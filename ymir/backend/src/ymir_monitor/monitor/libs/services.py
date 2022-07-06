@@ -19,18 +19,22 @@ class TaskService:
 
     def get_raw_log_contents(self, log_paths: Dict[str, float]) -> Dict[str, PercentResult]:
         result = dict()
-        for one_log_file in log_paths:
+        for log_path in log_paths:
             try:
-                percent_result = PercentLogHandler.parse_percent_log(one_log_file)
+                percent_result = PercentLogHandler.parse_percent_log(log_path)
             except ValueError as e:
                 raise LogFileError(f"percent log content error {e}")
-            result[one_log_file] = percent_result
+            result[log_path] = percent_result
 
         return result
 
     @staticmethod
-    def merge_task_progress_contents(task_id: str, raw_log_contents: Dict[str, PercentResult],
-                                     log_path_weights: Dict[str, float]) -> PercentResult:
+    def merge_task_progress_contents(
+        task_id: str, raw_log_contents: Dict[str, PercentResult], log_path_weights: Dict[str, float]
+    ) -> PercentResult:
+        """
+        calculate comprehensive progress (in percent) from multi-stages tasks
+        """
         percent = 0.0
         log_files_state_set = set()
         max_timestamp_content = None
@@ -75,21 +79,21 @@ class TaskService:
 
         return running_existence or finished_existence
 
-    def register_task(self, reg_parameters: TaskParameter) -> None:
-        if self.check_existence(reg_parameters.task_id):
-            raise DuplicateTaskIDError(f"duplicate task id {reg_parameters.task_id}")
+    def register_task(self, task_parameter: TaskParameter) -> None:
+        if self.check_existence(task_parameter.task_id):
+            raise DuplicateTaskIDError(f"duplicate task id {task_parameter.task_id}")
 
-        log_path_weights = reg_parameters.log_path_weights
+        log_path_weights = task_parameter.log_path_weights
         raw_log_contents = self.get_raw_log_contents(log_path_weights)
-        if len(raw_log_contents) != len(reg_parameters.log_path_weights):
+        if len(raw_log_contents) != len(task_parameter.log_path_weights):
             raise LogFileError
 
         percent_result = self.merge_task_progress_contents(
-            task_id=reg_parameters.task_id,
+            task_id=task_parameter.task_id,
             raw_log_contents=raw_log_contents,
             log_path_weights=log_path_weights,
         )
-        task_extra_info = TaskExtraInfo.parse_obj(reg_parameters.dict())
+        task_extra_info = TaskExtraInfo.parse_obj(task_parameter.dict())
         percent_result = PercentResult.parse_obj(percent_result.dict())
 
         task_info = TaskStorageStructure(
@@ -98,6 +102,6 @@ class TaskService:
             percent_result=percent_result,
         )
 
-        self.add_single_task(reg_parameters.task_id, task_info.dict())
+        self.add_single_task(task_parameter.task_id, task_info.dict())
 
         logger.info(f"register task successful: {task_info.dict()} ")
