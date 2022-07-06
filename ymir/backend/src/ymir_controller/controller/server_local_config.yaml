@@ -14,6 +14,7 @@ ASSETS:
   openpai_token: fake_token
   openpai_storage: fake_storage
   openpai_user: fake_user
+  server_runtime: ${SERVER_RUNTIME}
 SANDBOX:
   sandboxowner: ymir-root
   sandboxownergroup: ymir-root
