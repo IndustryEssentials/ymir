@@ -123,6 +123,7 @@ class TestInvokerTaskTraining(unittest.TestCase):
             'openpai_token': '',
             'openpai_storage': '',
             'openpai_user': '',
+            'server_runtime': 'nvidia',
         }
 
         working_dir_root = os.path.join(self._sandbox_root, "work_dir",
