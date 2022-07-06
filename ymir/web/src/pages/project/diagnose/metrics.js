@@ -15,10 +15,10 @@ import { CompareIcon } from "@/components/common/icons"
 import DefaultStages from "./components/defaultStages"
 
 const metricsTabs = [
-  { label: 'mAP', value: 'map', component: MapView, },
-  { label: 'PR curve', value: 'curve', component: CurveView, },
-  { label: 'R@P', value: 'rp', component: PView, },
-  { label: 'P@R', value: 'pr', component: PView, },
+  { value: 'map', component: MapView, },
+  { value: 'curve', component: CurveView, },
+  { value: 'rp', component: PView, },
+  { value: 'pr', component: PView, },
 ]
 
 const xAxisOptions = [
