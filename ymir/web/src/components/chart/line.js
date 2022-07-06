@@ -24,9 +24,10 @@ const Chart = ({ option = {}, height = 300, style = {}, ...rest }) => {
     let lineChart = null
     // console.log('option: ', option, chartRef)
     if (chartRef.current) {
-      const chart = chartRef.current
-      lineChart = echarts.init(chart)
-      lineChart.setOption(option)
+      setTimeout(() => {
+        lineChart = echarts.init(chartRef.current)
+        lineChart.setOption(option)
+      }, 50)
     }
     return () => {
       lineChart && lineChart.dispose()
@@ -43,7 +44,7 @@ const Chart = ({ option = {}, height = 300, style = {}, ...rest }) => {
     }
   })
 
-  return <div ref={chartRef} style={{height,  ...style, }} {...rest}>&nbsp;</div>
+  return <div ref={chartRef} style={{ ...style, }} {...rest}>&nbsp;</div>
 }
 
 export default Chart

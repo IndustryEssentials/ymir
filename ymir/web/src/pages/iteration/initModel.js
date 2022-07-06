@@ -85,7 +85,7 @@ const InitModel = ({ projects = {}, ...props }) => {
                 rules={[
                   { required: true, message: t('task.mining.form.model.required') },
                 ]}
-                tooltip={t('tip.task.filter.model')}
+                tooltip={t('tip.iteration.initmodel')}
               >
                 <ModelSelect placeholder={t('task.mining.form.mining.model.required')} pid={id} />
               </Form.Item>

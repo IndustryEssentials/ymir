@@ -112,11 +112,15 @@ const InferResultSelect = ({ pid, form, value, onChange = () => { } }) => {
 
   useEffect(() => {
     const selected = []
-    selectedDatasets.forEach(did => {
-      const dtask = tasks.filter(({ parameters: { dataset_id }, config }) => dataset_id === did)
-      selectedConfigs.forEach(sconfig => {
-        const ctask = dtask.find(({ config }) => sameConfig(config, sconfig))
-        ctask && selected.push(ctask)
+    selectedStages?.forEach(([model, selectedStage]) => {
+      selectedDatasets.forEach(did => {
+        const dtask = tasks.filter(({
+          parameters: { dataset_id, model_stage_id: stage }, config
+        }) => dataset_id === did && stage === selectedStage)
+        selectedConfigs.forEach(sconfig => {
+          const ctask = dtask.find(({ config }) => sameConfig(config, sconfig))
+          ctask && selected.push(ctask)
+        })
       })
     })
     setSelectedTasks(selected)

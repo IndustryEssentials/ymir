@@ -1,4 +1,3 @@
-import t from "@/utils/t"
 
 export const ROLES = Object.freeze({
   SUPER: 3,
@@ -15,20 +14,24 @@ export const STATES = Object.freeze({
 
 export const getRolesLabel = (role: number | undefined) => {
   const labels = Object.freeze({
-    [ROLES.SUPER]: 'user.role.super',
-    [ROLES.ADMIN]: 'user.role.admin',
-    [ROLES.USER]: 'user.role.user',
+    [ROLES.SUPER]: 'super',
+    [ROLES.ADMIN]: 'admin',
+    [ROLES.USER]: 'user',
   })
-  return typeof role !== 'undefined' ? labels[role] : labels
+  return typeof role !== 'undefined' ? `user.role.${labels[role]}` : labels
 }
 
 export const getUserState = (state: number | undefined) => {
   const states = Object.freeze({
-    [STATES.REGISTERED]: 'user.state.registered',
-    [STATES.ACTIVE]: 'user.state.active',
-    [STATES.DECLINED]: 'user.state.declined',
-    [STATES.DEACTIVED]: 'user.state.deactived',
+    [STATES.REGISTERED]: 'registered',
+    [STATES.ACTIVE]: 'active',
+    [STATES.DECLINED]: 'declined',
+    [STATES.DEACTIVED]: 'deactived',
   })
 
-  return typeof state !== 'undefined' ? states[state] : states
+  return typeof state !== 'undefined' ? `user.state.${states[state]}` : states
+}
+
+export function isSuperAdmin(role: number) {
+  return ROLES.SUPER === role
 }

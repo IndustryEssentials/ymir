@@ -15,15 +15,15 @@ import { CompareIcon } from "@/components/common/icons"
 import DefaultStages from "./components/defaultStages"
 
 const metricsTabs = [
-  { label: 'mAP', value: 'map', component: MapView, },
-  { label: 'PR curve', value: 'curve', component: CurveView, },
-  { label: 'R@P', value: 'rp', component: PView, },
-  { label: 'P@R', value: 'pr', component: PView, },
+  { value: 'map', component: MapView, },
+  { value: 'curve', component: CurveView, },
+  { value: 'rp', component: PView, },
+  { value: 'pr', component: PView, },
 ]
 
 const xAxisOptions = [
-  { label: 'Dataset', value: 0 },
-  { label: 'Class', value: 1 },
+  { key: 'dataset', value: 0 },
+  { key: 'keyword', value: 1 },
 ]
 
 const kwTypes = [{ label: 'keyword.add.name.label', value: 0 }, { label: 'keyword.ck.label', value: 1 }]
@@ -86,6 +86,7 @@ function Matrics({ pid, project }) {
 
   useEffect(() => {
     setDiagnosing(!!diagnosis)
+    setSelectedKeywords([])
   }, [diagnosis])
 
   useEffect(() => {
@@ -185,7 +186,7 @@ function Matrics({ pid, project }) {
       <Col>
         <Space size={20}>
           <span>{t('model.diagnose.metrics.dimension.label')}</span>
-          <Radio.Group defaultValue={xAxisOptions[0].value} options={xAxisOptions} onChange={xAxisChange} />
+          <Radio.Group defaultValue={xAxisOptions[0].value} options={xAxisOptions.map(({ key, value }) => ({ value, label: t(`model.diagnose.metrics.x.${key}`)}))} onChange={xAxisChange} />
         </Space>
       </Col>
     </Row>

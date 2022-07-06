@@ -7,7 +7,7 @@ import t from '@/utils/t'
 import useFetch from '../../hooks/useFetch'
 
 
-const ModelSelect = ({ pid, value, allModels, onChange = () => { }, ...resProps }) => {
+const ModelSelect = ({ pid, value, onlyModel, allModels, onChange = () => { }, ...resProps }) => {
   const [options, setOptions] = useState([])
   const [models, setModels] = useState([])
   const [_, getModels] = useFetch('model/queryAllModels')
@@ -46,14 +46,17 @@ const ModelSelect = ({ pid, value, allModels, onChange = () => { }, ...resProps 
   function generateOptions() {
     const opts = models.map(model => {
       const name = `${model.name} ${model.versionName}`
+      const childrenNode = onlyModel ? {} : {
+        children: model.stages.map(stage => ({
+          label: ` ${stage.name} (mAP:${percent(stage.map)}) ${stage.id === model.recommendStage ? t('common.recommend') : ''}`,
+          value: stage.id,
+        }))
+      }
       return {
         label: name,
         model,
         value: model.id,
-        children: model.stages.map(stage => ({
-          label: ` ${stage.name} (mAP:${percent(stage.map)}) ${stage.id === model.recommendStage ? t('common.recommend') : ''}`,
-          value: stage.id,
-        })),
+        ...childrenNode,
       }
     })
     setOptions(opts)
