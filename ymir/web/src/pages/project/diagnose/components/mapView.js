@@ -144,7 +144,7 @@ const MapView = ({ tasks, datasets, models, data, xType, kw: { kwType, keywords 
       }, {}) : {}
       const _average = kwType ? kdata._average?.ap : average(Object.values(drow))
       return {
-        id: `${id}${rate}`,
+        id,
         config,
         _model,
         _average,
@@ -157,6 +157,7 @@ const MapView = ({ tasks, datasets, models, data, xType, kw: { kwType, keywords 
     const dynamicColumns = xasix.map(({ value, label }) => ({
       title: label,
       dataIndex: value,
+      width: 100,
       render: percentRender,
     }))
     return [
@@ -169,20 +170,12 @@ const MapView = ({ tasks, datasets, models, data, xType, kw: { kwType, keywords 
       {
         title: 'Average mAP',
         dataIndex: '_average',
+        width: 100,
         render: percentRender,
       },
       ...dynamicColumns,
     ]
   }
-
-  // function getCK(data, keyword) {
-  //   const cks = Object.values(data).map(({ iou_averaged_evaluation }) => {
-  //     const ck = iou_averaged_evaluation.ck_evaluations[keyword] || {}
-  //     return ck.sub ? Object.keys(ck.sub) : []
-  //   }).flat()
-  //   const uniqueCKs = [...new Set(cks)]
-  //   return uniqueCKs.map(k => ({ value: k, label: k, parent: keywords }))
-  // }
 
   return list.map(({ id, label, rows }) => <div key={id}>
     <Panel label={label} visible={!hiddens[id]} setVisible={value => setHiddens(old => ({ ...old, [id]: !value }))} bg={false}>

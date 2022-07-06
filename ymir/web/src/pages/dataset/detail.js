@@ -80,7 +80,7 @@ function DatasetDetail({ datasetCache, getDataset }) {
               </div>
             ) : null}
             {!dataset.hidden ? <>
-              {taskTypes.map((type) => (
+              {taskTypes.map((type, index) => index === 0 || dataset.assetCount > 0 ? (
                 <Button
                   key={type}
                   type="primary"
@@ -88,7 +88,7 @@ function DatasetDetail({ datasetCache, getDataset }) {
                 >
                   {t(`task.type.${type}`)}
                 </Button>
-              ))}
+              ) : null)}
               <Button type="primary" onClick={() => hide(dataset)}>
                 {t(`common.action.hide`)}
               </Button>
