@@ -105,6 +105,9 @@ def normalize_parameters(
 
     if parameters.keywords:
         normalized["class_ids"] = user_labels.get_class_ids(names_or_aliases=parameters.keywords)
+
+    if parameters.preprocess:
+        normalized["preprocess"] = parameters.preprocess.json()
     return normalized
 
 
