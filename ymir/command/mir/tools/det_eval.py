@@ -576,8 +576,8 @@ class CocoDetEval:
                 precisions = precisions[iou_thr_index, :, :]
                 scores = scores[iou_thr_index, :, :]
             else:
-                precisions = np.mean(precisions, axis=0)
-                scores = np.mean(scores, axis=0)
+                precisions = np.nan_to_num(np.average(precisions, weights=(precisions >= 0), axis=0))
+                scores = np.nan_to_num(np.average(scores, weights=(scores >= 0), axis=0))
 
             # from dims: recThrs * catIds
             # to dims: recThrs
@@ -585,11 +585,15 @@ class CocoDetEval:
                 precisions = precisions[:, class_id_index]
                 scores = scores[:, class_id_index]
             else:
-                precisions = np.mean(precisions, axis=1)
-                scores = np.mean(scores, axis=1)
+                precisions = np.nan_to_num(np.average(precisions, weights=(precisions >= 0), axis=1))
+                scores = np.nan_to_num(np.average(scores, weights=(scores >= 0), axis=1))
 
             for recall_thr_index, recall_thr in enumerate(self.params.recThrs):
                 pr_point = mirpb.FloatPoint(x=recall_thr, y=precisions[recall_thr_index], z=scores[recall_thr_index])
+                # for test
+                if (scores[recall_thr_index] < 0 or precisions[recall_thr_index] < 0) and class_id_index is None:
+                    breakpoint()
+                # for test ends
                 ee.pr_curve.append(pr_point)
 
         return ee
