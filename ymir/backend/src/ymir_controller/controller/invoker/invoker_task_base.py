@@ -123,8 +123,7 @@ class TaskBaseInvoker(BaseMirControllerInvoker):
             if not (openpai_host and openpai_token and openpai_storage and openpai_user):
                 raise errors.MirCtrError(
                     CTLResponseCode.INVOKER_INVALID_ARGS,
-                    (f"openpai enabled, but invalid openpai_host: {openpai_host} "
-                     "or token: {openpai_token} or storage: {openpai_storage} or user: {openpai_user}"),
+                    "openpai enabled with invalid host, token, storage or user",
                 )
             task_context["openpai_enable"] = True
             task_context["openpai_host"] = openpai_host
