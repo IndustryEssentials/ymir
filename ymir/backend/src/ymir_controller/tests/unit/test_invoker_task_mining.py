@@ -104,7 +104,7 @@ class TestInvokerTaskMining(unittest.TestCase):
             'openpai_token': '',
             'openpai_storage': '',
             'openpai_user': '',
-            'server_runtime': 'nvidia',
+            'server_runtime': 'runc',
         }
 
         working_dir_root = os.path.join(self._sandbox_root, "work_dir",
@@ -146,7 +146,7 @@ class TestInvokerTaskMining(unittest.TestCase):
             'executor_config': mining_config,
             'task_context': {
                 'available_gpu_id': '',
-                'server_runtime': 'nvidia',
+                'server_runtime': 'runc',
             },
         }
         self.assertDictEqual(expected_config, config)

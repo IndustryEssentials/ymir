@@ -123,7 +123,7 @@ class TestInvokerTaskTraining(unittest.TestCase):
             'openpai_token': '',
             'openpai_storage': '',
             'openpai_user': '',
-            'server_runtime': 'nvidia',
+            'server_runtime': 'runc',
         }
 
         working_dir_root = os.path.join(self._sandbox_root, "work_dir",
@@ -162,7 +162,7 @@ class TestInvokerTaskTraining(unittest.TestCase):
             'executor_config': training_config,
             'task_context': {
                 'available_gpu_id': '1',
-                'server_runtime': 'nvidia',
+                'server_runtime': 'runc',
             },
         }
         logging.info(f"xxx config: {config}")  # for test
