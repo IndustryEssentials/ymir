@@ -4,7 +4,7 @@ from typing import Dict
 from common_utils.percent_log_util import PercentLogHandler, LogState
 from monitor.config import settings
 from monitor.libs.redis_handler import RedisHandler
-from monitor.schemas.task import TaskParameter, PercentResult, TaskStorageStructure, TaskExtraInfo
+from monitor.schemas.task import TaskParameter, PercentResult, TaskStorageStructure
 from monitor.utils.errors import DuplicateTaskIDError, LogFileError
 
 logger = logging.getLogger(__name__)
@@ -93,12 +93,10 @@ class TaskService:
             raw_log_contents=raw_log_contents,
             log_path_weights=log_path_weights,
         )
-        task_extra_info = TaskExtraInfo.parse_obj(task_parameter.dict())
-        percent_result = PercentResult.parse_obj(percent_result.dict())
 
         task_info = TaskStorageStructure(
             raw_log_contents=raw_log_contents,
-            task_extra_info=task_extra_info,
+            task_extra_info=task_parameter,
             percent_result=percent_result,
         )
 
