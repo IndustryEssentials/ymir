@@ -21,4 +21,6 @@ COPY ymir_exc/ymir_exc /app/ymir_exc
 # entry point for your app
 # the whole docker image will be started with `nvidia-docker run <other options> <docker-image-name>`
 # and this command will run automatically
+RUN echo "python /app/start.py" > /usr/bin/start.sh
 CMD python /app/start.py
+
