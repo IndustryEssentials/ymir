@@ -39,7 +39,7 @@ class CmdInfer(base.BaseCommand):
 
         return CmdInfer.run_with_args(work_dir=self.args.work_dir,
                                       mir_root=self.args.mir_root,
-                                      media_path=os.path.join(self.args.work_dir, 'assets'),
+                                      media_path=self.args.work_dir,
                                       model_location=self.args.model_location,
                                       model_hash_stage=self.args.model_hash_stage,
                                       index_file=self.args.index_file,

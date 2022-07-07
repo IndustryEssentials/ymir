@@ -46,10 +46,14 @@ def _run_training(env_config: env.EnvConfig) -> None:
 
     #! use `dataset_reader.item_paths` to read training or validation dataset items
     #!  note that `dataset_reader.item_paths` is a generator
+    absent_count = 0
     for asset_path, annotation_path in dr.item_paths(dataset_type=env.DatasetType.TRAINING):
-        if not os.path.isfile(asset_path):
-            raise FileNotFoundError(f"file not found: {asset_path}")
-        logging.info(f"asset: {asset_path}, annotation: {annotation_path}")
+        isfile = os.path.isfile(asset_path)
+        if not isfile:
+            absent_count += 1
+        logging.info(f"asset: {asset_path}, is file: {isfile}; "
+                     f"annotation: {annotation_path}, is file: {os.path.isfile(annotation_path)}")
+    logging.info(f"absent: {absent_count}")
 
     #! use `monitor.write_monitor_logger` to write write task process percent to monitor.txt
     monitor.write_monitor_logger(percent=0.5)
@@ -93,15 +97,19 @@ def _run_mining(env_config: env.EnvConfig) -> None:
     #! use `dataset_reader.item_paths` to read candidate dataset items
     #   note that annotations path will be empty str if there's no annotations in that dataset
     asset_paths = []
+    absent_count = 0
     for asset_path, _ in dr.item_paths(dataset_type=env.DatasetType.CANDIDATE):
-        logging.info(f"asset: {asset_path}")
+        isfile = os.path.isfile(asset_path)
+        if not isfile:
+            absent_count += 1
+        logging.info(f"asset: {asset_path}, is file: {isfile}")
         asset_paths.append(asset_path)
 
     if len(asset_paths) == 0:
         raise ValueError('empty asset paths')
 
     #! use `monitor.write_monitor_logger` to write task process to monitor.txt
-    logging.info(f"assets count: {len(asset_paths)}")
+    logging.info(f"assets count: {len(asset_paths)}, absent: {absent_count}")
     monitor.write_monitor_logger(percent=0.5)
 
     _dummy_work(idle_seconds=idle_seconds, trigger_crash=trigger_crash)
@@ -132,15 +140,19 @@ def _run_infer(env_config: env.EnvConfig) -> None:
     #! use `dataset_reader.item_paths` to read candidate dataset items
     #   note that annotations path will be empty str if there's no annotations in that dataset
     asset_paths: List[str] = []
+    absent_count = 0
     for asset_path, _ in dr.item_paths(dataset_type=env.DatasetType.CANDIDATE):
-        logging.info(f"asset: {asset_path}")
+        isfile = os.path.isfile(asset_path)
+        if not isfile:
+            absent_count += 1
+        logging.info(f"asset: {asset_path}, exists: {isfile}")
         asset_paths.append(asset_path)
 
     if len(asset_paths) == 0 or len(class_names) == 0:
         raise ValueError('empty asset paths or class names')
 
     #! use `monitor.write_monitor_logger` to write log to console and write task process percent to monitor.txt
-    logging.info(f"assets count: {len(asset_paths)}")
+    logging.info(f"assets count: {len(asset_paths)}, absent: {absent_count}")
     monitor.write_monitor_logger(percent=0.5)
 
     _dummy_work(idle_seconds=idle_seconds, trigger_crash=trigger_crash)
