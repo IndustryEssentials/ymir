@@ -123,6 +123,7 @@ class TestInvokerTaskTraining(unittest.TestCase):
             'openpai_token': '',
             'openpai_storage': '',
             'openpai_user': '',
+            'server_runtime': 'runc',
         }
 
         working_dir_root = os.path.join(self._sandbox_root, "work_dir",
@@ -157,7 +158,13 @@ class TestInvokerTaskTraining(unittest.TestCase):
 
         training_config["class_names"] = ["frisbee", "car"]
         training_config['gpu_id'] = '0'
-        expected_config = {'executor_config': training_config, 'task_context': {'available_gpu_id': '1'}}
+        expected_config = {
+            'executor_config': training_config,
+            'task_context': {
+                'available_gpu_id': '1',
+                'server_runtime': 'runc',
+            },
+        }
         logging.info(f"xxx config: {config}")  # for test
         self.assertDictEqual(expected_config, config)
 

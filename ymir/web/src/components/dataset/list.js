@@ -197,15 +197,15 @@ function Datasets({ pid, project = {}, iterations, group, datasetList, query, ve
   }
 
   const actionMenus = (record) => {
-    const { id, groupId, state, taskState, task, isProtected } = record
+    const { id, groupId, state, taskState, task, assetCount } = record
+    const always = [{
+      key: "fusion",
+      label: t("dataset.action.fusion"),
+      hidden: () => !isValidDataset(state),
+      onclick: () => history.push(`/home/project/${pid}/fusion?did=${id}`),
+      icon: <ScreenIcon className={styles.addBtnIcon} />,
+    }]
     const menus = [
-      {
-        key: "fusion",
-        label: t("dataset.action.fusion"),
-        hidden: () => !isValidDataset(state),
-        onclick: () => history.push(`/home/project/${pid}/fusion?did=${id}`),
-        icon: <ScreenIcon className={styles.addBtnIcon} />,
-      },
       {
         key: "train",
         label: t("dataset.action.train"),
@@ -256,7 +256,7 @@ function Datasets({ pid, project = {}, iterations, group, datasetList, query, ve
         icon: <EyeOffIcon />,
       },
     ]
-    return menus
+    return assetCount === 0 ? always : [...always, ...menus]
   }
 
   const tableChange = ({ current, pageSize }, filters, sorters = {}) => {
@@ -303,6 +303,7 @@ function Datasets({ pid, project = {}, iterations, group, datasetList, query, ve
 
   function setGroupLabelsByProject(datasets, project) {
     return datasets.map(item => {
+      delete item.projectLabel
       item = setLabelByProject(project?.trainSet?.id, 'isTrainSet', item)
       item = setLabelByProject(project?.testSet?.groupId, 'isTestSet', item, project?.testSet?.versionName)
       item = setLabelByProject(project?.miningSet?.groupId, 'isMiningSet', item, project?.miningSet?.versionName)
@@ -314,6 +315,7 @@ function Datasets({ pid, project = {}, iterations, group, datasetList, query, ve
     Object.keys(versions).forEach(gid => {
       const list = versions[gid]
       const updatedList = list.map(item => {
+        delete item.projectLabel
         const field = item.id === project?.testSet?.id ? 'isTestSet' :
           (item.id === project?.miningSet?.id ? 'isMiningSet' : (isTestingDataset(item.id) ? 'isTestingSet' : ''))
         field && (item = setLabelByProject(item.id, field, item))
@@ -328,6 +330,7 @@ function Datasets({ pid, project = {}, iterations, group, datasetList, query, ve
     Object.keys(versions).forEach(gid => {
       const list = versions[gid]
       const updatedList = list.map(item => {
+        delete item.iterationLabel
         item = setLabelByIterations(item, iterations)
         return { ...item }
       })

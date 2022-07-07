@@ -8,7 +8,7 @@ const DefaultStages = ({ diagnosing, models = [] }) => {
   const [uniqueModels, setModels] = useState([])
 
   useEffect(() => {
-    const unique = models.reduce((prev, model) => prev.some(md => md.id === model.id) ? prev : [...prev, model], [])
+    const unique = models.reduce((prev, model) => prev.some(md => md.id === model.id) || model.stages.length < 2 ? prev : [...prev, model], [])
     setModels(unique)
   }, [models])
 
@@ -23,7 +23,7 @@ const DefaultStages = ({ diagnosing, models = [] }) => {
     setStage({ model, stage })
   }
 
-  return diagnosing && models.length ?
+  return diagnosing && uniqueModels.length ?
     <Panel label={t('model.diagnose.stage.label')} toogleVisible={false}>
       {uniqueModels.map(model =>
         <Form.Item key={model.id} label={`${model.name} ${model.versionName}`}>

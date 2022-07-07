@@ -8,7 +8,7 @@ from google.protobuf import json_format
 import lmdb
 
 from mir.protos import mir_command_pb2 as mirpb
-from mir.tools import data_reader, data_writer, hash_utils, mir_storage_ops, revs_parser
+from mir.tools import data_preprocessor, data_reader, data_writer, hash_utils, mir_storage_ops, revs_parser
 from tests import utils as test_utils
 
 
@@ -178,17 +178,7 @@ class TestArkDataExporter(unittest.TestCase):
                                                       task=task)
 
     # private: check result
-    def __check_result(self, asset_ids, format_type, export_path, index_file_path):
-        # check files
-        for asset_id in asset_ids:
-            asset_path = os.path.join(export_path, asset_id + '.jpeg')
-            self.assertTrue(os.path.isfile(asset_path))
-            if format_type == data_writer.AnnoFormat.ANNO_FORMAT_ARK:
-                annotation_path = os.path.join(export_path, asset_id + '.txt')
-            elif format_type == data_writer.AnnoFormat.ANNO_FORMAT_VOC:
-                annotation_path = os.path.join(export_path, asset_id + '.xml')
-            self.assertTrue(os.path.isfile(annotation_path))
-
+    def __check_result(self, asset_ids: List[str], export_path: str, index_file_path: str):
         #   index file exists
         self.assertTrue(os.path.isfile(index_file_path))
         #   index file have enough lines
@@ -211,7 +201,7 @@ class TestArkDataExporter(unittest.TestCase):
             for col_idx in range(2):
                 self.assertEqual(expected_first_two_cols[line_idx][col_idx], int(line_components[col_idx].strip()))
 
-    def __check_lmdb_result(self, asset_ids, format_type, export_path, index_file_path):
+    def __check_lmdb_result(self, asset_ids: List[str], export_path: str, index_file_path: str):
         expected_asset_and_anno_and_gt_keys = {(f"asset_{asset_id}", f"anno_{asset_id}", f"gt_{asset_id}")
                                                for asset_id in asset_ids}
         asset_and_anno_and_gt_keys = set()
@@ -223,6 +213,7 @@ class TestArkDataExporter(unittest.TestCase):
         plained_asset_and_anno_and_gtkeys = {k for t in expected_asset_and_anno_and_gt_keys for k in t}
         lmdb_env = lmdb.open(export_path)
         lmdb_tnx = lmdb_env.begin(write=False)
+
         for k in plained_asset_and_anno_and_gtkeys:
             logging.info(f"plained_asset_and_anno_and_gtkeys: {k}")
             self.assertTrue(lmdb_tnx.get(k.encode()))
@@ -297,11 +288,60 @@ class TestArkDataExporter(unittest.TestCase):
 
         self.__check_result(
             asset_ids={'430df22960b0f369318705800139fcc8ec38a3e4', 'a3008c032eb11c8d9ffcb58208a36682ee40900f'},
-            format_type=data_writer.AnnoFormat.ANNO_FORMAT_ARK,
             export_path=train_path,
             index_file_path=index_file_path)
         self.__check_lmdb_result(
             asset_ids={'430df22960b0f369318705800139fcc8ec38a3e4', 'a3008c032eb11c8d9ffcb58208a36682ee40900f'},
-            format_type=data_writer.AnnoFormat.ANNO_FORMAT_ARK,
+            export_path=train_path,
+            index_file_path=lmdb_index_file_path)
+
+    def test_data_rw_01(self):
+        train_path = os.path.join(self._dest_root, 'train')
+
+        index_file_path = os.path.join(train_path, 'index.tsv')
+
+        raw_writer = data_writer.RawDataWriter(mir_root=self._mir_root,
+                                               assets_location=self._assets_location,
+                                               assets_dir=train_path,
+                                               annotations_dir=train_path,
+                                               need_ext=True,
+                                               need_id_sub_folder=False,
+                                               overwrite=False,
+                                               class_ids_mapping={
+                                                   2: 0,
+                                                   52: 1
+                                               },
+                                               format_type=data_writer.AnnoFormat.ANNO_FORMAT_ARK,
+                                               index_file_path=index_file_path,
+                                               prep_args={'longside_resize': {
+                                                   'dest_size': 250
+                                               }})
+        lmdb_index_file_path = os.path.join(train_path, 'index-lmdb.tsv')
+        lmdb_writer = data_writer.LmdbDataWriter(mir_root=self._mir_root,
+                                                 assets_location=self._assets_location,
+                                                 lmdb_dir=train_path,
+                                                 class_ids_mapping={
+                                                     2: 0,
+                                                     52: 1
+                                                 },
+                                                 format_type=data_writer.AnnoFormat.ANNO_FORMAT_ARK,
+                                                 index_file_path=lmdb_index_file_path,
+                                                 prep_args={'longside_resize': {
+                                                     'dest_size': 250
+                                                 }})
+
+        with data_reader.MirDataReader(mir_root=self._mir_root,
+                                       typ_rev_tid=revs_parser.parse_single_arg_rev('tr:a@a', need_tid=True),
+                                       asset_ids=set(),
+                                       class_ids=set()) as reader:
+            raw_writer.write_all(reader)
+            lmdb_writer.write_all(reader)
+
+        self.__check_result(
+            asset_ids={'430df22960b0f369318705800139fcc8ec38a3e4', 'a3008c032eb11c8d9ffcb58208a36682ee40900f'},
+            export_path=train_path,
+            index_file_path=index_file_path)
+        self.__check_lmdb_result(
+            asset_ids={'430df22960b0f369318705800139fcc8ec38a3e4', 'a3008c032eb11c8d9ffcb58208a36682ee40900f'},
             export_path=train_path,
             index_file_path=lmdb_index_file_path)
