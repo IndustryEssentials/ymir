@@ -59,7 +59,7 @@ def _execute_locally(
     run_as_root: bool,
     task_config: dict,
 ) -> int:
-    cmd = [mir_utils.get_docker_executable(runtime=task_config.get('server_runtime', 'nvidia')), 'run', '--rm']
+    cmd = [mir_utils.get_docker_executable(runtime=task_config.get('server_runtime', '')), 'run', '--rm']
     # path bindings
     cmd.append(f"-v{work_dir_in}:/in:ro")
     cmd.append(f"-v{work_dir_out}:/out")
