@@ -10,6 +10,7 @@ from monitor.utils.errors import LogWeightError
 
 class MonitorType(IntEnum):
     PERCENT = 1
+    OPENPAI = 2
 
 
 class TaskParameter(BaseModel):
