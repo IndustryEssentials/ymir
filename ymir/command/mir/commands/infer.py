@@ -39,7 +39,7 @@ class CmdInfer(base.BaseCommand):
 
         return CmdInfer.run_with_args(work_dir=self.args.work_dir,
                                       mir_root=self.args.mir_root,
-                                      media_path=self.args.work_dir,
+                                      media_path=os.path.join(self.args.work_dir, 'assets'),
                                       model_location=self.args.model_location,
                                       model_hash_stage=self.args.model_hash_stage,
                                       index_file=self.args.index_file,
@@ -290,7 +290,7 @@ def bind_to_subparsers(subparsers: argparse._SubParsersAction, parent_parser: ar
                                   required=True,
                                   dest='work_dir',
                                   type=str,
-                                  help='work place for mining and monitoring')
+                                  help='work place for this command, all images should put to <work_dir>/assets')
     infer_arg_parser.add_argument('--model-location',
                                   required=True,
                                   dest='model_location',

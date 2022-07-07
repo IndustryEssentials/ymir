@@ -22,7 +22,7 @@ class TestCmdInfer(unittest.TestCase):
         self._mir_repo_root = os.path.join(self._test_root, 'mir-demo-repo')
         self._working_root = os.path.join(self._test_root, 'work')  # work directory for cmd infer
         self._models_location = os.path.join(self._working_root, 'models')
-        self._src_assets_root = self._working_root  # source assets, index and infer config file
+        self._src_assets_root = os.path.join(self._working_root, 'assets')  # source assets, index and infer config file
         self._config_file = os.path.join(self._working_root, 'config.yaml')
         self._assets_index_file = os.path.join(self._working_root, 'index.tsv')
 
