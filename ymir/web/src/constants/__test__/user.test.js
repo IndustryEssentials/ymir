@@ -26,13 +26,6 @@ describe("constants: user", () => {
     expect(getRolesLabel(ROLES.SUPER)).toBe('user.role.super')
     expect(getRolesLabel(ROLES.ADMIN)).toBe('user.role.admin')
     expect(getRolesLabel(ROLES.USER)).toBe('user.role.user')
-  
-    const allLabels = getRolesLabel()
-    expect(allLabels[ROLES.SUPER]).toBe('user.role.super')
-    expect(allLabels[ROLES.ADMIN]).toBe('user.role.admin')
-    expect(allLabels[ROLES.USER]).toBe('user.role.user')
-
-    expect(getRolesLabel('54')).toBe(undefined) // unmatch role
   })
   it('getUserState: get label of user states', () => {
 
@@ -40,14 +33,6 @@ describe("constants: user", () => {
     expect(getUserState(STATES.ACTIVE)).toBe('user.state.active')
     expect(getUserState(STATES.DECLINED)).toBe('user.state.declined')
     expect(getUserState(STATES.DEACTIVED)).toBe('user.state.deactived')
-  
-    const allLabels = getUserState()
-    expect(allLabels[STATES.REGISTERED]).toBe('user.state.registered')
-    expect(allLabels[STATES.ACTIVE]).toBe('user.state.active')
-    expect(allLabels[STATES.DECLINED]).toBe('user.state.declined')
-    expect(allLabels[STATES.DEACTIVED]).toBe('user.state.deactived')
-
-    expect(getUserState('54')).toBe(undefined) // unmatch state
 
   })
 })

@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react"
 import { Menu, Layout } from "antd"
-import { useHistory, useLocation, withRouter } from "umi"
+import { useHistory, useLocation, withRouter, connect } from "umi"
 import t from '@/utils/t'
+import { isSuperAdmin } from '@/constants/user'
 import { BarchartIcon, FlagIcon, GithubIcon, FileHistoryIcon, MymodelIcon, NavDatasetIcon, UserIcon, UserSettingsIcon } from '@/components/common/icons'
 import { EditIcon, EyeOffIcon } from "./icons"
 
@@ -13,7 +14,7 @@ const getItem = (label, key, icon, children, type = '') => ({
 
 const getGroupItem = (label, key, children) => getItem(label, key, undefined, children, 'group')
 
-function LeftMenu() {
+function LeftMenu({ role }) {
   const history = useHistory()
   const { pathname } = useLocation()
   const [defaultKeys, setDefaultKeys] = useState(null)
@@ -47,16 +48,15 @@ function LeftMenu() {
       ]),
       getGroupItem(t('common.top.menu.configure'), 'settings', [
         getItem(t('common.top.menu.image'), '/home/image', <FileHistoryIcon />,),
-        getItem(t('common.top.menu.permission'), '/home/permission', <UserSettingsIcon />,),
+        isSuperAdmin(role) ? getItem(t('common.top.menu.permission'), '/home/permission', <UserSettingsIcon />,) : null,
       ]),
       { type: 'divider' },
       getItem(t('user.settings'), '/home/user', <UserIcon />,),
       getItem(<a target="_blank" href='https://github.com/IndustryEssentials/ymir'><GithubIcon /> {t('common.top.menu.community')}</a>, 'github',),
     ])
-  }, [pathname])
+  }, [pathname, role])
 
   const clickHandle = ({ key }) => {
-    console.log('key:', key)
     setDefaultKeys([key])
     history.push(key)
   }
@@ -67,5 +67,9 @@ function LeftMenu() {
     </Sider>
   ) : null
 }
-
-export default withRouter(LeftMenu)
+const props = state => {
+  return {
+    role: state.user.role,
+  }
+}
+export default withRouter(connect(props)(LeftMenu))

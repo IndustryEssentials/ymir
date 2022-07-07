@@ -51,9 +51,17 @@ const tip = {
     cn: "训练镜像中需传入的运行参数，默认为最佳推荐配置",
     en: "Hyperparameter tips: the operation parameters to be entered in the training docker, the default value is the best recommended configuration",
   },
-  "tip.task.filter.model": {
+  "tip.iteration.initmodel": {
     cn: "初始模型用于第一轮迭代时的数据挖掘，可以通过导入或者训练添加。",
     en: "The initial model is used for data mining during the first iteration and can be added by importing or training.",
+  },
+  "tip.task.mining.dataset": {
+    cn: "待挖掘的目标数据集",
+    en: "Dataset for mining",
+  },
+  "tip.task.filter.model": {
+    cn: "本次挖掘出来的数据可用于该选中模型效果的提升",
+    en: "The mining data can used for optimizing the model selected.",
   },
   "tip.task.filter.strategy": {
     cn: "用户自定义挖掘结果数据集的大小，即希望保留TopK个最有利于模型优化的数据。在选择多个数据集时，由于可能存在重复数据，合并后的结果小于所选数据集之和，当用户自定义TopK值大于合并后的数据集大小时，则返回全部数据。",

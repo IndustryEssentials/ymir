@@ -66,7 +66,11 @@ class BaseMirControllerInvoker(ABC):
 
     def _send_request_metrics(self) -> None:
         # not record internal requests.
-        if self._request.req_type in [backend_pb2.RequestType.CMD_GPU_INFO_GET]:
+        if self._request.req_type in [
+                backend_pb2.RequestType.CMD_GPU_INFO_GET,
+                backend_pb2.RequestType.CMD_LABEL_GET,
+                backend_pb2.RequestType.CMD_REPO_CHECK,
+        ]:
             return
 
         metrics_name = backend_pb2.RequestType.Name(self._request.req_type) + '.'

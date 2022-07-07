@@ -104,6 +104,7 @@ class TestInvokerTaskMining(unittest.TestCase):
             'openpai_token': '',
             'openpai_storage': '',
             'openpai_user': '',
+            'server_runtime': 'runc',
         }
 
         working_dir_root = os.path.join(self._sandbox_root, "work_dir",
@@ -141,7 +142,13 @@ class TestInvokerTaskMining(unittest.TestCase):
         with open(output_config, "r") as f:
             config = yaml.safe_load(f)
         mining_config['gpu_id'] = ''
-        expected_config = {'executor_config': mining_config, 'task_context': {'available_gpu_id': ''}}
+        expected_config = {
+            'executor_config': mining_config,
+            'task_context': {
+                'available_gpu_id': '',
+                'server_runtime': 'runc',
+            },
+        }
         self.assertDictEqual(expected_config, config)
 
         asset_cache_dir = os.path.join(self._user_root, 'mining_asset_cache')
@@ -149,9 +156,9 @@ class TestInvokerTaskMining(unittest.TestCase):
                       "--model-hash {5} --src-revs {1}@{6} --asset-cache-dir {9} --task-config-file {7} --executor {8} "
                       "--executant-name {10} --topk {4}".format(self._mir_repo_root, self._task_id, working_dir_0,
                                                                 self._storage_root, top_k,
-                                                                f"{model_hash}@{model_stage}",
-                                                                self._sub_task_id_1, output_config, 'mining_image',
-                                                                asset_cache_dir, self._task_id))
+                                                                f"{model_hash}@{model_stage}", self._sub_task_id_1,
+                                                                output_config, 'mining_image', asset_cache_dir,
+                                                                self._task_id))
         mock_run.assert_has_calls(calls=[
             mock.call(expected_cmd_merge.split(' '), capture_output=True, text=True),
             mock.call(mining_cmd.split(' '), capture_output=True, text=True),

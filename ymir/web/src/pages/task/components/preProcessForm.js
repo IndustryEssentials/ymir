@@ -27,11 +27,12 @@ const PreProcessForm = () => {
   }
   return <Panel label={t('task.train.preprocess.title')} toogleVisible={false}>
     {funcs.map(({ func, label, params }) => <Tip key={func} hidden={true}>
-      <Form.Item label={renderTitle(func, label)}>
-        {selected[func] ? params.map(({ key, rules, component }) => <Form.Item key={key} name={['preprocess', func, key]} rules={rules} noStyle>
-          {component}
-        </Form.Item>
-        ) : null }
+      <Form.Item label={renderTitle(func, label)} tooltip={t(`${label}.tip`)}>
+        {selected[func] ? params.map(({ key, rules, component }) => (
+          <Form.Item key={key} name={['preprocess', func, key]} rules={rules} noStyle>
+            {component}
+          </Form.Item>
+        )) : null}
       </Form.Item>
     </Tip>
     )}
