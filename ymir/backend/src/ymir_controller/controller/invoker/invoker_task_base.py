@@ -91,7 +91,7 @@ class TaskBaseInvoker(BaseMirControllerInvoker):
                                       class_names: List,
                                       task_parameters: str,
                                       output_config_file: str,
-                                      openpai_config: Dict = {},
+                                      assets_config: Dict = {},
                                       preprocess: Optional[str] = None) -> bool:
         executor_config = yaml.safe_load(req_executor_config)
         preprocess_config = yaml.safe_load(preprocess) if preprocess else None
@@ -106,24 +106,26 @@ class TaskBaseInvoker(BaseMirControllerInvoker):
         if preprocess_config:
             task_context["preprocess"] = preprocess_config
 
+        task_context['server_runtime'] = assets_config['server_runtime']
+
         gpu_count = executor_config.get("gpu_count", 0)
         executor_config["gpu_id"] = ",".join([str(i) for i in range(gpu_count)])
 
         # Openpai enabled
         if strtobool(str(executor_config.get("openpai_enable", "False"))):
-            logging.info(f"Openpai_config: {openpai_config}")
+            openpai_host = assets_config.get("openpai_host", None)
+            openpai_token = assets_config.get("openpai_token", None)
+            openpai_storage = assets_config.get("openpai_storage", None)
+            openpai_user = assets_config.get("openpai_user", "")
+            logging.info(f"OpenPAI host: {openpai_host}, token: {openpai_token}, "
+                         f"storage: {openpai_storage}, user: {openpai_user}")
 
-            task_context["openpai_enable"] = True
-            openpai_host = openpai_config.get("openpai_host", None)
-            openpai_token = openpai_config.get("openpai_token", None)
-            openpai_storage = openpai_config.get("openpai_storage", None)
-            openpai_user = openpai_config.get("openpai_user", "")
             if not (openpai_host and openpai_token and openpai_storage and openpai_user):
                 raise errors.MirCtrError(
                     CTLResponseCode.INVOKER_INVALID_ARGS,
-                    (f"openpai enabled, but invalid openpai_host: {openpai_host} "
-                     "or token: {openpai_token} or storage: {openpai_storage} or user: {openpai_user}"),
+                    "openpai enabled with invalid host, token, storage or user",
                 )
+            task_context["openpai_enable"] = True
             task_context["openpai_host"] = openpai_host
             task_context["openpai_token"] = openpai_token
             task_context["openpai_storage"] = openpai_storage

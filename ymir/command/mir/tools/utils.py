@@ -389,8 +389,7 @@ def collect_executor_outlog_tail(work_dir: str, tail_line_count: int = 5) -> str
     return f"EXECUTOR OUTLOG TAIL FROM: {out_log_path}\n{joint_tail_lines}"
 
 
-def get_docker_executable(gpu_ids: str) -> str:
-    if gpu_ids:
+def get_docker_executable(runtime: str) -> str:
+    if runtime == 'nvidia':
         return 'nvidia-docker'
-
     return 'docker'
