@@ -11,7 +11,7 @@ with open('requirements.txt') as f:
 setup(
     name='ymir-exc',
     version=__version__,
-    python_requires=">=3.6",
+    python_requires=">=3.7",
     install_requires=requirements,
     author_email="contact.viesc@gmail.com",
     description="ymir executor SDK: SDK for develop ymir training, mining and infer docker images",
