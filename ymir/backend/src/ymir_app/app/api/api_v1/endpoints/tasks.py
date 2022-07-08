@@ -306,6 +306,7 @@ def update_task_status(
         #  reformatting is needed
         payload = {updated_task.hash: task_update_msg.dict()}
         asyncio.run(request.app.sio.emit(event="update_taskstate", data=payload, namespace=namespace))
+        logger.info("notify task update (%s) to frontend (%s)", payload, namespace)
 
     return {"result": task_in_db}
 

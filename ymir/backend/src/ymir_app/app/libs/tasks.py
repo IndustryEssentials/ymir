@@ -222,17 +222,24 @@ class TaskResult:
         try:
             result = self.viz.get_model()
         except (ModelNotReady, ModelNotFound):
-            logger.exception("[update task] failed to get model from task")
+            logger.exception("[update task] failed to get model_info: model not ready")
+            return None
+        except Exception:
+            logger.exception("[update task] failed to get model_info: unknown error")
             return None
         else:
             return result
 
     @property
-    def dataset_info(self) -> DatasetMetaData:
-        return self.viz.get_dataset(user_labels=self.user_labels)
+    def dataset_info(self) -> Optional[DatasetMetaData]:
+        try:
+            return self.viz.get_dataset(user_labels=self.user_labels)
+        except Exception:
+            logger.exception("[update task] failed to get dataset_info, check viz log")
+            return None
 
     @property
-    def result_info(self) -> Union[DatasetMetaData, ModelMetaData, None]:
+    def result_info(self) -> Optional[Union[DatasetMetaData, ModelMetaData]]:
         if self._result is None:
             self._result = self.model_info if self.result_type is ResultType.model else self.dataset_info
         return self._result
