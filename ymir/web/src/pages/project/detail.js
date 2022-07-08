@@ -1,12 +1,11 @@
 import React, { useCallback, useEffect, useState } from "react"
-import { Card, Col, Row } from "antd"
+import { Button, Card, Col, Row, Space } from "antd"
 import { useParams, connect, useHistory } from "umi"
 import t from "@/utils/t"
 import Breadcrumbs from "@/components/common/breadcrumb"
 import s from "./detail.less"
-import { TrainIcon, NavDatasetIcon, ArrowRightIcon } from "@/components/common/icons"
+import { TrainIcon, NavDatasetIcon, ArrowRightIcon, ImportIcon } from "@/components/common/icons"
 import NoIterationDetail from "./components/noIterationDetail"
-import Detail from './components/detail'
 
 function ProjectDetail(func) {
   const history = useHistory()
@@ -44,17 +43,29 @@ function ProjectDetail(func) {
     return <div className={s.cardTitle}><TrainIcon className={s.titleIcon} /><span className={s.titleLabel}>{t('project.iteration.stage.training')}</span></div>
   }
 
+  function add() {
+    history.push(`/home/dataset/add/${id}`)
+  }
+
+  function goTraining() {
+    history.push(`/home/project/${id}/train`)
+  }
+
   return (
     <div>
       <Breadcrumbs />
       <div className={s.header}>
         <NoIterationDetail project={project} />
+        <Space className={s.actions}>
+          <Button type="primary" onClick={add}><ImportIcon /> {t("dataset.import.label")}</Button>
+          <Button type="primary" onClick={goTraining}><TrainIcon /> {t("project.iteration.stage.training")}</Button>
+        </Space>
       </div>
       <div className={`list ${s.projectOverview}`}>
         <Row gutter={10}>
           <Col span={12}>
-            <Card title={datasetTitle()} className={s.cardContainer} 
-              onClick={() => { history.push(`/home/project/${project.id}/dataset`) }} 
+            <Card title={datasetTitle()} className={s.cardContainer}
+              onClick={() => { history.push(`/home/project/${project.id}/dataset`) }}
               extra={<ArrowRightIcon className={s.rightIcon} />}>
               <Row className='content' justify="center">
                 <Col span={12}>
@@ -69,8 +80,8 @@ function ProjectDetail(func) {
             </Card>
           </Col>
           <Col span={12}>
-            <Card title={modelTitle()} className={s.cardContainer}  
-              onClick={() => { history.push(`/home/project/${project.id}/model`) }} 
+            <Card title={modelTitle()} className={s.cardContainer}
+              onClick={() => { history.push(`/home/project/${project.id}/model`) }}
               extra={<ArrowRightIcon className={s.rightIcon} />}>
               <Row className='content' justify="center">
                 <Col span={12}>
