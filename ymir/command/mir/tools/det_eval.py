@@ -594,10 +594,6 @@ class CocoDetEval:
 
             for recall_thr_index, recall_thr in enumerate(self.params.recThrs):
                 pr_point = mirpb.FloatPoint(x=recall_thr, y=precisions[recall_thr_index], z=scores[recall_thr_index])
-                # for test
-                if (scores[recall_thr_index] < 0 or precisions[recall_thr_index] < 0) and class_id_index is None:
-                    breakpoint()
-                # for test ends
                 ee.pr_curve.append(pr_point)
 
         return ee
