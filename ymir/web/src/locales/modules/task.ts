@@ -47,6 +47,7 @@ const task = {
   "task.train.form.network.label": { cn: "算法框架", en: "Network", },
   "task.train.form.backbone.label": { cn: "骨干网络结构", en: "Backbone", },
   "task.train.form.hyperparam.label": { cn: "高级参数", en: "Senior Config", },
+  "task.train.form.hyperparam.label.tip": { cn: "（点击切换展开/收起）", en: " (click to toggle unfold/fold)", },
   "task.train.form.traintypes.detect": { cn: "目标检测", en: "Object Detection", },
   "task.train.form.image.label": { cn: "镜像选择", en: "Docker Image", },
   "task.train.form.image.placeholder": { cn: "请选择镜像", en: "Please select a docker image", },
