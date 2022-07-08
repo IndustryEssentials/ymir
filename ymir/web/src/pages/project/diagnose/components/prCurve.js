@@ -21,7 +21,7 @@ const PrCurve = ({ title='', lines }) => {
     left: '0',
     right: '5px',
     bottom: '3%',
-    containLabel: true
+    // containLabel: true
   }
   const yAxis = [
     {
@@ -46,7 +46,7 @@ const PrCurve = ({ title='', lines }) => {
     setOption({
       tooltip,
       legend,
-      grid,
+      // grid,
       yAxis,
       xAxis,
       series,
