@@ -77,6 +77,7 @@ class TestInvokerCMDInference(unittest.TestCase):
         model_stage = "model_stage_name"
         assets_config = {
             "modelskvlocation": self._storage_root,
+            'server_runtime': 'nvidia'
         }
 
         mock_json = {
