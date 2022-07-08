@@ -290,7 +290,7 @@ def bind_to_subparsers(subparsers: argparse._SubParsersAction, parent_parser: ar
                                   required=True,
                                   dest='work_dir',
                                   type=str,
-                                  help='work place for mining and monitoring')
+                                  help='work place for this command, all images should put to <work_dir>/assets')
     infer_arg_parser.add_argument('--model-location',
                                   required=True,
                                   dest='model_location',
