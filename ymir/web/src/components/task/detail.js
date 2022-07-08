@@ -288,7 +288,7 @@ function TaskDetail({ task = {}, ignore = [], batchDatasets, getModel }) {
       <Item label={t("task.mining.form.topk.label")}>
         {task.parameters.top_k}
       </Item>
-      <Item label={t("task.detail.label.mining.image")}>
+      <Item label={t("task.detail.label.inference.image")}>
         {task.parameters.docker_image}
       </Item>
       <Item label={t("task.detail.label.hyperparams")} span={2}>

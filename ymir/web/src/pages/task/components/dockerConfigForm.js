@@ -21,8 +21,13 @@ const DockerConfigForm = ({ form, seniorConfig }) => {
       return Promise.resolve()
     }
   }
-  return seniorConfig.length ? 
-    <Panel label={t('task.train.form.hyperparam.label')} visible={visible} setVisible={setVisible}>
+  const renderTitle = <>
+    {t('task.train.form.hyperparam.label')}
+    <span style={{ fontSize: 14, color: 'gray' }}>{t('task.train.form.hyperparam.label.tip')}</span>
+  </>
+
+  return seniorConfig.length ?
+    <Panel label={renderTitle} visible={visible} setVisible={setVisible}>
       <Form.Item
         labelCol={{ span: 6 }}
         wrapperCol={{ offset: 6, span: 12 }}

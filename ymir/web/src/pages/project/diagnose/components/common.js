@@ -2,13 +2,13 @@ import { percent } from '@/utils/number'
 import { Popover } from 'antd'
 import ReactJson from 'react-json-view'
 
-export function getModelCell(rid, tasks, models) {
+export function getModelCell(rid, tasks, models, text) {
   const task = tasks.find(({ result }) => result === rid)
   const model = models.find(model => model.id === task.model)
   const stage = model.stages.find(sg => sg.id === task.stage)
   const content = <ReactJson src={task.config} name={false} />
   const label = `${model.name} ${model.versionName} ${stage.name}`
-  return <Popover content={content}>
+  return text ? label + rid : <Popover content={content}>
     <span title={label}>{label}</span>
   </Popover>
 }
