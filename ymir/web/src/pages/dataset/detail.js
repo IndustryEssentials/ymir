@@ -89,9 +89,9 @@ function DatasetDetail({ datasetCache, getDataset }) {
                   {t(`task.type.${type}`)}
                 </Button>
               ) : null)}
-              <Button type="primary" onClick={() => hide(dataset)}>
+              {dataset.assetCount > 0 ? <Button type="primary" onClick={() => hide(dataset)}>
                 {t(`common.action.hide`)}
-              </Button>
+              </Button> : null }
             </> :
               <Button type="primary" onClick={restore}>
                 {t("common.action.restore")}

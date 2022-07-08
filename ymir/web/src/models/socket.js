@@ -1,11 +1,9 @@
 import { getSocket } from '../services/socket'
 
 const pageMaps = [
-  { path: '/home/project/\\d+/detail', method: 'dataset/updateDatasets' },
-  { path: '/home/project/\\d+/detail', method: 'dataset/updateDatasetState' },
-  { path: '/home/project/\\d+/detail', method: 'model/updateModelState' },
-  { path: '/home/project/\\d+/detail', method: 'iteration/updateCurrentStageResult' },
-  { path: '/home/project/\\d+/detail', method: 'model/updateModelsStates' },
+  { path: '/home/project/\\d+/dataset', method: 'dataset/updateDatasets' },
+  { path: '/home/project/\\d+/dataset', method: 'iteration/updateCurrentStageResult' },
+  { path: '/home/project/\\d+/model', method: 'model/updateModelsStates' },
   { path: '/home/project/\\d+/model/\\d+', method: 'model/updateModelState' },
   { path: '/home/project/\\d+/dataset/\\d+', method: 'dataset/updateDatasetState' },
 ]

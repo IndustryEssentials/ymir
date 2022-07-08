@@ -89,7 +89,7 @@ const CurveView = ({ tasks, datasets, models, data, xType, kw: { kwType, keyword
     return kd.map(({ value }) => {
       const kwRows = tts.map(({ result: rid }) => {
         const ddata = (kwType ? dData[rid][keywords]?.sub : dData[rid]) || {}
-        const _model = getModelCell(rid, tasks, models)
+        const _model = getModelCell(rid, tasks, models, 'text')
         const line = ddata[value]?.pr_curve || []
         return {
           id: rid,
@@ -111,7 +111,7 @@ const CurveView = ({ tasks, datasets, models, data, xType, kw: { kwType, keyword
     return dd.map(({ value: tid, label }) => {
       const tks = tasks.filter(({ testing }) => testing === tid)
       const lines = tks.map(({ testing, result }) => {
-        const _model = getModelCell(result, tasks, models)
+        const _model = getModelCell(result, tasks, models, 'text')
         return {
           id: testing,
           name: _model,
