@@ -36,7 +36,7 @@ class InferenceCMDInvoker(BaseMirControllerInvoker):
 
     @classmethod
     def prepare_inference_picture(cls, source_path: str, work_dir: str) -> str:
-        inference_picture_directory = os.path.join(work_dir, "inference_picture")
+        inference_picture_directory = os.path.join(work_dir, "assets")
         os.makedirs(inference_picture_directory, exist_ok=True)
 
         for root, _, files in os.walk(source_path):
