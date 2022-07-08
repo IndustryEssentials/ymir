@@ -111,6 +111,10 @@ const InferResultSelect = ({ pid, form, value, onChange = () => { } }) => {
   }, [tasks, selectedDatasets])
 
   useEffect(() => {
+    form.setFieldsValue({ config: configs.map((_, index) => index)})
+  }, [configs])
+
+  useEffect(() => {
     const selected = []
     selectedStages?.forEach(([model, selectedStage]) => {
       selectedDatasets.forEach(did => {
