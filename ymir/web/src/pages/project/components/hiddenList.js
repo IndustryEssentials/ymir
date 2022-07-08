@@ -33,10 +33,13 @@ const HiddenList = ({ module, pid, ...func }) => {
       render: (name, { versionName }) => `${name} ${versionName}`,
       ellipsis: { showTitle: true },
     },
-    {
+    module === 'dataset' ? {
       title: showTitle("dataset.column.asset_count"),
       dataIndex: "assetCount",
       render: (num) => humanize(num),
+    } : {
+      title: showTitle("model.column.map"),
+      dataIndex: "map",
     },
     {
       title: showTitle("dataset.column.hidden_time"),

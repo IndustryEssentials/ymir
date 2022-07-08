@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react"
 import { connect } from "dva"
 import { useHistory, useParams, Link } from "umi"
-import { Button, Card, Space } from "antd"
+import { Button, Card, message, Space } from "antd"
 
 import t from "@/utils/t"
 import { TASKTYPES, getTaskTypeLabel } from "@/constants/task"
