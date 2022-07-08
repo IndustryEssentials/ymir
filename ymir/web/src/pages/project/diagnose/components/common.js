@@ -7,8 +7,8 @@ export function getModelCell(rid, tasks, models, text) {
   const model = models.find(model => model.id === task.model)
   const stage = model.stages.find(sg => sg.id === task.stage)
   const content = <ReactJson src={task.config} name={false} />
-  const label = `${model.name} ${model.versionName} ${stage.name}`
-  return text ? label + rid : <Popover content={content}>
+  const label = `${model.name} ${model.versionName} ${stage.name} ${task.configName}`
+  return text ? label : <Popover content={content}>
     <span title={label}>{label}</span>
   </Popover>
 }

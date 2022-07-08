@@ -113,8 +113,8 @@ function Matrics({ pid, project }) {
 
   function inferResultChange({ tasks, models, datasets }) {
     setInferTasks(tasks.map(
-      ({ config, parameters: { dataset_id, model_id, model_stage_id }, result_dataset: { id } }) =>
-        ({ config, testing: dataset_id, model: model_id, stage: model_stage_id, result: id })))
+      ({ config, configName, parameters: { dataset_id, model_id, model_stage_id }, result_dataset: { id } }) =>
+        ({ config, configName, testing: dataset_id, model: model_id, stage: model_stage_id, result: id })))
     setSelectedDatasets(datasets)
     setSelectedModels(models)
   }

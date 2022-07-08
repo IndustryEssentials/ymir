@@ -19,12 +19,12 @@ const ConfigSelect = ({ value, configs = [], onChange = () => { } }) => {
   const [options, setOptions] = useState([])
 
   useEffect(() => {
-    const opts = configs.map(({ config, model }, index) => {
-      const title = [...model, JSON.stringify(config)].join('\n')
+    const opts = configs.map((item, index) => {
+      const title = [...item.model, JSON.stringify(item.config)].join('\n')
       return {
         value: index,
-        label: <Tooltip color={'blue'} title={title}>config{index + 1}</Tooltip>,
-        config
+        label: <Tooltip color={'blue'} title={title}>{item.name}</Tooltip>,
+        config: item,
       }
     })
     setOptions(opts)
@@ -107,11 +107,11 @@ const InferResultSelect = ({ pid, form, value, onChange = () => { } }) => {
           }) :
           [...prev, { config, model: [stageName] }]
       }, [])
-    setConfigs(configs)
+    setConfigs(configs.map((config, index) => ({ ...config, name: `config${index + 1}` })))
   }, [tasks, selectedDatasets])
 
   useEffect(() => {
-    form.setFieldsValue({ config: configs.map((_, index) => index)})
+    form.setFieldsValue({ config: configs.map((_, index) => index) })
   }, [configs])
 
   useEffect(() => {
@@ -119,11 +119,11 @@ const InferResultSelect = ({ pid, form, value, onChange = () => { } }) => {
     selectedStages?.forEach(([model, selectedStage]) => {
       selectedDatasets.forEach(did => {
         const dtask = tasks.filter(({
-          parameters: { dataset_id, model_stage_id: stage }, config
+          parameters: { dataset_id, model_stage_id: stage }
         }) => dataset_id === did && stage === selectedStage)
-        selectedConfigs.forEach(sconfig => {
+        selectedConfigs.forEach(({ config: sconfig, name }) => {
           const ctask = dtask.find(({ config }) => sameConfig(config, sconfig))
-          ctask && selected.push(ctask)
+          ctask && selected.push({ ...ctask, configName: name })
         })
       })
     })
@@ -158,6 +158,7 @@ const InferResultSelect = ({ pid, form, value, onChange = () => { } }) => {
   }
 
   function configChange(values, options = []) {
+    console.log('options:', options)
     setSelectedConfigs(options.map((opt) => opt ? opt.config : null))
   }
 

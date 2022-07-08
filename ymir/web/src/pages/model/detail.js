@@ -81,7 +81,9 @@ function ModelDetail({ modelCache, getModel }) {
             <Item label={t('model.detail.label.name')}>{model.name} {model.versionName}</Item>
             {model.hidden ? <Item label={t("common.hidden.label")}>{t('common.state.hidden')}</Item> : null}
             <Item label={t('model.detail.label.map')}><span title={model.map}>{percent(model.map)}</span></Item>
-            <Item label={t('model.detail.label.stage')}>{model.stages?.map(stage => <Tag title={stage.map}>{stage.name} {percent(stage.map)}</Tag>)}</Item>
+            <Item label={t('model.detail.label.stage')}>
+              {model.stages?.map(stage => <Tag key={stage.id} title={stage.map}>{stage.name} {percent(stage.map)}</Tag>)}
+            </Item>
           </Descriptions>
           <TaskProgress state={model.state} result={model} task={model.task} duration={model.durationLabel} progress={model.progress} fresh={() => fetchModel(true)} />
           {model?.task?.error_code ? <Error code={model.task?.error_code} msg={model.task?.error_message} /> : null}
