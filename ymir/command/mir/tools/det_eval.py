@@ -570,14 +570,18 @@ class CocoDetEval:
             precisions = self.eval['precision'][:, :, :, area_ranges_index, max_dets_index]
             scores = self.eval['scores'][:, :, :, area_ranges_index, max_dets_index]
 
+            # TODO: hotfix, need to test with 3rd party pr curve result
+            precisions = np.maximum(0, precisions)
+            scores = np.maximum(0, scores)
+
             # from dims: iouThrs * recThrs * catIds
             # to dims: recThrs * catIds
             if iou_thr_index is not None:
                 precisions = precisions[iou_thr_index, :, :]
                 scores = scores[iou_thr_index, :, :]
             else:
-                precisions = np.nan_to_num(np.average(precisions, weights=(precisions >= 0), axis=0))
-                scores = np.nan_to_num(np.average(scores, weights=(scores >= 0), axis=0))
+                precisions = np.mean(precisions, axis=0)
+                scores = np.mean(scores, axis=0)
 
             # from dims: recThrs * catIds
             # to dims: recThrs
@@ -585,8 +589,8 @@ class CocoDetEval:
                 precisions = precisions[:, class_id_index]
                 scores = scores[:, class_id_index]
             else:
-                precisions = np.nan_to_num(np.average(precisions, weights=(precisions >= 0), axis=1))
-                scores = np.nan_to_num(np.average(scores, weights=(scores >= 0), axis=1))
+                precisions = np.mean(precisions, axis=1)
+                scores = np.mean(scores, axis=1)
 
             for recall_thr_index, recall_thr in enumerate(self.params.recThrs):
                 pr_point = mirpb.FloatPoint(x=recall_thr, y=precisions[recall_thr_index], z=scores[recall_thr_index])
