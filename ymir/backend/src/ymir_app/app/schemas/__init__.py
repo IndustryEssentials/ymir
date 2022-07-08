@@ -9,6 +9,7 @@ from .dataset import (
     DatasetUpdate,
     ImportStrategy,
     DatasetsFusionParameter,
+    DatasetsAnalysesOut,
 )
 from .dataset_group import (
     DatasetGroupOut,
@@ -44,7 +45,9 @@ from .model import (
     ModelPaginationOut,
     ModelsOut,
     ModelUpdate,
+    StageChange,
 )
+from .model_stage import ModelStage, ModelStageOut, ModelStagesOut, ModelStageCreate, ModelStageUpdate
 from .model_group import (
     ModelGroupOut,
     ModelGroupCreate,
@@ -97,5 +100,10 @@ from .user import (
     UsersOut,
     UserState,
     UserUpdate,
+)
+from .visualization import (
+    VisualizationPaginationOut,
+    VisualizationOut,
+    VisualizationCreate,
 )
 from .common import RequestParameterBase, BatchOperations

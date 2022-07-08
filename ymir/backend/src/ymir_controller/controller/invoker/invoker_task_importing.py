@@ -13,11 +13,16 @@ class TaskImportingInvoker(TaskBaseInvoker):
     def task_pre_invoke(self, sandbox_root: str, request: backend_pb2.GeneralReq) -> backend_pb2.GeneralResp:
         importing_request = request.req_create_task.importing
         logging.info(f"importing_request: {importing_request}")
-        media_dir, anno_dir = importing_request.asset_dir, importing_request.annotation_dir
+        (media_dir, anno_dir, gt_dir) = (importing_request.asset_dir, importing_request.annotation_dir,
+                                         importing_request.gt_dir)
         if anno_dir:
             if not os.access(anno_dir, os.R_OK):
                 return utils.make_general_response(code=CTLResponseCode.ARG_VALIDATION_FAILED,
                                                    message=f"invalid permissions of annotation_dir: {anno_dir}")
+        if gt_dir:
+            if not os.access(gt_dir, os.R_OK):
+                return utils.make_general_response(code=CTLResponseCode.ARG_VALIDATION_FAILED,
+                                                   message=f"invalid permissions of groundtruth_dir: {gt_dir}")
 
         if not os.access(media_dir, os.R_OK):
             return utils.make_general_response(CTLResponseCode.ARG_VALIDATION_FAILED,
@@ -35,7 +40,7 @@ class TaskImportingInvoker(TaskBaseInvoker):
         importing_request = request.req_create_task.importing
 
         # Prepare media index-file
-        media_dir, anno_dir = importing_request.asset_dir, importing_request.annotation_dir
+        media_dir = importing_request.asset_dir
         media_files = [
             os.path.join(media_dir, f) for f in os.listdir(media_dir) if os.path.isfile(os.path.join(media_dir, f))
         ]
@@ -47,7 +52,8 @@ class TaskImportingInvoker(TaskBaseInvoker):
         importing_response = cls.importing_cmd(repo_root=repo_root,
                                                task_id=subtask_id,
                                                index_file=index_file,
-                                               annotation_dir=anno_dir,
+                                               annotation_dir=importing_request.annotation_dir,
+                                               gt_dir=importing_request.gt_dir,
                                                media_location=media_location,
                                                work_dir=subtask_workdir,
                                                name_strategy_ignore=importing_request.name_strategy_ignore)
@@ -55,16 +61,17 @@ class TaskImportingInvoker(TaskBaseInvoker):
         return importing_response
 
     @staticmethod
-    def importing_cmd(repo_root: str, task_id: str, index_file: str, annotation_dir: str, media_location: str,
-                      work_dir: str, name_strategy_ignore: bool) -> backend_pb2.GeneralResp:
+    def importing_cmd(repo_root: str, task_id: str, index_file: str, annotation_dir: str, gt_dir: str,
+                      media_location: str, work_dir: str, name_strategy_ignore: bool) -> backend_pb2.GeneralResp:
         importing_cmd = [
-            utils.mir_executable(), 'import', '--root', repo_root,
-            '--dataset-name', task_id, '--dst-rev', f"{task_id}@{task_id}",
-            '--src-revs', 'master', '--index-file', index_file, '--gen-dir', media_location, '-w', work_dir
+            utils.mir_executable(), 'import', '--root', repo_root, '--dataset-name', task_id, '--dst-rev',
+            f"{task_id}@{task_id}", '--src-revs', 'master', '--index-file', index_file, '--gt-index-file', index_file,
+            '--gen-dir', media_location, '-w', work_dir
         ]
         if annotation_dir:
-            importing_cmd.append('--annotation-dir')
-            importing_cmd.append(annotation_dir)
+            importing_cmd.extend(['--annotation-dir', annotation_dir])
+        if gt_dir:
+            importing_cmd.extend(['--gt-dir', gt_dir])
         if name_strategy_ignore:
             importing_cmd.append("--ignore-unknown-types")
 

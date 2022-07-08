@@ -3,6 +3,7 @@ import t from "@/utils/t"
 import s from "./list.less"
 import { useHistory } from "umi"
 import { getStageLabel } from '@/constants/project'
+import KeywordsItem from "./keywordsItem"
 
 export const Lists = ({ projects = [], more = '' }) => {
   const history = useHistory()
@@ -13,7 +14,7 @@ export const Lists = ({ projects = [], more = '' }) => {
           <span className={s.name}>{item.name}</span>
           <span className='titleItem'>
             <span className='titleLabel'>{t('project.train_classes')}:</span>
-            <span className='titleContent'>{item.keywords.join(',')}</span>
+            <span className='titleContent'><KeywordsItem keywords={item.keywords} /></span>
           </span>
           <span className='titleItem'>
             <span className='titleLabel'>{t('project.iteration.current')}:</span>
@@ -63,7 +64,7 @@ export const Lists = ({ projects = [], more = '' }) => {
     </>
 
     return <List.Item 
-      onClick={() => { history.push(`/home/project/detail/${item.id}`) }}>
+      onClick={() => { history.push(`/home/project/${item.id}/detail`) }}>
       <Skeleton active loading={item.loading}>
         <List.Item.Meta title={title} description={desc}>
         </List.Item.Meta>

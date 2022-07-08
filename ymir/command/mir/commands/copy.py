@@ -85,10 +85,27 @@ class CmdCopy(base.BaseCommand):
             single_task_annotations=mir_annotations.task_annotations[orig_head_task_id],
             ignore_unknown_types=ignore_unknown_types,
             drop_annotations=drop_annotations)
-
         mir_annotations.task_annotations[dst_typ_rev_tid.tid].CopyFrom(single_task_annotations)
         del mir_annotations.task_annotations[orig_head_task_id]
         mir_annotations.head_task_id = dst_typ_rev_tid.tid
+
+        gt_annotations, gt_unknown_types = CmdCopy._change_single_task_annotations(
+            data_mir_root=data_mir_root,
+            dst_mir_root=mir_root,
+            single_task_annotations=mir_annotations.ground_truth,
+            ignore_unknown_types=ignore_unknown_types,
+            drop_annotations=drop_annotations)
+        mir_annotations.ground_truth.CopyFrom(gt_annotations)
+        unknown_types.update(gt_unknown_types)
+
+        pred_annotations, pred_unknown_types = CmdCopy._change_single_task_annotations(
+            data_mir_root=data_mir_root,
+            dst_mir_root=mir_root,
+            single_task_annotations=mir_annotations.prediction,
+            ignore_unknown_types=ignore_unknown_types,
+            drop_annotations=drop_annotations)
+        mir_annotations.prediction.CopyFrom(pred_annotations)
+        unknown_types.update(pred_unknown_types)
 
         # tasks.mir: get necessary head task infos, remove others and change head task id
         orig_head_task_id = mir_tasks.head_task_id
@@ -102,13 +119,12 @@ class CmdCopy(base.BaseCommand):
         PhaseLoggerCenter.update_phase(phase='copy.change')
 
         # save and commit
-        orig_task = mir_tasks.tasks[orig_head_task_id]
+        orig_task: mirpb.Task = mir_tasks.tasks[orig_head_task_id]
         task = mir_storage_ops.create_task(task_type=mirpb.TaskType.TaskTypeCopyData,
                                            task_id=dst_typ_rev_tid.tid,
                                            message=f"copy from {data_mir_root}, src: {data_src_revs}, dst: {dst_rev}",
                                            unknown_types=unknown_types,
-                                           model_hash=orig_task.model.model_hash,
-                                           model_mAP=orig_task.model.mean_average_precision,
+                                           model_meta=orig_task.model,
                                            serialized_task_parameters=orig_task.serialized_task_parameters,
                                            serialized_executor_config=orig_task.serialized_executor_config,
                                            executor=orig_task.executor,

@@ -171,7 +171,7 @@ function TaskDetail({ task = {}, ignore = [], batchDatasets, getModel }) {
       {renderTrainKeywords(task?.parameters?.keywords)}
       {renderTrainAlgo(task?.parameters)}
       {renderTrainImage(task?.parameters?.docker_image, 2)}
-      <Item label={"TensorBoard"} span={2}>
+      <Item label={t("task.detail.label.processing")} span={2}>
         <Link target="_blank" to={getTensorboardLink(task.hash)}>
           {t("task.detail.tensorboard.link.label")}
         </Link>
@@ -288,7 +288,7 @@ function TaskDetail({ task = {}, ignore = [], batchDatasets, getModel }) {
       <Item label={t("task.mining.form.topk.label")}>
         {task.parameters.top_k}
       </Item>
-      <Item label={t("task.detail.label.mining.image")}>
+      <Item label={t("task.detail.label.inference.image")}>
         {task.parameters.docker_image}
       </Item>
       <Item label={t("task.detail.label.hyperparams")} span={2}>

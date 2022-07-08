@@ -1,17 +1,12 @@
 import React, { useEffect, useState } from "react"
 import { connect } from "dva"
 import { Select, Card, Input, Radio, Button, Form, Row, Col, ConfigProvider, Space, InputNumber } from "antd"
-import {
-  PlusOutlined,
-  MinusCircleOutlined,
-  UpSquareOutlined,
-  DownSquareOutlined,
-} from '@ant-design/icons'
 import styles from "./index.less"
 import commonStyles from "../common.less"
 import { formLayout } from "@/config/antd"
 
 import t from "@/utils/t"
+import { string2Array } from '@/utils/string'
 import { TYPES } from '@/constants/image'
 import { useHistory, useParams, useLocation } from "umi"
 import Breadcrumbs from "@/components/common/breadcrumb"
@@ -21,6 +16,10 @@ import { randomNumber } from "@/utils/number"
 import Tip from "@/components/form/tip"
 import ModelSelect from "@/components/form/modelSelect"
 import ImageSelect from "@/components/form/imageSelect"
+import LiveCodeForm from "../components/liveCodeForm"
+import { removeLiveCodeConfig } from "../components/liveCodeConfig"
+import DockerConfigForm from "../components/dockerConfigForm"
+import DatasetSelect from "../../../components/form/datasetSelect"
 
 const { Option } = Select
 
@@ -37,21 +36,22 @@ const renderRadio = (types) => {
   )
 }
 
-function Mining({ datasetCache, datasets, ...func }) {
+function Mining({ datasetCache, ...func }) {
   const pageParams = useParams()
   const pid = Number(pageParams.id)
   const history = useHistory()
   const location = useLocation()
   const { mid, image, iterationId, currentStage, outputKey } = location.query
+  const stage = string2Array(mid)
   const did = Number(location.query.did)
   const [dataset, setDataset] = useState({})
   const [selectedModel, setSelectedModel] = useState({})
   const [form] = Form.useForm()
   const [seniorConfig, setSeniorConfig] = useState([])
-  const [hpVisible, setHpVisible] = useState(false)
   const [topk, setTopk] = useState(true)
   const [gpu_count, setGPU] = useState(0)
   const [imageHasInference, setImageHasInference] = useState(false)
+  const [live, setLiveCode] = useState(false)
 
   useEffect(() => {
     fetchSysInfo()
@@ -72,21 +72,6 @@ function Mining({ datasetCache, datasets, ...func }) {
     }
   }, [datasetCache])
 
-  useEffect(() => {
-    pid && func.getDatasets(pid)
-  }, [pid])
-
-  function validHyperparam(rule, value) {
-
-    const params = form.getFieldValue('hyperparam').map(({ key }) => key)
-      .filter(item => item && item.trim() && item === value)
-    if (params.length > 1) {
-      return Promise.reject(t('task.validator.same.param'))
-    } else {
-      return Promise.resolve()
-    }
-  }
-
   async function fetchSysInfo() {
     const result = await func.getSysInfo()
     if (result) {
@@ -104,7 +89,8 @@ function Mining({ datasetCache, datasets, ...func }) {
     const hasInference = configs.some(conf => conf.type === TYPES.INFERENCE)
     setImageHasInference(hasInference)
     !hasInference && form.setFieldsValue({ inference: false })
-    setConfig(configObj.config)
+    setLiveCode(image.liveCode || false)
+    setConfig(removeLiveCodeConfig(configObj.config))
   }
 
   function setConfig(config) {
@@ -113,8 +99,12 @@ function Mining({ datasetCache, datasets, ...func }) {
   }
 
   const onFinish = async (values) => {
-    const config = {}
-    form.getFieldValue('hyperparam').forEach(({ key, value }) => key && value ? config[key] = value : null)
+    const config = {
+      ...values.hyperparam?.reduce(
+        (prev, { key, value }) => key && value ? { ...prev, [key]: value } : prev,
+        {}),
+      ...(values.live || {}),
+    }
 
     config['gpu_count'] = form.getFieldValue('gpu_count') || 0
 
@@ -136,7 +126,7 @@ function Mining({ datasetCache, datasets, ...func }) {
         func.updateIteration({ id: iterationId, currentStage, [outputKey]: result.result_dataset.id })
       }
       await func.clearCache()
-      history.replace(`/home/project/detail/${pid}`)
+      history.replace(`/home/project/${pid}/dataset`)
     }
   }
 
@@ -144,17 +134,17 @@ function Mining({ datasetCache, datasets, ...func }) {
     console.log("Failed:", errorInfo)
   }
 
-  function setsChange(id) {
-    id && setDataset(datasets.find(ds => ds.id === id))
+  function setsChange(id, option) {
+    setDataset(option?.dataset || {})
   }
 
-  function modelChange(id, { model }) {
-    model && setSelectedModel(model)
+  function modelChange(id, options) {
+    setSelectedModel(options ? options[0].model : [])
   }
 
   const getCheckedValue = (list) => list.find((item) => item.checked)["id"]
   const initialValues = {
-    model: mid ? parseInt(mid) : undefined,
+    modelStage: stage,
     image: image ? parseInt(image) : undefined,
     datasetId: did ? did : undefined,
     algorithm: getCheckedValue(Algorithm()),
@@ -180,7 +170,7 @@ function Mining({ datasetCache, datasets, ...func }) {
           >
             <ConfigProvider renderEmpty={() => <EmptyStateDataset add={() => history.push(`/home/dataset/add/${pid}`)} />}>
 
-              <Tip hidden={true}>
+              <Tip content={t('tip.task.mining.dataset')}>
                 <Form.Item
                   label={t('task.mining.form.dataset.label')}
                   required
@@ -189,17 +179,11 @@ function Mining({ datasetCache, datasets, ...func }) {
                     { required: true, message: t('task.mining.form.dataset.required') },
                   ]}
                 >
-                  <Select
+                  <DatasetSelect
+                    pid={pid}
                     placeholder={t('task.mining.form.dataset.placeholder')}
-                    filterOption={(input, option) => option.children.join('').toLowerCase().indexOf(input.toLowerCase()) >= 0}
                     onChange={setsChange}
-                    showArrow
-                  >
-                    {datasets.map(item =>
-                      <Option value={item.id} key={item.id}>
-                        {item.name} {item.versionName}(assets: {item.assetCount})
-                      </Option>)}
-                  </Select>
+                  />
                 </Form.Item>
               </Tip>
             </ConfigProvider>
@@ -209,7 +193,7 @@ function Mining({ datasetCache, datasets, ...func }) {
               <Tip content={t('tip.task.filter.model')}>
                 <Form.Item
                   label={t('task.mining.form.model.label')}
-                  name="model"
+                  name="modelStage"
                   rules={[
                     { required: true, message: t('task.mining.form.model.required') },
                   ]}
@@ -246,15 +230,11 @@ function Mining({ datasetCache, datasets, ...func }) {
                   initialValue={true}
                   noStyle
                 >
-                  <Radio.Group onChange={filterStrategyChange}>
-                    <Radio value={false}>{t('common.all')}</Radio>
-                    <Radio checked value={true}>{t('task.mining.form.topk.label')}</Radio>
-                    <Form.Item noStyle name='topk' label='topk' dependencies={['filter_strategy']} rules={topk ? [
-                      { type: 'number', min: 1, max: (dataset.assetCount - 1) || 1 }
-                    ] : null}>
-                      <InputNumber style={{ width: 120 }} min={1} max={dataset.assetCount - 1} precision={0} />
-                    </Form.Item>
-                  </Radio.Group>
+                  <Form.Item noStyle name='topk' label='topk' dependencies={['filter_strategy']} rules={topk ? [
+                    { type: 'number', min: 1, max: (dataset.assetCount - 1) || 1 }
+                  ] : null}>
+                    <InputNumber style={{ width: 120 }} min={1} max={dataset.assetCount - 1} precision={0} />
+                  </Form.Item>
                 </Form.Item>
                 <p style={{ display: 'inline-block', marginLeft: 10 }}>{t('task.mining.topk.tip')}</p>
               </Form.Item>
@@ -286,73 +266,8 @@ function Mining({ datasetCache, datasets, ...func }) {
               </Form.Item>
             </Tip>
 
-            {seniorConfig.length ? <Tip content={t('tip.task.filter.mhyperparams')}>
-              <Form.Item
-                label={t('task.train.form.hyperparam.label')}
-                rules={[{ validator: validHyperparam }]}
-              >
-                <div>
-                  <Button type='link'
-                    onClick={() => setHpVisible(!hpVisible)}
-                    icon={hpVisible ? <UpSquareOutlined /> : <DownSquareOutlined />}
-                    style={{ paddingLeft: 0 }}
-                  >{hpVisible ? t('task.train.fold') : t('task.train.unfold')}
-                  </Button>
-                </div>
-
-                <Form.List name='hyperparam'>
-                  {(fields, { add, remove }) => (
-                    <div className={styles.paramContainer} hidden={!hpVisible}>
-                      <Row style={{ backgroundColor: '#fafafa', lineHeight: '40px', marginBottom: 10 }} gutter={20}>
-                        <Col flex={'240px'}>{t('common.key')}</Col>
-                        <Col flex={1}>{t('common.value')}</Col>
-                        <Col span={2}>{t('common.action')}</Col>
-                      </Row>
-                      {fields.map(field => (
-                        <Row key={field.key} gutter={20}>
-                          <Col flex={'240px'}>
-                            <Form.Item
-                              {...field}
-                              // label="Key"
-                              name={[field.name, 'key']}
-                              fieldKey={[field.fieldKey, 'key']}
-                              rules={[
-                                // {required: true, message: 'Missing Key'},
-                                { validator: validHyperparam }
-                              ]}
-                            >
-                              <Input disabled={field.key < seniorConfig.length} allowClear maxLength={50} />
-                            </Form.Item>
-                          </Col>
-                          <Col flex={1}>
-                            <Form.Item
-                              {...field}
-                              // label="Value"
-                              name={[field.name, 'value']}
-                              fieldKey={[field.fieldKey, 'value']}
-                              rules={[
-                                // {required: true, message: 'Missing Value'},
-                              ]}
-                            >
-                              {seniorConfig[field.name] && typeof seniorConfig[field.name].value === 'number' ?
-                                <InputNumber style={{ minWidth: '100%' }} maxLength={20} /> : <Input allowClear maxLength={100} />}
-                            </Form.Item>
-                          </Col>
-                          <Col span={2}>
-                            <Space>
-                              {field.name < seniorConfig.length ? null : <MinusCircleOutlined onClick={() => remove(field.name)} />}
-                              {field.name === fields.length - 1 ? <PlusOutlined onClick={() => add()} title={t('task.train.parameter.add.label')} /> : null}
-                            </Space>
-                          </Col>
-                        </Row>
-                      ))}
-
-                    </div>
-                  )}
-                </Form.List>
-
-              </Form.Item>
-            </Tip> : null}
+            <LiveCodeForm live={live} />
+            <DockerConfigForm form={form} seniorConfig={seniorConfig} />
             <Tip hidden={true}>
               <Form.Item wrapperCol={{ offset: 8 }}>
                 <Space size={20}>
@@ -378,7 +293,6 @@ function Mining({ datasetCache, datasets, ...func }) {
 
 const props = (state) => {
   return {
-    datasets: state.dataset.allDatasets,
     datasetCache: state.dataset.dataset,
   }
 }

@@ -1,7 +1,8 @@
 .header {
   background: #fff;
-  margin: -20px -5vw 0;
-  padding: 0 5vw 30px;
+  margin: -20px -20px 0;
+  padding: 0 20px 20px;
+  border-radius: 5px;
 }
 .detailPanel {
   margin-bottom: 20px;
@@ -46,4 +47,54 @@
   text-overflow: ellipsis;
   overflow: hidden;
   white-space: nowrap;
+}
+
+.datasetPanel {
+  height: 30px;
+  .datasetTitle {
+    margin-right: 20px;
+    font-size: 14px;
+    color: rgba(0, 0, 0, 0.85);
+  }
+  .nameTag {
+    background: rgba(0, 0, 0, 0.06);
+    border-radius: 2px 2px 2px 2px;
+    border: 1px solid rgba(0, 0, 0, 0.06);
+  }
+}
+.projectOverview {
+  background: #fff;
+  min-height: calc(100vh - 294px);
+  margin: 10px 0;
+  padding: 20px;
+  .cardContainer {
+    cursor: pointer;
+  }
+  .cardTitle {
+    font-size: 18px;
+    font-weight: bold;
+    color: rgba(0, 0, 0, 0.85);
+    display: flex;
+    align-items: center;
+    .titleIcon {
+      font-size: 24px;
+    }
+    .titleLabel {
+      margin-left: 6px;
+    }
+  }
+  .rightIcon {
+    color: rgba(0, 0, 0, 0.45);
+  }
+  .num {
+    height: 44px;
+    font-size: 28px;
+    color: rgba(0, 0, 0, 0.85);
+  }
+  .blue {
+    color: #2CBDE9;
+  }
+  .red {
+    color: #F2637B;
+  }
 }

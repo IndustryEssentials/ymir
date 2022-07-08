@@ -103,6 +103,11 @@ class FailedToEvaluate(ControllerError):
     message = "Failed to RUN EVALUATE CMD via Controller"
 
 
+class PrematureDatasetsEvaluation(APIError):
+    code = error_codes.PREMATURE_DATASETS_EVALUATION
+    message = "Not All The Datasets Are Ready to Evaluate"
+
+
 class RequiredFieldMissing(APIError):
     code = error_codes.REQUIRED_FIELD_MISSING
     message = "Required Field Missing"
@@ -143,9 +148,19 @@ class ModelNotFound(NotFound):
     message = "Model Not Found"
 
 
+class ModelStageNotFound(NotFound):
+    code = error_codes.MODEL_STAGE_NOT_FOUND
+    message = "Model Stage Not Found"
+
+
 class DatasetEvaluationNotFound(NotFound):
     code = error_codes.DATASET_EVALUATION_NOT_FOUND
     message = "Dataset Evaluation Not Found"
+
+
+class DatasetEvaluationMissingAnnotation(NotFound):
+    code = error_codes.DATASET_EVALUATION_NO_ANNOTATIONS
+    message = "Could Not Evaluate Dataset Without Annotations"
 
 
 class ModelNotReady(APIError):
@@ -295,6 +310,11 @@ class ProjectNotFound(NotFound):
     message = "Project Not Found"
 
 
+class VisualizationNotFound(NotFound):
+    code = error_codes.VISUALIZATION_NOT_FOUND
+    message = "Visualization Not Found"
+
+
 class DuplicateProjectError(DuplicateError):
     code = error_codes.PROJECT_DUPLICATED_NAME
     message = "Duplicated Project Name"
@@ -363,3 +383,18 @@ class MissingOperations(APIError):
 class DatasetsNotInSameGroup(APIError):
     code = error_codes.DATASETS_NOT_IN_SAME_GROUP
     message = "Datasets Not in the Same Group"
+
+
+class InvalidModelStageName(APIError):
+    code = error_codes.INVALID_MODEL_STAGE_NAME
+    message = "Invalid Model Stage Name"
+
+
+class VizError(APIError):
+    code = error_codes.VIZ_ERROR
+    message = "General Viz Error"
+
+
+class FailedToParseVizResponse(VizError):
+    code = error_codes.FAILED_TO_PARSE_VIZ_RESP
+    message = "Failed to Parse Viz Response"

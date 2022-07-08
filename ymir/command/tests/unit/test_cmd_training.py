@@ -1,17 +1,18 @@
 import os
 import shutil
+import time
 from typing import List, Tuple
 import unittest
 from unittest import mock
 
 from google.protobuf import json_format
-from mir.tools.errors import MirRuntimeError
 import yaml
 
 from mir.commands import training
 from mir.protos import mir_command_pb2 as mirpb
 from mir.tools import hash_utils, mir_repo_utils, mir_storage_ops, settings as mir_settings, utils as mir_utils
 from mir.tools.code import MirCode
+from mir.tools.errors import MirRuntimeError
 from tests import utils as test_utils
 
 
@@ -23,8 +24,10 @@ class TestCmdTraining(unittest.TestCase):
         self._assets_location = os.path.join(self._test_root, "assets")
         self._models_location = os.path.join(self._test_root, "models")
         self._working_root = os.path.join(self._test_root, "work")
+        self._assets_cache = os.path.join(self._test_root, 'cache')
         self._mir_root = os.path.join(self._test_root, "mir-root")
         self._config_file = os.path.join(self._test_root, 'config.yaml')
+        self._config_file_lmdb = os.path.join(self._test_root, 'config-lmdb.yaml')
 
     def setUp(self) -> None:
         self.__prepare_dirs()
@@ -44,7 +47,7 @@ class TestCmdTraining(unittest.TestCase):
         test_utils.remake_dirs(self._models_location)
         test_utils.remake_dirs(self._mir_root)
         test_utils.remake_dirs(self._working_root)
-        
+
     def __prepare_mir_repo(self):
         self.__prepare_mir_repo_branch_a()
         self.__prepare_mir_repo_branch_b()
@@ -212,19 +215,31 @@ class TestCmdTraining(unittest.TestCase):
         with open(self._config_file, 'w') as f:
             yaml.dump(config, f)
 
+        executor_config['export_format'] = 'ark:lmdb'
+        with open(self._config_file_lmdb, 'w') as f:
+            yaml.dump(config, f)
+
     def __deprepare_dirs(self):
         if os.path.isdir(self._test_root):
             shutil.rmtree(self._test_root)
 
-    # private: mocks
-    def __mock_run_train_cmd(*args, **kwargs):
-        return MirCode.RC_OK
+    # protected: mocked functions
+    def _mock_run_docker_cmd(*args, **kwargs):
+        pass
 
     def __mock_process_model_storage(*args, **kwargs):
-        return ("xyz", 0.9)
+        mss = mir_utils.ModelStageStorage(stage_name='default',
+                                          files=['default.weights'],
+                                          mAP=0.9,
+                                          timestamp=int(time.time()))
+        ms = mir_utils.ModelStorage(executor_config={'class_names': ['cat']},
+                                    task_context={'src_revs': 'a@a', 'dst_rev': 'a@test_training_cmd'},
+                                    stages={mss.stage_name: mss},
+                                    best_stage_name=mss.stage_name)
+        return ("xyz", 0.9, ms)
 
     # public: test cases
-    @mock.patch("mir.commands.training._run_train_cmd", side_effect=__mock_run_train_cmd)
+    @mock.patch('subprocess.run', side_effect=_mock_run_docker_cmd)
     @mock.patch("mir.commands.training._process_model_storage", side_effect=__mock_process_model_storage)
     def test_normal_00(self, *mock_run):
         """ normal case """
@@ -234,7 +249,7 @@ class TestCmdTraining(unittest.TestCase):
         fake_args.mir_root = self._mir_root
         fake_args.model_path = self._models_location
         fake_args.media_location = self._assets_location
-        fake_args.model_hash = ''
+        fake_args.model_hash_stage = ''
         fake_args.work_dir = self._working_root
         fake_args.force = True
         fake_args.force_rebuild = False
@@ -243,12 +258,42 @@ class TestCmdTraining(unittest.TestCase):
         fake_args.tensorboard_dir = ''
         fake_args.config_file = self._config_file
         fake_args.asset_cache_dir = ''
+        fake_args.run_as_root = False
 
         cmd = training.CmdTrain(fake_args)
         cmd_run_result = cmd.run()
 
         # check result
         self.assertEqual(MirCode.RC_OK, cmd_run_result)
+
+    @mock.patch('subprocess.run', side_effect=_mock_run_docker_cmd)
+    @mock.patch("mir.commands.training._process_model_storage", side_effect=__mock_process_model_storage)
+    def test_normal_01(self, *mock_run):
+        """ normal case """
+        fake_args = type('', (), {})()
+        fake_args.src_revs = "a@a"
+        fake_args.dst_rev = "a@test_training_cmd_lmdb"
+        fake_args.mir_root = self._mir_root
+        fake_args.model_path = self._models_location
+        fake_args.media_location = self._assets_location
+        fake_args.model_hash_stage = ''
+        fake_args.work_dir = self._working_root
+        fake_args.force = True
+        fake_args.force_rebuild = False
+        fake_args.executor = "executor"
+        fake_args.executant_name = 'executor-instance'
+        fake_args.tensorboard_dir = ''
+        fake_args.config_file = self._config_file_lmdb
+        fake_args.run_as_root = False
+        fake_args.asset_cache_dir = self._assets_cache
+
+        cmd = training.CmdTrain(fake_args)
+        cmd_run_result = cmd.run()
+
+        # check result
+        self.assertEqual(MirCode.RC_OK, cmd_run_result)
+        self.assertTrue(os.path.isfile(os.path.join(self._assets_cache, 'tr', 'a@a', 'data.mdb')))
+        self.assertTrue(os.path.isfile(os.path.join(self._assets_cache, 'va', 'a@a', 'data.mdb')))
 
     def test_abnormal_00(self):
         """ no training set """
@@ -258,7 +303,7 @@ class TestCmdTraining(unittest.TestCase):
         fake_args.mir_root = self._mir_root
         fake_args.model_path = self._models_location
         fake_args.media_location = self._assets_location
-        fake_args.model_hash = ''
+        fake_args.model_hash_stage = ''
         fake_args.work_dir = self._working_root
         fake_args.force = True
         fake_args.force_rebuild = False
@@ -266,9 +311,10 @@ class TestCmdTraining(unittest.TestCase):
         fake_args.executant_name = 'executor-instance'
         fake_args.tensorboard_dir = ''
         fake_args.config_file = self._config_file
+        fake_args.run_as_root = False
         fake_args.asset_cache_dir = ''
 
         cmd = training.CmdTrain(fake_args)
         with self.assertRaises(MirRuntimeError):
-            cmd_run_result = cmd.run()
+            cmd.run()
         self.assertTrue(mir_repo_utils.mir_check_branch_exists(self._mir_root, 'b@test_training_cmd'))

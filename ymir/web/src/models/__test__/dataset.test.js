@@ -92,7 +92,7 @@ describe("models: dataset", () => {
     const state = {
       datasets: {},
     }
-    const initQuery = { name: "", type: "", time: 0, offset: 0, limit: 20 }
+    const initQuery = { name: "", type: "", current: 1, time: 0, offset: 0, limit: 20 }
 
     const expected = {
       query: { ...initQuery },
@@ -562,8 +562,8 @@ describe("models: dataset", () => {
     expect(end.done).toBe(true)
   })
 
-  it("effects: compare", () => {
-    const saga = dataset.effects.compare
+  it("effects: evaluate", () => {
+    const saga = dataset.effects.evaluate
     const item = () => ({ ap: Math.random()})
     const list = (list, it) => list.reduce((p, c) => ({ ...p, [c]: it ? it : item()}), {})
     const keywords = ['dog', 'cat', 'person']
@@ -577,7 +577,7 @@ describe("models: dataset", () => {
       iou_everage_evaluations: iitems(),
     }
     const creator = {
-      type: "compare",
+      type: "evaluate",
       payload: { projectId: 51234, gt: 1324536, datasets: [534243234, 64311234], confidence: 0.6 },
     }
 

@@ -10,6 +10,7 @@ import ProjectEmpty from '@/components/empty/project'
 import Del from './del'
 import s from "./list.less"
 import { EditIcon, DeleteIcon, AddIcon, SearchIcon } from "@/components/common/icons"
+import KeywordsItem from "@/components/project/keywordsItem"
 
 const ProjectList = ({ list, query, ...func }) => {
 
@@ -38,7 +39,7 @@ const ProjectList = ({ list, query, ...func }) => {
   const pageChange = (current, pageSize) => {
     const limit = pageSize
     const offset = (current - 1) * pageSize
-    func.updateQuery({ ...query, limit, offset })
+    func.updateQuery({ ...query, current, limit, offset })
   }
 
   async function getData() {
@@ -54,7 +55,7 @@ const ProjectList = ({ list, query, ...func }) => {
         label: t("project.action.edit"),
         onclick: (e) => {
           e.stopPropagation()
-          history.push(`/home/project/add/${id}`)
+          history.push(`/home/project/${id}/add`)
         },
         icon: <EditIcon />,
       },
@@ -149,7 +150,7 @@ const ProjectList = ({ list, query, ...func }) => {
           <span className={s.name}><a>{item.name}</a></span>
           <span className='titleItem'>
             <span className='titleLabel'>{t('project.train_classes')}:</span>
-            <span className='titleContent'>{item.keywords.join(',')}</span>
+            <span className='titleContent'><KeywordsItem keywords={item.keywords} /></span>
           </span>
           <span className='titleItem'>
             <span className='titleLabel'>{t('project.iteration.current')}:</span>
@@ -190,7 +191,7 @@ const ProjectList = ({ list, query, ...func }) => {
 
     return <List.Item>
       <Skeleton active loading={item.loading}>
-        <List.Item.Meta title={title} description={desc} onClick={() => history.push(`/home/project/detail/${item.id}`)}>
+        <List.Item.Meta title={title} description={desc} onClick={() => history.push(`/home/project/${item.id}/detail`)}>
         </List.Item.Meta>
       </Skeleton>
     </List.Item>
@@ -209,7 +210,7 @@ const ProjectList = ({ list, query, ...func }) => {
           />
         </ConfigProvider>
         <Pagination className= 'pager' onChange={pageChange}
-          defaultCurrent={1} defaultPageSize={query.limit} total={total}
+          current={query.current} pageSize={query.limit} total={total}
           showTotal={() => t('project.list.total', { total })}
           showQuickJumper showSizeChanger />
         <Del ref={delRef} ok={delOk} />

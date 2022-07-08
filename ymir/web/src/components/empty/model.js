@@ -12,7 +12,7 @@ export default ({ id, style={} }) => {
     <Space className={styles.empty} style={style} direction="vertical">
       <NoXlmxIcon className={styles.primaryIcon} style={{ fontSize: 80 }} />
       <h3>{t("model.empty.label")}</h3>
-      <Button type="primary" onClick={() => history.push(`/home/model/import/${id}`)}>
+      <Button type="primary" style={{ pointerEvents: 'auto' }} onClick={() => history.push(`/home/model/import/${id}`)}>
         <TrainIcon /> {t('model.empty.btn.label')}
       </Button>
     </Space>

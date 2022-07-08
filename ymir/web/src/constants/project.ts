@@ -35,11 +35,11 @@ type stageObject = {
 export const StageList = () => {
   const iterationParams = 'iterationId={id}&currentStage={stage}&outputKey={output}'
   const list = [
-    { label: 'ready', value: Stages.prepareMining, output: 'miningSet', input: '', url: `/home/task/fusion/{pid}?did={s0d}&strategy={s0s}&chunk={s0c}&${iterationParams}` },
-    { label: 'mining', value: Stages.mining, output: 'miningResult', input: 'miningSet', url: `/home/task/mining/{pid}?did={s1d}&mid={s1m}&${iterationParams}` },
-    { label: 'label', value: Stages.labelling, output: 'labelSet', input: 'miningResult', url: `/home/task/label/{pid}?did={s2d}&${iterationParams}` },
-    { label: 'merge', value: Stages.merging, output: 'trainUpdateSet', input: 'labelSet', url: `/home/task/fusion/{pid}?did={s3d}&merging={s3m}&${iterationParams}` },
-    { label: 'training', value: Stages.training, output: 'model', input: 'trainUpdateSet', url: `/home/task/train/{pid}?did={s4d}&test={s4t}&${iterationParams}` },
+    { label: 'ready', value: Stages.prepareMining, output: 'miningSet', input: '', url: `/home/project/{pid}/fusion?did={s0d}&strategy={s0s}&chunk={s0c}&${iterationParams}` },
+    { label: 'mining', value: Stages.mining, output: 'miningResult', input: 'miningSet', url: `/home/project/{pid}/mining?did={s1d}&mid={s1m}&${iterationParams}` },
+    { label: 'label', value: Stages.labelling, output: 'labelSet', input: 'miningResult', url: `/home/project/{pid}/label?did={s2d}&${iterationParams}` },
+    { label: 'merge', value: Stages.merging, output: 'trainUpdateSet', input: 'labelSet', url: `/home/project/{pid}/fusion?did={s3d}&merging={s3m}&${iterationParams}` },
+    { label: 'training', value: Stages.training, output: 'model', input: 'trainUpdateSet', url: `/home/project/{pid}/train?did={s4d}&test={s4t}&${iterationParams}` },
     { label: 'next', value: Stages.next, output: '', input: 'trainSet', },
   ]
   return { list, ...singleList(list) }
@@ -56,11 +56,13 @@ export function transferProject(data: BackendData) {
     name: data.name,
     keywords: data.training_keywords,
     trainSet: data.training_dataset_group ? transferDatasetGroup(data.training_dataset_group) : undefined,
-    testSet: data.testing_dataset ? transferDataset(data.testing_dataset) : undefined,
+    testSet: data.validation_dataset ? transferDataset(data.validation_dataset) : undefined,
     miningSet: data.mining_dataset ? transferDataset(data.mining_dataset) : undefined,
+    testingSets: data.testing_dataset_ids?.split(',').map(Number) || [],
     setCount: data.dataset_count,
     trainSetVersion: data.initial_training_dataset_id || 0,
     model: data.initial_model_id || 0,
+    modelStage: data.initial_model_stage_id || 0,
     modelCount: data.model_count,
     miningStrategy: data.mining_strategy,
     chunkSize: data.chunk_size,
@@ -74,6 +76,10 @@ export function transferProject(data: BackendData) {
     hiddenDatasets: data.referenced_dataset_ids || [],
     hiddenModels: data.referenced_model_ids || [],
     updateTime: format(data.update_datetime),
+    enableIteration: data.enable_iteration,
+    totalAssetCount: data.total_asset_count,
+    runningTaskCount: data.running_task_count,
+    totalTaskCount: data.total_task_count,
   }
   return project
 }
@@ -88,7 +94,7 @@ export function transferIteration(data: BackendData): Iteration | undefined {
     name: data.name,
     round: data.iteration_round || 0,
     currentStage: data.current_stage || 0,
-    testSet: data.testing_dataset_id || 0,
+    testSet: data.validation_dataset_id || 0,
     miningSet: data.mining_input_dataset_id,
     miningResult: data.mining_output_dataset_id,
     labelSet: data.label_output_dataset_id,

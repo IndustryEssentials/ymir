@@ -135,6 +135,38 @@ class DatasetsOut(Common):
     result: List[Dataset]
 
 
+class DatasetHist(BaseModel):
+    asset_bytes: List[Dict]
+    asset_area: List[Dict]
+    asset_quality: List[Dict]
+    asset_hw_ratio: List[Dict]
+    anno_area_ratio: List[Dict]
+    anno_quality: List[Dict]
+    class_names_count: Dict[str, int]
+
+    class Config:
+        orm_mode = True
+
+
+class DatasetsAnalysis(DatasetHist):
+    group_name: str
+    version_num: int
+    total_asset_mbytes: int
+    total_assets_cnt: int
+    annos_cnt: int
+    ave_annos_cnt: float
+    positive_asset_cnt: int
+    negative_asset_cnt: int
+
+
+class DatasetsAnalyses(BaseModel):
+    datasets: List[DatasetsAnalysis]
+
+
+class DatasetsAnalysesOut(Common):
+    result: DatasetsAnalyses
+
+
 class DatasetPaginationOut(Common):
     result: DatasetPagination
 
@@ -157,11 +189,22 @@ class DatasetsFusionParameter(RequestParameterBase):
 
 class DatasetEvaluationCreate(BaseModel):
     project_id: int
-    gt_dataset_id: int
-    other_dataset_ids: List[int]
+    dataset_ids: List[int]
     confidence_threshold: float
+    iou_threshold: float
+    require_average_iou: Optional[bool] = False
+    need_pr_curve: Optional[bool] = True
 
 
 class DatasetEvaluationOut(Common):
     # dict of dataset_id to evaluation result
     result: Dict[int, Dict]
+
+
+class DatasetCheckDuplicationCreate(BaseModel):
+    project_id: int
+    dataset_ids: List[int]
+
+
+class DatasetCheckDuplicationOut(Common):
+    result: int

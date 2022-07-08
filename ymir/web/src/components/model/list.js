@@ -13,6 +13,7 @@ import { TASKTYPES, TASKSTATES } from '@/constants/task'
 import t from "@/utils/t"
 import { percent } from '@/utils/number'
 
+import CheckProjectDirty from "@/components/common/CheckProjectDirty"
 import Actions from "@/components/table/actions"
 import TypeTag from "@/components/task/typeTag"
 import RenderProgress from "@/components/common/progress"
@@ -23,9 +24,10 @@ import { getTensorboardLink } from "@/services/common"
 
 import {
   ShieldIcon, VectorIcon, EditIcon,
-  EyeOffIcon, DeleteIcon, FileDownloadIcon, TrainIcon, WajueIcon, StopIcon,SearchIcon,
+  EyeOffIcon, DeleteIcon, FileDownloadIcon, TrainIcon, WajueIcon, StopIcon, SearchIcon,
   ArrowDownIcon, ArrowRightIcon, ImportIcon, BarchartIcon
 } from "@/components/common/icons"
+import EditStageCell from "./editStageCell"
 
 const { useForm } = Form
 
@@ -133,8 +135,14 @@ function Model({ pid, project = {}, iterations, group, modelList, versions, quer
     {
       title: showTitle("model.column.map"),
       dataIndex: "map",
-      render: map => <span title={map}>{percent(map)}</span>,
-      sorter: (a, b) => a - b,
+      render: map => percent(map),
+      sorter: (a, b) => a.map - b.map,
+      align: 'center',
+    },
+    {
+      title: showTitle("model.column.stage"),
+      dataIndex: "recommendStage",
+      render: (_, record) => isValidModel(record.state) ? <EditStageCell record={record} saveHandle={updateModelVersion} /> : null,
       align: 'center',
     },
     {
@@ -169,9 +177,19 @@ function Model({ pid, project = {}, iterations, group, modelList, versions, quer
   const listChange = (current, pageSize) => {
     const limit = pageSize
     const offset = (current - 1) * pageSize
-    func.updateQuery({ ...query, limit, offset })
+    func.updateQuery({ ...query, current, limit, offset })
   }
 
+  function updateModelVersion(result) {
+    setModelVersions(mvs => {
+      return {
+        ...mvs,
+        [result.groupId]: mvs[result.groupId].map(version => {
+          return version.id === result.id ? result : version
+        })
+      }
+    })
+  }
 
   async function showVersions(id) {
     setVisibles((old) => ({ ...old, [id]: !old[id] }))
@@ -182,6 +200,7 @@ function Model({ pid, project = {}, iterations, group, modelList, versions, quer
     Object.keys(versions).forEach(gid => {
       const list = versions[gid]
       const updatedList = list.map(item => {
+        delete item.iterationLabel
         const iteration = iterations.find(iter => iter.model === item.id)
         if (iteration) {
           item.iterationLabel = t('iteration.tag.round', iteration)
@@ -197,6 +216,7 @@ function Model({ pid, project = {}, iterations, group, modelList, versions, quer
     Object.keys(versions).forEach(gid => {
       const list = versions[gid]
       const updatedList = list.map(item => {
+        delete item.projectLabel
         item = setLabelByProject(project?.model, 'isInitModel', item)
         return { ...item }
       })
@@ -207,6 +227,7 @@ function Model({ pid, project = {}, iterations, group, modelList, versions, quer
 
   function setGroupLabelsByProject(items, project) {
     return items.map(item => {
+      delete item.projectLabel
       item = setLabelByProject(project?.model, 'isInitModel', item)
       return { ...item }
     })
@@ -234,7 +255,8 @@ function Model({ pid, project = {}, iterations, group, modelList, versions, quer
   }
 
   const actionMenus = (record) => {
-    const { id, name, url, state, taskState, taskType, task, isProtected } = record
+    const { id, name, url, state, taskState, taskType, task, isProtected, stages, recommendStage } = record
+
     const actions = [
       {
         key: "verify",
@@ -255,21 +277,21 @@ function Model({ pid, project = {}, iterations, group, modelList, versions, quer
         key: "mining",
         label: t("dataset.action.mining"),
         hidden: () => !isValidModel(state),
-        onclick: () => history.push(`/home/task/mining/${pid}?mid=${id}`),
+        onclick: () => history.push(`/home/project/${pid}/mining?mid=${id},${recommendStage}`),
         icon: <VectorIcon />,
       },
       {
         key: "train",
         label: t("dataset.action.train"),
         hidden: () => !isValidModel(state),
-        onclick: () => history.push(`/home/task/train/${pid}?mid=${id}`),
+        onclick: () => history.push(`/home/project/${pid}/train?mid=${id},${recommendStage}`),
         icon: <TrainIcon />,
       },
       {
         key: "inference",
         label: t("dataset.action.inference"),
         hidden: () => !isValidModel(state),
-        onclick: () => history.push(`/home/task/inference/${pid}?mid=${id}`),
+        onclick: () => history.push(`/home/project/${pid}/inference?mid=${id},${recommendStage}`),
         icon: <WajueIcon />,
       },
       {
@@ -291,7 +313,7 @@ function Model({ pid, project = {}, iterations, group, modelList, versions, quer
         key: "hide",
         label: t("common.action.hide"),
         onclick: () => hide(record),
-        hidden: ()=> hideHidden(record),
+        hidden: () => hideHidden(record),
         icon: <EyeOffIcon />,
       },
     ]
@@ -304,14 +326,18 @@ function Model({ pid, project = {}, iterations, group, modelList, versions, quer
   }
 
   const multipleInfer = () => {
-    const ids = Object.values(selectedVersions)
-    history.push(`/home/task/inference/${pid}?mid=${ids}`)
+    const ids = Object.values(selectedVersions).flat()
+    const versionsObject = Object.values(versions).flat()
+    const selected = versionsObject.filter(md => ids.includes(md.id)).map(md => {
+      return [md.id, md.recommendStage].toString()
+    }).join('|')
+    history.push(`/home/project/${pid}/inference?mid=${selected}`)
   }
 
   const multipleHide = () => {
     const ids = Object.values(selectedVersions).flat()
     const allVss = Object.values(versions).flat()
-    const vss = allVss.filter(({id}) => ids.includes(id))
+    const vss = allVss.filter(({ id }) => ids.includes(id))
     hideRef.current.hide(vss, project.hiddenModels)
   }
 
@@ -328,7 +354,7 @@ function Model({ pid, project = {}, iterations, group, modelList, versions, quer
     setSelectedVersions({})
   }
 
-  
+
   function rowSelectChange(gid, rowKeys) {
     setSelectedVersions(old => ({ ...old, [gid]: rowKeys }))
   }
@@ -426,17 +452,23 @@ function Model({ pid, project = {}, iterations, group, modelList, versions, quer
         </div>
       </div>) : <Empty />}
     </div>
-    <Pagination className={`pager ${styles.pager}`} showQuickJumper showSizeChanger total={total} defaultCurrent={1} defaultPageSize={query.limit} onChange={listChange} />
+    <Pagination className={`pager ${styles.pager}`} showQuickJumper showSizeChanger total={total}
+      current={query.current} pageSize={query.limit} onChange={listChange} />
   </>)
 
   return (
     <div className={styles.model}>
-      <div className='actions'>
-        <Space>
-          {addBtn}
-          {renderMultipleActions}
-        </Space>
-      </div>
+      <Row className='actions'>
+        <Col flex={1}>
+          <Space>
+            {addBtn}
+            {renderMultipleActions}
+          </Space>
+        </Col>
+        <Col>
+          <CheckProjectDirty pid={pid} />
+        </Col>
+      </Row>
       <div className={`list ${styles.list}`}>
         <div className={`search ${styles.search}`}>
           <Form

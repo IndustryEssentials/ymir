@@ -1,15 +1,16 @@
 import {
-  getDatasetGroups, getDatasetByGroup, queryDatasets, getDataset, batchDatasets, evaluate,
+  getDatasetGroups, getDatasetByGroup, queryDatasets, getDataset, batchDatasets, evaluate, analysis,
   getAssetsOfDataset, getAsset, batchAct, delDataset, delDatasetGroup, createDataset, updateDataset, getInternalDataset,
 } from "@/services/dataset"
 import { getStats } from "../services/common"
-import { transferDatasetGroup, transferDataset, states } from '@/constants/dataset'
+import { transferDatasetGroup, transferDataset, transferDatasetAnalysis, states } from '@/constants/dataset'
 import { actions, updateResultState } from '@/constants/common'
 import { deepClone } from '@/utils/object'
+import { checkDuplication } from "../services/dataset"
 
 let loading = false
 
-const initQuery = { name: "", type: "", time: 0, offset: 0, limit: 20 }
+const initQuery = { name: "", type: "", time: 0, current: 1, offset: 0, limit: 20 }
 
 const initState = {
   query: { ...initQuery },
@@ -276,8 +277,22 @@ export default {
     *clearCache({ }, { put }) {
       yield put({ type: 'CLEAR_ALL', })
     },
-    *compare({ payload }, { call, put }) {
+    *evaluate({ payload }, { call, put }) {
       const { code, result } = yield call(evaluate, payload)
+      if (code === 0) {
+        return result
+      }
+    },
+    *analysis({ payload }, { call, put }) {
+      const { pid, datasets } = payload
+      const { code, result } = yield call(analysis, pid, datasets)
+      if (code === 0) {
+        return result.datasets.map(item => transferDatasetAnalysis(item))
+      }
+    },
+    *checkDuplication({ payload }, { call, put }) {
+      const { pid, trainSet, validationSet } = payload
+      const { code, result } = yield call(checkDuplication, pid, trainSet, validationSet)
       if (code === 0) {
         return result
       }

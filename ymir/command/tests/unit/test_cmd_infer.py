@@ -2,6 +2,7 @@ import json
 import os
 import shutil
 import tarfile
+import time
 import unittest
 from unittest import mock
 
@@ -19,11 +20,11 @@ class TestCmdInfer(unittest.TestCase):
         super().__init__(methodName=methodName)
         self._test_root = test_utils.dir_test_root(self.id().split('.')[-3:])
         self._mir_repo_root = os.path.join(self._test_root, 'mir-demo-repo')
-        self._models_location = os.path.join(self._test_root, 'models')
-        self._src_assets_root = os.path.join(self._test_root, 'assets')  # source assets, index and infer config file
         self._working_root = os.path.join(self._test_root, 'work')  # work directory for cmd infer
-        self._config_file = os.path.join(self._test_root, 'config.yaml')
-        self._assets_index_file = os.path.join(self._src_assets_root, 'index.tsv')
+        self._models_location = os.path.join(self._working_root, 'models')
+        self._src_assets_root = os.path.join(self._working_root, 'assets')  # source assets, index and infer config file
+        self._config_file = os.path.join(self._working_root, 'config.yaml')
+        self._assets_index_file = os.path.join(self._working_root, 'index.tsv')
 
     def setUp(self) -> None:
         self._prepare_dir()
@@ -40,6 +41,8 @@ class TestCmdInfer(unittest.TestCase):
 
     # protected: setup and teardown
     def _prepare_dir(self):
+        if os.path.isdir(self._test_root):
+            shutil.rmtree(self._test_root)
         os.makedirs(self._test_root, exist_ok=True)
         os.makedirs(self._models_location, exist_ok=True)
         os.makedirs(self._working_root, exist_ok=True)
@@ -58,7 +61,7 @@ class TestCmdInfer(unittest.TestCase):
         shutil.copyfile(src=os.path.join(test_assets_root, '2007_000032.jpg'),
                         dst=os.path.join(self._working_root, '2007_000032.jpg'))
         with open(self._assets_index_file, 'w') as f:
-            f.write(f'{self._working_root}/2007_000032.jpg\n')
+            f.write(f'{self._src_assets_root}/2007_000032.jpg\n')
 
     def _prepare_model(self):
         # model params
@@ -77,15 +80,20 @@ class TestCmdInfer(unittest.TestCase):
         training_config['anchors'] = '12, 16, 19, 36, 40, 28, 36, 75, 76, 55, 72, 146, 142, 110, 192, 243, 459, 401'
         training_config['class_names'] = ['person', 'cat', 'unknown-car']
 
-        model_storage = mir_utils.ModelStorage(models=['model.params', 'model.json'],
-                                               executor_config=training_config,
+        model_stage = mir_utils.ModelStageStorage(stage_name='default_best_stage',
+                                                  files=['model.params', 'model.json'],
+                                                  mAP=0.5,
+                                                  timestamp=int(time.time()))
+        model_storage = mir_utils.ModelStorage(executor_config=training_config,
                                                task_context={
                                                    'src_revs': 'master',
                                                    'dst_rev': 'a'
-                                               })
+                                               },
+                                               stages={model_stage.stage_name: model_stage},
+                                               best_stage_name=model_stage.stage_name)
 
         with open(os.path.join(self._models_location, 'ymir-info.yaml'), 'w') as f:
-            yaml.dump(model_storage.as_dict(), f)
+            yaml.dump(model_storage.dict(), f)
 
         # pack model
         with tarfile.open(os.path.join(self._models_location, 'fake_model_hash'), "w:gz") as dest_tar_gz:
@@ -100,7 +108,7 @@ class TestCmdInfer(unittest.TestCase):
             executor_config = yaml.safe_load(f)
         with open(self._config_file, 'w') as f:
             yaml.safe_dump({mir_settings.EXECUTOR_CONFIG_KEY: executor_config}, f)
-            
+
     def _prepare_infer_result_file(self):
         fake_infer_output_dict = {
             'detection': {
@@ -139,26 +147,24 @@ class TestCmdInfer(unittest.TestCase):
         fake_args.work_dir = self._working_root
         fake_args.mir_root = self._mir_repo_root
         fake_args.model_location = self._models_location
-        fake_args.model_hash = 'fake_model_hash'
+        fake_args.model_hash_stage = 'fake_model_hash@default_best_stage'
         fake_args.index_file = self._assets_index_file
         fake_args.config_file = self._config_file
         fake_args.executor = 'infer-executor:fake'
         fake_args.executant_name = 'executor-instance'
+        fake_args.run_as_root = False
         cmd_instance = CmdInfer(fake_args)
         cmd_result = cmd_instance.run()
 
         # check running result
         self.assertEqual(MirCode.RC_OK, cmd_result)
 
-        expected_cmd = ['nvidia-docker', 'run', '--rm']
-        expected_cmd.append(f"-v{fake_args.work_dir}:/in/assets:ro")
-        expected_cmd.append(f"-v{os.path.join(fake_args.work_dir, 'in', 'models')}:/in/models:ro")
-        expected_cmd.append(
-            f"-v{os.path.join(fake_args.work_dir, 'in', 'candidate-index.tsv')}:/in/candidate-index.tsv")
-        expected_cmd.append(f"-v{os.path.join(fake_args.work_dir, 'in', 'config.yaml')}:/in/config.yaml")
-        expected_cmd.append(f"-v{os.path.join(fake_args.work_dir, 'in', 'env.yaml')}:/in/env.yaml")
+        expected_cmd = ['docker', 'run', '--rm']
+        expected_cmd.append(f"-v{os.path.join(fake_args.work_dir, 'in')}:/in:ro")
         expected_cmd.append(f"-v{os.path.join(fake_args.work_dir, 'out')}:/out")
+        expected_cmd.append(f"-v{self._src_assets_root}:{self._src_assets_root}")
         expected_cmd.extend(['--user', f"{os.getuid()}:{os.getgid()}"])
+        expected_cmd.append("--shm-size=16G")
         expected_cmd.extend(['--name', fake_args.executant_name])
         expected_cmd.append(fake_args.executor)
         mock_run.assert_called_once_with(expected_cmd, check=True, stdout=mock.ANY, stderr=mock.ANY, text=True)

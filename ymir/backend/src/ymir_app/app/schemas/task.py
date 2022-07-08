@@ -1,3 +1,4 @@
+import enum
 import json
 from datetime import datetime
 from typing import Any, Dict, List, Optional, Union
@@ -22,6 +23,20 @@ class TaskBase(BaseModel):
         use_enum_values = True
 
 
+class TrainingDatasetsStrategy(enum.IntEnum):
+    stop = 0
+    as_training = 1  # use duplicated assets as training assets
+    as_validation = 2  # use duplicated assets as validation assets
+
+
+class LongsideResizeParameter(BaseModel):
+    dest_size: int
+
+
+class TaskPreprocess(BaseModel):
+    longside_resize: LongsideResizeParameter
+
+
 class TaskParameter(BaseModel):
     dataset_id: int
     keywords: Optional[List[str]]
@@ -36,9 +51,12 @@ class TaskParameter(BaseModel):
     network: Optional[str]
     backbone: Optional[str]
     hyperparameter: Optional[str]
+    strategy: Optional[TrainingDatasetsStrategy] = TrainingDatasetsStrategy.stop
+    preprocess: Optional[TaskPreprocess] = Field(description="preprocess to apply to related dataset")
 
     # mining & dataset_infer
     model_id: Optional[int]
+    model_stage_id: Optional[int]
     mining_algorithm: Optional[str]
     top_k: Optional[int]
     generate_annotations: Optional[bool]
@@ -60,6 +78,7 @@ class TaskCreate(TaskBase):
     iteration_stage: Optional[IterationStage]
     parameters: TaskParameter = Field(description="task specific parameters")
     docker_image_config: Optional[Dict] = Field(description="docker runtime configuration")
+    preprocess: Optional[TaskPreprocess] = Field(description="preprocess to apply to related dataset")
 
     @validator("docker_image_config")
     def dumps_docker_image_config(cls, v: Optional[Union[str, Dict]], values: Dict[str, Any]) -> Optional[str]:
@@ -69,6 +88,18 @@ class TaskCreate(TaskBase):
             return json.dumps(v)
         else:
             return v
+
+    @root_validator(pre=True)
+    def tuck_preprocess_into_parameters(cls, values: Any) -> Any:
+        """
+        For frontend, preprocess is a separate task configuration,
+        however, the underlying reads preprocess stuff from task_parameter,
+        so we just tuck preprocess into task_parameter
+        """
+        preprocess = values.get("preprocess")
+        if preprocess:
+            values["parameters"]["preprocess"] = preprocess
+        return values
 
     class Config:
         use_enum_values = True
@@ -270,3 +301,16 @@ class TaskPagination(BaseModel):
 
 class TaskPaginationOut(Common):
     result: TaskPagination
+
+
+class PaiTaskStatus(BaseModel):
+    position: int
+    total_pending_task: int
+
+
+class PaiTask(Task):
+    pai_status: Optional[PaiTaskStatus]
+
+
+class PaiTaskOut(Common):
+    result: PaiTask

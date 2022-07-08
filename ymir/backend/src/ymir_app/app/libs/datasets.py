@@ -1,3 +1,6 @@
+from collections import ChainMap
+from concurrent.futures import ThreadPoolExecutor
+from functools import partial
 from typing import Any, Dict, Optional, List
 import tempfile
 import pathlib
@@ -10,7 +13,6 @@ from app import crud, schemas, models
 from app.api.errors.errors import (
     DatasetNotFound,
     FailedtoCreateDataset,
-    FailedToEvaluate,
 )
 from app.config import settings
 from app.constants.state import ResultState
@@ -20,7 +22,6 @@ from app.utils.ymir_controller import (
     ControllerClient,
     gen_user_hash,
     gen_repo_hash,
-    gen_task_hash,
 )
 from common_utils.labels import UserLabels
 
@@ -65,6 +66,7 @@ def _import_dataset(
         parameters = {
             "annotation_dir": paths.annotation_dir,
             "asset_dir": paths.asset_dir,
+            "gt_dir": paths.gt_dir,
             "strategy": dataset_import.strategy,
         }
 
@@ -99,6 +101,13 @@ class ImportDatasetPaths:
         return str(self.data_dir / "images")
 
     @property
+    def gt_dir(self) -> Optional[str]:
+        gt_dir = self.data_dir / "gt"
+        if not gt_dir.is_dir():
+            return None
+        return str(gt_dir)
+
+    @property
     def data_dir(self) -> pathlib.Path:
         if not self._data_dir:
             if self.input_path:
@@ -113,32 +122,37 @@ class ImportDatasetPaths:
 
 
 def evaluate_dataset(
-    controller: ControllerClient,
+    viz: VizClient,
+    confidence_threshold: float,
+    iou_threshold: float,
+    require_average_iou: bool,
+    need_pr_curve: bool,
+    dataset_hash: str,
+) -> Dict:
+    if require_average_iou:
+        # fixme temporary walkaround
+        iou_threshold = 0.5
+    return viz.get_fast_evaluation(dataset_hash, confidence_threshold, iou_threshold, need_pr_curve)
+
+
+def evaluate_datasets(
     viz: VizClient,
     user_id: int,
     project_id: int,
     user_labels: UserLabels,
     confidence_threshold: float,
-    gt_dataset: models.Dataset,
-    other_datasets: List[models.Dataset],
+    iou_threshold: float,
+    require_average_iou: bool,
+    need_pr_curve: bool,
+    datasets: List[models.Dataset],
 ) -> Dict:
-    # temporary task hash used to fetch evaluation result later
-    task_hash = gen_task_hash(user_id, project_id)
-    try:
-        controller.evaluate_dataset(
-            user_id,
-            project_id,
-            task_hash,
-            confidence_threshold,
-            gt_dataset.hash,
-            [dataset.hash for dataset in other_datasets],
-        )
-    except ValueError:
-        logger.exception("Failed to evaluate via controller")
-        raise FailedToEvaluate()
-    # todo refactor
-    viz.initialize(user_id=user_id, project_id=project_id, branch_id=task_hash)
-    evaluations = viz.get_evaluations(user_labels)
+    dataset_id_mapping = {dataset.hash: dataset.id for dataset in datasets}
+    viz.initialize(user_id=user_id, project_id=project_id, user_labels=user_labels)
 
-    dataset_id_mapping = {dataset.hash: dataset.id for dataset in other_datasets}
+    f_evaluate = partial(evaluate_dataset, viz, confidence_threshold, iou_threshold, require_average_iou, need_pr_curve)
+    with ThreadPoolExecutor() as executor:
+        res = executor.map(f_evaluate, dataset_id_mapping.keys())
+
+    evaluations = ChainMap(*res)
+
     return {dataset_id_mapping[hash_]: evaluation for hash_, evaluation in evaluations.items()}

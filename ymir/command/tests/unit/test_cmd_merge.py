@@ -92,7 +92,7 @@ class TestMergeCmd(unittest.TestCase):
 
     @staticmethod
     def _generate_keywords_for_asset(predefined: List[int], customized: List[str]):
-        return {'predifined_keyids': predefined, 'customized_keywords': customized}
+        return {'predefined_keyids': predefined}
 
     @staticmethod
     def _generate_task(task_id: str, name: str, type: int, timestamp: int):
@@ -118,16 +118,19 @@ class TestMergeCmd(unittest.TestCase):
         ParseDict(dict_metadatas, mir_metadatas)
 
         image_annotations = {}
+        image_cks = {}
         for asset_idx, (asset_id, keywords_pair) in enumerate(assets_and_keywords.items()):
             image_annotations[asset_id] = TestMergeCmd._generate_annotations_for_asset(type_ids=keywords_pair[0],
                                                                                        x=100,
                                                                                        y=(asset_idx + 1) * 100)
+            image_cks[asset_id] = {'cks': keywords_pair[1]}
         dict_annotations = {
             "task_annotations": {
                 branch_name_and_task_id: {
                     "image_annotations": image_annotations
                 }
             },
+            'image_cks': image_cks,
             'head_task_id': branch_name_and_task_id
         }
         ParseDict(dict_annotations, mir_annotations)
@@ -157,10 +160,18 @@ class TestMergeCmd(unittest.TestCase):
         all asset size set to (1000, 1000)
         """
         assets_and_keywords = {
-            "a0": ([1], ["c0", "c1"]),
-            "a1": ([1], ["c0", "c1"]),
-            "a2": ([1], ["c0", "c1"]),
-            "a3": ([1], ["c0", "c1"]),
+            "a0": ([1], {
+                "c0": "c1"
+            }),
+            "a1": ([1], {
+                "c0": "c1"
+            }),
+            "a2": ([1], {
+                "c0": "c1"
+            }),
+            "a3": ([1], {
+                "c0": "c1"
+            }),
         }
         self._prepare_mir_branch(assets_and_keywords=assets_and_keywords,
                                  size=1000,
@@ -174,9 +185,15 @@ class TestMergeCmd(unittest.TestCase):
         all asset size set to (1100, 1100)
         """
         assets_and_keywords = {
-            "b0": ([2], ["c0", "c2"]),
-            "b1": ([2], ["c0", "c2"]),
-            "b2": ([2], ["c0", "c2"]),
+            "b0": ([2], {
+                "c0": "c2"
+            }),
+            "b1": ([2], {
+                "c0": "c2"
+            }),
+            "b2": ([2], {
+                "c0": "c2"
+            }),
         }
         self._prepare_mir_branch(assets_and_keywords=assets_and_keywords,
                                  size=1100,
@@ -190,9 +207,15 @@ class TestMergeCmd(unittest.TestCase):
         all asset size set to (1300, 1300)
         """
         assets_and_keywords = {
-            "a0": ([1, 2], ["c0", "c1", "c2"]),
-            "d0": ([1, 4], ["c0", "c1", "c4"]),
-            "d1": ([1, 4], ["c0", "c1", "c4"]),
+            "a0": ([1, 2], {
+                "c0": "c4"
+            }),
+            "d0": ([1, 4], {
+                "c0": "c4"
+            }),
+            "d1": ([1, 4], {
+                "c0": "c4"
+            }),
         }
         self._prepare_mir_branch(assets_and_keywords=assets_and_keywords,
                                  size=1300,
@@ -200,10 +223,7 @@ class TestMergeCmd(unittest.TestCase):
                                  commit_msg="prepare_branch_merge_d")
 
     # protected: check
-    def _check_result(self,
-                      expected_dict_metadatas=None,
-                      expected_dict_annotations=None,
-                      expected_dict_keywords=None):
+    def _check_result(self, expected_dict_metadatas=None, expected_dict_annotations=None, expected_dict_keywords=None):
         if expected_dict_metadatas:
             try:
                 mir_metadatas = test_utils.read_mir_pb(os.path.join(self._mir_root, "metadatas.mir"),
@@ -232,8 +252,8 @@ class TestMergeCmd(unittest.TestCase):
             for asset_id, expected_keywords in expected_dict_keywords["keywords"].items():
                 actual_keywords = actual_dict_keywords["keywords"][asset_id]
                 try:
-                    self.assertEqual(set(expected_keywords["predifined_keyids"]),
-                                     set(actual_keywords["predifined_keyids"]))
+                    self.assertEqual(set(expected_keywords["predefined_keyids"]),
+                                     set(actual_keywords["predefined_keyids"]))
                 except AssertionError as e:
                     logging.info(f"e: {expected_keywords}")
                     logging.info(f"a: {actual_keywords}")
@@ -255,7 +275,7 @@ class TestMergeCmd(unittest.TestCase):
         fake_args.mir_root = mir_root
         fake_args.src_revs = 'b;a'
         fake_args.ex_src_revs = ''
-        fake_args.dst_rev = '_test_no_tvt_stop_00@merge-task-id'
+        fake_args.dst_rev = '_test_no_tvt_stop_00@merge-task-id-s0'
         fake_args.strategy = 'stop'
         fake_args.work_dir = ''
         merge_instance = CmdMerge(fake_args)
@@ -278,7 +298,7 @@ class TestMergeCmd(unittest.TestCase):
 
         expected_dict_annotations = {
             "task_annotations": {
-                "merge-task-id": {
+                "merge-task-id-s0": {
                     "image_annotations": {
                         "a0": TestMergeCmd._generate_annotations_for_asset([1], 100, 100),
                         "a1": TestMergeCmd._generate_annotations_for_asset([1], 100, 200),
@@ -290,7 +310,44 @@ class TestMergeCmd(unittest.TestCase):
                     }
                 }
             },
-            'head_task_id': 'merge-task-id',
+            'head_task_id': 'merge-task-id-s0',
+            'image_cks': {
+                'a0': {
+                    'cks': {
+                        'c0': 'c1',
+                    }
+                },
+                'a1': {
+                    'cks': {
+                        'c0': 'c1',
+                    }
+                },
+                'a2': {
+                    'cks': {
+                        'c0': 'c1',
+                    }
+                },
+                'a3': {
+                    'cks': {
+                        'c0': 'c1',
+                    }
+                },
+                'b0': {
+                    'cks': {
+                        'c0': 'c2',
+                    }
+                },
+                'b1': {
+                    'cks': {
+                        'c0': 'c2',
+                    }
+                },
+                'b2': {
+                    'cks': {
+                        'c0': 'c2',
+                    }
+                }
+            }
         }
 
         expected_dict_keywords = {
@@ -313,7 +370,7 @@ class TestMergeCmd(unittest.TestCase):
         fake_args.mir_root = mir_root
         fake_args.src_revs = 'tr:a;va:d'
         fake_args.ex_src_revs = ''
-        fake_args.dst_rev = "_test_tvt_stop_01@merge-task-id"
+        fake_args.dst_rev = "_test_tvt_stop_01@merge-task-id-s1"
         fake_args.strategy = 'stop'
         fake_args.work_dir = ''
         merge_instance = CmdMerge(fake_args)
@@ -329,7 +386,7 @@ class TestMergeCmd(unittest.TestCase):
         fake_args.mir_root = mir_root
         fake_args.src_revs = 'tr:a;va:d'
         fake_args.ex_src_revs = ''
-        fake_args.dst_rev = '_test_tvt_host_00@merge-task-id'
+        fake_args.dst_rev = '_test_tvt_host_00@merge-task-id-h0'
         fake_args.strategy = 'host'
         fake_args.work_dir = ''
         merge_instance = CmdMerge(fake_args)
@@ -351,7 +408,7 @@ class TestMergeCmd(unittest.TestCase):
 
         expected_dict_annotations = {
             "task_annotations": {
-                "merge-task-id": {
+                "merge-task-id-h0": {
                     "image_annotations": {
                         "a0": TestMergeCmd._generate_annotations_for_asset([1], 100, 100),
                         "a1": TestMergeCmd._generate_annotations_for_asset([1], 100, 200),
@@ -362,7 +419,39 @@ class TestMergeCmd(unittest.TestCase):
                     }
                 }
             },
-            'head_task_id': 'merge-task-id',
+            'head_task_id': 'merge-task-id-h0',
+            'image_cks': {
+                'a0': {
+                    'cks': {
+                        'c0': 'c1'
+                    }
+                },
+                'a1': {
+                    'cks': {
+                        'c0': 'c1'
+                    }
+                },
+                'a2': {
+                    'cks': {
+                        'c0': 'c1'
+                    }
+                },
+                'a3': {
+                    'cks': {
+                        'c0': 'c1'
+                    }
+                },
+                'd0': {
+                    'cks': {
+                        'c0': 'c4'
+                    }
+                },
+                'd1': {
+                    'cks': {
+                        'c0': 'c4'
+                    }
+                },
+            },
         }
 
         expected_dict_keywords = {
@@ -384,7 +473,7 @@ class TestMergeCmd(unittest.TestCase):
         fake_args.mir_root = mir_root
         fake_args.src_revs = 'tr:a;va:d'
         fake_args.ex_src_revs = ''
-        fake_args.dst_rev = '_test_tvt_guest_00@merge-task-id'
+        fake_args.dst_rev = '_test_tvt_guest_00@merge-task-id-g0'
         fake_args.strategy = 'guest'
         fake_args.work_dir = ''
         merge_instance = CmdMerge(fake_args)
@@ -406,7 +495,7 @@ class TestMergeCmd(unittest.TestCase):
 
         expected_dict_annotations = {
             "task_annotations": {
-                "merge-task-id": {
+                "merge-task-id-g0": {
                     "image_annotations": {
                         "a1": TestMergeCmd._generate_annotations_for_asset([1], 100, 200),
                         "a2": TestMergeCmd._generate_annotations_for_asset([1], 100, 300),
@@ -417,7 +506,39 @@ class TestMergeCmd(unittest.TestCase):
                     }
                 }
             },
-            'head_task_id': 'merge-task-id',
+            'head_task_id': 'merge-task-id-g0',
+            'image_cks': {
+                'a0': {
+                    'cks': {
+                        'c0': 'c4'
+                    }
+                },
+                'a1': {
+                    'cks': {
+                        'c0': 'c1'
+                    }
+                },
+                'a2': {
+                    'cks': {
+                        'c0': 'c1'
+                    }
+                },
+                'a3': {
+                    'cks': {
+                        'c0': 'c1'
+                    }
+                },
+                'd0': {
+                    'cks': {
+                        'c0': 'c4'
+                    }
+                },
+                'd1': {
+                    'cks': {
+                        'c0': 'c4'
+                    }
+                },
+            },
         }
 
         expected_dict_keywords = {
@@ -440,7 +561,7 @@ class TestMergeCmd(unittest.TestCase):
         fake_args.mir_root = mir_root
         fake_args.src_revs = 'tr:a'
         fake_args.ex_src_revs = 'd'
-        fake_args.dst_rev = '_test_exclude_no_tvt_host_00@merge-task-id'
+        fake_args.dst_rev = '_test_exclude_no_tvt_host_00@merge-task-id-nth0'
         fake_args.strategy = 'host'
         fake_args.work_dir = ''
         merge_instance = CmdMerge(fake_args)
@@ -459,7 +580,7 @@ class TestMergeCmd(unittest.TestCase):
 
         expected_dict_annotations = {
             "task_annotations": {
-                "merge-task-id": {
+                "merge-task-id-nth0": {
                     "image_annotations": {
                         "a1": TestMergeCmd._generate_annotations_for_asset([1], 100, 200),
                         "a2": TestMergeCmd._generate_annotations_for_asset([1], 100, 300),
@@ -467,7 +588,24 @@ class TestMergeCmd(unittest.TestCase):
                     }
                 }
             },
-            'head_task_id': 'merge-task-id',
+            'head_task_id': 'merge-task-id-nth0',
+            'image_cks': {
+                'a1': {
+                    'cks': {
+                        'c0': 'c1'
+                    }
+                },
+                'a2': {
+                    'cks': {
+                        'c0': 'c1'
+                    }
+                },
+                'a3': {
+                    'cks': {
+                        'c0': 'c1'
+                    }
+                },
+            }
         }
 
         expected_dict_keywords = {

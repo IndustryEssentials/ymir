@@ -18,8 +18,8 @@ function Prepare({ project = {}, fresh = () => { }, ...func }) {
 
   function initStages() {
     const labels = [
-      { value: 'datasets', state: project.miningSet && project.testSet ? states.VALID : -1, url: `/home/project/add/${project.id}?settings=1`, },
-      { value: 'model', state: project.model ? states.VALID : -1, url: `/home/project/initmodel/${project.id}`, },
+      { value: 'datasets', state: project.miningSet && project.testSet ? states.VALID : -1, url: `/home/project/${project.id}/iterations/settings`, },
+      { value: 'model', state: project.model ? states.VALID : -1, url: `/home/project/${project.id}/initmodel`, },
       { value: 'start', state: validNext() ? states.VALID : -1, },
     ]
     const ss = labels.map(({ value, state, url, }, index) => {

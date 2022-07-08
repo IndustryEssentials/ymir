@@ -106,8 +106,8 @@ class TestInvokerTaskTraining(unittest.TestCase):
         training_data_type_2.dataset_type = backend_pb2.TvtType.TvtTypeValidation
 
         train_task_req = backend_pb2.TaskReqTraining()
-        train_task_req.in_dataset_types.append(training_data_type_1)
         train_task_req.in_dataset_types.append(training_data_type_2)
+        train_task_req.in_dataset_types.append(training_data_type_1)
         train_task_req.in_class_ids[:] = [0, 1]
 
         req_create_task = backend_pb2.ReqCreateTask()
@@ -119,6 +119,11 @@ class TestInvokerTaskTraining(unittest.TestCase):
             'modelsuploadlocation': self._storage_root,
             'assetskvlocation': self._storage_root,
             'tensorboard_root': self._tensorboard_root,
+            'openpai_host': '',
+            'openpai_token': '',
+            'openpai_storage': '',
+            'openpai_user': '',
+            'server_runtime': 'runc',
         }
 
         working_dir_root = os.path.join(self._sandbox_root, "work_dir",
@@ -153,12 +158,18 @@ class TestInvokerTaskTraining(unittest.TestCase):
 
         training_config["class_names"] = ["frisbee", "car"]
         training_config['gpu_id'] = '0'
-        expected_config = {'executor_config': training_config, 'task_context': {'available_gpu_id': '1'}}
+        expected_config = {
+            'executor_config': training_config,
+            'task_context': {
+                'available_gpu_id': '1',
+                'server_runtime': 'runc',
+            },
+        }
         logging.info(f"xxx config: {config}")  # for test
         self.assertDictEqual(expected_config, config)
 
         tensorboard_dir = os.path.join(self._tensorboard_root, self._user_name, self._task_id)
-        asset_cache_dir = os.path.join(self._sandbox_root, self._user_name, "training_assset_cache")
+        asset_cache_dir = os.path.join(self._sandbox_root, self._user_name, "training_asset_cache")
 
         training_cmd = ("mir train --root {0} --dst-rev {1}@{1} --model-location {2} "
                         "--media-location {2} -w {3} --src-revs {1}@{4} --task-config-file {5} --executor {6} "

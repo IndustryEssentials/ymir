@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react"
 import { connect } from "dva"
 import { useHistory, useParams, Link } from "umi"
-import { Button, Card, Space } from "antd"
+import { Button, Card, message, Space } from "antd"
 
 import t from "@/utils/t"
 import { TASKTYPES, getTaskTypeLabel } from "@/constants/task"
@@ -80,21 +80,18 @@ function DatasetDetail({ datasetCache, getDataset }) {
               </div>
             ) : null}
             {!dataset.hidden ? <>
-              {taskTypes.map((type) => (
+              {taskTypes.map((type, index) => index === 0 || dataset.assetCount > 0 ? (
                 <Button
                   key={type}
                   type="primary"
-                  onClick={() => history.push(`/home/task/${type}/${pid}?did=${id}`)}
+                  onClick={() => history.push(`/home/project/${pid}/${type}?did=${id}`)}
                 >
                   {t(`task.type.${type}`)}
                 </Button>
-              ))}
-              <Button type="primary" onClick={() => hide(dataset)}>
+              ) : null)}
+              {dataset.assetCount > 0 ? <Button type="primary" onClick={() => hide(dataset)}>
                 {t(`common.action.hide`)}
-              </Button>
-              <Button type="primary" onClick={() => history.push(`/home/project/${pid}/dataset/${dataset.groupId}/compare/${id}`)}>
-                {t(`common.action.compare`)}
-              </Button>
+              </Button> : null }
             </> :
               <Button type="primary" onClick={restore}>
                 {t("common.action.restore")}

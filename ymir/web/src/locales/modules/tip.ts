@@ -24,12 +24,12 @@ const tip = {
     en: "Samples expected.",
   },
   "tip.task.filter.testsets": {
-    cn: "训练集和测试集的图片不可重复",
-    en: "The images of the training set and the testing set cannot be duplicated.",
+    cn: "训练集和验证集的图片不可重复",
+    en: "The images of the training set and the validation set cannot be duplicated.",
   },
   "tip.task.filter.keywords": {
-    cn: "训练目标标签必须同时包含在训练集和测试集中",
-    en: "Both the training and testing sets must contain target keyword",
+    cn: "训练目标标签必须同时包含在训练集和验证集中",
+    en: "Both the training and validation sets must contain target keyword",
   },
   "tip.task.train.image": {
     cn: "平台提供默认训练镜像，同时支持开发者自主开发并接入。镜像会附带默认配置参数，可按需调整。",
@@ -51,9 +51,17 @@ const tip = {
     cn: "训练镜像中需传入的运行参数，默认为最佳推荐配置",
     en: "Hyperparameter tips: the operation parameters to be entered in the training docker, the default value is the best recommended configuration",
   },
-  "tip.task.filter.model": {
+  "tip.iteration.initmodel": {
     cn: "初始模型用于第一轮迭代时的数据挖掘，可以通过导入或者训练添加。",
     en: "The initial model is used for data mining during the first iteration and can be added by importing or training.",
+  },
+  "tip.task.mining.dataset": {
+    cn: "待挖掘的目标数据集",
+    en: "Dataset for mining",
+  },
+  "tip.task.filter.model": {
+    cn: "本次挖掘出来的数据可用于该选中模型效果的提升",
+    en: "The mining data can used for optimizing the model selected.",
   },
   "tip.task.filter.strategy": {
     cn: "用户自定义挖掘结果数据集的大小，即希望保留TopK个最有利于模型优化的数据。在选择多个数据集时，由于可能存在重复数据，合并后的结果小于所选数据集之和，当用户自定义TopK值大于合并后的数据集大小时，则返回全部数据。",
@@ -108,14 +116,17 @@ const tip = {
     en: 'Classes annotations required, training data will update in every iterations',
   },
   "project.add.testset.tip": {
-    cn: '用于指导训练集进行训练和测试，可获得更客观的模型效果评估结果，该数据集需要有标注。',
-    en: 'It is used to guide the training set for training and testing, which can obtain more objective results for model effect evaluation. This dataset needs to be annotated.',
+    cn: '用于指导训练集进行训练和验证，可获得更客观的模型效果评估结果，该数据集需要有标注。',
+    en: 'It is used to guide the training set for training and validation, which can obtain more objective results for model effect evaluation. This dataset needs to be annotated.',
   },
   "project.add.miningset.tip": {
     cn: '一般情况下无标注且数据量大，通过数据挖掘在该数据集下找到更贴合目标业务场景的数据。',
     en: 'Generally unlabeled and with a large amount of data, data mining is used to find data that better fits the target business scenario under that data set.',
   },
-
+  "tip.train.export.format": {
+    cn: '导出给训练镜像使用的数据格式，图像格式包含raw/lmdb, 标注格式有none/ark/voc/ls_json。请根据镜像选择相应的数据格式。',
+    en: 'Export format for training docker image. assets format: raw/lmdb, annotations format none/ark/voc/ls_json. Please choose one matched your training docker image.',
+  },
 }
 
 export default tip

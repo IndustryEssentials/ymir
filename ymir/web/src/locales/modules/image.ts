@@ -5,7 +5,7 @@ const image = {
   "image.type.unkown": { en: "Pending", cn: "加载中", },
   "image.type.mining": { en: "Mining", cn: "挖掘", },
   "image.type.train": { en: "Training", cn: "训练", },
-  "image.type.inference": { en: "Training", cn: "推理", },
+  "image.type.inference": { en: "Inference", cn: "推理", },
   "image.state.pending": { en: "Pending", cn: "加载中", },
   "image.state.done": { en: "Done", cn: "完成", },
   "image.state.error": { en: "Error", cn: "失败", },
@@ -62,6 +62,8 @@ const image = {
   'image.detail.relate': { en: "Relate", cn: "去关联", },
   'image.select.opt.related': { en: "Related Images", cn: "关联镜像（推荐）", },
   'image.select.opt.normal': { en: "List", cn: "列表", },
+  'image.livecode.label.remote': { en: "Remote", cn: "远端", },
+  'image.livecode.label.local': { en: "Local", cn: "本地", },
 }
 
 export default image

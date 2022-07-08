@@ -1,9 +1,9 @@
 from collections import defaultdict
 import logging
 import os
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Tuple, Union
 
-import xml.dom.minidom
+import xmltodict
 
 from mir.tools import class_ids
 from mir.tools.code import MirCode
@@ -12,80 +12,33 @@ from mir.tools.phase_logger import PhaseLoggerCenter
 from mir.protos import mir_command_pb2 as mirpb
 
 
-def _get_dom_xml_tag_node(node: xml.dom.minidom.Element, tag_name: str) -> Optional[xml.dom.minidom.Element]:
-    """
-    suppose we have the following xml:
-    ```
-    <blabla>
-        <tag1>tag1_value</tag1>
-        <tag2>tag2_value</tag2>
-    </blabla>
-    ```
-    and we have node point to <blabla>, we can use this function to get node tag1 and tag2 \n
-    if tag not found, returns None
-    """
-    tag_nodes = node.getElementsByTagName(tag_name)
-    if len(tag_nodes) > 0 and len(tag_nodes[0].childNodes) > 0:
-        return tag_nodes[0]
-    return None
-
-
-def _get_dom_xml_tag_data(node: xml.dom.minidom.Element, tag_name: str) -> str:
-    """
-    suppose we have the following xml:
-    ```
-    <blabla>
-        <tag1>tag1_value</tag1>
-        <tag2>tag2_value</tag2>
-    </blabla>
-    ```
-    and we have node point to <blabla>, we can use this function to get tag1_value and tag2_value \n
-    if tag not found, returns empty str
-    """
-    tag_node = _get_dom_xml_tag_node(node, tag_name)
-    if tag_node and len(tag_node.childNodes) > 0:
-        return tag_node.childNodes[0].data
-    return ''
-
-
-def _xml_obj_to_annotation(obj: xml.dom.minidom.Element,
-                           class_type_manager: class_ids.ClassIdManager) -> mirpb.Annotation:
-    """
-    generate mirpb.Annotation instance from object node in coco and pascal annotation xml file
-    """
-    name = _xml_obj_to_type_name(obj)
-    bndbox_node = _get_dom_xml_tag_node(obj, "bndbox")
-    if not bndbox_node:
+def _object_dict_to_annotation(object_dict: dict, class_type_manager: class_ids.ClassIdManager) -> mirpb.Annotation:
+    bndbox_dict: dict = object_dict['bndbox']
+    if not bndbox_dict:
         raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS, error_message='found no value for bndbox')
 
-    xmin = int(float(_get_dom_xml_tag_data(bndbox_node, "xmin")))
-    ymin = int(float(_get_dom_xml_tag_data(bndbox_node, "ymin")))
-    xmax = int(float(_get_dom_xml_tag_data(bndbox_node, "xmax")))
-    ymax = int(float(_get_dom_xml_tag_data(bndbox_node, "ymax")))
+    xmin = int(float(bndbox_dict['xmin']))
+    ymin = int(float(bndbox_dict['ymin']))
+    xmax = int(float(bndbox_dict['xmax']))
+    ymax = int(float(bndbox_dict['ymax']))
     width = xmax - xmin + 1
     height = ymax - ymin + 1
 
-    # there's no `score` key in original voc format, we add it here to support box conf score
-    score_str = _get_dom_xml_tag_data(obj, 'score')
-    score = float(score_str) if score_str else 2.0
-
     annotation = mirpb.Annotation()
-    annotation.class_id = class_type_manager.id_and_main_name_for_name(name)[0]
+    annotation.class_id = class_type_manager.id_and_main_name_for_name(object_dict['name'])[0]
     annotation.box.x = xmin
     annotation.box.y = ymin
     annotation.box.w = width
     annotation.box.h = height
-    annotation.score = score
+    annotation.score = float(object_dict.get('confidence', '-1.0'))
+    annotation.tags.update(object_dict.get('tags', {}))
+    annotation.anno_quality = float(object_dict.get('box_quality', '-1.0'))
     return annotation
 
 
-def _xml_obj_to_type_name(obj: xml.dom.minidom.Element) -> str:
-    return _get_dom_xml_tag_data(obj, "name").lower()
-
-
-def import_annotations(mir_metadatas: mirpb.MirMetadatas, mir_annotation: mirpb.MirAnnotations,
-                       in_sha1_file: str, mir_root: str,
-                       annotations_dir_path: str, task_id: str, phase: str) -> Tuple[int, Dict[str, int]]:
+def import_annotations(mir_metadatas: mirpb.MirMetadatas, mir_annotation: mirpb.MirAnnotations, in_sha1_file: str,
+                       in_sha1_gt_file: str, mir_root: str, annotations_dir_path: str, groundtruth_dir_path: str,
+                       task_id: str, phase: str) -> Tuple[int, Dict[str, int]]:
     """
     imports annotations
 
@@ -93,8 +46,10 @@ def import_annotations(mir_metadatas: mirpb.MirMetadatas, mir_annotation: mirpb.
         mir_annotation (mirpb.MirAnnotations): data buf for annotations.mir
         mir_keywords (mirpb.MirKeywords): data buf for keywords.mir
         in_sha1_file (str): path to sha1 file
+        in_sha1_gt_file (str): path to gt sha1 file
         mir_root (str): path to mir repo
         annotations_dir_path (str): path to annotations root
+        groundtruth_dir_path (str): path to groundtruth root
         task_id (str): task id
         phase (str): process phase
 
@@ -103,15 +58,43 @@ def import_annotations(mir_metadatas: mirpb.MirMetadatas, mir_annotation: mirpb.
     """
     unknown_types_and_count: Dict[str, int] = defaultdict(int)
 
-    if not in_sha1_file:
-        logging.error("empty sha1_file")
-        return MirCode.RC_CMD_INVALID_ARGS, unknown_types_and_count
-
     # read type_id_name_dict and type_name_id_dict
     class_type_manager = class_ids.ClassIdManager(mir_root=mir_root)
     logging.info("loaded type id and names: %d", class_type_manager.size())
 
-    image_annotations = mir_annotation.task_annotations[task_id].image_annotations
+    if in_sha1_file:
+        logging.info(f"wrting annotation in {annotations_dir_path}")
+        _import_annotations_from_dir(
+            mir_metadatas=mir_metadatas,
+            mir_annotation=mir_annotation,
+            in_sha1_file=in_sha1_file,
+            annotations_dir_path=annotations_dir_path,
+            unknown_types_and_count=unknown_types_and_count,
+            class_type_manager=class_type_manager,
+            image_annotations=mir_annotation.task_annotations[task_id],
+        )
+    PhaseLoggerCenter.update_phase(phase=phase, local_percent=0.5)
+
+    if groundtruth_dir_path:
+        logging.info(f"wrting ground-truth in {groundtruth_dir_path}")
+        _import_annotations_from_dir(
+            mir_metadatas=mir_metadatas,
+            mir_annotation=mir_annotation,
+            in_sha1_file=in_sha1_gt_file,
+            annotations_dir_path=groundtruth_dir_path,
+            unknown_types_and_count=unknown_types_and_count,
+            class_type_manager=class_type_manager,
+            image_annotations=mir_annotation.ground_truth,
+        )
+    PhaseLoggerCenter.update_phase(phase=phase, local_percent=1.0)
+
+    return MirCode.RC_OK, unknown_types_and_count
+
+
+def _import_annotations_from_dir(mir_metadatas: mirpb.MirMetadatas, mir_annotation: mirpb.MirAnnotations,
+                                 in_sha1_file: str, annotations_dir_path: str, unknown_types_and_count: Dict[str, int],
+                                 class_type_manager: class_ids.ClassIdManager,
+                                 image_annotations: mirpb.SingleTaskAnnotations) -> Tuple[int, Dict[str, int]]:
 
     assethash_filename_list: List[Tuple[str, str]] = []  # hash id and main file name
     with open(in_sha1_file, "r") as in_file:
@@ -129,7 +112,6 @@ def import_annotations(mir_metadatas: mirpb.MirMetadatas, mir_annotation: mirpb.
     total_assethash_count = len(assethash_filename_list)
     logging.info(f"wrting {total_assethash_count} annotations")
 
-    counter = 0
     missing_annotations_counter = 0
     for asset_hash, main_file_name in assethash_filename_list:
         # for each asset, import it's annotations
@@ -137,28 +119,35 @@ def import_annotations(mir_metadatas: mirpb.MirMetadatas, mir_annotation: mirpb.
         if not annotation_file or not os.path.isfile(annotation_file):
             missing_annotations_counter += 1
         else:
-            # if have annotation file, import annotations and predefined key ids
-            dom_tree = xml.dom.minidom.parse(annotation_file)
-            if not dom_tree:
+            with open(annotation_file, 'r') as f:
+                annos_xml_str = f.read()
+            if not annos_xml_str:
                 logging.error(f"cannot open annotation_file: {annotation_file}")
                 return MirCode.RC_CMD_INVALID_ARGS, unknown_types_and_count
 
-            collection = dom_tree.documentElement
-            objects = collection.getElementsByTagName("object")
-            for idx, obj in enumerate(objects):
-                type_name = _xml_obj_to_type_name(obj)
+            annos_dict: dict = xmltodict.parse(annos_xml_str)['annotation']
+
+            # cks
+            mir_annotation.image_cks[asset_hash].cks.update(annos_dict.get('cks', {}))
+            mir_annotation.image_cks[asset_hash].image_quality = float(annos_dict.get('image_quality', '-1.0'))
+
+            # annotations and tags
+            objects: Union[List[dict], dict] = annos_dict.get('object', [])
+            if isinstance(objects, dict):
+                # when there's only ONE object node in xml, it will be parsed to a dict, not a list
+                objects = [objects]
+
+            anno_idx = 0
+            for object_dict in objects:
+                type_name = object_dict['name']
                 if class_type_manager.has_name(type_name):
-                    annotation = _xml_obj_to_annotation(obj, class_type_manager)
-                    annotation.index = idx
-                    image_annotations[asset_hash].annotations.append(annotation)
+                    annotation = _object_dict_to_annotation(object_dict, class_type_manager)
+                    annotation.index = anno_idx
+                    image_annotations.image_annotations[asset_hash].annotations.append(annotation)
+                    anno_idx += 1
                 else:
                     unknown_types_and_count[type_name] += 1
 
-        counter += 1
-        if counter % 5000 == 0:
-            PhaseLoggerCenter.update_phase(phase=phase, local_percent=(counter / total_assethash_count))
-
-    if missing_annotations_counter > 0:
-        logging.warning(f"asset count that have no annotations: {missing_annotations_counter}")
+    logging.warning(f"asset count that have no annotations: {missing_annotations_counter}")
 
     return MirCode.RC_OK, unknown_types_and_count

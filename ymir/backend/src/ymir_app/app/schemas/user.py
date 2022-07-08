@@ -32,6 +32,8 @@ class UserBase(BaseModel):
     phone: Optional[str] = None
     avatar: Optional[str] = None
     state: UserState = UserState.registered
+    organization: Optional[str] = None
+    scene: Optional[str] = None
 
 
 # Properties to receive via API on creation

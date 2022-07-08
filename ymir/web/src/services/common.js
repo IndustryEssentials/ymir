@@ -15,9 +15,17 @@ export function getHistory({ type, id, max_hops }) {
   return request.get('/graphs/', { params: { type, id, max_hops } })
 }
 
-export function getTensorboardLink(hash) {
-  hash = hash ? hash : ''
-  return `/tensorboard/#scalars&regexInput=${hash}`
+/**
+ * generate tensorboard link
+ * @param {array|string} hashs 
+ * @returns 
+ */
+export function getTensorboardLink(hashs = []) {
+  if (!Array.isArray(hashs)) {
+    hashs = [hashs]
+  }
+  const query = hashs.filter(hash => hash).join('|')
+  return `/tensorboard/#scalars&regexInput=${query}`
 }
 
 /**

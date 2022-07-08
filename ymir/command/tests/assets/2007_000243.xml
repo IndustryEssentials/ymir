@@ -12,6 +12,12 @@
 		<depth>3</depth>
 	</size>
 	<segmented>1</segmented>
+	<image_quality>0.83</image_quality>
+	<cks>
+		<weather>rainy</weather>
+		<camera> camera 1 </camera>
+		<theme>gray sky</theme>
+	</cks>
 	<object>
 		<name>aeroplane</name>
 		<pose>Unspecified</pose>
@@ -23,5 +29,11 @@
 			<xmax>274</xmax>
 			<ymax>193</ymax>
 		</bndbox>
+		<box_quality>0.75</box_quality>
+		<tags>
+			<difficult>0</difficult>
+			<color>pink</color>
+			<pose>Unspecified</pose>
+		</tags>
 	</object>
 </annotation>

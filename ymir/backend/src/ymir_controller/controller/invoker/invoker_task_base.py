@@ -1,7 +1,8 @@
+from distutils.util import strtobool
 import logging
 import os
 import threading
-from typing import Dict, List
+from typing import Any, Dict, List, Optional
 
 import yaml
 
@@ -86,34 +87,63 @@ class TaskBaseInvoker(BaseMirControllerInvoker):
         return os.path.join(work_dir, "task_config.yaml")
 
     @staticmethod
-    def gen_executor_config_lock_gpus(req_executor_config: str, class_names: List, task_parameters: str,
-                                      output_config_file: str) -> bool:
+    def gen_executor_config_lock_gpus(req_executor_config: str,
+                                      class_names: List,
+                                      task_parameters: str,
+                                      output_config_file: str,
+                                      assets_config: Dict = {},
+                                      preprocess: Optional[str] = None) -> bool:
         executor_config = yaml.safe_load(req_executor_config)
-        task_context = {}
+        preprocess_config = yaml.safe_load(preprocess) if preprocess else None
+        task_context: Dict[str, Any] = {}
 
         if class_names:
             executor_config["class_names"] = class_names
 
-        # when gpu_count > 0, use gpu model
-        gpu_count = executor_config["gpu_count"]
-        if gpu_count > 0:
-            gpu_ids = gpu_utils.GPUInfo().find_gpu_ids_by_config(gpu_count, lock_gpu=True)
-            if not gpu_ids:
-                return False
-
-            task_context["available_gpu_id"] = gpu_ids
-            executor_config['gpu_id'] = ','.join([str(i) for i in range(gpu_count)])
-        else:
-            task_context["available_gpu_id"] = ''
-            executor_config['gpu_id'] = ''
-
         if task_parameters:
-            task_context['task_parameters'] = task_parameters
+            task_context["task_parameters"] = task_parameters
 
-        config = {'executor_config': executor_config, 'task_context': task_context}
+        if preprocess_config:
+            task_context["preprocess"] = preprocess_config
+
+        task_context['server_runtime'] = assets_config['server_runtime']
+
+        gpu_count = executor_config.get("gpu_count", 0)
+        executor_config["gpu_id"] = ",".join([str(i) for i in range(gpu_count)])
+
+        # Openpai enabled
+        if strtobool(str(executor_config.get("openpai_enable", "False"))):
+            openpai_host = assets_config.get("openpai_host", None)
+            openpai_token = assets_config.get("openpai_token", None)
+            openpai_storage = assets_config.get("openpai_storage", None)
+            openpai_user = assets_config.get("openpai_user", "")
+            logging.info(f"OpenPAI host: {openpai_host}, token: {openpai_token}, "
+                         f"storage: {openpai_storage}, user: {openpai_user}")
+
+            if not (openpai_host and openpai_token and openpai_storage and openpai_user):
+                raise errors.MirCtrError(
+                    CTLResponseCode.INVOKER_INVALID_ARGS,
+                    "openpai enabled with invalid host, token, storage or user",
+                )
+            task_context["openpai_enable"] = True
+            task_context["openpai_host"] = openpai_host
+            task_context["openpai_token"] = openpai_token
+            task_context["openpai_storage"] = openpai_storage
+            task_context["openpai_user"] = openpai_user
+
+            task_context["available_gpu_id"] = executor_config["gpu_id"]
+        else:
+            # lock local gpus.
+            gpu_ids = gpu_utils.GPUInfo().find_gpu_ids_by_config(gpu_count, lock_gpu=True)
+            if gpu_ids is None:
+                return False
+            task_context["available_gpu_id"] = gpu_ids
 
         with open(output_config_file, "w") as f:
-            yaml.dump(config, f)
+            yaml.safe_dump(dict(
+                executor_config=executor_config,
+                task_context=task_context,
+            ), f)
 
         return True
 
@@ -154,7 +184,7 @@ class TaskBaseInvoker(BaseMirControllerInvoker):
                     user_labels: UserLabels, request: backend_pb2.GeneralReq) -> backend_pb2.GeneralResp:
         subtask_weights = cls.subtask_weights()
         previous_subtask_id = None
-        # revsersed, to makesure the last subtask idx is 0.
+        # revsersed, to make sure the last subtask idx is 0.
         for subtask_idx in reversed(range(len(subtask_weights))):
             logging.info(f"processing subtask {subtask_idx}")
 

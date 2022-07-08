@@ -29,7 +29,6 @@ class CmdShow(base.BaseCommand):
 
         # show infos
         cls._show_cis(mir_root, src_typ_rev_tid, verbose)
-        cls._show_cks(mir_root, src_typ_rev_tid, verbose)
         cls._show_general(mir_root, src_typ_rev_tid, verbose)
 
         return MirCode.RC_OK
@@ -38,7 +37,7 @@ class CmdShow(base.BaseCommand):
     def _show_general(cls, mir_root: str, src_typ_rev_tid: revs_parser.TypRevTid, verbose: bool) -> None:
         cls._show_general_context_config(mir_root=mir_root)
 
-        [metadatas, annotations, _, tasks,
+        [metadatas, annotations, keywords, tasks,
          context] = mir_storage_ops.MirStorageOps.load_multiple_storages(mir_root=mir_root,
                                                                          mir_branch=src_typ_rev_tid.rev,
                                                                          mir_task_id=src_typ_rev_tid.tid,
@@ -46,7 +45,7 @@ class CmdShow(base.BaseCommand):
                                                                          as_dict=False)
         cls._show_general_metadatas(metadatas)
         cls._show_general_annotations(annotations)
-        cls._show_general_context(context)
+        cls._show_general_context(context, keywords)
         cls._show_general_tasks(tasks, verbose)
 
     @classmethod
@@ -66,12 +65,16 @@ class CmdShow(base.BaseCommand):
     def _show_general_annotations(cls, mir_annotations: mirpb.MirAnnotations) -> None:
         hid = mir_annotations.head_task_id
         print(f"annotations.mir: hid: {hid}," f" {len(mir_annotations.task_annotations[hid].image_annotations)} assets")
+        print(f"    ground truth: {len(mir_annotations.ground_truth.image_annotations)} assets")
+        print(f"    images count with ck: {len(mir_annotations.image_cks)}")
 
     @classmethod
-    def _show_general_context(cls, mir_context: mirpb.MirContext) -> None:
-        print(f"context.mir: negative assets cnt: {mir_context.negative_images_cnt}")
+    def _show_general_context(cls, mir_context: mirpb.MirContext, mir_keywords: mirpb.MirKeywords) -> None:
+        print(f"keywords.mir & context.mir: negative assets cnt: {mir_context.negative_images_cnt}")
         print(f"    project negative assets cnt: {mir_context.project_negative_images_cnt}")
         print(f"    total assets cnt: {mir_context.images_cnt}")
+        print(f"    main ck count: {len(mir_keywords.ck_idx)}")
+        print(f"    main tag count: {len(mir_keywords.gt_idx.tags)}")
 
     @classmethod
     def _show_general_context_config(cls, mir_root: str) -> None:
@@ -93,7 +96,9 @@ class CmdShow(base.BaseCommand):
             print(f"tasks.mir: hid: {hid}, code: {task.return_code}, error msg: {task.return_msg}\n"
                   f"    model hash: {task.model.model_hash}\n"
                   f"    map: {task.model.mean_average_precision}\n"
-                  f"    executor: {task.executor}")
+                  f"    executor: {task.executor}\n"
+                  f"    stages: {list(task.model.stages.keys())}\n"
+                  f"    best stage name: {task.model.best_stage_name}")
         else:
             print(f"tasks.mir: {json_format.MessageToDict(mir_tasks, preserving_proto_field_name=True)}")
 
@@ -122,10 +127,6 @@ class CmdShow(base.BaseCommand):
             else:
                 print(f"  {ci} (unknown ci): {cnt}")
 
-    @classmethod
-    def _show_cks(cls, mir_root: str, src_typ_rev_tid: revs_parser.TypRevTid, verbose: bool) -> None:
-        print('')  # currently no customized keywords
-
 
 def bind_to_subparsers(subparsers: argparse._SubParsersAction, parent_parser: argparse.ArgumentParser) -> None:
     show_arg_parser = subparsers.add_parser('show',
@@ -133,5 +134,9 @@ def bind_to_subparsers(subparsers: argparse._SubParsersAction, parent_parser: ar
                                             description='use this command to show current workspace informations',
                                             help='show current workspace informations')
     show_arg_parser.add_argument('--verbose', dest='verbose', action='store_true', help='show verbose info')
-    show_arg_parser.add_argument('--src-revs', dest='src_revs', type=str, help='rev@bid: source rev and base task id')
+    show_arg_parser.add_argument('--src-revs',
+                                 dest='src_revs',
+                                 type=str,
+                                 default='HEAD',
+                                 help='rev@bid: source rev and base task id')
     show_arg_parser.set_defaults(func=CmdShow)

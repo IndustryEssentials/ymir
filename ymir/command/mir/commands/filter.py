@@ -65,6 +65,13 @@ class CmdFilter(base.BaseCommand):
             matched_asset_ids_set.add(asset_id)
         return matched_asset_ids_set
 
+    @staticmethod
+    def __gen_task_annotations(src_task_annotations: mirpb.SingleTaskAnnotations,
+                               dst_task_annotations: mirpb.SingleTaskAnnotations, asset_ids: Set[str]) -> None:
+        joint_ids = asset_ids & src_task_annotations.image_annotations.keys()
+        for asset_id in joint_ids:
+            dst_task_annotations.image_annotations[asset_id].CopyFrom(src_task_annotations.image_annotations[asset_id])
+
     # public: run cmd
     @staticmethod
     @command_run_in_out
@@ -112,13 +119,16 @@ class CmdFilter(base.BaseCommand):
         class_manager = class_ids.ClassIdManager(mir_root=mir_root)
         preds_set = CmdFilter.__preds_set_from_str(in_cis, class_manager)  # type: Set[int]
         excludes_set = CmdFilter.__preds_set_from_str(ex_cis, class_manager)  # type: Set[int]
+
         ck_preds_set = {ck.strip() for ck in in_cks.split(";")} if in_cks else set()
+        ck_preds_set = {ck for ck in ck_preds_set if ck}
         ck_excludes_set = {ck.strip() for ck in ex_cks.split(";")} if ex_cks else set()
+        ck_excludes_set = {ck for ck in ck_excludes_set if ck}
 
         asset_ids_set = set(mir_metadatas.attributes.keys())
         match_functions: List[Tuple[__IncludeExcludeCallableType, Union[Set[str], Set[int]], str, str]] = [
-            (CmdFilter.__include_match, preds_set, 'predifined_keyids', 'select cis'),
-            (CmdFilter.__exclude_match, excludes_set, 'predifined_keyids', 'exclude cis'),
+            (CmdFilter.__include_match, preds_set, 'predefined_keyids', 'select cis'),
+            (CmdFilter.__exclude_match, excludes_set, 'predefined_keyids', 'exclude cis'),
             (CmdFilter.__include_match, ck_preds_set, 'customized_keywords', 'select cks'),
             (CmdFilter.__exclude_match, ck_excludes_set, 'customized_keywords', 'exclude cks')
         ]
@@ -130,7 +140,6 @@ class CmdFilter(base.BaseCommand):
 
         matched_mir_metadatas = mirpb.MirMetadatas()
         matched_mir_annotations = mirpb.MirAnnotations()
-        matched_mir_keywords = mirpb.MirKeywords()
 
         # generate matched metadatas, annotations and keywords
         for asset_id in asset_ids_set:
@@ -138,16 +147,20 @@ class CmdFilter(base.BaseCommand):
             asset_attr = mir_metadatas.attributes[asset_id]
             matched_mir_metadatas.attributes[asset_id].CopyFrom(asset_attr)
 
-        joint_ids = asset_ids_set & mir_keywords.keywords.keys()
-        for asset_id in joint_ids:
-            # generate `matched_mir_keywords`
-            matched_mir_keywords.keywords[asset_id].CopyFrom(mir_keywords.keywords[asset_id])
-
         # generate `matched_mir_annotations`
-        joint_ids = asset_ids_set & base_task_annotations.image_annotations.keys()
-        for asset_id in joint_ids:
-            matched_mir_annotations.task_annotations[task_id].image_annotations[asset_id].CopyFrom(
-                base_task_annotations.image_annotations[asset_id])
+        CmdFilter.__gen_task_annotations(src_task_annotations=base_task_annotations,
+                                         dst_task_annotations=matched_mir_annotations.task_annotations[task_id],
+                                         asset_ids=asset_ids_set)
+        CmdFilter.__gen_task_annotations(src_task_annotations=mir_annotations.ground_truth,
+                                         dst_task_annotations=matched_mir_annotations.ground_truth,
+                                         asset_ids=asset_ids_set)
+        CmdFilter.__gen_task_annotations(src_task_annotations=mir_annotations.prediction,
+                                         dst_task_annotations=matched_mir_annotations.prediction,
+                                         asset_ids=asset_ids_set)
+
+        image_ck_asset_ids = asset_ids_set & set(mir_annotations.image_cks.keys())
+        for asset_id in image_ck_asset_ids:
+            matched_mir_annotations.image_cks[asset_id].CopyFrom(mir_annotations.image_cks[asset_id])
 
         logging.info("matched: %d, overriding current mir repo", len(matched_mir_metadatas.attributes))
 
@@ -177,8 +190,8 @@ class CmdFilter(base.BaseCommand):
         return CmdFilter.run_with_args(mir_root=self.args.mir_root,
                                        in_cis=self.args.in_cis,
                                        ex_cis=self.args.ex_cis,
-                                       in_cks=self.args.in_cks,
-                                       ex_cks=self.args.ex_cks,
+                                       in_cks='',
+                                       ex_cks='',
                                        src_revs=self.args.src_revs,
                                        dst_rev=self.args.dst_rev,
                                        work_dir=self.args.work_dir)
@@ -189,10 +202,8 @@ def bind_to_subparsers(subparsers: argparse._SubParsersAction, parent_parser: ar
                                               parents=[parent_parser],
                                               description="use this command to filter assets",
                                               help="filter assets")
-    filter_arg_parser.add_argument("-p", dest="in_cis", type=str, help="type names")
-    filter_arg_parser.add_argument("-P", dest="ex_cis", type=str, help="exclusive type names")
-    filter_arg_parser.add_argument("-c", dest="in_cks", type=str, help="customized keywords")
-    filter_arg_parser.add_argument("-C", dest="ex_cks", type=str, help="excludsive customized keywords")
+    filter_arg_parser.add_argument("-p", '--cis', dest="in_cis", type=str, help="type names")
+    filter_arg_parser.add_argument("-P", '--ex-cis', dest="ex_cis", type=str, help="exclusive type names")
     filter_arg_parser.add_argument("--src-revs", dest="src_revs", type=str, help="type:rev@bid")
     filter_arg_parser.add_argument("--dst-rev", dest="dst_rev", type=str, help="rev@tid")
     filter_arg_parser.add_argument('-w', dest='work_dir', type=str, required=False, help='working directory')

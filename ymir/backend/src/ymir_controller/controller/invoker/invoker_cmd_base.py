@@ -55,8 +55,7 @@ class BaseMirControllerInvoker(ABC):
                 self._repo_id = repo_id
                 self._repo_root = os.path.join(self._user_root, repo_id)
             else:
-                raise errors.MirCtrError(CTLResponseCode.ARG_VALIDATION_FAILED,
-                                         "repo id provided, but miss user id.")
+                raise errors.MirCtrError(CTLResponseCode.ARG_VALIDATION_FAILED, "repo id provided, but miss user id.")
 
         self._request = request
         self._assets_config = assets_config
@@ -67,7 +66,11 @@ class BaseMirControllerInvoker(ABC):
 
     def _send_request_metrics(self) -> None:
         # not record internal requests.
-        if self._request.req_type in [backend_pb2.RequestType.CMD_GPU_INFO_GET]:
+        if self._request.req_type in [
+                backend_pb2.RequestType.CMD_GPU_INFO_GET,
+                backend_pb2.RequestType.CMD_LABEL_GET,
+                backend_pb2.RequestType.CMD_REPO_CHECK,
+        ]:
             return
 
         metrics_name = backend_pb2.RequestType.Name(self._request.req_type) + '.'
@@ -125,4 +128,5 @@ class BaseMirControllerInvoker(ABC):
                                              preserving_proto_field_name=True,
                                              use_integers_for_enums=True)
 
-        return f" request: \n {req_info} \n async_mode: {self._async_mode} \n work_dir: {self._work_dir}"
+        return (f" request: \n {req_info}\n assets_config: {self._assets_config}\n async_mode: {self._async_mode} \n"
+                "work_dir: {self._work_dir}")

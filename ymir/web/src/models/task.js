@@ -10,7 +10,7 @@ import {
   createLabelTask,
   createInferenceTask,
 } from "@/services/task"
-import { isFinalState } from '@/constants/task'
+import { TASKTYPES, TASKSTATES, isFinalState } from '@/constants/task'
 
 const initQuery = {
   name: '',
@@ -40,6 +40,14 @@ export default {
           payload: result,
         })
         return result
+      }
+    },
+    *queryInferTasks({ payload }, { call, put }) {
+      const params = { ...payload, type: TASKTYPES.INFERENCE, state: TASKSTATES.FINISH, limit: 1000 }
+      const result = yield put.resolve({ type: 'getTasks', payload: params})
+      if (result) {
+        console.log('result:', result)
+        return result.items
       }
     },
     *getTask({ payload }, { call, put }) {

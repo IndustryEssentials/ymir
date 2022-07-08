@@ -1,7 +1,7 @@
 from operator import attrgetter
 import enum
 import random
-from typing import Any, Dict, Optional, List
+from typing import Any, Dict, Optional
 
 from fastapi import APIRouter, BackgroundTasks, Depends, Path, Query
 from fastapi.encoders import jsonable_encoder
@@ -18,10 +18,10 @@ from app.api.errors.errors import (
     FailedtoCreateTask,
     FailedToHideProtectedResources,
     DatasetGroupNotFound,
+    PrematureDatasetsEvaluation,
     ProjectNotFound,
     MissingOperations,
     RefuseToProcessMixedOperations,
-    DatasetsNotInSameGroup,
 )
 from app.config import settings
 from app.constants.state import TaskState, TaskType, ResultState
@@ -29,7 +29,7 @@ from app.utils.iteration import get_iteration_context_converter
 from app.utils.ymir_controller import ControllerClient, gen_task_hash
 from app.utils.ymir_viz import VizClient
 from app.schemas.dataset import MergeStrategy
-from app.libs.datasets import import_dataset_in_background, evaluate_dataset
+from app.libs.datasets import import_dataset_in_background, evaluate_datasets
 from common_utils.labels import UserLabels
 
 router = APIRouter()
@@ -48,6 +48,39 @@ def batch_get_datasets(
     if not datasets:
         raise DatasetNotFound()
     return {"result": datasets}
+
+
+@router.get(
+    "/analysis",
+    response_model=schemas.DatasetsAnalysesOut,
+)
+def get_datasets_analysis(
+    db: Session = Depends(deps.get_db),
+    viz_client: VizClient = Depends(deps.get_viz_client),
+    project_id: int = Query(None),
+    dataset_ids: str = Query(None, example="1,2,3", alias="ids"),
+    current_user: models.User = Depends(deps.get_current_active_user),
+    user_labels: UserLabels = Depends(deps.get_user_labels),
+) -> Any:
+    ids = [int(i) for i in dataset_ids.split(",")]
+    datasets = crud.dataset.get_multi_by_ids(db, ids=ids)
+    if not datasets:
+        raise DatasetNotFound()
+
+    viz_client.initialize(
+        user_id=current_user.id,
+        project_id=project_id,
+        user_labels=user_labels,
+    )
+    results = []
+    for dataset in datasets:
+        if dataset.result_state != int(ResultState.ready):
+            raise DatasetNotFound()
+        res = viz_client.get_dataset(dataset.hash)
+        res.group_name = dataset.group_name  # type: ignore
+        res.version_num = dataset.version_num  # type: ignore
+        results.append(res)
+    return {"result": {"datasets": results}}
 
 
 @router.post(
@@ -311,12 +344,12 @@ def get_assets_of_dataset(
         user_id=current_user.id,
         project_id=dataset.project_id,
         branch_id=dataset.hash,
+        user_labels=user_labels,
     )
     assets = viz_client.get_assets(
         keyword_id=keyword_id,
         limit=limit,
         offset=offset,
-        user_labels=user_labels,
     )
     result = {
         "items": assets.items,
@@ -349,12 +382,12 @@ def get_random_asset_id_of_dataset(
         user_id=current_user.id,
         project_id=dataset.project_id,
         branch_id=dataset.hash,
+        user_labels=user_labels,
     )
     assets = viz_client.get_assets(
         keyword_id=None,
         offset=offset,
         limit=1,
-        user_labels=user_labels,
     )
     if len(assets.items) == 0:
         raise AssetNotFound()
@@ -392,11 +425,9 @@ def get_asset_of_dataset(
         user_id=current_user.id,
         project_id=dataset.project_id,
         branch_id=dataset.hash,
-    )
-    asset = viz_client.get_asset(
-        asset_id=asset_hash,
         user_labels=user_labels,
     )
+    asset = viz_client.get_asset(asset_id=asset_hash)
     if not asset:
         raise AssetNotFound()
     return {"result": asset}
@@ -498,38 +529,56 @@ def create_dataset_fusion(
     "/evaluation",
     response_model=schemas.dataset.DatasetEvaluationOut,
 )
-def evaluate_datasets(
+def batch_evaluate_datasets(
     *,
     db: Session = Depends(deps.get_db),
     evaluation_in: schemas.dataset.DatasetEvaluationCreate,
     current_user: models.User = Depends(deps.get_current_active_user),
-    controller_client: ControllerClient = Depends(deps.get_controller_client),
     viz_client: VizClient = Depends(deps.get_viz_client),
     user_labels: UserLabels = Depends(deps.get_user_labels),
 ) -> Any:
     """
-    evaluate dataset against ground truth
+    evaluate datasets by themselves
     """
-    gt_dataset = crud.dataset.get(db, id=evaluation_in.gt_dataset_id)
-    other_datasets = crud.dataset.get_multi_by_ids(db, ids=evaluation_in.other_dataset_ids)
-    if not gt_dataset or len(evaluation_in.other_dataset_ids) != len(other_datasets):
+    datasets = crud.dataset.get_multi_by_ids(db, ids=evaluation_in.dataset_ids)
+    if len(evaluation_in.dataset_ids) != len(datasets):
         raise DatasetNotFound()
-    if not is_same_group([gt_dataset, *other_datasets]):
-        # confine evaluation to the same dataset group
-        raise DatasetsNotInSameGroup()
 
-    evaluations = evaluate_dataset(
-        controller_client,
+    evaluations = evaluate_datasets(
         viz_client,
         current_user.id,
         evaluation_in.project_id,
         user_labels,
         evaluation_in.confidence_threshold,
-        gt_dataset,
-        other_datasets,
+        evaluation_in.iou_threshold,
+        evaluation_in.require_average_iou,
+        evaluation_in.need_pr_curve,
+        datasets,
     )
     return {"result": evaluations}
 
 
-def is_same_group(datasets: List[models.Dataset]) -> bool:
-    return len({dataset.dataset_group_id for dataset in datasets}) == 1
+@router.post(
+    "/check_duplication",
+    response_model=schemas.dataset.DatasetCheckDuplicationOut,
+)
+def check_duplication(
+    *,
+    db: Session = Depends(deps.get_db),
+    check_duplication: schemas.dataset.DatasetCheckDuplicationCreate,
+    current_user: models.User = Depends(deps.get_current_active_user),
+    viz_client: VizClient = Depends(deps.get_viz_client),
+) -> Any:
+    """
+    check duplication in two datasets
+    """
+    datasets = crud.dataset.get_multi_by_ids(db, ids=check_duplication.dataset_ids)
+    if len(check_duplication.dataset_ids) != len(datasets):
+        raise DatasetNotFound()
+
+    if not all(dataset.result_state == ResultState.ready for dataset in datasets):
+        raise PrematureDatasetsEvaluation()
+
+    viz_client.initialize(user_id=current_user.id, project_id=check_duplication.project_id)
+    duplicated_asset_count = viz_client.check_duplication([dataset.hash for dataset in datasets])
+    return {"result": duplicated_asset_count}

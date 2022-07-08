@@ -6,6 +6,7 @@ from datetime import date, datetime  # noqa: F401
 from typing import List, Dict  # noqa: F401
 
 from src.swagger_models.base_model_ import Model
+from src.swagger_models.dataset_evaluation_element_point3d import DatasetEvaluationElementPoint3d  # noqa: F401,E501
 from src import util
 
 
@@ -14,7 +15,7 @@ class DatasetEvaluationElement(Model):
 
     Do not edit the class manually.
     """
-    def __init__(self, ap: float=None, ar: float=None, tp: int=None, fp: int=None, fn: int=None):  # noqa: E501
+    def __init__(self, ap: float=None, ar: float=None, tp: int=None, fp: int=None, fn: int=None, pr_curve: List[DatasetEvaluationElementPoint3d]=None):  # noqa: E501
         """DatasetEvaluationElement - a model defined in Swagger
 
         :param ap: The ap of this DatasetEvaluationElement.  # noqa: E501
@@ -27,13 +28,16 @@ class DatasetEvaluationElement(Model):
         :type fp: int
         :param fn: The fn of this DatasetEvaluationElement.  # noqa: E501
         :type fn: int
+        :param pr_curve: The pr_curve of this DatasetEvaluationElement.  # noqa: E501
+        :type pr_curve: List[DatasetEvaluationElementPoint3d]
         """
         self.swagger_types = {
             'ap': float,
             'ar': float,
             'tp': int,
             'fp': int,
-            'fn': int
+            'fn': int,
+            'pr_curve': List[DatasetEvaluationElementPoint3d]
         }
 
         self.attribute_map = {
@@ -41,13 +45,15 @@ class DatasetEvaluationElement(Model):
             'ar': 'ar',
             'tp': 'tp',
             'fp': 'fp',
-            'fn': 'fn'
+            'fn': 'fn',
+            'pr_curve': 'pr_curve'
         }
         self._ap = ap
         self._ar = ar
         self._tp = tp
         self._fp = fp
         self._fn = fn
+        self._pr_curve = pr_curve
 
     @classmethod
     def from_dict(cls, dikt) -> 'DatasetEvaluationElement':
@@ -164,3 +170,24 @@ class DatasetEvaluationElement(Model):
         """
 
         self._fn = fn
+
+    @property
+    def pr_curve(self) -> List[DatasetEvaluationElementPoint3d]:
+        """Gets the pr_curve of this DatasetEvaluationElement.
+
+
+        :return: The pr_curve of this DatasetEvaluationElement.
+        :rtype: List[DatasetEvaluationElementPoint3d]
+        """
+        return self._pr_curve
+
+    @pr_curve.setter
+    def pr_curve(self, pr_curve: List[DatasetEvaluationElementPoint3d]):
+        """Sets the pr_curve of this DatasetEvaluationElement.
+
+
+        :param pr_curve: The pr_curve of this DatasetEvaluationElement.
+        :type pr_curve: List[DatasetEvaluationElementPoint3d]
+        """
+
+        self._pr_curve = pr_curve

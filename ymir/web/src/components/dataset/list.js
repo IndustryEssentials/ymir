@@ -10,6 +10,7 @@ import { diffTime } from '@/utils/date'
 import { getTaskTypeLabel, TASKSTATES } from '@/constants/task'
 import { states } from '@/constants/dataset'
 
+import CheckProjectDirty from "@/components/common/CheckProjectDirty"
 import StateTag from "@/components/task/stateTag"
 import EditBox from "@/components/form/editBox"
 import Terminate from "@/components/task/terminate"
@@ -40,6 +41,7 @@ function Datasets({ pid, project = {}, iterations, group, datasetList, query, ve
   const hideRef = useRef(null)
   let [lock, setLock] = useState(true)
   const terminateRef = useRef(null)
+  const [testingSetIds, setTestingSetIds] = useState([])
 
   /** use effect must put on the top */
   useEffect(() => {
@@ -53,6 +55,7 @@ function Datasets({ pid, project = {}, iterations, group, datasetList, query, ve
     const list = setGroupLabelsByProject(datasetList.items, project)
     setDatasets(list)
     setTotal(datasetList.total)
+    setTestingSetIds(project?.testingSets || [])
   }, [datasetList, project])
 
   useEffect(() => {
@@ -194,55 +197,48 @@ function Datasets({ pid, project = {}, iterations, group, datasetList, query, ve
   }
 
   const actionMenus = (record) => {
-    const { id, groupId, state, taskState, task, isProtected } = record
+    const { id, groupId, state, taskState, task, assetCount } = record
+    const always = [{
+      key: "fusion",
+      label: t("dataset.action.fusion"),
+      hidden: () => !isValidDataset(state),
+      onclick: () => history.push(`/home/project/${pid}/fusion?did=${id}`),
+      icon: <ScreenIcon className={styles.addBtnIcon} />,
+    }]
     const menus = [
-      {
-        key: "fusion",
-        label: t("dataset.action.fusion"),
-        hidden: () => !isValidDataset(state),
-        onclick: () => history.push(`/home/task/fusion/${pid}?did=${id}`),
-        icon: <ScreenIcon className={styles.addBtnIcon} />,
-      },
       {
         key: "train",
         label: t("dataset.action.train"),
-        hidden: () => !isValidDataset(state),
-        onclick: () => history.push(`/home/task/train/${pid}?did=${id}`),
+        hidden: () => !isValidDataset(state) || isTestingDataset(id),
+        onclick: () => history.push(`/home/project/${pid}/train?did=${id}`),
         icon: <TrainIcon />,
       },
       {
         key: "mining",
         label: t("dataset.action.mining"),
         hidden: () => !isValidDataset(state),
-        onclick: () => history.push(`/home/task/mining/${pid}?did=${id}`),
+        onclick: () => history.push(`/home/project/${pid}/mining?did=${id}`),
         icon: <VectorIcon />,
       },
       {
         key: "inference",
         label: t("dataset.action.inference"),
         hidden: () => !isValidDataset(state),
-        onclick: () => history.push(`/home/task/inference/${pid}?did=${id}`),
+        onclick: () => history.push(`/home/project/${pid}/inference?did=${id}`),
         icon: <WajueIcon />,
       },
       {
         key: "label",
         label: t("dataset.action.label"),
         hidden: () => !isValidDataset(state),
-        onclick: () => history.push(`/home/task/label/${pid}?did=${id}`),
+        onclick: () => history.push(`/home/project/${pid}/label?did=${id}`),
         icon: <TaggingIcon />,
-      },
-      {
-        key: "compare",
-        label: t("common.action.compare"),
-        hidden: () => !isValidDataset(state),
-        onclick: () => history.push(`/home/project/${pid}/dataset/${groupId}/compare/${id}`),
-        icon: <CompareIcon />,
       },
       {
         key: "copy",
         label: t("task.action.copy"),
         hidden: () => !isValidDataset(state),
-        onclick: () => history.push(`/home/task/copy/${pid}?did=${id}`),
+        onclick: () => history.push(`/home/project/${pid}/copy?did=${id}`),
         icon: <CopyIcon />,
       },
       {
@@ -260,7 +256,7 @@ function Datasets({ pid, project = {}, iterations, group, datasetList, query, ve
         icon: <EyeOffIcon />,
       },
     ]
-    return menus
+    return assetCount === 0 ? always : [...always, ...menus]
   }
 
   const tableChange = ({ current, pageSize }, filters, sorters = {}) => {
@@ -286,7 +282,7 @@ function Datasets({ pid, project = {}, iterations, group, datasetList, query, ve
   const listChange = (current, pageSize) => {
     const limit = pageSize
     const offset = (current - 1) * pageSize
-    func.updateQuery({ ...query, limit, offset })
+    func.updateQuery({ ...query, current, limit, offset })
   }
 
   function showTitle(str) {
@@ -307,6 +303,7 @@ function Datasets({ pid, project = {}, iterations, group, datasetList, query, ve
 
   function setGroupLabelsByProject(datasets, project) {
     return datasets.map(item => {
+      delete item.projectLabel
       item = setLabelByProject(project?.trainSet?.id, 'isTrainSet', item)
       item = setLabelByProject(project?.testSet?.groupId, 'isTestSet', item, project?.testSet?.versionName)
       item = setLabelByProject(project?.miningSet?.groupId, 'isMiningSet', item, project?.miningSet?.versionName)
@@ -318,8 +315,10 @@ function Datasets({ pid, project = {}, iterations, group, datasetList, query, ve
     Object.keys(versions).forEach(gid => {
       const list = versions[gid]
       const updatedList = list.map(item => {
-        item = setLabelByProject(project?.testSet?.id, 'isTestSet', item)
-        item = setLabelByProject(project?.miningSet?.id, 'isMiningSet', item)
+        delete item.projectLabel
+        const field = item.id === project?.testSet?.id ? 'isTestSet' :
+          (item.id === project?.miningSet?.id ? 'isMiningSet' : (isTestingDataset(item.id) ? 'isTestingSet' : ''))
+        field && (item = setLabelByProject(item.id, field, item))
         return { ...item }
       })
       versions[gid] = updatedList
@@ -331,6 +330,7 @@ function Datasets({ pid, project = {}, iterations, group, datasetList, query, ve
     Object.keys(versions).forEach(gid => {
       const list = versions[gid]
       const updatedList = list.map(item => {
+        delete item.iterationLabel
         item = setLabelByIterations(item, iterations)
         return { ...item }
       })
@@ -344,6 +344,7 @@ function Datasets({ pid, project = {}, iterations, group, datasetList, query, ve
       isTrainSet: 'project.tag.train',
       isTestSet: 'project.tag.test',
       isMiningSet: 'project.tag.mining',
+      isTestingSet: 'project.tag.testing',
     }
     item[label] = id && item.id === id
     item.projectLabel = item.projectLabel || (item[label] ? t(maps[label], { version }) : '')
@@ -414,24 +415,6 @@ function Datasets({ pid, project = {}, iterations, group, datasetList, query, ve
     }
   }
 
-  const multipleCompare = () => {
-    const ids = Object.values(selectedVersions).flat()
-    const vss = Object.values(versions).flat().filter(({ id }) => ids.includes(id))
-    const groups = [...new Set(vss.map(item => item.groupId))]
-    const diffGroup = groups.length > 1
-    if (diffGroup) {
-      // diff group
-      return message.error(t('dataset.compare.error.diff_group'))
-    }
-
-    const diffAssets = [...new Set(vss.map(item => item.assetCount))].length > 1
-    if (diffAssets) {
-      // diff assets count
-      return message.error(t('dataset.compare.error.diff_assets'))
-    }
-    history.push(`/home/project/${pid}/dataset/${groups[0]}/compare/${ids}`)
-  }
-
   const multipleHide = () => {
     const ids = Object.values(selectedVersions).flat()
     const allVss = Object.values(versions).flat()
@@ -460,6 +443,10 @@ function Datasets({ pid, project = {}, iterations, group, datasetList, query, ve
     return state === states.READY
   }
 
+  function isTestingDataset(id) {
+    return testingSetIds?.includes(id)
+  }
+
   const addBtn = (
     <Button type="primary" onClick={add}>
       <ImportIcon /> {t("dataset.import.label")}
@@ -470,9 +457,6 @@ function Datasets({ pid, project = {}, iterations, group, datasetList, query, ve
     <>
       <Button type="primary" onClick={multipleHide}>
         <EyeOffIcon /> {t("common.action.multiple.hide")}
-      </Button>
-      <Button type="primary" onClick={multipleCompare}>
-        <CompareIcon /> {t("common.action.multiple.compare")}
       </Button>
     </>
   ) : null
@@ -507,17 +491,23 @@ function Datasets({ pid, project = {}, iterations, group, datasetList, query, ve
         </div>
       </div>)}
     </div>
-    <Pagination className={`pager ${styles.pager}`} showQuickJumper showSizeChanger total={total} defaultCurrent={1} defaultPageSize={query.limit} onChange={listChange} />
+    <Pagination className={`pager ${styles.pager}`} showQuickJumper showSizeChanger total={total}
+      current={query.current} pageSize={query.limit} onChange={listChange} />
   </>)
 
   return (
     <div className={styles.dataset}>
-      <div className='actions'>
-        <Space>
-          {addBtn}
-          {renderMultipleActions}
-        </Space>
-      </div>
+      <Row className='actions'>
+        <Col flex={1}>
+          <Space>
+            {addBtn}
+            {renderMultipleActions}
+          </Space>
+        </Col>
+        <Col>
+          <CheckProjectDirty pid={pid} />
+        </Col>
+      </Row>
       <div className={`list ${styles.list}`}>
         <div className={`search ${styles.search}`}>
           <Form

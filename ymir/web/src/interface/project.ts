@@ -9,9 +9,11 @@ export interface Project {
   trainSet?: DatasetGroup,
   testSet?: Dataset,
   miningSet?: Dataset,
+  testingSets?: Array<number>,
   setCount: number,
   trainSetVersion?: number,
   model?: number,
+  modelStage?: number,
   modelCount: number,
   miningStrategy: number,
   chunkSize?: number,
@@ -24,6 +26,10 @@ export interface Project {
   isExample?: boolean,
   hiddenDatasets: Array<number>,
   hiddenModels: Array<number>,
+  enableIteration: boolean,
+  totalAssetCount: number,
+  runningTaskCount: number,
+  totalTaskCount: number,
 }
 
 export interface Iteration {

@@ -1,0 +1,29 @@
+<annotation>
+    <folder>images</folder>
+    <filename>241294009_432213948218468_252149922899382953_n.jpg</filename>
+    <path>images</path>
+    <image_quality>-1.000</image_quality>
+    <source>
+        <database>Unknown</database>
+    </source>
+    <size>
+        <width>1080</width>
+        <height>1080</height>
+        <depth>3</depth>
+    </size>
+    <segmented>0</segmented>
+    <object>
+        <name>人</name>
+        <pose>Unspecified</pose>
+        <truncated>0</truncated>
+        <difficult>0</difficult>
+        <box_quality>-1.000</box_quality>
+        <cm>FN</cm>
+        <bndbox>
+            <xmin>97.56898817345598</xmin>
+            <ymin>5.321944809461235</ymin>
+            <xmax>833.7713534822602</xmax>
+            <ymax>581.8659658344284</ymax>
+        </bndbox>
+    </object>
+</annotation>

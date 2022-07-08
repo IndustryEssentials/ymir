@@ -1,7 +1,7 @@
 import secrets
-from typing import List, Optional
+from typing import Any, Dict, List, Optional
 
-from pydantic import AnyHttpUrl, BaseSettings, EmailStr
+from pydantic import AnyHttpUrl, BaseSettings, EmailStr, root_validator
 
 
 class Settings(BaseSettings):
@@ -87,9 +87,26 @@ class Settings(BaseSettings):
 
     # Sample Project configs
     SAMPLE_PROJECT_KEYWORDS: List[str] = ["person", "cat"]
-    SAMPLE_PROJECT_TESTING_DATASET_URL: str = "http://web/val.zip"
+    SAMPLE_PROJECT_VALIDATION_DATASET_URL: str = "http://web/val.zip"
     SAMPLE_PROJECT_MINING_DATASET_URL: str = "http://web/mining.zip"
     SAMPLE_PROJECT_MODEL_URL: str = "http://web/683f4fa14d1baa733a87d9644bb0457cbed5aba8"
+
+    # OpenPAI
+    OPENPAI_ENABLED: bool = False
+    OPENPAI_HOST: Optional[str] = None
+    OPENPAI_TOKEN: Optional[str] = None
+    OPENPAI_STORAGE: Optional[str] = None
+    OPENPAI_USER: Optional[str] = None
+
+    @root_validator(pre=True)
+    def get_openpai_enabled(cls, values: Dict[str, Any]) -> Dict:
+        values["OPENPAI_ENABLED"] = bool(
+            values.get("OPENPAI_HOST")
+            and values.get("OPENPAI_TOKEN")
+            and values.get("OPENPAI_STORAGE")
+            and values.get("OPENPAI_USER")
+        )
+        return values
 
 
 settings = Settings(_env_file=".env")  # type: ignore

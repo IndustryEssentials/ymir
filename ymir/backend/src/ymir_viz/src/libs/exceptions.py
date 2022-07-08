@@ -1,4 +1,7 @@
-from typing import Optional, Dict
+from functools import wraps
+from typing import Any, Callable, Dict, Optional
+
+from mir.tools.errors import MirRuntimeError
 
 from id_definition.error_codes import VizErrorCode
 
@@ -43,3 +46,18 @@ class ModelNotExists(VizException):
 class DatasetEvaluationNotExists(VizException):
     code = VizErrorCode.DATASET_EVALUATION_NOT_EXISTS
     message = "dataset evaluation not found"
+
+
+class TooManyDatasetsToCheck(VizException):
+    code = VizErrorCode.TOO_MANY_DATASETS_TO_CHECK
+    message = "too may datasets to check duplication"
+
+
+def catch_viz_exceptions(f: Callable) -> Any:
+    @wraps(f)
+    def wrapper(*args: tuple, **kwargs: dict) -> Any:
+        try:
+            return f(*args, **kwargs)
+        except MirRuntimeError as e:
+            raise VizException(code=e.error_code, message=e.error_message)
+    return wrapper

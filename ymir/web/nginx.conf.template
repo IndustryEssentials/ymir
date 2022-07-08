@@ -58,6 +58,10 @@ server {
         return 307 ${LABEL_TOOL_HOST_URL};
     }
 
+    location /fiftyone/ {
+        return 307 ${FIFTYONE_HOST_URL}$request_uri;
+    }
+
     location /socket/ {
         proxy_pass http://socket_server/;
         proxy_set_header   X-Forwarded-Host $server_name;

@@ -24,6 +24,8 @@ class TaskTrainingInvoker(TaskBaseInvoker):
             class_names=class_names,
             task_parameters=request.task_parameters,
             output_config_file=output_config_file,
+            assets_config=self._assets_config,
+            preprocess=train_request.preprocess_config,
         )
         if not gpu_lock_ret:
             return utils.make_general_response(CTLResponseCode.LOCK_GPU_ERROR, "Not enough GPU available")
@@ -39,9 +41,11 @@ class TaskTrainingInvoker(TaskBaseInvoker):
                          request: backend_pb2.GeneralReq, subtask_id: str, subtask_workdir: str,
                          previous_subtask_id: str, user_labels: UserLabels) -> backend_pb2.GeneralResp:
         train_request = request.req_create_task.training
+        # order merged datasets by training - validation
+        ordered_dataset_types = sorted(train_request.in_dataset_types, key=lambda v: v.dataset_type)
         in_dataset_ids = [
             revs.join_tvt_dataset_id(dataset_type.dataset_type, dataset_type.dataset_id)
-            for dataset_type in train_request.in_dataset_types
+            for dataset_type in ordered_dataset_types
         ]
 
         merge_response = invoker_call.make_invoker_cmd_call(
@@ -51,7 +55,7 @@ class TaskTrainingInvoker(TaskBaseInvoker):
             user_id=request.user_id,
             repo_id=request.repo_id,
             task_id=subtask_id,
-            his_task_id=train_request.in_dataset_types[0].dataset_id,
+            his_task_id=ordered_dataset_types[0].dataset_id,
             dst_dataset_id=request.task_id,
             in_dataset_ids=in_dataset_ids,
             merge_strategy=request.merge_strategy,
@@ -68,12 +72,14 @@ class TaskTrainingInvoker(TaskBaseInvoker):
         media_location = assets_config["assetskvlocation"]
         training_image = request.singleton_op
 
-        tensorboard_root = assets_config['tensorboard_root']
+        tensorboard_root = assets_config["tensorboard_root"]
         tensorboard_dir = os.path.join(tensorboard_root, request.user_id, request.task_id)
         os.makedirs(tensorboard_dir, exist_ok=True)
 
+        asset_cache_dir = os.path.join(sandbox_root, request.user_id, "training_asset_cache")
+        os.makedirs(asset_cache_dir, exist_ok=True)
+
         config_file = cls.gen_executor_config_path(subtask_workdir)
-        asset_cache_dir = os.path.join(sandbox_root, request.user_id, "training_assset_cache")
         executant_name = request.task_id
         train_response = cls.training_cmd(
             repo_root=repo_root,
@@ -89,6 +95,7 @@ class TaskTrainingInvoker(TaskBaseInvoker):
             executant_name=executant_name,
             tensorboard=tensorboard_dir,
             model_hash=request.model_hash,
+            model_stage=request.model_stage,
         )
         return train_response
 
@@ -108,16 +115,17 @@ class TaskTrainingInvoker(TaskBaseInvoker):
         executant_name: str,
         tensorboard: str,
         model_hash: str,
+        model_stage: str,
     ) -> backend_pb2.GeneralResp:
         training_cmd = [
             utils.mir_executable(), 'train', '--root', repo_root, '--dst-rev', f"{task_id}@{task_id}",
             '--model-location', models_upload_location, '--media-location', media_location, '-w', work_dir,
             '--src-revs', f"{in_dataset_id}@{his_task_id}", '--task-config-file', config_file, '--executor',
-            training_image, '--executant-name', executant_name, '--tensorboard-dir', tensorboard,
-            '--asset-cache-dir', asset_cache_dir
+            training_image, '--executant-name', executant_name, '--tensorboard-dir', tensorboard, '--asset-cache-dir',
+            asset_cache_dir
         ]
-        if model_hash:
+        if model_hash and model_stage:
             training_cmd.append('--model-hash')
-            training_cmd.append(model_hash)
+            training_cmd.append(f"{model_hash}@{model_stage}")
 
         return utils.run_command(training_cmd)

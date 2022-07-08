@@ -10,15 +10,18 @@ import {
   importModel,
   updateModel,
   verify,
+  setRecommendStage,
+  batchModelStages,
 } from "@/services/model"
 import { getStats } from "../services/common"
-import { transferModelGroup, transferModel, getModelStateFromTask, states, } from '@/constants/model'
+import { transferModelGroup, transferModel, getModelStateFromTask, states, transferStage, } from '@/constants/model'
 import { actions, updateResultState } from '@/constants/common'
 import { deepClone } from '@/utils/object'
 
 const initQuery = {
   name: "",
   time: 0,
+  current: 1,
   offset: 0,
   limit: 20,
 }
@@ -170,11 +173,24 @@ export default {
         return result
       }
     },
+    *setRecommendStage({ payload }, { call, put }) {
+      const { model, stage } = payload
+      const { code, result } = yield call(setRecommendStage, model, stage)
+      if (code === 0) {
+        return transferModel(result)
+      }
+    },
     *verify({ payload }, { call }) {
-      const { id, urls, image, config } = payload
-      const { code, result } = yield call(verify, id, urls, image, config)
+      const { code, result } = yield call(verify, payload)
       if (code === 0) {
         return result
+      }
+    },
+    *batchModelStages({ payload }, { call, put }) {
+      const { code, result } = yield call(batchModelStages, payload)
+      if (code === 0) {
+        const stages = result.map(stage => transferStage(stage))
+        return stages || []
       }
     },
     *updateModelsStates({ payload }, { put, select }) {

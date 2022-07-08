@@ -265,6 +265,121 @@ paths:
         "400":
           description: DatasetEvaluation not exists
       x-openapi-router-controller: src.controllers.evaluation_controller
+  /users/{user_id}/repositories/{repo_id}/branches/{branch_id}/dataset_fast_evaluation:
+    get:
+      tags:
+      - evaluation
+      summary: evaluate dataset and get result
+      description: evaluate dataset and get result
+      operationId: dataset_fast_evaluation
+      parameters:
+      - name: user_id
+        in: path
+        description: user_id
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      - name: repo_id
+        in: path
+        description: repo_id
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      - name: branch_id
+        in: path
+        description: branch_id
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      - name: conf_thr
+        in: query
+        description: conf_thr
+        required: true
+        style: form
+        explode: true
+        schema:
+          maximum: 1.0
+          minimum: 0.0
+          type: number
+          example: 0.00050
+      - name: iou_thr
+        in: query
+        description: iou_thr
+        required: true
+        style: form
+        explode: true
+        schema:
+          maximum: 1.0
+          minimum: 0.0
+          type: number
+          example: 0.5
+      - name: need_pr_curve
+        in: query
+        description: need pr curve or not
+        required: true
+        style: form
+        explode: true
+        schema:
+          type: boolean
+      responses:
+        "200":
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DatasetEvaluationResult'
+        "400":
+          description: Dataset evaluation failed
+      x-openapi-router-controller: src.controllers.evaluation_controller
+  /users/{user_id}/repositories/{repo_id}/dataset_duplication:
+    get:
+      tags:
+      - dataset
+      summary: check datasets duplication
+      description: check datasets duplication
+      operationId: check_datasets_duplication
+      parameters:
+      - name: user_id
+        in: path
+        description: user_id
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      - name: repo_id
+        in: path
+        description: repo_id
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      - name: candidate_dataset_ids
+        in: query
+        description: "candidate datasets to check duplication with. each dataset_id\
+          \ is separated by comma (,)"
+        required: true
+        style: form
+        explode: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DatasetDuplicationResult'
+        "400":
+          description: Datasets not exist
+      x-openapi-router-controller: src.controllers.dataset_controller
 components:
   schemas:
     AssetInfo:
@@ -364,12 +479,21 @@ components:
           type: object
           additionalProperties:
             $ref: '#/components/schemas/DatasetEvaluationElement'
-        topic_evaluations:
+        ci_averaged_evaluation:
+          $ref: '#/components/schemas/DatasetEvaluationElement'
+        ck_evaluations:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/DatasetEvaluationTotalSubElement'
+    DatasetEvaluationTotalSubElement:
+      type: object
+      properties:
+        total:
+          $ref: '#/components/schemas/DatasetEvaluationElement'
+        sub:
           type: object
           additionalProperties:
             $ref: '#/components/schemas/DatasetEvaluationElement'
-        ci_averaged_evaluation:
-          $ref: '#/components/schemas/DatasetEvaluationElement'
     DatasetEvaluationElement:
       type: object
       properties:
@@ -383,6 +507,40 @@ components:
           type: integer
         fn:
           type: integer
+        pr_curve:
+          type: array
+          example:
+          - x: 0
+            "y": 1
+            z: 0.5
+          - x: 0.1
+            "y": 0.9
+            z: 0.3
+          - x: 1
+            "y": 0
+            z: 0.3
+          items:
+            $ref: '#/components/schemas/DatasetEvaluationElementPoint3d'
+    DatasetEvaluationElementPoint3d:
+      type: object
+      properties:
+        x:
+          type: number
+        "y":
+          type: number
+        z:
+          type: number
+      example:
+        x: 0.0
+        "y": 1.0
+        z: 0.3
+    DatasetDuplicationResult:
+      allOf:
+      - $ref: '#/components/schemas/ApiResponse'
+      - type: object
+        properties:
+          result:
+            type: integer
     AssetsResult_result:
       type: object
       properties:

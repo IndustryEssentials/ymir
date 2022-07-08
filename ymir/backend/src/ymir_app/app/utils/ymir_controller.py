@@ -12,6 +12,7 @@ from google.protobuf import json_format  # type: ignore
 from app.config import settings
 from app.constants.state import TaskType
 from app.schemas.dataset import ImportStrategy, MergeStrategy
+from app.schemas.task import TrainingDatasetsStrategy
 from common_utils.labels import UserLabels
 from id_definition.task_id import TaskId
 from proto import backend_pb2 as mirsvrpb
@@ -37,6 +38,13 @@ MERGE_STRATEGY_MAPPING = {
     MergeStrategy.stop_upon_conflict: mirsvrpb.STOP,
     MergeStrategy.prefer_newest: mirsvrpb.HOST,
     MergeStrategy.prefer_oldest: mirsvrpb.HOST,
+}
+
+
+TRAINING_DATASET_STRATEGY_MAPPING = {
+    TrainingDatasetsStrategy.stop: mirsvrpb.STOP,
+    TrainingDatasetsStrategy.as_training: mirsvrpb.HOST,
+    TrainingDatasetsStrategy.as_validation: mirsvrpb.GUEST,
 }
 
 
@@ -102,24 +110,27 @@ class ControllerRequest:
         for dataset in datasets:
             train_task_req.in_dataset_types.append(dataset)
         train_task_req.in_class_ids[:] = args["class_ids"]
-        if "model_hash" in args:
-            request.model_hash = args["model_hash"]
+        if args.get("preprocess"):
+            train_task_req.preprocess_config = args["preprocess"]
 
         req_create_task = mirsvrpb.ReqCreateTask()
         req_create_task.task_type = mirsvrpb.TaskTypeTraining
         req_create_task.training.CopyFrom(train_task_req)
 
+        if args.get("model_hash"):
+            request.model_hash = args["model_hash"]
+            request.model_stage = args["model_stage_name"]
         request.req_type = mirsvrpb.TASK_CREATE
         request.singleton_op = args["docker_image"]
         request.docker_image_config = args["docker_config"]
         # stop if training_dataset and validation_dataset share any assets
-        request.merge_strategy = mirsvrpb.STOP
+        request.merge_strategy = TRAINING_DATASET_STRATEGY_MAPPING[args["strategy"]]
         request.req_create_task.CopyFrom(req_create_task)
         return request
 
     def prepare_mining(self, request: mirsvrpb.GeneralReq, args: Dict) -> mirsvrpb.GeneralReq:
         mine_task_req = mirsvrpb.TaskReqMining()
-        if args.get("top_k", None):
+        if args.get("top_k"):
             mine_task_req.top_k = args["top_k"]
         mine_task_req.in_dataset_ids[:] = [args["dataset_hash"]]
         mine_task_req.generate_annotations = args["generate_annotations"]
@@ -132,12 +143,18 @@ class ControllerRequest:
         request.singleton_op = args["docker_image"]
         request.docker_image_config = args["docker_config"]
         request.model_hash = args["model_hash"]
+        request.model_stage = args["model_stage_name"]
         request.req_create_task.CopyFrom(req_create_task)
         return request
 
     def prepare_import_data(self, request: mirsvrpb.GeneralReq, args: Dict) -> mirsvrpb.GeneralReq:
         importing_request = mirsvrpb.TaskReqImporting()
+
         importing_request.asset_dir = args["asset_dir"]
+        # adhoc specify gt_dir for importing dataset
+        if args.get("gt_dir"):
+            importing_request.gt_dir = args["gt_dir"]
+
         strategy = args.get("strategy") or ImportStrategy.ignore_unknown_annotations
         if strategy != ImportStrategy.no_annotations:
             importing_request.annotation_dir = args["annotation_dir"]
@@ -199,6 +216,7 @@ class ControllerRequest:
     def prepare_inference(self, request: mirsvrpb.GeneralReq, args: Dict) -> mirsvrpb.GeneralReq:
         request.req_type = mirsvrpb.CMD_INFERENCE
         request.model_hash = args["model_hash"]
+        request.model_stage = args["model_stage_name"]
         request.asset_dir = args["asset_dir"]
         request.singleton_op = args["docker_image"]
         request.docker_image_config = args["docker_config"]
@@ -306,6 +324,24 @@ class ControllerRequest:
 
     def prepare_fix_repo(self, request: mirsvrpb.GeneralReq, args: Dict) -> mirsvrpb.GeneralReq:
         request.req_type = mirsvrpb.CMD_REPO_CLEAR
+        return request
+
+    def prepare_visualization(self, request: mirsvrpb.GeneralReq, args: Dict) -> mirsvrpb.GeneralReq:
+        visualization_task_req = mirsvrpb.TaskReqVisualization()
+        visualization_task_req.vis_tool_id = args["vis_tool_id"]
+        visualization_task_req.in_dataset_ids[:] = args["in_dataset_ids"]
+        visualization_task_req.in_dataset_names[:] = args["in_dataset_names"]
+        if args.get("iou_thr"):
+            visualization_task_req.iou_thr = args["iou_thr"]
+        if args.get("conf_thr"):
+            visualization_task_req.conf_thr = args["conf_thr"]
+
+        req_create_task = mirsvrpb.ReqCreateTask()
+        req_create_task.task_type = mirsvrpb.TaskTypeVisualization
+        req_create_task.visualization.CopyFrom(visualization_task_req)
+
+        request.req_type = mirsvrpb.TASK_CREATE
+        request.req_create_task.CopyFrom(req_create_task)
         return request
 
 
@@ -425,6 +461,7 @@ class ControllerClient:
         user_id: int,
         project_id: int,
         model_hash: Optional[str],
+        model_stage_name: Optional[str],
         asset_dir: str,
         docker_image: Optional[str],
         docker_config: Optional[str],
@@ -437,6 +474,7 @@ class ControllerClient:
             project_id=project_id,
             args={
                 "model_hash": model_hash,
+                "model_stage_name": model_stage_name,
                 "asset_dir": asset_dir,
                 "docker_image": docker_image,
                 "docker_config": docker_config,
@@ -503,5 +541,28 @@ class ControllerClient:
             type=ExtraRequestType.fix_repo,
             user_id=user_id,
             project_id=project_id,
+        )
+        return self.send(req)
+
+    def create_visualization(
+        self,
+        user_id: int,
+        project_id: int,
+        vis_tool_id: str,
+        iou_thr: Optional[float],
+        conf_thr: Optional[float],
+        datasets: List[Dict],
+    ) -> Dict:
+        req = ControllerRequest(
+            type=TaskType.visualization,
+            user_id=user_id,
+            project_id=project_id,
+            args={
+                "vis_tool_id": vis_tool_id,
+                "in_dataset_ids": [dataset["hash"] for dataset in datasets],
+                "in_dataset_names": [dataset["name"] for dataset in datasets],
+                "iou_thr": iou_thr,
+                "conf_thr": conf_thr,
+            },
         )
         return self.send(req)

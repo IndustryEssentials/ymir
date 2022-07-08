@@ -19,6 +19,7 @@ import { LoadingOutlined } from '@ant-design/icons'
 const initQuery = {
   name: undefined,
   type: undefined,
+  current: 1,
   offset: 0,
   limit: 20,
 }
@@ -45,7 +46,7 @@ const ImageList = ({ role, filter, getImages }) => {
   const pageChange = (current, pageSize) => {
     const limit = pageSize
     const offset = (current - 1) * pageSize
-    setQuery((old) => ({ ...old, limit, offset }))
+    setQuery((old) => ({ ...old, current, limit, offset }))
   }
 
   async function getData() {
@@ -62,7 +63,7 @@ const ImageList = ({ role, filter, getImages }) => {
   }
 
   const moreList = (record) => {
-    const { id, name, state, functions, url, related, is_shared } = record
+    const { id, name, state, functions, url, related, isShared } = record
 
     const menus = [
       {
@@ -76,7 +77,7 @@ const ImageList = ({ role, filter, getImages }) => {
         key: "share",
         label: t("image.action.share"),
         onclick: () => share(id, name),
-        hidden: () => !isDone(state) || is_shared,
+        hidden: () => !isDone(state) || isShared,
         icon: <ShareIcon />,
       },
       {
@@ -153,7 +154,11 @@ const ImageList = ({ role, filter, getImages }) => {
       [STATES.DONE]: <SuccessIcon style={{ color: 'rgba(54, 203, 203, 1)', fontSize: 16 }} />,
       [STATES.ERROR]: <FailIcon style={{ color: 'rgba(242, 99, 123, 1)', fontSize: 16 }} />,
     }
-    return states[state]
+    return <span className={s.stateIcon}>{states[state]}</span>
+  }
+
+  const liveCodeState = (live) => {
+    return <span className={live ? s.remote : s.local}>{t(live ? 'image.livecode.label.remote' : 'image.livecode.label.local')}</span>
   }
 
   const addBtn = (
@@ -162,7 +167,11 @@ const ImageList = ({ role, filter, getImages }) => {
 
   const renderItem = (item) => {
     const title = <Row wrap={false}>
-      <Col flex={1}>{item.name}<span className={s.stateIcon}>{imageState(item.state)}</span></Col>
+      <Col flex={1}><Space>
+        <span>{item.name}</span>
+        {imageState(item.state)}
+        {isDone(item.state) ? liveCodeState(item.liveCode) : null}
+        </Space></Col>
       <Col>{more(item)}</Col>
     </Row>
     const type = isTrain(item.functions) ? 'train' : 'mining'
@@ -193,7 +202,8 @@ const ImageList = ({ role, filter, getImages }) => {
         renderItem={renderItem}
       />
       <Pagination className='pager' onChange={pageChange}
-        defaultCurrent={1} defaultPageSize={query.limit} total={total}
+        current={query.current}
+        defaultCurrent={query.current} defaultPageSize={query.limit} total={total}
         showTotal={() => t('image.list.total', { total })}
         showQuickJumper showSizeChanger />
       <ShareModal ref={shareModalRef} ok={shareOk} />

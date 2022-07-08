@@ -28,6 +28,7 @@ enum TaskType {
     TaskTypeImportModel = 13;
     TaskTypeCopyModel = 14;
     TaskTypeDatasetInfer = 15;
+    TaskTypeVisualization = 17;
 
     reserved 12, 16;
 };
@@ -49,6 +50,7 @@ enum MirStorage {
 enum MergeStrategy {
     STOP = 0;
     HOST = 1;
+    GUEST = 2;
 }
 
 enum RequestType {
@@ -124,6 +126,7 @@ message GeneralReq {
     string task_parameters = 24;
     LabelCollection label_collection = 25;
     EvaluateConfig evaluate_config = 26;
+    string model_stage = 27;
     ReqCreateTask req_create_task = 1001;
 
     reserved 17, 1002;
@@ -140,6 +143,7 @@ message GeneralResp {
     LabelCollection label_collection = 9;
     bool ops_ret = 10;
     RespCMDInference detection = 1001;
+    bool enable_livecode = 1002;
 
     reserved 5, 1000;
 }
@@ -161,6 +165,7 @@ message ReqCreateTask {
     TaskReqLabeling labeling = 108;
     TaskReqFusion fusion = 109;
     TaskReqModelImporting model_importing = 110;
+    TaskReqVisualization visualization = 111;
 }
 
 message TaskReqFilter {
@@ -176,6 +181,7 @@ message TaskReqTraining {
     }
     repeated TrainingDatasetType in_dataset_types = 1;
     repeated int32 in_class_ids = 2;
+    string preprocess_config = 4;
 
     reserved 3;
 }
@@ -195,6 +201,7 @@ message TaskReqImporting {
     // single pascal xml per asset, same base_filename as in asset-folder
     string annotation_dir = 2;
     bool name_strategy_ignore = 3;
+    string gt_dir = 4;
 }
 
 message TaskReqExporting {
@@ -238,6 +245,14 @@ message TaskReqFusion {
 
 message TaskReqModelImporting {
     string model_package_path = 1;
+}
+
+message TaskReqVisualization {
+    string vis_tool_id = 1;
+    repeated string in_dataset_ids = 2;
+    repeated string in_dataset_names = 3;
+    float iou_thr = 4;
+    float conf_thr = 5;
 }
 
 message RespCMDInference {

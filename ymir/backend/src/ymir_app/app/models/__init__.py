@@ -6,6 +6,7 @@ from .image_relationship import DockerImageRelationship
 from .iteration import Iteration
 from .model import Model
 from .model_group import ModelGroup
+from .model_stage import ModelStage
 from .project import Project
 from .role import Role
 from .task import Task

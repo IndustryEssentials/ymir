@@ -4,6 +4,7 @@ import shutil
 import unittest
 
 import google.protobuf.json_format as pb_format
+from google.protobuf.json_format import MessageToDict
 
 from mir.protos import mir_command_pb2 as mirpb
 from mir.tools import context, mir_storage, mir_storage_ops
@@ -137,26 +138,15 @@ class TestMirStorage(unittest.TestCase):
         dict_keywords = {
             'keywords': {
                 'a001': {
-                    'predifined_keyids': [1, 2]
+                    'predefined_keyids': [1, 2]
                 },
                 'a002': {
-                    'predifined_keyids': [2, 3]
+                    'predefined_keyids': [2, 3]
                 },
                 'a003': {
-                    'predifined_keyids': [3]
+                    'predefined_keyids': [3]
                 },
             },
-            'index_predifined_keyids': {
-                1: {
-                    'asset_ids': ['a001']
-                },
-                2: {
-                    'asset_ids': ['a001', 'a002']
-                },
-                3: {
-                    'asset_ids': ['a002', 'a003']
-                },
-            }
         }
         pb_format.ParseDict(dict_keywords, mir_keywords)
 
@@ -173,7 +163,142 @@ class TestMirStorage(unittest.TestCase):
                 3: 2,
                 4: 0
             } if with_project else {}),
-            'customized_keywords_cnt': {},
+            'asset_quality_hist': {
+                '0.00': 0,
+                '0.10': 0,
+                '0.20': 0,
+                '0.30': 0,
+                '0.40': 0,
+                '0.50': 0,
+                '0.60': 0,
+                '0.70': 0,
+                '0.80': 0,
+                '0.90': 0,
+                '1.00': 0
+            },
+            'asset_bytes_hist': {
+                '5.0MB': 0,
+                '4.5MB': 0,
+                '4.0MB': 0,
+                '3.5MB': 0,
+                '3.0MB': 0,
+                '2.5MB': 0,
+                '2.0MB': 0,
+                '1.5MB': 0,
+                '1.0MB': 0,
+                '0.5MB': 0,
+                '0.0MB': 3,
+            },
+            'asset_area_hist': {
+                2000000: 0,
+                8000000: 0,
+                6000000: 0,
+                4000000: 0,
+                1000000: 3,
+                500000: 0,
+                100000: 0,
+                0: 0,
+            },
+            'asset_hw_ratio_hist': {
+                '1.50': 3,
+                '1.40': 0,
+                '1.30': 0,
+                '1.20': 0,
+                '1.10': 0,
+                '1.00': 0,
+                '0.90': 0,
+                '0.80': 0,
+                '0.70': 0,
+                '0.60': 0,
+                '0.50': 0,
+                '0.40': 0,
+                '0.30': 0,
+                '0.20': 0,
+                '0.10': 0,
+                '0.00': 0,
+            },
+            'pred_stats': {
+                'total_cnt': 6,
+                'positive_asset_cnt': 3,
+                'negative_asset_cnt': 0,
+                'quality_hist': {
+                    '0.00': 6,
+                    '0.10': 0,
+                    '0.20': 0,
+                    '0.30': 0,
+                    '0.40': 0,
+                    '0.50': 0,
+                    '0.60': 0,
+                    '0.70': 0,
+                    '0.80': 0,
+                    '0.90': 0,
+                    '1.00': 0
+                },
+                'area_hist': {
+                    0: 0,
+                    50: 0,
+                    500: 6,
+                    2500: 0,
+                    5000: 0,
+                    10000: 0,
+                    50000: 0,
+                    100000: 0,
+                    200000: 0
+                },
+                'area_ratio_hist': {
+                    '1.00': 0,
+                    '0.90': 0,
+                    '0.80': 0,
+                    '0.70': 0,
+                    '0.60': 0,
+                    '0.50': 0,
+                    '0.40': 0,
+                    '0.30': 0,
+                    '0.20': 0,
+                    '0.10': 0,
+                    '0.00': 6,
+                }
+            },
+            'gt_stats': {
+                'negative_asset_cnt': 3,
+                'quality_hist': {
+                    '1.00': 0,
+                    '0.90': 0,
+                    '0.80': 0,
+                    '0.70': 0,
+                    '0.60': 0,
+                    '0.50': 0,
+                    '0.40': 0,
+                    '0.30': 0,
+                    '0.20': 0,
+                    '0.10': 0,
+                    '0.00': 0,
+                },
+                'area_hist': {
+                    200000: 0,
+                    100000: 0,
+                    50000: 0,
+                    10000: 0,
+                    5000: 0,
+                    2500: 0,
+                    500: 0,
+                    50: 0,
+                    0: 0,
+                },
+                'area_ratio_hist': {
+                    '1.00': 0,
+                    '0.90': 0,
+                    '0.80': 0,
+                    '0.70': 0,
+                    '0.60': 0,
+                    '0.50': 0,
+                    '0.40': 0,
+                    '0.30': 0,
+                    '0.20': 0,
+                    '0.10': 0,
+                    '0.00': 0,
+                }
+            }
         }
         pb_format.ParseDict(dict_context, mir_context)
 
@@ -187,7 +312,9 @@ class TestMirStorage(unittest.TestCase):
                     'model': {
                         'model_hash': 'abc123',
                         'mean_average_precision': 0.5,
-                        'context': 'fake_context'
+                        'context': 'fake_context',
+                        'stages': {},
+                        'best_stage_name': '',
                     }
                 }
             },
@@ -231,8 +358,9 @@ class TestMirStorage(unittest.TestCase):
                                                                                 ms=mirpb.MirStorage.MIR_KEYWORDS,
                                                                                 mir_task_id='mining-task-id',
                                                                                 as_dict=False)
-        self.assertDictEqual(pb_format.MessageToDict(mir_keywords),
-                             pb_format.MessageToDict(loaded_mir_keywords))
+        self.assertDictEqual(
+            pb_format.MessageToDict(mir_keywords)['keywords'],
+            pb_format.MessageToDict(loaded_mir_keywords)['keywords'])
         loaded_mir_context = mir_storage_ops.MirStorageOps.load_single_storage(mir_root=self._mir_root,
                                                                                mir_branch='a',
                                                                                ms=mirpb.MirStorage.MIR_CONTEXT,
@@ -241,8 +369,8 @@ class TestMirStorage(unittest.TestCase):
         try:
             self.assertEqual(loaded_mir_context, mir_context)
         except AssertionError as e:
-            logging.info(f"expected: {mir_context}")
-            logging.info(f"actual: {loaded_mir_context}")
+            logging.info(f"expected: {MessageToDict(mir_context, preserving_proto_field_name=True)}")
+            logging.info(f"actual: {MessageToDict(loaded_mir_context, preserving_proto_field_name=True)}")
             raise e
 
         # add another commit a@t2, which has empty dataset
@@ -305,7 +433,9 @@ class TestMirStorage(unittest.TestCase):
                 'mean_average_precision': 0.5,
                 'context': 'fake_context',
                 'executor_config': {},
-                'task_parameters': ''
+                'task_parameters': '',
+                'stages': {},
+                'best_stage_name': '',
             })
         # load_single_model: have no model
         with self.assertRaises(MirError):
@@ -339,7 +469,9 @@ class TestMirStorage(unittest.TestCase):
                                                                                 ms=mirpb.MirStorage.MIR_KEYWORDS,
                                                                                 mir_task_id='mining-task-id',
                                                                                 as_dict=False)
-        self.assertDictEqual(pb_format.MessageToDict(mir_keywords), pb_format.MessageToDict(loaded_mir_keywords))
+        self.assertDictEqual(
+            pb_format.MessageToDict(mir_keywords)['keywords'],
+            pb_format.MessageToDict(loaded_mir_keywords)['keywords'])
         loaded_mir_context = mir_storage_ops.MirStorageOps.load_single_storage(mir_root=self._mir_root,
                                                                                mir_branch='a',
                                                                                ms=mirpb.MirStorage.MIR_CONTEXT,

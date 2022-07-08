@@ -44,16 +44,16 @@ const InitModel = ({ projects = {}, ...props }) => {
     const result = await props.updateProject(params)
     if (result) {
       message.success(t('project.initmodel.success.msg'))
-      history.push(`/home/project/detail/${id}`)
+      history.goBack()
     }
   }
 
 
   function initForm(project = {}) {
-    const { model } = project
+    const { model, modelStage } = project
     if (model) {
       form.setFieldsValue({
-        model,
+        modelStage: [model, modelStage],
       })
     }
   }
@@ -81,11 +81,11 @@ const InitModel = ({ projects = {}, ...props }) => {
             <ConfigProvider renderEmpty={() => <EmptyStateModel id={id} />}>
               <Form.Item
                 label={t('task.mining.form.model.label')}
-                name="model"
+                name="modelStage"
                 rules={[
                   { required: true, message: t('task.mining.form.model.required') },
                 ]}
-                tooltip={t('tip.task.filter.model')}
+                tooltip={t('tip.iteration.initmodel')}
               >
                 <ModelSelect placeholder={t('task.mining.form.mining.model.required')} pid={id} />
               </Form.Item>

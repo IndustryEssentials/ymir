@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react"
 import { connect } from 'dva'
 import s from "./index.less"
-import { useHistory, useParams } from "umi"
+import { Link, useHistory, useParams } from "umi"
 import { Form, Table, Modal, ConfigProvider, Card, Space, Row, Col, Button, Popover, } from "antd"
 
 import t from "@/utils/t"
@@ -9,6 +9,7 @@ import { percent, isNumber } from '@/utils/number'
 import { getStageLabel } from '@/constants/project'
 import Breadcrumbs from "@/components/common/breadcrumb"
 import KeywordRates from "@/components/dataset/keywordRates"
+import { EditIcon } from "../../components/common/icons"
 
 function Iterations({ ...func }) {
   const history = useHistory()
@@ -141,7 +142,10 @@ function Iterations({ ...func }) {
   function renderTitle() {
     return (
       <Row>
-        <Col flex={1}>{project.name} {t('project.iterations.title')}</Col>
+        <Col flex={1}>
+          {project.name} {t('project.iterations.title')} 
+          <Link to={`/home/project/${id}/iterations/settings`}><EditIcon /><span>{t('project.iteration.settings.title')}</span></Link>
+        </Col>
         <Col><Button type='link' onClick={() => history.goBack()}>{t('common.back')}&gt;</Button></Col>
       </Row>
     )

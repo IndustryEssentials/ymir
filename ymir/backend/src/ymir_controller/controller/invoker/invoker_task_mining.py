@@ -17,7 +17,7 @@ class TaskMiningInvoker(TaskBaseInvoker):
         if mining_request.top_k < 0:
             return utils.make_general_response(CTLResponseCode.ARG_VALIDATION_FAILED,
                                                "invalid topk: {}".format(mining_request.top_k))
-        if not request.model_hash:
+        if not request.model_hash or not request.model_stage:
             return utils.make_general_response(CTLResponseCode.ARG_VALIDATION_FAILED, "invalid model_hash")
 
         if not mining_request.in_dataset_ids:
@@ -31,6 +31,7 @@ class TaskMiningInvoker(TaskBaseInvoker):
             task_parameters=request.task_parameters,
             class_names=[],
             output_config_file=output_config_file,
+            assets_config=self._assets_config,
         )
         if not gpu_lock_ret:
             return utils.make_general_response(CTLResponseCode.LOCK_GPU_ERROR, "Not enough GPU available")
@@ -73,7 +74,7 @@ class TaskMiningInvoker(TaskBaseInvoker):
         mining_image = request.singleton_op
 
         config_file = cls.gen_executor_config_path(subtask_workdir)
-        asset_cache_dir = os.path.join(sandbox_root, request.user_id, "mining_assset_cache")
+        asset_cache_dir = os.path.join(sandbox_root, request.user_id, "mining_asset_cache")
         mining_response = cls.mining_cmd(repo_root=repo_root,
                                          config_file=config_file,
                                          task_id=subtask_id,
@@ -83,6 +84,7 @@ class TaskMiningInvoker(TaskBaseInvoker):
                                          media_location=media_location,
                                          top_k=mining_request.top_k,
                                          model_hash=request.model_hash,
+                                         model_stage=request.model_stage,
                                          in_dataset_id=request.task_id,
                                          his_task_id=previous_subtask_id,
                                          executor=mining_image,
@@ -102,6 +104,7 @@ class TaskMiningInvoker(TaskBaseInvoker):
         media_location: str,
         top_k: int,
         model_hash: str,
+        model_stage: str,
         in_dataset_id: str,
         his_task_id: str,
         asset_cache_dir: str,
@@ -111,7 +114,8 @@ class TaskMiningInvoker(TaskBaseInvoker):
     ) -> backend_pb2.GeneralResp:
         mining_cmd = [
             utils.mir_executable(), 'mining', '--root', repo_root, '--dst-rev', f"{task_id}@{task_id}", '-w', work_dir,
-            '--model-location', model_location, '--media-location', media_location, '--model-hash', model_hash,
+            '--model-location', model_location, '--media-location', media_location,
+            '--model-hash', f"{model_hash}@{model_stage}",
             '--src-revs', f"{in_dataset_id}@{his_task_id}", '--asset-cache-dir', asset_cache_dir, '--task-config-file',
             config_file, '--executor', executor, '--executant-name', executant_name
         ]

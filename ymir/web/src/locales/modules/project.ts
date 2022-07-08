@@ -1,6 +1,7 @@
 const project = {
   "projects.title": { en: "Project List", cn: "项目列表", },
   "project.title": { en: "Project Detail", cn: "项目详情", },
+  "project.summary": { en: "Project Summary", cn: "项目概览", },
   "project.add.title": { en: "Create Project", cn: "创建项目", },
   "project.settings.title": { en: "Project Settings", cn: "设置项目", },
   "project.iterations.title": { en: "Project Iterations", cn: "项目迭代", },
@@ -15,7 +16,7 @@ const project = {
   "project.target.map": { en: "Target mAP", cn: "目标mAP", },
   "project.iteration.current": { en: "Iteration Stage", cn: "迭代进度", },
   "project.train_set": { en: "Training Set", cn: "训练集", },
-  "project.test_set": { en: "Test Set", cn: "测试集", },
+  "project.test_set": { en: "Validation Set", cn: "验证集", },
   "project.mining_set": { en: "Mining Set", cn: "挖掘集", },
   "project.iteration.number": { en: "Iteration Number", cn: "迭代轮次", },
   "project.content.desc": { en: "Description", cn: "描述", },
@@ -39,6 +40,16 @@ const project = {
   'project.add.form.keyword.tip': {
     en: 'The target tags used for training need to match the categories in the user\'s tag list. If the input tag does not exist in the current user\'s tag list, it will be prompted to add it to the list when creating the project.',
     cn: '用于训练的目标标签，需要和用户的标签列表里的类别一致，如果输入的标签在当前用户的标签列表中不存在，则会在创建项目时提示将其加入列表。',
+  },
+  'project.add.form.enableIteration': { en: 'Open A Semi-automated Iterative Process', cn: '开启半自动化迭代流程', },
+  'project.add.form.enableIteration.tip': {
+    en: 'To assist users to achieve iterative optimization of the model through a fixed process, recommended for novice users.',
+    cn: '通过固定流程辅助用户实现模型的迭代优化，推荐新手用户选择。',
+  },
+  'project.add.form.testingset.required': { en: 'Testing dataset is required', cn: '测试集为必选项', },
+  'project.add.form.testingset.tip': {
+    en: 'Used to test the effect of the model in various data sets, note: the test set cannot be used for training.',
+    cn: '用于测试模型在各类数据集的效果指标，注：测试集不可用于训练。',
   },
   'project.add.form.target': { en: 'Project Target', cn: '目标设置', },
   'project.add.form.target.map': { en: 'mAP', cn: 'mAP', },
@@ -70,7 +81,8 @@ const project = {
   'project.stage.state.pending.current': { en: 'Pending', cn: '待完成', },
   'project.iteration.settings.title': { en: 'Iterations Settings', cn: '迭代设置', },
   'project.add.form.training.set': { en: 'Training Dataset', cn: '训练集', },
-  'project.add.form.test.set': { en: 'Test Dataset', cn: '测试集', },
+  'project.add.form.test.set': { en: 'Validation Dataset', cn: '验证集', },
+  'project.add.form.testing.set': { en: 'Testing Dataset', cn: '测试集', },
   'project.add.form.mining.set': { en: 'Mining Dataset', cn: '挖掘集', },
   'project.add.form.mining.strategy': { en: 'Mining Strategy', cn: '挖掘策略', },
   'project.add.form.mining.chunksize': { en: 'Chunk Size', cn: '每块数据量大小', },
@@ -92,13 +104,17 @@ const project = {
   'iteration.column.label': { en: 'Labelling Result', cn: '标注结果', },
   'iteration.column.merging': { en: 'Training Dataset', cn: '训练数据', },
   'iteration.column.training': { en: 'Model', cn: '训练结果|mAP', },
-  'iteration.column.test': { en: 'Testing Dataset', cn: '测试集', },
+  'iteration.column.test': { en: 'Validation Dataset', cn: '验证集', },
   'project.detail.desc': { en: 'Description', cn: '描述', },
+  'project.detail.datavolume': { en: 'Data Volume', cn: '数据量', },
+  'project.detail.runningtasks': { en: 'Running Tasks', cn: '运行中任务', },
+  'project.detail.totaltasks': { en: 'Total Tasks', cn: '总任务', },
   'project.target.dataset': { en: 'Training Dataset\'s Assets', cn: '目标训练集大小', },
   'project.initmodel.success.msg': { en: 'Initial model prepared', cn: '设置初始模型成功', },
   'project.tag.train': { en: 'Training Dataset', cn: '训练集', },
-  'project.tag.test': { en: 'Testing Dataset {version}', cn: '测试集 {version}', },
+  'project.tag.test': { en: 'Validation Dataset {version}', cn: '验证集 {version}', },
   'project.tag.mining': { en: 'Mining Dataset {version}', cn: '挖掘集 {version}', },
+  'project.tag.testing': { en: 'Testing Dataset', cn: '测试集', },
   'project.tag.model': { en: 'Initial Model {version}', cn: '初始模型 {version}', },
   'iteration.tag.round': { en: 'Round {round}', cn: '迭代{round}', },
   'project.del.confirm.content': {
@@ -118,10 +134,11 @@ const project = {
   'project.new.example.label': { en: 'Create Example Project', cn: '创建示例项目', },
   'project.keywords.invalid': { en: 'Invalid training keywords', cn: '训练目标不合法', },
   'project.workspace.status.dirty': {
-    en: 'Project is {dirtyLabel}, can not train, please check again.',
-    cn: '项目当前状态为{dirtyLabel}，无法创建训练任务，请重新检查状态',
+    en: 'Project is {dirtyLabel}, training is disabled, please check again. if it is persistence, contact to administrator.',
+    cn: '项目当前状态为{dirtyLabel}，无法创建训练任务，请重新检查状态。若状态持续异常，请联系管理员。',
   },
-  'project.workspace.status.clean': { en: 'Project is {cleanLabel}.', cn: '项目当前状态为{cleanLabel}', },
+  'project.workspace.status.clean': { en: 'Project is {cleanLabel}, Training is enabled.', cn: '项目当前状态为{cleanLabel}, 可以正常创建训练任务', },
+  'project.testing.dataset.label': { en: 'Project Testing Dataset', cn: '项目测试集', },
 }
 
 export default project

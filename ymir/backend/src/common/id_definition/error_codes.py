@@ -2,6 +2,30 @@ from enum import IntEnum, unique
 
 
 @unique
+class CMDResponseCode(IntEnum):
+    """
+    duplicated from `mir.tools.code.MirCode`
+    """
+
+    RC_OK = 0  # everything is ok, command finished without any errors or warnings
+    RC_CMD_INVALID_ARGS = 160001  # lack of necessary args, or unexpected args
+    RC_CMD_EMPTY_TRAIN_SET = 160002  # no training set when training
+    RC_CMD_EMPTY_VAL_SET = 160003  # no validation set when training
+    RC_CMD_CONTAINER_ERROR = 160004  # container errors
+    RC_CMD_UNKNOWN_TYPES = 160005  # unknown types found, and can not be ignored when mir import
+    RC_CMD_INVALID_BRANCH_OR_TAG = 160006  # invalid branch name or tag name
+    RC_CMD_DIRTY_REPO = 160007  # repo is dirty when mir commit
+    RC_CMD_MERGE_ERROR = 160008  # error occured when mir merge
+    RC_CMD_INVALID_MIR_REPO = 160009
+    RC_CMD_INVALID_FILE = 160010
+    RC_CMD_NO_RESULT = 160011  # no result for training, mining and infer
+    RC_CMD_OPENPAI_ERROR = 160012
+    RC_CMD_NO_ANNOTATIONS = 160013
+    RC_CMD_CAN_NOT_CALC_CONFUSION_MATRIX = 160014
+    RC_CMD_ERROR_UNKNOWN = 169999
+
+
+@unique
 class CTLResponseCode(IntEnum):
     CTR_OK = 0
 
@@ -19,6 +43,9 @@ class CTLResponseCode(IntEnum):
     INVOKER_LABEL_TASK_NETWORK_ERROR = 130603
     INVOKER_HTTP_ERROR = 130604
     INVOKER_UNKNOWN_ERROR = 130605
+    INVOKER_INVALID_ARGS = 130606
+    INVOKER_VISUALIZATION_TASK_NETWORK_ERROR = 130607
+    INVOKER_VISUALIZATION_TASK_FIFTYONE_ERROR = 130608
 
 
 @unique
@@ -28,6 +55,7 @@ class VizErrorCode(IntEnum):
     MODEL_NOT_EXISTS = 140402
     DATASET_EVALUATION_NOT_EXISTS = 140403
     INTERNAL_ERROR = 140500
+    TOO_MANY_DATASETS_TO_CHECK = 140600
 
 
 @unique
@@ -125,3 +153,13 @@ class APIErrorCode(IntEnum):
     FAILED_TO_EVALUATE = 111902
     DATASET_EVALUATION_NOT_FOUND = 111903
     MISSING_OPERATIONS = 111904
+    DATASET_EVALUATION_NO_ANNOTATIONS = 111905
+    PREMATURE_DATASETS_EVALUATION = 111906
+
+    MODEL_STAGE_NOT_FOUND = 112001
+    INVALID_MODEL_STAGE_NAME = 112002
+
+    VIZ_ERROR = 112101
+    FAILED_TO_PARSE_VIZ_RESP = 112102
+
+    VISUALIZATION_NOT_FOUND = 112201

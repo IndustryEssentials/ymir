@@ -6,7 +6,7 @@ import unittest
 
 import yaml
 
-from executor import result_writer as rw, settings
+from ymir_exc import result_writer as rw, settings
 
 
 class TestResultWriter(unittest.TestCase):
@@ -57,14 +57,12 @@ class TestResultWriter(unittest.TestCase):
             shutil.rmtree(self._test_root)
 
     # protected: check results
-    def _check_training_result(self, model_names: List[str], mAP: float, classAPs: Dict[str, float], **kwargs) -> None:
+    def _check_model_stages(self, best_stage_name: str, mAP: float, stage_names: List[str]) -> None:
         with open(self._training_result_file, 'r') as f:
-            result_obj = yaml.safe_load(f)
-            self.assertEqual(result_obj['model'], model_names)
-            self.assertEqual(result_obj['map'], mAP)
-            self.assertEqual(result_obj['class_aps'], classAPs)
-            for k, v in kwargs.items():
-                self.assertEqual(result_obj[k], v)
+            result_obj: dict = yaml.safe_load(f)
+        self.assertEqual(set(stage_names), set(result_obj['model_stages'].keys()))
+        self.assertEqual(best_stage_name, result_obj['best_stage_name'])
+        self.assertEqual(mAP, result_obj['map'])
 
     def _check_mining_result(self, mining_result: List[Tuple[str, float]]) -> None:
         with open(self._mining_result_file, 'r') as f:
@@ -79,12 +77,25 @@ class TestResultWriter(unittest.TestCase):
             infer_result_obj = json.loads(f.read())
             self.assertEqual(set(infer_result_obj['detection'].keys()), set(infer_result.keys()))
 
+    # public: test cases
+    def test_write_model_stage_00(self) -> None:
+        stage_names = [f"epoch_{idx}" for idx in range(0, 12)]
+        for idx, stage_name in enumerate(stage_names):
+            rw.write_model_stage(stage_name=stage_name,
+                                 files=[f"model-{idx}.params", 'model-symbol.json'],
+                                 mAP=idx / 22,
+                                 timestamp=10 * idx + 1000000)
+        rw.write_model_stage(stage_name='best',
+                             files=[f"model-best.params", 'model-symbol.json'],
+                             mAP=1,
+                             timestamp=900000)
+        expected_stage_names = [f"epoch_{idx}" for idx in range(2, 12)]
+        expected_stage_names.append('best')
+        self._check_model_stages(stage_names=expected_stage_names, best_stage_name='best', mAP=1.0)
+
     def test_write_training_result(self) -> None:
-        model_names = ['model-symbols.json', 'model-0000.params']
-        mAP = 0.86
-        classAPs = {'cat': 0.86, 'person': 0.86}
-        rw.write_training_result(model_names=model_names, mAP=mAP, classAPs=classAPs, author='fake author')
-        self._check_training_result(model_names=model_names, mAP=mAP, classAPs=classAPs, author='fake author')
+        rw.write_training_result(model_names=['fake.model'], mAP=0.9, classAPs={})
+        self._check_model_stages(stage_names=['default_best_stage'], best_stage_name='default_best_stage', mAP=0.9)
 
     def test_write_mining_result(self) -> None:
         mining_result = [('a', '0.1'), ('b', '0.3'), ('c', '0.2')]

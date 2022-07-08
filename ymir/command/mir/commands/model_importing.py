@@ -50,12 +50,10 @@ class CmdModelImport(base.BaseCommand):
         extract_model_dir_path = os.path.join(work_dir, 'model')
         model_storage = mir_utils.prepare_model(model_location=os.path.dirname(package_path),
                                                 model_hash=os.path.basename(package_path),
+                                                stage_name='',
                                                 dst_model_path=extract_model_dir_path)
 
         logging.info(f"importing model with storage: {model_storage}")
-
-        # check
-        _check_model(model_storage=model_storage, mir_root=mir_root)
 
         # update model_storage and pack
         model_storage.task_context['src-revs'] = src_revs
@@ -72,8 +70,7 @@ class CmdModelImport(base.BaseCommand):
         task = mir_storage_ops.create_task(task_type=mirpb.TaskType.TaskTypeImportModel,
                                            task_id=dst_typ_rev_tid.tid,
                                            message=f"import model {package_path} as {model_hash}",
-                                           model_hash=model_hash,
-                                           model_mAP=float(model_storage.task_context.get('mAP', 0)),
+                                           model_meta=model_storage.get_model_meta(model_hash=model_hash),
                                            return_code=MirCode.RC_OK,
                                            return_msg='',
                                            src_revs=src_revs,
@@ -89,16 +86,6 @@ class CmdModelImport(base.BaseCommand):
                                                       task=task)
 
         return MirCode.RC_OK
-
-
-def _check_model(model_storage: mir_utils.ModelStorage, mir_root: str) -> int:
-    # check producer
-    producer = model_storage.task_context.get(mir_settings.PRODUCER_KEY, None)
-    if producer != mir_settings.PRODUCER_NAME:
-        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_FILE,
-                              error_message=f"can not import model, invalid producer: {producer}")
-
-    return MirCode.RC_OK
 
 
 def bind_to_subparsers(subparsers: argparse._SubParsersAction, parent_parser: argparse.ArgumentParser) -> None:

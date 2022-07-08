@@ -72,12 +72,29 @@ class TestModel:
             "model_mAP": random.randint(1, 100) / 100,
             "task_parameters": "mock_task_parameters",
             "executor_config": "mock_executor_config",
+            "model_stages": {
+                "epoch-1000": {
+                    "mAP": -1,
+                    "timestamp": 100000000,
+                },
+                "epoch-2000": {
+                    "mAP": 0.3,
+                    "timestamp": 100000001,
+                },
+                "epoch-3000": {
+                    "mAP": 0.83,
+                    "timestamp": 100000002,
+                },
+            },
+            "best_stage_name": "epoch-3000",
         }
         M = m.ModelMetaData.from_viz_res(res)
         assert M.hash == res["model_id"]
         assert M.map == res["model_mAP"]
         assert M.task_parameters == res["task_parameters"]
         assert M.executor_config == res["executor_config"]
+        assert M.model_stages == res["model_stages"]
+        assert M.best_stage_name == res["best_stage_name"]
 
 
 class TestDataset:
@@ -87,6 +104,26 @@ class TestDataset:
             "ignored_labels": {"cat": 5},
             "negative_info": {"negative_images_cnt": 0, "project_negative_images_cnt": 0},
             "total_images_cnt": 1,
+            "pred": {
+                "total_images_cnt": 1,
+                "class_ids_count": {3: 34},
+                "ignored_labels": {"cat": 5},
+                "negative_info": {"negative_images_cnt": 0, "project_negative_images_cnt": 0},
+                "annos_cnt": 28,
+                "positive_asset_cnt": 1,
+                "negative_asset_cnt": 1,
+                "class_names_count": {"cat": 3},
+                "hist": {"anno_area_ratio": [[{"x": 1, "y": 2}]], "anno_quality": [[{"x": 1, "y": 2}]]},
+            },
+            "gt": {},
+            "hist": {
+                "asset_area": [[{"x": 1, "y": 2}]],
+                "asset_bytes": [[{"x": 1, "y": 2}]],
+                "asset_hw_ratio": [[{"x": 1, "y": 2}]],
+                "asset_quality": [[{"x": 1, "y": 2}]],
+            },
+            "total_asset_mbytes": 10,
+            "total_assets_cnt": 1,
         }
         M = m.DatasetMetaData.from_viz_res(res, mock_user_labels)
         assert M.keyword_count == len(res["class_ids_count"])
@@ -127,8 +164,9 @@ class TestVizClient:
             user_id=user_id,
             project_id=project_id,
             branch_id=task_id,
+            user_labels=mock_user_labels,
         )
-        ret = viz.get_assets(user_labels=mock_user_labels)
+        ret = viz.get_assets()
         assert isinstance(ret, m.Assets)
         assert ret.total
         assert ret.items
@@ -166,8 +204,9 @@ class TestVizClient:
             user_id=user_id,
             project_id=project_id,
             branch_id=task_id,
+            user_labels=mock_user_labels,
         )
-        ret = viz.get_asset(asset_id=asset_id, user_labels=mock_user_labels)
+        ret = viz.get_asset(asset_id=asset_id)
         assert isinstance(ret, dict)
         assert ret["hash"] == asset_id
 
@@ -181,6 +220,21 @@ class TestVizClient:
             "model_mAP": random.randint(1, 100) / 100,
             "task_parameters": "mock_task_parameters",
             "executor_config": "mock_executor_config",
+            "model_stages": {
+                "epoch-1000": {
+                    "mAP": -1,
+                    "timestamp": 100000000,
+                },
+                "epoch-2000": {
+                    "mAP": 0.3,
+                    "timestamp": 100000001,
+                },
+                "epoch-3000": {
+                    "mAP": 0.83,
+                    "timestamp": 100000002,
+                },
+            },
+            "best_stage_name": "epoch-3000",
         }
         resp.json.return_value = {"result": res}
         mock_session.get.return_value = resp
@@ -207,6 +261,26 @@ class TestVizClient:
             "ignored_labels": {"cat": 5},
             "negative_info": {"negative_images_cnt": 0, "project_negative_images_cnt": 0},
             "total_images_cnt": 1,
+            "pred": {
+                "total_images_cnt": 1,
+                "class_ids_count": {3: 34},
+                "ignored_labels": {"cat": 5},
+                "negative_info": {"negative_images_cnt": 0, "project_negative_images_cnt": 0},
+                "annos_cnt": 28,
+                "positive_asset_cnt": 1,
+                "negative_asset_cnt": 1,
+                "class_names_count": {"cat": 3},
+                "hist": {"anno_area_ratio": [[{"x": 1, "y": 2}]], "anno_quality": [[{"x": 1, "y": 2}]]},
+            },
+            "gt": {},
+            "hist": {
+                "asset_area": [[{"x": 1, "y": 2}]],
+                "asset_bytes": [[{"x": 1, "y": 2}]],
+                "asset_hw_ratio": [[{"x": 1, "y": 2}]],
+                "asset_quality": [[{"x": 1, "y": 2}]],
+            },
+            "total_asset_mbytes": 10,
+            "total_assets_cnt": 1,
         }
         resp.json.return_value = {"result": res}
         mock_session.get.return_value = resp
@@ -215,8 +289,8 @@ class TestVizClient:
         user_id = random.randint(100, 200)
         project_id = random.randint(100, 200)
         task_id = random_lower_string()
-        viz.initialize(user_id=user_id, project_id=project_id, branch_id=task_id)
-        ret = viz.get_dataset(mock_user_labels)
+        viz.initialize(user_id=user_id, project_id=project_id, branch_id=task_id, user_labels=mock_user_labels)
+        ret = viz.get_dataset()
         assert isinstance(ret, m.DatasetMetaData)
         assert ret.keyword_count == len(res["class_ids_count"])
         assert ret.ignored_keywords == res["ignored_labels"]

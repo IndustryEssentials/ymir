@@ -41,7 +41,7 @@ describe("service: projects", () => {
       training_dataset_count_target: 0,
       type: 0,
     }
-    const expected = { id, name }
+    const expected = { id }
     requestExample(updateProject, [id, project], expected, 'post')
   })
   it("createProject -> success", () => {

@@ -25,6 +25,13 @@ services:
       # monitor
       - MONITOR_URL=http://127.0.0.1:9098
       - APP_API_HOST=127.0.0.1:80
+      # OpenPai
+      - OPENPAI_HOST=${OPENPAI_HOST}
+      - OPENPAI_TOKEN=${OPENPAI_TOKEN}
+      - OPENPAI_STORAGE=${OPENPAI_STORAGE}
+      - OPENPAI_USER=${OPENPAI_USER}
+      # fiftyone
+      - FIFTYONE_HOST_URL=${FIFTYONE_HOST_URL}
     volumes:
       - "${BACKEND_SANDBOX_ROOT}:${BACKEND_SANDBOX_ROOT}"
       - "${YMIR_PATH}/ymir-data/logs:/app_logs"
@@ -76,6 +83,7 @@ services:
       - "${YMIR_PATH}/ymir-storage:/data/ymir/ymir-storage"
     environment:
       - LABEL_TOOL_HOST_URL=${LABEL_TOOL_HOST_URL}
+      - FIFTYONE_HOST_URL=${FIFTYONE_HOST_URL}
     ports:
       - ${NGINX_PORT}:80
     restart: on-failure:10

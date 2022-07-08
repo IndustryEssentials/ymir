@@ -121,17 +121,27 @@ export function delDatasetGroup(id) {
  * evalute between gt and target dataset
  * @param {number} projectId    project id
  * @param {number} datasets      evaluational datasets
- * @param {number} gt           ground truth dataset
+ * @param {number} iou           iou threadhold
+ * @param {number} everageIou    
  * @param {number} confidence   range: [0, 1]
  * @returns 
  */
-export function evaluate({ projectId, datasets, gt, confidence }) {
+export function evaluate({ projectId, datasets, iou, everageIou, confidence }) {
   return request.post(`/datasets/evaluation`, {
     project_id: projectId,
-    other_dataset_ids: datasets,
-    gt_dataset_id: gt,
+    dataset_ids: datasets,
     confidence_threshold: confidence,
+    iou_threshold: iou,
+    require_average_iou: everageIou,
   })
+}
+
+/**
+ * @param {array} datasets  analysis datasets
+ * @returns 
+ */
+export function analysis(projectId, datasets) {
+  return request.get(`/datasets/analysis`, { params: { project_id: projectId, ids: datasets.toString() } })
 }
 
 /**
@@ -184,4 +194,18 @@ export function updateDataset(id, name) {
 
 export function getInternalDataset() {
   return request.get('/datasets/public')
+}
+
+/**
+ * check train set and validation set duplication
+ * @param {number} projectId 
+ * @param {number} trainSet 
+ * @param {number} validationSet 
+ * @returns 
+ */
+export function checkDuplication(projectId, trainSet, validationSet) {
+  return request.post('/datasets/check_duplication', {
+    project_id: projectId,
+    dataset_ids: [trainSet, validationSet],
+  })
 }

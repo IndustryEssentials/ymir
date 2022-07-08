@@ -10,6 +10,7 @@ from controller.invoker.invoker_task_labeling import TaskLabelingInvoker
 from controller.invoker.invoker_task_mining import TaskMiningInvoker
 from controller.invoker.invoker_task_model_importing import TaskModelImportingInvoker
 from controller.invoker.invoker_task_training import TaskTrainingInvoker
+from controller.invoker.invoker_task_visualization import TaskVisualizationInvoker
 from proto import backend_pb2
 
 
@@ -26,6 +27,7 @@ class CreateTaskInvokerFactory(BaseMirControllerInvoker):
         backend_pb2.TaskTypeImportModel: TaskModelImportingInvoker,
         backend_pb2.TaskTypeCopyModel: TaskCopyInvoker,
         backend_pb2.TaskTypeDatasetInfer: TaskMiningInvoker,
+        backend_pb2.TaskTypeVisualization: TaskVisualizationInvoker,
     }
 
     def __new__(cls, request: backend_pb2.GeneralReq, *args, **kwargs) -> Any:  # type: ignore
