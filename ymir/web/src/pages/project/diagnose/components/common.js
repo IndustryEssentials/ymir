@@ -1,4 +1,4 @@
-import { percent } from '@/utils/number'
+import { percent, toFixed } from '@/utils/number'
 import { Popover } from 'antd'
 import ReactJson from 'react-json-view'
 
@@ -32,3 +32,5 @@ export const getKwField = ({ iou_evaluations, iou_averaged_evaluation }, type) =
   iou_averaged_evaluation['ck_evaluations']
 
 export const percentRender = value => typeof value === 'number' && !Number.isNaN(value) ? percent(value) : '-'
+
+export const confidenceRender = value => typeof value === 'number' && !Number.isNaN(value) ? toFixed(value, 3) : '-'
