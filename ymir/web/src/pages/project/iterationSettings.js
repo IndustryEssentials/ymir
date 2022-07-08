@@ -48,9 +48,10 @@ const Add = ({}) => {
   }, [result])
 
   function initForm(project = {}) {
-    const { name, testSet: testDataset, miningSet: miningDataset, miningStrategy, chunkSize } = project
+    const { name, trainSetVersion, testSet: testDataset, miningSet: miningDataset, miningStrategy, chunkSize } = project
     if (name) {
       form.setFieldsValue({
+        trainSetVersion,
         testSet: testDataset?.id || undefined,
         miningSet: miningDataset?.id || undefined,
         strategy: miningStrategy || 0,
