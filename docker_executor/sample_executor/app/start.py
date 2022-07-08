@@ -145,7 +145,7 @@ def _run_infer(env_config: env.EnvConfig) -> None:
         isfile = os.path.isfile(asset_path)
         if not isfile:
             absent_count += 1
-        logging.info(f"asset: {asset_path}, exists: {isfile}")
+        logging.info(f"asset: {asset_path}, is file: {isfile}")
         asset_paths.append(asset_path)
 
     if len(asset_paths) == 0 or len(class_names) == 0:
