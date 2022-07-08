@@ -16,9 +16,7 @@ from proto import backend_pb2
 
 class InferenceCMDInvoker(BaseMirControllerInvoker):
     @classmethod
-    def gen_inference_config(cls, req_inference_config: str, assets_config: dict, work_dir: str) -> str:
-        task_context = {'server_runtime': assets_config['server_runtime']}
-
+    def gen_inference_config(cls, req_inference_config: str, task_context: dict, work_dir: str) -> str:
         inference_config = yaml.safe_load(req_inference_config)
         inference_config_file = os.path.join(work_dir, "inference_config.yaml")
         with open(inference_config_file, "w") as f:
@@ -87,7 +85,7 @@ class InferenceCMDInvoker(BaseMirControllerInvoker):
 
         index_file = self.prepare_inference_picture(self._request.asset_dir, self._work_dir)
         config_file = self.gen_inference_config(req_inference_config=self._request.docker_image_config,
-                                                assets_config=self._assets_config,
+                                                task_context={'server_runtime': self._assets_config['server_runtime']},
                                                 work_dir=self._work_dir)
 
         self.inference_cmd(
