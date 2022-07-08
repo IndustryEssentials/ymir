@@ -27,6 +27,7 @@ const task = {
   "task.detail.label.hyperparams": { cn: "高级参数", en: "Senior Config", },
   "task.detail.label.training.image": { cn: "训练镜像", en: "Training Image", },
   "task.detail.label.mining.image": { cn: "挖掘镜像", en: "Mining Image", },
+  "task.detail.label.inference.image": { cn: "推理镜像", en: "Inference Image", },
   "task.detail.state.title": { cn: "任务状态", en: "Task State", },
   "task.detail.state.current": { cn: "当前状态", en: "Current State", },
   "task.detail.error.code": { cn: "失败原因", en: "Error Reason", },
