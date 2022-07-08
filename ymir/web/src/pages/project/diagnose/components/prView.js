@@ -4,7 +4,7 @@ import { percent, toFixed } from '@/utils/number'
 import { isSame } from '@/utils/object'
 import t from '@/utils/t'
 import Panel from "@/components/form/panel"
-import { average, getCK, getKwField, opt, percentRender, getModelCell } from "./common"
+import { average, getCK, getKwField, opt, percentRender, getModelCell, confidenceRender } from "./common"
 
 const getLabels = type => ({
   colMain: `model.diagnose.metrics.${type}.label`,
@@ -226,7 +226,7 @@ const PView = ({ tasks, datasets, models, data, prType, prRate, xType, kw: { kwT
         colSpan: 0,
         dataIndex: `${value}_conf`,
         width: 100,
-        render: percentRender,
+        render: confidenceRender,
       },
     ])).flat()
     return [
@@ -255,7 +255,7 @@ const PView = ({ tasks, datasets, models, data, prType, prRate, xType, kw: { kwT
         title: t('model.diagnose.metrics.confidence.average.label'),
         dataIndex: 'ca',
         width: 100,
-        render: percentRender,
+        render: confidenceRender,
       },
     ]
   }

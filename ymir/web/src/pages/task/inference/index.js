@@ -46,15 +46,17 @@ function Inference({ datasetCache, datasets, ...func }) {
   const { did, image } = location.query
   const stage = parseModelStage(location.query.mid)
   const [selectedModels, setSelectedModels] = useState([])
-  const [gpuStep, setGpuStep] = useState(1)
   const [form] = Form.useForm()
   const [seniorConfig, setSeniorConfig] = useState([])
   const [gpu_count, setGPU] = useState(0)
+  const [taskCount, setTaskCount] = useState(1)
   const [selectedGpu, setSelectedGpu] = useState(0)
   const [keywordRepeatTip, setKRTip] = useState('')
   const [{ newer }, checkKeywords] = useAddKeywords(true)
   const [live, setLiveCode] = useState(false)
   const [project, getProject] = useFetch('project/getProject', {})
+  const watchStages = Form.useWatch('stages', form)
+  const watchTestingSets = Form.useWatch('datasets', form)
 
   useEffect(() => {
     fetchSysInfo()
@@ -81,10 +83,13 @@ function Inference({ datasetCache, datasets, ...func }) {
   }, [pid])
 
   useEffect(() => {
-    setGpuStep(selectedModels.length || 1)
-
     checkModelKeywords()
   }, [selectedModels])
+
+  useEffect(() => {
+    const taskCount = watchStages?.length * watchTestingSets?.length || 1
+    setTaskCount(taskCount)
+  }, [watchStages, watchTestingSets])
 
   useEffect(() => {
     if (newer.length) {
@@ -261,9 +266,9 @@ function Inference({ datasetCache, datasets, ...func }) {
                   noStyle
                   name="gpu_count"
                 >
-                  <InputNumber min={0} max={Math.floor(gpu_count / gpuStep)} precision={0} onChange={setSelectedGpu} /></Form.Item>
+                  <InputNumber min={0} max={Math.floor(gpu_count / taskCount)} precision={0} onChange={setSelectedGpu} /></Form.Item>
                 <span style={{ marginLeft: 20 }}>
-                  {t('task.infer.gpu.tip', { total: gpu_count, selected: gpuStep * selectedGpu })}
+                  {t('task.infer.gpu.tip', { total: gpu_count, selected: taskCount * selectedGpu })}
                 </span>
               </Form.Item>
             </Tip>
