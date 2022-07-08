@@ -6,6 +6,8 @@ name: Node.js CI
 on:
   pull_request:
     branches: [ master, dev ]
+    paths:
+      - 'ymir/web/**'
 
 jobs:
   web-ci:
