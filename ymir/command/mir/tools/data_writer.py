@@ -194,8 +194,9 @@ def _single_image_annotations_to_voc(asset_id: str, attrs: mirpb.MetadataAttribu
         box_quality_node = ElementTree.SubElement(object_node, 'box_quality')
         box_quality_node.text = f"{annotation.anno_quality:.4f}"
 
-        cm_node = ElementTree.SubElement(object_node, 'cm')
-        cm_node.text = f"{mirpb.ConfusionMatrixType.Name(annotation.cm)}"
+        if annotation.cm != mirpb.ConfusionMatrixType.NotSet:
+            cm_node = ElementTree.SubElement(object_node, 'cm')
+            cm_node.text = f"{mirpb.ConfusionMatrixType.Name(annotation.cm)}"
 
         confidence_node = ElementTree.SubElement(object_node, 'confidence')
         confidence_node.text = f"{annotation.score:.4f}"
