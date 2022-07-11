@@ -35,10 +35,7 @@ from common_utils.labels import UserLabels
 router = APIRouter()
 
 
-@router.get(
-    "/batch",
-    response_model=schemas.DatasetsOut,
-)
+@router.get("/batch", response_model=schemas.DatasetsOut)
 def batch_get_datasets(
     db: Session = Depends(deps.get_db),
     dataset_ids: str = Query(None, example="1,2,3", alias="ids"),
@@ -50,10 +47,7 @@ def batch_get_datasets(
     return {"result": datasets}
 
 
-@router.get(
-    "/analysis",
-    response_model=schemas.DatasetsAnalysesOut,
-)
+@router.get("/analysis", response_model=schemas.DatasetsAnalysesOut)
 def get_datasets_analysis(
     db: Session = Depends(deps.get_db),
     viz_client: VizClient = Depends(deps.get_viz_client),
@@ -83,10 +77,7 @@ def get_datasets_analysis(
     return {"result": {"datasets": results}}
 
 
-@router.post(
-    "/batch",
-    response_model=schemas.DatasetsOut,
-)
+@router.post("/batch", response_model=schemas.DatasetsOut)
 def batch_update_datasets(
     *,
     db: Session = Depends(deps.get_db),
@@ -119,10 +110,7 @@ class SortField(enum.Enum):
     source = "source"
 
 
-@router.get(
-    "/",
-    response_model=schemas.DatasetPaginationOut,
-)
+@router.get("/", response_model=schemas.DatasetPaginationOut)
 def list_datasets(
     db: Session = Depends(deps.get_db),
     source: TaskType = Query(None, description="type of related task"),
@@ -160,10 +148,7 @@ def list_datasets(
     return {"result": {"total": total, "items": datasets}}
 
 
-@router.get(
-    "/public",
-    response_model=schemas.DatasetPaginationOut,
-)
+@router.get("/public", response_model=schemas.DatasetPaginationOut)
 def get_public_datasets(
     db: Session = Depends(deps.get_db),
     current_user: models.User = Depends(deps.get_current_active_user),
@@ -180,10 +165,7 @@ def get_public_datasets(
     return {"result": {"total": total, "items": datasets}}
 
 
-@router.post(
-    "/importing",
-    response_model=schemas.DatasetOut,
-)
+@router.post("/importing", response_model=schemas.DatasetOut)
 def import_dataset(
     *,
     db: Session = Depends(deps.get_db),
@@ -458,10 +440,7 @@ def fusion_normalize_parameters(
     return parameters
 
 
-@router.post(
-    "/fusion",
-    response_model=schemas.DatasetOut,
-)
+@router.post("/fusion", response_model=schemas.DatasetOut)
 def create_dataset_fusion(
     *,
     db: Session = Depends(deps.get_db),
@@ -525,10 +504,7 @@ def create_dataset_fusion(
     return {"result": dataset}
 
 
-@router.post(
-    "/evaluation",
-    response_model=schemas.dataset.DatasetEvaluationOut,
-)
+@router.post("/evaluation", response_model=schemas.dataset.DatasetEvaluationOut)
 def batch_evaluate_datasets(
     *,
     db: Session = Depends(deps.get_db),
@@ -558,10 +534,7 @@ def batch_evaluate_datasets(
     return {"result": evaluations}
 
 
-@router.post(
-    "/check_duplication",
-    response_model=schemas.dataset.DatasetCheckDuplicationOut,
-)
+@router.post("/check_duplication", response_model=schemas.dataset.DatasetCheckDuplicationOut)
 def check_duplication(
     *,
     db: Session = Depends(deps.get_db),
