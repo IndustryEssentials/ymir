@@ -1,14 +1,14 @@
-import { percent } from '@/utils/number'
+import { percent, toFixed } from '@/utils/number'
 import { Popover } from 'antd'
 import ReactJson from 'react-json-view'
 
-export function getModelCell(rid, tasks, models) {
+export function getModelCell(rid, tasks, models, text) {
   const task = tasks.find(({ result }) => result === rid)
   const model = models.find(model => model.id === task.model)
   const stage = model.stages.find(sg => sg.id === task.stage)
   const content = <ReactJson src={task.config} name={false} />
-  const label = `${model.name} ${model.versionName} ${stage.name}`
-  return <Popover content={content}>
+  const label = `${model.name} ${model.versionName} ${stage.name} ${task.configName}`
+  return text ? label : <Popover content={content}>
     <span title={label}>{label}</span>
   </Popover>
 }
@@ -32,3 +32,5 @@ export const getKwField = ({ iou_evaluations, iou_averaged_evaluation }, type) =
   iou_averaged_evaluation['ck_evaluations']
 
 export const percentRender = value => typeof value === 'number' && !Number.isNaN(value) ? percent(value) : '-'
+
+export const confidenceRender = value => typeof value === 'number' && !Number.isNaN(value) ? toFixed(value, 3) : '-'

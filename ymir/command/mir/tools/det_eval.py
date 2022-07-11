@@ -570,6 +570,10 @@ class CocoDetEval:
             precisions = self.eval['precision'][:, :, :, area_ranges_index, max_dets_index]
             scores = self.eval['scores'][:, :, :, area_ranges_index, max_dets_index]
 
+            # TODO: hotfix, need to test with 3rd party pr curve result
+            precisions = np.maximum(0, precisions)
+            scores = np.maximum(0, scores)
+
             # from dims: iouThrs * recThrs * catIds
             # to dims: recThrs * catIds
             if iou_thr_index is not None:

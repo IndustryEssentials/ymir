@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react"
 import { connect } from "dva"
 import { useHistory, useParams, Link } from "umi"
-import { Button, Card, Space } from "antd"
+import { Button, Card, message, Space } from "antd"
 
 import t from "@/utils/t"
 import { TASKTYPES, getTaskTypeLabel } from "@/constants/task"
@@ -89,9 +89,9 @@ function DatasetDetail({ datasetCache, getDataset }) {
                   {t(`task.type.${type}`)}
                 </Button>
               ) : null)}
-              <Button type="primary" onClick={() => hide(dataset)}>
+              {dataset.assetCount > 0 ? <Button type="primary" onClick={() => hide(dataset)}>
                 {t(`common.action.hide`)}
-              </Button>
+              </Button> : null }
             </> :
               <Button type="primary" onClick={restore}>
                 {t("common.action.restore")}

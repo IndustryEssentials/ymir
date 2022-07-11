@@ -14,13 +14,14 @@ from sqlalchemy import (
 from sqlalchemy.orm import relationship
 
 from app.config import settings
-from app.constants.state import TaskState
+from app.constants.state import TaskState, TaskType
 from app.db.base_class import Base
 from app.models.dataset import Dataset  # noqa
 from app.models.dataset_group import DatasetGroup  # noqa
 from app.models.iteration import Iteration  # noqa
 from app.models.model import Model  # noqa
 from app.models.model_group import ModelGroup  # noqa
+from app.models.task import Task  # noqa
 
 
 class Project(Base):
@@ -87,6 +88,12 @@ class Project(Base):
         uselist=True,
         viewonly=True,
     )
+    tasks = relationship(
+        "Task",
+        primaryjoin="foreign(Task.project_id)==Project.id",
+        uselist=True,
+        viewonly=True,
+    )
     current_iteration = relationship(
         "Iteration",
         primaryjoin="foreign(Iteration.id)==Project.current_iteration_id",
@@ -123,12 +130,16 @@ class Project(Base):
         return sum([dataset.asset_count for dataset in self.datasets if dataset.asset_count])
 
     @property
+    def training_tasks(self) -> List[Task]:
+        return [task for task in self.tasks if task.type == TaskType.training]
+
+    @property
     def running_task_count(self) -> int:
-        return sum([dataset.related_task.state == TaskState.running for dataset in self.datasets])
+        return sum([task.state == TaskState.running for task in self.training_tasks])
 
     @property
     def total_task_count(self) -> int:
-        return len(self.datasets)
+        return len(self.training_tasks)
 
     @property
     def referenced_dataset_ids(self) -> List[int]:

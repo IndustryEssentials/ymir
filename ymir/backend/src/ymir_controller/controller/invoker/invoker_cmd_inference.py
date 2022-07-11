@@ -16,11 +16,11 @@ from proto import backend_pb2
 
 class InferenceCMDInvoker(BaseMirControllerInvoker):
     @classmethod
-    def gen_inference_config(cls, req_inference_config: str, work_dir: str) -> str:
+    def gen_inference_config(cls, req_inference_config: str, task_context: dict, work_dir: str) -> str:
         inference_config = yaml.safe_load(req_inference_config)
         inference_config_file = os.path.join(work_dir, "inference_config.yaml")
         with open(inference_config_file, "w") as f:
-            yaml.dump({'executor_config': inference_config}, f)
+            yaml.dump({'executor_config': inference_config, 'task_context': task_context}, f)
 
         return inference_config_file
 
@@ -36,7 +36,7 @@ class InferenceCMDInvoker(BaseMirControllerInvoker):
 
     @classmethod
     def prepare_inference_picture(cls, source_path: str, work_dir: str) -> str:
-        inference_picture_directory = os.path.join(work_dir, "inference_picture")
+        inference_picture_directory = os.path.join(work_dir, "assets")
         os.makedirs(inference_picture_directory, exist_ok=True)
 
         for root, _, files in os.walk(source_path):
@@ -84,7 +84,9 @@ class InferenceCMDInvoker(BaseMirControllerInvoker):
                                                f"expected: {expected_type} vs actual: {self._request.req_type}")
 
         index_file = self.prepare_inference_picture(self._request.asset_dir, self._work_dir)
-        config_file = self.gen_inference_config(self._request.docker_image_config, self._work_dir)
+        config_file = self.gen_inference_config(req_inference_config=self._request.docker_image_config,
+                                                task_context={'server_runtime': self._assets_config['server_runtime']},
+                                                work_dir=self._work_dir)
 
         self.inference_cmd(
             repo_root=self._repo_root,
@@ -105,7 +107,7 @@ class InferenceCMDInvoker(BaseMirControllerInvoker):
                       model_stage: str, index_file: str, executor: str) -> backend_pb2.GeneralResp:
         infer_cmd = [
             utils.mir_executable(), 'infer', '--root', repo_root, '-w', work_dir, '--model-location', model_location,
-            '--index-file', index_file, '--model-hash', f"{model_hash}@{model_stage}",
-            '--task-config-file', config_file, "--executor", executor
+            '--index-file', index_file, '--model-hash', f"{model_hash}@{model_stage}", '--task-config-file',
+            config_file, "--executor", executor
         ]
         return utils.run_command(infer_cmd)
