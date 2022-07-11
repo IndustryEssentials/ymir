@@ -250,7 +250,9 @@ class ControllerRequest:
     def prepare_data_fusion(self, request: mirsvrpb.GeneralReq, args: Dict) -> mirsvrpb.GeneralReq:
         data_fusion_request = mirsvrpb.TaskReqFusion()
         data_fusion_request.in_dataset_ids[:] = args["include_datasets"]
-        data_fusion_request.merge_strategy = MERGE_STRATEGY_MAPPING[args["include_strategy"]]
+        data_fusion_request.merge_strategy = MERGE_STRATEGY_MAPPING[
+            args.get("include_strategy", MergeStrategy.stop_upon_conflict)
+        ]
         if args.get("exclude_datasets"):
             data_fusion_request.ex_dataset_ids[:] = args["exclude_datasets"]
 
@@ -563,6 +565,52 @@ class ControllerClient:
                 "in_dataset_names": [dataset["name"] for dataset in datasets],
                 "iou_thr": iou_thr,
                 "conf_thr": conf_thr,
+            },
+        )
+        return self.send(req)
+
+    def merge_datasets(
+        self,
+        user_id: int,
+        project_id: int,
+        task_hash: str,
+        dataset_hashes: List[str],
+        ex_dataset_hashes: List[str],
+        merge_strategy: Optional[MergeStrategy] = None,
+    ) -> Dict:
+        req = ControllerRequest(
+            type=TaskType.data_fusion,
+            user_id=user_id,
+            project_id=project_id,
+            task_id=task_hash,
+            args={
+                "in_datasets": dataset_hashes,
+                "exclude_datasets": ex_dataset_hashes,
+                "merge_strategy": merge_strategy,
+            },
+        )
+        return self.send(req)
+
+    def filter_dataset(
+        self,
+        user_id: int,
+        project_id: int,
+        task_hash: str,
+        dataset_hash: str,
+        class_ids: List[int],
+        ex_class_ids: List[int],
+        sampling_count: Optional[int] = None,
+    ) -> Dict:
+        req = ControllerRequest(
+            type=TaskType.data_fusion,
+            user_id=user_id,
+            project_id=project_id,
+            task_id=task_hash,
+            args={
+                "in_datasets": [dataset_hash],
+                "include_class_ids": class_ids,
+                "exclude_class_ids": ex_class_ids,
+                "sampling_count": sampling_count,
             },
         )
         return self.send(req)

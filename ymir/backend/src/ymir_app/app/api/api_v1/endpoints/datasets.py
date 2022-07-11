@@ -1,7 +1,7 @@
 from operator import attrgetter
 import enum
 import random
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, List
 
 from fastapi import APIRouter, BackgroundTasks, Depends, Path, Query
 from fastapi.encoders import jsonable_encoder
@@ -18,7 +18,6 @@ from app.api.errors.errors import (
     FailedtoCreateTask,
     FailedToHideProtectedResources,
     DatasetGroupNotFound,
-    PrematureDatasetsEvaluation,
     ProjectNotFound,
     MissingOperations,
     RefuseToProcessMixedOperations,
@@ -29,7 +28,7 @@ from app.utils.iteration import get_iteration_context_converter
 from app.utils.ymir_controller import ControllerClient, gen_task_hash
 from app.utils.ymir_viz import VizClient
 from app.schemas.dataset import MergeStrategy
-from app.libs.datasets import import_dataset_in_background, evaluate_datasets
+from app.libs.datasets import import_dataset_in_background, evaluate_datasets, ensure_datasets_are_ready
 from common_utils.labels import UserLabels
 
 router = APIRouter()
@@ -538,20 +537,77 @@ def batch_evaluate_datasets(
 def check_duplication(
     *,
     db: Session = Depends(deps.get_db),
-    check_duplication: schemas.dataset.DatasetCheckDuplicationCreate,
+    in_datasets: schemas.dataset.MultiDatasetsWithProjectID,
     current_user: models.User = Depends(deps.get_current_active_user),
     viz_client: VizClient = Depends(deps.get_viz_client),
 ) -> Any:
     """
     check duplication in two datasets
     """
-    datasets = crud.dataset.get_multi_by_ids(db, ids=check_duplication.dataset_ids)
-    if len(check_duplication.dataset_ids) != len(datasets):
-        raise DatasetNotFound()
+    datasets = ensure_datasets_are_ready(db, dataset_ids=in_datasets.dataset_ids)
 
-    if not all(dataset.result_state == ResultState.ready for dataset in datasets):
-        raise PrematureDatasetsEvaluation()
-
-    viz_client.initialize(user_id=current_user.id, project_id=check_duplication.project_id)
+    viz_client.initialize(user_id=current_user.id, project_id=in_datasets.project_id)
     duplicated_asset_count = viz_client.check_duplication([dataset.hash for dataset in datasets])
     return {"result": duplicated_asset_count}
+
+
+@router.post("/merge", response_model=schemas.dataset.DatasetOut)
+def merge_datasets(
+    *,
+    db: Session = Depends(deps.get_db),
+    in_merge: schemas.dataset.DatasetMergeCreate,
+    current_user: models.User = Depends(deps.get_current_active_user),
+    controller_client: ControllerClient = Depends(deps.get_controller_client),
+) -> Any:
+    """
+    Merge multiple datasets
+    """
+    in_datasets = ensure_datasets_are_ready(db, dataset_ids=[in_merge.dataset_id, *in_merge.include_datasets])
+    ex_datasets = ensure_datasets_are_ready(db, dataset_ids=in_merge.exclude_datasets)
+
+    task_hash = gen_task_hash(current_user.id, in_merge.project_id)
+    controller_client.merge_datasets(
+        current_user.id,
+        in_merge.project_id,
+        task_hash,
+        [d.hash for d in in_datasets],
+        [d.hash for d in ex_datasets],
+        in_merge.merge_strategy,
+    )
+    merged_dataset = None
+    # todo
+    #  register task
+    #  register result dataset placeholder
+    return {"result": merged_dataset}
+
+
+@router.post("/filter", response_model=schemas.dataset.DatasetOut)
+def filter_dataset(
+    *,
+    db: Session = Depends(deps.get_db),
+    in_filter: schemas.dataset.DatasetFilterCreate,
+    current_user: models.User = Depends(deps.get_current_active_user),
+    controller_client: ControllerClient = Depends(deps.get_controller_client),
+) -> Any:
+    """
+    Merge two datasets
+    """
+    datasets = ensure_datasets_are_ready(db, dataset_ids=[in_filter.dataset_id])
+    # todo
+    #  convert class_ids and ex_class_ids
+    #  register task
+    #  register result dataset placeholder
+    task_hash = gen_task_hash(current_user.id, in_filter.project_id)
+    class_ids: List[int] = []
+    ex_class_ids: List[int] = []
+    controller_client.filter_dataset(
+        current_user.id,
+        in_filter.project_id,
+        task_hash,
+        datasets[0].hash,
+        class_ids,
+        ex_class_ids,
+        in_filter.sampling_count,
+    )
+    merged_dataset = None
+    return {"result": merged_dataset}
