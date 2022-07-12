@@ -200,11 +200,11 @@ message TaskReqImporting {
     string asset_dir = 1;
     // single pascal xml per asset, same base_filename as in asset-folder
     string annotation_dir = 2;
+    // TODO: TO BE REMOVED
+    bool name_strategy_ignore = 3 [deprecated=true];
     string gt_dir = 4;
     // strategy for unknown class types: stop, ignore or add
     string unknown_types_strategy = 5;
-
-    reserved 3;
 }
 
 message TaskReqExporting {
