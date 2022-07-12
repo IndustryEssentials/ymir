@@ -147,7 +147,7 @@ const ProjectList = ({ list, query, ...func }) => {
     const title = <Row wrap={false} className='title'>
       <Col flex={1}>
         <Space>
-          <span className={s.name}><a>{item.name}</a></span>
+          <span className={s.name}><a>{item.name}</a> {!item.isExample ? <span className="nameExtra">{t('project.example')}</span> : null}</span>
           <span className='titleItem'>
             <span className='titleLabel'>{t('project.train_classes')}:</span>
             <span className='titleContent'><KeywordsItem keywords={item.keywords} /></span>

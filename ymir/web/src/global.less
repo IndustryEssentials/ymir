@@ -205,10 +205,10 @@ body {
 .breadcrumb {
   height: 50px;
   line-height: 50px;
-  background: @white;
+  // background: @white;
   margin: 0 -20px 20px;
   padding: 0 20px;
-  .box-shadow();
+  // .box-shadow();
   .breadcrumbContent {
     line-height: 50px;
   }
@@ -260,6 +260,14 @@ body {
     font-size: @font-size18;
   }
   .title {
+    .nameExtra {
+      background-color: @primary-color;
+      color: @white;
+      border-radius: 20px;
+      font-size: 12px;
+      display: inline-block;
+      padding: 2px 10px;
+    }
     .titleItem {
       font-size: @font-size14;
       font-weight: normal;
