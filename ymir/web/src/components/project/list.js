@@ -11,7 +11,7 @@ export const Lists = ({ projects = [], more = '' }) => {
     const title = <Row wrap={false} className='title'>
       <Col flex={1}>
         <Space>
-          <span className={s.name}>{item.name} {!item.isExample ? <span className="nameExtra">{t('project.example')}</span> : null}</span>
+          <span className={s.name}>{item.name} {item.isExample ? <span className="nameExtra">{t('project.example')}</span> : null}</span>
           <span className='titleItem'>
             <span className='titleLabel'>{t('project.train_classes')}:</span>
             <span className='titleContent'><KeywordsItem keywords={item.keywords} /></span>
