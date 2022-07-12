@@ -10,8 +10,8 @@ const { Sider } = Layout
 
 const projectModule = /^.*\/project\/(\d+).*$/
 
-const getItem = (label, key, icon, children, type = '') => ({
-  key, icon, children, label, type,
+const getItem = (label, key, Icon, children, type = '') => ({
+  key, icon: Icon ? <Icon /> : null, children, label, type,
 })
 
 const getGroupItem = (label, key, children) => getItem(label, key, undefined, children, 'group')
@@ -40,26 +40,26 @@ function LeftMenu() {
     const showLeftMenu = projectModule.test(pathname)
     setItems([
       getGroupItem(t('breadcrumbs.projects'), 'project', [
-        getItem(t('projects.title'), `/home/project`, <BarchartIcon />, ),
-        showLeftMenu ? getItem(project.name, `project.summary`, <BarchartIcon />, [
-            getItem(t('project.summary'), `/home/project/${id}/detail`, <BarchartIcon />,),
-            getItem(t('project.settings.title'), `/home/project/${id}/add`, <EditIcon />,),
-            getItem(t('dataset.list'), `/home/project/${id}/dataset`, <NavDatasetIcon />,),
-            getItem(t('model.management'), `/home/project/${id}/model`, <MymodelIcon />,),
-            getItem(t('model.diagnose'), `/home/project/${id}/diagnose`, <Diagnosis />),
-            getItem(t('breadcrumbs.task.training'), `/home/project/${id}/train`, <TrainIcon />),
-            getItem(t('common.hidden.list'), `/home/project/${id}/hidden`, <EyeOffIcon />,),
+        getItem(t('projects.title'), `/home/project`, BarchartIcon, ),
+        showLeftMenu ? getItem(project.name, `project.summary`, BarchartIcon, [
+            getItem(t('project.summary'), `/home/project/${id}/detail`, BarchartIcon,),
+            getItem(t('project.settings.title'), `/home/project/${id}/add`, EditIcon,),
+            getItem(t('dataset.list'), `/home/project/${id}/dataset`, NavDatasetIcon,),
+            getItem(t('model.management'), `/home/project/${id}/model`, MymodelIcon,),
+            getItem(t('model.diagnose'), `/home/project/${id}/diagnose`, Diagnosis),
+            getItem(t('breadcrumbs.task.training'), `/home/project/${id}/train`, TrainIcon),
+            getItem(t('common.hidden.list'), `/home/project/${id}/hidden`, EyeOffIcon,),
         ]) : null,
       ]),
       getGroupItem(t('breadcrumbs.keyword'), 'keyword', [
-        getItem(t('breadcrumbs.keyword'), '/home/keyword', <FlagIcon />,),
+        getItem(t('breadcrumbs.keyword'), '/home/keyword', FlagIcon,),
       ]),
       getGroupItem(t('common.top.menu.configure'), 'settings', [
-        getItem(t('common.top.menu.image'), '/home/image', <FileHistoryIcon />,),
-        isSuperAdmin(role) ? getItem(t('common.top.menu.permission'), '/home/permission', <UserSettingsIcon />,) : null,
+        getItem(t('common.top.menu.image'), '/home/image', FileHistoryIcon,),
+        isSuperAdmin(role) ? getItem(t('common.top.menu.permission'), '/home/permission', UserSettingsIcon,) : null,
       ]),
       { type: 'divider' },
-      getItem(t('user.settings'), '/home/user', <UserIcon />,),
+      getItem(t('user.settings'), '/home/user', UserIcon,),
       getItem(<a target="_blank" href='https://github.com/IndustryEssentials/ymir'><GithubIcon /> {t('common.top.menu.community')}</a>, 'github',),
     ])
   }, [id, project, role])
