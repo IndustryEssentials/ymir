@@ -28,12 +28,13 @@ class CmdImport(base.BaseCommand):
                                        dst_rev=self.args.dst_rev,
                                        src_revs=self.args.src_revs or 'master',
                                        work_dir=self.args.work_dir,
-                                       ignore_unknown_types=self.args.ignore_unknown_types)
+                                       unknown_types_strategy=self.args.unknown_types_strategy)
 
     @staticmethod
     @command_run_in_out
     def run_with_args(mir_root: str, index_file: str, gt_index_file: str, anno_abs: str, gt_abs: str, gen_abs: str,
-                      dataset_name: str, dst_rev: str, src_revs: str, work_dir: str, ignore_unknown_types: bool) -> int:
+                      dataset_name: str, dst_rev: str, src_revs: str, work_dir: str,
+                      unknown_types_strategy: str) -> int:
         # Step 1: check args and prepare environment.
         if not index_file or not gen_abs or not os.path.isfile(index_file):
             logging.error(f"invalid index_file: {index_file} or gen_abs: {gen_abs}")
@@ -50,6 +51,8 @@ class CmdImport(base.BaseCommand):
                 return MirCode.RC_CMD_INVALID_ARGS
         dst_typ_rev_tid = revs_parser.parse_single_arg_rev(dst_rev, need_tid=True)
         src_typ_rev_tid = revs_parser.parse_single_arg_rev(src_revs, need_tid=False)
+
+        unknwon_types_strategy_enum = annotations.UnknownTypesStrategy(unknown_types_strategy)
 
         if not dataset_name:
             dataset_name = dst_typ_rev_tid.tid
@@ -103,13 +106,14 @@ class CmdImport(base.BaseCommand):
                                                                  mir_root=mir_root,
                                                                  annotations_dir_path=anno_abs,
                                                                  groundtruth_dir_path=gt_abs,
+                                                                 unknown_types_strategy=unknwon_types_strategy_enum,
                                                                  task_id=dst_typ_rev_tid.tid,
                                                                  phase='import.others')
         if ret_code != MirCode.RC_OK:
             logging.error(f"import annotations error: {ret_code}")
             return ret_code
         if unknown_types:
-            if ignore_unknown_types:
+            if unknwon_types_strategy_enum == annotations.UnknownTypesStrategy.IGNORE:
                 logging.warning(f"unknown types: {unknown_types}")
             else:
                 raise MirRuntimeError(MirCode.RC_CMD_UNKNOWN_TYPES, json.dumps(unknown_types))
@@ -181,7 +185,8 @@ def bind_to_subparsers(subparsers: argparse._SubParsersAction, parent_parser: ar
     importing_arg_parser = subparsers.add_parser("import",
                                                  parents=[parent_parser],
                                                  description="use this command to import data from img/anno folder",
-                                                 help="import raw data")
+                                                 help="import raw data",
+                                                 formatter_class=argparse.RawTextHelpFormatter)
     importing_arg_parser.add_argument("--index-file",
                                       dest="index_file",
                                       type=str,
@@ -213,9 +218,13 @@ def bind_to_subparsers(subparsers: argparse._SubParsersAction, parent_parser: ar
                                       required=True,
                                       help="rev@tid: destination branch name and task id")
     importing_arg_parser.add_argument('-w', dest='work_dir', type=str, required=False, help='working directory')
-    importing_arg_parser.add_argument('--ignore-unknown-types',
-                                      dest='ignore_unknown_types',
+    importing_arg_parser.add_argument('--unknown-types-strategy',
+                                      dest='unknown_types_strategy',
                                       required=False,
-                                      action='store_true',
-                                      help='ignore unknown type names in annotation files')
+                                      choices=['stop', 'ignore', 'add'],
+                                      default='stop',
+                                      help='strategy for unknown class types in annotation files\n'
+                                      'stop: stop on unknown class type names\n'
+                                      'ignore: ignore unknown class type names\n'
+                                      'add: add unknown class types names to labels.yaml')
     importing_arg_parser.set_defaults(func=CmdImport)

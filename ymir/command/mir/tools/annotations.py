@@ -1,4 +1,5 @@
 from collections import defaultdict
+import enum
 import logging
 import os
 from typing import Dict, List, Tuple, Union
@@ -10,6 +11,12 @@ from mir.tools.code import MirCode
 from mir.tools.errors import MirRuntimeError
 from mir.tools.phase_logger import PhaseLoggerCenter
 from mir.protos import mir_command_pb2 as mirpb
+
+
+class UnknownTypesStrategy(str, enum.Enum):
+    STOP = 'stop'
+    IGNORE = 'ignore'
+    ADD = 'add'
 
 
 def _object_dict_to_annotation(object_dict: dict, class_type_manager: class_ids.ClassIdManager) -> mirpb.Annotation:
@@ -38,7 +45,8 @@ def _object_dict_to_annotation(object_dict: dict, class_type_manager: class_ids.
 
 def import_annotations(mir_metadatas: mirpb.MirMetadatas, mir_annotation: mirpb.MirAnnotations, in_sha1_file: str,
                        in_sha1_gt_file: str, mir_root: str, annotations_dir_path: str, groundtruth_dir_path: str,
-                       task_id: str, phase: str) -> Tuple[int, Dict[str, int]]:
+                       unknown_types_strategy: UnknownTypesStrategy, task_id: str,
+                       phase: str) -> Tuple[int, Dict[str, int]]:
     """
     imports annotations
 
@@ -50,6 +58,7 @@ def import_annotations(mir_metadatas: mirpb.MirMetadatas, mir_annotation: mirpb.
         mir_root (str): path to mir repo
         annotations_dir_path (str): path to annotations root
         groundtruth_dir_path (str): path to groundtruth root
+        unknown_types_strategy (UnknownTypesStrategy): strategy for unknown types
         task_id (str): task id
         phase (str): process phase
 
