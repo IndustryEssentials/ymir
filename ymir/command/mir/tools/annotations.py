@@ -80,6 +80,7 @@ def import_annotations(mir_metadatas: mirpb.MirMetadatas, mir_annotation: mirpb.
             annotations_dir_path=annotations_dir_path,
             unknown_types_and_count=unknown_types_and_count,
             class_type_manager=class_type_manager,
+            unknown_types_strategy=unknown_types_strategy,
             image_annotations=mir_annotation.task_annotations[task_id],
         )
     PhaseLoggerCenter.update_phase(phase=phase, local_percent=0.5)
@@ -93,6 +94,7 @@ def import_annotations(mir_metadatas: mirpb.MirMetadatas, mir_annotation: mirpb.
             annotations_dir_path=groundtruth_dir_path,
             unknown_types_and_count=unknown_types_and_count,
             class_type_manager=class_type_manager,
+            unknown_types_strategy=unknown_types_strategy,
             image_annotations=mir_annotation.ground_truth,
         )
     PhaseLoggerCenter.update_phase(phase=phase, local_percent=1.0)
@@ -103,6 +105,7 @@ def import_annotations(mir_metadatas: mirpb.MirMetadatas, mir_annotation: mirpb.
 def _import_annotations_from_dir(mir_metadatas: mirpb.MirMetadatas, mir_annotation: mirpb.MirAnnotations,
                                  in_sha1_file: str, annotations_dir_path: str, unknown_types_and_count: Dict[str, int],
                                  class_type_manager: class_ids.ClassIdManager,
+                                 unknown_types_strategy: UnknownTypesStrategy,
                                  image_annotations: mirpb.SingleTaskAnnotations) -> Tuple[int, Dict[str, int]]:
 
     assethash_filename_list: List[Tuple[str, str]] = []  # hash id and main file name
