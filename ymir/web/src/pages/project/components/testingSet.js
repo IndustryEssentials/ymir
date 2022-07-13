@@ -51,8 +51,5 @@ export const TestingSet = ({ project }) => {
     </Popover>
   }
 
-  return (<>
-      {renderProjectTestingSetLabel()}
-    </>
-  )
+  return datasets.length ? renderProjectTestingSetLabel() : null
 }

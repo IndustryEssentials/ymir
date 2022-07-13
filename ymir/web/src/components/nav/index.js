@@ -32,20 +32,15 @@ const menus = () => [
     icon: <FlagIcon className={styles.navIcon} />,
   },
   {
-    label: 'common.top.menu.configure',
-    key: "/home/configures",
+    label: 'common.top.menu.image',
+    key: "/home/image",
     icon: <EqualizerIcon className={styles.navIcon} />,
-    children: [
-      {
-        label: 'common.top.menu.image',
-        key: "/home/image",
-      },
-      {
-        label: 'common.top.menu.permission',
-        key: "/home/permission",
-        permission: ROLES.SUPER,
-      },
-    ]
+  },
+  {
+    label: 'common.top.menu.permission',
+    key: "/home/permission",
+    permission: ROLES.SUPER,
+    icon: <UserIcon className={styles.navIcon} />
   },
 ]
 

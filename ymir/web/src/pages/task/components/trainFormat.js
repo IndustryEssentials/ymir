@@ -6,7 +6,7 @@ const assetFormats = ['raw', 'lmdb']
 const TrainFormat = ({ value, onChange }) => {
 
   return <Radio.Group value={value} onChange={onChange}>
-    {assetFormats.map(as => <p>{annotationFormats.map(an => <Radio value={`${an}:${as}`}>{as}/{an}</Radio>)}</p>)}
+    {assetFormats.map(as => <p key={as}>{annotationFormats.map(an => <Radio key={an} value={`${an}:${as}`}>{as}/{an}</Radio>)}</p>)}
   </Radio.Group>
 }
 
