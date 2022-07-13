@@ -1,5 +1,5 @@
 import { Breadcrumb } from "antd"
-import { Link, useHistory, useParams, useRouteMatch, } from "umi"
+import { Link, useHistory, useParams, useRouteMatch, useSelector } from "umi"
 import { homeRoutes } from '@/config/routes'
 import t from '@/utils/t'
 import s from './common.less'
@@ -32,6 +32,15 @@ function loop(id = 1, crumbs) {
 function Breadcrumbs({ suffix = '', titles = {} }) {
   const { path } = useRouteMatch()
   const params = useParams() || {}
+  const projects = useSelector(({ project }) => project.projects)
+
+  const getLabel = (crumb, customTitle) => {
+    // project name
+    if (crumb.id === 25) {
+      return projects[params.id]?.name
+    }
+    return customTitle || t(crumb.label)
+  }
   const crumbs = getCrumbs()
   const crumbItems = getCrumbItems(path, crumbs)
   return <div className='breadcrumb'>
@@ -41,7 +50,7 @@ function Breadcrumbs({ suffix = '', titles = {} }) {
         const link = crumb.path.replace(/:([^\/]+)/g, (str, key) => {
           return params[key] ? params[key] : ''
         })
-        const label = titles[index] ? titles[index] : t(crumb.label)
+        const label = getLabel(crumb, titles[index])
         return <Item key={crumb.path}>
           {last ? <span>{label} {suffix}</span> : <Link to={link}>{label}</Link>}
         </Item>

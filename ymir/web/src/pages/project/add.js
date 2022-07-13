@@ -5,7 +5,6 @@ import { useParams, useHistory, useLocation } from "umi"
 
 import s from './add.less'
 import t from '@/utils/t'
-import { MiningStrategy } from '@/constants/project'
 import Breadcrumbs from '@/components/common/breadcrumb'
 import EmptyState from '@/components/empty/dataset'
 import DatasetSelect from '@/components/form/datasetSelect'
@@ -14,13 +13,6 @@ import useFetch from '@/hooks/useFetch'
 
 const { useForm } = Form
 const { confirm } = Modal
-
-const strategyOptions = Object.values(MiningStrategy)
-  .filter(key => Number.isInteger(key))
-  .map(value => ({
-    value,
-    label: t(`project.mining.strategy.${value}`),
-  }))
 
 const Add = ({ keywords, datasets, getKeywords, ...func }) => {
   const { id } = useParams()
@@ -48,7 +40,7 @@ const Add = ({ keywords, datasets, getKeywords, ...func }) => {
 
   function initForm(project = {}) {
     const { name, keywords: kws, trainSetVersion,
-      description, testSet: testDataset, miningSet: miningDataset, miningStrategy, chunkSize, enableIteration, testingSets } = project
+      description, enableIteration, testingSets } = project
     if (name) {
       form.setFieldsValue({
         name, keywords: kws, description,
@@ -130,7 +122,8 @@ const Add = ({ keywords, datasets, getKeywords, ...func }) => {
       <Breadcrumbs />
       <Card className={s.container} title={renderTitle}>
         <div className={s.formContainer}>
-          <Form form={form} labelCol={{ span: 6 }} wrapperCol={{ span: 12 }} labelAlign='left' onFinish={submit} scrollToFirstError>
+          <Form form={form} labelCol={{ offset: 2, span: 6 }} wrapperCol={{ span: 12 }} 
+            colon={false} labelAlign='left' onFinish={submit} scrollToFirstError>
             <Panel hasHeader={false}>
               <Form.Item
                 label={t('project.add.form.name')}
