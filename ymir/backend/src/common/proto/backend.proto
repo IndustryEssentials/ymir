@@ -53,6 +53,12 @@ enum MergeStrategy {
     GUEST = 2;
 }
 
+enum UnknownTypesStrategy {
+    UTS_STOP = 0;
+    UTS_IGNORE = 1;
+    UTS_ADD = 2;
+}
+
 enum RequestType {
     UNKNOWN = 0;
     // CMD task
@@ -204,7 +210,7 @@ message TaskReqImporting {
     bool name_strategy_ignore = 3 [deprecated=true];
     string gt_dir = 4;
     // strategy for unknown class types: stop, ignore or add
-    string unknown_types_strategy = 5;
+    UnknownTypesStrategy unknown_types_strategy = 5;
 }
 
 message TaskReqExporting {
