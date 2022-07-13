@@ -56,11 +56,11 @@ function ProjectDetail(func) {
       <Breadcrumbs />
       <div className={s.header}>
         <NoIterationDetail project={project} />
-        <Space className={s.actions}>
-          <Button type="primary" onClick={add}><ImportIcon /> {t("dataset.import.label")}</Button>
-          <Button type="primary" onClick={goTraining}><TrainIcon /> {t("project.iteration.stage.training")}</Button>
-        </Space>
       </div>
+      <Space className="actions">
+        <Button type="primary" onClick={add}><ImportIcon /> {t("dataset.import.label")}</Button>
+        <Button type="primary" onClick={goTraining}><TrainIcon /> {t("project.iteration.stage.training")}</Button>
+      </Space>
       <div className={`list ${s.projectOverview}`}>
         <Row gutter={10}>
           <Col span={12}>
