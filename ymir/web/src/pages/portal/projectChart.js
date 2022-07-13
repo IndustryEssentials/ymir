@@ -124,7 +124,6 @@ const ProjectChart = ({ getProjectStats }) => {
     >
       {series.length ? (
       <>
-        {console.log('option: ',option)}
         <Radio.Group className={styles.taskTimeBtn} options={times} optionType='button' value={type} onChange={timeChange}></Radio.Group>
         <BarChart option={option} height={241}></BarChart>
       </>) : <Empty /> }
