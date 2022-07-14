@@ -173,12 +173,13 @@ def import_dataset(
     background_tasks: BackgroundTasks,
 ) -> Any:
     """
-    Create dataset.
+    Import dataset.
 
     Three Import Strategy:
     - no_annotations = 1
     - ignore_unknown_annotations = 2
     - stop_upon_unknown_annotations = 3
+    - add unknown annotations = 4
     """
     # 1. check if dataset group name is available
     if crud.dataset_group.is_duplicated_name_in_project(
