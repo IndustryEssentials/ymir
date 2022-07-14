@@ -1,10 +1,9 @@
 from operator import attrgetter
 import enum
 import random
-from typing import Any, Dict, Optional, List
+from typing import Any, Dict, Optional
 
 from fastapi import APIRouter, BackgroundTasks, Depends, Path, Query
-from fastapi.encoders import jsonable_encoder
 from fastapi.logger import logger
 from sqlalchemy.orm import Session
 
@@ -12,10 +11,10 @@ from app import crud, models, schemas
 from app.api import deps
 from app.api.errors.errors import (
     AssetNotFound,
+    ControllerError,
     DatasetNotFound,
     DuplicateDatasetGroupError,
     NoDatasetPermission,
-    FailedtoCreateTask,
     FailedToHideProtectedResources,
     DatasetGroupNotFound,
     ProjectNotFound,
@@ -414,36 +413,34 @@ def get_asset_of_dataset(
     return {"result": asset}
 
 
-def fusion_normalize_parameters(
+def normalize_fusion_parameter(
     db: Session,
-    task_in: schemas.DatasetsFusionParameter,
+    fusion_params: schemas.DatasetsFusionParameter,
     user_labels: UserLabels,
 ) -> Dict:
-    include_datasets_info = crud.dataset.get_multi_by_ids(db, ids=[task_in.main_dataset_id] + task_in.include_datasets)
-
-    include_datasets_info.sort(
+    in_datasets = crud.dataset.get_multi_by_ids(
+        db, ids=[fusion_params.main_dataset_id] + fusion_params.include_datasets
+    )
+    in_datasets.sort(
         key=attrgetter("update_datetime"),
-        reverse=(task_in.include_strategy == MergeStrategy.prefer_newest),
+        reverse=(fusion_params.include_strategy == MergeStrategy.prefer_newest),
     )
-
-    exclude_datasets_info = crud.dataset.get_multi_by_ids(db, ids=task_in.exclude_datasets)
-    parameters = dict(
-        include_datasets=[dataset_info.hash for dataset_info in include_datasets_info],
-        include_strategy=task_in.include_strategy,
-        exclude_datasets=[dataset_info.hash for dataset_info in exclude_datasets_info],
-        include_class_ids=user_labels.get_class_ids(names_or_aliases=task_in.include_labels),
-        exclude_class_ids=user_labels.get_class_ids(names_or_aliases=task_in.exclude_labels),
-        sampling_count=task_in.sampling_count,
-    )
-
-    return parameters
+    ex_datasets = crud.dataset.get_multi_by_ids(db, ids=fusion_params.exclude_datasets)
+    return {
+        "include_datasets": [dataset.hash for dataset in in_datasets],
+        "include_strategy": fusion_params.include_strategy,
+        "exclude_datasets": [dataset.hash for dataset in ex_datasets],
+        "include_class_ids": user_labels.get_class_ids(names_or_aliases=fusion_params.include_labels),
+        "exclude_class_ids": user_labels.get_class_ids(names_or_aliases=fusion_params.exclude_labels),
+        "sampling_count": fusion_params.sampling_count,
+    }
 
 
 @router.post("/fusion", response_model=schemas.DatasetOut)
 def create_dataset_fusion(
     *,
     db: Session = Depends(deps.get_db),
-    task_in: schemas.DatasetsFusionParameter,
+    in_fusion: schemas.DatasetsFusionParameter,
     current_user: models.User = Depends(deps.get_current_active_user),
     controller_client: ControllerClient = Depends(deps.get_controller_client),
     user_labels: UserLabels = Depends(deps.get_user_labels),
@@ -451,56 +448,43 @@ def create_dataset_fusion(
     """
     Create data fusion
     """
-    logger.info(
-        "[create task] create dataset fusion with payload: %s",
-        jsonable_encoder(task_in),
-    )
+    logger.info("[fusion] create dataset fusion with payload: %s", in_fusion.json())
 
     with get_iteration_context_converter(db, user_labels) as iteration_context_converter:
-        task_in_parameters = iteration_context_converter(task_in)
+        fusion_params = iteration_context_converter(in_fusion)
 
-    parameters = fusion_normalize_parameters(db, task_in_parameters, user_labels)
-    task_hash = gen_task_hash(current_user.id, task_in.project_id)
+    parameters = normalize_fusion_parameter(db, fusion_params, user_labels)
+    task_hash = gen_task_hash(current_user.id, in_fusion.project_id)
 
     try:
-        resp = controller_client.create_data_fusion(
+        controller_client.create_data_fusion(
             current_user.id,
-            task_in.project_id,
+            in_fusion.project_id,
             task_hash,
             parameters,
         )
-        logger.info("[create task] controller response: %s", resp)
     except ValueError:
-        raise FailedtoCreateTask()
+        logger.exception("[fusion] failed to create fusion via controller")
+        raise ControllerError()
 
-    # 1. create task
     task = crud.task.create_placeholder(
         db,
         type_=TaskType.data_fusion,
         user_id=current_user.id,
-        project_id=task_in.project_id,
+        project_id=in_fusion.project_id,
         hash_=task_hash,
         state_=TaskState.pending,
-        parameters=task_in.json(),
+        parameters=in_fusion.json(),
     )
-    logger.info("[create dataset] related task record created: %s", task.hash)
+    logger.info("[fusion] related task record created: %s", task.hash)
 
-    # 2. create dataset record
-    dataset_group = crud.dataset_group.get(db, id=task_in.dataset_group_id)
+    dataset_group = crud.dataset_group.get(db, id=in_fusion.dataset_group_id)
     if not dataset_group:
         raise DatasetGroupNotFound()
-    dataset_in = schemas.DatasetCreate(
-        hash=task.hash,
-        dataset_group_id=task_in.dataset_group_id,
-        project_id=task.project_id,
-        user_id=task.user_id,
-        source=task.type,
-        task_id=task.id,
-    )
-    dataset = crud.dataset.create_with_version(db, obj_in=dataset_in, dest_group_name=dataset_group.name)
-    logger.info("[create dataset] dataset record created: %s", dataset.name)
+    fused_dataset = crud.dataset.create_as_task_result(db, task, dataset_group.id)
+    logger.info("[fusion] dataset record created: %s", fused_dataset.name)
 
-    return {"result": dataset}
+    return {"result": fused_dataset}
 
 
 @router.post("/evaluation", response_model=schemas.dataset.DatasetEvaluationOut)
@@ -562,22 +546,37 @@ def merge_datasets(
     """
     Merge multiple datasets
     """
+    main_dataset = crud.dataset.get(db, id=in_merge.dataset_id)
+    if not main_dataset:
+        raise DatasetNotFound()
     in_datasets = ensure_datasets_are_ready(db, dataset_ids=[in_merge.dataset_id, *in_merge.include_datasets])
     ex_datasets = ensure_datasets_are_ready(db, dataset_ids=in_merge.exclude_datasets)
 
     task_hash = gen_task_hash(current_user.id, in_merge.project_id)
-    controller_client.merge_datasets(
-        current_user.id,
-        in_merge.project_id,
-        task_hash,
-        [d.hash for d in in_datasets],
-        [d.hash for d in ex_datasets],
-        in_merge.merge_strategy,
+    try:
+        controller_client.merge_datasets(
+            current_user.id,
+            in_merge.project_id,
+            task_hash,
+            [d.hash for d in in_datasets],
+            [d.hash for d in ex_datasets],
+            in_merge.merge_strategy,
+        )
+    except ValueError:
+        logger.exception("[merge] failed to create merge via controller")
+        raise ControllerError()
+
+    task = crud.task.create_placeholder(
+        db,
+        type_=TaskType.merge,
+        user_id=current_user.id,
+        project_id=in_merge.project_id,
+        hash_=task_hash,
+        state_=TaskState.pending,
+        parameters=in_merge.json(),
     )
-    merged_dataset = None
-    # todo
-    #  register task
-    #  register result dataset placeholder
+    logger.info("[merge] related task record created: %s", task.hash)
+    merged_dataset = crud.dataset.create_as_task_result(db, task, main_dataset.dataset_group_id)
     return {"result": merged_dataset}
 
 
@@ -588,26 +587,41 @@ def filter_dataset(
     in_filter: schemas.dataset.DatasetFilterCreate,
     current_user: models.User = Depends(deps.get_current_active_user),
     controller_client: ControllerClient = Depends(deps.get_controller_client),
+    user_labels: UserLabels = Depends(deps.get_user_labels),
 ) -> Any:
     """
-    Merge two datasets
+    Filter dataset
     """
     datasets = ensure_datasets_are_ready(db, dataset_ids=[in_filter.dataset_id])
-    # todo
-    #  convert class_ids and ex_class_ids
-    #  register task
-    #  register result dataset placeholder
+    main_dataset = datasets[0]
+
+    class_ids = user_labels.get_class_ids(names_or_aliases=in_filter.include_keywords)
+    ex_class_ids = user_labels.get_class_ids(names_or_aliases=in_filter.exclude_keywords)
+
     task_hash = gen_task_hash(current_user.id, in_filter.project_id)
-    class_ids: List[int] = []
-    ex_class_ids: List[int] = []
-    controller_client.filter_dataset(
-        current_user.id,
-        in_filter.project_id,
-        task_hash,
-        datasets[0].hash,
-        class_ids,
-        ex_class_ids,
-        in_filter.sampling_count,
+    try:
+        controller_client.filter_dataset(
+            current_user.id,
+            in_filter.project_id,
+            task_hash,
+            main_dataset.hash,
+            class_ids,
+            ex_class_ids,
+            in_filter.sampling_count,
+        )
+    except ValueError:
+        logger.exception("[filter] failed to create filter via controller")
+        raise ControllerError()
+
+    task = crud.task.create_placeholder(
+        db,
+        type_=TaskType.merge,
+        user_id=current_user.id,
+        project_id=in_filter.project_id,
+        hash_=task_hash,
+        state_=TaskState.pending,
+        parameters=in_filter.json(),
     )
-    merged_dataset = None
-    return {"result": merged_dataset}
+    logger.info("[filter] related task record created: %s", task.hash)
+    filtered_dataset = crud.dataset.create_as_task_result(db, task, main_dataset.dataset_group_id)
+    return {"result": filtered_dataset}

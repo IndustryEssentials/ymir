@@ -489,10 +489,10 @@ class ControllerClient:
         user_id: int,
         project_id: int,
         task_id: str,
-        task_parameters: Optional[Dict],
+        args: Optional[Dict],
     ) -> Dict:
         req = ControllerRequest(
-            type=TaskType.data_fusion, user_id=user_id, project_id=project_id, task_id=task_id, args=task_parameters
+            type=TaskType.data_fusion, user_id=user_id, project_id=project_id, task_id=task_id, args=args
         )
 
         return self.send(req)
@@ -573,7 +573,7 @@ class ControllerClient:
         self,
         user_id: int,
         project_id: int,
-        task_hash: str,
+        task_id: str,
         dataset_hashes: List[str],
         ex_dataset_hashes: List[str],
         merge_strategy: Optional[MergeStrategy] = None,
@@ -582,7 +582,7 @@ class ControllerClient:
             type=TaskType.data_fusion,
             user_id=user_id,
             project_id=project_id,
-            task_id=task_hash,
+            task_id=task_id,
             args={
                 "in_datasets": dataset_hashes,
                 "exclude_datasets": ex_dataset_hashes,
@@ -595,7 +595,7 @@ class ControllerClient:
         self,
         user_id: int,
         project_id: int,
-        task_hash: str,
+        task_id: str,
         dataset_hash: str,
         class_ids: List[int],
         ex_class_ids: List[int],
@@ -605,7 +605,7 @@ class ControllerClient:
             type=TaskType.data_fusion,
             user_id=user_id,
             project_id=project_id,
-            task_id=task_hash,
+            task_id=task_id,
             args={
                 "in_datasets": [dataset_hash],
                 "include_class_ids": class_ids,
