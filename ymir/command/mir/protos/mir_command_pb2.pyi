@@ -801,6 +801,19 @@ class Task(google.protobuf.message.Message):
             ) -> None: ...
         def ClearField(self, field_name: typing_extensions.Literal["key",b"key","value",b"value"]) -> None: ...
 
+    class AddedTypesEntry(google.protobuf.message.Message):
+        DESCRIPTOR: google.protobuf.descriptor.Descriptor = ...
+        KEY_FIELD_NUMBER: builtins.int
+        VALUE_FIELD_NUMBER: builtins.int
+        key: typing.Text = ...
+        value: builtins.int = ...
+        def __init__(self,
+            *,
+            key : typing.Text = ...,
+            value : builtins.int = ...,
+            ) -> None: ...
+        def ClearField(self, field_name: typing_extensions.Literal["key",b"key","value",b"value"]) -> None: ...
+
     TYPE_FIELD_NUMBER: builtins.int
     NAME_FIELD_NUMBER: builtins.int
     TASK_ID_FIELD_NUMBER: builtins.int
@@ -810,6 +823,7 @@ class Task(google.protobuf.message.Message):
     RETURN_CODE_FIELD_NUMBER: builtins.int
     RETURN_MSG_FIELD_NUMBER: builtins.int
     EVALUATION_FIELD_NUMBER: builtins.int
+    ADDED_TYPES_FIELD_NUMBER: builtins.int
     SERIALIZED_TASK_PARAMETERS_FIELD_NUMBER: builtins.int
     SERIALIZED_EXECUTOR_CONFIG_FIELD_NUMBER: builtins.int
     SRC_REVS_FIELD_NUMBER: builtins.int
@@ -829,16 +843,20 @@ class Task(google.protobuf.message.Message):
 
     @property
     def model(self) -> global___ModelMeta:
-        """/ (special for training task): result model for cmd train"""
+        """/ (for training task): result model for cmd train"""
         pass
     @property
     def unknown_types(self) -> google.protobuf.internal.containers.ScalarMap[typing.Text, builtins.int]:
-        """/ (special for import task): unknown types for cmd import"""
+        """/ (for import task): unknown types for cmd import, key: class name, value: asset count"""
         pass
     return_code: builtins.int = ...
     return_msg: typing.Text = ...
     @property
     def evaluation(self) -> global___Evaluation: ...
+    @property
+    def added_types(self) -> google.protobuf.internal.containers.ScalarMap[typing.Text, builtins.int]:
+        """/ (for import task): added unknown types for cmd import, key: class name, value: class id"""
+        pass
     serialized_task_parameters: typing.Text = ...
     serialized_executor_config: typing.Text = ...
     src_revs: typing.Text = ...
@@ -855,6 +873,7 @@ class Task(google.protobuf.message.Message):
         return_code : builtins.int = ...,
         return_msg : typing.Text = ...,
         evaluation : typing.Optional[global___Evaluation] = ...,
+        added_types : typing.Optional[typing.Mapping[typing.Text, builtins.int]] = ...,
         serialized_task_parameters : typing.Text = ...,
         serialized_executor_config : typing.Text = ...,
         src_revs : typing.Text = ...,
@@ -862,7 +881,7 @@ class Task(google.protobuf.message.Message):
         executor : typing.Text = ...,
         ) -> None: ...
     def HasField(self, field_name: typing_extensions.Literal["evaluation",b"evaluation","model",b"model"]) -> builtins.bool: ...
-    def ClearField(self, field_name: typing_extensions.Literal["dst_rev",b"dst_rev","evaluation",b"evaluation","executor",b"executor","model",b"model","name",b"name","return_code",b"return_code","return_msg",b"return_msg","serialized_executor_config",b"serialized_executor_config","serialized_task_parameters",b"serialized_task_parameters","src_revs",b"src_revs","task_id",b"task_id","timestamp",b"timestamp","type",b"type","unknown_types",b"unknown_types"]) -> None: ...
+    def ClearField(self, field_name: typing_extensions.Literal["added_types",b"added_types","dst_rev",b"dst_rev","evaluation",b"evaluation","executor",b"executor","model",b"model","name",b"name","return_code",b"return_code","return_msg",b"return_msg","serialized_executor_config",b"serialized_executor_config","serialized_task_parameters",b"serialized_task_parameters","src_revs",b"src_revs","task_id",b"task_id","timestamp",b"timestamp","type",b"type","unknown_types",b"unknown_types"]) -> None: ...
 global___Task = Task
 
 class ModelMeta(google.protobuf.message.Message):

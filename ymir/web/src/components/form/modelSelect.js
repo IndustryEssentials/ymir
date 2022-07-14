@@ -1,13 +1,14 @@
-import { Cascader, Col, Row, Select } from 'antd'
-import { connect } from 'dva'
+import { Cascader } from 'antd'
+import { useSelector } from 'umi'
 import { useEffect, useState } from 'react'
 
 import { percent } from '@/utils/number'
 import t from '@/utils/t'
-import useFetch from '../../hooks/useFetch'
+import useFetch from '@/hooks/useFetch'
 
 
-const ModelSelect = ({ pid, value, onlyModel, allModels, onChange = () => { }, ...resProps }) => {
+const ModelSelect = ({ pid, value, onlyModel, onChange = () => { }, ...resProps }) => {
+  const allModels = useSelector(state => state.model.allModels)
   const [options, setOptions] = useState([])
   const [models, setModels] = useState([])
   const [_, getModels] = useFetch('model/queryAllModels')
@@ -72,14 +73,8 @@ const ModelSelect = ({ pid, value, onlyModel, allModels, onChange = () => { }, .
 
   return (
     <Cascader value={value} {...resProps} onChange={onChange} options={options}
-      displayRender={labelRender} showCheckedStrategy={Cascader.SHOW_CHILD} showSearch={{ filter }} allowClear></Cascader>
+      tagRender={labelRender} showCheckedStrategy={Cascader.SHOW_CHILD} showSearch={{ filter }} allowClear></Cascader>
   )
 }
 
-const props = (state) => {
-  return {
-    allModels: state.model.allModels,
-  }
-}
-
-export default connect(props, null)(ModelSelect)
+export default ModelSelect
