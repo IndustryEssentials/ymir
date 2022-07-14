@@ -8,6 +8,7 @@ on:
     branches:
       - master
       - dev
+      - ymir-pa
     paths:
       - 'docker_executor/sample_executor/**'
 
