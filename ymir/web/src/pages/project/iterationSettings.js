@@ -21,7 +21,7 @@ const strategyOptions = Object.values(MiningStrategy)
     label: t(`project.mining.strategy.${value}`),
   }))
 
-const Add = ({}) => {
+const Add = ({ }) => {
   const { id } = useParams()
   const history = useHistory()
   const [form] = useForm()
@@ -76,18 +76,22 @@ const Add = ({}) => {
       <Breadcrumbs />
       <Card className={s.container} title={t('project.iteration.settings.title')}>
         <div className={s.formContainer}>
-          <Form form={form} labelCol={{ span: 6, offset: 2 }} wrapperCol={{ span: 12 }} labelAlign='left' onFinish={submit} scrollToFirstError>
-
+          <Form form={form} labelCol={{ span: 6, offset: 2 }} wrapperCol={{ span: 12 }}
+            colon={false} labelAlign='left' onFinish={submit} scrollToFirstError>
             <ConfigProvider renderEmpty={() => <EmptyState add={() => history.push(`/home/dataset/add/${id}`)} />}>
               <Form.Item label={t('project.add.form.training.set')} tooltip={t('project.add.trainset.tip')}>
-                {project.trainSet?.name}
-                <Form.Item noStyle name='trainSetVersion'>
-                  <Select style={{ marginLeft: 20, width: 150 }} disabled={project.currentIteration}>
-                    {project?.trainSet?.versions?.map(({ id, versionName, assetCount }) =>
-                      <Select.Option key={id} value={id}>{versionName} (assets: {assetCount})</Select.Option>
-                    )}
-                  </Select>
-                </Form.Item>
+                <Row>
+                  <Col flex={1} className="normalColor">{project.trainSet?.name}</Col>
+                  <Col>
+                    <Form.Item name='trainSetVersion' label={'project.add.form.training.set.version'} className="normalFont">
+                      <Select style={{ marginLeft: 20, width: 150 }} disabled={project.currentIteration}>
+                        {project?.trainSet?.versions?.map(({ id, versionName, assetCount }) =>
+                          <Select.Option key={id} value={id}>{versionName} (assets: {assetCount})</Select.Option>
+                        )}
+                      </Select>
+                    </Form.Item>
+                  </Col>
+                </Row>
               </Form.Item>
               <Form.Item label={t('project.add.form.test.set')} name="testSet" rules={[
                 { required: true, message: t('task.train.form.testset.required') },
@@ -122,6 +126,7 @@ const Add = ({}) => {
                   </Col>
                   {strategy === 0 ? <Col flex={'200px'} offset={1}>
                     <Form.Item label={t('project.add.form.mining.chunksize')}
+                      className="normalFont"
                       name='chunkSize'
                       rules={[
                         { required: strategy === 0 }
