@@ -4,6 +4,7 @@ import { useEffect, useState } from "react"
 
 import t from '@/utils/t'
 import s from './common.less'
+import { FailIcon, SuccessIcon } from "./icons"
 
 const CheckProjectDirty = ({ pid, initialCheck, callback = () => { }, ...props }) => {
   const { checkDirty } = useProjectStatus(pid)
@@ -20,15 +21,21 @@ const CheckProjectDirty = ({ pid, initialCheck, callback = () => { }, ...props }
     callback(dirty)
   }
 
-  return <Row gutter={20} {...props}>
+  return <Row className={s.checkPanel} gutter={20} {...props}>
     {checked ?
-      <Col flex={1} className={isDirty ? s.checkerError : s.checkerSuccess}>
-        {isDirty ? t('project.workspace.status.dirty', {dirtyLabel: <span style={{ color: 'red' }}>Dirty</span> })
-        : t('project.workspace.status.clean', {cleanLabel: <span style={{ color: 'green' }}>Clean</span> })}
+      <Col flex={1} className={!isDirty ? s.checkerError : s.checkerSuccess}>
+        {!isDirty ?
+          <><FailIcon className={s.error} />{t('project.workspace.status.dirty', {
+            dirtyLabel: <span className={s.error}>Dirty</span>
+          })}</> :
+          <><SuccessIcon className={s.success} /> {t('project.workspace.status.clean', {
+            cleanLabel: <span className={s.success}>Clean</span>
+          })}</>
+        }
       </Col>
       : null}
     <Col>
-      <Button type='primary' onClick={checkStatus}>{t(`common.action.check${checked ? '.again' : ''}`)}</Button>
+      <Button className={s.checkBtn} onClick={checkStatus}>{t(`common.action.check${checked ? '.again' : ''}`)}</Button>
     </Col>
   </Row>
 }
