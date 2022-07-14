@@ -25,9 +25,8 @@ function ProjectDetail({ project = {}, iterations = {}, fresh = () => { } }) {
     ]
 
     return maps.map(({ name, label, dataset }) => {
-      const rlabel = <span>{t(label)}: {name}</span>
       return <Col key={label} className={s.ellipsis} span={8} title={name}>
-        {dataset ? renderPop(rlabel, dataset) : rlabel}
+        <span className={s.datasetTitle}>{t(label)}: </span>{dataset ? renderPop(name, dataset) : name}
       </Col>
     })
   }

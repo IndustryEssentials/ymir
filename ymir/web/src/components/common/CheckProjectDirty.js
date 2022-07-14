@@ -23,8 +23,8 @@ const CheckProjectDirty = ({ pid, initialCheck, callback = () => { }, ...props }
 
   return <Row className={s.checkPanel} gutter={20} {...props}>
     {checked ?
-      <Col flex={1} className={!isDirty ? s.checkerError : s.checkerSuccess}>
-        {!isDirty ?
+      <Col flex={1} className={isDirty ? s.checkerError : s.checkerSuccess}>
+        {isDirty ?
           <><FailIcon className={s.error} />{t('project.workspace.status.dirty', {
             dirtyLabel: <span className={s.error}>Dirty</span>
           })}</> :

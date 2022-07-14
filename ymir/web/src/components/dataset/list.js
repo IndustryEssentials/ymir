@@ -173,7 +173,7 @@ function Datasets({ pid, project = {}, iterations, group, datasetList, query, ve
       {
         title: showTitle('dataset.column.state'),
         dataIndex: 'state',
-        render: (state, record) => RenderProgress(state, record, true),
+        render: (state, record) => RenderProgress(state, record),
         // width: 60,
       },
       {
