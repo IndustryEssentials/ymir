@@ -19,6 +19,13 @@ export const statesLabel = (state: states) => {
   return maps[state]
 } 
 
+export enum IMPORTSTRATEGY {
+  ALL_KEYWORDS_IGNORE = 1,
+  UNKOWN_KEYWORDS_IGNORE = 2,
+  UNKOWN_KEYWORDS_STOP = 3,
+  UNKOWN_KEYWORDS_AUTO_ADD = 4,
+}
+
 export function transferDatasetGroup (data: BackendData) {
   const group: DatasetGroup = {
     id: data.id,
