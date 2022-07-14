@@ -1,7 +1,7 @@
 .header {
   background: #fff;
-  margin: -20px -20px 20px;
-  padding: 0 20px 20px;
+  margin: -20px 0 20px;
+  padding: 10px 20px 20px;
   border-radius: 5px;
 }
 .detailPanel {
@@ -16,10 +16,7 @@
   box-shadow: 0px 0px 0px rgb(255 255 255);
 }
 .detailPanel {
-  :global(.ant-space-item) {
-    margin-right: 16px;
-    color: rgba(0, 0, 0, 0.65);
-  }
+  color: rgba(0, 0, 0, 0.65);
   .name {
     font-size: 20px;
     font-weight: bold;
@@ -49,18 +46,18 @@
   white-space: nowrap;
 }
 
-.datasetPanel {
+.testingSets {
   height: 30px;
   .datasetTitle {
     margin-right: 20px;
     font-size: 14px;
     color: rgba(0, 0, 0, 0.85);
   }
-  .nameTag {
-    background: rgba(0, 0, 0, 0.06);
-    border-radius: 2px 2px 2px 2px;
-    border: 1px solid rgba(0, 0, 0, 0.06);
-  }
+}
+.detailContainer .nameTag {
+  background: rgba(0, 0, 0, 0.06);
+  border-radius: 2px;
+  border: 1px solid rgba(0, 0, 0, 0.06);
 }
 .projectOverview {
   background: #fff;

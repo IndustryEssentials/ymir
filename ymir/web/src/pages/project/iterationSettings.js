@@ -83,7 +83,7 @@ const Add = ({ }) => {
                 <Row>
                   <Col flex={1} className="normalColor">{project.trainSet?.name}</Col>
                   <Col>
-                    <Form.Item name='trainSetVersion' label={'project.add.form.training.set.version'} className="normalFont">
+                    <Form.Item name='trainSetVersion' label={t('project.add.form.training.set.version')} className="normalFont">
                       <Select style={{ marginLeft: 20, width: 150 }} disabled={project.currentIteration}>
                         {project?.trainSet?.versions?.map(({ id, versionName, assetCount }) =>
                           <Select.Option key={id} value={id}>{versionName} (assets: {assetCount})</Select.Option>
