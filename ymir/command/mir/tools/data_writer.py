@@ -184,6 +184,9 @@ def _single_image_annotations_to_voc(asset_id: str, attrs: mirpb.MetadataAttribu
         ymax_node = ElementTree.SubElement(bndbox_node, 'ymax')
         ymax_node.text = str(annotation.box.y + annotation.box.h - 1)
 
+        rotate_angle_node = ElementTree.SubElement(bndbox_node, 'rotate_angle')
+        rotate_angle_node.text = f"{annotation.box.rotate_angle:.4f}"
+
         difficult_node = ElementTree.SubElement(object_node, 'difficult')
         difficult_node.text = '0'
 
@@ -193,9 +196,6 @@ def _single_image_annotations_to_voc(asset_id: str, attrs: mirpb.MetadataAttribu
 
         box_quality_node = ElementTree.SubElement(object_node, 'box_quality')
         box_quality_node.text = f"{annotation.anno_quality:.4f}"
-
-        rotate_angle_node = ElementTree.SubElement(object_node, 'rotate_angle')
-        rotate_angle_node.text = f"{annotation.box.rotate_angle:.4f}"
 
         if annotation.cm != mirpb.ConfusionMatrixType.NotSet:
             cm_node = ElementTree.SubElement(object_node, 'cm')
