@@ -242,6 +242,24 @@ class TestCmdEvaluate(unittest.TestCase):
             'task_annotations': {
                 'd': {
                     'image_annotations': {
+                        'a1': {
+                            'annotations': [{
+                                'box': {
+                                    'x': 300,
+                                    'y': 300,
+                                    'w': 100,
+                                    'h': 100,
+                                    'rotate_angle': 0.0
+                                },
+                                'class_id': 2,
+                                'score': 0.9,
+                                'cm': 'TP',
+                                'index': 0,
+                                'anno_quality': 0.0,
+                                'tags': {},
+                                'det_link_id': 0
+                            }]
+                        },
                         'a0': {
                             'annotations': [{
                                 'box': {
@@ -303,24 +321,6 @@ class TestCmdEvaluate(unittest.TestCase):
                                 'det_link_id': 3,
                                 'anno_quality': 0.0,
                                 'tags': {}
-                            }]
-                        },
-                        'a1': {
-                            'annotations': [{
-                                'box': {
-                                    'x': 300,
-                                    'y': 300,
-                                    'w': 100,
-                                    'h': 100,
-                                    'rotate_angle': 0.0
-                                },
-                                'class_id': 2,
-                                'score': 0.9,
-                                'cm': 'TP',
-                                'index': 0,
-                                'anno_quality': 0.0,
-                                'tags': {},
-                                'det_link_id': 0
                             }]
                         }
                     },
