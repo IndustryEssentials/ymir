@@ -19,7 +19,7 @@ class TestToolsClassIds(unittest.TestCase):
         return super().setUp()
 
     def tearDown(self) -> None:
-        # self._deprepare_dirs()
+        self._deprepare_dirs()
         return super().tearDown()
 
     # protected: setup and teardown
@@ -50,3 +50,5 @@ class TestToolsClassIds(unittest.TestCase):
         cim = ClassIdManager(self._test_root)
         with self.assertRaises(ValidationError):
             cim.add(main_name='a')
+        self.assertEqual(3, cim.size())
+        self.assertEqual([0, 1, 2], cim.id_for_names(['a', 'b', 'c'])[0])
