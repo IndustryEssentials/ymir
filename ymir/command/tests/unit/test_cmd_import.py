@@ -139,7 +139,7 @@ class TestCmdImport(unittest.TestCase):
                                 'y': 127,
                                 'w': 94,
                                 'h': 67,
-                                'rotate_angle': -1.0
+                                'rotate_angle': -0.02
                             },
                             'class_id': 1,
                             'score': -1.0,
@@ -158,7 +158,7 @@ class TestCmdImport(unittest.TestCase):
                                 'y': 78,
                                 'w': 272,
                                 'h': 106,
-                                'rotate_angle': -1.0
+                                'rotate_angle': 0.22
                             },
                             'class_id': 1,
                             'score': 0.5,
@@ -175,7 +175,7 @@ class TestCmdImport(unittest.TestCase):
                                 'y': 88,
                                 'w': 65,
                                 'h': 36,
-                                'rotate_angle': -1.0
+                                'rotate_angle': 0.02
                             },
                             'class_id': 1,
                             'score': -1.0,
@@ -199,7 +199,7 @@ class TestCmdImport(unittest.TestCase):
                                 'y': 127,
                                 'w': 94,
                                 'h': 67,
-                                'rotate_angle': -1.0
+                                'rotate_angle': -0.02
                             },
                             'class_id': 1,
                             'score': -1.0,
@@ -218,7 +218,7 @@ class TestCmdImport(unittest.TestCase):
                                 'y': 78,
                                 'w': 272,
                                 'h': 106,
-                                'rotate_angle': -1.0
+                                'rotate_angle': 0.22
                             },
                             'class_id': 1,
                             'score': 0.5,
@@ -235,7 +235,7 @@ class TestCmdImport(unittest.TestCase):
                                 'y': 88,
                                 'w': 65,
                                 'h': 36,
-                                'rotate_angle': -1.0
+                                'rotate_angle': 0.02
                             },
                             'class_id': 1,
                             'score': -1.0,
@@ -251,8 +251,7 @@ class TestCmdImport(unittest.TestCase):
                                 'x': 195,
                                 'y': 180,
                                 'w': 19,
-                                'h': 50,
-                                'rotate_angle': -1.0
+                                'h': 50
                             },
                             'class_id': 2,
                             'score': -1.0,
@@ -268,7 +267,7 @@ class TestCmdImport(unittest.TestCase):
                                 'y': 189,
                                 'w': 19,
                                 'h': 50,
-                                'rotate_angle': -1.0
+                                'rotate_angle': 0.12
                             },
                             'class_id': 2,
                             'score': -1.0,
