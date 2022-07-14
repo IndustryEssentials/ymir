@@ -217,13 +217,15 @@ message Task {
     string task_id = 3;
     /// execution time of this task
     int64 timestamp = 5;  // RFC 3339 date strings
-    /// (special for training task): result model for cmd train
+    /// (for training task): result model for cmd train
     ModelMeta model = 6;
-    /// (special for import task): unknown types for cmd import
+    /// (for import task): unknown types for cmd import, key: class name, value: asset count
     map<string, int32> unknown_types = 7;
     int32 return_code = 8;
     string return_msg = 9;
     Evaluation evaluation = 10;
+    /// (for import task): added unknown types for cmd import, key: class name, value: class id
+    map<string, int32> added_types = 11;
 
     string serialized_task_parameters = 102;
     string serialized_executor_config = 103;

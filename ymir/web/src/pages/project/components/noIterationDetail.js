@@ -7,21 +7,13 @@ import { TestingSet } from "./testingSet"
 
 const NoIterationDetail = ({ project }) => {
   return (<>
-      <Row>
-        <Col flex={1}>
+      <div>
           <Space className={s.detailPanel} wrap>
             <span className={s.name}>{project.name}</span>
             <span>{t('project.train_classes')}: <span className={s.black}>{project?.keywords?.join(',')}</span></span>
             {project.description ? <span>{t('project.detail.desc')}: {project.description}</span> : null}
           </Space>
-        </Col>
-        <Col>
-          <Space>
-            <Link to={`/home/project/${project.id}/add`}><EditIcon /><span>{t('project.settings.title')}</span></Link>
-            <Link to={`/home/project/${project.id}/hidden`}><EyeOffIcon /><span>{t('common.hidden.list')}</span></Link>
-          </Space>
-        </Col>
-      </Row>
+        </div>
       <TestingSet project={project} />
     </>
   )
