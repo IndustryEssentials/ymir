@@ -90,7 +90,7 @@ def _single_image_annotations_to_ark(asset_id: str, attrs: mirpb.MetadataAttribu
         mapped_id = class_type_mapping[annotation.class_id] if class_type_mapping else annotation.class_id
         output_str += f"{mapped_id}, {annotation.box.x}, {annotation.box.y}, "
         output_str += f"{annotation.box.x + annotation.box.w - 1}, {annotation.box.y + annotation.box.h - 1}, "
-        output_str += f"{annotation.anno_quality}\n"
+        output_str += f"{annotation.anno_quality}, {annotation.box.rotate_angle}\n"
     return output_str
 
 
@@ -193,6 +193,9 @@ def _single_image_annotations_to_voc(asset_id: str, attrs: mirpb.MetadataAttribu
 
         box_quality_node = ElementTree.SubElement(object_node, 'box_quality')
         box_quality_node.text = f"{annotation.anno_quality:.4f}"
+
+        rotate_angle_node = ElementTree.SubElement(object_node, 'rotate_angle')
+        rotate_angle_node.text = f"{annotation.box.rotate_angle:.4f}"
 
         if annotation.cm != mirpb.ConfusionMatrixType.NotSet:
             cm_node = ElementTree.SubElement(object_node, 'cm')
