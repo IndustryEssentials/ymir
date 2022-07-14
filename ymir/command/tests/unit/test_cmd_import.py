@@ -55,7 +55,7 @@ class TestCmdImport(unittest.TestCase):
         args.gen = gen_folder
         args.dataset_name = ''
         args.work_dir = self._work_dir
-        args.ignore_unknown_types = False
+        args.unknown_types_strategy = 'stop'
         importing_instance = CmdImport(args)
         ret = importing_instance.run()
         assert ret == MirCode.RC_OK
@@ -65,7 +65,7 @@ class TestCmdImport(unittest.TestCase):
         test_utils.prepare_labels(mir_root=self._mir_repo_root, names=['cat', 'airplane,aeroplane'])
 
         # ignore unknown types
-        args.ignore_unknown_types = True
+        args.unknown_types_strategy = 'ignore'
         args.dataset_name = 'import-task-0'
         args.dst_rev = 'a@import-task-1'
         importing_instance = CmdImport(args)
@@ -76,7 +76,7 @@ class TestCmdImport(unittest.TestCase):
         # have no annotations
         args.anno = None
         args.gt_dir = None
-        args.ignore_unknown_types = False
+        args.unknown_types_strategy = 'stop'
         args.dataset_name = 'import-task-0'
         args.dst_rev = 'a@import-task-2'
         importing_instance = CmdImport(args)

@@ -1,7 +1,9 @@
+from datetime import datetime
 import os
 from typing import Any, Dict, List, Optional, Set, Tuple
 
-from pydantic import BaseModel, validator, root_validator
+import fasteners  # type: ignore
+from pydantic import BaseModel, root_validator, validate_model, validator
 import yaml
 
 from mir.tools import utils as mir_utils
@@ -12,6 +14,8 @@ EXPECTED_FILE_VERSION = 1
 class _SingleLabel(BaseModel):
     id: int
     name: str
+    create_time: datetime = datetime(year=2022, month=1, day=1)
+    update_time: datetime = datetime(year=2022, month=1, day=1)
     aliases: List[str] = []
 
     @validator('name')
@@ -29,6 +33,7 @@ class _LabelStorage(BaseModel):
     _label_to_ids: Dict[str, Tuple[int, Optional[str]]] = {}
     _id_to_labels: Dict[int, str] = {}
 
+    # protected: validators
     @validator('version')
     def _check_version(cls, v: int) -> int:
         if v != EXPECTED_FILE_VERSION:
@@ -59,20 +64,46 @@ class _LabelStorage(BaseModel):
         label_to_ids: Dict[str, Tuple[int, Optional[str]]] = {}
         id_to_labels: Dict[int, str] = {}
         for label in labels:
-            _set_if_not_exists(k=label.name, v=(label.id, None), d=label_to_ids, error_message_prefix='duplicated name')
+            cls._set_if_not_exists(k=label.name,
+                                   v=(label.id, None),
+                                   d=label_to_ids,
+                                   error_message_prefix='duplicated name')
             #   key: aliases
             for label_alias in label.aliases:
-                _set_if_not_exists(k=label_alias,
-                                   v=(label.id, label.name),
-                                   d=label_to_ids,
-                                   error_message_prefix='duplicated alias')
+                cls._set_if_not_exists(k=label_alias,
+                                       v=(label.id, label.name),
+                                       d=label_to_ids,
+                                       error_message_prefix='duplicated alias')
 
             # self._type_id_name_dict
-            _set_if_not_exists(k=label.id, v=label.name, d=id_to_labels, error_message_prefix='duplicated id')
+            cls._set_if_not_exists(k=label.id, v=label.name, d=id_to_labels, error_message_prefix='duplicated id')
 
         values['_label_to_ids'] = label_to_ids
         values['_id_to_labels'] = id_to_labels
         return values
+
+    # protected: general
+    @classmethod
+    def _set_if_not_exists(cls, k: Any, v: Any, d: dict, error_message_prefix: str) -> None:
+        if k in d:
+            raise ClassIdManagerError(f"{error_message_prefix}: {k}")
+        d[k] = v
+
+    # public: general
+    def dict(self) -> Any:  # type: ignore
+        return super().dict(exclude={'_label_to_ids', '_id_to_labels'})
+
+    def check(self) -> None:
+        """
+        force validators to run again, update `_id_to_labels` and `_label_to_ids`
+        """
+        validation_result, _, validation_error = validate_model(model=self.__class__, input_data=self.__dict__)
+        if validation_error:
+            raise validation_error
+
+        # this two fields not automatically updated when `validate_model` ends
+        self._id_to_labels.update(validation_result.get('_id_to_labels', {}))
+        self._label_to_ids.update(validation_result.get('_label_to_ids', {}))
 
 
 def ids_file_name() -> str:
@@ -81,6 +112,20 @@ def ids_file_name() -> str:
 
 def ids_file_path(mir_root: str) -> str:
     return os.path.join(mir_utils.repo_dot_mir_path(mir_root=mir_root), ids_file_name())
+
+
+def ids_lock_file_name() -> str:
+    return 'labels.lock'
+
+
+def ids_lock_file_path(ids_storage_file_path: str) -> str:
+    # for ymir-command users, file_path points to a real file
+    # for ymir-controller users, file_path points to a link, need to lock all write request for user
+    file_path = ids_storage_file_path
+    if os.path.islink(file_path):
+        file_path = os.path.realpath(file_path)
+    lock_file_path = os.path.join(os.path.dirname(file_path), ids_lock_file_name())
+    return lock_file_path
 
 
 def create_empty_if_not_exists(mir_root: str) -> None:
@@ -119,15 +164,25 @@ class ClassIdManager(object):
         if self._storage_file_path:
             raise ClassIdManagerError(f"already loaded from: {self._storage_file_path}")
 
+        self.__reload(file_path)
+
+        self._storage_file_path = file_path
+        return True
+
+    def __reload(self, file_path: str) -> None:
         with open(file_path, 'r') as f:
             file_obj = yaml.safe_load(f)
         if file_obj is None:
             file_obj = {}
 
         self._label_storage = _LabelStorage(**file_obj)
-        # save `self._storage_file_path` as a flag of successful loading
-        self._storage_file_path = file_path
-        return True
+
+    def __save(self) -> None:
+        if not self._storage_file_path:
+            raise ClassIdManagerError('not loaded')
+
+        with open(self._storage_file_path, 'w') as f:
+            yaml.safe_dump(self._label_storage.dict(), f)
 
     # public: general
     def id_and_main_name_for_name(self, name: str) -> Tuple[int, Optional[str]]:
@@ -146,7 +201,7 @@ class ClassIdManager(object):
         """
         name = name.strip().lower()
         if not self._storage_file_path:
-            raise ClassIdManagerError("not loade")
+            raise ClassIdManagerError("not loaded")
         if not name:
             raise ClassIdManagerError("empty name")
 
@@ -215,8 +270,21 @@ class ClassIdManager(object):
     def has_id(self, type_id: int) -> bool:
         return type_id in self._label_storage._id_to_labels
 
+    def add(self, main_name: str) -> int:
+        main_name = main_name.lower().strip()
+        if not main_name:
+            raise ClassIdManagerError('invalid main class name')
 
-def _set_if_not_exists(k: Any, v: Any, d: dict, error_message_prefix: str) -> None:
-    if k in d:
-        raise ClassIdManagerError(f"{error_message_prefix}: {k}")
-    d[k] = v
+        lock = fasteners.InterProcessLock(path=ids_lock_file_path(self._storage_file_path))
+        with lock:
+            self.__reload(self._storage_file_path)
+
+            current_datetime = datetime.now()
+            single_label = _SingleLabel(id=self.size(), name=main_name)
+            single_label.create_time = current_datetime
+            single_label.update_time = current_datetime
+            self._label_storage.labels.append(single_label)
+            self._label_storage.check()
+            self.__save()
+
+        return 0

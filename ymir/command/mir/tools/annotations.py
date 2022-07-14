@@ -152,7 +152,11 @@ def _import_annotations_from_dir(mir_metadatas: mirpb.MirMetadatas, mir_annotati
             anno_idx = 0
             for object_dict in objects:
                 type_name = object_dict['name']
-                if class_type_manager.has_name(type_name):
+                has_type_name = class_type_manager.has_name(type_name)
+                if has_type_name or unknown_types_strategy == UnknownTypesStrategy.ADD:
+                    if not has_type_name:
+                        class_type_manager.add(type_name)
+
                     annotation = _object_dict_to_annotation(object_dict, class_type_manager)
                     annotation.index = anno_idx
                     image_annotations.image_annotations[asset_hash].annotations.append(annotation)
