@@ -183,6 +183,7 @@ class CRUDModel(CRUDBase[Model, ModelCreate, ModelUpdate]):
         if result:
             model.map = result["map"]
             model.hash = result["hash"]
+            model.keywords = result["keywords"]
 
         model.result_state = int(result_state)
 
