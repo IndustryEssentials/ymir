@@ -30,7 +30,7 @@ def _object_dict_to_annotation(object_dict: dict, class_type_manager: class_ids.
     annotation.box.y = ymin
     annotation.box.w = width
     annotation.box.h = height
-    annotation.box.rotate_angle = float(bndbox_dict.get('rotate_angle', '-1.0'))
+    annotation.box.rotate_angle = float(bndbox_dict.get('rotate_angle', '0.0'))
     annotation.score = float(object_dict.get('confidence', '-1.0'))
     annotation.tags.update(object_dict.get('tags', {}))
     annotation.anno_quality = float(object_dict.get('box_quality', '-1.0'))
