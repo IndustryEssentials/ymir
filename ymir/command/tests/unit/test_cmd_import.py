@@ -138,17 +138,18 @@ class TestCmdImport(unittest.TestCase):
                                 'x': 181,
                                 'y': 127,
                                 'w': 94,
-                                'h': 67
+                                'h': 67,
+                                'rotate_angle': -0.02
                             },
                             'class_id': 1,
                             'score': -1.0,
+                            'anno_quality': 0.75,
                             'tags': {
                                 'difficult': '0',
                                 'color': 'pink',
                                 'pose': 'Unspecified'
-                            },
-                            'anno_quality': 0.75,
-                        }],
+                            }
+                        }]
                     },
                     '430df22960b0f369318705800139fcc8ec38a3e4': {
                         'annotations': [{
@@ -156,33 +157,35 @@ class TestCmdImport(unittest.TestCase):
                                 'x': 104,
                                 'y': 78,
                                 'w': 272,
-                                'h': 106
+                                'h': 106,
+                                'rotate_angle': 0.22
                             },
                             'class_id': 1,
                             'score': 0.5,
+                            'anno_quality': 0.62,
                             'tags': {
                                 'difficult': '0',
                                 'color': 'white',
                                 'pose': 'Frontal'
-                            },
-                            'anno_quality': 0.62,
+                            }
                         }, {
                             'index': 1,
                             'box': {
                                 'x': 133,
                                 'y': 88,
                                 'w': 65,
-                                'h': 36
+                                'h': 36,
+                                'rotate_angle': 0.02
                             },
                             'class_id': 1,
                             'score': -1.0,
+                            'anno_quality': 0.75,
                             'tags': {
                                 'difficult': '0',
                                 'color': 'blue',
                                 'pose': 'Left'
-                            },
-                            'anno_quality': 0.75,
-                        }],
+                            }
+                        }]
                     }
                 }
             }
@@ -195,15 +198,16 @@ class TestCmdImport(unittest.TestCase):
                                 'x': 181,
                                 'y': 127,
                                 'w': 94,
-                                'h': 67
+                                'h': 67,
+                                'rotate_angle': -0.02
                             },
                             'class_id': 1,
                             'score': -1.0,
                             'anno_quality': 0.75,
                             'tags': {
                                 'difficult': '0',
-                                'pose': 'Unspecified',
-                                'color': 'pink'
+                                'color': 'pink',
+                                'pose': 'Unspecified'
                             }
                         }]
                     },
@@ -213,15 +217,16 @@ class TestCmdImport(unittest.TestCase):
                                 'x': 104,
                                 'y': 78,
                                 'w': 272,
-                                'h': 106
+                                'h': 106,
+                                'rotate_angle': 0.22
                             },
                             'class_id': 1,
                             'score': 0.5,
                             'anno_quality': 0.62,
                             'tags': {
+                                'difficult': '0',
                                 'color': 'white',
-                                'pose': 'Frontal',
-                                'difficult': '0'
+                                'pose': 'Frontal'
                             }
                         }, {
                             'index': 1,
@@ -229,15 +234,16 @@ class TestCmdImport(unittest.TestCase):
                                 'x': 133,
                                 'y': 88,
                                 'w': 65,
-                                'h': 36
+                                'h': 36,
+                                'rotate_angle': 0.02
                             },
                             'class_id': 1,
                             'score': -1.0,
                             'anno_quality': 0.75,
                             'tags': {
                                 'difficult': '0',
-                                'pose': 'Left',
-                                'color': 'blue'
+                                'color': 'blue',
+                                'pose': 'Left'
                             }
                         }, {
                             'index': 2,
@@ -260,7 +266,8 @@ class TestCmdImport(unittest.TestCase):
                                 'x': 26,
                                 'y': 189,
                                 'w': 19,
-                                'h': 50
+                                'h': 50,
+                                'rotate_angle': 0.12
                             },
                             'class_id': 2,
                             'score': -1.0,

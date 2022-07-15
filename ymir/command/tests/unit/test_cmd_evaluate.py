@@ -248,7 +248,8 @@ class TestCmdEvaluate(unittest.TestCase):
                                     'x': 300,
                                     'y': 300,
                                     'w': 100,
-                                    'h': 100
+                                    'h': 100,
+                                    'rotate_angle': 0.0
                                 },
                                 'class_id': 2,
                                 'score': 0.9,
@@ -265,7 +266,8 @@ class TestCmdEvaluate(unittest.TestCase):
                                     'x': 50,
                                     'y': 50,
                                     'w': 50,
-                                    'h': 50
+                                    'h': 50,
+                                    'rotate_angle': 0.0
                                 },
                                 'score': 0.7,
                                 'cm': 'TP',
@@ -280,7 +282,8 @@ class TestCmdEvaluate(unittest.TestCase):
                                     'x': 150,
                                     'y': 50,
                                     'w': 75,
-                                    'h': 75
+                                    'h': 75,
+                                    'rotate_angle': 0.0
                                 },
                                 'score': 0.8,
                                 'cm': 'TP',
@@ -294,7 +297,8 @@ class TestCmdEvaluate(unittest.TestCase):
                                     'x': 150,
                                     'y': 150,
                                     'w': 75,
-                                    'h': 75
+                                    'h': 75,
+                                    'rotate_angle': 0.0
                                 },
                                 'class_id': 1,
                                 'score': 0.9,
@@ -308,7 +312,8 @@ class TestCmdEvaluate(unittest.TestCase):
                                     'x': 350,
                                     'y': 50,
                                     'w': 100,
-                                    'h': 100
+                                    'h': 100,
+                                    'rotate_angle': 0.0
                                 },
                                 'class_id': 2,
                                 'score': 0.9,
@@ -331,7 +336,8 @@ class TestCmdEvaluate(unittest.TestCase):
                                 'x': 50,
                                 'y': 50,
                                 'w': 50,
-                                'h': 50
+                                'h': 50,
+                                'rotate_angle': 0.0
                             },
                             'score': 1.0,
                             'cm': 'MTP',
@@ -346,7 +352,8 @@ class TestCmdEvaluate(unittest.TestCase):
                                 'x': 150,
                                 'y': 50,
                                 'w': 75,
-                                'h': 75
+                                'h': 75,
+                                'rotate_angle': 0.0
                             },
                             'score': 1.0,
                             'cm': 'MTP',
@@ -360,7 +367,8 @@ class TestCmdEvaluate(unittest.TestCase):
                                 'x': 150,
                                 'y': 150,
                                 'w': 75,
-                                'h': 75
+                                'h': 75,
+                                'rotate_angle': 0.0
                             },
                             'class_id': 1,
                             'score': 1.0,
@@ -374,7 +382,8 @@ class TestCmdEvaluate(unittest.TestCase):
                                 'x': 350,
                                 'y': 50,
                                 'w': 100,
-                                'h': 100
+                                'h': 100,
+                                'rotate_angle': 0.0
                             },
                             'class_id': 2,
                             'score': 1.0,
@@ -390,7 +399,8 @@ class TestCmdEvaluate(unittest.TestCase):
                                 'x': 300,
                                 'y': 300,
                                 'w': 100,
-                                'h': 100
+                                'h': 100,
+                                'rotate_angle': 0.0
                             },
                             'class_id': 2,
                             'score': 1.0,
@@ -412,7 +422,8 @@ class TestCmdEvaluate(unittest.TestCase):
                                 'x': 50,
                                 'y': 50,
                                 'w': 50,
-                                'h': 50
+                                'h': 50,
+                                'rotate_angle': 0.0
                             },
                             'score': 0.7,
                             'cm': 'TP',
@@ -427,7 +438,8 @@ class TestCmdEvaluate(unittest.TestCase):
                                 'x': 150,
                                 'y': 50,
                                 'w': 75,
-                                'h': 75
+                                'h': 75,
+                                'rotate_angle': 0.0
                             },
                             'score': 0.8,
                             'cm': 'TP',
@@ -441,7 +453,8 @@ class TestCmdEvaluate(unittest.TestCase):
                                 'x': 150,
                                 'y': 150,
                                 'w': 75,
-                                'h': 75
+                                'h': 75,
+                                'rotate_angle': 0.0
                             },
                             'class_id': 1,
                             'score': 0.9,
@@ -455,7 +468,8 @@ class TestCmdEvaluate(unittest.TestCase):
                                 'x': 350,
                                 'y': 50,
                                 'w': 100,
-                                'h': 100
+                                'h': 100,
+                                'rotate_angle': 0.0
                             },
                             'class_id': 2,
                             'score': 0.9,
@@ -471,7 +485,8 @@ class TestCmdEvaluate(unittest.TestCase):
                                 'x': 300,
                                 'y': 300,
                                 'w': 100,
-                                'h': 100
+                                'h': 100,
+                                'rotate_angle': 0.0
                             },
                             'class_id': 2,
                             'score': 0.9,
@@ -489,18 +504,18 @@ class TestCmdEvaluate(unittest.TestCase):
                 'a0': {
                     'cks': {
                         'weather': 'sunny',
-                        'color': 'red',
+                        'color': 'red'
                     },
-                    'image_quality': 0.5,
+                    'image_quality': 0.5
                 },
                 'a1': {
                     'cks': {
                         'weather': 'sunny',
-                        'color': 'blue',
+                        'color': 'blue'
                     },
-                    'image_quality': 1.0,
-                },
-            },
+                    'image_quality': 1.0
+                }
+            }
         }
         annotations_dict = json_format.MessageToDict(mir_annotations,
                                                      including_default_value_fields=True,
