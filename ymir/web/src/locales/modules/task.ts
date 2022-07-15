@@ -4,7 +4,7 @@ const task = {
   "task.type.label": { cn: "标注", en: "Label", },
   "task.type.fusion": { cn: "预处理", en: "Pretreat", },
   "task.type.inference": { cn: "推理", en: "Inference", },
-  "task.type.import": { cn: "数据集导入", en: "Dataset Import", },
+  "task.type.import": { cn: "添加数据集", en: "Dataset Add", },
   "task.type.copy": { cn: "复制", en: "Copy", },
   "task.type.modelimport": { cn: "导入模型", en: "Model Import", },
   "task.type.modelcopy": { cn: "复制模型", en: "Copy Model", },

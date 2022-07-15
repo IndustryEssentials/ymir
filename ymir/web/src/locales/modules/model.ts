@@ -3,7 +3,7 @@ const model = {
   "model.diagnose": { en: "Model Diagnose", cn: "模型诊断", },
   "model.management": { en: "Model Management", cn: "模型管理", },
   "model.list": { en: "Model List", cn: "模型列表", },
-  "model.column.name": { en: "Model Name", cn: "模型名称", },
+  "model.column.name": { en: "Version", cn: "版本", },
   "model.column.source": { en: "Source", cn: "来源", },
   "model.column.target": { en: "Train Classes", cn: "训练目标", },
   "model.column.map": { en: "mAP", cn: "精度均值(mAP)", },

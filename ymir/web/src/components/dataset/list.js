@@ -173,7 +173,7 @@ function Datasets({ pid, project = {}, iterations, group, datasetList, query, ve
       {
         title: showTitle('dataset.column.state'),
         dataIndex: 'state',
-        render: (state, record) => RenderProgress(state, record, true),
+        render: (state, record) => RenderProgress(state, record),
         // width: 60,
       },
       {
@@ -434,6 +434,11 @@ function Datasets({ pid, project = {}, iterations, group, datasetList, query, ve
     fetchDatasets(true)
     setSelectedVersions({})
   }
+  
+  const multipleInfer = () => {
+    const ids = Object.values(selectedVersions).flat().join('|')
+    history.push(`/home/project/${pid}/inference?did=${ids}`)
+  }
 
   function isValidDataset(state) {
     return states.VALID === state
@@ -457,6 +462,10 @@ function Datasets({ pid, project = {}, iterations, group, datasetList, query, ve
     <>
       <Button type="primary" onClick={multipleHide}>
         <EyeOffIcon /> {t("common.action.multiple.hide")}
+      </Button>
+      
+      <Button type="primary" onClick={multipleInfer}>
+        <WajueIcon /> {t("common.action.multiple.infer")}
       </Button>
     </>
   ) : null

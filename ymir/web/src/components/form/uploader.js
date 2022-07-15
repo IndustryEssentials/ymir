@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react'
 import ImgCrop from 'antd-img-crop'
 
 import { CloudUploadOutlined } from "@ant-design/icons"
-import { getUploadUrl } from "../../services/common"
+import { getUploadUrl } from "@/services/common"
 import storage from '@/utils/storage'
 import t from '@/utils/t'
 import 'antd/es/slider/style'
@@ -17,7 +17,7 @@ const fileSuffix = {
 }
 
 function Uploader({ className, value=null, format="zip", label, max = 200, 
-  maxCount = 1, info = '', type='', crop = false, showUploadList = true, onChange = ()=> {}, onRemove = () => {}}) {
+  maxCount = 1, info = '', type='primary', crop = false, showUploadList = true, onChange = ()=> {}, onRemove = () => {}}) {
 
   label = label || t('model.add.form.upload.btn')
   const [files, setFiles] = useState(null)
@@ -73,7 +73,7 @@ function Uploader({ className, value=null, format="zip", label, max = 200,
         maxCount={maxCount}
         showUploadList={showUploadList}
       >
-        <Button type={type} icon={<CloudUploadOutlined />}>{label}</Button>
+        <Button type={type} ghost icon={<CloudUploadOutlined />}>{label}</Button>
       </Upload>
 
   return (
