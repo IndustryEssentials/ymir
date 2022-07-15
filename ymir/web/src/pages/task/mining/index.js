@@ -266,7 +266,7 @@ function Mining({ datasetCache, ...func }) {
               </Form.Item>
             </Tip>
 
-            <LiveCodeForm live={live} />
+            <LiveCodeForm form={form} live={live} />
             <DockerConfigForm form={form} seniorConfig={seniorConfig} />
             <Tip hidden={true}>
               <Form.Item wrapperCol={{ offset: 8 }}>

@@ -21,6 +21,7 @@ export function transferModelGroup (data: BackendData) {
 }
 
 export function transferModel (data: BackendData): ModelVersion {
+  const durationLabel = calDuration(data.related_task.duration, getLocale())
   return {
     id: data.id,
     name: data.group_name,
@@ -42,7 +43,7 @@ export function transferModel (data: BackendData): ModelVersion {
     taskName: data.related_task.name,
     duration: data.related_task.duration,
     durationLabel: calDuration(data.related_task.duration, getLocale()),
-    task: data.related_task,
+    task: { ...data.related_task, durationLabel, },
     hidden: !data.is_visible,
     stages: data.related_stages || [],
     recommendStage: data.recommended_stage || 0,
