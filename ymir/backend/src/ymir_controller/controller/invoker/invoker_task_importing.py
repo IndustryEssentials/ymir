@@ -56,13 +56,14 @@ class TaskImportingInvoker(TaskBaseInvoker):
                                                gt_dir=importing_request.gt_dir,
                                                media_location=media_location,
                                                work_dir=subtask_workdir,
-                                               name_strategy_ignore=importing_request.name_strategy_ignore)
+                                               unknown_types_strategy=importing_request.unknown_types_strategy)
 
         return importing_response
 
     @staticmethod
     def importing_cmd(repo_root: str, task_id: str, index_file: str, annotation_dir: str, gt_dir: str,
-                      media_location: str, work_dir: str, name_strategy_ignore: bool) -> backend_pb2.GeneralResp:
+                      media_location: str, work_dir: str,
+                      unknown_types_strategy: backend_pb2.UnknownTypesStrategy) -> backend_pb2.GeneralResp:
         importing_cmd = [
             utils.mir_executable(), 'import', '--root', repo_root, '--dataset-name', task_id, '--dst-rev',
             f"{task_id}@{task_id}", '--src-revs', 'master', '--index-file', index_file, '--gt-index-file', index_file,
@@ -72,7 +73,17 @@ class TaskImportingInvoker(TaskBaseInvoker):
             importing_cmd.extend(['--annotation-dir', annotation_dir])
         if gt_dir:
             importing_cmd.extend(['--gt-dir', gt_dir])
-        if name_strategy_ignore:
-            importing_cmd.append("--ignore-unknown-types")
+        importing_cmd.extend(
+            ['--unknown-types-strategy',
+             TaskImportingInvoker._strategy_str_from_enum(unknown_types_strategy)])
 
         return utils.run_command(importing_cmd)
+
+    @staticmethod
+    def _strategy_str_from_enum(unknown_types_strategy: backend_pb2.UnknownTypesStrategy) -> str:
+        mapping = {
+            backend_pb2.UnknownTypesStrategy.UTS_STOP: 'stop',
+            backend_pb2.UnknownTypesStrategy.UTS_IGNORE: 'ignore',
+            backend_pb2.UnknownTypesStrategy.UTS_ADD: 'add'
+        }
+        return mapping[unknown_types_strategy]
