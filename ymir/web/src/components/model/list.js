@@ -3,15 +3,11 @@ import { connect } from 'dva'
 import styles from "./list.less"
 import { Link, useHistory } from "umi"
 import { Form, Input, Table, Modal, Row, Col, Tooltip, Pagination, Space, Empty, Button, } from "antd"
-import {
-  SearchOutlined,
-} from "@ant-design/icons"
 
 import { diffTime } from '@/utils/date'
 import { states } from '@/constants/model'
 import { TASKTYPES, TASKSTATES } from '@/constants/task'
 import t from "@/utils/t"
-import { percent } from '@/utils/number'
 
 import CheckProjectDirty from "@/components/common/CheckProjectDirty"
 import Actions from "@/components/table/actions"
@@ -135,8 +131,10 @@ function Model({ pid, project = {}, iterations, group, modelList, versions, quer
     {
       title: showTitle("model.column.stage"),
       dataIndex: "recommendStage",
-      render: (_, record) => isValidModel(record.state) ? <EditStageCell record={record} saveHandle={updateModelVersion} /> : null,
-      align: 'center',
+      render: (_, record) => isValidModel(record.state) ?
+        <EditStageCell record={record} saveHandle={updateModelVersion} /> : null,
+      // align: 'center',
+      width: 300,
     },
     {
       title: showTitle('dataset.column.state'),
@@ -296,7 +294,7 @@ function Model({ pid, project = {}, iterations, group, modelList, versions, quer
       },
       {
         key: "tensor",
-        label: 'Tensorboard',
+        label: t('task.action.training'),
         target: '_blank',
         link: getTensorboardLink(task.hash),
         hidden: () => taskType !== TASKTYPES.TRAINING,

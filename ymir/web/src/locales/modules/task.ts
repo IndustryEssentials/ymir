@@ -19,6 +19,7 @@ const task = {
   "task.column.duration": { cn: "时长", en: "Duration", },
   "task.action.terminate": { cn: "终止", en: "Terminate", },
   "task.action.copy": { cn: "复制", en: "Copy", },
+  "task.action.training": { cn: "训练过程", en: "Training Process", },
   "task.action.terminate.confirm.content": { cn: "确认要终止：{name}？", en: "Are you sure to terminate: {name}?", },
   "task.detail.label.train_goal": { cn: "训练目标", en: "Train Classes", },
   "task.detail.label.framework": { cn: "算法框架", en: "Network", },
