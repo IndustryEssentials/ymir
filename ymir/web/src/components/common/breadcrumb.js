@@ -1,7 +1,9 @@
+import { useEffect } from "react"
 import { Breadcrumb } from "antd"
 import { Link, useHistory, useParams, useRouteMatch, useSelector } from "umi"
 import { homeRoutes } from '@/config/routes'
 import t from '@/utils/t'
+import useFetch from '@/hooks/useFetch'
 import s from './common.less'
 
 const { Item } = Breadcrumb
@@ -32,14 +34,14 @@ function loop(id = 1, crumbs) {
 function Breadcrumbs({ suffix = '', titles = {} }) {
   const { path } = useRouteMatch()
   const params = useParams() || {}
-  const projects = useSelector(({ project }) => project.projects)
+  const [project, getProject] = useFetch('project/getProject', {})
+
+  useEffect(() => {
+    setTimeout(() => params.id && getProject({ id: params.id }), 500)
+  }, [params.id])
 
   const getLabel = (crumb, customTitle) => {
-    // project name
-    if (crumb.id === 25) {
-      return projects[params.id]?.name
-    }
-    return customTitle || t(crumb.label)
+    return (crumb.id === 25 ? project.name : customTitle) || t(crumb.label)
   }
   const crumbs = getCrumbs()
   const crumbItems = getCrumbItems(path, crumbs)
