@@ -1,6 +1,4 @@
-import Panel from "@/components/form/panel"
-import Tip from "@/components/form/tip"
-import { Checkbox, Form, Input, InputNumber } from "antd"
+import { Checkbox, Form, InputNumber } from "antd"
 import t from '@/utils/t'
 import { useState } from "react"
 
@@ -26,7 +24,7 @@ const PreProcessForm = () => {
     setSelected(old => ({ ...old, [value]: checked }))
   }
   return funcs.map(({ func, label, params }) =>
-    <Form.Item label={renderTitle(func, label)} tooltip={t(`${label}.tip`)}>
+    <Form.Item key={func} label={renderTitle(func, label)} tooltip={t(`${label}.tip`)}>
       {selected[func] ? params.map(({ key, rules, component }) => (
         <Form.Item key={key} name={['preprocess', func, key]} rules={rules} noStyle>
           {component}
