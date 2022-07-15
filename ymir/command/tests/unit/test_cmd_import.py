@@ -58,7 +58,7 @@ class TestCmdImport(unittest.TestCase):
         args.unknown_types_strategy = 'stop'
         importing_instance = CmdImport(args)
         ret = importing_instance.run()
-        assert ret == MirCode.RC_OK
+        self.assertEqual(ret, MirCode.RC_OK)
         self._check_repo(self._mir_repo_root, with_person_ignored=False, with_annotations=True)
 
         # not write person label
@@ -70,37 +70,57 @@ class TestCmdImport(unittest.TestCase):
         args.dst_rev = 'a@import-task-1'
         importing_instance = CmdImport(args)
         ret = importing_instance.run()
-        assert ret == MirCode.RC_OK
-        self._check_repo(self._mir_repo_root, with_person_ignored=True, with_annotations=True)
+        self.assertEqual(ret, MirCode.RC_OK)
+        self._check_repo(self._mir_repo_root,
+                         with_person_ignored=True,
+                         with_annotations=True,
+                         task_unknown_types={'person': 4})
+
+        # add unknown types
+        args.unknown_types_strategy = 'add'
+        args.dataset_name = 'import-task-0'
+        args.dst_rev = 'a@import-task-2'
+        importing_instance = CmdImport(args)
+        ret = importing_instance.run()
+        self.assertEqual(ret, MirCode.RC_OK)
+        self._check_repo(self._mir_repo_root,
+                         with_person_ignored=False,
+                         with_annotations=True,
+                         task_added_types={'person': 2})
 
         # have no annotations
         args.anno = None
         args.gt_dir = None
         args.unknown_types_strategy = 'stop'
         args.dataset_name = 'import-task-0'
-        args.dst_rev = 'a@import-task-2'
+        args.dst_rev = 'a@import-task-3'
         importing_instance = CmdImport(args)
         ret = importing_instance.run()
-        assert ret == MirCode.RC_OK
+        self.assertEqual(ret, MirCode.RC_OK)
         self._check_repo(self._mir_repo_root, with_person_ignored=False, with_annotations=False)
 
         # check for relative path, currently should return an error code
         args.mir_root = 'abc'
         importing_instance = CmdImport(args)
         ret = importing_instance.run()
-        assert ret != MirCode.RC_OK
+        self.assertNotEqual(ret, MirCode.RC_OK)
 
         args.index_file = ''
-        assert CmdImport(args).run() != MirCode.RC_OK
+        self.assertNotEqual(CmdImport(args).run(), MirCode.RC_OK)
         args.index_file = self._idx_file
 
         args.anno = ''
-        assert CmdImport(args).run() != MirCode.RC_OK
+        self.assertNotEqual(CmdImport(args).run(), MirCode.RC_OK)
         args.anno = self._data_xml_path + '/fake-one'
-        assert CmdImport(args).run() != MirCode.RC_OK
+        self.assertNotEqual(CmdImport(args).run(), MirCode.RC_OK)
         args.anno = self._data_xml_path
 
-    def _check_repo(self, repo_root: str, with_person_ignored: bool, with_annotations: bool):
+    def _check_repo(self,
+                    repo_root: str,
+                    with_person_ignored: bool,
+                    with_annotations: bool,
+                    task_unknown_types: dict = {},
+                    task_added_types: dict = {}):
         # check annotations.mir
         mir_annotations = mirpb.MirAnnotations()
         with open(os.path.join(repo_root, 'annotations.mir'), 'rb') as f:
@@ -1017,9 +1037,12 @@ class TestCmdImport(unittest.TestCase):
         mir_tasks = mirpb.MirTasks()
         with open(os.path.join(repo_root, 'tasks.mir'), 'rb') as f:
             mir_tasks.ParseFromString(f.read())
-        dict_tasks = MessageToDict(mir_tasks, preserving_proto_field_name=True)
-        assert ('import-task-0' in dict_tasks['tasks'] or 'import-task-1' in dict_tasks['tasks']
-                or 'import-task-2' in dict_tasks['tasks'])
+        self.assertTrue({'import-task-0', 'import-task-1', 'import-task-2', 'import-task-3'} & mir_tasks.tasks.keys())
+
+        task = mir_tasks.tasks[mir_tasks.head_task_id]
+        task_dict = MessageToDict(task, preserving_proto_field_name=True)
+        self.assertEqual(task_dict.get('unknown_types', {}), task_unknown_types)
+        self.assertEqual(task_dict.get('added_types', {}), task_added_types)
 
     # custom: env prepare
     def _prepare_dirs(self):

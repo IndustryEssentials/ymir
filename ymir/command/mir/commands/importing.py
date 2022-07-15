@@ -99,16 +99,17 @@ class CmdImport(base.BaseCommand):
             return ret
 
         mir_annotation = mirpb.MirAnnotations()
-        ret_code, unknown_types = annotations.import_annotations(mir_metadatas=mir_metadatas,
-                                                                 mir_annotation=mir_annotation,
-                                                                 in_sha1_file=sha1_index_abs,
-                                                                 in_sha1_gt_file=sha1_gt_index_abs,
-                                                                 mir_root=mir_root,
-                                                                 annotations_dir_path=anno_abs,
-                                                                 groundtruth_dir_path=gt_abs,
-                                                                 unknown_types_strategy=unknwon_types_strategy_enum,
-                                                                 task_id=dst_typ_rev_tid.tid,
-                                                                 phase='import.others')
+        ret_code, unknown_types, added_types = annotations.import_annotations(
+            mir_metadatas=mir_metadatas,
+            mir_annotation=mir_annotation,
+            in_sha1_file=sha1_index_abs,
+            in_sha1_gt_file=sha1_gt_index_abs,
+            mir_root=mir_root,
+            annotations_dir_path=anno_abs,
+            groundtruth_dir_path=gt_abs,
+            unknown_types_strategy=unknwon_types_strategy_enum,
+            task_id=dst_typ_rev_tid.tid,
+            phase='import.others')
         if ret_code != MirCode.RC_OK:
             logging.error(f"import annotations error: {ret_code}")
             return ret_code
@@ -117,13 +118,16 @@ class CmdImport(base.BaseCommand):
                 logging.warning(f"unknown types: {unknown_types}")
             else:
                 raise MirRuntimeError(MirCode.RC_CMD_UNKNOWN_TYPES, json.dumps(unknown_types))
+        if added_types:
+            logging.warning(f"added types and class ids: {added_types}")
 
         # create and write tasks
         task = mir_storage_ops.create_task(
             task_type=mirpb.TaskTypeImportData,
             task_id=dst_typ_rev_tid.tid,
-            message=f"importing {index_file}-{anno_abs}-{gt_abs}-{gen_abs} as {dataset_name}",
+            message=f"importing {index_file}-{anno_abs}-{gt_abs} to {dst_rev}, uts: {unknown_types_strategy}",
             unknown_types=unknown_types,
+            added_types=added_types,
             src_revs=src_revs,
             dst_rev=dst_rev,
         )
