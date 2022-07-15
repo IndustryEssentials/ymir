@@ -63,7 +63,7 @@ const common = {
   'common.action.label': {cn: '标注', en: 'Label', },
   'common.action.infer': {cn: '推理', en: 'Infer', },
   'common.action.copy': {cn: '复制', en: 'Copy', },
-  'common.action.import': {cn: '导入', en: 'Import', },
+  'common.action.import': {cn: '添加', en: 'Add', },
   'common.action.hide': {cn: '隐藏', en: 'Hide', },
   'common.action.check': {cn: '检查', en: 'Check', },
   'common.action.check.again': {cn: '重新检查', en: 'Recheck', },

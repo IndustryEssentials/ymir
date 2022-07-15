@@ -28,22 +28,18 @@ const EditStageCell = ({ record, saveHandle = () => { } }) => {
     }
   }, [result])
 
-  const toggleEdit = () => {
-    setEditing(!editing)
-  }
-
   const save = async () => {
     try {
       const values = await form.validateFields()
       await setRecommendStage({ ...values, model: record.id })
-      toggleEdit()
     } catch (errInfo) {
       console.log('Save failed:', errInfo)
     }
+    setEditing(false)
   }
 
   return editing && multipleStages ? (
-    <Form form={form} initialValues={{ stage: record.recommendStage }} onMouseLeave={() => setEditing(false)} size={'small'}>
+    <Form form={form} initialValues={{ stage: record.recommendStage }} size={'small'}>
       <Form.Item
         style={{
           margin: 0,
@@ -55,7 +51,11 @@ const EditStageCell = ({ record, saveHandle = () => { } }) => {
           },
         ]}
       >
-        <Select ref={selectRef} onChange={save} options={record?.stages?.map(stage => ({ label: `${stage.name} ${percent(stage.map)}`, value: stage.id }))}></Select>
+        <Select ref={selectRef}
+          onBlur={() => setEditing(false)}
+          onChange={save}
+          options={record?.stages?.map(stage => ({ label: `${stage.name} ${percent(stage.map)}`, value: stage.id }))}
+        ></Select>
       </Form.Item>
     </Form>
   ) : (
