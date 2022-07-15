@@ -9,7 +9,7 @@ const breadcrumbs = {
   'breadcrumbs.task.inference': { cn: '数据推理', en: 'Dataset Inference', },
   'breadcrumbs.datasets.copy': { cn: '复制数据集', en: 'Dataset Copy', },
   'breadcrumbs.dataset': { cn: '数据集详情', en: 'Dataset Detail', },
-  'breadcrumbs.dataset.add': { cn: '导入数据集', en: 'Import Dataset', },
+  'breadcrumbs.dataset.add': { cn: '添加数据集', en: 'Add Dataset', },
   'breadcrumbs.dataset.assets': { cn: '数据列表', en: 'Assets List', },
   'breadcrumbs.dataset.asset': { cn: '数据详情', en: 'Asset Detail', },
   'breadcrumbs.model.add': { cn: '导入模型', en: 'Model Import', },

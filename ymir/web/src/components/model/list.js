@@ -148,7 +148,7 @@ function Model({ pid, project = {}, iterations, group, modelList, versions, quer
     {
       title: showTitle('dataset.column.state'),
       dataIndex: 'state',
-      render: (state, record) => RenderProgress(state, record, true),
+      render: (state, record) => RenderProgress(state, record),
       // width: 60,
     },
     {

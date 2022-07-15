@@ -5,6 +5,7 @@ import { Link, useParams, useHistory } from 'umi'
 
 import { formLayout } from "@/config/antd"
 import t from '@/utils/t'
+import { IMPORTSTRATEGY } from '@/constants/dataset'
 import Uploader from '@/components/form/uploader'
 import { randomNumber } from '@/utils/number'
 import { urlValidator } from '@/components/form/validators'
@@ -42,25 +43,23 @@ const Add = (props) => {
     { id: TYPES.PATH, label: t('dataset.add.types.path') },
   ]
   const labelOptions = [
-    { value: 0, label: t('dataset.add.label_strategy.include'), },
-    { value: 1, label: t('dataset.add.label_strategy.exclude'), },
+    { value: IMPORTSTRATEGY.UNKOWN_KEYWORDS_IGNORE, label: t('dataset.add.label_strategy.include'), },
+    { value: IMPORTSTRATEGY.ALL_KEYWORDS_IGNORE, label: t('dataset.add.label_strategy.exclude'), },
   ]
   const labelStrategyOptions = [
-    { value: 0, label: t('dataset.add.label_strategy.ignore'), },
-    { value: 1, label: t('dataset.add.label_strategy.add'), },
-    { value: 2, label: t('dataset.add.label_strategy.stop'), },
+    { value: IMPORTSTRATEGY.UNKOWN_KEYWORDS_IGNORE, label: t('dataset.add.label_strategy.ignore'), },
+    { value: 0, label: t('dataset.add.label_strategy.add'), },
+    { value: IMPORTSTRATEGY.UNKOWN_KEYWORDS_STOP, label: t('dataset.add.label_strategy.stop'), },
   ]
   const [form] = useForm()
   const [currentType, setCurrentType] = useState(TYPES.INTERNAL)
   const [publicDataset, setPublicDataset] = useState([])
-  const [selected, setSelected] = useState([])
   const [fileToken, setFileToken] = useState('')
   const [selectedDataset, setSelectedDataset] = useState(id ? Number(id) : null)
   const [showLabelStrategy, setShowLS] = useState(true)
-  const [strategy, setStrategy] = useState(2)
+  const [strategy, setStrategy] = useState(IMPORTSTRATEGY.UNKOWN_KEYWORDS_IGNORE)
   const [kStrategy, setKStrategy] = useState(0)
   const [newKeywords, setNewKeywords] = useState([])
-  const [currentKeywords, setCurrentKeywords] = useState([])
   const [{ newer }, checkKeywords] = useAddKeywords(true)
 
 
@@ -81,8 +80,8 @@ const Add = (props) => {
   }, [selectedDataset])
 
   useEffect(() => {
-    setStrategy(kStrategy === labelStrategyOptions[2].value ? 3 : 2)
-    if (kStrategy === 1) {
+    setStrategy(kStrategy || IMPORTSTRATEGY.UNKOWN_KEYWORDS_IGNORE)
+    if (!kStrategy) {
       renderKeywords()
     }
   }, [kStrategy])
@@ -101,9 +100,12 @@ const Add = (props) => {
 
   const typeChange = (type) => {
     setCurrentType(type)
-    form.setFieldsValue({ with_annotations: 0, k_strategy: 0, })
+    form.setFieldsValue({
+      with_annotations: IMPORTSTRATEGY.UNKOWN_KEYWORDS_IGNORE,
+      k_strategy: IMPORTSTRATEGY.UNKOWN_KEYWORDS_IGNORE,
+    })
     setShowLS(true)
-    setKStrategy(0)
+    setKStrategy(IMPORTSTRATEGY.UNKOWN_KEYWORDS_IGNORE)
   }
 
   const isType = (type) => {
@@ -115,7 +117,7 @@ const Add = (props) => {
       return message.error(t('dataset.add.local.file.empty'))
     }
     const kws = form.getFieldValue('new_keywords')
-    if (kws && kws.length && kStrategy === 1 && isType(TYPES.INTERNAL)) {
+    if (kws && kws.length && !kStrategy && isType(TYPES.INTERNAL)) {
       const addKwParams = kws.filter(k => k.type === 0).map(k => ({ name: k.name }))
       const kResult = await props.updateKeywords({ keywords: addKwParams })
       if (!kResult) {
@@ -153,9 +155,17 @@ const Add = (props) => {
     console.log('finish failed: ', err)
   }
 
+  function strategyFilter() {
+    return labelStrategyOptions.filter(option =>
+      isType(TYPES.INTERNAL) ?
+        option.value !== IMPORTSTRATEGY.UNKOWN_KEYWORDS_STOP :
+        option.value
+    )
+  }
+
   function onLabelChange({ target }) {
-    setShowLS(target.value === labelOptions[0].value)
-    setStrategy(target.value === labelOptions[0].value ? 2 : 1)
+    setShowLS(target.value === IMPORTSTRATEGY.UNKOWN_KEYWORDS_IGNORE)
+    setStrategy(target.value)
   }
 
   function onStrategyChange({ target }) {
@@ -179,12 +189,6 @@ const Add = (props) => {
   function getSelectedDatasetKeywords() {
     const set = publicDataset.find(d => d.id === selectedDataset)
     return set?.keywords || []
-  }
-
-  function filterDataset() {
-    return selected.length ? publicDataset.filter(dataset => {
-      return dataset.keywords.some((key) => selected.indexOf(key) > -1)
-    }) : publicDataset
   }
 
   return (
@@ -239,7 +243,7 @@ const Add = (props) => {
                     ] : []}
                   >
                     <Select placeholder={t('dataset.add.form.internal.placeholder')} onChange={(value) => onInternalDatasetChange(value)}>
-                      {filterDataset().map(dataset => (
+                      {publicDataset.map(dataset => (
                         <Option value={dataset.id} key={dataset.id}>{dataset.name} {dataset.versionName} (Total: {dataset.assetCount})</Option>
                       ))}
                     </Select>
@@ -269,9 +273,9 @@ const Add = (props) => {
               </Tip>
             ) : null}
             <Tip hidden={true}>
-              <Form.Item label={t('dataset.add.form.label.label')} name='with_annotations' initialValue={labelOptions[0].value}>
+              <Form.Item label={t('dataset.add.form.label.label')} name='with_annotations' initialValue={IMPORTSTRATEGY.UNKOWN_KEYWORDS_IGNORE}>
                 <Radio.Group
-                  options={labelOptions.filter(option => isType(TYPES.INTERNAL) ? option.value !== 1 : true)}
+                  options={labelOptions.filter(option => !isType(TYPES.INTERNAL) || option.value !== IMPORTSTRATEGY.ALL_KEYWORDS_IGNORE)}
                   onChange={onLabelChange}
                 />
               </Form.Item>
@@ -281,9 +285,9 @@ const Add = (props) => {
                 <Tip hidden={true}>
                   <Form.Item label={t('dataset.add.form.newkw.label')}>
                     <p className={s.newkwTip}><TipsIcon className={s.tipIcon} /> {t('dataset.add.form.newkw.tip')}</p>
-                    <Row><Col flex={1}><Form.Item noStyle name='k_strategy' initialValue={0}>
+                    <Row><Col flex={1}><Form.Item noStyle name='k_strategy' initialValue={IMPORTSTRATEGY.UNKOWN_KEYWORDS_IGNORE}>
                       <Radio.Group key={!isType(TYPES.INTERNAL) ? 'internal' : 'other'}
-                        options={labelStrategyOptions.filter(option => isType(TYPES.INTERNAL) ? option.value !== 2 : option.value !== 1)}
+                        options={strategyFilter()}
                         onChange={onStrategyChange} />
                     </Form.Item></Col>
                       <Col><Link to={'/home/keyword'} target='_blank'>{t('dataset.add.form.newkw.link')}</Link></Col>
@@ -292,7 +296,7 @@ const Add = (props) => {
                 </Tip> : null}
 
               <Tip hidden={true}>
-                <Form.Item hidden={kStrategy !== 1} wrapperCol={{ offset: 8, span: 16 }}>
+                <Form.Item hidden={kStrategy} wrapperCol={{ offset: 8, span: 16 }}>
                   {newKeywords.length > 0 ?
                     <Form.List name='new_keywords'>
                       {(fields, { add, remove }) => (
@@ -363,8 +367,8 @@ const Add = (props) => {
                     onChange={(files, result) => { setFileToken(result) }}
                     max={1024}
                     onRemove={() => setFileToken('')}
-                    info={t('dataset.add.form.upload.tip', { 
-                      br: <br />, 
+                    info={t('dataset.add.form.upload.tip', {
+                      br: <br />,
                       sample: <a target='_blank' href={'/sample_dataset.zip'}>Sample.zip</a>,
                       pic: <img src={samplePic} />
                     })}

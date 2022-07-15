@@ -155,6 +155,7 @@ message Rect {
     int32 y = 2;
     int32 w = 3;
     int32 h = 4;
+    float rotate_angle = 5; // unit in pi.
 };
 
 /// ========== keywords.mir ==========

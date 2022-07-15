@@ -519,8 +519,10 @@ class MirStorageOps():
         return dict(
             all_asset_ids=sorted([*mir_storage_metadatas["attributes"].keys()]),  # ordered list.
             asset_ids_detail=asset_ids_detail,
-            class_ids_index={k: list(v["key_ids"].keys())
-                             for k, v in mir_storage_keywords["pred_idx"]['cis'].items()},
+            class_ids_index={
+                k: list(v.get('key_ids', {}))
+                for k, v in mir_storage_keywords.get('pred_idx', {}).get('cis', {}).items()
+            },
         )
 
     @classmethod

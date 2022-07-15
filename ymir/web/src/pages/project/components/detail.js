@@ -1,5 +1,5 @@
-import React, {  } from "react"
-import { Col, Popover, Row, Space } from "antd"
+import React, { } from "react"
+import { Col, Popover, Row, Space, Tag } from "antd"
 import { Link } from "umi"
 
 import t from "@/utils/t"
@@ -25,9 +25,8 @@ function ProjectDetail({ project = {}, iterations = {}, fresh = () => { } }) {
     ]
 
     return maps.map(({ name, label, dataset }) => {
-      const rlabel = <span>{t(label)}: {name}</span>
       return <Col key={label} className={s.ellipsis} span={8} title={name}>
-        {dataset ? renderPop(rlabel, dataset) : rlabel}
+        <span className={s.datasetTitle}>{t(label)}: </span>{dataset ? renderPop(name, dataset) : name}
       </Col>
     })
   }
@@ -36,14 +35,14 @@ function ProjectDetail({ project = {}, iterations = {}, fresh = () => { } }) {
     dataset.project = project
     const content = <KeywordRates dataset={dataset} progressWidth={0.4}></KeywordRates>
     return <Popover content={content} overlayInnerStyle={{ minWidth: 500 }}>
-      <span>{label}</span>
+      <Tag className={s.nameTag}>{label}</Tag>
     </Popover>
   }
 
-  return <>
+  return <div className={s.detailContainer}>
     <Row>
       <Col flex={1}>
-        <Space className={s.detailPanel} wrap>
+        <Space className={s.detailPanel} wrap size={16}>
           <span className={s.name}>{project.name}</span>
           <span className={s.iterationInfo}>
             {t('project.detail.info.iteration', {
@@ -65,11 +64,13 @@ function ProjectDetail({ project = {}, iterations = {}, fresh = () => { } }) {
     {project.round > 0 ?
       <Iteration project={project} iterations={iterations} fresh={fresh} /> : <Prepare project={project} iterations={iterations} fresh={fresh} />}
     <div className={s.setsPanel}>
-      <Row gutter={0} align='middle' style={{ textAlign: 'center' }}>
+      <Row gutter={0} align='middle'>
         {renderProjectDatasetLabel()}
+        <Col span={24} style={{ marginTop: 10 }}>
+          <TestingSet project={project} />
+        </Col>
       </Row>
-      <TestingSet project={project} />
     </div>
-  </>
+  </div>
 }
 export default ProjectDetail
