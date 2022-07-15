@@ -28,6 +28,7 @@
 			<ymin>127</ymin>
 			<xmax>274</xmax>
 			<ymax>193</ymax>
+			<rotate_angle>-0.02</rotate_angle>
 		</bndbox>
 		<box_quality>0.75</box_quality>
 		<tags>

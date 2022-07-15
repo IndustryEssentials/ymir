@@ -5,6 +5,7 @@ import t from '@/utils/t'
 import { isSuperAdmin } from '@/constants/user'
 import { BarchartIcon, FlagIcon, GithubIcon, FileHistoryIcon, MymodelIcon, 
   NavDatasetIcon, UserIcon, UserSettingsIcon, Diagnosis, EditIcon, EyeOffIcon, TrainIcon } from '@/components/common/icons'
+import { ProjectIcon, VectorIcon } from "./icons"
 
 const { Sider } = Layout
 
@@ -40,8 +41,8 @@ function LeftMenu() {
     const showLeftMenu = projectModule.test(pathname)
     setItems([
       getGroupItem(t('breadcrumbs.projects'), 'project', [
-        getItem(t('projects.title'), `/home/project`, BarchartIcon, ),
-        showLeftMenu ? getItem(project.name, `project.summary`, BarchartIcon, [
+        getItem(t('projects.title'), `/home/project`, ProjectIcon, ),
+        showLeftMenu ? getItem(project.name, `project.summary`, VectorIcon, [
             getItem(t('project.summary'), `/home/project/${id}/detail`, BarchartIcon,),
             getItem(t('project.settings.title'), `/home/project/${id}/add`, EditIcon,),
             getItem(t('dataset.list'), `/home/project/${id}/dataset`, NavDatasetIcon,),

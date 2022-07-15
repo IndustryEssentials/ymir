@@ -28,6 +28,7 @@
 			<ymin>78</ymin>
 			<xmax>375</xmax>
 			<ymax>183</ymax>
+			<rotate_angle>0.22</rotate_angle>
 		</bndbox>
 		<confidence>0.5</confidence>
 		<box_quality>0.62</box_quality>
@@ -47,6 +48,7 @@
 			<ymin>88</ymin>
 			<xmax>197</xmax>
 			<ymax>123</ymax>
+			<rotate_angle>0.02</rotate_angle>
 		</bndbox>
 		<box_quality>0.75</box_quality>
 		<tags>
@@ -65,6 +67,7 @@
 			<ymin>180</ymin>
 			<xmax>213</xmax>
 			<ymax>229</ymax>
+			<rotate_angle>0.0</rotate_angle>
 		</bndbox>
 		<box_quality>0.23</box_quality>
 		<tags>
@@ -82,6 +85,7 @@
 			<ymin>189</ymin>
 			<xmax>44</xmax>
 			<ymax>238</ymax>
+			<rotate_angle>0.12</rotate_angle>
 		</bndbox>
 		<box_quality>0.35</box_quality>
 		<tags>
