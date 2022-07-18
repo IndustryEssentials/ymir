@@ -25,6 +25,7 @@ const task = {
   "state": 3,
   "error_code": null,
   "duration": 18,
+  durationLabel: '1 分钟',
   "percent": 1,
   "parameters": {},
   "config": {},

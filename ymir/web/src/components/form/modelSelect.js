@@ -63,17 +63,13 @@ const ModelSelect = ({ pid, value, onlyModel, onChange = () => { }, ...resProps 
     setOptions(opts)
   }
 
-  function labelRender(labels, options) {
-    return <span>{labels.map(label => label)}</span>
-  }
-
   function filter(input, path) {
     return path.some(({ label = '' }) => label.toLowerCase().indexOf(input.toLowerCase()) > -1)
   }
 
   return (
     <Cascader value={value} {...resProps} onChange={onChange} options={options}
-      tagRender={labelRender} showCheckedStrategy={Cascader.SHOW_CHILD} showSearch={{ filter }} allowClear></Cascader>
+      showCheckedStrategy={Cascader.SHOW_CHILD} showSearch={{ filter }} allowClear></Cascader>
   )
 }
 

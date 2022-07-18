@@ -13,6 +13,7 @@ import TaskProgress from "@/components/task/progress"
 import Error from "@/components/task/error"
 import Hide from "@/components/common/hide"
 import useRestore from "@/hooks/useRestore"
+import keywordsItem from "@/components/task/items/keywords"
 
 const { Item } = Descriptions
 
@@ -80,9 +81,9 @@ function ModelDetail({ modelCache, getModel }) {
           <Descriptions bordered column={2} labelStyle={{ width: '200px' }} title={t('model.detail.title')} className='infoTable'>
             <Item label={t('model.detail.label.name')}>{model.name} {model.versionName}</Item>
             {model.hidden ? <Item label={t("common.hidden.label")}>{t('common.state.hidden')}</Item> : null}
-            <Item label={t('model.detail.label.map')}><span title={model.map}>{percent(model.map)}</span></Item>
+            {keywordsItem(model.keywords)}
             <Item label={t('model.detail.label.stage')}>
-              {model.stages?.map(stage => <Tag key={stage.id} title={stage.map}>{stage.name} {percent(stage.map)}</Tag>)}
+              {model.stages?.map(stage => <Tag key={stage.id} title={stage.map}>{stage.name} mAP: {percent(stage.map)}</Tag>)}
             </Item>
           </Descriptions>
           <TaskProgress state={model.state} result={model} task={model.task} duration={model.durationLabel} progress={model.progress} fresh={() => fetchModel(true)} />

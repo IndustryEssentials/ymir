@@ -5,7 +5,7 @@ import { formLayout } from "@/config/antd"
 import { useHistory, useParams, useLocation } from "umi"
 
 import t from "@/utils/t"
-import { string2Array } from '@/utils/string'
+import { string2Array, generateName } from '@/utils/string'
 import { TYPES } from '@/constants/image'
 import Breadcrumbs from "@/components/common/breadcrumb"
 import EmptyState from '@/components/empty/dataset'
@@ -232,7 +232,7 @@ function Train({ allDatasets, datasetCache, keywords, ...func }) {
 
   const getCheckedValue = (list) => list.find((item) => item.checked)["value"]
   const initialValues = {
-    name: 'task_train_' + randomNumber(),
+    name: generateName('train_model'),
     datasetId: did ? did : undefined,
     testset: Number(test) ? Number(test) : undefined,
     image: image ? parseInt(image) : undefined,
@@ -255,145 +255,135 @@ function Train({ allDatasets, datasetCache, keywords, ...func }) {
             initialValues={initialValues}
             onFinish={onFinish}
             onFinishFailed={onFinishFailed}
-            labelAlign={'left'}
-            colon={false}
-            scrollToFirstError
           >
+            <Form.Item
+              label={t('dataset.column.model')}
+              name='name'
+              rules={[
+                { required: true, whitespace: true, message: t('model.add.form.name.placeholder') },
+                { type: 'string', min: 2, max: 80 },
+              ]}
+            >
+              <Input placeholder={t('model.add.form.name.placeholder')} autoComplete='off' allowClear />
+            </Form.Item>
+            
+            <Form.Item name='image' label={t('task.train.form.image.label')} rules={[
+              { required: true, message: t('task.train.form.image.required') }
+            ]} tooltip={t('tip.task.train.image')}>
+              <ImageSelect placeholder={t('task.train.form.image.placeholder')} onChange={imageChange} />
+            </Form.Item>
+
+            {openpai ? <Form.Item label={t('task.train.form.platform.label')} name='openpai'>
+              {renderRadio(TrainDevices)}
+            </Form.Item> : null}
+
             <ConfigProvider renderEmpty={() => <EmptyState add={() => history.push(`/home/dataset/add/${pid}`)} />}>
-              <Tip hidden={true}>
-                <Form.Item
-                  label={t('task.train.form.trainsets.label')}
-                  required
-                  name="datasetId"
-                  rules={[
-                    { required: true, message: t('task.train.form.trainset.required') },
-                  ]}
-                >
-                  <DatasetSelect
-                    pid={pid}
-                    filters={trainsetFilters}
-                    onChange={trainSetChange}
-                  />
-                </Form.Item>
-              </Tip>
-              {trainSet ? <Tip hidden={true}>
+              <Form.Item
+                label={t('task.train.form.trainsets.label')}
+                required
+                name="datasetId"
+                rules={[
+                  { required: true, message: t('task.train.form.trainset.required') },
+                ]}
+              >
+                <DatasetSelect
+                  pid={pid}
+                  filters={trainsetFilters}
+                  onChange={trainSetChange}
+                />
+              </Form.Item>
+              {trainSet ?
                 <Form.Item label={t('dataset.train.form.samples')}>
                   <KeywordRates dataset={trainSet}></KeywordRates>
-                </Form.Item>
-              </Tip> : null}
-              <Tip content={t('tip.task.filter.testsets')}>
-                <Form.Item
-                  label={t('task.train.form.testsets.label')}
-                  name="testset"
-                  rules={[
-                    { required: true, message: t('task.train.form.testset.required') },
-                  ]}
-                  extra={duplicationChecked ? duplicatedRender() : null}
-                >
-                  <DatasetSelect
-                    pid={pid}
-                    filters={validationSetFilters}
-                    placeholder={t('task.train.form.test.datasets.placeholder')}
-                    onChange={validationSetChange}
-                    extra={<Button disabled={!trainSet || !testSet} type="primary" onClick={checkDuplicated}>{t('task.train.action.duplicated')}</Button>}
-                  />
-                </Form.Item>
-              </Tip>
+                </Form.Item> : null}
+              <Form.Item
+                label={t('task.train.form.testsets.label')}
+                name="testset"
+                rules={[
+                  { required: true, message: t('task.train.form.testset.required') },
+                ]}
+                tooltip={t('tip.task.filter.testsets')}
+                extra={duplicationChecked ? duplicatedRender() : null}
+              >
+                <DatasetSelect
+                  pid={pid}
+                  filters={validationSetFilters}
+                  placeholder={t('task.train.form.test.datasets.placeholder')}
+                  onChange={validationSetChange}
+                  extra={<Button disabled={!trainSet || !testSet} type="primary" onClick={checkDuplicated}>{t('task.train.action.duplicated')}</Button>}
+                />
+              </Form.Item>
             </ConfigProvider>
-            <Tip content={t('tip.task.filter.keywords')}>
-              {iterationId ? <Form.Item label={t('task.train.form.keywords.label')}>
-                {project?.keywords?.map(keyword => <Tag key={keyword}>{keyword}</Tag>)}
-              </Form.Item> :
-                <Form.Item
-                  label={t('task.train.form.keywords.label')}
-                  name="keywords"
-                  rules={[
-                    { required: true, message: t('project.add.form.keyword.required') }
-                  ]}
-                >
-                  <Select mode="multiple" showArrow
-                    placeholder={t('project.add.form.keyword.required')}
-                    onChange={setSelectedKeywords}
-                    filterOption={(value, option) => [option.value, ...(option.aliases || [])].some(key => key.indexOf(value) >= 0)}>
-                    {keywords.map(keyword => (
-                      <Select.Option key={keyword.name} value={keyword.name} aliases={keyword.aliases}>
-                        <Row>
-                          <Col flex={1}>{keyword.name}</Col>
-                        </Row>
-                      </Select.Option>
-                    ))}
-                  </Select>
-                </Form.Item>}
-            </Tip>
-            <Tip content={t('tip.train.export.format')}>
-              <Form.Item label={t('task.train.export.format')} name='trainFormat' initialValue={'ark:raw'}>
-                <TrainFormat />
-              </Form.Item>
-            </Tip>
-            {openpai ? <Tip hidden={true}>
-              <Form.Item label={t('task.train.form.platform.label')} name='openpai'>
-                {renderRadio(TrainDevices)}
-              </Form.Item>
-            </Tip> : null}
+            {iterationId ? <Form.Item label={t('task.train.form.keywords.label')}>
+              {project?.keywords?.map(keyword => <Tag key={keyword}>{keyword}</Tag>)}
+            </Form.Item> :
+              <Form.Item
+                label={t('task.train.form.keywords.label')}
+                name="keywords"
+                rules={[
+                  { required: true, message: t('project.add.form.keyword.required') }
+                ]}
+                tooltip={t('tip.task.filter.keywords')}
+              >
+                <Select mode="multiple" showArrow
+                  placeholder={t('project.add.form.keyword.required')}
+                  onChange={setSelectedKeywords}
+                  filterOption={(value, option) => [option.value, ...(option.aliases || [])].some(key => key.indexOf(value) >= 0)}>
+                  {keywords.map(keyword => (
+                    <Select.Option key={keyword.name} value={keyword.name} aliases={keyword.aliases}>
+                      <Row>
+                        <Col flex={1}>{keyword.name}</Col>
+                      </Row>
+                    </Select.Option>
+                  ))}
+                </Select>
+              </Form.Item>}
             <ConfigProvider renderEmpty={() => <EmptyStateModel id={pid} />}>
-              <Tip content={t('tip.task.train.model')}>
-                <Form.Item
-                  label={t('task.mining.form.model.label')}
-                  name="modelStage"
-                >
-                  <ModelSelect placeholder={t('task.train.form.model.placeholder')} pid={pid} />
-                </Form.Item>
-              </Tip>
+              <Form.Item
+                label={t('task.detail.label.premodel')}
+                name="modelStage"
+                tooltip={t('tip.task.train.model')}
+              >
+                <ModelSelect placeholder={t('task.train.form.model.placeholder')} pid={pid} />
+              </Form.Item>
             </ConfigProvider>
 
-            <Tip content={t('tip.task.train.image')}>
-              <Form.Item name='image' label={t('task.train.form.image.label')} rules={[
-                { required: true, message: t('task.train.form.image.required') }
-              ]}>
-                <ImageSelect placeholder={t('task.train.form.image.placeholder')} onChange={imageChange} />
-              </Form.Item>
-            </Tip>
+            <Form.Item
+              hidden
+              label={t('task.train.form.traintype.label')}
+              name="trainType"
+            >
+              {renderRadio(TrainType)}
+            </Form.Item>
 
-            <Tip hidden={true}>
-              <Form.Item
-                label={t('task.train.form.traintype.label')}
-                name="trainType"
-              >
-                {renderRadio(TrainType)}
+            <Form.Item
+              label={t('task.gpu.count')}
+              tooltip={t('tip.task.filter.gpucount')}
+            >
+              <Form.Item noStyle name="gpu_count">
+                <InputNumber min={0} max={gpu_count} precision={0} />
               </Form.Item>
-            </Tip>
-
-            <Tip content={t('tip.task.filter.gpucount')}>
-              <Form.Item
-                label={t('task.gpu.count')}
-              >
-                <Form.Item
-                  noStyle
-                  name="gpu_count"
-                >
-                  <InputNumber min={0} max={gpu_count} precision={0} /></Form.Item>
-                <span style={{ marginLeft: 20 }}>{t('task.gpu.tip', { count: gpu_count })}</span>
-              </Form.Item>
-            </Tip>
-            <PreProcessForm />
-            <LiveCodeForm live={live} />
+              <span style={{ marginLeft: 20 }}>{t('task.gpu.tip', { count: gpu_count })}</span>
+            </Form.Item>
+            <Form.Item hidden={!live} label={t('task.train.export.format')} tooltip={t('tip.train.export.format')} name='trainFormat' initialValue={'ark:raw'}>
+              <TrainFormat />
+            </Form.Item>
+            <LiveCodeForm form={form} live={live} />
             <DockerConfigForm seniorConfig={seniorConfig} form={form} />
-            <Tip hidden={true}>
-              <Form.Item wrapperCol={{ offset: 8 }}>
-                <Space size={20}>
-                  <Form.Item name='submitBtn' noStyle>
-                    <Button type="primary" size="large" disabled={projectDirty || allDuplicated} htmlType="submit">
-                      {t('common.action.train')}
-                    </Button>
-                  </Form.Item>
-                  <Form.Item name='backBtn' noStyle>
-                    <Button size="large" onClick={() => history.goBack()}>
-                      {t('task.btn.back')}
-                    </Button>
-                  </Form.Item>
-                </Space>
-              </Form.Item>
-            </Tip>
+            <Form.Item wrapperCol={{ offset: 8 }}>
+              <Space size={20}>
+                <Form.Item name='submitBtn' noStyle>
+                  <Button type="primary" size="large" disabled={projectDirty || allDuplicated} htmlType="submit">
+                    {t('common.action.train')}
+                  </Button>
+                </Form.Item>
+                <Form.Item name='backBtn' noStyle>
+                  <Button size="large" onClick={() => history.goBack()}>
+                    {t('task.btn.back')}
+                  </Button>
+                </Form.Item>
+              </Space>
+            </Form.Item>
           </Form>
         </div>
       </Card>
