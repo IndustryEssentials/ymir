@@ -1,6 +1,5 @@
 import argparse
 import logging
-import json
 import os
 import random
 import shutil
@@ -10,7 +9,6 @@ from mir.protos import mir_command_pb2 as mirpb
 from mir.tools import annotations, checker, hash_utils, metadatas, mir_repo_utils, mir_storage_ops, revs_parser
 from mir.tools.code import MirCode
 from mir.tools.command_run_in_out import command_run_in_out
-from mir.tools.errors import MirRuntimeError
 from mir.tools.phase_logger import PhaseLoggerCenter
 
 
@@ -98,7 +96,7 @@ class CmdImport(base.BaseCommand):
             return ret
 
         mir_annotation = mirpb.MirAnnotations()
-        ret_code, unknown_types, added_types = annotations.import_annotations(
+        unknown_or_added_types = annotations.import_annotations(
             mir_metadatas=mir_metadatas,
             mir_annotation=mir_annotation,
             in_sha1_file=sha1_index_abs,
@@ -109,16 +107,16 @@ class CmdImport(base.BaseCommand):
             unknown_types_strategy=unknown_types_strategy,
             task_id=dst_typ_rev_tid.tid,
             phase='import.others')
-        if ret_code != MirCode.RC_OK:
-            logging.error(f"import annotations error: {ret_code}")
-            return ret_code
-        if unknown_types:
-            if unknown_types_strategy == annotations.UnknownTypesStrategy.IGNORE:
-                logging.warning(f"unknown types: {unknown_types}")
+
+        unknown_types = {}
+        added_types = {}
+        if unknown_or_added_types:
+            if unknown_types_strategy == annotations.UnknownTypesStrategy.ADD:
+                logging.warning(f"unknown types: {unknown_or_added_types}")
+                added_types = unknown_or_added_types
             else:
-                raise MirRuntimeError(MirCode.RC_CMD_UNKNOWN_TYPES, json.dumps(unknown_types))
-        if added_types:
-            logging.warning(f"added types and class ids: {added_types}")
+                logging.warning(f"added types and class ids: {unknown_or_added_types}")
+                unknown_types = unknown_or_added_types
 
         # create and write tasks
         task = mir_storage_ops.create_task(

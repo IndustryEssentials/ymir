@@ -1,5 +1,5 @@
-from collections import defaultdict
 import enum
+import json
 import logging
 import os
 from typing import Dict, List, Tuple, Union
@@ -46,8 +46,7 @@ def _object_dict_to_annotation(object_dict: dict, class_type_manager: class_ids.
 
 def import_annotations(mir_metadatas: mirpb.MirMetadatas, mir_annotation: mirpb.MirAnnotations, in_sha1_file: str,
                        in_sha1_gt_file: str, mir_root: str, annotations_dir_path: str, groundtruth_dir_path: str,
-                       unknown_types_strategy: UnknownTypesStrategy, task_id: str,
-                       phase: str) -> Tuple[int, Dict[str, int], Dict[str, int]]:
+                       unknown_types_strategy: UnknownTypesStrategy, task_id: str, phase: str) -> Dict[str, int]:
     """
     imports annotations
 
@@ -64,10 +63,13 @@ def import_annotations(mir_metadatas: mirpb.MirMetadatas, mir_annotation: mirpb.
         phase (str): process phase
 
     Returns:
-        Tuple[int, Dict[str, int]]: return code, {unknown type name: asset count}, {added type name: class id}
+        Dict[str, int]: {unknown type name: asset count} OR {added type name: class id}
+
+    Raises:
+        MirRuntimeError if strategy is STOP and have unknown types
     """
-    unknown_types_and_count: Dict[str, int] = defaultdict(int)
-    added_types_and_cis: Dict[str, int] = {}
+
+    unknown_or_added_types: Dict[str, int] = {}
 
     # read type_id_name_dict and type_name_id_dict
     class_type_manager = class_ids.ClassIdManager(mir_root=mir_root)
@@ -80,10 +82,9 @@ def import_annotations(mir_metadatas: mirpb.MirMetadatas, mir_annotation: mirpb.
             mir_annotation=mir_annotation,
             in_sha1_file=in_sha1_file,
             annotations_dir_path=annotations_dir_path,
-            unknown_types_and_count=unknown_types_and_count,
-            added_types_and_cis=added_types_and_cis,
             class_type_manager=class_type_manager,
             unknown_types_strategy=unknown_types_strategy,
+            unknown_or_added_types=unknown_or_added_types,
             image_annotations=mir_annotation.task_annotations[task_id],
         )
     PhaseLoggerCenter.update_phase(phase=phase, local_percent=0.5)
@@ -95,22 +96,38 @@ def import_annotations(mir_metadatas: mirpb.MirMetadatas, mir_annotation: mirpb.
             mir_annotation=mir_annotation,
             in_sha1_file=in_sha1_gt_file,
             annotations_dir_path=groundtruth_dir_path,
-            unknown_types_and_count=unknown_types_and_count,
-            added_types_and_cis=added_types_and_cis,
             class_type_manager=class_type_manager,
             unknown_types_strategy=unknown_types_strategy,
+            unknown_or_added_types=unknown_or_added_types,
             image_annotations=mir_annotation.ground_truth,
         )
     PhaseLoggerCenter.update_phase(phase=phase, local_percent=1.0)
 
-    return MirCode.RC_OK, unknown_types_and_count, added_types_and_cis
+    if unknown_types_strategy == UnknownTypesStrategy.STOP and unknown_or_added_types:
+        raise MirRuntimeError(MirCode.RC_CMD_UNKNOWN_TYPES, json.dumps(unknown_or_added_types))
+
+    return unknown_or_added_types
 
 
 def _import_annotations_from_dir(mir_metadatas: mirpb.MirMetadatas, mir_annotation: mirpb.MirAnnotations,
-                                 in_sha1_file: str, annotations_dir_path: str, unknown_types_and_count: Dict[str, int],
-                                 added_types_and_cis: Dict[str, int], class_type_manager: class_ids.ClassIdManager,
-                                 unknown_types_strategy: UnknownTypesStrategy,
+                                 in_sha1_file: str, annotations_dir_path: str,
+                                 class_type_manager: class_ids.ClassIdManager,
+                                 unknown_types_strategy: UnknownTypesStrategy, unknown_or_added_types: Dict[str, int],
                                  image_annotations: mirpb.SingleTaskAnnotations) -> None:
+    """
+    import annotations from root dir of voc annotation files
+
+    Args:
+        mir_metadatas (mirpb.MirMetadatas): list of asset metadatas
+        mir_annotations (mirpb.MirAnnotations): instance of annotations
+        in_sha1_file (str): path to sha1 file, in each line: asset path and sha1sum
+        annotations_dir_path (str): path to annotations dir
+        class_type_manager (class_ids.ClassIdManager): class types manager
+        unknown_or_added_types (Dict[str, int]): if strategy is add, it's {type_name, type_id},
+                                                 if strategy ignore, it's {type_name: assets_count}
+        unknown_types_strategy (UnknownTypesStrategy): strategy of unknown type names
+        image_annotations (mirpb.SingleTaskAnnotations): asset ids and annotations
+    """
 
     assethash_filename_list: List[Tuple[str, str]] = []  # hash id and main file name
     with open(in_sha1_file, "r") as in_file:
@@ -157,16 +174,18 @@ def _import_annotations_from_dir(mir_metadatas: mirpb.MirMetadatas, mir_annotati
             for object_dict in objects:
                 type_name = class_ids.normalized_name(object_dict['name'])
                 has_type_name = class_type_manager.has_name(type_name)
-                if has_type_name or unknown_types_strategy == UnknownTypesStrategy.ADD:
-                    if not has_type_name:
-                        class_type_manager.add(type_name)
-                        added_types_and_cis[type_name] = class_type_manager.id_and_main_name_for_name(type_name)[0]
 
+                if not has_type_name and unknown_types_strategy == UnknownTypesStrategy.ADD:
+                    class_type_manager.add(type_name)
+                    unknown_or_added_types[type_name] = class_type_manager.id_and_main_name_for_name(type_name)[0]
+                    has_type_name = True
+
+                if has_type_name:
                     annotation = _object_dict_to_annotation(object_dict, class_type_manager)
                     annotation.index = anno_idx
                     image_annotations.image_annotations[asset_hash].annotations.append(annotation)
                     anno_idx += 1
                 else:
-                    unknown_types_and_count[type_name] += 1
+                    unknown_or_added_types[type_name] = unknown_or_added_types.get(type_name, 0) + 1
 
     logging.warning(f"asset count that have no annotations: {missing_annotations_counter}")
