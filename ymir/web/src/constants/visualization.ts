@@ -8,6 +8,8 @@ export function transferVisualization(data: BackendData): Visualization {
     userId: data.user_id,
     tid: data.tid,
     tasks: data.tasks,
+    iou: data.iou_thr,
+    confidence: data.conf_thr,
     createTime: format(data.create_datetime),
     updateTime: format(data.update_datetime),
   }
