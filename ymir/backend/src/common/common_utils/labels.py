@@ -127,8 +127,7 @@ class UserLabels(LabelStorage):
 def merge_labels(label_storage_file: str,
                  new_labels: UserLabels,
                  check_only: bool = False) -> UserLabels:
-    lock = fasteners.InterProcessLock(path=default_labels_lock_file_path(label_storage_file))
-    with lock:
+    with fasteners.InterProcessLock(path=default_labels_lock_file_path(label_storage_file)):
         current_labels = get_user_labels_from_storage(label_storage_file)
         current_time = datetime.now()
 
@@ -179,18 +178,13 @@ def default_labels_file_name() -> str:
     return 'labels.yaml'
 
 
-def default_labels_lock_file_name() -> str:
-    return 'labels.lock'
-
-
 def default_labels_lock_file_path(ids_storage_file_path: str) -> str:
     # for ymir-command users, file_path points to a real file
     # for ymir-controller users, file_path points to a link, need to lock all write request for user
     file_path = ids_storage_file_path
     if os.path.islink(file_path):
         file_path = os.path.realpath(file_path)
-    lock_file_path = os.path.join(os.path.dirname(file_path), default_labels_lock_file_name())
-    return lock_file_path
+    return os.path.join(os.path.dirname(file_path), 'labels.lock')
 
 
 def get_user_labels_from_storage(label_storage_file: str) -> UserLabels:

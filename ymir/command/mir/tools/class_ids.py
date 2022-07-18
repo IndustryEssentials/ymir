@@ -275,8 +275,7 @@ class ClassIdManager(object):
         if not main_name:
             raise ClassIdManagerError('invalid main class name')
 
-        lock = fasteners.InterProcessLock(path=ids_lock_file_path(self._storage_file_path))
-        with lock:
+        with fasteners.InterProcessLock(path=ids_lock_file_path(self._storage_file_path)):
             self.__reload(self._storage_file_path)
 
             current_datetime = datetime.now()

@@ -28,13 +28,14 @@ class CmdImport(base.BaseCommand):
                                        dst_rev=self.args.dst_rev,
                                        src_revs=self.args.src_revs or 'master',
                                        work_dir=self.args.work_dir,
-                                       unknown_types_strategy=self.args.unknown_types_strategy)
+                                       unknown_types_strategy=annotations.UnknownTypesStrategy(
+                                           self.args.unknown_types_strategy))
 
     @staticmethod
     @command_run_in_out
     def run_with_args(mir_root: str, index_file: str, gt_index_file: str, anno_abs: str, gt_abs: str, gen_abs: str,
                       dataset_name: str, dst_rev: str, src_revs: str, work_dir: str,
-                      unknown_types_strategy: str) -> int:
+                      unknown_types_strategy: annotations.UnknownTypesStrategy) -> int:
         # Step 1: check args and prepare environment.
         if not index_file or not gen_abs or not os.path.isfile(index_file):
             logging.error(f"invalid index_file: {index_file} or gen_abs: {gen_abs}")
@@ -51,8 +52,6 @@ class CmdImport(base.BaseCommand):
                 return MirCode.RC_CMD_INVALID_ARGS
         dst_typ_rev_tid = revs_parser.parse_single_arg_rev(dst_rev, need_tid=True)
         src_typ_rev_tid = revs_parser.parse_single_arg_rev(src_revs, need_tid=False)
-
-        unknwon_types_strategy_enum = annotations.UnknownTypesStrategy(unknown_types_strategy)
 
         if not dataset_name:
             dataset_name = dst_typ_rev_tid.tid
@@ -107,14 +106,14 @@ class CmdImport(base.BaseCommand):
             mir_root=mir_root,
             annotations_dir_path=anno_abs,
             groundtruth_dir_path=gt_abs,
-            unknown_types_strategy=unknwon_types_strategy_enum,
+            unknown_types_strategy=unknown_types_strategy,
             task_id=dst_typ_rev_tid.tid,
             phase='import.others')
         if ret_code != MirCode.RC_OK:
             logging.error(f"import annotations error: {ret_code}")
             return ret_code
         if unknown_types:
-            if unknwon_types_strategy_enum == annotations.UnknownTypesStrategy.IGNORE:
+            if unknown_types_strategy == annotations.UnknownTypesStrategy.IGNORE:
                 logging.warning(f"unknown types: {unknown_types}")
             else:
                 raise MirRuntimeError(MirCode.RC_CMD_UNKNOWN_TYPES, json.dumps(unknown_types))

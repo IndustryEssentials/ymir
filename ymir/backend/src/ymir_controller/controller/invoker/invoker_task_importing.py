@@ -6,7 +6,7 @@ from common_utils.labels import UserLabels
 from controller.invoker.invoker_task_base import TaskBaseInvoker
 from controller.utils import utils
 from id_definition.error_codes import CTLResponseCode
-from proto import backend_pb2
+from proto import backend_pb2, backend_pb2_utils
 
 
 class TaskImportingInvoker(TaskBaseInvoker):
@@ -75,15 +75,6 @@ class TaskImportingInvoker(TaskBaseInvoker):
             importing_cmd.extend(['--gt-dir', gt_dir])
         importing_cmd.extend(
             ['--unknown-types-strategy',
-             TaskImportingInvoker._strategy_str_from_enum(unknown_types_strategy)])
+             backend_pb2_utils.strategy_str_from_enum(unknown_types_strategy)])
 
         return utils.run_command(importing_cmd)
-
-    @staticmethod
-    def _strategy_str_from_enum(unknown_types_strategy: backend_pb2.UnknownTypesStrategy) -> str:
-        mapping = {
-            backend_pb2.UnknownTypesStrategy.UTS_STOP: 'stop',
-            backend_pb2.UnknownTypesStrategy.UTS_IGNORE: 'ignore',
-            backend_pb2.UnknownTypesStrategy.UTS_ADD: 'add'
-        }
-        return mapping[unknown_types_strategy]
