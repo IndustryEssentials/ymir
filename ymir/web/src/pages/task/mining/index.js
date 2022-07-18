@@ -21,21 +21,6 @@ import { removeLiveCodeConfig } from "../components/liveCodeConfig"
 import DockerConfigForm from "../components/dockerConfigForm"
 import DatasetSelect from "../../../components/form/datasetSelect"
 
-const { Option } = Select
-
-const Algorithm = () => [{ id: "aldd", label: 'ALDD', checked: true }]
-const renderRadio = (types) => {
-  return (
-    <Radio.Group>
-      {types.map((type) => (
-        <Radio value={type.id} key={type.id} defaultChecked={type.checked}>
-          {type.label}
-        </Radio>
-      ))}
-    </Radio.Group>
-  )
-}
-
 function Mining({ datasetCache, ...func }) {
   const pageParams = useParams()
   const pid = Number(pageParams.id)
@@ -142,12 +127,10 @@ function Mining({ datasetCache, ...func }) {
     setSelectedModel(options ? options[0].model : [])
   }
 
-  const getCheckedValue = (list) => list.find((item) => item.checked)["id"]
   const initialValues = {
     modelStage: stage,
     image: image ? parseInt(image) : undefined,
     datasetId: did ? did : undefined,
-    algorithm: getCheckedValue(Algorithm()),
     topk: 0,
     gpu_count: 0,
   }
@@ -164,126 +147,106 @@ function Mining({ datasetCache, ...func }) {
             initialValues={initialValues}
             onFinish={onFinish}
             onFinishFailed={onFinishFailed}
-            labelAlign={'left'}
-            colon={false}
-            scrollToFirstError
           >
+
+            <Form.Item name='image' tooltip={t('tip.task.mining.image')} label={t('task.mining.form.image.label')} rules={[
+              { required: true, message: t('task.train.form.image.required') }
+            ]}>
+              <ImageSelect placeholder={t('task.train.form.image.placeholder')}
+                relatedId={selectedModel?.task?.parameters?.docker_image_id} type={TYPES.MINING} onChange={imageChange} />
+            </Form.Item>
+
             <ConfigProvider renderEmpty={() => <EmptyStateDataset add={() => history.push(`/home/dataset/add/${pid}`)} />}>
 
-              <Tip content={t('tip.task.mining.dataset')}>
-                <Form.Item
-                  label={t('task.mining.form.dataset.label')}
-                  required
-                  name="datasetId"
-                  rules={[
-                    { required: true, message: t('task.mining.form.dataset.required') },
-                  ]}
-                >
-                  <DatasetSelect
-                    pid={pid}
-                    placeholder={t('task.mining.form.dataset.placeholder')}
-                    onChange={setsChange}
-                  />
-                </Form.Item>
-              </Tip>
+              <Form.Item
+                label={t('task.mining.form.dataset.label')}
+                tooltip={t('tip.task.mining.dataset')}
+                required
+                name="datasetId"
+                rules={[
+                  { required: true, message: t('task.mining.form.dataset.required') },
+                ]}
+              >
+                <DatasetSelect
+                  pid={pid}
+                  placeholder={t('task.mining.form.dataset.placeholder')}
+                  onChange={setsChange}
+                />
+              </Form.Item>
             </ConfigProvider>
 
 
             <ConfigProvider renderEmpty={() => <EmptyStateModel id={pid} />}>
-              <Tip content={t('tip.task.filter.model')}>
-                <Form.Item
-                  label={t('task.mining.form.model.label')}
-                  name="modelStage"
-                  rules={[
-                    { required: true, message: t('task.mining.form.model.required') },
-                  ]}
-                >
-                  <ModelSelect placeholder={t('task.mining.form.mining.model.required')} onChange={modelChange} pid={pid} />
-                </Form.Item>
-              </Tip>
+              <Form.Item
+                label={t('task.mining.form.model.label')}
+                tooltip={t('tip.task.filter.model')}
+                name="modelStage"
+                rules={[
+                  { required: true, message: t('task.mining.form.model.required') },
+                ]}
+              >
+                <ModelSelect placeholder={t('task.mining.form.mining.model.required')} onChange={modelChange} pid={pid} />
+              </Form.Item>
             </ConfigProvider>
 
-            <Tip content={t('tip.task.mining.image')}>
-              <Form.Item name='image' label={t('task.train.form.image.label')} rules={[
-                { required: true, message: t('task.train.form.image.required') }
-              ]}>
-                <ImageSelect placeholder={t('task.train.form.image.placeholder')}
-                  relatedId={selectedModel?.task?.parameters?.docker_image_id} type={TYPES.MINING} onChange={imageChange} />
-              </Form.Item>
-            </Tip>
-
-            <Tip hidden={true}>
+            <Form.Item
+              tooltip={t('tip.task.filter.strategy')}
+              label={t('task.mining.form.strategy.label')}
+            >
               <Form.Item
-                label={t('task.mining.form.algo.label')}
-                name="algorithm"
+                name='filter_strategy'
+                initialValue={true}
+                noStyle
               >
-                {renderRadio(Algorithm())}
-              </Form.Item>
-            </Tip>
-
-            <Tip content={t('tip.task.filter.strategy')}>
-              <Form.Item
-                label={t('task.mining.form.strategy.label')}
-              >
-                <Form.Item
-                  name='filter_strategy'
-                  initialValue={true}
-                  noStyle
-                >
-                  <Form.Item noStyle name='topk' label='topk' dependencies={['filter_strategy']} rules={topk ? [
-                    { type: 'number', min: 1, max: (dataset.assetCount - 1) || 1 }
-                  ] : null}>
-                    <InputNumber style={{ width: 120 }} min={1} max={dataset.assetCount - 1} precision={0} />
-                  </Form.Item>
+                <Form.Item noStyle name='topk' label='topk' dependencies={['filter_strategy']} rules={topk ? [
+                  { type: 'number', min: 1, max: (dataset.assetCount - 1) || 1 }
+                ] : null}>
+                  <InputNumber style={{ width: 120 }} min={1} max={dataset.assetCount - 1} precision={0} />
                 </Form.Item>
-                <p style={{ display: 'inline-block', marginLeft: 10 }}>{t('task.mining.topk.tip')}</p>
               </Form.Item>
-            </Tip>
+              <p style={{ display: 'inline-block', marginLeft: 10 }}>{t('task.mining.topk.tip')}</p>
+            </Form.Item>
 
-            <Tip content={t('tip.task.filter.newlable')}>
+            <Form.Item
+              tooltip={t('tip.task.filter.newlable')}
+              label={t('task.mining.form.label.label')}
+              name='inference'
+              initialValue={imageHasInference}
+            >
+              <Radio.Group options={[
+                { value: true, label: t('common.yes'), disabled: !imageHasInference },
+                { value: false, label: t('common.no') },
+              ]} />
+            </Form.Item>
+
+            <Form.Item
+              tooltip={t('tip.task.filter.mgpucount')}
+              label={t('task.gpu.count')}
+            >
               <Form.Item
-                label={t('task.mining.form.label.label')}
-                name='inference'
-                initialValue={imageHasInference}
+                noStyle
+                name="gpu_count"
               >
-                <Radio.Group options={[
-                  { value: true, label: t('common.yes'), disabled: !imageHasInference },
-                  { value: false, label: t('common.no') },
-                ]} />
-              </Form.Item>
-            </Tip>
+                <InputNumber min={0} max={gpu_count} precision={0} /></Form.Item>
+              <span style={{ marginLeft: 20 }}>{t('task.gpu.tip', { count: gpu_count })}</span>
+            </Form.Item>
 
-            <Tip content={t('tip.task.filter.mgpucount')}>
-              <Form.Item
-                label={t('task.gpu.count')}
-              >
-                <Form.Item
-                  noStyle
-                  name="gpu_count"
-                >
-                  <InputNumber min={0} max={gpu_count} precision={0} /></Form.Item>
-                <span style={{ marginLeft: 20 }}>{t('task.gpu.tip', { count: gpu_count })}</span>
-              </Form.Item>
-            </Tip>
-
-            <LiveCodeForm live={live} />
+            <LiveCodeForm form={form} live={live} />
             <DockerConfigForm form={form} seniorConfig={seniorConfig} />
-            <Tip hidden={true}>
-              <Form.Item wrapperCol={{ offset: 8 }}>
-                <Space size={20}>
-                  <Form.Item name='submitBtn' noStyle>
-                    <Button type="primary" size="large" htmlType="submit">
-                      {t('common.action.mine')}
-                    </Button>
-                  </Form.Item>
-                  <Form.Item name='backBtn' noStyle>
-                    <Button size="large" onClick={() => history.goBack()}>
-                      {t('task.btn.back')}
-                    </Button>
-                  </Form.Item>
-                </Space>
-              </Form.Item>
-            </Tip>
+            <Form.Item wrapperCol={{ offset: 8 }}>
+              <Space size={20}>
+                <Form.Item name='submitBtn' noStyle>
+                  <Button type="primary" size="large" htmlType="submit">
+                    {t('common.action.mine')}
+                  </Button>
+                </Form.Item>
+                <Form.Item name='backBtn' noStyle>
+                  <Button size="large" onClick={() => history.goBack()}>
+                    {t('task.btn.back')}
+                  </Button>
+                </Form.Item>
+              </Space>
+            </Form.Item>
           </Form>
         </div>
       </Card>

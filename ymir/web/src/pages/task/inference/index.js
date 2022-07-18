@@ -211,97 +211,100 @@ function Inference({ datasetCache, datasets, ...func }) {
             initialValues={initialValues}
             onFinish={onFinish}
             onFinishFailed={onFinishFailed}
-            labelAlign={'left'}
-            colon={false}
-            scrollToFirstError
           >
             <ConfigProvider renderEmpty={() => <EmptyStateDataset add={() => history.push(`/home/dataset/add/${pid}`)} />}>
 
-              <Tip hidden={true}>
-                <Form.Item
-                  label={t('task.inference.form.dataset.label')}
-                  required
-                  name="datasets"
-                  rules={[
-                    { required: true, message: t('task.inference.form.dataset.required') },
-                  ]}
-                >
-                  <DatasetSelect mode='multiple' pid={pid} filters={testSetFilters} renderLabel={renderLabel} placeholder={t('task.inference.form.dataset.placeholder')} />
-                </Form.Item>
-              </Tip>
+              <Form.Item
+                label={t('task.inference.form.dataset.label')}
+                required
+                name="datasets"
+                rules={[
+                  { required: true, message: t('task.inference.form.dataset.required') },
+                ]}
+              >
+                <DatasetSelect
+                  mode='multiple'
+                  pid={pid}
+                  filters={testSetFilters}
+                  renderLabel={renderLabel}
+                  placeholder={t('task.inference.form.dataset.placeholder')}
+                />
+              </Form.Item>
             </ConfigProvider>
 
 
             <ConfigProvider renderEmpty={() => <EmptyStateModel id={pid} />}>
-              <Tip content={t('tip.task.filter.imodel')}>
-                <Form.Item required
-                  label={t('task.mining.form.model.label')}>
-                  <Form.Item
-                    noStyle
-                    name="stages"
-                    rules={[
-                      { required: true, message: t('task.mining.form.model.required') },
-                    ]}
-                  >
-                    <ModelSelect multiple placeholder={t('task.inference.form.model.required')} onChange={modelChange} pid={pid} />
-                  </Form.Item>
-                  <div style={{ marginTop: 10 }}><Button size='small' type="primary" onClick={() => selectModelFromIteration()}>{t('task.inference.model.iters')}</Button></div>
-                </Form.Item>
-              </Tip>
-            </ConfigProvider>
-
-            <Tip content={t('tip.task.inference.image')}>
-              <Form.Item name='image' label={t('task.train.form.image.label')} rules={[
-                { required: true, message: t('task.inference.form.image.required') }
-              ]}>
-                <ImageSelect placeholder={t('task.inference.form.image.placeholder')} relatedId={selectedModels[0]?.task?.parameters?.docker_image_id} type={TYPES.INFERENCE} onChange={imageChange} />
-              </Form.Item>
-            </Tip>
-
-            <Tip content={t('tip.task.filter.igpucount')}>
-              <Form.Item
-                label={t('task.gpu.count')}
-              >
+              <Form.Item required
+                tooltip={t('tip.task.filter.imodel')}
+                label={t('task.mining.form.model.label')}>
                 <Form.Item
                   noStyle
-                  name="gpu_count"
+                  name="stages"
+                  rules={[
+                    { required: true, message: t('task.mining.form.model.required') },
+                  ]}
                 >
-                  <InputNumber min={0} max={Math.floor(gpu_count / taskCount)} precision={0} onChange={setSelectedGpu} /></Form.Item>
-                <span style={{ marginLeft: 20 }}>
-                  {t('task.infer.gpu.tip', { total: gpu_count, selected: taskCount * selectedGpu })}
-                </span>
+                  <ModelSelect multiple placeholder={t('task.inference.form.model.required')} onChange={modelChange} pid={pid} />
+                </Form.Item>
+                <div style={{ marginTop: 10 }}>
+                  <Button size='small' type="primary" onClick={() => selectModelFromIteration()}>
+                    {t('task.inference.model.iters')}
+                  </Button>
+                </div>
               </Form.Item>
-            </Tip>
+            </ConfigProvider>
 
-            <LiveCodeForm live={live} />
+            <Form.Item name='image' tooltip={t('tip.task.inference.image')} label={t('task.inference.form.image.label')} rules={[
+              { required: true, message: t('task.inference.form.image.required') }
+            ]}>
+              <ImageSelect
+                placeholder={t('task.inference.form.image.placeholder')}
+                relatedId={selectedModels[0]?.task?.parameters?.docker_image_id}
+                type={TYPES.INFERENCE}
+                onChange={imageChange}
+              />
+            </Form.Item>
+
+            <Form.Item
+              tooltip={t('tip.task.filter.igpucount')}
+              label={t('task.gpu.count')}
+            >
+              <Form.Item
+                noStyle
+                name="gpu_count"
+              >
+                <InputNumber min={0} max={Math.floor(gpu_count / taskCount)} precision={0} onChange={setSelectedGpu} />
+              </Form.Item>
+              <span style={{ marginLeft: 20 }}>
+                {t('task.infer.gpu.tip', { total: gpu_count, selected: taskCount * selectedGpu })}
+              </span>
+            </Form.Item>
+
+            <LiveCodeForm form={form} live={live} />
             <DockerConfigForm form={form} seniorConfig={seniorConfig} />
 
-            <Tip hidden={true}>
-              <Form.Item label={t('task.inference.form.desc')} name='description'
-                rules={[
-                  { max: 500 },
-                ]}
-              >
-                <Input.TextArea autoSize={{ minRows: 4, maxRows: 20 }} />
-              </Form.Item>
-            </Tip>
+            <Form.Item label={t('task.inference.form.desc')} name='description'
+              rules={[
+                { max: 500 },
+              ]}
+            >
+              <Input.TextArea autoSize={{ minRows: 4, maxRows: 20 }} />
+            </Form.Item>
 
-            <Tip hidden={true}>
-              <Form.Item wrapperCol={{ offset: 8 }}>
-                <Space size={20}>
-                  <Form.Item name='submitBtn' noStyle>
-                    <Button type="primary" size="large" htmlType="submit" >
-                      {t('common.action.infer')}
-                    </Button>
-                  </Form.Item>
-                  <Form.Item name='backBtn' noStyle>
-                    <Button size="large" onClick={() => history.goBack()}>
-                      {t('task.btn.back')}
-                    </Button>
-                  </Form.Item>
-                </Space>
-              </Form.Item>
-            </Tip>
+            <Form.Item wrapperCol={{ offset: 8 }}>
+              <Space size={20}>
+                <Form.Item name='submitBtn' noStyle>
+                  <Button type="primary" size="large" htmlType="submit" >
+                    {t('common.action.infer')}
+                  </Button>
+                </Form.Item>
+                <Form.Item name='backBtn' noStyle>
+                  <Button size="large" onClick={() => history.goBack()}>
+                    {t('task.btn.back')}
+                  </Button>
+                </Form.Item>
+              </Space>
+            </Form.Item>
           </Form>
         </div>
       </Card>
