@@ -70,7 +70,7 @@ class CRUDModelGroup(CRUDBase[ModelGroup, ModelGroupCreate, ModelGroupUpdate]):
             order_by_column = desc(order_by_column)
         query = query.order_by(order_by_column)
 
-        return query.offset(offset).limit(limit).all(), query.count()
+        return query.offset(offset).limit(limit).all(), len(query.all())
 
     def get_from_training_dataset(self, db: Session, training_dataset_id: int) -> Optional[ModelGroup]:
         return (
