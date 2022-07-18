@@ -75,6 +75,6 @@ class TaskImportingInvoker(TaskBaseInvoker):
             importing_cmd.extend(['--gt-dir', gt_dir])
         importing_cmd.extend(
             ['--unknown-types-strategy',
-             backend_pb2_utils.strategy_str_from_enum(unknown_types_strategy)])
+             backend_pb2_utils.unknown_types_strategy_str_from_enum(unknown_types_strategy)])
 
         return utils.run_command(importing_cmd)
