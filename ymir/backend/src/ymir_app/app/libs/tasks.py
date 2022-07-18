@@ -163,7 +163,7 @@ def create_single_task(db: Session, user_id: int, user_labels: UserLabels, task_
     task_info = schemas.TaskInternal.from_orm(task)
 
     task_result = TaskResult(db=db, task_in_db=task)
-    task_result.create(task_in.parameters.dataset_id)
+    task_result.create(task_in.parameters.dataset_id, task_in.result_description)
 
     try:
         write_clickhouse_metrics(
@@ -293,14 +293,16 @@ class TaskResult:
                 )
             return model_group.id, model_group.name
 
-    def create(self, dataset_id: int) -> Dict[str, Dict]:
+    def create(self, dataset_id: int, description: Optional[str] = None) -> Dict[str, Dict]:
         dest_group_id, dest_group_name = self.get_dest_group_info(dataset_id)
         if self.result_type is ResultType.dataset:
-            dataset = crud.dataset.create_as_task_result(self.db, self.task, dest_group_id, dest_group_name)
+            dataset = crud.dataset.create_as_task_result(
+                self.db, self.task, dest_group_id, dest_group_name, description
+            )
             logger.info("[create task] created new dataset(%s) as task result", dataset.name)
             return {"dataset": jsonable_encoder(dataset)}
         elif self.result_type is ResultType.model:
-            model = crud.model.create_as_task_result(self.db, self.task, dest_group_id, dest_group_name)
+            model = crud.model.create_as_task_result(self.db, self.task, dest_group_id, dest_group_name, description)
             logger.info("[create task] created new model(%s) as task result", model.name)
             return {"model": jsonable_encoder(model)}
         else:
