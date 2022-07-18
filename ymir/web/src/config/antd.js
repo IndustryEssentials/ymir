@@ -4,7 +4,10 @@ export const tailLayout = {
 
 export const formLayout = {
   labelCol: { span: 6, offset: 2, },
-  wrapperCol: { span: 16 },
+  wrapperCol: { span: 12 },
+  labelAlign: 'left',
+  colon: false,
+  scrollToFirstError: true,
 }
 
 export const layout420 = {

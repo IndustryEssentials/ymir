@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Button, Card, Form, Input, message, Modal, Select, Space, Upload } from 'antd'
 import { useParams, connect, useHistory, useLocation } from 'umi'
 
+import { formLayout } from "@/config/antd"
 import t from '@/utils/t'
 import { generateName } from '@/utils/string'
 import Breadcrumbs from '@/components/common/breadcrumb'
@@ -75,7 +76,10 @@ const Add = ({ importModel }) => {
       <Breadcrumbs />
       <Card className={s.container} title={t('breadcrumbs.model.add')}>
         <div className={s.formContainer}>
-          <Form form={form} labelCol={{ span: 4 }} onFinish={submit} initialValues={initialValues}>
+          <Form form={form}
+            { ...formLayout }
+            onFinish={submit} initialValues={initialValues}
+          >
             <Tip hidden={true}>
               <Form.Item
                 label={t('model.add.form.name')}
@@ -130,6 +134,7 @@ const Add = ({ importModel }) => {
                     { required: true, message: t('model.add.form.url.tip') },
                     { validator: urlValidator, }
                   ]}
+                  extra={t('model.add.form.url.help')}
                 >
                   <Input placeholder={t('model.add.form.url.placeholder')} max={512} allowClear />
                 </Form.Item>

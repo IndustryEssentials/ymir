@@ -225,7 +225,7 @@ function Verify({ verify }) {
             </Card>
 
             <Form form={form} className={styles.asset_form}>
-              <Form.Item name='image' label={t('task.train.form.image.label')} rules={[{ required: true }]}>
+              <Form.Item name='image' label={t('task.inference.form.image.label')} rules={[{ required: true }]}>
                 <ImageSelect style={{ width: 200 }} type={TYPES.INFERENCE} placeholder={t('task.train.form.image.placeholder')} onChange={imageChange} />
               </Form.Item>
 
