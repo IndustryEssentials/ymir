@@ -1,5 +1,5 @@
 const image = {
-  "images.title": { en: "Image List", cn: "镜像列表", },
+  "images.title": { en: "My Images", cn: "我的镜像", },
   "image.title": { en: "Image Detail", cn: "镜像详情", },
   "image.add.title": { en: "Create Image", cn: "添加镜像", },
   "image.type.unkown": { en: "Pending", cn: "加载中", },
@@ -17,8 +17,8 @@ const image = {
   "image.action.edit": { en: "Edit Image", cn: "编辑镜像", },
   "image.action.del": { en: "Delete Image", cn: "删除镜像", },
   "image.action.detail": { en: "Image Detail", cn: "镜像详情", },
-  "image.action.copy": { en: "Copy Image to List", cn: "复制镜像到镜像列表", },
-  "image.tab.my.title": { en: "Images List", cn: "镜像列表", },
+  "image.action.copy": { en: "Copy Image", cn: "复制镜像到我的镜像", },
+  "image.tab.my.title": { en: "My Images", cn: "我的镜像", },
   "image.tab.public.title": { en: "Public Images", cn: "公共镜像", },
   "image.new.label": { en: "New Image", cn: "新增镜像", },
   "image.list.item.type": { en: "Image Type: ", cn: "镜像类型：", },
