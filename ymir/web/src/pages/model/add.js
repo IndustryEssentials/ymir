@@ -60,7 +60,8 @@ const Add = ({ importModel }) => {
     const result = await importModel(params)
     if (result) {
       message.success(t('model.add.success'))
-      history.push(`/home/project/${pid}/model`)
+      const group = result.model_group_id || ''
+      history.push(`/home/project/${pid}/model#${group}`)
     }
   }
 

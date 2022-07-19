@@ -42,7 +42,8 @@ function Copy({ allDatasets, datasetCache, ...props }) {
     if (result) {
       message.success(t('dataset.copy.success.msg'))
       props.clearCache()
-      history.replace(`/home/project/${pid}/dataset`)
+      const group = result.dataset_group_id || ''
+      history.replace(`/home/project/${pid}/dataset#${group}`)
     }
   }
 
@@ -63,47 +64,39 @@ function Copy({ allDatasets, datasetCache, ...props }) {
           labelAlign={'left'}
           colon={false}
         >
-          <Tip hidden={true}>
-            <Form.Item label={t('dataset.copy.form.dataset')}><span>{dataset.name} {dataset.versionName} (assets: {dataset.assetCount})</span></Form.Item>
-          </Tip>
-          <Tip hidden={true}>
-            <Form.Item
-              label={t('dataset.add.form.name.label')}
-              name='name'
-              initialValue={'dataset_copy_' + randomNumber()}
-              rules={[
-                { required: true, whitespace: true, message: t('dataset.add.form.name.required') },
-                { type: 'string', min: 2, max: 80 },
-              ]}
-            >
-              <Input autoComplete={'off'} allowClear />
-            </Form.Item>
-          </Tip>
-          <Tip hidden={true}>
-            <Form.Item label={t('dataset.copy.form.desc.label')} name='description'
-              rules={[
-                { max: 100 },
-              ]}
-            >
-              <Input.TextArea autoSize={{ minRows: 4, maxRows: 20 }} />
-            </Form.Item>
-          </Tip>
-          <Tip hidden={true}>
-            <Form.Item wrapperCol={{ offset: 8 }}>
-              <Space size={20}>
-                <Form.Item name='submitBtn' noStyle>
-                  <Button type="primary" size="large" htmlType="submit">
-                    {t('common.action.copy')}
-                  </Button>
-                </Form.Item>
-                <Form.Item name='backBtn' noStyle>
-                  <Button size="large" onClick={() => history.goBack()}>
-                    {t('task.btn.back')}
-                  </Button>
-                </Form.Item>
-              </Space>
-            </Form.Item>
-          </Tip>
+          <Form.Item label={t('dataset.copy.form.dataset')}><span>{dataset.name} {dataset.versionName} (assets: {dataset.assetCount})</span></Form.Item>
+          <Form.Item
+            label={t('dataset.add.form.name.label')}
+            name='name'
+            initialValue={'dataset_copy_' + randomNumber()}
+            rules={[
+              { required: true, whitespace: true, message: t('dataset.add.form.name.required') },
+              { type: 'string', min: 2, max: 80 },
+            ]}
+          >
+            <Input autoComplete={'off'} allowClear />
+          </Form.Item>
+          <Form.Item label={t('dataset.copy.form.desc.label')} name='description'
+            rules={[
+              { max: 100 },
+            ]}
+          >
+            <Input.TextArea autoSize={{ minRows: 4, maxRows: 20 }} />
+          </Form.Item>
+          <Form.Item wrapperCol={{ offset: 8 }}>
+            <Space size={20}>
+              <Form.Item name='submitBtn' noStyle>
+                <Button type="primary" size="large" htmlType="submit">
+                  {t('common.action.copy')}
+                </Button>
+              </Form.Item>
+              <Form.Item name='backBtn' noStyle>
+                <Button size="large" onClick={() => history.goBack()}>
+                  {t('task.btn.back')}
+                </Button>
+              </Form.Item>
+            </Space>
+          </Form.Item>
         </Form>
       </Card>
     </div>
