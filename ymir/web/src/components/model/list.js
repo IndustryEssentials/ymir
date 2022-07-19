@@ -27,7 +27,7 @@ import EditStageCell from "./editStageCell"
 
 const { useForm } = Form
 
-function Model({ pid, project = {}, iterations, group, modelList, versions, query, ...func }) {
+function Model({ pid, project = {}, iterations, groups, modelList, versions, query, ...func }) {
   const history = useHistory()
   const { name } = history.location.query
   const [models, setModels] = useState([])
@@ -36,7 +36,7 @@ function Model({ pid, project = {}, iterations, group, modelList, versions, quer
   const [selectedVersions, setSelectedVersions] = useState({})
   const [form] = useForm()
   const [current, setCurrent] = useState({})
-  const [visibles, setVisibles] = useState(group ? { [group]: true } : {})
+  const [visibles, setVisibles] = useState({})
   let [lock, setLock] = useState(true)
   const hideRef = useRef(null)
   const delGroupRef = useRef(null)
@@ -49,6 +49,11 @@ function Model({ pid, project = {}, iterations, group, modelList, versions, quer
     }
     setLock(false)
   }, [history.location])
+
+  useEffect(() => {
+    const initVisibles = groups.reduce((prev, group) => ({ ...prev, [group]: true }), {})
+    setVisibles(initVisibles)
+  }, [groups])
 
   useEffect(() => {
     const mds = setGroupLabelsByProject(modelList.items, project)
