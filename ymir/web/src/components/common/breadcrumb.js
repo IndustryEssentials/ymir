@@ -35,16 +35,20 @@ function Breadcrumbs({ suffix = '', titles = {} }) {
   const { path } = useRouteMatch()
   const params = useParams() || {}
   const [project, getProject] = useFetch('project/getProject', {})
+  const crumbs = getCrumbs()
+  const crumbItems = getCrumbItems(path, crumbs)
 
   useEffect(() => {
-    setTimeout(() => params.id && getProject({ id: params.id }), 500)
+    setTimeout(() => {
+      if (crumbItems.some(crumb => crumb.id === 25) && params.id) {
+        getProject({ id: params.id })
+      }
+    }, 500)
   }, [params.id])
 
   const getLabel = (crumb, customTitle) => {
     return (crumb.id === 25 ? project.name : customTitle) || t(crumb.label)
   }
-  const crumbs = getCrumbs()
-  const crumbItems = getCrumbItems(path, crumbs)
   return <div className='breadcrumb'>
     <Breadcrumb className='breadcrumbContent' separator='/'>
       {crumbItems.map((crumb, index) => {

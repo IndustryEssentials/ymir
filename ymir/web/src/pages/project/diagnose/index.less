@@ -53,3 +53,21 @@
   padding: 10px 20px;
   background: rgba(44, 189, 233, 0.1);
 }
+.prRate {
+  width: 200px;
+  &:hover {
+
+    :global(.ant-slider-rail) {
+      background-color: lighten(@primary-color, 10) !important;
+    }
+    :global(.ant-slider-track) {
+        background-color: darken(@primary-color, 5) !important;
+    }
+  }
+  :global(.ant-slider-rail) {
+    background-color: lighten(@primary-color, 30);
+  }
+  :global(.ant-slider-track) {
+    background-color: darken(@primary-color, 10);
+  }
+}

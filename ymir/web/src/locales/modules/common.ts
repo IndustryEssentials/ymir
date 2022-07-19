@@ -7,7 +7,7 @@ const common = {
   'common.top.menu.keyword': { cn: "标签管理", en: "Keyword", },
   'common.top.menu.configure': { cn: "系统配置", en: "Configure", },
   'common.top.menu.permission': { cn: "权限配置", en: "Permission", },
-  'common.top.menu.image': { cn: "镜像列表", en: "Images", },
+  'common.top.menu.image': { cn: "我的镜像", en: "My Images", },
   'common.history.node.title': { cn: '节点详情', en: 'Node Detail', },
   'common.back': { cn: '返回', en: 'Back', },
   'common.editbox.action.edit': { cn: '编辑名称', en: 'Edit Name', }, 

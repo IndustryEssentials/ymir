@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react"
 import { Col, Row, Table } from "antd"
 import PrCurve from "./prCurve"
+import Panel from "@/components/form/panel"
 import { getCK, getKwField, getModelCell, opt } from "./common"
 
 const CurveView = ({ tasks, datasets, models, data, xType, kw: { kwType, keywords } }) => {
@@ -10,6 +11,7 @@ const CurveView = ({ tasks, datasets, models, data, xType, kw: { kwType, keyword
   const [xasix, setXAsix] = useState([])
   const [dData, setDData] = useState(null)
   const [kData, setKData] = useState(null)
+  const [hiddens, setHiddens] = useState({})
 
   useEffect(() => {
     if (data && keywords) {
@@ -127,13 +129,14 @@ const CurveView = ({ tasks, datasets, models, data, xType, kw: { kwType, keyword
   }
 
   return list.map(({ id, label, rows }) => <div key={id}>
-    <h3>{label}</h3>
-    <Row gutter={20}>
-      {rows.map(({ id, title, lines }, index) => <Col key={id} flex={1} style={{ minWidth: 300 }}>
-        <PrCurve title={title} lines={lines} />
-      </Col>
-      )}
-    </Row>
+    <Panel label={label} visible={!hiddens[id]} setVisible={value => setHiddens(old => ({ ...old, [id]: !value }))} bg={false}>
+      <Row gutter={20}>
+        {rows.map(({ id, title, lines }, index) => <Col key={id} span={12} style={{ minWidth: 300 }}>
+          <PrCurve title={title} lines={lines} />
+        </Col>
+        )}
+      </Row>
+    </Panel>
   </div>)
 }
 
