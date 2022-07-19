@@ -13,6 +13,7 @@ from app import crud, schemas, models
 from app.api.errors.errors import (
     DatasetNotFound,
     FailedtoCreateDataset,
+    PrematureDatasets,
 )
 from app.config import settings
 from app.constants.state import ResultState
@@ -156,3 +157,13 @@ def evaluate_datasets(
     evaluations = ChainMap(*res)
 
     return {dataset_id_mapping[hash_]: evaluation for hash_, evaluation in evaluations.items()}
+
+
+def ensure_datasets_are_ready(db: Session, dataset_ids: List[int]) -> List[models.Dataset]:
+    datasets = crud.dataset.get_multi_by_ids(db, ids=dataset_ids)
+    if len(dataset_ids) != len(datasets):
+        raise DatasetNotFound()
+
+    if not all(dataset.result_state == ResultState.ready for dataset in datasets):
+        raise PrematureDatasets()
+    return datasets

@@ -1,12 +1,12 @@
 import json
 from datetime import datetime
 from enum import IntEnum
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple, Union
 
 from sqlalchemy import and_, desc, not_
 from sqlalchemy.orm import Session
 
-from app import schemas
+from app import schemas, models
 from app.constants.state import ResultState, TaskType
 from app.crud.base import CRUDBase
 from app.models import Dataset
@@ -120,10 +120,10 @@ class CRUDDataset(CRUDBase[Dataset, DatasetCreate, DatasetUpdate]):
     def create_as_task_result(
         self,
         db: Session,
-        task: schemas.TaskInternal,
+        task: Union[schemas.TaskInternal, models.Task],
         dest_group_id: int,
-        dest_group_name: str,
-        description: Optional[str],
+        dest_group_name: Optional[str] = None,
+        description: Optional[str] = None,
     ) -> Dataset:
         dataset_in = DatasetCreate(
             hash=task.hash,
