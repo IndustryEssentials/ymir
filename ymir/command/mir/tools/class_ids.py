@@ -114,17 +114,13 @@ def ids_file_path(mir_root: str) -> str:
     return os.path.join(mir_utils.repo_dot_mir_path(mir_root=mir_root), ids_file_name())
 
 
-def ids_lock_file_name() -> str:
-    return 'labels.lock'
-
-
-def ids_lock_file_path(ids_storage_file_path: str) -> str:
+def parse_label_lock_path_or_link(ids_storage_file_path: str) -> str:
     # for ymir-command users, file_path points to a real file
     # for ymir-controller users, file_path points to a link, need to lock all write request for user
     file_path = ids_storage_file_path
     if os.path.islink(file_path):
         file_path = os.path.realpath(file_path)
-    lock_file_path = os.path.join(os.path.dirname(file_path), ids_lock_file_name())
+    lock_file_path = os.path.join(os.path.dirname(file_path), 'labels.lock')
     return lock_file_path
 
 
@@ -275,7 +271,7 @@ class ClassIdManager(object):
         if not main_name:
             raise ClassIdManagerError('invalid main class name')
 
-        with fasteners.InterProcessLock(path=ids_lock_file_path(self._storage_file_path)):
+        with fasteners.InterProcessLock(path=parse_label_lock_path_or_link(self._storage_file_path)):
             self.__reload(self._storage_file_path)
 
             current_datetime = datetime.now()
