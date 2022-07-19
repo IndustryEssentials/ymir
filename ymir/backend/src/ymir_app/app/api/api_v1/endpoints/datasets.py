@@ -576,7 +576,9 @@ def merge_datasets(
         parameters=in_merge.json(),
     )
     logger.info("[merge] related task record created: %s", task.hash)
-    merged_dataset = crud.dataset.create_as_task_result(db, task, main_dataset.dataset_group_id)
+    merged_dataset = crud.dataset.create_as_task_result(
+        db, task, main_dataset.dataset_group_id, description=in_merge.description
+    )
     return {"result": merged_dataset}
 
 
@@ -623,5 +625,7 @@ def filter_dataset(
         parameters=in_filter.json(),
     )
     logger.info("[filter] related task record created: %s", task.hash)
-    filtered_dataset = crud.dataset.create_as_task_result(db, task, main_dataset.dataset_group_id)
+    filtered_dataset = crud.dataset.create_as_task_result(
+        db, task, main_dataset.dataset_group_id, description=in_filter.description
+    )
     return {"result": filtered_dataset}
