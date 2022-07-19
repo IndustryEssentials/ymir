@@ -18,14 +18,16 @@ const PrCurve = ({ title='', lines }) => {
 
   const legend = { }
   const grid = {
-    left: '0',
-    right: '5px',
-    bottom: '3%',
-    // containLabel: true
+    left: 20,
+    right: 20,
+    containLabel: true
   }
   const yAxis = [
     {
-      type: 'value'
+      type: 'value',
+      name: 'Precision',
+      nameLocation: 'center',
+      nameGap: 30,
     }
   ]
 
@@ -40,13 +42,16 @@ const PrCurve = ({ title='', lines }) => {
     const xAxis = [
       {
         type: 'category',
+        name: 'Recall',
+        nameLocation: 'center',
+        nameGap: 30,
         data: xasix,
       }
     ]
     setOption({
       tooltip,
       legend,
-      // grid,
+      grid,
       yAxis,
       xAxis,
       series,
@@ -79,7 +84,7 @@ const PrCurve = ({ title='', lines }) => {
   }
 
   return (
-    <Card bordered={false} title={title}>
+    <Card bordered={false} title={title} headStyle={{ textAlign: 'center', background: 'rgba(0, 0, 0, 0.06)' }} bodyStyle={{ padding: 0 }}>
       {series.length ? (
         <>
           <LineChart option={option} style={{ height: '300px', width: '100%' }}></LineChart>

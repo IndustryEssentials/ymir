@@ -11,7 +11,6 @@ import Breadcrumbs from "@/components/common/breadcrumb"
 import EmptyState from '@/components/empty/dataset'
 import EmptyStateModel from '@/components/empty/model'
 import { randomNumber } from "@/utils/number"
-import Tip from "@/components/form/tip"
 import ImageSelect from "@/components/form/imageSelect"
 import styles from "./index.less"
 import commonStyles from "../common.less"
@@ -24,7 +23,6 @@ import DockerConfigForm from "../components/dockerConfigForm"
 import useFetch from '@/hooks/useFetch'
 import TrainFormat from "../components/trainFormat"
 import DatasetSelect from "../../../components/form/datasetSelect"
-import PreProcessForm from "../components/preProcessForm"
 
 const { Option } = Select
 

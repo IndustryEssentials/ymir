@@ -20,7 +20,7 @@ const breadcrumbs = {
   'breadcrumbs.keyword': { cn: '标签管理', en: 'Keyword List', },
   'breadcrumbs.configure.permission': { cn: '权限配置', en: 'Permission', },
   'breadcrumbs.user.info': { cn: '用户管理', en: 'User Information', },
-  'breadcrumbs.images': { cn: '镜像列表', en: 'Images', },
+  'breadcrumbs.images': { cn: '我的镜像', en: 'My Images', },
   'breadcrumbs.image': { cn: '镜像详情', en: 'Image', },
   'breadcrumbs.projects': { cn: '项目管理', en: 'Project', },
   'breadcrumbs.project': { cn: '项目详情', en: 'Detail', },

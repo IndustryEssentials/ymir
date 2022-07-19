@@ -1,25 +1,25 @@
 import { useEffect, useRef, useState } from "react"
 import * as echarts from 'echarts/core';
 import {
-    TooltipComponent,
-    GridComponent,
-    LegendComponent,
-    MarkLineComponent
+  TooltipComponent,
+  GridComponent,
+  LegendComponent,
+  MarkLineComponent
 } from 'echarts/components'
 import {
-    LineChart,
+  LineChart,
 } from 'echarts/charts'
 import {
-    CanvasRenderer
+  CanvasRenderer
 } from 'echarts/renderers'
 
 echarts.use(
-    [TooltipComponent, GridComponent, LegendComponent, MarkLineComponent, LineChart, CanvasRenderer]
+  [TooltipComponent, GridComponent, LegendComponent, MarkLineComponent, LineChart, CanvasRenderer]
 );
 
 const Chart = ({ option = {}, height = 300, style = {}, ...rest }) => {
   const chartRef = useRef(null)
-  
+
   useEffect(() => {
     let lineChart = null
     // console.log('option: ', option, chartRef)
@@ -40,9 +40,21 @@ const Chart = ({ option = {}, height = 300, style = {}, ...rest }) => {
     }
     const lineChart = echarts.getInstanceByDom(chartRef.current)
     if (lineChart && lineChart.resize) {
+      const container = chartRef.current.parentElement
+      var wi = getStyle(container, 'width')
+      chartRef.current.style.width = wi
       lineChart.resize()
     }
   })
+
+  function getStyle(el, name) {
+    if (window.getComputedStyle) {
+      return window.getComputedStyle(el, null)[name]
+    } else {
+      return el.currentStyle[name]
+    }
+  }
+
 
   return <div ref={chartRef} style={{ ...style, }} {...rest}>&nbsp;</div>
 }

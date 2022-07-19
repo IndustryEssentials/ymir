@@ -37,11 +37,13 @@ function Analysis({pid, project, ...func}) {
         totalField: 'assetCount',
         xUnit: 'MB',
         renderEachX: x => x.replace("MB",""),
+        color: ['#10BC5E', '#F2637B']
       },
       {
         label: 'model.diagnose.analysis.title.asset_hw_ratio',
         sourceField: 'assetHWRatio',
         totalField: 'assetCount',
+        color: ['#36CBCB', '#E8B900']
       },
       {
         label: 'model.diagnose.analysis.title.asset_area',
@@ -49,11 +51,13 @@ function Analysis({pid, project, ...func}) {
         totalField: 'assetCount',
         xUnit: 'PX',
         renderEachX: x => `${x/10000}W`,
+        color: ['#36CBCB', '#F2637B'],
       },
       {
         label: 'model.diagnose.analysis.title.asset_quality',
         sourceField: 'assetQuality',
         totalField: 'assetCount',
+        color: ['#36CBCB', '#10BC5E'],
         isXUpperLimit: true,
       },
       {
@@ -63,12 +67,14 @@ function Analysis({pid, project, ...func}) {
         customOptions: {
           tooltipLable: 'model.diagnose.analysis.bar.anno.tooltip',
         },
+        color: ['#10BC5E', '#E8B900'],
         isXUpperLimit: true,
       },
       {
         label: 'model.diagnose.analysis.title.keyword_ratio',
         sourceField: 'classNamesCount',
         totalField: 'assetCount',
+        color: ['#2CBDE9', '#E8B900'],
         xType: 'attribute'
       },
     ]
@@ -81,6 +87,7 @@ function Analysis({pid, project, ...func}) {
         customOptions: {
           ...chart.customOptions,
           xData,
+          color: chart.color,
           xUnit: chart.xUnit,
           yData
         },
