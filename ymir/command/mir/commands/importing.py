@@ -96,7 +96,7 @@ class CmdImport(base.BaseCommand):
             return ret
 
         mir_annotation = mirpb.MirAnnotations()
-        unknown_or_added_types = annotations.import_annotations(
+        anno_import_result = annotations.import_annotations(
             mir_metadatas=mir_metadatas,
             mir_annotation=mir_annotation,
             in_sha1_file=sha1_index_abs,
@@ -108,23 +108,18 @@ class CmdImport(base.BaseCommand):
             task_id=dst_typ_rev_tid.tid,
             phase='import.others')
 
-        unknown_types = {}
-        added_types = {}
-        if unknown_or_added_types:
-            if unknown_types_strategy == annotations.UnknownTypesStrategy.ADD:
-                logging.warning(f"unknown types: {unknown_or_added_types}")
-                added_types = unknown_or_added_types
-            else:
-                logging.warning(f"added types and class ids: {unknown_or_added_types}")
-                unknown_types = unknown_or_added_types
+        if unknown_types_strategy == annotations.UnknownTypesStrategy.ADD:
+            logging.warning(f"added type and class ids: {anno_import_result.added_type_and_ids}")
+        else:
+            logging.warning(f"ignored type and cnts: {anno_import_result.ignored_type_and_cnts}")
 
         # create and write tasks
         task = mir_storage_ops.create_task(
             task_type=mirpb.TaskTypeImportData,
             task_id=dst_typ_rev_tid.tid,
             message=f"importing {index_file}-{anno_abs}-{gt_abs} to {dst_rev}, uts: {unknown_types_strategy}",
-            unknown_types=unknown_types,
-            added_types=added_types,
+            unknown_types=anno_import_result.ignored_type_and_cnts,
+            added_types=anno_import_result.added_type_and_ids,
             src_revs=src_revs,
             dst_rev=dst_rev,
         )
