@@ -15,7 +15,8 @@ const RecommendKeywords = ({ global = false, sets, limit = 5, onSelect = () => {
   }, [sets])
 
   async function fetchKeywords() {
-    const result = await getRecommendKeywords({ global, dataset_ids: sets, limit })
+    const ids = Array.isArray(sets) ? sets : [sets]
+    const result = await getRecommendKeywords({ global, dataset_ids: ids, limit })
     if (result) {
       setKeywords(result)
     }

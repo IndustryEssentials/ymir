@@ -22,6 +22,7 @@ import Actions from "@/components/table/actions"
 import {
   ImportIcon, ScreenIcon, TaggingIcon, TrainIcon, VectorIcon, WajueIcon, SearchIcon,
   EditIcon, EyeOffIcon, CopyIcon, StopIcon, ArrowDownIcon, ArrowRightIcon, CompareIcon,
+  CompareListIcon,
 } from "@/components/common/icons"
 
 const { confirm } = Modal
@@ -198,13 +199,22 @@ function Datasets({ pid, project = {}, iterations, group, datasetList, query, ve
 
   const actionMenus = (record) => {
     const { id, groupId, state, taskState, task, assetCount } = record
-    const always = [{
-      key: "fusion",
-      label: t("dataset.action.fusion"),
-      hidden: () => !isValidDataset(state),
-      onclick: () => history.push(`/home/project/${pid}/fusion?did=${id}`),
-      icon: <ScreenIcon className={styles.addBtnIcon} />,
-    }]
+    const always = [
+      {
+        key: "merge",
+        label: t("common.action.merge"),
+        hidden: () => !isValidDataset(state),
+        onclick: () => history.push(`/home/project/${pid}/merge?did=${id}`),
+        icon: <CompareListIcon className={styles.addBtnIcon} />,
+      },
+      {
+        key: "filter",
+        label: t("common.action.filter"),
+        hidden: () => !isValidDataset(state),
+        onclick: () => history.push(`/home/project/${pid}/filter?did=${id}`),
+        icon: <ScreenIcon className={styles.addBtnIcon} />,
+      }
+    ]
     const menus = [
       {
         key: "train",
@@ -434,7 +444,7 @@ function Datasets({ pid, project = {}, iterations, group, datasetList, query, ve
     fetchDatasets(true)
     setSelectedVersions({})
   }
-  
+
   const multipleInfer = () => {
     const ids = Object.values(selectedVersions).flat().join('|')
     history.push(`/home/project/${pid}/inference?did=${ids}`)
@@ -463,7 +473,7 @@ function Datasets({ pid, project = {}, iterations, group, datasetList, query, ve
       <Button type="primary" onClick={multipleHide}>
         <EyeOffIcon /> {t("common.action.multiple.hide")}
       </Button>
-      
+
       <Button type="primary" onClick={multipleInfer}>
         <WajueIcon /> {t("common.action.multiple.infer")}
       </Button>

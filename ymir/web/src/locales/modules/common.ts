@@ -60,6 +60,8 @@ const common = {
   'common.action.train': {cn: '训练', en: 'Train', },
   'common.action.mine': {cn: '挖掘', en: 'Mine', },
   'common.action.fusion': {cn: '预处理', en: 'Pretreat', },
+  'common.action.merge': {cn: '合并', en: 'Merge', },
+  'common.action.filter': {cn: '筛选', en: 'Filter', },
   'common.action.label': {cn: '标注', en: 'Label', },
   'common.action.infer': {cn: '推理', en: 'Infer', },
   'common.action.copy': {cn: '复制', en: 'Copy', },
@@ -78,6 +80,7 @@ const common = {
   'common.hidden.list': {cn: '隐藏列表', en: 'Hidden List', },
   'common.average': {cn: '平均值', en: 'Average', },
   'common.recommend': {cn: '推荐', en: 'Recommend', },
+  "common.desc": { en: "Description", cn: "描述", },
 }
 
 export default common

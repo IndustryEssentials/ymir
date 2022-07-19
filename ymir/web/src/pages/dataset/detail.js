@@ -14,7 +14,7 @@ import Error from "@/components/task/error"
 import Hide from "@/components/common/hide"
 import useRestore from "@/hooks/useRestore"
 
-const taskTypes = ["fusion", "train", "mining", "label", 'inference', 'copy']
+const taskTypes = ["merge", "filter", "train", "mining", "label", 'inference', 'copy']
 
 function DatasetDetail({ datasetCache, getDataset }) {
   const history = useHistory()
@@ -86,7 +86,7 @@ function DatasetDetail({ datasetCache, getDataset }) {
                   type="primary"
                   onClick={() => history.push(`/home/project/${pid}/${type}?did=${id}`)}
                 >
-                  {t(`task.type.${type}`)}
+                  {t(`common.action.${type}`)}
                 </Button>
               ) : null)}
               {dataset.assetCount > 0 ? <Button type="primary" onClick={() => hide(dataset)}>

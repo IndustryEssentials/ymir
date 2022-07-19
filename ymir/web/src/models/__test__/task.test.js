@@ -11,10 +11,12 @@ describe("models: task", () => {
   errorCode(task, 'getTask')
   errorCode(task, 'deleteTask')
   errorCode(task, 'updateTask')
-  errorCode(task, 'createFusionTask')
-  errorCode(task, 'createLabelTask')
-  errorCode(task, 'createTrainTask')
-  errorCode(task, 'createMiningTask')
+  errorCode(task, 'fusion')
+  errorCode(task, 'merge')
+  errorCode(task, 'filter')
+  errorCode(task, 'label')
+  errorCode(task, 'train')
+  errorCode(task, 'mine')
   errorCode(task, 'stopTask')
 
   it("reducers: UPDATE_TASKS, UPDATE_TASK", () => {
@@ -42,10 +44,10 @@ describe("models: task", () => {
     expect(result.task.id).toBe(expectedId)
   })
 
-  it("effects: createFusionTask", () => {
-    const saga = task.effects.createFusionTask
+  it("effects: fusion", () => {
+    const saga = task.effects.fusion
     const creator = {
-      type: "createFusionTask",
+      type: "fusion",
       payload: {},
     }
     const expected = "ok"
@@ -62,10 +64,53 @@ describe("models: task", () => {
     expect(end.value).toBe(expected)
     expect(end.done).toBe(true)
   })
-  it("effects: createTrainTask", () => {
-    const saga = task.effects.createTrainTask
+
+  it("effects: merge", () => {
+    const saga = task.effects.merge
     const creator = {
-      type: "createTrainTask",
+      type: "merge",
+      payload: {},
+    }
+    const expected = "ok"
+
+    const generator = saga(creator, { put, call })
+    const start = generator.next()
+    generator.next({
+      code: 0,
+      result: expected,
+    })
+    generator.next()
+    const end = generator.next()
+
+    expect(end.value).toBe(expected)
+    expect(end.done).toBe(true)
+  })
+
+  it("effects: filter", () => {
+    const saga = task.effects.filter
+    const creator = {
+      type: "filter",
+      payload: {},
+    }
+    const expected = "ok"
+
+    const generator = saga(creator, { put, call })
+    const start = generator.next()
+    generator.next({
+      code: 0,
+      result: expected,
+    })
+    generator.next()
+    const end = generator.next()
+
+    expect(end.value).toBe(expected)
+    expect(end.done).toBe(true)
+  })
+
+  it("effects: train", () => {
+    const saga = task.effects.train
+    const creator = {
+      type: "train",
       payload: {},
     }
     const expected = "ok"
@@ -82,10 +127,10 @@ describe("models: task", () => {
     expect(end.value).toBe(expected)
     expect(end.done).toBe(true)
   })
-  it("effects: createMiningTask", () => {
-    const saga = task.effects.createMiningTask
+  it("effects: mine", () => {
+    const saga = task.effects.mine
     const creator = {
-      type: "createMiningTask",
+      type: "mine",
       payload: {},
     }
     const expected = "ok"
@@ -161,10 +206,10 @@ describe("models: task", () => {
     expect(end.done).toBe(true)
   })
 
-  it("effects: createLabelTask", () => {
-    const saga = task.effects.createLabelTask
+  it("effects: label", () => {
+    const saga = task.effects.label
     const creator = {
-      type: "createLabelTask",
+      type: "label",
       payload: {},
     }
     const expected = "ok"
@@ -330,59 +375,6 @@ describe("models: task", () => {
     const updated = d.value.payload.action.payload
 
     expect(updated).toEqual(tasks)
-    expect(end.done).toBe(true)
-  })
-  
-  it("effects: updateTaskState -> normal success -> progress", () => {
-    const saga = task.effects.updateTaskState
-    const ts = { id: 34, hash: 'hash1', state: 2, progress: 20 }
-    const creator = {
-      type: "updateTaskState",
-      payload: { hash1: { id: 34, state: 2, percent: 0.45 }, hash3: { id: 36, state: 3, percent: 1 } },
-    }
-    const expected = { id: 34, hash: 'hash1', state: 2, progress: 45 }
-
-    const generator = saga(creator, { put, call, select })
-    generator.next()
-    const d = generator.next(ts)
-    const end = generator.next()
-    const updated = d.value.payload.action.payload
-
-    expect(updated).toEqual(expected)
-    expect(end.done).toBe(true)
-  })
-  it("effects: updateTaskState -> normal success -> progress to done", () => {
-    const saga = task.effects.updateTaskState
-    const ts = { id: 34, hash: 'hash1', state: 2, progress: 20 }
-    const creator = {
-      type: "updateTaskState",
-      payload: { hash1: { id: 34, state: 3, percent: 1 }, hash3: { id: 36, state: 3, percent: 1 } },
-    }
-    const expected = { id: 34, hash: 'hash1', state: 3, progress: 100, forceUpdate: true }
-
-    const generator = saga(creator, { put, call, select })
-    generator.next()
-    const d = generator.next(ts)
-    const end = generator.next()
-    const updated = d.value.payload.action.payload
-
-    expect(updated).toEqual(expected)
-    expect(end.done).toBe(true)
-  })
-  it("effects: updateTaskState -> empty success", () => {
-    const saga = task.effects.updateTaskState
-    const ts = { id: 34, hash: 'hash1', state: 2, progress: 20 }
-    const creator = {
-      type: "updateTaskState",
-    }
-
-    const generator = saga(creator, { put, call, select })
-    generator.next()
-    const d = generator.next(ts)
-    const end = generator.next()
-    const updated = d.value.payload.action.payload
-
-    expect(updated).toEqual(ts)
     expect(end.done).toBe(true)
   })
 })

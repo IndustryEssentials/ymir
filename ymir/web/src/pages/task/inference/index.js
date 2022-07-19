@@ -149,7 +149,7 @@ function Inference({ datasetCache, datasets, ...func }) {
       image,
       config,
     }
-    const result = await func.createInferenceTask(params)
+    const result = await func.infer(params)
     if (result) {
       const tasksCount = values.stages.length * values.datasets.length
       const resultCount = result.filter(item => item).length
@@ -341,9 +341,9 @@ const dis = (dispatch) => {
     clearCache() {
       return dispatch({ type: "dataset/clearCache", })
     },
-    createInferenceTask(payload) {
+    infer(payload) {
       return dispatch({
-        type: "task/createInferenceTask",
+        type: "task/infer",
         payload,
       })
     },
