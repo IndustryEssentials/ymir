@@ -20,6 +20,7 @@ function Filter() {
   const [keywords, setKeywords] = useState([])
   const [dataset, getDataset] = useFetch('dataset/getDataset', {})
   const [filterResult, filter] = useFetch('task/filter')
+  const [_, clearCache] = useFetch('dataset/clearCache')
   const includes = Form.useWatch('includes', form)
   const excludes = Form.useWatch('excludes', form)
 
@@ -36,7 +37,7 @@ function Filter() {
   useEffect(() => {
     if (filterResult) {
       message.info(t('task.fusion.create.success.msg'))
-      func.clearCache()
+      clearCache()
       const group = mergeResult.dataset_group_id || ''
       history.replace(`/home/project/${dataset.projectId}/dataset#${group}`)
     }

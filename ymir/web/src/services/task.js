@@ -157,7 +157,7 @@ export function merge({
     exclude_datasets: excludes,
     dataset_id: dataset,
     merge_strategy: strategy,
-    result_description: description,
+    description,
   })
 }
 /**
@@ -184,7 +184,7 @@ export function filter({
     include_keywords: includes,
     exclude_keywords: excludes,
     sampling_count: samples,
-    result_description: description,
+    description,
   })
 }
 /**
