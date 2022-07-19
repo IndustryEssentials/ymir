@@ -584,7 +584,7 @@ class ControllerClient:
             project_id=project_id,
             task_id=task_id,
             args={
-                "in_datasets": dataset_hashes,
+                "include_datasets": dataset_hashes,
                 "exclude_datasets": ex_dataset_hashes,
                 "merge_strategy": merge_strategy,
             },
@@ -607,7 +607,7 @@ class ControllerClient:
             project_id=project_id,
             task_id=task_id,
             args={
-                "in_datasets": [dataset_hash],
+                "include_datasets": [dataset_hash],
                 "include_class_ids": class_ids,
                 "exclude_class_ids": ex_class_ids,
                 "sampling_count": sampling_count,

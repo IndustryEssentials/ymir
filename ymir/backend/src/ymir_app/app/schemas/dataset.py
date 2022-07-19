@@ -218,6 +218,7 @@ class DatasetMergeCreate(BaseModel):
     merge_strategy: MergeStrategy = Field(
         MergeStrategy.prefer_newest, description="strategy to merge multiple datasets"
     )
+    description: Optional[str] = Field(description="description for merge result")
 
 
 class DatasetFilterCreate(BaseModel):
@@ -226,3 +227,4 @@ class DatasetFilterCreate(BaseModel):
     include_keywords: List[str]
     exclude_keywords: List[str]
     sampling_count: Optional[int]
+    description: Optional[str] = Field(description="description for filter result")
