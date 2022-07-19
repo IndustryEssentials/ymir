@@ -27,7 +27,7 @@ import {
 const { confirm } = Modal
 const { useForm } = Form
 
-function Datasets({ pid, project = {}, iterations, group, datasetList, query, versions, ...func }) {
+function Datasets({ pid, project = {}, iterations, groups, datasetList, query, versions, ...func }) {
   const location = useLocation()
   const { name } = location.query
   const history = useHistory()
@@ -36,7 +36,7 @@ function Datasets({ pid, project = {}, iterations, group, datasetList, query, ve
   const [total, setTotal] = useState(1)
   const [form] = useForm()
   const [current, setCurrent] = useState({})
-  const [visibles, setVisibles] = useState(group ? { [group]: true } : {})
+  const [visibles, setVisibles] = useState({})
   const [selectedVersions, setSelectedVersions] = useState({})
   const hideRef = useRef(null)
   let [lock, setLock] = useState(true)
@@ -50,6 +50,11 @@ function Datasets({ pid, project = {}, iterations, group, datasetList, query, ve
     }
     setLock(false)
   }, [history.location])
+
+  useEffect(() => {
+    const initVisibles = groups.reduce((prev, group) => ({ ...prev, [group]: true }), {})
+    setVisibles(initVisibles)
+  }, [groups])
 
   useEffect(() => {
     const list = setGroupLabelsByProject(datasetList.items, project)
