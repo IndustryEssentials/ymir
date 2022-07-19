@@ -129,7 +129,7 @@ def _build_task_importing_req(args: Dict) -> backend_pb2.GeneralReq:
     importing_request.asset_dir = args['asset_dir']
     importing_request.annotation_dir = args['annotation_dir']
     importing_request.unknown_types_strategy = backend_pb2_utils.unknown_types_strategy_enum_from_str(
-        args['unknown_types_strategy'])
+        backend_pb2_utils.UnknownTypesStrategyStr(args['unknown_types_strategy']))
 
     req_create_task = backend_pb2.ReqCreateTask()
     req_create_task.task_type = backend_pb2.TaskTypeImportData
