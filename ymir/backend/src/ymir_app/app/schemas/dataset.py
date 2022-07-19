@@ -201,10 +201,28 @@ class DatasetEvaluationOut(Common):
     result: Dict[int, Dict]
 
 
-class DatasetCheckDuplicationCreate(BaseModel):
+class MultiDatasetsWithProjectID(BaseModel):
     project_id: int
     dataset_ids: List[int]
 
 
 class DatasetCheckDuplicationOut(Common):
     result: int
+
+
+class DatasetMergeCreate(BaseModel):
+    project_id: int
+    dataset_id: int
+    include_datasets: List[int]
+    exclude_datasets: List[int]
+    merge_strategy: MergeStrategy = Field(
+        MergeStrategy.prefer_newest, description="strategy to merge multiple datasets"
+    )
+
+
+class DatasetFilterCreate(BaseModel):
+    project_id: int
+    dataset_id: int
+    include_keywords: List[str]
+    exclude_keywords: List[str]
+    sampling_count: Optional[int]
