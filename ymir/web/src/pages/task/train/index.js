@@ -187,7 +187,8 @@ function Train({ allDatasets, datasetCache, keywords, ...func }) {
         func.updateIteration({ id: iterationId, currentStage, [outputKey]: result.result_model.id })
       }
       await func.clearCache()
-      history.replace(`/home/project/${pid}/model`)
+      const group = result.result_model?.model_group_id || ''
+      history.replace(`/home/project/${pid}/model#${group}`)
     }
   }
 
