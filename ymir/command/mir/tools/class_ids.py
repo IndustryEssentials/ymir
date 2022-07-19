@@ -61,33 +61,30 @@ class _LabelStorage(BaseModel):
     @root_validator
     def _generate_dicts(cls, values: dict) -> dict:
         labels: List[_SingleLabel] = values.get('labels', [])
+
+        # check duplicate
+        label_names = []
+        for label in labels:
+            label_names.append(label.name)
+            label_names.extend(label.aliases)
+        if len(label_names) != len(set(label_names)):
+            raise ClassIdManagerError('duplicated class label names and aliases')
+        label_ids = [label.id for label in labels]
+        if len(label_ids) != len(set(label_ids)):
+            raise ClassIdManagerError('duplicated class label ids')
+
         label_to_ids: Dict[str, Tuple[int, Optional[str]]] = {}
         id_to_labels: Dict[int, str] = {}
         for label in labels:
-            cls._set_if_not_exists(k=label.name,
-                                   v=(label.id, None),
-                                   d=label_to_ids,
-                                   error_message_prefix='duplicated name')
-            #   key: aliases
+            label_to_ids[label.name] = (label.id, None)
             for label_alias in label.aliases:
-                cls._set_if_not_exists(k=label_alias,
-                                       v=(label.id, label.name),
-                                       d=label_to_ids,
-                                       error_message_prefix='duplicated alias')
+                label_to_ids[label_alias] = (label.id, label.name)
 
-            # self._type_id_name_dict
-            cls._set_if_not_exists(k=label.id, v=label.name, d=id_to_labels, error_message_prefix='duplicated id')
+            id_to_labels[label.id] = label.name
 
         values['_label_to_ids'] = label_to_ids
         values['_id_to_labels'] = id_to_labels
         return values
-
-    # protected: general
-    @classmethod
-    def _set_if_not_exists(cls, k: Any, v: Any, d: dict, error_message_prefix: str) -> None:
-        if k in d:
-            raise ClassIdManagerError(f"{error_message_prefix}: {k}")
-        d[k] = v
 
     # public: general
     def dict(self) -> Any:  # type: ignore
