@@ -111,7 +111,8 @@ function Mining({ datasetCache, ...func }) {
         func.updateIteration({ id: iterationId, currentStage, [outputKey]: result.result_dataset.id })
       }
       await func.clearCache()
-      history.replace(`/home/project/${pid}/dataset`)
+      const group = result.result_dataset?.dataset_group_id || ''
+      history.replace(`/home/project/${pid}/dataset#${group}`)
     }
   }
 

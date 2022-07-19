@@ -147,7 +147,8 @@ const Add = (props) => {
     if (result) {
       message.success(t('dataset.add.success.msg'))
       props.clearCache()
-      history.push(`/home/project/${pid}/dataset`)
+      const group = result.dataset_group_id || ''
+      history.replace(`/home/project/${pid}/dataset#${group}`)
     }
   }
 
