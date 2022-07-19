@@ -129,8 +129,7 @@ def _import_annotations_from_dir(mir_metadatas: mirpb.MirMetadatas, mir_annotati
         in_sha1_file (str): path to sha1 file, in each line: asset path and sha1sum
         annotations_dir_path (str): path to annotations dir
         class_type_manager (class_ids.ClassIdManager): class types manager
-        unknown_or_added_types (Dict[str, int]): if strategy is add, it's {type_name, type_id},
-                                                 if strategy ignore, it's {type_name: assets_count}
+        anno_import_result (AnnoImportResult): annotation import result
         unknown_types_strategy (UnknownTypesStrategy): strategy of unknown type names
         image_annotations (mirpb.SingleTaskAnnotations): asset ids and annotations
     """
