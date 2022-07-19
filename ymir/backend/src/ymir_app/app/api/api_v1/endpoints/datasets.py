@@ -615,7 +615,7 @@ def filter_dataset(
 
     task = crud.task.create_placeholder(
         db,
-        type_=TaskType.merge,
+        type_=TaskType.filter,
         user_id=current_user.id,
         project_id=in_filter.project_id,
         hash_=task_hash,
