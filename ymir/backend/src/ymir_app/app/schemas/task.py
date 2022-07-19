@@ -177,6 +177,8 @@ class TaskInternal(TaskInDBBase):
             TaskType.import_data,
             TaskType.copy_data,
             TaskType.data_fusion,
+            TaskType.filter,
+            TaskType.merge,
         ]:
             return ResultType.dataset
         else:
