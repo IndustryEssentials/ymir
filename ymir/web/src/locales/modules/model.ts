@@ -107,6 +107,7 @@ const model = {
   'model.diagnose.v.tasks.require': {en: "Please select infered testing dataset and config", cn: "请选择推理过的测试集及配置", },
   'model.diagnose.metrics.x.dataset': {en: "Testing Dataset", cn: "测试集", },
   'model.diagnose.metrics.x.keyword': {en: "Keyword", cn: "标签", },
+  'model.list.batch.invalid': {en: "Please select valid model to batch", cn: "请选择有效的模型进行批量操作", },
 }
 
 export default model

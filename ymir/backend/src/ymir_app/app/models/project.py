@@ -46,8 +46,9 @@ class Project(Base):
     initial_model_id = Column(Integer, index=True)
     initial_model_stage_id = Column(Integer, index=True)
     initial_training_dataset_id = Column(Integer, index=True)
-    enable_iteration = Column(Boolean, default=True, nullable=False)
+    candidate_training_dataset_id = Column(Integer)
 
+    enable_iteration = Column(Boolean, default=True, nullable=False)
     # for project haven't finish initialization, current_iteration_id is None
     current_iteration_id = Column(Integer)
     user_id = Column(Integer, index=True, nullable=False)

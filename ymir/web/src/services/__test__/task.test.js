@@ -3,10 +3,12 @@ import {
   getTask,
   deleteTask,
   updateTask,
-  createFusionTask,
-  createLabelTask,
-  createTrainTask,
-  createMiningTask,
+  fusion,
+  filter,
+  merge,
+  label,
+  train,
+  mine,
   createTask,
   stopTask,
 } from "../task"
@@ -29,16 +31,16 @@ describe("service: tasks", () => {
     requestExample(getTask, id, expected, 'get')
   })
 
-  it("createFusionTask -> success, no include classes", () => {
+  it("fusion -> success, no include classes", () => {
     const params = {
       project_id: 2436,
       dataset_group_id: 2345,
       main_dataset_id: 435,
     }
     const expected = { id: 612 }
-    requestExample(createFusionTask, params, expected, 'post')
+    requestExample(fusion, params, expected, 'post')
   })
-  it("createFusionTask -> success, no exclude classes", () => {
+  it("fusion -> success, no exclude classes", () => {
     const params = {
       project_id: 2436,
       dataset_group_id: 2340,
@@ -46,9 +48,9 @@ describe("service: tasks", () => {
       include_datasets: [454, 457],
     }
     const expected = { id: 612 }
-    requestExample(createFusionTask, params, expected, 'post')
+    requestExample(fusion, params, expected, 'post')
   })
-  it("createFusionTask -> success, all params", () => {
+  it("fusion -> success, all params", () => {
     const params = {
       project_id: 2436,
       dataset_group_id: 2340,
@@ -61,10 +63,63 @@ describe("service: tasks", () => {
       sampling_count: 1000,
     }
     const expected = { id: 612 }
-    requestExample(createFusionTask, params, expected, 'post')
+    requestExample(fusion, params, expected, 'post')
+  })
+  it("merge -> success, no include classes", () => {
+    const params = {
+      project_id: 2436,
+      dataset_group_id: 2345,
+      main_dataset_id: 435,
+    }
+    const expected = { id: 612 }
+    requestExample(merge, params, expected, 'post')
+  })
+  it("merge -> success, no exclude classes", () => {
+    const params = {
+      project_id: 2436,
+      dataset_group_id: 2340,
+      main_dataset_id: 432,
+      include_datasets: [454, 457],
+    }
+    const expected = { id: 612 }
+    requestExample(merge, params, expected, 'post')
+  })
+  it("merge -> success, all params", () => {
+    const params = {
+      project_id: 2436,
+      dataset_group_id: 2340,
+      main_dataset_id: 432,
+      include_datasets: [454, 457],
+      include_strategy: 2,
+      exclude_datasets: [4,5],
+    }
+    const expected = { id: 612 }
+    requestExample(merge, params, expected, 'post')
+  })
+  
+  it("filter -> success, no include classes", () => {
+    const params = {
+      project_id: 2436,
+      main_dataset_id: 435,
+      include_labels: ['person'],
+    }
+    const expected = { id: 612 }
+    requestExample(filter, params, expected, 'post')
+  })
+  it("filter -> success, all params", () => {
+    const params = {
+      project_id: 2436,
+      dataset_group_id: 2340,
+      main_dataset_id: 432,
+      include_labels: ['person'],
+      exclude_labels: ['cat', 'dog', 'tree'],
+      sampling_count: 1000,
+    }
+    const expected = { id: 612 }
+    requestExample(filter, params, expected, 'post')
   })
 
-  it("createTrainTask -> success", () => {
+  it("train -> success", () => {
     const params = {
       name: 'taskname',
       train_sets: [1, 3, 4],
@@ -76,9 +131,9 @@ describe("service: tasks", () => {
       train_type: 1,
     }
     const expected = { id: 611 }
-    requestExample(createTrainTask, params, expected, 'post')
+    requestExample(train, params, expected, 'post')
   })
-  it("createMiningTask -> success", () => {
+  it("mine -> success", () => {
     const params = {
       model: 'modelhash',
       topk: 1000,
@@ -88,9 +143,9 @@ describe("service: tasks", () => {
       name: 'taskname',
     }
     const expected = { id: 610 }
-    requestExample(createMiningTask, params, expected, 'post')
+    requestExample(mine, params, expected, 'post')
   })
-  it("createLabelTask -> success", () => {
+  it("label -> success", () => {
     const params = {
       name: 'taskname',
       datasets: [23, 34],
@@ -99,7 +154,7 @@ describe("service: tasks", () => {
       doc: 'http://test.com/test.pdf'
     }
     const expected = { id: 609 }
-    requestExample(createLabelTask, params, expected, 'post')
+    requestExample(label, params, expected, 'post')
   })
   it("deleteTask -> success", () => {
     const id = 608

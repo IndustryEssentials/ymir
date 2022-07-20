@@ -3,6 +3,8 @@ const task = {
   "task.type.mining": { cn: "挖掘", en: "Mining", },
   "task.type.label": { cn: "标注", en: "Label", },
   "task.type.fusion": { cn: "预处理", en: "Pretreat", },
+  'task.type.merge': {cn: '合并', en: 'Merge', },
+  'task.type.filter': {cn: '筛选', en: 'Filter', },
   "task.type.inference": { cn: "推理", en: "Inference", },
   "task.type.import": { cn: "添加数据集", en: "Dataset Add", },
   "task.type.copy": { cn: "复制", en: "Copy", },
@@ -20,6 +22,7 @@ const task = {
   "task.action.terminate": { cn: "终止", en: "Terminate", },
   "task.action.copy": { cn: "复制", en: "Copy", },
   "task.action.training": { cn: "训练过程", en: "Training Process", },
+  "task.action.training.batch": { cn: "多模型训练过程", en: "Models Training Process", },
   "task.action.terminate.confirm.content": { cn: "确认要终止：{name}？", en: "Are you sure to terminate: {name}?", },
   "task.detail.label.train_goal": { cn: "训练目标", en: "Train Classes", },
   "task.detail.label.framework": { cn: "算法框架", en: "Network", },
@@ -179,6 +182,8 @@ const task = {
     cn: "图像将按原始比例缩放至最长边为设置值",
   },
   "task.train.preprocess.resize.placeholder": { en: "Max width/height", cn: "最大高/宽", },
+  "task.filter.includes.placeholder": { en: "Please select inclusion keywords", cn: "请选择保留的标签", },
+  "task.filter.excludes.placeholder": { en: "Please select exclusion keywords", cn: "请选择需要排除掉的标签", },
 }
 
 export default task

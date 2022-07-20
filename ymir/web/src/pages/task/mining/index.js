@@ -105,7 +105,7 @@ function Mining({ datasetCache, ...func }) {
       image,
       config,
     }
-    const result = await func.createMiningTask(params)
+    const result = await func.mine(params)
     if (result) {
       if (iterationId) {
         func.updateIteration({ id: iterationId, currentStage, [outputKey]: result.result_dataset.id })
@@ -283,9 +283,9 @@ const dis = (dispatch) => {
     clearCache() {
       return dispatch({ type: "dataset/clearCache", })
     },
-    createMiningTask(payload) {
+    mine(payload) {
       return dispatch({
-        type: "task/createMiningTask",
+        type: "task/mine",
         payload,
       })
     },
