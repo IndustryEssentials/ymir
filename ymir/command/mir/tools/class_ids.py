@@ -97,6 +97,43 @@ class _LabelStorage(BaseModel):
 
         return added_class_id, name
 
+    def id_to_label(self, type_id: int) -> Optional[str]:
+        """
+        get main type name for type id, if not found, returns None
+
+        Args:
+            type_id (int): type id
+
+        Returns:
+            Optional[str]: corresponding main type name, if not found, returns None
+        """
+        return self._id_to_labels.get(type_id, None)
+
+    def label_to_id_name(self, type_label: str) -> Tuple[int, str]:
+        """
+        returns type id and main type name for main type name or alias
+
+        Args:
+            name (str): main type name or alias
+
+        Returns:
+            Tuple[int, str]: (type id, main type name),
+            if name not found, returns (-1, name)
+        """
+        type_label = _normalized_name(type_label)
+        if not type_label:
+            raise ValueError("_LabelStorage get empty normalized name")
+
+        return self._label_to_ids.get(type_label, (-1, type_label))
+
+    @property
+    def all_main_names(self) -> List[str]:
+        return list(self._id_to_labels.values())
+
+    @property
+    def all_ids(self) -> List[int]:
+        return list(self._id_to_labels.keys())
+
 
 def ids_file_name() -> str:
     return 'labels.yaml'
@@ -170,36 +207,10 @@ class ClassIdManager(object):
 
     # public: general
     def id_and_main_name_for_name(self, name: str) -> Tuple[int, str]:
-        """
-        returns type id and main type name for main type name or alias
-
-        Args:
-            name (str): main type name or alias
-
-        Raises:
-            ClassIdManagerError: if name is empty
-
-        Returns:
-            Tuple[int, str]: (type id, main type name),
-            if name not found, returns (-1, name)
-        """
-        name = _normalized_name(name)
-        if not name:
-            raise ClassIdManagerError("ClassIdManager get empty normalized name")
-
-        return self._label_storage._label_to_ids.get(name, (-1, name))
+        return self._label_storage.label_to_id_name(name)
 
     def main_name_for_id(self, type_id: int) -> Optional[str]:
-        """
-        get main type name for type id, if not found, returns None
-
-        Args:
-            type_id (int): type id
-
-        Returns:
-            Optional[str]: corresponding main type name, if not found, returns None
-        """
-        return self._label_storage._id_to_labels.get(type_id, None)
+        return self._label_storage.id_to_label(type_id)
 
     def id_for_names(self, names: List[str]) -> Tuple[List[int], List[str]]:
         """
@@ -227,33 +238,22 @@ class ClassIdManager(object):
         Returns:
             List[str]: all main names, if not loaded, returns empty list
         """
-        return list(self._label_storage._id_to_labels.values())
+        return self._label_storage.all_main_names
 
     def all_ids(self) -> List[int]:
         """
         Returns:
             List[int]: all class_ids, if not loaded, returns empty list
         """
-        return list(self._label_storage._id_to_labels.keys())
-
-    def size(self) -> int:
-        """
-        Returns:
-            int: size of all type ids and main names, if not loaded, returns 0
-        """
-        return len(self._label_storage._id_to_labels)
+        return self._label_storage.all_ids
 
     def has_name(self, name: str) -> bool:
-        return _normalized_name(name) in self._label_storage._label_to_ids
+        return (self.id_and_main_name_for_name(name=name)[0] >= 0)
 
     def has_id(self, type_id: int) -> bool:
-        return type_id in self._label_storage._id_to_labels
+        return (self.main_name_for_id(type_id=type_id) is not None)
 
     def add_main_name(self, main_name: str) -> Tuple[int, str]:
-        main_name = _normalized_name(main_name)
-        if not main_name:
-            raise ClassIdManagerError('invalid main class name')
-
         # only trigger reload at saving, not read safe, main_name may already been added in another process.
         self.__reload()
         if self.has_name(main_name):
