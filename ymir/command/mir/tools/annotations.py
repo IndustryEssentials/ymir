@@ -1,3 +1,4 @@
+from collections import defaultdict
 import enum
 import json
 import logging
@@ -22,7 +23,7 @@ class UnknownTypesStrategy(str, enum.Enum):
 class AnnoImportResult:
     def __init__(self) -> None:
         self.added_type_and_ids: Dict[str, int] = {}
-        self.ignored_type_and_cnts: Dict[str, int] = {}
+        self.ignored_type_and_cnts: Dict[str, int] = defaultdict(int)
 
 
 def _object_dict_to_annotation(object_dict: dict, class_type_manager: class_ids.ClassIdManager) -> mirpb.Annotation:
@@ -192,7 +193,6 @@ def _import_annotations_from_dir(mir_metadatas: mirpb.MirMetadatas, mir_annotati
                     image_annotations.image_annotations[asset_hash].annotations.append(annotation)
                     anno_idx += 1
                 else:
-                    anno_import_result.ignored_type_and_cnts[type_name] = anno_import_result.ignored_type_and_cnts.get(
-                        type_name, 0) + 1
+                    anno_import_result.ignored_type_and_cnts[type_name] += 1
 
     logging.warning(f"asset count that have no annotations: {missing_annotations_counter}")

@@ -268,18 +268,21 @@ class ClassIdManager(object):
         if not main_name:
             raise ClassIdManagerError('invalid main class name')
 
+        added_class_id = -1
         with fasteners.InterProcessLock(path=parse_label_lock_path_or_link(self._storage_file_path)):
             self.__reload(self._storage_file_path)
 
             current_datetime = datetime.now()
-            single_label = _SingleLabel(id=self.size(), name=main_name)
+            added_class_id = self.size()
+
+            single_label = _SingleLabel(id=added_class_id, name=main_name)
             single_label.create_time = current_datetime
             single_label.update_time = current_datetime
             self._label_storage.labels.append(single_label)
             self._label_storage.check()
             self.__save()
 
-        return 0
+        return added_class_id
 
 
 def normalized_name(name: str) -> str:
