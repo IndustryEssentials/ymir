@@ -209,6 +209,8 @@ message TaskReqImporting {
     string gt_dir = 4;
     // strategy for unknown class types: stop, ignore or add
     UnknownTypesStrategy unknown_types_strategy = 5;
+
+    reserved 3;
 }
 
 message TaskReqExporting {
