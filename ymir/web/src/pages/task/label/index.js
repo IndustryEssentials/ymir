@@ -44,7 +44,7 @@ function Label({ datasets, keywords, ...func }) {
       doc,
       name: 'task_label_' + randomNumber(),
     }
-    const result = await func.createLabelTask(params)
+    const result = await func.label(params)
     if (result) {
       if (iterationId) {
         func.updateIteration({ id: iterationId, currentStage, [outputKey]: result.result_dataset.id })
@@ -208,9 +208,9 @@ const dis = (dispatch) => {
         payload: { id, force },
       })
     },
-    createLabelTask(payload) {
+    label(payload) {
       return dispatch({
-        type: "task/createLabelTask",
+        type: "task/label",
         payload,
       })
     },

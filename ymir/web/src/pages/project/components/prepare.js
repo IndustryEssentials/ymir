@@ -40,7 +40,6 @@ function Prepare({ project = {}, fresh = () => { }, ...func }) {
         stage.react = ''
         stage.current = validNext() ? index : 0
         stage.callback = () => createIteration()
-        console.log('project:', project, stage)
       }
       return stage
     })

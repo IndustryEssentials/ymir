@@ -122,7 +122,7 @@ function Fusion({ allDatasets, datasetCache, ...func }) {
       params.iteration = iterationId
       params.stage = currentStage
     }
-    const result = await func.createFusionTask(params)
+    const result = await func.fusion(params)
     if (result) {
       if (iterationId) {
         func.updateIteration({ id: iterationId, currentStage, [outputKey]: result.id })
@@ -322,9 +322,9 @@ const mapDispatchToProps = (dispatch) => {
     clearCache() {
       return dispatch({ type: "dataset/clearCache", })
     },
-    createFusionTask(payload) {
+    fusion(payload) {
       return dispatch({
-        type: "task/createFusionTask",
+        type: "task/fusion",
         payload,
       })
     },

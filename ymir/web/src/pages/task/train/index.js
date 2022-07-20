@@ -181,7 +181,7 @@ function Train({ allDatasets, datasetCache, keywords, ...func }) {
       imageId,
       config,
     }
-    const result = await func.createTrainTask(params)
+    const result = await func.train(params)
     if (result) {
       if (iterationId) {
         func.updateIteration({ id: iterationId, currentStage, [outputKey]: result.result_model.id })
@@ -421,9 +421,9 @@ const dis = (dispatch) => {
     clearCache() {
       return dispatch({ type: "model/clearCache", })
     },
-    createTrainTask(payload) {
+    train(payload) {
       return dispatch({
-        type: "task/createTrainTask",
+        type: "task/train",
         payload,
       })
     },
