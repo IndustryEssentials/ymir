@@ -188,7 +188,7 @@ def _import_annotations_from_dir(mir_metadatas: mirpb.MirMetadatas, mir_annotati
             anno_idx = 0
             for object_dict in objects:
                 cid, type_name, is_added = class_type_manager.id_and_main_name_for_name(
-                    name=object_dict['name'], add_if_not_found=unknown_types_strategy == UnknownTypesStrategy.ADD)
+                    name=object_dict['name'], add_if_not_found=(unknown_types_strategy == UnknownTypesStrategy.ADD))
 
                 if cid < 0 or is_added:
                     if is_added:
