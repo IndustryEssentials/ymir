@@ -179,18 +179,13 @@ def _import_annotations_from_dir(mir_metadatas: mirpb.MirMetadatas, mir_annotati
             anno_idx = 0
             for object_dict in objects:
                 type_name = class_ids.normalized_name(object_dict['name'])
-                has_type_name = class_type_manager.has_name(type_name)
+                cid = class_type_manager.id_and_main_name_for_name(type_name)[0]
 
-                cid = -1
-                if not has_type_name and unknown_types_strategy == UnknownTypesStrategy.ADD:
+                if cid < 0 and unknown_types_strategy == UnknownTypesStrategy.ADD:
                     cid = class_type_manager.add(type_name)
-                    anno_import_result.added_type_and_ids[type_name] = class_type_manager.id_and_main_name_for_name(
-                        type_name)[0]
-                    has_type_name = True
-                else:
-                    cid = class_type_manager.id_and_main_name_for_name(type_name)[0]
+                    anno_import_result.added_type_and_ids[type_name] = cid
 
-                if has_type_name:
+                if cid >= 0:
                     annotation = _object_dict_to_annotation(object_dict, cid)
                     annotation.index = anno_idx
                     image_annotations.image_annotations[asset_hash].annotations.append(annotation)

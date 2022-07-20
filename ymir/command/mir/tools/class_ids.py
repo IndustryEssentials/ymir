@@ -268,7 +268,6 @@ class ClassIdManager(object):
         if not main_name:
             raise ClassIdManagerError('invalid main class name')
 
-        added_class_id = -1
         with fasteners.InterProcessLock(path=parse_label_lock_path_or_link(self._storage_file_path)):
             self.__reload(self._storage_file_path)
 
@@ -282,7 +281,7 @@ class ClassIdManager(object):
             self._label_storage.check()
             self.__save()
 
-        return added_class_id
+            return added_class_id
 
 
 def normalized_name(name: str) -> str:
