@@ -20,11 +20,11 @@ class _SingleLabel(BaseModel):
 
     @validator('name')
     def _strip_and_lower_name(cls, v: str) -> str:
-        return normalized_name(v)
+        return _normalized_name(v)
 
     @validator('aliases', each_item=True)
     def _strip_and_lower_alias(cls, v: str) -> str:
-        return normalized_name(v)
+        return _normalized_name(v)
 
 
 class _LabelStorage(BaseModel):
@@ -192,7 +192,7 @@ class ClassIdManager(object):
             Tuple[int, str, bool]: (type id, main type name, is added),
             if name not found, returns (-1, name, False)
         """
-        name = normalized_name(name)
+        name = _normalized_name(name)
         if not self._storage_file_path:
             raise ClassIdManagerError("not loaded")
         if not name:
@@ -260,13 +260,13 @@ class ClassIdManager(object):
         return len(self._label_storage._id_to_labels)
 
     def has_name(self, name: str) -> bool:
-        return normalized_name(name) in self._label_storage._label_to_ids
+        return _normalized_name(name) in self._label_storage._label_to_ids
 
     def has_id(self, type_id: int) -> bool:
         return type_id in self._label_storage._id_to_labels
 
     def __add(self, main_name: str) -> Tuple[int, str]:
-        main_name = normalized_name(main_name)
+        main_name = _normalized_name(main_name)
         if not main_name:
             raise ClassIdManagerError('invalid main class name')
 
@@ -286,5 +286,5 @@ class ClassIdManager(object):
             return added_class_id, main_name
 
 
-def normalized_name(name: str) -> str:
+def _normalized_name(name: str) -> str:
     return name.lower().strip()
