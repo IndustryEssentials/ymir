@@ -116,7 +116,7 @@ class CmdImport(base.BaseCommand):
             task_type=mirpb.TaskTypeImportData,
             task_id=dst_typ_rev_tid.tid,
             message=f"importing {index_file}-{anno_abs}-{gt_abs} to {dst_rev}, uts: {unknown_types_strategy}",
-            unknown_types={k: v.count for k, v in anno_import_result.items() if v.count > 0},
+            unknown_types={k: v.count for k, v in anno_import_result.items() if v.id == -1},
             added_types={k: v.id for k, v in anno_import_result.items() if v.id >= 0},
             src_revs=src_revs,
             dst_rev=dst_rev,

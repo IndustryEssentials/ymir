@@ -194,8 +194,7 @@ def _import_annotations_from_dir(mir_metadatas: mirpb.MirMetadatas, mir_annotati
                     if unknown_types_strategy == UnknownTypesStrategy.ADD:
                         cid = class_type_manager.add(type_name)
                         accu_anno_import_result[type_name].id = cid
-                    else:
-                        accu_anno_import_result[type_name].count += 1
+                    accu_anno_import_result[type_name].count += 1
 
                 if cid >= 0:
                     annotation = _object_dict_to_annotation(object_dict, cid)
