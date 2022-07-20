@@ -20,11 +20,11 @@ class _SingleLabel(BaseModel):
 
     @validator('name')
     def _strip_and_lower_name(cls, v: str) -> str:
-        return _normalized_name(v)
+        return _normalize_and_check_name(v)
 
     @validator('aliases', each_item=True)
     def _strip_and_lower_alias(cls, v: str) -> str:
-        return _normalized_name(v)
+        return _normalize_and_check_name(v)
 
 
 class _LabelStorage(BaseModel):
@@ -80,7 +80,7 @@ class _LabelStorage(BaseModel):
         return super().dict(exclude={'_label_to_ids', '_id_to_labels'})
 
     def add_new_label(self, name: str) -> Tuple[int, str]:
-        name = _normalized_name(name)
+        name = _normalize_and_check_name(name)
         if name in self._label_to_ids:
             return self._label_to_ids[name]
 
@@ -120,10 +120,7 @@ class _LabelStorage(BaseModel):
             Tuple[int, str]: (type id, main type name),
             if name not found, returns (-1, name)
         """
-        type_label = _normalized_name(type_label)
-        if not type_label:
-            raise ValueError("_LabelStorage get empty normalized name")
-
+        type_label = _normalize_and_check_name(type_label)
         return self._label_to_ids.get(type_label, (-1, type_label))
 
     @property
@@ -265,5 +262,8 @@ class ClassIdManager(object):
             return added_class_id, main_name
 
 
-def _normalized_name(name: str) -> str:
-    return name.lower().strip()
+def _normalize_and_check_name(name: str) -> str:
+    name = name.lower().strip()
+    if not name:
+        raise ValueError("get empty normalized name")
+    return name
