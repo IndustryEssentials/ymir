@@ -1,11 +1,11 @@
 from collections import defaultdict
 import enum
-import json
 import logging
 import os
 from typing import Dict, List, Tuple, Union
 
 import xmltodict
+import yaml
 
 from mir.tools import class_ids
 from mir.tools.code import MirCode
@@ -111,7 +111,8 @@ def import_annotations(mir_metadatas: mirpb.MirMetadatas, mir_annotation: mirpb.
     PhaseLoggerCenter.update_phase(phase=phase, local_percent=1.0)
 
     if unknown_types_strategy == UnknownTypesStrategy.STOP and anno_import_result.ignored_type_and_cnts:
-        raise MirRuntimeError(MirCode.RC_CMD_UNKNOWN_TYPES, json.dumps(anno_import_result.ignored_type_and_cnts))
+        raise MirRuntimeError(MirCode.RC_CMD_UNKNOWN_TYPES,
+                              yaml.safe_dump(dict(anno_import_result.ignored_type_and_cnts)))
 
     return anno_import_result
 
