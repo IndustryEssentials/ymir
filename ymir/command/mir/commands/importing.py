@@ -108,10 +108,9 @@ class CmdImport(base.BaseCommand):
             task_id=dst_typ_rev_tid.tid,
             phase='import.others')
 
-        if unknown_types_strategy == annotations.UnknownTypesStrategy.ADD:
-            logging.warning(f"added type and class ids: {anno_import_result.added_type_and_ids}")
-        else:
-            logging.warning(f"ignored type and cnts: {anno_import_result.ignored_type_and_cnts}")
+        logging.info(f"unknown types strategy: {unknown_types_strategy}")
+        logging.info(f"added type and class ids: {anno_import_result.added_type_and_ids}")
+        logging.info(f"ignored type and cnts: {anno_import_result.ignored_type_and_cnts}")
 
         # create and write tasks
         task = mir_storage_ops.create_task(
