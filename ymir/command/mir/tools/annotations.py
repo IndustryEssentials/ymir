@@ -85,7 +85,7 @@ def import_annotations(mir_metadatas: mirpb.MirMetadatas, mir_annotation: mirpb.
 
     # read type_id_name_dict and type_name_id_dict
     class_type_manager = class_ids.ClassIdManager(mir_root=mir_root)
-    logging.info("loaded type id and names: %d", class_type_manager.size())
+    logging.info("loaded type id and names: %d", len(class_type_manager.all_ids()))
 
     if in_sha1_file:
         logging.info(f"wrting annotation in {annotations_dir_path}")
@@ -185,13 +185,17 @@ def _import_annotations_from_dir(mir_metadatas: mirpb.MirMetadatas, mir_annotati
 
             anno_idx = 0
             for object_dict in objects:
-                name = object_dict['name']
-                cid, new_type_name = class_type_manager.id_and_main_name_for_name(name=name)
+                cid, new_type_name = class_type_manager.id_and_main_name_for_name(name=object_dict['name'])
+
+                # update set of new_types, add label if required.
                 if cid < 0:
-                    accu_new_types[new_type_name].id = cid
-                    accu_new_types[new_type_name].count += 1
                     if add_if_not_found:
                         cid, _ = class_type_manager.add_main_name(main_name=new_type_name)
+                    accu_new_types[new_type_name].id = cid
+
+                # update counts of new types.
+                if new_type_name in accu_new_types:
+                    accu_new_types[new_type_name].count += 1
 
                 if cid >= 0:
                     annotation = _object_dict_to_annotation(object_dict, cid)
