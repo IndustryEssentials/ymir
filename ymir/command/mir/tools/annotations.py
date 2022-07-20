@@ -25,9 +25,6 @@ class ClassTypeIdAndCount:
         self.id = -1
         self.count = 0
 
-    def __repr__(self) -> str:
-        return '{' + f"id: {self.id}, count: {self.count}" + '}'
-
 
 AnnoImportResult = Dict[str, ClassTypeIdAndCount]
 
@@ -187,12 +184,11 @@ def _import_annotations_from_dir(mir_metadatas: mirpb.MirMetadatas, mir_annotati
 
             anno_idx = 0
             for object_dict in objects:
-                type_name = class_ids.normalized_name(object_dict['name'])
-                cid = class_type_manager.id_and_main_name_for_name(type_name)[0]
+                cid, type_name, is_added = class_type_manager.id_and_main_name_for_name(
+                    name=object_dict['name'], add_if_not_found=unknown_types_strategy == UnknownTypesStrategy.ADD)
 
-                if cid < 0:
-                    if unknown_types_strategy == UnknownTypesStrategy.ADD:
-                        cid = class_type_manager.add(type_name)
+                if cid < 0 or is_added:
+                    if is_added:
                         accu_anno_import_result[type_name].id = cid
                     accu_anno_import_result[type_name].count += 1
 

@@ -3,7 +3,6 @@ import shutil
 import unittest
 
 from mir.tools.class_ids import ClassIdManager
-from pydantic import ValidationError
 from tests import utils as test_utils
 
 
@@ -41,14 +40,13 @@ class TestToolsClassIds(unittest.TestCase):
 
     def test_write(self) -> None:
         cim = ClassIdManager(self._test_root)
-        cim.add(main_name='d')
-        cim.add(main_name='e')
+        cim.id_and_main_name_for_name(name='d', add_if_not_found=True)
+        cim.id_and_main_name_for_name(name='e', add_if_not_found=True)
         self.assertEqual(5, cim.size())
         self.assertEqual([0, 1, 2, 3, 4], cim.id_for_names(['a', 'b', 'c', 'd', 'e'])[0])
 
     def test_write_abnormal(self) -> None:
         cim = ClassIdManager(self._test_root)
-        with self.assertRaises(ValidationError):
-            cim.add(main_name='a')
+        cim.id_and_main_name_for_name(name='a', add_if_not_found=True)
         self.assertEqual(3, cim.size())
         self.assertEqual([0, 1, 2], cim.id_for_names(['a', 'b', 'c'])[0])

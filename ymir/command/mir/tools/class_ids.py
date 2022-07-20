@@ -30,7 +30,7 @@ class _SingleLabel(BaseModel):
 class _LabelStorage(BaseModel):
     version: int = EXPECTED_FILE_VERSION
     labels: List[_SingleLabel] = []
-    _label_to_ids: Dict[str, Tuple[int, Optional[str]]] = {}
+    _label_to_ids: Dict[str, Tuple[int, str]] = {}
     _id_to_labels: Dict[int, str] = {}
 
     # protected: validators
@@ -73,10 +73,10 @@ class _LabelStorage(BaseModel):
         if len(label_ids) != len(set(label_ids)):
             raise ClassIdManagerError('duplicated class label ids')
 
-        label_to_ids: Dict[str, Tuple[int, Optional[str]]] = {}
+        label_to_ids: Dict[str, Tuple[int, str]] = {}
         id_to_labels: Dict[int, str] = {}
         for label in labels:
-            label_to_ids[label.name] = (label.id, None)
+            label_to_ids[label.name] = (label.id, label.name)
             for label_alias in label.aliases:
                 label_to_ids[label_alias] = (label.id, label.name)
 
@@ -178,7 +178,7 @@ class ClassIdManager(object):
             yaml.safe_dump(self._label_storage.dict(), f)
 
     # public: general
-    def id_and_main_name_for_name(self, name: str) -> Tuple[int, Optional[str]]:
+    def id_and_main_name_for_name(self, name: str, add_if_not_found: bool = False) -> Tuple[int, str, bool]:
         """
         returns type id and main type name for main type name or alias
 
@@ -189,8 +189,8 @@ class ClassIdManager(object):
             ClassIdManagerError: if not loaded, or name is empty
 
         Returns:
-            Tuple[int, Optional[str]]: (type id, main type name),
-            if name not found, returns -1, None
+            Tuple[int, str, bool]: (type id, main type name, is added),
+            if name not found, returns (-1, name, False)
         """
         name = normalized_name(name)
         if not self._storage_file_path:
@@ -199,9 +199,11 @@ class ClassIdManager(object):
             raise ClassIdManagerError("empty name")
 
         if name not in self._label_storage._label_to_ids:
-            return -1, None
+            if add_if_not_found:
+                return *(self.__add(main_name=name)), True
+            return -1, name, False
 
-        return self._label_storage._label_to_ids[name]
+        return *(self._label_storage._label_to_ids[name]), False
 
     def main_name_for_id(self, type_id: int) -> Optional[str]:
         """
@@ -263,7 +265,7 @@ class ClassIdManager(object):
     def has_id(self, type_id: int) -> bool:
         return type_id in self._label_storage._id_to_labels
 
-    def add(self, main_name: str) -> int:
+    def __add(self, main_name: str) -> Tuple[int, str]:
         main_name = normalized_name(main_name)
         if not main_name:
             raise ClassIdManagerError('invalid main class name')
@@ -281,7 +283,7 @@ class ClassIdManager(object):
             self._label_storage.check()
             self.__save()
 
-            return added_class_id
+            return added_class_id, main_name
 
 
 def normalized_name(name: str) -> str:
