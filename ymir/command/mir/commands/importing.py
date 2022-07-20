@@ -109,16 +109,15 @@ class CmdImport(base.BaseCommand):
             phase='import.others')
 
         logging.info(f"unknown types strategy: {unknown_types_strategy}")
-        logging.info(f"added type and class ids: {anno_import_result.added_type_and_ids}")
-        logging.info(f"ignored type and cnts: {anno_import_result.ignored_type_and_cnts}")
+        logging.info(f"anno import result: {anno_import_result}")
 
         # create and write tasks
         task = mir_storage_ops.create_task(
             task_type=mirpb.TaskTypeImportData,
             task_id=dst_typ_rev_tid.tid,
             message=f"importing {index_file}-{anno_abs}-{gt_abs} to {dst_rev}, uts: {unknown_types_strategy}",
-            unknown_types=anno_import_result.ignored_type_and_cnts,
-            added_types=anno_import_result.added_type_and_ids,
+            unknown_types={k: v.count for k, v in anno_import_result.items() if v.count > 0},
+            added_types={k: v.id for k, v in anno_import_result.items() if v.id >= 0},
             src_revs=src_revs,
             dst_rev=dst_rev,
         )
