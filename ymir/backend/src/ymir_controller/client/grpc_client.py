@@ -273,7 +273,7 @@ def get_parser() -> Any:
     parser_create_task.add_argument("--ex_dataset_ids", nargs="*", type=str)
     parser_create_task.add_argument("--asset_dir", type=str)
     parser_create_task.add_argument("--annotation_dir", type=str)
-    parser_create_task.add_argument("--unknown-types-strategy", type=str)
+    parser_create_task.add_argument("--unknown_types_strategy", type=str)
     parser_create_task.add_argument("--model_package_path", type=str)
     parser_create_task.add_argument("--top_k", type=int)
     parser_create_task.add_argument("--expert_instruction_url", type=str)

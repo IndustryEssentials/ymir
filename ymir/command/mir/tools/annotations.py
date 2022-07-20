@@ -20,15 +20,15 @@ class UnknownTypesStrategy(str, enum.Enum):
 
 
 class ClassTypeIdAndCount:
-    def __init__(self) -> None:
-        self.id = -1
-        self.count = 0
+    def __init__(self, id: int = -1, count: int = 0) -> None:
+        self.id = id
+        self.count = count
 
     def __repr__(self) -> str:
         return '{' + f"id: {self.id}, count: {self.count}" + '}'
 
 
-AnnoImportResult = Dict[str, ClassTypeIdAndCount]
+AnnoNewTypes = Dict[str, ClassTypeIdAndCount]
 
 
 def _object_dict_to_annotation(object_dict: dict, cid: int) -> mirpb.Annotation:
@@ -58,7 +58,7 @@ def _object_dict_to_annotation(object_dict: dict, cid: int) -> mirpb.Annotation:
 
 def import_annotations(mir_metadatas: mirpb.MirMetadatas, mir_annotation: mirpb.MirAnnotations, in_sha1_file: str,
                        in_sha1_gt_file: str, mir_root: str, annotations_dir_path: str, groundtruth_dir_path: str,
-                       unknown_types_strategy: UnknownTypesStrategy, task_id: str, phase: str) -> AnnoImportResult:
+                       unknown_types_strategy: UnknownTypesStrategy, task_id: str, phase: str) -> AnnoNewTypes:
     """
     imports annotations
 
@@ -85,7 +85,7 @@ def import_annotations(mir_metadatas: mirpb.MirMetadatas, mir_annotation: mirpb.
 
     # read type_id_name_dict and type_name_id_dict
     class_type_manager = class_ids.ClassIdManager(mir_root=mir_root)
-    logging.info("loaded type id and names: %d", class_type_manager.size())
+    logging.info("loaded type id and names: %d", len(class_type_manager.all_ids()))
 
     if in_sha1_file:
         logging.info(f"wrting annotation in {annotations_dir_path}")
@@ -96,7 +96,7 @@ def import_annotations(mir_metadatas: mirpb.MirMetadatas, mir_annotation: mirpb.
             annotations_dir_path=annotations_dir_path,
             class_type_manager=class_type_manager,
             unknown_types_strategy=unknown_types_strategy,
-            accu_anno_import_result=anno_import_result,
+            accu_new_types=anno_import_result,
             image_annotations=mir_annotation.task_annotations[task_id],
         )
     PhaseLoggerCenter.update_phase(phase=phase, local_percent=0.5)
@@ -110,7 +110,7 @@ def import_annotations(mir_metadatas: mirpb.MirMetadatas, mir_annotation: mirpb.
             annotations_dir_path=groundtruth_dir_path,
             class_type_manager=class_type_manager,
             unknown_types_strategy=unknown_types_strategy,
-            accu_anno_import_result=anno_import_result,
+            accu_new_types=anno_import_result,
             image_annotations=mir_annotation.ground_truth,
         )
     PhaseLoggerCenter.update_phase(phase=phase, local_percent=1.0)
@@ -125,8 +125,7 @@ def import_annotations(mir_metadatas: mirpb.MirMetadatas, mir_annotation: mirpb.
 def _import_annotations_from_dir(mir_metadatas: mirpb.MirMetadatas, mir_annotation: mirpb.MirAnnotations,
                                  in_sha1_file: str, annotations_dir_path: str,
                                  class_type_manager: class_ids.ClassIdManager,
-                                 unknown_types_strategy: UnknownTypesStrategy,
-                                 accu_anno_import_result: AnnoImportResult,
+                                 unknown_types_strategy: UnknownTypesStrategy, accu_new_types: AnnoNewTypes,
                                  image_annotations: mirpb.SingleTaskAnnotations) -> None:
     """
     import annotations from root dir of voc annotation files
@@ -159,6 +158,7 @@ def _import_annotations_from_dir(mir_metadatas: mirpb.MirMetadatas, mir_annotati
     logging.info(f"wrting {total_assethash_count} annotations")
 
     missing_annotations_counter = 0
+    add_if_not_found = (unknown_types_strategy == UnknownTypesStrategy.ADD)
     for asset_hash, main_file_name in assethash_filename_list:
         # for each asset, import it's annotations
         annotation_file = os.path.join(annotations_dir_path, main_file_name + '.xml') if annotations_dir_path else None
@@ -185,13 +185,17 @@ def _import_annotations_from_dir(mir_metadatas: mirpb.MirMetadatas, mir_annotati
 
             anno_idx = 0
             for object_dict in objects:
-                cid, type_name, is_added = class_type_manager.id_and_main_name_for_name(
-                    name=object_dict['name'], add_if_not_found=(unknown_types_strategy == UnknownTypesStrategy.ADD))
+                cid, new_type_name = class_type_manager.id_and_main_name_for_name(name=object_dict['name'])
 
-                if cid < 0 or is_added:
-                    if is_added:
-                        accu_anno_import_result[type_name].id = cid
-                    accu_anno_import_result[type_name].count += 1
+                # update set of new_types, add label if required.
+                if cid < 0:
+                    if add_if_not_found:
+                        cid, _ = class_type_manager.add_main_name(main_name=new_type_name)
+                    accu_new_types[new_type_name].id = cid
+
+                # update counts of new types.
+                if new_type_name in accu_new_types:
+                    accu_new_types[new_type_name].count += 1
 
                 if cid >= 0:
                     annotation = _object_dict_to_annotation(object_dict, cid)
