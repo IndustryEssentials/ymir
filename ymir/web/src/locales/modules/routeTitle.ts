@@ -17,6 +17,8 @@ const routeTitle = {
   "model.diagnose.title": { cn: `${SysName}-模型诊断`, en: `${SysName} - Model Diagnose`, },
   "model.verify.title": { cn: `${SysName}-模型验证`, en: `${SysName} - Model Verify`, },
   "task.fusion.title": { cn: `${SysName}-数据预处理`, en: `${SysName} - Data Pretreatment`, },
+  "task.merge.title": { cn: `${SysName}-数据合并`, en: `${SysName} - Data Merge`, },
+  "task.filter.title": { cn: `${SysName}-数据筛选`, en: `${SysName} - Data Filter`, },
   "task.train.title": { cn: `${SysName}-模型训练`, en: `${SysName} - Model Training`, },
   "task.mining.title": { cn: `${SysName}-数据挖掘`, en: `${SysName} - Dataset Mining`, },
   "task.inference.title": { cn: `${SysName}-数据推理`, en: `${SysName} - Dataset Inference`, },

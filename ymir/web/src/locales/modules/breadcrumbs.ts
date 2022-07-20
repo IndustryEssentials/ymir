@@ -3,6 +3,8 @@ const breadcrumbs = {
   'breadcrumbs.models': { cn: '模型列表', en: 'Model List', },
   'breadcrumbs.datasets': { cn: '数据集列表', en: 'Dataset List', },
   'breadcrumbs.task.fusion': { cn: '数据预处理', en: 'Data Pretreatment', },
+  'breadcrumbs.task.merge': { cn: '数据合并', en: 'Data Merge', },
+  'breadcrumbs.task.filter': { cn: '数据筛选', en: 'Data Filter', },
   'breadcrumbs.task.training': { cn: '模型训练', en: 'Model Training', },
   'breadcrumbs.task.label': { cn: '标注数据', en: 'Dataset Labeling', },
   'breadcrumbs.task.mining': { cn: '挖掘数据', en: 'Dataset Mining', },

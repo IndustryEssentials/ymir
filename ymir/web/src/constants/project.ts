@@ -38,7 +38,7 @@ export const StageList = () => {
     { label: 'ready', value: Stages.prepareMining, output: 'miningSet', input: '', url: `/home/project/{pid}/fusion?did={s0d}&strategy={s0s}&chunk={s0c}&${iterationParams}` },
     { label: 'mining', value: Stages.mining, output: 'miningResult', input: 'miningSet', url: `/home/project/{pid}/mining?did={s1d}&mid={s1m}&${iterationParams}` },
     { label: 'label', value: Stages.labelling, output: 'labelSet', input: 'miningResult', url: `/home/project/{pid}/label?did={s2d}&${iterationParams}` },
-    { label: 'merge', value: Stages.merging, output: 'trainUpdateSet', input: 'labelSet', url: `/home/project/{pid}/fusion?did={s3d}&merging={s3m}&${iterationParams}` },
+    { label: 'merge', value: Stages.merging, output: 'trainUpdateSet', input: 'labelSet', url: `/home/project/{pid}/merge?did={s3d}&merging={s3m}&${iterationParams}` },
     { label: 'training', value: Stages.training, output: 'model', input: 'trainUpdateSet', url: `/home/project/{pid}/train?did={s4d}&test={s4t}&${iterationParams}` },
     { label: 'next', value: Stages.next, output: '', input: 'trainSet', },
   ]
