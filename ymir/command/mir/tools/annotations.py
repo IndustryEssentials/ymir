@@ -25,6 +25,9 @@ class ClassTypeIdAndCount:
         self.id = -1
         self.count = 0
 
+    def __repr__(self) -> str:
+        return '{' + f"id: {self.id}, count: {self.count}" + '}'
+
 
 AnnoImportResult = Dict[str, ClassTypeIdAndCount]
 
