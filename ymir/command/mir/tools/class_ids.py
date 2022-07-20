@@ -178,7 +178,7 @@ class ClassIdManager(object):
             yaml.safe_dump(self._label_storage.dict(), f)
 
     # public: general
-    def id_and_main_name_for_name(self, name: str, add_if_not_found: bool = False) -> Tuple[int, str, bool]:
+    def id_and_main_name_for_name(self, name: str, add_if_not_found: bool = False) -> Tuple[int, str]:
         """
         returns type id and main type name for main type name or alias
 
@@ -189,21 +189,21 @@ class ClassIdManager(object):
             ClassIdManagerError: if not loaded, or name is empty
 
         Returns:
-            Tuple[int, str, bool]: (type id, main type name, is added),
-            if name not found, returns (-1, name, False)
+            Tuple[int, str]: (type id, main type name),
+            if name not found, returns (-1, name)
         """
         name = _normalized_name(name)
         if not self._storage_file_path:
-            raise ClassIdManagerError("not loaded")
+            raise ClassIdManagerError(f"{self._storage_file_path} not loaded")
         if not name:
             raise ClassIdManagerError("empty name")
 
         if name not in self._label_storage._label_to_ids:
             if add_if_not_found:
-                return *(self.__add(main_name=name)), True
-            return -1, name, False
+                return self.__add(main_name=name)
+            return -1, name
 
-        return *(self._label_storage._label_to_ids[name]), False
+        return self._label_storage._label_to_ids[name]
 
     def main_name_for_id(self, type_id: int) -> Optional[str]:
         """

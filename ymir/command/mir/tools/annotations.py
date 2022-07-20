@@ -20,9 +20,9 @@ class UnknownTypesStrategy(str, enum.Enum):
 
 
 class ClassTypeIdAndCount:
-    def __init__(self) -> None:
-        self.id = -1
-        self.count = 0
+    def __init__(self, id: int = -1, count: int = 0) -> None:
+        self.id = id
+        self.count = count
 
     def __repr__(self) -> str:
         return '{' + f"id: {self.id}, count: {self.count}" + '}'
@@ -185,13 +185,11 @@ def _import_annotations_from_dir(mir_metadatas: mirpb.MirMetadatas, mir_annotati
 
             anno_idx = 0
             for object_dict in objects:
-                cid, type_name, is_added = class_type_manager.id_and_main_name_for_name(
+                cid, type_name = class_type_manager.id_and_main_name_for_name(
                     name=object_dict['name'], add_if_not_found=(unknown_types_strategy == UnknownTypesStrategy.ADD))
 
-                if cid < 0 or is_added:
-                    if is_added:
-                        accu_anno_import_result[type_name].id = cid
-                    accu_anno_import_result[type_name].count += 1
+                accu_anno_import_result[type_name].id = cid
+                accu_anno_import_result[type_name].count += 1
 
                 if cid >= 0:
                     annotation = _object_dict_to_annotation(object_dict, cid)
