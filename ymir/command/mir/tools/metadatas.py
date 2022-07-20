@@ -33,7 +33,7 @@ def _generate_metadata_mir_pb(mir_metadatas: mirpb.MirMetadatas, dataset_name: s
 
         # read file
         # if any exception occured, exit without any handler
-        hashed_asset_path = utils.get_asset_or_model_storage_path(location=hashed_asset_root, hash=val, make_dirs=False)
+        hashed_asset_path = utils.get_asset_storage_path(location=hashed_asset_root, hash=val, make_dirs=False)
         asset_type, width, height, channel, byte_size = _type_shape_size_for_asset(hashed_asset_path)
         if asset_type == mirpb.AssetTypeUnknown:
             logging.warning(f"ignore asset with unknown format, id: {val}")

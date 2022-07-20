@@ -166,9 +166,7 @@ def _generate_sha_and_copy(index_file: str, sha_idx_file: str, sha_folder: str) 
             sha1 = hash_utils.sha1sum_for_file(media_src)
             sha_f.writelines("\t".join([sha1, media_src]) + '\n')
 
-            media_dst = utils.get_asset_or_model_storage_path(location=sha_folder,
-                                                              hash=sha1,
-                                                              make_dirs=True)
+            media_dst = utils.get_asset_storage_path(location=sha_folder, hash=sha1, make_dirs=True)
             if not os.path.isfile(media_dst):
                 shutil.copyfile(media_src, media_dst)
 

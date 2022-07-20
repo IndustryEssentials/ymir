@@ -204,7 +204,7 @@ class TestCmdTraining(unittest.TestCase):
         sha1sum_path_pairs = [(hash_utils.sha1sum_for_file(image_path), image_path)
                               for image_path in image_paths]  # type: List[Tuple[str, str]]
         for sha1sum, image_path in sha1sum_path_pairs:
-            shutil.copyfile(image_path, os.path.join(self._assets_location, sha1sum))
+            shutil.copyfile(image_path, mir_utils.get_asset_storage_path(self._assets_location, sha1sum, make_dirs=True))
 
         shutil.copyfile('tests/assets/training-template.yaml', self._config_file)
         with open(self._config_file, 'r') as f:

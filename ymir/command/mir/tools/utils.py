@@ -4,13 +4,11 @@ import logging
 import os
 import pathlib
 import time
-import requests
 import shutil
 import tarfile
 from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 
 from google.protobuf import json_format
-from PIL import Image, UnidentifiedImageError
 from pydantic import BaseModel, root_validator
 import yaml
 
@@ -77,7 +75,7 @@ def mir_repo_commit_id(git: Union[str, scm.CmdScm], branch: str = "HEAD") -> str
 
 
 # assets
-def get_asset_or_model_storage_path(location: str, hash: str, make_dirs: bool) -> str:
+def get_asset_storage_path(location: str, hash: str, make_dirs: bool) -> str:
     sub_dir = os.path.join(location, hash[-2:])
     if make_dirs:
         os.makedirs(sub_dir, exist_ok=True)
@@ -157,9 +155,7 @@ def prepare_model(model_location: str, model_hash: str, stage_name: str, dst_mod
     Returns:
         ModelStorage
     """
-    tar_file_path = get_asset_or_model_storage_path(location=model_location,
-                                                    hash=model_hash,
-                                                    make_dirs=False)
+    tar_file_path = os.path.join(model_location, model_hash)
     if not os.path.isfile(tar_file_path):
         raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
                               error_message=f"tar_file is not a file: {tar_file_path}")
@@ -212,9 +208,9 @@ def pack_and_copy_models(model_storage: ModelStorage, model_dir_path: str, model
         logging.info(f"  packing {ymir_info_file_path} -> {ymir_info_file_name}")
         tar_gz_f.add(ymir_info_file_path, ymir_info_file_name)
 
+    os.makedirs(model_location, exist_ok=True)
     model_hash = hash_utils.sha1sum_for_file(tar_file_path)
-    shutil.copyfile(tar_file_path,
-                    get_asset_or_model_storage_path(location=model_location, hash=model_hash, make_dirs=True))
+    shutil.copyfile(tar_file_path, os.path.join(model_location, model_hash))
     os.remove(tar_file_path)
 
     logging.info(f"pack success, model hash: {model_hash}, best_stage_name: {model_storage.best_stage_name}, "

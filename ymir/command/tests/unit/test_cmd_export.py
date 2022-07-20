@@ -7,7 +7,7 @@ from google.protobuf import json_format
 
 from mir.commands import exporting
 from mir.protos import mir_command_pb2 as mirpb
-from mir.tools import hash_utils, mir_storage_ops
+from mir.tools import hash_utils, mir_storage_ops, utils
 from mir.tools.code import MirCode
 from tests import utils as test_utils
 
@@ -52,7 +52,7 @@ class TestCmdExport(unittest.TestCase):
         sha1sum_path_pairs = [(hash_utils.sha1sum_for_file(image_path), image_path)
                               for image_path in image_paths]  # type: List[Tuple[str, str]]
         for sha1sum, image_path in sha1sum_path_pairs:
-            shutil.copyfile(image_path, os.path.join(self._assets_location, sha1sum))
+            shutil.copyfile(image_path, utils.get_asset_storage_path(self._assets_location, sha1sum, make_dirs=True))
 
     def __prepare_mir_repo(self):
         '''
