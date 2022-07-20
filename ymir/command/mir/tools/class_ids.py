@@ -86,10 +86,13 @@ class _LabelStorage(BaseModel):
 
         current_datetime = datetime.now()
         added_class_id = len(self.labels)
-        single_label = _SingleLabel(id=added_class_id, name=name)
-        single_label.create_time = current_datetime
-        single_label.update_time = current_datetime
-        self.labels.append(single_label)
+        self.labels.append(
+            _SingleLabel(
+                id=added_class_id,
+                name=name,
+                create_time=current_datetime,
+                update_time=current_datetime,
+            ))
 
         # update lookup dict.
         self._label_to_ids[name] = added_class_id, name
