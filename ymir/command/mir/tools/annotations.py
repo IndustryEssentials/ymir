@@ -26,7 +26,7 @@ class AnnoImportResult:
         self.ignored_type_and_cnts: Dict[str, int] = defaultdict(int)
 
 
-def _object_dict_to_annotation(object_dict: dict, class_type_manager: class_ids.ClassIdManager) -> mirpb.Annotation:
+def _object_dict_to_annotation(object_dict: dict, cid: int) -> mirpb.Annotation:
     bndbox_dict: dict = object_dict['bndbox']
     if not bndbox_dict:
         raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS, error_message='found no value for bndbox')
@@ -39,7 +39,7 @@ def _object_dict_to_annotation(object_dict: dict, class_type_manager: class_ids.
     height = ymax - ymin + 1
 
     annotation = mirpb.Annotation()
-    annotation.class_id = class_type_manager.id_and_main_name_for_name(object_dict['name'])[0]
+    annotation.class_id = cid
     annotation.box.x = xmin
     annotation.box.y = ymin
     annotation.box.w = width
@@ -181,14 +181,17 @@ def _import_annotations_from_dir(mir_metadatas: mirpb.MirMetadatas, mir_annotati
                 type_name = class_ids.normalized_name(object_dict['name'])
                 has_type_name = class_type_manager.has_name(type_name)
 
+                cid = -1
                 if not has_type_name and unknown_types_strategy == UnknownTypesStrategy.ADD:
-                    class_type_manager.add(type_name)
+                    cid = class_type_manager.add(type_name)
                     anno_import_result.added_type_and_ids[type_name] = class_type_manager.id_and_main_name_for_name(
                         type_name)[0]
                     has_type_name = True
+                else:
+                    cid = class_type_manager.id_and_main_name_for_name(type_name)[0]
 
                 if has_type_name:
-                    annotation = _object_dict_to_annotation(object_dict, class_type_manager)
+                    annotation = _object_dict_to_annotation(object_dict, cid)
                     annotation.index = anno_idx
                     image_annotations.image_annotations[asset_hash].annotations.append(annotation)
                     anno_idx += 1
