@@ -35,18 +35,18 @@ class TestToolsClassIds(unittest.TestCase):
     # public: test cases
     def test_read(self) -> None:
         cim = ClassIdManager(self._test_root)
-        self.assertEqual(3, cim.size())
+        self.assertEqual([0, 1, 2], cim.all_ids())
         self.assertEqual([0, 1, 2], cim.id_for_names(['a', 'b', 'c'])[0])
 
     def test_write(self) -> None:
         cim = ClassIdManager(self._test_root)
-        cim.id_and_main_name_for_name(name='d', add_if_not_found=True)
-        cim.id_and_main_name_for_name(name='e', add_if_not_found=True)
-        self.assertEqual(5, cim.size())
+        self.assertEqual((3, 'd'), cim.add_main_name('D'))
+        self.assertEqual((4, 'e'), cim.add_main_name(' e '))
+        self.assertEqual([0, 1, 2, 3, 4], cim.all_ids())
         self.assertEqual([0, 1, 2, 3, 4], cim.id_for_names(['a', 'b', 'c', 'd', 'e'])[0])
 
     def test_write_abnormal(self) -> None:
         cim = ClassIdManager(self._test_root)
-        cim.id_and_main_name_for_name(name='a', add_if_not_found=True)
-        self.assertEqual(3, cim.size())
+        cim.add_main_name('a')
+        self.assertEqual([0, 1, 2], cim.all_ids())
         self.assertEqual([0, 1, 2], cim.id_for_names(['a', 'b', 'c'])[0])
