@@ -5,7 +5,6 @@ import os
 from typing import Dict, List, Tuple, Union
 
 import xmltodict
-import yaml
 
 from mir.tools import class_ids
 from mir.tools.code import MirCode
@@ -117,9 +116,8 @@ def import_annotations(mir_metadatas: mirpb.MirMetadatas, mir_annotation: mirpb.
     PhaseLoggerCenter.update_phase(phase=phase, local_percent=1.0)
 
     if unknown_types_strategy == UnknownTypesStrategy.STOP and anno_import_result:
-        unknown_types_and_cnt = {k: v.count for k, v in anno_import_result.items()}
         raise MirRuntimeError(error_code=MirCode.RC_CMD_UNKNOWN_TYPES,
-                              error_message=yaml.safe_dump(unknown_types_and_cnt))
+                              error_message=f"{list(anno_import_result.keys())}")
 
     return anno_import_result
 
