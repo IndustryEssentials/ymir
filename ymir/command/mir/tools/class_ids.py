@@ -1,9 +1,9 @@
 from datetime import datetime
 import os
-from typing import Any, Dict, List, Optional, Set, Tuple
+from typing import Dict, List, Optional, Set, Tuple
 
 import fasteners  # type: ignore
-from pydantic import BaseModel, root_validator, validate_model, validator
+from pydantic import BaseModel, root_validator, validator
 import yaml
 
 from mir.tools import utils as mir_utils
@@ -30,7 +30,7 @@ class _SingleLabel(BaseModel):
 class _LabelStorage(BaseModel):
     version: int = EXPECTED_FILE_VERSION
     labels: List[_SingleLabel] = []
-    _label_to_ids: Dict[str, Tuple[int, str]] = {}
+    _label_to_ids: Dict[str, Tuple[int, str]] = {}  # store main_name for main_name/alias lookup.
     _id_to_labels: Dict[int, str] = {}
 
     # protected: validators
@@ -60,18 +60,7 @@ class _LabelStorage(BaseModel):
 
     @root_validator
     def _generate_dicts(cls, values: dict) -> dict:
-        labels: List[_SingleLabel] = values.get('labels', [])
-
-        # check duplicate
-        label_names = []
-        for label in labels:
-            label_names.append(label.name)
-            label_names.extend(label.aliases)
-        if len(label_names) != len(set(label_names)):
-            raise ClassIdManagerError('duplicated class label names and aliases')
-        label_ids = [label.id for label in labels]
-        if len(label_ids) != len(set(label_ids)):
-            raise ClassIdManagerError('duplicated class label ids')
+        labels: List[_SingleLabel] = values['labels']
 
         label_to_ids: Dict[str, Tuple[int, str]] = {}
         id_to_labels: Dict[int, str] = {}
@@ -87,20 +76,26 @@ class _LabelStorage(BaseModel):
         return values
 
     # public: general
-    def dict(self) -> Any:  # type: ignore
+    def dict(self) -> Dict:  # type: ignore
         return super().dict(exclude={'_label_to_ids', '_id_to_labels'})
 
-    def check(self) -> None:
-        """
-        force validators to run again, update `_id_to_labels` and `_label_to_ids`
-        """
-        validation_result, _, validation_error = validate_model(model=self.__class__, input_data=self.__dict__)
-        if validation_error:
-            raise validation_error
+    def add_new_label(self, name: str) -> Tuple[int, str]:
+        name = _normalized_name(name)
+        if name in self._label_to_ids:
+            return self._label_to_ids[name]
 
-        # this two fields not automatically updated when `validate_model` ends
-        self._id_to_labels.update(validation_result.get('_id_to_labels', {}))
-        self._label_to_ids.update(validation_result.get('_label_to_ids', {}))
+        current_datetime = datetime.now()
+        added_class_id = len(self.labels)
+        single_label = _SingleLabel(id=added_class_id, name=name)
+        single_label.create_time = current_datetime
+        single_label.update_time = current_datetime
+        self.labels.append(single_label)
+
+        # update lookup dict.
+        self._label_to_ids[name] = added_class_id, name
+        self._id_to_labels[added_class_id] = name
+
+        return added_class_id, name
 
 
 def ids_file_name() -> str:
@@ -148,22 +143,21 @@ class ClassIdManager(object):
         # it will have value iff successfully loaded
         self._storage_file_path = ''
 
-        self.__load(ids_file_path(mir_root=mir_root))
+        if not self.__load(ids_file_path(mir_root=mir_root)):
+            raise ClassIdManagerError("ClassIdManager initialize failed in mir_root: {mir_root}")
 
     # private: load and unload
     def __load(self, file_path: str) -> bool:
         if not file_path:
-            raise ClassIdManagerError('empty path received')
-        if self._storage_file_path:
-            raise ClassIdManagerError(f"already loaded from: {self._storage_file_path}")
-
-        self.__reload(file_path)
+            raise ClassIdManagerError('ClassIdManager: empty path received')
 
         self._storage_file_path = file_path
+        self.__reload()
+
         return True
 
-    def __reload(self, file_path: str) -> None:
-        with open(file_path, 'r') as f:
+    def __reload(self) -> None:
+        with open(self._storage_file_path, 'r') as f:
             file_obj = yaml.safe_load(f)
         if file_obj is None:
             file_obj = {}
@@ -171,14 +165,11 @@ class ClassIdManager(object):
         self._label_storage = _LabelStorage(**file_obj)
 
     def __save(self) -> None:
-        if not self._storage_file_path:
-            raise ClassIdManagerError('not loaded')
-
         with open(self._storage_file_path, 'w') as f:
             yaml.safe_dump(self._label_storage.dict(), f)
 
     # public: general
-    def id_and_main_name_for_name(self, name: str, add_if_not_found: bool = False) -> Tuple[int, str]:
+    def id_and_main_name_for_name(self, name: str) -> Tuple[int, str]:
         """
         returns type id and main type name for main type name or alias
 
@@ -186,24 +177,17 @@ class ClassIdManager(object):
             name (str): main type name or alias
 
         Raises:
-            ClassIdManagerError: if not loaded, or name is empty
+            ClassIdManagerError: if name is empty
 
         Returns:
             Tuple[int, str]: (type id, main type name),
             if name not found, returns (-1, name)
         """
         name = _normalized_name(name)
-        if not self._storage_file_path:
-            raise ClassIdManagerError(f"{self._storage_file_path} not loaded")
         if not name:
-            raise ClassIdManagerError("empty name")
+            raise ClassIdManagerError("ClassIdManager get empty normalized name")
 
-        if name not in self._label_storage._label_to_ids:
-            if add_if_not_found:
-                return self.__add(main_name=name)
-            return -1, name
-
-        return self._label_storage._label_to_ids[name]
+        return self._label_storage._label_to_ids.get(name, (-1, name))
 
     def main_name_for_id(self, type_id: int) -> Optional[str]:
         """
@@ -265,24 +249,19 @@ class ClassIdManager(object):
     def has_id(self, type_id: int) -> bool:
         return type_id in self._label_storage._id_to_labels
 
-    def __add(self, main_name: str) -> Tuple[int, str]:
+    def add_main_name(self, main_name: str) -> Tuple[int, str]:
         main_name = _normalized_name(main_name)
         if not main_name:
             raise ClassIdManagerError('invalid main class name')
 
+        # only trigger reload at saving, not read safe, main_name may already been added in another process.
+        self.__reload()
+        if self.has_name(main_name):
+            return self.id_and_main_name_for_name(main_name)
+
         with fasteners.InterProcessLock(path=parse_label_lock_path_or_link(self._storage_file_path)):
-            self.__reload(self._storage_file_path)
-
-            current_datetime = datetime.now()
-            added_class_id = self.size()
-
-            single_label = _SingleLabel(id=added_class_id, name=main_name)
-            single_label.create_time = current_datetime
-            single_label.update_time = current_datetime
-            self._label_storage.labels.append(single_label)
-            self._label_storage.check()
+            added_class_id, main_name = self._label_storage.add_new_label(name=main_name)
             self.__save()
-
             return added_class_id, main_name
 
 
