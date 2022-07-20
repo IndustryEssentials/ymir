@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef } from "react"
 import { connect } from 'dva'
 import styles from "./list.less"
 import { Link, useHistory } from "umi"
-import { Form, Input, Table, Modal, Row, Col, Tooltip, Pagination, Space, Empty, Button, } from "antd"
+import { Form, Input, Table, Modal, Row, Col, Tooltip, Pagination, Space, Empty, Button, message, } from "antd"
 
 import { diffTime } from '@/utils/date'
 import { states } from '@/constants/model'
@@ -33,10 +33,11 @@ function Model({ pid, project = {}, iterations, groups, modelList, versions, que
   const [models, setModels] = useState([])
   const [modelVersions, setModelVersions] = useState({})
   const [total, setTotal] = useState(1)
-  const [selectedVersions, setSelectedVersions] = useState({})
+  const [selectedVersions, setSelectedVersions] = useState([])
   const [form] = useForm()
   const [current, setCurrent] = useState({})
   const [visibles, setVisibles] = useState({})
+  const [trainingUrl, setTrainingUrl] = useState('')
   let [lock, setLock] = useState(true)
   const hideRef = useRef(null)
   const delGroupRef = useRef(null)
@@ -108,6 +109,15 @@ function Model({ pid, project = {}, iterations, groups, modelList, versions, que
       getData()
     }
   }, [query, lock])
+
+  useEffect(() => {
+    const mvs = Object.values(modelVersions).flat().filter(version => selectedVersions.includes(version.id))
+    const hashs = mvs.map(version => version.task.hash)
+    console.log('selectedVersions:', selectedVersions, modelVersions, Object.values(modelVersions).flat(), hashs)
+    const url = getTensorboardLink(hashs)
+    console.log('url:', url)
+    setTrainingUrl(url)
+  }, [selectedVersions])
 
   async function initState() {
     await func.resetQuery()
@@ -322,18 +332,20 @@ function Model({ pid, project = {}, iterations, groups, modelList, versions, que
   }
 
   const multipleInfer = () => {
-    const ids = Object.values(selectedVersions).flat()
     const versionsObject = Object.values(versions).flat()
-    const selected = versionsObject.filter(md => ids.includes(md.id)).map(md => {
+    const selected = versionsObject.filter(md => selectedVersions.includes(md.id) && isValidModel(md.state)).map(md => {
       return [md.id, md.recommendStage].toString()
-    }).join('|')
-    history.push(`/home/project/${pid}/inference?mid=${selected}`)
+    })
+    if (selected.length) {
+      history.push(`/home/project/${pid}/inference?mid=${selected.join('|')}`)
+    } else {
+      message.error(t('model.list.batch.invalid'))
+    }
   }
 
   const multipleHide = () => {
-    const ids = Object.values(selectedVersions).flat()
     const allVss = Object.values(versions).flat()
-    const vss = allVss.filter(({ id }) => ids.includes(id))
+    const vss = allVss.filter(({ id }) => selectedVersions.includes(id))
     hideRef.current.hide(vss, project.hiddenModels)
   }
 
@@ -347,12 +359,13 @@ function Model({ pid, project = {}, iterations, groups, modelList, versions, que
   const hideOk = (result) => {
     result.forEach(item => fetchVersions(item.model_group_id, true))
     getData()
-    setSelectedVersions({})
+    setSelectedVersions([])
   }
 
 
   function rowSelectChange(gid, rowKeys) {
-    setSelectedVersions(old => ({ ...old, [gid]: rowKeys }))
+    const selected = [...selectedVersions, ...rowKeys]
+    setSelectedVersions(selected)
   }
 
   const stop = (dataset) => {
@@ -408,7 +421,7 @@ function Model({ pid, project = {}, iterations, groups, modelList, versions, que
     </Button>
   )
 
-  const renderMultipleActions = Object.values(selectedVersions).flat().length ? (
+  const renderMultipleActions = selectedVersions.length ? (
     <>
       <Button type="primary" onClick={multipleHide}>
         <EyeOffIcon /> {t("common.action.multiple.hide")}
@@ -416,6 +429,9 @@ function Model({ pid, project = {}, iterations, groups, modelList, versions, que
       <Button type="primary" onClick={multipleInfer}>
         <WajueIcon /> {t("common.action.multiple.infer")}
       </Button>
+      <a href={trainingUrl} target='_blank'><Button type="primary">
+        <BarchartIcon /> {t('task.action.training.batch')}
+      </Button></a>
     </>
   ) : null
 
