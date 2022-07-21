@@ -74,7 +74,8 @@ class TestCmdImport(unittest.TestCase):
         self._check_repo(self._mir_repo_root,
                          with_person_ignored=True,
                          with_annotations=True,
-                         task_unknown_types={'person': 4})
+                         task_new_types={'person': 4},
+                         task_new_types_added=False)
 
         # add unknown types
         args.unknown_types_strategy = 'add'
@@ -86,7 +87,8 @@ class TestCmdImport(unittest.TestCase):
         self._check_repo(self._mir_repo_root,
                          with_person_ignored=False,
                          with_annotations=True,
-                         task_added_types={'person': 2})
+                         task_new_types={'person': 4},
+                         task_new_types_added=True)
 
         # have no annotations
         args.anno = None
@@ -119,8 +121,8 @@ class TestCmdImport(unittest.TestCase):
                     repo_root: str,
                     with_person_ignored: bool,
                     with_annotations: bool,
-                    task_unknown_types: dict = {},
-                    task_added_types: dict = {}):
+                    task_new_types: dict = {},
+                    task_new_types_added: bool = False):
         # check annotations.mir
         mir_annotations = mirpb.MirAnnotations()
         with open(os.path.join(repo_root, 'annotations.mir'), 'rb') as f:
@@ -1048,8 +1050,8 @@ class TestCmdImport(unittest.TestCase):
 
         task = mir_tasks.tasks[mir_tasks.head_task_id]
         task_dict = MessageToDict(task, preserving_proto_field_name=True)
-        self.assertEqual(task_dict.get('unknown_types', {}), task_unknown_types)
-        self.assertEqual(task_dict.get('added_types', {}), task_added_types)
+        self.assertEqual(task_dict.get('new_types', {}), task_new_types)
+        self.assertEqual(task_dict.get('new_types_added', False), task_new_types_added)
 
     # custom: env prepare
     def _prepare_dirs(self):
