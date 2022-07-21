@@ -220,13 +220,13 @@ message Task {
     int64 timestamp = 5;  // RFC 3339 date strings
     /// (for training task): result model for cmd train
     ModelMeta model = 6;
-    /// (for import task): unknown types for cmd import, key: class name, value: asset count
-    map<string, int32> unknown_types = 7;
     int32 return_code = 8;
     string return_msg = 9;
     Evaluation evaluation = 10;
-    /// (for import task): added unknown types for cmd import, key: class name, value: class id
-    map<string, int32> added_types = 11;
+    /// (for import task): new types for cmd import, key: class name, value: asset count
+    map<string, int32> new_types = 11;
+    /// (for import task): reason for new types, True: added, False: ignored
+    bool new_types_added = 12;
 
     string serialized_task_parameters = 102;
     string serialized_executor_config = 103;
@@ -234,7 +234,7 @@ message Task {
     string dst_rev = 105;
     string executor = 106;
 
-    reserved 4, 100, 101;
+    reserved 4, 7, 100, 101;
 };
 
 message ModelMeta {

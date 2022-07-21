@@ -793,20 +793,7 @@ global___MirTasks = MirTasks
 
 class Task(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor = ...
-    class UnknownTypesEntry(google.protobuf.message.Message):
-        DESCRIPTOR: google.protobuf.descriptor.Descriptor = ...
-        KEY_FIELD_NUMBER: builtins.int
-        VALUE_FIELD_NUMBER: builtins.int
-        key: typing.Text = ...
-        value: builtins.int = ...
-        def __init__(self,
-            *,
-            key : typing.Text = ...,
-            value : builtins.int = ...,
-            ) -> None: ...
-        def ClearField(self, field_name: typing_extensions.Literal["key",b"key","value",b"value"]) -> None: ...
-
-    class AddedTypesEntry(google.protobuf.message.Message):
+    class NewTypesEntry(google.protobuf.message.Message):
         DESCRIPTOR: google.protobuf.descriptor.Descriptor = ...
         KEY_FIELD_NUMBER: builtins.int
         VALUE_FIELD_NUMBER: builtins.int
@@ -824,11 +811,11 @@ class Task(google.protobuf.message.Message):
     TASK_ID_FIELD_NUMBER: builtins.int
     TIMESTAMP_FIELD_NUMBER: builtins.int
     MODEL_FIELD_NUMBER: builtins.int
-    UNKNOWN_TYPES_FIELD_NUMBER: builtins.int
     RETURN_CODE_FIELD_NUMBER: builtins.int
     RETURN_MSG_FIELD_NUMBER: builtins.int
     EVALUATION_FIELD_NUMBER: builtins.int
-    ADDED_TYPES_FIELD_NUMBER: builtins.int
+    NEW_TYPES_FIELD_NUMBER: builtins.int
+    NEW_TYPES_ADDED_FIELD_NUMBER: builtins.int
     SERIALIZED_TASK_PARAMETERS_FIELD_NUMBER: builtins.int
     SERIALIZED_EXECUTOR_CONFIG_FIELD_NUMBER: builtins.int
     SRC_REVS_FIELD_NUMBER: builtins.int
@@ -850,18 +837,17 @@ class Task(google.protobuf.message.Message):
     def model(self) -> global___ModelMeta:
         """/ (for training task): result model for cmd train"""
         pass
-    @property
-    def unknown_types(self) -> google.protobuf.internal.containers.ScalarMap[typing.Text, builtins.int]:
-        """/ (for import task): unknown types for cmd import, key: class name, value: asset count"""
-        pass
     return_code: builtins.int = ...
     return_msg: typing.Text = ...
     @property
     def evaluation(self) -> global___Evaluation: ...
     @property
-    def added_types(self) -> google.protobuf.internal.containers.ScalarMap[typing.Text, builtins.int]:
-        """/ (for import task): added unknown types for cmd import, key: class name, value: class id"""
+    def new_types(self) -> google.protobuf.internal.containers.ScalarMap[typing.Text, builtins.int]:
+        """/ (for import task): new types for cmd import, key: class name, value: asset count"""
         pass
+    new_types_added: builtins.bool = ...
+    """/ (for import task): reason for new types, True: added, False: ignored"""
+
     serialized_task_parameters: typing.Text = ...
     serialized_executor_config: typing.Text = ...
     src_revs: typing.Text = ...
@@ -874,11 +860,11 @@ class Task(google.protobuf.message.Message):
         task_id : typing.Text = ...,
         timestamp : builtins.int = ...,
         model : typing.Optional[global___ModelMeta] = ...,
-        unknown_types : typing.Optional[typing.Mapping[typing.Text, builtins.int]] = ...,
         return_code : builtins.int = ...,
         return_msg : typing.Text = ...,
         evaluation : typing.Optional[global___Evaluation] = ...,
-        added_types : typing.Optional[typing.Mapping[typing.Text, builtins.int]] = ...,
+        new_types : typing.Optional[typing.Mapping[typing.Text, builtins.int]] = ...,
+        new_types_added : builtins.bool = ...,
         serialized_task_parameters : typing.Text = ...,
         serialized_executor_config : typing.Text = ...,
         src_revs : typing.Text = ...,
@@ -886,7 +872,7 @@ class Task(google.protobuf.message.Message):
         executor : typing.Text = ...,
         ) -> None: ...
     def HasField(self, field_name: typing_extensions.Literal["evaluation",b"evaluation","model",b"model"]) -> builtins.bool: ...
-    def ClearField(self, field_name: typing_extensions.Literal["added_types",b"added_types","dst_rev",b"dst_rev","evaluation",b"evaluation","executor",b"executor","model",b"model","name",b"name","return_code",b"return_code","return_msg",b"return_msg","serialized_executor_config",b"serialized_executor_config","serialized_task_parameters",b"serialized_task_parameters","src_revs",b"src_revs","task_id",b"task_id","timestamp",b"timestamp","type",b"type","unknown_types",b"unknown_types"]) -> None: ...
+    def ClearField(self, field_name: typing_extensions.Literal["dst_rev",b"dst_rev","evaluation",b"evaluation","executor",b"executor","model",b"model","name",b"name","new_types",b"new_types","new_types_added",b"new_types_added","return_code",b"return_code","return_msg",b"return_msg","serialized_executor_config",b"serialized_executor_config","serialized_task_parameters",b"serialized_task_parameters","src_revs",b"src_revs","task_id",b"task_id","timestamp",b"timestamp","type",b"type"]) -> None: ...
 global___Task = Task
 
 class ModelMeta(google.protobuf.message.Message):
