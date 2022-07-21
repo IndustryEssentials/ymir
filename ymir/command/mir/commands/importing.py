@@ -96,17 +96,16 @@ class CmdImport(base.BaseCommand):
             return ret
 
         mir_annotation = mirpb.MirAnnotations()
-        anno_import_result = annotations.import_annotations(
-            mir_metadatas=mir_metadatas,
-            mir_annotation=mir_annotation,
-            in_sha1_file=sha1_index_abs,
-            in_sha1_gt_file=sha1_gt_index_abs,
-            mir_root=mir_root,
-            annotations_dir_path=anno_abs,
-            groundtruth_dir_path=gt_abs,
-            unknown_types_strategy=unknown_types_strategy,
-            task_id=dst_typ_rev_tid.tid,
-            phase='import.others')
+        anno_import_result = annotations.import_annotations(mir_metadatas=mir_metadatas,
+                                                            mir_annotation=mir_annotation,
+                                                            in_sha1_file=sha1_index_abs,
+                                                            in_sha1_gt_file=sha1_gt_index_abs,
+                                                            mir_root=mir_root,
+                                                            annotations_dir_path=anno_abs,
+                                                            groundtruth_dir_path=gt_abs,
+                                                            unknown_types_strategy=unknown_types_strategy,
+                                                            task_id=dst_typ_rev_tid.tid,
+                                                            phase='import.others')
 
         logging.info(f"unknown types strategy: {unknown_types_strategy}")
         logging.info(f"anno import result: {anno_import_result}")
@@ -116,8 +115,9 @@ class CmdImport(base.BaseCommand):
             task_type=mirpb.TaskTypeImportData,
             task_id=dst_typ_rev_tid.tid,
             message=f"importing {index_file}-{anno_abs}-{gt_abs} to {dst_rev}, uts: {unknown_types_strategy}",
-            unknown_types={k: v.count for k, v in anno_import_result.items() if v.id == -1},
-            added_types={k: v.id for k, v in anno_import_result.items() if v.id >= 0},
+            new_types={k: v.count
+                       for k, v in anno_import_result.items()},
+            new_types_added=(unknown_types_strategy == annotations.UnknownTypesStrategy.ADD),
             src_revs=src_revs,
             dst_rev=dst_rev,
         )
