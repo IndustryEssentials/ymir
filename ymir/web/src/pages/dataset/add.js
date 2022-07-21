@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react'
-import { Button, Card, Form, Input, message, Radio, Row, Col, Select, Space, Tag } from 'antd'
-import { connect } from 'dva'
-import { Link, useParams, useHistory } from 'umi'
+import { Button, Card, Form, Input, message, Radio, Select, Space, Tag } from 'antd'
+import { useParams, useHistory } from 'umi'
 
 import { formLayout } from "@/config/antd"
 import t from '@/utils/t'
@@ -11,7 +10,6 @@ import { randomNumber } from '@/utils/number'
 import { urlValidator } from '@/components/form/validators'
 import s from './add.less'
 import Breadcrumbs from '@/components/common/breadcrumb'
-import { TipsIcon } from '@/components/common/icons'
 import ProjectDatasetSelect from '@/components/form/projectDatasetSelect'
 import useAddKeywords from '@/hooks/useAddKeywords'
 import useFetch from '@/hooks/useFetch'
@@ -27,48 +25,43 @@ const TYPES = Object.freeze({
   LOCAL: 4,
   PATH: 5,
 })
-
+const types = [
+  { id: TYPES.INTERNAL, label: 'internal' },
+  { id: TYPES.COPY, label: 'copy' },
+  { id: TYPES.NET, label: 'net' },
+  { id: TYPES.LOCAL, label: 'local' },
+  { id: TYPES.PATH, label: 'path' },
+]
+const strategies = [
+  { value: IMPORTSTRATEGY.UNKOWN_KEYWORDS_IGNORE, label: 'ignore', },
+  { value: IMPORTSTRATEGY.UNKOWN_KEYWORDS_AUTO_ADD, label: 'add', },
+  { value: IMPORTSTRATEGY.ALL_KEYWORDS_IGNORE, label: 'exclude', },
+]
 
 const Add = (props) => {
   const history = useHistory()
   const pageParams = useParams()
   const pid = Number(pageParams.id)
   const { id } = history.location.query
-  const types = [
-    { id: TYPES.INTERNAL, label: t('dataset.add.types.internal') },
-    { id: TYPES.COPY, label: t('dataset.add.types.copy') },
-    { id: TYPES.NET, label: t('dataset.add.types.net') },
-    { id: TYPES.LOCAL, label: t('dataset.add.types.local') },
-    { id: TYPES.PATH, label: t('dataset.add.types.path') },
-  ]
-  const labelOptions = [
-    { value: IMPORTSTRATEGY.UNKOWN_KEYWORDS_IGNORE, label: t('dataset.add.label_strategy.ignore'), },
-    { value: IMPORTSTRATEGY.UNKOWN_KEYWORDS_AUTO_ADD, label: t('dataset.add.label_strategy.add'), },
-    { value: IMPORTSTRATEGY.ALL_KEYWORDS_IGNORE, label: t('dataset.add.label_strategy.exclude'), },
-  ]
 
   const [form] = useForm()
   const [currentType, setCurrentType] = useState(TYPES.INTERNAL)
-  const [publicDataset, setPublicDataset] = useState([])
   const [fileToken, setFileToken] = useState('')
   const [selectedDataset, setSelectedDataset] = useState(id ? Number(id) : null)
   const [newKeywords, setNewKeywords] = useState([])
+  const [strategyOptions, setStrategyOptions] = useState([])
   const [ignoredKeywords, setIgnoredKeywords] = useState([])
   const [{ newer }, checkKeywords] = useAddKeywords(true)
-  const [{ repeated: updatedRepeated }, updateKeywords] = useAddKeywords()
+  const [_, updateKeywords] = useAddKeywords()
   const [addResult, newDataset] = useFetch('dataset/createDataset')
+  const [{ items: publicDatasets }, getPublicDatasets] = useFetch('dataset/getInternalDataset', { items: [] })
 
   useEffect(() => {
     form.setFieldsValue({ datasetId: null })
   }, [currentType])
 
   useEffect(async () => {
-    if (!publicDataset.length) {
-      const result = await props.getInternalDataset()
-      if (result) {
-        setPublicDataset(result.items)
-      }
-    }
+    getPublicDatasets()
   }, [])
 
   useEffect(() => {
@@ -84,11 +77,15 @@ const Add = (props) => {
   useEffect(() => {
     if (addResult) {
       message.success(t('dataset.add.success.msg'))
-      props.clearCache()
       const group = addResult.dataset_group_id || ''
       history.replace(`/home/project/${pid}/dataset#${group}`)
     }
   }, [addResult])
+
+  useEffect(() => {
+    const opts = strategies.map(opt => ({ ...opt, label: t(`dataset.add.label_strategy.${opt.label}`)}))
+    setStrategyOptions(opts)
+  }, [currentType])
 
   const typeChange = (type) => {
     setCurrentType(type)
@@ -175,7 +172,7 @@ const Add = (props) => {
   }
 
   function getSelectedDatasetKeywords() {
-    const set = publicDataset.find(d => d.id === selectedDataset)
+    const set = publicDatasets.find(d => d.id === selectedDataset)
     return set?.keywords || []
   }
 
@@ -206,7 +203,7 @@ const Add = (props) => {
             <Form.Item label={t('dataset.add.form.type.label')}>
               <Select onChange={(value) => typeChange(value)} defaultValue={TYPES.INTERNAL}>
                 {types.map(type => (
-                  <Option value={type.id} key={type.id}>{type.label}</Option>
+                  <Option value={type.id} key={type.id}>{t(`dataset.add.types.${type.label}`)}</Option>
                 ))}
               </Select>
             </Form.Item>
@@ -223,7 +220,7 @@ const Add = (props) => {
                   ] : []}
                 >
                   <Select placeholder={t('dataset.add.form.internal.placeholder')} onChange={(value) => onInternalDatasetChange(value)}>
-                    {publicDataset.map(dataset => (
+                    {publicDatasets.map(dataset => (
                       <Option value={dataset.id} key={dataset.id}>{dataset.name} {dataset.versionName} (Total: {dataset.assetCount})</Option>
                     ))}
                   </Select>
@@ -260,9 +257,9 @@ const Add = (props) => {
                 <ProjectDatasetSelect pid={pid} placeholder={t('dataset.add.form.copy.placeholder')}></ProjectDatasetSelect>
               </Form.Item>
             ) : null}
-            {!isType(TYPES.INTERNAL) ?
+            {!isType(TYPES.INTERNAL) && !isType(TYPES.COPY) ?
               <Form.Item label={t('dataset.add.form.label.label')} name='strategy' initialValue={IMPORTSTRATEGY.UNKOWN_KEYWORDS_IGNORE}>
-                <Radio.Group options={labelOptions.filter(option => !isType(TYPES.COPY) || option.value !== IMPORTSTRATEGY.ALL_KEYWORDS_IGNORE)} />
+                <Radio.Group options={strategyOptions} />
               </Form.Item> : null}
             {isType(TYPES.NET) ? (
               <Form.Item label={t('dataset.add.form.net.label')} required>
@@ -324,31 +321,4 @@ const Add = (props) => {
   )
 }
 
-
-const actions = (dispatch) => {
-  return {
-    getInternalDataset: (payload) => {
-      return dispatch({
-        type: 'dataset/getInternalDataset',
-        payload,
-      })
-    },
-    createDataset: (payload) => {
-      return dispatch({
-        type: 'dataset/createDataset',
-        payload,
-      })
-    },
-    clearCache() {
-      return dispatch({ type: "dataset/clearCache", })
-    },
-    updateKeywords: (payload) => {
-      return dispatch({
-        type: 'keyword/updateKeywords',
-        payload,
-      })
-    },
-  }
-}
-
-export default connect(null, actions)(Add)
+export default Add
