@@ -1,15 +1,7 @@
 from datetime import datetime
 from typing import Optional
 
-from sqlalchemy import (
-    Boolean,
-    Column,
-    DateTime,
-    Float,
-    Integer,
-    String,
-    SmallInteger,
-)
+from sqlalchemy import Boolean, Column, DateTime, Float, Integer, String, SmallInteger, Text
 from sqlalchemy.orm import relationship
 
 from app.config import settings
@@ -31,6 +23,8 @@ class Model(Base):
     user_id = Column(Integer, index=True, nullable=False)
     project_id = Column(Integer, index=True, nullable=False)
     task_id = Column(Integer, index=True, nullable=False)
+
+    keywords = Column(Text(settings.TEXT_LEN_LIMIT))
 
     # imported/copied model has no mAP
     map = Column(Float, nullable=True)
