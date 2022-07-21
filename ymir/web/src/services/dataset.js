@@ -171,7 +171,7 @@ export function batchAct(action, projectId, ids = []) {
  * }
  * @returns
  */
-export function createDataset({ name, projectId, url, datasetId, path, strategy, description }) {
+export function createDataset({ name, projectId, url, datasetId, path, strategy = 2, description }) {
   return request.post("/datasets/importing", {
     group_name: name, strategy,
     project_id: projectId,
