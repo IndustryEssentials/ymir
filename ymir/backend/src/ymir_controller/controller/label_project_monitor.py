@@ -12,11 +12,11 @@ from controller.config import label_task as label_task_config
 from controller.invoker.invoker_task_importing import TaskImportingInvoker
 from controller.utils import utils
 from controller.utils.redis import rds
+from proto import backend_pb2
 
 
-def trigger_mir_import(
-    repo_root: str, task_id: str, index_file: str, des_annotation_path: str, media_location: str, import_work_dir: str
-) -> None:
+def trigger_mir_import(repo_root: str, task_id: str, index_file: str, des_annotation_path: str, media_location: str,
+                       import_work_dir: str) -> None:
     # trigger mir import
     TaskImportingInvoker.importing_cmd(repo_root=repo_root,
                                        task_id=task_id,
@@ -25,7 +25,7 @@ def trigger_mir_import(
                                        gt_dir=des_annotation_path,
                                        media_location=media_location,
                                        work_dir=import_work_dir,
-                                       name_strategy_ignore=False)
+                                       unknown_types_strategy=backend_pb2.UnknownTypesStrategy.UTS_STOP)
 
 
 def remove_json_file(des_annotation_path: str) -> None:
@@ -78,9 +78,8 @@ def lable_task_monitor() -> None:
             remove_json_file(project_info["des_annotation_path"])
             try:
                 label_instance.sync_export_storage(project_info["storage_id"])
-                label_instance.convert_annotation_to_voc(
-                    project_info["project_id"], project_info["des_annotation_path"]
-                )
+                label_instance.convert_annotation_to_voc(project_info["project_id"],
+                                                         project_info["des_annotation_path"])
             except (ConnectionError, HTTPError, Timeout) as e:
                 sentry_sdk.capture_exception(e)
                 logging.error(f"get label task {task_id} error: {e}, set task_id:{task_id} error")

@@ -55,52 +55,74 @@ class TestCmdImport(unittest.TestCase):
         args.gen = gen_folder
         args.dataset_name = ''
         args.work_dir = self._work_dir
-        args.ignore_unknown_types = False
+        args.unknown_types_strategy = 'stop'
         importing_instance = CmdImport(args)
         ret = importing_instance.run()
-        assert ret == MirCode.RC_OK
+        self.assertEqual(ret, MirCode.RC_OK)
         self._check_repo(self._mir_repo_root, with_person_ignored=False, with_annotations=True)
 
         # not write person label
         test_utils.prepare_labels(mir_root=self._mir_repo_root, names=['cat', 'airplane,aeroplane'])
 
         # ignore unknown types
-        args.ignore_unknown_types = True
+        args.unknown_types_strategy = 'ignore'
         args.dataset_name = 'import-task-0'
         args.dst_rev = 'a@import-task-1'
         importing_instance = CmdImport(args)
         ret = importing_instance.run()
-        assert ret == MirCode.RC_OK
-        self._check_repo(self._mir_repo_root, with_person_ignored=True, with_annotations=True)
+        self.assertEqual(ret, MirCode.RC_OK)
+        self._check_repo(self._mir_repo_root,
+                         with_person_ignored=True,
+                         with_annotations=True,
+                         task_new_types={'person': 4},
+                         task_new_types_added=False)
 
-        # have no annotations
-        args.anno = None
-        args.gt_dir = None
-        args.ignore_unknown_types = False
+        # add unknown types
+        args.unknown_types_strategy = 'add'
         args.dataset_name = 'import-task-0'
         args.dst_rev = 'a@import-task-2'
         importing_instance = CmdImport(args)
         ret = importing_instance.run()
-        assert ret == MirCode.RC_OK
+        self.assertEqual(ret, MirCode.RC_OK)
+        self._check_repo(self._mir_repo_root,
+                         with_person_ignored=False,
+                         with_annotations=True,
+                         task_new_types={'person': 4},
+                         task_new_types_added=True)
+
+        # have no annotations
+        args.anno = None
+        args.gt_dir = None
+        args.unknown_types_strategy = 'stop'
+        args.dataset_name = 'import-task-0'
+        args.dst_rev = 'a@import-task-3'
+        importing_instance = CmdImport(args)
+        ret = importing_instance.run()
+        self.assertEqual(ret, MirCode.RC_OK)
         self._check_repo(self._mir_repo_root, with_person_ignored=False, with_annotations=False)
 
         # check for relative path, currently should return an error code
         args.mir_root = 'abc'
         importing_instance = CmdImport(args)
         ret = importing_instance.run()
-        assert ret != MirCode.RC_OK
+        self.assertNotEqual(ret, MirCode.RC_OK)
 
         args.index_file = ''
-        assert CmdImport(args).run() != MirCode.RC_OK
+        self.assertNotEqual(CmdImport(args).run(), MirCode.RC_OK)
         args.index_file = self._idx_file
 
         args.anno = ''
-        assert CmdImport(args).run() != MirCode.RC_OK
+        self.assertNotEqual(CmdImport(args).run(), MirCode.RC_OK)
         args.anno = self._data_xml_path + '/fake-one'
-        assert CmdImport(args).run() != MirCode.RC_OK
+        self.assertNotEqual(CmdImport(args).run(), MirCode.RC_OK)
         args.anno = self._data_xml_path
 
-    def _check_repo(self, repo_root: str, with_person_ignored: bool, with_annotations: bool):
+    def _check_repo(self,
+                    repo_root: str,
+                    with_person_ignored: bool,
+                    with_annotations: bool,
+                    task_new_types: dict = {},
+                    task_new_types_added: bool = False):
         # check annotations.mir
         mir_annotations = mirpb.MirAnnotations()
         with open(os.path.join(repo_root, 'annotations.mir'), 'rb') as f:
@@ -1024,9 +1046,12 @@ class TestCmdImport(unittest.TestCase):
         mir_tasks = mirpb.MirTasks()
         with open(os.path.join(repo_root, 'tasks.mir'), 'rb') as f:
             mir_tasks.ParseFromString(f.read())
-        dict_tasks = MessageToDict(mir_tasks, preserving_proto_field_name=True)
-        assert ('import-task-0' in dict_tasks['tasks'] or 'import-task-1' in dict_tasks['tasks']
-                or 'import-task-2' in dict_tasks['tasks'])
+        self.assertTrue({'import-task-0', 'import-task-1', 'import-task-2', 'import-task-3'} & mir_tasks.tasks.keys())
+
+        task = mir_tasks.tasks[mir_tasks.head_task_id]
+        task_dict = MessageToDict(task, preserving_proto_field_name=True)
+        self.assertEqual(task_dict.get('new_types', {}), task_new_types)
+        self.assertEqual(task_dict.get('new_types_added', False), task_new_types_added)
 
     # custom: env prepare
     def _prepare_dirs(self):
