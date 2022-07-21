@@ -1,4 +1,5 @@
 from dataclasses import asdict, dataclass
+import json
 from typing import Any, Dict, List, Optional
 
 import requests
@@ -77,9 +78,11 @@ class ModelMetaData:
     executor_config: str
     model_stages: dict
     best_stage_name: str
+    keywords: Optional[str]
 
     @classmethod
     def from_viz_res(cls, res: Dict) -> "ModelMetaData":
+        keywords = res["executor_config"].get("class_names")
         return cls(
             res["model_id"],
             res["model_mAP"],
@@ -87,6 +90,7 @@ class ModelMetaData:
             res["executor_config"],
             res["model_stages"],
             res["best_stage_name"],
+            json.dumps(keywords) if keywords else None,
         )
 
 

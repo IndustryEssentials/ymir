@@ -71,7 +71,7 @@ class TestModel:
             "model_id": random_lower_string(),
             "model_mAP": random.randint(1, 100) / 100,
             "task_parameters": "mock_task_parameters",
-            "executor_config": "mock_executor_config",
+            "executor_config": {"class_names": "a,b,c".split(",")},
             "model_stages": {
                 "epoch-1000": {
                     "mAP": -1,
@@ -219,7 +219,7 @@ class TestVizClient:
             "model_id": random_lower_string(),
             "model_mAP": random.randint(1, 100) / 100,
             "task_parameters": "mock_task_parameters",
-            "executor_config": "mock_executor_config",
+            "executor_config": {"class_names": "a,b,c".split(",")},
             "model_stages": {
                 "epoch-1000": {
                     "mAP": -1,

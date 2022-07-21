@@ -1,4 +1,5 @@
 from typing import Any, List, Optional
+import json
 
 from pydantic import BaseModel, Field, root_validator, validator
 from app.config import settings
@@ -22,6 +23,7 @@ class ModelBase(BaseModel):
     source: TaskType
     description: Optional[str]
     map: Optional[float] = Field(description="Mean Average Precision")
+    keywords: Optional[str]
     result_state: ResultState = ResultState.processing
     model_group_id: int
     project_id: int
@@ -57,6 +59,7 @@ class ModelCreate(ModelBase):
 class ModelUpdate(BaseModel):
     name: str
     description: Optional[str]
+    keywords: Optional[str]
 
 
 class ModelInDBBase(IdModelMixin, DateTimeModelMixin, IsDeletedModelMixin, ModelBase):
@@ -74,6 +77,7 @@ class ModelInDBBase(IdModelMixin, DateTimeModelMixin, IsDeletedModelMixin, Model
 
 # Properties to return to caller
 class Model(ModelInDBBase):
+    keywords: Optional[str]
     url: Optional[str] = None
 
     @root_validator
@@ -82,6 +86,13 @@ class Model(ModelInDBBase):
         if values.get("hash"):
             values["url"] = get_model_url(values["hash"])
         return values
+
+    # unpack json dumpped keywords before returning to caller
+    @validator("keywords")
+    def unpack(cls, v: Optional[str]) -> List[str]:
+        if v is None:
+            return []
+        return json.loads(v)
 
 
 class ModelPagination(BaseModel):
