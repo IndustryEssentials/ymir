@@ -174,7 +174,7 @@ const InferResultSelect = ({ pid, form, value, onChange = () => { } }) => {
 
   const renderInferBtn = <div className={fetched && !datasets.length ? 'error' : ''} style={{ lineHeight: '32px' }}>
     {t('task.infer.diagnose.tip')}
-    <Button size='small' onClick={goInfer}>{t('common.action.infer')}</Button>
+    <Button size='small' onClick={goInfer}>{t('common.action.inference')}</Button>
   </div>
 
   return (
