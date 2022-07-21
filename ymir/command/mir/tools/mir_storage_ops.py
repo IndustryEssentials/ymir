@@ -436,7 +436,7 @@ class MirStorageOps():
                 for id, count in mir_storage_context.predefined_keyids_cnt.items()
             },
             ignored_labels={k: v
-                            for k, v in task_storage.unknown_types.items()},
+                            for k, v in task_storage.new_types.items()},
             negative_info=dict(
                 negative_images_cnt=mir_storage_context.negative_images_cnt,
                 project_negative_images_cnt=mir_storage_context.project_negative_images_cnt,
@@ -553,7 +553,8 @@ class MirStorageOps():
 def create_task(task_type: 'mirpb.TaskType.V',
                 task_id: str,
                 message: str,
-                unknown_types: Dict[str, int] = {},
+                new_types: Dict[str, int] = {},
+                new_types_added: bool = False,
                 return_code: int = 0,
                 return_msg: str = '',
                 serialized_task_parameters: str = '',
@@ -572,7 +573,8 @@ def create_task(task_type: 'mirpb.TaskType.V',
         'return_msg': return_msg,
         'serialized_task_parameters': serialized_task_parameters,
         'serialized_executor_config': serialized_executor_config,
-        'unknown_types': unknown_types,
+        'new_types': new_types,
+        'new_types_added': new_types_added,
         'executor': executor,
         'src_revs': src_revs,
         'dst_rev': dst_rev,
