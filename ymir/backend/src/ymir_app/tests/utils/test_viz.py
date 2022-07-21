@@ -101,13 +101,15 @@ class TestDataset:
     def test_dataset(self, mock_user_labels):
         res = {
             "class_ids_count": {3: 34},
-            "ignored_labels": {"cat": 5},
+            "new_types": {"cat": 5},
+            "new_types_added": False,
             "negative_info": {"negative_images_cnt": 0, "project_negative_images_cnt": 0},
             "total_images_cnt": 1,
             "pred": {
                 "total_images_cnt": 1,
                 "class_ids_count": {3: 34},
-                "ignored_labels": {"cat": 5},
+                "new_types": {"cat": 5},
+                "new_types_added": False,
                 "negative_info": {"negative_images_cnt": 0, "project_negative_images_cnt": 0},
                 "annos_cnt": 28,
                 "positive_asset_cnt": 1,
@@ -127,7 +129,7 @@ class TestDataset:
         }
         M = m.DatasetMetaData.from_viz_res(res, mock_user_labels)
         assert M.keyword_count == len(res["class_ids_count"])
-        assert M.ignored_keywords == res["ignored_labels"]
+        assert M.ignored_keywords == res["new_types"]
         assert M.negative_info["negative_images_cnt"] == res["negative_info"]["negative_images_cnt"]
         assert M.negative_info["project_negative_images_cnt"] == res["negative_info"]["project_negative_images_cnt"]
         assert M.asset_count == res["total_images_cnt"]
@@ -258,13 +260,15 @@ class TestVizClient:
         resp = mocker.Mock()
         res = {
             "class_ids_count": {3: 34},
-            "ignored_labels": {"cat": 5},
+            "new_types": {"cat": 5},
+            "new_types_added": False,
             "negative_info": {"negative_images_cnt": 0, "project_negative_images_cnt": 0},
             "total_images_cnt": 1,
             "pred": {
                 "total_images_cnt": 1,
                 "class_ids_count": {3: 34},
-                "ignored_labels": {"cat": 5},
+                "new_types": {"cat": 5},
+                "new_types_added": False,
                 "negative_info": {"negative_images_cnt": 0, "project_negative_images_cnt": 0},
                 "annos_cnt": 28,
                 "positive_asset_cnt": 1,
@@ -293,7 +297,7 @@ class TestVizClient:
         ret = viz.get_dataset()
         assert isinstance(ret, m.DatasetMetaData)
         assert ret.keyword_count == len(res["class_ids_count"])
-        assert ret.ignored_keywords == res["ignored_labels"]
+        assert ret.ignored_keywords == res["new_types"]
         assert ret.negative_info["negative_images_cnt"] == res["negative_info"]["negative_images_cnt"]
         assert ret.negative_info["project_negative_images_cnt"] == res["negative_info"]["project_negative_images_cnt"]
         assert ret.asset_count == res["total_images_cnt"]
