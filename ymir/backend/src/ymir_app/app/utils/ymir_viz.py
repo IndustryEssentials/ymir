@@ -135,6 +135,7 @@ class DatasetMetaData:
 
     @classmethod
     def from_viz_res(cls, res: Dict, user_labels: UserLabels) -> "DatasetMetaData":
+        # todo clean up
         # for compatible
         res["total_images_cnt"] = res["pred"]["total_images_cnt"]
         res["class_ids_count"] = res["pred"]["class_ids_count"]
