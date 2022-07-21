@@ -69,7 +69,6 @@ function DatasetDetail({ datasetCache, getDataset }) {
           {dataset?.task?.error_code ? <Error code={dataset.task?.error_code} msg={dataset.task?.error_message} /> : null}
           <TaskDetail
             task={dataset.task}
-            ignore={dataset.ignoredKeywords}
           ></TaskDetail>
           <Space style={{ width: "100%", justifyContent: "flex-end" }}>
             {dataset.taskType === TASKTYPES.LABEL ? (

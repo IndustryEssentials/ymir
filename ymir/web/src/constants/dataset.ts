@@ -53,7 +53,6 @@ export function transferDataset (data: BackendData): Dataset {
     nagetiveCount: negative_images_cnt,
     isProtected: data.is_protected || false,
     projectNagetiveCount: project_negative_images_cnt,
-    ignoredKeywords: Object.keys(data.ignored_keywords || {}),
     hash: data.hash,
     state: data.result_state,
     createTime: format(data.create_datetime),

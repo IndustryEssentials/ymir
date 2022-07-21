@@ -110,7 +110,7 @@ const dataset = {
   'dataset.detail.action.train': { cn: '训练模型', en: 'Train Model', },
   'dataset.detail.action.mining': { cn: '挖掘数据', en: 'Mining', },
   'dataset.detail.action.label': { cn: '数据标注', en: 'Label', },
-  'dataset.import.public.include': { cn: '包含标签', en: 'Include', },
+  'dataset.import.public.include': { cn: '添加新标签', en: 'New Keywords', },
   'dataset.add.newkeyword.empty': { cn: '无新标签', en: 'None of new keywords', },
   'dataset.add.local.file.empty': { cn: '请上传本地文件', en: 'Please upload a zip file', },
   'dataset.samples.negative': { cn: '负样本', en: 'Negative Samples', },
