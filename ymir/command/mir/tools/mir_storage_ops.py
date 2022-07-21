@@ -393,7 +393,8 @@ class MirStorageOps():
             "pred":{
                 "class_ids_count":{},
                 "class_names_count":{},
-                "ignored_labels":{},
+                "new_types":{},
+                "new_types_added":False,
                 "negative_info":{
                     "negative_images_cnt":14,
                     "project_negative_images_cnt":0
@@ -435,8 +436,8 @@ class MirStorageOps():
                 class_id_mgr.main_name_for_id(id): count
                 for id, count in mir_storage_context.predefined_keyids_cnt.items()
             },
-            ignored_labels={k: v
-                            for k, v in task_storage.new_types.items()},
+            new_types={k: v for k, v in task_storage.new_types.items()},
+            new_types_added=task_storage.new_types_added,
             negative_info=dict(
                 negative_images_cnt=mir_storage_context.negative_images_cnt,
                 project_negative_images_cnt=mir_storage_context.project_negative_images_cnt,

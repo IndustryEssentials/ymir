@@ -1,4 +1,5 @@
 from collections import defaultdict
+import enum
 import logging
 import os
 from typing import Dict, List, Tuple, Union
@@ -12,7 +13,25 @@ from mir.tools.phase_logger import PhaseLoggerCenter
 from mir.protos import mir_command_pb2 as mirpb
 
 
-def _object_dict_to_annotation(object_dict: dict, class_type_manager: class_ids.ClassIdManager) -> mirpb.Annotation:
+class UnknownTypesStrategy(str, enum.Enum):
+    STOP = 'stop'
+    IGNORE = 'ignore'
+    ADD = 'add'
+
+
+class ClassTypeIdAndCount:
+    def __init__(self, id: int = -1, count: int = 0) -> None:
+        self.id = id
+        self.count = count
+
+    def __repr__(self) -> str:
+        return '{' + f"id: {self.id}, count: {self.count}" + '}'
+
+
+AnnoNewTypes = Dict[str, ClassTypeIdAndCount]
+
+
+def _object_dict_to_annotation(object_dict: dict, cid: int) -> mirpb.Annotation:
     bndbox_dict: dict = object_dict['bndbox']
     if not bndbox_dict:
         raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS, error_message='found no value for bndbox')
@@ -25,7 +44,7 @@ def _object_dict_to_annotation(object_dict: dict, class_type_manager: class_ids.
     height = ymax - ymin + 1
 
     annotation = mirpb.Annotation()
-    annotation.class_id = class_type_manager.id_and_main_name_for_name(object_dict['name'])[0]
+    annotation.class_id = cid
     annotation.box.x = xmin
     annotation.box.y = ymin
     annotation.box.w = width
@@ -39,7 +58,7 @@ def _object_dict_to_annotation(object_dict: dict, class_type_manager: class_ids.
 
 def import_annotations(mir_metadatas: mirpb.MirMetadatas, mir_annotation: mirpb.MirAnnotations, in_sha1_file: str,
                        in_sha1_gt_file: str, mir_root: str, annotations_dir_path: str, groundtruth_dir_path: str,
-                       task_id: str, phase: str) -> Tuple[int, Dict[str, int]]:
+                       unknown_types_strategy: UnknownTypesStrategy, task_id: str, phase: str) -> AnnoNewTypes:
     """
     imports annotations
 
@@ -51,17 +70,22 @@ def import_annotations(mir_metadatas: mirpb.MirMetadatas, mir_annotation: mirpb.
         mir_root (str): path to mir repo
         annotations_dir_path (str): path to annotations root
         groundtruth_dir_path (str): path to groundtruth root
+        unknown_types_strategy (UnknownTypesStrategy): strategy for unknown types
         task_id (str): task id
         phase (str): process phase
 
     Returns:
-        Tuple[int, Dict[str, int]]: return code and unknown type names
+        AnnoImportResult: added types and unknown (ignored) types
+
+    Raises:
+        MirRuntimeError if strategy is STOP and have unknown types
     """
-    unknown_types_and_count: Dict[str, int] = defaultdict(int)
+
+    anno_import_result: Dict[str, ClassTypeIdAndCount] = defaultdict(ClassTypeIdAndCount)
 
     # read type_id_name_dict and type_name_id_dict
     class_type_manager = class_ids.ClassIdManager(mir_root=mir_root)
-    logging.info("loaded type id and names: %d", class_type_manager.size())
+    logging.info("loaded type id and names: %d", len(class_type_manager.all_ids()))
 
     if in_sha1_file:
         logging.info(f"wrting annotation in {annotations_dir_path}")
@@ -70,8 +94,9 @@ def import_annotations(mir_metadatas: mirpb.MirMetadatas, mir_annotation: mirpb.
             mir_annotation=mir_annotation,
             in_sha1_file=in_sha1_file,
             annotations_dir_path=annotations_dir_path,
-            unknown_types_and_count=unknown_types_and_count,
             class_type_manager=class_type_manager,
+            unknown_types_strategy=unknown_types_strategy,
+            accu_new_types=anno_import_result,
             image_annotations=mir_annotation.task_annotations[task_id],
         )
     PhaseLoggerCenter.update_phase(phase=phase, local_percent=0.5)
@@ -83,19 +108,38 @@ def import_annotations(mir_metadatas: mirpb.MirMetadatas, mir_annotation: mirpb.
             mir_annotation=mir_annotation,
             in_sha1_file=in_sha1_gt_file,
             annotations_dir_path=groundtruth_dir_path,
-            unknown_types_and_count=unknown_types_and_count,
             class_type_manager=class_type_manager,
+            unknown_types_strategy=unknown_types_strategy,
+            accu_new_types=anno_import_result,
             image_annotations=mir_annotation.ground_truth,
         )
     PhaseLoggerCenter.update_phase(phase=phase, local_percent=1.0)
 
-    return MirCode.RC_OK, unknown_types_and_count
+    if unknown_types_strategy == UnknownTypesStrategy.STOP and anno_import_result:
+        raise MirRuntimeError(error_code=MirCode.RC_CMD_UNKNOWN_TYPES,
+                              error_message=f"{list(anno_import_result.keys())}")
+
+    return anno_import_result
 
 
 def _import_annotations_from_dir(mir_metadatas: mirpb.MirMetadatas, mir_annotation: mirpb.MirAnnotations,
-                                 in_sha1_file: str, annotations_dir_path: str, unknown_types_and_count: Dict[str, int],
+                                 in_sha1_file: str, annotations_dir_path: str,
                                  class_type_manager: class_ids.ClassIdManager,
-                                 image_annotations: mirpb.SingleTaskAnnotations) -> Tuple[int, Dict[str, int]]:
+                                 unknown_types_strategy: UnknownTypesStrategy, accu_new_types: AnnoNewTypes,
+                                 image_annotations: mirpb.SingleTaskAnnotations) -> None:
+    """
+    import annotations from root dir of voc annotation files
+
+    Args:
+        mir_metadatas (mirpb.MirMetadatas): list of asset metadatas
+        mir_annotations (mirpb.MirAnnotations): instance of annotations
+        in_sha1_file (str): path to sha1 file, in each line: asset path and sha1sum
+        annotations_dir_path (str): path to annotations dir
+        class_type_manager (class_ids.ClassIdManager): class types manager
+        accu_anno_import_result (AnnoImportResult): accumulated annotation import result
+        unknown_types_strategy (UnknownTypesStrategy): strategy of unknown type names
+        image_annotations (mirpb.SingleTaskAnnotations): asset ids and annotations
+    """
 
     assethash_filename_list: List[Tuple[str, str]] = []  # hash id and main file name
     with open(in_sha1_file, "r") as in_file:
@@ -114,6 +158,7 @@ def _import_annotations_from_dir(mir_metadatas: mirpb.MirMetadatas, mir_annotati
     logging.info(f"wrting {total_assethash_count} annotations")
 
     missing_annotations_counter = 0
+    add_if_not_found = (unknown_types_strategy == UnknownTypesStrategy.ADD)
     for asset_hash, main_file_name in assethash_filename_list:
         # for each asset, import it's annotations
         annotation_file = os.path.join(annotations_dir_path, main_file_name + '.xml') if annotations_dir_path else None
@@ -124,7 +169,7 @@ def _import_annotations_from_dir(mir_metadatas: mirpb.MirMetadatas, mir_annotati
                 annos_xml_str = f.read()
             if not annos_xml_str:
                 logging.error(f"cannot open annotation_file: {annotation_file}")
-                return MirCode.RC_CMD_INVALID_ARGS, unknown_types_and_count
+                continue
 
             annos_dict: dict = xmltodict.parse(annos_xml_str)['annotation']
 
@@ -140,15 +185,22 @@ def _import_annotations_from_dir(mir_metadatas: mirpb.MirMetadatas, mir_annotati
 
             anno_idx = 0
             for object_dict in objects:
-                type_name = object_dict['name']
-                if class_type_manager.has_name(type_name):
-                    annotation = _object_dict_to_annotation(object_dict, class_type_manager)
+                cid, new_type_name = class_type_manager.id_and_main_name_for_name(name=object_dict['name'])
+
+                # update set of new_types, add label if required.
+                if cid < 0:
+                    if add_if_not_found:
+                        cid, _ = class_type_manager.add_main_name(main_name=new_type_name)
+                    accu_new_types[new_type_name].id = cid
+
+                # update counts of new types.
+                if new_type_name in accu_new_types:
+                    accu_new_types[new_type_name].count += 1
+
+                if cid >= 0:
+                    annotation = _object_dict_to_annotation(object_dict, cid)
                     annotation.index = anno_idx
                     image_annotations.image_annotations[asset_hash].annotations.append(annotation)
                     anno_idx += 1
-                else:
-                    unknown_types_and_count[type_name] += 1
 
     logging.warning(f"asset count that have no annotations: {missing_annotations_counter}")
-
-    return MirCode.RC_OK, unknown_types_and_count
