@@ -17,12 +17,11 @@ import { format } from "@/utils/date"
 import { getTensorboardLink } from "@/services/common"
 import { TASKTYPES } from "@/constants/task"
 import s from "./detail.less"
-import IgnoreKeywords from "../common/ignoreKeywords"
 import renderLiveCodeItem from '@/components/task/items/livecode'
 
 const { Item } = Descriptions
 
-function TaskDetail({ task = {}, ignore = [], batchDatasets, getModel }) {
+function TaskDetail({ task = {}, batchDatasets, getModel }) {
   const history = useHistory()
   const id = task.id
   const [datasets, setDatasets] = useState({})
@@ -265,18 +264,12 @@ function TaskDetail({ task = {}, ignore = [], batchDatasets, getModel }) {
     <>
       {renderImportSource(task?.parameters)}
       {renderCreateTime(task.create_datetime)}
-      <Item label={t("dataset.column.ignored_keyword")}>
-        <IgnoreKeywords keywords={ignore} />
-      </Item>
     </>
   )
   const renderCopy = () => (
     <>
       {renderImportSource(task?.parameters)}
       {renderCreateTime(task.create_datetime)}
-      <Item label={t("dataset.column.ignored_keyword")}>
-        <IgnoreKeywords keywords={ignore} />
-      </Item>
     </>
   )
   const renderInference = () => (
