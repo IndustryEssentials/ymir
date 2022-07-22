@@ -332,7 +332,7 @@ class VizClient:
 
 
 def get_asset_url(asset_id: str) -> str:
-    return f"{settings.NGINX_PREFIX}/ymir-assets/{asset_id}"
+    return f"{settings.NGINX_PREFIX}/ymir-assets/{asset_id[-2:]}/{asset_id}"
 
 
 def convert_class_id_to_keyword(obj: Dict, user_labels: UserLabels) -> None:

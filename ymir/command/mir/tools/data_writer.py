@@ -10,7 +10,7 @@ import xml.etree.ElementTree as ElementTree
 import lmdb
 
 from mir.protos import mir_command_pb2 as mirpb
-from mir.tools import class_ids, data_preprocessor, data_reader
+from mir.tools import class_ids, data_preprocessor, data_reader, utils
 from mir.tools.code import MirCode
 from mir.tools.errors import MirRuntimeError
 
@@ -371,7 +371,7 @@ class RawDataWriter(BaseDataWriter):
     def _write(self, asset_id: str, attrs: mirpb.MetadataAttributes, image_annotations: mirpb.SingleImageAnnotations,
                gt_annotations: mirpb.SingleImageAnnotations, image_cks: mirpb.SingleImageCks) -> None:
         # write asset
-        asset_src_path = os.path.join(self._assets_location, asset_id)
+        asset_src_path = utils.get_asset_storage_path(location=self._assets_location, hash=asset_id, make_dirs=False)
         sub_folder_name = asset_id[-2:] if self._need_id_sub_folder else ''
 
         asset_file_name = f"{asset_id}-{self.signature}" if self.signature else asset_id
@@ -499,7 +499,7 @@ class LmdbDataWriter(BaseDataWriter):
 
     def _write(self, asset_id: str, attrs: mirpb.MetadataAttributes, image_annotations: mirpb.SingleImageAnnotations,
                gt_annotations: mirpb.SingleImageAnnotations, image_cks: mirpb.SingleImageCks) -> None:
-        asset_src_path = os.path.join(self._assets_location, asset_id)
+        asset_src_path = utils.get_asset_storage_path(location=self._assets_location, hash=asset_id, make_dirs=False)
         asset_data = self._preprocessor.prep_img(src_img_path=asset_src_path, return_bytes=True)
 
         # write asset and annotations
