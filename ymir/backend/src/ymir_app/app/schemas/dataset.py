@@ -19,6 +19,7 @@ class ImportStrategy(enum.IntEnum):
     no_annotations = 1
     ignore_unknown_annotations = 2
     stop_upon_unknown_annotations = 3
+    add_unknown_annotations = 4
 
 
 class MergeStrategy(enum.IntEnum):

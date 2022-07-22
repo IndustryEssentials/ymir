@@ -28,6 +28,7 @@ from app.constants.state import (
 )
 from app.config import settings
 from app import schemas, crud, models
+from app.utils.cache import CacheClient
 from app.utils.ymir_controller import ControllerClient, gen_task_hash
 from app.utils.clickhouse import YmirClickHouse
 from app.utils.ymir_viz import VizClient, ModelMetaData, DatasetMetaData
@@ -204,6 +205,7 @@ class TaskResult:
             project_id=self.project_id,
             branch_id=self.task_hash,
         )
+        self.cache = CacheClient(user_id=self.user_id)
 
         self._result: Optional[Union[DatasetMetaData, ModelMetaData]] = None
         self._user_labels: Optional[Dict] = None
@@ -233,10 +235,14 @@ class TaskResult:
     @property
     def dataset_info(self) -> Optional[DatasetMetaData]:
         try:
-            return self.viz.get_dataset(user_labels=self.user_labels)
+            dataset_info = self.viz.get_dataset(user_labels=self.user_labels)
         except Exception:
             logger.exception("[update task] failed to get dataset_info, check viz log")
             return None
+        if dataset_info.keywords_updated:
+            logger.info("[update task] delete user keywords cache for new keywords from dataset")
+            self.cache.delete_personal_keywords_cache()
+        return dataset_info
 
     @property
     def result_info(self) -> Optional[Union[DatasetMetaData, ModelMetaData]]:

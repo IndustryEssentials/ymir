@@ -115,6 +115,7 @@ class VizDataset(BaseModel):
 class DatasetMetaData:
     keywords: Dict[str, int]
     ignored_keywords: Dict[str, int]
+    keywords_updated: bool
     negative_info: Dict[str, int]
     asset_count: int
     keyword_count: int
@@ -134,10 +135,11 @@ class DatasetMetaData:
 
     @classmethod
     def from_viz_res(cls, res: Dict, user_labels: UserLabels) -> "DatasetMetaData":
+        # todo clean up
         # for compatible
         res["total_images_cnt"] = res["pred"]["total_images_cnt"]
         res["class_ids_count"] = res["pred"]["class_ids_count"]
-        res["ignored_labels"] = res["pred"]["ignored_labels"]
+        res["ignored_labels"] = res["pred"]["new_types"]
         res["negative_info"] = res["pred"]["negative_info"]
         viz_dataset = VizDataset(**res)
         keywords = {
@@ -146,6 +148,7 @@ class DatasetMetaData:
         return cls(
             keywords=keywords,
             ignored_keywords=viz_dataset.ignored_labels,
+            keywords_updated=res["pred"]["new_types_added"],
             negative_info=viz_dataset.negative_info,
             asset_count=viz_dataset.total_images_cnt,
             keyword_count=len(keywords),

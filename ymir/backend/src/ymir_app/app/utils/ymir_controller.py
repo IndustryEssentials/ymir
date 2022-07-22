@@ -48,6 +48,14 @@ TRAINING_DATASET_STRATEGY_MAPPING = {
 }
 
 
+IMPORTING_STRATEGY_MAPPING = {
+    ImportStrategy.no_annotations: mirsvrpb.UTS_IGNORE,
+    ImportStrategy.ignore_unknown_annotations: mirsvrpb.UTS_IGNORE,
+    ImportStrategy.stop_upon_unknown_annotations: mirsvrpb.UTS_STOP,
+    ImportStrategy.add_unknown_annotations: mirsvrpb.UTS_ADD,
+}
+
+
 def gen_typed_datasets(dataset_type: int, datasets: List[str]) -> Generator:
     for dataset_id in datasets:
         dataset_with_type = mirsvrpb.TaskReqTraining.TrainingDatasetType()
@@ -158,10 +166,7 @@ class ControllerRequest:
         strategy = args.get("strategy") or ImportStrategy.ignore_unknown_annotations
         if strategy != ImportStrategy.no_annotations:
             importing_request.annotation_dir = args["annotation_dir"]
-        if strategy == ImportStrategy.ignore_unknown_annotations:
-            importing_request.name_strategy_ignore = True
-        else:
-            importing_request.name_strategy_ignore = False
+        importing_request.unknown_types_strategy = IMPORTING_STRATEGY_MAPPING[strategy]
 
         req_create_task = mirsvrpb.ReqCreateTask()
         req_create_task.task_type = mirsvrpb.TaskTypeImportData

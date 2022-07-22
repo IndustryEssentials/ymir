@@ -141,7 +141,7 @@ def get_cache(
     current_user: models.User = Depends(get_current_active_user),
 ) -> Generator:
     try:
-        cache_client = ymir_cache.CacheClient(settings.BACKEND_REDIS_URL, current_user.id)
+        cache_client = ymir_cache.CacheClient(redis_uri=settings.BACKEND_REDIS_URL, user_id=current_user.id)
         yield cache_client
     finally:
         cache_client.close()
