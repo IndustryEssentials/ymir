@@ -789,6 +789,27 @@ def det_evaluate(
         mir_task_id=rev_tid.tid,
         ms_list=[mirpb.MirStorage.MIR_METADATAS, mirpb.MirStorage.MIR_ANNOTATIONS, mirpb.MirStorage.MIR_KEYWORDS])
 
+    return det_evaluate_with_pb(mir_metadatas=mir_metadatas,
+                                mir_annotations=mir_annotations,
+                                mir_keywords=mir_keywords,
+                                rev_tid=rev_tid,
+                                conf_thr=conf_thr,
+                                iou_thrs=iou_thrs,
+                                need_pr_curve=need_pr_curve,
+                                calc_confusion_matrix=calc_confusion_matrix)
+
+
+def det_evaluate_with_pb(
+    mir_metadatas: mirpb.MirMetadatas,
+    mir_annotations: mirpb.MirAnnotations,
+    mir_keywords: mirpb.MirKeywords,
+    rev_tid: revs_parser.TypRevTid,
+    conf_thr: float,
+    iou_thrs: str,
+    need_pr_curve: bool = False,
+    calc_confusion_matrix: bool = False,
+) -> Tuple[mirpb.Evaluation, mirpb.MirAnnotations]:
+    # TODO: change this function name; remove `rev_tid`
     mir_gt = MirCoco(mir_metadatas=mir_metadatas,
                      mir_annotations=mir_annotations,
                      mir_keywords=mir_keywords,

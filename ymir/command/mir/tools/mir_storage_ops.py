@@ -12,7 +12,8 @@ from mir import scm
 from mir.commands.checkout import CmdCheckout
 from mir.commands.commit import CmdCommit
 from mir.protos import mir_command_pb2 as mirpb
-from mir.tools import class_ids, context, exodus, mir_storage, mir_repo_utils, revs_parser, settings as mir_settings
+from mir.tools import class_ids, context, det_eval, exodus, mir_storage, mir_repo_utils, revs_parser
+from mir.tools import settings as mir_settings
 from mir.tools.code import MirCode
 from mir.tools.errors import MirError, MirRuntimeError
 
@@ -20,21 +21,24 @@ from mir.tools.errors import MirError, MirRuntimeError
 class MirStorageOps():
     # private: save and load
     @classmethod
-    def __save(cls, mir_root: str, mir_datas: Dict['mirpb.MirStorage.V', Any]) -> None:
+    def __save(cls, mir_root: str, mir_datas: Dict['mirpb.MirStorage.V', Any], calc_confusion_matrix: bool) -> None:
         # add default members
         mir_tasks: mirpb.MirTasks = mir_datas[mirpb.MirStorage.MIR_TASKS]
-        if mirpb.MirStorage.MIR_METADATAS not in mir_datas:
-            mir_datas[mirpb.MirStorage.MIR_METADATAS] = mirpb.MirMetadatas()
-        if mirpb.MirStorage.MIR_ANNOTATIONS not in mir_datas:
-            mir_datas[mirpb.MirStorage.MIR_ANNOTATIONS] = mirpb.MirAnnotations()
-
         mir_annotations: mirpb.MirAnnotations = mir_datas[mirpb.MirStorage.MIR_ANNOTATIONS]
+
         cls.__build_annotations_head_task_id(mir_annotations=mir_annotations, head_task_id=mir_tasks.head_task_id)
 
         # gen mir_keywords
         mir_keywords: mirpb.MirKeywords = mirpb.MirKeywords()
         cls.__build_mir_keywords(mir_annotations=mir_annotations, mir_keywords=mir_keywords)
         mir_datas[mirpb.MirStorage.MIR_KEYWORDS] = mir_keywords
+
+        if calc_confusion_matrix:
+            cls.__build_annotations_confusion_matrix(mir_metadatas=mir_datas[mirpb.MirStorage.MIR_METADATAS],
+                                                     mir_annotations=mir_annotations,
+                                                     mir_keywords=mir_keywords,
+                                                     mir_tasks=mir_tasks)
+            breakpoint()
 
         # gen mir_context
         project_class_ids = context.load(mir_root=mir_root)
@@ -52,9 +56,10 @@ class MirStorageOps():
             with open(mir_file_path, "wb") as m_f:
                 m_f.write(mir_data.SerializeToString())
 
-    @classmethod
     # public: presave actions
+    @classmethod
     def __build_annotations_head_task_id(cls, mir_annotations: mirpb.MirAnnotations, head_task_id: str) -> None:
+        # TODO: FUNCTION TO BE REMOVED
         task_annotations_count = len(mir_annotations.task_annotations)
         if task_annotations_count == 0:
             mir_annotations.task_annotations[head_task_id].CopyFrom(mirpb.SingleTaskAnnotations())
@@ -71,6 +76,23 @@ class MirStorageOps():
         mir_annotations.head_task_id = head_task_id
 
     @classmethod
+    def __build_annotations_confusion_matrix(cls, mir_metadatas: mirpb.MirMetadatas,
+                                             mir_annotations: mirpb.MirAnnotations, mir_keywords: mirpb.MirKeywords,
+                                             mir_tasks: mirpb.MirTasks) -> None:
+        det_eval.det_evaluate_with_pb(
+            mir_metadatas=mir_metadatas,
+            mir_annotations=mir_annotations,
+            mir_keywords=mir_keywords,
+            rev_tid=revs_parser.TypRevTid(),
+            conf_thr=0.0005,
+            iou_thrs='0.5',
+            need_pr_curve=False,
+            calc_confusion_matrix=True,
+        )
+        
+        # TODO: update mir_tasks with evaluate config
+
+    @classmethod
     def __build_mir_keywords(cls, mir_annotations: mirpb.MirAnnotations, mir_keywords: mirpb.MirKeywords) -> None:
         """
         build mir_keywords from single_task_annotations
@@ -79,14 +101,13 @@ class MirStorageOps():
             single_task_annotations (mirpb.SingleTaskAnnotations)
             mir_keywords (mirpb.MirKeywords)
         """
-        pred_task_annotations = mir_annotations.task_annotations[mir_annotations.head_task_id]
-
         # TODO: old fields to be deprecated
-        for asset_id, single_image_annotations in pred_task_annotations.image_annotations.items():
+        for asset_id, single_image_annotations in mir_annotations.prediction.image_annotations.items():
             mir_keywords.keywords[asset_id].predefined_keyids[:] = set(
                 [annotation.class_id for annotation in single_image_annotations.annotations])
 
-        cls.__build_mir_keywords_ci_tag(task_annotations=pred_task_annotations, keyword_to_index=mir_keywords.pred_idx)
+        cls.__build_mir_keywords_ci_tag(task_annotations=mir_annotations.prediction,
+                                        keyword_to_index=mir_keywords.pred_idx)
         cls.__build_mir_keywords_ci_tag(task_annotations=mir_annotations.ground_truth,
                                         keyword_to_index=mir_keywords.gt_idx)
 
@@ -241,8 +262,13 @@ class MirStorageOps():
 
     # public: save and load
     @classmethod
-    def save_and_commit(cls, mir_root: str, mir_branch: str, his_branch: Optional[str], mir_datas: Dict,
-                        task: mirpb.Task) -> int:
+    def save_and_commit(cls,
+                        mir_root: str,
+                        mir_branch: str,
+                        his_branch: Optional[str],
+                        mir_datas: Dict,
+                        task: mirpb.Task,
+                        calc_confusion_matrix: bool = True) -> int:
         """
         saves and commit all contents in mir_datas to branch: `mir_branch`;
         branch will be created if not exists, and it's history will be after `his_branch`
@@ -255,6 +281,7 @@ class MirStorageOps():
                 mir_tasks is needed, if mir_metadatas and mir_annotations not provided, they will be created as empty
                  datasets
             task (mirpb.Task): task for this commit
+            calc_confusion_matrix (bool): default is True, add TP/TP/FN to mir_annotations
 
         Raises:
             MirRuntimeError
@@ -266,6 +293,9 @@ class MirStorageOps():
             mir_root = '.'
         if not mir_branch:
             raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS, error_message="empty mir branch")
+        if mirpb.MirStorage.MIR_METADATAS not in mir_datas or mirpb.MirStorage.MIR_ANNOTATIONS not in mir_datas:
+            raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
+                                  error_message='need mir_metadatas and mir_annotations')
         if mirpb.MirStorage.MIR_KEYWORDS in mir_datas:
             raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS, error_message='need no mir_keywords')
         if mirpb.MirStorage.MIR_CONTEXT in mir_datas:
@@ -307,7 +337,7 @@ class MirStorageOps():
                 if return_code != MirCode.RC_OK:
                     return return_code
 
-            cls.__save(mir_root=mir_root, mir_datas=mir_datas)
+            cls.__save(mir_root=mir_root, mir_datas=mir_datas, calc_confusion_matrix=calc_confusion_matrix)
 
             ret_code = CmdCommit.run_with_args(mir_root=mir_root, msg=task.name)
             if ret_code != MirCode.RC_OK:
@@ -436,7 +466,8 @@ class MirStorageOps():
                 class_id_mgr.main_name_for_id(id): count
                 for id, count in mir_storage_context.predefined_keyids_cnt.items()
             },
-            new_types={k: v for k, v in task_storage.new_types.items()},
+            new_types={k: v
+                       for k, v in task_storage.new_types.items()},
             new_types_added=task_storage.new_types_added,
             negative_info=dict(
                 negative_images_cnt=mir_storage_context.negative_images_cnt,

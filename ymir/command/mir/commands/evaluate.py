@@ -72,7 +72,8 @@ class CmdEvaluate(base.BaseCommand):
                                                           mirpb.MirStorage.MIR_METADATAS: new_mir_metadatas,
                                                           mirpb.MirStorage.MIR_ANNOTATIONS: new_mir_annotation,
                                                       },
-                                                      task=task)
+                                                      task=task,
+                                                      calc_confusion_matrix=False)
 
         return MirCode.RC_OK
 
