@@ -34,10 +34,13 @@ class MirStorageOps():
         mir_datas[mirpb.MirStorage.MIR_KEYWORDS] = mir_keywords
 
         if calc_confusion_matrix:
-            cls.__build_annotations_confusion_matrix(mir_metadatas=mir_datas[mirpb.MirStorage.MIR_METADATAS],
-                                                     mir_annotations=mir_annotations,
-                                                     mir_keywords=mir_keywords,
-                                                     mir_tasks=mir_tasks)
+            mir_metadatas: mirpb.MirMetadatas = mir_datas[mirpb.MirStorage.MIR_METADATAS]
+            if (mir_metadatas.attributes and mir_annotations.ground_truth.image_annotations
+                    and mir_annotations.task_annotations[mir_annotations.head_task_id].image_annotations):
+                cls.__build_annotations_confusion_matrix(mir_metadatas=mir_datas[mirpb.MirStorage.MIR_METADATAS],
+                                                         mir_annotations=mir_annotations,
+                                                         mir_keywords=mir_keywords,
+                                                         mir_tasks=mir_tasks)
 
         # gen mir_context
         project_class_ids = context.load(mir_root=mir_root)
@@ -88,7 +91,7 @@ class MirStorageOps():
             need_pr_curve=False,
             calc_confusion_matrix=True,
         )
-        
+
         # TODO: update mir_tasks with evaluate config
 
     @classmethod
@@ -100,13 +103,14 @@ class MirStorageOps():
             single_task_annotations (mirpb.SingleTaskAnnotations)
             mir_keywords (mirpb.MirKeywords)
         """
+        pred_task_annotations = mir_annotations.task_annotations[mir_annotations.head_task_id]
+
         # TODO: old fields to be deprecated
-        for asset_id, single_image_annotations in mir_annotations.prediction.image_annotations.items():
+        for asset_id, single_image_annotations in pred_task_annotations.image_annotations.items():
             mir_keywords.keywords[asset_id].predefined_keyids[:] = set(
                 [annotation.class_id for annotation in single_image_annotations.annotations])
 
-        cls.__build_mir_keywords_ci_tag(task_annotations=mir_annotations.prediction,
-                                        keyword_to_index=mir_keywords.pred_idx)
+        cls.__build_mir_keywords_ci_tag(task_annotations=pred_task_annotations, keyword_to_index=mir_keywords.pred_idx)
         cls.__build_mir_keywords_ci_tag(task_annotations=mir_annotations.ground_truth,
                                         keyword_to_index=mir_keywords.gt_idx)
 
