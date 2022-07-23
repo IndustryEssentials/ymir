@@ -38,7 +38,6 @@ class MirStorageOps():
                                                      mir_annotations=mir_annotations,
                                                      mir_keywords=mir_keywords,
                                                      mir_tasks=mir_tasks)
-            breakpoint()
 
         # gen mir_context
         project_class_ids = context.load(mir_root=mir_root)
