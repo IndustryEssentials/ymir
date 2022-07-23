@@ -160,8 +160,8 @@ class TestTaskResult:
 class TestShouldRetry:
     @pytest.mark.asyncio()
     async def test_should_retry(self, mocker: Any) -> None:
-        resp = mocker.Mock(ok=False)
+        resp = mocker.AsyncMock(ok=False)
         assert await m.should_retry(resp)
 
-        resp = mocker.Mock(ok=True)
+        resp = mocker.AsyncMock(ok=True)
         assert not await m.should_retry(resp)

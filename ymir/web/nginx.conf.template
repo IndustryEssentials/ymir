@@ -93,7 +93,6 @@ server {
 
     # static files
     location /ymir-assets/ {
-        rewrite ^(.*)a000000000(.*)$ $1$2 break;
         types { } default_type  "image/jpeg;";
         root /data/ymir/;
     }

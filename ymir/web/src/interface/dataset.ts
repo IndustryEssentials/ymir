@@ -18,7 +18,6 @@ export interface Dataset extends Result {
   nagetiveCount?: number,
   projectNagetiveCount?: number,
   assetCount: number,
-  ignoredKeywords: Array<string>,
 }
 
 export interface DatasetAnalysis {

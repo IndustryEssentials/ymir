@@ -6,7 +6,7 @@ import shutil
 
 from mir.commands import base
 from mir.protos import mir_command_pb2 as mirpb
-from mir.tools import annotations, checker, hash_utils, metadatas, mir_repo_utils, mir_storage_ops, revs_parser
+from mir.tools import annotations, checker, hash_utils, metadatas, mir_repo_utils, mir_storage_ops, revs_parser, utils
 from mir.tools.code import MirCode
 from mir.tools.command_run_in_out import command_run_in_out
 from mir.tools.phase_logger import PhaseLoggerCenter
@@ -160,10 +160,11 @@ def _generate_sha_and_copy(index_file: str, sha_idx_file: str, sha_folder: str) 
             if not media_src or not os.path.isfile(media_src):
                 logging.warning("invalid file: ", media_src)
                 continue
+
             sha1 = hash_utils.sha1sum_for_file(media_src)
             sha_f.writelines("\t".join([sha1, media_src]) + '\n')
 
-            media_dst = os.path.join(sha_folder, sha1)
+            media_dst = utils.get_asset_storage_path(location=sha_folder, hash=sha1, make_dirs=True)
             if not os.path.isfile(media_dst):
                 shutil.copyfile(media_src, media_dst)
 
