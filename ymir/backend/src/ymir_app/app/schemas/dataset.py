@@ -2,7 +2,7 @@ import enum
 import json
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel, Field, validator, root_validator
 
 from app.constants.state import ResultState, TaskType
 from app.schemas.common import (
@@ -214,18 +214,34 @@ class DatasetCheckDuplicationOut(Common):
 class DatasetMergeCreate(BaseModel):
     project_id: int
     dataset_id: int
-    include_datasets: List[int]
-    exclude_datasets: List[int]
+    include_datasets: Optional[List[int]]
+    exclude_datasets: Optional[List[int]]
     merge_strategy: MergeStrategy = Field(
         MergeStrategy.prefer_newest, description="strategy to merge multiple datasets"
     )
     description: Optional[str] = Field(description="description for merge result")
 
+    @root_validator
+    def confine_parameters(cls, values: Any) -> Any:
+        if values.get("include_datasets") is None and values.get("exclude_datasets") is None:
+            raise ValueError("include_datasets and exclude_datasets cannot all be None")
+        return values
+
 
 class DatasetFilterCreate(BaseModel):
     project_id: int
     dataset_id: int
-    include_keywords: List[str]
-    exclude_keywords: List[str]
+    include_keywords: Optional[List[str]]
+    exclude_keywords: Optional[List[str]]
     sampling_count: Optional[int]
     description: Optional[str] = Field(description="description for filter result")
+
+    @root_validator
+    def confine_parameters(cls, values: Any) -> Any:
+        if (
+            values.get("include_keywords") is None
+            and values.get("exclude_keywords") is None
+            and values.get("sampling_count") is None
+        ):
+            raise ValueError("include_keywords, exclude_keywords and sampling_count cannot all be None")
+        return values
