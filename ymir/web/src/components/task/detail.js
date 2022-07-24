@@ -129,20 +129,6 @@ function TaskDetail({ task = {}, batchDatasets, getModel }) {
     </Item>
   }
 
-  function renderTrainAlgo(param = {}) {
-    return <>
-      <Item label={t("task.detail.label.framework")}>
-        {param.network}
-      </Item>
-      <Item label={t("task.detail.label.backbone")}>
-        {param.backbone}
-      </Item>
-      <Item label={t("task.train.form.traintype.label")}>
-        {t('task.train.form.traintypes.detect')}
-      </Item>
-    </>
-  }
-
   function renderDatasetSource(id) {
     return <Item label={t("task.origin.dataset")}>{renderDatasetName(id)}</Item>
   }
