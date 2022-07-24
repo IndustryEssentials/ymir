@@ -250,7 +250,6 @@ class TestToolsDetEval(unittest.TestCase):
                                     mir_annotations=mir_annotations,
                                     mir_keywords=mir_keywords,
                                     conf_thr=0,
-                                    dataset_id='a@a',
                                     as_gt=True)
         self.assertEqual(['a0', 'a1', 'a2'], mir_coco.get_asset_ids())
         self.assertEqual([0, 1, 2], mir_coco.get_asset_idxes())
@@ -279,13 +278,11 @@ class TestToolsDetEval(unittest.TestCase):
                                   mir_annotations=mir_annotations,
                                   mir_keywords=mir_keywords,
                                   conf_thr=0,
-                                  dataset_id='a',
                                   as_gt=True)
         mir_dt = det_eval.MirCoco(mir_metadatas=mir_metadatas,
                                   mir_annotations=mir_annotations,
                                   mir_keywords=mir_keywords,
                                   conf_thr=0,
-                                  dataset_id='a',
                                   as_gt=False)
 
         mir_evaluator = det_eval.CocoDetEval(coco_gt=mir_gt, coco_dt=mir_dt)
@@ -294,5 +291,5 @@ class TestToolsDetEval(unittest.TestCase):
         mir_evaluator.summarize()
         self.assertTrue(np.isclose(expected_stats, mir_evaluator.stats).all())
 
-        mir_evaluation_result = mir_evaluator.get_evaluation_result(area_ranges_index=0, max_dets_index=0)
-        self.assertTrue(len(mir_evaluation_result.iou_evaluations) > 0)
+        single_dataset_evaluation = mir_evaluator.get_evaluation_result(area_ranges_index=0, max_dets_index=0)
+        self.assertTrue(len(single_dataset_evaluation.iou_evaluations) > 0)

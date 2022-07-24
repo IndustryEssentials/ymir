@@ -1,4 +1,5 @@
 from collections import defaultdict
+import sys
 from typing import Any, Dict, Iterable, List, Optional, Set, Tuple, Union
 
 import numpy as np
@@ -15,7 +16,6 @@ class MirCoco:
                  mir_annotations: mirpb.MirAnnotations,
                  mir_keywords: mirpb.MirKeywords,
                  conf_thr: float,
-                 dataset_id: str,
                  as_gt: bool,
                  asset_ids: Iterable[str] = None) -> None:
         """
@@ -26,7 +26,6 @@ class MirCoco:
             mir_annotations (mirpb.MirAnnotations): annotations
             mir_keywords (mirpb.MirKeywords): keywords
             conf_thr (float): lower bound of annotation confidence score
-            dataset_id (str): dataset id
             as_gt (bool): if false, use preds in mir_annotations and mir_keywords, if true, use gt
             asset_ids (Iterable[str]): asset ids you want to include in MirCoco instance, None means include all
         """
@@ -53,12 +52,10 @@ class MirCoco:
         annos = self._get_annotations(single_task_annotations=task_annotations,
                                       asset_idxes=self.get_asset_idxes(),
                                       class_ids=self.get_class_ids(),
-                                      conf_thr=conf_thr,
-                                      as_gt=as_gt)
+                                      conf_thr=sys.float_info.min if as_gt else conf_thr)
         for anno in annos:
             self.img_cat_to_annotations[anno['asset_idx'], anno['class_id']].append(anno)
 
-        self.dataset_id = dataset_id
         self._task_annotations = task_annotations
 
     @property
@@ -70,7 +67,7 @@ class MirCoco:
         return self._asset_id_to_ordered_idxes
 
     def _get_annotations(self, single_task_annotations: mirpb.SingleTaskAnnotations, asset_idxes: List[int],
-                         class_ids: List[int], conf_thr: float, as_gt: bool) -> List[dict]:
+                         class_ids: List[int], conf_thr: float) -> List[dict]:
         """
         get all annotations list for asset ids and class ids
 
@@ -80,7 +77,7 @@ class MirCoco:
             single_task_annotations (mirpb.SingleTaskAnnotations): annotations
             asset_idxes (List[int]): asset ids, if not provided, returns annotations for all images
             class_ids (List[int]): class ids, if not provided, returns annotations for all classe
-            conf_thr (float): confidence threshold of bbox
+            conf_thr (float): confidence threshold of bbox, set to `sys.float_info.min` if you want all annotations
 
         Returns:
             a list of annotations and asset ids
@@ -109,7 +106,7 @@ class MirCoco:
             for annotation in single_image_annotations.annotations:
                 if class_ids and annotation.class_id not in class_ids:
                     continue
-                if not as_gt and annotation.score < conf_thr:
+                if annotation.score < conf_thr:
                     continue
 
                 annotation_dict = {
@@ -686,7 +683,7 @@ class Params:
         self.calc_confusion_matrix = False
 
 
-def _det_evaluate(mir_dts: List[MirCoco], mir_gt: MirCoco, config: mirpb.EvaluateConfig) -> mirpb.Evaluation:
+def _det_evaluate(mir_dt: MirCoco, mir_gt: MirCoco, config: mirpb.EvaluateConfig) -> mirpb.SingleDatasetEvaluation:
     if config.conf_thr < 0 or config.conf_thr > 1:
         raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS, error_message='invalid conf_thr')
     params = Params()
@@ -698,54 +695,48 @@ def _det_evaluate(mir_dts: List[MirCoco], mir_gt: MirCoco, config: mirpb.Evaluat
         raise MirRuntimeError(error_code=MirCode.RC_CMD_CAN_NOT_CALC_CONFUSION_MATRIX,
                               error_message='single iou thr is needed if calc_confusion_matrix')
 
-    evaluation = mirpb.Evaluation()
-    evaluation.config.CopyFrom(config)
-
     area_ranges_index = 0  # area range: 'all'
     max_dets_index = len(params.maxDets) - 1  # last max det number
 
-    for mir_dt in mir_dts:
-        evaluator = CocoDetEval(coco_gt=mir_gt, coco_dt=mir_dt, params=params)
+    evaluator = CocoDetEval(coco_gt=mir_gt, coco_dt=mir_dt, params=params)
+    evaluator.evaluate()
+    if params.calc_confusion_matrix:
+        iou_thr_index = 0  # single iou thr only.
+        evaluator.write_confusion_matrix(iou_thr_index=iou_thr_index, maxDets=params.maxDets[max_dets_index])
+    evaluator.accumulate()
+
+    single_dataset_evaluation = evaluator.get_evaluation_result(area_ranges_index=area_ranges_index,
+                                                                max_dets_index=max_dets_index)
+    single_dataset_evaluation.conf_thr = config.conf_thr
+
+    # evaluate for asset_ids for each ck main and ck sub
+    for ck_main, ck_main_assets_and_sub in mir_dt.ck_idx.items():
+        # ck main
+        evaluator = CocoDetEval(coco_gt=mir_gt,
+                                coco_dt=mir_dt,
+                                params=params,
+                                asset_ids=ck_main_assets_and_sub.asset_annos.keys())
         evaluator.evaluate()
-        if params.calc_confusion_matrix:
-            iou_thr_index = 0  # single iou thr only.
-            evaluator.write_confusion_matrix(iou_thr_index=iou_thr_index, maxDets=params.maxDets[max_dets_index])
         evaluator.accumulate()
+        ste = evaluator.get_evaluation_result(
+            area_ranges_index=area_ranges_index,
+            max_dets_index=max_dets_index).iou_averaged_evaluation.ci_averaged_evaluation
+        single_dataset_evaluation.iou_averaged_evaluation.ck_evaluations[ck_main].total.CopyFrom(ste)
 
-        single_dataset_evaluation = evaluator.get_evaluation_result(area_ranges_index=area_ranges_index,
-                                                                    max_dets_index=max_dets_index)
-        single_dataset_evaluation.conf_thr = config.conf_thr
-        single_dataset_evaluation.gt_dataset_id = mir_gt.dataset_id
-        single_dataset_evaluation.pred_dataset_id = mir_dt.dataset_id
-
-        # evaluate for asset_ids for each ck main and ck sub
-        for ck_main, ck_main_assets_and_sub in mir_dt.ck_idx.items():
-            # ck main
+        # ck sub
+        for ck_sub, ck_sub_assets in ck_main_assets_and_sub.sub_indexes.items():
             evaluator = CocoDetEval(coco_gt=mir_gt,
                                     coco_dt=mir_dt,
                                     params=params,
-                                    asset_ids=ck_main_assets_and_sub.asset_annos.keys())
+                                    asset_ids=ck_sub_assets.key_ids.keys())
             evaluator.evaluate()
             evaluator.accumulate()
             ste = evaluator.get_evaluation_result(
                 area_ranges_index=area_ranges_index,
                 max_dets_index=max_dets_index).iou_averaged_evaluation.ci_averaged_evaluation
-            single_dataset_evaluation.iou_averaged_evaluation.ck_evaluations[ck_main].total.CopyFrom(ste)
-
-            # ck sub
-            for ck_sub, ck_sub_assets in ck_main_assets_and_sub.sub_indexes.items():
-                evaluator = CocoDetEval(coco_gt=mir_gt,
-                                        coco_dt=mir_dt,
-                                        params=params,
-                                        asset_ids=ck_sub_assets.key_ids.keys())
-                evaluator.evaluate()
-                evaluator.accumulate()
-                ste = evaluator.get_evaluation_result(
-                    area_ranges_index=area_ranges_index,
-                    max_dets_index=max_dets_index).iou_averaged_evaluation.ci_averaged_evaluation
-                single_dataset_evaluation.iou_averaged_evaluation.ck_evaluations[ck_main].sub[ck_sub].CopyFrom(ste)
-        evaluation.dataset_evaluations[mir_dt.dataset_id].CopyFrom(single_dataset_evaluation)
-    return evaluation
+            single_dataset_evaluation.iou_averaged_evaluation.ck_evaluations[ck_main].sub[ck_sub].CopyFrom(ste)
+    single_dataset_evaluation.dataset_id = config.dataset_id
+    return single_dataset_evaluation
 
 
 def _get_ious_array(iou_thrs_str: str) -> np.ndarray:
@@ -780,6 +771,7 @@ def det_evaluate(
     need_pr_curve: bool = False,
     calc_confusion_matrix: bool = False,
 ) -> Tuple[mirpb.Evaluation, mirpb.MirAnnotations]:
+    # TODO: remove this function
     mir_metadatas: mirpb.MirMetadatas
     mir_annotations: mirpb.MirAnnotations
     mir_keywords: mirpb.MirKeywords
@@ -809,26 +801,26 @@ def det_evaluate_with_pb(
     need_pr_curve: bool = False,
     calc_confusion_matrix: bool = False,
 ) -> Tuple[mirpb.Evaluation, mirpb.MirAnnotations]:
-    # TODO: change this function name; remove `rev_tid`
+    # TODO: remove `rev_tid`
     mir_gt = MirCoco(mir_metadatas=mir_metadatas,
                      mir_annotations=mir_annotations,
                      mir_keywords=mir_keywords,
                      conf_thr=conf_thr,
-                     dataset_id=rev_tid.rev_tid,
                      as_gt=True)
     mir_dt = MirCoco(mir_metadatas=mir_metadatas,
                      mir_annotations=mir_annotations,
                      mir_keywords=mir_keywords,
                      conf_thr=conf_thr,
-                     dataset_id=rev_tid.rev_tid,
                      as_gt=False)
 
-    evaluate_config = mirpb.EvaluateConfig()
-    evaluate_config.conf_thr = conf_thr
-    evaluate_config.iou_thrs_interval = iou_thrs
-    evaluate_config.need_pr_curve = need_pr_curve
-    evaluate_config.calc_confusion_matrix = calc_confusion_matrix
-    evaluate_config.gt_dataset_id = mir_gt.dataset_id
-    evaluate_config.pred_dataset_ids.append(mir_dt.dataset_id)
+    evaluation = mirpb.Evaluation()
+    evaluation.config.conf_thr = conf_thr
+    evaluation.config.iou_thrs_interval = iou_thrs
+    evaluation.config.need_pr_curve = need_pr_curve
+    evaluation.config.calc_confusion_matrix = calc_confusion_matrix
+    evaluation.config.dataset_id = rev_tid.rev_tid
+    evaluation.dataset_evaluations[evaluation.config.dataset_id].CopyFrom(
+        _det_evaluate(mir_dt=mir_dt, mir_gt=mir_gt, config=evaluation.config))
+    # if `calc_confusion_matrix`, `mir_annotations` changed in `_det_evaluate`
 
-    return (_det_evaluate(mir_dts=[mir_dt], mir_gt=mir_gt, config=evaluate_config), mir_annotations)
+    return (evaluation, mir_annotations)

@@ -34,29 +34,38 @@ class CmdEvaluate(base.BaseCommand):
         if return_code != MirCode.RC_OK:
             return return_code
 
+        mir_metadatas: mirpb.MirMetadatas
+        mir_annotations: mirpb.MirAnnotations
+        mir_keywords: mirpb.MirKeywords
+        mir_metadatas, mir_annotations, mir_keywords = mir_storage_ops.MirStorageOps.load_multiple_storages(
+            mir_root=mir_root,
+            mir_branch=src_rev_tid.rev,
+            mir_task_id=src_rev_tid.tid,
+            ms_list=[mirpb.MirStorage.MIR_METADATAS, mirpb.MirStorage.MIR_ANNOTATIONS, mirpb.MirStorage.MIR_KEYWORDS])
+
         # evaluate
-        evaluation, mir_annotations = det_eval.det_evaluate(mir_root=mir_root,
-                                                            rev_tid=src_rev_tid,
-                                                            conf_thr=conf_thr,
-                                                            iou_thrs=iou_thrs,
-                                                            need_pr_curve=need_pr_curve,
-                                                            calc_confusion_matrix=calc_confusion_matrix)
+        evaluation, mir_annotations = det_eval.det_evaluate_with_pb(mir_metadatas=mir_metadatas,
+                                                                    mir_annotations=mir_annotations,
+                                                                    mir_keywords=mir_keywords,
+                                                                    rev_tid=src_rev_tid,
+                                                                    conf_thr=conf_thr,
+                                                                    iou_thrs=iou_thrs,
+                                                                    need_pr_curve=need_pr_curve,
+                                                                    calc_confusion_matrix=calc_confusion_matrix)
         _show_evaluation(evaluation=evaluation)
 
-        new_mir_metadatas = mirpb.MirMetadatas()
-        new_mir_annotation = mirpb.MirAnnotations()
         if calc_confusion_matrix:
-            new_mir_metadatas = mir_storage_ops.MirStorageOps.load_single_storage(mir_root=mir_root,
-                                                                                  mir_branch=src_rev_tid.rev,
-                                                                                  mir_task_id=src_rev_tid.tid,
-                                                                                  ms=mirpb.MirStorage.MIR_METADATAS)
+            # need a new dataset
+            orig_head_task_id = mir_annotations.head_task_id
+            pred_annotations = mir_annotations.task_annotations[orig_head_task_id]
 
-            pred_annotations = mir_annotations.task_annotations[mir_annotations.head_task_id]
-            new_mir_annotation.task_annotations[task_id].CopyFrom(pred_annotations)
-            new_mir_annotation.prediction.CopyFrom(pred_annotations)
-            new_mir_annotation.ground_truth.CopyFrom(mir_annotations.ground_truth)
-            for asset_id in mir_annotations.image_cks.keys():
-                new_mir_annotation.image_cks[asset_id].CopyFrom(mir_annotations.image_cks[asset_id])
+            mir_annotations.task_annotations[task_id].CopyFrom(pred_annotations)
+            del mir_annotations.task_annotations[orig_head_task_id]
+            mir_annotations.prediction.CopyFrom(pred_annotations)
+        else:
+            # dont need a new dataset
+            mir_metadatas = mirpb.MirMetadatas()
+            mir_annotations = mirpb.MirAnnotations()
 
         # save and commit
         task = mir_storage_ops.create_task(task_type=mirpb.TaskType.TaskTypeEvaluate,
@@ -69,8 +78,8 @@ class CmdEvaluate(base.BaseCommand):
                                                       mir_branch=dst_rev_tid.rev,
                                                       his_branch=src_rev_tid.rev,
                                                       mir_datas={
-                                                          mirpb.MirStorage.MIR_METADATAS: new_mir_metadatas,
-                                                          mirpb.MirStorage.MIR_ANNOTATIONS: new_mir_annotation,
+                                                          mirpb.MirStorage.MIR_METADATAS: mir_metadatas,
+                                                          mirpb.MirStorage.MIR_ANNOTATIONS: mir_annotations,
                                                       },
                                                       task=task,
                                                       calc_confusion_matrix=False)
@@ -81,7 +90,7 @@ class CmdEvaluate(base.BaseCommand):
 def _show_evaluation(evaluation: mirpb.Evaluation) -> None:
     for dataset_id, dataset_evaluation in evaluation.dataset_evaluations.items():
         cae = dataset_evaluation.iou_averaged_evaluation.ci_averaged_evaluation
-        logging.info(f"gt: {evaluation.config.gt_dataset_id} vs pred: {dataset_id}, mAP: {cae.ap}")
+        logging.info(f"dataset: {dataset_id}, mAP: {cae.ap}")
 
 
 def bind_to_subparsers(subparsers: argparse._SubParsersAction, parent_parser: argparse.ArgumentParser) -> None:
