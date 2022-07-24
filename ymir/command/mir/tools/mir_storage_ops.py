@@ -55,20 +55,8 @@ class MirStorageOps():
     @classmethod
     # public: presave actions
     def __build_annotations_head_task_id(cls, mir_annotations: mirpb.MirAnnotations, head_task_id: str) -> None:
-        task_annotations_count = len(mir_annotations.task_annotations)
-        if task_annotations_count == 0:
-            mir_annotations.task_annotations[head_task_id].CopyFrom(mirpb.SingleTaskAnnotations())
-        elif task_annotations_count == 1:
-            task_id = list(mir_annotations.task_annotations.keys())[0]
-            if task_id != head_task_id:
-                raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
-                                      error_message=f"annotation head task id mismatch: {head_task_id} != {task_id}")
-        elif task_annotations_count > 1:
-            # * now we allows only one task id in each mir_annotations
-            raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_MIR_REPO,
-                                  error_message='more then one task ids found in mir_annotations')
-
         mir_annotations.head_task_id = head_task_id
+        mir_annotations.prediction.task_id = head_task_id
 
     @classmethod
     def __build_mir_keywords(cls, mir_annotations: mirpb.MirAnnotations, mir_keywords: mirpb.MirKeywords) -> None:
@@ -79,14 +67,13 @@ class MirStorageOps():
             single_task_annotations (mirpb.SingleTaskAnnotations)
             mir_keywords (mirpb.MirKeywords)
         """
-        pred_task_annotations = mir_annotations.task_annotations[mir_annotations.head_task_id]
-
         # TODO: old fields to be deprecated
-        for asset_id, single_image_annotations in pred_task_annotations.image_annotations.items():
+        for asset_id, single_image_annotations in mir_annotations.prediction.image_annotations.items():
             mir_keywords.keywords[asset_id].predefined_keyids[:] = set(
                 [annotation.class_id for annotation in single_image_annotations.annotations])
 
-        cls.__build_mir_keywords_ci_tag(task_annotations=pred_task_annotations, keyword_to_index=mir_keywords.pred_idx)
+        cls.__build_mir_keywords_ci_tag(task_annotations=mir_annotations.prediction,
+                                        keyword_to_index=mir_keywords.pred_idx)
         cls.__build_mir_keywords_ci_tag(task_annotations=mir_annotations.ground_truth,
                                         keyword_to_index=mir_keywords.gt_idx)
 
@@ -165,9 +152,8 @@ class MirStorageOps():
                 mir_context.project_predefined_keyids_cnt[key_id] = 0
 
         # image_cnt, negative_images_cnt, project_negative_images_cnt
-        image_annotations = mir_annotations.task_annotations[mir_annotations.head_task_id].image_annotations
         mir_context.images_cnt = len(mir_metadatas.attributes)
-        mir_context.negative_images_cnt = mir_context.images_cnt - len(image_annotations)
+        mir_context.negative_images_cnt = mir_context.images_cnt - len(mir_annotations.prediction.image_annotations)
         if project_class_ids:
             mir_context.project_negative_images_cnt = mir_context.images_cnt - len(project_positive_asset_ids)
             # if no project_class_ids, project_negative_images_cnt set to 0
@@ -215,7 +201,7 @@ class MirStorageOps():
         # pred_stats
         cls.__build_mir_context_stats(stats=mir_context.pred_stats,
                                       mir_metadatas=mir_metadatas,
-                                      task_annotations=mir_annotations.task_annotations[mir_annotations.head_task_id])
+                                      task_annotations=mir_annotations.prediction)
         cls.__build_mir_context_stats(stats=mir_context.gt_stats,
                                       mir_metadatas=mir_metadatas,
                                       task_annotations=mir_annotations.ground_truth)
@@ -436,7 +422,8 @@ class MirStorageOps():
                 class_id_mgr.main_name_for_id(id): count
                 for id, count in mir_storage_context.predefined_keyids_cnt.items()
             },
-            new_types={k: v for k, v in task_storage.new_types.items()},
+            new_types={k: v
+                       for k, v in task_storage.new_types.items()},
             new_types_added=task_storage.new_types_added,
             negative_info=dict(
                 negative_images_cnt=mir_storage_context.negative_images_cnt,

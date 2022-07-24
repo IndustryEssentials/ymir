@@ -100,13 +100,13 @@ message Timestamp {
 
 /// ========== annotations.mir ==========
 message MirAnnotations {
-    /// key: task id, value: annotations of that single task
-    map<string, SingleTaskAnnotations> task_annotations = 1;
     string head_task_id = 2;
     SingleTaskAnnotations ground_truth = 3;
     SingleTaskAnnotations prediction = 4;
     // key: asset id, value: cks and image quality
     map<string, SingleImageCks> image_cks = 5;
+
+    reserved 1;
 };
 
 message SingleTaskAnnotations {

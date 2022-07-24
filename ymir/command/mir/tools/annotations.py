@@ -97,8 +97,9 @@ def import_annotations(mir_metadatas: mirpb.MirMetadatas, mir_annotation: mirpb.
             class_type_manager=class_type_manager,
             unknown_types_strategy=unknown_types_strategy,
             accu_new_types=anno_import_result,
-            image_annotations=mir_annotation.task_annotations[task_id],
+            image_annotations=mir_annotation.prediction,
         )
+    mir_annotation.prediction.task_id = task_id
     PhaseLoggerCenter.update_phase(phase=phase, local_percent=0.5)
 
     if groundtruth_dir_path:
@@ -113,6 +114,7 @@ def import_annotations(mir_metadatas: mirpb.MirMetadatas, mir_annotation: mirpb.
             accu_new_types=anno_import_result,
             image_annotations=mir_annotation.ground_truth,
         )
+    mir_annotation.ground_truth.task_id = task_id
     PhaseLoggerCenter.update_phase(phase=phase, local_percent=1.0)
 
     if unknown_types_strategy == UnknownTypesStrategy.STOP and anno_import_result:

@@ -301,21 +301,6 @@ global___Timestamp = Timestamp
 class MirAnnotations(google.protobuf.message.Message):
     """/ ========== annotations.mir =========="""
     DESCRIPTOR: google.protobuf.descriptor.Descriptor = ...
-    class TaskAnnotationsEntry(google.protobuf.message.Message):
-        DESCRIPTOR: google.protobuf.descriptor.Descriptor = ...
-        KEY_FIELD_NUMBER: builtins.int
-        VALUE_FIELD_NUMBER: builtins.int
-        key: typing.Text = ...
-        @property
-        def value(self) -> global___SingleTaskAnnotations: ...
-        def __init__(self,
-            *,
-            key : typing.Text = ...,
-            value : typing.Optional[global___SingleTaskAnnotations] = ...,
-            ) -> None: ...
-        def HasField(self, field_name: typing_extensions.Literal["value",b"value"]) -> builtins.bool: ...
-        def ClearField(self, field_name: typing_extensions.Literal["key",b"key","value",b"value"]) -> None: ...
-
     class ImageCksEntry(google.protobuf.message.Message):
         DESCRIPTOR: google.protobuf.descriptor.Descriptor = ...
         KEY_FIELD_NUMBER: builtins.int
@@ -331,15 +316,10 @@ class MirAnnotations(google.protobuf.message.Message):
         def HasField(self, field_name: typing_extensions.Literal["value",b"value"]) -> builtins.bool: ...
         def ClearField(self, field_name: typing_extensions.Literal["key",b"key","value",b"value"]) -> None: ...
 
-    TASK_ANNOTATIONS_FIELD_NUMBER: builtins.int
     HEAD_TASK_ID_FIELD_NUMBER: builtins.int
     GROUND_TRUTH_FIELD_NUMBER: builtins.int
     PREDICTION_FIELD_NUMBER: builtins.int
     IMAGE_CKS_FIELD_NUMBER: builtins.int
-    @property
-    def task_annotations(self) -> google.protobuf.internal.containers.MessageMap[typing.Text, global___SingleTaskAnnotations]:
-        """/ key: task id, value: annotations of that single task"""
-        pass
     head_task_id: typing.Text = ...
     @property
     def ground_truth(self) -> global___SingleTaskAnnotations: ...
@@ -351,14 +331,13 @@ class MirAnnotations(google.protobuf.message.Message):
         pass
     def __init__(self,
         *,
-        task_annotations : typing.Optional[typing.Mapping[typing.Text, global___SingleTaskAnnotations]] = ...,
         head_task_id : typing.Text = ...,
         ground_truth : typing.Optional[global___SingleTaskAnnotations] = ...,
         prediction : typing.Optional[global___SingleTaskAnnotations] = ...,
         image_cks : typing.Optional[typing.Mapping[typing.Text, global___SingleImageCks]] = ...,
         ) -> None: ...
     def HasField(self, field_name: typing_extensions.Literal["ground_truth",b"ground_truth","prediction",b"prediction"]) -> builtins.bool: ...
-    def ClearField(self, field_name: typing_extensions.Literal["ground_truth",b"ground_truth","head_task_id",b"head_task_id","image_cks",b"image_cks","prediction",b"prediction","task_annotations",b"task_annotations"]) -> None: ...
+    def ClearField(self, field_name: typing_extensions.Literal["ground_truth",b"ground_truth","head_task_id",b"head_task_id","image_cks",b"image_cks","prediction",b"prediction"]) -> None: ...
 global___MirAnnotations = MirAnnotations
 
 class SingleTaskAnnotations(google.protobuf.message.Message):
