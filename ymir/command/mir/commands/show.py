@@ -64,9 +64,9 @@ class CmdShow(base.BaseCommand):
     @classmethod
     def _show_general_annotations(cls, mir_annotations: mirpb.MirAnnotations) -> None:
         hid = mir_annotations.head_task_id
-        print(f"annotations.mir: hid: {hid}," f" {len(mir_annotations.prediction.image_annotations)} assets")
-        print(f"    ground truth: {len(mir_annotations.ground_truth.image_annotations)} assets")
-        print(f"    images count with ck: {len(mir_annotations.image_cks)}")
+        print(f"annotations.mir: hid: {hid},")
+        print(f"    pred: {len(mir_annotations.prediction.image_annotations)},"
+              f" gt: {len(mir_annotations.ground_truth.image_annotations)}")
 
     @classmethod
     def _show_general_context(cls, mir_context: mirpb.MirContext, mir_keywords: mirpb.MirKeywords) -> None:
