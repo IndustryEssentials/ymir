@@ -579,8 +579,8 @@ class ControllerClient:
         user_id: int,
         project_id: int,
         task_id: str,
-        dataset_hashes: List[str],
-        ex_dataset_hashes: List[str],
+        dataset_hashes: Optional[List[str]],
+        ex_dataset_hashes: Optional[List[str]],
         merge_strategy: Optional[MergeStrategy] = None,
     ) -> Dict:
         req = ControllerRequest(
@@ -602,8 +602,8 @@ class ControllerClient:
         project_id: int,
         task_id: str,
         dataset_hash: str,
-        class_ids: List[int],
-        ex_class_ids: List[int],
+        class_ids: Optional[List[int]],
+        ex_class_ids: Optional[List[int]],
         sampling_count: Optional[int] = None,
     ) -> Dict:
         req = ControllerRequest(
