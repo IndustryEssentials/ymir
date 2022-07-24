@@ -113,9 +113,6 @@ class CmdFilter(base.BaseCommand):
             raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_MIR_REPO,
                                   error_message='no base task id in tasks.mir')
 
-        assert len(mir_annotations.task_annotations.keys()) == 1
-        base_task_annotations = mir_annotations.task_annotations[base_task_id]  # type: mirpb.SingleTaskAnnotations
-
         class_manager = class_ids.ClassIdManager(mir_root=mir_root)
         preds_set = CmdFilter.__preds_set_from_str(in_cis, class_manager)  # type: Set[int]
         excludes_set = CmdFilter.__preds_set_from_str(ex_cis, class_manager)  # type: Set[int]
@@ -148,9 +145,6 @@ class CmdFilter(base.BaseCommand):
             matched_mir_metadatas.attributes[asset_id].CopyFrom(asset_attr)
 
         # generate `matched_mir_annotations`
-        CmdFilter.__gen_task_annotations(src_task_annotations=base_task_annotations,
-                                         dst_task_annotations=matched_mir_annotations.task_annotations[task_id],
-                                         asset_ids=asset_ids_set)
         CmdFilter.__gen_task_annotations(src_task_annotations=mir_annotations.ground_truth,
                                          dst_task_annotations=matched_mir_annotations.ground_truth,
                                          asset_ids=asset_ids_set)

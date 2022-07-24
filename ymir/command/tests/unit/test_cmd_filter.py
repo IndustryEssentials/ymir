@@ -87,37 +87,53 @@ class TestCmdFilter(unittest.TestCase):
         json_format.ParseDict(metadatas_dict, mir_metadatas)
 
         annotations_dict = {
-            "task_annotations": {
-                "t0": {
-                    "image_annotations": {
-                        "a0000000000000000000000000000000000000000000000000":
-                        TestCmdFilter.__annotations_for_single_image([0, 1, 2, 3, 4, 5]),
-                        "a0000000000000000000000000000000000000000000000001":
-                        TestCmdFilter.__annotations_for_single_image([4]),
-                        "a0000000000000000000000000000000000000000000000002":
-                        TestCmdFilter.__annotations_for_single_image([3]),
-                        "a0000000000000000000000000000000000000000000000003":
-                        TestCmdFilter.__annotations_for_single_image([2]),
-                        "a0000000000000000000000000000000000000000000000004":
-                        TestCmdFilter.__annotations_for_single_image([0, 1]),
-                    }
+            "prediction": {
+                "image_annotations": {
+                    "a0000000000000000000000000000000000000000000000000":
+                    TestCmdFilter.__annotations_for_single_image([0, 1, 2, 3, 4, 5]),
+                    "a0000000000000000000000000000000000000000000000001":
+                    TestCmdFilter.__annotations_for_single_image([4]),
+                    "a0000000000000000000000000000000000000000000000002":
+                    TestCmdFilter.__annotations_for_single_image([3]),
+                    "a0000000000000000000000000000000000000000000000003":
+                    TestCmdFilter.__annotations_for_single_image([2]),
+                    "a0000000000000000000000000000000000000000000000004":
+                    TestCmdFilter.__annotations_for_single_image([0, 1]),
                 }
             },
             'head_task_id': 't0',
             'image_cks': {
-                'a0000000000000000000000000000000000000000000000000': {'cks': {'c0': 'c1'}},
-                'a0000000000000000000000000000000000000000000000001': {'cks': {'c0': 'c1'}},
-                'a0000000000000000000000000000000000000000000000002': {'cks': {'c0': 'c1'}},
-                'a0000000000000000000000000000000000000000000000003': {'cks': {'c0': 'c1'}},
-                'a0000000000000000000000000000000000000000000000004': {'cks': {'c0': 'c1'}},
+                'a0000000000000000000000000000000000000000000000000': {
+                    'cks': {
+                        'c0': 'c1'
+                    }
+                },
+                'a0000000000000000000000000000000000000000000000001': {
+                    'cks': {
+                        'c0': 'c1'
+                    }
+                },
+                'a0000000000000000000000000000000000000000000000002': {
+                    'cks': {
+                        'c0': 'c1'
+                    }
+                },
+                'a0000000000000000000000000000000000000000000000003': {
+                    'cks': {
+                        'c0': 'c1'
+                    }
+                },
+                'a0000000000000000000000000000000000000000000000004': {
+                    'cks': {
+                        'c0': 'c1'
+                    }
+                },
             }
         }
         mir_annotations = mirpb.MirAnnotations()
         json_format.ParseDict(annotations_dict, mir_annotations)
 
-        task = mir_storage_ops.create_task(task_type=mirpb.TaskType.TaskTypeImportData,
-                                           task_id='t0',
-                                           message='import')
+        task = mir_storage_ops.create_task(task_type=mirpb.TaskType.TaskTypeImportData, task_id='t0', message='import')
 
         MirStorageOps.save_and_commit(mir_root=self._mir_root,
                                       mir_branch='a',
@@ -198,8 +214,7 @@ class TestCmdFilter(unittest.TestCase):
         mir_tasks = test_utils.read_mir_pb(os.path.join(self._mir_root, 'tasks.mir'), mirpb.MirTasks)
         self.assertEqual(expected_asset_ids, set(mir_metadatas.attributes.keys()))
         self.assertEqual(expected_asset_ids, set(mir_keywords.keywords.keys()))
-        self.assertEqual(1, len(mir_annotations.task_annotations))
-        self.assertEqual(expected_asset_ids, set(mir_annotations.task_annotations['t1'].image_annotations.keys()))
+        self.assertEqual(expected_asset_ids, set(mir_annotations.prediction.image_annotations.keys()))
         self.assertEqual(expected_asset_ids, set(mir_annotations.image_cks.keys()))
         self.assertEqual(1, len(mir_tasks.tasks))
         self.assertEqual('t1', mir_tasks.head_task_id)
