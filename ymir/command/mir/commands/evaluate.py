@@ -51,9 +51,7 @@ class CmdEvaluate(base.BaseCommand):
                                                                                   mir_task_id=src_rev_tid.tid,
                                                                                   ms=mirpb.MirStorage.MIR_METADATAS)
 
-            pred_annotations = mir_annotations.task_annotations[mir_annotations.head_task_id]
-            new_mir_annotation.task_annotations[task_id].CopyFrom(pred_annotations)
-            new_mir_annotation.prediction.CopyFrom(pred_annotations)
+            new_mir_annotation.prediction.CopyFrom(mir_annotations.prediction)
             new_mir_annotation.ground_truth.CopyFrom(mir_annotations.ground_truth)
             for asset_id in mir_annotations.image_cks.keys():
                 new_mir_annotation.image_cks[asset_id].CopyFrom(mir_annotations.image_cks[asset_id])

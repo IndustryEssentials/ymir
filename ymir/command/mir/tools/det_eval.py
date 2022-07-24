@@ -30,8 +30,7 @@ class MirCoco:
             as_gt (bool): if false, use preds in mir_annotations and mir_keywords, if true, use gt
             asset_ids (Iterable[str]): asset ids you want to include in MirCoco instance, None means include all
         """
-        task_annotations = mir_annotations.ground_truth if as_gt else mir_annotations.task_annotations[
-            mir_annotations.head_task_id]
+        task_annotations = mir_annotations.ground_truth if as_gt else mir_annotations.prediction
         keyword_to_idx = mir_keywords.gt_idx if as_gt else mir_keywords.pred_idx
 
         if len(mir_metadatas.attributes) == 0:
