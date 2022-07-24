@@ -166,6 +166,8 @@ function TaskDetail({ task = {}, batchDatasets, getModel }) {
       [TASKTYPES.COPY]: renderCopy,
       [TASKTYPES.INFERENCE]: renderInference,
       [TASKTYPES.FUSION]: renderFusion,
+      [TASKTYPES.MERGE]: renderMerge,
+      [TASKTYPES.FILTER]: renderFilter,
       [TASKTYPES.MODELCOPY]: renderModelCopy,
       [TASKTYPES.MODELIMPORT]: renderModelImport,
       [TASKTYPES.SYS]: renderSys,
@@ -311,6 +313,37 @@ function TaskDetail({ task = {}, batchDatasets, getModel }) {
       </Item>
       <Item label={t("task.detail.exclude_labels.label")}>
         {task.parameters?.exclude_labels?.map((keyword) => (
+          <Tag key={keyword}>{keyword}</Tag>
+        ))}
+      </Item>
+      <Item label={t("task.detail.samples.label")} span={2}>
+        {task?.parameters?.sampling_count}
+      </Item>
+    </>
+  )
+  const renderMerge = () => (
+    <>
+      {renderDatasetSource(task?.parameters?.dataset_id)}
+      {renderCreateTime(task.create_datetime)}
+      <Item label={t("task.detail.include_datasets.label")}>
+        {renderDatasetNames(task?.parameters?.include_datasets)}
+      </Item>
+      <Item label={t("task.detail.exclude_datasets.label")}>
+        {renderDatasetNames(task?.parameters?.exclude_datasets)}
+      </Item>
+    </>
+  )
+  const renderFilter = () => (
+    <>
+      {renderDatasetSource(task?.parameters?.dataset_id)}
+      {renderCreateTime(task.create_datetime)}
+      <Item label={t("task.detail.include_labels.label")}>
+        {task.parameters?.include_keywords?.map((keyword) => (
+          <Tag key={keyword}>{keyword}</Tag>
+        ))}
+      </Item>
+      <Item label={t("task.detail.exclude_labels.label")}>
+        {task.parameters?.exclude_keywords?.map((keyword) => (
           <Tag key={keyword}>{keyword}</Tag>
         ))}
       </Item>
