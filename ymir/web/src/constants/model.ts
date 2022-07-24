@@ -47,6 +47,7 @@ export function transferModel (data: BackendData): ModelVersion {
     hidden: !data.is_visible,
     stages: data.related_stages || [],
     recommendStage: data.recommended_stage || 0,
+    description: data.description || '',
   }
 }
 

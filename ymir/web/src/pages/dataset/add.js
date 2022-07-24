@@ -4,15 +4,18 @@ import { useParams, useHistory } from 'umi'
 
 import { formLayout } from "@/config/antd"
 import t from '@/utils/t'
-import { IMPORTSTRATEGY } from '@/constants/dataset'
-import Uploader from '@/components/form/uploader'
-import { randomNumber } from '@/utils/number'
-import { urlValidator } from '@/components/form/validators'
-import s from './add.less'
-import Breadcrumbs from '@/components/common/breadcrumb'
-import ProjectDatasetSelect from '@/components/form/projectDatasetSelect'
-import useAddKeywords from '@/hooks/useAddKeywords'
 import useFetch from '@/hooks/useFetch'
+import useAddKeywords from '@/hooks/useAddKeywords'
+import { IMPORTSTRATEGY } from '@/constants/dataset'
+import { randomNumber } from '@/utils/number'
+
+import { urlValidator } from '@/components/form/validators'
+import Breadcrumbs from '@/components/common/breadcrumb'
+import Uploader from '@/components/form/uploader'
+import ProjectDatasetSelect from '@/components/form/projectDatasetSelect'
+import Desc from "@/components/form/desc"
+
+import s from './add.less'
 import samplePic from '@/assets/sample.png'
 
 const { Option } = Select
@@ -298,6 +301,7 @@ const Add = (props) => {
                 ></Uploader>
               </Form.Item>
             ) : null}
+            <Desc form={form} />
             <Form.Item wrapperCol={{ offset: 8 }}>
               <Space size={20}>
                 <Form.Item name='submitBtn' noStyle>

@@ -5,12 +5,14 @@ import { useParams, connect, useHistory, useLocation } from 'umi'
 import { formLayout } from "@/config/antd"
 import t from '@/utils/t'
 import { generateName } from '@/utils/string'
-import Breadcrumbs from '@/components/common/breadcrumb'
-import Tip from "@/components/form/tip"
-import ProjectSelect from "@/components/form/projectModelSelect"
-import Uploader from '@/components/form/uploader'
-import s from './add.less'
+
 import { urlValidator } from '@/components/form/validators'
+import Breadcrumbs from '@/components/common/breadcrumb'
+import ProjectSelect from "@/components/form/projectModelSelect"
+import Desc from "@/components/form/desc"
+import Uploader from '@/components/form/uploader'
+
+import s from './add.less'
 
 const { Option } = Select
 const { useForm } = Form
@@ -78,93 +80,73 @@ const Add = ({ importModel }) => {
       <Card className={s.container} title={t('breadcrumbs.model.add')}>
         <div className={s.formContainer}>
           <Form form={form}
-            { ...formLayout }
+            {...formLayout}
             onFinish={submit} initialValues={initialValues}
           >
-            <Tip hidden={true}>
-              <Form.Item
-                label={t('model.add.form.name')}
-                name='name'
-                rules={[
-                  { required: true, whitespace: true, message: t('model.add.form.name.placeholder') },
-                  { type: 'string', min: 2, max: 80 },
-                ]}
-              >
-                <Input placeholder={t('model.add.form.name.placeholder')} autoComplete='off' allowClear />
-              </Form.Item>
-            </Tip>
-            <Tip hidden={true}>
-              <Form.Item label={t('model.add.form.type')}>
-                <Select onChange={(value) => typeChange(value)} defaultValue={TYPES.LOCAL}>
-                  {types.map(type => (
-                    <Option value={type.id} key={type.id}>{type.label}</Option>
-                  ))}
-                </Select>
-              </Form.Item>
-            </Tip>
+            <Form.Item
+              label={t('model.add.form.name')}
+              name='name'
+              rules={[
+                { required: true, whitespace: true, message: t('model.add.form.name.placeholder') },
+                { type: 'string', min: 2, max: 80 },
+              ]}
+            >
+              <Input placeholder={t('model.add.form.name.placeholder')} autoComplete='off' allowClear />
+            </Form.Item>
+            <Form.Item label={t('model.add.form.type')}>
+              <Select onChange={(value) => typeChange(value)} defaultValue={TYPES.LOCAL}>
+                {types.map(type => (
+                  <Option value={type.id} key={type.id}>{type.label}</Option>
+                ))}
+              </Select>
+            </Form.Item>
             {isType(TYPES.COPY) ?
-              <>
-                <Tip hidden={true}>
-                  <Form.Item label={t('model.add.form.project')} name='modelId' rules={[
-                    { required: true, }
-                  ]}>
-                    <ProjectSelect pid={pid} />
-                  </Form.Item>
-                </Tip>
-              </>
+              <Form.Item label={t('model.add.form.project')} name='modelId' rules={[
+                { required: true, }
+              ]}>
+                <ProjectSelect pid={pid} />
+              </Form.Item>
               : null}
             {isType(TYPES.LOCAL) ?
-              <Tip hidden={true}>
-                <Form.Item label={t('model.add.form.upload.btn')} name='path' required>
-                  <Uploader
-                    onChange={(files, result) => { setPath(result) }}
-                    max={1024}
-                    format='all'
-                    onRemove={() => setPath('')}
-                    info={t('model.add.form.upload.info', { br: <br />, max: 1024 })}
-                  ></Uploader>
-                </Form.Item>
-              </Tip> : null}
+              <Form.Item label={t('model.add.form.upload.btn')} name='path' required>
+                <Uploader
+                  onChange={(files, result) => { setPath(result) }}
+                  max={1024}
+                  format='all'
+                  onRemove={() => setPath('')}
+                  info={t('model.add.form.upload.info', { br: <br />, max: 1024 })}
+                ></Uploader>
+              </Form.Item>
+              : null}
 
             {isType(TYPES.NET) ?
-              <Tip hidden={true}>
-                <Form.Item
-                  label={t('model.add.form.url')}
-                  name='url'
-                  rules={[
-                    { required: true, message: t('model.add.form.url.tip') },
-                    { validator: urlValidator, }
-                  ]}
-                  extra={t('model.add.form.url.help')}
-                >
-                  <Input placeholder={t('model.add.form.url.placeholder')} max={512} allowClear />
-                </Form.Item>
-              </Tip> : null}
-            <Tip hidden={true}>
-              <Form.Item label={t('project.add.form.desc')} name='description'
+              <Form.Item
+                label={t('model.add.form.url')}
+                name='url'
                 rules={[
-                  { max: 500 },
+                  { required: true, message: t('model.add.form.url.tip') },
+                  { validator: urlValidator, }
                 ]}
+                extra={t('model.add.form.url.help')}
               >
-                <Input.TextArea autoSize={{ minRows: 4, maxRows: 20 }} />
+                <Input placeholder={t('model.add.form.url.placeholder')} max={512} allowClear />
               </Form.Item>
-            </Tip>
-            <Tip hidden={true}>
-              <Form.Item wrapperCol={{ offset: 8 }}>
-                <Space size={20}>
-                  <Form.Item name='submitBtn' noStyle>
-                    <Button type="primary" size="large" htmlType="submit">
-                      {t('common.action.import')}
-                    </Button>
-                  </Form.Item>
-                  <Form.Item name='backBtn' noStyle>
-                    <Button size="large" onClick={() => history.goBack()}>
-                      {t('task.btn.back')}
-                    </Button>
-                  </Form.Item>
-                </Space>
-              </Form.Item>
-            </Tip>
+              : null}
+            <Desc form={form} />
+            <Form.Item wrapperCol={{ offset: 8 }}>
+              <Space size={20}>
+                <Form.Item name='submitBtn' noStyle>
+                  <Button type="primary" size="large" htmlType="submit">
+                    {t('common.action.import')}
+                  </Button>
+                </Form.Item>
+                <Form.Item name='backBtn' noStyle>
+                  <Button size="large" onClick={() => history.goBack()}>
+                    {t('task.btn.back')}
+                  </Button>
+                </Form.Item>
+              </Space>
+            </Form.Item>
           </Form>
         </div>
       </Card>
