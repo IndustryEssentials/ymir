@@ -69,66 +69,65 @@ class TestMirStorage(unittest.TestCase):
         pb_format.ParseDict(dict_metadatas, mir_metadatas)
 
         dict_annotations = {
-            "task_annotations": {
-                "mining-task-id": {
-                    "image_annotations": {
-                        "a001": {
-                            'annotations': [{
-                                'box': {
-                                    'x': 26,
-                                    'y': 189,
-                                    'w': 19,
-                                    'h': 50
-                                },
-                                'classId': 1
-                            }, {
-                                'box': {
-                                    'x': 26,
-                                    'y': 189,
-                                    'w': 19,
-                                    'h': 50
-                                },
-                                'classId': 2
-                            }]
-                        },
-                        "a002": {
-                            'annotations': [{
-                                'box': {
-                                    'x': 26,
-                                    'y': 189,
-                                    'w': 19,
-                                    'h': 50
-                                },
-                                'classId': 2
-                            }, {
-                                'box': {
-                                    'x': 26,
-                                    'y': 189,
-                                    'w': 19,
-                                    'h': 50
-                                },
-                                'classId': 3
-                            }]
-                        },
-                        "a003": {
-                            'annotations': [{
-                                'box': {
-                                    'x': 26,
-                                    'y': 189,
-                                    'w': 19,
-                                    'h': 50
-                                },
-                                'classId': 3
-                            }, {
-                                'box': {
-                                    'x': 26,
-                                    'y': 189,
-                                    'w': 19,
-                                    'h': 50
-                                },
-                                'classId': 3
-                            }]
-                        }
+            "prediction": {
+                'task_id': 'mining-task-id',
+                "image_annotations": {
+                    "a001": {
+                        'annotations': [{
+                            'box': {
+                                'x': 26,
+                                'y': 189,
+                                'w': 19,
+                                'h': 50
+                            },
+                            'classId': 1
+                        }, {
+                            'box': {
+                                'x': 26,
+                                'y': 189,
+                                'w': 19,
+                                'h': 50
+                            },
+                            'classId': 2
+                        }]
+                    },
+                    "a002": {
+                        'annotations': [{
+                            'box': {
+                                'x': 26,
+                                'y': 189,
+                                'w': 19,
+                                'h': 50
+                            },
+                            'classId': 2
+                        }, {
+                            'box': {
+                                'x': 26,
+                                'y': 189,
+                                'w': 19,
+                                'h': 50
+                            },
+                            'classId': 3
+                        }]
+                    },
+                    "a003": {
+                        'annotations': [{
+                            'box': {
+                                'x': 26,
+                                'y': 189,
+                                'w': 19,
+                                'h': 50
+                            },
+                            'classId': 3
+                        }, {
+                            'box': {
+                                'x': 26,
+                                'y': 189,
+                                'w': 19,
+                                'h': 50
+                            },
+                            'classId': 3
+                        }]
                     }
                 }
             }
@@ -383,8 +382,11 @@ class TestMirStorage(unittest.TestCase):
             mirpb.MirMetadatas(),
             mirpb.MirStorage.MIR_ANNOTATIONS:
             pb_format.ParseDict({
-                "task_annotations": {
-                    "t2": {}
+                "prediction": {
+                    'task_id': 't2',
+                },
+                "ground_truth": {
+                    'task_id': 't2',
                 },
                 "head_task_id": "t2",
             }, mirpb.MirAnnotations()),
