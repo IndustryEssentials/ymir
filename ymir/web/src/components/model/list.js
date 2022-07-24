@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef } from "react"
 import { connect } from 'dva'
 import styles from "./list.less"
 import { Link, useHistory } from "umi"
-import { Form, Input, Table, Modal, Row, Col, Tooltip, Pagination, Space, Empty, Button, message, } from "antd"
+import { Form, Input, Table, Modal, Row, Col, Tooltip, Pagination, Space, Empty, Button, message, Popover, } from "antd"
 
 import { diffTime } from '@/utils/date'
 import { states } from '@/constants/model'
@@ -129,13 +129,16 @@ function Model({ pid, project = {}, iterations, groups, modelList, versions, que
       title: showTitle("model.column.name"),
       dataIndex: "versionName",
       className: styles[`column_name`],
-      render: (name, { id, state, projectLabel, iterationLabel }) => <Row>
-        <Col flex={1}><Link to={`/home/project/${pid}/model/${id}`}>{name}</Link></Col>
-        <Col flex={'50px'}>
-          {projectLabel ? <div className={styles.extraTag}>{projectLabel}</div> : null}
-          {iterationLabel ? <div className={styles.extraIterTag}>{iterationLabel}</div> : null}
-        </Col>
-      </Row>,
+      render: (name, { id, description, projectLabel, iterationLabel }) =>
+        <Popover title={t('common.desc')} content={<div style={{ maxWidth: '30vw' }}>{description}</div>}>
+          <Row>
+            <Col flex={1}><Link to={`/home/project/${pid}/model/${id}`}>{name}</Link></Col>
+            <Col flex={'50px'}>
+              {projectLabel ? <div className={styles.extraTag}>{projectLabel}</div> : null}
+              {iterationLabel ? <div className={styles.extraIterTag}>{iterationLabel}</div> : null}
+            </Col>
+          </Row>
+        </Popover>,
       ellipsis: true,
     },
     {
