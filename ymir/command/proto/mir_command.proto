@@ -161,10 +161,7 @@ message Rect {
 /// ========== keywords.mir ==========
 message MirKeywords {
     // key: asset hash, value: keywords list
-    // cnt: count of keywords
     map<string, Keywords> keywords = 1;
-    // key: class id, value: assert ids
-    map<int32, StringList> index_predefined_keyids = 6;
 
     KeywordToIndex pred_idx = 7;  // ci to assets, generated from preds
     KeywordToIndex gt_idx = 8;  // ci to assets, generated from gt
@@ -172,7 +169,7 @@ message MirKeywords {
     // key: ck main key, value: assets and assets with sub keys
     map<string, AssetAnnoIndex> ck_idx = 9;
 
-    reserved 2, 3, 4, 5;
+    reserved 2, 3, 4, 5, 6;
 };
 
 message KeywordToIndex {

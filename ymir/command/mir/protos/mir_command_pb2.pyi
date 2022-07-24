@@ -505,21 +505,6 @@ class MirKeywords(google.protobuf.message.Message):
         def HasField(self, field_name: typing_extensions.Literal["value",b"value"]) -> builtins.bool: ...
         def ClearField(self, field_name: typing_extensions.Literal["key",b"key","value",b"value"]) -> None: ...
 
-    class IndexPredefinedKeyidsEntry(google.protobuf.message.Message):
-        DESCRIPTOR: google.protobuf.descriptor.Descriptor = ...
-        KEY_FIELD_NUMBER: builtins.int
-        VALUE_FIELD_NUMBER: builtins.int
-        key: builtins.int = ...
-        @property
-        def value(self) -> global___StringList: ...
-        def __init__(self,
-            *,
-            key : builtins.int = ...,
-            value : typing.Optional[global___StringList] = ...,
-            ) -> None: ...
-        def HasField(self, field_name: typing_extensions.Literal["value",b"value"]) -> builtins.bool: ...
-        def ClearField(self, field_name: typing_extensions.Literal["key",b"key","value",b"value"]) -> None: ...
-
     class CkIdxEntry(google.protobuf.message.Message):
         DESCRIPTOR: google.protobuf.descriptor.Descriptor = ...
         KEY_FIELD_NUMBER: builtins.int
@@ -536,19 +521,12 @@ class MirKeywords(google.protobuf.message.Message):
         def ClearField(self, field_name: typing_extensions.Literal["key",b"key","value",b"value"]) -> None: ...
 
     KEYWORDS_FIELD_NUMBER: builtins.int
-    INDEX_PREDEFINED_KEYIDS_FIELD_NUMBER: builtins.int
     PRED_IDX_FIELD_NUMBER: builtins.int
     GT_IDX_FIELD_NUMBER: builtins.int
     CK_IDX_FIELD_NUMBER: builtins.int
     @property
     def keywords(self) -> google.protobuf.internal.containers.MessageMap[typing.Text, global___Keywords]:
-        """key: asset hash, value: keywords list
-        cnt: count of keywords
-        """
-        pass
-    @property
-    def index_predefined_keyids(self) -> google.protobuf.internal.containers.MessageMap[builtins.int, global___StringList]:
-        """key: class id, value: assert ids"""
+        """key: asset hash, value: keywords list"""
         pass
     @property
     def pred_idx(self) -> global___KeywordToIndex:
@@ -565,13 +543,12 @@ class MirKeywords(google.protobuf.message.Message):
     def __init__(self,
         *,
         keywords : typing.Optional[typing.Mapping[typing.Text, global___Keywords]] = ...,
-        index_predefined_keyids : typing.Optional[typing.Mapping[builtins.int, global___StringList]] = ...,
         pred_idx : typing.Optional[global___KeywordToIndex] = ...,
         gt_idx : typing.Optional[global___KeywordToIndex] = ...,
         ck_idx : typing.Optional[typing.Mapping[typing.Text, global___AssetAnnoIndex]] = ...,
         ) -> None: ...
     def HasField(self, field_name: typing_extensions.Literal["gt_idx",b"gt_idx","pred_idx",b"pred_idx"]) -> builtins.bool: ...
-    def ClearField(self, field_name: typing_extensions.Literal["ck_idx",b"ck_idx","gt_idx",b"gt_idx","index_predefined_keyids",b"index_predefined_keyids","keywords",b"keywords","pred_idx",b"pred_idx"]) -> None: ...
+    def ClearField(self, field_name: typing_extensions.Literal["ck_idx",b"ck_idx","gt_idx",b"gt_idx","keywords",b"keywords","pred_idx",b"pred_idx"]) -> None: ...
 global___MirKeywords = MirKeywords
 
 class KeywordToIndex(google.protobuf.message.Message):
