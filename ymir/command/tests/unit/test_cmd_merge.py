@@ -125,10 +125,9 @@ class TestMergeCmd(unittest.TestCase):
                                                                                        y=(asset_idx + 1) * 100)
             image_cks[asset_id] = {'cks': keywords_pair[1]}
         dict_annotations = {
-            "task_annotations": {
-                branch_name_and_task_id: {
-                    "image_annotations": image_annotations
-                }
+            "prediction": {
+                'task_id': branch_name_and_task_id,
+                "image_annotations": image_annotations
             },
             'image_cks': image_cks,
             'head_task_id': branch_name_and_task_id
@@ -297,18 +296,20 @@ class TestMergeCmd(unittest.TestCase):
         }
 
         expected_dict_annotations = {
-            "task_annotations": {
-                "merge-task-id-s0": {
-                    "image_annotations": {
-                        "a0": TestMergeCmd._generate_annotations_for_asset([1], 100, 100),
-                        "a1": TestMergeCmd._generate_annotations_for_asset([1], 100, 200),
-                        "a2": TestMergeCmd._generate_annotations_for_asset([1], 100, 300),
-                        "a3": TestMergeCmd._generate_annotations_for_asset([1], 100, 400),
-                        "b0": TestMergeCmd._generate_annotations_for_asset([2], 100, 100),
-                        "b1": TestMergeCmd._generate_annotations_for_asset([2], 100, 200),
-                        "b2": TestMergeCmd._generate_annotations_for_asset([2], 100, 300),
-                    }
+            "prediction": {
+                'task_id': 'merge-task-id-s0',
+                "image_annotations": {
+                    "a0": TestMergeCmd._generate_annotations_for_asset([1], 100, 100),
+                    "a1": TestMergeCmd._generate_annotations_for_asset([1], 100, 200),
+                    "a2": TestMergeCmd._generate_annotations_for_asset([1], 100, 300),
+                    "a3": TestMergeCmd._generate_annotations_for_asset([1], 100, 400),
+                    "b0": TestMergeCmd._generate_annotations_for_asset([2], 100, 100),
+                    "b1": TestMergeCmd._generate_annotations_for_asset([2], 100, 200),
+                    "b2": TestMergeCmd._generate_annotations_for_asset([2], 100, 300),
                 }
+            },
+            'ground_truth': {
+                'task_id': 'merge-task-id-s0',
             },
             'head_task_id': 'merge-task-id-s0',
             'image_cks': {
@@ -407,17 +408,19 @@ class TestMergeCmd(unittest.TestCase):
         }
 
         expected_dict_annotations = {
-            "task_annotations": {
-                "merge-task-id-h0": {
-                    "image_annotations": {
-                        "a0": TestMergeCmd._generate_annotations_for_asset([1], 100, 100),
-                        "a1": TestMergeCmd._generate_annotations_for_asset([1], 100, 200),
-                        "a2": TestMergeCmd._generate_annotations_for_asset([1], 100, 300),
-                        "a3": TestMergeCmd._generate_annotations_for_asset([1], 100, 400),
-                        "d0": TestMergeCmd._generate_annotations_for_asset([1, 4], 100, 200),
-                        "d1": TestMergeCmd._generate_annotations_for_asset([1, 4], 100, 300),
-                    }
+            "prediction": {
+                'task_id': 'merge-task-id-h0',
+                "image_annotations": {
+                    "a0": TestMergeCmd._generate_annotations_for_asset([1], 100, 100),
+                    "a1": TestMergeCmd._generate_annotations_for_asset([1], 100, 200),
+                    "a2": TestMergeCmd._generate_annotations_for_asset([1], 100, 300),
+                    "a3": TestMergeCmd._generate_annotations_for_asset([1], 100, 400),
+                    "d0": TestMergeCmd._generate_annotations_for_asset([1, 4], 100, 200),
+                    "d1": TestMergeCmd._generate_annotations_for_asset([1, 4], 100, 300),
                 }
+            },
+            'ground_truth': {
+                'task_id': 'merge-task-id-h0',
             },
             'head_task_id': 'merge-task-id-h0',
             'image_cks': {
@@ -494,17 +497,19 @@ class TestMergeCmd(unittest.TestCase):
         }
 
         expected_dict_annotations = {
-            "task_annotations": {
-                "merge-task-id-g0": {
-                    "image_annotations": {
-                        "a1": TestMergeCmd._generate_annotations_for_asset([1], 100, 200),
-                        "a2": TestMergeCmd._generate_annotations_for_asset([1], 100, 300),
-                        "a3": TestMergeCmd._generate_annotations_for_asset([1], 100, 400),
-                        "a0": TestMergeCmd._generate_annotations_for_asset([1, 2], 100, 100),
-                        "d0": TestMergeCmd._generate_annotations_for_asset([1, 4], 100, 200),
-                        "d1": TestMergeCmd._generate_annotations_for_asset([1, 4], 100, 300),
-                    }
+            "prediction": {
+                'task_id': 'merge-task-id-g0',
+                "image_annotations": {
+                    "a1": TestMergeCmd._generate_annotations_for_asset([1], 100, 200),
+                    "a2": TestMergeCmd._generate_annotations_for_asset([1], 100, 300),
+                    "a3": TestMergeCmd._generate_annotations_for_asset([1], 100, 400),
+                    "a0": TestMergeCmd._generate_annotations_for_asset([1, 2], 100, 100),
+                    "d0": TestMergeCmd._generate_annotations_for_asset([1, 4], 100, 200),
+                    "d1": TestMergeCmd._generate_annotations_for_asset([1, 4], 100, 300),
                 }
+            },
+            'ground_truth': {
+                'task_id': 'merge-task-id-g0',
             },
             'head_task_id': 'merge-task-id-g0',
             'image_cks': {
@@ -579,14 +584,16 @@ class TestMergeCmd(unittest.TestCase):
         }
 
         expected_dict_annotations = {
-            "task_annotations": {
-                "merge-task-id-nth0": {
-                    "image_annotations": {
-                        "a1": TestMergeCmd._generate_annotations_for_asset([1], 100, 200),
-                        "a2": TestMergeCmd._generate_annotations_for_asset([1], 100, 300),
-                        "a3": TestMergeCmd._generate_annotations_for_asset([1], 100, 400),
-                    }
+            "prediction": {
+                'task_id': 'merge-task-id-nth0',
+                "image_annotations": {
+                    "a1": TestMergeCmd._generate_annotations_for_asset([1], 100, 200),
+                    "a2": TestMergeCmd._generate_annotations_for_asset([1], 100, 300),
+                    "a3": TestMergeCmd._generate_annotations_for_asset([1], 100, 400),
                 }
+            },
+            'ground_truth': {
+                'task_id': 'merge-task-id-nth0',
             },
             'head_task_id': 'merge-task-id-nth0',
             'image_cks': {
