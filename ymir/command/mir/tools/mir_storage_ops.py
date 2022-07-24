@@ -57,6 +57,7 @@ class MirStorageOps():
     def __build_annotations_head_task_id(cls, mir_annotations: mirpb.MirAnnotations, head_task_id: str) -> None:
         mir_annotations.head_task_id = head_task_id
         mir_annotations.prediction.task_id = head_task_id
+        mir_annotations.ground_truth.task_id = head_task_id
 
     @classmethod
     def __build_mir_keywords(cls, mir_annotations: mirpb.MirAnnotations, mir_keywords: mirpb.MirKeywords) -> None:
