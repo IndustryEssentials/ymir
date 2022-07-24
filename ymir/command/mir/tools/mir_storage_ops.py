@@ -39,8 +39,7 @@ class MirStorageOps():
                     and mir_annotations.task_annotations[mir_annotations.head_task_id].image_annotations):
                 cls.__build_annotations_confusion_matrix(mir_metadatas=mir_datas[mirpb.MirStorage.MIR_METADATAS],
                                                          mir_annotations=mir_annotations,
-                                                         mir_keywords=mir_keywords,
-                                                         mir_tasks=mir_tasks)
+                                                         mir_keywords=mir_keywords)
 
         # gen mir_context
         project_class_ids = context.load(mir_root=mir_root)
@@ -79,8 +78,8 @@ class MirStorageOps():
 
     @classmethod
     def __build_annotations_confusion_matrix(cls, mir_metadatas: mirpb.MirMetadatas,
-                                             mir_annotations: mirpb.MirAnnotations, mir_keywords: mirpb.MirKeywords,
-                                             mir_tasks: mirpb.MirTasks) -> None:
+                                             mir_annotations: mirpb.MirAnnotations,
+                                             mir_keywords: mirpb.MirKeywords) -> None:
         det_eval.det_evaluate_with_pb(
             mir_metadatas=mir_metadatas,
             mir_annotations=mir_annotations,
@@ -91,8 +90,6 @@ class MirStorageOps():
             need_pr_curve=False,
             calc_confusion_matrix=True,
         )
-
-        # TODO: update mir_tasks with evaluate config
 
     @classmethod
     def __build_mir_keywords(cls, mir_annotations: mirpb.MirAnnotations, mir_keywords: mirpb.MirKeywords) -> None:
