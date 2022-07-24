@@ -101,6 +101,20 @@ class TestCmdFilter(unittest.TestCase):
                     TestCmdFilter.__annotations_for_single_image([0, 1]),
                 }
             },
+            "ground_truth": {
+                "image_annotations": {
+                    "a0000000000000000000000000000000000000000000000000":
+                    TestCmdFilter.__annotations_for_single_image([0, 1, 2, 3, 4, 5]),
+                    "a0000000000000000000000000000000000000000000000001":
+                    TestCmdFilter.__annotations_for_single_image([4, 5]),
+                    "a0000000000000000000000000000000000000000000000002":
+                    TestCmdFilter.__annotations_for_single_image([0, 3]),
+                    "a0000000000000000000000000000000000000000000000003":
+                    TestCmdFilter.__annotations_for_single_image([2]),
+                    "a0000000000000000000000000000000000000000000000004":
+                    TestCmdFilter.__annotations_for_single_image([0, 4]),
+                }
+            },
             'head_task_id': 't0',
             'image_cks': {
                 'a0000000000000000000000000000000000000000000000000': {
@@ -181,7 +195,8 @@ class TestCmdFilter(unittest.TestCase):
         preds = "frisbee; person; ChAiR"  # 0; 2; 15
         excludes = "Cat"  # 4
         expected_asset_ids = {
-            "a0000000000000000000000000000000000000000000000003", "a0000000000000000000000000000000000000000000000004"
+            "a0000000000000000000000000000000000000000000000002",
+            "a0000000000000000000000000000000000000000000000003",
         }
         self.__test_cmd_filter_normal_cases(in_cis=preds,
                                             ex_cis=excludes,
