@@ -550,8 +550,14 @@ def merge_datasets(
     main_dataset = crud.dataset.get(db, id=in_merge.dataset_id)
     if not main_dataset:
         raise DatasetNotFound()
-    in_datasets = ensure_datasets_are_ready(db, dataset_ids=[in_merge.dataset_id, *in_merge.include_datasets])
-    ex_datasets = ensure_datasets_are_ready(db, dataset_ids=in_merge.exclude_datasets)
+    in_datasets = (
+        ensure_datasets_are_ready(db, dataset_ids=[in_merge.dataset_id, *in_merge.include_datasets])
+        if in_merge.include_datasets
+        else None
+    )
+    ex_datasets = (
+        ensure_datasets_are_ready(db, dataset_ids=in_merge.exclude_datasets) if in_merge.exclude_datasets else None
+    )
 
     task_hash = gen_task_hash(current_user.id, in_merge.project_id)
     try:
@@ -598,8 +604,12 @@ def filter_dataset(
     datasets = ensure_datasets_are_ready(db, dataset_ids=[in_filter.dataset_id])
     main_dataset = datasets[0]
 
-    class_ids = user_labels.get_class_ids(names_or_aliases=in_filter.include_keywords)
-    ex_class_ids = user_labels.get_class_ids(names_or_aliases=in_filter.exclude_keywords)
+    class_ids = (
+        user_labels.get_class_ids(names_or_aliases=in_filter.include_keywords) if in_filter.include_keywords else None
+    )
+    ex_class_ids = (
+        user_labels.get_class_ids(names_or_aliases=in_filter.exclude_keywords) if in_filter.exclude_keywords else None
+    )
 
     task_hash = gen_task_hash(current_user.id, in_filter.project_id)
     try:
