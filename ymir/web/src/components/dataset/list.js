@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from "react"
 import { connect } from 'dva'
 import styles from "./list.less"
 import { Link, useHistory, useLocation } from "umi"
-import { Form, Button, Input, Table, Space, Modal, Row, Col, Tooltip, Pagination, message, } from "antd"
+import { Form, Button, Input, Table, Space, Modal, Row, Col, Tooltip, Pagination, message, Popover, } from "antd"
 
 import t from "@/utils/t"
 import { humanize } from "@/utils/number"
@@ -135,13 +135,16 @@ function Datasets({ pid, project = {}, iterations, groups, datasetList, query, v
         key: "name",
         dataIndex: "versionName",
         className: styles[`column_name`],
-        render: (name, { id, state, projectLabel, iterationLabel }) => <Row>
-          <Col flex={1}><Link to={`/home/project/${pid}/dataset/${id}`}>{name}</Link></Col>
-          <Col flex={'50px'}>
-            {projectLabel ? <div className={styles.extraTag}>{projectLabel}</div> : null}
-            {iterationLabel ? <div className={styles.extraIterTag}>{iterationLabel}</div> : null}
-          </Col>
-        </Row>,
+        render: (name, { id, description, projectLabel, iterationLabel }) =>
+          <Popover title={t('common.desc')} content={<div style={{ maxWidth: '30vw' }}>{description}</div>}>
+            <Row>
+              <Col flex={1}><Link to={`/home/project/${pid}/dataset/${id}`}>{name}</Link></Col>
+              <Col flex={'50px'}>
+                {projectLabel ? <div className={styles.extraTag}>{projectLabel}</div> : null}
+                {iterationLabel ? <div className={styles.extraIterTag}>{iterationLabel}</div> : null}
+              </Col>
+            </Row>
+          </Popover>,
         filters: getRoundFilter(gid),
         onFilter: (round, { iterationRound }) => round === iterationRound,
         ellipsis: true,

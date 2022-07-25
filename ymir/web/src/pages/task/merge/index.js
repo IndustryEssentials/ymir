@@ -4,13 +4,15 @@ import { useHistory, useLocation, useParams } from "umi"
 
 import { formLayout } from "@/config/antd"
 import t from "@/utils/t"
+import useFetch from '@/hooks/useFetch'
+
 import Breadcrumbs from "@/components/common/breadcrumb"
 import EmptyState from '@/components/empty/dataset'
-import s from "./index.less"
-import commonStyles from "../common.less"
 import DatasetSelect from "@/components/form/datasetSelect"
-import useFetch from '@/hooks/useFetch'
 import Desc from "@/components/form/desc"
+
+import commonStyles from "../common.less"
+import s from "./index.less"
 
 function Merge() {
   const [dataset, getDataset] = useFetch('dataset/getDataset', {})
@@ -122,7 +124,7 @@ function Merge() {
               />
             </Form.Item>
           </ConfigProvider>
-          <Desc />
+          <Desc form={form} />
           <Form.Item className={s.submit} wrapperCol={{ offset: 8 }}>
             <Space size={20}>
               <Form.Item name='submitBtn' noStyle>

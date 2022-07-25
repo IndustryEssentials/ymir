@@ -66,6 +66,7 @@ export function transferDataset (data: BackendData): Dataset {
     taskName: data.related_task.name,
     task: data.related_task,
     hidden: !data.is_visible,
+    description: data.description || '',
   }
 }
 

@@ -7,24 +7,25 @@ import { useHistory, useParams, useLocation } from "umi"
 import t from "@/utils/t"
 import { string2Array, generateName } from '@/utils/string'
 import { TYPES } from '@/constants/image'
+import { randomNumber } from "@/utils/number"
+import useFetch from '@/hooks/useFetch'
+
 import Breadcrumbs from "@/components/common/breadcrumb"
 import EmptyState from '@/components/empty/dataset'
 import EmptyStateModel from '@/components/empty/model'
-import { randomNumber } from "@/utils/number"
 import ImageSelect from "@/components/form/imageSelect"
-import styles from "./index.less"
-import commonStyles from "../common.less"
 import ModelSelect from "@/components/form/modelSelect"
 import KeywordRates from "@/components/dataset/keywordRates"
 import CheckProjectDirty from "@/components/common/CheckProjectDirty"
 import LiveCodeForm from "../components/liveCodeForm"
 import { removeLiveCodeConfig } from "../components/liveCodeConfig"
 import DockerConfigForm from "../components/dockerConfigForm"
-import useFetch from '@/hooks/useFetch'
 import TrainFormat from "../components/trainFormat"
-import DatasetSelect from "../../../components/form/datasetSelect"
+import DatasetSelect from "@/components/form/datasetSelect"
+import Desc from "@/components/form/desc"
 
-const { Option } = Select
+import styles from "./index.less"
+import commonStyles from "../common.less"
 
 const TrainType = [{ value: "detection", label: 'task.train.form.traintypes.detect', checked: true }]
 const TrainDevices = [
@@ -265,7 +266,6 @@ function Train({ allDatasets, datasetCache, keywords, ...func }) {
             >
               <Input placeholder={t('model.add.form.name.placeholder')} autoComplete='off' allowClear />
             </Form.Item>
-            
             <Form.Item name='image' label={t('task.train.form.image.label')} rules={[
               { required: true, message: t('task.train.form.image.required') }
             ]} tooltip={t('tip.task.train.image')}>
@@ -369,6 +369,7 @@ function Train({ allDatasets, datasetCache, keywords, ...func }) {
             </Form.Item>
             <LiveCodeForm form={form} live={live} />
             <DockerConfigForm seniorConfig={seniorConfig} form={form} />
+            <Desc form={form} />
             <Form.Item wrapperCol={{ offset: 8 }}>
               <Space size={20}>
                 <Form.Item name='submitBtn' noStyle>
