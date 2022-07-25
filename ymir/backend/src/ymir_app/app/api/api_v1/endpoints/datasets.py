@@ -182,6 +182,7 @@ def import_dataset(
     - add unknown annotations = 4
     """
     # 1. check if dataset group name is available
+    logger.info("[import dataset] import dataset with payload: %s", dataset_import.json())
     if crud.dataset_group.is_duplicated_name_in_project(
         db, project_id=dataset_import.project_id, name=dataset_import.group_name
     ):
@@ -482,7 +483,7 @@ def create_dataset_fusion(
     dataset_group = crud.dataset_group.get(db, id=in_fusion.dataset_group_id)
     if not dataset_group:
         raise DatasetGroupNotFound()
-    fused_dataset = crud.dataset.create_as_task_result(db, task, dataset_group.id)
+    fused_dataset = crud.dataset.create_as_task_result(db, task, dataset_group.id, description=in_fusion.description)
     logger.info("[fusion] dataset record created: %s", fused_dataset.name)
 
     return {"result": fused_dataset}
@@ -500,6 +501,7 @@ def batch_evaluate_datasets(
     """
     evaluate datasets by themselves
     """
+    logger.info("[evaluate] evaluate dataset with payload: %s", evaluation_in.json())
     datasets = crud.dataset.get_multi_by_ids(db, ids=evaluation_in.dataset_ids)
     if len(evaluation_in.dataset_ids) != len(datasets):
         raise DatasetNotFound()
@@ -547,6 +549,7 @@ def merge_datasets(
     """
     Merge multiple datasets
     """
+    logger.info("[merge] merge dataset with payload: %s", in_merge.json())
     main_dataset = crud.dataset.get(db, id=in_merge.dataset_id)
     if not main_dataset:
         raise DatasetNotFound()
@@ -565,8 +568,8 @@ def merge_datasets(
             current_user.id,
             in_merge.project_id,
             task_hash,
-            [d.hash for d in in_datasets],
-            [d.hash for d in ex_datasets],
+            [d.hash for d in in_datasets] if in_datasets else None,
+            [d.hash for d in ex_datasets] if ex_datasets else None,
             in_merge.merge_strategy,
         )
     except ValueError:
@@ -601,6 +604,7 @@ def filter_dataset(
     """
     Filter dataset
     """
+    logger.info("[filter] filter dataset with payload: %s", in_filter.json())
     datasets = ensure_datasets_are_ready(db, dataset_ids=[in_filter.dataset_id])
     main_dataset = datasets[0]
 

@@ -75,6 +75,7 @@ class DatasetCreate(DatasetBase):
     hash: str = Field(description="related task hash")
     task_id: int
     user_id: int
+    description: Optional[str]
 
     class Config:
         use_enum_values = True
@@ -186,6 +187,8 @@ class DatasetsFusionParameter(RequestParameterBase):
     exclude_labels: List[str]
 
     sampling_count: int = 0
+
+    description: Optional[str] = Field(description="description for fusion result")
 
 
 class DatasetEvaluationCreate(BaseModel):
