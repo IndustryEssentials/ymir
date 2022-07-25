@@ -1,5 +1,4 @@
 from collections import defaultdict
-import sys
 from typing import Any, Dict, Iterable, List, Optional, Set, Tuple, Union
 
 import numpy as np
@@ -52,7 +51,7 @@ class MirCoco:
         annos = self._get_annotations(single_task_annotations=task_annotations,
                                       asset_idxes=self.get_asset_idxes(),
                                       class_ids=self.get_class_ids(),
-                                      conf_thr=-sys.float_info.max if as_gt else conf_thr)
+                                      conf_thr=None if as_gt else conf_thr)
         for anno in annos:
             self.img_cat_to_annotations[anno['asset_idx'], anno['class_id']].append(anno)
 
@@ -67,7 +66,7 @@ class MirCoco:
         return self._asset_id_to_ordered_idxes
 
     def _get_annotations(self, single_task_annotations: mirpb.SingleTaskAnnotations, asset_idxes: List[int],
-                         class_ids: List[int], conf_thr: float) -> List[dict]:
+                         class_ids: List[int], conf_thr: Optional[float]) -> List[dict]:
         """
         get all annotations list for asset ids and class ids
 
@@ -77,7 +76,7 @@ class MirCoco:
             single_task_annotations (mirpb.SingleTaskAnnotations): annotations
             asset_idxes (List[int]): asset ids, if not provided, returns annotations for all images
             class_ids (List[int]): class ids, if not provided, returns annotations for all classe
-            conf_thr (float): confidence threshold of bbox, set to `-sys.float_info.max` if you want all annotations
+            conf_thr (float): confidence threshold of bbox, set to None if you want all annotations
 
         Returns:
             a list of annotations and asset ids
@@ -106,7 +105,7 @@ class MirCoco:
             for annotation in single_image_annotations.annotations:
                 if class_ids and annotation.class_id not in class_ids:
                     continue
-                if annotation.score < conf_thr:
+                if conf_thr is not None and annotation.score < conf_thr:
                     continue
 
                 annotation_dict = {
