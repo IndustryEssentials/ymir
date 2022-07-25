@@ -32,3 +32,7 @@ export function updateResultState(result: Result, tasks: BackendData) {
   result.task.percent = task.percent
   return result
 }
+
+export function validState(state: number) {
+  return states.VALID === state
+}

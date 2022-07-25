@@ -9,6 +9,7 @@ import {
 } from "@/services/project"
 import { transferProject } from '@/constants/project'
 import { deepClone } from '@/utils/object'
+import { validState } from '@/constants/common'
 
 const initQuery = {
   name: "",
@@ -23,6 +24,8 @@ const initState = {
     total: 0,
   },
   projects: {},
+  prepareTrainSet: null,
+  prepared: false,
 }
 
 export default {
@@ -81,9 +84,10 @@ export default {
       const { id, ...params } = payload
       const { code, result } = yield call(updateProject, id, params)
       if (code === 0) {
-        // yield put({
-        //   type: 'clearCache'
-        // })
+        yield put({
+          type: 'UPDATE_PREPARETRAINSET',
+          payload: params.trainSetVersion,
+        })
         return transferProject(result)
       }
     },
@@ -114,6 +118,19 @@ export default {
         return result
       }
     },
+    *updateProjectTrainSet({ payload }, { put, select }) {
+      const trainset = yield select(({ project }) => project.prepareTrainSet)
+      const tasks = Object.values(payload || {})
+      const task = tasks.find(task => task?.result_dataset?.id === trainset)
+      if (!trainset || !task) {
+        return
+      }
+      
+      yield put({
+        type: "UPDATE_PREPARED",
+        payload: validState(task.result_state),
+      })
+    },
   },
   reducers: {
     UPDATE_LIST(state, { payload }) {
@@ -129,6 +146,19 @@ export default {
       return {
         ...state,
         projects,
+      }
+    },
+    UPDATE_PREPARETRAINSET(state, { payload }) {
+      return {
+        ...state,
+        prepareTrainSet: payload,
+      }
+    },
+    
+    UPDATE_PREPARED(state, { payload }) {
+      return {
+        ...state,
+        prepared: payload,
       }
     },
     UPDATE_QUERY(state, { payload }) {

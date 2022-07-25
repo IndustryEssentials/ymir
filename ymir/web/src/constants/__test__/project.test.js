@@ -110,7 +110,7 @@ describe("constants: project", () => {
       testingSets: [],
       setCount: 6,
       model: 0,
-      modelStage: 0,
+      modelStage: [null, undefined],
       modelCount: 0,
       miningStrategy: 0,
       chunkSize: 0,
