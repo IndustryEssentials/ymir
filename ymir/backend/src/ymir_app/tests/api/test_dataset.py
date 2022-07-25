@@ -276,7 +276,7 @@ class TestCreateDataFusion:
             "dataset_group_id": dataset_group_obj.id,
             "main_dataset_id": dataset_obj.id,
             "include_datasets": [],
-            "include_strategy": 1,
+            "strategy": 1,
             "exclude_datasets": [],
             "include_labels": [],
             "exclude_labels": [],

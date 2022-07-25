@@ -430,7 +430,7 @@ def normalize_fusion_parameter(
     ex_datasets = crud.dataset.get_multi_by_ids(db, ids=fusion_params.exclude_datasets)
     return {
         "include_datasets": [dataset.hash for dataset in in_datasets],
-        "include_strategy": fusion_params.include_strategy,
+        "strategy": fusion_params.include_strategy,
         "exclude_datasets": [dataset.hash for dataset in ex_datasets],
         "include_class_ids": user_labels.get_class_ids(names_or_aliases=fusion_params.include_labels),
         "exclude_class_ids": user_labels.get_class_ids(names_or_aliases=fusion_params.exclude_labels),
@@ -553,11 +553,15 @@ def merge_datasets(
     main_dataset = crud.dataset.get(db, id=in_merge.dataset_id)
     if not main_dataset:
         raise DatasetNotFound()
-    in_datasets = (
-        ensure_datasets_are_ready(db, dataset_ids=[in_merge.dataset_id, *in_merge.include_datasets])
-        if in_merge.include_datasets
-        else None
-    )
+
+    if in_merge.include_datasets:
+        dataset_ids = sorted([in_merge.dataset_id, *in_merge.include_datasets])
+        in_datasets = ensure_datasets_are_ready(db, dataset_ids=[in_merge.dataset_id, *in_merge.include_datasets])
+        if in_merge.merge_strategy == MergeStrategy.prefer_newest:
+            in_datasets.reverse()
+    else:
+        in_datasets = [in_merge.dataset_id]
+
     ex_datasets = (
         ensure_datasets_are_ready(db, dataset_ids=in_merge.exclude_datasets) if in_merge.exclude_datasets else None
     )
