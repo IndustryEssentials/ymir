@@ -262,22 +262,20 @@ message Evaluation {
 }
 
 message EvaluateConfig {
-    string dataset_id = 1;
+    string gt_dataset_id = 1;
+    string pred_dataset_id = 2;
     float conf_thr = 3;
     string iou_thrs_interval = 4;
     bool need_pr_curve = 5;
     bool calc_confusion_matrix = 6;
-
-    reserved 2;
 }
 
 message SingleDatasetEvaluation {
     float conf_thr = 1;
-    string dataset_id = 2;
+    string gt_dataset_id = 2;
+    string pred_dataset_id = 3;
     map<string, SingleIouEvaluation> iou_evaluations = 4;  // key: string of iou threshold
     SingleIouEvaluation iou_averaged_evaluation = 5;  // average for all ious
-
-    reserved 3;
 }
 
 message SingleIouEvaluation {
