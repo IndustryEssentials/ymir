@@ -556,11 +556,11 @@ def merge_datasets(
 
     if in_merge.include_datasets:
         dataset_ids = sorted([in_merge.dataset_id, *in_merge.include_datasets])
-        in_datasets = ensure_datasets_are_ready(db, dataset_ids=[in_merge.dataset_id, *in_merge.include_datasets])
+        in_datasets = ensure_datasets_are_ready(db, dataset_ids=dataset_ids)
         if in_merge.merge_strategy == MergeStrategy.prefer_newest:
             in_datasets.reverse()
     else:
-        in_datasets = [in_merge.dataset_id]
+        in_datasets = [main_dataset]
 
     ex_datasets = (
         ensure_datasets_are_ready(db, dataset_ids=in_merge.exclude_datasets) if in_merge.exclude_datasets else None
