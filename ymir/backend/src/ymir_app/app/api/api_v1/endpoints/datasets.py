@@ -483,7 +483,7 @@ def create_dataset_fusion(
     dataset_group = crud.dataset_group.get(db, id=in_fusion.dataset_group_id)
     if not dataset_group:
         raise DatasetGroupNotFound()
-    fused_dataset = crud.dataset.create_as_task_result(db, task, dataset_group.id)
+    fused_dataset = crud.dataset.create_as_task_result(db, task, dataset_group.id, description=in_fusion.description)
     logger.info("[fusion] dataset record created: %s", fused_dataset.name)
 
     return {"result": fused_dataset}

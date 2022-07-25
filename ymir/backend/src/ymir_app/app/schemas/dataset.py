@@ -188,6 +188,8 @@ class DatasetsFusionParameter(RequestParameterBase):
 
     sampling_count: int = 0
 
+    description: Optional[str] = Field(description="description for fusion result")
+
 
 class DatasetEvaluationCreate(BaseModel):
     project_id: int
