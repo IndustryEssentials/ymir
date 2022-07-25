@@ -424,7 +424,7 @@ def normalize_fusion_parameter(
         db, ids=[fusion_params.main_dataset_id] + fusion_params.include_datasets
     )
     in_datasets.sort(
-        key=attrgetter("update_datetime"),
+        key=attrgetter("create_datetime"),
         reverse=(fusion_params.include_strategy == MergeStrategy.prefer_newest),
     )
     ex_datasets = crud.dataset.get_multi_by_ids(db, ids=fusion_params.exclude_datasets)
@@ -555,10 +555,11 @@ def merge_datasets(
         raise DatasetNotFound()
 
     if in_merge.include_datasets:
-        dataset_ids = sorted([in_merge.dataset_id, *in_merge.include_datasets])
-        in_datasets = ensure_datasets_are_ready(db, dataset_ids=dataset_ids)
-        if in_merge.merge_strategy == MergeStrategy.prefer_newest:
-            in_datasets.reverse()
+        in_datasets = ensure_datasets_are_ready(db, dataset_ids=[in_merge.dataset_id, *in_merge.include_datasets])
+        in_datasets.sort(
+            key=attrgetter("create_datetime"),
+            reverse=(in_merge.merge_strategy == MergeStrategy.prefer_newest),
+        )
     else:
         in_datasets = [main_dataset]
 
