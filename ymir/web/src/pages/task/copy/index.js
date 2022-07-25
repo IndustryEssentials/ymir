@@ -8,7 +8,7 @@ import t from "@/utils/t"
 import { randomNumber } from "@/utils/number"
 import Breadcrumbs from "@/components/common/breadcrumb"
 import commonStyles from "../common.less"
-import Tip from "@/components/form/tip"
+import Desc from "@/components/form/desc"
 
 function Copy({ allDatasets, datasetCache, ...props }) {
   const pageParams = useParams()
@@ -76,13 +76,7 @@ function Copy({ allDatasets, datasetCache, ...props }) {
           >
             <Input autoComplete={'off'} allowClear />
           </Form.Item>
-          <Form.Item label={t('dataset.copy.form.desc.label')} name='description'
-            rules={[
-              { max: 100 },
-            ]}
-          >
-            <Input.TextArea autoSize={{ minRows: 4, maxRows: 20 }} />
-          </Form.Item>
+          <Desc form={form} />
           <Form.Item wrapperCol={{ offset: 8 }}>
             <Space size={20}>
               <Form.Item name='submitBtn' noStyle>

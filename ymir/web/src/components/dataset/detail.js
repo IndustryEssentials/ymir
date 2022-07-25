@@ -34,9 +34,10 @@ function DatasetDetail({ dataset = {} }) {
             </Col>
           </Row>
         </Item>
+        <Item label={t("dataset.detail.label.keywords")}>{dataset?.keywords?.map(keyword => <Tag key={keyword}>{keyword}</Tag>)}</Item>
         <Item label={t("dataset.detail.label.assets")} contentStyle={{ minWidth: 150 }}>{dataset.assetCount}</Item>
         {dataset.hidden ? <Item label={t("common.hidden.label")}>{t('common.state.hidden')}</Item> : null}
-        <Item label={t("dataset.detail.label.keywords")}>{dataset?.keywords?.map(keyword => <Tag key={keyword}>{keyword}</Tag>)}</Item>
+        <Item label={t("common.desc")}>{dataset.description}</Item>
       </Descriptions>
     </div>
   )

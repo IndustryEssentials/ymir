@@ -113,6 +113,7 @@ describe("constants: dataset", () => {
       durationLabel: '1 分钟',
       taskName: task.name,
       task,
+      description: '',
     }
     expect(transferDataset(dataset)).toEqual(expected)
   })
