@@ -52,7 +52,7 @@ class MirCoco:
         annos = self._get_annotations(single_task_annotations=task_annotations,
                                       asset_idxes=self.get_asset_idxes(),
                                       class_ids=self.get_class_ids(),
-                                      conf_thr=sys.float_info.min if as_gt else conf_thr)
+                                      conf_thr=-sys.float_info.max if as_gt else conf_thr)
         for anno in annos:
             self.img_cat_to_annotations[anno['asset_idx'], anno['class_id']].append(anno)
 
@@ -77,7 +77,7 @@ class MirCoco:
             single_task_annotations (mirpb.SingleTaskAnnotations): annotations
             asset_idxes (List[int]): asset ids, if not provided, returns annotations for all images
             class_ids (List[int]): class ids, if not provided, returns annotations for all classe
-            conf_thr (float): confidence threshold of bbox, set to `sys.float_info.min` if you want all annotations
+            conf_thr (float): confidence threshold of bbox, set to `-sys.float_info.max` if you want all annotations
 
         Returns:
             a list of annotations and asset ids
