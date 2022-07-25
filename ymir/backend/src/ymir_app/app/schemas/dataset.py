@@ -75,6 +75,7 @@ class DatasetCreate(DatasetBase):
     hash: str = Field(description="related task hash")
     task_id: int
     user_id: int
+    description: Optional[str]
 
     class Config:
         use_enum_values = True

@@ -87,6 +87,7 @@ class CRUDModel(CRUDBase[Model, ModelCreate, ModelUpdate]):
         db_obj = Model(
             version_num=version_num,
             hash=obj_in.hash,
+            description=obj_in.description,
             source=int(obj_in.source),
             result_state=int(obj_in.result_state),
             model_group_id=obj_in.model_group_id,
