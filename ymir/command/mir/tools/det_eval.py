@@ -826,7 +826,7 @@ def det_evaluate_with_pb(
     evaluation.config.need_pr_curve = need_pr_curve
     evaluation.config.calc_confusion_matrix = calc_confusion_matrix
     evaluation.config.gt_dataset_id = rev_tid.rev_tid
-    evaluation.config.pred_dataset_id = rev_tid.rev_tid
+    evaluation.config.pred_dataset_ids.append(rev_tid.rev_tid)
 
     dataset_evaluations = _det_evaluate(mir_dts={rev_tid.rev_tid: mir_dt},
                                         mir_gt_and_id=(rev_tid.rev_tid, mir_gt),

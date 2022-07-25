@@ -16,7 +16,7 @@ class TestEvaluationController:
         evaluation_json = {
             'config': {
                 'gt_dataset_id': 'a',
-                'pred_dataset_id': 'a',
+                'pred_dataset_ids': ['a'],
                 'conf_thr': 0.3,
                 'iou_thrs_interval': '0.5',
                 'need_pr_curve': False

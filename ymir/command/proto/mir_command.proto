@@ -263,7 +263,7 @@ message Evaluation {
 
 message EvaluateConfig {
     string gt_dataset_id = 1;
-    string pred_dataset_id = 2;
+    repeated string pred_dataset_ids = 2;
     float conf_thr = 3;
     string iou_thrs_interval = 4;
     bool need_pr_curve = 5;
