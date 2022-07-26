@@ -33,7 +33,7 @@ function Model({ pid, project = {}, iterations, groups, modelList, versions, que
   const [models, setModels] = useState([])
   const [modelVersions, setModelVersions] = useState({})
   const [total, setTotal] = useState(1)
-  const [selectedVersions, setSelectedVersions] = useState([])
+  const [selectedVersions, setSelectedVersions] = useState({ selected: [], versions: {} })
   const [form] = useForm()
   const [current, setCurrent] = useState({})
   const [visibles, setVisibles] = useState({})
@@ -111,11 +111,10 @@ function Model({ pid, project = {}, iterations, groups, modelList, versions, que
   }, [query, lock])
 
   useEffect(() => {
-    const mvs = Object.values(modelVersions).flat().filter(version => selectedVersions.includes(version.id))
+    const selected = selectedVersions.selected
+    const mvs = Object.values(modelVersions).flat().filter(version => selected.includes(version.id))
     const hashs = mvs.map(version => version.task.hash)
-    console.log('selectedVersions:', selectedVersions, modelVersions, Object.values(modelVersions).flat(), hashs)
     const url = getTensorboardLink(hashs)
-    console.log('url:', url)
     setTrainingUrl(url)
   }, [selectedVersions])
 
@@ -335,21 +334,31 @@ function Model({ pid, project = {}, iterations, groups, modelList, versions, que
   }
 
   const multipleInfer = () => {
+    const { selected } = selectedVersions
     const versionsObject = Object.values(versions).flat()
-    const selected = versionsObject.filter(md => selectedVersions.includes(md.id) && isValidModel(md.state)).map(md => {
+    const stages = versionsObject.filter(md => selected.includes(md.id)).map(md => {
       return [md.id, md.recommendStage].toString()
     })
-    if (selected.length) {
-      history.push(`/home/project/${pid}/inference?mid=${selected.join('|')}`)
+    if (stages.length) {
+      history.push(`/home/project/${pid}/inference?mid=${stages.join('|')}`)
     } else {
-      message.error(t('model.list.batch.invalid'))
+      message.warning(t('model.list.batch.invalid'))
     }
   }
 
   const multipleHide = () => {
     const allVss = Object.values(versions).flat()
-    const vss = allVss.filter(({ id }) => selectedVersions.includes(id))
-    hideRef.current.hide(vss, project.hiddenModels)
+    const vss = allVss.filter(({ id, state }) => selectedVersions.selected.includes(id))
+    if (vss.length) {
+      hideRef.current.hide(vss, project.hiddenModels)
+    } else {
+      message.warning(t('model.list.batch.invalid'))
+    }
+  }
+
+  const getDisabledStatus = (filter = () => { }) => {
+    const allVss = Object.values(versions).flat()
+    return allVss.filter(({ id }) => selectedVersions.selected.includes(id)).some(version => filter(version))
   }
 
   const hide = (version) => {
@@ -362,13 +371,18 @@ function Model({ pid, project = {}, iterations, groups, modelList, versions, que
   const hideOk = (result) => {
     result.forEach(item => fetchVersions(item.model_group_id, true))
     getData()
-    setSelectedVersions([])
+    setSelectedVersions({ selected: [], versions: {} })
   }
 
 
   function rowSelectChange(gid, rowKeys) {
-    const selected = [...selectedVersions, ...rowKeys]
-    setSelectedVersions(selected)
+    setSelectedVersions(({ versions }) => {
+      versions[gid] = rowKeys
+      return {
+        selected: Object.values(versions).flat(),
+        versions: { ...versions },
+      }
+    })
   }
 
   const stop = (dataset) => {
@@ -424,12 +438,12 @@ function Model({ pid, project = {}, iterations, groups, modelList, versions, que
     </Button>
   )
 
-  const renderMultipleActions = selectedVersions.length ? (
+  const renderMultipleActions = selectedVersions.selected.length ? (
     <>
-      <Button type="primary" onClick={multipleHide}>
+      <Button type="primary" disabled={getDisabledStatus(({ state }) => isRunning(state))} onClick={multipleHide}>
         <EyeOffIcon /> {t("common.action.multiple.hide")}
       </Button>
-      <Button type="primary" onClick={multipleInfer}>
+      <Button type="primary" disabled={getDisabledStatus(({ state }) => !isValidModel(state))} onClick={multipleInfer}>
         <WajueIcon /> {t("common.action.multiple.infer")}
       </Button>
       <a href={trainingUrl} target='_blank'><Button type="primary">
@@ -457,8 +471,8 @@ function Model({ pid, project = {}, iterations, groups, modelList, versions, que
             onChange={tableChange}
             rowKey={(record) => record.id}
             rowSelection={{
+              selectedRowKeys: selectedVersions.versions[group.id],
               onChange: (keys) => rowSelectChange(group.id, keys),
-              getCheckboxProps: (record) => ({ disabled: isRunning(record.state), }),
             }}
             rowClassName={(record, index) => index % 2 === 0 ? '' : 'oddRow'}
             columns={columns}

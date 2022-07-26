@@ -38,7 +38,7 @@ function Datasets({ pid, project = {}, iterations, groups, datasetList, query, v
   const [form] = useForm()
   const [current, setCurrent] = useState({})
   const [visibles, setVisibles] = useState({})
-  const [selectedVersions, setSelectedVersions] = useState({})
+  const [selectedVersions, setSelectedVersions] = useState({ selected: [], versions: {} })
   const hideRef = useRef(null)
   let [lock, setLock] = useState(true)
   const terminateRef = useRef(null)
@@ -385,7 +385,13 @@ function Datasets({ pid, project = {}, iterations, groups, datasetList, query, v
   }
 
   function rowSelectChange(gid, rowKeys) {
-    setSelectedVersions(old => ({ ...old, [gid]: rowKeys }))
+    setSelectedVersions(({ versions }) => {
+      versions[gid] = rowKeys
+      return {
+        selected: Object.values(versions).flat(),
+        versions: { ...versions },
+      }
+    })
   }
 
   const stop = (dataset) => {
@@ -434,7 +440,7 @@ function Datasets({ pid, project = {}, iterations, groups, datasetList, query, v
   }
 
   const multipleHide = () => {
-    const ids = Object.values(selectedVersions).flat()
+    const ids = selectedVersions.selected
     const allVss = Object.values(versions).flat()
     const vss = allVss.filter(({ id }) => ids.includes(id))
     hideRef.current.hide(vss, project.hiddenDatasets)
@@ -450,12 +456,18 @@ function Datasets({ pid, project = {}, iterations, groups, datasetList, query, v
   const hideOk = (result) => {
     result.forEach(item => fetchVersions(item.dataset_group_id, true))
     fetchDatasets(true)
-    setSelectedVersions({})
+    setSelectedVersions({ selected: [], versions: {} })
   }
 
   const multipleInfer = () => {
-    const ids = Object.values(selectedVersions).flat().join('|')
+    const ids = selectedVersions.selected.join('|')
     history.push(`/home/project/${pid}/inference?did=${ids}`)
+  }
+
+  const getDisabledStatus = (filter = () => { }) => {
+    const allVss = Object.values(versions).flat()
+    const { selected } = selectedVersions
+    return allVss.filter(({ id }) => selected.includes(id)).some(version => filter(version))
   }
 
   function isValidDataset(state) {
@@ -476,13 +488,12 @@ function Datasets({ pid, project = {}, iterations, groups, datasetList, query, v
     </Button>
   )
 
-  const renderMultipleActions = Object.values(selectedVersions).flat().length ? (
+  const renderMultipleActions = selectedVersions.selected.length ? (
     <>
-      <Button type="primary" onClick={multipleHide}>
+      <Button type="primary" disabled={getDisabledStatus(({ state }) => isRunning(state))} onClick={multipleHide}>
         <EyeOffIcon /> {t("common.action.multiple.hide")}
       </Button>
-
-      <Button type="primary" onClick={multipleInfer}>
+      <Button type="primary" disabled={getDisabledStatus(({ state }) => !isValidDataset(state))} onClick={multipleInfer}>
         <WajueIcon /> {t("common.action.multiple.infer")}
       </Button>
     </>
@@ -507,9 +518,8 @@ function Datasets({ pid, project = {}, iterations, groups, datasetList, query, v
             onChange={tableChange}
             rowKey={(record) => record.id}
             rowSelection={{
-              selectedRowKeys: selectedVersions[group.id],
+              selectedRowKeys: selectedVersions.versions[group.id],
               onChange: (keys) => rowSelectChange(group.id, keys),
-              getCheckboxProps: (record) => ({ disabled: isRunning(record.state), }),
             }}
             rowClassName={(record, index) => index % 2 === 0 ? '' : 'oddRow'}
             columns={columns(group.id)}
