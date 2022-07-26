@@ -260,9 +260,9 @@ const Add = (props) => {
                 <ProjectDatasetSelect pid={pid} placeholder={t('dataset.add.form.copy.placeholder')}></ProjectDatasetSelect>
               </Form.Item>
             ) : null}
-            {!isType(TYPES.INTERNAL) && !isType(TYPES.COPY) ?
+            {!isType(TYPES.INTERNAL) ?
               <Form.Item label={t('dataset.add.form.label.label')} name='strategy' initialValue={IMPORTSTRATEGY.UNKOWN_KEYWORDS_IGNORE}>
-                <Radio.Group options={strategyOptions} />
+                <Radio.Group options={strategyOptions.filter(opt => !isType(TYPES.COPY) || opt.value !== IMPORTSTRATEGY.UNKOWN_KEYWORDS_IGNORE)} />
               </Form.Item> : null}
             {isType(TYPES.NET) ? (
               <Form.Item label={t('dataset.add.form.net.label')} required>

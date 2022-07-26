@@ -387,7 +387,7 @@ describe("models: dataset", () => {
     })
     const end = generator.next()
 
-    equalObject(expected, end.value)
+    expect(end.value).toEqual(expected)
     expect(end.done).toBe(true)
   })
   it("effects: updateDataset", () => {
