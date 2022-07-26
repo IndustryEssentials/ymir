@@ -388,6 +388,11 @@ class MirStorageOps():
         {
             "total_asset_mbytes":222,
             "total_assets_cnt":1420,
+            "new_types":{},
+            "new_types_added":False,
+            "cks_count_total":{},
+            "cks_count":{},
+            "total_images_cnt":1420,
             "hist":{
                 "asset_quality": [],
                 "asset_bytes": [],
@@ -397,15 +402,11 @@ class MirStorageOps():
             "pred":{
                 "class_ids_count":{},
                 "class_names_count":{},
-                "new_types":{},
-                "new_types_added":False,
+
                 "negative_info":{
                     "negative_images_cnt":14,
                     "project_negative_images_cnt":0
                 },
-                "total_images_cnt":1420,
-                "cks_count_total":{},
-                "cks_count":{},
                 "tags_cnt_total":{},
                 "tags_cnt":{},
                 "hist":{
@@ -442,6 +443,15 @@ class MirStorageOps():
                 asset_area=cls._gen_viz_hist(mir_storage_context.asset_area_hist),
                 asset_hw_ratio=cls._gen_viz_hist(mir_storage_context.asset_hw_ratio_hist),
             ),
+            new_types={k: v
+                       for k, v in task_storage.new_types.items()},
+            new_types_added=task_storage.new_types_added,
+            total_images_cnt=mir_storage_context.images_cnt,
+            cks_count_total={k: v.cnt
+                             for k, v in mir_storage_context.cks_cnt.items()},
+            cks_count={k: {k2: v2
+                           for k2, v2 in v.sub_cnt.items()}
+                       for k, v in mir_storage_context.cks_cnt.items()},
             pred=cls._load_single_dataset_pred_or_gt_info(mir_storage_context=mir_storage_context,
                                                           task_storage=task_storage,
                                                           class_id_mgr=class_id_mgr,
@@ -537,19 +547,10 @@ class MirStorageOps():
                 class_id_mgr.main_name_for_id(id): count
                 for id, count in anno_stats.class_ids_cnt.items()
             },
-            new_types={k: v
-                       for k, v in task_storage.new_types.items()},
-            new_types_added=task_storage.new_types_added,
             negative_info=dict(
                 negative_images_cnt=mir_storage_context.negative_images_cnt,
                 project_negative_images_cnt=mir_storage_context.project_negative_images_cnt,
             ),
-            total_images_cnt=mir_storage_context.images_cnt,
-            cks_count_total={k: v.cnt
-                             for k, v in mir_storage_context.cks_cnt.items()},
-            cks_count={k: {k2: v2
-                           for k2, v2 in v.sub_cnt.items()}
-                       for k, v in mir_storage_context.cks_cnt.items()},
             tags_cnt_total={k: v.cnt
                             for k, v in anno_stats.tags_cnt.items()},
             tags_cnt={k: {k2: v2
