@@ -1,14 +1,14 @@
 import React, { useEffect, useState } from "react"
 import { useParams, useHistory } from "umi"
 import { connect } from "dva"
-import { Select, Pagination, Image, Row, Col, Button, Space, Card, Descriptions, Tag, Modal } from "antd"
+import { Select, Pagination, Row, Col, Button, Space, Card, Tag, Modal } from "antd"
 
 import t from "@/utils/t"
 import Breadcrumbs from "@/components/common/breadcrumb"
 import { randomBetween, percent } from '@/utils/number'
 import Asset from "./components/asset"
 import styles from "./assets.less"
-import { ScreenIcon, TaggingIcon, TrainIcon, VectorIcon, WajueIcon, } from "@/components/common/icons"
+import GtSelector from "../../components/form/gtSelector"
 
 const { Option } = Select
 
@@ -92,6 +92,10 @@ const Dataset = ({ getDataset, getAssetsOfDataset }) => {
     return percent(count / dataset.assetCount)
   }
 
+  const gtChange = checkeds => {
+    console.log('checkeds:', checkeds)
+  }
+
   const randomPageButton = (
     <Button type="primary" onClick={randomPage}>
       {t("dataset.detail.randompage.label")}
@@ -142,6 +146,9 @@ const Dataset = ({ getDataset, getAssetsOfDataset }) => {
         <strong>{dataset.name} {dataset.versionName}</strong>
         <span>{t("dataset.detail.pager.total", { total: total + '/' + dataset.assetCount })}</span>
       </Space>
+    </Col>
+    <Col>
+      <GtSelector layout='inline' onChange={gtChange} />
     </Col>
     <Col>
       <span>{t("dataset.detail.keyword.label")}</span>
