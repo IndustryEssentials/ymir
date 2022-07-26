@@ -229,13 +229,15 @@ const Add = (props) => {
                   </Select>
                 </Form.Item>
 
-                {selectedDataset && newKeywords.length ?
+                {selectedDataset ?
                   <Form.Item label={t('dataset.import.public.include')}>
-                    <h4>
-                      {t('dataset.add.internal.newkeywords.label')}
-                      <Button type='link' onClick={e => updateIgnoredKeywords(e, newKeywords, false)}>{t('dataset.add.internal.ignore.all')}</Button>
-                    </h4>
-                    <div>{renderKeywords(newKeywords)}</div>
+                    {newKeywords.length ? <>
+                      <h4>
+                        {t('dataset.add.internal.newkeywords.label')}
+                        <Button type='link' onClick={e => updateIgnoredKeywords(e, newKeywords, false)}>{t('dataset.add.internal.ignore.all')}</Button>
+                      </h4>
+                      <div>{renderKeywords(newKeywords)}</div>
+                    </> : null}
                     {ignoredKeywords.length ? <>
                       <h4>
                         {t('dataset.add.internal.ignorekeywords.label')}
