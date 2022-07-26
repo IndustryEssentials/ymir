@@ -82,9 +82,10 @@ function ModelDetail({ modelCache, getModel }) {
             <Item label={t('model.detail.label.name')}>{model.name} {model.versionName}</Item>
             {model.hidden ? <Item label={t("common.hidden.label")}>{t('common.state.hidden')}</Item> : null}
             {keywordsItem(model.keywords)}
-            <Item label={t('model.detail.label.stage')}>
+            <Item label={t('model.detail.label.stage')} span={2}>
               {model.stages?.map(stage => <Tag key={stage.id} title={stage.map}>{stage.name} mAP: {percent(stage.map)}</Tag>)}
             </Item>
+            <Item label={t("common.desc")} span={2}>{model.description}</Item>
           </Descriptions>
           <TaskProgress state={model.state} result={model} task={model.task} duration={model.durationLabel} progress={model.progress} fresh={() => fetchModel(true)} />
           {model?.task?.error_code ? <Error code={model.task?.error_code} msg={model.task?.error_message} /> : null}

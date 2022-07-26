@@ -256,7 +256,7 @@ class ControllerRequest:
         data_fusion_request = mirsvrpb.TaskReqFusion()
         data_fusion_request.in_dataset_ids[:] = args["include_datasets"]
         data_fusion_request.merge_strategy = MERGE_STRATEGY_MAPPING[
-            args.get("include_strategy", MergeStrategy.stop_upon_conflict)
+            args.get("strategy", MergeStrategy.stop_upon_conflict)
         ]
         if args.get("exclude_datasets"):
             data_fusion_request.ex_dataset_ids[:] = args["exclude_datasets"]
@@ -591,7 +591,7 @@ class ControllerClient:
             args={
                 "include_datasets": dataset_hashes,
                 "exclude_datasets": ex_dataset_hashes,
-                "merge_strategy": merge_strategy,
+                "strategy": merge_strategy,
             },
         )
         return self.send(req)

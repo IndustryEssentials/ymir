@@ -1,26 +1,18 @@
 import React, { useCallback, useEffect, useState } from "react"
 import { connect } from "dva"
-import { Select, Card, Input, Radio, Button, Form, Row, Col, ConfigProvider, Space, InputNumber, message, Tag, Alert } from "antd"
-import {
-  PlusOutlined,
-  MinusCircleOutlined,
-  UpSquareOutlined,
-  DownSquareOutlined,
-} from '@ant-design/icons'
-import styles from "./index.less"
-import commonStyles from "../common.less"
-import { formLayout } from "@/config/antd"
+import { Select, Card, Button, Form, Row, Col, ConfigProvider, Space, InputNumber, message, Tag, Alert } from "antd"
+import { useHistory, useParams, useLocation } from "umi"
 
+import { formLayout } from "@/config/antd"
 import t from "@/utils/t"
 import { string2Array } from "@/utils/string"
 import { TYPES } from '@/constants/image'
-import { useHistory, useParams, useLocation } from "umi"
 import useFetch from '@/hooks/useFetch'
+
 import Breadcrumbs from "@/components/common/breadcrumb"
 import EmptyStateDataset from '@/components/empty/dataset'
 import EmptyStateModel from '@/components/empty/model'
 import { randomNumber } from "@/utils/number"
-import Tip from "@/components/form/tip"
 import ModelSelect from "@/components/form/modelSelect"
 import ImageSelect from "@/components/form/imageSelect"
 import DatasetSelect from "@/components/form/datasetSelect"
@@ -29,6 +21,11 @@ import AddKeywordsBtn from "@/components/keyword/addKeywordsBtn"
 import LiveCodeForm from "../components/liveCodeForm"
 import { removeLiveCodeConfig } from "../components/liveCodeConfig"
 import DockerConfigForm from "../components/dockerConfigForm"
+import Desc from "@/components/form/desc"
+
+import commonStyles from "../common.less"
+import styles from "./index.less"
+import OpenpaiForm from "../components/openpaiForm"
 
 const { Option } = Select
 
@@ -57,10 +54,22 @@ function Inference({ datasetCache, datasets, ...func }) {
   const [project, getProject] = useFetch('project/getProject', {})
   const watchStages = Form.useWatch('stages', form)
   const watchTestingSets = Form.useWatch('datasets', form)
+  const [openpai, setOpenpai] = useState(false)
+  const [sys, getSysInfo] = useFetch('common/getSysInfo', {})
+  const selectOpenpai = Form.useWatch('openpai', form)
 
   useEffect(() => {
-    fetchSysInfo()
+    getSysInfo()
   }, [])
+
+  useEffect(() => {
+    setGPU(sys.gpu_count || 0)
+    setOpenpai(!!sys.openpai_enabled)
+  }, [sys])
+
+  useEffect(() => {
+    setGPU(selectOpenpai ? 8 : sys.gpu_count || 0)
+  }, [selectOpenpai])
 
   useEffect(() => {
     pid && getProject({ id: pid, force: true })
@@ -265,7 +274,7 @@ function Inference({ datasetCache, datasets, ...func }) {
                 onChange={imageChange}
               />
             </Form.Item>
-
+            <OpenpaiForm form={form} openpai={openpai} />
             <Form.Item
               tooltip={t('tip.task.filter.igpucount')}
               label={t('task.gpu.count')}
@@ -284,13 +293,7 @@ function Inference({ datasetCache, datasets, ...func }) {
             <LiveCodeForm form={form} live={live} />
             <DockerConfigForm form={form} seniorConfig={seniorConfig} />
 
-            <Form.Item label={t('task.inference.form.desc')} name='description'
-              rules={[
-                { max: 500 },
-              ]}
-            >
-              <Input.TextArea autoSize={{ minRows: 4, maxRows: 20 }} />
-            </Form.Item>
+            <Desc form={form} label={t('task.inference.form.desc')} />
 
             <Form.Item wrapperCol={{ offset: 8 }}>
               <Space size={20}>

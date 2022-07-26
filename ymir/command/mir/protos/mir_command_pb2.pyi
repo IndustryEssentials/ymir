@@ -327,7 +327,7 @@ class MirAnnotations(google.protobuf.message.Message):
     def prediction(self) -> global___SingleTaskAnnotations: ...
     @property
     def image_cks(self) -> google.protobuf.internal.containers.MessageMap[typing.Text, global___SingleImageCks]:
-        """key: asset id, value: cks and image quality"""
+        """key: asset id, value: cks and image quality, from pred and gt"""
         pass
     def __init__(self,
         *,
@@ -526,7 +526,10 @@ class MirKeywords(google.protobuf.message.Message):
     CK_IDX_FIELD_NUMBER: builtins.int
     @property
     def keywords(self) -> google.protobuf.internal.containers.MessageMap[typing.Text, global___Keywords]:
-        """key: asset hash, value: keywords list"""
+        """key: asset hash, value: keywords list
+        cnt: count of keywords
+        from pred and gt
+        """
         pass
     @property
     def pred_idx(self) -> global___KeywordToIndex:
@@ -538,7 +541,7 @@ class MirKeywords(google.protobuf.message.Message):
         pass
     @property
     def ck_idx(self) -> google.protobuf.internal.containers.MessageMap[typing.Text, global___AssetAnnoIndex]:
-        """key: ck main key, value: assets and assets with sub keys"""
+        """key: ck main key, value: assets and assets with sub keys, from (mir_annotations.image_cks) pred and gt"""
         pass
     def __init__(self,
         *,
@@ -1263,23 +1266,27 @@ class MirContext(google.protobuf.message.Message):
     """/ total images count"""
 
     negative_images_cnt: builtins.int = ...
-    """/ total negative images count (images without any annotations)"""
+    """/ total negative images count (images without any annotations), from pred"""
 
     project_negative_images_cnt: builtins.int = ...
-    """/ total negative images count (images without any project class names)"""
+    """/ total negative images count (images without any project class names), from pred"""
 
     @property
     def predefined_keyids_cnt(self) -> google.protobuf.internal.containers.ScalarMap[builtins.int, builtins.int]:
-        """/ key: class id, value: images count"""
+        """/ key: class id, value: images count, from pred"""
         pass
     @property
     def project_predefined_keyids_cnt(self) -> google.protobuf.internal.containers.ScalarMap[builtins.int, builtins.int]:
-        """/ key: class id (only in this project), value: images count"""
+        """/ key: class id (only in this project), value: images count, from pred"""
         pass
     @property
-    def cks_cnt(self) -> google.protobuf.internal.containers.MessageMap[typing.Text, global___SingleMapCount]: ...
+    def cks_cnt(self) -> google.protobuf.internal.containers.MessageMap[typing.Text, global___SingleMapCount]:
+        """/ from pred and gt"""
+        pass
     @property
-    def tags_cnt(self) -> google.protobuf.internal.containers.MessageMap[typing.Text, global___SingleMapCount]: ...
+    def tags_cnt(self) -> google.protobuf.internal.containers.MessageMap[typing.Text, global___SingleMapCount]:
+        """/ from pred"""
+        pass
     @property
     def asset_quality_hist(self) -> google.protobuf.internal.containers.ScalarMap[typing.Text, builtins.int]:
         """key: 0 (lower bnd), 0.1, 0.2, ..., 0.9, 1.0, increment 0.1"""
