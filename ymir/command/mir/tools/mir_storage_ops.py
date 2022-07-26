@@ -402,7 +402,6 @@ class MirStorageOps():
             "pred":{
                 "class_ids_count":{},
                 "class_names_count":{},
-
                 "negative_info":{
                     "negative_images_cnt":14,
                     "project_negative_images_cnt":0
