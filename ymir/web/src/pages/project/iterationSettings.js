@@ -78,7 +78,7 @@ const Add = ({ }) => {
         <div className={s.formContainer}>
           <Form form={form} labelCol={{ span: 6, offset: 2 }} wrapperCol={{ span: 12 }}
             colon={false} labelAlign='left' onFinish={submit} scrollToFirstError>
-            <ConfigProvider renderEmpty={() => <EmptyState add={() => history.push(`/home/dataset/add/${id}`)} />}>
+            <ConfigProvider renderEmpty={() => <EmptyState add={() => history.push(`/home/project/${id}/dataset/add`)} />}>
               <Form.Item label={t('project.add.form.training.set')} tooltip={t('project.add.trainset.tip')}>
                 <Row>
                   <Col flex={1} className="normalColor">{project.trainSet?.name}</Col>

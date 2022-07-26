@@ -429,7 +429,7 @@ function Model({ pid, project = {}, iterations, groups, modelList, versions, que
   }
 
   function add() {
-    history.push(`/home/model/import/${pid}`)
+    history.push(`/home/project/${pid}/model/import`)
   }
 
   const addBtn = (

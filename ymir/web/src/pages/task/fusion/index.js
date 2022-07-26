@@ -183,7 +183,7 @@ function Fusion({ allDatasets, datasetCache, ...func }) {
             <Form.Item label={t('task.fusion.form.dataset')}><span>{dataset.name} {dataset.versionName} (assets: {dataset.assetCount})</span></Form.Item>
           </Panel>
           <Panel label={t('task.fusion.header.merge')} visible={visibles['merge']} setVisible={(value) => setVisibles(old => ({ ...old, merge: value }))}>
-            <ConfigProvider renderEmpty={() => <EmptyState add={() => history.push(`/home/dataset/add/${dataset.projectId}`)} />}>
+            <ConfigProvider renderEmpty={() => <EmptyState add={() => history.push(`/home/project/${dataset.projectId}/dataset/add`)} />}>
               <Form.Item label={t('task.fusion.form.merge.include.label')} name="include_datasets">
                 <DatasetSelect
                   placeholder={t('task.fusion.form.datasets.placeholder')}

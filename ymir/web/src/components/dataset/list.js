@@ -422,7 +422,7 @@ function Datasets({ pid, project = {}, iterations, groups, datasetList, query, v
   }
 
   const add = () => {
-    history.push(`/home/dataset/add/${pid}`)
+    history.push(`/home/project/${pid}/dataset/add`)
   }
 
 
