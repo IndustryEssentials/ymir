@@ -73,10 +73,10 @@ class MirStorageOps():
     @classmethod
     def __build_mir_keywords(cls, mir_annotations: mirpb.MirAnnotations, mir_keywords: mirpb.MirKeywords) -> None:
         """
-        build mir_keywords from single_task_annotations
+        build mir_keywords from mir_annotations
 
         Args:
-            single_task_annotations (mirpb.SingleTaskAnnotations)
+            mir_annotations (mirpb.MirAnnotations)
             mir_keywords (mirpb.MirKeywords)
         """
         pred_task_annotations = mir_annotations.task_annotations[mir_annotations.head_task_id]
