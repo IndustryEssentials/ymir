@@ -128,6 +128,7 @@ describe("constants: project", () => {
       totalAssetCount: 0,
       runningTaskCount: 0,
       totalTaskCount: 0,
+      candidateTrainSet: 0,
     }
     expect(transferProject(origin)).toEqual(expected)
 
