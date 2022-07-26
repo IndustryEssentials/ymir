@@ -25,6 +25,7 @@ import Desc from "@/components/form/desc"
 
 import commonStyles from "../common.less"
 import styles from "./index.less"
+import OpenpaiForm from "../components/openpaiForm"
 
 const { Option } = Select
 
@@ -53,10 +54,22 @@ function Inference({ datasetCache, datasets, ...func }) {
   const [project, getProject] = useFetch('project/getProject', {})
   const watchStages = Form.useWatch('stages', form)
   const watchTestingSets = Form.useWatch('datasets', form)
+  const [openpai, setOpenpai] = useState(false)
+  const [sys, getSysInfo] = useFetch('common/getSysInfo', {})
+  const selectOpenpai = Form.useWatch('openpai', form)
 
   useEffect(() => {
-    fetchSysInfo()
+    getSysInfo()
   }, [])
+
+  useEffect(() => {
+    setGPU(sys.gpu_count || 0)
+    setOpenpai(!!sys.openpai_enabled)
+  }, [sys])
+
+  useEffect(() => {
+    setGPU(selectOpenpai ? 8 : sys.gpu_count || 0)
+  }, [selectOpenpai])
 
   useEffect(() => {
     pid && getProject({ id: pid, force: true })
@@ -261,7 +274,7 @@ function Inference({ datasetCache, datasets, ...func }) {
                 onChange={imageChange}
               />
             </Form.Item>
-
+            <OpenpaiForm form={form} openpai={openpai} />
             <Form.Item
               tooltip={t('tip.task.filter.igpucount')}
               label={t('task.gpu.count')}

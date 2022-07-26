@@ -274,7 +274,7 @@ export function train({
 }
 
 export function mine({
-  iteration, stage, description,
+  iteration, stage, openpai, description,
   projectId, datasetId, modelStage = [], topk, algorithm,
   config, strategy, inference, name, image, imageId,
 }) {
@@ -287,7 +287,7 @@ export function mine({
     iteration_id: iteration,
     iteration_stage: stage,
     name,
-    docker_image_config: config,
+    docker_image_config: { ...config, openpai_enable: openpai, },
     parameters: {
       strategy,
       model_id: model,
@@ -324,6 +324,7 @@ export function infer({
   config,
   image,
   imageId,
+  openpai,
   description,
 }) {
   const maps = datasets.map(dataset => stages.map(([model, stage]) => ({ dataset, model, stage }))).flat()
@@ -332,7 +333,7 @@ export function infer({
     type: TASKTYPES.INFERENCE,
     project_id: projectId,
     result_description: description,
-    docker_image_config: config,
+    docker_image_config: { ...config, openpai_enable: openpai, },
     parameters: {
       model_id: model,
       model_stage_id: stage,
