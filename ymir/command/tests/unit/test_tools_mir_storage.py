@@ -220,6 +220,11 @@ class TestMirStorage(unittest.TestCase):
                 'total_cnt': 6,
                 'positive_asset_cnt': 3,
                 'negative_asset_cnt': 0,
+                'class_ids_cnt': {
+                    1: 1,
+                    2: 2,
+                    3: 2,
+                },
                 'quality_hist': {
                     '0.00': 6,
                     '0.10': 0,
@@ -482,6 +487,7 @@ class TestMirStorage(unittest.TestCase):
         try:
             self.assertEqual(loaded_mir_context, mir_context)
         except AssertionError as e:
+            breakpoint()
             logging.info(f"expected: {mir_context}")
             logging.info(f"actual: {loaded_mir_context}")
             raise e

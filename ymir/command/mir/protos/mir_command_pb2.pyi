@@ -1181,21 +1181,6 @@ class MirContext(google.protobuf.message.Message):
         def HasField(self, field_name: typing_extensions.Literal["value",b"value"]) -> builtins.bool: ...
         def ClearField(self, field_name: typing_extensions.Literal["key",b"key","value",b"value"]) -> None: ...
 
-    class TagsCntEntry(google.protobuf.message.Message):
-        DESCRIPTOR: google.protobuf.descriptor.Descriptor = ...
-        KEY_FIELD_NUMBER: builtins.int
-        VALUE_FIELD_NUMBER: builtins.int
-        key: typing.Text = ...
-        @property
-        def value(self) -> global___SingleMapCount: ...
-        def __init__(self,
-            *,
-            key : typing.Text = ...,
-            value : typing.Optional[global___SingleMapCount] = ...,
-            ) -> None: ...
-        def HasField(self, field_name: typing_extensions.Literal["value",b"value"]) -> builtins.bool: ...
-        def ClearField(self, field_name: typing_extensions.Literal["key",b"key","value",b"value"]) -> None: ...
-
     class AssetQualityHistEntry(google.protobuf.message.Message):
         DESCRIPTOR: google.protobuf.descriptor.Descriptor = ...
         KEY_FIELD_NUMBER: builtins.int
@@ -1254,7 +1239,6 @@ class MirContext(google.protobuf.message.Message):
     PREDEFINED_KEYIDS_CNT_FIELD_NUMBER: builtins.int
     PROJECT_PREDEFINED_KEYIDS_CNT_FIELD_NUMBER: builtins.int
     CKS_CNT_FIELD_NUMBER: builtins.int
-    TAGS_CNT_FIELD_NUMBER: builtins.int
     ASSET_QUALITY_HIST_FIELD_NUMBER: builtins.int
     ASSET_AREA_HIST_FIELD_NUMBER: builtins.int
     ASSET_BYTES_HIST_FIELD_NUMBER: builtins.int
@@ -1282,10 +1266,6 @@ class MirContext(google.protobuf.message.Message):
     @property
     def cks_cnt(self) -> google.protobuf.internal.containers.MessageMap[typing.Text, global___SingleMapCount]:
         """/ from pred and gt"""
-        pass
-    @property
-    def tags_cnt(self) -> google.protobuf.internal.containers.MessageMap[typing.Text, global___SingleMapCount]:
-        """/ from pred"""
         pass
     @property
     def asset_quality_hist(self) -> google.protobuf.internal.containers.ScalarMap[typing.Text, builtins.int]:
@@ -1316,7 +1296,6 @@ class MirContext(google.protobuf.message.Message):
         predefined_keyids_cnt : typing.Optional[typing.Mapping[builtins.int, builtins.int]] = ...,
         project_predefined_keyids_cnt : typing.Optional[typing.Mapping[builtins.int, builtins.int]] = ...,
         cks_cnt : typing.Optional[typing.Mapping[typing.Text, global___SingleMapCount]] = ...,
-        tags_cnt : typing.Optional[typing.Mapping[typing.Text, global___SingleMapCount]] = ...,
         asset_quality_hist : typing.Optional[typing.Mapping[typing.Text, builtins.int]] = ...,
         asset_area_hist : typing.Optional[typing.Mapping[builtins.int, builtins.int]] = ...,
         asset_bytes_hist : typing.Optional[typing.Mapping[typing.Text, builtins.int]] = ...,
@@ -1326,7 +1305,7 @@ class MirContext(google.protobuf.message.Message):
         gt_stats : typing.Optional[global___AnnoStats] = ...,
         ) -> None: ...
     def HasField(self, field_name: typing_extensions.Literal["gt_stats",b"gt_stats","pred_stats",b"pred_stats"]) -> builtins.bool: ...
-    def ClearField(self, field_name: typing_extensions.Literal["asset_area_hist",b"asset_area_hist","asset_bytes_hist",b"asset_bytes_hist","asset_hw_ratio_hist",b"asset_hw_ratio_hist","asset_quality_hist",b"asset_quality_hist","cks_cnt",b"cks_cnt","gt_stats",b"gt_stats","images_cnt",b"images_cnt","negative_images_cnt",b"negative_images_cnt","pred_stats",b"pred_stats","predefined_keyids_cnt",b"predefined_keyids_cnt","project_negative_images_cnt",b"project_negative_images_cnt","project_predefined_keyids_cnt",b"project_predefined_keyids_cnt","tags_cnt",b"tags_cnt","total_asset_mbytes",b"total_asset_mbytes"]) -> None: ...
+    def ClearField(self, field_name: typing_extensions.Literal["asset_area_hist",b"asset_area_hist","asset_bytes_hist",b"asset_bytes_hist","asset_hw_ratio_hist",b"asset_hw_ratio_hist","asset_quality_hist",b"asset_quality_hist","cks_cnt",b"cks_cnt","gt_stats",b"gt_stats","images_cnt",b"images_cnt","negative_images_cnt",b"negative_images_cnt","pred_stats",b"pred_stats","predefined_keyids_cnt",b"predefined_keyids_cnt","project_negative_images_cnt",b"project_negative_images_cnt","project_predefined_keyids_cnt",b"project_predefined_keyids_cnt","total_asset_mbytes",b"total_asset_mbytes"]) -> None: ...
 global___MirContext = MirContext
 
 class SingleMapCount(google.protobuf.message.Message):
@@ -1398,12 +1377,42 @@ class AnnoStats(google.protobuf.message.Message):
             ) -> None: ...
         def ClearField(self, field_name: typing_extensions.Literal["key",b"key","value",b"value"]) -> None: ...
 
+    class TagsCntEntry(google.protobuf.message.Message):
+        DESCRIPTOR: google.protobuf.descriptor.Descriptor = ...
+        KEY_FIELD_NUMBER: builtins.int
+        VALUE_FIELD_NUMBER: builtins.int
+        key: typing.Text = ...
+        @property
+        def value(self) -> global___SingleMapCount: ...
+        def __init__(self,
+            *,
+            key : typing.Text = ...,
+            value : typing.Optional[global___SingleMapCount] = ...,
+            ) -> None: ...
+        def HasField(self, field_name: typing_extensions.Literal["value",b"value"]) -> builtins.bool: ...
+        def ClearField(self, field_name: typing_extensions.Literal["key",b"key","value",b"value"]) -> None: ...
+
+    class ClassIdsCntEntry(google.protobuf.message.Message):
+        DESCRIPTOR: google.protobuf.descriptor.Descriptor = ...
+        KEY_FIELD_NUMBER: builtins.int
+        VALUE_FIELD_NUMBER: builtins.int
+        key: builtins.int = ...
+        value: builtins.int = ...
+        def __init__(self,
+            *,
+            key : builtins.int = ...,
+            value : builtins.int = ...,
+            ) -> None: ...
+        def ClearField(self, field_name: typing_extensions.Literal["key",b"key","value",b"value"]) -> None: ...
+
     TOTAL_CNT_FIELD_NUMBER: builtins.int
     POSITIVE_ASSET_CNT_FIELD_NUMBER: builtins.int
     NEGATIVE_ASSET_CNT_FIELD_NUMBER: builtins.int
     QUALITY_HIST_FIELD_NUMBER: builtins.int
     AREA_HIST_FIELD_NUMBER: builtins.int
     AREA_RATIO_HIST_FIELD_NUMBER: builtins.int
+    TAGS_CNT_FIELD_NUMBER: builtins.int
+    CLASS_IDS_CNT_FIELD_NUMBER: builtins.int
     total_cnt: builtins.int = ...
     positive_asset_cnt: builtins.int = ...
     negative_asset_cnt: builtins.int = ...
@@ -1419,6 +1428,14 @@ class AnnoStats(google.protobuf.message.Message):
     def area_ratio_hist(self) -> google.protobuf.internal.containers.ScalarMap[typing.Text, builtins.int]:
         """key: 0 (lower bnd), 0.1, 0.2, ..., 0.9, 1.0, increment 0.1"""
         pass
+    @property
+    def tags_cnt(self) -> google.protobuf.internal.containers.MessageMap[typing.Text, global___SingleMapCount]:
+        """key: main tag name, value: main tag count and sub tag names and counts"""
+        pass
+    @property
+    def class_ids_cnt(self) -> google.protobuf.internal.containers.ScalarMap[builtins.int, builtins.int]:
+        """key: class ids, value: asset count for this class id"""
+        pass
     def __init__(self,
         *,
         total_cnt : builtins.int = ...,
@@ -1427,6 +1444,8 @@ class AnnoStats(google.protobuf.message.Message):
         quality_hist : typing.Optional[typing.Mapping[typing.Text, builtins.int]] = ...,
         area_hist : typing.Optional[typing.Mapping[builtins.int, builtins.int]] = ...,
         area_ratio_hist : typing.Optional[typing.Mapping[typing.Text, builtins.int]] = ...,
+        tags_cnt : typing.Optional[typing.Mapping[typing.Text, global___SingleMapCount]] = ...,
+        class_ids_cnt : typing.Optional[typing.Mapping[builtins.int, builtins.int]] = ...,
         ) -> None: ...
-    def ClearField(self, field_name: typing_extensions.Literal["area_hist",b"area_hist","area_ratio_hist",b"area_ratio_hist","negative_asset_cnt",b"negative_asset_cnt","positive_asset_cnt",b"positive_asset_cnt","quality_hist",b"quality_hist","total_cnt",b"total_cnt"]) -> None: ...
+    def ClearField(self, field_name: typing_extensions.Literal["area_hist",b"area_hist","area_ratio_hist",b"area_ratio_hist","class_ids_cnt",b"class_ids_cnt","negative_asset_cnt",b"negative_asset_cnt","positive_asset_cnt",b"positive_asset_cnt","quality_hist",b"quality_hist","tags_cnt",b"tags_cnt","total_cnt",b"total_cnt"]) -> None: ...
 global___AnnoStats = AnnoStats

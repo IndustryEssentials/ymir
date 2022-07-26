@@ -318,8 +318,6 @@ message MirContext {
 
     /// from pred and gt
     map<string, SingleMapCount> cks_cnt = 6;
-    /// from pred
-    map<string, SingleMapCount> tags_cnt = 7;
 
     map<string, int32> asset_quality_hist = 8; // key: 0 (lower bnd), 0.1, 0.2, ..., 0.9, 1.0, increment 0.1
     map<int32, int32> asset_area_hist = 9; // key: 0 (lower bnd), 10, 50, 100, 200, 400, 600, 800, unit: 10000 pixels
@@ -329,6 +327,8 @@ message MirContext {
 
     AnnoStats pred_stats = 100;
     AnnoStats gt_stats = 101;
+
+    reserved 7;
 };
 
 message SingleMapCount {
@@ -343,4 +343,6 @@ message AnnoStats {
     map<string, int32> quality_hist = 4;  // key: 0 (lower bnd), 0.1, 0.2, ..., 0.9, 1.0, increment 0.1
     map<int32, int32> area_hist = 5;  // ranges: 0 (lower bnd), 50, 500, 2500, 5000, 10000, 50000, 100000, 200000
     map<string, int32> area_ratio_hist = 6;  // key: 0 (lower bnd), 0.1, 0.2, ..., 0.9, 1.0, increment 0.1
+    map<string, SingleMapCount> tags_cnt = 7;  // key: main tag name, value: main tag count and sub tag names and counts
+    map<int32, int32> class_ids_cnt = 8;  // key: class ids, value: asset count for this class id
 };

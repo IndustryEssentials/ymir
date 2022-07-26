@@ -1,7 +1,7 @@
 import os
 import shutil
 import subprocess
-from typing import List, Type
+from typing import Any, List, Type
 
 import yaml
 
@@ -63,3 +63,26 @@ def prepare_labels(mir_root: str, names: List[str]):
 
     with open(class_ids.ids_file_path(mir_root=mir_root), 'w') as f:
         yaml.safe_dump(label_storage.dict(), f)
+
+
+def diff_dicts(a_dict: dict, b_dict: dict, stack: list) -> None:
+    if set(a_dict.keys()) != set(b_dict.keys()):
+        raise ValueError(f"stack: {stack} keys mismatched\na: {sorted(a_dict.keys())}\nb: {sorted(b_dict.keys())}")
+    for ka in a_dict:
+        va = a_dict[ka]
+        vb = b_dict[ka]
+        diff_types(va, vb, stack=stack + [ka])
+        if isinstance(va, dict):
+            diff_dicts(a_dict=va, b_dict=vb, stack=stack + [ka])
+        else:
+            diff_others(a=va, b=vb, stack=stack + [ka])
+
+
+def diff_types(a: Any, b: Any, stack: list) -> None:
+    if not isinstance(a, type(b)) and not isinstance(b, type(a)):
+        raise ValueError(f"stack: {stack} types mismatched: {type(a)} vs {type(b)}")
+
+
+def diff_others(a: Any, b: Any, stack: list) -> None:
+    if a != b:
+        raise ValueError(f"stack: {stack}, other kind of values mismatched:\na: {a}\nb: {b}")

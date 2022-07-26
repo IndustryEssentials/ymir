@@ -109,13 +109,9 @@ class CmdShow(base.BaseCommand):
         cls_id_mgr = class_ids.ClassIdManager(mir_root=mir_root)
         if verbose:
             print('predefined key ids and assets count:')
-            cls._show_cis_verbose(predefined_keyids_cnt=mir_context.predefined_keyids_cnt, cls_id_mgr=cls_id_mgr)
-            if mir_context.project_predefined_keyids_cnt:
-                print('project predefined key ids and assets count:')
-                cls._show_cis_verbose(predefined_keyids_cnt=mir_context.project_predefined_keyids_cnt,
-                                      cls_id_mgr=cls_id_mgr)
+            cls._show_cis_verbose(predefined_keyids_cnt=mir_context.pred_stats.class_ids_cnt, cls_id_mgr=cls_id_mgr)
         else:
-            type_names = [cls_id_mgr.main_name_for_id(ci) or '' for ci in mir_context.predefined_keyids_cnt.keys()]
+            type_names = [cls_id_mgr.main_name_for_id(ci) or '' for ci in mir_context.pred_stats.class_ids_cnt.keys()]
             print(';'.join(type_names))
 
     @classmethod
