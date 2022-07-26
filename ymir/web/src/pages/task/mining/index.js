@@ -163,7 +163,7 @@ function Mining({ datasetCache, ...func }) {
                 relatedId={selectedModel?.task?.parameters?.docker_image_id} type={TYPES.MINING} onChange={imageChange} />
             </Form.Item>
             <OpenpaiForm form={form} openpai={openpai} />
-            <ConfigProvider renderEmpty={() => <EmptyStateDataset add={() => history.push(`/home/dataset/add/${pid}`)} />}>
+            <ConfigProvider renderEmpty={() => <EmptyStateDataset add={() => history.push(`/home/project/${pid}/dataset/add`)} />}>
 
               <Form.Item
                 label={t('task.mining.form.dataset.label')}

@@ -48,7 +48,7 @@ function ProjectDetail(func) {
   }
 
   function add() {
-    history.push(`/home/dataset/add/${id}`)
+    history.push(`/home/project/${id}/dataset/add`)
   }
 
   function goTraining() {
