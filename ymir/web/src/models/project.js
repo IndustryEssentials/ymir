@@ -9,6 +9,7 @@ import {
 } from "@/services/project"
 import { transferProject } from '@/constants/project'
 import { deepClone } from '@/utils/object'
+import { validState } from '@/constants/common'
 
 const initQuery = {
   name: "",
@@ -81,10 +82,12 @@ export default {
       const { id, ...params } = payload
       const { code, result } = yield call(updateProject, id, params)
       if (code === 0) {
+        const project = transferProject(result)
         yield put({
-          type: 'clearCache'
+          type: "UPDATE_PROJECTS",
+          payload: project,
         })
-        return result
+        return project
       }
     },
     *updateQuery({ payload = {} }, { put, select }) {
@@ -129,6 +132,12 @@ export default {
       return {
         ...state,
         projects,
+      }
+    },
+    UPDATE_PREPARETRAINSET(state, { payload }) {
+      return {
+        ...state,
+        prepareTrainSet: payload,
       }
     },
     UPDATE_QUERY(state, { payload }) {

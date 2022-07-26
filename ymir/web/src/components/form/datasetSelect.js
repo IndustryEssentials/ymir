@@ -8,17 +8,18 @@ const defaultLabelRender = item => <>{item.name} {item.versionName}(assets: {ite
 const DatasetSelect = ({
   pid, filter = [], allowEmpty, filterGroup = [],
   filters, value, datasets = [], onChange = () => { }, renderLabel = defaultLabelRender,
-  extra, getDatasets, ...resProps
+  extra, changeByUser, getDatasets, ...resProps
 }) => {
   const [options, setOptions] = useState([])
 
   useEffect(() => {
+    console.log('pid:', pid)
     pid && fetchDatasets()
   }, [pid])
 
   useEffect(() => {
     let selected = null
-    if (value) {
+    if (value && !changeByUser) {
       if (resProps.mode) {
         selected = options.filter(opt => value.includes(opt.value))
       } else {

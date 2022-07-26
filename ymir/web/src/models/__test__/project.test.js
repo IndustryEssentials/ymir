@@ -162,8 +162,8 @@ describe("models: project", () => {
     })
     const end = generator.next()
 
-    equalObject(expected, end.value)
     expect(end.done).toBe(true)
+    expect(end.value).toEqual(transferProject(expected))
   })
   it("effects: checkStatus", () => {
     const saga = project.effects.checkStatus
