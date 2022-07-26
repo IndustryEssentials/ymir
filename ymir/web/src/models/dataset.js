@@ -183,7 +183,7 @@ export default {
     *createDataset({ payload }, { call, put }) {
       const { code, result } = yield call(createDataset, payload)
       if (code === 0) {
-        yield put.resolve({ type: 'clearCache' })
+        // yield put.resolve({ type: 'clearCache' })
         return result
       }
     },
@@ -297,6 +297,28 @@ export default {
       if (code === 0) {
         return result
       }
+    },
+    *update({ payload }, { put, select }) {
+      const ds = payload
+      if (!ds) {
+        return
+      }
+      const { versions } = yield select(({ dataset }) => dataset)
+      // update versions
+      const target = versions[ds.groupId] || []
+      yield put({
+        type: 'UPDATE_VERSIONS', payload: {
+          id: ds.groupId,
+          versions: [ds, ...target],
+        }
+      })
+      // update dataset
+      yield put({
+        type: 'UPDATE_DATASET', payload: {
+          id: ds.id,
+          dataset: ds,
+        }
+      })
     },
   },
   reducers: {

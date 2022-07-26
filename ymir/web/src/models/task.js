@@ -133,10 +133,8 @@ export default {
       let { code, result } = yield call(merge, payload)
       if (code === 0) {
         yield put.resolve({
-          type: 'dataset/clearCache'
-        })
-        yield put.resolve({
-          type: 'project/clearCache'
+          type: 'dataset/update',
+          payload: result,
         })
         return result
       }
@@ -145,10 +143,8 @@ export default {
       let { code, result } = yield call(filter, payload)
       if (code === 0) {
         yield put.resolve({
-          type: 'dataset/clearCache'
-        })
-        yield put.resolve({
-          type: 'project/clearCache'
+          type: 'dataset/update',
+          payload: result,
         })
         return result
       }

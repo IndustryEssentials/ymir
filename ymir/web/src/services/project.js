@@ -92,7 +92,7 @@ export function updateProject(id, {
   strategy,
   chunkSize,
   description,
-  candidateTrainSet,
+  candidateTrainSet = null,
   trainSetVersion,
   miningSet,
   testSet,

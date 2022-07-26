@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { Row, Col, Form, Button } from "antd"
+import { useLocation } from 'umi'
 import { connect } from "dva"
 
 import t from '@/utils/t'
@@ -8,7 +9,14 @@ import DatasetSelect from '@/components/form/datasetSelect'
 import ModelSelect from '@/components/form/modelSelect'
 
 import s from "./iteration.less"
-import { YesIcon, LoaderIcon } from "../../../components/common/icons"
+import { YesIcon, LoaderIcon } from "@/components/common/icons"
+
+const stages = [
+  { field: 'candidateTrainSet', option: true, label: 'project.prepare.trainset', tip: 'project.add.trainset.tip', },
+  { field: 'testSet', label: 'project.prepare.validationset', tip: 'project.add.testset.tip', },
+  { field: 'miningSet', label: 'project.prepare.miningset', tip: 'project.add.miningset.tip', },
+  { field: 'modelStage', label: 'project.prepare.model', tip: 'tip.task.filter.model', type: 1 },
+]
 
 const SettingsSelection = (Select) => {
   const Selection = (props) => {
@@ -17,7 +25,7 @@ const SettingsSelection = (Select) => {
   return Selection
 }
 
-const Stage = ({ pid, value, stage }) => {
+const Stage = ({ pid, value, stage, project = {} }) => {
   console.log('stage init value:', value)
   const [valid, setValid] = useState(false)
   const Selection = useMemo(() => SettingsSelection(stage.type ? ModelSelect : DatasetSelect), [stage.type])
@@ -27,42 +35,20 @@ const Stage = ({ pid, value, stage }) => {
     setValid(value)
   }, [value])
 
-  const validNext = () => project.miningSet && project.testSet && project.model
-
-  // function initStages() {
-  //   const labels = [
-  //     { value: 'datasets', state: project.miningSet && project.testSet ? states.VALID : -1, url: `/home/project/${project.id}/iterations/settings`, },
-  //     { value: 'model', state: project.model ? states.VALID : -1, url: `/home/project/${project.id}/initmodel`, },
-  //     { value: 'start', state: validNext() ? states.VALID : -1, },
-  //   ]
-  //   const ss = labels.map(({ value, state, url, }, index) => {
-  //     const act = `project.iteration.stage.${value}`
-  //     const stage = {
-  //       value: index,
-  //       label: value,
-  //       act,
-  //       // react: `${act}.react`,
-  //       // next: index + 2,
-  //       url,
-  //       state,
-  //       current: index,
-  //       unskippable: true,
-  //       callback: fresh,
-  //     }
-  //     if (index === labels.length - 1) {
-  //       stage.react = ''
-  //       stage.current = validNext() ? index : 0
-  //       stage.callback = () => createIteration()
-  //     }
-  //     return stage
-  //   })
-  //   setStages(ss)
-  // }
   const renderIcon = () => {
     return valid ? <YesIcon /> : <LoaderIcon />
   }
   const renderState = () => {
-    return valid ? '已完成' : '待选择'
+    return valid ? t('project.stage.state.done') : t('project.stage.state.waiting')
+  }
+
+  const filters = datasets => {
+    const fields = stages.filter(({ type, field }) => !type && stage.field !== field)
+      .map(({ field }) => field)
+    const ids = fields.map(field => project[field]?.id || project[field])
+    console.log('ids:', ids, fields)
+
+    return datasets.filter(dataset => !ids.includes(dataset.id))
   }
 
   return <Row wrap={false}>
@@ -72,10 +58,10 @@ const Stage = ({ pid, value, stage }) => {
     </Col>
     <Col flex={1}>
       <Form.Item name={stage.field} label={stage.label}
-        tooltip={t(stage.tip)} initialValue={value}
+        tooltip={t(stage.tip)} initialValue={value || null}
         rules={[{ required: !stage.option }]}
       >
-        <Selection pid={pid} changeByUser allowClear={false} />
+        <Selection pid={pid} changeByUser filters={filters} allowClear={stage.option} />
       </Form.Item>
     </Col>
   </Row>
@@ -86,14 +72,9 @@ function getAttrFromProject(field, project = {}) {
   return attr?.id ? attr.id : attr
 }
 
-const stages = [
-  { field: 'candidateTrainSet', option: true, label: '训练集准备', tip: 'project.add.trainset.tip', },
-  { field: 'testSet', label: '测试集准备', tip: 'project.add.testset.tip', },
-  { field: 'miningSet', label: '挖掘集准备', tip: 'project.add.miningset.tip', },
-  { field: 'modelStage', label: '初始模型准备', tip: 'tip.task.filter.model', type: 1 },
-]
 function Prepare({ project = {}, fresh = () => { }, ...func }) {
-  const prepared = useSelector(({ project }) => project.prepared)
+  const location = useLocation()
+  console.log('location:', location)
   const [validPrepare, setValidPrepare] = useState(false)
   const [id, setId] = useState(null)
   const [result, updateProject] = useFetch('project/updateProject')
@@ -112,15 +93,9 @@ function Prepare({ project = {}, fresh = () => { }, ...func }) {
 
   useEffect(() => {
     if (mergeResult) {
-      updateProject({ id, trainSetVersion: mergeResult.id })
+      updateAndCreateIteration(mergeResult.id)
     }
   }, [mergeResult])
-
-  useEffect(() => {
-    if (prepared) {
-      createIteration()
-    }
-  }, [prepared])
 
   const formChange = (value, values) => {
     updateProject({ id, ...value })
@@ -136,12 +111,24 @@ function Prepare({ project = {}, fresh = () => { }, ...func }) {
     }
     const result = await func.createIteration(params)
     if (result) {
-      fresh(result)
+      fresh()
+      window.location.reload()
+    }
+  }
+
+  async function updateAndCreateIteration(trainSetVersion) {
+    const updateResult = updateProject({ id, trainSetVersion })
+    if (updateResult) {
+      createIteration()
     }
   }
 
   function mergeTrainSet() {
-    const params = {}
+    const params = {
+      projectId: id,
+      dataset: project.trainSetVersion, 
+      includes: [project.candidateTrainSet]
+    }
     merge(params)
   }
 
@@ -151,17 +138,27 @@ function Prepare({ project = {}, fresh = () => { }, ...func }) {
     setValidPrepare(valid)
   }
 
-  return (
+  function start() {
+    if (project.candidateTrainSet) {
+      mergeTrainSet()
+    } else {
+      createIteration()
+    }
+  }
+
+return (
     <div className={s.iteration}>
       <Form layout="vertical" onValuesChange={formChange}>
         <Row style={{ justifyContent: 'flex-end' }}>
           {stages.map((stage, index) => (
             <Col key={stage.field} span={6}>
-              <Stage stage={stage} value={getAttrFromProject(stage.field, project)} pid={id} />
+              <Stage stage={stage} value={getAttrFromProject(stage.field, project)} project={project} pid={id} />
             </Col>
           ))}
         </Row>
-        <div className={s.createBtn}><Button type='primary' disabled={!validPrepare} onClick={createIteration}>使用迭代功能提升模型效果</Button></div>
+        <div className={s.createBtn}>
+          <Button type='primary' disabled={!validPrepare} onClick={start}>{t('project.prepare.start')}</Button>
+        </div>
       </Form>
     </div>
   )

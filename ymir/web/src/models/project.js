@@ -24,8 +24,6 @@ const initState = {
     total: 0,
   },
   projects: {},
-  prepareTrainSet: null,
-  prepared: false,
 }
 
 export default {
@@ -84,11 +82,12 @@ export default {
       const { id, ...params } = payload
       const { code, result } = yield call(updateProject, id, params)
       if (code === 0) {
+        const project = transferProject(result)
         yield put({
-          type: 'UPDATE_PREPARETRAINSET',
-          payload: params.trainSetVersion,
+          type: "UPDATE_PROJECTS",
+          payload: project,
         })
-        return transferProject(result)
+        return project
       }
     },
     *updateQuery({ payload = {} }, { put, select }) {
@@ -118,19 +117,6 @@ export default {
         return result
       }
     },
-    *updateProjectTrainSet({ payload }, { put, select }) {
-      const trainset = yield select(({ project }) => project.prepareTrainSet)
-      const tasks = Object.values(payload || {})
-      const task = tasks.find(task => task?.result_dataset?.id === trainset)
-      if (!trainset || !task) {
-        return
-      }
-      
-      yield put({
-        type: "UPDATE_PREPARED",
-        payload: validState(task.result_state),
-      })
-    },
   },
   reducers: {
     UPDATE_LIST(state, { payload }) {
@@ -152,13 +138,6 @@ export default {
       return {
         ...state,
         prepareTrainSet: payload,
-      }
-    },
-    
-    UPDATE_PREPARED(state, { payload }) {
-      return {
-        ...state,
-        prepared: payload,
       }
     },
     UPDATE_QUERY(state, { payload }) {
