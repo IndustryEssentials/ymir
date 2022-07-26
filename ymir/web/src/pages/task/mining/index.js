@@ -9,6 +9,7 @@ import t from "@/utils/t"
 import { string2Array } from '@/utils/string'
 import { TYPES } from '@/constants/image'
 import { randomNumber } from "@/utils/number"
+import useFetch from '@/hooks/useFetch'
 
 import Breadcrumbs from "@/components/common/breadcrumb"
 import EmptyStateDataset from '@/components/empty/dataset'
@@ -23,6 +24,7 @@ import Desc from "@/components/form/desc"
 
 import commonStyles from "../common.less"
 import styles from "./index.less"
+import OpenpaiForm from "../components/openpaiForm"
 
 function Mining({ datasetCache, ...func }) {
   const pageParams = useParams()
@@ -40,10 +42,22 @@ function Mining({ datasetCache, ...func }) {
   const [gpu_count, setGPU] = useState(0)
   const [imageHasInference, setImageHasInference] = useState(false)
   const [live, setLiveCode] = useState(false)
+  const [openpai, setOpenpai] = useState(false)
+  const [sys, getSysInfo] = useFetch('common/getSysInfo', {})
+  const selectOpenpai = Form.useWatch('openpai', form)
 
   useEffect(() => {
-    fetchSysInfo()
+    getSysInfo()
   }, [])
+
+  useEffect(() => {
+    setGPU(sys.gpu_count || 0)
+    setOpenpai(!!sys.openpai_enabled)
+  }, [sys])
+
+  useEffect(() => {
+    setGPU(selectOpenpai ? 8 : sys.gpu_count || 0)
+  }, [selectOpenpai])
 
   useEffect(() => {
     form.setFieldsValue({ hyperparam: seniorConfig })
@@ -59,17 +73,6 @@ function Mining({ datasetCache, ...func }) {
       setDataset(cache)
     }
   }, [datasetCache])
-
-  async function fetchSysInfo() {
-    const result = await func.getSysInfo()
-    if (result) {
-      setGPU(result.gpu_count)
-    }
-  }
-
-  function filterStrategyChange({ target }) {
-    setTopk(target.value)
-  }
 
   function imageChange(_, image = {}) {
     const { url, configs = [] } = image
@@ -159,7 +162,7 @@ function Mining({ datasetCache, ...func }) {
               <ImageSelect placeholder={t('task.train.form.image.placeholder')}
                 relatedId={selectedModel?.task?.parameters?.docker_image_id} type={TYPES.MINING} onChange={imageChange} />
             </Form.Item>
-
+            <OpenpaiForm form={form} openpai={openpai} />
             <ConfigProvider renderEmpty={() => <EmptyStateDataset add={() => history.push(`/home/dataset/add/${pid}`)} />}>
 
               <Form.Item
