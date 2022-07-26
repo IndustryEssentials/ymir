@@ -7,7 +7,7 @@ import t from '@/utils/t'
 import useFetch from '@/hooks/useFetch'
 
 
-const ModelSelect = ({ pid, value, onlyModel, onChange = () => { }, ...resProps }) => {
+const ModelSelect = ({ pid, value, onlyModel, changeByUser, onChange = () => { }, ...resProps }) => {
   const allModels = useSelector(state => state.model.allModels)
   const [options, setOptions] = useState([])
   const [models, setModels] = useState([])
@@ -19,7 +19,7 @@ const ModelSelect = ({ pid, value, onlyModel, onChange = () => { }, ...resProps 
 
   useEffect(() => {
     if (options.length) {
-      if (value) {
+      if (value && !changeByUser) {
         if (resProps.multiple) {
           const opts = options.filter(opt => value.some(([model]) => opt.model.id === model)).map(opt => [opt, opt.value])
           onChange(value, opts)
@@ -68,8 +68,8 @@ const ModelSelect = ({ pid, value, onlyModel, onChange = () => { }, ...resProps 
   }
 
   return (
-    <Cascader value={value} {...resProps} onChange={onChange} options={options}
-      showCheckedStrategy={Cascader.SHOW_CHILD} showSearch={{ filter }} allowClear></Cascader>
+    <Cascader value={value} onChange={onChange} options={options}
+      showCheckedStrategy={Cascader.SHOW_CHILD} showSearch={{ filter }} allowClear {...resProps}></Cascader>
   )
 }
 

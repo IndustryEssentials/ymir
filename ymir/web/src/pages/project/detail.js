@@ -24,8 +24,12 @@ function ProjectDetail(func) {
       setProject(result)
     }
   }
-  const fresh = useCallback(() => {
-    fetchProject(true)
+  const fresh = useCallback((updateProject) => {
+    if (updateProject) {
+      setProject(updateProject)
+    } else {
+      fetchProject(true)
+    }
   }, [])
 
   async function fetchIterations(pid) {

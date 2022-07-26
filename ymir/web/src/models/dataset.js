@@ -298,6 +298,28 @@ export default {
         return result
       }
     },
+    *update({ payload }, { put, select }) {
+      const ds = payload
+      if (!ds) {
+        return
+      }
+      const { versions } = yield select(({ dataset }) => dataset)
+      // update versions
+      const target = versions[ds.groupId] || []
+      yield put({
+        type: 'UPDATE_VERSIONS', payload: {
+          id: ds.groupId,
+          versions: [ds, ...target],
+        }
+      })
+      // update dataset
+      yield put({
+        type: 'UPDATE_DATASET', payload: {
+          id: ds.id,
+          dataset: ds,
+        }
+      })
+    },
   },
   reducers: {
     UPDATE_DATASETS(state, { payload }) {
