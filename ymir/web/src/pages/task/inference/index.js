@@ -222,7 +222,7 @@ function Inference({ datasetCache, datasets, ...func }) {
             onFinish={onFinish}
             onFinishFailed={onFinishFailed}
           >
-            <ConfigProvider renderEmpty={() => <EmptyStateDataset add={() => history.push(`/home/dataset/add/${pid}`)} />}>
+            <ConfigProvider renderEmpty={() => <EmptyStateDataset add={() => history.push(`/home/project/${pid}/dataset/add`)} />}>
 
               <Form.Item
                 label={t('task.inference.form.dataset.label')}
