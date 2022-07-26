@@ -26,12 +26,9 @@ import Desc from "@/components/form/desc"
 
 import styles from "./index.less"
 import commonStyles from "../common.less"
+import OpenpaiForm from "../components/openpaiForm"
 
 const TrainType = [{ value: "detection", label: 'task.train.form.traintypes.detect', checked: true }]
-const TrainDevices = [
-  { value: false, label: 'task.train.device.local', checked: true, },
-  { value: true, label: 'task.train.device.openpai', },
-]
 
 const duplicatedOptions = [
   { value: 1, label: 'task.train.duplicated.option.train' },
@@ -65,6 +62,7 @@ function Train({ allDatasets, datasetCache, keywords, ...func }) {
   const [allDuplicated, setAllDulplicated] = useState(false)
   const [duplicated, checkDuplication] = useFetch('dataset/checkDuplication', 0)
   const [sys, getSysInfo] = useFetch('common/getSysInfo', {})
+  const selectOpenpai = Form.useWatch('openpai', form)
 
   const renderRadio = (types) => <Radio.Group options={types.map(type => ({ ...type, label: t(type.label) }))} />
 
@@ -79,8 +77,8 @@ function Train({ allDatasets, datasetCache, keywords, ...func }) {
   }, [sys])
 
   useEffect(() => {
-    form.setFieldsValue({ openpai: openpai })
-  }, [openpai])
+    setGPU(selectOpenpai ? 4 : sys.gpu_count || 0)
+  }, [selectOpenpai])
 
   useEffect(() => {
     func.getKeywords({ limit: 100000 })
@@ -238,7 +236,6 @@ function Train({ allDatasets, datasetCache, keywords, ...func }) {
     image: image ? parseInt(image) : undefined,
     modelStage: stage,
     trainType: getCheckedValue(TrainType),
-    openpai: getCheckedValue(TrainDevices),
     gpu_count: 1,
   }
   return (
@@ -271,11 +268,7 @@ function Train({ allDatasets, datasetCache, keywords, ...func }) {
             ]} tooltip={t('tip.task.train.image')}>
               <ImageSelect placeholder={t('task.train.form.image.placeholder')} onChange={imageChange} />
             </Form.Item>
-
-            {openpai ? <Form.Item label={t('task.train.form.platform.label')} name='openpai'>
-              {renderRadio(TrainDevices)}
-            </Form.Item> : null}
-
+            <OpenpaiForm form={form} openpai={openpai} />
             <ConfigProvider renderEmpty={() => <EmptyState add={() => history.push(`/home/dataset/add/${pid}`)} />}>
               <Form.Item
                 label={t('task.train.form.trainsets.label')}
