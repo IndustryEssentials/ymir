@@ -309,6 +309,10 @@ def get_assets_of_dataset(
     offset: int = 0,
     limit: int = settings.DEFAULT_LIMIT,
     keyword: Optional[str] = Query(None),
+    FN: Optional[bool] = Query(None),
+    MTP: Optional[bool] = Query(None),
+    FP: Optional[bool] = Query(None),
+    TP: Optional[bool] = Query(None),
     viz_client: VizClient = Depends(deps.get_viz_client),
     current_user: models.User = Depends(deps.get_current_active_user),
     user_labels: UserLabels = Depends(deps.get_user_labels),
@@ -330,6 +334,10 @@ def get_assets_of_dataset(
     )
     assets = viz_client.get_assets(
         keyword_id=keyword_id,
+        FN=FN,
+        MTP=MTP,
+        FP=FP,
+        TP=TP,
         limit=limit,
         offset=offset,
     )

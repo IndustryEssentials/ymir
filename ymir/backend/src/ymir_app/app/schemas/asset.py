@@ -28,6 +28,8 @@ class Asset(AssetBase):
     annotations: Optional[List[Dict]]
     metadata: Optional[Dict]
     keywords: Optional[List[str]]
+    gt: Optional[Dict]
+    pred: Optional[Dict]
 
 
 class AssetOut(Common):

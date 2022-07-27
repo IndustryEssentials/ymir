@@ -24,6 +24,8 @@ class Asset:
     annotations: List[Dict]
     keywords: List[str]
     metadata: Dict
+    gt: Optional[Dict]
+    pred: Optional[Dict]
 
     @classmethod
     def from_viz_res(cls, asset_id: str, res: Dict, user_labels: UserLabels) -> "Asset":
@@ -48,6 +50,8 @@ class Asset:
             annotations,
             keywords,  # type: ignore
             metadata,
+            res.get("gt"),
+            res.get("pred"),
         )
 
 
@@ -63,6 +67,8 @@ class Assets:
                 "url": get_asset_url(asset["asset_id"]),
                 "hash": asset["asset_id"],
                 "keywords": user_labels.get_main_names(class_ids=asset["class_ids"]),
+                "gt": asset.get("gt"),
+                "pred": asset.get("pred"),
             }
             for asset in res["elements"]
         ]
@@ -234,11 +240,15 @@ class VizClient:
         self,
         *,
         keyword_id: Optional[int] = None,
+        FN: Optional[bool] = None,
+        MTP: Optional[bool] = None,
+        FP: Optional[bool] = None,
+        TP: Optional[bool] = None,
         offset: int = 0,
         limit: int = 20,
     ) -> Assets:
         url = f"{self._url_prefix}/{self._branch_id}/assets"
-        payload = {"class_id": keyword_id, "limit": limit, "offset": offset}
+        payload = {"class_id": keyword_id, "FN": FN, "MTP": MTP, "FP": FP, "TP": TP, "limit": limit, "offset": offset}
         resp = self.session.get(url, params=payload, timeout=settings.VIZ_TIMEOUT)
         if not resp.ok:
             logger.error("[viz] failed to get assets info: %s", resp.content)
