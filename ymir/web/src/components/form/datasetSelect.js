@@ -52,19 +52,19 @@ const DatasetSelect = ({
     return datasets.filter(ds => ds.assetCount)
   }
 
-  const select = <ConfigProvider renderEmpty={() => <EmptyState add={() => history.push(`/home/project/${pid}/dataset/add`)} />}>
+  const select = <ConfigProvider renderEmpty={() => <EmptyState />}>
     <Select
-    value={value}
-    placeholder={t('task.train.form.training.datasets.placeholder')}
-    onChange={onChange}
-    showArrow
-    allowClear
-    showSearch
-    options={options}
-    filterOption={(input, option) => option.dataset.name.toLowerCase().indexOf(input.toLowerCase()) >= 0}
-    {...resProps}
-  >
-  </Select>
+      value={value}
+      placeholder={t('task.train.form.training.datasets.placeholder')}
+      onChange={onChange}
+      showArrow
+      allowClear
+      showSearch
+      options={options}
+      filterOption={(input, option) => option.dataset.name.toLowerCase().indexOf(input.toLowerCase()) >= 0}
+      {...resProps}
+    >
+    </Select>
   </ConfigProvider>
 
   return extra ? <Row gutter={20} wrap={false}><Col flex={1}>{select}</Col><Col>{extra}</Col></Row> : select
