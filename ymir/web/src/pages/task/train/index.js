@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react"
 import { connect } from "dva"
-import { Select, Card, Input, Radio, Button, Form, Row, Col, ConfigProvider, Space, InputNumber, Tag } from "antd"
+import { Select, Card, Input, Radio, Button, Form, Row, Col, Space, InputNumber, Tag } from "antd"
 import { formLayout } from "@/config/antd"
 import { useHistory, useParams, useLocation } from "umi"
 
@@ -11,7 +11,6 @@ import { randomNumber } from "@/utils/number"
 import useFetch from '@/hooks/useFetch'
 
 import Breadcrumbs from "@/components/common/breadcrumb"
-import EmptyStateModel from '@/components/empty/model'
 import ImageSelect from "@/components/form/imageSelect"
 import ModelSelect from "@/components/form/modelSelect"
 import KeywordRates from "@/components/dataset/keywordRates"
@@ -327,16 +326,13 @@ function Train({ allDatasets, datasetCache, keywords, ...func }) {
                   ))}
                 </Select>
               </Form.Item>}
-            <ConfigProvider renderEmpty={() => <EmptyStateModel id={pid} />}>
-              <Form.Item
-                label={t('task.detail.label.premodel')}
-                name="modelStage"
-                tooltip={t('tip.task.train.model')}
-              >
-                <ModelSelect placeholder={t('task.train.form.model.placeholder')} pid={pid} />
-              </Form.Item>
-            </ConfigProvider>
-
+            <Form.Item
+              label={t('task.detail.label.premodel')}
+              name="modelStage"
+              tooltip={t('tip.task.train.model')}
+            >
+              <ModelSelect placeholder={t('task.train.form.model.placeholder')} pid={pid} />
+            </Form.Item>
             <Form.Item
               hidden
               label={t('task.train.form.traintype.label')}

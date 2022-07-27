@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState } from "react"
 import { connect } from "dva"
-import { Select, Card, Button, Form, Row, Col, ConfigProvider, Space, InputNumber, message, Tag, Alert } from "antd"
+import { Select, Card, Button, Form, Row, Col, Space, InputNumber, message, Tag, Alert } from "antd"
 import { useHistory, useParams, useLocation } from "umi"
 
 import { formLayout } from "@/config/antd"
@@ -10,7 +10,6 @@ import { TYPES } from '@/constants/image'
 import useFetch from '@/hooks/useFetch'
 
 import Breadcrumbs from "@/components/common/breadcrumb"
-import EmptyStateModel from '@/components/empty/model'
 import { randomNumber } from "@/utils/number"
 import ModelSelect from "@/components/form/modelSelect"
 import ImageSelect from "@/components/form/imageSelect"
@@ -237,26 +236,24 @@ function Inference({ datasetCache, datasets, ...func }) {
                 placeholder={t('task.inference.form.dataset.placeholder')}
               />
             </Form.Item>
-            <ConfigProvider renderEmpty={() => <EmptyStateModel id={pid} />}>
-              <Form.Item required
-                tooltip={t('tip.task.filter.imodel')}
-                label={t('task.mining.form.model.label')}>
-                <Form.Item
-                  noStyle
-                  name="stages"
-                  rules={[
-                    { required: true, message: t('task.mining.form.model.required') },
-                  ]}
-                >
-                  <ModelSelect multiple placeholder={t('task.inference.form.model.required')} onChange={modelChange} pid={pid} />
-                </Form.Item>
-                <div style={{ marginTop: 10 }}>
-                  <Button size='small' type="primary" onClick={() => selectModelFromIteration()}>
-                    {t('task.inference.model.iters')}
-                  </Button>
-                </div>
+            <Form.Item required
+              tooltip={t('tip.task.filter.imodel')}
+              label={t('task.mining.form.model.label')}>
+              <Form.Item
+                noStyle
+                name="stages"
+                rules={[
+                  { required: true, message: t('task.mining.form.model.required') },
+                ]}
+              >
+                <ModelSelect multiple placeholder={t('task.inference.form.model.required')} onChange={modelChange} pid={pid} />
               </Form.Item>
-            </ConfigProvider>
+              <div style={{ marginTop: 10 }}>
+                <Button size='small' type="primary" onClick={() => selectModelFromIteration()}>
+                  {t('task.inference.model.iters')}
+                </Button>
+              </div>
+            </Form.Item>
 
             <Form.Item name='image' tooltip={t('tip.task.inference.image')} label={t('task.inference.form.image.label')} rules={[
               { required: true, message: t('task.inference.form.image.required') }

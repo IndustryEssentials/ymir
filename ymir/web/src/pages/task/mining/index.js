@@ -177,21 +177,16 @@ function Mining({ datasetCache, ...func }) {
                 onChange={setsChange}
               />
             </Form.Item>
-
-
-            <ConfigProvider renderEmpty={() => <EmptyStateModel id={pid} />}>
-              <Form.Item
-                label={t('task.mining.form.model.label')}
-                tooltip={t('tip.task.filter.model')}
-                name="modelStage"
-                rules={[
-                  { required: true, message: t('task.mining.form.model.required') },
-                ]}
-              >
-                <ModelSelect placeholder={t('task.mining.form.mining.model.required')} onChange={modelChange} pid={pid} />
-              </Form.Item>
-            </ConfigProvider>
-
+            <Form.Item
+              label={t('task.mining.form.model.label')}
+              tooltip={t('tip.task.filter.model')}
+              name="modelStage"
+              rules={[
+                { required: true, message: t('task.mining.form.model.required') },
+              ]}
+            >
+              <ModelSelect placeholder={t('task.mining.form.mining.model.required')} onChange={modelChange} pid={pid} />
+            </Form.Item>
             <Form.Item
               tooltip={t('tip.task.filter.strategy')}
               label={t('task.mining.form.strategy.label')}

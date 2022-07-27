@@ -1,11 +1,11 @@
-import { Cascader } from 'antd'
+import { Cascader, ConfigProvider } from 'antd'
 import { useSelector } from 'umi'
 import { useEffect, useState } from 'react'
 
 import { percent } from '@/utils/number'
 import t from '@/utils/t'
 import useFetch from '@/hooks/useFetch'
-
+import EmptyStateModel from '@/components/empty/model'
 
 const ModelSelect = ({ pid, value, onlyModel, changeByUser, onChange = () => { }, ...resProps }) => {
   const allModels = useSelector(state => state.model.allModels)
@@ -82,8 +82,10 @@ const ModelSelect = ({ pid, value, onlyModel, changeByUser, onChange = () => { }
   }
 
   return (
-    <Cascader value={ms} onChange={onChange} options={options}
-      showCheckedStrategy={Cascader.SHOW_CHILD} showSearch={{ filter }} allowClear {...resProps}></Cascader>
+    <ConfigProvider renderEmpty={() => <EmptyStateModel />}>
+      <Cascader value={ms} onChange={onChange} options={options}
+        showCheckedStrategy={Cascader.SHOW_CHILD} showSearch={{ filter }} allowClear {...resProps}></Cascader>
+    </ConfigProvider>
   )
 }
 
