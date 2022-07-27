@@ -7,14 +7,16 @@ import { formLayout } from "@/config/antd"
 import t from "@/utils/t"
 import { randomNumber } from "@/utils/number"
 import { MiningStrategy } from '@/constants/project'
+
 import Breadcrumbs from "@/components/common/breadcrumb"
 import EmptyState from '@/components/empty/dataset'
-import s from "./index.less"
-import commonStyles from "../common.less"
-import Tip from "@/components/form/tip"
 import RecommendKeywords from "@/components/common/recommendKeywords"
 import Panel from "@/components/form/panel"
 import DatasetSelect from "@/components/form/datasetSelect"
+import Desc from "@/components/form/desc"
+
+import s from "./index.less"
+import commonStyles from "../common.less"
 
 const { Option } = Select
 
