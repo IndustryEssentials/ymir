@@ -215,15 +215,15 @@ function Train({ allDatasets, datasetCache, keywords, ...func }) {
   }
 
   const matchKeywords = dataset => dataset.keywords.some(kw => selectedKeywords.includes(kw))
+    const notTestingSet = id => !testingSetIds.includes(id)
   const trainsetFilters = datasets => datasets.filter(ds => {
     const notTestSet = ds.id !== testSet
-    const notTestingSet = !testingSetIds.includes(ds.id)
-    return matchKeywords(ds) && notTestSet && notTestingSet
+    return matchKeywords(ds) && notTestSet && notTestingSet(ds.id)
   })
 
   const validationSetFilters = datasets => datasets.filter(ds => {
     const notTrainSet = ds.id !== trainSet
-    return matchKeywords(ds) && notTrainSet
+    return matchKeywords(ds) && notTrainSet && notTestingSet(ds.id)
   })
 
   const getCheckedValue = (list) => list.find((item) => item.checked)["value"]
