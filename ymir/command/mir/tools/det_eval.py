@@ -368,7 +368,7 @@ class CocoDetEval:
         A = len(p.areaRng)
         M = len(p.maxDets)
         precision = -np.ones((T, R, K, A, M))  # -1 for the precision of absent categories
-        precision_voc = -np.ones((T, K, A, M))
+        precision_voc = -np.ones((T, K, A, M))  # store all precision data points
         recall = -np.ones((T, K, A, M))
         scores = -np.ones((T, R, K, A, M))
         all_tps = np.zeros((T, K, A, M))
@@ -867,7 +867,7 @@ def voc_ap(rec: np.ndarray, prec: np.ndarray, use_07_metric: bool = False) -> fl
         # correct AP calculation
         # first append sentinel values at the end
         mrec = np.concatenate(([0.0], rec, [1.0]))  # type: ignore
-        mpre = np.concatenate(([0.0], prec, [0.0]))  # type: ignore
+        mpre = np.concatenate(([0.0], prec, [0.0])) # type: ignore
 
         # compute the precision envelope
         for i in range(mpre.size - 1, 0, -1):
@@ -875,7 +875,7 @@ def voc_ap(rec: np.ndarray, prec: np.ndarray, use_07_metric: bool = False) -> fl
 
         # to calculate area under PR curve, look for points
         # where X axis (recall) changes value
-        i = np.where(mrec[1:] != mrec[:-1])[0]  # type: ignore
+        i = np.where(mrec[1:] != mrec[:-1])[0]
 
         # and sum (\Delta recall) * prec
         ap = np.sum((mrec[i + 1] - mrec[i]) * mpre[i + 1])
