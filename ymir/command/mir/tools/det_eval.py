@@ -368,6 +368,7 @@ class CocoDetEval:
         A = len(p.areaRng)
         M = len(p.maxDets)
         precision = -np.ones((T, R, K, A, M))  # -1 for the precision of absent categories
+        precision_voc = -np.ones((T, K, A, M))
         recall = -np.ones((T, K, A, M))
         scores = -np.ones((T, R, K, A, M))
         all_tps = np.zeros((T, K, A, M))
@@ -433,8 +434,10 @@ class CocoDetEval:
 
                         if nd:
                             recall[t, k, a, m] = rc[-1]
+                            precision_voc[t, k, a, m] = pr[-1]
                         else:
                             recall[t, k, a, m] = 0
+                            precision_voc[t, k, a, m] = 0
 
                         # numpy is slow without cython optimization for accessing elements
                         # use python array gets significant speed improvement
@@ -459,6 +462,7 @@ class CocoDetEval:
             'params': p,
             'counts': [T, R, K, A, M],
             'precision': precision,
+            'precision_voc': precision_voc,
             'recall': recall,
             'scores': scores,
             'all_fps': all_fps,
@@ -523,16 +527,16 @@ class CocoDetEval:
         ee = mirpb.SingleEvaluationElement()
 
         # average precision
-        # precision dims: iouThrs * recThrs * catIds * areaRanges * maxDets
-        precisions: np.ndarray = self.eval['precision']
+        # PASCAL VOC
+        # precision_voc dims: iouThrs * catIds * areaRanges * maxDets
+        precisions: np.ndarray = self.eval['precision_voc']
         if iou_thr_index is not None:
             precisions = precisions[[iou_thr_index]]
         if class_id_index is not None:
-            precisions = precisions[:, :, class_id_index, area_ranges_index, max_dets_index]
+            precisions = precisions[:, class_id_index, area_ranges_index, max_dets_index]
         else:
-            precisions = precisions[:, :, :, area_ranges_index, max_dets_index]
+            precisions = precisions[:, :, area_ranges_index, max_dets_index]
         precisions[precisions <= -1] = 0
-        ee.ap = np.mean(precisions) if len(precisions) > 0 else -1
 
         # average recall
         # recall dims: iouThrs * catIds * areaRanges * maxDets
@@ -544,7 +548,9 @@ class CocoDetEval:
         else:
             recalls = recalls[:, :, area_ranges_index, max_dets_index]
         recalls[recalls <= -1] = 0
+
         ee.ar = np.mean(recalls) if len(recalls) > 0 else -1
+        ee.ap = voc_ap(recalls, precisions)
 
         # true positive
         ee.tp = _get_tp_tn_or_fn(iou_thr_index=iou_thr_index,
@@ -840,3 +846,37 @@ def _show_evaluation(evaluation: mirpb.Evaluation) -> None:
     for dataset_id, dataset_evaluation in evaluation.dataset_evaluations.items():
         cae = dataset_evaluation.iou_averaged_evaluation.ci_averaged_evaluation
         logging.info(f"gt: {gt_dataset_id}, pred: {dataset_id}, mAP: {cae.ap}")
+
+
+def voc_ap(rec: np.ndarray, prec: np.ndarray, use_07_metric: bool = False) -> float:
+    """ap = voc_ap(rec, prec, [use_07_metric])
+    Compute VOC AP given precision and recall.
+    If use_07_metric is true, uses the
+    VOC 07 11 point method (default:False).
+    """
+    if use_07_metric:
+        # 11 point metric
+        ap = 0.0
+        for t in np.arange(0.0, 1.1, 0.1):
+            if np.sum(rec >= t) == 0:
+                p = 0
+            else:
+                p = np.max(prec[rec >= t])
+            ap = ap + p / 11.0
+    else:
+        # correct AP calculation
+        # first append sentinel values at the end
+        mrec = np.concatenate(([0.0], rec, [1.0]))  # type: ignore
+        mpre = np.concatenate(([0.0], prec, [0.0]))  # type: ignore
+
+        # compute the precision envelope
+        for i in range(mpre.size - 1, 0, -1):
+            mpre[i - 1] = np.maximum(mpre[i - 1], mpre[i])
+
+        # to calculate area under PR curve, look for points
+        # where X axis (recall) changes value
+        i = np.where(mrec[1:] != mrec[:-1])[0]  # type: ignore
+
+        # and sum (\Delta recall) * prec
+        ap = np.sum((mrec[i + 1] - mrec[i]) * mpre[i + 1])
+    return ap
