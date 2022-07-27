@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react"
 import { connect } from "dva"
-import { Select, Card, Input, Radio, Button, Form, Row, Col, ConfigProvider, Space, InputNumber, Tag, message } from "antd"
+import { Select, Card, Input, Radio, Button, Form, Row, Col, ConfigProvider, Space, InputNumber, Tag } from "antd"
 import { formLayout } from "@/config/antd"
 import { useHistory, useParams, useLocation } from "umi"
 
@@ -11,7 +11,6 @@ import { randomNumber } from "@/utils/number"
 import useFetch from '@/hooks/useFetch'
 
 import Breadcrumbs from "@/components/common/breadcrumb"
-import EmptyState from '@/components/empty/dataset'
 import EmptyStateModel from '@/components/empty/model'
 import ImageSelect from "@/components/form/imageSelect"
 import ModelSelect from "@/components/form/modelSelect"
@@ -269,43 +268,41 @@ function Train({ allDatasets, datasetCache, keywords, ...func }) {
               <ImageSelect placeholder={t('task.train.form.image.placeholder')} onChange={imageChange} />
             </Form.Item>
             <OpenpaiForm form={form} openpai={openpai} />
-            <ConfigProvider renderEmpty={() => <EmptyState add={() => history.push(`/home/project/${pid}/dataset/add`)} />}>
-              <Form.Item
-                label={t('task.train.form.trainsets.label')}
-                required
-                name="datasetId"
-                rules={[
-                  { required: true, message: t('task.train.form.trainset.required') },
-                ]}
-              >
-                <DatasetSelect
-                  pid={pid}
-                  filters={trainsetFilters}
-                  onChange={trainSetChange}
-                />
-              </Form.Item>
-              {trainSet ?
-                <Form.Item label={t('dataset.train.form.samples')}>
-                  <KeywordRates dataset={trainSet}></KeywordRates>
-                </Form.Item> : null}
-              <Form.Item
-                label={t('task.train.form.testsets.label')}
-                name="testset"
-                rules={[
-                  { required: true, message: t('task.train.form.testset.required') },
-                ]}
-                tooltip={t('tip.task.filter.testsets')}
-                extra={duplicationChecked ? duplicatedRender() : null}
-              >
-                <DatasetSelect
-                  pid={pid}
-                  filters={validationSetFilters}
-                  placeholder={t('task.train.form.test.datasets.placeholder')}
-                  onChange={validationSetChange}
-                  extra={<Button disabled={!trainSet || !testSet} type="primary" onClick={checkDuplicated}>{t('task.train.action.duplicated')}</Button>}
-                />
-              </Form.Item>
-            </ConfigProvider>
+            <Form.Item
+              label={t('task.train.form.trainsets.label')}
+              required
+              name="datasetId"
+              rules={[
+                { required: true, message: t('task.train.form.trainset.required') },
+              ]}
+            >
+              <DatasetSelect
+                pid={pid}
+                filters={trainsetFilters}
+                onChange={trainSetChange}
+              />
+            </Form.Item>
+            {trainSet ?
+              <Form.Item label={t('dataset.train.form.samples')}>
+                <KeywordRates dataset={trainSet}></KeywordRates>
+              </Form.Item> : null}
+            <Form.Item
+              label={t('task.train.form.testsets.label')}
+              name="testset"
+              rules={[
+                { required: true, message: t('task.train.form.testset.required') },
+              ]}
+              tooltip={t('tip.task.filter.testsets')}
+              extra={duplicationChecked ? duplicatedRender() : null}
+            >
+              <DatasetSelect
+                pid={pid}
+                filters={validationSetFilters}
+                placeholder={t('task.train.form.test.datasets.placeholder')}
+                onChange={validationSetChange}
+                extra={<Button disabled={!trainSet || !testSet} type="primary" onClick={checkDuplicated}>{t('task.train.action.duplicated')}</Button>}
+              />
+            </Form.Item>
             {iterationId ? <Form.Item label={t('task.train.form.keywords.label')}>
               {project?.keywords?.map(keyword => <Tag key={keyword}>{keyword}</Tag>)}
             </Form.Item> :

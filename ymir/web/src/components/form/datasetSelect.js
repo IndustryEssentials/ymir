@@ -1,7 +1,9 @@
-import { Col, Row, Select } from 'antd'
+import { Col, ConfigProvider, Row, Select } from 'antd'
 import { connect } from 'umi'
 import { useEffect, useState } from 'react'
 import t from '@/utils/t'
+
+import EmptyState from '@/components/empty/dataset'
 
 const defaultLabelRender = item => <>{item.name} {item.versionName}(assets: {item.assetCount})</>
 
@@ -50,7 +52,8 @@ const DatasetSelect = ({
     return datasets.filter(ds => ds.assetCount)
   }
 
-  const select = <Select
+  const select = <ConfigProvider renderEmpty={() => <EmptyState add={() => history.push(`/home/project/${pid}/dataset/add`)} />}>
+    <Select
     value={value}
     placeholder={t('task.train.form.training.datasets.placeholder')}
     onChange={onChange}
@@ -62,6 +65,7 @@ const DatasetSelect = ({
     {...resProps}
   >
   </Select>
+  </ConfigProvider>
 
   return extra ? <Row gutter={20} wrap={false}><Col flex={1}>{select}</Col><Col>{extra}</Col></Row> : select
 }

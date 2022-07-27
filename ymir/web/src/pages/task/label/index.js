@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react"
 import { connect } from "dva"
-import { Select, Input, Card, Button, Form, Row, Col, Checkbox, ConfigProvider, Space, Radio, Tag, } from "antd"
+import { Select, Input, Card, Button, Form, Row, Col, Checkbox, Space, Radio, } from "antd"
 import { useHistory, useParams, Link, useLocation } from "umi"
 
 import { formLayout } from "@/config/antd"

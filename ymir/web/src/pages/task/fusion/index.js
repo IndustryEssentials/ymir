@@ -1,6 +1,6 @@
-import React, { useState, useEffect, memo, useMemo } from "react"
+import React, { useState, useEffect } from "react"
 import { connect } from "dva"
-import { Input, Select, Button, Form, message, ConfigProvider, Card, Space, Radio, Row, Col, InputNumber, Checkbox } from "antd"
+import { Select, Button, Form, message, Card, Space, Radio, Row, Col, InputNumber, Checkbox } from "antd"
 import { useHistory, useLocation, useParams } from "umi"
 
 import { formLayout } from "@/config/antd"
@@ -9,7 +9,6 @@ import { randomNumber } from "@/utils/number"
 import { MiningStrategy } from '@/constants/project'
 
 import Breadcrumbs from "@/components/common/breadcrumb"
-import EmptyState from '@/components/empty/dataset'
 import RecommendKeywords from "@/components/common/recommendKeywords"
 import Panel from "@/components/form/panel"
 import DatasetSelect from "@/components/form/datasetSelect"
@@ -185,47 +184,45 @@ function Fusion({ allDatasets, datasetCache, ...func }) {
             <Form.Item label={t('task.fusion.form.dataset')}><span>{dataset.name} {dataset.versionName} (assets: {dataset.assetCount})</span></Form.Item>
           </Panel>
           <Panel label={t('task.fusion.header.merge')} visible={visibles['merge']} setVisible={(value) => setVisibles(old => ({ ...old, merge: value }))}>
-            <ConfigProvider renderEmpty={() => <EmptyState add={() => history.push(`/home/project/${dataset.projectId}/dataset/add`)} />}>
-              <Form.Item label={t('task.fusion.form.merge.include.label')} name="include_datasets">
-                <DatasetSelect
-                  placeholder={t('task.fusion.form.datasets.placeholder')}
-                  mode='multiple'
-                  pid={pid}
-                  filter={[...excludeDatasets, did]}
-                  allowEmpty={true}
-                  onChange={onIncludeDatasetChange}
-                  showArrow
-                />
+            <Form.Item label={t('task.fusion.form.merge.include.label')} name="include_datasets">
+              <DatasetSelect
+                placeholder={t('task.fusion.form.datasets.placeholder')}
+                mode='multiple'
+                pid={pid}
+                filter={[...excludeDatasets, did]}
+                allowEmpty={true}
+                onChange={onIncludeDatasetChange}
+                showArrow
+              />
+            </Form.Item>
+            <Form.Item name='strategy'
+              hidden={includeDatasets.length < 1}
+              label={t('task.train.form.repeatdata.label')}>
+              <Radio.Group options={[
+                { value: 2, label: t('task.train.form.repeatdata.latest') },
+                { value: 3, label: t('task.train.form.repeatdata.original') },
+                { value: 1, label: t('task.train.form.repeatdata.terminate') },
+              ]} />
+            </Form.Item>
+            {strategy.length ?
+              <Form.Item noStyle>
+                <Row><Col offset={8} flex={1}>
+                  <Checkbox defaultChecked={Number(strategy) !== MiningStrategy.free} onChange={miningStrategyChanged}>
+                    {t(`project.mining.strategy.${strategy}.label`)}
+                  </Checkbox>
+                </Col></Row>
               </Form.Item>
-              <Form.Item name='strategy'
-                hidden={includeDatasets.length < 1}
-                label={t('task.train.form.repeatdata.label')}>
-                <Radio.Group options={[
-                  { value: 2, label: t('task.train.form.repeatdata.latest') },
-                  { value: 3, label: t('task.train.form.repeatdata.original') },
-                  { value: 1, label: t('task.train.form.repeatdata.terminate') },
-                ]} />
-              </Form.Item>
-              {strategy.length ?
-                <Form.Item noStyle>
-                  <Row><Col offset={8} flex={1}>
-                    <Checkbox defaultChecked={Number(strategy) !== MiningStrategy.free} onChange={miningStrategyChanged}>
-                      {t(`project.mining.strategy.${strategy}.label`)}
-                    </Checkbox>
-                  </Col></Row>
-                </Form.Item>
-                : null}
-              <Form.Item label={t('task.fusion.form.merge.exclude.label')} name="exclude_datasets">
-                <DatasetSelect
-                  placeholder={t('task.fusion.form.datasets.placeholder')}
-                  mode='multiple'
-                  pid={pid}
-                  filter={[...includeDatasets, did]}
-                  onChange={onExcludeDatasetChange}
-                  showArrow
-                />
-              </Form.Item>
-            </ConfigProvider>
+              : null}
+            <Form.Item label={t('task.fusion.form.merge.exclude.label')} name="exclude_datasets">
+              <DatasetSelect
+                placeholder={t('task.fusion.form.datasets.placeholder')}
+                mode='multiple'
+                pid={pid}
+                filter={[...includeDatasets, did]}
+                onChange={onExcludeDatasetChange}
+                showArrow
+              />
+            </Form.Item>
           </Panel>
           <Panel label={t('task.fusion.header.filter')} visible={visibles['filter']} setVisible={(value) => setVisibles(old => ({ ...old, filter: value }))}>
             <Form.Item label={t('task.fusion.form.include.label')}

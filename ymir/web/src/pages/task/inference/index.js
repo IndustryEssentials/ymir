@@ -10,7 +10,6 @@ import { TYPES } from '@/constants/image'
 import useFetch from '@/hooks/useFetch'
 
 import Breadcrumbs from "@/components/common/breadcrumb"
-import EmptyStateDataset from '@/components/empty/dataset'
 import EmptyStateModel from '@/components/empty/model'
 import { randomNumber } from "@/utils/number"
 import ModelSelect from "@/components/form/modelSelect"
@@ -222,27 +221,22 @@ function Inference({ datasetCache, datasets, ...func }) {
             onFinish={onFinish}
             onFinishFailed={onFinishFailed}
           >
-            <ConfigProvider renderEmpty={() => <EmptyStateDataset add={() => history.push(`/home/project/${pid}/dataset/add`)} />}>
-
-              <Form.Item
-                label={t('task.inference.form.dataset.label')}
-                required
-                name="datasets"
-                rules={[
-                  { required: true, message: t('task.inference.form.dataset.required') },
-                ]}
-              >
-                <DatasetSelect
-                  mode='multiple'
-                  pid={pid}
-                  filters={testSetFilters}
-                  renderLabel={renderLabel}
-                  placeholder={t('task.inference.form.dataset.placeholder')}
-                />
-              </Form.Item>
-            </ConfigProvider>
-
-
+            <Form.Item
+              label={t('task.inference.form.dataset.label')}
+              required
+              name="datasets"
+              rules={[
+                { required: true, message: t('task.inference.form.dataset.required') },
+              ]}
+            >
+              <DatasetSelect
+                mode='multiple'
+                pid={pid}
+                filters={testSetFilters}
+                renderLabel={renderLabel}
+                placeholder={t('task.inference.form.dataset.placeholder')}
+              />
+            </Form.Item>
             <ConfigProvider renderEmpty={() => <EmptyStateModel id={pid} />}>
               <Form.Item required
                 tooltip={t('tip.task.filter.imodel')}
