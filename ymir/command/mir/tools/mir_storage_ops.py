@@ -85,8 +85,8 @@ class MirStorageOps():
             mir_annotations=mir_annotations,
             mir_keywords=mir_keywords,
             rev_tid=revs_parser.TypRevTid(),
-            conf_thr=mir_settings.AUTO_EVALUATE_CONF_THR,
-            iou_thrs=mir_settings.AUTO_EVALUATE_IOU_THR,
+            conf_thr=mir_settings.DEFAULT_EVALUATE_CONF_THR,
+            iou_thrs=mir_settings.DEFAULT_EVALUATE_IOU_THR,
             need_pr_curve=False,
             calc_confusion_matrix=True,
         )
