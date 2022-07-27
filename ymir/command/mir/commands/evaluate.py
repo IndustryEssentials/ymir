@@ -54,6 +54,10 @@ class CmdEvaluate(base.BaseCommand):
                                            message='evaluate',
                                            src_revs=src_revs,
                                            dst_rev=dst_rev)
+        build_config = mir_storage_ops.MirStorageOpsBuildConfig(evaluate_conf_thr=conf_thr,
+                                                                evaluate_iou_thrs=iou_thrs,
+                                                                evaluate_need_pr_curve=need_pr_curve,
+                                                                evaluate_src_dataset_id=src_rev_tid.rev_tid)
         mir_storage_ops.MirStorageOps.save_and_commit(mir_root=mir_root,
                                                       mir_branch=dst_rev_tid.rev,
                                                       his_branch=src_rev_tid.rev,
@@ -62,10 +66,7 @@ class CmdEvaluate(base.BaseCommand):
                                                           mirpb.MirStorage.MIR_ANNOTATIONS: mir_annotations,
                                                       },
                                                       task=task,
-                                                      evaluate_iou_thrs=iou_thrs,
-                                                      evaluate_conf_thr=conf_thr,
-                                                      evaluate_need_pr_curve=need_pr_curve,
-                                                      evaluate_src_dataset_id=src_rev_tid.rev_tid)
+                                                      build_config=build_config)
 
         return MirCode.RC_OK
 
