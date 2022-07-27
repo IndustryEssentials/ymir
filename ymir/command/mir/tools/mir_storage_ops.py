@@ -334,7 +334,6 @@ class MirStorageOps():
                 if return_code != MirCode.RC_OK:
                     return return_code
 
-            dst_rev_tid = revs_parser.TypRevTid(rev=mir_branch, tid=task.task_id)
             cls.__build_and_save(mir_root=mir_root,
                                  mir_datas=mir_datas,
                                  evaluate_conf_thr=evaluate_conf_thr,
@@ -347,7 +346,7 @@ class MirStorageOps():
                 return ret_code
 
             # also have a tag for this commit
-            cls.__add_git_tag(mir_root=mir_root, tag=dst_rev_tid.rev_tid)
+            cls.__add_git_tag(mir_root=mir_root, tag=revs_parser.join_rev_tid(mir_branch, task.task_id))
 
         return ret_code
 
