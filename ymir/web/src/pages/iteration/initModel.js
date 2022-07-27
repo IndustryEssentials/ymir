@@ -53,7 +53,7 @@ const InitModel = ({ projects = {}, ...props }) => {
     const { model, modelStage } = project
     if (model) {
       form.setFieldsValue({
-        modelStage: [model, modelStage],
+        modelStage,
       })
     }
   }

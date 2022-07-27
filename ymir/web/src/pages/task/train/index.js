@@ -269,7 +269,7 @@ function Train({ allDatasets, datasetCache, keywords, ...func }) {
               <ImageSelect placeholder={t('task.train.form.image.placeholder')} onChange={imageChange} />
             </Form.Item>
             <OpenpaiForm form={form} openpai={openpai} />
-            <ConfigProvider renderEmpty={() => <EmptyState add={() => history.push(`/home/dataset/add/${pid}`)} />}>
+            <ConfigProvider renderEmpty={() => <EmptyState add={() => history.push(`/home/project/${pid}/dataset/add`)} />}>
               <Form.Item
                 label={t('task.train.form.trainsets.label')}
                 required

@@ -24,8 +24,12 @@ function ProjectDetail(func) {
       setProject(result)
     }
   }
-  const fresh = useCallback(() => {
-    fetchProject(true)
+  const fresh = useCallback((updateProject) => {
+    if (updateProject) {
+      setProject(updateProject)
+    } else {
+      fetchProject(true)
+    }
   }, [])
 
   async function fetchIterations(pid) {
@@ -44,7 +48,7 @@ function ProjectDetail(func) {
   }
 
   function add() {
-    history.push(`/home/dataset/add/${id}`)
+    history.push(`/home/project/${id}/dataset/add`)
   }
 
   function goTraining() {

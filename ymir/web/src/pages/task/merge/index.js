@@ -94,7 +94,7 @@ function Merge() {
           <Form.Item label={t('task.fusion.form.dataset')}>
             <span>{dataset.name} {dataset.versionName} (assets: {dataset.assetCount})</span>
           </Form.Item>
-          <ConfigProvider renderEmpty={() => <EmptyState add={() => history.push(`/home/dataset/add/${dataset.projectId}`)} />}>
+          <ConfigProvider renderEmpty={() => <EmptyState add={() => history.push(`/home/project/${dataset.projectId}/dataset/add`)} />}>
             <Form.Item label={t('task.fusion.form.merge.include.label')} name="includes">
               <DatasetSelect
                 placeholder={t('task.fusion.form.datasets.placeholder')}
