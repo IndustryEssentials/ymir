@@ -37,9 +37,16 @@ class MirStorageOps():
             mir_metadatas: mirpb.MirMetadatas = mir_datas[mirpb.MirStorage.MIR_METADATAS]
             if (mir_metadatas.attributes and mir_annotations.ground_truth.image_annotations
                     and mir_annotations.task_annotations[mir_annotations.head_task_id].image_annotations):
-                cls.__build_annotations_confusion_matrix(mir_metadatas=mir_datas[mirpb.MirStorage.MIR_METADATAS],
-                                                         mir_annotations=mir_annotations,
-                                                         mir_keywords=mir_keywords)
+                det_eval.det_evaluate_with_pb(
+                    mir_metadatas=mir_metadatas,
+                    mir_annotations=mir_annotations,
+                    mir_keywords=mir_keywords,
+                    rev_tid=revs_parser.TypRevTid(),
+                    conf_thr=mir_settings.DEFAULT_EVALUATE_CONF_THR,
+                    iou_thrs=mir_settings.DEFAULT_EVALUATE_IOU_THR,
+                    need_pr_curve=False,
+                    calc_confusion_matrix=True,
+                )
 
         # gen mir_context
         project_class_ids = context.load(mir_root=mir_root)
@@ -75,21 +82,6 @@ class MirStorageOps():
                                   error_message='more then one task ids found in mir_annotations')
 
         mir_annotations.head_task_id = head_task_id
-
-    @classmethod
-    def __build_annotations_confusion_matrix(cls, mir_metadatas: mirpb.MirMetadatas,
-                                             mir_annotations: mirpb.MirAnnotations,
-                                             mir_keywords: mirpb.MirKeywords) -> None:
-        det_eval.det_evaluate_with_pb(
-            mir_metadatas=mir_metadatas,
-            mir_annotations=mir_annotations,
-            mir_keywords=mir_keywords,
-            rev_tid=revs_parser.TypRevTid(),
-            conf_thr=mir_settings.DEFAULT_EVALUATE_CONF_THR,
-            iou_thrs=mir_settings.DEFAULT_EVALUATE_IOU_THR,
-            need_pr_curve=False,
-            calc_confusion_matrix=True,
-        )
 
     @classmethod
     def __build_mir_keywords(cls, mir_annotations: mirpb.MirAnnotations, mir_keywords: mirpb.MirKeywords) -> None:
