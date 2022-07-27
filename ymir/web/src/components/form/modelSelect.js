@@ -7,7 +7,7 @@ import t from '@/utils/t'
 import useFetch from '@/hooks/useFetch'
 import EmptyStateModel from '@/components/empty/model'
 
-const ModelSelect = ({ pid, value, onlyModel, changeByUser, onChange = () => { }, ...resProps }) => {
+const ModelSelect = ({ pid, value, onlyModel, changeByUser, onChange = () => { }, filters, ...resProps }) => {
   const allModels = useSelector(state => state.model.allModels)
   const [ms, setMS] = useState(null)
   const [options, setOptions] = useState([])
