@@ -26,7 +26,6 @@ const SettingsSelection = (Select) => {
 }
 
 const Stage = ({ pid, value, stage, project = {} }) => {
-  console.log('stage init value:', value)
   const [valid, setValid] = useState(false)
   const Selection = useMemo(() => SettingsSelection(stage.type ? ModelSelect : DatasetSelect), [stage.type])
   // const [newProject, updateProject] = useUpdateProject(pid)
@@ -60,7 +59,7 @@ const Stage = ({ pid, value, stage, project = {} }) => {
         tooltip={t(stage.tip)} initialValue={value || null}
         rules={[{ required: !stage.option }]}
       >
-        <Selection pid={pid} changeByUser filters={filters} allowClear={stage.option} />
+        <Selection pid={pid} changeByUser filters={filters} allowClear={!!stage.option} />
       </Form.Item>
     </Col>
   </Row>

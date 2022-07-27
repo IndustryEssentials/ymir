@@ -9,6 +9,7 @@ import useFetch from '@/hooks/useFetch'
 
 const ModelSelect = ({ pid, value, onlyModel, changeByUser, onChange = () => { }, ...resProps }) => {
   const allModels = useSelector(state => state.model.allModels)
+  const [ms, setMS] = useState(null)
   const [options, setOptions] = useState([])
   const [models, setModels] = useState([])
   const [_, getModels] = useFetch('model/queryAllModels')
@@ -20,6 +21,7 @@ const ModelSelect = ({ pid, value, onlyModel, changeByUser, onChange = () => { }
   useEffect(() => {
     if (options.length) {
       if (value && !changeByUser) {
+        console.log('value:', value)
         if (resProps.multiple) {
           const opts = options.filter(opt => value.some(([model]) => opt.model.id === model)).map(opt => [opt, opt.value])
           onChange(value, opts)
@@ -35,10 +37,22 @@ const ModelSelect = ({ pid, value, onlyModel, changeByUser, onChange = () => { }
   }, [allModels])
 
   useEffect(() => {
-    if (options.length === 1) {
-      value = options[0].value
+    // if (options.length === 1) {
+    //   value = options[0].value
+    // }
+    console.log('options => value:', value)
+    if (value && !value[1]) {
+      const model = models.find(md => md.id === value[0])
+      console.log('options => model:', models, model, options)
+      if (model) {
+        setMS([value[0], model.recommendStage])
+      }
     }
   }, [options])
+
+  useEffect(() => {
+    setMS(value)
+  }, [value])
 
   useEffect(() => {
     generateOptions()
@@ -68,7 +82,7 @@ const ModelSelect = ({ pid, value, onlyModel, changeByUser, onChange = () => { }
   }
 
   return (
-    <Cascader value={value} onChange={onChange} options={options}
+    <Cascader value={ms} onChange={onChange} options={options}
       showCheckedStrategy={Cascader.SHOW_CHILD} showSearch={{ filter }} allowClear {...resProps}></Cascader>
   )
 }
