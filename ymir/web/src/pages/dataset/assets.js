@@ -8,7 +8,7 @@ import Breadcrumbs from "@/components/common/breadcrumb"
 import { randomBetween, percent } from '@/utils/number'
 import Asset from "./components/asset"
 import styles from "./assets.less"
-import GtSelector from "../../components/form/gtSelector"
+import GtSelector from "@/components/form/gtSelector"
 
 const { Option } = Select
 

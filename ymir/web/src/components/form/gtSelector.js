@@ -1,22 +1,22 @@
 import { Checkbox, Form } from "antd"
 import { useEffect, useState } from "react"
 
-  const types = [
-    {
-      label: 'GT', value: 'gt', checked: true, children: [
-        { label: 'FN', value: 'fn' },
-        { label: 'MTP', value: 'mtp' },
-      ]
-    },
-    {
-      label: 'PRED', value: 'pred', children: [
-        { label: 'FP', value: 'fp' },
-        { label: 'TP', value: 'tp' },
-      ]
-    },
-  ]
+const types = [
+  {
+    label: 'GT', value: 'gt', checked: true, children: [
+      { label: 'FN', value: 'fn' },
+      { label: 'MTP', value: 'mtp' },
+    ]
+  },
+  {
+    label: 'PRED', value: 'pred', children: [
+      { label: 'FP', value: 'fp' },
+      { label: 'TP', value: 'tp' },
+    ]
+  },
+]
 
-const GtSelector = ({ value, onChange, ...props }) => {
+const GtSelector = ({ value, onChange = () => { }, ...props }) => {
   const [pcheckeds, setPCheckeds] = useState({
     gt: true,
     pred: true,
@@ -76,7 +76,7 @@ const GtSelector = ({ value, onChange, ...props }) => {
       <Checkbox.Group
         value={type.children.filter(item => checkeds[item.value]).map(({ value }) => value)}
         options={type.children}
-        onChange={value =>change(value, type.children)}
+        onChange={value => change(value, type.children)}
       />
     </Form.Item>)}
   </Form>

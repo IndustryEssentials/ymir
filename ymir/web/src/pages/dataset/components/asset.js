@@ -6,9 +6,12 @@ import { connect } from "dva"
 
 import { getDateFromTimestamp } from "@/utils/date"
 import t from "@/utils/t"
+import { randomBetween } from "@/utils/number"
+
 import Hash from "@/components/common/hash"
 import AssetAnnotation from "@/components/dataset/asset_annotation"
-import { randomBetween } from "@/utils/number"
+import GtSelector from "@/components/form/gtSelector"
+
 import styles from "./asset.less"
 import { ArrowRightIcon, NavDatasetIcon, EyeOffIcon, EyeOnIcon } from '@/components/common/icons'
 import { LeftOutlined, RightOutlined } from '@ant-design/icons'
@@ -82,7 +85,7 @@ function Asset({ id, datasetKeywords = [], filterKeyword, getAsset, getAssetsOfD
   }
 
   function random() {
-    setCurrentIndex(cu => ({ ...cu, index: randomBetween(0, total - 1, cu.index)}))
+    setCurrentIndex(cu => ({ ...cu, index: randomBetween(0, total - 1, cu.index) }))
   }
 
   function back() {
@@ -105,6 +108,10 @@ function Asset({ id, datasetKeywords = [], filterKeyword, getAsset, getAssetsOfD
     setSelectedKeywords(selectedKeywords.length ? [] : asset.keywords)
   }
 
+  function filterAnnotations(checkeds) {
+    console.log('checkeds:', checkeds)
+  }
+
   return asset.hash ? (
     <div className={styles.asset}>
       <div className={styles.info}>
@@ -124,6 +131,7 @@ function Asset({ id, datasetKeywords = [], filterKeyword, getAsset, getAssetsOfD
             <Card
               title={<><NavDatasetIcon /> {t("dataset.asset.info")}</>}
               bordered={false}
+              className='noShadow'
               style={{ marginRight: 20 }}
               headStyle={{ paddingLeft: 0 }}
               bodyStyle={{ padding: "20px 0" }}
@@ -176,6 +184,10 @@ function Asset({ id, datasetKeywords = [], filterKeyword, getAsset, getAssetsOfD
                   </Row>
                 </Descriptions.Item>
               </Descriptions>
+              <div className={styles.filter}>
+              <h3><NavDatasetIcon /> {t("dataset.asset.filters.title")}</h3>
+                <GtSelector layout='vertical' onChange={filterAnnotations} />
+              </div>
             </Card>
             <Space className={styles.random}>
               <Button
