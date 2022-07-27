@@ -1,4 +1,5 @@
 from collections import defaultdict
+import logging
 from typing import Any, Dict, Iterable, List, Optional, Set, Tuple, Union
 
 import numpy as np
@@ -686,7 +687,6 @@ class Params:
         self.areaRngLbl = ['all', 'small', 'medium', 'large']  # area range label
         self.confThr = 0.3  # confidence threshold
         self.need_pr_curve = False
-        self.calc_confusion_matrix = False
 
 
 def _det_evaluate(mir_dts: List[MirCoco], mir_gt: MirCoco, config: mirpb.EvaluateConfig) -> mirpb.Evaluation:
@@ -697,10 +697,6 @@ def _det_evaluate(mir_dts: List[MirCoco], mir_gt: MirCoco, config: mirpb.Evaluat
     params.confThr = config.conf_thr
     params.iouThrs = _get_ious_array(config.iou_thrs_interval)
     params.need_pr_curve = config.need_pr_curve
-    params.calc_confusion_matrix = config.calc_confusion_matrix
-    if params.calc_confusion_matrix and params.iouThrs.size != 1:
-        raise MirRuntimeError(error_code=MirCode.RC_CMD_CAN_NOT_CALC_CONFUSION_MATRIX,
-                              error_message='single iou thr is needed if calc_confusion_matrix')
 
     evaluation = mirpb.Evaluation()
     evaluation.config.CopyFrom(config)
@@ -711,9 +707,7 @@ def _det_evaluate(mir_dts: List[MirCoco], mir_gt: MirCoco, config: mirpb.Evaluat
     for mir_dt in mir_dts:
         evaluator = CocoDetEval(coco_gt=mir_gt, coco_dt=mir_dt, params=params)
         evaluator.evaluate()
-        if params.calc_confusion_matrix:
-            iou_thr_index = 0  # single iou thr only.
-            evaluator.write_confusion_matrix(iou_thr_index=iou_thr_index, maxDets=params.maxDets[max_dets_index])
+        evaluator.write_confusion_matrix(iou_thr_index=0, maxDets=params.maxDets[max_dets_index])
         evaluator.accumulate()
 
         single_dataset_evaluation = evaluator.get_evaluation_result(area_ranges_index=area_ranges_index,
@@ -783,7 +777,6 @@ def det_evaluate(
     conf_thr: float,
     iou_thrs: str,
     need_pr_curve: bool = False,
-    calc_confusion_matrix: bool = False,
 ) -> Tuple[mirpb.Evaluation, mirpb.MirAnnotations]:
     mir_metadatas: mirpb.MirMetadatas
     mir_annotations: mirpb.MirAnnotations
@@ -794,37 +787,37 @@ def det_evaluate(
         mir_task_id=rev_tid.tid,
         ms_list=[mirpb.MirStorage.MIR_METADATAS, mirpb.MirStorage.MIR_ANNOTATIONS, mirpb.MirStorage.MIR_KEYWORDS])
 
-    return det_evaluate_with_pb(mir_metadatas=mir_metadatas,
-                                mir_annotations=mir_annotations,
-                                mir_keywords=mir_keywords,
-                                rev_tid=rev_tid,
-                                conf_thr=conf_thr,
-                                iou_thrs=iou_thrs,
-                                need_pr_curve=need_pr_curve,
-                                calc_confusion_matrix=calc_confusion_matrix)
+    return det_evaluate_with_pb(
+        mir_metadatas=mir_metadatas,
+        mir_annotations=mir_annotations,
+        mir_keywords=mir_keywords,
+        dataset_id=rev_tid.rev_tid,
+        conf_thr=conf_thr,
+        iou_thrs=iou_thrs,
+        need_pr_curve=need_pr_curve,
+    )
 
 
 def det_evaluate_with_pb(
     mir_metadatas: mirpb.MirMetadatas,
     mir_annotations: mirpb.MirAnnotations,
     mir_keywords: mirpb.MirKeywords,
-    rev_tid: revs_parser.TypRevTid,
+    dataset_id: str,
     conf_thr: float,
     iou_thrs: str,
     need_pr_curve: bool = False,
-    calc_confusion_matrix: bool = False,
 ) -> Tuple[mirpb.Evaluation, mirpb.MirAnnotations]:
     mir_gt = MirCoco(mir_metadatas=mir_metadatas,
                      mir_annotations=mir_annotations,
                      mir_keywords=mir_keywords,
                      conf_thr=conf_thr,
-                     dataset_id=rev_tid.rev_tid,
+                     dataset_id=dataset_id,
                      as_gt=True)
     mir_dt = MirCoco(mir_metadatas=mir_metadatas,
                      mir_annotations=mir_annotations,
                      mir_keywords=mir_keywords,
                      conf_thr=conf_thr,
-                     dataset_id=rev_tid.rev_tid,
+                     dataset_id=dataset_id,
                      as_gt=False)
 
     # evaluation = mirpb.Evaluation()
@@ -832,10 +825,18 @@ def det_evaluate_with_pb(
     evaluate_config.conf_thr = conf_thr
     evaluate_config.iou_thrs_interval = iou_thrs
     evaluate_config.need_pr_curve = need_pr_curve
-    evaluate_config.calc_confusion_matrix = calc_confusion_matrix
-    evaluate_config.gt_dataset_id = rev_tid.rev_tid
-    evaluate_config.pred_dataset_ids.append(rev_tid.rev_tid)
+    evaluate_config.gt_dataset_id = dataset_id
+    evaluate_config.pred_dataset_ids.append(dataset_id)
 
     evaluation = _det_evaluate(mir_dts=[mir_dt], mir_gt=mir_gt, config=evaluate_config)
 
+    _show_evaluation(evaluation=evaluation)
+
     return (evaluation, mir_annotations)
+
+
+def _show_evaluation(evaluation: mirpb.Evaluation) -> None:
+    gt_dataset_id = evaluation.config.gt_dataset_id
+    for dataset_id, dataset_evaluation in evaluation.dataset_evaluations.items():
+        cae = dataset_evaluation.iou_averaged_evaluation.ci_averaged_evaluation
+        logging.info(f"gt: {gt_dataset_id}, pred: {dataset_id}, mAP: {cae.ap}")

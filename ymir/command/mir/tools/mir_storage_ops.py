@@ -18,10 +18,23 @@ from mir.tools.code import MirCode
 from mir.tools.errors import MirError, MirRuntimeError
 
 
+class MirStorageOpsBuildConfig:
+    def __init__(self,
+                 evaluate_conf_thr: float = mir_settings.DEFAULT_EVALUATE_CONF_THR,
+                 evaluate_iou_thrs: str = mir_settings.DEFAULT_EVALUATE_IOU_THR,
+                 evaluate_need_pr_curve: bool = False,
+                 evaluate_src_dataset_id: str = '') -> None:
+        self.evaluate_conf_thr: float = evaluate_conf_thr
+        self.evaluate_iou_thrs: str = evaluate_iou_thrs
+        self.evaluate_need_pr_curve: bool = evaluate_need_pr_curve
+        self.evaluate_src_dataset_id: str = evaluate_src_dataset_id
+
+
 class MirStorageOps():
     # private: save and load
     @classmethod
-    def __save(cls, mir_root: str, mir_datas: Dict['mirpb.MirStorage.V', Any], calc_confusion_matrix: bool) -> None:
+    def __build_and_save(cls, mir_root: str, mir_datas: Dict['mirpb.MirStorage.V', Any],
+                         build_config: MirStorageOpsBuildConfig) -> None:
         # add default members
         mir_tasks: mirpb.MirTasks = mir_datas[mirpb.MirStorage.MIR_TASKS]
         mir_annotations: mirpb.MirAnnotations = mir_datas[mirpb.MirStorage.MIR_ANNOTATIONS]
@@ -33,20 +46,19 @@ class MirStorageOps():
         cls.__build_mir_keywords(mir_annotations=mir_annotations, mir_keywords=mir_keywords)
         mir_datas[mirpb.MirStorage.MIR_KEYWORDS] = mir_keywords
 
-        if calc_confusion_matrix:
-            mir_metadatas: mirpb.MirMetadatas = mir_datas[mirpb.MirStorage.MIR_METADATAS]
-            if (mir_metadatas.attributes and mir_annotations.ground_truth.image_annotations
-                    and mir_annotations.task_annotations[mir_annotations.head_task_id].image_annotations):
-                det_eval.det_evaluate_with_pb(
-                    mir_metadatas=mir_metadatas,
-                    mir_annotations=mir_annotations,
-                    mir_keywords=mir_keywords,
-                    rev_tid=revs_parser.TypRevTid(),
-                    conf_thr=mir_settings.DEFAULT_EVALUATE_CONF_THR,
-                    iou_thrs=mir_settings.DEFAULT_EVALUATE_IOU_THR,
-                    need_pr_curve=False,
-                    calc_confusion_matrix=True,
-                )
+        mir_metadatas: mirpb.MirMetadatas = mir_datas[mirpb.MirStorage.MIR_METADATAS]
+        if (mir_metadatas.attributes and mir_annotations.ground_truth.image_annotations
+                and mir_annotations.task_annotations[mir_annotations.head_task_id].image_annotations):
+            evaluation, _ = det_eval.det_evaluate_with_pb(
+                mir_metadatas=mir_metadatas,
+                mir_annotations=mir_annotations,
+                mir_keywords=mir_keywords,
+                dataset_id=build_config.evaluate_src_dataset_id,
+                conf_thr=build_config.evaluate_conf_thr,
+                iou_thrs=build_config.evaluate_iou_thrs,
+                need_pr_curve=build_config.evaluate_need_pr_curve,
+            )
+            mir_tasks.tasks[mir_tasks.head_task_id].evaluation.CopyFrom(evaluation)
 
         # gen mir_context
         project_class_ids = context.load(mir_root=mir_root)
@@ -260,7 +272,7 @@ class MirStorageOps():
                         his_branch: Optional[str],
                         mir_datas: Dict,
                         task: mirpb.Task,
-                        calc_confusion_matrix: bool = True) -> int:
+                        build_config: MirStorageOpsBuildConfig = MirStorageOpsBuildConfig()) -> int:
         """
         saves and commit all contents in mir_datas to branch: `mir_branch`;
         branch will be created if not exists, and it's history will be after `his_branch`
@@ -273,7 +285,8 @@ class MirStorageOps():
                 mir_tasks is needed, if mir_metadatas and mir_annotations not provided, they will be created as empty
                  datasets
             task (mirpb.Task): task for this commit
-            calc_confusion_matrix (bool): default is True, add TP/TP/FN to mir_annotations
+            conf_thr (float): confidence thr used to evaluate
+            iou_thrs (str): iou thrs used to evaluate
 
         Raises:
             MirRuntimeError
@@ -298,6 +311,8 @@ class MirStorageOps():
             raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS, error_message="empty commit message")
         if not task.task_id:
             raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS, error_message='empty task id')
+        if not build_config.evaluate_src_dataset_id:
+            build_config.evaluate_src_dataset_id = revs_parser.join_rev_tid(mir_branch, task.task_id)
 
         mir_tasks: mirpb.MirTasks = mirpb.MirTasks()
         mir_tasks.head_task_id = task.task_id
@@ -329,7 +344,7 @@ class MirStorageOps():
                 if return_code != MirCode.RC_OK:
                     return return_code
 
-            cls.__save(mir_root=mir_root, mir_datas=mir_datas, calc_confusion_matrix=calc_confusion_matrix)
+            cls.__build_and_save(mir_root=mir_root, mir_datas=mir_datas, build_config=build_config)
 
             ret_code = CmdCommit.run_with_args(mir_root=mir_root, msg=task.name)
             if ret_code != MirCode.RC_OK:
