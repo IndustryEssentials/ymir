@@ -143,10 +143,10 @@ const project = {
   'project.example': { en: 'Example Project', cn: '示例项目', },
   'project.keywords.invalid': { en: 'Invalid training keywords', cn: '训练目标不合法', },
   'project.workspace.status.dirty': {
-    en: 'Project is {dirtyLabel}, training is disabled, please check again. if it is persistence, contact to administrator.',
-    cn: '项目当前状态为{dirtyLabel}，无法创建训练任务，请重新检查状态。若状态持续异常，请联系管理员。',
+    en: 'Project current workspace is {dirtyLabel}, training is disabled, please check again. if it is persistence, contact to administrator.',
+    cn: '项目当前的工作空间状态为{dirtyLabel}，无法创建训练任务，请重新检查状态。若状态持续异常，请联系管理员。',
   },
-  'project.workspace.status.clean': { en: 'Project is {cleanLabel}, Training is enabled.', cn: '项目当前状态为{cleanLabel}, 可以正常创建训练任务', },
+  'project.workspace.status.clean': { en: 'Project current workspace is {cleanLabel}, Training is enabled.', cn: '项目当前的工作空间状态为{cleanLabel}, 可以正常创建训练任务', },
   'project.testing.dataset.label': { en: 'Project Testing Dataset', cn: '项目测试集', },
 }
 
