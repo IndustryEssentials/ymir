@@ -21,7 +21,6 @@ const ModelSelect = ({ pid, value, onlyModel, changeByUser, onChange = () => { }
   useEffect(() => {
     if (options.length) {
       if (value && !changeByUser) {
-        console.log('value:', value)
         if (resProps.multiple) {
           const opts = options.filter(opt => value.some(([model]) => opt.model.id === model)).map(opt => [opt, opt.value])
           onChange(value, opts)
@@ -37,13 +36,8 @@ const ModelSelect = ({ pid, value, onlyModel, changeByUser, onChange = () => { }
   }, [allModels])
 
   useEffect(() => {
-    // if (options.length === 1) {
-    //   value = options[0].value
-    // }
-    console.log('options => value:', value)
     if (value && !value[1]) {
       const model = models.find(md => md.id === value[0])
-      console.log('options => model:', models, model, options)
       if (model) {
         setMS([value[0], model.recommendStage])
       }
