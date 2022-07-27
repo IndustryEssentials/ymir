@@ -302,6 +302,8 @@ class MirStorageOps():
             raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS, error_message="empty commit message")
         if not task.task_id:
             raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS, error_message='empty task id')
+        if not evaluate_src_dataset_id:
+            evaluate_src_dataset_id = revs_parser.join_rev_tid(mir_branch, task.task_id)
 
         mir_tasks: mirpb.MirTasks = mirpb.MirTasks()
         mir_tasks.head_task_id = task.task_id
