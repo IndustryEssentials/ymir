@@ -2,7 +2,7 @@ import argparse
 import logging
 
 from mir.commands import base
-from mir.tools import checker, det_eval, mir_storage_ops, revs_parser
+from mir.tools import checker, mir_storage_ops, revs_parser
 from mir.tools.code import MirCode
 from mir.tools.command_run_in_out import command_run_in_out
 from mir.protos import mir_command_pb2 as mirpb
@@ -42,28 +42,12 @@ class CmdEvaluate(base.BaseCommand):
             mir_task_id=src_rev_tid.tid,
             ms_list=[mirpb.MirStorage.MIR_METADATAS, mirpb.MirStorage.MIR_ANNOTATIONS])
 
-        # evaluate
-        # evaluation, mir_annotations = det_eval.det_evaluate_with_pb(mir_metadatas=mir_metadatas,
-        #                                                             mir_annotations=mir_annotations,
-        #                                                             mir_keywords=mir_keywords,
-        #                                                             rev_tid=src_rev_tid,
-        #                                                             conf_thr=conf_thr,
-        #                                                             iou_thrs=iou_thrs,
-        #                                                             need_pr_curve=need_pr_curve,
-        #                                                             calc_confusion_matrix=calc_confusion_matrix)
-
-        # if calc_confusion_matrix:
-        #     # need a new dataset
         orig_head_task_id = mir_annotations.head_task_id
         pred_annotations = mir_annotations.task_annotations[orig_head_task_id]
 
         mir_annotations.task_annotations[task_id].CopyFrom(pred_annotations)
         del mir_annotations.task_annotations[orig_head_task_id]
         mir_annotations.prediction.CopyFrom(pred_annotations)
-        # else:
-        #     # dont need a new dataset
-        #     mir_metadatas = mirpb.MirMetadatas()
-        #     mir_annotations = mirpb.MirAnnotations()
 
         # save and commit
         task = mir_storage_ops.create_task(task_type=mirpb.TaskType.TaskTypeEvaluate,
@@ -79,9 +63,10 @@ class CmdEvaluate(base.BaseCommand):
                                                           mirpb.MirStorage.MIR_ANNOTATIONS: mir_annotations,
                                                       },
                                                       task=task,
-                                                      iou_thrs=iou_thrs,
-                                                      conf_thr=conf_thr,
-                                                      evaluate_src_dataset_id=src_rev_tid.tid)
+                                                      evaluate_iou_thrs=iou_thrs,
+                                                      evaluate_conf_thr=conf_thr,
+                                                      evaluate_need_pr_curve=need_pr_curve,
+                                                      evaluate_src_dataset_id=src_rev_tid.rev_tid)
 
         _show_evaluation(evaluation=task.evaluation)
 
@@ -115,7 +100,7 @@ def bind_to_subparsers(subparsers: argparse._SubParsersAction, parent_parser: ar
                                      help='confidence threshold, default 0.3')
     evaluate_arg_parser.add_argument('--iou-thrs',
                                      dest='iou_thrs',
-                                     type=str,
+                                     type=float,
                                      required=False,
                                      default='0.5:1.0:0.05',
                                      help='iou thresholds, default 0.5:1.0:0.05, upper bound is excluded')

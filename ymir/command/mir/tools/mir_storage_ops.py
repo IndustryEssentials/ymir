@@ -21,8 +21,8 @@ from mir.tools.errors import MirError, MirRuntimeError
 class MirStorageOps():
     # private: save and load
     @classmethod
-    def __build_and_save(cls, mir_root: str, mir_datas: Dict['mirpb.MirStorage.V', Any], conf_thr: float, iou_thrs: str,
-                         rev_tid: revs_parser.TypRevTid, evaluate_src_dataset_id: str) -> None:
+    def __build_and_save(cls, mir_root: str, mir_datas: Dict['mirpb.MirStorage.V', Any], evaluate_conf_thr: float,
+                         evaluate_iou_thrs: str, evaluate_need_pr_curve: bool, evaluate_src_dataset_id: str) -> None:
         # add default members
         mir_tasks: mirpb.MirTasks = mir_datas[mirpb.MirStorage.MIR_TASKS]
         mir_annotations: mirpb.MirAnnotations = mir_datas[mirpb.MirStorage.MIR_ANNOTATIONS]
@@ -41,13 +41,12 @@ class MirStorageOps():
                 mir_metadatas=mir_metadatas,
                 mir_annotations=mir_annotations,
                 mir_keywords=mir_keywords,
-                rev_tid=rev_tid,
-                conf_thr=conf_thr,
-                iou_thrs=iou_thrs,
-                need_pr_curve=False,
+                dataset_id=evaluate_src_dataset_id,
+                conf_thr=evaluate_conf_thr,
+                iou_thrs=evaluate_iou_thrs,
+                need_pr_curve=evaluate_need_pr_curve,
                 calc_confusion_matrix=True,
             )
-            mir_tasks: mirpb.MirTasks = mir_datas[mirpb.MirStorage.MIR_TASKS]
             mir_tasks.tasks[mir_tasks.head_task_id].evaluation.CopyFrom(evaluation)
 
         # gen mir_context
@@ -262,8 +261,9 @@ class MirStorageOps():
                         his_branch: Optional[str],
                         mir_datas: Dict,
                         task: mirpb.Task,
-                        conf_thr: float = mir_settings.DEFAULT_EVALUATE_CONF_THR,
-                        iou_thrs: str = mir_settings.DEFAULT_EVALUATE_IOU_THR,
+                        evaluate_conf_thr: float = mir_settings.DEFAULT_EVALUATE_CONF_THR,
+                        evaluate_iou_thrs: str = mir_settings.DEFAULT_EVALUATE_IOU_THR,
+                        evaluate_need_pr_curve: bool = False,
                         evaluate_src_dataset_id: str = '') -> int:
         """
         saves and commit all contents in mir_datas to branch: `mir_branch`;
@@ -337,9 +337,9 @@ class MirStorageOps():
             dst_rev_tid = revs_parser.TypRevTid(rev=mir_branch, tid=task.task_id)
             cls.__build_and_save(mir_root=mir_root,
                                  mir_datas=mir_datas,
-                                 conf_thr=conf_thr,
-                                 iou_thrs=iou_thrs,
-                                 rev_tid=dst_rev_tid,
+                                 evaluate_conf_thr=evaluate_conf_thr,
+                                 evaluate_iou_thrs=evaluate_iou_thrs,
+                                 evaluate_need_pr_curve=evaluate_need_pr_curve,
                                  evaluate_src_dataset_id=evaluate_src_dataset_id)
 
             ret_code = CmdCommit.run_with_args(mir_root=mir_root, msg=task.name)
