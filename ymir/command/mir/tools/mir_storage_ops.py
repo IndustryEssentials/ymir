@@ -45,7 +45,6 @@ class MirStorageOps():
                 conf_thr=evaluate_conf_thr,
                 iou_thrs=evaluate_iou_thrs,
                 need_pr_curve=evaluate_need_pr_curve,
-                calc_confusion_matrix=True,
             )
             mir_tasks.tasks[mir_tasks.head_task_id].evaluation.CopyFrom(evaluation)
 
