@@ -1,4 +1,5 @@
 from collections import defaultdict
+import logging
 from typing import Any, Dict, Iterable, List, Optional, Set, Tuple, Union
 
 import numpy as np
@@ -835,4 +836,13 @@ def det_evaluate_with_pb(
 
     evaluation = _det_evaluate(mir_dts=[mir_dt], mir_gt=mir_gt, config=evaluate_config)
 
+    _show_evaluation(evaluation=evaluation)
+
     return (evaluation, mir_annotations)
+
+
+def _show_evaluation(evaluation: mirpb.Evaluation) -> None:
+    gt_dataset_id = evaluation.config.gt_dataset_id
+    for dataset_id, dataset_evaluation in evaluation.dataset_evaluations.items():
+        cae = dataset_evaluation.iou_averaged_evaluation.ci_averaged_evaluation
+        logging.info(f"gt: {gt_dataset_id}, pred: {dataset_id}, mAP: {cae.ap}")

@@ -68,16 +68,7 @@ class CmdEvaluate(base.BaseCommand):
                                                       evaluate_need_pr_curve=need_pr_curve,
                                                       evaluate_src_dataset_id=src_rev_tid.rev_tid)
 
-        _show_evaluation(evaluation=task.evaluation)
-
         return MirCode.RC_OK
-
-
-def _show_evaluation(evaluation: mirpb.Evaluation) -> None:
-    gt_dataset_id = evaluation.config.gt_dataset_id
-    for dataset_id, dataset_evaluation in evaluation.dataset_evaluations.items():
-        cae = dataset_evaluation.iou_averaged_evaluation.ci_averaged_evaluation
-        logging.info(f"gt: {gt_dataset_id}, pred: {dataset_id}, mAP: {cae.ap}")
 
 
 def bind_to_subparsers(subparsers: argparse._SubParsersAction, parent_parser: argparse.ArgumentParser) -> None:
@@ -100,7 +91,7 @@ def bind_to_subparsers(subparsers: argparse._SubParsersAction, parent_parser: ar
                                      help='confidence threshold, default 0.3')
     evaluate_arg_parser.add_argument('--iou-thrs',
                                      dest='iou_thrs',
-                                     type=float,
+                                     type=str,
                                      required=False,
                                      default='0.5:1.0:0.05',
                                      help='iou thresholds, default 0.5:1.0:0.05, upper bound is excluded')
