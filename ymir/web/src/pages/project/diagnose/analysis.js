@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react"
 import { Button, Form, Row, Col, Table, Popover } from "antd"
-import { connect } from "dva"
 import s from "./index.less"
 import style from "./analysis.less"
 
