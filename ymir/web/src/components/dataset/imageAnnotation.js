@@ -1,16 +1,17 @@
 import styles from "./common.less"
 import { useEffect, useState, useRef } from "react"
-import { percent } from "../../utils/number"
 
-function AssetAnnotation({
+function ImageAnnotation({
   url,
   data = [],
+  filters = a => a,
 }) {
   const [annotations, setAnnotations] = useState([])
-  const imgContainer = useRef()
   const img = useRef()
-  const [width, setWidth] = useState(0)
-  const [imgWidth, setImgWidth] = useState(0)
+  const [box, setBox] = useState({
+    width: 0,
+    height: 0,
+  })
   const [ratio, setRatio] = useState(1)
 
   useEffect(() => {
@@ -22,7 +23,6 @@ function AssetAnnotation({
       return items.map(({ box, score, ...item }) => {
         return {
           ...item,
-          score: score ? percent(score) : null,
           ...box,
         }
       })
@@ -30,13 +30,14 @@ function AssetAnnotation({
   }
 
   const renderAnnotations = () => {
-    return annotations.map((annotation, index) => {
+    return filters(annotations).map((annotation, index) => {
       return (
         <div
           title={`${annotation.keyword}` + (annotation.score ? `\nConference:${annotation.score}` : '')}
           className={`${styles.annotation} ${annotation.gt ? styles.gt : ''}`}
           key={index}
           style={{
+            position: 'absolute',
             color: annotation.color,
             borderColor: annotation.color,
             boxShadow: `${annotation.color} 0 0 2px 1px`,
@@ -45,47 +46,60 @@ function AssetAnnotation({
             width: annotation.w * ratio - 2,
             height: annotation.h * ratio - 2,
           }}
-        >
-          <span className={styles.annotationTitle} style={{ backgroundColor: annotation.color }}>{annotation.keyword}
-            {annotation.score ? <> {annotation.score}</> : null}</span>
-        </div>
+        ></div>
       )
     })
   }
 
   function calImgWidth(target) {
     const im = target || img.current
-    const { current } = imgContainer
-    const cw = current.clientWidth
+    if (!im) {
+      return
+    }
+    const cw = im.clientWidth
     const iw = im.naturalWidth || 0
-    const clientWidth = iw > cw ? cw : iw
-    setImgWidth(clientWidth)
-    setWidth(cw)
-    setRatio(clientWidth / iw)
+    setBox({
+      width: cw,
+      height: im.clientHeight,
+    })
+    setRatio(cw / iw)
   }
 
   window.addEventListener('resize', () => {
-    if (imgContainer.current) {
+    if (img.current) {
       calImgWidth()
     }
   })
 
   return (
-    <div className={styles.anno_panel} ref={imgContainer}>
-      <div className={styles.img_container}>
-        <img
-          ref={img}
-          src={url}
-          style={{ width: imgWidth }}
-          className={styles.assetImg}
-          onLoad={({ target }) => calImgWidth(target)}
-        />
-      </div>
-      <div className={styles.annotations} style={{ width: imgWidth, left: -imgWidth / 2 }}>
+    <div className={styles.ic_container} style={{
+      position: 'relative',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      height: '100%',
+      width: '100%',
+    }}>
+      <img
+        ref={img}
+        src={url}
+        style={{ maxWidth: '100%', maxHeight: '100%' }}
+        className={styles.assetImg}
+        onLoad={({ target }) => calImgWidth()}
+      />
+      <div style={{
+        position: 'absolute',
+        top: 0,
+        left: '50%',
+        marginLeft: -(box.width / 2),
+        width: box.width,
+        height: box.height,
+        zIndex: 5,
+      }}>
         {renderAnnotations()}
       </div>
     </div>
   )
 }
 
-export default AssetAnnotation
+export default ImageAnnotation

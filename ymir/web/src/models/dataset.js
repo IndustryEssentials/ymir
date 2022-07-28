@@ -3,7 +3,7 @@ import {
   getAssetsOfDataset, getAsset, batchAct, delDataset, delDatasetGroup, createDataset, updateDataset, getInternalDataset,
 } from "@/services/dataset"
 import { getStats } from "../services/common"
-import { transferDatasetGroup, transferDataset, transferDatasetAnalysis, states } from '@/constants/dataset'
+import { transferDatasetGroup, transferDataset, transferDatasetAnalysis, states, transferAsset } from '@/constants/dataset'
 import { actions, updateResultState } from '@/constants/common'
 import { deepClone } from '@/utils/object'
 import { checkDuplication } from "../services/dataset"
@@ -134,21 +134,26 @@ export default {
     *getAssetsOfDataset({ payload }, { call, put }) {
       const { code, result } = yield call(getAssetsOfDataset, payload)
       if (code === 0) {
+        const { items, total } = result
+        const keywords = [...new Set(items.map(item => item.keywords).flat())]
+        const assets = { items: items.map(asset => transferAsset(asset, keywords)), total }
+
         yield put({
           type: "UPDATE_ASSETS",
-          payload: result,
+          payload: assets,
         })
-        return result
+        return assets
       }
     },
     *getAsset({ payload }, { call, put }) {
       const { code, result } = yield call(getAsset, payload.id, payload.hash)
       if (code === 0) {
+        const asset = transferAsset(result)
         yield put({
           type: "UPDATE_ASSET",
-          payload: result,
+          payload: asset,
         })
-        return result
+        return asset
       }
     },
     *delDataset({ payload }, { call, put }) {

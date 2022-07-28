@@ -38,3 +38,32 @@ export interface DatasetAnalysis {
   annoQuality: Array<BackendData>,
   classNamesCount: BackendData,
 }
+
+export interface Asset {
+  id: number,
+  hash: string,
+  keywords: Array<string>,
+  url: string,
+  metadata?: {
+    width: number,
+    height: number,
+    channel: number,
+  },
+  size?: number,
+  annotations: Array<Annotation>,
+}
+
+export interface Annotation {
+  keyword: string,
+  box: {
+    x: number,
+    y: number,
+    w: number,
+    h: number,
+    rotate_angle: number,
+  }
+  color?: string,
+  score?: number,
+  gt?: boolean,
+  cm?: boolean,
+}

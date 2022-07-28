@@ -18,9 +18,7 @@ import { LeftOutlined, RightOutlined } from '@ant-design/icons'
 
 const { CheckableTag } = Tag
 
-const KeywordColor = ["green", "red", "cyan", "blue", "yellow", "purple", "magenta", "orange", "gold"]
-
-function Asset({ id, datasetKeywords = [], filterKeyword, getAsset, getAssetsOfDataset, index = 0, total = 0 }) {
+function Asset({ id, asset: cache, filterKeyword, getAsset, getAssetsOfDataset, index = 0, total = 0 }) {
   const history = useHistory()
   const [asset, setAsset] = useState({})
   const [current, setCurrent] = useState('')
@@ -28,8 +26,8 @@ function Asset({ id, datasetKeywords = [], filterKeyword, getAsset, getAssetsOfD
   const [selectedKeywords, setSelectedKeywords] = useState([])
   const [currentIndex, setCurrentIndex] = useState(null)
   const [assetHistory, setAssetHistory] = useState([])
-  const [colors] = useState(datasetKeywords.reduce((prev, curr, i) =>
-    ({ ...prev, [curr]: KeywordColor[i % KeywordColor.length] }), {}))
+  const [evaluation, setEvaluation] = useState({})
+  const [colors, setColors] = useState({})
 
   useEffect(() => {
     setAsset({})
@@ -44,28 +42,39 @@ function Asset({ id, datasetKeywords = [], filterKeyword, getAsset, getAssetsOfD
   }, [currentIndex])
 
   useEffect(() => {
-    if (!current) {
-      return
+    if (cache) {
+      setAsset(cache)
+      setCurrent(cache.hash)
     }
-    fetchAsset()
-  }, [current])
+  }, [cache])
 
   useEffect(() => {
-    setShowAnnotations((asset.annotations || []).filter(anno => selectedKeywords.indexOf(anno.keyword) >= 0))
-  }, [selectedKeywords])
+    if (!asset.hash) {
+      return
+    }
+    setSelectedKeywords(asset.keywords)
+  }, [asset])
+
+  useEffect(() => {
+    if (!cache) {
+      return
+    }
+    const { annotations } = cache
+    setColors(annotations.reduce((prev, annotation) => ({ ...prev, [annotation.keyword]: annotation.color }), {}))
+  }, [cache])
+
+  useEffect(() => {
+    const keywordFilter = annotation => selectedKeywords.indexOf(annotation.keyword) >= 0
+    const evaluationFilter = annotation => evaluation[annotation.cm]
+    const filters = annotation => keywordFilter(annotation) && evaluationFilter(annotation)
+    const visibleAnnotations = (asset.annotations || []).filter(filters)
+    setShowAnnotations(visibleAnnotations)
+  }, [selectedKeywords, evaluation, asset])
 
   async function fetchAsset() {
-    const compare = (a, b) => {
-      const aa = (a.keyword || a).toUpperCase()
-      const bb = (b.keyword || b).toUpperCase()
-      return aa > bb ? -1 : (aa < bb ? 1 : 0)
-    }
-
     const result = await getAsset(id, current)
-    const keywords = result.keywords.sort(compare)
-    const annotations = result.annotations.sort(compare).map(anno => ({ ...anno, color: colors[anno.keyword] }))
-    setAsset({ ...result, keywords, annotations })
-    setSelectedKeywords(keywords)
+    const corretColor = (annotations = []) => annotations.map(anno => ({ ...anno, color: colors[anno.keyword]}))
+    setAsset({...result, annotations: corretColor(result.annotations)})
   }
 
   async function fetchAssetHash() {
@@ -73,6 +82,7 @@ function Asset({ id, datasetKeywords = [], filterKeyword, getAsset, getAssetsOfD
     if (result?.items) {
       const ass = result.items[0]
       setCurrent(ass.hash)
+      fetchAsset()
     }
   }
 
@@ -109,7 +119,7 @@ function Asset({ id, datasetKeywords = [], filterKeyword, getAsset, getAssetsOfD
   }
 
   function filterAnnotations(checkeds) {
-    console.log('checkeds:', checkeds)
+    setEvaluation(checkeds)
   }
 
   return asset.hash ? (
@@ -185,7 +195,7 @@ function Asset({ id, datasetKeywords = [], filterKeyword, getAsset, getAssetsOfD
                 </Descriptions.Item>
               </Descriptions>
               <div className={styles.filter}>
-              <h3><NavDatasetIcon /> {t("dataset.asset.filters.title")}</h3>
+                <h3><NavDatasetIcon /> {t("dataset.asset.filters.title")}</h3>
                 <GtSelector layout='vertical' onChange={filterAnnotations} />
               </div>
             </Card>

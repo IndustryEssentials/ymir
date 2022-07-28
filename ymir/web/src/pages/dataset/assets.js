@@ -9,6 +9,7 @@ import { randomBetween, percent } from '@/utils/number'
 import Asset from "./components/asset"
 import styles from "./assets.less"
 import GtSelector from "@/components/form/gtSelector"
+import ImageAnnotation from "../../components/dataset/imageAnnotation"
 
 const { Option } = Select
 
@@ -43,6 +44,7 @@ const Dataset = ({ getDataset, getAssetsOfDataset }) => {
     hash: null,
     index: 0,
   })
+  const [evaluation, setEvaluation] = useState({})
 
   useEffect(async () => {
     const data = await getDataset(id)
@@ -76,8 +78,8 @@ const Dataset = ({ getDataset, getAssetsOfDataset }) => {
     setTotal(total)
     setAssets(items)
   }
-  const goAsset = (hash, index) => {
-    setCurrentAsset({ hash, index: filterParams.offset + index})
+  const goAsset = (asset, hash, index) => {
+    setCurrentAsset({ asset, hash, index: filterParams.offset + index})
     setAssetVisible(true)
   }
 
@@ -92,8 +94,8 @@ const Dataset = ({ getDataset, getAssetsOfDataset }) => {
     return percent(count / dataset.assetCount)
   }
 
-  const gtChange = checkeds => {
-    console.log('checkeds:', checkeds)
+  const filterAnnotations = annotations => {
+    return annotations.filter(annotation => evaluation[annotation.cm])
   }
 
   const randomPageButton = (
@@ -115,12 +117,9 @@ const Dataset = ({ getDataset, getAssetsOfDataset }) => {
           <Col flex={100 / row + '%'} key={asset.hash} className={styles.dataset_item}>
             <div
               className={styles.dataset_img}
-              onClick={() => goAsset(asset.hash, index * row + rowIndex)}
+              onClick={() => goAsset(asset, asset.hash, index * row + rowIndex)}
             >
-              <img
-                src={asset.url}
-                style={{ width: "auto", maxWidth: "100%", maxHeight: "100%" }}
-              />
+              <ImageAnnotation url={asset.url} data={asset.annotations} filters={filterAnnotations} />
               <span
                 className={styles.item_keywords_count}
                 title={asset?.keywords.join(",")}
@@ -148,7 +147,7 @@ const Dataset = ({ getDataset, getAssetsOfDataset }) => {
       </Space>
     </Col>
     <Col>
-      <GtSelector layout='inline' onChange={gtChange} />
+      <GtSelector layout='inline' onChange={setEvaluation} />
     </Col>
     <Col>
       <span>{t("dataset.detail.keyword.label")}</span>
@@ -175,7 +174,7 @@ const Dataset = ({ getDataset, getAssetsOfDataset }) => {
   const assetDetail = <Modal className={styles.assetDetail} destroyOnClose
     title={t('dataset.asset.title')} visible={assetVisible} onCancel={() => setAssetVisible(false)}
     width={null} footer={null}>
-    <Asset id={id} datasetKeywords={dataset.keywords} filterKeyword={assetVisible ? filterParams.keyword : null} index={currentAsset.index} total={total} />
+    <Asset id={id} asset={currentAsset.asset} datasetKeywords={dataset.keywords} filterKeyword={assetVisible ? filterParams.keyword : null} index={currentAsset.index} total={total} />
   </Modal>
 
   return (

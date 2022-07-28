@@ -1,17 +1,18 @@
 import { Checkbox, Form } from "antd"
 import { useEffect, useState } from "react"
+import { evaluationTags as tags } from '@/constants/dataset'
 
 const types = [
   {
     label: 'GT', value: 'gt', checked: true, children: [
-      { label: 'FN', value: 'fn' },
-      { label: 'MTP', value: 'mtp' },
+      { label: 'FN', value: tags.fn },
+      { label: 'MTP', value: tags.mtp },
     ]
   },
   {
     label: 'PRED', value: 'pred', children: [
-      { label: 'FP', value: 'fp' },
-      { label: 'TP', value: 'tp' },
+      { label: 'FP', value: tags.fp },
+      { label: 'TP', value: tags.tp },
     ]
   },
 ]
@@ -22,10 +23,10 @@ const GtSelector = ({ value, onChange = () => { }, ...props }) => {
     pred: true,
   })
   const [checkeds, setCheckeds] = useState({
-    fn: true,
-    fp: true,
-    tp: true,
-    mtp: true,
+    [tags.fn]: true,
+    [tags.fp]: true,
+    [tags.tp]: true,
+    [tags.mtp]: true,
   })
 
   const [all, setAll] = useState({
@@ -39,12 +40,12 @@ const GtSelector = ({ value, onChange = () => { }, ...props }) => {
 
   useEffect(() => {
     setPCheckeds({
-      gt: checkeds.fn && checkeds.mtp,
-      pred: checkeds.fp && checkeds.tp,
+      gt: checkeds[tags.fn] && checkeds[tags.mtp],
+      pred: checkeds[tags.fp] && checkeds[tags.tp],
     })
     setAll({
-      gt: (!checkeds.fn && checkeds.mtp) || (checkeds.fn && !checkeds.mtp),
-      pred: (!checkeds.fp && checkeds.tp) || (checkeds.fp && !checkeds.tp),
+      gt: (!checkeds[tags.fn] && checkeds[tags.mtp]) || (checkeds[tags.fn] && !checkeds[tags.mtp]),
+      pred: (!checkeds[tags.fp] && checkeds[tags.tp]) || (checkeds[tags.fp] && !checkeds[tags.tp]),
     })
   }, [checkeds])
 
