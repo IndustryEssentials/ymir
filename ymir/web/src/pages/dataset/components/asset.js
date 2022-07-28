@@ -9,7 +9,7 @@ import t from "@/utils/t"
 import { randomBetween } from "@/utils/number"
 
 import Hash from "@/components/common/hash"
-import AssetAnnotation from "@/components/dataset/asset_annotation"
+import AssetAnnotation from "@/components/dataset/assetAnnotation"
 import GtSelector from "@/components/form/gtSelector"
 
 import styles from "./asset.less"
