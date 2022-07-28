@@ -54,7 +54,7 @@ class TestAssetController:
         assert resp.status_code == 200
         assert resp.json()["result"] == expect_data
 
-    def test_get_assert_id_info(self, test_client, mock_mir_content):
+    def test_get_asset_id_info(self, test_client, mock_mir_content):
         user_id = "user_id"
         repo_id = "repo_id"
         branch_id = "branch_id"
@@ -62,7 +62,8 @@ class TestAssetController:
 
         expect_data = {
             "asset_id": asset_id,
-            "annotations": [{"box": {"h": 50, "w": 19, "x": 26, "y": 189}, "class_id": 2}],
+            "pred": [{"box": {"h": 50, "w": 19, "x": 26, "y": 189}, "class_id": 2, "cm": 1}],
+            "gt": [{"box": {"h": 50, "w": 19, "x": 26, "y": 189}, "class_id": 2, "cm": 1}],
             "class_ids": [2],
             "metadata": {"asset_type": 2, "height": 1620, "width": 1080},
         }

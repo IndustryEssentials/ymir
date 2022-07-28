@@ -203,7 +203,8 @@ class AssetsModel:
         example return data:
         {
             'asset_id': 'abc',
-            'annotations': [{'box': {'h': 329, 'w': 118, 'x': 1, 'y': 47}, 'class_id': 2}],
+            'pred': [{'box': {'h': 329, 'w': 118, 'x': 1, 'y': 47}, 'class_id': 2, 'cm': 1}],
+            'gt': [{'box': {'h': 329, 'w': 118, 'x': 1, 'y': 47}, 'class_id': 2, 'cm': 1}],
             'class_ids': [2, 30],
             'metadata': {'asset_type': 1, 'height': 375, 'image_channels': 3, 'timestamp': {'start': 123}, 'width': 500}
         }
