@@ -191,7 +191,7 @@ def _single_image_annotations_to_voc(asset_id: str, attrs: mirpb.MetadataAttribu
         difficult_node = ElementTree.SubElement(object_node, 'difficult')
         difficult_node.text = '0'
 
-        if annotation.tags:
+        if annotation.tags:  # Not add tags node if empty, otherwise xmlparse lib will get tags: None.
             tags_node = ElementTree.SubElement(object_node, 'tags')
             for k, v in annotation.tags.items():
                 ElementTree.SubElement(tags_node, k).text = v
