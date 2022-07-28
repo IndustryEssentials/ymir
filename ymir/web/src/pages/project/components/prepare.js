@@ -26,7 +26,6 @@ const SettingsSelection = (Select) => {
 }
 
 const Stage = ({ pid, value, stage, project = {} }) => {
-  console.log('stage init value:', value)
   const [valid, setValid] = useState(false)
   const Selection = useMemo(() => SettingsSelection(stage.type ? ModelSelect : DatasetSelect), [stage.type])
   // const [newProject, updateProject] = useUpdateProject(pid)
@@ -46,7 +45,6 @@ const Stage = ({ pid, value, stage, project = {} }) => {
     const fields = stages.filter(({ type, field }) => !type && stage.field !== field)
       .map(({ field }) => field)
     const ids = fields.map(field => project[field]?.id || project[field])
-    console.log('ids:', ids, fields)
 
     return datasets.filter(dataset => !ids.includes(dataset.id))
   }
@@ -57,11 +55,11 @@ const Stage = ({ pid, value, stage, project = {} }) => {
       <div className={s.state}>{renderState()}</div>
     </Col>
     <Col flex={1}>
-      <Form.Item name={stage.field} label={stage.label}
+      <Form.Item name={stage.field} label={t(stage.label)}
         tooltip={t(stage.tip)} initialValue={value || null}
         rules={[{ required: !stage.option }]}
       >
-        <Selection pid={pid} changeByUser filters={filters} allowClear={stage.option} />
+        <Selection pid={pid} changeByUser filters={filters} allowClear={!!stage.option} />
       </Form.Item>
     </Col>
   </Row>
@@ -74,7 +72,6 @@ function getAttrFromProject(field, project = {}) {
 
 function Prepare({ project = {}, fresh = () => { }, ...func }) {
   const location = useLocation()
-  console.log('location:', location)
   const [validPrepare, setValidPrepare] = useState(false)
   const [id, setId] = useState(null)
   const [result, updateProject] = useFetch('project/updateProject')

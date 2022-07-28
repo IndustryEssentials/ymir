@@ -122,15 +122,6 @@ export const homeRoutes = [
     breadcrumbLabel: 'breadcrumbs.dataset.assets',
   },
   {
-    path: "/home/project/:id/model/:mid",
-    name: "modelDetail",
-    component: "@/pages/model/detail",
-    title: "model.title",
-    pid: 33,
-    id: 12,
-    breadcrumbLabel: 'breadcrumbs.model',
-  },
-  {
     path: "/home/project/:id/model/import",
     name: "modelImport",
     component: "@/pages/model/add",
@@ -138,6 +129,15 @@ export const homeRoutes = [
     pid: 25,
     id: 13,
     breadcrumbLabel: 'breadcrumbs.model.add',
+  },
+  {
+    path: "/home/project/:id/model/:mid",
+    name: "modelDetail",
+    component: "@/pages/model/detail",
+    title: "model.title",
+    pid: 33,
+    id: 12,
+    breadcrumbLabel: 'breadcrumbs.model',
   },
   {
     path: "/home/project/:id/model/:mid/verify",

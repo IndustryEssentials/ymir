@@ -1,15 +1,13 @@
-import { Button, Card, Form, message, Select, Space, ConfigProvider } from 'antd'
+import { Button, Card, Form, message, Space } from 'antd'
 import { connect } from 'dva'
 import { useEffect, useState } from 'react'
 import { useParams, useHistory } from 'umi'
 
 import { formLayout } from "@/config/antd"
 import t from '@/utils/t'
-import EmptyStateModel from '@/components/empty/model'
 import ModelSelect from "@/components/form/modelSelect"
 import s from './add.less'
 import Breadcrumbs from '@/components/common/breadcrumb'
-import Tip from "@/components/form/tip"
 
 const { useForm } = Form
 
@@ -78,18 +76,16 @@ const InitModel = ({ projects = {}, ...props }) => {
             labelAlign={'left'}
             colon={false}
           >
-            <ConfigProvider renderEmpty={() => <EmptyStateModel id={id} />}>
-              <Form.Item
-                label={t('task.mining.form.model.label')}
-                name="modelStage"
-                rules={[
-                  { required: true, message: t('task.mining.form.model.required') },
-                ]}
-                tooltip={t('tip.iteration.initmodel')}
-              >
-                <ModelSelect placeholder={t('task.mining.form.mining.model.required')} pid={id} />
-              </Form.Item>
-            </ConfigProvider>
+            <Form.Item
+              label={t('task.mining.form.model.label')}
+              name="modelStage"
+              rules={[
+                { required: true, message: t('task.mining.form.model.required') },
+              ]}
+              tooltip={t('tip.iteration.initmodel')}
+            >
+              <ModelSelect placeholder={t('task.mining.form.mining.model.required')} pid={id} />
+            </Form.Item>
             <Form.Item wrapperCol={{ offset: 8 }}>
               <Space size={20}>
                 <Form.Item name='submitBtn' noStyle>

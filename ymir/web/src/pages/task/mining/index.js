@@ -12,7 +12,6 @@ import { randomNumber } from "@/utils/number"
 import useFetch from '@/hooks/useFetch'
 
 import Breadcrumbs from "@/components/common/breadcrumb"
-import EmptyStateDataset from '@/components/empty/dataset'
 import EmptyStateModel from '@/components/empty/model'
 import ModelSelect from "@/components/form/modelSelect"
 import ImageSelect from "@/components/form/imageSelect"
@@ -163,39 +162,31 @@ function Mining({ datasetCache, ...func }) {
                 relatedId={selectedModel?.task?.parameters?.docker_image_id} type={TYPES.MINING} onChange={imageChange} />
             </Form.Item>
             <OpenpaiForm form={form} openpai={openpai} />
-            <ConfigProvider renderEmpty={() => <EmptyStateDataset add={() => history.push(`/home/project/${pid}/dataset/add`)} />}>
-
-              <Form.Item
-                label={t('task.mining.form.dataset.label')}
-                tooltip={t('tip.task.mining.dataset')}
-                required
-                name="datasetId"
-                rules={[
-                  { required: true, message: t('task.mining.form.dataset.required') },
-                ]}
-              >
-                <DatasetSelect
-                  pid={pid}
-                  placeholder={t('task.mining.form.dataset.placeholder')}
-                  onChange={setsChange}
-                />
-              </Form.Item>
-            </ConfigProvider>
-
-
-            <ConfigProvider renderEmpty={() => <EmptyStateModel id={pid} />}>
-              <Form.Item
-                label={t('task.mining.form.model.label')}
-                tooltip={t('tip.task.filter.model')}
-                name="modelStage"
-                rules={[
-                  { required: true, message: t('task.mining.form.model.required') },
-                ]}
-              >
-                <ModelSelect placeholder={t('task.mining.form.mining.model.required')} onChange={modelChange} pid={pid} />
-              </Form.Item>
-            </ConfigProvider>
-
+            <Form.Item
+              label={t('task.mining.form.dataset.label')}
+              tooltip={t('tip.task.mining.dataset')}
+              required
+              name="datasetId"
+              rules={[
+                { required: true, message: t('task.mining.form.dataset.required') },
+              ]}
+            >
+              <DatasetSelect
+                pid={pid}
+                placeholder={t('task.mining.form.dataset.placeholder')}
+                onChange={setsChange}
+              />
+            </Form.Item>
+            <Form.Item
+              label={t('task.mining.form.model.label')}
+              tooltip={t('tip.task.filter.model')}
+              name="modelStage"
+              rules={[
+                { required: true, message: t('task.mining.form.model.required') },
+              ]}
+            >
+              <ModelSelect placeholder={t('task.mining.form.mining.model.required')} onChange={modelChange} pid={pid} />
+            </Form.Item>
             <Form.Item
               tooltip={t('tip.task.filter.strategy')}
               label={t('task.mining.form.strategy.label')}

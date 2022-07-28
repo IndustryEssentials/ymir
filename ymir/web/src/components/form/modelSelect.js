@@ -1,14 +1,15 @@
-import { Cascader } from 'antd'
+import { Cascader, ConfigProvider } from 'antd'
 import { useSelector } from 'umi'
 import { useEffect, useState } from 'react'
 
 import { percent } from '@/utils/number'
 import t from '@/utils/t'
 import useFetch from '@/hooks/useFetch'
+import EmptyStateModel from '@/components/empty/model'
 
-
-const ModelSelect = ({ pid, value, onlyModel, changeByUser, onChange = () => { }, ...resProps }) => {
+const ModelSelect = ({ pid, value, onlyModel, changeByUser, onChange = () => { }, filters, ...resProps }) => {
   const allModels = useSelector(state => state.model.allModels)
+  const [ms, setMS] = useState(null)
   const [options, setOptions] = useState([])
   const [models, setModels] = useState([])
   const [_, getModels] = useFetch('model/queryAllModels')
@@ -35,10 +36,17 @@ const ModelSelect = ({ pid, value, onlyModel, changeByUser, onChange = () => { }
   }, [allModels])
 
   useEffect(() => {
-    if (options.length === 1) {
-      value = options[0].value
+    if (value && !value[1]) {
+      const model = models.find(md => md.id === value[0])
+      if (model) {
+        setMS([value[0], model.recommendStage])
+      }
     }
   }, [options])
+
+  useEffect(() => {
+    setMS(value)
+  }, [value])
 
   useEffect(() => {
     generateOptions()
@@ -68,8 +76,10 @@ const ModelSelect = ({ pid, value, onlyModel, changeByUser, onChange = () => { }
   }
 
   return (
-    <Cascader value={value} onChange={onChange} options={options}
-      showCheckedStrategy={Cascader.SHOW_CHILD} showSearch={{ filter }} allowClear {...resProps}></Cascader>
+    <ConfigProvider renderEmpty={() => <EmptyStateModel />}>
+      <Cascader value={ms} onChange={onChange} options={options}
+        showCheckedStrategy={Cascader.SHOW_CHILD} showSearch={{ filter }} allowClear {...resProps}></Cascader>
+    </ConfigProvider>
   )
 }
 
