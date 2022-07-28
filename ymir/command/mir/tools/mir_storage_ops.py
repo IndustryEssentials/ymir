@@ -545,8 +545,8 @@ class MirStorageOps():
         gt_annotations = mir_storage_annotations['ground_truth']['image_annotations']
         keyword_keyids_list = mir_storage_keywords["keywords"]
         for asset_id, asset_metadata in mir_storage_metadatas["attributes"].items():
-            pred_asset_annotations = pred_annotations[asset_id]["annotations"] if asset_id in pred_annotations else {}
-            gt_asset_annotations = gt_annotations[asset_id]["annotations"] if asset_id in gt_annotations else {}
+            pred_asset_annotations = pred_annotations[asset_id]["annotations"] if asset_id in pred_annotations else []
+            gt_asset_annotations = gt_annotations[asset_id]["annotations"] if asset_id in gt_annotations else []
             asset_class_ids = (keyword_keyids_list[asset_id]["predefined_keyids"]
                                if asset_id in keyword_keyids_list else [])
             asset_ids_detail[asset_id] = dict(
