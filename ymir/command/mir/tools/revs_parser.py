@@ -7,10 +7,10 @@ from mir.tools.errors import MirRuntimeError
 class TypRevTid:
     __slots__ = ("typ", "rev", "tid")
 
-    def __init__(self) -> None:
-        self.typ = ''
-        self.rev = ''
-        self.tid = ''
+    def __init__(self, typ: str = '', rev: str = '', tid: str = '') -> None:
+        self.typ = typ
+        self.rev = rev
+        self.tid = tid
 
     def __repr__(self) -> str:
         return f"(t: {self.typ}, r: {self.rev}, t: {self.tid})"

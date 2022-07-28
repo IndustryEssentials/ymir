@@ -291,5 +291,5 @@ class TestToolsDetEval(unittest.TestCase):
         mir_evaluator.summarize()
         self.assertTrue(np.isclose(expected_stats, mir_evaluator.stats).all())
 
-        mir_evaluation_result = mir_evaluator.get_evaluation_result(area_ranges_index=0, max_dets_index=0)
-        self.assertTrue(len(mir_evaluation_result.iou_evaluations) > 0)
+        single_dataset_evaluation = mir_evaluator.get_evaluation_result(area_ranges_index=0, max_dets_index=0)
+        self.assertTrue(len(single_dataset_evaluation.iou_evaluations) > 0)

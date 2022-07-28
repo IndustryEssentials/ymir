@@ -1,3 +1,4 @@
+from ast import Assert
 import os
 import shutil
 import unittest
@@ -442,7 +443,6 @@ class TestCmdEvaluate(unittest.TestCase):
         fake_args.conf_thr = 0.3
         fake_args.iou_thrs = '0.5:0.95:0.05'
         fake_args.need_pr_curve = False
-        fake_args.calc_confusion_matrix = False
         evaluate_instance = evaluate.CmdEvaluate(fake_args)
         return_code = evaluate_instance.run()
 
@@ -460,12 +460,11 @@ class TestCmdEvaluate(unittest.TestCase):
         fake_args = type('', (), {})()
         fake_args.mir_root = self._mir_root
         fake_args.work_dir = self._working_root
-        fake_args.src_revs = 'a'
+        fake_args.src_revs = 'a@a'
         fake_args.dst_rev = 'd@d'
         fake_args.conf_thr = 0.3
         fake_args.iou_thrs = '0.5'
         fake_args.need_pr_curve = True
-        fake_args.calc_confusion_matrix = True
         evaluate_instance = evaluate.CmdEvaluate(fake_args)
         return_code = evaluate_instance.run()
 
@@ -477,5 +476,5 @@ class TestCmdEvaluate(unittest.TestCase):
                                                                                       mir_task_id='d',
                                                                                       ms=mirpb.MirStorage.MIR_TASKS)
         evaluation_result = mir_tasks.tasks[mir_tasks.head_task_id].evaluation
-        self.assertEqual({'a'}, set(evaluation_result.dataset_evaluations.keys()))
+        self.assertEqual({'a@a'}, set(evaluation_result.dataset_evaluations.keys()))
         self._check_fpfn(branch='d', task_id='d')

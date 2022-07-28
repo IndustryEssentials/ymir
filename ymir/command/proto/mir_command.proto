@@ -266,7 +266,8 @@ message EvaluateConfig {
     float conf_thr = 3;
     string iou_thrs_interval = 4;
     bool need_pr_curve = 5;
-    bool calc_confusion_matrix = 6;
+
+    reserved 6;
 }
 
 message SingleDatasetEvaluation {

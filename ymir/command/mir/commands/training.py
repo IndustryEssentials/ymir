@@ -458,7 +458,10 @@ class CmdTrain(base.BaseCommand):
         mir_storage_ops.MirStorageOps.save_and_commit(mir_root=mir_root,
                                                       mir_branch=dst_typ_rev_tid.rev,
                                                       his_branch=src_typ_rev_tid.rev,
-                                                      mir_datas={},
+                                                      mir_datas={
+                                                          mirpb.MirStorage.MIR_METADATAS: mirpb.MirMetadatas(),
+                                                          mirpb.MirStorage.MIR_ANNOTATIONS: mirpb.MirAnnotations()
+                                                      },
                                                       task=task)
 
         logging.info("training done")
