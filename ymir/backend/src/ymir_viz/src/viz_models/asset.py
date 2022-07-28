@@ -147,6 +147,7 @@ class AssetsModel:
         """
         example return data:
         [{
+            'asset_id': 'abc',
             'pred': [{'box': {'h': 329, 'w': 118, 'x': 1, 'y': 47}, 'class_id': 2}],
             'gt': [{'box': {'h': 329, 'w': 118, 'x': 1, 'y': 47}, 'class_id': 2}],
             'class_ids': [2, 30],
@@ -201,6 +202,7 @@ class AssetsModel:
         """
         example return data:
         {
+            'asset_id': 'abc',
             'annotations': [{'box': {'h': 329, 'w': 118, 'x': 1, 'y': 47}, 'class_id': 2}],
             'class_ids': [2, 30],
             'metadata': {'asset_type': 1, 'height': 375, 'image_channels': 3, 'timestamp': {'start': 123}, 'width': 500}
@@ -222,4 +224,5 @@ class AssetsModel:
             # asynchronous generate cache content,and we can add some policy to trigger it later
             self.trigger_cache_generator(assets_content)
 
+        result["asset_id"] = asset_id
         return result
