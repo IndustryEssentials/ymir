@@ -183,6 +183,7 @@ class TestCmdImport(unittest.TestCase):
                                 'rotate_angle': 0.22
                             },
                             'class_id': 1,
+                            'cm': 'TP',
                             'score': 0.5,
                             'anno_quality': 0.62,
                             'tags': {
@@ -243,6 +244,7 @@ class TestCmdImport(unittest.TestCase):
                                 'rotate_angle': 0.22
                             },
                             'class_id': 1,
+                            'cm': 'TP',
                             'score': 0.5,
                             'anno_quality': 0.62,
                             'tags': {
