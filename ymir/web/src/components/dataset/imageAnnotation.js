@@ -72,7 +72,7 @@ function ImageAnnotation({
   })
 
   return (
-    <div className={styles.ic_container} style={{
+    <div className={styles.annotations} style={{
       position: 'relative',
       display: 'flex',
       alignItems: 'center',
