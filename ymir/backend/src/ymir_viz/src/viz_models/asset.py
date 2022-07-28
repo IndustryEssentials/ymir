@@ -100,7 +100,7 @@ class AssetsModel:
             'total': 234
         }
         """
-        asset_ids = assets_content["class_ids_index"][class_id][offset : limit + offset]
+        asset_ids = assets_content["class_ids_index"][class_id][offset: limit + offset]
         elements = [
             {
                 "asset_id": asset_id,
