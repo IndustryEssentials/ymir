@@ -146,9 +146,10 @@ def _single_image_annotations_to_voc(asset_id: str, attrs: mirpb.MetadataAttribu
     segmented_node.text = '0'
 
     # annotation: cks and sub nodes
-    cks_node = ElementTree.SubElement(annotation_node, 'cks')
-    for k, v in image_cks.cks.items():
-        ElementTree.SubElement(cks_node, k).text = v
+    if image_cks.cks:
+        cks_node = ElementTree.SubElement(annotation_node, 'cks')
+        for k, v in image_cks.cks.items():
+            ElementTree.SubElement(cks_node, k).text = v
 
     # annotation: image_quality
     image_quality_node = ElementTree.SubElement(annotation_node, 'image_quality')
@@ -190,9 +191,10 @@ def _single_image_annotations_to_voc(asset_id: str, attrs: mirpb.MetadataAttribu
         difficult_node = ElementTree.SubElement(object_node, 'difficult')
         difficult_node.text = '0'
 
-        tags_node = ElementTree.SubElement(object_node, 'tags')
-        for k, v in annotation.tags.items():
-            ElementTree.SubElement(tags_node, k).text = v
+        if annotation.tags:  # Not add tags node if empty, otherwise xmlparse lib will get tags: None.
+            tags_node = ElementTree.SubElement(object_node, 'tags')
+            for k, v in annotation.tags.items():
+                ElementTree.SubElement(tags_node, k).text = v
 
         box_quality_node = ElementTree.SubElement(object_node, 'box_quality')
         box_quality_node.text = f"{annotation.anno_quality:.4f}"
