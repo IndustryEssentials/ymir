@@ -12,29 +12,53 @@ from mir import scm
 from mir.commands.checkout import CmdCheckout
 from mir.commands.commit import CmdCommit
 from mir.protos import mir_command_pb2 as mirpb
-from mir.tools import class_ids, context, exodus, mir_storage, mir_repo_utils, revs_parser, settings as mir_settings
+from mir.tools import class_ids, context, det_eval, exodus, mir_storage, mir_repo_utils, revs_parser
+from mir.tools import settings as mir_settings
 from mir.tools.code import MirCode
 from mir.tools.errors import MirError, MirRuntimeError
+
+
+class MirStorageOpsBuildConfig:
+    def __init__(self,
+                 evaluate_conf_thr: float = mir_settings.DEFAULT_EVALUATE_CONF_THR,
+                 evaluate_iou_thrs: str = mir_settings.DEFAULT_EVALUATE_IOU_THR,
+                 evaluate_need_pr_curve: bool = False,
+                 evaluate_src_dataset_id: str = '') -> None:
+        self.evaluate_conf_thr: float = evaluate_conf_thr
+        self.evaluate_iou_thrs: str = evaluate_iou_thrs
+        self.evaluate_need_pr_curve: bool = evaluate_need_pr_curve
+        self.evaluate_src_dataset_id: str = evaluate_src_dataset_id
 
 
 class MirStorageOps():
     # private: save and load
     @classmethod
-    def __save(cls, mir_root: str, mir_datas: Dict['mirpb.MirStorage.V', Any]) -> None:
+    def __build_and_save(cls, mir_root: str, mir_datas: Dict['mirpb.MirStorage.V', Any],
+                         build_config: MirStorageOpsBuildConfig) -> None:
         # add default members
         mir_tasks: mirpb.MirTasks = mir_datas[mirpb.MirStorage.MIR_TASKS]
-        if mirpb.MirStorage.MIR_METADATAS not in mir_datas:
-            mir_datas[mirpb.MirStorage.MIR_METADATAS] = mirpb.MirMetadatas()
-        if mirpb.MirStorage.MIR_ANNOTATIONS not in mir_datas:
-            mir_datas[mirpb.MirStorage.MIR_ANNOTATIONS] = mirpb.MirAnnotations()
-
         mir_annotations: mirpb.MirAnnotations = mir_datas[mirpb.MirStorage.MIR_ANNOTATIONS]
+
         cls.__build_annotations_head_task_id(mir_annotations=mir_annotations, head_task_id=mir_tasks.head_task_id)
 
         # gen mir_keywords
         mir_keywords: mirpb.MirKeywords = mirpb.MirKeywords()
         cls.__build_mir_keywords(mir_annotations=mir_annotations, mir_keywords=mir_keywords)
         mir_datas[mirpb.MirStorage.MIR_KEYWORDS] = mir_keywords
+
+        mir_metadatas: mirpb.MirMetadatas = mir_datas[mirpb.MirStorage.MIR_METADATAS]
+        if (mir_metadatas.attributes and mir_annotations.ground_truth.image_annotations
+                and mir_annotations.task_annotations[mir_annotations.head_task_id].image_annotations):
+            evaluation, _ = det_eval.det_evaluate_with_pb(
+                mir_metadatas=mir_metadatas,
+                mir_annotations=mir_annotations,
+                mir_keywords=mir_keywords,
+                dataset_id=build_config.evaluate_src_dataset_id,
+                conf_thr=build_config.evaluate_conf_thr,
+                iou_thrs=build_config.evaluate_iou_thrs,
+                need_pr_curve=build_config.evaluate_need_pr_curve,
+            )
+            mir_tasks.tasks[mir_tasks.head_task_id].evaluation.CopyFrom(evaluation)
 
         # gen mir_context
         project_class_ids = context.load(mir_root=mir_root)
@@ -52,9 +76,10 @@ class MirStorageOps():
             with open(mir_file_path, "wb") as m_f:
                 m_f.write(mir_data.SerializeToString())
 
-    @classmethod
     # public: presave actions
+    @classmethod
     def __build_annotations_head_task_id(cls, mir_annotations: mirpb.MirAnnotations, head_task_id: str) -> None:
+        # TODO: FUNCTION TO BE REMOVED
         task_annotations_count = len(mir_annotations.task_annotations)
         if task_annotations_count == 0:
             mir_annotations.task_annotations[head_task_id].CopyFrom(mirpb.SingleTaskAnnotations())
@@ -241,8 +266,13 @@ class MirStorageOps():
 
     # public: save and load
     @classmethod
-    def save_and_commit(cls, mir_root: str, mir_branch: str, his_branch: Optional[str], mir_datas: Dict,
-                        task: mirpb.Task) -> int:
+    def save_and_commit(cls,
+                        mir_root: str,
+                        mir_branch: str,
+                        his_branch: Optional[str],
+                        mir_datas: Dict,
+                        task: mirpb.Task,
+                        build_config: MirStorageOpsBuildConfig = MirStorageOpsBuildConfig()) -> int:
         """
         saves and commit all contents in mir_datas to branch: `mir_branch`;
         branch will be created if not exists, and it's history will be after `his_branch`
@@ -255,6 +285,8 @@ class MirStorageOps():
                 mir_tasks is needed, if mir_metadatas and mir_annotations not provided, they will be created as empty
                  datasets
             task (mirpb.Task): task for this commit
+            conf_thr (float): confidence thr used to evaluate
+            iou_thrs (str): iou thrs used to evaluate
 
         Raises:
             MirRuntimeError
@@ -266,6 +298,9 @@ class MirStorageOps():
             mir_root = '.'
         if not mir_branch:
             raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS, error_message="empty mir branch")
+        if mirpb.MirStorage.MIR_METADATAS not in mir_datas or mirpb.MirStorage.MIR_ANNOTATIONS not in mir_datas:
+            raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
+                                  error_message='need mir_metadatas and mir_annotations')
         if mirpb.MirStorage.MIR_KEYWORDS in mir_datas:
             raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS, error_message='need no mir_keywords')
         if mirpb.MirStorage.MIR_CONTEXT in mir_datas:
@@ -276,6 +311,8 @@ class MirStorageOps():
             raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS, error_message="empty commit message")
         if not task.task_id:
             raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS, error_message='empty task id')
+        if not build_config.evaluate_src_dataset_id:
+            build_config.evaluate_src_dataset_id = revs_parser.join_rev_tid(mir_branch, task.task_id)
 
         mir_tasks: mirpb.MirTasks = mirpb.MirTasks()
         mir_tasks.head_task_id = task.task_id
@@ -307,7 +344,7 @@ class MirStorageOps():
                 if return_code != MirCode.RC_OK:
                     return return_code
 
-            cls.__save(mir_root=mir_root, mir_datas=mir_datas)
+            cls.__build_and_save(mir_root=mir_root, mir_datas=mir_datas, build_config=build_config)
 
             ret_code = CmdCommit.run_with_args(mir_root=mir_root, msg=task.name)
             if ret_code != MirCode.RC_OK:
@@ -436,7 +473,8 @@ class MirStorageOps():
                 class_id_mgr.main_name_for_id(id): count
                 for id, count in mir_storage_context.predefined_keyids_cnt.items()
             },
-            new_types={k: v for k, v in task_storage.new_types.items()},
+            new_types={k: v
+                       for k, v in task_storage.new_types.items()},
             new_types_added=task_storage.new_types_added,
             negative_info=dict(
                 negative_images_cnt=mir_storage_context.negative_images_cnt,
