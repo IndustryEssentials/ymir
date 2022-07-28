@@ -46,7 +46,7 @@ class AssetsModel:
     ) -> None:
         """
         set cache to Redis
-        hash xxx:detail {'asset_id': {'metadata': xxx, 'annotations': xxx, 'class_ids': xx}}
+        hash xxx:detail {'asset_id': {'metadata': xxx, 'gt': xxx, 'pred': xxx, 'class_ids': xx}}
         list xxx:class_id ['asset_id',]
         str  xxx:class_ids_count "{3:44, }"
         str  xxx:class_names_count "{'cat':44, }"
@@ -85,7 +85,8 @@ class AssetsModel:
                 self.key_asset_detail,
                 self.key_asset_index,
                 self.key_cache_status,
-            ))
+            ),
+        )
         consumer_task.start()
 
     @classmethod
@@ -99,16 +100,24 @@ class AssetsModel:
             'total': 234
         }
         """
-        asset_ids = assets_content["class_ids_index"][class_id][offset:limit + offset]
+        asset_ids = assets_content["class_ids_index"][class_id][offset : limit + offset]
         elements = [
-            dict(asset_id=asset_id, class_ids=assets_content["asset_ids_detail"][asset_id]["class_ids"])
+            {
+                "asset_id": asset_id,
+                "class_ids": assets_content["asset_ids_detail"][asset_id]["class_ids"],
+                "metadata": assets_content["asset_ids_detail"][asset_id]["metadata"],
+                "pred": assets_content["asset_ids_detail"][asset_id]["pred"],
+                "gt": assets_content["asset_ids_detail"][asset_id]["gt"],
+            }
             for asset_id in asset_ids
         ]
 
-        result = dict(elements=elements,
-                      limit=limit,
-                      offset=offset,
-                      total=len(assets_content["class_ids_index"][class_id]),)
+        result = dict(
+            elements=elements,
+            limit=limit,
+            offset=offset,
+            total=len(assets_content["class_ids_index"][class_id]),
+        )
 
         return result
 
@@ -138,7 +147,8 @@ class AssetsModel:
         """
         example return data:
         [{
-            'annotations': [{'box': {'h': 329, 'w': 118, 'x': 1, 'y': 47}, 'class_id': 2}],
+            'pred': [{'box': {'h': 329, 'w': 118, 'x': 1, 'y': 47}, 'class_id': 2}],
+            'gt': [{'box': {'h': 329, 'w': 118, 'x': 1, 'y': 47}, 'class_id': 2}],
             'class_ids': [2, 30],
             'metadata': {'asset_type': 1, 'height': 375, 'image_channels': 3, 'timestamp': {'start': 123}, 'width': 500}
         }]
@@ -156,10 +166,9 @@ class AssetsModel:
                 branch_id=self.branch_id,
                 task_id=self.branch_id,
             ).get_assets_content()
-            result = self.format_assets_info(assets_content=assets_content,
-                                             offset=offset,
-                                             limit=limit,
-                                             class_id=class_id)
+            result = self.format_assets_info(
+                assets_content=assets_content, offset=offset, limit=limit, class_id=class_id
+            )
 
             # asynchronous generate cache content,and we can add some policy to trigger it later
             self.trigger_cache_generator(assets_content)
