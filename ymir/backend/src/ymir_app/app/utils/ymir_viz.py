@@ -17,23 +17,28 @@ from common_utils.labels import UserLabels
 from id_definition.error_codes import VizErrorCode, CMDResponseCode
 
 
+def parse_annotations(annotations: List[Dict], user_labels: UserLabels) -> List[Dict]:
+    return [
+        {
+            "box": annotation["box"],
+            "cm": annotation["cm"],
+            "keyword": user_labels.get_main_names(annotation["class_id"])[0],
+        }
+        for annotation in annotations
+    ]
+
+
 @dataclass
 class Asset:
     url: str
     hash: str
-    annotations: List[Dict]
     keywords: List[str]
     metadata: Dict
+    gt: List[Dict]
+    pred: List[Dict]
 
     @classmethod
     def from_viz_res(cls, asset_id: str, res: Dict, user_labels: UserLabels) -> "Asset":
-        annotations = [
-            {
-                "box": annotation["box"],
-                "keyword": user_labels.get_main_names(annotation["class_id"])[0],
-            }
-            for annotation in res["annotations"]
-        ]
         keywords = user_labels.get_main_names(class_ids=res["class_ids"])
         keywords = list(filter(None, keywords))
         metadata = {
@@ -45,9 +50,10 @@ class Asset:
         return cls(
             get_asset_url(asset_id),
             asset_id,
-            annotations,
             keywords,  # type: ignore
             metadata,
+            parse_annotations(res["gt"], user_labels),
+            parse_annotations(res["pred"], user_labels),
         )
 
 
@@ -63,6 +69,9 @@ class Assets:
                 "url": get_asset_url(asset["asset_id"]),
                 "hash": asset["asset_id"],
                 "keywords": user_labels.get_main_names(class_ids=asset["class_ids"]),
+                "metadata": asset["metadata"],
+                "gt": parse_annotations(asset["gt"], user_labels),
+                "pred": parse_annotations(asset["pred"], user_labels),
             }
             for asset in res["elements"]
         ]
