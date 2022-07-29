@@ -125,7 +125,7 @@ class AssetsModel:
         """
         return structure like this:
         {
-            'elements': [{'asset_id':xxx, 'class_ids':[2,3]},],
+            'elements': [{'asset_id':xxx, 'class_ids':[2,3], 'gt': [], 'pred': [], 'metadata': []},],
             'limit': 3,
             'offset': 1,
             'total': 234
@@ -136,7 +136,16 @@ class AssetsModel:
 
         elements = []
         for asset_id, asset_detail in zip(asset_ids, assets_detail):
-            elements.append(dict(asset_id=asset_id, class_ids=yaml.safe_load(asset_detail)["class_ids"]))
+            asset_detail = yaml.safe_load(asset_detail)
+            elements.append(
+                {
+                    "asset_id": asset_id,
+                    "class_ids": asset_detail["class_ids"],
+                    "gt": asset_detail["gt"],
+                    "pred": asset_detail["pred"],
+                    "metadata": asset_detail["metadata"],
+                }
+            )
         total = redis_cache.llen(f"{self.key_asset_index}:{class_id}")
         result = dict(elements=elements, limit=limit, offset=offset, total=total)
 
