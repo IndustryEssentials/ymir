@@ -41,7 +41,6 @@ function Inference({ datasetCache, datasets, ...func }) {
   const location = useLocation()
   const { image } = location.query
   const did = location.query.did ? getArray(location.query.did).map(Number) : undefined
-  console.log('did:', did)
   const stage = parseModelStage(location.query.mid)
   const [selectedModels, setSelectedModels] = useState([])
   const [form] = Form.useForm()
