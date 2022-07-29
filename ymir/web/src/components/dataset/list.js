@@ -24,6 +24,7 @@ import {
   EditIcon, EyeOffIcon, CopyIcon, StopIcon, ArrowDownIcon, ArrowRightIcon, CompareIcon,
   CompareListIcon,
 } from "@/components/common/icons"
+import { DescPop } from "../common/descPop"
 
 const { confirm } = Modal
 const { useForm } = Form
@@ -136,7 +137,7 @@ function Datasets({ pid, project = {}, iterations, groups, datasetList, query, v
         dataIndex: "versionName",
         className: styles[`column_name`],
         render: (name, { id, description, projectLabel, iterationLabel }) =>
-          <Popover title={t('common.desc')} content={<div style={{ maxWidth: '30vw' }}>{description}</div>}>
+          <Popover title={t('common.desc')} content={<DescPop description={description} />}>
             <Row>
               <Col flex={1}><Link to={`/home/project/${pid}/dataset/${id}`}>{name}</Link></Col>
               <Col flex={'50px'}>
