@@ -150,7 +150,13 @@ class Project(Base):
         - datasets and models of current iteration
         - all the training dataset of all the iterations
         """
-        project_dataset_ids = [self.validation_dataset_id, self.mining_dataset_id, self.initial_training_dataset_id]
+        testing_dataset_ids = [int(i) for i in self.testing_dataset_ids.split(",")] if self.testing_dataset_ids else []
+        project_dataset_ids = [
+            self.validation_dataset_id,
+            self.mining_dataset_id,
+            self.initial_training_dataset_id,
+            *testing_dataset_ids,
+        ]
         current_iteration_dataset_ids = self.current_iteration.referenced_dataset_ids if self.current_iteration else []
         all_iterations_training_dataset_ids = [i.training_input_dataset_id for i in self.iterations]
         dataset_ids = filter(

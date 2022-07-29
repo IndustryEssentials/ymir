@@ -254,7 +254,8 @@ def update_project(
             raise DatasetNotFound()
         if project.training_dataset_group_id != dataset.dataset_group_id:
             raise NoDatasetPermission()
-
+    if project_update.name and crud.project.is_duplicated_name(db, user_id=current_user.id, name=project_update.name):
+        raise DuplicateProjectError()
     project = crud.project.update_resources(db, project_id=project.id, project_update=project_update)
 
     return {"result": project}
