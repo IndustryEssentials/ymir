@@ -63,7 +63,7 @@ export function transferProject(data: BackendData) {
     candidateTrainSet: data.candidate_training_dataset_id || 0,
     trainSetVersion: data.initial_training_dataset_id || 0,
     model: data.initial_model_id || 0,
-    modelStage: [data.initial_model_id, data.initial_model_stage_id],
+    modelStage: data.initial_model_id ? [data.initial_model_id, data.initial_model_stage_id] : undefined,
     modelCount: data.model_count,
     miningStrategy: data.mining_strategy,
     chunkSize: data.chunk_size,
