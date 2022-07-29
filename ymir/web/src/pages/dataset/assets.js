@@ -44,6 +44,7 @@ const Dataset = ({ getDataset, getAssetsOfDataset }) => {
     hash: null,
     index: 0,
   })
+  const [evaluated, setEvaluated] = useState(false)
   const [evaluation, setEvaluation] = useState({})
 
   useEffect(async () => {
@@ -52,6 +53,11 @@ const Dataset = ({ getDataset, getAssetsOfDataset }) => {
       setDataset(data)
     }
   }, [id])
+
+  useEffect(() => {
+    const evaluated = assets.some(asset => asset.evaluated)
+    setEvaluated(evaluated)
+  }, [assets])
 
   useEffect(() => {
     setCurrentPage((filterParams.offset / filterParams.limit) + 1)
@@ -75,7 +81,6 @@ const Dataset = ({ getDataset, getAssetsOfDataset }) => {
   const filter = async (param) => {
     setAssets([])
     const { items, total } = await getAssetsOfDataset(param)
-    console.log('items:', items)
     setTotal(total)
     setAssets(items)
   }
@@ -147,9 +152,9 @@ const Dataset = ({ getDataset, getAssetsOfDataset }) => {
         <span>{t("dataset.detail.pager.total", { total: total + '/' + dataset.assetCount })}</span>
       </Space>
     </Col>
-    <Col>
+    { evaluated ? <Col>
       <GtSelector layout='inline' onChange={setEvaluation} />
-    </Col>
+    </Col> : null }
     <Col>
       <span>{t("dataset.detail.keyword.label")}</span>
       <Select

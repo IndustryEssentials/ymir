@@ -29,28 +29,21 @@ function ImageAnnotation({
     })
   }
 
-  const renderAnnotations = () => {
-    console.log('annotations:', filters(annotations))
-    return filters(annotations).map((annotation, index) => {
-      return (
-        <div
-          title={`${annotation.keyword}` + (annotation.score ? `\nConference:${annotation.score}` : '')}
-          className={`${styles.annotation} ${annotation.gt ? styles.gt : ''}`}
-          key={index}
-          style={{
-            position: 'absolute',
-            color: annotation.color,
-            borderColor: annotation.color,
-            boxShadow: `${annotation.color} 0 0 2px 1px`,
-            top: annotation.y * ratio,
-            left: annotation.x * ratio,
-            width: annotation.w * ratio - 2,
-            height: annotation.h * ratio - 2,
-          }}
-        ></div>
-      )
-    })
-  }
+  const renderAnnotations = () => filters(annotations).map((annotation, index) => <div
+    title={`${annotation.keyword}` + (annotation.score ? `\nConference:${annotation.score}` : '')}
+    className={`${styles.annotation} ${annotation.gt ? styles.gt : ''}`}
+    key={index}
+    style={{
+      position: 'absolute',
+      color: annotation.color,
+      borderColor: annotation.color,
+      boxShadow: `${annotation.color} 0 0 2px 1px`,
+      top: annotation.y * ratio,
+      left: annotation.x * ratio,
+      width: annotation.w * ratio - 2,
+      height: annotation.h * ratio - 2,
+    }}
+  ></div>)
 
   function calImgWidth(target) {
     const im = target || img.current

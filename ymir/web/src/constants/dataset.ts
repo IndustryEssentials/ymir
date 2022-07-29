@@ -105,6 +105,7 @@ export function transferAsset(data: BackendData, keywords: Array<string>): Asset
     ...transferAnnotations(data.gt, true),
     ...transferAnnotations(data.pred),
   ].map(annotation => ({ ...annotation, color: generateColor(annotation.keyword, keywords || data.keywords) }))
+  const evaluated = annotations.some(annotation => evaluationTags[annotation.cm])
   return {
     id: data.id,
     hash: data.hash,
@@ -113,6 +114,7 @@ export function transferAsset(data: BackendData, keywords: Array<string>): Asset
     metadata: data.metadata,
     size: data.size,
     annotations,
+    evaluated: evaluated,
   }
 }
 
@@ -121,6 +123,7 @@ export function transferAnnotation(data: BackendData, gt: boolean = false): Anno
     ...data,
     keyword: data.keyword,
     box: data.box,
+    cm: data.cm,
     gt,
   }
 }

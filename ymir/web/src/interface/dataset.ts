@@ -51,6 +51,7 @@ export interface Asset {
   },
   size?: number,
   annotations: Array<Annotation>,
+  evaluated?: boolean,
 }
 
 export interface Annotation {
@@ -65,5 +66,5 @@ export interface Annotation {
   color?: string,
   score?: number,
   gt?: boolean,
-  cm?: boolean,
+  cm: number,
 }
