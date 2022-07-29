@@ -408,7 +408,11 @@ components:
     AssetsMetaInfo:
       type: object
       properties:
-        annotations:
+        asset_id:
+          type: string
+        gt:
+          $ref: '#/components/schemas/Annotations'
+        pred:
           $ref: '#/components/schemas/Annotations'
         class_ids:
           type: array
@@ -417,7 +421,8 @@ components:
         metadata:
           $ref: '#/components/schemas/AssetsMetaInfo_metadata'
       example:
-        annotations:
+        asset_id: abc
+        gt:
         - box:
             x: 121
             "y": 1
@@ -425,6 +430,16 @@ components:
             h: 44
           class_id: 4
           score: 0.33
+          cm: 1
+        pred:
+        - box:
+            x: 121
+            "y": 1
+            w: 33
+            h: 44
+          class_id: 4
+          score: 0.33
+          cm: 2
         class_ids:
         - 4
         - 6
@@ -547,7 +562,7 @@ components:
         elements:
           type: array
           items:
-            $ref: '#/components/schemas/AssetInfo'
+            $ref: '#/components/schemas/AssetsMetaInfo'
         offset:
           type: integer
         limit:
@@ -641,8 +656,9 @@ components:
               type: integer
             h:
               type: integer
+        cm:
+          type: integer
         class_id:
           type: integer
         score:
           type: integer
-

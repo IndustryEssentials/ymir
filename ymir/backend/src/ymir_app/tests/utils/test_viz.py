@@ -31,10 +31,18 @@ class TestAsset:
     def test_create_asset(self, mock_user_labels, mocker):
         asset_id = random_lower_string()
         res = {
-            "annotations": [
+            "pred": [
                 {
                     "box": random_lower_string(10),
                     "class_id": random.randint(1, 20),
+                    "cm": 1,
+                }
+            ],
+            "gt": [
+                {
+                    "box": random_lower_string(10),
+                    "class_id": random.randint(1, 20),
+                    "cm": 1,
                 }
             ],
             "class_ids": list(range(1, 20)),
@@ -57,6 +65,26 @@ class TestAssets:
                 {
                     "asset_id": random_lower_string(),
                     "class_ids": [random.randint(1, 80) for _ in range(10)],
+                    "pred": [
+                        {
+                            "box": random_lower_string(10),
+                            "class_id": random.randint(1, 20),
+                            "cm": 1,
+                        }
+                    ],
+                    "gt": [
+                        {
+                            "box": random_lower_string(10),
+                            "class_id": random.randint(1, 20),
+                            "cm": 1,
+                        }
+                    ],
+                    "metadata": {
+                        "height": random.randint(100, 200),
+                        "width": random.randint(100, 200),
+                        "image_channels": random.randint(1, 3),
+                        "timestamp": {"start": time.time()},
+                    },
                 }
             ],
             "total": 124,
@@ -152,6 +180,26 @@ class TestVizClient:
                 {
                     "asset_id": random_lower_string(),
                     "class_ids": [random.randint(1, 80) for _ in range(10)],
+                    "pred": [
+                        {
+                            "box": random_lower_string(10),
+                            "class_id": random.randint(1, 20),
+                            "cm": 1,
+                        }
+                    ],
+                    "gt": [
+                        {
+                            "box": random_lower_string(10),
+                            "class_id": random.randint(1, 20),
+                            "cm": 1,
+                        }
+                    ],
+                    "metadata": {
+                        "height": random.randint(100, 200),
+                        "width": random.randint(100, 200),
+                        "image_channels": random.randint(1, 3),
+                        "timestamp": {"start": time.time()},
+                    },
                 }
             ],
             "total": random.randint(1000, 2000),
@@ -180,10 +228,18 @@ class TestVizClient:
         mock_session = mocker.Mock()
         resp = mocker.Mock()
         res = {
-            "annotations": [
+            "pred": [
                 {
                     "box": random_lower_string(10),
                     "class_id": random.randint(1, 80),
+                    "cm": 1,
+                }
+            ],
+            "gt": [
+                {
+                    "box": random_lower_string(10),
+                    "class_id": random.randint(1, 80),
+                    "cm": 1,
                 }
             ],
             "class_ids": list(range(1, 20)),
