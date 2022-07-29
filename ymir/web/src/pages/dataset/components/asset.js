@@ -65,7 +65,7 @@ function Asset({ id, asset: cache, filterKeyword, getAsset, getAssetsOfDataset, 
 
   useEffect(() => {
     const keywordFilter = annotation => selectedKeywords.indexOf(annotation.keyword) >= 0
-    const evaluationFilter = annotation => evaluation[annotation.cm]
+    const evaluationFilter = annotation => !annotation.cm || evaluation[annotation.cm]
     const filters = annotation => keywordFilter(annotation) && evaluationFilter(annotation)
     const visibleAnnotations = (asset.annotations || []).filter(filters)
     setShowAnnotations(visibleAnnotations)

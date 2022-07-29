@@ -75,6 +75,7 @@ const Dataset = ({ getDataset, getAssetsOfDataset }) => {
   const filter = async (param) => {
     setAssets([])
     const { items, total } = await getAssetsOfDataset(param)
+    console.log('items:', items)
     setTotal(total)
     setAssets(items)
   }
@@ -95,7 +96,7 @@ const Dataset = ({ getDataset, getAssetsOfDataset }) => {
   }
 
   const filterAnnotations = annotations => {
-    return annotations.filter(annotation => evaluation[annotation.cm])
+    return annotations.filter(annotation => !annotation.cm || evaluation[annotation.cm])
   }
 
   const randomPageButton = (

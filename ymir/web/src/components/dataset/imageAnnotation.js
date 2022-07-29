@@ -30,6 +30,7 @@ function ImageAnnotation({
   }
 
   const renderAnnotations = () => {
+    console.log('annotations:', filters(annotations))
     return filters(annotations).map((annotation, index) => {
       return (
         <div
