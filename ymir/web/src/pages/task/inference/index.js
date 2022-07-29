@@ -27,8 +27,9 @@ import OpenpaiForm from "../components/openpaiForm"
 
 const { Option } = Select
 
+const getArray = (str = '') => str.split('|')
 const parseModelStage = (str = '') => {
-  return str ? str.split('|').map(stage => string2Array(stage)) : []
+  return str ? getArray(str).map(stage => string2Array(stage)) : []
 }
 
 const Algorithm = () => [{ id: "aldd", label: 'ALDD', checked: true }]
@@ -38,7 +39,9 @@ function Inference({ datasetCache, datasets, ...func }) {
   const pid = Number(pageParams.id)
   const history = useHistory()
   const location = useLocation()
-  const { did, image } = location.query
+  const { image } = location.query
+  const did = location.query.did ? getArray(location.query.did).map(Number) : undefined
+  console.log('did:', did)
   const stage = parseModelStage(location.query.mid)
   const [selectedModels, setSelectedModels] = useState([])
   const [form] = Form.useForm()
@@ -78,7 +81,7 @@ function Inference({ datasetCache, datasets, ...func }) {
   }, [seniorConfig])
 
   useEffect(() => {
-    did && form.setFieldsValue({ datasets: [Number(did)] })
+    did && form.setFieldsValue({ datasets: did })
   }, [did])
 
   useEffect(() => {
@@ -284,7 +287,7 @@ function Inference({ datasetCache, datasets, ...func }) {
             <LiveCodeForm form={form} live={live} />
             <DockerConfigForm form={form} seniorConfig={seniorConfig} />
 
-            <Desc form={form} label={t('task.inference.form.desc')} />
+            <Desc form={form} />
 
             <Form.Item wrapperCol={{ offset: 8 }}>
               <Space size={20}>
