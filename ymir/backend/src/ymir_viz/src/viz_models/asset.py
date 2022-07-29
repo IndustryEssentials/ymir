@@ -208,6 +208,8 @@ class AssetsModel:
             'class_ids': [2, 30],
             'metadata': {'asset_type': 1, 'height': 375, 'image_channels': 3, 'timestamp': {'start': 123}, 'width': 500}
         }
+
+        cm: mir_command.proto.ConfusionMatrixType
         """
         if self.check_cache_existence():
             result = redis_cache.hget(self.key_asset_detail, asset_id)
