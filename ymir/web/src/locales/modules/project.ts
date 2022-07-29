@@ -1,9 +1,9 @@
 const project = {
-  "projects.title": { en: "Project List", cn: "项目列表", },
+  "projects.title": { en: "Projects", cn: "项目管理", },
   "project.title": { en: "Project Detail", cn: "项目详情", },
   "project.summary": { en: "Project Summary", cn: "项目概览", },
   "project.add.title": { en: "Create Project", cn: "创建项目", },
-  "project.settings.title": { en: "Project Settings", cn: "设置项目", },
+  "project.settings.title": { en: "Project Settings", cn: "项目设置", },
   "project.iterations.title": { en: "Project Iterations", cn: "项目迭代", },
   "project.hidden.title": { en: "Hidden List", cn: "隐藏列表", },
   "project.action.edit": { en: "Edit Project", cn: "编辑项目", },
