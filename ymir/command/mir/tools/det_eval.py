@@ -200,7 +200,7 @@ class CocoDetEval:
         self.evalImgs = [
             self.evaluateImg(imgIdx, catId, areaRng, maxDet) for catId in catIds for areaRng in p.areaRng
             for imgIdx in p.imgIdxes
-        ]
+        ]  # self.evalImgs sequence: (k0, a0, i0), (k0, a0, i1), .., (k0, a1, i0), (k0, a1, i1), .., (k1, a0, i0), ..
 
     def computeIoU(self, imgIdx: int, catId: int) -> Union[np.ndarray, list]:
         """
@@ -268,6 +268,7 @@ class CocoDetEval:
         Returns:
             dict (single image results)
         '''
+        # gt & dt: list of ground truth / detections for fixed imgIdx and catId
         gt = self._gts[imgIdx, catId]
         dt = self._dts[imgIdx, catId]
         if len(gt) == 0 and len(dt) == 0:
@@ -292,8 +293,8 @@ class CocoDetEval:
         T = len(p.iouThrs)
         G = len(gt)
         D = len(dt)
-        gtm = np.zeros((T, G))  # gtm[i, j]: dt annotation id matched by j-th gt in i-th iou thr, iouThrs x gts
-        dtm = np.zeros((T, D))  # dtm[i, j]: gt annotation id matched by j-th dt in i-th iou thr, iouThrs x dets
+        gtm = np.zeros((T, G))  # gtm[i, j]: dt annotation id matched by j-th gt in i-th iou thr, iouThrs x num of gt
+        dtm = np.zeros((T, D))  # dtm[i, j]: gt annotation id matched by j-th dt in i-th iou thr, iouThrs x num of dt
         gtIg = np.array([g['_ignore'] for g in gt])  # gt ignore
         dtIg = np.zeros((T, D))  # dt ignore
         if not len(ious) == 0:
@@ -383,21 +384,22 @@ class CocoDetEval:
         setI: set = set(self.params.imgIdxes)
         # get inds to evaluate
         k_list = [n for n, k in enumerate(p.catIds) if k in setK]
-        m_list = [m for n, m in enumerate(p.maxDets) if m in setM]
+        m_list = [m for _, m in enumerate(p.maxDets) if m in setM]
         a_list = [n for n, a in enumerate(map(lambda x: tuple(x), p.areaRng)) if a in setA]
         i_list = [n for n, i in enumerate(p.imgIdxes) if i in setI]
         I0 = len(self.params.imgIdxes)
         A0 = len(self.params.areaRng)
         # retrieve E at each category, area range, and max number of detections
         for k, k0 in enumerate(k_list):
-            Nk = k0 * A0 * I0
+            Nk = k0 * A0 * I0  # starting point at self.evalImgs for k0
             for a, a0 in enumerate(a_list):
-                Na = a0 * I0
+                Na = a0 * I0  # offset (start from Nk) for a0
                 for m, maxDet in enumerate(m_list):
-                    E = [self.evalImgs[Nk + Na + i] for i in i_list]
+                    E = [self.evalImgs[Nk + Na + i] for i in i_list]  # E: len: num of images, elem: see `evaluateImg`
                     E = [e for e in E if e is not None]
                     if len(E) == 0:
                         continue
+                    # all detection scores for all evalImgs result in fixed `k0` and `a0`
                     dtScores = np.concatenate([e['dtScores'][0:maxDet] for e in E])
                     if len(dtScores) == 0:
                         continue
@@ -407,6 +409,7 @@ class CocoDetEval:
                     inds = np.argsort(-dtScores, kind='mergesort')
                     dtScoresSorted = dtScores[inds]
 
+                    # dtm: num of iou thrs * num of detection matches, ordered by confidence desc
                     dtm = np.concatenate([e['dtMatches'][:, 0:maxDet] for e in E], axis=1)[:, inds]
                     dtIg = np.concatenate([e['dtIgnore'][:, 0:maxDet] for e in E], axis=1)[:, inds]
                     gtIg = np.concatenate([e['gtIgnore'] for e in E])
@@ -414,8 +417,9 @@ class CocoDetEval:
                     if npig == 0:
                         continue
 
-                    tps = np.logical_and(dtm, np.logical_not(dtIg))  # iouThrs x dts
-                    fps = np.logical_and(np.logical_not(dtm), np.logical_not(dtIg))  # iouThrs x dts
+                    # tps & fps & tp_sum & fp_sum: num of iou thrs x num of dets for all imgs
+                    tps = np.logical_and(dtm, np.logical_not(dtIg))
+                    fps = np.logical_and(np.logical_not(dtm), np.logical_not(dtIg))
                     tp_sum = np.cumsum(tps, axis=1).astype(dtype=float)
                     fp_sum = np.cumsum(fps, axis=1).astype(dtype=float)
 
@@ -537,6 +541,8 @@ class CocoDetEval:
         else:
             precisions = precisions[:, :, area_ranges_index, max_dets_index]
         precisions[precisions <= -1] = 0
+        if class_id_index is None:
+            precisions = precisions.mean(axis=1)
 
         # average recall
         # recall dims: iouThrs * catIds * areaRanges * maxDets
@@ -548,9 +554,11 @@ class CocoDetEval:
         else:
             recalls = recalls[:, :, area_ranges_index, max_dets_index]
         recalls[recalls <= -1] = 0
+        if class_id_index is None:
+            recalls = recalls.mean(axis=1)
 
         ee.ar = np.mean(recalls) if len(recalls) > 0 else -1
-        ee.ap = voc_ap(recalls, precisions)
+        ee.ap = voc_ap(rec=recalls, prec=precisions)
 
         # true positive
         ee.tp = _get_tp_tn_or_fn(iou_thr_index=iou_thr_index,
@@ -867,7 +875,7 @@ def voc_ap(rec: np.ndarray, prec: np.ndarray, use_07_metric: bool = False) -> fl
         # correct AP calculation
         # first append sentinel values at the end
         mrec = np.concatenate(([0.0], rec, [1.0]))  # type: ignore
-        mpre = np.concatenate(([0.0], prec, [0.0])) # type: ignore
+        mpre = np.concatenate(([0.0], prec, [0.0]))  # type: ignore
 
         # compute the precision envelope
         for i in range(mpre.size - 1, 0, -1):
@@ -875,8 +883,8 @@ def voc_ap(rec: np.ndarray, prec: np.ndarray, use_07_metric: bool = False) -> fl
 
         # to calculate area under PR curve, look for points
         # where X axis (recall) changes value
-        i = np.where(mrec[1:] != mrec[:-1])[0]
+        idxes = np.where(mrec[1:] != mrec[:-1])[0]
 
         # and sum (\Delta recall) * prec
-        ap = np.sum((mrec[i + 1] - mrec[i]) * mpre[i + 1])
+        ap = np.sum((mrec[idxes + 1] - mrec[idxes]) * mpre[idxes + 1])
     return ap
