@@ -555,21 +555,7 @@ class CocoDetEval:
 
         ee = mirpb.SingleEvaluationElement()
 
-        # average precision
-        # PASCAL VOC
-        # precision_voc dims: iouThrs * catIds * areaRanges * maxDets
-        precisions: np.ndarray = self.eval['precision_voc']
-        if iou_thr_index is not None:
-            precisions = precisions[[iou_thr_index]]
-        if class_id_index is not None:
-            precisions = precisions[:, class_id_index, area_ranges_index, max_dets_index]
-        else:
-            precisions = precisions[:, :, area_ranges_index, max_dets_index]
-        precisions[precisions <= -1] = 0
-        if class_id_index is None:
-            precisions = precisions.mean(axis=1)
-
-        # average recall
+        # average recall & precision
         # recall dims: iouThrs * catIds * areaRanges * maxDets
         recalls: np.ndarray = self.eval['recall']
         if iou_thr_index is not None:
