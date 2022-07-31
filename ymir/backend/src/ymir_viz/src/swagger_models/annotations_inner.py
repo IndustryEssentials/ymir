@@ -14,11 +14,13 @@ class AnnotationsInner(Model):
 
     Do not edit the class manually.
     """
-    def __init__(self, box: object=None, class_id: int=None, score: int=None):  # noqa: E501
+    def __init__(self, box: object=None, cm: int=None, class_id: int=None, score: int=None):  # noqa: E501
         """AnnotationsInner - a model defined in Swagger
 
         :param box: The box of this AnnotationsInner.  # noqa: E501
         :type box: object
+        :param cm: The cm of this AnnotationsInner.  # noqa: E501
+        :type cm: int
         :param class_id: The class_id of this AnnotationsInner.  # noqa: E501
         :type class_id: int
         :param score: The score of this AnnotationsInner.  # noqa: E501
@@ -26,16 +28,19 @@ class AnnotationsInner(Model):
         """
         self.swagger_types = {
             'box': object,
+            'cm': int,
             'class_id': int,
             'score': int
         }
 
         self.attribute_map = {
             'box': 'box',
+            'cm': 'cm',
             'class_id': 'class_id',
             'score': 'score'
         }
         self._box = box
+        self._cm = cm
         self._class_id = class_id
         self._score = score
 
@@ -70,6 +75,27 @@ class AnnotationsInner(Model):
         """
 
         self._box = box
+
+    @property
+    def cm(self) -> int:
+        """Gets the cm of this AnnotationsInner.
+
+
+        :return: The cm of this AnnotationsInner.
+        :rtype: int
+        """
+        return self._cm
+
+    @cm.setter
+    def cm(self, cm: int):
+        """Sets the cm of this AnnotationsInner.
+
+
+        :param cm: The cm of this AnnotationsInner.
+        :type cm: int
+        """
+
+        self._cm = cm
 
     @property
     def class_id(self) -> int:
