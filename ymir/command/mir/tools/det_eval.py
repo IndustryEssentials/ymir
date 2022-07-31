@@ -200,7 +200,7 @@ class CocoDetEval:
         self.evalImgs = [
             self.evaluateImg(imgIdx, catId, areaRng, maxDet) for catId in catIds for areaRng in p.areaRng
             for imgIdx in p.imgIdxes
-        ]
+        ]  # self.evalImgs sequence: (k0, a0, i0), (k0, a0, i1), .., (k0, a1, i0), (k0, a1, i1), .., (k1, a0, i0), ..
 
     def computeIoU(self, imgIdx: int, catId: int) -> Union[np.ndarray, list]:
         """
@@ -268,6 +268,7 @@ class CocoDetEval:
         Returns:
             dict (single image results)
         '''
+        # gt & dt: list of ground truth / detections for fixed imgIdx and catId
         gt = self._gts[imgIdx, catId]
         dt = self._dts[imgIdx, catId]
         if len(gt) == 0 and len(dt) == 0:
@@ -292,8 +293,8 @@ class CocoDetEval:
         T = len(p.iouThrs)
         G = len(gt)
         D = len(dt)
-        gtm = np.zeros((T, G))  # gtm[i, j]: dt annotation id matched by j-th gt in i-th iou thr, iouThrs x gts
-        dtm = np.zeros((T, D))  # dtm[i, j]: gt annotation id matched by j-th dt in i-th iou thr, iouThrs x dets
+        gtm = np.zeros((T, G))  # gtm[i, j]: dt annotation id matched by j-th gt in i-th iou thr, iouThrs x num of gt
+        dtm = np.zeros((T, D))  # dtm[i, j]: gt annotation id matched by j-th dt in i-th iou thr, iouThrs x num of dt
         gtIg = np.array([g['_ignore'] for g in gt])  # gt ignore
         dtIg = np.zeros((T, D))  # dt ignore
         if not len(ious) == 0:
@@ -368,12 +369,15 @@ class CocoDetEval:
         A = len(p.areaRng)
         M = len(p.maxDets)
         precision = -np.ones((T, R, K, A, M))  # -1 for the precision of absent categories
-        precision_voc = -np.ones((T, K, A, M))
         recall = -np.ones((T, K, A, M))
         scores = -np.ones((T, R, K, A, M))
         all_tps = np.zeros((T, K, A, M))
         all_fps = np.zeros((T, K, A, M))
         all_fns = np.zeros((T, K, A, M))
+        # orig_prcs: pr curves before sampling
+        #   key: (iou thr idx, class id idx, area range idx, max dets idx)
+        #   value: (recs ndarray, precs ndarray)
+        orig_prcs: Dict[Tuple[int, int, int, int], Any] = {}
 
         # create dictionary for future indexing
         catIds = self.params.catIds
@@ -383,21 +387,22 @@ class CocoDetEval:
         setI: set = set(self.params.imgIdxes)
         # get inds to evaluate
         k_list = [n for n, k in enumerate(p.catIds) if k in setK]
-        m_list = [m for n, m in enumerate(p.maxDets) if m in setM]
+        m_list = [m for _, m in enumerate(p.maxDets) if m in setM]
         a_list = [n for n, a in enumerate(map(lambda x: tuple(x), p.areaRng)) if a in setA]
         i_list = [n for n, i in enumerate(p.imgIdxes) if i in setI]
         I0 = len(self.params.imgIdxes)
         A0 = len(self.params.areaRng)
         # retrieve E at each category, area range, and max number of detections
         for k, k0 in enumerate(k_list):
-            Nk = k0 * A0 * I0
+            Nk = k0 * A0 * I0  # starting point at self.evalImgs for k0
             for a, a0 in enumerate(a_list):
-                Na = a0 * I0
+                Na = a0 * I0  # offset (start from Nk) for a0
                 for m, maxDet in enumerate(m_list):
-                    E = [self.evalImgs[Nk + Na + i] for i in i_list]
+                    E = [self.evalImgs[Nk + Na + i] for i in i_list]  # E: len: num of images, elem: see `evaluateImg`
                     E = [e for e in E if e is not None]
                     if len(E) == 0:
                         continue
+                    # all detection scores for all evalImgs result in fixed `k0` and `a0`
                     dtScores = np.concatenate([e['dtScores'][0:maxDet] for e in E])
                     if len(dtScores) == 0:
                         continue
@@ -407,6 +412,7 @@ class CocoDetEval:
                     inds = np.argsort(-dtScores, kind='mergesort')
                     dtScoresSorted = dtScores[inds]
 
+                    # dtm: num of iou thrs * num of detection matches, ordered by confidence desc
                     dtm = np.concatenate([e['dtMatches'][:, 0:maxDet] for e in E], axis=1)[:, inds]
                     dtIg = np.concatenate([e['dtIgnore'][:, 0:maxDet] for e in E], axis=1)[:, inds]
                     gtIg = np.concatenate([e['gtIgnore'] for e in E])
@@ -414,8 +420,9 @@ class CocoDetEval:
                     if npig == 0:
                         continue
 
-                    tps = np.logical_and(dtm, np.logical_not(dtIg))  # iouThrs x dts
-                    fps = np.logical_and(np.logical_not(dtm), np.logical_not(dtIg))  # iouThrs x dts
+                    # tps & fps & tp_sum & fp_sum: num of iou thrs x num of dets for all imgs
+                    tps = np.logical_and(dtm, np.logical_not(dtIg))
+                    fps = np.logical_and(np.logical_not(dtm), np.logical_not(dtIg))
                     tp_sum = np.cumsum(tps, axis=1).astype(dtype=float)
                     fp_sum = np.cumsum(fps, axis=1).astype(dtype=float)
 
@@ -431,13 +438,12 @@ class CocoDetEval:
                         pr = tp / (fp + tp + np.spacing(1))
                         q = np.zeros((R, ))
                         ss = np.zeros((R, ))
+                        orig_prcs[(t, k, a, m)] = (rc, pr)
 
                         if nd:
                             recall[t, k, a, m] = rc[-1]
-                            precision_voc[t, k, a, m] = pr[-1]
                         else:
                             recall[t, k, a, m] = 0
-                            precision_voc[t, k, a, m] = 0
 
                         # numpy is slow without cython optimization for accessing elements
                         # use python array gets significant speed improvement
@@ -462,12 +468,12 @@ class CocoDetEval:
             'params': p,
             'counts': [T, R, K, A, M],
             'precision': precision,
-            'precision_voc': precision_voc,
             'recall': recall,
             'scores': scores,
             'all_fps': all_fps,
             'all_tps': all_tps,
             'all_fns': all_fns,
+            'orig_prcs': orig_prcs,
         }
 
     def get_evaluation_result(self, area_ranges_index: int, max_dets_index: int) -> mirpb.SingleDatasetEvaluation:
@@ -485,60 +491,67 @@ class CocoDetEval:
             evaluation_result.iou_evaluations[f"{iou_thr:.2f}"].CopyFrom(iou_evaluation)
 
         # average evaluation
-        evaluation_result.iou_averaged_evaluation.CopyFrom(
-            self._get_iou_evaluation_result(area_ranges_index=area_ranges_index, max_dets_index=max_dets_index))
+        iou_averaged_evaluation = mirpb.SingleIouEvaluation()
+        for class_id in self.params.catIds:
+            self._get_average_ee(average_ee=iou_averaged_evaluation.ci_evaluations[class_id],
+                                 ees=[x.ci_evaluations[class_id] for x in evaluation_result.iou_evaluations.values()])
+
+        self._get_average_ee(average_ee=iou_averaged_evaluation.ci_averaged_evaluation,
+                             ees=[x.ci_averaged_evaluation for x in evaluation_result.iou_evaluations.values()])
+
+        evaluation_result.iou_averaged_evaluation.CopyFrom(iou_averaged_evaluation)
 
         return evaluation_result
 
-    def _get_iou_evaluation_result(self,
-                                   area_ranges_index: int,
-                                   max_dets_index: int,
-                                   iou_thr_index: int = None) -> mirpb.SingleIouEvaluation:
+    def _get_iou_evaluation_result(self, area_ranges_index: int, max_dets_index: int,
+                                   iou_thr_index: int) -> mirpb.SingleIouEvaluation:
         iou_evaluation = mirpb.SingleIouEvaluation()
 
         # ci evaluations: category / class ids
         for class_id_index, class_id in enumerate(self.params.catIds):
-            ee = self._get_evaluation_element(iou_thr_index, class_id_index, area_ranges_index, max_dets_index)
-            iou_evaluation.ci_evaluations[class_id].CopyFrom(ee)
-        # class average
-        ee = self._get_evaluation_element(iou_thr_index, None, area_ranges_index, max_dets_index)
-        iou_evaluation.ci_averaged_evaluation.CopyFrom(ee)
+            iou_evaluation.ci_evaluations[class_id].CopyFrom(
+                self._get_evaluation_element(iou_thr_index, class_id_index, area_ranges_index, max_dets_index))
+
+        # class average, no averaged pr curve
+        ci_averaged_ee = mirpb.SingleEvaluationElement()
+        self._get_average_ee(average_ee=ci_averaged_ee, ees=list(iou_evaluation.ci_evaluations.values()))
+        iou_evaluation.ci_averaged_evaluation.CopyFrom(ci_averaged_ee)
 
         return iou_evaluation
 
-    def _get_evaluation_element(self, iou_thr_index: Optional[int], class_id_index: Optional[int],
-                                area_ranges_index: int, max_dets_index: int) -> mirpb.SingleEvaluationElement:
-        def _get_tp_tn_or_fn(iou_thr_index: Optional[int], class_id_index: Optional[int], area_ranges_index: int,
-                             max_dets_index: int, array: np.ndarray) -> int:
+    def _get_average_ee(self, average_ee: mirpb.SingleEvaluationElement,
+                        ees: List[mirpb.SingleEvaluationElement]) -> None:
+        if not ees:
+            return
+
+        for ee in ees:
+            average_ee.ap += ee.ap
+            average_ee.ar += ee.ar
+            average_ee.tp += ee.tp
+            average_ee.fp += ee.fp
+            average_ee.fn += ee.fn
+
+        ees_cnt = len(ees)
+        average_ee.ap /= ees_cnt
+        average_ee.ar /= ees_cnt
+
+    def _get_evaluation_element(self, iou_thr_index: int, class_id_index: int, area_ranges_index: int,
+                                max_dets_index: int) -> mirpb.SingleEvaluationElement:
+        def _get_tp_tn_or_fn(iou_thr_index: int, class_id_index: int, area_ranges_index: int, max_dets_index: int,
+                             array: np.ndarray) -> int:
             """
             extract tp, tn and fn from `array`
 
             `array` comes from self.eval's all_tps, all_tns and all_fns, they all have the same structure:
                 iouThrs x catIds x aRngs x maxDets
             """
-            if iou_thr_index is not None:
-                array = array[[iou_thr_index]]
-            if class_id_index is not None:
-                array = array[:, class_id_index, area_ranges_index, max_dets_index]
-            else:
-                array = np.sum(array[:, :, area_ranges_index, max_dets_index], axis=1)
+            array = array[[iou_thr_index]]
+            array = array[:, class_id_index, area_ranges_index, max_dets_index]
             return int(array[0])
 
         ee = mirpb.SingleEvaluationElement()
 
-        # average precision
-        # PASCAL VOC
-        # precision_voc dims: iouThrs * catIds * areaRanges * maxDets
-        precisions: np.ndarray = self.eval['precision_voc']
-        if iou_thr_index is not None:
-            precisions = precisions[[iou_thr_index]]
-        if class_id_index is not None:
-            precisions = precisions[:, class_id_index, area_ranges_index, max_dets_index]
-        else:
-            precisions = precisions[:, :, area_ranges_index, max_dets_index]
-        precisions[precisions <= -1] = 0
-
-        # average recall
+        # average recall & precision
         # recall dims: iouThrs * catIds * areaRanges * maxDets
         recalls: np.ndarray = self.eval['recall']
         if iou_thr_index is not None:
@@ -548,9 +561,17 @@ class CocoDetEval:
         else:
             recalls = recalls[:, :, area_ranges_index, max_dets_index]
         recalls[recalls <= -1] = 0
+        if class_id_index is None:
+            recalls = recalls.mean(axis=1)
 
-        ee.ar = np.mean(recalls) if len(recalls) > 0 else -1
-        ee.ap = voc_ap(recalls, precisions)
+        orig_prcs = self.eval['orig_prcs']
+        if (iou_thr_index, class_id_index, area_ranges_index, max_dets_index) in orig_prcs:
+            recs_and_prcs = orig_prcs[(iou_thr_index, class_id_index, area_ranges_index, max_dets_index)]
+            ee.ap = voc_ap(rec=recs_and_prcs[0], prec=recs_and_prcs[1])
+            ee.ar = np.mean(recs_and_prcs[0])
+        else:
+            ee.ap = 0
+            ee.ar = 0
 
         # true positive
         ee.tp = _get_tp_tn_or_fn(iou_thr_index=iou_thr_index,
@@ -875,8 +896,8 @@ def voc_ap(rec: np.ndarray, prec: np.ndarray, use_07_metric: bool = False) -> fl
 
         # to calculate area under PR curve, look for points
         # where X axis (recall) changes value
-        i = np.where(mrec[1:] != mrec[:-1])[0]  # type: ignore
+        idxes = np.where(mrec[1:] != mrec[:-1])[0]
 
         # and sum (\Delta recall) * prec
-        ap = np.sum((mrec[i + 1] - mrec[i]) * mpre[i + 1])
+        ap = np.sum((mrec[idxes + 1] - mrec[idxes]) * mpre[idxes + 1])
     return ap
