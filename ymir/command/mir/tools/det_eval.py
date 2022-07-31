@@ -378,7 +378,7 @@ class CocoDetEval:
         # orig_prcs: pr curves before sampling
         #   key: (iou thr idx, class id idx, area range idx, max dets idx)
         #   value: (recs ndarray, precs ndarray)
-        orig_prcs: Dict[Tuple[int, int, int], Any] = {}
+        orig_prcs: Dict[Tuple[int, int, int, int], Any] = {}
 
         # create dictionary for future indexing
         catIds = self.params.catIds
@@ -495,32 +495,14 @@ class CocoDetEval:
             evaluation_result.iou_evaluations[f"{iou_thr:.2f}"].CopyFrom(iou_evaluation)
 
         # average evaluation
-        # TODO: TO BE CHANGED
-        # evaluation_result.iou_averaged_evaluation.CopyFrom(
-        #     self._get_iou_evaluation_result(area_ranges_index=area_ranges_index, max_dets_index=max_dets_index))
         iou_averaged_evaluation = mirpb.SingleIouEvaluation()
         for class_id in self.params.catIds:
-            for iou_ee in evaluation_result.iou_evaluations.values():
-                iou_averaged_evaluation.ci_evaluations[class_id].ap += iou_ee.ci_evaluations[class_id].ap
-                iou_averaged_evaluation.ci_evaluations[class_id].ar += iou_ee.ci_evaluations[class_id].ar
-                iou_averaged_evaluation.ci_evaluations[class_id].tp += iou_ee.ci_evaluations[class_id].tp
-                iou_averaged_evaluation.ci_evaluations[class_id].fp += iou_ee.ci_evaluations[class_id].fp
-                iou_averaged_evaluation.ci_evaluations[class_id].fn += iou_ee.ci_evaluations[class_id].fn
-            num_of_ious = len(evaluation_result.iou_evaluations)
-            iou_averaged_evaluation.ci_evaluations[class_id].ap /= num_of_ious
-            iou_averaged_evaluation.ci_evaluations[class_id].ar /= num_of_ious
-        
-        for iou_ee in evaluation_result.iou_evaluations.values():
-            iou_averaged_evaluation.ci_averaged_evaluation.ap += iou_ee.ci_averaged_evaluation.ap
-            iou_averaged_evaluation.ci_averaged_evaluation.ar += iou_ee.ci_averaged_evaluation.ar
-            iou_averaged_evaluation.ci_averaged_evaluation.tp += iou_ee.ci_averaged_evaluation.tp
-            iou_averaged_evaluation.ci_averaged_evaluation.fp += iou_ee.ci_averaged_evaluation.fp
-            iou_averaged_evaluation.ci_averaged_evaluation.fn += iou_ee.ci_averaged_evaluation.fn
+            self._get_average_ee(average_ee=iou_averaged_evaluation.ci_evaluations[class_id],
+                                 ees=[x.ci_evaluations[class_id] for x in evaluation_result.iou_evaluations.values()])
 
-        num = len(evaluation_result.iou_evaluations)
-        iou_averaged_evaluation.ci_averaged_evaluation.ap = iou_averaged_evaluation.ci_averaged_evaluation.ap / num if num else 0
-        iou_averaged_evaluation.ci_averaged_evaluation.ar = iou_averaged_evaluation.ci_averaged_evaluation.ar / num if num else 0
-                
+        self._get_average_ee(average_ee=iou_averaged_evaluation.ci_averaged_evaluation,
+                             ees=[x.ci_averaged_evaluation for x in evaluation_result.iou_evaluations.values()])
+
         evaluation_result.iou_averaged_evaluation.CopyFrom(iou_averaged_evaluation)
 
         return evaluation_result
@@ -528,7 +510,7 @@ class CocoDetEval:
     def _get_iou_evaluation_result(self,
                                    area_ranges_index: int,
                                    max_dets_index: int,
-                                   iou_thr_index: int = None) -> mirpb.SingleIouEvaluation:
+                                   iou_thr_index: int) -> mirpb.SingleIouEvaluation:
         iou_evaluation = mirpb.SingleIouEvaluation()
 
         # ci evaluations: category / class ids
@@ -538,34 +520,39 @@ class CocoDetEval:
 
         # class average, no averaged pr curve
         ee = mirpb.SingleEvaluationElement()
-        for class_id, class_ee in iou_evaluation.ci_evaluations.items():
-            ee.ap += class_ee.ap
-            ee.ar += class_ee.ar
-            ee.tp += class_ee.tp
-            ee.fp += class_ee.fp
-            ee.fn += class_ee.fn
-        ee.ap = ee.ap / len(iou_evaluation.ci_evaluations) if len(iou_evaluation.ci_evaluations) > 0 else 0
-        ee.ar = ee.ar / len(iou_evaluation.ci_evaluations) if len(iou_evaluation.ci_evaluations) > 0 else 0
+        self._get_average_ee(average_ee=ee, ees=list(iou_evaluation.ci_evaluations.values()))
         iou_evaluation.ci_averaged_evaluation.CopyFrom(ee)
 
         return iou_evaluation
 
-    def _get_evaluation_element(self, iou_thr_index: Optional[int], class_id_index: Optional[int],
-                                area_ranges_index: int, max_dets_index: int) -> mirpb.SingleEvaluationElement:
-        def _get_tp_tn_or_fn(iou_thr_index: Optional[int], class_id_index: Optional[int], area_ranges_index: int,
-                             max_dets_index: int, array: np.ndarray) -> int:
+    def _get_average_ee(self, average_ee: mirpb.SingleEvaluationElement,
+                        ees: List[mirpb.SingleEvaluationElement]) -> None:
+        if not ees:
+            return
+
+        for ee in ees:
+            average_ee.ap += ee.ap
+            average_ee.ar += ee.ar
+            average_ee.tp += ee.tp
+            average_ee.fp += ee.fp
+            average_ee.fn += ee.fn
+
+        ees_cnt = len(ees)
+        average_ee.ap /= ees_cnt
+        average_ee.ar /= ees_cnt
+
+    def _get_evaluation_element(self, iou_thr_index: int, class_id_index: int, area_ranges_index: int,
+                                max_dets_index: int) -> mirpb.SingleEvaluationElement:
+        def _get_tp_tn_or_fn(iou_thr_index: int, class_id_index: int, area_ranges_index: int, max_dets_index: int,
+                             array: np.ndarray) -> int:
             """
             extract tp, tn and fn from `array`
 
             `array` comes from self.eval's all_tps, all_tns and all_fns, they all have the same structure:
                 iouThrs x catIds x aRngs x maxDets
             """
-            if iou_thr_index is not None:
-                array = array[[iou_thr_index]]
-            if class_id_index is not None:
-                array = array[:, class_id_index, area_ranges_index, max_dets_index]
-            else:
-                array = np.sum(array[:, :, area_ranges_index, max_dets_index], axis=1)
+            array = array[[iou_thr_index]]
+            array = array[:, class_id_index, area_ranges_index, max_dets_index]
             return int(array[0])
 
         ee = mirpb.SingleEvaluationElement()
@@ -598,9 +585,13 @@ class CocoDetEval:
             recalls = recalls.mean(axis=1)
 
         orig_prcs = self.eval['orig_prcs']
-        recs_and_prcs = orig_prcs[(iou_thr_index, class_id_index, area_ranges_index, max_dets_index)]
-        ee.ar = np.mean(recalls) if len(recalls) > 0 else -1
-        ee.ap = voc_ap(rec=recs_and_prcs[0], prec=recs_and_prcs[1])
+        if (iou_thr_index, class_id_index, area_ranges_index, max_dets_index) in orig_prcs:
+            recs_and_prcs = orig_prcs[(iou_thr_index, class_id_index, area_ranges_index, max_dets_index)]
+            ee.ap = voc_ap(rec=recs_and_prcs[0], prec=recs_and_prcs[1])
+            ee.ar = np.mean(recs_and_prcs[0])
+        else:
+            ee.ap = 0
+            ee.ar = 0
 
         # true positive
         ee.tp = _get_tp_tn_or_fn(iou_thr_index=iou_thr_index,
