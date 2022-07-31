@@ -507,21 +507,19 @@ class CocoDetEval:
 
         return evaluation_result
 
-    def _get_iou_evaluation_result(self,
-                                   area_ranges_index: int,
-                                   max_dets_index: int,
+    def _get_iou_evaluation_result(self, area_ranges_index: int, max_dets_index: int,
                                    iou_thr_index: int) -> mirpb.SingleIouEvaluation:
         iou_evaluation = mirpb.SingleIouEvaluation()
 
         # ci evaluations: category / class ids
         for class_id_index, class_id in enumerate(self.params.catIds):
-            ee = self._get_evaluation_element(iou_thr_index, class_id_index, area_ranges_index, max_dets_index)
-            iou_evaluation.ci_evaluations[class_id].CopyFrom(ee)
+            iou_evaluation.ci_evaluations[class_id].CopyFrom(
+                self._get_evaluation_element(iou_thr_index, class_id_index, area_ranges_index, max_dets_index))
 
         # class average, no averaged pr curve
-        ee = mirpb.SingleEvaluationElement()
-        self._get_average_ee(average_ee=ee, ees=list(iou_evaluation.ci_evaluations.values()))
-        iou_evaluation.ci_averaged_evaluation.CopyFrom(ee)
+        ci_averaged_ee = mirpb.SingleEvaluationElement()
+        self._get_average_ee(average_ee=ci_averaged_ee, ees=list(iou_evaluation.ci_evaluations.values()))
+        iou_evaluation.ci_averaged_evaluation.CopyFrom(ci_averaged_ee)
 
         return iou_evaluation
 
