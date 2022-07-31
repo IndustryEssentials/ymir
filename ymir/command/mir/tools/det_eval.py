@@ -369,7 +369,6 @@ class CocoDetEval:
         A = len(p.areaRng)
         M = len(p.maxDets)
         precision = -np.ones((T, R, K, A, M))  # -1 for the precision of absent categories
-        precision_voc = -np.ones((T, K, A, M))  # store all precision data points
         recall = -np.ones((T, K, A, M))
         scores = -np.ones((T, R, K, A, M))
         all_tps = np.zeros((T, K, A, M))
@@ -443,10 +442,8 @@ class CocoDetEval:
 
                         if nd:
                             recall[t, k, a, m] = rc[-1]
-                            precision_voc[t, k, a, m] = pr[-1]
                         else:
                             recall[t, k, a, m] = 0
-                            precision_voc[t, k, a, m] = 0
 
                         # numpy is slow without cython optimization for accessing elements
                         # use python array gets significant speed improvement
@@ -471,7 +468,6 @@ class CocoDetEval:
             'params': p,
             'counts': [T, R, K, A, M],
             'precision': precision,
-            'precision_voc': precision_voc,
             'recall': recall,
             'scores': scores,
             'all_fps': all_fps,
