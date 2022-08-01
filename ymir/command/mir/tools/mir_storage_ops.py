@@ -1,3 +1,4 @@
+from collections import defaultdict
 from functools import reduce
 from math import ceil
 import os
@@ -36,6 +37,7 @@ class MirStorageOps():
     def __build_and_save(cls, mir_root: str, mir_datas: Dict['mirpb.MirStorage.V', Any],
                          build_config: MirStorageOpsBuildConfig) -> None:
         # add default members
+        mir_metadatas: mirpb.MirMetadatas = mir_datas[mirpb.MirStorage.MIR_METADATAS]
         mir_tasks: mirpb.MirTasks = mir_datas[mirpb.MirStorage.MIR_TASKS]
         mir_annotations: mirpb.MirAnnotations = mir_datas[mirpb.MirStorage.MIR_ANNOTATIONS]
 
@@ -43,10 +45,11 @@ class MirStorageOps():
 
         # gen mir_keywords
         mir_keywords: mirpb.MirKeywords = mirpb.MirKeywords()
-        cls.__build_mir_keywords(mir_annotations=mir_annotations, mir_keywords=mir_keywords)
+        cls.__build_mir_keywords(mir_metadatas=mir_metadatas,
+                                 mir_annotations=mir_annotations,
+                                 mir_keywords=mir_keywords)
         mir_datas[mirpb.MirStorage.MIR_KEYWORDS] = mir_keywords
 
-        mir_metadatas: mirpb.MirMetadatas = mir_datas[mirpb.MirStorage.MIR_METADATAS]
         if (mir_metadatas.attributes and mir_annotations.ground_truth.image_annotations
                 and mir_annotations.task_annotations[mir_annotations.head_task_id].image_annotations):
             evaluation, _ = det_eval.det_evaluate_with_pb(
@@ -96,7 +99,8 @@ class MirStorageOps():
         mir_annotations.head_task_id = head_task_id
 
     @classmethod
-    def __build_mir_keywords(cls, mir_annotations: mirpb.MirAnnotations, mir_keywords: mirpb.MirKeywords) -> None:
+    def __build_mir_keywords(cls, mir_metadatas: mirpb.MirMetadatas, mir_annotations: mirpb.MirAnnotations,
+                             mir_keywords: mirpb.MirKeywords) -> None:
         """
         build mir_keywords from single_task_annotations
 
@@ -106,10 +110,16 @@ class MirStorageOps():
         """
         pred_task_annotations = mir_annotations.task_annotations[mir_annotations.head_task_id]
 
-        # TODO: old fields to be deprecated
-        for asset_id, single_image_annotations in pred_task_annotations.image_annotations.items():
-            mir_keywords.keywords[asset_id].predefined_keyids[:] = set(
-                [annotation.class_id for annotation in single_image_annotations.annotations])
+        for asset_id in mir_metadatas.attributes:
+            cis_set = set()
+            if asset_id in pred_task_annotations.image_annotations:
+                image_annotation = pred_task_annotations.image_annotations[asset_id]
+                cis_set.update([annotation.class_id for annotation in image_annotation.annotations])
+            if asset_id in mir_annotations.ground_truth.image_annotations:
+                image_annotation = mir_annotations.ground_truth.image_annotations[asset_id]
+                cis_set.update([annotation.class_id for annotation in image_annotation.annotations])
+            if cis_set:
+                mir_keywords.keywords[asset_id].predefined_keyids[:] = cis_set
 
         cls.__build_mir_keywords_ci_tag(task_annotations=pred_task_annotations, keyword_to_index=mir_keywords.pred_idx)
         cls.__build_mir_keywords_ci_tag(task_annotations=mir_annotations.ground_truth,
@@ -561,13 +571,16 @@ class MirStorageOps():
                 gt=gt_asset_annotations,
                 class_ids=asset_class_ids,
             )
+        class_id_to_assets: Dict[int, Set[str]] = defaultdict(set)
+        for k, v in mir_storage_keywords.get('pred_idx', {}).get('cis', {}).items():
+            class_id_to_assets[k].update(v.get('key_ids', {}))
+        for k, v in mir_storage_keywords.get('gt_idx', {}).get('cis', {}).items():
+            class_id_to_assets[k].update(v.get('key_ids', {}))
         return dict(
             all_asset_ids=sorted([*mir_storage_metadatas["attributes"].keys()]),  # ordered list.
             asset_ids_detail=asset_ids_detail,
-            class_ids_index={
-                k: list(v.get('key_ids', {}))
-                for k, v in mir_storage_keywords.get('pred_idx', {}).get('cis', {}).items()
-            },
+            class_ids_index={k: list(v)
+                             for k, v in class_id_to_assets.items()},
         )
 
     @classmethod

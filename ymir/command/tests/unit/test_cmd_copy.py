@@ -67,10 +67,6 @@ class TestCmdCopy(unittest.TestCase):
         mir_annotations.task_annotations['t0'].image_annotations['asset1'].CopyFrom(
             self.__create_image_annotations(type_ids=[3]))
 
-        mir_keywords = mirpb.MirKeywords()
-        mir_keywords.keywords['asset0'].predefined_keyids.extend([1, 2, 3])
-        mir_keywords.keywords['asset1'].predefined_keyids.extend([3])
-
         model_meta = mirpb.ModelMeta(mean_average_precision=0.3)
         task = mir_storage_ops.create_task(task_type=mirpb.TaskType.TaskTypeTraining,
                                            task_id='t0',
