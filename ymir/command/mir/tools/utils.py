@@ -183,6 +183,12 @@ def prepare_model(model_location: str, model_hash: str, stage_name: str, dst_mod
     return model_storage
 
 
+def load_parsed_model(model_dir: str) -> ModelStorage:
+    with open(os.path.join(model_dir, 'ymir-info.yaml'), 'r') as f:
+        ymir_info_dict = yaml.safe_load(f.read())
+    return ModelStorage.parse_obj(ymir_info_dict)
+
+
 def pack_and_copy_models(model_storage: ModelStorage, model_dir_path: str, model_location: str) -> str:
     """
     pack model, returns model hash of the new model package

@@ -3,7 +3,7 @@ import json
 import logging
 import os
 from subprocess import CalledProcessError
-from typing import Dict, Optional, Set
+from typing import Dict, List, Optional, Set
 
 from google.protobuf import json_format
 
@@ -188,7 +188,8 @@ class CmdMining(base.BaseCommand):
                          src_typ_rev_tid=src_typ_rev_tid,
                          topk=topk,
                          add_annotations=add_annotations,
-                         task=task)
+                         task=task,
+                         model_class_names=mir_utils.load_parsed_model(model_dir=work_model_path).class_names)
         logging.info(f"mining done, results at: {work_out_path}")
 
         return MirCode.RC_OK
@@ -197,7 +198,7 @@ class CmdMining(base.BaseCommand):
 # protected: post process
 def _process_results(mir_root: str, export_out: str, dst_typ_rev_tid: revs_parser.TypRevTid,
                      src_typ_rev_tid: revs_parser.TypRevTid, topk: Optional[int], add_annotations: bool,
-                     task: mirpb.Task) -> int:
+                     model_class_names: List[str], task: mirpb.Task) -> int:
     # step 1: build topk results:
     #   read old
     mir_metadatas: mirpb.MirMetadatas
@@ -221,6 +222,8 @@ def _process_results(mir_root: str, export_out: str, dst_typ_rev_tid: revs_parse
     asset_id_to_annotations = (_get_infer_annotations(file_path=infer_result_file_path,
                                                       asset_ids_set=asset_ids_set,
                                                       cls_id_mgr=cls_id_mgr) if add_annotations else {})
+
+    model_class_ids = set(cls_id_mgr.id_for_names(model_class_names)[0])
 
     # step 2: update mir data files
     #   update mir metadatas
