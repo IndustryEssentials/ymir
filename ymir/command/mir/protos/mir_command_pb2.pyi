@@ -699,15 +699,21 @@ global___Int32List = Int32List
 class Keywords(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor = ...
     PREDEFINED_KEYIDS_FIELD_NUMBER: builtins.int
+    GT_PRETRAINED_KEYIDS_FIELD_NUMBER: builtins.int
     @property
     def predefined_keyids(self) -> google.protobuf.internal.containers.RepeatedScalarFieldContainer[builtins.int]:
-        """predefined: managed id-keyword map"""
+        """class ids for predictions"""
+        pass
+    @property
+    def gt_pretrained_keyids(self) -> google.protobuf.internal.containers.RepeatedScalarFieldContainer[builtins.int]:
+        """class ids for ground truth"""
         pass
     def __init__(self,
         *,
         predefined_keyids : typing.Optional[typing.Iterable[builtins.int]] = ...,
+        gt_pretrained_keyids : typing.Optional[typing.Iterable[builtins.int]] = ...,
         ) -> None: ...
-    def ClearField(self, field_name: typing_extensions.Literal["predefined_keyids",b"predefined_keyids"]) -> None: ...
+    def ClearField(self, field_name: typing_extensions.Literal["gt_pretrained_keyids",b"gt_pretrained_keyids","predefined_keyids",b"predefined_keyids"]) -> None: ...
 global___Keywords = Keywords
 
 class AssetAnnoIndex(google.protobuf.message.Message):
