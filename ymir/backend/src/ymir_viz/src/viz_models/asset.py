@@ -105,6 +105,8 @@ class AssetsModel:
             {
                 "asset_id": asset_id,
                 "class_ids": assets_content["asset_ids_detail"][asset_id]["class_ids"],
+                "pred_class_ids": assets_content["asset_ids_detail"][asset_id]["pred_class_ids"],
+                "gt_class_ids": assets_content["asset_ids_detail"][asset_id]["gt_class_ids"],
                 "metadata": assets_content["asset_ids_detail"][asset_id]["metadata"],
                 "pred": assets_content["asset_ids_detail"][asset_id]["pred"],
                 "gt": assets_content["asset_ids_detail"][asset_id]["gt"],

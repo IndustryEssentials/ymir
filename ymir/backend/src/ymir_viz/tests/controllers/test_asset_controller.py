@@ -27,6 +27,8 @@ def mock_mir_content(mocker):
                         }
                     ],
                     "class_ids": [2],
+                    "pred_class_ids": [2],
+                    "gt_class_ids": [2],
                 }
             },
             "class_ids_index": {
@@ -67,6 +69,8 @@ class TestAssetController:
             "pred": [{"box": {"h": 50, "w": 19, "x": 26, "y": 189}, "class_id": 2, "cm": 1}],
             "gt": [{"box": {"h": 50, "w": 19, "x": 26, "y": 189}, "class_id": 2, "cm": 1}],
             "class_ids": [2],
+            "pred_class_ids": [2],
+            "gt_class_ids": [2],
             "metadata": {"asset_type": 2, "height": 1620, "width": 1080},
         }
         resp = test_client.get(f"/v1/users/{user_id}/repositories/{repo_id}/branches/{branch_id}/assets/{asset_id}")
