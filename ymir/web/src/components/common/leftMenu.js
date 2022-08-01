@@ -44,12 +44,12 @@ function LeftMenu() {
         getItem(t('projects.title'), `/home/project`, ProjectIcon, ),
         showLeftMenu ? getItem(project.name, `project.summary`, VectorIcon, [
             getItem(t('project.summary'), `/home/project/${id}/detail`, BarchartIcon,),
-            getItem(t('project.settings.title'), `/home/project/${id}/add`, EditIcon,),
             getItem(t('dataset.list'), `/home/project/${id}/dataset`, NavDatasetIcon,),
             getItem(t('model.management'), `/home/project/${id}/model`, MymodelIcon,),
             getItem(t('model.diagnose'), `/home/project/${id}/diagnose`, DiagnosisIcon),
             getItem(t('breadcrumbs.task.training'), `/home/project/${id}/train`, TrainIcon),
             getItem(t('common.hidden.list'), `/home/project/${id}/hidden`, EyeOffIcon,),
+            getItem(t('project.settings.title'), `/home/project/${id}/add`, EditIcon,),
         ]) : null,
       ]),
       getGroupItem(t('breadcrumbs.keyword'), 'keyword', [
