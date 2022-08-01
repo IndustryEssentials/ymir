@@ -568,18 +568,16 @@ class MirStorageOps():
         for asset_id, asset_metadata in mir_storage_metadatas["attributes"].items():
             pred_asset_annotations = pred_annotations[asset_id]["annotations"] if asset_id in pred_annotations else []
             gt_asset_annotations = gt_annotations[asset_id]["annotations"] if asset_id in gt_annotations else []
-            pred_asset_class_ids = (keyword_keyids_list[asset_id]["predefined_keyids"]
-                                    if asset_id in keyword_keyids_list else [])
-            gt_asset_class_ids = (keyword_keyids_list[asset_id]["gt_predefined_keyids"]
-                                  if asset_id in keyword_keyids_list else [])
-            asset_class_ids = list(set(pred_asset_class_ids) | set(gt_asset_class_ids))
+            pred_class_ids = (keyword_keyids_list[asset_id]["predefined_keyids"]
+                              if asset_id in keyword_keyids_list else [])
+            gt_class_ids = (keyword_keyids_list[asset_id]["gt_predefined_keyids"]
+                            if asset_id in keyword_keyids_list else [])
             asset_ids_detail[asset_id] = dict(
                 metadata=asset_metadata,
                 pred=pred_asset_annotations,
                 gt=gt_asset_annotations,
-                class_ids=asset_class_ids,
-                pred_class_ids=pred_asset_class_ids,
-                gt_class_ids=gt_asset_class_ids,
+                pred_class_ids=pred_class_ids,
+                gt_class_ids=gt_class_ids,
             )
         class_id_to_assets: Dict[int, Set[str]] = defaultdict(set)
         for k, v in mir_storage_keywords.get('pred_idx', {}).get('cis', {}).items():

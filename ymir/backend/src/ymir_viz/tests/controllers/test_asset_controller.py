@@ -26,7 +26,6 @@ def mock_mir_content(mocker):
                             "cm": 1,
                         }
                     ],
-                    "class_ids": [2],
                     "pred_class_ids": [2],
                     "gt_class_ids": [2],
                 }
