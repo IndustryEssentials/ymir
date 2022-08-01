@@ -183,7 +183,7 @@ def prepare_model(model_location: str, model_hash: str, stage_name: str, dst_mod
     return model_storage
 
 
-def load_parsed_model(model_dir: str) -> ModelStorage:
+def load_prepared_model(model_dir: str) -> ModelStorage:
     with open(os.path.join(model_dir, 'ymir-info.yaml'), 'r') as f:
         ymir_info_dict = yaml.safe_load(f.read())
     return ModelStorage.parse_obj(ymir_info_dict)

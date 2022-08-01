@@ -189,7 +189,7 @@ class CmdMining(base.BaseCommand):
                          topk=topk,
                          add_annotations=add_annotations,
                          task=task,
-                         model_class_names=mir_utils.load_parsed_model(model_dir=work_model_path).class_names)
+                         model_class_names=mir_utils.load_prepared_model(model_dir=work_model_path).class_names)
         logging.info(f"mining done, results at: {work_out_path}")
 
         return MirCode.RC_OK
@@ -223,8 +223,6 @@ def _process_results(mir_root: str, export_out: str, dst_typ_rev_tid: revs_parse
                                                       asset_ids_set=asset_ids_set,
                                                       cls_id_mgr=cls_id_mgr) if add_annotations else {})
 
-    model_class_ids = set(cls_id_mgr.id_for_names(model_class_names)[0])
-
     # step 2: update mir data files
     #   update mir metadatas
     matched_mir_metadatas = mirpb.MirMetadatas()
@@ -236,7 +234,6 @@ def _process_results(mir_root: str, export_out: str, dst_typ_rev_tid: revs_parse
     matched_mir_annotations = mirpb.MirAnnotations()
     matched_task_annotation = matched_mir_annotations.task_annotations[dst_typ_rev_tid.tid]
     prediction = matched_mir_annotations.prediction
-    ground_truth = matched_mir_annotations.ground_truth
     if add_annotations:
         # add new
         for asset_id, single_image_annotations in asset_id_to_annotations.items():
@@ -253,9 +250,16 @@ def _process_results(mir_root: str, export_out: str, dst_typ_rev_tid: revs_parse
         for asset_id in pred_asset_ids:
             prediction.image_annotations[asset_id].CopyFrom(mir_annotations.prediction.image_annotations[asset_id])
 
+    #   filter ground truth by model class ids
+    model_class_ids = set(cls_id_mgr.id_for_names(model_class_names)[0])
     gt_asset_ids = set(mir_annotations.ground_truth.image_annotations.keys()) & asset_ids_set
     for asset_id in gt_asset_ids:
-        ground_truth.image_annotations[asset_id].CopyFrom(mir_annotations.ground_truth.image_annotations[asset_id])
+        image_annotations = mirpb.SingleImageAnnotations()
+        for annotation in mir_annotations.ground_truth.image_annotations[asset_id].annotations:
+            if annotation.class_id in model_class_ids:
+                image_annotations.annotations.append(annotation)
+        if len(image_annotations.annotations) > 0:
+            matched_mir_annotations.ground_truth.image_annotations[asset_id].CopyFrom(image_annotations)
 
     image_ck_asset_ids = set(mir_annotations.image_cks.keys() & asset_ids_set)
     for asset_id in image_ck_asset_ids:
