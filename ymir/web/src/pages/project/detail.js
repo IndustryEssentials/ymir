@@ -39,13 +39,10 @@ function ProjectDetail(func) {
     }
   }
 
-  function datasetTitle() {
-    return <div className={s.cardTitle}><NavDatasetIcon className={s.titleIcon} /><span className={s.titleLabel}>{t('project.tab.set.title')}</span></div>
-  }
-
-  function modelTitle() {
-    return <div className={s.cardTitle}><TrainIcon className={s.titleIcon} /><span className={s.titleLabel}>{t('project.iteration.stage.training')}</span></div>
-  }
+  const title = (Icon, label) => <div className={s.cardTitle}>
+    <Icon className={s.titleIcon} />
+    <span className={s.titleLabel}>{t(label)}</span>
+    </div>
 
   function add() {
     history.push(`/home/project/${id}/dataset/add`)
@@ -68,7 +65,7 @@ function ProjectDetail(func) {
       <div className={`list ${s.projectOverview}`}>
         <Row gutter={10}>
           <Col span={12}>
-            <Card title={datasetTitle()} className={s.cardContainer}
+            <Card title={title(NavDatasetIcon, 'project.tab.set.title')} className={s.cardContainer}
               onClick={() => { history.push(`/home/project/${project.id}/dataset`) }}
               extra={<ArrowRightIcon className={s.rightIcon} />}>
               <Row className='content' justify="center">
@@ -84,7 +81,7 @@ function ProjectDetail(func) {
             </Card>
           </Col>
           <Col span={12}>
-            <Card title={modelTitle()} className={s.cardContainer}
+            <Card title={title(TrainIcon, 'project.tab.model.title')} className={s.cardContainer}
               onClick={() => { history.push(`/home/project/${project.id}/model`) }}
               extra={<ArrowRightIcon className={s.rightIcon} />}>
               <Row className='content' justify="center">

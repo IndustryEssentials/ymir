@@ -24,6 +24,7 @@ import {
   EditIcon, EyeOffIcon, CopyIcon, StopIcon, ArrowDownIcon, ArrowRightIcon, CompareIcon,
   CompareListIcon,
 } from "@/components/common/icons"
+import { DescPop } from "../common/descPop"
 
 const { confirm } = Modal
 const { useForm } = Form
@@ -136,7 +137,7 @@ function Datasets({ pid, project = {}, iterations, groups, datasetList, query, v
         dataIndex: "versionName",
         className: styles[`column_name`],
         render: (name, { id, description, projectLabel, iterationLabel }) =>
-          <Popover title={t('common.desc')} content={<div style={{ maxWidth: '30vw' }}>{description}</div>}>
+          <Popover title={t('common.desc')} content={<DescPop description={description} />}>
             <Row>
               <Col flex={1}><Link to={`/home/project/${pid}/dataset/${id}`}>{name}</Link></Col>
               <Col flex={'50px'}>
@@ -207,7 +208,8 @@ function Datasets({ pid, project = {}, iterations, groups, datasetList, query, v
 
   const actionMenus = (record) => {
     const { id, groupId, state, taskState, task, assetCount } = record
-    const always = [
+    const invalidDataset = ({ state, assetCount }) => !isValidDataset(state) || assetCount === 0
+    const menus = [
       {
         key: "merge",
         label: t("common.action.merge"),
@@ -221,41 +223,39 @@ function Datasets({ pid, project = {}, iterations, groups, datasetList, query, v
         hidden: () => !isValidDataset(state),
         onclick: () => history.push(`/home/project/${pid}/filter?did=${id}`),
         icon: <ScreenIcon className={styles.addBtnIcon} />,
-      }
-    ]
-    const menus = [
+      },
       {
         key: "train",
         label: t("dataset.action.train"),
-        hidden: () => !isValidDataset(state) || isTestingDataset(id),
+        hidden: () => invalidDataset(record) || isTestingDataset(id),
         onclick: () => history.push(`/home/project/${pid}/train?did=${id}`),
         icon: <TrainIcon />,
       },
       {
         key: "mining",
         label: t("dataset.action.mining"),
-        hidden: () => !isValidDataset(state),
+        hidden: () => invalidDataset(record),
         onclick: () => history.push(`/home/project/${pid}/mining?did=${id}`),
         icon: <VectorIcon />,
       },
       {
         key: "inference",
         label: t("dataset.action.inference"),
-        hidden: () => !isValidDataset(state),
+        hidden: () => invalidDataset(record),
         onclick: () => history.push(`/home/project/${pid}/inference?did=${id}`),
         icon: <WajueIcon />,
       },
       {
         key: "label",
         label: t("dataset.action.label"),
-        hidden: () => !isValidDataset(state),
+        hidden: () => invalidDataset(record),
         onclick: () => history.push(`/home/project/${pid}/label?did=${id}`),
         icon: <TaggingIcon />,
       },
       {
         key: "copy",
         label: t("task.action.copy"),
-        hidden: () => !isValidDataset(state),
+        hidden: () => invalidDataset(record),
         onclick: () => history.push(`/home/project/${pid}/copy?did=${id}`),
         icon: <CopyIcon />,
       },
@@ -274,7 +274,7 @@ function Datasets({ pid, project = {}, iterations, groups, datasetList, query, v
         icon: <EyeOffIcon />,
       },
     ]
-    return assetCount === 0 ? always : [...always, ...menus]
+    return menus
   }
 
   const tableChange = ({ current, pageSize }, filters, sorters = {}) => {

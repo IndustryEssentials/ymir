@@ -1,8 +1,8 @@
 const common = {
   'common.top.menu.logout': { cn: '退出', en: 'Logout', },
-  'common.top.menu.user': { cn: '用户管理', en: 'User', },
+  'common.top.menu.user': { cn: '个人中心', en: 'User', },
   'common.top.menu.community': { cn: '开源社区', en: 'GitHub', },
-  'common.top.menu.home': { cn: "主页", en: "Home", },
+  'common.top.menu.home': { cn: "首页", en: "Home", },
   'common.top.menu.project': { cn: "项目管理", en: "Project", },
   'common.top.menu.keyword': { cn: "标签管理", en: "Keyword", },
   'common.top.menu.configure': { cn: "系统配置", en: "Configure", },
