@@ -14,7 +14,7 @@ from sqlalchemy import (
 from sqlalchemy.orm import relationship
 
 from app.config import settings
-from app.constants.state import TaskState, TaskType
+from app.constants.state import ResultState, TaskState, TaskType
 from app.db.base_class import Base
 from app.models.dataset import Dataset  # noqa
 from app.models.dataset_group import DatasetGroup  # noqa
@@ -124,7 +124,10 @@ class Project(Base):
 
     @property
     def model_count(self) -> int:
-        return len(self.models)
+        # Only ready models count.
+        # stick to `model_count` for compatibility
+        ready_models = [model for model in self.models if model.result_state == ResultState.ready]
+        return len(ready_models)
 
     @property
     def total_asset_count(self) -> int:
