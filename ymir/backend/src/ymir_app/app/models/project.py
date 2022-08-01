@@ -120,13 +120,16 @@ class Project(Base):
 
     @property
     def dataset_count(self) -> int:
-        return len(self.datasets)
+        # Only ready and visible datasets count.
+        # stick to `dataset_count` for compatibility
+        ready_datasets = [d for d in self.datasets if d.result_state == ResultState.ready and d.is_visible]
+        return len(ready_datasets)
 
     @property
     def model_count(self) -> int:
         # Only ready models count.
         # stick to `model_count` for compatibility
-        ready_models = [model for model in self.models if model.result_state == ResultState.ready]
+        ready_models = [model for model in self.models if model.result_state == ResultState.ready and model.is_visible]
         return len(ready_models)
 
     @property
