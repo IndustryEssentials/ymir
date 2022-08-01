@@ -44,6 +44,7 @@ const dataset = {
   "dataset.detail.keyword.label": { cn: "标签：", en: "Keywords: ", },
   "dataset.detail.randompage.label": { cn: "随机页", en: "Random Page", },
   "dataset.detail.assets.keywords.total": { cn: "共{total}个标签", en: "{total} keywords", },
+  "dataset.asset.filters.title": { cn: "评估结果：（重叠度: 0.5, 置信度: 0.8）", en: "Evaluation (IoU: 0.5, Confidence: 0.8)", },
   "dataset.asset.info": { cn: "数据信息", en: "Asset Info", },
   "dataset.asset.info.id": { cn: "标识", en: "ID", },
   "dataset.asset.info.size": { cn: "大小", en: "Size", },

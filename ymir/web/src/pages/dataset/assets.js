@@ -1,14 +1,15 @@
 import React, { useEffect, useState } from "react"
 import { useParams, useHistory } from "umi"
 import { connect } from "dva"
-import { Select, Pagination, Image, Row, Col, Button, Space, Card, Descriptions, Tag, Modal } from "antd"
+import { Select, Pagination, Row, Col, Button, Space, Card, Tag, Modal } from "antd"
 
 import t from "@/utils/t"
 import Breadcrumbs from "@/components/common/breadcrumb"
 import { randomBetween, percent } from '@/utils/number'
 import Asset from "./components/asset"
 import styles from "./assets.less"
-import { ScreenIcon, TaggingIcon, TrainIcon, VectorIcon, WajueIcon, } from "@/components/common/icons"
+import GtSelector from "@/components/form/gtSelector"
+import ImageAnnotation from "../../components/dataset/imageAnnotation"
 
 const { Option } = Select
 
@@ -43,6 +44,8 @@ const Dataset = ({ getDataset, getAssetsOfDataset }) => {
     hash: null,
     index: 0,
   })
+  const [evaluated, setEvaluated] = useState(false)
+  const [evaluation, setEvaluation] = useState({})
 
   useEffect(async () => {
     const data = await getDataset(id)
@@ -50,6 +53,11 @@ const Dataset = ({ getDataset, getAssetsOfDataset }) => {
       setDataset(data)
     }
   }, [id])
+
+  useEffect(() => {
+    const evaluated = assets.some(asset => asset.evaluated)
+    setEvaluated(evaluated)
+  }, [assets])
 
   useEffect(() => {
     setCurrentPage((filterParams.offset / filterParams.limit) + 1)
@@ -76,8 +84,8 @@ const Dataset = ({ getDataset, getAssetsOfDataset }) => {
     setTotal(total)
     setAssets(items)
   }
-  const goAsset = (hash, index) => {
-    setCurrentAsset({ hash, index: filterParams.offset + index})
+  const goAsset = (asset, hash, index) => {
+    setCurrentAsset({ asset, hash, index: filterParams.offset + index})
     setAssetVisible(true)
   }
 
@@ -90,6 +98,10 @@ const Dataset = ({ getDataset, getAssetsOfDataset }) => {
 
   const getRate = (count) => {
     return percent(count / dataset.assetCount)
+  }
+
+  const filterAnnotations = annotations => {
+    return annotations.filter(annotation => !annotation.cm || evaluation[annotation.cm])
   }
 
   const randomPageButton = (
@@ -111,12 +123,9 @@ const Dataset = ({ getDataset, getAssetsOfDataset }) => {
           <Col flex={100 / row + '%'} key={asset.hash} className={styles.dataset_item}>
             <div
               className={styles.dataset_img}
-              onClick={() => goAsset(asset.hash, index * row + rowIndex)}
+              onClick={() => goAsset(asset, asset.hash, index * row + rowIndex)}
             >
-              <img
-                src={asset.url}
-                style={{ width: "auto", maxWidth: "100%", maxHeight: "100%" }}
-              />
+              <ImageAnnotation url={asset.url} data={asset.annotations} filters={filterAnnotations} />
               <span
                 className={styles.item_keywords_count}
                 title={asset?.keywords.join(",")}
@@ -143,6 +152,9 @@ const Dataset = ({ getDataset, getAssetsOfDataset }) => {
         <span>{t("dataset.detail.pager.total", { total: total + '/' + dataset.assetCount })}</span>
       </Space>
     </Col>
+    { evaluated ? <Col>
+      <GtSelector layout='inline' onChange={setEvaluation} />
+    </Col> : null }
     <Col>
       <span>{t("dataset.detail.keyword.label")}</span>
       <Select
@@ -168,7 +180,7 @@ const Dataset = ({ getDataset, getAssetsOfDataset }) => {
   const assetDetail = <Modal className={styles.assetDetail} destroyOnClose
     title={t('dataset.asset.title')} visible={assetVisible} onCancel={() => setAssetVisible(false)}
     width={null} footer={null}>
-    <Asset id={id} datasetKeywords={dataset.keywords} filterKeyword={assetVisible ? filterParams.keyword : null} index={currentAsset.index} total={total} />
+    <Asset id={id} asset={currentAsset.asset} datasetKeywords={dataset.keywords} filterKeyword={assetVisible ? filterParams.keyword : null} index={currentAsset.index} total={total} />
   </Modal>
 
   return (
