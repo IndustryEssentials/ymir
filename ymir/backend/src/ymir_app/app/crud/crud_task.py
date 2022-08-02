@@ -129,13 +129,6 @@ class CRUDTask(CRUDBase[Task, TaskCreate, TaskUpdate]):
         db.refresh(task)
         return task
 
-    def update_percent(self, db: Session, *, task: Task, percent: float) -> Task:
-        task.percent = percent  # type: ignore
-        db.add(task)
-        db.commit()
-        db.refresh(task)
-        return task
-
     def update_state_and_percent(
         self,
         db: Session,
@@ -148,7 +141,8 @@ class CRUDTask(CRUDBase[Task, TaskCreate, TaskUpdate]):
         task.state = int(new_state)
         if percent is not None:
             task.percent = percent  # type: ignore
-        if state_code is not None:
+        if state_code is not None and not task.is_terminated:
+            # state_code (error_code) is not reasonable for terminated task
             task.error_code = state_code
         db.add(task)
         db.commit()
