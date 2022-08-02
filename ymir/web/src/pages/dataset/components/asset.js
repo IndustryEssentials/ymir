@@ -73,8 +73,8 @@ function Asset({ id, asset: cache, filterKeyword, getAsset, getAssetsOfDataset, 
 
   async function fetchAsset() {
     const result = await getAsset(id, current)
-    const corretColor = (annotations = []) => annotations.map(anno => ({ ...anno, color: colors[anno.keyword]}))
-    setAsset({...result, annotations: corretColor(result.annotations)})
+    const corretColor = (annotations = []) => annotations.map(anno => ({ ...anno, color: colors[anno.keyword] }))
+    setAsset({ ...result, annotations: corretColor(result.annotations) })
   }
 
   async function fetchAssetHash() {
@@ -194,10 +194,11 @@ function Asset({ id, asset: cache, filterKeyword, getAsset, getAssetsOfDataset, 
                   </Row>
                 </Descriptions.Item>
               </Descriptions>
-              <div className={styles.filter}>
-                <h3><NavDatasetIcon /> {t("dataset.asset.filters.title")}</h3>
-                <GtSelector layout='vertical' onChange={filterAnnotations} />
-              </div>
+              {asset.evaluted ?
+                <div className={styles.filter}>
+                  <h3><NavDatasetIcon /> {t("dataset.asset.filters.title")}</h3>
+                  <GtSelector layout='vertical' onChange={filterAnnotations} />
+                </div> : null}
             </Card>
             <Space className={styles.random}>
               <Button

@@ -190,22 +190,12 @@ function Mining({ datasetCache, ...func }) {
             </Form.Item>
             <Form.Item
               tooltip={t('tip.task.filter.strategy')}
-              label={t('task.mining.form.strategy.label')}
-            >
-              <Form.Item
-                name='filter_strategy'
-                initialValue={true}
-                noStyle
-              >
-                <Form.Item noStyle name='topk' label='topk' dependencies={['filter_strategy']} rules={topk ? [
-                  { type: 'number', min: 1, max: (dataset.assetCount - 1) || 1 }
-                ] : null}>
-                  <InputNumber style={{ width: 120 }} min={1} max={dataset.assetCount - 1} precision={0} />
-                </Form.Item>
-              </Form.Item>
-              <p style={{ display: 'inline-block', marginLeft: 10 }}>{t('task.mining.topk.tip')}</p>
+              label={t('task.mining.form.topk.label')}
+              name='topk' rules={topk ? [
+                { type: 'number', min: 1, max: (dataset.assetCount - 1) || 1 }
+              ] : null}>
+              <InputNumber style={{ width: 120 }} min={1} max={dataset.assetCount - 1} precision={0} />
             </Form.Item>
-
             <Form.Item
               tooltip={t('tip.task.filter.newlable')}
               label={t('task.mining.form.label.label')}
