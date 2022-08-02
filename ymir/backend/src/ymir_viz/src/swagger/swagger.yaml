@@ -99,9 +99,9 @@ paths:
         schema:
           type: string
           example: "1,2,3,4"
-      - name: gt_or_pred
+      - name: anno_type
         in: query
-        description: gt_or_pred
+        description: anno_type
         required: true
         style: form
         explode: true

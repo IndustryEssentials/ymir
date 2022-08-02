@@ -581,16 +581,24 @@ class MirStorageOps():
                 gt_class_ids=gt_class_ids,
                 class_ids=class_ids,
             )
-        class_id_to_assets: Dict[int, Set[str]] = defaultdict(set)
+        class_id_to_assets: Dict[int, Set[str]] = defaultdict(set)  # total
+        pred_class_id_to_assets: Dict[int, Set[str]] = defaultdict(set)  # class ids to assets (gen from prediction)
+        gt_class_id_to_assets: Dict[int, Set[str]] = defaultdict(set)  # class ids to assets (gen from ground truth)
         for k, v in mir_storage_keywords.get('pred_idx', {}).get('cis', {}).items():
             class_id_to_assets[k].update(v.get('key_ids', {}))
+            pred_class_id_to_assets[k].update(v.get('key_ids'), {})
         for k, v in mir_storage_keywords.get('gt_idx', {}).get('cis', {}).items():
             class_id_to_assets[k].update(v.get('key_ids', {}))
+            gt_class_id_to_assets[k].update(v.get('key_ids'), {})
         return dict(
             all_asset_ids=sorted([*mir_storage_metadatas["attributes"].keys()]),  # ordered list.
             asset_ids_detail=asset_ids_detail,
             class_ids_index={k: list(v)
                              for k, v in class_id_to_assets.items()},
+            pred_class_ids_index={k: list(v)
+                                  for k, v in pred_class_id_to_assets.items()},
+            gt_class_ids_index={k: list(v)
+                                for k, v in gt_class_id_to_assets.items()},
         )
 
     @classmethod

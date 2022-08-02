@@ -1,6 +1,6 @@
 import logging
 import threading
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Set, Tuple
 
 import yaml
 
@@ -68,9 +68,25 @@ class AssetsModel:
             pipe.execute()
 
         with redis_cache.pipeline() as pipe:
-            for class_id, assets_list in asset_content["class_ids_index"].items():
+            cid_to_assets = asset_content["class_ids_index"]
+            for class_id, assets_list in cid_to_assets.items():
                 if assets_list:
                     pipe.rpush(f"{key_asset_index}:{class_id}", *assets_list)
+
+            cid_to_assets = asset_content["pred_class_ids_index"]
+            for class_id, assets_list in cid_to_assets.items():
+                if assets_list:
+                    pipe.rpush(f"{key_asset_index}:pred:{class_id}", *assets_list)
+            if cid_to_assets:
+                pipe.rpush(f"{key_asset_index}:{viz_settings.VIZ_ALL_PRED_CLASSIDS}", *cid_to_assets.keys())
+
+            cid_to_assets = asset_content["gt_class_ids_index"]
+            for class_id, assets_list in cid_to_assets.items():
+                if assets_list:
+                    pipe.rpush(f"{key_asset_index}:gt:{class_id}", *assets_list)
+            if cid_to_assets:
+                pipe.rpush(f"{key_asset_index}:{viz_settings.VIZ_ALL_GT_CLASSIDS}", *cid_to_assets.keys())
+
             pipe.execute()
 
         redis_cache.set(key_cache_status, {"flag": 1})
@@ -100,7 +116,7 @@ class AssetsModel:
             'total': 234
         }
         """
-        asset_ids = assets_content["class_ids_index"][class_id][offset: limit + offset]
+        asset_ids = assets_content["class_ids_index"][class_id][offset:limit + offset]
         elements = []
         for asset_id in asset_ids:
             elements.append({
@@ -136,15 +152,13 @@ class AssetsModel:
         elements = []
         for asset_id, asset_detail in zip(asset_ids, assets_detail):
             asset_detail = yaml.safe_load(asset_detail)
-            elements.append(
-                {
-                    "asset_id": asset_id,
-                    "class_ids": asset_detail["class_ids"],
-                    "gt": asset_detail["gt"],
-                    "pred": asset_detail["pred"],
-                    "metadata": asset_detail["metadata"],
-                }
-            )
+            elements.append({
+                "asset_id": asset_id,
+                "class_ids": asset_detail["class_ids"],
+                "gt": asset_detail["gt"],
+                "pred": asset_detail["pred"],
+                "metadata": asset_detail["metadata"],
+            })
         total = redis_cache.llen(f"{self.key_asset_index}:{class_id}")
         result = dict(elements=elements, limit=limit, offset=offset, total=total)
 
@@ -175,14 +189,76 @@ class AssetsModel:
                 branch_id=self.branch_id,
                 task_id=self.branch_id,
             ).get_assets_content()
-            result = self.format_assets_info(
-                assets_content=assets_content, offset=offset, limit=limit, class_id=class_id
-            )
+            result = self.format_assets_info(assets_content=assets_content,
+                                             offset=offset,
+                                             limit=limit,
+                                             class_id=class_id)
 
             # asynchronous generate cache content,and we can add some policy to trigger it later
             self.trigger_cache_generator(assets_content)
 
         return result
+
+    def get_dataset_stats_from_cache(self, anno_type: int, cis: List[int]) -> Tuple[Dict[int, int], int, int]:
+        def _gen_key(anno_type: int, ci: int) -> str:
+            if anno_type == 1:
+                return f"{self.key_asset_index}:pred:{ci}"
+            else:
+                return f"{self.key_asset_index}:gt:{ci}"
+
+        class_id_to_asset_cnt: Dict[int, int] = {}  # key: class id, value: count of assets
+        positive_asset_ids: Set[str] = set()
+
+        for ci in cis:
+            ci_cache_key = _gen_key(anno_type=anno_type, ci=ci)
+            if not redis_cache.exists(ci_cache_key):
+                class_id_to_asset_cnt[ci] = 0
+                continue
+
+            ci_asset_ids = redis_cache.lrange(ci_cache_key, 0, -1)
+            class_id_to_asset_cnt[ci] = len(ci_asset_ids)
+            positive_asset_ids.update(ci_asset_ids)
+
+        all_asset_ids = set(redis_cache.lrange(f"{self.key_asset_index}:{viz_settings.VIZ_ALL_INDEX_CLASSIDS}", 0, -1))
+        negative_assets_cnt = len(all_asset_ids - positive_asset_ids)
+        return (class_id_to_asset_cnt, len(all_asset_ids), negative_assets_cnt)
+
+    def get_dataset_stats(self, anno_type: int, cis: List[int]) -> Tuple[Dict[int, int], int, int]:
+        if self.check_cache_existence():
+            logging.info("get_dataset_stats_from_cache")
+
+            return self.get_dataset_stats_from_cache(anno_type=anno_type, cis=cis)
+
+        # get result from mir_storage_ops
+        assets_content = pb_reader.MirStorageLoader(
+            sandbox_root=viz_settings.BACKEND_SANDBOX_ROOT,
+            user_id=self.user_id,
+            repo_id=self.repo_id,
+            branch_id=self.branch_id,
+            task_id=self.branch_id,
+        ).get_assets_content()
+
+        class_ids_index: Dict[int, List[str]] = assets_content[
+            'pred_class_ids_index'] if anno_type == 1 else assets_content['gt_class_ids_index']
+
+        class_id_to_asset_cnt: Dict[int, int] = {}  # key: class id, value: count of assets
+        positive_asset_ids: Set[str] = set()
+
+        for ci in cis:
+            if ci not in class_ids_index:
+                class_id_to_asset_cnt[ci] = 0
+                continue
+
+            ci_asset_ids = class_ids_index[ci]
+            class_id_to_asset_cnt[ci] = len(ci_asset_ids)
+            positive_asset_ids.update(ci_asset_ids)
+
+        all_asset_ids = set(assets_content['all_asset_ids'])
+        negative_assets_cnt = len(all_asset_ids - positive_asset_ids)
+
+        self.trigger_cache_generator(assets_content)
+
+        return (class_id_to_asset_cnt, len(all_asset_ids), negative_assets_cnt)
 
     def get_all_asset_ids_from_cache(self) -> List[str]:
         class_id = viz_settings.VIZ_ALL_INDEX_CLASSIDS

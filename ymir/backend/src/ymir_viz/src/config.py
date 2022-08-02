@@ -16,6 +16,9 @@ class VizSettings(BaseSettings):
     VIZ_KEY_ASSET_INDEX: str = "viz_key_index"
     # added all assets index by viz
     VIZ_ALL_INDEX_CLASSIDS: str = "__all_index_classids__"
+    # all class ids key
+    VIZ_ALL_PRED_CLASSIDS: str = '__all_pred_class_ids__'
+    VIZ_ALL_GT_CLASSIDS: str = '__all_gt_class_ids__'
     # set flag status when generating cache
     VIZ_CACHE_STATUS: str = "viz_key_status"
 

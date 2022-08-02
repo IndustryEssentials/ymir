@@ -1,4 +1,5 @@
 import logging
+from typing import List
 
 from src.config import viz_settings
 from src.libs import utils, exceptions
@@ -73,7 +74,7 @@ def get_dataset_stats(
     repo_id: str,
     branch_id: str,
     class_ids: str,
-    gt_or_pred: int,
+    anno_type: int,
 ) -> DatasetResult:
     """get dataset stats info
 
@@ -82,6 +83,7 @@ def get_dataset_stats(
         repo_id (str): repo id
         branch_id (str): dataset hash
         class_ids (List[int]): class ids
+        anno_type (int): 1 for prediction, 2 for ground truth
 
     Returns: DatasetResult
 
@@ -94,4 +96,21 @@ def get_dataset_stats(
         "total_images_cnt": 40,
     }
     """
-    pass
+    if not class_ids:
+        raise exceptions.NoClassIds()
+    if anno_type != 1 and anno_type != 2:
+        raise exceptions.InvalidAnnoType()
+
+    cis: List[int] = [int(x) for x in class_ids.split(',')]
+    ci_to_asset_cnts, total_cnt, negative_cnt = asset.AssetsModel(user_id, repo_id,
+                                                                  branch_id).get_dataset_stats(anno_type=anno_type,
+                                                                                               cis=cis)
+
+    result_dict = {'total_images_cnt': total_cnt,
+                   'negative_info': {'negative_images_cnt': negative_cnt},
+                   'class_ids_count': ci_to_asset_cnts}
+
+    resp = utils.suss_resp(result=result_dict)
+    logging.info(f"get_dataset_stats: {resp}")
+
+    return DatasetResult(**resp)
