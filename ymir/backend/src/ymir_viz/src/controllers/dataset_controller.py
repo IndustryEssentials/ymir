@@ -1,5 +1,4 @@
 import logging
-from typing import List
 
 from src.config import viz_settings
 from src.libs import utils, exceptions
