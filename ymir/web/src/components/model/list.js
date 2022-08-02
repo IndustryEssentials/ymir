@@ -130,7 +130,7 @@ function Model({ pid, project = {}, iterations, groups, modelList, versions, que
       dataIndex: "versionName",
       className: styles[`column_name`],
       render: (name, { id, description, projectLabel, iterationLabel }) =>
-        <Popover title={t('common.desc')} content={<DescPop description={description} />}>
+        <Popover title={t('common.desc')} content={<DescPop description={description} style={{ maxWidth: '30vw' }} />}>
           <Row>
             <Col flex={1}><Link to={`/home/project/${pid}/model/${id}`}>{name}</Link></Col>
             <Col flex={'50px'}>

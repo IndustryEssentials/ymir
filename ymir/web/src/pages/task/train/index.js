@@ -156,7 +156,7 @@ function Train({ allDatasets, datasetCache, keywords, ...func }) {
 
     const config = {
       ...values.hyperparam?.reduce(
-        (prev, { key, value }) => key && value ? { ...prev, [key]: value } : prev,
+        (prev, { key, value }) => key !== '' && value !== '' ? { ...prev, [key]: value } : prev,
         {}),
       ...(values.live || {}),
     }
