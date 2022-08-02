@@ -6,6 +6,7 @@ import Breadcrumbs from "@/components/common/breadcrumb"
 import s from "./detail.less"
 import { TrainIcon, NavDatasetIcon, ArrowRightIcon, ImportIcon } from "@/components/common/icons"
 import NoIterationDetail from "./components/noIterationDetail"
+import Detail from './components/detail'
 
 function ProjectDetail(func) {
   const history = useHistory()
@@ -56,7 +57,7 @@ function ProjectDetail(func) {
     <div>
       <Breadcrumbs />
       <div className={s.header}>
-        <NoIterationDetail project={project} />
+      {project.enableIteration ? <Detail project={project} iterations={iterations} fresh={fresh} /> : <NoIterationDetail project={project} />}
       </div>
       <Space className="actions">
         <Button type="primary" onClick={add}><ImportIcon /> {t("dataset.import.label")}</Button>

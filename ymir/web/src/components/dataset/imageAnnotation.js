@@ -58,26 +58,23 @@ function ImageAnnotation({
     })
     setRatio(cw / iw)
   }
-
+  let calculating = false
   window.addEventListener('resize', () => {
+    if (calculating) return
+    calculating = true
+    window.setTimeout(() => {
     if (img.current) {
       calImgWidth()
     }
+    calculating = false
+    }, 2000)
   })
 
   return (
-    <div className={styles.ic_container} style={{
-      position: 'relative',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      height: '100%',
-      width: '100%',
-    }}>
+    <div className={styles.ic_container}>
       <img
         ref={img}
         src={url}
-        style={{ maxWidth: '100%', maxHeight: '100%' }}
         className={styles.assetImg}
         onLoad={({ target }) => calImgWidth()}
       />
