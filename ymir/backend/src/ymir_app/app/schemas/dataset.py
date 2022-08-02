@@ -137,6 +137,21 @@ class DatasetsOut(Common):
     result: List[Dataset]
 
 
+class DatasetStatsElement(BaseModel):
+    keywords: Dict[str, int]
+    negative_images_count: int
+    positive_images_count: int
+
+
+class DatasetStats(BaseModel):
+    gt: DatasetStatsElement
+    pred: DatasetStatsElement
+
+
+class DatasetStatsOut(Common):
+    result: DatasetStats
+
+
 class DatasetHist(BaseModel):
     asset_bytes: List[Dict]
     asset_area: List[Dict]
