@@ -1,4 +1,4 @@
-export const DescPop = ({ description }) => {
+export const DescPop = ({ description = '', ...rest }) => {
     const text = description.split(/\n/)
-    return <div style={{ maxWidth: '30vw' }}>{text.map((txt, i) =><div key={i}>{txt}</div>)}</div>
+    return <div {...rest}>{text.map((txt, i) =><div key={i}>{txt}</div>)}</div>
 }
