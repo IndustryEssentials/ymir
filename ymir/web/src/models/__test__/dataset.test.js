@@ -428,8 +428,9 @@ describe("models: dataset", () => {
     const generator = saga(creator, { put, call, select })
     generator.next()
     const d = generator.next(versions)
+    generator.next([])
+    generator.next()
     const end = generator.next()
-    const updated = d.value.payload.action.payload
 
     expect(end.value).toEqual(expected)
     expect(end.done).toBe(true)
@@ -449,10 +450,11 @@ describe("models: dataset", () => {
     const generator = saga(creator, { put, call, select })
     generator.next()
     const d = generator.next(versions)
+    generator.next([])
+    generator.next()
     const end = generator.next()
-    const updated = d.value.payload.action.payload
 
-    expect(updated).toEqual(versions)
+    expect(end.value).toEqual(versions)
     expect(end.done).toBe(true)
   })
   it("effects: updateDatasetState -> normal success", () => {
