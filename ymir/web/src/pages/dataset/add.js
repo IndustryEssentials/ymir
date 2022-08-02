@@ -262,7 +262,7 @@ const Add = (props) => {
             ) : null}
             {!isType(TYPES.INTERNAL) ?
               <Form.Item label={t('dataset.add.form.label.label')} name='strategy' initialValue={IMPORTSTRATEGY.UNKOWN_KEYWORDS_IGNORE}>
-                <Radio.Group options={strategyOptions.filter(opt => !isType(TYPES.COPY) || opt.value !== IMPORTSTRATEGY.UNKOWN_KEYWORDS_IGNORE)} />
+                <Radio.Group options={strategyOptions.filter(opt => !isType(TYPES.COPY) || opt.value !== IMPORTSTRATEGY.UNKOWN_KEYWORDS_AUTO_ADD)} />
               </Form.Item> : null}
             {isType(TYPES.NET) ? (
               <Form.Item label={t('dataset.add.form.net.label')} required>
