@@ -572,12 +572,14 @@ class MirStorageOps():
                               if asset_id in keyword_keyids_list else [])
             gt_class_ids = (keyword_keyids_list[asset_id]["gt_predefined_keyids"]
                             if asset_id in keyword_keyids_list else [])
+            class_ids = list(set(pred_class_ids) | set(gt_class_ids))
             asset_ids_detail[asset_id] = dict(
                 metadata=asset_metadata,
                 pred=pred_asset_annotations,
                 gt=gt_asset_annotations,
                 pred_class_ids=pred_class_ids,
                 gt_class_ids=gt_class_ids,
+                class_ids=class_ids,
             )
         class_id_to_assets: Dict[int, Set[str]] = defaultdict(set)
         for k, v in mir_storage_keywords.get('pred_idx', {}).get('cis', {}).items():
