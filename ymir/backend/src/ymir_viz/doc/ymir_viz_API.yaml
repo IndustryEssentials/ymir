@@ -82,9 +82,8 @@ paths:
           description: class_ids
           required: true
           schema:
-            type: array
-            items:
-              type: integer
+            type: string
+            example: '1,2,3,4'
       responses:
         "200":
           description: successful operation
