@@ -161,7 +161,7 @@ const task = {
     en: "Please input relative path to your config filename， e.g. config/white.yaml",
     cn: "请输入配置文件名称的相对路径, 如 config/white.yaml",
   },
-  "task.train.form.platform.label": { en: "Train Function", cn: "训练方式", },
+  "task.train.form.platform.label": { en: "Use Openpai", cn: "使用Openpai", },
   "task.train.device.local": { en: "Local", cn: "本地训练", },
   "task.train.device.openpai": { en: "OpenPAI", cn: "OpenPAI训练", },
   "task.train.export.format": { en: "Format For Training", cn: "数据导出格式", },
