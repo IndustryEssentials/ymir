@@ -225,14 +225,14 @@ export default {
         })
         versions[gid] = updatedDatasets
       })
-      yield put({
-        type: 'UPDATE_ALL_VERSIONS',
-        payload: { ...versions },
-      })
-      const validDatasets = newDatasets.filter(d => d.needReload)
+      const validDatasets = newDatasets.filter(d => d?.needReload)
       yield put({
         type: 'UPDATE_ALL_DATASETS',
         payload: [...validDatasets, ...all],
+      })
+      yield put({
+        type: 'UPDATE_ALL_VERSIONS',
+        payload: { ...versions },
       })
       return { ...versions }
     },
