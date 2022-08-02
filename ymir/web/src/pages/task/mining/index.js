@@ -190,8 +190,8 @@ function Mining({ datasetCache, ...func }) {
             </Form.Item>
             <Form.Item
               tooltip={t('tip.task.filter.strategy')}
-              label={t('task.mining.form.strategy.label')}
-              name='topk' dependencies={['filter_strategy']} rules={topk ? [
+              label={t('task.mining.form.topk.label')}
+              name='topk' rules={topk ? [
                 { type: 'number', min: 1, max: (dataset.assetCount - 1) || 1 }
               ] : null}>
               <InputNumber style={{ width: 120 }} min={1} max={dataset.assetCount - 1} precision={0} />

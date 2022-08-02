@@ -69,7 +69,6 @@ const task = {
   "task.mining.form.mining.model.required": { cn: "请选择用于数据挖掘的模型", en: "please select the model used for data mining", },
 
   "task.mining.form.algo.label": { cn: "挖掘算法", en: "Mining Algorithm", },
-  "task.mining.form.strategy.label": { cn: "筛选策略", en: "Filter Strategy", },
   "task.mining.form.topk.label": { cn: "TOPK", en: "TOP K", },
   "task.label.form.type.newer": { cn: "未标注部分", en: "Unlabel", },
   "task.mining.form.dataset.label": { cn: "挖掘集", en: "Mining Dataset", },
