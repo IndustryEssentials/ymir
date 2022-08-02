@@ -109,8 +109,6 @@ class AssetsModel:
             elements.append({
                 "asset_id": asset_id,
                 "class_ids": class_ids,
-                "pred_class_ids": pred_class_ids,
-                "gt_class_ids": gt_class_ids,
                 "metadata": assets_content["asset_ids_detail"][asset_id]["metadata"],
                 "pred": assets_content["asset_ids_detail"][asset_id]["pred"],
                 "gt": assets_content["asset_ids_detail"][asset_id]["gt"],
