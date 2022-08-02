@@ -1,6 +1,7 @@
 import {
   getDatasetGroups, getDatasetByGroup, queryDatasets, getDataset, batchDatasets, evaluate, analysis,
   getAssetsOfDataset, getAsset, batchAct, delDataset, delDatasetGroup, createDataset, updateDataset, getInternalDataset,
+  getNegativeKeywords,
 } from "@/services/dataset"
 import { getStats } from "../services/common"
 import { transferDatasetGroup, transferDataset, transferDatasetAnalysis, states, transferAsset } from '@/constants/dataset'
@@ -332,6 +333,13 @@ export default {
           dataset: ds,
         }
       })
+    },
+    *getNegativeKeywords({ payload }, { put, call }) {
+      // const { pid, keywords, type } = payload
+      const { code, result } = yield call(getNegativeKeywords, payload)
+      if (code === 0) {
+        return result?.negative_info
+      }
     },
   },
   reducers: {

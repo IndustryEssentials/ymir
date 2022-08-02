@@ -209,3 +209,16 @@ export function checkDuplication(projectId, trainSet, validationSet) {
     dataset_ids: [trainSet, validationSet],
   })
 }
+
+export function getNegativeKeywords({
+  projectId,
+  dataset,
+  keywords,
+}) {
+  return request.get(`/datasets/${dataset}/stats`, {
+    params: {
+      project_id: projectId,
+      keywords: keywords.toString(),
+    }
+  })
+}

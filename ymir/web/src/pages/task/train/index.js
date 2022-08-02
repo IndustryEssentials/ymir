@@ -61,6 +61,7 @@ function Train({ allDatasets, datasetCache, keywords, ...func }) {
   const [allDuplicated, setAllDulplicated] = useState(false)
   const [duplicated, checkDuplication] = useFetch('dataset/checkDuplication', 0)
   const [sys, getSysInfo] = useFetch('common/getSysInfo', {})
+  const [negativeKeywords, getNegativeKeywords] = useFetch('dataset/getNegativeKeywords', {})
   const selectOpenpai = Form.useWatch('openpai', form)
 
   const renderRadio = (types) => <Radio.Group options={types.map(type => ({ ...type, label: t(type.label) }))} />
@@ -123,6 +124,16 @@ function Train({ allDatasets, datasetCache, keywords, ...func }) {
       setAllDulplicated(allValidation && allTrain)
     }
   }, [duplicationChecked, duplicated])
+
+  useEffect(() => {
+    console.log('negativeKeywords:', negativeKeywords, selectedKeywords)
+  }, [negativeKeywords])
+
+  useEffect(() => {
+    setTimeout(() => {
+      fetchNegativeKeywords()
+    }, 300)
+  }, [trainSet])
 
   async function fetchProject() {
     const project = await func.getProject(pid)
@@ -201,6 +212,17 @@ function Train({ allDatasets, datasetCache, keywords, ...func }) {
     }
   }
 
+  const keywordsBlur = () => {
+    fetchNegativeKeywords()
+  }
+
+  function fetchNegativeKeywords() {
+    if (!trainSet || !selectedKeywords.length) {
+      return
+    }
+    getNegativeKeywords({ projectId: pid, dataset: trainSet, keywords: selectedKeywords })
+  }
+
   const duplicatedRender = () => {
     const allValidation = duplicated === validationDataset?.assetCount
     const allTrain = duplicated === trainDataset?.assetCount
@@ -216,7 +238,7 @@ function Train({ allDatasets, datasetCache, keywords, ...func }) {
   }
 
   const matchKeywords = dataset => dataset.keywords.some(kw => selectedKeywords.includes(kw))
-    const notTestingSet = id => !testingSetIds.includes(id)
+  const notTestingSet = id => !testingSetIds.includes(id)
   const trainsetFilters = datasets => datasets.filter(ds => {
     const notTestSet = ds.id !== testSet
     return matchKeywords(ds) && notTestSet && notTestingSet(ds.id)
@@ -317,6 +339,7 @@ function Train({ allDatasets, datasetCache, keywords, ...func }) {
                 <Select mode="multiple" showArrow
                   placeholder={t('project.add.form.keyword.required')}
                   onChange={setSelectedKeywords}
+                  onBlur={keywordsBlur}
                   filterOption={(value, option) => [option.value, ...(option.aliases || [])].some(key => key.indexOf(value) >= 0)}>
                   {keywords.map(keyword => (
                     <Select.Option key={keyword.name} value={keyword.name} aliases={keyword.aliases}>
