@@ -18,7 +18,7 @@ const task = {
   "task.state.terminated": { cn: '终止', en: 'Terminated', },
   "task.state.terminating": { cn: '正在终止，请耐心等待结果', en: 'Terminating', },
   "task.column.state.timeleft.label": { cn: "剩余时间：", en: "Time Left: ", },
-  "task.column.duration": { cn: "训练时长", en: "Training Duration", },
+  "task.column.duration": { cn: "时长", en: "Duration", },
   "task.action.terminate": { cn: "终止", en: "Terminate", },
   "task.action.copy": { cn: "复制", en: "Copy", },
   "task.action.training": { cn: "训练过程", en: "Training Process", },
