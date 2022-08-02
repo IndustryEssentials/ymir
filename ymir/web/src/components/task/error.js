@@ -36,7 +36,7 @@ export default function Error({ code, msg = '', terminated }) {
     {t('task.detail.terminated')}
   </Item>
 
-  return terminated && code ? <div className='error'>
+  return terminated || code ? <div className='error'>
     <Descriptions
       bordered
       column={1}
