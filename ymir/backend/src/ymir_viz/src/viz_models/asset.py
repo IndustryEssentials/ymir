@@ -77,15 +77,11 @@ class AssetsModel:
             for class_id, assets_list in cid_to_assets.items():
                 if assets_list:
                     pipe.rpush(f"{key_asset_index}:pred:{class_id}", *assets_list)
-            if cid_to_assets:
-                pipe.rpush(f"{key_asset_index}:{viz_settings.VIZ_ALL_PRED_CLASSIDS}", *cid_to_assets.keys())
 
             cid_to_assets = asset_content["gt_class_ids_index"]
             for class_id, assets_list in cid_to_assets.items():
                 if assets_list:
                     pipe.rpush(f"{key_asset_index}:gt:{class_id}", *assets_list)
-            if cid_to_assets:
-                pipe.rpush(f"{key_asset_index}:{viz_settings.VIZ_ALL_GT_CLASSIDS}", *cid_to_assets.keys())
 
             pipe.execute()
 
