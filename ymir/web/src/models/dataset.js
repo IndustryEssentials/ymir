@@ -214,10 +214,13 @@ export default {
     *updateDatasets({ payload }, { put, select }) {
       const versions = yield select(state => state.dataset.versions)
       const tasks = payload || {}
+      const all = yield select(state => state.dataset.allDatasets)
+      const newDatasets = []
       Object.keys(versions).forEach(gid => {
         const datasets = versions[gid]
         let updatedDatasets = datasets.map(dataset => {
           const updatedDataset = updateResultState(dataset, tasks)
+          newDatasets.push(updatedDataset)
           return updatedDataset ? { ...updatedDataset } : dataset
         })
         versions[gid] = updatedDatasets
@@ -226,23 +229,20 @@ export default {
         type: 'UPDATE_ALL_VERSIONS',
         payload: { ...versions },
       })
+      const validDatasets = newDatasets.filter(d => d.needReload)
+      yield put({
+        type: 'UPDATE_ALL_DATASETS',
+        payload: [...validDatasets, ...all],
+      })
       return { ...versions }
     },
     *updateDatasetState({ payload }, { put, select }) {
       const datasetCache = yield select(state => state.dataset.dataset)
-      const all = yield select(state => state.dataset.allDatasets)
-      const validDatasets = []
       const tasks = payload || {}
       Object.keys(datasetCache).forEach(did => {
         const dataset = datasetCache[did]
         const updatedDataset = updateResultState(dataset, tasks)
         datasetCache[did] = updatedDataset ? updatedDataset : dataset
-      })
-
-      datasetCache.filter(d => d.needReload)
-      yield put({
-        type: 'UPDATE_ALL_DATASETS',
-        payload: [...validDatasets, ...all],
       })
 
       yield put({
