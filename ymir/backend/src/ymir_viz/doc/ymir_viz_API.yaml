@@ -84,6 +84,13 @@ paths:
           schema:
             type: string
             example: '1,2,3,4'
+        - name: gt_or_pred
+          in: query
+          description: gt_or_pred
+          required: true
+          schema:
+            type: integer  # 1 for pred, 2 for gt
+            example: 1
       responses:
         "200":
           description: successful operation

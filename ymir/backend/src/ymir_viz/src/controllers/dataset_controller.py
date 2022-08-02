@@ -73,6 +73,7 @@ def get_dataset_stats(
     repo_id: str,
     branch_id: str,
     class_ids: str,
+    gt_or_pred: int,
 ) -> DatasetResult:
     """get dataset stats info
 
