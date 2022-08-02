@@ -13,7 +13,7 @@ const labelStyle = {
   justifyContent: "flex-end",
 }
 
-export default function Error({ code, msg = '' }) {
+export default function Error({ code, msg = '', terminated }) {
   const [visible, setVisible] = useState(false)
 
   function formatErrorMessage(message) {
@@ -22,22 +22,29 @@ export default function Error({ code, msg = '' }) {
     </div>
   }
 
-  return <div className='error'>
+  const renderError = <>
+    <Item label={t("task.detail.error.code")}>
+      {t(`error${code}`)}
+      {msg ? <span className='more' onClick={() => setVisible(!visible)}>{visible ? <ArrowUpIcon /> : <ArrowDownIcon />}</span> : null}
+    </Item>
+    {msg && visible ? <Item label={t('task.detail.error.desc')} style={{ lineHeight: 1.25 }}>
+      {formatErrorMessage(msg)}
+    </Item> : null}
+  </>
 
+  const renderTerminated = <Item label={t("task.detail.terminated.label")}>
+    {t('task.detail.terminated')}
+  </Item>
+
+  return terminated && code ? <div className='error'>
     <Descriptions
       bordered
       column={1}
       labelStyle={labelStyle}
-      title={<div className='title'>{t("task.detail.error.title")}</div>}
+      title={<div className='title'>{t("task.state")}</div>}
       className='infoTable'
     >
-      <Item label={t("task.detail.error.code")}>
-        {t(`error${code}`)} 
-        {msg ? <span className='more' onClick={() => setVisible(!visible)}>{visible ? <ArrowUpIcon /> : <ArrowDownIcon />}</span> : null}
-      </Item>
-      {msg && visible ? <Item label={t('task.detail.error.desc')} style={{ lineHeight: 1.25 }}>
-        {formatErrorMessage(msg)}
-      </Item> : null}
+      {terminated ? renderTerminated : renderError }
     </Descriptions>
-  </div>
+  </div> : null
 }
