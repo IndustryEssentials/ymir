@@ -230,11 +230,19 @@ export default {
     },
     *updateDatasetState({ payload }, { put, select }) {
       const datasetCache = yield select(state => state.dataset.dataset)
+      const all = yield select(state => state.dataset.allDatasets)
+      const validDatasets = []
       const tasks = payload || {}
       Object.keys(datasetCache).forEach(did => {
         const dataset = datasetCache[did]
         const updatedDataset = updateResultState(dataset, tasks)
         datasetCache[did] = updatedDataset ? updatedDataset : dataset
+      })
+
+      datasetCache.filter(d => d.needReload)
+      yield put({
+        type: 'UPDATE_ALL_DATASETS',
+        payload: [...validDatasets, ...all],
       })
 
       yield put({
