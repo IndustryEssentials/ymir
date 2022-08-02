@@ -50,7 +50,7 @@ def get_dataset_info(user_id: str, repo_id: str, branch_id: str) -> DatasetResul
 def check_datasets_duplication(
     user_id: str,
     repo_id: str,
-    candidate_dataset_ids: str
+    candidate_dataset_ids: str,
 ) -> DatasetDuplicationResult:
     dataset_ids = [dataset_id.strip() for dataset_id in candidate_dataset_ids.split(",")]
     try:
@@ -66,3 +66,31 @@ def check_datasets_duplication(
     duplication_count = len(set(main_asset_ids).intersection(other_asset_ids))
     resp = utils.suss_resp(result=duplication_count)
     return DatasetDuplicationResult(**resp)
+
+
+def get_dataset_stats(
+    user_id: str,
+    repo_id: str,
+    branch_id: str,
+    class_ids: str,
+) -> DatasetResult:
+    """get dataset stats info
+
+    Args:
+        user_id (str): user id
+        repo_id (str): repo id
+        branch_id (str): dataset hash
+        class_ids (List[int]): class ids
+
+    Returns: DatasetResult
+
+    return example:
+    {
+        "class_ids_count": {3: 34},
+        "negative_info": {
+            "negative_images_cnt": 6,
+        },
+        "total_images_cnt": 40,
+    }
+    """
+    pass

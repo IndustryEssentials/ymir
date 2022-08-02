@@ -51,6 +51,48 @@ paths:
                 $ref: "#/components/schemas/DatasetResult"
         "400":
           description: Dataset not exists
+  "/users/{user_id}/repositories/{repo_id}/branches/{branch_id}/dataset_stats":
+    get:
+      tags:
+        - dataset
+      summary: "get dataset class stats"
+      description: "get dataset class stats"
+      operationId: get_dataset_stats
+      parameters:
+        - name: user_id
+          in: path
+          description: user_id
+          required: true
+          schema:
+            type: string
+        - name: repo_id
+          in: path
+          description: repo_id
+          required: true
+          schema:
+            type: string
+        - name: branch_id
+          in: path
+          description: branch_id
+          required: true
+          schema:
+            type: string
+        - name: class_ids
+          in: query
+          description: class_ids
+          required: true
+          schema:
+            type: string
+            example: '1,2,3,4'
+      responses:
+        "200":
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DatasetResult"
+        "400":
+          description: Dataset not exists
   "/users/{user_id}/repositories/{repo_id}/branches/{branch_id}/assets":
     get:
       tags:
