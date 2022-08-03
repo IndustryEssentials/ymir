@@ -97,7 +97,6 @@ def get_dataset_stats(
             "negative_images_cnt": 6,
             "positive_images_cnt": 34,
         },
-        
     }
     """
     pass
