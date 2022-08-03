@@ -115,7 +115,7 @@ const dataset = {
   'dataset.add.newkeyword.empty': { cn: '无新标签', en: 'None of new keywords', },
   'dataset.add.local.file.empty': { cn: '请上传本地文件', en: 'Please upload a zip file', },
   'dataset.samples.negative': { cn: '负样本', en: 'Negative Samples', },
-  'dataset.train.form.samples': { cn: '标签占比', en: 'Keywords Ratio', },
+  'dataset.train.form.samples': { cn: '正负样本', en: 'Neg./Pos. Samples', },
   'dataset.detail.label.name': { cn: '数据集名称', en: 'Dataset Name', },
   'dataset.detail.label.assets': { cn: '图片数', en: 'Assets Count', },
   'dataset.detail.label.keywords': { cn: '标签', en: 'Keywords', },

@@ -337,8 +337,13 @@ export default {
     *getNegativeKeywords({ payload }, { put, call }) {
       // const { pid, keywords, type } = payload
       const { code, result } = yield call(getNegativeKeywords, payload)
+      const getStats = (o = {}) => ({
+        keywords: o.keywords || {},
+        negative: o.negative_images_count || 0,
+        positive: o.positive_images_count || 0,
+      })
       if (code === 0) {
-        return result?.negative_info
+        return getStats(result?.pred)
       }
     },
   },
