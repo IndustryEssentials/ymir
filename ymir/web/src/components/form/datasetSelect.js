@@ -32,6 +32,13 @@ const DatasetSelect = ({
   }, [options])
 
   useEffect(() => {
+    const needReload = datasets.some(ds => ds.needReload)
+    if (needReload) {
+      fetchDatasets()
+    }
+  }, [datasets])
+
+  useEffect(() => {
     let dss = filters ? filters(datasets) : datasets
     dss = allowEmpty ? dss : filterEmptyAsset(dss)
     const opts = dss.filter(ds => !filter.includes(ds.id) && !filterGroup.includes(ds.groupId)).map(item => {

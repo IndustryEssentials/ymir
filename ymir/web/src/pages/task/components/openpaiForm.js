@@ -3,8 +3,8 @@ import t from '@/utils/t'
 import { useEffect } from "react"
 
 const types = [
-  { value: false, label: 'task.train.device.local', checked: true, },
-  { value: true, label: 'task.train.device.openpai', },
+  { value: true, label: 'common.yes', },
+  { value: false, label: 'common.no', checked: true, },
 ]
 
 const OpenpaiForm = ({ form, openpai }) => {

@@ -57,10 +57,6 @@ function Iteration({ project, fresh = () => { }, ...func }) {
     setStages(ss)
   }
 
-  function getModelStage(model) {
-    return model ? [model.id, model.recommendStage].toString() : ''
-  }
-
   function rerenderStages() {
     const ss = stages.map(stage => {
       const result = iteration[`i${stage.output}`] || iteration[stage.output]
@@ -69,7 +65,7 @@ function Iteration({ project, fresh = () => { }, ...func }) {
         s0s: project.miningStrategy,
         s0c: project.chunkSize || undefined,
         s1d: iteration.miningSet,
-        s1m: getModelStage(prevIteration.model) || project.modelStage,
+        s1m: [prevIteration.model, null] || project.modelStage,
         s2d: iteration.miningResult,
         s3d: prevIteration.trainUpdateSet || project.trainSetVersion,
         s3m: iteration.labelSet,
@@ -154,7 +150,7 @@ function Iteration({ project, fresh = () => { }, ...func }) {
     <div className={s.iteration}>
       <Row style={{ justifyContent: 'flex-end' }}>
         {stages.map((stage) => (
-          <Col key={stage.value}  flex={stage.next ? 1 : null}>
+          <Col key={stage.value} flex={stage.next ? 1 : null}>
             <Stage stage={stage} end={!stage.next} callback={callback} />
           </Col>
         ))}
