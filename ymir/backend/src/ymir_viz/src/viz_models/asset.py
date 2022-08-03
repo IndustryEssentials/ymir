@@ -103,12 +103,9 @@ class AssetsModel:
         asset_ids = assets_content["class_ids_index"][class_id][offset: limit + offset]
         elements = []
         for asset_id in asset_ids:
-            pred_class_ids = assets_content["asset_ids_detail"][asset_id]["pred_class_ids"]
-            gt_class_ids = assets_content["asset_ids_detail"][asset_id]["gt_class_ids"]
-            class_ids = list(set(pred_class_ids) | set(gt_class_ids))
             elements.append({
                 "asset_id": asset_id,
-                "class_ids": class_ids,
+                "class_ids": assets_content["asset_ids_detail"][asset_id]["class_ids"],
                 "metadata": assets_content["asset_ids_detail"][asset_id]["metadata"],
                 "pred": assets_content["asset_ids_detail"][asset_id]["pred"],
                 "gt": assets_content["asset_ids_detail"][asset_id]["gt"],
