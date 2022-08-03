@@ -215,7 +215,7 @@ class AssetsModel:
             class_id_to_asset_cnt[ci] = len(ci_asset_ids)
             positive_asset_ids.update(ci_asset_ids)
 
-        all_asset_ids = set(redis_cache.lrange(f"{self.key_asset_index}:{viz_settings.VIZ_ALL_INDEX_CLASSIDS}", 0, -1))
+        all_asset_ids = set(self.get_all_asset_ids_from_cache())
         negative_assets_cnt = len(all_asset_ids - positive_asset_ids)
         return (class_id_to_asset_cnt, len(all_asset_ids), negative_assets_cnt)
 
