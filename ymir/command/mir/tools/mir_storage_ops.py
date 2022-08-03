@@ -487,8 +487,6 @@ class MirStorageOps():
 
         class_id_mgr = class_ids.ClassIdManager(mir_root=mir_root)
         pred = dict(
-            class_ids_count={k: v
-                             for k, v in mir_storage_context.predefined_keyids_cnt.items()},
             class_names_count={
                 class_id_mgr.main_name_for_id(id): count
                 for id, count in mir_storage_context.predefined_keyids_cnt.items()
@@ -529,6 +527,8 @@ class MirStorageOps():
                 asset_area=cls._gen_viz_hist(mir_storage_context.asset_area_hist),
                 asset_hw_ratio=cls._gen_viz_hist(mir_storage_context.asset_hw_ratio_hist),
             ),
+            class_ids_count={k: v
+                             for k, v in mir_storage_context.predefined_keyids_cnt.items()},
             pred=pred,
             gt={},
         )
