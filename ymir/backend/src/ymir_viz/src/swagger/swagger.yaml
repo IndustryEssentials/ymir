@@ -114,7 +114,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DatasetResult'
+                $ref: '#/components/schemas/DatasetStatsResult'
         "400":
           description: Dataset not exists
       x-openapi-router-controller: src.controllers.dataset_controller
@@ -524,6 +524,25 @@ components:
         properties:
           result:
             $ref: '#/components/schemas/DatasetResult_result'
+    DatasetStatsResult:
+      allOf:
+      - $ref: '#/components/schemas/ApiResponse'
+      - type: object
+        properties:
+          result:
+            $ref: '#/components/schemas/DatasetStatsResult_result'
+    DataStatsPredGtResult:
+      type: object
+      properties:
+        class_ids_count:
+          type: object
+          example: "{3:8, 4:2}"
+        negative_images_cnt:
+          type: integer
+          example: 8
+        positive_images_cnt:
+          type: integer
+          example: 12
     DatasetEvaluationResult:
       allOf:
       - $ref: '#/components/schemas/ApiResponse'
@@ -689,6 +708,17 @@ components:
           example: "{'cat':8}"
         negative_info:
           $ref: '#/components/schemas/DatasetResult_result_negative_info'
+      example: null
+    DatasetStatsResult_result:
+      type: object
+      properties:
+        total_images_cnt:
+          type: integer
+          example: 40
+        pred:
+          $ref: '#/components/schemas/DataStatsPredGtResult'
+        gt:
+          $ref: '#/components/schemas/DataStatsPredGtResult'
       example: null
     DatasetEvaluationResult_result:
       type: object

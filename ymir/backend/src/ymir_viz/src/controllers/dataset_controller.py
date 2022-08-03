@@ -5,6 +5,7 @@ from src.config import viz_settings
 from src.libs import utils, exceptions
 from src.swagger_models.dataset_result import DatasetResult
 from src.swagger_models.dataset_duplication_result import DatasetDuplicationResult
+from src.swagger_models.dataset_stats_result import DatasetStatsResult
 from src.viz_models import asset, pb_reader
 
 
@@ -74,8 +75,7 @@ def get_dataset_stats(
     repo_id: str,
     branch_id: str,
     class_ids: str,
-    anno_type: int,
-) -> DatasetResult:
+) -> DatasetStatsResult:
     """get dataset stats info
 
     Args:
@@ -89,28 +89,26 @@ def get_dataset_stats(
 
     return example:
     {
-        "class_ids_count": {3: 34},
-        "negative_info": {
+        "total_images_cnt": 40
+        "gt": {
+            "class_ids_count": {3: 34},
             "negative_images_cnt": 6,
+            "positive_images_cnt": 34,
         },
-        "total_images_cnt": 40,
+        "pred": {
+            "class_ids_count": {3: 34},
+            "negative_images_cnt": 6,
+            "positive_images_cnt": 34,
+        },
     }
     """
     if not class_ids:
         raise exceptions.NoClassIds()
-    if anno_type != 1 and anno_type != 2:
-        raise exceptions.InvalidAnnoType()
 
     cis: List[int] = [int(x) for x in class_ids.split(',')]
-    ci_to_asset_cnts, total_cnt, negative_cnt = asset.AssetsModel(user_id, repo_id,
-                                                                  branch_id).get_dataset_stats(anno_type=anno_type,
-                                                                                               cis=cis)
+    dataset_stats_dict = asset.AssetsModel(user_id, repo_id, branch_id).get_dataset_stats(cis=cis)
 
-    result_dict = {'total_images_cnt': total_cnt,
-                   'negative_info': {'negative_images_cnt': negative_cnt},
-                   'class_ids_count': ci_to_asset_cnts}
-
-    resp = utils.suss_resp(result=result_dict)
+    resp = utils.suss_resp(result=dataset_stats_dict)
     logging.info(f"get_dataset_stats: {resp}")
 
-    return DatasetResult(**resp)
+    return DatasetStatsResult(**resp)
