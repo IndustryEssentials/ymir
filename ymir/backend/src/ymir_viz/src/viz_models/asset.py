@@ -195,35 +195,71 @@ class AssetsModel:
 
         return result
 
-    def get_dataset_stats_from_cache(self, anno_type: int, cis: List[int]) -> Tuple[Dict[int, int], int, int]:
-        def _gen_key(anno_type: int, ci: int) -> str:
-            if anno_type == 1:
+    def get_dataset_stats_from_cache(self, cis: List[int]) -> dict:
+        def _gen_key(is_gt: bool, ci: int) -> str:
+            if not is_gt:
                 return f"{self.key_asset_index}:pred:{ci}"
             else:
                 return f"{self.key_asset_index}:gt:{ci}"
 
-        class_id_to_asset_cnt: Dict[int, int] = {}  # key: class id, value: count of assets
-        positive_asset_ids: Set[str] = set()
+        def _gen_stats_result(is_gt: bool, cis: List[int]) -> Tuple[dict, int]:
+            class_id_to_asset_cnt: Dict[int, int] = {}  # key: class id, value: count of assets
+            positive_asset_ids: Set[str] = set()
 
-        for ci in cis:
-            ci_cache_key = _gen_key(anno_type=anno_type, ci=ci)
-            if not redis_cache.exists(ci_cache_key):
-                class_id_to_asset_cnt[ci] = 0
-                continue
+            for ci in cis:
+                ci_cache_key = _gen_key(is_gt=is_gt, ci=ci)
+                if not redis_cache.exists(ci_cache_key):
+                    class_id_to_asset_cnt[ci] = 0
+                    continue
 
-            ci_asset_ids = redis_cache.lrange(ci_cache_key, 0, -1)
-            class_id_to_asset_cnt[ci] = len(ci_asset_ids)
-            positive_asset_ids.update(ci_asset_ids)
+                ci_asset_ids = redis_cache.lrange(ci_cache_key, 0, -1)
+                class_id_to_asset_cnt[ci] = len(ci_asset_ids)
+                positive_asset_ids.update(ci_asset_ids)
 
-        all_asset_ids = set(self.get_all_asset_ids_from_cache())
-        negative_assets_cnt = len(all_asset_ids - positive_asset_ids)
-        return (class_id_to_asset_cnt, len(all_asset_ids), negative_assets_cnt)
+            all_asset_ids = set(self.get_all_asset_ids_from_cache())
 
-    def get_dataset_stats(self, anno_type: int, cis: List[int]) -> Tuple[Dict[int, int], int, int]:
+            return {
+                'negative_images_count': len(all_asset_ids - positive_asset_ids),
+                'positive_images_count': len(positive_asset_ids),
+                'class_ids_count': class_id_to_asset_cnt,
+            }, len(all_asset_ids)
+
+        pred_stats, total_images_cnt = _gen_stats_result(is_gt=False, cis=cis)
+        gt_stats, _ = _gen_stats_result(is_gt=True, cis=cis)
+
+        return {
+            'total_images_count': total_images_cnt,
+            'pred': pred_stats,
+            'gt': gt_stats,
+        }
+
+    def get_dataset_stats(self, cis: List[int]) -> dict:
+        def _gen_stats_result(assets_content: dict, is_gt: bool, cis: List[int]) -> dict:
+            class_ids_index: Dict[int, List[str]] = assets_content[
+                'pred_class_ids_index'] if not is_gt else assets_content['gt_class_ids_index']
+
+            class_id_to_asset_cnt: Dict[int, int] = {}  # key: class id, value: count of assets
+            positive_asset_ids: Set[str] = set()
+
+            for ci in cis:
+                if ci not in class_ids_index:
+                    class_id_to_asset_cnt[ci] = 0
+                    continue
+
+                ci_asset_ids = class_ids_index[ci]
+                class_id_to_asset_cnt[ci] = len(ci_asset_ids)
+                positive_asset_ids.update(ci_asset_ids)
+
+            return {
+                'negative_images_count': len(set(assets_content['all_asset_ids']) - positive_asset_ids),
+                'positive_images_count': len(positive_asset_ids),
+                'class_ids_count': class_id_to_asset_cnt,
+            }
+
         if self.check_cache_existence():
             logging.info("get_dataset_stats_from_cache")
 
-            return self.get_dataset_stats_from_cache(anno_type=anno_type, cis=cis)
+            return self.get_dataset_stats_from_cache(cis=cis)
 
         # get result from mir_storage_ops
         assets_content = pb_reader.MirStorageLoader(
@@ -234,27 +270,16 @@ class AssetsModel:
             task_id=self.branch_id,
         ).get_assets_content()
 
-        class_ids_index: Dict[int, List[str]] = assets_content[
-            'pred_class_ids_index'] if anno_type == 1 else assets_content['gt_class_ids_index']
-
-        class_id_to_asset_cnt: Dict[int, int] = {}  # key: class id, value: count of assets
-        positive_asset_ids: Set[str] = set()
-
-        for ci in cis:
-            if ci not in class_ids_index:
-                class_id_to_asset_cnt[ci] = 0
-                continue
-
-            ci_asset_ids = class_ids_index[ci]
-            class_id_to_asset_cnt[ci] = len(ci_asset_ids)
-            positive_asset_ids.update(ci_asset_ids)
-
-        all_asset_ids = set(assets_content['all_asset_ids'])
-        negative_assets_cnt = len(all_asset_ids - positive_asset_ids)
+        pred_stats = _gen_stats_result(assets_content=assets_content, is_gt=False, cis=cis)
+        gt_stats = _gen_stats_result(assets_content=assets_content, is_gt=True, cis=cis)
 
         self.trigger_cache_generator(assets_content)
 
-        return (class_id_to_asset_cnt, len(all_asset_ids), negative_assets_cnt)
+        return {
+            'total_images_count': len(assets_content['all_asset_ids']),
+            'pred': pred_stats,
+            'gt': gt_stats,
+        }
 
     def get_all_asset_ids_from_cache(self) -> List[str]:
         class_id = viz_settings.VIZ_ALL_INDEX_CLASSIDS

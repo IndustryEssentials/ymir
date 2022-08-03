@@ -99,14 +99,22 @@ class TestDatasetController:
 
         mocker.patch.object(MirStorageOps, "load_assets_content", return_value=mir_asset_contents)
         resp = test_client.get(
-            f"/v1/users/{user_id}/repositories/{repo_id}/branches/{branch_id}/dataset_stats?class_ids=2&anno_type=1")
+            f"/v1/users/{user_id}/repositories/{repo_id}/branches/{branch_id}/dataset_stats?class_ids=2")
         assert resp.status_code == 200
         assert resp.json()["result"] == {
-            'class_ids_count': {
-                '2': 0  # int is converted to str in json.dumps.
+            'total_images_count': 3,
+            'pred': {
+                'class_ids_count': {
+                    '2': 0,  # int is converted to str in json.dumps.
+                },
+                'negative_images_count': 3,
+                'positive_images_count': 0,
             },
-            'negative_info': {
-                'negative_images_cnt': 3,
+            'gt': {
+                'class_ids_count': {
+                    '2': 1,  # int is converted to str in json.dumps.
+                },
+                'negative_images_count': 2,
+                'positive_images_count': 1,
             },
-            'total_images_cnt': 3,
         }
