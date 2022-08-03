@@ -147,7 +147,6 @@ class DatasetMetaData:
         # todo clean up
         # for compatible
         res["total_images_cnt"] = res["pred"]["total_images_cnt"]
-        res["class_ids_count"] = res["pred"]["class_ids_count"]
         res["ignored_labels"] = res["pred"]["new_types"]
         res["negative_info"] = res["pred"]["negative_info"]
         viz_dataset = VizDataset(**res)
