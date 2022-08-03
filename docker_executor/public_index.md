@@ -11,4 +11,4 @@
 |youdaoyzbx/ymir-executor:ymir1.1.0-yolov7-cu111-tmi|training mining inference|-|-|yolov7|
 |youdaoyzbx/ymir-executor:ymir1.1.0-mmdet-cu102-tmi|training mining inference|-|-|mmdetection|
 |youdaoyzbx/ymir-executor:ymir1.1.0-mmdet-cu111-tmi|training mining inference|-|-|mmdetection|
-|youdaoyzbx/ymir-executor:ymir1.1.0-detectron2-cu102-tmi|training mining inference|-|-|detectron2|
+|youdaoyzbx/ymir-executor:ymir1.1.0-detectron2-cu111-tmi|training mining inference|-|-|detectron2|
