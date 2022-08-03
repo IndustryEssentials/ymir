@@ -148,13 +148,15 @@ class AssetsModel:
         elements = []
         for asset_id, asset_detail in zip(asset_ids, assets_detail):
             asset_detail = yaml.safe_load(asset_detail)
-            elements.append({
-                "asset_id": asset_id,
-                "class_ids": asset_detail["class_ids"],
-                "gt": asset_detail["gt"],
-                "pred": asset_detail["pred"],
-                "metadata": asset_detail["metadata"],
-            })
+            elements.append(
+                {
+                    "asset_id": asset_id,
+                    "class_ids": asset_detail["class_ids"],
+                    "gt": asset_detail["gt"],
+                    "pred": asset_detail["pred"],
+                    "metadata": asset_detail["metadata"],
+                }
+            )
         total = redis_cache.llen(f"{self.key_asset_index}:{class_id}")
         result = dict(elements=elements, limit=limit, offset=offset, total=total)
 
@@ -185,10 +187,9 @@ class AssetsModel:
                 branch_id=self.branch_id,
                 task_id=self.branch_id,
             ).get_assets_content()
-            result = self.format_assets_info(assets_content=assets_content,
-                                             offset=offset,
-                                             limit=limit,
-                                             class_id=class_id)
+            result = self.format_assets_info(
+                assets_content=assets_content, offset=offset, limit=limit, class_id=class_id
+            )
 
             # asynchronous generate cache content,and we can add some policy to trigger it later
             self.trigger_cache_generator(assets_content)
