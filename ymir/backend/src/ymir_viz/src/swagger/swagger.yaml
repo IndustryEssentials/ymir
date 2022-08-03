@@ -533,6 +533,7 @@ components:
           example: 8
         positive_images_cnt:
           type: integer
+          example: 12
     DatasetEvaluationResult:
       allOf:
       - $ref: '#/components/schemas/ApiResponse'
@@ -702,6 +703,9 @@ components:
     DatasetStatsResult_result:
       type: object
       properties:
+        total_images_cnt:
+          type: integer
+          example: 40
         pred:
           $ref: '#/components/schemas/DataStatsPredGtResult'
         gt:

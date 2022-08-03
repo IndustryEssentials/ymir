@@ -510,6 +510,9 @@ components:
             result:
               type: object
               properties:
+                total_images_cnt:
+                  type: integer
+                  example: 40
                 pred:
                   $ref: "#/components/schemas/DataStatsPredGtResult"
                 gt:

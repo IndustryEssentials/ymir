@@ -87,6 +87,7 @@ def get_dataset_stats(
 
     return example:
     {
+        "total_images_cnt": 40
         "gt": {
             "class_ids_count": {3: 34},
             "negative_images_cnt": 6,

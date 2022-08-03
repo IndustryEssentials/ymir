@@ -15,23 +15,28 @@ class DatasetStatsResultResult(Model):
 
     Do not edit the class manually.
     """
-    def __init__(self, pred: DataStatsPredGtResult=None, gt: DataStatsPredGtResult=None):  # noqa: E501
+    def __init__(self, total_images_cnt: int=None, pred: DataStatsPredGtResult=None, gt: DataStatsPredGtResult=None):  # noqa: E501
         """DatasetStatsResultResult - a model defined in Swagger
 
+        :param total_images_cnt: The total_images_cnt of this DatasetStatsResultResult.  # noqa: E501
+        :type total_images_cnt: int
         :param pred: The pred of this DatasetStatsResultResult.  # noqa: E501
         :type pred: DataStatsPredGtResult
         :param gt: The gt of this DatasetStatsResultResult.  # noqa: E501
         :type gt: DataStatsPredGtResult
         """
         self.swagger_types = {
+            'total_images_cnt': int,
             'pred': DataStatsPredGtResult,
             'gt': DataStatsPredGtResult
         }
 
         self.attribute_map = {
+            'total_images_cnt': 'total_images_cnt',
             'pred': 'pred',
             'gt': 'gt'
         }
+        self._total_images_cnt = total_images_cnt
         self._pred = pred
         self._gt = gt
 
@@ -45,6 +50,27 @@ class DatasetStatsResultResult(Model):
         :rtype: DatasetStatsResultResult
         """
         return util.deserialize_model(dikt, cls)
+
+    @property
+    def total_images_cnt(self) -> int:
+        """Gets the total_images_cnt of this DatasetStatsResultResult.
+
+
+        :return: The total_images_cnt of this DatasetStatsResultResult.
+        :rtype: int
+        """
+        return self._total_images_cnt
+
+    @total_images_cnt.setter
+    def total_images_cnt(self, total_images_cnt: int):
+        """Sets the total_images_cnt of this DatasetStatsResultResult.
+
+
+        :param total_images_cnt: The total_images_cnt of this DatasetStatsResultResult.
+        :type total_images_cnt: int
+        """
+
+        self._total_images_cnt = total_images_cnt
 
     @property
     def pred(self) -> DataStatsPredGtResult:
