@@ -190,8 +190,13 @@ class MirStorageOps():
                             mir_keywords: mirpb.MirKeywords, project_class_ids: List[int],
                             mir_context: mirpb.MirContext) -> None:
         # ci to asset count
+        ci_to_asset_ids: Dict[int, Set[str]] = defaultdict(set)
+        for ci, ci_assets in mir_keywords.gt_idx.cis.items():
+            ci_to_asset_ids[ci].update(ci_assets.key_ids.keys())
         for ci, ci_assets in mir_keywords.pred_idx.cis.items():
-            mir_context.predefined_keyids_cnt[ci] = len(ci_assets.key_ids)
+            ci_to_asset_ids[ci].update(ci_assets.key_ids.keys())
+        for ci, asset_ids_set in ci_to_asset_ids.items():
+            mir_context.predefined_keyids_cnt[ci] = len(asset_ids_set)
 
         # project_predefined_keyids_cnt: assets count for project class ids
         #   suppose we have: 13 images for key 5, 15 images for key 6, and proejct_class_ids = [3, 5]
