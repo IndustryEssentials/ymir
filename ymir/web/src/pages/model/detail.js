@@ -89,7 +89,7 @@ function ModelDetail({ modelCache, getModel }) {
             <Item label={t("common.desc")} span={2}><DescPop description={model.description} /></Item>
           </Descriptions>
           <TaskProgress state={model.state} result={model} task={model.task} duration={model.durationLabel} progress={model.progress} fresh={() => fetchModel(true)} />
-          {model?.task?.error_code ? <Error code={model.task?.error_code} msg={model.task?.error_message} /> : null}
+          <Error code={model.task?.error_code} msg={model.task?.error_message} terminated={model?.task?.is_terminated} />
           <TaskDetail task={model.task}></TaskDetail>
           <Space style={{ width: "100%", justifyContent: "flex-end" }}>{!model.hidden ? <>
             {model.url ? <Button><Link target="_blank" to={model.url}>{t('model.action.download')}</Link></Button> : null}

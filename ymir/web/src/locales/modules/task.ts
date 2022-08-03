@@ -183,6 +183,9 @@ const task = {
   "task.train.preprocess.resize.placeholder": { en: "Max width/height", cn: "最大高/宽", },
   "task.filter.includes.placeholder": { en: "Please select inclusion keywords", cn: "请选择保留的标签", },
   "task.filter.excludes.placeholder": { en: "Please select exclusion keywords", cn: "请选择需要排除掉的标签", },
+  "task.state": { en: "Task Status", cn: "任务状态", },
+  "task.detail.terminated.label": { en: "Terminated", cn: "终止", },
+  "task.detail.terminated": { en: "Terminated by user", cn: "用户手动终止", },
 }
 
 export default task

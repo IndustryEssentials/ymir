@@ -216,7 +216,7 @@ function Train({ allDatasets, datasetCache, keywords, ...func }) {
   }
 
   const matchKeywords = dataset => dataset.keywords.some(kw => selectedKeywords.includes(kw))
-    const notTestingSet = id => !testingSetIds.includes(id)
+  const notTestingSet = id => !testingSetIds.includes(id)
   const trainsetFilters = datasets => datasets.filter(ds => {
     const notTestSet = ds.id !== testSet
     return matchKeywords(ds) && notTestSet && notTestingSet(ds.id)
@@ -284,7 +284,7 @@ function Train({ allDatasets, datasetCache, keywords, ...func }) {
             </Form.Item>
             {trainSet ?
               <Form.Item label={t('dataset.train.form.samples')}>
-                <KeywordRates dataset={trainSet}></KeywordRates>
+                <KeywordRates pid={pid} id={trainSet} keywords={selectedKeywords}></KeywordRates>
               </Form.Item> : null}
             <Form.Item
               label={t('task.train.form.testsets.label')}
