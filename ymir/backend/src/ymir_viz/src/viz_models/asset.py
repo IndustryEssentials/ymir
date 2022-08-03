@@ -2,7 +2,7 @@ import logging
 import threading
 from typing import Dict, List, Optional, Set
 
-import yaml
+import json
 
 from src.config import viz_settings
 from src.libs import utils
@@ -64,7 +64,7 @@ class AssetsModel:
         redis_cache.set(key_cache_status, {"flag": 0})
         with redis_cache.pipeline() as pipe:
             for asset_id, asset_id_detail in asset_content["asset_ids_detail"].items():
-                pipe.hset(name=key_asset_detail, mapping={asset_id: yaml.safe_dump(asset_id_detail)})
+                pipe.hset(name=key_asset_detail, mapping={asset_id: json.dumps(asset_id_detail)})
             pipe.execute()
 
         with redis_cache.pipeline() as pipe:
@@ -147,7 +147,7 @@ class AssetsModel:
 
         elements = []
         for asset_id, asset_detail in zip(asset_ids, assets_detail):
-            asset_detail = yaml.safe_load(asset_detail)
+            asset_detail = json.loads(asset_detail)
             elements.append(
                 {
                     "asset_id": asset_id,
