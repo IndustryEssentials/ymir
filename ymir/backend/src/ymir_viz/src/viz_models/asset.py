@@ -1,6 +1,6 @@
 import logging
 import threading
-from typing import Dict, List, Optional, Set, Tuple
+from typing import Dict, List, Optional, Set
 
 import yaml
 
@@ -203,7 +203,7 @@ class AssetsModel:
             else:
                 return f"{self.key_asset_index}:gt:{ci}"
 
-        def _gen_stats_result(is_gt: bool, cis: List[int]) -> Tuple[dict, int]:
+        def _gen_stats_result(all_asset_ids: Set[str], is_gt: bool, cis: List[int]) -> dict:
             class_id_to_asset_cnt: Dict[int, int] = {}  # key: class id, value: count of assets
             positive_asset_ids: Set[str] = set()
 
@@ -217,19 +217,18 @@ class AssetsModel:
                 class_id_to_asset_cnt[ci] = len(ci_asset_ids)
                 positive_asset_ids.update(ci_asset_ids)
 
-            all_asset_ids = set(self.get_all_asset_ids_from_cache())
-
             return {
                 'negative_images_count': len(all_asset_ids - positive_asset_ids),
                 'positive_images_count': len(positive_asset_ids),
                 'class_ids_count': class_id_to_asset_cnt,
-            }, len(all_asset_ids)
+            }
 
-        pred_stats, total_images_cnt = _gen_stats_result(is_gt=False, cis=cis)
-        gt_stats, _ = _gen_stats_result(is_gt=True, cis=cis)
+        all_asset_ids = set(self.get_all_asset_ids_from_cache())
+        pred_stats = _gen_stats_result(all_asset_ids=all_asset_ids, is_gt=False, cis=cis)
+        gt_stats = _gen_stats_result(all_asset_ids=all_asset_ids, is_gt=True, cis=cis)
 
         return {
-            'total_images_count': total_images_cnt,
+            'total_images_count': len(all_asset_ids),
             'pred': pred_stats,
             'gt': gt_stats,
         }
