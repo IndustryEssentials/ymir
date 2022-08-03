@@ -180,6 +180,32 @@ class DatasetMetaData:
         )
 
 
+@dataclass
+class DatasetStatsElement:
+    keywords: Dict[str, int]
+    negative_images_count: int
+    positive_images_count: int
+
+    @classmethod
+    def from_viz_res(cls, data: Dict, user_labels: UserLabels) -> "DatasetStatsElement":
+        keywords = {
+            user_labels.get_main_names(class_id)[0]: count for class_id, count in data["class_ids_count"].items()
+        }
+        return cls(keywords, data["negative_images_count"], data["positive_images_count"])
+
+
+@dataclass
+class DatasetStats:
+    gt: DatasetStatsElement
+    pred: DatasetStatsElement
+
+    @classmethod
+    def from_viz_res(cls, res: Dict, user_labels: UserLabels) -> "DatasetStats":
+        gt = DatasetStatsElement.from_viz_res(res["gt"], user_labels)
+        pred = DatasetStatsElement.from_viz_res(res["pred"], user_labels)
+        return cls(gt=gt, pred=pred)
+
+
 class EvaluationScore(BaseModel):
     ap: float
     ar: float
@@ -280,6 +306,18 @@ class VizClient:
         res = self.parse_resp(resp)
         logger.info("[viz] get_dataset response: %s", res)
         return DatasetMetaData.from_viz_res(res, user_labels)
+
+    def get_dataset_stats(
+        self, *, dataset_hash: Optional[str] = None, keyword_ids: List[int], user_labels: Optional[UserLabels] = None
+    ) -> DatasetStats:
+        dataset_hash = dataset_hash or self._branch_id
+        user_labels = user_labels or self._user_labels
+        url = f"{self._url_prefix}/{dataset_hash}/dataset_stats"
+        params = {"class_ids": ",".join(str(k) for k in keyword_ids)}
+        resp = self.session.get(url, timeout=settings.VIZ_TIMEOUT, params=params)
+        res = self.parse_resp(resp)
+        logger.info("[viz] get_dataset_stats response: %s", res)
+        return DatasetStats.from_viz_res(res, user_labels)
 
     def get_evaluations(self) -> Dict:
         url = f"{self._url_prefix}/{self._branch_id}/evaluations"
