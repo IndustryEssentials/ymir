@@ -510,7 +510,7 @@ components:
             result:
               type: object
               properties:
-                total_images_cnt:
+                total_images_count:
                   type: integer
                   example: 40
                 pred:
@@ -523,10 +523,10 @@ components:
         class_ids_count:
           type: object
           example: "{3:8, 4:2}"
-        negative_images_cnt:
+        negative_images_count:
           type: integer
           example: 8
-        positive_images_cnt:
+        positive_images_count:
           type: integer
           example: 12
     DatasetEvaluationResult:

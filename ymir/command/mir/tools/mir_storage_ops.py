@@ -190,8 +190,13 @@ class MirStorageOps():
                             mir_keywords: mirpb.MirKeywords, project_class_ids: List[int],
                             mir_context: mirpb.MirContext) -> None:
         # ci to asset count
+        ci_to_asset_ids: Dict[int, Set[str]] = defaultdict(set)
+        for ci, ci_assets in mir_keywords.gt_idx.cis.items():
+            ci_to_asset_ids[ci].update(ci_assets.key_ids.keys())
         for ci, ci_assets in mir_keywords.pred_idx.cis.items():
-            mir_context.predefined_keyids_cnt[ci] = len(ci_assets.key_ids)
+            ci_to_asset_ids[ci].update(ci_assets.key_ids.keys())
+        for ci, asset_ids_set in ci_to_asset_ids.items():
+            mir_context.predefined_keyids_cnt[ci] = len(asset_ids_set)
 
         # project_predefined_keyids_cnt: assets count for project class ids
         #   suppose we have: 13 images for key 5, 15 images for key 6, and proejct_class_ids = [3, 5]
@@ -482,8 +487,6 @@ class MirStorageOps():
 
         class_id_mgr = class_ids.ClassIdManager(mir_root=mir_root)
         pred = dict(
-            class_ids_count={k: v
-                             for k, v in mir_storage_context.predefined_keyids_cnt.items()},
             class_names_count={
                 class_id_mgr.main_name_for_id(id): count
                 for id, count in mir_storage_context.predefined_keyids_cnt.items()
@@ -524,6 +527,8 @@ class MirStorageOps():
                 asset_area=cls._gen_viz_hist(mir_storage_context.asset_area_hist),
                 asset_hw_ratio=cls._gen_viz_hist(mir_storage_context.asset_hw_ratio_hist),
             ),
+            class_ids_count={k: v
+                             for k, v in mir_storage_context.predefined_keyids_cnt.items()},
             pred=pred,
             gt={},
         )
@@ -581,16 +586,22 @@ class MirStorageOps():
                 gt_class_ids=gt_class_ids,
                 class_ids=class_ids,
             )
-        class_id_to_assets: Dict[int, Set[str]] = defaultdict(set)
+
+        class_id_to_assets: Dict[int, Set[str]] = defaultdict(set)  # total
         for k, v in mir_storage_keywords.get('pred_idx', {}).get('cis', {}).items():
             class_id_to_assets[k].update(v.get('key_ids', {}))
         for k, v in mir_storage_keywords.get('gt_idx', {}).get('cis', {}).items():
             class_id_to_assets[k].update(v.get('key_ids', {}))
+
         return dict(
             all_asset_ids=sorted([*mir_storage_metadatas["attributes"].keys()]),  # ordered list.
             asset_ids_detail=asset_ids_detail,
             class_ids_index={k: list(v)
                              for k, v in class_id_to_assets.items()},
+            pred_class_ids_index={k: v.get('key_ids')
+                                  for k, v in mir_storage_keywords.get('pred_idx', {}).get('cis', {}).items()},
+            gt_class_ids_index={k: v.get('key_ids')
+                                for k, v in mir_storage_keywords.get('gt_idx', {}).get('cis', {}).items()},
         )
 
     @classmethod

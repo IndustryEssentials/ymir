@@ -1,4 +1,5 @@
 import logging
+from typing import List
 
 from src.config import viz_settings
 from src.libs import utils, exceptions
@@ -82,8 +83,9 @@ def get_dataset_stats(
         repo_id (str): repo id
         branch_id (str): dataset hash
         class_ids (List[int]): class ids
+        anno_type (int): 1 for prediction, 2 for ground truth
 
-    Returns: DatasetResult
+    Returns: DatasetStatsResult
 
     return example:
     {
@@ -100,4 +102,13 @@ def get_dataset_stats(
         },
     }
     """
-    pass
+    if not class_ids:
+        raise exceptions.NoClassIds()
+
+    cis: List[int] = [int(x) for x in class_ids.split(',')]
+    dataset_stats_dict = asset.AssetsModel(user_id, repo_id, branch_id).get_dataset_stats(cis=cis)
+
+    resp = utils.suss_resp(result=dataset_stats_dict)
+    logging.info(f"get_dataset_stats: {resp}")
+
+    return DatasetStatsResult(**resp)
