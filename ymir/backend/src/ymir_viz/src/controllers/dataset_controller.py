@@ -85,7 +85,7 @@ def get_dataset_stats(
         class_ids (List[int]): class ids
         anno_type (int): 1 for prediction, 2 for ground truth
 
-    Returns: DatasetResult
+    Returns: DatasetStatsResult
 
     return example:
     {
