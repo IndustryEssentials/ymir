@@ -28,8 +28,8 @@ class TestIsRelativeTo:
 
 class TestIsValidImportPath:
     def test_verify_import_path(self, mocker, tmp_path):
-        anno_dir = tmp_path / "annotations"
-        anno_dir.mkdir()
+        asset_dir = tmp_path / "images"
+        asset_dir.mkdir()
         m.settings.SHARED_DATA_DIR = str(tmp_path)
         assert m.verify_import_path(tmp_path) is None
 

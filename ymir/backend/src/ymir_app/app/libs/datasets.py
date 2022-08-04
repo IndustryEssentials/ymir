@@ -65,9 +65,9 @@ def _import_dataset(
             cache_dir=settings.SHARED_DATA_DIR, input_path=dataset_import.input_path, input_url=dataset_import.input_url
         )
         parameters = {
-            "annotation_dir": paths.annotation_dir,
             "asset_dir": paths.asset_dir,
             "gt_dir": paths.gt_dir,
+            "pred_dir": paths.pred_dir,
             "strategy": dataset_import.strategy,
         }
 
@@ -94,10 +94,6 @@ class ImportDatasetPaths:
         self._data_dir: Optional[str] = None
 
     @property
-    def annotation_dir(self) -> str:
-        return str(self.data_dir / "annotations")
-
-    @property
     def asset_dir(self) -> str:
         return str(self.data_dir / "images")
 
@@ -107,6 +103,13 @@ class ImportDatasetPaths:
         if not gt_dir.is_dir():
             return None
         return str(gt_dir)
+
+    @property
+    def pred_dir(self) -> Optional[str]:
+        pred_dir = self.data_dir / "pred"
+        if not pred_dir.is_dir():
+            return None
+        return str(pred_dir)
 
     @property
     def data_dir(self) -> pathlib.Path:
