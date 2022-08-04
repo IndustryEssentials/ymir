@@ -25,7 +25,9 @@ const ModelSelect = ({ pid, value, onlyModel, changeByUser, onChange = () => { }
           const opts = options.filter(opt => value.some(([model]) => opt.model.id === model)).map(opt => [opt, opt.value])
           onChange(value, opts)
         } else {
-          onChange(value, [options.find(opt => opt.model.id === value[0]), value[1]])
+          const opt = options.find(opt => opt.model.id === value[0])
+          const stage = value[1] || opt.model.recommendStage
+          onChange(value, [opt, stage])
         }
       }
     }

@@ -65,7 +65,7 @@ function Iteration({ project, fresh = () => { }, ...func }) {
         s0s: project.miningStrategy,
         s0c: project.chunkSize || undefined,
         s1d: iteration.miningSet,
-        s1m: [prevIteration.model, null] || project.modelStage,
+        s1m: prevIteration ? [prevIteration.model, null] : project.modelStage,
         s2d: iteration.miningResult,
         s3d: prevIteration.trainUpdateSet || project.trainSetVersion,
         s3m: iteration.labelSet,

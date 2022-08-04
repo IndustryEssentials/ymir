@@ -17,7 +17,6 @@ const Add = ({ keywords, datasets, getKeywords, ...func }) => {
   const { id } = useParams()
   const history = useHistory()
   const location = useLocation()
-  const { settings } = location.query
   const [form] = useForm()
   const [isEdit, setEdit] = useState(false)
   const [project, getProject] = useFetch('project/getProject', {})
@@ -54,12 +53,14 @@ const Add = ({ keywords, datasets, getKeywords, ...func }) => {
     var params = {
       ...values,
     }
-    if (settings || isEdit) {
+    if (isEdit) {
       params.id = id
     }
-    if (!settings) {
-      params.name = (name || '').trim()
-      params.description = (description || '').trim()
+    params.name = (name || '').trim()
+    params.description = (description || '').trim()
+
+    if (isEdit && params.name === project.name) {
+      delete params.name
     }
 
     const send = async () => {
