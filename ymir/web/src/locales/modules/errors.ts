@@ -45,7 +45,7 @@ const errors = {
   'error111001': { cn: '重复的标签名称或别名', en: 'KEYWORD_DUPLICATED: duplicated keyword or aliases', },
   'error110901': { cn: '调用推理失败', en: 'INFERENCE_FAILED_TO_CALL: failed to call inference', },
   'error110902': { cn: '推理镜像配置错误', en: 'INFERENCE_CONFIG_ERROR: inference image configure error', },
-  'error111101': { cn: '镜像名称重复', en: 'Duplicated docker image name', },
+  'error111101': { cn: '镜像地址重复', en: 'Duplicated docker image url', },
   'error111102': { cn: '找不到镜像', en: 'Docker image is not found', },
   'error111103': { cn: '共享镜像失败', en: 'Share docker image failed', },
   'error111104': { cn: '此镜像关联其他镜像，请清除关联后再处理', en: 'Clean relationships of docker images before deleting it', },
