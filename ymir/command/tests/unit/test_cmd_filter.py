@@ -227,7 +227,6 @@ class TestCmdFilter(unittest.TestCase):
         mir_annotations = test_utils.read_mir_pb(os.path.join(self._mir_root, 'annotations.mir'), mirpb.MirAnnotations)
         mir_keywords = test_utils.read_mir_pb(os.path.join(self._mir_root, 'keywords.mir'), mirpb.MirKeywords)
         mir_tasks = test_utils.read_mir_pb(os.path.join(self._mir_root, 'tasks.mir'), mirpb.MirTasks)
-        breakpoint()
         self.assertEqual(expected_asset_ids, set(mir_metadatas.attributes.keys()))
         self.assertEqual(expected_asset_ids, set(mir_keywords.keywords.keys()))
         self.assertEqual(expected_asset_ids, set(mir_annotations.prediction.image_annotations.keys()))

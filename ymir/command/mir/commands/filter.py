@@ -1,6 +1,6 @@
 import argparse
 import logging
-from typing import Any, Callable, List, Tuple, Optional, Set, Union
+from typing import Optional, Set
 
 from mir.commands import base
 from mir.protos import mir_command_pb2 as mirpb
@@ -9,9 +9,6 @@ from mir.tools.code import MirCode
 from mir.tools.command_run_in_out import command_run_in_out
 from mir.tools.errors import MirRuntimeError
 from mir.tools.phase_logger import PhaseLoggerCenter
-
-# type for function `__include_match` and `__exclude_match`
-__IncludeExcludeCallableType = Callable[[Set[str], mirpb.MirKeywords, str, Any], Set[str]]
 
 
 class CmdFilter(base.BaseCommand):
@@ -49,48 +46,13 @@ class CmdFilter(base.BaseCommand):
                         ex_cis_set: Set[int]) -> Set[str]:
         if not ex_cis_set:
             return asset_ids_set
+
         for ci in ex_cis_set:
             if ci in mir_keywords.pred_idx.cis:
-                asset_ids_set -= set(mir_keywords.pred_idx.cis[ci].key_ids.keys())
+                asset_ids_set.difference_update(mir_keywords.pred_idx.cis[ci].key_ids.keys())
             if ci in mir_keywords.gt_idx.cis:
-                asset_ids_set -= set(mir_keywords.gt_idx.cis[ci].key_ids.keys())
+                asset_ids_set.difference_update(mir_keywords.gt_idx.cis[ci].key_ids.keys())
         return asset_ids_set
-
-    # @staticmethod
-    # def __include_match(asset_ids_set: Set[str], mir_keywords: mirpb.MirKeywords, attr_name: str,
-    #                     in_set: Set[Union[int, str]]) -> Set[str]:
-        # # if don't need include match, returns all
-        # if not in_set:
-        #     return asset_ids_set
-
-    #     matched_asset_ids_set = set()  # type: Set[str]
-    #     for asset_id in asset_ids_set:
-    #         if asset_id not in mir_keywords.keywords:
-    #             continue
-
-    #         keyids_set = set(getattr(mir_keywords.keywords[asset_id], attr_name))
-    #         if not keyids_set:
-    #             continue
-
-    #         if keyids_set & in_set:
-    #             matched_asset_ids_set.add(asset_id)
-    #     return matched_asset_ids_set
-
-    # @staticmethod
-    # def __exclude_match(asset_ids_set: Set[str], mir_keywords: mirpb.MirKeywords, attr_name: str,
-    #                     ex_set: Set[Union[int, str]]) -> Set[str]:
-    #     # if don't need excludes filter, returns all
-    #     if not ex_set:
-    #         return asset_ids_set
-
-    #     matched_asset_ids_set = set()  # type: Set[str]
-    #     for asset_id in asset_ids_set:
-    #         if asset_id in mir_keywords.keywords:
-    #             keyids_set = set(getattr(mir_keywords.keywords[asset_id], attr_name))
-    #             if keyids_set & ex_set:
-    #                 continue
-    #         matched_asset_ids_set.add(asset_id)
-    #     return matched_asset_ids_set
 
     @staticmethod
     def __gen_task_annotations(src_task_annotations: mirpb.SingleTaskAnnotations,
@@ -143,16 +105,14 @@ class CmdFilter(base.BaseCommand):
         ex_cis_set: Set[int] = CmdFilter.__class_ids_set_from_str(ex_cis, class_manager)
 
         asset_ids_set = set(mir_metadatas.attributes.keys())
-        # TODO: change logic
-        # match_functions: List[Tuple[__IncludeExcludeCallableType, Union[Set[str], Set[int]], str, str]] = [
-        #     (CmdFilter.__include_match, in_cis_set, 'predefined_keyids', 'select cis'),
-        #     (CmdFilter.__exclude_match, ex_cis_set, 'predefined_keyids', 'exclude cis'),
-        # ]
-        # for match_func, ci_ck_conditions, attr_name, message in match_functions:
-        #     if ci_ck_conditions:
-        #         logging.info(f"assets count before {message}: {len(asset_ids_set)}")
-        #         asset_ids_set = match_func(asset_ids_set, mir_keywords, attr_name, ci_ck_conditions)
-        #         logging.info(f"assets count after {message}: {len(asset_ids_set)}")
+        asset_ids_set = CmdFilter.__include_match(asset_ids_set=asset_ids_set,
+                                                  mir_keywords=mir_keywords,
+                                                  in_cis_set=in_cis_set)
+        logging.info(f"assets count after include match: {len(asset_ids_set)}")
+        asset_ids_set = CmdFilter.__exclude_match(asset_ids_set=asset_ids_set,
+                                                  mir_keywords=mir_keywords,
+                                                  ex_cis_set=ex_cis_set)
+        logging.info(f"assets count after exclude match: {len(asset_ids_set)}")
 
         matched_mir_metadatas = mirpb.MirMetadatas()
         matched_mir_annotations = mirpb.MirAnnotations()
