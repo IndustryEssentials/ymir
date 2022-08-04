@@ -1,14 +1,16 @@
-import React, { useEffect, useState } from "react"
+import React, { useCallback, useEffect, useRef, useState } from "react"
 import { useParams, useHistory } from "umi"
 import { connect } from "dva"
-import { Select, Pagination, Image, Row, Col, Button, Space, Card, Descriptions, Tag, Modal } from "antd"
+import { Select, Pagination, Row, Col, Button, Space, Card, Tag, Modal } from "antd"
 
 import t from "@/utils/t"
 import Breadcrumbs from "@/components/common/breadcrumb"
 import { randomBetween, percent } from '@/utils/number'
 import Asset from "./components/asset"
 import styles from "./assets.less"
-import { ScreenIcon, TaggingIcon, TrainIcon, VectorIcon, WajueIcon, } from "@/components/common/icons"
+import GtSelector from "@/components/form/gtSelector"
+import ImageAnnotation from "../../components/dataset/imageAnnotation"
+import useWindowResize from "../../hooks/useWindowResize"
 
 const { Option } = Select
 
@@ -43,6 +45,10 @@ const Dataset = ({ getDataset, getAssetsOfDataset }) => {
     hash: null,
     index: 0,
   })
+  const [evaluated, setEvaluated] = useState(false)
+  const [evaluation, setEvaluation] = useState({})
+  const listRef = useRef(null)
+  const windowWidth = useWindowResize()
 
   useEffect(async () => {
     const data = await getDataset(id)
@@ -50,6 +56,11 @@ const Dataset = ({ getDataset, getAssetsOfDataset }) => {
       setDataset(data)
     }
   }, [id])
+
+  useEffect(() => {
+    const evaluated = assets.some(asset => asset.evaluated)
+    setEvaluated(evaluated)
+  }, [assets])
 
   useEffect(() => {
     setCurrentPage((filterParams.offset / filterParams.limit) + 1)
@@ -76,8 +87,8 @@ const Dataset = ({ getDataset, getAssetsOfDataset }) => {
     setTotal(total)
     setAssets(items)
   }
-  const goAsset = (hash, index) => {
-    setCurrentAsset({ hash, index: filterParams.offset + index})
+  const goAsset = (asset, hash, index) => {
+    setCurrentAsset({ asset, hash, index: filterParams.offset + index })
     setAssetVisible(true)
   }
 
@@ -92,49 +103,57 @@ const Dataset = ({ getDataset, getAssetsOfDataset }) => {
     return percent(count / dataset.assetCount)
   }
 
+  const filterAnnotations = annotations => {
+    return annotations.filter(annotation => !annotation.cm || evaluation[annotation.cm])
+  }
+
   const randomPageButton = (
     <Button type="primary" onClick={randomPage}>
       {t("dataset.detail.randompage.label")}
     </Button>
   )
 
-  const renderList = (list, row = 5) => {
+  const renderList = useCallback((list, row = 5) => {
     let r = 0, result = []
     while (r < list.length) {
       result.push(list.slice(r, r + row))
       r += row
     }
 
-    return result.map((rows, index) => (
-      <Row gutter={10} wrap={false} key={index} className={styles.dataset_container}>
-        {rows.map((asset, rowIndex) => (
-          <Col flex={100 / row + '%'} key={asset.hash} className={styles.dataset_item}>
-            <div
-              className={styles.dataset_img}
-              onClick={() => goAsset(asset.hash, index * row + rowIndex)}
-            >
-              <img
-                src={asset.url}
-                style={{ width: "auto", maxWidth: "100%", maxHeight: "100%" }}
-              />
-              <span
-                className={styles.item_keywords_count}
-                title={asset?.keywords.join(",")}
+    return result.map((rows, index) => {
+      const h = listRef.current?.clientWidth / rows.reduce((prev, row) => {
+        return (prev + row.metadata.width / row.metadata.height)
+      }, 0)
+
+      return (
+        <Row gutter={4} wrap={false} key={index} className={styles.dataset_container}>
+          {rows.map((asset, rowIndex) => (
+            <Col style={{ height: h }} key={asset.hash} className={styles.dataset_item}>
+              <div
+                className={styles.dataset_img}
+                onClick={() => goAsset(asset, asset.hash, index * row + rowIndex)}
               >
-                {t("dataset.detail.assets.keywords.total", {
-                  total: asset?.keywords?.length,
-                })}
-              </span>
-              <span className={styles.item_keywords}>
-                {asset.keywords.slice(0, 4).map(key => <Tag className={styles.item_keyword} key={key} title={key}>{key}</Tag>)}
-                {asset.keywords.length > 4 ? <Tag className={styles.item_keyword} style={{ width: '10px' }}>...</Tag> : null}
-              </span>
-            </div>
-          </Col>
-        ))}
-      </Row>
-    ))
-  }
+                <ImageAnnotation url={asset.url} data={asset.annotations} filters={filterAnnotations} />
+                <span
+                  className={styles.item_keywords_count}
+                  title={asset?.keywords.join(",")}
+                >
+                  {t("dataset.detail.assets.keywords.total", {
+                    total: asset?.keywords?.length,
+                  })}
+                </span>
+                <span className={styles.item_keywords}>
+                  {asset.keywords.slice(0, 4).map(key => <Tag className={styles.item_keyword} key={key} title={key}>{key}</Tag>)}
+                  {asset.keywords.length > 4 ? <Tag className={styles.item_keyword} style={{ width: '10px' }}>...</Tag> : null}
+                </span>
+              </div>
+            </Col>
+          ))}
+        </Row>
+      )
+    }
+    )
+  }, [windowWidth])
 
   const renderTitle = <Row className={styles.labels}>
     <Col flex={1}>
@@ -143,6 +162,9 @@ const Dataset = ({ getDataset, getAssetsOfDataset }) => {
         <span>{t("dataset.detail.pager.total", { total: total + '/' + dataset.assetCount })}</span>
       </Space>
     </Col>
+    {evaluated ? <Col>
+      <GtSelector layout='inline' onChange={setEvaluation} />
+    </Col> : null}
     <Col>
       <span>{t("dataset.detail.keyword.label")}</span>
       <Select
@@ -155,7 +177,7 @@ const Dataset = ({ getDataset, getAssetsOfDataset }) => {
         <Option value={0} key="all">
           {t("common.all")}
         </Option>
-        
+
         {dataset?.keywords?.map((key) => (
           <Option value={key} key={key} title={`${key} (${dataset.keywordsCount[key]})`}>
             {key} ({dataset.keywordsCount[key]}, {getRate(dataset.keywordsCount[key])})
@@ -168,7 +190,7 @@ const Dataset = ({ getDataset, getAssetsOfDataset }) => {
   const assetDetail = <Modal className={styles.assetDetail} destroyOnClose
     title={t('dataset.asset.title')} visible={assetVisible} onCancel={() => setAssetVisible(false)}
     width={null} footer={null}>
-    <Asset id={id} datasetKeywords={dataset.keywords} filterKeyword={assetVisible ? filterParams.keyword : null} index={currentAsset.index} total={total} />
+    <Asset id={id} asset={currentAsset.asset} datasetKeywords={dataset.keywords} filterKeyword={assetVisible ? filterParams.keyword : null} index={currentAsset.index} total={total} />
   </Modal>
 
   return (
@@ -176,7 +198,9 @@ const Dataset = ({ getDataset, getAssetsOfDataset }) => {
       <Breadcrumbs />
       {assetDetail}
       <Card className='list' title={renderTitle}>
-        {renderList(assets)}
+        <div className={styles.listContainer} ref={listRef}>
+          {renderList(assets)}
+        </div>
         <Space className={styles.pagi}>
           <Pagination
             key={'pager'}

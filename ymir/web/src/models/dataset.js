@@ -1,9 +1,10 @@
 import {
   getDatasetGroups, getDatasetByGroup, queryDatasets, getDataset, batchDatasets, evaluate, analysis,
   getAssetsOfDataset, getAsset, batchAct, delDataset, delDatasetGroup, createDataset, updateDataset, getInternalDataset,
+  getNegativeKeywords,
 } from "@/services/dataset"
 import { getStats } from "../services/common"
-import { transferDatasetGroup, transferDataset, transferDatasetAnalysis, states } from '@/constants/dataset'
+import { transferDatasetGroup, transferDataset, transferDatasetAnalysis, states, transferAsset } from '@/constants/dataset'
 import { actions, updateResultState } from '@/constants/common'
 import { deepClone } from '@/utils/object'
 import { checkDuplication } from "../services/dataset"
@@ -134,21 +135,26 @@ export default {
     *getAssetsOfDataset({ payload }, { call, put }) {
       const { code, result } = yield call(getAssetsOfDataset, payload)
       if (code === 0) {
+        const { items, total } = result
+        const keywords = [...new Set(items.map(item => item.keywords).flat())]
+        const assets = { items: items.map(asset => transferAsset(asset, keywords)), total }
+
         yield put({
           type: "UPDATE_ASSETS",
-          payload: result,
+          payload: assets,
         })
-        return result
+        return assets
       }
     },
     *getAsset({ payload }, { call, put }) {
       const { code, result } = yield call(getAsset, payload.id, payload.hash)
       if (code === 0) {
+        const asset = transferAsset(result)
         yield put({
           type: "UPDATE_ASSET",
-          payload: result,
+          payload: asset,
         })
-        return result
+        return asset
       }
     },
     *delDataset({ payload }, { call, put }) {
@@ -209,13 +215,21 @@ export default {
     *updateDatasets({ payload }, { put, select }) {
       const versions = yield select(state => state.dataset.versions)
       const tasks = payload || {}
+      const all = yield select(state => state.dataset.allDatasets)
+      const newDatasets = []
       Object.keys(versions).forEach(gid => {
         const datasets = versions[gid]
         let updatedDatasets = datasets.map(dataset => {
           const updatedDataset = updateResultState(dataset, tasks)
+          newDatasets.push(updatedDataset)
           return updatedDataset ? { ...updatedDataset } : dataset
         })
         versions[gid] = updatedDatasets
+      })
+      const validDatasets = newDatasets.filter(d => d?.needReload)
+      yield put({
+        type: 'UPDATE_ALL_DATASETS',
+        payload: [...validDatasets, ...all],
       })
       yield put({
         type: 'UPDATE_ALL_VERSIONS',
@@ -319,6 +333,18 @@ export default {
           dataset: ds,
         }
       })
+    },
+    *getNegativeKeywords({ payload }, { put, call }) {
+      // const { pid, keywords, type } = payload
+      const { code, result } = yield call(getNegativeKeywords, payload)
+      const getStats = (o = {}) => ({
+        keywords: o.keywords || {},
+        negative: o.negative_images_count || 0,
+        positive: o.positive_images_count || 0,
+      })
+      if (code === 0) {
+        return getStats(result?.pred)
+      }
     },
   },
   reducers: {

@@ -194,8 +194,10 @@ message Int32List {
 }
 
 message Keywords {
-    // predefined: managed id-keyword map
+    // class ids for predictions
     repeated int32 predefined_keyids = 1;
+    // class ids for ground truth
+    repeated int32 gt_predefined_keyids = 2;
 };
 
 message AssetAnnoIndex {

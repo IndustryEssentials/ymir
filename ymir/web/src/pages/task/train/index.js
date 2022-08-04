@@ -6,6 +6,7 @@ import { useHistory, useParams, useLocation } from "umi"
 
 import t from "@/utils/t"
 import { string2Array, generateName } from '@/utils/string'
+import { OPENPAI_MAX_GPU_COUNT } from '@/constants/common'
 import { TYPES } from '@/constants/image'
 import { randomNumber } from "@/utils/number"
 import useFetch from '@/hooks/useFetch'
@@ -75,7 +76,7 @@ function Train({ allDatasets, datasetCache, keywords, ...func }) {
   }, [sys])
 
   useEffect(() => {
-    setGPU(selectOpenpai ? 4 : sys.gpu_count || 0)
+    setGPU(selectOpenpai ? OPENPAI_MAX_GPU_COUNT : sys.gpu_count || 0)
   }, [selectOpenpai])
 
   useEffect(() => {
@@ -155,7 +156,7 @@ function Train({ allDatasets, datasetCache, keywords, ...func }) {
 
     const config = {
       ...values.hyperparam?.reduce(
-        (prev, { key, value }) => key && value ? { ...prev, [key]: value } : prev,
+        (prev, { key, value }) => key !== '' && value !== '' ? { ...prev, [key]: value } : prev,
         {}),
       ...(values.live || {}),
     }
@@ -215,7 +216,7 @@ function Train({ allDatasets, datasetCache, keywords, ...func }) {
   }
 
   const matchKeywords = dataset => dataset.keywords.some(kw => selectedKeywords.includes(kw))
-    const notTestingSet = id => !testingSetIds.includes(id)
+  const notTestingSet = id => !testingSetIds.includes(id)
   const trainsetFilters = datasets => datasets.filter(ds => {
     const notTestSet = ds.id !== testSet
     return matchKeywords(ds) && notTestSet && notTestingSet(ds.id)
@@ -283,7 +284,7 @@ function Train({ allDatasets, datasetCache, keywords, ...func }) {
             </Form.Item>
             {trainSet ?
               <Form.Item label={t('dataset.train.form.samples')}>
-                <KeywordRates dataset={trainSet}></KeywordRates>
+                <KeywordRates pid={pid} id={trainSet} keywords={selectedKeywords}></KeywordRates>
               </Form.Item> : null}
             <Form.Item
               label={t('task.train.form.testsets.label')}

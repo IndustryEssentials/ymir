@@ -15,7 +15,6 @@ const DatasetSelect = ({
   const [options, setOptions] = useState([])
 
   useEffect(() => {
-    console.log('pid:', pid)
     pid && fetchDatasets()
   }, [pid])
 
@@ -30,6 +29,13 @@ const DatasetSelect = ({
       onChange(value, selected)
     }
   }, [options])
+
+  useEffect(() => {
+    const needReload = datasets.some(ds => ds.needReload)
+    if (needReload) {
+      fetchDatasets()
+    }
+  }, [datasets])
 
   useEffect(() => {
     let dss = filters ? filters(datasets) : datasets
