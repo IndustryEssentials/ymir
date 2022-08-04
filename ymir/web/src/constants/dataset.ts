@@ -129,7 +129,6 @@ export function transferAnnotation(data: BackendData, gt: boolean = false): Anno
 }
 
 function generateColor(keyword: string, keywords: Array<string> = []) {
-  console.log('generateColor keywords:', keywords)
   const KeywordColor = ["green", "red", "cyan", "blue", "yellow", "purple", "magenta", "orange", "gold"]
   const colors: { [key: string]: any } = keywords.reduce((prev, curr, i) =>
     ({ ...prev, [curr]: KeywordColor[i % KeywordColor.length] }), {})
