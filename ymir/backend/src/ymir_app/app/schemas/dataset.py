@@ -157,9 +157,6 @@ class DatasetStats(BaseModel):
 class DatasetStatsOut(Common):
     result: DatasetStats
 
-    class Config:
-        orm_mode = True
-
 
 class DatasetHist(BaseModel):
     asset_bytes: List[Dict]
