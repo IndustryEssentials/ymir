@@ -180,6 +180,12 @@ class DatasetMetaData:
         )
 
 
+class VizDatasetStatsElement(BaseModel):
+    class_ids_count: Dict[int, int]
+    negative_images_count: int
+    positive_images_count: int
+
+
 @dataclass
 class DatasetStatsElement:
     keywords: Dict[str, int]
@@ -188,10 +194,11 @@ class DatasetStatsElement:
 
     @classmethod
     def from_viz_res(cls, data: Dict, user_labels: UserLabels) -> "DatasetStatsElement":
+        viz_res = VizDatasetStatsElement(**data)
         keywords = {
-            user_labels.get_main_names(class_id)[0]: count for class_id, count in data["class_ids_count"].items()
+            user_labels.get_main_names(class_id)[0]: count for class_id, count in viz_res.class_ids_count.items()
         }
-        return cls(keywords, data["negative_images_count"], data["positive_images_count"])
+        return cls(keywords, viz_res.negative_images_count, viz_res.positive_images_count)
 
 
 @dataclass

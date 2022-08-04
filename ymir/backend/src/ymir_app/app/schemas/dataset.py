@@ -142,10 +142,16 @@ class DatasetStatsElement(BaseModel):
     negative_images_count: int
     positive_images_count: int
 
+    class Config:
+        orm_mode = True
+
 
 class DatasetStats(BaseModel):
     gt: DatasetStatsElement
     pred: DatasetStatsElement
+
+    class Config:
+        orm_mode = True
 
 
 class DatasetStatsOut(Common):
