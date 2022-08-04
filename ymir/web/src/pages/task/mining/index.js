@@ -105,7 +105,6 @@ function Mining({ datasetCache, ...func }) {
     const params = {
       ...values,
       name: 'task_mining_' + randomNumber(),
-      topk: values.filter_strategy ? values.topk : 0,
       projectId: pid,
       imageId,
       image,
