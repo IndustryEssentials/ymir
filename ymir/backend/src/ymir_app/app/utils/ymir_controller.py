@@ -159,13 +159,12 @@ class ControllerRequest:
         importing_request = mirsvrpb.TaskReqImporting()
 
         importing_request.asset_dir = args["asset_dir"]
-        # adhoc specify gt_dir for importing dataset
         if args.get("gt_dir"):
             importing_request.gt_dir = args["gt_dir"]
 
         strategy = args.get("strategy") or ImportStrategy.ignore_unknown_annotations
-        if strategy != ImportStrategy.no_annotations:
-            importing_request.annotation_dir = args["annotation_dir"]
+        if strategy != ImportStrategy.no_annotations and args.get("pred_dir"):
+            importing_request.annotation_dir = args["pred_dir"]
         importing_request.unknown_types_strategy = IMPORTING_STRATEGY_MAPPING[strategy]
 
         req_create_task = mirsvrpb.ReqCreateTask()
