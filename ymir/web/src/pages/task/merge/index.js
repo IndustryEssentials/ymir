@@ -93,7 +93,7 @@ function Merge() {
           <Form.Item label={t('task.fusion.form.dataset')}>
             <span>{dataset.name} {dataset.versionName} (assets: {dataset.assetCount})</span>
           </Form.Item>
-          <Form.Item label={t('task.fusion.form.merge.include.label')} name="includes" tooltip={'tip.task.merge.include'}>
+          <Form.Item label={t('task.fusion.form.merge.include.label')} name="includes" tooltip={t('tip.task.merge.include')}>
             <DatasetSelect
               placeholder={t('task.fusion.form.datasets.placeholder')}
               mode='multiple'
@@ -112,7 +112,7 @@ function Merge() {
               { value: 1, label: t('task.train.form.repeatdata.terminate') },
             ]} />
           </Form.Item>
-          <Form.Item label={t('task.fusion.form.merge.exclude.label')} name="excludes" tooltip={'tip.task.merge.exclude'}>
+          <Form.Item label={t('task.fusion.form.merge.exclude.label')} name="excludes" tooltip={t('tip.task.merge.exclude')}>
             <DatasetSelect
               placeholder={t('task.fusion.form.datasets.placeholder')}
               mode='multiple'
