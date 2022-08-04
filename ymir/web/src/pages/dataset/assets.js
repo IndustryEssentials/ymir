@@ -4,6 +4,7 @@ import { connect } from "dva"
 import { Select, Pagination, Row, Col, Button, Space, Card, Tag, Modal } from "antd"
 
 import t from "@/utils/t"
+import { evaluationTags } from '@/constants/dataset'
 import Breadcrumbs from "@/components/common/breadcrumb"
 import { randomBetween, percent } from '@/utils/number'
 import Asset from "./components/asset"
@@ -153,7 +154,7 @@ const Dataset = ({ getDataset, getAssetsOfDataset }) => {
       )
     }
     )
-  }, [windowWidth])
+  }, [windowWidth, evaluation])
 
   const renderTitle = <Row className={styles.labels}>
     <Col flex={1}>
