@@ -181,6 +181,7 @@ class TestCmdImport(unittest.TestCase):
                             'rotate_angle': 0.22
                         },
                         'class_id': 1,
+                        'cm': 'TP',
                         'score': 0.5,
                         'anno_quality': 0.62,
                         'tags': {
@@ -239,6 +240,7 @@ class TestCmdImport(unittest.TestCase):
                             'rotate_angle': 0.22
                         },
                         'class_id': 1,
+                        'cm': 'TP',
                         'score': 0.5,
                         'anno_quality': 0.62,
                         'tags': {
@@ -299,9 +301,9 @@ class TestCmdImport(unittest.TestCase):
             }
         if not with_annotations:
             dict_image_annotations_expect = {}
-        self.assertDictEqual(dict_image_annotations_expect, dict_image_annotations)
         self.assertEqual(mir_annotations.head_task_id, mir_annotations.prediction.task_id)
         self.assertEqual(mir_annotations.head_task_id, mir_annotations.ground_truth.task_id)
+        self.assertDictEqual(dict_image_annotations_expect, dict_image_annotations)
         self.assertDictEqual(dict_asset_cks_expected, dict_asset_cks)
 
         # check keywords.mir and contexts.mir
