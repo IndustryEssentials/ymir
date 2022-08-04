@@ -17,7 +17,7 @@ __IncludeExcludeCallableType = Callable[[Set[str], mirpb.MirKeywords, str, Any],
 class CmdFilter(base.BaseCommand):
     # private: misc
     @staticmethod
-    def __preds_set_from_str(preds_str: str, cls_mgr: class_ids.ClassIdManager) -> Set[int]:
+    def __class_ids_set_from_str(preds_str: str, cls_mgr: class_ids.ClassIdManager) -> Set[int]:
         if not preds_str:
             return set()
 
@@ -114,8 +114,8 @@ class CmdFilter(base.BaseCommand):
                                   error_message='no base task id in tasks.mir')
 
         class_manager = class_ids.ClassIdManager(mir_root=mir_root)
-        preds_set = CmdFilter.__preds_set_from_str(in_cis, class_manager)  # type: Set[int]
-        excludes_set = CmdFilter.__preds_set_from_str(ex_cis, class_manager)  # type: Set[int]
+        preds_set = CmdFilter.__class_ids_set_from_str(in_cis, class_manager)  # type: Set[int]
+        excludes_set = CmdFilter.__class_ids_set_from_str(ex_cis, class_manager)  # type: Set[int]
 
         ck_preds_set = {ck.strip() for ck in in_cks.split(";")} if in_cks else set()
         ck_preds_set = {ck for ck in ck_preds_set if ck}
