@@ -133,11 +133,12 @@ export default {
       loading = false
     },
     *getAssetsOfDataset({ payload }, { call, put }) {
+      const { datasetKeywords } = payload
       const { code, result } = yield call(getAssetsOfDataset, payload)
       if (code === 0) {
         const { items, total } = result
         const keywords = [...new Set(items.map(item => item.keywords).flat())]
-        const assets = { items: items.map(asset => transferAsset(asset, keywords)), total }
+        const assets = { items: items.map(asset => transferAsset(asset, datasetKeywords || keywords)), total }
 
         yield put({
           type: "UPDATE_ASSETS",

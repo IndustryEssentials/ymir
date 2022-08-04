@@ -1,33 +1,34 @@
 
-import { useHistory, useParams } from "react-router"
-import React, { useEffect, useRef, useState } from "react"
+import React, { useEffect, useState } from "react"
 import { Button, Card, Col, Descriptions, Row, Tag, Space } from "antd"
-import { connect } from "dva"
 
 import { getDateFromTimestamp } from "@/utils/date"
 import t from "@/utils/t"
 import { randomBetween } from "@/utils/number"
+import { evaluationTags } from '@/constants/dataset'
+import useFetch from '@/hooks/useFetch'
 
 import Hash from "@/components/common/hash"
 import AssetAnnotation from "@/components/dataset/assetAnnotation"
 import GtSelector from "@/components/form/gtSelector"
 
 import styles from "./asset.less"
-import { ArrowRightIcon, NavDatasetIcon, EyeOffIcon, EyeOnIcon } from '@/components/common/icons'
+import { NavDatasetIcon, EyeOffIcon, EyeOnIcon } from '@/components/common/icons'
 import { LeftOutlined, RightOutlined } from '@ant-design/icons'
 
 const { CheckableTag } = Tag
 
-function Asset({ id, asset: cache, filterKeyword, getAsset, getAssetsOfDataset, index = 0, total = 0 }) {
-  const history = useHistory()
+function Asset({ id, asset: cache, datasetKeywords, filterKeyword, index = 0, total = 0 }) {
   const [asset, setAsset] = useState({})
   const [current, setCurrent] = useState('')
   const [showAnnotations, setShowAnnotations] = useState([])
   const [selectedKeywords, setSelectedKeywords] = useState([])
   const [currentIndex, setCurrentIndex] = useState(null)
   const [assetHistory, setAssetHistory] = useState([])
-  const [evaluation, setEvaluation] = useState({})
+  const initEvaluation = Object.keys(evaluationTags).reduce((prev, tag) => ({ ...prev, [tag]: true }), {})
+  const [evaluation, setEvaluation] = useState(initEvaluation)
   const [colors, setColors] = useState({})
+  const [{ items: assets }, getAssets] = useFetch('dataset/getAssetsOfDataset', { items: [] })
 
   useEffect(() => {
     setAsset({})
@@ -49,19 +50,19 @@ function Asset({ id, asset: cache, filterKeyword, getAsset, getAssetsOfDataset, 
   }, [cache])
 
   useEffect(() => {
+    console.log('asset:', asset)
     if (!asset.hash) {
       return
     }
+    const { annotations } = asset
     setSelectedKeywords(asset.keywords)
+    setCurrent(asset.hash)
+    setColors(annotations.reduce((prev, annotation) => ({ ...prev, [annotation.keyword]: annotation.color }), {}))
   }, [asset])
 
   useEffect(() => {
-    if (!cache) {
-      return
-    }
-    const { annotations } = cache
-    setColors(annotations.reduce((prev, annotation) => ({ ...prev, [annotation.keyword]: annotation.color }), {}))
-  }, [cache])
+    assets.length && setAsset(assets[0])
+  }, [assets])
 
   useEffect(() => {
     const keywordFilter = annotation => selectedKeywords.indexOf(annotation.keyword) >= 0
@@ -71,19 +72,8 @@ function Asset({ id, asset: cache, filterKeyword, getAsset, getAssetsOfDataset, 
     setShowAnnotations(visibleAnnotations)
   }, [selectedKeywords, evaluation, asset])
 
-  async function fetchAsset() {
-    const result = await getAsset(id, current)
-    const corretColor = (annotations = []) => annotations.map(anno => ({ ...anno, color: colors[anno.keyword] }))
-    setAsset({ ...result, annotations: corretColor(result.annotations) })
-  }
-
-  async function fetchAssetHash() {
-    const result = await getAssetsOfDataset({ id, keyword: currentIndex.keyword, offset: currentIndex.index, limit: 1 })
-    if (result?.items) {
-      const ass = result.items[0]
-      setCurrent(ass.hash)
-      fetchAsset()
-    }
+  function fetchAssetHash() {
+    getAssets({ id, keyword: currentIndex.keyword, offset: currentIndex.index, limit: 1, datasetKeywords })
   }
 
   function next() {
@@ -181,6 +171,7 @@ function Asset({ id, asset: cache, filterKeyword, getAsset, getAssetsOfDataset, 
                           onChange={(checked) => changeKeywords(keyword, checked)}
                           className={'ant-tag-' + colors[keyword]}
                           key={i}
+                          color={colors[keyword]}
                         >
                           {keyword}
                         </CheckableTag>
@@ -194,7 +185,7 @@ function Asset({ id, asset: cache, filterKeyword, getAsset, getAssetsOfDataset, 
                   </Row>
                 </Descriptions.Item>
               </Descriptions>
-              {asset.evaluted ?
+              {asset.evaluated ?
                 <div className={styles.filter}>
                   <h3><NavDatasetIcon /> {t("dataset.asset.filters.title")}</h3>
                   <GtSelector layout='vertical' onChange={filterAnnotations} />
@@ -226,21 +217,4 @@ function Asset({ id, asset: cache, filterKeyword, getAsset, getAssetsOfDataset, 
   )
 }
 
-const actions = (dispatch) => {
-  return {
-    getAsset(id, hash) {
-      return dispatch({
-        type: "dataset/getAsset",
-        payload: { id, hash },
-      })
-    },
-    getAssetsOfDataset(payload) {
-      return dispatch({
-        type: "dataset/getAssetsOfDataset",
-        payload,
-      })
-    },
-  }
-}
-
-export default connect(null, actions)(Asset)
+export default Asset
