@@ -48,6 +48,14 @@ TRAINING_DATASET_STRATEGY_MAPPING = {
 }
 
 
+IMPORTING_STRATEGY_MAPPING = {
+    ImportStrategy.no_annotations: mirsvrpb.UTS_IGNORE,
+    ImportStrategy.ignore_unknown_annotations: mirsvrpb.UTS_IGNORE,
+    ImportStrategy.stop_upon_unknown_annotations: mirsvrpb.UTS_STOP,
+    ImportStrategy.add_unknown_annotations: mirsvrpb.UTS_ADD,
+}
+
+
 def gen_typed_datasets(dataset_type: int, datasets: List[str]) -> Generator:
     for dataset_id in datasets:
         dataset_with_type = mirsvrpb.TaskReqTraining.TrainingDatasetType()
@@ -158,10 +166,7 @@ class ControllerRequest:
         strategy = args.get("strategy") or ImportStrategy.ignore_unknown_annotations
         if strategy != ImportStrategy.no_annotations:
             importing_request.annotation_dir = args["annotation_dir"]
-        if strategy == ImportStrategy.ignore_unknown_annotations:
-            importing_request.name_strategy_ignore = True
-        else:
-            importing_request.name_strategy_ignore = False
+        importing_request.unknown_types_strategy = IMPORTING_STRATEGY_MAPPING[strategy]
 
         req_create_task = mirsvrpb.ReqCreateTask()
         req_create_task.task_type = mirsvrpb.TaskTypeImportData
@@ -250,7 +255,9 @@ class ControllerRequest:
     def prepare_data_fusion(self, request: mirsvrpb.GeneralReq, args: Dict) -> mirsvrpb.GeneralReq:
         data_fusion_request = mirsvrpb.TaskReqFusion()
         data_fusion_request.in_dataset_ids[:] = args["include_datasets"]
-        data_fusion_request.merge_strategy = MERGE_STRATEGY_MAPPING[args["include_strategy"]]
+        data_fusion_request.merge_strategy = MERGE_STRATEGY_MAPPING[
+            args.get("strategy", MergeStrategy.stop_upon_conflict)
+        ]
         if args.get("exclude_datasets"):
             data_fusion_request.ex_dataset_ids[:] = args["exclude_datasets"]
 
@@ -487,10 +494,10 @@ class ControllerClient:
         user_id: int,
         project_id: int,
         task_id: str,
-        task_parameters: Optional[Dict],
+        args: Optional[Dict],
     ) -> Dict:
         req = ControllerRequest(
-            type=TaskType.data_fusion, user_id=user_id, project_id=project_id, task_id=task_id, args=task_parameters
+            type=TaskType.data_fusion, user_id=user_id, project_id=project_id, task_id=task_id, args=args
         )
 
         return self.send(req)
@@ -563,6 +570,52 @@ class ControllerClient:
                 "in_dataset_names": [dataset["name"] for dataset in datasets],
                 "iou_thr": iou_thr,
                 "conf_thr": conf_thr,
+            },
+        )
+        return self.send(req)
+
+    def merge_datasets(
+        self,
+        user_id: int,
+        project_id: int,
+        task_id: str,
+        dataset_hashes: Optional[List[str]],
+        ex_dataset_hashes: Optional[List[str]],
+        merge_strategy: Optional[MergeStrategy] = None,
+    ) -> Dict:
+        req = ControllerRequest(
+            type=TaskType.data_fusion,
+            user_id=user_id,
+            project_id=project_id,
+            task_id=task_id,
+            args={
+                "include_datasets": dataset_hashes,
+                "exclude_datasets": ex_dataset_hashes,
+                "strategy": merge_strategy,
+            },
+        )
+        return self.send(req)
+
+    def filter_dataset(
+        self,
+        user_id: int,
+        project_id: int,
+        task_id: str,
+        dataset_hash: str,
+        class_ids: Optional[List[int]],
+        ex_class_ids: Optional[List[int]],
+        sampling_count: Optional[int] = None,
+    ) -> Dict:
+        req = ControllerRequest(
+            type=TaskType.data_fusion,
+            user_id=user_id,
+            project_id=project_id,
+            task_id=task_id,
+            args={
+                "include_datasets": [dataset_hash],
+                "include_class_ids": class_ids,
+                "exclude_class_ids": ex_class_ids,
+                "sampling_count": sampling_count,
             },
         )
         return self.send(req)

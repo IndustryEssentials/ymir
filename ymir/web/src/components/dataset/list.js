@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from "react"
 import { connect } from 'dva'
 import styles from "./list.less"
 import { Link, useHistory, useLocation } from "umi"
-import { Form, Button, Input, Table, Space, Modal, Row, Col, Tooltip, Pagination, message, } from "antd"
+import { Form, Button, Input, Table, Space, Modal, Row, Col, Tooltip, Pagination, message, Popover, } from "antd"
 
 import t from "@/utils/t"
 import { humanize } from "@/utils/number"
@@ -22,12 +22,14 @@ import Actions from "@/components/table/actions"
 import {
   ImportIcon, ScreenIcon, TaggingIcon, TrainIcon, VectorIcon, WajueIcon, SearchIcon,
   EditIcon, EyeOffIcon, CopyIcon, StopIcon, ArrowDownIcon, ArrowRightIcon, CompareIcon,
+  CompareListIcon,
 } from "@/components/common/icons"
+import { DescPop } from "../common/descPop"
 
 const { confirm } = Modal
 const { useForm } = Form
 
-function Datasets({ pid, project = {}, iterations, group, datasetList, query, versions, ...func }) {
+function Datasets({ pid, project = {}, iterations, groups, datasetList, query, versions, ...func }) {
   const location = useLocation()
   const { name } = location.query
   const history = useHistory()
@@ -36,8 +38,8 @@ function Datasets({ pid, project = {}, iterations, group, datasetList, query, ve
   const [total, setTotal] = useState(1)
   const [form] = useForm()
   const [current, setCurrent] = useState({})
-  const [visibles, setVisibles] = useState(group ? { [group]: true } : {})
-  const [selectedVersions, setSelectedVersions] = useState({})
+  const [visibles, setVisibles] = useState({})
+  const [selectedVersions, setSelectedVersions] = useState({ selected: [], versions: {} })
   const hideRef = useRef(null)
   let [lock, setLock] = useState(true)
   const terminateRef = useRef(null)
@@ -50,6 +52,11 @@ function Datasets({ pid, project = {}, iterations, group, datasetList, query, ve
     }
     setLock(false)
   }, [history.location])
+
+  useEffect(() => {
+    const initVisibles = groups.reduce((prev, group) => ({ ...prev, [group]: true }), {})
+    setVisibles(initVisibles)
+  }, [groups])
 
   useEffect(() => {
     const list = setGroupLabelsByProject(datasetList.items, project)
@@ -129,13 +136,16 @@ function Datasets({ pid, project = {}, iterations, group, datasetList, query, ve
         key: "name",
         dataIndex: "versionName",
         className: styles[`column_name`],
-        render: (name, { id, state, projectLabel, iterationLabel }) => <Row>
-          <Col flex={1}><Link to={`/home/project/${pid}/dataset/${id}`}>{name}</Link></Col>
-          <Col flex={'50px'}>
-            {projectLabel ? <div className={styles.extraTag}>{projectLabel}</div> : null}
-            {iterationLabel ? <div className={styles.extraIterTag}>{iterationLabel}</div> : null}
-          </Col>
-        </Row>,
+        render: (name, { id, description, projectLabel, iterationLabel }) =>
+          <Popover title={t('common.desc')} content={<DescPop description={description} style={{ maxWidth: '30vw' }} />}>
+            <Row>
+              <Col flex={1}><Link to={`/home/project/${pid}/dataset/${id}`}>{name}</Link></Col>
+              <Col flex={'50px'}>
+                {projectLabel ? <div className={styles.extraTag}>{projectLabel}</div> : null}
+                {iterationLabel ? <div className={styles.extraIterTag}>{iterationLabel}</div> : null}
+              </Col>
+            </Row>
+          </Popover>,
         filters: getRoundFilter(gid),
         onFilter: (round, { iterationRound }) => round === iterationRound,
         ellipsis: true,
@@ -173,7 +183,7 @@ function Datasets({ pid, project = {}, iterations, group, datasetList, query, ve
       {
         title: showTitle('dataset.column.state'),
         dataIndex: 'state',
-        render: (state, record) => RenderProgress(state, record, true),
+        render: (state, record) => RenderProgress(state, record),
         // width: 60,
       },
       {
@@ -198,46 +208,54 @@ function Datasets({ pid, project = {}, iterations, group, datasetList, query, ve
 
   const actionMenus = (record) => {
     const { id, groupId, state, taskState, task, assetCount } = record
-    const always = [{
-      key: "fusion",
-      label: t("dataset.action.fusion"),
-      hidden: () => !isValidDataset(state),
-      onclick: () => history.push(`/home/project/${pid}/fusion?did=${id}`),
-      icon: <ScreenIcon className={styles.addBtnIcon} />,
-    }]
+    const invalidDataset = ({ state, assetCount }) => !isValidDataset(state) || assetCount === 0
     const menus = [
+      {
+        key: "merge",
+        label: t("common.action.merge"),
+        hidden: () => !isValidDataset(state),
+        onclick: () => history.push(`/home/project/${pid}/merge?did=${id}`),
+        icon: <CompareListIcon className={styles.addBtnIcon} />,
+      },
+      {
+        key: "filter",
+        label: t("common.action.filter"),
+        hidden: () => !isValidDataset(state),
+        onclick: () => history.push(`/home/project/${pid}/filter?did=${id}`),
+        icon: <ScreenIcon className={styles.addBtnIcon} />,
+      },
       {
         key: "train",
         label: t("dataset.action.train"),
-        hidden: () => !isValidDataset(state) || isTestingDataset(id),
+        hidden: () => invalidDataset(record) || isTestingDataset(id),
         onclick: () => history.push(`/home/project/${pid}/train?did=${id}`),
         icon: <TrainIcon />,
       },
       {
         key: "mining",
         label: t("dataset.action.mining"),
-        hidden: () => !isValidDataset(state),
+        hidden: () => invalidDataset(record),
         onclick: () => history.push(`/home/project/${pid}/mining?did=${id}`),
         icon: <VectorIcon />,
       },
       {
         key: "inference",
         label: t("dataset.action.inference"),
-        hidden: () => !isValidDataset(state),
+        hidden: () => invalidDataset(record),
         onclick: () => history.push(`/home/project/${pid}/inference?did=${id}`),
         icon: <WajueIcon />,
       },
       {
         key: "label",
         label: t("dataset.action.label"),
-        hidden: () => !isValidDataset(state),
+        hidden: () => invalidDataset(record),
         onclick: () => history.push(`/home/project/${pid}/label?did=${id}`),
         icon: <TaggingIcon />,
       },
       {
         key: "copy",
         label: t("task.action.copy"),
-        hidden: () => !isValidDataset(state),
+        hidden: () => invalidDataset(record),
         onclick: () => history.push(`/home/project/${pid}/copy?did=${id}`),
         icon: <CopyIcon />,
       },
@@ -256,7 +274,7 @@ function Datasets({ pid, project = {}, iterations, group, datasetList, query, ve
         icon: <EyeOffIcon />,
       },
     ]
-    return assetCount === 0 ? always : [...always, ...menus]
+    return menus
   }
 
   const tableChange = ({ current, pageSize }, filters, sorters = {}) => {
@@ -367,7 +385,13 @@ function Datasets({ pid, project = {}, iterations, group, datasetList, query, ve
   }
 
   function rowSelectChange(gid, rowKeys) {
-    setSelectedVersions(old => ({ ...old, [gid]: rowKeys }))
+    setSelectedVersions(({ versions }) => {
+      versions[gid] = rowKeys
+      return {
+        selected: Object.values(versions).flat(),
+        versions: { ...versions },
+      }
+    })
   }
 
   const stop = (dataset) => {
@@ -398,7 +422,7 @@ function Datasets({ pid, project = {}, iterations, group, datasetList, query, ve
   }
 
   const add = () => {
-    history.push(`/home/dataset/add/${pid}`)
+    history.push(`/home/project/${pid}/dataset/add`)
   }
 
 
@@ -416,7 +440,7 @@ function Datasets({ pid, project = {}, iterations, group, datasetList, query, ve
   }
 
   const multipleHide = () => {
-    const ids = Object.values(selectedVersions).flat()
+    const ids = selectedVersions.selected
     const allVss = Object.values(versions).flat()
     const vss = allVss.filter(({ id }) => ids.includes(id))
     hideRef.current.hide(vss, project.hiddenDatasets)
@@ -432,7 +456,18 @@ function Datasets({ pid, project = {}, iterations, group, datasetList, query, ve
   const hideOk = (result) => {
     result.forEach(item => fetchVersions(item.dataset_group_id, true))
     fetchDatasets(true)
-    setSelectedVersions({})
+    setSelectedVersions({ selected: [], versions: {} })
+  }
+
+  const multipleInfer = () => {
+    const ids = selectedVersions.selected.join('|')
+    history.push(`/home/project/${pid}/inference?did=${ids}`)
+  }
+
+  const getDisabledStatus = (filter = () => { }) => {
+    const allVss = Object.values(versions).flat()
+    const { selected } = selectedVersions
+    return allVss.filter(({ id }) => selected.includes(id)).some(version => filter(version))
   }
 
   function isValidDataset(state) {
@@ -453,10 +488,13 @@ function Datasets({ pid, project = {}, iterations, group, datasetList, query, ve
     </Button>
   )
 
-  const renderMultipleActions = Object.values(selectedVersions).flat().length ? (
+  const renderMultipleActions = selectedVersions.selected.length ? (
     <>
-      <Button type="primary" onClick={multipleHide}>
+      <Button type="primary" disabled={getDisabledStatus(({ state }) => isRunning(state))} onClick={multipleHide}>
         <EyeOffIcon /> {t("common.action.multiple.hide")}
+      </Button>
+      <Button type="primary" disabled={getDisabledStatus(({ state }) => !isValidDataset(state))} onClick={multipleInfer}>
+        <WajueIcon /> {t("common.action.multiple.infer")}
       </Button>
     </>
   ) : null
@@ -480,9 +518,8 @@ function Datasets({ pid, project = {}, iterations, group, datasetList, query, ve
             onChange={tableChange}
             rowKey={(record) => record.id}
             rowSelection={{
-              selectedRowKeys: selectedVersions[group.id],
+              selectedRowKeys: selectedVersions.versions[group.id],
               onChange: (keys) => rowSelectChange(group.id, keys),
-              getCheckboxProps: (record) => ({ disabled: isRunning(record.state), }),
             }}
             rowClassName={(record, index) => index % 2 === 0 ? '' : 'oddRow'}
             columns={columns(group.id)}

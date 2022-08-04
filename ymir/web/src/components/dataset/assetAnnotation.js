@@ -5,8 +5,6 @@ import { percent } from "../../utils/number"
 function AssetAnnotation({
   url,
   data = [],
-  colors = ["green", "red", "cyan", "blue", "yellow", "purple", "magenta", "orange", "gold"],
-  keywords = [],
 }) {
   const [annotations, setAnnotations] = useState([])
   const imgContainer = useRef()
@@ -21,12 +19,10 @@ function AssetAnnotation({
 
   const transAnnotations = (items) => {
     setAnnotations(() => {
-      let index = 0
-      return items.map(({ keyword, box, score, color = '#000' }) => {
+      return items.map(({ box, score, ...item }) => {
         return {
-          keyword,
+          ...item,
           score: score ? percent(score) : null,
-          color,
           ...box,
         }
       })
@@ -34,12 +30,11 @@ function AssetAnnotation({
   }
 
   const renderAnnotations = () => {
-    // console.log('annotations: ', annotations)
     return annotations.map((annotation, index) => {
       return (
         <div
           title={`${annotation.keyword}` + (annotation.score ? `\nConference:${annotation.score}` : '')}
-          className={`${styles.annotation}`}
+          className={`${styles.annotation} ${annotation.gt ? styles.gt : ''}`}
           key={index}
           style={{
             color: annotation.color,
@@ -51,8 +46,8 @@ function AssetAnnotation({
             height: annotation.h * ratio - 2,
           }}
         >
-          <span className={styles.annotationTitle} style={{ backgroundColor: annotation.color}}>{annotation.keyword}
-          {annotation.score ? <> {annotation.score}</> : null}</span>
+          <span className={styles.annotationTitle} style={{ backgroundColor: annotation.color }}>{annotation.keyword}
+            {annotation.score ? <> {annotation.score}</> : null}</span>
         </div>
       )
     })

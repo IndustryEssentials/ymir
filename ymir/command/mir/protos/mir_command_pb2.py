@@ -1607,6 +1607,13 @@ _KEYWORDS = _descriptor.Descriptor(
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='gt_predefined_keyids', full_name='mir.command.Keywords.gt_predefined_keyids', index=1,
+      number=2, type=5, cpp_type=1, label=3,
+      has_default_value=False, default_value=[],
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
   ],
   extensions=[
   ],
@@ -1816,23 +1823,23 @@ _MIRTASKS = _descriptor.Descriptor(
 )
 
 
-_TASK_UNKNOWNTYPESENTRY = _descriptor.Descriptor(
-  name='UnknownTypesEntry',
-  full_name='mir.command.Task.UnknownTypesEntry',
+_TASK_NEWTYPESENTRY = _descriptor.Descriptor(
+  name='NewTypesEntry',
+  full_name='mir.command.Task.NewTypesEntry',
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
   create_key=_descriptor._internal_create_key,
   fields=[
     _descriptor.FieldDescriptor(
-      name='key', full_name='mir.command.Task.UnknownTypesEntry.key', index=0,
+      name='key', full_name='mir.command.Task.NewTypesEntry.key', index=0,
       number=1, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=b"".decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='value', full_name='mir.command.Task.UnknownTypesEntry.value', index=1,
+      name='value', full_name='mir.command.Task.NewTypesEntry.value', index=1,
       number=2, type=5, cpp_type=1, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
@@ -1898,63 +1905,70 @@ _TASK = _descriptor.Descriptor(
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='unknown_types', full_name='mir.command.Task.unknown_types', index=5,
-      number=7, type=11, cpp_type=10, label=3,
-      has_default_value=False, default_value=[],
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
-    _descriptor.FieldDescriptor(
-      name='return_code', full_name='mir.command.Task.return_code', index=6,
+      name='return_code', full_name='mir.command.Task.return_code', index=5,
       number=8, type=5, cpp_type=1, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='return_msg', full_name='mir.command.Task.return_msg', index=7,
+      name='return_msg', full_name='mir.command.Task.return_msg', index=6,
       number=9, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=b"".decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='evaluation', full_name='mir.command.Task.evaluation', index=8,
+      name='evaluation', full_name='mir.command.Task.evaluation', index=7,
       number=10, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='serialized_task_parameters', full_name='mir.command.Task.serialized_task_parameters', index=9,
+      name='new_types', full_name='mir.command.Task.new_types', index=8,
+      number=11, type=11, cpp_type=10, label=3,
+      has_default_value=False, default_value=[],
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='new_types_added', full_name='mir.command.Task.new_types_added', index=9,
+      number=12, type=8, cpp_type=7, label=1,
+      has_default_value=False, default_value=False,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='serialized_task_parameters', full_name='mir.command.Task.serialized_task_parameters', index=10,
       number=102, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=b"".decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='serialized_executor_config', full_name='mir.command.Task.serialized_executor_config', index=10,
+      name='serialized_executor_config', full_name='mir.command.Task.serialized_executor_config', index=11,
       number=103, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=b"".decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='src_revs', full_name='mir.command.Task.src_revs', index=11,
+      name='src_revs', full_name='mir.command.Task.src_revs', index=12,
       number=104, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=b"".decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='dst_rev', full_name='mir.command.Task.dst_rev', index=12,
+      name='dst_rev', full_name='mir.command.Task.dst_rev', index=13,
       number=105, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=b"".decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='executor', full_name='mir.command.Task.executor', index=13,
+      name='executor', full_name='mir.command.Task.executor', index=14,
       number=106, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=b"".decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
@@ -1963,7 +1977,7 @@ _TASK = _descriptor.Descriptor(
   ],
   extensions=[
   ],
-  nested_types=[_TASK_UNKNOWNTYPESENTRY, ],
+  nested_types=[_TASK_NEWTYPESENTRY, ],
   enum_types=[
   ],
   serialized_options=None,
@@ -2244,13 +2258,6 @@ _EVALUATECONFIG = _descriptor.Descriptor(
     _descriptor.FieldDescriptor(
       name='need_pr_curve', full_name='mir.command.EvaluateConfig.need_pr_curve', index=4,
       number=5, type=8, cpp_type=7, label=1,
-      has_default_value=False, default_value=False,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
-    _descriptor.FieldDescriptor(
-      name='calc_confusion_matrix', full_name='mir.command.EvaluateConfig.calc_confusion_matrix', index=5,
-      number=6, type=8, cpp_type=7, label=1,
       has_default_value=False, default_value=False,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
@@ -3419,11 +3426,11 @@ _ASSETANNOINDEX.fields_by_name['sub_indexes'].message_type = _ASSETANNOINDEX_SUB
 _MIRTASKS_TASKSENTRY.fields_by_name['value'].message_type = _TASK
 _MIRTASKS_TASKSENTRY.containing_type = _MIRTASKS
 _MIRTASKS.fields_by_name['tasks'].message_type = _MIRTASKS_TASKSENTRY
-_TASK_UNKNOWNTYPESENTRY.containing_type = _TASK
+_TASK_NEWTYPESENTRY.containing_type = _TASK
 _TASK.fields_by_name['type'].enum_type = _TASKTYPE
 _TASK.fields_by_name['model'].message_type = _MODELMETA
-_TASK.fields_by_name['unknown_types'].message_type = _TASK_UNKNOWNTYPESENTRY
 _TASK.fields_by_name['evaluation'].message_type = _EVALUATION
+_TASK.fields_by_name['new_types'].message_type = _TASK_NEWTYPESENTRY
 _MODELMETA_STAGESENTRY.fields_by_name['value'].message_type = _MODELSTAGE
 _MODELMETA_STAGESENTRY.containing_type = _MODELMETA
 _MODELMETA.fields_by_name['stages'].message_type = _MODELMETA_STAGESENTRY
@@ -3756,10 +3763,10 @@ _sym_db.RegisterMessage(MirTasks.TasksEntry)
 
 Task = _reflection.GeneratedProtocolMessageType('Task', (_message.Message,), {
 
-  'UnknownTypesEntry' : _reflection.GeneratedProtocolMessageType('UnknownTypesEntry', (_message.Message,), {
-    'DESCRIPTOR' : _TASK_UNKNOWNTYPESENTRY,
+  'NewTypesEntry' : _reflection.GeneratedProtocolMessageType('NewTypesEntry', (_message.Message,), {
+    'DESCRIPTOR' : _TASK_NEWTYPESENTRY,
     '__module__' : 'mir_command_pb2'
-    # @@protoc_insertion_point(class_scope:mir.command.Task.UnknownTypesEntry)
+    # @@protoc_insertion_point(class_scope:mir.command.Task.NewTypesEntry)
     })
   ,
   'DESCRIPTOR' : _TASK,
@@ -3767,7 +3774,7 @@ Task = _reflection.GeneratedProtocolMessageType('Task', (_message.Message,), {
   # @@protoc_insertion_point(class_scope:mir.command.Task)
   })
 _sym_db.RegisterMessage(Task)
-_sym_db.RegisterMessage(Task.UnknownTypesEntry)
+_sym_db.RegisterMessage(Task.NewTypesEntry)
 
 ModelMeta = _reflection.GeneratedProtocolMessageType('ModelMeta', (_message.Message,), {
 
@@ -4013,7 +4020,7 @@ _MAPSTRINGTOINT32LIST_KEYIDSENTRY._options = None
 _ASSETANNOINDEX_ASSETANNOSENTRY._options = None
 _ASSETANNOINDEX_SUBINDEXESENTRY._options = None
 _MIRTASKS_TASKSENTRY._options = None
-_TASK_UNKNOWNTYPESENTRY._options = None
+_TASK_NEWTYPESENTRY._options = None
 _MODELMETA_STAGESENTRY._options = None
 _EVALUATION_DATASETEVALUATIONSENTRY._options = None
 _SINGLEDATASETEVALUATION_IOUEVALUATIONSENTRY._options = None

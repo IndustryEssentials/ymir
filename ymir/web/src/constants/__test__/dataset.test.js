@@ -100,7 +100,6 @@ describe("constants: dataset", () => {
       nagetiveCount: 0,
       isProtected: false,
       projectNagetiveCount: 0,
-      ignoredKeywords: ['person'],
       hash: 't00000020000012afef21646883528',
       state: 1,
       hidden: true,
@@ -114,6 +113,7 @@ describe("constants: dataset", () => {
       durationLabel: '1 分钟',
       taskName: task.name,
       task,
+      description: '',
     }
     expect(transferDataset(dataset)).toEqual(expected)
   })

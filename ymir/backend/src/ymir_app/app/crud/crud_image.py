@@ -43,9 +43,9 @@ class CRUDDockerImage(CRUDBase[DockerImage, DockerImageCreate, DockerImageUpdate
         query = db.query(self.model).filter(not_(self.model.is_deleted))
         return query.filter(self.model.url == url).first()  # type: ignore
 
-    def docker_name_exists(self, db: Session, url: str) -> bool:
+    def get_by_name(self, db: Session, name: str) -> Optional[DockerImage]:
         query = db.query(self.model).filter(not_(self.model.is_deleted))
-        return query.filter(self.model.url == url).first() is not None
+        return query.filter(self.model.name == name).first()  # type: ignore
 
     def update(
         self,

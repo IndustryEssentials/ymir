@@ -2,16 +2,12 @@ import React, { useEffect, useState, useRef } from "react"
 import { connect } from 'dva'
 import styles from "./list.less"
 import { Link, useHistory } from "umi"
-import { Form, Input, Table, Modal, Row, Col, Tooltip, Pagination, Space, Empty, Button, } from "antd"
-import {
-  SearchOutlined,
-} from "@ant-design/icons"
+import { Form, Input, Table, Modal, Row, Col, Tooltip, Pagination, Space, Empty, Button, message, Popover, } from "antd"
 
 import { diffTime } from '@/utils/date'
 import { states } from '@/constants/model'
 import { TASKTYPES, TASKSTATES } from '@/constants/task'
 import t from "@/utils/t"
-import { percent } from '@/utils/number'
 
 import CheckProjectDirty from "@/components/common/CheckProjectDirty"
 import Actions from "@/components/table/actions"
@@ -28,19 +24,21 @@ import {
   ArrowDownIcon, ArrowRightIcon, ImportIcon, BarchartIcon
 } from "@/components/common/icons"
 import EditStageCell from "./editStageCell"
+import { DescPop } from "../common/descPop"
 
 const { useForm } = Form
 
-function Model({ pid, project = {}, iterations, group, modelList, versions, query, ...func }) {
+function Model({ pid, project = {}, iterations, groups, modelList, versions, query, ...func }) {
   const history = useHistory()
   const { name } = history.location.query
   const [models, setModels] = useState([])
   const [modelVersions, setModelVersions] = useState({})
   const [total, setTotal] = useState(1)
-  const [selectedVersions, setSelectedVersions] = useState({})
+  const [selectedVersions, setSelectedVersions] = useState({ selected: [], versions: {} })
   const [form] = useForm()
   const [current, setCurrent] = useState({})
-  const [visibles, setVisibles] = useState(group ? { [group]: true } : {})
+  const [visibles, setVisibles] = useState({})
+  const [trainingUrl, setTrainingUrl] = useState('')
   let [lock, setLock] = useState(true)
   const hideRef = useRef(null)
   const delGroupRef = useRef(null)
@@ -53,6 +51,11 @@ function Model({ pid, project = {}, iterations, group, modelList, versions, quer
     }
     setLock(false)
   }, [history.location])
+
+  useEffect(() => {
+    const initVisibles = groups.reduce((prev, group) => ({ ...prev, [group]: true }), {})
+    setVisibles(initVisibles)
+  }, [groups])
 
   useEffect(() => {
     const mds = setGroupLabelsByProject(modelList.items, project)
@@ -108,6 +111,14 @@ function Model({ pid, project = {}, iterations, group, modelList, versions, quer
     }
   }, [query, lock])
 
+  useEffect(() => {
+    const selected = selectedVersions.selected
+    const mvs = Object.values(modelVersions).flat().filter(version => selected.includes(version.id))
+    const hashs = mvs.map(version => version.task.hash)
+    const url = getTensorboardLink(hashs)
+    setTrainingUrl(url)
+  }, [selectedVersions])
+
   async function initState() {
     await func.resetQuery()
     form.resetFields()
@@ -118,13 +129,16 @@ function Model({ pid, project = {}, iterations, group, modelList, versions, quer
       title: showTitle("model.column.name"),
       dataIndex: "versionName",
       className: styles[`column_name`],
-      render: (name, { id, state, projectLabel, iterationLabel }) => <Row>
-        <Col flex={1}><Link to={`/home/project/${pid}/model/${id}`}>{name}</Link></Col>
-        <Col flex={'50px'}>
-          {projectLabel ? <div className={styles.extraTag}>{projectLabel}</div> : null}
-          {iterationLabel ? <div className={styles.extraIterTag}>{iterationLabel}</div> : null}
-        </Col>
-      </Row>,
+      render: (name, { id, description, projectLabel, iterationLabel }) =>
+        <Popover title={t('common.desc')} content={<DescPop description={description} style={{ maxWidth: '30vw' }} />}>
+          <Row>
+            <Col flex={1}><Link to={`/home/project/${pid}/model/${id}`}>{name}</Link></Col>
+            <Col flex={'50px'}>
+              {projectLabel ? <div className={styles.extraTag}>{projectLabel}</div> : null}
+              {iterationLabel ? <div className={styles.extraIterTag}>{iterationLabel}</div> : null}
+            </Col>
+          </Row>
+        </Popover>,
       ellipsis: true,
     },
     {
@@ -133,22 +147,17 @@ function Model({ pid, project = {}, iterations, group, modelList, versions, quer
       render: (type) => <TypeTag type={type} />,
     },
     {
-      title: showTitle("model.column.map"),
-      dataIndex: "map",
-      render: map => percent(map),
-      sorter: (a, b) => a.map - b.map,
-      align: 'center',
-    },
-    {
       title: showTitle("model.column.stage"),
       dataIndex: "recommendStage",
-      render: (_, record) => isValidModel(record.state) ? <EditStageCell record={record} saveHandle={updateModelVersion} /> : null,
-      align: 'center',
+      render: (_, record) => isValidModel(record.state) ?
+        <EditStageCell record={record} saveHandle={updateModelVersion} /> : null,
+      // align: 'center',
+      width: 300,
     },
     {
       title: showTitle('dataset.column.state'),
       dataIndex: 'state',
-      render: (state, record) => RenderProgress(state, record, true),
+      render: (state, record) => RenderProgress(state, record),
       // width: 60,
     },
     {
@@ -303,7 +312,7 @@ function Model({ pid, project = {}, iterations, group, modelList, versions, quer
       },
       {
         key: "tensor",
-        label: 'Tensorboard',
+        label: t('task.action.training'),
         target: '_blank',
         link: getTensorboardLink(task.hash),
         hidden: () => taskType !== TASKTYPES.TRAINING,
@@ -326,19 +335,31 @@ function Model({ pid, project = {}, iterations, group, modelList, versions, quer
   }
 
   const multipleInfer = () => {
-    const ids = Object.values(selectedVersions).flat()
+    const { selected } = selectedVersions
     const versionsObject = Object.values(versions).flat()
-    const selected = versionsObject.filter(md => ids.includes(md.id)).map(md => {
+    const stages = versionsObject.filter(md => selected.includes(md.id)).map(md => {
       return [md.id, md.recommendStage].toString()
-    }).join('|')
-    history.push(`/home/project/${pid}/inference?mid=${selected}`)
+    })
+    if (stages.length) {
+      history.push(`/home/project/${pid}/inference?mid=${stages.join('|')}`)
+    } else {
+      message.warning(t('model.list.batch.invalid'))
+    }
   }
 
   const multipleHide = () => {
-    const ids = Object.values(selectedVersions).flat()
     const allVss = Object.values(versions).flat()
-    const vss = allVss.filter(({ id }) => ids.includes(id))
-    hideRef.current.hide(vss, project.hiddenModels)
+    const vss = allVss.filter(({ id, state }) => selectedVersions.selected.includes(id))
+    if (vss.length) {
+      hideRef.current.hide(vss, project.hiddenModels)
+    } else {
+      message.warning(t('model.list.batch.invalid'))
+    }
+  }
+
+  const getDisabledStatus = (filter = () => { }) => {
+    const allVss = Object.values(versions).flat()
+    return allVss.filter(({ id }) => selectedVersions.selected.includes(id)).some(version => filter(version))
   }
 
   const hide = (version) => {
@@ -351,12 +372,18 @@ function Model({ pid, project = {}, iterations, group, modelList, versions, quer
   const hideOk = (result) => {
     result.forEach(item => fetchVersions(item.model_group_id, true))
     getData()
-    setSelectedVersions({})
+    setSelectedVersions({ selected: [], versions: {} })
   }
 
 
   function rowSelectChange(gid, rowKeys) {
-    setSelectedVersions(old => ({ ...old, [gid]: rowKeys }))
+    setSelectedVersions(({ versions }) => {
+      versions[gid] = rowKeys
+      return {
+        selected: Object.values(versions).flat(),
+        versions: { ...versions },
+      }
+    })
   }
 
   const stop = (dataset) => {
@@ -403,7 +430,7 @@ function Model({ pid, project = {}, iterations, group, modelList, versions, quer
   }
 
   function add() {
-    history.push(`/home/model/import/${pid}`)
+    history.push(`/home/project/${pid}/model/import`)
   }
 
   const addBtn = (
@@ -412,14 +439,17 @@ function Model({ pid, project = {}, iterations, group, modelList, versions, quer
     </Button>
   )
 
-  const renderMultipleActions = Object.values(selectedVersions).flat().length ? (
+  const renderMultipleActions = selectedVersions.selected.length ? (
     <>
-      <Button type="primary" onClick={multipleHide}>
+      <Button type="primary" disabled={getDisabledStatus(({ state }) => isRunning(state))} onClick={multipleHide}>
         <EyeOffIcon /> {t("common.action.multiple.hide")}
       </Button>
-      <Button type="primary" onClick={multipleInfer}>
+      <Button type="primary" disabled={getDisabledStatus(({ state }) => !isValidModel(state))} onClick={multipleInfer}>
         <WajueIcon /> {t("common.action.multiple.infer")}
       </Button>
+      <a href={trainingUrl} target='_blank'><Button type="primary">
+        <BarchartIcon /> {t('task.action.training.batch')}
+      </Button></a>
     </>
   ) : null
 
@@ -442,8 +472,8 @@ function Model({ pid, project = {}, iterations, group, modelList, versions, quer
             onChange={tableChange}
             rowKey={(record) => record.id}
             rowSelection={{
+              selectedRowKeys: selectedVersions.versions[group.id],
               onChange: (keys) => rowSelectChange(group.id, keys),
-              getCheckboxProps: (record) => ({ disabled: isRunning(record.state), }),
             }}
             rowClassName={(record, index) => index % 2 === 0 ? '' : 'oddRow'}
             columns={columns}

@@ -1,16 +1,14 @@
 import argparse
 import logging
-import json
 import os
 import random
 import shutil
 
 from mir.commands import base
 from mir.protos import mir_command_pb2 as mirpb
-from mir.tools import annotations, checker, hash_utils, metadatas, mir_repo_utils, mir_storage_ops, revs_parser
+from mir.tools import annotations, checker, hash_utils, metadatas, mir_repo_utils, mir_storage_ops, revs_parser, utils
 from mir.tools.code import MirCode
 from mir.tools.command_run_in_out import command_run_in_out
-from mir.tools.errors import MirRuntimeError
 from mir.tools.phase_logger import PhaseLoggerCenter
 
 
@@ -28,12 +26,14 @@ class CmdImport(base.BaseCommand):
                                        dst_rev=self.args.dst_rev,
                                        src_revs=self.args.src_revs or 'master',
                                        work_dir=self.args.work_dir,
-                                       ignore_unknown_types=self.args.ignore_unknown_types)
+                                       unknown_types_strategy=annotations.UnknownTypesStrategy(
+                                           self.args.unknown_types_strategy))
 
     @staticmethod
     @command_run_in_out
     def run_with_args(mir_root: str, index_file: str, gt_index_file: str, anno_abs: str, gt_abs: str, gen_abs: str,
-                      dataset_name: str, dst_rev: str, src_revs: str, work_dir: str, ignore_unknown_types: bool) -> int:
+                      dataset_name: str, dst_rev: str, src_revs: str, work_dir: str,
+                      unknown_types_strategy: annotations.UnknownTypesStrategy) -> int:
         # Step 1: check args and prepare environment.
         if not index_file or not gen_abs or not os.path.isfile(index_file):
             logging.error(f"invalid index_file: {index_file} or gen_abs: {gen_abs}")
@@ -96,30 +96,28 @@ class CmdImport(base.BaseCommand):
             return ret
 
         mir_annotation = mirpb.MirAnnotations()
-        ret_code, unknown_types = annotations.import_annotations(mir_metadatas=mir_metadatas,
-                                                                 mir_annotation=mir_annotation,
-                                                                 in_sha1_file=sha1_index_abs,
-                                                                 in_sha1_gt_file=sha1_gt_index_abs,
-                                                                 mir_root=mir_root,
-                                                                 annotations_dir_path=anno_abs,
-                                                                 groundtruth_dir_path=gt_abs,
-                                                                 task_id=dst_typ_rev_tid.tid,
-                                                                 phase='import.others')
-        if ret_code != MirCode.RC_OK:
-            logging.error(f"import annotations error: {ret_code}")
-            return ret_code
-        if unknown_types:
-            if ignore_unknown_types:
-                logging.warning(f"unknown types: {unknown_types}")
-            else:
-                raise MirRuntimeError(MirCode.RC_CMD_UNKNOWN_TYPES, json.dumps(unknown_types))
+        anno_import_result = annotations.import_annotations(mir_metadatas=mir_metadatas,
+                                                            mir_annotation=mir_annotation,
+                                                            in_sha1_file=sha1_index_abs,
+                                                            in_sha1_gt_file=sha1_gt_index_abs,
+                                                            mir_root=mir_root,
+                                                            annotations_dir_path=anno_abs,
+                                                            groundtruth_dir_path=gt_abs,
+                                                            unknown_types_strategy=unknown_types_strategy,
+                                                            task_id=dst_typ_rev_tid.tid,
+                                                            phase='import.others')
+
+        logging.info(f"unknown types strategy: {unknown_types_strategy}")
+        logging.info(f"anno import result: {anno_import_result}")
 
         # create and write tasks
         task = mir_storage_ops.create_task(
             task_type=mirpb.TaskTypeImportData,
             task_id=dst_typ_rev_tid.tid,
-            message=f"importing {index_file}-{anno_abs}-{gt_abs}-{gen_abs} as {dataset_name}",
-            unknown_types=unknown_types,
+            message=f"importing {index_file}-{anno_abs}-{gt_abs} to {dst_rev}, uts: {unknown_types_strategy}",
+            new_types={k: v.count
+                       for k, v in anno_import_result.items()},
+            new_types_added=(unknown_types_strategy == annotations.UnknownTypesStrategy.ADD),
             src_revs=src_revs,
             dst_rev=dst_rev,
         )
@@ -162,10 +160,11 @@ def _generate_sha_and_copy(index_file: str, sha_idx_file: str, sha_folder: str) 
             if not media_src or not os.path.isfile(media_src):
                 logging.warning("invalid file: ", media_src)
                 continue
+
             sha1 = hash_utils.sha1sum_for_file(media_src)
             sha_f.writelines("\t".join([sha1, media_src]) + '\n')
 
-            media_dst = os.path.join(sha_folder, sha1)
+            media_dst = utils.get_asset_storage_path(location=sha_folder, hash=sha1, make_dirs=True)
             if not os.path.isfile(media_dst):
                 shutil.copyfile(media_src, media_dst)
 
@@ -181,7 +180,8 @@ def bind_to_subparsers(subparsers: argparse._SubParsersAction, parent_parser: ar
     importing_arg_parser = subparsers.add_parser("import",
                                                  parents=[parent_parser],
                                                  description="use this command to import data from img/anno folder",
-                                                 help="import raw data")
+                                                 help="import raw data",
+                                                 formatter_class=argparse.RawTextHelpFormatter)
     importing_arg_parser.add_argument("--index-file",
                                       dest="index_file",
                                       type=str,
@@ -213,9 +213,13 @@ def bind_to_subparsers(subparsers: argparse._SubParsersAction, parent_parser: ar
                                       required=True,
                                       help="rev@tid: destination branch name and task id")
     importing_arg_parser.add_argument('-w', dest='work_dir', type=str, required=False, help='working directory')
-    importing_arg_parser.add_argument('--ignore-unknown-types',
-                                      dest='ignore_unknown_types',
+    importing_arg_parser.add_argument('--unknown-types-strategy',
+                                      dest='unknown_types_strategy',
                                       required=False,
-                                      action='store_true',
-                                      help='ignore unknown type names in annotation files')
+                                      choices=['stop', 'ignore', 'add'],
+                                      default='stop',
+                                      help='strategy for unknown class types in annotation files\n'
+                                      'stop: stop on unknown class type names\n'
+                                      'ignore: ignore unknown class type names\n'
+                                      'add: add unknown class types names to labels.yaml')
     importing_arg_parser.set_defaults(func=CmdImport)

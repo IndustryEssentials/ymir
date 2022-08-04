@@ -98,7 +98,7 @@ const ProjectList = ({ list, query, ...func }) => {
       getData()
     }
   }
-  
+
   async function initState() {
     await func.resetQuery()
     form.resetFields()
@@ -147,15 +147,15 @@ const ProjectList = ({ list, query, ...func }) => {
     const title = <Row wrap={false} className='title'>
       <Col flex={1}>
         <Space>
-          <span className={s.name}><a>{item.name}</a></span>
+          <span className={s.name}><a>{item.name}</a> {item.isExample ? <span className="nameExtra">{t('project.example')}</span> : null}</span>
           <span className='titleItem'>
             <span className='titleLabel'>{t('project.train_classes')}:</span>
             <span className='titleContent'><KeywordsItem keywords={item.keywords} /></span>
           </span>
-          <span className='titleItem'>
+          {item.enableIteration ? <span className='titleItem'>
             <span className='titleLabel'>{t('project.iteration.current')}:</span>
             <span className='titleContent emphasis'>{t(getStageLabel(item.currentStage, item.round))}</span>
-          </span>
+          </span> : null}
         </Space>
       </Col>
       <Col>{more(item)}</Col>
@@ -176,12 +176,14 @@ const ProjectList = ({ list, query, ...func }) => {
             <span className='setLabel'>{item.trainSet?.name}</span><span>|</span>
             <span className='setLabel'>{item.testSet?.name}</span><span>|</span>
             <span className='setLabel'>{item.miningSet?.name}</span>
-            </div>
+          </div>
         </Col>
-        <Col span={4} className={s.stats}>
+        {item.enableIteration ? <Col span={4} className={s.stats}>
           <div className='contentLabel'>{t('project.iteration.number')}</div>
-          <div className='contentContent'><span className='currentIteration'>{item.round}</span></div>
-        </Col>
+          <div className='contentContent'>
+            <span className='currentIteration'>{item.round}</span>
+          </div>
+        </Col> : null}
       </Row>
       <Row>
         <Col flex={1}><span className='bottomLabel'>{t('project.content.desc')}:</span> <span className={s.bottomContent}>{item.description}</span></Col>
@@ -209,7 +211,7 @@ const ProjectList = ({ list, query, ...func }) => {
             renderItem={renderItem}
           />
         </ConfigProvider>
-        <Pagination className= 'pager' onChange={pageChange}
+        <Pagination className='pager' onChange={pageChange}
           current={query.current} pageSize={query.limit} total={total}
           showTotal={() => t('project.list.total', { total })}
           showQuickJumper showSizeChanger />

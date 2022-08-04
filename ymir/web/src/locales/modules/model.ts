@@ -3,7 +3,7 @@ const model = {
   "model.diagnose": { en: "Model Diagnose", cn: "模型诊断", },
   "model.management": { en: "Model Management", cn: "模型管理", },
   "model.list": { en: "Model List", cn: "模型列表", },
-  "model.column.name": { en: "Model Name", cn: "模型名称", },
+  "model.column.name": { en: "Version", cn: "版本", },
   "model.column.source": { en: "Source", cn: "来源", },
   "model.column.target": { en: "Train Classes", cn: "训练目标", },
   "model.column.map": { en: "mAP", cn: "精度均值(mAP)", },
@@ -39,9 +39,10 @@ const model = {
   'model.add.form.name': { en: 'Name', cn: '名称', },
   'model.add.form.name.placeholder': { en: 'Model Name', cn: '请输入模型名称', },
   'model.add.form.type': { en: 'Import Type', cn: '导入类型', },
-  'model.add.form.project': { en: 'Original Model', cn: '待复制模型', },
+  'model.add.form.project': { en: 'Select Model', cn: '选择模型', },
   'model.add.form.upload.btn': { en: 'Upload', cn: '上传文件', },
-  'model.add.form.url': { en: 'Url', cn: '网络地址', },
+  'model.add.form.url': { en: 'Url', cn: 'URL地址', },
+  'model.add.form.url.help': { en: 'E.g. https://github.com/yolo5_model/cat', cn: '示例：https://github.com/yolo5_model/cat', },
   'model.add.form.url.tip': { en: 'Please input valid url for model', cn: '请输入正确的网络地址，指向模型文件', },
   'model.add.form.url.placeholder': { en: 'Please input model url from internet', cn: '请输入模型文件的网络地址', },
   'model.file.required': { en: 'Please upload model', cn: '请上传模型', },
@@ -106,6 +107,7 @@ const model = {
   'model.diagnose.v.tasks.require': {en: "Please select infered testing dataset and config", cn: "请选择推理过的测试集及配置", },
   'model.diagnose.metrics.x.dataset': {en: "Testing Dataset", cn: "测试集", },
   'model.diagnose.metrics.x.keyword': {en: "Keyword", cn: "标签", },
+  'model.list.batch.invalid': {en: "Please select valid model to batch", cn: "请选择有效的模型进行批量操作", },
 }
 
 export default model

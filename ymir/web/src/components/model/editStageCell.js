@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react"
-import { Form, Input, Select } from "antd"
+import { Col, Form, Input, Row, Select } from "antd"
 import t from '@/utils/t'
 import { percent } from '@/utils/number'
 import useFetch from '@/hooks/useFetch'
@@ -16,9 +16,6 @@ const EditStageCell = ({ record, saveHandle = () => { } }) => {
   useEffect(() => {
     if (editing && multipleStages) {
       selectRef.current.focus()
-      form.setFieldsValue({
-        'stage': record.recommendStage,
-      })
     }
   }, [editing])
 
@@ -28,34 +25,38 @@ const EditStageCell = ({ record, saveHandle = () => { } }) => {
     }
   }, [result])
 
-  const toggleEdit = () => {
-    setEditing(!editing)
-  }
-
   const save = async () => {
     try {
       const values = await form.validateFields()
       await setRecommendStage({ ...values, model: record.id })
-      toggleEdit()
     } catch (errInfo) {
       console.log('Save failed:', errInfo)
     }
+    setEditing(false)
   }
 
+  const tagRender = ({ stage, color = 'rgba(0, 0, 0, 0.65)' }) => (<Row wrap={false}>
+    <Col flex={1}>{stage.name}</Col>
+    <Col style={{ color }}>mAP: {percent(stage.map)}</Col>
+  </Row>)
+
   return editing && multipleStages ? (
-    <Form form={form} initialValues={{ stage: record.recommendStage }} onMouseLeave={() => setEditing(false)} size={'small'}>
+    <Form form={form} initialValues={{ stage: record.recommendStage }} size={'small'}>
       <Form.Item
         style={{
           margin: 0,
         }}
         name='stage'
         rules={[
-          {
-            required: true,
-          },
+          { required: true, },
         ]}
       >
-        <Select ref={selectRef} onChange={save} options={record?.stages?.map(stage => ({ label: `${stage.name} ${percent(stage.map)}`, value: stage.id }))}></Select>
+        <Select ref={selectRef}
+          onBlur={() => setEditing(false)}
+          onChange={save}
+          options={record?.stages?.map(stage => ({ stage, label: tagRender({ stage }), value: stage.id }))}
+          tagRender={tagRender}
+        ></Select>
       </Form.Item>
     </Form>
   ) : (
@@ -63,7 +64,7 @@ const EditStageCell = ({ record, saveHandle = () => { } }) => {
       onMouseEnter={() => setEditing(true)}
       style={{ cursor: multipleStages ? 'pointer' : 'text' }}
     >
-      {recommendStage.name} {percent(recommendStage.map)}
+      {tagRender({ stage: recommendStage, color: 'orange' })}
     </div>
   )
 }

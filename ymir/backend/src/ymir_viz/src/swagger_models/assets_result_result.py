@@ -6,7 +6,7 @@ from datetime import date, datetime  # noqa: F401
 from typing import List, Dict  # noqa: F401
 
 from src.swagger_models.base_model_ import Model
-from src.swagger_models.asset_info import AssetInfo  # noqa: F401,E501
+from src.swagger_models.assets_meta_info import AssetsMetaInfo  # noqa: F401,E501
 from src import util
 
 
@@ -15,11 +15,11 @@ class AssetsResultResult(Model):
 
     Do not edit the class manually.
     """
-    def __init__(self, elements: List[AssetInfo]=None, offset: int=None, limit: int=None, tatal: int=None):  # noqa: E501
+    def __init__(self, elements: List[AssetsMetaInfo]=None, offset: int=None, limit: int=None, tatal: int=None):  # noqa: E501
         """AssetsResultResult - a model defined in Swagger
 
         :param elements: The elements of this AssetsResultResult.  # noqa: E501
-        :type elements: List[AssetInfo]
+        :type elements: List[AssetsMetaInfo]
         :param offset: The offset of this AssetsResultResult.  # noqa: E501
         :type offset: int
         :param limit: The limit of this AssetsResultResult.  # noqa: E501
@@ -28,7 +28,7 @@ class AssetsResultResult(Model):
         :type tatal: int
         """
         self.swagger_types = {
-            'elements': List[AssetInfo],
+            'elements': List[AssetsMetaInfo],
             'offset': int,
             'limit': int,
             'tatal': int
@@ -57,22 +57,22 @@ class AssetsResultResult(Model):
         return util.deserialize_model(dikt, cls)
 
     @property
-    def elements(self) -> List[AssetInfo]:
+    def elements(self) -> List[AssetsMetaInfo]:
         """Gets the elements of this AssetsResultResult.
 
 
         :return: The elements of this AssetsResultResult.
-        :rtype: List[AssetInfo]
+        :rtype: List[AssetsMetaInfo]
         """
         return self._elements
 
     @elements.setter
-    def elements(self, elements: List[AssetInfo]):
+    def elements(self, elements: List[AssetsMetaInfo]):
         """Sets the elements of this AssetsResultResult.
 
 
         :param elements: The elements of this AssetsResultResult.
-        :type elements: List[AssetInfo]
+        :type elements: List[AssetsMetaInfo]
         """
 
         self._elements = elements

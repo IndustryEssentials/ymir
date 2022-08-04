@@ -1,13 +1,11 @@
 import { useEffect, useState } from 'react'
-import { Button, Card, Form, Input, message, Modal, Select, Space, Radio, Row, Col, InputNumber, ConfigProvider } from 'antd'
+import { Button, Card, Form, Input, message, Modal, Select, Space, Radio, Row, Col } from 'antd'
 import { connect } from 'dva'
 import { useParams, useHistory, useLocation } from "umi"
 
 import s from './add.less'
 import t from '@/utils/t'
-import { MiningStrategy } from '@/constants/project'
 import Breadcrumbs from '@/components/common/breadcrumb'
-import EmptyState from '@/components/empty/dataset'
 import DatasetSelect from '@/components/form/datasetSelect'
 import Panel from '@/components/form/panel'
 import useFetch from '@/hooks/useFetch'
@@ -15,22 +13,13 @@ import useFetch from '@/hooks/useFetch'
 const { useForm } = Form
 const { confirm } = Modal
 
-const strategyOptions = Object.values(MiningStrategy)
-  .filter(key => Number.isInteger(key))
-  .map(value => ({
-    value,
-    label: t(`project.mining.strategy.${value}`),
-  }))
-
 const Add = ({ keywords, datasets, getKeywords, ...func }) => {
   const { id } = useParams()
   const history = useHistory()
   const location = useLocation()
-  const { settings } = location.query
   const [form] = useForm()
   const [isEdit, setEdit] = useState(false)
   const [project, getProject] = useFetch('project/getProject', {})
-  const [testSet, setTestSet] = useState(0)
 
   useEffect(() => {
     setEdit(!!id)
@@ -48,7 +37,7 @@ const Add = ({ keywords, datasets, getKeywords, ...func }) => {
 
   function initForm(project = {}) {
     const { name, keywords: kws, trainSetVersion,
-      description, testSet: testDataset, miningSet: miningDataset, miningStrategy, chunkSize, enableIteration, testingSets } = project
+      description, enableIteration, testingSets } = project
     if (name) {
       form.setFieldsValue({
         name, keywords: kws, description,
@@ -64,12 +53,14 @@ const Add = ({ keywords, datasets, getKeywords, ...func }) => {
     var params = {
       ...values,
     }
-    if (settings || isEdit) {
+    if (isEdit) {
       params.id = id
     }
-    if (!settings) {
-      params.name = (name || '').trim()
-      params.description = (description || '').trim()
+    params.name = (name || '').trim()
+    params.description = (description || '').trim()
+
+    if (isEdit && params.name === project.name) {
+      delete params.name
     }
 
     const send = async () => {
@@ -130,7 +121,8 @@ const Add = ({ keywords, datasets, getKeywords, ...func }) => {
       <Breadcrumbs />
       <Card className={s.container} title={renderTitle}>
         <div className={s.formContainer}>
-          <Form form={form} labelCol={{ span: 6 }} wrapperCol={{ span: 12 }} labelAlign='left' onFinish={submit} scrollToFirstError>
+          <Form form={form} labelCol={{ offset: 2, span: 6 }} wrapperCol={{ span: 12 }}
+            colon={false} labelAlign='left' onFinish={submit} scrollToFirstError>
             <Panel hasHeader={false}>
               <Form.Item
                 label={t('project.add.form.name')}
@@ -185,7 +177,7 @@ const Add = ({ keywords, datasets, getKeywords, ...func }) => {
                   { value: false, label: t('common.no') },
                 ]} />
               </Form.Item>
-              {isEdit ? <ConfigProvider renderEmpty={() => <EmptyState add={() => history.push(`/home/dataset/add/${id}`)} />}>
+              {isEdit ?
                 <Form.Item label={t('project.add.form.testing.set')} name="testingSets" tooltip={t('project.add.form.testingset.tip')}>
                   <DatasetSelect
                     pid={id}
@@ -193,8 +185,7 @@ const Add = ({ keywords, datasets, getKeywords, ...func }) => {
                     filters={datasets => datasets.filter(ds => ds.keywordCount > 0 && ds.groupId !== project?.trainSet?.id)}
                     allowClear
                   />
-                </Form.Item>
-              </ConfigProvider> : null}
+                </Form.Item> : null}
               <Form.Item label={t('project.add.form.desc')} name='description'
                 rules={[
                   { max: 500 },

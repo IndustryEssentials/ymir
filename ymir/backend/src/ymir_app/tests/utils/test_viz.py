@@ -31,10 +31,18 @@ class TestAsset:
     def test_create_asset(self, mock_user_labels, mocker):
         asset_id = random_lower_string()
         res = {
-            "annotations": [
+            "pred": [
                 {
                     "box": random_lower_string(10),
                     "class_id": random.randint(1, 20),
+                    "cm": 1,
+                }
+            ],
+            "gt": [
+                {
+                    "box": random_lower_string(10),
+                    "class_id": random.randint(1, 20),
+                    "cm": 1,
                 }
             ],
             "class_ids": list(range(1, 20)),
@@ -57,6 +65,26 @@ class TestAssets:
                 {
                     "asset_id": random_lower_string(),
                     "class_ids": [random.randint(1, 80) for _ in range(10)],
+                    "pred": [
+                        {
+                            "box": random_lower_string(10),
+                            "class_id": random.randint(1, 20),
+                            "cm": 1,
+                        }
+                    ],
+                    "gt": [
+                        {
+                            "box": random_lower_string(10),
+                            "class_id": random.randint(1, 20),
+                            "cm": 1,
+                        }
+                    ],
+                    "metadata": {
+                        "height": random.randint(100, 200),
+                        "width": random.randint(100, 200),
+                        "image_channels": random.randint(1, 3),
+                        "timestamp": {"start": time.time()},
+                    },
                 }
             ],
             "total": 124,
@@ -71,7 +99,7 @@ class TestModel:
             "model_id": random_lower_string(),
             "model_mAP": random.randint(1, 100) / 100,
             "task_parameters": "mock_task_parameters",
-            "executor_config": "mock_executor_config",
+            "executor_config": {"class_names": "a,b,c".split(",")},
             "model_stages": {
                 "epoch-1000": {
                     "mAP": -1,
@@ -101,13 +129,15 @@ class TestDataset:
     def test_dataset(self, mock_user_labels):
         res = {
             "class_ids_count": {3: 34},
-            "ignored_labels": {"cat": 5},
+            "new_types": {"cat": 5},
+            "new_types_added": False,
             "negative_info": {"negative_images_cnt": 0, "project_negative_images_cnt": 0},
             "total_images_cnt": 1,
             "pred": {
                 "total_images_cnt": 1,
                 "class_ids_count": {3: 34},
-                "ignored_labels": {"cat": 5},
+                "new_types": {"cat": 5},
+                "new_types_added": False,
                 "negative_info": {"negative_images_cnt": 0, "project_negative_images_cnt": 0},
                 "annos_cnt": 28,
                 "positive_asset_cnt": 1,
@@ -127,7 +157,7 @@ class TestDataset:
         }
         M = m.DatasetMetaData.from_viz_res(res, mock_user_labels)
         assert M.keyword_count == len(res["class_ids_count"])
-        assert M.ignored_keywords == res["ignored_labels"]
+        assert M.ignored_keywords == res["new_types"]
         assert M.negative_info["negative_images_cnt"] == res["negative_info"]["negative_images_cnt"]
         assert M.negative_info["project_negative_images_cnt"] == res["negative_info"]["project_negative_images_cnt"]
         assert M.asset_count == res["total_images_cnt"]
@@ -150,6 +180,26 @@ class TestVizClient:
                 {
                     "asset_id": random_lower_string(),
                     "class_ids": [random.randint(1, 80) for _ in range(10)],
+                    "pred": [
+                        {
+                            "box": random_lower_string(10),
+                            "class_id": random.randint(1, 20),
+                            "cm": 1,
+                        }
+                    ],
+                    "gt": [
+                        {
+                            "box": random_lower_string(10),
+                            "class_id": random.randint(1, 20),
+                            "cm": 1,
+                        }
+                    ],
+                    "metadata": {
+                        "height": random.randint(100, 200),
+                        "width": random.randint(100, 200),
+                        "image_channels": random.randint(1, 3),
+                        "timestamp": {"start": time.time()},
+                    },
                 }
             ],
             "total": random.randint(1000, 2000),
@@ -178,10 +228,18 @@ class TestVizClient:
         mock_session = mocker.Mock()
         resp = mocker.Mock()
         res = {
-            "annotations": [
+            "pred": [
                 {
                     "box": random_lower_string(10),
                     "class_id": random.randint(1, 80),
+                    "cm": 1,
+                }
+            ],
+            "gt": [
+                {
+                    "box": random_lower_string(10),
+                    "class_id": random.randint(1, 80),
+                    "cm": 1,
                 }
             ],
             "class_ids": list(range(1, 20)),
@@ -219,7 +277,7 @@ class TestVizClient:
             "model_id": random_lower_string(),
             "model_mAP": random.randint(1, 100) / 100,
             "task_parameters": "mock_task_parameters",
-            "executor_config": "mock_executor_config",
+            "executor_config": {"class_names": "a,b,c".split(",")},
             "model_stages": {
                 "epoch-1000": {
                     "mAP": -1,
@@ -258,13 +316,15 @@ class TestVizClient:
         resp = mocker.Mock()
         res = {
             "class_ids_count": {3: 34},
-            "ignored_labels": {"cat": 5},
+            "new_types": {"cat": 5},
+            "new_types_added": False,
             "negative_info": {"negative_images_cnt": 0, "project_negative_images_cnt": 0},
             "total_images_cnt": 1,
             "pred": {
                 "total_images_cnt": 1,
                 "class_ids_count": {3: 34},
-                "ignored_labels": {"cat": 5},
+                "new_types": {"cat": 5},
+                "new_types_added": False,
                 "negative_info": {"negative_images_cnt": 0, "project_negative_images_cnt": 0},
                 "annos_cnt": 28,
                 "positive_asset_cnt": 1,
@@ -293,7 +353,7 @@ class TestVizClient:
         ret = viz.get_dataset()
         assert isinstance(ret, m.DatasetMetaData)
         assert ret.keyword_count == len(res["class_ids_count"])
-        assert ret.ignored_keywords == res["ignored_labels"]
+        assert ret.ignored_keywords == res["new_types"]
         assert ret.negative_info["negative_images_cnt"] == res["negative_info"]["negative_images_cnt"]
         assert ret.negative_info["project_negative_images_cnt"] == res["negative_info"]["project_negative_images_cnt"]
         assert ret.asset_count == res["total_images_cnt"]

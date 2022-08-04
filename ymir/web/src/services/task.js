@@ -110,7 +110,7 @@ export function updateTask(id, name) {
  * }
  * @returns 
  */
-export function createFusionTask({
+export function fusion({
   iteration, project_id, group_id, dataset, include_datasets = [], mining_strategy, include_strategy = 2,
   exclude_result, exclude_datasets = [], include = [], exclude = [], samples,
   result_description: description,
@@ -133,6 +133,61 @@ export function createFusionTask({
 }
 
 /**
+ * create merge task
+ * @param {object} param0 
+ * {
+ * {number} projectId
+ * {number} dataset
+ * {array<number>} [includes]
+ * {array<number>} [excludes]
+ * {number} [strategy]
+ * {number} description 
+ * }
+ * @returns 
+ */
+export function merge({
+  projectId, dataset,
+  includes = [], strategy = 2,
+  excludes = [],
+  description,
+}) {
+  return request.post('/datasets/merge', {
+    project_id: projectId,
+    include_datasets: includes,
+    exclude_datasets: excludes,
+    dataset_id: dataset,
+    merge_strategy: strategy,
+    description,
+  })
+}
+/**
+ * create filter task
+ * @param {object} param0 
+ * {
+ * {number} projectId
+ * {number} dataset
+ * {array<string>} [includes]
+ * {array<string>} [excludes]
+ * {number} [samples]
+ * {number} [description]
+ * }
+ * @returns 
+ */
+export function filter({
+  projectId, dataset,
+  includes, excludes, samples,
+  description,
+}) {
+  return request.post('/datasets/filter', {
+    project_id: projectId,
+    dataset_id: dataset,
+    include_keywords: includes,
+    exclude_keywords: excludes,
+    sampling_count: samples,
+    description,
+  })
+}
+/**
  * create label task
  * @param {object} task {
  * {number} projectId
@@ -144,7 +199,7 @@ export function createFusionTask({
  * } 
  * @returns 
  */
-export function createLabelTask({
+export function label({
   projectId, iteration, stage,
   groupId, name, datasetId, keywords,
   labellers, keepAnnotations, doc, description,
@@ -185,7 +240,7 @@ export function createLabelTask({
  * } 
  * @returns 
  */
-export function createTrainTask({
+export function train({
   iteration, stage, openpai, description,
   name, projectId, datasetId, keywords, testset,
   backbone, config, network, trainType, strategy,
@@ -218,8 +273,8 @@ export function createTrainTask({
   })
 }
 
-export function createMiningTask({
-  iteration, stage, description,
+export function mine({
+  iteration, stage, openpai, description,
   projectId, datasetId, modelStage = [], topk, algorithm,
   config, strategy, inference, name, image, imageId,
 }) {
@@ -232,7 +287,7 @@ export function createMiningTask({
     iteration_id: iteration,
     iteration_stage: stage,
     name,
-    docker_image_config: config,
+    docker_image_config: { ...config, openpai_enable: openpai, },
     parameters: {
       strategy,
       model_id: model,
@@ -261,7 +316,7 @@ export function createMiningTask({
  * } 
  * @returns 
  */
-export function createInferenceTask({
+export function infer({
   name,
   projectId,
   datasets,
@@ -269,15 +324,16 @@ export function createInferenceTask({
   config,
   image,
   imageId,
+  openpai,
   description,
 }) {
-  const maps = datasets.map(dataset => stages.map(([model, stage]) => ({dataset, model, stage }))).flat()
-  const params = maps.map(({model, stage, dataset}) => ({
+  const maps = datasets.map(dataset => stages.map(([model, stage]) => ({ dataset, model, stage }))).flat()
+  const params = maps.map(({ model, stage, dataset }) => ({
     name,
     type: TASKTYPES.INFERENCE,
     project_id: projectId,
     result_description: description,
-    docker_image_config: config,
+    docker_image_config: { ...config, openpai_enable: openpai, },
     parameters: {
       model_id: model,
       model_stage_id: stage,

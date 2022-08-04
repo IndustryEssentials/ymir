@@ -4,11 +4,13 @@ import {
   deleteTask,
   updateTask,
   stopTask,
-  createFusionTask,
-  createMiningTask,
-  createTrainTask,
-  createLabelTask,
-  createInferenceTask,
+  fusion,
+  merge,
+  filter,
+  mine,
+  train,
+  label,
+  infer,
 } from "@/services/task"
 import { TASKTYPES, TASKSTATES, isFinalState } from '@/constants/task'
 
@@ -115,8 +117,8 @@ export default {
         return result
       }
     },
-    *createFusionTask({ payload }, { call, put }) {
-      let { code, result } = yield call(createFusionTask, payload)
+    *fusion({ payload }, { call, put }) {
+      let { code, result } = yield call(fusion, payload)
       if (code === 0) {
         yield put.resolve({
           type: 'dataset/clearCache'
@@ -127,8 +129,28 @@ export default {
         return result
       }
     },
-    *createTrainTask({ payload }, { call, put }) {
-      let { code, result } = yield call(createTrainTask, payload)
+    *merge({ payload }, { call, put }) {
+      let { code, result } = yield call(merge, payload)
+      if (code === 0) {
+        yield put.resolve({
+          type: 'dataset/update',
+          payload: result,
+        })
+        return result
+      }
+    },
+    *filter({ payload }, { call, put }) {
+      let { code, result } = yield call(filter, payload)
+      if (code === 0) {
+        yield put.resolve({
+          type: 'dataset/update',
+          payload: result,
+        })
+        return result
+      }
+    },
+    *train({ payload }, { call, put }) {
+      let { code, result } = yield call(train, payload)
       if (code === 0) {
         yield put.resolve({
           type: 'model/clearCache'
@@ -139,8 +161,8 @@ export default {
         return result
       }
     },
-    *createMiningTask({ payload }, { call, put }) {
-      let { code, result } = yield call(createMiningTask, payload)
+    *mine({ payload }, { call, put }) {
+      let { code, result } = yield call(mine, payload)
       if (code === 0) {
         yield put({
           type: 'dataset/clearCache'
@@ -151,8 +173,8 @@ export default {
         return result
       }
     },
-    *createLabelTask({ payload }, { call, put }) {
-      let { code, result } = yield call(createLabelTask, payload)
+    *label({ payload }, { call, put }) {
+      let { code, result } = yield call(label, payload)
       if (code === 0) {
         yield put.resolve({
           type: 'dataset/clearCache'
@@ -163,8 +185,8 @@ export default {
         return result
       }
     },
-    *createInferenceTask({ payload }, { call, put }) {
-      let { code, result } = yield call(createInferenceTask, payload)
+    *infer({ payload }, { call, put }) {
+      let { code, result } = yield call(infer, payload)
       if (code === 0) {
         yield put.resolve({
           type: 'dataset/clearCache'
@@ -192,22 +214,6 @@ export default {
       yield put({
         type: 'UPDATE_TASKS',
         payload: { items: result, total: tasks.total },
-      })
-    },
-    *updateTaskState({ payload }, { put, select }) {
-      const task = yield select(state => state.task.task)
-      const updateList = payload || {}
-      const updateItem = updateList[task.hash]
-      if (updateItem) {
-        task.state = updateItem.state
-        task.progress = updateItem.percent * 100
-        if (isFinalState(updateItem.state)) {
-          task.forceUpdate = true
-        }
-      }
-      yield put({
-        type: 'UPDATE_TASK',
-        payload: { ...task },
       })
     },
     *updateQuery({ payload = {} }, { put, select }) {

@@ -16,28 +16,38 @@ class AssetsMetaInfo(Model):
 
     Do not edit the class manually.
     """
-    def __init__(self, annotations: Annotations=None, class_ids: List[int]=None, metadata: AssetsMetaInfoMetadata=None):  # noqa: E501
+    def __init__(self, asset_id: str=None, gt: Annotations=None, pred: Annotations=None, class_ids: List[int]=None, metadata: AssetsMetaInfoMetadata=None):  # noqa: E501
         """AssetsMetaInfo - a model defined in Swagger
 
-        :param annotations: The annotations of this AssetsMetaInfo.  # noqa: E501
-        :type annotations: Annotations
+        :param asset_id: The asset_id of this AssetsMetaInfo.  # noqa: E501
+        :type asset_id: str
+        :param gt: The gt of this AssetsMetaInfo.  # noqa: E501
+        :type gt: Annotations
+        :param pred: The pred of this AssetsMetaInfo.  # noqa: E501
+        :type pred: Annotations
         :param class_ids: The class_ids of this AssetsMetaInfo.  # noqa: E501
         :type class_ids: List[int]
         :param metadata: The metadata of this AssetsMetaInfo.  # noqa: E501
         :type metadata: AssetsMetaInfoMetadata
         """
         self.swagger_types = {
-            'annotations': Annotations,
+            'asset_id': str,
+            'gt': Annotations,
+            'pred': Annotations,
             'class_ids': List[int],
             'metadata': AssetsMetaInfoMetadata
         }
 
         self.attribute_map = {
-            'annotations': 'annotations',
+            'asset_id': 'asset_id',
+            'gt': 'gt',
+            'pred': 'pred',
             'class_ids': 'class_ids',
             'metadata': 'metadata'
         }
-        self._annotations = annotations
+        self._asset_id = asset_id
+        self._gt = gt
+        self._pred = pred
         self._class_ids = class_ids
         self._metadata = metadata
 
@@ -53,25 +63,67 @@ class AssetsMetaInfo(Model):
         return util.deserialize_model(dikt, cls)
 
     @property
-    def annotations(self) -> Annotations:
-        """Gets the annotations of this AssetsMetaInfo.
+    def asset_id(self) -> str:
+        """Gets the asset_id of this AssetsMetaInfo.
 
 
-        :return: The annotations of this AssetsMetaInfo.
+        :return: The asset_id of this AssetsMetaInfo.
+        :rtype: str
+        """
+        return self._asset_id
+
+    @asset_id.setter
+    def asset_id(self, asset_id: str):
+        """Sets the asset_id of this AssetsMetaInfo.
+
+
+        :param asset_id: The asset_id of this AssetsMetaInfo.
+        :type asset_id: str
+        """
+
+        self._asset_id = asset_id
+
+    @property
+    def gt(self) -> Annotations:
+        """Gets the gt of this AssetsMetaInfo.
+
+
+        :return: The gt of this AssetsMetaInfo.
         :rtype: Annotations
         """
-        return self._annotations
+        return self._gt
 
-    @annotations.setter
-    def annotations(self, annotations: Annotations):
-        """Sets the annotations of this AssetsMetaInfo.
+    @gt.setter
+    def gt(self, gt: Annotations):
+        """Sets the gt of this AssetsMetaInfo.
 
 
-        :param annotations: The annotations of this AssetsMetaInfo.
-        :type annotations: Annotations
+        :param gt: The gt of this AssetsMetaInfo.
+        :type gt: Annotations
         """
 
-        self._annotations = annotations
+        self._gt = gt
+
+    @property
+    def pred(self) -> Annotations:
+        """Gets the pred of this AssetsMetaInfo.
+
+
+        :return: The pred of this AssetsMetaInfo.
+        :rtype: Annotations
+        """
+        return self._pred
+
+    @pred.setter
+    def pred(self, pred: Annotations):
+        """Sets the pred of this AssetsMetaInfo.
+
+
+        :param pred: The pred of this AssetsMetaInfo.
+        :type pred: Annotations
+        """
+
+        self._pred = pred
 
     @property
     def class_ids(self) -> List[int]:

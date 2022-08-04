@@ -10,7 +10,7 @@ import xml.etree.ElementTree as ElementTree
 import lmdb
 
 from mir.protos import mir_command_pb2 as mirpb
-from mir.tools import class_ids, data_preprocessor, data_reader
+from mir.tools import class_ids, data_preprocessor, data_reader, utils
 from mir.tools.code import MirCode
 from mir.tools.errors import MirRuntimeError
 
@@ -146,9 +146,10 @@ def _single_image_annotations_to_voc(asset_id: str, attrs: mirpb.MetadataAttribu
     segmented_node.text = '0'
 
     # annotation: cks and sub nodes
-    cks_node = ElementTree.SubElement(annotation_node, 'cks')
-    for k, v in image_cks.cks.items():
-        ElementTree.SubElement(cks_node, k).text = v
+    if image_cks.cks:
+        cks_node = ElementTree.SubElement(annotation_node, 'cks')
+        for k, v in image_cks.cks.items():
+            ElementTree.SubElement(cks_node, k).text = v
 
     # annotation: image_quality
     image_quality_node = ElementTree.SubElement(annotation_node, 'image_quality')
@@ -190,9 +191,10 @@ def _single_image_annotations_to_voc(asset_id: str, attrs: mirpb.MetadataAttribu
         difficult_node = ElementTree.SubElement(object_node, 'difficult')
         difficult_node.text = '0'
 
-        tags_node = ElementTree.SubElement(object_node, 'tags')
-        for k, v in annotation.tags.items():
-            ElementTree.SubElement(tags_node, k).text = v
+        if annotation.tags:  # Not add tags node if empty, otherwise xmlparse lib will get tags: None.
+            tags_node = ElementTree.SubElement(object_node, 'tags')
+            for k, v in annotation.tags.items():
+                ElementTree.SubElement(tags_node, k).text = v
 
         box_quality_node = ElementTree.SubElement(object_node, 'box_quality')
         box_quality_node.text = f"{annotation.anno_quality:.4f}"
@@ -371,7 +373,7 @@ class RawDataWriter(BaseDataWriter):
     def _write(self, asset_id: str, attrs: mirpb.MetadataAttributes, image_annotations: mirpb.SingleImageAnnotations,
                gt_annotations: mirpb.SingleImageAnnotations, image_cks: mirpb.SingleImageCks) -> None:
         # write asset
-        asset_src_path = os.path.join(self._assets_location, asset_id)
+        asset_src_path = utils.get_asset_storage_path(location=self._assets_location, hash=asset_id, make_dirs=False)
         sub_folder_name = asset_id[-2:] if self._need_id_sub_folder else ''
 
         asset_file_name = f"{asset_id}-{self.signature}" if self.signature else asset_id
@@ -499,7 +501,7 @@ class LmdbDataWriter(BaseDataWriter):
 
     def _write(self, asset_id: str, attrs: mirpb.MetadataAttributes, image_annotations: mirpb.SingleImageAnnotations,
                gt_annotations: mirpb.SingleImageAnnotations, image_cks: mirpb.SingleImageCks) -> None:
-        asset_src_path = os.path.join(self._assets_location, asset_id)
+        asset_src_path = utils.get_asset_storage_path(location=self._assets_location, hash=asset_id, make_dirs=False)
         asset_data = self._preprocessor.prep_img(src_img_path=asset_src_path, return_bytes=True)
 
         # write asset and annotations

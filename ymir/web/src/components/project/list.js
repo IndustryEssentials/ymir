@@ -11,34 +11,34 @@ export const Lists = ({ projects = [], more = '' }) => {
     const title = <Row wrap={false} className='title'>
       <Col flex={1}>
         <Space>
-          <span className={s.name}>{item.name}</span>
+          <span className={s.name}>{item.name} {item.isExample ? <span className="nameExtra">{t('project.example')}</span> : null}</span>
           <span className='titleItem'>
             <span className='titleLabel'>{t('project.train_classes')}:</span>
             <span className='titleContent'><KeywordsItem keywords={item.keywords} /></span>
           </span>
-          <span className='titleItem'>
+          {item.enableIteration ? <span className='titleItem'>
             <span className='titleLabel'>{t('project.iteration.current')}:</span>
             <span className='titleContent emphasis'>{t(getStageLabel(item.currentStage, item.round))}</span>
-          </span>
+          </span> : null }
         </Space>
       </Col>
       <Col>{more}</Col>
     </Row>
 
     const tipContent = <div>
-      <div>{t('project.train_set')}：{item.trainSet?.name}</div>
-      <div>{t('project.test_set')}：{item.testSet?.name}</div>
-      <div>{t('project.mining_set')}：{item.miningSet?.name}</div>
+      <div>{t('project.train_set')}: {item.trainSet?.name}</div>
+      <div>{t('project.test_set')}: {item.testSet?.name}</div>
+      <div>{t('project.mining_set')}: {item.miningSet?.name}</div>
     </div>;
     
     const desc = <>
       <Row className='content' justify="center">
         <Col span={5} className={s.stats}>
-          <div className='contentLabel'>Datasets</div>
+          <div className='contentLabel'>{t('project.tab.set.title')}</div>
           <div className='contentContent'>{item.setCount}</div>
         </Col>
         <Col span={5} className={s.stats}>
-          <div className='contentLabel'>Models</div>
+          <div className='contentLabel'>{t('project.tab.model.title')}</div>
           <div className='contentContent'>{item.modelCount}</div>
         </Col>
         <Col span={9} className={s.stats}>
@@ -52,10 +52,10 @@ export const Lists = ({ projects = [], more = '' }) => {
           </div>
         </Col>
     
-        <Col span={5} className={s.stats}>
+        {item.enableIteration ? <Col span={5} className={s.stats}>
           <div className='contentLabel'>{t('project.iteration.number')}</div>
           <div className='contentContent'><span className='currentIteration'>{item.round}</span></div>
-        </Col>
+        </Col> : null }
       </Row>
       <Row>
         <Col flex={1}><span className='bottomLabel'>{t('project.content.desc')}:</span> <span className={s.bottomContent}>{item.description}</span></Col>

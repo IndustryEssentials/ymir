@@ -14,7 +14,7 @@ import Error from "@/components/task/error"
 import Hide from "@/components/common/hide"
 import useRestore from "@/hooks/useRestore"
 
-const taskTypes = ["fusion", "train", "mining", "label", 'inference', 'copy']
+const taskTypes = ["merge", "filter", "train", "mining", "label", 'inference', 'copy']
 
 function DatasetDetail({ datasetCache, getDataset }) {
   const history = useHistory()
@@ -66,10 +66,9 @@ function DatasetDetail({ datasetCache, getDataset }) {
         <div className={s.content}>
           <Detail dataset={dataset} />
           <TaskProgress state={dataset.state} result={dataset} task={dataset.task} duration={dataset.durationLabel} progress={dataset.progress} fresh={() => fetchDataset(true)} />
-          {dataset?.task?.error_code ? <Error code={dataset.task?.error_code} msg={dataset.task?.error_message} /> : null}
+          <Error code={dataset.task?.error_code} msg={dataset.task?.error_message} terminated={dataset?.task?.is_terminated} />
           <TaskDetail
             task={dataset.task}
-            ignore={dataset.ignoredKeywords}
           ></TaskDetail>
           <Space style={{ width: "100%", justifyContent: "flex-end" }}>
             {dataset.taskType === TASKTYPES.LABEL ? (
@@ -86,7 +85,7 @@ function DatasetDetail({ datasetCache, getDataset }) {
                   type="primary"
                   onClick={() => history.push(`/home/project/${pid}/${type}?did=${id}`)}
                 >
-                  {t(`task.type.${type}`)}
+                  {t(`common.action.${type}`)}
                 </Button>
               ) : null)}
               {dataset.assetCount > 0 ? <Button type="primary" onClick={() => hide(dataset)}>

@@ -39,8 +39,7 @@
   z-index: 10000;
 }
 /** component: icons **/
-.cicon {
-  // margin-left: 6px;
+:global(.ant-menu-item) .cicon, :global(.ant-menu-submenu-title) .cicon, .cicon {
   font-size: 20px;
   line-height: 20px;
   vertical-align: middle;
@@ -92,16 +91,37 @@
 }
 
 /** check project dirty **/
+.checkPanel {
+  @error: rgb(242, 99, 123);
+  @success: @primary-color;
+  @btnColor: #10BC5E;
+  color: rgba(0, 0, 0, 0.65);
 .checkerError, .checkerSuccess {
   border-radius: 2px;
   line-height: 30px;
   padding: 0 10px;
 }
 .checkerSuccess {
-  background: rgba(54, 203, 203, 0.1);
-  border: 1px solid rgba(54, 203, 203, 1);
+  background: fade(@success, 10);
+  border: 1px solid @success;
 }
 .checkerError {
-  background: rgba(242, 99, 123, 0.1);
-  border: 1px solid rgba(242, 99, 123, 1);
+  background: fade(@error, 10);
+  border: 1px solid @error;
+}
+  .checkBtn {
+    background-color: @btnColor;
+    color: #fff;
+    border-color:@btnColor;
+    &:hover {
+      background-color: lighten(@btnColor, 10%);
+      border-color: lighten(@btnColor, 10%);
+    }
+  }
+  .success {
+    color: @success;
+  }
+  .error {
+    color: @error;
+  }
 }

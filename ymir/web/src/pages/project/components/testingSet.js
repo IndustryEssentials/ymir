@@ -29,7 +29,7 @@ export const TestingSet = ({ project }) => {
     ]
 
     return maps.map(({ label, datasetGroup }) => {
-      return <Row key={label} className={s.datasetPanel} align='left'>
+      return <Row key={label} className={s.testingSets} align='left'>
         <Col className={s.datasetTitle}>
           <span>{t(label)}: </span>
         </Col>
@@ -51,8 +51,5 @@ export const TestingSet = ({ project }) => {
     </Popover>
   }
 
-  return (<>
-      {renderProjectTestingSetLabel()}
-    </>
-  )
+  return datasets.length ? renderProjectTestingSetLabel() : null
 }
