@@ -9,7 +9,7 @@ KEYWORDS_CACHE_KEY = "keywords"
 
 
 class CacheClient:
-    def __init__(self, redis_uri: str, user_id: int):
+    def __init__(self, *, redis_uri: str = settings.BACKEND_REDIS_URL, user_id: int):
         self.prefix = "cache"
         self.user_id = user_id
         self.conn = self._get_redis_con(redis_uri)

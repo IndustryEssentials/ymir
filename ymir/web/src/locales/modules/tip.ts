@@ -64,8 +64,8 @@ const tip = {
     en: "The mining data can used for optimizing the model selected.",
   },
   "tip.task.filter.strategy": {
-    cn: "用户自定义挖掘结果数据集的大小，即希望保留TopK个最有利于模型优化的数据。在选择多个数据集时，由于可能存在重复数据，合并后的结果小于所选数据集之和，当用户自定义TopK值大于合并后的数据集大小时，则返回全部数据。",
-    en: "User-defined size of the mined result dataset, i.e., you want to keep the TopK data that are most conducive to model optimization.When multiple datasets are selected, the merged result may be smaller than the sum of the selected datasets due to the possible existence of duplicate data. When the user-defined TopK value is larger than the size of the merged dataset, all data are returned.",
+    cn: "用户自定义挖掘结果数据集的大小，即保留得分最高的K个最有利于模型优化的数据。",
+    en: "User-defined size of the mined result dataset, you want to keep the TopK data that are most conducive to model optimization.",
   },
   "tip.task.filter.newlable": {
     cn: "通过所选模型对数据集进行推理，产生新的标注结果",
@@ -126,6 +126,14 @@ const tip = {
   "tip.train.export.format": {
     cn: '导出给训练镜像使用的数据格式，图像格式包含raw/lmdb, 标注格式有none/ark/voc/ls_json。请根据镜像选择相应的数据格式。',
     en: 'Export format for training docker image. assets format: raw/lmdb, annotations format none/ark/voc/ls_json. Please choose one matched your training docker image.',
+  },
+  'tip.task.merge.include': {
+    cn: '选择要统一合并的其他数据集，可多选',
+    en: 'Select datasets to merged, multiple selection',
+  },
+  'tip.task.merge.exclude': {
+    cn: '选择不期望出现在结果数据集中的数据，可多选',
+    en: 'Select datasets for exclude data, multiple selection',
   },
 }
 

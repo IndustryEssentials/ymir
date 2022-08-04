@@ -53,6 +53,12 @@ enum MergeStrategy {
     GUEST = 2;
 }
 
+enum UnknownTypesStrategy {
+    UTS_STOP = 0;
+    UTS_IGNORE = 1;
+    UTS_ADD = 2;
+}
+
 enum RequestType {
     UNKNOWN = 0;
     // CMD task
@@ -200,8 +206,11 @@ message TaskReqImporting {
     string asset_dir = 1;
     // single pascal xml per asset, same base_filename as in asset-folder
     string annotation_dir = 2;
-    bool name_strategy_ignore = 3;
     string gt_dir = 4;
+    // strategy for unknown class types: stop, ignore or add
+    UnknownTypesStrategy unknown_types_strategy = 5;
+
+    reserved 3;
 }
 
 message TaskReqExporting {

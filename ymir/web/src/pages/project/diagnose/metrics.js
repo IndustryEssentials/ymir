@@ -165,7 +165,7 @@ function Matrics({ pid, project }) {
         onChange={metricsChange}
       />
       <div hidden={![metricsTabs[2].value, metricsTabs[3].value].includes(selectedMetric)}>
-        <Slider style={{ width: 200 }} min={0} max={1}
+        <Slider className={s.prRate} style={{ width: 200 }} min={0} max={1}
           value={prRate}
           range={true}
           onChange={prRateChange}

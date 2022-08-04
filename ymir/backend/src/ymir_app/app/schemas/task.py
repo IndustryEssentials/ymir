@@ -79,6 +79,7 @@ class TaskCreate(TaskBase):
     parameters: TaskParameter = Field(description="task specific parameters")
     docker_image_config: Optional[Dict] = Field(description="docker runtime configuration")
     preprocess: Optional[TaskPreprocess] = Field(description="preprocess to apply to related dataset")
+    result_description: Optional[str] = Field(description="description for task result, not task itself")
 
     @validator("docker_image_config")
     def dumps_docker_image_config(cls, v: Optional[Union[str, Dict]], values: Dict[str, Any]) -> Optional[str]:
@@ -176,6 +177,8 @@ class TaskInternal(TaskInDBBase):
             TaskType.import_data,
             TaskType.copy_data,
             TaskType.data_fusion,
+            TaskType.filter,
+            TaskType.merge,
         ]:
             return ResultType.dataset
         else:
@@ -185,8 +188,18 @@ class TaskInternal(TaskInDBBase):
         use_enum_values = True
 
 
-class TaskResult(BaseModel):
+class DatasetResult(BaseModel):
     id: int
+    dataset_group_id: int
+    result_state: ResultState
+
+    class Config:
+        orm_mode = True
+
+
+class ModelResult(BaseModel):
+    id: int
+    model_group_id: int
     result_state: ResultState
 
     class Config:
@@ -194,8 +207,8 @@ class TaskResult(BaseModel):
 
 
 class Task(TaskInternal):
-    result_model: Optional[TaskResult]
-    result_dataset: Optional[TaskResult]
+    result_model: Optional[ModelResult]
+    result_dataset: Optional[DatasetResult]
 
     @root_validator
     def ensure_terminate_state(cls, values: Any) -> Any:
@@ -270,8 +283,8 @@ class TaskResultUpdateMessage(BaseModel):
     percent: float
     state: int
     result_state: Optional[int]
-    result_model: Optional[TaskResult]
-    result_dataset: Optional[TaskResult]
+    result_model: Optional[ModelResult]
+    result_dataset: Optional[DatasetResult]
 
     @root_validator(pre=True)
     def gen_result_state(cls, values: Any) -> Any:

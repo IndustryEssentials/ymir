@@ -110,7 +110,7 @@ describe("constants: project", () => {
       testingSets: [],
       setCount: 6,
       model: 0,
-      modelStage: 0,
+      modelStage: undefined,
       modelCount: 0,
       miningStrategy: 0,
       chunkSize: 0,
@@ -128,6 +128,7 @@ describe("constants: project", () => {
       totalAssetCount: 0,
       runningTaskCount: 0,
       totalTaskCount: 0,
+      candidateTrainSet: 0,
     }
     expect(transferProject(origin)).toEqual(expected)
 

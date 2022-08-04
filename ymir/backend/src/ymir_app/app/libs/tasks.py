@@ -28,6 +28,7 @@ from app.constants.state import (
 )
 from app.config import settings
 from app import schemas, crud, models
+from app.utils.cache import CacheClient
 from app.utils.ymir_controller import ControllerClient, gen_task_hash
 from app.utils.clickhouse import YmirClickHouse
 from app.utils.ymir_viz import VizClient, ModelMetaData, DatasetMetaData
@@ -163,7 +164,7 @@ def create_single_task(db: Session, user_id: int, user_labels: UserLabels, task_
     task_info = schemas.TaskInternal.from_orm(task)
 
     task_result = TaskResult(db=db, task_in_db=task)
-    task_result.create(task_in.parameters.dataset_id)
+    task_result.create(task_in.parameters.dataset_id, task_in.result_description)
 
     try:
         write_clickhouse_metrics(
@@ -204,6 +205,7 @@ class TaskResult:
             project_id=self.project_id,
             branch_id=self.task_hash,
         )
+        self.cache = CacheClient(user_id=self.user_id)
 
         self._result: Optional[Union[DatasetMetaData, ModelMetaData]] = None
         self._user_labels: Optional[Dict] = None
@@ -233,10 +235,14 @@ class TaskResult:
     @property
     def dataset_info(self) -> Optional[DatasetMetaData]:
         try:
-            return self.viz.get_dataset(user_labels=self.user_labels)
+            dataset_info = self.viz.get_dataset(user_labels=self.user_labels)
         except Exception:
             logger.exception("[update task] failed to get dataset_info, check viz log")
             return None
+        if dataset_info.keywords_updated:
+            logger.info("[update task] delete user keywords cache for new keywords from dataset")
+            self.cache.delete_personal_keywords_cache()
+        return dataset_info
 
     @property
     def result_info(self) -> Optional[Union[DatasetMetaData, ModelMetaData]]:
@@ -293,14 +299,16 @@ class TaskResult:
                 )
             return model_group.id, model_group.name
 
-    def create(self, dataset_id: int) -> Dict[str, Dict]:
+    def create(self, dataset_id: int, description: Optional[str] = None) -> Dict[str, Dict]:
         dest_group_id, dest_group_name = self.get_dest_group_info(dataset_id)
         if self.result_type is ResultType.dataset:
-            dataset = crud.dataset.create_as_task_result(self.db, self.task, dest_group_id, dest_group_name)
+            dataset = crud.dataset.create_as_task_result(
+                self.db, self.task, dest_group_id, dest_group_name, description
+            )
             logger.info("[create task] created new dataset(%s) as task result", dataset.name)
             return {"dataset": jsonable_encoder(dataset)}
         elif self.result_type is ResultType.model:
-            model = crud.model.create_as_task_result(self.db, self.task, dest_group_id, dest_group_name)
+            model = crud.model.create_as_task_result(self.db, self.task, dest_group_id, dest_group_name, description)
             logger.info("[create task] created new model(%s) as task result", model.name)
             return {"model": jsonable_encoder(model)}
         else:

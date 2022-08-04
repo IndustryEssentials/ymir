@@ -14,6 +14,7 @@ const AnalysisChartBar = ({ customOptions = {}, ...resProps}) => {
     barWidth = 8, 
     grid, 
     legend, 
+    color,
     tooltipLable = 'model.diagnose.analysis.bar.asset.tooltip',
     yAxisFormatter = function (val) {
       return val * 100 + '%';
@@ -95,6 +96,7 @@ const AnalysisChartBar = ({ customOptions = {}, ...resProps}) => {
       grid: Object.assign(defaultGrid, grid),
       yAxis,
       xAxis,
+      color,
       series,
     })
   }, [series])

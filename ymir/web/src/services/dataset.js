@@ -171,7 +171,7 @@ export function batchAct(action, projectId, ids = []) {
  * }
  * @returns
  */
-export function createDataset({ name, projectId, url, datasetId, path, strategy, description }) {
+export function createDataset({ name, projectId, url, datasetId, path, strategy = 2, description }) {
   return request.post("/datasets/importing", {
     group_name: name, strategy,
     project_id: projectId,
@@ -207,5 +207,18 @@ export function checkDuplication(projectId, trainSet, validationSet) {
   return request.post('/datasets/check_duplication', {
     project_id: projectId,
     dataset_ids: [trainSet, validationSet],
+  })
+}
+
+export function getNegativeKeywords({
+  projectId,
+  dataset,
+  keywords,
+}) {
+  return request.get(`/datasets/${dataset}/stats`, {
+    params: {
+      project_id: projectId,
+      keywords: keywords.toString(),
+    }
   })
 }

@@ -104,6 +104,9 @@ def update_model_group(
     if not model_group:
         raise ModelGroupNotFound()
 
+    if crud.model_group.is_duplicated_name_in_project(db, project_id=model_group.project_id, name=obj_update.name):
+        raise DuplicateModelGroupError()
+
     model_group = crud.model_group.update(db, db_obj=model_group, obj_in=obj_update)
     return {"result": model_group}
 

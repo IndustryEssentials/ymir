@@ -699,15 +699,21 @@ global___Int32List = Int32List
 class Keywords(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor = ...
     PREDEFINED_KEYIDS_FIELD_NUMBER: builtins.int
+    GT_PREDEFINED_KEYIDS_FIELD_NUMBER: builtins.int
     @property
     def predefined_keyids(self) -> google.protobuf.internal.containers.RepeatedScalarFieldContainer[builtins.int]:
-        """predefined: managed id-keyword map"""
+        """class ids for predictions"""
+        pass
+    @property
+    def gt_predefined_keyids(self) -> google.protobuf.internal.containers.RepeatedScalarFieldContainer[builtins.int]:
+        """class ids for ground truth"""
         pass
     def __init__(self,
         *,
         predefined_keyids : typing.Optional[typing.Iterable[builtins.int]] = ...,
+        gt_predefined_keyids : typing.Optional[typing.Iterable[builtins.int]] = ...,
         ) -> None: ...
-    def ClearField(self, field_name: typing_extensions.Literal["predefined_keyids",b"predefined_keyids"]) -> None: ...
+    def ClearField(self, field_name: typing_extensions.Literal["gt_predefined_keyids",b"gt_predefined_keyids","predefined_keyids",b"predefined_keyids"]) -> None: ...
 global___Keywords = Keywords
 
 class AssetAnnoIndex(google.protobuf.message.Message):
@@ -793,7 +799,7 @@ global___MirTasks = MirTasks
 
 class Task(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor = ...
-    class UnknownTypesEntry(google.protobuf.message.Message):
+    class NewTypesEntry(google.protobuf.message.Message):
         DESCRIPTOR: google.protobuf.descriptor.Descriptor = ...
         KEY_FIELD_NUMBER: builtins.int
         VALUE_FIELD_NUMBER: builtins.int
@@ -811,10 +817,11 @@ class Task(google.protobuf.message.Message):
     TASK_ID_FIELD_NUMBER: builtins.int
     TIMESTAMP_FIELD_NUMBER: builtins.int
     MODEL_FIELD_NUMBER: builtins.int
-    UNKNOWN_TYPES_FIELD_NUMBER: builtins.int
     RETURN_CODE_FIELD_NUMBER: builtins.int
     RETURN_MSG_FIELD_NUMBER: builtins.int
     EVALUATION_FIELD_NUMBER: builtins.int
+    NEW_TYPES_FIELD_NUMBER: builtins.int
+    NEW_TYPES_ADDED_FIELD_NUMBER: builtins.int
     SERIALIZED_TASK_PARAMETERS_FIELD_NUMBER: builtins.int
     SERIALIZED_EXECUTOR_CONFIG_FIELD_NUMBER: builtins.int
     SRC_REVS_FIELD_NUMBER: builtins.int
@@ -834,16 +841,19 @@ class Task(google.protobuf.message.Message):
 
     @property
     def model(self) -> global___ModelMeta:
-        """/ (special for training task): result model for cmd train"""
-        pass
-    @property
-    def unknown_types(self) -> google.protobuf.internal.containers.ScalarMap[typing.Text, builtins.int]:
-        """/ (special for import task): unknown types for cmd import"""
+        """/ (for training task): result model for cmd train"""
         pass
     return_code: builtins.int = ...
     return_msg: typing.Text = ...
     @property
     def evaluation(self) -> global___Evaluation: ...
+    @property
+    def new_types(self) -> google.protobuf.internal.containers.ScalarMap[typing.Text, builtins.int]:
+        """/ (for import task): new types for cmd import, key: class name, value: asset count"""
+        pass
+    new_types_added: builtins.bool = ...
+    """/ (for import task): reason for new types, True: added, False: ignored"""
+
     serialized_task_parameters: typing.Text = ...
     serialized_executor_config: typing.Text = ...
     src_revs: typing.Text = ...
@@ -856,10 +866,11 @@ class Task(google.protobuf.message.Message):
         task_id : typing.Text = ...,
         timestamp : builtins.int = ...,
         model : typing.Optional[global___ModelMeta] = ...,
-        unknown_types : typing.Optional[typing.Mapping[typing.Text, builtins.int]] = ...,
         return_code : builtins.int = ...,
         return_msg : typing.Text = ...,
         evaluation : typing.Optional[global___Evaluation] = ...,
+        new_types : typing.Optional[typing.Mapping[typing.Text, builtins.int]] = ...,
+        new_types_added : builtins.bool = ...,
         serialized_task_parameters : typing.Text = ...,
         serialized_executor_config : typing.Text = ...,
         src_revs : typing.Text = ...,
@@ -867,7 +878,7 @@ class Task(google.protobuf.message.Message):
         executor : typing.Text = ...,
         ) -> None: ...
     def HasField(self, field_name: typing_extensions.Literal["evaluation",b"evaluation","model",b"model"]) -> builtins.bool: ...
-    def ClearField(self, field_name: typing_extensions.Literal["dst_rev",b"dst_rev","evaluation",b"evaluation","executor",b"executor","model",b"model","name",b"name","return_code",b"return_code","return_msg",b"return_msg","serialized_executor_config",b"serialized_executor_config","serialized_task_parameters",b"serialized_task_parameters","src_revs",b"src_revs","task_id",b"task_id","timestamp",b"timestamp","type",b"type","unknown_types",b"unknown_types"]) -> None: ...
+    def ClearField(self, field_name: typing_extensions.Literal["dst_rev",b"dst_rev","evaluation",b"evaluation","executor",b"executor","model",b"model","name",b"name","new_types",b"new_types","new_types_added",b"new_types_added","return_code",b"return_code","return_msg",b"return_msg","serialized_executor_config",b"serialized_executor_config","serialized_task_parameters",b"serialized_task_parameters","src_revs",b"src_revs","task_id",b"task_id","timestamp",b"timestamp","type",b"type"]) -> None: ...
 global___Task = Task
 
 class ModelMeta(google.protobuf.message.Message):
@@ -977,14 +988,12 @@ class EvaluateConfig(google.protobuf.message.Message):
     CONF_THR_FIELD_NUMBER: builtins.int
     IOU_THRS_INTERVAL_FIELD_NUMBER: builtins.int
     NEED_PR_CURVE_FIELD_NUMBER: builtins.int
-    CALC_CONFUSION_MATRIX_FIELD_NUMBER: builtins.int
     gt_dataset_id: typing.Text = ...
     @property
     def pred_dataset_ids(self) -> google.protobuf.internal.containers.RepeatedScalarFieldContainer[typing.Text]: ...
     conf_thr: builtins.float = ...
     iou_thrs_interval: typing.Text = ...
     need_pr_curve: builtins.bool = ...
-    calc_confusion_matrix: builtins.bool = ...
     def __init__(self,
         *,
         gt_dataset_id : typing.Text = ...,
@@ -992,9 +1001,8 @@ class EvaluateConfig(google.protobuf.message.Message):
         conf_thr : builtins.float = ...,
         iou_thrs_interval : typing.Text = ...,
         need_pr_curve : builtins.bool = ...,
-        calc_confusion_matrix : builtins.bool = ...,
         ) -> None: ...
-    def ClearField(self, field_name: typing_extensions.Literal["calc_confusion_matrix",b"calc_confusion_matrix","conf_thr",b"conf_thr","gt_dataset_id",b"gt_dataset_id","iou_thrs_interval",b"iou_thrs_interval","need_pr_curve",b"need_pr_curve","pred_dataset_ids",b"pred_dataset_ids"]) -> None: ...
+    def ClearField(self, field_name: typing_extensions.Literal["conf_thr",b"conf_thr","gt_dataset_id",b"gt_dataset_id","iou_thrs_interval",b"iou_thrs_interval","need_pr_curve",b"need_pr_curve","pred_dataset_ids",b"pred_dataset_ids"]) -> None: ...
 global___EvaluateConfig = EvaluateConfig
 
 class SingleDatasetEvaluation(google.protobuf.message.Message):

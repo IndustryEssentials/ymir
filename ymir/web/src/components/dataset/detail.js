@@ -6,6 +6,7 @@ import t from "@/utils/t"
 import { states } from '@/constants/common'
 import styles from "./detail.less"
 import { SearchIcon } from "@/components/common/icons"
+import { DescPop } from "../common/descPop"
 
 const { Item } = Descriptions
 
@@ -34,9 +35,10 @@ function DatasetDetail({ dataset = {} }) {
             </Col>
           </Row>
         </Item>
+        <Item label={t("dataset.detail.label.keywords")}>{dataset?.keywords?.map(keyword => <Tag key={keyword}>{keyword}</Tag>)}</Item>
         <Item label={t("dataset.detail.label.assets")} contentStyle={{ minWidth: 150 }}>{dataset.assetCount}</Item>
         {dataset.hidden ? <Item label={t("common.hidden.label")}>{t('common.state.hidden')}</Item> : null}
-        <Item label={t("dataset.detail.label.keywords")}>{dataset?.keywords?.map(keyword => <Tag key={keyword}>{keyword}</Tag>)}</Item>
+        <Item label={t("common.desc")}><DescPop description={dataset.description} /></Item>
       </Descriptions>
     </div>
   )

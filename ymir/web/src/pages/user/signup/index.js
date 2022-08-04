@@ -9,7 +9,7 @@ import { layout420 } from "@/config/antd"
 import HeaderNav from "@/components/nav"
 import Foot from "@/components/common/footer"
 import styles from "../common.less"
-import { EmailIcon, UserIcon, SmartphoneIcon, LockIcon, KeyIcon } from '@/components/common/icons'
+import { EmailIcon, UserIcon, SmartphoneIcon, LockIcon, KeyIcon, EqualizerIcon, NavHomeIcon } from '@/components/common/icons'
 import { phoneValidate } from "@/components/form/validators"
 
 const { Header, Footer, Content } = Layout
@@ -119,13 +119,13 @@ const Signup = ({ signupApi, loginApi, history }) => {
                 label={t("signup.org")}
                 name="organization"
               >
-                <Input allowClear placeholder={t('signup.org.placeholder')} prefix={<SmartphoneIcon style={{ color: 'rgba(0, 0, 0, 0.45)'}} />} />
+                <Input allowClear placeholder={t('signup.org.placeholder')} prefix={<NavHomeIcon style={{ color: 'rgba(0, 0, 0, 0.45)'}} />} />
               </Form.Item>
               <Form.Item
                 label={t("signup.scene")}
                 name="scene"
               >
-                <Input allowClear placeholder={t('signup.scene.placeholder')} prefix={<SmartphoneIcon style={{ color: 'rgba(0, 0, 0, 0.45)'}} />} />
+                <Input allowClear placeholder={t('signup.scene.placeholder')} prefix={<EqualizerIcon style={{ color: 'rgba(0, 0, 0, 0.45)'}} />} />
               </Form.Item>
 
               <Form.Item

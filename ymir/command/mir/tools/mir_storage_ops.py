@@ -1,3 +1,4 @@
+from collections import defaultdict
 from functools import reduce
 from math import ceil
 import os
@@ -12,29 +13,55 @@ from mir import scm
 from mir.commands.checkout import CmdCheckout
 from mir.commands.commit import CmdCommit
 from mir.protos import mir_command_pb2 as mirpb
-from mir.tools import class_ids, context, exodus, mir_storage, mir_repo_utils, revs_parser, settings as mir_settings
+from mir.tools import class_ids, context, det_eval, exodus, mir_storage, mir_repo_utils, revs_parser
+from mir.tools import settings as mir_settings
 from mir.tools.code import MirCode
 from mir.tools.errors import MirError, MirRuntimeError
+
+
+class MirStorageOpsBuildConfig:
+    def __init__(self,
+                 evaluate_conf_thr: float = mir_settings.DEFAULT_EVALUATE_CONF_THR,
+                 evaluate_iou_thrs: str = mir_settings.DEFAULT_EVALUATE_IOU_THR,
+                 evaluate_need_pr_curve: bool = False,
+                 evaluate_src_dataset_id: str = '') -> None:
+        self.evaluate_conf_thr: float = evaluate_conf_thr
+        self.evaluate_iou_thrs: str = evaluate_iou_thrs
+        self.evaluate_need_pr_curve: bool = evaluate_need_pr_curve
+        self.evaluate_src_dataset_id: str = evaluate_src_dataset_id
 
 
 class MirStorageOps():
     # private: save and load
     @classmethod
-    def __save(cls, mir_root: str, mir_datas: Dict['mirpb.MirStorage.V', Any]) -> None:
+    def __build_and_save(cls, mir_root: str, mir_datas: Dict['mirpb.MirStorage.V', Any],
+                         build_config: MirStorageOpsBuildConfig) -> None:
         # add default members
+        mir_metadatas: mirpb.MirMetadatas = mir_datas[mirpb.MirStorage.MIR_METADATAS]
         mir_tasks: mirpb.MirTasks = mir_datas[mirpb.MirStorage.MIR_TASKS]
-        if mirpb.MirStorage.MIR_METADATAS not in mir_datas:
-            mir_datas[mirpb.MirStorage.MIR_METADATAS] = mirpb.MirMetadatas()
-        if mirpb.MirStorage.MIR_ANNOTATIONS not in mir_datas:
-            mir_datas[mirpb.MirStorage.MIR_ANNOTATIONS] = mirpb.MirAnnotations()
-
         mir_annotations: mirpb.MirAnnotations = mir_datas[mirpb.MirStorage.MIR_ANNOTATIONS]
+
         cls.__build_annotations_head_task_id(mir_annotations=mir_annotations, head_task_id=mir_tasks.head_task_id)
 
         # gen mir_keywords
         mir_keywords: mirpb.MirKeywords = mirpb.MirKeywords()
-        cls.__build_mir_keywords(mir_annotations=mir_annotations, mir_keywords=mir_keywords)
+        cls.__build_mir_keywords(mir_metadatas=mir_metadatas,
+                                 mir_annotations=mir_annotations,
+                                 mir_keywords=mir_keywords)
         mir_datas[mirpb.MirStorage.MIR_KEYWORDS] = mir_keywords
+
+        if (mir_metadatas.attributes and mir_annotations.ground_truth.image_annotations
+                and mir_annotations.task_annotations[mir_annotations.head_task_id].image_annotations):
+            evaluation, _ = det_eval.det_evaluate_with_pb(
+                mir_metadatas=mir_metadatas,
+                mir_annotations=mir_annotations,
+                mir_keywords=mir_keywords,
+                dataset_id=build_config.evaluate_src_dataset_id,
+                conf_thr=build_config.evaluate_conf_thr,
+                iou_thrs=build_config.evaluate_iou_thrs,
+                need_pr_curve=build_config.evaluate_need_pr_curve,
+            )
+            mir_tasks.tasks[mir_tasks.head_task_id].evaluation.CopyFrom(evaluation)
 
         # gen mir_context
         project_class_ids = context.load(mir_root=mir_root)
@@ -52,9 +79,10 @@ class MirStorageOps():
             with open(mir_file_path, "wb") as m_f:
                 m_f.write(mir_data.SerializeToString())
 
-    @classmethod
     # public: presave actions
+    @classmethod
     def __build_annotations_head_task_id(cls, mir_annotations: mirpb.MirAnnotations, head_task_id: str) -> None:
+        # TODO: FUNCTION TO BE REMOVED
         task_annotations_count = len(mir_annotations.task_annotations)
         if task_annotations_count == 0:
             mir_annotations.task_annotations[head_task_id].CopyFrom(mirpb.SingleTaskAnnotations())
@@ -71,7 +99,8 @@ class MirStorageOps():
         mir_annotations.head_task_id = head_task_id
 
     @classmethod
-    def __build_mir_keywords(cls, mir_annotations: mirpb.MirAnnotations, mir_keywords: mirpb.MirKeywords) -> None:
+    def __build_mir_keywords(cls, mir_metadatas: mirpb.MirMetadatas, mir_annotations: mirpb.MirAnnotations,
+                             mir_keywords: mirpb.MirKeywords) -> None:
         """
         build mir_keywords from single_task_annotations
 
@@ -81,10 +110,21 @@ class MirStorageOps():
         """
         pred_task_annotations = mir_annotations.task_annotations[mir_annotations.head_task_id]
 
-        # TODO: old fields to be deprecated
-        for asset_id, single_image_annotations in pred_task_annotations.image_annotations.items():
-            mir_keywords.keywords[asset_id].predefined_keyids[:] = set(
-                [annotation.class_id for annotation in single_image_annotations.annotations])
+        for asset_id in mir_metadatas.attributes:
+            pred_cis_set = set()
+            gt_cis_set = set()
+
+            if asset_id in pred_task_annotations.image_annotations:
+                image_annotation = pred_task_annotations.image_annotations[asset_id]
+                pred_cis_set.update([annotation.class_id for annotation in image_annotation.annotations])
+            if asset_id in mir_annotations.ground_truth.image_annotations:
+                image_annotation = mir_annotations.ground_truth.image_annotations[asset_id]
+                gt_cis_set.update([annotation.class_id for annotation in image_annotation.annotations])
+
+            if pred_cis_set:
+                mir_keywords.keywords[asset_id].predefined_keyids[:] = pred_cis_set
+            if gt_cis_set:
+                mir_keywords.keywords[asset_id].gt_predefined_keyids[:] = gt_cis_set
 
         cls.__build_mir_keywords_ci_tag(task_annotations=pred_task_annotations, keyword_to_index=mir_keywords.pred_idx)
         cls.__build_mir_keywords_ci_tag(task_annotations=mir_annotations.ground_truth,
@@ -150,8 +190,13 @@ class MirStorageOps():
                             mir_keywords: mirpb.MirKeywords, project_class_ids: List[int],
                             mir_context: mirpb.MirContext) -> None:
         # ci to asset count
+        ci_to_asset_ids: Dict[int, Set[str]] = defaultdict(set)
+        for ci, ci_assets in mir_keywords.gt_idx.cis.items():
+            ci_to_asset_ids[ci].update(ci_assets.key_ids.keys())
         for ci, ci_assets in mir_keywords.pred_idx.cis.items():
-            mir_context.predefined_keyids_cnt[ci] = len(ci_assets.key_ids)
+            ci_to_asset_ids[ci].update(ci_assets.key_ids.keys())
+        for ci, asset_ids_set in ci_to_asset_ids.items():
+            mir_context.predefined_keyids_cnt[ci] = len(asset_ids_set)
 
         # project_predefined_keyids_cnt: assets count for project class ids
         #   suppose we have: 13 images for key 5, 15 images for key 6, and proejct_class_ids = [3, 5]
@@ -241,8 +286,13 @@ class MirStorageOps():
 
     # public: save and load
     @classmethod
-    def save_and_commit(cls, mir_root: str, mir_branch: str, his_branch: Optional[str], mir_datas: Dict,
-                        task: mirpb.Task) -> int:
+    def save_and_commit(cls,
+                        mir_root: str,
+                        mir_branch: str,
+                        his_branch: Optional[str],
+                        mir_datas: Dict,
+                        task: mirpb.Task,
+                        build_config: MirStorageOpsBuildConfig = MirStorageOpsBuildConfig()) -> int:
         """
         saves and commit all contents in mir_datas to branch: `mir_branch`;
         branch will be created if not exists, and it's history will be after `his_branch`
@@ -255,6 +305,8 @@ class MirStorageOps():
                 mir_tasks is needed, if mir_metadatas and mir_annotations not provided, they will be created as empty
                  datasets
             task (mirpb.Task): task for this commit
+            conf_thr (float): confidence thr used to evaluate
+            iou_thrs (str): iou thrs used to evaluate
 
         Raises:
             MirRuntimeError
@@ -266,6 +318,9 @@ class MirStorageOps():
             mir_root = '.'
         if not mir_branch:
             raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS, error_message="empty mir branch")
+        if mirpb.MirStorage.MIR_METADATAS not in mir_datas or mirpb.MirStorage.MIR_ANNOTATIONS not in mir_datas:
+            raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
+                                  error_message='need mir_metadatas and mir_annotations')
         if mirpb.MirStorage.MIR_KEYWORDS in mir_datas:
             raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS, error_message='need no mir_keywords')
         if mirpb.MirStorage.MIR_CONTEXT in mir_datas:
@@ -276,6 +331,8 @@ class MirStorageOps():
             raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS, error_message="empty commit message")
         if not task.task_id:
             raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS, error_message='empty task id')
+        if not build_config.evaluate_src_dataset_id:
+            build_config.evaluate_src_dataset_id = revs_parser.join_rev_tid(mir_branch, task.task_id)
 
         mir_tasks: mirpb.MirTasks = mirpb.MirTasks()
         mir_tasks.head_task_id = task.task_id
@@ -307,7 +364,7 @@ class MirStorageOps():
                 if return_code != MirCode.RC_OK:
                     return return_code
 
-            cls.__save(mir_root=mir_root, mir_datas=mir_datas)
+            cls.__build_and_save(mir_root=mir_root, mir_datas=mir_datas, build_config=build_config)
 
             ret_code = CmdCommit.run_with_args(mir_root=mir_root, msg=task.name)
             if ret_code != MirCode.RC_OK:
@@ -393,7 +450,8 @@ class MirStorageOps():
             "pred":{
                 "class_ids_count":{},
                 "class_names_count":{},
-                "ignored_labels":{},
+                "new_types":{},
+                "new_types_added":False,
                 "negative_info":{
                     "negative_images_cnt":14,
                     "project_negative_images_cnt":0
@@ -429,14 +487,13 @@ class MirStorageOps():
 
         class_id_mgr = class_ids.ClassIdManager(mir_root=mir_root)
         pred = dict(
-            class_ids_count={k: v
-                             for k, v in mir_storage_context.predefined_keyids_cnt.items()},
             class_names_count={
                 class_id_mgr.main_name_for_id(id): count
                 for id, count in mir_storage_context.predefined_keyids_cnt.items()
             },
-            ignored_labels={k: v
-                            for k, v in task_storage.unknown_types.items()},
+            new_types={k: v
+                       for k, v in task_storage.new_types.items()},
+            new_types_added=task_storage.new_types_added,
             negative_info=dict(
                 negative_images_cnt=mir_storage_context.negative_images_cnt,
                 project_negative_images_cnt=mir_storage_context.project_negative_images_cnt,
@@ -470,6 +527,8 @@ class MirStorageOps():
                 asset_area=cls._gen_viz_hist(mir_storage_context.asset_area_hist),
                 asset_hw_ratio=cls._gen_viz_hist(mir_storage_context.asset_hw_ratio_hist),
             ),
+            class_ids_count={k: v
+                             for k, v in mir_storage_context.predefined_keyids_cnt.items()},
             pred=pred,
             gt={},
         )
@@ -502,24 +561,47 @@ class MirStorageOps():
 
         asset_ids_detail: Dict[str, Dict] = dict()
         hid = mir_storage_annotations["head_task_id"]
-        annotations = mir_storage_annotations["task_annotations"][hid]["image_annotations"]
+        if "task_annotations" in mir_storage_annotations:
+            pred_annotations = mir_storage_annotations["task_annotations"][hid]["image_annotations"]
+        else:
+            pred_annotations = {}
+        if "ground_truth" in mir_storage_annotations:
+            gt_annotations = mir_storage_annotations['ground_truth'].get('image_annotations', {})
+        else:
+            gt_annotations = {}
         keyword_keyids_list = mir_storage_keywords["keywords"]
         for asset_id, asset_metadata in mir_storage_metadatas["attributes"].items():
-            asset_annotations = annotations[asset_id]["annotations"] if asset_id in annotations else {}
-            asset_class_ids = (keyword_keyids_list[asset_id]["predefined_keyids"]
-                               if asset_id in keyword_keyids_list else [])
+            pred_asset_annotations = pred_annotations[asset_id]["annotations"] if asset_id in pred_annotations else []
+            gt_asset_annotations = gt_annotations[asset_id]["annotations"] if asset_id in gt_annotations else []
+            pred_class_ids = (keyword_keyids_list[asset_id]["predefined_keyids"]
+                              if asset_id in keyword_keyids_list else [])
+            gt_class_ids = (keyword_keyids_list[asset_id]["gt_predefined_keyids"]
+                            if asset_id in keyword_keyids_list else [])
+            class_ids = list(set(pred_class_ids) | set(gt_class_ids))
             asset_ids_detail[asset_id] = dict(
                 metadata=asset_metadata,
-                annotations=asset_annotations,
-                class_ids=asset_class_ids,
+                pred=pred_asset_annotations,
+                gt=gt_asset_annotations,
+                pred_class_ids=pred_class_ids,
+                gt_class_ids=gt_class_ids,
+                class_ids=class_ids,
             )
+
+        class_id_to_assets: Dict[int, Set[str]] = defaultdict(set)  # total
+        for k, v in mir_storage_keywords.get('pred_idx', {}).get('cis', {}).items():
+            class_id_to_assets[k].update(v.get('key_ids', {}))
+        for k, v in mir_storage_keywords.get('gt_idx', {}).get('cis', {}).items():
+            class_id_to_assets[k].update(v.get('key_ids', {}))
+
         return dict(
             all_asset_ids=sorted([*mir_storage_metadatas["attributes"].keys()]),  # ordered list.
             asset_ids_detail=asset_ids_detail,
-            class_ids_index={
-                k: list(v.get('key_ids', {}))
-                for k, v in mir_storage_keywords.get('pred_idx', {}).get('cis', {}).items()
-            },
+            class_ids_index={k: list(v)
+                             for k, v in class_id_to_assets.items()},
+            pred_class_ids_index={k: v.get('key_ids')
+                                  for k, v in mir_storage_keywords.get('pred_idx', {}).get('cis', {}).items()},
+            gt_class_ids_index={k: v.get('key_ids')
+                                for k, v in mir_storage_keywords.get('gt_idx', {}).get('cis', {}).items()},
         )
 
     @classmethod
@@ -553,7 +635,8 @@ class MirStorageOps():
 def create_task(task_type: 'mirpb.TaskType.V',
                 task_id: str,
                 message: str,
-                unknown_types: Dict[str, int] = {},
+                new_types: Dict[str, int] = {},
+                new_types_added: bool = False,
                 return_code: int = 0,
                 return_msg: str = '',
                 serialized_task_parameters: str = '',
@@ -572,7 +655,8 @@ def create_task(task_type: 'mirpb.TaskType.V',
         'return_msg': return_msg,
         'serialized_task_parameters': serialized_task_parameters,
         'serialized_executor_config': serialized_executor_config,
-        'unknown_types': unknown_types,
+        'new_types': new_types,
+        'new_types_added': new_types_added,
         'executor': executor,
         'src_revs': src_revs,
         'dst_rev': dst_rev,

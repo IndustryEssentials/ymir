@@ -4,6 +4,8 @@ export interface Visualization {
   userId: number,
   tid: string,
   tasks?: Array<BackendData>,
+  iou: number,
+  confidence: number,
   createTime: string,
   updateTime: string,
 }

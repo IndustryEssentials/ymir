@@ -1,13 +1,15 @@
-import { Cascader, Col, Row, Select } from 'antd'
-import { connect } from 'dva'
+import { Cascader, ConfigProvider } from 'antd'
+import { useSelector } from 'umi'
 import { useEffect, useState } from 'react'
 
 import { percent } from '@/utils/number'
 import t from '@/utils/t'
-import useFetch from '../../hooks/useFetch'
+import useFetch from '@/hooks/useFetch'
+import EmptyStateModel from '@/components/empty/model'
 
-
-const ModelSelect = ({ pid, value, onlyModel, allModels, onChange = () => { }, ...resProps }) => {
+const ModelSelect = ({ pid, value, onlyModel, changeByUser, onChange = () => { }, filters, ...resProps }) => {
+  const allModels = useSelector(state => state.model.allModels)
+  const [ms, setMS] = useState(null)
   const [options, setOptions] = useState([])
   const [models, setModels] = useState([])
   const [_, getModels] = useFetch('model/queryAllModels')
@@ -18,12 +20,14 @@ const ModelSelect = ({ pid, value, onlyModel, allModels, onChange = () => { }, .
 
   useEffect(() => {
     if (options.length) {
-      if (value) {
+      if (value && !changeByUser) {
         if (resProps.multiple) {
           const opts = options.filter(opt => value.some(([model]) => opt.model.id === model)).map(opt => [opt, opt.value])
           onChange(value, opts)
         } else {
-          onChange(value, [options.find(opt => opt.model.id === value[0]), value[1]])
+          const opt = options.find(opt => opt.model.id === value[0])
+          const stage = value[1] || opt.model.recommendStage
+          onChange(value, [opt, stage])
         }
       }
     }
@@ -34,10 +38,17 @@ const ModelSelect = ({ pid, value, onlyModel, allModels, onChange = () => { }, .
   }, [allModels])
 
   useEffect(() => {
-    if (options.length === 1) {
-      value = options[0].value
+    if (value && !value[1]) {
+      const model = models.find(md => md.id === value[0])
+      if (model) {
+        setMS([value[0], model.recommendStage])
+      }
     }
   }, [options])
+
+  useEffect(() => {
+    setMS(value)
+  }, [value])
 
   useEffect(() => {
     generateOptions()
@@ -62,24 +73,18 @@ const ModelSelect = ({ pid, value, onlyModel, allModels, onChange = () => { }, .
     setOptions(opts)
   }
 
-  function labelRender(labels, options) {
-    return <span>{labels.map(label => label)}</span>
-  }
-
   function filter(input, path) {
     return path.some(({ label = '' }) => label.toLowerCase().indexOf(input.toLowerCase()) > -1)
   }
 
   return (
-    <Cascader value={value} {...resProps} onChange={onChange} options={options}
-      displayRender={labelRender} showCheckedStrategy={Cascader.SHOW_CHILD} showSearch={{ filter }} allowClear></Cascader>
+    <ConfigProvider renderEmpty={() => <EmptyStateModel />}>
+      <Cascader value={ms} onChange={onChange} options={options}
+        showCheckedStrategy={Cascader.SHOW_CHILD} showSearch={{ filter }}
+        placeholder={t('task.train.form.model.placeholder')}
+        allowClear {...resProps}></Cascader>
+    </ConfigProvider>
   )
 }
 
-const props = (state) => {
-  return {
-    allModels: state.model.allModels,
-  }
-}
-
-export default connect(props, null)(ModelSelect)
+export default ModelSelect

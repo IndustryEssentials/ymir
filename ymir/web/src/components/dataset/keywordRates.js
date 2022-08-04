@@ -1,104 +1,107 @@
 import { useState, useEffect } from "react"
-import { Row, Col, Progress, } from "antd"
-import { connect } from 'dva'
 import t from "@/utils/t"
 
 import s from "./keywordRates.less"
 import { percent } from "@/utils/number"
+import useFetch from '@/hooks/useFetch'
 
 function randomColor() {
   return "#" + Math.random().toString(16).slice(-6)
 }
 
-function KeywordRates({ dataset, progressWidth = 0.5, getKeywordRates }) {
-  const [data, setData] = useState({})
+function KeywordRates({ pid, id, keywords = [], dataset, progressWidth = 0.5 }) {
   const [list, setList] = useState([])
+  const [stats, getNegativeKeywords, setStats] = useFetch('dataset/getNegativeKeywords', {})
+  const [colors, setColors] = useState({})
+  const [labels, setLabels] = useState([])
 
   useEffect(() => {
-    if(dataset?.id) {
-      setData(dataset)
-    } else if(dataset) {
-      fetchRates(dataset)
+    if (dataset) {
+      setLabels(dataset.keywords)
+    } else if (keywords.length) {
+      setLabels(keywords)
     } else {
-      setData({})
+      setLabels([])
+    }
+  }, [keywords, dataset])
+
+  useEffect(() => {
+    if (!dataset && id && labels?.length) {
+      getNegativeKeywords({ projectId: pid, keywords: labels, dataset: id })
+    } else if (dataset) {
+      cacheToStats()
+    } else {
       setList([])
     }
-  }, [dataset])
+  }, [id, dataset, labels])
 
   useEffect(() => {
-    if (data) {
-      const klist = prepareList(data)
-      setList(klist)
-    }
-  }, [data])
+    const keywordColors = labels.reduce((prev, keyword) => (colors[keyword] ? prev : {
+      ...prev,
+      [keyword]: randomColor(),
+    }), {
+      0: 'gray'
+    })
+    setColors({ ...colors, ...keywordColors })
+  }, [labels])
 
-  async function fetchRates(id) {
-    const result = await getKeywordRates(id)
-    if (result) {
-      setData(result)
+  useEffect(() => {
+    if (typeof stats.negative !== 'undefined') {
+      const list = generateList(stats)
+      setList(list)
+    } else {
+      setList([])
     }
-  }
+  }, [stats])
 
-  function prepareList(dataset = {}) {
-    if (!dataset?.id) {
-      return []
-    }
-    const { assetCount, keywordsCount, nagetiveCount, projectNagetiveCount, project: { keywords = [] } } = dataset
-    const filter = keywords.length ? keywords : Object.keys(keywordsCount)
-    const neg = keywords.length ? projectNagetiveCount : nagetiveCount
-    const kwList = getKeywordList(keywordsCount, filter, neg)
-    const widthRate = assetCount / Math.max(...(kwList.map(item => item.count)))
-    const getWidth = (count) => percent(count * progressWidth * widthRate / assetCount)
-    return kwList.map(item => ({
+  function generateList(stats) {
+    const total = stats.negative + stats.positive
+    const klist = [
+      ...(labels.map(keyword => ({
+        key: keyword,
+        label: keyword,
+        count: stats.keywords[keyword],
+      }))),
+      {
+        key: 0,
+        label: t('dataset.samples.negative'),
+        count: stats.negative,
+      }]
+    const max = Math.max(...(klist.map(item => item.count || 0)))
+    return klist.map(item => ({
       ...item,
-      width: getWidth(item.count),
-      percent: percent(item.count / assetCount),
-      total: assetCount,
-      color: randomColor(),
+      total,
+      max,
+      color: colors[item.key],
     }))
   }
+  const getWidth = ({ count = 0, max }) => percent(count * progressWidth / max)
 
-  function getKeywordList(keywords = {}, filterKeywords, negative) {
-    const klist = filterKeywords.map(keyword => {
-      const count = keywords[keyword] || 0
-      return {
-        keyword, count
-      }
-    })
-    return [
-      ...klist,
-      {
-        keyword: t('dataset.samples.negative'),
-        count: negative,
-      }
-    ]
+  function label({ count = 0, label = '', total }) {
+    return `${label} ${count}/${total} ${percent(count / total)}`
   }
 
-  function format({ percent = 0, keyword = '', count = 0, total }) {
-    return `${keyword} ${count}/${total} ${percent}`
+  function cacheToStats() {
+    const { assetCount, keywordsCount, nagetiveCount, } = dataset
+    const defaultStats = {
+      keywords: keywordsCount,
+      negative: nagetiveCount,
+      positive: assetCount - nagetiveCount,
+      total: assetCount,
+    }
+    setStats(defaultStats)
   }
 
-  return list.length ? (
+  return (
     <div className={s.rates}>
       {list.map(item => (
-        <div key={item.keyword} className={s.rate}>
-          <span className={s.bar} style={{ width: item.width, background: item.color }}>&nbsp;</span>
-          <span>{format(item)}</span>
+        <div key={item.key} className={s.rate}>
+          <span className={s.bar} style={{ width: getWidth(item), background: item.color }}>&nbsp;</span>
+          <span>{label(item)}</span>
         </div>
       ))}
     </div>
-  ) : null
+  )
 }
 
-const actions = (dispatch) => {
-  return {
-    getKeywordRates(id, force) {
-      return dispatch({
-        type: 'dataset/getDataset',
-        payload: { id, force },
-      })
-    }
-  }
-}
-
-export default connect(null, actions)(KeywordRates)
+export default KeywordRates

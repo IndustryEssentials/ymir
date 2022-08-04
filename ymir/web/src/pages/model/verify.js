@@ -11,7 +11,7 @@ import t from "@/utils/t"
 import { format } from '@/utils/date'
 import Breadcrumb from '@/components/common/breadcrumb'
 import Uploader from "@/components/form/uploader"
-import AssetAnnotation from "@/components/dataset/asset_annotation"
+import AssetAnnotation from "@/components/dataset/assetAnnotation"
 import { TYPES } from '@/constants/image'
 import styles from './verify.less'
 import { NavDatasetIcon, SearchEyeIcon, NoXlmxIcon } from '@/components/common/icons'
@@ -225,7 +225,7 @@ function Verify({ verify }) {
             </Card>
 
             <Form form={form} className={styles.asset_form}>
-              <Form.Item name='image' label={t('task.train.form.image.label')} rules={[{ required: true }]}>
+              <Form.Item name='image' label={t('task.inference.form.image.label')} rules={[{ required: true }]}>
                 <ImageSelect style={{ width: 200 }} type={TYPES.INFERENCE} placeholder={t('task.train.form.image.placeholder')} onChange={imageChange} />
               </Form.Item>
 

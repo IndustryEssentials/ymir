@@ -158,6 +158,16 @@ function Visualization({ pid, project }) {
       },
     },
     {
+      title: showTitle('model.diagnose.form.iou'),
+      dataIndex: 'iou',
+      width: 100,
+    },
+    {
+      title: showTitle('model.diagnose.form.confidence'),
+      dataIndex: 'confidence',
+      width: 80,
+    },
+    {
       title: showTitle("visualization.column.create_time"),
       dataIndex: "createTime",
       sorter: true,
@@ -170,7 +180,7 @@ function Visualization({ pid, project }) {
       dataIndex: "id",
       render: (text, record) => <Actions menus={actionMenus(record)} />,
       align: "center",
-      width: 300,
+      width: 150,
     },
   ]
 

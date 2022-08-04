@@ -25,6 +25,7 @@ const task = {
   "state": 3,
   "error_code": null,
   "duration": 18,
+  durationLabel: '1 分钟',
   "percent": 1,
   "parameters": {},
   "config": {},
@@ -32,9 +33,7 @@ const task = {
   "last_message_datetime": "2022-03-10T03:39:09.033206",
   "is_terminated": false,
   "result_type": null,
-  parameters: {
     keywords: ['cat', 'dog'],
-  }
 }
 
 const ms = id => ({
@@ -45,6 +44,7 @@ const ms = id => ({
   state: 1,
   url: 'test/url',
   map: 0.88,
+  keywords: ['cat', 'dog'],
   'is_protected': false,
   "is_deleted": false,
   "create_datetime": createTime,
@@ -102,6 +102,7 @@ describe("constants: model", () => {
       task,
       stages: [],
       recommendStage: 0,
+      description: '',
     }
     expect(transferModel(model)).toEqual(expected)
   })

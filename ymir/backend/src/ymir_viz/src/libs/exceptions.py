@@ -48,6 +48,16 @@ class DatasetEvaluationNotExists(VizException):
     message = "dataset evaluation not found"
 
 
+class NoClassIds(VizException):
+    code = VizErrorCode.NO_CLASS_IDS
+    message = "no class ids"
+
+
+class InvalidAnnoType(VizException):
+    code = VizErrorCode.INVALID_ANNO_TYPE
+    message = "invalid anno_type (only 1 or 2)"
+
+
 class TooManyDatasetsToCheck(VizException):
     code = VizErrorCode.TOO_MANY_DATASETS_TO_CHECK
     message = "too may datasets to check duplication"

@@ -14,7 +14,7 @@ from sqlalchemy import (
 from sqlalchemy.orm import relationship
 
 from app.config import settings
-from app.constants.state import TaskState, TaskType
+from app.constants.state import ResultState, TaskState, TaskType
 from app.db.base_class import Base
 from app.models.dataset import Dataset  # noqa
 from app.models.dataset_group import DatasetGroup  # noqa
@@ -46,8 +46,9 @@ class Project(Base):
     initial_model_id = Column(Integer, index=True)
     initial_model_stage_id = Column(Integer, index=True)
     initial_training_dataset_id = Column(Integer, index=True)
-    enable_iteration = Column(Boolean, default=True, nullable=False)
+    candidate_training_dataset_id = Column(Integer)
 
+    enable_iteration = Column(Boolean, default=True, nullable=False)
     # for project haven't finish initialization, current_iteration_id is None
     current_iteration_id = Column(Integer)
     user_id = Column(Integer, index=True, nullable=False)
@@ -119,11 +120,17 @@ class Project(Base):
 
     @property
     def dataset_count(self) -> int:
-        return len(self.datasets)
+        # Only ready and visible datasets count.
+        # stick to `dataset_count` for compatibility
+        ready_datasets = [d for d in self.datasets if d.result_state == ResultState.ready and d.is_visible]
+        return len(ready_datasets)
 
     @property
     def model_count(self) -> int:
-        return len(self.models)
+        # Only ready models count.
+        # stick to `model_count` for compatibility
+        ready_models = [model for model in self.models if model.result_state == ResultState.ready and model.is_visible]
+        return len(ready_models)
 
     @property
     def total_asset_count(self) -> int:
@@ -149,7 +156,13 @@ class Project(Base):
         - datasets and models of current iteration
         - all the training dataset of all the iterations
         """
-        project_dataset_ids = [self.validation_dataset_id, self.mining_dataset_id, self.initial_training_dataset_id]
+        testing_dataset_ids = [int(i) for i in self.testing_dataset_ids.split(",")] if self.testing_dataset_ids else []
+        project_dataset_ids = [
+            self.validation_dataset_id,
+            self.mining_dataset_id,
+            self.initial_training_dataset_id,
+            *testing_dataset_ids,
+        ]
         current_iteration_dataset_ids = self.current_iteration.referenced_dataset_ids if self.current_iteration else []
         all_iterations_training_dataset_ids = [i.training_input_dataset_id for i in self.iterations]
         dataset_ids = filter(
