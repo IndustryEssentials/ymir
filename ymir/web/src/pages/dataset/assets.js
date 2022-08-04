@@ -1,33 +1,22 @@
 import React, { useCallback, useEffect, useRef, useState } from "react"
-import { useParams, useHistory } from "umi"
-import { connect } from "dva"
+import { useParams } from "umi"
 import { Select, Pagination, Row, Col, Button, Space, Card, Tag, Modal } from "antd"
 
 import t from "@/utils/t"
 import { evaluationTags } from '@/constants/dataset'
-import Breadcrumbs from "@/components/common/breadcrumb"
+import useFetch from '@/hooks/useFetch'
 import { randomBetween, percent } from '@/utils/number'
+
+import Breadcrumbs from "@/components/common/breadcrumb"
 import Asset from "./components/asset"
 import styles from "./assets.less"
 import GtSelector from "@/components/form/gtSelector"
-import ImageAnnotation from "../../components/dataset/imageAnnotation"
-import useWindowResize from "../../hooks/useWindowResize"
+import ImageAnnotation from "@/components/dataset/imageAnnotation"
+import useWindowResize from "@/hooks/useWindowResize"
 
 const { Option } = Select
 
-function rand(n, m, exclude) {
-  const result = Math.min(m, n) + Math.floor(Math.random() * Math.abs(m - n))
-
-  if (result === exclude) {
-    return rand(n, m, exclude)
-  }
-  if (result < 0) {
-    return 0
-  }
-  return result
-}
-
-const Dataset = ({ getDataset, getAssetsOfDataset }) => {
+const Dataset = () => {
   const { did: id } = useParams()
   const initQuery = {
     id,
@@ -35,11 +24,7 @@ const Dataset = ({ getDataset, getAssetsOfDataset }) => {
     offset: 0,
     limit: 20,
   }
-  const history = useHistory()
   const [filterParams, setFilterParams] = useState(initQuery)
-  const [dataset, setDataset] = useState({ id })
-  const [assets, setAssets] = useState([])
-  const [total, setTotal] = useState(0)
   const [currentPage, setCurrentPage] = useState(1)
   const [assetVisible, setAssetVisible] = useState(false)
   const [currentAsset, setCurrentAsset] = useState({
@@ -47,15 +32,15 @@ const Dataset = ({ getDataset, getAssetsOfDataset }) => {
     index: 0,
   })
   const [evaluated, setEvaluated] = useState(false)
-  const [evaluation, setEvaluation] = useState({})
+  const initEvaluation = Object.keys(evaluationTags).reduce((prev, tag) => ({ ...prev, [tag]: true }), {})
+  const [evaluation, setEvaluation] = useState(initEvaluation)
   const listRef = useRef(null)
   const windowWidth = useWindowResize()
+  const [dataset, getDataset] = useFetch('dataset/getDataset', {})
+  const [{ items: assets, total }, getAssets, setAssets] = useFetch('dataset/getAssetsOfDataset', { items: [], total: 0 })
 
-  useEffect(async () => {
-    const data = await getDataset(id)
-    if (data) {
-      setDataset(data)
-    }
+  useEffect(() => {
+    getDataset({ id })
   }, [id])
 
   useEffect(() => {
@@ -65,8 +50,8 @@ const Dataset = ({ getDataset, getAssetsOfDataset }) => {
 
   useEffect(() => {
     setCurrentPage((filterParams.offset / filterParams.limit) + 1)
-    filter(filterParams)
-  }, [filterParams])
+    dataset.id && filter(filterParams)
+  }, [dataset, filterParams])
 
   const filterKw = (kw) => {
     const keyword = kw ? kw : undefined
@@ -82,11 +67,9 @@ const Dataset = ({ getDataset, getAssetsOfDataset }) => {
     const offset = limit * (page - 1)
     setFilterParams((params) => ({ ...params, offset, limit }))
   }
-  const filter = async (param) => {
-    setAssets([])
-    const { items, total } = await getAssetsOfDataset(param)
-    setTotal(total)
-    setAssets(items)
+  const filter = (param) => {
+    setAssets({ items: [], total: 0 })
+    getAssets({ ...param, datasetKeywords: dataset?.keywords })
   }
   const goAsset = (asset, hash, index) => {
     setCurrentAsset({ asset, hash, index: filterParams.offset + index })
@@ -224,27 +207,4 @@ const Dataset = ({ getDataset, getAssetsOfDataset }) => {
   )
 }
 
-const mapStateToProps = (state) => {
-  return {
-    logined: state.user.logined,
-  }
-}
-
-const mapDispatchToProps = (dispatch) => {
-  return {
-    getDataset(id, force) {
-      return dispatch({
-        type: "dataset/getDataset",
-        payload: { id, force },
-      })
-    },
-    getAssetsOfDataset(payload) {
-      return dispatch({
-        type: "dataset/getAssetsOfDataset",
-        payload,
-      })
-    },
-  }
-}
-
-export default connect(mapStateToProps, mapDispatchToProps)(Dataset)
+export default Dataset
