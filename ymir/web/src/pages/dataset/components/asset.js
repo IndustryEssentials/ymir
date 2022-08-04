@@ -50,17 +50,12 @@ function Asset({ id, asset: cache, datasetKeywords, filterKeyword, index = 0, to
   }, [cache])
 
   useEffect(() => {
-    if (!asset.hash) {
-      return
-    }
-    setSelectedKeywords(asset.keywords)
-  }, [asset])
-
-  useEffect(() => {
+    console.log('asset:', asset)
     if (!asset.hash) {
       return
     }
     const { annotations } = asset
+    setSelectedKeywords(asset.keywords)
     setCurrent(asset.hash)
     setColors(annotations.reduce((prev, annotation) => ({ ...prev, [annotation.keyword]: annotation.color }), {}))
   }, [asset])
@@ -190,7 +185,7 @@ function Asset({ id, asset: cache, datasetKeywords, filterKeyword, index = 0, to
                   </Row>
                 </Descriptions.Item>
               </Descriptions>
-              {asset.evaluted ?
+              {asset.evaluated ?
                 <div className={styles.filter}>
                   <h3><NavDatasetIcon /> {t("dataset.asset.filters.title")}</h3>
                   <GtSelector layout='vertical' onChange={filterAnnotations} />
