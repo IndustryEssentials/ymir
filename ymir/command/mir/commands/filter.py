@@ -64,8 +64,8 @@ class CmdFilter(base.BaseCommand):
     # public: run cmd
     @staticmethod
     @command_run_in_out
-    def run_with_args(mir_root: str, in_cis: Optional[str], ex_cis: Optional[str], in_cks: Optional[str],
-                      ex_cks: Optional[str], src_revs: str, dst_rev: str, work_dir: str) -> int:  # type: ignore
+    def run_with_args(mir_root: str, in_cis: Optional[str], ex_cis: Optional[str], src_revs: str, dst_rev: str,
+                      work_dir: str) -> int:  # type: ignore
         # check args
         in_cis = in_cis.strip().lower() if in_cis else ''
         ex_cis = ex_cis.strip().lower() if ex_cis else ''
@@ -163,8 +163,6 @@ class CmdFilter(base.BaseCommand):
         return CmdFilter.run_with_args(mir_root=self.args.mir_root,
                                        in_cis=self.args.in_cis,
                                        ex_cis=self.args.ex_cis,
-                                       in_cks='',
-                                       ex_cks='',
                                        src_revs=self.args.src_revs,
                                        dst_rev=self.args.dst_rev,
                                        work_dir=self.args.work_dir)
