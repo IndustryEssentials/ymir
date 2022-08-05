@@ -5,6 +5,7 @@ from sqlalchemy import and_, desc, not_
 from sqlalchemy.orm import Session
 
 from app.crud.base import CRUDBase
+from app.libs.common import pagination
 from app.models import DatasetGroup
 from app.schemas.dataset_group import DatasetGroupCreate, DatasetGroupUpdate
 
@@ -67,7 +68,10 @@ class CRUDDatasetGroup(CRUDBase[DatasetGroup, DatasetGroupCreate, DatasetGroupUp
             order_by_column = desc(order_by_column)
         query = query.order_by(order_by_column)
 
-        return query.offset(offset).limit(limit).all(), len(query.all())
+        # fixme
+        # SQLAlchemy do not guarantee precise count
+        items = query.all()
+        return pagination(items, offset, limit), len(items)
 
 
 dataset_group = CRUDDatasetGroup(DatasetGroup)

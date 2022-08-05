@@ -71,7 +71,7 @@ def create_docker_image(
     This endpint will create an image record immediately,
     but the pulling process will run in background
     """
-    if crud.docker_image.docker_name_exists(db, url=docker_image_in.url):
+    if crud.docker_image.get_by_url(db, docker_image_in.url) or crud.docker_image.get_by_name(db, docker_image_in.name):
         raise DuplicateDockerImageError()
     docker_image = crud.docker_image.create(db, obj_in=docker_image_in)
     logger.info("[create image] docker image record created: %s", docker_image)
@@ -231,6 +231,9 @@ def update_docker_image(
     docker_image = crud.docker_image.get(db, id=docker_image_id)
     if not docker_image:
         raise DockerImageNotFound()
+
+    if docker_image_update.name and crud.docker_image.get_by_name(db, name=docker_image_update.name):
+        raise DuplicateDockerImageError()
 
     docker_image = crud.docker_image.update(db, db_obj=docker_image, obj_in=docker_image_update)
     return {"result": docker_image}

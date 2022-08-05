@@ -88,7 +88,7 @@ def create_sample_project(
     project_in = schemas.ProjectCreate(
         name=project_name,
         training_keywords=settings.SAMPLE_PROJECT_KEYWORDS,
-        chunk_size=1,
+        chunk_size=2,
         is_example=True,
     )
     project = crud.project.create_project(db, user_id=current_user.id, obj_in=project_in)
