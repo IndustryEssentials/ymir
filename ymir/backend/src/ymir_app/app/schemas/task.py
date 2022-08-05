@@ -5,7 +5,7 @@ from typing import Any, Dict, List, Optional, Union
 
 from pydantic import BaseModel, EmailStr, Field, validator, root_validator
 
-from app.constants.state import TaskState, TaskType, ResultState, ResultType, IterationStage
+from app.constants.state import AnnotationType, TaskState, TaskType, ResultState, ResultType, IterationStage
 from app.schemas.common import (
     Common,
     DateTimeModelMixin,
@@ -45,6 +45,7 @@ class TaskParameter(BaseModel):
     extra_url: Optional[str]
     labellers: Optional[List[EmailStr]]
     keep_annotations: Optional[bool]
+    annotation_type: Optional[AnnotationType] = AnnotationType.pred
 
     # training
     validation_dataset_id: Optional[int]
