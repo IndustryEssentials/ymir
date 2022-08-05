@@ -3,8 +3,8 @@ const task = {
   "task.type.mining": { cn: "挖掘", en: "Mining", },
   "task.type.label": { cn: "标注", en: "Label", },
   "task.type.fusion": { cn: "预处理", en: "Pretreat", },
-  'task.type.merge': {cn: '合并', en: 'Merge', },
-  'task.type.filter': {cn: '筛选', en: 'Filter', },
+  'task.type.merge': { cn: '合并', en: 'Merge', },
+  'task.type.filter': { cn: '筛选', en: 'Filter', },
   "task.type.inference": { cn: "推理", en: "Inference", },
   "task.type.import": { cn: "添加数据集", en: "Dataset Add", },
   "task.type.copy": { cn: "复制", en: "Copy", },
@@ -186,6 +186,10 @@ const task = {
   "task.state": { en: "Task Status", cn: "任务状态", },
   "task.detail.terminated.label": { en: "Terminated", cn: "终止", },
   "task.detail.terminated": { en: "Terminated by user", cn: "用户手动终止", },
+  "task.inference.header.tip": {
+    en: "Inference result dataset will generate prediction, and inherit original testing set's ground truth annotations.",
+    cn: "推理结果数据集将生成新的预测标注，并包含原测试集的基准值标注。",
+  },
 }
 
 export default task

@@ -1,14 +1,18 @@
-import { Col, Row } from "antd"
+import { FailIcon, TipsIcon } from "@/components/common/icons"
+import s from './tip.less'
 
-import SingleTip from './singleTip'
+const Tip = ({ type = 'success', content = '' }) => {
+  return content ? (
+    <div className={`${s.tipContainer} ${s[type]}`}>
+      {getIcon(type)}
+      {content}
+    </div>
+  ) : null
+}
 
-const Tip = ({ title = null, content = '', placement = 'right', span=6, formSpan=0, hidden = false, children }) => {
-  return (
-    <Row gutter={10} wrap={false}>
-      <Col span={formSpan || (24 - span)}>{children}</Col>
-      <Col span={span}>{hidden ? null : <SingleTip title={title} content={content} placement={placement} style={{ lineHeight: '40px' }} />}</Col>
-    </Row>
-  )
+function getIcon(type) {
+  const cls = `${s.icon} ${s[type]}`
+  return type === 'success' ? <TipsIcon className={cls} /> : <FailIcon className={cls} />
 }
 
 export default Tip
