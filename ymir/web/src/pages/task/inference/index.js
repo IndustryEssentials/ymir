@@ -25,7 +25,7 @@ import Desc from "@/components/form/desc"
 import commonStyles from "../common.less"
 import styles from "./index.less"
 import OpenpaiForm from "../components/openpaiForm"
-import Tip from "../../../components/form/tip"
+import Tip from "@/components/form/tip"
 
 const { Option } = Select
 

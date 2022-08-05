@@ -190,6 +190,10 @@ const task = {
     en: "Inference result dataset will generate prediction, and inherit original testing set's ground truth annotations.",
     cn: "推理结果数据集将生成新的预测标注，并包含原测试集的基准值标注。",
   },
+  "task.label.header.tip": {
+    en: "Labelling result dataset will generate ground truth annotations.",
+    cn: "标注结果数据集会生成新的标准值标注。",
+  },
 }
 
 export default task
