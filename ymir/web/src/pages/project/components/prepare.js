@@ -1,49 +1,102 @@
-import { useCallback, useEffect, useState } from "react"
-import { Row, Col } from "antd"
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { Row, Col, Form, Button } from "antd"
+import { useLocation } from 'umi'
 import { connect } from "dva"
 
-import { states } from '@/constants/dataset'
-import { Stages, StageList } from '@/constants/project'
-import Stage from './stage'
-import s from "./iteration.less"
+import t from '@/utils/t'
+import useFetch from '@/hooks/useFetch'
+import DatasetSelect from '@/components/form/datasetSelect'
+import ModelSelect from '@/components/form/modelSelect'
 
-function Prepare({ project = {}, fresh = () => { }, ...func }) {
-  const [stages, setStages] = useState([])
+import s from "./iteration.less"
+import { YesIcon, LoaderIcon } from "@/components/common/icons"
+
+const stages = [
+  { field: 'candidateTrainSet', option: true, label: 'project.prepare.trainset', tip: 'project.add.trainset.tip', },
+  { field: 'testSet', label: 'project.prepare.validationset', tip: 'project.add.testset.tip', },
+  { field: 'miningSet', label: 'project.prepare.miningset', tip: 'project.add.miningset.tip', },
+  { field: 'modelStage', label: 'project.prepare.model', tip: 'tip.task.filter.model', type: 1 },
+]
+
+const SettingsSelection = (Select) => {
+  const Selection = (props) => {
+    return <Select {...props} />
+  }
+  return Selection
+}
+
+const Stage = ({ pid, value, stage, project = {} }) => {
+  const [valid, setValid] = useState(false)
+  const Selection = useMemo(() => SettingsSelection(stage.type ? ModelSelect : DatasetSelect), [stage.type])
+  // const [newProject, updateProject] = useUpdateProject(pid)
 
   useEffect(() => {
-    project.id && initStages()
+    setValid(value)
+  }, [value])
+
+  const renderIcon = () => {
+    return valid ? <YesIcon /> : <LoaderIcon />
+  }
+  const renderState = () => {
+    return valid ? t('project.stage.state.done') : t('project.stage.state.waiting')
+  }
+
+  const filters = datasets => {
+    const fields = stages.filter(({ type, field }) => !type && stage.field !== field)
+      .map(({ field }) => field)
+    const ids = fields.map(field => project[field]?.id || project[field])
+
+    return datasets.filter(dataset => ![...ids, ...project.testingSets].includes(dataset.id))
+  }
+
+  return <Row wrap={false}>
+    <Col flex={'60px'}>
+      <div className={s.state}>{renderIcon()}</div>
+      <div className={s.state}>{renderState()}</div>
+    </Col>
+    <Col flex={1}>
+      <Form.Item name={stage.field} label={t(stage.label)}
+        tooltip={t(stage.tip)} initialValue={value || null}
+        rules={[{ required: !stage.option }]}
+      >
+        <Selection pid={pid} changeByUser filters={filters} allowClear={!!stage.option} />
+      </Form.Item>
+    </Col>
+  </Row>
+}
+
+function getAttrFromProject(field, project = {}) {
+  const attr = project[field]
+  return attr?.id ? attr.id : attr
+}
+
+function Prepare({ project = {}, fresh = () => { }, ...func }) {
+  const location = useLocation()
+  const [validPrepare, setValidPrepare] = useState(false)
+  const [id, setId] = useState(null)
+  const [result, updateProject] = useFetch('project/updateProject')
+  const [mergeResult, merge] = useFetch('task/merge')
+
+  useEffect(() => {
+    project.id && setId(project.id)
+    project.id && updatePrepareStatus()
   }, [project])
 
-  const validNext = () => project.miningSet && project.testSet && project.model
+  useEffect(() => {
+    if (result) {
+      fresh(result)
+    }
+  }, [result])
 
-  function initStages() {
-    const labels = [
-      { value: 'datasets', state: project.miningSet && project.testSet ? states.VALID : -1, url: `/home/project/${project.id}/iterations/settings`, },
-      { value: 'model', state: project.model ? states.VALID : -1, url: `/home/project/${project.id}/initmodel`, },
-      { value: 'start', state: validNext() ? states.VALID : -1, },
-    ]
-    const ss = labels.map(({ value, state, url, }, index) => {
-      const act = `project.iteration.stage.${value}`
-      const stage = {
-        value: index,
-        label: value,
-        act,
-        // react: `${act}.react`,
-        // next: index + 2,
-        url,
-        state,
-        current: index,
-        unskippable: true,
-        callback: fresh,
-      }
-      if (index === labels.length - 1) {
-        stage.react = ''
-        stage.current = validNext() ? index : 0
-        stage.callback = () => createIteration()
-      }
-      return stage
-    })
-    setStages(ss)
+  useEffect(() => {
+    if (mergeResult) {
+      updateAndCreateIteration(mergeResult.id)
+    }
+  }, [mergeResult])
+
+  const formChange = (value, values) => {
+    updateProject({ id, ...value })
+    updatePrepareStatus(values)
   }
 
   async function createIteration() {
@@ -56,18 +109,54 @@ function Prepare({ project = {}, fresh = () => { }, ...func }) {
     const result = await func.createIteration(params)
     if (result) {
       fresh()
+      window.location.reload()
     }
   }
 
-  return (
+  async function updateAndCreateIteration(trainSetVersion) {
+    const updateResult = updateProject({ id, trainSetVersion })
+    if (updateResult) {
+      createIteration()
+    }
+  }
+
+  function mergeTrainSet() {
+    const params = {
+      projectId: id,
+      dataset: project.trainSetVersion, 
+      includes: [project.candidateTrainSet]
+    }
+    merge(params)
+  }
+
+  function updatePrepareStatus() {
+    const fields = stages.filter(stage => !stage.option).map(stage => stage.field)
+    const valid = fields.every(field => project[field]?.id || project[field])
+    setValidPrepare(valid)
+  }
+
+  function start() {
+    if (project.candidateTrainSet) {
+      mergeTrainSet()
+    } else {
+      createIteration()
+    }
+  }
+
+return (
     <div className={s.iteration}>
-      <Row style={{ justifyContent: 'flex-end' }}>
-        {stages.map((stage, index) => (
-          <Col key={stage.value} flex={index >= stages.length - 1 ? null : 1}>
-            <Stage pid={project.id} stage={stage} end={index >= stages.length - 1} callback={stage.callback} />
-          </Col>
-        ))}
-      </Row>
+      <Form layout="vertical" onValuesChange={formChange}>
+        <Row style={{ justifyContent: 'flex-end' }}>
+          {stages.map((stage, index) => (
+            <Col key={stage.field} span={6}>
+              <Stage stage={stage} value={getAttrFromProject(stage.field, project)} project={project} pid={id} />
+            </Col>
+          ))}
+        </Row>
+        <div className={s.createBtn}>
+          <Button type='primary' disabled={!validPrepare} onClick={start}>{t('project.prepare.start')}</Button>
+        </div>
+      </Form>
     </div>
   )
 }

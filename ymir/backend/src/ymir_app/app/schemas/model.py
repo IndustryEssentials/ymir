@@ -54,6 +54,7 @@ class ModelImport(BaseModel):
 class ModelCreate(ModelBase):
     task_id: int
     user_id: int
+    description: Optional[str]
 
 
 class ModelUpdate(BaseModel):

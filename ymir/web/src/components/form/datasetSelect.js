@@ -1,14 +1,16 @@
-import { Col, Row, Select } from 'antd'
+import { Col, ConfigProvider, Row, Select } from 'antd'
 import { connect } from 'umi'
 import { useEffect, useState } from 'react'
 import t from '@/utils/t'
+
+import EmptyState from '@/components/empty/dataset'
 
 const defaultLabelRender = item => <>{item.name} {item.versionName}(assets: {item.assetCount})</>
 
 const DatasetSelect = ({
   pid, filter = [], allowEmpty, filterGroup = [],
   filters, value, datasets = [], onChange = () => { }, renderLabel = defaultLabelRender,
-  extra, getDatasets, ...resProps
+  extra, changeByUser, getDatasets, ...resProps
 }) => {
   const [options, setOptions] = useState([])
 
@@ -18,7 +20,7 @@ const DatasetSelect = ({
 
   useEffect(() => {
     let selected = null
-    if (value) {
+    if (value && !changeByUser) {
       if (resProps.mode) {
         selected = options.filter(opt => value.includes(opt.value))
       } else {
@@ -27,6 +29,13 @@ const DatasetSelect = ({
       onChange(value, selected)
     }
   }, [options])
+
+  useEffect(() => {
+    const needReload = datasets.some(ds => ds.needReload)
+    if (needReload) {
+      fetchDatasets()
+    }
+  }, [datasets])
 
   useEffect(() => {
     let dss = filters ? filters(datasets) : datasets
@@ -49,18 +58,20 @@ const DatasetSelect = ({
     return datasets.filter(ds => ds.assetCount)
   }
 
-  const select = <Select
-    value={value}
-    placeholder={t('task.train.form.training.datasets.placeholder')}
-    onChange={onChange}
-    showArrow
-    allowClear
-    showSearch
-    options={options}
-    filterOption={(input, option) => option.dataset.name.toLowerCase().indexOf(input.toLowerCase()) >= 0}
-    {...resProps}
-  >
-  </Select>
+  const select = <ConfigProvider renderEmpty={() => <EmptyState />}>
+    <Select
+      value={value}
+      placeholder={t('task.train.form.training.datasets.placeholder')}
+      onChange={onChange}
+      showArrow
+      allowClear
+      showSearch
+      options={options}
+      filterOption={(input, option) => option.dataset.name.toLowerCase().indexOf(input.toLowerCase()) >= 0}
+      {...resProps}
+    >
+    </Select>
+  </ConfigProvider>
 
   return extra ? <Row gutter={20} wrap={false}><Col flex={1}>{select}</Col><Col>{extra}</Col></Row> : select
 }

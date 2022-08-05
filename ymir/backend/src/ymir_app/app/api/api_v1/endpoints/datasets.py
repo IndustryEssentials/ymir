@@ -18,6 +18,7 @@ from app.api.errors.errors import (
     FailedToHideProtectedResources,
     DatasetGroupNotFound,
     ProjectNotFound,
+    RequiredFieldMissing,
     MissingOperations,
     RefuseToProcessMixedOperations,
 )
@@ -182,6 +183,7 @@ def import_dataset(
     - add unknown annotations = 4
     """
     # 1. check if dataset group name is available
+    logger.info("[import dataset] import dataset with payload: %s", dataset_import.json())
     if crud.dataset_group.is_duplicated_name_in_project(
         db, project_id=dataset_import.project_id, name=dataset_import.group_name
     ):
@@ -295,6 +297,35 @@ def get_dataset(
     if not dataset:
         raise DatasetNotFound()
     return {"result": dataset}
+
+
+@router.get("/{dataset_id}/stats", response_model=schemas.dataset.DatasetStatsOut)
+def get_dataset_stats(
+    db: Session = Depends(deps.get_db),
+    dataset_id: int = Path(..., example="12"),
+    project_id: int = Query(None),
+    keywords_str: str = Query(None, alias="keywords"),
+    viz_client: VizClient = Depends(deps.get_viz_client),
+    current_user: models.User = Depends(deps.get_current_active_user),
+    user_labels: UserLabels = Depends(deps.get_user_labels),
+) -> Any:
+    dataset = crud.dataset.get_by_user_and_id(db, user_id=current_user.id, id=dataset_id)
+    if not dataset:
+        raise DatasetNotFound()
+
+    keywords = keywords_str.split(",")
+    if not keywords:
+        raise RequiredFieldMissing()
+
+    keyword_ids = user_labels.get_class_ids(keywords)
+    viz_client.initialize(
+        user_id=current_user.id,
+        project_id=project_id,
+        branch_id=dataset.hash,
+        user_labels=user_labels,
+    )
+    dataset_stats = viz_client.get_dataset_stats(keyword_ids=keyword_ids)
+    return {"result": dataset_stats}
 
 
 @router.get(
@@ -423,13 +454,13 @@ def normalize_fusion_parameter(
         db, ids=[fusion_params.main_dataset_id] + fusion_params.include_datasets
     )
     in_datasets.sort(
-        key=attrgetter("update_datetime"),
+        key=attrgetter("create_datetime"),
         reverse=(fusion_params.include_strategy == MergeStrategy.prefer_newest),
     )
     ex_datasets = crud.dataset.get_multi_by_ids(db, ids=fusion_params.exclude_datasets)
     return {
         "include_datasets": [dataset.hash for dataset in in_datasets],
-        "include_strategy": fusion_params.include_strategy,
+        "strategy": fusion_params.include_strategy,
         "exclude_datasets": [dataset.hash for dataset in ex_datasets],
         "include_class_ids": user_labels.get_class_ids(names_or_aliases=fusion_params.include_labels),
         "exclude_class_ids": user_labels.get_class_ids(names_or_aliases=fusion_params.exclude_labels),
@@ -482,7 +513,7 @@ def create_dataset_fusion(
     dataset_group = crud.dataset_group.get(db, id=in_fusion.dataset_group_id)
     if not dataset_group:
         raise DatasetGroupNotFound()
-    fused_dataset = crud.dataset.create_as_task_result(db, task, dataset_group.id)
+    fused_dataset = crud.dataset.create_as_task_result(db, task, dataset_group.id, description=in_fusion.description)
     logger.info("[fusion] dataset record created: %s", fused_dataset.name)
 
     return {"result": fused_dataset}
@@ -500,6 +531,7 @@ def batch_evaluate_datasets(
     """
     evaluate datasets by themselves
     """
+    logger.info("[evaluate] evaluate dataset with payload: %s", evaluation_in.json())
     datasets = crud.dataset.get_multi_by_ids(db, ids=evaluation_in.dataset_ids)
     if len(evaluation_in.dataset_ids) != len(datasets):
         raise DatasetNotFound()
@@ -547,14 +579,20 @@ def merge_datasets(
     """
     Merge multiple datasets
     """
+    logger.info("[merge] merge dataset with payload: %s", in_merge.json())
     main_dataset = crud.dataset.get(db, id=in_merge.dataset_id)
     if not main_dataset:
         raise DatasetNotFound()
-    in_datasets = (
-        ensure_datasets_are_ready(db, dataset_ids=[in_merge.dataset_id, *in_merge.include_datasets])
-        if in_merge.include_datasets
-        else None
-    )
+
+    if in_merge.include_datasets:
+        in_datasets = ensure_datasets_are_ready(db, dataset_ids=[in_merge.dataset_id, *in_merge.include_datasets])
+        in_datasets.sort(
+            key=attrgetter("create_datetime"),
+            reverse=(in_merge.merge_strategy == MergeStrategy.prefer_newest),
+        )
+    else:
+        in_datasets = [main_dataset]
+
     ex_datasets = (
         ensure_datasets_are_ready(db, dataset_ids=in_merge.exclude_datasets) if in_merge.exclude_datasets else None
     )
@@ -565,8 +603,8 @@ def merge_datasets(
             current_user.id,
             in_merge.project_id,
             task_hash,
-            [d.hash for d in in_datasets],
-            [d.hash for d in ex_datasets],
+            [d.hash for d in in_datasets] if in_datasets else None,
+            [d.hash for d in ex_datasets] if ex_datasets else None,
             in_merge.merge_strategy,
         )
     except ValueError:
@@ -601,6 +639,7 @@ def filter_dataset(
     """
     Filter dataset
     """
+    logger.info("[filter] filter dataset with payload: %s", in_filter.json())
     datasets = ensure_datasets_are_ready(db, dataset_ids=[in_filter.dataset_id])
     main_dataset = datasets[0]
 

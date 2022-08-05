@@ -1,9 +1,11 @@
 import logging
+from typing import List
 
 from src.config import viz_settings
 from src.libs import utils, exceptions
 from src.swagger_models.dataset_result import DatasetResult
 from src.swagger_models.dataset_duplication_result import DatasetDuplicationResult
+from src.swagger_models.dataset_stats_result import DatasetStatsResult
 from src.viz_models import asset, pb_reader
 
 
@@ -50,7 +52,7 @@ def get_dataset_info(user_id: str, repo_id: str, branch_id: str) -> DatasetResul
 def check_datasets_duplication(
     user_id: str,
     repo_id: str,
-    candidate_dataset_ids: str
+    candidate_dataset_ids: str,
 ) -> DatasetDuplicationResult:
     dataset_ids = [dataset_id.strip() for dataset_id in candidate_dataset_ids.split(",")]
     try:
@@ -66,3 +68,47 @@ def check_datasets_duplication(
     duplication_count = len(set(main_asset_ids).intersection(other_asset_ids))
     resp = utils.suss_resp(result=duplication_count)
     return DatasetDuplicationResult(**resp)
+
+
+def get_dataset_stats(
+    user_id: str,
+    repo_id: str,
+    branch_id: str,
+    class_ids: str,
+) -> DatasetStatsResult:
+    """get dataset stats info
+
+    Args:
+        user_id (str): user id
+        repo_id (str): repo id
+        branch_id (str): dataset hash
+        class_ids (List[int]): class ids
+        anno_type (int): 1 for prediction, 2 for ground truth
+
+    Returns: DatasetStatsResult
+
+    return example:
+    {
+        "total_images_cnt": 40
+        "gt": {
+            "class_ids_count": {3: 34},
+            "negative_images_cnt": 6,
+            "positive_images_cnt": 34,
+        },
+        "pred": {
+            "class_ids_count": {3: 34},
+            "negative_images_cnt": 6,
+            "positive_images_cnt": 34,
+        },
+    }
+    """
+    if not class_ids:
+        raise exceptions.NoClassIds()
+
+    cis: List[int] = [int(x) for x in class_ids.split(',')]
+    dataset_stats_dict = asset.AssetsModel(user_id, repo_id, branch_id).get_dataset_stats(cis=cis)
+
+    resp = utils.suss_resp(result=dataset_stats_dict)
+    logging.info(f"get_dataset_stats: {resp}")
+
+    return DatasetStatsResult(**resp)

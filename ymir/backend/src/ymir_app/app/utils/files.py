@@ -100,14 +100,22 @@ def locate_dir(p: Union[str, Path], target: str) -> Path:
     Locate specifc target dirs
     """
     for _p in Path(p).iterdir():
-        if _p.is_dir() and _p.name.lower() == target:
+        if not _p.is_dir():
+            continue
+        if _p.name.lower() == target:
             return _p
         for __p in _p.iterdir():
-            if __p.is_dir() and __p.name.lower() == target:
+            if not __p.is_dir():
+                continue
+            if __p.name.lower() == target:
                 return __p
     # Only search 3rd depth when no result was found in 2nd depth.
     for _p in Path(p).iterdir():
+        if not _p.is_dir():
+            continue
         for __p in _p.iterdir():
+            if not __p.is_dir():
+                continue
             for ___p in __p.iterdir():
                 if ___p.is_dir() and ___p.name.lower() == target:
                     return ___p

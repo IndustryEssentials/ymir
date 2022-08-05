@@ -1,5 +1,5 @@
 import { getLocale } from "umi"
-import { DatasetGroup, Dataset, DatasetAnalysis } from "@/interface/dataset"
+import { DatasetGroup, Dataset, DatasetAnalysis, Annotation, Asset } from "@/interface/dataset"
 import { calDuration, format } from '@/utils/date'
 import { getIterationVersion, transferIteration } from "./project"
 import { BackendData } from "@/interface/common"
@@ -10,6 +10,13 @@ export enum states {
   INVALID = 2,
 }
 
+export enum evaluationTags {
+  tp = 1,
+  fp = 2,
+  fn = 3,
+  mtp = 11,
+}
+
 export const statesLabel = (state: states) => {
   const maps = {
     [states.READY]: 'dataset.state.ready',
@@ -17,7 +24,7 @@ export const statesLabel = (state: states) => {
     [states.INVALID]: 'dataset.state.invalid',
   }
   return maps[state]
-} 
+}
 
 export enum IMPORTSTRATEGY {
   ALL_KEYWORDS_IGNORE = 1,
@@ -26,7 +33,7 @@ export enum IMPORTSTRATEGY {
   UNKOWN_KEYWORDS_AUTO_ADD = 4,
 }
 
-export function transferDatasetGroup (data: BackendData) {
+export function transferDatasetGroup(data: BackendData) {
   const group: DatasetGroup = {
     id: data.id,
     projectId: data.project_id,
@@ -37,7 +44,7 @@ export function transferDatasetGroup (data: BackendData) {
   return group
 }
 
-export function transferDataset (data: BackendData): Dataset {
+export function transferDataset(data: BackendData): Dataset {
   const { negative_images_cnt = 0, project_negative_images_cnt = 0 } = data.negative_info || {}
   return {
     id: data.id,
@@ -66,6 +73,7 @@ export function transferDataset (data: BackendData): Dataset {
     taskName: data.related_task.name,
     task: data.related_task,
     hidden: !data.is_visible,
+    description: data.description || '',
   }
 }
 
@@ -85,7 +93,44 @@ export function transferDatasetAnalysis(data: BackendData): DatasetAnalysis {
     assetArea: data.asset_area,
     assetQuality: data.asset_quality,
     annoAreaRatio: data.anno_area_ratio,
-    annoQuality: data.anno_quality, 
+    annoQuality: data.anno_quality,
     classNamesCount: data.class_names_count,
   }
+}
+
+export function transferAsset(data: BackendData, keywords: Array<string>): Asset {
+  const transferAnnotations = (annotations = [], gt = false) =>
+    annotations.map((an: BackendData) => transferAnnotation(an, gt))
+  const annotations = [
+    ...transferAnnotations(data.gt, true),
+    ...transferAnnotations(data.pred),
+  ].map(annotation => ({ ...annotation, color: generateColor(annotation.keyword, keywords || data.keywords) }))
+  const evaluated = annotations.some(annotation => evaluationTags[annotation.cm])
+  return {
+    id: data.id,
+    hash: data.hash,
+    keywords: data.keywords || [],
+    url: data.url,
+    metadata: data.metadata,
+    size: data.size,
+    annotations,
+    evaluated: evaluated,
+  }
+}
+
+export function transferAnnotation(data: BackendData, gt: boolean = false): Annotation {
+  return {
+    ...data,
+    keyword: data.keyword,
+    box: data.box,
+    cm: data.cm,
+    gt,
+  }
+}
+
+function generateColor(keyword: string, keywords: Array<string> = []) {
+  const KeywordColor = ["green", "red", "cyan", "blue", "yellow", "purple", "magenta", "orange", "gold"]
+  const colors: { [key: string]: any } = keywords.reduce((prev, curr, i) =>
+    ({ ...prev, [curr]: KeywordColor[i % KeywordColor.length] }), {})
+  return colors[keyword]
 }

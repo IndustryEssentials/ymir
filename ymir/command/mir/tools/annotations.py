@@ -51,7 +51,9 @@ def _object_dict_to_annotation(object_dict: dict, cid: int) -> mirpb.Annotation:
     annotation.box.h = height
     annotation.box.rotate_angle = float(bndbox_dict.get('rotate_angle', '0.0'))
     annotation.score = float(object_dict.get('confidence', '-1.0'))
-    annotation.tags.update(object_dict.get('tags', {}))
+    tags = object_dict.get('tags', {})  # tags could be None
+    if tags:
+        annotation.tags.update(tags)
     annotation.anno_quality = float(object_dict.get('box_quality', '-1.0'))
     return annotation
 
@@ -176,7 +178,9 @@ def _import_annotations_from_dir(mir_metadatas: mirpb.MirMetadatas, mir_annotati
             annos_dict: dict = xmltodict.parse(annos_xml_str)['annotation']
 
             # cks
-            mir_annotation.image_cks[asset_hash].cks.update(annos_dict.get('cks', {}))
+            cks = annos_dict.get('cks', {})  # cks could be None
+            if cks:
+                mir_annotation.image_cks[asset_hash].cks.update(cks)
             mir_annotation.image_cks[asset_hash].image_quality = float(annos_dict.get('image_quality', '-1.0'))
 
             # annotations and tags

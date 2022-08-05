@@ -181,6 +181,7 @@ class TestCmdImport(unittest.TestCase):
                                 'rotate_angle': 0.22
                             },
                             'class_id': 1,
+                            'cm': 'TP',
                             'score': 0.5,
                             'anno_quality': 0.62,
                             'tags': {
@@ -239,6 +240,7 @@ class TestCmdImport(unittest.TestCase):
                                 'rotate_angle': 0.22
                             },
                             'class_id': 1,
+                            'cm': 'TP',
                             'score': 0.5,
                             'anno_quality': 0.62,
                             'tags': {
@@ -422,10 +424,12 @@ class TestCmdImport(unittest.TestCase):
                 dict_keywords_expect = {
                     'keywords': {
                         'a3008c032eb11c8d9ffcb58208a36682ee40900f': {
-                            'predefined_keyids': [1]
+                            'predefined_keyids': [1],
+                            'gt_predefined_keyids': [1],
                         },
                         '430df22960b0f369318705800139fcc8ec38a3e4': {
-                            'predefined_keyids': [1]
+                            'predefined_keyids': [1],
+                            'gt_predefined_keyids': [1],
                         }
                     },
                     'pred_idx': pred_gt_idx,
@@ -771,10 +775,12 @@ class TestCmdImport(unittest.TestCase):
                 dict_keywords_expect = {
                     'keywords': {
                         '430df22960b0f369318705800139fcc8ec38a3e4': {
-                            'predefined_keyids': [1, 2]
+                            'predefined_keyids': [1, 2],
+                            'gt_predefined_keyids': [1, 2]
                         },
                         'a3008c032eb11c8d9ffcb58208a36682ee40900f': {
-                            'predefined_keyids': [1]
+                            'predefined_keyids': [1],
+                            'gt_predefined_keyids': [1]
                         }
                     },
                     'pred_idx': pred_gt_idx,

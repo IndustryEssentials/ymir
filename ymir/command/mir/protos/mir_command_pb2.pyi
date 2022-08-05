@@ -678,15 +678,21 @@ global___Int32List = Int32List
 class Keywords(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor = ...
     PREDEFINED_KEYIDS_FIELD_NUMBER: builtins.int
+    GT_PREDEFINED_KEYIDS_FIELD_NUMBER: builtins.int
     @property
     def predefined_keyids(self) -> google.protobuf.internal.containers.RepeatedScalarFieldContainer[builtins.int]:
-        """predefined: managed id-keyword map"""
+        """class ids for predictions"""
+        pass
+    @property
+    def gt_predefined_keyids(self) -> google.protobuf.internal.containers.RepeatedScalarFieldContainer[builtins.int]:
+        """class ids for ground truth"""
         pass
     def __init__(self,
         *,
         predefined_keyids : typing.Optional[typing.Iterable[builtins.int]] = ...,
+        gt_predefined_keyids : typing.Optional[typing.Iterable[builtins.int]] = ...,
         ) -> None: ...
-    def ClearField(self, field_name: typing_extensions.Literal["predefined_keyids",b"predefined_keyids"]) -> None: ...
+    def ClearField(self, field_name: typing_extensions.Literal["gt_predefined_keyids",b"gt_predefined_keyids","predefined_keyids",b"predefined_keyids"]) -> None: ...
 global___Keywords = Keywords
 
 class AssetAnnoIndex(google.protobuf.message.Message):
@@ -961,14 +967,12 @@ class EvaluateConfig(google.protobuf.message.Message):
     CONF_THR_FIELD_NUMBER: builtins.int
     IOU_THRS_INTERVAL_FIELD_NUMBER: builtins.int
     NEED_PR_CURVE_FIELD_NUMBER: builtins.int
-    CALC_CONFUSION_MATRIX_FIELD_NUMBER: builtins.int
     gt_dataset_id: typing.Text = ...
     @property
     def pred_dataset_ids(self) -> google.protobuf.internal.containers.RepeatedScalarFieldContainer[typing.Text]: ...
     conf_thr: builtins.float = ...
     iou_thrs_interval: typing.Text = ...
     need_pr_curve: builtins.bool = ...
-    calc_confusion_matrix: builtins.bool = ...
     def __init__(self,
         *,
         gt_dataset_id : typing.Text = ...,
@@ -976,9 +980,8 @@ class EvaluateConfig(google.protobuf.message.Message):
         conf_thr : builtins.float = ...,
         iou_thrs_interval : typing.Text = ...,
         need_pr_curve : builtins.bool = ...,
-        calc_confusion_matrix : builtins.bool = ...,
         ) -> None: ...
-    def ClearField(self, field_name: typing_extensions.Literal["calc_confusion_matrix",b"calc_confusion_matrix","conf_thr",b"conf_thr","gt_dataset_id",b"gt_dataset_id","iou_thrs_interval",b"iou_thrs_interval","need_pr_curve",b"need_pr_curve","pred_dataset_ids",b"pred_dataset_ids"]) -> None: ...
+    def ClearField(self, field_name: typing_extensions.Literal["conf_thr",b"conf_thr","gt_dataset_id",b"gt_dataset_id","iou_thrs_interval",b"iou_thrs_interval","need_pr_curve",b"need_pr_curve","pred_dataset_ids",b"pred_dataset_ids"]) -> None: ...
 global___EvaluateConfig = EvaluateConfig
 
 class SingleDatasetEvaluation(google.protobuf.message.Message):

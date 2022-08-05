@@ -6,6 +6,7 @@ import Breadcrumbs from "@/components/common/breadcrumb"
 import s from "./detail.less"
 import { TrainIcon, NavDatasetIcon, ArrowRightIcon, ImportIcon } from "@/components/common/icons"
 import NoIterationDetail from "./components/noIterationDetail"
+import Detail from './components/detail'
 
 function ProjectDetail(func) {
   const history = useHistory()
@@ -24,8 +25,12 @@ function ProjectDetail(func) {
       setProject(result)
     }
   }
-  const fresh = useCallback(() => {
-    fetchProject(true)
+  const fresh = useCallback((updateProject) => {
+    if (updateProject) {
+      setProject(updateProject)
+    } else {
+      fetchProject(true)
+    }
   }, [])
 
   async function fetchIterations(pid) {
@@ -35,16 +40,13 @@ function ProjectDetail(func) {
     }
   }
 
-  function datasetTitle() {
-    return <div className={s.cardTitle}><NavDatasetIcon className={s.titleIcon} /><span className={s.titleLabel}>{t('project.tab.set.title')}</span></div>
-  }
-
-  function modelTitle() {
-    return <div className={s.cardTitle}><TrainIcon className={s.titleIcon} /><span className={s.titleLabel}>{t('project.iteration.stage.training')}</span></div>
-  }
+  const title = (Icon, label) => <div className={s.cardTitle}>
+    <Icon className={s.titleIcon} />
+    <span className={s.titleLabel}>{t(label)}</span>
+    </div>
 
   function add() {
-    history.push(`/home/dataset/add/${id}`)
+    history.push(`/home/project/${id}/dataset/add`)
   }
 
   function goTraining() {
@@ -55,7 +57,7 @@ function ProjectDetail(func) {
     <div>
       <Breadcrumbs />
       <div className={s.header}>
-        <NoIterationDetail project={project} />
+      {project.enableIteration ? <Detail project={project} iterations={iterations} fresh={fresh} /> : <NoIterationDetail project={project} />}
       </div>
       <Space className="actions">
         <Button type="primary" onClick={add}><ImportIcon /> {t("dataset.import.label")}</Button>
@@ -64,7 +66,7 @@ function ProjectDetail(func) {
       <div className={`list ${s.projectOverview}`}>
         <Row gutter={10}>
           <Col span={12}>
-            <Card title={datasetTitle()} className={s.cardContainer}
+            <Card title={title(NavDatasetIcon, 'project.tab.set.title')} className={s.cardContainer}
               onClick={() => { history.push(`/home/project/${project.id}/dataset`) }}
               extra={<ArrowRightIcon className={s.rightIcon} />}>
               <Row className='content' justify="center">
@@ -80,7 +82,7 @@ function ProjectDetail(func) {
             </Card>
           </Col>
           <Col span={12}>
-            <Card title={modelTitle()} className={s.cardContainer}
+            <Card title={title(TrainIcon, 'project.tab.model.title')} className={s.cardContainer}
               onClick={() => { history.push(`/home/project/${project.id}/model`) }}
               extra={<ArrowRightIcon className={s.rightIcon} />}>
               <Row className='content' justify="center">

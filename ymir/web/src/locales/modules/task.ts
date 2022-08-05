@@ -18,7 +18,7 @@ const task = {
   "task.state.terminated": { cn: '终止', en: 'Terminated', },
   "task.state.terminating": { cn: '正在终止，请耐心等待结果', en: 'Terminating', },
   "task.column.state.timeleft.label": { cn: "剩余时间：", en: "Time Left: ", },
-  "task.column.duration": { cn: "训练时长", en: "Training Duration", },
+  "task.column.duration": { cn: "时长", en: "Duration", },
   "task.action.terminate": { cn: "终止", en: "Terminate", },
   "task.action.copy": { cn: "复制", en: "Copy", },
   "task.action.training": { cn: "训练过程", en: "Training Process", },
@@ -69,7 +69,6 @@ const task = {
   "task.mining.form.mining.model.required": { cn: "请选择用于数据挖掘的模型", en: "please select the model used for data mining", },
 
   "task.mining.form.algo.label": { cn: "挖掘算法", en: "Mining Algorithm", },
-  "task.mining.form.strategy.label": { cn: "筛选策略", en: "Filter Strategy", },
   "task.mining.form.topk.label": { cn: "TOPK", en: "TOP K", },
   "task.label.form.type.newer": { cn: "未标注部分", en: "Unlabel", },
   "task.mining.form.dataset.label": { cn: "挖掘集", en: "Mining Dataset", },
@@ -161,7 +160,7 @@ const task = {
     en: "Please input relative path to your config filename， e.g. config/white.yaml",
     cn: "请输入配置文件名称的相对路径, 如 config/white.yaml",
   },
-  "task.train.form.platform.label": { en: "Train Function", cn: "训练方式", },
+  "task.train.form.platform.label": { en: "Use Openpai", cn: "使用Openpai", },
   "task.train.device.local": { en: "Local", cn: "本地训练", },
   "task.train.device.openpai": { en: "OpenPAI", cn: "OpenPAI训练", },
   "task.train.export.format": { en: "Format For Training", cn: "数据导出格式", },
@@ -184,6 +183,9 @@ const task = {
   "task.train.preprocess.resize.placeholder": { en: "Max width/height", cn: "最大高/宽", },
   "task.filter.includes.placeholder": { en: "Please select inclusion keywords", cn: "请选择保留的标签", },
   "task.filter.excludes.placeholder": { en: "Please select exclusion keywords", cn: "请选择需要排除掉的标签", },
+  "task.state": { en: "Task Status", cn: "任务状态", },
+  "task.detail.terminated.label": { en: "Terminated", cn: "终止", },
+  "task.detail.terminated": { en: "Terminated by user", cn: "用户手动终止", },
 }
 
 export default task

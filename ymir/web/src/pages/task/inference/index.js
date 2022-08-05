@@ -1,26 +1,17 @@
 import React, { useCallback, useEffect, useState } from "react"
 import { connect } from "dva"
-import { Select, Card, Input, Radio, Button, Form, Row, Col, ConfigProvider, Space, InputNumber, message, Tag, Alert } from "antd"
-import {
-  PlusOutlined,
-  MinusCircleOutlined,
-  UpSquareOutlined,
-  DownSquareOutlined,
-} from '@ant-design/icons'
-import styles from "./index.less"
-import commonStyles from "../common.less"
-import { formLayout } from "@/config/antd"
+import { Select, Card, Button, Form, Row, Col, Space, InputNumber, message, Tag, Alert } from "antd"
+import { useHistory, useParams, useLocation } from "umi"
 
+import { formLayout } from "@/config/antd"
 import t from "@/utils/t"
 import { string2Array } from "@/utils/string"
+import { OPENPAI_MAX_GPU_COUNT } from '@/constants/common'
 import { TYPES } from '@/constants/image'
-import { useHistory, useParams, useLocation } from "umi"
 import useFetch from '@/hooks/useFetch'
+
 import Breadcrumbs from "@/components/common/breadcrumb"
-import EmptyStateDataset from '@/components/empty/dataset'
-import EmptyStateModel from '@/components/empty/model'
 import { randomNumber } from "@/utils/number"
-import Tip from "@/components/form/tip"
 import ModelSelect from "@/components/form/modelSelect"
 import ImageSelect from "@/components/form/imageSelect"
 import DatasetSelect from "@/components/form/datasetSelect"
@@ -29,11 +20,17 @@ import AddKeywordsBtn from "@/components/keyword/addKeywordsBtn"
 import LiveCodeForm from "../components/liveCodeForm"
 import { removeLiveCodeConfig } from "../components/liveCodeConfig"
 import DockerConfigForm from "../components/dockerConfigForm"
+import Desc from "@/components/form/desc"
+
+import commonStyles from "../common.less"
+import styles from "./index.less"
+import OpenpaiForm from "../components/openpaiForm"
 
 const { Option } = Select
 
+const getArray = (str = '') => str.split('|')
 const parseModelStage = (str = '') => {
-  return str ? str.split('|').map(stage => string2Array(stage)) : []
+  return str ? getArray(str).map(stage => string2Array(stage)) : []
 }
 
 const Algorithm = () => [{ id: "aldd", label: 'ALDD', checked: true }]
@@ -43,7 +40,8 @@ function Inference({ datasetCache, datasets, ...func }) {
   const pid = Number(pageParams.id)
   const history = useHistory()
   const location = useLocation()
-  const { did, image } = location.query
+  const { image } = location.query
+  const did = location.query.did ? getArray(location.query.did).map(Number) : undefined
   const stage = parseModelStage(location.query.mid)
   const [selectedModels, setSelectedModels] = useState([])
   const [form] = Form.useForm()
@@ -57,10 +55,22 @@ function Inference({ datasetCache, datasets, ...func }) {
   const [project, getProject] = useFetch('project/getProject', {})
   const watchStages = Form.useWatch('stages', form)
   const watchTestingSets = Form.useWatch('datasets', form)
+  const [openpai, setOpenpai] = useState(false)
+  const [sys, getSysInfo] = useFetch('common/getSysInfo', {})
+  const selectOpenpai = Form.useWatch('openpai', form)
 
   useEffect(() => {
-    fetchSysInfo()
+    getSysInfo()
   }, [])
+
+  useEffect(() => {
+    setGPU(sys.gpu_count || 0)
+    setOpenpai(!!sys.openpai_enabled)
+  }, [sys])
+
+  useEffect(() => {
+    setGPU(selectOpenpai ? OPENPAI_MAX_GPU_COUNT : sys.gpu_count || 0)
+  }, [selectOpenpai])
 
   useEffect(() => {
     pid && getProject({ id: pid, force: true })
@@ -71,7 +81,7 @@ function Inference({ datasetCache, datasets, ...func }) {
   }, [seniorConfig])
 
   useEffect(() => {
-    did && form.setFieldsValue({ datasets: [Number(did)] })
+    did && form.setFieldsValue({ datasets: did })
   }, [did])
 
   useEffect(() => {
@@ -213,47 +223,40 @@ function Inference({ datasetCache, datasets, ...func }) {
             onFinish={onFinish}
             onFinishFailed={onFinishFailed}
           >
-            <ConfigProvider renderEmpty={() => <EmptyStateDataset add={() => history.push(`/home/dataset/add/${pid}`)} />}>
-
+            <Form.Item
+              label={t('task.inference.form.dataset.label')}
+              required
+              name="datasets"
+              rules={[
+                { required: true, message: t('task.inference.form.dataset.required') },
+              ]}
+            >
+              <DatasetSelect
+                mode='multiple'
+                pid={pid}
+                filters={testSetFilters}
+                renderLabel={renderLabel}
+                placeholder={t('task.inference.form.dataset.placeholder')}
+              />
+            </Form.Item>
+            <Form.Item required
+              tooltip={t('tip.task.filter.imodel')}
+              label={t('task.mining.form.model.label')}>
               <Form.Item
-                label={t('task.inference.form.dataset.label')}
-                required
-                name="datasets"
+                noStyle
+                name="stages"
                 rules={[
-                  { required: true, message: t('task.inference.form.dataset.required') },
+                  { required: true, message: t('task.mining.form.model.required') },
                 ]}
               >
-                <DatasetSelect
-                  mode='multiple'
-                  pid={pid}
-                  filters={testSetFilters}
-                  renderLabel={renderLabel}
-                  placeholder={t('task.inference.form.dataset.placeholder')}
-                />
+                <ModelSelect multiple placeholder={t('task.inference.form.model.required')} onChange={modelChange} pid={pid} />
               </Form.Item>
-            </ConfigProvider>
-
-
-            <ConfigProvider renderEmpty={() => <EmptyStateModel id={pid} />}>
-              <Form.Item required
-                tooltip={t('tip.task.filter.imodel')}
-                label={t('task.mining.form.model.label')}>
-                <Form.Item
-                  noStyle
-                  name="stages"
-                  rules={[
-                    { required: true, message: t('task.mining.form.model.required') },
-                  ]}
-                >
-                  <ModelSelect multiple placeholder={t('task.inference.form.model.required')} onChange={modelChange} pid={pid} />
-                </Form.Item>
-                <div style={{ marginTop: 10 }}>
-                  <Button size='small' type="primary" onClick={() => selectModelFromIteration()}>
-                    {t('task.inference.model.iters')}
-                  </Button>
-                </div>
-              </Form.Item>
-            </ConfigProvider>
+              <div style={{ marginTop: 10 }}>
+                <Button size='small' type="primary" onClick={() => selectModelFromIteration()}>
+                  {t('task.inference.model.iters')}
+                </Button>
+              </div>
+            </Form.Item>
 
             <Form.Item name='image' tooltip={t('tip.task.inference.image')} label={t('task.inference.form.image.label')} rules={[
               { required: true, message: t('task.inference.form.image.required') }
@@ -265,7 +268,7 @@ function Inference({ datasetCache, datasets, ...func }) {
                 onChange={imageChange}
               />
             </Form.Item>
-
+            <OpenpaiForm form={form} openpai={openpai} />
             <Form.Item
               tooltip={t('tip.task.filter.igpucount')}
               label={t('task.gpu.count')}
@@ -284,13 +287,7 @@ function Inference({ datasetCache, datasets, ...func }) {
             <LiveCodeForm form={form} live={live} />
             <DockerConfigForm form={form} seniorConfig={seniorConfig} />
 
-            <Form.Item label={t('task.inference.form.desc')} name='description'
-              rules={[
-                { max: 500 },
-              ]}
-            >
-              <Input.TextArea autoSize={{ minRows: 4, maxRows: 20 }} />
-            </Form.Item>
+            <Desc form={form} />
 
             <Form.Item wrapperCol={{ offset: 8 }}>
               <Space size={20}>

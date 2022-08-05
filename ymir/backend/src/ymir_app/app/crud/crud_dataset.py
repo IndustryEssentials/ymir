@@ -105,6 +105,7 @@ class CRUDDataset(CRUDBase[Dataset, DatasetCreate, DatasetUpdate]):
         db_obj = Dataset(
             version_num=version_num,
             hash=obj_in.hash,
+            description=obj_in.description,
             source=int(obj_in.source),
             result_state=int(obj_in.result_state),
             dataset_group_id=obj_in.dataset_group_id,

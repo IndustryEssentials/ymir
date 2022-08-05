@@ -14,6 +14,8 @@ export enum actions {
   del = 'delete',
 }
 
+export const OPENPAI_MAX_GPU_COUNT  = 8
+
 type Result = {
   [key: string]: any,
 }
@@ -31,4 +33,8 @@ export function updateResultState(result: Result, tasks: BackendData) {
   result.task.state = task.state
   result.task.percent = task.percent
   return result
+}
+
+export function validState(state: number) {
+  return states.VALID === state
 }

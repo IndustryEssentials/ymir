@@ -1,16 +1,17 @@
 import React, { useEffect } from "react"
-import { Select, Button, Form, message, ConfigProvider, Card, Space, Radio } from "antd"
+import { Button, Form, message, Card, Space, Radio } from "antd"
 import { useHistory, useLocation, useParams } from "umi"
 
 import { formLayout } from "@/config/antd"
 import t from "@/utils/t"
-import Breadcrumbs from "@/components/common/breadcrumb"
-import EmptyState from '@/components/empty/dataset'
-import s from "./index.less"
-import commonStyles from "../common.less"
-import DatasetSelect from "@/components/form/datasetSelect"
 import useFetch from '@/hooks/useFetch'
+
+import Breadcrumbs from "@/components/common/breadcrumb"
+import DatasetSelect from "@/components/form/datasetSelect"
 import Desc from "@/components/form/desc"
+
+import commonStyles from "../common.less"
+import s from "./index.less"
 
 function Merge() {
   const [dataset, getDataset] = useFetch('dataset/getDataset', {})
@@ -83,7 +84,7 @@ function Merge() {
       <Card className={commonStyles.container} title={t('task.fusion.header.merge')}>
         <Form
           form={form}
-          name='fusionForm'
+          name='mergeForm'
           {...formLayout}
           initialValues={initialValues}
           onFinish={onFinish}
@@ -92,37 +93,35 @@ function Merge() {
           <Form.Item label={t('task.fusion.form.dataset')}>
             <span>{dataset.name} {dataset.versionName} (assets: {dataset.assetCount})</span>
           </Form.Item>
-          <ConfigProvider renderEmpty={() => <EmptyState add={() => history.push(`/home/dataset/add/${dataset.projectId}`)} />}>
-            <Form.Item label={t('task.fusion.form.merge.include.label')} name="includes">
-              <DatasetSelect
-                placeholder={t('task.fusion.form.datasets.placeholder')}
-                mode='multiple'
-                pid={pid}
-                filters={filterIncludes}
-                allowEmpty={true}
-                showArrow
-              />
-            </Form.Item>
-            <Form.Item name='strategy'
-              hidden={includes?.length < 1}
-              label={t('task.train.form.repeatdata.label')} initialValue={2}>
-              <Radio.Group options={[
-                { value: 2, label: t('task.train.form.repeatdata.latest') },
-                { value: 3, label: t('task.train.form.repeatdata.original') },
-                { value: 1, label: t('task.train.form.repeatdata.terminate') },
-              ]} />
-            </Form.Item>
-            <Form.Item label={t('task.fusion.form.merge.exclude.label')} name="excludes">
-              <DatasetSelect
-                placeholder={t('task.fusion.form.datasets.placeholder')}
-                mode='multiple'
-                pid={pid}
-                filters={filterExcludes}
-                showArrow
-              />
-            </Form.Item>
-          </ConfigProvider>
-          <Desc />
+          <Form.Item label={t('task.fusion.form.merge.include.label')} name="includes" tooltip={t('tip.task.merge.include')}>
+            <DatasetSelect
+              placeholder={t('task.fusion.form.datasets.placeholder')}
+              mode='multiple'
+              pid={pid}
+              filters={filterIncludes}
+              allowEmpty={true}
+              showArrow
+            />
+          </Form.Item>
+          <Form.Item name='strategy'
+            hidden={includes?.length < 1}
+            label={t('task.train.form.repeatdata.label')} initialValue={2}>
+            <Radio.Group options={[
+              { value: 2, label: t('task.train.form.repeatdata.latest') },
+              { value: 3, label: t('task.train.form.repeatdata.original') },
+              { value: 1, label: t('task.train.form.repeatdata.terminate') },
+            ]} />
+          </Form.Item>
+          <Form.Item label={t('task.fusion.form.merge.exclude.label')} name="excludes" tooltip={t('tip.task.merge.exclude')}>
+            <DatasetSelect
+              placeholder={t('task.fusion.form.datasets.placeholder')}
+              mode='multiple'
+              pid={pid}
+              filters={filterExcludes}
+              showArrow
+            />
+          </Form.Item>
+          <Desc form={form} />
           <Form.Item className={s.submit} wrapperCol={{ offset: 8 }}>
             <Space size={20}>
               <Form.Item name='submitBtn' noStyle>

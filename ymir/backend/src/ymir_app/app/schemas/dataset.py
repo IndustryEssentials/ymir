@@ -75,6 +75,7 @@ class DatasetCreate(DatasetBase):
     hash: str = Field(description="related task hash")
     task_id: int
     user_id: int
+    description: Optional[str]
 
     class Config:
         use_enum_values = True
@@ -136,6 +137,27 @@ class DatasetsOut(Common):
     result: List[Dataset]
 
 
+class DatasetStatsElement(BaseModel):
+    keywords: Dict[str, int]
+    negative_images_count: int
+    positive_images_count: int
+
+    class Config:
+        orm_mode = True
+
+
+class DatasetStats(BaseModel):
+    gt: DatasetStatsElement
+    pred: DatasetStatsElement
+
+    class Config:
+        orm_mode = True
+
+
+class DatasetStatsOut(Common):
+    result: DatasetStats
+
+
 class DatasetHist(BaseModel):
     asset_bytes: List[Dict]
     asset_area: List[Dict]
@@ -186,6 +208,8 @@ class DatasetsFusionParameter(RequestParameterBase):
     exclude_labels: List[str]
 
     sampling_count: int = 0
+
+    description: Optional[str] = Field(description="description for fusion result")
 
 
 class DatasetEvaluationCreate(BaseModel):

@@ -16,7 +16,7 @@ const ListHOC = (Module) => {
     const { id } = useParams()
     const [iterations, getIterations] = useFetch('iteration/getIterations', [])
     const [groups, setGroups] = useState([])
-    const [project, getProject] = useFetch('project/getProject', {})
+    const [project, getProject, setProject] = useFetch('project/getProject', {})
 
     useEffect(() => {
       id && getProject({ id, force: true })
@@ -30,8 +30,12 @@ const ListHOC = (Module) => {
       }
     }, [location.hash])
 
-    const fresh = useCallback(() => {
-      getProject({ id, force: true })
+    const fresh = useCallback(project => {
+      if (project) {
+        setProject(project)
+      } else {
+        getProject({ id, force: true })
+      }
     }, [id])
 
     return (

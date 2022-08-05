@@ -4,15 +4,18 @@ import { useParams, useHistory } from 'umi'
 
 import { formLayout } from "@/config/antd"
 import t from '@/utils/t'
-import { IMPORTSTRATEGY } from '@/constants/dataset'
-import Uploader from '@/components/form/uploader'
-import { randomNumber } from '@/utils/number'
-import { urlValidator } from '@/components/form/validators'
-import s from './add.less'
-import Breadcrumbs from '@/components/common/breadcrumb'
-import ProjectDatasetSelect from '@/components/form/projectDatasetSelect'
-import useAddKeywords from '@/hooks/useAddKeywords'
 import useFetch from '@/hooks/useFetch'
+import useAddKeywords from '@/hooks/useAddKeywords'
+import { IMPORTSTRATEGY } from '@/constants/dataset'
+import { randomNumber } from '@/utils/number'
+
+import { urlValidator } from '@/components/form/validators'
+import Breadcrumbs from '@/components/common/breadcrumb'
+import Uploader from '@/components/form/uploader'
+import ProjectDatasetSelect from '@/components/form/projectDatasetSelect'
+import Desc from "@/components/form/desc"
+
+import s from './add.less'
 import samplePic from '@/assets/sample.png'
 
 const { Option } = Select
@@ -226,13 +229,15 @@ const Add = (props) => {
                   </Select>
                 </Form.Item>
 
-                {selectedDataset && newKeywords.length ?
+                {selectedDataset ?
                   <Form.Item label={t('dataset.import.public.include')}>
-                    <h4>
-                      {t('dataset.add.internal.newkeywords.label')}
-                      <Button type='link' onClick={e => updateIgnoredKeywords(e, newKeywords, false)}>{t('dataset.add.internal.ignore.all')}</Button>
-                    </h4>
-                    <div>{renderKeywords(newKeywords)}</div>
+                    {newKeywords.length ? <>
+                      <h4>
+                        {t('dataset.add.internal.newkeywords.label')}
+                        <Button type='link' onClick={e => updateIgnoredKeywords(e, newKeywords, false)}>{t('dataset.add.internal.ignore.all')}</Button>
+                      </h4>
+                      <div>{renderKeywords(newKeywords)}</div>
+                    </> : null}
                     {ignoredKeywords.length ? <>
                       <h4>
                         {t('dataset.add.internal.ignorekeywords.label')}
@@ -255,9 +260,9 @@ const Add = (props) => {
                 <ProjectDatasetSelect pid={pid} placeholder={t('dataset.add.form.copy.placeholder')}></ProjectDatasetSelect>
               </Form.Item>
             ) : null}
-            {!isType(TYPES.INTERNAL) && !isType(TYPES.COPY) ?
+            {!isType(TYPES.INTERNAL) ?
               <Form.Item label={t('dataset.add.form.label.label')} name='strategy' initialValue={IMPORTSTRATEGY.UNKOWN_KEYWORDS_IGNORE}>
-                <Radio.Group options={strategyOptions} />
+                <Radio.Group options={strategyOptions.filter(opt => !isType(TYPES.COPY) || opt.value !== IMPORTSTRATEGY.UNKOWN_KEYWORDS_AUTO_ADD)} />
               </Form.Item> : null}
             {isType(TYPES.NET) ? (
               <Form.Item label={t('dataset.add.form.net.label')} required>
@@ -298,6 +303,7 @@ const Add = (props) => {
                 ></Uploader>
               </Form.Item>
             ) : null}
+            <Desc form={form} />
             <Form.Item wrapperCol={{ offset: 8 }}>
               <Space size={20}>
                 <Form.Item name='submitBtn' noStyle>

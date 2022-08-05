@@ -44,3 +44,77 @@ class TestDatasetController:
             },
             'total_images_cnt': 1
         }
+
+    def test_get_dataset_stats(self, test_client, mocker):
+        user_id = "user_id"
+        repo_id = "repo_id"
+        branch_id = "branch_id"
+
+        mir_asset_contents = {
+            "all_asset_ids": ["asset_id_0", "asset_id_1", "asset_id_2"],
+            "asset_ids_detail": {
+                "asset_id_0": {
+                    "metadata": {
+                        "asset_type": 2,
+                        "width": 1080,
+                        "height": 1620
+                    },
+                    "pred": [{
+                        "box": {
+                            "x": 26,
+                            "y": 189,
+                            "w": 19,
+                            "h": 50
+                        },
+                        "class_id": 2,
+                        "cm": 1,
+                    }],
+                    "gt": [{
+                        "box": {
+                            "x": 26,
+                            "y": 189,
+                            "w": 19,
+                            "h": 50
+                        },
+                        "class_id": 2,
+                        "cm": 1,
+                    }],
+                    "class_ids": [2],
+                    "pred_class_ids": [2],
+                    "gt_class_ids": [2],
+                }
+            },
+            "class_ids_index": {
+                1: ["asset_id_0", "asset_id_1", "asset_id_2"],
+                2: ["asset_id_1"],
+            },
+            "pred_class_ids_index": {
+                1: ["asset_id_0", "asset_id_1"],
+            },
+            "gt_class_ids_index": {
+                1: ["asset_id_0", "asset_id_1", "asset_id_2"],
+                2: ["asset_id_1"],
+            }
+        }
+
+        mocker.patch.object(MirStorageOps, "load_assets_content", return_value=mir_asset_contents)
+        resp = test_client.get(
+            f"/v1/users/{user_id}/repositories/{repo_id}/branches/{branch_id}/dataset_stats?class_ids=2")
+        assert resp.status_code == 200
+        assert resp.json()["result"] == {
+            'total_images_count': 3,
+            'pred': {
+                'class_ids_count': {
+                    '2': 0,  # int is converted to str in json.dumps.
+                },
+                'negative_images_count': 3,
+                'positive_images_count': 0,
+            },
+            'gt': {
+                'class_ids_count': {
+                    '2': 1,  # int is converted to str in json.dumps.
+                },
+                'negative_images_count': 2,
+                'positive_images_count': 1,
+            },
+        }

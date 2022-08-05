@@ -95,7 +95,7 @@ export const homeRoutes = [
     breadcrumbLabel: 'breadcrumbs.datasets.copy',
   },
   {
-    path: "/home/dataset/add/:id",
+    path: "/home/project/:id/dataset/add",
     name: "datasetImport",
     component: "@/pages/dataset/add",
     title: "dataset.add.title",
@@ -122,6 +122,15 @@ export const homeRoutes = [
     breadcrumbLabel: 'breadcrumbs.dataset.assets',
   },
   {
+    path: "/home/project/:id/model/import",
+    name: "modelImport",
+    component: "@/pages/model/add",
+    title: "model.title",
+    pid: 25,
+    id: 13,
+    breadcrumbLabel: 'breadcrumbs.model.add',
+  },
+  {
     path: "/home/project/:id/model/:mid",
     name: "modelDetail",
     component: "@/pages/model/detail",
@@ -129,15 +138,6 @@ export const homeRoutes = [
     pid: 33,
     id: 12,
     breadcrumbLabel: 'breadcrumbs.model',
-  },
-  {
-    path: "/home/model/import/:id",
-    name: "modelImport",
-    component: "@/pages/model/add",
-    title: "model.title",
-    pid: 25,
-    id: 13,
-    breadcrumbLabel: 'breadcrumbs.model.add',
   },
   {
     path: "/home/project/:id/model/:mid/verify",

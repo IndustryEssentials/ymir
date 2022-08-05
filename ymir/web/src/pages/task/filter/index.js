@@ -4,13 +4,15 @@ import { useHistory, useLocation, useParams } from "umi"
 
 import { formLayout } from "@/config/antd"
 import t from "@/utils/t"
-import Breadcrumbs from "@/components/common/breadcrumb"
-import s from "./index.less"
-import commonStyles from "../common.less"
-import RecommendKeywords from "@/components/common/recommendKeywords"
 import useFetch from '@/hooks/useFetch'
+
+import Breadcrumbs from "@/components/common/breadcrumb"
+import RecommendKeywords from "@/components/common/recommendKeywords"
 import Desc from "@/components/form/desc"
 import KeywordSelect from "@/components/form/keywordSelect"
+
+import commonStyles from "../common.less"
+import s from "./index.less"
 
 function Filter() {
   const { query } = useLocation()
@@ -38,7 +40,7 @@ function Filter() {
     if (filterResult) {
       message.info(t('task.fusion.create.success.msg'))
       clearCache()
-      const group = mergeResult.dataset_group_id || ''
+      const group = filterResult.dataset_group_id || ''
       history.replace(`/home/project/${dataset.projectId}/dataset#${group}`)
     }
   }, [filterResult])
@@ -112,7 +114,7 @@ function Filter() {
           >
             <InputNumber step={1} min={1} precision={0} style={{ width: '100%' }} />
           </Form.Item>
-          <Desc />
+          <Desc form={form} />
           <Form.Item className={s.submit} wrapperCol={{ offset: 8 }}>
             <Space size={20}>
               <Form.Item name='submitBtn' noStyle>

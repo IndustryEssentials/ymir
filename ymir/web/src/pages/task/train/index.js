@@ -1,36 +1,33 @@
 import React, { useEffect, useState } from "react"
 import { connect } from "dva"
-import { Select, Card, Input, Radio, Button, Form, Row, Col, ConfigProvider, Space, InputNumber, Tag, message } from "antd"
+import { Select, Card, Input, Radio, Button, Form, Row, Col, Space, InputNumber, Tag } from "antd"
 import { formLayout } from "@/config/antd"
 import { useHistory, useParams, useLocation } from "umi"
 
 import t from "@/utils/t"
 import { string2Array, generateName } from '@/utils/string'
+import { OPENPAI_MAX_GPU_COUNT } from '@/constants/common'
 import { TYPES } from '@/constants/image'
-import Breadcrumbs from "@/components/common/breadcrumb"
-import EmptyState from '@/components/empty/dataset'
-import EmptyStateModel from '@/components/empty/model'
 import { randomNumber } from "@/utils/number"
+import useFetch from '@/hooks/useFetch'
+
+import Breadcrumbs from "@/components/common/breadcrumb"
 import ImageSelect from "@/components/form/imageSelect"
-import styles from "./index.less"
-import commonStyles from "../common.less"
 import ModelSelect from "@/components/form/modelSelect"
 import KeywordRates from "@/components/dataset/keywordRates"
 import CheckProjectDirty from "@/components/common/CheckProjectDirty"
 import LiveCodeForm from "../components/liveCodeForm"
 import { removeLiveCodeConfig } from "../components/liveCodeConfig"
 import DockerConfigForm from "../components/dockerConfigForm"
-import useFetch from '@/hooks/useFetch'
 import TrainFormat from "../components/trainFormat"
-import DatasetSelect from "../../../components/form/datasetSelect"
+import DatasetSelect from "@/components/form/datasetSelect"
+import Desc from "@/components/form/desc"
 
-const { Option } = Select
+import styles from "./index.less"
+import commonStyles from "../common.less"
+import OpenpaiForm from "../components/openpaiForm"
 
 const TrainType = [{ value: "detection", label: 'task.train.form.traintypes.detect', checked: true }]
-const TrainDevices = [
-  { value: false, label: 'task.train.device.local', checked: true, },
-  { value: true, label: 'task.train.device.openpai', },
-]
 
 const duplicatedOptions = [
   { value: 1, label: 'task.train.duplicated.option.train' },
@@ -64,6 +61,7 @@ function Train({ allDatasets, datasetCache, keywords, ...func }) {
   const [allDuplicated, setAllDulplicated] = useState(false)
   const [duplicated, checkDuplication] = useFetch('dataset/checkDuplication', 0)
   const [sys, getSysInfo] = useFetch('common/getSysInfo', {})
+  const selectOpenpai = Form.useWatch('openpai', form)
 
   const renderRadio = (types) => <Radio.Group options={types.map(type => ({ ...type, label: t(type.label) }))} />
 
@@ -78,8 +76,8 @@ function Train({ allDatasets, datasetCache, keywords, ...func }) {
   }, [sys])
 
   useEffect(() => {
-    form.setFieldsValue({ openpai: openpai })
-  }, [openpai])
+    setGPU(selectOpenpai ? OPENPAI_MAX_GPU_COUNT : sys.gpu_count || 0)
+  }, [selectOpenpai])
 
   useEffect(() => {
     func.getKeywords({ limit: 100000 })
@@ -158,7 +156,7 @@ function Train({ allDatasets, datasetCache, keywords, ...func }) {
 
     const config = {
       ...values.hyperparam?.reduce(
-        (prev, { key, value }) => key && value ? { ...prev, [key]: value } : prev,
+        (prev, { key, value }) => key !== '' && value !== '' ? { ...prev, [key]: value } : prev,
         {}),
       ...(values.live || {}),
     }
@@ -218,15 +216,15 @@ function Train({ allDatasets, datasetCache, keywords, ...func }) {
   }
 
   const matchKeywords = dataset => dataset.keywords.some(kw => selectedKeywords.includes(kw))
+  const notTestingSet = id => !testingSetIds.includes(id)
   const trainsetFilters = datasets => datasets.filter(ds => {
     const notTestSet = ds.id !== testSet
-    const notTestingSet = !testingSetIds.includes(ds.id)
-    return matchKeywords(ds) && notTestSet && notTestingSet
+    return matchKeywords(ds) && notTestSet && notTestingSet(ds.id)
   })
 
   const validationSetFilters = datasets => datasets.filter(ds => {
     const notTrainSet = ds.id !== trainSet
-    return matchKeywords(ds) && notTrainSet
+    return matchKeywords(ds) && notTrainSet && notTestingSet(ds.id)
   })
 
   const getCheckedValue = (list) => list.find((item) => item.checked)["value"]
@@ -237,7 +235,6 @@ function Train({ allDatasets, datasetCache, keywords, ...func }) {
     image: image ? parseInt(image) : undefined,
     modelStage: stage,
     trainType: getCheckedValue(TrainType),
-    openpai: getCheckedValue(TrainDevices),
     gpu_count: 1,
   }
   return (
@@ -265,54 +262,47 @@ function Train({ allDatasets, datasetCache, keywords, ...func }) {
             >
               <Input placeholder={t('model.add.form.name.placeholder')} autoComplete='off' allowClear />
             </Form.Item>
-            
             <Form.Item name='image' label={t('task.train.form.image.label')} rules={[
               { required: true, message: t('task.train.form.image.required') }
             ]} tooltip={t('tip.task.train.image')}>
               <ImageSelect placeholder={t('task.train.form.image.placeholder')} onChange={imageChange} />
             </Form.Item>
-
-            {openpai ? <Form.Item label={t('task.train.form.platform.label')} name='openpai'>
-              {renderRadio(TrainDevices)}
-            </Form.Item> : null}
-
-            <ConfigProvider renderEmpty={() => <EmptyState add={() => history.push(`/home/dataset/add/${pid}`)} />}>
-              <Form.Item
-                label={t('task.train.form.trainsets.label')}
-                required
-                name="datasetId"
-                rules={[
-                  { required: true, message: t('task.train.form.trainset.required') },
-                ]}
-              >
-                <DatasetSelect
-                  pid={pid}
-                  filters={trainsetFilters}
-                  onChange={trainSetChange}
-                />
-              </Form.Item>
-              {trainSet ?
-                <Form.Item label={t('dataset.train.form.samples')}>
-                  <KeywordRates dataset={trainSet}></KeywordRates>
-                </Form.Item> : null}
-              <Form.Item
-                label={t('task.train.form.testsets.label')}
-                name="testset"
-                rules={[
-                  { required: true, message: t('task.train.form.testset.required') },
-                ]}
-                tooltip={t('tip.task.filter.testsets')}
-                extra={duplicationChecked ? duplicatedRender() : null}
-              >
-                <DatasetSelect
-                  pid={pid}
-                  filters={validationSetFilters}
-                  placeholder={t('task.train.form.test.datasets.placeholder')}
-                  onChange={validationSetChange}
-                  extra={<Button disabled={!trainSet || !testSet} type="primary" onClick={checkDuplicated}>{t('task.train.action.duplicated')}</Button>}
-                />
-              </Form.Item>
-            </ConfigProvider>
+            <OpenpaiForm form={form} openpai={openpai} />
+            <Form.Item
+              label={t('task.train.form.trainsets.label')}
+              required
+              name="datasetId"
+              rules={[
+                { required: true, message: t('task.train.form.trainset.required') },
+              ]}
+            >
+              <DatasetSelect
+                pid={pid}
+                filters={trainsetFilters}
+                onChange={trainSetChange}
+              />
+            </Form.Item>
+            {trainSet ?
+              <Form.Item label={t('dataset.train.form.samples')}>
+                <KeywordRates pid={pid} id={trainSet} keywords={selectedKeywords}></KeywordRates>
+              </Form.Item> : null}
+            <Form.Item
+              label={t('task.train.form.testsets.label')}
+              name="testset"
+              rules={[
+                { required: true, message: t('task.train.form.testset.required') },
+              ]}
+              tooltip={t('tip.task.filter.testsets')}
+              extra={duplicationChecked ? duplicatedRender() : null}
+            >
+              <DatasetSelect
+                pid={pid}
+                filters={validationSetFilters}
+                placeholder={t('task.train.form.test.datasets.placeholder')}
+                onChange={validationSetChange}
+                extra={<Button disabled={!trainSet || !testSet} type="primary" onClick={checkDuplicated}>{t('task.train.action.duplicated')}</Button>}
+              />
+            </Form.Item>
             {iterationId ? <Form.Item label={t('task.train.form.keywords.label')}>
               {project?.keywords?.map(keyword => <Tag key={keyword}>{keyword}</Tag>)}
             </Form.Item> :
@@ -337,16 +327,13 @@ function Train({ allDatasets, datasetCache, keywords, ...func }) {
                   ))}
                 </Select>
               </Form.Item>}
-            <ConfigProvider renderEmpty={() => <EmptyStateModel id={pid} />}>
-              <Form.Item
-                label={t('task.detail.label.premodel')}
-                name="modelStage"
-                tooltip={t('tip.task.train.model')}
-              >
-                <ModelSelect placeholder={t('task.train.form.model.placeholder')} pid={pid} />
-              </Form.Item>
-            </ConfigProvider>
-
+            <Form.Item
+              label={t('task.detail.label.premodel')}
+              name="modelStage"
+              tooltip={t('tip.task.train.model')}
+            >
+              <ModelSelect placeholder={t('task.train.form.model.placeholder')} pid={pid} />
+            </Form.Item>
             <Form.Item
               hidden
               label={t('task.train.form.traintype.label')}
@@ -369,6 +356,7 @@ function Train({ allDatasets, datasetCache, keywords, ...func }) {
             </Form.Item>
             <LiveCodeForm form={form} live={live} />
             <DockerConfigForm seniorConfig={seniorConfig} form={form} />
+            <Desc form={form} />
             <Form.Item wrapperCol={{ offset: 8 }}>
               <Space size={20}>
                 <Form.Item name='submitBtn' noStyle>

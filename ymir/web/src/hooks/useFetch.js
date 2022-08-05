@@ -17,7 +17,7 @@ const useFetch = (effect, initResult = null) => {
     return result
   }
 
-  return [result, getResult]
+  return [result, getResult, setResult]
 }
 
 export default useFetch
