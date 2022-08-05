@@ -74,6 +74,7 @@ class TestControllerRequest:
                 "class_ids": [1, 2],
                 "extra_url": random_url(),
                 "keep_annotations": True,
+                "annotation_type": 1,
             },
         )
         assert ret.req.req_type == m.mirsvrpb.TASK_CREATE

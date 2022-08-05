@@ -154,7 +154,7 @@ def create_single_task(db: Session, user_id: int, user_labels: UserLabels, task_
             task_id=task_hash,
             task_type=task_in.type,
             args=args,
-            task_parameters=task_in.parameters.json() if task_in.parameters else None,
+            archived_task_parameters=task_in.parameters.json() if task_in.parameters else None,
         )
         logger.info("[create task] controller response: %s", resp)
     except ValueError:

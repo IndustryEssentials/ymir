@@ -79,5 +79,10 @@ class TrainingType(IntEnum):
     object_detect = 1
 
 
+class AnnotationType(IntEnum):
+    gt = 0
+    pred = 1
+
+
 RunningStates = [TaskState.pending, TaskState.running]
 FinalStates = [TaskState.done, TaskState.error, TaskState.terminate]
