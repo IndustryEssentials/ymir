@@ -46,7 +46,7 @@ const Stage = ({ pid, value, stage, project = {} }) => {
       .map(({ field }) => field)
     const ids = fields.map(field => project[field]?.id || project[field])
 
-    return datasets.filter(dataset => !ids.includes(dataset.id))
+    return datasets.filter(dataset => ![...ids, ...project.testingSets].includes(dataset.id))
   }
 
   return <Row wrap={false}>
