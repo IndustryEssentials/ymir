@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react"
-import { Button, Form, Row, Col, Table, Popover, Card } from "antd"
+import { Button, Form, Row, Col, Table, Popover, Card, Radio } from "antd"
 import { useParams } from "umi"
 
 import t from "@/utils/t"
@@ -14,6 +14,11 @@ import AnalysisChart from "./components/analysisChart"
 import style from "./analysis.less"
 import { CompareIcon } from "@/components/common/icons"
 
+const options = [
+  { value: 'gt' },
+  { value: 'pred' }
+]
+
 function Analysis() {
   const [form] = Form.useForm()
   const { id: pid } = useParams()
@@ -22,10 +27,7 @@ function Analysis() {
   const [datasets, setDatasets] = useState([])
   const [tableSource, setTableSource] = useState([])
   const [chartsData, setChartsData] = useState([])
-
-  // useEffect(() => {
-  //   pid && getProject({ id: pid })
-  // }, [pid])
+  const [annotationsType, setAnnotationType] = useState(options[0].value)
 
   useEffect(() => {
     setTableSource(source)
@@ -36,10 +38,15 @@ function Analysis() {
     setSource(remoteSource)
   }, [remoteSource])
 
+  useEffect(() => {
+    // todo show by annotations type
+    console.log('annotationsType:', annotationsType)
+  }, [annotationsType])
+
   function setAnalysisData(datasets) {
     const chartsMap = [
       {
-        label: 'model.diagnose.analysis.title.asset_bytes',
+        label: 'dataset.analysis.title.asset_bytes',
         sourceField: 'assetBytes',
         totalField: 'assetCount',
         xUnit: 'MB',
@@ -47,13 +54,13 @@ function Analysis() {
         color: ['#10BC5E', '#F2637B']
       },
       {
-        label: 'model.diagnose.analysis.title.asset_hw_ratio',
+        label: 'dataset.analysis.title.asset_hw_ratio',
         sourceField: 'assetHWRatio',
         totalField: 'assetCount',
         color: ['#36CBCB', '#E8B900']
       },
       {
-        label: 'model.diagnose.analysis.title.asset_area',
+        label: 'dataset.analysis.title.asset_area',
         sourceField: 'assetArea',
         totalField: 'assetCount',
         xUnit: 'PX',
@@ -61,24 +68,24 @@ function Analysis() {
         color: ['#36CBCB', '#F2637B'],
       },
       {
-        label: 'model.diagnose.analysis.title.asset_quality',
+        label: 'dataset.analysis.title.asset_quality',
         sourceField: 'assetQuality',
         totalField: 'assetCount',
         color: ['#36CBCB', '#10BC5E'],
         isXUpperLimit: true,
       },
       {
-        label: 'model.diagnose.analysis.title.anno_area_ratio',
+        label: 'dataset.analysis.title.anno_area_ratio',
         sourceField: 'annoAreaRatio',
         totalField: 'annosCnt',
         customOptions: {
-          tooltipLable: 'model.diagnose.analysis.bar.anno.tooltip',
+          tooltipLable: 'dataset.analysis.bar.anno.tooltip',
         },
         color: ['#10BC5E', '#E8B900'],
         isXUpperLimit: true,
       },
       {
-        label: 'model.diagnose.analysis.title.keyword_ratio',
+        label: 'dataset.analysis.title.keyword_ratio',
         sourceField: 'classNamesCount',
         totalField: 'assetCount',
         color: ['#2CBDE9', '#E8B900'],
@@ -178,14 +185,14 @@ function Analysis() {
 
   const columns = [
     {
-      title: showTitle('model.diagnose.analysis.column.name'),
+      title: showTitle('dataset.analysis.column.name'),
       dataIndex: "name",
       ellipsis: true,
       align: 'center',
       className: style.colunmClass,
     },
     {
-      title: showTitle('model.diagnose.analysis.column.version'),
+      title: showTitle('dataset.analysis.column.version'),
       dataIndex: "versionName",
       ellipsis: true,
       align: 'center',
@@ -193,7 +200,7 @@ function Analysis() {
       className: style.colunmClass,
     },
     {
-      title: showTitle('model.diagnose.analysis.column.size'),
+      title: showTitle('dataset.analysis.column.size'),
       dataIndex: "totalAssetMbytes",
       ellipsis: true,
       align: 'center',
@@ -203,7 +210,7 @@ function Analysis() {
       },
     },
     {
-      title: showTitle('model.diagnose.analysis.column.box_count'),
+      title: showTitle('dataset.analysis.column.box_count'),
       dataIndex: 'annosCnt',
       ellipsis: true,
       align: 'center',
@@ -211,14 +218,14 @@ function Analysis() {
       render: (num) => renderPop(humanize(num), num),
     },
     {
-      title: showTitle('model.diagnose.analysis.column.average_labels'),
+      title: showTitle('dataset.analysis.column.average_labels'),
       dataIndex: 'aveAnnosCnt',
       ellipsis: true,
       align: 'center',
       className: style.colunmClass,
     },
     {
-      title: showTitle('model.diagnose.analysis.column.overall'),
+      title: showTitle('dataset.analysis.column.overall'),
       dataIndex: 'metrics',
       ellipsis: true,
       align: 'center',
@@ -236,7 +243,7 @@ function Analysis() {
   async function validDatasetCount(rule, value) {
     const count = 5
     if (value?.length > count) {
-      return Promise.reject(t('model.diagnose.analysis.validator.dataset.count', { count }))
+      return Promise.reject(t('dataset.analysis.validator.dataset.count', { count }))
     } else {
       return Promise.resolve()
     }
@@ -250,6 +257,13 @@ function Analysis() {
       <Card className={style.container} title={t('breadcrumbs.dataset.analysis')}>
         <Row gutter={20} className={style.dataContainer}>
           <Col span={18} className={style.rowData}>
+            <div className={style.filters}>
+              <Radio.Group
+                value={annotationsType}
+                options={options.map(opt => ({ ...opt, label: t(`dataset.analysis.annotations.${opt.value}`) }))}
+                onChange={({ target: { value } }) => setAnnotationType(value)}
+              ></Radio.Group>
+            </div>
             <Table
               size="small"
               align='right'
@@ -272,10 +286,10 @@ function Analysis() {
           <Col span={6} className='rightForm'>
             <div className='mask' hidden={!source}>
               <Button style={{ marginBottom: 24 }} size='large' type="primary" onClick={() => retry()}>
-                <CompareIcon /> {t('model.diagnose.analysis.btn.retry')}
+                <CompareIcon /> {t('dataset.analysis.btn.retry')}
               </Button>
             </div>
-            <Panel label={t('model.diagnose.analysis.param.title')} style={{ marginTop: -10 }} toogleVisible={false}>
+            <Panel label={t('dataset.analysis.param.title')} style={{ marginTop: -10 }} toogleVisible={false}>
               <Form
                 className={style.analysisForm}
                 form={form}
@@ -288,7 +302,7 @@ function Analysis() {
                 colon={false}
               >
                 <Form.Item
-                  label={t('model.diagnose.analysis.column.name')}
+                  label={t('dataset.analysis.column.name')}
                   name='datasets'
                   rules={[
                     { required: true },
@@ -299,7 +313,7 @@ function Analysis() {
                 <Form.Item name='submitBtn'>
                   <div style={{ textAlign: 'center' }}>
                     <Button type="primary" size="large" htmlType="submit">
-                      <CompareIcon /> {t('model.diagnose.analysis.btn.start_diagnose')}
+                      <CompareIcon /> {t('dataset.analysis.btn.start_diagnose')}
                     </Button>
                   </div>
                 </Form.Item>
