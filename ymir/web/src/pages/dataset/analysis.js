@@ -1,41 +1,49 @@
 import React, { useEffect, useState } from "react"
-import { Button, Form, Row, Col, Table, Popover } from "antd"
-import s from "./index.less"
-import style from "./analysis.less"
+import { Button, Form, Row, Col, Table, Popover, Card } from "antd"
+import { useParams } from "umi"
 
 import t from "@/utils/t"
 import useFetch from "@/hooks/useFetch"
 import { humanize } from "@/utils/number"
+
+import Breadcrumbs from '@/components/common/breadcrumb'
 import Panel from "@/components/form/panel"
 import DatasetSelect from "@/components/form/datasetSelect"
-import { CompareIcon } from "@/components/common/icons"
 import AnalysisChart from "./components/analysisChart"
 
-function Analysis({pid, project, ...func}) {
+import style from "./analysis.less"
+import { CompareIcon } from "@/components/common/icons"
+
+function Analysis() {
   const [form] = Form.useForm()
+  const { id: pid } = useParams()
   const [remoteSource, fetchSource] = useFetch('dataset/analysis')
   const [source, setSource] = useState([])
   const [datasets, setDatasets] = useState([])
   const [tableSource, setTableSource] = useState([])
   const [chartsData, setChartsData] = useState([])
 
+  // useEffect(() => {
+  //   pid && getProject({ id: pid })
+  // }, [pid])
+
   useEffect(() => {
-    setTableSource(source);
-    setAnalysisData(source);
+    setTableSource(source)
+    setAnalysisData(source)
   }, [source])
 
   useEffect(() => {
-    setSource(remoteSource);
+    setSource(remoteSource)
   }, [remoteSource])
-  
+
   function setAnalysisData(datasets) {
-    const chartsMap= [
+    const chartsMap = [
       {
         label: 'model.diagnose.analysis.title.asset_bytes',
         sourceField: 'assetBytes',
         totalField: 'assetCount',
         xUnit: 'MB',
-        renderEachX: x => x.replace("MB",""),
+        renderEachX: x => x.replace("MB", ""),
         color: ['#10BC5E', '#F2637B']
       },
       {
@@ -49,7 +57,7 @@ function Analysis({pid, project, ...func}) {
         sourceField: 'assetArea',
         totalField: 'assetCount',
         xUnit: 'PX',
-        renderEachX: x => `${x/10000}W`,
+        renderEachX: x => `${x / 10000}W`,
         color: ['#36CBCB', '#F2637B'],
       },
       {
@@ -92,25 +100,25 @@ function Analysis({pid, project, ...func}) {
         },
       }
     }) : []
-    setChartsData(chartsConfig);
+    setChartsData(chartsConfig)
   }
 
-  function getXData({sourceField, isXUpperLimit = false, renderEachX = x => x}, datasets) {
+  function getXData({ sourceField, isXUpperLimit = false, renderEachX = x => x }, datasets) {
     const dataset = datasets.find(item => item[sourceField] && item[sourceField].length > 0) || datasets[0]
-    const xData = dataset && dataset[sourceField] ? dataset[sourceField].map(item => renderEachX(item.x)) : [];
-    const transferXData = xData.map((x,index) => {
+    const xData = dataset && dataset[sourceField] ? dataset[sourceField].map(item => renderEachX(item.x)) : []
+    const transferXData = xData.map((x, index) => {
       if (index === xData.length - 1) {
         return isXUpperLimit ? x : `[${x},+)`
       } else {
         return `[${x},${xData[index + 1]})`
       }
     })
-    return transferXData;
+    return transferXData
   }
 
-  function getYData({sourceField, totalField}, datasets) {
+  function getYData({ sourceField, totalField }, datasets) {
     const yData = datasets && datasets.map(dataset => {
-      const total = dataset[totalField];
+      const total = dataset[totalField]
       const name = `${dataset.name} ${dataset.versionName}`
       return {
         name,
@@ -118,30 +126,30 @@ function Analysis({pid, project, ...func}) {
         count: dataset[sourceField].map(item => item.y)
       }
     })
-    return yData;
+    return yData
   }
 
-  function getAttrXData({sourceField}, datasets) {
+  function getAttrXData({ sourceField }, datasets) {
     let xData = []
     datasets && datasets.forEach((dataset) => {
-      const datasetAttrs = Object.keys(dataset[sourceField]|| {});
-      xData = [...new Set([...xData, ...datasetAttrs])];
+      const datasetAttrs = Object.keys(dataset[sourceField] || {})
+      xData = [...new Set([...xData, ...datasetAttrs])]
     })
-    return xData;
+    return xData
   }
 
-  function getAttrYData({sourceField, totalField}, datasets, xData) {
+  function getAttrYData({ sourceField, totalField }, datasets, xData) {
     const yData = datasets && datasets.map(dataset => {
-      const total = dataset[totalField];
+      const total = dataset[totalField]
       const name = `${dataset.name} ${dataset.versionName}`
-      const attrObj = dataset[sourceField];
+      const attrObj = dataset[sourceField]
       return {
         name,
         value: xData.map(key => total ? (attrObj[key] ? (attrObj[key] / total).toFixed(4) : 0) : 0),
         count: xData.map(key => attrObj[key] || 0)
       }
     })
-    return yData;
+    return yData
   }
 
   function datasetsChange(values, options) {
@@ -191,7 +199,7 @@ function Analysis({pid, project, ...func}) {
       align: 'center',
       className: style.colunmClass,
       render: (num) => {
-        return num && <span>{num}MB</span>;
+        return num && <span>{num}MB</span>
       },
     },
     {
@@ -218,86 +226,90 @@ function Analysis({pid, project, ...func}) {
       render: (text, record) => renderPop(`${humanize(record.positiveAssetCnt)}/${humanize(record.assetCount)}`, `${record.positiveAssetCnt}/${record.assetCount}`),
     },
   ]
-  
+
   function renderPop(label, content = {}) {
     return <Popover content={content} >
       <span>{label}</span>
     </Popover>
   }
-  
+
   async function validDatasetCount(rule, value) {
     const count = 5
     if (value?.length > count) {
-      return Promise.reject(t('model.diagnose.analysis.validator.dataset.count', {count}))
+      return Promise.reject(t('model.diagnose.analysis.validator.dataset.count', { count }))
     } else {
       return Promise.resolve()
     }
   }
 
   const initialValues = {}
- 
+
   return (
-    <div className={s.wrapper}>
-      <Row gutter={20} className={style.dataContainer}>
-        <Col span={18} className={style.rowData}>
-          <Table 
-            size="small"
-            align='right'
-            dataSource={tableSource}
-            rowKey={(record) => record.name + record.versionName}
-            rowClassName={style.rowClass}
-            className={style.tableClass}
-            columns={columns}
-            pagination={false}
-          />
-          <Row gutter={[10, 20]}>
-            {chartsData.map(chart => (
-              <Col span={24} key={chart.label}>
-                <div className={style.echartTitle}>{t(chart.label)}</div>
-                <AnalysisChart customOptions={chart.customOptions} height={300}/>
-              </Col>
-            ))}
-          </Row>
-        </Col>
-        <Col span={6} className={s.formContainer}>
-          <div className={s.mask} hidden={!source}>
-            <Button style={{ marginBottom: 24 }} size='large' type="primary" onClick={() => retry()}>
-              <CompareIcon /> {t('model.diagnose.analysis.btn.retry')}
-            </Button>
-          </div>
-          <Panel label={t('model.diagnose.analysis.param.title')} style={{ marginTop: -10 }} toogleVisible={false}>
-            <Form
-              className={s.form}
-              form={form}
-              layout='vertical'
-              name='labelForm'
-              initialValues={initialValues}
-              onFinish={onFinish}
-              onFinishFailed={onFinishFailed}
-              labelAlign='left'
-              colon={false}
-            >
-              <Form.Item
-                label={t('model.diagnose.analysis.column.name')}
-                name='datasets'
-                rules={[
-                  { required: true},
-                  { validator: validDatasetCount}
-                ]}>
-                <DatasetSelect pid={pid} mode='multiple' onChange={datasetsChange} />
-              </Form.Item>
-              <Form.Item name='submitBtn'>
-                <div style={{ textAlign: 'center' }}>
-                  <Button type="primary" size="large" htmlType="submit">
-                    <CompareIcon /> {t('model.diagnose.analysis.btn.start_diagnose')}
-                  </Button>
-                </div>
-              </Form.Item>
-            </Form>
-          </Panel>
-        </Col>
-      </Row>
-    </div >
+    <div className={style.wrapper}>
+      <Breadcrumbs />
+      <Card className={style.container} title={t('breadcrumbs.dataset.analysis')}>
+        <Row gutter={20} className={style.dataContainer}>
+          <Col span={18} className={style.rowData}>
+            <Table
+              size="small"
+              align='right'
+              dataSource={tableSource}
+              rowKey={(record) => record.name + record.versionName}
+              rowClassName={style.rowClass}
+              className={style.tableClass}
+              columns={columns}
+              pagination={false}
+            />
+            <Row gutter={[10, 20]}>
+              {chartsData.map(chart => (
+                <Col span={24} key={chart.label}>
+                  <div className={style.echartTitle}>{t(chart.label)}</div>
+                  <AnalysisChart customOptions={chart.customOptions} height={300} />
+                </Col>
+              ))}
+            </Row>
+          </Col>
+          <Col span={6} className='rightForm'>
+            <div className='mask' hidden={!source}>
+              <Button style={{ marginBottom: 24 }} size='large' type="primary" onClick={() => retry()}>
+                <CompareIcon /> {t('model.diagnose.analysis.btn.retry')}
+              </Button>
+            </div>
+            <Panel label={t('model.diagnose.analysis.param.title')} style={{ marginTop: -10 }} toogleVisible={false}>
+              <Form
+                className={style.analysisForm}
+                form={form}
+                layout='vertical'
+                name='labelForm'
+                initialValues={initialValues}
+                onFinish={onFinish}
+                onFinishFailed={onFinishFailed}
+                labelAlign='left'
+                colon={false}
+              >
+                <Form.Item
+                  label={t('model.diagnose.analysis.column.name')}
+                  name='datasets'
+                  rules={[
+                    { required: true },
+                    { validator: validDatasetCount }
+                  ]}>
+                  <DatasetSelect pid={pid} mode='multiple' onChange={datasetsChange} />
+                </Form.Item>
+                <Form.Item name='submitBtn'>
+                  <div style={{ textAlign: 'center' }}>
+                    <Button type="primary" size="large" htmlType="submit">
+                      <CompareIcon /> {t('model.diagnose.analysis.btn.start_diagnose')}
+                    </Button>
+                  </div>
+                </Form.Item>
+              </Form>
+            </Panel>
+          </Col>
+        </Row>
+
+      </Card>
+    </div>
   )
 }
 

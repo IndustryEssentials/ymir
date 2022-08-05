@@ -9,6 +9,7 @@ const routeTitle = {
   "datasets.title": { cn: `${SysName}-数据集列表`, en: `${SysName} - Dataset List`, },
   "dataset.title": { cn: `${SysName}-数据集详情`, en: `${SysName} - Dataset Detail`, },
   "dataset.add.title": { cn: `${SysName}-添加数据集`, en: `${SysName} - Add Dataset`, },
+  "dataset.analysis.title": { cn: `${SysName}-数据集分析`, en: `${SysName} - Dataset Analysis`, },
   "dataset.copy.title": { cn: `${SysName}-数据集复制`, en: `${SysName} - Dataset Copy`, },
   "assets.title": { cn: `${SysName}-数据列表`, en: `${SysName} - Asset List`, },
   "asset.title": { cn: `${SysName}-数据详情`, en: `${SysName} - Asset Detail`, },
