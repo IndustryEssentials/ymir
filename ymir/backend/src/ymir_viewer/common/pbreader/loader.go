@@ -88,11 +88,10 @@ func LoadAssetsInfo(repoId constant.MirRepo) []constant.MirAssetDetail {
 	if mirAnnotations.GroundTruth != nil && len(mirAnnotations.GroundTruth.ImageAnnotations) > 0 {
 		gtAnnotations = mirAnnotations.GroundTruth.ImageAnnotations
 	}
-	// predAnnotations := map[string]*protos.SingleImageAnnotations{}
-	// if mirAnnotations.Prediction != nil && len(mirAnnotations.Prediction.ImageAnnotations) > 0 {
-	// 	predAnnotations = mirAnnotations.Prediction.ImageAnnotations
-	// }
-	predAnnotations := mirAnnotations.TaskAnnotations[mirAnnotations.HeadTaskId].ImageAnnotations
+	predAnnotations := map[string]*protos.SingleImageAnnotations{}
+	if mirAnnotations.Prediction != nil && len(mirAnnotations.Prediction.ImageAnnotations) > 0 {
+		predAnnotations = mirAnnotations.Prediction.ImageAnnotations
+	}
 	keywords := mirKeywords.Keywords
 
 	mirAssetDetails := make([]constant.MirAssetDetail, len(mirMetadatas.Attributes))
