@@ -26,7 +26,12 @@ func loadAndCacheAssets(mongo MongoServer, mirRepo constant.MirRepo) {
 	}
 }
 
-func GetAssetsHandler(mongo MongoServer, mirRepo constant.MirRepo, offset int, limit int, classIds []int, currentAssetId string) []constant.MirAssetDetail {
+func GetAssetsHandler(mongo MongoServer, mirRepo constant.MirRepo, offset int, limit int, classIds []int, currentAssetId string) constant.QueryAssetsResult {
 	loadAndCacheAssets(mongo, mirRepo)
-	return mongo.QueryAssetsClassIds(mirRepo, offset, limit, classIds, currentAssetId)
+	return mongo.QueryAssets(mirRepo, offset, limit, classIds, currentAssetId)
+}
+
+func GetDatasetStatsHandler(mongo MongoServer, mirRepo constant.MirRepo, classIds []int) constant.QueryDatasetStatsResult {
+	loadAndCacheAssets(mongo, mirRepo)
+	return mongo.QueryDatasetStats(mirRepo, classIds)
 }

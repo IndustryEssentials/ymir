@@ -93,7 +93,7 @@ func (s *MongoServer) IndexMongoData(mirRepo constant.MirRepo, newData []interfa
 	s.setExistence(collectionName, true, false)
 }
 
-func (s *MongoServer) QueryAssetsClassIds(mirRepo constant.MirRepo, offset int, limit int, classIds []int, currentAssetId string) []constant.MirAssetDetail {
+func (s *MongoServer) QueryAssets(mirRepo constant.MirRepo, offset int, limit int, classIds []int, currentAssetId string) constant.QueryAssetsResult {
 	defer tools.TimeTrack(time.Now())
 
 	collection, _ := s.getRepoCollection(mirRepo)
@@ -117,6 +117,17 @@ func (s *MongoServer) QueryAssetsClassIds(mirRepo constant.MirRepo, offset int, 
 	if err = queryCursor.All(s.Ctx, &queryData); err != nil {
 		panic(err)
 	}
+
+	totalCount, err := collection.CountDocuments(s.Ctx, filterQuery, &options.CountOptions{})
+	if err != nil {
+		panic(err)
+	}
+
+	return constant.QueryAssetsResult{AssetsDetail: queryData, TotalCount: totalCount}
+}
+
+func (s *MongoServer) QueryDatasetStats(mirRepo constant.MirRepo, classIds []int) constant.QueryDatasetStatsResult {
+	queryData := constant.QueryDatasetStatsResult{}
 	return queryData
 }
 

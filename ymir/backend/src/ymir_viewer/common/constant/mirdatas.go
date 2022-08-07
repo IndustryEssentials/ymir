@@ -91,3 +91,20 @@ func NewMirAssetDetail() MirAssetDetail {
 	mirAssetDetail.GtClassIds = []int32{}
 	return mirAssetDetail
 }
+
+type QueryAssetsResult struct {
+	AssetsDetail []MirAssetDetail `json:"elements"`
+	TotalCount int64 `json:"total"`
+}
+
+type DatasetStatsElement struct {
+    ClassIdCount map[int]int `json:"keywords"`
+    NegativeImagesCount int `json:"negative_images_count"`
+    PositiveImagesCount int `json:"NegativeImagesCount"`
+}
+
+type QueryDatasetStatsResult struct {
+	Gt DatasetStatsElement `json:"gt"`
+	Pred DatasetStatsElement `json:"pred"`
+	TotalCount int64 `json:"total"`
+}

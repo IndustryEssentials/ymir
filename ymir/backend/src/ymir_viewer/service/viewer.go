@@ -56,17 +56,28 @@ func (s *ViewerServer) routes() {
 		v1Path := apiPath.Group("/v1")
 		{
 			v1Path.GET("/users/:userId/repo/:repoId/branch/:branchId/assets", s.handleAssets)
+			v1Path.GET("/users/:userId/repo/:repoId/branch/:branchId/dataset_stats", s.handleDatasetStats)
 		}
 	}
 }
 
-func (s *ViewerServer) handleAssets(c *gin.Context) {
+func (s *ViewerServer) buildMirRepoFromParam(c *gin.Context) constant.MirRepo {
 	userId := c.Param("userId")
 	repoId := c.Param("repoId")
 	branchId := c.Param("branchId")
-	mirRepo := constant.MirRepo{SandboxRoot: s.sandbox, UserId: userId, RepoId: repoId, BranchId: branchId, TaskId: branchId}
+	return constant.MirRepo{SandboxRoot: s.sandbox, UserId: userId, RepoId: repoId, BranchId: branchId, TaskId: branchId}
+}
 
-	classIdsStrs := strings.Split(c.DefaultQuery("class_ids", ""), ",")
+func (s *ViewerServer) getIntFromQuery(c *gin.Context, field string) int {
+	data, err := strconv.Atoi(c.DefaultQuery(field, "0"))
+	if err != nil {
+		panic(err)
+	}
+	return data
+}
+
+func (s *ViewerServer) getIntSliceFromQuery(c *gin.Context, field string) []int {
+	classIdsStrs := strings.Split(c.DefaultQuery(field, ""), ",")
 	classIds := make([]int, 0)
 	for _, v := range classIdsStrs {
 		if len(v) < 1 {
@@ -79,19 +90,24 @@ func (s *ViewerServer) handleAssets(c *gin.Context) {
 		}
 		classIds = append(classIds, classId)
 	}
+	return classIds
+}
 
-	offset, err := strconv.Atoi(c.DefaultQuery("offset", "0"))
-	if err != nil {
-		panic(err)
-	}
-
-	limit, err := strconv.Atoi(c.DefaultQuery("limit", "1"))
-	if err != nil {
-		panic(err)
-	}
-
+func (s *ViewerServer) handleAssets(c *gin.Context) {
+	mirRepo := s.buildMirRepoFromParam(c)
+	classIds := s.getIntSliceFromQuery(c, "class_ids")
+	offset := s.getIntFromQuery(c, "offset")
+	limit := s.getIntFromQuery(c, "limit")
 	currentAssetId := c.DefaultQuery("current_asset_id", "")
-	mirSssetDetails := GetAssetsHandler(s.Mongo, mirRepo, offset, limit, classIds, currentAssetId)
 
-	ViewerSuccess(c, constant.ViewerSuccessCode, constant.ViewerSuccessMsg, mirSssetDetails)
+	resultData := GetAssetsHandler(s.Mongo, mirRepo, offset, limit, classIds, currentAssetId)
+	ViewerSuccess(c, constant.ViewerSuccessCode, constant.ViewerSuccessMsg, resultData)
+}
+
+func (s *ViewerServer) handleDatasetStats(c *gin.Context) {
+	mirRepo := s.buildMirRepoFromParam(c)
+	classIds := s.getIntSliceFromQuery(c, "class_ids")
+
+	resultData := GetDatasetStatsHandler(s.Mongo, mirRepo, classIds)
+	ViewerSuccess(c, constant.ViewerSuccessCode, constant.ViewerSuccessMsg, resultData)
 }
