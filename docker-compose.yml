@@ -32,6 +32,9 @@ services:
       - OPENPAI_USER=${OPENPAI_USER}
       # fiftyone
       - FIFTYONE_HOST_URL=${FIFTYONE_HOST_URL}
+      # viewer
+      - VIEWER_HOST_PORT=9527
+      - MONGODB_URI=mongodb://${MYSQL_INITIAL_USER}:${MYSQL_INITIAL_PASSWORD}@mongodb:${MONGODB_HOST_PORT}
     volumes:
       - "${BACKEND_SANDBOX_ROOT}:${BACKEND_SANDBOX_ROOT}"
       - "${YMIR_PATH}/ymir-data/logs:/app_logs"
@@ -54,6 +57,7 @@ services:
       - viz-redis
       - tensorboard
       - clickhouse
+      - mongodb
     command: bash -c 'cd /app && supervisord -nc supervisor/supervisord.conf'
     restart: on-failure:10
     networks:
@@ -125,6 +129,16 @@ services:
     volumes:
       - ${YMIR_PATH}/clickhouseDB:/var/lib/clickhouse
     restart: on-failure:10
+
+  mongodb:
+    image: mongo:4.4
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=${MYSQL_INITIAL_USER}
+      - MONGO_INITDB_ROOT_PASSWORD=${MYSQL_INITIAL_PASSWORD}
+    restart: on-failure:10
+    command: mongod --port ${MONGODB_HOST_PORT} --auth --nojournal
+    volumes:
+      - ${YMIR_PATH}/ymir-viewer/mongo_data:/data/db
     networks:
       - ymirnetwork
 

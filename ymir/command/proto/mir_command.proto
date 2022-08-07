@@ -2,6 +2,8 @@ syntax = "proto3";
 
 package mir.command;
 
+option go_package = "/protos";
+
 /// assertion type: training, validation or test
 enum TvtType {
     TvtTypeUnknown = 0;
