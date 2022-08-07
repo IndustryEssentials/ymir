@@ -10,10 +10,12 @@ import (
 	"github.com/IndustryEssentials/ymir-viewer/tools"
 )
 
-func GetAssetsHandler(mongo MongoServer, mirRepo constant.MirRepo, offset int, limit int, classIds []int) []constant.MirAssetDetail {
+func loadAndCacheAssets(mongo MongoServer, mirRepo constant.MirRepo) {
 	defer tools.TimeTrack(time.Now())
-	if !mongo.checkExistence(mirRepo) {
-		log.Printf("No cache for %s", fmt.Sprint(mirRepo))
+	if mongo.checkExistence(mirRepo) {
+		log.Printf("Mongodb ready for %s.", fmt.Sprint(mirRepo))
+	} else {
+		log.Printf("No data for %s, reading & building cache.", fmt.Sprint(mirRepo))
 		mirAssetDetails := pbreader.LoadAssetsInfo(mirRepo)
 
 		newData := make([]interface{}, 0)
@@ -21,8 +23,10 @@ func GetAssetsHandler(mongo MongoServer, mirRepo constant.MirRepo, offset int, l
 			newData = append(newData, v)
 		}
 		mongo.IndexMongoData(mirRepo, newData)
-	} else {
-		log.Printf("Found cache for %s", fmt.Sprint(mirRepo))
 	}
-	return mongo.QueryAssetsClassIds(mirRepo, offset, limit, classIds)
+}
+
+func GetAssetsHandler(mongo MongoServer, mirRepo constant.MirRepo, offset int, limit int, classIds []int, currentAssetId string) []constant.MirAssetDetail {
+	loadAndCacheAssets(mongo, mirRepo)
+	return mongo.QueryAssetsClassIds(mirRepo, offset, limit, classIds, currentAssetId)
 }

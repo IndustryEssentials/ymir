@@ -66,20 +66,32 @@ func (s *ViewerServer) handleAssets(c *gin.Context) {
 	branchId := c.Param("branchId")
 	mirRepo := constant.MirRepo{SandboxRoot: s.sandbox, UserId: userId, RepoId: repoId, BranchId: branchId, TaskId: branchId}
 
-	classIdsStrs := strings.Split(c.DefaultQuery("classIds", ""), ",")
-	classIds := make([]int, len(classIdsStrs))
-	for i, v := range classIdsStrs {
-		classIds[i], _ = strconv.Atoi(v)
+	classIdsStrs := strings.Split(c.DefaultQuery("class_ids", ""), ",")
+	classIds := make([]int, 0)
+	for _, v := range classIdsStrs {
+		if len(v) < 1 {
+			continue
+		}
+
+		classId, err := strconv.Atoi(v)
+		if err != nil {
+			panic(err)
+		}
+		classIds = append(classIds, classId)
 	}
+
 	offset, err := strconv.Atoi(c.DefaultQuery("offset", "0"))
 	if err != nil {
 		panic(err)
 	}
-	limit, err := strconv.Atoi(c.DefaultQuery("limit", "0"))
+
+	limit, err := strconv.Atoi(c.DefaultQuery("limit", "1"))
 	if err != nil {
 		panic(err)
 	}
-	mirSssetDetails := GetAssetsHandler(s.Mongo, mirRepo, offset, limit, classIds)
+
+	currentAssetId := c.DefaultQuery("current_asset_id", "")
+	mirSssetDetails := GetAssetsHandler(s.Mongo, mirRepo, offset, limit, classIds, currentAssetId)
 
 	ViewerSuccess(c, constant.ViewerSuccessCode, constant.ViewerSuccessMsg, mirSssetDetails)
 }

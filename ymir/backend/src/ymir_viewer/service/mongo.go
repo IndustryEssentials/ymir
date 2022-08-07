@@ -93,15 +93,22 @@ func (s *MongoServer) IndexMongoData(mirRepo constant.MirRepo, newData []interfa
 	s.setExistence(collectionName, true, false)
 }
 
-func (s *MongoServer) QueryAssetsClassIds(mirRepo constant.MirRepo, offset int, limit int, classIds []int) []constant.MirAssetDetail {
+func (s *MongoServer) QueryAssetsClassIds(mirRepo constant.MirRepo, offset int, limit int, classIds []int, currentAssetId string) []constant.MirAssetDetail {
 	defer tools.TimeTrack(time.Now())
 
-	filterQuery := bson.M{"predclassids": bson.M{"$in": classIds}}
-	pageOptions := options.Find()
- 	pageOptions.SetSkip(int64(offset))
- 	pageOptions.SetLimit(int64(limit))
-
 	collection, _ := s.getRepoCollection(mirRepo)
+	log.Printf("Query offset: %d, limit: %d, classIds: %v, currentId: %s\n", offset, limit, classIds, currentAssetId)
+
+	filterQuery := bson.M{}
+	if len(classIds) > 0 {
+		filterQuery["predclassids"] = bson.M{"$in": classIds}
+	}
+	if len(currentAssetId) > 0 {
+		filterQuery["assetid"] = bson.M{"$gte": currentAssetId}
+	}
+	pageOptions := options.Find().SetSort(bson.M{"assetid": 1}).SetSkip(int64(offset)).SetLimit(int64(limit))
+	log.Printf("filterQuery: %+v\n", filterQuery)
+
 	queryCursor, err := collection.Find(s.Ctx, filterQuery, pageOptions)
 	if err != nil {
 		panic(err)
