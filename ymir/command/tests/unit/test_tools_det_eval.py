@@ -71,77 +71,75 @@ class TestToolsDetEval(unittest.TestCase):
         json_format.ParseDict(metadatas_dict, mir_metadatas)
 
         annotations_dict = {
-            'task_annotations': {
-                'a': {
-                    'image_annotations': {
-                        'a0': {
-                            'annotations': [{
-                                'index': 0,
-                                'box': {
-                                    'x': 45,
-                                    'y': 45,
-                                    'w': 52,
-                                    'h': 52,
-                                },
-                                'class_id': 0,
-                                'score': 0.7,
-                            }, {
-                                'index': 1,
-                                'box': {
-                                    'x': 150,
-                                    'y': 50,
-                                    'w': 73,
-                                    'h': 73,
-                                },
-                                'class_id': 0,
-                                'score': 0.8,
-                            }, {
-                                'index': 2,
-                                'box': {
-                                    'x': 350,
-                                    'y': 50,
-                                    'w': 76,
-                                    'h': 76,
-                                },
-                                'class_id': 0,
-                                'score': 0.9,
-                            }, {
-                                'index': 3,
-                                'box': {
-                                    'x': 150,
-                                    'y': 160,
-                                    'w': 78,
-                                    'h': 78,
-                                },
-                                'class_id': 1,
-                                'score': 0.9,
-                            }, {
-                                'index': 4,
-                                'box': {
-                                    'x': 350,
-                                    'y': 50,
-                                    'w': 102,
-                                    'h': 103,
-                                },
-                                'class_id': 2,
-                                'score': 0.9,
-                            }]
-                        },
-                        'a1': {
-                            'annotations': [{
-                                'index': 0,
-                                'box': {
-                                    'x': 300,
-                                    'y': 300,
-                                    'w': 103,
-                                    'h': 110,
-                                },
-                                'class_id': 2,
-                                'score': 0.9,
-                            }]
-                        },
-                    }
-                }
+            'prediction': {
+                'image_annotations': {
+                    'a0': {
+                        'annotations': [{
+                            'index': 0,
+                            'box': {
+                                'x': 45,
+                                'y': 45,
+                                'w': 52,
+                                'h': 52,
+                            },
+                            'class_id': 0,
+                            'score': 0.7,
+                        }, {
+                            'index': 1,
+                            'box': {
+                                'x': 150,
+                                'y': 50,
+                                'w': 73,
+                                'h': 73,
+                            },
+                            'class_id': 0,
+                            'score': 0.8,
+                        }, {
+                            'index': 2,
+                            'box': {
+                                'x': 350,
+                                'y': 50,
+                                'w': 76,
+                                'h': 76,
+                            },
+                            'class_id': 0,
+                            'score': 0.9,
+                        }, {
+                            'index': 3,
+                            'box': {
+                                'x': 150,
+                                'y': 160,
+                                'w': 78,
+                                'h': 78,
+                            },
+                            'class_id': 1,
+                            'score': 0.9,
+                        }, {
+                            'index': 4,
+                            'box': {
+                                'x': 350,
+                                'y': 50,
+                                'w': 102,
+                                'h': 103,
+                            },
+                            'class_id': 2,
+                            'score': 0.9,
+                        }]
+                    },
+                    'a1': {
+                        'annotations': [{
+                            'index': 0,
+                            'box': {
+                                'x': 300,
+                                'y': 300,
+                                'w': 103,
+                                'h': 110,
+                            },
+                            'class_id': 2,
+                            'score': 0.9,
+                        }]
+                    },
+                },
             },
             'head_task_id': 'a',
             'image_cks': {
@@ -262,8 +260,7 @@ class TestToolsDetEval(unittest.TestCase):
         """ align our eval with original COCOeval """
 
         # original result from pycocotools
-        expected_stats = np.array(
-            [0.61177118, 0.88888889, 0.41749175])
+        expected_stats = np.array([0.61177118, 0.88888889, 0.41749175])
 
         # ymir's eval
         mir_metadatas: mirpb.MirMetadatas

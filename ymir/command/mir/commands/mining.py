@@ -229,27 +229,21 @@ def _process_results(mir_root: str, export_out: str, dst_typ_rev_tid: revs_parse
         matched_mir_metadatas.attributes[asset_id].CopyFrom(mir_metadatas.attributes[asset_id])
     logging.info(f"matched: {len(matched_mir_metadatas.attributes)}, overriding metadatas.mir")
 
-    #   update mir annotations
+    #   update mir annotations: predictions
     matched_mir_annotations = mirpb.MirAnnotations()
-    matched_task_annotation = matched_mir_annotations.task_annotations[dst_typ_rev_tid.tid]
     prediction = matched_mir_annotations.prediction
-    ground_truth = matched_mir_annotations.ground_truth
     if add_annotations:
         # add new
         for asset_id, single_image_annotations in asset_id_to_annotations.items():
-            matched_task_annotation.image_annotations[asset_id].CopyFrom(single_image_annotations)
             prediction.image_annotations[asset_id].CopyFrom(single_image_annotations)
     else:
         # use old
-        src_annotation = mir_annotations.task_annotations[mir_annotations.head_task_id]
-        anno_asset_ids = set(src_annotation.image_annotations.keys()) & asset_ids_set
-        for asset_id in anno_asset_ids:
-            matched_task_annotation.image_annotations[asset_id].CopyFrom(src_annotation.image_annotations[asset_id])
-
         pred_asset_ids = set(mir_annotations.prediction.image_annotations.keys()) & asset_ids_set
         for asset_id in pred_asset_ids:
             prediction.image_annotations[asset_id].CopyFrom(mir_annotations.prediction.image_annotations[asset_id])
 
+    #   update mir annotations: ground truth
+    ground_truth = matched_mir_annotations.ground_truth
     gt_asset_ids = set(mir_annotations.ground_truth.image_annotations.keys()) & asset_ids_set
     for asset_id in gt_asset_ids:
         ground_truth.image_annotations[asset_id].CopyFrom(mir_annotations.ground_truth.image_annotations[asset_id])
@@ -257,8 +251,6 @@ def _process_results(mir_root: str, export_out: str, dst_typ_rev_tid: revs_parse
     image_ck_asset_ids = set(mir_annotations.image_cks.keys() & asset_ids_set)
     for asset_id in image_ck_asset_ids:
         matched_mir_annotations.image_cks[asset_id].CopyFrom(mir_annotations.image_cks[asset_id])
-
-    #   mir_keywords: auto generated from mir_annotations, so do nothing
 
     # step 3: store results and commit.
     mir_datas = {

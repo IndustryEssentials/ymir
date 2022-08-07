@@ -77,14 +77,6 @@ def _merge_annotations(host_mir_annotations: mirpb.MirAnnotations, guest_mir_ann
     if not host_mir_annotations.head_task_id:
         raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
                               error_message="no head_task_id found in host_mir_annotations")
-    if len(guest_mir_annotations.task_annotations) == 0:
-        logging.warning('empty guest_mir_annotations')
-        return
-
-    _merge_pair_annotations(host_annotation=host_mir_annotations.task_annotations[host_mir_annotations.head_task_id],
-                            guest_annotation=guest_mir_annotations.task_annotations[guest_mir_annotations.head_task_id],
-                            target_annotation=host_mir_annotations.task_annotations[host_mir_annotations.head_task_id],
-                            strategy=strategy)
 
     _merge_pair_annotations(host_annotation=host_mir_annotations.prediction,
                             guest_annotation=guest_mir_annotations.prediction,
@@ -248,9 +240,6 @@ def _exclude_from_mir(host_mir_metadatas: mirpb.MirMetadatas, host_mir_annotatio
                                       set(guest_mir_metadatas.attributes.keys()))
     for asset_id in id_joint:
         del host_mir_metadatas.attributes[asset_id]
-
-        if asset_id in host_mir_annotations.task_annotations[host_mir_annotations.head_task_id].image_annotations:
-            del host_mir_annotations.task_annotations[host_mir_annotations.head_task_id].image_annotations[asset_id]
 
         if asset_id in host_mir_annotations.prediction.image_annotations:
             del host_mir_annotations.prediction.image_annotations[asset_id]
