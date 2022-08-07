@@ -82,21 +82,8 @@ class MirStorageOps():
     # public: presave actions
     @classmethod
     def __build_annotations_head_task_id(cls, mir_annotations: mirpb.MirAnnotations, head_task_id: str) -> None:
-        # TODO: FUNCTION TO BE REMOVED
-        task_annotations_count = len(mir_annotations.task_annotations)
-        if task_annotations_count == 0:
-            mir_annotations.task_annotations[head_task_id].CopyFrom(mirpb.SingleTaskAnnotations())
-        elif task_annotations_count == 1:
-            task_id = list(mir_annotations.task_annotations.keys())[0]
-            if task_id != head_task_id:
-                raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
-                                      error_message=f"annotation head task id mismatch: {head_task_id} != {task_id}")
-        elif task_annotations_count > 1:
-            # * now we allows only one task id in each mir_annotations
-            raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_MIR_REPO,
-                                  error_message='more then one task ids found in mir_annotations')
-
         mir_annotations.head_task_id = head_task_id
+        mir_annotations.prediction.task_id = head_task_id
 
     @classmethod
     def __build_mir_keywords(cls, mir_metadatas: mirpb.MirMetadatas, mir_annotations: mirpb.MirAnnotations,
@@ -210,9 +197,8 @@ class MirStorageOps():
                 mir_context.project_predefined_keyids_cnt[key_id] = 0
 
         # image_cnt, negative_images_cnt, project_negative_images_cnt
-        image_annotations = mir_annotations.task_annotations[mir_annotations.head_task_id].image_annotations
         mir_context.images_cnt = len(mir_metadatas.attributes)
-        mir_context.negative_images_cnt = mir_context.images_cnt - len(image_annotations)
+        mir_context.negative_images_cnt = mir_context.images_cnt - len(mir_annotations.prediction.image_annotations)
         if project_class_ids:
             mir_context.project_negative_images_cnt = mir_context.images_cnt - len(project_positive_asset_ids)
             # if no project_class_ids, project_negative_images_cnt set to 0
@@ -260,7 +246,7 @@ class MirStorageOps():
         # pred_stats
         cls.__build_mir_context_stats(stats=mir_context.pred_stats,
                                       mir_metadatas=mir_metadatas,
-                                      task_annotations=mir_annotations.task_annotations[mir_annotations.head_task_id])
+                                      task_annotations=mir_annotations.prediction)
         cls.__build_mir_context_stats(stats=mir_context.gt_stats,
                                       mir_metadatas=mir_metadatas,
                                       task_annotations=mir_annotations.ground_truth)

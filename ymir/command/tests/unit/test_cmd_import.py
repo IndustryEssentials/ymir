@@ -130,8 +130,7 @@ class TestCmdImport(unittest.TestCase):
         dict_annotations = MessageToDict(mir_annotations, preserving_proto_field_name=True)
         dict_asset_cks = dict_annotations.get('image_cks', {})
 
-        task_id = list(dict_annotations['task_annotations'].keys())[0]
-        dict_annotations = dict_annotations['task_annotations'][task_id]
+        dict_image_annotations = dict_annotations.get('prediction', {}).get('image_annotations', {})
 
         dict_asset_cks_expected = {
             'a3008c032eb11c8d9ffcb58208a36682ee40900f': {
@@ -152,9 +151,8 @@ class TestCmdImport(unittest.TestCase):
             }
         } if with_annotations else {}
         if with_person_ignored:
-            dict_annotations_expect = {
-                'image_annotations': {
-                    'a3008c032eb11c8d9ffcb58208a36682ee40900f': {
+            dict_image_annotations_expect = {
+                'a3008c032eb11c8d9ffcb58208a36682ee40900f': {
                         'annotations': [{
                             'box': {
                                 'x': 181,
@@ -210,12 +208,10 @@ class TestCmdImport(unittest.TestCase):
                             }
                         }]
                     }
-                }
             }
         else:
-            dict_annotations_expect = {
-                'image_annotations': {
-                    'a3008c032eb11c8d9ffcb58208a36682ee40900f': {
+            dict_image_annotations_expect = {
+                'a3008c032eb11c8d9ffcb58208a36682ee40900f': {
                         'annotations': [{
                             'box': {
                                 'x': 181,
@@ -302,11 +298,12 @@ class TestCmdImport(unittest.TestCase):
                             }
                         }]
                     }
-                }
             }
         if not with_annotations:
-            dict_annotations_expect = {}
-        self.assertDictEqual(dict_annotations_expect, dict_annotations)
+            dict_image_annotations_expect = {}
+        self.assertDictEqual(dict_image_annotations_expect, dict_image_annotations)
+        self.assertEqual(mir_annotations.head_task_id, mir_annotations.prediction.task_id)
+        self.assertEqual(mir_annotations.head_task_id, mir_annotations.ground_truth.task_id)
         self.assertDictEqual(dict_asset_cks_expected, dict_asset_cks)
 
         # check keywords.mir and contexts.mir
