@@ -118,8 +118,16 @@ func (s *MongoServer) IndexMongoData(mirRepo constant.MirRepo, newData []interfa
 
 func (s *MongoServer) CountAssetsInClass(collection *mongo.Collection, queryField string, classIds []int) int64 {
 	filterQuery := bson.M{}
-	if len(classIds) > 0 && len(queryField) > 0 {
-		filterQuery[queryField] = bson.M{"$in": classIds}
+	if len(classIds) > 0 {
+		if len(queryField) > 0 {
+			filterQuery[queryField] = bson.M{"$in": classIds}
+		} else {
+			// If classIds && empty queryField, count in both fields.
+			filterQuery["$or"] = bson.A{
+				bson.M{"gtclassids": bson.M{"$in": classIds}},
+				bson.M{"predclassids": bson.M{"$in": classIds},},
+			}
+		}
 	}
 
 	count, err := collection.CountDocuments(s.Ctx, filterQuery, &options.CountOptions{})
@@ -136,8 +144,12 @@ func (s *MongoServer) QueryAssets(mirRepo constant.MirRepo, offset int, limit in
 	log.Printf("Query offset: %d, limit: %d, classIds: %v, currentId: %s\n", offset, limit, classIds, currentAssetId)
 
 	filterQuery := bson.M{}
+	// class id in either field counts.
 	if len(classIds) > 0 {
-		filterQuery["predclassids"] = bson.M{"$in": classIds}
+		filterQuery["$or"] = bson.A{
+			bson.M{"gtclassids": bson.M{"$in": classIds}},
+			bson.M{"predclassids": bson.M{"$in": classIds},},
+		}
 	}
 	if len(currentAssetId) > 0 {
 		filterQuery["assetid"] = bson.M{"$gte": currentAssetId}
@@ -157,7 +169,7 @@ func (s *MongoServer) QueryAssets(mirRepo constant.MirRepo, offset int, limit in
 		queryData = []constant.MirAssetDetail{}
 	}
 
-	totalCount := s.CountAssetsInClass(collection, "predclassids", classIds)
+	totalCount := s.CountAssetsInClass(collection, "", classIds)
 	return constant.QueryAssetsResult{AssetsDetail: queryData, TotalCount: totalCount}
 }
 
