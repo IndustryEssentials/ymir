@@ -44,8 +44,7 @@ class TaskParameter(BaseModel):
     # label
     extra_url: Optional[str]
     labellers: Optional[List[EmailStr]]
-    keep_annotations: Optional[bool]
-    annotation_type: Optional[AnnotationType] = AnnotationType.pred
+    annotation_type: Optional[AnnotationType] = None
 
     # training
     validation_dataset_id: Optional[int]

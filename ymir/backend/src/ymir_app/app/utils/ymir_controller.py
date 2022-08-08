@@ -186,8 +186,11 @@ class ControllerRequest:
         label_request.dataset_id = args["dataset_hash"]
         label_request.labeler_accounts[:] = args["labellers"]
         label_request.in_class_ids[:] = args["class_ids"]
-        label_request.export_annotation = args["keep_annotations"]
-        label_request.annotation_type = ANNOTATION_TYPE_MAPPING[args["annotation_type"]]
+
+        # pre annotation
+        if "annotation_type" in args:
+            label_request.annotation_type = ANNOTATION_TYPE_MAPPING[args["annotation_type"]]
+
         if args.get("extra_url"):
             label_request.expert_instruction_url = args["extra_url"]
 
