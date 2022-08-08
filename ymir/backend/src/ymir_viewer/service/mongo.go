@@ -93,6 +93,19 @@ func (s *MongoServer) IndexMongoData(mirRepo constant.MirRepo, newData []interfa
 	s.setExistence(collectionName, true, false)
 }
 
+func (s *MongoServer) CountAssetsInClass(collection *mongo.Collection, queryField string, classIds []int) int64 {
+	filterQuery := bson.M{}
+	if len(classIds) > 0 && len(queryField) > 0 {
+		filterQuery[queryField] = bson.M{"$in": classIds}
+	}
+
+	count, err := collection.CountDocuments(s.Ctx, filterQuery, &options.CountOptions{})
+	if err != nil {
+		panic(err)
+	}
+	return count
+}
+
 func (s *MongoServer) QueryAssets(mirRepo constant.MirRepo, offset int, limit int, classIds []int, currentAssetId string) constant.QueryAssetsResult {
 	defer tools.TimeTrack(time.Now())
 
@@ -118,16 +131,24 @@ func (s *MongoServer) QueryAssets(mirRepo constant.MirRepo, offset int, limit in
 		panic(err)
 	}
 
-	totalCount, err := collection.CountDocuments(s.Ctx, filterQuery, &options.CountOptions{})
-	if err != nil {
-		panic(err)
-	}
-
+	totalCount := s.CountAssetsInClass(collection, "predclassids", classIds)
 	return constant.QueryAssetsResult{AssetsDetail: queryData, TotalCount: totalCount}
 }
 
 func (s *MongoServer) QueryDatasetStats(mirRepo constant.MirRepo, classIds []int) constant.QueryDatasetStatsResult {
-	queryData := constant.QueryDatasetStatsResult{}
+	collection, _ := s.getRepoCollection(mirRepo)
+
+	totalCount := s.CountAssetsInClass(collection, "", []int{})
+	queryData := constant.NewQueryDatasetStatsResult()
+	queryData.TotalCount = totalCount
+	for _, classId := range classIds {
+		queryData.Gt.ClassIdCount[classId] = s.CountAssetsInClass(collection, "gtclassids", []int{classId})
+		queryData.Pred.ClassIdCount[classId] = s.CountAssetsInClass(collection, "predclassids", []int{classId})
+	}
+	queryData.Gt.PositiveImagesCount = s.CountAssetsInClass(collection, "gtclassids", classIds)
+	queryData.Gt.NegativeImagesCount = totalCount - queryData.Gt.PositiveImagesCount
+	queryData.Pred.PositiveImagesCount = s.CountAssetsInClass(collection, "predclassids", classIds)
+	queryData.Pred.NegativeImagesCount = totalCount - queryData.Pred.PositiveImagesCount
 	return queryData
 }
 

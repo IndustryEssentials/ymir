@@ -98,13 +98,18 @@ type QueryAssetsResult struct {
 }
 
 type DatasetStatsElement struct {
-    ClassIdCount map[int]int `json:"keywords"`
-    NegativeImagesCount int `json:"negative_images_count"`
-    PositiveImagesCount int `json:"NegativeImagesCount"`
+    ClassIdCount map[int]int64 `json:"keywords"`
+    NegativeImagesCount int64 `json:"negative_images_count"`
+    PositiveImagesCount int64 `json:"NegativeImagesCount"`
 }
 
 type QueryDatasetStatsResult struct {
 	Gt DatasetStatsElement `json:"gt"`
 	Pred DatasetStatsElement `json:"pred"`
 	TotalCount int64 `json:"total"`
+}
+
+func NewQueryDatasetStatsResult() QueryDatasetStatsResult {
+	queryResult := QueryDatasetStatsResult{Gt: DatasetStatsElement{ClassIdCount: map[int]int64{}}, Pred: DatasetStatsElement{ClassIdCount: map[int]int64{}}}
+	return queryResult
 }
