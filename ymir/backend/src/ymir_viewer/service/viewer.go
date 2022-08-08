@@ -9,6 +9,7 @@ import (
 
 	"github.com/IndustryEssentials/ymir-viewer/common/constant"
 	"github.com/gin-gonic/gin"
+	"go.mongodb.org/mongo-driver/bson"
 )
 
 
@@ -57,6 +58,7 @@ func (s *ViewerServer) routes() {
 		{
 			v1Path.GET("/users/:userId/repo/:repoId/branch/:branchId/assets", s.handleAssets)
 			v1Path.GET("/users/:userId/repo/:repoId/branch/:branchId/dataset_stats", s.handleDatasetStats)
+			v1Path.GET("/users/:userId/repo/:repoId/dataset_duplication", s.handleDatasetDup)
 		}
 	}
 }
@@ -109,5 +111,26 @@ func (s *ViewerServer) handleDatasetStats(c *gin.Context) {
 	classIds := s.getIntSliceFromQuery(c, "class_ids")
 
 	resultData := GetDatasetStatsHandler(s.Mongo, mirRepo, classIds)
+	ViewerSuccess(c, constant.ViewerSuccessCode, constant.ViewerSuccessMsg, resultData)
+}
+
+func (s *ViewerServer) handleDatasetDup(c *gin.Context) {
+	// Validate candidate_dataset_ids
+	candidateDatasetIds := c.DefaultQuery("candidate_dataset_ids", "")
+	if len(candidateDatasetIds) <= 0 {
+		ViewerFailure(c, constant.FailInvalidParmsCode, constant.FailInvalidParmsMsg, "Invalid candidate_dataset_ids")
+	}
+	datasetIds := strings.Split(candidateDatasetIds, ",")
+	if len(datasetIds) != 2 {
+		ViewerFailure(c, constant.FailInvalidParmsCode, constant.FailInvalidParmsMsg, "candidate_dataset_ids requires exact two datasets.")
+	}
+
+	userId := c.Param("userId")
+	repoId := c.Param("repoId")
+	mirRepo0 := constant.MirRepo{SandboxRoot: s.sandbox, UserId: userId, RepoId: repoId, BranchId: datasetIds[0], TaskId: datasetIds[0]}
+	mirRepo1 := constant.MirRepo{SandboxRoot: s.sandbox, UserId: userId, RepoId: repoId, BranchId: datasetIds[1], TaskId: datasetIds[1]}
+
+	duplicateCount, mirRepoCount0, mirRepoCount1 := GetDatasetDupHandler(s.Mongo, mirRepo0, mirRepo1)
+	resultData := bson.M{"result": duplicateCount, "total_count": bson.M{datasetIds[0]: mirRepoCount0, datasetIds[1]: mirRepoCount1}}
 	ViewerSuccess(c, constant.ViewerSuccessCode, constant.ViewerSuccessMsg, resultData)
 }

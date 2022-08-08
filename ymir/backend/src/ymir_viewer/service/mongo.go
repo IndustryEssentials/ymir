@@ -8,9 +8,9 @@ import (
 	"github.com/IndustryEssentials/ymir-viewer/common/constant"
 	"github.com/IndustryEssentials/ymir-viewer/tools"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/x/bsonx"
-	"gopkg.in/mgo.v2/bson"
 )
 
 type MongoServer struct {
@@ -18,6 +18,25 @@ type MongoServer struct {
 	Ctx context.Context
 	dbName string
 	existenceName string
+}
+
+func NewMongoServer(uri string) MongoServer {
+	mongoCtx := context.Background()
+	mongoClient, err := mongo.Connect(mongoCtx, options.Client().ApplyURI(uri))
+    if err != nil {
+        panic(err)
+    }
+
+	defaultDbName := "YMIR"
+	// Clear cached data.
+	mongoClient.Database(defaultDbName).Drop(mongoCtx)
+
+	return MongoServer{
+		Clt: mongoClient,
+		Ctx: mongoCtx,
+		dbName: defaultDbName,
+		existenceName: "__collection_existence__",
+	}
 }
 
 func (s *MongoServer) getRepoCollection(mirRepo constant.MirRepo) (*mongo.Collection, string){
@@ -62,6 +81,10 @@ func (s *MongoServer) checkExistence(mirRepo constant.MirRepo) bool{
 
 func (s *MongoServer) IndexMongoData(mirRepo constant.MirRepo, newData []interface{}) {
 	defer tools.TimeTrack(time.Now())
+
+	if len(newData) <= 0 {
+		return
+	}
 
 	collection, collectionName := s.getRepoCollection(mirRepo)
 	s.setExistence(collectionName, false, true)
@@ -130,6 +153,9 @@ func (s *MongoServer) QueryAssets(mirRepo constant.MirRepo, offset int, limit in
 	if err = queryCursor.All(s.Ctx, &queryData); err != nil {
 		panic(err)
 	}
+	if queryData == nil {
+		queryData = []constant.MirAssetDetail{}
+	}
 
 	totalCount := s.CountAssetsInClass(collection, "predclassids", classIds)
 	return constant.QueryAssetsResult{AssetsDetail: queryData, TotalCount: totalCount}
@@ -152,21 +178,23 @@ func (s *MongoServer) QueryDatasetStats(mirRepo constant.MirRepo, classIds []int
 	return queryData
 }
 
-func NewMongoServer(uri string) MongoServer {
-	mongoCtx := context.Background()
-	mongoClient, err := mongo.Connect(mongoCtx, options.Client().ApplyURI(uri))
-    if err != nil {
-        panic(err)
-    }
+func (s *MongoServer) QueryDatasetDup(mirRepo0 constant.MirRepo, mirRepo1 constant.MirRepo) (int, int64, int64) {
+	defer tools.TimeTrack(time.Now())
 
-	defaultDbName := "YMIR"
-	// Clear cached data.
-	mongoClient.Database(defaultDbName).Drop(mongoCtx)
+	collection0, _ := s.getRepoCollection(mirRepo0)
+	totalCount0 := s.CountAssetsInClass(collection0, "", []int{})
 
-	return MongoServer{
-		Clt: mongoClient,
-		Ctx: mongoCtx,
-		dbName: defaultDbName,
-		existenceName: "__collection_existence__",
+	collection1, collectionName1 := s.getRepoCollection(mirRepo1)
+	totalCount1 := s.CountAssetsInClass(collection1, "", []int{})
+
+	lookupStage := bson.D{{"$lookup", bson.D{{"from", collectionName1}, {"localField", "assetid"}, {"foreignField", "assetid"}, {"as", "joinAssets"}}}}
+	showLoadedCursor, err := collection0.Aggregate(s.Ctx, mongo.Pipeline{lookupStage})
+	if err != nil {
+		panic(err)
 	}
+	var showsLoaded []bson.M
+	if err = showLoadedCursor.All(s.Ctx, &showsLoaded); err != nil {
+		panic(err)
+	}
+	return len(showsLoaded), totalCount0, totalCount1
 }
