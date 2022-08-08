@@ -31,12 +31,12 @@ def trigger_ymir_export(repo_root: str, dataset_id: str, input_asset_dir: str, m
     # trigger ymir export, so that we can get pictures from ymir
     format_str = utils.annotation_format_str(backend_pb2.LabelFormat.LABEL_STUDIO_JSON)
 
+    gt_dir: Optional[str] = None
+    pred_dir: Optional[str] = None
     if annotation_type == backend_pb2.GT:
-        gt_dir, pred_dir = input_asset_dir, None
+        gt_dir = input_asset_dir
     elif annotation_type == backend_pb2.PRED:
-        gt_dir, pred_dir = None, input_asset_dir
-    else:
-        gt_dir, pred_dir = None, None
+        pred_dir = input_asset_dir
 
     TaskExportingInvoker.exporting_cmd(repo_root=repo_root,
                                        dataset_id_with_tid=f"{dataset_id}@{dataset_id}",
