@@ -70,7 +70,7 @@ class TaskImportingInvoker(TaskBaseInvoker):
             '--gen-dir', media_location, '-w', work_dir
         ]
         if annotation_dir:
-            importing_cmd.extend(['--annotation-dir', annotation_dir])
+            importing_cmd.extend(['--pred-dir', annotation_dir])
         if gt_dir:
             importing_cmd.extend(['--gt-dir', gt_dir])
         importing_cmd.extend([

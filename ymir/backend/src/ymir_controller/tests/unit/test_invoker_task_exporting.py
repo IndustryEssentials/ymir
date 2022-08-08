@@ -103,7 +103,7 @@ class TestInvokerTaskExporting(unittest.TestCase):
         print(MessageToDict(response))
 
         expected_cmd_importing = (
-            "mir export --root {0} --media-location {1} --asset-dir {1} --annotation-dir {1} --src-revs {2}@{2} "
+            "mir export --root {0} --media-location {1} --asset-dir {1} --pred-dir {1} --src-revs {2}@{2} "
             "--format {3} -w {4}".format(self._mir_repo_root, self._storage_root, self._base_task_id, 'voc',
                                          working_dir))
         mock_run.assert_has_calls(calls=[

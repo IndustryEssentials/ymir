@@ -203,7 +203,7 @@ class TestCmdExport(unittest.TestCase):
         fake_args = type('', (), {})()
         fake_args.mir_root = self._mir_root
         fake_args.asset_dir = self._dest_root
-        fake_args.annotation_dir = self._dest_root
+        fake_args.pred_dir = self._dest_root
         fake_args.gt_dir = self._gt_root
         fake_args.media_location = self._assets_location
         fake_args.src_revs = 'a@a'
@@ -220,7 +220,7 @@ class TestCmdExport(unittest.TestCase):
         fake_args = type('', (), {})()
         fake_args.mir_root = self._mir_root
         fake_args.asset_dir = self._dest_root
-        fake_args.annotation_dir = self._dest_root
+        fake_args.pred_dir = self._dest_root
         fake_args.gt_dir = self._gt_root
         fake_args.media_location = self._assets_location
         fake_args.src_revs = 'a@a'
@@ -233,11 +233,11 @@ class TestCmdExport(unittest.TestCase):
         result = runner.run()
         self.assertEqual(MirCode.RC_OK, result)
 
-        # abnormal case: no asset_dir, annotation_dir, media_location
+        # abnormal case: no asset_dir, pred_dir, media_location
         fake_args = type('', (), {})()
         fake_args.mir_root = self._mir_root
         fake_args.asset_dir = ''
-        fake_args.annotation_dir = ''
+        fake_args.pred_dir = ''
         fake_args.gt_dir = ''
         fake_args.media_location = ''
         fake_args.src_revs = 'a@a'
