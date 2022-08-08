@@ -89,8 +89,8 @@ def import_annotations(mir_metadatas: mirpb.MirMetadatas, mir_annotation: mirpb.
     class_type_manager = class_ids.ClassIdManager(mir_root=mir_root)
     logging.info("loaded type id and names: %d", len(class_type_manager.all_ids()))
 
-    if in_sha1_file:
-        logging.info(f"wrting annotation in {annotations_dir_path}")
+    if annotations_dir_path:
+        logging.info(f"wrting prediction in {annotations_dir_path}")
         _import_annotations_from_dir(
             mir_metadatas=mir_metadatas,
             mir_annotation=mir_annotation,

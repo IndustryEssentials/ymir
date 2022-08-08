@@ -19,7 +19,7 @@ class CmdImport(base.BaseCommand):
         return CmdImport.run_with_args(mir_root=self.args.mir_root,
                                        index_file=self.args.index_file,
                                        gt_index_file=self.args.gt_index_file,
-                                       anno_abs=self.args.anno,
+                                       anno_abs=self.args.anno_dir,
                                        gt_abs=self.args.gt_dir,
                                        gen_abs=self.args.gen,
                                        dataset_name=self.args.dataset_name,
@@ -187,7 +187,7 @@ def bind_to_subparsers(subparsers: argparse._SubParsersAction, parent_parser: ar
                                       type=str,
                                       help="index of input media, one file per line")
     importing_arg_parser.add_argument("--annotation-dir",
-                                      dest="anno",
+                                      dest="anno_dir",
                                       type=str,
                                       required=False,
                                       help="corresponding annotation folder")

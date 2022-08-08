@@ -50,7 +50,7 @@ class TestCmdImport(unittest.TestCase):
         args.index_file = self._idx_file
         args.gt_index_file = self._gt_idx_file
         args.ck_file = self._ck_file
-        args.anno = self._data_xml_path
+        args.anno_dir = self._data_xml_path
         args.gt_dir = self._data_xml_path
         args.gen = gen_folder
         args.dataset_name = ''
@@ -91,7 +91,7 @@ class TestCmdImport(unittest.TestCase):
                          task_new_types_added=True)
 
         # have no annotations
-        args.anno = None
+        args.anno_dir = None
         args.gt_dir = None
         args.unknown_types_strategy = 'stop'
         args.dataset_name = 'import-task-0'
@@ -106,16 +106,17 @@ class TestCmdImport(unittest.TestCase):
         importing_instance = CmdImport(args)
         ret = importing_instance.run()
         self.assertNotEqual(ret, MirCode.RC_OK)
+        args.mir_root = self._mir_repo_root
 
         args.index_file = ''
         self.assertNotEqual(CmdImport(args).run(), MirCode.RC_OK)
         args.index_file = self._idx_file
 
-        args.anno = ''
+        args.anno_dir = ''
+        self.assertEqual(CmdImport(args).run(), MirCode.RC_OK)
+        args.anno_dir = self._data_xml_path + '/fake-one'
         self.assertNotEqual(CmdImport(args).run(), MirCode.RC_OK)
-        args.anno = self._data_xml_path + '/fake-one'
-        self.assertNotEqual(CmdImport(args).run(), MirCode.RC_OK)
-        args.anno = self._data_xml_path
+        args.anno_dir = self._data_xml_path
 
     def _check_repo(self,
                     repo_root: str,
