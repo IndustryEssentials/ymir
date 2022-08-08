@@ -160,6 +160,11 @@ const dataset = {
   "dataset.analysis.annotations.gt": { cn: "标准值标注", en: "Ground Truth Annotations", },
   "dataset.analysis.annotations.pred": { cn: "预测标注", en: "Predicted Annotations", },
   "dataset.train.all.train.target": { cn: "将训练集的所有标签作为训练目标", en: "All training dataset keywords as training target", },
+  'dataset.assets.keyword.selector.types.k': { en: 'Keywords', cn: '标签' },
+  'dataset.assets.keyword.selector.types.ck': { en: 'Custom Keywords', cn: '自定义标签' },
+  'dataset.assets.keyword.selector.types.bt': { en: 'Box Tags', cn: '标注标签' },
+  'dataset.assets.keyword.selector.types.placeholder': { en: 'Please select filter keywords', cn: '请选择筛选标签，可多选' },
+
 }
 
 export default dataset

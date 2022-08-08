@@ -13,6 +13,7 @@ import styles from "./assets.less"
 import GtSelector from "@/components/form/gtSelector"
 import ImageAnnotation from "@/components/dataset/imageAnnotation"
 import useWindowResize from "@/hooks/useWindowResize"
+import KeywordSelector from "./components/keywordSelector"
 
 const { Option } = Select
 
@@ -150,24 +151,7 @@ const Dataset = () => {
       <GtSelector layout='inline' onChange={setEvaluation} />
     </Col> : null}
     <Col>
-      <span>{t("dataset.detail.keyword.label")}</span>
-      <Select
-        showSearch
-        defaultValue={0}
-        style={{ width: 160 }}
-        onChange={filterKw}
-        filterOption={(input, option) => option.key.toLowerCase().indexOf(input.toLowerCase()) >= 0}
-      >
-        <Option value={0} key="all">
-          {t("common.all")}
-        </Option>
-
-        {dataset?.keywords?.map((key) => (
-          <Option value={key} key={key} title={`${key} (${dataset.keywordsCount[key]})`}>
-            {key} ({dataset.keywordsCount[key]}, {getRate(dataset.keywordsCount[key])})
-          </Option>
-        ))}
-      </Select>
+      <KeywordSelector onChange={filterKw} dataset={dataset} />
     </Col>
   </Row>
 
