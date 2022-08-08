@@ -6,7 +6,6 @@ from datetime import date, datetime  # noqa: F401
 from typing import List, Dict  # noqa: F401
 
 from src.swagger_models.base_model_ import Model
-from src.swagger_models.dataset_result_result_negative_info import DatasetResultResultNegativeInfo  # noqa: F401,E501
 from src import util
 
 
@@ -15,7 +14,7 @@ class DatasetResultResult(Model):
 
     Do not edit the class manually.
     """
-    def __init__(self, total_images_cnt: int=None, class_ids_count: object=None, class_names_count: object=None, ignored_labels: object=None, negative_info: DatasetResultResultNegativeInfo=None):  # noqa: E501
+    def __init__(self, total_images_cnt: int=None, class_ids_count: object=None, class_names_count: object=None, ignored_labels: object=None, negative_images_cnt: int=None):  # noqa: E501
         """DatasetResultResult - a model defined in Swagger
 
         :param total_images_cnt: The total_images_cnt of this DatasetResultResult.  # noqa: E501
@@ -26,15 +25,15 @@ class DatasetResultResult(Model):
         :type class_names_count: object
         :param ignored_labels: The ignored_labels of this DatasetResultResult.  # noqa: E501
         :type ignored_labels: object
-        :param negative_info: The negative_info of this DatasetResultResult.  # noqa: E501
-        :type negative_info: DatasetResultResultNegativeInfo
+        :param negative_images_cnt: The negative_images_cnt of this DatasetResultResult.  # noqa: E501
+        :type negative_images_cnt: int
         """
         self.swagger_types = {
             'total_images_cnt': int,
             'class_ids_count': object,
             'class_names_count': object,
             'ignored_labels': object,
-            'negative_info': DatasetResultResultNegativeInfo
+            'negative_images_cnt': int
         }
 
         self.attribute_map = {
@@ -42,13 +41,13 @@ class DatasetResultResult(Model):
             'class_ids_count': 'class_ids_count',
             'class_names_count': 'class_names_count',
             'ignored_labels': 'ignored_labels',
-            'negative_info': 'negative_info'
+            'negative_images_cnt': 'negative_images_cnt'
         }
         self._total_images_cnt = total_images_cnt
         self._class_ids_count = class_ids_count
         self._class_names_count = class_names_count
         self._ignored_labels = ignored_labels
-        self._negative_info = negative_info
+        self._negative_images_cnt = negative_images_cnt
 
     @classmethod
     def from_dict(cls, dikt) -> 'DatasetResultResult':
@@ -146,22 +145,22 @@ class DatasetResultResult(Model):
         self._ignored_labels = ignored_labels
 
     @property
-    def negative_info(self) -> DatasetResultResultNegativeInfo:
-        """Gets the negative_info of this DatasetResultResult.
+    def negative_images_cnt(self) -> int:
+        """Gets the negative_images_cnt of this DatasetResultResult.
 
 
-        :return: The negative_info of this DatasetResultResult.
-        :rtype: DatasetResultResultNegativeInfo
+        :return: The negative_images_cnt of this DatasetResultResult.
+        :rtype: int
         """
-        return self._negative_info
+        return self._negative_images_cnt
 
-    @negative_info.setter
-    def negative_info(self, negative_info: DatasetResultResultNegativeInfo):
-        """Sets the negative_info of this DatasetResultResult.
+    @negative_images_cnt.setter
+    def negative_images_cnt(self, negative_images_cnt: int):
+        """Sets the negative_images_cnt of this DatasetResultResult.
 
 
-        :param negative_info: The negative_info of this DatasetResultResult.
-        :type negative_info: DatasetResultResultNegativeInfo
+        :param negative_images_cnt: The negative_images_cnt of this DatasetResultResult.
+        :type negative_images_cnt: int
         """
 
-        self._negative_info = negative_info
+        self._negative_images_cnt = negative_images_cnt

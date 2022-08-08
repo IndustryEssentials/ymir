@@ -461,10 +461,7 @@ class MirStorageOps():
             "pred":{
                 "class_ids_count":{},
                 "class_names_count":{},
-                "negative_info":{
-                    "negative_images_cnt":14,
-                    "project_negative_images_cnt":0
-                },
+                "negative_images_cnt":14,
                 "tags_cnt_total":{},
                 "tags_cnt":{},
                 "hist":{
@@ -622,10 +619,7 @@ class MirStorageOps():
                 class_id_mgr.main_name_for_id(id): count
                 for id, count in anno_stats.class_ids_cnt.items()
             },
-            negative_info=dict(
-                negative_images_cnt=mir_storage_context.negative_images_cnt,
-                project_negative_images_cnt=mir_storage_context.project_negative_images_cnt,
-            ),
+            negative_images_cnt=anno_stats.negative_asset_cnt,
             tags_cnt_total={k: v.cnt
                             for k, v in anno_stats.tags_cnt.items()},
             tags_cnt={k: {k2: v2

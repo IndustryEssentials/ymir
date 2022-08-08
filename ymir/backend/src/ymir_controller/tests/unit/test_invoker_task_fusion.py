@@ -107,7 +107,7 @@ class TestInvokerTaskFusion(unittest.TestCase):
         expected_filter_cmd = f"mir filter --root {self._mir_repo_root}"
         expected_filter_cmd += f" --dst-rev {self._task_id}@{self._sub_task_id_1}"
         expected_filter_cmd += f" --src-revs {self._task_id}@{self._sub_task_id_2}"
-        expected_filter_cmd += f" -w {expected_filter_work_dir} -p person;cat;table"
+        expected_filter_cmd += f" -w {expected_filter_work_dir} --cis person;cat;table"
 
         expected_sampling_cmd = f"mir sampling --root {self._mir_repo_root}"
         expected_sampling_cmd += f" --dst-rev {self._task_id}@{self._task_id}"
