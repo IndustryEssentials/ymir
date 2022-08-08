@@ -62,7 +62,10 @@ class CmdCopy(base.BaseCommand):
             return check_code
 
         # read from src mir root
-        [mir_metadatas, mir_annotations, mir_keywords, mir_tasks,
+        mir_metadatas: mirpb.MirMetadatas
+        mir_annotations: mirpb.MirAnnotations
+        mir_tasks: mirpb.MirTasks
+        [mir_metadatas, mir_annotations, _, mir_tasks,
          _] = mir_storage_ops.MirStorageOps.load_multiple_storages(mir_root=data_mir_root,
                                                                    mir_branch=data_src_typ_rev_tid.rev,
                                                                    mir_task_id=data_src_typ_rev_tid.tid,
@@ -75,19 +78,14 @@ class CmdCopy(base.BaseCommand):
         if not orig_head_task_id:
             logging.error('bad annotations.mir: empty head task id')
             return MirCode.RC_CMD_INVALID_MIR_REPO
-        if ((len(mir_annotations.task_annotations) > 0 and orig_head_task_id not in mir_annotations.task_annotations)):
-            logging.error(f"bad annotations.mir: can not find head task id: {orig_head_task_id}")
-            return MirCode.RC_CMD_INVALID_MIR_REPO
 
-        single_task_annotations, unknown_types = CmdCopy._change_single_task_annotations(
+        pred_annotations, unknown_types = CmdCopy._change_single_task_annotations(
             data_mir_root=data_mir_root,
             dst_mir_root=mir_root,
-            single_task_annotations=mir_annotations.task_annotations[orig_head_task_id],
+            single_task_annotations=mir_annotations.prediction,
             ignore_unknown_types=ignore_unknown_types,
             drop_annotations=drop_annotations)
-        mir_annotations.task_annotations[dst_typ_rev_tid.tid].CopyFrom(single_task_annotations)
-        del mir_annotations.task_annotations[orig_head_task_id]
-        mir_annotations.head_task_id = dst_typ_rev_tid.tid
+        mir_annotations.prediction.CopyFrom(pred_annotations)
 
         gt_annotations, gt_unknown_types = CmdCopy._change_single_task_annotations(
             data_mir_root=data_mir_root,
@@ -97,15 +95,6 @@ class CmdCopy(base.BaseCommand):
             drop_annotations=drop_annotations)
         mir_annotations.ground_truth.CopyFrom(gt_annotations)
         unknown_types.update(gt_unknown_types)
-
-        pred_annotations, pred_unknown_types = CmdCopy._change_single_task_annotations(
-            data_mir_root=data_mir_root,
-            dst_mir_root=mir_root,
-            single_task_annotations=mir_annotations.prediction,
-            ignore_unknown_types=ignore_unknown_types,
-            drop_annotations=drop_annotations)
-        mir_annotations.prediction.CopyFrom(pred_annotations)
-        unknown_types.update(pred_unknown_types)
 
         # tasks.mir: get necessary head task infos, remove others and change head task id
         orig_head_task_id = mir_tasks.head_task_id

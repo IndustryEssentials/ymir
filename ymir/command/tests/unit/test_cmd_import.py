@@ -130,8 +130,7 @@ class TestCmdImport(unittest.TestCase):
         dict_annotations = MessageToDict(mir_annotations, preserving_proto_field_name=True)
         dict_asset_cks = dict_annotations.get('image_cks', {})
 
-        task_id = list(dict_annotations['task_annotations'].keys())[0]
-        dict_annotations = dict_annotations['task_annotations'][task_id]
+        dict_image_annotations = dict_annotations.get('prediction', {}).get('image_annotations', {})
 
         dict_asset_cks_expected = {
             'a3008c032eb11c8d9ffcb58208a36682ee40900f': {
@@ -152,161 +151,159 @@ class TestCmdImport(unittest.TestCase):
             }
         } if with_annotations else {}
         if with_person_ignored:
-            dict_annotations_expect = {
-                'image_annotations': {
-                    'a3008c032eb11c8d9ffcb58208a36682ee40900f': {
-                        'annotations': [{
-                            'box': {
-                                'x': 181,
-                                'y': 127,
-                                'w': 94,
-                                'h': 67,
-                                'rotate_angle': -0.02
-                            },
-                            'class_id': 1,
-                            'score': -1.0,
-                            'anno_quality': 0.75,
-                            'tags': {
-                                'difficult': '0',
-                                'color': 'pink',
-                                'pose': 'Unspecified'
-                            }
-                        }]
-                    },
-                    '430df22960b0f369318705800139fcc8ec38a3e4': {
-                        'annotations': [{
-                            'box': {
-                                'x': 104,
-                                'y': 78,
-                                'w': 272,
-                                'h': 106,
-                                'rotate_angle': 0.22
-                            },
-                            'class_id': 1,
-                            'cm': 'TP',
-                            'score': 0.5,
-                            'anno_quality': 0.62,
-                            'tags': {
-                                'difficult': '0',
-                                'color': 'white',
-                                'pose': 'Frontal'
-                            }
-                        }, {
-                            'index': 1,
-                            'box': {
-                                'x': 133,
-                                'y': 88,
-                                'w': 65,
-                                'h': 36,
-                                'rotate_angle': 0.02
-                            },
-                            'class_id': 1,
-                            'score': -1.0,
-                            'anno_quality': 0.75,
-                            'tags': {
-                                'difficult': '0',
-                                'color': 'blue',
-                                'pose': 'Left'
-                            }
-                        }]
-                    }
+            dict_image_annotations_expect = {
+                'a3008c032eb11c8d9ffcb58208a36682ee40900f': {
+                    'annotations': [{
+                        'box': {
+                            'x': 181,
+                            'y': 127,
+                            'w': 94,
+                            'h': 67,
+                            'rotate_angle': -0.02
+                        },
+                        'class_id': 1,
+                        'score': -1.0,
+                        'anno_quality': 0.75,
+                        'tags': {
+                            'difficult': '0',
+                            'color': 'pink',
+                            'pose': 'Unspecified'
+                        }
+                    }]
+                },
+                '430df22960b0f369318705800139fcc8ec38a3e4': {
+                    'annotations': [{
+                        'box': {
+                            'x': 104,
+                            'y': 78,
+                            'w': 272,
+                            'h': 106,
+                            'rotate_angle': 0.22
+                        },
+                        'class_id': 1,
+                        'cm': 'TP',
+                        'score': 0.5,
+                        'anno_quality': 0.62,
+                        'tags': {
+                            'difficult': '0',
+                            'color': 'white',
+                            'pose': 'Frontal'
+                        }
+                    }, {
+                        'index': 1,
+                        'box': {
+                            'x': 133,
+                            'y': 88,
+                            'w': 65,
+                            'h': 36,
+                            'rotate_angle': 0.02
+                        },
+                        'class_id': 1,
+                        'score': -1.0,
+                        'anno_quality': 0.75,
+                        'tags': {
+                            'difficult': '0',
+                            'color': 'blue',
+                            'pose': 'Left'
+                        }
+                    }]
                 }
             }
         else:
-            dict_annotations_expect = {
-                'image_annotations': {
-                    'a3008c032eb11c8d9ffcb58208a36682ee40900f': {
-                        'annotations': [{
-                            'box': {
-                                'x': 181,
-                                'y': 127,
-                                'w': 94,
-                                'h': 67,
-                                'rotate_angle': -0.02
-                            },
-                            'class_id': 1,
-                            'score': -1.0,
-                            'anno_quality': 0.75,
-                            'tags': {
-                                'difficult': '0',
-                                'color': 'pink',
-                                'pose': 'Unspecified'
-                            }
-                        }]
-                    },
-                    '430df22960b0f369318705800139fcc8ec38a3e4': {
-                        'annotations': [{
-                            'box': {
-                                'x': 104,
-                                'y': 78,
-                                'w': 272,
-                                'h': 106,
-                                'rotate_angle': 0.22
-                            },
-                            'class_id': 1,
-                            'cm': 'TP',
-                            'score': 0.5,
-                            'anno_quality': 0.62,
-                            'tags': {
-                                'difficult': '0',
-                                'color': 'white',
-                                'pose': 'Frontal'
-                            }
-                        }, {
-                            'index': 1,
-                            'box': {
-                                'x': 133,
-                                'y': 88,
-                                'w': 65,
-                                'h': 36,
-                                'rotate_angle': 0.02
-                            },
-                            'class_id': 1,
-                            'score': -1.0,
-                            'anno_quality': 0.75,
-                            'tags': {
-                                'difficult': '0',
-                                'color': 'blue',
-                                'pose': 'Left'
-                            }
-                        }, {
-                            'index': 2,
-                            'box': {
-                                'x': 195,
-                                'y': 180,
-                                'w': 19,
-                                'h': 50
-                            },
-                            'class_id': 2,
-                            'score': -1.0,
-                            'anno_quality': 0.23,
-                            'tags': {
-                                'difficult': '1',
-                                'pose': 'Rear'
-                            }
-                        }, {
-                            'index': 3,
-                            'box': {
-                                'x': 26,
-                                'y': 189,
-                                'w': 19,
-                                'h': 50,
-                                'rotate_angle': 0.12
-                            },
-                            'class_id': 2,
-                            'score': -1.0,
-                            'anno_quality': 0.35,
-                            'tags': {
-                                'difficult': '1',
-                                'pose': 'Rear'
-                            }
-                        }]
-                    }
+            dict_image_annotations_expect = {
+                'a3008c032eb11c8d9ffcb58208a36682ee40900f': {
+                    'annotations': [{
+                        'box': {
+                            'x': 181,
+                            'y': 127,
+                            'w': 94,
+                            'h': 67,
+                            'rotate_angle': -0.02
+                        },
+                        'class_id': 1,
+                        'score': -1.0,
+                        'anno_quality': 0.75,
+                        'tags': {
+                            'difficult': '0',
+                            'color': 'pink',
+                            'pose': 'Unspecified'
+                        }
+                    }]
+                },
+                '430df22960b0f369318705800139fcc8ec38a3e4': {
+                    'annotations': [{
+                        'box': {
+                            'x': 104,
+                            'y': 78,
+                            'w': 272,
+                            'h': 106,
+                            'rotate_angle': 0.22
+                        },
+                        'class_id': 1,
+                        'cm': 'TP',
+                        'score': 0.5,
+                        'anno_quality': 0.62,
+                        'tags': {
+                            'difficult': '0',
+                            'color': 'white',
+                            'pose': 'Frontal'
+                        }
+                    }, {
+                        'index': 1,
+                        'box': {
+                            'x': 133,
+                            'y': 88,
+                            'w': 65,
+                            'h': 36,
+                            'rotate_angle': 0.02
+                        },
+                        'class_id': 1,
+                        'score': -1.0,
+                        'anno_quality': 0.75,
+                        'tags': {
+                            'difficult': '0',
+                            'color': 'blue',
+                            'pose': 'Left'
+                        }
+                    }, {
+                        'index': 2,
+                        'box': {
+                            'x': 195,
+                            'y': 180,
+                            'w': 19,
+                            'h': 50
+                        },
+                        'class_id': 2,
+                        'score': -1.0,
+                        'anno_quality': 0.23,
+                        'tags': {
+                            'difficult': '1',
+                            'pose': 'Rear'
+                        }
+                    }, {
+                        'index': 3,
+                        'box': {
+                            'x': 26,
+                            'y': 189,
+                            'w': 19,
+                            'h': 50,
+                            'rotate_angle': 0.12
+                        },
+                        'class_id': 2,
+                        'score': -1.0,
+                        'anno_quality': 0.35,
+                        'tags': {
+                            'difficult': '1',
+                            'pose': 'Rear'
+                        }
+                    }]
                 }
             }
         if not with_annotations:
-            dict_annotations_expect = {}
-        self.assertDictEqual(dict_annotations_expect, dict_annotations)
+            dict_image_annotations_expect = {}
+        self.assertEqual(mir_annotations.head_task_id, mir_annotations.prediction.task_id)
+        self.assertEqual(mir_annotations.head_task_id, mir_annotations.ground_truth.task_id)
+        self.assertDictEqual(dict_image_annotations_expect, dict_image_annotations)
         self.assertDictEqual(dict_asset_cks_expected, dict_asset_cks)
 
         # check keywords.mir and contexts.mir
@@ -498,6 +495,33 @@ class TestCmdImport(unittest.TestCase):
                     'total_cnt': 3,
                     'positive_asset_cnt': 2,
                     'negative_asset_cnt': 0,
+                    'class_ids_cnt': {
+                        1: 2,
+                    },
+                    'tags_cnt': {
+                        'difficult': {
+                            'cnt': 3,
+                            'sub_cnt': {
+                                '0': 3,
+                            },
+                        },
+                        'color': {
+                            'cnt': 3,
+                            'sub_cnt': {
+                                'white': 1,
+                                'blue': 1,
+                                'pink': 1,
+                            },
+                        },
+                        'pose': {
+                            'cnt': 3,
+                            'sub_cnt': {
+                                'Left': 1,
+                                'Frontal': 1,
+                                'Unspecified': 1,
+                            },
+                        },
+                    },
                     'quality_hist': {
                         '1.00': 0,
                         '0.90': 0,
@@ -567,30 +591,6 @@ class TestCmdImport(unittest.TestCase):
                                 'gray sky': 1,
                             },
                         }
-                    },
-                    'tags_cnt': {
-                        'difficult': {
-                            'cnt': 3,
-                            'sub_cnt': {
-                                '0': 3,
-                            },
-                        },
-                        'color': {
-                            'cnt': 3,
-                            'sub_cnt': {
-                                'white': 1,
-                                'blue': 1,
-                                'pink': 1,
-                            },
-                        },
-                        'pose': {
-                            'cnt': 3,
-                            'sub_cnt': {
-                                'Left': 1,
-                                'Frontal': 1,
-                                'Unspecified': 1,
-                            },
-                        },
                     },
                     'asset_quality_hist': {
                         '1.00': 0,
@@ -849,6 +849,36 @@ class TestCmdImport(unittest.TestCase):
                     'total_cnt': 5,
                     'positive_asset_cnt': 2,
                     'negative_asset_cnt': 0,
+                    'class_ids_cnt': {
+                        1: 2,
+                        2: 1,
+                    },
+                    'tags_cnt': {
+                        'difficult': {
+                            'cnt': 5,
+                            'sub_cnt': {
+                                '0': 3,
+                                '1': 2,
+                            },
+                        },
+                        'color': {
+                            'cnt': 3,
+                            'sub_cnt': {
+                                'white': 1,
+                                'blue': 1,
+                                'pink': 1,
+                            },
+                        },
+                        'pose': {
+                            'cnt': 5,
+                            'sub_cnt': {
+                                'Left': 1,
+                                'Frontal': 1,
+                                'Unspecified': 1,
+                                'Rear': 2,
+                            },
+                        },
+                    },
                     'quality_hist': {
                         '1.00': 0,
                         '0.90': 0,
@@ -920,32 +950,6 @@ class TestCmdImport(unittest.TestCase):
                             },
                         }
                     },
-                    'tags_cnt': {
-                        'difficult': {
-                            'cnt': 5,
-                            'sub_cnt': {
-                                '0': 3,
-                                '1': 2,
-                            },
-                        },
-                        'color': {
-                            'cnt': 3,
-                            'sub_cnt': {
-                                'white': 1,
-                                'blue': 1,
-                                'pink': 1,
-                            },
-                        },
-                        'pose': {
-                            'cnt': 5,
-                            'sub_cnt': {
-                                'Left': 1,
-                                'Frontal': 1,
-                                'Unspecified': 1,
-                                'Rear': 2,
-                            },
-                        },
-                    },
                     'asset_quality_hist': {
                         '1.00': 0,
                         '0.90': 1,
@@ -1006,18 +1010,16 @@ class TestCmdImport(unittest.TestCase):
             try:
                 self.assertDictEqual(dict_keywords, dict_keywords_expect)
             except AssertionError as e:
-                logging.info(f"expected: {dict_keywords_expect}")
-                logging.info(f"actual: {dict_keywords}")
+                test_utils.diff_dicts(dict_keywords, dict_keywords_expect, stack=[])
                 raise e
             try:
                 self.assertDictEqual(dict_context, dict_context_expected)
             except AssertionError as e:
-                logging.info(f"expected: {dict_context_expected}")
-                logging.info(f"actual: {dict_context}")
+                test_utils.diff_dicts(dict_context, dict_context_expected, stack=[])
                 raise e
         else:
             self.assertEqual(0, len(dict_keywords))
-            self.assertEqual(0, len(dict_context['predefined_keyids_cnt']))
+            self.assertEqual(0, len(dict_context['pred_stats']['class_ids_cnt']))
 
         # check metadatas.mir
         mir_metadatas = mirpb.MirMetadatas()

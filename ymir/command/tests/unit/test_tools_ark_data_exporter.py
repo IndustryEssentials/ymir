@@ -82,73 +82,72 @@ class TestArkDataExporter(unittest.TestCase):
 
         # annotations
         annotations_dict = {
-            'task_annotations': {
-                'a': {
-                    'image_annotations': {
-                        '430df22960b0f369318705800139fcc8ec38a3e4': {
-                            'annotations': [{
-                                'index': 0,
-                                'box': {
-                                    'x': 104,
-                                    'y': 78,
-                                    'w': 272,
-                                    'h': 105
-                                },
-                                'class_id': 52,
-                                'score': 1,
-                            }, {
-                                'index': 1,
-                                'box': {
-                                    'x': 133,
-                                    'y': 88,
-                                    'w': 65,
-                                    'h': 36
-                                },
-                                'class_id': 52,
-                                'score': 1,
-                            }, {
-                                'index': 2,
-                                'box': {
-                                    'x': 195,
-                                    'y': 180,
-                                    'w': 19,
-                                    'h': 50
-                                },
-                                'class_id': 2,
-                                'score': 1,
-                            }, {
-                                'index': 3,
-                                'box': {
-                                    'x': 26,
-                                    'y': 189,
-                                    'w': 19,
-                                    'h': 95
-                                },
-                                'class_id': 2,
-                                'score': 1,
-                            }]
-                        },
-                        'a3008c032eb11c8d9ffcb58208a36682ee40900f': {
-                            'annotations': [{
-                                'index': 0,
-                                'box': {
-                                    'x': 181,
-                                    'y': 127,
-                                    'w': 94,
-                                    'h': 67
-                                },
-                                'class_id': 52,
-                                'score': 1,
-                            }]
-                        },
-                    }
+            'prediction': {
+                'task_id': 'a',
+                'image_annotations': {
+                    '430df22960b0f369318705800139fcc8ec38a3e4': {
+                        'annotations': [{
+                            'index': 0,
+                            'box': {
+                                'x': 104,
+                                'y': 78,
+                                'w': 272,
+                                'h': 105
+                            },
+                            'class_id': 52,
+                            'score': 1,
+                        }, {
+                            'index': 1,
+                            'box': {
+                                'x': 133,
+                                'y': 88,
+                                'w': 65,
+                                'h': 36
+                            },
+                            'class_id': 52,
+                            'score': 1,
+                        }, {
+                            'index': 2,
+                            'box': {
+                                'x': 195,
+                                'y': 180,
+                                'w': 19,
+                                'h': 50
+                            },
+                            'class_id': 2,
+                            'score': 1,
+                        }, {
+                            'index': 3,
+                            'box': {
+                                'x': 26,
+                                'y': 189,
+                                'w': 19,
+                                'h': 95
+                            },
+                            'class_id': 2,
+                            'score': 1,
+                        }]
+                    },
+                    'a3008c032eb11c8d9ffcb58208a36682ee40900f': {
+                        'annotations': [{
+                            'index': 0,
+                            'box': {
+                                'x': 181,
+                                'y': 127,
+                                'w': 94,
+                                'h': 67
+                            },
+                            'class_id': 52,
+                            'score': 1,
+                        }]
+                    },
                 }
             },
             'head_task_id': 'a',
         }
         mir_annotations = mirpb.MirAnnotations()
         json_format.ParseDict(annotations_dict, mir_annotations)
-        mir_annotations.ground_truth.CopyFrom(mir_annotations.task_annotations[mir_annotations.head_task_id])
+        mir_annotations.ground_truth.CopyFrom(mir_annotations.prediction)
 
         # keywords
         keywords_dict = {

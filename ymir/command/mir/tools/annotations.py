@@ -99,7 +99,7 @@ def import_annotations(mir_metadatas: mirpb.MirMetadatas, mir_annotation: mirpb.
             class_type_manager=class_type_manager,
             unknown_types_strategy=unknown_types_strategy,
             accu_new_types=anno_import_result,
-            image_annotations=mir_annotation.task_annotations[task_id],
+            image_annotations=mir_annotation.prediction,
         )
     PhaseLoggerCenter.update_phase(phase=phase, local_percent=0.5)
 
