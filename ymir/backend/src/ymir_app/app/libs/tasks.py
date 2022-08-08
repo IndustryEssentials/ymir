@@ -15,6 +15,7 @@ from app.api.errors.errors import (
     FailedToConnectClickHouse,
     ModelNotReady,
     ModelNotFound,
+    ModelStageNotFound,
     TaskNotFound,
     DatasetNotFound,
     DatasetGroupNotFound,
@@ -100,9 +101,10 @@ def normalize_parameters(
 
     if parameters.model_stage_id:
         model_stage = crud.model_stage.get(db, id=parameters.model_stage_id)
-        if model_stage:
-            normalized["model_hash"] = model_stage.model.hash  # type: ignore
-            normalized["model_stage_name"] = model_stage.name
+        if not model_stage:
+            raise ModelStageNotFound()
+        normalized["model_hash"] = model_stage.model.hash  # type: ignore
+        normalized["model_stage_name"] = model_stage.name
 
     if parameters.keywords:
         normalized["class_ids"] = user_labels.get_class_ids(names_or_aliases=parameters.keywords)
