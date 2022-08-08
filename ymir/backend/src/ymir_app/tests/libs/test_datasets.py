@@ -5,12 +5,14 @@ from tests.utils.utils import random_lower_string
 
 
 class TestImportDatasetPaths:
-    def test_import_dataset_paths(self, mocker: Any) -> None:
+    def test_import_dataset_paths(self, mocker: Any, tmp_path: Any) -> None:
         mocker.patch.object(m, "verify_import_path", return_value=True)
-        input_path = random_lower_string()
+        input_path = tmp_path
+        (tmp_path / "pred").mkdir()
         p = m.ImportDatasetPaths(input_path, random_lower_string())
-        assert p.annotation_dir == f"{input_path}/annotations"
-        assert p.asset_dir == f"{input_path}/images"
+        assert p.pred_dir == str(input_path / "pred")
+        assert p.asset_dir == str(input_path / "images")
+        assert p.gt_dir is None
 
 
 class TestEvaluateDataset:
