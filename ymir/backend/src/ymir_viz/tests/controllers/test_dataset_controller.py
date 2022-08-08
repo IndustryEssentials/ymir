@@ -17,10 +17,7 @@ class TestDatasetController:
             "ignored_labels": {
                 'cat': 5,
             },
-            "negative_info": {
-                "negative_images_cnt": 0,
-                "project_negative_images_cnt": 0,
-            },
+            "negative_images_cnt": 0,
             "total_images_cnt": 1,
         }
 
@@ -38,10 +35,7 @@ class TestDatasetController:
             'ignored_labels': {
                 'cat': 5
             },
-            'negative_info': {
-                'negative_images_cnt': 0,
-                'project_negative_images_cnt': 0
-            },
+            'negative_images_cnt': 0,
             'total_images_cnt': 1
         }
 
