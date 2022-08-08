@@ -101,14 +101,14 @@ class CmdImport(base.BaseCommand):
                                                             in_sha1_file=sha1_index_abs,
                                                             in_sha1_gt_file=sha1_gt_index_abs,
                                                             mir_root=mir_root,
-                                                            annotations_dir_path=pred_abs,
+                                                            prediction_dir_path=pred_abs,
                                                             groundtruth_dir_path=gt_abs,
                                                             unknown_types_strategy=unknown_types_strategy,
                                                             task_id=dst_typ_rev_tid.tid,
                                                             phase='import.others')
 
         logging.info(f"unknown types strategy: {unknown_types_strategy}")
-        logging.info(f"anno import result: {anno_import_result}")
+        logging.info(f"pred / gt import result: {anno_import_result}")
 
         # create and write tasks
         task = mir_storage_ops.create_task(

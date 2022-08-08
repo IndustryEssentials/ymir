@@ -336,7 +336,7 @@ outlabel() {
         _echo_in_color $C_YELLOW "export from $_MINED_SET_PREFIX-$2 to path $TMP_OUTLABEL_ASSET_ROOT/$_MINED_SET_PREFIX-$2"
         $MIR_EXE export --root $MIR_ROOT \
                         --asset-dir "$TMP_OUTLABEL_ASSET_ROOT/$_MINED_SET_PREFIX-$2" \
-                        --annotation-dir "$TMP_OUTLABEL_ASSET_ROOT/$_MINED_SET_PREFIX-$2" \
+                        --pred-dir "$TMP_OUTLABEL_ASSET_ROOT/$_MINED_SET_PREFIX-$2" \
                         --media-location "$YMIR_ASSET_LOCATION" \
                         --src-revs "$_MINED_SET_PREFIX-$2@$_MINED_SET_PREFIX-$2" \
                         --format "none"
@@ -374,7 +374,7 @@ inlabel() {
         _echo_in_color $C_YELLOW "import"
         $MIR_EXE import --root "$MIR_ROOT" \
                     --index-file "$TMP_OUTLABEL_ASSET_ROOT/$_MINED_SET_PREFIX-$2.index.tsv" \
-                    --annotation-dir "$3" \
+                    --pred-dir "$3" \
                     --gen-dir "$YMIR_ASSET_LOCATION" \
                     --dataset-name "$MINING_SET_PREFIX" \
                     --src-revs "$_MINED_SET_PREFIX-$2" \

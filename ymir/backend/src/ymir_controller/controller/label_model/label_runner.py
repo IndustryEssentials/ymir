@@ -35,7 +35,7 @@ def trigger_ymir_export(repo_root: str, dataset_id: str, input_asset_dir: str, m
                                        dataset_id_with_tid=f"{dataset_id}@{dataset_id}",
                                        annotation_format=format_str,
                                        asset_dir=input_asset_dir,
-                                       annotation_dir=input_asset_dir,
+                                       pred_dir=input_asset_dir,
                                        media_location=media_location,
                                        work_dir=export_work_dir,
                                        keywords=keywords)
