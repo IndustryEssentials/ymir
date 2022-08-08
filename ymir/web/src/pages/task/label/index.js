@@ -11,6 +11,7 @@ import { randomNumber } from "@/utils/number"
 
 import DatasetSelect from "../../../components/form/datasetSelect"
 import Desc from "@/components/form/desc"
+import Tip from "@/components/form/tip"
 
 import styles from "./index.less"
 import commonStyles from "../common.less"
@@ -85,6 +86,7 @@ function Label({ datasets, keywords, ...func }) {
             onFinish={onFinish}
             onFinishFailed={onFinishFailed}
           >
+            <Form.Item wrapperCol={{ span: 20 }}><Tip content={t('task.label.header.tip')} /></Form.Item>
             <Form.Item label={t('task.fusion.form.dataset')} name='datasetId'>
               <DatasetSelect pid={pid} />
             </Form.Item>
