@@ -103,80 +103,72 @@ class ModelMetaData:
         )
 
 
-class VizDataset(BaseModel):
+@dataclass
+class DatasetAnnotationMetadata:
+    class_names_count: Dict[str, int]
+    negative_images_count: int
+
+    tags_cnt_total: Dict
+    tags_cnt: Dict
+
+    hist: Dict
+
+    annos_cnt: int
+    ave_annos_cnt: int
+
+    positive_asset_cnt: int
+    negative_asset_cnt: int
+
+    @classmethod
+    def from_viz_res(cls, res: Dict, total_assets_cnt: int) -> "DatasetAnnotationMetadata":
+        ave_annos_cnt = round(res["annos_cnt"] / total_assets_cnt, 2) if total_assets_cnt else 0
+        return cls(
+            class_names_count=res["class_names_count"],
+            negative_images_count=res["negative_images_count"],
+            tags_cnt_total=res["tags_cnt_total"],
+            tags_cnt=res["tags_cnt"],
+            hist=res["hist"],
+            annos_cnt=res["annos_cnt"],
+            ave_annos_cnt=ave_annos_cnt,
+            positive_asset_cnt=res["positive_asset_cnt"],
+            negative_asset_cnt=res["negative_asset_cnt"],
+        )
+
+
+@dataclass
+class DatasetMetaData:
     """
     Interface dataclass of VIZ output, defined as DatasetResult in doc:
     https://github.com/IndustryEssentials/ymir/blob/master/ymir/backend/src/ymir_viz/doc/ymir_viz_API.yaml
     """
 
-    total_images_cnt: int
-    class_ids_count: Dict[int, int]
-    ignored_labels: Dict[str, int]
-    negative_info: Dict[str, int]
-    gt: Dict
-    pred: Dict
-    hist: Dict
-    total_asset_mbytes: int
-    total_assets_cnt: int
-
-
-@dataclass
-class DatasetMetaData:
-    keywords: Dict[str, int]
-    ignored_keywords: Dict[str, int]
     keywords_updated: bool
-    negative_info: Dict[str, int]
-    asset_count: int
-    keyword_count: int
+
     total_asset_mbytes: int
     total_assets_cnt: int
-    annos_cnt: int
-    ave_annos_cnt: float
-    positive_asset_cnt: int
-    negative_asset_cnt: int
-    asset_bytes: List[Dict]
-    asset_area: List[Dict]
-    asset_quality: List[Dict]
-    asset_hw_ratio: List[Dict]
-    anno_area_ratio: List[Dict]
-    anno_quality: List[Dict]
-    class_names_count: Dict[str, int]
+
+    gt: Optional[DatasetAnnotationMetadata]
+    pred: Optional[DatasetAnnotationMetadata]
+    hist: Dict
 
     @classmethod
-    def from_viz_res(cls, res: Dict, user_labels: UserLabels) -> "DatasetMetaData":
-        # todo clean up
-        # for compatible
-        res["total_images_cnt"] = res["pred"]["total_images_cnt"]
-        res["ignored_labels"] = res["pred"]["new_types"]
-        res["negative_info"] = res["pred"]["negative_info"]
-        viz_dataset = VizDataset(**res)
-        keywords = {
-            user_labels.get_main_names(class_id)[0]: count for class_id, count in viz_dataset.class_ids_count.items()
+    def from_viz_res(cls, res: Dict) -> "DatasetMetaData":
+        total_assets_cnt = res["total_assets_cnt"]
+        gt = DatasetAnnotationMetadata.from_viz_res(res["gt"], total_assets_cnt) if "gt" in res else None
+        pred = DatasetAnnotationMetadata.from_viz_res(res["pred"], total_assets_cnt) if "pred" in res else None
+        hist = {
+            "asset_bytes": res["hist"]["asset_bytes"][0],
+            "asset_area": res["hist"]["asset_area"][0],
+            "asset_quality": res["hist"]["asset_quality"][0],
+            "asset_hw_ratio": res["hist"]["asset_hw_ratio"][0],
         }
         return cls(
-            keywords=keywords,
-            ignored_keywords=viz_dataset.ignored_labels,
-            keywords_updated=res["pred"]["new_types_added"],
-            negative_info=viz_dataset.negative_info,
-            asset_count=viz_dataset.total_images_cnt,
-            keyword_count=len(keywords),
-            total_asset_mbytes=viz_dataset.total_asset_mbytes,
-            total_assets_cnt=viz_dataset.total_assets_cnt,
-            annos_cnt=viz_dataset.pred["annos_cnt"],
-            ave_annos_cnt=(
-                round(viz_dataset.pred["annos_cnt"] / viz_dataset.total_assets_cnt, 2)
-                if viz_dataset.total_assets_cnt
-                else 0
-            ),
-            positive_asset_cnt=viz_dataset.pred["positive_asset_cnt"],
-            negative_asset_cnt=viz_dataset.pred["negative_asset_cnt"],
-            asset_bytes=viz_dataset.hist["asset_bytes"][0],
-            asset_area=viz_dataset.hist["asset_area"][0],
-            asset_quality=viz_dataset.hist["asset_quality"][0],
-            asset_hw_ratio=viz_dataset.hist["asset_hw_ratio"][0],
-            anno_area_ratio=viz_dataset.pred["hist"]["anno_area_ratio"][0],
-            anno_quality=viz_dataset.pred["hist"]["anno_quality"][0],
-            class_names_count=viz_dataset.pred["class_names_count"],
+            keywords_updated=res["new_types_added"],  # delete personal keywords cache
+            total_asset_mbytes=res["total_asset_mbytes"],
+            total_assets_cnt=total_assets_cnt,
+            gt=gt,
+            pred=pred,
+            hist=hist,
         )
 
 
@@ -303,16 +295,13 @@ class VizClient:
         res = self.parse_resp(resp)
         return ModelMetaData.from_viz_res(res)
 
-    def get_dataset(
-        self, dataset_hash: Optional[str] = None, user_labels: Optional[UserLabels] = None
-    ) -> DatasetMetaData:
+    def get_dataset(self, dataset_hash: Optional[str] = None) -> DatasetMetaData:
         dataset_hash = dataset_hash or self._branch_id
-        user_labels = user_labels or self._user_labels
         url = f"{self._url_prefix}/{dataset_hash}/datasets"
         resp = self.session.get(url, timeout=settings.VIZ_TIMEOUT)
         res = self.parse_resp(resp)
         logger.info("[viz] get_dataset response: %s", res)
-        return DatasetMetaData.from_viz_res(res, user_labels)
+        return DatasetMetaData.from_viz_res(res)
 
     def get_dataset_stats(
         self, *, dataset_hash: Optional[str] = None, keyword_ids: List[int], user_labels: Optional[UserLabels] = None

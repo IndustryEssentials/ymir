@@ -163,15 +163,12 @@ class DatasetHist(BaseModel):
     asset_area: List[Dict]
     asset_quality: List[Dict]
     asset_hw_ratio: List[Dict]
-    anno_area_ratio: List[Dict]
-    anno_quality: List[Dict]
-    class_names_count: Dict[str, int]
 
     class Config:
         orm_mode = True
 
 
-class DatasetsAnalysis(DatasetHist):
+class DatasetsAnalysis(BaseModel):
     group_name: str
     version_num: int
     total_asset_mbytes: int
@@ -180,6 +177,7 @@ class DatasetsAnalysis(DatasetHist):
     ave_annos_cnt: float
     positive_asset_cnt: int
     negative_asset_cnt: int
+    hist: DatasetHist
 
 
 class DatasetsAnalyses(BaseModel):
