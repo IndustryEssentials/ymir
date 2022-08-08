@@ -19,7 +19,7 @@ class CmdImport(base.BaseCommand):
         return CmdImport.run_with_args(mir_root=self.args.mir_root,
                                        index_file=self.args.index_file,
                                        gt_index_file=self.args.gt_index_file,
-                                       anno_abs=self.args.anno_dir,
+                                       pred_abs=self.args.pred_dir,
                                        gt_abs=self.args.gt_dir,
                                        gen_abs=self.args.gen,
                                        dataset_name=self.args.dataset_name,
@@ -31,15 +31,15 @@ class CmdImport(base.BaseCommand):
 
     @staticmethod
     @command_run_in_out
-    def run_with_args(mir_root: str, index_file: str, gt_index_file: str, anno_abs: str, gt_abs: str, gen_abs: str,
+    def run_with_args(mir_root: str, index_file: str, gt_index_file: str, pred_abs: str, gt_abs: str, gen_abs: str,
                       dataset_name: str, dst_rev: str, src_revs: str, work_dir: str,
                       unknown_types_strategy: annotations.UnknownTypesStrategy) -> int:
         # Step 1: check args and prepare environment.
         if not index_file or not gen_abs or not os.path.isfile(index_file):
             logging.error(f"invalid index_file: {index_file} or gen_abs: {gen_abs}")
             return MirCode.RC_CMD_INVALID_ARGS
-        if anno_abs and not os.path.isdir(anno_abs):
-            logging.error(f"annotations dir invalid: {anno_abs}")
+        if pred_abs and not os.path.isdir(pred_abs):
+            logging.error(f"prediction dir invalid: {pred_abs}")
             return MirCode.RC_CMD_INVALID_ARGS
         if gt_abs:  # need to import ground-truth data.
             if not os.path.isdir(gt_abs):
@@ -101,7 +101,7 @@ class CmdImport(base.BaseCommand):
                                                             in_sha1_file=sha1_index_abs,
                                                             in_sha1_gt_file=sha1_gt_index_abs,
                                                             mir_root=mir_root,
-                                                            annotations_dir_path=anno_abs,
+                                                            annotations_dir_path=pred_abs,
                                                             groundtruth_dir_path=gt_abs,
                                                             unknown_types_strategy=unknown_types_strategy,
                                                             task_id=dst_typ_rev_tid.tid,
@@ -114,7 +114,7 @@ class CmdImport(base.BaseCommand):
         task = mir_storage_ops.create_task(
             task_type=mirpb.TaskTypeImportData,
             task_id=dst_typ_rev_tid.tid,
-            message=f"importing {index_file}-{anno_abs}-{gt_abs} to {dst_rev}, uts: {unknown_types_strategy}",
+            message=f"importing {index_file}-{pred_abs}-{gt_abs} to {dst_rev}, uts: {unknown_types_strategy}",
             new_types={k: v.count
                        for k, v in anno_import_result.items()},
             new_types_added=(unknown_types_strategy == annotations.UnknownTypesStrategy.ADD),
@@ -186,11 +186,11 @@ def bind_to_subparsers(subparsers: argparse._SubParsersAction, parent_parser: ar
                                       dest="index_file",
                                       type=str,
                                       help="index of input media, one file per line")
-    importing_arg_parser.add_argument("--annotation-dir",
-                                      dest="anno_dir",
+    importing_arg_parser.add_argument("--pred-dir",
+                                      dest="pred_dir",
                                       type=str,
                                       required=False,
-                                      help="corresponding annotation folder")
+                                      help="corresponding prediction folder")
     importing_arg_parser.add_argument("--gt-index-file",
                                       dest="gt_index_file",
                                       type=str,

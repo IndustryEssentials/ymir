@@ -169,7 +169,7 @@ import() {
     $MIR_EXE checkout master --root "$MIR_ROOT"
     $MIR_EXE import --root "$MIR_ROOT" \
                     --index-file "$RAW_TRAINING_SET_INDEX_PATH" \
-                    --annotation-dir "$RAW_TRAINING_SET_ANNO_ROOT" \
+                    --pred-dir "$RAW_TRAINING_SET_ANNO_ROOT" \
                     --gen-dir "$YMIR_ASSET_LOCATION" \
                     --dataset-name "$TRAINING_SET_PREFIX" \
                     --dst-rev "$TRAINING_SET_PREFIX@$TRAINING_SET_PREFIX"
@@ -179,7 +179,7 @@ import() {
     $MIR_EXE checkout master --root "$MIR_ROOT"
     $MIR_EXE import --root "$MIR_ROOT" \
                     --index-file "$RAW_VAL_SET_INDEX_PATH" \
-                    --annotation-dir "$RAW_VAL_SET_ANNO_ROOT" \
+                    --pred-dir "$RAW_VAL_SET_ANNO_ROOT" \
                     --gen-dir "$YMIR_ASSET_LOCATION" \
                     --dataset-name "$VAL_SET_PREFIX" \
                     --dst-rev "$VAL_SET_PREFIX@$VAL_SET_PREFIX"
@@ -189,7 +189,7 @@ import() {
     $MIR_EXE checkout master --root "$MIR_ROOT"
     $MIR_EXE import --root "$MIR_ROOT" \
                     --index-file "$RAW_MINING_SET_INDEX_PATH" \
-                    --annotation-dir "$RAW_MINING_SET_ANNO_ROOT" \
+                    --pred-dir "$RAW_MINING_SET_ANNO_ROOT" \
                     --gen-dir "$YMIR_ASSET_LOCATION" \
                     --dataset-name "$MINING_SET_PREFIX" \
                     --dst-rev "$MINING_SET_PREFIX@$MINING_SET_PREFIX"
