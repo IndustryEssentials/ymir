@@ -84,10 +84,15 @@ const dataset = {
   "dataset.add.form.internal.required": { cn: "请选择公共数据集", en: "Please select public dataset", },
   "dataset.add.form.internal.placeholder": { cn: "请选择一个公共数据集", en: "Select A Public Dataset", },
   "dataset.add.form.net.label": { cn: "URL地址", en: "URL", },
-  "dataset.add.form.net.tip": { cn: "请输入压缩文件的url地址", en: "Please input a url of zip file", },
+  "dataset.add.form.net.placeholder": { cn: "请输入压缩文件的url地址", en: "Please input a url of zip file", },
   "dataset.add.form.path.label": { cn: "相对路径", en: "Relative Path", },
+  "dataset.add.form.tip.structure": {
+    cn: "压缩包文件内图片文件需放入images文件夹内，标准值标注文件需放入gt文件夹内，模型推理标注文件需放入pred文件夹内。gt和pred都是可选的。压缩包内文件结构如下：{br}{pic}",
+    en: "image -> images; gt -> ground truth annotations; pred -> predictions. gt and pred is optional. zip structure: {br}{pic}"
+  },
   "dataset.add.form.path.tip": {
-    cn: "将数据文件夹存放到ymir工作空间目录下的ymir-sharing目录，如 /home/ymir/ymir-workspace/ymir-sharing/VOC2012, 输入基于ymir-sharing相对路径：VOC2012",
+    cn: `1. 将数据文件夹存放到ymir工作空间目录下的ymir-sharing目录，如 /home/ymir/ymir-workspace/ymir-sharing/VOC2012, 输入基于ymir-sharing相对路径：VOC2012{br}
+    2. {structure}`,
     en: "Save the data in 'ymir-sharing' under ymir workspace directory, such as /home/ymir/ymir-workspace/ymir-sharing/VOC2012, and input relative path base on ymir-sharing: VOC2012",
   },
   "dataset.add.form.path.placeholder": { cn: "请输入路径", en: "Please input path on server", },
@@ -96,13 +101,19 @@ const dataset = {
     cn: `1. 仅支持zip格式压缩包文件上传；{br}
       2. 局域网内压缩包大小 < 1G, 互联网建议 < 200MB；{br}
       3. 压缩包内图片格式要求为：图片格式为*.jpg、*.jpeg、*.png、*.bmp，格式不符的图片将不会导入，标注文件格式为Pascal VOC。{br}
-      4. 压缩包文件内图片文件需放入images文件夹内，标注文件需放入annotations文件夹内，如以下示例：{sample}{br}
-      5. 压缩包内文件结构如下：{br}{pic}`,
+      4. 示例：{sample}{br}
+      5. {structure}`,
     en: `1. Only zip file allowed;{br} 
       2. Size < 1G;{br}
       3. Images format allowed *.jpg, *.jpeg, *.png, *.bmp, images with unmatched format can not be imported, annotations format supported pascal(*.xml){br}
       4. Sample: {sample}{br}
-      5. zip structure: {br}{pic}`
+      5. {structure}`
+  },
+  "dataset.add.form.net.tip": {
+    cn: `1. 示例: https://www.examples.com/pascal.zip{br}
+      2. {structure}`,
+    en: `1. Sample: https://www.examples.com/pascal.zip{br} 
+      2. {structure}`
   },
   "dataset.copy.form.dataset": { cn: "原数据集", en: "Original Dataset", },
   "dataset.copy.form.desc.label": { cn: '备注', en: 'Description', },
@@ -124,10 +135,10 @@ const dataset = {
   'dataset.add.form.copy.placeholder': { cn: '请选择待复制的数据集版本', en: 'Select a dataset version for copy', },
   'dataset.add.validate.url.invalid': { cn: '不是合法的网络地址', en: 'Invalid url', },
   'dataset.fusion.validate.inputs': { cn: '请输入至少一项预处理条件', en: 'Please input at less one condition for pretreating', },
-  'dataset.add.internal.newkeywords.label': { en: 'Add following keywords and related annotations:', cn: '添加以下标签及相应标注：'},
-  'dataset.add.internal.ignore.all': { en: 'Ignore All', cn: '全部忽略'},
-  'dataset.add.internal.ignorekeywords.label': { en: 'Ignore following keywords and related annotations:', cn: '忽略以下标签及相应标注：'},
-  'dataset.add.internal.add.all': { en: 'Add All', cn: '全部添加'},
+  'dataset.add.internal.newkeywords.label': { en: 'Add following keywords and related annotations:', cn: '添加以下标签及相应标注：' },
+  'dataset.add.internal.ignore.all': { en: 'Ignore All', cn: '全部忽略' },
+  'dataset.add.internal.ignorekeywords.label': { en: 'Ignore following keywords and related annotations:', cn: '忽略以下标签及相应标注：' },
+  'dataset.add.internal.add.all': { en: 'Add All', cn: '全部添加' },
 }
 
 export default dataset

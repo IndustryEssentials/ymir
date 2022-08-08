@@ -179,6 +179,17 @@ const Add = (props) => {
     return set?.keywords || []
   }
 
+  const structureTip = t('dataset.add.form.tip.structure', {
+    br: <br />,
+    pic: <img src={samplePic} />
+  })
+
+  const renderTip = (type, params = {}) => t(`dataset.add.form.${type}.tip`, {
+    ...params,
+    br: <br />,
+    structure: structureTip,
+  })
+
   return (
     <div className={s.wrapper}>
       <Breadcrumbs />
@@ -270,20 +281,20 @@ const Add = (props) => {
                   name='url'
                   noStyle
                   rules={[
-                    { required: true, message: t('dataset.add.form.net.tip') },
+                    { required: true, message: t('dataset.add.form.net.placeholder') },
                     { validator: urlValidator, }
                   ]}
                 >
-                  <Input placeholder={t('dataset.add.form.net.tip')} max={512} allowClear />
+                  <Input placeholder={t('dataset.add.form.net.placeholder')} max={512} allowClear />
                 </Form.Item>
-                <p>Sample: https://www.examples.com/pascal.zip</p>
+                <p>{renderTip('net')}</p>
               </Form.Item>
             ) : null}
 
             {isType(TYPES.PATH) ? (
               <Form.Item label={t('dataset.add.form.path.label')} required
                 name='path'
-                help={t('dataset.add.form.path.tip')}
+                help={renderTip('path')}
                 rules={[{ required: true, message: t('dataset.add.form.path.tip') }]}
               >
                 <Input placeholder={t('dataset.add.form.path.placeholder')} max={512} allowClear />
@@ -295,10 +306,8 @@ const Add = (props) => {
                   onChange={(files, result) => { setFileToken(result) }}
                   max={1024}
                   onRemove={() => setFileToken('')}
-                  info={t('dataset.add.form.upload.tip', {
-                    br: <br />,
+                  info={renderTip('upload', {
                     sample: <a target='_blank' href={'/sample_dataset.zip'}>Sample.zip</a>,
-                    pic: <img src={samplePic} />
                   })}
                 ></Uploader>
               </Form.Item>
