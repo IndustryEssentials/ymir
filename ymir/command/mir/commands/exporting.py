@@ -44,8 +44,8 @@ class CmdExport(base.BaseCommand):
         if not asset_format:
             asset_format = 'raw'
 
-        if not asset_dir or not annotation_dir or not media_location or not src_revs:
-            logging.error('empty --asset-dir, --annotation-dir, --media-location or --src-revs')
+        if not asset_dir or not media_location or not src_revs:
+            logging.error('empty --asset-dir, --media-location or --src-revs')
             return MirCode.RC_CMD_INVALID_ARGS
 
         src_rev_tid = revs_parser.parse_single_arg_rev(src_revs, need_tid=False)
@@ -84,18 +84,19 @@ class CmdExport(base.BaseCommand):
         # export
         dw: data_writer.BaseDataWriter
         if asset_format_type == data_writer.AssetFormat.ASSET_FORMAT_RAW:
-            dw = data_writer.RawDataWriter(mir_root=mir_root,
-                                           assets_location=media_location,
-                                           assets_dir=asset_dir,
-                                           annotations_dir=annotation_dir,
-                                           gt_dir=gt_dir,
-                                           need_ext=True,
-                                           need_id_sub_folder=False,
-                                           overwrite=False,
-                                           class_ids_mapping=class_type_ids,
-                                           format_type=anno_format_type,
-                                           index_file_path=os.path.join(annotation_dir, 'index.tsv'),
-                                           gt_index_file_path=os.path.join(gt_dir, 'index.tsv') if gt_dir else '')
+            dw = data_writer.RawDataWriter(
+                mir_root=mir_root,
+                assets_location=media_location,
+                assets_dir=asset_dir,
+                annotations_dir=annotation_dir,
+                gt_dir=gt_dir,
+                need_ext=True,
+                need_id_sub_folder=False,
+                overwrite=False,
+                class_ids_mapping=class_type_ids,
+                format_type=anno_format_type,
+                index_file_path=os.path.join(annotation_dir, 'index.tsv') if annotation_dir else '',
+                gt_index_file_path=os.path.join(gt_dir, 'index.tsv') if gt_dir else '')
         elif asset_format_type == data_writer.AssetFormat.ASSET_FORMAT_LMDB:
             dw = data_writer.LmdbDataWriter(mir_root=mir_root,
                                             assets_location=media_location,
