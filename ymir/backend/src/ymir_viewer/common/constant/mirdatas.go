@@ -75,20 +75,20 @@ func NewMirdataModel(taskParameters string) MirdataModel {
 }
 
 type MirAssetDetail struct {
-	AssetId string `json:"asset_id"`
-	MetaData map[string]*interface{} `json:"metadata"`
-	Pred []map[string]interface{} `json:"pred"`
-	PredClassIds []int32 `json:"pred_class_ids"`
-	Gt []map[string]interface{} `json:"gt"`
-	GtClassIds []int32 `json:"gt_class_ids"`
+	// Export fields.
+	AssetId string `json:"asset_id" bson:"asset_id"`
+	MetaData map[string]*interface{} `json:"metadata" bson:"metadata"`
+	Gt []map[string]interface{} `json:"gt" bson:"gt"`
+	Pred []map[string]interface{} `json:"pred" bson:"pred"`
+	Cks map[string]string `json:"cks" bson:"cks"`
 }
 
 func NewMirAssetDetail() MirAssetDetail {
 	mirAssetDetail := MirAssetDetail{}
+	mirAssetDetail.MetaData = map[string]*interface{}{}
 	mirAssetDetail.Pred = make([]map[string]interface{}, 0)
-	mirAssetDetail.PredClassIds = []int32{}
 	mirAssetDetail.Gt = make([]map[string]interface{}, 0)
-	mirAssetDetail.GtClassIds = []int32{}
+	mirAssetDetail.Cks = map[string]string{}
 	return mirAssetDetail
 }
 
@@ -100,7 +100,7 @@ type QueryAssetsResult struct {
 type DatasetStatsElement struct {
     ClassIdCount map[int]int64 `json:"keywords"`
     NegativeImagesCount int64 `json:"negative_images_count"`
-    PositiveImagesCount int64 `json:"NegativeImagesCount"`
+    PositiveImagesCount int64 `json:"positive_images_count"`
 }
 
 type QueryDatasetStatsResult struct {

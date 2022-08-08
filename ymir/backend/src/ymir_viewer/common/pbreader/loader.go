@@ -78,11 +78,10 @@ func LoadModelInfo(repoId constant.MirRepo) constant.MirdataModel {
 
 func LoadAssetsInfo(repoId constant.MirRepo) []constant.MirAssetDetail {
 	defer tools.TimeTrack(time.Now())
-	filesToLoad := []constant.MirFile{constant.MirfileMetadatas, constant.MirfileAnnotations, constant.MirfileKeywords}
+	filesToLoad := []constant.MirFile{constant.MirfileMetadatas, constant.MirfileAnnotations}
 	mirDatas := LoadMutipleMirDatas(repoId, filesToLoad)
 	mirMetadatas := mirDatas[0].(*protos.MirMetadatas)
 	mirAnnotations := mirDatas[1].(*protos.MirAnnotations)
-	mirKeywords := mirDatas[2].(*protos.MirKeywords)
 
 	gtAnnotations := map[string]*protos.SingleImageAnnotations{}
 	if mirAnnotations.GroundTruth != nil && len(mirAnnotations.GroundTruth.ImageAnnotations) > 0 {
@@ -92,7 +91,10 @@ func LoadAssetsInfo(repoId constant.MirRepo) []constant.MirAssetDetail {
 	if mirAnnotations.Prediction != nil && len(mirAnnotations.Prediction.ImageAnnotations) > 0 {
 		predAnnotations = mirAnnotations.Prediction.ImageAnnotations
 	}
-	keywords := mirKeywords.Keywords
+	mirCks := map[string]*protos.SingleImageCks{}
+	if mirAnnotations.ImageCks != nil && len(mirAnnotations.ImageCks) > 0 {
+		mirCks = mirAnnotations.ImageCks
+	}
 
 	mirAssetDetails := make([]constant.MirAssetDetail, len(mirMetadatas.Attributes))
 	assetIds := make([]string, 0)
@@ -101,10 +103,13 @@ func LoadAssetsInfo(repoId constant.MirRepo) []constant.MirAssetDetail {
 	}
 	sort.Strings(assetIds)
 	for idx, assetId := range assetIds {
-		assetMetadata := mirMetadatas.Attributes[assetId]
 		mirAssetDetails[idx] = constant.NewMirAssetDetail()
 		mirAssetDetails[idx].AssetId = assetId
-		BuildStructFromMessage(assetMetadata, &mirAssetDetails[idx].MetaData)
+		BuildStructFromMessage(mirMetadatas.Attributes[assetId], &mirAssetDetails[idx].MetaData)
+		if  cks, ok := mirCks[assetId]; ok {
+			mirAssetDetails[idx].Cks = cks.Cks
+		}
+
 		if gtAnnotation, ok := gtAnnotations[assetId]; ok {
 			for _, annotation := range gtAnnotation.Annotations {
 				annotationOut := BuildStructFromMessage(annotation, map[string]interface{}{}).(map[string]interface{})
@@ -115,14 +120,6 @@ func LoadAssetsInfo(repoId constant.MirRepo) []constant.MirAssetDetail {
 			for _, annotation := range predAnnotation.Annotations {
 				annotationOut := BuildStructFromMessage(annotation, map[string]interface{}{}).(map[string]interface{})
 				mirAssetDetails[idx].Pred = append(mirAssetDetails[idx].Pred, annotationOut)
-			}
-		}
-		if keyword, ok := keywords[assetId]; ok {
-			if len(keyword.PredefinedKeyids) > 0 {
-				mirAssetDetails[idx].PredClassIds = append([]int32(nil), keyword.PredefinedKeyids...)
-			}
-			if len(keyword.GtPredefinedKeyids) > 0 {
-				mirAssetDetails[idx].GtClassIds = append([]int32(nil), keyword.GtPredefinedKeyids...)
 			}
 		}
 	}

@@ -2,13 +2,15 @@ package service
 
 import (
 	"context"
+	"fmt"
 	"log"
+	"strings"
 	"time"
 
 	"github.com/IndustryEssentials/ymir-viewer/common/constant"
 	"github.com/IndustryEssentials/ymir-viewer/tools"
-	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/x/bsonx"
 )
@@ -97,17 +99,32 @@ func (s *MongoServer) IndexMongoData(mirRepo constant.MirRepo, newData []interfa
 	defer tools.TimeTrack(time.Now())
 	index := []mongo.IndexModel{
         {
-			Keys: bsonx.Doc{{Key: "assetid", Value: bsonx.Int32(1)}},
+			Keys: bsonx.Doc{{Key: "asset_id", Value: bsonx.Int32(1)}},
         },
         {
-			Keys: bsonx.Doc{{Key: "predclassids", Value: bsonx.Int32(1)}},
+			Keys: bsonx.Doc{{Key: "cks", Value: bsonx.Int32(1)}},
         },
         {
-			Keys: bsonx.Doc{{Key: "gtclassids", Value: bsonx.Int32(1)}},
+			Keys: bsonx.Doc{{Key: "gt.class_id", Value: bsonx.Int32(1)}},
+        },
+        {
+			Keys: bsonx.Doc{{Key: "pred.class_id", Value: bsonx.Int32(1)}},
+        },
+        {
+			Keys: bsonx.Doc{{Key: "gt.cm", Value: bsonx.Int32(1)}},
+        },
+        {
+			Keys: bsonx.Doc{{Key: "pred.cm", Value: bsonx.Int32(1)}},
+        },
+        {
+			Keys: bsonx.Doc{{Key: "gt.tags", Value: bsonx.Int32(1)}},
+        },
+        {
+			Keys: bsonx.Doc{{Key: "pred.tags", Value: bsonx.Int32(1)}},
         },
     }
 
-    opts := options.CreateIndexes().SetMaxTime(10 * time.Second)
+    opts := options.CreateIndexes().SetMaxTime(60 * time.Second)
     _, err = collection.Indexes().CreateMany(s.Ctx, index, opts)
     if err != nil {
         panic(err)
@@ -124,8 +141,8 @@ func (s *MongoServer) CountAssetsInClass(collection *mongo.Collection, queryFiel
 		} else {
 			// If classIds && empty queryField, count in both fields.
 			filterQuery["$or"] = bson.A{
-				bson.M{"gtclassids": bson.M{"$in": classIds}},
-				bson.M{"predclassids": bson.M{"$in": classIds},},
+				bson.M{"gt.class_id": bson.M{"$in": classIds}},
+				bson.M{"pred.class_id": bson.M{"$in": classIds}},
 			}
 		}
 	}
@@ -137,39 +154,87 @@ func (s *MongoServer) CountAssetsInClass(collection *mongo.Collection, queryFiel
 	return count
 }
 
-func (s *MongoServer) QueryAssets(mirRepo constant.MirRepo, offset int, limit int, classIds []int, currentAssetId string) constant.QueryAssetsResult {
+func (s *MongoServer) QueryAssets(mirRepo constant.MirRepo, offset int, limit int, classIds []int, currentAssetId string, cmTypes []int32, cks []string, tags []string) constant.QueryAssetsResult {
 	defer tools.TimeTrack(time.Now())
 
+	if limit <= 0 {
+		limit = 10
+	}
+	log.Printf("Query offset: %d, limit: %d, classIds: %v, currentId: %s, cmTypes: %v cks: %v tags: %v\n", offset, limit, classIds, currentAssetId, cmTypes, cks, tags)
 	collection, _ := s.getRepoCollection(mirRepo)
-	log.Printf("Query offset: %d, limit: %d, classIds: %v, currentId: %s\n", offset, limit, classIds, currentAssetId)
 
 	filterQuery := bson.M{}
 	// class id in either field counts.
 	if len(classIds) > 0 {
 		filterQuery["$or"] = bson.A{
-			bson.M{"gtclassids": bson.M{"$in": classIds}},
-			bson.M{"predclassids": bson.M{"$in": classIds},},
+			bson.M{"gt.class_id": bson.M{"$in": classIds}},
+			bson.M{"pred.class_id": bson.M{"$in": classIds}},
 		}
 	}
 	if len(currentAssetId) > 0 {
-		filterQuery["assetid"] = bson.M{"$gte": currentAssetId}
+		filterQuery["asset_id"] = bson.M{"$gte": currentAssetId}
 	}
-	pageOptions := options.Find().SetSort(bson.M{"assetid": 1}).SetSkip(int64(offset)).SetLimit(int64(limit))
-	log.Printf("filterQuery: %+v\n", filterQuery)
+	if len(cmTypes) > 0 {
+		filterQuery["$or"] = bson.A{
+			bson.M{"gt.cm": bson.M{"$in": cmTypes}},
+			bson.M{"pred.cm": bson.M{"$in": cmTypes}},
+		}
+	}
+	// ck format "xxx" "xxx:" "xxx:yyy"
+	if len(cks) > 0 {
+		for _, ck := range cks {
+			ckStrs := strings.Split(ck, ":")
+			if len(ckStrs) > 2 || len(ckStrs) < 1 || len(ckStrs[0]) == 0 {
+				panic(fmt.Sprintf("invalid ck: %s", ck))
+			}
+			if len(ckStrs) == 1 || len(ckStrs[1]) == 0 {
+				// case "xxx:" or "xxx"
+				filterQuery["cks." + ckStrs[0]] = bson.M{"$exists": true}
+			} else {
+				// case "xxx:yyy"
+				filterQuery["cks." + ckStrs[0]] = ckStrs[1]
+			}
+		}
+	}
+	// tag format "xxx" "xxx:" "xxx:yyy"
+	if len(tags) > 0 {
+		for _, tag := range tags {
+			tagStrs := strings.Split(tag, ":")
+			if len(tagStrs) > 2 || len(tagStrs) < 1 || len(tagStrs[0]) == 0 {
+				panic(fmt.Sprintf("invalid tag: %s", tag))
+			}
+			if len(tagStrs) == 1 || len(tagStrs[1]) == 0 {
+				// case "xxx:" or "xxx"
+				filterQuery["$or"] = bson.A{
+					bson.M{"gt.tags." + tagStrs[0]: bson.M{"$exists": true}},
+					bson.M{"pred.tags." + tagStrs[0]: bson.M{"$exists": true}},
+				}
+			} else {
+				// case "xxx:yyy"
+				filterQuery["$or"] = bson.A{
+					bson.M{"gt.tags." + tagStrs[0]: tagStrs[1]},
+					bson.M{"pred.tags." + tagStrs[0]: tagStrs[1]},
+				}
+			}
+		}
+	}
 
+	totalCount, err := collection.CountDocuments(s.Ctx, filterQuery, &options.CountOptions{})
+	if err != nil {
+		panic(err)
+	}
+	log.Printf("filterQuery: %+v result: %d\n", filterQuery, totalCount)
+
+	pageOptions := options.Find().SetSort(bson.M{"asset_id": 1}).SetSkip(int64(offset)).SetLimit(int64(limit))
 	queryCursor, err := collection.Find(s.Ctx, filterQuery, pageOptions)
 	if err != nil {
 		panic(err)
 	}
-	var queryData []constant.MirAssetDetail
+	queryData := []constant.MirAssetDetail{}
 	if err = queryCursor.All(s.Ctx, &queryData); err != nil {
 		panic(err)
 	}
-	if queryData == nil {
-		queryData = []constant.MirAssetDetail{}
-	}
 
-	totalCount := s.CountAssetsInClass(collection, "", classIds)
 	return constant.QueryAssetsResult{AssetsDetail: queryData, TotalCount: totalCount}
 }
 
@@ -180,12 +245,12 @@ func (s *MongoServer) QueryDatasetStats(mirRepo constant.MirRepo, classIds []int
 	queryData := constant.NewQueryDatasetStatsResult()
 	queryData.TotalCount = totalCount
 	for _, classId := range classIds {
-		queryData.Gt.ClassIdCount[classId] = s.CountAssetsInClass(collection, "gtclassids", []int{classId})
-		queryData.Pred.ClassIdCount[classId] = s.CountAssetsInClass(collection, "predclassids", []int{classId})
+		queryData.Gt.ClassIdCount[classId] = s.CountAssetsInClass(collection, "gt.class_id", []int{classId})
+		queryData.Pred.ClassIdCount[classId] = s.CountAssetsInClass(collection, "pred.class_id", []int{classId})
 	}
-	queryData.Gt.PositiveImagesCount = s.CountAssetsInClass(collection, "gtclassids", classIds)
+	queryData.Gt.PositiveImagesCount = s.CountAssetsInClass(collection, "gt.class_id", classIds)
 	queryData.Gt.NegativeImagesCount = totalCount - queryData.Gt.PositiveImagesCount
-	queryData.Pred.PositiveImagesCount = s.CountAssetsInClass(collection, "predclassids", classIds)
+	queryData.Pred.PositiveImagesCount = s.CountAssetsInClass(collection, "pred.class_id", classIds)
 	queryData.Pred.NegativeImagesCount = totalCount - queryData.Pred.PositiveImagesCount
 	return queryData
 }
@@ -199,7 +264,7 @@ func (s *MongoServer) QueryDatasetDup(mirRepo0 constant.MirRepo, mirRepo1 consta
 	collection1, collectionName1 := s.getRepoCollection(mirRepo1)
 	totalCount1 := s.CountAssetsInClass(collection1, "", []int{})
 
-	lookupStage := bson.D{{"$lookup", bson.D{{"from", collectionName1}, {"localField", "assetid"}, {"foreignField", "assetid"}, {"as", "joinAssets"}}}}
+	lookupStage := bson.D{{"$lookup", bson.D{{"from", collectionName1}, {"localField", "asset_id"}, {"foreignField", "asset_id"}, {"as", "joinAssets"}}}}
 	showLoadedCursor, err := collection0.Aggregate(s.Ctx, mongo.Pipeline{lookupStage})
 	if err != nil {
 		panic(err)
