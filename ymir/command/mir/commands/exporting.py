@@ -140,7 +140,7 @@ def bind_to_subparsers(subparsers: argparse._SubParsersAction, parent_parser: ar
                                       type=str,
                                       help="export directory for assets")
     exporting_arg_parser.add_argument("--annotation-dir",
-                                      required=True,
+                                      required=False,
                                       dest="annotation_dir",
                                       type=str,
                                       help="export directory for annotations")
