@@ -128,11 +128,9 @@ def prepare_imported_dataset_dir(url: str, output_dir: Union[str, Path]) -> str:
         logging.info("[import dataset] url content cached to %s", tmp.name)
         decompress_zip(tmp.name, output_dir)
 
+    # only `asset_dir` (images) is required
+    # both `gt_dir` and `pred_dir` are optional
     image_dir = locate_dir(output_dir, "images")
-    annotation_dir = locate_dir(output_dir, "annotations")
-    if image_dir.parent != annotation_dir.parent:
-        logging.error("[import dataset] image(%s) and annotation(%s) not in the same dir", image_dir, annotation_dir)
-        raise InvalidFileStructure()
     return str(image_dir.parent)
 
 
@@ -166,10 +164,10 @@ def is_relative_to(path_long: Union[str, Path], path_short: Union[str, Path]) ->
 
 def verify_import_path(src_path: Union[str, Path]) -> None:
     src_path = Path(src_path)
-    annotation_path = src_path / "annotations"
-    if not (src_path.is_dir() and annotation_path.is_dir()):
-        logger.error(f'import path {src_path} or {annotation_path} is not directory')
+    asset_path = src_path / "images"
+    if not asset_path.is_dir():
+        logger.error(f"import path {asset_path} is not directory")
         raise InvalidFileStructure()
-    if not is_relative_to(annotation_path, settings.SHARED_DATA_DIR):
-        logger.error("import path (%s) not within shared_dir (%s)" % (annotation_path, settings.SHARED_DATA_DIR))
+    if not is_relative_to(asset_path, settings.SHARED_DATA_DIR):
+        logger.error("import path (%s) not within shared_dir (%s)" % (asset_path, settings.SHARED_DATA_DIR))
         raise InvalidFileStructure()
