@@ -4,10 +4,10 @@ import t from "@/utils/t"
 const options = [
   { value: 0, label: 'gt' },
   { value: 1, label: 'pred' },
-  { value: 2, label: 'none' },
+  { value: undefined, label: 'none' },
 ]
 
-const KeepAnnotations = ({ initialValue = 0, ...rest }) => {
+const KeepAnnotations = ({ initialValue, ...rest }) => {
   const prefix = 'task.label.form.keep_anno.'
   return <Form.Item name='keepAnnotations'
     required
