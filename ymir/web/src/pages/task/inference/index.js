@@ -25,6 +25,7 @@ import Desc from "@/components/form/desc"
 import commonStyles from "../common.less"
 import styles from "./index.less"
 import OpenpaiForm from "../components/openpaiForm"
+import Tip from "@/components/form/tip"
 
 const { Option } = Select
 
@@ -223,6 +224,7 @@ function Inference({ datasetCache, datasets, ...func }) {
             onFinish={onFinish}
             onFinishFailed={onFinishFailed}
           >
+            <Form.Item wrapperCol={{ span: 20 }}><Tip content={t('task.inference.header.tip')} /></Form.Item>
             <Form.Item
               label={t('task.inference.form.dataset.label')}
               required

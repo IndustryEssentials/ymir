@@ -1,4 +1,28 @@
-.icon {
-  cursor: pointer;
-  color: rgba(0, 0, 0, 0.25);
+.tipContainer {
+  @error: rgb(242, 99, 123);
+  @success: @primary-color;
+  color: rgba(0, 0, 0, 0.65);
+
+  &.error, &.success {
+    border-radius: 2px;
+    line-height: 40px;
+    padding: 0 10px;
+  }
+  &.success {
+    background: fade(@success, 10);
+    border: 1px solid @success;
+  }
+  &.error {
+    background: fade(@error, 10);
+    border: 1px solid @error;
+  }
+  .success, .error {
+    margin-right: 10px;
+  }
+  .success {
+    color: @success;
+  }
+  .error {
+    color: @error;
+  }
 }
