@@ -15,6 +15,7 @@ import Tip from "@/components/form/tip"
 
 import styles from "./index.less"
 import commonStyles from "../common.less"
+import KeepAnnotations from "./components/keepAnnotations"
 
 const LabelTypes = () => [
   { id: "part", label: t('task.label.form.type.newer'), checked: true },
@@ -69,7 +70,6 @@ function Label({ datasets, keywords, ...func }) {
   const getCheckedValue = (list) => list.find((item) => item.checked)["id"]
   const initialValues = {
     datasetId: did || undefined,
-    keepAnnotations: true,
     labelType: getCheckedValue(LabelTypes()),
   }
   return (
@@ -154,14 +154,7 @@ function Label({ datasets, keywords, ...func }) {
                 ))}
               </Select>
             </Form.Item>
-            <Form.Item name='keepAnnotations'
-              required
-              label={t('task.label.form.keep_anno.label')}>
-              <Radio.Group options={[
-                { value: true, label: t('common.yes') },
-                { value: false, label: t('common.no') },
-              ]} />
-            </Form.Item>
+            <KeepAnnotations />
             <Form.Item label={t('task.label.form.desc.label')} name='desc'>
               <Uploader onChange={docChange} onRemove={() => setDoc(undefined)} format="doc"
                 max={50} info={t('task.label.form.desc.info', { br: <br /> })}></Uploader>
