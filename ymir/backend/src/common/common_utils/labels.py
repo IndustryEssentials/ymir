@@ -94,6 +94,9 @@ class UserLabels(LabelStorage):
         else:
             raise ValueError(f"unsupported type: {type(class_ids)}")
 
+    def get_main_name(self, class_id: int) -> str:
+        return self.id_to_name[class_id]
+
     # keyword: {"name": "dog", "aliases": ["puppy", "pup", "canine"]}
     def filter_labels(
         self,
