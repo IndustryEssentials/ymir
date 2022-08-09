@@ -139,8 +139,7 @@ class DatasetsOut(Common):
 
 class DatasetStatsElement(BaseModel):
     keywords: Dict[str, int]
-    negative_images_count: int
-    positive_images_count: int
+    negative_assets_count: int
 
     class Config:
         orm_mode = True
@@ -158,6 +157,15 @@ class DatasetStatsOut(Common):
     result: DatasetStats
 
 
+class DatasetAnnotationHist(BaseModel):
+    anno_quality: List[Dict]
+    anno_area: List[Dict]
+    anno_area_ratio: List[Dict]
+
+    class Config:
+        orm_mode = True
+
+
 class DatasetHist(BaseModel):
     asset_bytes: List[Dict]
     asset_area: List[Dict]
@@ -170,14 +178,12 @@ class DatasetHist(BaseModel):
 
 class DatasetAnnotation(BaseModel):
     class_names_count: Dict[str, int]
-    negative_images_count: int
-    tags_cnt_total: Dict  # box tags in first level
-    tags_cnt: Dict  # box tags in second level
-    hist: Dict
-    annos_cnt: int
-    ave_annos_cnt: int
-    positive_asset_cnt: int
-    negative_asset_cnt: int
+    negative_assets_count: int
+    tags_count_total: Dict  # box tags in first level
+    tags_count: Dict  # box tags in second level
+    hist: DatasetAnnotationHist
+    annos_count: int
+    ave_annos_count: int
 
 
 class DatasetAnalysis(BaseModel):
@@ -187,8 +193,8 @@ class DatasetAnalysis(BaseModel):
     cks_count: Dict
     cks_count_total: Dict
 
-    total_asset_mbytes: int
-    total_assets_cnt: int
+    total_assets_mbytes: int
+    total_assets_count: int
 
     gt: Optional[DatasetAnnotation]
     pred: Optional[DatasetAnnotation]

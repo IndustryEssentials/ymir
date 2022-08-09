@@ -58,7 +58,7 @@ def get_datasets_analysis(
     ids = [int(i) for i in dataset_ids.split(",")]
     datasets = ensure_datasets_are_ready(db, dataset_ids=ids)
 
-    viz_client.initialize(user_id=current_user.id, project_id=project_id)
+    viz_client.initialize(user_id=current_user.id, project_id=project_id, user_labels=user_labels)
     results = []
     for dataset in datasets:
         res = viz_client.get_dataset(dataset.hash)

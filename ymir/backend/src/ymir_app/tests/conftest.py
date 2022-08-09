@@ -89,8 +89,8 @@ def fake_viz_client() -> Generator:
             keywords_updated=False,
             cks_count={},
             cks_count_total={},
-            total_asset_mbytes=20,
-            total_assets_cnt=400,
+            total_assets_mbytes=20,
+            total_assets_count=400,
             gt=None,
             pred=None,
             hist={

@@ -105,35 +105,33 @@ class ModelMetaData:
 
 @dataclass
 class DatasetAnnotationMetadata:
-    keywords: List[str]
-    class_names_count: Dict[str, int]
-    negative_images_count: int
+    keywords: Dict[str, int]
+    class_ids_count: Dict[str, int]
+    negative_assets_count: int
 
-    tags_cnt_total: Dict
-    tags_cnt: Dict
+    tags_count_total: Dict
+    tags_count: Dict
 
     hist: Dict
 
-    annos_cnt: int
-    ave_annos_cnt: int
-
-    positive_asset_cnt: int
-    negative_asset_cnt: int
+    annos_count: int
+    ave_annos_count: int
 
     @classmethod
-    def from_viz_res(cls, res: Dict, total_assets_cnt: int) -> "DatasetAnnotationMetadata":
-        ave_annos_cnt = round(res["annos_cnt"] / total_assets_cnt, 2) if total_assets_cnt else 0
+    def from_viz_res(cls, res: Dict, total_assets_count: int, user_labels: UserLabels) -> "DatasetAnnotationMetadata":
+        ave_annos_count = round(res["annos_count"] / total_assets_count, 2) if total_assets_count else 0
+        keywords = {
+            user_labels.get_main_names(int(class_id))[0]: count for class_id, count in res["class_ids_count"].items()
+        }
         return cls(
-            keywords=list(res["class_names_count"]),
-            class_names_count=res["class_names_count"],
-            negative_images_count=res["negative_images_count"],
-            tags_cnt_total=res["tags_cnt_total"],
-            tags_cnt=res["tags_cnt"],
+            keywords=keywords,
+            class_ids_count=res["class_ids_count"],
+            negative_assets_count=res["negative_assets_count"],
+            tags_count_total=res["tags_count_total"],
+            tags_count=res["tags_count"],
             hist=res["hist"],
-            annos_cnt=res["annos_cnt"],
-            ave_annos_cnt=ave_annos_cnt,
-            positive_asset_cnt=res["positive_asset_cnt"],
-            negative_asset_cnt=res["negative_asset_cnt"],
+            annos_count=res["annos_count"],
+            ave_annos_count=ave_annos_count,
         )
 
 
@@ -150,18 +148,28 @@ class DatasetMetaData:
     cks_count: Dict
     cks_count_total: Dict
 
-    total_asset_mbytes: int
-    total_assets_cnt: int
+    total_assets_mbytes: int
+    total_assets_count: int
 
     gt: Optional[DatasetAnnotationMetadata]
     pred: Optional[DatasetAnnotationMetadata]
     hist: Dict
 
+    negative_info: Dict[str, int]
+
     @classmethod
-    def from_viz_res(cls, res: Dict) -> "DatasetMetaData":
-        total_assets_cnt = res["total_assets_cnt"]
-        gt = DatasetAnnotationMetadata.from_viz_res(res["gt"], total_assets_cnt) if res.get("gt") else None
-        pred = DatasetAnnotationMetadata.from_viz_res(res["pred"], total_assets_cnt) if res.get("pred") else None
+    def from_viz_res(cls, res: Dict, user_labels: UserLabels) -> "DatasetMetaData":
+        total_assets_count = res["total_assets_count"]
+        gt = (
+            DatasetAnnotationMetadata.from_viz_res(res["gt"], total_assets_count, user_labels)
+            if res.get("gt")
+            else None
+        )
+        pred = (
+            DatasetAnnotationMetadata.from_viz_res(res["pred"], total_assets_count, user_labels)
+            if res.get("pred")
+            else None
+        )
         hist = {
             "asset_bytes": res["hist"]["asset_bytes"][0],
             "asset_area": res["hist"]["asset_area"][0],
@@ -169,41 +177,44 @@ class DatasetMetaData:
             "asset_hw_ratio": res["hist"]["asset_hw_ratio"][0],
         }
         keywords = {
-            "gt": gt.keywords if gt else [],
-            "pred": pred.keywords if pred else [],
+            "gt": gt.keywords if gt else {},
+            "pred": pred.keywords if pred else {},
+        }
+        negative_info = {
+            "gt": gt.negative_assets_count if gt else 0,
+            "pred": pred.negative_assets_count if pred else 0,
         }
         return cls(
             keywords=keywords,
             keywords_updated=res["new_types_added"],  # delete personal keywords cache
             cks_count=res["cks_count"],
             cks_count_total=res["cks_count_total"],
-            total_asset_mbytes=res["total_asset_mbytes"],
-            total_assets_cnt=total_assets_cnt,
+            total_assets_mbytes=res["total_assets_mbytes"],
+            total_assets_count=total_assets_count,
             gt=gt,
             pred=pred,
             hist=hist,
+            negative_info=negative_info,
         )
 
 
 class VizDatasetStatsElement(BaseModel):
     class_ids_count: Dict[int, int]
-    negative_images_count: int
-    positive_images_count: int
+    negative_assets_count: int
 
 
 @dataclass
 class DatasetStatsElement:
     keywords: Dict[str, int]
-    negative_images_count: int
-    positive_images_count: int
+    negative_assets_count: int
 
     @classmethod
     def from_viz_res(cls, data: Dict, user_labels: UserLabels) -> "DatasetStatsElement":
         viz_res = VizDatasetStatsElement(**data)
         keywords = {
-            user_labels.get_main_names(class_id)[0]: count for class_id, count in viz_res.class_ids_count.items()
+            user_labels.get_main_names(int(class_id))[0]: count for class_id, count in viz_res.class_ids_count.items()
         }
-        return cls(keywords, viz_res.negative_images_count, viz_res.positive_images_count)
+        return cls(keywords, viz_res.negative_assets_count)
 
 
 @dataclass
@@ -308,13 +319,16 @@ class VizClient:
         res = self.parse_resp(resp)
         return ModelMetaData.from_viz_res(res)
 
-    def get_dataset(self, dataset_hash: Optional[str] = None) -> DatasetMetaData:
+    def get_dataset(
+        self, dataset_hash: Optional[str] = None, user_labels: Optional[UserLabels] = None
+    ) -> DatasetMetaData:
         dataset_hash = dataset_hash or self._branch_id
+        user_labels = user_labels or self._user_labels
         url = f"{self._url_prefix}/{dataset_hash}/datasets"
         resp = self.session.get(url, timeout=settings.VIZ_TIMEOUT)
         res = self.parse_resp(resp)
         logger.info("[viz] get_dataset response: %s", res)
-        return DatasetMetaData.from_viz_res(res)
+        return DatasetMetaData.from_viz_res(res, user_labels)
 
     def get_dataset_stats(
         self, *, dataset_hash: Optional[str] = None, keyword_ids: List[int], user_labels: Optional[UserLabels] = None

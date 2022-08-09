@@ -237,7 +237,7 @@ class TaskResult:
     @property
     def dataset_info(self) -> Optional[DatasetMetaData]:
         try:
-            dataset_info = self.viz.get_dataset()
+            dataset_info = self.viz.get_dataset(user_labels=self.user_labels)
         except Exception:
             logger.exception("[update task] failed to get dataset_info, check viz log")
             return None

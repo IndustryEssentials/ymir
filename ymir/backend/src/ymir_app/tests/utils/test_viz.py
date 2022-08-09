@@ -133,18 +133,15 @@ class TestDataset:
             "new_types_added": False,
             "cks_count_total": {},
             "cks_count": {},
-            "total_images_cnt": 1,
+            "total_assets_count": 1,
             "pred": {
-                "total_images_cnt": 1,
                 "class_ids_count": {3: 34},
                 "new_types": {"cat": 5},
                 "new_types_added": False,
-                "negative_images_count": 0,
-                "tags_cnt_total": {},
-                "tags_cnt": {},
-                "annos_cnt": 28,
-                "positive_asset_cnt": 1,
-                "negative_asset_cnt": 1,
+                "negative_assets_count": 0,
+                "tags_count_total": {},
+                "tags_count": {},
+                "annos_count": 28,
                 "class_names_count": {"cat": 3},
                 "hist": {"anno_area_ratio": [[{"x": 1, "y": 2}]], "anno_quality": [[{"x": 1, "y": 2}]]},
             },
@@ -155,10 +152,10 @@ class TestDataset:
                 "asset_hw_ratio": [[{"x": 1, "y": 2}]],
                 "asset_quality": [[{"x": 1, "y": 2}]],
             },
-            "total_asset_mbytes": 10,
-            "total_assets_cnt": 1,
+            "total_assets_mbytes": 10,
+            "total_assets_count": 1,
         }
-        M = m.DatasetMetaData.from_viz_res(res)
+        M = m.DatasetMetaData.from_viz_res(res, mock_user_labels)
         assert "gt" in M.keywords
         assert "pred" in M.keywords
         assert M.gt is None
@@ -322,18 +319,15 @@ class TestVizClient:
             "new_types_added": False,
             "cks_count_total": {},
             "cks_count": {},
-            "total_images_cnt": 1,
+            "total_assets_count": 1,
             "pred": {
-                "total_images_cnt": 1,
                 "class_ids_count": {3: 34},
                 "new_types": {"cat": 5},
                 "new_types_added": False,
-                "tags_cnt_total": {},
-                "tags_cnt": {},
-                "negative_images_count": 0,
-                "annos_cnt": 28,
-                "positive_asset_cnt": 1,
-                "negative_asset_cnt": 1,
+                "tags_count_total": {},
+                "tags_count": {},
+                "negative_assets_count": 0,
+                "annos_count": 28,
                 "class_names_count": {"cat": 3},
                 "hist": {"anno_area_ratio": [[{"x": 1, "y": 2}]], "anno_quality": [[{"x": 1, "y": 2}]]},
             },
@@ -344,8 +338,8 @@ class TestVizClient:
                 "asset_hw_ratio": [[{"x": 1, "y": 2}]],
                 "asset_quality": [[{"x": 1, "y": 2}]],
             },
-            "total_asset_mbytes": 10,
-            "total_assets_cnt": 1,
+            "total_assets_mbytes": 10,
+            "total_assets_count": 1,
         }
         resp.json.return_value = {"result": res}
         mock_session.get.return_value = resp
