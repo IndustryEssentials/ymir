@@ -6,11 +6,11 @@ import (
 
 	"github.com/spf13/viper"
 
-	"github.com/IndustryEssentials/ymir-viewer/common/constant"
+	"github.com/IndustryEssentials/ymir-viewer/common/constants"
 	"github.com/IndustryEssentials/ymir-viewer/service"
 )
 
-func InitViperConfig() constant.Config {
+func InitViperConfig() constants.Config {
 	viper.BindEnv("YmirSandbox", "BACKEND_SANDBOX_ROOT")
 	viper.BindEnv("ViewerPort", "VIEWER_HOST_PORT")
 	viper.BindEnv("MongodbUri", "MONGODB_URI")
@@ -23,7 +23,7 @@ func InitViperConfig() constant.Config {
 		panic(err)
 	}
 
-	var config constant.Config
+	var config constants.Config
 	err = viper.Unmarshal(&config)
 	if err != nil {
 		panic(err)

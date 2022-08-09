@@ -11,16 +11,16 @@ import (
 	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/proto"
 
-	"github.com/IndustryEssentials/ymir-viewer/common/constant"
+	"github.com/IndustryEssentials/ymir-viewer/common/constants"
 	"github.com/IndustryEssentials/ymir-viewer/common/protos"
 	"github.com/IndustryEssentials/ymir-viewer/tools"
 )
 
-func LoadSingleMirData(mirRepo constant.MirRepo, mirFile constant.MirFile) interface{} {
-	return LoadMutipleMirDatas(mirRepo, []constant.MirFile{mirFile})[0]
+func LoadSingleMirData(mirRepo constants.MirRepo, mirFile constants.MirFile) interface{} {
+	return LoadMutipleMirDatas(mirRepo, []constants.MirFile{mirFile})[0]
 }
 
-func LoadMutipleMirDatas(mirRepo constant.MirRepo, mirFiles []constant.MirFile) []interface{} {
+func LoadMutipleMirDatas(mirRepo constants.MirRepo, mirFiles []constants.MirFile) []interface{} {
 	defer tools.TimeTrack(time.Now())
 	mirRoot, mirRev := mirRepo.BuildRepoId()
 
@@ -63,10 +63,10 @@ func BuildStructFromMessage(message proto.Message, structOut interface{}) interf
 	return structOut
 }
 
-func LoadModelInfo(repoId constant.MirRepo) constant.MirdataModel {
-	mirTasks := LoadSingleMirData(repoId, constant.MirfileTasks).(*protos.MirTasks)
+func LoadModelInfo(repoId constants.MirRepo) constants.MirdataModel {
+	mirTasks := LoadSingleMirData(repoId, constants.MirfileTasks).(*protos.MirTasks)
 	task := mirTasks.Tasks[mirTasks.HeadTaskId]
-	modelData := constant.NewMirdataModel(task.SerializedTaskParameters)
+	modelData := constants.NewMirdataModel(task.SerializedTaskParameters)
 	if task.SerializedExecutorConfig != "" {
 		if err := yaml.Unmarshal([]byte(task.SerializedExecutorConfig), &modelData.ExecutorConfig); err != nil {
 			panic(err)
@@ -76,9 +76,9 @@ func LoadModelInfo(repoId constant.MirRepo) constant.MirdataModel {
 	return modelData
 }
 
-func LoadAssetsInfo(repoId constant.MirRepo) []constant.MirAssetDetail {
+func LoadAssetsInfo(repoId constants.MirRepo) []constants.MirAssetDetail {
 	defer tools.TimeTrack(time.Now())
-	filesToLoad := []constant.MirFile{constant.MirfileMetadatas, constant.MirfileAnnotations}
+	filesToLoad := []constants.MirFile{constants.MirfileMetadatas, constants.MirfileAnnotations}
 	mirDatas := LoadMutipleMirDatas(repoId, filesToLoad)
 	mirMetadatas := mirDatas[0].(*protos.MirMetadatas)
 	mirAnnotations := mirDatas[1].(*protos.MirAnnotations)
@@ -96,14 +96,14 @@ func LoadAssetsInfo(repoId constant.MirRepo) []constant.MirAssetDetail {
 		mirCks = mirAnnotations.ImageCks
 	}
 
-	mirAssetDetails := make([]constant.MirAssetDetail, len(mirMetadatas.Attributes))
+	mirAssetDetails := make([]constants.MirAssetDetail, len(mirMetadatas.Attributes))
 	assetIds := make([]string, 0)
 	for assetId := range mirMetadatas.Attributes {
 		assetIds = append(assetIds, assetId)
 	}
 	sort.Strings(assetIds)
 	for idx, assetId := range assetIds {
-		mirAssetDetails[idx] = constant.NewMirAssetDetail()
+		mirAssetDetails[idx] = constants.NewMirAssetDetail()
 		mirAssetDetails[idx].AssetId = assetId
 		BuildStructFromMessage(mirMetadatas.Attributes[assetId], &mirAssetDetails[idx].MetaData)
 		if cks, ok := mirCks[assetId]; ok {

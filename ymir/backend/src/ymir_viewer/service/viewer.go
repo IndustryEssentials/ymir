@@ -7,7 +7,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/IndustryEssentials/ymir-viewer/common/constant"
+	"github.com/IndustryEssentials/ymir-viewer/common/constants"
 	"github.com/IndustryEssentials/ymir-viewer/common/protos"
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson"
@@ -18,10 +18,10 @@ type ViewerServer struct {
 	gin     *gin.Engine
 	Mongo   MongoServer
 	sandbox string
-	config  constant.Config
+	config  constants.Config
 }
 
-func NewViewerServer(config constant.Config) ViewerServer {
+func NewViewerServer(config constants.Config) ViewerServer {
 	sandbox := config.YmirSandbox
 	viewerUri := config.ViewerUri
 	mongoUri := config.MongodbUri
@@ -63,11 +63,11 @@ func (s *ViewerServer) routes() {
 	}
 }
 
-func (s *ViewerServer) buildMirRepoFromParam(c *gin.Context) constant.MirRepo {
+func (s *ViewerServer) buildMirRepoFromParam(c *gin.Context) constants.MirRepo {
 	userId := c.Param("userId")
 	repoId := c.Param("repoId")
 	branchId := c.Param("branchId")
-	return constant.MirRepo{SandboxRoot: s.sandbox, UserId: userId, RepoId: repoId, BranchId: branchId, TaskId: branchId}
+	return constants.MirRepo{SandboxRoot: s.sandbox, UserId: userId, RepoId: repoId, BranchId: branchId, TaskId: branchId}
 }
 
 func (s *ViewerServer) getIntFromQuery(c *gin.Context, field string) int {
@@ -148,7 +148,7 @@ func (s *ViewerServer) handleAssets(c *gin.Context) {
 	}
 
 	resultData := GetAssetsHandler(s.Mongo, mirRepo, offset, limit, classIds, currentAssetId, cmTypes, cks, tags)
-	ViewerSuccess(c, constant.ViewerSuccessCode, constant.ViewerSuccessMsg, resultData)
+	ViewerSuccess(c, constants.ViewerSuccessCode, constants.ViewerSuccessMsg, resultData)
 }
 
 func (s *ViewerServer) handleDatasetStats(c *gin.Context) {
@@ -156,26 +156,26 @@ func (s *ViewerServer) handleDatasetStats(c *gin.Context) {
 	classIds := s.getIntSliceFromQuery(c, "class_ids")
 
 	resultData := GetDatasetStatsHandler(s.Mongo, mirRepo, classIds)
-	ViewerSuccess(c, constant.ViewerSuccessCode, constant.ViewerSuccessMsg, resultData)
+	ViewerSuccess(c, constants.ViewerSuccessCode, constants.ViewerSuccessMsg, resultData)
 }
 
 func (s *ViewerServer) handleDatasetDup(c *gin.Context) {
 	// Validate candidate_dataset_ids
 	candidateDatasetIds := c.DefaultQuery("candidate_dataset_ids", "")
 	if len(candidateDatasetIds) <= 0 {
-		ViewerFailure(c, constant.FailInvalidParmsCode, constant.FailInvalidParmsMsg, "Invalid candidate_dataset_ids")
+		ViewerFailure(c, constants.FailInvalidParmsCode, constants.FailInvalidParmsMsg, "Invalid candidate_dataset_ids")
 	}
 	datasetIds := strings.Split(candidateDatasetIds, ",")
 	if len(datasetIds) != 2 {
-		ViewerFailure(c, constant.FailInvalidParmsCode, constant.FailInvalidParmsMsg, "candidate_dataset_ids requires exact two datasets.")
+		ViewerFailure(c, constants.FailInvalidParmsCode, constants.FailInvalidParmsMsg, "candidate_dataset_ids requires exact two datasets.")
 	}
 
 	userId := c.Param("userId")
 	repoId := c.Param("repoId")
-	mirRepo0 := constant.MirRepo{SandboxRoot: s.sandbox, UserId: userId, RepoId: repoId, BranchId: datasetIds[0], TaskId: datasetIds[0]}
-	mirRepo1 := constant.MirRepo{SandboxRoot: s.sandbox, UserId: userId, RepoId: repoId, BranchId: datasetIds[1], TaskId: datasetIds[1]}
+	mirRepo0 := constants.MirRepo{SandboxRoot: s.sandbox, UserId: userId, RepoId: repoId, BranchId: datasetIds[0], TaskId: datasetIds[0]}
+	mirRepo1 := constants.MirRepo{SandboxRoot: s.sandbox, UserId: userId, RepoId: repoId, BranchId: datasetIds[1], TaskId: datasetIds[1]}
 
 	duplicateCount, mirRepoCount0, mirRepoCount1 := GetDatasetDupHandler(s.Mongo, mirRepo0, mirRepo1)
 	resultData := bson.M{"result": duplicateCount, "total_count": bson.M{datasetIds[0]: mirRepoCount0, datasetIds[1]: mirRepoCount1}}
-	ViewerSuccess(c, constant.ViewerSuccessCode, constant.ViewerSuccessMsg, resultData)
+	ViewerSuccess(c, constants.ViewerSuccessCode, constants.ViewerSuccessMsg, resultData)
 }

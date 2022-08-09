@@ -1,4 +1,4 @@
-package constant
+package constants
 
 type ResponseCode int
 type ResponseMsg string

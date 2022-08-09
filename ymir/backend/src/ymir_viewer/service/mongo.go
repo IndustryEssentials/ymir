@@ -7,7 +7,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/IndustryEssentials/ymir-viewer/common/constant"
+	"github.com/IndustryEssentials/ymir-viewer/common/constants"
 	"github.com/IndustryEssentials/ymir-viewer/tools"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -41,7 +41,7 @@ func NewMongoServer(uri string) MongoServer {
 	}
 }
 
-func (s *MongoServer) getRepoCollection(mirRepo constant.MirRepo) (*mongo.Collection, string) {
+func (s *MongoServer) getRepoCollection(mirRepo constants.MirRepo) (*mongo.Collection, string) {
 	_, mirRev := mirRepo.BuildRepoId()
 	return s.Clt.Database(s.dbName).Collection(mirRev), mirRev
 }
@@ -58,7 +58,7 @@ func (s *MongoServer) setExistence(collectionName string, ready bool, insert boo
 	}
 }
 
-func (s *MongoServer) checkExistence(mirRepo constant.MirRepo) bool {
+func (s *MongoServer) checkExistence(mirRepo constants.MirRepo) bool {
 	// Step 1: check collection exist.
 	collectionData, collectionName := s.getRepoCollection(mirRepo)
 	count, err := collectionData.EstimatedDocumentCount(s.Ctx)
@@ -81,7 +81,7 @@ func (s *MongoServer) checkExistence(mirRepo constant.MirRepo) bool {
 	return data["ready"].(bool)
 }
 
-func (s *MongoServer) IndexMongoData(mirRepo constant.MirRepo, newData []interface{}) {
+func (s *MongoServer) IndexMongoData(mirRepo constants.MirRepo, newData []interface{}) {
 	defer tools.TimeTrack(time.Now())
 
 	if len(newData) <= 0 {
@@ -154,7 +154,7 @@ func (s *MongoServer) CountAssetsInClass(collection *mongo.Collection, queryFiel
 	return count
 }
 
-func (s *MongoServer) QueryAssets(mirRepo constant.MirRepo, offset int, limit int, classIds []int, currentAssetId string, cmTypes []int32, cks []string, tags []string) constant.QueryAssetsResult {
+func (s *MongoServer) QueryAssets(mirRepo constants.MirRepo, offset int, limit int, classIds []int, currentAssetId string, cmTypes []int32, cks []string, tags []string) constants.QueryAssetsResult {
 	defer tools.TimeTrack(time.Now())
 
 	if limit <= 0 {
@@ -230,19 +230,19 @@ func (s *MongoServer) QueryAssets(mirRepo constant.MirRepo, offset int, limit in
 	if err != nil {
 		panic(err)
 	}
-	queryData := []constant.MirAssetDetail{}
+	queryData := []constants.MirAssetDetail{}
 	if err = queryCursor.All(s.Ctx, &queryData); err != nil {
 		panic(err)
 	}
 
-	return constant.QueryAssetsResult{AssetsDetail: queryData, TotalCount: totalCount}
+	return constants.QueryAssetsResult{AssetsDetail: queryData, TotalCount: totalCount}
 }
 
-func (s *MongoServer) QueryDatasetStats(mirRepo constant.MirRepo, classIds []int) constant.QueryDatasetStatsResult {
+func (s *MongoServer) QueryDatasetStats(mirRepo constants.MirRepo, classIds []int) constants.QueryDatasetStatsResult {
 	collection, _ := s.getRepoCollection(mirRepo)
 
 	totalCount := s.CountAssetsInClass(collection, "", []int{})
-	queryData := constant.NewQueryDatasetStatsResult()
+	queryData := constants.NewQueryDatasetStatsResult()
 	queryData.TotalCount = totalCount
 	for _, classId := range classIds {
 		queryData.Gt.ClassIdCount[classId] = s.CountAssetsInClass(collection, "gt.class_id", []int{classId})
@@ -255,7 +255,7 @@ func (s *MongoServer) QueryDatasetStats(mirRepo constant.MirRepo, classIds []int
 	return queryData
 }
 
-func (s *MongoServer) QueryDatasetDup(mirRepo0 constant.MirRepo, mirRepo1 constant.MirRepo) (int, int64, int64) {
+func (s *MongoServer) QueryDatasetDup(mirRepo0 constants.MirRepo, mirRepo1 constants.MirRepo) (int, int64, int64) {
 	defer tools.TimeTrack(time.Now())
 
 	collection0, _ := s.getRepoCollection(mirRepo0)
