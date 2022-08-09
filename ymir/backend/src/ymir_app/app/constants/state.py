@@ -80,8 +80,8 @@ class TrainingType(IntEnum):
 
 
 class AnnotationType(IntEnum):
-    gt = 0
-    pred = 1
+    gt = 1
+    pred = 2
 
 
 RunningStates = [TaskState.pending, TaskState.running]
