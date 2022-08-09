@@ -14,30 +14,30 @@ class DataStatsPredGtResult(Model):
 
     Do not edit the class manually.
     """
-    def __init__(self, class_ids_count: object=None, negative_images_cnt: int=None, positive_images_cnt: int=None):  # noqa: E501
+    def __init__(self, class_ids_count: object=None, negative_images_count: int=None, positive_images_count: int=None):  # noqa: E501
         """DataStatsPredGtResult - a model defined in Swagger
 
         :param class_ids_count: The class_ids_count of this DataStatsPredGtResult.  # noqa: E501
         :type class_ids_count: object
-        :param negative_images_cnt: The negative_images_cnt of this DataStatsPredGtResult.  # noqa: E501
-        :type negative_images_cnt: int
-        :param positive_images_cnt: The positive_images_cnt of this DataStatsPredGtResult.  # noqa: E501
-        :type positive_images_cnt: int
+        :param negative_images_count: The negative_images_count of this DataStatsPredGtResult.  # noqa: E501
+        :type negative_images_count: int
+        :param positive_images_count: The positive_images_count of this DataStatsPredGtResult.  # noqa: E501
+        :type positive_images_count: int
         """
         self.swagger_types = {
             'class_ids_count': object,
-            'negative_images_cnt': int,
-            'positive_images_cnt': int
+            'negative_images_count': int,
+            'positive_images_count': int
         }
 
         self.attribute_map = {
             'class_ids_count': 'class_ids_count',
-            'negative_images_cnt': 'negative_images_cnt',
-            'positive_images_cnt': 'positive_images_cnt'
+            'negative_images_count': 'negative_images_count',
+            'positive_images_count': 'positive_images_count'
         }
         self._class_ids_count = class_ids_count
-        self._negative_images_cnt = negative_images_cnt
-        self._positive_images_cnt = positive_images_cnt
+        self._negative_images_count = negative_images_count
+        self._positive_images_count = positive_images_count
 
     @classmethod
     def from_dict(cls, dikt) -> 'DataStatsPredGtResult':
@@ -72,43 +72,43 @@ class DataStatsPredGtResult(Model):
         self._class_ids_count = class_ids_count
 
     @property
-    def negative_images_cnt(self) -> int:
-        """Gets the negative_images_cnt of this DataStatsPredGtResult.
+    def negative_images_count(self) -> int:
+        """Gets the negative_images_count of this DataStatsPredGtResult.
 
 
-        :return: The negative_images_cnt of this DataStatsPredGtResult.
+        :return: The negative_images_count of this DataStatsPredGtResult.
         :rtype: int
         """
-        return self._negative_images_cnt
+        return self._negative_images_count
 
-    @negative_images_cnt.setter
-    def negative_images_cnt(self, negative_images_cnt: int):
-        """Sets the negative_images_cnt of this DataStatsPredGtResult.
+    @negative_images_count.setter
+    def negative_images_count(self, negative_images_count: int):
+        """Sets the negative_images_count of this DataStatsPredGtResult.
 
 
-        :param negative_images_cnt: The negative_images_cnt of this DataStatsPredGtResult.
-        :type negative_images_cnt: int
+        :param negative_images_count: The negative_images_count of this DataStatsPredGtResult.
+        :type negative_images_count: int
         """
 
-        self._negative_images_cnt = negative_images_cnt
+        self._negative_images_count = negative_images_count
 
     @property
-    def positive_images_cnt(self) -> int:
-        """Gets the positive_images_cnt of this DataStatsPredGtResult.
+    def positive_images_count(self) -> int:
+        """Gets the positive_images_count of this DataStatsPredGtResult.
 
 
-        :return: The positive_images_cnt of this DataStatsPredGtResult.
+        :return: The positive_images_count of this DataStatsPredGtResult.
         :rtype: int
         """
-        return self._positive_images_cnt
+        return self._positive_images_count
 
-    @positive_images_cnt.setter
-    def positive_images_cnt(self, positive_images_cnt: int):
-        """Sets the positive_images_cnt of this DataStatsPredGtResult.
+    @positive_images_count.setter
+    def positive_images_count(self, positive_images_count: int):
+        """Sets the positive_images_count of this DataStatsPredGtResult.
 
 
-        :param positive_images_cnt: The positive_images_cnt of this DataStatsPredGtResult.
-        :type positive_images_cnt: int
+        :param positive_images_count: The positive_images_count of this DataStatsPredGtResult.
+        :type positive_images_count: int
         """
 
-        self._positive_images_cnt = positive_images_cnt
+        self._positive_images_count = positive_images_count

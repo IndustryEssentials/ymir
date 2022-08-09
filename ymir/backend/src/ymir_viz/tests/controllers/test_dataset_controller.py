@@ -8,20 +8,11 @@ class TestDatasetController:
         branch_id = "branch_id"
 
         mir_dataset_content = {
-            "class_names_count": {
-                'cat': 34
-            },
             "class_ids_count": {
                 3: 34
             },
-            "ignored_labels": {
-                'cat': 5,
-            },
-            "negative_info": {
-                "negative_images_cnt": 0,
-                "project_negative_images_cnt": 0,
-            },
-            "total_images_cnt": 1,
+            "negative_assets_count": 0,
+            "total_assets_count": 1,
         }
 
         mocker.patch.object(MirStorageOps, "load_single_dataset", return_value=mir_dataset_content)
@@ -32,17 +23,8 @@ class TestDatasetController:
             'class_ids_count': {
                 '3': 34  # int is converted to str in json.dumps.
             },
-            'class_names_count': {
-                'cat': 34
-            },
-            'ignored_labels': {
-                'cat': 5
-            },
-            'negative_info': {
-                'negative_images_cnt': 0,
-                'project_negative_images_cnt': 0
-            },
-            'total_images_cnt': 1
+            'negative_assets_count': 0,
+            'total_assets_count': 1
         }
 
     def test_get_dataset_stats(self, test_client, mocker):
@@ -102,19 +84,17 @@ class TestDatasetController:
             f"/v1/users/{user_id}/repositories/{repo_id}/branches/{branch_id}/dataset_stats?class_ids=2")
         assert resp.status_code == 200
         assert resp.json()["result"] == {
-            'total_images_count': 3,
+            'total_assets_count': 3,
             'pred': {
                 'class_ids_count': {
                     '2': 0,  # int is converted to str in json.dumps.
                 },
-                'negative_images_count': 3,
-                'positive_images_count': 0,
+                'negative_assets_count': 3,
             },
             'gt': {
                 'class_ids_count': {
                     '2': 1,  # int is converted to str in json.dumps.
                 },
-                'negative_images_count': 2,
-                'positive_images_count': 1,
+                'negative_assets_count': 2,
             },
         }

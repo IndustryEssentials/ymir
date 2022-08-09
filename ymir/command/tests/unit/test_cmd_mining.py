@@ -194,7 +194,7 @@ class TestMiningCmd(unittest.TestCase):
         args.model_location = self._storage_root
         args.media_location = self._storage_root
         args.topk = 1
-        args.add_annotations = True
+        args.add_prediction = True
         args.mir_root = self._mir_repo_root
         args.config_file = self._config_file
         args.executor = 'al:0.0.1'
@@ -214,7 +214,7 @@ class TestMiningCmd(unittest.TestCase):
                                          executor=args.executor,
                                          executant_name=args.executant_name,
                                          run_as_root=args.run_as_root,
-                                         run_infer=args.add_annotations,
+                                         run_infer=args.add_prediction,
                                          run_mining=True)
 
         if os.path.isdir(self._sandbox_root):
