@@ -9,65 +9,63 @@ function randomColor() {
   return "#" + Math.random().toString(16).slice(-6)
 }
 
-function KeywordRates({ pid, id, keywords = [], dataset, progressWidth = 0.5 }) {
-  const [list, setList] = useState([])
+const initList = { gt: [], pred: [] }
+
+const getWidth = ({ count = 0, max }, progressWidth) => percent(count * progressWidth / max)
+
+function KeywordRates({ keywords = [], dataset = {}, progressWidth = 0.5 }) {
+  const [list, setList] = useState(initList)
   const [stats, getNegativeKeywords, setStats] = useFetch('dataset/getNegativeKeywords', {})
   const [colors, setColors] = useState({})
-  const [labels, setLabels] = useState([])
 
   useEffect(() => {
-    if (dataset) {
-      setLabels(dataset.keywords)
-    } else if (keywords.length) {
-      setLabels(keywords)
-    } else {
-      setLabels([])
+    if (dataset.id && keywords?.length) {
+      getNegativeKeywords({ projectId: dataset.projectId, keywords, dataset: dataset.id })
+    } else if (dataset.id) {
+      cacheToStats(dataset)
     }
-  }, [keywords, dataset])
+  }, [dataset])
 
   useEffect(() => {
-    if (!dataset && id && labels?.length) {
-      getNegativeKeywords({ projectId: pid, keywords: labels, dataset: id })
-    } else if (dataset) {
-      cacheToStats()
-    } else {
-      setList([])
-    }
-  }, [id, dataset, labels])
-
-  useEffect(() => {
-    const keywordColors = labels.reduce((prev, keyword) => (colors[keyword] ? prev : {
+    const keywordColors = keywords.reduce((prev, keyword) => (colors[keyword] ? prev : {
       ...prev,
       [keyword]: randomColor(),
     }), {
       0: 'gray'
     })
     setColors({ ...colors, ...keywordColors })
-  }, [labels])
+  }, [keywords])
 
   useEffect(() => {
-    if (typeof stats.negative !== 'undefined') {
-      const list = generateList(stats)
+    if (stats.gt) {
+      const list = generateList(stats, dataset.assetCount, colors)
       setList(list)
     } else {
-      setList([])
+      setList(initList)
     }
-  }, [stats])
+  }, [stats, dataset, colors])
 
-  function generateList(stats) {
-    const total = stats.negative + stats.positive
+  function generateList(stats, total = 0, colors) {
+    return {
+      gt: transfer(stats.gt, total, colors),
+      pred: transfer(stats.pred, total, colors),
+    }
+  }
+
+  function transfer({ keywords: kc = {}, negative = 0 }, total = 0, colors) {
     const klist = [
-      ...(labels.map(keyword => ({
-        key: keyword,
-        label: keyword,
-        count: stats.keywords[keyword],
+      ...(Object.keys(kc).map(kw => ({
+        key: kw,
+        label: kw,
+        count: kc[kw],
       }))),
       {
         key: 0,
         label: t('dataset.samples.negative'),
-        count: stats.negative,
-      }]
-    const max = Math.max(...(klist.map(item => item.count || 0)))
+        count: negative,
+      }
+    ]
+    const max = Math.max(...(klist.map(item => item.count || 0)), progressWidth)
     return klist.map(item => ({
       ...item,
       total,
@@ -75,31 +73,42 @@ function KeywordRates({ pid, id, keywords = [], dataset, progressWidth = 0.5 }) 
       color: colors[item.key],
     }))
   }
-  const getWidth = ({ count = 0, max }) => percent(count * progressWidth / max)
 
   function label({ count = 0, label = '', total }) {
     return `${label} ${count}/${total} ${percent(count / total)}`
   }
 
-  function cacheToStats() {
-    const { assetCount, keywordsCount, nagetiveCount, } = dataset
-    const defaultStats = {
-      keywords: keywordsCount,
-      negative: nagetiveCount,
-      positive: assetCount - nagetiveCount,
-      total: assetCount,
+  function cacheToStats(dataset = {}) {
+    const { keywordsCount, nagetiveCount, } = dataset
+    const { gt, pred } = keywordsCount
+    const cacheStats = {
+      gt: {
+        keywords: gt,
+        negative: nagetiveCount.gt,
+      },
+      pred: {
+        keywords: pred,
+        negative: nagetiveCount.pred,
+      }
     }
-    setStats(defaultStats)
+    setStats(cacheStats)
   }
+
+  const renderList = list => list.map(item => (
+    <div key={item.key} className={s.rate}>
+      <span className={s.bar} style={{ width: getWidth(item), background: item.color }}>&nbsp;</span>
+      <span>{label(item)}</span>
+    </div>
+  ))
 
   return (
     <div className={s.rates}>
-      {list.map(item => (
-        <div key={item.key} className={s.rate}>
-          <span className={s.bar} style={{ width: getWidth(item), background: item.color }}>&nbsp;</span>
-          <span>{label(item)}</span>
-        </div>
-      ))}
+      <h3>Group Truth</h3>
+      {renderList(list.gt)}
+      {keywords.length ? <>
+        <h3>Prediction</h3>
+        {renderList(list.pred)}
+      </> : null}
     </div>
   )
 }

@@ -340,11 +340,10 @@ export default {
       const { code, result } = yield call(getNegativeKeywords, payload)
       const getStats = (o = {}) => ({
         keywords: o.keywords || {},
-        negative: o.negative_images_count || 0,
-        positive: o.positive_images_count || 0,
+        negative: o.negative_assets_count || 0,
       })
       if (code === 0) {
-        return getStats(result?.pred)
+        return { pred: getStats(result?.pred), gt: getStats(result?.gt) }
       }
     },
   },

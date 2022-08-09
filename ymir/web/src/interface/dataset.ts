@@ -15,8 +15,10 @@ export interface Dataset extends Result {
   keywordCount: number,
   keywordsCount: Keywords,
   isProtected: Boolean,
-  nagetiveCount?: number,
-  projectNagetiveCount?: number,
+  nagetiveCount?: {
+    gt: number,
+    pred: number,
+  },
   assetCount: number,
 }
 

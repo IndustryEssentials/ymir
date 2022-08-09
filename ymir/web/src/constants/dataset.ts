@@ -45,7 +45,8 @@ export function transferDatasetGroup(data: BackendData) {
 }
 
 export function transferDataset(data: BackendData): Dataset {
-  const { negative_images_cnt = 0, project_negative_images_cnt = 0 } = data.negative_info || {}
+  const { gt = {}, pred = {} } = data.keywords
+  const keywords = [...new Set([...Object.keys(gt), ...Object.keys(pred)])]
   return {
     id: data.id,
     groupId: data.dataset_group_id,
@@ -54,12 +55,11 @@ export function transferDataset(data: BackendData): Dataset {
     version: data.version_num || 0,
     versionName: getIterationVersion(data.version_num),
     assetCount: data.asset_count || 0,
-    keywords: Object.keys(data.keywords || {}),
-    keywordCount: data.keyword_count || 0,
+    keywords,
+    keywordCount: keywords.length,
     keywordsCount: data.keywords || {},
-    nagetiveCount: negative_images_cnt,
+    nagetiveCount: data.negative_info || {},
     isProtected: data.is_protected || false,
-    projectNagetiveCount: project_negative_images_cnt,
     hash: data.hash,
     state: data.result_state,
     createTime: format(data.create_datetime),
