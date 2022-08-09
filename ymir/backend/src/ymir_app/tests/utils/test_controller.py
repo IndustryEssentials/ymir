@@ -73,12 +73,12 @@ class TestControllerRequest:
                 "labellers": [],
                 "class_ids": [1, 2],
                 "extra_url": random_url(),
-                "keep_annotations": True,
+                "annotation_type": 2,
             },
         )
         assert ret.req.req_type == m.mirsvrpb.TASK_CREATE
         assert ret.req.req_create_task.task_type == m.mirsvrpb.TaskTypeLabel
-        assert ret.req.req_create_task.labeling.export_annotation
+        assert ret.req.req_create_task.labeling.annotation_type == m.mirsvrpb.PRED
 
     def test_copy_data(self):
         task_type = m.TaskType.copy_data
