@@ -102,12 +102,11 @@ class TestInvokerTaskExporting(unittest.TestCase):
                                          req_create_task=req_create_task)
         print(MessageToDict(response))
 
-        expected_cmd_importing = (
-            "mir export --root {0} --media-location {1} --asset-dir {1} --pred-dir {1} --src-revs {2}@{2} "
-            "--format {3} -w {4}".format(self._mir_repo_root, self._storage_root, self._base_task_id, 'voc',
-                                         working_dir))
+        expected_cmd_exporting = (
+            "mir export --root {0} --media-location {1} --asset-dir {1} --src-revs {2}@{2} --format {3} -w {4} "
+            "--pred-dir {1}".format(self._mir_repo_root, self._storage_root, self._base_task_id, 'voc', working_dir))
         mock_run.assert_has_calls(calls=[
-            mock.call(expected_cmd_importing.split(' '), capture_output=True, text=True),
+            mock.call(expected_cmd_exporting.split(' '), capture_output=True, text=True),
         ])
 
         expected_ret = backend_pb2.GeneralResp()

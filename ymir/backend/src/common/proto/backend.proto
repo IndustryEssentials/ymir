@@ -231,6 +231,12 @@ message TaskReqCopyData {
     bool drop_annotations = 5;
 }
 
+enum AnnotationType {
+    NOT_SET = 0;
+    GT = 1;
+    PRED = 2;
+}
+
 message TaskReqLabeling {
     string dataset_id = 1;
     repeated string labeler_accounts = 2;
@@ -238,6 +244,7 @@ message TaskReqLabeling {
     string expert_instruction_url = 4;
     string project_name = 5;
     bool export_annotation = 6;
+    AnnotationType annotation_type = 7;
 }
 
 message TaskReqFusion {

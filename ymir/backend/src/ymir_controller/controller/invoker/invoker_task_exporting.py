@@ -55,14 +55,14 @@ class TaskExportingInvoker(TaskBaseInvoker):
                       dataset_id_with_tid: str,
                       annotation_format: str,
                       asset_dir: str,
-                      pred_dir: str,
+                      pred_dir: Optional[str],
                       media_location: str,
                       work_dir: Optional[str] = None,
                       keywords: List[str] = None,
                       gt_dir: Optional[str] = None) -> backend_pb2.GeneralResp:
         exporting_cmd = [
             utils.mir_executable(), 'export', '--root', repo_root, '--media-location', media_location, '--asset-dir',
-            asset_dir, '--pred-dir', pred_dir, '--src-revs', dataset_id_with_tid, '--format',
+            asset_dir, '--src-revs', dataset_id_with_tid, '--format',
             annotation_format
         ]
         if keywords:
@@ -70,6 +70,8 @@ class TaskExportingInvoker(TaskBaseInvoker):
             exporting_cmd.append(';'.join(keywords))
         if work_dir:
             exporting_cmd += ["-w", work_dir]
+        if pred_dir:
+            exporting_cmd += ["--pred-dir", pred_dir]
         if gt_dir:
             exporting_cmd += ["--gt-dir", gt_dir]
 

@@ -10,7 +10,7 @@ from fastapi.logger import logger
 from google.protobuf import json_format  # type: ignore
 
 from app.config import settings
-from app.constants.state import TaskType
+from app.constants.state import TaskType, AnnotationType
 from app.schemas.dataset import ImportStrategy, MergeStrategy
 from app.schemas.task import TrainingDatasetsStrategy
 from common_utils.labels import UserLabels
@@ -55,6 +55,11 @@ IMPORTING_STRATEGY_MAPPING = {
     ImportStrategy.add_unknown_annotations: mirsvrpb.UTS_ADD,
 }
 
+ANNOTATION_TYPE_MAPPING = {
+    AnnotationType.gt: mirsvrpb.GT,
+    AnnotationType.pred: mirsvrpb.PRED,
+}
+
 
 def gen_typed_datasets(dataset_type: int, datasets: List[str]) -> Generator:
     for dataset_id in datasets:
@@ -87,7 +92,7 @@ class ControllerRequest:
     task_id: Optional[str] = None
     args: Optional[Dict] = None
     req: Optional[mirsvrpb.GeneralReq] = None
-    task_parameters: Optional[str] = None
+    archived_task_parameters: Optional[str] = None
 
     def __post_init__(self) -> None:
         user_hash = gen_user_hash(self.user_id)
@@ -95,7 +100,7 @@ class ControllerRequest:
         task_hash = self.task_id or gen_task_hash(self.user_id, self.project_id)
 
         request = mirsvrpb.GeneralReq(
-            user_id=user_hash, repo_id=repo_hash, task_id=task_hash, task_parameters=self.task_parameters
+            user_id=user_hash, repo_id=repo_hash, task_id=task_hash, task_parameters=self.archived_task_parameters
         )
 
         method_name = "prepare_" + self.type.name
@@ -181,7 +186,11 @@ class ControllerRequest:
         label_request.dataset_id = args["dataset_hash"]
         label_request.labeler_accounts[:] = args["labellers"]
         label_request.in_class_ids[:] = args["class_ids"]
-        label_request.export_annotation = args["keep_annotations"]
+
+        # pre annotation
+        if "annotation_type" in args:
+            label_request.annotation_type = ANNOTATION_TYPE_MAPPING[args["annotation_type"]]
+
         if args.get("extra_url"):
             label_request.expert_instruction_url = args["extra_url"]
 
@@ -395,7 +404,7 @@ class ControllerClient:
         task_id: str,
         task_type: TaskType,
         args: Optional[Dict],
-        task_parameters: Optional[str],
+        archived_task_parameters: Optional[str],
     ) -> Dict:
         req = ControllerRequest(
             type=TaskType(task_type),
@@ -403,7 +412,7 @@ class ControllerClient:
             project_id=project_id,
             task_id=task_id,
             args=args,
-            task_parameters=task_parameters,
+            archived_task_parameters=archived_task_parameters,
         )
         return self.send(req)
 
