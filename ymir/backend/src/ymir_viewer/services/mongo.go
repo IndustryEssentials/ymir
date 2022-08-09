@@ -1,4 +1,4 @@
-package service
+package services
 
 import (
 	"context"
@@ -264,7 +264,7 @@ func (s *MongoServer) QueryDatasetDup(mirRepo0 constants.MirRepo, mirRepo1 const
 	collection1, collectionName1 := s.getRepoCollection(mirRepo1)
 	totalCount1 := s.CountAssetsInClass(collection1, "", []int{})
 
-	lookupStage := bson.D{{"$lookup", bson.D{{"from", collectionName1}, {"localField", "asset_id"}, {"foreignField", "asset_id"}, {"as", "joinAssets"}}}}
+	lookupStage := bson.D{bson.E{Key: "$lookup", Value: bson.D{bson.E{Key: "from", Value: collectionName1}, bson.E{Key: "localField", Value: "asset_id"}, bson.E{Key: "foreignField", Value: "asset_id"}, bson.E{Key: "as", Value: "joinAssets"}}}}
 	showLoadedCursor, err := collection0.Aggregate(s.Ctx, mongo.Pipeline{lookupStage})
 	if err != nil {
 		panic(err)

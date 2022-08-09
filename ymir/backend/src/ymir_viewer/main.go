@@ -7,7 +7,7 @@ import (
 	"github.com/spf13/viper"
 
 	"github.com/IndustryEssentials/ymir-viewer/common/constants"
-	"github.com/IndustryEssentials/ymir-viewer/service"
+	"github.com/IndustryEssentials/ymir-viewer/services"
 )
 
 func InitViperConfig() constants.Config {
@@ -35,7 +35,7 @@ func InitViperConfig() constants.Config {
 }
 
 func main() {
-	viewerServer := service.NewViewerServer(InitViperConfig())
+	viewerServer := services.NewViewerServer(InitViperConfig())
 	defer viewerServer.Clear()
 
 	viewerServer.Start()
