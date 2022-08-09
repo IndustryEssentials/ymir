@@ -154,13 +154,31 @@ func (s *MongoServer) CountAssetsInClass(collection *mongo.Collection, queryFiel
 	return count
 }
 
-func (s *MongoServer) QueryAssets(mirRepo constants.MirRepo, offset int, limit int, classIds []int, currentAssetId string, cmTypes []int32, cks []string, tags []string) constants.QueryAssetsResult {
+func (s *MongoServer) QueryAssets(
+	mirRepo constants.MirRepo,
+	offset int,
+	limit int,
+	classIds []int,
+	currentAssetId string,
+	cmTypes []int32,
+	cks []string,
+	tags []string,
+) constants.QueryAssetsResult {
 	defer tools.TimeTrack(time.Now())
 
 	if limit <= 0 {
 		limit = 10
 	}
-	log.Printf("Query offset: %d, limit: %d, classIds: %v, currentId: %s, cmTypes: %v cks: %v tags: %v\n", offset, limit, classIds, currentAssetId, cmTypes, cks, tags)
+	log.Printf(
+		"Query offset: %d, limit: %d, classIds: %v, currentId: %s, cmTypes: %v cks: %v tags: %v\n",
+		offset,
+		limit,
+		classIds,
+		currentAssetId,
+		cmTypes,
+		cks,
+		tags,
+	)
 	collection, _ := s.getRepoCollection(mirRepo)
 
 	filterQuery := bson.M{}
@@ -264,7 +282,17 @@ func (s *MongoServer) QueryDatasetDup(mirRepo0 constants.MirRepo, mirRepo1 const
 	collection1, collectionName1 := s.getRepoCollection(mirRepo1)
 	totalCount1 := s.CountAssetsInClass(collection1, "", []int{})
 
-	lookupStage := bson.D{bson.E{Key: "$lookup", Value: bson.D{bson.E{Key: "from", Value: collectionName1}, bson.E{Key: "localField", Value: "asset_id"}, bson.E{Key: "foreignField", Value: "asset_id"}, bson.E{Key: "as", Value: "joinAssets"}}}}
+	lookupStage := bson.D{
+		bson.E{
+			Key: "$lookup",
+			Value: bson.D{
+				bson.E{Key: "from", Value: collectionName1},
+				bson.E{Key: "localField", Value: "asset_id"},
+				bson.E{Key: "foreignField", Value: "asset_id"},
+				bson.E{Key: "as", Value: "joinAssets"},
+			},
+		},
+	}
 	showLoadedCursor, err := collection0.Aggregate(s.Ctx, mongo.Pipeline{lookupStage})
 	if err != nil {
 		panic(err)

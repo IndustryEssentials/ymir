@@ -67,7 +67,13 @@ func (s *ViewerServer) buildMirRepoFromParam(c *gin.Context) constants.MirRepo {
 	userId := c.Param("userId")
 	repoId := c.Param("repoId")
 	branchId := c.Param("branchId")
-	return constants.MirRepo{SandboxRoot: s.sandbox, UserId: userId, RepoId: repoId, BranchId: branchId, TaskId: branchId}
+	return constants.MirRepo{
+		SandboxRoot: s.sandbox,
+		UserId:      userId,
+		RepoId:      repoId,
+		BranchId:    branchId,
+		TaskId:      branchId,
+	}
 }
 
 func (s *ViewerServer) getIntFromQuery(c *gin.Context, field string) int {
@@ -167,15 +173,35 @@ func (s *ViewerServer) handleDatasetDup(c *gin.Context) {
 	}
 	datasetIds := strings.Split(candidateDatasetIds, ",")
 	if len(datasetIds) != 2 {
-		ViewerFailure(c, constants.FailInvalidParmsCode, constants.FailInvalidParmsMsg, "candidate_dataset_ids requires exact two datasets.")
+		ViewerFailure(
+			c,
+			constants.FailInvalidParmsCode,
+			constants.FailInvalidParmsMsg,
+			"candidate_dataset_ids requires exact two datasets.",
+		)
 	}
 
 	userId := c.Param("userId")
 	repoId := c.Param("repoId")
-	mirRepo0 := constants.MirRepo{SandboxRoot: s.sandbox, UserId: userId, RepoId: repoId, BranchId: datasetIds[0], TaskId: datasetIds[0]}
-	mirRepo1 := constants.MirRepo{SandboxRoot: s.sandbox, UserId: userId, RepoId: repoId, BranchId: datasetIds[1], TaskId: datasetIds[1]}
+	mirRepo0 := constants.MirRepo{
+		SandboxRoot: s.sandbox,
+		UserId:      userId,
+		RepoId:      repoId,
+		BranchId:    datasetIds[0],
+		TaskId:      datasetIds[0],
+	}
+	mirRepo1 := constants.MirRepo{
+		SandboxRoot: s.sandbox,
+		UserId:      userId,
+		RepoId:      repoId,
+		BranchId:    datasetIds[1],
+		TaskId:      datasetIds[1],
+	}
 
 	duplicateCount, mirRepoCount0, mirRepoCount1 := GetDatasetDupHandler(s.Mongo, mirRepo0, mirRepo1)
-	resultData := bson.M{"result": duplicateCount, "total_count": bson.M{datasetIds[0]: mirRepoCount0, datasetIds[1]: mirRepoCount1}}
+	resultData := bson.M{
+		"result":      duplicateCount,
+		"total_count": bson.M{datasetIds[0]: mirRepoCount0, datasetIds[1]: mirRepoCount1},
+	}
 	ViewerSuccess(c, constants.ViewerSuccessCode, constants.ViewerSuccessMsg, resultData)
 }

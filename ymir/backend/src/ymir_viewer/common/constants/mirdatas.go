@@ -79,9 +79,9 @@ type MirAssetDetail struct {
 	// Export fields.
 	AssetId  string                   `json:"asset_id" bson:"asset_id"`
 	MetaData map[string]*interface{}  `json:"metadata" bson:"metadata"`
-	Gt       []map[string]interface{} `json:"gt" bson:"gt"`
-	Pred     []map[string]interface{} `json:"pred" bson:"pred"`
-	Cks      map[string]string        `json:"cks" bson:"cks"`
+	Gt       []map[string]interface{} `json:"gt"       bson:"gt"`
+	Pred     []map[string]interface{} `json:"pred"     bson:"pred"`
+	Cks      map[string]string        `json:"cks"      bson:"cks"`
 }
 
 func NewMirAssetDetail() MirAssetDetail {
@@ -111,6 +111,8 @@ type QueryDatasetStatsResult struct {
 }
 
 func NewQueryDatasetStatsResult() QueryDatasetStatsResult {
-	queryResult := QueryDatasetStatsResult{Gt: DatasetStatsElement{ClassIdCount: map[int]int64{}}, Pred: DatasetStatsElement{ClassIdCount: map[int]int64{}}}
+	queryResult := QueryDatasetStatsResult{Gt: DatasetStatsElement{
+		ClassIdCount: map[int]int64{}},
+		Pred: DatasetStatsElement{ClassIdCount: map[int]int64{}}}
 	return queryResult
 }
