@@ -232,8 +232,9 @@ message TaskReqCopyData {
 }
 
 enum AnnotationType {
-    GT = 0;
-    PRED = 1;
+    NOT_SET = 0;
+    GT = 1;
+    PRED = 2;
 }
 
 message TaskReqLabeling {
