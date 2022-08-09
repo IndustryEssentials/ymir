@@ -131,14 +131,17 @@ class TestDataset:
             "class_ids_count": {3: 34},
             "new_types": {"cat": 5},
             "new_types_added": False,
-            "negative_info": {"negative_images_cnt": 0, "project_negative_images_cnt": 0},
+            "cks_count_total": {},
+            "cks_count": {},
             "total_images_cnt": 1,
             "pred": {
                 "total_images_cnt": 1,
                 "class_ids_count": {3: 34},
                 "new_types": {"cat": 5},
                 "new_types_added": False,
-                "negative_info": {"negative_images_cnt": 0, "project_negative_images_cnt": 0},
+                "negative_images_count": 0,
+                "tags_cnt_total": {},
+                "tags_cnt": {},
                 "annos_cnt": 28,
                 "positive_asset_cnt": 1,
                 "negative_asset_cnt": 1,
@@ -155,12 +158,11 @@ class TestDataset:
             "total_asset_mbytes": 10,
             "total_assets_cnt": 1,
         }
-        M = m.DatasetMetaData.from_viz_res(res, mock_user_labels)
-        assert M.keyword_count == len(res["class_ids_count"])
-        assert M.ignored_keywords == res["new_types"]
-        assert M.negative_info["negative_images_cnt"] == res["negative_info"]["negative_images_cnt"]
-        assert M.negative_info["project_negative_images_cnt"] == res["negative_info"]["project_negative_images_cnt"]
-        assert M.asset_count == res["total_images_cnt"]
+        M = m.DatasetMetaData.from_viz_res(res)
+        assert "gt" in M.keywords
+        assert "pred" in M.keywords
+        assert M.gt is None
+        assert M.pred
 
 
 class TestVizClient:
@@ -318,14 +320,17 @@ class TestVizClient:
             "class_ids_count": {3: 34},
             "new_types": {"cat": 5},
             "new_types_added": False,
-            "negative_info": {"negative_images_cnt": 0, "project_negative_images_cnt": 0},
+            "cks_count_total": {},
+            "cks_count": {},
             "total_images_cnt": 1,
             "pred": {
                 "total_images_cnt": 1,
                 "class_ids_count": {3: 34},
                 "new_types": {"cat": 5},
                 "new_types_added": False,
-                "negative_info": {"negative_images_cnt": 0, "project_negative_images_cnt": 0},
+                "tags_cnt_total": {},
+                "tags_cnt": {},
+                "negative_images_count": 0,
                 "annos_cnt": 28,
                 "positive_asset_cnt": 1,
                 "negative_asset_cnt": 1,
@@ -352,11 +357,10 @@ class TestVizClient:
         viz.initialize(user_id=user_id, project_id=project_id, branch_id=task_id, user_labels=mock_user_labels)
         ret = viz.get_dataset()
         assert isinstance(ret, m.DatasetMetaData)
-        assert ret.keyword_count == len(res["class_ids_count"])
-        assert ret.ignored_keywords == res["new_types"]
-        assert ret.negative_info["negative_images_cnt"] == res["negative_info"]["negative_images_cnt"]
-        assert ret.negative_info["project_negative_images_cnt"] == res["negative_info"]["project_negative_images_cnt"]
-        assert ret.asset_count == res["total_images_cnt"]
+        assert "gt" in ret.keywords
+        assert "pred" in ret.keywords
+        assert ret.gt is None
+        assert ret.pred
 
     def test_close(self, mocker):
         host = random_lower_string()

@@ -151,10 +151,7 @@ class CRUDDataset(CRUDBase[Dataset, DatasetCreate, DatasetUpdate]):
 
         if result:
             dataset.keywords = json.dumps(result["keywords"])
-            dataset.ignored_keywords = json.dumps(result["ignored_keywords"])
-            dataset.negative_info = json.dumps(result["negative_info"])
             dataset.asset_count = result["asset_count"]
-            dataset.keyword_count = result["keyword_count"]
 
         db.add(dataset)
         db.commit()

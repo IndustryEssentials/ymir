@@ -56,19 +56,11 @@ def get_datasets_analysis(
     user_labels: UserLabels = Depends(deps.get_user_labels),
 ) -> Any:
     ids = [int(i) for i in dataset_ids.split(",")]
-    datasets = crud.dataset.get_multi_by_ids(db, ids=ids)
-    if not datasets:
-        raise DatasetNotFound()
+    datasets = ensure_datasets_are_ready(db, dataset_ids=ids)
 
-    viz_client.initialize(
-        user_id=current_user.id,
-        project_id=project_id,
-        user_labels=user_labels,
-    )
+    viz_client.initialize(user_id=current_user.id, project_id=project_id)
     results = []
     for dataset in datasets:
-        if dataset.result_state != int(ResultState.ready):
-            raise DatasetNotFound()
         res = viz_client.get_dataset(dataset.hash)
         res.group_name = dataset.group_name  # type: ignore
         res.version_num = dataset.version_num  # type: ignore

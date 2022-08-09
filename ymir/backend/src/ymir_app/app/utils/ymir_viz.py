@@ -105,6 +105,7 @@ class ModelMetaData:
 
 @dataclass
 class DatasetAnnotationMetadata:
+    keywords: List[str]
     class_names_count: Dict[str, int]
     negative_images_count: int
 
@@ -123,6 +124,7 @@ class DatasetAnnotationMetadata:
     def from_viz_res(cls, res: Dict, total_assets_cnt: int) -> "DatasetAnnotationMetadata":
         ave_annos_cnt = round(res["annos_cnt"] / total_assets_cnt, 2) if total_assets_cnt else 0
         return cls(
+            keywords=list(res["class_names_count"]),
             class_names_count=res["class_names_count"],
             negative_images_count=res["negative_images_count"],
             tags_cnt_total=res["tags_cnt_total"],
@@ -142,7 +144,11 @@ class DatasetMetaData:
     https://github.com/IndustryEssentials/ymir/blob/master/ymir/backend/src/ymir_viz/doc/ymir_viz_API.yaml
     """
 
+    keywords: Dict
     keywords_updated: bool
+
+    cks_count: Dict
+    cks_count_total: Dict
 
     total_asset_mbytes: int
     total_assets_cnt: int
@@ -154,16 +160,23 @@ class DatasetMetaData:
     @classmethod
     def from_viz_res(cls, res: Dict) -> "DatasetMetaData":
         total_assets_cnt = res["total_assets_cnt"]
-        gt = DatasetAnnotationMetadata.from_viz_res(res["gt"], total_assets_cnt) if "gt" in res else None
-        pred = DatasetAnnotationMetadata.from_viz_res(res["pred"], total_assets_cnt) if "pred" in res else None
+        gt = DatasetAnnotationMetadata.from_viz_res(res["gt"], total_assets_cnt) if res.get("gt") else None
+        pred = DatasetAnnotationMetadata.from_viz_res(res["pred"], total_assets_cnt) if res.get("pred") else None
         hist = {
             "asset_bytes": res["hist"]["asset_bytes"][0],
             "asset_area": res["hist"]["asset_area"][0],
             "asset_quality": res["hist"]["asset_quality"][0],
             "asset_hw_ratio": res["hist"]["asset_hw_ratio"][0],
         }
+        keywords = {
+            "gt": gt.keywords if gt else [],
+            "pred": pred.keywords if pred else [],
+        }
         return cls(
+            keywords=keywords,
             keywords_updated=res["new_types_added"],  # delete personal keywords cache
+            cks_count=res["cks_count"],
+            cks_count_total=res["cks_count_total"],
             total_asset_mbytes=res["total_asset_mbytes"],
             total_assets_cnt=total_assets_cnt,
             gt=gt,

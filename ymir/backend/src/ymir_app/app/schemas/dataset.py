@@ -168,20 +168,38 @@ class DatasetHist(BaseModel):
         orm_mode = True
 
 
-class DatasetsAnalysis(BaseModel):
-    group_name: str
-    version_num: int
-    total_asset_mbytes: int
-    total_assets_cnt: int
+class DatasetAnnotation(BaseModel):
+    class_names_count: Dict[str, int]
+    negative_images_count: int
+    tags_cnt_total: Dict  # box tags in first level
+    tags_cnt: Dict  # box tags in second level
+    hist: Dict
     annos_cnt: int
-    ave_annos_cnt: float
+    ave_annos_cnt: int
     positive_asset_cnt: int
     negative_asset_cnt: int
+
+
+class DatasetAnalysis(BaseModel):
+    group_name: str
+    version_num: int
+
+    cks_count: Dict
+    cks_count_total: Dict
+
+    total_asset_mbytes: int
+    total_assets_cnt: int
+
+    gt: Optional[DatasetAnnotation]
+    pred: Optional[DatasetAnnotation]
     hist: DatasetHist
+
+    class Config:
+        orm_mode = True
 
 
 class DatasetsAnalyses(BaseModel):
-    datasets: List[DatasetsAnalysis]
+    datasets: List[DatasetAnalysis]
 
 
 class DatasetsAnalysesOut(Common):
