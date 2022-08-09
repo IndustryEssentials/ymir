@@ -7,7 +7,7 @@ ARG PIP_SOURCE=https://pypi.org/simple
 RUN apt-get update \
   && apt-get install -y git \
   && apt-get install -y vim \
-  && apt-get install -y --no-install-recommends python3-pip python3-dev golang-1.16-go \
+  && apt-get install -y --no-install-recommends python3-pip python3-dev golang-1.18-go \
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/* \
   && cd /usr/local/bin \
@@ -26,7 +26,7 @@ RUN pip3 install -r requirements.txt -i ${PIP_SOURCE}
 
 COPY ./backend/src/ymir_viewer/go.mod ./
 COPY ./backend/src/ymir_viewer/go.sum ./
-RUN update-alternatives --install /usr/bin/go go /usr/lib/go-1.16/bin/go 10
+RUN update-alternatives --install /usr/bin/go go /usr/lib/go-1.18/bin/go 10
 RUN go mod download -x
 
 COPY ./command /command
