@@ -36,7 +36,7 @@ func GetDatasetStatsHandler(mongo MongoServer, mirRepo constant.MirRepo, classId
 	return mongo.QueryDatasetStats(mirRepo, classIds)
 }
 
-func GetDatasetDupHandler(mongo MongoServer, mirRepo0 constant.MirRepo,  mirRepo1 constant.MirRepo) (int, int64, int64) {
+func GetDatasetDupHandler(mongo MongoServer, mirRepo0 constant.MirRepo, mirRepo1 constant.MirRepo) (int, int64, int64) {
 	loadAndCacheAssets(mongo, mirRepo0)
 	loadAndCacheAssets(mongo, mirRepo1)
 	return mongo.QueryDatasetDup(mirRepo0, mirRepo1)

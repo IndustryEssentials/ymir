@@ -7,7 +7,6 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-
 type ResultVO struct {
 	Code    constant.ResponseCode `json:"code"`
 	Msg     constant.ResponseMsg  `json:"msg"`

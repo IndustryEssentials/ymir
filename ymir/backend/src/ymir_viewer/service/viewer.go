@@ -13,26 +13,25 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 )
 
-
 type ViewerServer struct {
-	addr  string
-	gin   *gin.Engine
-	Mongo MongoServer
+	addr    string
+	gin     *gin.Engine
+	Mongo   MongoServer
 	sandbox string
-	config constant.Config
+	config  constant.Config
 }
 
-func NewViewerServer(config constant.Config) ViewerServer{
+func NewViewerServer(config constant.Config) ViewerServer {
 	sandbox := config.YmirSandbox
 	viewerUri := config.ViewerUri
 	mongoUri := config.MongodbUri
 	gin.SetMode(gin.ReleaseMode)
 	viewerServer := ViewerServer{
-		addr:  viewerUri,
-		gin:   gin.Default(),
-		Mongo: NewMongoServer(mongoUri),
+		addr:    viewerUri,
+		gin:     gin.Default(),
+		Mongo:   NewMongoServer(mongoUri),
 		sandbox: sandbox,
-		config: config,
+		config:  config,
 	}
 	viewerServer.routes()
 	return viewerServer
@@ -101,7 +100,6 @@ func (s *ViewerServer) getIntSliceFromQuery(c *gin.Context, field string) []int 
 	return classIds
 }
 
-
 // optional query example:
 // offset=100
 // limit=10
@@ -138,7 +136,6 @@ func (s *ViewerServer) handleAssets(c *gin.Context) {
 			}
 		}
 	}
-
 
 	tagsStr := c.DefaultQuery("tags", "")
 	tags := make([]string, 0)

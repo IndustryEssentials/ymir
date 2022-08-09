@@ -16,32 +16,32 @@ import (
 )
 
 type MongoServer struct {
-	Clt *mongo.Client
-	Ctx context.Context
-	dbName string
+	Clt           *mongo.Client
+	Ctx           context.Context
+	dbName        string
 	existenceName string
 }
 
 func NewMongoServer(uri string) MongoServer {
 	mongoCtx := context.Background()
 	mongoClient, err := mongo.Connect(mongoCtx, options.Client().ApplyURI(uri))
-    if err != nil {
-        panic(err)
-    }
+	if err != nil {
+		panic(err)
+	}
 
 	defaultDbName := "YMIR"
 	// Clear cached data.
 	mongoClient.Database(defaultDbName).Drop(mongoCtx)
 
 	return MongoServer{
-		Clt: mongoClient,
-		Ctx: mongoCtx,
-		dbName: defaultDbName,
+		Clt:           mongoClient,
+		Ctx:           mongoCtx,
+		dbName:        defaultDbName,
 		existenceName: "__collection_existence__",
 	}
 }
 
-func (s *MongoServer) getRepoCollection(mirRepo constant.MirRepo) (*mongo.Collection, string){
+func (s *MongoServer) getRepoCollection(mirRepo constant.MirRepo) (*mongo.Collection, string) {
 	_, mirRev := mirRepo.BuildRepoId()
 	return s.Clt.Database(s.dbName).Collection(mirRev), mirRev
 }
@@ -58,7 +58,7 @@ func (s *MongoServer) setExistence(collectionName string, ready bool, insert boo
 	}
 }
 
-func (s *MongoServer) checkExistence(mirRepo constant.MirRepo) bool{
+func (s *MongoServer) checkExistence(mirRepo constant.MirRepo) bool {
 	// Step 1: check collection exist.
 	collectionData, collectionName := s.getRepoCollection(mirRepo)
 	count, err := collectionData.EstimatedDocumentCount(s.Ctx)
@@ -66,7 +66,7 @@ func (s *MongoServer) checkExistence(mirRepo constant.MirRepo) bool{
 		panic(err)
 	}
 	if count < 1 {
-    	return false
+		return false
 	}
 
 	// Step 2: check collection ready.
@@ -98,37 +98,37 @@ func (s *MongoServer) IndexMongoData(mirRepo constant.MirRepo, newData []interfa
 
 	defer tools.TimeTrack(time.Now())
 	index := []mongo.IndexModel{
-        {
+		{
 			Keys: bsonx.Doc{{Key: "asset_id", Value: bsonx.Int32(1)}},
-        },
-        {
+		},
+		{
 			Keys: bsonx.Doc{{Key: "cks", Value: bsonx.Int32(1)}},
-        },
-        {
+		},
+		{
 			Keys: bsonx.Doc{{Key: "gt.class_id", Value: bsonx.Int32(1)}},
-        },
-        {
+		},
+		{
 			Keys: bsonx.Doc{{Key: "pred.class_id", Value: bsonx.Int32(1)}},
-        },
-        {
+		},
+		{
 			Keys: bsonx.Doc{{Key: "gt.cm", Value: bsonx.Int32(1)}},
-        },
-        {
+		},
+		{
 			Keys: bsonx.Doc{{Key: "pred.cm", Value: bsonx.Int32(1)}},
-        },
-        {
+		},
+		{
 			Keys: bsonx.Doc{{Key: "gt.tags", Value: bsonx.Int32(1)}},
-        },
-        {
+		},
+		{
 			Keys: bsonx.Doc{{Key: "pred.tags", Value: bsonx.Int32(1)}},
-        },
-    }
+		},
+	}
 
-    opts := options.CreateIndexes().SetMaxTime(60 * time.Second)
-    _, err = collection.Indexes().CreateMany(s.Ctx, index, opts)
-    if err != nil {
-        panic(err)
-    }
+	opts := options.CreateIndexes().SetMaxTime(60 * time.Second)
+	_, err = collection.Indexes().CreateMany(s.Ctx, index, opts)
+	if err != nil {
+		panic(err)
+	}
 
 	s.setExistence(collectionName, true, false)
 }
@@ -189,10 +189,10 @@ func (s *MongoServer) QueryAssets(mirRepo constant.MirRepo, offset int, limit in
 			}
 			if len(ckStrs) == 1 || len(ckStrs[1]) == 0 {
 				// case "xxx:" or "xxx"
-				filterQuery["cks." + ckStrs[0]] = bson.M{"$exists": true}
+				filterQuery["cks."+ckStrs[0]] = bson.M{"$exists": true}
 			} else {
 				// case "xxx:yyy"
-				filterQuery["cks." + ckStrs[0]] = ckStrs[1]
+				filterQuery["cks."+ckStrs[0]] = ckStrs[1]
 			}
 		}
 	}

@@ -70,7 +70,7 @@ func LoadModelInfo(repoId constant.MirRepo) constant.MirdataModel {
 	if task.SerializedExecutorConfig != "" {
 		if err := yaml.Unmarshal([]byte(task.SerializedExecutorConfig), &modelData.ExecutorConfig); err != nil {
 			panic(err)
-    	}
+		}
 	}
 	BuildStructFromMessage(task.Model, &modelData)
 	return modelData
@@ -106,7 +106,7 @@ func LoadAssetsInfo(repoId constant.MirRepo) []constant.MirAssetDetail {
 		mirAssetDetails[idx] = constant.NewMirAssetDetail()
 		mirAssetDetails[idx].AssetId = assetId
 		BuildStructFromMessage(mirMetadatas.Attributes[assetId], &mirAssetDetails[idx].MetaData)
-		if  cks, ok := mirCks[assetId]; ok {
+		if cks, ok := mirCks[assetId]; ok {
 			mirAssetDetails[idx].Cks = cks.Cks
 		}
 

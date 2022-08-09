@@ -24,7 +24,7 @@ func InitViperConfig() constant.Config {
 	}
 
 	var config constant.Config
-  	err = viper.Unmarshal(&config)
+	err = viper.Unmarshal(&config)
 	if err != nil {
 		panic(err)
 	}

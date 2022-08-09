@@ -10,6 +10,7 @@ import (
 )
 
 type MirFile int
+
 const (
 	MirfileMetadatas MirFile = iota
 	MirfileAnnotations
@@ -19,37 +20,37 @@ const (
 )
 
 func (mirFile MirFile) String() string {
-    return []string{"metadatas.mir", "annotations.mir", "keywords.mir", "context.mir", "tasks.mir"}[mirFile]
+	return []string{"metadatas.mir", "annotations.mir", "keywords.mir", "context.mir", "tasks.mir"}[mirFile]
 }
 
 func (mirFile MirFile) ProtoData() proto.Message {
 	switch mirFile {
-		case MirfileMetadatas:
-			return &protos.MirMetadatas{}
+	case MirfileMetadatas:
+		return &protos.MirMetadatas{}
 
-		case MirfileAnnotations:
-			return &protos.MirAnnotations{}
+	case MirfileAnnotations:
+		return &protos.MirAnnotations{}
 
-		case MirfileKeywords:
-			return &protos.MirKeywords{}
+	case MirfileKeywords:
+		return &protos.MirKeywords{}
 
-		case MirfileContext:
-			return &protos.MirContext{}
+	case MirfileContext:
+		return &protos.MirContext{}
 
-		case MirfileTasks:
-			return &protos.MirTasks{}
+	case MirfileTasks:
+		return &protos.MirTasks{}
 
-		default:
-			return nil
+	default:
+		return nil
 	}
 }
 
 type MirRepo struct {
 	SandboxRoot string
-	UserId string
-	RepoId string
-	BranchId string
-	TaskId string
+	UserId      string
+	RepoId      string
+	BranchId    string
+	TaskId      string
 }
 
 func (mirRepo MirRepo) BuildRepoId() (string, string) {
@@ -59,13 +60,13 @@ func (mirRepo MirRepo) BuildRepoId() (string, string) {
 }
 
 type MirdataModel struct {
-	ModelHash string `json:"model_hash"`
-	MeanAveragePrecision float32 `json:"mean_average_precision"`
-	Context string `json:"context"`
-	Stages map[string]interface{} `json:"stages"`
-	BestStageName string `json:"best_stage_name"`
+	ModelHash            string                 `json:"model_hash"`
+	MeanAveragePrecision float32                `json:"mean_average_precision"`
+	Context              string                 `json:"context"`
+	Stages               map[string]interface{} `json:"stages"`
+	BestStageName        string                 `json:"best_stage_name"`
 
-	TaskParameters string `json:"task_parameters"`
+	TaskParameters string                 `json:"task_parameters"`
 	ExecutorConfig map[string]interface{} `json:"executor_config"`
 }
 
@@ -76,11 +77,11 @@ func NewMirdataModel(taskParameters string) MirdataModel {
 
 type MirAssetDetail struct {
 	// Export fields.
-	AssetId string `json:"asset_id" bson:"asset_id"`
-	MetaData map[string]*interface{} `json:"metadata" bson:"metadata"`
-	Gt []map[string]interface{} `json:"gt" bson:"gt"`
-	Pred []map[string]interface{} `json:"pred" bson:"pred"`
-	Cks map[string]string `json:"cks" bson:"cks"`
+	AssetId  string                   `json:"asset_id" bson:"asset_id"`
+	MetaData map[string]*interface{}  `json:"metadata" bson:"metadata"`
+	Gt       []map[string]interface{} `json:"gt" bson:"gt"`
+	Pred     []map[string]interface{} `json:"pred" bson:"pred"`
+	Cks      map[string]string        `json:"cks" bson:"cks"`
 }
 
 func NewMirAssetDetail() MirAssetDetail {
@@ -94,19 +95,19 @@ func NewMirAssetDetail() MirAssetDetail {
 
 type QueryAssetsResult struct {
 	AssetsDetail []MirAssetDetail `json:"elements"`
-	TotalCount int64 `json:"total"`
+	TotalCount   int64            `json:"total"`
 }
 
 type DatasetStatsElement struct {
-    ClassIdCount map[int]int64 `json:"keywords"`
-    NegativeImagesCount int64 `json:"negative_images_count"`
-    PositiveImagesCount int64 `json:"positive_images_count"`
+	ClassIdCount        map[int]int64 `json:"keywords"`
+	NegativeImagesCount int64         `json:"negative_images_count"`
+	PositiveImagesCount int64         `json:"positive_images_count"`
 }
 
 type QueryDatasetStatsResult struct {
-	Gt DatasetStatsElement `json:"gt"`
-	Pred DatasetStatsElement `json:"pred"`
-	TotalCount int64 `json:"total"`
+	Gt         DatasetStatsElement `json:"gt"`
+	Pred       DatasetStatsElement `json:"pred"`
+	TotalCount int64               `json:"total"`
 }
 
 func NewQueryDatasetStatsResult() QueryDatasetStatsResult {
