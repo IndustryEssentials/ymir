@@ -111,8 +111,9 @@ type QueryDatasetStatsResult struct {
 }
 
 func NewQueryDatasetStatsResult() QueryDatasetStatsResult {
-	queryResult := QueryDatasetStatsResult{Gt: DatasetStatsElement{
-		ClassIdCount: map[int]int64{}},
-		Pred: DatasetStatsElement{ClassIdCount: map[int]int64{}}}
+	queryResult := QueryDatasetStatsResult{
+		Gt:   DatasetStatsElement{ClassIdCount: map[int]int64{}},
+		Pred: DatasetStatsElement{ClassIdCount: map[int]int64{}},
+	}
 	return queryResult
 }
