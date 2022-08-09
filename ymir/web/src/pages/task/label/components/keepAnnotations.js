@@ -2,8 +2,8 @@ import { Form, Radio } from "antd"
 import t from "@/utils/t"
 
 const options = [
-  { value: 0, label: 'gt' },
-  { value: 1, label: 'pred' },
+  { value: 1, label: 'gt' },
+  { value: 2, label: 'pred' },
   { value: undefined, label: 'none' },
 ]
 
