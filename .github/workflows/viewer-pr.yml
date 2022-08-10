@@ -24,6 +24,16 @@ jobs:
         go mod verify
         go build -v ./...
 
+    - name: Cache Go Environment
+      uses: actions/cache@v3
+      with:
+        path: |
+          ~/.cache/go-build
+          ~/go/pkg/mod
+        key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+        restore-keys: |
+          ${{ runner.os }}-go-
+
     - name: Lint and test code
       working-directory: ymir/backend/src/ymir_viewer
       run: |
