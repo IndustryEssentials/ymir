@@ -15,6 +15,16 @@ function DatasetDetail({ dataset = {} }) {
 
   const labelStyle = { width: '15%', paddingRight: '20px', justifyContent: 'flex-end' }
 
+  const renderKeywords = (anno, label = 'ground truth') => {
+    if (!anno) {
+      return
+    }
+    const { keywords = [], count = {} } = anno
+    return keywords.length ? <p>
+      {label}: {keywords.map(keyword => <Tag key={keyword}>{keyword}({count[keyword]})</Tag>)}
+    </p> : null
+  }
+
   return (
     <div className='datasetDetail'>
       <Descriptions
@@ -35,7 +45,10 @@ function DatasetDetail({ dataset = {} }) {
             </Col>
           </Row>
         </Item>
-        <Item label={t("dataset.detail.label.keywords")}>{dataset?.keywords?.map(keyword => <Tag key={keyword}>{keyword}</Tag>)}</Item>
+        <Item label={t("dataset.detail.label.keywords")}>
+          {renderKeywords(dataset.gt)}
+          {renderKeywords(dataset.pred, 'prediction')}
+        </Item>
         <Item label={t("dataset.detail.label.assets")} contentStyle={{ minWidth: 150 }}>{dataset.assetCount}</Item>
         {dataset.hidden ? <Item label={t("common.hidden.label")}>{t('common.state.hidden')}</Item> : null}
         <Item label={t("common.desc")}><DescPop description={dataset.description} /></Item>
