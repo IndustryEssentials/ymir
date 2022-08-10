@@ -1,0 +1,29 @@
+name: viewer-unittest
+
+on:
+  pull_request:
+    branches:
+      - master
+      - dev
+      - ymir-pa
+
+jobs:
+  viewer-ci:
+    runs-on: ubuntu-20.04
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Set up Go
+      uses: actions/setup-go@v2
+      with:
+        go-version: 1.18
+
+    - name: Verify dependencies
+      working-directory: ymir/src/ymir_viewer
+      run: |
+        go mod verify
+        go build -v ./...
+        go vet ./...
+        go install honnef.co/go/tools/cmd/staticcheck@latest
+        staticcheck ./...
+        go test -race -cover -vet=off ./...
