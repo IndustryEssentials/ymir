@@ -1,3 +1,11 @@
+FROM golang:1.16-buster AS build
+
+COPY ./backend/src /app
+COPY ./backend/src/ymir_viewer/ /ymir_viewer
+WORKDIR /ymir_viewer
+RUN go build -mod=readonly -v -o viewer_server
+
+
 FROM ubuntu:20.04
 
 ENV DEBIAN_FRONTEND=noninteractive
@@ -24,18 +32,13 @@ RUN mkdir -p /app_logs/
 COPY ./backend/requirements.txt ./
 RUN pip3 install -r requirements.txt -i ${PIP_SOURCE}
 
-COPY ./backend/src/ymir_viewer/go.mod ./
-COPY ./backend/src/ymir_viewer/go.sum ./
-RUN update-alternatives --install /usr/bin/go go /usr/lib/go-1.16/bin/go 10
-RUN go mod download -x
-
 COPY ./command /command
 RUN pip3 install -U /command -i ${PIP_SOURCE}
 
 COPY ./backend/src /app
 
-WORKDIR /app/ymir_viewer
-RUN go build -mod=readonly -v -o viewer_server
+COPY --from=build /ymir_viewer/viewer_server /app/ymir_viewer/viewer_server
+
 
 WORKDIR /app
 COPY ./backend/deploy/git.config /root/.gitconfig
