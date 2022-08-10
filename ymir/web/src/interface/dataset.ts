@@ -3,6 +3,12 @@ import { Result, BackendData } from "@/interface/common"
 type Keywords = {
   [key: string]: number,
 }
+type AnnotationsCount = {
+  count: Keywords,
+  keywords: Array<string>,
+  negative: number,
+  total: number,
+}
 export interface DatasetGroup {
   id: number,
   name: string,
@@ -13,13 +19,10 @@ export interface DatasetGroup {
 
 export interface Dataset extends Result {
   keywordCount: number,
-  keywordsCount: Keywords,
   isProtected: Boolean,
-  nagetiveCount?: {
-    gt: number,
-    pred: number,
-  },
   assetCount: number,
+  gt?: AnnotationsCount,
+  pred?: AnnotationsCount,
 }
 
 export interface DatasetAnalysis {

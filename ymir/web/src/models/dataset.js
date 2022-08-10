@@ -4,7 +4,7 @@ import {
   getNegativeKeywords,
 } from "@/services/dataset"
 import { getStats } from "../services/common"
-import { transferDatasetGroup, transferDataset, transferDatasetAnalysis, states, transferAsset } from '@/constants/dataset'
+import { transferDatasetGroup, transferDataset, transferDatasetAnalysis, states, transferAsset, transferAnnotationsCount } from '@/constants/dataset'
 import { actions, updateResultState } from '@/constants/common'
 import { deepClone } from '@/utils/object'
 import { checkDuplication } from "../services/dataset"
@@ -336,14 +336,14 @@ export default {
       })
     },
     *getNegativeKeywords({ payload }, { put, call }) {
-      // const { pid, keywords, type } = payload
       const { code, result } = yield call(getNegativeKeywords, payload)
-      const getStats = (o = {}) => ({
-        keywords: o.keywords || {},
-        negative: o.negative_assets_count || 0,
-      })
       if (code === 0) {
-        return { pred: getStats(result?.pred), gt: getStats(result?.gt) }
+        const { gt, pred, total_assets_count } = result
+        const getStats = (o = {}) => transferAnnotationsCount(o.keywords, o.negative_assets_count, total_assets_count)
+        return {
+          pred: getStats(pred),
+          gt: getStats(gt),
+        }
       }
     },
   },

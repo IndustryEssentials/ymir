@@ -46,6 +46,7 @@ export function transferDatasetGroup(data: BackendData) {
 
 export function transferDataset(data: BackendData): Dataset {
   const { gt = {}, pred = {} } = data.keywords
+  const assetCount = data.asset_count || 0
   const keywords = [...new Set([...Object.keys(gt), ...Object.keys(pred)])]
   return {
     id: data.id,
@@ -54,11 +55,11 @@ export function transferDataset(data: BackendData): Dataset {
     name: data.group_name,
     version: data.version_num || 0,
     versionName: getIterationVersion(data.version_num),
-    assetCount: data.asset_count || 0,
+    assetCount,
     keywords,
     keywordCount: keywords.length,
-    keywordsCount: data.keywords || {},
-    nagetiveCount: data.negative_info || {},
+    gt: transferAnnotationsCount(gt, data.negative_info?.gt, assetCount),
+    pred: transferAnnotationsCount(pred, data.negative_info?.pred, assetCount),
     isProtected: data.is_protected || false,
     hash: data.hash,
     state: data.result_state,
@@ -125,6 +126,15 @@ export function transferAnnotation(data: BackendData, gt: boolean = false): Anno
     box: data.box,
     cm: data.cm,
     gt,
+  }
+}
+
+export function transferAnnotationsCount(count = {}, negative = 0, total = 1) {
+  return {
+    keywords: Object.keys(count),
+    count,
+    negative,
+    total,
   }
 }
 

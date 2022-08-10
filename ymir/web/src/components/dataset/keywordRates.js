@@ -19,7 +19,6 @@ function KeywordRates({ keywords, dataset, progressWidth = 0.5 }) {
   const [colors, setColors] = useState({})
 
   useEffect(() => {
-    console.log('dataset, keywords:', dataset, keywords)
     if (dataset?.id && keywords?.length) {
       getNegativeKeywords({ projectId: dataset.projectId, keywords, dataset: dataset.id })
     } else if (dataset?.id) {
@@ -28,7 +27,7 @@ function KeywordRates({ keywords, dataset, progressWidth = 0.5 }) {
   }, [dataset, keywords])
 
   useEffect(() => {
-    const kws = keywords.length ? keywords : dataset?.keywords
+    const kws = keywords?.length ? keywords : dataset?.keywords
     const keywordColors = (kws || []).reduce((prev, keyword) => (colors[keyword] ? prev : {
       ...prev,
       [keyword]: randomColor(),
@@ -40,26 +39,26 @@ function KeywordRates({ keywords, dataset, progressWidth = 0.5 }) {
 
   useEffect(() => {
     if (stats.gt) {
-      const list = generateList(stats, dataset?.assetCount, colors)
+      const list = generateList(stats, colors)
       setList(list)
     } else {
       setList(initList)
     }
   }, [stats, dataset, colors])
 
-  function generateList(stats, total = 0, colors) {
+  function generateList({ gt, pred }, colors) {
     return {
-      gt: transfer(stats.gt, total, colors),
-      pred: transfer(stats.pred, total, colors),
+      gt: transfer(gt, colors),
+      pred: transfer(pred, colors),
     }
   }
 
-  function transfer({ keywords: kc = {}, negative = 0 }, total = 0, colors) {
+  function transfer({ count = {}, keywords, negative = 0, total }, colors) {
     const klist = [
-      ...(Object.keys(kc).map(kw => ({
+      ...(keywords.map(kw => ({
         key: kw,
         label: kw,
-        count: kc[kw],
+        count: count[kw],
       }))),
       {
         key: 0,
@@ -81,19 +80,8 @@ function KeywordRates({ keywords, dataset, progressWidth = 0.5 }) {
   }
 
   function cacheToStats(dataset = {}) {
-    const { keywordsCount, nagetiveCount, } = dataset
-    const { gt, pred } = keywordsCount
-    const cacheStats = {
-      gt: {
-        keywords: gt,
-        negative: nagetiveCount.gt,
-      },
-      pred: {
-        keywords: pred,
-        negative: nagetiveCount.pred,
-      }
-    }
-    setStats(cacheStats)
+    const { gt, pred } = dataset
+    setStats({ gt, pred })
   }
 
   const renderList = (list, title = 'Ground Truth') => <div className={s.rates}>
@@ -109,7 +97,7 @@ function KeywordRates({ keywords, dataset, progressWidth = 0.5 }) {
   return (
     <div className={s.rates}>
       {renderList(list.gt)}
-      {!keywords.length ? renderList(list.pred, 'Prediction') : null}
+      {!keywords?.length ? renderList(list.pred, 'Prediction') : null}
     </div>
   )
 }

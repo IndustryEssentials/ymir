@@ -34,7 +34,7 @@ const duplicatedOptions = [
   { value: 2, label: 'task.train.duplicated.option.validation' }
 ]
 
-function Train({ allDatasets, datasetCache, keywords, ...func }) {
+function Train({ allDatasets, datasetCache, ...func }) {
   const pageParams = useParams()
   const pid = Number(pageParams.id)
   const history = useHistory()
@@ -80,11 +80,7 @@ function Train({ allDatasets, datasetCache, keywords, ...func }) {
   }, [selectOpenpai])
 
   useEffect(() => {
-    func.getKeywords({ limit: 100000 })
-  }, [])
-
-  useEffect(() => {
-    const dss = allDatasets.filter(ds => ds.keywords.some(kw => project?.keywords?.includes(kw)))
+    const dss = allDatasets
     const isValid = dss.some(ds => ds.id === did)
     const visibleValue = isValid ? did : null
     setTrainSet(visibleValue)
@@ -115,6 +111,12 @@ function Train({ allDatasets, datasetCache, keywords, ...func }) {
   }, [trainSet, testSet])
 
   useEffect(() => {
+    if (trainDataset?.id) {
+      setAllKeywords()
+    }
+  }, [trainDataset])
+
+  useEffect(() => {
     if (duplicationChecked) {
       const allValidation = duplicated === validationDataset?.assetCount
       const allTrain = duplicated === trainDataset?.assetCount
@@ -127,8 +129,12 @@ function Train({ allDatasets, datasetCache, keywords, ...func }) {
   async function fetchProject() {
     const project = await func.getProject(pid)
     project && setProject(project)
-    setSelectedKeywords(project.keywords)
-    form.setFieldsValue({ keywords: project.keywords })
+  }
+
+  function setAllKeywords() {
+    const kws = trainDataset.gt.keywords
+    setSelectedKeywords(kws)
+    form.setFieldsValue({ keywords: kws })
   }
 
   function trainSetChange(value, option) {
@@ -215,16 +221,15 @@ function Train({ allDatasets, datasetCache, keywords, ...func }) {
     </div>) : t('task.train.action.duplicated.no')
   }
 
-  const matchKeywords = dataset => dataset.keywords.some(kw => selectedKeywords.includes(kw))
   const notTestingSet = id => !testingSetIds.includes(id)
   const trainsetFilters = datasets => datasets.filter(ds => {
     const notTestSet = ds.id !== testSet
-    return matchKeywords(ds) && notTestSet && notTestingSet(ds.id)
+    return notTestSet && notTestingSet(ds.id)
   })
 
   const validationSetFilters = datasets => datasets.filter(ds => {
     const notTrainSet = ds.id !== trainSet
-    return matchKeywords(ds) && notTrainSet && notTestingSet(ds.id)
+    return notTrainSet && notTestingSet(ds.id)
   })
 
   const getCheckedValue = (list) => list.find((item) => item.checked)["value"]
@@ -286,6 +291,26 @@ function Train({ allDatasets, datasetCache, keywords, ...func }) {
               <Form.Item label={t('dataset.train.form.samples')}>
                 <KeywordRates keywords={selectedKeywords} dataset={trainDataset}></KeywordRates>
               </Form.Item> : null}
+            {iterationId ? <Form.Item label={t('task.train.form.keywords.label')}>
+              {project?.keywords?.map(keyword => <Tag key={keyword}>{keyword}</Tag>)}
+            </Form.Item> :
+              <Form.Item
+                label={t('task.train.form.keywords.label')}
+                name="keywords"
+                rules={[
+                  { required: true, message: t('project.add.form.keyword.required') }
+                ]}
+                tooltip={t('tip.task.filter.keywords')}
+                help={trainDataset && selectedKeywords.length !== trainDataset.gt.keywords.length ?
+                  <Button type="link" onClick={() => setAllKeywords()}>{t('dataset.train.all.train.target')}</Button>
+                  : null}
+              >
+                <Select mode="multiple" showArrow allowClear
+                  placeholder={t('project.add.form.keyword.required')}
+                  onChange={setSelectedKeywords}
+                  options={(trainDataset?.gt?.keywords || []).map(k => ({ label: k, value: k }))}
+                />
+              </Form.Item>}
             <Form.Item
               label={t('task.train.form.testsets.label')}
               name="testset"
@@ -303,30 +328,6 @@ function Train({ allDatasets, datasetCache, keywords, ...func }) {
                 extra={<Button disabled={!trainSet || !testSet} type="primary" onClick={checkDuplicated}>{t('task.train.action.duplicated')}</Button>}
               />
             </Form.Item>
-            {iterationId ? <Form.Item label={t('task.train.form.keywords.label')}>
-              {project?.keywords?.map(keyword => <Tag key={keyword}>{keyword}</Tag>)}
-            </Form.Item> :
-              <Form.Item
-                label={t('task.train.form.keywords.label')}
-                name="keywords"
-                rules={[
-                  { required: true, message: t('project.add.form.keyword.required') }
-                ]}
-                tooltip={t('tip.task.filter.keywords')}
-              >
-                <Select mode="multiple" showArrow
-                  placeholder={t('project.add.form.keyword.required')}
-                  onChange={setSelectedKeywords}
-                  filterOption={(value, option) => [option.value, ...(option.aliases || [])].some(key => key.indexOf(value) >= 0)}>
-                  {keywords.map(keyword => (
-                    <Select.Option key={keyword.name} value={keyword.name} aliases={keyword.aliases}>
-                      <Row>
-                        <Col flex={1}>{keyword.name}</Col>
-                      </Row>
-                    </Select.Option>
-                  ))}
-                </Select>
-              </Form.Item>}
             <Form.Item
               label={t('task.detail.label.premodel')}
               name="modelStage"
@@ -382,7 +383,6 @@ const props = (state) => {
   return {
     allDatasets: state.dataset.allDatasets,
     datasetCache: state.dataset.dataset,
-    keywords: state.keyword.keywords.items,
   }
 }
 
@@ -419,12 +419,6 @@ const dis = (dispatch) => {
       return dispatch({
         type: 'iteration/updateIteration',
         payload: params,
-      })
-    },
-    getKeywords() {
-      return dispatch({
-        type: 'keyword/getKeywords',
-        payload: { limit: 10000 },
       })
     },
   }
