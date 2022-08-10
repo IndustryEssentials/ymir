@@ -7,6 +7,7 @@ import (
 
 	"github.com/IndustryEssentials/ymir-viewer/common/constants"
 	"github.com/IndustryEssentials/ymir-viewer/common/pbreader"
+	"github.com/IndustryEssentials/ymir-viewer/common/protos"
 	"github.com/IndustryEssentials/ymir-viewer/tools"
 )
 
@@ -39,6 +40,32 @@ func GetAssetsHandler(
 ) constants.QueryAssetsResult {
 	loadAndCacheAssets(mongo, mirRepo)
 	return mongo.QueryAssets(mirRepo, offset, limit, classIds, currentAssetId, cmTypes, cks, tags)
+}
+
+func GetDatasetMetaCountsHandler(
+	mongo MongoServer,
+	mirRepo constants.MirRepo,
+) constants.QueryDatasetStatsResult {
+	defer tools.TimeTrack(time.Now())
+	mirContext := pbreader.LoadSingleMirData(mirRepo, constants.MirfileContext).(*protos.MirContext)
+	result := constants.NewQueryDatasetStatsResult()
+	result.TotalAssetsCount = int64(mirContext.ImagesCnt)
+
+	gtStats := mirContext.GtStats
+	result.Gt.NegativeImagesCount = int64(gtStats.NegativeAssetCnt)
+	result.Gt.PositiveImagesCount = int64(gtStats.PositiveAssetCnt)
+	for k, v := range gtStats.ClassIdsCnt {
+		result.Gt.ClassIdsCount[int(k)] = int64(v)
+	}
+
+	predStats := mirContext.PredStats
+	result.Pred.NegativeImagesCount = int64(predStats.NegativeAssetCnt)
+	result.Pred.PositiveImagesCount = int64(predStats.PositiveAssetCnt)
+	for k, v := range predStats.ClassIdsCnt {
+		result.Pred.ClassIdsCount[int(k)] = int64(v)
+	}
+
+	return result
 }
 
 func GetDatasetStatsHandler(

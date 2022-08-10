@@ -57,6 +57,7 @@ func (s *ViewerServer) routes() {
 		v1Path := apiPath.Group("/v1")
 		{
 			v1Path.GET("/users/:userId/repo/:repoId/branch/:branchId/assets", s.handleAssets)
+			v1Path.GET("/users/:userId/repo/:repoId/branch/:branchId/dataset_meta_count", s.handleDatasetMetaCounts)
 			v1Path.GET("/users/:userId/repo/:repoId/branch/:branchId/dataset_stats", s.handleDatasetStats)
 			v1Path.GET("/users/:userId/repo/:repoId/dataset_duplication", s.handleDatasetDup)
 		}
@@ -154,6 +155,12 @@ func (s *ViewerServer) handleAssets(c *gin.Context) {
 	}
 
 	resultData := GetAssetsHandler(s.Mongo, mirRepo, offset, limit, classIds, currentAssetId, cmTypes, cks, tags)
+	ViewerSuccess(c, constants.ViewerSuccessCode, constants.ViewerSuccessMsg, resultData)
+}
+
+func (s *ViewerServer) handleDatasetMetaCounts(c *gin.Context) {
+	mirRepo := s.buildMirRepoFromParam(c)
+	resultData := GetDatasetMetaCountsHandler(s.Mongo, mirRepo)
 	ViewerSuccess(c, constants.ViewerSuccessCode, constants.ViewerSuccessMsg, resultData)
 }
 
