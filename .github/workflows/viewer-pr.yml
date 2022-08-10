@@ -19,7 +19,7 @@ jobs:
         go-version: 1.18
 
     - name: Verify dependencies
-      working-directory: ymir/src/ymir_viewer
+      working-directory: ymir/backend/src/ymir_viewer
       run: |
         go mod verify
         go build -v ./...
