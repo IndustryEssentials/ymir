@@ -467,7 +467,7 @@ function Datasets({ pid, project = {}, iterations, groups, datasetList, query, v
   const getDisabledStatus = (filter = () => { }) => {
     const allVss = Object.values(versions).flat()
     const { selected } = selectedVersions
-    return allVss.filter(({ id }) => selected.includes(id)).some(version => filter(version))
+    return !selected.length || allVss.filter(({ id }) => selected.includes(id)).some(version => filter(version))
   }
 
   function isValidDataset(state) {
@@ -488,16 +488,14 @@ function Datasets({ pid, project = {}, iterations, groups, datasetList, query, v
     </Button>
   )
 
-  const renderMultipleActions = selectedVersions.selected.length ? (
-    <>
-      <Button type="primary" disabled={getDisabledStatus(({ state }) => isRunning(state))} onClick={multipleHide}>
-        <EyeOffIcon /> {t("common.action.multiple.hide")}
-      </Button>
-      <Button type="primary" disabled={getDisabledStatus(({ state }) => !isValidDataset(state))} onClick={multipleInfer}>
-        <WajueIcon /> {t("common.action.multiple.infer")}
-      </Button>
-    </>
-  ) : null
+  const renderMultipleActions = <>
+    <Button type="primary" disabled={getDisabledStatus(({ state }) => isRunning(state))} onClick={multipleHide}>
+      <EyeOffIcon /> {t("common.action.multiple.hide")}
+    </Button>
+    <Button type="primary" disabled={getDisabledStatus(({ state }) => !isValidDataset(state))} onClick={multipleInfer}>
+      <WajueIcon /> {t("common.action.multiple.infer")}
+    </Button>
+  </>
 
   const renderGroups = (<>
     <div className='groupList'>

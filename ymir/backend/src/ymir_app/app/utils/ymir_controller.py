@@ -188,7 +188,7 @@ class ControllerRequest:
         label_request.in_class_ids[:] = args["class_ids"]
 
         # pre annotation
-        if "annotation_type" in args:
+        if args.get("annotation_type"):
             label_request.annotation_type = ANNOTATION_TYPE_MAPPING[args["annotation_type"]]
 
         if args.get("extra_url"):

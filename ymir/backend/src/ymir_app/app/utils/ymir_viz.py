@@ -219,6 +219,7 @@ class DatasetStatsElement:
 
 @dataclass
 class DatasetStats:
+    total_assets_count: int
     gt: DatasetStatsElement
     pred: DatasetStatsElement
 
@@ -226,7 +227,7 @@ class DatasetStats:
     def from_viz_res(cls, res: Dict, user_labels: UserLabels) -> "DatasetStats":
         gt = DatasetStatsElement.from_viz_res(res["gt"], user_labels)
         pred = DatasetStatsElement.from_viz_res(res["pred"], user_labels)
-        return cls(gt=gt, pred=pred)
+        return cls(total_assets_count=res["total_assets_count"], gt=gt, pred=pred)
 
 
 class EvaluationScore(BaseModel):

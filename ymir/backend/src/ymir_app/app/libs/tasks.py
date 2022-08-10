@@ -19,6 +19,7 @@ from app.api.errors.errors import (
     TaskNotFound,
     DatasetNotFound,
     DatasetGroupNotFound,
+    RequiredFieldMissing,
 )
 from app.constants.state import (
     FinalStates,
@@ -161,6 +162,8 @@ def create_single_task(db: Session, user_id: int, user_labels: UserLabels, task_
         logger.info("[create task] controller response: %s", resp)
     except ValueError:
         raise FailedtoCreateTask()
+    except KeyError:
+        raise RequiredFieldMissing()
 
     task = crud.task.create_task(db, obj_in=task_in, task_hash=task_hash, user_id=user_id)
     task_info = schemas.TaskInternal.from_orm(task)
