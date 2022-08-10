@@ -177,13 +177,16 @@ class DatasetHist(BaseModel):
 
 
 class DatasetAnnotation(BaseModel):
-    class_names_count: Dict[str, int]
+    keywords: Dict[str, int]
     negative_assets_count: int
     tags_count_total: Dict  # box tags in first level
     tags_count: Dict  # box tags in second level
     hist: DatasetAnnotationHist
     annos_count: int
     ave_annos_count: int
+
+    class Config:
+        orm_mode = True
 
 
 class DatasetAnalysis(BaseModel):
