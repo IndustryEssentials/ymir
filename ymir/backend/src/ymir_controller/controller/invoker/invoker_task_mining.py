@@ -123,6 +123,6 @@ class TaskMiningInvoker(TaskBaseInvoker):
             mining_cmd.append('--topk')
             mining_cmd.append(str(top_k))
         if generate_annotations:
-            mining_cmd.append('--add-annotations')
+            mining_cmd.append('--add-prediction')
 
         return utils.run_command(mining_cmd)

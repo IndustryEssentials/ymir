@@ -15,7 +15,6 @@ dist
 .vscode
 .pytest_cache
 server_config.server
-protos
 mir
 .env
 .tox

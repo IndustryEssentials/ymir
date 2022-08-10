@@ -218,8 +218,7 @@ class AssetsModel:
                 positive_asset_ids.update(ci_asset_ids)
 
             return {
-                'negative_images_count': len(all_asset_ids - positive_asset_ids),
-                'positive_images_count': len(positive_asset_ids),
+                'negative_assets_count': len(all_asset_ids - positive_asset_ids),
                 'class_ids_count': class_id_to_asset_cnt,
             }
 
@@ -228,7 +227,7 @@ class AssetsModel:
         gt_stats = _gen_stats_result(all_asset_ids=all_asset_ids, is_gt=True, cis=cis)
 
         return {
-            'total_images_count': len(all_asset_ids),
+            'total_assets_count': len(all_asset_ids),
             'pred': pred_stats,
             'gt': gt_stats,
         }
@@ -251,8 +250,7 @@ class AssetsModel:
                 positive_asset_ids.update(ci_asset_ids)
 
             return {
-                'negative_images_count': len(set(assets_content['all_asset_ids']) - positive_asset_ids),
-                'positive_images_count': len(positive_asset_ids),
+                'negative_assets_count': len(set(assets_content['all_asset_ids']) - positive_asset_ids),
                 'class_ids_count': class_id_to_asset_cnt,
             }
 
@@ -276,7 +274,7 @@ class AssetsModel:
         self.trigger_cache_generator(assets_content)
 
         return {
-            'total_images_count': len(assets_content['all_asset_ids']),
+            'total_assets_count': len(assets_content['all_asset_ids']),
             'pred': pred_stats,
             'gt': gt_stats,
         }
