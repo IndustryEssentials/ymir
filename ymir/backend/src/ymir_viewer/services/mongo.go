@@ -237,11 +237,11 @@ func (s *MongoServer) QueryAssets(
 		}
 	}
 
-	totalCount, err := collection.CountDocuments(s.Ctx, filterQuery, &options.CountOptions{})
+	totalAssetsCount, err := collection.CountDocuments(s.Ctx, filterQuery, &options.CountOptions{})
 	if err != nil {
 		panic(err)
 	}
-	log.Printf("filterQuery: %+v result: %d\n", filterQuery, totalCount)
+	log.Printf("filterQuery: %+v result: %d\n", filterQuery, totalAssetsCount)
 
 	pageOptions := options.Find().SetSort(bson.M{"asset_id": 1}).SetSkip(int64(offset)).SetLimit(int64(limit))
 	queryCursor, err := collection.Find(s.Ctx, filterQuery, pageOptions)
@@ -253,23 +253,23 @@ func (s *MongoServer) QueryAssets(
 		panic(err)
 	}
 
-	return constants.QueryAssetsResult{AssetsDetail: queryData, TotalCount: totalCount}
+	return constants.QueryAssetsResult{AssetsDetail: queryData, TotalAssetsCount: totalAssetsCount}
 }
 
 func (s *MongoServer) QueryDatasetStats(mirRepo constants.MirRepo, classIds []int) constants.QueryDatasetStatsResult {
 	collection, _ := s.getRepoCollection(mirRepo)
 
-	totalCount := s.CountAssetsInClass(collection, "", []int{})
+	totalAssetsCount := s.CountAssetsInClass(collection, "", []int{})
 	queryData := constants.NewQueryDatasetStatsResult()
-	queryData.TotalCount = totalCount
+	queryData.TotalAssetsCount = totalAssetsCount
 	for _, classId := range classIds {
-		queryData.Gt.ClassIdCount[classId] = s.CountAssetsInClass(collection, "gt.class_id", []int{classId})
-		queryData.Pred.ClassIdCount[classId] = s.CountAssetsInClass(collection, "pred.class_id", []int{classId})
+		queryData.Gt.ClassIdsCount[classId] = s.CountAssetsInClass(collection, "gt.class_id", []int{classId})
+		queryData.Pred.ClassIdsCount[classId] = s.CountAssetsInClass(collection, "pred.class_id", []int{classId})
 	}
 	queryData.Gt.PositiveImagesCount = s.CountAssetsInClass(collection, "gt.class_id", classIds)
-	queryData.Gt.NegativeImagesCount = totalCount - queryData.Gt.PositiveImagesCount
+	queryData.Gt.NegativeImagesCount = totalAssetsCount - queryData.Gt.PositiveImagesCount
 	queryData.Pred.PositiveImagesCount = s.CountAssetsInClass(collection, "pred.class_id", classIds)
-	queryData.Pred.NegativeImagesCount = totalCount - queryData.Pred.PositiveImagesCount
+	queryData.Pred.NegativeImagesCount = totalAssetsCount - queryData.Pred.PositiveImagesCount
 	return queryData
 }
 
