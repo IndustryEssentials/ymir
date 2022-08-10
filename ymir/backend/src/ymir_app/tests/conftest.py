@@ -85,24 +85,20 @@ def fake_viz_client() -> Generator:
         }
         assets = Mock(total=1, items=[asset], keywords={}, negative_info={})
         dataset = Mock(
-            keywords={},
-            ignored_keywords={},
-            negative_info={},
-            asset_count=400,
-            keyword_count=5,
-            asset_bytes=[[{"x": 1, "y": 2}]],
-            asset_area=[[{"x": 1, "y": 2}]],
-            asset_quality=[[{"x": 1, "y": 2}]],
-            asset_hw_ratio=[[{"x": 1, "y": 2}]],
-            anno_area_ratio=[[{"x": 1, "y": 2}]],
-            anno_quality=[[{"x": 1, "y": 2}]],
-            class_names_count={"cat": 20},
-            annos_cnt=20,
-            ave_annos_cnt=1.175,
-            positive_asset_cnt=277,
-            negative_asset_cnt=23,
-            total_asset_mbytes=20,
-            total_assets_cnt=400
+            keywords={"gt": ["a"], "pred": ["x"]},
+            keywords_updated=False,
+            cks_count={},
+            cks_count_total={},
+            total_assets_mbytes=20,
+            total_assets_count=400,
+            gt=None,
+            pred=None,
+            hist={
+                "asset_bytes": [],
+                "asset_area": [],
+                "asset_quality": [],
+                "asset_hw_ratio": [],
+            },
         )
         client.get_assets.return_value = assets
         client.get_asset.return_value = asset
@@ -116,18 +112,8 @@ def fake_graph_client() -> Generator:
     try:
         client = Mock()
         nodes = [
-            {
-                "id": 1,
-                "name": "n1",
-                "hash": "h1",
-                "type": 1
-            },
-            {
-                "id": 2,
-                "name": "n2",
-                "hash": "h2",
-                "type": 2
-            },
+            {"id": 1, "name": "n1", "hash": "h1", "type": 1},
+            {"id": 2, "name": "n2", "hash": "h2", "type": 2},
         ]
         edges = [{"target": "h1", "source": "h2", "task": {"id": 1}}]
         client.query_history.return_value = {"nodes": nodes, "edges": edges}
