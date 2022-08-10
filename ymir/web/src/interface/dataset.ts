@@ -9,6 +9,15 @@ type AnnotationsCount = {
   negative: number,
   total: number,
 }
+type AnylysisAnnotation = {
+  keywords: Keywords,
+  total: number,
+  average: number,
+  negative: number,
+  quality: Array<BackendData>,
+  area: Array<BackendData>,
+  areaRatio: Array<BackendData>,
+}
 export interface DatasetGroup {
   id: number,
   name: string,
@@ -31,17 +40,17 @@ export interface DatasetAnalysis {
   versionName: string,
   assetCount: number,
   totalAssetMbytes: number,
-  annosCnt: number,
-  aveAnnosCnt: number,
-  positiveAssetCnt: number,
-  negativeAssetCnt: number,
+  // annosCnt: number,
+  // aveAnnosCnt: number,
+  // positiveAssetCnt: number,
+  // negativeAssetCnt: number,
   assetBytes: Array<BackendData>,
   assetHWRatio: Array<BackendData>,
   assetArea: Array<BackendData>,
   assetQuality: Array<BackendData>,
-  annoAreaRatio: Array<BackendData>,
-  annoQuality: Array<BackendData>,
-  classNamesCount: BackendData,
+  // classNamesCount: BackendData,
+  gt: AnylysisAnnotation,
+  pred: AnylysisAnnotation,
 }
 
 export interface Asset {

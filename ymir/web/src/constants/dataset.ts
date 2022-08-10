@@ -79,23 +79,40 @@ export function transferDataset(data: BackendData): Dataset {
 }
 
 export function transferDatasetAnalysis(data: BackendData): DatasetAnalysis {
+  const { asset_bytes, asset_area, asset_quality, asset_hw_ratio, } = data.hist
+  const generateAnno = (data: BackendData) => {
+    const { anno_quality, anno_area, anno_area_ratio } = data.hist
+    return {
+      keywords: data.keywords,
+      total: data.tags_count_total,
+      average: data.ave_annos_count,
+      negative: data.negative_assets_count,
+      quality: anno_quality,
+      area: anno_area,
+      areaRatio: anno_area_ratio,
+    }
+  }
+  const gt = generateAnno(data.gt)
+  const pred = generateAnno(data.pred)
   return {
     name: data.group_name,
     version: data.version_num || 0,
     versionName: getIterationVersion(data.version_num),
-    assetCount: data.total_assets_cnt || 0,
-    totalAssetMbytes: data.total_asset_mbytes,
-    annosCnt: data.annos_cnt,
-    aveAnnosCnt: data.ave_annos_cnt,
-    positiveAssetCnt: data.positive_asset_cnt,
-    negativeAssetCnt: data.negative_asset_cnt,
-    assetBytes: data.asset_bytes,
-    assetHWRatio: data.asset_hw_ratio,
-    assetArea: data.asset_area,
-    assetQuality: data.asset_quality,
-    annoAreaRatio: data.anno_area_ratio,
-    annoQuality: data.anno_quality,
-    classNamesCount: data.class_names_count,
+    assetCount: data.total_assets_count || 0,
+    totalAssetMbytes: data.total_assets_mbytes,
+    assetBytes: asset_bytes,
+    assetArea: asset_area,
+    assetQuality: asset_quality,
+    assetHWRatio: asset_hw_ratio,
+    gt,
+    pred,
+    // annosCnt: data.annos_cnt,
+    // aveAnnosCnt: data.ave_annos_cnt,
+    // positiveAssetCnt: data.positive_asset_cnt,
+    // negativeAssetCnt: data.negative_asset_cnt,
+    // annoAreaRatio: data.anno_area_ratio,
+    // annoQuality: data.anno_quality,
+    // classNamesCount: data.class_names_count,
   }
 }
 
