@@ -13,32 +13,34 @@ const initList = { gt: [], pred: [] }
 
 const getWidth = ({ count = 0, max }, progressWidth) => percent(count * progressWidth / max)
 
-function KeywordRates({ keywords = [], dataset = {}, progressWidth = 0.5 }) {
+function KeywordRates({ keywords, dataset, progressWidth = 0.5 }) {
   const [list, setList] = useState(initList)
   const [stats, getNegativeKeywords, setStats] = useFetch('dataset/getNegativeKeywords', {})
   const [colors, setColors] = useState({})
 
   useEffect(() => {
-    if (dataset.id && keywords?.length) {
+    console.log('dataset, keywords:', dataset, keywords)
+    if (dataset?.id && keywords?.length) {
       getNegativeKeywords({ projectId: dataset.projectId, keywords, dataset: dataset.id })
-    } else if (dataset.id) {
+    } else if (dataset?.id) {
       cacheToStats(dataset)
     }
-  }, [dataset])
+  }, [dataset, keywords])
 
   useEffect(() => {
-    const keywordColors = keywords.reduce((prev, keyword) => (colors[keyword] ? prev : {
+    const kws = keywords.length ? keywords : dataset?.keywords
+    const keywordColors = (kws || []).reduce((prev, keyword) => (colors[keyword] ? prev : {
       ...prev,
       [keyword]: randomColor(),
     }), {
       0: 'gray'
     })
     setColors({ ...colors, ...keywordColors })
-  }, [keywords])
+  }, [keywords, dataset])
 
   useEffect(() => {
     if (stats.gt) {
-      const list = generateList(stats, dataset.assetCount, colors)
+      const list = generateList(stats, dataset?.assetCount, colors)
       setList(list)
     } else {
       setList(initList)
@@ -94,21 +96,20 @@ function KeywordRates({ keywords = [], dataset = {}, progressWidth = 0.5 }) {
     setStats(cacheStats)
   }
 
-  const renderList = list => list.map(item => (
-    <div key={item.key} className={s.rate}>
-      <span className={s.bar} style={{ width: getWidth(item), background: item.color }}>&nbsp;</span>
-      <span>{label(item)}</span>
-    </div>
-  ))
+  const renderList = (list, title = 'Ground Truth') => <div className={s.rates}>
+    <div className={s.title}>{title}</div>
+    {list.map(item => (
+      <div key={item.key} className={s.rate}>
+        <span className={s.bar} style={{ width: getWidth(item, progressWidth), background: item.color }}>&nbsp;</span>
+        <span>{label(item)}</span>
+      </div>
+    ))}
+  </div>
 
   return (
     <div className={s.rates}>
-      <h3>Group Truth</h3>
       {renderList(list.gt)}
-      {keywords.length ? <>
-        <h3>Prediction</h3>
-        {renderList(list.pred)}
-      </> : null}
+      {!keywords.length ? renderList(list.pred, 'Prediction') : null}
     </div>
   )
 }

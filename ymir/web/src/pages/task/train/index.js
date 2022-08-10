@@ -284,7 +284,7 @@ function Train({ allDatasets, datasetCache, keywords, ...func }) {
             </Form.Item>
             {trainSet ?
               <Form.Item label={t('dataset.train.form.samples')}>
-                <KeywordRates pid={pid} id={trainSet} keywords={selectedKeywords}></KeywordRates>
+                <KeywordRates pid={pid} keywords={selectedKeywords} dataset={{ id: trainSet }}></KeywordRates>
               </Form.Item> : null}
             <Form.Item
               label={t('task.train.form.testsets.label')}
