@@ -6,7 +6,6 @@ from unittest import mock
 
 from google.protobuf.json_format import MessageToDict, ParseDict
 
-
 from common_utils import labels
 from controller.utils import utils
 from controller.utils.invoker_call import make_invoker_cmd_call
@@ -107,8 +106,8 @@ class TestInvokerTaskFilter(unittest.TestCase):
                               "--src-revs {4}@{4};{5}".format(self._mir_repo_root, self._task_id, self._sub_task_id_1,
                                                               working_dir_1, self._guest_id1, self._guest_id2))
         expected_cmd_filter = ("mir filter --root {0} --dst-rev {1}@{1} --src-revs {1}@{2} -w {3} "
-                               "-p {4} -P {5}".format(self._mir_repo_root, self._task_id, self._sub_task_id_1,
-                                                      working_dir_0, 'frisbee;car', 'frisbee;car'))
+                               "--cis {4} --ex-cis {5}".format(self._mir_repo_root, self._task_id, self._sub_task_id_1,
+                                                               working_dir_0, 'frisbee;car', 'frisbee;car'))
         mock_run.assert_has_calls(calls=[
             mock.call(expected_cmd_merge.split(' '), capture_output=True, text=True),
             mock.call(expected_cmd_filter.split(' '), capture_output=True, text=True),

@@ -23,7 +23,6 @@ from src.swagger_models.dataset_evaluation_result_result import DatasetEvaluatio
 from src.swagger_models.dataset_evaluation_total_sub_element import DatasetEvaluationTotalSubElement
 from src.swagger_models.dataset_result import DatasetResult
 from src.swagger_models.dataset_result_result import DatasetResultResult
-from src.swagger_models.dataset_result_result_negative_info import DatasetResultResultNegativeInfo
 from src.swagger_models.dataset_stats_result import DatasetStatsResult
 from src.swagger_models.dataset_stats_result_result import DatasetStatsResultResult
 from src.swagger_models.model_result import ModelResult

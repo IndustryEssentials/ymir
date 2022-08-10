@@ -445,13 +445,11 @@ class MirStorageOps():
         """
         exampled return data:
         {
-            "total_asset_mbytes":222,
-            "total_assets_cnt":1420,
-            "new_types":{},
+            "total_assets_mbytes":222,
+            "total_assets_count":1420,
             "new_types_added":False,
             "cks_count_total":{},
             "cks_count":{},
-            "total_images_cnt":1420,
             "hist":{
                 "asset_quality": [],
                 "asset_bytes": [],
@@ -460,21 +458,15 @@ class MirStorageOps():
             },
             "pred":{
                 "class_ids_count":{},
-                "class_names_count":{},
-                "negative_info":{
-                    "negative_images_cnt":14,
-                    "project_negative_images_cnt":0
-                },
-                "tags_cnt_total":{},
-                "tags_cnt":{},
+                "negative_assets_count":14,
+                "tags_count_total":{},
+                "tags_count":{},
                 "hist":{
                     "anno_quality":[],
                     "anno_area":[],
                     "anno_area_ratio":[]
                 },
-                "annos_cnt":10006,
-                "positive_asset_cnt":1406,
-                "negative_asset_cnt":14
+                "annos_count":10006,
             },
             "gt":{}
         }
@@ -493,18 +485,15 @@ class MirStorageOps():
 
         class_id_mgr = class_ids.ClassIdManager(mir_root=mir_root)
         result = dict(
-            total_asset_mbytes=mir_storage_context.total_asset_mbytes,
-            total_assets_cnt=mir_storage_context.images_cnt,
+            total_assets_mbytes=mir_storage_context.total_asset_mbytes,
+            total_assets_count=mir_storage_context.images_cnt,
             hist=dict(
                 asset_quality=cls._gen_viz_hist(mir_storage_context.asset_quality_hist),
                 asset_bytes=cls._gen_viz_hist(mir_storage_context.asset_bytes_hist),
                 asset_area=cls._gen_viz_hist(mir_storage_context.asset_area_hist),
                 asset_hw_ratio=cls._gen_viz_hist(mir_storage_context.asset_hw_ratio_hist),
             ),
-            new_types={k: v
-                       for k, v in task_storage.new_types.items()},
             new_types_added=task_storage.new_types_added,
-            total_images_cnt=mir_storage_context.images_cnt,
             cks_count_total={k: v.cnt
                              for k, v in mir_storage_context.cks_cnt.items()},
             cks_count={k: {k2: v2
@@ -618,27 +607,18 @@ class MirStorageOps():
         return dict(
             class_ids_count={k: v
                              for k, v in anno_stats.class_ids_cnt.items()},
-            class_names_count={
-                class_id_mgr.main_name_for_id(id): count
-                for id, count in anno_stats.class_ids_cnt.items()
-            },
-            negative_info=dict(
-                negative_images_cnt=mir_storage_context.negative_images_cnt,
-                project_negative_images_cnt=mir_storage_context.project_negative_images_cnt,
-            ),
-            tags_cnt_total={k: v.cnt
-                            for k, v in anno_stats.tags_cnt.items()},
-            tags_cnt={k: {k2: v2
-                          for k2, v2 in v.sub_cnt.items()}
-                      for k, v in anno_stats.tags_cnt.items()},
+            tags_count_total={k: v.cnt
+                              for k, v in anno_stats.tags_cnt.items()},
+            tags_count={k: {k2: v2
+                            for k2, v2 in v.sub_cnt.items()}
+                        for k, v in anno_stats.tags_cnt.items()},
             hist=dict(
                 anno_quality=cls._gen_viz_hist(anno_stats.quality_hist),
                 anno_area=cls._gen_viz_hist(anno_stats.area_hist),
                 anno_area_ratio=cls._gen_viz_hist(anno_stats.area_ratio_hist),
             ),
-            annos_cnt=anno_stats.total_cnt,
-            positive_asset_cnt=anno_stats.positive_asset_cnt,
-            negative_asset_cnt=anno_stats.negative_asset_cnt,
+            annos_count=anno_stats.total_cnt,
+            negative_assets_count=anno_stats.negative_asset_cnt,
         )
 
 
