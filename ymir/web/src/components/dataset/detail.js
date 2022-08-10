@@ -20,9 +20,9 @@ function DatasetDetail({ dataset = {} }) {
       return
     }
     const { keywords = [], count = {} } = anno
-    return keywords.length ? <p>
+    return <p>
       {label}: {keywords.map(keyword => <Tag key={keyword}>{keyword}({count[keyword]})</Tag>)}
-    </p> : null
+    </p>
   }
 
   return (
