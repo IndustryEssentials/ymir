@@ -84,6 +84,8 @@ const model = {
   'model.diagnose.metrics.keyword.placeholder': {en: "Please select keywords", cn: "请选择标签", },
   'model.diagnose.metrics.view.label': {en: "View", cn: "视图", },
   'model.diagnose.metrics.dimension.label': {en: "Dimension:", cn: "维度：", },
+  "model.diagnose.metrics.btn.start": { cn: "开始诊断", en: "Diagnose", },
+  "model.diagnose.metrics.btn.retry": { cn: "重新诊断", en: "Retry", },
   'model.diagnose.v.tasks.require': {en: "Please select infered testing dataset and config", cn: "请选择推理过的测试集及配置", },
   'model.diagnose.metrics.x.dataset': {en: "Testing Dataset", cn: "测试集", },
   'model.diagnose.metrics.x.keyword': {en: "Keyword", cn: "标签", },

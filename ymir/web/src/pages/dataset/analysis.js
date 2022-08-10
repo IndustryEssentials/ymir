@@ -313,7 +313,7 @@ function Analysis() {
                 <Form.Item name='submitBtn'>
                   <div style={{ textAlign: 'center' }}>
                     <Button type="primary" size="large" htmlType="submit">
-                      <CompareIcon /> {t('dataset.analysis.btn.start_diagnose')}
+                      <CompareIcon /> {t('dataset.analysis.btn.start')}
                     </Button>
                   </div>
                 </Form.Item>

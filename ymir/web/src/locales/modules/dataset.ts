@@ -147,8 +147,8 @@ const dataset = {
   "dataset.analysis.column.average_labels": { cn: "标注框总数/总图片数", en: "Total Annotations/Total Assets", },
   "dataset.analysis.column.overall": { cn: "已标注图片数/总图片数", en: "Labelled Assets/Total Assets", },
   "dataset.analysis.param.title": { cn: "选择", en: "Select", },
-  "dataset.analysis.btn.start_diagnose": { cn: "开始诊断", en: "Diagnose", },
-  "dataset.analysis.btn.retry": { cn: "重新诊断", en: "Retry", },
+  "dataset.analysis.btn.start": { cn: "开始分析", en: "Analysis", },
+  "dataset.analysis.btn.retry": { cn: "重新分析", en: "Retry", },
   "dataset.analysis.title.asset_bytes": { cn: "图像大小分布", en: "Image Size Distribution", },
   "dataset.analysis.title.asset_hw_ratio": { cn: "图像高宽比分布", en: "Image Aspect Ratio Distribution", },
   "dataset.analysis.title.asset_area": { cn: "图像分辨率分布", en: "Image Resolution Distribution", },
@@ -159,8 +159,6 @@ const dataset = {
   "dataset.analysis.bar.anno.tooltip": { cn: " 占比：{ratio} 数量：{amount} 个", en: " Ratio：{ratio} Amount：{amount}", },
   "dataset.analysis.annotations.gt": { cn: "标准值标注", en: "Ground Truth Annotations", },
   "dataset.analysis.annotations.pred": { cn: "预测标注", en: "Predicted Annotations", },
-
-  
 }
 
 export default dataset
