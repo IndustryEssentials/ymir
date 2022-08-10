@@ -146,6 +146,7 @@ class DatasetStatsElement(BaseModel):
 
 
 class DatasetStats(BaseModel):
+    total_assets_count: int
     gt: DatasetStatsElement
     pred: DatasetStatsElement
 
