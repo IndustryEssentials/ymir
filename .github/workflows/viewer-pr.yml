@@ -23,6 +23,8 @@ jobs:
       run: |
         go mod verify
         go build -v ./...
+        go install honnef.co/go/tools/cmd/staticcheck@latest
+        go install golang.org/x/lint/golint@latest
 
     - name: Cache Go Environment
       uses: actions/cache@v3
@@ -38,6 +40,5 @@ jobs:
       working-directory: ymir/backend/src/ymir_viewer
       run: |
         go vet ./...
-        go install honnef.co/go/tools/cmd/staticcheck@latest
         staticcheck ./...
         go test -race -cover -vet=off ./...
