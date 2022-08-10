@@ -22,7 +22,7 @@ def parse_annotations(annotations: List[Dict], user_labels: UserLabels) -> List[
         {
             "box": annotation["box"],
             "cm": annotation["cm"],
-            "keyword": user_labels.get_main_names(annotation["class_id"])[0],
+            "keyword": user_labels.get_main_name(annotation["class_id"]),
         }
         for annotation in annotations
     ]
@@ -121,7 +121,7 @@ class DatasetAnnotationMetadata:
     def from_viz_res(cls, res: Dict, total_assets_count: int, user_labels: UserLabels) -> "DatasetAnnotationMetadata":
         ave_annos_count = round(res["annos_count"] / total_assets_count, 2) if total_assets_count else 0
         keywords = {
-            user_labels.get_main_names(int(class_id))[0]: count for class_id, count in res["class_ids_count"].items()
+            user_labels.get_main_name(int(class_id)): count for class_id, count in res["class_ids_count"].items()
         }
         return cls(
             keywords=keywords,
@@ -212,7 +212,7 @@ class DatasetStatsElement:
     def from_viz_res(cls, data: Dict, user_labels: UserLabels) -> "DatasetStatsElement":
         viz_res = VizDatasetStatsElement(**data)
         keywords = {
-            user_labels.get_main_names(int(class_id))[0]: count for class_id, count in viz_res.class_ids_count.items()
+            user_labels.get_main_name(int(class_id)): count for class_id, count in viz_res.class_ids_count.items()
         }
         return cls(keywords, viz_res.negative_assets_count)
 
@@ -411,6 +411,6 @@ def convert_class_id_to_keyword(obj: Dict, user_labels: UserLabels) -> None:
     if isinstance(obj, dict):
         for key, value in obj.items():
             if key == "ci_evaluations":
-                obj[key] = {user_labels.get_main_names(k)[0]: v for k, v in value.items()}
+                obj[key] = {user_labels.get_main_name(k): v for k, v in value.items()}
             else:
                 convert_class_id_to_keyword(obj[key], user_labels)
