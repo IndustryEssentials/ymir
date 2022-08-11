@@ -115,7 +115,7 @@ class DatasetAnnotationMetadata:
     hist: Dict
 
     annos_count: int
-    ave_annos_count: int
+    ave_annos_count: float
 
     @classmethod
     def from_viz_res(cls, res: Dict, total_assets_count: int, user_labels: UserLabels) -> "DatasetAnnotationMetadata":
@@ -171,10 +171,10 @@ class DatasetMetaData:
             else None
         )
         hist = {
-            "asset_bytes": res["hist"]["asset_bytes"][0],
-            "asset_area": res["hist"]["asset_area"][0],
-            "asset_quality": res["hist"]["asset_quality"][0],
-            "asset_hw_ratio": res["hist"]["asset_hw_ratio"][0],
+            "asset_bytes": res["hist"]["asset_bytes"],
+            "asset_area": res["hist"]["asset_area"],
+            "asset_quality": res["hist"]["asset_quality"],
+            "asset_hw_ratio": res["hist"]["asset_hw_ratio"],
         }
         keywords = {
             "gt": gt.keywords if gt else {},
