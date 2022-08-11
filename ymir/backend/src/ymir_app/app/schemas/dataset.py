@@ -243,8 +243,8 @@ class DatasetEvaluationCreate(BaseModel):
     dataset_ids: List[int]
     confidence_threshold: float
     iou_threshold: float
-    require_average_iou: Optional[bool] = False
-    need_pr_curve: Optional[bool] = True
+    require_average_iou: bool = False
+    need_pr_curve: bool = True
 
 
 class DatasetEvaluationOut(Common):

@@ -224,10 +224,6 @@ def get_project(
     project = crud.project.get_by_user_and_id(db, user_id=current_user.id, id=project_id)
     if not project:
         raise ProjectNotFound()
-
-    # for compatible
-    project.enable_iteration = True if project.enable_iteration is None else project.enable_iteration
-
     return {"result": project}
 
 
