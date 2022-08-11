@@ -82,7 +82,9 @@ func TestGetDatasetMetaCountsHandler(t *testing.T) {
 			"negative_images_count": 5,
 			"positive_images_count": 8
 		},
-		"total_assets_count": 20
+		"total_assets_count": 20,
+		"cks_count_total": {},
+		"cks_count": {}
 	}`), &expectedResult)
 	if err != nil {
 		panic(err)
