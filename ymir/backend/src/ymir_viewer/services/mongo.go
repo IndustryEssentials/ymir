@@ -108,31 +108,31 @@ func (s *MongoServer) IndexMongoData(mirRepo constants.MirRepo, newData []interf
 	defer tools.TimeTrack(time.Now())
 	index := []mongo.IndexModel{
 		{
-			Keys: bsonx.Doc{{Key: "asset_id", Value: bsonx.Int32(1)}},
+			Keys: bson.M{"asset_id": bsonx.Int32(1)}, Options: options.Index(),
 		},
 		{
-			Keys: bsonx.Doc{{Key: "cks", Value: bsonx.Int32(1)}},
+			Keys: bson.M{"cks": bsonx.Int32(1)}, Options: options.Index(),
 		},
 		{
-			Keys: bsonx.Doc{{Key: "class_ids", Value: bsonx.Int32(1)}},
+			Keys: bson.M{"class_ids": bsonx.Int32(1)}, Options: options.Index(),
 		},
 		{
-			Keys: bsonx.Doc{{Key: "gt.class_id", Value: bsonx.Int32(1)}},
+			Keys: bson.M{"gt.class_id": bsonx.Int32(1)}, Options: options.Index(),
 		},
 		{
-			Keys: bsonx.Doc{{Key: "pred.class_id", Value: bsonx.Int32(1)}},
+			Keys: bson.M{"pred.class_id": bsonx.Int32(1)}, Options: options.Index(),
 		},
 		{
-			Keys: bsonx.Doc{{Key: "gt.cm", Value: bsonx.Int32(1)}},
+			Keys: bson.M{"gt.cm": bsonx.Int32(1)}, Options: options.Index(),
 		},
 		{
-			Keys: bsonx.Doc{{Key: "pred.cm", Value: bsonx.Int32(1)}},
+			Keys: bson.M{"pred.cm": bsonx.Int32(1)}, Options: options.Index(),
 		},
 		{
-			Keys: bsonx.Doc{{Key: "gt.tags", Value: bsonx.Int32(1)}},
+			Keys: bson.M{"gt.tags": bsonx.Int32(1)}, Options: options.Index(),
 		},
 		{
-			Keys: bsonx.Doc{{Key: "pred.tags", Value: bsonx.Int32(1)}},
+			Keys: bson.M{"pred.tags": bsonx.Int32(1)}, Options: options.Index(),
 		},
 	}
 
@@ -294,24 +294,32 @@ func (s *MongoServer) QueryDatasetStats(mirRepo constants.MirRepo, classIds []in
 func (s *MongoServer) QueryDatasetDup(mirRepo0 constants.MirRepo, mirRepo1 constants.MirRepo) (int, int64, int64) {
 	defer tools.TimeTrack(time.Now())
 
-	collection0, _ := s.getRepoCollection(mirRepo0)
+	collection0, collectionName0 := s.getRepoCollection(mirRepo0)
 	totalCount0 := s.countAssetsInClass(collection0, "", []int{})
 
 	collection1, collectionName1 := s.getRepoCollection(mirRepo1)
 	totalCount1 := s.countAssetsInClass(collection1, "", []int{})
 
+	// No-SQL Aggregate Trick: always set smaller dataset to be joined.
+	collectionJoined := collection0
+	collectionNameToJoin := collectionName1
+	if totalCount0 > totalCount1 {
+		collectionJoined = collection1
+		collectionNameToJoin = collectionName0
+	}
+
 	lookupStage := bson.D{
 		bson.E{
 			Key: "$lookup",
 			Value: bson.D{
-				bson.E{Key: "from", Value: collectionName1},
+				bson.E{Key: "from", Value: collectionNameToJoin},
 				bson.E{Key: "localField", Value: "asset_id"},
 				bson.E{Key: "foreignField", Value: "asset_id"},
 				bson.E{Key: "as", Value: "joinAssets"},
 			},
 		},
 	}
-	showLoadedCursor, err := collection0.Aggregate(s.Ctx, mongo.Pipeline{lookupStage})
+	showLoadedCursor, err := collectionJoined.Aggregate(s.Ctx, mongo.Pipeline{lookupStage})
 	if err != nil {
 		panic(err)
 	}
