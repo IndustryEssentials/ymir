@@ -123,17 +123,25 @@ func (mirRepoLoader *MirRepoLoader) LoadAssetsDetail() []constants.MirAssetDetai
 			mirAssetDetails[idx].Cks = cks.Cks
 		}
 
+		mapClassIDs := map[int32]bool{}
 		if gtAnnotation, ok := gtAnnotations[assetId]; ok {
 			for _, annotation := range gtAnnotation.Annotations {
 				annotationOut := mirRepoLoader.buildStructFromMessage(annotation, map[string]interface{}{}).(map[string]interface{})
 				mirAssetDetails[idx].Gt = append(mirAssetDetails[idx].Gt, annotationOut)
+				mapClassIDs[annotation.ClassId] = true
 			}
 		}
 		if predAnnotation, ok := predAnnotations[assetId]; ok {
 			for _, annotation := range predAnnotation.Annotations {
 				annotationOut := mirRepoLoader.buildStructFromMessage(annotation, map[string]interface{}{}).(map[string]interface{})
 				mirAssetDetails[idx].Pred = append(mirAssetDetails[idx].Pred, annotationOut)
+				mapClassIDs[annotation.ClassId] = true
 			}
+		}
+
+		mirAssetDetails[idx].JoinedClassIDs = make([]int32, 0, len(mapClassIDs))
+		for k := range mapClassIDs {
+			mirAssetDetails[idx].JoinedClassIDs = append(mirAssetDetails[idx].JoinedClassIDs, k)
 		}
 	}
 	return mirAssetDetails
