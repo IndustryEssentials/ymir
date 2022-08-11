@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/IndustryEssentials/ymir-viewer/common/constants"
+	"github.com/IndustryEssentials/ymir-viewer/common/loader"
 	"github.com/IndustryEssentials/ymir-viewer/common/protos"
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson"
@@ -154,22 +155,32 @@ func (s *ViewerServer) handleAssets(c *gin.Context) {
 		}
 	}
 
-	resultData := GetAssetsHandler(s.Mongo, mirRepo, offset, limit, classIds, currentAssetId, cmTypes, cks, tags)
-	ViewerSuccess(c, constants.ViewerSuccessCode, constants.ViewerSuccessMsg, resultData)
+	resultData := GetAssetsHandler(
+		s.Mongo,
+		&loader.MirRepoLoader{MirRepo: mirRepo},
+		offset,
+		limit,
+		classIds,
+		currentAssetId,
+		cmTypes,
+		cks,
+		tags,
+	)
+	ViewerSuccess(c, resultData)
 }
 
 func (s *ViewerServer) handleDatasetMetaCounts(c *gin.Context) {
 	mirRepo := s.buildMirRepoFromParam(c)
-	resultData := GetDatasetMetaCountsHandler(s.Mongo, mirRepo)
-	ViewerSuccess(c, constants.ViewerSuccessCode, constants.ViewerSuccessMsg, resultData)
+	resultData := GetDatasetMetaCountsHandler(&loader.MirRepoLoader{MirRepo: mirRepo})
+	ViewerSuccess(c, resultData)
 }
 
 func (s *ViewerServer) handleDatasetStats(c *gin.Context) {
 	mirRepo := s.buildMirRepoFromParam(c)
 	classIds := s.getIntSliceFromQuery(c, "class_ids")
 
-	resultData := GetDatasetStatsHandler(s.Mongo, mirRepo, classIds)
-	ViewerSuccess(c, constants.ViewerSuccessCode, constants.ViewerSuccessMsg, resultData)
+	resultData := GetDatasetStatsHandler(s.Mongo, &loader.MirRepoLoader{MirRepo: mirRepo}, classIds)
+	ViewerSuccess(c, resultData)
 }
 
 func (s *ViewerServer) handleDatasetDup(c *gin.Context) {
@@ -205,10 +216,14 @@ func (s *ViewerServer) handleDatasetDup(c *gin.Context) {
 		TaskId:      datasetIds[1],
 	}
 
-	duplicateCount, mirRepoCount0, mirRepoCount1 := GetDatasetDupHandler(s.Mongo, mirRepo0, mirRepo1)
+	duplicateCount, mirRepoCount0, mirRepoCount1 := GetDatasetDupHandler(
+		s.Mongo,
+		&loader.MirRepoLoader{MirRepo: mirRepo0},
+		&loader.MirRepoLoader{MirRepo: mirRepo1},
+	)
 	resultData := bson.M{
 		"result":      duplicateCount,
 		"total_count": bson.M{datasetIds[0]: mirRepoCount0, datasetIds[1]: mirRepoCount1},
 	}
-	ViewerSuccess(c, constants.ViewerSuccessCode, constants.ViewerSuccessMsg, resultData)
+	ViewerSuccess(c, resultData)
 }

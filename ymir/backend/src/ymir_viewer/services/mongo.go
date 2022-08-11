@@ -31,7 +31,10 @@ func NewMongoServer(uri string) MongoServer {
 
 	defaultDbName := "YMIR"
 	// Clear cached data.
-	mongoClient.Database(defaultDbName).Drop(mongoCtx)
+	err = mongoClient.Database(defaultDbName).Drop(mongoCtx)
+	if err != nil {
+		panic(err)
+	}
 
 	return MongoServer{
 		Clt:           mongoClient,
@@ -50,11 +53,17 @@ func (s *MongoServer) setExistence(collectionName string, ready bool, insert boo
 	collection := s.Clt.Database(s.dbName).Collection(s.existenceName)
 	if insert {
 		record := bson.M{"_id": collectionName, "ready": ready, "exist": true}
-		collection.InsertOne(s.Ctx, record)
+		_, err := collection.InsertOne(s.Ctx, record)
+		if err != nil {
+			panic(err)
+		}
 	} else {
 		filter := bson.M{"_id": collectionName}
 		update := bson.M{"$set": bson.M{"ready": ready}}
-		collection.UpdateOne(s.Ctx, filter, update)
+		_, err := collection.UpdateOne(s.Ctx, filter, update)
+		if err != nil {
+			panic(err)
+		}
 	}
 }
 

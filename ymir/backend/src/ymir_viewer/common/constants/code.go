@@ -7,9 +7,12 @@ const (
 	ViewerSuccessCode ResponseCode = 0
 	ViewerSuccessMsg  ResponseMsg  = "Success"
 
-	FailDataMissCode ResponseCode = 180100
+	FailGeneralCode ResponseCode = 180100
+	FailGeneralMsg  ResponseMsg  = "Viewer Failure"
+
+	FailDataMissCode ResponseCode = 180101
 	FailDataMissMsg  ResponseMsg  = "Data not exist"
 
-	FailInvalidParmsCode ResponseCode = 180101
+	FailInvalidParmsCode ResponseCode = 180102
 	FailInvalidParmsMsg  ResponseMsg  = "Invalid parameters"
 )
