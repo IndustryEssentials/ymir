@@ -33,7 +33,7 @@ func (m *MockMirRepoLoader) LoadAssetsDetail() []constants.MirAssetDetail {
 func TestGetDatasetMetaCountsHandler(t *testing.T) {
 	mirFile := constants.MirfileContext
 	mockMirContext := protos.MirContext{}
-	json.Unmarshal([]byte(`{
+	err := json.Unmarshal([]byte(`{
 		"images_cnt": 20,
 		"pred_stats":
 		{
@@ -54,13 +54,16 @@ func TestGetDatasetMetaCountsHandler(t *testing.T) {
 			}
 		}
 	}`), &mockMirContext)
+	if err != nil {
+		panic(err)
+	}
 
 	pbreaderMock := MockMirRepoLoader{}
 	pbreaderMock.On("LoadSingleMirData", mirFile).Return(&mockMirContext)
 
 	expectedResult := constants.QueryDatasetStatsResult{}
 	result := GetDatasetMetaCountsHandler(&pbreaderMock)
-	json.Unmarshal([]byte(`{
+	err = json.Unmarshal([]byte(`{
 		"gt":
 		{
 			"class_ids_count":
@@ -81,6 +84,9 @@ func TestGetDatasetMetaCountsHandler(t *testing.T) {
 		},
 		"total_assets_count": 20
 	}`), &expectedResult)
+	if err != nil {
+		panic(err)
+	}
 	assert.Equal(t, result, expectedResult)
 	pbreaderMock.AssertExpectations(t)
 
