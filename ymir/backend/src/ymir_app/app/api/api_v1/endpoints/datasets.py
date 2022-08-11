@@ -1,7 +1,7 @@
 from operator import attrgetter
 import enum
 import random
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, List
 
 from fastapi import APIRouter, BackgroundTasks, Depends, Path, Query
 from fastapi.logger import logger
@@ -331,6 +331,10 @@ def get_assets_of_dataset(
     offset: int = 0,
     limit: int = settings.DEFAULT_LIMIT,
     keyword: Optional[str] = Query(None),
+    keywords: Optional[List[str]] = Query(None),
+    cm_types: Optional[List[str]] = Query(None),
+    cks: Optional[List[str]] = Query(None),
+    tags: Optional[List[str]] = Query(None),
     viz_client: VizClient = Depends(deps.get_viz_client),
     current_user: models.User = Depends(deps.get_current_active_user),
     user_labels: UserLabels = Depends(deps.get_user_labels),
@@ -343,15 +347,22 @@ def get_assets_of_dataset(
     if not dataset:
         raise DatasetNotFound()
 
-    keyword_id = user_labels.get_class_ids(keyword)[0] if keyword else None
+    if keyword:
+        keywords = [keyword]
+    keyword_ids = user_labels.get_class_ids(keywords) if keywords else None
+
     viz_client.initialize(
         user_id=current_user.id,
         project_id=dataset.project_id,
         branch_id=dataset.hash,
         user_labels=user_labels,
+        use_viewer=True,
     )
     assets = viz_client.get_assets(
-        keyword_id=keyword_id,
+        keyword_ids=keyword_ids,
+        cm_types=cm_types,
+        cks=cks,
+        tags=tags,
         limit=limit,
         offset=offset,
     )
@@ -430,11 +441,12 @@ def get_asset_of_dataset(
         project_id=dataset.project_id,
         branch_id=dataset.hash,
         user_labels=user_labels,
+        use_viewer=True,
     )
-    asset = viz_client.get_asset(asset_id=asset_hash)
-    if not asset:
+    assets = viz_client.get_assets(asset_hash=asset_hash)
+    if assets.total == 0:
         raise AssetNotFound()
-    return {"result": asset}
+    return {"result": assets.items[0]}
 
 
 def normalize_fusion_parameter(
