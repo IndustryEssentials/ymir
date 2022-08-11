@@ -129,6 +129,8 @@ services:
     volumes:
       - ${YMIR_PATH}/clickhouseDB:/var/lib/clickhouse
     restart: on-failure:10
+    networks:
+      - ymirnetwork
 
   mongodb:
     image: mongo:4.4
