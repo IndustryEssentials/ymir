@@ -97,7 +97,7 @@ function KeywordRates({ keywords, dataset, progressWidth = 0.5 }) {
   return (
     <div className={s.rates}>
       {renderList(list.gt)}
-      {!keywords?.length ? renderList(list.pred, 'Prediction') : null}
+      {renderList(list.pred, 'Prediction')}
     </div>
   )
 }
