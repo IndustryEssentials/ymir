@@ -175,6 +175,12 @@ const docTemplate = `{
                         "name": "branchId",
                         "in": "path",
                         "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "e.g. class_ids=1,3,7",
+                        "name": "class_ids",
+                        "in": "query"
                     }
                 ],
                 "responses": {

@@ -201,6 +201,7 @@ func (s *ViewerServer) handleDatasetMetaCounts(c *gin.Context) {
 // @Param   userId     path    string     true        "User ID"
 // @Param   repoId     path    string     true        "Repo ID"
 // @Param   branchId     path    string     true        "Branch ID"
+// @Param   class_ids     query    string     false        "e.g. class_ids=1,3,7"
 // @Success 200 {string} string    "'code': 0, 'msg': 'Success', 'Success': true, 'Data': constants.QueryDatasetStatsResult"
 // @Router /api/v1/users/{userId}/repo/{repoId}/branch/{branchId}/dataset_stats [get]
 func (s *ViewerServer) handleDatasetStats(c *gin.Context) {
