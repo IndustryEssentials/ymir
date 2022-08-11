@@ -198,7 +198,7 @@ const docTemplate = `{
                 "produces": [
                     "application/json"
                 ],
-                "summary": "Query dataset Stats.",
+                "summary": "Query dataset dups.",
                 "parameters": [
                     {
                         "type": "string",

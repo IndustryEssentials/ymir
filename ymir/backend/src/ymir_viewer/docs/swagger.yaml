@@ -148,5 +148,5 @@ paths:
             ''duplication: 50, total_count: {xxx: 100, yyy: 200}'''
           schema:
             type: string
-      summary: Query dataset Stats.
+      summary: Query dataset dups.
 swagger: "2.0"

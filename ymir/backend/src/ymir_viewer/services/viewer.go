@@ -209,7 +209,7 @@ func (s *ViewerServer) handleDatasetStats(c *gin.Context) {
 	ViewerSuccess(c, resultData)
 }
 
-// @Summary Query dataset Stats.
+// @Summary Query dataset dups.
 // @Accept  json
 // @Produce  json
 // @Param   userId     path    string     true        "User ID"
