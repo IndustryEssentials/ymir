@@ -8,6 +8,7 @@ import t from "@/utils/t"
 import Uploader from "@/components/form/uploader"
 import Breadcrumbs from "@/components/common/breadcrumb"
 import { randomNumber } from "@/utils/number"
+import useFetch from '@/hooks/useFetch'
 
 import DatasetSelect from "../../../components/form/datasetSelect"
 import Desc from "@/components/form/desc"
@@ -32,10 +33,19 @@ function Label({ datasets, keywords, ...func }) {
   const [doc, setDoc] = useState(undefined)
   const [form] = Form.useForm()
   const [asChecker, setAsChecker] = useState(false)
+  const [project, getProject] = useFetch('project/getProject', {})
 
   useEffect(() => {
     func.getKeywords({ limit: 100000 })
   }, [])
+
+  useEffect(() => {
+    iterationId && pid && getProject({ id: pid })
+  }, [pid, iterationId])
+
+  useEffect(() => {
+    project.id && form.setFieldsValue({ keywords: project.keywords})
+  }, [project])
 
   const onFinish = async (values) => {
     const { labellers, checker } = values

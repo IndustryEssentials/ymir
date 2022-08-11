@@ -45,7 +45,9 @@ export function transferDatasetGroup(data: BackendData) {
 }
 
 export function transferDataset(data: BackendData): Dataset {
-  const { negative_images_cnt = 0, project_negative_images_cnt = 0 } = data.negative_info || {}
+  const { gt = {}, pred = {} } = data.keywords
+  const assetCount = data.asset_count || 0
+  const keywords = [...new Set([...Object.keys(gt), ...Object.keys(pred)])]
   return {
     id: data.id,
     groupId: data.dataset_group_id,
@@ -53,13 +55,12 @@ export function transferDataset(data: BackendData): Dataset {
     name: data.group_name,
     version: data.version_num || 0,
     versionName: getIterationVersion(data.version_num),
-    assetCount: data.asset_count || 0,
-    keywords: Object.keys(data.keywords || {}),
-    keywordCount: data.keyword_count || 0,
-    keywordsCount: data.keywords || {},
-    nagetiveCount: negative_images_cnt,
+    assetCount,
+    keywords,
+    keywordCount: keywords.length,
+    gt: transferAnnotationsCount(gt, data.negative_info?.gt, assetCount),
+    pred: transferAnnotationsCount(pred, data.negative_info?.pred, assetCount),
     isProtected: data.is_protected || false,
-    projectNagetiveCount: project_negative_images_cnt,
     hash: data.hash,
     state: data.result_state,
     createTime: format(data.create_datetime),
@@ -78,23 +79,23 @@ export function transferDataset(data: BackendData): Dataset {
 }
 
 export function transferDatasetAnalysis(data: BackendData): DatasetAnalysis {
+  const { asset_bytes, asset_area, asset_quality, asset_hw_ratio, } = data.hist
+
+  const assetTotal = data.total_assets_count || 0
+  const gt = generateAnno(data.gt)
+  const pred = generateAnno(data.pred)
   return {
     name: data.group_name,
     version: data.version_num || 0,
     versionName: getIterationVersion(data.version_num),
-    assetCount: data.total_assets_cnt || 0,
-    totalAssetMbytes: data.total_asset_mbytes,
-    annosCnt: data.annos_cnt,
-    aveAnnosCnt: data.ave_annos_cnt,
-    positiveAssetCnt: data.positive_asset_cnt,
-    negativeAssetCnt: data.negative_asset_cnt,
-    assetBytes: data.asset_bytes,
-    assetHWRatio: data.asset_hw_ratio,
-    assetArea: data.asset_area,
-    assetQuality: data.asset_quality,
-    annoAreaRatio: data.anno_area_ratio,
-    annoQuality: data.anno_quality,
-    classNamesCount: data.class_names_count,
+    assetCount: data.total_assets_count || 0,
+    totalAssetMbytes: data.total_assets_mbytes,
+    assetBytes: asset_bytes,
+    assetArea: asset_area,
+    assetQuality: asset_quality,
+    assetHWRatio: asset_hw_ratio,
+    gt,
+    pred,
   }
 }
 
@@ -125,6 +126,28 @@ export function transferAnnotation(data: BackendData, gt: boolean = false): Anno
     box: data.box,
     cm: data.cm,
     gt,
+  }
+}
+
+export function transferAnnotationsCount(count = {}, negative = 0, total = 1) {
+  return {
+    keywords: Object.keys(count),
+    count,
+    negative,
+    total,
+  }
+}
+
+const generateAnno = (data: BackendData) => {
+  const { anno_quality, anno_area, anno_area_ratio } = data.hist
+  return {
+    keywords: data.keywords,
+    total: data.annos_count,
+    average: data.ave_annos_count,
+    negative: data.negative_assets_count,
+    quality: anno_quality,
+    area: anno_area,
+    areaRatio: anno_area_ratio,
   }
 }
 

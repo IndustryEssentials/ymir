@@ -104,6 +104,15 @@ export const homeRoutes = [
     breadcrumbLabel: 'breadcrumbs.dataset.add',
   },
   {
+    path: "/home/project/:id/dataset/analysis",
+    name: "datasetAnalysis",
+    component: "@/pages/dataset/analysis",
+    title: "dataset.analysis.title",
+    pid: 25,
+    id: 38,
+    breadcrumbLabel: 'breadcrumbs.dataset.analysis',
+  },
+  {
     path: "/home/project/:id/dataset/:did",
     name: "datasetDetail",
     component: "@/pages/dataset/detail",
