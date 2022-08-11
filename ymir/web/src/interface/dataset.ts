@@ -51,6 +51,8 @@ export interface DatasetAnalysis {
   // classNamesCount: BackendData,
   gt: AnylysisAnnotation,
   pred: AnylysisAnnotation,
+  ck?: Keywords,
+  tags?: Keywords,
 }
 
 export interface Asset {

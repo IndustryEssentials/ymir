@@ -32,7 +32,7 @@ function Analysis() {
   useEffect(() => {
     setTableSource(source)
     setAnalysisData(source)
-  }, [source])
+  }, [source, annotationsType])
 
   useEffect(() => {
     setSource(remoteSource)
@@ -76,19 +76,21 @@ function Analysis() {
       },
       {
         label: 'dataset.analysis.title.anno_area_ratio',
-        sourceField: 'annoAreaRatio',
-        totalField: 'annosCnt',
+        sourceField: 'areaRatio',
+        totalField: 'total',
         customOptions: {
           tooltipLable: 'dataset.analysis.bar.anno.tooltip',
         },
         color: ['#10BC5E', '#E8B900'],
+        annoType: true,
         isXUpperLimit: true,
       },
       {
         label: 'dataset.analysis.title.keyword_ratio',
-        sourceField: 'classNamesCount',
-        totalField: 'assetCount',
+        sourceField: 'keywords',
+        totalField: 'total',
         color: ['#2CBDE9', '#E8B900'],
+        annoType: true,
         xType: 'attribute'
       },
     ]
@@ -110,9 +112,19 @@ function Analysis() {
     setChartsData(chartsConfig)
   }
 
-  function getXData({ sourceField, isXUpperLimit = false, renderEachX = x => x }, datasets) {
-    const dataset = datasets.find(item => item[sourceField] && item[sourceField].length > 0) || datasets[0]
-    const xData = dataset && dataset[sourceField] ? dataset[sourceField].map(item => renderEachX(item.x)) : []
+  const getField = (item = {}, field, annoType) => {
+    console.log('item = {}, field, annoType:', item, field, annoType)
+
+    return annoType && item[annotationsType] ? item[annotationsType][field] : item[field]
+  }
+
+  function getXData({ sourceField, isXUpperLimit = false, annoType, renderEachX = x => x }, datasets) {
+    const dataset = datasets.find(item => {
+      const target = getField(item, sourceField, annoType)
+      return target && target.length > 0
+    }) || datasets[0]
+    const field = getField(dataset, sourceField, annoType)
+    const xData = field ? field.map(item => renderEachX(item.x)) : []
     const transferXData = xData.map((x, index) => {
       if (index === xData.length - 1) {
         return isXUpperLimit ? x : `[${x},+)`
@@ -123,33 +135,35 @@ function Analysis() {
     return transferXData
   }
 
-  function getYData({ sourceField, totalField }, datasets) {
+  function getYData({ sourceField, annoType, totalField }, datasets) {
     const yData = datasets && datasets.map(dataset => {
-      const total = dataset[totalField]
+      const total = getField(dataset, totalField, annoType)
       const name = `${dataset.name} ${dataset.versionName}`
+      const field = getField(dataset, sourceField, annoType)
       return {
         name,
-        value: dataset[sourceField].map(item => total ? (item.y / total).toFixed(4) : 0),
-        count: dataset[sourceField].map(item => item.y)
+        value: field.map(item => total ? (item.y / total).toFixed(4) : 0),
+        count: field.map(item => item.y)
       }
     })
     return yData
   }
 
-  function getAttrXData({ sourceField }, datasets) {
+  function getAttrXData({ sourceField, annoType }, datasets) {
     let xData = []
     datasets && datasets.forEach((dataset) => {
-      const datasetAttrs = Object.keys(dataset[sourceField] || {})
+      const field = getField(dataset, sourceField, annoType)
+      const datasetAttrs = Object.keys(field || {})
       xData = [...new Set([...xData, ...datasetAttrs])]
     })
     return xData
   }
 
-  function getAttrYData({ sourceField, totalField }, datasets, xData) {
+  function getAttrYData({ sourceField, annoType, totalField }, datasets, xData) {
     const yData = datasets && datasets.map(dataset => {
-      const total = dataset[totalField]
+      const total = getField(dataset, totalField, annoType)
       const name = `${dataset.name} ${dataset.versionName}`
-      const attrObj = dataset[sourceField]
+      const attrObj = getField(dataset, sourceField, annoType)
       return {
         name,
         value: xData.map(key => total ? (attrObj[key] ? (attrObj[key] / total).toFixed(4) : 0) : 0),
@@ -211,18 +225,22 @@ function Analysis() {
     },
     {
       title: showTitle('dataset.analysis.column.box_count'),
-      dataIndex: 'annosCnt',
+      dataIndex: 'total',
       ellipsis: true,
       align: 'center',
       className: style.colunmClass,
-      render: (num) => renderPop(humanize(num), num),
+      render: (_, record) => {
+        const num = getField(record, 'total', true)
+        return renderPop(humanize(num), num)
+      },
     },
     {
       title: showTitle('dataset.analysis.column.average_labels'),
-      dataIndex: 'aveAnnosCnt',
+      dataIndex: 'average',
       ellipsis: true,
       align: 'center',
       className: style.colunmClass,
+      render: (_, record) => getField(record, 'average', true),
     },
     {
       title: showTitle('dataset.analysis.column.overall'),
@@ -230,7 +248,11 @@ function Analysis() {
       ellipsis: true,
       align: 'center',
       className: style.colunmClass,
-      render: (text, record) => renderPop(`${humanize(record.positiveAssetCnt)}/${humanize(record.assetCount)}`, `${record.positiveAssetCnt}/${record.assetCount}`),
+      render: (text, record) => {
+        const total = getField(record, 'total', true)
+        const negative = getField(record, 'negative', true)
+        return renderPop(`${humanize(total - negative)}/${humanize(total)}`, `${total - negative}/${total}`)
+      },
     },
   ]
 

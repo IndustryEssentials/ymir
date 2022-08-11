@@ -80,20 +80,10 @@ export function transferDataset(data: BackendData): Dataset {
 
 export function transferDatasetAnalysis(data: BackendData): DatasetAnalysis {
   const { asset_bytes, asset_area, asset_quality, asset_hw_ratio, } = data.hist
-  const generateAnno = (data: BackendData) => {
-    const { anno_quality, anno_area, anno_area_ratio } = data.hist
-    return {
-      keywords: data.keywords,
-      total: data.tags_count_total,
-      average: data.ave_annos_count,
-      negative: data.negative_assets_count,
-      quality: anno_quality,
-      area: anno_area,
-      areaRatio: anno_area_ratio,
-    }
-  }
-  const gt = generateAnno(data.gt)
-  const pred = generateAnno(data.pred)
+
+  const assetTotal = data.total_assets_count || 0
+  const gt = generateAnno(data.gt, assetTotal)
+  const pred = generateAnno(data.pred, assetTotal)
   return {
     name: data.group_name,
     version: data.version_num || 0,
@@ -152,6 +142,19 @@ export function transferAnnotationsCount(count = {}, negative = 0, total = 1) {
     count,
     negative,
     total,
+  }
+}
+
+const generateAnno = (data: BackendData, assetTotal = 1) => {
+  const { anno_quality, anno_area, anno_area_ratio } = data.hist
+  return {
+    keywords: data.keywords,
+    total: data.annos_count,
+    average: data.annos_count / assetTotal,
+    negative: data.negative_assets_count,
+    quality: anno_quality,
+    area: anno_area,
+    areaRatio: anno_area_ratio,
   }
 }
 
