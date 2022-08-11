@@ -70,9 +70,6 @@ func GetDatasetMetaCountsHandler(
 		result.CksCountTotal[k] = int64(v.Cnt)
 		result.CksCount[k] = map[string]int64{}
 		for k2, v2 := range v.SubCnt {
-			if _, ok := result.CksCount[k]; !ok {
-				result.CksCount[k] = map[string]int64{}
-			}
 			result.CksCount[k][k2] = int64(v2)
 		}
 	}
