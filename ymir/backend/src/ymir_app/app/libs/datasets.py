@@ -16,7 +16,7 @@ from app.api.errors.errors import (
     PrematureDatasets,
 )
 from app.config import settings
-from app.constants.state import ResultState
+from app.constants.state import ResultState, TaskState
 from app.utils.files import FailedToDownload, verify_import_path, prepare_imported_dataset_dir, InvalidFileStructure
 from app.utils.ymir_viz import VizClient
 from app.utils.ymir_controller import (
@@ -25,6 +25,7 @@ from app.utils.ymir_controller import (
     gen_repo_hash,
 )
 from common_utils.labels import UserLabels
+from id_definition.error_codes import APIErrorCode as error_codes
 
 
 def import_dataset_in_background(
@@ -36,10 +37,30 @@ def import_dataset_in_background(
     dataset_id: int,
 ) -> None:
     try:
-        _import_dataset(db, controller_client, dataset_import, user_id, task_hash)
-    except (OSError, BadZipFile, FailedToDownload, FailedtoCreateDataset, DatasetNotFound, InvalidFileStructure):
+        return _import_dataset(db, controller_client, dataset_import, user_id, task_hash)
+    except FailedToDownload:
+        logger.exception("[import dataset] failed to download dataset file")
+        state_code = error_codes.FAILED_TO_DOWNLOAD
+    except (InvalidFileStructure, FileNotFoundError):
+        logger.exception("[import dataset] invalid dataset file structure")
+        state_code = error_codes.INVALID_DATASET_STRUCTURE
+    except DatasetNotFound:
+        logger.exception("[import dataset] source dataset not found, could not copy")
+        state_code = error_codes.DATASET_NOT_FOUND
+    except FailedtoCreateDataset:
+        logger.exception("[import dataset] controller error")
+        state_code = error_codes.CONTROLLER_ERROR
+    except BadZipFile:
+        logger.exception("[import dataset] invalid zip file")
+        state_code = error_codes.INVALID_DATASET_ZIP_FILE
+    except Exception:
         logger.exception("[import dataset] failed to import dataset")
-        crud.dataset.update_state(db, dataset_id=dataset_id, new_state=ResultState.error)
+        state_code = error_codes.DATASET_FAILED_TO_IMPORT
+
+    task = crud.task.get_by_hash(db, task_hash)
+    if task:
+        crud.task.update_state(db, task=task, new_state=TaskState.error, state_code=str(state_code))
+    crud.dataset.update_state(db, dataset_id=dataset_id, new_state=ResultState.error)
 
 
 def _import_dataset(
