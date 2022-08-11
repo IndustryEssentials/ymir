@@ -27,9 +27,9 @@ func (m *MockMirRepoLoader) LoadAssetsDetail(
 	anchorAssetID string,
 	offset int,
 	limit int,
-) ([]constants.MirAssetDetail, int64) {
+) ([]constants.MirAssetDetail, int64, int64) {
 	args := m.Called()
-	return args.Get(0).([]constants.MirAssetDetail), int64(args.Int(1))
+	return args.Get(0).([]constants.MirAssetDetail), int64(args.Int(1)), int64(args.Int(2))
 }
 
 func TestGetDatasetMetaCountsHandler(t *testing.T) {
@@ -61,7 +61,7 @@ func TestGetDatasetMetaCountsHandler(t *testing.T) {
 	}
 
 	pbreaderMock := MockMirRepoLoader{}
-	pbreaderMock.On("LoadSingleMirData", mirFile).Return(&mockMirContext, 0)
+	pbreaderMock.On("LoadSingleMirData", mirFile).Return(&mockMirContext, 0, 0)
 
 	expectedResult := constants.QueryDatasetStatsResult{}
 	result := GetDatasetMetaCountsHandler(&pbreaderMock)

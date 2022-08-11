@@ -19,7 +19,7 @@ func loadAndCacheAssets(mongo MongoServer, mirLoader loader.BaseMirRepoLoader) {
 		log.Printf("Mongodb ready for %s.", fmt.Sprint(mirRepo))
 	} else {
 		log.Printf("No data for %s, reading & building cache.", fmt.Sprint(mirRepo))
-		mirAssetsDetail, _ := mirLoader.LoadAssetsDetail("", 0, 0)
+		mirAssetsDetail, _, _ := mirLoader.LoadAssetsDetail("", 0, 0)
 
 		newData := make([]interface{}, 0)
 		for _, v := range mirAssetsDetail {
@@ -45,12 +45,12 @@ func GetAssetsHandler(
 		if len(classIds) < 1 && len(cmTypes) < 1 && len(cks) < 1 && len(tags) < 1 {
 			go loadAndCacheAssets(mongo, mirLoader)
 
-			mirAssetsDetail, totalAssetsCount := mirLoader.LoadAssetsDetail(currentAssetId, offset, limit)
+			mirAssetsDetail, anchor, totalAssetsCount := mirLoader.LoadAssetsDetail(currentAssetId, offset, limit)
 			return constants.QueryAssetsResult{
 				AssetsDetail:     mirAssetsDetail,
 				Offset:           offset,
 				Limit:            limit,
-				Anchor:           0,
+				Anchor:           anchor,
 				TotalAssetsCount: totalAssetsCount,
 			}
 		}

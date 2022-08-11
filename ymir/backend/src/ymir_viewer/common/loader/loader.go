@@ -20,7 +20,7 @@ import (
 type BaseMirRepoLoader interface {
 	GetMirRepo() constants.MirRepo
 	LoadSingleMirData(mirFile constants.MirFile) interface{}
-	LoadAssetsDetail(anchorAssetID string, offset int, limit int) ([]constants.MirAssetDetail, int64)
+	LoadAssetsDetail(anchorAssetID string, offset int, limit int) ([]constants.MirAssetDetail, int64, int64)
 }
 
 type MirRepoLoader struct {
@@ -94,7 +94,7 @@ func (mirRepoLoader *MirRepoLoader) LoadAssetsDetail(
 	anchorAssetID string,
 	offset int,
 	limit int,
-) ([]constants.MirAssetDetail, int64) {
+) ([]constants.MirAssetDetail, int64, int64) {
 	defer tools.TimeTrack(time.Now())
 	filesToLoad := []constants.MirFile{constants.MirfileMetadatas, constants.MirfileAnnotations}
 	mirDatas := mirRepoLoader.LoadMutipleMirDatas(filesToLoad)
@@ -120,9 +120,9 @@ func (mirRepoLoader *MirRepoLoader) LoadAssetsDetail(
 	}
 	sort.Strings(assetIds)
 
+	anchorIdx := 0
 	// Taking shortcut, only return a "limit" subset of assetIds.
 	if limit > 0 {
-		anchorIdx := 0
 		if len(anchorAssetID) > 0 {
 			for idx, assetId := range assetIds {
 				if assetId == anchorAssetID {
@@ -168,5 +168,5 @@ func (mirRepoLoader *MirRepoLoader) LoadAssetsDetail(
 			mirAssetDetails[idx].JoinedClassIDs = append(mirAssetDetails[idx].JoinedClassIDs, k)
 		}
 	}
-	return mirAssetDetails, int64(len(mirMetadatas.Attributes))
+	return mirAssetDetails, int64(anchorIdx), int64(len(mirMetadatas.Attributes))
 }
