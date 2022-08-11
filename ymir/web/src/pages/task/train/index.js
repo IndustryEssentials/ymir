@@ -221,6 +221,7 @@ function Train({ allDatasets, datasetCache, ...func }) {
     </div>) : t('task.train.action.duplicated.no')
   }
 
+  const matchKeywords = dataset => dataset.keywords.some(kw => selectedKeywords.includes(kw))
   const notTestingSet = id => !testingSetIds.includes(id)
   const trainsetFilters = datasets => datasets.filter(ds => {
     const notTestSet = ds.id !== testSet
@@ -229,7 +230,7 @@ function Train({ allDatasets, datasetCache, ...func }) {
 
   const validationSetFilters = datasets => datasets.filter(ds => {
     const notTrainSet = ds.id !== trainSet
-    return notTrainSet && notTestingSet(ds.id)
+    return matchKeywords(ds) && notTrainSet && notTestingSet(ds.id)
   })
 
   const getCheckedValue = (list) => list.find((item) => item.checked)["value"]
