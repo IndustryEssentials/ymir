@@ -5,7 +5,6 @@ paths:
     get:
       consumes:
       - application/json
-      description: get string by ID
       parameters:
       - description: User ID
         in: path
@@ -63,7 +62,6 @@ paths:
     get:
       consumes:
       - application/json
-      description: get string by ID
       parameters:
       - description: User ID
         in: path
@@ -93,7 +91,6 @@ paths:
     get:
       consumes:
       - application/json
-      description: get string by ID
       parameters:
       - description: User ID
         in: path
@@ -127,7 +124,6 @@ paths:
     get:
       consumes:
       - application/json
-      description: get string by ID
       parameters:
       - description: User ID
         in: path

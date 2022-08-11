@@ -18,7 +18,6 @@ const docTemplate = `{
     "paths": {
         "/api/v1/users/{userId}/repo/{repoId}/branch/{branchId}/assets": {
             "get": {
-                "description": "get string by ID",
                 "consumes": [
                     "application/json"
                 ],
@@ -103,7 +102,6 @@ const docTemplate = `{
         },
         "/api/v1/users/{userId}/repo/{repoId}/branch/{branchId}/dataset_meta_count": {
             "get": {
-                "description": "get string by ID",
                 "consumes": [
                     "application/json"
                 ],
@@ -146,7 +144,6 @@ const docTemplate = `{
         },
         "/api/v1/users/{userId}/repo/{repoId}/branch/{branchId}/dataset_stats": {
             "get": {
-                "description": "get string by ID",
                 "consumes": [
                     "application/json"
                 ],
@@ -195,7 +192,6 @@ const docTemplate = `{
         },
         "/api/v1/users/{userId}/repo/{repoId}/dataset_duplication": {
             "get": {
-                "description": "get string by ID",
                 "consumes": [
                     "application/json"
                 ],

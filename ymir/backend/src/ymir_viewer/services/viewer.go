@@ -111,7 +111,6 @@ func (s *ViewerServer) getIntSliceFromQuery(c *gin.Context, field string) []int 
 }
 
 // @Summary Query single or set of assets.
-// @Description get string by ID
 // @Accept  json
 // @Produce  json
 // @Param   userId     path    string     true        "User ID"
@@ -180,7 +179,6 @@ func (s *ViewerServer) handleAssets(c *gin.Context) {
 }
 
 // @Summary Query dataset info, lightweight api.
-// @Description get string by ID
 // @Accept  json
 // @Produce  json
 // @Param   userId     path    string     true        "User ID"
@@ -195,7 +193,6 @@ func (s *ViewerServer) handleDatasetMetaCounts(c *gin.Context) {
 }
 
 // @Summary Query dataset Stats.
-// @Description get string by ID
 // @Accept  json
 // @Produce  json
 // @Param   userId     path    string     true        "User ID"
@@ -213,7 +210,6 @@ func (s *ViewerServer) handleDatasetStats(c *gin.Context) {
 }
 
 // @Summary Query dataset Stats.
-// @Description get string by ID
 // @Accept  json
 // @Produce  json
 // @Param   userId     path    string     true        "User ID"
