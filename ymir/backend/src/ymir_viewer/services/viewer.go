@@ -56,15 +56,18 @@ func (s *ViewerServer) Clear() {
 }
 
 func (s *ViewerServer) routes() {
-	apiGroup := s.gin.Group("/ap/v1")
-	{
-		apiGroup.GET("/users/:userId/repo/:repoId/branch/:branchId/assets", s.handleAssets)
-		apiGroup.GET("/users/:userId/repo/:repoId/branch/:branchId/dataset_meta_count", s.handleDatasetMetaCounts)
-		apiGroup.GET("/users/:userId/repo/:repoId/branch/:branchId/dataset_stats", s.handleDatasetStats)
-		apiGroup.GET("/users/:userId/repo/:repoId/dataset_duplication", s.handleDatasetDup)
-	}
+	r := s.gin
+
 	docs.SwaggerInfo.BasePath = "/api/v1"
-	s.gin.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+
+	apiPath := r.Group("/api/v1")
+	{
+		apiPath.GET("/users/:userId/repo/:repoId/branch/:branchId/assets", s.handleAssets)
+		apiPath.GET("/users/:userId/repo/:repoId/branch/:branchId/dataset_meta_count", s.handleDatasetMetaCounts)
+		apiPath.GET("/users/:userId/repo/:repoId/branch/:branchId/dataset_stats", s.handleDatasetStats)
+		apiPath.GET("/users/:userId/repo/:repoId/dataset_duplication", s.handleDatasetDup)
+	}
 }
 
 func (s *ViewerServer) buildMirRepoFromParam(c *gin.Context) constants.MirRepo {
