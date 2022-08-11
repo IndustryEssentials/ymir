@@ -184,7 +184,7 @@ class DatasetAnnotation(BaseModel):
     tags_count: Dict  # box tags in second level
     hist: DatasetAnnotationHist
     annos_count: int
-    ave_annos_count: int
+    ave_annos_count: float
 
     class Config:
         orm_mode = True

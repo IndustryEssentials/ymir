@@ -598,7 +598,7 @@ class MirStorageOps():
 
     @classmethod
     def _gen_viz_hist(cls, hist_dict: Any) -> List[Dict]:
-        return sorted([{'x': k, 'y': v} for k, v in hist_dict.items()], key=lambda e: e['x']),  # type: ignore
+        return sorted([{'x': k, 'y': v} for k, v in hist_dict.items()], key=lambda e: e['x'])
 
     @classmethod
     def _load_single_dataset_pred_or_gt_info(cls, mir_storage_context: mirpb.MirContext, task_storage: mirpb.Task,
