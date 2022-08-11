@@ -1,5 +1,3 @@
-from collections import Counter
-import json
 import os
 import shutil
 import unittest
@@ -8,7 +6,7 @@ from google.protobuf import json_format
 import numpy as np
 
 from mir.protos import mir_command_pb2 as mirpb
-from mir.tools import det_eval, mir_storage_ops, revs_parser
+from mir.tools import det_eval_coco, det_eval_dataset, mir_storage_ops
 from tests import utils as test_utils
 
 
@@ -244,12 +242,12 @@ class TestToolsDetEval(unittest.TestCase):
             mir_branch='a',
             mir_task_id='a',
             ms_list=[mirpb.MirStorage.MIR_METADATAS, mirpb.MirStorage.MIR_ANNOTATIONS, mirpb.MirStorage.MIR_KEYWORDS])
-        mir_coco = det_eval.MirCoco(mir_metadatas=mir_metadatas,
-                                    mir_annotations=mir_annotations,
-                                    mir_keywords=mir_keywords,
-                                    conf_thr=0,
-                                    dataset_id='a@a',
-                                    as_gt=True)
+        mir_coco = det_eval_dataset.MirDataset(mir_metadatas=mir_metadatas,
+                                               mir_annotations=mir_annotations,
+                                               mir_keywords=mir_keywords,
+                                               conf_thr=0,
+                                               dataset_id='a@a',
+                                               as_gt=True)
         self.assertEqual(['a0', 'a1', 'a2'], mir_coco.get_asset_ids())
         self.assertEqual([0, 1, 2], mir_coco.get_asset_idxes())
         self.assertEqual([0, 1, 2], mir_coco.get_class_ids())
@@ -272,20 +270,20 @@ class TestToolsDetEval(unittest.TestCase):
             mir_task_id='a',
             ms_list=[mirpb.MirStorage.MIR_METADATAS, mirpb.MirStorage.MIR_ANNOTATIONS, mirpb.MirStorage.MIR_KEYWORDS])
 
-        mir_gt = det_eval.MirCoco(mir_metadatas=mir_metadatas,
-                                  mir_annotations=mir_annotations,
-                                  mir_keywords=mir_keywords,
-                                  conf_thr=0,
-                                  dataset_id='a',
-                                  as_gt=True)
-        mir_dt = det_eval.MirCoco(mir_metadatas=mir_metadatas,
-                                  mir_annotations=mir_annotations,
-                                  mir_keywords=mir_keywords,
-                                  conf_thr=0,
-                                  dataset_id='a',
-                                  as_gt=False)
+        mir_gt = det_eval_dataset.MirDataset(mir_metadatas=mir_metadatas,
+                                             mir_annotations=mir_annotations,
+                                             mir_keywords=mir_keywords,
+                                             conf_thr=0,
+                                             dataset_id='a',
+                                             as_gt=True)
+        mir_dt = det_eval_dataset.MirDataset(mir_metadatas=mir_metadatas,
+                                             mir_annotations=mir_annotations,
+                                             mir_keywords=mir_keywords,
+                                             conf_thr=0,
+                                             dataset_id='a',
+                                             as_gt=False)
 
-        mir_evaluator = det_eval.CocoDetEval(coco_gt=mir_gt, coco_dt=mir_dt)
+        mir_evaluator = det_eval_coco.CocoDetEval(coco_gt=mir_gt, coco_dt=mir_dt)
         mir_evaluator.evaluate()
         mir_evaluator.accumulate()
         mir_evaluator.summarize()
