@@ -4,3 +4,5 @@ ViewerHost: "127.0.0.1"
 ViewerPort: 9527
 
 MongodbUri: "mongodb://127.0.0.1:27017"
+
+InnerTimeout: 10
