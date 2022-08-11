@@ -45,8 +45,8 @@ func (s *ViewerServer) Start() {
 	srv := &http.Server{
 		Addr:         s.addr,
 		Handler:      s.gin,
-		ReadTimeout:  5 * time.Second,
-		WriteTimeout: 5 * time.Second,
+		ReadTimeout:  s.config.InnerTimeout * time.Second,
+		WriteTimeout: s.config.InnerTimeout * time.Second,
 	}
 	log.Fatal(srv.ListenAndServe())
 }
@@ -56,14 +56,17 @@ func (s *ViewerServer) Clear() {
 }
 
 func (s *ViewerServer) routes() {
+	r := s.gin
+
 	docs.SwaggerInfo.BasePath = "/api/v1"
-	s.gin.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
-	apiGroup := s.gin.Group("/ap/v1")
+	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+
+	apiPath := r.Group("/api/v1")
 	{
-		apiGroup.GET("/users/:userId/repo/:repoId/branch/:branchId/assets", s.handleAssets)
-		apiGroup.GET("/users/:userId/repo/:repoId/branch/:branchId/dataset_meta_count", s.handleDatasetMetaCounts)
-		apiGroup.GET("/users/:userId/repo/:repoId/branch/:branchId/dataset_stats", s.handleDatasetStats)
-		apiGroup.GET("/users/:userId/repo/:repoId/dataset_duplication", s.handleDatasetDup)
+		apiPath.GET("/users/:userId/repo/:repoId/branch/:branchId/assets", s.handleAssets)
+		apiPath.GET("/users/:userId/repo/:repoId/branch/:branchId/dataset_meta_count", s.handleDatasetMetaCounts)
+		apiPath.GET("/users/:userId/repo/:repoId/branch/:branchId/dataset_stats", s.handleDatasetStats)
+		apiPath.GET("/users/:userId/repo/:repoId/dataset_duplication", s.handleDatasetDup)
 	}
 }
 
