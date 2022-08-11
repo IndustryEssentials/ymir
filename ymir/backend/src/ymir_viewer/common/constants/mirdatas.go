@@ -105,15 +105,20 @@ type DatasetStatsElement struct {
 }
 
 type QueryDatasetStatsResult struct {
-	Gt               DatasetStatsElement `json:"gt"`
-	Pred             DatasetStatsElement `json:"pred"`
-	TotalAssetsCount int64               `json:"total_assets_count"`
+	Gt               DatasetStatsElement         `json:"gt"`
+	Pred             DatasetStatsElement         `json:"pred"`
+	TotalAssetsCount int64                       `json:"total_assets_count"`
+	CksCountTotal    map[string]int64            `json:"cks_count_total"`
+	CksCount         map[string]map[string]int64 `json:"cks_count"`
 }
 
 func NewQueryDatasetStatsResult() QueryDatasetStatsResult {
 	queryResult := QueryDatasetStatsResult{
-		Gt:   DatasetStatsElement{ClassIdsCount: map[int]int64{}},
-		Pred: DatasetStatsElement{ClassIdsCount: map[int]int64{}},
+		Gt:               DatasetStatsElement{ClassIdsCount: map[int]int64{}},
+		Pred:             DatasetStatsElement{ClassIdsCount: map[int]int64{}},
+		TotalAssetsCount: 0,
+		CksCount:         map[string]map[string]int64{},
+		CksCountTotal:    map[string]int64{},
 	}
 	return queryResult
 }

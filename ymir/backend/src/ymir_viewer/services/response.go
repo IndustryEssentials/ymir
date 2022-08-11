@@ -14,12 +14,12 @@ type ResultVO struct {
 	Data    interface{}            `json:"data"`
 }
 
-func ViewerSuccess(ctx *gin.Context, code constants.ResponseCode, msg constants.ResponseMsg, data interface{}) {
-	resp := &ResultVO{Code: code, Msg: msg, Success: true, Data: data}
+func ViewerSuccess(ctx *gin.Context, data interface{}) {
+	resp := &ResultVO{Code: constants.ViewerSuccessCode, Msg: constants.ViewerSuccessMsg, Success: true, Data: data}
 	ctx.JSON(http.StatusOK, resp)
 }
 
 func ViewerFailure(ctx *gin.Context, code constants.ResponseCode, msg constants.ResponseMsg, data interface{}) {
 	resp := &ResultVO{Code: code, Msg: msg, Success: false, Data: data}
-	ctx.JSON(http.StatusInternalServerError, resp)
+	ctx.JSON(http.StatusOK, resp)
 }

@@ -8,8 +8,12 @@ import (
 	"time"
 
 	"github.com/IndustryEssentials/ymir-viewer/common/constants"
+	"github.com/IndustryEssentials/ymir-viewer/common/loader"
 	"github.com/IndustryEssentials/ymir-viewer/common/protos"
+	docs "github.com/IndustryEssentials/ymir-viewer/docs"
 	"github.com/gin-gonic/gin"
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 	"go.mongodb.org/mongo-driver/bson"
 )
 
@@ -41,8 +45,8 @@ func (s *ViewerServer) Start() {
 	srv := &http.Server{
 		Addr:         s.addr,
 		Handler:      s.gin,
-		ReadTimeout:  5 * time.Second,
-		WriteTimeout: 5 * time.Second,
+		ReadTimeout:  s.config.InnerTimeout * time.Second,
+		WriteTimeout: s.config.InnerTimeout * time.Second,
 	}
 	log.Fatal(srv.ListenAndServe())
 }
@@ -52,15 +56,17 @@ func (s *ViewerServer) Clear() {
 }
 
 func (s *ViewerServer) routes() {
-	apiPath := s.gin.Group("/api")
+	r := s.gin
+
+	docs.SwaggerInfo.BasePath = "/api/v1"
+	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+
+	apiPath := r.Group("/api/v1")
 	{
-		v1Path := apiPath.Group("/v1")
-		{
-			v1Path.GET("/users/:userId/repo/:repoId/branch/:branchId/assets", s.handleAssets)
-			v1Path.GET("/users/:userId/repo/:repoId/branch/:branchId/dataset_meta_count", s.handleDatasetMetaCounts)
-			v1Path.GET("/users/:userId/repo/:repoId/branch/:branchId/dataset_stats", s.handleDatasetStats)
-			v1Path.GET("/users/:userId/repo/:repoId/dataset_duplication", s.handleDatasetDup)
-		}
+		apiPath.GET("/users/:userId/repo/:repoId/branch/:branchId/assets", s.handleAssets)
+		apiPath.GET("/users/:userId/repo/:repoId/branch/:branchId/dataset_meta_count", s.handleDatasetMetaCounts)
+		apiPath.GET("/users/:userId/repo/:repoId/branch/:branchId/dataset_stats", s.handleDatasetStats)
+		apiPath.GET("/users/:userId/repo/:repoId/dataset_duplication", s.handleDatasetDup)
 	}
 }
 
@@ -107,14 +113,21 @@ func (s *ViewerServer) getIntSliceFromQuery(c *gin.Context, field string) []int 
 	return classIds
 }
 
-// optional query example:
-// offset=100
-// limit=10
-// class_ids=1,3,7
-// current_asset_id=xxxyyyzzz
-// cm_types=FN,TP,MTP,IGNORED
-// cks=xxx,xxx:,xxx:yyy (key:value, key is required, :yyy is not valid)
-// tags=xxx,xxx:,xxx:yyy (key:value, key is required, :yyy is not valid)
+// @Summary Query single or set of assets.
+// @Accept  json
+// @Produce  json
+// @Param   userId     path    string     true        "User ID"
+// @Param   repoId     path    string     true        "Repo ID"
+// @Param   branchId     path    string     true        "Branch ID"
+// @Param   offset     query    string     false        "Offset, default is 0"
+// @Param   limit     query    string     false        "limit, default is 20"
+// @Param   class_ids     query    string     false        "e.g. class_ids=1,3,7"
+// @Param   current_asset_id     query    string     false        "e.g. current_asset_id=xxxyyyzzz"
+// @Param   cm_types     query    string     false        "e.g. cm_types=FN,TP,MTP,IGNORED"
+// @Param   cks     query    string     false        "ck pairs, e.g. cks=xxx,xxx:,xxx:yyy"
+// @Param   tags     query    string     false        "tag pairs, e.g. cks=xxx,xxx:,xxx:yyy"
+// @Success 200 {string} string    "'code': 0, 'msg': 'Success', 'Success': true, 'Data': constants.QueryAssetsResult"
+// @Router /api/v1/users/{userId}/repo/{repoId}/branch/{branchId}/assets [get]
 func (s *ViewerServer) handleAssets(c *gin.Context) {
 	mirRepo := s.buildMirRepoFromParam(c)
 	offset := s.getIntFromQuery(c, "offset")
@@ -154,24 +167,59 @@ func (s *ViewerServer) handleAssets(c *gin.Context) {
 		}
 	}
 
-	resultData := GetAssetsHandler(s.Mongo, mirRepo, offset, limit, classIds, currentAssetId, cmTypes, cks, tags)
-	ViewerSuccess(c, constants.ViewerSuccessCode, constants.ViewerSuccessMsg, resultData)
+	resultData := GetAssetsHandler(
+		s.Mongo,
+		&loader.MirRepoLoader{MirRepo: mirRepo},
+		offset,
+		limit,
+		classIds,
+		currentAssetId,
+		cmTypes,
+		cks,
+		tags,
+	)
+	ViewerSuccess(c, resultData)
 }
 
+// @Summary Query dataset info, lightweight api.
+// @Accept  json
+// @Produce  json
+// @Param   userId     path    string     true        "User ID"
+// @Param   repoId     path    string     true        "Repo ID"
+// @Param   branchId     path    string     true        "Branch ID"
+// @Success 200 {string} string    "'code': 0, 'msg': 'Success', 'Success': true, 'Data': constants.QueryDatasetStatsResult"
+// @Router /api/v1/users/{userId}/repo/{repoId}/branch/{branchId}/dataset_meta_count [get]
 func (s *ViewerServer) handleDatasetMetaCounts(c *gin.Context) {
 	mirRepo := s.buildMirRepoFromParam(c)
-	resultData := GetDatasetMetaCountsHandler(s.Mongo, mirRepo)
-	ViewerSuccess(c, constants.ViewerSuccessCode, constants.ViewerSuccessMsg, resultData)
+	resultData := GetDatasetMetaCountsHandler(&loader.MirRepoLoader{MirRepo: mirRepo})
+	ViewerSuccess(c, resultData)
 }
 
+// @Summary Query dataset Stats.
+// @Accept  json
+// @Produce  json
+// @Param   userId     path    string     true        "User ID"
+// @Param   repoId     path    string     true        "Repo ID"
+// @Param   branchId     path    string     true        "Branch ID"
+// @Param   class_ids     query    string     false        "e.g. class_ids=1,3,7"
+// @Success 200 {string} string    "'code': 0, 'msg': 'Success', 'Success': true, 'Data': constants.QueryDatasetStatsResult"
+// @Router /api/v1/users/{userId}/repo/{repoId}/branch/{branchId}/dataset_stats [get]
 func (s *ViewerServer) handleDatasetStats(c *gin.Context) {
 	mirRepo := s.buildMirRepoFromParam(c)
 	classIds := s.getIntSliceFromQuery(c, "class_ids")
 
-	resultData := GetDatasetStatsHandler(s.Mongo, mirRepo, classIds)
-	ViewerSuccess(c, constants.ViewerSuccessCode, constants.ViewerSuccessMsg, resultData)
+	resultData := GetDatasetStatsHandler(s.Mongo, &loader.MirRepoLoader{MirRepo: mirRepo}, classIds)
+	ViewerSuccess(c, resultData)
 }
 
+// @Summary Query dataset dups.
+// @Accept  json
+// @Produce  json
+// @Param   userId     path    string     true        "User ID"
+// @Param   repoId     path    string     true        "Repo ID"
+// @Param   candidate_dataset_ids     query    string     true        "e.g. candidate_dataset_ids=xxx,yyy"
+// @Success 200 {string} string    "'code': 0, 'msg': 'Success', 'Success': true, 'Data': 'duplication: 50, total_count: {xxx: 100, yyy: 200}'"
+// @Router /api/v1/users/{userId}/repo/{repoId}/dataset_duplication [get]
 func (s *ViewerServer) handleDatasetDup(c *gin.Context) {
 	// Validate candidate_dataset_ids
 	candidateDatasetIds := c.DefaultQuery("candidate_dataset_ids", "")
@@ -205,10 +253,14 @@ func (s *ViewerServer) handleDatasetDup(c *gin.Context) {
 		TaskId:      datasetIds[1],
 	}
 
-	duplicateCount, mirRepoCount0, mirRepoCount1 := GetDatasetDupHandler(s.Mongo, mirRepo0, mirRepo1)
+	duplicateCount, mirRepoCount0, mirRepoCount1 := GetDatasetDupHandler(
+		s.Mongo,
+		&loader.MirRepoLoader{MirRepo: mirRepo0},
+		&loader.MirRepoLoader{MirRepo: mirRepo1},
+	)
 	resultData := bson.M{
-		"result":      duplicateCount,
+		"duplication": duplicateCount,
 		"total_count": bson.M{datasetIds[0]: mirRepoCount0, datasetIds[1]: mirRepoCount1},
 	}
-	ViewerSuccess(c, constants.ViewerSuccessCode, constants.ViewerSuccessMsg, resultData)
+	ViewerSuccess(c, resultData)
 }
