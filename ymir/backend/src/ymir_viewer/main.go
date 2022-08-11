@@ -11,14 +11,23 @@ import (
 )
 
 func InitViperConfig() constants.Config {
-	viper.BindEnv("YmirSandbox", "BACKEND_SANDBOX_ROOT")
-	viper.BindEnv("ViewerPort", "VIEWER_HOST_PORT")
-	viper.BindEnv("MongodbUri", "MONGODB_URI")
+	err := viper.BindEnv("YmirSandbox", "BACKEND_SANDBOX_ROOT")
+	if err != nil {
+		panic(err)
+	}
+	err = viper.BindEnv("ViewerPort", "VIEWER_HOST_PORT")
+	if err != nil {
+		panic(err)
+	}
+	err = viper.BindEnv("MongodbUri", "MONGODB_URI")
+	if err != nil {
+		panic(err)
+	}
 
 	viper.SetConfigName("config")
 	viper.SetConfigType("yml")
 	viper.AddConfigPath(".")
-	err := viper.ReadInConfig()
+	err = viper.ReadInConfig()
 	if err != nil {
 		panic(err)
 	}

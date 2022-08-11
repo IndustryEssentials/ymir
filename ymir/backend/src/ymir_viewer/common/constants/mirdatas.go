@@ -94,26 +94,31 @@ func NewMirAssetDetail() MirAssetDetail {
 }
 
 type QueryAssetsResult struct {
-	AssetsDetail []MirAssetDetail `json:"elements"`
-	TotalCount   int64            `json:"total"`
+	AssetsDetail     []MirAssetDetail `json:"elements"`
+	TotalAssetsCount int64            `json:"total_assets_count"`
 }
 
 type DatasetStatsElement struct {
-	ClassIdCount        map[int]int64 `json:"keywords"`
+	ClassIdsCount       map[int]int64 `json:"class_ids_count"`
 	NegativeImagesCount int64         `json:"negative_images_count"`
 	PositiveImagesCount int64         `json:"positive_images_count"`
 }
 
 type QueryDatasetStatsResult struct {
-	Gt         DatasetStatsElement `json:"gt"`
-	Pred       DatasetStatsElement `json:"pred"`
-	TotalCount int64               `json:"total"`
+	Gt               DatasetStatsElement         `json:"gt"`
+	Pred             DatasetStatsElement         `json:"pred"`
+	TotalAssetsCount int64                       `json:"total_assets_count"`
+	CksCountTotal    map[string]int64            `json:"cks_count_total"`
+	CksCount         map[string]map[string]int64 `json:"cks_count"`
 }
 
 func NewQueryDatasetStatsResult() QueryDatasetStatsResult {
 	queryResult := QueryDatasetStatsResult{
-		Gt:   DatasetStatsElement{ClassIdCount: map[int]int64{}},
-		Pred: DatasetStatsElement{ClassIdCount: map[int]int64{}},
+		Gt:               DatasetStatsElement{ClassIdsCount: map[int]int64{}},
+		Pred:             DatasetStatsElement{ClassIdsCount: map[int]int64{}},
+		TotalAssetsCount: 0,
+		CksCount:         map[string]map[string]int64{},
+		CksCountTotal:    map[string]int64{},
 	}
 	return queryResult
 }
