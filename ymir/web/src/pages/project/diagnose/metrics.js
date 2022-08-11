@@ -215,7 +215,7 @@ function Matrics({ pid, project }) {
           <div className={s.formContainer}>
 
             <div className={s.mask} hidden={!diagnosing}>
-              <Button style={{ marginBottom: 10 }} size='large' type="primary" onClick={() => retry()}><CompareIcon /> {t('model.diagnose.analysis.btn.retry')}</Button>
+              <Button style={{ marginBottom: 10 }} size='large' type="primary" onClick={() => retry()}><CompareIcon /> {t('model.diagnose.metrics.btn.retry')}</Button>
             </div>
             <Panel label={'Metrics'} style={{ marginTop: -10 }} toogleVisible={false}>
               <Form
@@ -238,7 +238,7 @@ function Matrics({ pid, project }) {
                 <Form.Item name='submitBtn'>
                   <div style={{ textAlign: 'center' }}>
                     <Button type="primary" size="large" htmlType="submit">
-                      <CompareIcon /> {t('model.diagnose.analysis.btn.start_diagnose')}
+                      <CompareIcon /> {t('model.diagnose.metrics.btn.start')}
                     </Button>
                   </div>
                 </Form.Item>
