@@ -45,8 +45,8 @@ func (s *ViewerServer) Start() {
 	srv := &http.Server{
 		Addr:         s.addr,
 		Handler:      s.gin,
-		ReadTimeout:  5 * time.Second,
-		WriteTimeout: 5 * time.Second,
+		ReadTimeout:  s.config.InnerTimeout * time.Second,
+		WriteTimeout: s.config.InnerTimeout * time.Second,
 	}
 	log.Fatal(srv.ListenAndServe())
 }
@@ -56,8 +56,6 @@ func (s *ViewerServer) Clear() {
 }
 
 func (s *ViewerServer) routes() {
-	docs.SwaggerInfo.BasePath = "/api/v1"
-	s.gin.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 	apiGroup := s.gin.Group("/ap/v1")
 	{
 		apiGroup.GET("/users/:userId/repo/:repoId/branch/:branchId/assets", s.handleAssets)
@@ -65,6 +63,8 @@ func (s *ViewerServer) routes() {
 		apiGroup.GET("/users/:userId/repo/:repoId/branch/:branchId/dataset_stats", s.handleDatasetStats)
 		apiGroup.GET("/users/:userId/repo/:repoId/dataset_duplication", s.handleDatasetDup)
 	}
+	docs.SwaggerInfo.BasePath = "/api/v1"
+	s.gin.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 }
 
 func (s *ViewerServer) buildMirRepoFromParam(c *gin.Context) constants.MirRepo {

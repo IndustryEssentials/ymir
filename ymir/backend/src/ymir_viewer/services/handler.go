@@ -66,6 +66,13 @@ func GetDatasetMetaCountsHandler(
 		result.Pred.ClassIdsCount[int(k)] = int64(v)
 	}
 
+	for k, v := range mirContext.CksCnt {
+		result.CksCountTotal[k] = int64(v.Cnt)
+		for k2, v2 := range v.SubCnt {
+			result.CksCount[k][k2] = int64(v2)
+		}
+	}
+
 	return result
 }
 
