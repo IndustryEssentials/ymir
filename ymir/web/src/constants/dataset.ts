@@ -96,13 +96,6 @@ export function transferDatasetAnalysis(data: BackendData): DatasetAnalysis {
     assetHWRatio: asset_hw_ratio,
     gt,
     pred,
-    // annosCnt: data.annos_cnt,
-    // aveAnnosCnt: data.ave_annos_cnt,
-    // positiveAssetCnt: data.positive_asset_cnt,
-    // negativeAssetCnt: data.negative_asset_cnt,
-    // annoAreaRatio: data.anno_area_ratio,
-    // annoQuality: data.anno_quality,
-    // classNamesCount: data.class_names_count,
   }
 }
 
