@@ -19,7 +19,7 @@ func loadAndCacheAssets(mongo MongoServer, mirLoader loader.BaseMirRepoLoader) {
 		log.Printf("Mongodb ready for %s.", fmt.Sprint(mirRepo))
 	} else {
 		log.Printf("No data for %s, reading & building cache.", fmt.Sprint(mirRepo))
-		mirAssetsDetail := mirLoader.LoadAssetsDetail()
+		mirAssetsDetail, _ := mirLoader.LoadAssetsDetail("", 0, 0)
 
 		newData := make([]interface{}, 0)
 		for _, v := range mirAssetsDetail {
@@ -40,6 +40,22 @@ func GetAssetsHandler(
 	cks []string,
 	tags []string,
 ) constants.QueryAssetsResult {
+	// Speed up when "first time" loading, i.e.: cache miss && only offset/limit/currentAssetId are set at most.
+	if !mongo.checkExistence(mirLoader.GetMirRepo()) {
+		if len(classIds) < 1 && len(cmTypes) < 1 && len(cks) < 1 && len(tags) < 1 {
+			go loadAndCacheAssets(mongo, mirLoader)
+
+			mirAssetsDetail, totalAssetsCount := mirLoader.LoadAssetsDetail(currentAssetId, offset, limit)
+			return constants.QueryAssetsResult{
+				AssetsDetail:     mirAssetsDetail,
+				Offset:           offset,
+				Limit:            limit,
+				Anchor:           0,
+				TotalAssetsCount: totalAssetsCount,
+			}
+		}
+	}
+
 	loadAndCacheAssets(mongo, mirLoader)
 	return mongo.QueryAssets(mirLoader.GetMirRepo(), offset, limit, classIds, currentAssetId, cmTypes, cks, tags)
 }
