@@ -443,8 +443,8 @@ def get_asset_of_dataset(
         user_labels=user_labels,
         use_viewer=True,
     )
-    assets = viz_client.get_assets(asset_hash=asset_hash)
-    if assets.total == 0:
+    assets = viz_client.get_assets(asset_hash=asset_hash, limit=1)
+    if assets.total != 1:
         raise AssetNotFound()
     return {"result": assets.items[0]}
 

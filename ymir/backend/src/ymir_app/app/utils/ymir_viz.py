@@ -272,8 +272,10 @@ class ViewerAssetRequest(BaseModel):
     cm_types: Optional[str]
     cks: Optional[str]
     tags: Optional[str]
+    limit: Optional[int]
+    offset: Optional[int]
 
-    @validator("*", pre=True)
+    @validator("class_ids", "cm_types", "cks", "tags", pre=True)
     def make_str(cls, v: Any) -> Optional[str]:
         if v is None:
             return v
@@ -337,7 +339,13 @@ class VizClient:
         url = f"{self._url_prefix}/{self._branch_id}/assets"
         if self._use_viewer:
             payload = ViewerAssetRequest(
-                class_ids=keyword_ids, cm_types=cm_types, cks=cks, tags=tags, current_asset_id=asset_hash
+                class_ids=keyword_ids,
+                cm_types=cm_types,
+                cks=cks,
+                tags=tags,
+                current_asset_id=asset_hash,
+                limit=limit,
+                offset=offset,
             ).dict(exclude_none=True)
         else:
             payload = {"class_id": keyword_id, "limit": limit, "offset": offset}
