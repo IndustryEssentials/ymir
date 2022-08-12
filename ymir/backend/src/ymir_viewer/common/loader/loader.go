@@ -2,6 +2,7 @@ package loader
 
 import (
 	"encoding/json"
+	"log"
 	"sort"
 	"time"
 
@@ -19,7 +20,7 @@ import (
 type BaseMirRepoLoader interface {
 	GetMirRepo() constants.MirRepo
 	LoadSingleMirData(mirFile constants.MirFile) interface{}
-	LoadAssetsDetail() []constants.MirAssetDetail
+	LoadAssetsDetail(anchorAssetID string, offset int, limit int) ([]constants.MirAssetDetail, int64, int64)
 }
 
 type MirRepoLoader struct {
@@ -89,7 +90,11 @@ func (mirRepoLoader *MirRepoLoader) LoadModelInfo() constants.MirdataModel {
 	return modelData
 }
 
-func (mirRepoLoader *MirRepoLoader) LoadAssetsDetail() []constants.MirAssetDetail {
+func (mirRepoLoader *MirRepoLoader) LoadAssetsDetail(
+	anchorAssetID string,
+	offset int,
+	limit int,
+) ([]constants.MirAssetDetail, int64, int64) {
 	defer tools.TimeTrack(time.Now())
 	filesToLoad := []constants.MirFile{constants.MirfileMetadatas, constants.MirfileAnnotations}
 	mirDatas := mirRepoLoader.LoadMutipleMirDatas(filesToLoad)
@@ -109,32 +114,59 @@ func (mirRepoLoader *MirRepoLoader) LoadAssetsDetail() []constants.MirAssetDetai
 		mirCks = mirAnnotations.ImageCks
 	}
 
-	mirAssetDetails := make([]constants.MirAssetDetail, len(mirMetadatas.Attributes))
 	assetIds := make([]string, 0)
 	for assetId := range mirMetadatas.Attributes {
 		assetIds = append(assetIds, assetId)
 	}
 	sort.Strings(assetIds)
+
+	anchorIdx := 0
+	// Taking shortcut, only return a "limit" subset of assetIds.
+	if limit > 0 {
+		if len(anchorAssetID) > 0 {
+			for idx, assetId := range assetIds {
+				if assetId == anchorAssetID {
+					anchorIdx = idx
+					break
+				}
+			}
+		}
+		assetIds = assetIds[anchorIdx+offset : anchorIdx+offset+limit]
+		log.Printf(" shortcut: anchorIdx %d, offset %d, limit %d assets %d\n", anchorIdx, offset, limit, len(assetIds))
+	}
+	mirAssetDetails := make([]constants.MirAssetDetail, len(assetIds))
+
 	for idx, assetId := range assetIds {
 		mirAssetDetails[idx] = constants.NewMirAssetDetail()
 		mirAssetDetails[idx].AssetId = assetId
 		mirRepoLoader.buildStructFromMessage(mirMetadatas.Attributes[assetId], &mirAssetDetails[idx].MetaData)
 		if cks, ok := mirCks[assetId]; ok {
-			mirAssetDetails[idx].Cks = cks.Cks
+			if len(cks.Cks) > 0 {
+				mirAssetDetails[idx].Cks = cks.Cks
+			}
+			mirAssetDetails[idx].Quality = cks.ImageQuality
 		}
 
+		mapClassIDs := map[int32]bool{}
 		if gtAnnotation, ok := gtAnnotations[assetId]; ok {
 			for _, annotation := range gtAnnotation.Annotations {
 				annotationOut := mirRepoLoader.buildStructFromMessage(annotation, map[string]interface{}{}).(map[string]interface{})
 				mirAssetDetails[idx].Gt = append(mirAssetDetails[idx].Gt, annotationOut)
+				mapClassIDs[annotation.ClassId] = true
 			}
 		}
 		if predAnnotation, ok := predAnnotations[assetId]; ok {
 			for _, annotation := range predAnnotation.Annotations {
 				annotationOut := mirRepoLoader.buildStructFromMessage(annotation, map[string]interface{}{}).(map[string]interface{})
 				mirAssetDetails[idx].Pred = append(mirAssetDetails[idx].Pred, annotationOut)
+				mapClassIDs[annotation.ClassId] = true
 			}
 		}
+
+		mirAssetDetails[idx].JoinedClassIDs = make([]int32, 0, len(mapClassIDs))
+		for k := range mapClassIDs {
+			mirAssetDetails[idx].JoinedClassIDs = append(mirAssetDetails[idx].JoinedClassIDs, k)
+		}
 	}
-	return mirAssetDetails
+	return mirAssetDetails, int64(anchorIdx), int64(len(mirMetadatas.Attributes))
 }
