@@ -11,15 +11,15 @@ type ResultVO struct {
 	Code    constants.ResponseCode `json:"code"`
 	Msg     constants.ResponseMsg  `json:"msg"`
 	Success bool                   `json:"success"`
-	Data    interface{}            `json:"data"`
+	Result  interface{}            `json:"data"`
 }
 
-func ViewerSuccess(ctx *gin.Context, data interface{}) {
-	resp := &ResultVO{Code: constants.ViewerSuccessCode, Msg: constants.ViewerSuccessMsg, Success: true, Data: data}
+func ViewerSuccess(ctx *gin.Context, result interface{}) {
+	resp := &ResultVO{Code: constants.ViewerSuccessCode, Msg: constants.ViewerSuccessMsg, Success: true, Result: result}
 	ctx.JSON(http.StatusOK, resp)
 }
 
-func ViewerFailure(ctx *gin.Context, code constants.ResponseCode, msg constants.ResponseMsg, data interface{}) {
-	resp := &ResultVO{Code: code, Msg: msg, Success: false, Data: data}
+func ViewerFailure(ctx *gin.Context, code constants.ResponseCode, msg constants.ResponseMsg, result interface{}) {
+	resp := &ResultVO{Code: code, Msg: msg, Success: false, Result: result}
 	ctx.JSON(http.StatusOK, resp)
 }
