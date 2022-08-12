@@ -171,7 +171,7 @@ message MirKeywords {
     // key: ck main key, value: assets and assets with sub keys, from (mir_annotations.image_cks) pred and gt
     map<string, AssetAnnoIndex> ck_idx = 9;
 
-    reserved 1, 2, 3, 4, 5, 6;
+    reserved 2, 3, 4, 5, 6;
 };
 
 message KeywordToIndex {
