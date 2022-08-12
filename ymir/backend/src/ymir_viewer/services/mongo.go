@@ -174,10 +174,6 @@ func (s *MongoServer) QueryAssets(
 ) constants.QueryAssetsResult {
 	defer tools.TimeTrack(time.Now())
 
-	if limit < 1 {
-		limit = 1
-	}
-
 	log.Printf(
 		"Query offset: %d, limit: %d, classIds: %v, currentId: %s, cmTypes: %v cks: %v tags: %v\n",
 		offset,
