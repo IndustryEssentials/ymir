@@ -163,8 +163,6 @@ message Rect {
 /// ========== keywords.mir ==========
 message MirKeywords {
     // key: asset hash, value: keywords list
-    // cnt: count of keywords
-    // from pred and gt
     map<string, Keywords> keywords = 1;
 
     KeywordToIndex pred_idx = 7;  // ci to assets, generated from preds
