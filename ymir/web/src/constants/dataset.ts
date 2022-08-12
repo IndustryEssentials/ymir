@@ -88,7 +88,7 @@ export function transferDatasetAnalysis(data: BackendData): DatasetAnalysis {
     name: data.group_name,
     version: data.version_num || 0,
     versionName: getIterationVersion(data.version_num),
-    assetCount: data.total_assets_count || 0,
+    assetCount: assetTotal,
     totalAssetMbytes: data.total_assets_mbytes,
     assetBytes: asset_bytes,
     assetArea: asset_area,
@@ -96,6 +96,8 @@ export function transferDatasetAnalysis(data: BackendData): DatasetAnalysis {
     assetHWRatio: asset_hw_ratio,
     gt,
     pred,
+    cks: transferCK(data.cks_count, data.cks_count_total),
+    tags: transferCK(data.tags_count, data.tags_count_total),
   }
 }
 
@@ -134,6 +136,25 @@ export function transferAnnotationsCount(count = {}, negative = 0, total = 1) {
     keywords: Object.keys(count),
     count,
     negative,
+    total,
+  }
+}
+
+const transferCK = (counts: BackendData = {}, total: BackendData = {}) => {
+  const keywords = Object.keys(counts).map(keyword => {
+    const children = counts[keyword]
+    return {
+      keyword,
+      children: Object.keys(children).map(child => ({
+        keyword: child,
+        count: children[child],
+      })),
+      count: total[keyword],
+    }
+  })
+  return {
+    keywords,
+    counts,
     total,
   }
 }

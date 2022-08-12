@@ -76,13 +76,16 @@ export function batchDatasets(ids) {
  */
 export function getAssetsOfDataset({
   id,
-  keyword = null,
+  type = 'keywords',
+  keywords = [],
+  cm,
   offset = 0,
   limit = 20,
 }) {
   return request.get(`datasets/${id}/assets`, {
     params: {
-      keyword,
+      [type]: keywords.length ? keywords.toString() : undefined,
+      cm_types: cm,
       offset,
       limit,
     },

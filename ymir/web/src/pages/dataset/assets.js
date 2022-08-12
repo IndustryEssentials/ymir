@@ -54,11 +54,12 @@ const Dataset = () => {
     dataset.id && filter(filterParams)
   }, [dataset, filterParams])
 
-  const filterKw = (kw) => {
-    const keyword = kw ? kw : undefined
+  const filterKw = ({ type, selected }) => {
+    console.log('type, selected:', type, selected)
     setFilterParams((params) => ({
       ...params,
-      keyword,
+      type,
+      keywords: selected,
       offset: initQuery.offset,
     }))
   }

@@ -46,8 +46,8 @@ export interface DatasetAnalysis {
   assetQuality: Array<BackendData>,
   gt: AnylysisAnnotation,
   pred: AnylysisAnnotation,
-  ck?: Keywords,
-  tags?: Keywords,
+  cks?: BackendData,
+  tags?: BackendData,
 }
 
 export interface Asset {

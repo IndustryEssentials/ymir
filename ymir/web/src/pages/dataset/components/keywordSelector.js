@@ -2,68 +2,71 @@ import { Cascader, Col, Row, Select } from "antd"
 import t from "@/utils/t"
 import { useEffect, useState } from "react"
 
+import useFetch from '@/hooks/useFetch'
+
+const initKeywords = [
+  { value: 'keywords', list: [], },
+  { value: 'cks', list: [], },
+  { value: 'tags', list: [], }
+]
 
 const KeywordSelector = ({ value, onChange, dataset = {} }) => {
-  const [keywords, setKeywords] = useState([])
-  const [currentType, setCurrentType] = useState(0)
+  const [keywords, setKeywords] = useState(initKeywords)
+  const [currentType, setCurrentType] = useState(initKeywords[0].value)
   const [selected, setSelected] = useState([0, []])
+  const [{ cks, tags }, getCK] = useFetch('dataset/getCK', { cks: {}, tags: {} })
 
   useEffect(() => {
     if (!dataset.id) {
       return
     }
-    const lists = generateKeywordList(dataset)
-    setKeywords(lists)
+    getCK({ pid: dataset.projectId, id: dataset.id })
+    generateKeywords(initKeywords[0].value, dataset.keywords.map(keyword => ({ keyword })))
   }, [dataset])
 
   useEffect(() => {
-    onChange(selected)
+    generateKeywords(initKeywords[1].value, cks.keywords)
+  }, [cks, tags])
+
+  useEffect(() => {
+    generateKeywords(initKeywords[2].value, tags.keywords)
+  }, [tags])
+
+  useEffect(() => {
+    onChange({ type: currentType, selected })
   }, [selected])
 
-  function keywordsChange(value) {
-    console.log('keyword change: ', value)
-    setSelected([currentType, value])
+  useEffect(() => {
+    setSelected([])
+  }, [currentType])
+
+  function generateKeywords(type, kws = []) {
+    console.log('type, kws:', type, kws)
+    const parse = (list = []) => list.map(({ keyword, children }) => ({
+      value: keyword,
+      label: keyword,
+      children: children?.length ? parse(children) : undefined,
+    }))
+    return setKeywords(keywords => keywords.map(({ value, list }) => (value === type ? { value: type, list: parse(kws) } : { value, list })))
   }
 
-  function generateKeywordList(dataset) {
-    const k = dataset.keywords
-    const bt = dataset.boxTags || []
-    const ck = dataset.ck || []
-    const list = [
-      { value: 'k', list: k, },
-      { value: 'ck', list: ck, },
-      { value: 'bt', list: bt, }
-    ]
-    return list
-  }
-
-  const renderKeywords = ({ value: type, list = [] }) => {
-    return type === 'ck' ? renderCk(list) : <Select
+  const renderKeywords = (type) => {
+    const { list = [] } = keywords.find(({ value }) => value === type)
+    return type !== 'keywords' ? renderCk(list) : <Select
       showSearch
+      value={selected}
       mode="multiple"
       allowClear
       style={{ width: 160 }}
-      onChange={keywordsChange}
+      onChange={setSelected}
       placeholder={t('dataset.assets.keyword.selector.types.placeholder')}
       filterOption={(input, option) => option.label.toLowerCase().indexOf(input.toLowerCase()) >= 0}
-      options={list.map(keyword => ({
-        value: keyword,
-        label: keyword
-      }))}
+      options={list}
     ></Select>
   }
 
-  const renderCk = (ck = {}) => {
-    console.log('ck:', ck)
-    const list = Object.keys(ck).map(key => {
-      const children = ck[key] || []
-      return {
-        value: key,
-        label: key,
-        children: Object.keys(children),
-      }
-    })
-    return <Cascader multiple allowClear options={list} placeholder={t('dataset.assets.keyword.selector.types.placeholder')} />
+  const renderCk = (list = []) => {
+    return <Cascader value={selected} multiple allowClear onChange={setSelected} options={list} placeholder={t('dataset.assets.keyword.selector.types.placeholder')} />
   }
 
 
@@ -71,14 +74,14 @@ const KeywordSelector = ({ value, onChange, dataset = {} }) => {
     <Row gutter={10}>
       <Col style={{ width: 150 }}>
         <Select
-          style={{ width: '100%'}}
+          style={{ width: '100%' }}
           defaultValue={currentType}
-          onChange={(value) => { console.log('type select: ', value); setCurrentType(value)}}
-          options={keywords.map(({ value }, index) => ({ value: index, label: t(`dataset.assets.keyword.selector.types.${value}`) }))}
+          onChange={setCurrentType}
+          options={keywords.map(({ value }) => ({ value, label: t(`dataset.assets.keyword.selector.types.${value}`) }))}
         />
       </Col>
       <Col flex={1}>
-        {keywords.length ? renderKeywords(keywords[currentType]) : null}
+        {renderKeywords(currentType)}
       </Col>
     </Row>
   )
