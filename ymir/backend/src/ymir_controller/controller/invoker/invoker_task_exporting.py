@@ -18,12 +18,17 @@ class TaskExportingInvoker(TaskBaseInvoker):
             return utils.make_general_response(code=CTLResponseCode.ARG_VALIDATION_FAILED, message="empty asset_dir")
         os.makedirs(asset_dir, exist_ok=True)
 
-        annotation_dir = exporting_request.annotation_dir
         if exporting_request.format != backend_pb2.LabelFormat.NO_ANNOTATION:
-            if not annotation_dir:
+            pred_dir = exporting_request.pred_dir
+            if not pred_dir:
                 return utils.make_general_response(code=CTLResponseCode.ARG_VALIDATION_FAILED,
-                                                   message="empty annotation_dir")
-            os.makedirs(annotation_dir, exist_ok=True)
+                                                   message="empty pred_dir")
+            os.makedirs(pred_dir, exist_ok=True)
+            gt_dir = exporting_request.gt_dir
+            if not gt_dir:
+                return utils.make_general_response(code=CTLResponseCode.ARG_VALIDATION_FAILED,
+                                                   message="empty gt_dir")
+            os.makedirs(pred_dir, exist_ok=True)
 
         return utils.make_general_response(code=CTLResponseCode.CTR_OK, message="")
 
@@ -36,15 +41,14 @@ class TaskExportingInvoker(TaskBaseInvoker):
                          request: backend_pb2.GeneralReq, subtask_id: str, subtask_workdir: str,
                          previous_subtask_id: str, user_labels: UserLabels) -> backend_pb2.GeneralResp:
         exporting_request = request.req_create_task.exporting
-        asset_dir = exporting_request.asset_dir
-        pred_dir = exporting_request.annotation_dir
         media_location = assets_config['assetskvlocation']
         dst_dataset_id_with_tid = f"{exporting_request.dataset_id}@{exporting_request.dataset_id}"
         exporting_response = cls.exporting_cmd(repo_root=repo_root,
                                                dataset_id_with_tid=dst_dataset_id_with_tid,
                                                annotation_format=utils.annotation_format_str(exporting_request.format),
-                                               asset_dir=asset_dir,
-                                               pred_dir=pred_dir,
+                                               asset_dir=exporting_request.asset_dir,
+                                               pred_dir=exporting_request.pred_dir,
+                                               gt_dir=exporting_request.gt_dir,
                                                media_location=media_location,
                                                work_dir=subtask_workdir)
 

@@ -1,5 +1,6 @@
 import logging
 import os
+import shutil
 from typing import Dict, List
 from common_utils.labels import UserLabels
 
@@ -13,12 +14,12 @@ class TaskImportingInvoker(TaskBaseInvoker):
     def task_pre_invoke(self, sandbox_root: str, request: backend_pb2.GeneralReq) -> backend_pb2.GeneralResp:
         importing_request = request.req_create_task.importing
         logging.info(f"importing_request: {importing_request}")
-        (media_dir, anno_dir, gt_dir) = (importing_request.asset_dir, importing_request.annotation_dir,
+        (media_dir, pred_dir, gt_dir) = (importing_request.asset_dir, importing_request.pred_dir,
                                          importing_request.gt_dir)
-        if anno_dir:
-            if not os.access(anno_dir, os.R_OK):
+        if pred_dir:
+            if not os.access(pred_dir, os.R_OK):
                 return utils.make_general_response(code=CTLResponseCode.ARG_VALIDATION_FAILED,
-                                                   message=f"invalid permissions of annotation_dir: {anno_dir}")
+                                                   message=f"invalid permissions of pred_dir: {pred_dir}")
         if gt_dir:
             if not os.access(gt_dir, os.R_OK):
                 return utils.make_general_response(code=CTLResponseCode.ARG_VALIDATION_FAILED,
@@ -52,25 +53,40 @@ class TaskImportingInvoker(TaskBaseInvoker):
         importing_response = cls.importing_cmd(repo_root=repo_root,
                                                task_id=subtask_id,
                                                index_file=index_file,
-                                               annotation_dir=importing_request.annotation_dir,
+                                               pred_dir=importing_request.pred_dir,
                                                gt_dir=importing_request.gt_dir,
                                                media_location=media_location,
                                                work_dir=subtask_workdir,
                                                unknown_types_strategy=importing_request.unknown_types_strategy)
 
+        if importing_request.clean_dirs:
+            logging.info("trying to clean all data dirs.")
+            try:
+                shutil.rmtree(media_dir)
+            except Exception:
+                pass
+            try:
+                shutil.rmtree(importing_request.pred_dir)
+            except Exception:
+                pass
+            try:
+                shutil.rmtree(importing_request.gt_dir)
+            except Exception:
+                pass
+
         return importing_response
 
     @staticmethod
-    def importing_cmd(repo_root: str, task_id: str, index_file: str, annotation_dir: str, gt_dir: str,
-                      media_location: str, work_dir: str,
+    def importing_cmd(repo_root: str, task_id: str, index_file: str, pred_dir: str, gt_dir: str, media_location: str,
+                      work_dir: str,
                       unknown_types_strategy: backend_pb2.UnknownTypesStrategy) -> backend_pb2.GeneralResp:
         importing_cmd = [
             utils.mir_executable(), 'import', '--root', repo_root, '--dataset-name', task_id, '--dst-rev',
             f"{task_id}@{task_id}", '--src-revs', 'master', '--index-file', index_file, '--gt-index-file', index_file,
             '--gen-dir', media_location, '-w', work_dir
         ]
-        if annotation_dir:
-            importing_cmd.extend(['--pred-dir', annotation_dir])
+        if pred_dir:
+            importing_cmd.extend(['--pred-dir', pred_dir])
         if gt_dir:
             importing_cmd.extend(['--gt-dir', gt_dir])
         importing_cmd.extend([
