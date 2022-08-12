@@ -14,12 +14,12 @@ class TaskImportingInvoker(TaskBaseInvoker):
     def task_pre_invoke(self, sandbox_root: str, request: backend_pb2.GeneralReq) -> backend_pb2.GeneralResp:
         importing_request = request.req_create_task.importing
         logging.info(f"importing_request: {importing_request}")
-        (media_dir, anno_dir, gt_dir) = (importing_request.asset_dir, importing_request.annotation_dir,
+        (media_dir, pred_dir, gt_dir) = (importing_request.asset_dir, importing_request.pred_dir,
                                          importing_request.gt_dir)
-        if anno_dir:
-            if not os.access(anno_dir, os.R_OK):
+        if pred_dir:
+            if not os.access(pred_dir, os.R_OK):
                 return utils.make_general_response(code=CTLResponseCode.ARG_VALIDATION_FAILED,
-                                                   message=f"invalid permissions of annotation_dir: {anno_dir}")
+                                                   message=f"invalid permissions of pred_dir: {pred_dir}")
         if gt_dir:
             if not os.access(gt_dir, os.R_OK):
                 return utils.make_general_response(code=CTLResponseCode.ARG_VALIDATION_FAILED,
