@@ -82,6 +82,8 @@ class CmdFilter(base.BaseCommand):
         if return_code != MirCode.RC_OK:
             return return_code
 
+        PhaseLoggerCenter.update_phase(phase="filter.init")
+
         [mir_metadatas, mir_annotations, mir_keywords, mir_tasks,
          _] = mir_storage_ops.MirStorageOps.load_multiple_storages(mir_root=mir_root,
                                                                    mir_branch=src_typ_rev_tid.rev,

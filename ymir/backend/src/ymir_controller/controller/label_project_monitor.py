@@ -21,7 +21,7 @@ def trigger_mir_import(repo_root: str, task_id: str, index_file: str, des_annota
     TaskImportingInvoker.importing_cmd(repo_root=repo_root,
                                        task_id=task_id,
                                        index_file=index_file,
-                                       annotation_dir=des_annotation_path,
+                                       pred_dir=des_annotation_path,
                                        gt_dir=des_annotation_path,
                                        media_location=media_location,
                                        work_dir=import_work_dir,
@@ -86,12 +86,12 @@ def lable_task_monitor() -> None:
                 state = LogState.ERROR
             index_file = _gen_index_file(project_info["des_annotation_path"])
             trigger_mir_import(
-                project_info["repo_root"],
-                task_id,
-                index_file,
-                project_info["des_annotation_path"],
-                project_info["media_location"],
-                project_info["import_work_dir"],
+                repo_root=project_info["repo_root"],
+                task_id=task_id,
+                index_file=index_file,
+                des_annotation_path=project_info["des_annotation_path"],
+                media_location=project_info["media_location"],
+                import_work_dir=project_info["import_work_dir"],
             )
 
             rds.hdel(label_task_config.MONITOR_MAPPING_KEY, task_id)

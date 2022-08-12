@@ -63,6 +63,8 @@ class CmdImport(base.BaseCommand):
         if check_code != MirCode.RC_OK:
             return check_code
 
+        PhaseLoggerCenter.update_phase(phase="import.init")
+
         # Step 2: generate sha1 file and rename images.
         # sha1 file to be written.
         sha1_index_abs = os.path.join(

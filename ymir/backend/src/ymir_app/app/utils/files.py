@@ -68,7 +68,7 @@ def save_file_content(url: Union[AnyHttpUrl, str], output_filename: Union[Path, 
 
     # if file is hosted by nginx on the same host, just copy it
     file_path = Path(NGINX_DATA_PATH) / url
-    shutil.copy(file_path, output_filename)
+    shutil.move(file_path, output_filename)
 
 
 def download_file(url: AnyHttpUrl, output_filename: str) -> None:

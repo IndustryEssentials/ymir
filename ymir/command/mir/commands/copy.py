@@ -61,6 +61,8 @@ class CmdCopy(base.BaseCommand):
         if check_code != MirCode.RC_OK:
             return check_code
 
+        PhaseLoggerCenter.update_phase(phase="copy.init")
+
         # read from src mir root
         mir_metadatas: mirpb.MirMetadatas
         mir_annotations: mirpb.MirAnnotations

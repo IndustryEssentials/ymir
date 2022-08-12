@@ -36,15 +36,14 @@ class TaskExportingInvoker(TaskBaseInvoker):
                          request: backend_pb2.GeneralReq, subtask_id: str, subtask_workdir: str,
                          previous_subtask_id: str, user_labels: UserLabels) -> backend_pb2.GeneralResp:
         exporting_request = request.req_create_task.exporting
-        asset_dir = exporting_request.asset_dir
-        pred_dir = exporting_request.annotation_dir
         media_location = assets_config['assetskvlocation']
         dst_dataset_id_with_tid = f"{exporting_request.dataset_id}@{exporting_request.dataset_id}"
         exporting_response = cls.exporting_cmd(repo_root=repo_root,
                                                dataset_id_with_tid=dst_dataset_id_with_tid,
                                                annotation_format=utils.annotation_format_str(exporting_request.format),
-                                               asset_dir=asset_dir,
-                                               pred_dir=pred_dir,
+                                               asset_dir=exporting_request.asset_dir,
+                                               pred_dir=exporting_request.pred_dir,
+                                               gt_dir=exporting_request.gt_dir,
                                                media_location=media_location,
                                                work_dir=subtask_workdir)
 
