@@ -18,12 +18,17 @@ class TaskExportingInvoker(TaskBaseInvoker):
             return utils.make_general_response(code=CTLResponseCode.ARG_VALIDATION_FAILED, message="empty asset_dir")
         os.makedirs(asset_dir, exist_ok=True)
 
-        annotation_dir = exporting_request.annotation_dir
         if exporting_request.format != backend_pb2.LabelFormat.NO_ANNOTATION:
-            if not annotation_dir:
+            pred_dir = exporting_request.pred_dir
+            if not pred_dir:
                 return utils.make_general_response(code=CTLResponseCode.ARG_VALIDATION_FAILED,
-                                                   message="empty annotation_dir")
-            os.makedirs(annotation_dir, exist_ok=True)
+                                                   message="empty pred_dir")
+            os.makedirs(pred_dir, exist_ok=True)
+            gt_dir = exporting_request.gt_dir
+            if not gt_dir:
+                return utils.make_general_response(code=CTLResponseCode.ARG_VALIDATION_FAILED,
+                                                   message="empty gt_dir")
+            os.makedirs(pred_dir, exist_ok=True)
 
         return utils.make_general_response(code=CTLResponseCode.CTR_OK, message="")
 
