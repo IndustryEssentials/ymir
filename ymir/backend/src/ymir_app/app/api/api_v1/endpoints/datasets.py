@@ -330,11 +330,12 @@ def get_assets_of_dataset(
     dataset_id: int = Path(..., example="12"),
     offset: int = 0,
     limit: int = settings.DEFAULT_LIMIT,
+    # dataset_ids: str = Query(None, example="1,2,3", alias="ids"),
     keyword: Optional[str] = Query(None),
-    keywords: Optional[List[str]] = Query(None),
-    cm_types: Optional[List[str]] = Query(None),
-    cks: Optional[List[str]] = Query(None),
-    tags: Optional[List[str]] = Query(None),
+    keywords_str: Optional[str] = Query(None, example="person,cat", alias="keywords"),
+    cm_types_str: Optional[str] = Query(None, example="tp,mtp", alias="cm_types"),
+    cks_str: Optional[str] = Query(None, example="shenzhen,shanghai", alias="cks"),
+    tags_str: Optional[str] = Query(None, example="big,small", alias="tags"),
     viz_client: VizClient = Depends(deps.get_viz_client),
     current_user: models.User = Depends(deps.get_current_active_user),
     user_labels: UserLabels = Depends(deps.get_user_labels),
@@ -348,7 +349,13 @@ def get_assets_of_dataset(
         raise DatasetNotFound()
 
     if keyword:
-        keywords = [keyword]
+        # fixme
+        #  remove upon replacing all viz endpoints
+        keywords = [keyword]  # type: Optional[List]
+    elif keywords_str:
+        keywords = keywords_str.split(",")
+    else:
+        keywords = None
     keyword_ids = user_labels.get_class_ids(keywords) if keywords else None
 
     viz_client.initialize(
@@ -360,9 +367,9 @@ def get_assets_of_dataset(
     )
     assets = viz_client.get_assets(
         keyword_ids=keyword_ids,
-        cm_types=cm_types,
-        cks=cks,
-        tags=tags,
+        cm_types=stringtolist(cm_types_str),
+        cks=stringtolist(cks_str),
+        tags=stringtolist(tags_str),
         limit=limit,
         offset=offset,
     )
@@ -683,3 +690,9 @@ def filter_dataset(
         db, task, main_dataset.dataset_group_id, description=in_filter.description
     )
     return {"result": filtered_dataset}
+
+
+def stringtolist(s: Optional[str]) -> Optional[List]:
+    if s is None:
+        return s
+    return s.split(",")
