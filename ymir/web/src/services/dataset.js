@@ -82,9 +82,10 @@ export function getAssetsOfDataset({
   offset = 0,
   limit = 20,
 }) {
+  const kws = type === 'keywords' ? keywords.toString() : keywords.map(([_, value]) => value).toString()
   return request.get(`datasets/${id}/assets`, {
     params: {
-      [type]: keywords.length ? keywords.toString() : undefined,
+      [type]: kws || undefined,
       cm_types: cm,
       offset,
       limit,

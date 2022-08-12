@@ -54,15 +54,16 @@ const Dataset = () => {
     dataset.id && filter(filterParams)
   }, [dataset, filterParams])
 
-  const filterKw = ({ type, selected }) => {
-    console.log('type, selected:', type, selected)
-    setFilterParams((params) => ({
-      ...params,
-      type,
-      keywords: selected,
-      offset: initQuery.offset,
-    }))
-  }
+  useEffect(() => {
+    // todo filter by evaluation params
+  }, [evaluation])
+
+  const filterKw = ({ type, selected }) => setFilterParams((params) => ({
+    ...params,
+    type,
+    keywords: selected,
+    offset: initQuery.offset,
+  }))
   const filterPage = (page, pageSize) => {
     setCurrentPage(page)
     const limit = pageSize
@@ -83,10 +84,6 @@ const Dataset = () => {
     setCurrentPage(offset / limit + 1)
     const page = randomBetween(Math.ceil(total / limit), 1, currentPage)
     filterPage(page, limit)
-  }
-
-  const getRate = (count) => {
-    return percent(count / dataset.assetCount)
   }
 
   const filterAnnotations = annotations => {

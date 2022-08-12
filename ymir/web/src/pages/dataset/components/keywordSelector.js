@@ -13,7 +13,7 @@ const initKeywords = [
 const KeywordSelector = ({ value, onChange, dataset = {} }) => {
   const [keywords, setKeywords] = useState(initKeywords)
   const [currentType, setCurrentType] = useState(initKeywords[0].value)
-  const [selected, setSelected] = useState([0, []])
+  const [selected, setSelected] = useState([])
   const [{ cks, tags }, getCK] = useFetch('dataset/getCK', { cks: {}, tags: {} })
 
   useEffect(() => {
@@ -41,33 +41,41 @@ const KeywordSelector = ({ value, onChange, dataset = {} }) => {
   }, [currentType])
 
   function generateKeywords(type, kws = []) {
-    console.log('type, kws:', type, kws)
-    const parse = (list = []) => list.map(({ keyword, children }) => ({
-      value: keyword,
-      label: keyword,
-      children: children?.length ? parse(children) : undefined,
-    }))
-    return setKeywords(keywords => keywords.map(({ value, list }) => (value === type ? { value: type, list: parse(kws) } : { value, list })))
+    return setKeywords(keywords => keywords.map((item) => ({
+      ...item,
+      list: item.value === type ? kws : item.list
+    })))
   }
 
   const renderKeywords = (type) => {
     const { list = [] } = keywords.find(({ value }) => value === type)
-    return type !== 'keywords' ? renderCk(list) : <Select
-      showSearch
-      value={selected}
-      mode="multiple"
-      allowClear
-      style={{ width: 160 }}
-      onChange={setSelected}
-      placeholder={t('dataset.assets.keyword.selector.types.placeholder')}
-      filterOption={(input, option) => option.label.toLowerCase().indexOf(input.toLowerCase()) >= 0}
-      options={list}
-    ></Select>
+    return type !== 'keywords' ? renderCk(list) : renderKw(list)
   }
 
-  const renderCk = (list = []) => {
-    return <Cascader value={selected} multiple allowClear onChange={setSelected} options={list} placeholder={t('dataset.assets.keyword.selector.types.placeholder')} />
-  }
+  const renderKw = (list = []) => <Select
+    showSearch
+    value={selected}
+    mode="multiple"
+    fieldNames={{ label: 'keyword', value: 'keyword' }}
+    allowClear
+    style={{ width: 160 }}
+    onChange={setSelected}
+    placeholder={t('dataset.assets.keyword.selector.types.placeholder')}
+    options={list}
+  />
+
+  const renderCk = (list = []) => <Cascader
+    value={selected}
+    multiple
+    allowClear
+    expandTrigger="hover"
+    showCheckedStrategy={Cascader.SHOW_CHILD}
+    fieldNames={{ label: 'keyword', value: 'keyword' }}
+    onChange={setSelected}
+    options={list}
+    displayRender={value => value.join('/')}
+    placeholder={t('dataset.assets.keyword.selector.types.placeholder')}
+  />
 
 
   return (
@@ -75,9 +83,12 @@ const KeywordSelector = ({ value, onChange, dataset = {} }) => {
       <Col style={{ width: 150 }}>
         <Select
           style={{ width: '100%' }}
-          defaultValue={currentType}
+          value={currentType}
           onChange={setCurrentType}
-          options={keywords.map(({ value }) => ({ value, label: t(`dataset.assets.keyword.selector.types.${value}`) }))}
+          options={keywords.map(({ value }) => ({
+            value,
+            label: t(`dataset.assets.keyword.selector.types.${value}`)
+          }))}
         />
       </Col>
       <Col flex={1}>

@@ -15,6 +15,8 @@ export enum evaluationTags {
   fp = 2,
   fn = 3,
   mtp = 11,
+  gto = -1,
+  predo = -1,
 }
 
 export const statesLabel = (state: states) => {
@@ -84,6 +86,12 @@ export function transferDatasetAnalysis(data: BackendData): DatasetAnalysis {
   const assetTotal = data.total_assets_count || 0
   const gt = generateAnno(data.gt)
   const pred = generateAnno(data.pred)
+  const tagsCounts = Object.keys(data.gt.tags_count).reduce((prev, tag) => {
+    const gtCount = data.gt.tags_count[tag] || {}
+    const predCount = data.pred.tags_count[tag] || {}
+    return { ...prev, [tag]: { ...gtCount, ...predCount } }
+  }, {})
+  const tagsTotal = { ...data.gt.tags_count_total, ...data.pred.tags_count_total }
   return {
     name: data.group_name,
     version: data.version_num || 0,
@@ -97,7 +105,7 @@ export function transferDatasetAnalysis(data: BackendData): DatasetAnalysis {
     gt,
     pred,
     cks: transferCK(data.cks_count, data.cks_count_total),
-    tags: transferCK(data.tags_count, data.tags_count_total),
+    tags: transferCK(tagsCounts, tagsTotal),
   }
 }
 
