@@ -11,7 +11,7 @@ type ResultVO struct {
 	Code    constants.ResponseCode `json:"code"`
 	Msg     constants.ResponseMsg  `json:"msg"`
 	Success bool                   `json:"success"`
-	Result  interface{}            `json:"data"`
+	Result  interface{}            `json:"result"`
 }
 
 func ViewerSuccess(ctx *gin.Context, result interface{}) {
