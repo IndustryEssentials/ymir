@@ -22,7 +22,7 @@ type MongoServer struct {
 	existenceName string
 }
 
-func NewMongoServer(uri string) MongoServer {
+func NewMongoServer(uri string) *MongoServer {
 	mongoCtx := context.Background()
 	mongoClient, err := mongo.Connect(mongoCtx, options.Client().ApplyURI(uri))
 	if err != nil {
@@ -36,7 +36,7 @@ func NewMongoServer(uri string) MongoServer {
 		panic(err)
 	}
 
-	return MongoServer{
+	return &MongoServer{
 		Clt:           mongoClient,
 		Ctx:           mongoCtx,
 		dbName:        defaultDbName,
@@ -45,7 +45,7 @@ func NewMongoServer(uri string) MongoServer {
 }
 
 func (s *MongoServer) getRepoCollection(mirRepo constants.MirRepo) (*mongo.Collection, string) {
-	_, mirRev := mirRepo.BuildRepoId()
+	_, mirRev := mirRepo.BuildRepoID()
 	return s.Clt.Database(s.dbName).Collection(mirRev), mirRev
 }
 
@@ -167,7 +167,7 @@ func (s *MongoServer) QueryAssets(
 	offset int,
 	limit int,
 	classIds []int,
-	currentAssetId string,
+	currentAssetID string,
 	cmTypes []int32,
 	cks []string,
 	tags []string,
@@ -179,7 +179,7 @@ func (s *MongoServer) QueryAssets(
 		offset,
 		limit,
 		classIds,
-		currentAssetId,
+		currentAssetID,
 		cmTypes,
 		cks,
 		tags,
@@ -191,8 +191,8 @@ func (s *MongoServer) QueryAssets(
 	if len(classIds) > 0 {
 		filterQuery["class_ids"] = bson.M{"$in": classIds}
 	}
-	if len(currentAssetId) > 0 {
-		filterQuery["asset_id"] = bson.M{"$gte": currentAssetId}
+	if len(currentAssetID) > 0 {
+		filterQuery["asset_id"] = bson.M{"$gte": currentAssetID}
 	}
 	if len(cmTypes) > 0 {
 		filterQuery["$or"] = bson.A{
@@ -271,19 +271,19 @@ func (s *MongoServer) QueryAssets(
 	}
 }
 
-func (s *MongoServer) QueryDatasetStats(mirRepo constants.MirRepo, classIds []int) constants.QueryDatasetStatsResult {
+func (s *MongoServer) QueryDatasetStats(mirRepo constants.MirRepo, classIDs []int) constants.QueryDatasetStatsResult {
 	collection, _ := s.getRepoCollection(mirRepo)
 
 	totalAssetsCount := s.countAssetsInClass(collection, "", []int{})
 	queryData := constants.NewQueryDatasetStatsResult()
 	queryData.TotalAssetsCount = totalAssetsCount
-	for _, classId := range classIds {
-		queryData.Gt.ClassIdsCount[classId] = s.countAssetsInClass(collection, "gt.class_id", []int{classId})
-		queryData.Pred.ClassIdsCount[classId] = s.countAssetsInClass(collection, "pred.class_id", []int{classId})
+	for _, classID := range classIDs {
+		queryData.Gt.ClassIdsCount[classID] = s.countAssetsInClass(collection, "gt.class_id", []int{classID})
+		queryData.Pred.ClassIdsCount[classID] = s.countAssetsInClass(collection, "pred.class_id", []int{classID})
 	}
-	queryData.Gt.PositiveImagesCount = s.countAssetsInClass(collection, "gt.class_id", classIds)
+	queryData.Gt.PositiveImagesCount = s.countAssetsInClass(collection, "gt.class_id", classIDs)
 	queryData.Gt.NegativeImagesCount = totalAssetsCount - queryData.Gt.PositiveImagesCount
-	queryData.Pred.PositiveImagesCount = s.countAssetsInClass(collection, "pred.class_id", classIds)
+	queryData.Pred.PositiveImagesCount = s.countAssetsInClass(collection, "pred.class_id", classIDs)
 	queryData.Pred.NegativeImagesCount = totalAssetsCount - queryData.Pred.PositiveImagesCount
 	return queryData
 }

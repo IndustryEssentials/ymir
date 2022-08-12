@@ -47,15 +47,15 @@ func (mirFile MirFile) ProtoData() proto.Message {
 
 type MirRepo struct {
 	SandboxRoot string
-	UserId      string
-	RepoId      string
-	BranchId    string
-	TaskId      string
+	UserID      string
+	RepoID      string
+	BranchID    string
+	TaskID      string
 }
 
-func (mirRepo MirRepo) BuildRepoId() (string, string) {
-	mirRoot := path.Join(mirRepo.SandboxRoot, mirRepo.UserId, mirRepo.RepoId)
-	mirRev := fmt.Sprintf("%s@%s", mirRepo.BranchId, mirRepo.TaskId)
+func (mirRepo MirRepo) BuildRepoID() (string, string) {
+	mirRoot := path.Join(mirRepo.SandboxRoot, mirRepo.UserID, mirRepo.RepoID)
+	mirRev := fmt.Sprintf("%s@%s", mirRepo.BranchID, mirRepo.TaskID)
 	return mirRoot, mirRev
 }
 
@@ -77,7 +77,7 @@ func NewMirdataModel(taskParameters string) MirdataModel {
 
 type MirAssetDetail struct {
 	// Export fields.
-	AssetId        string                   `json:"asset_id"      bson:"asset_id"`
+	AssetID        string                   `json:"asset_id"      bson:"asset_id"`
 	MetaData       map[string]interface{}   `json:"metadata"      bson:"metadata"`
 	JoinedClassIDs []int32                  `json:"class_ids"     bson:"class_ids"`
 	Gt             []map[string]interface{} `json:"gt"            bson:"gt"`

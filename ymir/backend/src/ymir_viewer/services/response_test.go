@@ -25,8 +25,8 @@ func TestViewerSuccess(t *testing.T) {
 		Result:  msg,
 	}
 	expectedDataBytes, _ := json.Marshal(expectedData)
-	assert.Equal(t, w.Code, 200)
-	assert.Equal(t, w.Body.Bytes(), expectedDataBytes)
+	assert.Equal(t, 200, w.Code)
+	assert.Equal(t, expectedDataBytes, w.Body.Bytes())
 }
 
 func TestViewerFailure(t *testing.T) {
@@ -45,6 +45,6 @@ func TestViewerFailure(t *testing.T) {
 		Result:  msg,
 	}
 	expectedDataBytes, _ := json.Marshal(expectedData)
-	assert.Equal(t, w.Code, 200)
-	assert.Equal(t, w.Body.Bytes(), expectedDataBytes)
+	assert.Equal(t, 200, w.Code)
+	assert.Equal(t, expectedDataBytes, w.Body.Bytes())
 }

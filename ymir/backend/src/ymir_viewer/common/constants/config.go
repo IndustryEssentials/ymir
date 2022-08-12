@@ -6,7 +6,7 @@ type Config struct {
 	YmirSandbox  string
 	ViewerHost   string
 	ViewerPort   int
-	ViewerUri    string
-	MongodbUri   string
+	ViewerURI    string
+	MongodbURI   string
 	InnerTimeout time.Duration
 }

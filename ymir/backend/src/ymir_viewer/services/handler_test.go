@@ -64,7 +64,8 @@ func TestGetDatasetMetaCountsHandler(t *testing.T) {
 	pbreaderMock.On("LoadSingleMirData", mirFile).Return(&mockMirContext, 0, 0)
 
 	expectedResult := constants.QueryDatasetStatsResult{}
-	result := GetDatasetMetaCountsHandler(&pbreaderMock)
+	handler := &ViewerHandler{}
+	result := handler.GetDatasetMetaCountsHandler(&pbreaderMock)
 	err = json.Unmarshal([]byte(`{
 		"gt":
 		{
@@ -91,7 +92,7 @@ func TestGetDatasetMetaCountsHandler(t *testing.T) {
 	if err != nil {
 		panic(err)
 	}
-	assert.Equal(t, result, expectedResult)
+	assert.Equal(t, expectedResult, result)
 	pbreaderMock.AssertExpectations(t)
 
 }

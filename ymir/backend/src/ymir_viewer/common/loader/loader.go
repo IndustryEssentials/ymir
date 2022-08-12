@@ -36,7 +36,7 @@ func (mirRepoLoader *MirRepoLoader) LoadSingleMirData(mirFile constants.MirFile)
 
 func (mirRepoLoader *MirRepoLoader) LoadMutipleMirDatas(mirFiles []constants.MirFile) []interface{} {
 	defer tools.TimeTrack(time.Now())
-	mirRoot, mirRev := mirRepoLoader.MirRepo.BuildRepoId()
+	mirRoot, mirRev := mirRepoLoader.MirRepo.BuildRepoID()
 
 	repo, err := gitreader.OpenRepo(mirRoot)
 	if err != nil {
@@ -114,33 +114,33 @@ func (mirRepoLoader *MirRepoLoader) LoadAssetsDetail(
 		mirCks = mirAnnotations.ImageCks
 	}
 
-	assetIds := make([]string, 0)
-	for assetId := range mirMetadatas.Attributes {
-		assetIds = append(assetIds, assetId)
+	assetIDs := make([]string, 0)
+	for assetID := range mirMetadatas.Attributes {
+		assetIDs = append(assetIDs, assetID)
 	}
-	sort.Strings(assetIds)
+	sort.Strings(assetIDs)
 
 	anchorIdx := 0
 	// Taking shortcut, only return a "limit" subset of assetIds.
 	if limit > 0 {
 		if len(anchorAssetID) > 0 {
-			for idx, assetId := range assetIds {
-				if assetId == anchorAssetID {
+			for idx, assetID := range assetIDs {
+				if assetID == anchorAssetID {
 					anchorIdx = idx
 					break
 				}
 			}
 		}
-		assetIds = assetIds[anchorIdx+offset : anchorIdx+offset+limit]
-		log.Printf(" shortcut: anchorIdx %d, offset %d, limit %d assets %d\n", anchorIdx, offset, limit, len(assetIds))
+		assetIDs = assetIDs[anchorIdx+offset : anchorIdx+offset+limit]
+		log.Printf(" shortcut: anchorIdx %d, offset %d, limit %d assets %d\n", anchorIdx, offset, limit, len(assetIDs))
 	}
-	mirAssetDetails := make([]constants.MirAssetDetail, len(assetIds))
+	mirAssetDetails := make([]constants.MirAssetDetail, len(assetIDs))
 
-	for idx, assetId := range assetIds {
+	for idx, assetID := range assetIDs {
 		mirAssetDetails[idx] = constants.NewMirAssetDetail()
-		mirAssetDetails[idx].AssetId = assetId
-		mirRepoLoader.buildStructFromMessage(mirMetadatas.Attributes[assetId], &mirAssetDetails[idx].MetaData)
-		if cks, ok := mirCks[assetId]; ok {
+		mirAssetDetails[idx].AssetID = assetID
+		mirRepoLoader.buildStructFromMessage(mirMetadatas.Attributes[assetID], &mirAssetDetails[idx].MetaData)
+		if cks, ok := mirCks[assetID]; ok {
 			if len(cks.Cks) > 0 {
 				mirAssetDetails[idx].Cks = cks.Cks
 			}
@@ -148,14 +148,14 @@ func (mirRepoLoader *MirRepoLoader) LoadAssetsDetail(
 		}
 
 		mapClassIDs := map[int32]bool{}
-		if gtAnnotation, ok := gtAnnotations[assetId]; ok {
+		if gtAnnotation, ok := gtAnnotations[assetID]; ok {
 			for _, annotation := range gtAnnotation.Annotations {
 				annotationOut := mirRepoLoader.buildStructFromMessage(annotation, map[string]interface{}{}).(map[string]interface{})
 				mirAssetDetails[idx].Gt = append(mirAssetDetails[idx].Gt, annotationOut)
 				mapClassIDs[annotation.ClassId] = true
 			}
 		}
-		if predAnnotation, ok := predAnnotations[assetId]; ok {
+		if predAnnotation, ok := predAnnotations[assetID]; ok {
 			for _, annotation := range predAnnotation.Annotations {
 				annotationOut := mirRepoLoader.buildStructFromMessage(annotation, map[string]interface{}{}).(map[string]interface{})
 				mirAssetDetails[idx].Pred = append(mirAssetDetails[idx].Pred, annotationOut)

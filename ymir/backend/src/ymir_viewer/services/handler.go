@@ -11,7 +11,37 @@ import (
 	"github.com/IndustryEssentials/ymir-viewer/tools"
 )
 
-func loadAndCacheAssets(mongo MongoServer, mirLoader loader.BaseMirRepoLoader) {
+type BaseViewerHandler interface {
+	GetDatasetMetaCountsHandler(
+		mirLoader loader.BaseMirRepoLoader,
+	) constants.QueryDatasetStatsResult
+	GetAssetsHandler(
+		mongo *MongoServer,
+		mirLoader loader.BaseMirRepoLoader,
+		offset int,
+		limit int,
+		classIds []int,
+		currentAssetID string,
+		cmTypes []int32,
+		cks []string,
+		tags []string,
+	) constants.QueryAssetsResult
+	GetDatasetStatsHandler(
+		mongo *MongoServer,
+		mirLoader loader.BaseMirRepoLoader,
+		classIds []int,
+	) constants.QueryDatasetStatsResult
+	GetDatasetDupHandler(
+		mongo *MongoServer,
+		mirLoader0 loader.BaseMirRepoLoader,
+		mirLoader1 loader.BaseMirRepoLoader,
+	) (int, int64, int64)
+}
+
+type ViewerHandler struct {
+}
+
+func (viewerHandler *ViewerHandler) loadAndCacheAssets(mongo *MongoServer, mirLoader loader.BaseMirRepoLoader) {
 	defer tools.TimeTrack(time.Now())
 
 	mirRepo := mirLoader.GetMirRepo()
@@ -29,23 +59,23 @@ func loadAndCacheAssets(mongo MongoServer, mirLoader loader.BaseMirRepoLoader) {
 	}
 }
 
-func GetAssetsHandler(
-	mongo MongoServer,
+func (viewerHandler *ViewerHandler) GetAssetsHandler(
+	mongo *MongoServer,
 	mirLoader loader.BaseMirRepoLoader,
 	offset int,
 	limit int,
 	classIds []int,
-	currentAssetId string,
+	currentAssetID string,
 	cmTypes []int32,
 	cks []string,
 	tags []string,
 ) constants.QueryAssetsResult {
-	// Speed up when "first time" loading, i.e.: cache miss && only offset/limit/currentAssetId are set at most.
+	// Speed up when "first time" loading, i.e.: cache miss && only offset/limit/currentAssetID are set at most.
 	if !mongo.checkExistence(mirLoader.GetMirRepo()) {
 		if len(classIds) < 1 && len(cmTypes) < 1 && len(cks) < 1 && len(tags) < 1 {
-			go loadAndCacheAssets(mongo, mirLoader)
+			go viewerHandler.loadAndCacheAssets(mongo, mirLoader)
 
-			mirAssetsDetail, anchor, totalAssetsCount := mirLoader.LoadAssetsDetail(currentAssetId, offset, limit)
+			mirAssetsDetail, anchor, totalAssetsCount := mirLoader.LoadAssetsDetail(currentAssetID, offset, limit)
 			return constants.QueryAssetsResult{
 				AssetsDetail:     mirAssetsDetail,
 				Offset:           offset,
@@ -56,11 +86,11 @@ func GetAssetsHandler(
 		}
 	}
 
-	loadAndCacheAssets(mongo, mirLoader)
-	return mongo.QueryAssets(mirLoader.GetMirRepo(), offset, limit, classIds, currentAssetId, cmTypes, cks, tags)
+	viewerHandler.loadAndCacheAssets(mongo, mirLoader)
+	return mongo.QueryAssets(mirLoader.GetMirRepo(), offset, limit, classIds, currentAssetID, cmTypes, cks, tags)
 }
 
-func GetDatasetMetaCountsHandler(
+func (viewerHandler *ViewerHandler) GetDatasetMetaCountsHandler(
 	mirLoader loader.BaseMirRepoLoader,
 ) constants.QueryDatasetStatsResult {
 	defer tools.TimeTrack(time.Now())
@@ -93,21 +123,21 @@ func GetDatasetMetaCountsHandler(
 	return result
 }
 
-func GetDatasetStatsHandler(
-	mongo MongoServer,
+func (viewerHandler *ViewerHandler) GetDatasetStatsHandler(
+	mongo *MongoServer,
 	mirLoader loader.BaseMirRepoLoader,
 	classIds []int,
 ) constants.QueryDatasetStatsResult {
-	loadAndCacheAssets(mongo, mirLoader)
+	viewerHandler.loadAndCacheAssets(mongo, mirLoader)
 	return mongo.QueryDatasetStats(mirLoader.GetMirRepo(), classIds)
 }
 
-func GetDatasetDupHandler(
-	mongo MongoServer,
+func (viewerHandler *ViewerHandler) GetDatasetDupHandler(
+	mongo *MongoServer,
 	mirLoader0 loader.BaseMirRepoLoader,
 	mirLoader1 loader.BaseMirRepoLoader,
 ) (int, int64, int64) {
-	loadAndCacheAssets(mongo, mirLoader0)
-	loadAndCacheAssets(mongo, mirLoader1)
+	viewerHandler.loadAndCacheAssets(mongo, mirLoader0)
+	viewerHandler.loadAndCacheAssets(mongo, mirLoader1)
 	return mongo.QueryDatasetDup(mirLoader0.GetMirRepo(), mirLoader1.GetMirRepo())
 }

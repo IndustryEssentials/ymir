@@ -20,22 +20,26 @@ import (
 type ViewerServer struct {
 	addr    string
 	gin     *gin.Engine
-	Mongo   MongoServer
+	Mongo   *MongoServer
 	sandbox string
 	config  constants.Config
+	handler BaseViewerHandler
 }
 
 func NewViewerServer(config constants.Config) ViewerServer {
 	sandbox := config.YmirSandbox
-	viewerUri := config.ViewerUri
-	mongoUri := config.MongodbUri
+	viewerURI := config.ViewerURI
+	mongoURI := config.MongodbURI
 	gin.SetMode(gin.ReleaseMode)
 	viewerServer := ViewerServer{
-		addr:    viewerUri,
+		addr:    viewerURI,
 		gin:     gin.Default(),
-		Mongo:   NewMongoServer(mongoUri),
 		sandbox: sandbox,
 		config:  config,
+		handler: &ViewerHandler{},
+	}
+	if len(mongoURI) > 0 {
+		viewerServer.Mongo = NewMongoServer(mongoURI)
 	}
 	viewerServer.routes()
 	return viewerServer
@@ -71,15 +75,15 @@ func (s *ViewerServer) routes() {
 }
 
 func (s *ViewerServer) buildMirRepoFromParam(c *gin.Context) constants.MirRepo {
-	userId := c.Param("userId")
-	repoId := c.Param("repoId")
-	branchId := c.Param("branchId")
+	userID := c.Param("userId")
+	repoID := c.Param("repoId")
+	branchID := c.Param("branchId")
 	return constants.MirRepo{
 		SandboxRoot: s.sandbox,
-		UserId:      userId,
-		RepoId:      repoId,
-		BranchId:    branchId,
-		TaskId:      branchId,
+		UserID:      userID,
+		RepoID:      repoID,
+		BranchID:    branchID,
+		TaskID:      branchID,
 	}
 }
 
@@ -92,25 +96,25 @@ func (s *ViewerServer) getIntFromQuery(c *gin.Context, field string) int {
 }
 
 func (s *ViewerServer) getIntSliceFromQuery(c *gin.Context, field string) []int {
-	classIds := make([]int, 0)
-	classIdsStr := c.DefaultQuery(field, "")
-	if len(classIdsStr) < 1 {
-		return classIds
+	classIDs := make([]int, 0)
+	classIDsStr := c.DefaultQuery(field, "")
+	if len(classIDsStr) < 1 {
+		return classIDs
 	}
 
-	classIdsStrs := strings.Split(classIdsStr, ",")
-	for _, v := range classIdsStrs {
+	classIDsStrs := strings.Split(classIDsStr, ",")
+	for _, v := range classIDsStrs {
 		if len(v) < 1 {
 			continue
 		}
 
-		classId, err := strconv.Atoi(v)
+		classID, err := strconv.Atoi(v)
 		if err != nil {
 			panic(err)
 		}
-		classIds = append(classIds, classId)
+		classIDs = append(classIDs, classID)
 	}
-	return classIds
+	return classIDs
 }
 
 // @Summary Query single or set of assets.
@@ -120,13 +124,13 @@ func (s *ViewerServer) getIntSliceFromQuery(c *gin.Context, field string) []int 
 // @Param   repoId     path    string     true        "Repo ID"
 // @Param   branchId     path    string     true        "Branch ID"
 // @Param   offset     query    string     false        "Offset, default is 0"
-// @Param   limit     query    string     false        "limit, default is 20"
+// @Param   limit     query    string     false        "limit, default is 1"
 // @Param   class_ids     query    string     false        "e.g. class_ids=1,3,7"
 // @Param   current_asset_id     query    string     false        "e.g. current_asset_id=xxxyyyzzz"
 // @Param   cm_types     query    string     false        "e.g. cm_types=FN,TP,MTP,IGNORED"
-// @Param   cks     query    string     false        "ck pairs, e.g. cks=xxx,xxx:,xxx:yyy"
-// @Param   tags     query    string     false        "tag pairs, e.g. cks=xxx,xxx:,xxx:yyy"
-// @Success 200 {string} string    "'code': 0, 'msg': 'Success', 'Success': true, 'Data': constants.QueryAssetsResult"
+// @Param   cks     query    string     false        "ck pairs, e.g. cks=xxx,xxx:,xxx:yyy, e.g. camera_id:1"
+// @Param   tags     query    string     false        "tag pairs, e.g. cks=xxx,xxx:,xxx:yyy, e.g. camera_id:1"
+// @Success 200 {string} string    "'code': 0, 'msg': 'Success', 'Success': true, 'result': constants.QueryAssetsResult"
 // @Router /api/v1/users/{userId}/repo/{repoId}/branch/{branchId}/assets [get]
 func (s *ViewerServer) handleAssets(c *gin.Context) {
 	mirRepo := s.buildMirRepoFromParam(c)
@@ -139,7 +143,7 @@ func (s *ViewerServer) handleAssets(c *gin.Context) {
 		limit = 1
 	}
 	classIds := s.getIntSliceFromQuery(c, "class_ids")
-	currentAssetId := c.DefaultQuery("current_asset_id", "")
+	currentAssetID := c.DefaultQuery("current_asset_id", "")
 
 	// Convert cm query.
 	cmTypesStr := c.DefaultQuery("cm_types", "")
@@ -173,13 +177,13 @@ func (s *ViewerServer) handleAssets(c *gin.Context) {
 		}
 	}
 
-	resultData := GetAssetsHandler(
+	resultData := s.handler.GetAssetsHandler(
 		s.Mongo,
 		&loader.MirRepoLoader{MirRepo: mirRepo},
 		offset,
 		limit,
 		classIds,
-		currentAssetId,
+		currentAssetID,
 		cmTypes,
 		cks,
 		tags,
@@ -193,11 +197,11 @@ func (s *ViewerServer) handleAssets(c *gin.Context) {
 // @Param   userId     path    string     true        "User ID"
 // @Param   repoId     path    string     true        "Repo ID"
 // @Param   branchId     path    string     true        "Branch ID"
-// @Success 200 {string} string    "'code': 0, 'msg': 'Success', 'Success': true, 'Data': constants.QueryDatasetStatsResult"
+// @Success 200 {string} string    "'code': 0, 'msg': 'Success', 'Success': true, 'result': constants.QueryDatasetStatsResult"
 // @Router /api/v1/users/{userId}/repo/{repoId}/branch/{branchId}/dataset_meta_count [get]
 func (s *ViewerServer) handleDatasetMetaCounts(c *gin.Context) {
 	mirRepo := s.buildMirRepoFromParam(c)
-	resultData := GetDatasetMetaCountsHandler(&loader.MirRepoLoader{MirRepo: mirRepo})
+	resultData := s.handler.GetDatasetMetaCountsHandler(&loader.MirRepoLoader{MirRepo: mirRepo})
 	ViewerSuccess(c, resultData)
 }
 
@@ -208,13 +212,13 @@ func (s *ViewerServer) handleDatasetMetaCounts(c *gin.Context) {
 // @Param   repoId     path    string     true        "Repo ID"
 // @Param   branchId     path    string     true        "Branch ID"
 // @Param   class_ids     query    string     false        "e.g. class_ids=1,3,7"
-// @Success 200 {string} string    "'code': 0, 'msg': 'Success', 'Success': true, 'Data': constants.QueryDatasetStatsResult"
+// @Success 200 {string} string    "'code': 0, 'msg': 'Success', 'Success': true, 'result': constants.QueryDatasetStatsResult"
 // @Router /api/v1/users/{userId}/repo/{repoId}/branch/{branchId}/dataset_stats [get]
 func (s *ViewerServer) handleDatasetStats(c *gin.Context) {
 	mirRepo := s.buildMirRepoFromParam(c)
 	classIds := s.getIntSliceFromQuery(c, "class_ids")
 
-	resultData := GetDatasetStatsHandler(s.Mongo, &loader.MirRepoLoader{MirRepo: mirRepo}, classIds)
+	resultData := s.handler.GetDatasetStatsHandler(s.Mongo, &loader.MirRepoLoader{MirRepo: mirRepo}, classIds)
 	ViewerSuccess(c, resultData)
 }
 
@@ -224,16 +228,16 @@ func (s *ViewerServer) handleDatasetStats(c *gin.Context) {
 // @Param   userId     path    string     true        "User ID"
 // @Param   repoId     path    string     true        "Repo ID"
 // @Param   candidate_dataset_ids     query    string     true        "e.g. candidate_dataset_ids=xxx,yyy"
-// @Success 200 {string} string    "'code': 0, 'msg': 'Success', 'Success': true, 'Data': 'duplication: 50, total_count: {xxx: 100, yyy: 200}'"
+// @Success 200 {string} string    "'code': 0, 'msg': 'Success', 'Success': true, 'result': 'duplication: 50, total_count: {xxx: 100, yyy: 200}'"
 // @Router /api/v1/users/{userId}/repo/{repoId}/dataset_duplication [get]
 func (s *ViewerServer) handleDatasetDup(c *gin.Context) {
 	// Validate candidate_dataset_ids
-	candidateDatasetIds := c.DefaultQuery("candidate_dataset_ids", "")
-	if len(candidateDatasetIds) <= 0 {
+	candidateDatasetIDs := c.DefaultQuery("candidate_dataset_ids", "")
+	if len(candidateDatasetIDs) <= 0 {
 		ViewerFailure(c, constants.FailInvalidParmsCode, constants.FailInvalidParmsMsg, "Invalid candidate_dataset_ids")
 	}
-	datasetIds := strings.Split(candidateDatasetIds, ",")
-	if len(datasetIds) != 2 {
+	datasetIDs := strings.Split(candidateDatasetIDs, ",")
+	if len(datasetIDs) != 2 {
 		ViewerFailure(
 			c,
 			constants.FailInvalidParmsCode,
@@ -242,31 +246,31 @@ func (s *ViewerServer) handleDatasetDup(c *gin.Context) {
 		)
 	}
 
-	userId := c.Param("userId")
-	repoId := c.Param("repoId")
+	userID := c.Param("userId")
+	repoID := c.Param("repoId")
 	mirRepo0 := constants.MirRepo{
 		SandboxRoot: s.sandbox,
-		UserId:      userId,
-		RepoId:      repoId,
-		BranchId:    datasetIds[0],
-		TaskId:      datasetIds[0],
+		UserID:      userID,
+		RepoID:      repoID,
+		BranchID:    datasetIDs[0],
+		TaskID:      datasetIDs[0],
 	}
 	mirRepo1 := constants.MirRepo{
 		SandboxRoot: s.sandbox,
-		UserId:      userId,
-		RepoId:      repoId,
-		BranchId:    datasetIds[1],
-		TaskId:      datasetIds[1],
+		UserID:      userID,
+		RepoID:      repoID,
+		BranchID:    datasetIDs[1],
+		TaskID:      datasetIDs[1],
 	}
 
-	duplicateCount, mirRepoCount0, mirRepoCount1 := GetDatasetDupHandler(
+	duplicateCount, mirRepoCount0, mirRepoCount1 := s.handler.GetDatasetDupHandler(
 		s.Mongo,
 		&loader.MirRepoLoader{MirRepo: mirRepo0},
 		&loader.MirRepoLoader{MirRepo: mirRepo1},
 	)
 	resultData := bson.M{
 		"duplication": duplicateCount,
-		"total_count": bson.M{datasetIds[0]: mirRepoCount0, datasetIds[1]: mirRepoCount1},
+		"total_count": bson.M{datasetIDs[0]: mirRepoCount0, datasetIDs[1]: mirRepoCount1},
 	}
 	ViewerSuccess(c, resultData)
 }

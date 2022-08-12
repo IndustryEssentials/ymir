@@ -38,7 +38,7 @@ func InitViperConfig() constants.Config {
 		panic(err)
 	}
 
-	config.ViewerUri = fmt.Sprintf("%s:%d", config.ViewerHost, config.ViewerPort)
+	config.ViewerURI = fmt.Sprintf("%s:%d", config.ViewerHost, config.ViewerPort)
 	log.Printf("config: %+v\n", config)
 	return config
 }
