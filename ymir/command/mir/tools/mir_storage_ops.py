@@ -96,7 +96,6 @@ class MirStorageOps():
             mir_annotations (mirpb.MirAnnotations)
             mir_keywords (mirpb.MirKeywords)
         """
-        cls.__build_mir_keywords_asset_to_cis(mir_annotations=mir_annotations, mir_keywords=mir_keywords)
 
         for asset_id in mir_metadatas.attributes:
             pred_cis_set = set()
@@ -123,17 +122,6 @@ class MirStorageOps():
             for k, v in image_cks.cks.items():
                 mir_keywords.ck_idx[k].asset_annos[asset_id]  # empty record to asset id
                 mir_keywords.ck_idx[k].sub_indexes[v].key_ids[asset_id]  # empty record to asset id
-
-    @classmethod
-    def __build_mir_keywords_asset_to_cis(cls, mir_annotations: mirpb.MirAnnotations,
-                                          mir_keywords: mirpb.MirKeywords) -> None:
-        asset_to_cis: Dict[str, Set[int]] = defaultdict(set)
-        for asset_id, single_image_annotations in mir_annotations.prediction.image_annotations.items():
-            asset_to_cis[asset_id].update([annotation.class_id for annotation in single_image_annotations.annotations])
-        for asset_id, single_image_annotations in mir_annotations.ground_truth.image_annotations.items():
-            asset_to_cis[asset_id].update([annotation.class_id for annotation in single_image_annotations.annotations])
-        for asset_id, class_ids_set in asset_to_cis.items():
-            mir_keywords.keywords[asset_id].predefined_keyids[:] = class_ids_set
 
     @classmethod
     def __build_mir_keywords_ci_tag(cls, task_annotations: mirpb.SingleTaskAnnotations,
