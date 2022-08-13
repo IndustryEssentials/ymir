@@ -4,12 +4,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"os/exec"
 	"path"
 	"testing"
 
 	"github.com/IndustryEssentials/ymir-viewer/common/constants"
 	"github.com/IndustryEssentials/ymir-viewer/common/protos"
-	"github.com/go-git/go-git/v5"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/protobuf/proto"
 )
@@ -25,16 +25,28 @@ func createTestMirRepo(sandbox string) *constants.MirRepo {
 }
 
 func createGitRepo(t *testing.T, repoRoot string, fileContents map[string][]byte, tagName string) {
-	r, _ := git.PlainInit(repoRoot, false)
-	w, _ := r.Worktree()
+	os.RemoveAll(repoRoot)
+	exec.Command("mkdir", "-p", repoRoot).Run()
+	cmd := exec.Command("git", "init")
+	cmd.Dir = repoRoot
+	cmd.Run()
 
 	for fileName, fileContent := range fileContents {
 		absFileName := path.Join(repoRoot, fileName)
 		os.WriteFile(absFileName, fileContent, 0777)
-		w.Add(absFileName)
 	}
-	commitHash, _ := w.Commit("git commit", &git.CommitOptions{All: true})
-	r.CreateTag(tagName, commitHash, nil)
+
+	cmd = exec.Command("git", "add", ".")
+	cmd.Dir = repoRoot
+	cmd.Run()
+
+	cmd = exec.Command("git", "commit", "-m", "\"msg\"")
+	cmd.Dir = repoRoot
+	cmd.Run()
+
+	cmd = exec.Command("git", "tag", tagName)
+	cmd.Dir = repoRoot
+	cmd.Run()
 }
 
 func TestGetMirRepo(t *testing.T) {
@@ -45,7 +57,8 @@ func TestGetMirRepo(t *testing.T) {
 }
 
 func TestLoadModelInfo(t *testing.T) {
-	workDir := fmt.Sprintf("%s/modelinfo", t.TempDir())
+	workDir := fmt.Sprintf("%s/modelinfo", "/tmp/test1")
+	//	workDir := fmt.Sprintf("%s/modelinfo", t.TempDir())
 	mirRepo := createTestMirRepo(workDir)
 	mirRoot, mirRev := mirRepo.BuildRepoID()
 
@@ -76,7 +89,8 @@ func TestLoadModelInfo(t *testing.T) {
 }
 
 func TestLoadAssetsDetail(t *testing.T) {
-	workDir := fmt.Sprintf("%s/assets_detail", t.TempDir())
+	workDir := fmt.Sprintf("%s/modelinfo", "/tmp/test2")
+	//	workDir := fmt.Sprintf("%s/assets_detail", t.TempDir())
 	mirRepo := createTestMirRepo(workDir)
 	mirRoot, mirRev := mirRepo.BuildRepoID()
 
