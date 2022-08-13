@@ -131,7 +131,13 @@ func (s *ViewerServer) getIntSliceFromQuery(c *gin.Context, field string) []int 
 func (s *ViewerServer) handleAssets(c *gin.Context) {
 	mirRepo := s.buildMirRepoFromParam(c)
 	offset := s.getIntFromQuery(c, "offset")
+	if offset < 0 {
+		offset = 0
+	}
 	limit := s.getIntFromQuery(c, "limit")
+	if limit < 1 {
+		limit = 1
+	}
 	classIds := s.getIntSliceFromQuery(c, "class_ids")
 	currentAssetId := c.DefaultQuery("current_asset_id", "")
 

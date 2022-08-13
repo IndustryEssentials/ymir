@@ -81,7 +81,7 @@ class TestInvokerTaskImporting(unittest.TestCase):
     def test_invoker_00(self, mock_run):
         importing_request = backend_pb2.TaskReqImporting()
         importing_request.asset_dir = self._storage_root
-        importing_request.annotation_dir = self._storage_root
+        importing_request.pred_dir = self._storage_root
         importing_request.gt_dir = self._storage_root
         importing_request.unknown_types_strategy = backend_pb2.UnknownTypesStrategy.UTS_ADD
         req_create_task = backend_pb2.ReqCreateTask()

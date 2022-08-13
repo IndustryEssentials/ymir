@@ -77,24 +77,31 @@ func NewMirdataModel(taskParameters string) MirdataModel {
 
 type MirAssetDetail struct {
 	// Export fields.
-	AssetId  string                   `json:"asset_id" bson:"asset_id"`
-	MetaData map[string]*interface{}  `json:"metadata" bson:"metadata"`
-	Gt       []map[string]interface{} `json:"gt"       bson:"gt"`
-	Pred     []map[string]interface{} `json:"pred"     bson:"pred"`
-	Cks      map[string]string        `json:"cks"      bson:"cks"`
+	AssetId        string                   `json:"asset_id"      bson:"asset_id"`
+	MetaData       map[string]interface{}   `json:"metadata"      bson:"metadata"`
+	JoinedClassIDs []int32                  `json:"class_ids"     bson:"class_ids"`
+	Gt             []map[string]interface{} `json:"gt"            bson:"gt"`
+	Pred           []map[string]interface{} `json:"pred"          bson:"pred"`
+	Cks            map[string]string        `json:"cks"           bson:"cks"`
+	Quality        float32                  `json:"image_quality" bson:"quality"`
 }
 
 func NewMirAssetDetail() MirAssetDetail {
 	mirAssetDetail := MirAssetDetail{}
-	mirAssetDetail.MetaData = map[string]*interface{}{}
+	mirAssetDetail.MetaData = map[string]interface{}{}
+	mirAssetDetail.JoinedClassIDs = []int32{}
 	mirAssetDetail.Pred = make([]map[string]interface{}, 0)
 	mirAssetDetail.Gt = make([]map[string]interface{}, 0)
 	mirAssetDetail.Cks = map[string]string{}
+	mirAssetDetail.Quality = -1
 	return mirAssetDetail
 }
 
 type QueryAssetsResult struct {
 	AssetsDetail     []MirAssetDetail `json:"elements"`
+	Offset           int              `json:"offset"`
+	Limit            int              `json:"limit"`
+	Anchor           int64            `json:"anchor"`
 	TotalAssetsCount int64            `json:"total_assets_count"`
 }
 

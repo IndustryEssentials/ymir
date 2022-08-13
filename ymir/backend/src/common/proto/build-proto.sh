@@ -10,4 +10,4 @@ python -m grpc_tools.protoc \
        --python_out=$OUTPUT_DIR \
        "$INPUT_DIR/backend.proto"
 
-sed -i -r 's/^import (.*_pb2.*)/from proto import \1/g' $OUTPUT_DIR/*_pb2*.py
+sed -i.bak -r 's/^import (.*_pb2.*)/from proto import \1/g' $OUTPUT_DIR/*_pb2*.py && rm *.bak

@@ -22,7 +22,7 @@ func TestViewerSuccess(t *testing.T) {
 		Code:    constants.ViewerSuccessCode,
 		Msg:     constants.ViewerSuccessMsg,
 		Success: true,
-		Data:    msg,
+		Result:  msg,
 	}
 	expectedDataBytes, _ := json.Marshal(expectedData)
 	assert.Equal(t, w.Code, 200)
@@ -42,7 +42,7 @@ func TestViewerFailure(t *testing.T) {
 		Code:    constants.FailGeneralCode,
 		Msg:     constants.FailGeneralMsg,
 		Success: false,
-		Data:    msg,
+		Result:  msg,
 	}
 	expectedDataBytes, _ := json.Marshal(expectedData)
 	assert.Equal(t, w.Code, 200)
