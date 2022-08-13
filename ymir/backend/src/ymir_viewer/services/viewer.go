@@ -1,6 +1,7 @@
 package services
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"net/http"
@@ -16,12 +17,14 @@ import (
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 type ViewerServer struct {
 	addr    string
 	gin     *gin.Engine
-	Mongo   *MongoServer
+	Mongo   BaseMongoServer
 	sandbox string
 	config  constants.Config
 	handler BaseViewerHandler
@@ -40,7 +43,14 @@ func NewViewerServer(config constants.Config) ViewerServer {
 		handler: &ViewerHandler{},
 	}
 	if len(mongoURI) > 0 {
-		viewerServer.Mongo = NewMongoServer(mongoURI)
+		defaultDbName := "YMIR"
+		mongoCtx := context.Background()
+		client, err := mongo.Connect(mongoCtx, options.Client().ApplyURI(mongoURI))
+		if err != nil {
+			panic(err)
+		}
+		database := client.Database(defaultDbName)
+		viewerServer.Mongo = NewMongoServer(mongoCtx, database)
 	}
 	viewerServer.routes()
 	return viewerServer

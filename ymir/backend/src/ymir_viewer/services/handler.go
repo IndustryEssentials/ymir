@@ -16,7 +16,7 @@ type BaseViewerHandler interface {
 		mirLoader loader.BaseMirRepoLoader,
 	) constants.QueryDatasetStatsResult
 	GetAssetsHandler(
-		mongo *MongoServer,
+		mongo BaseMongoServer,
 		mirLoader loader.BaseMirRepoLoader,
 		offset int,
 		limit int,
@@ -27,12 +27,12 @@ type BaseViewerHandler interface {
 		tags []string,
 	) constants.QueryAssetsResult
 	GetDatasetStatsHandler(
-		mongo *MongoServer,
+		mongo BaseMongoServer,
 		mirLoader loader.BaseMirRepoLoader,
 		classIds []int,
 	) constants.QueryDatasetStatsResult
 	GetDatasetDupHandler(
-		mongo *MongoServer,
+		mongo BaseMongoServer,
 		mirLoader0 loader.BaseMirRepoLoader,
 		mirLoader1 loader.BaseMirRepoLoader,
 	) (int, int64, int64)
@@ -41,7 +41,7 @@ type BaseViewerHandler interface {
 type ViewerHandler struct {
 }
 
-func (viewerHandler *ViewerHandler) loadAndCacheAssets(mongo *MongoServer, mirLoader loader.BaseMirRepoLoader) {
+func (viewerHandler *ViewerHandler) loadAndCacheAssets(mongo BaseMongoServer, mirLoader loader.BaseMirRepoLoader) {
 	defer tools.TimeTrack(time.Now())
 
 	mirRepo := mirLoader.GetMirRepo()
@@ -55,16 +55,16 @@ func (viewerHandler *ViewerHandler) loadAndCacheAssets(mongo *MongoServer, mirLo
 		for _, v := range mirAssetsDetail {
 			newData = append(newData, v)
 		}
-		mongo.IndexMongoData(mirRepo, newData)
+		mongo.IndexCollectionData(mirRepo, newData)
 	}
 }
 
 func (viewerHandler *ViewerHandler) GetAssetsHandler(
-	mongo *MongoServer,
+	mongo BaseMongoServer,
 	mirLoader loader.BaseMirRepoLoader,
 	offset int,
 	limit int,
-	classIds []int,
+	classIDs []int,
 	currentAssetID string,
 	cmTypes []int32,
 	cks []string,
@@ -72,7 +72,7 @@ func (viewerHandler *ViewerHandler) GetAssetsHandler(
 ) constants.QueryAssetsResult {
 	// Speed up when "first time" loading, i.e.: cache miss && only offset/limit/currentAssetID are set at most.
 	if !mongo.checkExistence(mirLoader.GetMirRepo()) {
-		if len(classIds) < 1 && len(cmTypes) < 1 && len(cks) < 1 && len(tags) < 1 {
+		if len(classIDs) < 1 && len(cmTypes) < 1 && len(cks) < 1 && len(tags) < 1 {
 			go viewerHandler.loadAndCacheAssets(mongo, mirLoader)
 
 			mirAssetsDetail, anchor, totalAssetsCount := mirLoader.LoadAssetsDetail(currentAssetID, offset, limit)
@@ -87,7 +87,7 @@ func (viewerHandler *ViewerHandler) GetAssetsHandler(
 	}
 
 	viewerHandler.loadAndCacheAssets(mongo, mirLoader)
-	return mongo.QueryAssets(mirLoader.GetMirRepo(), offset, limit, classIds, currentAssetID, cmTypes, cks, tags)
+	return mongo.QueryAssets(mirLoader.GetMirRepo(), offset, limit, classIDs, currentAssetID, cmTypes, cks, tags)
 }
 
 func (viewerHandler *ViewerHandler) GetDatasetMetaCountsHandler(
@@ -124,7 +124,7 @@ func (viewerHandler *ViewerHandler) GetDatasetMetaCountsHandler(
 }
 
 func (viewerHandler *ViewerHandler) GetDatasetStatsHandler(
-	mongo *MongoServer,
+	mongo BaseMongoServer,
 	mirLoader loader.BaseMirRepoLoader,
 	classIds []int,
 ) constants.QueryDatasetStatsResult {
@@ -133,7 +133,7 @@ func (viewerHandler *ViewerHandler) GetDatasetStatsHandler(
 }
 
 func (viewerHandler *ViewerHandler) GetDatasetDupHandler(
-	mongo *MongoServer,
+	mongo BaseMongoServer,
 	mirLoader0 loader.BaseMirRepoLoader,
 	mirLoader1 loader.BaseMirRepoLoader,
 ) (int, int64, int64) {

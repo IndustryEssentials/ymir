@@ -15,42 +15,61 @@ import (
 	"go.mongodb.org/mongo-driver/x/bsonx"
 )
 
+type BaseDatabase interface {
+	Drop(ctx context.Context) error
+	Collection(name string, opts ...*options.CollectionOptions) *mongo.Collection
+}
+type BaseMongoServer interface {
+	setExistence(collectionName string, ready bool, insert bool)
+	checkExistence(mirRepo *constants.MirRepo) bool
+	IndexCollectionData(mirRepo *constants.MirRepo, newData []interface{})
+	QueryAssets(
+		mirRepo *constants.MirRepo,
+		offset int,
+		limit int,
+		classIds []int,
+		currentAssetID string,
+		cmTypes []int32,
+		cks []string,
+		tags []string,
+	) constants.QueryAssetsResult
+	QueryDatasetStats(mirRepo *constants.MirRepo, classIDs []int) constants.QueryDatasetStatsResult
+	QueryDatasetDup(mirRepo0 *constants.MirRepo, mirRepo1 *constants.MirRepo) (int, int64, int64)
+	countAssetsInClass(collection *mongo.Collection, queryField string, classIds []int) int64
+	getRepoCollection(mirRepo *constants.MirRepo) (*mongo.Collection, string)
+}
+
 type MongoServer struct {
-	Clt           *mongo.Client
+	database      BaseDatabase
 	Ctx           context.Context
-	dbName        string
 	existenceName string
 }
 
-func NewMongoServer(uri string) *MongoServer {
-	mongoCtx := context.Background()
-	mongoClient, err := mongo.Connect(mongoCtx, options.Client().ApplyURI(uri))
-	if err != nil {
-		panic(err)
-	}
-
-	defaultDbName := "YMIR"
+func NewMongoServer(mongoCtx context.Context, database BaseDatabase) *MongoServer {
 	// Clear cached data.
-	err = mongoClient.Database(defaultDbName).Drop(mongoCtx)
+	err := database.Drop(mongoCtx)
 	if err != nil {
 		panic(err)
 	}
-
 	return &MongoServer{
-		Clt:           mongoClient,
+		database:      database,
 		Ctx:           mongoCtx,
-		dbName:        defaultDbName,
 		existenceName: "__collection_existence__",
 	}
 }
 
 func (s *MongoServer) getRepoCollection(mirRepo *constants.MirRepo) (*mongo.Collection, string) {
 	_, mirRev := mirRepo.BuildRepoID()
-	return s.Clt.Database(s.dbName).Collection(mirRev), mirRev
+	return s.database.Collection(mirRev), mirRev
+}
+
+func (s *MongoServer) getExistenceCollection() *mongo.Collection {
+	collection, _ := s.getRepoCollection(&constants.MirRepo{BranchID: s.existenceName})
+	return collection
 }
 
 func (s *MongoServer) setExistence(collectionName string, ready bool, insert bool) {
-	collection := s.Clt.Database(s.dbName).Collection(s.existenceName)
+	collection := s.getExistenceCollection()
 	if insert {
 		record := bson.M{"_id": collectionName, "ready": ready, "exist": true}
 		_, err := collection.InsertOne(s.Ctx, record)
@@ -79,7 +98,7 @@ func (s *MongoServer) checkExistence(mirRepo *constants.MirRepo) bool {
 	}
 
 	// Step 2: check collection ready.
-	collectionExistence := s.Clt.Database(s.dbName).Collection(s.existenceName)
+	collectionExistence := s.getExistenceCollection()
 	filter := bson.M{"_id": collectionName}
 	data := make(map[string]interface{})
 	err = collectionExistence.FindOne(s.Ctx, filter).Decode(data)
@@ -90,7 +109,7 @@ func (s *MongoServer) checkExistence(mirRepo *constants.MirRepo) bool {
 	return data["ready"].(bool)
 }
 
-func (s *MongoServer) IndexMongoData(mirRepo *constants.MirRepo, newData []interface{}) {
+func (s *MongoServer) IndexCollectionData(mirRepo *constants.MirRepo, newData []interface{}) {
 	defer tools.TimeTrack(time.Now())
 
 	if len(newData) <= 0 {
@@ -245,7 +264,8 @@ func (s *MongoServer) QueryAssets(
 		panic(err)
 	}
 	queryData := []constants.MirAssetDetail{}
-	if err = queryCursor.All(s.Ctx, &queryData); err != nil {
+	newData := bson.D{}
+	if err = queryCursor.All(s.Ctx, &newData); err != nil {
 		panic(err)
 	}
 

@@ -30,7 +30,7 @@ type MockViewerHandler struct {
 }
 
 func (viewerHandler *MockViewerHandler) GetAssetsHandler(
-	mongo *MongoServer,
+	mongo BaseMongoServer,
 	mirLoader loader.BaseMirRepoLoader,
 	offset int,
 	limit int,
@@ -56,7 +56,7 @@ func (viewerHandler *MockViewerHandler) GetDatasetMetaCountsHandler(
 }
 
 func (viewerHandler *MockViewerHandler) GetDatasetStatsHandler(
-	mongo *MongoServer,
+	mongo BaseMongoServer,
 	mirLoader loader.BaseMirRepoLoader,
 	classIDs []int,
 ) constants.QueryDatasetStatsResult {
@@ -69,7 +69,7 @@ func (viewerHandler *MockViewerHandler) GetDatasetStatsHandler(
 }
 
 func (viewerHandler *MockViewerHandler) GetDatasetDupHandler(
-	mongo *MongoServer,
+	mongo BaseMongoServer,
 	mirLoader0 loader.BaseMirRepoLoader,
 	mirLoader1 loader.BaseMirRepoLoader,
 ) (int, int64, int64) {
