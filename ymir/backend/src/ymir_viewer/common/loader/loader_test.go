@@ -30,8 +30,8 @@ func createGitRepo(t *testing.T, repoRoot string, fileContents map[string][]byte
 
 	for fileName, fileContent := range fileContents {
 		absFileName := path.Join(repoRoot, fileName)
-		os.WriteFile(absFileName, fileContent, 0644)
-		w.Add(fileName)
+		os.WriteFile(absFileName, fileContent, 0777)
+		w.Add(absFileName)
 	}
 	commitHash, _ := w.Commit("git commit", &git.CommitOptions{All: true})
 	r.CreateTag(tagName, commitHash, nil)
