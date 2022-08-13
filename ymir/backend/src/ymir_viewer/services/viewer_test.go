@@ -15,7 +15,7 @@ import (
 )
 
 func TestCreateViewer(t *testing.T) {
-	server := NewViewerServer(constants.Config{})
+	server := NewViewerServer(constants.Config{ViewerURI: "127.0.0.1:9527"})
 
 	server.getInt("invalid")
 	server.getIntSliceFromString("")
@@ -106,14 +106,14 @@ func TestSimplePageHandlerSuccess(t *testing.T) {
 	classIDs := []int{0, 1}
 	classIDsStr := "0,1"
 	statsRequestURL := fmt.Sprintf(
-		"http://127.0.0.1:9527/users/%s/repo/%s/branch/%s/dataset_stats?class_ids=%s",
+		"/users/%s/repo/%s/branch/%s/dataset_stats?class_ids=%s",
 		userID,
 		repoID,
 		branchID,
 		classIDsStr,
 	)
 	metaRequestURL := fmt.Sprintf(
-		"http://127.0.0.1:9527/users/%s/repo/%s/branch/%s/dataset_meta_count",
+		"/users/%s/repo/%s/branch/%s/dataset_meta_count",
 		userID,
 		repoID,
 		branchID,
@@ -161,7 +161,7 @@ func TestDupPageHandlerSuccess(t *testing.T) {
 	branchID0 := "branchID0"
 	branchID1 := "branchID1"
 	dupRequestURL := fmt.Sprintf(
-		"http://127.0.0.1:9527/users/%s/repo/%s/dataset_duplication?candidate_dataset_ids=%s,%s",
+		"/users/%s/repo/%s/dataset_duplication?candidate_dataset_ids=%s,%s",
 		userID,
 		repoID,
 		branchID0,
@@ -195,12 +195,12 @@ func TestDupPageHandlerFailure(t *testing.T) {
 	repoID := "repoID"
 	branchID0 := "branchID0"
 	dupRequestURL0 := fmt.Sprintf(
-		"http://127.0.0.1:9527/users/%s/repo/%s/dataset_duplication",
+		"/users/%s/repo/%s/dataset_duplication",
 		userID,
 		repoID,
 	)
 	dupRequestURL1 := fmt.Sprintf(
-		"http://127.0.0.1:9527/users/%s/repo/%s/dataset_duplication?candidate_dataset_ids=%s",
+		"/users/%s/repo/%s/dataset_duplication?candidate_dataset_ids=%s",
 		userID,
 		repoID,
 		branchID0,
@@ -257,7 +257,7 @@ func TestAssetsPageHandlerSuccess(t *testing.T) {
 		tags,
 	)
 	dupRequestURL := fmt.Sprintf(
-		"http://127.0.0.1:9527/users/%s/repo/%s/branch/%s/assets?%s",
+		"/users/%s/repo/%s/branch/%s/assets?%s",
 		userID,
 		repoID,
 		branchID,
