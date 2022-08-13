@@ -26,27 +26,46 @@ func createTestMirRepo(sandbox string) *constants.MirRepo {
 
 func createGitRepo(t *testing.T, repoRoot string, fileContents map[string][]byte, tagName string) {
 	os.RemoveAll(repoRoot)
-	exec.Command("mkdir", "-p", repoRoot).Run()
+	err := exec.Command("mkdir", "-p", repoRoot).Run()
+	if err != nil {
+		panic(err)
+	}
+
 	cmd := exec.Command("git", "init")
 	cmd.Dir = repoRoot
-	cmd.Run()
+	err = cmd.Run()
+	if err != nil {
+		panic(err)
+	}
 
 	for fileName, fileContent := range fileContents {
 		absFileName := path.Join(repoRoot, fileName)
-		os.WriteFile(absFileName, fileContent, 0777)
+		err = os.WriteFile(absFileName, fileContent, 0777)
+		if err != nil {
+			panic(err)
+		}
 	}
 
 	cmd = exec.Command("git", "add", ".")
 	cmd.Dir = repoRoot
-	cmd.Run()
+	err = cmd.Run()
+	if err != nil {
+		panic(err)
+	}
 
 	cmd = exec.Command("git", "commit", "-m", "\"msg\"")
 	cmd.Dir = repoRoot
-	cmd.Run()
+	err = cmd.Run()
+	if err != nil {
+		panic(err)
+	}
 
 	cmd = exec.Command("git", "tag", tagName)
 	cmd.Dir = repoRoot
-	cmd.Run()
+	err = cmd.Run()
+	if err != nil {
+		panic(err)
+	}
 }
 
 func TestGetMirRepo(t *testing.T) {
