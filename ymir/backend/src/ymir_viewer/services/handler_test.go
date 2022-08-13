@@ -14,8 +14,8 @@ type MockMirRepoLoader struct {
 	mock.Mock
 }
 
-func (m *MockMirRepoLoader) GetMirRepo() constants.MirRepo {
-	return constants.MirRepo{}
+func (m *MockMirRepoLoader) GetMirRepo() *constants.MirRepo {
+	return &constants.MirRepo{}
 }
 
 func (m *MockMirRepoLoader) LoadSingleMirData(mirFile constants.MirFile) interface{} {
@@ -37,6 +37,17 @@ func TestGetDatasetMetaCountsHandler(t *testing.T) {
 	mockMirContext := protos.MirContext{}
 	err := json.Unmarshal([]byte(`{
 		"images_cnt": 20,
+		"cks_cnt":
+		{
+			"city":
+			{
+				"cnt": 1,
+				"sub_cnt":
+				{
+					"hangzhou": 1
+				}
+			}
+		},
 		"pred_stats":
 		{
 			"positive_asset_cnt": 8,
@@ -86,8 +97,17 @@ func TestGetDatasetMetaCountsHandler(t *testing.T) {
 			"positive_images_count": 8
 		},
 		"total_assets_count": 20,
-		"cks_count_total": {},
-		"cks_count": {}
+		"cks_count_total":
+		{
+			"city": 1
+		},
+		"cks_count":
+		{
+			"city":
+			{
+				"hangzhou": 1
+			}
+		}
 	}`), &expectedResult)
 	if err != nil {
 		panic(err)

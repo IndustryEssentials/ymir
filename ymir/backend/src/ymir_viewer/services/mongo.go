@@ -44,7 +44,7 @@ func NewMongoServer(uri string) *MongoServer {
 	}
 }
 
-func (s *MongoServer) getRepoCollection(mirRepo constants.MirRepo) (*mongo.Collection, string) {
+func (s *MongoServer) getRepoCollection(mirRepo *constants.MirRepo) (*mongo.Collection, string) {
 	_, mirRev := mirRepo.BuildRepoID()
 	return s.Clt.Database(s.dbName).Collection(mirRev), mirRev
 }
@@ -67,7 +67,7 @@ func (s *MongoServer) setExistence(collectionName string, ready bool, insert boo
 	}
 }
 
-func (s *MongoServer) checkExistence(mirRepo constants.MirRepo) bool {
+func (s *MongoServer) checkExistence(mirRepo *constants.MirRepo) bool {
 	// Step 1: check collection exist.
 	collectionData, collectionName := s.getRepoCollection(mirRepo)
 	count, err := collectionData.EstimatedDocumentCount(s.Ctx)
@@ -90,7 +90,7 @@ func (s *MongoServer) checkExistence(mirRepo constants.MirRepo) bool {
 	return data["ready"].(bool)
 }
 
-func (s *MongoServer) IndexMongoData(mirRepo constants.MirRepo, newData []interface{}) {
+func (s *MongoServer) IndexMongoData(mirRepo *constants.MirRepo, newData []interface{}) {
 	defer tools.TimeTrack(time.Now())
 
 	if len(newData) <= 0 {
@@ -163,7 +163,7 @@ func (s *MongoServer) countAssetsInClass(collection *mongo.Collection, queryFiel
 }
 
 func (s *MongoServer) QueryAssets(
-	mirRepo constants.MirRepo,
+	mirRepo *constants.MirRepo,
 	offset int,
 	limit int,
 	classIds []int,
@@ -271,7 +271,7 @@ func (s *MongoServer) QueryAssets(
 	}
 }
 
-func (s *MongoServer) QueryDatasetStats(mirRepo constants.MirRepo, classIDs []int) constants.QueryDatasetStatsResult {
+func (s *MongoServer) QueryDatasetStats(mirRepo *constants.MirRepo, classIDs []int) constants.QueryDatasetStatsResult {
 	collection, _ := s.getRepoCollection(mirRepo)
 
 	totalAssetsCount := s.countAssetsInClass(collection, "", []int{})
@@ -288,7 +288,7 @@ func (s *MongoServer) QueryDatasetStats(mirRepo constants.MirRepo, classIDs []in
 	return queryData
 }
 
-func (s *MongoServer) QueryDatasetDup(mirRepo0 constants.MirRepo, mirRepo1 constants.MirRepo) (int, int64, int64) {
+func (s *MongoServer) QueryDatasetDup(mirRepo0 *constants.MirRepo, mirRepo1 *constants.MirRepo) (int, int64, int64) {
 	defer tools.TimeTrack(time.Now())
 
 	collection0, collectionName0 := s.getRepoCollection(mirRepo0)

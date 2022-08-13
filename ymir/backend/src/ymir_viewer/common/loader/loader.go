@@ -18,16 +18,16 @@ import (
 )
 
 type BaseMirRepoLoader interface {
-	GetMirRepo() constants.MirRepo
+	GetMirRepo() *constants.MirRepo
 	LoadSingleMirData(mirFile constants.MirFile) interface{}
 	LoadAssetsDetail(anchorAssetID string, offset int, limit int) ([]constants.MirAssetDetail, int64, int64)
 }
 
 type MirRepoLoader struct {
-	MirRepo constants.MirRepo
+	MirRepo *constants.MirRepo
 }
 
-func (mirRepoLoader *MirRepoLoader) GetMirRepo() constants.MirRepo {
+func (mirRepoLoader *MirRepoLoader) GetMirRepo() *constants.MirRepo {
 	return mirRepoLoader.MirRepo
 }
 func (mirRepoLoader *MirRepoLoader) LoadSingleMirData(mirFile constants.MirFile) interface{} {
