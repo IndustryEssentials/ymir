@@ -3,7 +3,7 @@ package loader
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"os"
 	"path"
 	"testing"
 
@@ -30,7 +30,7 @@ func createGitRepo(t *testing.T, repoRoot string, fileContents map[string][]byte
 
 	for fileName, fileContent := range fileContents {
 		absFileName := path.Join(repoRoot, fileName)
-		ioutil.WriteFile(absFileName, fileContent, 0644)
+		os.WriteFile(absFileName, fileContent, 0644)
 		w.Add(fileName)
 	}
 	commitHash, _ := w.Commit("git commit", &git.CommitOptions{All: true})
