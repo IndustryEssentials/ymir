@@ -41,6 +41,9 @@ jobs:
         version: v1.48
         working-directory: ymir/backend/src/ymir_viewer
 
+    - name: Setup tmate session
+      uses: mxschmitt/action-tmate@v3
+
     - name: Lint and test code
       working-directory: ymir/backend/src/ymir_viewer
       run: |
