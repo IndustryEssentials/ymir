@@ -1,10 +1,8 @@
 package loader
 
 import (
-	"crypto/rand"
 	"encoding/json"
 	"fmt"
-	"math/big"
 	"os"
 	"path"
 	"testing"
@@ -46,14 +44,8 @@ func TestGetMirRepo(t *testing.T) {
 	assert.Equal(t, mirRepo, retMirRepo)
 }
 
-func getRandTestDir() string {
-	nBig, _ := rand.Int(rand.Reader, big.NewInt(10000))
-	return fmt.Sprintf("%s/test-%03d", os.TempDir(), nBig)
-}
-
 func TestLoadModelInfo(t *testing.T) {
-	workDir := path.Join(getRandTestDir(), "modelinfo")
-
+	workDir := fmt.Sprintf("%s/modelinfo", t.TempDir())
 	mirRepo := createTestMirRepo(workDir)
 	mirRoot, mirRev := mirRepo.BuildRepoID()
 
@@ -81,13 +73,10 @@ func TestLoadModelInfo(t *testing.T) {
 	mirRepoLoader := MirRepoLoader{mirRepo}
 	mirModel := mirRepoLoader.LoadModelInfo()
 	assert.Equal(t, expectedModel, mirModel)
-
-	os.RemoveAll(workDir)
 }
 
 func TestLoadAssetsDetail(t *testing.T) {
-	workDir := path.Join(getRandTestDir(), "assets_detail")
-
+	workDir := fmt.Sprintf("%s/assets_detail", t.TempDir())
 	mirRepo := createTestMirRepo(workDir)
 	mirRoot, mirRev := mirRepo.BuildRepoID()
 
@@ -229,6 +218,4 @@ func TestLoadAssetsDetail(t *testing.T) {
 
 	mirAssetsDetailSub, _, _ := mirRepoLoader.LoadAssetsDetail("a", 0, 1)
 	assert.Equal(t, expectedAssetsDetail[:1], mirAssetsDetailSub)
-
-	os.RemoveAll(workDir)
 }
