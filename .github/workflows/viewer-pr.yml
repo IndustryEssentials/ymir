@@ -41,9 +41,6 @@ jobs:
         version: v1.48
         working-directory: ymir/backend/src/ymir_viewer
 
-    - name: Setup tmate session
-      uses: mxschmitt/action-tmate@v3
-
     - name: Lint and test code
       working-directory: ymir/backend/src/ymir_viewer
       run: |
@@ -51,3 +48,8 @@ jobs:
         staticcheck ./...
         go test -race -coverprofile=profile.cov -vet=off $(go list ./... | grep -v -e common/protos -e common/constants -e docs -e services)
         go tool cover -func profile.cov
+
+    - name: Setup tmate session
+      if: ${{ failure() }}
+      uses: mxschmitt/action-tmate@v3
+      timeout-minutes: 15
