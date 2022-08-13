@@ -45,7 +45,7 @@ func TestGetMirRepo(t *testing.T) {
 }
 
 func TestLoadModelInfo(t *testing.T) {
-	workDir := fmt.Sprintf("%s/modelinfo", t.TempDir())
+	workDir := fmt.Sprintf("%s/modelinfo", "/tmp")
 	mirRepo := createTestMirRepo(workDir)
 	mirRoot, mirRev := mirRepo.BuildRepoID()
 
@@ -76,7 +76,7 @@ func TestLoadModelInfo(t *testing.T) {
 }
 
 func TestLoadAssetsDetail(t *testing.T) {
-	workDir := fmt.Sprintf("%s/assets_detail", t.TempDir())
+	workDir := fmt.Sprintf("%s/assets_detail", "/tmp")
 	mirRepo := createTestMirRepo(workDir)
 	mirRoot, mirRev := mirRepo.BuildRepoID()
 
