@@ -50,3 +50,13 @@ jobs:
         staticcheck ./...
         go test -race -coverprofile=profile.cov -vet=off $(go list ./... | grep -v -e common/protos -e common/constants -e docs)
         go tool cover -func profile.cov
+
+        go install github.com/axw/gocov/gocov@latest
+        go install github.com/AlekSi/gocov-xml@latest
+        gocov convert profile.cov | gocov-xml > coverage.xml
+
+    - name: Display coverage
+      uses: ewjoachim/coverage-comment-action@v1
+      with:
+        GITHUB_TOKEN: ${{ github.token }}
+        COVERAGE_FILE: "ymir/backend/src/ymir_viewer/coverage.xml"
