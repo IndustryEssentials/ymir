@@ -8,7 +8,6 @@ import (
 	"github.com/IndustryEssentials/ymir-viewer/common/protos"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
-	"go.mongodb.org/mongo-driver/mongo"
 )
 
 type MockMirRepoLoader struct {
@@ -38,24 +37,25 @@ func (m *MockMirRepoLoader) LoadAssetsDetail(
 	return args.Get(0).([]constants.MirAssetDetail), args.Get(1).(int64), args.Get(2).(int64)
 }
 
+func (m *MockMirRepoLoader) LoadModelInfo(mirRepo *constants.MirRepo) constants.MirdataModel {
+	args := m.Called(mirRepo)
+	return args.Get(0).(constants.MirdataModel)
+}
+
 type MockMongoServer struct {
 	mock.Mock
 }
 
-func (m *MockMongoServer) setExistence(collectionName string, ready bool, insert bool) {
-	m.Called(collectionName, ready, insert)
-}
-
-func (m *MockMongoServer) checkExistence(mirRepo *constants.MirRepo) bool {
+func (m *MockMongoServer) CheckDatasetExistence(mirRepo *constants.MirRepo) bool {
 	args := m.Called(mirRepo)
 	return args.Bool(0)
 }
 
-func (m *MockMongoServer) IndexCollectionData(mirRepo *constants.MirRepo, newData []interface{}) {
+func (m *MockMongoServer) IndexDatasetData(mirRepo *constants.MirRepo, newData []interface{}) {
 	m.Called(mirRepo, newData)
 }
 
-func (m *MockMongoServer) QueryAssets(
+func (m *MockMongoServer) QueryDatasetAssets(
 	mirRepo *constants.MirRepo,
 	offset int,
 	limit int,
@@ -80,19 +80,9 @@ func (m *MockMongoServer) QueryDatasetStats(
 func (m *MockMongoServer) QueryDatasetDup(
 	mirRepo0 *constants.MirRepo,
 	mirRepo1 *constants.MirRepo,
-) (int, int64, int64) {
+) constants.QueryDatasetDupResult {
 	args := m.Called(mirRepo0, mirRepo1)
-	return args.Int(0), args.Get(1).(int64), args.Get(2).(int64)
-}
-
-func (m *MockMongoServer) countAssetsInClass(collection *mongo.Collection, queryField string, classIds []int) int64 {
-	args := m.Called(collection, queryField, classIds)
-	return args.Get(0).(int64)
-}
-
-func (m *MockMongoServer) getRepoCollection(mirRepo *constants.MirRepo) (*mongo.Collection, string) {
-	args := m.Called(mirRepo)
-	return args.Get(0).(*mongo.Collection), args.String(1)
+	return args.Get(0).(constants.QueryDatasetDupResult)
 }
 
 func TestGetDatasetMetaCountsHandler(t *testing.T) {
@@ -190,15 +180,17 @@ func TestGetDatasetDupHandler(t *testing.T) {
 	expectedCount0 := int64(200)
 	expectedCount1 := int64(300)
 	mockMongoServer := MockMongoServer{}
-	mockMongoServer.On("checkExistence", &mirRepo).Return(true)
-	mockMongoServer.On("QueryDatasetDup", &mirRepo, &mirRepo).Return(expectedDup, expectedCount0, expectedCount1)
+	mockMongoServer.On("CheckDatasetExistence", &mirRepo).Return(true)
+	expectedResult := constants.QueryDatasetDupResult{
+		Duplication: expectedDup,
+		TotalCount:  map[string]int64{"a": expectedCount0, "b": expectedCount1},
+	}
+	mockMongoServer.On("QueryDatasetDup", &mirRepo, &mirRepo).Return(expectedResult)
 
 	mockLoader := MockMirRepoLoader{}
 	handler := &ViewerHandler{mongoServer: &mockMongoServer, mirLoader: &mockLoader}
-	retDup, retCount0, retCount1 := handler.GetDatasetDupHandler(&mirRepo, &mirRepo)
-	assert.Equal(t, expectedDup, retDup)
-	assert.Equal(t, expectedCount0, retCount0)
-	assert.Equal(t, expectedCount1, retCount1)
+	resultData := handler.GetDatasetDupHandler(&mirRepo, &mirRepo)
+	assert.Equal(t, expectedResult, resultData)
 }
 
 func TestGetDatasetStatsHandler(t *testing.T) {
@@ -210,8 +202,8 @@ func TestGetDatasetStatsHandler(t *testing.T) {
 	classIDs := []int{0, 1}
 	expectedResult := constants.QueryDatasetStatsResult{}
 	mockMongoServer := MockMongoServer{}
-	mockMongoServer.On("checkExistence", &mirRepo).Return(false)
-	mockMongoServer.On("IndexCollectionData", &mirRepo, []interface{}{mockAssetsDetail[0]})
+	mockMongoServer.On("CheckDatasetExistence", &mirRepo).Return(false)
+	mockMongoServer.On("IndexDatasetData", &mirRepo, []interface{}{mockAssetsDetail[0]})
 	mockMongoServer.On("QueryDatasetStats", &mirRepo, classIDs).Return(expectedResult)
 	handler := &ViewerHandler{mongoServer: &mockMongoServer, mirLoader: &mockLoader}
 
@@ -232,8 +224,8 @@ func TestGetAssetsHandler(t *testing.T) {
 	tags := []string{"x", "y", "z"}
 	expectedResult := constants.QueryAssetsResult{}
 	mockMongoServer := MockMongoServer{}
-	mockMongoServer.On("checkExistence", &mirRepo).Return(true)
-	mockMongoServer.On("QueryAssets", &mirRepo, offset, limit, classIDs, currentAssetID, cmTypes, cks, tags).
+	mockMongoServer.On("CheckDatasetExistence", &mirRepo).Return(true)
+	mockMongoServer.On("QueryDatasetAssets", &mirRepo, offset, limit, classIDs, currentAssetID, cmTypes, cks, tags).
 		Return(expectedResult)
 	handler := &ViewerHandler{mongoServer: &mockMongoServer, mirLoader: &mockLoader}
 
@@ -276,8 +268,8 @@ func TestGetAssetsHandlerShortcut(t *testing.T) {
 		Return(mockAssetsDetail, anchor, totalAssetsCount)
 
 	mockMongoServer := MockMongoServer{}
-	mockMongoServer.On("checkExistence", &mirRepo).Return(false)
-	mockMongoServer.On("IndexCollectionData", &mirRepo, []interface{}{})
+	mockMongoServer.On("CheckDatasetExistence", &mirRepo).Return(false)
+	mockMongoServer.On("IndexDatasetData", &mirRepo, []interface{}{})
 	handler := &ViewerHandler{mongoServer: &mockMongoServer, mirLoader: &mockLoader}
 
 	result := handler.GetAssetsHandler(

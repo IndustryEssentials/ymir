@@ -10,7 +10,7 @@ import (
 	"github.com/IndustryEssentials/ymir-viewer/common/constants"
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
-	"go.mongodb.org/mongo-driver/bson"
+	"github.com/stretchr/testify/mock"
 )
 
 func TestCreateViewer(t *testing.T) {
@@ -26,9 +26,10 @@ func TestCreateViewer(t *testing.T) {
 }
 
 type MockViewerHandler struct {
+	mock.Mock
 }
 
-func (v *MockViewerHandler) GetAssetsHandler(
+func (h *MockViewerHandler) GetAssetsHandler(
 	mirRepo *constants.MirRepo,
 	offset int,
 	limit int,
@@ -38,42 +39,31 @@ func (v *MockViewerHandler) GetAssetsHandler(
 	cks []string,
 	tags []string,
 ) constants.QueryAssetsResult {
-	return constants.QueryAssetsResult{
-		AssetsDetail:     []constants.MirAssetDetail{},
-		Offset:           offset,
-		Limit:            limit,
-		Anchor:           int64(len(classIDs)),
-		TotalAssetsCount: 42,
-	}
+	args := h.Called(mirRepo, offset, limit, classIDs, currentAssetID, cmTypes, cks, tags)
+	return args.Get(0).(constants.QueryAssetsResult)
 }
 
-func (v *MockViewerHandler) GetDatasetDupHandler(
+func (h *MockViewerHandler) GetDatasetDupHandler(
 	mirRepo0 *constants.MirRepo,
 	mirRepo1 *constants.MirRepo,
-) (int, int64, int64) {
-	return 100, 1000, 2000
+) constants.QueryDatasetDupResult {
+	args := h.Called(mirRepo0, mirRepo1)
+	return args.Get(0).(constants.QueryDatasetDupResult)
 }
 
-func (v *MockViewerHandler) GetDatasetMetaCountsHandler(
+func (h *MockViewerHandler) GetDatasetMetaCountsHandler(
 	mirRepo *constants.MirRepo,
 ) constants.QueryDatasetStatsResult {
-	return constants.NewQueryDatasetStatsResult()
+	args := h.Called(mirRepo)
+	return args.Get(0).(constants.QueryDatasetStatsResult)
 }
 
-func (v *MockViewerHandler) GetDatasetStatsHandler(
+func (h *MockViewerHandler) GetDatasetStatsHandler(
 	mirRepo *constants.MirRepo,
 	classIDs []int,
 ) constants.QueryDatasetStatsResult {
-	result := constants.NewQueryDatasetStatsResult()
-	for classID := range classIDs {
-		result.Gt.ClassIdsCount[classID] = 0
-		result.Pred.ClassIdsCount[classID] = 0
-	}
-	return result
-}
-
-func setUpViewer() *ViewerServer {
-	return &ViewerServer{gin: gin.Default(), handler: &MockViewerHandler{}}
+	args := h.Called(mirRepo, classIDs)
+	return args.Get(0).(constants.QueryDatasetStatsResult)
 }
 
 func buildResponseBody(
@@ -90,11 +80,12 @@ func buildResponseBody(
 	return bytes
 }
 
-func TestSimplePageHandlerSuccess(t *testing.T) {
-	viewer := setUpViewer()
+func TestStatsPageHandlerSuccess(t *testing.T) {
+	mockHandler := MockViewerHandler{}
+	viewer := &ViewerServer{gin: gin.Default(), handler: &mockHandler}
+
 	r := viewer.gin
 	r.GET("/users/:userID/repo/:repoID/branch/:branchID/dataset_stats", viewer.handleDatasetStats)
-	r.GET("/users/:userID/repo/:repoID/branch/:branchID/dataset_meta_count", viewer.handleDatasetMetaCounts)
 
 	userID := "userID"
 	repoID := "repoID"
@@ -108,12 +99,6 @@ func TestSimplePageHandlerSuccess(t *testing.T) {
 		branchID,
 		classIDsStr,
 	)
-	metaRequestURL := fmt.Sprintf(
-		"/users/%s/repo/%s/branch/%s/dataset_meta_count",
-		userID,
-		repoID,
-		branchID,
-	)
 
 	statsExpectedResult := constants.NewQueryDatasetStatsResult()
 	for classID := range classIDs {
@@ -126,6 +111,34 @@ func TestSimplePageHandlerSuccess(t *testing.T) {
 		true,
 		statsExpectedResult,
 	)
+
+	mirRepo := constants.MirRepo{UserID: userID, RepoID: repoID, BranchID: branchID, TaskID: branchID}
+	mockHandler.On("GetDatasetStatsHandler", &mirRepo, classIDs).Return(statsExpectedResult)
+
+	req, _ := http.NewRequest("GET", statsRequestURL, nil)
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+	assert.Equal(t, string(statsExpectedResponseData), w.Body.String())
+	assert.Equal(t, http.StatusOK, w.Code)
+}
+
+func TestMetaCountPageHandlerSuccess(t *testing.T) {
+	mockHandler := MockViewerHandler{}
+	viewer := &ViewerServer{gin: gin.Default(), handler: &mockHandler}
+
+	r := viewer.gin
+	r.GET("/users/:userID/repo/:repoID/branch/:branchID/dataset_meta_count", viewer.handleDatasetMetaCounts)
+
+	userID := "userID"
+	repoID := "repoID"
+	branchID := "branchID"
+	metaRequestURL := fmt.Sprintf(
+		"/users/%s/repo/%s/branch/%s/dataset_meta_count",
+		userID,
+		repoID,
+		branchID,
+	)
+
 	metaExpectedResult := constants.NewQueryDatasetStatsResult()
 	metaExpectedResponseData := buildResponseBody(
 		constants.ViewerSuccessCode,
@@ -134,21 +147,58 @@ func TestSimplePageHandlerSuccess(t *testing.T) {
 		metaExpectedResult,
 	)
 
-	req, _ := http.NewRequest("GET", statsRequestURL, nil)
-	w := httptest.NewRecorder()
-	r.ServeHTTP(w, req)
-	assert.Equal(t, string(statsExpectedResponseData), w.Body.String())
-	assert.Equal(t, http.StatusOK, w.Code)
+	mirRepo := constants.MirRepo{UserID: userID, RepoID: repoID, BranchID: branchID, TaskID: branchID}
+	mockHandler.On("GetDatasetMetaCountsHandler", &mirRepo).Return(metaExpectedResult)
 
-	req, _ = http.NewRequest("GET", metaRequestURL, nil)
-	w = httptest.NewRecorder()
+	req, _ := http.NewRequest("GET", metaRequestURL, nil)
+	w := httptest.NewRecorder()
 	r.ServeHTTP(w, req)
 	assert.Equal(t, string(metaExpectedResponseData), w.Body.String())
 	assert.Equal(t, http.StatusOK, w.Code)
 }
 
+func TestMetaCountPageHandlerFailure(t *testing.T) {
+	mockHandler := MockViewerHandler{}
+	viewer := &ViewerServer{gin: gin.Default(), handler: &mockHandler}
+
+	r := viewer.gin
+	r.GET("/users/:userID/repo/:repoID/branch/:branchID/dataset_meta_count", viewer.handleDatasetMetaCounts)
+
+	userID := "userID"
+	repoID := "repoID"
+	branchID := "branchID"
+	metaRequestURL := fmt.Sprintf(
+		"/users/%s/repo/%s/branch/%s/dataset_meta_count",
+		userID,
+		repoID,
+		branchID,
+	)
+
+	failureResult := FailureResult{
+		Code: constants.FailRepoNotExistCode,
+		Msg:  constants.ResponseMsg("unknown ref"),
+	}
+	statsExpectedResponseData := buildResponseBody(
+		failureResult.Code,
+		failureResult.Msg,
+		false,
+		failureResult,
+	)
+
+	mirRepo := constants.MirRepo{UserID: userID, RepoID: repoID, BranchID: branchID, TaskID: branchID}
+	mockHandler.On("GetDatasetMetaCountsHandler", &mirRepo).Panic("unknown ref")
+
+	req, _ := http.NewRequest("GET", metaRequestURL, nil)
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+	assert.Equal(t, string(statsExpectedResponseData), w.Body.String())
+	assert.Equal(t, http.StatusOK, w.Code)
+}
+
 func TestDupPageHandlerSuccess(t *testing.T) {
-	viewer := setUpViewer()
+	mockHandler := MockViewerHandler{}
+	viewer := &ViewerServer{gin: gin.Default(), handler: &mockHandler}
+
 	r := viewer.gin
 	r.GET("/users/:userID/repo/:repoID/dataset_duplication", viewer.handleDatasetDup)
 
@@ -164,16 +214,24 @@ func TestDupPageHandlerSuccess(t *testing.T) {
 		branchID1,
 	)
 
-	statsExpectedResult := bson.M{
-		"duplication": 100,
-		"total_count": bson.M{branchID0: 1000, branchID1: 2000},
+	dupCount := 100
+	branchCount0 := int64(1000)
+	branchCount1 := int64(2000)
+	mockDupResult := constants.QueryDatasetDupResult{
+		Duplication: dupCount,
+		TotalCount:  map[string]int64{branchID0: branchCount0, branchID1: branchCount1},
 	}
 	statsExpectedResponseData := buildResponseBody(
 		constants.ViewerSuccessCode,
 		"Success",
 		true,
-		statsExpectedResult,
+		mockDupResult,
 	)
+
+	// Set mock funcs.
+	mirRepo0 := constants.MirRepo{UserID: userID, RepoID: repoID, BranchID: branchID0, TaskID: branchID0}
+	mirRepo1 := constants.MirRepo{UserID: userID, RepoID: repoID, BranchID: branchID1, TaskID: branchID1}
+	mockHandler.On("GetDatasetDupHandler", &mirRepo0, &mirRepo1).Return(mockDupResult)
 
 	req, _ := http.NewRequest("GET", dupRequestURL, nil)
 	w := httptest.NewRecorder()
@@ -183,30 +241,28 @@ func TestDupPageHandlerSuccess(t *testing.T) {
 }
 
 func TestDupPageHandlerFailure(t *testing.T) {
-	viewer := setUpViewer()
+	mockHandler := MockViewerHandler{}
+	viewer := &ViewerServer{gin: gin.Default(), handler: &mockHandler}
+
 	r := viewer.gin
 	r.GET("/users/:userID/repo/:repoID/dataset_duplication", viewer.handleDatasetDup)
 
 	userID := "userID"
 	repoID := "repoID"
-	branchID0 := "branchID0"
 	dupRequestURL0 := fmt.Sprintf(
 		"/users/%s/repo/%s/dataset_duplication",
 		userID,
 		repoID,
 	)
-	dupRequestURL1 := fmt.Sprintf(
-		"/users/%s/repo/%s/dataset_duplication?candidate_dataset_ids=%s",
-		userID,
-		repoID,
-		branchID0,
-	)
-
+	failureResult := FailureResult{
+		Code: constants.FailInvalidParmsCode,
+		Msg:  constants.ResponseMsg("Invalid candidate_dataset_ids."),
+	}
 	statsExpectedResponseData := buildResponseBody(
-		constants.FailInvalidParmsCode,
-		constants.FailInvalidParmsMsg,
+		failureResult.Code,
+		failureResult.Msg,
 		false,
-		"Invalid candidate_dataset_ids",
+		failureResult,
 	)
 	req, _ := http.NewRequest("GET", dupRequestURL0, nil)
 	w := httptest.NewRecorder()
@@ -214,11 +270,22 @@ func TestDupPageHandlerFailure(t *testing.T) {
 	assert.Equal(t, string(statsExpectedResponseData), w.Body.String())
 	assert.Equal(t, http.StatusOK, w.Code)
 
+	branchID0 := "branchID0"
+	dupRequestURL1 := fmt.Sprintf(
+		"/users/%s/repo/%s/dataset_duplication?candidate_dataset_ids=%s",
+		userID,
+		repoID,
+		branchID0,
+	)
+	failureResult = FailureResult{
+		Code: constants.FailInvalidParmsCode,
+		Msg:  constants.ResponseMsg("candidate_dataset_ids requires exact two datasets."),
+	}
 	statsExpectedResponseData = buildResponseBody(
-		constants.FailInvalidParmsCode,
-		constants.FailInvalidParmsMsg,
+		failureResult.Code,
+		failureResult.Msg,
 		false,
-		"candidate_dataset_ids requires exact two datasets.",
+		failureResult,
 	)
 	req, _ = http.NewRequest("GET", dupRequestURL1, nil)
 	w = httptest.NewRecorder()
@@ -228,7 +295,9 @@ func TestDupPageHandlerFailure(t *testing.T) {
 }
 
 func TestAssetsPageHandlerSuccess(t *testing.T) {
-	viewer := setUpViewer()
+	mockHandler := MockViewerHandler{}
+	viewer := &ViewerServer{gin: gin.Default(), handler: &mockHandler}
+
 	r := viewer.gin
 	r.GET("/users/:userID/repo/:repoID/branch/:branchID/assets", viewer.handleAssets)
 
@@ -273,6 +342,24 @@ func TestAssetsPageHandlerSuccess(t *testing.T) {
 		true,
 		assetsExpectedResult,
 	)
+
+	revisedOffset := 0
+	revisedLimit := 1
+	revisedcmTypes := []int32{2, 3}
+	revisedCks := []string{"ck0", "ck1"}
+	revisedTags := []string{"tag0", "tag1"}
+	mirRepo := constants.MirRepo{UserID: userID, RepoID: repoID, BranchID: branchID, TaskID: branchID}
+	mockHandler.On(
+		"GetAssetsHandler",
+		&mirRepo,
+		revisedOffset,
+		revisedLimit,
+		classIDs,
+		currentAssetID,
+		revisedcmTypes,
+		revisedCks,
+		revisedTags).
+		Return(assetsExpectedResult)
 
 	req, _ := http.NewRequest("GET", dupRequestURL, nil)
 	w := httptest.NewRecorder()

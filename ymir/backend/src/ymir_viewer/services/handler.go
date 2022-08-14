@@ -23,13 +23,13 @@ type BaseMirRepoLoader interface {
 		offset int,
 		limit int,
 	) ([]constants.MirAssetDetail, int64, int64)
+	LoadModelInfo(mirRepo *constants.MirRepo) constants.MirdataModel
 }
 
 type BaseMongoServer interface {
-	setExistence(collectionName string, ready bool, insert bool)
-	checkExistence(mirRepo *constants.MirRepo) bool
-	IndexCollectionData(mirRepo *constants.MirRepo, newData []interface{})
-	QueryAssets(
+	CheckDatasetExistence(mirRepo *constants.MirRepo) bool
+	IndexDatasetData(mirRepo *constants.MirRepo, newData []interface{})
+	QueryDatasetAssets(
 		mirRepo *constants.MirRepo,
 		offset int,
 		limit int,
@@ -39,10 +39,8 @@ type BaseMongoServer interface {
 		cks []string,
 		tags []string,
 	) constants.QueryAssetsResult
+	QueryDatasetDup(mirRepo0 *constants.MirRepo, mirRepo1 *constants.MirRepo) constants.QueryDatasetDupResult
 	QueryDatasetStats(mirRepo *constants.MirRepo, classIDs []int) constants.QueryDatasetStatsResult
-	QueryDatasetDup(mirRepo0 *constants.MirRepo, mirRepo1 *constants.MirRepo) (int, int64, int64)
-	countAssetsInClass(collection *mongo.Collection, queryField string, classIds []int) int64
-	getRepoCollection(mirRepo *constants.MirRepo) (*mongo.Collection, string)
 }
 
 type ViewerHandler struct {
@@ -77,7 +75,7 @@ func NewViewerHandler(mongoURI string, mongoDBName string, clearCache bool) *Vie
 func (v *ViewerHandler) loadAndCacheAssets(mirRepo *constants.MirRepo) {
 	defer tools.TimeTrack(time.Now())
 
-	if v.mongoServer.checkExistence(mirRepo) {
+	if v.mongoServer.CheckDatasetExistence(mirRepo) {
 		log.Printf("Mongodb ready for %s.", fmt.Sprint(mirRepo))
 	} else {
 		log.Printf("No data for %s, reading & building cache.", fmt.Sprint(mirRepo))
@@ -88,7 +86,7 @@ func (v *ViewerHandler) loadAndCacheAssets(mirRepo *constants.MirRepo) {
 		for _, v := range mirAssetsDetail {
 			newData = append(newData, v)
 		}
-		v.mongoServer.IndexCollectionData(mirRepo, newData)
+		v.mongoServer.IndexDatasetData(mirRepo, newData)
 	}
 }
 
@@ -103,7 +101,7 @@ func (v *ViewerHandler) GetAssetsHandler(
 	tags []string,
 ) constants.QueryAssetsResult {
 	// Speed up when "first time" loading, i.e.: cache miss && only offset/limit/currentAssetID are set at most.
-	if !v.mongoServer.checkExistence(mirRepo) {
+	if !v.mongoServer.CheckDatasetExistence(mirRepo) {
 		if len(classIDs) < 1 && len(cmTypes) < 1 && len(cks) < 1 && len(tags) < 1 {
 			go v.loadAndCacheAssets(mirRepo)
 
@@ -124,7 +122,7 @@ func (v *ViewerHandler) GetAssetsHandler(
 	}
 
 	v.loadAndCacheAssets(mirRepo)
-	return v.mongoServer.QueryAssets(
+	return v.mongoServer.QueryDatasetAssets(
 		mirRepo,
 		offset,
 		limit,
@@ -180,7 +178,7 @@ func (v *ViewerHandler) GetDatasetStatsHandler(
 func (v *ViewerHandler) GetDatasetDupHandler(
 	mirRepo0 *constants.MirRepo,
 	mirRepo1 *constants.MirRepo,
-) (int, int64, int64) {
+) constants.QueryDatasetDupResult {
 	v.loadAndCacheAssets(mirRepo0)
 	v.loadAndCacheAssets(mirRepo1)
 	return v.mongoServer.QueryDatasetDup(mirRepo0, mirRepo1)

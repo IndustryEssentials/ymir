@@ -15,4 +15,6 @@ const (
 
 	FailInvalidParmsCode ResponseCode = 180102
 	FailInvalidParmsMsg  ResponseMsg  = "Invalid parameters"
+
+	FailRepoNotExistCode ResponseCode = 180103
 )

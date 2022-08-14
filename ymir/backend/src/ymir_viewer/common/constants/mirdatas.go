@@ -129,3 +129,8 @@ func NewQueryDatasetStatsResult() QueryDatasetStatsResult {
 	}
 	return queryResult
 }
+
+type QueryDatasetDupResult struct {
+	Duplication int              `json:"duplication"`
+	TotalCount  map[string]int64 `json:"total_count"`
+}

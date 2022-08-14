@@ -35,14 +35,17 @@ func TestViewerFailure(t *testing.T) {
 	w := httptest.NewRecorder()
 	c, _ := gin.CreateTestContext(w)
 
-	msg := "testing ViewerFailure"
-	ViewerFailure(c, constants.FailGeneralCode, constants.FailGeneralMsg, msg)
+	result := FailureResult{Code: constants.FailGeneralCode, Msg: "testing ViewerFailure"}
+	ViewerFailure(
+		c,
+		&result,
+	)
 
 	expectedData := ResultVO{
-		Code:    constants.FailGeneralCode,
-		Msg:     constants.FailGeneralMsg,
+		Code:    result.Code,
+		Msg:     result.Msg,
 		Success: false,
-		Result:  msg,
+		Result:  result,
 	}
 	expectedDataBytes, _ := json.Marshal(expectedData)
 	assert.Equal(t, 200, w.Code)

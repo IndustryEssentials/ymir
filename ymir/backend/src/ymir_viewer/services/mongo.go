@@ -16,7 +16,6 @@ import (
 )
 
 type BaseDatabase interface {
-	Drop(ctx context.Context) error
 	Collection(name string, opts ...*options.CollectionOptions) *mongo.Collection
 }
 type MongoServer struct {
@@ -43,7 +42,7 @@ func (s *MongoServer) getExistenceCollection() *mongo.Collection {
 	return collection
 }
 
-func (s *MongoServer) setExistence(collectionName string, ready bool, insert bool) {
+func (s *MongoServer) setDatasetExistence(collectionName string, ready bool, insert bool) {
 	collection := s.getExistenceCollection()
 	if insert {
 		record := bson.M{"_id": collectionName, "ready": ready, "exist": true}
@@ -61,7 +60,7 @@ func (s *MongoServer) setExistence(collectionName string, ready bool, insert boo
 	}
 }
 
-func (s *MongoServer) checkExistence(mirRepo *constants.MirRepo) bool {
+func (s *MongoServer) CheckDatasetExistence(mirRepo *constants.MirRepo) bool {
 	// Step 1: check collection exist.
 	collectionData, collectionName := s.getRepoCollection(mirRepo)
 	count, err := collectionData.EstimatedDocumentCount(s.Ctx)
@@ -84,7 +83,7 @@ func (s *MongoServer) checkExistence(mirRepo *constants.MirRepo) bool {
 	return data["ready"].(bool)
 }
 
-func (s *MongoServer) IndexCollectionData(mirRepo *constants.MirRepo, newData []interface{}) {
+func (s *MongoServer) IndexDatasetData(mirRepo *constants.MirRepo, newData []interface{}) {
 	defer tools.TimeTrack(time.Now())
 
 	if len(newData) <= 0 {
@@ -92,7 +91,7 @@ func (s *MongoServer) IndexCollectionData(mirRepo *constants.MirRepo, newData []
 	}
 
 	collection, collectionName := s.getRepoCollection(mirRepo)
-	s.setExistence(collectionName, false, true)
+	s.setDatasetExistence(collectionName, false, true)
 
 	_, err := collection.InsertMany(s.Ctx, newData)
 	if err != nil {
@@ -136,10 +135,10 @@ func (s *MongoServer) IndexCollectionData(mirRepo *constants.MirRepo, newData []
 		panic(err)
 	}
 
-	s.setExistence(collectionName, true, false)
+	s.setDatasetExistence(collectionName, true, false)
 }
 
-func (s *MongoServer) countAssetsInClass(collection *mongo.Collection, queryField string, classIds []int) int64 {
+func (s *MongoServer) countDatasetAssetsInClass(collection *mongo.Collection, queryField string, classIds []int) int64 {
 	filterQuery := bson.M{}
 	if len(classIds) > 0 {
 		if len(queryField) < 1 {
@@ -156,7 +155,7 @@ func (s *MongoServer) countAssetsInClass(collection *mongo.Collection, queryFiel
 	return count
 }
 
-func (s *MongoServer) QueryAssets(
+func (s *MongoServer) QueryDatasetAssets(
 	mirRepo *constants.MirRepo,
 	offset int,
 	limit int,
@@ -269,28 +268,31 @@ func (s *MongoServer) QueryAssets(
 func (s *MongoServer) QueryDatasetStats(mirRepo *constants.MirRepo, classIDs []int) constants.QueryDatasetStatsResult {
 	collection, _ := s.getRepoCollection(mirRepo)
 
-	totalAssetsCount := s.countAssetsInClass(collection, "", []int{})
+	totalAssetsCount := s.countDatasetAssetsInClass(collection, "", []int{})
 	queryData := constants.NewQueryDatasetStatsResult()
 	queryData.TotalAssetsCount = totalAssetsCount
 	for _, classID := range classIDs {
-		queryData.Gt.ClassIdsCount[classID] = s.countAssetsInClass(collection, "gt.class_id", []int{classID})
-		queryData.Pred.ClassIdsCount[classID] = s.countAssetsInClass(collection, "pred.class_id", []int{classID})
+		queryData.Gt.ClassIdsCount[classID] = s.countDatasetAssetsInClass(collection, "gt.class_id", []int{classID})
+		queryData.Pred.ClassIdsCount[classID] = s.countDatasetAssetsInClass(collection, "pred.class_id", []int{classID})
 	}
-	queryData.Gt.PositiveImagesCount = s.countAssetsInClass(collection, "gt.class_id", classIDs)
+	queryData.Gt.PositiveImagesCount = s.countDatasetAssetsInClass(collection, "gt.class_id", classIDs)
 	queryData.Gt.NegativeImagesCount = totalAssetsCount - queryData.Gt.PositiveImagesCount
-	queryData.Pred.PositiveImagesCount = s.countAssetsInClass(collection, "pred.class_id", classIDs)
+	queryData.Pred.PositiveImagesCount = s.countDatasetAssetsInClass(collection, "pred.class_id", classIDs)
 	queryData.Pred.NegativeImagesCount = totalAssetsCount - queryData.Pred.PositiveImagesCount
 	return queryData
 }
 
-func (s *MongoServer) QueryDatasetDup(mirRepo0 *constants.MirRepo, mirRepo1 *constants.MirRepo) (int, int64, int64) {
+func (s *MongoServer) QueryDatasetDup(
+	mirRepo0 *constants.MirRepo,
+	mirRepo1 *constants.MirRepo,
+) constants.QueryDatasetDupResult {
 	defer tools.TimeTrack(time.Now())
 
 	collection0, collectionName0 := s.getRepoCollection(mirRepo0)
-	totalCount0 := s.countAssetsInClass(collection0, "", []int{})
+	totalCount0 := s.countDatasetAssetsInClass(collection0, "", []int{})
 
 	collection1, collectionName1 := s.getRepoCollection(mirRepo1)
-	totalCount1 := s.countAssetsInClass(collection1, "", []int{})
+	totalCount1 := s.countDatasetAssetsInClass(collection1, "", []int{})
 
 	// No-SQL Aggregate Trick: always set smaller dataset to be joined.
 	collectionJoined := collection0
@@ -319,5 +321,10 @@ func (s *MongoServer) QueryDatasetDup(mirRepo0 *constants.MirRepo, mirRepo1 *con
 	if err = showLoadedCursor.All(s.Ctx, &showsLoaded); err != nil {
 		panic(err)
 	}
-	return len(showsLoaded), totalCount0, totalCount1
+
+	resultData := constants.QueryDatasetDupResult{
+		Duplication: len(showsLoaded),
+		TotalCount:  map[string]int64{mirRepo0.BranchID: totalCount0, mirRepo1.BranchID: totalCount1},
+	}
+	return resultData
 }

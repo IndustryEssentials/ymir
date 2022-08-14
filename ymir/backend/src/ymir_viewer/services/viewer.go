@@ -1,6 +1,7 @@
 package services
 
 import (
+	"errors"
 	"fmt"
 	"log"
 	"net/http"
@@ -14,7 +15,6 @@ import (
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
-	"go.mongodb.org/mongo-driver/bson"
 )
 
 // Delcare base handler interface, which is used in viewer.
@@ -32,7 +32,7 @@ type BaseHandler interface {
 	GetDatasetDupHandler(
 		mirRepo0 *constants.MirRepo,
 		mirRepo1 *constants.MirRepo,
-	) (int, int64, int64)
+	) constants.QueryDatasetDupResult
 	GetDatasetMetaCountsHandler(
 		mirRepo *constants.MirRepo,
 	) constants.QueryDatasetStatsResult
@@ -152,6 +152,8 @@ func (s *ViewerServer) getIntSliceFromString(input string) []int {
 // @Success 200 {string} string    "'code': 0, 'msg': 'Success', 'Success': true, 'result': constants.QueryAssetsResult"
 // @Router /api/v1/users/{userID}/repo/{repoID}/branch/{branchID}/assets [get]
 func (s *ViewerServer) handleAssets(c *gin.Context) {
+	defer s.handleFailure(c)
+
 	mirRepo := s.buildMirRepoFromParam(c)
 	offset := s.getInt(c.DefaultQuery("offset", "0"))
 	if offset < 0 {
@@ -218,7 +220,10 @@ func (s *ViewerServer) handleAssets(c *gin.Context) {
 // @Success 200 {string} string    "'code': 0, 'msg': 'Success', 'Success': true, 'result': constants.QueryDatasetStatsResult"
 // @Router /api/v1/users/{userID}/repo/{repoID}/branch/{branchID}/dataset_meta_count [get]
 func (s *ViewerServer) handleDatasetMetaCounts(c *gin.Context) {
+	defer s.handleFailure(c)
+
 	mirRepo := s.buildMirRepoFromParam(c)
+
 	resultData := s.handler.GetDatasetMetaCountsHandler(mirRepo)
 	ViewerSuccess(c, resultData)
 }
@@ -233,6 +238,8 @@ func (s *ViewerServer) handleDatasetMetaCounts(c *gin.Context) {
 // @Success 200 {string} string    "'code': 0, 'msg': 'Success', 'Success': true, 'result': constants.QueryDatasetStatsResult"
 // @Router /api/v1/users/{userID}/repo/{repoID}/branch/{branchID}/dataset_stats [get]
 func (s *ViewerServer) handleDatasetStats(c *gin.Context) {
+	defer s.handleFailure(c)
+
 	mirRepo := s.buildMirRepoFromParam(c)
 	classIDs := s.getIntSliceFromString(c.DefaultQuery("class_ids", ""))
 
@@ -249,20 +256,19 @@ func (s *ViewerServer) handleDatasetStats(c *gin.Context) {
 // @Success 200 {string} string    "'code': 0, 'msg': 'Success', 'Success': true, 'result': 'duplication: 50, total_count: {xxx: 100, yyy: 200}'"
 // @Router /api/v1/users/{userID}/repo/{repoID}/dataset_duplication [get]
 func (s *ViewerServer) handleDatasetDup(c *gin.Context) {
+	defer s.handleFailure(c)
+
 	// Validate candidate_dataset_ids
 	candidateDatasetIDs := c.DefaultQuery("candidate_dataset_ids", "")
 	if len(candidateDatasetIDs) <= 0 {
-		ViewerFailure(c, constants.FailInvalidParmsCode, constants.FailInvalidParmsMsg, "Invalid candidate_dataset_ids")
+		ViewerFailure(c, &FailureResult{Code: constants.FailInvalidParmsCode,
+			Msg: "Invalid candidate_dataset_ids."})
 		return
 	}
 	datasetIDs := strings.Split(candidateDatasetIDs, ",")
 	if len(datasetIDs) != 2 {
-		ViewerFailure(
-			c,
-			constants.FailInvalidParmsCode,
-			constants.FailInvalidParmsMsg,
-			"candidate_dataset_ids requires exact two datasets.",
-		)
+		ViewerFailure(c, &FailureResult{Code: constants.FailInvalidParmsCode,
+			Msg: "candidate_dataset_ids requires exact two datasets."})
 		return
 	}
 
@@ -283,10 +289,20 @@ func (s *ViewerServer) handleDatasetDup(c *gin.Context) {
 		TaskID:      datasetIDs[1],
 	}
 
-	duplicateCount, mirRepoCount0, mirRepoCount1 := s.handler.GetDatasetDupHandler(mirRepo0, mirRepo1)
-	resultData := bson.M{
-		"duplication": duplicateCount,
-		"total_count": bson.M{datasetIDs[0]: mirRepoCount0, datasetIDs[1]: mirRepoCount1},
-	}
+	resultData := s.handler.GetDatasetDupHandler(mirRepo0, mirRepo1)
 	ViewerSuccess(c, resultData)
+}
+
+func (s *ViewerServer) handleFailure(c *gin.Context) {
+	if r := recover(); r != nil {
+		if s, ok := r.(string); ok {
+			r = errors.New(s)
+		}
+		if r, ok := r.(error); ok {
+			ViewerFailureFromErr(c, r)
+			return
+		}
+
+		panic(fmt.Sprintf("unhandled error type: %T\n", r))
+	}
 }
