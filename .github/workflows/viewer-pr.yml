@@ -60,5 +60,7 @@ jobs:
     - name: Display coverage
       uses: ewjoachim/coverage-comment-action@v1
       with:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        github-token: ${{ secrets.GITHUB_TOKEN }}
         COVERAGE_FILE: "ymir/backend/src/ymir_viewer/coverage.xml"
+      env:
+          GITHUB_TOKEN: ${{ github.token }}
