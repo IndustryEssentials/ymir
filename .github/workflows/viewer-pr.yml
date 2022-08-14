@@ -9,6 +9,8 @@ on:
 
 jobs:
   viewer-ci:
+    permissions: write-all
+      # pull-requests: write
     runs-on: ubuntu-20.04
     steps:
     - uses: actions/checkout@v2
@@ -34,6 +36,9 @@ jobs:
         go mod verify
         go build -v ./...
         go install honnef.co/go/tools/cmd/staticcheck@latest
+        go install github.com/axw/gocov/gocov@latest
+        go install github.com/AlekSi/gocov-xml@latest
+
 
     - name: golangci-lint
       uses: golangci/golangci-lint-action@v3
@@ -50,9 +55,6 @@ jobs:
         staticcheck ./...
         go test -race -coverprofile=profile.cov -vet=off $(go list ./... | grep -v -e common/protos -e common/constants -e docs)
         go tool cover -func profile.cov
-
-        go install github.com/axw/gocov/gocov@latest
-        go install github.com/AlekSi/gocov-xml@latest
         gocov convert profile.cov | gocov-xml > coverage.xml
 
     - name: Display coverage
