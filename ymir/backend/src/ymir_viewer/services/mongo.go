@@ -19,26 +19,6 @@ type BaseDatabase interface {
 	Drop(ctx context.Context) error
 	Collection(name string, opts ...*options.CollectionOptions) *mongo.Collection
 }
-type BaseMongoServer interface {
-	setExistence(collectionName string, ready bool, insert bool)
-	checkExistence(mirRepo *constants.MirRepo) bool
-	IndexCollectionData(mirRepo *constants.MirRepo, newData []interface{})
-	QueryAssets(
-		mirRepo *constants.MirRepo,
-		offset int,
-		limit int,
-		classIds []int,
-		currentAssetID string,
-		cmTypes []int32,
-		cks []string,
-		tags []string,
-	) constants.QueryAssetsResult
-	QueryDatasetStats(mirRepo *constants.MirRepo, classIDs []int) constants.QueryDatasetStatsResult
-	QueryDatasetDup(mirRepo0 *constants.MirRepo, mirRepo1 *constants.MirRepo) (int, int64, int64)
-	countAssetsInClass(collection *mongo.Collection, queryField string, classIds []int) int64
-	getRepoCollection(mirRepo *constants.MirRepo) (*mongo.Collection, string)
-}
-
 type MongoServer struct {
 	database      BaseDatabase
 	Ctx           context.Context
@@ -46,11 +26,6 @@ type MongoServer struct {
 }
 
 func NewMongoServer(mongoCtx context.Context, database BaseDatabase) *MongoServer {
-	// Clear cached data.
-	err := database.Drop(mongoCtx)
-	if err != nil {
-		panic(err)
-	}
 	return &MongoServer{
 		database:      database,
 		Ctx:           mongoCtx,

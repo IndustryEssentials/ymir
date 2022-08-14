@@ -19,7 +19,7 @@ func InitViperConfig() constants.Config {
 	if err != nil {
 		panic(err)
 	}
-	err = viper.BindEnv("MongodbUri", "MONGODB_URI")
+	err = viper.BindEnv("MongoDBURI", "MONGODB_URI")
 	if err != nil {
 		panic(err)
 	}
@@ -38,8 +38,11 @@ func InitViperConfig() constants.Config {
 		panic(err)
 	}
 
-	config.ViewerURI = fmt.Sprintf("%s:%d", config.ViewerHost, config.ViewerPort)
-	log.Printf("config: %+v\n", config)
+	if len(config.ViewerURI) < 1 {
+		config.ViewerURI = fmt.Sprintf("%s:%d", config.ViewerHost, config.ViewerPort)
+	}
+
+	log.Printf("viewer config: %+v\n", config)
 	return config
 }
 

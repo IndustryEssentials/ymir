@@ -15,22 +15,26 @@ type MockMirRepoLoader struct {
 	mock.Mock
 }
 
-func (m *MockMirRepoLoader) GetMirRepo() *constants.MirRepo {
-	args := m.Called()
-	return args.Get(0).(*constants.MirRepo)
-}
-
-func (m *MockMirRepoLoader) LoadSingleMirData(mirFile constants.MirFile) interface{} {
-	args := m.Called(mirFile)
+func (m *MockMirRepoLoader) LoadSingleMirData(mirRepo *constants.MirRepo, mirFile constants.MirFile) interface{} {
+	args := m.Called(mirRepo, mirFile)
 	return args.Get(0).(*protos.MirContext)
 }
 
+func (m *MockMirRepoLoader) LoadMutipleMirDatas(
+	mirRepo *constants.MirRepo,
+	mirFiles []constants.MirFile,
+) []interface{} {
+	args := m.Called(mirRepo, mirFiles)
+	return args.Get(0).([]interface{})
+}
+
 func (m *MockMirRepoLoader) LoadAssetsDetail(
+	mirRepo *constants.MirRepo,
 	anchorAssetID string,
 	offset int,
 	limit int,
 ) ([]constants.MirAssetDetail, int64, int64) {
-	args := m.Called(anchorAssetID, offset, limit)
+	args := m.Called(mirRepo, anchorAssetID, offset, limit)
 	return args.Get(0).([]constants.MirAssetDetail), args.Get(1).(int64), args.Get(2).(int64)
 }
 
@@ -129,13 +133,7 @@ func TestGetDatasetMetaCountsHandler(t *testing.T) {
 	if err != nil {
 		panic(err)
 	}
-
-	pbreaderMock := MockMirRepoLoader{}
-	pbreaderMock.On("LoadSingleMirData", mirFile).Return(&mockMirContext, 0, 0)
-
 	expectedResult := constants.QueryDatasetStatsResult{}
-	handler := &ViewerHandler{}
-	result := handler.GetDatasetMetaCountsHandler(&pbreaderMock)
 	err = json.Unmarshal([]byte(`{
 		"gt":
 		{
@@ -171,17 +169,22 @@ func TestGetDatasetMetaCountsHandler(t *testing.T) {
 	if err != nil {
 		panic(err)
 	}
+
+	mirRepo := constants.MirRepo{}
+	mockLoader := MockMirRepoLoader{}
+	mockLoader.On("LoadSingleMirData", &mirRepo, mirFile).Return(&mockMirContext, 0, 0)
+	mockMongoServer := MockMongoServer{}
+
+	handler := &ViewerHandler{mongoServer: &mockMongoServer, mirLoader: &mockLoader}
+	result := handler.GetDatasetMetaCountsHandler(&mirRepo)
+
 	assert.Equal(t, expectedResult, result)
-	pbreaderMock.AssertExpectations(t)
+	mockLoader.AssertExpectations(t)
 
 }
 
 func TestGetDatasetDupHandler(t *testing.T) {
 	mirRepo := constants.MirRepo{}
-	pbreaderMock0 := MockMirRepoLoader{}
-	pbreaderMock0.On("GetMirRepo").Return(&mirRepo)
-	pbreaderMock1 := MockMirRepoLoader{}
-	pbreaderMock1.On("GetMirRepo").Return(&mirRepo)
 
 	expectedDup := 100
 	expectedCount0 := int64(200)
@@ -189,9 +192,10 @@ func TestGetDatasetDupHandler(t *testing.T) {
 	mockMongoServer := MockMongoServer{}
 	mockMongoServer.On("checkExistence", &mirRepo).Return(true)
 	mockMongoServer.On("QueryDatasetDup", &mirRepo, &mirRepo).Return(expectedDup, expectedCount0, expectedCount1)
-	handler := &ViewerHandler{}
 
-	retDup, retCount0, retCount1 := handler.GetDatasetDupHandler(&mockMongoServer, &pbreaderMock0, &pbreaderMock1)
+	mockLoader := MockMirRepoLoader{}
+	handler := &ViewerHandler{mongoServer: &mockMongoServer, mirLoader: &mockLoader}
+	retDup, retCount0, retCount1 := handler.GetDatasetDupHandler(&mirRepo, &mirRepo)
 	assert.Equal(t, expectedDup, retDup)
 	assert.Equal(t, expectedCount0, retCount0)
 	assert.Equal(t, expectedCount1, retCount1)
@@ -200,9 +204,8 @@ func TestGetDatasetDupHandler(t *testing.T) {
 func TestGetDatasetStatsHandler(t *testing.T) {
 	mockAssetsDetail := []constants.MirAssetDetail{{AssetID: "a"}}
 	mirRepo := constants.MirRepo{}
-	pbreaderMock := MockMirRepoLoader{}
-	pbreaderMock.On("GetMirRepo").Return(&mirRepo)
-	pbreaderMock.On("LoadAssetsDetail", "", 0, 0).Return(mockAssetsDetail, int64(0), int64(0))
+	mockLoader := MockMirRepoLoader{}
+	mockLoader.On("LoadAssetsDetail", &mirRepo, "", 0, 0).Return(mockAssetsDetail, int64(0), int64(0))
 
 	classIDs := []int{0, 1}
 	expectedResult := constants.QueryDatasetStatsResult{}
@@ -210,16 +213,15 @@ func TestGetDatasetStatsHandler(t *testing.T) {
 	mockMongoServer.On("checkExistence", &mirRepo).Return(false)
 	mockMongoServer.On("IndexCollectionData", &mirRepo, []interface{}{mockAssetsDetail[0]})
 	mockMongoServer.On("QueryDatasetStats", &mirRepo, classIDs).Return(expectedResult)
-	handler := &ViewerHandler{}
+	handler := &ViewerHandler{mongoServer: &mockMongoServer, mirLoader: &mockLoader}
 
-	result := handler.GetDatasetStatsHandler(&mockMongoServer, &pbreaderMock, classIDs)
+	result := handler.GetDatasetStatsHandler(&mirRepo, classIDs)
 	assert.Equal(t, expectedResult, result)
 }
 
 func TestGetAssetsHandler(t *testing.T) {
 	mirRepo := constants.MirRepo{}
-	pbreaderMock := MockMirRepoLoader{}
-	pbreaderMock.On("GetMirRepo").Return(&mirRepo)
+	mockLoader := MockMirRepoLoader{}
 
 	offset := 100
 	limit := 10
@@ -233,11 +235,10 @@ func TestGetAssetsHandler(t *testing.T) {
 	mockMongoServer.On("checkExistence", &mirRepo).Return(true)
 	mockMongoServer.On("QueryAssets", &mirRepo, offset, limit, classIDs, currentAssetID, cmTypes, cks, tags).
 		Return(expectedResult)
-	handler := &ViewerHandler{}
+	handler := &ViewerHandler{mongoServer: &mockMongoServer, mirLoader: &mockLoader}
 
 	result := handler.GetAssetsHandler(
-		&mockMongoServer,
-		&pbreaderMock,
+		&mirRepo,
 		offset,
 		limit,
 		classIDs,
@@ -269,20 +270,18 @@ func TestGetAssetsHandlerShortcut(t *testing.T) {
 
 	mockAssetsDetail := []constants.MirAssetDetail{}
 	mirRepo := constants.MirRepo{}
-	pbreaderMock := MockMirRepoLoader{}
-	pbreaderMock.On("GetMirRepo").Return(&mirRepo)
-	pbreaderMock.On("LoadAssetsDetail", "", 0, 0).Return(mockAssetsDetail, int64(0), int64(0))
-	pbreaderMock.On("LoadAssetsDetail", currentAssetID, offset, limit).
+	mockLoader := MockMirRepoLoader{}
+	mockLoader.On("LoadAssetsDetail", &mirRepo, "", 0, 0).Return(mockAssetsDetail, int64(0), int64(0))
+	mockLoader.On("LoadAssetsDetail", &mirRepo, currentAssetID, offset, limit).
 		Return(mockAssetsDetail, anchor, totalAssetsCount)
 
 	mockMongoServer := MockMongoServer{}
 	mockMongoServer.On("checkExistence", &mirRepo).Return(false)
 	mockMongoServer.On("IndexCollectionData", &mirRepo, []interface{}{})
-	handler := &ViewerHandler{}
+	handler := &ViewerHandler{mongoServer: &mockMongoServer, mirLoader: &mockLoader}
 
 	result := handler.GetAssetsHandler(
-		&mockMongoServer,
-		&pbreaderMock,
+		&mirRepo,
 		offset,
 		limit,
 		classIDs,

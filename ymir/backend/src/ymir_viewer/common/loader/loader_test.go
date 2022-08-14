@@ -68,13 +68,6 @@ func createGitRepo(t *testing.T, repoRoot string, fileContents map[string][]byte
 	}
 }
 
-func TestGetMirRepo(t *testing.T) {
-	mirRepo := createTestMirRepo("")
-	mirRepoLoader := MirRepoLoader{mirRepo}
-	retMirRepo := mirRepoLoader.GetMirRepo()
-	assert.Equal(t, mirRepo, retMirRepo)
-}
-
 func TestLoadModelInfo(t *testing.T) {
 	workDir := fmt.Sprintf("%s/modelinfo", "/tmp/test1")
 	//	workDir := fmt.Sprintf("%s/modelinfo", t.TempDir())
@@ -102,8 +95,9 @@ func TestLoadModelInfo(t *testing.T) {
 		Context:              "context",
 		BestStageName:        "best_stage",
 		ExecutorConfig:       map[string]interface{}{"abc": 1}}
-	mirRepoLoader := MirRepoLoader{mirRepo}
-	mirModel := mirRepoLoader.LoadModelInfo()
+
+	mirRepoLoader := MirRepoLoader{}
+	mirModel := mirRepoLoader.LoadModelInfo(mirRepo)
 	assert.Equal(t, expectedModel, mirModel)
 }
 
@@ -245,10 +239,10 @@ func TestLoadAssetsDetail(t *testing.T) {
 		panic(err)
 	}
 
-	mirRepoLoader := MirRepoLoader{mirRepo}
-	mirAssetsDetail, _, _ := mirRepoLoader.LoadAssetsDetail("", 0, 0)
+	mirRepoLoader := MirRepoLoader{}
+	mirAssetsDetail, _, _ := mirRepoLoader.LoadAssetsDetail(mirRepo, "", 0, 0)
 	assert.Equal(t, expectedAssetsDetail, mirAssetsDetail)
 
-	mirAssetsDetailSub, _, _ := mirRepoLoader.LoadAssetsDetail("a", 0, 1)
+	mirAssetsDetailSub, _, _ := mirRepoLoader.LoadAssetsDetail(mirRepo, "a", 0, 1)
 	assert.Equal(t, expectedAssetsDetail[:1], mirAssetsDetailSub)
 }

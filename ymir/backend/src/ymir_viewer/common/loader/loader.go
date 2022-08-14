@@ -17,26 +17,22 @@ import (
 	"github.com/IndustryEssentials/ymir-viewer/tools"
 )
 
-type BaseMirRepoLoader interface {
-	GetMirRepo() *constants.MirRepo
-	LoadSingleMirData(mirFile constants.MirFile) interface{}
-	LoadAssetsDetail(anchorAssetID string, offset int, limit int) ([]constants.MirAssetDetail, int64, int64)
-}
-
 type MirRepoLoader struct {
-	MirRepo *constants.MirRepo
 }
 
-func (mirRepoLoader *MirRepoLoader) GetMirRepo() *constants.MirRepo {
-	return mirRepoLoader.MirRepo
-}
-func (mirRepoLoader *MirRepoLoader) LoadSingleMirData(mirFile constants.MirFile) interface{} {
-	return mirRepoLoader.LoadMutipleMirDatas([]constants.MirFile{mirFile})[0]
+func (l *MirRepoLoader) LoadSingleMirData(
+	mirRepo *constants.MirRepo,
+	mirFile constants.MirFile,
+) interface{} {
+	return l.LoadMutipleMirDatas(mirRepo, []constants.MirFile{mirFile})[0]
 }
 
-func (mirRepoLoader *MirRepoLoader) LoadMutipleMirDatas(mirFiles []constants.MirFile) []interface{} {
+func (l *MirRepoLoader) LoadMutipleMirDatas(
+	mirRepo *constants.MirRepo,
+	mirFiles []constants.MirFile,
+) []interface{} {
 	defer tools.TimeTrack(time.Now())
-	mirRoot, mirRev := mirRepoLoader.MirRepo.BuildRepoID()
+	mirRoot, mirRev := mirRepo.BuildRepoID()
 
 	repo, err := gitreader.OpenRepo(mirRoot)
 	if err != nil {
@@ -65,7 +61,7 @@ func (mirRepoLoader *MirRepoLoader) LoadMutipleMirDatas(mirFiles []constants.Mir
 	return sliceDatas
 }
 
-func (mirRepoLoader *MirRepoLoader) buildStructFromMessage(message proto.Message, structOut interface{}) interface{} {
+func (l *MirRepoLoader) buildStructFromMessage(message proto.Message, structOut interface{}) interface{} {
 	m := protojson.MarshalOptions{EmitUnpopulated: true, AllowPartial: true, UseProtoNames: true, UseEnumNumbers: true}
 	jsonBytes, err := m.Marshal(message)
 	if err != nil {
@@ -77,8 +73,8 @@ func (mirRepoLoader *MirRepoLoader) buildStructFromMessage(message proto.Message
 	return structOut
 }
 
-func (mirRepoLoader *MirRepoLoader) LoadModelInfo() constants.MirdataModel {
-	mirTasks := mirRepoLoader.LoadSingleMirData(constants.MirfileTasks).(*protos.MirTasks)
+func (l *MirRepoLoader) LoadModelInfo(mirRepo *constants.MirRepo) constants.MirdataModel {
+	mirTasks := l.LoadSingleMirData(mirRepo, constants.MirfileTasks).(*protos.MirTasks)
 	task := mirTasks.Tasks[mirTasks.HeadTaskId]
 	modelData := constants.NewMirdataModel(task.SerializedTaskParameters)
 	if task.SerializedExecutorConfig != "" {
@@ -86,18 +82,19 @@ func (mirRepoLoader *MirRepoLoader) LoadModelInfo() constants.MirdataModel {
 			panic(err)
 		}
 	}
-	mirRepoLoader.buildStructFromMessage(task.Model, &modelData)
+	l.buildStructFromMessage(task.Model, &modelData)
 	return modelData
 }
 
-func (mirRepoLoader *MirRepoLoader) LoadAssetsDetail(
+func (l *MirRepoLoader) LoadAssetsDetail(
+	mirRepo *constants.MirRepo,
 	anchorAssetID string,
 	offset int,
 	limit int,
 ) ([]constants.MirAssetDetail, int64, int64) {
 	defer tools.TimeTrack(time.Now())
 	filesToLoad := []constants.MirFile{constants.MirfileMetadatas, constants.MirfileAnnotations}
-	mirDatas := mirRepoLoader.LoadMutipleMirDatas(filesToLoad)
+	mirDatas := l.LoadMutipleMirDatas(mirRepo, filesToLoad)
 	mirMetadatas := mirDatas[0].(*protos.MirMetadatas)
 	mirAnnotations := mirDatas[1].(*protos.MirAnnotations)
 
@@ -139,7 +136,7 @@ func (mirRepoLoader *MirRepoLoader) LoadAssetsDetail(
 	for idx, assetID := range assetIDs {
 		mirAssetDetails[idx] = constants.NewMirAssetDetail()
 		mirAssetDetails[idx].AssetID = assetID
-		mirRepoLoader.buildStructFromMessage(mirMetadatas.Attributes[assetID], &mirAssetDetails[idx].MetaData)
+		l.buildStructFromMessage(mirMetadatas.Attributes[assetID], &mirAssetDetails[idx].MetaData)
 		if cks, ok := mirCks[assetID]; ok {
 			if len(cks.Cks) > 0 {
 				mirAssetDetails[idx].Cks = cks.Cks
@@ -150,14 +147,14 @@ func (mirRepoLoader *MirRepoLoader) LoadAssetsDetail(
 		mapClassIDs := map[int32]bool{}
 		if gtAnnotation, ok := gtAnnotations[assetID]; ok {
 			for _, annotation := range gtAnnotation.Annotations {
-				annotationOut := mirRepoLoader.buildStructFromMessage(annotation, map[string]interface{}{}).(map[string]interface{})
+				annotationOut := l.buildStructFromMessage(annotation, map[string]interface{}{}).(map[string]interface{})
 				mirAssetDetails[idx].Gt = append(mirAssetDetails[idx].Gt, annotationOut)
 				mapClassIDs[annotation.ClassId] = true
 			}
 		}
 		if predAnnotation, ok := predAnnotations[assetID]; ok {
 			for _, annotation := range predAnnotation.Annotations {
-				annotationOut := mirRepoLoader.buildStructFromMessage(annotation, map[string]interface{}{}).(map[string]interface{})
+				annotationOut := l.buildStructFromMessage(annotation, map[string]interface{}{}).(map[string]interface{})
 				mirAssetDetails[idx].Pred = append(mirAssetDetails[idx].Pred, annotationOut)
 				mapClassIDs[annotation.ClassId] = true
 			}

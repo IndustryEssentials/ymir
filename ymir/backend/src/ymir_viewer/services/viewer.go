@@ -1,7 +1,6 @@
 package services
 
 import (
-	"context"
 	"fmt"
 	"log"
 	"net/http"
@@ -10,48 +9,57 @@ import (
 	"time"
 
 	"github.com/IndustryEssentials/ymir-viewer/common/constants"
-	"github.com/IndustryEssentials/ymir-viewer/common/loader"
 	"github.com/IndustryEssentials/ymir-viewer/common/protos"
 	docs "github.com/IndustryEssentials/ymir-viewer/docs"
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
 )
+
+// Delcare base handler interface, which is used in viewer.
+type BaseHandler interface {
+	GetAssetsHandler(
+		mirRepo *constants.MirRepo,
+		offset int,
+		limit int,
+		classIDs []int,
+		currentAssetID string,
+		cmTypes []int32,
+		cks []string,
+		tags []string,
+	) constants.QueryAssetsResult
+	GetDatasetDupHandler(
+		mirRepo0 *constants.MirRepo,
+		mirRepo1 *constants.MirRepo,
+	) (int, int64, int64)
+	GetDatasetMetaCountsHandler(
+		mirRepo *constants.MirRepo,
+	) constants.QueryDatasetStatsResult
+	GetDatasetStatsHandler(
+		mirRepo *constants.MirRepo,
+		classIDs []int,
+	) constants.QueryDatasetStatsResult
+}
 
 type ViewerServer struct {
 	addr    string
 	gin     *gin.Engine
-	Mongo   BaseMongoServer
 	sandbox string
 	config  constants.Config
-	handler BaseViewerHandler
+	handler BaseHandler
 }
 
 func NewViewerServer(config constants.Config) ViewerServer {
-	sandbox := config.YmirSandbox
-	viewerURI := config.ViewerURI
-	mongoURI := config.MongodbURI
 	gin.SetMode(gin.ReleaseMode)
 	viewerServer := ViewerServer{
-		addr:    viewerURI,
+		addr:    config.ViewerURI,
 		gin:     gin.Default(),
-		sandbox: sandbox,
+		sandbox: config.YmirSandbox,
 		config:  config,
-		handler: &ViewerHandler{},
+		handler: NewViewerHandler(config.MongoDBURI, config.MongoDBName, config.MongoDBNoCache),
 	}
-	if len(mongoURI) > 0 {
-		defaultDbName := "YMIR"
-		mongoCtx := context.Background()
-		client, err := mongo.Connect(mongoCtx, options.Client().ApplyURI(mongoURI))
-		if err != nil {
-			panic(err)
-		}
-		database := client.Database(defaultDbName)
-		viewerServer.Mongo = NewMongoServer(mongoCtx, database)
-	}
+
 	viewerServer.routes()
 	return viewerServer
 }
@@ -189,8 +197,7 @@ func (s *ViewerServer) handleAssets(c *gin.Context) {
 	}
 
 	resultData := s.handler.GetAssetsHandler(
-		s.Mongo,
-		&loader.MirRepoLoader{MirRepo: mirRepo},
+		mirRepo,
 		offset,
 		limit,
 		classIDs,
@@ -212,7 +219,7 @@ func (s *ViewerServer) handleAssets(c *gin.Context) {
 // @Router /api/v1/users/{userID}/repo/{repoID}/branch/{branchID}/dataset_meta_count [get]
 func (s *ViewerServer) handleDatasetMetaCounts(c *gin.Context) {
 	mirRepo := s.buildMirRepoFromParam(c)
-	resultData := s.handler.GetDatasetMetaCountsHandler(&loader.MirRepoLoader{MirRepo: mirRepo})
+	resultData := s.handler.GetDatasetMetaCountsHandler(mirRepo)
 	ViewerSuccess(c, resultData)
 }
 
@@ -229,7 +236,7 @@ func (s *ViewerServer) handleDatasetStats(c *gin.Context) {
 	mirRepo := s.buildMirRepoFromParam(c)
 	classIDs := s.getIntSliceFromString(c.DefaultQuery("class_ids", ""))
 
-	resultData := s.handler.GetDatasetStatsHandler(s.Mongo, &loader.MirRepoLoader{MirRepo: mirRepo}, classIDs)
+	resultData := s.handler.GetDatasetStatsHandler(mirRepo, classIDs)
 	ViewerSuccess(c, resultData)
 }
 
@@ -276,11 +283,7 @@ func (s *ViewerServer) handleDatasetDup(c *gin.Context) {
 		TaskID:      datasetIDs[1],
 	}
 
-	duplicateCount, mirRepoCount0, mirRepoCount1 := s.handler.GetDatasetDupHandler(
-		s.Mongo,
-		&loader.MirRepoLoader{MirRepo: mirRepo0},
-		&loader.MirRepoLoader{MirRepo: mirRepo1},
-	)
+	duplicateCount, mirRepoCount0, mirRepoCount1 := s.handler.GetDatasetDupHandler(mirRepo0, mirRepo1)
 	resultData := bson.M{
 		"duplication": duplicateCount,
 		"total_count": bson.M{datasetIDs[0]: mirRepoCount0, datasetIDs[1]: mirRepoCount1},

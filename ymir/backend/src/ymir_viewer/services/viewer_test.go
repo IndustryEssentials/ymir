@@ -8,7 +8,6 @@ import (
 	"testing"
 
 	"github.com/IndustryEssentials/ymir-viewer/common/constants"
-	"github.com/IndustryEssentials/ymir-viewer/common/loader"
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
 	"go.mongodb.org/mongo-driver/bson"
@@ -29,9 +28,8 @@ func TestCreateViewer(t *testing.T) {
 type MockViewerHandler struct {
 }
 
-func (viewerHandler *MockViewerHandler) GetAssetsHandler(
-	mongo BaseMongoServer,
-	mirLoader loader.BaseMirRepoLoader,
+func (v *MockViewerHandler) GetAssetsHandler(
+	mirRepo *constants.MirRepo,
 	offset int,
 	limit int,
 	classIDs []int,
@@ -49,15 +47,21 @@ func (viewerHandler *MockViewerHandler) GetAssetsHandler(
 	}
 }
 
-func (viewerHandler *MockViewerHandler) GetDatasetMetaCountsHandler(
-	mirLoader loader.BaseMirRepoLoader,
+func (v *MockViewerHandler) GetDatasetDupHandler(
+	mirRepo0 *constants.MirRepo,
+	mirRepo1 *constants.MirRepo,
+) (int, int64, int64) {
+	return 100, 1000, 2000
+}
+
+func (v *MockViewerHandler) GetDatasetMetaCountsHandler(
+	mirRepo *constants.MirRepo,
 ) constants.QueryDatasetStatsResult {
 	return constants.NewQueryDatasetStatsResult()
 }
 
-func (viewerHandler *MockViewerHandler) GetDatasetStatsHandler(
-	mongo BaseMongoServer,
-	mirLoader loader.BaseMirRepoLoader,
+func (v *MockViewerHandler) GetDatasetStatsHandler(
+	mirRepo *constants.MirRepo,
 	classIDs []int,
 ) constants.QueryDatasetStatsResult {
 	result := constants.NewQueryDatasetStatsResult()
@@ -66,14 +70,6 @@ func (viewerHandler *MockViewerHandler) GetDatasetStatsHandler(
 		result.Pred.ClassIdsCount[classID] = 0
 	}
 	return result
-}
-
-func (viewerHandler *MockViewerHandler) GetDatasetDupHandler(
-	mongo BaseMongoServer,
-	mirLoader0 loader.BaseMirRepoLoader,
-	mirLoader1 loader.BaseMirRepoLoader,
-) (int, int64, int64) {
-	return 100, 1000, 2000
 }
 
 func setUpViewer() *ViewerServer {
