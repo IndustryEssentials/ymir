@@ -1,5 +1,8 @@
 name: viewer-unittest
 
+permissions:
+  pull-requests: write
+
 on:
   pull_request:
     branches:
@@ -9,8 +12,6 @@ on:
 
 jobs:
   viewer-ci:
-    permissions: write-all
-      # pull-requests: write
     runs-on: ubuntu-20.04
     steps:
     - uses: actions/checkout@v2
@@ -60,7 +61,5 @@ jobs:
     - name: Display coverage
       uses: ewjoachim/coverage-comment-action@v1
       with:
-        github-token: ${{ secrets.GITHUB_TOKEN }}
+        GITHUB_TOKEN: ${{ github.token }}
         COVERAGE_FILE: "ymir/backend/src/ymir_viewer/coverage.xml"
-      env:
-          GITHUB_TOKEN: ${{ github.token }}
