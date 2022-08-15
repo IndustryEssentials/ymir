@@ -26,6 +26,6 @@ jobs:
         cache-dependency-path: ymir/web/package-lock.json
     - name: Test with npm
       run: |
-        npm ci
+        npm run build
         npm run test:coverage
       working-directory: ymir/web
