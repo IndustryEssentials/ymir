@@ -51,6 +51,8 @@ type ViewerHandler struct {
 func NewViewerHandler(mongoURI string, mongoDBName string, clearCache bool) *ViewerHandler {
 	var mongoServer *MongoServer
 	if len(mongoURI) > 0 {
+		log.Printf("[viewer] init mongodb %s\n", mongoURI)
+
 		mongoCtx := context.Background()
 		client, err := mongo.Connect(mongoCtx, options.Client().ApplyURI(mongoURI))
 		if err != nil {
