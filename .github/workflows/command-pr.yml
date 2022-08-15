@@ -21,6 +21,13 @@ jobs:
       uses: actions/setup-python@v2
       with:
         python-version: 3.8
+    - name: Cache Python Environment
+      uses: actions/cache@v3
+      with:
+        path: |
+          ymir/command/.mypy_cache
+          ${{ env.pythonLocation }}
+        key: ${{ env.pythonLocation }}-${{ hashFiles('ymir/command/requirements.txt', 'ymir/command/requirements-ci.txt') }}
     - name: Install dependencies
       run: |
         pip install -r requirements.txt
