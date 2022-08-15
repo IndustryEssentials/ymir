@@ -335,6 +335,7 @@ def get_assets_of_dataset(
     cm_types_str: Optional[str] = Query(None, example="tp,mtp", alias="cm_types"),
     cks_str: Optional[str] = Query(None, example="shenzhen,shanghai", alias="cks"),
     tags_str: Optional[str] = Query(None, example="big,small", alias="tags"),
+    annotation_types_str: Optional[str] = Query(None, example="gt,pred", alias="annotation_types"),
     viz_client: VizClient = Depends(deps.get_viz_client),
     current_user: models.User = Depends(deps.get_current_active_user),
     user_labels: UserLabels = Depends(deps.get_user_labels),
@@ -369,6 +370,7 @@ def get_assets_of_dataset(
         cm_types=stringtolist(cm_types_str),
         cks=stringtolist(cks_str),
         tags=stringtolist(tags_str),
+        annotation_types=stringtolist(annotation_types_str),
         limit=limit,
         offset=offset,
     )

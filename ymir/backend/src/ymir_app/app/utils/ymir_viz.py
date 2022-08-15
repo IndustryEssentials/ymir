@@ -272,10 +272,11 @@ class ViewerAssetRequest(BaseModel):
     cm_types: Optional[str]
     cks: Optional[str]
     tags: Optional[str]
+    annotation_types: Optional[str]
     limit: Optional[int]
     offset: Optional[int]
 
-    @validator("class_ids", "cm_types", "cks", "tags", pre=True)
+    @validator("class_ids", "cm_types", "cks", "tags", "annotation_types", pre=True)
     def make_str(cls, v: Any) -> Optional[str]:
         if v is None:
             return v
@@ -333,6 +334,7 @@ class VizClient:
         cm_types: Optional[List[str]] = None,
         cks: Optional[List[str]] = None,
         tags: Optional[List[str]] = None,
+        annotation_types: Optional[List[str]] = None,
         offset: int = 0,
         limit: int = 20,
     ) -> Assets:
@@ -343,6 +345,7 @@ class VizClient:
                 cm_types=cm_types,
                 cks=cks,
                 tags=tags,
+                annotation_types=annotation_types,
                 current_asset_id=asset_hash,
                 limit=limit,
                 offset=offset,
