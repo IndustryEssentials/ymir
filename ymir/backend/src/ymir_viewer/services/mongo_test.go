@@ -223,7 +223,7 @@ func TestQueryAssetsSuccess(t *testing.T) {
 		tags := []string{"x", "y:z"}
 		expectedCount := int64(0)
 		expectedResult := constants.QueryAssetsResult{
-			AssetsDetail:     []constants.MirAssetDetail{},
+			AssetsDetail:     []constants.MirAssetDetail{{}, {}},
 			Offset:           offset,
 			Limit:            limit,
 			Anchor:           expectedCount,
