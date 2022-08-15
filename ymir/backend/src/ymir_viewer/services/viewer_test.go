@@ -192,7 +192,7 @@ func TestMetaCountPageHandlerFailure(t *testing.T) {
 	w := httptest.NewRecorder()
 	r.ServeHTTP(w, req)
 	assert.Equal(t, string(statsExpectedResponseData), w.Body.String())
-	assert.Equal(t, http.StatusOK, w.Code)
+	assert.Equal(t, http.StatusBadRequest, w.Code)
 }
 
 func TestDupPageHandlerSuccess(t *testing.T) {
@@ -268,7 +268,7 @@ func TestDupPageHandlerFailure(t *testing.T) {
 	w := httptest.NewRecorder()
 	r.ServeHTTP(w, req)
 	assert.Equal(t, string(statsExpectedResponseData), w.Body.String())
-	assert.Equal(t, http.StatusOK, w.Code)
+	assert.Equal(t, http.StatusBadRequest, w.Code)
 
 	branchID0 := "branchID0"
 	dupRequestURL1 := fmt.Sprintf(
@@ -291,7 +291,7 @@ func TestDupPageHandlerFailure(t *testing.T) {
 	w = httptest.NewRecorder()
 	r.ServeHTTP(w, req)
 	assert.Equal(t, string(statsExpectedResponseData), w.Body.String())
-	assert.Equal(t, http.StatusOK, w.Code)
+	assert.Equal(t, http.StatusBadRequest, w.Code)
 }
 
 func TestAssetsPageHandlerSuccess(t *testing.T) {
