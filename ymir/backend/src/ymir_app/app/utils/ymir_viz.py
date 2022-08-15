@@ -359,11 +359,8 @@ class VizClient:
         else:
             payload = {"class_id": keyword_id, "limit": limit, "offset": offset}
 
-        resp = self.get_resp(url, params=payload)
-        if not resp.ok:
-            logger.error("[viz] failed to get assets info: %s", resp.content)
-            resp.raise_for_status()
-        res = resp.json()["result"]
+        resp = self.session.get(url, params=payload, timeout=settings.VIZ_TIMEOUT)
+        res = self.parse_resp(resp)
         logger.info("[viz] get_assets response: %s", res)
         return Assets.from_viz_res(res, self._user_labels)
 
