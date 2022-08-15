@@ -15,42 +15,35 @@ import (
 	"go.mongodb.org/mongo-driver/x/bsonx"
 )
 
+type BaseDatabase interface {
+	Collection(name string, opts ...*options.CollectionOptions) *mongo.Collection
+}
 type MongoServer struct {
-	Clt           *mongo.Client
+	database      BaseDatabase
 	Ctx           context.Context
-	dbName        string
 	existenceName string
 }
 
-func NewMongoServer(uri string) MongoServer {
-	mongoCtx := context.Background()
-	mongoClient, err := mongo.Connect(mongoCtx, options.Client().ApplyURI(uri))
-	if err != nil {
-		panic(err)
-	}
-
-	defaultDbName := "YMIR"
-	// Clear cached data.
-	err = mongoClient.Database(defaultDbName).Drop(mongoCtx)
-	if err != nil {
-		panic(err)
-	}
-
-	return MongoServer{
-		Clt:           mongoClient,
+func NewMongoServer(mongoCtx context.Context, database BaseDatabase) *MongoServer {
+	return &MongoServer{
+		database:      database,
 		Ctx:           mongoCtx,
-		dbName:        defaultDbName,
 		existenceName: "__collection_existence__",
 	}
 }
 
-func (s *MongoServer) getRepoCollection(mirRepo constants.MirRepo) (*mongo.Collection, string) {
-	_, mirRev := mirRepo.BuildRepoId()
-	return s.Clt.Database(s.dbName).Collection(mirRev), mirRev
+func (s *MongoServer) getRepoCollection(mirRepo *constants.MirRepo) (*mongo.Collection, string) {
+	_, mirRev := mirRepo.BuildRepoID()
+	return s.database.Collection(mirRev), mirRev
 }
 
-func (s *MongoServer) setExistence(collectionName string, ready bool, insert bool) {
-	collection := s.Clt.Database(s.dbName).Collection(s.existenceName)
+func (s *MongoServer) getExistenceCollection() *mongo.Collection {
+	collection, _ := s.getRepoCollection(&constants.MirRepo{BranchID: s.existenceName})
+	return collection
+}
+
+func (s *MongoServer) setDatasetExistence(collectionName string, ready bool, insert bool) {
+	collection := s.getExistenceCollection()
 	if insert {
 		record := bson.M{"_id": collectionName, "ready": ready, "exist": true}
 		_, err := collection.InsertOne(s.Ctx, record)
@@ -67,7 +60,7 @@ func (s *MongoServer) setExistence(collectionName string, ready bool, insert boo
 	}
 }
 
-func (s *MongoServer) checkExistence(mirRepo constants.MirRepo) bool {
+func (s *MongoServer) CheckDatasetExistence(mirRepo *constants.MirRepo) bool {
 	// Step 1: check collection exist.
 	collectionData, collectionName := s.getRepoCollection(mirRepo)
 	count, err := collectionData.EstimatedDocumentCount(s.Ctx)
@@ -79,7 +72,7 @@ func (s *MongoServer) checkExistence(mirRepo constants.MirRepo) bool {
 	}
 
 	// Step 2: check collection ready.
-	collectionExistence := s.Clt.Database(s.dbName).Collection(s.existenceName)
+	collectionExistence := s.getExistenceCollection()
 	filter := bson.M{"_id": collectionName}
 	data := make(map[string]interface{})
 	err = collectionExistence.FindOne(s.Ctx, filter).Decode(data)
@@ -90,7 +83,7 @@ func (s *MongoServer) checkExistence(mirRepo constants.MirRepo) bool {
 	return data["ready"].(bool)
 }
 
-func (s *MongoServer) IndexMongoData(mirRepo constants.MirRepo, newData []interface{}) {
+func (s *MongoServer) IndexDatasetData(mirRepo *constants.MirRepo, newData []interface{}) {
 	defer tools.TimeTrack(time.Now())
 
 	if len(newData) <= 0 {
@@ -98,7 +91,7 @@ func (s *MongoServer) IndexMongoData(mirRepo constants.MirRepo, newData []interf
 	}
 
 	collection, collectionName := s.getRepoCollection(mirRepo)
-	s.setExistence(collectionName, false, true)
+	s.setDatasetExistence(collectionName, false, true)
 
 	_, err := collection.InsertMany(s.Ctx, newData)
 	if err != nil {
@@ -142,10 +135,10 @@ func (s *MongoServer) IndexMongoData(mirRepo constants.MirRepo, newData []interf
 		panic(err)
 	}
 
-	s.setExistence(collectionName, true, false)
+	s.setDatasetExistence(collectionName, true, false)
 }
 
-func (s *MongoServer) countAssetsInClass(collection *mongo.Collection, queryField string, classIds []int) int64 {
+func (s *MongoServer) countDatasetAssetsInClass(collection *mongo.Collection, queryField string, classIds []int) int64 {
 	filterQuery := bson.M{}
 	if len(classIds) > 0 {
 		if len(queryField) < 1 {
@@ -162,12 +155,12 @@ func (s *MongoServer) countAssetsInClass(collection *mongo.Collection, queryFiel
 	return count
 }
 
-func (s *MongoServer) QueryAssets(
-	mirRepo constants.MirRepo,
+func (s *MongoServer) QueryDatasetAssets(
+	mirRepo *constants.MirRepo,
 	offset int,
 	limit int,
 	classIds []int,
-	currentAssetId string,
+	currentAssetID string,
 	cmTypes []int32,
 	cks []string,
 	tags []string,
@@ -179,7 +172,7 @@ func (s *MongoServer) QueryAssets(
 		offset,
 		limit,
 		classIds,
-		currentAssetId,
+		currentAssetID,
 		cmTypes,
 		cks,
 		tags,
@@ -191,8 +184,8 @@ func (s *MongoServer) QueryAssets(
 	if len(classIds) > 0 {
 		filterQuery["class_ids"] = bson.M{"$in": classIds}
 	}
-	if len(currentAssetId) > 0 {
-		filterQuery["asset_id"] = bson.M{"$gte": currentAssetId}
+	if len(currentAssetID) > 0 {
+		filterQuery["asset_id"] = bson.M{"$gte": currentAssetID}
 	}
 	if len(cmTypes) > 0 {
 		filterQuery["$or"] = bson.A{
@@ -245,7 +238,8 @@ func (s *MongoServer) QueryAssets(
 		panic(err)
 	}
 	queryData := []constants.MirAssetDetail{}
-	if err = queryCursor.All(s.Ctx, &queryData); err != nil {
+	newData := bson.D{}
+	if err = queryCursor.All(s.Ctx, &newData); err != nil {
 		panic(err)
 	}
 
@@ -271,31 +265,34 @@ func (s *MongoServer) QueryAssets(
 	}
 }
 
-func (s *MongoServer) QueryDatasetStats(mirRepo constants.MirRepo, classIds []int) constants.QueryDatasetStatsResult {
+func (s *MongoServer) QueryDatasetStats(mirRepo *constants.MirRepo, classIDs []int) constants.QueryDatasetStatsResult {
 	collection, _ := s.getRepoCollection(mirRepo)
 
-	totalAssetsCount := s.countAssetsInClass(collection, "", []int{})
+	totalAssetsCount := s.countDatasetAssetsInClass(collection, "", []int{})
 	queryData := constants.NewQueryDatasetStatsResult()
 	queryData.TotalAssetsCount = totalAssetsCount
-	for _, classId := range classIds {
-		queryData.Gt.ClassIdsCount[classId] = s.countAssetsInClass(collection, "gt.class_id", []int{classId})
-		queryData.Pred.ClassIdsCount[classId] = s.countAssetsInClass(collection, "pred.class_id", []int{classId})
+	for _, classID := range classIDs {
+		queryData.Gt.ClassIdsCount[classID] = s.countDatasetAssetsInClass(collection, "gt.class_id", []int{classID})
+		queryData.Pred.ClassIdsCount[classID] = s.countDatasetAssetsInClass(collection, "pred.class_id", []int{classID})
 	}
-	queryData.Gt.PositiveImagesCount = s.countAssetsInClass(collection, "gt.class_id", classIds)
+	queryData.Gt.PositiveImagesCount = s.countDatasetAssetsInClass(collection, "gt.class_id", classIDs)
 	queryData.Gt.NegativeImagesCount = totalAssetsCount - queryData.Gt.PositiveImagesCount
-	queryData.Pred.PositiveImagesCount = s.countAssetsInClass(collection, "pred.class_id", classIds)
+	queryData.Pred.PositiveImagesCount = s.countDatasetAssetsInClass(collection, "pred.class_id", classIDs)
 	queryData.Pred.NegativeImagesCount = totalAssetsCount - queryData.Pred.PositiveImagesCount
 	return queryData
 }
 
-func (s *MongoServer) QueryDatasetDup(mirRepo0 constants.MirRepo, mirRepo1 constants.MirRepo) (int, int64, int64) {
+func (s *MongoServer) QueryDatasetDup(
+	mirRepo0 *constants.MirRepo,
+	mirRepo1 *constants.MirRepo,
+) constants.QueryDatasetDupResult {
 	defer tools.TimeTrack(time.Now())
 
 	collection0, collectionName0 := s.getRepoCollection(mirRepo0)
-	totalCount0 := s.countAssetsInClass(collection0, "", []int{})
+	totalCount0 := s.countDatasetAssetsInClass(collection0, "", []int{})
 
 	collection1, collectionName1 := s.getRepoCollection(mirRepo1)
-	totalCount1 := s.countAssetsInClass(collection1, "", []int{})
+	totalCount1 := s.countDatasetAssetsInClass(collection1, "", []int{})
 
 	// No-SQL Aggregate Trick: always set smaller dataset to be joined.
 	collectionJoined := collection0
@@ -324,5 +321,10 @@ func (s *MongoServer) QueryDatasetDup(mirRepo0 constants.MirRepo, mirRepo1 const
 	if err = showLoadedCursor.All(s.Ctx, &showsLoaded); err != nil {
 		panic(err)
 	}
-	return len(showsLoaded), totalCount0, totalCount1
+
+	resultData := constants.QueryDatasetDupResult{
+		Duplication: len(showsLoaded),
+		TotalCount:  map[string]int64{mirRepo0.BranchID: totalCount0, mirRepo1.BranchID: totalCount1},
+	}
+	return resultData
 }

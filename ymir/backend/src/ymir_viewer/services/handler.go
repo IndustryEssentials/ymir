@@ -1,6 +1,7 @@
 package services
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"time"
@@ -9,43 +10,107 @@ import (
 	"github.com/IndustryEssentials/ymir-viewer/common/loader"
 	"github.com/IndustryEssentials/ymir-viewer/common/protos"
 	"github.com/IndustryEssentials/ymir-viewer/tools"
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-func loadAndCacheAssets(mongo MongoServer, mirLoader loader.BaseMirRepoLoader) {
+type BaseMirRepoLoader interface {
+	LoadSingleMirData(mirRepo *constants.MirRepo, mirFile constants.MirFile) interface{}
+	LoadMutipleMirDatas(mirRepo *constants.MirRepo, mirFiles []constants.MirFile) []interface{}
+	LoadAssetsDetail(
+		mirRepo *constants.MirRepo,
+		anchorAssetID string,
+		offset int,
+		limit int,
+	) ([]constants.MirAssetDetail, int64, int64)
+	LoadModelInfo(mirRepo *constants.MirRepo) constants.MirdataModel
+}
+
+type BaseMongoServer interface {
+	CheckDatasetExistence(mirRepo *constants.MirRepo) bool
+	IndexDatasetData(mirRepo *constants.MirRepo, newData []interface{})
+	QueryDatasetAssets(
+		mirRepo *constants.MirRepo,
+		offset int,
+		limit int,
+		classIds []int,
+		currentAssetID string,
+		cmTypes []int32,
+		cks []string,
+		tags []string,
+	) constants.QueryAssetsResult
+	QueryDatasetDup(mirRepo0 *constants.MirRepo, mirRepo1 *constants.MirRepo) constants.QueryDatasetDupResult
+	QueryDatasetStats(mirRepo *constants.MirRepo, classIDs []int) constants.QueryDatasetStatsResult
+}
+
+type ViewerHandler struct {
+	mongoServer BaseMongoServer
+	mirLoader   BaseMirRepoLoader
+}
+
+func NewViewerHandler(mongoURI string, mongoDBName string, clearCache bool) *ViewerHandler {
+	var mongoServer *MongoServer
+	if len(mongoURI) > 0 {
+		mongoCtx := context.Background()
+		client, err := mongo.Connect(mongoCtx, options.Client().ApplyURI(mongoURI))
+		if err != nil {
+			panic(err)
+		}
+
+		database := client.Database(mongoDBName)
+		if clearCache {
+			// Clear cached data.
+			err = database.Drop(mongoCtx)
+			if err != nil {
+				panic(err)
+			}
+		}
+
+		mongoServer = NewMongoServer(mongoCtx, database)
+	}
+
+	return &ViewerHandler{mongoServer: mongoServer, mirLoader: &loader.MirRepoLoader{}}
+}
+
+func (v *ViewerHandler) loadAndCacheAssets(mirRepo *constants.MirRepo) {
 	defer tools.TimeTrack(time.Now())
 
-	mirRepo := mirLoader.GetMirRepo()
-	if mongo.checkExistence(mirRepo) {
+	if v.mongoServer.CheckDatasetExistence(mirRepo) {
 		log.Printf("Mongodb ready for %s.", fmt.Sprint(mirRepo))
 	} else {
 		log.Printf("No data for %s, reading & building cache.", fmt.Sprint(mirRepo))
-		mirAssetsDetail, _, _ := mirLoader.LoadAssetsDetail("", 0, 0)
+
+		mirAssetsDetail, _, _ := v.mirLoader.LoadAssetsDetail(mirRepo, "", 0, 0)
 
 		newData := make([]interface{}, 0)
 		for _, v := range mirAssetsDetail {
 			newData = append(newData, v)
 		}
-		mongo.IndexMongoData(mirRepo, newData)
+		v.mongoServer.IndexDatasetData(mirRepo, newData)
 	}
 }
 
-func GetAssetsHandler(
-	mongo MongoServer,
-	mirLoader loader.BaseMirRepoLoader,
+func (v *ViewerHandler) GetAssetsHandler(
+	mirRepo *constants.MirRepo,
 	offset int,
 	limit int,
-	classIds []int,
-	currentAssetId string,
+	classIDs []int,
+	currentAssetID string,
 	cmTypes []int32,
 	cks []string,
 	tags []string,
 ) constants.QueryAssetsResult {
-	// Speed up when "first time" loading, i.e.: cache miss && only offset/limit/currentAssetId are set at most.
-	if !mongo.checkExistence(mirLoader.GetMirRepo()) {
-		if len(classIds) < 1 && len(cmTypes) < 1 && len(cks) < 1 && len(tags) < 1 {
-			go loadAndCacheAssets(mongo, mirLoader)
+	// Speed up when "first time" loading, i.e.: cache miss && only offset/limit/currentAssetID are set at most.
+	if !v.mongoServer.CheckDatasetExistence(mirRepo) {
+		if len(classIDs) < 1 && len(cmTypes) < 1 && len(cks) < 1 && len(tags) < 1 {
+			go v.loadAndCacheAssets(mirRepo)
 
-			mirAssetsDetail, anchor, totalAssetsCount := mirLoader.LoadAssetsDetail(currentAssetId, offset, limit)
+			mirAssetsDetail, anchor, totalAssetsCount := v.mirLoader.LoadAssetsDetail(
+				mirRepo,
+				currentAssetID,
+				offset,
+				limit,
+			)
 			return constants.QueryAssetsResult{
 				AssetsDetail:     mirAssetsDetail,
 				Offset:           offset,
@@ -56,15 +121,24 @@ func GetAssetsHandler(
 		}
 	}
 
-	loadAndCacheAssets(mongo, mirLoader)
-	return mongo.QueryAssets(mirLoader.GetMirRepo(), offset, limit, classIds, currentAssetId, cmTypes, cks, tags)
+	v.loadAndCacheAssets(mirRepo)
+	return v.mongoServer.QueryDatasetAssets(
+		mirRepo,
+		offset,
+		limit,
+		classIDs,
+		currentAssetID,
+		cmTypes,
+		cks,
+		tags,
+	)
 }
 
-func GetDatasetMetaCountsHandler(
-	mirLoader loader.BaseMirRepoLoader,
+func (v *ViewerHandler) GetDatasetMetaCountsHandler(
+	mirRepo *constants.MirRepo,
 ) constants.QueryDatasetStatsResult {
 	defer tools.TimeTrack(time.Now())
-	mirContext := mirLoader.LoadSingleMirData(constants.MirfileContext).(*protos.MirContext)
+	mirContext := v.mirLoader.LoadSingleMirData(mirRepo, constants.MirfileContext).(*protos.MirContext)
 	result := constants.NewQueryDatasetStatsResult()
 	result.TotalAssetsCount = int64(mirContext.ImagesCnt)
 
@@ -93,21 +167,19 @@ func GetDatasetMetaCountsHandler(
 	return result
 }
 
-func GetDatasetStatsHandler(
-	mongo MongoServer,
-	mirLoader loader.BaseMirRepoLoader,
+func (v *ViewerHandler) GetDatasetStatsHandler(
+	mirRepo *constants.MirRepo,
 	classIds []int,
 ) constants.QueryDatasetStatsResult {
-	loadAndCacheAssets(mongo, mirLoader)
-	return mongo.QueryDatasetStats(mirLoader.GetMirRepo(), classIds)
+	v.loadAndCacheAssets(mirRepo)
+	return v.mongoServer.QueryDatasetStats(mirRepo, classIds)
 }
 
-func GetDatasetDupHandler(
-	mongo MongoServer,
-	mirLoader0 loader.BaseMirRepoLoader,
-	mirLoader1 loader.BaseMirRepoLoader,
-) (int, int64, int64) {
-	loadAndCacheAssets(mongo, mirLoader0)
-	loadAndCacheAssets(mongo, mirLoader1)
-	return mongo.QueryDatasetDup(mirLoader0.GetMirRepo(), mirLoader1.GetMirRepo())
+func (v *ViewerHandler) GetDatasetDupHandler(
+	mirRepo0 *constants.MirRepo,
+	mirRepo1 *constants.MirRepo,
+) constants.QueryDatasetDupResult {
+	v.loadAndCacheAssets(mirRepo0)
+	v.loadAndCacheAssets(mirRepo1)
+	return v.mongoServer.QueryDatasetDup(mirRepo0, mirRepo1)
 }
