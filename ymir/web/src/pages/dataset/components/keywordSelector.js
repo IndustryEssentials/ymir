@@ -33,7 +33,11 @@ const KeywordSelector = ({ value, onChange, dataset = {} }) => {
   }, [tags])
 
   useEffect(() => {
-    onChange({ type: currentType, selected })
+    let s = selected
+    if (currentType !== initKeywords[0].value) {
+      s = selected.map(item => item.join(':'))
+    }
+    onChange({ type: currentType, selected: s })
   }, [selected])
 
   useEffect(() => {
@@ -69,7 +73,6 @@ const KeywordSelector = ({ value, onChange, dataset = {} }) => {
     multiple
     allowClear
     expandTrigger="hover"
-    showCheckedStrategy={Cascader.SHOW_CHILD}
     fieldNames={{ label: 'keyword', value: 'keyword' }}
     onChange={setSelected}
     options={list}
