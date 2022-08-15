@@ -102,7 +102,11 @@ def _get_average_ee(average_ee: mirpb.SingleEvaluationElement, ees: List[mirpb.S
 
 
 def _show_evaluation(evaluation: mirpb.Evaluation) -> None:
+    if not evaluation.dataset_evaluations:
+        logging.info('evaluation result: none')
+        return
+
     gt_dataset_id = evaluation.config.gt_dataset_id
     for dataset_id, dataset_evaluation in evaluation.dataset_evaluations.items():
         cae = dataset_evaluation.iou_averaged_evaluation.ci_averaged_evaluation
-        logging.info(f"gt: {gt_dataset_id}, pred: {dataset_id}, mAP: {cae.ap}")
+        logging.info(f"evaluation result: gt: {gt_dataset_id}, pred: {dataset_id}, mAP: {cae.ap}")
