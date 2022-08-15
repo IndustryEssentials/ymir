@@ -145,7 +145,7 @@ func (s *ViewerServer) getIntSliceFromString(input string) []int {
 // @Param   offset     query    string     false        "Offset, default is 0"
 // @Param   limit     query    string     false        "limit, default is 1"
 // @Param   class_ids     query    string     false        "e.g. class_ids=1,3,7"
-// @Param   annotation_type     query    string     false        "e.g. annotation_type=GT,PRED"
+// @Param   annotation_types     query    string     false        "e.g. annotation_types=GT,PRED"
 // @Param   current_asset_id     query    string     false        "e.g. current_asset_id=xxxyyyzzz"
 // @Param   cm_types     query    string     false        "e.g. cm_types=0,1,2,3 NotSet=0,TP=1,FP=2,FN=3,TN=4,Unknown=5,MTP=11,IGNORED=12"
 // @Param   cks     query    string     false        "ck pairs, e.g. cks=xxx,xxx:,xxx:yyy, e.g. camera_id:1"
@@ -168,7 +168,7 @@ func (s *ViewerServer) handleAssets(c *gin.Context) {
 	currentAssetID := c.DefaultQuery("current_asset_id", "")
 	cmTypes := s.getIntSliceFromString(c.DefaultQuery("cm_types", ""))
 
-	annoTypesStr := c.DefaultQuery("annotation_type", "")
+	annoTypesStr := c.DefaultQuery("annotation_types", "")
 	annoTypes := make([]string, 0)
 	if len(annoTypesStr) > 0 {
 		for _, v := range strings.Split(annoTypesStr, ",") {
