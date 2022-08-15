@@ -83,5 +83,5 @@ def start_label_task(
                        repo_root=repo_root,
                        media_location=media_location,
                        import_work_dir=import_work_dir,
-                       use_pre_annotation=annotation_type is not None)
+                       use_pre_annotation=bool(annotation_type))
     logging.info("finish label task!!!")
