@@ -7,26 +7,26 @@ const types = [
     label: 'GT', value: 'gt', checked: true, children: [
       { label: 'FN', value: tags.fn },
       { label: 'MTP', value: tags.mtp },
+      { label: 'Other', value: tags.gto },
     ]
   },
   {
     label: 'PRED', value: 'pred', children: [
       { label: 'FP', value: tags.fp },
       { label: 'TP', value: tags.tp },
+      { label: 'Other', value: tags.predo },
     ]
   },
 ]
 
 const GtSelector = ({ value, onChange = () => { }, ...props }) => {
   const [pcheckeds, setPCheckeds] = useState({
-    gt: true,
-    pred: true,
+    gt: false,
+    pred: false,
   })
   const [checkeds, setCheckeds] = useState({
-    [tags.fn]: true,
-    [tags.fp]: true,
-    [tags.tp]: true,
-    [tags.mtp]: true,
+    gt: [],
+    pred: [],
   })
 
   const [all, setAll] = useState({
@@ -39,28 +39,32 @@ const GtSelector = ({ value, onChange = () => { }, ...props }) => {
   }, [checkeds])
 
   useEffect(() => {
-    setPCheckeds({
-      gt: checkeds[tags.fn] && checkeds[tags.mtp],
-      pred: checkeds[tags.fp] && checkeds[tags.tp],
-    })
-    setAll({
-      gt: (!checkeds[tags.fn] && checkeds[tags.mtp]) || (checkeds[tags.fn] && !checkeds[tags.mtp]),
-      pred: (!checkeds[tags.fp] && checkeds[tags.tp]) || (checkeds[tags.fp] && !checkeds[tags.tp]),
-    })
+    setAll(types.reduce((prev, { value }) => ({
+      ...prev, [value]:
+        [1, 2].includes(checkeds[value].length)
+    }), {}))
   }, [checkeds])
 
   function pChange({ target: { checked, value } }) {
-    const { children } = types.find(type => type.value === value)
+    const parent = types.find(type => type.value === value)
+    setPCheckeds(checkeds => ({
+      ...checkeds,
+      [value]: checked,
+    }))
     setCheckeds(checkeds => ({
       ...checkeds,
-      ...(children.reduce((prev, curr) => ({ ...prev, [curr.value]: checked }), {})),
+      [value]: checked ? parent.children.map(item => item.value) : [],
     }))
   }
 
-  function change(checked, list) {
+  function change(checked, type) {
     setCheckeds(checkeds => ({
       ...checkeds,
-      ...(list.reduce((prev, curr) => ({ ...prev, [curr.value]: checked.includes(curr.value) }), {})),
+      [type]: checked,
+    }))
+    setPCheckeds(checkeds => ({
+      ...checkeds,
+      [type]: checked.length !== 0,
     }))
   }
 
@@ -75,9 +79,9 @@ const GtSelector = ({ value, onChange = () => { }, ...props }) => {
         {type.label} &gt;
       </Checkbox>}>
       <Checkbox.Group
-        value={type.children.filter(item => checkeds[item.value]).map(({ value }) => value)}
+        value={checkeds[type.value]}
         options={type.children}
-        onChange={value => change(value, type.children)}
+        onChange={value => change(value, type.value)}
       />
     </Form.Item>)}
   </Form>
