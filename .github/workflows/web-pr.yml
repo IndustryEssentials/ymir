@@ -21,6 +21,7 @@ jobs:
     - name: Use Node.js 16.10
       uses: actions/setup-node@v3
       with:
+        # node-version: 16.12 or above has issue at caching.
         node-version: 16.10
         cache: 'npm'
         cache-dependency-path: ymir/web/package-lock.json
