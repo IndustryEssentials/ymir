@@ -115,8 +115,22 @@ def _voc_eval(class_recs, BB, confidence, image_ids, ovthresh, npos,
     rec = tp / float(npos)  # recalls
     prec = tp / np.maximum(tp + fp, np.finfo(np.float64).eps)  # precisions
     ap: float = _voc_ap(rec, prec, use_07_metric)
-    # TODO: ar and conf in pr curve, tp/mtp/fp/fn tag in mirpb.Annotation
-    return {'rec': rec, 'prec': prec, 'ap': ap, 'tp': tp[-1] if tp else 0, 'fp': fp[-1] if fp else 0}
+
+    tp_cnt = tp[-1] if tp else 0
+    fp_cnt = fp[-1] if fp else 0
+    fn_cnt = npos - tp_cnt
+
+    return {
+        'rec': rec,
+        'prec': prec,
+        'conf': confidence[sorted_ind],
+        'ap': ap,
+        'ar': np.mean(rec),
+        'tp': tp_cnt,
+        'fp': fp_cnt,
+        'fn': fn_cnt,
+    }
+    # TODO: tp/mtp/fp/fn tags
 
 
 def _get_ious_array(iou_thrs_str: str) -> np.ndarray:
@@ -184,22 +198,21 @@ def _get_single_evaluate_element(mir_dt: MirDataset, mir_gt: MirDataset, class_i
                             use_07_metric=True)
 
     # voc_eval to get result
-    # TODO: ar and conf in pr curve
-    see = mirpb.SingleEvaluationElement()
-    see.ap = eval_result['ap']
-    see.tp = eval_result['tp']
-    see.fp = eval_result['fp']
+    see = mirpb.SingleEvaluationElement(ap=eval_result['ap'],
+                                        ar=eval_result['ar'],
+                                        tp=eval_result['tp'],
+                                        fp=eval_result['fp'],
+                                        fn=eval_result['fn'])
+
     if need_pr_curve:
         rec = eval_result['rec']
         prec = eval_result['prec']
+        conf = eval_result['conf']
+
         for i in range(len(rec)):
-            see.pr_curve.append(mirpb.FloatPoint(x=rec[i], y=prec[i], z=0))
+            see.pr_curve.append(mirpb.FloatPoint(x=rec[i], y=prec[i], z=conf[i]))
+
     return see
-
-
-def _calc_averaged_evaluations(dataset_evaluation: mirpb.SingleDatasetEvaluation) -> None:
-    # TODO: BRING IT OUT TO PUBLIC ZONE
-    pass
 
 
 def det_evaluate(mir_dts: List[MirDataset], mir_gt: MirDataset, config: mirpb.EvaluateConfig) -> mirpb.Evaluation:

@@ -64,10 +64,18 @@ def det_evaluate_with_pb(
     evaluate_config.pred_dataset_ids.append(dataset_id)
 
     evaluation = det_eval_coco.det_evaluate(mir_dts=[mir_dt], mir_gt=mir_gt, config=evaluate_config)
+    for dataset_evaluation in evaluation.dataset_evaluations.values():
+        _calc_averaged_evaluations(dataset_evaluation=dataset_evaluation)
 
     _show_evaluation(evaluation=evaluation)
 
     return (evaluation, mir_annotations)
+
+
+def _calc_averaged_evaluations(dataset_evaluation: mirpb.SingleDatasetEvaluation) -> None:
+    for sie in dataset_evaluation.iou_evaluations.values():
+        for see in sie.ci_evaluations.values():
+            pass
 
 
 def _show_evaluation(evaluation: mirpb.Evaluation) -> None:
