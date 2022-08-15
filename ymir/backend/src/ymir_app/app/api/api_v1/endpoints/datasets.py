@@ -61,7 +61,7 @@ def get_datasets_analysis(
     viz_client.initialize(user_id=current_user.id, project_id=project_id, user_labels=user_labels)
     results = []
     for dataset in datasets:
-        res = viz_client.get_dataset(dataset.hash)
+        res = viz_client.get_dataset_analysis(dataset.hash)
         res.group_name = dataset.group_name  # type: ignore
         res.version_num = dataset.version_num  # type: ignore
         results.append(res)
@@ -361,11 +361,11 @@ def get_assets_of_dataset(
     viz_client.initialize(
         user_id=current_user.id,
         project_id=dataset.project_id,
-        branch_id=dataset.hash,
         user_labels=user_labels,
         use_viewer=True,
     )
     assets = viz_client.get_assets(
+        dataset_hash=dataset.hash,
         keyword_ids=keyword_ids,
         cm_types=stringtolist(cm_types_str),
         cks=stringtolist(cks_str),
@@ -374,11 +374,7 @@ def get_assets_of_dataset(
         limit=limit,
         offset=offset,
     )
-    result = {
-        "items": assets.items,
-        "total": assets.total,
-    }
-    return {"result": result}
+    return {"result": assets}
 
 
 @router.get(
@@ -404,17 +400,18 @@ def get_random_asset_id_of_dataset(
     viz_client.initialize(
         user_id=current_user.id,
         project_id=dataset.project_id,
-        branch_id=dataset.hash,
         user_labels=user_labels,
+        use_viewer=True,
     )
     assets = viz_client.get_assets(
+        dataset_hash=dataset.hash,
         keyword_id=None,
         offset=offset,
         limit=1,
     )
-    if len(assets.items) == 0:
+    if assets["total"] == 0:
         raise AssetNotFound()
-    return {"result": assets.items[0]}
+    return {"result": assets["items"][0]}
 
 
 def get_random_asset_offset(dataset: models.Dataset) -> int:
@@ -447,14 +444,13 @@ def get_asset_of_dataset(
     viz_client.initialize(
         user_id=current_user.id,
         project_id=dataset.project_id,
-        branch_id=dataset.hash,
         user_labels=user_labels,
         use_viewer=True,
     )
-    assets = viz_client.get_assets(asset_hash=asset_hash, limit=1)
-    if assets.total != 1:
+    assets = viz_client.get_assets(dataset_hash=dataset.hash, asset_hash=asset_hash, limit=1)
+    if assets["total"] == 0:
         raise AssetNotFound()
-    return {"result": assets.items[0]}
+    return {"result": assets["items"][0]}
 
 
 def normalize_fusion_parameter(

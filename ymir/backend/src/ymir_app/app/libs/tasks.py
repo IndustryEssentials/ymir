@@ -1,7 +1,7 @@
 import json
 import itertools
 import asyncio
-from typing import Any, Dict, List, Tuple, Optional, Union
+from typing import Any, Dict, List, Tuple, Optional
 
 import aiohttp
 from dataclasses import asdict
@@ -33,7 +33,7 @@ from app import schemas, crud, models
 from app.utils.cache import CacheClient
 from app.utils.ymir_controller import ControllerClient, gen_task_hash
 from app.utils.clickhouse import YmirClickHouse
-from app.utils.ymir_viz import VizClient, ModelMetaData, DatasetMetaData
+from app.utils.ymir_viz import VizClient
 from common_utils.labels import UserLabels
 
 
@@ -212,7 +212,7 @@ class TaskResult:
         )
         self.cache = CacheClient(user_id=self.user_id)
 
-        self._result: Optional[Union[DatasetMetaData, ModelMetaData]] = None
+        self._result: Optional[Dict] = None
         self._user_labels: Optional[Dict] = None
 
     @property
@@ -225,9 +225,9 @@ class TaskResult:
         return self._user_labels
 
     @property
-    def model_info(self) -> Optional[ModelMetaData]:
+    def model_info(self) -> Optional[Dict]:
         try:
-            result = self.viz.get_model()
+            result = self.viz.get_model_info()
         except (ModelNotReady, ModelNotFound):
             logger.exception("[update task] failed to get model_info: model not ready")
             return None
@@ -238,24 +238,24 @@ class TaskResult:
             return result
 
     @property
-    def dataset_info(self) -> Optional[DatasetMetaData]:
+    def dataset_info(self) -> Optional[Dict]:
         try:
-            dataset_info = self.viz.get_dataset(user_labels=self.user_labels)
+            dataset_info = self.viz.get_dataset_info(dataset_hash=self.task_hash, user_labels=self.user_labels)
         except Exception:
             logger.exception("[update task] failed to get dataset_info, check viz log")
             return None
-        if dataset_info.keywords_updated:
+        if dataset_info["new_types_added"]:
             logger.info("[update task] delete user keywords cache for new keywords from dataset")
             self.cache.delete_personal_keywords_cache()
         return dataset_info
 
     @property
-    def result_info(self) -> Optional[Union[DatasetMetaData, ModelMetaData]]:
+    def result_info(self) -> Optional[Dict]:
         if self._result is None:
             self._result = self.model_info if self.result_type is ResultType.model else self.dataset_info
         return self._result
 
-    def save_model_stats(self, result: ModelMetaData) -> None:
+    def save_model_stats(self, result: Dict) -> None:
         model_in_db = crud.model.get_by_task_id(self.db, task_id=self.task.id)
         if not model_in_db:
             logger.warning("[update task] found no model to save model stats(%s)", result)
@@ -270,8 +270,8 @@ class TaskResult:
             model_in_db.model_group_id,
             model_in_db.id,
             model_in_db.name,
-            result.hash,
-            result.map,
+            result["hash"],
+            result["map"],
             keywords,
         )
 
@@ -379,22 +379,22 @@ class TaskResult:
                 crud.task.update_parameters_and_config(
                     self.db,
                     task=task_in_db,
-                    parameters=model_info.task_parameters,
-                    config=json.dumps(model_info.executor_config),
+                    parameters=model_info["task_parameters"],
+                    config=json.dumps(model_info["executor_config"]),
                 )
                 current_model = crud.model.finish(
-                    self.db, result_record.id, result_state=ResultState.ready, result=asdict(model_info)
+                    self.db, result_record.id, result_state=ResultState.ready, result=model_info
                 )
                 if current_model:
                     stages_in = []
-                    for stage_name, body in model_info.model_stages.items():
+                    for stage_name, body in model_info["model_stages"].items():
                         stage_obj = schemas.ModelStageCreate(
                             name=stage_name, map=body["mAP"], timestamp=body["timestamp"], model_id=current_model.id
                         )
                         stages_in.append(stage_obj)
                     crud.model_stage.batch_create(self.db, objs_in=stages_in)
                     crud.model.update_recommonded_stage_by_name(
-                        self.db, model_id=current_model.id, stage_name=model_info.best_stage_name
+                        self.db, model_id=current_model.id, stage_name=model_info["best_stage_name"]
                     )
                 try:
                     self.save_model_stats(model_info)

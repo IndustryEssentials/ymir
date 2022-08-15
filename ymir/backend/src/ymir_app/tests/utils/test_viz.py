@@ -31,6 +31,7 @@ class TestAsset:
     def test_create_asset(self, mock_user_labels, mocker):
         asset_id = random_lower_string()
         res = {
+            "asset_id": asset_id,
             "pred": [
                 {
                     "box": random_lower_string(10),
@@ -56,7 +57,8 @@ class TestAsset:
             },
         }
 
-        A = m.Asset.from_viz_res(asset_id, res, user_labels=mock_user_labels)
+        m.convert_class_id_to_keyword(res, mock_user_labels, ["class_id", "class_ids"])
+        A = m.ViewerAsset.parse_obj(res)
         assert A.url == m.get_asset_url(asset_id)
 
 
@@ -92,9 +94,10 @@ class TestAssets:
                     "cks": {},
                 }
             ],
-            "total": 124,
+            "total_assets_count": 124,
         }
-        AS = m.Assets.from_viz_res(res, mock_user_labels)
+        m.convert_class_id_to_keyword(res, mock_user_labels, ["class_id", "class_ids"])
+        AS = m.ViewerAssetsResponse.parse_obj(res)
         assert len(AS.items) == len(res["elements"])
 
 
@@ -121,7 +124,7 @@ class TestModel:
             },
             "best_stage_name": "epoch-3000",
         }
-        M = m.ModelMetaData.from_viz_res(res)
+        M = m.ViewerModelInfoResponse.parse_obj(res)
         assert M.hash == res["model_id"]
         assert M.map == res["model_mAP"]
         assert M.task_parameters == res["task_parameters"]
@@ -210,7 +213,7 @@ class TestVizClient:
                     "cks": {},
                 }
             ],
-            "total": random.randint(1000, 2000),
+            "total_assets_count": random.randint(1000, 2000),
         }
         resp.json.return_value = {"result": res}
         mock_session.get.return_value = resp
@@ -221,15 +224,15 @@ class TestVizClient:
         viz.initialize(
             user_id=user_id,
             project_id=project_id,
-            branch_id=task_id,
             user_labels=mock_user_labels,
         )
-        ret = viz.get_assets()
-        assert isinstance(ret, m.Assets)
-        assert ret.total
-        assert ret.items
-        assert len(ret.items) == len(res["elements"])
+        ret = viz.get_assets(dataset_hash=task_id)
+        assert isinstance(ret, Dict)
+        assert ret["total"]
+        assert ret["items"]
+        assert len(ret["items"]) == len(res["elements"])
 
+<<<<<<< HEAD
     def test_get_asset(self, mock_user_labels, mocker):
         host = random_lower_string()
         viz = m.VizClient(host=host)
@@ -279,7 +282,7 @@ class TestVizClient:
         assert isinstance(ret, dict)
         assert ret["hash"] == asset_id
 
-    def test_get_model(self, mocker):
+    def test_get_model_info(self, mocker):
         host = random_lower_string()
         viz = m.VizClient(host=host)
         mock_session = mocker.Mock()
@@ -313,14 +316,14 @@ class TestVizClient:
         project_id = random.randint(100, 200)
         task_id = random_lower_string()
         viz.initialize(user_id=user_id, project_id=project_id, branch_id=task_id)
-        ret = viz.get_model()
-        assert isinstance(ret, m.ModelMetaData)
-        assert ret.hash == res["model_id"]
-        assert ret.map == res["model_mAP"]
-        assert ret.task_parameters == res["task_parameters"]
-        assert ret.executor_config == res["executor_config"]
+        ret = viz.get_model_info()
+        assert isinstance(ret, Dict)
+        assert ret["hash"] == res["model_id"]
+        assert ret["map"] == res["model_mAP"]
+        assert ret["task_parameters"] == res["task_parameters"]
+        assert ret["executor_config"] == res["executor_config"]
 
-    def test_get_dataset(self, mock_user_labels, mocker):
+    def test_get_dataset_analysis(self, mock_user_labels, mocker):
         host = random_lower_string()
         viz = m.VizClient(host=host)
         mock_session = mocker.Mock()
@@ -362,7 +365,7 @@ class TestVizClient:
         project_id = random.randint(100, 200)
         task_id = random_lower_string()
         viz.initialize(user_id=user_id, project_id=project_id, branch_id=task_id, user_labels=mock_user_labels)
-        ret = viz.get_dataset()
+        ret = viz.get_dataset_analysis(dataset_hash=task_id)
         assert isinstance(ret, m.DatasetMetaData)
         assert "gt" in ret.keywords
         assert "pred" in ret.keywords
