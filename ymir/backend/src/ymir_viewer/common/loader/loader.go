@@ -128,7 +128,16 @@ func (l *MirRepoLoader) LoadAssetsDetail(
 				}
 			}
 		}
-		assetIDs = assetIDs[anchorIdx+offset : anchorIdx+offset+limit]
+
+		start := anchorIdx + offset
+		if start > len(assetIDs) {
+			start = len(assetIDs)
+		}
+		end := anchorIdx + offset + limit
+		if end > len(assetIDs) {
+			end = len(assetIDs)
+		}
+		assetIDs = assetIDs[start:end]
 		log.Printf(" shortcut: anchorIdx %d, offset %d, limit %d assets %d\n", anchorIdx, offset, limit, len(assetIDs))
 	}
 	mirAssetDetails := make([]constants.MirAssetDetail, len(assetIDs))

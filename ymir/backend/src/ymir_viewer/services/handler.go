@@ -27,13 +27,14 @@ type BaseMirRepoLoader interface {
 }
 
 type BaseMongoServer interface {
-	CheckDatasetExistence(mirRepo *constants.MirRepo) bool
+	CheckDatasetExistenceReady(mirRepo *constants.MirRepo) (bool, bool)
 	IndexDatasetData(mirRepo *constants.MirRepo, newData []interface{})
 	QueryDatasetAssets(
 		mirRepo *constants.MirRepo,
 		offset int,
 		limit int,
 		classIds []int,
+		annoTypes []string,
 		currentAssetID string,
 		cmTypes []int,
 		cks []string,
@@ -74,12 +75,12 @@ func NewViewerHandler(mongoURI string, mongoDBName string, clearCache bool) *Vie
 	return &ViewerHandler{mongoServer: mongoServer, mirLoader: &loader.MirRepoLoader{}}
 }
 
-func (v *ViewerHandler) loadAndCacheAssets(mirRepo *constants.MirRepo) {
+func (v *ViewerHandler) loadAndIndexAssets(mirRepo *constants.MirRepo) {
 	defer tools.TimeTrack(time.Now())
 
-	if v.mongoServer.CheckDatasetExistence(mirRepo) {
-		log.Printf("Mongodb ready for %s.", fmt.Sprint(mirRepo))
-	} else {
+	exist, ready := v.mongoServer.CheckDatasetExistenceReady(mirRepo)
+	// Dataset not exist, need to load&index.
+	if !exist {
 		log.Printf("No data for %s, reading & building cache.", fmt.Sprint(mirRepo))
 
 		mirAssetsDetail, _, _ := v.mirLoader.LoadAssetsDetail(mirRepo, "", 0, 0)
@@ -89,7 +90,36 @@ func (v *ViewerHandler) loadAndCacheAssets(mirRepo *constants.MirRepo) {
 			newData = append(newData, v)
 		}
 		v.mongoServer.IndexDatasetData(mirRepo, newData)
+		return
 	}
+
+	// Data set exist, return if ready.
+	if ready {
+		log.Printf("Mongodb ready for %s.", fmt.Sprint(mirRepo))
+		return
+	}
+
+	// Exist, but not ready, wait up to 30s.
+	timeout := 30
+	for i := 1; i <= timeout; i++ {
+		log.Printf("Mongodb %s exists, but not ready, sleep %d/%d", fmt.Sprint(mirRepo), i, timeout)
+		time.Sleep(1 * time.Second)
+		waitExist, waitReady := v.mongoServer.CheckDatasetExistenceReady(mirRepo)
+		if waitExist && waitReady {
+			log.Printf("Mongodb ready for %s, after wait %d rounds.", fmt.Sprint(mirRepo), i)
+			return
+		}
+	}
+	panic("loadAndIndexAssets timeout")
+}
+
+func (v *ViewerHandler) loadAndCacheAssetsNoPanic(mirRepo *constants.MirRepo) {
+	defer func() {
+		if r := recover(); r != nil {
+			log.Printf("loadAndCacheAssetsNoPanic panic %v", r)
+		}
+	}()
+	v.loadAndIndexAssets(mirRepo)
 }
 
 func (v *ViewerHandler) GetAssetsHandler(
@@ -97,15 +127,17 @@ func (v *ViewerHandler) GetAssetsHandler(
 	offset int,
 	limit int,
 	classIDs []int,
+	annoTypes []string,
 	currentAssetID string,
 	cmTypes []int,
 	cks []string,
 	tags []string,
 ) constants.QueryAssetsResult {
 	// Speed up when "first time" loading, i.e.: cache miss && only offset/limit/currentAssetID are set at most.
-	if !v.mongoServer.CheckDatasetExistence(mirRepo) {
-		if len(classIDs) < 1 && len(cmTypes) < 1 && len(cks) < 1 && len(tags) < 1 {
-			go v.loadAndCacheAssets(mirRepo)
+	_, ready := v.mongoServer.CheckDatasetExistenceReady(mirRepo)
+	if !ready {
+		if len(classIDs) < 1 && len(annoTypes) < 1 && len(cmTypes) < 1 && len(cks) < 1 && len(tags) < 1 {
+			go v.loadAndCacheAssetsNoPanic(mirRepo)
 
 			mirAssetsDetail, anchor, totalAssetsCount := v.mirLoader.LoadAssetsDetail(
 				mirRepo,
@@ -123,12 +155,13 @@ func (v *ViewerHandler) GetAssetsHandler(
 		}
 	}
 
-	v.loadAndCacheAssets(mirRepo)
+	v.loadAndIndexAssets(mirRepo)
 	return v.mongoServer.QueryDatasetAssets(
 		mirRepo,
 		offset,
 		limit,
 		classIDs,
+		annoTypes,
 		currentAssetID,
 		cmTypes,
 		cks,
@@ -173,7 +206,7 @@ func (v *ViewerHandler) GetDatasetStatsHandler(
 	mirRepo *constants.MirRepo,
 	classIds []int,
 ) constants.QueryDatasetStatsResult {
-	v.loadAndCacheAssets(mirRepo)
+	v.loadAndIndexAssets(mirRepo)
 	return v.mongoServer.QueryDatasetStats(mirRepo, classIds)
 }
 
@@ -181,7 +214,7 @@ func (v *ViewerHandler) GetDatasetDupHandler(
 	mirRepo0 *constants.MirRepo,
 	mirRepo1 *constants.MirRepo,
 ) constants.QueryDatasetDupResult {
-	v.loadAndCacheAssets(mirRepo0)
-	v.loadAndCacheAssets(mirRepo1)
+	v.loadAndIndexAssets(mirRepo0)
+	v.loadAndIndexAssets(mirRepo1)
 	return v.mongoServer.QueryDatasetDup(mirRepo0, mirRepo1)
 }

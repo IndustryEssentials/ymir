@@ -77,30 +77,15 @@ func TestCheckDatasetExistenceSuccess(t *testing.T) {
 			Return(mockCollection)
 
 		mongoServer := NewMongoServer(context.Background(), &mockDatabase)
-		mt.AddMockResponses(mtest.CreateSuccessResponse(bson.E{Key: "n", Value: 0}))
-		existence := mongoServer.CheckDatasetExistence(&mirRepo)
-		assert.Equal(t, existence, false)
-
-		mt.AddMockResponses(mtest.CreateSuccessResponse(bson.E{Key: "n", Value: 1}))
-
 		find := mtest.CreateCursorResponse(
 			1,
 			"a.b",
 			mtest.FirstBatch,
-			bson.D{{Key: "ready", Value: true}})
-		getMore := mtest.CreateCursorResponse(
-			1,
-			"a.b",
-			mtest.NextBatch,
-			bson.D{})
-		killCursors := mtest.CreateCursorResponse(
-			0,
-			"a.b",
-			mtest.NextBatch,
-			bson.D{})
-		mt.AddMockResponses(find, getMore, killCursors)
-		existence = mongoServer.CheckDatasetExistence(&mirRepo)
+			bson.D{{Key: "exist", Value: true}, {Key: "ready", Value: true}})
+		mt.AddMockResponses(find)
+		existence, ready := mongoServer.CheckDatasetExistenceReady(&mirRepo)
 		assert.Equal(t, existence, true)
+		assert.Equal(t, ready, true)
 	})
 }
 
@@ -122,7 +107,7 @@ func TestCheckDatasetExistenceFailure0(t *testing.T) {
 			Return(mockCollection)
 
 		mongoServer := NewMongoServer(context.Background(), &mockDatabase)
-		mongoServer.CheckDatasetExistence(&mirRepo)
+		mongoServer.CheckDatasetExistenceReady(&mirRepo)
 	})
 }
 
@@ -141,9 +126,15 @@ func TestCheckDatasetExistenceFailure1(t *testing.T) {
 
 		mongoServer := NewMongoServer(context.Background(), &mockDatabase)
 
-		mt.AddMockResponses(mtest.CreateSuccessResponse(bson.E{Key: "n", Value: 1}))
-		existence := mongoServer.CheckDatasetExistence(&mirRepo)
+		find := mtest.CreateCursorResponse(
+			1,
+			"a.b",
+			mtest.FirstBatch,
+			bson.D{{Key: "exist", Value: false}, {Key: "ready", Value: false}})
+		mt.AddMockResponses(find)
+		existence, ready := mongoServer.CheckDatasetExistenceReady(&mirRepo)
 		assert.Equal(t, existence, false)
+		assert.Equal(t, ready, false)
 	})
 }
 
@@ -218,6 +209,7 @@ func TestQueryAssetsSuccess(t *testing.T) {
 		limit := 10
 		classIDs := []int{0, 1}
 		currentAssetID := "abc"
+		annoTypes := []string{"gt", "pred"}
 		cmTypes := []int{0, 1}
 		cks := []string{"a", "b:c"}
 		tags := []string{"x", "y:z"}
@@ -249,7 +241,17 @@ func TestQueryAssetsSuccess(t *testing.T) {
 		mt.AddMockResponses(first, second, killCursors) // Find/All require a set of responses.
 		mt.AddMockResponses(countCursor)
 		mt.AddMockResponses(countCursor)
-		result := mongoServer.QueryDatasetAssets(&mirRepo, offset, limit, classIDs, currentAssetID, cmTypes, cks, tags)
+		result := mongoServer.QueryDatasetAssets(
+			&mirRepo,
+			offset,
+			limit,
+			classIDs,
+			annoTypes,
+			currentAssetID,
+			cmTypes,
+			cks,
+			tags,
+		)
 		assert.Equal(t, expectedResult, result)
 	})
 }

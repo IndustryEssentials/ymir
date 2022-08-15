@@ -59,28 +59,16 @@ func (s *MongoServer) setDatasetExistence(collectionName string, ready bool, ins
 		}
 	}
 }
-
-func (s *MongoServer) CheckDatasetExistence(mirRepo *constants.MirRepo) bool {
-	// Step 1: check collection exist.
-	collectionData, collectionName := s.getRepoCollection(mirRepo)
-	count, err := collectionData.EstimatedDocumentCount(s.Ctx)
-	if err != nil {
-		panic(err)
-	}
-	if count < 1 {
-		return false
-	}
-
-	// Step 2: check collection ready.
+func (s *MongoServer) CheckDatasetExistenceReady(mirRepo *constants.MirRepo) (bool, bool) {
+	_, collectionName := s.getRepoCollection(mirRepo)
 	collectionExistence := s.getExistenceCollection()
 	filter := bson.M{"_id": collectionName}
 	data := make(map[string]interface{})
-	err = collectionExistence.FindOne(s.Ctx, filter).Decode(data)
+	err := collectionExistence.FindOne(s.Ctx, filter).Decode(data)
 	if err != nil {
-		log.Printf("checkExistence Error: %s\n", err)
-		return false
+		return false, false
 	}
-	return data["ready"].(bool)
+	return data["exist"].(bool), data["ready"].(bool)
 }
 
 func (s *MongoServer) IndexDatasetData(mirRepo *constants.MirRepo, newData []interface{}) {
@@ -160,6 +148,7 @@ func (s *MongoServer) QueryDatasetAssets(
 	offset int,
 	limit int,
 	classIds []int,
+	annoTypes []string,
 	currentAssetID string,
 	cmTypes []int,
 	cks []string,
@@ -183,6 +172,16 @@ func (s *MongoServer) QueryDatasetAssets(
 	// class id in either field counts.
 	if len(classIds) > 0 {
 		filterQuery["class_ids"] = bson.M{"$in": classIds}
+	}
+	if len(annoTypes) > 0 {
+		for _, v := range annoTypes {
+			if v == "gt" {
+				filterQuery["gt.class_id"] = bson.M{"$exists": true}
+			}
+			if v == "pred" {
+				filterQuery["pred.class_id"] = bson.M{"$exists": true}
+			}
+		}
 	}
 	if len(currentAssetID) > 0 {
 		filterQuery["asset_id"] = bson.M{"$gte": currentAssetID}

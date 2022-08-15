@@ -34,6 +34,7 @@ func (h *MockViewerHandler) GetAssetsHandler(
 	offset int,
 	limit int,
 	classIDs []int,
+	annoTypes []string,
 	currentAssetID string,
 	cmTypes []int,
 	cks []string,
