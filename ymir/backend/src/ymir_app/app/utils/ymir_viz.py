@@ -4,7 +4,7 @@ from typing import Any, Dict, List, Optional
 
 import requests
 from fastapi.logger import logger
-from pydantic import BaseModel
+from pydantic import BaseModel, validator
 
 from app.api.errors.errors import (
     DatasetEvaluationNotFound,
@@ -75,8 +75,10 @@ class Assets:
             }
             for asset in res["elements"]
         ]
-
-        return cls(items=assets, total=res["total"])
+        # fixme
+        #  remove upon replacing all viz endpoints
+        total = res.get("total") or res.get("total_assets_count") or 0
+        return cls(items=assets, total=total)
 
 
 @dataclass
@@ -260,6 +262,29 @@ class VizDatasetEvaluationResult(BaseModel):
     iou_averaged_evaluation: VizDatasetEvaluation
 
 
+class ViewerAssetRequest(BaseModel):
+    """
+    Payload for viewer GET /assets
+    """
+
+    class_ids: Optional[str]
+    current_asset_id: Optional[str]
+    cm_types: Optional[str]
+    cks: Optional[str]
+    tags: Optional[str]
+    annotation_types: Optional[str]
+    limit: Optional[int]
+    offset: Optional[int]
+
+    @validator("class_ids", "cm_types", "cks", "tags", "annotation_types", pre=True)
+    def make_str(cls, v: Any) -> Optional[str]:
+        if v is None:
+            return v
+        if isinstance(v, str):
+            return v
+        return ",".join(map(str, v))
+
+
 class VizClient:
     def __init__(self, *, host: str = settings.VIZ_HOST):
         self.host = host
@@ -269,6 +294,7 @@ class VizClient:
         self._branch_id = None  # type: Optional[str]
         self._url_prefix = None  # type: Optional[str]
         self._user_labels = None  # type: Optional[UserLabels]
+        self._use_viewer = False
 
     def initialize(
         self,
@@ -277,12 +303,23 @@ class VizClient:
         project_id: int,
         branch_id: Optional[str] = None,
         user_labels: Optional[UserLabels] = None,
+        use_viewer: bool = False,
     ) -> None:
         self._user_id = f"{user_id:0>4}"
         self._project_id = f"{project_id:0>6}"
-        self._url_prefix = (
-            f"http://{self.host}/v1/users/{self._user_id}/repositories/{self._project_id}/branches"  # noqa: E501
-        )
+        if use_viewer:
+            # fixme
+            #  remove upon replacing all viz endpoints
+            self._use_viewer = True
+            host = f"127.0.0.1:{settings.VIEWER_HOST_PORT}"
+            self._url_prefix = (
+                f"http://{host}/api/v1/users/{self._user_id}/repo/{self._project_id}/branch"  # noqa: E501
+            )
+        else:
+            self._url_prefix = (
+                f"http://{self.host}/v1/users/{self._user_id}/repositories/{self._project_id}/branches"  # noqa: E501
+            )
+
         if branch_id:
             self._branch_id = branch_id
         if user_labels:
@@ -291,12 +328,31 @@ class VizClient:
     def get_assets(
         self,
         *,
+        asset_hash: Optional[str] = None,
         keyword_id: Optional[int] = None,
+        keyword_ids: Optional[List[int]] = None,
+        cm_types: Optional[List[str]] = None,
+        cks: Optional[List[str]] = None,
+        tags: Optional[List[str]] = None,
+        annotation_types: Optional[List[str]] = None,
         offset: int = 0,
         limit: int = 20,
     ) -> Assets:
         url = f"{self._url_prefix}/{self._branch_id}/assets"
-        payload = {"class_id": keyword_id, "limit": limit, "offset": offset}
+        if self._use_viewer:
+            payload = ViewerAssetRequest(
+                class_ids=keyword_ids,
+                cm_types=cm_types,
+                cks=cks,
+                tags=tags,
+                annotation_types=annotation_types,
+                current_asset_id=asset_hash,
+                limit=limit,
+                offset=offset,
+            ).dict(exclude_none=True)
+        else:
+            payload = {"class_id": keyword_id, "limit": limit, "offset": offset}
+
         resp = self.session.get(url, params=payload, timeout=settings.VIZ_TIMEOUT)
         if not resp.ok:
             logger.error("[viz] failed to get assets info: %s", resp.content)

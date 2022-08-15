@@ -25,8 +25,8 @@ func TestViewerSuccess(t *testing.T) {
 		Result:  msg,
 	}
 	expectedDataBytes, _ := json.Marshal(expectedData)
-	assert.Equal(t, w.Code, 200)
-	assert.Equal(t, w.Body.Bytes(), expectedDataBytes)
+	assert.Equal(t, 200, w.Code)
+	assert.Equal(t, expectedDataBytes, w.Body.Bytes())
 }
 
 func TestViewerFailure(t *testing.T) {
@@ -35,16 +35,19 @@ func TestViewerFailure(t *testing.T) {
 	w := httptest.NewRecorder()
 	c, _ := gin.CreateTestContext(w)
 
-	msg := "testing ViewerFailure"
-	ViewerFailure(c, constants.FailGeneralCode, constants.FailGeneralMsg, msg)
+	result := FailureResult{Code: constants.FailGeneralCode, Msg: "testing ViewerFailure"}
+	ViewerFailure(
+		c,
+		&result,
+	)
 
 	expectedData := ResultVO{
-		Code:    constants.FailGeneralCode,
-		Msg:     constants.FailGeneralMsg,
+		Code:    result.Code,
+		Msg:     result.Msg,
 		Success: false,
-		Result:  msg,
+		Result:  result,
 	}
 	expectedDataBytes, _ := json.Marshal(expectedData)
-	assert.Equal(t, w.Code, 200)
-	assert.Equal(t, w.Body.Bytes(), expectedDataBytes)
+	assert.Equal(t, 400, w.Code)
+	assert.Equal(t, expectedDataBytes, w.Body.Bytes())
 }

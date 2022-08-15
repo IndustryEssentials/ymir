@@ -15,6 +15,8 @@ export enum evaluationTags {
   fp = 2,
   fn = 3,
   mtp = 11,
+  gto = -1,
+  predo = -1,
 }
 
 export const statesLabel = (state: states) => {
@@ -84,11 +86,17 @@ export function transferDatasetAnalysis(data: BackendData): DatasetAnalysis {
   const assetTotal = data.total_assets_count || 0
   const gt = generateAnno(data.gt)
   const pred = generateAnno(data.pred)
+  const tagsCounts = Object.keys(data.gt.tags_count).reduce((prev, tag) => {
+    const gtCount = data.gt.tags_count[tag] || {}
+    const predCount = data.pred.tags_count[tag] || {}
+    return { ...prev, [tag]: { ...gtCount, ...predCount } }
+  }, {})
+  const tagsTotal = { ...data.gt.tags_count_total, ...data.pred.tags_count_total }
   return {
     name: data.group_name,
     version: data.version_num || 0,
     versionName: getIterationVersion(data.version_num),
-    assetCount: data.total_assets_count || 0,
+    assetCount: assetTotal,
     totalAssetMbytes: data.total_assets_mbytes,
     assetBytes: asset_bytes,
     assetArea: asset_area,
@@ -96,6 +104,8 @@ export function transferDatasetAnalysis(data: BackendData): DatasetAnalysis {
     assetHWRatio: asset_hw_ratio,
     gt,
     pred,
+    cks: transferCK(data.cks_count, data.cks_count_total),
+    tags: transferCK(tagsCounts, tagsTotal),
   }
 }
 
@@ -134,6 +144,25 @@ export function transferAnnotationsCount(count = {}, negative = 0, total = 1) {
     keywords: Object.keys(count),
     count,
     negative,
+    total,
+  }
+}
+
+const transferCK = (counts: BackendData = {}, total: BackendData = {}) => {
+  const keywords = Object.keys(counts).map(keyword => {
+    const children = counts[keyword]
+    return {
+      keyword,
+      children: Object.keys(children).map(child => ({
+        keyword: child,
+        count: children[child],
+      })),
+      count: total[keyword],
+    }
+  })
+  return {
+    keywords,
+    counts,
     total,
   }
 }
