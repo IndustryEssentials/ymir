@@ -2,7 +2,7 @@ import logging
 from typing import List, Tuple
 
 from mir.tools import mir_storage_ops, revs_parser, det_eval_coco, det_eval_voc
-from mir.tools.det_eval_dataset import MirDataset
+from mir.tools.det_eval_utils import MirDataset
 from mir.protos import mir_command_pb2 as mirpb
 
 
@@ -64,41 +64,10 @@ def det_evaluate_with_pb(
     evaluate_config.pred_dataset_ids.append(dataset_id)
 
     evaluation = det_eval_voc.det_evaluate(mir_dts=[mir_dt], mir_gt=mir_gt, config=evaluate_config)
-    for dataset_evaluation in evaluation.dataset_evaluations.values():
-        _calc_averaged_evaluations(dataset_evaluation=dataset_evaluation, class_ids=mir_dt.get_class_ids())
 
     _show_evaluation(evaluation=evaluation)
 
     return (evaluation, mir_annotations)
-
-
-def _calc_averaged_evaluations(dataset_evaluation: mirpb.SingleDatasetEvaluation, class_ids: List[int]) -> None:
-    for iou_evaluation in dataset_evaluation.iou_evaluations.values():
-        _get_average_ee(average_ee=iou_evaluation.ci_averaged_evaluation,
-                        ees=list(iou_evaluation.ci_evaluations.values()))
-
-    for class_id in class_ids:
-        _get_average_ee(average_ee=dataset_evaluation.iou_averaged_evaluation.ci_evaluations[class_id],
-                        ees=[x.ci_evaluations[class_id] for x in dataset_evaluation.iou_evaluations.values()])
-
-    _get_average_ee(average_ee=dataset_evaluation.iou_averaged_evaluation.ci_averaged_evaluation,
-                    ees=[x.ci_averaged_evaluation for x in dataset_evaluation.iou_evaluations.values()])
-
-
-def _get_average_ee(average_ee: mirpb.SingleEvaluationElement, ees: List[mirpb.SingleEvaluationElement]) -> None:
-    if not ees:
-        return
-
-    for ee in ees:
-        average_ee.ap += ee.ap
-        average_ee.ar += ee.ar
-        average_ee.tp += ee.tp
-        average_ee.fp += ee.fp
-        average_ee.fn += ee.fn
-
-    ees_cnt = len(ees)
-    average_ee.ap /= ees_cnt
-    average_ee.ar /= ees_cnt
 
 
 def _show_evaluation(evaluation: mirpb.Evaluation) -> None:
@@ -110,3 +79,7 @@ def _show_evaluation(evaluation: mirpb.Evaluation) -> None:
     for dataset_id, dataset_evaluation in evaluation.dataset_evaluations.items():
         cae = dataset_evaluation.iou_averaged_evaluation.ci_averaged_evaluation
         logging.info(f"evaluation result: gt: {gt_dataset_id}, pred: {dataset_id}, mAP: {cae.ap}")
+
+        for class_id, see in dataset_evaluation.iou_averaged_evaluation.ci_evaluations.items():
+            if see.ap > 0:
+                logging.info(f"    class id: {class_id}, mAP: {see.ap}")

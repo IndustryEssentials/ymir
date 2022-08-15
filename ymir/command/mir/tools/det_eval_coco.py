@@ -4,7 +4,7 @@ from typing import Any, Dict, Iterable, List, Optional, Set, Tuple, Union
 import numpy as np
 
 from mir.tools.code import MirCode
-from mir.tools.det_eval_dataset import MirDataset
+from mir.tools.det_eval_utils import MirDataset
 from mir.tools.errors import MirRuntimeError
 from mir.protos import mir_command_pb2 as mirpb
 

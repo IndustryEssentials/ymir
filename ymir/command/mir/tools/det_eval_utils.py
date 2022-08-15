@@ -1,6 +1,8 @@
 from collections import defaultdict
 from typing import Dict, Iterable, List, Optional, Tuple
 
+import numpy as np
+
 from mir.tools.code import MirCode
 from mir.tools.errors import MirRuntimeError
 from mir.protos import mir_command_pb2 as mirpb
@@ -138,3 +140,56 @@ class MirDataset:
 
     def get_class_ids(self) -> List[int]:
         return self._ordered_class_ids
+
+
+def get_ious_array(iou_thrs_str: str) -> np.ndarray:
+    iou_thrs = [float(v) for v in iou_thrs_str.split(':')]
+    if len(iou_thrs) == 3:
+        iou_thr_from, iou_thr_to, iou_thr_step = iou_thrs
+    elif len(iou_thrs) == 1:
+        iou_thr_from, iou_thr_to, iou_thr_step = iou_thrs[0], iou_thrs[0], 0
+    else:
+        raise ValueError(f"invalid iou thrs str: {iou_thrs_str}")
+    for thr in [iou_thr_from, iou_thr_to, iou_thr_step]:
+        if thr < 0 or thr > 1:
+            raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
+                                  error_message='invalid iou_thr_from, iou_thr_to or iou_thr_step')
+    if iou_thr_from > iou_thr_to:
+        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
+                              error_message='invalid iou_thr_from or iou_thr_to')
+
+    if iou_thr_to == iou_thr_from:
+        return np.array([iou_thr_from])
+    return np.linspace(start=iou_thr_from,
+                       stop=iou_thr_to,
+                       num=int(np.round((iou_thr_to - iou_thr_from) / iou_thr_step)),
+                       endpoint=False)
+
+
+def calc_averaged_evaluations(dataset_evaluation: mirpb.SingleDatasetEvaluation, class_ids: List[int]) -> None:
+    for iou_evaluation in dataset_evaluation.iou_evaluations.values():
+        _get_average_ee(average_ee=iou_evaluation.ci_averaged_evaluation,
+                        ees=list(iou_evaluation.ci_evaluations.values()))
+
+    for class_id in class_ids:
+        _get_average_ee(average_ee=dataset_evaluation.iou_averaged_evaluation.ci_evaluations[class_id],
+                        ees=[x.ci_evaluations[class_id] for x in dataset_evaluation.iou_evaluations.values()])
+
+    _get_average_ee(average_ee=dataset_evaluation.iou_averaged_evaluation.ci_averaged_evaluation,
+                    ees=[x.ci_averaged_evaluation for x in dataset_evaluation.iou_evaluations.values()])
+
+
+def _get_average_ee(average_ee: mirpb.SingleEvaluationElement, ees: List[mirpb.SingleEvaluationElement]) -> None:
+    if not ees:
+        return
+
+    for ee in ees:
+        average_ee.ap += ee.ap
+        average_ee.ar += ee.ar
+        average_ee.tp += ee.tp
+        average_ee.fp += ee.fp
+        average_ee.fn += ee.fn
+
+    ees_cnt = len(ees)
+    average_ee.ap /= ees_cnt
+    average_ee.ar /= ees_cnt
