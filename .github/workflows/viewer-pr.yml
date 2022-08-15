@@ -32,7 +32,6 @@ jobs:
       working-directory: ymir/backend/src/ymir_viewer
       run: |
         go mod verify
-        time go build -v ./...
         time go install honnef.co/go/tools/cmd/staticcheck@latest
 
     - name: golangci-lint
