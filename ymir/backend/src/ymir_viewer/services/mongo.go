@@ -161,7 +161,7 @@ func (s *MongoServer) QueryDatasetAssets(
 	limit int,
 	classIds []int,
 	currentAssetID string,
-	cmTypes []int32,
+	cmTypes []int,
 	cks []string,
 	tags []string,
 ) constants.QueryAssetsResult {
@@ -238,8 +238,7 @@ func (s *MongoServer) QueryDatasetAssets(
 		panic(err)
 	}
 	queryData := []constants.MirAssetDetail{}
-	newData := bson.D{}
-	if err = queryCursor.All(s.Ctx, &newData); err != nil {
+	if err = queryCursor.All(s.Ctx, &queryData); err != nil {
 		panic(err)
 	}
 

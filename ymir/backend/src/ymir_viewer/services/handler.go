@@ -35,7 +35,7 @@ type BaseMongoServer interface {
 		limit int,
 		classIds []int,
 		currentAssetID string,
-		cmTypes []int32,
+		cmTypes []int,
 		cks []string,
 		tags []string,
 	) constants.QueryAssetsResult
@@ -51,6 +51,8 @@ type ViewerHandler struct {
 func NewViewerHandler(mongoURI string, mongoDBName string, clearCache bool) *ViewerHandler {
 	var mongoServer *MongoServer
 	if len(mongoURI) > 0 {
+		log.Printf("[viewer] init mongodb %s\n", mongoURI)
+
 		mongoCtx := context.Background()
 		client, err := mongo.Connect(mongoCtx, options.Client().ApplyURI(mongoURI))
 		if err != nil {
@@ -96,7 +98,7 @@ func (v *ViewerHandler) GetAssetsHandler(
 	limit int,
 	classIDs []int,
 	currentAssetID string,
-	cmTypes []int32,
+	cmTypes []int,
 	cks []string,
 	tags []string,
 ) constants.QueryAssetsResult {

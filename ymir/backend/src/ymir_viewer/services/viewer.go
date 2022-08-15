@@ -10,7 +10,6 @@ import (
 	"time"
 
 	"github.com/IndustryEssentials/ymir-viewer/common/constants"
-	"github.com/IndustryEssentials/ymir-viewer/common/protos"
 	docs "github.com/IndustryEssentials/ymir-viewer/docs"
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"
@@ -25,7 +24,7 @@ type BaseHandler interface {
 		limit int,
 		classIDs []int,
 		currentAssetID string,
-		cmTypes []int32,
+		cmTypes []int,
 		cks []string,
 		tags []string,
 	) constants.QueryAssetsResult
@@ -146,7 +145,7 @@ func (s *ViewerServer) getIntSliceFromString(input string) []int {
 // @Param   limit     query    string     false        "limit, default is 1"
 // @Param   class_ids     query    string     false        "e.g. class_ids=1,3,7"
 // @Param   current_asset_id     query    string     false        "e.g. current_asset_id=xxxyyyzzz"
-// @Param   cm_types     query    string     false        "e.g. cm_types=FN,TP,MTP,IGNORED"
+// @Param   cm_types     query    string     false        "e.g. cm_types=0,1,2,3 NotSet=0,TP=1,FP=2,FN=3,TN=4,Unknown=5,MTP=11,IGNORED=12"
 // @Param   cks     query    string     false        "ck pairs, e.g. cks=xxx,xxx:,xxx:yyy, e.g. camera_id:1"
 // @Param   tags     query    string     false        "tag pairs, e.g. cks=xxx,xxx:,xxx:yyy, e.g. camera_id:1"
 // @Success 200 {string} string    "'code': 0, 'msg': 'Success', 'Success': true, 'result': constants.QueryAssetsResult"
@@ -165,18 +164,7 @@ func (s *ViewerServer) handleAssets(c *gin.Context) {
 	}
 	classIDs := s.getIntSliceFromString(c.DefaultQuery("class_ids", ""))
 	currentAssetID := c.DefaultQuery("current_asset_id", "")
-
-	// Convert cm query.
-	cmTypesStr := c.DefaultQuery("cm_types", "")
-	cmTypes := make([]int32, 0)
-	if len(cmTypesStr) > 0 {
-		cmTypesStrs := strings.Split(cmTypesStr, ",")
-		for _, v := range cmTypesStrs {
-			if cmValue, ok := protos.ConfusionMatrixType_value[v]; ok {
-				cmTypes = append(cmTypes, cmValue)
-			}
-		}
-	}
+	cmTypes := s.getIntSliceFromString(c.DefaultQuery("cm_types", ""))
 
 	cksStr := c.DefaultQuery("cks", "")
 	cks := make([]string, 0)

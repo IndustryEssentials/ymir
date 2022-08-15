@@ -35,7 +35,7 @@ func (h *MockViewerHandler) GetAssetsHandler(
 	limit int,
 	classIDs []int,
 	currentAssetID string,
-	cmTypes []int32,
+	cmTypes []int,
 	cks []string,
 	tags []string,
 ) constants.QueryAssetsResult {
@@ -192,7 +192,7 @@ func TestMetaCountPageHandlerFailure(t *testing.T) {
 	w := httptest.NewRecorder()
 	r.ServeHTTP(w, req)
 	assert.Equal(t, string(statsExpectedResponseData), w.Body.String())
-	assert.Equal(t, http.StatusOK, w.Code)
+	assert.Equal(t, http.StatusBadRequest, w.Code)
 }
 
 func TestDupPageHandlerSuccess(t *testing.T) {
@@ -268,7 +268,7 @@ func TestDupPageHandlerFailure(t *testing.T) {
 	w := httptest.NewRecorder()
 	r.ServeHTTP(w, req)
 	assert.Equal(t, string(statsExpectedResponseData), w.Body.String())
-	assert.Equal(t, http.StatusOK, w.Code)
+	assert.Equal(t, http.StatusBadRequest, w.Code)
 
 	branchID0 := "branchID0"
 	dupRequestURL1 := fmt.Sprintf(
@@ -291,7 +291,7 @@ func TestDupPageHandlerFailure(t *testing.T) {
 	w = httptest.NewRecorder()
 	r.ServeHTTP(w, req)
 	assert.Equal(t, string(statsExpectedResponseData), w.Body.String())
-	assert.Equal(t, http.StatusOK, w.Code)
+	assert.Equal(t, http.StatusBadRequest, w.Code)
 }
 
 func TestAssetsPageHandlerSuccess(t *testing.T) {
@@ -309,7 +309,7 @@ func TestAssetsPageHandlerSuccess(t *testing.T) {
 	classIDs := []int{0, 1}
 	classIDsStr := "0,1"
 	currentAssetID := "asset_id"
-	cmTypes := "FP,FN"
+	cmTypes := "0,1"
 	cks := "ck0,ck1"
 	tags := "tag0,tag1"
 	querySuffix := fmt.Sprintf("offset=%d&limit=%d&class_ids=%s&current_asset_id=%s&cm_types=%s&cks=%s&tags=%s",
@@ -345,7 +345,7 @@ func TestAssetsPageHandlerSuccess(t *testing.T) {
 
 	revisedOffset := 0
 	revisedLimit := 1
-	revisedcmTypes := []int32{2, 3}
+	revisedcmTypes := []int{0, 1}
 	revisedCks := []string{"ck0", "ck1"}
 	revisedTags := []string{"tag0", "tag1"}
 	mirRepo := constants.MirRepo{UserID: userID, RepoID: repoID, BranchID: branchID, TaskID: branchID}

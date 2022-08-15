@@ -37,7 +37,7 @@ func ViewerSuccess(ctx *gin.Context, result interface{}) {
 
 func ViewerFailure(ctx *gin.Context, result *FailureResult) {
 	resp := &ResultVO{Code: result.Code, Msg: result.Msg, Success: false, Result: result}
-	ctx.JSON(http.StatusOK, resp)
+	ctx.JSON(http.StatusBadRequest, resp)
 	log.Printf("ViewerFailure\nURL: %s\n%#v\n%s\n", getURLFromContext(ctx), *result, debug.Stack())
 }
 

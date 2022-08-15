@@ -48,6 +48,6 @@ func TestViewerFailure(t *testing.T) {
 		Result:  result,
 	}
 	expectedDataBytes, _ := json.Marshal(expectedData)
-	assert.Equal(t, 200, w.Code)
+	assert.Equal(t, 400, w.Code)
 	assert.Equal(t, expectedDataBytes, w.Body.Bytes())
 }

@@ -218,12 +218,12 @@ func TestQueryAssetsSuccess(t *testing.T) {
 		limit := 10
 		classIDs := []int{0, 1}
 		currentAssetID := "abc"
-		cmTypes := []int32{0, 1}
+		cmTypes := []int{0, 1}
 		cks := []string{"a", "b:c"}
 		tags := []string{"x", "y:z"}
 		expectedCount := int64(0)
 		expectedResult := constants.QueryAssetsResult{
-			AssetsDetail:     []constants.MirAssetDetail{},
+			AssetsDetail:     []constants.MirAssetDetail{{}, {}},
 			Offset:           offset,
 			Limit:            limit,
 			Anchor:           expectedCount,
