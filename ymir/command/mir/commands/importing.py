@@ -148,36 +148,38 @@ def _generate_sha_and_copy(index_file: str, sha_idx_file: str, sha_folder: str) 
 
     os.makedirs(sha_folder, exist_ok=True)
 
-    with open(index_file) as idx_f, open(sha_idx_file, 'w') as sha_f:
+    with open(index_file) as idx_f:
         lines = idx_f.readlines()
-        total_count = len(lines)
-        asset_count_limit = 1000000
-        if total_count > asset_count_limit:  # large number of images may trigger redis timeout error.
-            logging.error(f'# of image {total_count} exceeds upper boundary {asset_count_limit}.')
-            return MirCode.RC_CMD_INVALID_ARGS
+    total_count = len(lines)
+    asset_count_limit = 1000000
+    if total_count > asset_count_limit:  # large number of images may trigger redis timeout error.
+        logging.error(f'# of image {total_count} exceeds upper boundary {asset_count_limit}.')
+        return MirCode.RC_CMD_INVALID_ARGS
 
-        hashed_file = set()
-        idx = 0
-        for line in lines:
-            media_src = line.strip()
-            if not media_src or not os.path.isfile(media_src):
-                logging.warning("invalid file: ", media_src)
-                continue
+    map_hashed_path = {}
+    idx = 0
+    for line in lines:
+        media_src = line.strip()
+        if not media_src or not os.path.isfile(media_src):
+            logging.warning("invalid file: ", media_src)
+            continue
 
-            sha1 = hash_utils.sha1sum_for_file(media_src)
-            if sha1 not in hashed_file:
-                sha_f.writelines("\t".join([sha1, media_src]) + '\n')
+        sha1 = hash_utils.sha1sum_for_file(media_src)
+        if sha1 not in map_hashed_path:
+            map_hashed_path[sha1] = media_src
+            media_dst = utils.get_asset_storage_path(location=sha_folder, hash=sha1, make_dirs=True)
+            if not os.path.isfile(media_dst):
+                shutil.copyfile(media_src, media_dst)
 
-                media_dst = utils.get_asset_storage_path(location=sha_folder, hash=sha1, make_dirs=True)
-                if not os.path.isfile(media_dst):
-                    shutil.copyfile(media_src, media_dst)
+        idx += 1
+        if idx % 5000 == 0:
+            PhaseLoggerCenter.update_phase(phase=hash_phase_name, local_percent=(idx / total_count))
+            logging.info(f"finished {idx} / {total_count} hashes")
 
-                hashed_file.add(sha1)
+    with open(sha_idx_file, 'w') as sha_f:
+        for sha1, media_src in map_hashed_path.items():
+            sha_f.write(f"{sha1}\t{media_src}\n")
 
-            idx += 1
-            if idx % 5000 == 0:
-                PhaseLoggerCenter.update_phase(phase=hash_phase_name, local_percent=(idx / total_count))
-                logging.info(f"finished {idx} / {total_count} hashes")
     PhaseLoggerCenter.update_phase(phase=hash_phase_name)
     return MirCode.RC_OK
 
