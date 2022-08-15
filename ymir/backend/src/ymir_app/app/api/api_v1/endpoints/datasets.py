@@ -330,7 +330,6 @@ def get_assets_of_dataset(
     dataset_id: int = Path(..., example="12"),
     offset: int = 0,
     limit: int = settings.DEFAULT_LIMIT,
-    # dataset_ids: str = Query(None, example="1,2,3", alias="ids"),
     keyword: Optional[str] = Query(None),
     keywords_str: Optional[str] = Query(None, example="person,cat", alias="keywords"),
     cm_types_str: Optional[str] = Query(None, example="tp,mtp", alias="cm_types"),
