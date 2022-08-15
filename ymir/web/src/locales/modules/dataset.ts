@@ -164,6 +164,8 @@ const dataset = {
   'dataset.assets.keyword.selector.types.cks': { en: 'Custom Keywords', cn: '自定义标签' },
   'dataset.assets.keyword.selector.types.tags': { en: 'Box Tags', cn: '标注标签' },
   'dataset.assets.keyword.selector.types.placeholder': { en: 'Please select filter keywords', cn: '请选择筛选标签，可多选' },
+  'dataset.assets.selector.gt.label': { en: 'Annotation Type:', cn: '标注类型：' },
+  'dataset.assets.selector.evaluation.label': { en: 'Evaluation:', cn: '预测：' },
 
 }
 

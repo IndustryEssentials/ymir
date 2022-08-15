@@ -349,7 +349,6 @@ export default {
     *getCK({ payload }, { put }) {
       const { pid, id } = payload
       const datasets = yield put.resolve({ type: 'analysis', payload: { pid, datasets: [id] } })
-      console.log('get CK datasets:', datasets)
       if (datasets?.length) {
         const { cks, tags } = datasets[0]
         return {

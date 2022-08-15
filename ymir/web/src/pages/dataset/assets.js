@@ -3,7 +3,6 @@ import { useParams } from "umi"
 import { Select, Pagination, Row, Col, Button, Space, Card, Tag, Modal } from "antd"
 
 import t from "@/utils/t"
-import { evaluationTags } from '@/constants/dataset'
 import useFetch from '@/hooks/useFetch'
 import { randomBetween, percent } from '@/utils/number'
 
@@ -14,6 +13,7 @@ import GtSelector from "@/components/form/gtSelector"
 import ImageAnnotation from "@/components/dataset/imageAnnotation"
 import useWindowResize from "@/hooks/useWindowResize"
 import KeywordSelector from "./components/keywordSelector"
+import EvaluationSelector from "@/components/form/evaluationSelector"
 
 const { Option } = Select
 
@@ -32,9 +32,6 @@ const Dataset = () => {
     hash: null,
     index: 0,
   })
-  const [evaluated, setEvaluated] = useState(false)
-  const initEvaluation = Object.keys(evaluationTags).reduce((prev, tag) => ({ ...prev, [tag]: true }), {})
-  const [evaluation, setEvaluation] = useState(initEvaluation)
   const listRef = useRef(null)
   const windowWidth = useWindowResize()
   const [dataset, getDataset] = useFetch('dataset/getDataset', {})
@@ -45,18 +42,9 @@ const Dataset = () => {
   }, [id])
 
   useEffect(() => {
-    const evaluated = assets.some(asset => asset.evaluated)
-    setEvaluated(evaluated)
-  }, [assets])
-
-  useEffect(() => {
     setCurrentPage((filterParams.offset / filterParams.limit) + 1)
     dataset.id && filter(filterParams)
   }, [dataset, filterParams])
-
-  useEffect(() => {
-    // todo filter by evaluation params
-  }, [evaluation])
 
   const filterKw = ({ type, selected }) => setFilterParams((params) => ({
     ...params,
@@ -64,6 +52,7 @@ const Dataset = () => {
     keywords: selected,
     offset: initQuery.offset,
   }))
+
   const filterPage = (page, pageSize) => {
     setCurrentPage(page)
     const limit = pageSize
@@ -71,7 +60,6 @@ const Dataset = () => {
     setFilterParams((params) => ({ ...params, offset, limit }))
   }
   const filter = (param) => {
-    setAssets({ items: [], total: 0 })
     getAssets({ ...param, datasetKeywords: dataset?.keywords })
   }
   const goAsset = (asset, hash, index) => {
@@ -86,8 +74,21 @@ const Dataset = () => {
     filterPage(page, limit)
   }
 
-  const filterAnnotations = annotations => {
-    return annotations.filter(annotation => !annotation.cm || evaluation[annotation.cm])
+  const filterAnnotations = useCallback(annotations => {
+    const cm = filterParams.cm
+    const annoType = filterParams.annoType
+    const gtFilter = annotation => !annoType.length || annoType.some(selected => selected === 'gt' ? annotation.gt : !annotation.gt)
+    const evaluationFilter = annotation => !cm.length || cm.includes(annotation.cm)
+    return annotations.filter(annotation => gtFilter(annotation) && evaluationFilter(annotation))
+  }, [filterParams.cm, filterParams.annoType])
+
+  const updateFilterParams = (value, field) => {
+    setFilterParams(query => ({
+      ...query,
+      [field]: value,
+      offset: initQuery.offset,
+      limit: initQuery.limit,
+    }))
   }
 
   const randomPageButton = (
@@ -136,7 +137,7 @@ const Dataset = () => {
       )
     }
     )
-  }, [windowWidth, evaluation])
+  }, [windowWidth, filterParams.cm])
 
   const renderTitle = <Row className={styles.labels}>
     <Col flex={1}>
@@ -145,9 +146,12 @@ const Dataset = () => {
         <span>{t("dataset.detail.pager.total", { total: total + '/' + dataset.assetCount })}</span>
       </Space>
     </Col>
-    {evaluated ? <Col>
-      <GtSelector layout='inline' onChange={setEvaluation} />
-    </Col> : null}
+    <Col>
+      <GtSelector layout='inline' onChange={checked => updateFilterParams(checked, 'annoType')} />
+    </Col>
+    <Col>
+      <EvaluationSelector onChange={checked => updateFilterParams(checked, 'cm')} />
+    </Col>
     <Col>
       <KeywordSelector onChange={filterKw} dataset={dataset} />
     </Col>
@@ -156,7 +160,14 @@ const Dataset = () => {
   const assetDetail = <Modal className={styles.assetDetail} destroyOnClose
     title={t('dataset.asset.title')} visible={assetVisible} onCancel={() => setAssetVisible(false)}
     width={null} footer={null}>
-    <Asset id={id} asset={currentAsset.asset} datasetKeywords={dataset.keywords} filterKeyword={assetVisible ? filterParams.keyword : null} index={currentAsset.index} total={total} />
+    <Asset
+      id={id}
+      asset={currentAsset.asset}
+      datasetKeywords={dataset.keywords}
+      filters={filterParams}
+      filterKeyword={assetVisible ? filterParams.keyword : null}
+      index={currentAsset.index} total={total}
+    />
   </Modal>
 
   return (
