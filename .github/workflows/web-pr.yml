@@ -18,16 +18,15 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
-    - name: Use Node.js 18.x
+    - name: Use Node.js 16.x
       uses: actions/setup-node@v3
       with:
-        node-version: 18.x
+        node-version: 16.x
         cache: 'npm'
         cache-dependency-path: ymir/web/package-lock.json
     - name: Test with npm
       run: |
-        npm cache clear --force
-        npm config set registry https://registry.npmjs.org/
+        time npm update
         time npm install
         time npm run build
         time CI=true npm run test:coverage
