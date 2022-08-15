@@ -25,7 +25,7 @@ jobs:
         python-version: 3.8
     - name: Install dependencies
       run: |
-        pip install tox
+        time pip install tox
       working-directory: ymir/backend
     - name: Cache Tox Environment
       uses: actions/cache@v3
@@ -40,5 +40,5 @@ jobs:
       run: |
         git config --global user.name 'CI-test'
         git config --global user.email 'deployer@ymir-team'
-        tox
+        time tox
       working-directory: ymir/backend
