@@ -63,7 +63,7 @@ def det_evaluate_with_pb(
     evaluate_config.gt_dataset_id = dataset_id
     evaluate_config.pred_dataset_ids.append(dataset_id)
 
-    evaluation = det_eval_coco._det_evaluate(mir_dts=[mir_dt], mir_gt=mir_gt, config=evaluate_config)
+    evaluation = det_eval_coco.det_evaluate(mir_dts=[mir_dt], mir_gt=mir_gt, config=evaluate_config)
 
     _show_evaluation(evaluation=evaluation)
 

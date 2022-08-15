@@ -19,48 +19,19 @@
 # Licensed under The MIT License [see LICENSE for details]
 # Written by Bharath Hariharan
 # --------------------------------------------------------
-
 """Python implementation of the PASCAL VOC devkit's AP evaluation code."""
 
-import logging
-import os
-from typing import Any, Dict, List
-import xml.etree.ElementTree as ET
+from typing import Any, Dict, List, Tuple
 
 import numpy as np
 
-
-def parse_rec(filename: str) -> List[Dict[str, Any]]:
-    # TODO: TO BE REMOVED
-    """
-    Parse a PASCAL VOC xml file.
-    Returns:
-        list of dicts, each dict consists of:
-            'name': str, class name
-            'pose': str, pose
-            'truncated': int, 1 - true, 0 - false
-            'difficult': int, 1 - true, 0 - false
-            'bbox': list of 4 ints, x1, y1, x2, y2
-    """
-    tree = ET.parse(filename)
-    objects: List[Dict[str, Any]] = []
-    for obj in tree.findall('object'):
-        obj_struct = {}
-        obj_struct['name'] = obj.find('name').text
-        obj_struct['pose'] = obj.find('pose').text
-        obj_struct['truncated'] = int(obj.find('truncated').text)
-        obj_struct['difficult'] = int(obj.find('difficult').text)
-        bbox = obj.find('bndbox')
-        obj_struct['bbox'] = [int(bbox.find('xmin').text),
-                              int(bbox.find('ymin').text),
-                              int(bbox.find('xmax').text),
-                              int(bbox.find('ymax').text)]
-        objects.append(obj_struct)
-
-    return objects
+from mir.protos import mir_command_pb2 as mirpb
+from mir.tools.det_eval_dataset import MirDataset
+from mir.tools.code import MirCode
+from mir.tools.errors import MirRuntimeError
 
 
-def voc_ap(rec, prec, use_07_metric=False):
+def _voc_ap(rec, prec, use_07_metric=False):
     """Compute VOC AP given precision and recall. If use_07_metric is true, uses
     the VOC 07 11-point method (default:False).
     """
@@ -92,98 +63,22 @@ def voc_ap(rec, prec, use_07_metric=False):
     return ap
 
 
-def voc_eval(detpath,
-             annopath,
-             imagesetfile,
-             classname,
-             ovthresh=0.5,
-             use_07_metric=False):
-    """rec, prec, ap = voc_eval(detpath,
-                                annopath,
-                                imagesetfile,
-                                classname,
-                                [ovthresh],
-                                [use_07_metric])
-
-    Top level function that does the PASCAL VOC evaluation.
-
-    detpath: Path to detections
-        detpath.format(classname) should produce the detection results file.
-    annopath: Path to annotations
-        annopath.format(imagename) should be the xml annotations file.
-    imagesetfile: Text file containing the list of images, one image per line.
-    classname: Category name (duh)
-    [ovthresh]: Overlap threshold (default = 0.5)
-    [use_07_metric]: Whether to use VOC07's 11 point AP computation
-        (default False)
-    """
-    # assumes detections are in detpath.format(classname)
-    # assumes annotations are in annopath.format(imagename)
-    # assumes imagesetfile is a text file with each line an image name
-
-    # first load gt
-    # imagenames: list of image names
-    # recs: ground truth of images
-
-    # read list of images
-    with open(imagesetfile, 'r') as f:
-        lines = f.readlines()
-    imagenames = [x.strip() for x in lines]
-
-    # load annots
-
-    # recs: key: image name (each line of `imagesetfile`)
-    #       value: annotations list, each element is dict consists of:
-    #             'name': str, class name
-    #             'pose': str, pose
-    #             'truncated': int, 1 - true, 0 - false
-    #             'difficult': int, 1 - true, 0 - false
-    #             'bbox': list of 4 ints, x1, y1, x2, y2
-    recs: Dict[str, List[Dict[str, Any]]] = {}
-    for i, imagename in enumerate(imagenames):
-        recs[imagename] = parse_rec(annopath.format(imagename))
-        if i % 100 == 0:
-            logging.info(
-                'Reading annotation for {:d}/{:d}'.format(
-                    i + 1, len(imagenames)))
-
-    # extract gt objects for this class
-    class_recs = {}
-    npos = 0
-    for imagename in imagenames:
-        R = [obj for obj in recs[imagename] if obj['name'] == classname]
-        bbox = np.array([x['bbox'] for x in R])
-        difficult = np.array([x['difficult'] for x in R]).astype(np.bool)
-        det = [False] * len(R)
-        npos = npos + sum(~difficult)
-        class_recs[imagename] = {'bbox': bbox,
-                                 'difficult': difficult,
-                                 'det': det}
-
-    # read dets
-    detfile = detpath.format(classname)
-    with open(detfile, 'r') as f:
-        lines = f.readlines()
-
-    splitlines = [x.strip().split(' ') for x in lines]
-    image_ids = [x[0] for x in splitlines]
-    confidence = np.array([float(x[1]) for x in splitlines])
-    BB = np.array([[float(z) for z in x[2:]] for x in splitlines])
-
-    # sort by confidence
+def _voc_eval(class_recs, BB, confidence, image_ids, ovthresh, npos,
+              use_07_metric) -> Tuple[np.ndarray, np.ndarray, float]:
+    # `BB` and `image_ids`: sort desc by confidence
     sorted_ind = np.argsort(-confidence)
     BB = BB[sorted_ind, :]
     image_ids = [image_ids[x] for x in sorted_ind]
 
     # go down dets and mark TPs and FPs
     nd = len(image_ids)
-    tp = np.zeros(nd)
-    fp = np.zeros(nd)
+    tp = np.zeros(nd)  # 0 or 1, tp[d] == 1 means BB[d] is true positive
+    fp = np.zeros(nd)  # 0 or 1, tp[d] == 1 means BB[d] is false positive
     for d in range(nd):
-        R = class_recs[image_ids[d]]
-        bb = BB[d, :].astype(float)
+        R = class_recs[image_ids[d]]  # gt of that image name
+        bb = BB[d, :].astype(float)  # single prediction box, shape: (1, 4)
         ovmax = -np.inf
-        BBGT = R['bbox'].astype(float)
+        BBGT: np.ndarray = R['bbox'].astype(float)  # gt boxes of that image name, shape: (*, 4), x1, y1, x2, y2
 
         if BBGT.size > 0:
             # compute overlaps
@@ -197,8 +92,7 @@ def voc_eval(detpath,
             inters = iw * ih
 
             # union
-            uni = ((bb[2] - bb[0] + 1.) * (bb[3] - bb[1] + 1.) +
-                   (BBGT[:, 2] - BBGT[:, 0] + 1.) *
+            uni = ((bb[2] - bb[0] + 1.) * (bb[3] - bb[1] + 1.) + (BBGT[:, 2] - BBGT[:, 0] + 1.) *
                    (BBGT[:, 3] - BBGT[:, 1] + 1.) - inters)
 
             overlaps = inters / uni
@@ -218,10 +112,116 @@ def voc_eval(detpath,
     # compute precision recall
     fp = np.cumsum(fp)
     tp = np.cumsum(tp)
-    rec = tp / float(npos)
-    # avoid divide by zero in case the first detection matches a difficult
-    # ground truth
-    prec = tp / np.maximum(tp + fp, np.finfo(np.float64).eps)
-    ap = voc_ap(rec, prec, use_07_metric)
+    rec = tp / float(npos)  # recalls
+    prec = tp / np.maximum(tp + fp, np.finfo(np.float64).eps)  # precisions
+    ap: float = _voc_ap(rec, prec, use_07_metric)
+    # TODO: ar and conf in pr curve, tp/mtp/fp/fn tag in mirpb.Annotation
+    return {'rec': rec, 'prec': prec, 'ap': ap, 'tp': tp[-1] if tp else 0, 'fp': fp[-1] if fp else 0}
 
-    return rec, prec, ap
+
+def _get_ious_array(iou_thrs_str: str) -> np.ndarray:
+    # TODO: BRING IT OUT TO PUBLIC ZONE
+    iou_thrs = [float(v) for v in iou_thrs_str.split(':')]
+    if len(iou_thrs) == 3:
+        iou_thr_from, iou_thr_to, iou_thr_step = iou_thrs
+    elif len(iou_thrs) == 1:
+        iou_thr_from, iou_thr_to, iou_thr_step = iou_thrs[0], iou_thrs[0], 0
+    else:
+        raise ValueError(f"invalid iou thrs str: {iou_thrs_str}")
+    for thr in [iou_thr_from, iou_thr_to, iou_thr_step]:
+        if thr < 0 or thr > 1:
+            raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
+                                  error_message='invalid iou_thr_from, iou_thr_to or iou_thr_step')
+    if iou_thr_from > iou_thr_to:
+        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
+                              error_message='invalid iou_thr_from or iou_thr_to')
+
+    if iou_thr_to == iou_thr_from:
+        return np.array([iou_thr_from])
+    return np.linspace(start=iou_thr_from,
+                       stop=iou_thr_to,
+                       num=int(np.round((iou_thr_to - iou_thr_from) / iou_thr_step)),
+                       endpoint=False)
+
+
+def _get_single_evaluate_element(mir_dt: MirDataset, mir_gt: MirDataset, class_id: int, iou_thr: float,
+                                 need_pr_curve: bool) -> mirpb.SingleEvaluationElement:
+    # convert data structure
+    # convert gt, save to `class_recs`
+    class_recs: Dict[int, Dict[str, Any]] = {}
+    for asset_idx in mir_gt.get_asset_idxes():
+        annos: List[dict] = mir_gt.img_cat_to_annotations[(asset_idx, class_id)] if (
+            asset_idx, class_id) in mir_gt.img_cat_to_annotations else []
+        bbox = np.array([x['bbox'] for x in annos])  # shape: (len(annos), 4), type: int
+        bbox[2, :] += bbox[0, :]  # w -> x2
+        bbox[3, :] += bbox[1, :]  # h -> y2
+        difficult = np.array([x['iscrowd'] for x in annos]).astype(np.bool)  # shape: (len(annos),), type: int
+        det = [False] * len(annos)  # 1: have matched detections, 0: not matched yet
+        npos = npos + sum(~difficult)
+        class_recs[asset_idx] = {'bbox': bbox, 'difficult': difficult, 'det': det}
+
+    # convert det
+    image_ids = []
+    confidence = []
+    bboxes: List[List[int]] = []
+    for asset_idx in mir_dt.get_asset_idxes():
+        annos: List[dict] = mir_dt.img_cat_to_annotations[(asset_idx, class_id)] if (
+            asset_idx, class_id) in mir_dt.img_cat_to_annotations else []
+        for anno in annos:
+            bbox = anno['bbox']
+            bboxes.append([bbox[0], bbox[1], bbox[0] + bbox[2], bbox[1] + bbox[3]])
+        image_ids.extend([asset_idx] * len(annos))
+        confidence.extend([float(x['score']) for x in annos])
+    BB = np.array(bboxes)
+
+    # voc eval
+    eval_result = _voc_eval(class_recs=class_recs,
+                            BB=BB,
+                            confidence=confidence,
+                            image_ids=image_ids,
+                            ovthresh=iou_thr,
+                            npos=npos,
+                            use_07_metric=True)
+
+    # voc_eval to get result
+    # TODO: ar and conf in pr curve
+    see = mirpb.SingleEvaluationElement()
+    see.ap = eval_result['ap']
+    see.tp = eval_result['tp']
+    see.fp = eval_result['fp']
+    if need_pr_curve:
+        rec = eval_result['rec']
+        prec = eval_result['prec']
+        for i in range(len(rec)):
+            see.pr_curve.append(mirpb.FloatPoint(x=rec[i], y=prec[i], z=0))
+    return see
+
+
+def _calc_averaged_evaluations(dataset_evaluation: mirpb.SingleDatasetEvaluation) -> None:
+    # TODO: BRING IT OUT TO PUBLIC ZONE
+    pass
+
+
+def det_evaluate(mir_dts: List[MirDataset], mir_gt: MirDataset, config: mirpb.EvaluateConfig) -> mirpb.Evaluation:
+    if config.conf_thr < 0 or config.conf_thr > 1:
+        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS, error_message='invalid conf_thr')
+
+    evaluation = mirpb.Evaluation()
+    evaluation.config.CopyFrom(config)
+
+    class_ids = mir_gt.get_class_ids()
+    iou_thrs = _get_ious_array(config.iou_thrs_interval)
+
+    for mir_dt in mir_dts:
+        for iou_thr in iou_thrs:
+            for class_id in class_ids:
+                evaluation.dataset_evaluations[
+                    mir_dt.dataset_id].iou_evaluations[iou_thr].ci_evaluations[class_id].CopyFrom(
+                        _get_single_evaluate_element(mir_dt=mir_dt,
+                                                     mir_gt=mir_gt,
+                                                     class_id=class_id,
+                                                     iou_thr=iou_thr,
+                                                     need_pr_curve=config.need_pr_curve))
+        _calc_averaged_evaluations(evaluation.dataset_evaluations[mir_dt.dataset_id])
+
+    return evaluation
