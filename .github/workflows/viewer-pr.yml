@@ -31,7 +31,7 @@ jobs:
     - name: Verify dependencies
       working-directory: ymir/backend/src/ymir_viewer
       run: |
-        go mod verify
+        time go mod verify
         time go install honnef.co/go/tools/cmd/staticcheck@latest
 
     - name: golangci-lint
@@ -45,7 +45,7 @@ jobs:
       run: |
         git config --global user.name 'CI-TEST'
         git config --global user.email 'ci-test@ymir-team'
-        time go vet ./...
+        go vet ./...
         time staticcheck ./...
         time go test -race -coverprofile=profile.cov -vet=off $(go list ./... | grep -v -e common/protos -e common/constants -e docs)
         go tool cover -func profile.cov

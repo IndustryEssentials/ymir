@@ -40,5 +40,5 @@ jobs:
       run: |
         git config --global user.name 'CI-test'
         git config --global user.email 'deployer@ymir-team'
-        time tox
+        tox
       working-directory: ymir/backend
