@@ -35,7 +35,7 @@ type BaseMongoServer interface {
 		limit int,
 		classIds []int,
 		currentAssetID string,
-		cmTypes []int32,
+		cmTypes []int,
 		cks []string,
 		tags []string,
 	) constants.QueryAssetsResult
@@ -96,7 +96,7 @@ func (v *ViewerHandler) GetAssetsHandler(
 	limit int,
 	classIDs []int,
 	currentAssetID string,
-	cmTypes []int32,
+	cmTypes []int,
 	cks []string,
 	tags []string,
 ) constants.QueryAssetsResult {

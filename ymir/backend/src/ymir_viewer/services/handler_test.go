@@ -61,7 +61,7 @@ func (m *MockMongoServer) QueryDatasetAssets(
 	limit int,
 	classIds []int,
 	currentAssetID string,
-	cmTypes []int32,
+	cmTypes []int,
 	cks []string,
 	tags []string,
 ) constants.QueryAssetsResult {
@@ -219,7 +219,7 @@ func TestGetAssetsHandler(t *testing.T) {
 	limit := 10
 	classIDs := []int{0, 1}
 	currentAssetID := "abc"
-	cmTypes := []int32{0, 1}
+	cmTypes := []int{0, 1}
 	cks := []string{"a", "b", "c"}
 	tags := []string{"x", "y", "z"}
 	expectedResult := constants.QueryAssetsResult{}
@@ -247,7 +247,7 @@ func TestGetAssetsHandlerShortcut(t *testing.T) {
 	limit := 10
 	classIDs := []int{}
 	currentAssetID := "abc"
-	cmTypes := []int32{}
+	cmTypes := []int{}
 	cks := []string{}
 	tags := []string{}
 	anchor := int64(0)
