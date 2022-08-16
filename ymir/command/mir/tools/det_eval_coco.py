@@ -4,7 +4,7 @@ from typing import Any, Dict, Iterable, List, Optional, Set, Tuple, Union
 import numpy as np
 
 from mir.tools.code import MirCode
-from mir.tools.det_eval_utils import MirDataset
+from mir.tools.det_eval_utils import MirDataset, get_ious_array
 from mir.tools.errors import MirRuntimeError
 from mir.protos import mir_command_pb2 as mirpb
 
@@ -512,7 +512,7 @@ class CocoDetEval:
             raise Exception('Please run accumulate() first')
         self.stats = _summarizeDets()
 
-    def write_confusion_matrix(self, iou_thr_index: int, maxDets: int) -> None:
+    def _write_confusion_matrix(self, iou_thr_index: int, maxDets: int) -> None:
         gt_annotation = self._coco_gt._task_annotations
         dt_annotation = self._coco_dt._task_annotations
         cm_key = (iou_thr_index, maxDets)
@@ -563,7 +563,7 @@ def det_evaluate(mir_dts: List[MirDataset], mir_gt: MirDataset, config: mirpb.Ev
 
     params = Params()
     params.confThr = config.conf_thr
-    params.iouThrs = _get_ious_array(config.iou_thrs_interval)
+    params.iouThrs = get_ious_array(config.iou_thrs_interval)
     params.need_pr_curve = config.need_pr_curve
 
     evaluation = mirpb.Evaluation()
@@ -575,7 +575,7 @@ def det_evaluate(mir_dts: List[MirDataset], mir_gt: MirDataset, config: mirpb.Ev
     for mir_dt in mir_dts:
         evaluator = CocoDetEval(coco_gt=mir_gt, coco_dt=mir_dt, params=params)
         evaluator.evaluate()
-        evaluator.write_confusion_matrix(iou_thr_index=0, maxDets=params.maxDets[max_dets_index])
+        evaluator._write_confusion_matrix(iou_thr_index=0, maxDets=params.maxDets[max_dets_index])
         evaluator.accumulate()
 
         single_dataset_evaluation = evaluator.get_evaluation_result(area_ranges_index=area_ranges_index,
@@ -613,27 +613,3 @@ def det_evaluate(mir_dts: List[MirDataset], mir_gt: MirDataset, config: mirpb.Ev
         single_dataset_evaluation.pred_dataset_id = mir_dt.dataset_id
         evaluation.dataset_evaluations[mir_dt.dataset_id].CopyFrom(single_dataset_evaluation)
     return evaluation
-
-
-def _get_ious_array(iou_thrs_str: str) -> np.ndarray:
-    iou_thrs = [float(v) for v in iou_thrs_str.split(':')]
-    if len(iou_thrs) == 3:
-        iou_thr_from, iou_thr_to, iou_thr_step = iou_thrs
-    elif len(iou_thrs) == 1:
-        iou_thr_from, iou_thr_to, iou_thr_step = iou_thrs[0], iou_thrs[0], 0
-    else:
-        raise ValueError(f"invalid iou thrs str: {iou_thrs_str}")
-    for thr in [iou_thr_from, iou_thr_to, iou_thr_step]:
-        if thr < 0 or thr > 1:
-            raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
-                                  error_message='invalid iou_thr_from, iou_thr_to or iou_thr_step')
-    if iou_thr_from > iou_thr_to:
-        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
-                              error_message='invalid iou_thr_from or iou_thr_to')
-
-    if iou_thr_to == iou_thr_from:
-        return np.array([iou_thr_from])
-    return np.linspace(start=iou_thr_from,
-                       stop=iou_thr_to,
-                       num=int(np.round((iou_thr_to - iou_thr_from) / iou_thr_step)),
-                       endpoint=False)

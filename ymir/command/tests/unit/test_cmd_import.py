@@ -163,6 +163,8 @@ class TestCmdImport(unittest.TestCase):
                             'rotate_angle': -0.02
                         },
                         'class_id': 1,
+                        'cm': 'FP',
+                        'det_link_id': -1,
                         'score': -1.0,
                         'anno_quality': 0.75,
                         'tags': {
@@ -200,6 +202,8 @@ class TestCmdImport(unittest.TestCase):
                             'rotate_angle': 0.02
                         },
                         'class_id': 1,
+                        'cm': 'FP',
+                        'det_link_id': -1,
                         'score': -1.0,
                         'anno_quality': 0.75,
                         'tags': {
@@ -222,6 +226,8 @@ class TestCmdImport(unittest.TestCase):
                             'rotate_angle': -0.02
                         },
                         'class_id': 1,
+                        'cm': 'FP',
+                        'det_link_id': -1,
                         'score': -1.0,
                         'anno_quality': 0.75,
                         'tags': {
@@ -259,6 +265,8 @@ class TestCmdImport(unittest.TestCase):
                             'rotate_angle': 0.02
                         },
                         'class_id': 1,
+                        'cm': 'FP',
+                        'det_link_id': -1,
                         'score': -1.0,
                         'anno_quality': 0.75,
                         'tags': {
@@ -275,6 +283,8 @@ class TestCmdImport(unittest.TestCase):
                             'h': 50
                         },
                         'class_id': 2,
+                        'cm': 'FP',
+                        'det_link_id': -1,
                         'score': -1.0,
                         'anno_quality': 0.23,
                         'tags': {
@@ -291,6 +301,8 @@ class TestCmdImport(unittest.TestCase):
                             'rotate_angle': 0.12
                         },
                         'class_id': 2,
+                        'cm': 'FP',
+                        'det_link_id': -1,
                         'score': -1.0,
                         'anno_quality': 0.35,
                         'tags': {

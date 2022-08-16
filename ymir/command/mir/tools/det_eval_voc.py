@@ -21,7 +21,7 @@
 # --------------------------------------------------------
 """Python implementation of the PASCAL VOC devkit's AP evaluation code."""
 
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Set, Tuple
 
 import numpy as np
 
@@ -63,8 +63,13 @@ def _voc_ap(rec: np.ndarray, prec: np.ndarray, use_07_metric: bool):
     return ap
 
 
-def _voc_eval(class_recs: Dict[int, Dict[str, Any]], BB: np.ndarray, confidence: np.ndarray, image_ids: List[int],
-              ovthresh: float, npos: int, use_07_metric: bool) -> Dict[str, Any]:
+def _voc_eval(class_recs: Dict[int, Dict[str, Any]], BB: np.ndarray, confidence: np.ndarray, image_ids: List[str],
+              pred_pb_index_ids: List[int], matches: Set[Tuple[str, int, int]], ovthresh: float, npos: int,
+              use_07_metric: bool) -> Dict[str, Any]:
+    """
+    gt: class_recs
+    pred: BB, confidence, image_ids, pred_pb_index_ids
+    """
     if len(image_ids) == 0:
         return {
             'rec': [],
@@ -81,6 +86,7 @@ def _voc_eval(class_recs: Dict[int, Dict[str, Any]], BB: np.ndarray, confidence:
     sorted_ind = np.argsort(-confidence)
     BB = BB[sorted_ind, :]
     image_ids = [image_ids[x] for x in sorted_ind]
+    pred_pb_index_ids = [pred_pb_index_ids[x] for x in sorted_ind]
 
     # go down dets and mark TPs and FPs
     nd = len(image_ids)
@@ -117,11 +123,17 @@ def _voc_eval(class_recs: Dict[int, Dict[str, Any]], BB: np.ndarray, confidence:
         if ovmax > ovthresh:
             if not R['difficult'][jmax]:
                 if not R['det'][jmax]:
+                    # pred `d` matched to gt `jmax`
                     tp[d] = 1.
                     R['det'][jmax] = 1
+
+                    # fill matches: asset_idx, pb_index_id for gt, pb_index_id for pred
+                    matches.add((image_ids[d], class_recs[image_ids[d]]['pb_index_ids'][jmax], pred_pb_index_ids[d]))
                 else:
+                    # jmax previously matched to another
                     fp[d] = 1.
         else:
+            # pred `d` not matched to anything
             fp[d] = 1.
 
     # compute precision recall
@@ -145,16 +157,41 @@ def _voc_eval(class_recs: Dict[int, Dict[str, Any]], BB: np.ndarray, confidence:
         'fp': fp_cnt,
         'fn': fn_cnt,
     }
-    # TODO: tp/mtp/fp/fn tags
 
 
-def _get_single_evaluate_element(mir_dt: MirDataset, mir_gt: MirDataset, class_id: int, iou_thr: float,
-                                 need_pr_curve: bool) -> mirpb.SingleEvaluationElement:
+def _erase_confusion_matrix(mir_gt: MirDataset, mir_dt: MirDataset) -> None:
+    gt_annotations = mir_gt._task_annotations
+    pred_annotations = mir_dt._task_annotations
+
+    for image_annotations in gt_annotations.image_annotations.values():
+        for annotation in image_annotations.annotations:
+            annotation.cm = mirpb.ConfusionMatrixType.FN
+            annotation.det_link_id = -1
+    for image_annotations in pred_annotations.image_annotations.values():
+        for annotation in image_annotations.annotations:
+            annotation.cm = mirpb.ConfusionMatrixType.FP
+            annotation.det_link_id = -1
+
+
+def _write_confusion_matrix(mir_gt: MirDataset, mir_dt: MirDataset, matches: Set[Tuple[str, int, int]]) -> None:
+    gt_annotations = mir_gt._task_annotations
+    pred_annotations = mir_dt._task_annotations
+
+    for asset_id, gt_pb_index, pred_pb_index in matches:
+        gt_annotations.image_annotations[asset_id].annotations[gt_pb_index].cm = mirpb.ConfusionMatrixType.MTP
+        gt_annotations.image_annotations[asset_id].annotations[gt_pb_index].det_link_id = pred_pb_index
+        pred_annotations.image_annotations[asset_id].annotations[pred_pb_index].cm = mirpb.ConfusionMatrixType.TP
+        pred_annotations.image_annotations[asset_id].annotations[pred_pb_index].det_link_id = gt_pb_index
+
+
+def _get_single_evaluate_element(mir_dt: MirDataset, mir_gt: MirDataset, matches: Set[Tuple[str, int, int]],
+                                 class_id: int, iou_thr: float, need_pr_curve: bool) -> mirpb.SingleEvaluationElement:
     # convert data structure
     # convert gt, save to `class_recs`
-    class_recs: Dict[int, Dict[str, Any]] = {}
+    class_recs: Dict[str, Dict[str, Any]] = {}
     npos = 0
-    for asset_idx in mir_gt.get_asset_idxes():
+    for asset_id in mir_gt.get_asset_ids():
+        asset_idx = mir_gt.asset_id_to_ordered_idxes[asset_id]
         if (asset_idx, class_id) not in mir_gt.img_cat_to_annotations:
             continue
 
@@ -165,27 +202,40 @@ def _get_single_evaluate_element(mir_dt: MirDataset, mir_gt: MirDataset, class_i
         difficult = np.array([x['iscrowd'] for x in annos]).astype(bool)  # shape: (len(annos),), type: int
         det = [False] * len(annos)  # 1: have matched detections, 0: not matched yet
         npos = npos + sum(~difficult)
-        class_recs[asset_idx] = {'bbox': bbox, 'difficult': difficult, 'det': det}
+        pb_index_ids = [x['pb_index_id'] for x in annos]
+
+        class_recs[asset_id] = {
+            'bbox': bbox,
+            'difficult': difficult,
+            'det': det,
+            'pb_index_ids': pb_index_ids,
+        }
 
     # convert det
-    image_ids = []
+    image_ids: List[str] = []
     confidence = []
     bboxes: List[List[int]] = []
-    for asset_idx in mir_dt.get_asset_idxes():
+    pred_pb_index_ids: List[int] = []
+    for asset_id in mir_dt.get_asset_ids():
+        asset_idx = mir_dt.asset_id_to_ordered_idxes[asset_id]
         annos: List[dict] = mir_dt.img_cat_to_annotations[(asset_idx, class_id)] if (
             asset_idx, class_id) in mir_dt.img_cat_to_annotations else []
         for anno in annos:
             bbox = anno['bbox']
             bboxes.append([bbox[0], bbox[1], bbox[0] + bbox[2], bbox[1] + bbox[3]])
-        image_ids.extend([asset_idx] * len(annos))
+        image_ids.extend([asset_id] * len(annos))
         confidence.extend([float(x['score']) for x in annos])
+        pred_pb_index_ids.extend([x['pb_index_id'] for x in annos])
     BB = np.array(bboxes)
 
     # voc eval
+    # matches: set to save match result, each element: (asset_id, gt_pb_index, pred_pb_index)
     eval_result = _voc_eval(class_recs=class_recs,
                             BB=BB,
                             confidence=np.array(confidence),
                             image_ids=image_ids,
+                            pred_pb_index_ids=pred_pb_index_ids,
+                            matches=matches,
                             ovthresh=iou_thr,
                             npos=npos,
                             use_07_metric=True)
@@ -220,14 +270,22 @@ def det_evaluate(mir_dts: List[MirDataset], mir_gt: MirDataset, config: mirpb.Ev
 
     for mir_dt in mir_dts:
         dataset_evaluation = evaluation.dataset_evaluations[mir_dt.dataset_id]
-        for iou_thr in iou_thrs:
+        for i, iou_thr in enumerate(iou_thrs):
+            if i == 0:
+                _erase_confusion_matrix(mir_gt=mir_gt, mir_dt=mir_dt)
+
+            matches: Set[Tuple[str, int, int]] = set()
             for class_id in class_ids:
-                dataset_evaluation.iou_evaluations[f"{iou_thr:.2f}"].ci_evaluations[class_id].CopyFrom(
-                    _get_single_evaluate_element(mir_dt=mir_dt,
-                                                 mir_gt=mir_gt,
-                                                 class_id=class_id,
-                                                 iou_thr=iou_thr,
-                                                 need_pr_curve=config.need_pr_curve))
+                see = _get_single_evaluate_element(mir_dt=mir_dt,
+                                                   mir_gt=mir_gt,
+                                                   class_id=class_id,
+                                                   iou_thr=iou_thr,
+                                                   matches=matches,
+                                                   need_pr_curve=config.need_pr_curve)
+                dataset_evaluation.iou_evaluations[f"{iou_thr:.2f}"].ci_evaluations[class_id].CopyFrom(see)
+
+            if i == 0:
+                _write_confusion_matrix(mir_gt=mir_gt, mir_dt=mir_dt, matches=matches)
         calc_averaged_evaluations(dataset_evaluation=dataset_evaluation, class_ids=class_ids)
 
     return evaluation

@@ -1,5 +1,5 @@
 import logging
-from typing import List, Tuple
+from typing import Tuple
 
 from mir.tools import mir_storage_ops, revs_parser, det_eval_coco, det_eval_voc
 from mir.tools.det_eval_utils import MirDataset
