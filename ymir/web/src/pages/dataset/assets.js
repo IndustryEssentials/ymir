@@ -36,6 +36,8 @@ const Dataset = () => {
   const windowWidth = useWindowResize()
   const [dataset, getDataset] = useFetch('dataset/getDataset', {})
   const [{ items: assets, total }, getAssets, setAssets] = useFetch('dataset/getAssetsOfDataset', { items: [], total: 0 })
+  const gtRef = useRef(null)
+  const evaluateRef = useRef(null)
 
   useEffect(() => {
     getDataset({ id })
@@ -75,8 +77,8 @@ const Dataset = () => {
   }
 
   const filterAnnotations = useCallback(annotations => {
-    const cm = filterParams.cm
-    const annoType = filterParams.annoType
+    const cm = filterParams.cm || []
+    const annoType = filterParams.annoType || []
     const gtFilter = annotation => !annoType.length || annoType.some(selected => selected === 'gt' ? annotation.gt : !annotation.gt)
     const evaluationFilter = annotation => !cm.length || cm.includes(annotation.cm)
     return annotations.filter(annotation => gtFilter(annotation) && evaluationFilter(annotation))
@@ -88,6 +90,13 @@ const Dataset = () => {
     offset: initQuery.offset,
     limit: initQuery.limit,
   }))
+
+  const reset = () => {
+    setFilterParams(initQuery)
+    
+    gtRef.current.clear()
+    evaluateRef.current.clear()
+  }
 
   const randomPageButton = (
     <Button type="primary" onClick={randomPage}>
@@ -145,14 +154,15 @@ const Dataset = () => {
       </Space>
     </Col>
     <Col>
-      <GtSelector layout='inline' onChange={checked => updateFilterParams(checked, 'annoType')} />
+      <GtSelector ref={gtRef} layout='inline' value={filterParams.annoType} onChange={checked => updateFilterParams(checked, 'annoType')} />
     </Col>
     <Col>
-      <EvaluationSelector onChange={checked => updateFilterParams(checked, 'cm')} />
+      <EvaluationSelector ref={evaluateRef} value={filterParams.cm} onChange={checked => updateFilterParams(checked, 'cm')} />
     </Col>
     <Col>
       <KeywordSelector onChange={filterKw} dataset={dataset} />
     </Col>
+    <Col><Button onClick={reset}>Reset</Button></Col>
   </Row>
 
   const assetDetail = <Modal className={styles.assetDetail} destroyOnClose

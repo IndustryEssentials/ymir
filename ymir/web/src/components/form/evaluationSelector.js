@@ -1,5 +1,6 @@
 import { evaluationTags as tags } from '@/constants/dataset'
 import t from "@/utils/t"
+import { forwardRef } from 'react'
 import CheckboxSelector from "./checkboxSelector"
 
 const types = [
@@ -9,10 +10,11 @@ const types = [
   { label: 'TP', value: tags.tp },
 ]
 
-const EvaluationSelector = (props) => <CheckboxSelector
+const EvaluationSelector = forwardRef((props, ref) => <CheckboxSelector
   options={types}
   label={t('dataset.assets.selector.evaluation.label')}
+  ref={ref}
   {...props}
-/>
+/>)
 
 export default EvaluationSelector
