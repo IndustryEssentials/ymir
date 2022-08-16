@@ -130,7 +130,7 @@ type QueryDatasetStatsContext struct {
 type QueryDatasetStatsResult struct {
 	// Assets
 	TotalAssetsCount    int64               `json:"total_assets_count"`
-	TotalAssetsFileSize int                 `json:"total_assets_mbytes"`
+	TotalAssetsFileSize int64               `json:"total_assets_mbytes"`
 	AssetsHist          map[string]*MirHist `json:"assets_hist"`
 
 	// Annotations

@@ -62,8 +62,10 @@ func (h *MockViewerHandler) GetDatasetMetaCountsHandler(
 func (h *MockViewerHandler) GetDatasetStatsHandler(
 	mirRepo *constants.MirRepo,
 	classIDs []int,
+	requireAssetsHist bool,
+	requireAnnotationsHist bool,
 ) *constants.QueryDatasetStatsResult {
-	args := h.Called(mirRepo, classIDs)
+	args := h.Called(mirRepo, classIDs, requireAssetsHist, requireAnnotationsHist)
 	return args.Get(0).(*constants.QueryDatasetStatsResult)
 }
 
@@ -119,7 +121,7 @@ func TestStatsPageHandlerSuccess(t *testing.T) {
 	)
 
 	mirRepo := constants.MirRepo{UserID: userID, RepoID: repoID, BranchID: branchID, TaskID: branchID}
-	mockHandler.On("GetDatasetStatsHandler", &mirRepo, classIDs).Return(statsExpectedResult)
+	mockHandler.On("GetDatasetStatsHandler", &mirRepo, classIDs, false, false).Return(statsExpectedResult)
 
 	req, _ := http.NewRequest("GET", statsRequestURL, nil)
 	w := httptest.NewRecorder()

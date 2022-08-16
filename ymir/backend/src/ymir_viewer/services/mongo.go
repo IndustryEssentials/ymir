@@ -126,21 +126,34 @@ func (s *MongoServer) IndexDatasetData(mirRepo *constants.MirRepo, newData []int
 	s.setDatasetExistence(collectionName, true, false)
 }
 
-func (s *MongoServer) countDatasetAssetsInClass(collection *mongo.Collection, queryField string, classIds []int) int64 {
-	filterQuery := bson.M{}
-	if len(classIds) > 0 {
-		if len(queryField) < 1 {
-			panic("classIds is set, but get empty queryField in countAssetsInClass.")
-		} else {
-			filterQuery[queryField] = bson.M{"$in": classIds}
-		}
+func (s *MongoServer) countDatasetAssetsInClass(
+	collection *mongo.Collection,
+	queryField string,
+	classIds []int,
+) (int64, int64) {
+	if len(queryField) < 1 {
+		panic("invalid queryField in countDatasetAssetsInClass")
 	}
 
-	count, err := collection.CountDocuments(s.Ctx, filterQuery, &options.CountOptions{})
+	matchStage := bson.D{bson.E{Key: "$match", Value: bson.M{queryField: bson.M{"$in": classIds}}}}
+	countStage := bson.D{
+		bson.E{
+			Key: "$group",
+			Value: bson.D{
+				bson.E{Key: "_id", Value: nil},
+				bson.E{Key: "count", Value: bson.M{"$sum": 1}},
+				bson.E{Key: "sum", Value: bson.M{"$sum": bson.M{"$size": "$" + queryField}}}}}}
+
+	showInfoCursor, err := collection.Aggregate(s.Ctx, mongo.Pipeline{matchStage, countStage})
 	if err != nil {
 		panic(err)
 	}
-	return count
+
+	var showsWithInfo []bson.M
+	if err = showInfoCursor.All(s.Ctx, &showsWithInfo); err != nil {
+		panic(err)
+	}
+	return int64(showsWithInfo[0]["count"].(int32)), int64(showsWithInfo[0]["sum"].(int32))
 }
 
 func (s *MongoServer) QueryDatasetAssets(
@@ -286,21 +299,46 @@ func (s *MongoServer) QueryDatasetAssets(
 	}
 }
 
-func (s *MongoServer) QueryDatasetStats(mirRepo *constants.MirRepo, classIDs []int) *constants.QueryDatasetStatsResult {
+func (s *MongoServer) QueryDatasetStats(
+	mirRepo *constants.MirRepo,
+	classIDs []int,
+	requireAssetsHist bool,
+	requireAnnotationsHist bool,
+) *constants.QueryDatasetStatsResult {
 	collection, _ := s.getRepoCollection(mirRepo)
+	totalAssetsCount, err := collection.CountDocuments(s.Ctx, bson.M{}, &options.CountOptions{})
+	if err != nil {
+		panic(err)
+	}
 
-	totalAssetsCount := s.countDatasetAssetsInClass(collection, "", []int{})
 	queryData := constants.NewQueryDatasetStatsResult()
 	queryData.TotalAssetsCount = totalAssetsCount
+
 	for _, classID := range classIDs {
-		queryData.Gt.ClassIdsCount[classID] = s.countDatasetAssetsInClass(collection, "gt.class_id", []int{classID})
-		queryData.Pred.ClassIdsCount[classID] = s.countDatasetAssetsInClass(collection, "pred.class_id", []int{classID})
+		queryData.Gt.ClassIdsCount[classID], _ = s.countDatasetAssetsInClass(collection, "gt.class_id", []int{classID})
+		queryData.Pred.ClassIdsCount[classID], _ = s.countDatasetAssetsInClass(
+			collection,
+			"pred.class_id",
+			[]int{classID},
+		)
 	}
-	queryData.Gt.PositiveImagesCount = s.countDatasetAssetsInClass(collection, "gt.class_id", classIDs)
+
+	queryData.Gt.PositiveImagesCount, queryData.Gt.AnnotationsCount = s.countDatasetAssetsInClass(
+		collection,
+		"gt.class_id",
+		classIDs,
+	)
 	queryData.Gt.NegativeImagesCount = totalAssetsCount - queryData.Gt.PositiveImagesCount
-	queryData.Pred.PositiveImagesCount = s.countDatasetAssetsInClass(collection, "pred.class_id", classIDs)
+
+	queryData.Pred.PositiveImagesCount, queryData.Pred.AnnotationsCount = s.countDatasetAssetsInClass(
+		collection,
+		"pred.class_id",
+		classIDs,
+	)
 	queryData.Pred.NegativeImagesCount = totalAssetsCount - queryData.Pred.PositiveImagesCount
 
+	queryData.QueryContext.RequireAssetsHist = requireAssetsHist
+	queryData.QueryContext.RequireAnnotationsHist = requireAnnotationsHist
 	return queryData
 }
 
@@ -311,10 +349,16 @@ func (s *MongoServer) QueryDatasetDup(
 	defer tools.TimeTrack(time.Now())
 
 	collection0, collectionName0 := s.getRepoCollection(mirRepo0)
-	totalCount0 := s.countDatasetAssetsInClass(collection0, "", []int{})
+	totalCount0, err := collection0.CountDocuments(s.Ctx, bson.M{}, &options.CountOptions{})
+	if err != nil {
+		panic(err)
+	}
 
 	collection1, collectionName1 := s.getRepoCollection(mirRepo1)
-	totalCount1 := s.countDatasetAssetsInClass(collection1, "", []int{})
+	totalCount1, err := collection0.CountDocuments(s.Ctx, bson.M{}, &options.CountOptions{})
+	if err != nil {
+		panic(err)
+	}
 
 	// No-SQL Aggregate Trick: always set smaller dataset to be joined.
 	collectionJoined := collection0

@@ -41,7 +41,12 @@ type BaseMongoServer interface {
 		tags []string,
 	) *constants.QueryAssetsResult
 	QueryDatasetDup(mirRepo0 *constants.MirRepo, mirRepo1 *constants.MirRepo) *constants.QueryDatasetDupResult
-	QueryDatasetStats(mirRepo *constants.MirRepo, classIDs []int) *constants.QueryDatasetStatsResult
+	QueryDatasetStats(
+		mirRepo *constants.MirRepo,
+		classIDs []int,
+		requireAssetsHist bool,
+		requireAnnotationsHist bool,
+	) *constants.QueryDatasetStatsResult
 }
 
 type ViewerHandler struct {
@@ -192,6 +197,7 @@ func (v *ViewerHandler) GetDatasetMetaCountsHandler(
 	for k, v := range gtStats.ClassIdsCnt {
 		result.Gt.ClassIdsCount[int(k)] = int64(v)
 	}
+	result.Gt.AnnotationsCount = int64(gtStats.TotalCnt)
 
 	predStats := mirContext.PredStats
 	result.Pred.NegativeImagesCount = int64(predStats.NegativeAssetCnt)
@@ -199,6 +205,7 @@ func (v *ViewerHandler) GetDatasetMetaCountsHandler(
 	for k, v := range predStats.ClassIdsCnt {
 		result.Pred.ClassIdsCount[int(k)] = int64(v)
 	}
+	result.Pred.AnnotationsCount = int64(predStats.TotalCnt)
 
 	return v.fillupDatasetUniverseFields(mirRepo, result)
 }
@@ -212,6 +219,7 @@ func (v *ViewerHandler) fillupDatasetUniverseFields(
 	result.NewTypesAdded = task.NewTypesAdded
 
 	mirContext := v.mirLoader.LoadSingleMirData(mirRepo, constants.MirfileContext).(*protos.MirContext)
+	result.TotalAssetsFileSize = int64(mirContext.TotalAssetMbytes)
 	for k, v := range mirContext.CksCnt {
 		result.CksCountTotal[k] = int64(v.Cnt)
 		result.CksCount[k] = map[string]int64{}
@@ -225,9 +233,11 @@ func (v *ViewerHandler) fillupDatasetUniverseFields(
 func (v *ViewerHandler) GetDatasetStatsHandler(
 	mirRepo *constants.MirRepo,
 	classIds []int,
+	requireAssetsHist bool,
+	requireAnnotationsHist bool,
 ) *constants.QueryDatasetStatsResult {
 	v.loadAndIndexAssets(mirRepo)
-	result := v.mongoServer.QueryDatasetStats(mirRepo, classIds)
+	result := v.mongoServer.QueryDatasetStats(mirRepo, classIds, requireAssetsHist, requireAnnotationsHist)
 
 	// Backfill task and context info, to align with GetDatasetMetaCountsHandler result.
 	return v.fillupDatasetUniverseFields(mirRepo, result)

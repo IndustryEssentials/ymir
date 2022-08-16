@@ -73,6 +73,8 @@ func (m *MockMongoServer) QueryDatasetAssets(
 func (m *MockMongoServer) QueryDatasetStats(
 	mirRepo *constants.MirRepo,
 	classIDs []int,
+	requireAssetsHist bool,
+	requireAnnotationsHist bool,
 ) *constants.QueryDatasetStatsResult {
 	args := m.Called(mirRepo, classIDs)
 	return args.Get(0).(*constants.QueryDatasetStatsResult)
@@ -223,7 +225,7 @@ func TestGetDatasetStatsHandler(t *testing.T) {
 	mockMongoServer.On("QueryDatasetStats", &mirRepo, classIDs).Return(expectedResult)
 	handler := &ViewerHandler{mongoServer: &mockMongoServer, mirLoader: &mockLoader}
 
-	result := handler.GetDatasetStatsHandler(&mirRepo, classIDs)
+	result := handler.GetDatasetStatsHandler(&mirRepo, classIDs, true, true)
 	assert.Equal(t, expectedResult, result)
 }
 
