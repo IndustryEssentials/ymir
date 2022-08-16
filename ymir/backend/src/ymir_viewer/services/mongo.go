@@ -157,10 +157,11 @@ func (s *MongoServer) QueryDatasetAssets(
 	defer tools.TimeTrack(time.Now())
 
 	log.Printf(
-		"Query offset: %d, limit: %d, classIds: %v, currentId: %s, cmTypes: %v cks: %v tags: %v\n",
+		"Query offset: %d, limit: %d, classIds: %v, annoTypes: %v, currentId: %s, cmTypes: %v cks: %v tags: %v\n",
 		offset,
 		limit,
 		classIds,
+		annoTypes,
 		currentAssetID,
 		cmTypes,
 		cks,
@@ -168,67 +169,89 @@ func (s *MongoServer) QueryDatasetAssets(
 	)
 	collection, _ := s.getRepoCollection(mirRepo)
 
-	filterQuery := bson.M{}
+	// "and" for inter-group, "or" for inner-group
+	filterAndConditions := bson.A{}
 	// class id in either field counts.
 	if len(classIds) > 0 {
-		filterQuery["class_ids"] = bson.M{"$in": classIds}
+		singleQuery := bson.M{"class_ids": bson.M{"$in": classIds}}
+		filterAndConditions = append(filterAndConditions, singleQuery)
 	}
+
 	if len(annoTypes) > 0 {
-		for _, v := range annoTypes {
-			if v == "gt" {
-				filterQuery["gt.class_id"] = bson.M{"$exists": true}
-			}
-			if v == "pred" {
-				filterQuery["pred.class_id"] = bson.M{"$exists": true}
-			}
+		singleQuery := bson.M{annoTypes[0] + ".class_id": bson.M{"$exists": true}}
+
+		// Both gt and pred.
+		if len(annoTypes) > 1 {
+			singleQuery = bson.M{"$or": bson.A{
+				bson.M{"gt.class_id": bson.M{"$exists": true}},
+				bson.M{"pred.class_id": bson.M{"$exists": true}},
+			}}
 		}
+		filterAndConditions = append(filterAndConditions, singleQuery)
 	}
-	if len(currentAssetID) > 0 {
-		filterQuery["asset_id"] = bson.M{"$gte": currentAssetID}
-	}
+
 	if len(cmTypes) > 0 {
-		filterQuery["$or"] = bson.A{
+		singleQuery := bson.M{"$or": bson.A{
 			bson.M{"gt.cm": bson.M{"$in": cmTypes}},
 			bson.M{"pred.cm": bson.M{"$in": cmTypes}},
-		}
+		}}
+		filterAndConditions = append(filterAndConditions, singleQuery)
 	}
+
 	// ck format "xxx" "xxx:" "xxx:yyy"
 	if len(cks) > 0 {
+		orConditions := bson.A{}
 		for _, ck := range cks {
 			ckStrs := strings.Split(ck, ":")
 			if len(ckStrs) > 2 || len(ckStrs) < 1 || len(ckStrs[0]) == 0 {
 				panic(fmt.Sprintf("invalid ck: %s", ck))
 			}
+
 			if len(ckStrs) == 1 || len(ckStrs[1]) == 0 {
 				// case "xxx:" or "xxx"
-				filterQuery["cks."+ckStrs[0]] = bson.M{"$exists": true}
+				orConditions = append(orConditions, bson.M{"cks." + ckStrs[0]: bson.M{"$exists": true}})
 			} else {
 				// case "xxx:yyy"
-				filterQuery["cks."+ckStrs[0]] = ckStrs[1]
+				orConditions = append(orConditions, bson.M{"cks." + ckStrs[0]: ckStrs[1]})
 			}
 		}
+		filterAndConditions = append(filterAndConditions, bson.M{"$or": orConditions})
 	}
+
 	// tag format "xxx" "xxx:" "xxx:yyy"
 	if len(tags) > 0 {
+		orConditions := bson.A{}
 		for _, tag := range tags {
 			tagStrs := strings.Split(tag, ":")
 			if len(tagStrs) > 2 || len(tagStrs) < 1 || len(tagStrs[0]) == 0 {
 				panic(fmt.Sprintf("invalid tag: %s", tag))
 			}
+
 			if len(tagStrs) == 1 || len(tagStrs[1]) == 0 {
 				// case "xxx:" or "xxx"
-				filterQuery["$or"] = bson.A{
+				orConditions = append(orConditions, bson.M{"$or": bson.A{
 					bson.M{"gt.tags." + tagStrs[0]: bson.M{"$exists": true}},
 					bson.M{"pred.tags." + tagStrs[0]: bson.M{"$exists": true}},
-				}
+				}})
 			} else {
 				// case "xxx:yyy"
-				filterQuery["$or"] = bson.A{
+				orConditions = append(orConditions, bson.M{"$or": bson.A{
 					bson.M{"gt.tags." + tagStrs[0]: tagStrs[1]},
 					bson.M{"pred.tags." + tagStrs[0]: tagStrs[1]},
-				}
+				}})
 			}
 		}
+		filterAndConditions = append(filterAndConditions, bson.M{"$or": orConditions})
+	}
+
+	filterQuery := bson.M{}
+	if len(filterAndConditions) > 0 {
+		filterQuery["$and"] = filterAndConditions
+	}
+
+	// This is a special field, used as anchor.
+	if len(currentAssetID) > 0 {
+		filterQuery["asset_id"] = bson.M{"$gte": currentAssetID}
 	}
 
 	pageOptions := options.Find().SetSort(bson.M{"asset_id": 1}).SetSkip(int64(offset)).SetLimit(int64(limit))
