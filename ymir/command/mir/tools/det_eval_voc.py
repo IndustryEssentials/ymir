@@ -31,7 +31,7 @@ from mir.tools.code import MirCode
 from mir.tools.errors import MirRuntimeError
 
 
-def _voc_ap(rec: np.ndarray, prec: np.ndarray, use_07_metric: bool):
+def _voc_ap(rec: np.ndarray, prec: np.ndarray, use_07_metric: bool) -> float:
     """Compute VOC AP given precision and recall. If use_07_metric is true, uses
     the VOC 07 11-point method (default:False).
     """
@@ -47,8 +47,8 @@ def _voc_ap(rec: np.ndarray, prec: np.ndarray, use_07_metric: bool):
     else:
         # correct AP calculation
         # first append sentinel values at the end
-        mrec = np.concatenate(([0.], rec, [1.]))
-        mpre = np.concatenate(([0.], prec, [0.]))
+        mrec: np.ndarray = np.concatenate(([0.], rec, [1.]))  # type: ignore
+        mpre: np.ndarray = np.concatenate(([0.], prec, [0.]))  # type: ignore
 
         # compute the precision envelope
         for i in range(mpre.size - 1, 0, -1):
@@ -56,14 +56,14 @@ def _voc_ap(rec: np.ndarray, prec: np.ndarray, use_07_metric: bool):
 
         # to calculate area under PR curve, look for points
         # where X axis (recall) changes value
-        i = np.where(mrec[1:] != mrec[:-1])[0]
+        i = np.where(mrec[1:] != mrec[:-1])[0]  # type: ignore
 
         # and sum (\Delta recall) * prec
         ap = np.sum((mrec[i + 1] - mrec[i]) * mpre[i + 1])
     return ap
 
 
-def _voc_eval(class_recs: Dict[int, Dict[str, Any]], BB: np.ndarray, confidence: np.ndarray, image_ids: List[str],
+def _voc_eval(class_recs: Dict[str, Dict[str, Any]], BB: np.ndarray, confidence: np.ndarray, image_ids: List[str],
               pred_pb_index_ids: List[int], matches: Set[Tuple[str, int, int]], ovthresh: float, npos: int,
               use_07_metric: bool) -> Dict[str, Any]:
     """
@@ -218,7 +218,7 @@ def _get_single_evaluate_element(mir_dt: MirDataset, mir_gt: MirDataset, matches
     pred_pb_index_ids: List[int] = []
     for asset_id in mir_dt.get_asset_ids():
         asset_idx = mir_dt.asset_id_to_ordered_idxes[asset_id]
-        annos: List[dict] = mir_dt.img_cat_to_annotations[(asset_idx, class_id)] if (
+        annos = mir_dt.img_cat_to_annotations[(asset_idx, class_id)] if (
             asset_idx, class_id) in mir_dt.img_cat_to_annotations else []
         for anno in annos:
             bbox = anno['bbox']

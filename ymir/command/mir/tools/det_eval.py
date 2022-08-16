@@ -41,6 +41,7 @@ def det_evaluate_with_pb(
     conf_thr: float,
     iou_thrs: str,
     need_pr_curve: bool = False,
+    mode: str = 'voc',
 ) -> Tuple[mirpb.Evaluation, mirpb.MirAnnotations]:
     mir_gt = MirDataset(mir_metadatas=mir_metadatas,
                         mir_annotations=mir_annotations,
@@ -63,7 +64,8 @@ def det_evaluate_with_pb(
     evaluate_config.gt_dataset_id = dataset_id
     evaluate_config.pred_dataset_ids.append(dataset_id)
 
-    evaluation = det_eval_voc.det_evaluate(mir_dts=[mir_dt], mir_gt=mir_gt, config=evaluate_config)
+    eval_model_name = det_eval_voc if mode == 'voc' else det_eval_coco
+    evaluation = eval_model_name.det_evaluate(mir_dts=[mir_dt], mir_gt=mir_gt, config=evaluate_config)  # type: ignore
 
     _show_evaluation(evaluation=evaluation)
 
