@@ -161,7 +161,6 @@ def _generate_sha_and_copy(index_file: str, sha_idx_file: str, sha_folder: str) 
     for line in lines:
         media_src = line.strip()
         if not media_src or not os.path.isfile(media_src):
-            logging.warning("invalid file: ", media_src)
             continue
 
         sha1 = hash_utils.sha1sum_for_file(media_src)
@@ -176,6 +175,7 @@ def _generate_sha_and_copy(index_file: str, sha_idx_file: str, sha_folder: str) 
             PhaseLoggerCenter.update_phase(phase=hash_phase_name, local_percent=(idx / total_count))
             logging.info(f"finished {idx} / {total_count} hashes")
 
+    logging.info(f"skipped assets: {len(lines) - len(map_hashed_path)}")
     with open(sha_idx_file, 'w') as sha_f:
         for sha1, media_src in map_hashed_path.items():
             sha_f.write(f"{sha1}\t{media_src}\n")
