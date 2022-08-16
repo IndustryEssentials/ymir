@@ -1,11 +1,11 @@
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass, InitVar
 import json
 from typing import Any, Dict, List, Optional
 
 import requests
 from requests.exceptions import ConnectionError, Timeout
 from fastapi.logger import logger
-from pydantic import BaseModel, Field, validator, root_validator
+from pydantic import BaseModel, dataclasses, validator, root_validator
 
 from app.api.errors.errors import (
     DatasetEvaluationNotFound,
@@ -54,12 +54,7 @@ class DatasetAnnotationMetadata:
 
 
 @dataclass
-class DatasetMetaData:
-    """
-    Interface dataclass of VIZ output, defined as DatasetResult in doc:
-    https://github.com/IndustryEssentials/ymir/blob/master/ymir/backend/src/ymir_viz/doc/ymir_viz_API.yaml
-    """
-
+class DatasetAnalysis:
     keywords: Dict
     keywords_updated: bool
 
@@ -76,7 +71,7 @@ class DatasetMetaData:
     negative_info: Dict[str, int]
 
     @classmethod
-    def from_viz_res(cls, res: Dict, user_labels: UserLabels) -> "DatasetMetaData":
+    def from_viz_res(cls, res: Dict, user_labels: UserLabels) -> "DatasetAnalysis":
         total_assets_count = res["total_assets_count"]
         gt = (
             DatasetAnnotationMetadata.from_viz_res(res["gt"], total_assets_count, user_labels)
@@ -121,13 +116,13 @@ class VizDatasetStatsElement(BaseModel):
     negative_assets_count: int
 
 
-@dataclass
+@dataclasses.dataclass
 class DatasetStatsElement:
     keywords: Dict[str, int]
     negative_assets_count: int
 
     @classmethod
-    def from_viz_res(cls, data: Dict, user_labels: UserLabels) -> "DatasetStatsElement":
+    def from_dict(cls, data: Dict, user_labels: UserLabels) -> "DatasetStatsElement":
         viz_res = VizDatasetStatsElement(**data)
         keywords = {
             user_labels.get_main_name(int(class_id)): count for class_id, count in viz_res.class_ids_count.items()
@@ -135,16 +130,16 @@ class DatasetStatsElement:
         return cls(keywords, viz_res.negative_assets_count)
 
 
-@dataclass
+@dataclasses.dataclass
 class DatasetStats:
     total_assets_count: int
     gt: DatasetStatsElement
     pred: DatasetStatsElement
 
     @classmethod
-    def from_viz_res(cls, res: Dict, user_labels: UserLabels) -> "DatasetStats":
-        gt = DatasetStatsElement.from_viz_res(res["gt"], user_labels)
-        pred = DatasetStatsElement.from_viz_res(res["pred"], user_labels)
+    def from_dict(cls, res: Dict, user_labels: UserLabels) -> "DatasetStats":
+        gt = DatasetStatsElement.from_dict(res["gt"], user_labels)
+        pred = DatasetStatsElement.from_dict(res["pred"], user_labels)
         return cls(total_assets_count=res["total_assets_count"], gt=gt, pred=pred)
 
 
@@ -201,55 +196,102 @@ class ViewerAssetRequest(BaseModel):
         return ",".join(map(str, v))
 
 
-class ViewerAssetAnnotation(BaseModel):
+@dataclasses.dataclass
+class ViewerAssetAnnotation:
     box: Dict
-    keyword: str
+    class_id: int
     cm: int
     tags: Dict
+    keyword: Optional[str] = None
+    user_labels: InitVar[UserLabels] = None
 
-    @root_validator(pre=True)
-    def make_up_fields(cls, values: Any) -> Any:
-        values["keyword"] = values["class_id"]
-        return values
+    def __post_init__(self, user_labels: UserLabels) -> None:
+        self.keyword = user_labels.get_main_name(self.class_id)
 
 
-class ViewerAsset(BaseModel):
-    url: str
-    hash: str
-    keywords: List[str]
-    metadata: Any
-    gt: List[ViewerAssetAnnotation]
-    pred: List[ViewerAssetAnnotation]
+@dataclasses.dataclass
+class ViewerAsset:
+    asset_id: str
+    class_ids: List[int]
+    metadata: Dict
+    gt: List
+    pred: List
     cks: Dict
+    url: Optional[str] = None
+    hash: Optional[str] = None
+    keywords: Optional[List[str]] = None
+    user_labels: InitVar[UserLabels] = None
 
-    @root_validator(pre=True)
-    def make_up_fields(cls, values: Any) -> Any:
-        values["url"] = get_asset_url(values["asset_id"])
-        values["hash"] = values["asset_id"]
-        values["keywords"] = values["class_ids"]
-        return values
-
-
-class ViewerAssetsResponse(BaseModel):
-    items: List[ViewerAsset]
-    total: int
-
-    @root_validator(pre=True)
-    def make_up_fields(cls, values: Any) -> Any:
-        values["items"] = values["elements"]
-        values["total"] = values.get("total_assets_count", 0)
-        return values
+    def __post_init__(self, user_labels: UserLabels) -> None:
+        self.url = get_asset_url(self.asset_id)
+        self.hash = self.asset_id
+        self.keywords = user_labels.get_main_names(self.class_ids)
+        self.gt = [
+            ViewerAssetAnnotation(i["box"], i["class_id"], i["cm"], i["tags"], user_labels=user_labels) for i in self.gt
+        ]
+        self.pred = [
+            ViewerAssetAnnotation(i["box"], i["class_id"], i["cm"], i["tags"], user_labels=user_labels)
+            for i in self.pred
+        ]
 
 
-class ViewerDatasetAnnotation(BaseModel):
-    class_ids_count: Dict[int, int]
-
-
-class ViewerDatasetInfoResponse(BaseModel):
-    gt: ViewerDatasetAnnotation
-    pred: ViewerDatasetAnnotation
+@dataclasses.dataclass
+class ViewerAssetsResponse:
     total_assets_count: int
-    new_types_added: Optional[bool] = Field(description="delete keywords cache if having new_types_added")
+    elements: List[Dict]
+    total: Optional[int] = None
+    items: Optional[List] = None
+    user_labels: InitVar[UserLabels] = None
+
+    def __post_init__(self, user_labels: UserLabels) -> None:
+        self.total = self.total_assets_count
+        self.items = [
+            ViewerAsset(
+                i["asset_id"],
+                i["class_ids"],
+                i["metadata"],
+                i["gt"],
+                i["pred"],
+                i["cks"],
+                user_labels=user_labels,
+            )
+            for i in self.elements
+        ]
+
+    @classmethod
+    def from_dict(cls, data: Dict, user_labels: UserLabels) -> "ViewerAssetsResponse":
+        return cls(data["total_assets_count"], data["elements"], user_labels=user_labels)
+
+
+@dataclasses.dataclass
+class ViewerDatasetAnnotation:
+    class_ids_count: Dict[int, int]
+    keywords: Optional[Dict[str, int]] = None
+    user_labels: InitVar[UserLabels] = None
+
+    def __post_init__(self, user_labels: UserLabels) -> None:
+        self.class_ids_count = {
+            user_labels.get_main_name(int(class_id)): count for class_id, count in self.class_ids_count.items()
+        }
+
+
+@dataclasses.dataclass
+class ViewerDatasetInfoResponse:
+    gt: Any
+    pred: Any
+    total_assets_count: int
+    new_types_added: Optional[bool]
+    user_labels: InitVar[UserLabels] = None
+
+    def __post_init__(self, user_labels: UserLabels) -> None:
+        self.gt = ViewerDatasetAnnotation(self.gt["class_ids_count"], user_labels=user_labels)
+        self.pred = ViewerDatasetAnnotation(self.pred["class_ids_count"], user_labels=user_labels)
+
+    @classmethod
+    def from_dict(cls, data: Dict, user_labels: UserLabels) -> "ViewerDatasetInfoResponse":
+        return cls(
+            data["gt"], data["pred"], data["total_assets_count"], data.get("new_types_added"), user_labels=user_labels
+        )
 
 
 class ViewerModelInfoResponse(BaseModel):
@@ -290,7 +332,7 @@ class VizClient:
         project_id: int,
         branch_id: Optional[str] = None,
         user_labels: Optional[UserLabels] = None,
-        use_viewer: bool = False,
+        use_viewer: bool = True,
     ) -> None:
         self._user_id = f"{user_id:0>4}"
         self._project_id = f"{project_id:0>6}"
@@ -299,9 +341,7 @@ class VizClient:
             #  remove upon replacing all viz endpoints
             self._use_viewer = True
             host = f"127.0.0.1:{settings.VIEWER_HOST_PORT}"
-            self._url_prefix = (
-                f"http://{host}/api/v1/users/{self._user_id}/repo/{self._project_id}/branch"  # noqa: E501
-            )
+            self._url_prefix = f"http://{host}/api/v1/users/{self._user_id}/repo/{self._project_id}"  # noqa: E501
         else:
             self._url_prefix = (
                 f"http://{self.host}/v1/users/{self._user_id}/repositories/{self._project_id}/branches"  # noqa: E501
@@ -326,31 +366,32 @@ class VizClient:
         offset: int = 0,
         limit: int = 20,
     ) -> Dict:
-        url = f"{self._url_prefix}/{dataset_hash}/assets"
-        if self._use_viewer:
-            payload = ViewerAssetRequest(
-                class_ids=keyword_ids,
-                cm_types=cm_types,
-                cks=cks,
-                tags=tags,
-                annotation_types=annotation_types,
-                current_asset_id=asset_hash,
-                limit=limit,
-                offset=offset,
-            ).dict(exclude_none=True)
-        else:
-            payload = {"class_id": keyword_id, "limit": limit, "offset": offset}
+        """
+        viewer: GET /assets
+        """
+        url = f"{self._url_prefix}/branch/{dataset_hash}/assets"
+        payload = ViewerAssetRequest(
+            class_ids=keyword_ids,
+            cm_types=cm_types,
+            cks=cks,
+            tags=tags,
+            annotation_types=annotation_types,
+            current_asset_id=asset_hash,
+            limit=limit,
+            offset=offset,
+        ).dict(exclude_none=True)
 
         resp = self.session.get(url, params=payload, timeout=settings.VIZ_TIMEOUT)
         res = self.parse_resp(resp)
         logger.info("[viz] get_assets response: %s", res)
-        convert_class_id_to_keyword(res, self._user_labels, ["class_id", "class_ids"])
-        logger.info("[viz] replace class_ids with keywords")
-        assets = ViewerAssetsResponse.parse_obj(res).dict()
-        return assets
+        assets = ViewerAssetsResponse.from_dict(res, self._user_labels)
+        return asdict(assets)
 
     def get_model_info(self) -> Dict:
-        url = f"{self._url_prefix}/{self._branch_id}/models"
+        """
+        viewer: GET /model_info
+        """
+        url = f"{self._url_prefix}/branch/{self._branch_id}/model_info"
         resp = self.get_resp(url)
         res = self.parse_resp(resp)
         model_info = ViewerModelInfoResponse.parse_obj(res).dict()
@@ -358,26 +399,41 @@ class VizClient:
 
     def get_dataset_info(self, *, dataset_hash: str, user_labels: Optional[UserLabels] = None) -> Dict:
         """
-        viewer: GET dataset_meta_count
+        viewer: GET /dataset_meta_count
         """
         user_labels = user_labels or self._user_labels
-        url = f"{self._url_prefix}/{dataset_hash}/dataset_meta_count"
+        url = f"{self._url_prefix}/branch/{dataset_hash}/dataset_meta_count"
         resp = self.session.get(url, timeout=settings.VIZ_TIMEOUT)
         res = self.parse_resp(resp)
-        logger.info("[viz] dataset_meta_count response: %s", res)
-        dataset_counts = ViewerDatasetInfoResponse.parse_obj(res).dict()
-        convert_class_id_to_keyword(dataset_counts, self._user_labels, ["class_ids_count"])
-        return dataset_counts
+        logger.info("[viewer] dataset_meta_count response: %s", res)
+        dataset_counts = ViewerDatasetInfoResponse.from_dict(res, self._user_labels)
+        return asdict(dataset_counts)
+
+    def get_dataset_analysis(
+        self, dataset_hash: str, keyword_ids: Optional[List[int]] = None, require_hist: bool = False
+    ) -> DatasetAnalysis:
+        """
+        viewer: GET /dataset_stats
+        """
+        url = f"{self._url_prefix}/{dataset_hash}/dataset_stats"
+
+        params = {"require_assets_hist": require_hist, "require_annos_hist": require_hist}  # type: Dict
+        if keyword_ids:
+            params["class_ids"] = ",".join(str(k) for k in keyword_ids)
 
     def get_dataset_analysis(self, dataset_hash: str) -> DatasetMetaData:
         url = f"{self._url_prefix}/{dataset_hash}/datasets"
         resp = self.get_resp(url)
         res = self.parse_resp(resp)
-        logger.info("[viz] get dataset analysis response: %s", res)
-        return DatasetMetaData.from_viz_res(res, self._user_labels)
+        logger.info("[viewer] get dataset analysis response: %s", res)
+        return DatasetAnalysis.from_viz_res(res, self._user_labels)
 
     def get_dataset_stats(
-        self, *, dataset_hash: Optional[str] = None, keyword_ids: List[int], user_labels: Optional[UserLabels] = None
+        self,
+        *,
+        dataset_hash: Optional[str] = None,
+        keyword_ids: List[int],
+        user_labels: Optional[UserLabels] = None,
     ) -> DatasetStats:
         dataset_hash = dataset_hash or self._branch_id
         user_labels = user_labels or self._user_labels
@@ -385,12 +441,19 @@ class VizClient:
         params = {"class_ids": ",".join(str(k) for k in keyword_ids)}
         resp = self.get_resp(url, params=params)
         res = self.parse_resp(resp)
-        logger.info("[viz] get_dataset_stats response: %s", res)
-        return DatasetStats.from_viz_res(res, user_labels)
+        logger.info("[viewer] get_dataset_stats response: %s", res)
+        return DatasetStats.from_dict(res, user_labels=user_labels)
 
     def get_fast_evaluation(
-        self, dataset_hash: str, confidence_threshold: float, iou_threshold: float, need_pr_curve: bool
+        self,
+        dataset_hash: str,
+        confidence_threshold: float,
+        iou_threshold: float,
+        need_pr_curve: bool,
     ) -> Dict:
+        """
+        viz: /dataset_fast_evaluation
+        """
         url = f"{self._url_prefix}/{dataset_hash}/dataset_fast_evaluation"
         params = {
             "conf_thr": confidence_threshold,
@@ -402,11 +465,14 @@ class VizClient:
         evaluations = {
             dataset_hash: VizDatasetEvaluationResult(**evaluation).dict() for dataset_hash, evaluation in res.items()
         }
-        convert_class_id_to_keyword(evaluations, self._user_labels, ["ci_evaluations"])
+        convert_class_id_to_keyword(evaluations, self._user_labels)
         return evaluations
 
     def check_duplication(self, dataset_hashes: List[str]) -> int:
-        url = f"http://{self.host}/v1/users/{self._user_id}/repositories/{self._project_id}/dataset_duplication"  # noqa: E501
+        """
+        viewer: GET /dataset_duplication
+        """
+        url = f"{self._url_prefix}/dataset_duplication"
         params = {"candidate_dataset_ids": ",".join(dataset_hashes)}
         resp = self.get_resp(url, params=params)
         return self.parse_resp(resp)
@@ -434,7 +500,7 @@ class VizClient:
             return resp.json()["result"]
 
         if resp.status_code == 400:
-            logger.error("[viz] failed to parse viz response: %s", resp.content)
+            logger.error("[viz] failed to parse viz error response: %s", resp.content)
             error_code = resp.json()["code"]
             if error_code == VizErrorCode.MODEL_NOT_EXISTS:
                 logger.error("[viz] model not found")
@@ -455,18 +521,10 @@ def get_asset_url(asset_id: str) -> str:
     return f"{settings.NGINX_PREFIX}/ymir-assets/{asset_id[-2:]}/{asset_id}"
 
 
-def convert_class_id_to_keyword(obj: Dict, user_labels: UserLabels, targets: List[str]) -> None:
+def convert_class_id_to_keyword(obj: Dict, user_labels: UserLabels) -> None:
     if isinstance(obj, dict):
         for key, value in obj.items():
-            if key in targets:
-                if isinstance(value, dict):
-                    obj[key] = {user_labels.get_main_name(k): v for k, v in value.items()}
-                elif isinstance(value, list):
-                    obj[key] = [k for k in user_labels.get_main_names(value) if k is not None]
-                else:
-                    obj[key] = user_labels.get_main_name(value)
+            if key == "ci_evaluations":
+                obj[key] = {user_labels.get_main_name(k): v for k, v in value.items()}
             else:
-                convert_class_id_to_keyword(obj[key], user_labels, targets)
-    elif isinstance(obj, list):
-        for item in obj:
-            convert_class_id_to_keyword(item, user_labels, targets)
+                convert_class_id_to_keyword(obj[key], user_labels)

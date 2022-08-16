@@ -34,15 +34,16 @@ class TestAsset:
             "asset_id": asset_id,
             "pred": [
                 {
-                    "box": random_lower_string(10),
+                    "box": {},
                     "class_id": random.randint(1, 20),
                     "cm": 1,
                     "tags": {},
                 }
             ],
+            "cks": [],
             "gt": [
                 {
-                    "box": random_lower_string(10),
+                    "box": {},
                     "class_id": random.randint(1, 20),
                     "cm": 1,
                     "tags": {},
@@ -57,8 +58,15 @@ class TestAsset:
             },
         }
 
-        m.convert_class_id_to_keyword(res, mock_user_labels, ["class_id", "class_ids"])
-        A = m.ViewerAsset.parse_obj(res)
+        A = m.ViewerAsset(
+            res["asset_id"],
+            res["class_ids"],
+            res["metadata"],
+            res["gt"],
+            res["pred"],
+            res["cks"],
+            user_labels=mock_user_labels,
+        )
         assert A.url == m.get_asset_url(asset_id)
 
 
@@ -71,7 +79,7 @@ class TestAssets:
                     "class_ids": [random.randint(1, 80) for _ in range(10)],
                     "pred": [
                         {
-                            "box": random_lower_string(10),
+                            "box": {},
                             "class_id": random.randint(1, 20),
                             "cm": 1,
                             "tags": {},
@@ -79,7 +87,7 @@ class TestAssets:
                     ],
                     "gt": [
                         {
-                            "box": random_lower_string(10),
+                            "box": {},
                             "class_id": random.randint(1, 20),
                             "cm": 1,
                             "tags": {},
@@ -96,8 +104,7 @@ class TestAssets:
             ],
             "total_assets_count": 124,
         }
-        m.convert_class_id_to_keyword(res, mock_user_labels, ["class_id", "class_ids"])
-        AS = m.ViewerAssetsResponse.parse_obj(res)
+        AS = m.ViewerAssetsResponse(res["total_assets_count"], res["elements"], user_labels=mock_user_labels)
         assert len(AS.items) == len(res["elements"])
 
 
@@ -164,7 +171,7 @@ class TestDataset:
             "total_assets_mbytes": 10,
             "total_assets_count": 1,
         }
-        M = m.DatasetMetaData.from_viz_res(res, mock_user_labels)
+        M = m.DatasetAnalysis.from_viz_res(res, mock_user_labels)
         assert "gt" in M.keywords
         assert "pred" in M.keywords
         assert M.gt is None
@@ -190,7 +197,7 @@ class TestVizClient:
                     "class_ids": [random.randint(1, 80) for _ in range(10)],
                     "pred": [
                         {
-                            "box": random_lower_string(10),
+                            "box": {},
                             "class_id": random.randint(1, 20),
                             "cm": 1,
                             "tags": {},
@@ -198,7 +205,7 @@ class TestVizClient:
                     ],
                     "gt": [
                         {
-                            "box": random_lower_string(10),
+                            "box": {},
                             "class_id": random.randint(1, 20),
                             "cm": 1,
                             "tags": {},
@@ -231,56 +238,6 @@ class TestVizClient:
         assert ret["total"]
         assert ret["items"]
         assert len(ret["items"]) == len(res["elements"])
-
-<<<<<<< HEAD
-    def test_get_asset(self, mock_user_labels, mocker):
-        host = random_lower_string()
-        viz = m.VizClient(host=host)
-        mock_session = mocker.Mock()
-        resp = mocker.Mock()
-        res = {
-            "pred": [
-                {
-                    "box": random_lower_string(10),
-                    "class_id": random.randint(1, 80),
-                    "cm": 1,
-                    "tags": {},
-                }
-            ],
-            "gt": [
-                {
-                    "box": random_lower_string(10),
-                    "class_id": random.randint(1, 80),
-                    "cm": 1,
-                    "tags": {},
-                }
-            ],
-            "class_ids": list(range(1, 20)),
-            "metadata": {
-                "height": random.randint(100, 200),
-                "width": random.randint(100, 200),
-                "image_channels": random.randint(1, 3),
-                "timestamp": {"start": time.time()},
-            },
-            "cks": {},
-        }
-        resp.json.return_value = {"result": res}
-        mock_session.get.return_value = resp
-        viz.session = mock_session
-
-        user_id = random.randint(100, 200)
-        project_id = random.randint(100, 200)
-        task_id = random_lower_string()
-        asset_id = random_lower_string()
-        viz.initialize(
-            user_id=user_id,
-            project_id=project_id,
-            branch_id=task_id,
-            user_labels=mock_user_labels,
-        )
-        ret = viz.get_asset(asset_id=asset_id)
-        assert isinstance(ret, dict)
-        assert ret["hash"] == asset_id
 
     def test_get_model_info(self, mocker):
         host = random_lower_string()
@@ -366,7 +323,7 @@ class TestVizClient:
         task_id = random_lower_string()
         viz.initialize(user_id=user_id, project_id=project_id, branch_id=task_id, user_labels=mock_user_labels)
         ret = viz.get_dataset_analysis(dataset_hash=task_id)
-        assert isinstance(ret, m.DatasetMetaData)
+        assert isinstance(ret, m.DatasetAnalysis)
         assert "gt" in ret.keywords
         assert "pred" in ret.keywords
         assert ret.gt is None
