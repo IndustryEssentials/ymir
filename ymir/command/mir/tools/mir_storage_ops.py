@@ -435,7 +435,6 @@ class MirStorageOps():
         {
             "total_assets_mbytes":222,
             "total_assets_count":1420,
-            "new_types_added":False,
             "cks_count_total":{},
             "cks_count":{},
             "hist":{

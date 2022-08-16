@@ -23,7 +23,7 @@ type BaseMirRepoLoader interface {
 		offset int,
 		limit int,
 	) ([]constants.MirAssetDetail, int64, int64)
-	LoadModelInfo(mirRepo *constants.MirRepo) constants.MirdataModel
+	LoadModelInfo(mirRepo *constants.MirRepo) *constants.MirdataModel
 }
 
 type BaseMongoServer interface {
@@ -39,9 +39,9 @@ type BaseMongoServer interface {
 		cmTypes []int,
 		cks []string,
 		tags []string,
-	) constants.QueryAssetsResult
-	QueryDatasetDup(mirRepo0 *constants.MirRepo, mirRepo1 *constants.MirRepo) constants.QueryDatasetDupResult
-	QueryDatasetStats(mirRepo *constants.MirRepo, classIDs []int) constants.QueryDatasetStatsResult
+	) *constants.QueryAssetsResult
+	QueryDatasetDup(mirRepo0 *constants.MirRepo, mirRepo1 *constants.MirRepo) *constants.QueryDatasetDupResult
+	QueryDatasetStats(mirRepo *constants.MirRepo, classIDs []int) *constants.QueryDatasetStatsResult
 }
 
 type ViewerHandler struct {
@@ -139,7 +139,7 @@ func (v *ViewerHandler) GetAssetsHandler(
 	cmTypes []int,
 	cks []string,
 	tags []string,
-) constants.QueryAssetsResult {
+) *constants.QueryAssetsResult {
 	// Speed up when "first time" loading, i.e.: cache miss && only offset/limit/currentAssetID are set at most.
 	_, ready := v.mongoServer.CheckDatasetExistenceReady(mirRepo)
 	if !ready {
@@ -152,7 +152,7 @@ func (v *ViewerHandler) GetAssetsHandler(
 				offset,
 				limit,
 			)
-			return constants.QueryAssetsResult{
+			return &constants.QueryAssetsResult{
 				AssetsDetail:     mirAssetsDetail,
 				Offset:           offset,
 				Limit:            limit,
@@ -178,14 +178,10 @@ func (v *ViewerHandler) GetAssetsHandler(
 
 func (v *ViewerHandler) GetDatasetMetaCountsHandler(
 	mirRepo *constants.MirRepo,
-) constants.QueryDatasetStatsResult {
+) *constants.QueryDatasetStatsResult {
 	defer tools.TimeTrack(time.Now())
 
 	result := constants.NewQueryDatasetStatsResult()
-
-	mirTasks := v.mirLoader.LoadSingleMirData(mirRepo, constants.MirfileTasks).(*protos.MirTasks)
-	task := mirTasks.Tasks[mirTasks.HeadTaskId]
-	result.NewTypesAdded = task.NewTypesAdded
 
 	mirContext := v.mirLoader.LoadSingleMirData(mirRepo, constants.MirfileContext).(*protos.MirContext)
 	result.TotalAssetsCount = int64(mirContext.ImagesCnt)
@@ -204,6 +200,18 @@ func (v *ViewerHandler) GetDatasetMetaCountsHandler(
 		result.Pred.ClassIdsCount[int(k)] = int64(v)
 	}
 
+	return v.fillupDatasetUniverseFields(mirRepo, result)
+}
+
+func (v *ViewerHandler) fillupDatasetUniverseFields(
+	mirRepo *constants.MirRepo,
+	result *constants.QueryDatasetStatsResult,
+) *constants.QueryDatasetStatsResult {
+	mirTasks := v.mirLoader.LoadSingleMirData(mirRepo, constants.MirfileTasks).(*protos.MirTasks)
+	task := mirTasks.Tasks[mirTasks.HeadTaskId]
+	result.NewTypesAdded = task.NewTypesAdded
+
+	mirContext := v.mirLoader.LoadSingleMirData(mirRepo, constants.MirfileContext).(*protos.MirContext)
 	for k, v := range mirContext.CksCnt {
 		result.CksCountTotal[k] = int64(v.Cnt)
 		result.CksCount[k] = map[string]int64{}
@@ -211,22 +219,24 @@ func (v *ViewerHandler) GetDatasetMetaCountsHandler(
 			result.CksCount[k][k2] = int64(v2)
 		}
 	}
-
 	return result
 }
 
 func (v *ViewerHandler) GetDatasetStatsHandler(
 	mirRepo *constants.MirRepo,
 	classIds []int,
-) constants.QueryDatasetStatsResult {
+) *constants.QueryDatasetStatsResult {
 	v.loadAndIndexAssets(mirRepo)
-	return v.mongoServer.QueryDatasetStats(mirRepo, classIds)
+	result := v.mongoServer.QueryDatasetStats(mirRepo, classIds)
+
+	// Backfill task and context info, to align with GetDatasetMetaCountsHandler result.
+	return v.fillupDatasetUniverseFields(mirRepo, result)
 }
 
 func (v *ViewerHandler) GetDatasetDupHandler(
 	mirRepo0 *constants.MirRepo,
 	mirRepo1 *constants.MirRepo,
-) constants.QueryDatasetDupResult {
+) *constants.QueryDatasetDupResult {
 	v.loadAndIndexAssets(mirRepo0)
 	v.loadAndIndexAssets(mirRepo1)
 	return v.mongoServer.QueryDatasetDup(mirRepo0, mirRepo1)
@@ -234,6 +244,6 @@ func (v *ViewerHandler) GetDatasetDupHandler(
 
 func (v *ViewerHandler) GetModelInfoHandler(
 	mirRepo *constants.MirRepo,
-) constants.MirdataModel {
+) *constants.MirdataModel {
 	return v.mirLoader.LoadModelInfo(mirRepo)
 }

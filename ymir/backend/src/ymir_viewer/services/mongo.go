@@ -153,7 +153,7 @@ func (s *MongoServer) QueryDatasetAssets(
 	cmTypes []int,
 	cks []string,
 	tags []string,
-) constants.QueryAssetsResult {
+) *constants.QueryAssetsResult {
 	defer tools.TimeTrack(time.Now())
 
 	log.Printf(
@@ -277,7 +277,7 @@ func (s *MongoServer) QueryDatasetAssets(
 	anchor := totalAssetsCount - remainingAssetsCount
 	log.Printf("filterQuery: %+v totalAssetsCount: %d anchor: %d\n", filterQuery, totalAssetsCount, anchor)
 
-	return constants.QueryAssetsResult{
+	return &constants.QueryAssetsResult{
 		AssetsDetail:     queryData,
 		Offset:           offset,
 		Limit:            limit,
@@ -286,7 +286,7 @@ func (s *MongoServer) QueryDatasetAssets(
 	}
 }
 
-func (s *MongoServer) QueryDatasetStats(mirRepo *constants.MirRepo, classIDs []int) constants.QueryDatasetStatsResult {
+func (s *MongoServer) QueryDatasetStats(mirRepo *constants.MirRepo, classIDs []int) *constants.QueryDatasetStatsResult {
 	collection, _ := s.getRepoCollection(mirRepo)
 
 	totalAssetsCount := s.countDatasetAssetsInClass(collection, "", []int{})
@@ -300,13 +300,14 @@ func (s *MongoServer) QueryDatasetStats(mirRepo *constants.MirRepo, classIDs []i
 	queryData.Gt.NegativeImagesCount = totalAssetsCount - queryData.Gt.PositiveImagesCount
 	queryData.Pred.PositiveImagesCount = s.countDatasetAssetsInClass(collection, "pred.class_id", classIDs)
 	queryData.Pred.NegativeImagesCount = totalAssetsCount - queryData.Pred.PositiveImagesCount
+
 	return queryData
 }
 
 func (s *MongoServer) QueryDatasetDup(
 	mirRepo0 *constants.MirRepo,
 	mirRepo1 *constants.MirRepo,
-) constants.QueryDatasetDupResult {
+) *constants.QueryDatasetDupResult {
 	defer tools.TimeTrack(time.Now())
 
 	collection0, collectionName0 := s.getRepoCollection(mirRepo0)
@@ -343,9 +344,8 @@ func (s *MongoServer) QueryDatasetDup(
 		panic(err)
 	}
 
-	resultData := constants.QueryDatasetDupResult{
+	return &constants.QueryDatasetDupResult{
 		Duplication: len(showsLoaded),
 		TotalCount:  map[string]int64{mirRepo0.BranchID: totalCount0, mirRepo1.BranchID: totalCount1},
 	}
-	return resultData
 }

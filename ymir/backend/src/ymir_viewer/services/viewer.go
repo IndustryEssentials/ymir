@@ -29,21 +29,21 @@ type BaseHandler interface {
 		cmTypes []int,
 		cks []string,
 		tags []string,
-	) constants.QueryAssetsResult
+	) *constants.QueryAssetsResult
 	GetDatasetDupHandler(
 		mirRepo0 *constants.MirRepo,
 		mirRepo1 *constants.MirRepo,
-	) constants.QueryDatasetDupResult
+	) *constants.QueryDatasetDupResult
 	GetDatasetMetaCountsHandler(
 		mirRepo *constants.MirRepo,
-	) constants.QueryDatasetStatsResult
+	) *constants.QueryDatasetStatsResult
 	GetDatasetStatsHandler(
 		mirRepo *constants.MirRepo,
 		classIDs []int,
-	) constants.QueryDatasetStatsResult
+	) *constants.QueryDatasetStatsResult
 	GetModelInfoHandler(
 		mirRepo *constants.MirRepo,
-	) constants.MirdataModel
+	) *constants.MirdataModel
 }
 
 type ViewerServer struct {
@@ -256,6 +256,8 @@ func (s *ViewerServer) handleDatasetMetaCounts(c *gin.Context) {
 // @Param   repoID     path    string     true        "Repo ID"
 // @Param   branchID     path    string     true        "Branch ID"
 // @Param   class_ids     query    string     false        "e.g. class_ids=1,3,7"
+// @Param   asset_hist     query    string     false        "e.g. asset_hist=1 or asset_hist=true"
+// @Param   anno_hist     query    string     false        "e.g. anno_hist=1 or anno_hist=true"
 // @Success 200 {string} string    "'code': 0, 'msg': 'Success', 'Success': true, 'result': constants.QueryDatasetStatsResult"
 // @Router /api/v1/users/{userID}/repo/{repoID}/branch/{branchID}/dataset_stats [get]
 func (s *ViewerServer) handleDatasetStats(c *gin.Context) {

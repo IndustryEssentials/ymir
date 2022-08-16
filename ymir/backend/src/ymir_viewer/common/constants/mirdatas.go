@@ -70,9 +70,9 @@ type MirdataModel struct {
 	ExecutorConfig map[string]interface{} `json:"executor_config"`
 }
 
-func NewMirdataModel(taskParameters string) MirdataModel {
+func NewMirdataModel(taskParameters string) *MirdataModel {
 	modelData := MirdataModel{TaskParameters: taskParameters, ExecutorConfig: map[string]interface{}{}}
-	return modelData
+	return &modelData
 }
 
 type MirAssetDetail struct {
@@ -105,30 +105,57 @@ type QueryAssetsResult struct {
 	TotalAssetsCount int64            `json:"total_assets_count"`
 }
 
+type MirHist struct {
+	LowerBNDs []float32
+	OpsField  string
+	BinData   map[float32]int
+}
+
 type DatasetStatsElement struct {
+	// Assets count
 	ClassIdsCount       map[int]int64 `json:"class_ids_count"`
 	NegativeImagesCount int64         `json:"negative_images_count"`
 	PositiveImagesCount int64         `json:"positive_images_count"`
+
+	// Annotations
+	AnnotationsCount int64               `json:"annos_count"`
+	AnnotationsHist  map[string]*MirHist `json:"annos_hist"`
+}
+
+type QueryDatasetStatsContext struct {
+	RequireAssetsHist      bool `json:"require_assets_hist"`
+	RequireAnnotationsHist bool `json:"require_annos_hist"`
 }
 
 type QueryDatasetStatsResult struct {
-	Gt               DatasetStatsElement         `json:"gt"`
-	Pred             DatasetStatsElement         `json:"pred"`
-	TotalAssetsCount int64                       `json:"total_assets_count"`
-	CksCountTotal    map[string]int64            `json:"cks_count_total"`
-	CksCount         map[string]map[string]int64 `json:"cks_count"`
-	NewTypesAdded    bool                        `json:"new_types_added"`
+	// Assets
+	TotalAssetsCount    int64               `json:"total_assets_count"`
+	TotalAssetsFileSize int                 `json:"total_assets_mbytes"`
+	AssetsHist          map[string]*MirHist `json:"assets_hist"`
+
+	// Annotations
+	Gt   DatasetStatsElement `json:"gt"`
+	Pred DatasetStatsElement `json:"pred"`
+
+	// Cks
+	CksCountTotal map[string]int64            `json:"cks_count_total"`
+	CksCount      map[string]map[string]int64 `json:"cks_count"`
+
+	// Task and query context.
+	NewTypesAdded bool                     `json:"new_types_added"`
+	QueryContext  QueryDatasetStatsContext `json:"query_context"`
 }
 
-func NewQueryDatasetStatsResult() QueryDatasetStatsResult {
+func NewQueryDatasetStatsResult() *QueryDatasetStatsResult {
 	queryResult := QueryDatasetStatsResult{
-		Gt:               DatasetStatsElement{ClassIdsCount: map[int]int64{}},
-		Pred:             DatasetStatsElement{ClassIdsCount: map[int]int64{}},
-		TotalAssetsCount: 0,
-		CksCount:         map[string]map[string]int64{},
-		CksCountTotal:    map[string]int64{},
+		AssetsHist: map[string]*MirHist{},
+		Gt:         DatasetStatsElement{ClassIdsCount: map[int]int64{}, AnnotationsHist: map[string]*MirHist{}},
+		Pred:       DatasetStatsElement{ClassIdsCount: map[int]int64{}, AnnotationsHist: map[string]*MirHist{}},
+
+		CksCount:      map[string]map[string]int64{},
+		CksCountTotal: map[string]int64{},
 	}
-	return queryResult
+	return &queryResult
 }
 
 type QueryDatasetDupResult struct {

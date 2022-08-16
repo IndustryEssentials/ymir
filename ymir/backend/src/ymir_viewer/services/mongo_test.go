@@ -214,7 +214,7 @@ func TestQueryAssetsSuccess(t *testing.T) {
 		cks := []string{"a", "b:c"}
 		tags := []string{"x", "y:z"}
 		expectedCount := int64(0)
-		expectedResult := constants.QueryAssetsResult{
+		expectedResult := &constants.QueryAssetsResult{
 			AssetsDetail:     []constants.MirAssetDetail{{}, {}},
 			Offset:           offset,
 			Limit:            limit,
