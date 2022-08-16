@@ -21,7 +21,7 @@ def trigger_mir_import(repo_root: str, task_id: str, index_file: str, des_annota
     TaskImportingInvoker.importing_cmd(repo_root=repo_root,
                                        task_id=task_id,
                                        index_file=index_file,
-                                       pred_dir=des_annotation_path,
+                                       pred_dir='',
                                        gt_dir=des_annotation_path,
                                        media_location=media_location,
                                        work_dir=import_work_dir,
