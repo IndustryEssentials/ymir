@@ -82,14 +82,12 @@ const Dataset = () => {
     return annotations.filter(annotation => gtFilter(annotation) && evaluationFilter(annotation))
   }, [filterParams.cm, filterParams.annoType])
 
-  const updateFilterParams = (value, field) => {
-    setFilterParams(query => ({
-      ...query,
-      [field]: value,
-      offset: initQuery.offset,
-      limit: initQuery.limit,
-    }))
-  }
+  const updateFilterParams = (value, field) => setFilterParams(query => ({
+    ...query,
+    [field]: value,
+    offset: initQuery.offset,
+    limit: initQuery.limit,
+  }))
 
   const randomPageButton = (
     <Button type="primary" onClick={randomPage}>
@@ -137,7 +135,7 @@ const Dataset = () => {
       )
     }
     )
-  }, [windowWidth, filterParams.cm])
+  }, [windowWidth, filterParams])
 
   const renderTitle = <Row className={styles.labels}>
     <Col flex={1}>
