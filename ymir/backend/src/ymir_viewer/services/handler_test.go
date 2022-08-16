@@ -16,7 +16,7 @@ type MockMirRepoLoader struct {
 
 func (m *MockMirRepoLoader) LoadSingleMirData(mirRepo *constants.MirRepo, mirFile constants.MirFile) interface{} {
 	args := m.Called(mirRepo, mirFile)
-	return args.Get(0).(*protos.MirContext)
+	return args.Get(0)
 }
 
 func (m *MockMirRepoLoader) LoadMutipleMirDatas(
@@ -87,7 +87,8 @@ func (m *MockMongoServer) QueryDatasetDup(
 }
 
 func TestGetDatasetMetaCountsHandler(t *testing.T) {
-	mirFile := constants.MirfileContext
+	mirFileContext := constants.MirfileContext
+	mirFileTasks := constants.MirfileTasks
 	mockMirContext := protos.MirContext{}
 	err := json.Unmarshal([]byte(`{
 		"images_cnt": 20,
@@ -155,7 +156,8 @@ func TestGetDatasetMetaCountsHandler(t *testing.T) {
 			{
 				"hangzhou": 1
 			}
-		}
+		},
+		"new_types_added": true
 	}`), &expectedResult)
 	if err != nil {
 		panic(err)
@@ -163,7 +165,10 @@ func TestGetDatasetMetaCountsHandler(t *testing.T) {
 
 	mirRepo := constants.MirRepo{}
 	mockLoader := MockMirRepoLoader{}
-	mockLoader.On("LoadSingleMirData", &mirRepo, mirFile).Return(&mockMirContext, 0, 0)
+	mockLoader.On("LoadSingleMirData", &mirRepo, mirFileContext).Return(&mockMirContext, 0, 0).Once()
+	mockLoader.On("LoadSingleMirData", &mirRepo, mirFileTasks).
+		Return(&protos.MirTasks{HeadTaskId: "h", Tasks: map[string]*protos.Task{"h": {NewTypesAdded: true}}}, 0, 0).
+		Once()
 	mockMongoServer := MockMongoServer{}
 
 	handler := &ViewerHandler{mongoServer: &mockMongoServer, mirLoader: &mockLoader}
