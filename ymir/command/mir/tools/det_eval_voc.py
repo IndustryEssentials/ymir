@@ -31,7 +31,7 @@ from mir.tools.code import MirCode
 from mir.tools.errors import MirRuntimeError
 
 
-def _voc_ap(rec, prec, use_07_metric=False):
+def _voc_ap(rec: np.ndarray, prec: np.ndarray, use_07_metric: bool):
     """Compute VOC AP given precision and recall. If use_07_metric is true, uses
     the VOC 07 11-point method (default:False).
     """
@@ -63,7 +63,8 @@ def _voc_ap(rec, prec, use_07_metric=False):
     return ap
 
 
-def _voc_eval(class_recs, BB, confidence, image_ids, ovthresh, npos, use_07_metric) -> Dict[str, Any]:
+def _voc_eval(class_recs: Dict[int, Dict[str, Any]], BB: np.ndarray, confidence: np.ndarray, image_ids: List[int],
+              ovthresh: float, npos: int, use_07_metric: bool) -> Dict[str, Any]:
     if len(image_ids) == 0:
         return {
             'rec': [],
@@ -87,7 +88,7 @@ def _voc_eval(class_recs, BB, confidence, image_ids, ovthresh, npos, use_07_metr
     fp = np.zeros(nd)  # 0 or 1, tp[d] == 1 means BB[d] is false positive
     for d in range(nd):
         if image_ids[d] not in class_recs:
-            continue  # TODO: should i continue here?
+            continue  # TODO: check here: should i continue or do sth. else ?
 
         R = class_recs[image_ids[d]]  # gt of that image name
         bb = BB[d, :].astype(float)  # single prediction box, shape: (1, 4)
