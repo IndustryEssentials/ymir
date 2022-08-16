@@ -59,7 +59,7 @@ def import_dataset_in_background(
 
     task = crud.task.get_by_hash(db, task_hash)
     if task:
-        crud.task.update_state(db, task=task, new_state=TaskState.error, state_code=str(state_code))
+        crud.task.update_state(db, task=task, new_state=TaskState.error, state_code=str(state_code.value))
     crud.dataset.update_state(db, dataset_id=dataset_id, new_state=ResultState.error)
 
 
