@@ -122,6 +122,12 @@ def locate_dir(p: Union[str, Path], target: str) -> Path:
     raise FileNotFoundError()
 
 
+def ensure_lowercase_dirname(p: Path) -> None:
+    lowercase_dir = p.with_name(p.name.lower())
+    if not p.name.islower() and not lowercase_dir.is_dir():
+        p.rename(lowercase_dir)
+
+
 def prepare_imported_dataset_dir(url: str, output_dir: Union[str, Path]) -> str:
     with NamedTemporaryFile("wb") as tmp:
         save_file_content(url, tmp.name)
@@ -131,6 +137,15 @@ def prepare_imported_dataset_dir(url: str, output_dir: Union[str, Path]) -> str:
     # only `asset_dir` (images) is required
     # both `gt_dir` and `pred_dir` are optional
     image_dir = locate_dir(output_dir, "images")
+    ensure_lowercase_dirname(image_dir)
+
+    for annotation_dirname in ["gt", "pred"]:
+        try:
+            annotation_dir = locate_dir(output_dir, annotation_dirname)
+        except FileNotFoundError:
+            pass
+        else:
+            ensure_lowercase_dirname(annotation_dir)
     return str(image_dir.parent)
 
 
@@ -164,6 +179,13 @@ def is_relative_to(path_long: Union[str, Path], path_short: Union[str, Path]) ->
 
 def verify_import_path(src_path: Union[str, Path]) -> None:
     src_path = Path(src_path)
+
+    for _p in src_path.iterdir():
+        if not _p.is_dir():
+            continue
+        if _p.name.lower() in ["images", "gt", "pred"]:
+            ensure_lowercase_dirname(_p)
+
     asset_path = src_path / "images"
     if not asset_path.is_dir():
         logger.error(f"import path {asset_path} is not directory")
