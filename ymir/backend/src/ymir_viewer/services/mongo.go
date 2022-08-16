@@ -168,6 +168,7 @@ func (s *MongoServer) QueryDatasetAssets(
 	)
 	collection, _ := s.getRepoCollection(mirRepo)
 
+	// "and" for inter-group, "or" for inner-group
 	filterAndConditions := bson.A{}
 	// class id in either field counts.
 	if len(classIds) > 0 {
