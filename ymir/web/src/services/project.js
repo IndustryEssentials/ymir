@@ -89,7 +89,7 @@ export function addExampleProject() {
 export function updateProject(id, {
   name,
   keywords,
-  strategy,
+  strategy = 1,
   chunkSize,
   description,
   candidateTrainSet,
