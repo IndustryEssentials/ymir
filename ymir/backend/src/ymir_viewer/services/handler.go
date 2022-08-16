@@ -85,6 +85,13 @@ func (v *ViewerHandler) loadAndIndexAssets(mirRepo *constants.MirRepo) {
 
 		mirAssetsDetail, _, _ := v.mirLoader.LoadAssetsDetail(mirRepo, "", 0, 0)
 
+		// check again, in case cache process started during data loading.
+		exist, _ = v.mongoServer.CheckDatasetExistenceReady(mirRepo)
+		if exist {
+			log.Printf("Cache exists, skip data indexing.")
+			return
+		}
+
 		newData := make([]interface{}, 0)
 		for _, v := range mirAssetsDetail {
 			newData = append(newData, v)
