@@ -12,6 +12,7 @@ import (
 	"github.com/IndustryEssentials/ymir-viewer/common/constants"
 	docs "github.com/IndustryEssentials/ymir-viewer/docs"
 	"github.com/gin-gonic/gin"
+	"github.com/penglongli/gin-metrics/ginmetrics"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 )
@@ -40,6 +41,9 @@ type BaseHandler interface {
 		mirRepo *constants.MirRepo,
 		classIDs []int,
 	) constants.QueryDatasetStatsResult
+	GetModelInfoHandler(
+		mirRepo *constants.MirRepo,
+	) constants.MirdataModel
 }
 
 type ViewerServer struct {
@@ -59,6 +63,18 @@ func NewViewerServer(config constants.Config) ViewerServer {
 		config:  config,
 		handler: NewViewerHandler(config.MongoDBURI, config.MongoDBName, config.MongoDBNoCache),
 	}
+
+	// get global Monitor object
+	m := ginmetrics.GetMonitor()
+
+	// +optional set slow time, default 5s
+	m.SetSlowTime(10)
+	// +optional set request duration, default {0.1, 0.3, 1.2, 5, 10}
+	// used to p95, p99
+	m.SetDuration([]float64{0.1, 0.3, 1.2, 5, 10})
+
+	// set middleware for gin
+	m.Use(viewerServer.gin)
 
 	viewerServer.routes()
 	return viewerServer
@@ -86,10 +102,11 @@ func (s *ViewerServer) routes() {
 
 	apiPath := r.Group("/api/v1")
 	{
+		apiPath.GET("/users/:userID/repo/:repoID/dataset_duplication", s.handleDatasetDup)
 		apiPath.GET("/users/:userID/repo/:repoID/branch/:branchID/assets", s.handleAssets)
 		apiPath.GET("/users/:userID/repo/:repoID/branch/:branchID/dataset_meta_count", s.handleDatasetMetaCounts)
 		apiPath.GET("/users/:userID/repo/:repoID/branch/:branchID/dataset_stats", s.handleDatasetStats)
-		apiPath.GET("/users/:userID/repo/:repoID/dataset_duplication", s.handleDatasetDup)
+		apiPath.GET("/users/:userID/repo/:repoID/branch/:branchID/model_info", s.handleModelInfo)
 	}
 }
 
@@ -294,6 +311,23 @@ func (s *ViewerServer) handleDatasetDup(c *gin.Context) {
 	}
 
 	resultData := s.handler.GetDatasetDupHandler(mirRepo0, mirRepo1)
+	ViewerSuccess(c, resultData)
+}
+
+// @Summary Query model info.
+// @Accept  json
+// @Produce  json
+// @Param   userID     path    string     true        "User ID"
+// @Param   repoID     path    string     true        "Repo ID"
+// @Param   branchID     path    string     true        "Branch ID"
+// @Success 200 {string} string    "'code': 0, 'msg': 'Success', 'Success': true, 'result':  constants.MirdataModel"
+// @Router /api/v1/users/{userID}/repo/{repoID}/branch/{branchID}/model_info [get]
+func (s *ViewerServer) handleModelInfo(c *gin.Context) {
+	defer s.handleFailure(c)
+
+	mirRepo := s.buildMirRepoFromParam(c)
+
+	resultData := s.handler.GetModelInfoHandler(mirRepo)
 	ViewerSuccess(c, resultData)
 }
 

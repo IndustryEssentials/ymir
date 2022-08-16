@@ -117,6 +117,7 @@ type QueryDatasetStatsResult struct {
 	TotalAssetsCount int64                       `json:"total_assets_count"`
 	CksCountTotal    map[string]int64            `json:"cks_count_total"`
 	CksCount         map[string]map[string]int64 `json:"cks_count"`
+	NewTypesAdded    bool                        `json:"new_types_added"`
 }
 
 func NewQueryDatasetStatsResult() QueryDatasetStatsResult {

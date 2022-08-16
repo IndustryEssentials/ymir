@@ -21,22 +21,29 @@ jobs:
       uses: actions/setup-python@v2
       with:
         python-version: 3.8
+    - name: Cache Python Environment
+      uses: actions/cache@v3
+      with:
+        path: |
+          ymir/command/.mypy_cache
+          ${{ env.pythonLocation }}
+        key: ${{ env.pythonLocation }}-${{ hashFiles('ymir/command/requirements.txt', 'ymir/command/requirements-ci.txt') }}
     - name: Install dependencies
       run: |
-        pip install -r requirements.txt
-        pip install -r requirements-ci.txt
+        time pip install -r requirements.txt
+        time pip install -r requirements-ci.txt
       working-directory: ymir/command
     - name: mypy
       run: |
-        mypy mir
+        time mypy mir
       working-directory: ymir/command
     - name: flake8
       run: |
-        flake8 mir
+        time flake8 mir
       working-directory: ymir/command
     - name: Test with pytest
       run: |
         git config --global user.name 'CI-TEST'
         git config --global user.email 'ci-test@ymir-team'
-        python tests/__main__.py
+        time python tests/__main__.py
       working-directory: ymir/command

@@ -5,7 +5,6 @@ import { Button, Card, Col, Descriptions, Row, Tag, Space } from "antd"
 import { getDateFromTimestamp } from "@/utils/date"
 import t from "@/utils/t"
 import { randomBetween } from "@/utils/number"
-import { evaluationTags } from '@/constants/dataset'
 import useFetch from '@/hooks/useFetch'
 
 import Hash from "@/components/common/hash"
@@ -15,18 +14,19 @@ import GtSelector from "@/components/form/gtSelector"
 import styles from "./asset.less"
 import { NavDatasetIcon, EyeOffIcon, EyeOnIcon } from '@/components/common/icons'
 import { LeftOutlined, RightOutlined } from '@ant-design/icons'
+import EvaluationSelector from "@/components/form/evaluationSelector"
 
 const { CheckableTag } = Tag
 
-function Asset({ id, asset: cache, datasetKeywords, filterKeyword, index = 0, total = 0 }) {
+function Asset({ id, asset: cache, datasetKeywords, filterKeyword, filters, index = 0, total = 0 }) {
   const [asset, setAsset] = useState({})
   const [current, setCurrent] = useState('')
   const [showAnnotations, setShowAnnotations] = useState([])
   const [selectedKeywords, setSelectedKeywords] = useState([])
   const [currentIndex, setCurrentIndex] = useState(null)
   const [assetHistory, setAssetHistory] = useState([])
-  const initEvaluation = Object.keys(evaluationTags).reduce((prev, tag) => ({ ...prev, [tag]: true }), {})
-  const [evaluation, setEvaluation] = useState(initEvaluation)
+  const [evaluation, setEvaluation] = useState([])
+  const [gtSelected, setGtSelected] = useState([])
   const [colors, setColors] = useState({})
   const [{ items: assets }, getAssets] = useFetch('dataset/getAssetsOfDataset', { items: [] })
 
@@ -50,7 +50,6 @@ function Asset({ id, asset: cache, datasetKeywords, filterKeyword, index = 0, to
   }, [cache])
 
   useEffect(() => {
-    console.log('asset:', asset)
     if (!asset.hash) {
       return
     }
@@ -66,14 +65,15 @@ function Asset({ id, asset: cache, datasetKeywords, filterKeyword, index = 0, to
 
   useEffect(() => {
     const keywordFilter = annotation => selectedKeywords.indexOf(annotation.keyword) >= 0
-    const evaluationFilter = annotation => !annotation.cm || evaluation[annotation.cm]
-    const filters = annotation => keywordFilter(annotation) && evaluationFilter(annotation)
+    const gtFilter = annotation => !gtSelected.length || gtSelected.some(selected => selected === 'gt' ? annotation.gt : !annotation.gt)
+    const evaluationFilter = annotation => !evaluation.length || evaluation.includes(annotation.cm)
+    const filters = annotation => keywordFilter(annotation) && evaluationFilter(annotation) && gtFilter(annotation)
     const visibleAnnotations = (asset.annotations || []).filter(filters)
     setShowAnnotations(visibleAnnotations)
-  }, [selectedKeywords, evaluation, asset])
+  }, [selectedKeywords, evaluation, asset, gtSelected])
 
   function fetchAssetHash() {
-    getAssets({ id, keyword: currentIndex.keyword, offset: currentIndex.index, limit: 1, datasetKeywords })
+    getAssets({ id, ...filters, keyword: currentIndex.keyword, offset: currentIndex.index, limit: 1, datasetKeywords })
   }
 
   function next() {
@@ -188,7 +188,8 @@ function Asset({ id, asset: cache, datasetKeywords, filterKeyword, index = 0, to
               {asset.evaluated ?
                 <div className={styles.filter}>
                   <h3><NavDatasetIcon /> {t("dataset.asset.filters.title")}</h3>
-                  <GtSelector layout='vertical' onChange={filterAnnotations} />
+                  <GtSelector vertical onChange={setGtSelected} />
+                  <EvaluationSelector vertical onChange={setEvaluation} />
                 </div> : null}
             </Card>
             <Space className={styles.random}>
