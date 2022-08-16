@@ -15,8 +15,6 @@ export enum evaluationTags {
   fp = 2,
   fn = 3,
   mtp = 11,
-  gto = -1,
-  predo = -1,
 }
 
 export const statesLabel = (state: states) => {

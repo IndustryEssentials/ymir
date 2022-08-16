@@ -78,14 +78,16 @@ export function getAssetsOfDataset({
   id,
   type = 'keywords',
   keywords = [],
-  cm,
+  cm = [],
+  annoType = [],
   offset = 0,
   limit = 20,
 }) {
   return request.get(`datasets/${id}/assets`, {
     params: {
       [type]: keywords.toString() || undefined,
-      cm_types: cm,
+      cm_types: cm.toString() || undefined,
+      annotation_types: annoType.toString() || undefined,
       offset,
       limit,
     },
