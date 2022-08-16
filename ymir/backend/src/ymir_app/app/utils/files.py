@@ -1,5 +1,4 @@
 import hashlib
-import logging
 import os
 import shutil
 import zipfile
@@ -131,7 +130,7 @@ def ensure_lowercase_dirname(p: Path) -> None:
 def prepare_imported_dataset_dir(url: str, output_dir: Union[str, Path]) -> str:
     with NamedTemporaryFile("wb") as tmp:
         save_file_content(url, tmp.name)
-        logging.info("[import dataset] url content cached to %s", tmp.name)
+        logger.info("[import dataset] url content cached to %s", tmp.name)
         decompress_zip(tmp.name, output_dir)
 
     # only `asset_dir` (images) is required
