@@ -16,7 +16,7 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/api/v1/users/{userId}/repo/{repoId}/branch/{branchId}/assets": {
+        "/api/v1/users/{userID}/repo/{repoID}/branch/{branchID}/assets": {
             "get": {
                 "consumes": [
                     "application/json"
@@ -29,21 +29,21 @@ const docTemplate = `{
                     {
                         "type": "string",
                         "description": "User ID",
-                        "name": "userId",
+                        "name": "userID",
                         "in": "path",
                         "required": true
                     },
                     {
                         "type": "string",
                         "description": "Repo ID",
-                        "name": "repoId",
+                        "name": "repoID",
                         "in": "path",
                         "required": true
                     },
                     {
                         "type": "string",
                         "description": "Branch ID",
-                        "name": "branchId",
+                        "name": "branchID",
                         "in": "path",
                         "required": true
                     },
@@ -55,7 +55,7 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "description": "limit, default is 20",
+                        "description": "limit, default is 1",
                         "name": "limit",
                         "in": "query"
                     },
@@ -67,32 +67,38 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
+                        "description": "e.g. annotation_types=GT,PRED",
+                        "name": "annotation_types",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
                         "description": "e.g. current_asset_id=xxxyyyzzz",
                         "name": "current_asset_id",
                         "in": "query"
                     },
                     {
                         "type": "string",
-                        "description": "e.g. cm_types=FN,TP,MTP,IGNORED",
+                        "description": "e.g. cm_types=0,1,2,3 NotSet=0,TP=1,FP=2,FN=3,TN=4,Unknown=5,MTP=11,IGNORED=12",
                         "name": "cm_types",
                         "in": "query"
                     },
                     {
                         "type": "string",
-                        "description": "ck pairs, e.g. cks=xxx,xxx:,xxx:yyy",
+                        "description": "ck pairs, e.g. cks=xxx,xxx:,xxx:yyy, e.g. camera_id:1",
                         "name": "cks",
                         "in": "query"
                     },
                     {
                         "type": "string",
-                        "description": "tag pairs, e.g. cks=xxx,xxx:,xxx:yyy",
+                        "description": "tag pairs, e.g. cks=xxx,xxx:,xxx:yyy, e.g. camera_id:1",
                         "name": "tags",
                         "in": "query"
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "'code': 0, 'msg': 'Success', 'Success': true, 'Data': constants.QueryAssetsResult",
+                        "description": "'code': 0, 'msg': 'Success', 'Success': true, 'result': constants.QueryAssetsResult",
                         "schema": {
                             "type": "string"
                         }
@@ -100,7 +106,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/users/{userId}/repo/{repoId}/branch/{branchId}/dataset_meta_count": {
+        "/api/v1/users/{userID}/repo/{repoID}/branch/{branchID}/dataset_meta_count": {
             "get": {
                 "consumes": [
                     "application/json"
@@ -113,28 +119,28 @@ const docTemplate = `{
                     {
                         "type": "string",
                         "description": "User ID",
-                        "name": "userId",
+                        "name": "userID",
                         "in": "path",
                         "required": true
                     },
                     {
                         "type": "string",
                         "description": "Repo ID",
-                        "name": "repoId",
+                        "name": "repoID",
                         "in": "path",
                         "required": true
                     },
                     {
                         "type": "string",
                         "description": "Branch ID",
-                        "name": "branchId",
+                        "name": "branchID",
                         "in": "path",
                         "required": true
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "'code': 0, 'msg': 'Success', 'Success': true, 'Data': constants.QueryDatasetStatsResult",
+                        "description": "'code': 0, 'msg': 'Success', 'Success': true, 'result': constants.QueryDatasetStatsResult",
                         "schema": {
                             "type": "string"
                         }
@@ -142,7 +148,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/users/{userId}/repo/{repoId}/branch/{branchId}/dataset_stats": {
+        "/api/v1/users/{userID}/repo/{repoID}/branch/{branchID}/dataset_stats": {
             "get": {
                 "consumes": [
                     "application/json"
@@ -155,21 +161,21 @@ const docTemplate = `{
                     {
                         "type": "string",
                         "description": "User ID",
-                        "name": "userId",
+                        "name": "userID",
                         "in": "path",
                         "required": true
                     },
                     {
                         "type": "string",
                         "description": "Repo ID",
-                        "name": "repoId",
+                        "name": "repoID",
                         "in": "path",
                         "required": true
                     },
                     {
                         "type": "string",
                         "description": "Branch ID",
-                        "name": "branchId",
+                        "name": "branchID",
                         "in": "path",
                         "required": true
                     },
@@ -182,7 +188,7 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "'code': 0, 'msg': 'Success', 'Success': true, 'Data': constants.QueryDatasetStatsResult",
+                        "description": "'code': 0, 'msg': 'Success', 'Success': true, 'result': constants.QueryDatasetStatsResult",
                         "schema": {
                             "type": "string"
                         }
@@ -190,7 +196,49 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/users/{userId}/repo/{repoId}/dataset_duplication": {
+        "/api/v1/users/{userID}/repo/{repoID}/branch/{branchID}/model_info": {
+            "get": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Query model info.",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "User ID",
+                        "name": "userID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Repo ID",
+                        "name": "repoID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Branch ID",
+                        "name": "branchID",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "'code': 0, 'msg': 'Success', 'Success': true, 'result':  constants.MirdataModel",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/users/{userID}/repo/{repoID}/dataset_duplication": {
             "get": {
                 "consumes": [
                     "application/json"
@@ -203,14 +251,14 @@ const docTemplate = `{
                     {
                         "type": "string",
                         "description": "User ID",
-                        "name": "userId",
+                        "name": "userID",
                         "in": "path",
                         "required": true
                     },
                     {
                         "type": "string",
                         "description": "Repo ID",
-                        "name": "repoId",
+                        "name": "repoID",
                         "in": "path",
                         "required": true
                     },
@@ -224,7 +272,7 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "'code': 0, 'msg': 'Success', 'Success': true, 'Data': 'duplication: 50, total_count: {xxx: 100, yyy: 200}'",
+                        "description": "'code': 0, 'msg': 'Success', 'Success': true, 'result': 'duplication: 50, total_count: {xxx: 100, yyy: 200}'",
                         "schema": {
                             "type": "string"
                         }

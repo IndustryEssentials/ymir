@@ -67,6 +67,11 @@ func (h *MockViewerHandler) GetDatasetStatsHandler(
 	return args.Get(0).(constants.QueryDatasetStatsResult)
 }
 
+func (h *MockViewerHandler) GetModelInfoHandler(mirRepo *constants.MirRepo) constants.MirdataModel {
+	args := h.Called(mirRepo)
+	return args.Get(0).(constants.MirdataModel)
+}
+
 func buildResponseBody(
 	code constants.ResponseCode,
 	msg constants.ResponseMsg,

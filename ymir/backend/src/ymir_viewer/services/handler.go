@@ -173,8 +173,14 @@ func (v *ViewerHandler) GetDatasetMetaCountsHandler(
 	mirRepo *constants.MirRepo,
 ) constants.QueryDatasetStatsResult {
 	defer tools.TimeTrack(time.Now())
-	mirContext := v.mirLoader.LoadSingleMirData(mirRepo, constants.MirfileContext).(*protos.MirContext)
+
 	result := constants.NewQueryDatasetStatsResult()
+
+	mirTasks := v.mirLoader.LoadSingleMirData(mirRepo, constants.MirfileTasks).(*protos.MirTasks)
+	task := mirTasks.Tasks[mirTasks.HeadTaskId]
+	result.NewTypesAdded = task.NewTypesAdded
+
+	mirContext := v.mirLoader.LoadSingleMirData(mirRepo, constants.MirfileContext).(*protos.MirContext)
 	result.TotalAssetsCount = int64(mirContext.ImagesCnt)
 
 	gtStats := mirContext.GtStats
@@ -217,4 +223,10 @@ func (v *ViewerHandler) GetDatasetDupHandler(
 	v.loadAndIndexAssets(mirRepo0)
 	v.loadAndIndexAssets(mirRepo1)
 	return v.mongoServer.QueryDatasetDup(mirRepo0, mirRepo1)
+}
+
+func (v *ViewerHandler) GetModelInfoHandler(
+	mirRepo *constants.MirRepo,
+) constants.MirdataModel {
+	return v.mirLoader.LoadModelInfo(mirRepo)
 }
