@@ -31,7 +31,7 @@ jobs:
     - name: Verify dependencies
       working-directory: ymir/backend/src/ymir_viewer
       run: |
-        go mod verify
+        time go mod verify
         time go install honnef.co/go/tools/cmd/staticcheck@latest
 
     - name: golangci-lint
