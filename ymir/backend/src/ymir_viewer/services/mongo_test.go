@@ -287,8 +287,8 @@ func TestQueryDatasetStatsSuccess(t *testing.T) {
 		expectedResult.Pred.ClassIdsCount[1] = 1
 		expectedResult.Pred.PositiveImagesCount = 1
 		expectedResult.Pred.AnnotationsCount = 1
-		expectedResult.QueryContext.RequireAssetsHist = true
-		expectedResult.QueryContext.RequireAnnotationsHist = true
+		expectedResult.QueryContext.RequireAssetsHist = false
+		expectedResult.QueryContext.RequireAnnotationsHist = false
 
 		countCursor := mtest.CreateCursorResponse(
 			1,
@@ -313,7 +313,7 @@ func TestQueryDatasetStatsSuccess(t *testing.T) {
 		mt.AddMockResponses(first, second, killCursors)
 		mt.AddMockResponses(first, second, killCursors)
 		mt.AddMockResponses(first, second, killCursors)
-		result := mongoServer.QueryDatasetStats(&mirRepo, classIDs, true, true)
+		result := mongoServer.QueryDatasetStats(&mirRepo, classIDs, false, false)
 		assert.Equal(t, expectedResult, result)
 	})
 }

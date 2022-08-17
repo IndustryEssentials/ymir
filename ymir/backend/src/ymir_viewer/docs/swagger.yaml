@@ -115,6 +115,14 @@ paths:
         in: query
         name: class_ids
         type: string
+      - description: e.g. require_assets_hist
+        in: query
+        name: require_assets_hist
+        type: string
+      - description: e.g. require_annos_hist
+        in: query
+        name: require_annos_hist
+        type: string
       produces:
       - application/json
       responses:

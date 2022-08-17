@@ -105,12 +105,6 @@ type QueryAssetsResult struct {
 	TotalAssetsCount int64            `json:"total_assets_count"`
 }
 
-type MirHist struct {
-	LowerBNDs []float32
-	OpsField  string
-	BinData   map[float32]int
-}
-
 type DatasetStatsElement struct {
 	// Assets count
 	ClassIdsCount       map[int]int64 `json:"class_ids_count"`

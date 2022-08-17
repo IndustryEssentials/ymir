@@ -299,6 +299,57 @@ func (s *MongoServer) QueryDatasetAssets(
 	}
 }
 
+func (s *MongoServer) queryHistogram(
+	collection *mongo.Collection,
+	ops interface{},
+	lowerBNDs []float64,
+	unwindField string,
+) *map[string]string {
+	buckets := map[string]string{}
+	for _, lowerBND := range lowerBNDs {
+		buckedKeyStr := fmt.Sprintf("%.2f", lowerBND)
+		buckets[buckedKeyStr] = "0"
+	}
+
+	unwindStage := bson.D{bson.E{
+		Key: "$unwind", Value: unwindField,
+	}}
+
+	bucketStage := bson.D{
+		bson.E{
+			Key: "$bucket",
+			Value: bson.D{
+				bson.E{
+					Key:   "groupBy",
+					Value: ops,
+				},
+				bson.E{Key: "default", Value: "_others_"},
+				bson.E{
+					Key:   "boundaries",
+					Value: lowerBNDs,
+				},
+				bson.E{Key: "output", Value: bson.M{"count": bson.M{"$sum": 1}}},
+			}}}
+
+	showInfoCursor, err := collection.Aggregate(s.Ctx, mongo.Pipeline{unwindStage, bucketStage})
+	if err != nil {
+		panic(err)
+	}
+
+	var showsWithInfo []map[string]interface{}
+	if err = showInfoCursor.All(s.Ctx, &showsWithInfo); err != nil {
+		panic(err)
+	}
+
+	for _, bucketMap := range showsWithInfo {
+		if buckedKey, ok := bucketMap["_id"].(float64); ok {
+			buckedKeyStr := fmt.Sprintf("%.2f", buckedKey)
+			buckets[buckedKeyStr] = fmt.Sprintf("%d", bucketMap["count"].(int32))
+		}
+	}
+	return &buckets
+}
+
 func (s *MongoServer) QueryDatasetStats(
 	mirRepo *constants.MirRepo,
 	classIDs []int,
@@ -312,8 +363,23 @@ func (s *MongoServer) QueryDatasetStats(
 	}
 
 	queryData := constants.NewQueryDatasetStatsResult()
-	queryData.TotalAssetsCount = totalAssetsCount
 
+	// Build Asset fields.
+	queryData.TotalAssetsCount = totalAssetsCount
+	if requireAssetsHist {
+		for histKey, hist := range constants.ConstAssetsMirHist {
+			assetHist := hist
+			assetHist.Buckets = s.queryHistogram(
+				collection,
+				assetHist.Ops,
+				assetHist.LowerBNDs,
+				"$metadata",
+			)
+			queryData.AssetsHist[histKey] = &assetHist
+		}
+	}
+
+	// Build Annotation fields.
 	for _, classID := range classIDs {
 		queryData.Gt.ClassIdsCount[classID], _ = s.countDatasetAssetsInClass(collection, "gt.class_id", []int{classID})
 		queryData.Pred.ClassIdsCount[classID], _ = s.countDatasetAssetsInClass(
@@ -337,8 +403,34 @@ func (s *MongoServer) QueryDatasetStats(
 	)
 	queryData.Pred.NegativeImagesCount = totalAssetsCount - queryData.Pred.PositiveImagesCount
 
+	if requireAnnotationsHist {
+
+		for histKey, hist := range constants.ConstGtMirHist {
+			annoHist := hist
+			annoHist.Buckets = s.queryHistogram(
+				collection,
+				annoHist.Ops,
+				annoHist.LowerBNDs,
+				"$gt",
+			)
+			queryData.Gt.AnnotationsHist[histKey] = &annoHist
+		}
+		for histKey, hist := range constants.ConstPredMirHist {
+			annoHist := hist
+			annoHist.Buckets = s.queryHistogram(
+				collection,
+				annoHist.Ops,
+				annoHist.LowerBNDs,
+				"$pred",
+			)
+			queryData.Pred.AnnotationsHist[histKey] = &annoHist
+		}
+	}
+
+	// Build Query Context.
 	queryData.QueryContext.RequireAssetsHist = requireAssetsHist
 	queryData.QueryContext.RequireAnnotationsHist = requireAnnotationsHist
+
 	return queryData
 }
 

@@ -1,6 +1,11 @@
 package constants
 
-import "time"
+import (
+	"encoding/json"
+	"time"
+
+	"go.mongodb.org/mongo-driver/bson"
+)
 
 type Config struct {
 	YmirSandbox string
@@ -16,11 +21,62 @@ type Config struct {
 	InnerTimeout time.Duration
 }
 
-// const {
-// 	BYTES_PER_MB = 1048576
-// QUALITY_DESC_LOWER_BNDS = [x / 10 for x in range(10, -1, -1)]
-// ANNO_AREA_DESC_LOWER_BNDS = [200000, 100000, 50000, 10000, 5000, 2500, 500, 50, 0]
-// ASSET_BYTES_DESC_LOWER_BNDS = [x * BYTES_PER_MB / 2 for x in range(10, -1, -1)]
-// ASSET_AREA_DESC_LOWER_BNDS = [8000000, 6000000, 4000000, 2000000, 1000000, 500000, 100000, 0]
-// ASSET_HW_RATIO_DESC_LOWER_BNDS = [x / 10 for x in range(15, -1, -1)]
-// }
+type MirHist struct {
+	Buckets   *map[string]string `json:"-"`
+	LowerBNDs []float64          `json:"-"`
+	Ops       interface{}        `json:"-"`
+}
+
+// Json as array, not a sub-field of struct.
+func (h *MirHist) MarshalJSON() ([]byte, error) {
+	return json.Marshal(&h.Buckets)
+}
+
+const (
+	BytesPerMB float64 = 1048576
+)
+
+var ConstAssetsMirHist map[string]MirHist = map[string]MirHist{
+	"quality": {Ops: "$quality", LowerBNDs: []float64{0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0}},
+	"bytes": {Ops: "$metadata.byte_size", LowerBNDs: []float64{
+		0,
+		0.5 * BytesPerMB,
+		1.0 * BytesPerMB,
+		1.5 * BytesPerMB,
+		2.0 * BytesPerMB,
+		2.5 * BytesPerMB,
+		3.0 * BytesPerMB,
+		3.5 * BytesPerMB,
+		4.0 * BytesPerMB,
+		4.5 * BytesPerMB,
+		5.0 * BytesPerMB,
+	}},
+	"area": {Ops: bson.M{"$multiply": bson.A{"$metadata.width", "$metadata.height"}},
+		LowerBNDs: []float64{0, 100000, 500000, 1000000, 2000000, 4000000, 6000000, 8000000}},
+	"hw_ratio": {Ops: bson.M{"$divide": bson.A{"$metadata.height", "$metadata.width"}},
+		LowerBNDs: []float64{0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5}},
+}
+
+var ConstGtMirHist map[string]MirHist = map[string]MirHist{
+	"quality": {Ops: "$gt.anno_quality", LowerBNDs: []float64{0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0}},
+	"area": {
+		Ops:       bson.M{"$multiply": bson.A{"$gt.box.w", "$gt.box.h"}},
+		LowerBNDs: []float64{0, 50, 500, 2500, 5000, 10000, 50000, 100000, 200000},
+	},
+	"area_ratio": {
+		Ops: bson.M{"$divide": bson.A{bson.M{"$multiply": bson.A{"$gt.box.w", "$gt.box.h"}},
+			bson.M{"$multiply": bson.A{"$metadata.width", "$metadata.height"}}}},
+		LowerBNDs: []float64{0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0}},
+}
+
+var ConstPredMirHist map[string]MirHist = map[string]MirHist{
+	"quality": {Ops: "$pred.anno_quality", LowerBNDs: []float64{0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0}},
+	"area": {
+		Ops:       bson.M{"$multiply": bson.A{"$pred.box.w", "$pred.box.h"}},
+		LowerBNDs: []float64{0, 50, 500, 2500, 5000, 10000, 50000, 100000, 200000},
+	},
+	"area_ratio": {
+		Ops: bson.M{"$divide": bson.A{bson.M{"$multiply": bson.A{"$pred.box.w", "$pred.box.h"}},
+			bson.M{"$multiply": bson.A{"$metadata.width", "$metadata.height"}}}},
+		LowerBNDs: []float64{0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0}},
+}
