@@ -166,7 +166,7 @@ def get_ious_array(iou_thrs_str: str) -> np.ndarray:
                        endpoint=False)
 
 
-def calc_averaged_evaluations(dataset_evaluation: mirpb.SingleDatasetEvaluation, class_ids: List[int]) -> None:
+def calc_averaged_evaluations(dataset_evaluation: mirpb.SingleDatasetEvaluation, class_ids: Iterable[int]) -> None:
     for iou_evaluation in dataset_evaluation.iou_evaluations.values():
         _get_average_ee(average_ee=iou_evaluation.ci_averaged_evaluation,
                         ees=list(iou_evaluation.ci_evaluations.values()))

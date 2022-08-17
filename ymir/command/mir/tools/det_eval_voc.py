@@ -21,7 +21,7 @@
 # --------------------------------------------------------
 """Python implementation of the PASCAL VOC devkit's AP evaluation code."""
 
-from typing import Any, Dict, List, Set, Tuple
+from typing import Any, Dict, Iterable, List, Set, Tuple
 
 import numpy as np
 
@@ -159,17 +159,20 @@ def _voc_eval(class_recs: Dict[str, Dict[str, Any]], BB: np.ndarray, confidence:
     }
 
 
-def _erase_confusion_matrix(mir_gt: MirDataset, mir_dt: MirDataset) -> None:
+def _erase_confusion_matrix(mir_gt: MirDataset, mir_dt: MirDataset, class_ids: Iterable[int]) -> None:
     gt_annotations = mir_gt._task_annotations
     pred_annotations = mir_dt._task_annotations
+    class_ids_set = set(class_ids)
 
     for image_annotations in gt_annotations.image_annotations.values():
         for annotation in image_annotations.annotations:
-            annotation.cm = mirpb.ConfusionMatrixType.FN
+            annotation.cm = (mirpb.ConfusionMatrixType.FN
+                             if annotation.class_id in class_ids_set else mirpb.ConfusionMatrixType.IGNORED)
             annotation.det_link_id = -1
     for image_annotations in pred_annotations.image_annotations.values():
         for annotation in image_annotations.annotations:
-            annotation.cm = mirpb.ConfusionMatrixType.FP
+            annotation.cm = (mirpb.ConfusionMatrixType.FP
+                             if annotation.class_id in class_ids_set else mirpb.ConfusionMatrixType.IGNORED)
             annotation.det_link_id = -1
 
 
@@ -272,7 +275,7 @@ def det_evaluate(mir_dts: List[MirDataset], mir_gt: MirDataset, config: mirpb.Ev
         dataset_evaluation = evaluation.dataset_evaluations[mir_dt.dataset_id]
         for i, iou_thr in enumerate(iou_thrs):
             if i == 0:
-                _erase_confusion_matrix(mir_gt=mir_gt, mir_dt=mir_dt)
+                _erase_confusion_matrix(mir_gt=mir_gt, mir_dt=mir_dt, class_ids=class_ids)
 
             matches: Set[Tuple[str, int, int]] = set()
             for class_id in class_ids:
