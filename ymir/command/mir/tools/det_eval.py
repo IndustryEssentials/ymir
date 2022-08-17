@@ -1,5 +1,5 @@
 import logging
-from typing import Tuple
+from typing import List, Tuple
 
 from mir.tools import mir_storage_ops, revs_parser, det_eval_coco, det_eval_voc
 from mir.tools.det_eval_utils import MirDataset
@@ -11,6 +11,7 @@ def det_evaluate(
     rev_tid: revs_parser.TypRevTid,
     conf_thr: float,
     iou_thrs: str,
+    class_ids: List[int] = [],
     need_pr_curve: bool = False,
 ) -> Tuple[mirpb.Evaluation, mirpb.MirAnnotations]:
     mir_metadatas: mirpb.MirMetadatas
@@ -40,6 +41,7 @@ def det_evaluate_with_pb(
     dataset_id: str,
     conf_thr: float,
     iou_thrs: str,
+    class_ids: List[int] = [],
     need_pr_curve: bool = False,
     mode: str = 'voc',
 ) -> Tuple[mirpb.Evaluation, mirpb.MirAnnotations]:
@@ -63,6 +65,7 @@ def det_evaluate_with_pb(
     evaluate_config.need_pr_curve = need_pr_curve
     evaluate_config.gt_dataset_id = dataset_id
     evaluate_config.pred_dataset_ids.append(dataset_id)
+    evaluate_config.class_ids[:] = class_ids
 
     eval_model_name = det_eval_voc if mode == 'voc' else det_eval_coco
     evaluation = eval_model_name.det_evaluate(mir_dts=[mir_dt], mir_gt=mir_gt, config=evaluate_config)  # type: ignore

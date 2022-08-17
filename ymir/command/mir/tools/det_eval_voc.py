@@ -265,7 +265,7 @@ def det_evaluate(mir_dts: List[MirDataset], mir_gt: MirDataset, config: mirpb.Ev
     evaluation = mirpb.Evaluation()
     evaluation.config.CopyFrom(config)
 
-    class_ids = mir_gt.get_class_ids()
+    class_ids = config.class_ids or mir_gt.get_class_ids()
     iou_thrs = get_ious_array(config.iou_thrs_interval)
 
     for mir_dt in mir_dts:
