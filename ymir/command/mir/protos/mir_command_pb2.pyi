@@ -526,10 +526,7 @@ class MirKeywords(google.protobuf.message.Message):
     CK_IDX_FIELD_NUMBER: builtins.int
     @property
     def keywords(self) -> google.protobuf.internal.containers.MessageMap[typing.Text, global___Keywords]:
-        """key: asset hash, value: keywords list
-        cnt: count of keywords
-        from pred and gt
-        """
+        """key: asset hash, value: keywords list"""
         pass
     @property
     def pred_idx(self) -> global___KeywordToIndex:
@@ -947,12 +944,15 @@ class EvaluateConfig(google.protobuf.message.Message):
     CONF_THR_FIELD_NUMBER: builtins.int
     IOU_THRS_INTERVAL_FIELD_NUMBER: builtins.int
     NEED_PR_CURVE_FIELD_NUMBER: builtins.int
+    CLASS_IDS_FIELD_NUMBER: builtins.int
     gt_dataset_id: typing.Text = ...
     @property
     def pred_dataset_ids(self) -> google.protobuf.internal.containers.RepeatedScalarFieldContainer[typing.Text]: ...
     conf_thr: builtins.float = ...
     iou_thrs_interval: typing.Text = ...
     need_pr_curve: builtins.bool = ...
+    @property
+    def class_ids(self) -> google.protobuf.internal.containers.RepeatedScalarFieldContainer[builtins.int]: ...
     def __init__(self,
         *,
         gt_dataset_id : typing.Text = ...,
@@ -960,8 +960,9 @@ class EvaluateConfig(google.protobuf.message.Message):
         conf_thr : builtins.float = ...,
         iou_thrs_interval : typing.Text = ...,
         need_pr_curve : builtins.bool = ...,
+        class_ids : typing.Optional[typing.Iterable[builtins.int]] = ...,
         ) -> None: ...
-    def ClearField(self, field_name: typing_extensions.Literal["conf_thr",b"conf_thr","gt_dataset_id",b"gt_dataset_id","iou_thrs_interval",b"iou_thrs_interval","need_pr_curve",b"need_pr_curve","pred_dataset_ids",b"pred_dataset_ids"]) -> None: ...
+    def ClearField(self, field_name: typing_extensions.Literal["class_ids",b"class_ids","conf_thr",b"conf_thr","gt_dataset_id",b"gt_dataset_id","iou_thrs_interval",b"iou_thrs_interval","need_pr_curve",b"need_pr_curve","pred_dataset_ids",b"pred_dataset_ids"]) -> None: ...
 global___EvaluateConfig = EvaluateConfig
 
 class SingleDatasetEvaluation(google.protobuf.message.Message):
