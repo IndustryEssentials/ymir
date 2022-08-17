@@ -94,7 +94,7 @@ def _voc_eval(class_recs: Dict[str, Dict[str, Any]], BB: np.ndarray, confidence:
     fp = np.zeros(nd)  # 0 or 1, tp[d] == 1 means BB[d] is false positive
     for d in range(nd):
         if image_ids[d] not in class_recs:
-            continue  # TODO: check here: should i continue or do sth. else ?
+            continue
 
         R = class_recs[image_ids[d]]  # gt of that image name
         bb = BB[d, :].astype(float)  # single prediction box, shape: (1, 4)
