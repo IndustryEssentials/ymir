@@ -80,6 +80,7 @@ def _import_dataset(
             "src_repo_id": gen_repo_hash(dataset.project_id),
             "src_resource_id": dataset.hash,
             "strategy": dataset_import.strategy,
+            "clean_dirs": True,
         }
     else:
         paths = ImportDatasetPaths(
@@ -90,6 +91,7 @@ def _import_dataset(
             "gt_dir": paths.gt_dir,
             "pred_dir": paths.pred_dir,
             "strategy": dataset_import.strategy,
+            "clean_dirs": dataset_import.input_path is None,  # for path importing, DO NOT clean_dirs
         }
 
     try:
