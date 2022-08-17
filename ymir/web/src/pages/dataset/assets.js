@@ -21,7 +21,7 @@ const Dataset = () => {
   const { did: id } = useParams()
   const initQuery = {
     id,
-    keyword: null,
+    keywords: [],
     offset: 0,
     limit: 20,
   }
@@ -48,12 +48,17 @@ const Dataset = () => {
     dataset.id && filter(filterParams)
   }, [dataset, filterParams])
 
-  const filterKw = ({ type, selected }) => setFilterParams((params) => ({
-    ...params,
-    type,
-    keywords: selected,
-    offset: initQuery.offset,
-  }))
+  const filterKw = ({ type, selected }) => {
+    console.log('type, selected:', type, selected)
+    if (selected.length || (!selected.length && filterParams.keywords.length > 0)) {
+      setFilterParams((params) => ({
+        ...params,
+        type,
+        keywords: selected,
+        offset: initQuery.offset,
+      }))
+    }
+  }
 
   const filterPage = (page, pageSize) => {
     setCurrentPage(page)
@@ -84,18 +89,22 @@ const Dataset = () => {
     return annotations.filter(annotation => gtFilter(annotation) && evaluationFilter(annotation))
   }, [filterParams.cm, filterParams.annoType])
 
-  const updateFilterParams = (value, field) => setFilterParams(query => ({
-    ...query,
-    [field]: value,
-    offset: initQuery.offset,
-    limit: initQuery.limit,
-  }))
+  const updateFilterParams = (value, field) => {
+    if (value?.length || (filterParams[field]?.length && !value?.length)) {
+      setFilterParams(query => ({
+        ...query,
+        [field]: value,
+        offset: initQuery.offset,
+        limit: initQuery.limit,
+      }))
+    }
+  }
 
   const reset = () => {
     setFilterParams(initQuery)
-    
-    gtRef.current.clear()
-    evaluateRef.current.clear()
+
+    // gtRef.current.clear()
+    // evaluateRef.current.clear()
   }
 
   const randomPageButton = (
@@ -147,22 +156,20 @@ const Dataset = () => {
   }, [windowWidth, filterParams])
 
   const renderTitle = <Row className={styles.labels}>
-    <Col flex={1}>
+    <Col span={12}>
       <Space>
         <strong>{dataset.name} {dataset.versionName}</strong>
         <span>{t("dataset.detail.pager.total", { total: total + '/' + dataset.assetCount })}</span>
       </Space>
     </Col>
-    <Col>
-      <GtSelector ref={gtRef} layout='inline' value={filterParams.annoType} onChange={checked => updateFilterParams(checked, 'annoType')} />
+    <Col span={12}>
+      <Space size={10} wrap={true}>
+        <GtSelector layout='inline' value={filterParams.annoType} onChange={checked => updateFilterParams(checked, 'annoType')} />
+        <EvaluationSelector value={filterParams.cm} onChange={checked => updateFilterParams(checked, 'cm')} />
+        <KeywordSelector value={filterParams.keywords} onChange={filterKw} dataset={dataset} />
+        <Button onClick={reset}>{t('common.reset')}</Button>
+      </Space>
     </Col>
-    <Col>
-      <EvaluationSelector ref={evaluateRef} value={filterParams.cm} onChange={checked => updateFilterParams(checked, 'cm')} />
-    </Col>
-    <Col>
-      <KeywordSelector onChange={filterKw} dataset={dataset} />
-    </Col>
-    <Col><Button onClick={reset}>Reset</Button></Col>
   </Row>
 
   const assetDetail = <Modal className={styles.assetDetail} destroyOnClose
@@ -173,7 +180,7 @@ const Dataset = () => {
       asset={currentAsset.asset}
       datasetKeywords={dataset.keywords}
       filters={filterParams}
-      filterKeyword={assetVisible ? filterParams.keyword : null}
+      filterKeyword={assetVisible ? filterParams.keywords : null}
       index={currentAsset.index} total={total}
     />
   </Modal>

@@ -16,7 +16,7 @@ const CheckboxSelector = forwardRef(({ options = [], label = '', value, onChange
   }
 
   useEffect(() => {
-    value && setCheckeds(value)
+    setCheckeds(value)
   }, [value])
 
   useEffect(() => {
@@ -27,7 +27,7 @@ const CheckboxSelector = forwardRef(({ options = [], label = '', value, onChange
   }, [checkeds])
 
   return <Row gutter={20} ref={ref}>
-    <Col span={vertical ? 24 : null} style={{ fontWeight: 'bold' }}>{label}</Col>
+    <Col span={vertical ? 24 : null} style={{ fontWeight: 'bold', textAlign: 'right' }}>{label}</Col>
     <Col flex={1}>
       <Checkbox.Group
         value={checkeds}
