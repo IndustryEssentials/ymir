@@ -10,6 +10,7 @@ const CheckboxSelector = ({ options = [], label = '', value, onChange = () => { 
   }, [value])
 
   useEffect(() => {
+    console.log('checkeds:', checkeds)
     onChange(checkeds)
   }, [checkeds])
 
