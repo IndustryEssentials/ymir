@@ -36,6 +36,7 @@ class TestAsset:
                     "box": random_lower_string(10),
                     "class_id": random.randint(1, 20),
                     "cm": 1,
+                    "tags": {},
                 }
             ],
             "gt": [
@@ -43,6 +44,7 @@ class TestAsset:
                     "box": random_lower_string(10),
                     "class_id": random.randint(1, 20),
                     "cm": 1,
+                    "tags": {},
                 }
             ],
             "class_ids": list(range(1, 20)),
@@ -70,6 +72,7 @@ class TestAssets:
                             "box": random_lower_string(10),
                             "class_id": random.randint(1, 20),
                             "cm": 1,
+                            "tags": {},
                         }
                     ],
                     "gt": [
@@ -77,6 +80,7 @@ class TestAssets:
                             "box": random_lower_string(10),
                             "class_id": random.randint(1, 20),
                             "cm": 1,
+                            "tags": {},
                         }
                     ],
                     "metadata": {
@@ -85,6 +89,7 @@ class TestAssets:
                         "image_channels": random.randint(1, 3),
                         "timestamp": {"start": time.time()},
                     },
+                    "cks": {},
                 }
             ],
             "total": 124,
@@ -152,6 +157,7 @@ class TestDataset:
                 "asset_hw_ratio": [[{"x": 1, "y": 2}]],
                 "asset_quality": [[{"x": 1, "y": 2}]],
             },
+            "cks": {},
             "total_assets_mbytes": 10,
             "total_assets_count": 1,
         }
@@ -184,6 +190,7 @@ class TestVizClient:
                             "box": random_lower_string(10),
                             "class_id": random.randint(1, 20),
                             "cm": 1,
+                            "tags": {},
                         }
                     ],
                     "gt": [
@@ -191,6 +198,7 @@ class TestVizClient:
                             "box": random_lower_string(10),
                             "class_id": random.randint(1, 20),
                             "cm": 1,
+                            "tags": {},
                         }
                     ],
                     "metadata": {
@@ -199,6 +207,7 @@ class TestVizClient:
                         "image_channels": random.randint(1, 3),
                         "timestamp": {"start": time.time()},
                     },
+                    "cks": {},
                 }
             ],
             "total": random.randint(1000, 2000),
@@ -232,6 +241,7 @@ class TestVizClient:
                     "box": random_lower_string(10),
                     "class_id": random.randint(1, 80),
                     "cm": 1,
+                    "tags": {},
                 }
             ],
             "gt": [
@@ -239,6 +249,7 @@ class TestVizClient:
                     "box": random_lower_string(10),
                     "class_id": random.randint(1, 80),
                     "cm": 1,
+                    "tags": {},
                 }
             ],
             "class_ids": list(range(1, 20)),
@@ -248,6 +259,7 @@ class TestVizClient:
                 "image_channels": random.randint(1, 3),
                 "timestamp": {"start": time.time()},
             },
+            "cks": {},
         }
         resp.json.return_value = {"result": res}
         mock_session.get.return_value = resp
@@ -340,6 +352,7 @@ class TestVizClient:
             },
             "total_assets_mbytes": 10,
             "total_assets_count": 1,
+            "cks": {},
         }
         resp.json.return_value = {"result": res}
         mock_session.get.return_value = resp
