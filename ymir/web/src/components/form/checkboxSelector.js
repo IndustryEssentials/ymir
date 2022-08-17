@@ -3,7 +3,6 @@ import { useEffect, useState } from "react"
 
 
 const CheckboxSelector = ({ options = [], label = '', value, onChange = () => { }, vertical, labelAlign, ...rest }) => {
-  console.log('labelAlign:', labelAlign)
   const [checkeds, setCheckeds] = useState([])
 
   useEffect(() => {
