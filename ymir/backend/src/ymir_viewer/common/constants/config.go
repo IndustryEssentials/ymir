@@ -2,6 +2,7 @@ package constants
 
 import (
 	"encoding/json"
+	"sort"
 	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
@@ -29,7 +30,25 @@ type MirHist struct {
 
 // Json as array, not a sub-field of struct.
 func (h *MirHist) MarshalJSON() ([]byte, error) {
-	return json.Marshal(&h.Buckets)
+	histKeys := make([]string, 0)
+	for histKey := range *h.Buckets {
+		histKeys = append(histKeys, histKey)
+	}
+
+	sort.Slice(histKeys, func(i, j int) bool {
+		l1, l2 := len(histKeys[i]), len(histKeys[j])
+		if l1 != l2 {
+			return l1 < l2
+		}
+		return histKeys[i] < histKeys[j]
+	})
+
+	output := []map[string]string{}
+	for _, histKey := range histKeys {
+		output = append(output, map[string]string{"x": histKey, "y": (*h.Buckets)[histKey]})
+	}
+
+	return json.Marshal(&output)
 }
 
 const (
