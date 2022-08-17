@@ -2,7 +2,8 @@ import { Checkbox, Col, Form, Row } from "antd"
 import { useEffect, useState } from "react"
 
 
-const CheckboxSelector = ({ options = [], label = '', value, onChange = () => { }, vertical }) => {
+const CheckboxSelector = ({ options = [], label = '', value, onChange = () => { }, vertical, labelAlign, ...rest }) => {
+  console.log('labelAlign:', labelAlign)
   const [checkeds, setCheckeds] = useState([])
 
   useEffect(() => {
@@ -13,8 +14,8 @@ const CheckboxSelector = ({ options = [], label = '', value, onChange = () => { 
     onChange(checkeds)
   }, [checkeds])
 
-  return <Row gutter={20}>
-    <Col span={vertical ? 24 : null} style={{ fontWeight: 'bold', textAlign: 'right' }}>{label}</Col>
+  return <Row gutter={20} {...rest}>
+    <Col span={vertical ? 24 : null} style={{ fontWeight: 'bold', textAlign: labelAlign || 'left' }}>{label}</Col>
     <Col flex={1}>
       <Checkbox.Group
         value={checkeds}
