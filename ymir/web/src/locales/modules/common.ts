@@ -81,6 +81,7 @@ const common = {
   'common.average': {cn: '平均值', en: 'Average', },
   'common.recommend': {cn: '推荐', en: 'Recommend', },
   "common.desc": { en: "Description", cn: "描述", },
+  "common.reset": { en: "Reset", cn: "重置", },
 }
 
 export default common

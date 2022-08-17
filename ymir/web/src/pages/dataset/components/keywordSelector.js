@@ -17,6 +17,10 @@ const KeywordSelector = ({ value, onChange, dataset = {} }) => {
   const [{ cks, tags }, getCK] = useFetch('dataset/getCK', { cks: {}, tags: {} })
 
   useEffect(() => {
+    setSelected(value || [])
+  }, [value])
+
+  useEffect(() => {
     if (!dataset.id) {
       return
     }
@@ -52,7 +56,7 @@ const KeywordSelector = ({ value, onChange, dataset = {} }) => {
   }
 
   const renderKeywords = (type) => {
-    const { list = [] } = keywords.find(({ value }) => value === type)
+    const { list = [] } = keywords.find(({ value }) => value === type) || {}
     return type !== 'keywords' ? renderCk(list) : renderKw(list)
   }
 

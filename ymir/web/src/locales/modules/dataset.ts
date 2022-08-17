@@ -157,7 +157,7 @@ const dataset = {
   "dataset.analysis.title.keyword_ratio": { cn: "标签占比", en: "Keywords Ratio", },
   "dataset.analysis.bar.asset.tooltip": { cn: " 占比：{ratio} 数量：{amount} 张", en: " Ratio：{ratio} Amount：{amount}", },
   "dataset.analysis.bar.anno.tooltip": { cn: " 占比：{ratio} 数量：{amount} 个", en: " Ratio：{ratio} Amount：{amount}", },
-  "dataset.analysis.annotations.gt": { cn: "标准值标注", en: "Ground Truth Annotations", },
+  "dataset.analysis.annotations.gt": { cn: "GT标注", en: "Ground Truth Annotations", },
   "dataset.analysis.annotations.pred": { cn: "预测标注", en: "Predicted Annotations", },
   "dataset.train.all.train.target": { cn: "将训练集的所有标签作为训练目标", en: "All training dataset keywords as training target", },
   'dataset.assets.keyword.selector.types.keywords': { en: 'Keywords', cn: '标签' },

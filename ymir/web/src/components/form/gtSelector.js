@@ -6,7 +6,7 @@ const types = [
   { label: 'PRED', value: 'pred', },
 ]
 
-const GtSelector = (props) => <CheckboxSelector
+const GtSelector = props => <CheckboxSelector
   options={types}
   label={t('dataset.assets.selector.gt.label')}
   {...props}

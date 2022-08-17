@@ -97,6 +97,12 @@ function TaskDetail({ task = {}, batchDatasets, getModel }) {
     return label ? <Item label={t('task.column.duration')}>{label}</Item> : null
   }
 
+  function renderKeepAnnotations(type) {
+    const maps = {1: 'gt', 2: 'pred' }
+    const label = type ? maps[type] : 'none'
+    return t(`task.label.form.keep_anno.${label}`)
+  }
+
   function renderPreProcess(preprocess) {
     return preprocess ? <Item label={t("task.train.preprocess.title")} span={2}>
       {Object.keys(preprocess).map((key) => (
@@ -222,7 +228,8 @@ function TaskDetail({ task = {}, batchDatasets, getModel }) {
         ))}
       </Item>
       <Item label={t("task.label.form.keep_anno.label")}>
-        {task.parameters.keep_annotations ? t("common.yes") : t("common.no")}
+        {renderKeepAnnotations(task.parameters.annotation_type)}
+        {/* {task.parameters.keep_annotations ? t("common.yes") : t("common.no")} */}
       </Item>
       <Item label={t("task.label.form.desc.label")}>
         {task.parameters.extra_url ? (

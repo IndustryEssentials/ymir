@@ -65,8 +65,8 @@ function Asset({ id, asset: cache, datasetKeywords, filterKeyword, filters, inde
 
   useEffect(() => {
     const keywordFilter = annotation => selectedKeywords.indexOf(annotation.keyword) >= 0
-    const gtFilter = annotation => !gtSelected.length || gtSelected.some(selected => selected === 'gt' ? annotation.gt : !annotation.gt)
-    const evaluationFilter = annotation => !evaluation.length || evaluation.includes(annotation.cm)
+    const gtFilter = annotation => !gtSelected?.length || gtSelected.some(selected => selected === 'gt' ? annotation.gt : !annotation.gt)
+    const evaluationFilter = annotation => !evaluation?.length || evaluation.includes(annotation.cm)
     const filters = annotation => keywordFilter(annotation) && evaluationFilter(annotation) && gtFilter(annotation)
     const visibleAnnotations = (asset.annotations || []).filter(filters)
     setShowAnnotations(visibleAnnotations)
@@ -106,10 +106,6 @@ function Asset({ id, asset: cache, datasetKeywords, filterKeyword, filters, inde
 
   function toggleAnnotation() {
     setSelectedKeywords(selectedKeywords.length ? [] : asset.keywords)
-  }
-
-  function filterAnnotations(checkeds) {
-    setEvaluation(checkeds)
   }
 
   return asset.hash ? (
@@ -185,12 +181,11 @@ function Asset({ id, asset: cache, datasetKeywords, filterKeyword, filters, inde
                   </Row>
                 </Descriptions.Item>
               </Descriptions>
-              {asset.evaluated ?
-                <div className={styles.filter}>
-                  <h3><NavDatasetIcon /> {t("dataset.asset.filters.title")}</h3>
-                  <GtSelector vertical onChange={setGtSelected} />
-                  <EvaluationSelector vertical onChange={setEvaluation} />
-                </div> : null}
+
+              <Space className={styles.filter} size={10} wrap>
+                <GtSelector vertical onChange={setGtSelected} />
+                <EvaluationSelector hidden={!asset.evaluated} vertical onChange={setEvaluation} />
+              </Space>
             </Card>
             <Space className={styles.random}>
               <Button
