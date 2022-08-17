@@ -9,7 +9,7 @@ const types = [
   { label: 'TP', value: tags.tp },
 ]
 
-const EvaluationSelector = (props) => <CheckboxSelector
+const EvaluationSelector = props => <CheckboxSelector
   options={types}
   label={t('dataset.assets.selector.evaluation.label')}
   {...props}

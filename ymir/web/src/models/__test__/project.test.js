@@ -84,6 +84,7 @@ describe("models: project", () => {
       code: 0,
       result: expected,
     })
+    generator.next()
     const end = generator.next()
 
     expect(end.value).toEqual(transferProject(expected))

@@ -24,6 +24,7 @@ const initState = {
     total: 0,
   },
   projects: {},
+  current: null,
 }
 
 export default {
@@ -47,6 +48,10 @@ export default {
         const cache = yield select(state => state.project.projects)
         const cacheProject = cache[id]
         if (cacheProject) {
+          yield put({ 
+            type: 'UPDATE_CURRENT',
+            payload: cacheProject,
+          })
           return cacheProject
         }
       }
@@ -55,6 +60,10 @@ export default {
         const project = transferProject(result)
         yield put({
           type: "UPDATE_PROJECTS",
+          payload: project,
+        })
+        yield put({
+          type: 'UPDATE_CURRENT',
           payload: project,
         })
         return project
@@ -132,6 +141,12 @@ export default {
       return {
         ...state,
         projects,
+      }
+    },
+    UPDATE_CURRENT(state, { payload }) {
+      return {
+        ...state,
+        current: payload,
       }
     },
     UPDATE_PREPARETRAINSET(state, { payload }) {
