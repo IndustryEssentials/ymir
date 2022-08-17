@@ -36,8 +36,6 @@ const Dataset = () => {
   const windowWidth = useWindowResize()
   const [dataset, getDataset] = useFetch('dataset/getDataset', {})
   const [{ items: assets, total }, getAssets, setAssets] = useFetch('dataset/getAssetsOfDataset', { items: [], total: 0 })
-  const gtRef = useRef(null)
-  const evaluateRef = useRef(null)
 
   useEffect(() => {
     getDataset({ id })
@@ -102,9 +100,6 @@ const Dataset = () => {
 
   const reset = () => {
     setFilterParams(initQuery)
-
-    // gtRef.current.clear()
-    // evaluateRef.current.clear()
   }
 
   const randomPageButton = (

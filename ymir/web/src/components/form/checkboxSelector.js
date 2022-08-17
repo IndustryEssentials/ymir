@@ -1,29 +1,16 @@
 import { Checkbox, Col, Form, Row } from "antd"
-import { forwardRef, useEffect, useImperativeHandle, useState } from "react"
+import { useEffect, useState } from "react"
 
 
-const CheckboxSelector = forwardRef(({ options = [], label = '', value, onChange = () => { }, vertical }, ref) => {
+const CheckboxSelector = ({ options = [], label = '', value, onChange = () => { }, vertical }) => {
   const [checkeds, setCheckeds] = useState([])
-  const [clearable, setClearable] = useState(false)
-
-  useImperativeHandle(ref, () => {
-    return { clear }
-  })
-
-  function clear() {
-    setClearable(true)
-    setCheckeds([])
-  }
 
   useEffect(() => {
     setCheckeds(value)
   }, [value])
 
   useEffect(() => {
-    if (!clearable) {
-      onChange(checkeds)
-    }
-    setClearable(false)
+    onChange(checkeds)
   }, [checkeds])
 
   return <Row gutter={20} ref={ref}>
@@ -36,6 +23,6 @@ const CheckboxSelector = forwardRef(({ options = [], label = '', value, onChange
       />
     </Col>
   </Row>
-})
+}
 
 export default CheckboxSelector
