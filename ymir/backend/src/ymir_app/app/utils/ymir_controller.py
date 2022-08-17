@@ -170,7 +170,7 @@ class ControllerRequest:
                 importing_request.gt_dir = args["gt_dir"]
             if args.get("pred_dir"):
                 importing_request.pred_dir = args["pred_dir"]
-        importing_request.clean_dirs = True
+        importing_request.clean_dirs = args["clean_dirs"]
 
         importing_request.unknown_types_strategy = IMPORTING_STRATEGY_MAPPING[strategy]
 
