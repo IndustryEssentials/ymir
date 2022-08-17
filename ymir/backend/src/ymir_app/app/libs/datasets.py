@@ -17,7 +17,7 @@ from app.api.errors.errors import (
 )
 from app.config import settings
 from app.constants.state import ResultState, TaskState
-from app.utils.files import FailedToDownload, verify_import_path, prepare_imported_dataset_dir, InvalidFileStructure
+from app.utils.files import FailedToDownload, locate_import_paths, prepare_downloaded_paths, InvalidFileStructure
 from app.utils.ymir_viz import VizClient
 from app.utils.ymir_controller import (
     ControllerClient,
@@ -109,41 +109,29 @@ class ImportDatasetPaths:
     def __init__(
         self, input_path: Optional[str], input_url: Optional[str], cache_dir: str = settings.SHARED_DATA_DIR
     ) -> None:
-        self.cache_dir = cache_dir
-        self.input_url = input_url
-        self.input_path = input_path
-        self._data_dir: Optional[str] = None
+        self._asset_path: Optional[pathlib.Path] = None
+        self._gt_path: Optional[pathlib.Path] = None
+        self._pred_path: Optional[pathlib.Path] = None
+
+        if input_path:
+            self._asset_path, self._gt_path, self._pred_path = locate_import_paths(input_path)
+        elif input_url:
+            temp_dir = tempfile.mkdtemp(prefix="import_dataset_", dir=cache_dir)
+            self._asset_path, self._gt_path, self._pred_path = prepare_downloaded_paths(input_url, temp_dir)
+        else:
+            raise ValueError("input_path or input_url is required")
 
     @property
     def asset_dir(self) -> str:
-        return str(self.data_dir / "images")
+        return str(self._asset_path)
 
     @property
     def gt_dir(self) -> Optional[str]:
-        gt_dir = self.data_dir / "gt"
-        if not gt_dir.is_dir():
-            return None
-        return str(gt_dir)
+        return str(self._gt_path) if self._gt_path else None
 
     @property
     def pred_dir(self) -> Optional[str]:
-        pred_dir = self.data_dir / "pred"
-        if not pred_dir.is_dir():
-            return None
-        return str(pred_dir)
-
-    @property
-    def data_dir(self) -> pathlib.Path:
-        if not self._data_dir:
-            if self.input_path:
-                verify_import_path(self.input_path)
-                self._data_dir = self.input_path
-            elif self.input_url:
-                temp_dir = tempfile.mkdtemp(prefix="import_dataset_", dir=self.cache_dir)
-                self._data_dir = prepare_imported_dataset_dir(self.input_url, temp_dir)
-            else:
-                raise ValueError("input_path or input_url is required")
-        return pathlib.Path(self._data_dir)
+        return str(self._pred_path) if self._pred_path else None
 
 
 def evaluate_dataset(
