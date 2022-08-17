@@ -17,7 +17,7 @@ function DatasetDetail({ dataset = {} }) {
   const [{ cks, tags }, getCK] = useFetch('dataset/getCK', { cks: {}, tags: {} })
 
   useEffect(() => {
-    dataset.id && getCK({ id: dataset.id })
+    dataset.id && dataset.state === states.VALID && getCK({ id: dataset.id })
   }, [dataset])
 
 

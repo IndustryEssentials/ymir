@@ -13,7 +13,7 @@ const CheckboxSelector = ({ options = [], label = '', value, onChange = () => { 
     onChange(checkeds)
   }, [checkeds])
 
-  return <Row gutter={20} ref={ref}>
+  return <Row gutter={20}>
     <Col span={vertical ? 24 : null} style={{ fontWeight: 'bold', textAlign: 'right' }}>{label}</Col>
     <Col flex={1}>
       <Checkbox.Group
