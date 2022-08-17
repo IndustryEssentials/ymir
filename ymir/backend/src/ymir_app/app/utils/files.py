@@ -95,9 +95,29 @@ def decompress_zip(zip_file_path: Union[str, Path], output_dir: Union[str, Path]
         zip_ref.extractall(str(output_dir))
 
 
+def save_file(
+    url: Union[AnyHttpUrl, str],
+    output_dir: Union[str, Path],
+    output_filename: Optional[str] = None,
+) -> Path:
+    filename = output_filename or Path(urlparse(url).path).name
+    output_file = Path(output_dir) / filename
+    save_file_content(url, output_file)
+    return output_file
+
+
+def save_files(urls: List[Union[AnyHttpUrl, str]], output_basedir: Union[str, Path]) -> Tuple[str, Dict]:
+    output_dir = mkdtemp(prefix="import_files_", dir=output_basedir)
+    save_ = partial(save_file, output_dir=Path(output_dir))
+    workers = min(MAX_WORKERS, len(urls))
+    with ThreadPoolExecutor(workers) as executor:
+        res = executor.map(save_, urls)
+    return output_dir, {filename.name: url for filename, url in zip(res, urls)}
+
+
 def locate_dir(p: Union[str, Path], target: str) -> Path:
     """
-    Locate specifc target dirs
+    Locate specifc target dir
     """
     for _p in Path(p).iterdir():
         if not _p.is_dir():
@@ -119,10 +139,24 @@ def locate_dir(p: Union[str, Path], target: str) -> Path:
             for ___p in __p.iterdir():
                 if ___p.is_dir() and ___p.name.lower() == target:
                     return ___p
-    raise FileNotFoundError()
+    raise FileNotFoundError
 
 
-def prepare_imported_dataset_dir(url: str, output_dir: Union[str, Path]) -> str:
+def locate_annotation_dir(p: Path, target: str) -> Optional[Path]:
+    """
+    annotation_dir (gt or pred) must be in sibling with asset_dir
+    p: asset_dir.parent
+    target: "gt" or "pred"
+    """
+    for _p in Path(p).iterdir():
+        if not _p.is_dir():
+            continue
+        if _p.name.lower() == target:
+            return _p
+    return None
+
+
+def prepare_downloaded_paths(url: str, output_dir: Union[str, Path]) -> Tuple[Path, Optional[Path], Optional[Path]]:
     with NamedTemporaryFile("wb") as tmp:
         save_file_content(url, tmp.name)
         logging.info("[import dataset] url content cached to %s", tmp.name)
@@ -130,28 +164,10 @@ def prepare_imported_dataset_dir(url: str, output_dir: Union[str, Path]) -> str:
 
     # only `asset_dir` (images) is required
     # both `gt_dir` and `pred_dir` are optional
-    image_dir = locate_dir(output_dir, "images")
-    return str(image_dir.parent)
-
-
-def save_file(
-    url: Union[AnyHttpUrl, str],
-    output_dir: Union[str, Path],
-    output_filename: Optional[str] = None,
-) -> Path:
-    filename = output_filename or Path(urlparse(url).path).name
-    output_file = Path(output_dir) / filename
-    save_file_content(url, output_file)
-    return output_file
-
-
-def save_files(urls: List[Union[AnyHttpUrl, str]], output_basedir: Union[str, Path]) -> Tuple[str, Dict]:
-    output_dir = mkdtemp(prefix="import_files_", dir=output_basedir)
-    save_ = partial(save_file, output_dir=Path(output_dir))
-    workers = min(MAX_WORKERS, len(urls))
-    with ThreadPoolExecutor(workers) as executor:
-        res = executor.map(save_, urls)
-    return output_dir, {filename.name: url for filename, url in zip(res, urls)}
+    asset_dir = locate_dir(output_dir, "images")
+    gt_dir = locate_annotation_dir(asset_dir.parent, "gt")
+    pred_dir = locate_annotation_dir(asset_dir.parent, "pred")
+    return asset_dir, gt_dir, pred_dir
 
 
 def is_relative_to(path_long: Union[str, Path], path_short: Union[str, Path]) -> bool:
@@ -162,12 +178,14 @@ def is_relative_to(path_long: Union[str, Path], path_short: Union[str, Path]) ->
     return Path(path_short) in Path(path_long).parents
 
 
-def verify_import_path(src_path: Union[str, Path]) -> None:
+def locate_import_paths(src_path: Union[str, Path]) -> Tuple[Path, Optional[Path], Optional[Path]]:
     src_path = Path(src_path)
-    asset_path = src_path / "images"
-    if not asset_path.is_dir():
-        logger.error(f"import path {asset_path} is not directory")
+
+    asset_dir = locate_dir(src_path, "images")
+    gt_dir = locate_annotation_dir(asset_dir.parent, "gt")
+    pred_dir = locate_annotation_dir(asset_dir.parent, "pred")
+
+    if not is_relative_to(asset_dir, settings.SHARED_DATA_DIR):
+        logger.error("import path (%s) not within shared_dir (%s)" % (asset_dir, settings.SHARED_DATA_DIR))
         raise InvalidFileStructure()
-    if not is_relative_to(asset_path, settings.SHARED_DATA_DIR):
-        logger.error("import path (%s) not within shared_dir (%s)" % (asset_path, settings.SHARED_DATA_DIR))
-        raise InvalidFileStructure()
+    return asset_dir, gt_dir, pred_dir
