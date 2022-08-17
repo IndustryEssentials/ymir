@@ -13,7 +13,7 @@ from mir import scm
 from mir.commands.checkout import CmdCheckout
 from mir.commands.commit import CmdCommit
 from mir.protos import mir_command_pb2 as mirpb
-from mir.tools import class_ids, context, det_eval, exodus, mir_storage, mir_repo_utils, revs_parser
+from mir.tools import context, det_eval, exodus, mir_storage, mir_repo_utils, revs_parser
 from mir.tools import settings as mir_settings
 from mir.tools.code import MirCode
 from mir.tools.errors import MirError, MirRuntimeError
@@ -435,7 +435,6 @@ class MirStorageOps():
         {
             "total_assets_mbytes":222,
             "total_assets_count":1420,
-            "new_types_added":False,
             "cks_count_total":{},
             "cks_count":{},
             "hist":{
@@ -459,19 +458,16 @@ class MirStorageOps():
             "gt":{}
         }
         """
-        mir_storage_tasks: mirpb.MirTasks
         mir_storage_context: mirpb.MirContext
 
-        mir_storage_tasks, mir_storage_context = cls.load_multiple_storages(
+        mir_storage_context = cls.load_single_storage(
             mir_root=mir_root,
             mir_branch=mir_branch,
-            ms_list=[mirpb.MirStorage.MIR_TASKS, mirpb.MirStorage.MIR_CONTEXT],
+            ms=mirpb.MirStorage.MIR_CONTEXT,
             mir_task_id=mir_task_id,
             as_dict=False,
         )
-        task_storage = mir_storage_tasks.tasks[mir_storage_tasks.head_task_id]
 
-        class_id_mgr = class_ids.ClassIdManager(mir_root=mir_root)
         result = dict(
             total_assets_mbytes=mir_storage_context.total_asset_mbytes,
             total_assets_count=mir_storage_context.images_cnt,
@@ -481,20 +477,13 @@ class MirStorageOps():
                 asset_area=cls._gen_viz_hist(mir_storage_context.asset_area_hist),
                 asset_hw_ratio=cls._gen_viz_hist(mir_storage_context.asset_hw_ratio_hist),
             ),
-            new_types_added=task_storage.new_types_added,
             cks_count_total={k: v.cnt
                              for k, v in mir_storage_context.cks_cnt.items()},
             cks_count={k: {k2: v2
                            for k2, v2 in v.sub_cnt.items()}
                        for k, v in mir_storage_context.cks_cnt.items()},
-            pred=cls._load_single_dataset_pred_or_gt_info(mir_storage_context=mir_storage_context,
-                                                          task_storage=task_storage,
-                                                          class_id_mgr=class_id_mgr,
-                                                          is_gt=False),
-            gt=cls._load_single_dataset_pred_or_gt_info(mir_storage_context=mir_storage_context,
-                                                        task_storage=task_storage,
-                                                        class_id_mgr=class_id_mgr,
-                                                        is_gt=True),
+            pred=cls._load_single_dataset_pred_or_gt_info(mir_storage_context=mir_storage_context, is_gt=False),
+            gt=cls._load_single_dataset_pred_or_gt_info(mir_storage_context=mir_storage_context, is_gt=True),
         )
         return result
 
@@ -555,10 +544,14 @@ class MirStorageOps():
             asset_ids_detail=asset_ids_detail,
             class_ids_index={k: list(v)
                              for k, v in class_id_to_assets.items()},
-            pred_class_ids_index={k: v.get('key_ids')
-                                  for k, v in mir_storage_keywords.get('pred_idx', {}).get('cis', {}).items()},
-            gt_class_ids_index={k: v.get('key_ids')
-                                for k, v in mir_storage_keywords.get('gt_idx', {}).get('cis', {}).items()},
+            pred_class_ids_index={
+                k: v.get('key_ids')
+                for k, v in mir_storage_keywords.get('pred_idx', {}).get('cis', {}).items()
+            },
+            gt_class_ids_index={
+                k: v.get('key_ids')
+                for k, v in mir_storage_keywords.get('gt_idx', {}).get('cis', {}).items()
+            },
         )
 
     @classmethod
@@ -589,8 +582,7 @@ class MirStorageOps():
         return sorted([{'x': k, 'y': v} for k, v in hist_dict.items()], key=lambda e: e['x'])
 
     @classmethod
-    def _load_single_dataset_pred_or_gt_info(cls, mir_storage_context: mirpb.MirContext, task_storage: mirpb.Task,
-                                             class_id_mgr: class_ids.ClassIdManager, is_gt: bool) -> dict:
+    def _load_single_dataset_pred_or_gt_info(cls, mir_storage_context: mirpb.MirContext, is_gt: bool) -> dict:
         anno_stats = mir_storage_context.gt_stats if is_gt else mir_storage_context.pred_stats
         return dict(
             class_ids_count={k: v
