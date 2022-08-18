@@ -33,7 +33,7 @@ type BaseMongoServer interface {
 		mirRepo *constants.MirRepo,
 		offset int,
 		limit int,
-		classIds []int,
+		classIDs []int,
 		annoTypes []string,
 		currentAssetID string,
 		cmTypes []int,
@@ -192,20 +192,28 @@ func (v *ViewerHandler) GetDatasetMetaCountsHandler(
 	result.TotalAssetsCount = int64(mirContext.ImagesCnt)
 
 	gtStats := mirContext.GtStats
-	result.Gt.NegativeImagesCount = int64(gtStats.NegativeAssetCnt)
-	result.Gt.PositiveImagesCount = int64(gtStats.PositiveAssetCnt)
-	for k, v := range gtStats.ClassIdsCnt {
-		result.Gt.ClassIdsCount[int(k)] = int64(v)
+	if gtStats != nil {
+		result.Gt.NegativeAssetsCount = int64(gtStats.NegativeAssetCnt)
+		result.Gt.PositiveAssetsCount = int64(gtStats.PositiveAssetCnt)
+		if gtStats.ClassIdsCnt != nil {
+			for k, v := range gtStats.ClassIdsCnt {
+				result.Gt.ClassIDsCount[int(k)] = int64(v)
+			}
+		}
+		result.Gt.AnnotationsCount = int64(gtStats.TotalCnt)
 	}
-	result.Gt.AnnotationsCount = int64(gtStats.TotalCnt)
 
 	predStats := mirContext.PredStats
-	result.Pred.NegativeImagesCount = int64(predStats.NegativeAssetCnt)
-	result.Pred.PositiveImagesCount = int64(predStats.PositiveAssetCnt)
-	for k, v := range predStats.ClassIdsCnt {
-		result.Pred.ClassIdsCount[int(k)] = int64(v)
+	if predStats != nil {
+		result.Pred.NegativeAssetsCount = int64(predStats.NegativeAssetCnt)
+		result.Pred.PositiveAssetsCount = int64(predStats.PositiveAssetCnt)
+		if predStats.ClassIdsCnt != nil {
+			for k, v := range predStats.ClassIdsCnt {
+				result.Pred.ClassIDsCount[int(k)] = int64(v)
+			}
+		}
+		result.Pred.AnnotationsCount = int64(predStats.TotalCnt)
 	}
-	result.Pred.AnnotationsCount = int64(predStats.TotalCnt)
 
 	return v.fillupDatasetUniverseFields(mirRepo, result)
 }
@@ -227,17 +235,41 @@ func (v *ViewerHandler) fillupDatasetUniverseFields(
 			result.CksCount[k][k2] = int64(v2)
 		}
 	}
+
+	if mirContext.GtStats != nil && mirContext.GtStats.TagsCnt != nil {
+		for k, v := range mirContext.GtStats.TagsCnt {
+			result.Gt.TagsCountTotal[k] = int64(v.Cnt)
+			result.Gt.TagsCount[k] = map[string]int64{}
+			for k2, v2 := range v.SubCnt {
+				result.Gt.TagsCount[k][k2] = int64(v2)
+			}
+		}
+	}
+
+	if mirContext.PredStats != nil && mirContext.PredStats.TagsCnt != nil {
+		for k, v := range mirContext.PredStats.TagsCnt {
+			result.Pred.TagsCountTotal[k] = int64(v.Cnt)
+			result.Pred.TagsCount[k] = map[string]int64{}
+			for k2, v2 := range v.SubCnt {
+				result.Pred.TagsCount[k][k2] = int64(v2)
+			}
+		}
+	}
+
 	return result
 }
 
 func (v *ViewerHandler) GetDatasetStatsHandler(
 	mirRepo *constants.MirRepo,
-	classIds []int,
+	classIDs []int,
 	requireAssetsHist bool,
 	requireAnnotationsHist bool,
 ) *constants.QueryDatasetStatsResult {
+	if len(classIDs) < 1 && !requireAssetsHist && !requireAnnotationsHist {
+		panic("same result as dataset_meta_count, should use lightweight interface instead.")
+	}
 	v.loadAndIndexAssets(mirRepo)
-	result := v.mongoServer.QueryDatasetStats(mirRepo, classIds, requireAssetsHist, requireAnnotationsHist)
+	result := v.mongoServer.QueryDatasetStats(mirRepo, classIDs, requireAssetsHist, requireAnnotationsHist)
 
 	// Backfill task and context info, to align with GetDatasetMetaCountsHandler result.
 	return v.fillupDatasetUniverseFields(mirRepo, result)

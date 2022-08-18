@@ -110,8 +110,8 @@ func TestStatsPageHandlerSuccess(t *testing.T) {
 
 	statsExpectedResult := constants.NewQueryDatasetStatsResult()
 	for classID := range classIDs {
-		statsExpectedResult.Gt.ClassIdsCount[classID] = 0
-		statsExpectedResult.Pred.ClassIdsCount[classID] = 0
+		statsExpectedResult.Gt.ClassIDsCount[classID] = 0
+		statsExpectedResult.Pred.ClassIDsCount[classID] = 0
 	}
 	statsExpectedResponseData := buildResponseBody(
 		constants.ViewerSuccessCode,
