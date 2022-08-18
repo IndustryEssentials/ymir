@@ -1,6 +1,6 @@
 import enum
 import json
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Union
 
 from pydantic import BaseModel, Field, validator, root_validator
 
@@ -182,7 +182,7 @@ class DatasetAnnotation(BaseModel):
     negative_assets_count: int
     tags_count_total: Dict  # box tags in first level
     tags_count: Dict  # box tags in second level
-    hist: DatasetAnnotationHist
+    hist: Union[DatasetAnnotationHist, Dict]
     annos_count: int
     ave_annos_count: float
 
@@ -202,7 +202,7 @@ class DatasetAnalysis(BaseModel):
 
     gt: Optional[DatasetAnnotation]
     pred: Optional[DatasetAnnotation]
-    hist: DatasetHist
+    hist: Union[DatasetHist, Dict]
 
     class Config:
         orm_mode = True

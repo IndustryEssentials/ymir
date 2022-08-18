@@ -224,7 +224,7 @@ class ViewerDatasetAnnotation:
     user_labels: InitVar[UserLabels] = None
 
     def __post_init__(self, user_labels: UserLabels) -> None:
-        self.class_ids_count = {
+        self.keywords = {
             user_labels.get_main_name(int(class_id)): count for class_id, count in self.class_ids_count.items()
         }
 
@@ -235,11 +235,16 @@ class ViewerDatasetInfoResponse:
     pred: Any
     total_assets_count: int
     new_types_added: Optional[bool]
+    keywords: Optional[Dict] = None
     user_labels: InitVar[UserLabels] = None
 
     def __post_init__(self, user_labels: UserLabels) -> None:
         self.gt = ViewerDatasetAnnotation(self.gt["class_ids_count"], user_labels=user_labels)
         self.pred = ViewerDatasetAnnotation(self.pred["class_ids_count"], user_labels=user_labels)
+        self.keywords = {
+            "gt": self.gt.keywords if self.gt else {},
+            "pred": self.pred.keywords if self.pred else {},
+        }
 
     @classmethod
     def from_dict(cls, data: Dict, user_labels: UserLabels) -> "ViewerDatasetInfoResponse":
