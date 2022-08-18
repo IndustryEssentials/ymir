@@ -5,14 +5,9 @@ import { useEffect, useState } from "react"
 const CheckboxSelector = ({ options = [], label = '', value, onChange = () => { }, vertical, labelAlign, ...rest }) => {
   const [checkeds, setCheckeds] = useState([])
 
-  useEffect(() => {
-    setCheckeds(value)
-  }, [value])
+  useEffect(() => setCheckeds(value), [value])
 
-  useEffect(() => {
-    console.log('checkeds:', checkeds)
-    onChange(checkeds)
-  }, [checkeds])
+  useEffect(() => onChange(checkeds), [checkeds])
 
   return <Row gutter={20} {...rest}>
     <Col span={vertical ? 24 : null} style={{ fontWeight: 'bold', textAlign: labelAlign || 'left' }}>{label}</Col>
