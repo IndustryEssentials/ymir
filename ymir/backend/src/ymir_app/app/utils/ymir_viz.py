@@ -47,7 +47,7 @@ class DatasetAnnotationMetadata:
             negative_assets_count=res["negative_assets_count"],
             tags_count_total=res["tags_count_total"],
             tags_count=res["tags_count"],
-            hist=res["hist"],
+            hist=res.get("annos_hist", {}),
             annos_count=res["annos_count"],
             ave_annos_count=ave_annos_count,
         )
@@ -83,12 +83,6 @@ class DatasetAnalysis:
             if res.get("pred")
             else None
         )
-        hist = {
-            "asset_bytes": res["hist"]["asset_bytes"],
-            "asset_area": res["hist"]["asset_area"],
-            "asset_quality": res["hist"]["asset_quality"],
-            "asset_hw_ratio": res["hist"]["asset_hw_ratio"],
-        }
         keywords = {
             "gt": gt.keywords if gt else {},
             "pred": pred.keywords if pred else {},
@@ -106,7 +100,7 @@ class DatasetAnalysis:
             total_assets_count=total_assets_count,
             gt=gt,
             pred=pred,
-            hist=hist,
+            hist=res.get("assets_hist", {}),
             negative_info=negative_info,
         )
 
