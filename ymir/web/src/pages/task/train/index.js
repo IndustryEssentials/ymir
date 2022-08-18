@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react"
+import React, { useCallback, useEffect, useState } from "react"
 import { connect } from "dva"
 import { Select, Card, Input, Radio, Button, Form, Row, Col, Space, InputNumber, Tag } from "antd"
 import { formLayout } from "@/config/antd"
@@ -80,7 +80,7 @@ function Train({ allDatasets, datasetCache, ...func }) {
   }, [selectOpenpai])
 
   useEffect(() => {
-    const dss = allDatasets
+    const dss = allDatasets || []
     const isValid = dss.some(ds => ds.id === did)
     const visibleValue = isValid ? did : null
     setTrainSet(visibleValue)
@@ -112,10 +112,10 @@ function Train({ allDatasets, datasetCache, ...func }) {
   }, [trainSet, testSet])
 
   useEffect(() => {
-    if (trainDataset?.id) {
+    if (trainSet) {
       setAllKeywords()
     }
-  }, [trainDataset])
+  }, [trainSet])
 
   useEffect(() => {
     if (duplicationChecked) {
@@ -133,7 +133,7 @@ function Train({ allDatasets, datasetCache, ...func }) {
   }
 
   function setAllKeywords() {
-    const kws = trainDataset.gt.keywords
+    const kws = trainDataset?.gt?.keywords
     setSelectedKeywords(kws)
     form.setFieldsValue({ keywords: kws })
   }
@@ -234,6 +234,13 @@ function Train({ allDatasets, datasetCache, ...func }) {
     return matchKeywords(ds) && notTrainSet && notTestingSet(ds.id)
   })
 
+  const renderKeywordRates = useCallback(() => {
+    return trainDataset ?
+    <Form.Item label={t('dataset.train.form.samples')}>
+      <KeywordRates keywords={selectedKeywords} dataset={trainDataset}></KeywordRates>
+    </Form.Item> : null
+  }, [selectedKeywords])
+
   const getCheckedValue = (list) => list.find((item) => item.checked)["value"]
   const initialValues = {
     name: generateName('train_model'),
@@ -279,10 +286,7 @@ function Train({ allDatasets, datasetCache, ...func }) {
                 onChange={trainSetChange}
               />
             </Form.Item>
-            {trainSet ?
-              <Form.Item label={t('dataset.train.form.samples')}>
-                <KeywordRates keywords={selectedKeywords} dataset={trainDataset}></KeywordRates>
-              </Form.Item> : null}
+            {renderKeywordRates()}
             {iterationId ? <Form.Item label={t('task.train.form.keywords.label')}>
               {project?.keywords?.map(keyword => <Tag key={keyword}>{keyword}</Tag>)}
             </Form.Item> :
