@@ -167,7 +167,7 @@ class TestEvaluationController:
         mocker.patch.object(det_eval, 'det_evaluate', return_value=(evaluation, None))
         resp = test_client.get(
             f"/v1/users/{user_id}/repositories/{repo_id}/branches/{branch_id}/dataset_fast_evaluation"
-            "?conf_thr=0.3&iou_thr=0.5&need_pr_curve=false&need_ck=true")
+            "?conf_thr=0.3&iou_thr=0.5&need_pr_curve=false")
 
         assert resp.status_code == 200
         assert resp.json()['result'] == evaluation_json['dataset_evaluations']
