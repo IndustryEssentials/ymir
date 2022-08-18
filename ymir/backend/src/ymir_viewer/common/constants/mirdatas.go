@@ -114,6 +114,10 @@ type DatasetStatsElement struct {
 	// Annotations
 	AnnotationsCount int64               `json:"annos_count"`
 	AnnotationsHist  map[string]*MirHist `json:"annos_hist"`
+
+	// Tags
+	TagsCountTotal map[string]int64            `json:"tags_count_total"`
+	TagsCount      map[string]map[string]int64 `json:"tags_count"`
 }
 
 type QueryDatasetStatsContext struct {
@@ -143,8 +147,18 @@ type QueryDatasetStatsResult struct {
 func NewQueryDatasetStatsResult() *QueryDatasetStatsResult {
 	queryResult := QueryDatasetStatsResult{
 		AssetsHist: map[string]*MirHist{},
-		Gt:         DatasetStatsElement{ClassIdsCount: map[int]int64{}, AnnotationsHist: map[string]*MirHist{}},
-		Pred:       DatasetStatsElement{ClassIdsCount: map[int]int64{}, AnnotationsHist: map[string]*MirHist{}},
+		Gt: DatasetStatsElement{
+			ClassIdsCount:   map[int]int64{},
+			AnnotationsHist: map[string]*MirHist{},
+			TagsCount:       map[string]map[string]int64{},
+			TagsCountTotal:  map[string]int64{},
+		},
+		Pred: DatasetStatsElement{
+			ClassIdsCount:   map[int]int64{},
+			AnnotationsHist: map[string]*MirHist{},
+			TagsCount:       map[string]map[string]int64{},
+			TagsCountTotal:  map[string]int64{},
+		},
 
 		CksCount:      map[string]map[string]int64{},
 		CksCountTotal: map[string]int64{},
