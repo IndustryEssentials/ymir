@@ -22,7 +22,7 @@ from id_definition.error_codes import VizErrorCode, CMDResponseCode
 
 
 @dataclass
-class DatasetAnnotationMetadata:
+class DatasetAnnotation:
     keywords: Dict[str, int]
     class_ids_count: Dict[str, int]
     negative_assets_count: int
@@ -36,7 +36,7 @@ class DatasetAnnotationMetadata:
     ave_annos_count: float
 
     @classmethod
-    def from_viz_res(cls, res: Dict, total_assets_count: int, user_labels: UserLabels) -> "DatasetAnnotationMetadata":
+    def from_viz_res(cls, res: Dict, total_assets_count: int, user_labels: UserLabels) -> "DatasetAnnotation":
         ave_annos_count = round(res["annos_count"] / total_assets_count, 2) if total_assets_count else 0
         keywords = {
             user_labels.get_main_name(int(class_id)): count for class_id, count in res["class_ids_count"].items()
@@ -64,8 +64,8 @@ class DatasetAnalysis:
     total_assets_mbytes: int
     total_assets_count: int
 
-    gt: Optional[DatasetAnnotationMetadata]
-    pred: Optional[DatasetAnnotationMetadata]
+    gt: Optional[DatasetAnnotation]
+    pred: Optional[DatasetAnnotation]
     hist: Dict
 
     negative_info: Dict[str, int]
@@ -73,16 +73,8 @@ class DatasetAnalysis:
     @classmethod
     def from_viz_res(cls, res: Dict, user_labels: UserLabels) -> "DatasetAnalysis":
         total_assets_count = res["total_assets_count"]
-        gt = (
-            DatasetAnnotationMetadata.from_viz_res(res["gt"], total_assets_count, user_labels)
-            if res.get("gt")
-            else None
-        )
-        pred = (
-            DatasetAnnotationMetadata.from_viz_res(res["pred"], total_assets_count, user_labels)
-            if res.get("pred")
-            else None
-        )
+        gt = DatasetAnnotation.from_viz_res(res["gt"], total_assets_count, user_labels) if res.get("gt") else None
+        pred = DatasetAnnotation.from_viz_res(res["pred"], total_assets_count, user_labels) if res.get("pred") else None
         keywords = {
             "gt": gt.keywords if gt else {},
             "pred": pred.keywords if pred else {},
@@ -103,38 +95,6 @@ class DatasetAnalysis:
             hist=res.get("assets_hist", {}),
             negative_info=negative_info,
         )
-
-
-class VizDatasetStatsElement(BaseModel):
-    class_ids_count: Dict[int, int]
-    negative_assets_count: int
-
-
-@dataclasses.dataclass
-class DatasetStatsElement:
-    keywords: Dict[str, int]
-    negative_assets_count: int
-
-    @classmethod
-    def from_dict(cls, data: Dict, user_labels: UserLabels) -> "DatasetStatsElement":
-        viz_res = VizDatasetStatsElement(**data)
-        keywords = {
-            user_labels.get_main_name(int(class_id)): count for class_id, count in viz_res.class_ids_count.items()
-        }
-        return cls(keywords, viz_res.negative_assets_count)
-
-
-@dataclasses.dataclass
-class DatasetStats:
-    total_assets_count: int
-    gt: DatasetStatsElement
-    pred: DatasetStatsElement
-
-    @classmethod
-    def from_dict(cls, res: Dict, user_labels: UserLabels) -> "DatasetStats":
-        gt = DatasetStatsElement.from_dict(res["gt"], user_labels)
-        pred = DatasetStatsElement.from_dict(res["pred"], user_labels)
-        return cls(total_assets_count=res["total_assets_count"], gt=gt, pred=pred)
 
 
 class EvaluationScore(BaseModel):
@@ -421,22 +381,6 @@ class VizClient:
         res = self.parse_resp(resp)
         logger.info("[viewer] get dataset analysis response: %s", res)
         return DatasetAnalysis.from_viz_res(res, self._user_labels)
-
-    def get_dataset_stats(
-        self,
-        *,
-        dataset_hash: Optional[str] = None,
-        keyword_ids: List[int],
-        user_labels: Optional[UserLabels] = None,
-    ) -> DatasetStats:
-        dataset_hash = dataset_hash or self._branch_id
-        user_labels = user_labels or self._user_labels
-        url = f"{self._url_prefix}/{dataset_hash}/dataset_stats"
-        params = {"class_ids": ",".join(str(k) for k in keyword_ids)}
-        resp = self.get_resp(url, params=params)
-        res = self.parse_resp(resp)
-        logger.info("[viewer] get_dataset_stats response: %s", res)
-        return DatasetStats.from_dict(res, user_labels=user_labels)
 
     def get_fast_evaluation(
         self,

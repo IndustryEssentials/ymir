@@ -61,7 +61,7 @@ def get_datasets_analysis(
     viz_client.initialize(user_id=current_user.id, project_id=project_id, user_labels=user_labels)
     results = []
     for dataset in datasets:
-        res = viz_client.get_dataset_analysis(dataset.hash)
+        res = viz_client.get_dataset_analysis(dataset.hash, require_hist=True)
         res.group_name = dataset.group_name  # type: ignore
         res.version_num = dataset.version_num  # type: ignore
         results.append(res)
@@ -308,15 +308,14 @@ def get_dataset_stats(
     keywords = keywords_str.split(",")
     if not keywords:
         raise RequiredFieldMissing()
-
     keyword_ids = user_labels.get_class_ids(keywords)
+
     viz_client.initialize(
         user_id=current_user.id,
         project_id=project_id,
-        branch_id=dataset.hash,
         user_labels=user_labels,
     )
-    dataset_stats = viz_client.get_dataset_stats(keyword_ids=keyword_ids)
+    dataset_stats = viz_client.get_dataset_analysis(dataset_hash=dataset.hash, keyword_ids=keyword_ids)
     return {"result": dataset_stats}
 
 
