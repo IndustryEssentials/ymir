@@ -141,17 +141,11 @@ class DatasetStatsElement(BaseModel):
     keywords: Dict[str, int]
     negative_assets_count: int
 
-    class Config:
-        orm_mode = True
 
-
-class DatasetStats(BaseModel):
-    total_assets_count: int
-    gt: DatasetStatsElement
-    pred: DatasetStatsElement
-
-    class Config:
-        orm_mode = True
+class DatasetStats(Dataset):
+    total_assets_count: Optional[int]
+    gt: Optional[DatasetStatsElement]
+    pred: Optional[DatasetStatsElement]
 
 
 class DatasetStatsOut(Common):

@@ -5,11 +5,12 @@ from .dataset import (
     DatasetImport,
     DatasetOut,
     DatasetPaginationOut,
-    DatasetsOut,
     DatasetUpdate,
-    ImportStrategy,
+    DatasetsOut,
     DatasetsFusionParameter,
     DatasetsAnalysesOut,
+    DatasetStatsOut,
+    ImportStrategy,
 )
 from .dataset_group import (
     DatasetGroupOut,

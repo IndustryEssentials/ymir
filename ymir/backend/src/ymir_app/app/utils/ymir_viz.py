@@ -330,7 +330,6 @@ class VizClient:
 
         resp = self.session.get(url, params=payload, timeout=settings.VIZ_TIMEOUT)
         res = self.parse_resp(resp)
-        logger.info("[viz] get_assets response: %s", res)
         assets = ViewerAssetsResponse.from_dict(res, self._user_labels)
         return asdict(assets)
 
@@ -353,13 +352,12 @@ class VizClient:
         url = f"{self._url_prefix}/branch/{dataset_hash}/dataset_meta_count"
         resp = self.session.get(url, timeout=settings.VIZ_TIMEOUT)
         res = self.parse_resp(resp)
-        logger.info("[viewer] dataset_meta_count response: %s", res)
         dataset_counts = ViewerDatasetInfoResponse.from_dict(res, user_labels=user_labels)
         return asdict(dataset_counts)
 
     def get_dataset_analysis(
         self, dataset_hash: str, keyword_ids: Optional[List[int]] = None, require_hist: bool = False
-    ) -> DatasetAnalysis:
+    ) -> Dict:
         """
         viewer: GET /dataset_stats
         """
@@ -374,8 +372,7 @@ class VizClient:
         resp = self.session.get(url, params=params, timeout=settings.VIZ_TIMEOUT)
         resp = self.get_resp(url)
         res = self.parse_resp(resp)
-        logger.info("[viewer] get dataset analysis response: %s", res)
-        return DatasetAnalysis.from_dict(res, self._user_labels)
+        return asdict(DatasetAnalysis.from_dict(res, self._user_labels))
 
     def get_fast_evaluation(
         self,
@@ -387,6 +384,8 @@ class VizClient:
         """
         viz: /dataset_fast_evaluation
         """
+        # todo
+        #  replace with controller counterpart
         url_prefix = f"http://{self.host}/v1/users/{self._user_id}/repositories/{self._project_id}/branches"
         url = f"{url_prefix}/{dataset_hash}/dataset_fast_evaluation"
         params = {
@@ -432,19 +431,21 @@ class VizClient:
         3. model not ready, try to get model later
         """
         if resp.ok:
-            return resp.json()["result"]
+            res = resp.json()["result"]
+            logger.info("[viewer] successful response: %s", res)
+            return res
 
+        logger.error("[viewer] error response: %s", resp.content)
         if resp.status_code == 400:
-            logger.error("[viz] failed to parse viz error response: %s", resp.content)
             error_code = resp.json()["code"]
             if error_code == VizErrorCode.MODEL_NOT_EXISTS:
-                logger.error("[viz] model not found")
+                logger.error("[viewer] model not found")
                 raise ModelNotFound()
             elif error_code == VizErrorCode.DATASET_EVALUATION_NOT_EXISTS:
-                logger.error("[viz] dataset evaluation not found")
+                logger.error("[viewer] dataset evaluation not found")
                 raise DatasetEvaluationNotFound()
             elif error_code == CMDResponseCode.RC_CMD_NO_ANNOTATIONS:
-                logger.error("[viz] missing annotations for dataset evaluation")
+                logger.error("[viewer] missing annotations for dataset evaluation")
                 raise DatasetEvaluationMissingAnnotation()
         raise FailedToParseVizResponse()
 

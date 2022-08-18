@@ -4,6 +4,7 @@ import random
 from typing import Any, Dict, Optional, List
 
 from fastapi import APIRouter, BackgroundTasks, Depends, Path, Query
+from fastapi.encoders import jsonable_encoder
 from fastapi.logger import logger
 from sqlalchemy.orm import Session
 
@@ -18,7 +19,6 @@ from app.api.errors.errors import (
     FailedToHideProtectedResources,
     DatasetGroupNotFound,
     ProjectNotFound,
-    RequiredFieldMissing,
     MissingOperations,
     RefuseToProcessMixedOperations,
 )
@@ -44,28 +44,6 @@ def batch_get_datasets(
     if not datasets:
         raise DatasetNotFound()
     return {"result": datasets}
-
-
-@router.get("/analysis", response_model=schemas.DatasetsAnalysesOut)
-def get_datasets_analysis(
-    db: Session = Depends(deps.get_db),
-    viz_client: VizClient = Depends(deps.get_viz_client),
-    project_id: int = Query(None),
-    dataset_ids: str = Query(None, example="1,2,3", alias="ids"),
-    current_user: models.User = Depends(deps.get_current_active_user),
-    user_labels: UserLabels = Depends(deps.get_user_labels),
-) -> Any:
-    ids = [int(i) for i in dataset_ids.split(",")]
-    datasets = ensure_datasets_are_ready(db, dataset_ids=ids)
-
-    viz_client.initialize(user_id=current_user.id, project_id=project_id, user_labels=user_labels)
-    results = []
-    for dataset in datasets:
-        res = viz_client.get_dataset_analysis(dataset.hash, require_hist=True)
-        res.group_name = dataset.group_name  # type: ignore
-        res.version_num = dataset.version_num  # type: ignore
-        results.append(res)
-    return {"result": {"datasets": results}}
 
 
 @router.post("/batch", response_model=schemas.DatasetsOut)
@@ -274,13 +252,16 @@ def delete_dataset(
 
 @router.get(
     "/{dataset_id}",
-    response_model=schemas.DatasetOut,
+    response_model=schemas.DatasetStatsOut,
     responses={404: {"description": "Dataset Not Found"}},
 )
 def get_dataset(
     db: Session = Depends(deps.get_db),
     dataset_id: int = Path(..., example="12"),
+    verbose_info: bool = Query(False, alias="v"),
     current_user: models.User = Depends(deps.get_current_active_user),
+    viz_client: VizClient = Depends(deps.get_viz_client),
+    user_labels: UserLabels = Depends(deps.get_user_labels),
 ) -> Any:
     """
     Get verbose information of specific dataset
@@ -288,35 +269,44 @@ def get_dataset(
     dataset = crud.dataset.get_by_user_and_id(db, user_id=current_user.id, id=dataset_id)
     if not dataset:
         raise DatasetNotFound()
-    return {"result": dataset}
+
+    dataset_info = jsonable_encoder(dataset)
+    if verbose_info:
+        viz_client.initialize(
+            user_id=current_user.id,
+            project_id=dataset.project_id,
+            user_labels=user_labels,
+        )
+        dataset_stats = viz_client.get_dataset_info(dataset_hash=dataset.hash)  # type: ignore
+        dataset_info.update(dataset_stats)
+
+    return {"result": dataset_info}
 
 
-@router.get("/{dataset_id}/stats", response_model=schemas.dataset.DatasetStatsOut)
-def get_dataset_stats(
+@router.get("/analysis", response_model=schemas.DatasetsAnalysesOut)
+def get_datasets_analysis(
     db: Session = Depends(deps.get_db),
-    dataset_id: int = Path(..., example="12"),
+    viz_client: VizClient = Depends(deps.get_viz_client),
     project_id: int = Query(None),
     keywords_str: str = Query(None, alias="keywords"),
-    viz_client: VizClient = Depends(deps.get_viz_client),
+    dataset_ids: str = Query(None, example="1,2,3", alias="ids"),
     current_user: models.User = Depends(deps.get_current_active_user),
     user_labels: UserLabels = Depends(deps.get_user_labels),
 ) -> Any:
-    dataset = crud.dataset.get_by_user_and_id(db, user_id=current_user.id, id=dataset_id)
-    if not dataset:
-        raise DatasetNotFound()
+    ids = [int(i) for i in dataset_ids.split(",")]
+    datasets = ensure_datasets_are_ready(db, dataset_ids=ids)
 
     keywords = keywords_str.split(",")
-    if not keywords:
-        raise RequiredFieldMissing()
     keyword_ids = user_labels.get_class_ids(keywords)
 
-    viz_client.initialize(
-        user_id=current_user.id,
-        project_id=project_id,
-        user_labels=user_labels,
-    )
-    dataset_stats = viz_client.get_dataset_analysis(dataset_hash=dataset.hash, keyword_ids=keyword_ids)
-    return {"result": dataset_stats}
+    viz_client.initialize(user_id=current_user.id, project_id=project_id, user_labels=user_labels)
+    results = []
+    for dataset in datasets:
+        res = viz_client.get_dataset_analysis(dataset.hash, keyword_ids, require_hist=True)
+        res.group_name = dataset.group_name  # type: ignore
+        res.version_num = dataset.version_num  # type: ignore
+        results.append(res)
+    return {"result": {"datasets": results}}
 
 
 @router.get(
