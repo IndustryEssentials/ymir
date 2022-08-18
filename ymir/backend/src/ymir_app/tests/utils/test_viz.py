@@ -272,8 +272,8 @@ class TestVizClient:
         user_id = random.randint(100, 200)
         project_id = random.randint(100, 200)
         task_id = random_lower_string()
-        viz.initialize(user_id=user_id, project_id=project_id, branch_id=task_id)
-        ret = viz.get_model_info()
+        viz.initialize(user_id=user_id, project_id=project_id)
+        ret = viz.get_model_info(task_id)
         assert isinstance(ret, Dict)
         assert ret["hash"] == res["model_hash"]
         assert ret["map"] == res["mean_average_precision"]
@@ -321,7 +321,7 @@ class TestVizClient:
         user_id = random.randint(100, 200)
         project_id = random.randint(100, 200)
         task_id = random_lower_string()
-        viz.initialize(user_id=user_id, project_id=project_id, branch_id=task_id, user_labels=mock_user_labels)
+        viz.initialize(user_id=user_id, project_id=project_id, user_labels=mock_user_labels)
         ret = viz.get_dataset_analysis(dataset_hash=task_id)
         assert isinstance(ret, m.DatasetAnalysis)
         assert "gt" in ret.keywords

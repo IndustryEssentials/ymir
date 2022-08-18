@@ -207,7 +207,6 @@ class TaskResult:
         self.viz.initialize(
             user_id=self.user_id,
             project_id=self.project_id,
-            branch_id=self.task_hash,
         )
         self.cache = CacheClient(user_id=self.user_id)
 
@@ -226,7 +225,7 @@ class TaskResult:
     @property
     def model_info(self) -> Optional[Dict]:
         try:
-            result = self.viz.get_model_info()
+            result = self.viz.get_model_info(self.task_hash)
         except (ModelNotReady, ModelNotFound):
             logger.exception("[update task] failed to get model_info: model not ready")
             return None
@@ -239,7 +238,7 @@ class TaskResult:
     @property
     def dataset_info(self) -> Optional[Dict]:
         try:
-            dataset_info = self.viz.get_dataset_info(dataset_hash=self.task_hash, user_labels=self.user_labels)
+            dataset_info = self.viz.get_dataset_info(self.task_hash, user_labels=self.user_labels)
         except Exception:
             logger.exception("[update task] failed to get dataset_info, check viz log")
             return None

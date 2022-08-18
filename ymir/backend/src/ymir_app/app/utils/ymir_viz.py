@@ -283,32 +283,19 @@ class VizClient:
         self._branch_id = None  # type: Optional[str]
         self._url_prefix = None  # type: Optional[str]
         self._user_labels = None  # type: Optional[UserLabels]
-        self._use_viewer = False
 
     def initialize(
         self,
         *,
         user_id: int,
         project_id: int,
-        branch_id: Optional[str] = None,
         user_labels: Optional[UserLabels] = None,
-        use_viewer: bool = True,
     ) -> None:
         self._user_id = f"{user_id:0>4}"
         self._project_id = f"{project_id:0>6}"
-        if use_viewer:
-            # fixme
-            #  remove upon replacing all viz endpoints
-            self._use_viewer = True
-            host = f"127.0.0.1:{settings.VIEWER_HOST_PORT}"
-            self._url_prefix = f"http://{host}/api/v1/users/{self._user_id}/repo/{self._project_id}"  # noqa: E501
-        else:
-            self._url_prefix = (
-                f"http://{self.host}/v1/users/{self._user_id}/repositories/{self._project_id}/branches"  # noqa: E501
-            )
+        host = f"127.0.0.1:{settings.VIEWER_HOST_PORT}"
+        self._url_prefix = f"http://{host}/api/v1/users/{self._user_id}/repo/{self._project_id}"  # noqa: E501
 
-        if branch_id:
-            self._branch_id = branch_id
         if user_labels:
             self._user_labels = user_labels
 
@@ -347,17 +334,18 @@ class VizClient:
         assets = ViewerAssetsResponse.from_dict(res, self._user_labels)
         return asdict(assets)
 
-    def get_model_info(self) -> Dict:
+    def get_model_info(self, branch_id: str) -> Dict:
         """
         viewer: GET /model_info
         """
-        url = f"{self._url_prefix}/branch/{self._branch_id}/model_info"
+        url = f"{self._url_prefix}/branch/{branch_id}/model_info"
+        resp = self.session.get(url, timeout=settings.VIZ_TIMEOUT)
         resp = self.get_resp(url)
         res = self.parse_resp(resp)
         model_info = ViewerModelInfoResponse.parse_obj(res).dict()
         return model_info
 
-    def get_dataset_info(self, *, dataset_hash: str, user_labels: Optional[UserLabels] = None) -> Dict:
+    def get_dataset_info(self, dataset_hash: str, user_labels: Optional[UserLabels] = None) -> Dict:
         """
         viewer: GET /dataset_meta_count
         """
@@ -383,6 +371,7 @@ class VizClient:
 
     def get_dataset_analysis(self, dataset_hash: str) -> DatasetMetaData:
         url = f"{self._url_prefix}/{dataset_hash}/datasets"
+        resp = self.session.get(url, params=params, timeout=settings.VIZ_TIMEOUT)
         resp = self.get_resp(url)
         res = self.parse_resp(resp)
         logger.info("[viewer] get dataset analysis response: %s", res)
@@ -398,7 +387,8 @@ class VizClient:
         """
         viz: /dataset_fast_evaluation
         """
-        url = f"{self._url_prefix}/{dataset_hash}/dataset_fast_evaluation"
+        url_prefix = f"http://{self.host}/v1/users/{self._user_id}/repositories/{self._project_id}/branches"
+        url = f"{url_prefix}/{dataset_hash}/dataset_fast_evaluation"
         params = {
             "conf_thr": confidence_threshold,
             "iou_thr": iou_threshold,
