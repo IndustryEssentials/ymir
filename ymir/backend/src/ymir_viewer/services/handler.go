@@ -193,8 +193,8 @@ func (v *ViewerHandler) GetDatasetMetaCountsHandler(
 
 	gtStats := mirContext.GtStats
 	if gtStats != nil {
-		result.Gt.NegativeImagesCount = int64(gtStats.NegativeAssetCnt)
-		result.Gt.PositiveImagesCount = int64(gtStats.PositiveAssetCnt)
+		result.Gt.NegativeAssetsCount = int64(gtStats.NegativeAssetCnt)
+		result.Gt.PositiveAssetsCount = int64(gtStats.PositiveAssetCnt)
 		if gtStats.ClassIdsCnt != nil {
 			for k, v := range gtStats.ClassIdsCnt {
 				result.Gt.ClassIDsCount[int(k)] = int64(v)
@@ -205,8 +205,8 @@ func (v *ViewerHandler) GetDatasetMetaCountsHandler(
 
 	predStats := mirContext.PredStats
 	if predStats != nil {
-		result.Pred.NegativeImagesCount = int64(predStats.NegativeAssetCnt)
-		result.Pred.PositiveImagesCount = int64(predStats.PositiveAssetCnt)
+		result.Pred.NegativeAssetsCount = int64(predStats.NegativeAssetCnt)
+		result.Pred.PositiveAssetsCount = int64(predStats.PositiveAssetCnt)
 		if predStats.ClassIdsCnt != nil {
 			for k, v := range predStats.ClassIdsCnt {
 				result.Pred.ClassIDsCount[int(k)] = int64(v)

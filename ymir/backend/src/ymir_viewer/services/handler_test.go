@@ -151,9 +151,9 @@ func TestGetDatasetMetaCountsHandler(t *testing.T) {
 			{
 				"0": 3
 			},
-			"negative_images_count": 2,
+			"negative_assets_count": 2,
 			"annos_hist": {},
-			"positive_images_count": 3,
+			"positive_assets_count": 3,
 			"tags_count_total":
 			{
 				"city": 1
@@ -172,9 +172,9 @@ func TestGetDatasetMetaCountsHandler(t *testing.T) {
 			{
 				"1": 8
 			},
-			"negative_images_count": 5,
+			"negative_assets_count": 5,
 			"annos_hist": {},
-			"positive_images_count": 8,
+			"positive_assets_count": 8,
 			"tags_count_total":
 			{
 				"city": 1
