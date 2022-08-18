@@ -162,7 +162,7 @@ def evaluate_datasets(
     datasets: List[models.Dataset],
 ) -> Dict:
     dataset_id_mapping = {dataset.hash: dataset.id for dataset in datasets}
-    viz.initialize(user_id=user_id, project_id=project_id, user_labels=user_labels)
+    viz.initialize(user_id=user_id, project_id=project_id, user_labels=user_labels, use_viewer=False)
 
     f_evaluate = partial(evaluate_dataset, viz, confidence_threshold, iou_threshold, require_average_iou, need_pr_curve)
     with ThreadPoolExecutor() as executor:

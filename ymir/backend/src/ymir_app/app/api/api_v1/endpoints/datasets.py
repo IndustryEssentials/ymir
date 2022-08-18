@@ -362,7 +362,6 @@ def get_assets_of_dataset(
         user_id=current_user.id,
         project_id=dataset.project_id,
         user_labels=user_labels,
-        use_viewer=True,
     )
     assets = viz_client.get_assets(
         dataset_hash=dataset.hash,
@@ -401,7 +400,6 @@ def get_random_asset_id_of_dataset(
         user_id=current_user.id,
         project_id=dataset.project_id,
         user_labels=user_labels,
-        use_viewer=True,
     )
     assets = viz_client.get_assets(
         dataset_hash=dataset.hash,
@@ -445,7 +443,6 @@ def get_asset_of_dataset(
         user_id=current_user.id,
         project_id=dataset.project_id,
         user_labels=user_labels,
-        use_viewer=True,
     )
     assets = viz_client.get_assets(dataset_hash=dataset.hash, asset_hash=asset_hash, limit=1)
     if assets["total"] == 0:
@@ -572,8 +569,8 @@ def check_duplication(
     datasets = ensure_datasets_are_ready(db, dataset_ids=in_datasets.dataset_ids)
 
     viz_client.initialize(user_id=current_user.id, project_id=in_datasets.project_id)
-    duplicated_stats = viz_client.check_duplication([dataset.hash for dataset in datasets])
-    return {"result": duplicated_stats["duplication"]}
+    duplicated_asset_count = viz_client.check_duplication([dataset.hash for dataset in datasets])
+    return {"result": duplicated_asset_count}
 
 
 @router.post("/merge", response_model=schemas.dataset.DatasetOut)

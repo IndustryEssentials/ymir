@@ -475,7 +475,8 @@ class VizClient:
         url = f"{self._url_prefix}/dataset_duplication"
         params = {"candidate_dataset_ids": ",".join(dataset_hashes)}
         resp = self.get_resp(url, params=params)
-        return self.parse_resp(resp)
+        duplicated_stats = self.parse_resp(resp)
+        return duplicated_stats["duplication"]
 
     def get_resp(
         self, url: str, params: Optional[Dict] = None, timeout: int = settings.VIZ_TIMEOUT
