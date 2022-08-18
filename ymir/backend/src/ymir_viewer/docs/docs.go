@@ -184,6 +184,18 @@ const docTemplate = `{
                         "description": "e.g. class_ids=1,3,7",
                         "name": "class_ids",
                         "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "e.g. require_assets_hist",
+                        "name": "require_assets_hist",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "e.g. require_annos_hist",
+                        "name": "require_annos_hist",
+                        "in": "query"
                     }
                 ],
                 "responses": {

@@ -22,6 +22,7 @@ def parse_annotations(annotations: List[Dict], user_labels: UserLabels) -> List[
         {
             "box": annotation["box"],
             "cm": annotation["cm"],
+            "tags": annotation["tags"],
             "keyword": user_labels.get_main_name(annotation["class_id"]),
         }
         for annotation in annotations
@@ -72,6 +73,7 @@ class Assets:
                 "metadata": asset["metadata"],
                 "gt": parse_annotations(asset["gt"], user_labels),
                 "pred": parse_annotations(asset["pred"], user_labels),
+                "cks": asset["cks"],
             }
             for asset in res["elements"]
         ]

@@ -104,7 +104,7 @@ const task = {
   "task.label.form.plat.go": { cn: "到标注平台注册账号", en: "Label Platform", },
   "task.label.form.keep_anno.label": { cn: "保留原标注", en: "Keep Annotations", },
   "task.label.form.keep_anno.none": { cn: "不保留原标注", en: "No", },
-  "task.label.form.keep_anno.gt": { cn: "保留标准值标注", en: "Keep Ground Truth", },
+  "task.label.form.keep_anno.gt": { cn: "保留GT标注", en: "Keep Ground Truth", },
   "task.label.form.keep_anno.pred": { cn: "保留预测标注", en: "Keep Predictions", },
   "task.train.fold": { cn: '收起参数配置', en: 'Fold', },
   "task.train.unfold": { cn: '展开参数配置', en: 'Unfold', },

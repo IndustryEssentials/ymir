@@ -129,16 +129,19 @@ function Model({ pid, project = {}, iterations, groups, modelList, versions, que
       title: showTitle("model.column.name"),
       dataIndex: "versionName",
       className: styles[`column_name`],
-      render: (name, { id, description, projectLabel, iterationLabel }) =>
-        <Popover title={t('common.desc')} content={<DescPop description={description} style={{ maxWidth: '30vw' }} />}>
-          <Row>
-            <Col flex={1}><Link to={`/home/project/${pid}/model/${id}`}>{name}</Link></Col>
-            <Col flex={'50px'}>
-              {projectLabel ? <div className={styles.extraTag}>{projectLabel}</div> : null}
-              {iterationLabel ? <div className={styles.extraIterTag}>{iterationLabel}</div> : null}
-            </Col>
-          </Row>
-        </Popover>,
+      render: (name, { id, description, projectLabel, iterationLabel }) => {
+        const popContent = <DescPop description={description} style={{ maxWidth: '30vw' }} />
+        const content = <Row>
+          <Col flex={1}><Link to={`/home/project/${pid}/model/${id}`}>{name}</Link></Col>
+          <Col flex={'50px'}>
+            {projectLabel ? <div className={styles.extraTag}>{projectLabel}</div> : null}
+            {iterationLabel ? <div className={styles.extraIterTag}>{iterationLabel}</div> : null}
+          </Col>
+        </Row>
+        return description ? <Popover title={t('common.desc')} content={popContent}>
+          {content}
+        </Popover> : content
+      },
       ellipsis: true,
     },
     {
