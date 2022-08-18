@@ -572,8 +572,8 @@ def check_duplication(
     datasets = ensure_datasets_are_ready(db, dataset_ids=in_datasets.dataset_ids)
 
     viz_client.initialize(user_id=current_user.id, project_id=in_datasets.project_id)
-    duplicated_asset_count = viz_client.check_duplication([dataset.hash for dataset in datasets])
-    return {"result": duplicated_asset_count}
+    duplicated_stats = viz_client.check_duplication([dataset.hash for dataset in datasets])
+    return {"result": duplicated_stats["duplication"]}
 
 
 @router.post("/merge", response_model=schemas.dataset.DatasetOut)

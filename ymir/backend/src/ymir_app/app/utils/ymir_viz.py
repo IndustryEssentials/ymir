@@ -265,7 +265,7 @@ class ViewerAssetsResponse:
 
 @dataclasses.dataclass
 class ViewerDatasetAnnotation:
-    class_ids_count: Dict[int, int]
+    class_ids_count: Dict[str, int]
     keywords: Optional[Dict[str, int]] = None
     user_labels: InitVar[UserLabels] = None
 
@@ -415,7 +415,7 @@ class VizClient:
         """
         viewer: GET /dataset_stats
         """
-        url = f"{self._url_prefix}/{dataset_hash}/dataset_stats"
+        url = f"{self._url_prefix}/branch/{dataset_hash}/dataset_stats"
 
         params = {"require_assets_hist": require_hist, "require_annos_hist": require_hist}  # type: Dict
         if keyword_ids:
