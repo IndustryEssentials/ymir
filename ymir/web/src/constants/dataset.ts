@@ -17,6 +17,16 @@ export enum evaluationTags {
   mtp = 11,
 }
 
+export const evaluationLabel = (tag: evaluationTags) => {
+  const maps = {
+    [evaluationTags.tp]: 'tp',
+    [evaluationTags.fp]: 'fp',
+    [evaluationTags.fn]: 'fn',
+    [evaluationTags.mtp]: 'mtp',
+  }
+  return maps[tag]
+}
+
 export const statesLabel = (state: states) => {
   const maps = {
     [states.READY]: 'dataset.state.ready',
@@ -124,6 +134,7 @@ export function transferAsset(data: BackendData, keywords: Array<string>): Asset
     size: data.size,
     annotations,
     evaluated: evaluated,
+    cks: data.cks || {},
   }
 }
 
@@ -134,6 +145,7 @@ export function transferAnnotation(data: BackendData, gt: boolean = false): Anno
     box: data.box,
     cm: data.cm,
     gt,
+    tags: data.tags || {},
   }
 }
 

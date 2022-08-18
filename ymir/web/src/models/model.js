@@ -196,13 +196,21 @@ export default {
     *updateModelsStates({ payload }, { put, select }) {
       const versions = yield select(state => state.model.versions)
       const tasks = payload || {}
+      const all = yield select(({ model }) => model.allModels)
+      const newModels = []
       Object.keys(versions).forEach(gid => {
         const models = versions[gid]
         const updatedModels = models.map(model => {
           const updatedModel = updateResultState(model, tasks)
+          newModels.push(updatedModel)
           return updatedModel ? { ...updatedModel } : model
         })
         versions[gid] = updatedModels
+      })
+      const validNewModels = newModels.filter(model => model?.needReload)
+      yield put({
+        type: 'UPDATE_ALL_MODELS',
+        payload: [...validNewModels, ...all],
       })
       yield put({
         type: 'UPDATE_ALL_VERSIONS',
