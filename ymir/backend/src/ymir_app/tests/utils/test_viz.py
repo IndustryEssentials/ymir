@@ -111,11 +111,11 @@ class TestAssets:
 class TestModel:
     def test_model(self):
         res = {
-            "model_id": random_lower_string(),
-            "model_mAP": random.randint(1, 100) / 100,
+            "model_hash": random_lower_string(),
+            "mean_average_precision": random.randint(1, 100) / 100,
             "task_parameters": "mock_task_parameters",
             "executor_config": {"class_names": "a,b,c".split(",")},
-            "model_stages": {
+            "stages": {
                 "epoch-1000": {
                     "mAP": -1,
                     "timestamp": 100000000,
@@ -132,11 +132,11 @@ class TestModel:
             "best_stage_name": "epoch-3000",
         }
         M = m.ViewerModelInfoResponse.parse_obj(res)
-        assert M.hash == res["model_id"]
-        assert M.map == res["model_mAP"]
+        assert M.hash == res["model_hash"]
+        assert M.map == res["mean_average_precision"]
         assert M.task_parameters == res["task_parameters"]
         assert M.executor_config == res["executor_config"]
-        assert M.model_stages == res["model_stages"]
+        assert M.model_stages == res["stages"]
         assert M.best_stage_name == res["best_stage_name"]
 
 
@@ -245,11 +245,11 @@ class TestVizClient:
         mock_session = mocker.Mock()
         resp = mocker.Mock()
         res = {
-            "model_id": random_lower_string(),
-            "model_mAP": random.randint(1, 100) / 100,
+            "model_hash": random_lower_string(),
+            "mean_average_precision": random.randint(1, 100) / 100,
             "task_parameters": "mock_task_parameters",
             "executor_config": {"class_names": "a,b,c".split(",")},
-            "model_stages": {
+            "stages": {
                 "epoch-1000": {
                     "mAP": -1,
                     "timestamp": 100000000,
@@ -275,8 +275,8 @@ class TestVizClient:
         viz.initialize(user_id=user_id, project_id=project_id, branch_id=task_id)
         ret = viz.get_model_info()
         assert isinstance(ret, Dict)
-        assert ret["hash"] == res["model_id"]
-        assert ret["map"] == res["model_mAP"]
+        assert ret["hash"] == res["model_hash"]
+        assert ret["map"] == res["mean_average_precision"]
         assert ret["task_parameters"] == res["task_parameters"]
         assert ret["executor_config"] == res["executor_config"]
 

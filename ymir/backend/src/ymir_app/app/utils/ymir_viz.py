@@ -261,8 +261,9 @@ class ViewerModelInfoResponse(BaseModel):
     def make_up_fields(cls, values: Any) -> Any:
         keywords = values["executor_config"].get("class_names")
         values.update(
-            hash=values["model_id"],
-            map=values["model_mAP"],
+            hash=values["model_hash"],
+            map=values["mean_average_precision"],
+            model_stages=values["stages"],
             keywords=json.dumps(keywords) if keywords else None,
         )
         return values
