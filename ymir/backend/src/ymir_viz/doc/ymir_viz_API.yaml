@@ -314,6 +314,12 @@ paths:
           required: true
           schema:
             type: boolean
+        - name: need_ck
+          in: query
+          description: need evaluate for each ck
+          required: true
+          schema:
+            type: boolean
       responses:
         "200":
           description: successful operation

@@ -41,7 +41,7 @@ def get_dataset_evaluations(user_id: str, repo_id: str, branch_id: str) -> Datas
 
 @exceptions.catch_viz_exceptions
 def dataset_fast_evaluation(user_id: str, repo_id: str, branch_id: str, conf_thr: float, iou_thr: float,
-                            need_pr_curve: bool) -> DatasetEvaluationResult:
+                            need_pr_curve: bool, need_ck: bool) -> DatasetEvaluationResult:
     rev_tid = revs_parser.parse_single_arg_rev(branch_id, need_tid=False)
     mir_root = os.path.join(viz_settings.BACKEND_SANDBOX_ROOT, user_id, repo_id)
 
@@ -49,7 +49,8 @@ def dataset_fast_evaluation(user_id: str, repo_id: str, branch_id: str, conf_thr
                                           rev_tid=rev_tid,
                                           conf_thr=conf_thr,
                                           iou_thrs=str(iou_thr),
-                                          need_pr_curve=need_pr_curve)
+                                          need_pr_curve=need_pr_curve,
+                                          need_ck=need_ck)
 
     logging.info(f"successfully dataset_fast_evaluation from branch {branch_id}")
 

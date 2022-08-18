@@ -18,12 +18,13 @@ class CmdEvaluate(base.BaseCommand):
                                          mir_root=self.args.mir_root,
                                          conf_thr=self.args.conf_thr,
                                          iou_thrs=self.args.iou_thrs,
-                                         need_pr_curve=self.args.need_pr_curve)
+                                         need_pr_curve=self.args.need_pr_curve,
+                                         need_ck=self.args.need_ck)
 
     @staticmethod
     @command_run_in_out
     def run_with_args(work_dir: str, src_revs: str, dst_rev: str, mir_root: str, conf_thr: float, iou_thrs: str,
-                      need_pr_curve: bool) -> int:
+                      need_pr_curve: bool, need_ck: bool) -> int:
         src_rev_tid = revs_parser.parse_single_arg_rev(src_revs, need_tid=False)
         dst_rev_tid = revs_parser.parse_single_arg_rev(dst_rev, need_tid=True)
         task_id = dst_rev_tid.tid
@@ -50,6 +51,7 @@ class CmdEvaluate(base.BaseCommand):
         build_config = mir_storage_ops.MirStorageOpsBuildConfig(evaluate_conf_thr=conf_thr,
                                                                 evaluate_iou_thrs=iou_thrs,
                                                                 evaluate_need_pr_curve=need_pr_curve,
+                                                                evaluate_need_ck=need_ck,
                                                                 evaluate_src_dataset_id=src_rev_tid.rev_tid)
         mir_storage_ops.MirStorageOps.save_and_commit(mir_root=mir_root,
                                                       mir_branch=dst_rev_tid.rev,
@@ -92,4 +94,8 @@ def bind_to_subparsers(subparsers: argparse._SubParsersAction, parent_parser: ar
                                      dest='need_pr_curve',
                                      action='store_true',
                                      help='also generates pr curve in evaluation result')
+    evaluate_arg_parser.add_argument('--need-ck',
+                                     dest='need_ck',
+                                     action='store_true',
+                                     help='also evaluate for images in each customized keywords')
     evaluate_arg_parser.set_defaults(func=CmdEvaluate)

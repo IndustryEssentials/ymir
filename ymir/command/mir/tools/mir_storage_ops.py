@@ -24,10 +24,12 @@ class MirStorageOpsBuildConfig:
                  evaluate_conf_thr: float = mir_settings.DEFAULT_EVALUATE_CONF_THR,
                  evaluate_iou_thrs: str = mir_settings.DEFAULT_EVALUATE_IOU_THR,
                  evaluate_need_pr_curve: bool = False,
+                 evaluate_need_ck: bool = False,
                  evaluate_src_dataset_id: str = '') -> None:
         self.evaluate_conf_thr: float = evaluate_conf_thr
         self.evaluate_iou_thrs: str = evaluate_iou_thrs
         self.evaluate_need_pr_curve: bool = evaluate_need_pr_curve
+        self.evaluate_need_ck: bool = evaluate_need_ck
         self.evaluate_src_dataset_id: str = evaluate_src_dataset_id
 
 
@@ -60,6 +62,7 @@ class MirStorageOps():
                 conf_thr=build_config.evaluate_conf_thr,
                 iou_thrs=build_config.evaluate_iou_thrs,
                 need_pr_curve=build_config.evaluate_need_pr_curve,
+                need_ck=build_config.evaluate_need_ck,
             )
             mir_tasks.tasks[mir_tasks.head_task_id].evaluation.CopyFrom(evaluation)
 

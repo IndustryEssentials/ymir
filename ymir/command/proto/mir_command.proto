@@ -268,6 +268,7 @@ message EvaluateConfig {
     float conf_thr = 3;
     string iou_thrs_interval = 4;
     bool need_pr_curve = 5;
+    bool need_ck = 7;
 
     reserved 6;
 }
