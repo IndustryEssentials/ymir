@@ -258,16 +258,6 @@ function Train({ allDatasets, datasetCache, ...func }) {
             onFinish={onFinish}
             onFinishFailed={onFinishFailed}
           >
-            <Form.Item
-              label={t('dataset.column.model')}
-              name='name'
-              rules={[
-                { required: true, whitespace: true, message: t('model.add.form.name.placeholder') },
-                { type: 'string', min: 2, max: 80 },
-              ]}
-            >
-              <Input placeholder={t('model.add.form.name.placeholder')} autoComplete='off' allowClear />
-            </Form.Item>
             <Form.Item name='image' label={t('task.train.form.image.label')} rules={[
               { required: true, message: t('task.train.form.image.required') }
             ]} tooltip={t('tip.task.train.image')}>
