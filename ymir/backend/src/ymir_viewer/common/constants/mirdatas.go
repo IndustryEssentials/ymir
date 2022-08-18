@@ -107,7 +107,7 @@ type QueryAssetsResult struct {
 
 type DatasetStatsElement struct {
 	// Assets count
-	ClassIdsCount       map[int]int64 `json:"class_ids_count"`
+	ClassIDsCount       map[int]int64 `json:"class_ids_count"`
 	NegativeImagesCount int64         `json:"negative_images_count"`
 	PositiveImagesCount int64         `json:"positive_images_count"`
 
@@ -148,13 +148,13 @@ func NewQueryDatasetStatsResult() *QueryDatasetStatsResult {
 	queryResult := QueryDatasetStatsResult{
 		AssetsHist: map[string]*MirHist{},
 		Gt: DatasetStatsElement{
-			ClassIdsCount:   map[int]int64{},
+			ClassIDsCount:   map[int]int64{},
 			AnnotationsHist: map[string]*MirHist{},
 			TagsCount:       map[string]map[string]int64{},
 			TagsCountTotal:  map[string]int64{},
 		},
 		Pred: DatasetStatsElement{
-			ClassIdsCount:   map[int]int64{},
+			ClassIDsCount:   map[int]int64{},
 			AnnotationsHist: map[string]*MirHist{},
 			TagsCount:       map[string]map[string]int64{},
 			TagsCountTotal:  map[string]int64{},

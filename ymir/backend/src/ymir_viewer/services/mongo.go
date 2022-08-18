@@ -384,8 +384,8 @@ func (s *MongoServer) QueryDatasetStats(
 
 	// Build Annotation fields.
 	for _, classID := range classIDs {
-		queryData.Gt.ClassIdsCount[classID], _ = s.countDatasetAssetsInClass(collection, "gt.class_id", []int{classID})
-		queryData.Pred.ClassIdsCount[classID], _ = s.countDatasetAssetsInClass(
+		queryData.Gt.ClassIDsCount[classID], _ = s.countDatasetAssetsInClass(collection, "gt.class_id", []int{classID})
+		queryData.Pred.ClassIDsCount[classID], _ = s.countDatasetAssetsInClass(
 			collection,
 			"pred.class_id",
 			[]int{classID},

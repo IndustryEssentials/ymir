@@ -279,12 +279,12 @@ func TestQueryDatasetStatsSuccess(t *testing.T) {
 		expectedCount := int32(1)
 		expectedResult := constants.NewQueryDatasetStatsResult()
 		expectedResult.TotalAssetsCount = 1
-		expectedResult.Gt.ClassIdsCount[0] = 1
-		expectedResult.Gt.ClassIdsCount[1] = 1
+		expectedResult.Gt.ClassIDsCount[0] = 1
+		expectedResult.Gt.ClassIDsCount[1] = 1
 		expectedResult.Gt.AnnotationsCount = 1
 		expectedResult.Gt.PositiveImagesCount = 1
-		expectedResult.Pred.ClassIdsCount[0] = 1
-		expectedResult.Pred.ClassIdsCount[1] = 1
+		expectedResult.Pred.ClassIDsCount[0] = 1
+		expectedResult.Pred.ClassIDsCount[1] = 1
 		expectedResult.Pred.PositiveImagesCount = 1
 		expectedResult.Pred.AnnotationsCount = 1
 		expectedResult.QueryContext.RequireAssetsHist = false

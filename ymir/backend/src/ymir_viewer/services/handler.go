@@ -33,7 +33,7 @@ type BaseMongoServer interface {
 		mirRepo *constants.MirRepo,
 		offset int,
 		limit int,
-		classIds []int,
+		classIDs []int,
 		annoTypes []string,
 		currentAssetID string,
 		cmTypes []int,
@@ -197,7 +197,7 @@ func (v *ViewerHandler) GetDatasetMetaCountsHandler(
 		result.Gt.PositiveImagesCount = int64(gtStats.PositiveAssetCnt)
 		if gtStats.ClassIdsCnt != nil {
 			for k, v := range gtStats.ClassIdsCnt {
-				result.Gt.ClassIdsCount[int(k)] = int64(v)
+				result.Gt.ClassIDsCount[int(k)] = int64(v)
 			}
 		}
 		result.Gt.AnnotationsCount = int64(gtStats.TotalCnt)
@@ -209,7 +209,7 @@ func (v *ViewerHandler) GetDatasetMetaCountsHandler(
 		result.Pred.PositiveImagesCount = int64(predStats.PositiveAssetCnt)
 		if predStats.ClassIdsCnt != nil {
 			for k, v := range predStats.ClassIdsCnt {
-				result.Pred.ClassIdsCount[int(k)] = int64(v)
+				result.Pred.ClassIDsCount[int(k)] = int64(v)
 			}
 		}
 		result.Pred.AnnotationsCount = int64(predStats.TotalCnt)
@@ -261,15 +261,15 @@ func (v *ViewerHandler) fillupDatasetUniverseFields(
 
 func (v *ViewerHandler) GetDatasetStatsHandler(
 	mirRepo *constants.MirRepo,
-	classIds []int,
+	classIDs []int,
 	requireAssetsHist bool,
 	requireAnnotationsHist bool,
 ) *constants.QueryDatasetStatsResult {
-	if len(classIds) < 1 && !requireAssetsHist && !requireAnnotationsHist {
+	if len(classIDs) < 1 && !requireAssetsHist && !requireAnnotationsHist {
 		panic("same result as dataset_meta_count, should use lightweight interface instead.")
 	}
 	v.loadAndIndexAssets(mirRepo)
-	result := v.mongoServer.QueryDatasetStats(mirRepo, classIds, requireAssetsHist, requireAnnotationsHist)
+	result := v.mongoServer.QueryDatasetStats(mirRepo, classIDs, requireAssetsHist, requireAnnotationsHist)
 
 	// Backfill task and context info, to align with GetDatasetMetaCountsHandler result.
 	return v.fillupDatasetUniverseFields(mirRepo, result)
