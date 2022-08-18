@@ -17,7 +17,7 @@ const KeywordSelector = ({ value, onChange, dataset = {} }) => {
   const [{ cks, tags }, getCK] = useFetch('dataset/getCK', { cks: {}, tags: {} })
 
   useEffect(() => {
-    setSelected(value || [])
+    !value?.length && setSelected([])
   }, [value])
 
   useEffect(() => {
@@ -37,11 +37,7 @@ const KeywordSelector = ({ value, onChange, dataset = {} }) => {
   }, [tags])
 
   useEffect(() => {
-    let s = selected
-    if (currentType !== initKeywords[0].value) {
-      s = selected.map(item => item.join(':'))
-    }
-    onChange({ type: currentType, selected: s })
+    onChange({ type: currentType, selected })
   }, [selected])
 
   useEffect(() => {

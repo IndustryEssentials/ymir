@@ -47,11 +47,12 @@ const Dataset = () => {
   }, [dataset, filterParams])
 
   const filterKw = ({ type, selected }) => {
-    if (selected.length || (!selected.length && filterParams.keywords.length > 0)) {
+    const s = selected.map(item => Array.isArray(item) ? item.join(':') : item)
+    if (s.length || (!s.length && filterParams.keywords.length > 0)) {
       setFilterParams((params) => ({
         ...params,
         type,
-        keywords: selected,
+        keywords: s,
         offset: initQuery.offset,
       }))
     }
