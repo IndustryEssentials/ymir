@@ -3,6 +3,9 @@ import { Result, BackendData } from "@/interface/common"
 type Keywords = {
   [key: string]: number,
 }
+type CK = {
+  [key: string]: any,
+}
 type AnnotationsCount = {
   count: Keywords,
   keywords: Array<string>,
@@ -63,6 +66,7 @@ export interface Asset {
   size?: number,
   annotations: Array<Annotation>,
   evaluated?: boolean,
+  cks?: CK,
 }
 
 export interface Annotation {
@@ -78,4 +82,5 @@ export interface Annotation {
   score?: number,
   gt?: boolean,
   cm: number,
+  tags?: CK,
 }
