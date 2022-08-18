@@ -4,7 +4,6 @@ import asyncio
 from typing import Any, Dict, List, Tuple, Optional
 
 import aiohttp
-from dataclasses import asdict
 from fastapi.logger import logger
 from fastapi.encoders import jsonable_encoder
 from sqlalchemy.orm import Session
@@ -407,7 +406,7 @@ class TaskResult:
                 self.db,
                 result_record.id,
                 result_state=ResultState.ready,
-                result=asdict(self.result_info),
+                result=self.result_info,
             )
         else:
             crud_func.finish(

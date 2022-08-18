@@ -171,7 +171,7 @@ class TestDataset:
             "total_assets_mbytes": 10,
             "total_assets_count": 1,
         }
-        M = m.DatasetAnalysis.from_viz_res(res, mock_user_labels)
+        M = m.DatasetAnalysis.from_dict(res, mock_user_labels)
         assert "gt" in M.keywords
         assert "pred" in M.keywords
         assert M.gt is None

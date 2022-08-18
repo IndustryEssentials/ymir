@@ -36,7 +36,7 @@ class DatasetAnnotation:
     ave_annos_count: float
 
     @classmethod
-    def from_viz_res(cls, res: Dict, total_assets_count: int, user_labels: UserLabels) -> "DatasetAnnotation":
+    def from_dict(cls, res: Dict, total_assets_count: int, user_labels: UserLabels) -> "DatasetAnnotation":
         ave_annos_count = round(res["annos_count"] / total_assets_count, 2) if total_assets_count else 0
         keywords = {
             user_labels.get_main_name(int(class_id)): count for class_id, count in res["class_ids_count"].items()
@@ -71,10 +71,10 @@ class DatasetAnalysis:
     negative_info: Dict[str, int]
 
     @classmethod
-    def from_viz_res(cls, res: Dict, user_labels: UserLabels) -> "DatasetAnalysis":
+    def from_dict(cls, res: Dict, user_labels: UserLabels) -> "DatasetAnalysis":
         total_assets_count = res["total_assets_count"]
-        gt = DatasetAnnotation.from_viz_res(res["gt"], total_assets_count, user_labels) if res.get("gt") else None
-        pred = DatasetAnnotation.from_viz_res(res["pred"], total_assets_count, user_labels) if res.get("pred") else None
+        gt = DatasetAnnotation.from_dict(res["gt"], total_assets_count, user_labels) if res.get("gt") else None
+        pred = DatasetAnnotation.from_dict(res["pred"], total_assets_count, user_labels) if res.get("pred") else None
         keywords = {
             "gt": gt.keywords if gt else {},
             "pred": pred.keywords if pred else {},
@@ -361,7 +361,7 @@ class VizClient:
         resp = self.session.get(url, timeout=settings.VIZ_TIMEOUT)
         res = self.parse_resp(resp)
         logger.info("[viewer] dataset_meta_count response: %s", res)
-        dataset_counts = ViewerDatasetInfoResponse.from_dict(res, self._user_labels)
+        dataset_counts = ViewerDatasetInfoResponse.from_dict(res, user_labels=user_labels)
         return asdict(dataset_counts)
 
     def get_dataset_analysis(
@@ -381,7 +381,7 @@ class VizClient:
         resp = self.get_resp(url)
         res = self.parse_resp(resp)
         logger.info("[viewer] get dataset analysis response: %s", res)
-        return DatasetAnalysis.from_viz_res(res, self._user_labels)
+        return DatasetAnalysis.from_dict(res, self._user_labels)
 
     def get_fast_evaluation(
         self,
