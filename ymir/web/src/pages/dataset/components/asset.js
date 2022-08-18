@@ -153,10 +153,10 @@ function Asset({ id, asset: cache, datasetKeywords, filterKeyword, filters, inde
                   </Descriptions.Item>
                 ) : null}
                 <Descriptions.Item label={t("dataset.asset.info.channel")} span={asset.size ? 1 : 2}>
-                  {asset.metadata?.channel}
+                  {asset.metadata?.image_channels}
                 </Descriptions.Item>
                 <Descriptions.Item label={t("dataset.asset.info.timestamp")} span={2}>
-                  {getDateFromTimestamp(asset.metadata?.timestamp)}
+                  {getDateFromTimestamp(asset.metadata?.timestamp?.start)}
                 </Descriptions.Item>
                 <Descriptions.Item label={t("dataset.asset.info.keyword")} span={2}>
                   <Row>

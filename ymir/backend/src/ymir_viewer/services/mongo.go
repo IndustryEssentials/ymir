@@ -153,6 +153,9 @@ func (s *MongoServer) countDatasetAssetsInClass(
 	if err = showInfoCursor.All(s.Ctx, &showsWithInfo); err != nil {
 		panic(err)
 	}
+	if len(showsWithInfo) < 1 {
+		return 0, 0
+	}
 	return int64(showsWithInfo[0]["count"].(int32)), int64(showsWithInfo[0]["sum"].(int32))
 }
 
