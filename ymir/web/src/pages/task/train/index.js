@@ -85,6 +85,7 @@ function Train({ allDatasets, datasetCache, ...func }) {
     const visibleValue = isValid ? did : null
     setTrainSet(visibleValue)
     setTestingSetIds(project?.testingSets || [])
+    iterationId && setSelectedKeywords(project?.keywords || [])
     form.setFieldsValue({ datasetId: visibleValue })
   }, [allDatasets, project])
 
