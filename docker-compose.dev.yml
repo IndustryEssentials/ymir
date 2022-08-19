@@ -3,9 +3,9 @@ version: "3.3"
 services:
   prometheus:
     image: prom/prometheus:v2.17.1
-    container_name: prometheus
     ports:
       - 9090:9090
+    user: "0:0"
     command:
       - '--config.file=/etc/prometheus/prometheus.yml'
       - '--storage.tsdb.path=/prometheus'
@@ -22,7 +22,6 @@ services:
 
   cadvisor:
     image: gcr.io/cadvisor/cadvisor:v0.44.1-test
-    container_name: cadvisor
     ports:
       - 8080:8080
     volumes:
@@ -37,7 +36,6 @@ services:
 
   nodeexporter:
     image: prom/node-exporter:v1.3.1
-    container_name: nodeexporter
     restart: unless-stopped
     volumes:
       - /proc:/host/proc:ro
@@ -55,8 +53,8 @@ services:
 
   grafana:
     image: grafana/grafana:9.1.0
-    container_name: monitoring_grafana
     restart: unless-stopped
+    user: "0:0"
     ports:
       - 3000:3000
     depends_on:
