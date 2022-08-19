@@ -60,6 +60,7 @@ const Add = (props) => {
   const [nameChangedByUser, setNameChangedByUser] = useState(false)
   const [defaultName, setDefaultName] = useState('')
   const netUrl = Form.useWatch('url', form)
+  const path = Form.useWatch('path', form)
 
   useEffect(() => {
     form.setFieldsValue({ datasetId: null })
@@ -85,6 +86,8 @@ const Add = (props) => {
     const filename = (netUrl || '').replace(/^.+\/([^\/]+)\.zip$/, '$1')
     setDefaultName(filename)
   }, [netUrl])
+
+  useEffect(() => setDefaultName(path), [path])
 
   useEffect(() => addDefaultName(defaultName), [defaultName])
 
@@ -170,6 +173,12 @@ const Add = (props) => {
   function setFileDefaultName([file]) {
     const filename = file.name.replace(/\.zip$/i, '')
     setDefaultName(filename)
+  }
+
+  function setCopyDefaultName(value, option) {
+    const label = value ? option[1]?.label : ''
+    const datasetname = label.replace(/ \(assets: \d+\)/, '')
+    setDefaultName(datasetname)
   }
 
   function addDefaultName(name = '') {
@@ -294,7 +303,7 @@ const Add = (props) => {
                   { required: true, message: t('dataset.add.form.copy.required') }
                 ]}
               >
-                <ProjectDatasetSelect pid={pid} placeholder={t('dataset.add.form.copy.placeholder')}></ProjectDatasetSelect>
+                <ProjectDatasetSelect pid={pid} onChange={setCopyDefaultName} placeholder={t('dataset.add.form.copy.placeholder')}></ProjectDatasetSelect>
               </Form.Item>
             ) : null}
             {!isType(TYPES.INTERNAL) ?
