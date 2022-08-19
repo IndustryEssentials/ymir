@@ -58,6 +58,7 @@ const Add = (props) => {
   const [addResult, newDataset] = useFetch('dataset/createDataset')
   const [{ items: publicDatasets }, getPublicDatasets] = useFetch('dataset/getInternalDataset', { items: [] })
   const [nameChangedByUser, setNameChangedByUser] = useState(false)
+  const netUrl = Form.useWatch('url', form)
 
   useEffect(() => {
     form.setFieldsValue({ datasetId: null })
@@ -78,8 +79,14 @@ const Add = (props) => {
   }, [newer])
 
   useEffect(() => {
+    // todo get name
     file && addDefaultName(file)
   }, [file])
+
+  useEffect(() => {
+    // todo get name
+    addDefaultName(netUrl)
+  }, [netUrl])
 
   useEffect(() => {
     if (addResult) {
@@ -161,6 +168,7 @@ const Add = (props) => {
   }
 
   function addDefaultName(name = '') {
+    console.log('name:', name)
     if (!name) {
       return
     }
@@ -316,7 +324,7 @@ const Add = (props) => {
             {isType(TYPES.LOCAL) ? (
               <Form.Item label={t('dataset.add.form.upload.btn')} required>
                 <Uploader
-                  onChange={(files, result) => { setFile(result) }}
+                  onChange={(files, result) => { setFile(result); addDefaultName(files) }}
                   max={1024}
                   onRemove={() => setFile('')}
                   info={renderTip('upload', {
