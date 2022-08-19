@@ -39,37 +39,39 @@ func (h *MockViewerHandler) GetAssetsHandler(
 	cmTypes []int,
 	cks []string,
 	tags []string,
-) constants.QueryAssetsResult {
+) *constants.QueryAssetsResult {
 	args := h.Called(mirRepo, offset, limit, classIDs, currentAssetID, cmTypes, cks, tags)
-	return args.Get(0).(constants.QueryAssetsResult)
+	return args.Get(0).(*constants.QueryAssetsResult)
 }
 
 func (h *MockViewerHandler) GetDatasetDupHandler(
 	mirRepo0 *constants.MirRepo,
 	mirRepo1 *constants.MirRepo,
-) constants.QueryDatasetDupResult {
+) *constants.QueryDatasetDupResult {
 	args := h.Called(mirRepo0, mirRepo1)
-	return args.Get(0).(constants.QueryDatasetDupResult)
+	return args.Get(0).(*constants.QueryDatasetDupResult)
 }
 
 func (h *MockViewerHandler) GetDatasetMetaCountsHandler(
 	mirRepo *constants.MirRepo,
-) constants.QueryDatasetStatsResult {
+) *constants.QueryDatasetStatsResult {
 	args := h.Called(mirRepo)
-	return args.Get(0).(constants.QueryDatasetStatsResult)
+	return args.Get(0).(*constants.QueryDatasetStatsResult)
 }
 
 func (h *MockViewerHandler) GetDatasetStatsHandler(
 	mirRepo *constants.MirRepo,
 	classIDs []int,
-) constants.QueryDatasetStatsResult {
-	args := h.Called(mirRepo, classIDs)
-	return args.Get(0).(constants.QueryDatasetStatsResult)
+	requireAssetsHist bool,
+	requireAnnotationsHist bool,
+) *constants.QueryDatasetStatsResult {
+	args := h.Called(mirRepo, classIDs, requireAssetsHist, requireAnnotationsHist)
+	return args.Get(0).(*constants.QueryDatasetStatsResult)
 }
 
-func (h *MockViewerHandler) GetModelInfoHandler(mirRepo *constants.MirRepo) constants.MirdataModel {
+func (h *MockViewerHandler) GetModelInfoHandler(mirRepo *constants.MirRepo) *constants.MirdataModel {
 	args := h.Called(mirRepo)
-	return args.Get(0).(constants.MirdataModel)
+	return args.Get(0).(*constants.MirdataModel)
 }
 
 func buildResponseBody(
@@ -108,8 +110,8 @@ func TestStatsPageHandlerSuccess(t *testing.T) {
 
 	statsExpectedResult := constants.NewQueryDatasetStatsResult()
 	for classID := range classIDs {
-		statsExpectedResult.Gt.ClassIdsCount[classID] = 0
-		statsExpectedResult.Pred.ClassIdsCount[classID] = 0
+		statsExpectedResult.Gt.ClassIDsCount[classID] = 0
+		statsExpectedResult.Pred.ClassIDsCount[classID] = 0
 	}
 	statsExpectedResponseData := buildResponseBody(
 		constants.ViewerSuccessCode,
@@ -119,7 +121,7 @@ func TestStatsPageHandlerSuccess(t *testing.T) {
 	)
 
 	mirRepo := constants.MirRepo{UserID: userID, RepoID: repoID, BranchID: branchID, TaskID: branchID}
-	mockHandler.On("GetDatasetStatsHandler", &mirRepo, classIDs).Return(statsExpectedResult)
+	mockHandler.On("GetDatasetStatsHandler", &mirRepo, classIDs, false, false).Return(statsExpectedResult)
 
 	req, _ := http.NewRequest("GET", statsRequestURL, nil)
 	w := httptest.NewRecorder()
@@ -223,7 +225,7 @@ func TestDupPageHandlerSuccess(t *testing.T) {
 	dupCount := 100
 	branchCount0 := int64(1000)
 	branchCount1 := int64(2000)
-	mockDupResult := constants.QueryDatasetDupResult{
+	mockDupResult := &constants.QueryDatasetDupResult{
 		Duplication: dupCount,
 		TotalCount:  map[string]int64{branchID0: branchCount0, branchID1: branchCount1},
 	}
@@ -335,7 +337,7 @@ func TestAssetsPageHandlerSuccess(t *testing.T) {
 		querySuffix,
 	)
 
-	assetsExpectedResult := constants.QueryAssetsResult{
+	assetsExpectedResult := &constants.QueryAssetsResult{
 		AssetsDetail:     []constants.MirAssetDetail{},
 		Offset:           0,
 		Limit:            1,

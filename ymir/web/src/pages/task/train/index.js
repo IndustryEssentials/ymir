@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react"
+import React, { useCallback, useEffect, useState } from "react"
 import { connect } from "dva"
 import { Select, Card, Input, Radio, Button, Form, Row, Col, Space, InputNumber, Tag } from "antd"
 import { formLayout } from "@/config/antd"
@@ -80,11 +80,12 @@ function Train({ allDatasets, datasetCache, ...func }) {
   }, [selectOpenpai])
 
   useEffect(() => {
-    const dss = allDatasets
+    const dss = allDatasets || []
     const isValid = dss.some(ds => ds.id === did)
     const visibleValue = isValid ? did : null
     setTrainSet(visibleValue)
     setTestingSetIds(project?.testingSets || [])
+    iterationId && setSelectedKeywords(project?.keywords || [])
     form.setFieldsValue({ datasetId: visibleValue })
   }, [allDatasets, project])
 
@@ -110,11 +111,7 @@ function Train({ allDatasets, datasetCache, ...func }) {
     setAllDulplicated(false)
   }, [trainSet, testSet])
 
-  useEffect(() => {
-    if (trainDataset?.id) {
-      setAllKeywords()
-    }
-  }, [trainDataset])
+  useEffect(() => (trainDataset && !iterationId) && setAllKeywords(), [trainDataset])
 
   useEffect(() => {
     if (duplicationChecked) {
@@ -132,7 +129,7 @@ function Train({ allDatasets, datasetCache, ...func }) {
   }
 
   function setAllKeywords() {
-    const kws = trainDataset.gt.keywords
+    const kws = trainDataset?.gt?.keywords
     setSelectedKeywords(kws)
     form.setFieldsValue({ keywords: kws })
   }
@@ -233,6 +230,13 @@ function Train({ allDatasets, datasetCache, ...func }) {
     return matchKeywords(ds) && notTrainSet && notTestingSet(ds.id)
   })
 
+  const renderKeywordRates = useCallback(() => {
+    return trainDataset ?
+    <Form.Item label={t('dataset.train.form.samples')}>
+      <KeywordRates keywords={selectedKeywords} dataset={trainDataset}></KeywordRates>
+    </Form.Item> : null
+  }, [selectedKeywords])
+
   const getCheckedValue = (list) => list.find((item) => item.checked)["value"]
   const initialValues = {
     name: generateName('train_model'),
@@ -258,16 +262,6 @@ function Train({ allDatasets, datasetCache, ...func }) {
             onFinish={onFinish}
             onFinishFailed={onFinishFailed}
           >
-            <Form.Item
-              label={t('dataset.column.model')}
-              name='name'
-              rules={[
-                { required: true, whitespace: true, message: t('model.add.form.name.placeholder') },
-                { type: 'string', min: 2, max: 80 },
-              ]}
-            >
-              <Input placeholder={t('model.add.form.name.placeholder')} autoComplete='off' allowClear />
-            </Form.Item>
             <Form.Item name='image' label={t('task.train.form.image.label')} rules={[
               { required: true, message: t('task.train.form.image.required') }
             ]} tooltip={t('tip.task.train.image')}>
@@ -288,10 +282,7 @@ function Train({ allDatasets, datasetCache, ...func }) {
                 onChange={trainSetChange}
               />
             </Form.Item>
-            {trainSet ?
-              <Form.Item label={t('dataset.train.form.samples')}>
-                <KeywordRates keywords={selectedKeywords} dataset={trainDataset}></KeywordRates>
-              </Form.Item> : null}
+            {renderKeywordRates()}
             {iterationId ? <Form.Item label={t('task.train.form.keywords.label')}>
               {project?.keywords?.map(keyword => <Tag key={keyword}>{keyword}</Tag>)}
             </Form.Item> :

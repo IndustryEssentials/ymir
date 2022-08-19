@@ -1,0 +1,69 @@
+version: "3.3"
+
+services:
+  prometheus:
+    image: prom/prometheus:v2.17.1
+    container_name: prometheus
+    ports:
+      - 9090:9090
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--web.enable-lifecycle'
+    volumes:
+      - ./metrics/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ${YMIR_PATH}/metrics/prometheus:/prometheus
+    depends_on:
+      - cadvisor
+    networks:
+      - ymirnetwork
+
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:v0.44.1-test
+    container_name: cadvisor
+    ports:
+      - 8080:8080
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:rw
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /dev/disk/:/dev/disk:ro
+    networks:
+      - ymirnetwork
+
+  nodeexporter:
+    image: prom/node-exporter:v1.3.1
+    container_name: nodeexporter
+    restart: unless-stopped
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+    command:
+      - '--path.procfs=/host/proc'
+      - '--path.rootfs=/rootfs'
+      - '--path.sysfs=/host/sys'
+      - '--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)'
+    ports:
+      - 9100:9100
+    networks:
+      - ymirnetwork
+
+  grafana:
+    image: grafana/grafana:9.1.0
+    container_name: monitoring_grafana
+    restart: unless-stopped
+    ports:
+      - 3000:3000
+    depends_on:
+      - prometheus
+    volumes:
+      - ${YMIR_PATH}/metrics/grafana:/var/lib/grafana
+      - ./metrics/grafana/provisioning:/etc/grafana/provisioning
+    networks:
+      - ymirnetwork
+

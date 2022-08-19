@@ -23,7 +23,7 @@ type BaseMirRepoLoader interface {
 		offset int,
 		limit int,
 	) ([]constants.MirAssetDetail, int64, int64)
-	LoadModelInfo(mirRepo *constants.MirRepo) constants.MirdataModel
+	LoadModelInfo(mirRepo *constants.MirRepo) *constants.MirdataModel
 }
 
 type BaseMongoServer interface {
@@ -33,15 +33,20 @@ type BaseMongoServer interface {
 		mirRepo *constants.MirRepo,
 		offset int,
 		limit int,
-		classIds []int,
+		classIDs []int,
 		annoTypes []string,
 		currentAssetID string,
 		cmTypes []int,
 		cks []string,
 		tags []string,
-	) constants.QueryAssetsResult
-	QueryDatasetDup(mirRepo0 *constants.MirRepo, mirRepo1 *constants.MirRepo) constants.QueryDatasetDupResult
-	QueryDatasetStats(mirRepo *constants.MirRepo, classIDs []int) constants.QueryDatasetStatsResult
+	) *constants.QueryAssetsResult
+	QueryDatasetDup(mirRepo0 *constants.MirRepo, mirRepo1 *constants.MirRepo) *constants.QueryDatasetDupResult
+	QueryDatasetStats(
+		mirRepo *constants.MirRepo,
+		classIDs []int,
+		requireAssetsHist bool,
+		requireAnnotationsHist bool,
+	) *constants.QueryDatasetStatsResult
 }
 
 type ViewerHandler struct {
@@ -84,6 +89,13 @@ func (v *ViewerHandler) loadAndIndexAssets(mirRepo *constants.MirRepo) {
 		log.Printf("No data for %s, reading & building cache.", fmt.Sprint(mirRepo))
 
 		mirAssetsDetail, _, _ := v.mirLoader.LoadAssetsDetail(mirRepo, "", 0, 0)
+
+		// check again, in case cache process started during data loading.
+		exist, _ = v.mongoServer.CheckDatasetExistenceReady(mirRepo)
+		if exist {
+			log.Printf("Cache exists, skip data indexing.")
+			return
+		}
 
 		newData := make([]interface{}, 0)
 		for _, v := range mirAssetsDetail {
@@ -132,7 +144,7 @@ func (v *ViewerHandler) GetAssetsHandler(
 	cmTypes []int,
 	cks []string,
 	tags []string,
-) constants.QueryAssetsResult {
+) *constants.QueryAssetsResult {
 	// Speed up when "first time" loading, i.e.: cache miss && only offset/limit/currentAssetID are set at most.
 	_, ready := v.mongoServer.CheckDatasetExistenceReady(mirRepo)
 	if !ready {
@@ -145,7 +157,7 @@ func (v *ViewerHandler) GetAssetsHandler(
 				offset,
 				limit,
 			)
-			return constants.QueryAssetsResult{
+			return &constants.QueryAssetsResult{
 				AssetsDetail:     mirAssetsDetail,
 				Offset:           offset,
 				Limit:            limit,
@@ -171,32 +183,51 @@ func (v *ViewerHandler) GetAssetsHandler(
 
 func (v *ViewerHandler) GetDatasetMetaCountsHandler(
 	mirRepo *constants.MirRepo,
-) constants.QueryDatasetStatsResult {
+) *constants.QueryDatasetStatsResult {
 	defer tools.TimeTrack(time.Now())
 
 	result := constants.NewQueryDatasetStatsResult()
-
-	mirTasks := v.mirLoader.LoadSingleMirData(mirRepo, constants.MirfileTasks).(*protos.MirTasks)
-	task := mirTasks.Tasks[mirTasks.HeadTaskId]
-	result.NewTypesAdded = task.NewTypesAdded
 
 	mirContext := v.mirLoader.LoadSingleMirData(mirRepo, constants.MirfileContext).(*protos.MirContext)
 	result.TotalAssetsCount = int64(mirContext.ImagesCnt)
 
 	gtStats := mirContext.GtStats
-	result.Gt.NegativeImagesCount = int64(gtStats.NegativeAssetCnt)
-	result.Gt.PositiveImagesCount = int64(gtStats.PositiveAssetCnt)
-	for k, v := range gtStats.ClassIdsCnt {
-		result.Gt.ClassIdsCount[int(k)] = int64(v)
+	if gtStats != nil {
+		result.Gt.NegativeAssetsCount = int64(gtStats.NegativeAssetCnt)
+		result.Gt.PositiveAssetsCount = int64(gtStats.PositiveAssetCnt)
+		if gtStats.ClassIdsCnt != nil {
+			for k, v := range gtStats.ClassIdsCnt {
+				result.Gt.ClassIDsCount[int(k)] = int64(v)
+			}
+		}
+		result.Gt.AnnotationsCount = int64(gtStats.TotalCnt)
 	}
 
 	predStats := mirContext.PredStats
-	result.Pred.NegativeImagesCount = int64(predStats.NegativeAssetCnt)
-	result.Pred.PositiveImagesCount = int64(predStats.PositiveAssetCnt)
-	for k, v := range predStats.ClassIdsCnt {
-		result.Pred.ClassIdsCount[int(k)] = int64(v)
+	if predStats != nil {
+		result.Pred.NegativeAssetsCount = int64(predStats.NegativeAssetCnt)
+		result.Pred.PositiveAssetsCount = int64(predStats.PositiveAssetCnt)
+		if predStats.ClassIdsCnt != nil {
+			for k, v := range predStats.ClassIdsCnt {
+				result.Pred.ClassIDsCount[int(k)] = int64(v)
+			}
+		}
+		result.Pred.AnnotationsCount = int64(predStats.TotalCnt)
 	}
 
+	return v.fillupDatasetUniverseFields(mirRepo, result)
+}
+
+func (v *ViewerHandler) fillupDatasetUniverseFields(
+	mirRepo *constants.MirRepo,
+	result *constants.QueryDatasetStatsResult,
+) *constants.QueryDatasetStatsResult {
+	mirTasks := v.mirLoader.LoadSingleMirData(mirRepo, constants.MirfileTasks).(*protos.MirTasks)
+	task := mirTasks.Tasks[mirTasks.HeadTaskId]
+	result.NewTypesAdded = task.NewTypesAdded
+
+	mirContext := v.mirLoader.LoadSingleMirData(mirRepo, constants.MirfileContext).(*protos.MirContext)
+	result.TotalAssetsFileSize = int64(mirContext.TotalAssetMbytes)
 	for k, v := range mirContext.CksCnt {
 		result.CksCountTotal[k] = int64(v.Cnt)
 		result.CksCount[k] = map[string]int64{}
@@ -205,21 +236,49 @@ func (v *ViewerHandler) GetDatasetMetaCountsHandler(
 		}
 	}
 
+	if mirContext.GtStats != nil && mirContext.GtStats.TagsCnt != nil {
+		for k, v := range mirContext.GtStats.TagsCnt {
+			result.Gt.TagsCountTotal[k] = int64(v.Cnt)
+			result.Gt.TagsCount[k] = map[string]int64{}
+			for k2, v2 := range v.SubCnt {
+				result.Gt.TagsCount[k][k2] = int64(v2)
+			}
+		}
+	}
+
+	if mirContext.PredStats != nil && mirContext.PredStats.TagsCnt != nil {
+		for k, v := range mirContext.PredStats.TagsCnt {
+			result.Pred.TagsCountTotal[k] = int64(v.Cnt)
+			result.Pred.TagsCount[k] = map[string]int64{}
+			for k2, v2 := range v.SubCnt {
+				result.Pred.TagsCount[k][k2] = int64(v2)
+			}
+		}
+	}
+
 	return result
 }
 
 func (v *ViewerHandler) GetDatasetStatsHandler(
 	mirRepo *constants.MirRepo,
-	classIds []int,
-) constants.QueryDatasetStatsResult {
+	classIDs []int,
+	requireAssetsHist bool,
+	requireAnnotationsHist bool,
+) *constants.QueryDatasetStatsResult {
+	if len(classIDs) < 1 && !requireAssetsHist && !requireAnnotationsHist {
+		panic("same result as dataset_meta_count, should use lightweight interface instead.")
+	}
 	v.loadAndIndexAssets(mirRepo)
-	return v.mongoServer.QueryDatasetStats(mirRepo, classIds)
+	result := v.mongoServer.QueryDatasetStats(mirRepo, classIDs, requireAssetsHist, requireAnnotationsHist)
+
+	// Backfill task and context info, to align with GetDatasetMetaCountsHandler result.
+	return v.fillupDatasetUniverseFields(mirRepo, result)
 }
 
 func (v *ViewerHandler) GetDatasetDupHandler(
 	mirRepo0 *constants.MirRepo,
 	mirRepo1 *constants.MirRepo,
-) constants.QueryDatasetDupResult {
+) *constants.QueryDatasetDupResult {
 	v.loadAndIndexAssets(mirRepo0)
 	v.loadAndIndexAssets(mirRepo1)
 	return v.mongoServer.QueryDatasetDup(mirRepo0, mirRepo1)
@@ -227,6 +286,6 @@ func (v *ViewerHandler) GetDatasetDupHandler(
 
 func (v *ViewerHandler) GetModelInfoHandler(
 	mirRepo *constants.MirRepo,
-) constants.MirdataModel {
+) *constants.MirdataModel {
 	return v.mirLoader.LoadModelInfo(mirRepo)
 }

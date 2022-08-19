@@ -30,6 +30,7 @@ def det_evaluate(
         dataset_id=rev_tid.rev_tid,
         conf_thr=conf_thr,
         iou_thrs=iou_thrs,
+        class_ids=class_ids,
         need_pr_curve=need_pr_curve,
     )
 

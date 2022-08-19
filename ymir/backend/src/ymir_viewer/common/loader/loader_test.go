@@ -89,7 +89,8 @@ func TestLoadModelInfo(t *testing.T) {
 	encodedData, _ := proto.Marshal(&mirTasks)
 	createGitRepo(t, mirRoot, map[string][]byte{"tasks.mir": encodedData}, mirRev)
 
-	expectedModel := constants.MirdataModel{ModelHash: "model_hash",
+	expectedModel := &constants.MirdataModel{
+		ModelHash:            "model_hash",
 		Stages:               map[string]interface{}{},
 		MeanAveragePrecision: 0.42,
 		Context:              "context",

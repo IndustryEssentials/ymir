@@ -179,16 +179,22 @@ func TestCountAssetsInClassSuccess(t *testing.T) {
 		mongoServer := NewMongoServer(context.Background(), &mockDatabase)
 
 		queryField := "abc"
-		expectedCount := int64(1)
+		expectedCount := int32(10)
 		classIds := []int{0, 1}
-		countCursor := mtest.CreateCursorResponse(
+		first := mtest.CreateCursorResponse(
 			1,
 			"a.b",
 			mtest.FirstBatch,
-			bson.D{{Key: "n", Value: expectedCount}})
-		mt.AddMockResponses(countCursor)
-		count := mongoServer.countDatasetAssetsInClass(collection, queryField, classIds)
-		assert.Equal(t, expectedCount, count)
+			bson.D{{Key: "count", Value: expectedCount}, {Key: "sum", Value: expectedCount}})
+		second := mtest.CreateCursorResponse(
+			1,
+			"a.b",
+			mtest.NextBatch,
+			bson.D{{Key: "AssetID", Value: "aaa"}})
+		killCursors := mtest.CreateCursorResponse(0, "a.b", mtest.NextBatch)
+		mt.AddMockResponses(first, second, killCursors)
+		count, _ := mongoServer.countDatasetAssetsInClass(collection, queryField, classIds)
+		assert.Equal(t, int64(expectedCount), count)
 	})
 }
 
@@ -214,7 +220,7 @@ func TestQueryAssetsSuccess(t *testing.T) {
 		cks := []string{"a", "b:c"}
 		tags := []string{"x", "y:z"}
 		expectedCount := int64(0)
-		expectedResult := constants.QueryAssetsResult{
+		expectedResult := &constants.QueryAssetsResult{
 			AssetsDetail:     []constants.MirAssetDetail{{}, {}},
 			Offset:           offset,
 			Limit:            limit,
@@ -270,23 +276,44 @@ func TestQueryDatasetStatsSuccess(t *testing.T) {
 		mongoServer := NewMongoServer(context.Background(), &mockDatabase)
 
 		classIDs := []int{0, 1}
-		expectedCount := int64(1)
+		expectedCount := int32(1)
 		expectedResult := constants.NewQueryDatasetStatsResult()
 		expectedResult.TotalAssetsCount = 1
-		expectedResult.Gt.ClassIdsCount[0] = 1
-		expectedResult.Gt.ClassIdsCount[1] = 1
-		expectedResult.Gt.PositiveImagesCount = 1
-		expectedResult.Pred.ClassIdsCount[0] = 1
-		expectedResult.Pred.ClassIdsCount[1] = 1
-		expectedResult.Pred.PositiveImagesCount = 1
+		expectedResult.Gt.ClassIDsCount[0] = 1
+		expectedResult.Gt.ClassIDsCount[1] = 1
+		expectedResult.Gt.AnnotationsCount = 1
+		expectedResult.Gt.PositiveAssetsCount = 1
+		expectedResult.Pred.ClassIDsCount[0] = 1
+		expectedResult.Pred.ClassIDsCount[1] = 1
+		expectedResult.Pred.PositiveAssetsCount = 1
+		expectedResult.Pred.AnnotationsCount = 1
+		expectedResult.QueryContext.RequireAssetsHist = false
+		expectedResult.QueryContext.RequireAnnotationsHist = false
 
 		countCursor := mtest.CreateCursorResponse(
 			1,
 			"a.b",
 			mtest.FirstBatch,
-			bson.D{{Key: "n", Value: expectedCount}})
-		mt.AddMockResponses(countCursor, countCursor, countCursor, countCursor, countCursor, countCursor, countCursor)
-		result := mongoServer.QueryDatasetStats(&mirRepo, classIDs)
+			bson.D{{Key: "n", Value: int64(expectedCount)}})
+		mt.AddMockResponses(countCursor)
+		first := mtest.CreateCursorResponse(
+			1,
+			"a.b",
+			mtest.FirstBatch,
+			bson.D{{Key: "count", Value: expectedCount}, {Key: "sum", Value: expectedCount}})
+		second := mtest.CreateCursorResponse(
+			1,
+			"a.b",
+			mtest.NextBatch,
+			bson.D{{Key: "AssetID", Value: "aaa"}})
+		killCursors := mtest.CreateCursorResponse(0, "a.b", mtest.NextBatch)
+		mt.AddMockResponses(first, second, killCursors)
+		mt.AddMockResponses(first, second, killCursors)
+		mt.AddMockResponses(first, second, killCursors)
+		mt.AddMockResponses(first, second, killCursors)
+		mt.AddMockResponses(first, second, killCursors)
+		mt.AddMockResponses(first, second, killCursors)
+		result := mongoServer.QueryDatasetStats(&mirRepo, classIDs, false, false)
 		assert.Equal(t, expectedResult, result)
 	})
 }

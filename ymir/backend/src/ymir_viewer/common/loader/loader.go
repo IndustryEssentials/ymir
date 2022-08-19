@@ -73,7 +73,7 @@ func (l *MirRepoLoader) buildStructFromMessage(message proto.Message, structOut 
 	return structOut
 }
 
-func (l *MirRepoLoader) LoadModelInfo(mirRepo *constants.MirRepo) constants.MirdataModel {
+func (l *MirRepoLoader) LoadModelInfo(mirRepo *constants.MirRepo) *constants.MirdataModel {
 	mirTasks := l.LoadSingleMirData(mirRepo, constants.MirfileTasks).(*protos.MirTasks)
 	task := mirTasks.Tasks[mirTasks.HeadTaskId]
 	modelData := constants.NewMirdataModel(task.SerializedTaskParameters)

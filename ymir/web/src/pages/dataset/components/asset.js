@@ -17,6 +17,7 @@ import { LeftOutlined, RightOutlined } from '@ant-design/icons'
 import EvaluationSelector from "@/components/form/evaluationSelector"
 
 const { CheckableTag } = Tag
+const { Item } = Descriptions
 
 function Asset({ id, asset: cache, datasetKeywords, filterKeyword, filters, index = 0, total = 0 }) {
   const [asset, setAsset] = useState({})
@@ -65,8 +66,8 @@ function Asset({ id, asset: cache, datasetKeywords, filterKeyword, filters, inde
 
   useEffect(() => {
     const keywordFilter = annotation => selectedKeywords.indexOf(annotation.keyword) >= 0
-    const gtFilter = annotation => !gtSelected.length || gtSelected.some(selected => selected === 'gt' ? annotation.gt : !annotation.gt)
-    const evaluationFilter = annotation => !evaluation.length || evaluation.includes(annotation.cm)
+    const gtFilter = annotation => !gtSelected?.length || gtSelected.some(selected => selected === 'gt' ? annotation.gt : !annotation.gt)
+    const evaluationFilter = annotation => !evaluation?.length || evaluation.includes(annotation.cm)
     const filters = annotation => keywordFilter(annotation) && evaluationFilter(annotation) && gtFilter(annotation)
     const visibleAnnotations = (asset.annotations || []).filter(filters)
     setShowAnnotations(visibleAnnotations)
@@ -108,15 +109,13 @@ function Asset({ id, asset: cache, datasetKeywords, filterKeyword, filters, inde
     setSelectedKeywords(selectedKeywords.length ? [] : asset.keywords)
   }
 
-  function filterAnnotations(checkeds) {
-    setEvaluation(checkeds)
-  }
-
   return asset.hash ? (
     <div className={styles.asset}>
       <div className={styles.info}>
         <Row className={styles.infoRow} align="center" wrap={false}>
-          <Col flex={'20px'} style={{ alignSelf: 'center' }}><LeftOutlined hidden={currentIndex.index <= 0} className={styles.prev} onClick={prev} /></Col>
+          <Col flex={'20px'} style={{ alignSelf: 'center' }}>
+            <LeftOutlined hidden={currentIndex.index <= 0} className={styles.prev} onClick={prev} />
+          </Col>
           <Col flex={1} className={`${styles.asset_img} scrollbar`}>
             {asset.annotations ? (
               <AssetAnnotation
@@ -142,27 +141,27 @@ function Asset({ id, asset: cache, datasetKeywords, filterKeyword, filters, inde
                 contentStyle={{ flexWrap: 'wrap', padding: '10px' }}
                 labelStyle={{ justifyContent: 'flex-end', padding: '10px' }}
               >
-                <Descriptions.Item label={t("dataset.asset.info.id")} span={2}>
+                <Item label={t("dataset.asset.info.id")} span={2}>
                   <Hash value={current} />
-                </Descriptions.Item>
-                <Descriptions.Item label={t("dataset.asset.info.width")}>
+                </Item>
+                <Item label={t("dataset.asset.info.width")}>
                   {asset.metadata?.width}
-                </Descriptions.Item>
-                <Descriptions.Item label={t("dataset.asset.info.height")}>
+                </Item>
+                <Item label={t("dataset.asset.info.height")}>
                   {asset.metadata?.height}
-                </Descriptions.Item>
+                </Item>
                 {asset.size ? (
-                  <Descriptions.Item label={t("dataset.asset.info.size")}>
+                  <Item label={t("dataset.asset.info.size")}>
                     {asset.size}
-                  </Descriptions.Item>
+                  </Item>
                 ) : null}
-                <Descriptions.Item label={t("dataset.asset.info.channel")} span={asset.size ? 1 : 2}>
-                  {asset.metadata?.channel}
-                </Descriptions.Item>
-                <Descriptions.Item label={t("dataset.asset.info.timestamp")} span={2}>
-                  {getDateFromTimestamp(asset.metadata?.timestamp)}
-                </Descriptions.Item>
-                <Descriptions.Item label={t("dataset.asset.info.keyword")} span={2}>
+                <Item label={t("dataset.asset.info.channel")} span={asset.size ? 1 : 2}>
+                  {asset.metadata?.image_channels}
+                </Item>
+                <Item label={t("dataset.asset.info.timestamp")} span={2}>
+                  {getDateFromTimestamp(asset.metadata?.timestamp?.start)}
+                </Item>
+                <Item label={t("dataset.asset.info.keyword")} span={2}>
                   <Row>
                     <Col flex={1}>
                       {asset.keywords?.map((keyword, i) => (
@@ -183,14 +182,18 @@ function Asset({ id, asset: cache, datasetKeywords, filterKeyword, filters, inde
                         <EyeOffIcon onClick={toggleAnnotation} title={t("dataset.asset.annotation.show")} />}
                     </Col>
                   </Row>
-                </Descriptions.Item>
+                </Item>
+                <Item label={t('dataset.assets.keyword.selector.types.cks')}>
+                  {Object.keys(asset.cks).map(ck => <Space key={ck}>
+                    <span style={{ fontWeight: 'bold' }}>{ck}: </span> <span>{asset.cks[ck]}</span>
+                  </Space>)}
+                </Item>
               </Descriptions>
-              {asset.evaluated ?
-                <div className={styles.filter}>
-                  <h3><NavDatasetIcon /> {t("dataset.asset.filters.title")}</h3>
-                  <GtSelector vertical onChange={setGtSelected} />
-                  <EvaluationSelector vertical onChange={setEvaluation} />
-                </div> : null}
+
+              <Space className={styles.filter} size={10} wrap>
+                <GtSelector vertical onChange={setGtSelected} />
+                <EvaluationSelector hidden={!asset.evaluated} vertical onChange={setEvaluation} />
+              </Space>
             </Card>
             <Space className={styles.random}>
               <Button
@@ -209,7 +212,9 @@ function Asset({ id, asset: cache, datasetKeywords, filterKeyword, filters, inde
                 {t("dataset.asset.back")}
               </Button></Space>
           </Col>
-          <Col style={{ alignSelf: 'center' }} flex={'20px'}><RightOutlined hidden={currentIndex.index >= total - 1} className={styles.next} onClick={next} /></Col>
+          <Col style={{ alignSelf: 'center' }} flex={'20px'}>
+            <RightOutlined hidden={currentIndex.index >= total - 1} className={styles.next} onClick={next} />
+          </Col>
         </Row>
       </div>
     </div>

@@ -29,21 +29,23 @@ type BaseHandler interface {
 		cmTypes []int,
 		cks []string,
 		tags []string,
-	) constants.QueryAssetsResult
+	) *constants.QueryAssetsResult
 	GetDatasetDupHandler(
 		mirRepo0 *constants.MirRepo,
 		mirRepo1 *constants.MirRepo,
-	) constants.QueryDatasetDupResult
+	) *constants.QueryDatasetDupResult
 	GetDatasetMetaCountsHandler(
 		mirRepo *constants.MirRepo,
-	) constants.QueryDatasetStatsResult
+	) *constants.QueryDatasetStatsResult
 	GetDatasetStatsHandler(
 		mirRepo *constants.MirRepo,
 		classIDs []int,
-	) constants.QueryDatasetStatsResult
+		requireAssetsHist bool,
+		requireAnnotationsHist bool,
+	) *constants.QueryDatasetStatsResult
 	GetModelInfoHandler(
 		mirRepo *constants.MirRepo,
-	) constants.MirdataModel
+	) *constants.MirdataModel
 }
 
 type ViewerServer struct {
@@ -67,6 +69,8 @@ func NewViewerServer(config constants.Config) ViewerServer {
 	// get global Monitor object
 	m := ginmetrics.GetMonitor()
 
+	// +optional set metric path, default /debug/metrics
+	m.SetMetricPath("/metrics")
 	// +optional set slow time, default 5s
 	m.SetSlowTime(10)
 	// +optional set request duration, default {0.1, 0.3, 1.2, 5, 10}
@@ -256,6 +260,8 @@ func (s *ViewerServer) handleDatasetMetaCounts(c *gin.Context) {
 // @Param   repoID     path    string     true        "Repo ID"
 // @Param   branchID     path    string     true        "Branch ID"
 // @Param   class_ids     query    string     false        "e.g. class_ids=1,3,7"
+// @Param   require_assets_hist     query    string     false        "e.g. require_assets_hist"
+// @Param   require_annos_hist     query    string     false        "e.g. require_annos_hist"
 // @Success 200 {string} string    "'code': 0, 'msg': 'Success', 'Success': true, 'result': constants.QueryDatasetStatsResult"
 // @Router /api/v1/users/{userID}/repo/{repoID}/branch/{branchID}/dataset_stats [get]
 func (s *ViewerServer) handleDatasetStats(c *gin.Context) {
@@ -264,7 +270,16 @@ func (s *ViewerServer) handleDatasetStats(c *gin.Context) {
 	mirRepo := s.buildMirRepoFromParam(c)
 	classIDs := s.getIntSliceFromString(c.DefaultQuery("class_ids", ""))
 
-	resultData := s.handler.GetDatasetStatsHandler(mirRepo, classIDs)
+	requireAssetsHist := false
+	if _, ok := c.GetQuery("require_assets_hist"); ok {
+		requireAssetsHist = true
+	}
+	requireAnnotationsHist := false
+	if _, ok := c.GetQuery("require_annos_hist"); ok {
+		requireAnnotationsHist = true
+	}
+
+	resultData := s.handler.GetDatasetStatsHandler(mirRepo, classIDs, requireAssetsHist, requireAnnotationsHist)
 	ViewerSuccess(c, resultData)
 }
 
