@@ -162,7 +162,7 @@ class TestGetDatasetAnalyses:
         user_id: int,
     ):
         dataset = create_dataset_record(db, user_id=user_id)
-        params = {"ids": str(dataset.id)}
+        params = {"project_id": dataset.project_id, "ids": str(dataset.id)}
         r = client.get(
             f"{settings.API_V1_STR}/datasets/analysis",
             headers=normal_user_token_headers,

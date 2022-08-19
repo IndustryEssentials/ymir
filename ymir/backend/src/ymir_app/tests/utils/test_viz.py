@@ -323,11 +323,11 @@ class TestVizClient:
         task_id = random_lower_string()
         viz.initialize(user_id=user_id, project_id=project_id, user_labels=mock_user_labels)
         ret = viz.get_dataset_analysis(dataset_hash=task_id)
-        assert isinstance(ret, m.DatasetAnalysis)
-        assert "gt" in ret.keywords
-        assert "pred" in ret.keywords
-        assert ret.gt is None
-        assert ret.pred
+        assert isinstance(ret, Dict)
+        assert "gt" in ret["keywords"]
+        assert "pred" in ret["keywords"]
+        assert ret["gt"] is None
+        assert ret["pred"]
 
     def test_close(self, mocker):
         host = random_lower_string()

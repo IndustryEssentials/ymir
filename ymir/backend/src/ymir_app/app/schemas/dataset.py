@@ -106,6 +106,10 @@ class DatasetInDBBase(IdModelMixin, DateTimeModelMixin, IsDeletedModelMixin, Dat
         orm_mode = True
 
 
+class DatasetInDB(DatasetInDBBase):
+    pass
+
+
 # Properties to return to caller
 class Dataset(DatasetInDBBase):
     keywords: Optional[str]
@@ -142,10 +146,22 @@ class DatasetStatsElement(BaseModel):
     negative_assets_count: int
 
 
-class DatasetStats(Dataset):
+class DatasetStats(DatasetInDBBase):
     total_assets_count: Optional[int]
     gt: Optional[DatasetStatsElement]
     pred: Optional[DatasetStatsElement]
+    keywords: Optional[str]
+    ignored_keywords: Optional[str]
+    negative_info: Optional[str]
+
+    # make sure all the json dumped value is unpacked before returning to caller
+    @validator("keywords", "ignored_keywords", "negative_info")
+    def unpack(cls, v: Optional[Union[str, Dict]]) -> Dict[str, int]:
+        if v is None:
+            return {}
+        if isinstance(v, str):
+            return json.loads(v)
+        return v
 
 
 class DatasetStatsOut(Common):
