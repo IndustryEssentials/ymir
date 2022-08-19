@@ -31,8 +31,6 @@ function KeywordRates({ keywords, dataset, progressWidth = 0.5 }) {
   useEffect(() => {
     if (did && kws?.length && did === dataset.id && kws.every(k => keywords.includes(k))) {
       getNegativeKeywords({ keywords: kws, dataset: did })
-    } else if (dataset?.id) {
-      cacheToStats(dataset)
     }
   }, [did, kws])
 
@@ -86,11 +84,6 @@ function KeywordRates({ keywords, dataset, progressWidth = 0.5 }) {
 
   function label({ count = 0, label = '', total }) {
     return `${label} ${count}/${total} ${percent(count / total)}`
-  }
-
-  function cacheToStats(dataset = {}) {
-    const { gt, pred } = dataset
-    setStats({ gt, pred })
   }
 
   const renderList = (list, title = 'Ground Truth') => <div className={s.rates}>

@@ -77,7 +77,7 @@ function Iterations({ ...func }) {
 
   function renderPop(label, dataset = {}, extra) {
     dataset.project = project
-    const content = <KeywordRates dataset={dataset} progressWidth={0.4}></KeywordRates>
+    const content = <KeywordRates keywords={project.keywords} dataset={dataset} progressWidth={0.4}></KeywordRates>
     return <Popover content={content} overlayInnerStyle={{ minWidth: 500 }}>
       <span>{label}</span>
       {extra}
