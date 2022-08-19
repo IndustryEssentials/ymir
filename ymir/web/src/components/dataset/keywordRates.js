@@ -15,19 +15,26 @@ const getWidth = ({ count = 0, max }, progressWidth) => percent(count * progress
 
 function KeywordRates({ keywords, dataset, progressWidth = 0.5 }) {
   const [list, setList] = useState(initList)
+  const [did, setDid] = useState(null)
+  const [kws, setKws] = useState([])
   const [stats, getNegativeKeywords, setStats] = useFetch('dataset/getNegativeKeywords', {})
   const [colors, setColors] = useState({})
 
   useEffect(() => {
-    if (dataset?.id && keywords?.length) {
-      getNegativeKeywords({ projectId: dataset.projectId, keywords, dataset: dataset.id })
-    } else if (dataset?.id) {
-      cacheToStats(dataset)
-    }
-  }, [dataset, keywords])
+    dataset?.id && setDid(dataset.id)
+  }, [dataset])
 
   useEffect(() => {
-    const kws = keywords?.length ? keywords : dataset?.keywords
+    setKws(keywords)
+  }, [keywords])
+
+  useEffect(() => {
+    if (did && kws?.length && did === dataset.id && kws.every(k => keywords.includes(k))) {
+      getNegativeKeywords({ keywords: kws, dataset: did })
+    }
+  }, [did, kws])
+
+  useEffect(() => {
     const keywordColors = (kws || []).reduce((prev, keyword) => (colors[keyword] ? prev : {
       ...prev,
       [keyword]: randomColor(),
@@ -35,7 +42,7 @@ function KeywordRates({ keywords, dataset, progressWidth = 0.5 }) {
       0: 'gray'
     })
     setColors({ ...colors, ...keywordColors })
-  }, [keywords, dataset])
+  }, [kws])
 
   useEffect(() => {
     if (stats.gt) {
@@ -44,7 +51,7 @@ function KeywordRates({ keywords, dataset, progressWidth = 0.5 }) {
     } else {
       setList(initList)
     }
-  }, [stats, dataset, colors])
+  }, [stats, colors])
 
   function generateList({ gt, pred }, colors) {
     return {
@@ -77,11 +84,6 @@ function KeywordRates({ keywords, dataset, progressWidth = 0.5 }) {
 
   function label({ count = 0, label = '', total }) {
     return `${label} ${count}/${total} ${percent(count / total)}`
-  }
-
-  function cacheToStats(dataset = {}) {
-    const { gt, pred } = dataset
-    setStats({ gt, pred })
   }
 
   const renderList = (list, title = 'Ground Truth') => <div className={s.rates}>

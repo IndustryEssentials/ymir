@@ -41,12 +41,14 @@ const Stage = ({ pid, value, stage, project = {} }) => {
     return valid ? t('project.stage.state.done') : t('project.stage.state.waiting')
   }
 
+  const matchKeywords = dataset => dataset.keywords.some(kw => project.keywords.includes(kw))
+
   const filters = datasets => {
     const fields = stages.filter(({ type, field }) => !type && stage.field !== field)
       .map(({ field }) => field)
     const ids = fields.map(field => project[field]?.id || project[field])
 
-    return datasets.filter(dataset => ![...ids, ...project.testingSets].includes(dataset.id))
+    return datasets.filter(dataset => ![...ids, ...project.testingSets].includes(dataset.id) && matchKeywords(dataset))
   }
 
   return <Row wrap={false}>
