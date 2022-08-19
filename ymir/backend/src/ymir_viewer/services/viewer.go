@@ -11,6 +11,7 @@ import (
 
 	"github.com/IndustryEssentials/ymir-viewer/common/constants"
 	docs "github.com/IndustryEssentials/ymir-viewer/docs"
+	healthcheck "github.com/RaMin0/gin-health-check"
 	"github.com/gin-gonic/gin"
 	"github.com/penglongli/gin-metrics/ginmetrics"
 	swaggerFiles "github.com/swaggo/files"
@@ -79,6 +80,8 @@ func NewViewerServer(config constants.Config) ViewerServer {
 
 	// set middleware for gin
 	m.Use(viewerServer.gin)
+
+	viewerServer.gin.Use(healthcheck.Default())
 
 	viewerServer.routes()
 	return viewerServer

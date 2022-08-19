@@ -75,7 +75,7 @@
                     },
                     "targets": [
                         {
-                            "expr": "sum(rate(container_cpu_user_seconds_total{image!=\"\"}[1m])) / count(node_cpu_seconds_total{mode=\"user\"}) * 100",
+                            "expr": "sum(rate(container_cpu_user_seconds_total{image!=\"\"}[5m])) / count(node_cpu_seconds_total{mode=\"user\"}) * 100",
                             "interval": "10s",
                             "intervalFactor": 1,
                             "legendFormat": "",
@@ -800,6 +800,259 @@
         {
             "collapse": false,
             "editable": true,
+            "height": "150px",
+            "panels": [
+                {
+                    "aliasColors": {},
+                    "breakPoint": "50%",
+                    "cacheTimeout": null,
+                    "combine": {
+                        "label": "Others",
+                        "threshold": 0
+                    },
+                    "datasource": null,
+                    "decimals": null,
+                    "description": "",
+                    "fieldConfig": {
+                        "defaults": {
+                            "custom": {
+                                "align": null,
+                                "filterable": false
+                            },
+                            "mappings": [],
+                            "thresholds": {
+                                "mode": "absolute",
+                                "steps": [
+                                    {
+                                        "color": "blue",
+                                        "value": null
+                                    },
+                                    {
+                                        "color": "green",
+                                        "value": 80
+                                    }
+                                ]
+                            },
+                            "unit": "none"
+                        },
+                        "overrides": []
+                    },
+                    "fontSize": "80%",
+                    "format": "none",
+                    "gridPos": {
+                        "h": 5,
+                        "w": 7,
+                        "x": 0,
+                        "y": 21
+                    },
+                    "id": 23,
+                    "interval": null,
+                    "legend": {
+                        "show": true,
+                        "values": true
+                    },
+                    "legendType": "Right side",
+                    "links": [],
+                    "nullPointMode": "connected",
+                    "pieType": "pie",
+                    "pluginVersion": "7.2.0",
+                    "strokeWidth": 1,
+                    "targets": [
+                        {
+                            "expr": "sum by(code, uri, instance) (gin_uri_request_total)",
+                            "format": "time_series",
+                            "instant": false,
+                            "interval": "",
+                            "intervalFactor": 1,
+                            "legendFormat": "{{instance}}-{{uri}}-{{code}}",
+                            "refId": "A"
+                        }
+                    ],
+                    "timeFrom": null,
+                    "timeShift": null,
+                    "title": "Viewer Return Code",
+                    "type": "grafana-piechart-panel",
+                    "valueName": "current"
+                },
+                {
+                    "aliasColors": {},
+                    "bars": false,
+                    "dashLength": 10,
+                    "dashes": false,
+                    "datasource": null,
+                    "fieldConfig": {
+                        "defaults": {
+                            "custom": {},
+                            "unit": "s"
+                        },
+                        "overrides": []
+                    },
+                    "fill": 1,
+                    "fillGradient": 0,
+                    "gridPos": {
+                        "h": 7,
+                        "w": 17,
+                        "x": 7,
+                        "y": 14
+                    },
+                    "hiddenSeries": false,
+                    "id": 22,
+                    "legend": {
+                        "avg": false,
+                        "current": false,
+                        "max": false,
+                        "min": false,
+                        "show": true,
+                        "total": false,
+                        "values": false
+                    },
+                    "lines": true,
+                    "linewidth": 1,
+                    "nullPointMode": "null",
+                    "options": {
+                        "alertThreshold": true
+                    },
+                    "percentage": false,
+                    "pluginVersion": "7.2.0",
+                    "pointradius": 2,
+                    "points": false,
+                    "renderer": "flot",
+                    "seriesOverrides": [],
+                    "spaceLength": 10,
+                    "stack": false,
+                    "steppedLine": false,
+                    "targets": [
+                        {
+                            "expr": "histogram_quantile(0.95, sum (rate(gin_request_duration_bucket[5m])) by (le, instance))",
+                            "interval": "",
+                            "legendFormat": "p95",
+                            "refId": "A"
+                        },
+                        {
+                            "expr": "histogram_quantile(0.99, sum (rate(gin_request_duration_bucket[5m])) by (le, instance))",
+                            "interval": "",
+                            "legendFormat": "p99",
+                            "refId": "B"
+                        },
+                        {
+                            "expr": "sum (gin_request_duration_sum) / sum(gin_request_duration_count)",
+                            "interval": "",
+                            "legendFormat": "avg",
+                            "refId": "C"
+                        }
+                    ],
+                    "thresholds": [],
+                    "timeFrom": null,
+                    "timeRegions": [],
+                    "timeShift": null,
+                    "title": "Viewer Request Duration",
+                    "tooltip": {
+                        "shared": true,
+                        "sort": 0,
+                        "value_type": "individual"
+                    },
+                    "type": "graph",
+                    "xaxis": {
+                        "buckets": null,
+                        "mode": "time",
+                        "name": null,
+                        "show": true,
+                        "values": []
+                    },
+                    "yaxes": [
+                        {
+                            "format": "s",
+                            "label": null,
+                            "logBase": 1,
+                            "max": null,
+                            "min": null,
+                            "show": true
+                        },
+                        {
+                            "format": "bytes",
+                            "label": null,
+                            "logBase": 1,
+                            "max": null,
+                            "min": null,
+                            "show": true
+                        }
+                    ],
+                    "yaxis": {
+                        "align": false,
+                        "alignLevel": null
+                    }
+                },
+                {
+                    "cacheTimeout": null,
+                    "datasource": null,
+                    "fieldConfig": {
+                        "defaults": {
+                            "custom": {
+                                "align": null,
+                                "filterable": false
+                            },
+                            "mappings": [],
+                            "thresholds": {
+                                "mode": "absolute",
+                                "steps": [
+                                    {
+                                        "color": "blue",
+                                        "value": null
+                                    },
+                                    {
+                                        "color": "green",
+                                        "value": 80
+                                    }
+                                ]
+                            },
+                            "unit": "none"
+                        },
+                        "overrides": []
+                    },
+                    "gridPos": {
+                        "h": 5,
+                        "w": 17,
+                        "x": 7,
+                        "y": 21
+                    },
+                    "id": 24,
+                    "interval": null,
+                    "links": [],
+                    "options": {
+                        "displayMode": "basic",
+                        "orientation": "horizontal",
+                        "reduceOptions": {
+                            "calcs": [
+                                "last"
+                            ],
+                            "fields": "",
+                            "values": false
+                        },
+                        "showUnfilled": true
+                    },
+                    "pluginVersion": "7.2.0",
+                    "targets": [
+                        {
+                            "expr": "sum by(uri, instance) (gin_slow_request_total)",
+                            "format": "time_series",
+                            "instant": false,
+                            "interval": "",
+                            "intervalFactor": 1,
+                            "legendFormat": "{{instance}}-{{uri}}",
+                            "refId": "A"
+                        }
+                    ],
+                    "timeFrom": null,
+                    "timeShift": null,
+                    "title": "Viewer Slow Request(> 10s)",
+                    "type": "bargauge"
+                }
+            ],
+            "title": "Viewer"
+        },
+        {
+            "collapse": false,
+            "editable": true,
             "height": "250px",
             "panels": [
                 {
@@ -843,7 +1096,7 @@
                     "steppedLine": false,
                     "targets": [
                         {
-                            "expr": "sum by (name) (rate(container_cpu_usage_seconds_total{image!=\"\"}[1m])) / scalar(count(node_cpu_seconds_total{mode=\"user\"})) * 100",
+                            "expr": "sum by (name) (rate(container_cpu_usage_seconds_total{image!=\"\"}[5m])) / scalar(count(node_cpu_seconds_total{mode=\"user\"})) * 100",
                             "intervalFactor": 10,
                             "legendFormat": "{{ name }}",
                             "metric": "container_cpu_user_seconds_total",
@@ -1102,7 +1355,7 @@
                     "steppedLine": false,
                     "targets": [
                         {
-                            "expr": "sum by (name) (rate(container_network_receive_bytes_total{image!=\"\"}[1m]))",
+                            "expr": "sum by (name) (rate(container_network_receive_bytes_total{image!=\"\"}[5m]))",
                             "intervalFactor": 10,
                             "legendFormat": "{{ name }}",
                             "metric": "container_network_receive_bytes_total",
@@ -1183,7 +1436,7 @@
                     "steppedLine": false,
                     "targets": [
                         {
-                            "expr": "sum by (name) (rate(container_network_transmit_bytes_total{image!=\"\"}[1m]))",
+                            "expr": "sum by (name) (rate(container_network_transmit_bytes_total{image!=\"\"}[5m]))",
                             "intervalFactor": 10,
                             "legendFormat": "{{ name }}",
                             "metric": "container_network_transmit_bytes_total",
