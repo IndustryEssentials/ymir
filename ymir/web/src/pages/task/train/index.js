@@ -80,14 +80,18 @@ function Train({ allDatasets, datasetCache, ...func }) {
   }, [selectOpenpai])
 
   useEffect(() => {
-    const dss = allDatasets || []
-    const isValid = dss.some(ds => ds.id === did)
-    const visibleValue = isValid ? did : null
-    setTrainSet(visibleValue)
     setTestingSetIds(project?.testingSets || [])
     iterationId && setSelectedKeywords(project?.keywords || [])
-    form.setFieldsValue({ datasetId: visibleValue })
-  }, [allDatasets, project])
+  }, [project])
+
+  useEffect(() => {
+    if (did && allDatasets?.length) {
+      const isValid = dss.some(ds => ds.id === did)
+      const visibleValue = isValid ? did : null
+      setTrainSet(visibleValue)
+      form.setFieldsValue({ datasetId: visibleValue })
+    }
+  }, [did, allDatasets])
 
   useEffect(() => {
     did && func.getDataset(did)
