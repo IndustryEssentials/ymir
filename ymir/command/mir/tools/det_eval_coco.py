@@ -4,7 +4,7 @@ from typing import Any, Dict, Iterable, List, Optional, Set, Tuple, Union
 import numpy as np
 
 from mir.tools.code import MirCode
-from mir.tools.det_eval_utils import MirDataset, get_ious_array
+from mir.tools.det_eval_utils import calc_averaged_evaluations, get_ious_array, MirDataset
 from mir.tools.errors import MirRuntimeError
 from mir.protos import mir_command_pb2 as mirpb
 
@@ -13,15 +13,14 @@ class CocoDetEval:
     def __init__(self,
                  coco_gt: MirDataset,
                  coco_dt: MirDataset,
-                 params: 'Params' = None,
+                 params: 'Params',
                  asset_ids: Iterable[str] = None):
         self.evalImgs: list = []  # per-image per-category evaluation results [KxAxI] elements
         self.eval: dict = {}  # accumulated evaluation results
-        self.params = params or Params()  # parameters
+        self.params = params
         self.stats: np.ndarray = np.zeros(1)  # result summarization
         self.ious: dict = {
         }  # key: (asset id, class id), value: ious ndarray of ith dt (sorted by score, desc) and jth gt
-        self.params.catIds = coco_gt.get_class_ids()
 
         if asset_ids:
             self.params.imgIdxes = sorted([coco_gt.asset_id_to_ordered_idxes[x] for x in asset_ids])
@@ -349,8 +348,8 @@ class CocoDetEval:
             evaluation_result.iou_evaluations[f"{iou_thr:.2f}"].CopyFrom(iou_evaluation)
 
         # average evaluation
-        evaluation_result.iou_averaged_evaluation.CopyFrom(
-            self._get_iou_evaluation_result(area_ranges_index=area_ranges_index, max_dets_index=max_dets_index))
+        # evaluation_result.iou_averaged_evaluation.CopyFrom(
+        #     self._get_iou_evaluation_result(area_ranges_index=area_ranges_index, max_dets_index=max_dets_index))
 
         return evaluation_result
 
@@ -365,8 +364,8 @@ class CocoDetEval:
             ee = self._get_evaluation_element(iou_thr_index, class_id_index, area_ranges_index, max_dets_index)
             iou_evaluation.ci_evaluations[class_id].CopyFrom(ee)
         # class average
-        ee = self._get_evaluation_element(iou_thr_index, None, area_ranges_index, max_dets_index)
-        iou_evaluation.ci_averaged_evaluation.CopyFrom(ee)
+        # ee = self._get_evaluation_element(iou_thr_index, None, area_ranges_index, max_dets_index)
+        # iou_evaluation.ci_averaged_evaluation.CopyFrom(ee)
 
         return iou_evaluation
 
@@ -565,6 +564,7 @@ def det_evaluate(mir_dts: List[MirDataset], mir_gt: MirDataset, config: mirpb.Ev
     params.confThr = config.conf_thr
     params.iouThrs = get_ious_array(config.iou_thrs_interval)
     params.need_pr_curve = config.need_pr_curve
+    params.catIds = config.class_ids or mir_gt.get_class_ids()
 
     evaluation = mirpb.Evaluation()
     evaluation.config.CopyFrom(config)
@@ -580,6 +580,7 @@ def det_evaluate(mir_dts: List[MirDataset], mir_gt: MirDataset, config: mirpb.Ev
 
         single_dataset_evaluation = evaluator.get_evaluation_result(area_ranges_index=area_ranges_index,
                                                                     max_dets_index=max_dets_index)
+        calc_averaged_evaluations(dataset_evaluation=single_dataset_evaluation, class_ids=config.class_ids)
         single_dataset_evaluation.conf_thr = config.conf_thr
         single_dataset_evaluation.gt_dataset_id = mir_gt.dataset_id
         single_dataset_evaluation.pred_dataset_id = mir_dt.dataset_id

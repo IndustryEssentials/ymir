@@ -221,8 +221,9 @@ def _get_single_evaluate_element(mir_dt: MirDataset, mir_gt: MirDataset, matches
     pred_pb_index_ids: List[int] = []
     for asset_id in mir_dt.get_asset_ids():
         asset_idx = mir_dt.asset_id_to_ordered_idxes[asset_id]
-        annos = mir_dt.img_cat_to_annotations[(asset_idx, class_id)] if (
-            asset_idx, class_id) in mir_dt.img_cat_to_annotations else []
+        annos = mir_dt.img_cat_to_annotations[(asset_idx,
+                                               class_id)] if (asset_idx,
+                                                              class_id) in mir_dt.img_cat_to_annotations else []
         for anno in annos:
             bbox = anno['bbox']
             bboxes.append([bbox[0], bbox[1], bbox[0] + bbox[2], bbox[1] + bbox[3]])
@@ -272,7 +273,11 @@ def det_evaluate(mir_dts: List[MirDataset], mir_gt: MirDataset, config: mirpb.Ev
     iou_thrs = get_ious_array(config.iou_thrs_interval)
 
     for mir_dt in mir_dts:
-        dataset_evaluation = evaluation.dataset_evaluations[mir_dt.dataset_id]
+        single_dataset_evaluation = evaluation.dataset_evaluations[mir_dt.dataset_id]
+        single_dataset_evaluation.conf_thr = config.conf_thr
+        single_dataset_evaluation.gt_dataset_id = mir_gt.dataset_id
+        single_dataset_evaluation.pred_dataset_id = mir_dt.dataset_id
+
         for i, iou_thr in enumerate(iou_thrs):
             if i == 0:
                 _erase_confusion_matrix(mir_gt=mir_gt, mir_dt=mir_dt, class_ids=class_ids)
@@ -285,10 +290,10 @@ def det_evaluate(mir_dts: List[MirDataset], mir_gt: MirDataset, config: mirpb.Ev
                                                    iou_thr=iou_thr,
                                                    matches=matches,
                                                    need_pr_curve=config.need_pr_curve)
-                dataset_evaluation.iou_evaluations[f"{iou_thr:.2f}"].ci_evaluations[class_id].CopyFrom(see)
+                single_dataset_evaluation.iou_evaluations[f"{iou_thr:.2f}"].ci_evaluations[class_id].CopyFrom(see)
 
             if i == 0:
                 _write_confusion_matrix(mir_gt=mir_gt, mir_dt=mir_dt, matches=matches)
-        calc_averaged_evaluations(dataset_evaluation=dataset_evaluation, class_ids=class_ids)
+        calc_averaged_evaluations(dataset_evaluation=single_dataset_evaluation, class_ids=class_ids)
 
     return evaluation
