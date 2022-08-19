@@ -111,7 +111,7 @@ function Train({ allDatasets, datasetCache, ...func }) {
     setAllDulplicated(false)
   }, [trainSet, testSet])
 
-  useEffect(() => trainDataset && setAllKeywords(), [trainDataset])
+  useEffect(() => (trainDataset && !iterationId) && setAllKeywords(), [trainDataset])
 
   useEffect(() => {
     if (duplicationChecked) {
