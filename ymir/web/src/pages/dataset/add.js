@@ -7,7 +7,6 @@ import t from '@/utils/t'
 import useFetch from '@/hooks/useFetch'
 import useAddKeywords from '@/hooks/useAddKeywords'
 import { IMPORTSTRATEGY } from '@/constants/dataset'
-import { randomNumber } from '@/utils/number'
 
 import { urlValidator } from '@/components/form/validators'
 import Breadcrumbs from '@/components/common/breadcrumb'
@@ -49,7 +48,7 @@ const Add = (props) => {
 
   const [form] = useForm()
   const [currentType, setCurrentType] = useState(TYPES.INTERNAL)
-  const [fileToken, setFileToken] = useState('')
+  const [file, setFile] = useState('')
   const [selectedDataset, setSelectedDataset] = useState(id ? Number(id) : null)
   const [newKeywords, setNewKeywords] = useState([])
   const [strategyOptions, setStrategyOptions] = useState([])
@@ -58,6 +57,7 @@ const Add = (props) => {
   const [_, updateKeywords] = useAddKeywords()
   const [addResult, newDataset] = useFetch('dataset/createDataset')
   const [{ items: publicDatasets }, getPublicDatasets] = useFetch('dataset/getInternalDataset', { items: [] })
+  const [nameChangedByUser, setNameChangedByUser] = useState(false)
 
   useEffect(() => {
     form.setFieldsValue({ datasetId: null })
@@ -76,6 +76,10 @@ const Add = (props) => {
     setNewKeywords(newer)
     setIgnoredKeywords([])
   }, [newer])
+
+  useEffect(() => {
+    file && addDefaultName(file)
+  }, [file])
 
   useEffect(() => {
     if (addResult) {
@@ -111,7 +115,7 @@ const Add = (props) => {
 
   async function submit(values) {
     let updateKeywordResult = null
-    if (currentType === TYPES.LOCAL && !fileToken) {
+    if (currentType === TYPES.LOCAL && !file) {
       return message.error(t('dataset.add.local.file.empty'))
     }
 
@@ -135,8 +139,8 @@ const Add = (props) => {
       params.datasetId = params.datasetId[1]
     }
     if (currentType === TYPES.LOCAL) {
-      if (fileToken) {
-        params.url = fileToken
+      if (file) {
+        params.url = file
       } else {
         return message.error(t('dataset.add.local.file.empty'))
       }
@@ -151,8 +155,19 @@ const Add = (props) => {
     console.log('finish failed: ', err)
   }
 
-  function onInternalDatasetChange(value) {
+  function onInternalDatasetChange(value, option) {
+    // addDefaultName('test_name')
     setSelectedDataset(value)
+  }
+
+  function addDefaultName(name = '') {
+    if (!name) {
+      return
+    }
+    const datasetName = form.getFieldValue('name')
+    if (!nameChangedByUser || !datasetName) {
+      form.setFieldsValue({ name })
+    }
   }
 
   function updateIgnoredKeywords(e, keywords, isRemove) {
@@ -205,13 +220,12 @@ const Add = (props) => {
             <Form.Item
               label={t('dataset.add.form.name.label')}
               name='name'
-              initialValue={'dataset_import_' + randomNumber()}
               rules={[
                 { required: true, whitespace: true, message: t('dataset.add.form.name.required') },
                 { type: 'string', min: 2, max: 80 },
               ]}
             >
-              <Input autoComplete={'off'} allowClear />
+              <Input autoComplete={'off'} onKeyUp={() => setNameChangedByUser(true)} allowClear />
             </Form.Item>
             <Form.Item label={t('dataset.add.form.type.label')}>
               <Select onChange={(value) => typeChange(value)} defaultValue={TYPES.INTERNAL}>
@@ -302,9 +316,9 @@ const Add = (props) => {
             {isType(TYPES.LOCAL) ? (
               <Form.Item label={t('dataset.add.form.upload.btn')} required>
                 <Uploader
-                  onChange={(files, result) => { setFileToken(result) }}
+                  onChange={(files, result) => { setFile(result) }}
                   max={1024}
-                  onRemove={() => setFileToken('')}
+                  onRemove={() => setFile('')}
                   info={renderTip('upload', {
                     sample: <a target='_blank' href={'/sample_dataset.zip'}>Sample.zip</a>,
                   })}
