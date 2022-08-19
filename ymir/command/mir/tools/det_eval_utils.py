@@ -1,5 +1,5 @@
 from collections import defaultdict
-from typing import Dict, Iterable, List, Optional, Tuple
+from typing import Dict, Iterable, List, Optional, Set, Tuple
 
 import numpy as np
 
@@ -142,6 +142,18 @@ class MirDataset:
         return self._ordered_class_ids
 
 
+class DetEvalMatchResult:
+    def __init__(self) -> None:
+        self._gt_pred_match: Dict[str, Set[Tuple[int, int]]] = defaultdict(set)
+
+    @property
+    def gt_pred_match(self) -> Dict[str, Set[Tuple[int, int]]]:
+        return self._gt_pred_match
+
+    def add_match(self, asset_id: str, gt_pb_idx: int, pred_pb_idx: int) -> None:
+        self._gt_pred_match[asset_id].add((gt_pb_idx, pred_pb_idx))
+
+
 def get_ious_array(iou_thrs_str: str) -> np.ndarray:
     iou_thrs = [float(v) for v in iou_thrs_str.split(':')]
     if len(iou_thrs) == 3:
@@ -193,3 +205,32 @@ def _get_average_ee(average_ee: mirpb.SingleEvaluationElement, ees: List[mirpb.S
     ees_cnt = len(ees)
     average_ee.ap /= ees_cnt
     average_ee.ar /= ees_cnt
+
+
+def erase_confusion_matrix(mir_gt: MirDataset, mir_dt: MirDataset, class_ids: Iterable[int]) -> None:
+    gt_annotations = mir_gt._task_annotations
+    pred_annotations = mir_dt._task_annotations
+    class_ids_set = set(class_ids)
+
+    for image_annotations in gt_annotations.image_annotations.values():
+        for annotation in image_annotations.annotations:
+            annotation.cm = (mirpb.ConfusionMatrixType.FN
+                             if annotation.class_id in class_ids_set else mirpb.ConfusionMatrixType.IGNORED)
+            annotation.det_link_id = -1
+    for image_annotations in pred_annotations.image_annotations.values():
+        for annotation in image_annotations.annotations:
+            annotation.cm = (mirpb.ConfusionMatrixType.FP
+                             if annotation.class_id in class_ids_set else mirpb.ConfusionMatrixType.IGNORED)
+            annotation.det_link_id = -1
+
+
+def write_confusion_matrix(mir_gt: MirDataset, mir_dt: MirDataset, match_result: DetEvalMatchResult) -> None:
+    gt_annotations = mir_gt._task_annotations
+    pred_annotations = mir_dt._task_annotations
+
+    for asset_id, gt_pred_indexes in match_result.gt_pred_match.items():
+        for gt_pb_index, pred_pb_index in gt_pred_indexes:
+            gt_annotations.image_annotations[asset_id].annotations[gt_pb_index].cm = mirpb.ConfusionMatrixType.MTP
+            gt_annotations.image_annotations[asset_id].annotations[gt_pb_index].det_link_id = pred_pb_index
+            pred_annotations.image_annotations[asset_id].annotations[pred_pb_index].cm = mirpb.ConfusionMatrixType.TP
+            pred_annotations.image_annotations[asset_id].annotations[pred_pb_index].det_link_id = gt_pb_index

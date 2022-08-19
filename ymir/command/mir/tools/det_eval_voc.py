@@ -21,12 +21,13 @@
 # --------------------------------------------------------
 """Python implementation of the PASCAL VOC devkit's AP evaluation code."""
 
-from typing import Any, Dict, Iterable, List, Set, Tuple
+from typing import Any, Dict, List
 
 import numpy as np
 
 from mir.protos import mir_command_pb2 as mirpb
-from mir.tools.det_eval_utils import calc_averaged_evaluations, get_ious_array, MirDataset
+from mir.tools import det_eval_utils
+from mir.tools.det_eval_utils import DetEvalMatchResult, MirDataset
 from mir.tools.code import MirCode
 from mir.tools.errors import MirRuntimeError
 
@@ -64,7 +65,7 @@ def _voc_ap(rec: np.ndarray, prec: np.ndarray, use_07_metric: bool) -> float:
 
 
 def _voc_eval(class_recs: Dict[str, Dict[str, Any]], BB: np.ndarray, confidence: np.ndarray, image_ids: List[str],
-              pred_pb_index_ids: List[int], matches: Set[Tuple[str, int, int]], ovthresh: float, npos: int,
+              pred_pb_index_ids: List[int], match_result: det_eval_utils.DetEvalMatchResult, ovthresh: float, npos: int,
               use_07_metric: bool) -> Dict[str, Any]:
     """
     gt: class_recs
@@ -127,8 +128,9 @@ def _voc_eval(class_recs: Dict[str, Dict[str, Any]], BB: np.ndarray, confidence:
                     tp[d] = 1.
                     R['det'][jmax] = 1
 
-                    # fill matches: asset_idx, pb_index_id for gt, pb_index_id for pred
-                    matches.add((image_ids[d], class_recs[image_ids[d]]['pb_index_ids'][jmax], pred_pb_index_ids[d]))
+                    match_result.add_match(asset_id=image_ids[d],
+                                           gt_pb_idx=class_recs[image_ids[d]]['pb_index_ids'][jmax],
+                                           pred_pb_idx=pred_pb_index_ids[d])
                 else:
                     # jmax previously matched to another
                     fp[d] = 1.
@@ -159,36 +161,9 @@ def _voc_eval(class_recs: Dict[str, Dict[str, Any]], BB: np.ndarray, confidence:
     }
 
 
-def _erase_confusion_matrix(mir_gt: MirDataset, mir_dt: MirDataset, class_ids: Iterable[int]) -> None:
-    gt_annotations = mir_gt._task_annotations
-    pred_annotations = mir_dt._task_annotations
-    class_ids_set = set(class_ids)
-
-    for image_annotations in gt_annotations.image_annotations.values():
-        for annotation in image_annotations.annotations:
-            annotation.cm = (mirpb.ConfusionMatrixType.FN
-                             if annotation.class_id in class_ids_set else mirpb.ConfusionMatrixType.IGNORED)
-            annotation.det_link_id = -1
-    for image_annotations in pred_annotations.image_annotations.values():
-        for annotation in image_annotations.annotations:
-            annotation.cm = (mirpb.ConfusionMatrixType.FP
-                             if annotation.class_id in class_ids_set else mirpb.ConfusionMatrixType.IGNORED)
-            annotation.det_link_id = -1
-
-
-def _write_confusion_matrix(mir_gt: MirDataset, mir_dt: MirDataset, matches: Set[Tuple[str, int, int]]) -> None:
-    gt_annotations = mir_gt._task_annotations
-    pred_annotations = mir_dt._task_annotations
-
-    for asset_id, gt_pb_index, pred_pb_index in matches:
-        gt_annotations.image_annotations[asset_id].annotations[gt_pb_index].cm = mirpb.ConfusionMatrixType.MTP
-        gt_annotations.image_annotations[asset_id].annotations[gt_pb_index].det_link_id = pred_pb_index
-        pred_annotations.image_annotations[asset_id].annotations[pred_pb_index].cm = mirpb.ConfusionMatrixType.TP
-        pred_annotations.image_annotations[asset_id].annotations[pred_pb_index].det_link_id = gt_pb_index
-
-
-def _get_single_evaluate_element(mir_dt: MirDataset, mir_gt: MirDataset, matches: Set[Tuple[str, int, int]],
-                                 class_id: int, iou_thr: float, need_pr_curve: bool) -> mirpb.SingleEvaluationElement:
+def _get_single_evaluate_element(mir_dt: det_eval_utils.MirDataset, mir_gt: det_eval_utils.MirDataset,
+                                 match_result: det_eval_utils.DetEvalMatchResult, class_id: int, iou_thr: float,
+                                 need_pr_curve: bool) -> mirpb.SingleEvaluationElement:
     # convert data structure
     # convert gt, save to `class_recs`
     class_recs: Dict[str, Dict[str, Any]] = {}
@@ -239,7 +214,7 @@ def _get_single_evaluate_element(mir_dt: MirDataset, mir_gt: MirDataset, matches
                             confidence=np.array(confidence),
                             image_ids=image_ids,
                             pred_pb_index_ids=pred_pb_index_ids,
-                            matches=matches,
+                            match_result=match_result,
                             ovthresh=iou_thr,
                             npos=npos,
                             use_07_metric=True)
@@ -270,7 +245,7 @@ def det_evaluate(mir_dts: List[MirDataset], mir_gt: MirDataset, config: mirpb.Ev
     evaluation.config.CopyFrom(config)
 
     class_ids = config.class_ids
-    iou_thrs = get_ious_array(config.iou_thrs_interval)
+    iou_thrs = det_eval_utils.get_ious_array(config.iou_thrs_interval)
 
     for mir_dt in mir_dts:
         single_dataset_evaluation = evaluation.dataset_evaluations[mir_dt.dataset_id]
@@ -280,20 +255,20 @@ def det_evaluate(mir_dts: List[MirDataset], mir_gt: MirDataset, config: mirpb.Ev
 
         for i, iou_thr in enumerate(iou_thrs):
             if i == 0:
-                _erase_confusion_matrix(mir_gt=mir_gt, mir_dt=mir_dt, class_ids=class_ids)
+                det_eval_utils.erase_confusion_matrix(mir_gt=mir_gt, mir_dt=mir_dt, class_ids=class_ids)
 
-            matches: Set[Tuple[str, int, int]] = set()
+            match_result = DetEvalMatchResult()
             for class_id in class_ids:
                 see = _get_single_evaluate_element(mir_dt=mir_dt,
                                                    mir_gt=mir_gt,
                                                    class_id=class_id,
                                                    iou_thr=iou_thr,
-                                                   matches=matches,
+                                                   match_result=match_result,
                                                    need_pr_curve=config.need_pr_curve)
                 single_dataset_evaluation.iou_evaluations[f"{iou_thr:.2f}"].ci_evaluations[class_id].CopyFrom(see)
 
             if i == 0:
-                _write_confusion_matrix(mir_gt=mir_gt, mir_dt=mir_dt, matches=matches)
-        calc_averaged_evaluations(dataset_evaluation=single_dataset_evaluation, class_ids=class_ids)
+                det_eval_utils.write_confusion_matrix(mir_gt=mir_gt, mir_dt=mir_dt, match_result=match_result)
+        det_eval_utils.calc_averaged_evaluations(dataset_evaluation=single_dataset_evaluation, class_ids=class_ids)
 
     return evaluation

@@ -553,7 +553,7 @@ def det_evaluate(mir_dts: List[MirDataset], mir_gt: MirDataset, config: mirpb.Ev
     params.confThr = config.conf_thr
     params.iouThrs = get_ious_array(config.iou_thrs_interval)
     params.need_pr_curve = config.need_pr_curve
-    params.catIds = config.class_ids
+    params.catIds = list(config.class_ids)
 
     evaluation = mirpb.Evaluation()
     evaluation.config.CopyFrom(config)
