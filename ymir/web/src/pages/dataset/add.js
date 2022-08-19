@@ -58,10 +58,12 @@ const Add = (props) => {
   const [addResult, newDataset] = useFetch('dataset/createDataset')
   const [{ items: publicDatasets }, getPublicDatasets] = useFetch('dataset/getInternalDataset', { items: [] })
   const [nameChangedByUser, setNameChangedByUser] = useState(false)
+  const [defaultName, setDefaultName] = useState('')
   const netUrl = Form.useWatch('url', form)
 
   useEffect(() => {
     form.setFieldsValue({ datasetId: null })
+    setDefaultName('')
   }, [currentType])
 
   useEffect(async () => {
@@ -80,13 +82,11 @@ const Add = (props) => {
 
   useEffect(() => {
     // todo get name
-    file && addDefaultName(file)
-  }, [file])
-
-  useEffect(() => {
-    // todo get name
-    addDefaultName(netUrl)
+    const filename = (netUrl || '').replace(/^.+\/([^\/]+)\.zip$/, '$1')
+    setDefaultName(filename)
   }, [netUrl])
+
+  useEffect(() => addDefaultName(defaultName), [defaultName])
 
   useEffect(() => {
     if (addResult) {
@@ -162,16 +162,17 @@ const Add = (props) => {
     console.log('finish failed: ', err)
   }
 
-  function onInternalDatasetChange(value, option) {
-    // addDefaultName('test_name')
+  function onInternalDatasetChange(value, { dataset }) {
+    setDefaultName(`${dataset.name} ${dataset.versionName}`)
     setSelectedDataset(value)
   }
 
+  function setFileDefaultName([file]) {
+    const filename = file.name.replace(/\.zip$/i, '')
+    setDefaultName(filename)
+  }
+
   function addDefaultName(name = '') {
-    console.log('name:', name)
-    if (!name) {
-      return
-    }
     const datasetName = form.getFieldValue('name')
     if (!nameChangedByUser || !datasetName) {
       form.setFieldsValue({ name })
@@ -254,10 +255,14 @@ const Add = (props) => {
                     { required: true, message: t('dataset.add.form.internal.required') }
                   ] : []}
                 >
-                  <Select placeholder={t('dataset.add.form.internal.placeholder')} onChange={(value) => onInternalDatasetChange(value)}>
-                    {publicDatasets.map(dataset => (
-                      <Option value={dataset.id} key={dataset.id}>{dataset.name} {dataset.versionName} (Total: {dataset.assetCount})</Option>
-                    ))}
+                  <Select
+                    placeholder={t('dataset.add.form.internal.placeholder')}
+                    onChange={onInternalDatasetChange}
+                    options={publicDatasets.map(dataset => ({
+                      value: dataset.id,
+                      dataset,
+                      label: `${dataset.name} ${dataset.versionName} (Total: ${dataset.assetCount})`
+                    }))}>
                   </Select>
                 </Form.Item>
 
@@ -324,7 +329,7 @@ const Add = (props) => {
             {isType(TYPES.LOCAL) ? (
               <Form.Item label={t('dataset.add.form.upload.btn')} required>
                 <Uploader
-                  onChange={(files, result) => { setFile(result); addDefaultName(files) }}
+                  onChange={(files, result) => { setFile(result); setFileDefaultName(files) }}
                   max={1024}
                   onRemove={() => setFile('')}
                   info={renderTip('upload', {
