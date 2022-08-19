@@ -316,7 +316,6 @@ export default {
       }
     },
     *update({ payload }, { put, select }) {
-      console.log('update:', update)
       const ds = payload
       if (!ds) {
         return
