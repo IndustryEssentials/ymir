@@ -66,7 +66,7 @@ def det_evaluate_with_pb(
     evaluate_config.need_pr_curve = need_pr_curve
     evaluate_config.gt_dataset_id = dataset_id
     evaluate_config.pred_dataset_ids.append(dataset_id)
-    evaluate_config.class_ids[:] = class_ids
+    evaluate_config.class_ids[:] = class_ids or mir_gt.get_class_ids()
 
     eval_model_name = det_eval_voc if mode == 'voc' else det_eval_coco
     evaluation = eval_model_name.det_evaluate(mir_dts=[mir_dt], mir_gt=mir_gt, config=evaluate_config)  # type: ignore
