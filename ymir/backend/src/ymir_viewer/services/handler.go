@@ -294,6 +294,14 @@ func (v *ViewerHandler) GetDatasetDupHandler(
 	mirMetadatas1 := v.mirLoader.LoadSingleMirData(mirRepo1, constants.MirfileMetadatas).(*protos.MirMetadatas)
 	assetsCount1 := len(mirMetadatas1.Attributes)
 
+	// Load and cache datasets, defer after current loading.
+	if !exist0 {
+		go v.loadAndCacheAssetsNoPanic(mirRepo0)
+	}
+	if !exist1 {
+		go v.loadAndCacheAssetsNoPanic(mirRepo1)
+	}
+
 	// Count dups.
 	assetIDMap := make(map[string]bool, assetsCount0)
 	for assetID := range mirMetadatas0.Attributes {
@@ -305,10 +313,6 @@ func (v *ViewerHandler) GetDatasetDupHandler(
 			dupCount += 1
 		}
 	}
-
-	// Load and cache datasets.
-	go v.loadAndCacheAssetsNoPanic(mirRepo0)
-	go v.loadAndCacheAssetsNoPanic(mirRepo1)
 
 	return &constants.QueryDatasetDupResult{
 		Duplication: dupCount,
