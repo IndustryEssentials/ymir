@@ -40,7 +40,6 @@ type BaseMongoServer interface {
 		cks []string,
 		tags []string,
 	) *constants.QueryAssetsResult
-	QueryDatasetDup(mirRepo0 *constants.MirRepo, mirRepo1 *constants.MirRepo) *constants.QueryDatasetDupResult
 	QueryDatasetStats(
 		mirRepo *constants.MirRepo,
 		classIDs []int,
@@ -279,9 +278,25 @@ func (v *ViewerHandler) GetDatasetDupHandler(
 	mirRepo0 *constants.MirRepo,
 	mirRepo1 *constants.MirRepo,
 ) *constants.QueryDatasetDupResult {
-	v.loadAndIndexAssets(mirRepo0)
-	v.loadAndIndexAssets(mirRepo1)
-	return v.mongoServer.QueryDatasetDup(mirRepo0, mirRepo1)
+	mirMetadatas0 := v.mirLoader.LoadSingleMirData(mirRepo0, constants.MirfileMetadatas).(*protos.MirMetadatas)
+	assetsCount0 := len(mirMetadatas0.Attributes)
+	mirMetadatas1 := v.mirLoader.LoadSingleMirData(mirRepo1, constants.MirfileMetadatas).(*protos.MirMetadatas)
+	assetsCount1 := len(mirMetadatas1.Attributes)
+
+	assetIDMap := make(map[string]bool, assetsCount0)
+	for assetID := range mirMetadatas0.Attributes {
+		assetIDMap[assetID] = true
+	}
+	dupCount := 0
+	for assetID := range mirMetadatas1.Attributes {
+		if _, ok := assetIDMap[assetID]; ok {
+			dupCount += 1
+		}
+	}
+	return &constants.QueryDatasetDupResult{
+		Duplication: dupCount,
+		TotalCount:  map[string]int64{mirRepo0.BranchID: int64(assetsCount0), mirRepo1.BranchID: int64(assetsCount1)},
+	}
 }
 
 func (v *ViewerHandler) GetModelInfoHandler(
