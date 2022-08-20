@@ -295,12 +295,15 @@ class CocoDetEval:
         dtm = np.zeros((T, D))  # dtm[i, j]: gt annotation id matched by j-th dt in i-th iou thr, iouThrs x dets
         gtIg = np.array([g['_ignore'] for g in gt])  # gt ignore
         dtIg = np.zeros((T, D))  # dt ignore
+
+        for tind, t in enumerate(p.iouThrs):
+            for gind, g in enumerate(gt):
+                g['cm'][tind, maxDet] = (mirpb.ConfusionMatrixType.FN, -1)  # default gt is FN, unless matched.
+                if gtIg[gind]:
+                    g['cm'][tind, maxDet] = (mirpb.ConfusionMatrixType.IGNORED, -1)
+
         if not len(ious) == 0:
             for tind, t in enumerate(p.iouThrs):
-                for gind, g in enumerate(gt):
-                    g['cm'][tind, maxDet] = (mirpb.ConfusionMatrixType.FN, -1)  # default gt is FN, unless matched.
-                    if gtIg[gind]:
-                        g['cm'][tind, maxDet] = (mirpb.ConfusionMatrixType.IGNORED, -1)
                 for dind, d in enumerate(dt):
                     d['cm'][tind, maxDet] = (mirpb.ConfusionMatrixType.FP, -1)  # default dt is FP, unless matched.
                     # information about best match so far (m=-1 -> unmatched)
