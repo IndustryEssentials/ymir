@@ -226,12 +226,14 @@ func TestGetDatasetMetaCountsHandler(t *testing.T) {
 func TestGetDatasetDupHandler(t *testing.T) {
 	mirRepo0 := constants.MirRepo{BranchID: "a"}
 	mirRepo1 := constants.MirRepo{BranchID: "b"}
+	mockMongoServer := MockMongoServer{}
+	mockMongoServer.On("CheckDatasetExistenceReady", &mirRepo0).Return(false, false).Once()
+	mockMongoServer.On("CheckDatasetExistenceReady", &mirRepo1).Return(true, true).Once()
 
 	expectedDup := 100
 	expectedCount0 := int64(expectedDup)
 	expectedCount1 := int64(expectedDup)
 
-	mockMongoServer := MockMongoServer{}
 	mockLoader := MockMirRepoLoader{}
 	mockMirMetadatas := protos.MirMetadatas{Attributes: map[string]*protos.MetadataAttributes{}}
 	for i := 0; i < expectedDup; i++ {
