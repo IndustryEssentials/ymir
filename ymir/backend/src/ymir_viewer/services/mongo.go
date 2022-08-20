@@ -457,7 +457,7 @@ func (s *MongoServer) QueryDatasetDup(
 		}
 	}
 
-	totalCount1, err := collection0.CountDocuments(s.Ctx, bson.M{}, &options.CountOptions{})
+	totalCount1, err := collection1.CountDocuments(s.Ctx, bson.M{}, &options.CountOptions{})
 	if err != nil {
 		panic(err)
 	}
