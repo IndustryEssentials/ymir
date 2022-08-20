@@ -207,10 +207,10 @@ class CocoDetEval:
         # set unmatched detections outside of area range to ignore
         a = np.array([d['area'] < aRng[0] or d['area'] > aRng[1] for d in dt]).reshape((1, len(dt)))
         dtIg = np.logical_or(dtIg, np.logical_and(dtm == 0, np.repeat(a, T, 0)))
-        for dind, d in enumerate(dt):
-            if dtIg[tind, dind]:
-                gt_pb_index_id = d['cm'][tind, maxDet][1]
-                d['cm'][tind, maxDet] = (mirpb.ConfusionMatrixType.IGNORED, gt_pb_index_id)
+        # for dind, d in enumerate(dt):
+        #     if dtIg[tind, dind]:
+        #         gt_pb_index_id = d['cm'][tind, maxDet][1]
+        #         d['cm'][tind, maxDet] = (mirpb.ConfusionMatrixType.IGNORED, gt_pb_index_id)
         # store results for given image and category
         return {
             'image_id': imgIdx,
