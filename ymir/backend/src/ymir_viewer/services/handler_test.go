@@ -71,14 +71,6 @@ func (m *MockMongoServer) QueryDatasetAssets(
 	return args.Get(0).(*constants.QueryAssetsResult)
 }
 
-func (m *MockMongoServer) QueryDatasetDup(
-	mirRepo0 *constants.MirRepo,
-	mirRepo1 *constants.MirRepo,
-) *constants.QueryDatasetDupResult {
-	args := m.Called(mirRepo0, mirRepo1)
-	return args.Get(0).(*constants.QueryDatasetDupResult)
-}
-
 func (m *MockMongoServer) QueryDatasetStats(
 	mirRepo *constants.MirRepo,
 	classIDs []int,
@@ -87,6 +79,14 @@ func (m *MockMongoServer) QueryDatasetStats(
 ) *constants.QueryDatasetStatsResult {
 	args := m.Called(mirRepo, classIDs)
 	return args.Get(0).(*constants.QueryDatasetStatsResult)
+}
+
+func (m *MockMongoServer) QueryDatasetDup(
+	mirRepo0 *constants.MirRepo,
+	mirRepo1 *constants.MirRepo,
+) *constants.QueryDatasetDupResult {
+	args := m.Called(mirRepo0, mirRepo1)
+	return args.Get(0).(*constants.QueryDatasetDupResult)
 }
 
 func TestGetDatasetMetaCountsHandler(t *testing.T) {
