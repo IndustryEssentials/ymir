@@ -142,16 +142,30 @@ class MirDataset:
         return self._ordered_class_ids
 
 
-class DetEvalMatchResult:
+class _DetEvalIouMatchResult:
     def __init__(self) -> None:
         self._gt_pred_match: Dict[str, Set[Tuple[int, int]]] = defaultdict(set)
+
+    def add_match(self, asset_id: str, gt_pb_idx: int, pred_pb_idx: int) -> None:
+        self._gt_pred_match[asset_id].add((gt_pb_idx, pred_pb_idx))
 
     @property
     def gt_pred_match(self) -> Dict[str, Set[Tuple[int, int]]]:
         return self._gt_pred_match
 
-    def add_match(self, asset_id: str, gt_pb_idx: int, pred_pb_idx: int) -> None:
-        self._gt_pred_match[asset_id].add((gt_pb_idx, pred_pb_idx))
+
+class DetEvalMatchResult:
+    def __init__(self) -> None:
+        self._iou_matches: Dict[float, _DetEvalIouMatchResult] = defaultdict(_DetEvalIouMatchResult)
+
+    def add_match(self, asset_id: str, iou_thr: float, gt_pb_idx: int, pred_pb_idx: int) -> None:
+        self._iou_matches[iou_thr].add_match(asset_id=asset_id, gt_pb_idx=gt_pb_idx, pred_pb_idx=pred_pb_idx)
+
+    def get_asset_ids(self, iou_thr: float) -> Iterable[str]:
+        return self._iou_matches[iou_thr].gt_pred_match.keys() if iou_thr in self._iou_matches else []
+
+    def get_matches(self, asset_id: str, iou_thr: float) -> Iterable[Tuple[int, int]]:
+        return self._iou_matches[iou_thr].gt_pred_match[asset_id]
 
 
 def get_ious_array(iou_thrs_str: str) -> np.ndarray:
@@ -207,9 +221,8 @@ def _get_average_ee(average_ee: mirpb.SingleEvaluationElement, ees: List[mirpb.S
     average_ee.ar /= ees_cnt
 
 
-def erase_confusion_matrix(mir_gt: MirDataset, mir_dt: MirDataset, class_ids: Iterable[int]) -> None:
-    gt_annotations = mir_gt._task_annotations
-    pred_annotations = mir_dt._task_annotations
+def _erase_confusion_matrix(gt_annotations: mirpb.SingleTaskAnnotations, pred_annotations: mirpb.SingleTaskAnnotations,
+                            class_ids: Iterable[int]) -> None:
     class_ids_set = set(class_ids)
 
     for image_annotations in gt_annotations.image_annotations.values():
@@ -224,12 +237,15 @@ def erase_confusion_matrix(mir_gt: MirDataset, mir_dt: MirDataset, class_ids: It
             annotation.det_link_id = -1
 
 
-def write_confusion_matrix(mir_gt: MirDataset, mir_dt: MirDataset, match_result: DetEvalMatchResult) -> None:
+def write_confusion_matrix(mir_gt: MirDataset, mir_dt: MirDataset, class_ids: List[int],
+                           match_result: DetEvalMatchResult, iou_thr: float) -> None:
     gt_annotations = mir_gt._task_annotations
     pred_annotations = mir_dt._task_annotations
 
-    for asset_id, gt_pred_indexes in match_result.gt_pred_match.items():
-        for gt_pb_index, pred_pb_index in gt_pred_indexes:
+    _erase_confusion_matrix(gt_annotations=gt_annotations, pred_annotations=pred_annotations, class_ids=class_ids)
+
+    for asset_id in match_result.get_asset_ids(iou_thr=iou_thr):
+        for gt_pb_index, pred_pb_index in match_result.get_matches(asset_id=asset_id, iou_thr=iou_thr):
             gt_annotations.image_annotations[asset_id].annotations[gt_pb_index].cm = mirpb.ConfusionMatrixType.MTP
             gt_annotations.image_annotations[asset_id].annotations[gt_pb_index].det_link_id = pred_pb_index
             pred_annotations.image_annotations[asset_id].annotations[pred_pb_index].cm = mirpb.ConfusionMatrixType.TP

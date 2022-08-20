@@ -3,14 +3,18 @@ from typing import Any, Dict, Iterable, List, Optional, Set, Tuple, Union
 
 import numpy as np
 
+from mir.tools import det_eval_utils
 from mir.tools.code import MirCode
-from mir.tools.det_eval_utils import calc_averaged_evaluations, get_ious_array, MirDataset
 from mir.tools.errors import MirRuntimeError
 from mir.protos import mir_command_pb2 as mirpb
 
 
 class CocoDetEval:
-    def __init__(self, coco_gt: MirDataset, coco_dt: MirDataset, params: 'Params', asset_ids: Iterable[str] = None):
+    def __init__(self,
+                 coco_gt: det_eval_utils.MirDataset,
+                 coco_dt: det_eval_utils.MirDataset,
+                 params: 'Params',
+                 asset_ids: Iterable[str] = None):
         self.evalImgs: list = []  # per-image per-category evaluation results [KxAxI] elements
         self.eval: dict = {}  # accumulated evaluation results
         self.params = params
@@ -33,6 +37,8 @@ class CocoDetEval:
 
         self._coco_gt = coco_gt
         self._coco_dt = coco_dt
+
+        self.match_result = det_eval_utils.DetEvalMatchResult()
 
     @classmethod
     def filter_img_cat_to_annotations(cls, img_cat_to_annotations: Dict[Tuple[int, int], List[dict]],
@@ -161,12 +167,12 @@ class CocoDetEval:
         dtIg = np.zeros((T, D))  # dt ignore
         if not len(ious) == 0:
             for tind, t in enumerate(p.iouThrs):
-                for gind, g in enumerate(gt):
-                    g['cm'][tind, maxDet] = (mirpb.ConfusionMatrixType.FN, -1)  # default gt is FN, unless matched.
-                    if gtIg[gind]:
-                        g['cm'][tind, maxDet] = (mirpb.ConfusionMatrixType.IGNORED, -1)
+                # for gind, g in enumerate(gt):
+                #     g['cm'][tind, maxDet] = (mirpb.ConfusionMatrixType.FN, -1)  # default gt is FN, unless matched.
+                #     if gtIg[gind]:
+                #         g['cm'][tind, maxDet] = (mirpb.ConfusionMatrixType.IGNORED, -1)
                 for dind, d in enumerate(dt):
-                    d['cm'][tind, maxDet] = (mirpb.ConfusionMatrixType.FP, -1)  # default dt is FP, unless matched.
+                    # d['cm'][tind, maxDet] = (mirpb.ConfusionMatrixType.FP, -1)  # default dt is FP, unless matched.
                     # information about best match so far (m=-1 -> unmatched)
                     iou = min([t, 1 - 1e-10])
                     m = -1  # best matched gind for current dind, -1 for unmatch
@@ -189,8 +195,15 @@ class CocoDetEval:
                     dtIg[tind, dind] = gtIg[m]
                     dtm[tind, dind] = gt[m]['id']
                     gtm[tind, m] = d['id']
-                    gt[m]['cm'][tind, maxDet] = (mirpb.ConfusionMatrixType.MTP, d['pb_index_id'])
-                    d['cm'][tind, maxDet] = (mirpb.ConfusionMatrixType.TP, gt[m]['pb_index_id'])
+
+                    # only set match for the first iou thresh
+                    if tind == 0:
+                        self.match_result.add_match(asset_id=d['asset_id'],
+                                                    iou_thr=t,
+                                                    gt_pb_idx=gt[m]['pb_index_id'],
+                                                    pred_pb_idx=d['pb_index_id'])
+                    # gt[m]['cm'][tind, maxDet] = (mirpb.ConfusionMatrixType.MTP, d['pb_index_id'])
+                    # d['cm'][tind, maxDet] = (mirpb.ConfusionMatrixType.TP, gt[m]['pb_index_id'])
         # set unmatched detections outside of area range to ignore
         a = np.array([d['area'] < aRng[0] or d['area'] > aRng[1] for d in dt]).reshape((1, len(dt)))
         dtIg = np.logical_or(dtIg, np.logical_and(dtm == 0, np.repeat(a, T, 0)))
@@ -500,34 +513,6 @@ class CocoDetEval:
             raise Exception('Please run accumulate() first')
         self.stats = _summarizeDets()
 
-    def _write_confusion_matrix(self, iou_thr_index: int, maxDets: int) -> None:
-        gt_annotation = self._coco_gt._task_annotations
-        dt_annotation = self._coco_dt._task_annotations
-        cm_key = (iou_thr_index, maxDets)
-        for imgIdx in self.params.imgIdxes:
-            for catId in self.params.catIds:
-                gt = self._gts[imgIdx, catId]
-                if len(gt):
-                    gt_img_annotation = gt_annotation.image_annotations[gt[0]['asset_id']]
-                    pb_idx_to_anno = {anno.index: anno for anno in gt_img_annotation.annotations}
-                    for g in gt:
-                        if not g.get('cm', {}).get(cm_key, None):
-                            continue
-                        cm_tuple = g['cm'][cm_key]
-                        anno = pb_idx_to_anno[g['pb_index_id']]
-                        anno.cm, anno.det_link_id = cm_tuple[0], cm_tuple[1]
-
-                dt = self._dts[imgIdx, catId]
-                if len(dt):
-                    dt_img_annotation = dt_annotation.image_annotations[dt[0]['asset_id']]
-                    pb_idx_to_anno = {anno.index: anno for anno in dt_img_annotation.annotations}
-                    for d in dt:
-                        if not d.get('cm', {}).get(cm_key, None):
-                            continue
-                        cm_tuple = d['cm'][cm_key]
-                        anno = pb_idx_to_anno[d['pb_index_id']]
-                        anno.cm, anno.det_link_id = cm_tuple[0], cm_tuple[1]
-
 
 class Params:
     def __init__(self) -> None:
@@ -545,13 +530,14 @@ class Params:
         self.need_pr_curve = False
 
 
-def det_evaluate(mir_dts: List[MirDataset], mir_gt: MirDataset, config: mirpb.EvaluateConfig) -> mirpb.Evaluation:
+def det_evaluate(mir_dts: List[det_eval_utils.MirDataset], mir_gt: det_eval_utils.MirDataset,
+                 config: mirpb.EvaluateConfig) -> mirpb.Evaluation:
     if config.conf_thr < 0 or config.conf_thr > 1:
         raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS, error_message='invalid conf_thr')
 
     params = Params()
     params.confThr = config.conf_thr
-    params.iouThrs = get_ious_array(config.iou_thrs_interval)
+    params.iouThrs = det_eval_utils.get_ious_array(config.iou_thrs_interval)
     params.need_pr_curve = config.need_pr_curve
     params.catIds = list(config.class_ids)
 
@@ -564,12 +550,17 @@ def det_evaluate(mir_dts: List[MirDataset], mir_gt: MirDataset, config: mirpb.Ev
     for mir_dt in mir_dts:
         evaluator = CocoDetEval(coco_gt=mir_gt, coco_dt=mir_dt, params=params)
         evaluator.evaluate()
-        evaluator._write_confusion_matrix(iou_thr_index=0, maxDets=params.maxDets[max_dets_index])
         evaluator.accumulate()
+
+        det_eval_utils.write_confusion_matrix(mir_gt=mir_gt,
+                                              mir_dt=mir_dt,
+                                              class_ids=params.catIds,
+                                              match_result=evaluator.match_result,
+                                              iou_thr=params.iouThrs[0])
 
         single_dataset_evaluation = evaluator.get_evaluation_result(area_ranges_index=area_ranges_index,
                                                                     max_dets_index=max_dets_index)
-        calc_averaged_evaluations(dataset_evaluation=single_dataset_evaluation, class_ids=params.catIds)
+        det_eval_utils.calc_averaged_evaluations(dataset_evaluation=single_dataset_evaluation, class_ids=params.catIds)
         single_dataset_evaluation.conf_thr = config.conf_thr
         single_dataset_evaluation.gt_dataset_id = mir_gt.dataset_id
         single_dataset_evaluation.pred_dataset_id = mir_dt.dataset_id

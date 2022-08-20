@@ -129,6 +129,7 @@ def _voc_eval(class_recs: Dict[str, Dict[str, Any]], BB: np.ndarray, confidence:
                     R['det'][jmax] = 1
 
                     match_result.add_match(asset_id=image_ids[d],
+                                           iou_thr=ovthresh,
                                            gt_pb_idx=class_recs[image_ids[d]]['pb_index_ids'][jmax],
                                            pred_pb_idx=pred_pb_index_ids[d])
                 else:
@@ -244,7 +245,7 @@ def det_evaluate(mir_dts: List[MirDataset], mir_gt: MirDataset, config: mirpb.Ev
     evaluation = mirpb.Evaluation()
     evaluation.config.CopyFrom(config)
 
-    class_ids = config.class_ids
+    class_ids = list(config.class_ids)
     iou_thrs = det_eval_utils.get_ious_array(config.iou_thrs_interval)
 
     for mir_dt in mir_dts:
@@ -254,9 +255,6 @@ def det_evaluate(mir_dts: List[MirDataset], mir_gt: MirDataset, config: mirpb.Ev
         single_dataset_evaluation.pred_dataset_id = mir_dt.dataset_id
 
         for i, iou_thr in enumerate(iou_thrs):
-            if i == 0:
-                det_eval_utils.erase_confusion_matrix(mir_gt=mir_gt, mir_dt=mir_dt, class_ids=class_ids)
-
             match_result = DetEvalMatchResult()
             for class_id in class_ids:
                 see = _get_single_evaluate_element(mir_dt=mir_dt,
@@ -267,8 +265,11 @@ def det_evaluate(mir_dts: List[MirDataset], mir_gt: MirDataset, config: mirpb.Ev
                                                    need_pr_curve=config.need_pr_curve)
                 single_dataset_evaluation.iou_evaluations[f"{iou_thr:.2f}"].ci_evaluations[class_id].CopyFrom(see)
 
-            if i == 0:
-                det_eval_utils.write_confusion_matrix(mir_gt=mir_gt, mir_dt=mir_dt, match_result=match_result)
+            det_eval_utils.write_confusion_matrix(mir_gt=mir_gt,
+                                                  mir_dt=mir_dt,
+                                                  class_ids=class_ids,
+                                                  match_result=match_result,
+                                                  iou_thr=iou_thrs[0])
         det_eval_utils.calc_averaged_evaluations(dataset_evaluation=single_dataset_evaluation, class_ids=class_ids)
 
     return evaluation
