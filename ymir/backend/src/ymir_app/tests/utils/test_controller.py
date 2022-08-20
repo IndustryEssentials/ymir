@@ -141,7 +141,7 @@ class TestControllerClient:
         mock_stub.data_manage_request.return_value = mocker.Mock(code=0)
         cc.stub = mock_stub
         req = mocker.Mock()
-        mocker.patch.object(m, "json_format")
+        mocker.patch.object(m, "MessageToDict")
         cc.send(req)
         mock_stub.data_manage_request.assert_called()
 
