@@ -56,7 +56,7 @@ function Merge() {
 
   const onFinish = async (values) => {
     if (!checkInputs(values)) {
-      return message.error(t('dataset.fusion.validate.inputs'))
+      return message.error(t('dataset.merge.validate.inputs'))
     }
     const params = {
       ...values,

@@ -123,7 +123,7 @@ const Dataset = () => {
       return (
         <Row gutter={4} wrap={false} key={index} className={styles.dataset_container}>
           {rows.map((asset, rowIndex) => (
-            <Col style={{ height: h }} key={asset.hash} className={styles.dataset_item}>
+            <Col style={{ height: h }} key={rowIndex} className={styles.dataset_item}>
               <div
                 className={styles.dataset_img}
                 onClick={() => goAsset(asset, asset.hash, index * row + rowIndex)}

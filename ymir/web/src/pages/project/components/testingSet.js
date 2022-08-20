@@ -45,7 +45,7 @@ export const TestingSet = ({ project }) => {
 
   function renderPop(label, dataset = {}) {
     dataset.project = project
-    const content = <KeywordRates dataset={dataset} progressWidth={0.4}></KeywordRates>
+    const content = <KeywordRates keywords={project?.keywords} dataset={dataset} progressWidth={0.4}></KeywordRates>
     return <Popover content={content} overlayInnerStyle={{ minWidth: 500 }}>
       <span>{label}</span>
     </Popover>

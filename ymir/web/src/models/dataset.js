@@ -228,10 +228,12 @@ export default {
         versions[gid] = updatedDatasets
       })
       const validDatasets = newDatasets.filter(d => d?.needReload)
-      yield put({
-        type: 'UPDATE_ALL_DATASETS',
-        payload: [...validDatasets, ...all],
-      })
+      if (validDatasets.length) {
+        yield put({
+          type: 'UPDATE_ALL_DATASETS',
+          payload: [...validDatasets, ...all],
+        })
+      }
       yield put({
         type: 'UPDATE_ALL_VERSIONS',
         payload: { ...versions },
@@ -335,8 +337,9 @@ export default {
         }
       })
     },
-    *getNegativeKeywords({ payload }, { put, call }) {
-      const { code, result } = yield call(getNegativeKeywords, payload)
+    *getNegativeKeywords({ payload }, { put, call, select }) {
+      const pid = yield select(({ project: { current } }) => current.id)
+      const { code, result } = yield call(getNegativeKeywords, { projectId: pid, ...payload })
       if (code === 0) {
         const { gt, pred, total_assets_count } = result
         const getStats = (o = {}) => transferAnnotationsCount(o.keywords, o.negative_assets_count, total_assets_count)

@@ -166,7 +166,6 @@ const Add = (props) => {
   function renderKeywords(keywords, isIgnoreKeywords) {
     return keywords.length ? keywords.map(key =>
       <Tag className={s.selectedTag} key={key} closable
-        onClick={e => updateIgnoredKeywords(e, [key], !isIgnoreKeywords)}
         onClose={e => updateIgnoredKeywords(e, [key], isIgnoreKeywords)}
       >
         {key}
