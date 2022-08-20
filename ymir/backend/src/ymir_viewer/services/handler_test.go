@@ -224,8 +224,8 @@ func TestGetDatasetMetaCountsHandler(t *testing.T) {
 }
 
 func TestGetDatasetDupHandler(t *testing.T) {
-	mirRepo0 := constants.MirRepo{BranchID: "a"}
-	mirRepo1 := constants.MirRepo{BranchID: "b"}
+	mirRepo0 := constants.MirRepo{BranchID: "a", TaskID: "a"}
+	mirRepo1 := constants.MirRepo{BranchID: "b", TaskID: "b"}
 	mockMongoServer := MockMongoServer{}
 	mockMongoServer.On("CheckDatasetExistenceReady", &mirRepo0).Return(false, false).Once()
 	mockMongoServer.On("CheckDatasetExistenceReady", &mirRepo1).Return(true, true).Once()

@@ -279,6 +279,10 @@ func (v *ViewerHandler) GetDatasetDupHandler(
 	mirRepo0 *constants.MirRepo,
 	mirRepo1 *constants.MirRepo,
 ) *constants.QueryDatasetDupResult {
+	if mirRepo0.TaskID == mirRepo1.TaskID {
+		panic("Exactly the same taskid.")
+	}
+
 	exist0, ready0 := v.mongoServer.CheckDatasetExistenceReady(mirRepo0)
 	exist1, ready1 := v.mongoServer.CheckDatasetExistenceReady(mirRepo1)
 	if exist0 && exist1 && ready0 && ready1 {
@@ -308,7 +312,7 @@ func (v *ViewerHandler) GetDatasetDupHandler(
 
 	return &constants.QueryDatasetDupResult{
 		Duplication: dupCount,
-		TotalCount:  map[string]int64{mirRepo0.BranchID: int64(assetsCount0), mirRepo1.BranchID: int64(assetsCount1)},
+		TotalCount:  map[string]int64{mirRepo0.TaskID: int64(assetsCount0), mirRepo1.TaskID: int64(assetsCount1)},
 	}
 }
 
