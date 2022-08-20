@@ -209,6 +209,11 @@ def _get_average_ee(average_ee: mirpb.SingleEvaluationElement, ees: List[mirpb.S
     if not ees:
         return
 
+    if len(ees) == 1:
+        average_ee.CopyFrom(ees[0])
+        del average_ee.pr_curve[:]
+        return
+
     for ee in ees:
         average_ee.ap += ee.ap
         average_ee.ar += ee.ar
