@@ -81,14 +81,6 @@ func (m *MockMongoServer) QueryDatasetStats(
 	return args.Get(0).(*constants.QueryDatasetStatsResult)
 }
 
-func (m *MockMongoServer) QueryDatasetDup(
-	mirRepo0 *constants.MirRepo,
-	mirRepo1 *constants.MirRepo,
-) *constants.QueryDatasetDupResult {
-	args := m.Called(mirRepo0, mirRepo1)
-	return args.Get(0).(*constants.QueryDatasetDupResult)
-}
-
 func TestGetDatasetMetaCountsHandler(t *testing.T) {
 	mirFileContext := constants.MirfileContext
 	mirFileTasks := constants.MirfileTasks
@@ -227,8 +219,6 @@ func TestGetDatasetDupHandler(t *testing.T) {
 	mirRepo0 := constants.MirRepo{BranchID: "a", TaskID: "a"}
 	mirRepo1 := constants.MirRepo{BranchID: "b", TaskID: "b"}
 	mockMongoServer := MockMongoServer{}
-	mockMongoServer.On("CheckDatasetExistenceReady", &mirRepo0).Return(false, false).Once()
-	mockMongoServer.On("CheckDatasetExistenceReady", &mirRepo1).Return(true, true).Once()
 
 	expectedDup := 100
 	expectedCount0 := int64(expectedDup)

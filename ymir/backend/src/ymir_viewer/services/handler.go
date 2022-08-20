@@ -40,7 +40,6 @@ type BaseMongoServer interface {
 		cks []string,
 		tags []string,
 	) *constants.QueryAssetsResult
-	QueryDatasetDup(mirRepo0 *constants.MirRepo, mirRepo1 *constants.MirRepo) *constants.QueryDatasetDupResult
 	QueryDatasetStats(
 		mirRepo *constants.MirRepo,
 		classIDs []int,
@@ -283,24 +282,10 @@ func (v *ViewerHandler) GetDatasetDupHandler(
 		panic("Exactly the same taskid.")
 	}
 
-	exist0, ready0 := v.mongoServer.CheckDatasetExistenceReady(mirRepo0)
-	exist1, ready1 := v.mongoServer.CheckDatasetExistenceReady(mirRepo1)
-	if exist0 && exist1 && ready0 && ready1 {
-		return v.mongoServer.QueryDatasetDup(mirRepo0, mirRepo1)
-	}
-
 	mirMetadatas0 := v.mirLoader.LoadSingleMirData(mirRepo0, constants.MirfileMetadatas).(*protos.MirMetadatas)
 	assetsCount0 := len(mirMetadatas0.Attributes)
 	mirMetadatas1 := v.mirLoader.LoadSingleMirData(mirRepo1, constants.MirfileMetadatas).(*protos.MirMetadatas)
 	assetsCount1 := len(mirMetadatas1.Attributes)
-
-	// Load and cache datasets, defer after current loading.
-	if !exist0 {
-		go v.loadAndCacheAssetsNoPanic(mirRepo0)
-	}
-	if !exist1 {
-		go v.loadAndCacheAssetsNoPanic(mirRepo1)
-	}
 
 	// Count dups.
 	assetIDMap := make(map[string]bool, assetsCount0)
