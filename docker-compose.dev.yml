@@ -45,7 +45,7 @@ services:
   cadvisor:
     image: gcr.io/cadvisor/cadvisor:v0.44.1-test
     ports:
-      - 8080:8080
+      - 8880:8080
     volumes:
       - /:/rootfs:ro
       - /var/run:/var/run:rw
@@ -78,6 +78,43 @@ services:
       - 9100:9100
     healthcheck:
       test: wget -q --tries=1 -O- http://localhost:9100/health | grep -q "Node Exporter"
+      interval: 60s
+      timeout: 6s
+      retries: 3
+      start_period: 30s
+    networks:
+      - ymirnetwork
+
+  loki:
+    image: grafana/loki:main-87e20d9
+    volumes:
+      - ${YMIR_PATH}/metrics/loki/:/etc/loki/
+      - ./metrics/config/loki.yml:/etc/loki/loki.yml:ro
+    command: -config.file=/etc/loki/loki.yml
+    restart: on-failure:10
+    ports:
+      - 3100:3100
+    healthcheck:
+      test: wget -q --tries=1 -O- http://localhost:3100/ready | grep -q "ready"
+      interval: 60s
+      timeout: 6s
+      retries: 3
+      start_period: 30s
+    networks:
+      - ymirnetwork
+
+  promtail:
+    image: grafana/promtail:main-87e20d9
+    volumes:
+      - ${YMIR_PATH}/metrics/promtail:/etc/promtail/
+      - ${YMIR_PATH}/ymir-data/logs:/var/log/:ro
+      - ./metrics/config/promtail.yml:/etc/promtail/promtail.yml:ro
+    command: -config.file=/etc/promtail/promtail.yml
+    restart: on-failure:10
+    ports:
+      - 9080:9080
+    healthcheck:
+      test: promtails --version
       interval: 60s
       timeout: 6s
       retries: 3

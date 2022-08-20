@@ -26,9 +26,178 @@
     "fiscalYearStartMonth": 0,
     "graphTooltip": 1,
     "id": null,
-    "links": [],
+    "links": [
+        {
+            "asDropdown": false,
+            "icon": "bolt",
+            "includeVars": true,
+            "keepTime": true,
+            "tags": [],
+            "targetBlank": true,
+            "title": "View In Explore",
+            "tooltip": "",
+            "type": "link",
+            "url": "/explore?orgId=1&left=[\"now-1h\",\"now\",\"Loki\",{\"expr\":\"{filename=\\\"$filename\\\"}\"},{\"ui\":[true,true,true,\"none\"]}]"
+        },
+        {
+            "asDropdown": false,
+            "icon": "external link",
+            "includeVars": false,
+            "keepTime": false,
+            "tags": [],
+            "targetBlank": true,
+            "title": "Learn LogQL",
+            "tooltip": "",
+            "type": "link",
+            "url": "https://grafana.com/docs/loki/latest/logql/"
+        }
+    ],
     "liveNow": false,
     "panels": [
+        {
+            "gridPos": {
+                "h": 1,
+                "w": 24,
+                "x": 0,
+                "y": 0
+            },
+            "id": 36,
+            "title": "YMIR-logs",
+            "type": "row"
+        },
+        {
+            "aliasColors": {},
+            "bars": true,
+            "dashLength": 10,
+            "dashes": false,
+            "datasource": {
+                "type": "loki",
+                "uid": "oaP4s6i4z"
+            },
+            "fieldConfig": {
+                "defaults": {
+                    "links": []
+                },
+                "overrides": []
+            },
+            "fill": 1,
+            "fillGradient": 0,
+            "gridPos": {
+                "h": 3,
+                "w": 24,
+                "x": 0,
+                "y": 1
+            },
+            "hiddenSeries": false,
+            "id": 6,
+            "legend": {
+                "avg": false,
+                "current": false,
+                "max": false,
+                "min": false,
+                "show": false,
+                "total": false,
+                "values": false
+            },
+            "lines": false,
+            "linewidth": 1,
+            "nullPointMode": "null",
+            "options": {
+                "alertThreshold": true
+            },
+            "percentage": false,
+            "pluginVersion": "9.1.0",
+            "pointradius": 2,
+            "points": false,
+            "renderer": "flot",
+            "seriesOverrides": [],
+            "spaceLength": 10,
+            "stack": false,
+            "steppedLine": false,
+            "targets": [
+                {
+                    "datasource": {
+                        "type": "loki",
+                        "uid": "oaP4s6i4z"
+                    },
+                    "editorMode": "code",
+                    "expr": "sum(count_over_time({filename=\"$filename\"} |= \"$search\" [$__interval]))",
+                    "legendFormat": "",
+                    "queryType": "range",
+                    "refId": "A"
+                }
+            ],
+            "thresholds": [],
+            "timeRegions": [],
+            "tooltip": {
+                "shared": true,
+                "sort": 0,
+                "value_type": "individual"
+            },
+            "type": "graph",
+            "xaxis": {
+                "mode": "time",
+                "show": true,
+                "values": []
+            },
+            "yaxes": [
+                {
+                    "$$hashKey": "object:168",
+                    "format": "short",
+                    "logBase": 1,
+                    "show": false
+                },
+                {
+                    "$$hashKey": "object:169",
+                    "format": "short",
+                    "logBase": 1,
+                    "show": false
+                }
+            ],
+            "yaxis": {
+                "align": false
+            }
+        },
+        {
+            "datasource": {
+                "type": "loki",
+                "uid": "oaP4s6i4z"
+            },
+            "gridPos": {
+                "h": 22,
+                "w": 24,
+                "x": 0,
+                "y": 4
+            },
+            "id": 2,
+            "maxDataPoints": "",
+            "options": {
+                "dedupStrategy": "none",
+                "enableLogDetails": true,
+                "prettifyLogMessage": false,
+                "showCommonLabels": false,
+                "showLabels": false,
+                "showTime": true,
+                "sortOrder": "Descending",
+                "wrapLogMessage": false
+            },
+            "targets": [
+                {
+                    "datasource": {
+                        "type": "loki",
+                        "uid": "oaP4s6i4z"
+                    },
+                    "editorMode": "code",
+                    "expr": "{filename=\"$filename\"} |= \"$search\"",
+                    "hide": false,
+                    "legendFormat": "",
+                    "queryType": "range",
+                    "refId": "A"
+                }
+            ],
+            "transparent": true,
+            "type": "logs"
+        },
         {
             "collapsed": false,
             "datasource": {
@@ -39,7 +208,7 @@
                 "h": 1,
                 "w": 24,
                 "x": 0,
-                "y": 0
+                "y": 26
             },
             "id": 28,
             "panels": [],
@@ -88,9 +257,9 @@
             },
             "gridPos": {
                 "h": 8,
-                "w": 13,
+                "w": 15,
                 "x": 0,
-                "y": 1
+                "y": 27
             },
             "id": 30,
             "options": {
@@ -184,11 +353,35 @@
                         "uid": "PBFA97CFB590B2093"
                     },
                     "editorMode": "code",
+                    "expr": "sum(rate(container_last_seen{container_label_com_docker_compose_service=\"clickhouse\"}[15m]))",
+                    "hide": false,
+                    "legendFormat": "clickhouse",
+                    "range": true,
+                    "refId": "C"
+                },
+                {
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "PBFA97CFB590B2093"
+                    },
+                    "editorMode": "code",
                     "expr": "sum(rate(container_last_seen{container_label_com_docker_compose_service=\"tensorboard\"}[15m]))",
                     "hide": false,
                     "legendFormat": "tensorboard",
                     "range": true,
                     "refId": "H"
+                },
+                {
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "PBFA97CFB590B2093"
+                    },
+                    "editorMode": "code",
+                    "expr": "sum(rate(container_last_seen{container_label_com_docker_compose_service=\"labelstudio\"}[15m]))",
+                    "hide": false,
+                    "legendFormat": "labelstudio",
+                    "range": true,
+                    "refId": "P"
                 },
                 {
                     "datasource": {
@@ -249,9 +442,33 @@
                     "legendFormat": "prometheus",
                     "range": true,
                     "refId": "M"
+                },
+                {
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "PBFA97CFB590B2093"
+                    },
+                    "editorMode": "code",
+                    "expr": "sum(rate(container_last_seen{container_label_com_docker_compose_service=\"loki\"}[15m]))",
+                    "hide": false,
+                    "legendFormat": "loki",
+                    "range": true,
+                    "refId": "N"
+                },
+                {
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "PBFA97CFB590B2093"
+                    },
+                    "editorMode": "code",
+                    "expr": "sum(rate(container_last_seen{container_label_com_docker_compose_service=\"promtail\"}[15m]))",
+                    "hide": false,
+                    "legendFormat": "promtail",
+                    "range": true,
+                    "refId": "O"
                 }
             ],
-            "title": "Health Rate",
+            "title": "Health Rate (last 15m)",
             "type": "gauge"
         },
         {
@@ -295,9 +512,9 @@
             },
             "gridPos": {
                 "h": 8,
-                "w": 10,
-                "x": 14,
-                "y": 1
+                "w": 9,
+                "x": 15,
+                "y": 27
             },
             "id": 32,
             "links": [],
@@ -403,9 +620,33 @@
                     "legendFormat": "viz-redis",
                     "range": true,
                     "refId": "G"
+                },
+                {
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "PBFA97CFB590B2093"
+                    },
+                    "editorMode": "code",
+                    "expr": "absent(container_last_seen{container_label_com_docker_compose_service=\"clickhouse\"})",
+                    "hide": false,
+                    "legendFormat": "clickhouse",
+                    "range": true,
+                    "refId": "H"
+                },
+                {
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "PBFA97CFB590B2093"
+                    },
+                    "editorMode": "code",
+                    "expr": "absent(container_last_seen{container_label_com_docker_compose_service=\"labelstudio\"})",
+                    "hide": false,
+                    "legendFormat": "labelstudio",
+                    "range": true,
+                    "refId": "I"
                 }
             ],
-            "title": "Service Alert",
+            "title": "Core Service Alert",
             "type": "state-timeline"
         },
         {
@@ -418,7 +659,7 @@
                 "h": 1,
                 "w": 24,
                 "x": 0,
-                "y": 9
+                "y": 35
             },
             "id": 28,
             "panels": [],
@@ -452,7 +693,7 @@
                 "h": 4,
                 "w": 8,
                 "x": 0,
-                "y": 10
+                "y": 36
             },
             "id": 23,
             "legend": {
@@ -505,7 +746,7 @@
                 "h": 4,
                 "w": 8,
                 "x": 8,
-                "y": 10
+                "y": 36
             },
             "hiddenSeries": false,
             "id": 22,
@@ -605,7 +846,7 @@
                 "h": 1,
                 "w": 24,
                 "x": 0,
-                "y": 14
+                "y": 40
             },
             "id": 28,
             "panels": [],
@@ -639,7 +880,7 @@
                 "h": 4,
                 "w": 8,
                 "x": 0,
-                "y": 15
+                "y": 41
             },
             "id": 23,
             "legend": {
@@ -692,7 +933,7 @@
                 "h": 4,
                 "w": 8,
                 "x": 8,
-                "y": 15
+                "y": 41
             },
             "hiddenSeries": false,
             "id": 22,
@@ -811,7 +1052,7 @@
                 "h": 4,
                 "w": 8,
                 "x": 16,
-                "y": 15
+                "y": 41
             },
             "id": 24,
             "links": [],
@@ -858,7 +1099,7 @@
                 "h": 1,
                 "w": 24,
                 "x": 0,
-                "y": 19
+                "y": 45
             },
             "id": 28,
             "panels": [],
@@ -923,7 +1164,7 @@
                 "h": 4,
                 "w": 4,
                 "x": 0,
-                "y": 20
+                "y": 46
             },
             "hideTimeOverride": true,
             "id": 4,
@@ -1002,7 +1243,7 @@
                 "h": 4,
                 "w": 4,
                 "x": 4,
-                "y": 20
+                "y": 46
             },
             "id": 7,
             "links": [],
@@ -1088,7 +1329,7 @@
                 "h": 4,
                 "w": 4,
                 "x": 8,
-                "y": 20
+                "y": 46
             },
             "hideTimeOverride": true,
             "id": 5,
@@ -1168,7 +1409,7 @@
                 "h": 4,
                 "w": 4,
                 "x": 12,
-                "y": 20
+                "y": 46
             },
             "hideTimeOverride": true,
             "id": 2,
@@ -1255,7 +1496,7 @@
                 "h": 4,
                 "w": 4,
                 "x": 16,
-                "y": 20
+                "y": 46
             },
             "hideTimeOverride": true,
             "id": 6,
@@ -1335,7 +1576,7 @@
                 "h": 4,
                 "w": 4,
                 "x": 20,
-                "y": 20
+                "y": 46
             },
             "hideTimeOverride": true,
             "id": 3,
@@ -1392,7 +1633,7 @@
                 "h": 4,
                 "w": 8,
                 "x": 0,
-                "y": 24
+                "y": 50
             },
             "hiddenSeries": false,
             "id": 9,
@@ -1488,7 +1729,7 @@
                 "h": 4,
                 "w": 8,
                 "x": 8,
-                "y": 24
+                "y": 50
             },
             "hiddenSeries": false,
             "id": 10,
@@ -1588,7 +1829,7 @@
                 "h": 4,
                 "w": 8,
                 "x": 16,
-                "y": 24
+                "y": 50
             },
             "hiddenSeries": false,
             "id": 15,
@@ -1724,7 +1965,7 @@
                 "h": 7,
                 "w": 24,
                 "x": 0,
-                "y": 28
+                "y": 54
             },
             "hiddenSeries": false,
             "id": 8,
@@ -1821,7 +2062,7 @@
                 "h": 7,
                 "w": 24,
                 "x": 0,
-                "y": 35
+                "y": 61
             },
             "hiddenSeries": false,
             "id": 11,
@@ -1918,7 +2159,7 @@
                 "h": 7,
                 "w": 24,
                 "x": 0,
-                "y": 42
+                "y": 68
             },
             "hiddenSeries": false,
             "id": 12,
@@ -2015,7 +2256,7 @@
                 "h": 7,
                 "w": 24,
                 "x": 0,
-                "y": 49
+                "y": 75
             },
             "hiddenSeries": false,
             "id": 13,
@@ -2112,7 +2353,7 @@
                 "h": 7,
                 "w": 24,
                 "x": 0,
-                "y": 56
+                "y": 82
             },
             "hiddenSeries": false,
             "id": 14,
@@ -2198,7 +2439,52 @@
         "docker"
     ],
     "templating": {
-        "list": []
+        "list": [
+            {
+                "current": {
+                    "selected": true,
+                    "text": "/var/log/ymir_viewer.log",
+                    "value": "/var/log/ymir_viewer.log"
+                },
+                "datasource": {
+                    "type": "loki",
+                    "uid": "oaP4s6i4z"
+                },
+                "definition": "label_values(filename)",
+                "hide": 0,
+                "includeAll": false,
+                "label": "Filename",
+                "multi": false,
+                "name": "filename",
+                "options": [],
+                "query": "label_values(filename)",
+                "refresh": 1,
+                "regex": "",
+                "skipUrlSync": false,
+                "sort": 0,
+                "type": "query"
+            },
+            {
+                "current": {
+                    "selected": true,
+                    "text": "",
+                    "value": ""
+                },
+                "hide": 0,
+                "label": "String Match",
+                "name": "search",
+                "options": [
+                    {
+                        "selected": true,
+                        "text": "",
+                        "value": ""
+                    }
+                ],
+                "query": "",
+                "skipUrlSync": false,
+                "type": "textbox"
+            }
+        ]
     },
     "time": {
         "from": "now-1h",
@@ -2232,6 +2518,6 @@
     "timezone": "browser",
     "title": "Docker Containers",
     "uid": "RiZOV3mVz",
-    "version": 21,
+    "version": 31,
     "weekStart": ""
 }
