@@ -9,4 +9,4 @@ MongoDBURI: "mongodb://127.0.0.1:27017"
 MongoDBName: "YMIR"
 MongoDBNoCache: true
 
-InnerTimeout: 10
+InnerTimeout: 61 # +1 for elder.
