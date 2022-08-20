@@ -13,10 +13,32 @@ services:
       - '--web.console.templates=/etc/prometheus/consoles'
       - '--web.enable-lifecycle'
     volumes:
-      - ./metrics/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./metrics/config/prometheus.yml:/etc/prometheus/prometheus.yml:ro
       - ${YMIR_PATH}/metrics/prometheus:/prometheus
     depends_on:
       - cadvisor
+    healthcheck:
+      test: wget -q --tries=1 -O- http://localhost:9090/-/healthy | grep -q "Healthy"
+      interval: 60s
+      timeout: 6s
+      retries: 3
+      start_period: 30s
+    networks:
+      - ymirnetwork
+
+
+  blackbox:
+    image: prom/blackbox-exporter:v0.22.0
+    volumes:
+      - ./metrics/config/blackbox.yml:/etc/blackbox_exporter/config.yml:ro
+    ports:
+      - 9115:9115
+    healthcheck:
+      test: wget -q --tries=1 -O- http://localhost:9115/-/healthy | grep -q "Healthy"
+      interval: 60s
+      timeout: 6s
+      retries: 3
+      start_period: 30s
     networks:
       - ymirnetwork
 
@@ -31,6 +53,12 @@ services:
       - /var/lib/docker/:/var/lib/docker:ro
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - /dev/disk/:/dev/disk:ro
+    healthcheck:
+      test: wget -q --tries=1 -O- http://localhost:8080/healthz | grep -q "ok"
+      interval: 60s
+      timeout: 6s
+      retries: 3
+      start_period: 30s
     networks:
       - ymirnetwork
 
@@ -48,20 +76,33 @@ services:
       - '--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)'
     ports:
       - 9100:9100
+    healthcheck:
+      test: wget -q --tries=1 -O- http://localhost:9100/health | grep -q "Node Exporter"
+      interval: 60s
+      timeout: 6s
+      retries: 3
+      start_period: 30s
     networks:
       - ymirnetwork
 
   grafana:
     image: grafana/grafana:9.1.0
+    environment:
+      - "GF_INSTALL_PLUGINS=grafana-piechart-panel"
     restart: unless-stopped
     user: "0:0"
     ports:
-      - 3000:3000
+      - 13000:3000
     depends_on:
       - prometheus
     volumes:
       - ${YMIR_PATH}/metrics/grafana:/var/lib/grafana
       - ./metrics/grafana/provisioning:/etc/grafana/provisioning
+    healthcheck:
+      test: wget -q --tries=1 -O- http://localhost:3000/api/health | grep -q "ok"
+      interval: 60s
+      timeout: 6s
+      retries: 3
+      start_period: 30s
     networks:
       - ymirnetwork
-

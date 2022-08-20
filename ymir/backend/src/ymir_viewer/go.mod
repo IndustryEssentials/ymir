@@ -3,7 +3,6 @@ module github.com/IndustryEssentials/ymir-viewer
 go 1.18
 
 require (
-	github.com/RaMin0/gin-health-check v0.0.0-20180807004848-a677317b3f01
 	github.com/gin-gonic/gin v1.8.1
 	github.com/penglongli/gin-metrics v0.1.10
 	github.com/spf13/viper v1.12.0

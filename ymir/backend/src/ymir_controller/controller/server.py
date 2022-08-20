@@ -8,6 +8,8 @@ from distutils.util import strtobool
 from typing import Any, Dict
 
 import grpc
+from grpc_health.v1 import health
+from grpc_health.v1 import health_pb2_grpc
 from requests.exceptions import ConnectionError, HTTPError, Timeout
 import sentry_sdk
 import yaml
@@ -135,6 +137,9 @@ def main(main_args: Any) -> int:
     mc_service_impl = MirControllerService(sandbox_root=sandbox_root, assets_config=server_config['ASSETS'])
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
     backend_pb2_grpc.add_mir_controller_serviceServicer_to_server(mc_service_impl, server)
+
+    health_pb2_grpc.add_HealthServicer_to_server(health.HealthServicer(), server)
+
     server.add_insecure_port("[::]:{}".format(port))
     server.start()
 

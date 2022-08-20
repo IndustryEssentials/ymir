@@ -11,7 +11,6 @@ import (
 
 	"github.com/IndustryEssentials/ymir-viewer/common/constants"
 	docs "github.com/IndustryEssentials/ymir-viewer/docs"
-	healthcheck "github.com/RaMin0/gin-health-check"
 	"github.com/gin-gonic/gin"
 	"github.com/penglongli/gin-metrics/ginmetrics"
 	swaggerFiles "github.com/swaggo/files"
@@ -81,8 +80,6 @@ func NewViewerServer(config constants.Config) ViewerServer {
 	// set middleware for gin
 	m.Use(viewerServer.gin)
 
-	viewerServer.gin.Use(healthcheck.Default())
-
 	viewerServer.routes()
 	return viewerServer
 }
@@ -106,6 +103,8 @@ func (s *ViewerServer) routes() {
 
 	docs.SwaggerInfo.BasePath = "/api/v1"
 	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+
+	r.GET("/health", s.handleHealth)
 
 	apiPath := r.Group("/api/v1")
 	{
@@ -347,6 +346,10 @@ func (s *ViewerServer) handleModelInfo(c *gin.Context) {
 
 	resultData := s.handler.GetModelInfoHandler(mirRepo)
 	ViewerSuccess(c, resultData)
+}
+
+func (s *ViewerServer) handleHealth(c *gin.Context) {
+	ViewerSuccess(c, "Healthy")
 }
 
 func (s *ViewerServer) handleFailure(c *gin.Context) {
