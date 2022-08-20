@@ -1,6 +1,5 @@
 import enum
 import itertools
-import json
 import secrets
 import time
 from dataclasses import dataclass
@@ -8,7 +7,8 @@ from typing import Any, Dict, Generator, List, Optional, Union
 
 import grpc
 from fastapi.logger import logger
-from google.protobuf import json_format  # type: ignore
+from google.protobuf.json_format import MessageToDict
+from google.protobuf.text_format import MessageToString
 
 from app.config import settings
 from app.constants.state import TaskType, AnnotationType
@@ -376,14 +376,13 @@ class ControllerClient:
         resp = self.stub.data_manage_request(req.req)
         if resp.code != 0:
             raise ValueError(f"gRPC error. response: {resp.code} {resp.message}")
-        result = json_format.MessageToDict(
+        logger.info("[controller] response: %s", MessageToString(resp, as_one_line=True))
+        return MessageToDict(
             resp,
             preserving_proto_field_name=True,
             use_integers_for_enums=True,
             including_default_value_fields=True,
         )
-        logger.info("[controller] response: %s", json.dumps(result))
-        return result
 
     def add_labels(self, user_id: int, new_labels: UserLabels, dry_run: bool) -> Dict:
         req = ControllerRequest(
