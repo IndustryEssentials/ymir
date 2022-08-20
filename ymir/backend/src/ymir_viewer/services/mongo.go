@@ -450,6 +450,13 @@ func (s *MongoServer) QueryDatasetDup(
 	}
 
 	collection1, collectionName1 := s.getRepoCollection(mirRepo1)
+	if collectionName0 == collectionName1 {
+		return &constants.QueryDatasetDupResult{
+			Duplication: int(totalCount0),
+			TotalCount:  map[string]int64{mirRepo0.TaskID: totalCount0, mirRepo1.TaskID: totalCount0},
+		}
+	}
+
 	totalCount1, err := collection0.CountDocuments(s.Ctx, bson.M{}, &options.CountOptions{})
 	if err != nil {
 		panic(err)
@@ -485,6 +492,6 @@ func (s *MongoServer) QueryDatasetDup(
 
 	return &constants.QueryDatasetDupResult{
 		Duplication: len(showsLoaded),
-		TotalCount:  map[string]int64{mirRepo0.BranchID: totalCount0, mirRepo1.BranchID: totalCount1},
+		TotalCount:  map[string]int64{mirRepo0.TaskID: totalCount0, mirRepo1.TaskID: totalCount1},
 	}
 }

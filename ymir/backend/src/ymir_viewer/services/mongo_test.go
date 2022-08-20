@@ -325,13 +325,13 @@ func TestQueryDatasetDupSuccess(t *testing.T) {
 	mt.Run("success", func(mt *mtest.T) {
 		BranchID0 := "a"
 		BranchID1 := "b"
-		mirRepo0 := constants.MirRepo{BranchID: BranchID0}
-		mirRepo1 := constants.MirRepo{BranchID: BranchID1}
+		mirRepo0 := constants.MirRepo{BranchID: BranchID0, TaskID: BranchID0}
+		mirRepo1 := constants.MirRepo{BranchID: BranchID1, TaskID: BranchID1}
 		mockCollection := mt.Coll
 		mockDatabase := MockDatabase{}
-		mockDatabase.On("Collection", BranchID0+"@", []*options.CollectionOptions(nil)).
+		mockDatabase.On("Collection", BranchID0+"@"+BranchID0, []*options.CollectionOptions(nil)).
 			Return(mockCollection)
-		mockDatabase.On("Collection", BranchID1+"@", []*options.CollectionOptions(nil)).
+		mockDatabase.On("Collection", BranchID1+"@"+BranchID1, []*options.CollectionOptions(nil)).
 			Return(mockCollection)
 
 		mongoServer := NewMongoServer(context.Background(), &mockDatabase)
