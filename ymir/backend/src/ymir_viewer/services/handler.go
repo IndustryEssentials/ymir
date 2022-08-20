@@ -40,6 +40,7 @@ type BaseMongoServer interface {
 		cks []string,
 		tags []string,
 	) *constants.QueryAssetsResult
+	QueryDatasetDup(mirRepo0 *constants.MirRepo, mirRepo1 *constants.MirRepo) *constants.QueryDatasetDupResult
 	QueryDatasetStats(
 		mirRepo *constants.MirRepo,
 		classIDs []int,
@@ -278,11 +279,18 @@ func (v *ViewerHandler) GetDatasetDupHandler(
 	mirRepo0 *constants.MirRepo,
 	mirRepo1 *constants.MirRepo,
 ) *constants.QueryDatasetDupResult {
+	exist0, ready0 := v.mongoServer.CheckDatasetExistenceReady(mirRepo0)
+	exist1, ready1 := v.mongoServer.CheckDatasetExistenceReady(mirRepo1)
+	if exist0 && exist1 && ready0 && ready1 {
+		return v.mongoServer.QueryDatasetDup(mirRepo0, mirRepo1)
+	}
+
 	mirMetadatas0 := v.mirLoader.LoadSingleMirData(mirRepo0, constants.MirfileMetadatas).(*protos.MirMetadatas)
 	assetsCount0 := len(mirMetadatas0.Attributes)
 	mirMetadatas1 := v.mirLoader.LoadSingleMirData(mirRepo1, constants.MirfileMetadatas).(*protos.MirMetadatas)
 	assetsCount1 := len(mirMetadatas1.Attributes)
 
+	// Count dups.
 	assetIDMap := make(map[string]bool, assetsCount0)
 	for assetID := range mirMetadatas0.Attributes {
 		assetIDMap[assetID] = true
@@ -293,6 +301,11 @@ func (v *ViewerHandler) GetDatasetDupHandler(
 			dupCount += 1
 		}
 	}
+
+	// Load and cache datasets.
+	go v.loadAndCacheAssetsNoPanic(mirRepo0)
+	go v.loadAndCacheAssetsNoPanic(mirRepo1)
+
 	return &constants.QueryDatasetDupResult{
 		Duplication: dupCount,
 		TotalCount:  map[string]int64{mirRepo0.BranchID: int64(assetsCount0), mirRepo1.BranchID: int64(assetsCount1)},

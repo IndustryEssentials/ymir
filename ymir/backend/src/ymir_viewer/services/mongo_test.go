@@ -317,3 +317,55 @@ func TestQueryDatasetStatsSuccess(t *testing.T) {
 		assert.Equal(t, expectedResult, result)
 	})
 }
+
+func TestQueryDatasetDupSuccess(t *testing.T) {
+	mt := mtest.New(t, mtest.NewOptions().ClientType(mtest.Mock))
+	defer mt.Close()
+
+	mt.Run("success", func(mt *mtest.T) {
+		BranchID0 := "a"
+		BranchID1 := "b"
+		mirRepo0 := constants.MirRepo{BranchID: BranchID0}
+		mirRepo1 := constants.MirRepo{BranchID: BranchID1}
+		mockCollection := mt.Coll
+		mockDatabase := MockDatabase{}
+		mockDatabase.On("Collection", BranchID0+"@", []*options.CollectionOptions(nil)).
+			Return(mockCollection)
+		mockDatabase.On("Collection", BranchID1+"@", []*options.CollectionOptions(nil)).
+			Return(mockCollection)
+
+		mongoServer := NewMongoServer(context.Background(), &mockDatabase)
+
+		expectedCount0 := int64(0)
+		expectedCount1 := int64(1)
+		countCursor0 := mtest.CreateCursorResponse(
+			1,
+			"a.b",
+			mtest.FirstBatch,
+			bson.D{{Key: "n", Value: expectedCount1}})
+		countCursor1 := mtest.CreateCursorResponse(
+			1,
+			"a.b",
+			mtest.FirstBatch,
+			bson.D{{Key: "n", Value: expectedCount0}})
+		mt.AddMockResponses(countCursor0, countCursor1)
+
+		first := mtest.CreateCursorResponse(
+			1,
+			"a.b",
+			mtest.FirstBatch,
+			bson.D{})
+		second := mtest.CreateCursorResponse(
+			1,
+			"a.b",
+			mtest.NextBatch,
+			bson.D{{Key: "AssetID", Value: "aaa"}})
+		killCursors := mtest.CreateCursorResponse(0, "a.b", mtest.NextBatch)
+		mt.AddMockResponses(first, second, killCursors) // Aggregate/All require a set of responses.
+
+		resultData := mongoServer.QueryDatasetDup(&mirRepo0, &mirRepo1)
+		assert.Equal(t, 2, resultData.Duplication)
+		assert.Equal(t, expectedCount1, resultData.TotalCount["a"])
+		assert.Equal(t, expectedCount0, resultData.TotalCount["b"])
+	})
+}
