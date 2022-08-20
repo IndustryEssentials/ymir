@@ -142,6 +142,7 @@ class TestControllerClient:
         cc.stub = mock_stub
         req = mocker.Mock()
         mocker.patch.object(m, "MessageToDict")
+        mocker.patch.object(m, "MessageToString")
         cc.send(req)
         mock_stub.data_manage_request.assert_called()
 
