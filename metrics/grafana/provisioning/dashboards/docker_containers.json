@@ -173,11 +173,11 @@
             "maxDataPoints": "",
             "options": {
                 "dedupStrategy": "none",
-                "enableLogDetails": true,
+                "enableLogDetails": false,
                 "prettifyLogMessage": false,
                 "showCommonLabels": false,
                 "showLabels": false,
-                "showTime": true,
+                "showTime": false,
                 "sortOrder": "Descending",
                 "wrapLogMessage": false
             },
@@ -239,8 +239,7 @@
                         "mode": "absolute",
                         "steps": [
                             {
-                                "color": "red",
-                                "value": null
+                                "color": "red"
                             },
                             {
                                 "color": "orange",
@@ -493,8 +492,7 @@
                         "mode": "absolute",
                         "steps": [
                             {
-                                "color": "green",
-                                "value": null
+                                "color": "green"
                             },
                             {
                                 "color": "green",
@@ -1035,8 +1033,7 @@
                         "mode": "absolute",
                         "steps": [
                             {
-                                "color": "blue",
-                                "value": null
+                                "color": "blue"
                             },
                             {
                                 "color": "green",
@@ -1143,8 +1140,7 @@
                         "mode": "absolute",
                         "steps": [
                             {
-                                "color": "rgba(50, 172, 45, 0.97)",
-                                "value": null
+                                "color": "rgba(50, 172, 45, 0.97)"
                             },
                             {
                                 "color": "rgba(237, 129, 40, 0.89)",
@@ -1226,8 +1222,7 @@
                         "mode": "absolute",
                         "steps": [
                             {
-                                "color": "green",
-                                "value": null
+                                "color": "green"
                             },
                             {
                                 "color": "red",
@@ -1308,8 +1303,7 @@
                         "mode": "absolute",
                         "steps": [
                             {
-                                "color": "rgba(50, 172, 45, 0.97)",
-                                "value": null
+                                "color": "rgba(50, 172, 45, 0.97)"
                             },
                             {
                                 "color": "rgba(237, 129, 40, 0.89)",
@@ -1392,8 +1386,7 @@
                         "mode": "absolute",
                         "steps": [
                             {
-                                "color": "green",
-                                "value": null
+                                "color": "green"
                             },
                             {
                                 "color": "red",
@@ -1475,8 +1468,7 @@
                         "mode": "absolute",
                         "steps": [
                             {
-                                "color": "rgba(50, 172, 45, 0.97)",
-                                "value": null
+                                "color": "rgba(50, 172, 45, 0.97)"
                             },
                             {
                                 "color": "rgba(237, 129, 40, 0.89)",
@@ -1559,8 +1551,7 @@
                         "mode": "absolute",
                         "steps": [
                             {
-                                "color": "green",
-                                "value": null
+                                "color": "green"
                             },
                             {
                                 "color": "red",
@@ -2443,8 +2434,8 @@
             {
                 "current": {
                     "selected": true,
-                    "text": "/var/log/ymir_viewer.log",
-                    "value": "/var/log/ymir_viewer.log"
+                    "text": "/var/log/ymir_controller.log",
+                    "value": "/var/log/ymir_controller.log"
                 },
                 "datasource": {
                     "type": "loki",
@@ -2518,6 +2509,6 @@
     "timezone": "browser",
     "title": "Docker Containers",
     "uid": "RiZOV3mVz",
-    "version": 31,
+    "version": 32,
     "weekStart": ""
 }

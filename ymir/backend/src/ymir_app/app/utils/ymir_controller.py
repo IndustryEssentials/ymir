@@ -1,5 +1,6 @@
 import enum
 import itertools
+import json
 import secrets
 import time
 from dataclasses import dataclass
@@ -375,13 +376,14 @@ class ControllerClient:
         resp = self.stub.data_manage_request(req.req)
         if resp.code != 0:
             raise ValueError(f"gRPC error. response: {resp.code} {resp.message}")
-        logger.info("[controller] response: %s", resp)
-        return json_format.MessageToDict(
+        result = json_format.MessageToDict(
             resp,
             preserving_proto_field_name=True,
             use_integers_for_enums=True,
             including_default_value_fields=True,
         )
+        logger.info("[controller] response: %s", json.dumps(result))
+        return result
 
     def add_labels(self, user_id: int, new_labels: UserLabels, dry_run: bool) -> Dict:
         req = ControllerRequest(

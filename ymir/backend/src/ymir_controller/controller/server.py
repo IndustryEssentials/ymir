@@ -7,6 +7,7 @@ from concurrent import futures
 from distutils.util import strtobool
 from typing import Any, Dict
 
+from google.protobuf.text_format import MessageToString
 import grpc
 from grpc_health.v1 import health
 from grpc_health.v1 import health_pb2_grpc
@@ -60,9 +61,10 @@ class MirControllerService(backend_pb2_grpc.mir_controller_serviceServicer):
             logging.exception(f"task {task_id} general error: {e}")
             return utils.make_general_response(CTLResponseCode.INVOKER_UNKNOWN_ERROR, str(e))
 
-        logging.info(f"task {task_id} result: {invoker_result}")
         if isinstance(invoker_result, backend_pb2.GeneralResp):
+            logging.info(f"task {task_id} result: {MessageToString(invoker_result, as_one_line=True)}")
             return invoker_result
+
         return utils.make_general_response(CTLResponseCode.UNKOWN_RESPONSE_FORMAT,
                                            "unknown result type: {}".format(type(invoker_result)))
 
