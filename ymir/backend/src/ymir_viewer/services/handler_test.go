@@ -52,6 +52,10 @@ func (m *MockMongoServer) CheckDatasetExistenceReady(mirRepo *constants.MirRepo)
 	return args.Bool(0), args.Bool(1)
 }
 
+func (m *MockMongoServer) RemoveNonReadyDataset() {
+	m.Called()
+}
+
 func (m *MockMongoServer) IndexDatasetData(mirRepo *constants.MirRepo, newData []interface{}) {
 	m.Called(mirRepo, newData)
 }

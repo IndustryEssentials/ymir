@@ -42,21 +42,14 @@ func (s *MongoServer) getExistenceCollection() *mongo.Collection {
 	return collection
 }
 
-func (s *MongoServer) setDatasetExistence(collectionName string, ready bool, insert bool) {
+func (s *MongoServer) setDatasetExistence(collectionName string, ready bool, exist bool) {
 	collection := s.getExistenceCollection()
-	if insert {
-		record := bson.M{"_id": collectionName, "ready": ready, "exist": true}
-		_, err := collection.InsertOne(s.Ctx, record)
-		if err != nil {
-			panic(err)
-		}
-	} else {
-		filter := bson.M{"_id": collectionName}
-		update := bson.M{"$set": bson.M{"ready": ready}}
-		_, err := collection.UpdateOne(s.Ctx, filter, update)
-		if err != nil {
-			panic(err)
-		}
+	filter := bson.M{"_id": collectionName}
+	update := bson.M{"$set": bson.M{"ready": ready, "exist": exist}}
+	upsert := true
+	_, err := collection.UpdateOne(s.Ctx, filter, update, &options.UpdateOptions{Upsert: &upsert})
+	if err != nil {
+		panic(err)
 	}
 }
 func (s *MongoServer) CheckDatasetExistenceReady(mirRepo *constants.MirRepo) (bool, bool) {
@@ -123,7 +116,7 @@ func (s *MongoServer) IndexDatasetData(mirRepo *constants.MirRepo, newData []int
 		panic(err)
 	}
 
-	s.setDatasetExistence(collectionName, true, false)
+	s.setDatasetExistence(collectionName, true, true)
 }
 
 func (s *MongoServer) countDatasetAssetsInClass(
@@ -351,6 +344,27 @@ func (s *MongoServer) queryHistogram(
 		}
 	}
 	return &buckets
+}
+
+func (s *MongoServer) RemoveNonReadyDataset() {
+	collectionExistence := s.getExistenceCollection()
+	filter := bson.M{"ready": false}
+	queryCursor, err := collectionExistence.Find(s.Ctx, filter)
+	if err != nil {
+		panic(err)
+	}
+	queryDatas := []map[string]interface{}{}
+	if err = queryCursor.All(s.Ctx, &queryDatas); err != nil {
+		panic(err)
+	}
+	log.Printf("queryDatas %+v", queryDatas)
+	for _, record := range queryDatas {
+		collectionName := record["_id"].(string)
+		log.Printf("  Dropping non-ready collection %s", collectionName)
+		s.database.Collection(collectionName).Drop(s.Ctx)
+		s.setDatasetExistence(collectionName, false, false)
+	}
+	log.Printf("Dropped %d non-ready collections.", len(queryDatas))
 }
 
 func (s *MongoServer) QueryDatasetStats(

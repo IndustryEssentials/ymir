@@ -29,6 +29,7 @@ type BaseMirRepoLoader interface {
 type BaseMongoServer interface {
 	CheckDatasetExistenceReady(mirRepo *constants.MirRepo) (bool, bool)
 	IndexDatasetData(mirRepo *constants.MirRepo, newData []interface{})
+	RemoveNonReadyDataset()
 	QueryDatasetAssets(
 		mirRepo *constants.MirRepo,
 		offset int,
@@ -53,7 +54,7 @@ type ViewerHandler struct {
 	mirLoader   BaseMirRepoLoader
 }
 
-func NewViewerHandler(mongoURI string, mongoDBName string, clearCache bool) *ViewerHandler {
+func NewViewerHandler(mongoURI string, mongoDataDBName string, useDataDBCache bool) *ViewerHandler {
 	var mongoServer *MongoServer
 	if len(mongoURI) > 0 {
 		log.Printf("[viewer] init mongodb %s\n", mongoURI)
@@ -64,8 +65,11 @@ func NewViewerHandler(mongoURI string, mongoDBName string, clearCache bool) *Vie
 			panic(err)
 		}
 
-		database := client.Database(mongoDBName)
-		if clearCache {
+		database := client.Database(mongoDataDBName)
+		mongoServer = NewMongoServer(mongoCtx, database)
+		if useDataDBCache {
+			go mongoServer.RemoveNonReadyDataset()
+		} else {
 			// Clear cached data.
 			err = database.Drop(mongoCtx)
 			if err != nil {
@@ -73,7 +77,6 @@ func NewViewerHandler(mongoURI string, mongoDBName string, clearCache bool) *Vie
 			}
 		}
 
-		mongoServer = NewMongoServer(mongoCtx, database)
 	}
 
 	return &ViewerHandler{mongoServer: mongoServer, mirLoader: &loader.MirRepoLoader{}}
@@ -213,6 +216,8 @@ func (v *ViewerHandler) GetDatasetMetaCountsHandler(
 		}
 		result.Pred.AnnotationsCount = int64(predStats.TotalCnt)
 	}
+
+	go v.loadAndCacheAssetsNoPanic(mirRepo)
 
 	return v.fillupDatasetUniverseFields(mirRepo, result)
 }
