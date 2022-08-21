@@ -361,7 +361,9 @@ func (s *MongoServer) RemoveNonReadyDataset() {
 	for _, record := range queryDatas {
 		collectionName := record["_id"].(string)
 		log.Printf("  Dropping non-ready collection %s", collectionName)
-		s.database.Collection(collectionName).Drop(s.Ctx)
+		if err = s.database.Collection(collectionName).Drop(s.Ctx); err != nil {
+			log.Panicf("  Fail to drop %s, error: %+v", collectionName, err)
+		}
 		s.setDatasetExistence(collectionName, false, false)
 	}
 	log.Printf("Dropped %d non-ready collections.", len(queryDatas))
