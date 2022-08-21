@@ -646,18 +646,17 @@ class CocoDetEval:
             raise Exception('Please run accumulate() first')
         self.stats = _summarizeDets()
 
-    def erase_confusion_matrix(self) -> None:
-        gt_annotation = self._coco_gt._task_annotations
-        for image_annotations in gt_annotation.image_annotations.values():
-            for annotation in image_annotations.annotations:
-                annotation.cm = mirpb.ConfusionMatrixType.FN
-                annotation.det_link_id = -1
+    def reset_default_confusion_matrix(self) -> None:
+        def _reset_default_confusion_matrix(task_annotations: mirpb.SingleTaskAnnotations, cm: Any) -> None:
+            for image_annotations in task_annotations.image_annotations.values():
+                for annotation in image_annotations.annotations:
+                    annotation.cm = cm
+                    annotation.det_link_id = -1
 
-        dt_annotation = self._coco_dt._task_annotations
-        for image_annotations in dt_annotation.image_annotations.values():
-            for annotation in image_annotations.annotations:
-                annotation.cm = mirpb.ConfusionMatrixType.FP
-                annotation.det_link_id = -1
+        _reset_default_confusion_matrix(task_annotations=self._coco_gt._task_annotations,
+                                        cm=mirpb.ConfusionMatrixType.FN)
+        _reset_default_confusion_matrix(task_annotations=self._coco_dt._task_annotations,
+                                        cm=mirpb.ConfusionMatrixType.FP)
 
     def write_confusion_matrix(self, iou_thr_index: int, maxDets: int) -> None:
         gt_annotation = self._coco_gt._task_annotations
@@ -722,7 +721,7 @@ def _det_evaluate(mir_dts: List[MirCoco], mir_gt: MirCoco, config: mirpb.Evaluat
     for mir_dt in mir_dts:
         evaluator = CocoDetEval(coco_gt=mir_gt, coco_dt=mir_dt, params=params)
         evaluator.evaluate()
-        evaluator.erase_confusion_matrix()
+        evaluator.reset_default_confusion_matrix()
         evaluator.write_confusion_matrix(iou_thr_index=0, maxDets=params.maxDets[max_dets_index])
         evaluator.accumulate()
 
