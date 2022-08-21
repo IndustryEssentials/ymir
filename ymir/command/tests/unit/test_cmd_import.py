@@ -316,10 +316,7 @@ class TestCmdImport(unittest.TestCase):
             dict_image_annotations_expect = {}
         self.assertEqual(mir_annotations.head_task_id, mir_annotations.prediction.task_id)
         self.assertEqual(mir_annotations.head_task_id, mir_annotations.ground_truth.task_id)
-        try:
-            self.assertDictEqual(dict_image_annotations_expect, dict_image_annotations)
-        except AssertionError:
-            breakpoint()
+        self.assertDictEqual(dict_image_annotations_expect, dict_image_annotations)
         self.assertDictEqual(dict_asset_cks_expected, dict_asset_cks)
 
         # check keywords.mir and contexts.mir
