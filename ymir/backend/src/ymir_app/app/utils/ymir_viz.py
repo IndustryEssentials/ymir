@@ -3,6 +3,7 @@ import json
 from typing import Any, Dict, List, Optional
 
 import requests
+from requests.exceptions import ConnectionError, Timeout
 from fastapi.logger import logger
 from pydantic import BaseModel, validator
 
@@ -11,7 +12,10 @@ from app.api.errors.errors import (
     DatasetEvaluationMissingAnnotation,
     ModelNotFound,
     FailedToParseVizResponse,
+    VizError,
+    VizTimeOut,
 )
+
 from app.config import settings
 from common_utils.labels import UserLabels
 from id_definition.error_codes import VizErrorCode, CMDResponseCode
@@ -355,7 +359,7 @@ class VizClient:
         else:
             payload = {"class_id": keyword_id, "limit": limit, "offset": offset}
 
-        resp = self.session.get(url, params=payload, timeout=settings.VIZ_TIMEOUT)
+        resp = self.get_resp(url, params=payload)
         if not resp.ok:
             logger.error("[viz] failed to get assets info: %s", resp.content)
             resp.raise_for_status()
@@ -365,7 +369,7 @@ class VizClient:
 
     def get_asset(self, *, asset_id: str) -> Optional[Dict]:
         url = f"{self._url_prefix}/{self._branch_id}/assets/{asset_id}"
-        resp = self.session.get(url, timeout=settings.VIZ_TIMEOUT)
+        resp = self.get_resp(url)
         if not resp.ok:
             logger.error("[viz] failed to get asset info: %s", resp.content)
             return None
@@ -374,7 +378,7 @@ class VizClient:
 
     def get_model(self) -> ModelMetaData:
         url = f"{self._url_prefix}/{self._branch_id}/models"
-        resp = self.session.get(url, timeout=settings.VIZ_TIMEOUT)
+        resp = self.get_resp(url)
         res = self.parse_resp(resp)
         return ModelMetaData.from_viz_res(res)
 
@@ -384,7 +388,7 @@ class VizClient:
         dataset_hash = dataset_hash or self._branch_id
         user_labels = user_labels or self._user_labels
         url = f"{self._url_prefix}/{dataset_hash}/datasets"
-        resp = self.session.get(url, timeout=settings.VIZ_TIMEOUT)
+        resp = self.get_resp(url)
         res = self.parse_resp(resp)
         logger.info("[viz] get_dataset response: %s", res)
         return DatasetMetaData.from_viz_res(res, user_labels)
@@ -396,14 +400,14 @@ class VizClient:
         user_labels = user_labels or self._user_labels
         url = f"{self._url_prefix}/{dataset_hash}/dataset_stats"
         params = {"class_ids": ",".join(str(k) for k in keyword_ids)}
-        resp = self.session.get(url, timeout=settings.VIZ_TIMEOUT, params=params)
+        resp = self.get_resp(url, params=params)
         res = self.parse_resp(resp)
         logger.info("[viz] get_dataset_stats response: %s", res)
         return DatasetStats.from_viz_res(res, user_labels)
 
     def get_evaluations(self) -> Dict:
         url = f"{self._url_prefix}/{self._branch_id}/evaluations"
-        resp = self.session.get(url, timeout=settings.VIZ_TIMEOUT)
+        resp = self.get_resp(url)
         res = self.parse_resp(resp)
         evaluations = {
             dataset_hash: VizDatasetEvaluationResult(**evaluation).dict() for dataset_hash, evaluation in res.items()
@@ -420,7 +424,7 @@ class VizClient:
             "iou_thr": iou_threshold,
             "need_pr_curve": need_pr_curve,
         }
-        resp = self.session.get(url, params=params, timeout=settings.VIZ_TIMEOUT)
+        resp = self.get_resp(url, params=params)
         res = self.parse_resp(resp)
         evaluations = {
             dataset_hash: VizDatasetEvaluationResult(**evaluation).dict() for dataset_hash, evaluation in res.items()
@@ -431,8 +435,20 @@ class VizClient:
     def check_duplication(self, dataset_hashes: List[str]) -> int:
         url = f"http://{self.host}/v1/users/{self._user_id}/repositories/{self._project_id}/dataset_duplication"  # noqa: E501
         params = {"candidate_dataset_ids": ",".join(dataset_hashes)}
-        resp = self.session.get(url, params=params, timeout=settings.VIZ_TIMEOUT)
+        resp = self.get_resp(url, params=params)
         return self.parse_resp(resp)
+
+    def get_resp(
+        self, url: str, params: Optional[Dict] = None, timeout: int = settings.VIZ_TIMEOUT
+    ) -> requests.Response:
+        try:
+            resp = self.session.get(url, params=params, timeout=timeout)
+        except ConnectionError:
+            raise VizError()
+        except Timeout:
+            raise VizTimeOut()
+        else:
+            return resp
 
     def parse_resp(self, resp: requests.Response) -> Any:
         """
