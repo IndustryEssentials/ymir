@@ -15,9 +15,9 @@ type Config struct {
 	ViewerPort int
 	ViewerURI  string
 
-	MongoDBURI     string
-	MongoDBName    string
-	MongoDBNoCache bool
+	MongoDBURI       string
+	MongoDataDBName  string
+	MongoDataDBCache bool
 
 	InnerTimeout time.Duration
 }

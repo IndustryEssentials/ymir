@@ -63,7 +63,7 @@ func NewViewerServer(config constants.Config) ViewerServer {
 		gin:     gin.Default(),
 		sandbox: config.YmirSandbox,
 		config:  config,
-		handler: NewViewerHandler(config.MongoDBURI, config.MongoDBName, config.MongoDBNoCache),
+		handler: NewViewerHandler(config.MongoDBURI, config.MongoDataDBName, config.MongoDataDBCache),
 	}
 
 	// get global Monitor object
