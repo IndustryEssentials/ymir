@@ -487,7 +487,6 @@ class TestMirStorage(unittest.TestCase):
         try:
             self.assertEqual(loaded_mir_context, mir_context)
         except AssertionError as e:
-            breakpoint()
             logging.info(f"expected: {mir_context}")
             logging.info(f"actual: {loaded_mir_context}")
             raise e
