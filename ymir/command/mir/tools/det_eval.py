@@ -295,12 +295,15 @@ class CocoDetEval:
         dtm = np.zeros((T, D))  # dtm[i, j]: gt annotation id matched by j-th dt in i-th iou thr, iouThrs x dets
         gtIg = np.array([g['_ignore'] for g in gt])  # gt ignore
         dtIg = np.zeros((T, D))  # dt ignore
+
+        for tind, t in enumerate(p.iouThrs):
+            for gind, g in enumerate(gt):
+                g['cm'][tind, maxDet] = (mirpb.ConfusionMatrixType.FN, -1)  # default gt is FN, unless matched.
+                if gtIg[gind]:
+                    g['cm'][tind, maxDet] = (mirpb.ConfusionMatrixType.IGNORED, -1)
+
         if not len(ious) == 0:
             for tind, t in enumerate(p.iouThrs):
-                for gind, g in enumerate(gt):
-                    g['cm'][tind, maxDet] = (mirpb.ConfusionMatrixType.FN, -1)  # default gt is FN, unless matched.
-                    if gtIg[gind]:
-                        g['cm'][tind, maxDet] = (mirpb.ConfusionMatrixType.IGNORED, -1)
                 for dind, d in enumerate(dt):
                     d['cm'][tind, maxDet] = (mirpb.ConfusionMatrixType.FP, -1)  # default dt is FP, unless matched.
                     # information about best match so far (m=-1 -> unmatched)
@@ -646,6 +649,12 @@ class CocoDetEval:
     def write_confusion_matrix(self, iou_thr_index: int, maxDets: int) -> None:
         gt_annotation = self._coco_gt._task_annotations
         dt_annotation = self._coco_dt._task_annotations
+
+        reset_default_confusion_matrix(task_annotations=gt_annotation,
+                                       cm=mirpb.ConfusionMatrixType.FN)
+        reset_default_confusion_matrix(task_annotations=dt_annotation,
+                                       cm=mirpb.ConfusionMatrixType.FP)
+
         cm_key = (iou_thr_index, maxDets)
         for imgIdx in self.params.imgIdxes:
             for catId in self.params.catIds:
@@ -811,3 +820,10 @@ def _show_evaluation(evaluation: mirpb.Evaluation) -> None:
     for dataset_id, dataset_evaluation in evaluation.dataset_evaluations.items():
         cae = dataset_evaluation.iou_averaged_evaluation.ci_averaged_evaluation
         logging.info(f"gt: {gt_dataset_id}, pred: {dataset_id}, mAP: {cae.ap}")
+
+
+def reset_default_confusion_matrix(task_annotations: mirpb.SingleTaskAnnotations, cm: Any) -> None:
+    for image_annotations in task_annotations.image_annotations.values():
+        for annotation in image_annotations.annotations:
+            annotation.cm = cm
+            annotation.det_link_id = -1
