@@ -72,7 +72,7 @@
             "dashes": false,
             "datasource": {
                 "type": "loki",
-                "uid": "oaP4s6i4z"
+                "uid": "zw9hDGZ4z"
             },
             "fieldConfig": {
                 "defaults": {
@@ -118,11 +118,10 @@
                 {
                     "datasource": {
                         "type": "loki",
-                        "uid": "oaP4s6i4z"
+                        "uid": "zw9hDGZ4z"
                     },
                     "editorMode": "code",
                     "expr": "sum(count_over_time({filename=\"$filename\"} |= \"$search\" [$__interval]))",
-                    "legendFormat": "",
                     "queryType": "range",
                     "refId": "A"
                 }
@@ -161,7 +160,7 @@
         {
             "datasource": {
                 "type": "loki",
-                "uid": "oaP4s6i4z"
+                "uid": "zw9hDGZ4z"
             },
             "gridPos": {
                 "h": 22,
@@ -185,12 +184,10 @@
                 {
                     "datasource": {
                         "type": "loki",
-                        "uid": "oaP4s6i4z"
+                        "uid": "zw9hDGZ4z"
                     },
                     "editorMode": "code",
                     "expr": "{filename=\"$filename\"} |= \"$search\"",
-                    "hide": false,
-                    "legendFormat": "",
                     "queryType": "range",
                     "refId": "A"
                 }
@@ -239,7 +236,8 @@
                         "mode": "absolute",
                         "steps": [
                             {
-                                "color": "red"
+                                "color": "red",
+                                "value": null
                             },
                             {
                                 "color": "orange",
@@ -492,7 +490,8 @@
                         "mode": "absolute",
                         "steps": [
                             {
-                                "color": "green"
+                                "color": "green",
+                                "value": null
                             },
                             {
                                 "color": "green",
@@ -1033,7 +1032,8 @@
                         "mode": "absolute",
                         "steps": [
                             {
-                                "color": "blue"
+                                "color": "blue",
+                                "value": null
                             },
                             {
                                 "color": "green",
@@ -1140,7 +1140,8 @@
                         "mode": "absolute",
                         "steps": [
                             {
-                                "color": "rgba(50, 172, 45, 0.97)"
+                                "color": "rgba(50, 172, 45, 0.97)",
+                                "value": null
                             },
                             {
                                 "color": "rgba(237, 129, 40, 0.89)",
@@ -1222,7 +1223,8 @@
                         "mode": "absolute",
                         "steps": [
                             {
-                                "color": "green"
+                                "color": "green",
+                                "value": null
                             },
                             {
                                 "color": "red",
@@ -1303,7 +1305,8 @@
                         "mode": "absolute",
                         "steps": [
                             {
-                                "color": "rgba(50, 172, 45, 0.97)"
+                                "color": "rgba(50, 172, 45, 0.97)",
+                                "value": null
                             },
                             {
                                 "color": "rgba(237, 129, 40, 0.89)",
@@ -1386,7 +1389,8 @@
                         "mode": "absolute",
                         "steps": [
                             {
-                                "color": "green"
+                                "color": "green",
+                                "value": null
                             },
                             {
                                 "color": "red",
@@ -1468,7 +1472,8 @@
                         "mode": "absolute",
                         "steps": [
                             {
-                                "color": "rgba(50, 172, 45, 0.97)"
+                                "color": "rgba(50, 172, 45, 0.97)",
+                                "value": null
                             },
                             {
                                 "color": "rgba(237, 129, 40, 0.89)",
@@ -1551,7 +1556,8 @@
                         "mode": "absolute",
                         "steps": [
                             {
-                                "color": "green"
+                                "color": "green",
+                                "value": null
                             },
                             {
                                 "color": "red",
@@ -2434,12 +2440,12 @@
             {
                 "current": {
                     "selected": true,
-                    "text": "/var/log/ymir_controller.log",
-                    "value": "/var/log/ymir_controller.log"
+                    "text": "/var/log/ymir_crontab_monitor.log",
+                    "value": "/var/log/ymir_crontab_monitor.log"
                 },
                 "datasource": {
                     "type": "loki",
-                    "uid": "oaP4s6i4z"
+                    "uid": "zw9hDGZ4z"
                 },
                 "definition": "label_values(filename)",
                 "hide": 0,
@@ -2457,7 +2463,7 @@
             },
             {
                 "current": {
-                    "selected": true,
+                    "selected": false,
                     "text": "",
                     "value": ""
                 },
@@ -2509,6 +2515,6 @@
     "timezone": "browser",
     "title": "Docker Containers",
     "uid": "RiZOV3mVz",
-    "version": 32,
+    "version": 1,
     "weekStart": ""
 }
