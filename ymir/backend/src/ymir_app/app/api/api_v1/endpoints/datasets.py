@@ -271,8 +271,7 @@ def get_datasets_analysis(
     results = []
     for dataset in datasets:
         res = viz_client.get_dataset_analysis(dataset.hash, keyword_ids, require_hist=True)
-        res.group_name = dataset.group_name  # type: ignore
-        res.version_num = dataset.version_num  # type: ignore
+        res.update({"group_name": dataset.group_name, "version_num": dataset.version_num})
         results.append(res)
     return {"result": {"datasets": results}}
 
