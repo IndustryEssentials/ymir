@@ -180,6 +180,10 @@ paths:
         name: candidate_dataset_ids
         required: true
         type: string
+      - description: dataset_ids to be corroded
+        in: query
+        name: corrodee_dataset_ids
+        type: string
       produces:
       - application/json
       responses:
