@@ -153,7 +153,9 @@ function Train({ allDatasets, datasetCache, ...func }) {
   function imageChange(_, image = {}) {
     const { configs } = image
     const configObj = (configs || []).find(conf => conf.type === TYPES.TRAINING) || {}
-    setLiveCode(image.liveCode || false)
+    if (!HIDDENMODULES.LIVECODE) {
+      setLiveCode(image.liveCode || false)
+    }
     setConfig(removeLiveCodeConfig(configObj.config))
   }
 

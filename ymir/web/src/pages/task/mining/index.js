@@ -83,7 +83,9 @@ function Mining({ datasetCache, ...func }) {
     const hasInference = configs.some(conf => conf.type === TYPES.INFERENCE)
     setImageHasInference(hasInference)
     !hasInference && form.setFieldsValue({ inference: false })
-    setLiveCode(image.liveCode || false)
+    if (!HIDDENMODULES.LIVECODE) {
+      setLiveCode(image.liveCode || false)
+    }
     setConfig(removeLiveCodeConfig(configObj.config))
   }
 

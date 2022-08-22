@@ -3,6 +3,7 @@ import { connect } from 'dva'
 import { useEffect, useState } from 'react'
 
 import { TYPES } from '@/constants/image'
+import { HIDDENMODULES } from '@/constants/common'
 import t from '@/utils/t'
 
 const ImageSelect = ({ value, relatedId, type = TYPES.TRAINING, onChange = () => { }, getImages, getImage, ...resProps }) => {
@@ -34,7 +35,7 @@ const ImageSelect = ({ value, relatedId, type = TYPES.TRAINING, onChange = () =>
   const generateOption = image => ({
     label: <Row>
       <Col flex={1}>{image.name}</Col>
-      <Col style={{ color: 'rgba(0, 0, 0, 0.45)'}}>{t(`image.livecode.label.${image.liveCode ? 'remote' : 'local'}`)}</Col>
+      {!HIDDENMODULES.LIVECODE ? <Col style={{ color: 'rgba(0, 0, 0, 0.45)' }}>{t(`image.livecode.label.${image.liveCode ? 'remote' : 'local'}`)}</Col> : null}
     </Row>,
     image,
     value: image.id + ',' + image.url,
