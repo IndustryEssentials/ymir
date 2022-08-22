@@ -649,6 +649,12 @@ class CocoDetEval:
     def write_confusion_matrix(self, iou_thr_index: int, maxDets: int) -> None:
         gt_annotation = self._coco_gt._task_annotations
         dt_annotation = self._coco_dt._task_annotations
+
+        reset_default_confusion_matrix(task_annotations=gt_annotation,
+                                       cm=mirpb.ConfusionMatrixType.FN)
+        reset_default_confusion_matrix(task_annotations=dt_annotation,
+                                       cm=mirpb.ConfusionMatrixType.FP)
+
         cm_key = (iou_thr_index, maxDets)
         for imgIdx in self.params.imgIdxes:
             for catId in self.params.catIds:
@@ -707,11 +713,6 @@ def _det_evaluate(mir_dts: List[MirCoco], mir_gt: MirCoco, config: mirpb.Evaluat
     max_dets_index = len(params.maxDets) - 1  # last max det number
 
     for mir_dt in mir_dts:
-        reset_default_confusion_matrix(task_annotations=mir_gt._task_annotations,
-                                       cm=mirpb.ConfusionMatrixType.FN)
-        reset_default_confusion_matrix(task_annotations=mir_dt._task_annotations,
-                                       cm=mirpb.ConfusionMatrixType.FP)
-
         evaluator = CocoDetEval(coco_gt=mir_gt, coco_dt=mir_dt, params=params)
         evaluator.evaluate()
         evaluator.write_confusion_matrix(iou_thr_index=0, maxDets=params.maxDets[max_dets_index])
