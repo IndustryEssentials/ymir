@@ -42,21 +42,14 @@ func (s *MongoServer) getExistenceCollection() *mongo.Collection {
 	return collection
 }
 
-func (s *MongoServer) setDatasetExistence(collectionName string, ready bool, insert bool) {
+func (s *MongoServer) setDatasetExistence(collectionName string, ready bool, exist bool) {
 	collection := s.getExistenceCollection()
-	if insert {
-		record := bson.M{"_id": collectionName, "ready": ready, "exist": true}
-		_, err := collection.InsertOne(s.Ctx, record)
-		if err != nil {
-			panic(err)
-		}
-	} else {
-		filter := bson.M{"_id": collectionName}
-		update := bson.M{"$set": bson.M{"ready": ready}}
-		_, err := collection.UpdateOne(s.Ctx, filter, update)
-		if err != nil {
-			panic(err)
-		}
+	filter := bson.M{"_id": collectionName}
+	update := bson.M{"$set": bson.M{"ready": ready, "exist": exist}}
+	upsert := true
+	_, err := collection.UpdateOne(s.Ctx, filter, update, &options.UpdateOptions{Upsert: &upsert})
+	if err != nil {
+		panic(err)
 	}
 }
 func (s *MongoServer) CheckDatasetExistenceReady(mirRepo *constants.MirRepo) (bool, bool) {
@@ -123,7 +116,7 @@ func (s *MongoServer) IndexDatasetData(mirRepo *constants.MirRepo, newData []int
 		panic(err)
 	}
 
-	s.setDatasetExistence(collectionName, true, false)
+	s.setDatasetExistence(collectionName, true, true)
 }
 
 func (s *MongoServer) countDatasetAssetsInClass(
@@ -353,6 +346,29 @@ func (s *MongoServer) queryHistogram(
 	return &buckets
 }
 
+func (s *MongoServer) RemoveNonReadyDataset() {
+	collectionExistence := s.getExistenceCollection()
+	filter := bson.M{"ready": false}
+	queryCursor, err := collectionExistence.Find(s.Ctx, filter)
+	if err != nil {
+		panic(err)
+	}
+	queryDatas := []map[string]interface{}{}
+	if err = queryCursor.All(s.Ctx, &queryDatas); err != nil {
+		panic(err)
+	}
+	log.Printf("queryDatas %+v", queryDatas)
+	for _, record := range queryDatas {
+		collectionName := record["_id"].(string)
+		log.Printf("  Dropping non-ready collection %s", collectionName)
+		if err = s.database.Collection(collectionName).Drop(s.Ctx); err != nil {
+			log.Panicf("  Fail to drop %s, error: %+v", collectionName, err)
+		}
+		s.setDatasetExistence(collectionName, false, false)
+	}
+	log.Printf("Dropped %d non-ready collections.", len(queryDatas))
+}
+
 func (s *MongoServer) QueryDatasetStats(
 	mirRepo *constants.MirRepo,
 	classIDs []int,
@@ -435,56 +451,4 @@ func (s *MongoServer) QueryDatasetStats(
 	queryData.QueryContext.RequireAnnotationsHist = requireAnnotationsHist
 
 	return queryData
-}
-
-func (s *MongoServer) QueryDatasetDup(
-	mirRepo0 *constants.MirRepo,
-	mirRepo1 *constants.MirRepo,
-) *constants.QueryDatasetDupResult {
-	defer tools.TimeTrack(time.Now())
-
-	collection0, collectionName0 := s.getRepoCollection(mirRepo0)
-	totalCount0, err := collection0.CountDocuments(s.Ctx, bson.M{}, &options.CountOptions{})
-	if err != nil {
-		panic(err)
-	}
-
-	collection1, collectionName1 := s.getRepoCollection(mirRepo1)
-	totalCount1, err := collection0.CountDocuments(s.Ctx, bson.M{}, &options.CountOptions{})
-	if err != nil {
-		panic(err)
-	}
-
-	// No-SQL Aggregate Trick: always set smaller dataset to be joined.
-	collectionJoined := collection0
-	collectionNameToJoin := collectionName1
-	if totalCount0 > totalCount1 {
-		collectionJoined = collection1
-		collectionNameToJoin = collectionName0
-	}
-
-	lookupStage := bson.D{
-		bson.E{
-			Key: "$lookup",
-			Value: bson.D{
-				bson.E{Key: "from", Value: collectionNameToJoin},
-				bson.E{Key: "localField", Value: "asset_id"},
-				bson.E{Key: "foreignField", Value: "asset_id"},
-				bson.E{Key: "as", Value: "joinAssets"},
-			},
-		},
-	}
-	showLoadedCursor, err := collectionJoined.Aggregate(s.Ctx, mongo.Pipeline{lookupStage})
-	if err != nil {
-		panic(err)
-	}
-	var showsLoaded []bson.M
-	if err = showLoadedCursor.All(s.Ctx, &showsLoaded); err != nil {
-		panic(err)
-	}
-
-	return &constants.QueryDatasetDupResult{
-		Duplication: len(showsLoaded),
-		TotalCount:  map[string]int64{mirRepo0.BranchID: totalCount0, mirRepo1.BranchID: totalCount1},
-	}
 }
