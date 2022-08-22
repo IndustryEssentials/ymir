@@ -41,7 +41,7 @@ function AssetAnnotation({
       const popContent = <>
         <Row><Col flex={'100px'}>{t('keyword.column.name')}</Col><Col flex={1}>{annotation.keyword}</Col></Row>
         {evaluatedLabel ? <Row><Col flex={'100px'}>Evaluation</Col><Col flex={1}>{evaluationLabel(annotation.cm)}</Col></Row> : null}
-        {annotation.confidence ? <Row><Col flex={'100px'}>{t('model.verify.confidence')}</Col><Col flex={1}>{annotation.confidence}</Col></Row> : null}
+        {annotation.score ? <Row><Col flex={'100px'}>{t('model.verify.confidence')}</Col><Col flex={1}>{annotation.score}</Col></Row> : null}
         {!emptyTags ? <Row><Col flex={'100px'}>{t('dataset.assets.keyword.selector.types.tags')}</Col><Col flex={1}>
           {Object.keys(annotation.tags).map(tag => <Space key={tag} style={{ width: '100%' }}>
             <span style={{ fontWeight: 'bold' }}>{tag}: </span> <span>{annotation.tags[tag]}</span>
@@ -49,7 +49,7 @@ function AssetAnnotation({
         </Col>
         </Row> : null}
       </>
-      return <Popover content={popContent} placement='right'>
+      return <Popover key={index} content={popContent} placement='right'>
         <div
           title={`${annotation.keyword}` + (annotation.score ? `\nConference:${annotation.score}` : '')}
           className={`${styles.annotation} ${annotation.gt ? styles.gt : ''}`}
