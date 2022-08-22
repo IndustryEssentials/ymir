@@ -60,6 +60,12 @@ services:
       - mongodb
     command: bash -c 'cd /app && supervisord -nc supervisor/supervisord.conf'
     restart: on-failure:10
+    healthcheck:
+      test: bash health_check.sh || exit 1
+      interval: 60s
+      timeout: 6s
+      retries: 3
+      start_period: 30s
     networks:
       - ymirnetwork
 
@@ -70,12 +76,24 @@ services:
       - ${YMIR_PATH}/redis:/var/log/redis
       - ${YMIR_PATH}/redis:/data
     restart: on-failure:10
+    healthcheck:
+      test: ["CMD", "redis-cli","ping"]
+      interval: 60s
+      timeout: 6s
+      retries: 3
+      start_period: 30s
     networks:
       - ymirnetwork
 
   viz-redis:
     image: industryessentials/ymir-viz-redis
     restart: on-failure:10
+    healthcheck:
+      test: ["CMD", "redis-cli","ping"]
+      interval: 60s
+      timeout: 6s
+      retries: 3
+      start_period: 30s
     networks:
       - ymirnetwork
 
@@ -93,6 +111,12 @@ services:
     restart: on-failure:10
     depends_on:
       - backend
+    healthcheck:
+      test: curl --fail -s http://localhost:80/health || exit 1
+      interval: 60s
+      timeout: 6s
+      retries: 3
+      start_period: 30s
     networks:
       - ymirnetwork
 
@@ -106,17 +130,29 @@ services:
     volumes:
       - ${YMIR_PATH}/mysql:/var/lib/mysql
     restart: on-failure:10
+    healthcheck:
+        test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost"]
+        interval: 60s
+        timeout: 6s
+        retries: 3
+        start_period: 30s
     networks:
       - ymirnetwork
 
   tensorboard:
-    image: tensorflow/tensorflow:latest
+    image: tensorflow/tensorflow:2.9.1
     env_file:
       - .env
     volumes:
       - "${TENSORBOARD_ROOT}:${TENSORBOARD_ROOT}"
     command: tensorboard --logdir ${TENSORBOARD_ROOT} --port 6006 --bind_all
     restart: on-failure:10
+    healthcheck:
+      test: curl --fail -s http://localhost:6006 || exit 1
+      interval: 60s
+      timeout: 6s
+      retries: 3
+      start_period: 30s
     networks:
       - ymirnetwork
 
@@ -141,6 +177,12 @@ services:
     command: mongod --port ${MONGODB_HOST_PORT} --auth --nojournal
     volumes:
       - ${YMIR_PATH}/ymir-viewer/mongo_data:/data/db
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongo mongodb:${MONGODB_HOST_PORT}/test --quiet
+      interval: 60s
+      timeout: 6s
+      retries: 3
+      start_period: 30s
     networks:
       - ymirnetwork
 

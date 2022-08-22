@@ -104,6 +104,8 @@ func (s *ViewerServer) routes() {
 	docs.SwaggerInfo.BasePath = "/api/v1"
 	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
+	r.GET("/health", s.handleHealth)
+
 	apiPath := r.Group("/api/v1")
 	{
 		apiPath.GET("/users/:userID/repo/:repoID/dataset_duplication", s.handleDatasetDup)
@@ -344,6 +346,10 @@ func (s *ViewerServer) handleModelInfo(c *gin.Context) {
 
 	resultData := s.handler.GetModelInfoHandler(mirRepo)
 	ViewerSuccess(c, resultData)
+}
+
+func (s *ViewerServer) handleHealth(c *gin.Context) {
+	ViewerSuccess(c, "Healthy")
 }
 
 func (s *ViewerServer) handleFailure(c *gin.Context) {

@@ -1,0 +1,10 @@
+modules:
+  http_2xx:
+    prober: http
+    http:
+      method: GET
+  grpc:
+    prober: grpc
+    grpc:
+      tls: true
+      preferred_ip_protocol: "ip4"
