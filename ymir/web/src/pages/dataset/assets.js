@@ -93,7 +93,6 @@ const Dataset = () => {
         ...query,
         [field]: value,
         offset: initQuery.offset,
-        limit: initQuery.limit,
       }))
     }
   }
