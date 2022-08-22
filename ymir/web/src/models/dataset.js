@@ -308,8 +308,9 @@ export default {
         return result.datasets.map(item => transferDatasetAnalysis(item))
       }
     },
-    *checkDuplication({ payload }, { call, put }) {
-      const { pid, trainSet, validationSet } = payload
+    *checkDuplication({ payload }, { call, put, select }) {
+      const { trainSet, validationSet } = payload
+      const pid = yield select(({ project }) => project.current?.id)
       const { code, result } = yield call(checkDuplication, pid, trainSet, validationSet)
       if (code === 0) {
         return result
