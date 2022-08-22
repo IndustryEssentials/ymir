@@ -828,4 +828,3 @@ def reset_default_confusion_matrix(task_annotations: mirpb.SingleTaskAnnotations
         for annotation in image_annotations.annotations:
             annotation.cm = cm
             annotation.det_link_id = -1
-
