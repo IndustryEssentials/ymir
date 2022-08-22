@@ -609,19 +609,19 @@ The user imports the three data sets with the following command:
 ```
 $ cd ~/mir-demo-repo
 $ mir import --index-file /path/to/training-dataset-index.tsv \ # index.tsv path
-             --annotation-dir /path/to/training-dataset-annotation-dir \ # annotations dir
+             --pred-dir /path/to/training-dataset-annotation-dir \ # annotations dir
              --gen-dir ~/ymir-assets \ # assets storage dir
              --dataset-name 'dataset-training' \ # dataset name
              --dst-rev 'dataset-training@import' # destination branch and task name
 $ mir checkout master
 $ mir import --index-file /path/to/val-dataset-index.tsv \
-             --annotation-dir /path/to/val-dataset-annotation-dir \
+             --pred-dir /path/to/val-dataset-annotation-dir \
              --gen-dir ~/ymir-assets \
              --dataset-name 'dataset-val' \
              --dst-rev 'dataset-val@import'
 $ mir checkout master
 $ mir import --index-file /path/to/mining-dataset-index.tsv \
-             --annotation-dir /path/to/mining-dataset-annotation-dir \
+             --pred-dir /path/to/mining-dataset-annotation-dir \
              --gen-dir ~/ymir-assets \
              --dataset-name 'dataset-mining' \
              --dst-rev 'dataset-mining@import'
@@ -736,7 +736,7 @@ Users can export assets with the following command:
 
 ```
 mir export --asset-dir /tmp/ymir/export/export-0/assets \ # export directory for assets
-           --annotation-dir /tmp/ymir/export/export-0/annotations \ # export directory for annotations
+           --pred-dir /tmp/ymir/export/export-0/annotations \ # export directory for annotations
            --media-location ~/ymir-assets \ # assets storage directory
            --src-revs mining-0@mining \
            --format none # no annotations needed
@@ -748,7 +748,7 @@ Once the annotation is finished, the user can import the data using a similar ap
 
 ```
 $ mir import --index-file /tmp/ymir/export/export-0/index.tsv
-             --annotation-dir /tmp/ymir/export/export-0/annotations \ # annotation directory
+             --pred-dir /tmp/ymir/export/export-0/annotations \ # annotation directory
              --gen-dir ~/ymir-assets \ # asset storage directory
              --dataset-name 'dataset-mining' \ # dataset name
              --dst-rev 'labeled-0@import' # destination branch and task name

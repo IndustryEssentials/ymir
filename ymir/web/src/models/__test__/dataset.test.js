@@ -451,7 +451,6 @@ describe("models: dataset", () => {
     generator.next()
     const d = generator.next(versions)
     generator.next([])
-    generator.next()
     const end = generator.next()
 
     expect(end.value).toEqual(versions)

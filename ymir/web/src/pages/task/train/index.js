@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react"
 import { connect } from "dva"
-import { Select, Card, Input, Radio, Button, Form, Row, Col, Space, InputNumber, Tag } from "antd"
+import { Select, Card, Radio, Button, Form, Space, InputNumber, Tag } from "antd"
 import { formLayout } from "@/config/antd"
 import { useHistory, useParams, useLocation } from "umi"
 
@@ -34,7 +34,7 @@ const duplicatedOptions = [
   { value: 2, label: 'task.train.duplicated.option.validation' }
 ]
 
-function Train({ allDatasets, datasetCache, keywords, ...func }) {
+function Train({ allDatasets, datasetCache, ...func }) {
   const pageParams = useParams()
   const pid = Number(pageParams.id)
   const history = useHistory()
@@ -80,17 +80,18 @@ function Train({ allDatasets, datasetCache, keywords, ...func }) {
   }, [selectOpenpai])
 
   useEffect(() => {
-    func.getKeywords({ limit: 100000 })
-  }, [])
+    setTestingSetIds(project?.testingSets || [])
+    iterationId && setSelectedKeywords(project?.keywords || [])
+  }, [project])
 
   useEffect(() => {
-    const dss = allDatasets.filter(ds => ds.keywords.some(kw => project?.keywords?.includes(kw)))
-    const isValid = dss.some(ds => ds.id === did)
-    const visibleValue = isValid ? did : null
-    setTrainSet(visibleValue)
-    setTestingSetIds(project?.testingSets || [])
-    form.setFieldsValue({ datasetId: visibleValue })
-  }, [allDatasets, project])
+    if (did && allDatasets?.length) {
+      const isValid = allDatasets.some(ds => ds.id === did)
+      const visibleValue = isValid ? did : null
+      setTrainSet(visibleValue)
+      form.setFieldsValue({ datasetId: visibleValue })
+    }
+  }, [did, allDatasets])
 
   useEffect(() => {
     did && func.getDataset(did)
@@ -114,6 +115,8 @@ function Train({ allDatasets, datasetCache, keywords, ...func }) {
     setAllDulplicated(false)
   }, [trainSet, testSet])
 
+  useEffect(() => (trainDataset && !iterationId) && setAllKeywords(), [trainDataset])
+
   useEffect(() => {
     if (duplicationChecked) {
       const allValidation = duplicated === validationDataset?.assetCount
@@ -127,8 +130,12 @@ function Train({ allDatasets, datasetCache, keywords, ...func }) {
   async function fetchProject() {
     const project = await func.getProject(pid)
     project && setProject(project)
-    setSelectedKeywords(project.keywords)
-    form.setFieldsValue({ keywords: project.keywords })
+  }
+
+  function setAllKeywords() {
+    const kws = trainDataset?.gt?.keywords
+    setSelectedKeywords(kws)
+    form.setFieldsValue({ keywords: kws })
   }
 
   function trainSetChange(value, option) {
@@ -219,7 +226,7 @@ function Train({ allDatasets, datasetCache, keywords, ...func }) {
   const notTestingSet = id => !testingSetIds.includes(id)
   const trainsetFilters = datasets => datasets.filter(ds => {
     const notTestSet = ds.id !== testSet
-    return matchKeywords(ds) && notTestSet && notTestingSet(ds.id)
+    return notTestSet && notTestingSet(ds.id)
   })
 
   const validationSetFilters = datasets => datasets.filter(ds => {
@@ -252,16 +259,6 @@ function Train({ allDatasets, datasetCache, keywords, ...func }) {
             onFinish={onFinish}
             onFinishFailed={onFinishFailed}
           >
-            <Form.Item
-              label={t('dataset.column.model')}
-              name='name'
-              rules={[
-                { required: true, whitespace: true, message: t('model.add.form.name.placeholder') },
-                { type: 'string', min: 2, max: 80 },
-              ]}
-            >
-              <Input placeholder={t('model.add.form.name.placeholder')} autoComplete='off' allowClear />
-            </Form.Item>
             <Form.Item name='image' label={t('task.train.form.image.label')} rules={[
               { required: true, message: t('task.train.form.image.required') }
             ]} tooltip={t('tip.task.train.image')}>
@@ -282,10 +279,29 @@ function Train({ allDatasets, datasetCache, keywords, ...func }) {
                 onChange={trainSetChange}
               />
             </Form.Item>
-            {trainSet ?
-              <Form.Item label={t('dataset.train.form.samples')}>
-                <KeywordRates pid={pid} id={trainSet} keywords={selectedKeywords}></KeywordRates>
-              </Form.Item> : null}
+            <Form.Item hidden={!trainSet} label={t('dataset.train.form.samples')}>
+              <KeywordRates keywords={selectedKeywords} dataset={trainDataset}></KeywordRates>
+            </Form.Item>
+            {iterationId ? <Form.Item label={t('task.train.form.keywords.label')}>
+              {project?.keywords?.map(keyword => <Tag key={keyword}>{keyword}</Tag>)}
+            </Form.Item> :
+              <Form.Item
+                label={t('task.train.form.keywords.label')}
+                name="keywords"
+                rules={[
+                  { required: true, message: t('project.add.form.keyword.required') }
+                ]}
+                tooltip={t('tip.task.filter.keywords')}
+                help={trainDataset && selectedKeywords.length !== trainDataset.gt.keywords.length ?
+                  <Button type="link" onClick={() => setAllKeywords()}>{t('dataset.train.all.train.target')}</Button>
+                  : null}
+              >
+                <Select mode="multiple" showArrow allowClear
+                  placeholder={t('project.add.form.keyword.required')}
+                  onChange={setSelectedKeywords}
+                  options={(trainDataset?.gt?.keywords || []).map(k => ({ label: k, value: k }))}
+                />
+              </Form.Item>}
             <Form.Item
               label={t('task.train.form.testsets.label')}
               name="testset"
@@ -303,30 +319,6 @@ function Train({ allDatasets, datasetCache, keywords, ...func }) {
                 extra={<Button disabled={!trainSet || !testSet} type="primary" onClick={checkDuplicated}>{t('task.train.action.duplicated')}</Button>}
               />
             </Form.Item>
-            {iterationId ? <Form.Item label={t('task.train.form.keywords.label')}>
-              {project?.keywords?.map(keyword => <Tag key={keyword}>{keyword}</Tag>)}
-            </Form.Item> :
-              <Form.Item
-                label={t('task.train.form.keywords.label')}
-                name="keywords"
-                rules={[
-                  { required: true, message: t('project.add.form.keyword.required') }
-                ]}
-                tooltip={t('tip.task.filter.keywords')}
-              >
-                <Select mode="multiple" showArrow
-                  placeholder={t('project.add.form.keyword.required')}
-                  onChange={setSelectedKeywords}
-                  filterOption={(value, option) => [option.value, ...(option.aliases || [])].some(key => key.indexOf(value) >= 0)}>
-                  {keywords.map(keyword => (
-                    <Select.Option key={keyword.name} value={keyword.name} aliases={keyword.aliases}>
-                      <Row>
-                        <Col flex={1}>{keyword.name}</Col>
-                      </Row>
-                    </Select.Option>
-                  ))}
-                </Select>
-              </Form.Item>}
             <Form.Item
               label={t('task.detail.label.premodel')}
               name="modelStage"
@@ -382,7 +374,6 @@ const props = (state) => {
   return {
     allDatasets: state.dataset.allDatasets,
     datasetCache: state.dataset.dataset,
-    keywords: state.keyword.keywords.items,
   }
 }
 
@@ -419,12 +410,6 @@ const dis = (dispatch) => {
       return dispatch({
         type: 'iteration/updateIteration',
         payload: params,
-      })
-    },
-    getKeywords() {
-      return dispatch({
-        type: 'keyword/getKeywords',
-        payload: { limit: 10000 },
       })
     },
   }

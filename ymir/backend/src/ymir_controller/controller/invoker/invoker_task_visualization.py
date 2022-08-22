@@ -91,7 +91,7 @@ class TaskVisualizationInvoker(TaskBaseInvoker):
         dataset_export_dir = f"{work_dir}/{dataset_id}"
         dirs = {
             "asset_dir": f"{dataset_export_dir}/images",
-            "annotation_dir": f"{dataset_export_dir}/annotations",
+            "pred_dir": f"{dataset_export_dir}/annotations",
             "gt_dir": f"{dataset_export_dir}/groundtruth",
         }
         utils.ensure_dirs_exist(list(dirs.values()))

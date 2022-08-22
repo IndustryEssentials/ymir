@@ -30,8 +30,7 @@ class MirCoco:
             as_gt (bool): if false, use preds in mir_annotations and mir_keywords, if true, use gt
             asset_ids (Iterable[str]): asset ids you want to include in MirCoco instance, None means include all
         """
-        task_annotations = mir_annotations.ground_truth if as_gt else mir_annotations.task_annotations[
-            mir_annotations.head_task_id]
+        task_annotations = mir_annotations.ground_truth if as_gt else mir_annotations.prediction
         keyword_to_idx = mir_keywords.gt_idx if as_gt else mir_keywords.pred_idx
 
         if len(mir_metadatas.attributes) == 0:
@@ -296,12 +295,15 @@ class CocoDetEval:
         dtm = np.zeros((T, D))  # dtm[i, j]: gt annotation id matched by j-th dt in i-th iou thr, iouThrs x dets
         gtIg = np.array([g['_ignore'] for g in gt])  # gt ignore
         dtIg = np.zeros((T, D))  # dt ignore
+
+        for tind, t in enumerate(p.iouThrs):
+            for gind, g in enumerate(gt):
+                g['cm'][tind, maxDet] = (mirpb.ConfusionMatrixType.FN, -1)  # default gt is FN, unless matched.
+                if gtIg[gind]:
+                    g['cm'][tind, maxDet] = (mirpb.ConfusionMatrixType.IGNORED, -1)
+
         if not len(ious) == 0:
             for tind, t in enumerate(p.iouThrs):
-                for gind, g in enumerate(gt):
-                    g['cm'][tind, maxDet] = (mirpb.ConfusionMatrixType.FN, -1)  # default gt is FN, unless matched.
-                    if gtIg[gind]:
-                        g['cm'][tind, maxDet] = (mirpb.ConfusionMatrixType.IGNORED, -1)
                 for dind, d in enumerate(dt):
                     d['cm'][tind, maxDet] = (mirpb.ConfusionMatrixType.FP, -1)  # default dt is FP, unless matched.
                     # information about best match so far (m=-1 -> unmatched)
@@ -647,6 +649,12 @@ class CocoDetEval:
     def write_confusion_matrix(self, iou_thr_index: int, maxDets: int) -> None:
         gt_annotation = self._coco_gt._task_annotations
         dt_annotation = self._coco_dt._task_annotations
+
+        reset_default_confusion_matrix(task_annotations=gt_annotation,
+                                       cm=mirpb.ConfusionMatrixType.FN)
+        reset_default_confusion_matrix(task_annotations=dt_annotation,
+                                       cm=mirpb.ConfusionMatrixType.FP)
+
         cm_key = (iou_thr_index, maxDets)
         for imgIdx in self.params.imgIdxes:
             for catId in self.params.catIds:
@@ -713,34 +721,6 @@ def _det_evaluate(mir_dts: List[MirCoco], mir_gt: MirCoco, config: mirpb.Evaluat
         single_dataset_evaluation = evaluator.get_evaluation_result(area_ranges_index=area_ranges_index,
                                                                     max_dets_index=max_dets_index)
         single_dataset_evaluation.conf_thr = config.conf_thr
-
-        # evaluate for asset_ids for each ck main and ck sub
-        for ck_main, ck_main_assets_and_sub in mir_dt.ck_idx.items():
-            # ck main
-            evaluator = CocoDetEval(coco_gt=mir_gt,
-                                    coco_dt=mir_dt,
-                                    params=params,
-                                    asset_ids=ck_main_assets_and_sub.asset_annos.keys())
-            evaluator.evaluate()
-            evaluator.accumulate()
-            ste = evaluator.get_evaluation_result(
-                area_ranges_index=area_ranges_index,
-                max_dets_index=max_dets_index).iou_averaged_evaluation.ci_averaged_evaluation
-            single_dataset_evaluation.iou_averaged_evaluation.ck_evaluations[ck_main].total.CopyFrom(ste)
-
-            # ck sub
-            for ck_sub, ck_sub_assets in ck_main_assets_and_sub.sub_indexes.items():
-                evaluator = CocoDetEval(coco_gt=mir_gt,
-                                        coco_dt=mir_dt,
-                                        params=params,
-                                        asset_ids=ck_sub_assets.key_ids.keys())
-                evaluator.evaluate()
-                evaluator.accumulate()
-                ste = evaluator.get_evaluation_result(
-                    area_ranges_index=area_ranges_index,
-                    max_dets_index=max_dets_index).iou_averaged_evaluation.ci_averaged_evaluation
-                single_dataset_evaluation.iou_averaged_evaluation.ck_evaluations[ck_main].sub[ck_sub].CopyFrom(ste)
-
         single_dataset_evaluation.gt_dataset_id = mir_gt.dataset_id
         single_dataset_evaluation.pred_dataset_id = mir_dt.dataset_id
         evaluation.dataset_evaluations[mir_dt.dataset_id].CopyFrom(single_dataset_evaluation)
@@ -840,3 +820,10 @@ def _show_evaluation(evaluation: mirpb.Evaluation) -> None:
     for dataset_id, dataset_evaluation in evaluation.dataset_evaluations.items():
         cae = dataset_evaluation.iou_averaged_evaluation.ci_averaged_evaluation
         logging.info(f"gt: {gt_dataset_id}, pred: {dataset_id}, mAP: {cae.ap}")
+
+
+def reset_default_confusion_matrix(task_annotations: mirpb.SingleTaskAnnotations, cm: Any) -> None:
+    for image_annotations in task_annotations.image_annotations.values():
+        for annotation in image_annotations.annotations:
+            annotation.cm = cm
+            annotation.det_link_id = -1

@@ -83,76 +83,85 @@ class TestCmdExport(unittest.TestCase):
 
         # annotations
         annotations_dict = {
-            'task_annotations': {
-                'a': {
-                    'image_annotations': {
-                        '430df22960b0f369318705800139fcc8ec38a3e4': {
-                            'annotations': [{
-                                'index': 0,
-                                'box': {
-                                    'x': 104,
-                                    'y': 78,
-                                    'w': 272,
-                                    'h': 105
-                                },
-                                'class_id': 3,
-                                'score': 1,
-                                'anno_quality': 0.95,
-                                'tags': {'fake tag name': 'fake tag data'},
-                            }, {
-                                'index': 1,
-                                'box': {
-                                    'x': 133,
-                                    'y': 88,
-                                    'w': 65,
-                                    'h': 36
-                                },
-                                'class_id': 3,
-                                'score': 1,
-                                'anno_quality': 0.95,
-                                'tags': {'fake tag name': 'fake tag data'},
-                            }, {
-                                'index': 2,
-                                'box': {
-                                    'x': 195,
-                                    'y': 180,
-                                    'w': 19,
-                                    'h': 50
-                                },
-                                'class_id': 2,
-                                'score': 1,
-                                'anno_quality': 0.95,
-                                'tags': {'fake tag name': 'fake tag data'},
-                            }, {
-                                'index': 3,
-                                'box': {
-                                    'x': 26,
-                                    'y': 189,
-                                    'w': 19,
-                                    'h': 95
-                                },
-                                'class_id': 2,
-                                'score': 1,
-                                'anno_quality': 0.95,
-                                'tags': {'fake tag name': 'fake tag data'},
-                            }],
-                        },
-                        'a3008c032eb11c8d9ffcb58208a36682ee40900f': {
-                            'annotations': [{
-                                'index': 0,
-                                'box': {
-                                    'x': 181,
-                                    'y': 127,
-                                    'w': 94,
-                                    'h': 67
-                                },
-                                'class_id': 3,
-                                'score': 1,
-                                'anno_quality': 0.95,
-                                'tags': {'fake tag name': 'fake tag data'},
-                            }],
-                        },
-                    }
+            'prediction': {
+                'task_id': 'a',
+                'image_annotations': {
+                    '430df22960b0f369318705800139fcc8ec38a3e4': {
+                        'annotations': [{
+                            'index': 0,
+                            'box': {
+                                'x': 104,
+                                'y': 78,
+                                'w': 272,
+                                'h': 105
+                            },
+                            'class_id': 3,
+                            'score': 1,
+                            'anno_quality': 0.95,
+                            'tags': {
+                                'fake tag name': 'fake tag data'
+                            },
+                        }, {
+                            'index': 1,
+                            'box': {
+                                'x': 133,
+                                'y': 88,
+                                'w': 65,
+                                'h': 36
+                            },
+                            'class_id': 3,
+                            'score': 1,
+                            'anno_quality': 0.95,
+                            'tags': {
+                                'fake tag name': 'fake tag data'
+                            },
+                        }, {
+                            'index': 2,
+                            'box': {
+                                'x': 195,
+                                'y': 180,
+                                'w': 19,
+                                'h': 50
+                            },
+                            'class_id': 2,
+                            'score': 1,
+                            'anno_quality': 0.95,
+                            'tags': {
+                                'fake tag name': 'fake tag data'
+                            },
+                        }, {
+                            'index': 3,
+                            'box': {
+                                'x': 26,
+                                'y': 189,
+                                'w': 19,
+                                'h': 95
+                            },
+                            'class_id': 2,
+                            'score': 1,
+                            'anno_quality': 0.95,
+                            'tags': {
+                                'fake tag name': 'fake tag data'
+                            },
+                        }],
+                    },
+                    'a3008c032eb11c8d9ffcb58208a36682ee40900f': {
+                        'annotations': [{
+                            'index': 0,
+                            'box': {
+                                'x': 181,
+                                'y': 127,
+                                'w': 94,
+                                'h': 67
+                            },
+                            'class_id': 3,
+                            'score': 1,
+                            'anno_quality': 0.95,
+                            'tags': {
+                                'fake tag name': 'fake tag data'
+                            },
+                        }],
+                    },
                 }
             },
             'image_cks': {
@@ -194,7 +203,7 @@ class TestCmdExport(unittest.TestCase):
         fake_args = type('', (), {})()
         fake_args.mir_root = self._mir_root
         fake_args.asset_dir = self._dest_root
-        fake_args.annotation_dir = self._dest_root
+        fake_args.pred_dir = self._dest_root
         fake_args.gt_dir = self._gt_root
         fake_args.media_location = self._assets_location
         fake_args.src_revs = 'a@a'
@@ -211,7 +220,7 @@ class TestCmdExport(unittest.TestCase):
         fake_args = type('', (), {})()
         fake_args.mir_root = self._mir_root
         fake_args.asset_dir = self._dest_root
-        fake_args.annotation_dir = self._dest_root
+        fake_args.pred_dir = self._dest_root
         fake_args.gt_dir = self._gt_root
         fake_args.media_location = self._assets_location
         fake_args.src_revs = 'a@a'
@@ -224,11 +233,11 @@ class TestCmdExport(unittest.TestCase):
         result = runner.run()
         self.assertEqual(MirCode.RC_OK, result)
 
-        # abnormal case: no asset_dir, annotation_dir, media_location
+        # abnormal case: no asset_dir, pred_dir, media_location
         fake_args = type('', (), {})()
         fake_args.mir_root = self._mir_root
         fake_args.asset_dir = ''
-        fake_args.annotation_dir = ''
+        fake_args.pred_dir = ''
         fake_args.gt_dir = ''
         fake_args.media_location = ''
         fake_args.src_revs = 'a@a'

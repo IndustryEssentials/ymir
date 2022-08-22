@@ -217,7 +217,7 @@ export function label({
       keywords,
       labellers,
       extra_url: doc,
-      keep_annotations: keepAnnotations,
+      annotation_type: keepAnnotations,
     },
   })
 }

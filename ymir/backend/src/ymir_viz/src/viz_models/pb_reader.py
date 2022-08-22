@@ -36,10 +36,7 @@ class MirStorageLoader:
             "class_names_count": {'cat': 34},
             "new_types": {'cat':5, },
             "new_types_added": False,
-            "negative_info": {
-                "negative_images_cnt": 0,
-                "project_negative_images_cnt": 0,
-            },
+            "negative_images_cnt": 0,
             "total_images_cnt": 1,
         }
         """

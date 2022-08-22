@@ -19,7 +19,7 @@ class CmdImport(base.BaseCommand):
         return CmdImport.run_with_args(mir_root=self.args.mir_root,
                                        index_file=self.args.index_file,
                                        gt_index_file=self.args.gt_index_file,
-                                       anno_abs=self.args.anno,
+                                       pred_abs=self.args.pred_dir,
                                        gt_abs=self.args.gt_dir,
                                        gen_abs=self.args.gen,
                                        dataset_name=self.args.dataset_name,
@@ -31,15 +31,15 @@ class CmdImport(base.BaseCommand):
 
     @staticmethod
     @command_run_in_out
-    def run_with_args(mir_root: str, index_file: str, gt_index_file: str, anno_abs: str, gt_abs: str, gen_abs: str,
+    def run_with_args(mir_root: str, index_file: str, gt_index_file: str, pred_abs: str, gt_abs: str, gen_abs: str,
                       dataset_name: str, dst_rev: str, src_revs: str, work_dir: str,
                       unknown_types_strategy: annotations.UnknownTypesStrategy) -> int:
         # Step 1: check args and prepare environment.
         if not index_file or not gen_abs or not os.path.isfile(index_file):
             logging.error(f"invalid index_file: {index_file} or gen_abs: {gen_abs}")
             return MirCode.RC_CMD_INVALID_ARGS
-        if anno_abs and not os.path.isdir(anno_abs):
-            logging.error(f"annotations dir invalid: {anno_abs}")
+        if pred_abs and not os.path.isdir(pred_abs):
+            logging.error(f"prediction dir invalid: {pred_abs}")
             return MirCode.RC_CMD_INVALID_ARGS
         if gt_abs:  # need to import ground-truth data.
             if not os.path.isdir(gt_abs):
@@ -62,6 +62,8 @@ class CmdImport(base.BaseCommand):
                                    [checker.Prerequisites.IS_INSIDE_MIR_REPO, checker.Prerequisites.HAVE_LABELS])
         if check_code != MirCode.RC_OK:
             return check_code
+
+        PhaseLoggerCenter.update_phase(phase="import.init")
 
         # Step 2: generate sha1 file and rename images.
         # sha1 file to be written.
@@ -101,20 +103,20 @@ class CmdImport(base.BaseCommand):
                                                             in_sha1_file=sha1_index_abs,
                                                             in_sha1_gt_file=sha1_gt_index_abs,
                                                             mir_root=mir_root,
-                                                            annotations_dir_path=anno_abs,
+                                                            prediction_dir_path=pred_abs,
                                                             groundtruth_dir_path=gt_abs,
                                                             unknown_types_strategy=unknown_types_strategy,
                                                             task_id=dst_typ_rev_tid.tid,
                                                             phase='import.others')
 
         logging.info(f"unknown types strategy: {unknown_types_strategy}")
-        logging.info(f"anno import result: {anno_import_result}")
+        logging.info(f"pred / gt import result: {anno_import_result}")
 
         # create and write tasks
         task = mir_storage_ops.create_task(
             task_type=mirpb.TaskTypeImportData,
             task_id=dst_typ_rev_tid.tid,
-            message=f"importing {index_file}-{anno_abs}-{gt_abs} to {dst_rev}, uts: {unknown_types_strategy}",
+            message=f"importing {index_file}-{pred_abs}-{gt_abs} to {dst_rev}, uts: {unknown_types_strategy}",
             new_types={k: v.count
                        for k, v in anno_import_result.items()},
             new_types_added=(unknown_types_strategy == annotations.UnknownTypesStrategy.ADD),
@@ -146,32 +148,38 @@ def _generate_sha_and_copy(index_file: str, sha_idx_file: str, sha_folder: str) 
 
     os.makedirs(sha_folder, exist_ok=True)
 
-    with open(index_file) as idx_f, open(sha_idx_file, 'w') as sha_f:
+    with open(index_file) as idx_f:
         lines = idx_f.readlines()
-        total_count = len(lines)
-        asset_count_limit = 1000000
-        if total_count > asset_count_limit:  # large number of images may trigger redis timeout error.
-            logging.error(f'# of image {total_count} exceeds upper boundary {asset_count_limit}.')
-            return MirCode.RC_CMD_INVALID_ARGS
+    total_count = len(lines)
+    asset_count_limit = 1000000
+    if total_count > asset_count_limit:  # large number of images may trigger redis timeout error.
+        logging.error(f'# of image {total_count} exceeds upper boundary {asset_count_limit}.')
+        return MirCode.RC_CMD_INVALID_ARGS
 
-        idx = 0
-        for line in lines:
-            media_src = line.strip()
-            if not media_src or not os.path.isfile(media_src):
-                logging.warning("invalid file: ", media_src)
-                continue
+    map_hashed_path = {}
+    idx = 0
+    for line in lines:
+        media_src = line.strip()
+        if not media_src or not os.path.isfile(media_src):
+            continue
 
-            sha1 = hash_utils.sha1sum_for_file(media_src)
-            sha_f.writelines("\t".join([sha1, media_src]) + '\n')
-
+        sha1 = hash_utils.sha1sum_for_file(media_src)
+        if sha1 not in map_hashed_path:
+            map_hashed_path[sha1] = media_src
             media_dst = utils.get_asset_storage_path(location=sha_folder, hash=sha1, make_dirs=True)
             if not os.path.isfile(media_dst):
                 shutil.copyfile(media_src, media_dst)
 
-            idx += 1
-            if idx % 5000 == 0:
-                PhaseLoggerCenter.update_phase(phase=hash_phase_name, local_percent=(idx / total_count))
-                logging.info(f"finished {idx} / {total_count} hashes")
+        idx += 1
+        if idx % 5000 == 0:
+            PhaseLoggerCenter.update_phase(phase=hash_phase_name, local_percent=(idx / total_count))
+            logging.info(f"finished {idx} / {total_count} hashes")
+
+    logging.info(f"skipped assets: {len(lines) - len(map_hashed_path)}")
+    with open(sha_idx_file, 'w') as sha_f:
+        for sha1, media_src in map_hashed_path.items():
+            sha_f.write(f"{sha1}\t{media_src}\n")
+
     PhaseLoggerCenter.update_phase(phase=hash_phase_name)
     return MirCode.RC_OK
 
@@ -186,11 +194,11 @@ def bind_to_subparsers(subparsers: argparse._SubParsersAction, parent_parser: ar
                                       dest="index_file",
                                       type=str,
                                       help="index of input media, one file per line")
-    importing_arg_parser.add_argument("--annotation-dir",
-                                      dest="anno",
+    importing_arg_parser.add_argument("--pred-dir",
+                                      dest="pred_dir",
                                       type=str,
                                       required=False,
-                                      help="corresponding annotation folder")
+                                      help="corresponding prediction folder")
     importing_arg_parser.add_argument("--gt-index-file",
                                       dest="gt_index_file",
                                       type=str,

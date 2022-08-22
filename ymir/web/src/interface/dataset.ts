@@ -3,6 +3,24 @@ import { Result, BackendData } from "@/interface/common"
 type Keywords = {
   [key: string]: number,
 }
+type CK = {
+  [key: string]: any,
+}
+type AnnotationsCount = {
+  count: Keywords,
+  keywords: Array<string>,
+  negative: number,
+  total: number,
+}
+type AnylysisAnnotation = {
+  keywords: Keywords,
+  total: number,
+  average: number,
+  negative: number,
+  quality: Array<BackendData>,
+  area: Array<BackendData>,
+  areaRatio: Array<BackendData>,
+}
 export interface DatasetGroup {
   id: number,
   name: string,
@@ -13,11 +31,10 @@ export interface DatasetGroup {
 
 export interface Dataset extends Result {
   keywordCount: number,
-  keywordsCount: Keywords,
   isProtected: Boolean,
-  nagetiveCount?: number,
-  projectNagetiveCount?: number,
   assetCount: number,
+  gt?: AnnotationsCount,
+  pred?: AnnotationsCount,
 }
 
 export interface DatasetAnalysis {
@@ -26,17 +43,14 @@ export interface DatasetAnalysis {
   versionName: string,
   assetCount: number,
   totalAssetMbytes: number,
-  annosCnt: number,
-  aveAnnosCnt: number,
-  positiveAssetCnt: number,
-  negativeAssetCnt: number,
   assetBytes: Array<BackendData>,
   assetHWRatio: Array<BackendData>,
   assetArea: Array<BackendData>,
   assetQuality: Array<BackendData>,
-  annoAreaRatio: Array<BackendData>,
-  annoQuality: Array<BackendData>,
-  classNamesCount: BackendData,
+  gt: AnylysisAnnotation,
+  pred: AnylysisAnnotation,
+  cks?: BackendData,
+  tags?: BackendData,
 }
 
 export interface Asset {
@@ -52,6 +66,7 @@ export interface Asset {
   size?: number,
   annotations: Array<Annotation>,
   evaluated?: boolean,
+  cks?: CK,
 }
 
 export interface Annotation {
@@ -67,4 +82,5 @@ export interface Annotation {
   score?: number,
   gt?: boolean,
   cm: number,
+  tags?: CK,
 }

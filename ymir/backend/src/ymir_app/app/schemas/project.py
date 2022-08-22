@@ -113,6 +113,12 @@ class Project(ProjectInDBBase):
     def unpack_keywords(cls, v: str) -> List[str]:
         return json.loads(v)
 
+    @validator("enable_iteration", pre=True)
+    def make_up_default_value(cls, v: Optional[bool]) -> bool:
+        if v is None:
+            return True
+        return v
+
 
 class ProjectOut(Common):
     result: Project

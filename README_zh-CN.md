@@ -589,19 +589,19 @@ labels:
 ```
 $ cd ~/mir-demo-repo
 $ mir import --index-file /path/to/training-dataset-index.tsv \ # 数据集index.tsv路径
-             --annotation-dir /path/to/training-dataset-annotation-dir \ # 标注路径
+             --pred-dir /path/to/training-dataset-annotation-dir \ # 标注路径
              --gen-dir ~/ymir-assets \ # 资源存储路径
              --dataset-name 'dataset-training' \ # 数据集名称
              --dst-rev 'dataset-training@import' # 结果分支及操作任务名称
 $ mir checkout master
 $ mir import --index-file /path/to/val-dataset-index.tsv \
-             --annotation-dir /path/to/val-dataset-annotation-dir \
+             --pred-dir /path/to/val-dataset-annotation-dir \
              --gen-dir ~/ymir-assets \
              --dataset-name 'dataset-val' \
              --dst-rev 'dataset-val@import'
 $ mir checkout master
 $ mir import --index-file /path/to/mining-dataset-index.tsv \
-             --annotation-dir /path/to/mining-dataset-annotation-dir \
+             --pred-dir /path/to/mining-dataset-annotation-dir \
              --gen-dir ~/ymir-assets \
              --dataset-name 'dataset-mining' \
              --dst-rev 'dataset-mining@import'
@@ -713,7 +713,7 @@ mir mining --src-revs dataset-mining@import \ # 导入的挖掘分支
 
 ```
 mir export --asset-dir /tmp/ymir/export/export-0/assets \ # 资源导出目录
-           --annotation-dir /tmp/ymir/export/export-0/annotations \ # 导出标注目录
+           --pred-dir /tmp/ymir/export/export-0/annotations \ # 导出标注目录
            --media-location ~/ymir-assets \ # 资源存储目录
            --src-revs mining-0@mining \
            --format none # 不导出标注
@@ -725,7 +725,7 @@ find /tmp/ymir/export/export-0/assets > /tmp/ymir/export/export-0/index.tsv
 
 ```
 $ mir import --index-file /tmp/ymir/export/export-0/index.tsv
-             --annotation-dir /tmp/ymir/export/export-0/annotations \ # 标注路径
+             --pred-dir /tmp/ymir/export/export-0/annotations \ # 标注路径
              --gen-dir ~/ymir-assets \ # 资源存储路径
              --dataset-name 'dataset-mining' \ # 数据集名称
              --dst-rev 'labeled-0@import' # 结果分支及操作任务名称

@@ -36,6 +36,7 @@ class TestAsset:
                     "box": random_lower_string(10),
                     "class_id": random.randint(1, 20),
                     "cm": 1,
+                    "tags": {},
                 }
             ],
             "gt": [
@@ -43,6 +44,7 @@ class TestAsset:
                     "box": random_lower_string(10),
                     "class_id": random.randint(1, 20),
                     "cm": 1,
+                    "tags": {},
                 }
             ],
             "class_ids": list(range(1, 20)),
@@ -70,6 +72,7 @@ class TestAssets:
                             "box": random_lower_string(10),
                             "class_id": random.randint(1, 20),
                             "cm": 1,
+                            "tags": {},
                         }
                     ],
                     "gt": [
@@ -77,6 +80,7 @@ class TestAssets:
                             "box": random_lower_string(10),
                             "class_id": random.randint(1, 20),
                             "cm": 1,
+                            "tags": {},
                         }
                     ],
                     "metadata": {
@@ -85,6 +89,7 @@ class TestAssets:
                         "image_channels": random.randint(1, 3),
                         "timestamp": {"start": time.time()},
                     },
+                    "cks": {},
                 }
             ],
             "total": 124,
@@ -131,17 +136,17 @@ class TestDataset:
             "class_ids_count": {3: 34},
             "new_types": {"cat": 5},
             "new_types_added": False,
-            "negative_info": {"negative_images_cnt": 0, "project_negative_images_cnt": 0},
-            "total_images_cnt": 1,
+            "cks_count_total": {},
+            "cks_count": {},
+            "total_assets_count": 1,
             "pred": {
-                "total_images_cnt": 1,
                 "class_ids_count": {3: 34},
                 "new_types": {"cat": 5},
                 "new_types_added": False,
-                "negative_info": {"negative_images_cnt": 0, "project_negative_images_cnt": 0},
-                "annos_cnt": 28,
-                "positive_asset_cnt": 1,
-                "negative_asset_cnt": 1,
+                "negative_assets_count": 0,
+                "tags_count_total": {},
+                "tags_count": {},
+                "annos_count": 28,
                 "class_names_count": {"cat": 3},
                 "hist": {"anno_area_ratio": [[{"x": 1, "y": 2}]], "anno_quality": [[{"x": 1, "y": 2}]]},
             },
@@ -152,15 +157,15 @@ class TestDataset:
                 "asset_hw_ratio": [[{"x": 1, "y": 2}]],
                 "asset_quality": [[{"x": 1, "y": 2}]],
             },
-            "total_asset_mbytes": 10,
-            "total_assets_cnt": 1,
+            "cks": {},
+            "total_assets_mbytes": 10,
+            "total_assets_count": 1,
         }
         M = m.DatasetMetaData.from_viz_res(res, mock_user_labels)
-        assert M.keyword_count == len(res["class_ids_count"])
-        assert M.ignored_keywords == res["new_types"]
-        assert M.negative_info["negative_images_cnt"] == res["negative_info"]["negative_images_cnt"]
-        assert M.negative_info["project_negative_images_cnt"] == res["negative_info"]["project_negative_images_cnt"]
-        assert M.asset_count == res["total_images_cnt"]
+        assert "gt" in M.keywords
+        assert "pred" in M.keywords
+        assert M.gt is None
+        assert M.pred
 
 
 class TestVizClient:
@@ -185,6 +190,7 @@ class TestVizClient:
                             "box": random_lower_string(10),
                             "class_id": random.randint(1, 20),
                             "cm": 1,
+                            "tags": {},
                         }
                     ],
                     "gt": [
@@ -192,6 +198,7 @@ class TestVizClient:
                             "box": random_lower_string(10),
                             "class_id": random.randint(1, 20),
                             "cm": 1,
+                            "tags": {},
                         }
                     ],
                     "metadata": {
@@ -200,6 +207,7 @@ class TestVizClient:
                         "image_channels": random.randint(1, 3),
                         "timestamp": {"start": time.time()},
                     },
+                    "cks": {},
                 }
             ],
             "total": random.randint(1000, 2000),
@@ -233,6 +241,7 @@ class TestVizClient:
                     "box": random_lower_string(10),
                     "class_id": random.randint(1, 80),
                     "cm": 1,
+                    "tags": {},
                 }
             ],
             "gt": [
@@ -240,6 +249,7 @@ class TestVizClient:
                     "box": random_lower_string(10),
                     "class_id": random.randint(1, 80),
                     "cm": 1,
+                    "tags": {},
                 }
             ],
             "class_ids": list(range(1, 20)),
@@ -249,6 +259,7 @@ class TestVizClient:
                 "image_channels": random.randint(1, 3),
                 "timestamp": {"start": time.time()},
             },
+            "cks": {},
         }
         resp.json.return_value = {"result": res}
         mock_session.get.return_value = resp
@@ -318,17 +329,17 @@ class TestVizClient:
             "class_ids_count": {3: 34},
             "new_types": {"cat": 5},
             "new_types_added": False,
-            "negative_info": {"negative_images_cnt": 0, "project_negative_images_cnt": 0},
-            "total_images_cnt": 1,
+            "cks_count_total": {},
+            "cks_count": {},
+            "total_assets_count": 1,
             "pred": {
-                "total_images_cnt": 1,
                 "class_ids_count": {3: 34},
                 "new_types": {"cat": 5},
                 "new_types_added": False,
-                "negative_info": {"negative_images_cnt": 0, "project_negative_images_cnt": 0},
-                "annos_cnt": 28,
-                "positive_asset_cnt": 1,
-                "negative_asset_cnt": 1,
+                "tags_count_total": {},
+                "tags_count": {},
+                "negative_assets_count": 0,
+                "annos_count": 28,
                 "class_names_count": {"cat": 3},
                 "hist": {"anno_area_ratio": [[{"x": 1, "y": 2}]], "anno_quality": [[{"x": 1, "y": 2}]]},
             },
@@ -339,8 +350,9 @@ class TestVizClient:
                 "asset_hw_ratio": [[{"x": 1, "y": 2}]],
                 "asset_quality": [[{"x": 1, "y": 2}]],
             },
-            "total_asset_mbytes": 10,
-            "total_assets_cnt": 1,
+            "total_assets_mbytes": 10,
+            "total_assets_count": 1,
+            "cks": {},
         }
         resp.json.return_value = {"result": res}
         mock_session.get.return_value = resp
@@ -352,11 +364,10 @@ class TestVizClient:
         viz.initialize(user_id=user_id, project_id=project_id, branch_id=task_id, user_labels=mock_user_labels)
         ret = viz.get_dataset()
         assert isinstance(ret, m.DatasetMetaData)
-        assert ret.keyword_count == len(res["class_ids_count"])
-        assert ret.ignored_keywords == res["new_types"]
-        assert ret.negative_info["negative_images_cnt"] == res["negative_info"]["negative_images_cnt"]
-        assert ret.negative_info["project_negative_images_cnt"] == res["negative_info"]["project_negative_images_cnt"]
-        assert ret.asset_count == res["total_images_cnt"]
+        assert "gt" in ret.keywords
+        assert "pred" in ret.keywords
+        assert ret.gt is None
+        assert ret.pred
 
     def test_close(self, mocker):
         host = random_lower_string()

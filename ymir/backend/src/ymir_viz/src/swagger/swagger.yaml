@@ -528,10 +528,10 @@ components:
         class_ids_count:
           type: object
           example: "{3:8, 4:2}"
-        negative_images_cnt:
+        negative_images_count:
           type: integer
           example: 8
-        positive_images_cnt:
+        positive_images_count:
           type: integer
           example: 12
     DatasetEvaluationResult:
@@ -675,14 +675,6 @@ components:
         executor_config:
           type: string
       example: null
-    DatasetResult_result_negative_info:
-      type: object
-      properties:
-        negative_images_cnt:
-          type: integer
-        project_negative_images_cnt:
-          type: integer
-      example: null
     DatasetResult_result:
       type: object
       properties:
@@ -697,13 +689,14 @@ components:
         ignored_labels:
           type: object
           example: "{'cat':8}"
-        negative_info:
-          $ref: '#/components/schemas/DatasetResult_result_negative_info'
+        negative_images_cnt:
+          type: integer
+          example: 3
       example: null
     DatasetStatsResult_result:
       type: object
       properties:
-        total_images_cnt:
+        total_images_count:
           type: integer
           example: 40
         pred:

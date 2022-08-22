@@ -59,7 +59,7 @@ def _object_dict_to_annotation(object_dict: dict, cid: int) -> mirpb.Annotation:
 
 
 def import_annotations(mir_metadatas: mirpb.MirMetadatas, mir_annotation: mirpb.MirAnnotations, in_sha1_file: str,
-                       in_sha1_gt_file: str, mir_root: str, annotations_dir_path: str, groundtruth_dir_path: str,
+                       in_sha1_gt_file: str, mir_root: str, prediction_dir_path: str, groundtruth_dir_path: str,
                        unknown_types_strategy: UnknownTypesStrategy, task_id: str, phase: str) -> AnnoNewTypes:
     """
     imports annotations
@@ -70,7 +70,7 @@ def import_annotations(mir_metadatas: mirpb.MirMetadatas, mir_annotation: mirpb.
         in_sha1_file (str): path to sha1 file
         in_sha1_gt_file (str): path to gt sha1 file
         mir_root (str): path to mir repo
-        annotations_dir_path (str): path to annotations root
+        prediction_dir_path (str): path to annotations root
         groundtruth_dir_path (str): path to groundtruth root
         unknown_types_strategy (UnknownTypesStrategy): strategy for unknown types
         task_id (str): task id
@@ -89,17 +89,17 @@ def import_annotations(mir_metadatas: mirpb.MirMetadatas, mir_annotation: mirpb.
     class_type_manager = class_ids.ClassIdManager(mir_root=mir_root)
     logging.info("loaded type id and names: %d", len(class_type_manager.all_ids()))
 
-    if in_sha1_file:
-        logging.info(f"wrting annotation in {annotations_dir_path}")
+    if prediction_dir_path:
+        logging.info(f"wrting prediction in {prediction_dir_path}")
         _import_annotations_from_dir(
             mir_metadatas=mir_metadatas,
             mir_annotation=mir_annotation,
             in_sha1_file=in_sha1_file,
-            annotations_dir_path=annotations_dir_path,
+            annotations_dir_path=prediction_dir_path,
             class_type_manager=class_type_manager,
             unknown_types_strategy=unknown_types_strategy,
             accu_new_types=anno_import_result,
-            image_annotations=mir_annotation.task_annotations[task_id],
+            image_annotations=mir_annotation.prediction,
         )
     PhaseLoggerCenter.update_phase(phase=phase, local_percent=0.5)
 
@@ -136,7 +136,7 @@ def _import_annotations_from_dir(mir_metadatas: mirpb.MirMetadatas, mir_annotati
         mir_metadatas (mirpb.MirMetadatas): list of asset metadatas
         mir_annotations (mirpb.MirAnnotations): instance of annotations
         in_sha1_file (str): path to sha1 file, in each line: asset path and sha1sum
-        annotations_dir_path (str): path to annotations dir
+        annotations_dir_path (str): path to prediction / gt dir
         class_type_manager (class_ids.ClassIdManager): class types manager
         accu_anno_import_result (AnnoImportResult): accumulated annotation import result
         unknown_types_strategy (UnknownTypesStrategy): strategy of unknown type names

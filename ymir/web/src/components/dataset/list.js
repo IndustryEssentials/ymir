@@ -136,16 +136,19 @@ function Datasets({ pid, project = {}, iterations, groups, datasetList, query, v
         key: "name",
         dataIndex: "versionName",
         className: styles[`column_name`],
-        render: (name, { id, description, projectLabel, iterationLabel }) =>
-          <Popover title={t('common.desc')} content={<DescPop description={description} style={{ maxWidth: '30vw' }} />}>
-            <Row>
-              <Col flex={1}><Link to={`/home/project/${pid}/dataset/${id}`}>{name}</Link></Col>
-              <Col flex={'50px'}>
-                {projectLabel ? <div className={styles.extraTag}>{projectLabel}</div> : null}
-                {iterationLabel ? <div className={styles.extraIterTag}>{iterationLabel}</div> : null}
-              </Col>
-            </Row>
-          </Popover>,
+        render: (name, { id, description, projectLabel, iterationLabel }) => {
+          const popContent = <DescPop description={description} style={{ maxWidth: '30vw' }} />
+          const content = <Row>
+            <Col flex={1}><Link to={`/home/project/${pid}/dataset/${id}`}>{name}</Link></Col>
+            <Col flex={'50px'}>
+              {projectLabel ? <div className={styles.extraTag}>{projectLabel}</div> : null}
+              {iterationLabel ? <div className={styles.extraIterTag}>{iterationLabel}</div> : null}
+            </Col>
+          </Row>
+          return description ? <Popover title={t('common.desc')} content={popContent}>
+            {content}
+          </Popover> : content
+        },
         filters: getRoundFilter(gid),
         onFilter: (round, { iterationRound }) => round === iterationRound,
         ellipsis: true,
@@ -169,12 +172,19 @@ function Datasets({ pid, project = {}, iterations, groups, datasetList, query, v
       {
         title: showTitle("dataset.column.keyword"),
         dataIndex: "keywords",
-        render: (keywords) => {
-          const label = t('dataset.column.keyword.label', { keywords: keywords.join(', '), total: keywords.length })
-          return <Tooltip title={label}
+        render: (_, { gt, pred, state, }) => {
+          const renderLine = (keywords, label = 'ground truth') => <div>
+            <div>{label}:</div>
+            {t('dataset.column.keyword.label', {
+              keywords: keywords.join(', '),
+              total: keywords.length
+            })}
+          </div>
+          const label = <>{renderLine(gt.keywords)}{renderLine(pred.keywords, 'prediction')}</>
+          return isValidDataset(state) ? <Tooltip title={label}
             color='white' overlayInnerStyle={{ color: 'rgba(0,0,0,0.45)', fontSize: 12 }}
             mouseEnterDelay={0.5}
-          ><div>{label}</div></Tooltip>
+          ><div>{label}</div></Tooltip> : null
         },
         ellipsis: {
           showTitle: false,
@@ -467,7 +477,7 @@ function Datasets({ pid, project = {}, iterations, groups, datasetList, query, v
   const getDisabledStatus = (filter = () => { }) => {
     const allVss = Object.values(versions).flat()
     const { selected } = selectedVersions
-    return allVss.filter(({ id }) => selected.includes(id)).some(version => filter(version))
+    return !selected.length || allVss.filter(({ id }) => selected.includes(id)).some(version => filter(version))
   }
 
   function isValidDataset(state) {
@@ -488,16 +498,14 @@ function Datasets({ pid, project = {}, iterations, groups, datasetList, query, v
     </Button>
   )
 
-  const renderMultipleActions = selectedVersions.selected.length ? (
-    <>
-      <Button type="primary" disabled={getDisabledStatus(({ state }) => isRunning(state))} onClick={multipleHide}>
-        <EyeOffIcon /> {t("common.action.multiple.hide")}
-      </Button>
-      <Button type="primary" disabled={getDisabledStatus(({ state }) => !isValidDataset(state))} onClick={multipleInfer}>
-        <WajueIcon /> {t("common.action.multiple.infer")}
-      </Button>
-    </>
-  ) : null
+  const renderMultipleActions = <>
+    <Button type="primary" disabled={getDisabledStatus(({ state }) => isRunning(state))} onClick={multipleHide}>
+      <EyeOffIcon /> {t("common.action.multiple.hide")}
+    </Button>
+    <Button type="primary" disabled={getDisabledStatus(({ state }) => !isValidDataset(state))} onClick={multipleInfer}>
+      <WajueIcon /> {t("common.action.multiple.infer")}
+    </Button>
+  </>
 
   const renderGroups = (<>
     <div className='groupList'>

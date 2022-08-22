@@ -3,8 +3,8 @@ const task = {
   "task.type.mining": { cn: "挖掘", en: "Mining", },
   "task.type.label": { cn: "标注", en: "Label", },
   "task.type.fusion": { cn: "预处理", en: "Pretreat", },
-  'task.type.merge': {cn: '合并', en: 'Merge', },
-  'task.type.filter': {cn: '筛选', en: 'Filter', },
+  'task.type.merge': { cn: '合并', en: 'Merge', },
+  'task.type.filter': { cn: '筛选', en: 'Filter', },
   "task.type.inference": { cn: "推理", en: "Inference", },
   "task.type.import": { cn: "添加数据集", en: "Dataset Add", },
   "task.type.copy": { cn: "复制", en: "Copy", },
@@ -103,6 +103,9 @@ const task = {
   "task.label.form.plat.label": { cn: "标注平台账号", en: "Label Platform Account", },
   "task.label.form.plat.go": { cn: "到标注平台注册账号", en: "Label Platform", },
   "task.label.form.keep_anno.label": { cn: "保留原标注", en: "Keep Annotations", },
+  "task.label.form.keep_anno.none": { cn: "不保留原标注", en: "No", },
+  "task.label.form.keep_anno.gt": { cn: "保留GT标注", en: "Keep Ground Truth", },
+  "task.label.form.keep_anno.pred": { cn: "保留预测标注", en: "Keep Predictions", },
   "task.train.fold": { cn: '收起参数配置', en: 'Fold', },
   "task.train.unfold": { cn: '展开参数配置', en: 'Unfold', },
   "task.train.parameter.add.label": { cn: '添加自定义参数', en: 'Add Custom Parameter', },
@@ -186,6 +189,14 @@ const task = {
   "task.state": { en: "Task Status", cn: "任务状态", },
   "task.detail.terminated.label": { en: "Terminated", cn: "终止", },
   "task.detail.terminated": { en: "Terminated by user", cn: "用户手动终止", },
+  "task.inference.header.tip": {
+    en: "Inference result dataset will generate prediction, and inherit original testing set's ground truth annotations.",
+    cn: "推理结果数据集将生成新的预测标注，并包含原测试集的基准值标注。",
+  },
+  "task.label.header.tip": {
+    en: "Labelling result dataset will generate ground truth annotations.",
+    cn: "标注结果数据集会生成新的标准值标注。",
+  },
 }
 
 export default task

@@ -127,7 +127,8 @@ def _build_task_mining_req(args: Dict) -> backend_pb2.GeneralReq:
 def _build_task_importing_req(args: Dict) -> backend_pb2.GeneralReq:
     importing_request = backend_pb2.TaskReqImporting()
     importing_request.asset_dir = args['asset_dir']
-    importing_request.annotation_dir = args['annotation_dir']
+    importing_request.pred_dir = args['pred_dir']
+    importing_request.gt_dir = args['gt_dir']
     importing_request.unknown_types_strategy = backend_pb2_utils.unknown_types_strategy_enum_from_str(
         backend_pb2_utils.UnknownTypesStrategyStr(args['unknown_types_strategy']))
 
@@ -272,7 +273,8 @@ def get_parser() -> Any:
     parser_create_task.add_argument("--in_dataset_ids", nargs="*", type=str)
     parser_create_task.add_argument("--ex_dataset_ids", nargs="*", type=str)
     parser_create_task.add_argument("--asset_dir", type=str)
-    parser_create_task.add_argument("--annotation_dir", type=str)
+    parser_create_task.add_argument("--pred_dir", type=str)
+    parser_create_task.add_argument("--gt_dir", type=str)
     parser_create_task.add_argument("--unknown_types_strategy", type=str)
     parser_create_task.add_argument("--model_package_path", type=str)
     parser_create_task.add_argument("--top_k", type=int)

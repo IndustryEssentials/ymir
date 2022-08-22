@@ -25,12 +25,14 @@ jobs:
         python-version: 3.8
     - name: Install dependencies
       run: |
-        pip install tox
+        time pip install tox
       working-directory: ymir/backend
     - name: Cache Tox Environment
       uses: actions/cache@v3
       with:
-        path: ymir/backend/.tox
+        path: |
+          ymir/backend/.tox
+          ymir/backend/.mypy_cache
         # requirements.txt and requirements-dev.txt have versioning info that would
         # impact the tox environment.
         key: tox-${{ hashFiles('ymir/backend/requirements.txt', 'ymir/backend/requirements-dev.txt') }}

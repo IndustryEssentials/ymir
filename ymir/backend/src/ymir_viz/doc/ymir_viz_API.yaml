@@ -495,13 +495,9 @@ components:
                 ignored_labels:
                   type: object
                   example: "{'cat':8}"
-                negative_info:
-                  type: object
-                  properties:
-                    negative_images_cnt:
-                      type: integer
-                    project_negative_images_cnt:
-                      type: integer
+                negative_images_cnt:
+                  type: integer
+                  example: 3
     DatasetStatsResult:
       allOf:
         - $ref: "#/components/schemas/ApiResponse"

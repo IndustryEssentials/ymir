@@ -3,7 +3,6 @@ import { useParams } from "umi"
 import { Select, Pagination, Row, Col, Button, Space, Card, Tag, Modal } from "antd"
 
 import t from "@/utils/t"
-import { evaluationTags } from '@/constants/dataset'
 import useFetch from '@/hooks/useFetch'
 import { randomBetween, percent } from '@/utils/number'
 
@@ -13,6 +12,8 @@ import styles from "./assets.less"
 import GtSelector from "@/components/form/gtSelector"
 import ImageAnnotation from "@/components/dataset/imageAnnotation"
 import useWindowResize from "@/hooks/useWindowResize"
+import KeywordSelector from "./components/keywordSelector"
+import EvaluationSelector from "@/components/form/evaluationSelector"
 
 const { Option } = Select
 
@@ -20,7 +21,7 @@ const Dataset = () => {
   const { did: id } = useParams()
   const initQuery = {
     id,
-    keyword: null,
+    keywords: [],
     offset: 0,
     limit: 20,
   }
@@ -31,9 +32,6 @@ const Dataset = () => {
     hash: null,
     index: 0,
   })
-  const [evaluated, setEvaluated] = useState(false)
-  const initEvaluation = Object.keys(evaluationTags).reduce((prev, tag) => ({ ...prev, [tag]: true }), {})
-  const [evaluation, setEvaluation] = useState(initEvaluation)
   const listRef = useRef(null)
   const windowWidth = useWindowResize()
   const [dataset, getDataset] = useFetch('dataset/getDataset', {})
@@ -44,23 +42,22 @@ const Dataset = () => {
   }, [id])
 
   useEffect(() => {
-    const evaluated = assets.some(asset => asset.evaluated)
-    setEvaluated(evaluated)
-  }, [assets])
-
-  useEffect(() => {
     setCurrentPage((filterParams.offset / filterParams.limit) + 1)
     dataset.id && filter(filterParams)
   }, [dataset, filterParams])
 
-  const filterKw = (kw) => {
-    const keyword = kw ? kw : undefined
-    setFilterParams((params) => ({
-      ...params,
-      keyword,
-      offset: initQuery.offset,
-    }))
+  const filterKw = ({ type, selected }) => {
+    const s = selected.map(item => Array.isArray(item) ? item.join(':') : item)
+    if (s.length || (!s.length && filterParams.keywords.length > 0)) {
+      setFilterParams((params) => ({
+        ...params,
+        type,
+        keywords: s,
+        offset: initQuery.offset,
+      }))
+    }
   }
+
   const filterPage = (page, pageSize) => {
     setCurrentPage(page)
     const limit = pageSize
@@ -68,7 +65,6 @@ const Dataset = () => {
     setFilterParams((params) => ({ ...params, offset, limit }))
   }
   const filter = (param) => {
-    setAssets({ items: [], total: 0 })
     getAssets({ ...param, datasetKeywords: dataset?.keywords })
   }
   const goAsset = (asset, hash, index) => {
@@ -83,12 +79,26 @@ const Dataset = () => {
     filterPage(page, limit)
   }
 
-  const getRate = (count) => {
-    return percent(count / dataset.assetCount)
+  const filterAnnotations = useCallback(annotations => {
+    const cm = filterParams.cm || []
+    const annoType = filterParams.annoType || []
+    const gtFilter = annotation => !annoType.length || annoType.some(selected => selected === 'gt' ? annotation.gt : !annotation.gt)
+    const evaluationFilter = annotation => !cm.length || cm.includes(annotation.cm)
+    return annotations.filter(annotation => gtFilter(annotation) && evaluationFilter(annotation))
+  }, [filterParams.cm, filterParams.annoType])
+
+  const updateFilterParams = (value, field) => {
+    if (value?.length || (filterParams[field]?.length && !value?.length)) {
+      setFilterParams(query => ({
+        ...query,
+        [field]: value,
+        offset: initQuery.offset,
+      }))
+    }
   }
 
-  const filterAnnotations = annotations => {
-    return annotations.filter(annotation => !annotation.cm || evaluation[annotation.cm])
+  const reset = () => {
+    setFilterParams(initQuery)
   }
 
   const randomPageButton = (
@@ -112,7 +122,7 @@ const Dataset = () => {
       return (
         <Row gutter={4} wrap={false} key={index} className={styles.dataset_container}>
           {rows.map((asset, rowIndex) => (
-            <Col style={{ height: h }} key={asset.hash} className={styles.dataset_item}>
+            <Col style={{ height: h }} key={rowIndex} className={styles.dataset_item}>
               <div
                 className={styles.dataset_img}
                 onClick={() => goAsset(asset, asset.hash, index * row + rowIndex)}
@@ -137,44 +147,36 @@ const Dataset = () => {
       )
     }
     )
-  }, [windowWidth, evaluation])
+  }, [windowWidth, filterParams])
 
   const renderTitle = <Row className={styles.labels}>
-    <Col flex={1}>
+    <Col span={12}>
       <Space>
         <strong>{dataset.name} {dataset.versionName}</strong>
         <span>{t("dataset.detail.pager.total", { total: total + '/' + dataset.assetCount })}</span>
       </Space>
     </Col>
-    {evaluated ? <Col>
-      <GtSelector layout='inline' onChange={setEvaluation} />
-    </Col> : null}
-    <Col>
-      <span>{t("dataset.detail.keyword.label")}</span>
-      <Select
-        showSearch
-        defaultValue={0}
-        style={{ width: 160 }}
-        onChange={filterKw}
-        filterOption={(input, option) => option.key.toLowerCase().indexOf(input.toLowerCase()) >= 0}
-      >
-        <Option value={0} key="all">
-          {t("common.all")}
-        </Option>
-
-        {dataset?.keywords?.map((key) => (
-          <Option value={key} key={key} title={`${key} (${dataset.keywordsCount[key]})`}>
-            {key} ({dataset.keywordsCount[key]}, {getRate(dataset.keywordsCount[key])})
-          </Option>
-        ))}
-      </Select>
+    <Col span={12}>
+      <Space size={10} wrap={true}>
+        <GtSelector layout='inline' value={filterParams.annoType} onChange={checked => updateFilterParams(checked, 'annoType')} />
+        <EvaluationSelector value={filterParams.cm} onChange={checked => updateFilterParams(checked, 'cm')} labelAlign={'right'} />
+        <KeywordSelector value={filterParams.keywords} onChange={filterKw} dataset={dataset} labelAlign={'right'} />
+        <Button onClick={reset}>{t('common.reset')}</Button>
+      </Space>
     </Col>
   </Row>
 
   const assetDetail = <Modal className={styles.assetDetail} destroyOnClose
     title={t('dataset.asset.title')} visible={assetVisible} onCancel={() => setAssetVisible(false)}
     width={null} footer={null}>
-    <Asset id={id} asset={currentAsset.asset} datasetKeywords={dataset.keywords} filterKeyword={assetVisible ? filterParams.keyword : null} index={currentAsset.index} total={total} />
+    <Asset
+      id={id}
+      asset={currentAsset.asset}
+      datasetKeywords={dataset.keywords}
+      filters={filterParams}
+      filterKeyword={assetVisible ? filterParams.keywords : null}
+      index={currentAsset.index} total={total}
+    />
   </Modal>
 
   return (

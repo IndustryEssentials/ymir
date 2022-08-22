@@ -4,7 +4,7 @@ import {
   getNegativeKeywords,
 } from "@/services/dataset"
 import { getStats } from "../services/common"
-import { transferDatasetGroup, transferDataset, transferDatasetAnalysis, states, transferAsset } from '@/constants/dataset'
+import { transferDatasetGroup, transferDataset, transferDatasetAnalysis, states, transferAsset, transferAnnotationsCount } from '@/constants/dataset'
 import { actions, updateResultState } from '@/constants/common'
 import { deepClone } from '@/utils/object'
 import { checkDuplication } from "../services/dataset"
@@ -228,10 +228,12 @@ export default {
         versions[gid] = updatedDatasets
       })
       const validDatasets = newDatasets.filter(d => d?.needReload)
-      yield put({
-        type: 'UPDATE_ALL_DATASETS',
-        payload: [...validDatasets, ...all],
-      })
+      if (validDatasets.length) {
+        yield put({
+          type: 'UPDATE_ALL_DATASETS',
+          payload: [...validDatasets, ...all],
+        })
+      }
       yield put({
         type: 'UPDATE_ALL_VERSIONS',
         payload: { ...versions },
@@ -335,16 +337,27 @@ export default {
         }
       })
     },
-    *getNegativeKeywords({ payload }, { put, call }) {
-      // const { pid, keywords, type } = payload
-      const { code, result } = yield call(getNegativeKeywords, payload)
-      const getStats = (o = {}) => ({
-        keywords: o.keywords || {},
-        negative: o.negative_images_count || 0,
-        positive: o.positive_images_count || 0,
-      })
+    *getNegativeKeywords({ payload }, { put, call, select }) {
+      const pid = yield select(({ project: { current } }) => current.id)
+      const { code, result } = yield call(getNegativeKeywords, { projectId: pid, ...payload })
       if (code === 0) {
-        return getStats(result?.pred)
+        const { gt, pred, total_assets_count } = result
+        const getStats = (o = {}) => transferAnnotationsCount(o.keywords, o.negative_assets_count, total_assets_count)
+        return {
+          pred: getStats(pred),
+          gt: getStats(gt),
+        }
+      }
+    },
+    *getCK({ payload }, { select, put }) {
+      const { id } = payload
+      const { id: pid } = yield select(({ project }) => project.current)
+      const datasets = yield put.resolve({ type: 'analysis', payload: { pid, datasets: [id] } })
+      if (datasets?.length) {
+        const { cks, tags } = datasets[0]
+        return {
+          cks, tags,
+        }
       }
     },
   },

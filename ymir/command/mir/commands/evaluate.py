@@ -41,13 +41,6 @@ class CmdEvaluate(base.BaseCommand):
             mir_task_id=src_rev_tid.tid,
             ms_list=[mirpb.MirStorage.MIR_METADATAS, mirpb.MirStorage.MIR_ANNOTATIONS])
 
-        orig_head_task_id = mir_annotations.head_task_id
-        pred_annotations = mir_annotations.task_annotations[orig_head_task_id]
-
-        mir_annotations.task_annotations[task_id].CopyFrom(pred_annotations)
-        del mir_annotations.task_annotations[orig_head_task_id]
-        mir_annotations.prediction.CopyFrom(pred_annotations)
-
         # save and commit
         task = mir_storage_ops.create_task(task_type=mirpb.TaskType.TaskTypeEvaluate,
                                            task_id=task_id,

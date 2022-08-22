@@ -205,10 +205,11 @@ message TaskReqImporting {
     // store media files
     string asset_dir = 1;
     // single pascal xml per asset, same base_filename as in asset-folder
-    string annotation_dir = 2;
+    string pred_dir = 2;
     string gt_dir = 4;
     // strategy for unknown class types: stop, ignore or add
     UnknownTypesStrategy unknown_types_strategy = 5;
+    bool clean_dirs = 6;
 
     reserved 3;
 }
@@ -217,7 +218,8 @@ message TaskReqExporting {
     string dataset_id = 1;
     LabelFormat format = 2;
     string asset_dir = 3;
-    string annotation_dir = 4;
+    string pred_dir = 4;
+    string gt_dir = 5;
 }
 
 message TaskReqInference {
@@ -231,6 +233,12 @@ message TaskReqCopyData {
     bool drop_annotations = 5;
 }
 
+enum AnnotationType {
+    NOT_SET = 0;
+    GT = 1;
+    PRED = 2;
+}
+
 message TaskReqLabeling {
     string dataset_id = 1;
     repeated string labeler_accounts = 2;
@@ -238,6 +246,7 @@ message TaskReqLabeling {
     string expert_instruction_url = 4;
     string project_name = 5;
     bool export_annotation = 6;
+    AnnotationType annotation_type = 7;
 }
 
 message TaskReqFusion {

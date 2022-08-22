@@ -4,7 +4,7 @@ from typing import Any, Dict, List, Optional
 
 import requests
 from fastapi.logger import logger
-from pydantic import BaseModel
+from pydantic import BaseModel, validator
 
 from app.api.errors.errors import (
     DatasetEvaluationNotFound,
@@ -22,7 +22,8 @@ def parse_annotations(annotations: List[Dict], user_labels: UserLabels) -> List[
         {
             "box": annotation["box"],
             "cm": annotation["cm"],
-            "keyword": user_labels.get_main_names(annotation["class_id"])[0],
+            "tags": annotation["tags"],
+            "keyword": user_labels.get_main_name(annotation["class_id"]),
         }
         for annotation in annotations
     ]
@@ -72,11 +73,14 @@ class Assets:
                 "metadata": asset["metadata"],
                 "gt": parse_annotations(asset["gt"], user_labels),
                 "pred": parse_annotations(asset["pred"], user_labels),
+                "cks": asset["cks"],
             }
             for asset in res["elements"]
         ]
-
-        return cls(items=assets, total=res["total"])
+        # fixme
+        #  remove upon replacing all viz endpoints
+        total = res.get("total") or res.get("total_assets_count") or 0
+        return cls(items=assets, total=total)
 
 
 @dataclass
@@ -103,106 +107,123 @@ class ModelMetaData:
         )
 
 
-class VizDataset(BaseModel):
+@dataclass
+class DatasetAnnotationMetadata:
+    keywords: Dict[str, int]
+    class_ids_count: Dict[str, int]
+    negative_assets_count: int
+
+    tags_count_total: Dict
+    tags_count: Dict
+
+    hist: Dict
+
+    annos_count: int
+    ave_annos_count: float
+
+    @classmethod
+    def from_viz_res(cls, res: Dict, total_assets_count: int, user_labels: UserLabels) -> "DatasetAnnotationMetadata":
+        ave_annos_count = round(res["annos_count"] / total_assets_count, 2) if total_assets_count else 0
+        keywords = {
+            user_labels.get_main_name(int(class_id)): count for class_id, count in res["class_ids_count"].items()
+        }
+        return cls(
+            keywords=keywords,
+            class_ids_count=res["class_ids_count"],
+            negative_assets_count=res["negative_assets_count"],
+            tags_count_total=res["tags_count_total"],
+            tags_count=res["tags_count"],
+            hist=res["hist"],
+            annos_count=res["annos_count"],
+            ave_annos_count=ave_annos_count,
+        )
+
+
+@dataclass
+class DatasetMetaData:
     """
     Interface dataclass of VIZ output, defined as DatasetResult in doc:
     https://github.com/IndustryEssentials/ymir/blob/master/ymir/backend/src/ymir_viz/doc/ymir_viz_API.yaml
     """
 
-    total_images_cnt: int
-    class_ids_count: Dict[int, int]
-    ignored_labels: Dict[str, int]
-    negative_info: Dict[str, int]
-    gt: Dict
-    pred: Dict
-    hist: Dict
-    total_asset_mbytes: int
-    total_assets_cnt: int
-
-
-@dataclass
-class DatasetMetaData:
-    keywords: Dict[str, int]
-    ignored_keywords: Dict[str, int]
+    keywords: Dict
     keywords_updated: bool
+
+    cks_count: Dict
+    cks_count_total: Dict
+
+    total_assets_mbytes: int
+    total_assets_count: int
+
+    gt: Optional[DatasetAnnotationMetadata]
+    pred: Optional[DatasetAnnotationMetadata]
+    hist: Dict
+
     negative_info: Dict[str, int]
-    asset_count: int
-    keyword_count: int
-    total_asset_mbytes: int
-    total_assets_cnt: int
-    annos_cnt: int
-    ave_annos_cnt: float
-    positive_asset_cnt: int
-    negative_asset_cnt: int
-    asset_bytes: List[Dict]
-    asset_area: List[Dict]
-    asset_quality: List[Dict]
-    asset_hw_ratio: List[Dict]
-    anno_area_ratio: List[Dict]
-    anno_quality: List[Dict]
-    class_names_count: Dict[str, int]
 
     @classmethod
     def from_viz_res(cls, res: Dict, user_labels: UserLabels) -> "DatasetMetaData":
-        # todo clean up
-        # for compatible
-        res["total_images_cnt"] = res["pred"]["total_images_cnt"]
-        res["ignored_labels"] = res["pred"]["new_types"]
-        res["negative_info"] = res["pred"]["negative_info"]
-        viz_dataset = VizDataset(**res)
+        total_assets_count = res["total_assets_count"]
+        gt = (
+            DatasetAnnotationMetadata.from_viz_res(res["gt"], total_assets_count, user_labels)
+            if res.get("gt")
+            else None
+        )
+        pred = (
+            DatasetAnnotationMetadata.from_viz_res(res["pred"], total_assets_count, user_labels)
+            if res.get("pred")
+            else None
+        )
+        hist = {
+            "asset_bytes": res["hist"]["asset_bytes"],
+            "asset_area": res["hist"]["asset_area"],
+            "asset_quality": res["hist"]["asset_quality"],
+            "asset_hw_ratio": res["hist"]["asset_hw_ratio"],
+        }
         keywords = {
-            user_labels.get_main_names(class_id)[0]: count for class_id, count in viz_dataset.class_ids_count.items()
+            "gt": gt.keywords if gt else {},
+            "pred": pred.keywords if pred else {},
+        }
+        negative_info = {
+            "gt": gt.negative_assets_count if gt else 0,
+            "pred": pred.negative_assets_count if pred else 0,
         }
         return cls(
             keywords=keywords,
-            ignored_keywords=viz_dataset.ignored_labels,
-            keywords_updated=res["pred"]["new_types_added"],
-            negative_info=viz_dataset.negative_info,
-            asset_count=viz_dataset.total_images_cnt,
-            keyword_count=len(keywords),
-            total_asset_mbytes=viz_dataset.total_asset_mbytes,
-            total_assets_cnt=viz_dataset.total_assets_cnt,
-            annos_cnt=viz_dataset.pred["annos_cnt"],
-            ave_annos_cnt=(
-                round(viz_dataset.pred["annos_cnt"] / viz_dataset.total_assets_cnt, 2)
-                if viz_dataset.total_assets_cnt
-                else 0
-            ),
-            positive_asset_cnt=viz_dataset.pred["positive_asset_cnt"],
-            negative_asset_cnt=viz_dataset.pred["negative_asset_cnt"],
-            asset_bytes=viz_dataset.hist["asset_bytes"][0],
-            asset_area=viz_dataset.hist["asset_area"][0],
-            asset_quality=viz_dataset.hist["asset_quality"][0],
-            asset_hw_ratio=viz_dataset.hist["asset_hw_ratio"][0],
-            anno_area_ratio=viz_dataset.pred["hist"]["anno_area_ratio"][0],
-            anno_quality=viz_dataset.pred["hist"]["anno_quality"][0],
-            class_names_count=viz_dataset.pred["class_names_count"],
+            keywords_updated=res["new_types_added"],  # delete personal keywords cache
+            cks_count=res["cks_count"],
+            cks_count_total=res["cks_count_total"],
+            total_assets_mbytes=res["total_assets_mbytes"],
+            total_assets_count=total_assets_count,
+            gt=gt,
+            pred=pred,
+            hist=hist,
+            negative_info=negative_info,
         )
 
 
 class VizDatasetStatsElement(BaseModel):
     class_ids_count: Dict[int, int]
-    negative_images_count: int
-    positive_images_count: int
+    negative_assets_count: int
 
 
 @dataclass
 class DatasetStatsElement:
     keywords: Dict[str, int]
-    negative_images_count: int
-    positive_images_count: int
+    negative_assets_count: int
 
     @classmethod
     def from_viz_res(cls, data: Dict, user_labels: UserLabels) -> "DatasetStatsElement":
         viz_res = VizDatasetStatsElement(**data)
         keywords = {
-            user_labels.get_main_names(class_id)[0]: count for class_id, count in viz_res.class_ids_count.items()
+            user_labels.get_main_name(int(class_id)): count for class_id, count in viz_res.class_ids_count.items()
         }
-        return cls(keywords, viz_res.negative_images_count, viz_res.positive_images_count)
+        return cls(keywords, viz_res.negative_assets_count)
 
 
 @dataclass
 class DatasetStats:
+    total_assets_count: int
     gt: DatasetStatsElement
     pred: DatasetStatsElement
 
@@ -210,7 +231,7 @@ class DatasetStats:
     def from_viz_res(cls, res: Dict, user_labels: UserLabels) -> "DatasetStats":
         gt = DatasetStatsElement.from_viz_res(res["gt"], user_labels)
         pred = DatasetStatsElement.from_viz_res(res["pred"], user_labels)
-        return cls(gt=gt, pred=pred)
+        return cls(total_assets_count=res["total_assets_count"], gt=gt, pred=pred)
 
 
 class EvaluationScore(BaseModel):
@@ -243,6 +264,29 @@ class VizDatasetEvaluationResult(BaseModel):
     iou_averaged_evaluation: VizDatasetEvaluation
 
 
+class ViewerAssetRequest(BaseModel):
+    """
+    Payload for viewer GET /assets
+    """
+
+    class_ids: Optional[str]
+    current_asset_id: Optional[str]
+    cm_types: Optional[str]
+    cks: Optional[str]
+    tags: Optional[str]
+    annotation_types: Optional[str]
+    limit: Optional[int]
+    offset: Optional[int]
+
+    @validator("class_ids", "cm_types", "cks", "tags", "annotation_types", pre=True)
+    def make_str(cls, v: Any) -> Optional[str]:
+        if v is None:
+            return v
+        if isinstance(v, str):
+            return v
+        return ",".join(map(str, v))
+
+
 class VizClient:
     def __init__(self, *, host: str = settings.VIZ_HOST):
         self.host = host
@@ -252,6 +296,7 @@ class VizClient:
         self._branch_id = None  # type: Optional[str]
         self._url_prefix = None  # type: Optional[str]
         self._user_labels = None  # type: Optional[UserLabels]
+        self._use_viewer = False
 
     def initialize(
         self,
@@ -260,12 +305,23 @@ class VizClient:
         project_id: int,
         branch_id: Optional[str] = None,
         user_labels: Optional[UserLabels] = None,
+        use_viewer: bool = False,
     ) -> None:
         self._user_id = f"{user_id:0>4}"
         self._project_id = f"{project_id:0>6}"
-        self._url_prefix = (
-            f"http://{self.host}/v1/users/{self._user_id}/repositories/{self._project_id}/branches"  # noqa: E501
-        )
+        if use_viewer:
+            # fixme
+            #  remove upon replacing all viz endpoints
+            self._use_viewer = True
+            host = f"127.0.0.1:{settings.VIEWER_HOST_PORT}"
+            self._url_prefix = (
+                f"http://{host}/api/v1/users/{self._user_id}/repo/{self._project_id}/branch"  # noqa: E501
+            )
+        else:
+            self._url_prefix = (
+                f"http://{self.host}/v1/users/{self._user_id}/repositories/{self._project_id}/branches"  # noqa: E501
+            )
+
         if branch_id:
             self._branch_id = branch_id
         if user_labels:
@@ -274,12 +330,31 @@ class VizClient:
     def get_assets(
         self,
         *,
+        asset_hash: Optional[str] = None,
         keyword_id: Optional[int] = None,
+        keyword_ids: Optional[List[int]] = None,
+        cm_types: Optional[List[str]] = None,
+        cks: Optional[List[str]] = None,
+        tags: Optional[List[str]] = None,
+        annotation_types: Optional[List[str]] = None,
         offset: int = 0,
         limit: int = 20,
     ) -> Assets:
         url = f"{self._url_prefix}/{self._branch_id}/assets"
-        payload = {"class_id": keyword_id, "limit": limit, "offset": offset}
+        if self._use_viewer:
+            payload = ViewerAssetRequest(
+                class_ids=keyword_ids,
+                cm_types=cm_types,
+                cks=cks,
+                tags=tags,
+                annotation_types=annotation_types,
+                current_asset_id=asset_hash,
+                limit=limit,
+                offset=offset,
+            ).dict(exclude_none=True)
+        else:
+            payload = {"class_id": keyword_id, "limit": limit, "offset": offset}
+
         resp = self.session.get(url, params=payload, timeout=settings.VIZ_TIMEOUT)
         if not resp.ok:
             logger.error("[viz] failed to get assets info: %s", resp.content)
@@ -395,6 +470,6 @@ def convert_class_id_to_keyword(obj: Dict, user_labels: UserLabels) -> None:
     if isinstance(obj, dict):
         for key, value in obj.items():
             if key == "ci_evaluations":
-                obj[key] = {user_labels.get_main_names(k)[0]: v for k, v in value.items()}
+                obj[key] = {user_labels.get_main_name(k): v for k, v in value.items()}
             else:
                 convert_class_id_to_keyword(obj[key], user_labels)

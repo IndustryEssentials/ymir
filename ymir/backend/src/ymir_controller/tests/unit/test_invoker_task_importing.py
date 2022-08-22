@@ -81,7 +81,7 @@ class TestInvokerTaskImporting(unittest.TestCase):
     def test_invoker_00(self, mock_run):
         importing_request = backend_pb2.TaskReqImporting()
         importing_request.asset_dir = self._storage_root
-        importing_request.annotation_dir = self._storage_root
+        importing_request.pred_dir = self._storage_root
         importing_request.gt_dir = self._storage_root
         importing_request.unknown_types_strategy = backend_pb2.UnknownTypesStrategy.UTS_ADD
         req_create_task = backend_pb2.ReqCreateTask()
@@ -105,7 +105,7 @@ class TestInvokerTaskImporting(unittest.TestCase):
 
         expected_cmd_importing = (
             "mir import --root {0} --dataset-name {1} --dst-rev {1}@{1} --src-revs {2} "
-            "--index-file {3} --gt-index-file {3} --gen-dir {4} -w {5} --annotation-dir {4} --gt-dir {4} "
+            "--index-file {3} --gt-index-file {3} --gen-dir {4} -w {5} --pred-dir {4} --gt-dir {4} "
             "--unknown-types-strategy add".format(
                 self._mir_repo_root, self._task_id, 'master', os.path.join(working_dir, 'index.txt'),
                 self._storage_root, working_dir))

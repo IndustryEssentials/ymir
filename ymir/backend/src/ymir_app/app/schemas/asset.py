@@ -29,6 +29,7 @@ class Asset(AssetBase):
     keywords: Optional[List[str]]
     gt: Optional[List[Dict]]
     pred: Optional[List[Dict]]
+    cks: Optional[Dict]
 
 
 class AssetOut(Common):

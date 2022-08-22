@@ -6,8 +6,9 @@
 
 set -e
 
-INPUT_DIR=./proto
-OUTPUT_DIR=./mir/protos
+INPUT_DIR="./proto"
+OUTPUT_DIR="./mir/protos"
+VIEWER_GO_DIR="../backend/src/ymir_viewer/common"
 rm -rf $OUTPUT_DIR
 mkdir -p $OUTPUT_DIR
 
@@ -15,6 +16,7 @@ mkdir -p $OUTPUT_DIR
 python -m grpc_tools.protoc \
       -I "$INPUT_DIR" \
       --python_out="$OUTPUT_DIR" \
+      --go_out="$VIEWER_GO_DIR" \
       "$INPUT_DIR/mir_command.proto"
 
 # gen protobuf pyi for mypy

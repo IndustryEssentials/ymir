@@ -9,65 +9,71 @@ function randomColor() {
   return "#" + Math.random().toString(16).slice(-6)
 }
 
-function KeywordRates({ pid, id, keywords = [], dataset, progressWidth = 0.5 }) {
-  const [list, setList] = useState([])
+const initList = { gt: [], pred: [] }
+
+const getWidth = ({ count = 0, max }, progressWidth) => percent(count * progressWidth / max)
+
+function KeywordRates({ keywords, dataset, progressWidth = 0.5 }) {
+  const [list, setList] = useState(initList)
+  const [did, setDid] = useState(null)
+  const [kws, setKws] = useState([])
   const [stats, getNegativeKeywords, setStats] = useFetch('dataset/getNegativeKeywords', {})
   const [colors, setColors] = useState({})
-  const [labels, setLabels] = useState([])
 
   useEffect(() => {
-    if (dataset) {
-      setLabels(dataset.keywords)
-    } else if (keywords.length) {
-      setLabels(keywords)
-    } else {
-      setLabels([])
+    dataset?.id && setDid(dataset.id)
+  }, [dataset])
+
+  useEffect(() => {
+    setKws(keywords)
+  }, [keywords])
+
+  useEffect(() => {
+    if (did && kws?.length && did === dataset.id && kws.every(k => keywords.includes(k))) {
+      getNegativeKeywords({ keywords: kws, dataset: did })
     }
-  }, [keywords, dataset])
+  }, [did, kws])
 
   useEffect(() => {
-    if (!dataset && id && labels?.length) {
-      getNegativeKeywords({ projectId: pid, keywords: labels, dataset: id })
-    } else if (dataset) {
-      cacheToStats()
-    } else {
-      setList([])
-    }
-  }, [id, dataset, labels])
-
-  useEffect(() => {
-    const keywordColors = labels.reduce((prev, keyword) => (colors[keyword] ? prev : {
+    const keywordColors = (kws || []).reduce((prev, keyword) => (colors[keyword] ? prev : {
       ...prev,
       [keyword]: randomColor(),
     }), {
       0: 'gray'
     })
     setColors({ ...colors, ...keywordColors })
-  }, [labels])
+  }, [kws])
 
   useEffect(() => {
-    if (typeof stats.negative !== 'undefined') {
-      const list = generateList(stats)
+    if (stats.gt) {
+      const list = generateList(stats, colors)
       setList(list)
     } else {
-      setList([])
+      setList(initList)
     }
-  }, [stats])
+  }, [stats, colors])
 
-  function generateList(stats) {
-    const total = stats.negative + stats.positive
+  function generateList({ gt, pred }, colors) {
+    return {
+      gt: transfer(gt, colors),
+      pred: transfer(pred, colors),
+    }
+  }
+
+  function transfer({ count = {}, keywords, negative = 0, total }, colors) {
     const klist = [
-      ...(labels.map(keyword => ({
-        key: keyword,
-        label: keyword,
-        count: stats.keywords[keyword],
+      ...(keywords.map(kw => ({
+        key: kw,
+        label: kw,
+        count: count[kw],
       }))),
       {
         key: 0,
         label: t('dataset.samples.negative'),
-        count: stats.negative,
-      }]
-    const max = Math.max(...(klist.map(item => item.count || 0)))
+        count: negative,
+      }
+    ]
+    const max = Math.max(...(klist.map(item => item.count || 0)), progressWidth)
     return klist.map(item => ({
       ...item,
       total,
@@ -75,31 +81,25 @@ function KeywordRates({ pid, id, keywords = [], dataset, progressWidth = 0.5 }) 
       color: colors[item.key],
     }))
   }
-  const getWidth = ({ count = 0, max }) => percent(count * progressWidth / max)
 
   function label({ count = 0, label = '', total }) {
     return `${label} ${count}/${total} ${percent(count / total)}`
   }
 
-  function cacheToStats() {
-    const { assetCount, keywordsCount, nagetiveCount, } = dataset
-    const defaultStats = {
-      keywords: keywordsCount,
-      negative: nagetiveCount,
-      positive: assetCount - nagetiveCount,
-      total: assetCount,
-    }
-    setStats(defaultStats)
-  }
+  const renderList = (list, title = 'Ground Truth') => <div className={s.rates}>
+    <div className={s.title}>{title}</div>
+    {list.map(item => (
+      <div key={item.key} className={s.rate}>
+        <span className={s.bar} style={{ width: getWidth(item, progressWidth), background: item.color }}>&nbsp;</span>
+        <span>{label(item)}</span>
+      </div>
+    ))}
+  </div>
 
   return (
     <div className={s.rates}>
-      {list.map(item => (
-        <div key={item.key} className={s.rate}>
-          <span className={s.bar} style={{ width: getWidth(item), background: item.color }}>&nbsp;</span>
-          <span>{label(item)}</span>
-        </div>
-      ))}
+      {renderList(list.gt)}
+      {renderList(list.pred, 'Prediction')}
     </div>
   )
 }

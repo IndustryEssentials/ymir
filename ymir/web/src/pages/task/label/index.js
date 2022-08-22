@@ -8,12 +8,15 @@ import t from "@/utils/t"
 import Uploader from "@/components/form/uploader"
 import Breadcrumbs from "@/components/common/breadcrumb"
 import { randomNumber } from "@/utils/number"
+import useFetch from '@/hooks/useFetch'
 
 import DatasetSelect from "../../../components/form/datasetSelect"
 import Desc from "@/components/form/desc"
+import Tip from "@/components/form/tip"
 
 import styles from "./index.less"
 import commonStyles from "../common.less"
+import KeepAnnotations from "./components/keepAnnotations"
 
 const LabelTypes = () => [
   { id: "part", label: t('task.label.form.type.newer'), checked: true },
@@ -30,10 +33,19 @@ function Label({ datasets, keywords, ...func }) {
   const [doc, setDoc] = useState(undefined)
   const [form] = Form.useForm()
   const [asChecker, setAsChecker] = useState(false)
+  const [project, getProject] = useFetch('project/getProject', {})
 
   useEffect(() => {
     func.getKeywords({ limit: 100000 })
   }, [])
+
+  useEffect(() => {
+    iterationId && pid && getProject({ id: pid })
+  }, [pid, iterationId])
+
+  useEffect(() => {
+    project.id && form.setFieldsValue({ keywords: project.keywords})
+  }, [project])
 
   const onFinish = async (values) => {
     const { labellers, checker } = values
@@ -68,7 +80,6 @@ function Label({ datasets, keywords, ...func }) {
   const getCheckedValue = (list) => list.find((item) => item.checked)["id"]
   const initialValues = {
     datasetId: did || undefined,
-    keepAnnotations: true,
     labelType: getCheckedValue(LabelTypes()),
   }
   return (
@@ -85,6 +96,7 @@ function Label({ datasets, keywords, ...func }) {
             onFinish={onFinish}
             onFinishFailed={onFinishFailed}
           >
+            <Form.Item wrapperCol={{ span: 20 }}><Tip content={t('task.label.header.tip')} /></Form.Item>
             <Form.Item label={t('task.fusion.form.dataset')} name='datasetId'>
               <DatasetSelect pid={pid} />
             </Form.Item>
@@ -152,14 +164,7 @@ function Label({ datasets, keywords, ...func }) {
                 ))}
               </Select>
             </Form.Item>
-            <Form.Item name='keepAnnotations'
-              required
-              label={t('task.label.form.keep_anno.label')}>
-              <Radio.Group options={[
-                { value: true, label: t('common.yes') },
-                { value: false, label: t('common.no') },
-              ]} />
-            </Form.Item>
+            <KeepAnnotations />
             <Form.Item label={t('task.label.form.desc.label')} name='desc'>
               <Uploader onChange={docChange} onRemove={() => setDoc(undefined)} format="doc"
                 max={50} info={t('task.label.form.desc.info', { br: <br /> })}></Uploader>

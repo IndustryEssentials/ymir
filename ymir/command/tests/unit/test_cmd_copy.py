@@ -61,10 +61,9 @@ class TestCmdCopy(unittest.TestCase):
 
         mir_annotations = mirpb.MirAnnotations()
         mir_annotations.head_task_id = 't0'
-        mir_annotations.task_annotations['t0']
-        mir_annotations.task_annotations['t0'].image_annotations['asset0'].CopyFrom(
+        mir_annotations.prediction.image_annotations['asset0'].CopyFrom(
             self.__create_image_annotations(type_ids=[1, 2, 3]))
-        mir_annotations.task_annotations['t0'].image_annotations['asset1'].CopyFrom(
+        mir_annotations.prediction.image_annotations['asset1'].CopyFrom(
             self.__create_image_annotations(type_ids=[3]))
 
         model_meta = mirpb.ModelMeta(mean_average_precision=0.3)
@@ -106,15 +105,15 @@ class TestCmdCopy(unittest.TestCase):
 
         self.assertEqual(dst_tid, mir_annotations.head_task_id)
         if drop_annotations:
-            self.assertEqual(0, len(mir_annotations.task_annotations[dst_tid].image_annotations))
+            self.assertEqual(0, len(mir_annotations.prediction.image_annotations))
         else:
             asset0_idx_ids = {
                 annotation.index: annotation.class_id
-                for annotation in mir_annotations.task_annotations[dst_tid].image_annotations['asset0'].annotations
+                for annotation in mir_annotations.prediction.image_annotations['asset0'].annotations
             }
             asset1_idx_ids = {
                 annotation.index: annotation.class_id
-                for annotation in mir_annotations.task_annotations[dst_tid].image_annotations['asset1'].annotations
+                for annotation in mir_annotations.prediction.image_annotations['asset1'].annotations
             }
             self.assertEqual({0: 2, 1: 1}, asset0_idx_ids)
             self.assertEqual({}, asset1_idx_ids)

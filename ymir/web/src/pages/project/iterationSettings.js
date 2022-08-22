@@ -121,12 +121,12 @@ const Add = ({ }) => {
                     <Select options={strategyOptions} onChange={value => setStrategy(value)} />
                   </Form.Item>
                 </Col>
-                {strategy === 0 ? <Col flex={'200px'} offset={1}>
+                {strategy === MiningStrategy.block ? <Col flex={'200px'} offset={1}>
                   <Form.Item label={t('project.add.form.mining.chunksize')}
                     className="normalFont"
                     name='chunkSize'
                     rules={[
-                      { required: strategy === 0 }
+                      { required: strategy === MiningStrategy.block }
                     ]}>
                     <InputNumber step={1} min={2} precision={0} style={{ width: '100%' }} />
                   </Form.Item>

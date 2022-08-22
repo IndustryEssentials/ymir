@@ -49,6 +49,7 @@ export function createProject({
   name,
   description,
   keywords,
+  strategy = 1,
   enableIteration,
 }) {
   return request.post("/projects/", {
@@ -56,6 +57,7 @@ export function createProject({
     description,
     training_type: 1,
     training_keywords: keywords,
+    mining_strategy: strategy,
     enable_iteration: enableIteration
   })
 }
