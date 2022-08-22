@@ -86,7 +86,7 @@ function Train({ allDatasets, datasetCache, ...func }) {
 
   useEffect(() => {
     if (did && allDatasets?.length) {
-      const isValid = dss.some(ds => ds.id === did)
+      const isValid = allDatasets.some(ds => ds.id === did)
       const visibleValue = isValid ? did : null
       setTrainSet(visibleValue)
       form.setFieldsValue({ datasetId: visibleValue })
