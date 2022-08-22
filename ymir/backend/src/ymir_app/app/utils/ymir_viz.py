@@ -15,7 +15,6 @@ from app.api.errors.errors import (
     VizError,
     VizTimeOut,
 )
-
 from app.config import settings
 from common_utils.labels import UserLabels
 from id_definition.error_codes import VizErrorCode, CMDResponseCode
@@ -317,7 +316,7 @@ class VizClient:
         viewer: GET /assets
         """
         url = f"{self._url_prefix}/branch/{dataset_hash}/assets"
-        payload = ViewerAssetRequest(
+        params = ViewerAssetRequest(
             class_ids=keyword_ids,
             cm_types=cm_types,
             cks=cks,
@@ -328,7 +327,7 @@ class VizClient:
             offset=offset,
         ).dict(exclude_none=True)
 
-        resp = self.session.get(url, params=payload, timeout=settings.VIZ_TIMEOUT)
+        resp = self.get_resp(url, params=params)
         res = self.parse_resp(resp)
         assets = ViewerAssetsResponse.from_dict(res, self._user_labels)
         return asdict(assets)
@@ -338,7 +337,6 @@ class VizClient:
         viewer: GET /model_info
         """
         url = f"{self._url_prefix}/branch/{branch_id}/model_info"
-        resp = self.session.get(url, timeout=settings.VIZ_TIMEOUT)
         resp = self.get_resp(url)
         res = self.parse_resp(resp)
         model_info = ViewerModelInfoResponse.parse_obj(res).dict()
@@ -350,7 +348,7 @@ class VizClient:
         """
         user_labels = user_labels or self._user_labels
         url = f"{self._url_prefix}/branch/{dataset_hash}/dataset_meta_count"
-        resp = self.session.get(url, timeout=settings.VIZ_TIMEOUT)
+        resp = self.get_resp(url)
         res = self.parse_resp(resp)
         dataset_counts = ViewerDatasetInfoResponse.from_dict(res, user_labels=user_labels)
         return asdict(dataset_counts)
@@ -367,10 +365,7 @@ class VizClient:
         if keyword_ids:
             params["class_ids"] = ",".join(str(k) for k in keyword_ids)
 
-    def get_dataset_analysis(self, dataset_hash: str) -> DatasetMetaData:
-        url = f"{self._url_prefix}/{dataset_hash}/datasets"
-        resp = self.session.get(url, params=params, timeout=settings.VIZ_TIMEOUT)
-        resp = self.get_resp(url)
+        resp = self.get_resp(url, params=params)
         res = self.parse_resp(resp)
         return asdict(DatasetAnalysis.from_dict(res, self._user_labels))
 
