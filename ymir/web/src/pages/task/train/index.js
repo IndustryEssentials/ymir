@@ -5,6 +5,7 @@ import { formLayout } from "@/config/antd"
 import { useHistory, useParams, useLocation } from "umi"
 
 import t from "@/utils/t"
+import { HIDDENMODULES } from '@/constants/common'
 import { string2Array, generateName } from '@/utils/string'
 import { OPENPAI_MAX_GPU_COUNT } from '@/constants/common'
 import { TYPES } from '@/constants/image'
@@ -72,7 +73,9 @@ function Train({ allDatasets, datasetCache, ...func }) {
 
   useEffect(() => {
     setGPU(sys.gpu_count)
-    setOpenpai(!!sys.openpai_enabled)
+    if (!HIDDENMODULES.OPENPAI) {
+      setOpenpai(!!sys.openpai_enabled)
+    }
   }, [sys])
 
   useEffect(() => {
