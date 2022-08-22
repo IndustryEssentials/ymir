@@ -5,6 +5,7 @@ import { useHistory, useParams, useLocation } from "umi"
 
 import { formLayout } from "@/config/antd"
 import t from "@/utils/t"
+import { HIDDENMODULES } from '@/constants/common'
 import { string2Array } from "@/utils/string"
 import { OPENPAI_MAX_GPU_COUNT } from '@/constants/common'
 import { TYPES } from '@/constants/image'
@@ -66,7 +67,9 @@ function Inference({ datasetCache, datasets, ...func }) {
 
   useEffect(() => {
     setGPU(sys.gpu_count || 0)
-    setOpenpai(!!sys.openpai_enabled)
+    if (!HIDDENMODULES.OPENPAI) {
+      setOpenpai(!!sys.openpai_enabled)
+    }
   }, [sys])
 
   useEffect(() => {
