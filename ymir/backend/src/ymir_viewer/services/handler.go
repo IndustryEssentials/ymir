@@ -280,33 +280,51 @@ func (v *ViewerHandler) GetDatasetStatsHandler(
 }
 
 func (v *ViewerHandler) GetDatasetDupHandler(
-	mirRepo0 *constants.MirRepo,
-	mirRepo1 *constants.MirRepo,
+	candidateMirRepos []*constants.MirRepo,
+	corrodeeMirRepos []*constants.MirRepo,
 ) *constants.QueryDatasetDupResult {
-	if mirRepo0.TaskID == mirRepo1.TaskID {
-		panic("Exactly the same taskid.")
-	}
+	joinAssetCountMax := 0
+	assetsCountMap := make(map[string]int64, len(candidateMirRepos))
+	candidateMetadatas := []*protos.MirMetadatas{}
+	for _, mirRepo := range candidateMirRepos {
+		candidateMetadata := v.mirLoader.LoadSingleMirData(mirRepo, constants.MirfileMetadatas).(*protos.MirMetadatas)
 
-	mirMetadatas0 := v.mirLoader.LoadSingleMirData(mirRepo0, constants.MirfileMetadatas).(*protos.MirMetadatas)
-	assetsCount0 := len(mirMetadatas0.Attributes)
-	mirMetadatas1 := v.mirLoader.LoadSingleMirData(mirRepo1, constants.MirfileMetadatas).(*protos.MirMetadatas)
-	assetsCount1 := len(mirMetadatas1.Attributes)
+		joinAssetCountMax += len(candidateMetadata.Attributes)
+		assetsCountMap[mirRepo.TaskID] = int64(len(candidateMetadata.Attributes))
+		candidateMetadatas = append(candidateMetadatas, candidateMetadata)
+	}
 
 	// Count dups.
-	assetIDMap := make(map[string]bool, assetsCount0)
-	for assetID := range mirMetadatas0.Attributes {
-		assetIDMap[assetID] = true
-	}
 	dupCount := 0
-	for assetID := range mirMetadatas1.Attributes {
-		if _, ok := assetIDMap[assetID]; ok {
-			dupCount += 1
+	joinedAssetIDMap := make(map[string]bool, joinAssetCountMax)
+	for _, candidateMetadata := range candidateMetadatas {
+		for assetID := range candidateMetadata.Attributes {
+			if _, ok := joinedAssetIDMap[assetID]; ok {
+				dupCount += 1
+			} else {
+				joinedAssetIDMap[assetID] = true
+			}
 		}
 	}
 
+	// Count corrode residency.
+	residualCountMap := make(map[string]int64, len(corrodeeMirRepos))
+	for _, mirRepo := range corrodeeMirRepos {
+		corrodeeMetadata := v.mirLoader.LoadSingleMirData(mirRepo, constants.MirfileMetadatas).(*protos.MirMetadatas)
+
+		residualCount := len(corrodeeMetadata.Attributes)
+		for assetID := range corrodeeMetadata.Attributes {
+			if _, ok := joinedAssetIDMap[assetID]; ok {
+				residualCount -= 1
+			}
+		}
+		residualCountMap[mirRepo.TaskID] = int64(residualCount)
+	}
+
 	return &constants.QueryDatasetDupResult{
-		Duplication: dupCount,
-		TotalCount:  map[string]int64{mirRepo0.TaskID: int64(assetsCount0), mirRepo1.TaskID: int64(assetsCount1)},
+		Duplication:   dupCount,
+		TotalCount:    assetsCountMap,
+		ResidualCount: residualCountMap,
 	}
 }
 
