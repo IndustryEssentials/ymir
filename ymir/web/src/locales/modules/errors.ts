@@ -70,6 +70,7 @@ const errors = {
   'error111903': { cn: '完成数据集比对，但找不到相应的结果', en: 'Evaluate done, but can not find result', },
   'error111905': { cn: '推理结果缺乏真值或预测标注，诊断失败', en: 'Evaluation failed for no ground truth or prediction', },
   'error111906': { cn: '模型推理尚未完成，诊断失败', en: 'Evaluate failed for inference unfinished', },
+  'error112103': { cn: '内部请求超时', en: 'Internal request timeout', },
   'error130604': {
     cn: '内部网络错误, 请检查应用程序系统配置',
     en: 'HTTP_ERROR: internal network error, please check system configuration.',

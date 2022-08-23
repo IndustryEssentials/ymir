@@ -585,7 +585,3 @@ service mir_controller_service {
     rpc data_manage_request(GeneralReq) returns (GeneralResp) {}
     // rpc view_request(GeneralReq) returns (GeneralResp) {}
 } // mcs_dm
-
-// service mcs_view
-// service scm_tvt
-// service mcs_auto_mining

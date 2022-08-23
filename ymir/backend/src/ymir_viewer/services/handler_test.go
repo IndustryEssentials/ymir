@@ -2,6 +2,7 @@ package services
 
 import (
 	"encoding/json"
+	"strconv"
 	"testing"
 
 	"github.com/IndustryEssentials/ymir-viewer/common/constants"
@@ -51,6 +52,10 @@ func (m *MockMongoServer) CheckDatasetExistenceReady(mirRepo *constants.MirRepo)
 	return args.Bool(0), args.Bool(1)
 }
 
+func (m *MockMongoServer) RemoveNonReadyDataset() {
+	m.Called()
+}
+
 func (m *MockMongoServer) IndexDatasetData(mirRepo *constants.MirRepo, newData []interface{}) {
 	m.Called(mirRepo, newData)
 }
@@ -78,14 +83,6 @@ func (m *MockMongoServer) QueryDatasetStats(
 ) *constants.QueryDatasetStatsResult {
 	args := m.Called(mirRepo, classIDs)
 	return args.Get(0).(*constants.QueryDatasetStatsResult)
-}
-
-func (m *MockMongoServer) QueryDatasetDup(
-	mirRepo0 *constants.MirRepo,
-	mirRepo1 *constants.MirRepo,
-) *constants.QueryDatasetDupResult {
-	args := m.Called(mirRepo0, mirRepo1)
-	return args.Get(0).(*constants.QueryDatasetDupResult)
 }
 
 func TestGetDatasetMetaCountsHandler(t *testing.T) {
@@ -223,22 +220,30 @@ func TestGetDatasetMetaCountsHandler(t *testing.T) {
 }
 
 func TestGetDatasetDupHandler(t *testing.T) {
-	mirRepo := constants.MirRepo{}
+	mirRepo0 := constants.MirRepo{BranchID: "a", TaskID: "a"}
+	mirRepo1 := constants.MirRepo{BranchID: "b", TaskID: "b"}
+	mockMongoServer := MockMongoServer{}
 
 	expectedDup := 100
-	expectedCount0 := int64(200)
-	expectedCount1 := int64(300)
-	mockMongoServer := MockMongoServer{}
-	mockMongoServer.On("CheckDatasetExistenceReady", &mirRepo).Return(true, true)
-	expectedResult := &constants.QueryDatasetDupResult{
-		Duplication: expectedDup,
-		TotalCount:  map[string]int64{"a": expectedCount0, "b": expectedCount1},
-	}
-	mockMongoServer.On("QueryDatasetDup", &mirRepo, &mirRepo).Return(expectedResult)
+	expectedCount0 := int64(expectedDup)
+	expectedCount1 := int64(expectedDup)
 
 	mockLoader := MockMirRepoLoader{}
+	mockMirMetadatas := protos.MirMetadatas{Attributes: map[string]*protos.MetadataAttributes{}}
+	for i := 0; i < expectedDup; i++ {
+		mockMirMetadatas.Attributes[strconv.Itoa(i)] = &protos.MetadataAttributes{}
+	}
+	mockLoader.On("LoadSingleMirData", &mirRepo0, constants.MirfileMetadatas).Return(&mockMirMetadatas).Once()
+	mockLoader.On("LoadSingleMirData", &mirRepo1, constants.MirfileMetadatas).Return(&mockMirMetadatas).Once()
+
+	expectedResult := &constants.QueryDatasetDupResult{
+		Duplication:   expectedDup,
+		TotalCount:    map[string]int64{"a": expectedCount0, "b": expectedCount1},
+		ResidualCount: map[string]int64{},
+	}
+
 	handler := &ViewerHandler{mongoServer: &mockMongoServer, mirLoader: &mockLoader}
-	resultData := handler.GetDatasetDupHandler(&mirRepo, &mirRepo)
+	resultData := handler.GetDatasetDupHandler([]*constants.MirRepo{&mirRepo0, &mirRepo1}, []*constants.MirRepo{})
 	assert.Equal(t, expectedResult, resultData)
 }
 

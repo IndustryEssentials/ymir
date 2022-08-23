@@ -31,8 +31,8 @@ type BaseHandler interface {
 		tags []string,
 	) *constants.QueryAssetsResult
 	GetDatasetDupHandler(
-		mirRepo0 *constants.MirRepo,
-		mirRepo1 *constants.MirRepo,
+		candidateMirRepos []*constants.MirRepo,
+		corrodeeMirRepos []*constants.MirRepo,
 	) *constants.QueryDatasetDupResult
 	GetDatasetMetaCountsHandler(
 		mirRepo *constants.MirRepo,
@@ -63,7 +63,7 @@ func NewViewerServer(config constants.Config) ViewerServer {
 		gin:     gin.Default(),
 		sandbox: config.YmirSandbox,
 		config:  config,
-		handler: NewViewerHandler(config.MongoDBURI, config.MongoDBName, config.MongoDBNoCache),
+		handler: NewViewerHandler(config.MongoDBURI, config.MongoDataDBName, config.MongoDataDBCache),
 	}
 
 	// get global Monitor object
@@ -103,6 +103,8 @@ func (s *ViewerServer) routes() {
 
 	docs.SwaggerInfo.BasePath = "/api/v1"
 	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+
+	r.GET("/health", s.handleHealth)
 
 	apiPath := r.Group("/api/v1")
 	{
@@ -289,43 +291,48 @@ func (s *ViewerServer) handleDatasetStats(c *gin.Context) {
 // @Param   userID     path    string     true        "User ID"
 // @Param   repoID     path    string     true        "Repo ID"
 // @Param   candidate_dataset_ids     query    string     true        "e.g. candidate_dataset_ids=xxx,yyy"
+// @Param   corrodee_dataset_ids     query    string     false        "dataset_ids to be corroded"
 // @Success 200 {string} string    "'code': 0, 'msg': 'Success', 'Success': true, 'result': 'duplication: 50, total_count: {xxx: 100, yyy: 200}'"
 // @Router /api/v1/users/{userID}/repo/{repoID}/dataset_duplication [get]
 func (s *ViewerServer) handleDatasetDup(c *gin.Context) {
 	defer s.handleFailure(c)
 
-	// Validate candidate_dataset_ids
-	candidateDatasetIDs := c.DefaultQuery("candidate_dataset_ids", "")
-	if len(candidateDatasetIDs) <= 0 {
+	candidateMirRepos := []*constants.MirRepo{}
+	userID := c.Param("userID")
+	repoID := c.Param("repoID")
+	for _, v := range strings.Split(c.DefaultQuery("candidate_dataset_ids", ""), ",") {
+		if len(v) < 1 {
+			continue
+		}
+		candidateMirRepos = append(candidateMirRepos, &constants.MirRepo{
+			SandboxRoot: s.sandbox,
+			UserID:      userID,
+			RepoID:      repoID,
+			BranchID:    v,
+			TaskID:      v,
+		})
+	}
+	if len(candidateMirRepos) <= 0 {
 		ViewerFailure(c, &FailureResult{Code: constants.FailInvalidParmsCode,
 			Msg: "Invalid candidate_dataset_ids."})
 		return
 	}
-	datasetIDs := strings.Split(candidateDatasetIDs, ",")
-	if len(datasetIDs) != 2 {
-		ViewerFailure(c, &FailureResult{Code: constants.FailInvalidParmsCode,
-			Msg: "candidate_dataset_ids requires exact two datasets."})
-		return
+
+	corrodeeMirRepos := []*constants.MirRepo{}
+	for _, v := range strings.Split(c.DefaultQuery("corrodee_dataset_ids", ""), ",") {
+		if len(v) < 1 {
+			continue
+		}
+		corrodeeMirRepos = append(corrodeeMirRepos, &constants.MirRepo{
+			SandboxRoot: s.sandbox,
+			UserID:      userID,
+			RepoID:      repoID,
+			BranchID:    v,
+			TaskID:      v,
+		})
 	}
 
-	userID := c.Param("userID")
-	repoID := c.Param("repoID")
-	mirRepo0 := &constants.MirRepo{
-		SandboxRoot: s.sandbox,
-		UserID:      userID,
-		RepoID:      repoID,
-		BranchID:    datasetIDs[0],
-		TaskID:      datasetIDs[0],
-	}
-	mirRepo1 := &constants.MirRepo{
-		SandboxRoot: s.sandbox,
-		UserID:      userID,
-		RepoID:      repoID,
-		BranchID:    datasetIDs[1],
-		TaskID:      datasetIDs[1],
-	}
-
-	resultData := s.handler.GetDatasetDupHandler(mirRepo0, mirRepo1)
+	resultData := s.handler.GetDatasetDupHandler(candidateMirRepos, corrodeeMirRepos)
 	ViewerSuccess(c, resultData)
 }
 
@@ -344,6 +351,10 @@ func (s *ViewerServer) handleModelInfo(c *gin.Context) {
 
 	resultData := s.handler.GetModelInfoHandler(mirRepo)
 	ViewerSuccess(c, resultData)
+}
+
+func (s *ViewerServer) handleHealth(c *gin.Context) {
+	ViewerSuccess(c, "Healthy")
 }
 
 func (s *ViewerServer) handleFailure(c *gin.Context) {

@@ -7,7 +7,6 @@ import t from '@/utils/t'
 import useFetch from '@/hooks/useFetch'
 import useAddKeywords from '@/hooks/useAddKeywords'
 import { IMPORTSTRATEGY } from '@/constants/dataset'
-import { randomNumber } from '@/utils/number'
 
 import { urlValidator } from '@/components/form/validators'
 import Breadcrumbs from '@/components/common/breadcrumb'
@@ -49,7 +48,7 @@ const Add = (props) => {
 
   const [form] = useForm()
   const [currentType, setCurrentType] = useState(TYPES.INTERNAL)
-  const [fileToken, setFileToken] = useState('')
+  const [file, setFile] = useState('')
   const [selectedDataset, setSelectedDataset] = useState(id ? Number(id) : null)
   const [newKeywords, setNewKeywords] = useState([])
   const [strategyOptions, setStrategyOptions] = useState([])
@@ -58,9 +57,14 @@ const Add = (props) => {
   const [_, updateKeywords] = useAddKeywords()
   const [addResult, newDataset] = useFetch('dataset/createDataset')
   const [{ items: publicDatasets }, getPublicDatasets] = useFetch('dataset/getInternalDataset', { items: [] })
+  const [nameChangedByUser, setNameChangedByUser] = useState(false)
+  const [defaultName, setDefaultName] = useState('')
+  const netUrl = Form.useWatch('url', form)
+  const path = Form.useWatch('path', form)
 
   useEffect(() => {
     form.setFieldsValue({ datasetId: null })
+    setDefaultName('')
   }, [currentType])
 
   useEffect(async () => {
@@ -76,6 +80,16 @@ const Add = (props) => {
     setNewKeywords(newer)
     setIgnoredKeywords([])
   }, [newer])
+
+  useEffect(() => {
+    // todo get name
+    const filename = (netUrl || '').replace(/^.+\/([^\/]+)\.zip$/, '$1')
+    setDefaultName(filename)
+  }, [netUrl])
+
+  useEffect(() => setDefaultName(path), [path])
+
+  useEffect(() => addDefaultName(defaultName), [defaultName])
 
   useEffect(() => {
     if (addResult) {
@@ -111,7 +125,7 @@ const Add = (props) => {
 
   async function submit(values) {
     let updateKeywordResult = null
-    if (currentType === TYPES.LOCAL && !fileToken) {
+    if (currentType === TYPES.LOCAL && !file) {
       return message.error(t('dataset.add.local.file.empty'))
     }
 
@@ -135,8 +149,8 @@ const Add = (props) => {
       params.datasetId = params.datasetId[1]
     }
     if (currentType === TYPES.LOCAL) {
-      if (fileToken) {
-        params.url = fileToken
+      if (file) {
+        params.url = file
       } else {
         return message.error(t('dataset.add.local.file.empty'))
       }
@@ -151,8 +165,27 @@ const Add = (props) => {
     console.log('finish failed: ', err)
   }
 
-  function onInternalDatasetChange(value) {
+  function onInternalDatasetChange(value, { dataset }) {
+    setDefaultName(`${dataset.name} ${dataset.versionName}`)
     setSelectedDataset(value)
+  }
+
+  function setFileDefaultName([file]) {
+    const filename = file.name.replace(/\.zip$/i, '')
+    setDefaultName(filename)
+  }
+
+  function setCopyDefaultName(value, option) {
+    const label = value ? option[1]?.label : ''
+    const datasetname = label.replace(/ \(assets: \d+\)/, '')
+    setDefaultName(datasetname)
+  }
+
+  function addDefaultName(name = '') {
+    const datasetName = form.getFieldValue('name')
+    if (!nameChangedByUser || !datasetName) {
+      form.setFieldsValue({ name })
+    }
   }
 
   function updateIgnoredKeywords(e, keywords, isRemove) {
@@ -166,7 +199,6 @@ const Add = (props) => {
   function renderKeywords(keywords, isIgnoreKeywords) {
     return keywords.length ? keywords.map(key =>
       <Tag className={s.selectedTag} key={key} closable
-        onClick={e => updateIgnoredKeywords(e, [key], !isIgnoreKeywords)}
         onClose={e => updateIgnoredKeywords(e, [key], isIgnoreKeywords)}
       >
         {key}
@@ -206,13 +238,12 @@ const Add = (props) => {
             <Form.Item
               label={t('dataset.add.form.name.label')}
               name='name'
-              initialValue={'dataset_import_' + randomNumber()}
               rules={[
                 { required: true, whitespace: true, message: t('dataset.add.form.name.required') },
                 { type: 'string', min: 2, max: 80 },
               ]}
             >
-              <Input autoComplete={'off'} allowClear />
+              <Input autoComplete={'off'} onKeyUp={() => setNameChangedByUser(true)} allowClear />
             </Form.Item>
             <Form.Item label={t('dataset.add.form.type.label')}>
               <Select onChange={(value) => typeChange(value)} defaultValue={TYPES.INTERNAL}>
@@ -233,10 +264,14 @@ const Add = (props) => {
                     { required: true, message: t('dataset.add.form.internal.required') }
                   ] : []}
                 >
-                  <Select placeholder={t('dataset.add.form.internal.placeholder')} onChange={(value) => onInternalDatasetChange(value)}>
-                    {publicDatasets.map(dataset => (
-                      <Option value={dataset.id} key={dataset.id}>{dataset.name} {dataset.versionName} (Total: {dataset.assetCount})</Option>
-                    ))}
+                  <Select
+                    placeholder={t('dataset.add.form.internal.placeholder')}
+                    onChange={onInternalDatasetChange}
+                    options={publicDatasets.map(dataset => ({
+                      value: dataset.id,
+                      dataset,
+                      label: `${dataset.name} ${dataset.versionName} (Total: ${dataset.assetCount})`
+                    }))}>
                   </Select>
                 </Form.Item>
 
@@ -268,7 +303,7 @@ const Add = (props) => {
                   { required: true, message: t('dataset.add.form.copy.required') }
                 ]}
               >
-                <ProjectDatasetSelect pid={pid} placeholder={t('dataset.add.form.copy.placeholder')}></ProjectDatasetSelect>
+                <ProjectDatasetSelect pid={pid} onChange={setCopyDefaultName} placeholder={t('dataset.add.form.copy.placeholder')}></ProjectDatasetSelect>
               </Form.Item>
             ) : null}
             {!isType(TYPES.INTERNAL) ?
@@ -303,9 +338,9 @@ const Add = (props) => {
             {isType(TYPES.LOCAL) ? (
               <Form.Item label={t('dataset.add.form.upload.btn')} required>
                 <Uploader
-                  onChange={(files, result) => { setFileToken(result) }}
+                  onChange={(files, result) => { setFile(result); setFileDefaultName(files) }}
                   max={1024}
-                  onRemove={() => setFileToken('')}
+                  onRemove={() => setFile('')}
                   info={renderTip('upload', {
                     sample: <a target='_blank' href={'/sample_dataset.zip'}>Sample.zip</a>,
                   })}

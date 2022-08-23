@@ -398,3 +398,8 @@ class VizError(APIError):
 class FailedToParseVizResponse(VizError):
     code = error_codes.FAILED_TO_PARSE_VIZ_RESP
     message = "Failed to Parse Viz Response"
+
+
+class VizTimeOut(VizError):
+    code = error_codes.VIZ_TIMEOUT
+    message = "Internal Viz Service Timeout"

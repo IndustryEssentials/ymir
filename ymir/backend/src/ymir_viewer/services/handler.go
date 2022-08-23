@@ -29,6 +29,7 @@ type BaseMirRepoLoader interface {
 type BaseMongoServer interface {
 	CheckDatasetExistenceReady(mirRepo *constants.MirRepo) (bool, bool)
 	IndexDatasetData(mirRepo *constants.MirRepo, newData []interface{})
+	RemoveNonReadyDataset()
 	QueryDatasetAssets(
 		mirRepo *constants.MirRepo,
 		offset int,
@@ -40,7 +41,6 @@ type BaseMongoServer interface {
 		cks []string,
 		tags []string,
 	) *constants.QueryAssetsResult
-	QueryDatasetDup(mirRepo0 *constants.MirRepo, mirRepo1 *constants.MirRepo) *constants.QueryDatasetDupResult
 	QueryDatasetStats(
 		mirRepo *constants.MirRepo,
 		classIDs []int,
@@ -54,7 +54,7 @@ type ViewerHandler struct {
 	mirLoader   BaseMirRepoLoader
 }
 
-func NewViewerHandler(mongoURI string, mongoDBName string, clearCache bool) *ViewerHandler {
+func NewViewerHandler(mongoURI string, mongoDataDBName string, useDataDBCache bool) *ViewerHandler {
 	var mongoServer *MongoServer
 	if len(mongoURI) > 0 {
 		log.Printf("[viewer] init mongodb %s\n", mongoURI)
@@ -65,8 +65,11 @@ func NewViewerHandler(mongoURI string, mongoDBName string, clearCache bool) *Vie
 			panic(err)
 		}
 
-		database := client.Database(mongoDBName)
-		if clearCache {
+		database := client.Database(mongoDataDBName)
+		mongoServer = NewMongoServer(mongoCtx, database)
+		if useDataDBCache {
+			go mongoServer.RemoveNonReadyDataset()
+		} else {
 			// Clear cached data.
 			err = database.Drop(mongoCtx)
 			if err != nil {
@@ -74,7 +77,6 @@ func NewViewerHandler(mongoURI string, mongoDBName string, clearCache bool) *Vie
 			}
 		}
 
-		mongoServer = NewMongoServer(mongoCtx, database)
 	}
 
 	return &ViewerHandler{mongoServer: mongoServer, mirLoader: &loader.MirRepoLoader{}}
@@ -215,6 +217,8 @@ func (v *ViewerHandler) GetDatasetMetaCountsHandler(
 		result.Pred.AnnotationsCount = int64(predStats.TotalCnt)
 	}
 
+	go v.loadAndCacheAssetsNoPanic(mirRepo)
+
 	return v.fillupDatasetUniverseFields(mirRepo, result)
 }
 
@@ -276,12 +280,52 @@ func (v *ViewerHandler) GetDatasetStatsHandler(
 }
 
 func (v *ViewerHandler) GetDatasetDupHandler(
-	mirRepo0 *constants.MirRepo,
-	mirRepo1 *constants.MirRepo,
+	candidateMirRepos []*constants.MirRepo,
+	corrodeeMirRepos []*constants.MirRepo,
 ) *constants.QueryDatasetDupResult {
-	v.loadAndIndexAssets(mirRepo0)
-	v.loadAndIndexAssets(mirRepo1)
-	return v.mongoServer.QueryDatasetDup(mirRepo0, mirRepo1)
+	joinAssetCountMax := 0
+	assetsCountMap := make(map[string]int64, len(candidateMirRepos))
+	candidateMetadatas := []*protos.MirMetadatas{}
+	for _, mirRepo := range candidateMirRepos {
+		candidateMetadata := v.mirLoader.LoadSingleMirData(mirRepo, constants.MirfileMetadatas).(*protos.MirMetadatas)
+
+		joinAssetCountMax += len(candidateMetadata.Attributes)
+		assetsCountMap[mirRepo.TaskID] = int64(len(candidateMetadata.Attributes))
+		candidateMetadatas = append(candidateMetadatas, candidateMetadata)
+	}
+
+	// Count dups.
+	dupCount := 0
+	joinedAssetIDMap := make(map[string]bool, joinAssetCountMax)
+	for _, candidateMetadata := range candidateMetadatas {
+		for assetID := range candidateMetadata.Attributes {
+			if _, ok := joinedAssetIDMap[assetID]; ok {
+				dupCount += 1
+			} else {
+				joinedAssetIDMap[assetID] = true
+			}
+		}
+	}
+
+	// Count corrode residency.
+	residualCountMap := make(map[string]int64, len(corrodeeMirRepos))
+	for _, mirRepo := range corrodeeMirRepos {
+		corrodeeMetadata := v.mirLoader.LoadSingleMirData(mirRepo, constants.MirfileMetadatas).(*protos.MirMetadatas)
+
+		residualCount := len(corrodeeMetadata.Attributes)
+		for assetID := range corrodeeMetadata.Attributes {
+			if _, ok := joinedAssetIDMap[assetID]; ok {
+				residualCount -= 1
+			}
+		}
+		residualCountMap[mirRepo.TaskID] = int64(residualCount)
+	}
+
+	return &constants.QueryDatasetDupResult{
+		Duplication:   dupCount,
+		TotalCount:    assetsCountMap,
+		ResidualCount: residualCountMap,
+	}
 }
 
 func (v *ViewerHandler) GetModelInfoHandler(

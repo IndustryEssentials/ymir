@@ -11,9 +11,11 @@ import ModelSelect from '@/components/form/modelSelect'
 import s from "./iteration.less"
 import { YesIcon, LoaderIcon } from "@/components/common/icons"
 
+const matchKeywords = (dataset, project) => dataset.keywords.some(kw => project.keywords.includes(kw))
+
 const stages = [
-  { field: 'candidateTrainSet', option: true, label: 'project.prepare.trainset', tip: 'project.add.trainset.tip', },
-  { field: 'testSet', label: 'project.prepare.validationset', tip: 'project.add.testset.tip', },
+  { field: 'candidateTrainSet', option: true, label: 'project.prepare.trainset', tip: 'project.add.trainset.tip', filter: matchKeywords, },
+  { field: 'testSet', label: 'project.prepare.validationset', tip: 'project.add.testset.tip', filter: matchKeywords, },
   { field: 'miningSet', label: 'project.prepare.miningset', tip: 'project.add.miningset.tip', },
   { field: 'modelStage', label: 'project.prepare.model', tip: 'tip.task.filter.model', type: 1 },
 ]
@@ -41,12 +43,13 @@ const Stage = ({ pid, value, stage, project = {} }) => {
     return valid ? t('project.stage.state.done') : t('project.stage.state.waiting')
   }
 
+
   const filters = datasets => {
     const fields = stages.filter(({ type, field }) => !type && stage.field !== field)
       .map(({ field }) => field)
     const ids = fields.map(field => project[field]?.id || project[field])
 
-    return datasets.filter(dataset => ![...ids, ...project.testingSets].includes(dataset.id))
+    return datasets.filter(dataset => ![...ids, ...project.testingSets].includes(dataset.id) && (!stage.filter || stage.filter(dataset, project)))
   }
 
   return <Row wrap={false}>
@@ -123,7 +126,7 @@ function Prepare({ project = {}, fresh = () => { }, ...func }) {
   function mergeTrainSet() {
     const params = {
       projectId: id,
-      dataset: project.trainSetVersion, 
+      dataset: project.trainSetVersion,
       includes: [project.candidateTrainSet]
     }
     merge(params)
@@ -143,7 +146,7 @@ function Prepare({ project = {}, fresh = () => { }, ...func }) {
     }
   }
 
-return (
+  return (
     <div className={s.iteration}>
       <Form layout="vertical" onValuesChange={formChange}>
         <Row style={{ justifyContent: 'flex-end' }}>

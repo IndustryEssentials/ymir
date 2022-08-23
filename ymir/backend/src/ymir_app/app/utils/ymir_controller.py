@@ -7,7 +7,8 @@ from typing import Any, Dict, Generator, List, Optional, Union
 
 import grpc
 from fastapi.logger import logger
-from google.protobuf import json_format  # type: ignore
+from google.protobuf.json_format import MessageToDict
+from google.protobuf.text_format import MessageToString
 
 from app.config import settings
 from app.constants.state import TaskType, AnnotationType
@@ -364,19 +365,21 @@ class ControllerRequest:
 
 class ControllerClient:
     def __init__(self, channel: str = settings.GRPC_CHANNEL) -> None:
-        self.channel = grpc.insecure_channel(channel)
-        self.stub = mir_grpc.mir_controller_serviceStub(self.channel)
+        self.channel_ep = channel
 
     def close(self) -> None:
-        self.channel.close()
+        pass
 
     def send(self, req: mirsvrpb.GeneralReq) -> Dict:
         logger.info("[controller] request: %s", req.req)
-        resp = self.stub.data_manage_request(req.req)
+        with grpc.insecure_channel(self.channel_ep) as channel:
+            stub = mir_grpc.mir_controller_serviceStub(channel)
+            resp = stub.data_manage_request(req.req)
+
         if resp.code != 0:
             raise ValueError(f"gRPC error. response: {resp.code} {resp.message}")
-        logger.info("[controller] response: %s", resp)
-        return json_format.MessageToDict(
+        logger.info("[controller] response: %s", MessageToString(resp, as_one_line=True))
+        return MessageToDict(
             resp,
             preserving_proto_field_name=True,
             use_integers_for_enums=True,

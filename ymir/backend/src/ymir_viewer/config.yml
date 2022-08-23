@@ -1,12 +1,12 @@
 YmirSandbox: ""
 
-ViewerHost: "127.0.0.1"
+ViewerHost: "0.0.0.0"
 ViewerPort: 9527
 # ViewerURI has higher priority than above fields, if set.
 ViewerURI: ""
 
 MongoDBURI: "mongodb://127.0.0.1:27017"
-MongoDBName: "YMIR"
-MongoDBNoCache: true
+MongoDataDBName: "YMIR-data"
+MongoDataDBCache: true
 
-InnerTimeout: 10
+InnerTimeout: 61 # +1 for elder.

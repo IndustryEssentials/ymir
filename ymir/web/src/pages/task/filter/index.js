@@ -51,7 +51,7 @@ function Filter() {
 
   const onFinish = (values) => {
     if (!checkInputs(values)) {
-      return message.error(t('dataset.fusion.validate.inputs'))
+      return message.error(t('dataset.filter.validate.inputs'))
     }
     const params = {
       ...values,

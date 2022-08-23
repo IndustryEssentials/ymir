@@ -52,6 +52,10 @@ class MirStorageOps():
                                  mir_keywords=mir_keywords)
         mir_datas[mirpb.MirStorage.MIR_KEYWORDS] = mir_keywords
 
+        det_eval.reset_default_confusion_matrix(task_annotations=mir_annotations.prediction,
+                                                cm=mirpb.ConfusionMatrixType.NotSet)
+        det_eval.reset_default_confusion_matrix(task_annotations=mir_annotations.ground_truth,
+                                                cm=mirpb.ConfusionMatrixType.NotSet)
         if (mir_metadatas.attributes and mir_annotations.ground_truth.image_annotations
                 and mir_annotations.prediction.image_annotations):
             evaluation, _ = det_eval.det_evaluate_with_pb(
