@@ -5,6 +5,7 @@ import { useHistory } from "umi"
 import { List, Skeleton, Space, Button, Pagination, Col, Row, } from "antd"
 
 import t from "@/utils/t"
+import { HIDDENMODULES } from '@/constants/common'
 import { ROLES } from '@/constants/user'
 import { TYPES, STATES, getImageTypeLabel, imageIsPending } from '@/constants/image'
 import ShareModal from "./share"
@@ -170,7 +171,7 @@ const ImageList = ({ role, filter, getImages }) => {
       <Col flex={1}><Space>
         <span>{item.name}</span>
         {imageState(item.state)}
-        {isDone(item.state) ? liveCodeState(item.liveCode) : null}
+        {isDone(item.state) && !HIDDENMODULES.LIVECODE ? liveCodeState(item.liveCode) : null}
         </Space></Col>
       <Col>{more(item)}</Col>
     </Row>

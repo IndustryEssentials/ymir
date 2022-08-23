@@ -2,6 +2,12 @@
 
 
 import { BackendData } from "@/interface/common"
+export const HIDDENMODULES = {
+  VISUALIZATION: true,
+  OPENPAI: true,
+  LIVECODE: true,
+}
+
 export enum states {
   READY = 0,
   VALID = 1,

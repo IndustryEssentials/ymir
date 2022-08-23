@@ -3,6 +3,7 @@ import { Card } from "antd"
 import { useLocation, useParams, useHistory } from "umi"
 
 import t from "@/utils/t"
+import { HIDDENMODULES } from '@/constants/common'
 import useFetch from "@/hooks/useFetch"
 import Breadcrumbs from "@/components/common/breadcrumb"
 
@@ -15,7 +16,7 @@ import s from "./detail.less"
 const tabs = [
   { tab: 'model.diagnose.tab.metrics', key: 'metrics', },
   { tab: 'model.diagnose.tab.training', key: 'training', },
-  { tab: 'model.diagnose.tab.visualization', key: 'visualization', },
+  { tab: 'model.diagnose.tab.visualization', key: 'visualization', hidden: HIDDENMODULES.VISUALIZATION },
 
 ]
 
@@ -47,7 +48,7 @@ function ProjectDetail() {
   return (
     <div className={s.projectDetail}>
       <Breadcrumbs />
-      <Card tabList={tabs.map(tab => ({ ...tab, tab: t(tab.tab) }))}
+      <Card tabList={tabs.filter(tab => !tab.hidden).map(tab => ({ ...tab, tab: t(tab.tab) }))}
         activeTabKey={active} onTabChange={tabChange} className='noShadow'
         headStyle={{ background: '#fff', marginBottom: '10px' }}
         bodyStyle={{ padding: '0 20px' }}>
