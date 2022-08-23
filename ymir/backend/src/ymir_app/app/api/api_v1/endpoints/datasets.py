@@ -51,7 +51,7 @@ def get_datasets_analysis(
     if verbose_info:
         viz_client.initialize(user_id=current_user.id, project_id=project_id, user_labels=user_labels)
         for dataset in datasets_info:
-            dataset_analysis = viz_client.get_dataset_analysis(dataset.hash, require_hist=True)
+            dataset_analysis = viz_client.get_dataset_analysis(dataset["hash"], require_hist=True)
             dataset.update(dataset_analysis)
     return {"result": datasets_info}
 
