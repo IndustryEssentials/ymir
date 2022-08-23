@@ -150,7 +150,6 @@ class TestControllerClient:
         mock_stub.data_manage_request.return_value = mocker.Mock(code=0)
 
         cc = m.ControllerClient(channel_str)
-        mock_stub.data_manage_request.return_value = mocker.Mock(code=0)
         req = mocker.Mock()
         mocker.patch.object(m, "MessageToDict")
         mocker.patch.object(m, "MessageToString")
