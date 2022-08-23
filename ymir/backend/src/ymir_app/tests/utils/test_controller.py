@@ -117,6 +117,14 @@ class TestControllerRequest:
 class TestControllerClient:
     def test_send_with_grpc_error(self, mocker):
         channel_str = random_lower_string()
+        mock_grpc = mocker.Mock()
+        mock_channel = mocker.Mock()
+        mock_stub = mocker.Mock()
+
+        mocker.patch.object(m, "grpc", return_value=mock_grpc)
+        mock_grpc.insecure_channel.return_value = mock_channel
+        mocker.patch.object(m, "mir_grpc.mir_controller_serviceStub", return_value=mock_stub)
+        mock_stub.data_manage_request.return_value = mocker.Mock(code=0)
         cc = m.ControllerClient(channel_str)
         mock_stub = mocker.Mock()
         mock_stub.data_manage_request.return_value = mocker.Mock(code=-1)
@@ -127,10 +135,17 @@ class TestControllerClient:
 
     def test_send(self, mocker):
         channel_str = random_lower_string()
-        cc = m.ControllerClient(channel_str)
+        mock_grpc = mocker.Mock()
+        mock_channel = mocker.Mock()
         mock_stub = mocker.Mock()
+
+        mocker.patch.object(m, "grpc", return_value=mock_grpc)
+        mock_grpc.insecure_channel.return_value = mock_channel
+        mocker.patch.object(m, "mir_grpc.mir_controller_serviceStub", return_value=mock_stub)
         mock_stub.data_manage_request.return_value = mocker.Mock(code=0)
-        cc.stub = mock_stub
+
+        cc = m.ControllerClient(channel_str)
+        mock_stub.data_manage_request.return_value = mocker.Mock(code=0)
         req = mocker.Mock()
         mocker.patch.object(m, "MessageToDict")
         mocker.patch.object(m, "MessageToString")
