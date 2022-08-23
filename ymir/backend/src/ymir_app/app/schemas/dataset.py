@@ -141,25 +141,36 @@ class DatasetsOut(Common):
     result: List[Dataset]
 
 
-class DatasetStatsElement(BaseModel):
+class DatasetAnnotationHist(BaseModel):
+    anno_quality: List[Dict]
+    anno_area: List[Dict]
+    anno_area_ratio: List[Dict]
+
+
+class DatasetAnnotation(BaseModel):
     keywords: Dict[str, int]
     negative_assets_count: int
     tags_count_total: Dict  # box tags in first level
     tags_count: Dict  # box tags in second level
 
+    hist: Optional[DatasetAnnotationHist]
+    annos_count: Optional[int]
+    ave_annos_count: Optional[float]
 
-class DatasetStats(DatasetInDBBase):
-    total_assets_count: Optional[int]
-    gt: Optional[DatasetStatsElement]
-    pred: Optional[DatasetStatsElement]
+
+class DatasetInfo(DatasetInDBBase):
+    gt: Optional[DatasetAnnotation]
+    pred: Optional[DatasetAnnotation]
+
     keywords: Optional[Any]
     cks_count: Optional[Dict]
     cks_count_total: Optional[Dict]
-    ignored_keywords: Optional[str]
+
+    total_assets_count: Optional[int]
     negative_info: Optional[str]
 
     # make sure all the json dumped value is unpacked before returning to caller
-    @validator("keywords", "ignored_keywords", "negative_info")
+    @validator("keywords", "negative_info")
     def unpack(cls, v: Optional[Union[str, Dict]]) -> Dict[str, int]:
         if v is None:
             return {}
@@ -168,17 +179,8 @@ class DatasetStats(DatasetInDBBase):
         return v
 
 
-class DatasetStatsOut(Common):
-    result: DatasetStats
-
-
-class DatasetAnnotationHist(BaseModel):
-    anno_quality: List[Dict]
-    anno_area: List[Dict]
-    anno_area_ratio: List[Dict]
-
-    class Config:
-        orm_mode = True
+class DatasetInfoOut(Common):
+    result: DatasetInfo
 
 
 class DatasetHist(BaseModel):
@@ -187,47 +189,14 @@ class DatasetHist(BaseModel):
     asset_quality: List[Dict]
     asset_hw_ratio: List[Dict]
 
-    class Config:
-        orm_mode = True
 
-
-class DatasetAnnotation(BaseModel):
-    keywords: Dict[str, int]
-    negative_assets_count: int
-    tags_count_total: Dict  # box tags in first level
-    tags_count: Dict  # box tags in second level
-    hist: Union[DatasetAnnotationHist, Dict]
-    annos_count: int
-    ave_annos_count: float
-
-    class Config:
-        orm_mode = True
-
-
-class DatasetAnalysis(BaseModel):
-    group_name: str
-    version_num: int
-
-    cks_count: Dict
-    cks_count_total: Dict
-
-    total_assets_mbytes: int
-    total_assets_count: int
-
-    gt: Optional[DatasetAnnotation]
-    pred: Optional[DatasetAnnotation]
-    hist: Union[DatasetHist, Dict]
-
-    class Config:
-        orm_mode = True
-
-
-class DatasetsAnalyses(BaseModel):
-    datasets: List[DatasetAnalysis]
+class DatasetAnalysis(DatasetInfo):
+    total_assets_mbytes: Optional[int]
+    hist: Optional[DatasetHist]
 
 
 class DatasetsAnalysesOut(Common):
-    result: DatasetsAnalyses
+    result: List[DatasetAnalysis]
 
 
 class DatasetPaginationOut(Common):

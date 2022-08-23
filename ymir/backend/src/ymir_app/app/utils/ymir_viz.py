@@ -1,4 +1,4 @@
-from dataclasses import asdict, dataclass, InitVar
+from dataclasses import asdict, InitVar
 import json
 from typing import Any, Dict, List, Optional
 
@@ -20,7 +20,7 @@ from common_utils.labels import UserLabels
 from id_definition.error_codes import VizErrorCode, CMDResponseCode
 
 
-@dataclass
+@dataclasses.dataclass
 class DatasetAnnotation:
     keywords: Dict[str, int]
     class_ids_count: Dict[str, int]
@@ -29,48 +29,47 @@ class DatasetAnnotation:
     tags_count_total: Dict
     tags_count: Dict
 
-    hist: Dict
-
-    annos_count: int
-    ave_annos_count: float
+    hist: Optional[Dict]
+    annos_count: Optional[int]
+    ave_annos_count: Optional[float]
 
     @classmethod
-    def from_dict(cls, res: Dict, total_assets_count: int, user_labels: UserLabels) -> "DatasetAnnotation":
-        ave_annos_count = round(res["annos_count"] / total_assets_count, 2) if total_assets_count else 0
+    def from_dict(cls, data: Dict, total_assets_count: int, user_labels: UserLabels) -> "DatasetAnnotation":
+        ave_annos_count = round(data["annos_count"] / total_assets_count, 2) if total_assets_count else None
         keywords = {
-            user_labels.get_main_name(int(class_id)): count for class_id, count in res["class_ids_count"].items()
+            user_labels.get_main_name(int(class_id)): count for class_id, count in data["class_ids_count"].items()
         }
         return cls(
             keywords=keywords,
-            class_ids_count=res["class_ids_count"],
-            negative_assets_count=res["negative_assets_count"],
-            tags_count_total=res["tags_count_total"],
-            tags_count=res["tags_count"],
-            hist=res.get("annos_hist", {}),
-            annos_count=res["annos_count"],
+            class_ids_count=data["class_ids_count"],
+            negative_assets_count=data["negative_assets_count"],
+            tags_count_total=data["tags_count_total"],
+            tags_count=data["tags_count"],
+            hist=data.get("annos_hist"),
+            annos_count=data.get("annos_count"),
             ave_annos_count=ave_annos_count,
         )
 
 
-@dataclass
-class DatasetAnalysis:
-    keywords: Dict
-    keywords_updated: bool
+@dataclasses.dataclass
+class DatasetInfo:
+    gt: Optional[DatasetAnnotation]
+    pred: Optional[DatasetAnnotation]
 
     cks_count: Dict
     cks_count_total: Dict
 
-    total_assets_mbytes: int
+    keywords: Dict
+    new_types_added: Optional[bool]
+
     total_assets_count: int
 
-    gt: Optional[DatasetAnnotation]
-    pred: Optional[DatasetAnnotation]
-    hist: Dict
-
-    negative_info: Dict[str, int]
+    hist: Optional[Dict] = None
+    negative_info: Optional[Dict[str, int]] = None
+    total_assets_mbytes: Optional[int] = None
 
     @classmethod
-    def from_dict(cls, res: Dict, user_labels: UserLabels) -> "DatasetAnalysis":
+    def from_dict(cls, res: Dict, user_labels: UserLabels) -> "DatasetInfo":
         total_assets_count = res["total_assets_count"]
         gt = DatasetAnnotation.from_dict(res["gt"], total_assets_count, user_labels) if res.get("gt") else None
         pred = DatasetAnnotation.from_dict(res["pred"], total_assets_count, user_labels) if res.get("pred") else None
@@ -83,16 +82,16 @@ class DatasetAnalysis:
             "pred": pred.negative_assets_count if pred else 0,
         }
         return cls(
-            keywords=keywords,
-            keywords_updated=res["new_types_added"],  # delete personal keywords cache
-            cks_count=res["cks_count"],
-            cks_count_total=res["cks_count_total"],
-            total_assets_mbytes=res["total_assets_mbytes"],
-            total_assets_count=total_assets_count,
             gt=gt,
             pred=pred,
-            hist=res.get("assets_hist", {}),
+            cks_count=res["cks_count"],
+            cks_count_total=res["cks_count_total"],
+            keywords=keywords,
+            new_types_added=res.get("new_types_added"),
+            total_assets_count=total_assets_count,
+            hist=res.get("assets_hist"),
             negative_info=negative_info,
+            total_assets_mbytes=res.get("total_assets_mbytes"),
         )
 
 
@@ -216,65 +215,6 @@ class ViewerAssetsResponse:
         return cls(data["total_assets_count"], data["elements"], user_labels=user_labels)
 
 
-@dataclasses.dataclass
-class ViewerDatasetAnnotation:
-    class_ids_count: Dict[str, int]
-    negative_assets_count: int
-    tags_count_total: Dict
-    tags_count: Dict
-    keywords: Optional[Dict[str, int]] = None
-    user_labels: InitVar[UserLabels] = None
-
-    def __post_init__(self, user_labels: UserLabels) -> None:
-        self.keywords = {
-            user_labels.get_main_name(int(class_id)): count for class_id, count in self.class_ids_count.items()
-        }
-
-
-@dataclasses.dataclass
-class ViewerDatasetInfoResponse:
-    gt: Any
-    pred: Any
-    cks_count: Dict
-    cks_count_total: Dict
-    total_assets_count: int
-    new_types_added: Optional[bool]
-    keywords: Optional[Dict] = None
-    user_labels: InitVar[UserLabels] = None
-
-    def __post_init__(self, user_labels: UserLabels) -> None:
-        self.gt = ViewerDatasetAnnotation(
-            self.gt["class_ids_count"],
-            self.gt["negative_assets_count"],
-            self.gt["tags_count_total"],
-            self.gt["tags_count"],
-            user_labels=user_labels,
-        )
-        self.pred = ViewerDatasetAnnotation(
-            self.pred["class_ids_count"],
-            self.pred["negative_assets_count"],
-            self.pred["tags_count_total"],
-            self.pred["tags_count"],
-            user_labels=user_labels,
-        )
-        self.keywords = {
-            "gt": self.gt.keywords if self.gt else {},
-            "pred": self.pred.keywords if self.pred else {},
-        }
-
-    @classmethod
-    def from_dict(cls, data: Dict, user_labels: UserLabels) -> "ViewerDatasetInfoResponse":
-        return cls(
-            data["gt"],
-            data["pred"],
-            data["cks_count"],
-            data["cks_count_total"],
-            data["total_assets_count"],
-            data.get("new_types_added"),
-            user_labels=user_labels,
-        )
-
-
 class ViewerModelInfoResponse(BaseModel):
     hash: str
     map: float
@@ -373,8 +313,8 @@ class VizClient:
         url = f"{self._url_prefix}/branch/{dataset_hash}/dataset_meta_count"
         resp = self.get_resp(url)
         res = self.parse_resp(resp)
-        dataset_counts = ViewerDatasetInfoResponse.from_dict(res, user_labels=user_labels)
-        return asdict(dataset_counts)
+        dataset_info = DatasetInfo.from_dict(res, user_labels=user_labels)
+        return asdict(dataset_info)
 
     def get_dataset_analysis(
         self, dataset_hash: str, keyword_ids: Optional[List[int]] = None, require_hist: bool = False
@@ -390,7 +330,8 @@ class VizClient:
 
         resp = self.get_resp(url, params=params)
         res = self.parse_resp(resp)
-        return asdict(DatasetAnalysis.from_dict(res, self._user_labels))
+        dataset_info = DatasetInfo.from_dict(res, self._user_labels)
+        return asdict(dataset_info)
 
     def get_fast_evaluation(
         self,

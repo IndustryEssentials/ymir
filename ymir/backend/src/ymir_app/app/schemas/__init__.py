@@ -9,7 +9,7 @@ from .dataset import (
     DatasetsOut,
     DatasetsFusionParameter,
     DatasetsAnalysesOut,
-    DatasetStatsOut,
+    DatasetInfoOut,
     ImportStrategy,
 )
 from .dataset_group import (

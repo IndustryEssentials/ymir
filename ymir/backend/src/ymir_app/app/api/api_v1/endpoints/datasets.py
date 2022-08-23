@@ -33,16 +33,27 @@ from common_utils.labels import UserLabels
 router = APIRouter()
 
 
-@router.get("/batch", response_model=schemas.DatasetsOut)
-def batch_get_datasets(
+@router.get("/batch", response_model=schemas.DatasetsAnalysesOut)
+def get_datasets_analysis(
     db: Session = Depends(deps.get_db),
+    viz_client: VizClient = Depends(deps.get_viz_client),
+    project_id: int = Query(None),
     dataset_ids: str = Query(None, example="1,2,3", alias="ids"),
+    verbose_info: bool = Query(False, alias="verbose"),
+    current_user: models.User = Depends(deps.get_current_active_user),
+    user_labels: UserLabels = Depends(deps.get_user_labels),
 ) -> Any:
     ids = [int(i) for i in dataset_ids.split(",")]
-    datasets = crud.dataset.get_multi_by_ids(db, ids=ids)
-    if not datasets:
-        raise DatasetNotFound()
-    return {"result": datasets}
+    datasets = ensure_datasets_are_ready(db, dataset_ids=ids)
+
+    datasets_info = [schemas.dataset.DatasetInDB.from_orm(dataset).dict() for dataset in datasets]
+
+    if verbose_info:
+        viz_client.initialize(user_id=current_user.id, project_id=project_id, user_labels=user_labels)
+        for dataset in datasets_info:
+            dataset_analysis = viz_client.get_dataset_analysis(dataset.hash, require_hist=True)
+            dataset.update(dataset_analysis)
+    return {"result": datasets_info}
 
 
 @router.post("/batch", response_model=schemas.DatasetsOut)
@@ -249,42 +260,16 @@ def delete_dataset(
     return {"result": dataset}
 
 
-@router.get("/analysis", response_model=schemas.DatasetsAnalysesOut)
-def get_datasets_analysis(
-    db: Session = Depends(deps.get_db),
-    viz_client: VizClient = Depends(deps.get_viz_client),
-    project_id: int = Query(None),
-    keywords_str: str = Query(None, alias="keywords"),
-    dataset_ids: str = Query(None, example="1,2,3", alias="ids"),
-    current_user: models.User = Depends(deps.get_current_active_user),
-    user_labels: UserLabels = Depends(deps.get_user_labels),
-) -> Any:
-    ids = [int(i) for i in dataset_ids.split(",")]
-    datasets = ensure_datasets_are_ready(db, dataset_ids=ids)
-
-    keyword_ids: Optional[List[int]] = None
-    if keywords_str:
-        keywords = keywords_str.split(",")
-        keyword_ids = user_labels.get_class_ids(keywords)
-
-    viz_client.initialize(user_id=current_user.id, project_id=project_id, user_labels=user_labels)
-    results = []
-    for dataset in datasets:
-        res = viz_client.get_dataset_analysis(dataset.hash, keyword_ids, require_hist=True)
-        res.update({"group_name": dataset.group_name, "version_num": dataset.version_num})
-        results.append(res)
-    return {"result": {"datasets": results}}
-
-
 @router.get(
     "/{dataset_id}",
-    response_model=schemas.DatasetStatsOut,
+    response_model=schemas.DatasetInfoOut,
     responses={404: {"description": "Dataset Not Found"}},
 )
 def get_dataset(
     db: Session = Depends(deps.get_db),
     dataset_id: int = Path(..., example="12"),
-    verbose_info: bool = Query(False, alias="v"),
+    keywords_for_negative_info: str = Query(None, alias="keywords"),
+    verbose_info: bool = Query(False, alias="verbose"),
     current_user: models.User = Depends(deps.get_current_active_user),
     viz_client: VizClient = Depends(deps.get_viz_client),
     user_labels: UserLabels = Depends(deps.get_user_labels),
@@ -296,14 +281,26 @@ def get_dataset(
     if not dataset:
         raise DatasetNotFound()
 
+    keyword_ids: Optional[List[int]] = None
+    if keywords_for_negative_info:
+        keywords = keywords_for_negative_info.split(",")
+        keyword_ids = user_labels.get_class_ids(keywords)
+
     dataset_info = schemas.dataset.DatasetInDB.from_orm(dataset).dict()
-    if verbose_info:
+    if verbose_info or keyword_ids:
         viz_client.initialize(
             user_id=current_user.id,
             project_id=dataset.project_id,
             user_labels=user_labels,
         )
-        dataset_stats = viz_client.get_dataset_info(dataset_hash=dataset.hash)  # type: ignore
+        if verbose_info:
+            # get cks and tags
+            dataset_stats = viz_client.get_dataset_info(dataset_hash=dataset.hash)
+        else:
+            # get negative info based on given keywords
+            dataset_stats = viz_client.get_dataset_analysis(
+                dataset_hash=dataset.hash, keyword_ids=keyword_ids, require_hist=False
+            )
         dataset_info.update(dataset_stats)
 
     return {"result": dataset_info}
