@@ -339,7 +339,7 @@ export default {
       })
     },
     *getNegativeKeywords({ payload }, { put, call, select }) {
-      const pid = yield select(({ project: { current } }) => current.id)
+      const pid = yield select(({ project: { current } }) => current?.id)
       const { code, result } = yield call(getNegativeKeywords, { projectId: pid, ...payload })
       if (code === 0) {
         const { gt, pred, total_assets_count } = result
