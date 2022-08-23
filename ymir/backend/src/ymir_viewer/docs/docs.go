@@ -280,6 +280,12 @@ const docTemplate = `{
                         "name": "candidate_dataset_ids",
                         "in": "query",
                         "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "dataset_ids to be corroded",
+                        "name": "corrodee_dataset_ids",
+                        "in": "query"
                     }
                 ],
                 "responses": {

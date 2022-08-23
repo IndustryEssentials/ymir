@@ -237,12 +237,13 @@ func TestGetDatasetDupHandler(t *testing.T) {
 	mockLoader.On("LoadSingleMirData", &mirRepo1, constants.MirfileMetadatas).Return(&mockMirMetadatas).Once()
 
 	expectedResult := &constants.QueryDatasetDupResult{
-		Duplication: expectedDup,
-		TotalCount:  map[string]int64{"a": expectedCount0, "b": expectedCount1},
+		Duplication:   expectedDup,
+		TotalCount:    map[string]int64{"a": expectedCount0, "b": expectedCount1},
+		ResidualCount: map[string]int64{},
 	}
 
 	handler := &ViewerHandler{mongoServer: &mockMongoServer, mirLoader: &mockLoader}
-	resultData := handler.GetDatasetDupHandler(&mirRepo0, &mirRepo1)
+	resultData := handler.GetDatasetDupHandler([]*constants.MirRepo{&mirRepo0, &mirRepo1}, []*constants.MirRepo{})
 	assert.Equal(t, expectedResult, resultData)
 }
 
