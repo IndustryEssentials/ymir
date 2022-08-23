@@ -58,7 +58,7 @@ function Train({ allDatasets, datasetCache, ...func }) {
   const [projectDirty, setProjectDirty] = useState(false)
   const [live, setLiveCode] = useState(false)
   const [openpai, setOpenpai] = useState(false)
-  const checkDuplicated = useDuplicatedCheck(duplicatedCheckedOk)
+  const checkDuplicated = useDuplicatedCheck(submit)
   const [sys, getSysInfo] = useFetch('common/getSysInfo', {})
   const selectOpenpai = Form.useWatch('openpai', form)
 
@@ -113,16 +113,6 @@ function Train({ allDatasets, datasetCache, ...func }) {
 
   useEffect(() => (trainDataset && !iterationId) && setAllKeywords(), [trainDataset])
 
-  // useEffect(() => {
-  //   if (duplicationChecked) {
-  //     const allValidation = duplicated === validationDataset?.assetCount
-  //     const allTrain = duplicated === trainDataset?.assetCount
-
-  //     setStrategy(allValidation && !allTrain ? 2 : 1)
-  //     setAllDulplicated(allValidation && allTrain)
-  //   }
-  // }, [duplicationChecked, duplicated])
-
   async function fetchProject() {
     const project = await func.getProject(pid)
     project && setProject(project)
@@ -160,7 +150,7 @@ function Train({ allDatasets, datasetCache, ...func }) {
   const onFinish = () => checkDuplicated(trainDataset, validationDataset)
 
   async function submit (strategy) {
-    console.log(' submit strategy:', strategy)
+    const values = form.getFieldsValue()
     const config = {
       ...values.hyperparam?.reduce(
         (prev, { key, value }) => key !== '' && value !== '' ? { ...prev, [key]: value } : prev,
@@ -199,11 +189,6 @@ function Train({ allDatasets, datasetCache, ...func }) {
 
   function onFinishFailed(errorInfo) {
     console.log("Failed:", errorInfo)
-  }
-
-  function duplicatedCheckedOk(strategy) {
-    console.log('duplicatedCheckedOk strategy:', strategy)
-    submit(strategy)
   }
 
   const matchKeywords = dataset => dataset.keywords.some(kw => selectedKeywords.includes(kw))
@@ -299,7 +284,6 @@ function Train({ allDatasets, datasetCache, ...func }) {
                 filters={validationSetFilters}
                 placeholder={t('task.train.form.test.datasets.placeholder')}
                 onChange={validationSetChange}
-                extra={<Button disabled={!trainSet || !testSet} type="primary" onClick={checkDuplicated}>{t('task.train.action.duplicated')}</Button>}
               />
             </Form.Item>
             <Form.Item

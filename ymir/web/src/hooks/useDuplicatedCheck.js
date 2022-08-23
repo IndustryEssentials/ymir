@@ -1,8 +1,9 @@
-import { useEffect, useState } from 'react'
-import { Modal } from '@antd'
+import { useCallback, useEffect, useState } from 'react'
+import { Modal, Radio } from 'antd'
 
 import t from '@/utils/t'
 import { MERGESTRATEGY } from '@/constants/dataset'
+import useFetch from '@/hooks/useFetch'
 
 const { confirm, error } = Modal
 
@@ -11,65 +12,64 @@ const options = [
   { value: MERGESTRATEGY.GUEST, label: 'task.train.duplicated.option.validation' }
 ]
 
+const ContentRender = ({ duplicated, strategy, disabled, onChange = () => { } }) => {
+  const [s, setS] = useState(strategy)
+  useEffect(() => onChange(s), [s])
+  return <div>
+    <span>{t('task.train.duplicated.tip', { duplicated })}</span>
+    <Radio.Group
+      value={s}
+      onChange={({ target: { value } }) => { setS(value) }}
+      options={options.map(opt => ({
+        ...opt,
+        disabled: disabled === opt.value,
+        label: <p>{t(opt.label)}</p>
+      }))}
+    />
+  </div>
+}
+
 const useDuplicatedCheck = (onChange = () => { }) => {
-  const [checked, setChecked] = useState(false)
-  const [duplicated, checkDuplication] = useFetch('dataset/checkDuplication', 0)
-  const [trainset, setTrainset] = useState({})
-  const [validationset, setValidationset] = useState({})
-  const [strategy, setStrategy] = useState(MERGESTRATEGY.NORMAL)
+  const [_, checkDuplication] = useFetch('dataset/checkDuplication', 0)
+  let strategy = MERGESTRATEGY.NORMAL
 
-  useEffect(() => {
-    if (trainset.id && validationset.id) {
-      checkDuplication({ trainSet: trainset.id, validationSet: validationset.id })
-      setChecked(true)
+  const ok = () => {
+    onChange(strategy)
+  }
+
+  const check = async (trainDataset, validationDataset) => {
+    const result = await checkDuplication({ trainSet: trainDataset?.id, validationSet: validationDataset?.id })
+    if (result) {
+      checkHandle(result, trainDataset, validationDataset)
     }
-  }, [trainset, validationset])
+  }
 
-  useEffect(() => {
-    if (checked && !duplicated) {
+  const checkHandle = (duplicated, trainDataset, validationDataset) => {
+    if (!duplicated) {
       return ok()
     }
-    const allValidation = duplicated === trainset.assetCount
-    const allTrain = duplicated === validationset.assetCount
+    const allValidation = duplicated === trainDataset.assetCount
+    const allTrain = duplicated === validationDataset.assetCount
     const allDuplicated = allValidation && allTrain
     if (allDuplicated) {
       return error({
         content: t('task.train.action.duplicated.all'),
-        onOk: cancel,
-        onCancel: cancel,
       })
     }
+    PopConfirm(duplicated, allValidation, allTrain)
+  }
+
+  const PopConfirm = (duplicated, allValidation, allTrain) => {
+
+    const disabled = allValidation ? MERGESTRATEGY.GUEST : (allTrain ? MERGESTRATEGY.HOST : null)
+    const value = allValidation ? MERGESTRATEGY.HOST : (allTrain ? MERGESTRATEGY.GUEST : strategy)
+    strategy = value
     confirm({
-      visible: checked,
-      content: renderContent(duplicated, allTrain, allValidation),
+      visible: true,
+      content: <ContentRender duplicated={duplicated} disabled={disabled} strategy={value} onChange={value => (strategy = value)} />,
       onOk: ok,
-      onCancel: cancel,
+      destroyOnClose: true,
     })
-  }, [duplicated, checked])
-
-  const check = (trainDataset, validationDataset) => {
-    setTrainset(trainDataset)
-    setValidationset(validationDataset)
-  }
-
-  function renderContent(duplicated, allTrain, allValidation) {
-    const disabled = allValidation ? MERGESTRATEGY.HOST : (allTrain ? MERGESTRATEGY.GUEST : null)
-    return <div>
-      <span>{t('task.train.duplicated.tip', { duplicated })}</span>
-      <Radio.Group
-        value={strategy}
-        onChange={({ target: { value } }) => setStrategy(value)}
-        options={options.map(opt => ({ ...opt, disabled: disabled === opt.value, label: <p>{t(opt.label)}</p> }))}
-      />
-    </div>
-  }
-
-  function ok() {
-    onChange(strategy)
-  }
-
-  function cancel() {
-    setChecked(false)
   }
 
   return check
