@@ -4,6 +4,7 @@ datasources:
   - name: Prometheus
     type: prometheus
     access: proxy
+    uid: ymir_metrics_prometheus
     orgId: 1
     url: http://prometheus:9090
     basicAuth: false
