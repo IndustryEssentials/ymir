@@ -72,7 +72,7 @@
             "dashes": false,
             "datasource": {
                 "type": "loki",
-                "uid": "zw9hDGZ4z"
+                "uid": "ymir_metrics_loki"
             },
             "fieldConfig": {
                 "defaults": {
@@ -118,7 +118,7 @@
                 {
                     "datasource": {
                         "type": "loki",
-                        "uid": "zw9hDGZ4z"
+                        "uid": "ymir_metrics_loki"
                     },
                     "editorMode": "code",
                     "expr": "sum(count_over_time({filename=\"$filename\"} |= \"$search\" [$__interval]))",
@@ -160,7 +160,7 @@
         {
             "datasource": {
                 "type": "loki",
-                "uid": "zw9hDGZ4z"
+                "uid": "ymir_metrics_loki"
             },
             "gridPos": {
                 "h": 22,
@@ -184,7 +184,7 @@
                 {
                     "datasource": {
                         "type": "loki",
-                        "uid": "zw9hDGZ4z"
+                        "uid": "ymir_metrics_loki"
                     },
                     "editorMode": "code",
                     "expr": "{filename=\"$filename\"} |= \"$search\"",
@@ -709,12 +709,13 @@
                         "type": "prometheus",
                         "uid": "PBFA97CFB590B2093"
                     },
-                    "expr": "sum by(status, handler, instance) (http_requests_total)",
+                    "editorMode": "code",
+                    "expr": "sum by(status_code, path, job) (starlette_requests_total)",
                     "format": "time_series",
                     "instant": false,
                     "interval": "",
                     "intervalFactor": 1,
-                    "legendFormat": "{{instance}}-{{handler}}-{{status}}",
+                    "legendFormat": "{{job}}-{{path}}-{{status_code}}",
                     "refId": "A"
                 }
             ],
@@ -777,9 +778,11 @@
                         "type": "prometheus",
                         "uid": "PBFA97CFB590B2093"
                     },
-                    "expr": "histogram_quantile(0.95, sum (rate(http_request_duration_seconds_bucket[5m])) by (le, instance))",
+                    "editorMode": "code",
+                    "expr": "histogram_quantile(0.95, sum (rate(starlette_request_duration_seconds_bucket[5m])) by (le, instance))",
                     "interval": "",
                     "legendFormat": "p95",
+                    "range": true,
                     "refId": "A"
                 },
                 {
@@ -787,9 +790,11 @@
                         "type": "prometheus",
                         "uid": "PBFA97CFB590B2093"
                     },
-                    "expr": "histogram_quantile(0.99, sum (rate(http_request_duration_seconds_bucket[5m])) by (le, instance))",
+                    "editorMode": "code",
+                    "expr": "histogram_quantile(0.99, sum (rate(starlette_request_duration_seconds_bucket[5m])) by (le, instance))",
                     "interval": "",
                     "legendFormat": "p99",
+                    "range": true,
                     "refId": "B"
                 },
                 {
@@ -797,9 +802,11 @@
                         "type": "prometheus",
                         "uid": "PBFA97CFB590B2093"
                     },
-                    "expr": "sum (http_request_duration_seconds_count) / sum(http_request_duration_seconds_sum)",
+                    "editorMode": "code",
+                    "expr": "sum (starlette_request_duration_seconds_count) / sum(starlette_request_duration_seconds_sum)",
                     "interval": "",
                     "legendFormat": "avg",
+                    "range": true,
                     "refId": "C"
                 }
             ],
@@ -832,6 +839,101 @@
             "yaxis": {
                 "align": false
             }
+        },
+        {
+            "datasource": {
+                "type": "prometheus",
+                "uid": "PBFA97CFB590B2093"
+            },
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "palette-classic"
+                    },
+                    "custom": {
+                        "axisCenteredZero": false,
+                        "axisColorMode": "text",
+                        "axisLabel": "",
+                        "axisPlacement": "auto",
+                        "barAlignment": 0,
+                        "drawStyle": "line",
+                        "fillOpacity": 0,
+                        "gradientMode": "none",
+                        "hideFrom": {
+                            "legend": false,
+                            "tooltip": false,
+                            "viz": false
+                        },
+                        "lineInterpolation": "linear",
+                        "lineWidth": 1,
+                        "pointSize": 5,
+                        "scaleDistribution": {
+                            "type": "linear"
+                        },
+                        "showPoints": "auto",
+                        "spanNulls": false,
+                        "stacking": {
+                            "group": "A",
+                            "mode": "none"
+                        },
+                        "thresholdsStyle": {
+                            "mode": "off"
+                        }
+                    },
+                    "mappings": [],
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "green",
+                                "value": null
+                            },
+                            {
+                                "color": "red",
+                                "value": 80
+                            }
+                        ]
+                    },
+                    "unit": "s"
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 4,
+                "w": 8,
+                "x": 16,
+                "y": 36
+            },
+            "id": 37,
+            "options": {
+                "legend": {
+                    "calcs": [],
+                    "displayMode": "list",
+                    "placement": "bottom",
+                    "showLegend": true
+                },
+                "tooltip": {
+                    "mode": "single",
+                    "sort": "none"
+                }
+            },
+            "pluginVersion": "9.1.0",
+            "targets": [
+                {
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "PBFA97CFB590B2093"
+                    },
+                    "editorMode": "code",
+                    "expr": "histogram_quantile(1, sum (rate(starlette_request_duration_seconds_bucket[5m])) by (le, instance, path, status_code))",
+                    "interval": "",
+                    "legendFormat": "{{ instance }}-{{path}}-{{status_code}}",
+                    "range": true,
+                    "refId": "A"
+                }
+            ],
+            "title": "Slow Response",
+            "type": "timeseries"
         },
         {
             "collapsed": false,
@@ -2445,7 +2547,7 @@
                 },
                 "datasource": {
                     "type": "loki",
-                    "uid": "zw9hDGZ4z"
+                    "uid": "ymir_metrics_loki"
                 },
                 "definition": "label_values(filename)",
                 "hide": 0,

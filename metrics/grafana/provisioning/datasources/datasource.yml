@@ -12,5 +12,6 @@ datasources:
   - name: Loki
     type: loki
     access: proxy
+    uid: ymir_metrics_loki
     orgId: 1
     url: http://loki:3100
