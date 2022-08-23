@@ -45,7 +45,7 @@ class DatasetAnnotation:
             negative_assets_count=data["negative_assets_count"],
             tags_count_total=data["tags_count_total"],
             tags_count=data["tags_count"],
-            hist=data.get("annos_hist"),
+            hist=data.get("annos_hist") or None,
             annos_count=data.get("annos_count"),
             ave_annos_count=ave_annos_count,
         )

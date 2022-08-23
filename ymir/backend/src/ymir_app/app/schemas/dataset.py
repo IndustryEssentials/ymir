@@ -37,8 +37,7 @@ class DatasetBase(BaseModel):
     # task_id haven't created yet
     # user_id can be parsed from token
     keywords: Optional[str]
-    ignored_keywords: Optional[str]
-    negative_info: Optional[str]
+    negative_info: Optional[Union[str, Dict]]
     asset_count: Optional[int]
     keyword_count: Optional[int]
 
@@ -86,7 +85,6 @@ class DatasetUpdate(BaseModel):
     description: Optional[str]
     result_state: Optional[ResultState]
     keywords: Optional[str]
-    ignored_keywords: Optional[str]
     negative_info: Optional[str]
     asset_count: Optional[int]
     keyword_count: Optional[int]
@@ -113,11 +111,10 @@ class DatasetInDB(DatasetInDBBase):
 # Properties to return to caller
 class Dataset(DatasetInDBBase):
     keywords: Optional[str]
-    ignored_keywords: Optional[str]
     negative_info: Optional[str]
 
     # make sure all the json dumped value is unpacked before returning to caller
-    @validator("keywords", "ignored_keywords", "negative_info")
+    @validator("keywords", "negative_info")
     def unpack(cls, v: Optional[str]) -> Dict[str, int]:
         if v is None:
             return {}
@@ -167,7 +164,7 @@ class DatasetInfo(DatasetInDBBase):
     cks_count_total: Optional[Dict]
 
     total_assets_count: Optional[int]
-    negative_info: Optional[str]
+    negative_info: Optional[Union[str, Dict]]
 
     # make sure all the json dumped value is unpacked before returning to caller
     @validator("keywords", "negative_info")
