@@ -117,34 +117,46 @@ class TestControllerRequest:
 class TestControllerClient:
     def test_send_with_grpc_error(self, mocker):
         channel_str = random_lower_string()
-        mock_grpc = mocker.Mock()
-        mock_channel = mocker.Mock()
-        mock_mir_grpc = mocker.Mock()
-        mock_stub = mocker.Mock()
 
+        mock_grpc = mocker.Mock()
         mocker.patch.object(m, "grpc", return_value=mock_grpc)
+
+        mock_channel = mocker.Mock()
         mock_grpc.insecure_channel.return_value = mock_channel
+
+        mock_mir_grpc = mocker.Mock()
         mocker.patch.object(m, "mir_grpc", return_value=mock_mir_grpc)
+
+        mock_stub = mocker.Mock()
         mock_mir_grpc.mir_controller_serviceStub.return_value = mock_stub
 
+        mock_resp = mocker.Mock()
+        mock_stub.data_manage_request.return_value = mock_resp
+        mock_resp.code = -1
+
         cc = m.ControllerClient(channel_str)
-        mock_stub.data_manage_request.return_value = mocker.Mock(code=-1)
         req = mocker.Mock()
         with pytest.raises(ValueError):
             cc.send(req)
 
     def test_send(self, mocker):
         channel_str = random_lower_string()
-        mock_grpc = mocker.Mock()
-        mock_channel = mocker.Mock()
-        mock_mir_grpc = mocker.Mock()
-        mock_stub = mocker.Mock()
 
+        mock_grpc = mocker.Mock()
         mocker.patch.object(m, "grpc", return_value=mock_grpc)
+
+        mock_channel = mocker.Mock()
         mock_grpc.insecure_channel.return_value = mock_channel
+
+        mock_mir_grpc = mocker.Mock()
         mocker.patch.object(m, "mir_grpc", return_value=mock_mir_grpc)
+
+        mock_stub = mocker.Mock()
         mock_mir_grpc.mir_controller_serviceStub.return_value = mock_stub
-        mock_stub.data_manage_request.return_value = mocker.Mock(code=0)
+
+        mock_resp = mocker.Mock()
+        mock_stub.data_manage_request.return_value = mock_resp
+        mock_resp.code = 0
 
         cc = m.ControllerClient(channel_str)
         req = mocker.Mock()
