@@ -219,6 +219,7 @@ class ViewerAssetsResponse:
 @dataclasses.dataclass
 class ViewerDatasetAnnotation:
     class_ids_count: Dict[str, int]
+    negative_assets_count: int
     tags_count_total: Dict
     tags_count: Dict
     keywords: Optional[Dict[str, int]] = None
@@ -243,10 +244,15 @@ class ViewerDatasetInfoResponse:
 
     def __post_init__(self, user_labels: UserLabels) -> None:
         self.gt = ViewerDatasetAnnotation(
-            self.gt["class_ids_count"], self.gt["tags_count_total"], self.gt["tags_count"], user_labels=user_labels
+            self.gt["class_ids_count"],
+            self.gt["negative_assets_count"],
+            self.gt["tags_count_total"],
+            self.gt["tags_count"],
+            user_labels=user_labels,
         )
         self.pred = ViewerDatasetAnnotation(
             self.pred["class_ids_count"],
+            self.pred["negative_assets_count"],
             self.pred["tags_count_total"],
             self.pred["tags_count"],
             user_labels=user_labels,

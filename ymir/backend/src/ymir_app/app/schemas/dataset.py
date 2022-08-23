@@ -152,7 +152,7 @@ class DatasetStats(DatasetInDBBase):
     total_assets_count: Optional[int]
     gt: Optional[DatasetStatsElement]
     pred: Optional[DatasetStatsElement]
-    keywords: Optional[str]
+    keywords: Optional[Any]
     cks_count: Optional[Dict]
     cks_count_total: Optional[Dict]
     ignored_keywords: Optional[str]
