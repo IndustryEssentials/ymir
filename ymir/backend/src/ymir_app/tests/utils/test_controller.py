@@ -126,12 +126,9 @@ class TestControllerClient:
         mock_grpc.insecure_channel.return_value = mock_channel
         mocker.patch.object(m, "mir_grpc", return_value=mock_mir_grpc)
         mock_mir_grpc.mir_controller_serviceStub.return_value = mock_stub
-        mock_stub.data_manage_request.return_value = mocker.Mock(code=0)
 
         cc = m.ControllerClient(channel_str)
-        mock_stub = mocker.Mock()
         mock_stub.data_manage_request.return_value = mocker.Mock(code=-1)
-        cc.stub = mock_stub
         req = mocker.Mock()
         with pytest.raises(ValueError):
             cc.send(req)
