@@ -3,9 +3,9 @@ version: "3.3"
 services:
   prometheus:
     image: prom/prometheus:v2.17.1
-    container_name: prometheus
     ports:
       - 9090:9090
+    user: "0:0"
     command:
       - '--config.file=/etc/prometheus/prometheus.yml'
       - '--storage.tsdb.path=/prometheus'
@@ -13,18 +13,39 @@ services:
       - '--web.console.templates=/etc/prometheus/consoles'
       - '--web.enable-lifecycle'
     volumes:
-      - ./metrics/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./metrics/config/prometheus.yml:/etc/prometheus/prometheus.yml:ro
       - ${YMIR_PATH}/metrics/prometheus:/prometheus
     depends_on:
       - cadvisor
+    healthcheck:
+      test: wget -q --tries=1 -O- http://localhost:9090/-/healthy | grep -q "Healthy"
+      interval: 60s
+      timeout: 6s
+      retries: 3
+      start_period: 30s
+    networks:
+      - ymirnetwork
+
+
+  blackbox:
+    image: prom/blackbox-exporter:v0.22.0
+    volumes:
+      - ./metrics/config/blackbox.yml:/etc/blackbox_exporter/config.yml:ro
+    ports:
+      - 9115:9115
+    healthcheck:
+      test: wget -q --tries=1 -O- http://localhost:9115/-/healthy | grep -q "Healthy"
+      interval: 60s
+      timeout: 6s
+      retries: 3
+      start_period: 30s
     networks:
       - ymirnetwork
 
   cadvisor:
     image: gcr.io/cadvisor/cadvisor:v0.44.1-test
-    container_name: cadvisor
     ports:
-      - 8080:8080
+      - 8880:8080
     volumes:
       - /:/rootfs:ro
       - /var/run:/var/run:rw
@@ -32,12 +53,17 @@ services:
       - /var/lib/docker/:/var/lib/docker:ro
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - /dev/disk/:/dev/disk:ro
+    healthcheck:
+      test: wget -q --tries=1 -O- http://localhost:8080/healthz | grep -q "ok"
+      interval: 60s
+      timeout: 6s
+      retries: 3
+      start_period: 30s
     networks:
       - ymirnetwork
 
   nodeexporter:
     image: prom/node-exporter:v1.3.1
-    container_name: nodeexporter
     restart: unless-stopped
     volumes:
       - /proc:/host/proc:ro
@@ -50,20 +76,70 @@ services:
       - '--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)'
     ports:
       - 9100:9100
+    healthcheck:
+      test: wget -q --tries=1 -O- http://localhost:9100/health | grep -q "Node Exporter"
+      interval: 60s
+      timeout: 6s
+      retries: 3
+      start_period: 30s
+    networks:
+      - ymirnetwork
+
+  loki:
+    image: grafana/loki:main-87e20d9
+    volumes:
+      - ${YMIR_PATH}/metrics/loki/:/etc/loki/
+      - ./metrics/config/loki.yml:/etc/loki/loki.yml:ro
+    command: -config.file=/etc/loki/loki.yml
+    restart: on-failure:10
+    ports:
+      - 3100:3100
+    healthcheck:
+      test: wget -q --tries=1 -O- http://localhost:3100/ready | grep -q "ready"
+      interval: 60s
+      timeout: 6s
+      retries: 3
+      start_period: 30s
+    networks:
+      - ymirnetwork
+
+  promtail:
+    image: grafana/promtail:main-87e20d9
+    volumes:
+      - ${YMIR_PATH}/metrics/promtail:/etc/promtail/
+      - ${YMIR_PATH}/ymir-data/logs:/var/log/:ro
+      - ./metrics/config/promtail.yml:/etc/promtail/promtail.yml:ro
+    command: -config.file=/etc/promtail/promtail.yml
+    restart: on-failure:10
+    ports:
+      - 9080:9080
+    healthcheck:
+      test: promtails --version
+      interval: 60s
+      timeout: 6s
+      retries: 3
+      start_period: 30s
     networks:
       - ymirnetwork
 
   grafana:
     image: grafana/grafana:9.1.0
-    container_name: monitoring_grafana
+    environment:
+      - "GF_INSTALL_PLUGINS=grafana-piechart-panel"
     restart: unless-stopped
+    user: "0:0"
     ports:
-      - 3000:3000
+      - 13000:3000
     depends_on:
       - prometheus
     volumes:
       - ${YMIR_PATH}/metrics/grafana:/var/lib/grafana
       - ./metrics/grafana/provisioning:/etc/grafana/provisioning
+    healthcheck:
+      test: wget -q --tries=1 -O- http://localhost:3000/api/health | grep -q "ok"
+      interval: 60s
+      timeout: 6s
+      retries: 3
+      start_period: 30s
     networks:
       - ymirnetwork
-

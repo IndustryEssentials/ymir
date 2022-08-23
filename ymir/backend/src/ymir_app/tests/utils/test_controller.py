@@ -115,35 +115,36 @@ class TestControllerRequest:
 
 
 class TestControllerClient:
-    def test_close_controller(self, mocker):
-        channel_str = random_lower_string()
-        mock_grpc = mocker.Mock()
-        mocker.patch.object(m, "grpc", return_value=mock_grpc)
-        cc = m.ControllerClient(channel_str)
-        cc.channel = mock_channel = mocker.Mock()
-        cc.close()
-        mock_channel.close.assert_called()
-
     def test_send_with_grpc_error(self, mocker):
         channel_str = random_lower_string()
+
+        mock_grpc = mocker.Mock()
+        mocker.patch.object(m, "grpc", return_value=mock_grpc)
+
+        mock_mir_grpc = mocker.Mock()
+        mock_mir_grpc.mir_controller_serviceStub().data_manage_request.return_value = mocker.Mock(code=-1)
+        mocker.patch.object(m, "mir_grpc", mock_mir_grpc)
+
         cc = m.ControllerClient(channel_str)
-        mock_stub = mocker.Mock()
-        mock_stub.data_manage_request.return_value = mocker.Mock(code=-1)
-        cc.stub = mock_stub
         req = mocker.Mock()
         with pytest.raises(ValueError):
             cc.send(req)
 
     def test_send(self, mocker):
         channel_str = random_lower_string()
+
+        mock_grpc = mocker.Mock()
+        mocker.patch.object(m, "grpc", return_value=mock_grpc)
+
+        mock_mir_grpc = mocker.Mock()
+        mock_mir_grpc.mir_controller_serviceStub().data_manage_request.return_value = mocker.Mock(code=0)
+        mocker.patch.object(m, "mir_grpc", mock_mir_grpc)
+
         cc = m.ControllerClient(channel_str)
-        mock_stub = mocker.Mock()
-        mock_stub.data_manage_request.return_value = mocker.Mock(code=0)
-        cc.stub = mock_stub
         req = mocker.Mock()
-        mocker.patch.object(m, "json_format")
+        mocker.patch.object(m, "MessageToDict")
+        mocker.patch.object(m, "MessageToString")
         cc.send(req)
-        mock_stub.data_manage_request.assert_called()
 
     def test_inference(self, mocker):
         user_id = random.randint(1000, 9000)

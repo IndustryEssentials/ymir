@@ -1,6 +1,6 @@
 YmirSandbox: ""
 
-ViewerHost: "127.0.0.1"
+ViewerHost: "0.0.0.0"
 ViewerPort: 9527
 # ViewerURI has higher priority than above fields, if set.
 ViewerURI: ""
