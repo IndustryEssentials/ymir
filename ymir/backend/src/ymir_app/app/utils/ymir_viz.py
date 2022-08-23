@@ -219,6 +219,8 @@ class ViewerAssetsResponse:
 @dataclasses.dataclass
 class ViewerDatasetAnnotation:
     class_ids_count: Dict[str, int]
+    tags_count_total: Dict
+    tags_count: Dict
     keywords: Optional[Dict[str, int]] = None
     user_labels: InitVar[UserLabels] = None
 
@@ -232,14 +234,23 @@ class ViewerDatasetAnnotation:
 class ViewerDatasetInfoResponse:
     gt: Any
     pred: Any
+    cks_count: Dict
+    cks_count_total: Dict
     total_assets_count: int
     new_types_added: Optional[bool]
     keywords: Optional[Dict] = None
     user_labels: InitVar[UserLabels] = None
 
     def __post_init__(self, user_labels: UserLabels) -> None:
-        self.gt = ViewerDatasetAnnotation(self.gt["class_ids_count"], user_labels=user_labels)
-        self.pred = ViewerDatasetAnnotation(self.pred["class_ids_count"], user_labels=user_labels)
+        self.gt = ViewerDatasetAnnotation(
+            self.gt["class_ids_count"], self.gt["tags_count_total"], self.gt["tags_count"], user_labels=user_labels
+        )
+        self.pred = ViewerDatasetAnnotation(
+            self.pred["class_ids_count"],
+            self.pred["tags_count_total"],
+            self.pred["tags_count"],
+            user_labels=user_labels,
+        )
         self.keywords = {
             "gt": self.gt.keywords if self.gt else {},
             "pred": self.pred.keywords if self.pred else {},
@@ -248,7 +259,13 @@ class ViewerDatasetInfoResponse:
     @classmethod
     def from_dict(cls, data: Dict, user_labels: UserLabels) -> "ViewerDatasetInfoResponse":
         return cls(
-            data["gt"], data["pred"], data["total_assets_count"], data.get("new_types_added"), user_labels=user_labels
+            data["gt"],
+            data["pred"],
+            data["cks_count"],
+            data["cks_count_total"],
+            data["total_assets_count"],
+            data.get("new_types_added"),
+            user_labels=user_labels,
         )
 
 

@@ -144,6 +144,8 @@ class DatasetsOut(Common):
 class DatasetStatsElement(BaseModel):
     keywords: Dict[str, int]
     negative_assets_count: int
+    tags_count_total: Dict  # box tags in first level
+    tags_count: Dict  # box tags in second level
 
 
 class DatasetStats(DatasetInDBBase):
@@ -151,6 +153,8 @@ class DatasetStats(DatasetInDBBase):
     gt: Optional[DatasetStatsElement]
     pred: Optional[DatasetStatsElement]
     keywords: Optional[str]
+    cks_count: Optional[Dict]
+    cks_count_total: Optional[Dict]
     ignored_keywords: Optional[str]
     negative_info: Optional[str]
 
