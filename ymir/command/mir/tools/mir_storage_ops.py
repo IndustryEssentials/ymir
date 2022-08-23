@@ -13,7 +13,7 @@ from mir import scm
 from mir.commands.checkout import CmdCheckout
 from mir.commands.commit import CmdCommit
 from mir.protos import mir_command_pb2 as mirpb
-from mir.tools import class_ids, context, det_eval, exodus, mir_storage, mir_repo_utils, revs_parser
+from mir.tools import class_ids, context, det_eval, det_eval_utils, exodus, mir_storage, mir_repo_utils, revs_parser
 from mir.tools import settings as mir_settings
 from mir.tools.code import MirCode
 from mir.tools.errors import MirError, MirRuntimeError
@@ -52,10 +52,10 @@ class MirStorageOps():
                                  mir_keywords=mir_keywords)
         mir_datas[mirpb.MirStorage.MIR_KEYWORDS] = mir_keywords
 
-        det_eval.reset_default_confusion_matrix(task_annotations=mir_annotations.prediction,
-                                                cm=mirpb.ConfusionMatrixType.NotSet)
-        det_eval.reset_default_confusion_matrix(task_annotations=mir_annotations.ground_truth,
-                                                cm=mirpb.ConfusionMatrixType.NotSet)
+        det_eval_utils.reset_default_confusion_matrix(task_annotations=mir_annotations.prediction,
+                                                      cm=mirpb.ConfusionMatrixType.NotSet)
+        det_eval_utils.reset_default_confusion_matrix(task_annotations=mir_annotations.ground_truth,
+                                                      cm=mirpb.ConfusionMatrixType.NotSet)
         if (mir_metadatas.attributes and mir_annotations.ground_truth.image_annotations
                 and mir_annotations.prediction.image_annotations):
             evaluation, _ = det_eval.det_evaluate_with_pb(

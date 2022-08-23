@@ -1,5 +1,5 @@
 from collections import defaultdict
-from typing import Dict, Iterable, List, Optional, Set, Tuple
+from typing import Any, Dict, Iterable, List, Optional, Set, Tuple
 
 import numpy as np
 
@@ -242,11 +242,19 @@ def _erase_confusion_matrix(gt_annotations: mirpb.SingleTaskAnnotations, pred_an
             annotation.det_link_id = -1
 
 
+def reset_default_confusion_matrix(task_annotations: mirpb.SingleTaskAnnotations, cm: Any) -> None:
+    for image_annotations in task_annotations.image_annotations.values():
+        for annotation in image_annotations.annotations:
+            annotation.cm = cm
+            annotation.det_link_id = -1
+
+
 def write_confusion_matrix(mir_gt: MirDataset, mir_dt: MirDataset, class_ids: List[int],
                            match_result: DetEvalMatchResult, iou_thr: float) -> None:
     gt_annotations = mir_gt._task_annotations
     pred_annotations = mir_dt._task_annotations
 
+    # TODO: change to reset_default_confusion_matrix
     _erase_confusion_matrix(gt_annotations=gt_annotations, pred_annotations=pred_annotations, class_ids=class_ids)
 
     for asset_id in match_result.get_asset_ids(iou_thr=iou_thr):
