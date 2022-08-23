@@ -45,10 +45,10 @@ func (h *MockViewerHandler) GetAssetsHandler(
 }
 
 func (h *MockViewerHandler) GetDatasetDupHandler(
-	mirRepo0 *constants.MirRepo,
-	mirRepo1 *constants.MirRepo,
+	candidateMirRepos []*constants.MirRepo,
+	corrodeeMirRepos []*constants.MirRepo,
 ) *constants.QueryDatasetDupResult {
-	args := h.Called(mirRepo0, mirRepo1)
+	args := h.Called(candidateMirRepos, corrodeeMirRepos)
 	return args.Get(0).(*constants.QueryDatasetDupResult)
 }
 
@@ -239,7 +239,8 @@ func TestDupPageHandlerSuccess(t *testing.T) {
 	// Set mock funcs.
 	mirRepo0 := constants.MirRepo{UserID: userID, RepoID: repoID, BranchID: branchID0, TaskID: branchID0}
 	mirRepo1 := constants.MirRepo{UserID: userID, RepoID: repoID, BranchID: branchID1, TaskID: branchID1}
-	mockHandler.On("GetDatasetDupHandler", &mirRepo0, &mirRepo1).Return(mockDupResult)
+	mockHandler.On("GetDatasetDupHandler", []*constants.MirRepo{&mirRepo0, &mirRepo1}, []*constants.MirRepo{}).
+		Return(mockDupResult)
 
 	req, _ := http.NewRequest("GET", dupRequestURL, nil)
 	w := httptest.NewRecorder()
@@ -278,16 +279,14 @@ func TestDupPageHandlerFailure(t *testing.T) {
 	assert.Equal(t, string(statsExpectedResponseData), w.Body.String())
 	assert.Equal(t, http.StatusBadRequest, w.Code)
 
-	branchID0 := "branchID0"
 	dupRequestURL1 := fmt.Sprintf(
-		"/users/%s/repo/%s/dataset_duplication?candidate_dataset_ids=%s",
+		"/users/%s/repo/%s/dataset_duplication?candidate_dataset_ids=,",
 		userID,
 		repoID,
-		branchID0,
 	)
 	failureResult = FailureResult{
 		Code: constants.FailInvalidParmsCode,
-		Msg:  constants.ResponseMsg("candidate_dataset_ids requires exact two datasets."),
+		Msg:  constants.ResponseMsg("Invalid candidate_dataset_ids."),
 	}
 	statsExpectedResponseData = buildResponseBody(
 		failureResult.Code,
