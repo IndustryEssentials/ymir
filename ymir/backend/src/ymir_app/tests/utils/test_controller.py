@@ -115,15 +115,6 @@ class TestControllerRequest:
 
 
 class TestControllerClient:
-    def test_close_controller(self, mocker):
-        channel_str = random_lower_string()
-        mock_grpc = mocker.Mock()
-        mocker.patch.object(m, "grpc", return_value=mock_grpc)
-        cc = m.ControllerClient(channel_str)
-        cc.channel = mock_channel = mocker.Mock()
-        cc.close()
-        mock_channel.close.assert_called()
-
     def test_send_with_grpc_error(self, mocker):
         channel_str = random_lower_string()
         cc = m.ControllerClient(channel_str)
