@@ -254,7 +254,7 @@ def det_evaluate(mir_dts: List[MirDataset], mir_gt: MirDataset, config: mirpb.Ev
         single_dataset_evaluation.gt_dataset_id = mir_gt.dataset_id
         single_dataset_evaluation.pred_dataset_id = mir_dt.dataset_id
 
-        for i, iou_thr in enumerate(iou_thrs):
+        for iou_thr in iou_thrs:
             match_result = DetEvalMatchResult()
             for class_id in class_ids:
                 see = _get_single_evaluate_element(mir_dt=mir_dt,
