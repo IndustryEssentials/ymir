@@ -308,8 +308,9 @@ export default {
         return result.datasets.map(item => transferDatasetAnalysis(item))
       }
     },
-    *checkDuplication({ payload }, { call, put }) {
-      const { pid, trainSet, validationSet } = payload
+    *checkDuplication({ payload }, { call, put, select }) {
+      const { trainSet, validationSet } = payload
+      const pid = yield select(({ project }) => project.current?.id)
       const { code, result } = yield call(checkDuplication, pid, trainSet, validationSet)
       if (code === 0) {
         return result
@@ -338,7 +339,7 @@ export default {
       })
     },
     *getNegativeKeywords({ payload }, { put, call, select }) {
-      const pid = yield select(({ project: { current } }) => current.id)
+      const pid = yield select(({ project: { current } }) => current?.id)
       const { code, result } = yield call(getNegativeKeywords, { projectId: pid, ...payload })
       if (code === 0) {
         const { gt, pred, total_assets_count } = result
