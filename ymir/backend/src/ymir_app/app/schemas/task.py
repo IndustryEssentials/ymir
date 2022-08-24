@@ -153,16 +153,8 @@ class TaskInternal(TaskInDBBase):
     state: TaskState
     result_type: ResultType = ResultType.no_result
 
-    @validator("parameters")
-    def ensure_parameters_dict(cls, v: Optional[Union[Dict, str]]) -> Dict[str, Any]:
-        if not v:
-            return {}
-        if isinstance(v, dict):
-            return v
-        return json.loads(v)
-
-    @validator("config")
-    def ensure_config_dict(cls, v: Optional[Union[Dict, str]]) -> Dict[str, Any]:
+    @validator("parameters", "config")
+    def ensure_dict(cls, v: Optional[Union[Dict, str]]) -> Dict[str, Any]:
         if not v:
             return {}
         if isinstance(v, dict):

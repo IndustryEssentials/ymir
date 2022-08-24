@@ -173,10 +173,15 @@ class ViewerAsset:
         self.hash = self.asset_id
         self.keywords = user_labels.get_main_names(self.class_ids)
         self.gt = [
-            ViewerAssetAnnotation(i["box"], i["class_id"], i["cm"], i["tags"], user_labels=user_labels) for i in self.gt
+            ViewerAssetAnnotation(
+                box=i["box"], class_id=i["class_id"], cm=i["cm"], tags=i["tags"], user_labels=user_labels
+            )
+            for i in self.gt
         ]
         self.pred = [
-            ViewerAssetAnnotation(i["box"], i["class_id"], i["cm"], i["tags"], user_labels=user_labels)
+            ViewerAssetAnnotation(
+                box=i["box"], class_id=i["class_id"], cm=i["cm"], tags=i["tags"], user_labels=user_labels
+            )
             for i in self.pred
         ]
 
@@ -193,12 +198,12 @@ class ViewerAssetsResponse:
         self.total = self.total_assets_count
         self.items = [
             ViewerAsset(
-                i["asset_id"],
-                i["class_ids"],
-                i["metadata"],
-                i["gt"],
-                i["pred"],
-                i["cks"],
+                asset_id=i["asset_id"],
+                class_ids=i["class_ids"],
+                metadata=i["metadata"],
+                gt=i["gt"],
+                pred=i["pred"],
+                cks=i["cks"],
                 user_labels=user_labels,
             )
             for i in self.elements
