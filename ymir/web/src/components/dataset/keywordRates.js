@@ -29,8 +29,8 @@ function KeywordRates({ keywords, dataset, progressWidth = 0.5 }) {
   }, [keywords])
 
   useEffect(() => {
-    if (did && kws?.length && did === dataset.id && kws.every(k => keywords.includes(k))) {
-      getNegativeKeywords({ keywords: kws, dataset: did })
+    if (did && kws?.length && did === dataset?.id && kws.every(k => keywords.includes(k))) {
+      setTimeout(() => getNegativeKeywords({ keywords: kws, dataset: did }), 500)
     }
   }, [did, kws])
 

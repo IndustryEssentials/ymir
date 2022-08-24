@@ -27,6 +27,7 @@ import Desc from "@/components/form/desc"
 import styles from "./index.less"
 import commonStyles from "../common.less"
 import OpenpaiForm from "../components/openpaiForm"
+import useDuplicatedCheck from "../../../hooks/useDuplicatedCheck"
 
 const TrainType = [{ value: "detection", label: 'task.train.form.traintypes.detect', checked: true }]
 
@@ -57,10 +58,7 @@ function Train({ allDatasets, datasetCache, ...func }) {
   const [projectDirty, setProjectDirty] = useState(false)
   const [live, setLiveCode] = useState(false)
   const [openpai, setOpenpai] = useState(false)
-  const [duplicationChecked, setDuplicationChecked] = useState(false)
-  const [strategy, setStrategy] = useState(0)
-  const [allDuplicated, setAllDulplicated] = useState(false)
-  const [duplicated, checkDuplication] = useFetch('dataset/checkDuplication', 0)
+  const checkDuplicated = useDuplicatedCheck(submit)
   const [sys, getSysInfo] = useFetch('common/getSysInfo', {})
   const selectOpenpai = Form.useWatch('openpai', form)
 
@@ -113,22 +111,7 @@ function Train({ allDatasets, datasetCache, ...func }) {
     form.setFieldsValue({ hyperparam: seniorConfig })
   }, [seniorConfig])
 
-  useEffect(() => {
-    setDuplicationChecked(false)
-    setAllDulplicated(false)
-  }, [trainSet, testSet])
-
   useEffect(() => (trainDataset && !iterationId) && setAllKeywords(), [trainDataset])
-
-  useEffect(() => {
-    if (duplicationChecked) {
-      const allValidation = duplicated === validationDataset?.assetCount
-      const allTrain = duplicated === trainDataset?.assetCount
-
-      setStrategy(allValidation && !allTrain ? 2 : 1)
-      setAllDulplicated(allValidation && allTrain)
-    }
-  }, [duplicationChecked, duplicated])
 
   async function fetchProject() {
     const project = await func.getProject(pid)
@@ -164,8 +147,10 @@ function Train({ allDatasets, datasetCache, ...func }) {
     setSeniorConfig(params)
   }
 
-  const onFinish = async (values) => {
+  const onFinish = () => checkDuplicated(trainDataset, validationDataset)
 
+  async function submit (strategy) {
+    const values = form.getFieldsValue()
     const config = {
       ...values.hyperparam?.reduce(
         (prev, { key, value }) => key !== '' && value !== '' ? { ...prev, [key]: value } : prev,
@@ -204,27 +189,6 @@ function Train({ allDatasets, datasetCache, ...func }) {
 
   function onFinishFailed(errorInfo) {
     console.log("Failed:", errorInfo)
-  }
-
-  async function checkDuplicated() {
-    if (trainSet && testSet) {
-      await checkDuplication({ pid, trainSet, validationSet: testSet })
-      setDuplicationChecked(true)
-    }
-  }
-
-  const duplicatedRender = () => {
-    const allValidation = duplicated === validationDataset?.assetCount
-    const allTrain = duplicated === trainDataset?.assetCount
-    const disabled = allValidation ? 1 : (allTrain ? 2 : null)
-    return duplicated ? (allDuplicated ? t('task.train.action.duplicated.all') : <div>
-      <span>{t('task.train.duplicated.tip', { duplicated })}</span>
-      <Radio.Group
-        value={strategy}
-        onChange={({ target: { value } }) => setStrategy(value)}
-        options={duplicatedOptions.map(opt => ({ ...opt, disabled: disabled === opt.value, label: t(opt.label) }))}
-      />
-    </div>) : t('task.train.action.duplicated.no')
   }
 
   const matchKeywords = dataset => dataset.keywords.some(kw => selectedKeywords.includes(kw))
@@ -314,14 +278,12 @@ function Train({ allDatasets, datasetCache, ...func }) {
                 { required: true, message: t('task.train.form.testset.required') },
               ]}
               tooltip={t('tip.task.filter.testsets')}
-              extra={duplicationChecked ? duplicatedRender() : null}
             >
               <DatasetSelect
                 pid={pid}
                 filters={validationSetFilters}
                 placeholder={t('task.train.form.test.datasets.placeholder')}
                 onChange={validationSetChange}
-                extra={<Button disabled={!trainSet || !testSet} type="primary" onClick={checkDuplicated}>{t('task.train.action.duplicated')}</Button>}
               />
             </Form.Item>
             <Form.Item
@@ -357,7 +319,7 @@ function Train({ allDatasets, datasetCache, ...func }) {
             <Form.Item wrapperCol={{ offset: 8 }}>
               <Space size={20}>
                 <Form.Item name='submitBtn' noStyle>
-                  <Button type="primary" size="large" disabled={projectDirty || allDuplicated} htmlType="submit">
+                  <Button type="primary" size="large" disabled={projectDirty} htmlType="submit">
                     {t('common.action.train')}
                   </Button>
                 </Form.Item>
