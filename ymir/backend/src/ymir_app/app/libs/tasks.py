@@ -1,3 +1,4 @@
+# from datetime import datetime
 import json
 import itertools
 import asyncio
@@ -178,6 +179,31 @@ def create_single_task(db: Session, user_id: int, user_labels: UserLabels, task_
             task_in.parameters.model_id,
             task_in.parameters.keywords or [],
         )
+
+        # viz_client = VizClient(host=settings.VIZ_HOST)
+        # m_timestamp = int(datetime.timestamp(task_info.create_datetime))
+        # m_keywords = task_in.parameters.keywords or []
+        # viz_client.send_metrics(metrics_group="task",
+        #                         id=task_info.hash,
+        #                         create_time=m_timestamp,
+        #                         user_id=task_info.user_id,
+        #                         project_id=task_info.project_id,
+        #                         keywords=m_keywords,
+        #                         user_labels=user_labels,
+        #                         extra_data=dict(
+        #                             task_type=TaskType(task_info.type).name,
+        #                             dataset_ids=[args["dataset_hash"]],
+        #                             model_ids=[args["model_hash"]],
+        #                         ))
+        # viz_client.send_metrics(metrics_group="keyids",
+        #                         id=task_info.hash,
+        #                         create_time=m_timestamp,
+        #                         user_id=task_info.user_id,
+        #                         project_id=task_info.project_id,
+        #                         keywords=m_keywords,
+        #                         user_labels=user_labels,
+        #                         extra_data={})
+
     except FailedToConnectClickHouse:
         # clickhouse metric shouldn't block create task process
         logger.exception(
@@ -272,6 +298,16 @@ class TaskResult:
             result["map"],
             keywords,
         )
+
+        # viz_client = VizClient(host=settings.VIZ_HOST)
+        # viz_client.send_metrics(metrics_group="model",
+        #                         id=result["hash"],
+        #                         create_time=int(datetime.timestamp(model_in_db.create_datetime)),
+        #                         user_id=self.user_id,
+        #                         project_id=model_in_db.project_id,
+        #                         keywords=keywords,
+        #                         user_labels=self.user_labels,
+        #                         extra_data=dict(model_map=result["map"]))
 
     def get_dest_group_info(self, dataset_id: int) -> Tuple[int, str]:
         if self.result_type is ResultType.dataset:

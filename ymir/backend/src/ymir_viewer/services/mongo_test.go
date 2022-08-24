@@ -32,11 +32,12 @@ func TestSetDatasetExistenceSuccess(t *testing.T) {
 
 	mt.Run("success", func(mt *mtest.T) {
 		mockCollection := mt.Coll
-		mockDatabase := MockDatabase{}
-		mockDatabase.On("Collection", getDatasetExistenceName(), []*options.CollectionOptions(nil)).
+		mockMirDatabase := MockDatabase{}
+		mockMetricsDatabase := MockDatabase{}
+		mockMirDatabase.On("Collection", getDatasetExistenceName(), []*options.CollectionOptions(nil)).
 			Return(mockCollection)
 
-		mongoServer := NewMongoServer(context.Background(), &mockDatabase)
+		mongoServer := NewMongoServer(context.Background(), &mockMirDatabase, &mockMetricsDatabase)
 		mt.AddMockResponses(mtest.CreateSuccessResponse())
 		mongoServer.setDatasetExistence("", true, false)
 	})
@@ -53,11 +54,12 @@ func TestSetDatasetExistenceFailure(t *testing.T) {
 			}
 		}()
 		mockCollection := mt.Coll
-		mockDatabase := MockDatabase{}
-		mockDatabase.On("Collection", getDatasetExistenceName(), []*options.CollectionOptions(nil)).
+		mockMirDatabase := MockDatabase{}
+		mockMetricsDatabase := MockDatabase{}
+		mockMirDatabase.On("Collection", getDatasetExistenceName(), []*options.CollectionOptions(nil)).
 			Return(mockCollection)
 
-		mongoServer := NewMongoServer(context.Background(), &mockDatabase)
+		mongoServer := NewMongoServer(context.Background(), &mockMirDatabase, &mockMetricsDatabase)
 		mt.AddMockResponses(mtest.CreateWriteErrorsResponse(mtest.WriteError{}))
 		mongoServer.setDatasetExistence("", true, true)
 	})
@@ -70,13 +72,14 @@ func TestCheckDatasetExistenceSuccess(t *testing.T) {
 	mt.Run("success", func(mt *mtest.T) {
 		mirRepo := constants.MirRepo{}
 		mockCollection := mt.Coll
-		mockDatabase := MockDatabase{}
-		mockDatabase.On("Collection", getDatasetExistenceName(), []*options.CollectionOptions(nil)).
+		mockMirDatabase := MockDatabase{}
+		mockMetricsDatabase := MockDatabase{}
+		mockMirDatabase.On("Collection", getDatasetExistenceName(), []*options.CollectionOptions(nil)).
 			Return(mockCollection)
-		mockDatabase.On("Collection", "@", []*options.CollectionOptions(nil)).
+		mockMirDatabase.On("Collection", "@", []*options.CollectionOptions(nil)).
 			Return(mockCollection)
 
-		mongoServer := NewMongoServer(context.Background(), &mockDatabase)
+		mongoServer := NewMongoServer(context.Background(), &mockMirDatabase, &mockMetricsDatabase)
 		find := mtest.CreateCursorResponse(
 			1,
 			"a.b",
@@ -102,11 +105,12 @@ func TestCheckDatasetExistenceFailure0(t *testing.T) {
 
 		mirRepo := constants.MirRepo{}
 		mockCollection := mt.Coll
-		mockDatabase := MockDatabase{}
-		mockDatabase.On("Collection", getDatasetExistenceName(), []*options.CollectionOptions(nil)).
+		mockMirDatabase := MockDatabase{}
+		mockMetricsDatabase := MockDatabase{}
+		mockMirDatabase.On("Collection", getDatasetExistenceName(), []*options.CollectionOptions(nil)).
 			Return(mockCollection)
 
-		mongoServer := NewMongoServer(context.Background(), &mockDatabase)
+		mongoServer := NewMongoServer(context.Background(), &mockMirDatabase, &mockMetricsDatabase)
 		mongoServer.CheckDatasetExistenceReady(&mirRepo)
 	})
 }
@@ -118,13 +122,14 @@ func TestCheckDatasetExistenceFailure1(t *testing.T) {
 	mt.Run("success", func(mt *mtest.T) {
 		mirRepo := constants.MirRepo{}
 		mockCollection := mt.Coll
-		mockDatabase := MockDatabase{}
-		mockDatabase.On("Collection", getDatasetExistenceName(), []*options.CollectionOptions(nil)).
+		mockMirDatabase := MockDatabase{}
+		mockMetricsDatabase := MockDatabase{}
+		mockMirDatabase.On("Collection", getDatasetExistenceName(), []*options.CollectionOptions(nil)).
 			Return(mockCollection)
-		mockDatabase.On("Collection", "@", []*options.CollectionOptions(nil)).
+		mockMirDatabase.On("Collection", "@", []*options.CollectionOptions(nil)).
 			Return(mockCollection)
 
-		mongoServer := NewMongoServer(context.Background(), &mockDatabase)
+		mongoServer := NewMongoServer(context.Background(), &mockMirDatabase, &mockMetricsDatabase)
 
 		find := mtest.CreateCursorResponse(
 			1,
@@ -146,13 +151,14 @@ func TestIndexDatasetDataSuccess(t *testing.T) {
 		mirRepo := constants.MirRepo{}
 		mockAssetsDetail := []constants.MirAssetDetail{{AssetID: "a"}}
 		mockCollection := mt.Coll
-		mockDatabase := MockDatabase{}
-		mockDatabase.On("Collection", getDatasetExistenceName(), []*options.CollectionOptions(nil)).
+		mockMirDatabase := MockDatabase{}
+		mockMetricsDatabase := MockDatabase{}
+		mockMirDatabase.On("Collection", getDatasetExistenceName(), []*options.CollectionOptions(nil)).
 			Return(mockCollection)
-		mockDatabase.On("Collection", "@", []*options.CollectionOptions(nil)).
+		mockMirDatabase.On("Collection", "@", []*options.CollectionOptions(nil)).
 			Return(mockCollection)
 
-		mongoServer := NewMongoServer(context.Background(), &mockDatabase)
+		mongoServer := NewMongoServer(context.Background(), &mockMirDatabase, &mockMetricsDatabase)
 		mongoServer.IndexDatasetData(&mirRepo, []interface{}{})
 
 		mt.AddMockResponses(
@@ -172,11 +178,12 @@ func TestCountAssetsInClassSuccess(t *testing.T) {
 	mt.Run("success", func(mt *mtest.T) {
 		collection := mt.Coll
 		mockCollection := mt.Coll
-		mockDatabase := MockDatabase{}
-		mockDatabase.On("Collection", "@", []*options.CollectionOptions(nil)).
+		mockMirDatabase := MockDatabase{}
+		mockMetricsDatabase := MockDatabase{}
+		mockMirDatabase.On("Collection", "@", []*options.CollectionOptions(nil)).
 			Return(mockCollection)
 
-		mongoServer := NewMongoServer(context.Background(), &mockDatabase)
+		mongoServer := NewMongoServer(context.Background(), &mockMirDatabase, &mockMetricsDatabase)
 
 		queryField := "abc"
 		expectedCount := int32(10)
@@ -205,11 +212,12 @@ func TestQueryAssetsSuccess(t *testing.T) {
 	mt.Run("success", func(mt *mtest.T) {
 		mirRepo := constants.MirRepo{}
 		mockCollection := mt.Coll
-		mockDatabase := MockDatabase{}
-		mockDatabase.On("Collection", "@", []*options.CollectionOptions(nil)).
+		mockMirDatabase := MockDatabase{}
+		mockMetricsDatabase := MockDatabase{}
+		mockMirDatabase.On("Collection", "@", []*options.CollectionOptions(nil)).
 			Return(mockCollection)
 
-		mongoServer := NewMongoServer(context.Background(), &mockDatabase)
+		mongoServer := NewMongoServer(context.Background(), &mockMirDatabase, &mockMetricsDatabase)
 
 		offset := 100
 		limit := 10
@@ -269,11 +277,12 @@ func TestQueryDatasetStatsSuccess(t *testing.T) {
 	mt.Run("success", func(mt *mtest.T) {
 		mirRepo := constants.MirRepo{}
 		mockCollection := mt.Coll
-		mockDatabase := MockDatabase{}
-		mockDatabase.On("Collection", "@", []*options.CollectionOptions(nil)).
+		mockMirDatabase := MockDatabase{}
+		mockMetricsDatabase := MockDatabase{}
+		mockMirDatabase.On("Collection", "@", []*options.CollectionOptions(nil)).
 			Return(mockCollection)
 
-		mongoServer := NewMongoServer(context.Background(), &mockDatabase)
+		mongoServer := NewMongoServer(context.Background(), &mockMirDatabase, &mockMetricsDatabase)
 
 		classIDs := []int{0, 1}
 		expectedCount := int32(1)

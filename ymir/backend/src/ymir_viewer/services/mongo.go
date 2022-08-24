@@ -9,7 +9,9 @@ import (
 
 	"github.com/IndustryEssentials/ymir-viewer/common/constants"
 	"github.com/IndustryEssentials/ymir-viewer/tools"
+	"github.com/jinzhu/now"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/x/bsonx"
@@ -19,22 +21,26 @@ type BaseDatabase interface {
 	Collection(name string, opts ...*options.CollectionOptions) *mongo.Collection
 }
 type MongoServer struct {
-	database      BaseDatabase
-	Ctx           context.Context
-	existenceName string
+	mirDatabase     BaseDatabase
+	metricsDatabase BaseDatabase
+	Ctx             context.Context
+	existenceName   string
+	metricsPrefix   string
 }
 
-func NewMongoServer(mongoCtx context.Context, database BaseDatabase) *MongoServer {
+func NewMongoServer(mongoCtx context.Context, mirDatabase BaseDatabase, metricsDatabase BaseDatabase) *MongoServer {
 	return &MongoServer{
-		database:      database,
-		Ctx:           mongoCtx,
-		existenceName: "__collection_existence__",
+		mirDatabase:     mirDatabase,
+		metricsDatabase: metricsDatabase,
+		Ctx:             mongoCtx,
+		existenceName:   "__collection_existence__",
+		metricsPrefix:   "__metrics__",
 	}
 }
 
 func (s *MongoServer) getRepoCollection(mirRepo *constants.MirRepo) (*mongo.Collection, string) {
 	_, mirRev := mirRepo.BuildRepoID()
-	return s.database.Collection(mirRev), mirRev
+	return s.mirDatabase.Collection(mirRev), mirRev
 }
 
 func (s *MongoServer) getExistenceCollection() *mongo.Collection {
@@ -44,14 +50,20 @@ func (s *MongoServer) getExistenceCollection() *mongo.Collection {
 
 func (s *MongoServer) setDatasetExistence(collectionName string, ready bool, exist bool) {
 	collection := s.getExistenceCollection()
-	filter := bson.M{"_id": collectionName}
-	update := bson.M{"$set": bson.M{"ready": ready, "exist": exist}}
+	data := bson.M{"ready": ready, "exist": exist}
+	s.upsertDocument(collection, collectionName, data)
+}
+
+func (s *MongoServer) upsertDocument(collection *mongo.Collection, id string, data interface{}) {
+	filter := bson.M{"_id": id}
+	update := bson.M{"$set": data}
 	upsert := true
 	_, err := collection.UpdateOne(s.Ctx, filter, update, &options.UpdateOptions{Upsert: &upsert})
 	if err != nil {
 		panic(err)
 	}
 }
+
 func (s *MongoServer) CheckDatasetExistenceReady(mirRepo *constants.MirRepo) (bool, bool) {
 	_, collectionName := s.getRepoCollection(mirRepo)
 	collectionExistence := s.getExistenceCollection()
@@ -137,19 +149,11 @@ func (s *MongoServer) countDatasetAssetsInClass(
 		bson.E{Key: "count", Value: bson.M{"$sum": 1}},
 		bson.E{Key: "sum", Value: bson.M{"$sum": bson.M{"$size": "$" + queryField}}}}})
 
-	showInfoCursor, err := collection.Aggregate(s.Ctx, cond)
-	if err != nil {
-		panic(err)
-	}
-
-	var showsWithInfo []bson.M
-	if err = showInfoCursor.All(s.Ctx, &showsWithInfo); err != nil {
-		panic(err)
-	}
-	if len(showsWithInfo) < 1 {
+	aggreData := *s.aggregateMongoQuery(collection, cond)
+	if len(aggreData) < 1 {
 		return 0, 0
 	}
-	return int64(showsWithInfo[0]["count"].(int32)), int64(showsWithInfo[0]["sum"].(int32))
+	return int64(aggreData[0]["count"].(int32)), int64(aggreData[0]["sum"].(int32))
 }
 
 func (s *MongoServer) QueryDatasetAssets(
@@ -300,34 +304,40 @@ func (s *MongoServer) queryHistogram(
 	ops interface{},
 	lowerBNDs []float64,
 	unwindField string,
-) *map[string]string {
-	buckets := map[string]string{}
-	for _, lowerBND := range lowerBNDs {
-		buckedKeyStr := fmt.Sprintf("%.2f", lowerBND)
-		buckets[buckedKeyStr] = "0"
-	}
+) *map[string]int32 {
+	buckets := map[string]int32{}
 
-	unwindStage := bson.D{bson.E{
-		Key: "$unwind", Value: unwindField,
-	}}
+	// Mongodb treat last upper element as exclusive boundary, add delta to enclose it.
+	extendedLowerBNDs := lowerBNDs
+	extendedLowerBNDs = append(extendedLowerBNDs, lowerBNDs[len(lowerBNDs)-1]+0.01)
 
-	bucketStage := bson.D{
+	cond := make([]bson.M, 0)
+	cond = append(cond, bson.M{"$unwind": unwindField})
+	cond = append(cond, bson.M{"$bucket": bson.D{
 		bson.E{
-			Key: "$bucket",
-			Value: bson.D{
-				bson.E{
-					Key:   "groupBy",
-					Value: ops,
-				},
-				bson.E{Key: "default", Value: "_others_"},
-				bson.E{
-					Key:   "boundaries",
-					Value: lowerBNDs,
-				},
-				bson.E{Key: "output", Value: bson.M{"count": bson.M{"$sum": 1}}},
-			}}}
+			Key:   "groupBy",
+			Value: ops,
+		},
+		bson.E{Key: "default", Value: "_others_"},
+		bson.E{
+			Key:   "boundaries",
+			Value: extendedLowerBNDs,
+		},
+		bson.E{Key: "output", Value: bson.M{"count": bson.M{"$sum": 1}}},
+	}})
 
-	showInfoCursor, err := collection.Aggregate(s.Ctx, mongo.Pipeline{unwindStage, bucketStage})
+	aggreData := s.aggregateMongoQuery(collection, cond)
+	for _, bucketMap := range *aggreData {
+		if buckedKey, ok := bucketMap["_id"].(float64); ok {
+			buckedKeyStr := fmt.Sprintf("%.2f", buckedKey)
+			buckets[buckedKeyStr] = bucketMap["count"].(int32)
+		}
+	}
+	return &buckets
+}
+
+func (s *MongoServer) aggregateMongoQuery(collection *mongo.Collection, cond []bson.M) *[]map[string]interface{} {
+	showInfoCursor, err := collection.Aggregate(s.Ctx, cond)
 	if err != nil {
 		panic(err)
 	}
@@ -337,18 +347,12 @@ func (s *MongoServer) queryHistogram(
 		panic(err)
 	}
 
-	for _, bucketMap := range showsWithInfo {
-		if buckedKey, ok := bucketMap["_id"].(float64); ok {
-			buckedKeyStr := fmt.Sprintf("%.2f", buckedKey)
-			buckets[buckedKeyStr] = fmt.Sprintf("%d", bucketMap["count"].(int32))
-		}
-	}
-	return &buckets
+	return &showsWithInfo
 }
 
 func (s *MongoServer) RemoveNonReadyDataset() {
 	collectionExistence := s.getExistenceCollection()
-	filter := bson.M{"ready": false}
+	filter := bson.M{"ready": false, "exist": true}
 	queryCursor, err := collectionExistence.Find(s.Ctx, filter)
 	if err != nil {
 		panic(err)
@@ -361,7 +365,7 @@ func (s *MongoServer) RemoveNonReadyDataset() {
 	for _, record := range queryDatas {
 		collectionName := record["_id"].(string)
 		log.Printf("  Dropping non-ready collection %s", collectionName)
-		if err = s.database.Collection(collectionName).Drop(s.Ctx); err != nil {
+		if err = s.mirDatabase.Collection(collectionName).Drop(s.Ctx); err != nil {
 			log.Panicf("  Fail to drop %s, error: %+v", collectionName, err)
 		}
 		s.setDatasetExistence(collectionName, false, false)
@@ -421,7 +425,7 @@ func (s *MongoServer) QueryDatasetStats(
 	if requireAssetsHist {
 		for histKey, hist := range constants.ConstAssetsMirHist {
 			assetHist := hist
-			assetHist.Buckets = s.queryHistogram(
+			assetHist.SparseBuckets = s.queryHistogram(
 				collection,
 				assetHist.Ops,
 				assetHist.LowerBNDs,
@@ -460,7 +464,7 @@ func (s *MongoServer) QueryDatasetStats(
 
 		for histKey, hist := range constants.ConstGtMirHist {
 			annoHist := hist
-			annoHist.Buckets = s.queryHistogram(
+			annoHist.SparseBuckets = s.queryHistogram(
 				collection,
 				annoHist.Ops,
 				annoHist.LowerBNDs,
@@ -470,7 +474,7 @@ func (s *MongoServer) QueryDatasetStats(
 		}
 		for histKey, hist := range constants.ConstPredMirHist {
 			annoHist := hist
-			annoHist.Buckets = s.queryHistogram(
+			annoHist.SparseBuckets = s.queryHistogram(
 				collection,
 				annoHist.Ops,
 				annoHist.LowerBNDs,
@@ -485,4 +489,121 @@ func (s *MongoServer) QueryDatasetStats(
 	queryData.QueryContext.RequireAnnotationsHist = requireAnnotationsHist
 
 	return queryData
+}
+
+func (s *MongoServer) getMetricsCollection(collectionSuffix string) *mongo.Collection {
+	return s.metricsDatabase.Collection(s.metricsPrefix + collectionSuffix)
+}
+func (s *MongoServer) MetricsRecordSignals(collectionSuffix string, id string, data interface{}) {
+	s.upsertDocument(s.getMetricsCollection(collectionSuffix), id, data)
+}
+
+func (s *MongoServer) MetricsQuerySignals(
+	collectionSuffix string,
+	userID string,
+	queryField string,
+	bucket string,
+	unit string,
+	limit int,
+) *[]constants.MetricsQueryPoint {
+	collection := s.getMetricsCollection(collectionSuffix)
+	switch bucket {
+	case "count":
+		return s.metricsQueryByCount(collection, userID, queryField, limit)
+	case "time":
+		return s.metricsQueryByTime(collection, userID, queryField, unit, limit)
+	default:
+		panic("invalid bucket value: " + bucket)
+	}
+}
+
+func (s *MongoServer) metricsQueryByCount(
+	collection *mongo.Collection,
+	userID string,
+	queryField string,
+	limit int,
+) *[]constants.MetricsQueryPoint {
+	cond := make([]bson.M, 0)
+	cond = append(cond, bson.M{"$unwind": "$" + queryField})
+	cond = append(cond, bson.M{"$match": bson.M{"user_id": userID}})
+
+	cond = append(cond, bson.M{"$group": bson.D{
+		bson.E{Key: "_id", Value: "$" + queryField},
+		bson.E{Key: "value", Value: bson.M{"$sum": 1}}}})
+	cond = append(cond, bson.M{"$sort": bson.M{"value": -1}})
+	aggreData := s.aggregateMongoQuery(collection, cond)
+
+	result := []constants.MetricsQueryPoint{}
+	for _, data := range *aggreData {
+		if queryKey, ok := data["_id"].(int32); ok {
+			queryKeyStr := fmt.Sprintf("%d", queryKey)
+			result = append(
+				result,
+				constants.MetricsQueryPoint{Legend: queryKeyStr, Count: int64(data["value"].(int32))},
+			)
+		}
+	}
+
+	return &result
+}
+
+func (s *MongoServer) metricsQueryByTime(
+	collection *mongo.Collection,
+	userID string,
+	queryField string,
+	unit string,
+	limit int,
+) *[]constants.MetricsQueryPoint {
+	// for time aggregation.
+	unitDay := 0
+	unitMonth := 0
+	var lastBND time.Time
+	switch unit {
+	case "day":
+		unitDay = 1
+		lastBND = now.BeginningOfDay()
+	case "week":
+		unitDay = 7
+		lastBND = now.BeginningOfWeek().AddDate(0, 0, 1) // Start day on Monday.
+	case "month":
+		unitMonth = 1
+		lastBND = now.BeginningOfMonth()
+	default:
+		panic("bucket:time expect unit in day/week/month, get: " + unit)
+	}
+
+	boundries := []time.Time{}
+	buckets := map[string]int64{}
+	for idx := -limit + 1; idx <= 1; idx++ {
+		lowerBND := lastBND.AddDate(0, idx*unitMonth, idx*unitDay)
+		boundries = append(boundries, lowerBND)
+
+		buckedKeyStr := lowerBND.Format("2006-01-02")
+		buckets[buckedKeyStr] = 0
+	}
+
+	cond := make([]bson.M, 0)
+	cond = append(cond, bson.M{"$match": bson.M{"user_id": userID}})
+	cond = append(cond, bson.M{
+		"$bucket": bson.D{
+			bson.E{Key: "groupBy", Value: "$" + queryField},
+			bson.E{Key: "default", Value: "_others_"},
+			bson.E{Key: "boundaries", Value: boundries},
+			bson.E{Key: "output", Value: bson.D{bson.E{Key: "count", Value: bson.M{"$sum": 1}}}},
+		}})
+	aggreData := s.aggregateMongoQuery(collection, cond)
+	for _, bucketMap := range *aggreData {
+		if timeStamp, ok := bucketMap["_id"].(primitive.DateTime); ok {
+			buckedKeyStr := time.Unix(0, int64(timeStamp)*int64(time.Millisecond)).Format("2006-01-02")
+			buckets[buckedKeyStr] = int64(bucketMap["count"].(int32))
+		}
+	}
+
+	result := []constants.MetricsQueryPoint{}
+	for _, boundary := range boundries[:len(boundries)-1] {
+		buckedKeyStr := boundary.Format("2006-01-02")
+		result = append(result, constants.MetricsQueryPoint{Legend: buckedKeyStr, Count: int64(buckets[buckedKeyStr])})
+	}
+
+	return &result
 }

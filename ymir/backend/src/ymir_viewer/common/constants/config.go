@@ -2,7 +2,7 @@ package constants
 
 import (
 	"encoding/json"
-	"sort"
+	"fmt"
 	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
@@ -15,37 +15,30 @@ type Config struct {
 	ViewerPort int
 	ViewerURI  string
 
-	MongoDBURI       string
-	MongoDataDBName  string
-	MongoDataDBCache bool
+	MongoDBURI         string
+	MongoDataDBName    string
+	MongoDataDBCache   bool
+	MongoMetricsDBName string
 
 	InnerTimeout time.Duration
 }
 
 type MirHist struct {
-	Buckets   *map[string]string `json:"-"`
-	LowerBNDs []float64          `json:"-"`
-	Ops       interface{}        `json:"-"`
+	SparseBuckets *map[string]int32 `json:"-"`
+	LowerBNDs     []float64         `json:"-"`
+	Ops           interface{}       `json:"-"`
 }
 
-// Json as array, not a sub-field of struct.
+// MarshalJSON return json as array, not a sub-field of struct.
 func (h *MirHist) MarshalJSON() ([]byte, error) {
-	histKeys := make([]string, 0)
-	for histKey := range *h.Buckets {
-		histKeys = append(histKeys, histKey)
-	}
-
-	sort.Slice(histKeys, func(i, j int) bool {
-		l1, l2 := len(histKeys[i]), len(histKeys[j])
-		if l1 != l2 {
-			return l1 < l2
-		}
-		return histKeys[i] < histKeys[j]
-	})
-
 	output := []map[string]string{}
-	for _, histKey := range histKeys {
-		output = append(output, map[string]string{"x": histKey, "y": (*h.Buckets)[histKey]})
+	for _, LowerBND := range h.LowerBNDs {
+		histKey := fmt.Sprintf("%.2f", LowerBND)
+		value := "0"
+		if data, ok := (*h.SparseBuckets)[histKey]; ok {
+			value = fmt.Sprintf("%d", data)
+		}
+		output = append(output, map[string]string{"x": histKey, "y": value})
 	}
 
 	return json.Marshal(&output)

@@ -408,6 +408,33 @@ class VizClient:
                 raise DatasetEvaluationMissingAnnotation()
         raise FailedToParseVizResponse()
 
+    def send_metrics(self, metrics_group: str, id: str, create_time: int, user_id: int, project_id: int,
+                     keywords: List[str], user_labels: UserLabels, extra_data: Dict) -> None:
+        if not extra_data:
+            extra_data = {}
+
+        # fill up required fields.
+        extra_data["id"] = id
+        extra_data["create_time"] = create_time
+        extra_data["user_id"] = f"{user_id:0>4}"
+        extra_data["project_id"] = f"{project_id:0>6}"
+        extra_data["key_ids"] = ','.join([str(user_labels.name_aliases_to_id[k]) for k in keywords])
+
+        url = f"http://127.0.0.1:{settings.VIEWER_HOST_PORT}/api/v1/user_metrics/{metrics_group}"
+        self.session.post(url, data=extra_data, timeout=settings.VIZ_TIMEOUT)
+
+    def query_metrics(self,
+                      metrics_group: str,
+                      user_id: int,
+                      query_field: str,
+                      bucket: str,
+                      unit: str = "",
+                      limit: int = 10) -> Dict:
+        url = f"http://127.0.0.1:{settings.VIEWER_HOST_PORT}/api/v1/user_metrics/{metrics_group}"
+        params = {"user_id": user_id, "query_field": query_field, "bucket": bucket, "unit": unit, "limit": limit}
+        resp = self.get_resp(url, params=params)
+        return self.parse_resp(resp)
+
     def close(self) -> None:
         self.session.close()
 

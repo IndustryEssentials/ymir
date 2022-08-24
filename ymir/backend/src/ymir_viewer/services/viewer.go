@@ -17,7 +17,7 @@ import (
 	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
-// Delcare base handler interface, which is used in viewer.
+// BaseHandler delcare base handler interface, which is used in viewer.
 type BaseHandler interface {
 	GetAssetsHandler(
 		mirRepo *constants.MirRepo,
@@ -46,6 +46,18 @@ type BaseHandler interface {
 	GetModelInfoHandler(
 		mirRepo *constants.MirRepo,
 	) *constants.MirdataModel
+	MetricsQueryHandler(
+		metricsGroup string,
+		userID string,
+		queryField string,
+		bucket string,
+		unit string,
+		limit int,
+	) *[]constants.MetricsQueryPoint
+	MetricsRecordHandler(
+		metricsGroup string,
+		postForm map[string]interface{},
+	)
 }
 
 type ViewerServer struct {
@@ -60,11 +72,21 @@ func NewViewerServer(config constants.Config) ViewerServer {
 	gin.SetMode(gin.ReleaseMode)
 	viewerServer := ViewerServer{
 		addr:    config.ViewerURI,
-		gin:     gin.Default(),
+		gin:     gin.New(),
 		sandbox: config.YmirSandbox,
 		config:  config,
-		handler: NewViewerHandler(config.MongoDBURI, config.MongoDataDBName, config.MongoDataDBCache),
+		handler: NewViewerHandler(
+			config.MongoDBURI,
+			config.MongoDataDBName,
+			config.MongoDataDBCache,
+			config.MongoMetricsDBName,
+		),
 	}
+
+	viewerServer.gin.Use(
+		gin.LoggerWithWriter(gin.DefaultWriter, "/health", "/metrics"),
+		gin.Recovery(),
+	)
 
 	// get global Monitor object
 	m := ginmetrics.GetMonitor()
@@ -113,6 +135,8 @@ func (s *ViewerServer) routes() {
 		apiPath.GET("/users/:userID/repo/:repoID/branch/:branchID/dataset_meta_count", s.handleDatasetMetaCounts)
 		apiPath.GET("/users/:userID/repo/:repoID/branch/:branchID/dataset_stats", s.handleDatasetStats)
 		apiPath.GET("/users/:userID/repo/:repoID/branch/:branchID/model_info", s.handleModelInfo)
+		apiPath.GET("/user_metrics/:metrics_group", s.handleMetricsQuery)
+		apiPath.POST("/user_metrics/:metrics_group", s.handleMetricsRecord)
 	}
 }
 
@@ -355,6 +379,93 @@ func (s *ViewerServer) handleModelInfo(c *gin.Context) {
 
 func (s *ViewerServer) handleHealth(c *gin.Context) {
 	ViewerSuccess(c, "Healthy")
+}
+
+// @Summary Record metrics signals.
+// @Accept  json
+// @Produce  json
+// @Param   metricsGroup    path    string     true        "metrics_group"
+// @Param   ID              post    string     true        "id"
+// @Param   createTime      post    timestamp  true        "create_time"
+// @Param   keyIDs     		post    string     true        "e.g. key_ids=0,1,2"
+// @Success 200 {string} string    "'code': 0, 'msg': 'Success', 'Success': true, 'result': ''"
+// @Router /api/v1/user_metrics/:metrics_group [post]
+func (s *ViewerServer) handleMetricsRecord(c *gin.Context) {
+	metricsGroup := c.Param("metrics_group")
+	if len(metricsGroup) <= 0 {
+		ViewerFailure(c, &FailureResult{Code: constants.FailInvalidParmsCode,
+			Msg: "Missing metricsGroup."})
+		return
+	}
+
+	if len(c.PostForm("id")) < 1 || len(c.PostForm("create_time")) < 1 ||
+		len(c.PostForm("user_id")) < 1 || len(c.PostForm("project_id")) < 1 || len(c.PostForm("key_ids")) < 1 {
+		ViewerFailure(c, &FailureResult{Code: constants.FailInvalidParmsCode,
+			Msg: "Missing required fields: id or create_time or user_id or project_id or key_ids."})
+		return
+	}
+
+	dataMap := map[string]interface{}{}
+	if err := c.Request.ParseForm(); err != nil {
+		panic(err)
+	}
+	for key, value := range c.Request.PostForm {
+		dataMap[key] = value[0]
+	}
+
+	// Normalize params.
+	keyIDsKey := "key_ids"
+	createTimeKey := "create_time"
+	dataMap[keyIDsKey] = s.getIntSliceFromString(dataMap[keyIDsKey].(string))
+	// Parse time from timestamp.
+	createTime, err := strconv.ParseInt(dataMap[createTimeKey].(string), 10, 64)
+	if err != nil {
+		panic(err)
+	}
+	dataMap[createTimeKey] = time.Unix(createTime, 0)
+
+	log.Printf("recording metrics group: %s dataMap: %#v", metricsGroup, dataMap)
+	s.handler.MetricsRecordHandler(metricsGroup, dataMap)
+	ViewerSuccess(c, "")
+}
+
+// @Summary Query metrics signals.
+// @Accept  json
+// @Produce  json
+// @Param   metricsGroup     path    string     true        "metrics_group"
+// @Param   userID           query   string     true        "user_id for filter"
+// @Param   queryField       query   string     true        "query_field: field of data to query"
+// @Param   bucket     		 query   string     true        "bucket type, e.g. bucket=count/time"
+// @Param   unit     		 query   string     true        "valid with bucket=time e.g. unit=day week month"
+// @Param   limit            query    string     false        "limit, default is 8"
+// @Success 200 {string} string    "'code': 0, 'msg': 'Success', 'Success': true, 'result': ''"
+// @Router /api/v1/user_metrics/:metrics_group [get]
+func (s *ViewerServer) handleMetricsQuery(c *gin.Context) {
+	metricsGroup := c.Param("metrics_group")
+	if len(metricsGroup) <= 0 {
+		ViewerFailure(c, &FailureResult{Code: constants.FailInvalidParmsCode,
+			Msg: "Missing metricsGroup."})
+		return
+	}
+
+	// validate queries.
+	userID := c.DefaultQuery("user_id", "")
+	queryField := c.DefaultQuery("query_field", "")
+	bucket := c.DefaultQuery("bucket", "")
+	if len(userID) < 1 || len(queryField) < 1 || len(bucket) < 1 {
+		ViewerFailure(c, &FailureResult{Code: constants.FailInvalidParmsCode,
+			Msg: "Missing required field: user_id, query_field, bucket"})
+		return
+	}
+	limit := s.getInt(c.DefaultQuery("limit", "0"))
+	if limit < 1 {
+		limit = 8
+	}
+	unit := c.DefaultQuery("unit", "")
+
+	result := s.handler.MetricsQueryHandler(metricsGroup, userID, queryField, bucket, unit, limit)
+	log.Printf("MetricsQuery result: %+v", result)
+	ViewerSuccess(c, result)
 }
 
 func (s *ViewerServer) handleFailure(c *gin.Context) {
