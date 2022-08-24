@@ -1,9 +1,10 @@
-import React, { useEffect } from "react"
-import { Button, Form, message, Card, Space, Radio } from "antd"
+import React, { useEffect, useState } from "react"
+import { Button, Form, message, Card, Space, Radio, Input } from "antd"
 import { useHistory, useLocation, useParams } from "umi"
 
 import { formLayout } from "@/config/antd"
 import t from "@/utils/t"
+import { string2Array } from '@/utils/string'
 import useFetch from '@/hooks/useFetch'
 
 import Breadcrumbs from "@/components/common/breadcrumb"
@@ -12,6 +13,11 @@ import Desc from "@/components/form/desc"
 
 import commonStyles from "../common.less"
 import s from "./index.less"
+import MergeType from "./components/formItem.mergeType"
+import DatasetName from "../../../components/form/items/datasetName"
+import Strategy from "./components/formItem.strategy"
+
+const { useWatch, useForm } = Form
 
 function Merge() {
   const [dataset, getDataset] = useFetch('dataset/getDataset', {})
@@ -21,17 +27,19 @@ function Merge() {
   const pageParams = useParams()
   const pid = Number(pageParams.id)
   const { query } = useLocation()
-  const { iterationId, currentStage, outputKey, merging } = query
+  const { iterationId, currentStage, outputKey, } = query
   const did = Number(query.did)
+  const mid = string2Array(query.mid)
   const history = useHistory()
-  const [form] = Form.useForm()
-  const includes = Form.useWatch('includes', form)
-  const excludes = Form.useWatch('excludes', form)
+  const [form] = useForm()
+  const includes = useWatch('includes', form)
+  const excludes = useWatch('excludes', form)
+  const type = useWatch('type', form)
+  const selectedDataset = useWatch('dataset', form)
 
 
   const initialValues = {
-    includes: Number(merging) ? [Number(merging)] : [],
-    strategy: 2,
+    includes: mid,
   }
 
   useEffect(() => {
@@ -60,8 +68,8 @@ function Merge() {
     }
     const params = {
       ...values,
-      projectId: dataset.projectId,
-      dataset: did,
+      projectId: pid,
+      datasets: [did, selectedDataset, ...values.includes].filter(item => item),
     }
     await merge(params)
   }
@@ -70,12 +78,8 @@ function Merge() {
     console.log("on finish failed: ", err)
   }
 
-  function filterExcludes(datasets) {
-    return datasets.filter(ds => ![...(includes || []), did].includes(ds.id))
-  }
-
-  function filterIncludes(datasets) {
-    return datasets.filter(ds => ![...(excludes || []), did].includes(ds.id))
+  function filter(datasets, ids = []) {
+    return datasets.filter(ds => ![...ids, did].includes(ds.id))
   }
 
   return (
@@ -90,34 +94,33 @@ function Merge() {
           onFinish={onFinish}
           onFinishFailed={onFinishFailed}
         >
-          <Form.Item label={t('task.fusion.form.dataset')}>
+          <MergeType initialValue={mid ? 0 : 1} />
+          {did ? <Form.Item label={t('task.fusion.form.dataset')}>
             <span>{dataset.name} {dataset.versionName} (assets: {dataset.assetCount})</span>
-          </Form.Item>
+          </Form.Item> : null}
+          {type ? <Form.Item name='dataset' label={t('task.fusion.form.dataset')}>
+            <DatasetSelect
+              pid={pid}
+              filters={datasets => filter(datasets, [...(includes || []), ...(excludes || [])])}
+            />
+          </Form.Item> : <DatasetName />}
           <Form.Item label={t('task.fusion.form.merge.include.label')} name="includes" tooltip={t('tip.task.merge.include')}>
             <DatasetSelect
               placeholder={t('task.fusion.form.datasets.placeholder')}
               mode='multiple'
               pid={pid}
-              filters={filterIncludes}
+              filters={datasets => filter(datasets, [selectedDataset, ...(excludes || [])])}
               allowEmpty={true}
               showArrow
             />
           </Form.Item>
-          <Form.Item name='strategy'
-            hidden={includes?.length < 1}
-            label={t('task.train.form.repeatdata.label')} initialValue={2}>
-            <Radio.Group options={[
-              { value: 2, label: t('task.train.form.repeatdata.latest') },
-              { value: 3, label: t('task.train.form.repeatdata.original') },
-              { value: 1, label: t('task.train.form.repeatdata.terminate') },
-            ]} />
-          </Form.Item>
+          <Strategy hidden={includes?.length < 1} />
           <Form.Item label={t('task.fusion.form.merge.exclude.label')} name="excludes" tooltip={t('tip.task.merge.exclude')}>
             <DatasetSelect
               placeholder={t('task.fusion.form.datasets.placeholder')}
               mode='multiple'
               pid={pid}
-              filters={filterExcludes}
+              filters={datasets => filter(datasets, [selectedDataset, ...(includes || [])])}
               showArrow
             />
           </Form.Item>
