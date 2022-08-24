@@ -240,6 +240,8 @@ class DatasetCheckDuplicationOut(Common):
 class DatasetMergeCreate(BaseModel):
     project_id: int
     dataset_id: int
+    dest_group_id: Optional[int]
+    dest_group_name: Optional[str]
     include_datasets: Optional[List[int]]
     exclude_datasets: Optional[List[int]]
     merge_strategy: MergeStrategy = Field(
@@ -250,7 +252,9 @@ class DatasetMergeCreate(BaseModel):
     @root_validator
     def confine_parameters(cls, values: Any) -> Any:
         if values.get("include_datasets") is None and values.get("exclude_datasets") is None:
-            raise ValueError("include_datasets and exclude_datasets cannot all be None")
+            raise ValueError("include_datasets and exclude_datasets cannot both be None")
+        if values.get("dest_group_id") is None and values.get("dest_group_name") is None:
+            raise ValueError("dest_group_id and dest_group_name cannot both be None")
         return values
 
 
