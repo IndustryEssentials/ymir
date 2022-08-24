@@ -34,7 +34,7 @@ router = APIRouter()
 
 
 @router.get("/batch", response_model=schemas.DatasetsAnalysesOut)
-def get_datasets_analysis(
+def batch_get_datasets(
     db: Session = Depends(deps.get_db),
     viz_client: VizClient = Depends(deps.get_viz_client),
     project_id: int = Query(None),
