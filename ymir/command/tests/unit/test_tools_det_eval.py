@@ -6,7 +6,7 @@ from google.protobuf import json_format
 import numpy as np
 
 from mir.protos import mir_command_pb2 as mirpb
-from mir.tools import det_eval_coco, det_eval_utils, mir_storage_ops
+from mir.tools import det_eval_coco, det_eval_utils, det_eval_voc, mir_storage_ops
 from tests import utils as test_utils
 
 
@@ -254,7 +254,7 @@ class TestToolsDetEval(unittest.TestCase):
 
         self.assertEqual(2, len(mir_coco.img_cat_to_annotations[(0, 0)]))
 
-    def test_mir_eval_00(self):
+    def test_det_eval_coco_00(self):
         """ align our eval with original COCOeval """
 
         # original result from pycocotools
@@ -293,3 +293,38 @@ class TestToolsDetEval(unittest.TestCase):
 
         single_dataset_evaluation = mir_evaluator.get_evaluation_result(area_ranges_index=0, max_dets_index=0)
         self.assertTrue(len(single_dataset_evaluation.iou_evaluations) > 0)
+        
+    def test_det_eval_voc_00(self) -> None:
+        mir_metadatas: mirpb.MirMetadatas
+        mir_annotations: mirpb.MirAnnotations
+        mir_keywords: mirpb.MirKeywords
+        mir_metadatas, mir_annotations, mir_keywords = mir_storage_ops.MirStorageOps.load_multiple_storages(
+            mir_root=self._mir_root,
+            mir_branch='a',
+            mir_task_id='a',
+            ms_list=[mirpb.MirStorage.MIR_METADATAS, mirpb.MirStorage.MIR_ANNOTATIONS, mirpb.MirStorage.MIR_KEYWORDS])
+
+        mir_gt = det_eval_utils.MirDataset(mir_metadatas=mir_metadatas,
+                                           mir_annotations=mir_annotations,
+                                           mir_keywords=mir_keywords,
+                                           conf_thr=0,
+                                           dataset_id='a',
+                                           as_gt=True)
+        mir_dt = det_eval_utils.MirDataset(mir_metadatas=mir_metadatas,
+                                           mir_annotations=mir_annotations,
+                                           mir_keywords=mir_keywords,
+                                           conf_thr=0,
+                                           dataset_id='a',
+                                           as_gt=False)
+
+        evaluate_config = mirpb.EvaluateConfig()
+        evaluate_config.conf_thr = 0.0005
+        evaluate_config.iou_thrs_interval = '0.5'
+        evaluate_config.need_pr_curve = True
+        evaluate_config.gt_dataset_id = 'a'
+        evaluate_config.pred_dataset_ids.append('a')
+        evaluate_config.class_ids[:] = [0, 1]
+        evaluation = det_eval_voc.det_evaluate(mir_dts=[mir_dt],
+                                               mir_gt=mir_gt,
+                                               config=evaluate_config)
+        self.assertTrue(len(evaluation.dataset_evaluations) == 1)
