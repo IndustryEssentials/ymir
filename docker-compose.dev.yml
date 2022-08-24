@@ -126,6 +126,7 @@ services:
     image: grafana/grafana:9.1.0
     environment:
       - "GF_INSTALL_PLUGINS=grafana-piechart-panel"
+      - "GF_DASHBOARDS_DEFAULT_HOME_DASHBOARD_PATH=/etc/grafana/provisioning/dashboards/docker_containers.json"
     restart: unless-stopped
     user: "0:0"
     ports:

@@ -43,6 +43,12 @@ export enum IMPORTSTRATEGY {
   UNKOWN_KEYWORDS_AUTO_ADD = 4,
 }
 
+export enum MERGESTRATEGY {
+  NORMAL = 0,
+  HOST = 1,
+  GUEST = 2,
+}
+
 export function transferDatasetGroup(data: BackendData) {
   const group: DatasetGroup = {
     id: data.id,

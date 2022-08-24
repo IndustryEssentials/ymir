@@ -72,7 +72,7 @@
             "dashes": false,
             "datasource": {
                 "type": "loki",
-                "uid": "zw9hDGZ4z"
+                "uid": "ymir_metrics_loki"
             },
             "fieldConfig": {
                 "defaults": {
@@ -118,7 +118,7 @@
                 {
                     "datasource": {
                         "type": "loki",
-                        "uid": "zw9hDGZ4z"
+                        "uid": "ymir_metrics_loki"
                     },
                     "editorMode": "code",
                     "expr": "sum(count_over_time({filename=\"$filename\"} |= \"$search\" [$__interval]))",
@@ -160,7 +160,7 @@
         {
             "datasource": {
                 "type": "loki",
-                "uid": "zw9hDGZ4z"
+                "uid": "ymir_metrics_loki"
             },
             "gridPos": {
                 "h": 22,
@@ -184,7 +184,7 @@
                 {
                     "datasource": {
                         "type": "loki",
-                        "uid": "zw9hDGZ4z"
+                        "uid": "ymir_metrics_loki"
                     },
                     "editorMode": "code",
                     "expr": "{filename=\"$filename\"} |= \"$search\"",
@@ -199,7 +199,7 @@
             "collapsed": false,
             "datasource": {
                 "type": "prometheus",
-                "uid": "PBFA97CFB590B2093"
+                "uid": "ymir_metrics_prometheus"
             },
             "gridPos": {
                 "h": 1,
@@ -213,7 +213,7 @@
                 {
                     "datasource": {
                         "type": "prometheus",
-                        "uid": "PBFA97CFB590B2093"
+                        "uid": "ymir_metrics_prometheus"
                     },
                     "refId": "A"
                 }
@@ -224,7 +224,7 @@
         {
             "datasource": {
                 "type": "prometheus",
-                "uid": "PBFA97CFB590B2093"
+                "uid": "ymir_metrics_prometheus"
             },
             "fieldConfig": {
                 "defaults": {
@@ -276,7 +276,7 @@
                 {
                     "datasource": {
                         "type": "prometheus",
-                        "uid": "PBFA97CFB590B2093"
+                        "uid": "ymir_metrics_prometheus"
                     },
                     "editorMode": "code",
                     "expr": "sum(rate(container_last_seen{container_label_com_docker_compose_service=\"web\"}[15m]))",
@@ -287,7 +287,7 @@
                 {
                     "datasource": {
                         "type": "prometheus",
-                        "uid": "PBFA97CFB590B2093"
+                        "uid": "ymir_metrics_prometheus"
                     },
                     "editorMode": "code",
                     "expr": "sum(rate(container_last_seen{container_label_com_docker_compose_service=\"backend\"}[15m]))",
@@ -299,7 +299,7 @@
                 {
                     "datasource": {
                         "type": "prometheus",
-                        "uid": "PBFA97CFB590B2093"
+                        "uid": "ymir_metrics_prometheus"
                     },
                     "editorMode": "code",
                     "expr": "sum(rate(container_last_seen{container_label_com_docker_compose_service=\"db\"}[15m]))",
@@ -311,7 +311,7 @@
                 {
                     "datasource": {
                         "type": "prometheus",
-                        "uid": "PBFA97CFB590B2093"
+                        "uid": "ymir_metrics_prometheus"
                     },
                     "editorMode": "code",
                     "expr": "sum(rate(container_last_seen{container_label_com_docker_compose_service=\"mongodb\"}[15m]))",
@@ -323,7 +323,7 @@
                 {
                     "datasource": {
                         "type": "prometheus",
-                        "uid": "PBFA97CFB590B2093"
+                        "uid": "ymir_metrics_prometheus"
                     },
                     "editorMode": "code",
                     "expr": "sum(rate(container_last_seen{container_label_com_docker_compose_service=\"redis\"}[15m]))",
@@ -335,7 +335,7 @@
                 {
                     "datasource": {
                         "type": "prometheus",
-                        "uid": "PBFA97CFB590B2093"
+                        "uid": "ymir_metrics_prometheus"
                     },
                     "editorMode": "code",
                     "expr": "sum(rate(container_last_seen{container_label_com_docker_compose_service=\"viz-redis\"}[15m]))",
@@ -347,7 +347,7 @@
                 {
                     "datasource": {
                         "type": "prometheus",
-                        "uid": "PBFA97CFB590B2093"
+                        "uid": "ymir_metrics_prometheus"
                     },
                     "editorMode": "code",
                     "expr": "sum(rate(container_last_seen{container_label_com_docker_compose_service=\"clickhouse\"}[15m]))",
@@ -359,7 +359,7 @@
                 {
                     "datasource": {
                         "type": "prometheus",
-                        "uid": "PBFA97CFB590B2093"
+                        "uid": "ymir_metrics_prometheus"
                     },
                     "editorMode": "code",
                     "expr": "sum(rate(container_last_seen{container_label_com_docker_compose_service=\"tensorboard\"}[15m]))",
@@ -371,7 +371,7 @@
                 {
                     "datasource": {
                         "type": "prometheus",
-                        "uid": "PBFA97CFB590B2093"
+                        "uid": "ymir_metrics_prometheus"
                     },
                     "editorMode": "code",
                     "expr": "sum(rate(container_last_seen{container_label_com_docker_compose_service=\"labelstudio\"}[15m]))",
@@ -383,7 +383,7 @@
                 {
                     "datasource": {
                         "type": "prometheus",
-                        "uid": "PBFA97CFB590B2093"
+                        "uid": "ymir_metrics_prometheus"
                     },
                     "editorMode": "code",
                     "expr": "sum(rate(container_last_seen{container_label_com_docker_compose_service=\"blackbox\"}[15m]))",
@@ -395,7 +395,7 @@
                 {
                     "datasource": {
                         "type": "prometheus",
-                        "uid": "PBFA97CFB590B2093"
+                        "uid": "ymir_metrics_prometheus"
                     },
                     "editorMode": "code",
                     "expr": "sum(rate(container_last_seen{container_label_com_docker_compose_service=\"cadvisor\"}[15m]))",
@@ -407,7 +407,7 @@
                 {
                     "datasource": {
                         "type": "prometheus",
-                        "uid": "PBFA97CFB590B2093"
+                        "uid": "ymir_metrics_prometheus"
                     },
                     "editorMode": "code",
                     "expr": "sum(rate(container_last_seen{container_label_com_docker_compose_service=\"grafana\"}[15m]))",
@@ -419,7 +419,7 @@
                 {
                     "datasource": {
                         "type": "prometheus",
-                        "uid": "PBFA97CFB590B2093"
+                        "uid": "ymir_metrics_prometheus"
                     },
                     "editorMode": "code",
                     "expr": "sum(rate(container_last_seen{container_label_com_docker_compose_service=\"nodeexporter\"}[15m]))",
@@ -431,7 +431,7 @@
                 {
                     "datasource": {
                         "type": "prometheus",
-                        "uid": "PBFA97CFB590B2093"
+                        "uid": "ymir_metrics_prometheus"
                     },
                     "editorMode": "code",
                     "expr": "sum(rate(container_last_seen{container_label_com_docker_compose_service=\"prometheus\"}[15m]))",
@@ -443,7 +443,7 @@
                 {
                     "datasource": {
                         "type": "prometheus",
-                        "uid": "PBFA97CFB590B2093"
+                        "uid": "ymir_metrics_prometheus"
                     },
                     "editorMode": "code",
                     "expr": "sum(rate(container_last_seen{container_label_com_docker_compose_service=\"loki\"}[15m]))",
@@ -455,7 +455,7 @@
                 {
                     "datasource": {
                         "type": "prometheus",
-                        "uid": "PBFA97CFB590B2093"
+                        "uid": "ymir_metrics_prometheus"
                     },
                     "editorMode": "code",
                     "expr": "sum(rate(container_last_seen{container_label_com_docker_compose_service=\"promtail\"}[15m]))",
@@ -471,7 +471,7 @@
         {
             "datasource": {
                 "type": "prometheus",
-                "uid": "PBFA97CFB590B2093"
+                "uid": "ymir_metrics_prometheus"
             },
             "fieldConfig": {
                 "defaults": {
@@ -535,7 +535,7 @@
                 {
                     "datasource": {
                         "type": "prometheus",
-                        "uid": "PBFA97CFB590B2093"
+                        "uid": "ymir_metrics_prometheus"
                     },
                     "editorMode": "code",
                     "expr": "absent(container_last_seen{container_label_com_docker_compose_service=\"web\"})",
@@ -546,7 +546,7 @@
                 {
                     "datasource": {
                         "type": "prometheus",
-                        "uid": "PBFA97CFB590B2093"
+                        "uid": "ymir_metrics_prometheus"
                     },
                     "editorMode": "code",
                     "expr": "absent(container_last_seen{container_label_com_docker_compose_service=\"backend\"})",
@@ -558,7 +558,7 @@
                 {
                     "datasource": {
                         "type": "prometheus",
-                        "uid": "PBFA97CFB590B2093"
+                        "uid": "ymir_metrics_prometheus"
                     },
                     "editorMode": "code",
                     "exemplar": false,
@@ -572,7 +572,7 @@
                 {
                     "datasource": {
                         "type": "prometheus",
-                        "uid": "PBFA97CFB590B2093"
+                        "uid": "ymir_metrics_prometheus"
                     },
                     "editorMode": "code",
                     "expr": "absent(container_last_seen{container_label_com_docker_compose_service=\"mongodb\"})",
@@ -584,7 +584,7 @@
                 {
                     "datasource": {
                         "type": "prometheus",
-                        "uid": "PBFA97CFB590B2093"
+                        "uid": "ymir_metrics_prometheus"
                     },
                     "editorMode": "code",
                     "expr": "absent(container_last_seen{container_label_com_docker_compose_service=\"redis\"})",
@@ -596,7 +596,7 @@
                 {
                     "datasource": {
                         "type": "prometheus",
-                        "uid": "PBFA97CFB590B2093"
+                        "uid": "ymir_metrics_prometheus"
                     },
                     "editorMode": "code",
                     "exemplar": false,
@@ -609,7 +609,7 @@
                 {
                     "datasource": {
                         "type": "prometheus",
-                        "uid": "PBFA97CFB590B2093"
+                        "uid": "ymir_metrics_prometheus"
                     },
                     "editorMode": "code",
                     "expr": "absent(container_last_seen{container_label_com_docker_compose_service=\"viz-redis\"})",
@@ -621,7 +621,7 @@
                 {
                     "datasource": {
                         "type": "prometheus",
-                        "uid": "PBFA97CFB590B2093"
+                        "uid": "ymir_metrics_prometheus"
                     },
                     "editorMode": "code",
                     "expr": "absent(container_last_seen{container_label_com_docker_compose_service=\"clickhouse\"})",
@@ -633,7 +633,7 @@
                 {
                     "datasource": {
                         "type": "prometheus",
-                        "uid": "PBFA97CFB590B2093"
+                        "uid": "ymir_metrics_prometheus"
                     },
                     "editorMode": "code",
                     "expr": "absent(container_last_seen{container_label_com_docker_compose_service=\"labelstudio\"})",
@@ -650,7 +650,7 @@
             "collapsed": false,
             "datasource": {
                 "type": "prometheus",
-                "uid": "PBFA97CFB590B2093"
+                "uid": "ymir_metrics_prometheus"
             },
             "gridPos": {
                 "h": 1,
@@ -664,7 +664,7 @@
                 {
                     "datasource": {
                         "type": "prometheus",
-                        "uid": "PBFA97CFB590B2093"
+                        "uid": "ymir_metrics_prometheus"
                     },
                     "refId": "A"
                 }
@@ -681,7 +681,7 @@
             },
             "datasource": {
                 "type": "prometheus",
-                "uid": "PBFA97CFB590B2093"
+                "uid": "ymir_metrics_prometheus"
             },
             "description": "",
             "fontSize": "80%",
@@ -707,14 +707,15 @@
                 {
                     "datasource": {
                         "type": "prometheus",
-                        "uid": "PBFA97CFB590B2093"
+                        "uid": "ymir_metrics_prometheus"
                     },
-                    "expr": "sum by(status, handler, instance) (http_requests_total)",
+                    "editorMode": "code",
+                    "expr": "sum by(status_code, path, job) (starlette_requests_total)",
                     "format": "time_series",
                     "instant": false,
                     "interval": "",
                     "intervalFactor": 1,
-                    "legendFormat": "{{instance}}-{{handler}}-{{status}}",
+                    "legendFormat": "{{job}}-{{path}}-{{status_code}}",
                     "refId": "A"
                 }
             ],
@@ -729,7 +730,7 @@
             "dashes": false,
             "datasource": {
                 "type": "prometheus",
-                "uid": "PBFA97CFB590B2093"
+                "uid": "ymir_metrics_prometheus"
             },
             "fieldConfig": {
                 "defaults": {
@@ -775,31 +776,37 @@
                 {
                     "datasource": {
                         "type": "prometheus",
-                        "uid": "PBFA97CFB590B2093"
+                        "uid": "ymir_metrics_prometheus"
                     },
-                    "expr": "histogram_quantile(0.95, sum (rate(http_request_duration_seconds_bucket[5m])) by (le, instance))",
+                    "editorMode": "code",
+                    "expr": "histogram_quantile(0.95, sum (rate(starlette_request_duration_seconds_bucket[5m])) by (le, instance))",
                     "interval": "",
                     "legendFormat": "p95",
+                    "range": true,
                     "refId": "A"
                 },
                 {
                     "datasource": {
                         "type": "prometheus",
-                        "uid": "PBFA97CFB590B2093"
+                        "uid": "ymir_metrics_prometheus"
                     },
-                    "expr": "histogram_quantile(0.99, sum (rate(http_request_duration_seconds_bucket[5m])) by (le, instance))",
+                    "editorMode": "code",
+                    "expr": "histogram_quantile(0.99, sum (rate(starlette_request_duration_seconds_bucket[5m])) by (le, instance))",
                     "interval": "",
                     "legendFormat": "p99",
+                    "range": true,
                     "refId": "B"
                 },
                 {
                     "datasource": {
                         "type": "prometheus",
-                        "uid": "PBFA97CFB590B2093"
+                        "uid": "ymir_metrics_prometheus"
                     },
-                    "expr": "sum (http_request_duration_seconds_count) / sum(http_request_duration_seconds_sum)",
+                    "editorMode": "code",
+                    "expr": "sum (starlette_request_duration_seconds_count) / sum(starlette_request_duration_seconds_sum)",
                     "interval": "",
                     "legendFormat": "avg",
+                    "range": true,
                     "refId": "C"
                 }
             ],
@@ -834,10 +841,105 @@
             }
         },
         {
+            "datasource": {
+                "type": "prometheus",
+                "uid": "ymir_metrics_prometheus"
+            },
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "palette-classic"
+                    },
+                    "custom": {
+                        "axisCenteredZero": false,
+                        "axisColorMode": "text",
+                        "axisLabel": "",
+                        "axisPlacement": "auto",
+                        "barAlignment": 0,
+                        "drawStyle": "line",
+                        "fillOpacity": 0,
+                        "gradientMode": "none",
+                        "hideFrom": {
+                            "legend": false,
+                            "tooltip": false,
+                            "viz": false
+                        },
+                        "lineInterpolation": "linear",
+                        "lineWidth": 1,
+                        "pointSize": 5,
+                        "scaleDistribution": {
+                            "type": "linear"
+                        },
+                        "showPoints": "auto",
+                        "spanNulls": false,
+                        "stacking": {
+                            "group": "A",
+                            "mode": "none"
+                        },
+                        "thresholdsStyle": {
+                            "mode": "off"
+                        }
+                    },
+                    "mappings": [],
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "green",
+                                "value": null
+                            },
+                            {
+                                "color": "red",
+                                "value": 80
+                            }
+                        ]
+                    },
+                    "unit": "s"
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 4,
+                "w": 8,
+                "x": 16,
+                "y": 36
+            },
+            "id": 37,
+            "options": {
+                "legend": {
+                    "calcs": [],
+                    "displayMode": "list",
+                    "placement": "bottom",
+                    "showLegend": true
+                },
+                "tooltip": {
+                    "mode": "single",
+                    "sort": "none"
+                }
+            },
+            "pluginVersion": "9.1.0",
+            "targets": [
+                {
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "ymir_metrics_prometheus"
+                    },
+                    "editorMode": "code",
+                    "expr": "histogram_quantile(1, sum (rate(starlette_request_duration_seconds_bucket[5m])) by (le, instance, path, status_code))",
+                    "interval": "",
+                    "legendFormat": "{{ instance }}-{{path}}-{{status_code}}",
+                    "range": true,
+                    "refId": "A"
+                }
+            ],
+            "title": "Slow Response",
+            "type": "timeseries"
+        },
+        {
             "collapsed": false,
             "datasource": {
                 "type": "prometheus",
-                "uid": "PBFA97CFB590B2093"
+                "uid": "ymir_metrics_prometheus"
             },
             "gridPos": {
                 "h": 1,
@@ -851,7 +953,7 @@
                 {
                     "datasource": {
                         "type": "prometheus",
-                        "uid": "PBFA97CFB590B2093"
+                        "uid": "ymir_metrics_prometheus"
                     },
                     "refId": "A"
                 }
@@ -868,7 +970,7 @@
             },
             "datasource": {
                 "type": "prometheus",
-                "uid": "PBFA97CFB590B2093"
+                "uid": "ymir_metrics_prometheus"
             },
             "description": "",
             "fontSize": "80%",
@@ -894,7 +996,7 @@
                 {
                     "datasource": {
                         "type": "prometheus",
-                        "uid": "PBFA97CFB590B2093"
+                        "uid": "ymir_metrics_prometheus"
                     },
                     "expr": "sum by(code, uri, instance) (gin_uri_request_total)",
                     "format": "time_series",
@@ -916,7 +1018,7 @@
             "dashes": false,
             "datasource": {
                 "type": "prometheus",
-                "uid": "PBFA97CFB590B2093"
+                "uid": "ymir_metrics_prometheus"
             },
             "fieldConfig": {
                 "defaults": {
@@ -962,7 +1064,7 @@
                 {
                     "datasource": {
                         "type": "prometheus",
-                        "uid": "PBFA97CFB590B2093"
+                        "uid": "ymir_metrics_prometheus"
                     },
                     "expr": "histogram_quantile(0.95, sum (rate(gin_request_duration_bucket[5m])) by (le, instance))",
                     "interval": "",
@@ -972,7 +1074,7 @@
                 {
                     "datasource": {
                         "type": "prometheus",
-                        "uid": "PBFA97CFB590B2093"
+                        "uid": "ymir_metrics_prometheus"
                     },
                     "expr": "histogram_quantile(0.99, sum (rate(gin_request_duration_bucket[5m])) by (le, instance))",
                     "interval": "",
@@ -982,7 +1084,7 @@
                 {
                     "datasource": {
                         "type": "prometheus",
-                        "uid": "PBFA97CFB590B2093"
+                        "uid": "ymir_metrics_prometheus"
                     },
                     "expr": "sum (gin_request_duration_sum) / sum(gin_request_duration_count)",
                     "interval": "",
@@ -1023,7 +1125,7 @@
         {
             "datasource": {
                 "type": "prometheus",
-                "uid": "PBFA97CFB590B2093"
+                "uid": "ymir_metrics_prometheus"
             },
             "fieldConfig": {
                 "defaults": {
@@ -1072,7 +1174,7 @@
                 {
                     "datasource": {
                         "type": "prometheus",
-                        "uid": "PBFA97CFB590B2093"
+                        "uid": "ymir_metrics_prometheus"
                     },
                     "expr": "sum by(uri, instance) (gin_slow_request_total)",
                     "format": "time_series",
@@ -1090,7 +1192,7 @@
             "collapsed": false,
             "datasource": {
                 "type": "prometheus",
-                "uid": "PBFA97CFB590B2093"
+                "uid": "ymir_metrics_prometheus"
             },
             "gridPos": {
                 "h": 1,
@@ -1104,7 +1206,7 @@
                 {
                     "datasource": {
                         "type": "prometheus",
-                        "uid": "PBFA97CFB590B2093"
+                        "uid": "ymir_metrics_prometheus"
                     },
                     "refId": "A"
                 }
@@ -1115,7 +1217,7 @@
         {
             "datasource": {
                 "type": "prometheus",
-                "uid": "PBFA97CFB590B2093"
+                "uid": "ymir_metrics_prometheus"
             },
             "fieldConfig": {
                 "defaults": {
@@ -1184,7 +1286,7 @@
                 {
                     "datasource": {
                         "type": "prometheus",
-                        "uid": "PBFA97CFB590B2093"
+                        "uid": "ymir_metrics_prometheus"
                     },
                     "expr": "sum(rate(container_cpu_user_seconds_total{image!=\"\"}[5m])) / count(node_cpu_seconds_total{mode=\"user\"}) * 100",
                     "interval": "10s",
@@ -1201,7 +1303,7 @@
         {
             "datasource": {
                 "type": "prometheus",
-                "uid": "PBFA97CFB590B2093"
+                "uid": "ymir_metrics_prometheus"
             },
             "fieldConfig": {
                 "defaults": {
@@ -1264,7 +1366,7 @@
                 {
                     "datasource": {
                         "type": "prometheus",
-                        "uid": "PBFA97CFB590B2093"
+                        "uid": "ymir_metrics_prometheus"
                     },
                     "expr": "machine_cpu_cores",
                     "interval": "",
@@ -1281,7 +1383,7 @@
         {
             "datasource": {
                 "type": "prometheus",
-                "uid": "PBFA97CFB590B2093"
+                "uid": "ymir_metrics_prometheus"
             },
             "fieldConfig": {
                 "defaults": {
@@ -1349,7 +1451,7 @@
                 {
                     "datasource": {
                         "type": "prometheus",
-                        "uid": "PBFA97CFB590B2093"
+                        "uid": "ymir_metrics_prometheus"
                     },
                     "expr": "(sum(node_memory_MemTotal_bytes) - sum(node_memory_MemFree_bytes+node_memory_Buffers_bytes+node_memory_Cached_bytes) ) / sum(node_memory_MemTotal_bytes) * 100",
                     "interval": "10s",
@@ -1366,7 +1468,7 @@
         {
             "datasource": {
                 "type": "prometheus",
-                "uid": "PBFA97CFB590B2093"
+                "uid": "ymir_metrics_prometheus"
             },
             "fieldConfig": {
                 "defaults": {
@@ -1431,7 +1533,7 @@
                 {
                     "datasource": {
                         "type": "prometheus",
-                        "uid": "PBFA97CFB590B2093"
+                        "uid": "ymir_metrics_prometheus"
                     },
                     "expr": "sum(container_memory_usage_bytes{image!=\"\"})",
                     "interval": "10s",
@@ -1448,7 +1550,7 @@
         {
             "datasource": {
                 "type": "prometheus",
-                "uid": "PBFA97CFB590B2093"
+                "uid": "ymir_metrics_prometheus"
             },
             "fieldConfig": {
                 "defaults": {
@@ -1516,7 +1618,7 @@
                 {
                     "datasource": {
                         "type": "prometheus",
-                        "uid": "PBFA97CFB590B2093"
+                        "uid": "ymir_metrics_prometheus"
                     },
                     "expr": "(node_filesystem_size_bytes{fstype=~\"aufs|ext4\"} - node_filesystem_free_bytes{fstype=~\"aufs|ext4\"}) / node_filesystem_size_bytes{fstype=~\"aufs|ext4\"}  * 100",
                     "interval": "30s",
@@ -1533,7 +1635,7 @@
         {
             "datasource": {
                 "type": "prometheus",
-                "uid": "PBFA97CFB590B2093"
+                "uid": "ymir_metrics_prometheus"
             },
             "fieldConfig": {
                 "defaults": {
@@ -1598,7 +1700,7 @@
                 {
                     "datasource": {
                         "type": "prometheus",
-                        "uid": "PBFA97CFB590B2093"
+                        "uid": "ymir_metrics_prometheus"
                     },
                     "expr": "sum(container_fs_usage_bytes)",
                     "interval": "30s",
@@ -1618,7 +1720,7 @@
             "dashes": false,
             "datasource": {
                 "type": "prometheus",
-                "uid": "PBFA97CFB590B2093"
+                "uid": "ymir_metrics_prometheus"
             },
             "decimals": 0,
             "editable": true,
@@ -1664,7 +1766,7 @@
                 {
                     "datasource": {
                         "type": "prometheus",
-                        "uid": "PBFA97CFB590B2093"
+                        "uid": "ymir_metrics_prometheus"
                     },
                     "expr": "scalar(count(container_memory_usage_bytes{image!=\"\"}) > 0)",
                     "interval": "",
@@ -1714,7 +1816,7 @@
             "dashes": false,
             "datasource": {
                 "type": "prometheus",
-                "uid": "PBFA97CFB590B2093"
+                "uid": "ymir_metrics_prometheus"
             },
             "decimals": 2,
             "editable": true,
@@ -1765,7 +1867,7 @@
                 {
                     "datasource": {
                         "type": "prometheus",
-                        "uid": "PBFA97CFB590B2093"
+                        "uid": "ymir_metrics_prometheus"
                     },
                     "expr": "node_load1",
                     "interval": "",
@@ -1815,7 +1917,7 @@
             "dashes": false,
             "datasource": {
                 "type": "prometheus",
-                "uid": "PBFA97CFB590B2093"
+                "uid": "ymir_metrics_prometheus"
             },
             "editable": true,
             "error": false,
@@ -1875,7 +1977,7 @@
                 {
                     "datasource": {
                         "type": "prometheus",
-                        "uid": "PBFA97CFB590B2093"
+                        "uid": "ymir_metrics_prometheus"
                     },
                     "expr": "sum(irate(node_disk_read_bytes_total[5m]))",
                     "interval": "2s",
@@ -1888,7 +1990,7 @@
                 {
                     "datasource": {
                         "type": "prometheus",
-                        "uid": "PBFA97CFB590B2093"
+                        "uid": "ymir_metrics_prometheus"
                     },
                     "expr": "sum(irate(node_disk_written_bytes_total[5m]))",
                     "interval": "2s",
@@ -1901,7 +2003,7 @@
                 {
                     "datasource": {
                         "type": "prometheus",
-                        "uid": "PBFA97CFB590B2093"
+                        "uid": "ymir_metrics_prometheus"
                     },
                     "expr": "sum(irate(node_disk_io_time_seconds_total[5m]))",
                     "interval": "2s",
@@ -1950,7 +2052,7 @@
             "dashes": false,
             "datasource": {
                 "type": "prometheus",
-                "uid": "PBFA97CFB590B2093"
+                "uid": "ymir_metrics_prometheus"
             },
             "decimals": 2,
             "editable": true,
@@ -1998,7 +2100,7 @@
                 {
                     "datasource": {
                         "type": "prometheus",
-                        "uid": "PBFA97CFB590B2093"
+                        "uid": "ymir_metrics_prometheus"
                     },
                     "expr": "sum by (name) (rate(container_cpu_usage_seconds_total{image!=\"\"}[5m])) / scalar(count(node_cpu_seconds_total{mode=\"user\"})) * 100",
                     "intervalFactor": 10,
@@ -2047,7 +2149,7 @@
             "dashes": false,
             "datasource": {
                 "type": "prometheus",
-                "uid": "PBFA97CFB590B2093"
+                "uid": "ymir_metrics_prometheus"
             },
             "decimals": 2,
             "editable": true,
@@ -2095,7 +2197,7 @@
                 {
                     "datasource": {
                         "type": "prometheus",
-                        "uid": "PBFA97CFB590B2093"
+                        "uid": "ymir_metrics_prometheus"
                     },
                     "expr": "sum by (name)(container_memory_usage_bytes{image!=\"\"})",
                     "intervalFactor": 1,
@@ -2144,7 +2246,7 @@
             "dashes": false,
             "datasource": {
                 "type": "prometheus",
-                "uid": "PBFA97CFB590B2093"
+                "uid": "ymir_metrics_prometheus"
             },
             "decimals": 2,
             "editable": true,
@@ -2192,7 +2294,7 @@
                 {
                     "datasource": {
                         "type": "prometheus",
-                        "uid": "PBFA97CFB590B2093"
+                        "uid": "ymir_metrics_prometheus"
                     },
                     "expr": "sum by (name) (container_memory_cache{image!=\"\"})",
                     "intervalFactor": 2,
@@ -2241,7 +2343,7 @@
             "dashes": false,
             "datasource": {
                 "type": "prometheus",
-                "uid": "PBFA97CFB590B2093"
+                "uid": "ymir_metrics_prometheus"
             },
             "decimals": 2,
             "editable": true,
@@ -2289,7 +2391,7 @@
                 {
                     "datasource": {
                         "type": "prometheus",
-                        "uid": "PBFA97CFB590B2093"
+                        "uid": "ymir_metrics_prometheus"
                     },
                     "expr": "sum by (name) (rate(container_network_receive_bytes_total{image!=\"\"}[5m]))",
                     "intervalFactor": 10,
@@ -2338,7 +2440,7 @@
             "dashes": false,
             "datasource": {
                 "type": "prometheus",
-                "uid": "PBFA97CFB590B2093"
+                "uid": "ymir_metrics_prometheus"
             },
             "decimals": 2,
             "editable": true,
@@ -2386,7 +2488,7 @@
                 {
                     "datasource": {
                         "type": "prometheus",
-                        "uid": "PBFA97CFB590B2093"
+                        "uid": "ymir_metrics_prometheus"
                     },
                     "expr": "sum by (name) (rate(container_network_transmit_bytes_total{image!=\"\"}[5m]))",
                     "intervalFactor": 10,
@@ -2445,7 +2547,7 @@
                 },
                 "datasource": {
                     "type": "loki",
-                    "uid": "zw9hDGZ4z"
+                    "uid": "ymir_metrics_loki"
                 },
                 "definition": "label_values(filename)",
                 "hide": 0,
