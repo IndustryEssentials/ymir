@@ -305,7 +305,7 @@ export default {
       const { pid, datasets } = payload
       const { code, result } = yield call(analysis, pid, datasets)
       if (code === 0) {
-        return result.datasets.map(item => transferDatasetAnalysis(item))
+        return result.map(item => transferDatasetAnalysis(item))
       }
     },
     *checkDuplication({ payload }, { call, put, select }) {
