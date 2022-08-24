@@ -12,11 +12,11 @@ from app.api import deps
 from app.api.errors.errors import (
     AssetNotFound,
     ControllerError,
+    DatasetGroupNotFound,
     DatasetNotFound,
     DuplicateDatasetGroupError,
     NoDatasetPermission,
     FailedToHideProtectedResources,
-    DatasetGroupNotFound,
     ProjectNotFound,
     MissingOperations,
     RefuseToProcessMixedOperations,
@@ -575,6 +575,24 @@ def merge_datasets(
     if not main_dataset:
         raise DatasetNotFound()
 
+    if in_merge.dest_group_name:
+        if crud.dataset_group.is_duplicated_name_in_project(
+            db, project_id=in_merge.project_id, name=in_merge.dest_group_name
+        ):
+            raise DuplicateDatasetGroupError()
+        dest_group = crud.dataset_group.create_dataset_group(
+            db,
+            name=in_merge.dest_group_name,
+            user_id=current_user.id,
+            project_id=in_merge.project_id,
+        )
+    elif in_merge.dest_group_id:
+        dest_group = crud.dataset_group.get(db, id=in_merge.dest_group_id)
+        if not dest_group:
+            raise DatasetGroupNotFound()
+    else:
+        raise RequiredFieldMissing()
+
     if in_merge.include_datasets:
         in_datasets = ensure_datasets_are_ready(db, dataset_ids=[in_merge.dataset_id, *in_merge.include_datasets])
         in_datasets.sort(
@@ -612,9 +630,8 @@ def merge_datasets(
         parameters=in_merge.json(),
     )
     logger.info("[merge] related task record created: %s", task.hash)
-    merged_dataset = crud.dataset.create_as_task_result(
-        db, task, main_dataset.dataset_group_id, description=in_merge.description
-    )
+
+    merged_dataset = crud.dataset.create_as_task_result(db, task, dest_group.id, description=in_merge.description)
     return {"result": merged_dataset}
 
 
