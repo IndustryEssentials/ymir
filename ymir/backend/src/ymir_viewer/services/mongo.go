@@ -128,16 +128,16 @@ func (s *MongoServer) countDatasetAssetsInClass(
 		panic("invalid queryField in countDatasetAssetsInClass")
 	}
 
-	matchStage := bson.D{bson.E{Key: "$match", Value: bson.M{queryField: bson.M{"$in": classIds}}}}
-	countStage := bson.D{
-		bson.E{
-			Key: "$group",
-			Value: bson.D{
-				bson.E{Key: "_id", Value: nil},
-				bson.E{Key: "count", Value: bson.M{"$sum": 1}},
-				bson.E{Key: "sum", Value: bson.M{"$sum": bson.M{"$size": "$" + queryField}}}}}}
+	cond := make([]bson.M, 0)
+	if len(classIds) > 0 {
+		cond = append(cond, bson.M{"$match": bson.M{queryField: bson.M{"$in": classIds}}})
+	}
+	cond = append(cond, bson.M{"$group": bson.D{
+		bson.E{Key: "_id", Value: nil},
+		bson.E{Key: "count", Value: bson.M{"$sum": 1}},
+		bson.E{Key: "sum", Value: bson.M{"$sum": bson.M{"$size": "$" + queryField}}}}})
 
-	showInfoCursor, err := collection.Aggregate(s.Ctx, mongo.Pipeline{matchStage, countStage})
+	showInfoCursor, err := collection.Aggregate(s.Ctx, cond)
 	if err != nil {
 		panic(err)
 	}
@@ -376,6 +376,39 @@ func (s *MongoServer) QueryDatasetStats(
 	requireAnnotationsHist bool,
 ) *constants.QueryDatasetStatsResult {
 	collection, _ := s.getRepoCollection(mirRepo)
+
+	var gtClassIDs []int
+	var predClassIDs []int
+	// If classIDs is empty, fill by all class_ids.
+	if len(classIDs) < 1 {
+		gtUniqueClassIDs, err := collection.Distinct(s.Ctx, "gt.class_id", bson.D{})
+		if err != nil {
+			panic(err)
+		}
+		gtClassIDs = []int{}
+		for _, v := range gtUniqueClassIDs {
+			if id, ok := v.(float64); ok {
+				gtClassIDs = append(gtClassIDs, int(id))
+			}
+		}
+
+		predUniqueClassIDs, err := collection.Distinct(s.Ctx, "pred.class_id", bson.D{})
+		if err != nil {
+			panic(err)
+		}
+		predClassIDs = []int{}
+		for _, v := range predUniqueClassIDs {
+			if id, ok := v.(float64); ok {
+				predClassIDs = append(predClassIDs, int(id))
+			}
+		}
+
+	} else {
+		gtClassIDs = classIDs
+		predClassIDs = classIDs
+	}
+	log.Printf("gtClassIDs: %#v predClassIDs: %#v", gtClassIDs, predClassIDs)
+
 	totalAssetsCount, err := collection.CountDocuments(s.Ctx, bson.M{}, &options.CountOptions{})
 	if err != nil {
 		panic(err)
@@ -399,26 +432,27 @@ func (s *MongoServer) QueryDatasetStats(
 	}
 
 	// Build Annotation fields.
-	for _, classID := range classIDs {
+	for _, classID := range gtClassIDs {
 		queryData.Gt.ClassIDsCount[classID], _ = s.countDatasetAssetsInClass(collection, "gt.class_id", []int{classID})
+	}
+	queryData.Gt.PositiveAssetsCount, queryData.Gt.AnnotationsCount = s.countDatasetAssetsInClass(
+		collection,
+		"gt.class_id",
+		gtClassIDs,
+	)
+	queryData.Gt.NegativeAssetsCount = totalAssetsCount - queryData.Gt.PositiveAssetsCount
+
+	for _, classID := range predClassIDs {
 		queryData.Pred.ClassIDsCount[classID], _ = s.countDatasetAssetsInClass(
 			collection,
 			"pred.class_id",
 			[]int{classID},
 		)
 	}
-
-	queryData.Gt.PositiveAssetsCount, queryData.Gt.AnnotationsCount = s.countDatasetAssetsInClass(
-		collection,
-		"gt.class_id",
-		classIDs,
-	)
-	queryData.Gt.NegativeAssetsCount = totalAssetsCount - queryData.Gt.PositiveAssetsCount
-
 	queryData.Pred.PositiveAssetsCount, queryData.Pred.AnnotationsCount = s.countDatasetAssetsInClass(
 		collection,
 		"pred.class_id",
-		classIDs,
+		predClassIDs,
 	)
 	queryData.Pred.NegativeAssetsCount = totalAssetsCount - queryData.Pred.PositiveAssetsCount
 
