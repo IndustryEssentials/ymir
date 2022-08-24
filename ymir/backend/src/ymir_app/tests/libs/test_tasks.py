@@ -103,21 +103,21 @@ class TestTaskResult:
 
         ctrl = mocker.Mock()
         mocker.patch.object(m, "ControllerClient", return_value=ctrl)
-        viz = mocker.Mock()
+        viz = mocker.MagicMock()
         mocker.patch.object(m, "VizClient", return_value=viz)
 
         tr = m.TaskResult(db, task_in_db)
         ctrl.get_labels_of_user.assert_not_called()
-        viz.get_model.assert_not_called()
-        viz.get_dataset.assert_not_called()
+        viz.get_model_info.assert_not_called()
+        viz.get_dataset_info.assert_not_called()
 
         tr.user_labels
         ctrl.get_labels_of_user.assert_called()
 
         tr.model_info
-        viz.get_model.assert_called()
+        viz.get_model_info.assert_called()
         tr.dataset_info
-        viz.get_dataset.assert_called()
+        viz.get_dataset_info.assert_called()
 
     def test_get_dest_group_info_is_dataset(self, db: Session, mocker: Any) -> None:
         user_id = randint(100, 200)
