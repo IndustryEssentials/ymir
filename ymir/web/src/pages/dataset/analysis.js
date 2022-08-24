@@ -113,8 +113,6 @@ function Analysis() {
   }
 
   const getField = (item = {}, field, annoType) => {
-    console.log('item = {}, field, annoType:', item, field, annoType)
-
     return annoType && item[annotationsType] ? item[annotationsType][field] : item[field]
   }
 
@@ -249,7 +247,7 @@ function Analysis() {
       align: 'center',
       className: style.colunmClass,
       render: (text, record) => {
-        const total = getField(record, 'total', true)
+        const total = record.assetCount
         const negative = getField(record, 'negative', true)
         return renderPop(`${humanize(total - negative)}/${humanize(total)}`, `${total - negative}/${total}`)
       },

@@ -146,7 +146,13 @@ export function evaluate({ projectId, datasets, iou, everageIou, confidence }) {
  * @returns 
  */
 export function analysis(projectId, datasets) {
-  return request.get(`/datasets/batch`, { params: { project_id: projectId, ids: datasets.toString() } })
+  return request.get(`/datasets/batch`, {
+    params: {
+      project_id: projectId,
+      ids: datasets.toString(),
+      verbose: true,
+    }
+  })
 }
 
 /**
