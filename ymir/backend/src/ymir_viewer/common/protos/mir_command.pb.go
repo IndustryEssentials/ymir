@@ -796,6 +796,7 @@ type SingleTaskAnnotations struct {
 	/// key: image id, value: annotations of that single image
 	ImageAnnotations map[string]*SingleImageAnnotations `protobuf:"bytes,1,rep,name=image_annotations,json=imageAnnotations,proto3" json:"image_annotations,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
 	TaskId           string                             `protobuf:"bytes,2,opt,name=task_id,json=taskId,proto3" json:"task_id,omitempty"`
+	Meta             *AnnotationMeta                    `protobuf:"bytes,3,opt,name=meta,proto3" json:"meta,omitempty"`
 }
 
 func (x *SingleTaskAnnotations) Reset() {
@@ -842,6 +843,13 @@ func (x *SingleTaskAnnotations) GetTaskId() string {
 		return x.TaskId
 	}
 	return ""
+}
+
+func (x *SingleTaskAnnotations) GetMeta() *AnnotationMeta {
+	if x != nil {
+		return x.Meta
+	}
+	return nil
 }
 
 type SingleImageAnnotations struct {
@@ -891,6 +899,53 @@ func (x *SingleImageAnnotations) GetAnnotations() []*Annotation {
 	return nil
 }
 
+type AnnotationMeta struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	ClassIds []int32 `protobuf:"varint,1,rep,packed,name=class_ids,json=classIds,proto3" json:"class_ids,omitempty"`
+}
+
+func (x *AnnotationMeta) Reset() {
+	*x = AnnotationMeta{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_mir_command_proto_msgTypes[6]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *AnnotationMeta) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*AnnotationMeta) ProtoMessage() {}
+
+func (x *AnnotationMeta) ProtoReflect() protoreflect.Message {
+	mi := &file_mir_command_proto_msgTypes[6]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use AnnotationMeta.ProtoReflect.Descriptor instead.
+func (*AnnotationMeta) Descriptor() ([]byte, []int) {
+	return file_mir_command_proto_rawDescGZIP(), []int{6}
+}
+
+func (x *AnnotationMeta) GetClassIds() []int32 {
+	if x != nil {
+		return x.ClassIds
+	}
+	return nil
+}
+
 type SingleImageCks struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -903,7 +958,7 @@ type SingleImageCks struct {
 func (x *SingleImageCks) Reset() {
 	*x = SingleImageCks{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_mir_command_proto_msgTypes[6]
+		mi := &file_mir_command_proto_msgTypes[7]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -916,7 +971,7 @@ func (x *SingleImageCks) String() string {
 func (*SingleImageCks) ProtoMessage() {}
 
 func (x *SingleImageCks) ProtoReflect() protoreflect.Message {
-	mi := &file_mir_command_proto_msgTypes[6]
+	mi := &file_mir_command_proto_msgTypes[7]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -929,7 +984,7 @@ func (x *SingleImageCks) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SingleImageCks.ProtoReflect.Descriptor instead.
 func (*SingleImageCks) Descriptor() ([]byte, []int) {
-	return file_mir_command_proto_rawDescGZIP(), []int{6}
+	return file_mir_command_proto_rawDescGZIP(), []int{7}
 }
 
 func (x *SingleImageCks) GetCks() map[string]string {
@@ -965,7 +1020,7 @@ type Annotation struct {
 func (x *Annotation) Reset() {
 	*x = Annotation{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_mir_command_proto_msgTypes[7]
+		mi := &file_mir_command_proto_msgTypes[8]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -978,7 +1033,7 @@ func (x *Annotation) String() string {
 func (*Annotation) ProtoMessage() {}
 
 func (x *Annotation) ProtoReflect() protoreflect.Message {
-	mi := &file_mir_command_proto_msgTypes[7]
+	mi := &file_mir_command_proto_msgTypes[8]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -991,7 +1046,7 @@ func (x *Annotation) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Annotation.ProtoReflect.Descriptor instead.
 func (*Annotation) Descriptor() ([]byte, []int) {
-	return file_mir_command_proto_rawDescGZIP(), []int{7}
+	return file_mir_command_proto_rawDescGZIP(), []int{8}
 }
 
 func (x *Annotation) GetIndex() int32 {
@@ -1065,7 +1120,7 @@ type Rect struct {
 func (x *Rect) Reset() {
 	*x = Rect{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_mir_command_proto_msgTypes[8]
+		mi := &file_mir_command_proto_msgTypes[9]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1078,7 +1133,7 @@ func (x *Rect) String() string {
 func (*Rect) ProtoMessage() {}
 
 func (x *Rect) ProtoReflect() protoreflect.Message {
-	mi := &file_mir_command_proto_msgTypes[8]
+	mi := &file_mir_command_proto_msgTypes[9]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1091,7 +1146,7 @@ func (x *Rect) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Rect.ProtoReflect.Descriptor instead.
 func (*Rect) Descriptor() ([]byte, []int) {
-	return file_mir_command_proto_rawDescGZIP(), []int{8}
+	return file_mir_command_proto_rawDescGZIP(), []int{9}
 }
 
 func (x *Rect) GetX() int32 {
@@ -1146,7 +1201,7 @@ type MirKeywords struct {
 func (x *MirKeywords) Reset() {
 	*x = MirKeywords{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_mir_command_proto_msgTypes[9]
+		mi := &file_mir_command_proto_msgTypes[10]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1159,7 +1214,7 @@ func (x *MirKeywords) String() string {
 func (*MirKeywords) ProtoMessage() {}
 
 func (x *MirKeywords) ProtoReflect() protoreflect.Message {
-	mi := &file_mir_command_proto_msgTypes[9]
+	mi := &file_mir_command_proto_msgTypes[10]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1172,7 +1227,7 @@ func (x *MirKeywords) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use MirKeywords.ProtoReflect.Descriptor instead.
 func (*MirKeywords) Descriptor() ([]byte, []int) {
-	return file_mir_command_proto_rawDescGZIP(), []int{9}
+	return file_mir_command_proto_rawDescGZIP(), []int{10}
 }
 
 func (x *MirKeywords) GetKeywords() map[string]*Keywords {
@@ -1217,7 +1272,7 @@ type KeywordToIndex struct {
 func (x *KeywordToIndex) Reset() {
 	*x = KeywordToIndex{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_mir_command_proto_msgTypes[10]
+		mi := &file_mir_command_proto_msgTypes[11]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1230,7 +1285,7 @@ func (x *KeywordToIndex) String() string {
 func (*KeywordToIndex) ProtoMessage() {}
 
 func (x *KeywordToIndex) ProtoReflect() protoreflect.Message {
-	mi := &file_mir_command_proto_msgTypes[10]
+	mi := &file_mir_command_proto_msgTypes[11]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1243,7 +1298,7 @@ func (x *KeywordToIndex) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use KeywordToIndex.ProtoReflect.Descriptor instead.
 func (*KeywordToIndex) Descriptor() ([]byte, []int) {
-	return file_mir_command_proto_rawDescGZIP(), []int{10}
+	return file_mir_command_proto_rawDescGZIP(), []int{11}
 }
 
 func (x *KeywordToIndex) GetCis() map[int32]*MapStringToInt32List {
@@ -1271,7 +1326,7 @@ type StringList struct {
 func (x *StringList) Reset() {
 	*x = StringList{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_mir_command_proto_msgTypes[11]
+		mi := &file_mir_command_proto_msgTypes[12]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1284,7 +1339,7 @@ func (x *StringList) String() string {
 func (*StringList) ProtoMessage() {}
 
 func (x *StringList) ProtoReflect() protoreflect.Message {
-	mi := &file_mir_command_proto_msgTypes[11]
+	mi := &file_mir_command_proto_msgTypes[12]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1297,7 +1352,7 @@ func (x *StringList) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use StringList.ProtoReflect.Descriptor instead.
 func (*StringList) Descriptor() ([]byte, []int) {
-	return file_mir_command_proto_rawDescGZIP(), []int{11}
+	return file_mir_command_proto_rawDescGZIP(), []int{12}
 }
 
 func (x *StringList) GetAssetIds() []string {
@@ -1318,7 +1373,7 @@ type MapStringToInt32List struct {
 func (x *MapStringToInt32List) Reset() {
 	*x = MapStringToInt32List{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_mir_command_proto_msgTypes[12]
+		mi := &file_mir_command_proto_msgTypes[13]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1331,7 +1386,7 @@ func (x *MapStringToInt32List) String() string {
 func (*MapStringToInt32List) ProtoMessage() {}
 
 func (x *MapStringToInt32List) ProtoReflect() protoreflect.Message {
-	mi := &file_mir_command_proto_msgTypes[12]
+	mi := &file_mir_command_proto_msgTypes[13]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1344,7 +1399,7 @@ func (x *MapStringToInt32List) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use MapStringToInt32List.ProtoReflect.Descriptor instead.
 func (*MapStringToInt32List) Descriptor() ([]byte, []int) {
-	return file_mir_command_proto_rawDescGZIP(), []int{12}
+	return file_mir_command_proto_rawDescGZIP(), []int{13}
 }
 
 func (x *MapStringToInt32List) GetKeyIds() map[string]*Int32List {
@@ -1365,7 +1420,7 @@ type Int32List struct {
 func (x *Int32List) Reset() {
 	*x = Int32List{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_mir_command_proto_msgTypes[13]
+		mi := &file_mir_command_proto_msgTypes[14]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1378,7 +1433,7 @@ func (x *Int32List) String() string {
 func (*Int32List) ProtoMessage() {}
 
 func (x *Int32List) ProtoReflect() protoreflect.Message {
-	mi := &file_mir_command_proto_msgTypes[13]
+	mi := &file_mir_command_proto_msgTypes[14]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1391,7 +1446,7 @@ func (x *Int32List) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Int32List.ProtoReflect.Descriptor instead.
 func (*Int32List) Descriptor() ([]byte, []int) {
-	return file_mir_command_proto_rawDescGZIP(), []int{13}
+	return file_mir_command_proto_rawDescGZIP(), []int{14}
 }
 
 func (x *Int32List) GetIds() []int32 {
@@ -1415,7 +1470,7 @@ type Keywords struct {
 func (x *Keywords) Reset() {
 	*x = Keywords{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_mir_command_proto_msgTypes[14]
+		mi := &file_mir_command_proto_msgTypes[15]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1428,7 +1483,7 @@ func (x *Keywords) String() string {
 func (*Keywords) ProtoMessage() {}
 
 func (x *Keywords) ProtoReflect() protoreflect.Message {
-	mi := &file_mir_command_proto_msgTypes[14]
+	mi := &file_mir_command_proto_msgTypes[15]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1441,7 +1496,7 @@ func (x *Keywords) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Keywords.ProtoReflect.Descriptor instead.
 func (*Keywords) Descriptor() ([]byte, []int) {
-	return file_mir_command_proto_rawDescGZIP(), []int{14}
+	return file_mir_command_proto_rawDescGZIP(), []int{15}
 }
 
 func (x *Keywords) GetPredefinedKeyids() []int32 {
@@ -1470,7 +1525,7 @@ type AssetAnnoIndex struct {
 func (x *AssetAnnoIndex) Reset() {
 	*x = AssetAnnoIndex{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_mir_command_proto_msgTypes[15]
+		mi := &file_mir_command_proto_msgTypes[16]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1483,7 +1538,7 @@ func (x *AssetAnnoIndex) String() string {
 func (*AssetAnnoIndex) ProtoMessage() {}
 
 func (x *AssetAnnoIndex) ProtoReflect() protoreflect.Message {
-	mi := &file_mir_command_proto_msgTypes[15]
+	mi := &file_mir_command_proto_msgTypes[16]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1496,7 +1551,7 @@ func (x *AssetAnnoIndex) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AssetAnnoIndex.ProtoReflect.Descriptor instead.
 func (*AssetAnnoIndex) Descriptor() ([]byte, []int) {
-	return file_mir_command_proto_rawDescGZIP(), []int{15}
+	return file_mir_command_proto_rawDescGZIP(), []int{16}
 }
 
 func (x *AssetAnnoIndex) GetAssetAnnos() map[string]*Int32List {
@@ -1526,7 +1581,7 @@ type MirTasks struct {
 func (x *MirTasks) Reset() {
 	*x = MirTasks{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_mir_command_proto_msgTypes[16]
+		mi := &file_mir_command_proto_msgTypes[17]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1539,7 +1594,7 @@ func (x *MirTasks) String() string {
 func (*MirTasks) ProtoMessage() {}
 
 func (x *MirTasks) ProtoReflect() protoreflect.Message {
-	mi := &file_mir_command_proto_msgTypes[16]
+	mi := &file_mir_command_proto_msgTypes[17]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1552,7 +1607,7 @@ func (x *MirTasks) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use MirTasks.ProtoReflect.Descriptor instead.
 func (*MirTasks) Descriptor() ([]byte, []int) {
-	return file_mir_command_proto_rawDescGZIP(), []int{16}
+	return file_mir_command_proto_rawDescGZIP(), []int{17}
 }
 
 func (x *MirTasks) GetTasks() map[string]*Task {
@@ -1600,7 +1655,7 @@ type Task struct {
 func (x *Task) Reset() {
 	*x = Task{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_mir_command_proto_msgTypes[17]
+		mi := &file_mir_command_proto_msgTypes[18]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1613,7 +1668,7 @@ func (x *Task) String() string {
 func (*Task) ProtoMessage() {}
 
 func (x *Task) ProtoReflect() protoreflect.Message {
-	mi := &file_mir_command_proto_msgTypes[17]
+	mi := &file_mir_command_proto_msgTypes[18]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1626,7 +1681,7 @@ func (x *Task) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Task.ProtoReflect.Descriptor instead.
 func (*Task) Descriptor() ([]byte, []int) {
-	return file_mir_command_proto_rawDescGZIP(), []int{17}
+	return file_mir_command_proto_rawDescGZIP(), []int{18}
 }
 
 func (x *Task) GetType() TaskType {
@@ -1752,7 +1807,7 @@ type ModelMeta struct {
 func (x *ModelMeta) Reset() {
 	*x = ModelMeta{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_mir_command_proto_msgTypes[18]
+		mi := &file_mir_command_proto_msgTypes[19]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1765,7 +1820,7 @@ func (x *ModelMeta) String() string {
 func (*ModelMeta) ProtoMessage() {}
 
 func (x *ModelMeta) ProtoReflect() protoreflect.Message {
-	mi := &file_mir_command_proto_msgTypes[18]
+	mi := &file_mir_command_proto_msgTypes[19]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1778,7 +1833,7 @@ func (x *ModelMeta) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ModelMeta.ProtoReflect.Descriptor instead.
 func (*ModelMeta) Descriptor() ([]byte, []int) {
-	return file_mir_command_proto_rawDescGZIP(), []int{18}
+	return file_mir_command_proto_rawDescGZIP(), []int{19}
 }
 
 func (x *ModelMeta) GetModelHash() string {
@@ -1830,7 +1885,7 @@ type ModelStage struct {
 func (x *ModelStage) Reset() {
 	*x = ModelStage{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_mir_command_proto_msgTypes[19]
+		mi := &file_mir_command_proto_msgTypes[20]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1843,7 +1898,7 @@ func (x *ModelStage) String() string {
 func (*ModelStage) ProtoMessage() {}
 
 func (x *ModelStage) ProtoReflect() protoreflect.Message {
-	mi := &file_mir_command_proto_msgTypes[19]
+	mi := &file_mir_command_proto_msgTypes[20]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1856,7 +1911,7 @@ func (x *ModelStage) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ModelStage.ProtoReflect.Descriptor instead.
 func (*ModelStage) Descriptor() ([]byte, []int) {
-	return file_mir_command_proto_rawDescGZIP(), []int{19}
+	return file_mir_command_proto_rawDescGZIP(), []int{20}
 }
 
 func (x *ModelStage) GetStageName() string {
@@ -1900,7 +1955,7 @@ type Evaluation struct {
 func (x *Evaluation) Reset() {
 	*x = Evaluation{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_mir_command_proto_msgTypes[20]
+		mi := &file_mir_command_proto_msgTypes[21]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1913,7 +1968,7 @@ func (x *Evaluation) String() string {
 func (*Evaluation) ProtoMessage() {}
 
 func (x *Evaluation) ProtoReflect() protoreflect.Message {
-	mi := &file_mir_command_proto_msgTypes[20]
+	mi := &file_mir_command_proto_msgTypes[21]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1926,7 +1981,7 @@ func (x *Evaluation) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Evaluation.ProtoReflect.Descriptor instead.
 func (*Evaluation) Descriptor() ([]byte, []int) {
-	return file_mir_command_proto_rawDescGZIP(), []int{20}
+	return file_mir_command_proto_rawDescGZIP(), []int{21}
 }
 
 func (x *Evaluation) GetConfig() *EvaluateConfig {
@@ -1959,7 +2014,7 @@ type EvaluateConfig struct {
 func (x *EvaluateConfig) Reset() {
 	*x = EvaluateConfig{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_mir_command_proto_msgTypes[21]
+		mi := &file_mir_command_proto_msgTypes[22]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1972,7 +2027,7 @@ func (x *EvaluateConfig) String() string {
 func (*EvaluateConfig) ProtoMessage() {}
 
 func (x *EvaluateConfig) ProtoReflect() protoreflect.Message {
-	mi := &file_mir_command_proto_msgTypes[21]
+	mi := &file_mir_command_proto_msgTypes[22]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1985,7 +2040,7 @@ func (x *EvaluateConfig) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use EvaluateConfig.ProtoReflect.Descriptor instead.
 func (*EvaluateConfig) Descriptor() ([]byte, []int) {
-	return file_mir_command_proto_rawDescGZIP(), []int{21}
+	return file_mir_command_proto_rawDescGZIP(), []int{22}
 }
 
 func (x *EvaluateConfig) GetGtDatasetId() string {
@@ -2045,7 +2100,7 @@ type SingleDatasetEvaluation struct {
 func (x *SingleDatasetEvaluation) Reset() {
 	*x = SingleDatasetEvaluation{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_mir_command_proto_msgTypes[22]
+		mi := &file_mir_command_proto_msgTypes[23]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2058,7 +2113,7 @@ func (x *SingleDatasetEvaluation) String() string {
 func (*SingleDatasetEvaluation) ProtoMessage() {}
 
 func (x *SingleDatasetEvaluation) ProtoReflect() protoreflect.Message {
-	mi := &file_mir_command_proto_msgTypes[22]
+	mi := &file_mir_command_proto_msgTypes[23]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2071,7 +2126,7 @@ func (x *SingleDatasetEvaluation) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SingleDatasetEvaluation.ProtoReflect.Descriptor instead.
 func (*SingleDatasetEvaluation) Descriptor() ([]byte, []int) {
-	return file_mir_command_proto_rawDescGZIP(), []int{22}
+	return file_mir_command_proto_rawDescGZIP(), []int{23}
 }
 
 func (x *SingleDatasetEvaluation) GetConfThr() float32 {
@@ -2122,7 +2177,7 @@ type SingleIouEvaluation struct {
 func (x *SingleIouEvaluation) Reset() {
 	*x = SingleIouEvaluation{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_mir_command_proto_msgTypes[23]
+		mi := &file_mir_command_proto_msgTypes[24]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2135,7 +2190,7 @@ func (x *SingleIouEvaluation) String() string {
 func (*SingleIouEvaluation) ProtoMessage() {}
 
 func (x *SingleIouEvaluation) ProtoReflect() protoreflect.Message {
-	mi := &file_mir_command_proto_msgTypes[23]
+	mi := &file_mir_command_proto_msgTypes[24]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2148,7 +2203,7 @@ func (x *SingleIouEvaluation) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SingleIouEvaluation.ProtoReflect.Descriptor instead.
 func (*SingleIouEvaluation) Descriptor() ([]byte, []int) {
-	return file_mir_command_proto_rawDescGZIP(), []int{23}
+	return file_mir_command_proto_rawDescGZIP(), []int{24}
 }
 
 func (x *SingleIouEvaluation) GetCiEvaluations() map[int32]*SingleEvaluationElement {
@@ -2188,7 +2243,7 @@ type SingleEvaluationElement struct {
 func (x *SingleEvaluationElement) Reset() {
 	*x = SingleEvaluationElement{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_mir_command_proto_msgTypes[24]
+		mi := &file_mir_command_proto_msgTypes[25]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2201,7 +2256,7 @@ func (x *SingleEvaluationElement) String() string {
 func (*SingleEvaluationElement) ProtoMessage() {}
 
 func (x *SingleEvaluationElement) ProtoReflect() protoreflect.Message {
-	mi := &file_mir_command_proto_msgTypes[24]
+	mi := &file_mir_command_proto_msgTypes[25]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2214,7 +2269,7 @@ func (x *SingleEvaluationElement) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SingleEvaluationElement.ProtoReflect.Descriptor instead.
 func (*SingleEvaluationElement) Descriptor() ([]byte, []int) {
-	return file_mir_command_proto_rawDescGZIP(), []int{24}
+	return file_mir_command_proto_rawDescGZIP(), []int{25}
 }
 
 func (x *SingleEvaluationElement) GetAp() float32 {
@@ -2271,7 +2326,7 @@ type SingleCkTotalSubEvaluation struct {
 func (x *SingleCkTotalSubEvaluation) Reset() {
 	*x = SingleCkTotalSubEvaluation{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_mir_command_proto_msgTypes[25]
+		mi := &file_mir_command_proto_msgTypes[26]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2284,7 +2339,7 @@ func (x *SingleCkTotalSubEvaluation) String() string {
 func (*SingleCkTotalSubEvaluation) ProtoMessage() {}
 
 func (x *SingleCkTotalSubEvaluation) ProtoReflect() protoreflect.Message {
-	mi := &file_mir_command_proto_msgTypes[25]
+	mi := &file_mir_command_proto_msgTypes[26]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2297,7 +2352,7 @@ func (x *SingleCkTotalSubEvaluation) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SingleCkTotalSubEvaluation.ProtoReflect.Descriptor instead.
 func (*SingleCkTotalSubEvaluation) Descriptor() ([]byte, []int) {
-	return file_mir_command_proto_rawDescGZIP(), []int{25}
+	return file_mir_command_proto_rawDescGZIP(), []int{26}
 }
 
 func (x *SingleCkTotalSubEvaluation) GetTotal() *SingleEvaluationElement {
@@ -2327,7 +2382,7 @@ type FloatPoint struct {
 func (x *FloatPoint) Reset() {
 	*x = FloatPoint{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_mir_command_proto_msgTypes[26]
+		mi := &file_mir_command_proto_msgTypes[27]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2340,7 +2395,7 @@ func (x *FloatPoint) String() string {
 func (*FloatPoint) ProtoMessage() {}
 
 func (x *FloatPoint) ProtoReflect() protoreflect.Message {
-	mi := &file_mir_command_proto_msgTypes[26]
+	mi := &file_mir_command_proto_msgTypes[27]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2353,7 +2408,7 @@ func (x *FloatPoint) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use FloatPoint.ProtoReflect.Descriptor instead.
 func (*FloatPoint) Descriptor() ([]byte, []int) {
-	return file_mir_command_proto_rawDescGZIP(), []int{26}
+	return file_mir_command_proto_rawDescGZIP(), []int{27}
 }
 
 func (x *FloatPoint) GetX() float32 {
@@ -2407,7 +2462,7 @@ type MirContext struct {
 func (x *MirContext) Reset() {
 	*x = MirContext{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_mir_command_proto_msgTypes[27]
+		mi := &file_mir_command_proto_msgTypes[28]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2420,7 +2475,7 @@ func (x *MirContext) String() string {
 func (*MirContext) ProtoMessage() {}
 
 func (x *MirContext) ProtoReflect() protoreflect.Message {
-	mi := &file_mir_command_proto_msgTypes[27]
+	mi := &file_mir_command_proto_msgTypes[28]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2433,7 +2488,7 @@ func (x *MirContext) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use MirContext.ProtoReflect.Descriptor instead.
 func (*MirContext) Descriptor() ([]byte, []int) {
-	return file_mir_command_proto_rawDescGZIP(), []int{27}
+	return file_mir_command_proto_rawDescGZIP(), []int{28}
 }
 
 func (x *MirContext) GetImagesCnt() int32 {
@@ -2539,7 +2594,7 @@ type SingleMapCount struct {
 func (x *SingleMapCount) Reset() {
 	*x = SingleMapCount{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_mir_command_proto_msgTypes[28]
+		mi := &file_mir_command_proto_msgTypes[29]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2552,7 +2607,7 @@ func (x *SingleMapCount) String() string {
 func (*SingleMapCount) ProtoMessage() {}
 
 func (x *SingleMapCount) ProtoReflect() protoreflect.Message {
-	mi := &file_mir_command_proto_msgTypes[28]
+	mi := &file_mir_command_proto_msgTypes[29]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2565,7 +2620,7 @@ func (x *SingleMapCount) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SingleMapCount.ProtoReflect.Descriptor instead.
 func (*SingleMapCount) Descriptor() ([]byte, []int) {
-	return file_mir_command_proto_rawDescGZIP(), []int{28}
+	return file_mir_command_proto_rawDescGZIP(), []int{29}
 }
 
 func (x *SingleMapCount) GetCnt() int32 {
@@ -2600,7 +2655,7 @@ type AnnoStats struct {
 func (x *AnnoStats) Reset() {
 	*x = AnnoStats{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_mir_command_proto_msgTypes[29]
+		mi := &file_mir_command_proto_msgTypes[30]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2613,7 +2668,7 @@ func (x *AnnoStats) String() string {
 func (*AnnoStats) ProtoMessage() {}
 
 func (x *AnnoStats) ProtoReflect() protoreflect.Message {
-	mi := &file_mir_command_proto_msgTypes[29]
+	mi := &file_mir_command_proto_msgTypes[30]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2626,7 +2681,7 @@ func (x *AnnoStats) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AnnoStats.ProtoReflect.Descriptor instead.
 func (*AnnoStats) Descriptor() ([]byte, []int) {
-	return file_mir_command_proto_rawDescGZIP(), []int{29}
+	return file_mir_command_proto_rawDescGZIP(), []int{30}
 }
 
 func (x *AnnoStats) GetTotalCnt() int32 {
@@ -2748,7 +2803,7 @@ var file_mir_command_proto_rawDesc = []byte{
 	0x12, 0x31, 0x0a, 0x05, 0x76, 0x61, 0x6c, 0x75, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0b, 0x32,
 	0x1b, 0x2e, 0x6d, 0x69, 0x72, 0x2e, 0x63, 0x6f, 0x6d, 0x6d, 0x61, 0x6e, 0x64, 0x2e, 0x53, 0x69,
 	0x6e, 0x67, 0x6c, 0x65, 0x49, 0x6d, 0x61, 0x67, 0x65, 0x43, 0x6b, 0x73, 0x52, 0x05, 0x76, 0x61,
-	0x6c, 0x75, 0x65, 0x3a, 0x02, 0x38, 0x01, 0x4a, 0x04, 0x08, 0x01, 0x10, 0x02, 0x22, 0x81, 0x02,
+	0x6c, 0x75, 0x65, 0x3a, 0x02, 0x38, 0x01, 0x4a, 0x04, 0x08, 0x01, 0x10, 0x02, 0x22, 0xb2, 0x02,
 	0x0a, 0x15, 0x53, 0x69, 0x6e, 0x67, 0x6c, 0x65, 0x54, 0x61, 0x73, 0x6b, 0x41, 0x6e, 0x6e, 0x6f,
 	0x74, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x12, 0x65, 0x0a, 0x11, 0x69, 0x6d, 0x61, 0x67, 0x65,
 	0x5f, 0x61, 0x6e, 0x6e, 0x6f, 0x74, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x18, 0x01, 0x20, 0x03,
@@ -2758,19 +2813,25 @@ var file_mir_command_proto_rawDesc = []byte{
 	0x74, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x45, 0x6e, 0x74, 0x72, 0x79, 0x52, 0x10, 0x69, 0x6d,
 	0x61, 0x67, 0x65, 0x41, 0x6e, 0x6e, 0x6f, 0x74, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x12, 0x17,
 	0x0a, 0x07, 0x74, 0x61, 0x73, 0x6b, 0x5f, 0x69, 0x64, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52,
-	0x06, 0x74, 0x61, 0x73, 0x6b, 0x49, 0x64, 0x1a, 0x68, 0x0a, 0x15, 0x49, 0x6d, 0x61, 0x67, 0x65,
-	0x41, 0x6e, 0x6e, 0x6f, 0x74, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x45, 0x6e, 0x74, 0x72, 0x79,
-	0x12, 0x10, 0x0a, 0x03, 0x6b, 0x65, 0x79, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x03, 0x6b,
-	0x65, 0x79, 0x12, 0x39, 0x0a, 0x05, 0x76, 0x61, 0x6c, 0x75, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28,
-	0x0b, 0x32, 0x23, 0x2e, 0x6d, 0x69, 0x72, 0x2e, 0x63, 0x6f, 0x6d, 0x6d, 0x61, 0x6e, 0x64, 0x2e,
-	0x53, 0x69, 0x6e, 0x67, 0x6c, 0x65, 0x49, 0x6d, 0x61, 0x67, 0x65, 0x41, 0x6e, 0x6e, 0x6f, 0x74,
-	0x61, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x52, 0x05, 0x76, 0x61, 0x6c, 0x75, 0x65, 0x3a, 0x02, 0x38,
-	0x01, 0x22, 0x59, 0x0a, 0x16, 0x53, 0x69, 0x6e, 0x67, 0x6c, 0x65, 0x49, 0x6d, 0x61, 0x67, 0x65,
-	0x41, 0x6e, 0x6e, 0x6f, 0x74, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x12, 0x39, 0x0a, 0x0b, 0x61,
-	0x6e, 0x6e, 0x6f, 0x74, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x18, 0x02, 0x20, 0x03, 0x28, 0x0b,
-	0x32, 0x17, 0x2e, 0x6d, 0x69, 0x72, 0x2e, 0x63, 0x6f, 0x6d, 0x6d, 0x61, 0x6e, 0x64, 0x2e, 0x41,
-	0x6e, 0x6e, 0x6f, 0x74, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x52, 0x0b, 0x61, 0x6e, 0x6e, 0x6f, 0x74,
-	0x61, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x4a, 0x04, 0x08, 0x01, 0x10, 0x02, 0x22, 0xa5, 0x01, 0x0a,
+	0x06, 0x74, 0x61, 0x73, 0x6b, 0x49, 0x64, 0x12, 0x2f, 0x0a, 0x04, 0x6d, 0x65, 0x74, 0x61, 0x18,
+	0x03, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x1b, 0x2e, 0x6d, 0x69, 0x72, 0x2e, 0x63, 0x6f, 0x6d, 0x6d,
+	0x61, 0x6e, 0x64, 0x2e, 0x41, 0x6e, 0x6e, 0x6f, 0x74, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x4d, 0x65,
+	0x74, 0x61, 0x52, 0x04, 0x6d, 0x65, 0x74, 0x61, 0x1a, 0x68, 0x0a, 0x15, 0x49, 0x6d, 0x61, 0x67,
+	0x65, 0x41, 0x6e, 0x6e, 0x6f, 0x74, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x45, 0x6e, 0x74, 0x72,
+	0x79, 0x12, 0x10, 0x0a, 0x03, 0x6b, 0x65, 0x79, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x03,
+	0x6b, 0x65, 0x79, 0x12, 0x39, 0x0a, 0x05, 0x76, 0x61, 0x6c, 0x75, 0x65, 0x18, 0x02, 0x20, 0x01,
+	0x28, 0x0b, 0x32, 0x23, 0x2e, 0x6d, 0x69, 0x72, 0x2e, 0x63, 0x6f, 0x6d, 0x6d, 0x61, 0x6e, 0x64,
+	0x2e, 0x53, 0x69, 0x6e, 0x67, 0x6c, 0x65, 0x49, 0x6d, 0x61, 0x67, 0x65, 0x41, 0x6e, 0x6e, 0x6f,
+	0x74, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x52, 0x05, 0x76, 0x61, 0x6c, 0x75, 0x65, 0x3a, 0x02,
+	0x38, 0x01, 0x22, 0x59, 0x0a, 0x16, 0x53, 0x69, 0x6e, 0x67, 0x6c, 0x65, 0x49, 0x6d, 0x61, 0x67,
+	0x65, 0x41, 0x6e, 0x6e, 0x6f, 0x74, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x12, 0x39, 0x0a, 0x0b,
+	0x61, 0x6e, 0x6e, 0x6f, 0x74, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x18, 0x02, 0x20, 0x03, 0x28,
+	0x0b, 0x32, 0x17, 0x2e, 0x6d, 0x69, 0x72, 0x2e, 0x63, 0x6f, 0x6d, 0x6d, 0x61, 0x6e, 0x64, 0x2e,
+	0x41, 0x6e, 0x6e, 0x6f, 0x74, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x52, 0x0b, 0x61, 0x6e, 0x6e, 0x6f,
+	0x74, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x4a, 0x04, 0x08, 0x01, 0x10, 0x02, 0x22, 0x2d, 0x0a,
+	0x0e, 0x41, 0x6e, 0x6e, 0x6f, 0x74, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x4d, 0x65, 0x74, 0x61, 0x12,
+	0x1b, 0x0a, 0x09, 0x63, 0x6c, 0x61, 0x73, 0x73, 0x5f, 0x69, 0x64, 0x73, 0x18, 0x01, 0x20, 0x03,
+	0x28, 0x05, 0x52, 0x08, 0x63, 0x6c, 0x61, 0x73, 0x73, 0x49, 0x64, 0x73, 0x22, 0xa5, 0x01, 0x0a,
 	0x0e, 0x53, 0x69, 0x6e, 0x67, 0x6c, 0x65, 0x49, 0x6d, 0x61, 0x67, 0x65, 0x43, 0x6b, 0x73, 0x12,
 	0x36, 0x0a, 0x03, 0x63, 0x6b, 0x73, 0x18, 0x01, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x24, 0x2e, 0x6d,
 	0x69, 0x72, 0x2e, 0x63, 0x6f, 0x6d, 0x6d, 0x61, 0x6e, 0x64, 0x2e, 0x53, 0x69, 0x6e, 0x67, 0x6c,
@@ -3348,7 +3409,7 @@ func file_mir_command_proto_rawDescGZIP() []byte {
 }
 
 var file_mir_command_proto_enumTypes = make([]protoimpl.EnumInfo, 8)
-var file_mir_command_proto_msgTypes = make([]protoimpl.MessageInfo, 63)
+var file_mir_command_proto_msgTypes = make([]protoimpl.MessageInfo, 64)
 var file_mir_command_proto_goTypes = []interface{}{
 	(TvtType)(0),                       // 0: mir.command.TvtType
 	(AssetType)(0),                     // 1: mir.command.AssetType
@@ -3364,142 +3425,144 @@ var file_mir_command_proto_goTypes = []interface{}{
 	(*MirAnnotations)(nil),             // 11: mir.command.MirAnnotations
 	(*SingleTaskAnnotations)(nil),      // 12: mir.command.SingleTaskAnnotations
 	(*SingleImageAnnotations)(nil),     // 13: mir.command.SingleImageAnnotations
-	(*SingleImageCks)(nil),             // 14: mir.command.SingleImageCks
-	(*Annotation)(nil),                 // 15: mir.command.Annotation
-	(*Rect)(nil),                       // 16: mir.command.Rect
-	(*MirKeywords)(nil),                // 17: mir.command.MirKeywords
-	(*KeywordToIndex)(nil),             // 18: mir.command.KeywordToIndex
-	(*StringList)(nil),                 // 19: mir.command.StringList
-	(*MapStringToInt32List)(nil),       // 20: mir.command.MapStringToInt32List
-	(*Int32List)(nil),                  // 21: mir.command.Int32List
-	(*Keywords)(nil),                   // 22: mir.command.Keywords
-	(*AssetAnnoIndex)(nil),             // 23: mir.command.AssetAnnoIndex
-	(*MirTasks)(nil),                   // 24: mir.command.MirTasks
-	(*Task)(nil),                       // 25: mir.command.Task
-	(*ModelMeta)(nil),                  // 26: mir.command.ModelMeta
-	(*ModelStage)(nil),                 // 27: mir.command.ModelStage
-	(*Evaluation)(nil),                 // 28: mir.command.Evaluation
-	(*EvaluateConfig)(nil),             // 29: mir.command.EvaluateConfig
-	(*SingleDatasetEvaluation)(nil),    // 30: mir.command.SingleDatasetEvaluation
-	(*SingleIouEvaluation)(nil),        // 31: mir.command.SingleIouEvaluation
-	(*SingleEvaluationElement)(nil),    // 32: mir.command.SingleEvaluationElement
-	(*SingleCkTotalSubEvaluation)(nil), // 33: mir.command.SingleCkTotalSubEvaluation
-	(*FloatPoint)(nil),                 // 34: mir.command.FloatPoint
-	(*MirContext)(nil),                 // 35: mir.command.MirContext
-	(*SingleMapCount)(nil),             // 36: mir.command.SingleMapCount
-	(*AnnoStats)(nil),                  // 37: mir.command.AnnoStats
-	nil,                                // 38: mir.command.MirMetadatas.AttributesEntry
-	nil,                                // 39: mir.command.MirAnnotations.ImageCksEntry
-	nil,                                // 40: mir.command.SingleTaskAnnotations.ImageAnnotationsEntry
-	nil,                                // 41: mir.command.SingleImageCks.CksEntry
-	nil,                                // 42: mir.command.Annotation.TagsEntry
-	nil,                                // 43: mir.command.MirKeywords.KeywordsEntry
-	nil,                                // 44: mir.command.MirKeywords.CkIdxEntry
-	nil,                                // 45: mir.command.KeywordToIndex.CisEntry
-	nil,                                // 46: mir.command.KeywordToIndex.TagsEntry
-	nil,                                // 47: mir.command.MapStringToInt32List.KeyIdsEntry
-	nil,                                // 48: mir.command.AssetAnnoIndex.AssetAnnosEntry
-	nil,                                // 49: mir.command.AssetAnnoIndex.SubIndexesEntry
-	nil,                                // 50: mir.command.MirTasks.TasksEntry
-	nil,                                // 51: mir.command.Task.NewTypesEntry
-	nil,                                // 52: mir.command.ModelMeta.StagesEntry
-	nil,                                // 53: mir.command.Evaluation.DatasetEvaluationsEntry
-	nil,                                // 54: mir.command.SingleDatasetEvaluation.IouEvaluationsEntry
-	nil,                                // 55: mir.command.SingleIouEvaluation.CiEvaluationsEntry
-	nil,                                // 56: mir.command.SingleIouEvaluation.CkEvaluationsEntry
-	nil,                                // 57: mir.command.SingleCkTotalSubEvaluation.SubEntry
-	nil,                                // 58: mir.command.MirContext.PredefinedKeyidsCntEntry
-	nil,                                // 59: mir.command.MirContext.ProjectPredefinedKeyidsCntEntry
-	nil,                                // 60: mir.command.MirContext.CksCntEntry
-	nil,                                // 61: mir.command.MirContext.AssetQualityHistEntry
-	nil,                                // 62: mir.command.MirContext.AssetAreaHistEntry
-	nil,                                // 63: mir.command.MirContext.AssetBytesHistEntry
-	nil,                                // 64: mir.command.MirContext.AssetHwRatioHistEntry
-	nil,                                // 65: mir.command.SingleMapCount.SubCntEntry
-	nil,                                // 66: mir.command.AnnoStats.QualityHistEntry
-	nil,                                // 67: mir.command.AnnoStats.AreaHistEntry
-	nil,                                // 68: mir.command.AnnoStats.AreaRatioHistEntry
-	nil,                                // 69: mir.command.AnnoStats.TagsCntEntry
-	nil,                                // 70: mir.command.AnnoStats.ClassIdsCntEntry
+	(*AnnotationMeta)(nil),             // 14: mir.command.AnnotationMeta
+	(*SingleImageCks)(nil),             // 15: mir.command.SingleImageCks
+	(*Annotation)(nil),                 // 16: mir.command.Annotation
+	(*Rect)(nil),                       // 17: mir.command.Rect
+	(*MirKeywords)(nil),                // 18: mir.command.MirKeywords
+	(*KeywordToIndex)(nil),             // 19: mir.command.KeywordToIndex
+	(*StringList)(nil),                 // 20: mir.command.StringList
+	(*MapStringToInt32List)(nil),       // 21: mir.command.MapStringToInt32List
+	(*Int32List)(nil),                  // 22: mir.command.Int32List
+	(*Keywords)(nil),                   // 23: mir.command.Keywords
+	(*AssetAnnoIndex)(nil),             // 24: mir.command.AssetAnnoIndex
+	(*MirTasks)(nil),                   // 25: mir.command.MirTasks
+	(*Task)(nil),                       // 26: mir.command.Task
+	(*ModelMeta)(nil),                  // 27: mir.command.ModelMeta
+	(*ModelStage)(nil),                 // 28: mir.command.ModelStage
+	(*Evaluation)(nil),                 // 29: mir.command.Evaluation
+	(*EvaluateConfig)(nil),             // 30: mir.command.EvaluateConfig
+	(*SingleDatasetEvaluation)(nil),    // 31: mir.command.SingleDatasetEvaluation
+	(*SingleIouEvaluation)(nil),        // 32: mir.command.SingleIouEvaluation
+	(*SingleEvaluationElement)(nil),    // 33: mir.command.SingleEvaluationElement
+	(*SingleCkTotalSubEvaluation)(nil), // 34: mir.command.SingleCkTotalSubEvaluation
+	(*FloatPoint)(nil),                 // 35: mir.command.FloatPoint
+	(*MirContext)(nil),                 // 36: mir.command.MirContext
+	(*SingleMapCount)(nil),             // 37: mir.command.SingleMapCount
+	(*AnnoStats)(nil),                  // 38: mir.command.AnnoStats
+	nil,                                // 39: mir.command.MirMetadatas.AttributesEntry
+	nil,                                // 40: mir.command.MirAnnotations.ImageCksEntry
+	nil,                                // 41: mir.command.SingleTaskAnnotations.ImageAnnotationsEntry
+	nil,                                // 42: mir.command.SingleImageCks.CksEntry
+	nil,                                // 43: mir.command.Annotation.TagsEntry
+	nil,                                // 44: mir.command.MirKeywords.KeywordsEntry
+	nil,                                // 45: mir.command.MirKeywords.CkIdxEntry
+	nil,                                // 46: mir.command.KeywordToIndex.CisEntry
+	nil,                                // 47: mir.command.KeywordToIndex.TagsEntry
+	nil,                                // 48: mir.command.MapStringToInt32List.KeyIdsEntry
+	nil,                                // 49: mir.command.AssetAnnoIndex.AssetAnnosEntry
+	nil,                                // 50: mir.command.AssetAnnoIndex.SubIndexesEntry
+	nil,                                // 51: mir.command.MirTasks.TasksEntry
+	nil,                                // 52: mir.command.Task.NewTypesEntry
+	nil,                                // 53: mir.command.ModelMeta.StagesEntry
+	nil,                                // 54: mir.command.Evaluation.DatasetEvaluationsEntry
+	nil,                                // 55: mir.command.SingleDatasetEvaluation.IouEvaluationsEntry
+	nil,                                // 56: mir.command.SingleIouEvaluation.CiEvaluationsEntry
+	nil,                                // 57: mir.command.SingleIouEvaluation.CkEvaluationsEntry
+	nil,                                // 58: mir.command.SingleCkTotalSubEvaluation.SubEntry
+	nil,                                // 59: mir.command.MirContext.PredefinedKeyidsCntEntry
+	nil,                                // 60: mir.command.MirContext.ProjectPredefinedKeyidsCntEntry
+	nil,                                // 61: mir.command.MirContext.CksCntEntry
+	nil,                                // 62: mir.command.MirContext.AssetQualityHistEntry
+	nil,                                // 63: mir.command.MirContext.AssetAreaHistEntry
+	nil,                                // 64: mir.command.MirContext.AssetBytesHistEntry
+	nil,                                // 65: mir.command.MirContext.AssetHwRatioHistEntry
+	nil,                                // 66: mir.command.SingleMapCount.SubCntEntry
+	nil,                                // 67: mir.command.AnnoStats.QualityHistEntry
+	nil,                                // 68: mir.command.AnnoStats.AreaHistEntry
+	nil,                                // 69: mir.command.AnnoStats.AreaRatioHistEntry
+	nil,                                // 70: mir.command.AnnoStats.TagsCntEntry
+	nil,                                // 71: mir.command.AnnoStats.ClassIdsCntEntry
 }
 var file_mir_command_proto_depIdxs = []int32{
-	38, // 0: mir.command.MirMetadatas.attributes:type_name -> mir.command.MirMetadatas.AttributesEntry
+	39, // 0: mir.command.MirMetadatas.attributes:type_name -> mir.command.MirMetadatas.AttributesEntry
 	10, // 1: mir.command.MetadataAttributes.timestamp:type_name -> mir.command.Timestamp
 	0,  // 2: mir.command.MetadataAttributes.tvt_type:type_name -> mir.command.TvtType
 	1,  // 3: mir.command.MetadataAttributes.asset_type:type_name -> mir.command.AssetType
 	12, // 4: mir.command.MirAnnotations.ground_truth:type_name -> mir.command.SingleTaskAnnotations
 	12, // 5: mir.command.MirAnnotations.prediction:type_name -> mir.command.SingleTaskAnnotations
-	39, // 6: mir.command.MirAnnotations.image_cks:type_name -> mir.command.MirAnnotations.ImageCksEntry
-	40, // 7: mir.command.SingleTaskAnnotations.image_annotations:type_name -> mir.command.SingleTaskAnnotations.ImageAnnotationsEntry
-	15, // 8: mir.command.SingleImageAnnotations.annotations:type_name -> mir.command.Annotation
-	41, // 9: mir.command.SingleImageCks.cks:type_name -> mir.command.SingleImageCks.CksEntry
-	16, // 10: mir.command.Annotation.box:type_name -> mir.command.Rect
-	42, // 11: mir.command.Annotation.tags:type_name -> mir.command.Annotation.TagsEntry
-	7,  // 12: mir.command.Annotation.cm:type_name -> mir.command.ConfusionMatrixType
-	43, // 13: mir.command.MirKeywords.keywords:type_name -> mir.command.MirKeywords.KeywordsEntry
-	18, // 14: mir.command.MirKeywords.pred_idx:type_name -> mir.command.KeywordToIndex
-	18, // 15: mir.command.MirKeywords.gt_idx:type_name -> mir.command.KeywordToIndex
-	44, // 16: mir.command.MirKeywords.ck_idx:type_name -> mir.command.MirKeywords.CkIdxEntry
-	45, // 17: mir.command.KeywordToIndex.cis:type_name -> mir.command.KeywordToIndex.CisEntry
-	46, // 18: mir.command.KeywordToIndex.tags:type_name -> mir.command.KeywordToIndex.TagsEntry
-	47, // 19: mir.command.MapStringToInt32List.key_ids:type_name -> mir.command.MapStringToInt32List.KeyIdsEntry
-	48, // 20: mir.command.AssetAnnoIndex.asset_annos:type_name -> mir.command.AssetAnnoIndex.AssetAnnosEntry
-	49, // 21: mir.command.AssetAnnoIndex.sub_indexes:type_name -> mir.command.AssetAnnoIndex.SubIndexesEntry
-	50, // 22: mir.command.MirTasks.tasks:type_name -> mir.command.MirTasks.TasksEntry
-	2,  // 23: mir.command.Task.type:type_name -> mir.command.TaskType
-	26, // 24: mir.command.Task.model:type_name -> mir.command.ModelMeta
-	28, // 25: mir.command.Task.evaluation:type_name -> mir.command.Evaluation
-	51, // 26: mir.command.Task.new_types:type_name -> mir.command.Task.NewTypesEntry
-	52, // 27: mir.command.ModelMeta.stages:type_name -> mir.command.ModelMeta.StagesEntry
-	29, // 28: mir.command.Evaluation.config:type_name -> mir.command.EvaluateConfig
-	53, // 29: mir.command.Evaluation.dataset_evaluations:type_name -> mir.command.Evaluation.DatasetEvaluationsEntry
-	54, // 30: mir.command.SingleDatasetEvaluation.iou_evaluations:type_name -> mir.command.SingleDatasetEvaluation.IouEvaluationsEntry
-	31, // 31: mir.command.SingleDatasetEvaluation.iou_averaged_evaluation:type_name -> mir.command.SingleIouEvaluation
-	55, // 32: mir.command.SingleIouEvaluation.ci_evaluations:type_name -> mir.command.SingleIouEvaluation.CiEvaluationsEntry
-	32, // 33: mir.command.SingleIouEvaluation.ci_averaged_evaluation:type_name -> mir.command.SingleEvaluationElement
-	56, // 34: mir.command.SingleIouEvaluation.ck_evaluations:type_name -> mir.command.SingleIouEvaluation.CkEvaluationsEntry
-	34, // 35: mir.command.SingleEvaluationElement.pr_curve:type_name -> mir.command.FloatPoint
-	32, // 36: mir.command.SingleCkTotalSubEvaluation.total:type_name -> mir.command.SingleEvaluationElement
-	57, // 37: mir.command.SingleCkTotalSubEvaluation.sub:type_name -> mir.command.SingleCkTotalSubEvaluation.SubEntry
-	58, // 38: mir.command.MirContext.predefined_keyids_cnt:type_name -> mir.command.MirContext.PredefinedKeyidsCntEntry
-	59, // 39: mir.command.MirContext.project_predefined_keyids_cnt:type_name -> mir.command.MirContext.ProjectPredefinedKeyidsCntEntry
-	60, // 40: mir.command.MirContext.cks_cnt:type_name -> mir.command.MirContext.CksCntEntry
-	61, // 41: mir.command.MirContext.asset_quality_hist:type_name -> mir.command.MirContext.AssetQualityHistEntry
-	62, // 42: mir.command.MirContext.asset_area_hist:type_name -> mir.command.MirContext.AssetAreaHistEntry
-	63, // 43: mir.command.MirContext.asset_bytes_hist:type_name -> mir.command.MirContext.AssetBytesHistEntry
-	64, // 44: mir.command.MirContext.asset_hw_ratio_hist:type_name -> mir.command.MirContext.AssetHwRatioHistEntry
-	37, // 45: mir.command.MirContext.pred_stats:type_name -> mir.command.AnnoStats
-	37, // 46: mir.command.MirContext.gt_stats:type_name -> mir.command.AnnoStats
-	65, // 47: mir.command.SingleMapCount.sub_cnt:type_name -> mir.command.SingleMapCount.SubCntEntry
-	66, // 48: mir.command.AnnoStats.quality_hist:type_name -> mir.command.AnnoStats.QualityHistEntry
-	67, // 49: mir.command.AnnoStats.area_hist:type_name -> mir.command.AnnoStats.AreaHistEntry
-	68, // 50: mir.command.AnnoStats.area_ratio_hist:type_name -> mir.command.AnnoStats.AreaRatioHistEntry
-	69, // 51: mir.command.AnnoStats.tags_cnt:type_name -> mir.command.AnnoStats.TagsCntEntry
-	70, // 52: mir.command.AnnoStats.class_ids_cnt:type_name -> mir.command.AnnoStats.ClassIdsCntEntry
-	9,  // 53: mir.command.MirMetadatas.AttributesEntry.value:type_name -> mir.command.MetadataAttributes
-	14, // 54: mir.command.MirAnnotations.ImageCksEntry.value:type_name -> mir.command.SingleImageCks
-	13, // 55: mir.command.SingleTaskAnnotations.ImageAnnotationsEntry.value:type_name -> mir.command.SingleImageAnnotations
-	22, // 56: mir.command.MirKeywords.KeywordsEntry.value:type_name -> mir.command.Keywords
-	23, // 57: mir.command.MirKeywords.CkIdxEntry.value:type_name -> mir.command.AssetAnnoIndex
-	20, // 58: mir.command.KeywordToIndex.CisEntry.value:type_name -> mir.command.MapStringToInt32List
-	23, // 59: mir.command.KeywordToIndex.TagsEntry.value:type_name -> mir.command.AssetAnnoIndex
-	21, // 60: mir.command.MapStringToInt32List.KeyIdsEntry.value:type_name -> mir.command.Int32List
-	21, // 61: mir.command.AssetAnnoIndex.AssetAnnosEntry.value:type_name -> mir.command.Int32List
-	20, // 62: mir.command.AssetAnnoIndex.SubIndexesEntry.value:type_name -> mir.command.MapStringToInt32List
-	25, // 63: mir.command.MirTasks.TasksEntry.value:type_name -> mir.command.Task
-	27, // 64: mir.command.ModelMeta.StagesEntry.value:type_name -> mir.command.ModelStage
-	30, // 65: mir.command.Evaluation.DatasetEvaluationsEntry.value:type_name -> mir.command.SingleDatasetEvaluation
-	31, // 66: mir.command.SingleDatasetEvaluation.IouEvaluationsEntry.value:type_name -> mir.command.SingleIouEvaluation
-	32, // 67: mir.command.SingleIouEvaluation.CiEvaluationsEntry.value:type_name -> mir.command.SingleEvaluationElement
-	33, // 68: mir.command.SingleIouEvaluation.CkEvaluationsEntry.value:type_name -> mir.command.SingleCkTotalSubEvaluation
-	32, // 69: mir.command.SingleCkTotalSubEvaluation.SubEntry.value:type_name -> mir.command.SingleEvaluationElement
-	36, // 70: mir.command.MirContext.CksCntEntry.value:type_name -> mir.command.SingleMapCount
-	36, // 71: mir.command.AnnoStats.TagsCntEntry.value:type_name -> mir.command.SingleMapCount
-	72, // [72:72] is the sub-list for method output_type
-	72, // [72:72] is the sub-list for method input_type
-	72, // [72:72] is the sub-list for extension type_name
-	72, // [72:72] is the sub-list for extension extendee
-	0,  // [0:72] is the sub-list for field type_name
+	40, // 6: mir.command.MirAnnotations.image_cks:type_name -> mir.command.MirAnnotations.ImageCksEntry
+	41, // 7: mir.command.SingleTaskAnnotations.image_annotations:type_name -> mir.command.SingleTaskAnnotations.ImageAnnotationsEntry
+	14, // 8: mir.command.SingleTaskAnnotations.meta:type_name -> mir.command.AnnotationMeta
+	16, // 9: mir.command.SingleImageAnnotations.annotations:type_name -> mir.command.Annotation
+	42, // 10: mir.command.SingleImageCks.cks:type_name -> mir.command.SingleImageCks.CksEntry
+	17, // 11: mir.command.Annotation.box:type_name -> mir.command.Rect
+	43, // 12: mir.command.Annotation.tags:type_name -> mir.command.Annotation.TagsEntry
+	7,  // 13: mir.command.Annotation.cm:type_name -> mir.command.ConfusionMatrixType
+	44, // 14: mir.command.MirKeywords.keywords:type_name -> mir.command.MirKeywords.KeywordsEntry
+	19, // 15: mir.command.MirKeywords.pred_idx:type_name -> mir.command.KeywordToIndex
+	19, // 16: mir.command.MirKeywords.gt_idx:type_name -> mir.command.KeywordToIndex
+	45, // 17: mir.command.MirKeywords.ck_idx:type_name -> mir.command.MirKeywords.CkIdxEntry
+	46, // 18: mir.command.KeywordToIndex.cis:type_name -> mir.command.KeywordToIndex.CisEntry
+	47, // 19: mir.command.KeywordToIndex.tags:type_name -> mir.command.KeywordToIndex.TagsEntry
+	48, // 20: mir.command.MapStringToInt32List.key_ids:type_name -> mir.command.MapStringToInt32List.KeyIdsEntry
+	49, // 21: mir.command.AssetAnnoIndex.asset_annos:type_name -> mir.command.AssetAnnoIndex.AssetAnnosEntry
+	50, // 22: mir.command.AssetAnnoIndex.sub_indexes:type_name -> mir.command.AssetAnnoIndex.SubIndexesEntry
+	51, // 23: mir.command.MirTasks.tasks:type_name -> mir.command.MirTasks.TasksEntry
+	2,  // 24: mir.command.Task.type:type_name -> mir.command.TaskType
+	27, // 25: mir.command.Task.model:type_name -> mir.command.ModelMeta
+	29, // 26: mir.command.Task.evaluation:type_name -> mir.command.Evaluation
+	52, // 27: mir.command.Task.new_types:type_name -> mir.command.Task.NewTypesEntry
+	53, // 28: mir.command.ModelMeta.stages:type_name -> mir.command.ModelMeta.StagesEntry
+	30, // 29: mir.command.Evaluation.config:type_name -> mir.command.EvaluateConfig
+	54, // 30: mir.command.Evaluation.dataset_evaluations:type_name -> mir.command.Evaluation.DatasetEvaluationsEntry
+	55, // 31: mir.command.SingleDatasetEvaluation.iou_evaluations:type_name -> mir.command.SingleDatasetEvaluation.IouEvaluationsEntry
+	32, // 32: mir.command.SingleDatasetEvaluation.iou_averaged_evaluation:type_name -> mir.command.SingleIouEvaluation
+	56, // 33: mir.command.SingleIouEvaluation.ci_evaluations:type_name -> mir.command.SingleIouEvaluation.CiEvaluationsEntry
+	33, // 34: mir.command.SingleIouEvaluation.ci_averaged_evaluation:type_name -> mir.command.SingleEvaluationElement
+	57, // 35: mir.command.SingleIouEvaluation.ck_evaluations:type_name -> mir.command.SingleIouEvaluation.CkEvaluationsEntry
+	35, // 36: mir.command.SingleEvaluationElement.pr_curve:type_name -> mir.command.FloatPoint
+	33, // 37: mir.command.SingleCkTotalSubEvaluation.total:type_name -> mir.command.SingleEvaluationElement
+	58, // 38: mir.command.SingleCkTotalSubEvaluation.sub:type_name -> mir.command.SingleCkTotalSubEvaluation.SubEntry
+	59, // 39: mir.command.MirContext.predefined_keyids_cnt:type_name -> mir.command.MirContext.PredefinedKeyidsCntEntry
+	60, // 40: mir.command.MirContext.project_predefined_keyids_cnt:type_name -> mir.command.MirContext.ProjectPredefinedKeyidsCntEntry
+	61, // 41: mir.command.MirContext.cks_cnt:type_name -> mir.command.MirContext.CksCntEntry
+	62, // 42: mir.command.MirContext.asset_quality_hist:type_name -> mir.command.MirContext.AssetQualityHistEntry
+	63, // 43: mir.command.MirContext.asset_area_hist:type_name -> mir.command.MirContext.AssetAreaHistEntry
+	64, // 44: mir.command.MirContext.asset_bytes_hist:type_name -> mir.command.MirContext.AssetBytesHistEntry
+	65, // 45: mir.command.MirContext.asset_hw_ratio_hist:type_name -> mir.command.MirContext.AssetHwRatioHistEntry
+	38, // 46: mir.command.MirContext.pred_stats:type_name -> mir.command.AnnoStats
+	38, // 47: mir.command.MirContext.gt_stats:type_name -> mir.command.AnnoStats
+	66, // 48: mir.command.SingleMapCount.sub_cnt:type_name -> mir.command.SingleMapCount.SubCntEntry
+	67, // 49: mir.command.AnnoStats.quality_hist:type_name -> mir.command.AnnoStats.QualityHistEntry
+	68, // 50: mir.command.AnnoStats.area_hist:type_name -> mir.command.AnnoStats.AreaHistEntry
+	69, // 51: mir.command.AnnoStats.area_ratio_hist:type_name -> mir.command.AnnoStats.AreaRatioHistEntry
+	70, // 52: mir.command.AnnoStats.tags_cnt:type_name -> mir.command.AnnoStats.TagsCntEntry
+	71, // 53: mir.command.AnnoStats.class_ids_cnt:type_name -> mir.command.AnnoStats.ClassIdsCntEntry
+	9,  // 54: mir.command.MirMetadatas.AttributesEntry.value:type_name -> mir.command.MetadataAttributes
+	15, // 55: mir.command.MirAnnotations.ImageCksEntry.value:type_name -> mir.command.SingleImageCks
+	13, // 56: mir.command.SingleTaskAnnotations.ImageAnnotationsEntry.value:type_name -> mir.command.SingleImageAnnotations
+	23, // 57: mir.command.MirKeywords.KeywordsEntry.value:type_name -> mir.command.Keywords
+	24, // 58: mir.command.MirKeywords.CkIdxEntry.value:type_name -> mir.command.AssetAnnoIndex
+	21, // 59: mir.command.KeywordToIndex.CisEntry.value:type_name -> mir.command.MapStringToInt32List
+	24, // 60: mir.command.KeywordToIndex.TagsEntry.value:type_name -> mir.command.AssetAnnoIndex
+	22, // 61: mir.command.MapStringToInt32List.KeyIdsEntry.value:type_name -> mir.command.Int32List
+	22, // 62: mir.command.AssetAnnoIndex.AssetAnnosEntry.value:type_name -> mir.command.Int32List
+	21, // 63: mir.command.AssetAnnoIndex.SubIndexesEntry.value:type_name -> mir.command.MapStringToInt32List
+	26, // 64: mir.command.MirTasks.TasksEntry.value:type_name -> mir.command.Task
+	28, // 65: mir.command.ModelMeta.StagesEntry.value:type_name -> mir.command.ModelStage
+	31, // 66: mir.command.Evaluation.DatasetEvaluationsEntry.value:type_name -> mir.command.SingleDatasetEvaluation
+	32, // 67: mir.command.SingleDatasetEvaluation.IouEvaluationsEntry.value:type_name -> mir.command.SingleIouEvaluation
+	33, // 68: mir.command.SingleIouEvaluation.CiEvaluationsEntry.value:type_name -> mir.command.SingleEvaluationElement
+	34, // 69: mir.command.SingleIouEvaluation.CkEvaluationsEntry.value:type_name -> mir.command.SingleCkTotalSubEvaluation
+	33, // 70: mir.command.SingleCkTotalSubEvaluation.SubEntry.value:type_name -> mir.command.SingleEvaluationElement
+	37, // 71: mir.command.MirContext.CksCntEntry.value:type_name -> mir.command.SingleMapCount
+	37, // 72: mir.command.AnnoStats.TagsCntEntry.value:type_name -> mir.command.SingleMapCount
+	73, // [73:73] is the sub-list for method output_type
+	73, // [73:73] is the sub-list for method input_type
+	73, // [73:73] is the sub-list for extension type_name
+	73, // [73:73] is the sub-list for extension extendee
+	0,  // [0:73] is the sub-list for field type_name
 }
 
 func init() { file_mir_command_proto_init() }
@@ -3581,7 +3644,7 @@ func file_mir_command_proto_init() {
 			}
 		}
 		file_mir_command_proto_msgTypes[6].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*SingleImageCks); i {
+			switch v := v.(*AnnotationMeta); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -3593,7 +3656,7 @@ func file_mir_command_proto_init() {
 			}
 		}
 		file_mir_command_proto_msgTypes[7].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Annotation); i {
+			switch v := v.(*SingleImageCks); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -3605,7 +3668,7 @@ func file_mir_command_proto_init() {
 			}
 		}
 		file_mir_command_proto_msgTypes[8].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Rect); i {
+			switch v := v.(*Annotation); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -3617,7 +3680,7 @@ func file_mir_command_proto_init() {
 			}
 		}
 		file_mir_command_proto_msgTypes[9].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*MirKeywords); i {
+			switch v := v.(*Rect); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -3629,7 +3692,7 @@ func file_mir_command_proto_init() {
 			}
 		}
 		file_mir_command_proto_msgTypes[10].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*KeywordToIndex); i {
+			switch v := v.(*MirKeywords); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -3641,7 +3704,7 @@ func file_mir_command_proto_init() {
 			}
 		}
 		file_mir_command_proto_msgTypes[11].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*StringList); i {
+			switch v := v.(*KeywordToIndex); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -3653,7 +3716,7 @@ func file_mir_command_proto_init() {
 			}
 		}
 		file_mir_command_proto_msgTypes[12].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*MapStringToInt32List); i {
+			switch v := v.(*StringList); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -3665,7 +3728,7 @@ func file_mir_command_proto_init() {
 			}
 		}
 		file_mir_command_proto_msgTypes[13].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Int32List); i {
+			switch v := v.(*MapStringToInt32List); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -3677,7 +3740,7 @@ func file_mir_command_proto_init() {
 			}
 		}
 		file_mir_command_proto_msgTypes[14].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Keywords); i {
+			switch v := v.(*Int32List); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -3689,7 +3752,7 @@ func file_mir_command_proto_init() {
 			}
 		}
 		file_mir_command_proto_msgTypes[15].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*AssetAnnoIndex); i {
+			switch v := v.(*Keywords); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -3701,7 +3764,7 @@ func file_mir_command_proto_init() {
 			}
 		}
 		file_mir_command_proto_msgTypes[16].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*MirTasks); i {
+			switch v := v.(*AssetAnnoIndex); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -3713,7 +3776,7 @@ func file_mir_command_proto_init() {
 			}
 		}
 		file_mir_command_proto_msgTypes[17].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Task); i {
+			switch v := v.(*MirTasks); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -3725,7 +3788,7 @@ func file_mir_command_proto_init() {
 			}
 		}
 		file_mir_command_proto_msgTypes[18].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*ModelMeta); i {
+			switch v := v.(*Task); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -3737,7 +3800,7 @@ func file_mir_command_proto_init() {
 			}
 		}
 		file_mir_command_proto_msgTypes[19].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*ModelStage); i {
+			switch v := v.(*ModelMeta); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -3749,7 +3812,7 @@ func file_mir_command_proto_init() {
 			}
 		}
 		file_mir_command_proto_msgTypes[20].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Evaluation); i {
+			switch v := v.(*ModelStage); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -3761,7 +3824,7 @@ func file_mir_command_proto_init() {
 			}
 		}
 		file_mir_command_proto_msgTypes[21].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*EvaluateConfig); i {
+			switch v := v.(*Evaluation); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -3773,7 +3836,7 @@ func file_mir_command_proto_init() {
 			}
 		}
 		file_mir_command_proto_msgTypes[22].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*SingleDatasetEvaluation); i {
+			switch v := v.(*EvaluateConfig); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -3785,7 +3848,7 @@ func file_mir_command_proto_init() {
 			}
 		}
 		file_mir_command_proto_msgTypes[23].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*SingleIouEvaluation); i {
+			switch v := v.(*SingleDatasetEvaluation); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -3797,7 +3860,7 @@ func file_mir_command_proto_init() {
 			}
 		}
 		file_mir_command_proto_msgTypes[24].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*SingleEvaluationElement); i {
+			switch v := v.(*SingleIouEvaluation); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -3809,7 +3872,7 @@ func file_mir_command_proto_init() {
 			}
 		}
 		file_mir_command_proto_msgTypes[25].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*SingleCkTotalSubEvaluation); i {
+			switch v := v.(*SingleEvaluationElement); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -3821,7 +3884,7 @@ func file_mir_command_proto_init() {
 			}
 		}
 		file_mir_command_proto_msgTypes[26].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*FloatPoint); i {
+			switch v := v.(*SingleCkTotalSubEvaluation); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -3833,7 +3896,7 @@ func file_mir_command_proto_init() {
 			}
 		}
 		file_mir_command_proto_msgTypes[27].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*MirContext); i {
+			switch v := v.(*FloatPoint); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -3845,7 +3908,7 @@ func file_mir_command_proto_init() {
 			}
 		}
 		file_mir_command_proto_msgTypes[28].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*SingleMapCount); i {
+			switch v := v.(*MirContext); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -3857,6 +3920,18 @@ func file_mir_command_proto_init() {
 			}
 		}
 		file_mir_command_proto_msgTypes[29].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*SingleMapCount); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_mir_command_proto_msgTypes[30].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*AnnoStats); i {
 			case 0:
 				return &v.state
@@ -3875,7 +3950,7 @@ func file_mir_command_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_mir_command_proto_rawDesc,
 			NumEnums:      8,
-			NumMessages:   63,
+			NumMessages:   64,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

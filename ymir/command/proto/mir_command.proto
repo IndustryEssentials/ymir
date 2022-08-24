@@ -115,12 +115,17 @@ message SingleTaskAnnotations {
     /// key: image id, value: annotations of that single image
     map<string, SingleImageAnnotations> image_annotations = 1;
     string task_id = 2;
+    AnnotationMeta meta = 3;
 };
 
 message SingleImageAnnotations {
     repeated Annotation annotations = 2;
 
     reserved 1;
+};
+
+message AnnotationMeta {
+    repeated int32 class_ids = 1;
 };
 
 message SingleImageCks {
