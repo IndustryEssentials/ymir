@@ -96,6 +96,7 @@ def bind_to_subparsers(subparsers: argparse._SubParsersAction, parent_parser: ar
                                      dest='need_pr_curve',
                                      action='store_true',
                                      help='also generates pr curve in evaluation result')
+    # FIXME: using cis in prediction target
     evaluate_arg_parser.add_argument('--cis',
                                      dest='cis',
                                      required=False,
