@@ -196,12 +196,10 @@ class CocoDetEval:
                     dtm[tind, dind] = gt[m]['id']
                     gtm[tind, m] = d['id']
 
-                    # only set match for the first iou thresh
-                    if tind == 0:
-                        self.match_result.add_match(asset_id=d['asset_id'],
-                                                    iou_thr=t,
-                                                    gt_pb_idx=gt[m]['pb_index_id'],
-                                                    pred_pb_idx=d['pb_index_id'])
+                    self.match_result.add_match(asset_id=d['asset_id'],
+                                                iou_thr=t,
+                                                gt_pb_idx=gt[m]['pb_index_id'],
+                                                pred_pb_idx=d['pb_index_id'])
                     # gt[m]['cm'][tind, maxDet] = (mirpb.ConfusionMatrixType.MTP, d['pb_index_id'])
                     # d['cm'][tind, maxDet] = (mirpb.ConfusionMatrixType.TP, gt[m]['pb_index_id'])
         # set unmatched detections outside of area range to ignore
@@ -537,7 +535,7 @@ def det_evaluate(mir_dts: List[det_eval_utils.MirDataset], mir_gt: det_eval_util
 
     params = Params()
     params.confThr = config.conf_thr
-    params.iouThrs = det_eval_utils.get_ious_array(config.iou_thrs_interval)
+    params.iouThrs = det_eval_utils.get_iou_thrs_array(config.iou_thrs_interval)
     params.need_pr_curve = config.need_pr_curve
     params.catIds = list(config.class_ids)
 

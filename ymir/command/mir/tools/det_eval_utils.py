@@ -168,7 +168,7 @@ class DetEvalMatchResult:
         return self._iou_matches[iou_thr].gt_pred_match[asset_id]
 
 
-def get_ious_array(iou_thrs_str: str) -> np.ndarray:
+def get_iou_thrs_array(iou_thrs_str: str) -> np.ndarray:
     iou_thrs = [float(v) for v in iou_thrs_str.split(':')]
     if len(iou_thrs) == 3:
         iou_thr_from, iou_thr_to, iou_thr_step = iou_thrs
