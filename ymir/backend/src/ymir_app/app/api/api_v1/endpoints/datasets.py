@@ -20,6 +20,7 @@ from app.api.errors.errors import (
     ProjectNotFound,
     MissingOperations,
     RefuseToProcessMixedOperations,
+    RequiredFieldMissing,
 )
 from app.config import settings
 from app.constants.state import TaskState, TaskType, ResultState
@@ -587,7 +588,7 @@ def merge_datasets(
             project_id=in_merge.project_id,
         )
     elif in_merge.dest_group_id:
-        dest_group = crud.dataset_group.get(db, id=in_merge.dest_group_id)
+        dest_group = crud.dataset_group.get(db, id=in_merge.dest_group_id)  # type: ignore
         if not dest_group:
             raise DatasetGroupNotFound()
     else:
