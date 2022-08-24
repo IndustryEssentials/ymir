@@ -136,9 +136,9 @@ class DatasetsOut(Common):
 
 
 class DatasetAnnotationHist(BaseModel):
-    anno_quality: List[Dict]
-    anno_area: List[Dict]
-    anno_area_ratio: List[Dict]
+    quality: List[Dict]
+    area: List[Dict]
+    area_ratio: List[Dict]
 
 
 class DatasetAnnotation(BaseModel):
@@ -177,10 +177,10 @@ class DatasetInfoOut(Common):
 
 
 class DatasetHist(BaseModel):
-    asset_bytes: List[Dict]
-    asset_area: List[Dict]
-    asset_quality: List[Dict]
-    asset_hw_ratio: List[Dict]
+    bytes: List[Dict]
+    area: List[Dict]
+    quality: List[Dict]
+    hw_ratio: List[Dict]
 
 
 class DatasetAnalysis(DatasetInfo):

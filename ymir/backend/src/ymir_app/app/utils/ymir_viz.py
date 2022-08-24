@@ -84,7 +84,7 @@ class DatasetInfo:
             keywords=keywords,
             new_types_added=res.get("new_types_added"),
             total_assets_count=total_assets_count,
-            hist=res.get("assets_hist"),
+            hist=res.get("assets_hist") or None,
             total_assets_mbytes=res.get("total_assets_mbytes"),
         )
 
