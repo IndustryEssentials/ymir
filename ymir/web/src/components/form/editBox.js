@@ -32,6 +32,7 @@ const EditBox = ({ children, record, max=50, action = () => { } }) => {
     onCancel={onCancel}
     onOk={onOk}
     destroyOnClose
+    forceRender
   >
     <Form form={editForm} labelCol={{ span: 6 }} colon={false} labelAlign='left'>
       <Form.Item
