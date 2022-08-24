@@ -146,7 +146,13 @@ export function evaluate({ projectId, datasets, iou, everageIou, confidence }) {
  * @returns 
  */
 export function analysis(projectId, datasets) {
-  return request.get(`/datasets/analysis`, { params: { project_id: projectId, ids: datasets.toString() } })
+  return request.get(`/datasets/batch`, {
+    params: {
+      project_id: projectId,
+      ids: datasets.toString(),
+      verbose: true,
+    }
+  })
 }
 
 /**
@@ -220,7 +226,7 @@ export function getNegativeKeywords({
   dataset,
   keywords,
 }) {
-  return request.get(`/datasets/${dataset}/stats`, {
+  return request.get(`/datasets/${dataset}`, {
     params: {
       project_id: projectId,
       keywords: keywords.toString(),

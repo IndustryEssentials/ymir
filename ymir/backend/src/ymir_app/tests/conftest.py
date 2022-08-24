@@ -83,10 +83,9 @@ def fake_viz_client() -> Generator:
             "keywords": [],
             "metadata": {},
         }
-        assets = Mock(total=1, items=[asset], keywords={}, negative_info={})
-        dataset = Mock(
+        assets = dict(total=1, items=[asset], keywords={})
+        dataset_analysis = dict(
             keywords={"gt": ["a"], "pred": ["x"]},
-            keywords_updated=False,
             cks_count={},
             cks_count_total={},
             total_assets_mbytes=20,
@@ -102,7 +101,7 @@ def fake_viz_client() -> Generator:
         )
         client.get_assets.return_value = assets
         client.get_asset.return_value = asset
-        client.get_dataset.return_value = dataset
+        client.get_dataset_analysis.return_value = dataset_analysis
         yield client
     finally:
         client.close()

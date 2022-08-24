@@ -95,7 +95,7 @@ export function transferDataset(data: BackendData): Dataset {
 }
 
 export function transferDatasetAnalysis(data: BackendData): DatasetAnalysis {
-  const { asset_bytes, asset_area, asset_quality, asset_hw_ratio, } = data.hist
+  const { bytes, area, quality, hw_ratio, } = data.hist
 
   const assetTotal = data.total_assets_count || 0
   const gt = generateAnno(data.gt)
@@ -112,10 +112,10 @@ export function transferDatasetAnalysis(data: BackendData): DatasetAnalysis {
     versionName: getIterationVersion(data.version_num),
     assetCount: assetTotal,
     totalAssetMbytes: data.total_assets_mbytes,
-    assetBytes: asset_bytes,
-    assetArea: asset_area,
-    assetQuality: asset_quality,
-    assetHWRatio: asset_hw_ratio,
+    assetBytes: bytes,
+    assetArea: area,
+    assetQuality: quality,
+    assetHWRatio: hw_ratio,
     gt,
     pred,
     cks: transferCK(data.cks_count, data.cks_count_total),
@@ -184,15 +184,15 @@ const transferCK = (counts: BackendData = {}, total: BackendData = {}) => {
 }
 
 const generateAnno = (data: BackendData) => {
-  const { anno_quality, anno_area, anno_area_ratio } = data.hist
+  const { quality, area, area_ratio } = data.hist
   return {
     keywords: data.keywords,
     total: data.annos_count,
     average: data.ave_annos_count,
     negative: data.negative_assets_count,
-    quality: anno_quality,
-    area: anno_area,
-    areaRatio: anno_area_ratio,
+    quality: quality,
+    area: area,
+    areaRatio: area_ratio,
   }
 }
 
