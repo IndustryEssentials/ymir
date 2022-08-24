@@ -151,7 +151,6 @@ class CRUDDataset(CRUDBase[Dataset, DatasetCreate, DatasetUpdate]):
 
         if result:
             dataset.keywords = json.dumps(result["keywords"])
-            dataset.negative_info = json.dumps(result["negative_info"])
             dataset.asset_count = result["total_assets_count"]
 
         db.add(dataset)

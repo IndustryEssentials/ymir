@@ -1,6 +1,6 @@
 import enum
 import json
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Union
 
 from pydantic import BaseModel, Field, validator, root_validator
 
@@ -37,8 +37,6 @@ class DatasetBase(BaseModel):
     # task_id haven't created yet
     # user_id can be parsed from token
     keywords: Optional[str]
-    ignored_keywords: Optional[str]
-    negative_info: Optional[str]
     asset_count: Optional[int]
     keyword_count: Optional[int]
 
@@ -86,8 +84,6 @@ class DatasetUpdate(BaseModel):
     description: Optional[str]
     result_state: Optional[ResultState]
     keywords: Optional[str]
-    ignored_keywords: Optional[str]
-    negative_info: Optional[str]
     asset_count: Optional[int]
     keyword_count: Optional[int]
 
@@ -106,14 +102,16 @@ class DatasetInDBBase(IdModelMixin, DateTimeModelMixin, IsDeletedModelMixin, Dat
         orm_mode = True
 
 
+class DatasetInDB(DatasetInDBBase):
+    pass
+
+
 # Properties to return to caller
 class Dataset(DatasetInDBBase):
     keywords: Optional[str]
-    ignored_keywords: Optional[str]
-    negative_info: Optional[str]
 
     # make sure all the json dumped value is unpacked before returning to caller
-    @validator("keywords", "ignored_keywords", "negative_info")
+    @validator("keywords")
     def unpack(cls, v: Optional[str]) -> Dict[str, int]:
         if v is None:
             return {}
@@ -137,44 +135,10 @@ class DatasetsOut(Common):
     result: List[Dataset]
 
 
-class DatasetStatsElement(BaseModel):
-    keywords: Dict[str, int]
-    negative_assets_count: int
-
-    class Config:
-        orm_mode = True
-
-
-class DatasetStats(BaseModel):
-    total_assets_count: int
-    gt: DatasetStatsElement
-    pred: DatasetStatsElement
-
-    class Config:
-        orm_mode = True
-
-
-class DatasetStatsOut(Common):
-    result: DatasetStats
-
-
 class DatasetAnnotationHist(BaseModel):
-    anno_quality: List[Dict]
-    anno_area: List[Dict]
-    anno_area_ratio: List[Dict]
-
-    class Config:
-        orm_mode = True
-
-
-class DatasetHist(BaseModel):
-    asset_bytes: List[Dict]
-    asset_area: List[Dict]
-    asset_quality: List[Dict]
-    asset_hw_ratio: List[Dict]
-
-    class Config:
-        orm_mode = True
+    quality: List[Dict]
+    area: List[Dict]
+    area_ratio: List[Dict]
 
 
 class DatasetAnnotation(BaseModel):
@@ -182,38 +146,50 @@ class DatasetAnnotation(BaseModel):
     negative_assets_count: int
     tags_count_total: Dict  # box tags in first level
     tags_count: Dict  # box tags in second level
-    hist: DatasetAnnotationHist
-    annos_count: int
-    ave_annos_count: float
 
-    class Config:
-        orm_mode = True
+    hist: Optional[DatasetAnnotationHist]
+    annos_count: Optional[int]
+    ave_annos_count: Optional[float]
 
 
-class DatasetAnalysis(BaseModel):
-    group_name: str
-    version_num: int
-
-    cks_count: Dict
-    cks_count_total: Dict
-
-    total_assets_mbytes: int
-    total_assets_count: int
-
+class DatasetInfo(DatasetInDBBase):
     gt: Optional[DatasetAnnotation]
     pred: Optional[DatasetAnnotation]
-    hist: DatasetHist
 
-    class Config:
-        orm_mode = True
+    keywords: Optional[Any]
+    cks_count: Optional[Dict]
+    cks_count_total: Optional[Dict]
+
+    total_assets_count: Optional[int]
+
+    # make sure all the json dumped value is unpacked before returning to caller
+    @validator("keywords")
+    def unpack(cls, v: Optional[Union[str, Dict]]) -> Dict[str, int]:
+        if v is None:
+            return {}
+        if isinstance(v, str):
+            return json.loads(v)
+        return v
 
 
-class DatasetsAnalyses(BaseModel):
-    datasets: List[DatasetAnalysis]
+class DatasetInfoOut(Common):
+    result: DatasetInfo
+
+
+class DatasetHist(BaseModel):
+    bytes: List[Dict]
+    area: List[Dict]
+    quality: List[Dict]
+    hw_ratio: List[Dict]
+
+
+class DatasetAnalysis(DatasetInfo):
+    total_assets_mbytes: Optional[int]
+    hist: Optional[DatasetHist]
 
 
 class DatasetsAnalysesOut(Common):
-    result: DatasetsAnalyses
+    result: List[DatasetAnalysis]
 
 
 class DatasetPaginationOut(Common):
