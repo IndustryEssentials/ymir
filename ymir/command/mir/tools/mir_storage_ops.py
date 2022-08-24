@@ -13,7 +13,8 @@ from mir import scm
 from mir.commands.checkout import CmdCheckout
 from mir.commands.commit import CmdCommit
 from mir.protos import mir_command_pb2 as mirpb
-from mir.tools import class_ids, context, det_eval, det_eval_utils, exodus, mir_storage, mir_repo_utils, revs_parser
+from mir.tools import class_ids, context, det_eval_ops, det_eval_utils, exodus
+from mir.tools import mir_storage, mir_repo_utils, revs_parser
 from mir.tools import settings as mir_settings
 from mir.tools.code import MirCode
 from mir.tools.errors import MirError, MirRuntimeError
@@ -58,7 +59,7 @@ class MirStorageOps():
                                                       cm=mirpb.ConfusionMatrixType.NotSet)
         if (mir_metadatas.attributes and mir_annotations.ground_truth.image_annotations
                 and mir_annotations.prediction.image_annotations):
-            evaluation, _ = det_eval.det_evaluate_with_pb(
+            evaluation, _ = det_eval_ops.det_evaluate_with_pb(
                 mir_metadatas=mir_metadatas,
                 mir_annotations=mir_annotations,
                 mir_keywords=mir_keywords,

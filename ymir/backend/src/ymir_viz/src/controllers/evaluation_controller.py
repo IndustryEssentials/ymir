@@ -2,7 +2,7 @@ import logging
 import os
 
 from google.protobuf import json_format
-from mir.tools import det_eval, revs_parser
+from mir.tools import det_eval_ops, revs_parser
 
 from src.config import viz_settings
 from src.libs import utils
@@ -45,11 +45,11 @@ def dataset_fast_evaluation(user_id: str, repo_id: str, branch_id: str, conf_thr
     rev_tid = revs_parser.parse_single_arg_rev(branch_id, need_tid=False)
     mir_root = os.path.join(viz_settings.BACKEND_SANDBOX_ROOT, user_id, repo_id)
 
-    evaluation, _ = det_eval.det_evaluate(mir_root=mir_root,
-                                          rev_tid=rev_tid,
-                                          conf_thr=conf_thr,
-                                          iou_thrs=str(iou_thr),
-                                          need_pr_curve=need_pr_curve)
+    evaluation, _ = det_eval_ops.det_evaluate(mir_root=mir_root,
+                                              rev_tid=rev_tid,
+                                              conf_thr=conf_thr,
+                                              iou_thrs=str(iou_thr),
+                                              need_pr_curve=need_pr_curve)
 
     logging.info(f"successfully dataset_fast_evaluation from branch {branch_id}")
 
