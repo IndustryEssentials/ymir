@@ -367,6 +367,7 @@ class VizClient:
     def get_resp(
         self, url: str, params: Optional[Dict] = None, timeout: int = settings.VIZ_TIMEOUT
     ) -> requests.Response:
+        logger.info("[viewer] request url %s and params %s", url, params)
         try:
             resp = self.session.get(url, params=params, timeout=timeout)
         except ConnectionError:
