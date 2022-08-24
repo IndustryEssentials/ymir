@@ -65,7 +65,6 @@ class DatasetInfo:
     total_assets_count: int
 
     hist: Optional[Dict] = None
-    negative_info: Optional[Dict[str, int]] = None
     total_assets_mbytes: Optional[int] = None
 
     @classmethod
@@ -77,10 +76,6 @@ class DatasetInfo:
             "gt": gt.keywords if gt else {},
             "pred": pred.keywords if pred else {},
         }
-        negative_info = {
-            "gt": gt.negative_assets_count if gt else 0,
-            "pred": pred.negative_assets_count if pred else 0,
-        }
         return cls(
             gt=gt,
             pred=pred,
@@ -90,7 +85,6 @@ class DatasetInfo:
             new_types_added=res.get("new_types_added"),
             total_assets_count=total_assets_count,
             hist=res.get("assets_hist"),
-            negative_info=negative_info,
             total_assets_mbytes=res.get("total_assets_mbytes"),
         )
 

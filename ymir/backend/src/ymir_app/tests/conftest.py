@@ -83,7 +83,7 @@ def fake_viz_client() -> Generator:
             "keywords": [],
             "metadata": {},
         }
-        assets = dict(total=1, items=[asset], keywords={}, negative_info={})
+        assets = dict(total=1, items=[asset], keywords={})
         dataset_analysis = dict(
             keywords={"gt": ["a"], "pred": ["x"]},
             cks_count={},
