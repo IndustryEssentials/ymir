@@ -32,6 +32,7 @@ function Merge() {
   const mid = string2Array(query.mid)
   const history = useHistory()
   const [form] = useForm()
+  const [group, setGroup] = useState()
   const includes = useWatch('includes', form)
   const excludes = useWatch('excludes', form)
   const type = useWatch('type', form)
@@ -45,6 +46,8 @@ function Merge() {
   useEffect(() => {
     did && getDataset({ id: did })
   }, [did])
+
+  useEffect(() => dataset.id && setGroup(dataset.groupId), [dataset])
 
   useEffect(() => {
     if (mergeResult) {
@@ -68,6 +71,7 @@ function Merge() {
     }
     const params = {
       ...values,
+      group,
       projectId: pid,
       datasets: [did, selectedDataset, ...values.includes].filter(item => item),
     }
@@ -80,6 +84,10 @@ function Merge() {
 
   function filter(datasets, ids = []) {
     return datasets.filter(ds => ![...ids, did].includes(ds.id))
+  }
+
+  function nameChange(_, option) {
+    option.dataset && setGroup(option.dataset.groupId)
   }
 
   return (
@@ -101,6 +109,7 @@ function Merge() {
           {type ? <Form.Item name='dataset' label={t('task.fusion.form.dataset')}>
             <DatasetSelect
               pid={pid}
+              onChane={nameChange}
               filters={datasets => filter(datasets, [...(includes || []), ...(excludes || [])])}
             />
           </Form.Item> : <DatasetName />}
