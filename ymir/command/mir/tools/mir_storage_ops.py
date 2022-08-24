@@ -13,7 +13,7 @@ from mir import scm
 from mir.commands.checkout import CmdCheckout
 from mir.commands.commit import CmdCommit
 from mir.protos import mir_command_pb2 as mirpb
-from mir.tools import class_ids, context, det_eval, exodus, mir_storage, mir_repo_utils, revs_parser
+from mir.tools import class_ids, context, det_eval, det_eval_utils, exodus, mir_storage, mir_repo_utils, revs_parser
 from mir.tools import settings as mir_settings
 from mir.tools.code import MirCode
 from mir.tools.errors import MirError, MirRuntimeError
@@ -24,11 +24,13 @@ class MirStorageOpsBuildConfig:
                  evaluate_conf_thr: float = mir_settings.DEFAULT_EVALUATE_CONF_THR,
                  evaluate_iou_thrs: str = mir_settings.DEFAULT_EVALUATE_IOU_THR,
                  evaluate_need_pr_curve: bool = False,
-                 evaluate_src_dataset_id: str = '') -> None:
+                 evaluate_src_dataset_id: str = '',
+                 evaluate_class_ids: List[int] = []) -> None:
         self.evaluate_conf_thr: float = evaluate_conf_thr
         self.evaluate_iou_thrs: str = evaluate_iou_thrs
         self.evaluate_need_pr_curve: bool = evaluate_need_pr_curve
         self.evaluate_src_dataset_id: str = evaluate_src_dataset_id
+        self.evaluate_class_ids: List[int] = evaluate_class_ids
 
 
 class MirStorageOps():
@@ -50,10 +52,10 @@ class MirStorageOps():
                                  mir_keywords=mir_keywords)
         mir_datas[mirpb.MirStorage.MIR_KEYWORDS] = mir_keywords
 
-        det_eval.reset_default_confusion_matrix(task_annotations=mir_annotations.prediction,
-                                                cm=mirpb.ConfusionMatrixType.NotSet)
-        det_eval.reset_default_confusion_matrix(task_annotations=mir_annotations.ground_truth,
-                                                cm=mirpb.ConfusionMatrixType.NotSet)
+        det_eval_utils.reset_default_confusion_matrix(task_annotations=mir_annotations.prediction,
+                                                      cm=mirpb.ConfusionMatrixType.NotSet)
+        det_eval_utils.reset_default_confusion_matrix(task_annotations=mir_annotations.ground_truth,
+                                                      cm=mirpb.ConfusionMatrixType.NotSet)
         if (mir_metadatas.attributes and mir_annotations.ground_truth.image_annotations
                 and mir_annotations.prediction.image_annotations):
             evaluation, _ = det_eval.det_evaluate_with_pb(
@@ -64,6 +66,7 @@ class MirStorageOps():
                 conf_thr=build_config.evaluate_conf_thr,
                 iou_thrs=build_config.evaluate_iou_thrs,
                 need_pr_curve=build_config.evaluate_need_pr_curve,
+                class_ids=build_config.evaluate_class_ids,
             )
             mir_tasks.tasks[mir_tasks.head_task_id].evaluation.CopyFrom(evaluation)
 
