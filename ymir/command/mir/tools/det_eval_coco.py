@@ -1,5 +1,5 @@
 from collections import defaultdict
-from typing import Any, Dict, Iterable, List, Optional, Set, Tuple, Union
+from typing import Any, Dict, List, Optional, Set, Tuple, Union
 
 import numpy as np
 
@@ -13,8 +13,7 @@ class CocoDetEval:
     def __init__(self,
                  coco_gt: det_eval_utils.MirDataset,
                  coco_dt: det_eval_utils.MirDataset,
-                 params: 'Params',
-                 asset_ids: Iterable[str] = None):
+                 params: 'Params'):
         self.evalImgs: list = []  # per-image per-category evaluation results [KxAxI] elements
         self.eval: dict = {}  # accumulated evaluation results
         self.params = params
@@ -22,18 +21,9 @@ class CocoDetEval:
         self.ious: dict = {
         }  # key: (asset id, class id), value: ious ndarray of ith dt (sorted by score, desc) and jth gt
 
-        if asset_ids:
-            self.params.imgIdxes = sorted([coco_gt.asset_id_to_ordered_idxes[x] for x in asset_ids])
-            # gt for eval, key: (img_idx, cat_idx), value: annos list
-            self._gts = self.filter_img_cat_to_annotations(img_cat_to_annotations=coco_gt.img_cat_to_annotations,
-                                                           img_idxes=self.params.imgIdxes)
-            # dt for eval, key: (img_idx, cat_idx), value: annos list
-            self._dts = self.filter_img_cat_to_annotations(img_cat_to_annotations=coco_dt.img_cat_to_annotations,
-                                                           img_idxes=self.params.imgIdxes)
-        else:
-            self.params.imgIdxes = coco_gt.get_asset_idxes()
-            self._gts = defaultdict(list, coco_gt.img_cat_to_annotations)
-            self._dts = defaultdict(list, coco_dt.img_cat_to_annotations)
+        self.params.imgIdxes = coco_gt.get_asset_idxes()
+        self._gts = defaultdict(list, coco_gt.img_cat_to_annotations)
+        self._dts = defaultdict(list, coco_dt.img_cat_to_annotations)
 
         self._coco_gt = coco_gt
         self._coco_dt = coco_dt
