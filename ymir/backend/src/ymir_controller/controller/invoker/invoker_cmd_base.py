@@ -5,7 +5,7 @@ from abc import ABC, abstractmethod
 from google.protobuf import json_format
 
 from common_utils import labels
-from controller.utils import checker, errors, metrics, utils
+from controller.utils import errors, metrics, utils
 from id_definition.error_codes import CTLResponseCode
 from proto import backend_pb2
 
@@ -33,9 +33,7 @@ class BaseMirControllerInvoker(ABC):
         if not os.path.isdir(sandbox_root):
             raise errors.MirCtrError(CTLResponseCode.ARG_VALIDATION_FAILED,
                                      f"sandbox root {sandbox_root} not found, abort.")
-        ret = checker.check_invoker(invoker=self, prerequisites=[checker.Prerequisites.CHECK_TASK_ID])
-        if (ret.code != CTLResponseCode.CTR_OK):
-            raise errors.MirCtrError(CTLResponseCode.ARG_VALIDATION_FAILED, f"task_id {request.task_id} error, abort.")
+
         self._request = request
         self._sandbox_root = sandbox_root
         self._task_id = request.task_id
@@ -49,11 +47,6 @@ class BaseMirControllerInvoker(ABC):
         self._label_storage_file = ""
         self._user_labels = None
         if self._user_id:
-            ret = checker.check_invoker(invoker=self, prerequisites=[checker.Prerequisites.CHECK_USER_ID])
-            if (ret.code != CTLResponseCode.CTR_OK):
-                raise errors.MirCtrError(CTLResponseCode.ARG_VALIDATION_FAILED,
-                                         f"user_id {request.user_id} error, abort.")
-
             self._user_root = os.path.join(sandbox_root, self._user_id)
             self._label_storage_file = os.path.join(self._user_root, labels.default_labels_file_name())
             self._user_labels = labels.get_user_labels_from_storage(self._label_storage_file)
@@ -64,10 +57,6 @@ class BaseMirControllerInvoker(ABC):
         if request.repo_id:
             if not self._user_id or not self._user_root:
                 raise errors.MirCtrError(CTLResponseCode.ARG_VALIDATION_FAILED, "repo id provided, but miss user id.")
-            ret = checker.check_invoker(invoker=self, prerequisites=[checker.Prerequisites.CHECK_REPO_ID])
-            if (ret.code != CTLResponseCode.CTR_OK):
-                raise errors.MirCtrError(CTLResponseCode.ARG_VALIDATION_FAILED,
-                                         f"repo_id {request.repo_id} error, abort.")
 
             self._repo_id = request.repo_id
             self._repo_root = os.path.join(self._user_root, request.repo_id)
