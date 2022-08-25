@@ -43,7 +43,7 @@ class MirDataset:
         self.img_cat_to_annotations: Dict[Tuple[int, int], List[dict]] = defaultdict(list)
         annos = self._get_annotations(single_task_annotations=pred_or_gt_annotations,
                                       asset_idxes=self.get_asset_idxes(),
-                                      class_ids=self.get_class_ids(),
+                                      class_ids=self._ordered_class_ids,
                                       conf_thr=conf_thr)
         for anno in annos:
             self.img_cat_to_annotations[anno['asset_idx'], anno['class_id']].append(anno)
@@ -127,9 +127,6 @@ class MirDataset:
 
     def get_asset_idxes(self) -> List[int]:
         return list(range(len(self._ordered_asset_ids)))
-
-    def get_class_ids(self) -> List[int]:
-        return self._ordered_class_ids
 
 
 class _DetEvalIouMatchResult:
