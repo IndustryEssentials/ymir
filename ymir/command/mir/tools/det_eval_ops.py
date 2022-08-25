@@ -46,18 +46,16 @@ def det_evaluate_with_pb(
     need_pr_curve: bool = False,
     mode: str = 'voc',  # voc or coco
 ) -> Tuple[mirpb.Evaluation, mirpb.MirAnnotations]:
-    mir_gt = MirDataset(mir_metadatas=mir_metadatas,
-                        mir_annotations=mir_annotations,
-                        mir_keywords=mir_keywords,
+    mir_gt = MirDataset(asset_ids=mir_metadatas.attributes.keys(),
+                        pred_or_gt_annotations=mir_annotations.ground_truth,
+                        class_ids=mir_keywords.gt_idx.cis.keys(),
+                        conf_thr=None,
+                        dataset_id=dataset_id)
+    mir_dt = MirDataset(asset_ids=mir_metadatas.attributes.keys(),
+                        pred_or_gt_annotations=mir_annotations.prediction,
+                        class_ids=mir_keywords.pred_idx.cis.keys(),
                         conf_thr=conf_thr,
-                        dataset_id=dataset_id,
-                        as_gt=True)
-    mir_dt = MirDataset(mir_metadatas=mir_metadatas,
-                        mir_annotations=mir_annotations,
-                        mir_keywords=mir_keywords,
-                        conf_thr=conf_thr,
-                        dataset_id=dataset_id,
-                        as_gt=False)
+                        dataset_id=dataset_id)
 
     # evaluation = mirpb.Evaluation()
     evaluate_config = mirpb.EvaluateConfig()

@@ -1,5 +1,5 @@
 from collections import defaultdict
-from typing import Any, Dict, Iterable, List, Optional, Set, Tuple
+from typing import Any, Collection, Dict, List, Optional, Set, Tuple
 
 import numpy as np
 
@@ -10,57 +10,47 @@ from mir.protos import mir_command_pb2 as mirpb
 
 class MirDataset:
     def __init__(self,
-                 mir_metadatas: mirpb.MirMetadatas,
-                 mir_annotations: mirpb.MirAnnotations,
-                 mir_keywords: mirpb.MirKeywords,
-                 conf_thr: float,
-                 dataset_id: str,
-                 as_gt: bool,
-                 asset_ids: Iterable[str] = None) -> None:
+                 asset_ids: Collection[str],
+                 pred_or_gt_annotations: mirpb.SingleTaskAnnotations,
+                 class_ids: Collection[int],
+                 conf_thr: Optional[float],
+                 dataset_id: str) -> None:
         """
         creates MirDataset instance
 
         Args:
-            mir_metadatas (mirpb.MirMetadatas): metadatas
-            mir_annotations (mirpb.MirAnnotations): annotations
-            mir_keywords (mirpb.MirKeywords): keywords
-            conf_thr (float): lower bound of annotation confidence score
-            as_gt (bool): if false, use preds in mir_annotations and mir_keywords, if true, use gt
-            asset_ids (Iterable[str]): asset ids you want to include in MirDataset instance, None means include all
+            asset_ids (Collection[str]): asset ids (hashes)
+            pred_or_gt_annotations (mirpb.SingleTaskAnnotations): pred or gt annotations
+            class_ids (Collection[int]): class ids you wish to evaluate
+            conf_thr (Optional[float]): lower bound of annotation confidence score
+                only annotation with confidence greater then conf_thr will be used.
+                if you wish to use all annotations, let conf_thr = None
         """
-        task_annotations = mir_annotations.ground_truth if as_gt else mir_annotations.prediction
-        keyword_to_idx = mir_keywords.gt_idx if as_gt else mir_keywords.pred_idx
-
-        if len(mir_metadatas.attributes) == 0:
+        if len(asset_ids) == 0:
             raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
                                   error_message='no assets in evaluated dataset')
-        if len(task_annotations.image_annotations) == 0:
+        if len(pred_or_gt_annotations.image_annotations) == 0:
             raise MirRuntimeError(error_code=MirCode.RC_CMD_NO_ANNOTATIONS,
                                   error_message='no annotations in evaluated dataset')
 
         # ordered list of asset / image ids
-        self._ordered_asset_ids = sorted(asset_ids or mir_metadatas.attributes.keys())
+        self._ordered_asset_ids = sorted(asset_ids)
         # key: asset id, value: index in `self._ordered_asset_ids`
         self._asset_id_to_ordered_idxes = {asset_id: idx for idx, asset_id in enumerate(self._ordered_asset_ids)}
         # ordered list of class / category ids
-        self._ordered_class_ids = sorted(list(keyword_to_idx.cis.keys()))
-        self._ck_idx: Dict[str, mirpb.AssetAnnoIndex] = {key: value for key, value in mir_keywords.ck_idx.items()}
+        self._ordered_class_ids = sorted(class_ids)
 
         self.img_cat_to_annotations: Dict[Tuple[int, int], List[dict]] = defaultdict(list)
-        annos = self._get_annotations(single_task_annotations=task_annotations,
+        annos = self._get_annotations(single_task_annotations=pred_or_gt_annotations,
                                       asset_idxes=self.get_asset_idxes(),
                                       class_ids=self.get_class_ids(),
-                                      conf_thr=None if as_gt else conf_thr)
+                                      conf_thr=conf_thr)
         for anno in annos:
             self.img_cat_to_annotations[anno['asset_idx'], anno['class_id']].append(anno)
 
-        self._task_annotations = task_annotations
+        self._task_annotations = pred_or_gt_annotations
 
         self._dataset_id = dataset_id
-
-    @property
-    def ck_idx(self) -> Dict[str, mirpb.AssetAnnoIndex]:
-        return self._ck_idx
 
     @property
     def asset_id_to_ordered_idxes(self) -> Dict[str, int]:
@@ -161,10 +151,10 @@ class DetEvalMatchResult:
     def add_match(self, asset_id: str, iou_thr: float, gt_pb_idx: int, pred_pb_idx: int) -> None:
         self._iou_matches[iou_thr].add_match(asset_id=asset_id, gt_pb_idx=gt_pb_idx, pred_pb_idx=pred_pb_idx)
 
-    def get_asset_ids(self, iou_thr: float) -> Iterable[str]:
+    def get_asset_ids(self, iou_thr: float) -> Collection[str]:
         return self._iou_matches[iou_thr].gt_pred_match.keys() if iou_thr in self._iou_matches else []
 
-    def get_matches(self, asset_id: str, iou_thr: float) -> Iterable[Tuple[int, int]]:
+    def get_matches(self, asset_id: str, iou_thr: float) -> Collection[Tuple[int, int]]:
         return self._iou_matches[iou_thr].gt_pred_match[asset_id]
 
 
@@ -192,7 +182,7 @@ def get_iou_thrs_array(iou_thrs_str: str) -> np.ndarray:
                        endpoint=False)
 
 
-def calc_averaged_evaluations(dataset_evaluation: mirpb.SingleDatasetEvaluation, class_ids: Iterable[int]) -> None:
+def calc_averaged_evaluations(dataset_evaluation: mirpb.SingleDatasetEvaluation, class_ids: Collection[int]) -> None:
     for iou_evaluation in dataset_evaluation.iou_evaluations.values():
         _get_average_ee(average_ee=iou_evaluation.ci_averaged_evaluation,
                         ees=list(iou_evaluation.ci_evaluations.values()))
@@ -227,7 +217,7 @@ def _get_average_ee(average_ee: mirpb.SingleEvaluationElement, ees: List[mirpb.S
 
 
 def reset_default_confusion_matrix(task_annotations: mirpb.SingleTaskAnnotations, cm: Any,
-                                   class_ids: Iterable[int] = []) -> None:
+                                   class_ids: Collection[int] = []) -> None:
     for image_annotations in task_annotations.image_annotations.values():
         for annotation in image_annotations.annotations:
             annotation.cm = cm if (class_ids

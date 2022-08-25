@@ -242,12 +242,11 @@ class TestToolsDetEval(unittest.TestCase):
             mir_branch='a',
             mir_task_id='a',
             ms_list=[mirpb.MirStorage.MIR_METADATAS, mirpb.MirStorage.MIR_ANNOTATIONS, mirpb.MirStorage.MIR_KEYWORDS])
-        mir_coco = det_eval_utils.MirDataset(mir_metadatas=mir_metadatas,
-                                             mir_annotations=mir_annotations,
-                                             mir_keywords=mir_keywords,
-                                             conf_thr=0,
-                                             dataset_id='a@a',
-                                             as_gt=True)
+        mir_coco = det_eval_utils.MirDataset(asset_ids=mir_metadatas.attributes.keys(),
+                                             pred_or_gt_annotations=mir_annotations.ground_truth,
+                                             class_ids=mir_keywords.gt_idx.cis.keys(),
+                                             conf_thr=None,
+                                             dataset_id='a@a')
         self.assertEqual(['a0', 'a1', 'a2'], mir_coco.get_asset_ids())
         self.assertEqual([0, 1, 2], mir_coco.get_asset_idxes())
         self.assertEqual([0, 1, 2], mir_coco.get_class_ids())
@@ -270,18 +269,16 @@ class TestToolsDetEval(unittest.TestCase):
             mir_task_id='a',
             ms_list=[mirpb.MirStorage.MIR_METADATAS, mirpb.MirStorage.MIR_ANNOTATIONS, mirpb.MirStorage.MIR_KEYWORDS])
 
-        mir_gt = det_eval_utils.MirDataset(mir_metadatas=mir_metadatas,
-                                           mir_annotations=mir_annotations,
-                                           mir_keywords=mir_keywords,
+        mir_gt = det_eval_utils.MirDataset(asset_ids=mir_metadatas.attributes.keys(),
+                                           pred_or_gt_annotations=mir_annotations.ground_truth,
+                                           class_ids=mir_keywords.gt_idx.cis.keys(),
+                                           conf_thr=None,
+                                           dataset_id='a')
+        mir_dt = det_eval_utils.MirDataset(asset_ids=mir_metadatas.attributes.keys(),
+                                           pred_or_gt_annotations=mir_annotations.prediction,
+                                           class_ids=mir_keywords.pred_idx.cis.keys(),
                                            conf_thr=0,
-                                           dataset_id='a',
-                                           as_gt=True)
-        mir_dt = det_eval_utils.MirDataset(mir_metadatas=mir_metadatas,
-                                           mir_annotations=mir_annotations,
-                                           mir_keywords=mir_keywords,
-                                           conf_thr=0,
-                                           dataset_id='a',
-                                           as_gt=False)
+                                           dataset_id='a')
 
         params = det_eval_coco.Params()
         params.catIds = mir_gt.get_class_ids()
@@ -304,18 +301,16 @@ class TestToolsDetEval(unittest.TestCase):
             mir_task_id='a',
             ms_list=[mirpb.MirStorage.MIR_METADATAS, mirpb.MirStorage.MIR_ANNOTATIONS, mirpb.MirStorage.MIR_KEYWORDS])
 
-        mir_gt = det_eval_utils.MirDataset(mir_metadatas=mir_metadatas,
-                                           mir_annotations=mir_annotations,
-                                           mir_keywords=mir_keywords,
+        mir_gt = det_eval_utils.MirDataset(asset_ids=mir_metadatas.attributes.keys(),
+                                           pred_or_gt_annotations=mir_annotations.ground_truth,
+                                           class_ids=mir_keywords.gt_idx.cis.keys(),
+                                           conf_thr=None,
+                                           dataset_id='a')
+        mir_dt = det_eval_utils.MirDataset(asset_ids=mir_metadatas.attributes.keys(),
+                                           pred_or_gt_annotations=mir_annotations.prediction,
+                                           class_ids=mir_keywords.pred_idx.cis.keys(),
                                            conf_thr=0,
-                                           dataset_id='a',
-                                           as_gt=True)
-        mir_dt = det_eval_utils.MirDataset(mir_metadatas=mir_metadatas,
-                                           mir_annotations=mir_annotations,
-                                           mir_keywords=mir_keywords,
-                                           conf_thr=0,
-                                           dataset_id='a',
-                                           as_gt=False)
+                                           dataset_id='a')
 
         evaluate_config = mirpb.EvaluateConfig()
         evaluate_config.conf_thr = 0.0005
