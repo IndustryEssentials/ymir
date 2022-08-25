@@ -5,6 +5,7 @@ from common_utils.labels import UserLabels
 from controller.invoker.invoker_task_base import SubTaskType, TaskBaseInvoker
 from controller.utils import utils
 from id_definition.error_codes import CTLResponseCode
+from mir.protos import mir_command_pb2 as mir_cmd_pb
 from proto import backend_pb2
 
 
@@ -16,7 +17,7 @@ class TaskExportingInvoker(TaskBaseInvoker):
             return utils.make_general_response(code=CTLResponseCode.ARG_VALIDATION_FAILED, message="empty asset_dir")
         os.makedirs(asset_dir, exist_ok=True)
 
-        if exporting_request.format != backend_pb2.LabelFormat.NO_ANNOTATION:
+        if exporting_request.format != mir_cmd_pb.LabelFormat.NO_ANNOTATION:
             pred_dir = exporting_request.pred_dir
             if not pred_dir:
                 return utils.make_general_response(code=CTLResponseCode.ARG_VALIDATION_FAILED, message="empty pred_dir")

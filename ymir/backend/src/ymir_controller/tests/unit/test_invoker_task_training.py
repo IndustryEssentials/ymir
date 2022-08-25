@@ -15,6 +15,7 @@ from controller.utils.invoker_call import make_invoker_cmd_call
 from controller.utils.invoker_mapping import RequestTypeToInvoker
 from controller.utils.redis import rds
 from proto import backend_pb2
+from mir.protos import mir_command_pb2 as mir_cmd_pb
 
 RET_ID = 'commit t000aaaabbbbbbzzzzzzzzzzzzzzz3\nabc'
 
@@ -100,10 +101,10 @@ class TestInvokerTaskTraining(unittest.TestCase):
 
         training_data_type_1 = backend_pb2.TaskReqTraining.TrainingDatasetType()
         training_data_type_1.dataset_id = self._guest_id1
-        training_data_type_1.dataset_type = backend_pb2.TvtType.TvtTypeTraining
+        training_data_type_1.dataset_type = mir_cmd_pb.TvtType.TvtTypeTraining
         training_data_type_2 = backend_pb2.TaskReqTraining.TrainingDatasetType()
         training_data_type_2.dataset_id = self._guest_id2
-        training_data_type_2.dataset_type = backend_pb2.TvtType.TvtTypeValidation
+        training_data_type_2.dataset_type = mir_cmd_pb.TvtType.TvtTypeValidation
 
         train_task_req = backend_pb2.TaskReqTraining()
         train_task_req.in_dataset_types.append(training_data_type_2)

@@ -16,6 +16,7 @@ from app.schemas.dataset import ImportStrategy, MergeStrategy
 from app.schemas.task import TrainingDatasetsStrategy
 from common_utils.labels import UserLabels
 from id_definition.task_id import TaskId
+from mir.protos import mir_command_pb2 as mir_cmd_pb
 from proto import backend_pb2 as mirsvrpb
 from proto import backend_pb2_grpc as mir_grpc
 
@@ -118,8 +119,8 @@ class ControllerRequest:
     def prepare_training(self, request: mirsvrpb.GeneralReq, args: Dict) -> mirsvrpb.GeneralReq:
         train_task_req = mirsvrpb.TaskReqTraining()
         datasets = itertools.chain(
-            gen_typed_datasets(mirsvrpb.TvtTypeTraining, [args["dataset_hash"]]),
-            gen_typed_datasets(mirsvrpb.TvtTypeValidation, [args["validation_dataset_hash"]]),
+            gen_typed_datasets(mir_cmd_pb.TvtTypeTraining, [args["dataset_hash"]]),
+            gen_typed_datasets(mir_cmd_pb.TvtTypeValidation, [args["validation_dataset_hash"]]),
         )
         for dataset in datasets:
             train_task_req.in_dataset_types.append(dataset)
@@ -325,7 +326,7 @@ class ControllerRequest:
         return self.prepare_mining(request, args)
 
     def prepare_evaluate(self, request: mirsvrpb.GeneralReq, args: Dict) -> mirsvrpb.GeneralReq:
-        evaluate_config = mirsvrpb.EvaluateConfig()
+        evaluate_config = mir_cmd_pb.EvaluateConfig()
         evaluate_config.conf_thr = args["confidence_threshold"]
         evaluate_config.iou_thrs_interval = "0.5:1:0.05"
         evaluate_config.need_pr_curve = False

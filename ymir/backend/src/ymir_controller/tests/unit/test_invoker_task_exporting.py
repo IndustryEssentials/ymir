@@ -10,6 +10,7 @@ import tests.utils as test_utils
 from controller.utils import utils
 from controller.utils.invoker_call import make_invoker_cmd_call
 from controller.utils.invoker_mapping import RequestTypeToInvoker
+from mir.protos import mir_command_pb2 as mir_cmd_pb
 from proto import backend_pb2
 
 RET_ID = 'commit t000aaaabbbbbbzzzzzzzzzzzzzzz3\nabc'
@@ -80,7 +81,7 @@ class TestInvokerTaskExporting(unittest.TestCase):
     def test_invoker_00(self, mock_run):
         exporting_request = backend_pb2.TaskReqExporting()
         exporting_request.dataset_id = self._base_task_id
-        exporting_request.format = backend_pb2.LabelFormat.PASCAL_VOC
+        exporting_request.format = mir_cmd_pb.LabelFormat.PASCAL_VOC
         exporting_request.asset_dir = self._storage_root
         exporting_request.pred_dir = self._storage_root
         exporting_request.gt_dir = self._storage_root

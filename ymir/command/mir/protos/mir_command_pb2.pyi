@@ -173,10 +173,12 @@ class _LabelFormatEnumTypeWrapper(google.protobuf.internal.enum_type_wrapper._En
     NO_ANNOTATION = LabelFormat.V(0)
     PASCAL_VOC = LabelFormat.V(1)
     IF_ARK = LabelFormat.V(2)
+    LABEL_STUDIO_JSON = LabelFormat.V(3)
 
 NO_ANNOTATION = LabelFormat.V(0)
 PASCAL_VOC = LabelFormat.V(1)
 IF_ARK = LabelFormat.V(2)
+LABEL_STUDIO_JSON = LabelFormat.V(3)
 global___LabelFormat = LabelFormat
 
 

@@ -4,6 +4,7 @@ from typing import Tuple, List, Optional
 
 from controller.invoker.invoker_task_exporting import TaskExportingInvoker
 from controller.utils import utils
+from mir.protos import mir_command_pb2 as mir_cmd_pb
 from proto import backend_pb2
 
 
@@ -29,7 +30,7 @@ def prepare_label_dir(working_dir: str, task_id: str) -> Tuple[str, str, str, st
 def trigger_ymir_export(repo_root: str, dataset_id: str, input_asset_dir: str, media_location: str,
                         export_work_dir: str, keywords: List[str], annotation_type: Optional[int]) -> None:
     # trigger ymir export, so that we can get pictures from ymir
-    format_str = utils.annotation_format_str(backend_pb2.LabelFormat.LABEL_STUDIO_JSON)
+    format_str = utils.annotation_format_str(mir_cmd_pb.LabelFormat.LABEL_STUDIO_JSON)
 
     gt_dir: Optional[str] = None
     pred_dir: Optional[str] = None

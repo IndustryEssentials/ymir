@@ -74,6 +74,7 @@ enum LabelFormat {
     NO_ANNOTATION = 0;
     PASCAL_VOC = 1;
     IF_ARK = 2;
+    LABEL_STUDIO_JSON = 3;
 };
 
 /// ========== metadatas.mir ==========

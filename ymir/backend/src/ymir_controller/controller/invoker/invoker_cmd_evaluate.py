@@ -1,21 +1,14 @@
 from controller.invoker.invoker_cmd_base import BaseMirControllerInvoker
-from controller.utils import checker, revs, utils
+from controller.utils import checker, utils
 from id_definition.error_codes import CTLResponseCode
+from mir.tools import det_eval, revs_parser
 from proto import backend_pb2
 
 
 class EvaluateInvoker(BaseMirControllerInvoker):
     def _need_work_dir(self) -> bool:
-        return True
+        return False
 
-    """
-    invoker for command evaluate
-    request.in_dataset_ids: predictions
-    request.singleton_op: ground truth
-    request.task_id: task hash for this evaluate command
-    request.evaluate_config.conf_thr: confidence threshold
-    request.evaluate_config.iou_thrs_interval: from:to:step, default is '0.5:1.0:0.05', end point excluded
-    """
     def pre_invoke(self) -> backend_pb2.GeneralResp:
         checker_resp = checker.check_invoker(invoker=self,
                                              prerequisites=[
@@ -23,50 +16,33 @@ class EvaluateInvoker(BaseMirControllerInvoker):
                                                  checker.Prerequisites.CHECK_REPO_ID,
                                                  checker.Prerequisites.CHECK_REPO_ROOT_EXIST,
                                                  checker.Prerequisites.CHECK_TASK_ID,
-                                                 checker.Prerequisites.CHECK_SINGLETON_OP,
                                                  checker.Prerequisites.CHECK_IN_DATASET_IDS,
                                              ])
         if checker_resp.code != CTLResponseCode.CTR_OK:
             return checker_resp
 
-        conf_thr = self._request.evaluate_config.conf_thr
-        if conf_thr < 0 or conf_thr >= 1:
+        ec = self._request.evaluate_config
+        if ec.conf_thr < 0 or ec.conf_thr >= 1:
             return utils.make_general_response(CTLResponseCode.ARG_VALIDATION_FAILED,
-                                               f"invalid evaluate conf thr: {conf_thr:.2f}")
+                                               f"invalid evaluate conf thr: {ec.conf_thr:.2f}")
 
-        iou_thrs_interval: str = self._request.evaluate_config.iou_thrs_interval or '0.5:1.0:0.05'
-        iou_thrs_interval_list = [float(v) for v in iou_thrs_interval.split(':')]
-        if len(iou_thrs_interval_list) != 3:
+        if not ec.iou_thrs_interval:
             return utils.make_general_response(CTLResponseCode.ARG_VALIDATION_FAILED,
-                                               "invalid evaluate iou thrs interval: {}".format(iou_thrs_interval))
-        for v in iou_thrs_interval_list:
-            if v < 0 or v > 1:
-                return utils.make_general_response(CTLResponseCode.ARG_VALIDATION_FAILED,
-                                                   "invalid evaluate iou thrs interval: {}".format(iou_thrs_interval))
+                                               "invalid evaluate iou thrs interval: {}".format(ec.iou_thrs_interval))
 
         return utils.make_general_response(CTLResponseCode.CTR_OK, "")
 
     def invoke(self) -> backend_pb2.GeneralResp:
         ec = self._request.evaluate_config
-        command = [
-            utils.mir_executable(),
-            'evaluate',
-            '--root',
-            self._repo_root,
-            '--dst-rev',
-            revs.join_tvt_branch_tid(branch_id=self._request.task_id, tid=self._request.task_id),
-            '--src-revs',
-            revs.build_src_revs(in_src_revs=self._request.in_dataset_ids, his_tid=self._request.his_task_id),
-            '--gt-rev',
-            revs.join_tvt_branch_tid(branch_id=self._request.singleton_op, tid=self._request.singleton_op),
-            '-w',
-            self._work_dir,
-            '--conf-thr',
-            f"{ec.conf_thr:.2f}",
-            '--iou-thrs',
-            ec.iou_thrs_interval,
-        ]
-        if ec.need_pr_curve:
-            command.append('--need-pr-curve')
+        rev_tid = revs_parser.parse_single_arg_rev(ec.pred_dataset_ids[0], need_tid=False)
 
-        return utils.run_command(command)
+        evaluation, _ = det_eval.det_evaluate(mir_root=self._repo_root,
+                                              rev_tid=rev_tid,
+                                              conf_thr=ec.conf_thr,
+                                              iou_thrs=ec.iou_thrs_interval,
+                                              need_pr_curve=ec.need_pr_curve)
+
+        response = backend_pb2.GeneralResp()
+        response.code = CTLResponseCode.CTR_OK
+        response.evaluation.CopyFrom(evaluation)
+        return response
