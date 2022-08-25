@@ -2,7 +2,7 @@
 """Client and server classes corresponding to protobuf-defined services."""
 import grpc
 
-from mir.protos import backend_pb2 as backend__pb2
+import backend_pb2 as backend__pb2
 
 
 class mir_controller_serviceStub(object):
