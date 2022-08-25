@@ -8,5 +8,6 @@ ViewerURI: ""
 MongoDBURI: "mongodb://127.0.0.1:27017"
 MongoDataDBName: "YMIR-data"
 MongoDataDBCache: true
+MongoMetricsDBName: "YMIR-metrics"
 
 InnerTimeout: 61 # +1 for elder.

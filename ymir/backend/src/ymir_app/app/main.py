@@ -102,6 +102,18 @@ uvicorn_access_logger = logging.getLogger("uvicorn.access")
 uvicorn_access_logger.handlers = gunicorn_error_logger.handlers
 logging.getLogger("multipart").setLevel(logging.WARNING)
 
+
+class EndpointFilter(logging.Filter):
+    def filter(self, record: logging.LogRecord) -> bool:
+        for filter_key in ["/health", "/metrics"]:
+            if record.getMessage().find(filter_key) != -1:
+                return False
+        return True
+
+
+uvicorn_access_logger.addFilter(EndpointFilter())
+
+
 if __name__ == "__main__":
     import uvicorn
 

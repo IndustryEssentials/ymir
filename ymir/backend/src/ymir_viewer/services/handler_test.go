@@ -85,6 +85,22 @@ func (m *MockMongoServer) QueryDatasetStats(
 	return args.Get(0).(*constants.QueryDatasetStatsResult)
 }
 
+func (m *MockMongoServer) MetricsRecordSignals(collectionSuffix string, id string, data interface{}) {
+	m.Called(collectionSuffix, id, data)
+}
+
+func (m *MockMongoServer) MetricsQuerySignals(
+	collectionSuffix string,
+	userID string,
+	queryField string,
+	bucket string,
+	unit string,
+	limit int,
+) *[]constants.MetricsQueryPoint {
+	args := m.Called(collectionSuffix, userID, queryField, bucket, unit, limit)
+	return args.Get(0).(*[]constants.MetricsQueryPoint)
+}
+
 func TestGetDatasetMetaCountsHandler(t *testing.T) {
 	mirFileContext := constants.MirfileContext
 	mirFileTasks := constants.MirfileTasks

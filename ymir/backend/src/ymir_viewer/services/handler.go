@@ -10,6 +10,7 @@ import (
 	"github.com/IndustryEssentials/ymir-viewer/common/loader"
 	"github.com/IndustryEssentials/ymir-viewer/common/protos"
 	"github.com/IndustryEssentials/ymir-viewer/tools"
+	"github.com/mitchellh/mapstructure"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
@@ -47,6 +48,15 @@ type BaseMongoServer interface {
 		requireAssetsHist bool,
 		requireAnnotationsHist bool,
 	) *constants.QueryDatasetStatsResult
+	MetricsQuerySignals(
+		collectionSuffix string,
+		userID string,
+		queryField string,
+		bucket string,
+		unit string,
+		limit int,
+	) *[]constants.MetricsQueryPoint
+	MetricsRecordSignals(collectionSuffix string, id string, data interface{})
 }
 
 type ViewerHandler struct {
@@ -54,7 +64,12 @@ type ViewerHandler struct {
 	mirLoader   BaseMirRepoLoader
 }
 
-func NewViewerHandler(mongoURI string, mongoDataDBName string, useDataDBCache bool) *ViewerHandler {
+func NewViewerHandler(
+	mongoURI string,
+	mongoDataDBName string,
+	useDataDBCache bool,
+	mongoMetricsDBName string,
+) *ViewerHandler {
 	var mongoServer *MongoServer
 	if len(mongoURI) > 0 {
 		log.Printf("[viewer] init mongodb %s\n", mongoURI)
@@ -65,13 +80,14 @@ func NewViewerHandler(mongoURI string, mongoDataDBName string, useDataDBCache bo
 			panic(err)
 		}
 
-		database := client.Database(mongoDataDBName)
-		mongoServer = NewMongoServer(mongoCtx, database)
+		mirDatabase := client.Database(mongoDataDBName)
+		metricsDatabase := client.Database(mongoMetricsDBName)
+		mongoServer = NewMongoServer(mongoCtx, mirDatabase, metricsDatabase)
 		if useDataDBCache {
 			go mongoServer.RemoveNonReadyDataset()
 		} else {
 			// Clear cached data.
-			err = database.Drop(mongoCtx)
+			err = mirDatabase.Drop(mongoCtx)
 			if err != nil {
 				panic(err)
 			}
@@ -300,7 +316,7 @@ func (v *ViewerHandler) GetDatasetDupHandler(
 	for _, candidateMetadata := range candidateMetadatas {
 		for assetID := range candidateMetadata.Attributes {
 			if _, ok := joinedAssetIDMap[assetID]; ok {
-				dupCount += 1
+				dupCount++
 			} else {
 				joinedAssetIDMap[assetID] = true
 			}
@@ -315,7 +331,7 @@ func (v *ViewerHandler) GetDatasetDupHandler(
 		residualCount := len(corrodeeMetadata.Attributes)
 		for assetID := range corrodeeMetadata.Attributes {
 			if _, ok := joinedAssetIDMap[assetID]; ok {
-				residualCount -= 1
+				residualCount--
 			}
 		}
 		residualCountMap[mirRepo.TaskID] = int64(residualCount)
@@ -332,4 +348,38 @@ func (v *ViewerHandler) GetModelInfoHandler(
 	mirRepo *constants.MirRepo,
 ) *constants.MirdataModel {
 	return v.mirLoader.LoadModelInfo(mirRepo)
+}
+
+func (v *ViewerHandler) MetricsRecordHandler(
+	metricsGroup string,
+	postForm map[string]interface{},
+) {
+	dataType := constants.ParseMirMetrics(metricsGroup)
+	if dataType == constants.MetricsUnknown {
+		panic("unknown metrics type")
+	}
+
+	data := constants.MetricsDataPoint{}
+	err := mapstructure.Decode(postForm, &data)
+	if err != nil {
+		panic(err)
+	}
+
+	v.mongoServer.MetricsRecordSignals(metricsGroup, postForm["id"].(string), data)
+}
+
+func (v *ViewerHandler) MetricsQueryHandler(
+	metricsGroup string,
+	userID string,
+	queryField string,
+	bucket string,
+	unit string,
+	limit int,
+) *[]constants.MetricsQueryPoint {
+	dataType := constants.ParseMirMetrics(metricsGroup)
+	if dataType == constants.MetricsUnknown {
+		panic("unknown metrics type")
+	}
+
+	return v.mongoServer.MetricsQuerySignals(metricsGroup, userID, queryField, bucket, unit, limit)
 }
