@@ -40,8 +40,6 @@ class MirCoco:
         self.img_cat_to_annotations = self._aggregate_annotations(single_task_annotations=pred_or_gt_annotations,
                                                                   conf_thr=conf_thr)
 
-        self._task_annotations = pred_or_gt_annotations
-
     @property
     def asset_id_to_ordered_idxes(self) -> Dict[str, int]:
         return self._asset_id_to_ordered_idxes
