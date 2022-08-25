@@ -5,22 +5,22 @@ from proto import backend_pb2
 
 
 class FilterBranchInvoker(BaseMirControllerInvoker):
+    def _need_work_dir(self) -> bool:
+        return True
+
     def pre_invoke(self) -> backend_pb2.GeneralResp:
-        return checker.check_request(request=self._request,
+        return checker.check_invoker(invoker=self,
                                      prerequisites=[
                                          checker.Prerequisites.CHECK_USER_ID,
                                          checker.Prerequisites.CHECK_REPO_ID,
                                          checker.Prerequisites.CHECK_REPO_ROOT_EXIST,
                                          checker.Prerequisites.CHECK_DST_DATASET_ID,
                                          checker.Prerequisites.CHECK_SINGLE_IN_DATASET_ID,
-                                     ],
-                                     mir_root=self._repo_root)
+                                     ])
 
     def invoke(self) -> backend_pb2.GeneralResp:
-        expected_type = backend_pb2.RequestType.CMD_FILTER
-        if self._request.req_type != expected_type:
-            return utils.make_general_response(CTLResponseCode.MIS_MATCHED_INVOKER_TYPE,
-                                               f"expected: {expected_type} vs actual: {self._request.req_type}")
+        if not self._user_labels:
+            return utils.make_general_response(CTLResponseCode.RC_CMD_INVALID_ARGS, "invalid _user_labels")
 
         # invoke command
         filter_command = [

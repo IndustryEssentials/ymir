@@ -5,6 +5,9 @@ from proto import backend_pb2
 
 
 class EvaluateInvoker(BaseMirControllerInvoker):
+    def _need_work_dir(self) -> bool:
+        return True
+
     """
     invoker for command evaluate
     request.in_dataset_ids: predictions
@@ -14,7 +17,7 @@ class EvaluateInvoker(BaseMirControllerInvoker):
     request.evaluate_config.iou_thrs_interval: from:to:step, default is '0.5:1.0:0.05', end point excluded
     """
     def pre_invoke(self) -> backend_pb2.GeneralResp:
-        checker_resp = checker.check_request(request=self._request,
+        checker_resp = checker.check_invoker(invoker=self,
                                              prerequisites=[
                                                  checker.Prerequisites.CHECK_USER_ID,
                                                  checker.Prerequisites.CHECK_REPO_ID,
@@ -22,8 +25,7 @@ class EvaluateInvoker(BaseMirControllerInvoker):
                                                  checker.Prerequisites.CHECK_TASK_ID,
                                                  checker.Prerequisites.CHECK_SINGLETON_OP,
                                                  checker.Prerequisites.CHECK_IN_DATASET_IDS,
-                                             ],
-                                             mir_root=self._repo_root)
+                                             ])
         if checker_resp.code != CTLResponseCode.CTR_OK:
             return checker_resp
 
@@ -45,11 +47,6 @@ class EvaluateInvoker(BaseMirControllerInvoker):
         return utils.make_general_response(CTLResponseCode.CTR_OK, "")
 
     def invoke(self) -> backend_pb2.GeneralResp:
-        expected_type = backend_pb2.RequestType.CMD_EVALUATE
-        if self._request.req_type != expected_type:
-            return utils.make_general_response(CTLResponseCode.MIS_MATCHED_INVOKER_TYPE,
-                                               f"expected: {expected_type} vs actual: {self._request.req_type}")
-
         ec = self._request.evaluate_config
         command = [
             utils.mir_executable(),

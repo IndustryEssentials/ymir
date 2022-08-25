@@ -15,6 +15,9 @@ from proto import backend_pb2
 
 
 class InferenceCMDInvoker(BaseMirControllerInvoker):
+    def _need_work_dir(self) -> bool:
+        return True
+
     @classmethod
     def gen_inference_config(cls, req_inference_config: str, task_context: dict, work_dir: str) -> str:
         inference_config = yaml.safe_load(req_inference_config)
@@ -71,18 +74,12 @@ class InferenceCMDInvoker(BaseMirControllerInvoker):
         return resp
 
     def pre_invoke(self) -> backend_pb2.GeneralResp:
-        return checker.check_request(
-            request=self._request,
+        return checker.check_invoker(
+            invoker=self,
             prerequisites=[checker.Prerequisites.CHECK_USER_ID, checker.Prerequisites.CHECK_REPO_ID],
-            mir_root=self._repo_root,
         )
 
     def invoke(self) -> backend_pb2.GeneralResp:
-        expected_type = backend_pb2.RequestType.CMD_INFERENCE
-        if self._request.req_type != expected_type:
-            return utils.make_general_response(CTLResponseCode.MIS_MATCHED_INVOKER_TYPE,
-                                               f"expected: {expected_type} vs actual: {self._request.req_type}")
-
         index_file = self.prepare_inference_picture(self._request.asset_dir, self._work_dir)
         config_file = self.gen_inference_config(req_inference_config=self._request.docker_image_config,
                                                 task_context={'server_runtime': self._assets_config['server_runtime']},

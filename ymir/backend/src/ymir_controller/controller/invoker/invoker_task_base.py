@@ -15,15 +15,17 @@ from proto import backend_pb2
 
 
 class TaskBaseInvoker(BaseMirControllerInvoker):
+    def _need_work_dir(self) -> bool:
+        return True
+
     def pre_invoke(self) -> backend_pb2.GeneralResp:
         # still in sync mode.
-        checker_ret = checker.check_request(request=self._request,
+        checker_ret = checker.check_invoker(invoker=self,
                                             prerequisites=[
                                                 checker.Prerequisites.CHECK_USER_ID,
                                                 checker.Prerequisites.CHECK_REPO_ID,
                                                 checker.Prerequisites.CHECK_REPO_ROOT_EXIST,
-                                            ],
-                                            mir_root=self._repo_root)
+                                            ])
         if checker_ret.code != CTLResponseCode.CTR_OK:
             return checker_ret
         return self.task_pre_invoke(request=self._request, sandbox_root=self._sandbox_root)
@@ -152,6 +154,7 @@ class TaskBaseInvoker(BaseMirControllerInvoker):
         if self._request.req_type != expected_type:
             return utils.make_general_response(CTLResponseCode.MIS_MATCHED_INVOKER_TYPE,
                                                f"expected: {expected_type} vs actual: {self._request.req_type}")
+
         self.create_subtask_workdir_monitor(task_id=self._task_id,
                                             user_id=self._user_id,
                                             master_work_dir=self._work_dir,
