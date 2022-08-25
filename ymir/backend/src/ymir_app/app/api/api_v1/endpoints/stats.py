@@ -130,6 +130,7 @@ def get_projects_count(
         precision=precision.value,
         start_at=start_at,
         end_at=end_at,
+        limit=limit,
     )
     logging.info(f"viz stats: {stats}")
     return {"result": stats}
