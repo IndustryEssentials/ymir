@@ -20,12 +20,12 @@ class CmdEvaluate(base.BaseCommand):
                                          conf_thr=self.args.conf_thr,
                                          iou_thrs=self.args.iou_thrs,
                                          need_pr_curve=self.args.need_pr_curve,
-                                         cis=self.args.cis)
+                                         class_names=self.args.class_names)
 
     @staticmethod
     @command_run_in_out
     def run_with_args(work_dir: str, src_revs: str, dst_rev: str, mir_root: str, conf_thr: float, iou_thrs: str,
-                      need_pr_curve: bool, cis: str) -> int:
+                      need_pr_curve: bool, class_names: str) -> int:
         src_rev_tid = revs_parser.parse_single_arg_rev(src_revs, need_tid=False)
         dst_rev_tid = revs_parser.parse_single_arg_rev(dst_rev, need_tid=True)
         task_id = dst_rev_tid.tid
@@ -44,7 +44,7 @@ class CmdEvaluate(base.BaseCommand):
             ms_list=[mirpb.MirStorage.MIR_METADATAS, mirpb.MirStorage.MIR_ANNOTATIONS])
 
         # save and commit
-        cls_ids = ClassIdManager(mir_root=mir_root).id_for_names(names=cis.split(';'))[0] if cis else []
+        cls_ids = ClassIdManager(mir_root).id_for_names(names=class_names.split(';'))[0] if class_names else []
         task = mir_storage_ops.create_task(task_type=mirpb.TaskType.TaskTypeEvaluate,
                                            task_id=task_id,
                                            message='evaluate',
@@ -97,8 +97,8 @@ def bind_to_subparsers(subparsers: argparse._SubParsersAction, parent_parser: ar
                                      action='store_true',
                                      help='also generates pr curve in evaluation result')
     # FIXME: using cis in prediction target
-    evaluate_arg_parser.add_argument('--cis',
-                                     dest='cis',
+    evaluate_arg_parser.add_argument('--class-names',
+                                     dest='class_names',
                                      required=False,
                                      type=str,
                                      default='',
