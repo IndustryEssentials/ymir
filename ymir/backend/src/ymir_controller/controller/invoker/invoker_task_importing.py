@@ -30,7 +30,7 @@ class TaskImportingInvoker(TaskBaseInvoker):
         return utils.make_general_response(code=CTLResponseCode.CTR_OK, message="")
 
     @classmethod
-    def registor_subtasks(cls) -> List[Tuple[SubTaskType, float]]:
+    def register_subtasks(cls) -> List[Tuple[SubTaskType, float]]:
         return [(cls.subtask_invoke_import, 1.0)]
 
     @classmethod

@@ -18,7 +18,7 @@ class TaskFusionInvoker(TaskBaseInvoker):
         return utils.make_general_response(CTLResponseCode.CTR_OK, "")
 
     @classmethod
-    def registor_subtasks(cls) -> List[Tuple[SubTaskType, float]]:
+    def register_subtasks(cls) -> List[Tuple[SubTaskType, float]]:
         return [(cls.subtask_invoke_merge, 0.3), (cls.subtask_invoke_filter, 0.3), (cls.subtask_invoke_sample, 0.4)]
 
     @classmethod

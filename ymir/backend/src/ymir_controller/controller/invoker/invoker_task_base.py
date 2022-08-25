@@ -176,7 +176,7 @@ class TaskBaseInvoker(BaseMirControllerInvoker):
     def task_invoke(cls, task_id: str, sandbox_root: str, repo_root: str, assets_config: Dict[str,
                                                                                               str], working_dir: str,
                     user_labels: UserLabels, request: backend_pb2.GeneralReq) -> backend_pb2.GeneralResp:
-        sub_tasks = cls.registor_subtasks()
+        sub_tasks = cls.register_subtasks()
 
         subtask_weights = [sub_task[1] for sub_task in sub_tasks]
         cls._register_subtask_monitor(task_id=task_id,
@@ -214,6 +214,6 @@ class TaskBaseInvoker(BaseMirControllerInvoker):
         raise NotImplementedError
 
     @classmethod
-    def registor_subtasks(cls) -> List[Tuple[SubTaskType, float]]:
+    def register_subtasks(cls) -> List[Tuple[SubTaskType, float]]:
         # register sub_tasks in executing orders.
         raise NotImplementedError

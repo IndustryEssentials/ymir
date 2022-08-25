@@ -37,7 +37,7 @@ class TaskTrainingInvoker(TaskBaseInvoker):
         return utils.make_general_response(CTLResponseCode.CTR_OK, "")
 
     @classmethod
-    def registor_subtasks(cls) -> List[Tuple[SubTaskType, float]]:
+    def register_subtasks(cls) -> List[Tuple[SubTaskType, float]]:
         return [(cls.subtask_invoke_merge, 0), (cls.subtask_invoke_training, 1.0)]
 
     @classmethod

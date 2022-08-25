@@ -14,7 +14,7 @@ class TaskLabelingInvoker(TaskBaseInvoker):
         return utils.make_general_response(CTLResponseCode.CTR_OK, "")
 
     @classmethod
-    def registor_subtasks(cls) -> List[Tuple[SubTaskType, float]]:
+    def register_subtasks(cls) -> List[Tuple[SubTaskType, float]]:
         return [(cls.subtask_invoke_label, 1.0)]
 
     @classmethod
