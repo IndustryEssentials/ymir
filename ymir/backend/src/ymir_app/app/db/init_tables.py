@@ -7,7 +7,7 @@ from app.db.session import engine
 from app.db.base import Base
 
 
-def init_tables(alembic_cfg_file) -> None:
+def init_tables(alembic_cfg_file: str) -> None:
     Base.metadata.create_all(bind=engine)
 
     alembic_cfg = Config(alembic_cfg_file)
