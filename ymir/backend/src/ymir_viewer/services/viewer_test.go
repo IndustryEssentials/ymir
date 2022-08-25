@@ -52,6 +52,24 @@ func (h *MockViewerHandler) GetDatasetDupHandler(
 	return args.Get(0).(*constants.QueryDatasetDupResult)
 }
 
+func (h *MockViewerHandler) MetricsQueryHandler(
+	metricsGroup string,
+	userID string,
+	queryField string,
+	bucket string,
+	unit string,
+	limit int,
+) *[]constants.MetricsQueryPoint {
+	args := h.Called(metricsGroup, userID, queryField, bucket, unit, limit)
+	return args.Get(0).(*[]constants.MetricsQueryPoint)
+}
+func (h *MockViewerHandler) MetricsRecordHandler(
+	metricsGroup string,
+	postForm map[string]interface{},
+) {
+	h.Called(metricsGroup, postForm)
+}
+
 func (h *MockViewerHandler) GetDatasetMetaCountsHandler(
 	mirRepo *constants.MirRepo,
 ) *constants.QueryDatasetStatsResult {

@@ -4,6 +4,8 @@ go 1.18
 
 require (
 	github.com/gin-gonic/gin v1.8.1
+	github.com/jinzhu/now v1.1.5
+	github.com/mitchellh/mapstructure v1.5.0
 	github.com/penglongli/gin-metrics v0.1.10
 	github.com/spf13/viper v1.12.0
 	github.com/stretchr/testify v1.8.0
@@ -47,7 +49,6 @@ require (
 	github.com/mailru/easyjson v0.7.6 // indirect
 	github.com/mattn/go-isatty v0.0.16 // indirect
 	github.com/matttproud/golang_protobuf_extensions v1.0.1 // indirect
-	github.com/mitchellh/mapstructure v1.5.0 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.2 // indirect
 	github.com/montanaflynn/stats v0.0.0-20171201202039-1bf9dbcd8cbe // indirect
