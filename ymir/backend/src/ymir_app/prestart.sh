@@ -8,7 +8,7 @@ current_rev=$(alembic current)
 if [ -z "$current_rev" ]
 then
     echo create database tables from scratch
-    python app/init_tables.py
+    python app/db/init_tables.py
 else
     echo migrating database from $current_rev
     alembic upgrade head
