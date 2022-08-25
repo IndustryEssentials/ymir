@@ -1,5 +1,6 @@
 import os
 import shutil
+from typing import Any
 import unittest
 
 from google.protobuf import json_format
@@ -242,75 +243,34 @@ class TestToolsDetEval(unittest.TestCase):
             mir_branch='a',
             mir_task_id='a',
             ms_list=[mirpb.MirStorage.MIR_METADATAS, mirpb.MirStorage.MIR_ANNOTATIONS, mirpb.MirStorage.MIR_KEYWORDS])
-        mir_coco = det_eval_utils.MirDataset(asset_ids=mir_metadatas.attributes.keys(),
-                                             pred_or_gt_annotations=mir_annotations.ground_truth,
-                                             class_ids=mir_keywords.gt_idx.cis.keys(),
-                                             conf_thr=None,
-                                             dataset_id='a@a')
+        mir_coco = det_eval_coco.MirCoco(asset_ids=mir_metadatas.attributes.keys(),
+                                         pred_or_gt_annotations=mir_annotations.ground_truth,
+                                         class_ids=mir_keywords.gt_idx.cis.keys(),
+                                         conf_thr=None)
         self.assertEqual(['a0', 'a1', 'a2'], mir_coco.get_asset_ids())
         self.assertEqual([0, 1, 2], mir_coco.get_asset_idxes())
         self.assertEqual([0, 1, 2], mir_coco._ordered_class_ids)
 
         self.assertEqual(2, len(mir_coco.img_cat_to_annotations[(0, 0)]))
 
-    def test_det_eval_coco_00(self):
-        """ align our eval with original COCOeval """
+    def test_det_eval_coco_00(self) -> None:
+        sde = self._test_det_eval(det_eval_model_name=det_eval_coco)
+        see = sde.iou_averaged_evaluation.ci_averaged_evaluation
+        self.assertTrue(np.isclose(0.833333, see.ap))
 
-        # original result from pycocotools
-        expected_stats = np.array([0.61177118, 0.88888889, 0.41749175])
-
-        # ymir's eval
-        mir_metadatas: mirpb.MirMetadatas
-        mir_annotations: mirpb.MirAnnotations
-        mir_keywords: mirpb.MirKeywords
-        mir_metadatas, mir_annotations, mir_keywords = mir_storage_ops.MirStorageOps.load_multiple_storages(
-            mir_root=self._mir_root,
-            mir_branch='a',
-            mir_task_id='a',
-            ms_list=[mirpb.MirStorage.MIR_METADATAS, mirpb.MirStorage.MIR_ANNOTATIONS, mirpb.MirStorage.MIR_KEYWORDS])
-
-        mir_gt = det_eval_utils.MirDataset(asset_ids=mir_metadatas.attributes.keys(),
-                                           pred_or_gt_annotations=mir_annotations.ground_truth,
-                                           class_ids=mir_keywords.gt_idx.cis.keys(),
-                                           conf_thr=None,
-                                           dataset_id='a')
-        mir_dt = det_eval_utils.MirDataset(asset_ids=mir_metadatas.attributes.keys(),
-                                           pred_or_gt_annotations=mir_annotations.prediction,
-                                           class_ids=mir_keywords.pred_idx.cis.keys(),
-                                           conf_thr=0,
-                                           dataset_id='a')
-
-        params = det_eval_coco.Params()
-        params.catIds = list(mir_keywords.gt_idx.cis.keys())
-        mir_evaluator = det_eval_coco.CocoDetEval(coco_gt=mir_gt, coco_dt=mir_dt, params=params)
-        mir_evaluator.evaluate()
-        mir_evaluator.accumulate()
-        mir_evaluator.summarize()
-        self.assertTrue(np.isclose(expected_stats, mir_evaluator.stats).all())
-
-        single_dataset_evaluation = mir_evaluator.get_evaluation_result(area_ranges_index=0, max_dets_index=0)
-        self.assertTrue(len(single_dataset_evaluation.iou_evaluations) > 0)
-        
     def test_det_eval_voc_00(self) -> None:
+        sde = self._test_det_eval(det_eval_model_name=det_eval_voc)
+        see = sde.iou_averaged_evaluation.ci_averaged_evaluation
+        self.assertTrue(np.isclose(0.833333, see.ap))
+
+    def _test_det_eval(self, det_eval_model_name: Any) -> mirpb.SingleDatasetEvaluation:
         mir_metadatas: mirpb.MirMetadatas
         mir_annotations: mirpb.MirAnnotations
-        mir_keywords: mirpb.MirKeywords
-        mir_metadatas, mir_annotations, mir_keywords = mir_storage_ops.MirStorageOps.load_multiple_storages(
+        mir_metadatas, mir_annotations = mir_storage_ops.MirStorageOps.load_multiple_storages(
             mir_root=self._mir_root,
             mir_branch='a',
             mir_task_id='a',
-            ms_list=[mirpb.MirStorage.MIR_METADATAS, mirpb.MirStorage.MIR_ANNOTATIONS, mirpb.MirStorage.MIR_KEYWORDS])
-
-        mir_gt = det_eval_utils.MirDataset(asset_ids=mir_metadatas.attributes.keys(),
-                                           pred_or_gt_annotations=mir_annotations.ground_truth,
-                                           class_ids=mir_keywords.gt_idx.cis.keys(),
-                                           conf_thr=None,
-                                           dataset_id='a')
-        mir_dt = det_eval_utils.MirDataset(asset_ids=mir_metadatas.attributes.keys(),
-                                           pred_or_gt_annotations=mir_annotations.prediction,
-                                           class_ids=mir_keywords.pred_idx.cis.keys(),
-                                           conf_thr=0,
-                                           dataset_id='a')
+            ms_list=[mirpb.MirStorage.MIR_METADATAS, mirpb.MirStorage.MIR_ANNOTATIONS])
 
         evaluate_config = mirpb.EvaluateConfig()
         evaluate_config.conf_thr = 0.0005
@@ -319,7 +279,10 @@ class TestToolsDetEval(unittest.TestCase):
         evaluate_config.gt_dataset_id = 'a'
         evaluate_config.pred_dataset_ids.append('a')
         evaluate_config.class_ids[:] = [0, 1]
-        evaluation = det_eval_voc.det_evaluate(mir_dts=[mir_dt],
-                                               mir_gt=mir_gt,
-                                               config=evaluate_config)
+        evaluation = det_eval_model_name.det_evaluate(predictions=[mir_annotations.prediction],
+                                                      ground_truth=mir_annotations.ground_truth,
+                                                      asset_ids=mir_metadatas.attributes.keys(),
+                                                      config=evaluate_config)
         self.assertTrue(len(evaluation.dataset_evaluations) == 1)
+        sde = evaluation.dataset_evaluations['a']
+        return sde

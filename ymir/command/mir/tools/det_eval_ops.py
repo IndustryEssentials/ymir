@@ -2,7 +2,6 @@ import logging
 from typing import List, Tuple
 
 from mir.tools import mir_storage_ops, revs_parser, det_eval_coco, det_eval_voc
-from mir.tools.det_eval_utils import MirDataset
 from mir.protos import mir_command_pb2 as mirpb
 
 
@@ -46,17 +45,6 @@ def det_evaluate_with_pb(
     need_pr_curve: bool = False,
     mode: str = 'voc',  # voc or coco
 ) -> Tuple[mirpb.Evaluation, mirpb.MirAnnotations]:
-    mir_gt = MirDataset(asset_ids=mir_metadatas.attributes.keys(),
-                        pred_or_gt_annotations=mir_annotations.ground_truth,
-                        class_ids=mir_keywords.gt_idx.cis.keys(),
-                        conf_thr=None,
-                        dataset_id=dataset_id)
-    mir_dt = MirDataset(asset_ids=mir_metadatas.attributes.keys(),
-                        pred_or_gt_annotations=mir_annotations.prediction,
-                        class_ids=mir_keywords.pred_idx.cis.keys(),
-                        conf_thr=conf_thr,
-                        dataset_id=dataset_id)
-
     # evaluation = mirpb.Evaluation()
     evaluate_config = mirpb.EvaluateConfig()
     evaluate_config.conf_thr = conf_thr
@@ -67,7 +55,10 @@ def det_evaluate_with_pb(
     evaluate_config.class_ids[:] = class_ids or mir_keywords.gt_idx.cis.keys()
 
     eval_model_name = det_eval_voc if mode == 'voc' else det_eval_coco
-    evaluation = eval_model_name.det_evaluate(mir_dts=[mir_dt], mir_gt=mir_gt, config=evaluate_config)  # type: ignore
+    evaluation = eval_model_name.det_evaluate(predictions=[mir_annotations.prediction],  # type: ignore
+                                              ground_truth=mir_annotations.ground_truth,
+                                              asset_ids=mir_metadatas.attributes.keys(),
+                                              config=evaluate_config)
 
     _show_evaluation(evaluation=evaluation)
 

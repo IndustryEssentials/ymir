@@ -1,113 +1,11 @@
 from collections import defaultdict
-from typing import Any, Collection, Dict, List, Optional, Set, Tuple
+from typing import Any, Collection, Dict, List, Set, Tuple
 
 import numpy as np
 
 from mir.tools.code import MirCode
 from mir.tools.errors import MirRuntimeError
 from mir.protos import mir_command_pb2 as mirpb
-
-
-class MirDataset:
-    def __init__(self, asset_ids: Collection[str], pred_or_gt_annotations: mirpb.SingleTaskAnnotations,
-                 class_ids: Collection[int], conf_thr: Optional[float], dataset_id: str) -> None:
-        """
-        creates MirDataset instance
-
-        Args:
-            asset_ids (Collection[str]): asset ids (hashes)
-            pred_or_gt_annotations (mirpb.SingleTaskAnnotations): pred or gt annotations
-            class_ids (Collection[int]): class ids you wish to evaluate
-            conf_thr (Optional[float]): lower bound of annotation confidence score
-                only annotation with confidence greater then conf_thr will be used.
-                if you wish to use all annotations, let conf_thr = None
-        """
-        if len(asset_ids) == 0:
-            raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
-                                  error_message='no assets in evaluated dataset')
-        if len(pred_or_gt_annotations.image_annotations) == 0:
-            raise MirRuntimeError(error_code=MirCode.RC_CMD_NO_ANNOTATIONS,
-                                  error_message='no annotations in evaluated dataset')
-
-        # ordered list of asset / image ids
-        self._ordered_asset_ids = sorted(asset_ids)
-        # key: asset id, value: index in `self._ordered_asset_ids`
-        self._asset_id_to_ordered_idxes = {asset_id: idx for idx, asset_id in enumerate(self._ordered_asset_ids)}
-        # ordered list of class / category ids
-        self._ordered_class_ids = sorted(class_ids)
-
-        self.img_cat_to_annotations = self._aggregate_annotations(single_task_annotations=pred_or_gt_annotations,
-                                                                  conf_thr=conf_thr)
-
-        self._task_annotations = pred_or_gt_annotations
-
-        self._dataset_id = dataset_id
-
-    @property
-    def asset_id_to_ordered_idxes(self) -> Dict[str, int]:
-        return self._asset_id_to_ordered_idxes
-
-    @property
-    def dataset_id(self) -> str:
-        return self._dataset_id
-
-    def _aggregate_annotations(self, single_task_annotations: mirpb.SingleTaskAnnotations,
-                               conf_thr: Optional[float]) -> Dict[Tuple[int, int], List[dict]]:
-        """
-        aggregates annotations with confidence >= conf_thr into a dict with key: (asset idx, class id)
-
-        Args:
-            single_task_annotations (mirpb.SingleTaskAnnotations): annotations
-            conf_thr (float): confidence threshold of bbox, set to None if you want all annotations
-
-        Returns:
-            annotations dict with key: (asset idx, class id), value: annotations list,
-            each element is a dict, and has following keys and values:
-                asset_id: str, image / asset id
-                asset_idx: int, position of asset id in `self.get_asset_ids()`
-                id: int, id for a single annotation
-                class_id: int, category / class id
-                area: int, area of bbox
-                bbox: List[int], bounding box, xywh
-                score: float, confidence of bbox
-                iscrowd: always 0 because mir knows nothing about it
-        """
-        img_cat_to_annotations: Dict[Tuple[int, int], List[dict]] = defaultdict(list)
-
-        annotation_idx = 1
-        for asset_idx, asset_id in enumerate(self._ordered_asset_ids):
-            if asset_id not in single_task_annotations.image_annotations:
-                continue
-
-            single_image_annotations = single_task_annotations.image_annotations[asset_id]
-            for annotation in single_image_annotations.annotations:
-                if conf_thr is not None and annotation.score < conf_thr:
-                    continue
-
-                annotation_dict = {
-                    'asset_id': asset_id,
-                    'asset_idx': asset_idx,
-                    'id': annotation_idx,
-                    'class_id': annotation.class_id,
-                    'area': annotation.box.w * annotation.box.h,
-                    'bbox': [annotation.box.x, annotation.box.y, annotation.box.w, annotation.box.h],
-                    'score': annotation.score,
-                    'iscrowd': 0,
-                    'ignore': 0,
-                    'cm': {},  # key: (iou_thr_idx, maxDet), value: (ConfusionMatrixType, linked pb_index_id)
-                    'pb_index_id': annotation.index,
-                }
-                img_cat_to_annotations[asset_idx, annotation.class_id].append(annotation_dict)
-
-                annotation_idx += 1
-
-        return img_cat_to_annotations
-
-    def get_asset_ids(self) -> List[str]:
-        return self._ordered_asset_ids
-
-    def get_asset_idxes(self) -> List[int]:
-        return list(range(len(self._ordered_asset_ids)))
 
 
 class _DetEvalIouMatchResult:
@@ -204,11 +102,8 @@ def reset_default_confusion_matrix(task_annotations: mirpb.SingleTaskAnnotations
             annotation.det_link_id = -1
 
 
-def write_confusion_matrix(mir_gt: MirDataset, mir_dt: MirDataset, class_ids: List[int],
-                           match_result: DetEvalMatchResult, iou_thr: float) -> None:
-    gt_annotations = mir_gt._task_annotations
-    pred_annotations = mir_dt._task_annotations
-
+def write_confusion_matrix(gt_annotations: mirpb.SingleTaskAnnotations, pred_annotations: mirpb.SingleTaskAnnotations,
+                           class_ids: List[int], match_result: DetEvalMatchResult, iou_thr: float) -> None:
     class_ids_set = set(class_ids)
     reset_default_confusion_matrix(task_annotations=gt_annotations,
                                    cm=mirpb.ConfusionMatrixType.FN,

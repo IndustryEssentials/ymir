@@ -21,13 +21,13 @@
 # --------------------------------------------------------
 """Python implementation of the PASCAL VOC devkit's AP evaluation code."""
 
-from typing import Any, Dict, List
+from typing import Any, Collection, Dict, List
 
 import numpy as np
 
 from mir.protos import mir_command_pb2 as mirpb
 from mir.tools import det_eval_utils
-from mir.tools.det_eval_utils import DetEvalMatchResult, MirDataset
+from mir.tools.det_eval_utils import DetEvalMatchResult
 from mir.tools.code import MirCode
 from mir.tools.errors import MirRuntimeError
 
@@ -162,26 +162,28 @@ def _voc_eval(class_recs: Dict[str, Dict[str, Any]], BB: np.ndarray, confidence:
     }
 
 
-def _get_single_evaluate_element(mir_dt: det_eval_utils.MirDataset, mir_gt: det_eval_utils.MirDataset,
-                                 match_result: det_eval_utils.DetEvalMatchResult, class_id: int, iou_thr: float,
+def _get_single_evaluate_element(prediction: mirpb.SingleTaskAnnotations, ground_truth: mirpb.SingleTaskAnnotations,
+                                 asset_ids: Collection[str], match_result: det_eval_utils.DetEvalMatchResult,
+                                 class_id: int, iou_thr: float, conf_thr: float,
                                  need_pr_curve: bool) -> mirpb.SingleEvaluationElement:
     # convert data structure
     # convert gt, save to `class_recs`
     class_recs: Dict[str, Dict[str, Any]] = {}
     npos = 0
-    for asset_id in mir_gt.get_asset_ids():
-        asset_idx = mir_gt.asset_id_to_ordered_idxes[asset_id]
-        if (asset_idx, class_id) not in mir_gt.img_cat_to_annotations:
+    for asset_id in asset_ids:
+        if asset_id not in ground_truth.image_annotations:
             continue
 
-        annos: List[dict] = mir_gt.img_cat_to_annotations[(asset_idx, class_id)]
-        bbox = np.array([x['bbox'] for x in annos])  # shape: (len(annos), 4), type: int
-        bbox[:, 2] += bbox[:, 0]  # w -> x2
-        bbox[:, 3] += bbox[:, 1]  # h -> y2
-        difficult = np.array([x['iscrowd'] for x in annos]).astype(bool)  # shape: (len(annos),), type: int
-        det = [False] * len(annos)  # 1: have matched detections, 0: not matched yet
+        img_gts = [x for x in ground_truth.image_annotations[asset_id].annotations if x.class_id == class_id]
+        if len(img_gts) == 0:
+            continue
+
+        # bbox: shape: (len(annos), 4), type: int, x1y1x2y2
+        bbox = np.array([[x.box.x, x.box.y, x.box.x + x.box.w, x.box.y + x.box.h] for x in img_gts])
+        difficult = np.array([False] * len(img_gts))  # shape: (len(annos),)
+        det = [False] * len(img_gts)  # 1: have matched detections, 0: not matched yet
         npos = npos + sum(~difficult)
-        pb_index_ids = [x['pb_index_id'] for x in annos]
+        pb_index_ids = [x.index for x in img_gts]
 
         class_recs[asset_id] = {
             'bbox': bbox,
@@ -195,17 +197,16 @@ def _get_single_evaluate_element(mir_dt: det_eval_utils.MirDataset, mir_gt: det_
     confidence = []
     bboxes: List[List[int]] = []
     pred_pb_index_ids: List[int] = []
-    for asset_id in mir_dt.get_asset_ids():
-        asset_idx = mir_dt.asset_id_to_ordered_idxes[asset_id]
-        annos = mir_dt.img_cat_to_annotations[(asset_idx,
-                                               class_id)] if (asset_idx,
-                                                              class_id) in mir_dt.img_cat_to_annotations else []
-        for anno in annos:
-            bbox = anno['bbox']
-            bboxes.append([bbox[0], bbox[1], bbox[0] + bbox[2], bbox[1] + bbox[3]])
-        image_ids.extend([asset_id] * len(annos))
-        confidence.extend([float(x['score']) for x in annos])
-        pred_pb_index_ids.extend([x['pb_index_id'] for x in annos])
+    for asset_id in asset_ids:
+        img_preds = prediction.image_annotations[
+            asset_id].annotations if asset_id in prediction.image_annotations else []
+        img_preds = [x for x in img_preds if x.class_id == class_id and x.score > conf_thr]
+        for annotation in img_preds:
+            box = annotation.box
+            bboxes.append([box.x, box.y, box.x + box.w, box.y + box.h])
+        image_ids.extend([asset_id] * len(img_preds))
+        confidence.extend([x.score for x in img_preds])
+        pred_pb_index_ids.extend([x.index for x in img_preds])
     BB = np.array(bboxes)
 
     # voc eval
@@ -238,7 +239,8 @@ def _get_single_evaluate_element(mir_dt: det_eval_utils.MirDataset, mir_gt: det_
     return see
 
 
-def det_evaluate(mir_dts: List[MirDataset], mir_gt: MirDataset, config: mirpb.EvaluateConfig) -> mirpb.Evaluation:
+def det_evaluate(predictions: Collection[mirpb.SingleTaskAnnotations], ground_truth: mirpb.SingleTaskAnnotations,
+                 asset_ids: Collection[str], config: mirpb.EvaluateConfig) -> mirpb.Evaluation:
     if config.conf_thr < 0 or config.conf_thr > 1:
         raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS, error_message='invalid conf_thr')
 
@@ -248,25 +250,28 @@ def det_evaluate(mir_dts: List[MirDataset], mir_gt: MirDataset, config: mirpb.Ev
     class_ids = list(config.class_ids)
     iou_thrs = det_eval_utils.get_iou_thrs_array(config.iou_thrs_interval)
 
-    for mir_dt in mir_dts:
-        single_dataset_evaluation = evaluation.dataset_evaluations[mir_dt.dataset_id]
+    for idx, prediction in enumerate(predictions):
+        pred_dataset_id = config.pred_dataset_ids[idx]
+        single_dataset_evaluation = evaluation.dataset_evaluations[pred_dataset_id]
         single_dataset_evaluation.conf_thr = config.conf_thr
-        single_dataset_evaluation.gt_dataset_id = mir_gt.dataset_id
-        single_dataset_evaluation.pred_dataset_id = mir_dt.dataset_id
+        single_dataset_evaluation.gt_dataset_id = config.gt_dataset_id
+        single_dataset_evaluation.pred_dataset_id = pred_dataset_id
 
         for iou_thr in iou_thrs:
             match_result = DetEvalMatchResult()
             for class_id in class_ids:
-                see = _get_single_evaluate_element(mir_dt=mir_dt,
-                                                   mir_gt=mir_gt,
+                see = _get_single_evaluate_element(prediction=prediction,
+                                                   ground_truth=ground_truth,
+                                                   asset_ids=asset_ids,
                                                    class_id=class_id,
                                                    iou_thr=iou_thr,
-                                                   match_result=match_result,
-                                                   need_pr_curve=config.need_pr_curve)
+                                                   conf_thr=config.conf_thr,
+                                                   need_pr_curve=config.need_pr_curve,
+                                                   match_result=match_result)
                 single_dataset_evaluation.iou_evaluations[f"{iou_thr:.2f}"].ci_evaluations[class_id].CopyFrom(see)
 
-            det_eval_utils.write_confusion_matrix(mir_gt=mir_gt,
-                                                  mir_dt=mir_dt,
+            det_eval_utils.write_confusion_matrix(gt_annotations=ground_truth,
+                                                  pred_annotations=prediction,
                                                   class_ids=class_ids,
                                                   match_result=match_result,
                                                   iou_thr=iou_thrs[0])
