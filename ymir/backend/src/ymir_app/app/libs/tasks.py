@@ -201,8 +201,7 @@ def create_single_task(db: Session, user_id: int, user_labels: UserLabels, task_
         #                         user_id=task_info.user_id,
         #                         project_id=task_info.project_id,
         #                         keywords=m_keywords,
-        #                         user_labels=user_labels,
-        #                         extra_data={})
+        #                         user_labels=user_labels)
 
     except FailedToConnectClickHouse:
         # clickhouse metric shouldn't block create task process

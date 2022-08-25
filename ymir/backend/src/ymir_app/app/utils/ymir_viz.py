@@ -409,7 +409,7 @@ class VizClient:
         raise FailedToParseVizResponse()
 
     def send_metrics(self, metrics_group: str, id: str, create_time: int, user_id: int, project_id: int,
-                     keywords: List[str], user_labels: UserLabels, extra_data: Dict) -> None:
+                     keywords: List[str], user_labels: UserLabels, extra_data: Optional[Dict]) -> None:
         if not extra_data:
             extra_data = {}
 
