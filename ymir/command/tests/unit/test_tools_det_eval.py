@@ -7,7 +7,7 @@ from google.protobuf import json_format
 import numpy as np
 
 from mir.protos import mir_command_pb2 as mirpb
-from mir.tools import det_eval_coco, det_eval_utils, det_eval_voc, mir_storage_ops
+from mir.tools import det_eval_coco, det_eval_voc, mir_storage_ops
 from tests import utils as test_utils
 
 
@@ -234,25 +234,6 @@ class TestToolsDetEval(unittest.TestCase):
             shutil.rmtree(self._test_root)
 
     # public: test cases
-    def test_mir_coco(self):
-        mir_metadatas: mirpb.MirMetadatas
-        mir_annotations: mirpb.MirAnnotations
-        mir_keywords: mirpb.MirKeywords
-        mir_metadatas, mir_annotations, mir_keywords = mir_storage_ops.MirStorageOps.load_multiple_storages(
-            mir_root=self._mir_root,
-            mir_branch='a',
-            mir_task_id='a',
-            ms_list=[mirpb.MirStorage.MIR_METADATAS, mirpb.MirStorage.MIR_ANNOTATIONS, mirpb.MirStorage.MIR_KEYWORDS])
-        mir_coco = det_eval_coco.MirCoco(asset_ids=mir_metadatas.attributes.keys(),
-                                         pred_or_gt_annotations=mir_annotations.ground_truth,
-                                         class_ids=mir_keywords.gt_idx.cis.keys(),
-                                         conf_thr=None)
-        self.assertEqual(['a0', 'a1', 'a2'], mir_coco.get_asset_ids())
-        self.assertEqual([0, 1, 2], mir_coco.get_asset_idxes())
-        self.assertEqual([0, 1, 2], mir_coco._ordered_class_ids)
-
-        self.assertEqual(2, len(mir_coco.img_cat_to_annotations[(0, 0)]))
-
     def test_det_eval_coco_00(self) -> None:
         sde = self._test_det_eval(det_eval_model_name=det_eval_coco)
         see = sde.iou_averaged_evaluation.ci_averaged_evaluation

@@ -11,14 +11,13 @@ from mir.protos import mir_command_pb2 as mirpb
 
 class MirCoco:
     def __init__(self, asset_ids: Collection[str], pred_or_gt_annotations: mirpb.SingleTaskAnnotations,
-                 class_ids: Collection[int], conf_thr: Optional[float]) -> None:
+                 conf_thr: Optional[float]) -> None:
         """
         creates MirCoco instance
 
         Args:
             asset_ids (Collection[str]): asset ids (hashes)
             pred_or_gt_annotations (mirpb.SingleTaskAnnotations): pred or gt annotations
-            class_ids (Collection[int]): class ids you wish to evaluate
             conf_thr (Optional[float]): lower bound of annotation confidence score
                 only annotation with confidence greater then conf_thr will be used.
                 if you wish to use all annotations, let conf_thr = None
@@ -32,17 +31,9 @@ class MirCoco:
 
         # ordered list of asset / image ids
         self._ordered_asset_ids = sorted(asset_ids)
-        # key: asset id, value: index in `self._ordered_asset_ids`
-        self._asset_id_to_ordered_idxes = {asset_id: idx for idx, asset_id in enumerate(self._ordered_asset_ids)}
-        # ordered list of class / category ids
-        self._ordered_class_ids = sorted(class_ids)
 
         self.img_cat_to_annotations = self._aggregate_annotations(single_task_annotations=pred_or_gt_annotations,
                                                                   conf_thr=conf_thr)
-
-    @property
-    def asset_id_to_ordered_idxes(self) -> Dict[str, int]:
-        return self._asset_id_to_ordered_idxes
 
     def _aggregate_annotations(self, single_task_annotations: mirpb.SingleTaskAnnotations,
                                conf_thr: Optional[float]) -> Dict[Tuple[int, int], List[dict]]:
@@ -57,7 +48,7 @@ class MirCoco:
             annotations dict with key: (asset idx, class id), value: annotations list,
             each element is a dict, and has following keys and values:
                 asset_id: str, image / asset id
-                asset_idx: int, position of asset id in `self.get_asset_ids()`
+                asset_idx: int, position of asset id in `self._ordered_asset_ids`
                 id: int, id for a single annotation
                 class_id: int, category / class id
                 area: int, area of bbox
@@ -96,12 +87,6 @@ class MirCoco:
 
         return img_cat_to_annotations
 
-    def get_asset_ids(self) -> List[str]:
-        return self._ordered_asset_ids
-
-    def get_asset_idxes(self) -> List[int]:
-        return list(range(len(self._ordered_asset_ids)))
-
 
 class CocoDetEval:
     def __init__(self, coco_gt: MirCoco, coco_dt: MirCoco, params: 'Params'):
@@ -112,7 +97,6 @@ class CocoDetEval:
         self.ious: dict = {
         }  # key: (asset id, class id), value: ious ndarray of ith dt (sorted by score, desc) and jth gt
 
-        self.params.imgIdxes = coco_gt.get_asset_idxes()
         self._gts = defaultdict(list, coco_gt.img_cat_to_annotations)
         self._dts = defaultdict(list, coco_dt.img_cat_to_annotations)
 
@@ -120,11 +104,6 @@ class CocoDetEval:
         self._coco_dt = coco_dt
 
         self.match_result = det_eval_utils.DetEvalMatchResult()
-
-    @classmethod
-    def filter_img_cat_to_annotations(cls, img_cat_to_annotations: Dict[Tuple[int, int], List[dict]],
-                                      img_idxes: List[int]) -> Dict[Tuple[int, int], List[dict]]:
-        return defaultdict(list, {k: v for k, v in img_cat_to_annotations.items() if k[0] in img_idxes and len(v) > 0})
 
     def evaluate(self) -> None:
         '''
@@ -550,48 +529,6 @@ class CocoDetEval:
 
         return ee
 
-    def summarize(self) -> None:
-        '''
-        Compute and display summary metrics for evaluation results.
-        Note this functin can *only* be applied on the default parameter setting
-        '''
-        def _summarize(ap: int = 1, iouThr: float = None, areaRng: str = 'all', maxDets: int = 100) -> float:
-            p = self.params
-
-            aind = [i for i, aRng in enumerate(p.areaRngLbl) if aRng == areaRng]  # areaRanges index
-            mind = [i for i, mDet in enumerate(p.maxDets) if mDet == maxDets]  # maxDets index
-            if ap == 1:
-                # dimension of precision: [TxRxKxAxM] iouThrs * recThrs * catIds * areaRanges * maxDets
-                s = self.eval['precision']
-                # IoU
-                if iouThr is not None:
-                    t = np.where(iouThr == p.iouThrs)[0]
-                    s = s[t]
-                s = s[:, :, :, aind, mind]
-            else:
-                # dimension of recall: [TxKxAxM] iouThrs * catIds * areaRanges * maxDets
-                s = self.eval['recall']
-                if iouThr is not None:
-                    t = np.where(iouThr == p.iouThrs)[0]
-                    s = s[t]
-                s = s[:, :, aind, mind]
-            if len(s[s > -1]) == 0:
-                mean_s = -1
-            else:
-                mean_s = np.mean(s[s > -1])
-            return mean_s
-
-        def _summarizeDets() -> np.ndarray:
-            stats = np.zeros((3, ))
-            stats[0] = _summarize(1)
-            stats[1] = _summarize(1, iouThr=.5, maxDets=self.params.maxDets[-1])
-            stats[2] = _summarize(1, iouThr=.75, maxDets=self.params.maxDets[-1])
-            return stats
-
-        if not self.eval:
-            raise Exception('Please run accumulate() first')
-        self.stats = _summarizeDets()
-
 
 class Params:
     def __init__(self) -> None:
@@ -619,6 +556,7 @@ def det_evaluate(predictions: Collection[mirpb.SingleTaskAnnotations], ground_tr
     params.iouThrs = det_eval_utils.get_iou_thrs_array(config.iou_thrs_interval)
     params.need_pr_curve = config.need_pr_curve
     params.catIds = list(config.class_ids)
+    params.imgIdxes = list(range(len(asset_ids)))
 
     evaluation = mirpb.Evaluation()
     evaluation.config.CopyFrom(config)
@@ -626,12 +564,11 @@ def det_evaluate(predictions: Collection[mirpb.SingleTaskAnnotations], ground_tr
     area_ranges_index = 0  # area range: 'all'
     max_dets_index = len(params.maxDets) - 1  # last max det number
 
-    mir_gt = MirCoco(asset_ids=asset_ids, pred_or_gt_annotations=ground_truth, class_ids=params.catIds, conf_thr=None)
+    mir_gt = MirCoco(asset_ids=asset_ids, pred_or_gt_annotations=ground_truth, conf_thr=None)
 
     for idx, prediction in enumerate(predictions):
         mir_dt = MirCoco(asset_ids=asset_ids,
                          pred_or_gt_annotations=prediction,
-                         class_ids=params.catIds,
                          conf_thr=config.conf_thr)
 
         evaluator = CocoDetEval(coco_gt=mir_gt, coco_dt=mir_dt, params=params)
