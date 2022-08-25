@@ -418,7 +418,7 @@ class VizClient:
         extra_data["create_time"] = create_time
         extra_data["user_id"] = f"{user_id:0>4}"
         extra_data["project_id"] = f"{project_id:0>6}"
-        extra_data["key_ids"] = ','.join([str(user_labels.name_aliases_to_id[k]) for k in keywords])
+        extra_data["key_ids"] = ','.join(map(str, user_labels.get_class_ids(keywords)))
 
         url = f"http://127.0.0.1:{settings.VIEWER_HOST_PORT}/api/v1/user_metrics/{metrics_group}"
         self.session.post(url, data=extra_data, timeout=settings.VIZ_TIMEOUT)
