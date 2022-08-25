@@ -1,0 +1,18 @@
+apiVersion: 1
+
+datasources:
+  - name: Prometheus
+    type: prometheus
+    access: proxy
+    uid: ymir_metrics_prometheus
+    orgId: 1
+    url: http://prometheus:9090
+    basicAuth: false
+    isDefault: true
+    editable: true
+  - name: Loki
+    type: loki
+    access: proxy
+    uid: ymir_metrics_loki
+    orgId: 1
+    url: http://loki:3100

@@ -1,40 +1,31 @@
 import React, { useEffect, useState } from "react"
 import { connect } from "dva"
-import { Select, Card, Input, Radio, Button, Form, Row, Col, ConfigProvider, Space, InputNumber } from "antd"
-import styles from "./index.less"
-import commonStyles from "../common.less"
-import { formLayout } from "@/config/antd"
-
-import t from "@/utils/t"
-import { string2Array } from '@/utils/string'
-import { TYPES } from '@/constants/image'
+import { Card, Radio, Button, Form, ConfigProvider, Space, InputNumber } from "antd"
 import { useHistory, useParams, useLocation } from "umi"
-import Breadcrumbs from "@/components/common/breadcrumb"
-import EmptyStateDataset from '@/components/empty/dataset'
-import EmptyStateModel from '@/components/empty/model'
+
+
+import { formLayout } from "@/config/antd"
+import t from "@/utils/t"
+import { HIDDENMODULES } from '@/constants/common'
+import { string2Array } from '@/utils/string'
+import { OPENPAI_MAX_GPU_COUNT } from '@/constants/common'
+import { TYPES } from '@/constants/image'
 import { randomNumber } from "@/utils/number"
-import Tip from "@/components/form/tip"
+import useFetch from '@/hooks/useFetch'
+
+import Breadcrumbs from "@/components/common/breadcrumb"
+import EmptyStateModel from '@/components/empty/model'
 import ModelSelect from "@/components/form/modelSelect"
 import ImageSelect from "@/components/form/imageSelect"
 import LiveCodeForm from "../components/liveCodeForm"
 import { removeLiveCodeConfig } from "../components/liveCodeConfig"
 import DockerConfigForm from "../components/dockerConfigForm"
-import DatasetSelect from "../../../components/form/datasetSelect"
+import DatasetSelect from "@/components/form/datasetSelect"
+import Desc from "@/components/form/desc"
 
-const { Option } = Select
-
-const Algorithm = () => [{ id: "aldd", label: 'ALDD', checked: true }]
-const renderRadio = (types) => {
-  return (
-    <Radio.Group>
-      {types.map((type) => (
-        <Radio value={type.id} key={type.id} defaultChecked={type.checked}>
-          {type.label}
-        </Radio>
-      ))}
-    </Radio.Group>
-  )
-}
+import commonStyles from "../common.less"
+import styles from "./index.less"
+import OpenpaiForm from "../components/openpaiForm"
 
 function Mining({ datasetCache, ...func }) {
   const pageParams = useParams()
@@ -52,10 +43,24 @@ function Mining({ datasetCache, ...func }) {
   const [gpu_count, setGPU] = useState(0)
   const [imageHasInference, setImageHasInference] = useState(false)
   const [live, setLiveCode] = useState(false)
+  const [openpai, setOpenpai] = useState(false)
+  const [sys, getSysInfo] = useFetch('common/getSysInfo', {})
+  const selectOpenpai = Form.useWatch('openpai', form)
 
   useEffect(() => {
-    fetchSysInfo()
+    getSysInfo()
   }, [])
+
+  useEffect(() => {
+    setGPU(sys.gpu_count || 0)
+    if (!HIDDENMODULES.OPENPAI) {
+      setOpenpai(!!sys.openpai_enabled)
+    }
+  }, [sys])
+
+  useEffect(() => {
+    setGPU(selectOpenpai ? OPENPAI_MAX_GPU_COUNT : sys.gpu_count || 0)
+  }, [selectOpenpai])
 
   useEffect(() => {
     form.setFieldsValue({ hyperparam: seniorConfig })
@@ -72,24 +77,15 @@ function Mining({ datasetCache, ...func }) {
     }
   }, [datasetCache])
 
-  async function fetchSysInfo() {
-    const result = await func.getSysInfo()
-    if (result) {
-      setGPU(result.gpu_count)
-    }
-  }
-
-  function filterStrategyChange({ target }) {
-    setTopk(target.value)
-  }
-
   function imageChange(_, image = {}) {
     const { url, configs = [] } = image
     const configObj = configs.find(conf => conf.type === TYPES.MINING) || {}
     const hasInference = configs.some(conf => conf.type === TYPES.INFERENCE)
     setImageHasInference(hasInference)
     !hasInference && form.setFieldsValue({ inference: false })
-    setLiveCode(image.liveCode || false)
+    if (!HIDDENMODULES.LIVECODE) {
+      setLiveCode(image.liveCode || false)
+    }
     setConfig(removeLiveCodeConfig(configObj.config))
   }
 
@@ -114,19 +110,19 @@ function Mining({ datasetCache, ...func }) {
     const params = {
       ...values,
       name: 'task_mining_' + randomNumber(),
-      topk: values.filter_strategy ? values.topk : 0,
       projectId: pid,
       imageId,
       image,
       config,
     }
-    const result = await func.createMiningTask(params)
+    const result = await func.mine(params)
     if (result) {
       if (iterationId) {
         func.updateIteration({ id: iterationId, currentStage, [outputKey]: result.result_dataset.id })
       }
       await func.clearCache()
-      history.replace(`/home/project/${pid}/dataset`)
+      const group = result.result_dataset?.dataset_group_id || ''
+      history.replace(`/home/project/${pid}/dataset#${group}`)
     }
   }
 
@@ -137,17 +133,18 @@ function Mining({ datasetCache, ...func }) {
   function setsChange(id, option) {
     setDataset(option?.dataset || {})
   }
-
-  function modelChange(id, options) {
+  
+  function modelChange(stage, options) {
+    if(!stage[1]) {
+      form.setFieldsValue({ modelStage: [stage[0], options[1]]})
+    }
     setSelectedModel(options ? options[0].model : [])
   }
 
-  const getCheckedValue = (list) => list.find((item) => item.checked)["id"]
   const initialValues = {
     modelStage: stage,
     image: image ? parseInt(image) : undefined,
     datasetId: did ? did : undefined,
-    algorithm: getCheckedValue(Algorithm()),
     topk: 0,
     gpu_count: 0,
   }
@@ -164,126 +161,89 @@ function Mining({ datasetCache, ...func }) {
             initialValues={initialValues}
             onFinish={onFinish}
             onFinishFailed={onFinishFailed}
-            labelAlign={'left'}
-            colon={false}
-            scrollToFirstError
           >
-            <ConfigProvider renderEmpty={() => <EmptyStateDataset add={() => history.push(`/home/dataset/add/${pid}`)} />}>
 
-              <Tip content={t('tip.task.mining.dataset')}>
-                <Form.Item
-                  label={t('task.mining.form.dataset.label')}
-                  required
-                  name="datasetId"
-                  rules={[
-                    { required: true, message: t('task.mining.form.dataset.required') },
-                  ]}
-                >
-                  <DatasetSelect
-                    pid={pid}
-                    placeholder={t('task.mining.form.dataset.placeholder')}
-                    onChange={setsChange}
-                  />
-                </Form.Item>
-              </Tip>
-            </ConfigProvider>
+            <Form.Item name='image' tooltip={t('tip.task.mining.image')} label={t('task.mining.form.image.label')} rules={[
+              { required: true, message: t('task.train.form.image.required') }
+            ]}>
+              <ImageSelect placeholder={t('task.train.form.image.placeholder')}
+                relatedId={selectedModel?.task?.parameters?.docker_image_id} type={TYPES.MINING} onChange={imageChange} />
+            </Form.Item>
+            <OpenpaiForm form={form} openpai={openpai} />
+            <Form.Item
+              label={t('task.mining.form.dataset.label')}
+              tooltip={t('tip.task.mining.dataset')}
+              required
+              name="datasetId"
+              rules={[
+                { required: true, message: t('task.mining.form.dataset.required') },
+              ]}
+            >
+              <DatasetSelect
+                pid={pid}
+                placeholder={t('task.mining.form.dataset.placeholder')}
+                onChange={setsChange}
+              />
+            </Form.Item>
+            <Form.Item
+              label={t('task.mining.form.model.label')}
+              tooltip={t('tip.task.filter.model')}
+              name="modelStage"
+              rules={[
+                { required: true, message: t('task.mining.form.model.required') },
+              ]}
+            >
+              <ModelSelect placeholder={t('task.mining.form.mining.model.required')} onChange={modelChange} pid={pid} />
+            </Form.Item>
+            <Form.Item
+              tooltip={t('tip.task.filter.strategy')}
+              label={t('task.mining.form.topk.label')}
+              name='topk' rules={topk ? [
+                { type: 'number', min: 1, max: (dataset.assetCount - 1) || 1 }
+              ] : null}>
+              <InputNumber style={{ width: 120 }} min={1} max={dataset.assetCount - 1} precision={0} />
+            </Form.Item>
+            <Form.Item
+              tooltip={t('tip.task.filter.newlable')}
+              label={t('task.mining.form.label.label')}
+              name='inference'
+              initialValue={imageHasInference}
+            >
+              <Radio.Group options={[
+                { value: true, label: t('common.yes'), disabled: !imageHasInference },
+                { value: false, label: t('common.no') },
+              ]} />
+            </Form.Item>
 
-
-            <ConfigProvider renderEmpty={() => <EmptyStateModel id={pid} />}>
-              <Tip content={t('tip.task.filter.model')}>
-                <Form.Item
-                  label={t('task.mining.form.model.label')}
-                  name="modelStage"
-                  rules={[
-                    { required: true, message: t('task.mining.form.model.required') },
-                  ]}
-                >
-                  <ModelSelect placeholder={t('task.mining.form.mining.model.required')} onChange={modelChange} pid={pid} />
-                </Form.Item>
-              </Tip>
-            </ConfigProvider>
-
-            <Tip content={t('tip.task.mining.image')}>
-              <Form.Item name='image' label={t('task.train.form.image.label')} rules={[
-                { required: true, message: t('task.train.form.image.required') }
-              ]}>
-                <ImageSelect placeholder={t('task.train.form.image.placeholder')}
-                  relatedId={selectedModel?.task?.parameters?.docker_image_id} type={TYPES.MINING} onChange={imageChange} />
-              </Form.Item>
-            </Tip>
-
-            <Tip hidden={true}>
+            <Form.Item
+              tooltip={t('tip.task.filter.mgpucount')}
+              label={t('task.gpu.count')}
+            >
               <Form.Item
-                label={t('task.mining.form.algo.label')}
-                name="algorithm"
+                noStyle
+                name="gpu_count"
               >
-                {renderRadio(Algorithm())}
-              </Form.Item>
-            </Tip>
+                <InputNumber min={0} max={gpu_count} precision={0} /></Form.Item>
+              <span style={{ marginLeft: 20 }}>{t('task.gpu.tip', { count: gpu_count })}</span>
+            </Form.Item>
 
-            <Tip content={t('tip.task.filter.strategy')}>
-              <Form.Item
-                label={t('task.mining.form.strategy.label')}
-              >
-                <Form.Item
-                  name='filter_strategy'
-                  initialValue={true}
-                  noStyle
-                >
-                  <Form.Item noStyle name='topk' label='topk' dependencies={['filter_strategy']} rules={topk ? [
-                    { type: 'number', min: 1, max: (dataset.assetCount - 1) || 1 }
-                  ] : null}>
-                    <InputNumber style={{ width: 120 }} min={1} max={dataset.assetCount - 1} precision={0} />
-                  </Form.Item>
-                </Form.Item>
-                <p style={{ display: 'inline-block', marginLeft: 10 }}>{t('task.mining.topk.tip')}</p>
-              </Form.Item>
-            </Tip>
-
-            <Tip content={t('tip.task.filter.newlable')}>
-              <Form.Item
-                label={t('task.mining.form.label.label')}
-                name='inference'
-                initialValue={imageHasInference}
-              >
-                <Radio.Group options={[
-                  { value: true, label: t('common.yes'), disabled: !imageHasInference },
-                  { value: false, label: t('common.no') },
-                ]} />
-              </Form.Item>
-            </Tip>
-
-            <Tip content={t('tip.task.filter.mgpucount')}>
-              <Form.Item
-                label={t('task.gpu.count')}
-              >
-                <Form.Item
-                  noStyle
-                  name="gpu_count"
-                >
-                  <InputNumber min={0} max={gpu_count} precision={0} /></Form.Item>
-                <span style={{ marginLeft: 20 }}>{t('task.gpu.tip', { count: gpu_count })}</span>
-              </Form.Item>
-            </Tip>
-
-            <LiveCodeForm live={live} />
+            <LiveCodeForm form={form} live={live} />
             <DockerConfigForm form={form} seniorConfig={seniorConfig} />
-            <Tip hidden={true}>
-              <Form.Item wrapperCol={{ offset: 8 }}>
-                <Space size={20}>
-                  <Form.Item name='submitBtn' noStyle>
-                    <Button type="primary" size="large" htmlType="submit">
-                      {t('common.action.mine')}
-                    </Button>
-                  </Form.Item>
-                  <Form.Item name='backBtn' noStyle>
-                    <Button size="large" onClick={() => history.goBack()}>
-                      {t('task.btn.back')}
-                    </Button>
-                  </Form.Item>
-                </Space>
-              </Form.Item>
-            </Tip>
+            <Desc form={form} />
+            <Form.Item wrapperCol={{ offset: 8 }}>
+              <Space size={20}>
+                <Form.Item name='submitBtn' noStyle>
+                  <Button type="primary" size="large" htmlType="submit">
+                    {t('common.action.mining')}
+                  </Button>
+                </Form.Item>
+                <Form.Item name='backBtn' noStyle>
+                  <Button size="large" onClick={() => history.goBack()}>
+                    {t('task.btn.back')}
+                  </Button>
+                </Form.Item>
+              </Space>
+            </Form.Item>
           </Form>
         </div>
       </Card>
@@ -319,9 +279,9 @@ const dis = (dispatch) => {
     clearCache() {
       return dispatch({ type: "dataset/clearCache", })
     },
-    createMiningTask(payload) {
+    mine(payload) {
       return dispatch({
-        type: "task/createMiningTask",
+        type: "task/mine",
         payload,
       })
     },

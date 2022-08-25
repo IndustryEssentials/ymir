@@ -41,8 +41,8 @@ const ImageList = ({ role, getShareImages }) => {
     return isAdmin() ? menus : []
   }
 
-  function copy (record) {
-    history.push({pathname: '/home/image/add', state: { record }})
+  function copy(record) {
+    history.push({ pathname: '/home/image/add', state: { record } })
   }
 
   function isAdmin() {
@@ -76,11 +76,11 @@ const ImageList = ({ role, getShareImages }) => {
       <Space className={s.info} >
         <span className={s.infoItem}><span className={s.infoLabel}>{t('image.list.item.type')}</span>{item.functions}</span>
         <span className={s.infoItem}><span className={s.infoLabel}>{t('image.list.item.desc')}</span>{item.description}</span>
+      </Space><br />
+      <Space className={s.related}>
+        <span><NavHomeIcon title={t('image.list.item.org')} /> {item.organization}</span>
+        <span><UserSharedIcon title={t('image.list.item.contributor')} /> {item.contributor}</span>
       </Space>
-      <div className={s.related}>
-        <span><NavHomeIcon title={t('image.list.item.org')} /> </span>{item.organization}
-        <UserSharedIcon title='Contributor' title={t('image.list.item.contributor')} /> {item.contributor}
-      </div>
     </Col>
     </Row>
 

@@ -1,12 +1,12 @@
 import json
 from datetime import datetime
 from enum import IntEnum
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple, Union
 
 from sqlalchemy import and_, desc, not_
 from sqlalchemy.orm import Session
 
-from app import schemas
+from app import schemas, models
 from app.constants.state import ResultState, TaskType
 from app.crud.base import CRUDBase
 from app.models import Dataset
@@ -105,6 +105,7 @@ class CRUDDataset(CRUDBase[Dataset, DatasetCreate, DatasetUpdate]):
         db_obj = Dataset(
             version_num=version_num,
             hash=obj_in.hash,
+            description=obj_in.description,
             source=int(obj_in.source),
             result_state=int(obj_in.result_state),
             dataset_group_id=obj_in.dataset_group_id,
@@ -118,10 +119,16 @@ class CRUDDataset(CRUDBase[Dataset, DatasetCreate, DatasetUpdate]):
         return db_obj
 
     def create_as_task_result(
-        self, db: Session, task: schemas.TaskInternal, dest_group_id: int, dest_group_name: str
+        self,
+        db: Session,
+        task: Union[schemas.TaskInternal, models.Task],
+        dest_group_id: int,
+        dest_group_name: Optional[str] = None,
+        description: Optional[str] = None,
     ) -> Dataset:
         dataset_in = DatasetCreate(
             hash=task.hash,
+            description=description,
             source=task.type,
             dataset_group_id=dest_group_id,
             project_id=task.project_id,
@@ -144,10 +151,7 @@ class CRUDDataset(CRUDBase[Dataset, DatasetCreate, DatasetUpdate]):
 
         if result:
             dataset.keywords = json.dumps(result["keywords"])
-            dataset.ignored_keywords = json.dumps(result["ignored_keywords"])
-            dataset.negative_info = json.dumps(result["negative_info"])
-            dataset.asset_count = result["asset_count"]
-            dataset.keyword_count = result["keyword_count"]
+            dataset.asset_count = result["total_assets_count"]
 
         db.add(dataset)
         db.commit()

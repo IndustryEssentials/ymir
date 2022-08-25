@@ -1,10 +1,9 @@
 import json
 import itertools
 import asyncio
-from typing import Any, Dict, List, Tuple, Optional, Union
+from typing import Any, Dict, List, Tuple, Optional
 
 import aiohttp
-from dataclasses import asdict
 from fastapi.logger import logger
 from fastapi.encoders import jsonable_encoder
 from sqlalchemy.orm import Session
@@ -15,9 +14,11 @@ from app.api.errors.errors import (
     FailedToConnectClickHouse,
     ModelNotReady,
     ModelNotFound,
+    ModelStageNotFound,
     TaskNotFound,
     DatasetNotFound,
     DatasetGroupNotFound,
+    RequiredFieldMissing,
 )
 from app.constants.state import (
     FinalStates,
@@ -28,9 +29,10 @@ from app.constants.state import (
 )
 from app.config import settings
 from app import schemas, crud, models
+from app.utils.cache import CacheClient
 from app.utils.ymir_controller import ControllerClient, gen_task_hash
 from app.utils.clickhouse import YmirClickHouse
-from app.utils.ymir_viz import VizClient, ModelMetaData, DatasetMetaData
+from app.utils.ymir_viz import VizClient
 from common_utils.labels import UserLabels
 
 
@@ -99,9 +101,10 @@ def normalize_parameters(
 
     if parameters.model_stage_id:
         model_stage = crud.model_stage.get(db, id=parameters.model_stage_id)
-        if model_stage:
-            normalized["model_hash"] = model_stage.model.hash  # type: ignore
-            normalized["model_stage_name"] = model_stage.name
+        if not model_stage:
+            raise ModelStageNotFound()
+        normalized["model_hash"] = model_stage.model.hash  # type: ignore
+        normalized["model_stage_name"] = model_stage.name
 
     if parameters.keywords:
         normalized["class_ids"] = user_labels.get_class_ids(names_or_aliases=parameters.keywords)
@@ -153,17 +156,19 @@ def create_single_task(db: Session, user_id: int, user_labels: UserLabels, task_
             task_id=task_hash,
             task_type=task_in.type,
             args=args,
-            task_parameters=task_in.parameters.json() if task_in.parameters else None,
+            archived_task_parameters=task_in.parameters.json() if task_in.parameters else None,
         )
         logger.info("[create task] controller response: %s", resp)
     except ValueError:
         raise FailedtoCreateTask()
+    except KeyError:
+        raise RequiredFieldMissing()
 
     task = crud.task.create_task(db, obj_in=task_in, task_hash=task_hash, user_id=user_id)
     task_info = schemas.TaskInternal.from_orm(task)
 
     task_result = TaskResult(db=db, task_in_db=task)
-    task_result.create(task_in.parameters.dataset_id)
+    task_result.create(task_in.parameters.dataset_id, task_in.result_description)
 
     try:
         write_clickhouse_metrics(
@@ -202,10 +207,10 @@ class TaskResult:
         self.viz.initialize(
             user_id=self.user_id,
             project_id=self.project_id,
-            branch_id=self.task_hash,
         )
+        self.cache = CacheClient(user_id=self.user_id)
 
-        self._result: Optional[Union[DatasetMetaData, ModelMetaData]] = None
+        self._result: Optional[Dict] = None
         self._user_labels: Optional[Dict] = None
 
     @property
@@ -218,9 +223,9 @@ class TaskResult:
         return self._user_labels
 
     @property
-    def model_info(self) -> Optional[ModelMetaData]:
+    def model_info(self) -> Optional[Dict]:
         try:
-            result = self.viz.get_model()
+            result = self.viz.get_model_info(self.task_hash)
         except (ModelNotReady, ModelNotFound):
             logger.exception("[update task] failed to get model_info: model not ready")
             return None
@@ -231,20 +236,24 @@ class TaskResult:
             return result
 
     @property
-    def dataset_info(self) -> Optional[DatasetMetaData]:
+    def dataset_info(self) -> Optional[Dict]:
         try:
-            return self.viz.get_dataset(user_labels=self.user_labels)
+            dataset_info = self.viz.get_dataset_info(self.task_hash, user_labels=self.user_labels)
         except Exception:
             logger.exception("[update task] failed to get dataset_info, check viz log")
             return None
+        if dataset_info["new_types_added"]:
+            logger.info("[update task] delete user keywords cache for new keywords from dataset")
+            self.cache.delete_personal_keywords_cache()
+        return dataset_info
 
     @property
-    def result_info(self) -> Optional[Union[DatasetMetaData, ModelMetaData]]:
+    def result_info(self) -> Optional[Dict]:
         if self._result is None:
             self._result = self.model_info if self.result_type is ResultType.model else self.dataset_info
         return self._result
 
-    def save_model_stats(self, result: ModelMetaData) -> None:
+    def save_model_stats(self, result: Dict) -> None:
         model_in_db = crud.model.get_by_task_id(self.db, task_id=self.task.id)
         if not model_in_db:
             logger.warning("[update task] found no model to save model stats(%s)", result)
@@ -259,8 +268,8 @@ class TaskResult:
             model_in_db.model_group_id,
             model_in_db.id,
             model_in_db.name,
-            result.hash,
-            result.map,
+            result["hash"],
+            result["map"],
             keywords,
         )
 
@@ -293,14 +302,16 @@ class TaskResult:
                 )
             return model_group.id, model_group.name
 
-    def create(self, dataset_id: int) -> Dict[str, Dict]:
+    def create(self, dataset_id: int, description: Optional[str] = None) -> Dict[str, Dict]:
         dest_group_id, dest_group_name = self.get_dest_group_info(dataset_id)
         if self.result_type is ResultType.dataset:
-            dataset = crud.dataset.create_as_task_result(self.db, self.task, dest_group_id, dest_group_name)
+            dataset = crud.dataset.create_as_task_result(
+                self.db, self.task, dest_group_id, dest_group_name, description
+            )
             logger.info("[create task] created new dataset(%s) as task result", dataset.name)
             return {"dataset": jsonable_encoder(dataset)}
         elif self.result_type is ResultType.model:
-            model = crud.model.create_as_task_result(self.db, self.task, dest_group_id, dest_group_name)
+            model = crud.model.create_as_task_result(self.db, self.task, dest_group_id, dest_group_name, description)
             logger.info("[create task] created new model(%s) as task result", model.name)
             return {"model": jsonable_encoder(model)}
         else:
@@ -366,22 +377,22 @@ class TaskResult:
                 crud.task.update_parameters_and_config(
                     self.db,
                     task=task_in_db,
-                    parameters=model_info.task_parameters,
-                    config=json.dumps(model_info.executor_config),
+                    parameters=model_info["task_parameters"],
+                    config=json.dumps(model_info["executor_config"]),
                 )
                 current_model = crud.model.finish(
-                    self.db, result_record.id, result_state=ResultState.ready, result=asdict(model_info)
+                    self.db, result_record.id, result_state=ResultState.ready, result=model_info
                 )
                 if current_model:
                     stages_in = []
-                    for stage_name, body in model_info.model_stages.items():
+                    for stage_name, body in model_info["model_stages"].items():
                         stage_obj = schemas.ModelStageCreate(
                             name=stage_name, map=body["mAP"], timestamp=body["timestamp"], model_id=current_model.id
                         )
                         stages_in.append(stage_obj)
                     crud.model_stage.batch_create(self.db, objs_in=stages_in)
                     crud.model.update_recommonded_stage_by_name(
-                        self.db, model_id=current_model.id, stage_name=model_info.best_stage_name
+                        self.db, model_id=current_model.id, stage_name=model_info["best_stage_name"]
                     )
                 try:
                     self.save_model_stats(model_info)
@@ -394,7 +405,7 @@ class TaskResult:
                 self.db,
                 result_record.id,
                 result_state=ResultState.ready,
-                result=asdict(self.result_info),
+                result=self.result_info,
             )
         else:
             crud_func.finish(

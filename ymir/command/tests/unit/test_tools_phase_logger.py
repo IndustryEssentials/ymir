@@ -186,7 +186,7 @@ class TestPhaseLoggerCenter(unittest.TestCase):
         sub_phase_loggers = PhaseLoggerCenter.loggers()
 
         sub_logger: PhaseLogger = sub_phase_loggers['copy.read']
-        self.assertTrue(math.isclose(0, sub_logger.start_percent))
+        self.assertTrue(math.isclose(0.05, sub_logger.start_percent))
         self.assertTrue(math.isclose(0.4, sub_logger.end_percent))
         self.assertFalse(sub_logger.auto_done)
 

@@ -1,18 +1,21 @@
-import { Cascader, Col, Row, Select } from 'antd'
-import { connect } from 'dva'
-import { useCallback, useEffect, useState } from 'react'
+import { Col, Row, Select } from 'antd'
+import { useEffect, useState } from 'react'
 
 import t from '@/utils/t'
 import useFetch from '@/hooks/useFetch'
 
 
-const KeywordSelect = ({ value, onChange = () => { }, data = [], keywords, ...resProps }) => {
+const KeywordSelect = ({ value, onChange = () => { }, keywords, filter, ...resProps }) => {
   const [options, setOptions] = useState([])
-  const [_, getKeywords] = useFetch('keyword/getKeywords')
+  const [keywordResult, getKeywords] = useFetch('keyword/getKeywords')
 
   useEffect(() => {
-    getKeywords({ limit: 9999 })
-  }, [])
+    if (keywords) {
+      generateOptions(keywords.map(keyword => ({ name: keyword })))
+    } else {
+      getKeywords({ limit: 9999 })
+    }
+  }, [keywords])
 
   useEffect(() => {
     if (options.length) {
@@ -29,11 +32,14 @@ const KeywordSelect = ({ value, onChange = () => { }, data = [], keywords, ...re
   }, [options])
 
   useEffect(() => {
-    generateOptions()
-  }, [keywords])
+    if (keywordResult) {
+      generateOptions(keywordResult.items)
+    }
+  }, [keywordResult])
 
-  function generateOptions() {
-    const opts = keywords.map(keyword => ({
+  function generateOptions(keywords = []) {
+    filter = filter || (x => x)
+    const opts = filter(keywords).map(keyword => ({
       label: <Row><Col flex={1}>{keyword.name}</Col></Row>,
       aliases: keyword.aliases,
       value: keyword.name,
@@ -41,19 +47,19 @@ const KeywordSelect = ({ value, onChange = () => { }, data = [], keywords, ...re
     setOptions(opts)
   }
 
+  function filterOptions(options, filter = x => x) {
+    return filter(options)
+  }
+
   return (
     <Select mode="multiple" showArrow
       placeholder={t('task.train.form.keywords.label')}
       filterOption={(value, option) => [option.value, ...(option.aliases || [])].some(key => key.indexOf(value) >= 0)}
-      options={options}
+      options={filterOptions(options, filter)}
+      onChange={onChange}
+      {...resProps}
     ></Select>
   )
 }
 
-const props = (state) => {
-  return {
-    keywords: state.keyword.keywords.items,
-  }
-}
-
-export default connect(props, null)(KeywordSelect)
+export default KeywordSelect

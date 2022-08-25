@@ -3,10 +3,8 @@ import { Col, Form, Input, InputNumber, Row, Space } from "antd"
 import Panel from "@/components/form/panel"
 import t from '@/utils/t'
 import s from "./form.less"
-import {
-  PlusOutlined,
-  MinusCircleOutlined,
-} from '@ant-design/icons'
+import PreProcessForm from "./preProcessForm"
+import { AddTwoIcon, AddDelTwoIcon } from '@/components/common/icons'
 
 const DockerConfigForm = ({ form, seniorConfig }) => {
   const [visible, setVisible] = useState(false)
@@ -29,8 +27,7 @@ const DockerConfigForm = ({ form, seniorConfig }) => {
   return seniorConfig.length ?
     <Panel label={renderTitle} visible={visible} setVisible={setVisible}>
       <Form.Item
-        labelCol={{ span: 6 }}
-        wrapperCol={{ offset: 6, span: 12 }}
+        wrapperCol={{ offset: 8, span: 12 }}
         rules={[{ validator: validHyperparam }]}
       >
         <Form.List name='hyperparam'>
@@ -40,18 +37,16 @@ const DockerConfigForm = ({ form, seniorConfig }) => {
                 <Row style={{ backgroundColor: '#fafafa', border: '1px solid #f4f4f4', lineHeight: '40px', marginBottom: 10 }} gutter={20}>
                   <Col flex={'240px'}>{t('common.key')}</Col>
                   <Col flex={1}>{t('common.value')}</Col>
-                  <Col span={2}>{t('common.action')}</Col>
+                  <Col flex={'60px'}>{t('common.action')}</Col>
                 </Row>
                 {fields.map(field => (
                   <Row key={field.key} gutter={20}>
                     <Col flex={'240px'}>
                       <Form.Item
                         {...field}
-                        // label="Key"
                         name={[field.name, 'key']}
                         fieldKey={[field.fieldKey, 'key']}
                         rules={[
-                          // {required: true, message: 'Missing Key'},
                           { validator: validHyperparam }
                         ]}
                       >
@@ -61,21 +56,21 @@ const DockerConfigForm = ({ form, seniorConfig }) => {
                     <Col flex={1}>
                       <Form.Item
                         {...field}
-                        // label="Value"
                         name={[field.name, 'value']}
                         fieldKey={[field.fieldKey, 'value']}
                         rules={[
-                          // {required: true, message: 'Missing Value'},
                         ]}
                       >
                         {seniorConfig[field.name] && typeof seniorConfig[field.name].value === 'number' ?
                           <InputNumber maxLength={20} style={{ minWidth: '100%' }} /> : <Input allowClear maxLength={100} />}
                       </Form.Item>
                     </Col>
-                    <Col span={2}>
+                    <Col flex={'60px'}>
                       <Space>
-                        {field.name < seniorConfig.length ? null : <MinusCircleOutlined onClick={() => remove(field.name)} />}
-                        {field.name === fields.length - 1 ? <PlusOutlined onClick={() => add()} title={t('task.train.parameter.add.label')} /> : null}
+                        {field.name === fields.length - 1 ?
+                          <AddTwoIcon style={{ color: '#36cbcb' }} onClick={() => add()} title={t('task.train.parameter.add.label')} /> :
+                          null}
+                        {field.name < seniorConfig.length ? null : <AddDelTwoIcon onClick={() => remove(field.name)} />}
                       </Space>
                     </Col>
                   </Row>
@@ -86,6 +81,7 @@ const DockerConfigForm = ({ form, seniorConfig }) => {
         </Form.List>
 
       </Form.Item>
+      <PreProcessForm />
     </Panel> : null
 }
 

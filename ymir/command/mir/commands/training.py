@@ -228,8 +228,8 @@ class CmdTrain(base.BaseCommand):
                               tensorboard_dir=tensorboard_dir)
 
         asset_dir = os.path.join(work_dir_in, 'assets')
-        work_dir_annotations = os.path.join(work_dir_in, 'annotations')
-        work_dir_gt = os.path.join(work_dir_in, 'groundtruth')
+        work_dir_annotations = os.path.join(work_dir_in, 'prediction')
+        work_dir_gt = os.path.join(work_dir_in, 'annotations')
         tensorboard_dir = os.path.join(work_dir_out, 'tensorboard')
 
         # if have model_hash_stage, export model
@@ -300,11 +300,11 @@ class CmdTrain(base.BaseCommand):
                 overwrite=False,
                 class_ids_mapping=type_id_idx_mapping,
                 format_type=export_format,
-                index_file_path=os.path.join(work_dir_in, 'train-index.tsv'),
-                gt_index_file_path=os.path.join(work_dir_in, 'train-index-gt.tsv'),
+                index_file_path=os.path.join(work_dir_in, 'train-index-pred.tsv'),
+                gt_index_file_path=os.path.join(work_dir_in, 'train-index.tsv'),
                 index_assets_prefix='/in/assets',
-                index_annotations_prefix='/in/annotations',
-                index_gt_prefix='/in/groundtruth',
+                index_annotations_prefix='/in/prediction',
+                index_gt_prefix='/in/annotations',
                 prep_args=prep_args,
             )
             dw_val = data_writer.RawDataWriter(
@@ -318,11 +318,11 @@ class CmdTrain(base.BaseCommand):
                 overwrite=False,
                 class_ids_mapping=type_id_idx_mapping,
                 format_type=export_format,
-                index_file_path=os.path.join(work_dir_in, 'val-index.tsv'),
-                gt_index_file_path=os.path.join(work_dir_in, 'val-index-gt.tsv'),
+                index_file_path=os.path.join(work_dir_in, 'val-index-pred.tsv'),
+                gt_index_file_path=os.path.join(work_dir_in, 'val-index.tsv'),
                 index_assets_prefix='/in/assets',
-                index_annotations_prefix='/in/annotations',
-                index_gt_prefix='/in/groundtruth',
+                index_annotations_prefix='/in/prediction',
+                index_gt_prefix='/in/annotations',
                 prep_args=prep_args,
             )
         elif asset_format == data_writer.AssetFormat.ASSET_FORMAT_LMDB:
@@ -458,7 +458,10 @@ class CmdTrain(base.BaseCommand):
         mir_storage_ops.MirStorageOps.save_and_commit(mir_root=mir_root,
                                                       mir_branch=dst_typ_rev_tid.rev,
                                                       his_branch=src_typ_rev_tid.rev,
-                                                      mir_datas={},
+                                                      mir_datas={
+                                                          mirpb.MirStorage.MIR_METADATAS: mirpb.MirMetadatas(),
+                                                          mirpb.MirStorage.MIR_ANNOTATIONS: mirpb.MirAnnotations()
+                                                      },
                                                       task=task)
 
         logging.info("training done")

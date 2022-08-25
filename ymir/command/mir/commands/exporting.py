@@ -23,7 +23,7 @@ class CmdExport(base.BaseCommand):
 
         return CmdExport.run_with_args(mir_root=self.args.mir_root,
                                        asset_dir=self.args.asset_dir,
-                                       annotation_dir=self.args.annotation_dir,
+                                       pred_dir=self.args.pred_dir,
                                        gt_dir=self.args.gt_dir,
                                        media_location=self.args.media_location,
                                        src_revs=self.args.src_revs,
@@ -35,7 +35,7 @@ class CmdExport(base.BaseCommand):
 
     @staticmethod
     @command_run_in_out
-    def run_with_args(mir_root: str, asset_dir: str, annotation_dir: str, gt_dir: str, media_location: str,
+    def run_with_args(mir_root: str, asset_dir: str, pred_dir: str, gt_dir: str, media_location: str,
                       src_revs: str, anno_format: str, asset_format: str, in_cis: str, work_dir: str,
                       dst_rev: str) -> int:
         # check args
@@ -44,8 +44,8 @@ class CmdExport(base.BaseCommand):
         if not asset_format:
             asset_format = 'raw'
 
-        if not asset_dir or not annotation_dir or not media_location or not src_revs:
-            logging.error('empty --asset-dir, --annotation-dir, --media-location or --src-revs')
+        if not asset_dir or not media_location or not src_revs:
+            logging.error('empty --asset-dir, --media-location or --src-revs')
             return MirCode.RC_CMD_INVALID_ARGS
 
         src_rev_tid = revs_parser.parse_single_arg_rev(src_revs, need_tid=False)
@@ -84,18 +84,19 @@ class CmdExport(base.BaseCommand):
         # export
         dw: data_writer.BaseDataWriter
         if asset_format_type == data_writer.AssetFormat.ASSET_FORMAT_RAW:
-            dw = data_writer.RawDataWriter(mir_root=mir_root,
-                                           assets_location=media_location,
-                                           assets_dir=asset_dir,
-                                           annotations_dir=annotation_dir,
-                                           gt_dir=gt_dir,
-                                           need_ext=True,
-                                           need_id_sub_folder=False,
-                                           overwrite=False,
-                                           class_ids_mapping=class_type_ids,
-                                           format_type=anno_format_type,
-                                           index_file_path=os.path.join(annotation_dir, 'index.tsv'),
-                                           gt_index_file_path=os.path.join(gt_dir, 'index.tsv') if gt_dir else '')
+            dw = data_writer.RawDataWriter(
+                mir_root=mir_root,
+                assets_location=media_location,
+                assets_dir=asset_dir,
+                annotations_dir=pred_dir,
+                gt_dir=gt_dir,
+                need_ext=True,
+                need_id_sub_folder=False,
+                overwrite=False,
+                class_ids_mapping=class_type_ids,
+                format_type=anno_format_type,
+                index_file_path=os.path.join(pred_dir, 'index.tsv') if pred_dir else '',
+                gt_index_file_path=os.path.join(gt_dir, 'index.tsv') if gt_dir else '')
         elif asset_format_type == data_writer.AssetFormat.ASSET_FORMAT_LMDB:
             dw = data_writer.LmdbDataWriter(mir_root=mir_root,
                                             assets_location=media_location,
@@ -119,7 +120,10 @@ class CmdExport(base.BaseCommand):
         mir_storage_ops.MirStorageOps.save_and_commit(mir_root=mir_root,
                                                       mir_branch=dst_rev_tid.rev,
                                                       his_branch=src_rev_tid.rev,
-                                                      mir_datas={},
+                                                      mir_datas={
+                                                          mirpb.MirStorage.MIR_METADATAS: mirpb.MirMetadatas(),
+                                                          mirpb.MirStorage.MIR_ANNOTATIONS: mirpb.MirAnnotations()
+                                                      },
                                                       task=task)
 
         return MirCode.RC_OK
@@ -135,11 +139,11 @@ def bind_to_subparsers(subparsers: argparse._SubParsersAction, parent_parser: ar
                                       dest="asset_dir",
                                       type=str,
                                       help="export directory for assets")
-    exporting_arg_parser.add_argument("--annotation-dir",
-                                      required=True,
-                                      dest="annotation_dir",
+    exporting_arg_parser.add_argument("--pred-dir",
+                                      required=False,
+                                      dest="pred_dir",
                                       type=str,
-                                      help="export directory for annotations")
+                                      help="export directory for prediction")
     exporting_arg_parser.add_argument("--gt-dir",
                                       required=False,
                                       dest="gt_dir",

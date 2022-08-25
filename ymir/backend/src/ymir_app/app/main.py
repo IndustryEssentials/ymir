@@ -13,10 +13,12 @@ from fastapi.staticfiles import StaticFiles
 from fastapi_cache import FastAPICache
 from fastapi_cache.backends.redis import RedisBackend
 from fastapi_socketio import SocketManager
+from fastapi_health import health
 from sentry_sdk.integrations.asgi import SentryAsgiMiddleware
 from starlette.exceptions import HTTPException
 from starlette.middleware.cors import CORSMiddleware
 from starlette.responses import HTMLResponse
+from starlette_exporter import PrometheusMiddleware, handle_metrics
 
 from app.api.api_v1.api import api_router
 from app.api.errors import errors
@@ -30,6 +32,10 @@ app = FastAPI(
     openapi_url=f"{settings.API_V1_STR}/openapi.json",
 )
 app.mount("/static", StaticFiles(directory="static"), name="static")
+
+app.add_middleware(PrometheusMiddleware)
+app.add_route("/metrics", handle_metrics)
+app.add_api_route("/health", health([]))
 
 if settings.SENTRY_DSN:
     sentry_sdk.init(dsn=settings.SENTRY_DSN)  # type: ignore
@@ -72,9 +78,7 @@ redis_stream = RedisStream(settings.BACKEND_REDIS_URL)
 async def startup() -> None:
     if settings.REDIS_TESTING:
         return
-    redis = aioredis.from_url(
-        settings.BACKEND_REDIS_URL, encoding="utf8", decode_responses=True
-    )
+    redis = aioredis.from_url(settings.BACKEND_REDIS_URL, encoding="utf8", decode_responses=True)
     FastAPICache.init(RedisBackend(redis), prefix="ymir-app-cache")
     asyncio.create_task(redis_stream.consume(batch_update_task_status))
 

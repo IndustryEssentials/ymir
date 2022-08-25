@@ -49,6 +49,7 @@ export function createProject({
   name,
   description,
   keywords,
+  strategy = 1,
   enableIteration,
 }) {
   return request.post("/projects/", {
@@ -56,6 +57,7 @@ export function createProject({
     description,
     training_type: 1,
     training_keywords: keywords,
+    mining_strategy: strategy,
     enable_iteration: enableIteration
   })
 }
@@ -92,6 +94,7 @@ export function updateProject(id, {
   strategy,
   chunkSize,
   description,
+  candidateTrainSet,
   trainSetVersion,
   miningSet,
   testSet,
@@ -114,6 +117,7 @@ export function updateProject(id, {
       initial_model_id: model,
       initial_model_stage_id: stage,
       initial_training_dataset_id: trainSetVersion,
+      candidate_training_dataset_id: candidateTrainSet,
       enable_iteration: enableIteration,
       testing_dataset_ids: testingSets ? testingSets?.toString() : undefined,
     },

@@ -40,7 +40,7 @@ class CmdMining(base.BaseCommand):
                                        media_location=self.args.media_location,
                                        config_file=self.args.config_file,
                                        topk=self.args.topk,
-                                       add_annotations=self.args.add_annotations,
+                                       add_prediction=self.args.add_prediction,
                                        executor=self.args.executor,
                                        executant_name=self.args.executant_name,
                                        run_as_root=self.args.run_as_root)
@@ -60,7 +60,7 @@ class CmdMining(base.BaseCommand):
                       executant_name: str,
                       run_as_root: bool,
                       topk: int = None,
-                      add_annotations: bool = False) -> int:
+                      add_prediction: bool = False) -> int:
         """
         runs a mining task \n
         Args:
@@ -75,7 +75,7 @@ class CmdMining(base.BaseCommand):
             executor: executor name, currently, the docker image name
             executant_name: docker container name
             topk: top k assets you want to select in the result workspace, positive integer or None (no mining)
-            add_annotations: if true, write new annotations into annotations.mir
+            add_prediction: if true, write new prediction into annotations.mir
         Returns:
             error code
         """
@@ -164,7 +164,7 @@ class CmdMining(base.BaseCommand):
                                          executor=executor,
                                          executant_name=executant_name,
                                          run_as_root=run_as_root,
-                                         run_infer=add_annotations,
+                                         run_infer=add_prediction,
                                          run_mining=(topk is not None))
         except CalledProcessError:
             return_code = MirCode.RC_CMD_CONTAINER_ERROR
@@ -187,7 +187,7 @@ class CmdMining(base.BaseCommand):
                          dst_typ_rev_tid=dst_typ_rev_tid,
                          src_typ_rev_tid=src_typ_rev_tid,
                          topk=topk,
-                         add_annotations=add_annotations,
+                         add_prediction=add_prediction,
                          task=task)
         logging.info(f"mining done, results at: {work_out_path}")
 
@@ -196,7 +196,7 @@ class CmdMining(base.BaseCommand):
 
 # protected: post process
 def _process_results(mir_root: str, export_out: str, dst_typ_rev_tid: revs_parser.TypRevTid,
-                     src_typ_rev_tid: revs_parser.TypRevTid, topk: Optional[int], add_annotations: bool,
+                     src_typ_rev_tid: revs_parser.TypRevTid, topk: Optional[int], add_prediction: bool,
                      task: mirpb.Task) -> int:
     # step 1: build topk results:
     #   read old
@@ -220,7 +220,7 @@ def _process_results(mir_root: str, export_out: str, dst_typ_rev_tid: revs_parse
     cls_id_mgr = class_ids.ClassIdManager(mir_root=mir_root)
     asset_id_to_annotations = (_get_infer_annotations(file_path=infer_result_file_path,
                                                       asset_ids_set=asset_ids_set,
-                                                      cls_id_mgr=cls_id_mgr) if add_annotations else {})
+                                                      cls_id_mgr=cls_id_mgr) if add_prediction else {})
 
     # step 2: update mir data files
     #   update mir metadatas
@@ -229,27 +229,21 @@ def _process_results(mir_root: str, export_out: str, dst_typ_rev_tid: revs_parse
         matched_mir_metadatas.attributes[asset_id].CopyFrom(mir_metadatas.attributes[asset_id])
     logging.info(f"matched: {len(matched_mir_metadatas.attributes)}, overriding metadatas.mir")
 
-    #   update mir annotations
+    #   update mir annotations: predictions
     matched_mir_annotations = mirpb.MirAnnotations()
-    matched_task_annotation = matched_mir_annotations.task_annotations[dst_typ_rev_tid.tid]
     prediction = matched_mir_annotations.prediction
-    ground_truth = matched_mir_annotations.ground_truth
-    if add_annotations:
+    if add_prediction:
         # add new
         for asset_id, single_image_annotations in asset_id_to_annotations.items():
-            matched_task_annotation.image_annotations[asset_id].CopyFrom(single_image_annotations)
             prediction.image_annotations[asset_id].CopyFrom(single_image_annotations)
     else:
         # use old
-        src_annotation = mir_annotations.task_annotations[mir_annotations.head_task_id]
-        anno_asset_ids = set(src_annotation.image_annotations.keys()) & asset_ids_set
-        for asset_id in anno_asset_ids:
-            matched_task_annotation.image_annotations[asset_id].CopyFrom(src_annotation.image_annotations[asset_id])
-
         pred_asset_ids = set(mir_annotations.prediction.image_annotations.keys()) & asset_ids_set
         for asset_id in pred_asset_ids:
             prediction.image_annotations[asset_id].CopyFrom(mir_annotations.prediction.image_annotations[asset_id])
 
+    #   update mir annotations: ground truth
+    ground_truth = matched_mir_annotations.ground_truth
     gt_asset_ids = set(mir_annotations.ground_truth.image_annotations.keys()) & asset_ids_set
     for asset_id in gt_asset_ids:
         ground_truth.image_annotations[asset_id].CopyFrom(mir_annotations.ground_truth.image_annotations[asset_id])
@@ -257,8 +251,6 @@ def _process_results(mir_root: str, export_out: str, dst_typ_rev_tid: revs_parse
     image_ck_asset_ids = set(mir_annotations.image_cks.keys() & asset_ids_set)
     for asset_id in image_ck_asset_ids:
         matched_mir_annotations.image_cks[asset_id].CopyFrom(mir_annotations.image_cks[asset_id])
-
-    #   mir_keywords: auto generated from mir_annotations, so do nothing
 
     # step 3: store results and commit.
     mir_datas = {
@@ -392,11 +384,11 @@ def bind_to_subparsers(subparsers: argparse._SubParsersAction, parent_parser: ar
                                    type=int,
                                    required=False,
                                    help='if set, discard samples out of topk, sorting by scores.')
-    mining_arg_parser.add_argument('--add-annotations',
-                                   dest='add_annotations',
+    mining_arg_parser.add_argument('--add-prediction',
+                                   dest='add_prediction',
                                    action='store_true',
                                    required=False,
-                                   help='if set, also add inference result to annotations')
+                                   help='if set, also add inference result')
     mining_arg_parser.add_argument('--model-hash',
                                    dest='model_hash_stage',
                                    type=str,

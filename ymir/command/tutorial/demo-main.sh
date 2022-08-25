@@ -151,7 +151,7 @@ import_data_pascal() {
         printf '%s\n' "creating pascal index file... $IDX_PASCAL_ABS"
         find $PASCAL_DATA_IMG_ABS -iname \*.jpg >> $IDX_PASCAL_ABS
     fi
-    $MIR_EXE import --index-file $IDX_PASCAL_ABS --annotation-dir $PASCAL_DATA_ANNO_ABS --gen-dir $INTERMEDIATE_FOLDER_ABS --dataset-name $DEMO_PASCAL_BRANCH -t $DEMO_PASCAL_BRANCH
+    $MIR_EXE import --index-file $IDX_PASCAL_ABS --pred-dir $PASCAL_DATA_ANNO_ABS --gen-dir $INTERMEDIATE_FOLDER_ABS --dataset-name $DEMO_PASCAL_BRANCH -t $DEMO_PASCAL_BRANCH
 }
 
 import_data_coco() {
@@ -161,7 +161,7 @@ import_data_coco() {
         printf '%s\n' "creating coco index file... $IDX_COCO_ABS"
         find $COCO_DATA_IMG_ABS -iname \*.jpg >> $IDX_COCO_ABS
     fi
-    $MIR_EXE import --index-file $IDX_COCO_ABS --annotation-dir $COCO_DATA_ANNO_ABS --gen-dir $INTERMEDIATE_FOLDER_ABS --dataset-name $DEMO_COCO_BRANCH -t $DEMO_COCO_BRANCH
+    $MIR_EXE import --index-file $IDX_COCO_ABS --pred-dir $COCO_DATA_ANNO_ABS --gen-dir $INTERMEDIATE_FOLDER_ABS --dataset-name $DEMO_COCO_BRANCH -t $DEMO_COCO_BRANCH
 }
 
 process_filter() {

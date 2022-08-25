@@ -5,7 +5,7 @@ from typing import Any, Dict, List, Optional, Union
 
 from pydantic import BaseModel, EmailStr, Field, validator, root_validator
 
-from app.constants.state import TaskState, TaskType, ResultState, ResultType, IterationStage
+from app.constants.state import AnnotationType, TaskState, TaskType, ResultState, ResultType, IterationStage
 from app.schemas.common import (
     Common,
     DateTimeModelMixin,
@@ -44,7 +44,7 @@ class TaskParameter(BaseModel):
     # label
     extra_url: Optional[str]
     labellers: Optional[List[EmailStr]]
-    keep_annotations: Optional[bool]
+    annotation_type: Optional[AnnotationType] = None
 
     # training
     validation_dataset_id: Optional[int]
@@ -79,6 +79,7 @@ class TaskCreate(TaskBase):
     parameters: TaskParameter = Field(description="task specific parameters")
     docker_image_config: Optional[Dict] = Field(description="docker runtime configuration")
     preprocess: Optional[TaskPreprocess] = Field(description="preprocess to apply to related dataset")
+    result_description: Optional[str] = Field(description="description for task result, not task itself")
 
     @validator("docker_image_config")
     def dumps_docker_image_config(cls, v: Optional[Union[str, Dict]], values: Dict[str, Any]) -> Optional[str]:
@@ -118,12 +119,12 @@ class TaskInDBBase(IdModelMixin, DateTimeModelMixin, IsDeletedModelMixin, TaskBa
     state: Optional[TaskState] = TaskState.pending
     error_code: Optional[str]
     duration: Optional[int] = Field(0, description="task process time in seconds")
-    percent: Optional[float] = Field(0, description="from 0 to 1")
+    percent: Optional[float] = Field(0, ge=0, le=1)
     parameters: Optional[str] = Field(description="json dumped input parameters when creating task")
     config: Optional[str] = Field(description="json dumped docker runtime configuration")
     user_id: int = Field(description="task owner's user_id")
 
-    last_message_datetime: datetime = None  # type: ignore
+    last_message_datetime: Optional[datetime] = None
 
     is_terminated: bool = False
 
@@ -147,21 +148,17 @@ class TaskInDBBase(IdModelMixin, DateTimeModelMixin, IsDeletedModelMixin, TaskBa
 
 
 class TaskInternal(TaskInDBBase):
-    parameters: Optional[str]
-    config: Optional[str]
+    parameters: Optional[Any]
+    config: Optional[Any]
     state: TaskState
     result_type: ResultType = ResultType.no_result
 
-    @validator("parameters")
-    def loads_parameters(cls, v: str) -> Dict[str, Any]:
+    @validator("parameters", "config")
+    def ensure_dict(cls, v: Optional[Union[Dict, str]]) -> Dict[str, Any]:
         if not v:
             return {}
-        return json.loads(v)
-
-    @validator("config")
-    def loads_config(cls, v: str) -> Dict[str, Any]:
-        if not v:
-            return {}
+        if isinstance(v, dict):
+            return v
         return json.loads(v)
 
     @validator("result_type", pre=True, always=True)
@@ -176,6 +173,8 @@ class TaskInternal(TaskInDBBase):
             TaskType.import_data,
             TaskType.copy_data,
             TaskType.data_fusion,
+            TaskType.filter,
+            TaskType.merge,
         ]:
             return ResultType.dataset
         else:

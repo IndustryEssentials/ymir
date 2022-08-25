@@ -7,10 +7,11 @@ from typing import Any, Dict, Generator, List, Optional, Union
 
 import grpc
 from fastapi.logger import logger
-from google.protobuf import json_format  # type: ignore
+from google.protobuf.json_format import MessageToDict
+from google.protobuf.text_format import MessageToString
 
 from app.config import settings
-from app.constants.state import TaskType
+from app.constants.state import TaskType, AnnotationType
 from app.schemas.dataset import ImportStrategy, MergeStrategy
 from app.schemas.task import TrainingDatasetsStrategy
 from common_utils.labels import UserLabels
@@ -48,6 +49,19 @@ TRAINING_DATASET_STRATEGY_MAPPING = {
 }
 
 
+IMPORTING_STRATEGY_MAPPING = {
+    ImportStrategy.no_annotations: mirsvrpb.UTS_IGNORE,
+    ImportStrategy.ignore_unknown_annotations: mirsvrpb.UTS_IGNORE,
+    ImportStrategy.stop_upon_unknown_annotations: mirsvrpb.UTS_STOP,
+    ImportStrategy.add_unknown_annotations: mirsvrpb.UTS_ADD,
+}
+
+ANNOTATION_TYPE_MAPPING = {
+    AnnotationType.gt: mirsvrpb.GT,
+    AnnotationType.pred: mirsvrpb.PRED,
+}
+
+
 def gen_typed_datasets(dataset_type: int, datasets: List[str]) -> Generator:
     for dataset_id in datasets:
         dataset_with_type = mirsvrpb.TaskReqTraining.TrainingDatasetType()
@@ -79,7 +93,7 @@ class ControllerRequest:
     task_id: Optional[str] = None
     args: Optional[Dict] = None
     req: Optional[mirsvrpb.GeneralReq] = None
-    task_parameters: Optional[str] = None
+    archived_task_parameters: Optional[str] = None
 
     def __post_init__(self) -> None:
         user_hash = gen_user_hash(self.user_id)
@@ -87,7 +101,7 @@ class ControllerRequest:
         task_hash = self.task_id or gen_task_hash(self.user_id, self.project_id)
 
         request = mirsvrpb.GeneralReq(
-            user_id=user_hash, repo_id=repo_hash, task_id=task_hash, task_parameters=self.task_parameters
+            user_id=user_hash, repo_id=repo_hash, task_id=task_hash, task_parameters=self.archived_task_parameters
         )
 
         method_name = "prepare_" + self.type.name
@@ -151,17 +165,15 @@ class ControllerRequest:
         importing_request = mirsvrpb.TaskReqImporting()
 
         importing_request.asset_dir = args["asset_dir"]
-        # adhoc specify gt_dir for importing dataset
-        if args.get("gt_dir"):
-            importing_request.gt_dir = args["gt_dir"]
-
         strategy = args.get("strategy") or ImportStrategy.ignore_unknown_annotations
         if strategy != ImportStrategy.no_annotations:
-            importing_request.annotation_dir = args["annotation_dir"]
-        if strategy == ImportStrategy.ignore_unknown_annotations:
-            importing_request.name_strategy_ignore = True
-        else:
-            importing_request.name_strategy_ignore = False
+            if args.get("gt_dir"):
+                importing_request.gt_dir = args["gt_dir"]
+            if args.get("pred_dir"):
+                importing_request.pred_dir = args["pred_dir"]
+        importing_request.clean_dirs = args["clean_dirs"]
+
+        importing_request.unknown_types_strategy = IMPORTING_STRATEGY_MAPPING[strategy]
 
         req_create_task = mirsvrpb.ReqCreateTask()
         req_create_task.task_type = mirsvrpb.TaskTypeImportData
@@ -177,7 +189,11 @@ class ControllerRequest:
         label_request.dataset_id = args["dataset_hash"]
         label_request.labeler_accounts[:] = args["labellers"]
         label_request.in_class_ids[:] = args["class_ids"]
-        label_request.export_annotation = args["keep_annotations"]
+
+        # pre annotation
+        if args.get("annotation_type"):
+            label_request.annotation_type = ANNOTATION_TYPE_MAPPING[args["annotation_type"]]
+
         if args.get("extra_url"):
             label_request.expert_instruction_url = args["extra_url"]
 
@@ -250,7 +266,9 @@ class ControllerRequest:
     def prepare_data_fusion(self, request: mirsvrpb.GeneralReq, args: Dict) -> mirsvrpb.GeneralReq:
         data_fusion_request = mirsvrpb.TaskReqFusion()
         data_fusion_request.in_dataset_ids[:] = args["include_datasets"]
-        data_fusion_request.merge_strategy = MERGE_STRATEGY_MAPPING[args["include_strategy"]]
+        data_fusion_request.merge_strategy = MERGE_STRATEGY_MAPPING[
+            args.get("strategy", MergeStrategy.stop_upon_conflict)
+        ]
         if args.get("exclude_datasets"):
             data_fusion_request.ex_dataset_ids[:] = args["exclude_datasets"]
 
@@ -347,19 +365,21 @@ class ControllerRequest:
 
 class ControllerClient:
     def __init__(self, channel: str = settings.GRPC_CHANNEL) -> None:
-        self.channel = grpc.insecure_channel(channel)
-        self.stub = mir_grpc.mir_controller_serviceStub(self.channel)
+        self.channel_ep = channel
 
     def close(self) -> None:
-        self.channel.close()
+        pass
 
     def send(self, req: mirsvrpb.GeneralReq) -> Dict:
         logger.info("[controller] request: %s", req.req)
-        resp = self.stub.data_manage_request(req.req)
+        with grpc.insecure_channel(self.channel_ep) as channel:
+            stub = mir_grpc.mir_controller_serviceStub(channel)
+            resp = stub.data_manage_request(req.req)
+
         if resp.code != 0:
             raise ValueError(f"gRPC error. response: {resp.code} {resp.message}")
-        logger.info("[controller] response: %s", resp)
-        return json_format.MessageToDict(
+        logger.info("[controller] response: %s", MessageToString(resp, as_one_line=True))
+        return MessageToDict(
             resp,
             preserving_proto_field_name=True,
             use_integers_for_enums=True,
@@ -389,7 +409,7 @@ class ControllerClient:
         task_id: str,
         task_type: TaskType,
         args: Optional[Dict],
-        task_parameters: Optional[str],
+        archived_task_parameters: Optional[str],
     ) -> Dict:
         req = ControllerRequest(
             type=TaskType(task_type),
@@ -397,7 +417,7 @@ class ControllerClient:
             project_id=project_id,
             task_id=task_id,
             args=args,
-            task_parameters=task_parameters,
+            archived_task_parameters=archived_task_parameters,
         )
         return self.send(req)
 
@@ -487,10 +507,10 @@ class ControllerClient:
         user_id: int,
         project_id: int,
         task_id: str,
-        task_parameters: Optional[Dict],
+        args: Optional[Dict],
     ) -> Dict:
         req = ControllerRequest(
-            type=TaskType.data_fusion, user_id=user_id, project_id=project_id, task_id=task_id, args=task_parameters
+            type=TaskType.data_fusion, user_id=user_id, project_id=project_id, task_id=task_id, args=args
         )
 
         return self.send(req)
@@ -563,6 +583,52 @@ class ControllerClient:
                 "in_dataset_names": [dataset["name"] for dataset in datasets],
                 "iou_thr": iou_thr,
                 "conf_thr": conf_thr,
+            },
+        )
+        return self.send(req)
+
+    def merge_datasets(
+        self,
+        user_id: int,
+        project_id: int,
+        task_id: str,
+        dataset_hashes: Optional[List[str]],
+        ex_dataset_hashes: Optional[List[str]],
+        merge_strategy: Optional[MergeStrategy] = None,
+    ) -> Dict:
+        req = ControllerRequest(
+            type=TaskType.data_fusion,
+            user_id=user_id,
+            project_id=project_id,
+            task_id=task_id,
+            args={
+                "include_datasets": dataset_hashes,
+                "exclude_datasets": ex_dataset_hashes,
+                "strategy": merge_strategy,
+            },
+        )
+        return self.send(req)
+
+    def filter_dataset(
+        self,
+        user_id: int,
+        project_id: int,
+        task_id: str,
+        dataset_hash: str,
+        class_ids: Optional[List[int]],
+        ex_class_ids: Optional[List[int]],
+        sampling_count: Optional[int] = None,
+    ) -> Dict:
+        req = ControllerRequest(
+            type=TaskType.data_fusion,
+            user_id=user_id,
+            project_id=project_id,
+            task_id=task_id,
+            args={
+                "include_datasets": [dataset_hash],
+                "include_class_ids": class_ids,
+                "exclude_class_ids": ex_class_ids,
+                "sampling_count": sampling_count,
             },
         )
         return self.send(req)

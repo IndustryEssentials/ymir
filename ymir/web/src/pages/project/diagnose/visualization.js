@@ -8,7 +8,6 @@ import { SearchIcon, EyeOnIcon, DeleteIcon } from "@/components/common/icons"
 import t from "@/utils/t"
 import s from './visualization.less'
 import Panel from "@/components/form/panel"
-import Tip from "@/components/form/tip"
 import Actions from "@/components/table/actions"
 import InferResultSelect from "@/components/form/inferResultSelect"
 import Del from './components/del'
@@ -158,6 +157,16 @@ function Visualization({ pid, project }) {
       },
     },
     {
+      title: showTitle('model.diagnose.form.iou'),
+      dataIndex: 'iou',
+      width: 100,
+    },
+    {
+      title: showTitle('model.diagnose.form.confidence'),
+      dataIndex: 'confidence',
+      width: 80,
+    },
+    {
       title: showTitle("visualization.column.create_time"),
       dataIndex: "createTime",
       sorter: true,
@@ -170,7 +179,7 @@ function Visualization({ pid, project }) {
       dataIndex: "id",
       render: (text, record) => <Actions menus={actionMenus(record)} />,
       align: "center",
-      width: 300,
+      width: 150,
     },
   ]
 
@@ -270,22 +279,20 @@ function Visualization({ pid, project }) {
           <Form.Item label={'IOU'} name='iou' initialValue={0.5}>
             <Slider min={0.25} max={0.95} step={0.05} marks={{ 0.25: '0.25', 0.5: '0.5', 0.95: '0.95' }} />
           </Form.Item>
-          <Tip hidden={true}>
-            <Form.Item wrapperCol={{ offset: 8 }}>
-              <Space size={20} style={{ display: 'flex' }}>
-                <Form.Item name='submitBtn'>
-                  <Button type="primary" size="large" htmlType="submit">
-                    {t('common.confirm')}
-                  </Button>
-                </Form.Item>
-                <Form.Item name='backBtn'>
-                  <Button size="large" onClick={() => reset()}>
-                    {t('common.cancel')}
-                  </Button>
-                </Form.Item>
-              </Space>
-            </Form.Item>
-          </Tip>
+          <Form.Item wrapperCol={{ offset: 6 }}>
+            <Space size={20} style={{ display: 'flex' }}>
+              <Form.Item name='submitBtn'>
+                <Button type="primary" size="large" htmlType="submit">
+                  {t('common.confirm')}
+                </Button>
+              </Form.Item>
+              <Form.Item name='backBtn'>
+                <Button size="large" onClick={() => reset()}>
+                  {t('common.cancel')}
+                </Button>
+              </Form.Item>
+            </Space>
+          </Form.Item>
         </Form>
         <Panel label={t('visualization.records.title')} visible={settingsVisible} setVisible={() => setSettingsVisible(!settingsVisible)}>
           <div className={s.tableContainer}>

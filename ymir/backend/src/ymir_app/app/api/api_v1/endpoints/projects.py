@@ -88,7 +88,7 @@ def create_sample_project(
     project_in = schemas.ProjectCreate(
         name=project_name,
         training_keywords=settings.SAMPLE_PROJECT_KEYWORDS,
-        chunk_size=1,
+        chunk_size=2,
         is_example=True,
     )
     project = crud.project.create_project(db, user_id=current_user.id, obj_in=project_in)
@@ -224,10 +224,6 @@ def get_project(
     project = crud.project.get_by_user_and_id(db, user_id=current_user.id, id=project_id)
     if not project:
         raise ProjectNotFound()
-
-    # for compatible
-    project.enable_iteration = True if project.enable_iteration is None else project.enable_iteration
-
     return {"result": project}
 
 
@@ -254,7 +250,8 @@ def update_project(
             raise DatasetNotFound()
         if project.training_dataset_group_id != dataset.dataset_group_id:
             raise NoDatasetPermission()
-
+    if project_update.name and crud.project.is_duplicated_name(db, user_id=current_user.id, name=project_update.name):
+        raise DuplicateProjectError()
     project = crud.project.update_resources(db, project_id=project.id, project_update=project_update)
 
     return {"result": project}

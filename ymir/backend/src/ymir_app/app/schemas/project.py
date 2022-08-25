@@ -1,7 +1,7 @@
 import json
 from typing import List, Optional
 
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel, validator
 
 from app.constants.state import MiningStrategy, TrainingType
 from app.schemas.common import (
@@ -17,20 +17,21 @@ from app.schemas.dataset_group import DatasetGroup
 
 
 class ProjectBase(BaseModel):
-    name: str = Field(description="Project Name")
+    name: str
     description: Optional[str]
 
     mining_strategy: MiningStrategy = MiningStrategy.chunk
     chunk_size: Optional[int] = 0
 
-    training_type: TrainingType = TrainingType.object_detect
-
+    enable_iteration: Optional[bool] = True
     iteration_target: Optional[int]
     map_target: Optional[float]
     training_dataset_count_target: Optional[int]
+
     is_example: Optional[bool] = False
 
-    enable_iteration: Optional[bool] = True
+    training_type: TrainingType = TrainingType.object_detect
+    candidate_training_dataset_id: Optional[int]
 
 
 # Sufficient properties to create a project
@@ -59,6 +60,7 @@ class ProjectUpdate(BaseModel):
     initial_model_id: Optional[int]
     initial_model_stage_id: Optional[int]
     initial_training_dataset_id: Optional[int]
+    candidate_training_dataset_id: Optional[int]
 
     training_keywords: Optional[List[str]]
 
@@ -110,6 +112,12 @@ class Project(ProjectInDBBase):
     @validator("training_keywords", pre=True)
     def unpack_keywords(cls, v: str) -> List[str]:
         return json.loads(v)
+
+    @validator("enable_iteration", pre=True)
+    def make_up_default_value(cls, v: Optional[bool]) -> bool:
+        if v is None:
+            return True
+        return v
 
 
 class ProjectOut(Common):

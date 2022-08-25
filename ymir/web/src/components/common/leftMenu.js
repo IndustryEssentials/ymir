@@ -3,9 +3,11 @@ import { Menu, Layout } from "antd"
 import { useHistory, useLocation, withRouter, useSelector } from "umi"
 import t from '@/utils/t'
 import { isSuperAdmin } from '@/constants/user'
-import { BarchartIcon, FlagIcon, GithubIcon, FileHistoryIcon, MymodelIcon, 
-  NavDatasetIcon, UserIcon, UserSettingsIcon, Diagnosis, EditIcon, EyeOffIcon, TrainIcon } from '@/components/common/icons'
-import { ProjectIcon, VectorIcon } from "./icons"
+import {
+  BarchartIcon, FlagIcon, GithubIcon, FileHistoryIcon, MymodelIcon,
+  NavDatasetIcon, UserIcon, UserSettingsIcon, DiagnosisIcon, EditIcon, EyeOffIcon, TrainIcon,
+  BarChart2LineIcon, ProjectIcon, VectorIcon
+} from '@/components/common/icons'
 
 const { Sider } = Layout
 
@@ -41,15 +43,16 @@ function LeftMenu() {
     const showLeftMenu = projectModule.test(pathname)
     setItems([
       getGroupItem(t('breadcrumbs.projects'), 'project', [
-        getItem(t('projects.title'), `/home/project`, ProjectIcon, ),
+        getItem(t('projects.title'), `/home/project`, ProjectIcon,),
         showLeftMenu ? getItem(project.name, `project.summary`, VectorIcon, [
-            getItem(t('project.summary'), `/home/project/${id}/detail`, BarchartIcon,),
-            getItem(t('project.settings.title'), `/home/project/${id}/add`, EditIcon,),
-            getItem(t('dataset.list'), `/home/project/${id}/dataset`, NavDatasetIcon,),
-            getItem(t('model.management'), `/home/project/${id}/model`, MymodelIcon,),
-            getItem(t('model.diagnose'), `/home/project/${id}/diagnose`, Diagnosis),
-            getItem(t('breadcrumbs.task.training'), `/home/project/${id}/train`, TrainIcon),
-            getItem(t('common.hidden.list'), `/home/project/${id}/hidden`, EyeOffIcon,),
+          getItem(t('project.summary'), `/home/project/${id}/detail`, BarchartIcon,),
+          getItem(t('dataset.list'), `/home/project/${id}/dataset`, NavDatasetIcon,),
+          getItem(t('breadcrumbs.dataset.analysis'), `/home/project/${id}/dataset/analysis`, BarChart2LineIcon),
+          getItem(t('model.management'), `/home/project/${id}/model`, MymodelIcon,),
+          getItem(t('model.diagnose'), `/home/project/${id}/diagnose`, DiagnosisIcon),
+          getItem(t('breadcrumbs.task.training'), `/home/project/${id}/train`, TrainIcon),
+          getItem(t('common.hidden.list'), `/home/project/${id}/hidden`, EyeOffIcon,),
+          getItem(t('project.settings.title'), `/home/project/${id}/add`, EditIcon,),
         ]) : null,
       ]),
       getGroupItem(t('breadcrumbs.keyword'), 'keyword', [
@@ -72,7 +75,7 @@ function LeftMenu() {
 
   return items.length ? (
     <Sider style={{ background: '#fff' }}>
-      <Menu items={items} mode='inline' defaultOpenKeys={['project.summary']} onClick={clickHandle} selectedKeys={defaultKeys}></Menu>
+      <Menu items={items} mode='inline' defaultOpenKeys={['project.summary', `/home/project/${id}/dataset`]} onClick={clickHandle} selectedKeys={defaultKeys}></Menu>
     </Sider>
   ) : null
 }

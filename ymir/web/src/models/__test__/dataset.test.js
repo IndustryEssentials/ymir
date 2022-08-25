@@ -2,7 +2,7 @@ import dataset from "../dataset"
 import { put, putResolve, call, select } from "redux-saga/effects"
 import { errorCode, normalReducer, product, products } from './func'
 import { toFixed } from '@/utils/number'
-import { transferDatasetGroup, transferDataset, states } from '@/constants/dataset'
+import { transferDatasetGroup, transferDataset, transferAsset, states } from '@/constants/dataset'
 
 jest.mock('umi', () => {
   return {
@@ -186,18 +186,19 @@ describe("models: dataset", () => {
       type: "getAssetsOfDataset",
       payload: {},
     }
-    const expected = { items: [1, 2, , 3, 4], total: 4 }
+    const result = { items: products(4), total: 4 }
+    const expected = { items: result.items.map(item => transferAsset(item)), total: 4 }
 
     const generator = saga(creator, { put, call })
     generator.next()
     generator.next({
       code: 0,
-      result: expected,
+      result,
     })
     const end = generator.next()
 
-    equalObject(expected, end.value)
     expect(end.done).toBe(true)
+    expect(end.value).toEqual(expected)
   })
   it("effects: queryAllDatasets -> from remote", () => {
     const saga = dataset.effects.queryAllDatasets
@@ -326,15 +327,12 @@ describe("models: dataset", () => {
       type: "getAsset",
       payload: { hash: 'identify_hash_string' },
     }
-    const expected = {
+    const result = {
       hash: 'identify_hash_string', width: 800, height: 600,
       "size": 0,
       "channel": 3,
       "timestamp": "2021-09-28T08:26:53.088Z",
       "url": "string",
-      "annotations": [
-        {}
-      ],
       "metadata": {},
       "keywords": [
         "string"
@@ -345,11 +343,11 @@ describe("models: dataset", () => {
     generator.next()
     generator.next({
       code: 0,
-      result: expected,
+      result,
     })
     const end = generator.next()
 
-    equalObject(expected, end.value)
+    expect(end.value).toEqual(transferAsset(result))
     expect(end.done).toBe(true)
   })
   it("effects: delDataset", () => {
@@ -381,12 +379,13 @@ describe("models: dataset", () => {
 
     const generator = saga(creator, { put, call })
     generator.next()
-    const end = generator.next({
+    generator.next({
       code: 0,
       result: expected,
     })
+    const end = generator.next()
 
-    equalObject(expected, end.value)
+    expect(end.value).toEqual(expected)
     expect(end.done).toBe(true)
   })
   it("effects: updateDataset", () => {
@@ -429,8 +428,9 @@ describe("models: dataset", () => {
     const generator = saga(creator, { put, call, select })
     generator.next()
     const d = generator.next(versions)
+    generator.next([])
+    generator.next()
     const end = generator.next()
-    const updated = d.value.payload.action.payload
 
     expect(end.value).toEqual(expected)
     expect(end.done).toBe(true)
@@ -450,10 +450,10 @@ describe("models: dataset", () => {
     const generator = saga(creator, { put, call, select })
     generator.next()
     const d = generator.next(versions)
+    generator.next([])
     const end = generator.next()
-    const updated = d.value.payload.action.payload
 
-    expect(updated).toEqual(versions)
+    expect(end.value).toEqual(versions)
     expect(end.done).toBe(true)
   })
   it("effects: updateDatasetState -> normal success", () => {

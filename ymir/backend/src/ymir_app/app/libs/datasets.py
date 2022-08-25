@@ -13,10 +13,11 @@ from app import crud, schemas, models
 from app.api.errors.errors import (
     DatasetNotFound,
     FailedtoCreateDataset,
+    PrematureDatasets,
 )
 from app.config import settings
-from app.constants.state import ResultState
-from app.utils.files import FailedToDownload, verify_import_path, prepare_imported_dataset_dir, InvalidFileStructure
+from app.constants.state import ResultState, TaskState
+from app.utils.files import FailedToDownload, locate_import_paths, prepare_downloaded_paths, InvalidFileStructure
 from app.utils.ymir_viz import VizClient
 from app.utils.ymir_controller import (
     ControllerClient,
@@ -24,6 +25,7 @@ from app.utils.ymir_controller import (
     gen_repo_hash,
 )
 from common_utils.labels import UserLabels
+from id_definition.error_codes import APIErrorCode as error_codes
 
 
 def import_dataset_in_background(
@@ -35,10 +37,30 @@ def import_dataset_in_background(
     dataset_id: int,
 ) -> None:
     try:
-        _import_dataset(db, controller_client, dataset_import, user_id, task_hash)
-    except (OSError, BadZipFile, FailedToDownload, FailedtoCreateDataset, DatasetNotFound, InvalidFileStructure):
+        return _import_dataset(db, controller_client, dataset_import, user_id, task_hash)
+    except FailedToDownload:
+        logger.exception("[import dataset] failed to download dataset file")
+        state_code = error_codes.FAILED_TO_DOWNLOAD
+    except (InvalidFileStructure, FileNotFoundError):
+        logger.exception("[import dataset] invalid dataset file structure")
+        state_code = error_codes.INVALID_DATASET_STRUCTURE
+    except DatasetNotFound:
+        logger.exception("[import dataset] source dataset not found, could not copy")
+        state_code = error_codes.DATASET_NOT_FOUND
+    except FailedtoCreateDataset:
+        logger.exception("[import dataset] controller error")
+        state_code = error_codes.CONTROLLER_ERROR
+    except BadZipFile:
+        logger.exception("[import dataset] invalid zip file")
+        state_code = error_codes.INVALID_DATASET_ZIP_FILE
+    except Exception:
         logger.exception("[import dataset] failed to import dataset")
-        crud.dataset.update_state(db, dataset_id=dataset_id, new_state=ResultState.error)
+        state_code = error_codes.DATASET_FAILED_TO_IMPORT
+
+    task = crud.task.get_by_hash(db, task_hash)
+    if task:
+        crud.task.update_state(db, task=task, new_state=TaskState.error, state_code=str(state_code.value))
+    crud.dataset.update_state(db, dataset_id=dataset_id, new_state=ResultState.error)
 
 
 def _import_dataset(
@@ -58,16 +80,18 @@ def _import_dataset(
             "src_repo_id": gen_repo_hash(dataset.project_id),
             "src_resource_id": dataset.hash,
             "strategy": dataset_import.strategy,
+            "clean_dirs": True,
         }
     else:
         paths = ImportDatasetPaths(
             cache_dir=settings.SHARED_DATA_DIR, input_path=dataset_import.input_path, input_url=dataset_import.input_url
         )
         parameters = {
-            "annotation_dir": paths.annotation_dir,
             "asset_dir": paths.asset_dir,
             "gt_dir": paths.gt_dir,
+            "pred_dir": paths.pred_dir,
             "strategy": dataset_import.strategy,
+            "clean_dirs": dataset_import.input_path is None,  # for path importing, DO NOT clean_dirs
         }
 
     try:
@@ -87,38 +111,29 @@ class ImportDatasetPaths:
     def __init__(
         self, input_path: Optional[str], input_url: Optional[str], cache_dir: str = settings.SHARED_DATA_DIR
     ) -> None:
-        self.cache_dir = cache_dir
-        self.input_url = input_url
-        self.input_path = input_path
-        self._data_dir: Optional[str] = None
+        self._asset_path: Optional[pathlib.Path] = None
+        self._gt_path: Optional[pathlib.Path] = None
+        self._pred_path: Optional[pathlib.Path] = None
 
-    @property
-    def annotation_dir(self) -> str:
-        return str(self.data_dir / "annotations")
+        if input_path:
+            self._asset_path, self._gt_path, self._pred_path = locate_import_paths(input_path)
+        elif input_url:
+            temp_dir = tempfile.mkdtemp(prefix="import_dataset_", dir=cache_dir)
+            self._asset_path, self._gt_path, self._pred_path = prepare_downloaded_paths(input_url, temp_dir)
+        else:
+            raise ValueError("input_path or input_url is required")
 
     @property
     def asset_dir(self) -> str:
-        return str(self.data_dir / "images")
+        return str(self._asset_path)
 
     @property
     def gt_dir(self) -> Optional[str]:
-        gt_dir = self.data_dir / "gt"
-        if not gt_dir.is_dir():
-            return None
-        return str(gt_dir)
+        return str(self._gt_path) if self._gt_path else None
 
     @property
-    def data_dir(self) -> pathlib.Path:
-        if not self._data_dir:
-            if self.input_path:
-                verify_import_path(self.input_path)
-                self._data_dir = self.input_path
-            elif self.input_url:
-                temp_dir = tempfile.mkdtemp(prefix="import_dataset_", dir=self.cache_dir)
-                self._data_dir = prepare_imported_dataset_dir(self.input_url, temp_dir)
-            else:
-                raise ValueError("input_path or input_url is required")
-        return pathlib.Path(self._data_dir)
+    def pred_dir(self) -> Optional[str]:
+        return str(self._pred_path) if self._pred_path else None
 
 
 def evaluate_dataset(
@@ -156,3 +171,13 @@ def evaluate_datasets(
     evaluations = ChainMap(*res)
 
     return {dataset_id_mapping[hash_]: evaluation for hash_, evaluation in evaluations.items()}
+
+
+def ensure_datasets_are_ready(db: Session, dataset_ids: List[int]) -> List[models.Dataset]:
+    datasets = crud.dataset.get_multi_by_ids(db, ids=dataset_ids)
+    if len(dataset_ids) != len(datasets):
+        raise DatasetNotFound()
+
+    if not all(dataset.result_state == ResultState.ready for dataset in datasets):
+        raise PrematureDatasets()
+    return datasets

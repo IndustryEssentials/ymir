@@ -103,9 +103,9 @@ class FailedToEvaluate(ControllerError):
     message = "Failed to RUN EVALUATE CMD via Controller"
 
 
-class PrematureDatasetsEvaluation(APIError):
-    code = error_codes.PREMATURE_DATASETS_EVALUATION
-    message = "Not All The Datasets Are Ready to Evaluate"
+class PrematureDatasets(APIError):
+    code = error_codes.PREMATURE_DATASETS
+    message = "Not All The Datasets Are Ready"
 
 
 class RequiredFieldMissing(APIError):
@@ -398,3 +398,8 @@ class VizError(APIError):
 class FailedToParseVizResponse(VizError):
     code = error_codes.FAILED_TO_PARSE_VIZ_RESP
     message = "Failed to Parse Viz Response"
+
+
+class VizTimeOut(VizError):
+    code = error_codes.VIZ_TIMEOUT
+    message = "Internal Viz Service Timeout"

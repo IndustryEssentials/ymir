@@ -50,57 +50,80 @@ class TestCmdImport(unittest.TestCase):
         args.index_file = self._idx_file
         args.gt_index_file = self._gt_idx_file
         args.ck_file = self._ck_file
-        args.anno = self._data_xml_path
+        args.pred_dir = self._data_xml_path
         args.gt_dir = self._data_xml_path
         args.gen = gen_folder
         args.dataset_name = ''
         args.work_dir = self._work_dir
-        args.ignore_unknown_types = False
+        args.unknown_types_strategy = 'stop'
         importing_instance = CmdImport(args)
         ret = importing_instance.run()
-        assert ret == MirCode.RC_OK
+        self.assertEqual(ret, MirCode.RC_OK)
         self._check_repo(self._mir_repo_root, with_person_ignored=False, with_annotations=True)
 
         # not write person label
         test_utils.prepare_labels(mir_root=self._mir_repo_root, names=['cat', 'airplane,aeroplane'])
 
         # ignore unknown types
-        args.ignore_unknown_types = True
+        args.unknown_types_strategy = 'ignore'
         args.dataset_name = 'import-task-0'
         args.dst_rev = 'a@import-task-1'
         importing_instance = CmdImport(args)
         ret = importing_instance.run()
-        assert ret == MirCode.RC_OK
-        self._check_repo(self._mir_repo_root, with_person_ignored=True, with_annotations=True)
+        self.assertEqual(ret, MirCode.RC_OK)
+        self._check_repo(self._mir_repo_root,
+                         with_person_ignored=True,
+                         with_annotations=True,
+                         task_new_types={'person': 4},
+                         task_new_types_added=False)
 
-        # have no annotations
-        args.anno = None
-        args.gt_dir = None
-        args.ignore_unknown_types = False
+        # add unknown types
+        args.unknown_types_strategy = 'add'
         args.dataset_name = 'import-task-0'
         args.dst_rev = 'a@import-task-2'
         importing_instance = CmdImport(args)
         ret = importing_instance.run()
-        assert ret == MirCode.RC_OK
+        self.assertEqual(ret, MirCode.RC_OK)
+        self._check_repo(self._mir_repo_root,
+                         with_person_ignored=False,
+                         with_annotations=True,
+                         task_new_types={'person': 4},
+                         task_new_types_added=True)
+
+        # have no annotations
+        args.pred_dir = None
+        args.gt_dir = None
+        args.unknown_types_strategy = 'stop'
+        args.dataset_name = 'import-task-0'
+        args.dst_rev = 'a@import-task-3'
+        importing_instance = CmdImport(args)
+        ret = importing_instance.run()
+        self.assertEqual(ret, MirCode.RC_OK)
         self._check_repo(self._mir_repo_root, with_person_ignored=False, with_annotations=False)
 
         # check for relative path, currently should return an error code
         args.mir_root = 'abc'
         importing_instance = CmdImport(args)
         ret = importing_instance.run()
-        assert ret != MirCode.RC_OK
+        self.assertNotEqual(ret, MirCode.RC_OK)
+        args.mir_root = self._mir_repo_root
 
         args.index_file = ''
-        assert CmdImport(args).run() != MirCode.RC_OK
+        self.assertNotEqual(CmdImport(args).run(), MirCode.RC_OK)
         args.index_file = self._idx_file
 
-        args.anno = ''
-        assert CmdImport(args).run() != MirCode.RC_OK
-        args.anno = self._data_xml_path + '/fake-one'
-        assert CmdImport(args).run() != MirCode.RC_OK
-        args.anno = self._data_xml_path
+        args.pred_dir = ''
+        self.assertEqual(CmdImport(args).run(), MirCode.RC_OK)
+        args.pred_dir = self._data_xml_path + '/fake-one'
+        self.assertNotEqual(CmdImport(args).run(), MirCode.RC_OK)
+        args.pred_dir = self._data_xml_path
 
-    def _check_repo(self, repo_root: str, with_person_ignored: bool, with_annotations: bool):
+    def _check_repo(self,
+                    repo_root: str,
+                    with_person_ignored: bool,
+                    with_annotations: bool,
+                    task_new_types: dict = {},
+                    task_new_types_added: bool = False):
         # check annotations.mir
         mir_annotations = mirpb.MirAnnotations()
         with open(os.path.join(repo_root, 'annotations.mir'), 'rb') as f:
@@ -108,8 +131,7 @@ class TestCmdImport(unittest.TestCase):
         dict_annotations = MessageToDict(mir_annotations, preserving_proto_field_name=True)
         dict_asset_cks = dict_annotations.get('image_cks', {})
 
-        task_id = list(dict_annotations['task_annotations'].keys())[0]
-        dict_annotations = dict_annotations['task_annotations'][task_id]
+        dict_image_annotations = dict_annotations.get('prediction', {}).get('image_annotations', {})
 
         dict_asset_cks_expected = {
             'a3008c032eb11c8d9ffcb58208a36682ee40900f': {
@@ -130,159 +152,171 @@ class TestCmdImport(unittest.TestCase):
             }
         } if with_annotations else {}
         if with_person_ignored:
-            dict_annotations_expect = {
-                'image_annotations': {
-                    'a3008c032eb11c8d9ffcb58208a36682ee40900f': {
-                        'annotations': [{
-                            'box': {
-                                'x': 181,
-                                'y': 127,
-                                'w': 94,
-                                'h': 67,
-                                'rotate_angle': -0.02
-                            },
-                            'class_id': 1,
-                            'score': -1.0,
-                            'anno_quality': 0.75,
-                            'tags': {
-                                'difficult': '0',
-                                'color': 'pink',
-                                'pose': 'Unspecified'
-                            }
-                        }]
-                    },
-                    '430df22960b0f369318705800139fcc8ec38a3e4': {
-                        'annotations': [{
-                            'box': {
-                                'x': 104,
-                                'y': 78,
-                                'w': 272,
-                                'h': 106,
-                                'rotate_angle': 0.22
-                            },
-                            'class_id': 1,
-                            'score': 0.5,
-                            'anno_quality': 0.62,
-                            'tags': {
-                                'difficult': '0',
-                                'color': 'white',
-                                'pose': 'Frontal'
-                            }
-                        }, {
-                            'index': 1,
-                            'box': {
-                                'x': 133,
-                                'y': 88,
-                                'w': 65,
-                                'h': 36,
-                                'rotate_angle': 0.02
-                            },
-                            'class_id': 1,
-                            'score': -1.0,
-                            'anno_quality': 0.75,
-                            'tags': {
-                                'difficult': '0',
-                                'color': 'blue',
-                                'pose': 'Left'
-                            }
-                        }]
-                    }
+            dict_image_annotations_expect = {
+                'a3008c032eb11c8d9ffcb58208a36682ee40900f': {
+                    'annotations': [{
+                        'box': {
+                            'x': 181,
+                            'y': 127,
+                            'w': 94,
+                            'h': 67,
+                            'rotate_angle': -0.02
+                        },
+                        'class_id': 1,
+                        'cm': 'FP',
+                        'det_link_id': -1,
+                        'score': -1.0,
+                        'anno_quality': 0.75,
+                        'tags': {
+                            'difficult': '0',
+                            'color': 'pink',
+                            'pose': 'Unspecified'
+                        }
+                    }]
+                },
+                '430df22960b0f369318705800139fcc8ec38a3e4': {
+                    'annotations': [{
+                        'box': {
+                            'x': 104,
+                            'y': 78,
+                            'w': 272,
+                            'h': 106,
+                            'rotate_angle': 0.22
+                        },
+                        'class_id': 1,
+                        'cm': 'TP',
+                        'score': 0.5,
+                        'anno_quality': 0.62,
+                        'tags': {
+                            'difficult': '0',
+                            'color': 'white',
+                            'pose': 'Frontal'
+                        }
+                    }, {
+                        'index': 1,
+                        'box': {
+                            'x': 133,
+                            'y': 88,
+                            'w': 65,
+                            'h': 36,
+                            'rotate_angle': 0.02
+                        },
+                        'class_id': 1,
+                        'cm': 'FP',
+                        'det_link_id': -1,
+                        'score': -1.0,
+                        'anno_quality': 0.75,
+                        'tags': {
+                            'difficult': '0',
+                            'color': 'blue',
+                            'pose': 'Left'
+                        }
+                    }]
                 }
             }
         else:
-            dict_annotations_expect = {
-                'image_annotations': {
-                    'a3008c032eb11c8d9ffcb58208a36682ee40900f': {
-                        'annotations': [{
-                            'box': {
-                                'x': 181,
-                                'y': 127,
-                                'w': 94,
-                                'h': 67,
-                                'rotate_angle': -0.02
-                            },
-                            'class_id': 1,
-                            'score': -1.0,
-                            'anno_quality': 0.75,
-                            'tags': {
-                                'difficult': '0',
-                                'color': 'pink',
-                                'pose': 'Unspecified'
-                            }
-                        }]
-                    },
-                    '430df22960b0f369318705800139fcc8ec38a3e4': {
-                        'annotations': [{
-                            'box': {
-                                'x': 104,
-                                'y': 78,
-                                'w': 272,
-                                'h': 106,
-                                'rotate_angle': 0.22
-                            },
-                            'class_id': 1,
-                            'score': 0.5,
-                            'anno_quality': 0.62,
-                            'tags': {
-                                'difficult': '0',
-                                'color': 'white',
-                                'pose': 'Frontal'
-                            }
-                        }, {
-                            'index': 1,
-                            'box': {
-                                'x': 133,
-                                'y': 88,
-                                'w': 65,
-                                'h': 36,
-                                'rotate_angle': 0.02
-                            },
-                            'class_id': 1,
-                            'score': -1.0,
-                            'anno_quality': 0.75,
-                            'tags': {
-                                'difficult': '0',
-                                'color': 'blue',
-                                'pose': 'Left'
-                            }
-                        }, {
-                            'index': 2,
-                            'box': {
-                                'x': 195,
-                                'y': 180,
-                                'w': 19,
-                                'h': 50
-                            },
-                            'class_id': 2,
-                            'score': -1.0,
-                            'anno_quality': 0.23,
-                            'tags': {
-                                'difficult': '1',
-                                'pose': 'Rear'
-                            }
-                        }, {
-                            'index': 3,
-                            'box': {
-                                'x': 26,
-                                'y': 189,
-                                'w': 19,
-                                'h': 50,
-                                'rotate_angle': 0.12
-                            },
-                            'class_id': 2,
-                            'score': -1.0,
-                            'anno_quality': 0.35,
-                            'tags': {
-                                'difficult': '1',
-                                'pose': 'Rear'
-                            }
-                        }]
-                    }
+            dict_image_annotations_expect = {
+                'a3008c032eb11c8d9ffcb58208a36682ee40900f': {
+                    'annotations': [{
+                        'box': {
+                            'x': 181,
+                            'y': 127,
+                            'w': 94,
+                            'h': 67,
+                            'rotate_angle': -0.02
+                        },
+                        'class_id': 1,
+                        'cm': 'FP',
+                        'det_link_id': -1,
+                        'score': -1.0,
+                        'anno_quality': 0.75,
+                        'tags': {
+                            'difficult': '0',
+                            'color': 'pink',
+                            'pose': 'Unspecified'
+                        }
+                    }]
+                },
+                '430df22960b0f369318705800139fcc8ec38a3e4': {
+                    'annotations': [{
+                        'box': {
+                            'x': 104,
+                            'y': 78,
+                            'w': 272,
+                            'h': 106,
+                            'rotate_angle': 0.22
+                        },
+                        'class_id': 1,
+                        'cm': 'TP',
+                        'score': 0.5,
+                        'anno_quality': 0.62,
+                        'tags': {
+                            'difficult': '0',
+                            'color': 'white',
+                            'pose': 'Frontal'
+                        }
+                    }, {
+                        'index': 1,
+                        'box': {
+                            'x': 133,
+                            'y': 88,
+                            'w': 65,
+                            'h': 36,
+                            'rotate_angle': 0.02
+                        },
+                        'class_id': 1,
+                        'cm': 'FP',
+                        'det_link_id': -1,
+                        'score': -1.0,
+                        'anno_quality': 0.75,
+                        'tags': {
+                            'difficult': '0',
+                            'color': 'blue',
+                            'pose': 'Left'
+                        }
+                    }, {
+                        'index': 2,
+                        'box': {
+                            'x': 195,
+                            'y': 180,
+                            'w': 19,
+                            'h': 50
+                        },
+                        'class_id': 2,
+                        'cm': 'FP',
+                        'det_link_id': -1,
+                        'score': -1.0,
+                        'anno_quality': 0.23,
+                        'tags': {
+                            'difficult': '1',
+                            'pose': 'Rear'
+                        }
+                    }, {
+                        'index': 3,
+                        'box': {
+                            'x': 26,
+                            'y': 189,
+                            'w': 19,
+                            'h': 50,
+                            'rotate_angle': 0.12
+                        },
+                        'class_id': 2,
+                        'cm': 'FP',
+                        'det_link_id': -1,
+                        'score': -1.0,
+                        'anno_quality': 0.35,
+                        'tags': {
+                            'difficult': '1',
+                            'pose': 'Rear'
+                        }
+                    }]
                 }
             }
         if not with_annotations:
-            dict_annotations_expect = {}
-        self.assertDictEqual(dict_annotations_expect, dict_annotations)
+            dict_image_annotations_expect = {}
+        self.assertEqual(mir_annotations.head_task_id, mir_annotations.prediction.task_id)
+        self.assertEqual(mir_annotations.head_task_id, mir_annotations.ground_truth.task_id)
+        self.assertDictEqual(dict_image_annotations_expect, dict_image_annotations)
         self.assertDictEqual(dict_asset_cks_expected, dict_asset_cks)
 
         # check keywords.mir and contexts.mir
@@ -403,10 +437,12 @@ class TestCmdImport(unittest.TestCase):
                 dict_keywords_expect = {
                     'keywords': {
                         'a3008c032eb11c8d9ffcb58208a36682ee40900f': {
-                            'predefined_keyids': [1]
+                            'predefined_keyids': [1],
+                            'gt_predefined_keyids': [1],
                         },
                         '430df22960b0f369318705800139fcc8ec38a3e4': {
-                            'predefined_keyids': [1]
+                            'predefined_keyids': [1],
+                            'gt_predefined_keyids': [1],
                         }
                     },
                     'pred_idx': pred_gt_idx,
@@ -472,6 +508,33 @@ class TestCmdImport(unittest.TestCase):
                     'total_cnt': 3,
                     'positive_asset_cnt': 2,
                     'negative_asset_cnt': 0,
+                    'class_ids_cnt': {
+                        1: 2,
+                    },
+                    'tags_cnt': {
+                        'difficult': {
+                            'cnt': 3,
+                            'sub_cnt': {
+                                '0': 3,
+                            },
+                        },
+                        'color': {
+                            'cnt': 3,
+                            'sub_cnt': {
+                                'white': 1,
+                                'blue': 1,
+                                'pink': 1,
+                            },
+                        },
+                        'pose': {
+                            'cnt': 3,
+                            'sub_cnt': {
+                                'Left': 1,
+                                'Frontal': 1,
+                                'Unspecified': 1,
+                            },
+                        },
+                    },
                     'quality_hist': {
                         '1.00': 0,
                         '0.90': 0,
@@ -541,30 +604,6 @@ class TestCmdImport(unittest.TestCase):
                                 'gray sky': 1,
                             },
                         }
-                    },
-                    'tags_cnt': {
-                        'difficult': {
-                            'cnt': 3,
-                            'sub_cnt': {
-                                '0': 3,
-                            },
-                        },
-                        'color': {
-                            'cnt': 3,
-                            'sub_cnt': {
-                                'white': 1,
-                                'blue': 1,
-                                'pink': 1,
-                            },
-                        },
-                        'pose': {
-                            'cnt': 3,
-                            'sub_cnt': {
-                                'Left': 1,
-                                'Frontal': 1,
-                                'Unspecified': 1,
-                            },
-                        },
                     },
                     'asset_quality_hist': {
                         '1.00': 0,
@@ -752,10 +791,12 @@ class TestCmdImport(unittest.TestCase):
                 dict_keywords_expect = {
                     'keywords': {
                         '430df22960b0f369318705800139fcc8ec38a3e4': {
-                            'predefined_keyids': [1, 2]
+                            'predefined_keyids': [1, 2],
+                            'gt_predefined_keyids': [1, 2]
                         },
                         'a3008c032eb11c8d9ffcb58208a36682ee40900f': {
-                            'predefined_keyids': [1]
+                            'predefined_keyids': [1],
+                            'gt_predefined_keyids': [1]
                         }
                     },
                     'pred_idx': pred_gt_idx,
@@ -821,6 +862,36 @@ class TestCmdImport(unittest.TestCase):
                     'total_cnt': 5,
                     'positive_asset_cnt': 2,
                     'negative_asset_cnt': 0,
+                    'class_ids_cnt': {
+                        1: 2,
+                        2: 1,
+                    },
+                    'tags_cnt': {
+                        'difficult': {
+                            'cnt': 5,
+                            'sub_cnt': {
+                                '0': 3,
+                                '1': 2,
+                            },
+                        },
+                        'color': {
+                            'cnt': 3,
+                            'sub_cnt': {
+                                'white': 1,
+                                'blue': 1,
+                                'pink': 1,
+                            },
+                        },
+                        'pose': {
+                            'cnt': 5,
+                            'sub_cnt': {
+                                'Left': 1,
+                                'Frontal': 1,
+                                'Unspecified': 1,
+                                'Rear': 2,
+                            },
+                        },
+                    },
                     'quality_hist': {
                         '1.00': 0,
                         '0.90': 0,
@@ -892,32 +963,6 @@ class TestCmdImport(unittest.TestCase):
                             },
                         }
                     },
-                    'tags_cnt': {
-                        'difficult': {
-                            'cnt': 5,
-                            'sub_cnt': {
-                                '0': 3,
-                                '1': 2,
-                            },
-                        },
-                        'color': {
-                            'cnt': 3,
-                            'sub_cnt': {
-                                'white': 1,
-                                'blue': 1,
-                                'pink': 1,
-                            },
-                        },
-                        'pose': {
-                            'cnt': 5,
-                            'sub_cnt': {
-                                'Left': 1,
-                                'Frontal': 1,
-                                'Unspecified': 1,
-                                'Rear': 2,
-                            },
-                        },
-                    },
                     'asset_quality_hist': {
                         '1.00': 0,
                         '0.90': 1,
@@ -978,18 +1023,16 @@ class TestCmdImport(unittest.TestCase):
             try:
                 self.assertDictEqual(dict_keywords, dict_keywords_expect)
             except AssertionError as e:
-                logging.info(f"expected: {dict_keywords_expect}")
-                logging.info(f"actual: {dict_keywords}")
+                test_utils.diff_dicts(dict_keywords, dict_keywords_expect, stack=[])
                 raise e
             try:
                 self.assertDictEqual(dict_context, dict_context_expected)
             except AssertionError as e:
-                logging.info(f"expected: {dict_context_expected}")
-                logging.info(f"actual: {dict_context}")
+                test_utils.diff_dicts(dict_context, dict_context_expected, stack=[])
                 raise e
         else:
             self.assertEqual(0, len(dict_keywords))
-            self.assertEqual(0, len(dict_context['predefined_keyids_cnt']))
+            self.assertEqual(0, len(dict_context['pred_stats']['class_ids_cnt']))
 
         # check metadatas.mir
         mir_metadatas = mirpb.MirMetadatas()
@@ -1024,9 +1067,12 @@ class TestCmdImport(unittest.TestCase):
         mir_tasks = mirpb.MirTasks()
         with open(os.path.join(repo_root, 'tasks.mir'), 'rb') as f:
             mir_tasks.ParseFromString(f.read())
-        dict_tasks = MessageToDict(mir_tasks, preserving_proto_field_name=True)
-        assert ('import-task-0' in dict_tasks['tasks'] or 'import-task-1' in dict_tasks['tasks']
-                or 'import-task-2' in dict_tasks['tasks'])
+        self.assertTrue({'import-task-0', 'import-task-1', 'import-task-2', 'import-task-3'} & mir_tasks.tasks.keys())
+
+        task = mir_tasks.tasks[mir_tasks.head_task_id]
+        task_dict = MessageToDict(task, preserving_proto_field_name=True)
+        self.assertEqual(task_dict.get('new_types', {}), task_new_types)
+        self.assertEqual(task_dict.get('new_types_added', False), task_new_types_added)
 
     # custom: env prepare
     def _prepare_dirs(self):

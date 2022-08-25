@@ -108,5 +108,8 @@ class Settings(BaseSettings):
         )
         return values
 
+    # ymir_viewer
+    VIEWER_HOST_PORT: Optional[int] = None
+
 
 settings = Settings(_env_file=".env")  # type: ignore

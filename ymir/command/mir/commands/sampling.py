@@ -66,10 +66,6 @@ class CmdSampling(base.BaseCommand):
             sampled_mir_annotations = mirpb.MirAnnotations()
             for asset_id in sampled_asset_ids:
                 sampled_mir_metadatas.attributes[asset_id].CopyFrom(mir_metadatas.attributes[asset_id])
-                CmdSampling._gen_task_annotations(
-                    src_task_annotations=mir_annotations.task_annotations[mir_annotations.head_task_id],
-                    dst_task_annotations=sampled_mir_annotations.task_annotations[dst_typ_rev_tid.tid],
-                    asset_id=asset_id)
                 CmdSampling._gen_task_annotations(src_task_annotations=mir_annotations.prediction,
                                                   dst_task_annotations=sampled_mir_annotations.prediction,
                                                   asset_id=asset_id)
@@ -81,8 +77,6 @@ class CmdSampling(base.BaseCommand):
             sampled_mir_metadatas = mir_metadatas
             sampled_mir_annotations = mirpb.MirAnnotations()
             sampled_mir_annotations.head_task_id = dst_typ_rev_tid.tid
-            sampled_mir_annotations.task_annotations[dst_typ_rev_tid.tid].CopyFrom(
-                mir_annotations.task_annotations[mir_annotations.head_task_id])
             sampled_mir_annotations.prediction.CopyFrom(mir_annotations.prediction)
             sampled_mir_annotations.ground_truth.CopyFrom(mir_annotations.ground_truth)
             for asset_id in mir_annotations.image_cks.keys():

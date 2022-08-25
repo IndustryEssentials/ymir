@@ -3,6 +3,7 @@ import logging
 import os
 from typing import Any, Dict, Iterator, List, Set, Union
 
+import fasteners  # type: ignore
 from google.protobuf import json_format
 from pydantic import BaseModel, root_validator, validator
 import yaml
@@ -93,6 +94,9 @@ class UserLabels(LabelStorage):
         else:
             raise ValueError(f"unsupported type: {type(class_ids)}")
 
+    def get_main_name(self, class_id: int) -> str:
+        return self.id_to_name[class_id]
+
     # keyword: {"name": "dog", "aliases": ["puppy", "pup", "canine"]}
     def filter_labels(
         self,
@@ -126,42 +130,43 @@ class UserLabels(LabelStorage):
 def merge_labels(label_storage_file: str,
                  new_labels: UserLabels,
                  check_only: bool = False) -> UserLabels:
-    current_labels = get_user_labels_from_storage(label_storage_file)
-    current_time = datetime.now()
+    with fasteners.InterProcessLock(path=parse_label_lock_path_or_link(label_storage_file)):
+        current_labels = get_user_labels_from_storage(label_storage_file)
+        current_time = datetime.now()
 
-    conflict_labels = []
-    for label in new_labels.labels:
-        new_label = SingleLabel.parse_obj(label.dict())
-        idx = current_labels.name_to_id.get(label.name, None)
+        conflict_labels = []
+        for label in new_labels.labels:
+            new_label = SingleLabel.parse_obj(label.dict())
+            idx = current_labels.name_to_id.get(label.name, None)
 
-        # in case any alias is in other labels.
-        conflict_alias = []
-        for alias in label.aliases:
-            alias_idx = current_labels.name_aliases_to_id.get(alias, idx)
-            if alias_idx != idx:
-                conflict_alias.append(alias)
-        if conflict_alias:
-            new_label.id = -1
-            conflict_labels.append(new_label)
-            continue
+            # in case any alias is in other labels.
+            conflict_alias = []
+            for alias in label.aliases:
+                alias_idx = current_labels.name_aliases_to_id.get(alias, idx)
+                if alias_idx != idx:
+                    conflict_alias.append(alias)
+            if conflict_alias:
+                new_label.id = -1
+                conflict_labels.append(new_label)
+                continue
 
-        new_label.update_time = current_time
-        if idx is not None:  # update alias.
-            new_label.id = idx
-            new_label.create_time = current_labels.labels[idx].create_time
-            current_labels.labels[idx] = new_label
-        else:  # insert new record.
-            new_label.id = len(current_labels.labels)
-            new_label.create_time = current_time
-            current_labels.labels.append(new_label)
+            new_label.update_time = current_time
+            if idx is not None:  # update alias.
+                new_label.id = idx
+                new_label.create_time = current_labels.labels[idx].create_time
+                current_labels.labels[idx] = new_label
+            else:  # insert new record.
+                new_label.id = len(current_labels.labels)
+                new_label.create_time = current_time
+                current_labels.labels.append(new_label)
 
-    if not (check_only or conflict_labels):
-        label_storage = LabelStorage(labels=current_labels.labels)
-        with open(label_storage_file, 'w') as f:
-            yaml.safe_dump(label_storage.dict(), f)
+        if not (check_only or conflict_labels):
+            label_storage = LabelStorage(labels=current_labels.labels)
+            with open(label_storage_file, 'w') as f:
+                yaml.safe_dump(label_storage.dict(), f)
 
-    logging.info(f"conflict labels: {conflict_labels}")
-    return UserLabels(labels=conflict_labels)
+        logging.info(f"conflict labels: {conflict_labels}")
+        return UserLabels(labels=conflict_labels)
 
 
 def parse_labels_from_proto(label_collection: backend_pb2.LabelCollection) -> UserLabels:
@@ -174,6 +179,15 @@ def parse_labels_from_proto(label_collection: backend_pb2.LabelCollection) -> Us
 
 def default_labels_file_name() -> str:
     return 'labels.yaml'
+
+
+def parse_label_lock_path_or_link(ids_storage_file_path: str) -> str:
+    # for ymir-command users, file_path points to a real file
+    # for ymir-controller users, file_path points to a link, need to lock all write request for user
+    file_path = ids_storage_file_path
+    if os.path.islink(file_path):
+        file_path = os.path.realpath(file_path)
+    return os.path.join(os.path.dirname(file_path), 'labels.lock')
 
 
 def get_user_labels_from_storage(label_storage_file: str) -> UserLabels:

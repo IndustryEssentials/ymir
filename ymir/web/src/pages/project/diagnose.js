@@ -3,10 +3,10 @@ import { Card } from "antd"
 import { useLocation, useParams, useHistory } from "umi"
 
 import t from "@/utils/t"
+import { HIDDENMODULES } from '@/constants/common'
 import useFetch from "@/hooks/useFetch"
 import Breadcrumbs from "@/components/common/breadcrumb"
 
-import Analysis from "./diagnose/analysis"
 import Metrics from "./diagnose/metrics"
 import Training from "./diagnose/training"
 import Visualization from "./diagnose/visualization"
@@ -14,10 +14,9 @@ import Visualization from "./diagnose/visualization"
 import s from "./detail.less"
 
 const tabs = [
-  { tab: 'model.diagnose.tab.analysis', key: 'analysis', },
   { tab: 'model.diagnose.tab.metrics', key: 'metrics', },
   { tab: 'model.diagnose.tab.training', key: 'training', },
-  { tab: 'model.diagnose.tab.visualization', key: 'visualization', },
+  { tab: 'model.diagnose.tab.visualization', key: 'visualization', hidden: HIDDENMODULES.VISUALIZATION },
 
 ]
 
@@ -28,10 +27,9 @@ function ProjectDetail() {
   const [active, setActive] = useState(tabs[0].key)
   const [project, fetchProject] = useFetch('project/getProject')
   const content = {
-    [tabs[0].key]: <Analysis pid={id} project={project} />,
-    [tabs[1].key]: <Metrics pid={id} project={project} />,
-    [tabs[2].key]: <Training pid={id} project={project} />,
-    [tabs[3].key]: <Visualization pid={id} project={project} />,
+    [tabs[0].key]: <Metrics pid={id} project={project} />,
+    [tabs[1].key]: <Training pid={id} project={project} />,
+    [tabs[2].key]: <Visualization pid={id} project={project} />,
   }
 
   useEffect(() => {
@@ -50,7 +48,7 @@ function ProjectDetail() {
   return (
     <div className={s.projectDetail}>
       <Breadcrumbs />
-      <Card tabList={tabs.map(tab => ({ ...tab, tab: t(tab.tab) }))}
+      <Card tabList={tabs.filter(tab => !tab.hidden).map(tab => ({ ...tab, tab: t(tab.tab) }))}
         activeTabKey={active} onTabChange={tabChange} className='noShadow'
         headStyle={{ background: '#fff', marginBottom: '10px' }}
         bodyStyle={{ padding: '0 20px' }}>

@@ -1,12 +1,15 @@
-import styles from "./common.less"
 import { useEffect, useState, useRef } from "react"
-import { percent } from "../../utils/number"
+import { Col, Popover, Row, Space } from "antd"
+
+import { percent } from "@/utils/number"
+import t from '@/utils/t'
+import { evaluationLabel } from '@/constants/dataset'
+
+import styles from "./common.less"
 
 function AssetAnnotation({
   url,
   data = [],
-  colors = ["green", "red", "cyan", "blue", "yellow", "purple", "magenta", "orange", "gold"],
-  keywords = [],
 }) {
   const [annotations, setAnnotations] = useState([])
   const imgContainer = useRef()
@@ -21,12 +24,10 @@ function AssetAnnotation({
 
   const transAnnotations = (items) => {
     setAnnotations(() => {
-      let index = 0
-      return items.map(({ keyword, box, score, color = '#000' }) => {
+      return items.map(({ box, score, ...item }) => {
         return {
-          keyword,
+          ...item,
           score: score ? percent(score) : null,
-          color,
           ...box,
         }
       })
@@ -34,12 +35,24 @@ function AssetAnnotation({
   }
 
   const renderAnnotations = () => {
-    // console.log('annotations: ', annotations)
     return annotations.map((annotation, index) => {
-      return (
+      const evaluatedLabel = evaluationLabel(annotation.cm)
+      const emptyTags = Object.keys(annotation.tags).length === 0
+      const popContent = <>
+        <Row><Col flex={'100px'}>{t('keyword.column.name')}</Col><Col flex={1}>{annotation.keyword}</Col></Row>
+        {evaluatedLabel ? <Row><Col flex={'100px'}>Evaluation</Col><Col flex={1}>{evaluationLabel(annotation.cm)}</Col></Row> : null}
+        {annotation.confidence ? <Row><Col flex={'100px'}>{t('model.verify.confidence')}</Col><Col flex={1}>{annotation.confidence}</Col></Row> : null}
+        {!emptyTags ? <Row><Col flex={'100px'}>{t('dataset.assets.keyword.selector.types.tags')}</Col><Col flex={1}>
+          {Object.keys(annotation.tags).map(tag => <Space key={tag} style={{ width: '100%' }}>
+            <span style={{ fontWeight: 'bold' }}>{tag}: </span> <span>{annotation.tags[tag]}</span>
+          </Space>)}
+        </Col>
+        </Row> : null}
+      </>
+      return <Popover content={popContent} placement='right'>
         <div
           title={`${annotation.keyword}` + (annotation.score ? `\nConference:${annotation.score}` : '')}
-          className={`${styles.annotation}`}
+          className={`${styles.annotation} ${annotation.gt ? styles.gt : ''}`}
           key={index}
           style={{
             color: annotation.color,
@@ -51,10 +64,10 @@ function AssetAnnotation({
             height: annotation.h * ratio - 2,
           }}
         >
-          <span className={styles.annotationTitle} style={{ backgroundColor: annotation.color}}>{annotation.keyword}
-          {annotation.score ? <> {annotation.score}</> : null}</span>
+          <span className={styles.annotationTitle} style={{ backgroundColor: annotation.color }}>{annotation.keyword}
+            {annotation.score ? <> {annotation.score}</> : null}</span>
         </div>
-      )
+      </Popover>
     })
   }
 

@@ -62,7 +62,8 @@ class TestMiningCmd(unittest.TestCase):
                             },
                             'score': 0.5,
                             'class_name': 'cat',
-                        }, {
+                        },
+                        {
                             'box': {
                                 'x': 50,
                                 'y': 0,
@@ -82,10 +83,7 @@ class TestMiningCmd(unittest.TestCase):
         return 0
 
     def _mock_prepare_model(*args, **kwargs):
-        mss = mir_utils.ModelStageStorage(stage_name='default',
-                                          files=['0.params'],
-                                          mAP=0.5,
-                                          timestamp=int(time.time()))
+        mss = mir_utils.ModelStageStorage(stage_name='default', files=['0.params'], mAP=0.5, timestamp=int(time.time()))
         ms = mir_utils.ModelStorage(executor_config={'class_names': ['person', 'cat', 'unknown-car']},
                                     task_context={'task_id': '0'},
                                     stages={mss.stage_name: mss},
@@ -120,9 +118,13 @@ class TestMiningCmd(unittest.TestCase):
         mir_annotations = mirpb.MirAnnotations()
         mir_metadatas = mirpb.MirMetadatas()
 
-        mock_image_file = os.path.join(self._storage_root, 'd4e4a60147f1e35bc7f5bc89284aa16073b043c9')
+        mock_image_file = mir_utils.get_asset_storage_path(self._storage_root,
+                                                           'd4e4a60147f1e35bc7f5bc89284aa16073b043c9',
+                                                           make_dirs=True)
         shutil.copyfile("tests/assets/2007_000032.jpg", mock_image_file)
-        mock_image_file = os.path.join(self._storage_root, 'a3008c032eb11c8d9ffcb58208a36682ee40900f')
+        mock_image_file = mir_utils.get_asset_storage_path(self._storage_root,
+                                                           'a3008c032eb11c8d9ffcb58208a36682ee40900f',
+                                                           make_dirs=True)
         shutil.copyfile("tests/assets/2007_000243.jpg", mock_image_file)
 
         mock_training_config_file = os.path.join(self._storage_root, 'config.yaml')
@@ -192,7 +194,7 @@ class TestMiningCmd(unittest.TestCase):
         args.model_location = self._storage_root
         args.media_location = self._storage_root
         args.topk = 1
-        args.add_annotations = True
+        args.add_prediction = True
         args.mir_root = self._mir_repo_root
         args.config_file = self._config_file
         args.executor = 'al:0.0.1'
@@ -212,7 +214,7 @@ class TestMiningCmd(unittest.TestCase):
                                          executor=args.executor,
                                          executant_name=args.executant_name,
                                          run_as_root=args.run_as_root,
-                                         run_infer=args.add_annotations,
+                                         run_infer=args.add_prediction,
                                          run_mining=True)
 
         if os.path.isdir(self._sandbox_root):

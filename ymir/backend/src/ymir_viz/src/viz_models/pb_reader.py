@@ -34,11 +34,9 @@ class MirStorageLoader:
         {
             "class_ids_count": {3: 34},
             "class_names_count": {'cat': 34},
-            "ignored_labels": {'cat':5, },
-            "negative_info": {
-                "negative_images_cnt": 0,
-                "project_negative_images_cnt": 0,
-            },
+            "new_types": {'cat':5, },
+            "new_types_added": False,
+            "negative_images_cnt": 0,
             "total_images_cnt": 1,
         }
         """
@@ -62,7 +60,8 @@ class MirStorageLoader:
             "asset_ids_detail": {
                 "asset_id": {
                     "metadata": {"asset_type": 2, "width": 1080, "height": 1620,},
-                    "annotations": [{"box": {"x": 26, "y": 189, "w": 19, "h": 50}, "class_id": 2}],
+                    "gt": [{"box": {"x": 26, "y": 189, "w": 19, "h": 50}, "class_id": 2, "cm": 1}],
+                    "pred": [{"box": {"x": 26, "y": 189, "w": 19, "h": 50}, "class_id": 2, "cm": 1}],
                     "class_ids": [2, 3],
                 }
             },

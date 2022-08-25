@@ -27,4 +27,5 @@ export interface Result {
   project?: Project,
   task?: Task,
   hidden: boolean,
+  description: string,
 }

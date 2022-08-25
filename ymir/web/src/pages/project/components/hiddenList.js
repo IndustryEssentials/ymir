@@ -1,15 +1,18 @@
 import React, { useEffect, useState } from "react"
 import { connect } from 'dva'
-import s from "../index.less"
-import { Table, Space, Button, message, } from "antd"
+import { Table, Space, Button, message, Card, } from "antd"
+import { useHistory } from "umi"
 
 import t from "@/utils/t"
 import { humanize } from "@/utils/number"
+import { tabs } from '@/constants/project'
 import Actions from "@/components/table/actions"
+import s from "../index.less"
 import { EyeOnIcon } from "@/components/common/icons"
 import useRestore from "@/hooks/useRestore"
 
 const HiddenList = ({ module, pid, ...func }) => {
+  const history = useHistory()
   const [list, setHiddenList] = useState([])
   const [total, setTotal] = useState(0)
   const [query, setQuery] = useState(null)
@@ -25,6 +28,10 @@ const HiddenList = ({ module, pid, ...func }) => {
   useEffect(() => {
     query && fetch()
   }, [query])
+
+  function tabChange(key) {
+    history.push(`#${key}`)
+  }
 
   const columns = [
     {
@@ -117,26 +124,33 @@ const HiddenList = ({ module, pid, ...func }) => {
         <EyeOnIcon /> {t("common.action.multiple.restore")}
       </Button>
     </Space>
-    <div className={`list ${s.table}`}>
-      <Table
-        dataSource={list}
-        pagination={{
-          total,
-          showQuickJumper: true,
-          showSizeChanger: true,
-          defaultCurrent: 1,
-          defaultPageSize: query?.offset || 10,
-        }}
-        onChange={pageChange}
-        rowKey={(record) => record.id}
-        rowSelection={{
-          selectedRowKeys: selected,
-          onChange: (keys) => rowSelectChange(keys),
-        }}
-        rowClassName={(record, index) => index % 2 === 0 ? '' : 'oddRow'}
-        columns={columns}
-      ></Table>
-    </div>
+      <div className={`list ${s.table}`}>
+    <Card tabList={tabs.map(tab => ({ ...tab, tab: t(tab.tab) }))} activeTabKey={module} onTabChange={tabChange}
+      className='noShadow'
+      bordered={false}
+      style={{ margin: '-20px -20px 0', background: 'transparent' }}
+      headStyle={{ padding: '0 20px', background: '#fff', marginBottom: '20px' }}
+      bodyStyle={{ padding: '0 20px' }}>
+        <Table
+          dataSource={list}
+          pagination={{
+            total,
+            showQuickJumper: true,
+            showSizeChanger: true,
+            defaultCurrent: 1,
+            defaultPageSize: query?.offset || 10,
+          }}
+          onChange={pageChange}
+          rowKey={(record) => record.id}
+          rowSelection={{
+            selectedRowKeys: selected,
+            onChange: (keys) => rowSelectChange(keys),
+          }}
+          rowClassName={(record, index) => index % 2 === 0 ? '' : 'oddRow'}
+          columns={columns}
+        ></Table>
+    </Card>
+      </div>
   </div>
 }
 

@@ -51,6 +51,48 @@ paths:
                 $ref: "#/components/schemas/DatasetResult"
         "400":
           description: Dataset not exists
+  "/users/{user_id}/repositories/{repo_id}/branches/{branch_id}/dataset_stats":
+    get:
+      tags:
+        - dataset
+      summary: "get dataset class stats"
+      description: "get dataset class stats"
+      operationId: get_dataset_stats
+      parameters:
+        - name: user_id
+          in: path
+          description: user_id
+          required: true
+          schema:
+            type: string
+        - name: repo_id
+          in: path
+          description: repo_id
+          required: true
+          schema:
+            type: string
+        - name: branch_id
+          in: path
+          description: branch_id
+          required: true
+          schema:
+            type: string
+        - name: class_ids
+          in: query
+          description: class_ids
+          required: true
+          schema:
+            type: string
+            example: '1,2,3,4'
+      responses:
+        "200":
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DatasetStatsResult"
+        "400":
+          description: Dataset not exists
   "/users/{user_id}/repositories/{repo_id}/branches/{branch_id}/assets":
     get:
       tags:
@@ -342,7 +384,7 @@ components:
                 elements:
                   type: array
                   items:
-                    $ref: "#/components/schemas/AssetInfo"
+                    $ref: "#/components/schemas/AssetsMetaInfo"
                 offset:
                   type: integer
                 limit:
@@ -359,7 +401,11 @@ components:
     AssetsMetaInfo:
       type: object
       properties:
-        annotations:
+        asset_id:
+          type: string
+        gt:
+          $ref: "#/components/schemas/Annotations"
+        pred:
           $ref: "#/components/schemas/Annotations"
         class_ids:
           type: array
@@ -382,7 +428,8 @@ components:
                 start:
                   type: integer
       example:
-        annotations:
+        asset_id: abc
+        gt:
           - box:
               x: 121
               y: 1
@@ -390,6 +437,16 @@ components:
               h: 44
             class_id: 4
             score: 0.33
+            cm: 1
+        pred:
+          - box:
+              x: 121
+              y: 1
+              w: 33
+              h: 44
+            class_id: 4
+            score: 0.33
+            cm: 2
         class_ids:
           - 4
           - 6
@@ -438,13 +495,36 @@ components:
                 ignored_labels:
                   type: object
                   example: "{'cat':8}"
-                negative_info:
-                  type: object
-                  properties:
-                    negative_images_cnt:
-                      type: integer
-                    project_negative_images_cnt:
-                      type: integer
+                negative_images_cnt:
+                  type: integer
+                  example: 3
+    DatasetStatsResult:
+      allOf:
+        - $ref: "#/components/schemas/ApiResponse"
+        - type: object
+          properties:
+            result:
+              type: object
+              properties:
+                total_images_count:
+                  type: integer
+                  example: 40
+                pred:
+                  $ref: "#/components/schemas/DataStatsPredGtResult"
+                gt:
+                  $ref: "#/components/schemas/DataStatsPredGtResult"
+    DataStatsPredGtResult:
+      type: object
+      properties:
+        class_ids_count:
+          type: object
+          example: "{3:8, 4:2}"
+        negative_images_count:
+          type: integer
+          example: 8
+        positive_images_count:
+          type: integer
+          example: 12
     DatasetEvaluationResult:
       allOf:
         - $ref: '#/components/schemas/ApiResponse'
@@ -490,6 +570,8 @@ components:
                 type: integer
               h:
                 type: integer
+          cm:
+            type: integer
           class_id:
             type: integer
           score:

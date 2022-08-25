@@ -7,7 +7,10 @@ from concurrent import futures
 from distutils.util import strtobool
 from typing import Any, Dict
 
+from google.protobuf.text_format import MessageToString
 import grpc
+from grpc_health.v1 import health
+from grpc_health.v1 import health_pb2_grpc
 from requests.exceptions import ConnectionError, HTTPError, Timeout
 import sentry_sdk
 import yaml
@@ -58,9 +61,10 @@ class MirControllerService(backend_pb2_grpc.mir_controller_serviceServicer):
             logging.exception(f"task {task_id} general error: {e}")
             return utils.make_general_response(CTLResponseCode.INVOKER_UNKNOWN_ERROR, str(e))
 
-        logging.info(f"task {task_id} result: {invoker_result}")
         if isinstance(invoker_result, backend_pb2.GeneralResp):
+            logging.info(f"task {task_id} result: {MessageToString(invoker_result, as_one_line=True)}")
             return invoker_result
+
         return utils.make_general_response(CTLResponseCode.UNKOWN_RESPONSE_FORMAT,
                                            "unknown result type: {}".format(type(invoker_result)))
 
@@ -135,6 +139,9 @@ def main(main_args: Any) -> int:
     mc_service_impl = MirControllerService(sandbox_root=sandbox_root, assets_config=server_config['ASSETS'])
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
     backend_pb2_grpc.add_mir_controller_serviceServicer_to_server(mc_service_impl, server)
+
+    health_pb2_grpc.add_HealthServicer_to_server(health.HealthServicer(), server)
+
     server.add_insecure_port("[::]:{}".format(port))
     server.start()
 

@@ -1,9 +1,10 @@
 import {
   getDatasetGroups, getDatasetByGroup, queryDatasets, getDataset, batchDatasets, evaluate, analysis,
   getAssetsOfDataset, getAsset, batchAct, delDataset, delDatasetGroup, createDataset, updateDataset, getInternalDataset,
+  getNegativeKeywords,
 } from "@/services/dataset"
 import { getStats } from "../services/common"
-import { transferDatasetGroup, transferDataset, transferDatasetAnalysis, states } from '@/constants/dataset'
+import { transferDatasetGroup, transferDataset, transferDatasetAnalysis, states, transferAsset, transferAnnotationsCount } from '@/constants/dataset'
 import { actions, updateResultState } from '@/constants/common'
 import { deepClone } from '@/utils/object'
 import { checkDuplication } from "../services/dataset"
@@ -132,23 +133,29 @@ export default {
       loading = false
     },
     *getAssetsOfDataset({ payload }, { call, put }) {
+      const { datasetKeywords } = payload
       const { code, result } = yield call(getAssetsOfDataset, payload)
       if (code === 0) {
+        const { items, total } = result
+        const keywords = [...new Set(items.map(item => item.keywords).flat())]
+        const assets = { items: items.map(asset => transferAsset(asset, datasetKeywords || keywords)), total }
+
         yield put({
           type: "UPDATE_ASSETS",
-          payload: result,
+          payload: assets,
         })
-        return result
+        return assets
       }
     },
     *getAsset({ payload }, { call, put }) {
       const { code, result } = yield call(getAsset, payload.id, payload.hash)
       if (code === 0) {
+        const asset = transferAsset(result)
         yield put({
           type: "UPDATE_ASSET",
-          payload: result,
+          payload: asset,
         })
-        return result
+        return asset
       }
     },
     *delDataset({ payload }, { call, put }) {
@@ -183,6 +190,7 @@ export default {
     *createDataset({ payload }, { call, put }) {
       const { code, result } = yield call(createDataset, payload)
       if (code === 0) {
+        yield put.resolve({ type: 'clearCache' })
         return result
       }
     },
@@ -208,14 +216,24 @@ export default {
     *updateDatasets({ payload }, { put, select }) {
       const versions = yield select(state => state.dataset.versions)
       const tasks = payload || {}
+      const all = yield select(state => state.dataset.allDatasets)
+      const newDatasets = []
       Object.keys(versions).forEach(gid => {
         const datasets = versions[gid]
         let updatedDatasets = datasets.map(dataset => {
           const updatedDataset = updateResultState(dataset, tasks)
+          newDatasets.push(updatedDataset)
           return updatedDataset ? { ...updatedDataset } : dataset
         })
         versions[gid] = updatedDatasets
       })
+      const validDatasets = newDatasets.filter(d => d?.needReload)
+      if (validDatasets.length) {
+        yield put({
+          type: 'UPDATE_ALL_DATASETS',
+          payload: [...validDatasets, ...all],
+        })
+      }
       yield put({
         type: 'UPDATE_ALL_VERSIONS',
         payload: { ...versions },
@@ -287,14 +305,60 @@ export default {
       const { pid, datasets } = payload
       const { code, result } = yield call(analysis, pid, datasets)
       if (code === 0) {
-        return result.datasets.map(item => transferDatasetAnalysis(item))
+        return result.map(item => transferDatasetAnalysis(item))
       }
     },
-    *checkDuplication({ payload }, { call, put }) {
-      const { pid, trainSet, validationSet } = payload
+    *checkDuplication({ payload }, { call, put, select }) {
+      const { trainSet, validationSet } = payload
+      const pid = yield select(({ project }) => project.current?.id)
       const { code, result } = yield call(checkDuplication, pid, trainSet, validationSet)
       if (code === 0) {
         return result
+      }
+    },
+    *update({ payload }, { put, select }) {
+      const ds = payload
+      if (!ds) {
+        return
+      }
+      const { versions } = yield select(({ dataset }) => dataset)
+      // update versions
+      const target = versions[ds.groupId] || []
+      yield put({
+        type: 'UPDATE_VERSIONS', payload: {
+          id: ds.groupId,
+          versions: [ds, ...target],
+        }
+      })
+      // update dataset
+      yield put({
+        type: 'UPDATE_DATASET', payload: {
+          id: ds.id,
+          dataset: ds,
+        }
+      })
+    },
+    *getNegativeKeywords({ payload }, { put, call, select }) {
+      const pid = yield select(({ project: { current } }) => current?.id)
+      const { code, result } = yield call(getNegativeKeywords, { projectId: pid, ...payload })
+      if (code === 0) {
+        const { gt, pred, total_assets_count } = result
+        const getStats = (o = {}) => transferAnnotationsCount(o.keywords, o.negative_assets_count, total_assets_count)
+        return {
+          pred: getStats(pred),
+          gt: getStats(gt),
+        }
+      }
+    },
+    *getCK({ payload }, { select, put }) {
+      const { id } = payload
+      const { id: pid } = yield select(({ project }) => project.current)
+      const datasets = yield put.resolve({ type: 'analysis', payload: { pid, datasets: [id] } })
+      if (datasets?.length) {
+        const { cks, tags } = datasets[0]
+        return {
+          cks, tags,
+        }
       }
     },
   },

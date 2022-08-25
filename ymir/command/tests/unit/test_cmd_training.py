@@ -83,72 +83,72 @@ class TestCmdTraining(unittest.TestCase):
 
         # annotations
         annotations_dict = {
-            "task_annotations": {
-                "a": {
-                    "image_annotations": {
-                        "430df22960b0f369318705800139fcc8ec38a3e4": {
-                            "annotations": [{
-                                "index": 0,
-                                "box": {
-                                    "x": 104,
-                                    "y": 78,
-                                    "w": 272,
-                                    "h": 105
-                                },
-                                "class_id": 3,
-                                "score": 1,
-                            }, {
-                                "index": 1,
-                                "box": {
-                                    "x": 133,
-                                    "y": 88,
-                                    "w": 65,
-                                    "h": 36
-                                },
-                                "class_id": 3,
-                                "score": 1,
-                            }, {
-                                "index": 2,
-                                "box": {
-                                    "x": 195,
-                                    "y": 180,
-                                    "w": 19,
-                                    "h": 50
-                                },
-                                "class_id": 2,
-                                "score": 1,
-                            }, {
-                                "index": 3,
-                                "box": {
-                                    "x": 26,
-                                    "y": 189,
-                                    "w": 19,
-                                    "h": 95
-                                },
-                                "class_id": 2,
-                                "score": 1,
-                            }]
-                        },
-                        "a3008c032eb11c8d9ffcb58208a36682ee40900f": {
-                            "annotations": [{
-                                "index": 0,
-                                "box": {
-                                    "x": 181,
-                                    "y": 127,
-                                    "w": 94,
-                                    "h": 67
-                                },
-                                "class_id": 3,
-                                "score": 1,
-                            }]
-                        },
-                    }
+            "prediction": {
+                'task_id': 'a',
+                "image_annotations": {
+                    "430df22960b0f369318705800139fcc8ec38a3e4": {
+                        "annotations": [{
+                            "index": 0,
+                            "box": {
+                                "x": 104,
+                                "y": 78,
+                                "w": 272,
+                                "h": 105
+                            },
+                            "class_id": 3,
+                            "score": 1,
+                        }, {
+                            "index": 1,
+                            "box": {
+                                "x": 133,
+                                "y": 88,
+                                "w": 65,
+                                "h": 36
+                            },
+                            "class_id": 3,
+                            "score": 1,
+                        }, {
+                            "index": 2,
+                            "box": {
+                                "x": 195,
+                                "y": 180,
+                                "w": 19,
+                                "h": 50
+                            },
+                            "class_id": 2,
+                            "score": 1,
+                        }, {
+                            "index": 3,
+                            "box": {
+                                "x": 26,
+                                "y": 189,
+                                "w": 19,
+                                "h": 95
+                            },
+                            "class_id": 2,
+                            "score": 1,
+                        }]
+                    },
+                    "a3008c032eb11c8d9ffcb58208a36682ee40900f": {
+                        "annotations": [{
+                            "index": 0,
+                            "box": {
+                                "x": 181,
+                                "y": 127,
+                                "w": 94,
+                                "h": 67
+                            },
+                            "class_id": 3,
+                            "score": 1,
+                        }]
+                    },
                 }
             },
             'head_task_id': 'a'
         }
         mir_annotations = mirpb.MirAnnotations()
         json_format.ParseDict(annotations_dict, mir_annotations)
+        mir_annotations.ground_truth.CopyFrom(mir_annotations.prediction)
 
         # save and commit
         task = mir_storage_ops.create_task(task_type=mirpb.TaskType.TaskTypeImportData, task_id='a', message='import')
@@ -204,7 +204,8 @@ class TestCmdTraining(unittest.TestCase):
         sha1sum_path_pairs = [(hash_utils.sha1sum_for_file(image_path), image_path)
                               for image_path in image_paths]  # type: List[Tuple[str, str]]
         for sha1sum, image_path in sha1sum_path_pairs:
-            shutil.copyfile(image_path, os.path.join(self._assets_location, sha1sum))
+            shutil.copyfile(image_path, mir_utils.get_asset_storage_path(self._assets_location, sha1sum,
+                                                                         make_dirs=True))
 
         shutil.copyfile('tests/assets/training-template.yaml', self._config_file)
         with open(self._config_file, 'r') as f:
@@ -233,7 +234,10 @@ class TestCmdTraining(unittest.TestCase):
                                           mAP=0.9,
                                           timestamp=int(time.time()))
         ms = mir_utils.ModelStorage(executor_config={'class_names': ['cat']},
-                                    task_context={'src_revs': 'a@a', 'dst_rev': 'a@test_training_cmd'},
+                                    task_context={
+                                        'src_revs': 'a@a',
+                                        'dst_rev': 'a@test_training_cmd'
+                                    },
                                     stages={mss.stage_name: mss},
                                     best_stage_name=mss.stage_name)
         return ("xyz", 0.9, ms)
