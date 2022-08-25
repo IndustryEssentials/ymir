@@ -10,4 +10,6 @@ from .model_stage import ModelStage
 from .project import Project
 from .role import Role
 from .task import Task
+from .task_visual_relationship import TaskVisualRelationship
 from .user import User
+from .visualization import Visualization
