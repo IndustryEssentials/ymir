@@ -163,18 +163,14 @@ def _voc_eval(class_recs: Dict[str, Dict[str, Any]], BB: np.ndarray, confidence:
 
 
 def _get_single_evaluate_element(prediction: mirpb.SingleTaskAnnotations, ground_truth: mirpb.SingleTaskAnnotations,
-                                 asset_ids: Collection[str], match_result: det_eval_utils.DetEvalMatchResult,
-                                 class_id: int, iou_thr: float, conf_thr: float,
-                                 need_pr_curve: bool) -> mirpb.SingleEvaluationElement:
+                                 match_result: det_eval_utils.DetEvalMatchResult, class_id: int, iou_thr: float,
+                                 conf_thr: float, need_pr_curve: bool) -> mirpb.SingleEvaluationElement:
     # convert data structure
     # convert gt, save to `class_recs`
     class_recs: Dict[str, Dict[str, Any]] = {}
     npos = 0
-    for asset_id in asset_ids:
-        if asset_id not in ground_truth.image_annotations:
-            continue
-
-        img_gts = [x for x in ground_truth.image_annotations[asset_id].annotations if x.class_id == class_id]
+    for asset_id, image_annotations in ground_truth.image_annotations.items():
+        img_gts = [x for x in image_annotations.annotations if x.class_id == class_id]
         if len(img_gts) == 0:
             continue
 
@@ -197,10 +193,8 @@ def _get_single_evaluate_element(prediction: mirpb.SingleTaskAnnotations, ground
     confidence = []
     bboxes: List[List[int]] = []
     pred_pb_index_ids: List[int] = []
-    for asset_id in asset_ids:
-        img_preds = prediction.image_annotations[
-            asset_id].annotations if asset_id in prediction.image_annotations else []
-        img_preds = [x for x in img_preds if x.class_id == class_id and x.score > conf_thr]
+    for asset_id, image_annotations in prediction.image_annotations.items():
+        img_preds = [x for x in image_annotations.annotations if x.class_id == class_id and x.score > conf_thr]
         for annotation in img_preds:
             box = annotation.box
             bboxes.append([box.x, box.y, box.x + box.w, box.y + box.h])
@@ -262,7 +256,6 @@ def det_evaluate(predictions: Collection[mirpb.SingleTaskAnnotations], ground_tr
             for class_id in class_ids:
                 see = _get_single_evaluate_element(prediction=prediction,
                                                    ground_truth=ground_truth,
-                                                   asset_ids=asset_ids,
                                                    class_id=class_id,
                                                    iou_thr=iou_thr,
                                                    conf_thr=config.conf_thr,
