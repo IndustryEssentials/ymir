@@ -21,6 +21,7 @@ class Settings(BaseSettings):
     TEXT_LEN_LIMIT: int = 20000
     SENTRY_DSN: Optional[str]
     REGISTRATION_NEEDS_APPROVAL: bool = False
+    YMIR_VERSION: Optional[str]
 
     # assets viz
     VIZ_HOST: str = "viz:9099"
