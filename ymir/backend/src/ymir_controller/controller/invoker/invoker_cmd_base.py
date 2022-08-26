@@ -7,6 +7,7 @@ from google.protobuf import json_format
 from common_utils import labels
 from controller.utils import errors, metrics, utils
 from id_definition.error_codes import CTLResponseCode
+from mir.protos import mir_command_pb2 as mir_cmd_pb
 from proto import backend_pb2
 
 
@@ -69,7 +70,7 @@ class BaseMirControllerInvoker(ABC):
             return
 
         metrics_name = backend_pb2.RequestType.Name(self._request.req_type) + '.'
-        metrics_name += backend_pb2.TaskType.Name(self._request.req_create_task.task_type)
+        metrics_name += mir_cmd_pb.TaskType.Name(self._request.req_create_task.task_type)
         metrics.send_counter_metrics(metrics_name)
 
     # functions about invoke and pre_invoke
@@ -100,7 +101,7 @@ class BaseMirControllerInvoker(ABC):
 
         # Prepare working dir.
         if self._request.req_type == backend_pb2.RequestType.TASK_CREATE:
-            type_dir = backend_pb2.TaskType.Name(self._request.req_create_task.task_type)
+            type_dir = mir_cmd_pb.TaskType.Name(self._request.req_create_task.task_type)
         else:
             type_dir = backend_pb2.RequestType.Name(self._request.req_type)
 

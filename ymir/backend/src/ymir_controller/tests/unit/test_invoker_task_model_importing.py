@@ -6,6 +6,7 @@ from unittest import mock
 
 from controller.utils.invoker_call import make_invoker_cmd_call
 from controller.utils.invoker_mapping import RequestTypeToInvoker
+from mir.protos import mir_command_pb2 as mir_cmd_pb
 from proto import backend_pb2
 import tests.utils as test_utils
 
@@ -69,7 +70,7 @@ class TestInvokerTaskModelImporting(unittest.TestCase):
     @mock.patch("subprocess.run", side_effect=_mock_run_func)
     def test_invoker_00(self, mock_run):
         req_create_task = backend_pb2.ReqCreateTask()
-        req_create_task.task_type = backend_pb2.TaskTypeImportModel
+        req_create_task.task_type = mir_cmd_pb.TaskType.TaskTypeImportModel
         req_create_task.no_task_monitor = True
         req_create_task.model_importing.model_package_path = self._model_package_path
 
@@ -83,7 +84,7 @@ class TestInvokerTaskModelImporting(unittest.TestCase):
                                          req_create_task=req_create_task)
         logging.info(f"import model response: {response}")
         work_dir_root = os.path.join(self._sandbox_root, "work_dir",
-                                     backend_pb2.TaskType.Name(backend_pb2.TaskTypeImportModel), self._task_id)
+                                     mir_cmd_pb.TaskType.Name(mir_cmd_pb.TaskType.TaskTypeImportModel), self._task_id)
         working_dir_0 = os.path.join(work_dir_root, 'sub_task', self._task_id)
         expected_cmd = [
             'mir', 'models', '--root', self._mir_repo_root, '--package-path', self._model_package_path, '-w',

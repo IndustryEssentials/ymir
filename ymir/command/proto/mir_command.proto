@@ -42,9 +42,11 @@ enum TaskType {
     TaskTypeFusion = 11;
     TaskTypeInit = 12;
     TaskTypeImportModel = 13;
+    TaskTypeCopyModel = 14;
+    TaskTypeDatasetInfer = 15;
     TaskTypeEvaluate = 16;
+    TaskTypeVisualization = 17;
 
-    reserved 14, 15;
 };
 
 enum TaskState {

@@ -34,9 +34,9 @@ def trigger_ymir_export(repo_root: str, dataset_id: str, input_asset_dir: str, m
 
     gt_dir: Optional[str] = None
     pred_dir: Optional[str] = None
-    if annotation_type == backend_pb2.GT:
+    if annotation_type == backend_pb2.AnnotationType.GT:
         gt_dir = input_asset_dir
-    elif annotation_type == backend_pb2.PRED:
+    elif annotation_type == backend_pb2.AnnotationType.PRED:
         pred_dir = input_asset_dir
 
     TaskExportingInvoker.exporting_cmd(repo_root=repo_root,
