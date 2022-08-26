@@ -80,9 +80,9 @@ class UserLabels(LabelStorage):
 
     def get_class_ids(self, names_or_aliases: Union[str, List[str]]) -> List[int]:
         if isinstance(names_or_aliases, str):
-            return [self.name_aliases_to_id[names_or_aliases]]
+            return [self.name_aliases_to_id.get(names_or_aliases, -1)]
         elif isinstance(names_or_aliases, list):
-            return [self.name_aliases_to_id[name_or_aliaes] for name_or_aliaes in names_or_aliases]
+            return [self.name_aliases_to_id.get(name_or_aliaes, -1) for name_or_aliaes in names_or_aliases]
         else:
             raise ValueError(f"unsupported type: {type(names_or_aliases)}")
 
