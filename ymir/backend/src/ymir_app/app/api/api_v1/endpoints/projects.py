@@ -23,6 +23,7 @@ from app.constants.state import ResultState, RunningStates, TaskType, TrainingTy
 from app.utils.cache import CacheClient
 from app.utils.clickhouse import YmirClickHouse
 from app.utils.ymir_controller import ControllerClient, gen_task_hash
+
 # from app.utils.ymir_viz import VizClient
 from app.libs.projects import setup_sample_project_in_background
 from app.libs.keywords import add_keywords
@@ -98,7 +99,7 @@ def create_sample_project(
 
     try:
         user_labels.get_class_ids(names_or_aliases=settings.SAMPLE_PROJECT_KEYWORDS)
-    except KeyError:
+    except ValueError:
         # todo refactor keywords dependencies to handle ensure given keywords exist
         add_keywords(controller_client, cache, current_user.id, settings.SAMPLE_PROJECT_KEYWORDS)
 
@@ -134,7 +135,6 @@ def create_project(
     controller_client: ControllerClient = Depends(deps.get_controller_client),
     clickhouse: YmirClickHouse = Depends(deps.get_clickhouse_client),
     user_labels: UserLabels = Depends(deps.get_user_labels),
-
 ) -> Any:
     """
     Create project
