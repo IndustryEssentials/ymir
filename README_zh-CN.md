@@ -194,14 +194,14 @@ sudo docker run --rm --gpus all nvidia/cuda:11.0.3-base-ubuntu20.04 nvidia-smi
 ## 上述命令在终端应输出类似以下的结果
 
 +-----------------------------------------------------------------------------+
-| NVIDIA-SMI 450.51.06    Driver Version: 450.51.06    CUDA Version: 11.0     |
+| NVIDIA-SMI 510.60.02    Driver Version: 510.60.02    CUDA Version: 11.6     |
 |-------------------------------+----------------------+----------------------+
 | GPU  Name        Persistence-M| Bus-Id        Disp.A | Volatile Uncorr. ECC |
 | Fan  Temp  Perf  Pwr:Usage/Cap|         Memory-Usage | GPU-Util  Compute M. |
 |                               |                      |               MIG M. |
 |===============================+======================+======================|
-|   0  Tesla T4            On   | 00000000:00:1E.0 Off |                    0 |
-| N/A   34C    P8     9W /  70W |      0MiB / 15109MiB |      0%      Default |
+|   0  Tesla P4            Off  | 00000000:0B:00.0 Off |                    0 |
+| N/A   62C    P0    55W /  75W |   4351MiB /  7680MiB |     94%      Default |
 |                               |                      |                  N/A |
 +-------------------------------+----------------------+----------------------+
 
@@ -210,13 +210,14 @@ sudo docker run --rm --gpus all nvidia/cuda:11.0.3-base-ubuntu20.04 nvidia-smi
 |  GPU   GI   CI        PID   Type   Process name                  GPU Memory |
 |        ID   ID                                                   Usage      |
 |=============================================================================|
-|  No running processes found                                                 |
+|    0   N/A  N/A      8132      C                                    4349MiB |
 +-----------------------------------------------------------------------------+
 ```
 
 3. 推荐服务器配置：
 *  NVIDIA GeForce RTX 2080 Ti 12G
 *  显存最大值到达9974MiB
+*  CUDA 版本 >= 11.2 (低版本CUDA只能使用低版本镜像)
 
 ## 2.2. 安装 YMIR-GUI
 
