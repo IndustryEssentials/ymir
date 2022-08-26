@@ -232,6 +232,11 @@ class CmdTrain(base.BaseCommand):
         work_dir_gt = os.path.join(work_dir_in, 'annotations')
         tensorboard_dir = os.path.join(work_dir_out, 'tensorboard')
 
+        docker_log_dst = os.path.join(tensorboard_dir, "executor.log")
+        docker_log_src = os.path.join(work_dir_out, mir_settings.EXECUTOR_OUTLOG_NAME)
+        open(docker_log_src, 'w').close()
+        os.symlink(docker_log_src, docker_log_dst)
+
         # if have model_hash_stage, export model
         pretrained_model_names = _prepare_pretrained_models(model_location=model_upload_location,
                                                             model_hash_stage=pretrained_model_hash_stage,

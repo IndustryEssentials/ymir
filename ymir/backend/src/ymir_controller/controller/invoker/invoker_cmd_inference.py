@@ -1,5 +1,4 @@
 import json
-import logging
 import os
 import shutil
 
@@ -27,28 +26,20 @@ class InferenceCMDInvoker(BaseMirControllerInvoker):
         return inference_config_file
 
     @classmethod
-    def check_picture(cls, one_picture: str) -> bool:
-        img = Image.open(one_picture)
-        img_type = img.format.lower()
-        if img_type in ["png", "jpeg", "jpg"]:
-            return True
-        else:
-            logging.warning(f"image error: {one_picture}")
-            return False
+    def prepare_inference_assets(cls, asset_dir: str, dst_dir: str) -> str:
+        dst_assets = os.path.join(asset_dir, "assets")
+        os.makedirs(dst_assets, exist_ok=True)
 
-    @classmethod
-    def prepare_inference_picture(cls, source_path: str, work_dir: str) -> str:
-        inference_picture_directory = os.path.join(work_dir, "assets")
-        os.makedirs(inference_picture_directory, exist_ok=True)
+        media_files = []
+        for root, _, files in os.walk(asset_dir):
+            for asset_fileame in files:
+                asset_src_file = os.path.join(root, asset_fileame)
 
-        for root, _, files in os.walk(source_path):
-            for one_pic in files:
-                media_file = os.path.join(root, one_pic)
-                if cls.check_picture(media_file):
-                    shutil.copy(media_file, inference_picture_directory)
+                if Image.open(asset_src_file).format.lower() in ["png", "jpeg", "jpg"]:
+                    shutil.copy(asset_src_file, dst_assets)
+                    media_files.append(os.path.join(dst_assets, asset_fileame))
 
-        media_files = [os.path.join(inference_picture_directory, f) for f in os.listdir(inference_picture_directory)]
-        index_file = os.path.join(work_dir, "inference_pic_index.txt")
+        index_file = os.path.join(dst_dir, "index.txt")
         with open(index_file, "w") as f:
             f.write("\n".join(media_files))
 
@@ -64,7 +55,7 @@ class InferenceCMDInvoker(BaseMirControllerInvoker):
         if not self._user_labels:
             return utils.make_general_response(CTLResponseCode.ARG_VALIDATION_FAILED, "invalid _user_labels")
 
-        index_file = self.prepare_inference_picture(self._request.asset_dir, self._work_dir)
+        index_file = self.prepare_inference_assets(asset_dir=self._request.asset_dir, dst_dir=self._work_dir)
         config_file = self.gen_inference_config(req_inference_config=self._request.docker_image_config,
                                                 task_context={'server_runtime': self._assets_config['server_runtime']},
                                                 work_dir=self._work_dir)
