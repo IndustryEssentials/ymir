@@ -256,27 +256,7 @@ message TaskReqVisualization {
 
 message RespCMDInference {
     /// key: image id, value: annotations of that single image
-    map<string, SingleImageAnnotations> image_annotations = 1;
-};
-
-message SingleImageAnnotations {
-    repeated Annotation annotations = 2;
-};
-
-message Annotation {
-    // Index of this annotation in current single image, may be different from the index in repeated field.
-    int32 index = 1;
-    Rect box = 2;
-    int32 class_id = 3;
-    double score = 4;
-    string class_name = 5;
-};
-
-message Rect {
-    int32 x = 1;
-    int32 y = 2;
-    int32 w = 3;
-    int32 h = 4;
+    map<string, mir.command.SingleImageAnnotations> image_annotations = 1;
 };
 
 message LabelCollection {

@@ -90,7 +90,6 @@ class TestInvokerCMDInference(unittest.TestCase):
                             "w": 81,
                             "h": 88
                         },
-                        "class_name": "no_helmet_head",
                         "score": 0.991247296333313,
                         "class_id": 3,
                     }],
