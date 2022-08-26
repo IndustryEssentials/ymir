@@ -23,8 +23,6 @@ from app.constants.state import ResultState, RunningStates, TaskType, TrainingTy
 from app.utils.cache import CacheClient
 from app.utils.clickhouse import YmirClickHouse
 from app.utils.ymir_controller import ControllerClient, gen_task_hash
-
-# from app.utils.ymir_viz import VizClient
 from app.libs.projects import setup_sample_project_in_background
 from app.libs.keywords import add_keywords
 from common_utils.labels import UserLabels
