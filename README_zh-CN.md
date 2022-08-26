@@ -34,18 +34,18 @@
 [📘使用说明](https://github.com/IndustryEssentials/ymir/blob/master/README_zh-CN.md#3-gui%E4%BD%BF%E7%94%A8-%E5%85%B8%E5%9E%8B%E6%A8%A1%E5%9E%8B%E7%94%9F%E4%BA%A7%E6%B5%81%E7%A8%8B) |
 [🛠️安装教程](https://github.com/IndustryEssentials/ymir/blob/master/README_zh-CN.md#2-%E5%AE%89%E8%A3%85) |
 [👀推荐配置](https://c1n.cn/obvHf) |
-[🚀进行中的项目](https://github.com/IndustryEssentials/ymir/projects) | 
-[🤔报告问题](https://github.com/IndustryEssentials/ymir/issues/new/choose) | 
+[🚀进行中的项目](https://github.com/IndustryEssentials/ymir/projects) |
+[🤔报告问题](https://github.com/IndustryEssentials/ymir/issues/new/choose) |
 [📰开源协议](https://github.com/IndustryEssentials/ymir/blob/master/LICENSE)
-  
+
 </div>&nbsp;</div>
-  
+
 <div align="center">
   <img src="https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/wechat_code.jpg" width="180"/>
   <img src="https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/contact.jpg" width="400"/>
-  
+
   📫 使用问题反馈：contact.viesc@gmail.com / 服务器级设备专业咨询：tensor.station@gmail.com
-  
+
 <div>&nbsp;</div>&nbsp;</div>
 
 # 文章引用
@@ -54,7 +54,7 @@
 
 ```bibtex
 @inproceedings{huang2021ymir,
-      title={YMIR: A Rapid Data-centric Development Platform for Vision Applications}, 
+      title={YMIR: A Rapid Data-centric Development Platform for Vision Applications},
       author={Phoenix X. Huang and Wenze Hu and William Brendel and Manmohan Chandraker and Li-Jia Li and Xiaoyu Wang},
       booktitle={Proceedings of the Data-Centric AI Workshop at NeurIPS},
       year={2021},
@@ -181,12 +181,39 @@ YMIR平台主要满足用户规模化生产模型的需求，为用户提供良�
 
 ## 2.1. 环境依赖
 
-1. GPU版本需要GPU，并安装nvidia驱动: [https://www.nvidia.cn/geforce/drivers/](https://www.nvidia.cn/geforce/drivers/) 
+1. GPU版本需要GPU，并安装nvidia驱动: [https://www.nvidia.cn/geforce/drivers/](https://www.nvidia.cn/geforce/drivers/)
 
 2. 需要安装docker：
-*  Docker & Docker Compose 安装： [https://docs.docker.com/get-docker/](https://docs.docker.com/get-docker/) 
+*  Docker & Docker Compose 安装： [https://docs.docker.com/get-docker/](https://docs.docker.com/get-docker/)
 *  NVIDIA Docker安装： [https://github.com/NVIDIA/nvidia-docker](https://github.com/NVIDIA/nvidia-docker)
- 
+* 检查 nvidia-docker 安装, 详情参考 [nvidia-docker install-guide](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/install-guide.html#docker)
+
+```sh
+sudo docker run --rm --gpus all nvidia/cuda:11.0.3-base-ubuntu20.04 nvidia-smi
+
+## 上述命令在终端应输出类似以下的结果
+
++-----------------------------------------------------------------------------+
+| NVIDIA-SMI 450.51.06    Driver Version: 450.51.06    CUDA Version: 11.0     |
+|-------------------------------+----------------------+----------------------+
+| GPU  Name        Persistence-M| Bus-Id        Disp.A | Volatile Uncorr. ECC |
+| Fan  Temp  Perf  Pwr:Usage/Cap|         Memory-Usage | GPU-Util  Compute M. |
+|                               |                      |               MIG M. |
+|===============================+======================+======================|
+|   0  Tesla T4            On   | 00000000:00:1E.0 Off |                    0 |
+| N/A   34C    P8     9W /  70W |      0MiB / 15109MiB |      0%      Default |
+|                               |                      |                  N/A |
++-------------------------------+----------------------+----------------------+
+
++-----------------------------------------------------------------------------+
+| Processes:                                                                  |
+|  GPU   GI   CI        PID   Type   Process name                  GPU Memory |
+|        ID   ID                                                   Usage      |
+|=============================================================================|
+|  No running processes found                                                 |
++-----------------------------------------------------------------------------+
+```
+
 3. 推荐服务器配置：
 *  NVIDIA GeForce RTX 2080 Ti 12G
 *  显存最大值到达9974MiB
@@ -919,11 +946,11 @@ YMIR repo中的任何代码都应遵循编码标准，并将在CI测试中进行
 [![All Contributors](https://img.shields.io/badge/All%20Contributors-8-brightgreen)](#contributors-)
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 
-<a href="https://github.com/phoenix-xhuang"><img src="https://avatars.githubusercontent.com/u/89957974?v=4" class="avatar-user" width="18px;"/></a> 
-<a href="https://github.com/IJtLJZ8Rm4Yr"><img src="https://avatars.githubusercontent.com/u/90443055?v=4" class="avatar-user" width="18px;"/></a> 
-<a href="https://github.com/elliotmessi"><img src="https://avatars.githubusercontent.com/u/90443217?v=4" class="avatar-user" width="18px;"/></a> 
-<a href="https://github.com/Aryalfrat"><img src="https://avatars.githubusercontent.com/u/90443348?v=4" class="avatar-user" width="18px;"/></a> 
-<a href="https://github.com/fenrir-z"><img src="https://avatars.githubusercontent.com/u/90444968?v=4" class="avatar-user" width="18px;"/></a> 
-<a href="https://github.com/under-chaos"><img src="https://avatars.githubusercontent.com/u/90446262?v=4" class="avatar-user" width="18px;"/></a> 
-<a href="https://github.com/Zhang-SJ930104"><img src="https://avatars.githubusercontent.com/u/91466580?v=4" class="avatar-user" width="18px;"/></a> 
-<a href="https://github.com/LuciferZap"><img src="https://avatars.githubusercontent.com/u/92283801?v=4" class="avatar-user" width="18px;"/></a> 
+<a href="https://github.com/phoenix-xhuang"><img src="https://avatars.githubusercontent.com/u/89957974?v=4" class="avatar-user" width="18px;"/></a>
+<a href="https://github.com/IJtLJZ8Rm4Yr"><img src="https://avatars.githubusercontent.com/u/90443055?v=4" class="avatar-user" width="18px;"/></a>
+<a href="https://github.com/elliotmessi"><img src="https://avatars.githubusercontent.com/u/90443217?v=4" class="avatar-user" width="18px;"/></a>
+<a href="https://github.com/Aryalfrat"><img src="https://avatars.githubusercontent.com/u/90443348?v=4" class="avatar-user" width="18px;"/></a>
+<a href="https://github.com/fenrir-z"><img src="https://avatars.githubusercontent.com/u/90444968?v=4" class="avatar-user" width="18px;"/></a>
+<a href="https://github.com/under-chaos"><img src="https://avatars.githubusercontent.com/u/90446262?v=4" class="avatar-user" width="18px;"/></a>
+<a href="https://github.com/Zhang-SJ930104"><img src="https://avatars.githubusercontent.com/u/91466580?v=4" class="avatar-user" width="18px;"/></a>
+<a href="https://github.com/LuciferZap"><img src="https://avatars.githubusercontent.com/u/92283801?v=4" class="avatar-user" width="18px;"/></a>
