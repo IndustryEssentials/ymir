@@ -62,6 +62,8 @@ def login_access_token(
         "id": user.id,
         "role": role.name,
     }
+    if settings.YMIR_VERSION:
+        token_payload["version"] = settings.YMIR_VERSION
     payload = {
         "access_token": security.create_access_token(token_payload, expires_delta=access_token_expires),
         "token_type": "bearer",

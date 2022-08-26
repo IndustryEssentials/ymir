@@ -214,6 +214,12 @@ class InvalidToken(APIError):
     message = "Invalid Token"
 
 
+class SystemVersionConflict(APIError):
+    status_code = 401
+    code = error_codes.SYSTEM_VERSION_CONFLICT
+    message = "System Version Conflict"
+
+
 class InvalidScope(APIError):
     status_code = 401
     code = error_codes.INVALID_SCOPE
