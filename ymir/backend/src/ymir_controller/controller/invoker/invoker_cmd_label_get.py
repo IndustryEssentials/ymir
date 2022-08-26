@@ -16,7 +16,7 @@ class LabelGetInvoker(BaseMirControllerInvoker):
 
     def invoke(self) -> backend_pb2.GeneralResp:
         if not self._user_labels:
-            return utils.make_general_response(CTLResponseCode.RC_CMD_INVALID_ARGS, "invalid _user_labels")
+            return utils.make_general_response(CTLResponseCode.ARG_VALIDATION_FAILED, "invalid _user_labels")
 
         expected_type = backend_pb2.RequestType.CMD_LABEL_GET
         if self._request.req_type != expected_type:

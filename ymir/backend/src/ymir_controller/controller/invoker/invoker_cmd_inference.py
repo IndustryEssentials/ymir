@@ -62,7 +62,7 @@ class InferenceCMDInvoker(BaseMirControllerInvoker):
 
     def invoke(self) -> backend_pb2.GeneralResp:
         if not self._user_labels:
-            return utils.make_general_response(CTLResponseCode.RC_CMD_INVALID_ARGS, "invalid _user_labels")
+            return utils.make_general_response(CTLResponseCode.ARG_VALIDATION_FAILED, "invalid _user_labels")
 
         index_file = self.prepare_inference_picture(self._request.asset_dir, self._work_dir)
         config_file = self.gen_inference_config(req_inference_config=self._request.docker_image_config,
@@ -80,14 +80,13 @@ class InferenceCMDInvoker(BaseMirControllerInvoker):
             executor=self._request.singleton_op,
         )
 
-        resp = utils.make_general_response(CTLResponseCode.CTR_OK, "")
         infer_result_file = os.path.join(self._work_dir, "out", "infer-result.json")
         if not os.path.isfile(infer_result_file):
-            return resp
-
+            return utils.make_general_response(CTLResponseCode.DOCKER_IMAGE_ERROR, "empty inference result.")
         with open(infer_result_file) as f:
             infer_result = json.load(f)
 
+        resp = utils.make_general_response(CTLResponseCode.CTR_OK, "")
         json_format.ParseDict(dict(imageAnnotations=infer_result["detection"]),
                               resp.detection,
                               ignore_unknown_fields=False)

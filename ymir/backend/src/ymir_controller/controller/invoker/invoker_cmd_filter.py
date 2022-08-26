@@ -20,7 +20,7 @@ class FilterBranchInvoker(BaseMirControllerInvoker):
 
     def invoke(self) -> backend_pb2.GeneralResp:
         if not self._user_labels:
-            return utils.make_general_response(CTLResponseCode.RC_CMD_INVALID_ARGS, "invalid _user_labels")
+            return utils.make_general_response(CTLResponseCode.ARG_VALIDATION_FAILED, "invalid _user_labels")
 
         # invoke command
         filter_command = [
