@@ -51,6 +51,8 @@ function Matrics({ pid, project }) {
     kwType: 0,
     keywords: [],
   })
+  const [ckDatasets, getCKDatasets] = useFetch('dataset/analysis', [])
+  const [cks, setCKs] = useState([])
 
   useEffect(() => {
     setDiagnosis(remoteData)
@@ -95,6 +97,21 @@ function Matrics({ pid, project }) {
       kwType,
     })
   }, [selectedKeywords, keywords])
+
+  useEffect(() => {
+    if (selectedDatasets.length) {
+      getCKDatasets({ ids: selectedDatasets.map(({ id }) => id) })
+    }
+  }, [selectedDatasets])
+
+  useEffect(() => {
+    const allCks = ckDatasets.map(({ cks }) => cks).flat()
+    allCks.filter(({ keyword }) => {
+      const same = allCks.filter(k => k === keyword)
+      return same.length === ckDatasets.length
+    })
+    setCKs(cks)
+  }, [ckDatasets])
 
   const onFinish = async (values) => {
     const inferDataset = inferTasks.map(({ result }) => result)
@@ -186,7 +203,7 @@ function Matrics({ pid, project }) {
       <Col>
         <Space size={20}>
           <span>{t('model.diagnose.metrics.dimension.label')}</span>
-          <Radio.Group defaultValue={xAxisOptions[0].value} options={xAxisOptions.map(({ key, value }) => ({ value, label: t(`model.diagnose.metrics.x.${key}`)}))} onChange={xAxisChange} />
+          <Radio.Group defaultValue={xAxisOptions[0].value} options={xAxisOptions.map(({ key, value }) => ({ value, label: t(`model.diagnose.metrics.x.${key}`) }))} onChange={xAxisChange} />
         </Space>
       </Col>
     </Row>
