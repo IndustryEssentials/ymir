@@ -5,8 +5,9 @@ from abc import ABC, abstractmethod
 from google.protobuf import json_format
 
 from common_utils import labels
-from controller.utils import checker, errors, metrics, utils
+from controller.utils import errors, metrics, utils
 from id_definition.error_codes import CTLResponseCode
+from mir.protos import mir_command_pb2 as mir_cmd_pb
 from proto import backend_pb2
 
 
@@ -26,58 +27,50 @@ class BaseMirControllerInvoker(ABC):
                  request: backend_pb2.GeneralReq,
                  assets_config: dict,
                  async_mode: bool = False,
-                 work_dir: str = '') -> None:
+                 work_dir: str = "") -> None:
         super().__init__()
 
-        # check sandbox_root
+        # check sandbox_root & task_id
         if not os.path.isdir(sandbox_root):
             raise errors.MirCtrError(CTLResponseCode.ARG_VALIDATION_FAILED,
                                      f"sandbox root {sandbox_root} not found, abort.")
-        self._sandbox_root = sandbox_root
 
-        ret = checker.check_request(request=request, prerequisites=[checker.Prerequisites.CHECK_TASK_ID])
-        if (ret.code != CTLResponseCode.CTR_OK):
-            raise errors.MirCtrError(CTLResponseCode.ARG_VALIDATION_FAILED, f"task_id {request.task_id} error, abort.")
+        self._request = request
+        self._sandbox_root = sandbox_root
         self._task_id = request.task_id
+        self._assets_config = assets_config
+        self._async_mode = async_mode
+        self._work_dir = work_dir or self._prepare_work_dir()
 
         # check user_id
-        user_id = request.user_id
-        if user_id:
-            self._user_id = user_id
-            self._user_root = os.path.join(sandbox_root, user_id)
+        self._user_id = request.user_id
+        self._user_root = ""
+        self._label_storage_file = ""
+        self._user_labels = None
+        if self._user_id:
+            self._user_root = os.path.join(sandbox_root, self._user_id)
             self._label_storage_file = os.path.join(self._user_root, labels.default_labels_file_name())
             self._user_labels = labels.get_user_labels_from_storage(self._label_storage_file)
 
         # check repo_id
-        repo_id = request.repo_id
-        if repo_id:
-            if user_id:
-                self._repo_id = repo_id
-                self._repo_root = os.path.join(self._user_root, repo_id)
-            else:
+        self._repo_id = request.repo_id
+        self._repo_root = ""
+        if request.repo_id:
+            if not self._user_id or not self._user_root:
                 raise errors.MirCtrError(CTLResponseCode.ARG_VALIDATION_FAILED, "repo id provided, but miss user id.")
 
-        self._request = request
-        self._assets_config = assets_config
-        self._async_mode = async_mode
-        self._work_dir = work_dir or self.prepare_work_dir()
+            self._repo_id = request.repo_id
+            self._repo_root = os.path.join(self._user_root, request.repo_id)
 
         self._send_request_metrics()
 
     def _send_request_metrics(self) -> None:
-        # not record internal requests.
-        if self._request.req_type in [
-                backend_pb2.RequestType.CMD_GPU_INFO_GET,
-                backend_pb2.RequestType.CMD_LABEL_GET,
-                backend_pb2.RequestType.CMD_REPO_CHECK,
-        ]:
+        # only record task.
+        if self._request.req_type != backend_pb2.TASK_CREATE:
             return
 
         metrics_name = backend_pb2.RequestType.Name(self._request.req_type) + '.'
-        if self._request.req_type == backend_pb2.TASK_CREATE:
-            metrics_name += backend_pb2.TaskType.Name(self._request.req_create_task.task_type)
-        else:
-            metrics_name += 'None'
+        metrics_name += mir_cmd_pb.TaskType.Name(self._request.req_create_task.task_type)
         metrics.send_counter_metrics(metrics_name)
 
     # functions about invoke and pre_invoke
@@ -99,21 +92,16 @@ class BaseMirControllerInvoker(ABC):
     def invoke(self) -> backend_pb2.GeneralResp:
         pass
 
-    def prepare_work_dir(self) -> str:
-        # Only create work_dir for specific tasks.
-        if self._request.req_type not in [
-                backend_pb2.RequestType.TASK_CREATE,
-                backend_pb2.RequestType.CMD_EVALUATE,
-                backend_pb2.RequestType.CMD_FILTER,
-                backend_pb2.RequestType.CMD_MERGE,
-                backend_pb2.RequestType.CMD_INFERENCE,
-                backend_pb2.RequestType.CMD_SAMPLING,
-        ]:
+    def _need_work_dir(self) -> bool:
+        raise NotImplementedError
+
+    def _prepare_work_dir(self) -> str:
+        if not self._need_work_dir():
             return ''
 
         # Prepare working dir.
         if self._request.req_type == backend_pb2.RequestType.TASK_CREATE:
-            type_dir = backend_pb2.TaskType.Name(self._request.req_create_task.task_type)
+            type_dir = mir_cmd_pb.TaskType.Name(self._request.req_create_task.task_type)
         else:
             type_dir = backend_pb2.RequestType.Name(self._request.req_type)
 

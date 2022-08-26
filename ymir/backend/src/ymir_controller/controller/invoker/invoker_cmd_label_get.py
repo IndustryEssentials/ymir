@@ -5,13 +5,19 @@ from proto import backend_pb2
 
 
 class LabelGetInvoker(BaseMirControllerInvoker):
+    def _need_work_dir(self) -> bool:
+        return False
+
     def pre_invoke(self) -> backend_pb2.GeneralResp:
-        return checker.check_request(
-            request=self._request,
+        return checker.check_invoker(
+            invoker=self,
             prerequisites=[checker.Prerequisites.CHECK_USER_ID],
         )
 
     def invoke(self) -> backend_pb2.GeneralResp:
+        if not self._user_labels:
+            return utils.make_general_response(CTLResponseCode.ARG_VALIDATION_FAILED, "invalid _user_labels")
+
         expected_type = backend_pb2.RequestType.CMD_LABEL_GET
         if self._request.req_type != expected_type:
             return utils.make_general_response(CTLResponseCode.MIS_MATCHED_INVOKER_TYPE,

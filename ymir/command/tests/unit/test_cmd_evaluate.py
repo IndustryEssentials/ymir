@@ -254,6 +254,7 @@ class TestCmdEvaluate(unittest.TestCase):
                             'cm': 'MTP',
                             'index': 0,
                             'class_id': 0,
+                            'class_name': "",
                             'anno_quality': 0.0,
                             'tags': {},
                             'det_link_id': 0
@@ -269,6 +270,7 @@ class TestCmdEvaluate(unittest.TestCase):
                             'score': 1.0,
                             'cm': 'MTP',
                             'det_link_id': 1,
+                            'class_name': "",
                             'class_id': 0,
                             'anno_quality': 0.0,
                             'tags': {}
@@ -281,6 +283,7 @@ class TestCmdEvaluate(unittest.TestCase):
                                 'h': 75,
                                 'rotate_angle': 0.0
                             },
+                            'class_name': "",
                             'class_id': 1,
                             'score': 1.0,
                             'cm': 'MTP',
@@ -296,6 +299,7 @@ class TestCmdEvaluate(unittest.TestCase):
                                 'h': 100,
                                 'rotate_angle': 0.0
                             },
+                            'class_name': "",
                             'class_id': 2,
                             'score': 1.0,
                             'cm': 'MTP',
@@ -313,6 +317,7 @@ class TestCmdEvaluate(unittest.TestCase):
                                 'h': 100,
                                 'rotate_angle': 0.0
                             },
+                            'class_name': "",
                             'class_id': 2,
                             'score': 1.0,
                             'cm': 'MTP',
@@ -339,6 +344,7 @@ class TestCmdEvaluate(unittest.TestCase):
                             'score': 0.7,
                             'cm': 'TP',
                             'index': 0,
+                            'class_name': "",
                             'class_id': 0,
                             'anno_quality': 0.0,
                             'tags': {},
@@ -355,6 +361,7 @@ class TestCmdEvaluate(unittest.TestCase):
                             'score': 0.8,
                             'cm': 'TP',
                             'det_link_id': 1,
+                            'class_name': "",
                             'class_id': 0,
                             'anno_quality': 0.0,
                             'tags': {}
@@ -367,6 +374,7 @@ class TestCmdEvaluate(unittest.TestCase):
                                 'h': 75,
                                 'rotate_angle': 0.0
                             },
+                            'class_name': "",
                             'class_id': 1,
                             'score': 0.9,
                             'cm': 'TP',
@@ -382,6 +390,7 @@ class TestCmdEvaluate(unittest.TestCase):
                                 'h': 100,
                                 'rotate_angle': 0.0
                             },
+                            'class_name': "",
                             'class_id': 2,
                             'score': 0.9,
                             'cm': 'TP',
@@ -399,6 +408,7 @@ class TestCmdEvaluate(unittest.TestCase):
                                 'h': 100,
                                 'rotate_angle': 0.0
                             },
+                            'class_name': "",
                             'class_id': 2,
                             'score': 0.9,
                             'cm': 'TP',

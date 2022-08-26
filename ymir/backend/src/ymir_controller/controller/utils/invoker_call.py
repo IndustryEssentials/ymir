@@ -1,6 +1,7 @@
 from typing import Any, List
 
 from proto import backend_pb2
+from mir.protos import mir_command_pb2 as mir_cmd_pb
 
 
 def make_cmd_request(user_id: str = None,
@@ -29,7 +30,7 @@ def make_cmd_request(user_id: str = None,
                      sampling_count: int = None,
                      sampling_rate: float = None,
                      task_parameters: str = None,
-                     evaluate_config: backend_pb2.EvaluateConfig = None) -> backend_pb2.GeneralReq:
+                     evaluate_config: mir_cmd_pb.EvaluateConfig = None) -> backend_pb2.GeneralReq:
     request = backend_pb2.GeneralReq()
     if user_id is not None:
         request.user_id = user_id
@@ -116,7 +117,7 @@ def make_invoker_cmd_call(invoker: Any,
                           sampling_count: int = None,
                           sampling_rate: float = None,
                           work_dir: str = '',
-                          evaluate_config: backend_pb2.EvaluateConfig = None) -> backend_pb2.GeneralReq:
+                          evaluate_config: mir_cmd_pb.EvaluateConfig = None) -> backend_pb2.GeneralReq:
     request = make_cmd_request(req_type=req_type,
                                user_id=user_id,
                                repo_id=repo_id,
