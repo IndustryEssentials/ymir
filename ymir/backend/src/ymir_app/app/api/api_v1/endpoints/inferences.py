@@ -16,7 +16,6 @@ from app.api.errors.errors import (
 from app.config import settings
 from app.utils.files import FailedToDownload, save_files
 from app.utils.ymir_controller import ControllerClient
-from common_utils.labels import UserLabels
 
 router = APIRouter()
 
@@ -31,7 +30,6 @@ def call_inference(
     db: Session = Depends(deps.get_db),
     current_user: models.User = Depends(deps.get_current_active_user),
     controller_client: ControllerClient = Depends(deps.get_controller_client),
-    user_labels: UserLabels = Depends(deps.get_user_labels),
 ) -> Any:
     """
     Call Inference
@@ -68,16 +66,15 @@ def call_inference(
 
     result = {
         "model_stage_id": inference_in.model_stage_id,
-        "annotations": extract_inference_annotations(resp, filename_mapping=filename_mapping, user_labels=user_labels),
+        "annotations": extract_inference_annotations(resp, filename_mapping=filename_mapping),
     }
     return {"result": result}
 
 
 def extract_inference_annotations(
-    resp: Dict, *, inference_type: str = "detection", filename_mapping: Dict, user_labels: UserLabels
+    resp: Dict, *, inference_type: str = "detection", filename_mapping: Dict
 ) -> Generator:
     for filename, annotations in resp[inference_type]["image_annotations"].items():
-        annotations["annotations"]["class_name"] = user_labels.get_main_name(annotations["annotations"]["class_id"])
         yield {
             "image_url": filename_mapping[filename],
             "detection": annotations["annotations"],
