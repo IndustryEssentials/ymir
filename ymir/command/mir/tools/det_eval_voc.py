@@ -234,7 +234,7 @@ def _get_single_evaluate_element(prediction: mirpb.SingleTaskAnnotations, ground
 
 
 def det_evaluate(predictions: Collection[mirpb.SingleTaskAnnotations], ground_truth: mirpb.SingleTaskAnnotations,
-                 asset_ids: Collection[str], config: mirpb.EvaluateConfig) -> mirpb.Evaluation:
+                 config: mirpb.EvaluateConfig) -> mirpb.Evaluation:
     if config.conf_thr < 0 or config.conf_thr > 1:
         raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS, error_message='invalid conf_thr')
 

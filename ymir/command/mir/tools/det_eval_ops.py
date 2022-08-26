@@ -13,17 +13,15 @@ def det_evaluate(
     class_ids: List[int] = [],
     need_pr_curve: bool = False,
 ) -> Tuple[mirpb.Evaluation, mirpb.MirAnnotations]:
-    mir_metadatas: mirpb.MirMetadatas
     mir_annotations: mirpb.MirAnnotations
     mir_keywords: mirpb.MirKeywords
-    mir_metadatas, mir_annotations, mir_keywords = mir_storage_ops.MirStorageOps.load_multiple_storages(
+    mir_annotations, mir_keywords = mir_storage_ops.MirStorageOps.load_multiple_storages(
         mir_root=mir_root,
         mir_branch=rev_tid.rev,
         mir_task_id=rev_tid.tid,
-        ms_list=[mirpb.MirStorage.MIR_METADATAS, mirpb.MirStorage.MIR_ANNOTATIONS, mirpb.MirStorage.MIR_KEYWORDS])
+        ms_list=[mirpb.MirStorage.MIR_ANNOTATIONS, mirpb.MirStorage.MIR_KEYWORDS])
 
     return det_evaluate_with_pb(
-        mir_metadatas=mir_metadatas,
         mir_annotations=mir_annotations,
         mir_keywords=mir_keywords,
         dataset_id=rev_tid.rev_tid,
@@ -35,7 +33,6 @@ def det_evaluate(
 
 
 def det_evaluate_with_pb(
-    mir_metadatas: mirpb.MirMetadatas,
     mir_annotations: mirpb.MirAnnotations,
     mir_keywords: mirpb.MirKeywords,
     dataset_id: str,
@@ -43,7 +40,7 @@ def det_evaluate_with_pb(
     iou_thrs: str,
     class_ids: List[int] = [],
     need_pr_curve: bool = False,
-    mode: str = 'voc',  # voc or coco
+    mode: str = 'coco',  # voc or coco
 ) -> Tuple[mirpb.Evaluation, mirpb.MirAnnotations]:
     # evaluation = mirpb.Evaluation()
     evaluate_config = mirpb.EvaluateConfig()
@@ -57,7 +54,6 @@ def det_evaluate_with_pb(
     eval_model_name = det_eval_voc if mode == 'voc' else det_eval_coco
     evaluation = eval_model_name.det_evaluate(predictions=[mir_annotations.prediction],  # type: ignore
                                               ground_truth=mir_annotations.ground_truth,
-                                              asset_ids=mir_metadatas.attributes.keys(),
                                               config=evaluate_config)
 
     _show_evaluation(evaluation=evaluation)

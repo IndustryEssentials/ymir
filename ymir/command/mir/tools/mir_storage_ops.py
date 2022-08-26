@@ -60,7 +60,6 @@ class MirStorageOps():
         if (mir_metadatas.attributes and mir_annotations.ground_truth.image_annotations
                 and mir_annotations.prediction.image_annotations):
             evaluation, _ = det_eval_ops.det_evaluate_with_pb(
-                mir_metadatas=mir_metadatas,
                 mir_annotations=mir_annotations,
                 mir_keywords=mir_keywords,
                 dataset_id=build_config.evaluate_src_dataset_id,

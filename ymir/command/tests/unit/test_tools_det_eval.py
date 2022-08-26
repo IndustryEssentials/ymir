@@ -245,13 +245,11 @@ class TestToolsDetEval(unittest.TestCase):
         self.assertTrue(np.isclose(0.833333, see.ap))
 
     def _test_det_eval(self, det_eval_model_name: Any) -> mirpb.SingleDatasetEvaluation:
-        mir_metadatas: mirpb.MirMetadatas
-        mir_annotations: mirpb.MirAnnotations
-        mir_metadatas, mir_annotations = mir_storage_ops.MirStorageOps.load_multiple_storages(
+        mir_annotations: mirpb.MirAnnotations = mir_storage_ops.MirStorageOps.load_single_storage(
             mir_root=self._mir_root,
             mir_branch='a',
             mir_task_id='a',
-            ms_list=[mirpb.MirStorage.MIR_METADATAS, mirpb.MirStorage.MIR_ANNOTATIONS])
+            ms=mirpb.MirStorage.MIR_ANNOTATIONS)
 
         evaluate_config = mirpb.EvaluateConfig()
         evaluate_config.conf_thr = 0.0005
@@ -262,7 +260,6 @@ class TestToolsDetEval(unittest.TestCase):
         evaluate_config.class_ids[:] = [0, 1]
         evaluation = det_eval_model_name.det_evaluate(predictions=[mir_annotations.prediction],
                                                       ground_truth=mir_annotations.ground_truth,
-                                                      asset_ids=mir_metadatas.attributes.keys(),
                                                       config=evaluate_config)
         self.assertTrue(len(evaluation.dataset_evaluations) == 1)
         sde = evaluation.dataset_evaluations['a']
