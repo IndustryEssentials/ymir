@@ -95,7 +95,7 @@ class InferenceCMDInvoker(BaseMirControllerInvoker):
         # class_id should be updated, as it was from outside model.
         for _, annotations in resp.detection.image_annotations.items():
             for annotation in annotations.annotations:
-                annotation.class_id = self._user_labels.get_class_ids(annotation.class_name)[0]
+                annotation.class_id = self._user_labels.get_class_ids(annotation.class_name, raise_if_unknown=False)[0]
 
         return resp
 
