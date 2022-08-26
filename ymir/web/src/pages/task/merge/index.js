@@ -20,7 +20,7 @@ import Strategy from "./components/formItem.strategy"
 const { useWatch, useForm } = Form
 
 function Merge() {
-  const [dataset, getDataset] = useFetch('dataset/getDataset', {})
+  const [dataset, getDataset, setDataset] = useFetch('dataset/getDataset', {})
   const [_, clearCache] = useFetch('dataset/clearCache')
   const [mergeResult, merge] = useFetch('task/merge')
   const [__, updateIteration] = useFetch('iteration/updateIteration')
@@ -57,7 +57,7 @@ function Merge() {
       message.info(t('task.fusion.create.success.msg'))
       clearCache()
       const group = mergeResult.dataset_group_id || ''
-      history.replace(`/home/project/${dataset.projectId}/dataset#${group}`)
+      history.replace(`/home/project/${pid}/dataset#${group}`)
     }
   }, [mergeResult])
 
@@ -71,7 +71,7 @@ function Merge() {
     }
     const params = {
       ...values,
-      group,
+      group: type ? group : undefined,
       projectId: pid,
       datasets: [did, selectedDataset, ...values.includes].filter(item => item),
     }
@@ -86,8 +86,9 @@ function Merge() {
     return datasets.filter(ds => ![...ids, did].includes(ds.id))
   }
 
-  function nameChange(_, option) {
-    option.dataset && setGroup(option.dataset.groupId)
+  function originDatasetChange(_, option) {
+    setDataset(option?.dataset || {})
+    setGroup(option?.dataset?.groupId || undefined)
   }
 
   return (
@@ -103,16 +104,17 @@ function Merge() {
           onFinishFailed={onFinishFailed}
         >
           <MergeType initialValue={mid ? 0 : 1} />
+          {!type ? <DatasetName /> : null}
           {did ? <Form.Item label={t('task.fusion.form.dataset')}>
             <span>{dataset.name} {dataset.versionName} (assets: {dataset.assetCount})</span>
           </Form.Item> : null}
-          {type ? <Form.Item name='dataset' label={t('task.fusion.form.dataset')}>
+          {!did && (type || dataset.id) ? <Form.Item name='dataset' label={t('task.fusion.form.dataset')}>
             <DatasetSelect
               pid={pid}
-              onChane={nameChange}
+              onChange={originDatasetChange}
               filters={datasets => filter(datasets, [...(includes || []), ...(excludes || [])])}
             />
-          </Form.Item> : <DatasetName />}
+          </Form.Item>: null }
           <Form.Item label={t('task.fusion.form.merge.include.label')} name="includes" tooltip={t('tip.task.merge.include')}>
             <DatasetSelect
               placeholder={t('task.fusion.form.datasets.placeholder')}
