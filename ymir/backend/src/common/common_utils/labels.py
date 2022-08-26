@@ -86,9 +86,10 @@ class UserLabels(LabelStorage):
         else:
             raise ValueError(f"unsupported type: {type(names_or_aliases)}")
 
-        for id in ret:
-            if id < 0:
-                raise ValueError(f"unknown class found: {names_or_aliases}")
+        if raise_if_unknown:
+            for id in ret:
+                if id < 0:
+                    raise ValueError(f"unknown class found: {names_or_aliases}")
         return ret
 
     def get_main_names(self, class_ids: Union[int, List[int]]) -> List[str]:
