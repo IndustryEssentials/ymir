@@ -174,13 +174,21 @@ class ViewerAsset:
         self.keywords = user_labels.get_main_names(self.class_ids)
         self.gt = [
             ViewerAssetAnnotation(
-                box=i["box"], class_id=i["class_id"], cm=i["cm"], tags=i["tags"], user_labels=user_labels
+                box=i["box"],
+                class_id=i["class_id"],
+                cm=i["cm"],
+                tags=i["tags"],
+                user_labels=user_labels,
             )
             for i in self.gt
         ]
         self.pred = [
             ViewerAssetAnnotation(
-                box=i["box"], class_id=i["class_id"], cm=i["cm"], tags=i["tags"], user_labels=user_labels
+                box=i["box"],
+                class_id=i["class_id"],
+                cm=i["cm"],
+                tags=i["tags"],
+                user_labels=user_labels,
             )
             for i in self.pred
         ]
@@ -316,14 +324,20 @@ class VizClient:
         return asdict(dataset_info)
 
     def get_dataset_analysis(
-        self, dataset_hash: str, keyword_ids: Optional[List[int]] = None, require_hist: bool = False
+        self,
+        dataset_hash: str,
+        keyword_ids: Optional[List[int]] = None,
+        require_hist: bool = False,
     ) -> Dict:
         """
         viewer: GET /dataset_stats
         """
         url = f"{self._url_prefix}/branch/{dataset_hash}/dataset_stats"
 
-        params = {"require_assets_hist": require_hist, "require_annos_hist": require_hist}  # type: Dict
+        params = {
+            "require_assets_hist": require_hist,
+            "require_annos_hist": require_hist,
+        }  # type: Dict
         if keyword_ids:
             params["class_ids"] = ",".join(str(k) for k in keyword_ids)
 
@@ -370,7 +384,10 @@ class VizClient:
         return duplicated_stats["duplication"]
 
     def get_resp(
-        self, url: str, params: Optional[Dict] = None, timeout: int = settings.VIZ_TIMEOUT
+        self,
+        url: str,
+        params: Optional[Dict] = None,
+        timeout: int = settings.VIZ_TIMEOUT,
     ) -> requests.Response:
         logger.info("[viewer] request url %s and params %s", url, params)
         try:
@@ -408,8 +425,17 @@ class VizClient:
                 raise DatasetEvaluationMissingAnnotation()
         raise FailedToParseVizResponse()
 
-    def send_metrics(self, metrics_group: str, id: str, create_time: int, user_id: int, project_id: int,
-                     keywords: List[str], user_labels: UserLabels, extra_data: Optional[Dict]) -> None:
+    def send_metrics(
+        self,
+        metrics_group: str,
+        id: str,
+        create_time: int,
+        user_id: int,
+        project_id: int,
+        keywords: List[str],
+        user_labels: UserLabels,
+        extra_data: Optional[Dict],
+    ) -> None:
         if not extra_data:
             extra_data = {}
 
@@ -418,24 +444,28 @@ class VizClient:
         extra_data["create_time"] = create_time
         extra_data["user_id"] = f"{user_id:0>4}"
         extra_data["project_id"] = f"{project_id:0>6}"
-        extra_data["class_ids"] = ','.join(map(str, user_labels.get_class_ids(keywords)))
+        extra_data["key_ids"] = ",".join(map(str, user_labels.get_class_ids(keywords)))
 
         url = f"http://127.0.0.1:{settings.VIEWER_HOST_PORT}/api/v1/user_metrics/{metrics_group}"
         self.session.post(url, data=extra_data, timeout=settings.VIZ_TIMEOUT)
 
-    def query_metrics(self,
-                      metrics_group: str,
-                      user_id: int,
-                      query_field: str,
-                      bucket: str,
-                      unit: str = "",
-                      limit: int = 10,
-                      user_labels: UserLabels = None,
-                      keywords: List[str] = []) -> Dict:
+    def query_metrics(
+        self,
+        metrics_group: str,
+        user_id: int,
+        query_field: str,
+        bucket: str,
+        unit: str = "",
+        limit: int = 10,
+    ) -> Dict:
         url = f"http://127.0.0.1:{settings.VIEWER_HOST_PORT}/api/v1/user_metrics/{metrics_group}"
-        params = {"user_id": user_id, "query_field": query_field, "bucket": bucket, "unit": unit, "limit": limit}
-        if keywords and user_labels:
-            params["class_ids"] = ','.join(map(str, user_labels.get_class_ids(keywords)))
+        params = {
+            "user_id": user_id,
+            "query_field": query_field,
+            "bucket": bucket,
+            "unit": unit,
+            "limit": limit,
+        }
         resp = self.get_resp(url, params=params)
         return self.parse_resp(resp)
 

@@ -1,4 +1,3 @@
-# from datetime import datetime
 import json
 import itertools
 import asyncio
@@ -172,41 +171,36 @@ def create_single_task(db: Session, user_id: int, user_labels: UserLabels, task_
     task_result.create(task_in.parameters.dataset_id, task_in.result_description)
 
     try:
-        write_clickhouse_metrics(
-            task_info,
-            args["dataset_group_id"],
-            args["dataset_id"],
-            task_in.parameters.model_id,
-            task_in.parameters.keywords or [],
+        viz_client = VizClient()
+        m_timestamp = int(task_info.create_datetime.timestamp())
+        m_keywords = task_in.parameters.keywords or []
+        viz_client.send_metrics(
+            metrics_group="task",
+            id=task_info.hash,
+            create_time=m_timestamp,
+            user_id=task_info.user_id,
+            project_id=task_info.project_id,
+            keywords=m_keywords,
+            user_labels=user_labels,
+            extra_data=dict(
+                task_type=TaskType(task_info.type).name,
+                dataset_ids=[args["dataset_hash"]],
+                model_ids=[args["model_hash"]],
+            ),
+        )
+        viz_client.send_metrics(
+            metrics_group="keyids",
+            id=task_info.hash,
+            create_time=m_timestamp,
+            user_id=task_info.user_id,
+            project_id=task_info.project_id,
+            keywords=m_keywords,
+            user_labels=user_labels,
         )
 
-        # viz_client = VizClient(host=settings.VIZ_HOST)
-        # m_timestamp = int(datetime.timestamp(task_info.create_datetime))
-        # m_keywords = task_in.parameters.keywords or []
-        # viz_client.send_metrics(metrics_group="task",
-        #                         id=task_info.hash,
-        #                         create_time=m_timestamp,
-        #                         user_id=task_info.user_id,
-        #                         project_id=task_info.project_id,
-        #                         keywords=m_keywords,
-        #                         user_labels=user_labels,
-        #                         extra_data=dict(
-        #                             task_type=TaskType(task_info.type).name,
-        #                             dataset_ids=[args["dataset_hash"]],
-        #                             model_ids=[args["model_hash"]],
-        #                         ))
-        # viz_client.send_metrics(metrics_group="keyids",
-        #                         id=task_info.hash,
-        #                         create_time=m_timestamp,
-        #                         user_id=task_info.user_id,
-        #                         project_id=task_info.project_id,
-        #                         keywords=m_keywords,
-        #                         user_labels=user_labels)
-
-    except FailedToConnectClickHouse:
-        # clickhouse metric shouldn't block create task process
+    except Exception:
         logger.exception(
-            "[create task] failed to write task(%s) stats to clickhouse, continue anyway",
+            "[create task] failed to write task(%s) stats to viewer, continue anyway",
             task.hash,
         )
     logger.info("[create task] created task name: %s", task_info.name)
@@ -285,28 +279,17 @@ class TaskResult:
             return
         project_in_db = crud.project.get(self.db, id=self.project_id)
         keywords = schemas.Project.from_orm(project_in_db).training_keywords
-        clickhouse = YmirClickHouse()
-        clickhouse.save_model_result(
-            model_in_db.create_datetime,
-            self.user_id,
-            model_in_db.project_id,
-            model_in_db.model_group_id,
-            model_in_db.id,
-            model_in_db.name,
-            result["hash"],
-            result["map"],
-            keywords,
+        viz_client = VizClient(host=settings.VIZ_HOST)
+        viz_client.send_metrics(
+            metrics_group="model",
+            id=result["hash"],
+            create_time=int(model_in_db.create_datetime.timestamp()),
+            user_id=self.user_id,
+            project_id=model_in_db.project_id,
+            keywords=keywords,
+            user_labels=self.user_labels,
+            extra_data=dict(model_map=result["map"]),
         )
-
-        # viz_client = VizClient(host=settings.VIZ_HOST)
-        # viz_client.send_metrics(metrics_group="model",
-        #                         id=result["hash"],
-        #                         create_time=int(datetime.timestamp(model_in_db.create_datetime)),
-        #                         user_id=self.user_id,
-        #                         project_id=model_in_db.project_id,
-        #                         keywords=keywords,
-        #                         user_labels=self.user_labels,
-        #                         extra_data=dict(model_map=result["map"]))
 
     def get_dest_group_info(self, dataset_id: int) -> Tuple[int, str]:
         if self.result_type is ResultType.dataset:
