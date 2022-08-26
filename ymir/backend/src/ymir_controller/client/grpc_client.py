@@ -7,6 +7,7 @@ import grpc
 from google.protobuf import json_format
 
 from controller.utils import invoker_call, revs
+from mir.protos import mir_command_pb2 as mir_cmd_pb
 from proto import backend_pb2, backend_pb2_grpc, backend_pb2_utils
 
 
@@ -89,7 +90,7 @@ def _build_task_filter_req(args: Dict) -> backend_pb2.GeneralReq:
         filter_request.ex_class_ids[:] = args['ex_class_ids']
 
     req_create_task = backend_pb2.ReqCreateTask()
-    req_create_task.task_type = backend_pb2.TaskTypeFilter
+    req_create_task.task_type = mir_cmd_pb.TaskType.TaskTypeFilter
     req_create_task.filter.CopyFrom(filter_request)
 
     return req_create_task
@@ -102,7 +103,7 @@ def _build_task_training_req(args: Dict) -> backend_pb2.GeneralReq:
     train_task_req.in_class_ids[:] = args['in_class_ids']
 
     req_create_task = backend_pb2.ReqCreateTask()
-    req_create_task.task_type = backend_pb2.TaskTypeTraining
+    req_create_task.task_type = mir_cmd_pb.TaskType.TaskTypeTraining
     req_create_task.no_task_monitor = args['no_task_monitor']
     req_create_task.training.CopyFrom(train_task_req)
 
@@ -118,7 +119,7 @@ def _build_task_mining_req(args: Dict) -> backend_pb2.GeneralReq:
         mine_task_req.ex_dataset_ids[:] = args['ex_dataset_ids']
 
     req_create_task = backend_pb2.ReqCreateTask()
-    req_create_task.task_type = backend_pb2.TaskTypeMining
+    req_create_task.task_type = mir_cmd_pb.TaskType.TaskTypeMining
     req_create_task.mining.CopyFrom(mine_task_req)
 
     return req_create_task
@@ -133,7 +134,7 @@ def _build_task_importing_req(args: Dict) -> backend_pb2.GeneralReq:
         backend_pb2_utils.UnknownTypesStrategyStr(args['unknown_types_strategy']))
 
     req_create_task = backend_pb2.ReqCreateTask()
-    req_create_task.task_type = backend_pb2.TaskTypeImportData
+    req_create_task.task_type = mir_cmd_pb.TaskType.TaskTypeImportData
     req_create_task.no_task_monitor = args['no_task_monitor']
     req_create_task.importing.CopyFrom(importing_request)
 
@@ -151,7 +152,7 @@ def _build_task_labeling_req(args: Dict) -> backend_pb2.GeneralReq:
         labeling_request.export_annotation = True
 
     req_create_task = backend_pb2.ReqCreateTask()
-    req_create_task.task_type = backend_pb2.TaskTypeLabel
+    req_create_task.task_type = mir_cmd_pb.TaskType.TaskTypeLabel
     req_create_task.no_task_monitor = args['no_task_monitor']
     req_create_task.labeling.CopyFrom(labeling_request)
 
@@ -174,7 +175,7 @@ def _build_task_fusion_req(args: Dict) -> backend_pb2.GeneralReq:
         fusion_request.rate = args['sampling_rate']
 
     req_create_task = backend_pb2.ReqCreateTask()
-    req_create_task.task_type = backend_pb2.TaskTypeFusion
+    req_create_task.task_type = mir_cmd_pb.TaskType.TaskTypeFusion
     req_create_task.no_task_monitor = args['no_task_monitor']
     req_create_task.fusion.CopyFrom(fusion_request)
 
@@ -183,7 +184,7 @@ def _build_task_fusion_req(args: Dict) -> backend_pb2.GeneralReq:
 
 def _build_task_import_model_req(args: Dict) -> backend_pb2.GeneralReq:
     req_create_task = backend_pb2.ReqCreateTask()
-    req_create_task.task_type = backend_pb2.TaskTypeImportModel
+    req_create_task.task_type = mir_cmd_pb.TaskType.TaskTypeImportModel
     req_create_task.no_task_monitor = args['no_task_monitor']
     req_create_task.model_importing.model_package_path = args['model_package_path']
 

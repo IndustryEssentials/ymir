@@ -14,6 +14,7 @@ from controller.utils import gpu_utils, utils
 from controller.utils.invoker_call import make_invoker_cmd_call
 from controller.utils.invoker_mapping import RequestTypeToInvoker
 from controller.utils.redis import rds
+from mir.protos import mir_command_pb2 as mir_cmd_pb
 from proto import backend_pb2
 
 RET_ID = 'commit t000aaaabbbbbbzzzzzzzzzzzzzzz3\nabc'
@@ -100,10 +101,10 @@ class TestInvokerTaskTraining(unittest.TestCase):
 
         training_data_type_1 = backend_pb2.TaskReqTraining.TrainingDatasetType()
         training_data_type_1.dataset_id = self._guest_id1
-        training_data_type_1.dataset_type = backend_pb2.TvtType.TvtTypeTraining
+        training_data_type_1.dataset_type = mir_cmd_pb.TvtType.TvtTypeTraining
         training_data_type_2 = backend_pb2.TaskReqTraining.TrainingDatasetType()
         training_data_type_2.dataset_id = self._guest_id2
-        training_data_type_2.dataset_type = backend_pb2.TvtType.TvtTypeValidation
+        training_data_type_2.dataset_type = mir_cmd_pb.TvtType.TvtTypeValidation
 
         train_task_req = backend_pb2.TaskReqTraining()
         train_task_req.in_dataset_types.append(training_data_type_2)
@@ -111,7 +112,7 @@ class TestInvokerTaskTraining(unittest.TestCase):
         train_task_req.in_class_ids[:] = [0, 1]
 
         req_create_task = backend_pb2.ReqCreateTask()
-        req_create_task.task_type = backend_pb2.TaskTypeTraining
+        req_create_task.task_type = mir_cmd_pb.TaskType.TaskTypeTraining
         req_create_task.no_task_monitor = True
         req_create_task.training.CopyFrom(train_task_req)
         training_image = 'test_training_image'
@@ -127,7 +128,7 @@ class TestInvokerTaskTraining(unittest.TestCase):
         }
 
         working_dir_root = os.path.join(self._sandbox_root, "work_dir",
-                                        backend_pb2.TaskType.Name(backend_pb2.TaskTypeTraining), self._task_id)
+                                        mir_cmd_pb.TaskType.Name(mir_cmd_pb.TaskType.TaskTypeTraining), self._task_id)
         os.makedirs(working_dir_root, exist_ok=True)
         working_dir_0 = os.path.join(working_dir_root, 'sub_task', self._sub_task_id_0)
         os.makedirs(working_dir_0, exist_ok=True)

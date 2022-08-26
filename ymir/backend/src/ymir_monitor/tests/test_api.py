@@ -10,7 +10,6 @@ class TestReg:
 
         body = dict(
             task_id="abcdadf",
-            user_id="12",
             log_path_weights={
                 "/data/test/monitor.txtaa": 0.5,
                 "/data/test/m2.txtaa": 0.5

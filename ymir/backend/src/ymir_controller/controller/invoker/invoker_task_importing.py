@@ -1,19 +1,18 @@
 import logging
 import os
 import shutil
-from typing import Dict, List
+from typing import Dict, List, Optional, Tuple
 from common_utils.labels import UserLabels
 
-from controller.invoker.invoker_task_base import TaskBaseInvoker
+from controller.invoker.invoker_task_base import SubTaskType, TaskBaseInvoker
 from controller.utils import utils
 from id_definition.error_codes import CTLResponseCode
 from proto import backend_pb2, backend_pb2_utils
 
 
 class TaskImportingInvoker(TaskBaseInvoker):
-    def task_pre_invoke(self, sandbox_root: str, request: backend_pb2.GeneralReq) -> backend_pb2.GeneralResp:
+    def task_pre_invoke(self, request: backend_pb2.GeneralReq) -> backend_pb2.GeneralResp:
         importing_request = request.req_create_task.importing
-        logging.info(f"importing_request: {importing_request}")
         (media_dir, pred_dir, gt_dir) = (importing_request.asset_dir, importing_request.pred_dir,
                                          importing_request.gt_dir)
         if pred_dir:
@@ -31,13 +30,13 @@ class TaskImportingInvoker(TaskBaseInvoker):
         return utils.make_general_response(code=CTLResponseCode.CTR_OK, message="")
 
     @classmethod
-    def subtask_weights(cls) -> List[float]:
-        return [1.0]
+    def register_subtasks(cls) -> List[Tuple[SubTaskType, float]]:
+        return [(cls.subtask_invoke_import, 1.0)]
 
     @classmethod
-    def subtask_invoke_0(cls, sandbox_root: str, repo_root: str, assets_config: Dict[str, str],
-                         request: backend_pb2.GeneralReq, subtask_id: str, subtask_workdir: str,
-                         previous_subtask_id: str, user_labels: UserLabels) -> backend_pb2.GeneralResp:
+    def subtask_invoke_import(cls, request: backend_pb2.GeneralReq, user_labels: UserLabels, sandbox_root: str,
+                              assets_config: Dict[str, str], repo_root: str, master_task_id: str, subtask_id: str,
+                              subtask_workdir: str, previous_subtask_id: Optional[str]) -> backend_pb2.GeneralResp:
         importing_request = request.req_create_task.importing
 
         # Prepare media index-file
