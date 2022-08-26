@@ -12,6 +12,7 @@ from app.schemas.common import (
     IdModelMixin,
     IsDeletedModelMixin,
 )
+from id_definition.task_id import TaskId
 
 
 class TaskBase(BaseModel):
@@ -260,8 +261,8 @@ class TaskUpdateStatus(BaseModel):
     @classmethod
     def from_monitor_event(cls, msg: str) -> "TaskUpdateStatus":
         payload = json.loads(msg)
-        user_id = int(payload["task_extra_info"]["user_id"])
         event = payload["percent_result"]
+        user_id = int(TaskId.from_task_id(event["task_id"]).user_id)
         return cls(
             user_id=user_id,
             hash=event["task_id"],
