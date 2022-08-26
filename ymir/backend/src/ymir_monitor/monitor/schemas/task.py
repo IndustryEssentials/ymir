@@ -14,7 +14,6 @@ class MonitorType(IntEnum):
 
 class TaskParameter(BaseModel):
     task_id: str
-    user_id: str
     monitor_type: MonitorType = MonitorType.PERCENT
     log_path_weights: Dict[str, float]
     description: Optional[str]
@@ -33,7 +32,6 @@ class TaskParameter(BaseModel):
 
 
 class TaskExtraInfo(BaseModel):
-    user_id: Optional[str] = None
     monitor_type: MonitorType = MonitorType.PERCENT
     log_path_weights: Dict[str, float]
     description: Optional[str]

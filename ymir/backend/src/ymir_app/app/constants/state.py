@@ -1,14 +1,15 @@
 from enum import IntEnum
 
 from common_utils.percent_log_util import LogState
+from mir.protos import mir_command_pb2 as mir_cmd_pb
 from proto import backend_pb2 as mirsvrpb
 
 
 class DockerImageType(IntEnum):
-    unknown = mirsvrpb.TaskType.TaskTypeUnknown
-    training = mirsvrpb.TaskType.TaskTypeTraining
-    mining = mirsvrpb.TaskType.TaskTypeMining
-    infer = mirsvrpb.TaskType.TaskTypeInfer
+    unknown = mir_cmd_pb.TaskType.TaskTypeUnknown
+    training = mir_cmd_pb.TaskType.TaskTypeTraining
+    mining = mir_cmd_pb.TaskType.TaskTypeMining
+    infer = mir_cmd_pb.TaskType.TaskTypeInfer
 
 
 class DockerImageState(IntEnum):
@@ -18,21 +19,21 @@ class DockerImageState(IntEnum):
 
 
 class TaskType(IntEnum):
-    unknown = mirsvrpb.TaskType.TaskTypeUnknown
-    training = mirsvrpb.TaskType.TaskTypeTraining
-    mining = mirsvrpb.TaskType.TaskTypeMining
-    label = mirsvrpb.TaskType.TaskTypeLabel
-    filter = mirsvrpb.TaskType.TaskTypeFilter
-    import_data = mirsvrpb.TaskType.TaskTypeImportData
-    export_data = mirsvrpb.TaskType.TaskTypeExportData
-    copy_data = mirsvrpb.TaskType.TaskTypeCopyData
-    merge = mirsvrpb.TaskType.TaskTypeMerge
-    infer = mirsvrpb.TaskType.TaskTypeInfer
-    data_fusion = mirsvrpb.TaskType.TaskTypeFusion
-    copy_model = mirsvrpb.TaskType.TaskTypeCopyModel
-    import_model = mirsvrpb.TaskType.TaskTypeImportModel
-    dataset_infer = mirsvrpb.TaskType.TaskTypeDatasetInfer
-    visualization = mirsvrpb.TaskType.TaskTypeVisualization
+    unknown = mir_cmd_pb.TaskType.TaskTypeUnknown
+    training = mir_cmd_pb.TaskType.TaskTypeTraining
+    mining = mir_cmd_pb.TaskType.TaskTypeMining
+    label = mir_cmd_pb.TaskType.TaskTypeLabel
+    filter = mir_cmd_pb.TaskType.TaskTypeFilter
+    import_data = mir_cmd_pb.TaskType.TaskTypeImportData
+    export_data = mir_cmd_pb.TaskType.TaskTypeExportData
+    copy_data = mir_cmd_pb.TaskType.TaskTypeCopyData
+    merge = mir_cmd_pb.TaskType.TaskTypeMerge
+    infer = mir_cmd_pb.TaskType.TaskTypeInfer
+    data_fusion = mir_cmd_pb.TaskType.TaskTypeFusion
+    copy_model = mir_cmd_pb.TaskType.TaskTypeCopyModel
+    import_model = mir_cmd_pb.TaskType.TaskTypeImportModel
+    dataset_infer = mir_cmd_pb.TaskType.TaskTypeDatasetInfer
+    visualization = mir_cmd_pb.TaskType.TaskTypeVisualization
 
     # fixme
     #  create_project is not the type of TASK_CREATE, but empty dataset need a task

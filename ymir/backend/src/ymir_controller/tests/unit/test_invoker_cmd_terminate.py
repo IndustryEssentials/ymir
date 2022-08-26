@@ -7,6 +7,7 @@ from unittest import mock
 import tests.utils as test_utils
 from controller.utils.invoker_call import make_invoker_cmd_call
 from controller.utils.invoker_mapping import RequestTypeToInvoker
+from mir.protos import mir_command_pb2 as mir_cmd_pb
 from proto import backend_pb2
 
 
@@ -65,7 +66,7 @@ class TestInvokerCMDTerminate(unittest.TestCase):
             repo_id=self._mir_repo_name,
             task_id=self._task_id,
             executant_name=executant_name,
-            terminated_task_type=backend_pb2.TaskType.TaskTypeTraining,
+            terminated_task_type=mir_cmd_pb.TaskType.TaskTypeTraining,
         )
 
         cmd = f"docker rm -f {executant_name}"

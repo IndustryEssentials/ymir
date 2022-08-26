@@ -6,6 +6,7 @@ from unittest import mock
 from controller.utils.invoker_call import make_invoker_cmd_call
 from controller.utils.invoker_mapping import RequestTypeToInvoker
 from proto import backend_pb2
+from mir.protos import mir_command_pb2 as mir_cmd_pb
 
 import tests.utils as test_utils
 
@@ -61,15 +62,13 @@ class TestInvokerCmdEvaluate(unittest.TestCase):
 
     # protected: mocked
     def _mock_run_func(*args, **kwargs):
-        ret = type('', (), {})()
-        ret.returncode = 0
-        ret.stdout = 'done'
-        return ret
+        return mir_cmd_pb.Evaluation(), None
 
     # public: test cases
-    @mock.patch("subprocess.run", side_effect=_mock_run_func)
+    @mock.patch("mir.tools.det_eval.det_evaluate", side_effect=_mock_run_func)
     def test_evaluate_00(self, mock_run):
-        evaluate_config = backend_pb2.EvaluateConfig()
+        evaluate_config = mir_cmd_pb.EvaluateConfig()
+        evaluate_config.pred_dataset_ids[:] = ["abc"]
         evaluate_config.conf_thr = self._conf_thr
         evaluate_config.iou_thrs_interval = self._iou_thrs_interval
 
@@ -83,13 +82,3 @@ class TestInvokerCmdEvaluate(unittest.TestCase):
                                          singleton_op=self._gt_dataset_id,
                                          evaluate_config=evaluate_config)
         self.assertEqual(response.code, 0)
-        self.assertEqual(response.message, 'done')
-
-        work_dir = os.path.join(self._sandbox_root, "work_dir", backend_pb2.RequestType.Name(backend_pb2.CMD_EVALUATE),
-                                self._task_id)
-        expected_cmd = f"mir evaluate --root {self._mir_repo_root} --dst-rev {self._task_id}@{self._task_id}"
-        expected_cmd += f" --src-revs {self._in_dataset_ids[0]}"
-        expected_cmd += f" --gt-rev {self._gt_dataset_id}@{self._gt_dataset_id}"
-        expected_cmd += f" -w {work_dir} --conf-thr {self._conf_thr:.2f}"
-        expected_cmd += f" --iou-thrs {self._iou_thrs_interval}"
-        mock_run.assert_called_once_with(expected_cmd.split(' '), capture_output=True, text=True)

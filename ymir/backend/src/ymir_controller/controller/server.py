@@ -50,6 +50,7 @@ class MirControllerService(backend_pb2_grpc.mir_controller_serviceServicer):
                                 assets_config=self.assets_config,
                                 async_mode=True)
         try:
+            logging.info(f"task {task_id} process:\n {invoker}")
             invoker_result = invoker.server_invoke()
         except errors.MirCtrError as e:
             logging.exception(f"task {task_id} MirCtrError error: {e}")
@@ -62,7 +63,7 @@ class MirControllerService(backend_pb2_grpc.mir_controller_serviceServicer):
             return utils.make_general_response(CTLResponseCode.INVOKER_UNKNOWN_ERROR, str(e))
 
         if isinstance(invoker_result, backend_pb2.GeneralResp):
-            logging.info(f"task {task_id} result: {MessageToString(invoker_result, as_one_line=True)}")
+            logging.info(f"task {task_id} result:\n {MessageToString(invoker_result, as_one_line=True)}")
             return invoker_result
 
         return utils.make_general_response(CTLResponseCode.UNKOWN_RESPONSE_FORMAT,

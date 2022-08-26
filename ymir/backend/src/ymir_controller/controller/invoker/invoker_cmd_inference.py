@@ -2,7 +2,6 @@ import json
 import logging
 import os
 import shutil
-from typing import Dict
 
 import yaml
 from PIL import Image
@@ -15,6 +14,9 @@ from proto import backend_pb2
 
 
 class InferenceCMDInvoker(BaseMirControllerInvoker):
+    def _need_work_dir(self) -> bool:
+        return True
+
     @classmethod
     def gen_inference_config(cls, req_inference_config: str, task_context: dict, work_dir: str) -> str:
         inference_config = yaml.safe_load(req_inference_config)
@@ -52,36 +54,15 @@ class InferenceCMDInvoker(BaseMirControllerInvoker):
 
         return index_file
 
-    @classmethod
-    def get_inference_result(cls, work_dir: str) -> Dict:
-        infer_result_file = os.path.join(work_dir, "out", "infer-result.json")
-        with open(infer_result_file) as f:
-            infer_result = json.load(f)
-
-        return infer_result
-
-    @classmethod
-    def generate_inference_response(cls, inference_result: Dict) -> backend_pb2.GeneralResp:
-        resp = utils.make_general_response(CTLResponseCode.CTR_OK, "")
-        result = dict(imageAnnotations=inference_result["detection"])
-        resp_inference = backend_pb2.RespCMDInference()
-        json_format.ParseDict(result, resp_inference, ignore_unknown_fields=False)
-        resp.detection.CopyFrom(resp_inference)
-
-        return resp
-
     def pre_invoke(self) -> backend_pb2.GeneralResp:
-        return checker.check_request(
-            request=self._request,
+        return checker.check_invoker(
+            invoker=self,
             prerequisites=[checker.Prerequisites.CHECK_USER_ID, checker.Prerequisites.CHECK_REPO_ID],
-            mir_root=self._repo_root,
         )
 
     def invoke(self) -> backend_pb2.GeneralResp:
-        expected_type = backend_pb2.RequestType.CMD_INFERENCE
-        if self._request.req_type != expected_type:
-            return utils.make_general_response(CTLResponseCode.MIS_MATCHED_INVOKER_TYPE,
-                                               f"expected: {expected_type} vs actual: {self._request.req_type}")
+        if not self._user_labels:
+            return utils.make_general_response(CTLResponseCode.ARG_VALIDATION_FAILED, "invalid _user_labels")
 
         index_file = self.prepare_inference_picture(self._request.asset_dir, self._work_dir)
         config_file = self.gen_inference_config(req_inference_config=self._request.docker_image_config,
@@ -98,9 +79,24 @@ class InferenceCMDInvoker(BaseMirControllerInvoker):
             index_file=index_file,
             executor=self._request.singleton_op,
         )
-        inference_result = self.get_inference_result(self._work_dir)
 
-        return self.generate_inference_response(inference_result)
+        infer_result_file = os.path.join(self._work_dir, "out", "infer-result.json")
+        if not os.path.isfile(infer_result_file):
+            return utils.make_general_response(CTLResponseCode.DOCKER_IMAGE_ERROR, "empty inference result.")
+        with open(infer_result_file) as f:
+            infer_result = json.load(f)
+
+        resp = utils.make_general_response(CTLResponseCode.CTR_OK, "")
+        json_format.ParseDict(dict(imageAnnotations=infer_result["detection"]),
+                              resp.detection,
+                              ignore_unknown_fields=False)
+
+        # class_id should be updated, as it was from outside model.
+        for _, annotations in resp.detection.image_annotations.items():
+            for annotation in annotations.annotations:
+                annotation.class_id = self._user_labels.get_class_ids(annotation.class_name, raise_if_unknown=False)[0]
+
+        return resp
 
     @classmethod
     def inference_cmd(cls, repo_root: str, work_dir: str, model_location: str, config_file: str, model_hash: str,

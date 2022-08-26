@@ -1,6 +1,6 @@
 from concurrent.futures import ThreadPoolExecutor
 from functools import partial
-from typing import Dict, List
+from typing import Dict, List, Optional
 
 import requests
 from requests.exceptions import ConnectionError, HTTPError, Timeout
@@ -15,7 +15,7 @@ from controller.config.fiftyone_task import FIFTYONE_HOST_URL, FIFTYONE_TIMEOUT,
 
 
 class TaskVisualizationInvoker(TaskBaseInvoker):
-    def task_pre_invoke(self, sandbox_root: str, request: backend_pb2.GeneralReq) -> backend_pb2.GeneralResp:
+    def task_pre_invoke(self, request: backend_pb2.GeneralReq) -> backend_pb2.GeneralResp:
         return utils.make_general_response(CTLResponseCode.CTR_OK, "")
 
     @classmethod
@@ -23,17 +23,9 @@ class TaskVisualizationInvoker(TaskBaseInvoker):
         return [1.0]
 
     @classmethod
-    def subtask_invoke_0(
-        cls,
-        sandbox_root: str,
-        repo_root: str,
-        assets_config: Dict[str, str],
-        request: backend_pb2.GeneralReq,
-        subtask_id: str,
-        subtask_workdir: str,
-        previous_subtask_id: str,
-        user_labels: UserLabels,
-    ) -> backend_pb2.GeneralResp:
+    def subtask_invoke_0(cls, request: backend_pb2.GeneralReq, user_labels: UserLabels, sandbox_root: str,
+                         assets_config: Dict[str, str], repo_root: str, master_task_id: str, subtask_id: str,
+                         subtask_workdir: str, previous_subtask_id: Optional[str]) -> backend_pb2.GeneralResp:
         # export as PASCAL_VOC format
         visualization = request.req_create_task.visualization
 

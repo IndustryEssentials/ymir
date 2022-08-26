@@ -33,8 +33,8 @@ class TestControllerRequest:
                 "docker_config": "{}",
             },
         )
-        assert ret.req.req_type == m.mirsvrpb.TASK_CREATE
-        assert ret.req.req_create_task.task_type == m.mirsvrpb.TaskTypeTraining
+        assert ret.req.req_type == m.mirsvrpb.RequestType.TASK_CREATE
+        assert ret.req.req_create_task.task_type == m.mir_cmd_pb.TaskType.TaskTypeTraining
 
     def test_mining(self):
         task_type = m.TaskType.mining
@@ -55,8 +55,8 @@ class TestControllerRequest:
                 "docker_config": "{}",
             },
         )
-        assert ret.req.req_type == m.mirsvrpb.TASK_CREATE
-        assert ret.req.req_create_task.task_type == m.mirsvrpb.TaskTypeMining
+        assert ret.req.req_type == m.mirsvrpb.RequestType.TASK_CREATE
+        assert ret.req.req_create_task.task_type == m.mir_cmd_pb.TaskType.TaskTypeMining
 
     def test_label(self):
         task_type = m.TaskType.label
@@ -76,9 +76,9 @@ class TestControllerRequest:
                 "annotation_type": 2,
             },
         )
-        assert ret.req.req_type == m.mirsvrpb.TASK_CREATE
-        assert ret.req.req_create_task.task_type == m.mirsvrpb.TaskTypeLabel
-        assert ret.req.req_create_task.labeling.annotation_type == m.mirsvrpb.PRED
+        assert ret.req.req_type == m.mirsvrpb.RequestType.TASK_CREATE
+        assert ret.req.req_create_task.task_type == m.mir_cmd_pb.TaskType.TaskTypeLabel
+        assert ret.req.req_create_task.labeling.annotation_type == m.mirsvrpb.AnnotationType.PRED
 
     def test_copy_data(self):
         task_type = m.TaskType.copy_data
@@ -94,8 +94,8 @@ class TestControllerRequest:
                 "src_resource_id": random_lower_string(),
             },
         )
-        assert ret.req.req_type == m.mirsvrpb.TASK_CREATE
-        assert ret.req.req_create_task.task_type == m.mirsvrpb.TaskTypeCopyData
+        assert ret.req.req_type == m.mirsvrpb.RequestType.TASK_CREATE
+        assert ret.req.req_create_task.task_type == m.mir_cmd_pb.TaskType.TaskTypeCopyData
 
     def test_kill(self, mocker):
         task_type = m.ExtraRequestType.kill

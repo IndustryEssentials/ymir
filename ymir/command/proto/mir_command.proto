@@ -42,9 +42,11 @@ enum TaskType {
     TaskTypeFusion = 11;
     TaskTypeInit = 12;
     TaskTypeImportModel = 13;
+    TaskTypeCopyModel = 14;
+    TaskTypeDatasetInfer = 15;
     TaskTypeEvaluate = 16;
+    TaskTypeVisualization = 17;
 
-    reserved 14, 15;
 };
 
 enum TaskState {
@@ -74,6 +76,7 @@ enum LabelFormat {
     NO_ANNOTATION = 0;
     PASCAL_VOC = 1;
     IF_ARK = 2;
+    LABEL_STUDIO_JSON = 3;
 };
 
 /// ========== metadatas.mir ==========
@@ -138,6 +141,7 @@ message Annotation {
     map<string, string> tags = 6;
     ConfusionMatrixType cm = 7;
     int32 det_link_id = 8;
+    string class_name = 9;  // for data parsed from outside, e.g. inference.
 };
 
 enum ConfusionMatrixType {
