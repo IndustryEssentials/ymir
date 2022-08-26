@@ -23,18 +23,16 @@ def det_evaluate(
 
     return det_evaluate_with_pb(
         mir_annotations=mir_annotations,
-        mir_keywords=mir_keywords,
         dataset_id=rev_tid.rev_tid,
         conf_thr=conf_thr,
         iou_thrs=iou_thrs,
-        class_ids=class_ids,
+        class_ids=class_ids or list(mir_keywords.gt_idx.cis.keys()),
         need_pr_curve=need_pr_curve,
     )
 
 
 def det_evaluate_with_pb(
     mir_annotations: mirpb.MirAnnotations,
-    mir_keywords: mirpb.MirKeywords,
     dataset_id: str,
     conf_thr: float,
     iou_thrs: str,
@@ -49,7 +47,7 @@ def det_evaluate_with_pb(
     evaluate_config.need_pr_curve = need_pr_curve
     evaluate_config.gt_dataset_id = dataset_id
     evaluate_config.pred_dataset_ids.append(dataset_id)
-    evaluate_config.class_ids[:] = class_ids or mir_keywords.gt_idx.cis.keys()
+    evaluate_config.class_ids[:] = class_ids
 
     eval_model_name = det_eval_voc if mode == 'voc' else det_eval_coco
     evaluation = eval_model_name.det_evaluate(predictions=[mir_annotations.prediction],  # type: ignore

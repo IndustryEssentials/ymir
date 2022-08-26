@@ -61,12 +61,11 @@ class MirStorageOps():
                 and mir_annotations.prediction.image_annotations):
             evaluation, _ = det_eval_ops.det_evaluate_with_pb(
                 mir_annotations=mir_annotations,
-                mir_keywords=mir_keywords,
                 dataset_id=build_config.evaluate_src_dataset_id,
                 conf_thr=build_config.evaluate_conf_thr,
                 iou_thrs=build_config.evaluate_iou_thrs,
                 need_pr_curve=build_config.evaluate_need_pr_curve,
-                class_ids=build_config.evaluate_class_ids,
+                class_ids=build_config.evaluate_class_ids or list(mir_keywords.gt_idx.cis.keys()),
             )
             mir_tasks.tasks[mir_tasks.head_task_id].evaluation.CopyFrom(evaluation)
 

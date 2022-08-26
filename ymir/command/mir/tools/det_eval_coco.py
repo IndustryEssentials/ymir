@@ -10,25 +10,25 @@ from mir.protos import mir_command_pb2 as mirpb
 
 
 class MirCoco:
-    def __init__(self, pred_or_gt_annotations: mirpb.SingleTaskAnnotations, conf_thr: Optional[float]) -> None:
+    def __init__(self, task_annotations: mirpb.SingleTaskAnnotations, conf_thr: Optional[float]) -> None:
         """
         creates MirCoco instance
 
         Args:
             asset_ids (Collection[str]): asset ids (hashes)
-            pred_or_gt_annotations (mirpb.SingleTaskAnnotations): pred or gt annotations
+            task_annotations (mirpb.SingleTaskAnnotations): pred or gt annotations
             conf_thr (Optional[float]): lower bound of annotation confidence score
                 only annotation with confidence greater then conf_thr will be used.
                 if you wish to use all annotations, let conf_thr = None
         """
-        if len(pred_or_gt_annotations.image_annotations) == 0:
+        if len(task_annotations.image_annotations) == 0:
             raise MirRuntimeError(error_code=MirCode.RC_CMD_NO_ANNOTATIONS,
                                   error_message='no annotations in evaluated dataset')
 
         # ordered list of asset / image ids
-        self.asset_ids = list(pred_or_gt_annotations.image_annotations.keys())
+        self.asset_ids = list(task_annotations.image_annotations.keys())
 
-        self.img_cat_to_annotations = self._aggregate_annotations(single_task_annotations=pred_or_gt_annotations,
+        self.img_cat_to_annotations = self._aggregate_annotations(single_task_annotations=task_annotations,
                                                                   conf_thr=conf_thr)
 
     def _aggregate_annotations(self, single_task_annotations: mirpb.SingleTaskAnnotations,
@@ -533,10 +533,10 @@ def det_evaluate(predictions: Collection[mirpb.SingleTaskAnnotations], ground_tr
     area_ranges_index = 0  # area range: 'all'
     max_dets_index = len(params.maxDets) - 1  # last max det number
 
-    mir_gt = MirCoco(pred_or_gt_annotations=ground_truth, conf_thr=None)
+    mir_gt = MirCoco(task_annotations=ground_truth, conf_thr=None)
 
     for idx, prediction in enumerate(predictions):
-        mir_dt = MirCoco(pred_or_gt_annotations=prediction, conf_thr=config.conf_thr)
+        mir_dt = MirCoco(task_annotations=prediction, conf_thr=config.conf_thr)
 
         evaluator = CocoDetEval(coco_gt=mir_gt, coco_dt=mir_dt, params=params)
         evaluator.evaluate()
