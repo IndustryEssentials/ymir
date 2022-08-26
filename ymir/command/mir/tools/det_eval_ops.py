@@ -38,7 +38,7 @@ def det_evaluate_with_pb(
     iou_thrs: str,
     class_ids: List[int] = [],
     need_pr_curve: bool = False,
-    mode: str = 'coco',  # voc or coco
+    mode: str = 'voc',  # voc or coco
 ) -> Tuple[mirpb.Evaluation, mirpb.MirAnnotations]:
     # evaluation = mirpb.Evaluation()
     evaluate_config = mirpb.EvaluateConfig()
