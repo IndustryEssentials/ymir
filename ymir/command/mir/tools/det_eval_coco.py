@@ -15,7 +15,6 @@ class MirCoco:
         creates MirCoco instance
 
         Args:
-            asset_ids (Collection[str]): asset ids (hashes)
             task_annotations (mirpb.SingleTaskAnnotations): pred or gt annotations
             conf_thr (Optional[float]): lower bound of annotation confidence score
                 only annotation with confidence greater then conf_thr will be used.
@@ -34,7 +33,7 @@ class MirCoco:
     def _aggregate_annotations(self, single_task_annotations: mirpb.SingleTaskAnnotations,
                                conf_thr: Optional[float]) -> Dict[Tuple[str, int], List[dict]]:
         """
-        aggregates annotations with confidence >= conf_thr into a dict with key: (asset idx, class id)
+        aggregates annotations with confidence >= conf_thr into a dict with key: (asset id, class id)
 
         Args:
             single_task_annotations (mirpb.SingleTaskAnnotations): annotations
@@ -43,12 +42,13 @@ class MirCoco:
         Returns:
             annotations dict with key: (asset idx, class id), value: annotations list,
             each element is a dict, and has following keys and values:
-                asset_id: str, image / asset id
-                id: int, id for a single annotation
+                id: int, global id for a single annotation
                 area: int, area of bbox
                 bbox: List[int], bounding box, xywh
                 score: float, confidence of bbox
                 iscrowd: always 0 because mir knows nothing about it
+                ignore: always 0
+                pb_index_id: annotation.index in mir_annotations file
         """
         img_cat_to_annotations: Dict[Tuple[str, int], List[dict]] = defaultdict(list)
 
@@ -69,7 +69,6 @@ class MirCoco:
                     'score': annotation.score,
                     'iscrowd': 0,
                     'ignore': 0,
-                    'cm': {},  # key: (iou_thr_idx, maxDet), value: (ConfusionMatrixType, linked pb_index_id)
                     'pb_index_id': annotation.index,
                 }
                 img_cat_to_annotations[asset_id, annotation.class_id].append(annotation_dict)
@@ -180,7 +179,7 @@ class CocoDetEval:
         perform evaluation for single category and image
 
         Args:
-            imgIdx (int): image / asset ordered index
+            asset_id (str): asset id
             catId (int): category / class id
             aRng (List[float]): area range (lower and upper bound)
             maxDet (int):

@@ -59,9 +59,11 @@ class MirStorageOps():
                                                       cm=mirpb.ConfusionMatrixType.NotSet)
         if (mir_metadatas.attributes and mir_annotations.ground_truth.image_annotations
                 and mir_annotations.prediction.image_annotations):
-            evaluation, _ = det_eval_ops.det_evaluate_with_pb(
-                mir_annotations=mir_annotations,
-                dataset_id=build_config.evaluate_src_dataset_id,
+            evaluation = det_eval_ops.det_evaluate_with_pb(
+                prediction=mir_annotations.prediction,
+                ground_truth=mir_annotations.ground_truth,
+                gt_dataset_id=build_config.evaluate_src_dataset_id,
+                pred_dataset_id=build_config.evaluate_src_dataset_id,
                 conf_thr=build_config.evaluate_conf_thr,
                 iou_thrs=build_config.evaluate_iou_thrs,
                 need_pr_curve=build_config.evaluate_need_pr_curve,
