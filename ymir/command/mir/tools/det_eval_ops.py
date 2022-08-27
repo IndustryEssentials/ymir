@@ -53,7 +53,6 @@ def det_evaluate_with_pb(
         need_pr_curve: bool = False,
         mode: str = 'voc',  # voc or coco
 ) -> mirpb.Evaluation:
-    # evaluation = mirpb.Evaluation()
     evaluate_config = mirpb.EvaluateConfig()
     evaluate_config.conf_thr = conf_thr
     evaluate_config.iou_thrs_interval = iou_thrs
