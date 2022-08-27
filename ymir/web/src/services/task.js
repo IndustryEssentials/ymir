@@ -137,8 +137,9 @@ export function fusion({
  * @param {object} param0 
  * {
  * {number} projectId
- * {number} dataset
- * {array<number>} [includes]
+ * {number} [group]  group id for generated to
+ * {string} [name] dataset name for generated
+ * {array<number>} [datasets] merge datasets
  * {array<number>} [excludes]
  * {number} [strategy]
  * {number} description 
@@ -146,16 +147,17 @@ export function fusion({
  * @returns 
  */
 export function merge({
-  projectId, dataset,
-  includes = [], strategy = 2,
+  projectId, group, name,
+  datasets = [], strategy = 2,
   excludes = [],
   description,
 }) {
   return request.post('/datasets/merge', {
     project_id: projectId,
-    include_datasets: includes,
+    include_datasets: datasets,
     exclude_datasets: excludes,
-    dataset_id: dataset,
+    dest_group_name: name,
+    dest_group_id: group,
     merge_strategy: strategy,
     description,
   })
