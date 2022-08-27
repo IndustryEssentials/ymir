@@ -20,25 +20,26 @@ from mir.tools.code import MirCode
 from mir.tools.errors import MirError, MirRuntimeError
 
 
-class MirStorageOpsBuildConfig:
-    def __init__(self,
-                 evaluate_conf_thr: float = mir_settings.DEFAULT_EVALUATE_CONF_THR,
-                 evaluate_iou_thrs: str = mir_settings.DEFAULT_EVALUATE_IOU_THR,
-                 evaluate_need_pr_curve: bool = False,
-                 evaluate_src_dataset_id: str = '',
-                 evaluate_class_ids: List[int] = []) -> None:
-        self.evaluate_conf_thr: float = evaluate_conf_thr
-        self.evaluate_iou_thrs: str = evaluate_iou_thrs
-        self.evaluate_need_pr_curve: bool = evaluate_need_pr_curve
-        self.evaluate_src_dataset_id: str = evaluate_src_dataset_id
-        self.evaluate_class_ids: List[int] = evaluate_class_ids
+def create_evaluate_config(conf_thr: float = mir_settings.DEFAULT_EVALUATE_CONF_THR,
+                           iou_thrs: str = mir_settings.DEFAULT_EVALUATE_IOU_THR,
+                           need_pr_curve: bool = False,
+                           src_dataset_id: str = '',
+                           class_ids: List[int] = []) -> mirpb.EvaluateConfig:
+    evaluate_config = mirpb.EvaluateConfig()
+    evaluate_config.conf_thr = conf_thr
+    evaluate_config.iou_thrs_interval = iou_thrs
+    evaluate_config.need_pr_curve = need_pr_curve
+    evaluate_config.class_ids[:] = class_ids
+    evaluate_config.gt_dataset_id = src_dataset_id
+    evaluate_config.pred_dataset_ids[:] = [src_dataset_id]
+    return evaluate_config
 
 
 class MirStorageOps():
     # private: save and load
     @classmethod
     def __build_and_save(cls, mir_root: str, mir_datas: Dict['mirpb.MirStorage.V', Any],
-                         build_config: MirStorageOpsBuildConfig) -> None:
+                         evaluate_config: mirpb.EvaluateConfig) -> None:
         # add default members
         mir_metadatas: mirpb.MirMetadatas = mir_datas[mirpb.MirStorage.MIR_METADATAS]
         mir_tasks: mirpb.MirTasks = mir_datas[mirpb.MirStorage.MIR_TASKS]
@@ -62,12 +63,7 @@ class MirStorageOps():
             evaluation = det_eval_ops.det_evaluate_with_pb(
                 prediction=mir_annotations.prediction,
                 ground_truth=mir_annotations.ground_truth,
-                gt_dataset_id=build_config.evaluate_src_dataset_id,
-                pred_dataset_id=build_config.evaluate_src_dataset_id,
-                conf_thr=build_config.evaluate_conf_thr,
-                iou_thrs=build_config.evaluate_iou_thrs,
-                need_pr_curve=build_config.evaluate_need_pr_curve,
-                class_ids=build_config.evaluate_class_ids or list(mir_keywords.gt_idx.cis.keys()),
+                config=evaluate_config,
             )
             mir_tasks.tasks[mir_tasks.head_task_id].evaluation.CopyFrom(evaluation)
 
@@ -293,7 +289,7 @@ class MirStorageOps():
                         his_branch: Optional[str],
                         mir_datas: Dict,
                         task: mirpb.Task,
-                        build_config: MirStorageOpsBuildConfig = MirStorageOpsBuildConfig()) -> int:
+                        evaluate_config: mirpb.EvaluateConfig = create_evaluate_config()) -> int:
         """
         saves and commit all contents in mir_datas to branch: `mir_branch`;
         branch will be created if not exists, and it's history will be after `his_branch`
@@ -306,8 +302,7 @@ class MirStorageOps():
                 mir_tasks is needed, if mir_metadatas and mir_annotations not provided, they will be created as empty
                  datasets
             task (mirpb.Task): task for this commit
-            conf_thr (float): confidence thr used to evaluate
-            iou_thrs (str): iou thrs used to evaluate
+            evaluate_config (mirpb.EvaluateConfig): evaluate config
 
         Raises:
             MirRuntimeError
@@ -332,8 +327,14 @@ class MirStorageOps():
             raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS, error_message="empty commit message")
         if not task.task_id:
             raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS, error_message='empty task id')
-        if not build_config.evaluate_src_dataset_id:
-            build_config.evaluate_src_dataset_id = revs_parser.join_rev_tid(mir_branch, task.task_id)
+
+        # don't change original `evaluate_config`!
+        copied_evaluate_config = mirpb.EvaluateConfig()
+        copied_evaluate_config.CopyFrom(evaluate_config)
+
+        if not copied_evaluate_config.gt_dataset_id and not copied_evaluate_config.pred_dataset_ids:
+            copied_evaluate_config.gt_dataset_id = revs_parser.join_rev_tid(mir_branch, task.task_id)
+            copied_evaluate_config.pred_dataset_ids[:] = [copied_evaluate_config.gt_dataset_id]
 
         mir_tasks: mirpb.MirTasks = mirpb.MirTasks()
         mir_tasks.head_task_id = task.task_id
@@ -365,7 +366,7 @@ class MirStorageOps():
                 if return_code != MirCode.RC_OK:
                     return return_code
 
-            cls.__build_and_save(mir_root=mir_root, mir_datas=mir_datas, build_config=build_config)
+            cls.__build_and_save(mir_root=mir_root, mir_datas=mir_datas, evaluate_config=copied_evaluate_config)
 
             ret_code = CmdCommit.run_with_args(mir_root=mir_root, msg=task.name)
             if ret_code != MirCode.RC_OK:
@@ -563,10 +564,14 @@ class MirStorageOps():
             asset_ids_detail=asset_ids_detail,
             class_ids_index={k: list(v)
                              for k, v in class_id_to_assets.items()},
-            pred_class_ids_index={k: v.get('key_ids')
-                                  for k, v in mir_storage_keywords.get('pred_idx', {}).get('cis', {}).items()},
-            gt_class_ids_index={k: v.get('key_ids')
-                                for k, v in mir_storage_keywords.get('gt_idx', {}).get('cis', {}).items()},
+            pred_class_ids_index={
+                k: v.get('key_ids')
+                for k, v in mir_storage_keywords.get('pred_idx', {}).get('cis', {}).items()
+            },
+            gt_class_ids_index={
+                k: v.get('key_ids')
+                for k, v in mir_storage_keywords.get('gt_idx', {}).get('cis', {}).items()
+            },
         )
 
     @classmethod

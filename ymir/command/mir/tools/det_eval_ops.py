@@ -1,5 +1,5 @@
 import logging
-from typing import List
+from typing import List, Set
 
 from mir.tools import mir_storage_ops, revs_parser, det_eval_coco, det_eval_voc
 from mir.protos import mir_command_pb2 as mirpb
@@ -14,13 +14,8 @@ def det_evaluate_datasets(
     class_ids: List[int] = [],
     need_pr_curve: bool = False,
 ) -> mirpb.Evaluation:
-    mir_annotations: mirpb.MirAnnotations
-    mir_keywords: mirpb.MirKeywords
-    mir_annotations, mir_keywords = mir_storage_ops.MirStorageOps.load_multiple_storages(
-        mir_root=mir_root,
-        mir_branch=gt_rev_tid.rev,
-        mir_task_id=gt_rev_tid.tid,
-        ms_list=[mirpb.MirStorage.MIR_ANNOTATIONS, mirpb.MirStorage.MIR_KEYWORDS])
+    mir_annotations: mirpb.MirAnnotations = mir_storage_ops.MirStorageOps.load_single_storage(
+        mir_root=mir_root, mir_branch=gt_rev_tid.rev, mir_task_id=gt_rev_tid.tid, ms=mirpb.MirStorage.MIR_ANNOTATIONS)
     ground_truth = mir_annotations.ground_truth
 
     if pred_rev_tid != gt_rev_tid:
@@ -30,46 +25,44 @@ def det_evaluate_datasets(
                                                                             ms=mirpb.MirStorage.MIR_ANNOTATIONS)
     prediction = mir_annotations.prediction
 
+    evaluate_config = mirpb.EvaluateConfig()
+    evaluate_config.conf_thr = conf_thr
+    evaluate_config.iou_thrs_interval = iou_thrs
+    evaluate_config.class_ids[:] = class_ids
+    evaluate_config.need_pr_curve = need_pr_curve
+    evaluate_config.gt_dataset_id = gt_rev_tid.rev_tid
+    evaluate_config.pred_dataset_ids.append(pred_rev_tid.rev_tid)
+
     return det_evaluate_with_pb(
         prediction=prediction,
         ground_truth=ground_truth,
-        gt_dataset_id=gt_rev_tid.rev_tid,
-        pred_dataset_id=pred_rev_tid.rev_tid,
-        conf_thr=conf_thr,
-        iou_thrs=iou_thrs,
-        class_ids=class_ids or list(mir_keywords.gt_idx.cis.keys()),
-        need_pr_curve=need_pr_curve,
+        config=evaluate_config,
     )
 
 
 def det_evaluate_with_pb(
         prediction: mirpb.SingleTaskAnnotations,
         ground_truth: mirpb.SingleTaskAnnotations,
-        gt_dataset_id: str,
-        pred_dataset_id: str,
-        conf_thr: float,
-        iou_thrs: str,
-        class_ids: List[int] = [],
-        need_pr_curve: bool = False,
+        config: mirpb.EvaluateConfig,
         mode: str = 'voc',  # voc or coco
 ) -> mirpb.Evaluation:
-    evaluate_config = mirpb.EvaluateConfig()
-    evaluate_config.conf_thr = conf_thr
-    evaluate_config.iou_thrs_interval = iou_thrs
-    evaluate_config.need_pr_curve = need_pr_curve
-    evaluate_config.gt_dataset_id = gt_dataset_id
-    evaluate_config.pred_dataset_ids.append(pred_dataset_id)
-    evaluate_config.class_ids[:] = class_ids
+    if not config.class_ids:
+        config.class_ids.extend(_gen_class_ids_from_gt(ground_truth=ground_truth))
 
     eval_model_name = det_eval_voc if mode == 'voc' else det_eval_coco
     evaluation = eval_model_name.det_evaluate(  # type: ignore
-        predictions=[prediction],
-        ground_truth=ground_truth,
-        config=evaluate_config)
+        predictions=[prediction], ground_truth=ground_truth, config=config)
 
     _show_evaluation(evaluation=evaluation)
 
     return evaluation
+
+
+def _gen_class_ids_from_gt(ground_truth: mirpb.SingleTaskAnnotations) -> Set[int]:
+    return {
+        annotation.class_id
+        for image_annotations in ground_truth.image_annotations.values() for annotation in image_annotations.annotations
+    }
 
 
 def _show_evaluation(evaluation: mirpb.Evaluation) -> None:
