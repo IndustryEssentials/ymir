@@ -164,7 +164,7 @@ class TestEvaluationController:
         }
         evaluation = mirpb.Evaluation()
         json_format.ParseDict(evaluation_json, evaluation)
-        mocker.patch.object(det_eval_ops, 'det_evaluate', return_value=(evaluation, None))
+        mocker.patch.object(det_eval_ops, 'det_evaluate_datasets', return_value=(evaluation, None))
         resp = test_client.get(
             f"/v1/users/{user_id}/repositories/{repo_id}/branches/{branch_id}/dataset_fast_evaluation"
             "?conf_thr=0.3&iou_thr=0.5&need_pr_curve=false")

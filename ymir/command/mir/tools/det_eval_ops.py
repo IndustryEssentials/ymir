@@ -5,7 +5,7 @@ from mir.tools import mir_storage_ops, revs_parser, det_eval_coco, det_eval_voc
 from mir.protos import mir_command_pb2 as mirpb
 
 
-def det_evaluate(
+def det_evaluate_datasets(
     mir_root: str,
     gt_rev_tid: revs_parser.TypRevTid,
     pred_rev_tid: revs_parser.TypRevTid,

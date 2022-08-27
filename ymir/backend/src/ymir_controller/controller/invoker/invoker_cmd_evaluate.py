@@ -36,12 +36,12 @@ class EvaluateInvoker(BaseMirControllerInvoker):
         ec = self._request.evaluate_config
         rev_tid = revs_parser.parse_single_arg_rev(ec.pred_dataset_ids[0], need_tid=False)
 
-        evaluation, _ = det_eval_ops.det_evaluate(mir_root=self._repo_root,
-                                                  gt_rev_tid=rev_tid,
-                                                  pred_rev_tid=rev_tid,
-                                                  conf_thr=ec.conf_thr,
-                                                  iou_thrs=ec.iou_thrs_interval,
-                                                  need_pr_curve=ec.need_pr_curve)
+        evaluation, _ = det_eval_ops.det_evaluate_datasets(mir_root=self._repo_root,
+                                                           gt_rev_tid=rev_tid,
+                                                           pred_rev_tid=rev_tid,
+                                                           conf_thr=ec.conf_thr,
+                                                           iou_thrs=ec.iou_thrs_interval,
+                                                           need_pr_curve=ec.need_pr_curve)
 
         response = backend_pb2.GeneralResp()
         response.code = CTLResponseCode.CTR_OK
