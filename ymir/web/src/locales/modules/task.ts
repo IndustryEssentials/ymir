@@ -197,6 +197,9 @@ const task = {
     en: "Labelling result dataset will generate ground truth annotations.",
     cn: "标注结果数据集会生成新的标准值标注。",
   },
+  'task.merge.type.label': { en: 'Merge Type', cn: '合并方式' },
+  'task.merge.type.new': { en: 'Generate a new dataset', cn: '生成新数据集' },
+  'task.merge.type.exist': { en: 'Generate a version for original dataset', cn: '在原数据集上生成新版本' },
 }
 
 export default task
