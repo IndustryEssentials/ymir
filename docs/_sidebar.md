@@ -1,3 +1,4 @@
+- [主页](README.md)
 - [如何导入外部模型](import-extra-models.md)
 - [ymir 与功能性 docker container 数据传输接口](ymir-cmd-container.md)
 - [ymir-executor 使用说明](ymir-dataset-zh-CN.md)
