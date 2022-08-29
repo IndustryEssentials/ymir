@@ -301,11 +301,6 @@ class FailedToUpdateTaskStatus(APIError):
     message = "Failed to Update Task Status"
 
 
-class FailedToConnectClickHouse(APIError):
-    code = error_codes.FAILED_TO_CONNECT_CLICKHOUSE
-    message = "Failed to Connect ClickHouse"
-
-
 class FailedToCreateProject(APIError):
     code = error_codes.PROJECT_FAILED_TO_CREATE
     message = "Failed to Create Project"

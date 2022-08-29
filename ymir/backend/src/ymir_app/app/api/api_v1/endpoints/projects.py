@@ -1,5 +1,4 @@
 import enum
-import json
 from typing import Any
 import uuid
 
@@ -21,7 +20,7 @@ from app.constants.state import ResultState, RunningStates, TaskType, TrainingTy
 from app.utils.cache import CacheClient
 from app.utils.ymir_controller import ControllerClient, gen_task_hash
 from app.utils.ymir_viz import VizClient
-from app.libs.projects import setup_sample_project_in_background
+from app.libs.projects import setup_sample_project_in_background, send_project_metrics
 from app.libs.keywords import add_keywords
 from common_utils.labels import UserLabels
 
@@ -76,6 +75,7 @@ def create_sample_project(
     db: Session = Depends(deps.get_db),
     current_user: models.User = Depends(deps.get_current_active_user),
     user_labels: UserLabels = Depends(deps.get_user_labels),
+    viz_client: VizClient = Depends(deps.get_viz_client),
     controller_client: ControllerClient = Depends(deps.get_controller_client),
     background_tasks: BackgroundTasks,
     cache: CacheClient = Depends(deps.get_cache),
@@ -109,6 +109,17 @@ def create_sample_project(
     except ValueError:
         crud.project.soft_remove(db, id=project.id)
         raise FailedToCreateProject()
+
+    viz_client.initialize(user_id=current_user.id, project_id=project.id)
+    keyword_ids = user_labels.get_class_ids(project_in.training_keywords)
+    send_project_metrics(
+        viz_client,
+        project.id,
+        project.name,
+        keyword_ids,
+        TrainingType(project.training_type).name,
+        int(project.create_datetime.timestamp()),
+    )
 
     background_tasks.add_task(
         setup_sample_project_in_background,
@@ -188,25 +199,16 @@ def create_project(
             ),
         )
 
-    try:
-        viz_client.send_metrics(
-            metrics_group="project",
-            id=f"{project.id:0>6}",
-            create_time=int(project.create_datetime.timestamp()),
-            user_id=project.user_id,
-            project_id=project.id,
-            keywords=json.loads(project.training_keywords),
-            user_labels=user_labels,
-            extra_data=dict(
-                project_type=TrainingType(project.training_type).name,
-            ),
-        )
-
-    except Exception:
-        logger.exception(
-            "[create project metrics] failed to write project(%s) stats to viewer, continue anyway",
-            project.name,
-        )
+    viz_client.initialize(user_id=current_user.id, project_id=project.id)
+    keyword_ids = user_labels.get_class_ids(project_in.training_keywords)
+    send_project_metrics(
+        viz_client,
+        project.id,
+        project.name,
+        keyword_ids,
+        TrainingType(project.training_type).name,
+        int(project.create_datetime.timestamp()),
+    )
 
     logger.info("[create project] project record created: %s", project)
     return {"result": project}

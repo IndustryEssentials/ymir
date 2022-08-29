@@ -10,7 +10,6 @@ class Settings(BaseSettings):
     NGINX_PREFIX: str = ""
     API_V1_STR: str = "/api/v1"
     DATABASE_URI: str = "sqlite:///app.db"
-    CLICKHOUSE_URI: str = "clickhouse"
     TOKEN_URL: str = "/auth/token"
     GRPC_CHANNEL: str = "controller:50066"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 40  # 40 hours

@@ -11,7 +11,6 @@ from sqlalchemy.orm import Session
 from app.api.errors.errors import (
     FailedToUpdateTaskStatus,
     FailedtoCreateTask,
-    FailedToConnectClickHouse,
     ModelNotReady,
     ModelNotFound,
     ModelStageNotFound,
@@ -23,7 +22,6 @@ from app.api.errors.errors import (
 from app.constants.state import (
     FinalStates,
     TaskState,
-    TaskType,
     ResultType,
     ResultState,
 )
@@ -31,7 +29,6 @@ from app.config import settings
 from app import schemas, crud, models
 from app.utils.cache import CacheClient
 from app.utils.ymir_controller import ControllerClient, gen_task_hash
-from app.utils.clickhouse import YmirClickHouse
 from app.utils.ymir_viz import VizClient
 from common_utils.labels import UserLabels
 
@@ -114,37 +111,6 @@ def normalize_parameters(
     return normalized
 
 
-def write_clickhouse_metrics(
-    task_info: schemas.TaskInternal,
-    dataset_group_id: int,
-    dataset_id: int,
-    model_id: Optional[int],
-    keywords: List[str],
-) -> None:
-    # for task stats
-    clickhouse = YmirClickHouse()
-    clickhouse.save_task_parameter(
-        dt=task_info.create_datetime,
-        user_id=task_info.user_id,
-        project_id=task_info.project_id,
-        name=task_info.name,
-        hash_=task_info.hash,
-        type_=TaskType(task_info.type).name,
-        dataset_ids=[dataset_id],
-        model_ids=[model_id] if model_id else [],
-        keywords=keywords,
-    )
-    # for keywords recommendation
-    clickhouse.save_dataset_keyword(
-        dt=task_info.create_datetime,
-        user_id=task_info.user_id,
-        project_id=task_info.project_id,
-        group_id=dataset_group_id,
-        dataset_id=dataset_id,
-        keywords=keywords,
-    )
-
-
 def create_single_task(db: Session, user_id: int, user_labels: UserLabels, task_in: schemas.TaskCreate) -> models.Task:
     args = normalize_parameters(db, task_in.parameters, task_in.docker_image_config, user_labels)
     task_hash = gen_task_hash(user_id, task_in.project_id)
@@ -170,40 +136,22 @@ def create_single_task(db: Session, user_id: int, user_labels: UserLabels, task_
     task_result = TaskResult(db=db, task_in_db=task)
     task_result.create(task_in.parameters.dataset_id, task_in.result_description)
 
-    try:
-        viz_client = VizClient()
-        m_timestamp = int(task_info.create_datetime.timestamp())
-        m_keywords = task_in.parameters.keywords or []
-        viz_client.send_metrics(
-            metrics_group="task",
-            id=task_info.hash,
-            create_time=m_timestamp,
-            user_id=task_info.user_id,
-            project_id=task_info.project_id,
-            keywords=m_keywords,
-            user_labels=user_labels,
-            extra_data=dict(
-                task_type=TaskType(task_info.type).name,
-                dataset_ids=[args["dataset_hash"]],
-                model_ids=[args["model_hash"]],
-            ),
-        )
-        viz_client.send_metrics(
-            metrics_group="keyids",
-            id=task_info.hash,
-            create_time=m_timestamp,
-            user_id=task_info.user_id,
-            project_id=task_info.project_id,
-            keywords=m_keywords,
-            user_labels=user_labels,
-        )
-
-    except Exception:
-        logger.exception(
-            "[create task] failed to write task(%s) stats to viewer, continue anyway",
-            task.hash,
-        )
     logger.info("[create task] created task name: %s", task_info.name)
+    if args.get("class_ids"):
+        try:
+            viz_client = VizClient()
+            viz_client.initialize(user_id=user_id, project_id=task_in.project_id)
+            viz_client.send_metrics(
+                metrics_group="keyids",
+                id=task_info.hash,
+                create_time=int(task_info.create_datetime.timestamp()),
+                keyword_ids=args["class_ids"],
+            )
+        except Exception:
+            logger.exception(
+                "[create task] failed to write task(%s) stats to viewer, continue anyway",
+                task.hash,
+            )
     return task
 
 
@@ -271,25 +219,6 @@ class TaskResult:
         if self._result is None:
             self._result = self.model_info if self.result_type is ResultType.model else self.dataset_info
         return self._result
-
-    def save_model_stats(self, result: Dict) -> None:
-        model_in_db = crud.model.get_by_task_id(self.db, task_id=self.task.id)
-        if not model_in_db:
-            logger.warning("[update task] found no model to save model stats(%s)", result)
-            return
-        project_in_db = crud.project.get(self.db, id=self.project_id)
-        keywords = schemas.Project.from_orm(project_in_db).training_keywords
-        viz_client = VizClient(host=settings.VIZ_HOST)
-        viz_client.send_metrics(
-            metrics_group="model",
-            id=result["hash"],
-            create_time=int(model_in_db.create_datetime.timestamp()),
-            user_id=self.user_id,
-            project_id=model_in_db.project_id,
-            keywords=keywords,
-            user_labels=self.user_labels,
-            extra_data=dict(model_map=result["map"]),
-        )
 
     def get_dest_group_info(self, dataset_id: int) -> Tuple[int, str]:
         if self.result_type is ResultType.dataset:
@@ -412,11 +341,6 @@ class TaskResult:
                     crud.model.update_recommonded_stage_by_name(
                         self.db, model_id=current_model.id, stage_name=model_info["best_stage_name"]
                     )
-                try:
-                    self.save_model_stats(model_info)
-                except FailedToConnectClickHouse:
-                    logger.exception("Failed to write model stats to clickhouse, continue anyway")
-                return
 
         if task_result.state is TaskState.done and self.result_info:
             crud_func.finish(

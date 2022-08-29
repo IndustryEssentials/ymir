@@ -55,11 +55,6 @@ def mock_viz(mocker):
     return mocker.Mock()
 
 
-@pytest.fixture(scope="function")
-def mock_clickhouse(mocker):
-    return mocker.Mock()
-
-
 class TestListTasks:
     def test_list_tasks_succeed(
         self,
