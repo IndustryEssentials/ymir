@@ -465,7 +465,7 @@ class TestCmdEvaluate(unittest.TestCase):
                                                                                       mir_task_id='c',
                                                                                       ms=mirpb.MirStorage.MIR_TASKS)
         evaluation_result = mir_tasks.tasks[mir_tasks.head_task_id].evaluation
-        self.assertEqual({'a'}, set(evaluation_result.dataset_evaluations.keys()))
+        self.assertEqual({'c@c'}, set(evaluation_result.dataset_evaluations.keys()))
 
     def test_01(self) -> None:
         fake_args = type('', (), {})()
@@ -488,5 +488,5 @@ class TestCmdEvaluate(unittest.TestCase):
                                                                                       mir_task_id='d',
                                                                                       ms=mirpb.MirStorage.MIR_TASKS)
         evaluation_result = mir_tasks.tasks[mir_tasks.head_task_id].evaluation
-        self.assertEqual({'a@a'}, set(evaluation_result.dataset_evaluations.keys()))
+        self.assertEqual({'d@d'}, set(evaluation_result.dataset_evaluations.keys()))
         self._check_fpfn(branch='d', task_id='d')

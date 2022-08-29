@@ -333,12 +333,8 @@ class MirStorageOps():
         copied_evaluate_config = mirpb.EvaluateConfig()
         copied_evaluate_config.CopyFrom(evaluate_config)
 
-        if not copied_evaluate_config.gt_dataset_id and not copied_evaluate_config.pred_dataset_ids:
-            copied_evaluate_config.gt_dataset_id = revs_parser.join_rev_tid(mir_branch, task.task_id)
-            copied_evaluate_config.pred_dataset_ids[:] = [copied_evaluate_config.gt_dataset_id]
-        if len(copied_evaluate_config.pred_dataset_ids) > 1:
-            raise MirRuntimeError(error_code=MirCode.RC_CMD_NOT_IMPLEMENTED,
-                                  error_message=f"too many pred dataset ids: {copied_evaluate_config.pred_dataset_ids}")
+        copied_evaluate_config.gt_dataset_id = revs_parser.join_rev_tid(mir_branch, task.task_id)
+        copied_evaluate_config.pred_dataset_ids[:] = [copied_evaluate_config.gt_dataset_id]
 
         mir_tasks: mirpb.MirTasks = mirpb.MirTasks()
         mir_tasks.head_task_id = task.task_id
