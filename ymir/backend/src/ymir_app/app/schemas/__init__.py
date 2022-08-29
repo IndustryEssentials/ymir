@@ -73,6 +73,7 @@ from .stats import (
     StatsPopularKeywordsOut,
     StatsPopularModelsOut,
     StatsProjectsCountOut,
+    StatsMetricsQueryOut,
 )
 from .sys_info import SysInfo, SysInfoOut
 from .task import (

@@ -8,7 +8,7 @@ def test_monitor_percent_log(client: TestClient, clear_redislite, mocker):
     mocker.patch("os.path.exists", return_value=True)
     data = "task_id_1	21245543	0.50	2"
     mocker.patch("builtins.open", mocker.mock_open(read_data=data))
-    body = dict(task_id="task_id_1", user_id="12", log_path_weights={"/data/test/monitor.txt": 1.0},)
+    body = dict(task_id="task_id_1", log_path_weights={"/data/test/monitor.txt": 1.0},)
     client.post("/api/v1/tasks", json=body)
 
     data = "task_id_1	21245567	1	3"
@@ -38,7 +38,6 @@ def test_monitor_percent_log(client: TestClient, clear_redislite, mocker):
                     }
                 },
                 "task_extra_info": {
-                    "user_id": "12",
                     "monitor_type": 1,
                     "log_path_weights": {
                         "/data/test/monitor.txt": 1.0

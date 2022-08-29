@@ -45,5 +45,3 @@ sqlalchemy==1.4.20
 starlette-exporter==0.14.0
 statsd==3.3.0
 supervisor==4.2.2
-types-redis==3.5.7
-types-requests==2.25.2

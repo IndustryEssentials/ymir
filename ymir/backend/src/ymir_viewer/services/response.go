@@ -21,24 +21,15 @@ type FailureResult struct {
 	Msg  constants.ResponseMsg  `json:"msg"`
 }
 
-func getURLFromContext(ctx *gin.Context) string {
-	url := ""
-	if ctx.Request != nil {
-		url = ctx.Request.URL.String()
-	}
-	return url
-}
-
 func ViewerSuccess(ctx *gin.Context, result interface{}) {
 	resp := &ResultVO{Code: constants.ViewerSuccessCode, Msg: constants.ViewerSuccessMsg, Success: true, Result: result}
 	ctx.JSON(http.StatusOK, resp)
-	log.Printf("ViewerScuccess\nURL: %s\n", getURLFromContext(ctx))
 }
 
 func ViewerFailure(ctx *gin.Context, result *FailureResult) {
 	resp := &ResultVO{Code: result.Code, Msg: result.Msg, Success: false, Result: result}
 	ctx.JSON(http.StatusBadRequest, resp)
-	log.Printf("ViewerFailure\nURL: %s\n%#v\n%s\n", getURLFromContext(ctx), *result, debug.Stack())
+	log.Printf("ViewerFailure\n%#v\n%s\n", *result, debug.Stack())
 }
 
 func ViewerFailureFromErr(ctx *gin.Context, err error) {

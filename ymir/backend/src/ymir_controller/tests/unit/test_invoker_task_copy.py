@@ -10,6 +10,7 @@ import tests.utils as test_utils
 from controller.utils import utils
 from controller.utils.invoker_call import make_invoker_cmd_call
 from controller.utils.invoker_mapping import RequestTypeToInvoker
+from mir.protos import mir_command_pb2 as mir_cmd_pb
 from proto import backend_pb2
 
 RET_ID = 'commit t000aaaabbbbbbzzzzzzzzzzzzzzz3\nabc'
@@ -86,11 +87,11 @@ class TestInvokerTaskCopy(unittest.TestCase):
         mir_src_root = os.path.join(self._sandbox_root, copy_request.src_user_id, copy_request.src_repo_id)
         os.makedirs(mir_src_root)
         working_dir = os.path.join(self._sandbox_root, "work_dir",
-                                   backend_pb2.TaskType.Name(backend_pb2.TaskTypeCopyData), self._task_id, 'sub_task',
-                                   self._task_id)
+                                   mir_cmd_pb.TaskType.Name(mir_cmd_pb.TaskType.TaskTypeCopyData), self._task_id,
+                                   'sub_task', self._task_id)
 
         req_create_task = backend_pb2.ReqCreateTask()
-        req_create_task.task_type = backend_pb2.TaskTypeCopyData
+        req_create_task.task_type = mir_cmd_pb.TaskType.TaskTypeCopyData
         req_create_task.no_task_monitor = True
         req_create_task.copy.CopyFrom(copy_request)
         response = make_invoker_cmd_call(invoker=RequestTypeToInvoker[backend_pb2.TASK_CREATE],

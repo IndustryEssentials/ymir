@@ -108,6 +108,8 @@ services:
     volumes:
       - ${YMIR_PATH}/metrics/promtail:/etc/promtail/
       - ${YMIR_PATH}/ymir-data/logs:/var/log/:ro
+      - ${TENSORBOARD_ROOT}:/var/dockerlog:ro
+      - "${BACKEND_SANDBOX_ROOT}:${BACKEND_SANDBOX_ROOT}"
       - ./metrics/config/promtail.yml:/etc/promtail/promtail.yml:ro
     command: -config.file=/etc/promtail/promtail.yml
     restart: on-failure:10

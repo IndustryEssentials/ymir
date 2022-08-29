@@ -1,6 +1,7 @@
 from typing import List
 
 from proto import backend_pb2
+from mir.protos import mir_command_pb2 as mir_cmd_pb
 
 
 def join_tvt_branch_tid(branch_id: str, tvt_type: str = None, tid: str = None) -> str:
@@ -16,9 +17,9 @@ def join_tvt_branch_tid(branch_id: str, tvt_type: str = None, tid: str = None) -
 
 def build_tvt_dataset_id(tvt_dataset_id: str) -> backend_pb2.TaskReqTraining.TrainingDatasetType:
     _prefix_to_tvt = {
-        'tr': backend_pb2.TvtTypeTraining,
-        'va': backend_pb2.TvtTypeValidation,
-        'te': backend_pb2.TvtTypeTest,
+        'tr': mir_cmd_pb.TvtTypeTraining,
+        'va': mir_cmd_pb.TvtTypeValidation,
+        'te': mir_cmd_pb.TvtTypeTest,
     }
     dataset_type = backend_pb2.TaskReqTraining.TrainingDatasetType()
     split_data = tvt_dataset_id.split(':')
@@ -33,12 +34,12 @@ def build_tvt_dataset_id(tvt_dataset_id: str) -> backend_pb2.TaskReqTraining.Tra
     return dataset_type
 
 
-def join_tvt_dataset_id(tvt_type: backend_pb2.TvtType, dataset_id: str) -> str:
+def join_tvt_dataset_id(tvt_type: mir_cmd_pb.TvtType, dataset_id: str) -> str:
     _tvt_to_prefix = {
-        backend_pb2.TvtTypeUnknown: '',
-        backend_pb2.TvtTypeTraining: 'tr:',
-        backend_pb2.TvtTypeValidation: 'va:',
-        backend_pb2.TvtTypeTest: 'te:',
+        mir_cmd_pb.TvtTypeUnknown: '',
+        mir_cmd_pb.TvtTypeTraining: 'tr:',
+        mir_cmd_pb.TvtTypeValidation: 'va:',
+        mir_cmd_pb.TvtTypeTest: 'te:',
     }
     return ''.join([_tvt_to_prefix[tvt_type], dataset_id])
 

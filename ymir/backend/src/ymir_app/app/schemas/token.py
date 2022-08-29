@@ -1,3 +1,5 @@
+from typing import Optional
+
 from pydantic import BaseModel
 
 from .common import Common
@@ -17,3 +19,4 @@ class TokenOut(Common):
 class TokenPayload(BaseModel):
     id: int
     role: str
+    version: Optional[str]
