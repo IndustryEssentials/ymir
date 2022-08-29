@@ -31,11 +31,6 @@ import useDuplicatedCheck from "../../../hooks/useDuplicatedCheck"
 
 const TrainType = [{ value: "detection", label: 'task.train.form.traintypes.detect', checked: true }]
 
-const duplicatedOptions = [
-  { value: 1, label: 'task.train.duplicated.option.train' },
-  { value: 2, label: 'task.train.duplicated.option.validation' }
-]
-
 function Train({ allDatasets, datasetCache, ...func }) {
   const pageParams = useParams()
   const pid = Number(pageParams.id)
@@ -269,6 +264,7 @@ function Train({ allDatasets, datasetCache, ...func }) {
                   placeholder={t('project.add.form.keyword.required')}
                   onChange={setSelectedKeywords}
                   options={(trainDataset?.gt?.keywords || []).map(k => ({ label: k, value: k }))}
+                  maxTagCount={5}
                 />
               </Form.Item>}
             <Form.Item
