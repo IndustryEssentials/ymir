@@ -1,5 +1,5 @@
 from collections import defaultdict
-from typing import Any, Collection, Dict, List, Optional, Set, Tuple, Union
+from typing import Any, Dict, List, Optional, Set, Tuple, Union
 
 import numpy as np
 
@@ -515,7 +515,7 @@ class Params:
         self.need_pr_curve = False
 
 
-def det_evaluate(predictions: Collection[mirpb.SingleTaskAnnotations], ground_truth: mirpb.SingleTaskAnnotations,
+def det_evaluate(predictions: Dict[str, mirpb.SingleTaskAnnotations], ground_truth: mirpb.SingleTaskAnnotations,
                  config: mirpb.EvaluateConfig) -> mirpb.Evaluation:
     if config.conf_thr < 0 or config.conf_thr > 1:
         raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS, error_message='invalid conf_thr')
@@ -534,7 +534,7 @@ def det_evaluate(predictions: Collection[mirpb.SingleTaskAnnotations], ground_tr
 
     mir_gt = MirCoco(task_annotations=ground_truth, conf_thr=None)
 
-    for idx, prediction in enumerate(predictions):
+    for pred_dataset_id, prediction in predictions.items():
         mir_dt = MirCoco(task_annotations=prediction, conf_thr=config.conf_thr)
 
         evaluator = CocoDetEval(coco_gt=mir_gt, coco_dt=mir_dt, params=params)
@@ -551,7 +551,6 @@ def det_evaluate(predictions: Collection[mirpb.SingleTaskAnnotations], ground_tr
                                                                     max_dets_index=max_dets_index)
         det_eval_utils.calc_averaged_evaluations(dataset_evaluation=single_dataset_evaluation, class_ids=params.catIds)
 
-        pred_dataset_id = config.pred_dataset_ids[idx]
         single_dataset_evaluation.conf_thr = config.conf_thr
         single_dataset_evaluation.gt_dataset_id = config.gt_dataset_id
         single_dataset_evaluation.pred_dataset_id = pred_dataset_id

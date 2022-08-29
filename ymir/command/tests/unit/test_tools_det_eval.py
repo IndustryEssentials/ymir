@@ -258,7 +258,7 @@ class TestToolsDetEval(unittest.TestCase):
         evaluate_config.gt_dataset_id = 'a'
         evaluate_config.pred_dataset_ids.append('a')
         evaluate_config.class_ids[:] = [0, 1]
-        evaluation = det_eval_model_name.det_evaluate(predictions=[mir_annotations.prediction],
+        evaluation = det_eval_model_name.det_evaluate(predictions={'a': mir_annotations.prediction},
                                                       ground_truth=mir_annotations.ground_truth,
                                                       config=evaluate_config)
         self.assertTrue(len(evaluation.dataset_evaluations) == 1)

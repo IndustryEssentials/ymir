@@ -21,7 +21,7 @@
 # --------------------------------------------------------
 """Python implementation of the PASCAL VOC devkit's AP evaluation code."""
 
-from typing import Any, Collection, Dict, List
+from typing import Any, Dict, List
 
 import numpy as np
 
@@ -233,7 +233,7 @@ def _get_single_evaluate_element(prediction: mirpb.SingleTaskAnnotations, ground
     return see
 
 
-def det_evaluate(predictions: Collection[mirpb.SingleTaskAnnotations], ground_truth: mirpb.SingleTaskAnnotations,
+def det_evaluate(predictions: Dict[str, mirpb.SingleTaskAnnotations], ground_truth: mirpb.SingleTaskAnnotations,
                  config: mirpb.EvaluateConfig) -> mirpb.Evaluation:
     if config.conf_thr < 0 or config.conf_thr > 1:
         raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS, error_message='invalid conf_thr')
@@ -244,8 +244,7 @@ def det_evaluate(predictions: Collection[mirpb.SingleTaskAnnotations], ground_tr
     class_ids = list(config.class_ids)
     iou_thrs = det_eval_utils.get_iou_thrs_array(config.iou_thrs_interval)
 
-    for idx, prediction in enumerate(predictions):
-        pred_dataset_id = config.pred_dataset_ids[idx]
+    for pred_dataset_id, prediction in predictions.items():
         single_dataset_evaluation = evaluation.dataset_evaluations[pred_dataset_id]
         single_dataset_evaluation.conf_thr = config.conf_thr
         single_dataset_evaluation.gt_dataset_id = config.gt_dataset_id

@@ -1,5 +1,5 @@
 import logging
-from typing import List, Set
+from typing import Dict, List, Set
 
 from mir.tools import mir_storage_ops, revs_parser, det_eval_coco, det_eval_voc
 from mir.protos import mir_command_pb2 as mirpb
@@ -34,14 +34,14 @@ def det_evaluate_datasets(
     evaluate_config.pred_dataset_ids.append(pred_rev_tid.rev_tid)
 
     return det_evaluate_with_pb(
-        prediction=prediction,
+        predictions={pred_rev_tid.rev_tid: prediction},
         ground_truth=ground_truth,
         config=evaluate_config,
     )
 
 
 def det_evaluate_with_pb(
-        prediction: mirpb.SingleTaskAnnotations,
+        predictions: Dict[str, mirpb.SingleTaskAnnotations],
         ground_truth: mirpb.SingleTaskAnnotations,
         config: mirpb.EvaluateConfig,
         mode: str = 'voc',  # voc or coco
@@ -51,7 +51,7 @@ def det_evaluate_with_pb(
 
     eval_model_name = det_eval_voc if mode == 'voc' else det_eval_coco
     evaluation = eval_model_name.det_evaluate(  # type: ignore
-        predictions=[prediction], ground_truth=ground_truth, config=config)
+        predictions=predictions, ground_truth=ground_truth, config=config)
 
     _show_evaluation(evaluation=evaluation)
 

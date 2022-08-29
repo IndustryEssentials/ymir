@@ -46,11 +46,11 @@ def dataset_fast_evaluation(user_id: str, repo_id: str, branch_id: str, conf_thr
     mir_root = os.path.join(viz_settings.BACKEND_SANDBOX_ROOT, user_id, repo_id)
 
     evaluation = det_eval_ops.det_evaluate_datasets(mir_root=mir_root,
-                                                       gt_rev_tid=rev_tid,
-                                                       pred_rev_tid=rev_tid,
-                                                       conf_thr=conf_thr,
-                                                       iou_thrs=str(iou_thr),
-                                                       need_pr_curve=need_pr_curve)
+                                                    gt_rev_tid=rev_tid,
+                                                    pred_rev_tid=rev_tid,
+                                                    conf_thr=conf_thr,
+                                                    iou_thrs=str(iou_thr),
+                                                    need_pr_curve=need_pr_curve)
 
     logging.info(f"successfully dataset_fast_evaluation from branch {branch_id}")
 

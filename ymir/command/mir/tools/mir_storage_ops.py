@@ -62,7 +62,7 @@ class MirStorageOps():
         if (mir_metadatas.attributes and mir_annotations.ground_truth.image_annotations
                 and mir_annotations.prediction.image_annotations):
             evaluation = det_eval_ops.det_evaluate_with_pb(
-                prediction=mir_annotations.prediction,
+                predictions={evaluate_config.pred_dataset_ids[0]: mir_annotations.prediction},
                 ground_truth=mir_annotations.ground_truth,
                 config=evaluate_config,
             )
@@ -336,6 +336,9 @@ class MirStorageOps():
         if not copied_evaluate_config.gt_dataset_id and not copied_evaluate_config.pred_dataset_ids:
             copied_evaluate_config.gt_dataset_id = revs_parser.join_rev_tid(mir_branch, task.task_id)
             copied_evaluate_config.pred_dataset_ids[:] = [copied_evaluate_config.gt_dataset_id]
+        if len(copied_evaluate_config.pred_dataset_ids) > 1:
+            raise MirRuntimeError(error_code=MirCode.RC_CMD_MULTIPLE_PRED_DATASET_IDS_ON_SAVE,
+                                  error_message=f"too many pred dataset ids: {copied_evaluate_config.pred_dataset_ids}")
 
         mir_tasks: mirpb.MirTasks = mirpb.MirTasks()
         mir_tasks.head_task_id = task.task_id
