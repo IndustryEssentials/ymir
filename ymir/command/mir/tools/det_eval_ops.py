@@ -1,42 +1,8 @@
 import logging
-from typing import Dict, List, Set
+from typing import Dict, Set
 
-from mir.tools import mir_storage_ops, revs_parser, det_eval_coco, det_eval_voc
+from mir.tools import det_eval_coco, det_eval_voc
 from mir.protos import mir_command_pb2 as mirpb
-
-
-def det_evaluate_datasets(
-    mir_root: str,
-    gt_rev_tid: revs_parser.TypRevTid,
-    pred_rev_tid: revs_parser.TypRevTid,
-    conf_thr: float,
-    iou_thrs: str,
-    class_ids: List[int] = [],
-    need_pr_curve: bool = False,
-) -> mirpb.Evaluation:
-    mir_annotations: mirpb.MirAnnotations = mir_storage_ops.MirStorageOps.load_single_storage(
-        mir_root=mir_root, mir_branch=gt_rev_tid.rev, mir_task_id=gt_rev_tid.tid, ms=mirpb.MirStorage.MIR_ANNOTATIONS)
-    ground_truth = mir_annotations.ground_truth
-
-    if pred_rev_tid != gt_rev_tid:
-        mir_annotations = mir_storage_ops.MirStorageOps.load_single_storage(mir_root=mir_root,
-                                                                            mir_branch=pred_rev_tid.rev,
-                                                                            mir_task_id=pred_rev_tid.tid,
-                                                                            ms=mirpb.MirStorage.MIR_ANNOTATIONS)
-    prediction = mir_annotations.prediction
-
-    evaluate_config = mir_storage_ops.create_evaluate_config(conf_thr=conf_thr,
-                                                             iou_thrs=iou_thrs,
-                                                             need_pr_curve=need_pr_curve,
-                                                             gt_dataset_id=gt_rev_tid.rev_tid,
-                                                             pred_dataset_id=pred_rev_tid.rev_tid,
-                                                             class_ids=class_ids)
-
-    return det_evaluate_with_pb(
-        predictions={pred_rev_tid.rev_tid: prediction},
-        ground_truth=ground_truth,
-        config=evaluate_config,
-    )
 
 
 def det_evaluate_with_pb(
