@@ -9,7 +9,7 @@ const RecommendKeywords = ({ global = false, sets, limit = 5, onSelect = () => {
   const [keywords, setKeywords] = useState([])
 
   useEffect(() => {
-    if (global || sets?.length) {
+    if (global || sets) {
       fetchKeywords()
     }
   }, [sets])
@@ -18,7 +18,7 @@ const RecommendKeywords = ({ global = false, sets, limit = 5, onSelect = () => {
     const ids = Array.isArray(sets) ? sets : [sets]
     const result = await getRecommendKeywords({ global, dataset_ids: ids, limit })
     if (result) {
-      setKeywords(result)
+      setKeywords(result.map(item => item.legend))
     }
   }
 
