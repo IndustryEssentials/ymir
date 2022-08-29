@@ -13,7 +13,7 @@ const initList = { gt: [], pred: [] }
 
 const getWidth = ({ count = 0, max }, progressWidth) => percent(count * progressWidth / max)
 
-function KeywordRates({ keywords, dataset, progressWidth = 0.5 }) {
+function KeywordRates({ keywords, dataset, mode = 'negative', progressWidth = 0.5 }) {
   const [list, setList] = useState(initList)
   const [did, setDid] = useState(null)
   const [kws, setKws] = useState([])
@@ -98,8 +98,10 @@ function KeywordRates({ keywords, dataset, progressWidth = 0.5 }) {
 
   return (
     <div className={s.rates}>
-      {renderList(list.gt)}
-      {renderList(list.pred, 'Prediction')}
+      {mode === 'negative' && list.gt.length ? <>
+        {renderList(list.gt)}
+        {renderList(list.pred, 'Prediction')}
+      </> : <div>calculate negative samples</div>}
     </div>
   )
 }
