@@ -25,13 +25,12 @@ def det_evaluate_datasets(
                                                                             ms=mirpb.MirStorage.MIR_ANNOTATIONS)
     prediction = mir_annotations.prediction
 
-    evaluate_config = mirpb.EvaluateConfig()
-    evaluate_config.conf_thr = conf_thr
-    evaluate_config.iou_thrs_interval = iou_thrs
-    evaluate_config.class_ids[:] = class_ids
-    evaluate_config.need_pr_curve = need_pr_curve
-    evaluate_config.gt_dataset_id = gt_rev_tid.rev_tid
-    evaluate_config.pred_dataset_ids.append(pred_rev_tid.rev_tid)
+    evaluate_config = mir_storage_ops.create_evaluate_config(conf_thr=conf_thr,
+                                                             iou_thrs=iou_thrs,
+                                                             need_pr_curve=need_pr_curve,
+                                                             gt_dataset_id=gt_rev_tid.rev_tid,
+                                                             pred_dataset_id=pred_rev_tid.rev_tid,
+                                                             class_ids=class_ids)
 
     return det_evaluate_with_pb(
         predictions={pred_rev_tid.rev_tid: prediction},
