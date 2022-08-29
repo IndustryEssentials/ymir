@@ -249,6 +249,9 @@ function Matrics({ pid, project }) {
                 <Form.Item label={t('model.diagnose.form.confidence')} name='confidence'>
                   <InputNumber step={0.0005} min={0.0005} max={0.9995} />
                 </Form.Item>
+                <Form.Item label={'cks'}>
+                  <Select options={cks.map(({ keyword }) => ({ value: keyword, label: keyword }))}></Select>
+                </Form.Item>
                 <Form.Item label={renderIouTitle} name='iou'>
                   <Slider style={{ display: !everageIou ? 'block' : 'none' }} min={0.25} max={0.95} step={0.05} marks={{ 0.25: '0.25', 0.5: '0.5', 0.95: '0.95' }} onChange={setIou} />
                 </Form.Item>
