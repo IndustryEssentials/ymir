@@ -114,8 +114,9 @@ def _voc_eval(class_recs: Dict[str, Dict[str, Any]], BB: np.ndarray, confidence:
             inters = iw * ih
 
             # union
-            uni = ((bb[2] - bb[0] + 1.) * (bb[3] - bb[1] + 1.) + (BBGT[:, 2] - BBGT[:, 0] + 1.) *
-                   (BBGT[:, 3] - BBGT[:, 1] + 1.) - inters)
+            area1 = (bb[2] - bb[0] + 1.) * (bb[3] - bb[1] + 1.)
+            area2 = (BBGT[:, 2] - BBGT[:, 0] + 1.) * (BBGT[:, 3] - BBGT[:, 1] + 1.)
+            uni = (area1 + area2 - inters)
 
             overlaps = inters / uni
             ovmax = np.max(overlaps)
