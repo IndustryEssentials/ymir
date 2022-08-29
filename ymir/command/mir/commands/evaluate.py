@@ -53,7 +53,8 @@ class CmdEvaluate(base.BaseCommand):
         evaluate_config = mir_storage_ops.create_evaluate_config(conf_thr=conf_thr,
                                                                  iou_thrs=iou_thrs,
                                                                  need_pr_curve=need_pr_curve,
-                                                                 src_dataset_id=src_rev_tid.rev_tid,
+                                                                 gt_dataset_id=src_rev_tid.rev_tid,
+                                                                 pred_dataset_id=src_rev_tid.rev_tid,
                                                                  class_ids=cls_ids)
         mir_storage_ops.MirStorageOps.save_and_commit(mir_root=mir_root,
                                                       mir_branch=dst_rev_tid.rev,
