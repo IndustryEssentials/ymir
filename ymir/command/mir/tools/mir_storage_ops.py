@@ -325,7 +325,9 @@ class MirStorageOps():
         if not task.task_id:
             raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS, error_message='empty task id')
 
-        # don't change original `evaluate_config`!
+        # don't change `evaluate_config` because it may be a default value from `create_evaluate_config`
+        # if you change the default `evaluate_config`
+        # other invocation of `save_and_commit` will be affected by your change
         copied_evaluate_config = mirpb.EvaluateConfig()
         copied_evaluate_config.CopyFrom(evaluate_config)
 
