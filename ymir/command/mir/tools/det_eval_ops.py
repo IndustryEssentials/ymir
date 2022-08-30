@@ -16,7 +16,7 @@ def det_evaluate_with_pb(
     if not config.class_ids:
         config.class_ids.extend(_gen_class_ids_from_gt(ground_truth=ground_truth[1]))
 
-    det_eval_utils.reset_default_confusion_matrix(task_annotations=ground_truth,
+    det_eval_utils.reset_default_confusion_matrix(task_annotations=ground_truth[1],
                                                   cm=mirpb.ConfusionMatrixType.NotSet)
     for prediction in predictions.values():
         det_eval_utils.reset_default_confusion_matrix(task_annotations=prediction,
