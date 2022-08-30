@@ -1,5 +1,5 @@
 import logging
-from typing import Dict, Set
+from typing import Dict, Set, Tuple
 
 from mir.tools import det_eval_coco, det_eval_voc
 from mir.protos import mir_command_pb2 as mirpb
@@ -7,12 +7,14 @@ from mir.protos import mir_command_pb2 as mirpb
 
 def det_evaluate_with_pb(
         predictions: Dict[str, mirpb.SingleTaskAnnotations],
-        ground_truth: mirpb.SingleTaskAnnotations,
+        ground_truth: Tuple[str, mirpb.SingleTaskAnnotations],
         config: mirpb.EvaluateConfig,
         mode: str = 'voc',  # voc or coco
 ) -> mirpb.Evaluation:
     if not config.class_ids:
         config.class_ids.extend(_gen_class_ids_from_gt(ground_truth=ground_truth))
+    config.gt_dataset_id = ground_truth[0]
+    config.pred_dataset_ids[:] = list(predictions.keys())
 
     eval_model_name = det_eval_voc if mode == 'voc' else det_eval_coco
     evaluation = eval_model_name.det_evaluate(  # type: ignore

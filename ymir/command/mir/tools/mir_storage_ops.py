@@ -40,7 +40,7 @@ class MirStorageOps():
     # private: save and load
     @classmethod
     def __build_and_save(cls, mir_root: str, mir_datas: Dict['mirpb.MirStorage.V', Any],
-                         evaluate_config: mirpb.EvaluateConfig) -> None:
+                         evaluate_config: mirpb.EvaluateConfig, dst_dataset_id: str) -> None:
         # add default members
         mir_metadatas: mirpb.MirMetadatas = mir_datas[mirpb.MirStorage.MIR_METADATAS]
         mir_tasks: mirpb.MirTasks = mir_datas[mirpb.MirStorage.MIR_TASKS]
@@ -62,8 +62,8 @@ class MirStorageOps():
         if (mir_metadatas.attributes and mir_annotations.ground_truth.image_annotations
                 and mir_annotations.prediction.image_annotations):
             evaluation = det_eval_ops.det_evaluate_with_pb(
-                predictions={evaluate_config.pred_dataset_ids[0]: mir_annotations.prediction},
-                ground_truth=mir_annotations.ground_truth,
+                predictions={dst_dataset_id: mir_annotations.prediction},
+                ground_truth=(dst_dataset_id, mir_annotations.ground_truth),
                 config=evaluate_config,
             )
             mir_tasks.tasks[mir_tasks.head_task_id].evaluation.CopyFrom(evaluation)
@@ -333,9 +333,6 @@ class MirStorageOps():
         copied_evaluate_config = mirpb.EvaluateConfig()
         copied_evaluate_config.CopyFrom(evaluate_config)
 
-        copied_evaluate_config.gt_dataset_id = revs_parser.join_rev_tid(mir_branch, task.task_id)
-        copied_evaluate_config.pred_dataset_ids[:] = [copied_evaluate_config.gt_dataset_id]
-
         mir_tasks: mirpb.MirTasks = mirpb.MirTasks()
         mir_tasks.head_task_id = task.task_id
         mir_tasks.tasks[mir_tasks.head_task_id].CopyFrom(task)
@@ -366,7 +363,8 @@ class MirStorageOps():
                 if return_code != MirCode.RC_OK:
                     return return_code
 
-            cls.__build_and_save(mir_root=mir_root, mir_datas=mir_datas, evaluate_config=copied_evaluate_config)
+            cls.__build_and_save(mir_root=mir_root, mir_datas=mir_datas, evaluate_config=copied_evaluate_config,
+                                 dst_dataset_id=revs_parser.join_rev_tid(mir_branch, task.task_id))
 
             ret_code = CmdCommit.run_with_args(mir_root=mir_root, msg=task.name)
             if ret_code != MirCode.RC_OK:

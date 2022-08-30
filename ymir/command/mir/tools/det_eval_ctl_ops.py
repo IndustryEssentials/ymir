@@ -27,12 +27,10 @@ def det_evaluate_datasets(
     evaluate_config = mir_storage_ops.create_evaluate_config(conf_thr=conf_thr,
                                                              iou_thrs=iou_thrs,
                                                              need_pr_curve=need_pr_curve,
-                                                             gt_dataset_id=gt_rev_tid.rev_tid,
-                                                             pred_dataset_id=pred_rev_tid.rev_tid,
                                                              class_ids=class_ids)
 
     return det_eval_ops.det_evaluate_with_pb(
         predictions={pred_rev_tid.rev_tid: prediction},
-        ground_truth=ground_truth,
+        ground_truth=(gt_rev_tid.rev_tid, ground_truth),
         config=evaluate_config,
     )
