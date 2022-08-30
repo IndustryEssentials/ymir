@@ -1,4 +1,4 @@
-# Sample Ymir Doc Pages
+# YMIR 中文文档
 
 - [如何导入外部模型](import-extra-models.md)
 - [ymir 与功能性 docker container 数据传输接口](ymir-cmd-container.md)
