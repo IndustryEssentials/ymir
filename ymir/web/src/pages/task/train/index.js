@@ -144,7 +144,7 @@ function Train({ allDatasets, datasetCache, ...func }) {
 
   const onFinish = () => checkDuplicated(trainDataset, validationDataset)
 
-  async function submit (strategy) {
+  async function submit(strategy) {
     const values = form.getFieldsValue()
     const config = {
       ...values.hyperparam?.reduce(
@@ -243,9 +243,6 @@ function Train({ allDatasets, datasetCache, ...func }) {
                 onChange={trainSetChange}
               />
             </Form.Item>
-            <Form.Item hidden={!trainSet} label={t('dataset.train.form.samples')}>
-              <KeywordRates keywords={selectedKeywords} dataset={trainDataset}></KeywordRates>
-            </Form.Item>
             {iterationId ? <Form.Item label={t('task.train.form.keywords.label')}>
               {project?.keywords?.map(keyword => <Tag key={keyword}>{keyword}</Tag>)}
             </Form.Item> :
@@ -267,6 +264,9 @@ function Train({ allDatasets, datasetCache, ...func }) {
                   maxTagCount={5}
                 />
               </Form.Item>}
+            <Form.Item label={t('dataset.train.form.samples')}>
+              <KeywordRates keywords={selectedKeywords} dataset={trainDataset} negative />
+            </Form.Item>
             <Form.Item
               label={t('task.train.form.testsets.label')}
               name="testset"
