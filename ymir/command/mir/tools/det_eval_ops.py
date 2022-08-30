@@ -12,13 +12,13 @@ def det_evaluate_with_pb(
         mode: str = 'voc',  # voc or coco
 ) -> mirpb.Evaluation:
     if not config.class_ids:
-        config.class_ids.extend(_gen_class_ids_from_gt(ground_truth=ground_truth))
+        config.class_ids.extend(_gen_class_ids_from_gt(ground_truth=ground_truth[1]))
     config.gt_dataset_id = ground_truth[0]
     config.pred_dataset_ids[:] = list(predictions.keys())
 
     eval_model_name = det_eval_voc if mode == 'voc' else det_eval_coco
     evaluation = eval_model_name.det_evaluate(  # type: ignore
-        predictions=predictions, ground_truth=ground_truth, config=config)
+        predictions=predictions, ground_truth=ground_truth[1], config=config)
 
     _show_evaluation(evaluation=evaluation)
 
