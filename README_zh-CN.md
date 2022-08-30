@@ -188,11 +188,13 @@ YMIR平台主要满足用户规模化生产模型的需求，为用户提供良�
 *  `NVIDIA Docker`安装： [nvidia-docker install-guide](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/install-guide.html#docker)
 
 ```sh
-## 对安装CUDA11以上版本的主机
+## 通过nvidia-smi查看主机显卡驱动支持的最高cuda版本
+nvidia-smi
+## 对支持CUDA11以上版本的主机, 检查nvidia-docker是否安装成功
 sudo docker run --rm --gpus all nvidia/cuda:11.0.3-base-ubuntu20.04 nvidia-smi
-## 对安装CUDA10的主机
+## 对支持CUDA10的主机, 检测nvidia-docker是否安装成功
 sudo docker run --rm --gpus all nvidia/cuda:10.2-base-ubuntu18.04 nvidia-smi
-## 上述命令在终端应输出类似以下的结果
+## 上述命令在终端应输出类似以下的结果 (最高支持cuda 11.6)
 +-----------------------------------------------------------------------------+
 | NVIDIA-SMI 510.60.02    Driver Version: 510.60.02    CUDA Version: 11.6     |
 |-------------------------------+----------------------+----------------------+
@@ -216,7 +218,7 @@ sudo docker run --rm --gpus all nvidia/cuda:10.2-base-ubuntu18.04 nvidia-smi
 3. 推荐服务器配置：
 *  NVIDIA GeForce RTX 2080 Ti 12G
 *  显存最大值到达9974MiB
-*  CUDA 版本 >= 11.2 (主机的CUDA版本要高于镜像的CUDA版本)
+*  显卡驱动支持的最高CUDA 版本 >= 11.2
 
 ## 2.2. 安装 YMIR-GUI
 
