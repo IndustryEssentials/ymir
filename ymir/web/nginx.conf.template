@@ -25,6 +25,11 @@ server {
 
     keepalive_timeout 5;
 
+    # Ymir docs
+    location /docs/ {
+        root /data/ymir/;
+    }
+
     location /api/ {
         proxy_pass http://backend_api/api/;
         add_header 'Access-Control-Allow-Origin' '*';
