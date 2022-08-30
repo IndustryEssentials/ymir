@@ -319,7 +319,8 @@ class TestMirStorage(unittest.TestCase):
                         'context': 'fake_context',
                         'stages': {},
                         'best_stage_name': '',
-                    }
+                    },
+                    'evaluation': {},
                 }
             },
             'head_task_id': 'mining-task-id',
@@ -379,6 +380,7 @@ class TestMirStorage(unittest.TestCase):
 
         # add another commit a@t2, which has empty dataset
         task_2 = mir_storage_ops.create_task(task_type=mirpb.TaskType.TaskTypeMining, task_id='t2', message='task-t2')
+        task_2.evaluation.CopyFrom(mirpb.Evaluation())
         mir_tasks_2 = mirpb.MirTasks()
         mir_tasks_2.head_task_id = task_2.task_id
         mir_tasks_2.tasks[task_2.task_id].CopyFrom(task_2)

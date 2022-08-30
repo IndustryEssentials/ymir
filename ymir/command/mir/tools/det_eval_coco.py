@@ -517,6 +517,9 @@ class Params:
 
 def det_evaluate(predictions: Dict[str, mirpb.SingleTaskAnnotations], ground_truth: mirpb.SingleTaskAnnotations,
                  config: mirpb.EvaluateConfig) -> mirpb.Evaluation:
+    if len(ground_truth.image_annotations) == 0:
+        return mirpb.Evaluation()
+
     if config.conf_thr < 0 or config.conf_thr > 1:
         raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS, error_message='invalid conf_thr')
 
@@ -535,6 +538,9 @@ def det_evaluate(predictions: Dict[str, mirpb.SingleTaskAnnotations], ground_tru
     mir_gt = MirCoco(task_annotations=ground_truth, conf_thr=None)
 
     for pred_dataset_id, prediction in predictions.items():
+        if len(prediction.image_annotations) == 0:
+            continue
+
         mir_dt = MirCoco(task_annotations=prediction, conf_thr=config.conf_thr)
 
         evaluator = CocoDetEval(coco_gt=mir_gt, coco_dt=mir_dt, params=params)

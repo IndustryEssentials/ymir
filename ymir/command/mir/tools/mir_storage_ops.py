@@ -55,14 +55,12 @@ class MirStorageOps():
                                  mir_keywords=mir_keywords)
         mir_datas[mirpb.MirStorage.MIR_KEYWORDS] = mir_keywords
 
-        if (mir_metadatas.attributes and mir_annotations.ground_truth.image_annotations
-                and mir_annotations.prediction.image_annotations):
-            evaluation = det_eval_ops.det_evaluate_with_pb(
-                predictions={dst_dataset_id: mir_annotations.prediction},
-                ground_truth=(dst_dataset_id, mir_annotations.ground_truth),
-                config=evaluate_config,
-            )
-            mir_tasks.tasks[mir_tasks.head_task_id].evaluation.CopyFrom(evaluation)
+        evaluation = det_eval_ops.det_evaluate_with_pb(
+            predictions={dst_dataset_id: mir_annotations.prediction},
+            ground_truth=(dst_dataset_id, mir_annotations.ground_truth),
+            config=evaluate_config,
+        )
+        mir_tasks.tasks[mir_tasks.head_task_id].evaluation.CopyFrom(evaluation)
 
         # gen mir_context
         project_class_ids = context.load(mir_root=mir_root)
