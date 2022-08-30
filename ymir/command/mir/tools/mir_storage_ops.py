@@ -23,16 +23,12 @@ from mir.tools.errors import MirError, MirRuntimeError
 def create_evaluate_config(conf_thr: float = mir_settings.DEFAULT_EVALUATE_CONF_THR,
                            iou_thrs: str = mir_settings.DEFAULT_EVALUATE_IOU_THR,
                            need_pr_curve: bool = False,
-                           gt_dataset_id: str = '',
-                           pred_dataset_id: str = '',
                            class_ids: List[int] = []) -> mirpb.EvaluateConfig:
     evaluate_config = mirpb.EvaluateConfig()
     evaluate_config.conf_thr = conf_thr
     evaluate_config.iou_thrs_interval = iou_thrs
     evaluate_config.need_pr_curve = need_pr_curve
     evaluate_config.class_ids[:] = class_ids
-    evaluate_config.gt_dataset_id = gt_dataset_id
-    evaluate_config.pred_dataset_ids[:] = [pred_dataset_id]
     return evaluate_config
 
 
