@@ -60,7 +60,7 @@ const common = {
   'common.action.train': {cn: '训练', en: 'Train', },
   'common.action.mining': {cn: '挖掘', en: 'Mine', },
   'common.action.fusion': {cn: '预处理', en: 'Pretreat', },
-  'common.action.merge': {cn: '合并', en: 'Merge', },
+  'common.action.merge': {cn: '添加', en: 'Add', },
   'common.action.filter': {cn: '筛选', en: 'Filter', },
   'common.action.label': {cn: '标注', en: 'Label', },
   'common.action.inference': {cn: '推理', en: 'Infer', },
