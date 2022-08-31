@@ -339,8 +339,7 @@ export default {
       })
     },
     *getNegativeKeywords({ payload }, { put, call, select }) {
-      const pid = yield select(({ project: { current } }) => current?.id)
-      const { code, result } = yield call(getNegativeKeywords, { projectId: pid, ...payload })
+      const { code, result } = yield call(getNegativeKeywords, { ...payload })
       if (code === 0) {
         const { gt, pred, total_assets_count } = result
         const getStats = (o = {}) => transferAnnotationsCount(o.keywords, o.negative_assets_count, total_assets_count)
