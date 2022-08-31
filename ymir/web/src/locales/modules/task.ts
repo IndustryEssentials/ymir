@@ -200,6 +200,7 @@ const task = {
   'task.merge.type.label': { en: 'Merge Type', cn: '合并方式' },
   'task.merge.type.new': { en: 'Generate a new dataset', cn: '生成新数据集' },
   'task.merge.type.exist': { en: 'Generate a version for original dataset', cn: '在原数据集上生成新版本' },
+  'task.train.btn.calc.negative': { en: 'Calculate Positive/Negative Samples', cn: '计算正负样本' },
 }
 
 export default task
