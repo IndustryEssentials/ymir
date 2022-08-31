@@ -14,13 +14,13 @@ ASSETS:
   openpai_token: fake_token
   openpai_storage: fake_storage
   openpai_user: fake_user
-  server_runtime: nvidia
+  server_runtime: runc
 SANDBOX:
   sandboxowner: ymir-root
   sandboxownergroup: ymir-root
   sandboxroot: /tmp/ymir-controller-sandbox-root/sandbox
 METRICS:
-  allow_feedback: True
+  allow_feedback: False
   anonymous_uuid: localtest
   server_host: localhost
   server_port: "9125"

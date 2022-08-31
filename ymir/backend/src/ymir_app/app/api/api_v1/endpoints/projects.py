@@ -1,3 +1,4 @@
+# from datetime import datetime
 import enum
 import json
 from typing import Any
@@ -96,7 +97,7 @@ def create_sample_project(
 
     try:
         user_labels.get_class_ids(names_or_aliases=settings.SAMPLE_PROJECT_KEYWORDS)
-    except KeyError:
+    except ValueError:
         # todo refactor keywords dependencies to handle ensure given keywords exist
         add_keywords(controller_client, cache, current_user.id, settings.SAMPLE_PROJECT_KEYWORDS)
 
@@ -131,6 +132,7 @@ def create_project(
     project_in: schemas.ProjectCreate,
     controller_client: ControllerClient = Depends(deps.get_controller_client),
     clickhouse: YmirClickHouse = Depends(deps.get_clickhouse_client),
+    user_labels: UserLabels = Depends(deps.get_user_labels),
 ) -> Any:
     """
     Create project
@@ -197,6 +199,17 @@ def create_project(
             training_type=TrainingType(project.training_type).name,
             training_keywords=json.loads(project.training_keywords),
         )
+
+        # viz_client = VizClient(host=settings.VIZ_HOST)
+        # viz_client.send_metrics(metrics_group="project",
+        #                         id=f"{project.id:0>6}",
+        #                         create_time=int(datetime.timestamp(project.create_datetime)),
+        #                         user_id=project.user_id,
+        #                         project_id=project.id,
+        #                         keywords=json.loads(project.training_keywords),
+        #                         user_labels=user_labels,
+        #                         extra_data=dict(project_type=TrainingType(project.training_type).name,))
+
     except FailedToConnectClickHouse:
         # clickhouse metric shouldn't block create task process
         logger.exception(

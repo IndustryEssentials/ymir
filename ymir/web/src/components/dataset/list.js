@@ -474,6 +474,11 @@ function Datasets({ pid, project = {}, iterations, groups, datasetList, query, v
     history.push(`/home/project/${pid}/inference?did=${ids}`)
   }
 
+  const batchMerge = () => {
+    const ids = selectedVersions.selected.join(',')
+    history.push(`/home/project/${pid}/merge?mid=${ids}`)
+  }
+
   const getDisabledStatus = (filter = () => { }) => {
     const allVss = Object.values(versions).flat()
     const { selected } = selectedVersions
@@ -504,6 +509,9 @@ function Datasets({ pid, project = {}, iterations, groups, datasetList, query, v
     </Button>
     <Button type="primary" disabled={getDisabledStatus(({ state }) => !isValidDataset(state))} onClick={multipleInfer}>
       <WajueIcon /> {t("common.action.multiple.infer")}
+    </Button>
+    <Button type="primary" disabled={getDisabledStatus(({ state }) => !isValidDataset(state))} onClick={batchMerge}>
+      <WajueIcon /> {t("common.action.multiple.merge")}
     </Button>
   </>
 

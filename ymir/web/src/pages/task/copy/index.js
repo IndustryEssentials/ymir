@@ -9,6 +9,7 @@ import { randomNumber } from "@/utils/number"
 import Breadcrumbs from "@/components/common/breadcrumb"
 import commonStyles from "../common.less"
 import Desc from "@/components/form/desc"
+import DatasetName from "@/components/form/items/datasetName"
 
 function Copy({ allDatasets, datasetCache, ...props }) {
   const pageParams = useParams()
@@ -65,17 +66,7 @@ function Copy({ allDatasets, datasetCache, ...props }) {
           colon={false}
         >
           <Form.Item label={t('dataset.copy.form.dataset')}><span>{dataset.name} {dataset.versionName} (assets: {dataset.assetCount})</span></Form.Item>
-          <Form.Item
-            label={t('dataset.add.form.name.label')}
-            name='name'
-            initialValue={'dataset_copy_' + randomNumber()}
-            rules={[
-              { required: true, whitespace: true, message: t('dataset.add.form.name.required') },
-              { type: 'string', min: 2, max: 80 },
-            ]}
-          >
-            <Input autoComplete={'off'} allowClear />
-          </Form.Item>
+          <DatasetName itemProps={{ initialValue: 'dataset_copy_' + randomNumber() }} />
           <Desc form={form} />
           <Form.Item wrapperCol={{ offset: 8 }}>
             <Space size={20}>

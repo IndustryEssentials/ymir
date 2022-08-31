@@ -16,6 +16,7 @@ import Desc from "@/components/form/desc"
 
 import s from './add.less'
 import samplePic from '@/assets/sample.png'
+import DatasetName from '../../components/form/items/datasetName'
 
 const { Option } = Select
 const { useForm } = Form
@@ -182,8 +183,7 @@ const Add = (props) => {
   }
 
   function addDefaultName(name = '') {
-    const datasetName = form.getFieldValue('name')
-    if (!nameChangedByUser || !datasetName) {
+    if (!nameChangedByUser) {
       form.setFieldsValue({ name })
     }
   }
@@ -235,7 +235,10 @@ const Add = (props) => {
             onFinish={submit}
             onFinishFailed={onFinishFailed}
           >
-            <Form.Item
+            <DatasetName inputProps={{
+              onKeyUp: () => setNameChangedByUser(true)
+            }} />
+            {/* <Form.Item
               label={t('dataset.add.form.name.label')}
               name='name'
               rules={[
@@ -244,7 +247,7 @@ const Add = (props) => {
               ]}
             >
               <Input autoComplete={'off'} onKeyUp={() => setNameChangedByUser(true)} allowClear />
-            </Form.Item>
+            </Form.Item> */}
             <Form.Item label={t('dataset.add.form.type.label')}>
               <Select onChange={(value) => typeChange(value)} defaultValue={TYPES.INTERNAL}>
                 {types.map(type => (

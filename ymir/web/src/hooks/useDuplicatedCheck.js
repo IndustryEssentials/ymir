@@ -39,7 +39,7 @@ const useDuplicatedCheck = (onChange = () => { }) => {
 
   const check = async (trainDataset, validationDataset) => {
     const result = await checkDuplication({ trainSet: trainDataset?.id, validationSet: validationDataset?.id })
-    if (result) {
+    if (typeof result !== 'undefined') {
       checkHandle(result, trainDataset, validationDataset)
     }
   }

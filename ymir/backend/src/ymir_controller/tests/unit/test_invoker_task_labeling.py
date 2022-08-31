@@ -16,6 +16,7 @@ from controller.label_model.label_free import LabelFree
 from controller.utils import utils
 from controller.utils.invoker_call import make_invoker_cmd_call
 from controller.utils.invoker_mapping import RequestTypeToInvoker
+from mir.protos import mir_command_pb2 as mir_cmd_pb
 from proto import backend_pb2
 
 
@@ -39,7 +40,7 @@ class TestTaskLabelingInvoker:
         label_req.export_annotation = False
 
         req_create_task = backend_pb2.ReqCreateTask()
-        req_create_task.task_type = backend_pb2.TaskTypeLabel
+        req_create_task.task_type = mir_cmd_pb.TaskType.TaskTypeLabel
         req_create_task.labeling.CopyFrom(label_req)
         req_create_task.no_task_monitor = True
 
@@ -63,8 +64,9 @@ class TestTaskLabelingInvoker:
         os.makedirs(mir_repo_root)
         test_utils.mir_repo_init(mir_repo_root)
 
-        working_dir = os.path.join(sandbox_root, "work_dir", backend_pb2.TaskType.Name(backend_pb2.TaskTypeLabel),
-                                   task_id, 'sub_task', task_id)
+        working_dir = os.path.join(sandbox_root, "work_dir",
+                                   mir_cmd_pb.TaskType.Name(mir_cmd_pb.TaskType.TaskTypeLabel), task_id, 'sub_task',
+                                   task_id)
         if os.path.isdir(working_dir):
             logging.info("working_dir exists, remove it first")
             shutil.rmtree(working_dir)

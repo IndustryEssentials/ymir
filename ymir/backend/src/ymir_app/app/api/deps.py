@@ -13,6 +13,7 @@ from app.api.errors.errors import (
     InvalidScope,
     InvalidToken,
     UserNotFound,
+    SystemVersionConflict,
 )
 from app.config import settings
 from app.constants.role import Roles
@@ -63,6 +64,10 @@ def get_current_user(
     except (jwt.JWTError, ValidationError):
         logger.exception("Invalid JWT token")
         raise InvalidToken()
+
+    if token_data.version != settings.YMIR_VERSION:
+        raise SystemVersionConflict()
+
     user = crud.user.get(db, id=token_data.id)
     if not user:
         raise UserNotFound()

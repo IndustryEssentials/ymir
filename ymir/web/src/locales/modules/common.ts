@@ -72,6 +72,7 @@ const common = {
   'common.action.multiple.hide': {cn: '批量隐藏', en: 'Batch Hide', },
   'common.action.multiple.restore': {cn: '批量显示', en: 'Batch Show', },
   'common.action.multiple.infer': {cn: '批量推理', en: 'Batch Inference', },
+  'common.action.multiple.merge': {cn: '批量合并', en: 'Batch Merge', },
   'common.action.restore': {cn: '显示', en: 'Show', },
   'common.action.diagnose.training': {cn: '训练过程诊断', en: 'Training Diagnose', },
   'common.hidden.label': {cn: '显示状态', en: 'Visible Status', },

@@ -84,7 +84,10 @@ class _TaskTypeEnumTypeWrapper(google.protobuf.internal.enum_type_wrapper._EnumT
 
     TaskTypeInit = TaskType.V(12)
     TaskTypeImportModel = TaskType.V(13)
+    TaskTypeCopyModel = TaskType.V(14)
+    TaskTypeDatasetInfer = TaskType.V(15)
     TaskTypeEvaluate = TaskType.V(16)
+    TaskTypeVisualization = TaskType.V(17)
 
 TaskTypeUnknown = TaskType.V(0)
 TaskTypeTraining = TaskType.V(1)
@@ -102,7 +105,10 @@ TaskTypeFusion = TaskType.V(11)
 
 TaskTypeInit = TaskType.V(12)
 TaskTypeImportModel = TaskType.V(13)
+TaskTypeCopyModel = TaskType.V(14)
+TaskTypeDatasetInfer = TaskType.V(15)
 TaskTypeEvaluate = TaskType.V(16)
+TaskTypeVisualization = TaskType.V(17)
 global___TaskType = TaskType
 
 
@@ -173,10 +179,12 @@ class _LabelFormatEnumTypeWrapper(google.protobuf.internal.enum_type_wrapper._En
     NO_ANNOTATION = LabelFormat.V(0)
     PASCAL_VOC = LabelFormat.V(1)
     IF_ARK = LabelFormat.V(2)
+    LABEL_STUDIO_JSON = LabelFormat.V(3)
 
 NO_ANNOTATION = LabelFormat.V(0)
 PASCAL_VOC = LabelFormat.V(1)
 IF_ARK = LabelFormat.V(2)
+LABEL_STUDIO_JSON = LabelFormat.V(3)
 global___LabelFormat = LabelFormat
 
 
@@ -466,6 +474,7 @@ class Annotation(google.protobuf.message.Message):
     TAGS_FIELD_NUMBER: builtins.int
     CM_FIELD_NUMBER: builtins.int
     DET_LINK_ID_FIELD_NUMBER: builtins.int
+    CLASS_NAME_FIELD_NUMBER: builtins.int
     index: builtins.int = ...
     """Index of this annotation in current single image, may be different from the index in repeated field."""
 
@@ -478,6 +487,9 @@ class Annotation(google.protobuf.message.Message):
     def tags(self) -> google.protobuf.internal.containers.ScalarMap[typing.Text, typing.Text]: ...
     cm: global___ConfusionMatrixType.V = ...
     det_link_id: builtins.int = ...
+    class_name: typing.Text = ...
+    """for data parsed from outside, e.g. inference."""
+
     def __init__(self,
         *,
         index : builtins.int = ...,
@@ -488,9 +500,10 @@ class Annotation(google.protobuf.message.Message):
         tags : typing.Optional[typing.Mapping[typing.Text, typing.Text]] = ...,
         cm : global___ConfusionMatrixType.V = ...,
         det_link_id : builtins.int = ...,
+        class_name : typing.Text = ...,
         ) -> None: ...
     def HasField(self, field_name: typing_extensions.Literal["box",b"box"]) -> builtins.bool: ...
-    def ClearField(self, field_name: typing_extensions.Literal["anno_quality",b"anno_quality","box",b"box","class_id",b"class_id","cm",b"cm","det_link_id",b"det_link_id","index",b"index","score",b"score","tags",b"tags"]) -> None: ...
+    def ClearField(self, field_name: typing_extensions.Literal["anno_quality",b"anno_quality","box",b"box","class_id",b"class_id","class_name",b"class_name","cm",b"cm","det_link_id",b"det_link_id","index",b"index","score",b"score","tags",b"tags"]) -> None: ...
 global___Annotation = Annotation
 
 class Rect(google.protobuf.message.Message):

@@ -12,14 +12,15 @@ from app.api import deps
 from app.api.errors.errors import (
     AssetNotFound,
     ControllerError,
+    DatasetGroupNotFound,
     DatasetNotFound,
     DuplicateDatasetGroupError,
     NoDatasetPermission,
     FailedToHideProtectedResources,
-    DatasetGroupNotFound,
     ProjectNotFound,
     MissingOperations,
     RefuseToProcessMixedOperations,
+    RequiredFieldMissing,
 )
 from app.config import settings
 from app.constants.state import TaskState, TaskType, ResultState
@@ -571,19 +572,29 @@ def merge_datasets(
     Merge multiple datasets
     """
     logger.info("[merge] merge dataset with payload: %s", in_merge.json())
-    main_dataset = crud.dataset.get(db, id=in_merge.dataset_id)
-    if not main_dataset:
-        raise DatasetNotFound()
-
-    if in_merge.include_datasets:
-        in_datasets = ensure_datasets_are_ready(db, dataset_ids=[in_merge.dataset_id, *in_merge.include_datasets])
-        in_datasets.sort(
-            key=attrgetter("create_datetime"),
-            reverse=(in_merge.merge_strategy == MergeStrategy.prefer_newest),
+    if in_merge.dest_group_name:
+        if crud.dataset_group.is_duplicated_name_in_project(
+            db, project_id=in_merge.project_id, name=in_merge.dest_group_name
+        ):
+            raise DuplicateDatasetGroupError()
+        dest_group = crud.dataset_group.create_dataset_group(
+            db,
+            name=in_merge.dest_group_name,
+            user_id=current_user.id,
+            project_id=in_merge.project_id,
         )
+    elif in_merge.dest_group_id:
+        dest_group = crud.dataset_group.get(db, id=in_merge.dest_group_id)  # type: ignore
+        if not dest_group:
+            raise DatasetGroupNotFound()
     else:
-        in_datasets = [main_dataset]
+        raise RequiredFieldMissing()
 
+    in_datasets = ensure_datasets_are_ready(db, dataset_ids=in_merge.include_datasets)
+    in_datasets.sort(
+        key=attrgetter("create_datetime"),
+        reverse=(in_merge.merge_strategy == MergeStrategy.prefer_newest),
+    )
     ex_datasets = (
         ensure_datasets_are_ready(db, dataset_ids=in_merge.exclude_datasets) if in_merge.exclude_datasets else None
     )
@@ -612,9 +623,8 @@ def merge_datasets(
         parameters=in_merge.json(),
     )
     logger.info("[merge] related task record created: %s", task.hash)
-    merged_dataset = crud.dataset.create_as_task_result(
-        db, task, main_dataset.dataset_group_id, description=in_merge.description
-    )
+
+    merged_dataset = crud.dataset.create_as_task_result(db, task, dest_group.id, description=in_merge.description)
     return {"result": merged_dataset}
 
 
