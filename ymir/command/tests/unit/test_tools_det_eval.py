@@ -1,14 +1,13 @@
-from collections import Counter
-import json
 import os
 import shutil
+from typing import Any
 import unittest
 
 from google.protobuf import json_format
 import numpy as np
 
 from mir.protos import mir_command_pb2 as mirpb
-from mir.tools import det_eval, mir_storage_ops, revs_parser
+from mir.tools import det_eval_coco, det_eval_voc, mir_storage_ops
 from tests import utils as test_utils
 
 
@@ -234,62 +233,256 @@ class TestToolsDetEval(unittest.TestCase):
         if os.path.isdir(self._test_root):
             shutil.rmtree(self._test_root)
 
+    # private: check result
+    def _check_fpfn(self, actual_mir_annotations: mirpb.MirAnnotations) -> None:
+        expected_annotations_dict = {
+            'head_task_id': 'a',
+            'ground_truth': {
+                'image_annotations': {
+                    'a0': {
+                        'annotations': [{
+                            'box': {
+                                'x': 50,
+                                'y': 50,
+                                'w': 50,
+                                'h': 50,
+                                'rotate_angle': 0.0
+                            },
+                            'score': 1.0,
+                            'cm': 'MTP',
+                            'index': 0,
+                            'class_id': 0,
+                            'anno_quality': 0.0,
+                            'tags': {},
+                            'det_link_id': 0,
+                            'class_name': ''
+                        }, {
+                            'index': 1,
+                            'box': {
+                                'x': 150,
+                                'y': 50,
+                                'w': 75,
+                                'h': 75,
+                                'rotate_angle': 0.0
+                            },
+                            'score': 1.0,
+                            'cm': 'MTP',
+                            'det_link_id': 1,
+                            'class_id': 0,
+                            'anno_quality': 0.0,
+                            'tags': {},
+                            'class_name': ''
+                        }, {
+                            'index': 2,
+                            'box': {
+                                'x': 150,
+                                'y': 150,
+                                'w': 75,
+                                'h': 75,
+                                'rotate_angle': 0.0
+                            },
+                            'class_id': 1,
+                            'score': 1.0,
+                            'cm': 'MTP',
+                            'det_link_id': 3,
+                            'anno_quality': 0.0,
+                            'tags': {},
+                            'class_name': ''
+                        }, {
+                            'index': 3,
+                            'box': {
+                                'x': 350,
+                                'y': 50,
+                                'w': 100,
+                                'h': 100,
+                                'rotate_angle': 0.0
+                            },
+                            'class_id': 2,
+                            'score': 1.0,
+                            'cm': 'IGNORED',
+                            'det_link_id': -1,
+                            'anno_quality': 0.0,
+                            'tags': {},
+                            'class_name': ''
+                        }]
+                    },
+                    'a1': {
+                        'annotations': [{
+                            'box': {
+                                'x': 300,
+                                'y': 300,
+                                'w': 100,
+                                'h': 100,
+                                'rotate_angle': 0.0
+                            },
+                            'class_id': 2,
+                            'score': 1.0,
+                            'cm': 'IGNORED',
+                            'det_link_id': -1,
+                            'index': 0,
+                            'anno_quality': 0.0,
+                            'tags': {},
+                            'class_name': ''
+                        }]
+                    },
+                },
+                'task_id': 'a'
+            },
+            'prediction': {
+                'image_annotations': {
+                    'a1': {
+                        'annotations': [{
+                            'box': {
+                                'x': 300,
+                                'y': 300,
+                                'w': 103,
+                                'h': 110,
+                                'rotate_angle': 0.0
+                            },
+                            'class_id': 2,
+                            'score': 0.9,
+                            'cm': 'IGNORED',
+                            'det_link_id': -1,
+                            'index': 0,
+                            'anno_quality': 0.0,
+                            'tags': {},
+                            'class_name': ''
+                        }]
+                    },
+                    'a0': {
+                        'annotations': [{
+                            'box': {
+                                'x': 45,
+                                'y': 45,
+                                'w': 52,
+                                'h': 52,
+                                'rotate_angle': 0.0
+                            },
+                            'score': 0.7,
+                            'cm': 'TP',
+                            'index': 0,
+                            'class_id': 0,
+                            'anno_quality': 0.0,
+                            'tags': {},
+                            'det_link_id': 0,
+                            'class_name': ''
+                        }, {
+                            'index': 1,
+                            'box': {
+                                'x': 150,
+                                'y': 50,
+                                'w': 73,
+                                'h': 73,
+                                'rotate_angle': 0.0
+                            },
+                            'score': 0.8,
+                            'cm': 'TP',
+                            'det_link_id': 1,
+                            'class_id': 0,
+                            'anno_quality': 0.0,
+                            'tags': {},
+                            'class_name': ''
+                        }, {
+                            'index': 2,
+                            'box': {
+                                'x': 350,
+                                'y': 50,
+                                'w': 76,
+                                'h': 76,
+                                'rotate_angle': 0.0
+                            },
+                            'score': 0.9,
+                            'cm': 'FP',
+                            'det_link_id': -1,
+                            'class_id': 0,
+                            'anno_quality': 0.0,
+                            'tags': {},
+                            'class_name': ''
+                        }, {
+                            'index': 3,
+                            'box': {
+                                'x': 150,
+                                'y': 160,
+                                'w': 78,
+                                'h': 78,
+                                'rotate_angle': 0.0
+                            },
+                            'class_id': 1,
+                            'score': 0.9,
+                            'cm': 'TP',
+                            'det_link_id': 2,
+                            'anno_quality': 0.0,
+                            'tags': {},
+                            'class_name': ''
+                        }, {
+                            'index': 4,
+                            'box': {
+                                'x': 350,
+                                'y': 50,
+                                'w': 102,
+                                'h': 103,
+                                'rotate_angle': 0.0
+                            },
+                            'class_id': 2,
+                            'score': 0.9,
+                            'cm': 'IGNORED',
+                            'det_link_id': -1,
+                            'anno_quality': 0.0,
+                            'tags': {},
+                            'class_name': ''
+                        }]
+                    }
+                },
+                'task_id': 'a'
+            },
+            'image_cks': {
+                'a1': {
+                    'cks': {
+                        'color': 'blue',
+                        'weather': 'sunny'
+                    },
+                    'image_quality': 0.0
+                },
+                'a0': {
+                    'cks': {
+                        'color': 'red',
+                        'weather': 'sunny'
+                    },
+                    'image_quality': 0.0
+                }
+            }
+        }
+        actual_annotations_dict = json_format.MessageToDict(actual_mir_annotations,
+                                                            including_default_value_fields=True,
+                                                            preserving_proto_field_name=True)
+        try:
+            self.assertEqual(expected_annotations_dict, actual_annotations_dict)
+        except AssertionError:
+            breakpoint()
+            print('')
+
     # public: test cases
-    def test_mir_coco(self):
-        mir_metadatas: mirpb.MirMetadatas
-        mir_annotations: mirpb.MirAnnotations
-        mir_keywords: mirpb.MirKeywords
-        mir_metadatas, mir_annotations, mir_keywords = mir_storage_ops.MirStorageOps.load_multiple_storages(
-            mir_root=self._mir_root,
-            mir_branch='a',
-            mir_task_id='a',
-            ms_list=[mirpb.MirStorage.MIR_METADATAS, mirpb.MirStorage.MIR_ANNOTATIONS, mirpb.MirStorage.MIR_KEYWORDS])
-        mir_coco = det_eval.MirCoco(mir_metadatas=mir_metadatas,
-                                    mir_annotations=mir_annotations,
-                                    mir_keywords=mir_keywords,
-                                    conf_thr=0,
-                                    dataset_id='a@a',
-                                    as_gt=True)
-        self.assertEqual(['a0', 'a1', 'a2'], mir_coco.get_asset_ids())
-        self.assertEqual([0, 1, 2], mir_coco.get_asset_idxes())
-        self.assertEqual([0, 1, 2], mir_coco.get_class_ids())
+    def test_det_eval_coco_00(self) -> None:
+        sde = self._test_det_eval(det_eval_model_name=det_eval_coco)
+        see = sde.iou_averaged_evaluation.ci_averaged_evaluation
+        self.assertTrue(np.isclose(0.833333, see.ap))
 
-        self.assertEqual(2, len(mir_coco.img_cat_to_annotations[(0, 0)]))
+    def test_det_eval_voc_00(self) -> None:
+        sde = self._test_det_eval(det_eval_model_name=det_eval_voc)
+        see = sde.iou_averaged_evaluation.ci_averaged_evaluation
+        self.assertTrue(np.isclose(0.833333, see.ap))
 
-    def test_mir_eval_00(self):
-        """ align our eval with original COCOeval """
+    def _test_det_eval(self, det_eval_model_name: Any) -> mirpb.SingleDatasetEvaluation:
+        mir_annotations: mirpb.MirAnnotations = mir_storage_ops.MirStorageOps.load_single_storage(
+            mir_root=self._mir_root, mir_branch='a', mir_task_id='a', ms=mirpb.MirStorage.MIR_ANNOTATIONS)
 
-        # original result from pycocotools
-        expected_stats = np.array([0.61177118, 0.88888889, 0.41749175])
-
-        # ymir's eval
-        mir_metadatas: mirpb.MirMetadatas
-        mir_annotations: mirpb.MirAnnotations
-        mir_keywords: mirpb.MirKeywords
-        mir_metadatas, mir_annotations, mir_keywords = mir_storage_ops.MirStorageOps.load_multiple_storages(
-            mir_root=self._mir_root,
-            mir_branch='a',
-            mir_task_id='a',
-            ms_list=[mirpb.MirStorage.MIR_METADATAS, mirpb.MirStorage.MIR_ANNOTATIONS, mirpb.MirStorage.MIR_KEYWORDS])
-
-        mir_gt = det_eval.MirCoco(mir_metadatas=mir_metadatas,
-                                  mir_annotations=mir_annotations,
-                                  mir_keywords=mir_keywords,
-                                  conf_thr=0,
-                                  dataset_id='a',
-                                  as_gt=True)
-        mir_dt = det_eval.MirCoco(mir_metadatas=mir_metadatas,
-                                  mir_annotations=mir_annotations,
-                                  mir_keywords=mir_keywords,
-                                  conf_thr=0,
-                                  dataset_id='a',
-                                  as_gt=False)
-
-        mir_evaluator = det_eval.CocoDetEval(coco_gt=mir_gt, coco_dt=mir_dt)
-        mir_evaluator.evaluate()
-        mir_evaluator.accumulate()
-        mir_evaluator.summarize()
-        self.assertTrue(np.isclose(expected_stats, mir_evaluator.stats).all())
-
-        single_dataset_evaluation = mir_evaluator.get_evaluation_result(area_ranges_index=0, max_dets_index=0)
-        self.assertTrue(len(single_dataset_evaluation.iou_evaluations) > 0)
+        evaluate_config = mirpb.EvaluateConfig()
+        evaluate_config.conf_thr = 0.0005
+        evaluate_config.iou_thrs_interval = '0.5'
+        evaluate_config.need_pr_curve = True
+        evaluate_config.class_ids[:] = [0, 1]
+        evaluation: mirpb.Evaluation = det_eval_model_name.det_evaluate(prediction=mir_annotations.prediction,
+                                                                        ground_truth=mir_annotations.ground_truth,
+                                                                        config=evaluate_config)
+        self._check_fpfn(mir_annotations)
+        return evaluation.dataset_evaluation

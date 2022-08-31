@@ -13,29 +13,30 @@ from mir import scm
 from mir.commands.checkout import CmdCheckout
 from mir.commands.commit import CmdCommit
 from mir.protos import mir_command_pb2 as mirpb
-from mir.tools import class_ids, context, det_eval, exodus, mir_storage, mir_repo_utils, revs_parser
+from mir.tools import class_ids, context, det_eval_ops, exodus
+from mir.tools import mir_storage, mir_repo_utils, revs_parser
 from mir.tools import settings as mir_settings
 from mir.tools.code import MirCode
 from mir.tools.errors import MirError, MirRuntimeError
 
 
-class MirStorageOpsBuildConfig:
-    def __init__(self,
-                 evaluate_conf_thr: float = mir_settings.DEFAULT_EVALUATE_CONF_THR,
-                 evaluate_iou_thrs: str = mir_settings.DEFAULT_EVALUATE_IOU_THR,
-                 evaluate_need_pr_curve: bool = False,
-                 evaluate_src_dataset_id: str = '') -> None:
-        self.evaluate_conf_thr: float = evaluate_conf_thr
-        self.evaluate_iou_thrs: str = evaluate_iou_thrs
-        self.evaluate_need_pr_curve: bool = evaluate_need_pr_curve
-        self.evaluate_src_dataset_id: str = evaluate_src_dataset_id
+def create_evaluate_config(conf_thr: float = mir_settings.DEFAULT_EVALUATE_CONF_THR,
+                           iou_thrs: str = mir_settings.DEFAULT_EVALUATE_IOU_THR,
+                           need_pr_curve: bool = False,
+                           class_ids: List[int] = []) -> mirpb.EvaluateConfig:
+    evaluate_config = mirpb.EvaluateConfig()
+    evaluate_config.conf_thr = conf_thr
+    evaluate_config.iou_thrs_interval = iou_thrs
+    evaluate_config.need_pr_curve = need_pr_curve
+    evaluate_config.class_ids[:] = class_ids
+    return evaluate_config
 
 
 class MirStorageOps():
     # private: save and load
     @classmethod
     def __build_and_save(cls, mir_root: str, mir_datas: Dict['mirpb.MirStorage.V', Any],
-                         build_config: MirStorageOpsBuildConfig) -> None:
+                         evaluate_config: mirpb.EvaluateConfig, dst_dataset_id: str) -> None:
         # add default members
         mir_metadatas: mirpb.MirMetadatas = mir_datas[mirpb.MirStorage.MIR_METADATAS]
         mir_tasks: mirpb.MirTasks = mir_datas[mirpb.MirStorage.MIR_TASKS]
@@ -50,22 +51,12 @@ class MirStorageOps():
                                  mir_keywords=mir_keywords)
         mir_datas[mirpb.MirStorage.MIR_KEYWORDS] = mir_keywords
 
-        det_eval.reset_default_confusion_matrix(task_annotations=mir_annotations.prediction,
-                                                cm=mirpb.ConfusionMatrixType.NotSet)
-        det_eval.reset_default_confusion_matrix(task_annotations=mir_annotations.ground_truth,
-                                                cm=mirpb.ConfusionMatrixType.NotSet)
-        if (mir_metadatas.attributes and mir_annotations.ground_truth.image_annotations
-                and mir_annotations.prediction.image_annotations):
-            evaluation, _ = det_eval.det_evaluate_with_pb(
-                mir_metadatas=mir_metadatas,
-                mir_annotations=mir_annotations,
-                mir_keywords=mir_keywords,
-                dataset_id=build_config.evaluate_src_dataset_id,
-                conf_thr=build_config.evaluate_conf_thr,
-                iou_thrs=build_config.evaluate_iou_thrs,
-                need_pr_curve=build_config.evaluate_need_pr_curve,
-            )
-            mir_tasks.tasks[mir_tasks.head_task_id].evaluation.CopyFrom(evaluation)
+        evaluation = det_eval_ops.det_evaluate_with_pb(
+            prediction=mir_annotations.prediction,
+            ground_truth=mir_annotations.ground_truth,
+            config=evaluate_config,
+        )
+        mir_tasks.tasks[mir_tasks.head_task_id].evaluation.CopyFrom(evaluation)
 
         # gen mir_context
         project_class_ids = context.load(mir_root=mir_root)
@@ -289,7 +280,7 @@ class MirStorageOps():
                         his_branch: Optional[str],
                         mir_datas: Dict,
                         task: mirpb.Task,
-                        build_config: MirStorageOpsBuildConfig = MirStorageOpsBuildConfig()) -> int:
+                        evaluate_config: Optional[mirpb.EvaluateConfig] = None) -> int:
         """
         saves and commit all contents in mir_datas to branch: `mir_branch`;
         branch will be created if not exists, and it's history will be after `his_branch`
@@ -302,8 +293,7 @@ class MirStorageOps():
                 mir_tasks is needed, if mir_metadatas and mir_annotations not provided, they will be created as empty
                  datasets
             task (mirpb.Task): task for this commit
-            conf_thr (float): confidence thr used to evaluate
-            iou_thrs (str): iou thrs used to evaluate
+            evaluate_config (mirpb.EvaluateConfig): evaluate config
 
         Raises:
             MirRuntimeError
@@ -328,8 +318,9 @@ class MirStorageOps():
             raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS, error_message="empty commit message")
         if not task.task_id:
             raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS, error_message='empty task id')
-        if not build_config.evaluate_src_dataset_id:
-            build_config.evaluate_src_dataset_id = revs_parser.join_rev_tid(mir_branch, task.task_id)
+
+        if not evaluate_config:
+            evaluate_config = create_evaluate_config()
 
         mir_tasks: mirpb.MirTasks = mirpb.MirTasks()
         mir_tasks.head_task_id = task.task_id
@@ -361,7 +352,8 @@ class MirStorageOps():
                 if return_code != MirCode.RC_OK:
                     return return_code
 
-            cls.__build_and_save(mir_root=mir_root, mir_datas=mir_datas, build_config=build_config)
+            cls.__build_and_save(mir_root=mir_root, mir_datas=mir_datas, evaluate_config=evaluate_config,
+                                 dst_dataset_id=revs_parser.join_rev_tid(mir_branch, task.task_id))
 
             ret_code = CmdCommit.run_with_args(mir_root=mir_root, msg=task.name)
             if ret_code != MirCode.RC_OK:
@@ -559,25 +551,25 @@ class MirStorageOps():
             asset_ids_detail=asset_ids_detail,
             class_ids_index={k: list(v)
                              for k, v in class_id_to_assets.items()},
-            pred_class_ids_index={k: v.get('key_ids')
-                                  for k, v in mir_storage_keywords.get('pred_idx', {}).get('cis', {}).items()},
-            gt_class_ids_index={k: v.get('key_ids')
-                                for k, v in mir_storage_keywords.get('gt_idx', {}).get('cis', {}).items()},
+            pred_class_ids_index={
+                k: v.get('key_ids')
+                for k, v in mir_storage_keywords.get('pred_idx', {}).get('cis', {}).items()
+            },
+            gt_class_ids_index={
+                k: v.get('key_ids')
+                for k, v in mir_storage_keywords.get('gt_idx', {}).get('cis', {}).items()
+            },
         )
 
     @classmethod
-    def load_dataset_evaluations(cls, mir_root: str, mir_branch: str, mir_task_id: str = '') -> Dict:
+    def load_dataset_evaluation(cls, mir_root: str, mir_branch: str, mir_task_id: str = '') -> Dict:
         mir_storage_data: mirpb.MirTasks = cls.load_single_storage(mir_root=mir_root,
                                                                    mir_branch=mir_branch,
                                                                    ms=mirpb.MirStorage.MIR_TASKS,
                                                                    mir_task_id=mir_task_id,
                                                                    as_dict=False)
         task = mir_storage_data.tasks[mir_storage_data.head_task_id]
-        if not task.evaluation.dataset_evaluations:
-            raise MirError(error_code=MirCode.RC_CMD_INVALID_ARGS, error_message="no dataset evaluation")
-
-        dataset_evaluations = cls.__message_to_dict(task.evaluation)
-        return dataset_evaluations["dataset_evaluations"]
+        return cls.__message_to_dict(task.evaluation.dataset_evaluation)
 
     @classmethod
     def load_dataset_metadata(cls, mir_root: str, mir_branch: str, mir_task_id: str = '') -> Dict:

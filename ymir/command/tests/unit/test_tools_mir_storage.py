@@ -7,7 +7,7 @@ import google.protobuf.json_format as pb_format
 from google.protobuf.json_format import MessageToDict
 
 from mir.protos import mir_command_pb2 as mirpb
-from mir.tools import context, mir_storage, mir_storage_ops
+from mir.tools import context, mir_storage, mir_storage_ops, settings as mir_settings
 from mir.tools.errors import MirError
 from tests import utils as test_utils
 
@@ -319,7 +319,13 @@ class TestMirStorage(unittest.TestCase):
                         'context': 'fake_context',
                         'stages': {},
                         'best_stage_name': '',
-                    }
+                    },
+                    'evaluation': {
+                        'config': {
+                            'conf_thr': mir_settings.DEFAULT_EVALUATE_CONF_THR,
+                            'iou_thrs_interval': mir_settings.DEFAULT_EVALUATE_IOU_THR,
+                        }
+                    },
                 }
             },
             'head_task_id': 'mining-task-id',
@@ -379,6 +385,7 @@ class TestMirStorage(unittest.TestCase):
 
         # add another commit a@t2, which has empty dataset
         task_2 = mir_storage_ops.create_task(task_type=mirpb.TaskType.TaskTypeMining, task_id='t2', message='task-t2')
+        task_2.evaluation.config.CopyFrom(mir_storage_ops.create_evaluate_config())
         mir_tasks_2 = mirpb.MirTasks()
         mir_tasks_2.head_task_id = task_2.task_id
         mir_tasks_2.tasks[task_2.task_id].CopyFrom(task_2)

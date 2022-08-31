@@ -81,57 +81,52 @@ class MirStorageLoader:
 
         return assets_info
 
-    def get_dataset_evaluations(self) -> Dict:
+    def get_dataset_evaluation(self) -> Dict:
         """
         return value example:
         {
-           "dataset_hash":{
-              "iou_averaged_evaluation":{
-                 "ci_averaged_evaluation":{
+            "iou_averaged_evaluation":{
+                "ci_averaged_evaluation":{
+                "ap":1.0,
+                "ar":1.0,
+                "fn":0,
+                "fp":0,
+                "tp":4329
+                },
+                "ci_evaluations":{
+                "4":{
+                    "ap":1.0,
+                    "ar":1.0,
+                    "fn":0,
+                    "fp":0,
+                    "tp":91
+                }
+                },
+                "topic_evaluations":{}
+            },
+            "iou_evaluations":{
+                "0.50":{
+                "ci_averaged_evaluation":{
                     "ap":1.0,
                     "ar":1.0,
                     "fn":0,
                     "fp":0,
                     "tp":4329
-                 },
-                 "ci_evaluations":{
-                    "4":{
-                       "ap":1.0,
-                       "ar":1.0,
-                       "fn":0,
-                       "fp":0,
-                       "tp":91
+                },
+                "ci_evaluations":{
+                    "2":{
+                        "ap":1.0,
+                        "ar":1.0,
+                        "fn":0,
+                        "fp":0,
+                        "tp":4238
                     }
-                 },
-                 "topic_evaluations":{}
-              },
-              "iou_evaluations":{
-                 "0.50":{
-                    "ci_averaged_evaluation":{
-                       "ap":1.0,
-                       "ar":1.0,
-                       "fn":0,
-                       "fp":0,
-                       "tp":4329
-                    },
-                    "ci_evaluations":{
-                       "2":{
-                          "ap":1.0,
-                          "ar":1.0,
-                          "fn":0,
-                          "fp":0,
-                          "tp":4238
-                       }
-                    },
-                    "topic_evaluations":{}
-                 },
-                 "topic_evaluations":{}
-              }
-           }
+                },
+            }
         }
         """
         try:
-            evaluation = mir_storage_ops.MirStorageOps.load_dataset_evaluations(
+            evaluation = mir_storage_ops.MirStorageOps.load_dataset_evaluation(
                 mir_root=self.mir_root,
                 mir_branch=self.branch_id,
                 mir_task_id=self.task_id,
