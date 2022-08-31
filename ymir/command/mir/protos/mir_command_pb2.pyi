@@ -366,7 +366,9 @@ class SingleTaskAnnotations(google.protobuf.message.Message):
         pass
     task_id: typing.Text = ...
     @property
-    def meta(self) -> global___AnnotationMeta: ...
+    def meta(self) -> global___AnnotationMeta:
+        """prediction meta infos"""
+        pass
     def __init__(self,
         *,
         image_annotations : typing.Optional[typing.Mapping[typing.Text, global___SingleImageAnnotations]] = ...,
@@ -392,13 +394,25 @@ global___SingleImageAnnotations = SingleImageAnnotations
 class AnnotationMeta(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor = ...
     CLASS_IDS_FIELD_NUMBER: builtins.int
+    MODEL_FIELD_NUMBER: builtins.int
+    STAGE_NAME_FIELD_NUMBER: builtins.int
     @property
     def class_ids(self) -> google.protobuf.internal.containers.RepeatedScalarFieldContainer[builtins.int]: ...
+    @property
+    def model(self) -> global___ModelMeta:
+        """model meta info associated with this single_task_annotations"""
+        pass
+    stage_name: typing.Text = ...
+    """stage name used to generate this single_task_annotations"""
+
     def __init__(self,
         *,
         class_ids : typing.Optional[typing.Iterable[builtins.int]] = ...,
+        model : typing.Optional[global___ModelMeta] = ...,
+        stage_name : typing.Text = ...,
         ) -> None: ...
-    def ClearField(self, field_name: typing_extensions.Literal["class_ids",b"class_ids"]) -> None: ...
+    def HasField(self, field_name: typing_extensions.Literal["model",b"model"]) -> builtins.bool: ...
+    def ClearField(self, field_name: typing_extensions.Literal["class_ids",b"class_ids","model",b"model","stage_name",b"stage_name"]) -> None: ...
 global___AnnotationMeta = AnnotationMeta
 
 class SingleImageCks(google.protobuf.message.Message):
@@ -876,6 +890,7 @@ class ModelMeta(google.protobuf.message.Message):
     CONTEXT_FIELD_NUMBER: builtins.int
     STAGES_FIELD_NUMBER: builtins.int
     BEST_STAGE_NAME_FIELD_NUMBER: builtins.int
+    CLASS_NAMES_FIELD_NUMBER: builtins.int
     model_hash: typing.Text = ...
     """/ hash for models.tar.gz"""
 
@@ -888,6 +903,8 @@ class ModelMeta(google.protobuf.message.Message):
     @property
     def stages(self) -> google.protobuf.internal.containers.MessageMap[typing.Text, global___ModelStage]: ...
     best_stage_name: typing.Text = ...
+    @property
+    def class_names(self) -> google.protobuf.internal.containers.RepeatedScalarFieldContainer[typing.Text]: ...
     def __init__(self,
         *,
         model_hash : typing.Text = ...,
@@ -895,8 +912,9 @@ class ModelMeta(google.protobuf.message.Message):
         context : typing.Text = ...,
         stages : typing.Optional[typing.Mapping[typing.Text, global___ModelStage]] = ...,
         best_stage_name : typing.Text = ...,
+        class_names : typing.Optional[typing.Iterable[typing.Text]] = ...,
         ) -> None: ...
-    def ClearField(self, field_name: typing_extensions.Literal["best_stage_name",b"best_stage_name","context",b"context","mean_average_precision",b"mean_average_precision","model_hash",b"model_hash","stages",b"stages"]) -> None: ...
+    def ClearField(self, field_name: typing_extensions.Literal["best_stage_name",b"best_stage_name","class_names",b"class_names","context",b"context","mean_average_precision",b"mean_average_precision","model_hash",b"model_hash","stages",b"stages"]) -> None: ...
 global___ModelMeta = ModelMeta
 
 class ModelStage(google.protobuf.message.Message):
