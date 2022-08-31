@@ -326,7 +326,9 @@ class TestToolsDetEval(unittest.TestCase):
                         }]
                     },
                 },
-                'task_id': 'a'
+                'task_id': 'a',
+                'class_ids': [],
+                'stage_name': '',
             },
             'prediction': {
                 'image_annotations': {
@@ -433,7 +435,9 @@ class TestToolsDetEval(unittest.TestCase):
                         }]
                     }
                 },
-                'task_id': 'a'
+                'task_id': 'a',
+                'class_ids': [],
+                'stage_name': '',
             },
             'image_cks': {
                 'a1': {
@@ -455,11 +459,7 @@ class TestToolsDetEval(unittest.TestCase):
         actual_annotations_dict = json_format.MessageToDict(actual_mir_annotations,
                                                             including_default_value_fields=True,
                                                             preserving_proto_field_name=True)
-        try:
-            self.assertEqual(expected_annotations_dict, actual_annotations_dict)
-        except AssertionError:
-            breakpoint()
-            print('')
+        self.assertEqual(expected_annotations_dict, actual_annotations_dict)
 
     # public: test cases
     def test_det_eval_coco_00(self) -> None:
