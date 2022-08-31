@@ -111,7 +111,6 @@ function Train({ allDatasets, datasetCache, ...func }) {
 
   useEffect(() => {
     const state = location.state
-    console.log('state:', state)
 
     if (state?.record) {
       const { task: { parameters, config }, description, } = state.record
@@ -120,7 +119,9 @@ function Train({ allDatasets, datasetCache, ...func }) {
         validation_dataset_id,
         strategy,
         docker_image,
-        docker_image_id, model_id,
+        docker_image_id, 
+        model_id,
+        model_stage_id,
         keywords,
       } = parameters
       form.setFieldsValue({
@@ -128,18 +129,18 @@ function Train({ allDatasets, datasetCache, ...func }) {
         keywords: keywords,
         testset: validation_dataset_id,
         gpu_count: config.gpu_count,
-        model: model_id,
+        model: [model_id, model_stage_id],
         image: docker_image_id + ',' + docker_image,
         strategy,
         description,
       })
-      setConfig(config)
+      setTimeout(() => setConfig(config), 500)
       setTestSet(validation_dataset_id)
       setTrainSet(dataset_id)
       setSelectedKeywords(keywords)
       setShowConfig(true)
 
-      // history.replace({ state: {} })
+      history.replace({ state: {} })
     }
   }, [location.state])
 
