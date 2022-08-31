@@ -65,6 +65,13 @@ If you wish to refer to YMIR in your work, please use the following BibTeX entry
 
 1.1.0 was released in 5/17/2022
 
+system
+- new dataset/model hiding and restoring functions.
+- support for modifying the project training category before the start of the iteration.
+- adding a new model testing module and model inference result comparison function.
+- optimizing the code structure.
+
+docker
 - support [yolov5](https://github.com/ultralytics/yolov5)
 - support [mmdetection](https://github.com/open-mmlab/mmdetection)
 - support [yolov7](https://github.com/wongkinyiu/yolov7)
