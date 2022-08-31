@@ -56,6 +56,7 @@ function Train({ allDatasets, datasetCache, ...func }) {
   const checkDuplicated = useDuplicatedCheck(submit)
   const [sys, getSysInfo] = useFetch('common/getSysInfo', {})
   const selectOpenpai = Form.useWatch('openpai', form)
+  const [showConfig, setShowConfig] = useState(false)
 
   const renderRadio = (types) => <Radio.Group options={types.map(type => ({ ...type, label: t(type.label) }))} />
 
@@ -107,6 +108,40 @@ function Train({ allDatasets, datasetCache, ...func }) {
   }, [seniorConfig])
 
   useEffect(() => (trainDataset && !iterationId) && setAllKeywords(), [trainDataset])
+
+  useEffect(() => {
+    const state = location.state
+    console.log('state:', state)
+
+    if (state?.record) {
+      const { task: { parameters, config }, description, } = state.record
+      const {
+        dataset_id,
+        validation_dataset_id,
+        strategy,
+        docker_image,
+        docker_image_id, model_id,
+        keywords,
+      } = parameters
+      form.setFieldsValue({
+        datasetId: dataset_id,
+        keywords: keywords,
+        testset: validation_dataset_id,
+        gpu_count: config.gpu_count,
+        model: model_id,
+        image: docker_image_id + ',' + docker_image,
+        strategy,
+        description,
+      })
+      setConfig(config)
+      setTestSet(validation_dataset_id)
+      setTrainSet(dataset_id)
+      setSelectedKeywords(keywords)
+      setShowConfig(true)
+
+      // history.replace({ state: {} })
+    }
+  }, [location.state])
 
   async function fetchProject() {
     const project = await func.getProject(pid)
@@ -310,7 +345,7 @@ function Train({ allDatasets, datasetCache, ...func }) {
               <TrainFormat />
             </Form.Item>
             <LiveCodeForm form={form} live={live} />
-            <DockerConfigForm seniorConfig={seniorConfig} form={form} />
+            <DockerConfigForm show={showConfig} seniorConfig={seniorConfig} form={form} />
             <Desc form={form} />
             <Form.Item wrapperCol={{ offset: 8 }}>
               <Space size={20}>
