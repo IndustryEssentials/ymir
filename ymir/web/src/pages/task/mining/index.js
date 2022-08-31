@@ -101,7 +101,6 @@ function Mining({ datasetCache, ...func }) {
         inference: generate_annotations,
         description,
       })
-      setConfig(config)
       setShowConfig(true)
 
       setTimeout(() => setConfig(config), 500)
