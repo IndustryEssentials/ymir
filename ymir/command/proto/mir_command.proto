@@ -118,7 +118,7 @@ message SingleTaskAnnotations {
     /// key: image id, value: annotations of that single image
     map<string, SingleImageAnnotations> image_annotations = 1;
     string task_id = 2;
-    // prediction meta infos
+    // meta infos of this SingleTaskAnnotations
     AnnotationMeta meta = 3;
 };
 

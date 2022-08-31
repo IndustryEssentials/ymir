@@ -375,7 +375,7 @@ class SingleTaskAnnotations(google.protobuf.message.Message):
     task_id: typing.Text = ...
     @property
     def meta(self) -> global___AnnotationMeta:
-        """prediction meta infos"""
+        """meta infos of this SingleTaskAnnotations"""
         pass
     def __init__(self,
         *,

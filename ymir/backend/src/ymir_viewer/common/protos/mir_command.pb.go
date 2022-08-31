@@ -808,7 +808,7 @@ type SingleTaskAnnotations struct {
 	/// key: image id, value: annotations of that single image
 	ImageAnnotations map[string]*SingleImageAnnotations `protobuf:"bytes,1,rep,name=image_annotations,json=imageAnnotations,proto3" json:"image_annotations,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
 	TaskId           string                             `protobuf:"bytes,2,opt,name=task_id,json=taskId,proto3" json:"task_id,omitempty"`
-	// prediction meta infos
+	// meta infos of this SingleTaskAnnotations
 	Meta *AnnotationMeta `protobuf:"bytes,3,opt,name=meta,proto3" json:"meta,omitempty"`
 }
 
