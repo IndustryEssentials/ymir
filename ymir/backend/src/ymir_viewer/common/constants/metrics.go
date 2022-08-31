@@ -8,14 +8,14 @@ type MirMetrics int
 
 const (
 	MetricsUnknown MirMetrics = iota
-	MetricsKeyIDs
+	MetricsClassIDs
 	MetricsModel
 	MetricsProject
 	MetricsTask
 )
 
 var (
-	MetricsDatasetStringList = []string{"_", "keyids", "model", "project", "task"}
+	MetricsDatasetStringList = []string{"_", "class_ids", "model", "project", "task"}
 )
 
 func (mirMetrics MirMetrics) String() string {
@@ -36,7 +36,7 @@ type MetricsDataPoint struct {
 	ID         string    `json:"id"          bson:"id"          mapstructure:"id"`
 	UserID     string    `json:"user_id"     bson:"user_id"     mapstructure:"user_id"`
 	ProjectID  string    `json:"project_id"  bson:"project_id"  mapstructure:"project_id"`
-	KeyIDs     []int     `json:"key_ids"     bson:"key_ids"     mapstructure:"key_ids"`
+	ClassIDs   []int     `json:"class_ids"   bson:"class_ids"   mapstructure:"class_ids"`
 
 	Other map[string]interface{} `mapstructure:",remain"`
 }
