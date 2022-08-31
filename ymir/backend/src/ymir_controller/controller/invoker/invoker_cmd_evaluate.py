@@ -34,7 +34,7 @@ class EvaluateInvoker(BaseMirControllerInvoker):
 
     def invoke(self) -> backend_pb2.GeneralResp:
         ec = self._request.evaluate_config
-        rev_tid = revs_parser.parse_single_arg_rev(ec.pred_dataset_ids[0], need_tid=False)
+        rev_tid = revs_parser.parse_single_arg_rev(self._request.in_dataset_ids[0], need_tid=False)
 
         evaluation = det_eval_ctl_ops.det_evaluate_datasets(mir_root=self._repo_root,
                                                             gt_rev_tid=rev_tid,

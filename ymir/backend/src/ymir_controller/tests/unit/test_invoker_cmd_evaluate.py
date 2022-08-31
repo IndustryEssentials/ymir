@@ -68,7 +68,6 @@ class TestInvokerCmdEvaluate(unittest.TestCase):
     @mock.patch("mir.tools.det_eval_ctl_ops.det_evaluate_datasets", side_effect=_mock_run_func)
     def test_evaluate_00(self, mock_run):
         evaluate_config = mir_cmd_pb.EvaluateConfig()
-        evaluate_config.pred_dataset_ids[:] = ["abc"]
         evaluate_config.conf_thr = self._conf_thr
         evaluate_config.iou_thrs_interval = self._iou_thrs_interval
 
