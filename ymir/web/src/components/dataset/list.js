@@ -221,18 +221,11 @@ function Datasets({ pid, project = {}, iterations, groups, datasetList, query, v
     const invalidDataset = ({ state, assetCount }) => !isValidDataset(state) || assetCount === 0
     const menus = [
       {
-        key: "merge",
-        label: t("common.action.merge"),
-        hidden: () => !isValidDataset(state),
-        onclick: () => history.push(`/home/project/${pid}/merge?did=${id}`),
-        icon: <CompareListIcon className={styles.addBtnIcon} />,
-      },
-      {
-        key: "filter",
-        label: t("common.action.filter"),
-        hidden: () => !isValidDataset(state),
-        onclick: () => history.push(`/home/project/${pid}/filter?did=${id}`),
-        icon: <ScreenIcon className={styles.addBtnIcon} />,
+        key: "label",
+        label: t("dataset.action.label"),
+        hidden: () => invalidDataset(record),
+        onclick: () => history.push(`/home/project/${pid}/label?did=${id}`),
+        icon: <TaggingIcon />,
       },
       {
         key: "train",
@@ -249,18 +242,25 @@ function Datasets({ pid, project = {}, iterations, groups, datasetList, query, v
         icon: <VectorIcon />,
       },
       {
+        key: "merge",
+        label: t("common.action.merge"),
+        hidden: () => !isValidDataset(state),
+        onclick: () => history.push(`/home/project/${pid}/merge?did=${id}`),
+        icon: <CompareListIcon className={styles.addBtnIcon} />,
+      },
+      {
+        key: "filter",
+        label: t("common.action.filter"),
+        hidden: () => !isValidDataset(state),
+        onclick: () => history.push(`/home/project/${pid}/filter?did=${id}`),
+        icon: <ScreenIcon className={styles.addBtnIcon} />,
+      },
+      {
         key: "inference",
         label: t("dataset.action.inference"),
         hidden: () => invalidDataset(record),
         onclick: () => history.push(`/home/project/${pid}/inference?did=${id}`),
         icon: <WajueIcon />,
-      },
-      {
-        key: "label",
-        label: t("dataset.action.label"),
-        hidden: () => invalidDataset(record),
-        onclick: () => history.push(`/home/project/${pid}/label?did=${id}`),
-        icon: <TaggingIcon />,
       },
       {
         key: "copy",
