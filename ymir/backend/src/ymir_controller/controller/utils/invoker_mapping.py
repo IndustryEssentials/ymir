@@ -1,6 +1,5 @@
 from controller.invoker import (
     invoker_cmd_branch_commit,
-    invoker_cmd_evaluate,
     invoker_cmd_filter,
     invoker_cmd_gpu_info,
     invoker_cmd_inference,
@@ -21,7 +20,6 @@ from proto import backend_pb2
 
 RequestTypeToInvoker = {
     backend_pb2.CMD_COMMIT: invoker_cmd_branch_commit.BranchCommitInvoker,
-    backend_pb2.CMD_EVALUATE: invoker_cmd_evaluate.EvaluateInvoker,
     backend_pb2.CMD_FILTER: invoker_cmd_filter.FilterBranchInvoker,
     backend_pb2.CMD_GPU_INFO_GET: invoker_cmd_gpu_info.GPUInfoInvoker,
     backend_pb2.CMD_INFERENCE: invoker_cmd_inference.InferenceCMDInvoker,

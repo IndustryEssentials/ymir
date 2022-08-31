@@ -280,7 +280,7 @@ paths:
       - evaluation
       summary: get dataset evaluation result
       description: get dataset evaluation result
-      operationId: get_dataset_evaluations
+      operationId: get_dataset_evaluation
       parameters:
       - name: user_id
         in: path

@@ -11,7 +11,7 @@ from src.swagger_models import DatasetEvaluationResult
 from src.viz_models import pb_reader
 
 
-def get_dataset_evaluations(user_id: str, repo_id: str, branch_id: str) -> DatasetEvaluationResult:
+def get_dataset_evaluation(user_id: str, repo_id: str, branch_id: str) -> DatasetEvaluationResult:
     """
     get dataset evaluations result
 
@@ -30,11 +30,11 @@ def get_dataset_evaluations(user_id: str, repo_id: str, branch_id: str) -> Datas
         repo_id=repo_id,
         branch_id=branch_id,
         task_id=branch_id,
-    ).get_dataset_evaluations()
+    ).get_dataset_evaluation()
 
     resp = utils.suss_resp()
     resp["result"] = evaluations
-    logging.info("successfully get_dataset_evaluations from branch %s", branch_id)
+    logging.info("successfully get_dataset_evaluation from branch %s", branch_id)
 
     return DatasetEvaluationResult(**resp)
 

@@ -36,7 +36,6 @@ enum RequestType {
     CMD_PULL_IMAGE = 16;
     CMD_GPU_INFO_GET = 17;
     CMD_SAMPLING = 18;
-    CMD_EVALUATE = 19;
     CMD_REPO_CHECK = 20;
     CMD_REPO_CLEAR = 21;
 
@@ -51,7 +50,7 @@ enum RequestType {
     // Long task
     TASK_CREATE = 1001;
 
-    reserved 15, 1002;
+    reserved 15, 19, 1002;
 }
 
 message GeneralReq {

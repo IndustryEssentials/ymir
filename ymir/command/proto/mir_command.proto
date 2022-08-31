@@ -262,16 +262,12 @@ message ModelStage {
 
 message Evaluation {
     EvaluateConfig config = 1;
-    // key: prediction dataset id, value: evaluation result for ground truth and prediction dataset
-    // map<string, SingleDatasetEvaluation> dataset_evaluations = 2;
     SingleDatasetEvaluation dataset_evaluation = 3;
 
     reserved 2;
 }
 
 message EvaluateConfig {
-    // string gt_dataset_id = 1;
-    // repeated string pred_dataset_ids = 2;
     float conf_thr = 3;
     string iou_thrs_interval = 4;
     bool need_pr_curve = 5;
@@ -282,8 +278,6 @@ message EvaluateConfig {
 
 message SingleDatasetEvaluation {
     float conf_thr = 1;
-    // string gt_dataset_id = 2;
-    // string pred_dataset_id = 3;
     map<string, SingleIouEvaluation> iou_evaluations = 4;  // key: string of iou threshold
     SingleIouEvaluation iou_averaged_evaluation = 5;  // average for all ious
 

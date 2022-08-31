@@ -280,7 +280,7 @@ class MirStorageOps():
                         his_branch: Optional[str],
                         mir_datas: Dict,
                         task: mirpb.Task,
-                        evaluate_config: mirpb.EvaluateConfig = create_evaluate_config()) -> int:
+                        evaluate_config: Optional[mirpb.EvaluateConfig] = None) -> int:
         """
         saves and commit all contents in mir_datas to branch: `mir_branch`;
         branch will be created if not exists, and it's history will be after `his_branch`
@@ -319,11 +319,8 @@ class MirStorageOps():
         if not task.task_id:
             raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS, error_message='empty task id')
 
-        # don't change `evaluate_config` because it may be a default value from `create_evaluate_config`
-        # if you change the default `evaluate_config`
-        # other invocation of `save_and_commit` will be affected by your change
-        copied_evaluate_config = mirpb.EvaluateConfig()
-        copied_evaluate_config.CopyFrom(evaluate_config)
+        if not evaluate_config:
+            evaluate_config = create_evaluate_config()
 
         mir_tasks: mirpb.MirTasks = mirpb.MirTasks()
         mir_tasks.head_task_id = task.task_id
@@ -355,7 +352,7 @@ class MirStorageOps():
                 if return_code != MirCode.RC_OK:
                     return return_code
 
-            cls.__build_and_save(mir_root=mir_root, mir_datas=mir_datas, evaluate_config=copied_evaluate_config,
+            cls.__build_and_save(mir_root=mir_root, mir_datas=mir_datas, evaluate_config=evaluate_config,
                                  dst_dataset_id=revs_parser.join_rev_tid(mir_branch, task.task_id))
 
             ret_code = CmdCommit.run_with_args(mir_root=mir_root, msg=task.name)
@@ -565,7 +562,7 @@ class MirStorageOps():
         )
 
     @classmethod
-    def load_dataset_evaluations(cls, mir_root: str, mir_branch: str, mir_task_id: str = '') -> Dict:
+    def load_dataset_evaluation(cls, mir_root: str, mir_branch: str, mir_task_id: str = '') -> Dict:
         mir_storage_data: mirpb.MirTasks = cls.load_single_storage(mir_root=mir_root,
                                                                    mir_branch=mir_branch,
                                                                    ms=mirpb.MirStorage.MIR_TASKS,
