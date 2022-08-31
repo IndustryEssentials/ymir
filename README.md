@@ -47,6 +47,8 @@
   📫 Feedback on usage issues: contact.viesc@gmail.com / Professional consulting for server equipment: tensor.station@gmail.com
 <div>&nbsp;</div>&nbsp;</div>
 
+English | [简体中文](README_zh-CN.md)
+
 # Citations
 
 If you wish to refer to YMIR in your work, please use the following BibTeX entry.
@@ -72,8 +74,6 @@ If you wish to refer to YMIR in your work, please use the following BibTeX entry
 view [ymir-executor-fork](https://github.com/modelai/ymir-executor-fork) for detail 
 
 ## Introduction
-
-English | [简体中文](README_zh-CN.md)
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
