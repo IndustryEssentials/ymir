@@ -61,6 +61,16 @@
 }
 ```
 
+# 更新内容
+
+- 支持 [yolov5](https://github.com/ultralytics/yolov5)
+- 支持 [mmdetection](https://github.com/open-mmlab/mmdetection)
+- 支持 [yolov7](https://github.com/wongkinyiu/yolov7)
+- 支持 [detectron2](https://github.com/facebookresearch/detectron2)
+- 支持 [An Extendable, Efficient and Effective Transformer-based Object Detector](https://github.com/naver-ai/vidt)
+
+查看更多内容 [ymir-executor-fork](https://github.com/modelai/ymir-executor-fork) 
+
 ## 简介
 
 [English](README.md) | 简体中文
@@ -71,6 +81,7 @@
 **目录**
 
 - [文章引用](#文章引用)
+- [更新内容](#更新内容)
 - [1. AI SUITE-YMIR介绍](#1--ai-suite-ymir%E4%BB%8B%E7%BB%8D)
   - [1.1.	主要功能](#11-主要功能)
   - [1.2.	申请试用](#12-申请试用)
