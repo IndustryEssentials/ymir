@@ -48,6 +48,8 @@
   
 <div>&nbsp;</div>&nbsp;</div>
 
+[English](README.md) | 简体中文
+
 # 文章引用
 
 如要在您的工作中引用YMIR，请使用下面的Bibtex：
@@ -63,6 +65,8 @@
 
 # 更新内容
 
+1.1.0版本更新时间为5/17/2022
+
 - 支持 [yolov5](https://github.com/ultralytics/yolov5)
 - 支持 [mmdetection](https://github.com/open-mmlab/mmdetection)
 - 支持 [yolov7](https://github.com/wongkinyiu/yolov7)
@@ -72,8 +76,6 @@
 查看更多内容 [ymir-executor-fork](https://github.com/modelai/ymir-executor-fork) 
 
 ## 简介
-
-[English](README.md) | 简体中文
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
