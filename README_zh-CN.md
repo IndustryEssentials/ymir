@@ -67,6 +67,13 @@
 
 1.1.0版本更新时间为5/17/2022
 
+YMIR平台
+- 新增数据集/模型隐藏和还原功能；
+- 支持在迭代开始前修改项目训练类别；
+- 新增模型测试模块和模型推理结果比对功能；
+- 优化代码结构；
+
+Docker
 - 支持 [yolov5](https://github.com/ultralytics/yolov5)
 - 支持 [mmdetection](https://github.com/open-mmlab/mmdetection)
 - 支持 [yolov7](https://github.com/wongkinyiu/yolov7)
