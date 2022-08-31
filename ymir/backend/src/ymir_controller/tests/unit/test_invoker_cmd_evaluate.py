@@ -62,10 +62,10 @@ class TestInvokerCmdEvaluate(unittest.TestCase):
 
     # protected: mocked
     def _mock_run_func(*args, **kwargs):
-        return mir_cmd_pb.Evaluation(), None
+        return mir_cmd_pb.Evaluation()
 
     # public: test cases
-    @mock.patch("mir.tools.det_eval.det_evaluate", side_effect=_mock_run_func)
+    @mock.patch("mir.tools.det_eval_ops.det_evaluate_datasets", side_effect=_mock_run_func)
     def test_evaluate_00(self, mock_run):
         evaluate_config = mir_cmd_pb.EvaluateConfig()
         evaluate_config.pred_dataset_ids[:] = ["abc"]
