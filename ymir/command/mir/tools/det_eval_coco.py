@@ -517,20 +517,19 @@ class Params:
 
 def det_evaluate(prediction: mirpb.SingleTaskAnnotations, ground_truth: mirpb.SingleTaskAnnotations,
                  config: mirpb.EvaluateConfig) -> mirpb.Evaluation:
-    if len(ground_truth.image_annotations) == 0 or len(prediction.image_annotations) == 0:
-        return mirpb.Evaluation()
-
     if config.conf_thr < 0 or config.conf_thr > 1:
         raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS, error_message='invalid conf_thr')
+
+    evaluation = mirpb.Evaluation()
+    evaluation.config.CopyFrom(config)
+    if len(ground_truth.image_annotations) == 0 or len(prediction.image_annotations) == 0:
+        return evaluation
 
     params = Params()
     params.confThr = config.conf_thr
     params.iouThrs = det_eval_utils.get_iou_thrs_array(config.iou_thrs_interval)
     params.need_pr_curve = config.need_pr_curve
     params.catIds = list(config.class_ids)
-
-    evaluation = mirpb.Evaluation()
-    evaluation.config.CopyFrom(config)
 
     area_ranges_index = 0  # area range: 'all'
     max_dets_index = len(params.maxDets) - 1  # last max det number
