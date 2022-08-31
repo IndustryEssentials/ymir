@@ -59,6 +59,18 @@ If you wish to refer to YMIR in your work, please use the following BibTeX entry
 }
 ```
 
+# What's New
+
+1.1.0 was released in 5/17/2022
+
+- support [yolov5](https://github.com/ultralytics/yolov5)
+- support [mmdetection](https://github.com/open-mmlab/mmdetection)
+- support [yolov7](https://github.com/wongkinyiu/yolov7)
+- support [detectron2](https://github.com/facebookresearch/detectron2)
+- support [An Extendable, Efficient and Effective Transformer-based Object Detector](https://github.com/naver-ai/vidt)
+
+view [ymir-executor-fork](https://github.com/modelai/ymir-executor-fork) for detail 
+
 ## Introduction
 
 English | [简体中文](README_zh-CN.md)
@@ -68,6 +80,7 @@ English | [简体中文](README_zh-CN.md)
 **Catalog**
 
 - [Citations](#citations)
+- [What's New](#whats-new)
 - [1. Introduction to AI SUITE-YMIR](#1-introduction-to-ai-suite-ymir)
   - [1.1. Main functions](#11-main-functions)
   - [1.2. Apply for trial](#12-apply-for-trial)
