@@ -30,7 +30,7 @@ def det_evaluate_datasets(
                                                              class_ids=class_ids)
 
     return det_eval_ops.det_evaluate_with_pb(
-        predictions={pred_rev_tid.rev_tid: prediction},
-        ground_truth=(gt_rev_tid.rev_tid, ground_truth),
+        prediction=prediction,
+        ground_truth=ground_truth,
         config=evaluate_config,
     )

@@ -52,8 +52,8 @@ class MirStorageOps():
         mir_datas[mirpb.MirStorage.MIR_KEYWORDS] = mir_keywords
 
         evaluation = det_eval_ops.det_evaluate_with_pb(
-            predictions={dst_dataset_id: mir_annotations.prediction},
-            ground_truth=(dst_dataset_id, mir_annotations.ground_truth),
+            prediction=mir_annotations.prediction,
+            ground_truth=mir_annotations.ground_truth,
             config=evaluate_config,
         )
         mir_tasks.tasks[mir_tasks.head_task_id].evaluation.CopyFrom(evaluation)
@@ -572,11 +572,7 @@ class MirStorageOps():
                                                                    mir_task_id=mir_task_id,
                                                                    as_dict=False)
         task = mir_storage_data.tasks[mir_storage_data.head_task_id]
-        if not task.evaluation.dataset_evaluations:
-            raise MirError(error_code=MirCode.RC_CMD_INVALID_ARGS, error_message="no dataset evaluation")
-
-        dataset_evaluations = cls.__message_to_dict(task.evaluation)
-        return dataset_evaluations["dataset_evaluations"]
+        return cls.__message_to_dict(task.evaluation.dataset_evaluation)
 
     @classmethod
     def load_dataset_metadata(cls, mir_root: str, mir_branch: str, mir_task_id: str = '') -> Dict:

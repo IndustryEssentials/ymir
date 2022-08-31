@@ -55,8 +55,8 @@ def dataset_fast_evaluation(user_id: str, repo_id: str, branch_id: str, conf_thr
     logging.info(f"successfully dataset_fast_evaluation from branch {branch_id}")
 
     resp = utils.suss_resp()
-    resp["result"] = json_format.MessageToDict(evaluation,
+    resp["result"] = json_format.MessageToDict(evaluation.dataset_evaluation,
                                                including_default_value_fields=True,
                                                preserving_proto_field_name=True,
-                                               use_integers_for_enums=True)['dataset_evaluations']
+                                               use_integers_for_enums=True)
     return DatasetEvaluationResult(**resp)

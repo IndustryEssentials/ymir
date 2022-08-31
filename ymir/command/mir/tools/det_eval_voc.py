@@ -234,9 +234,9 @@ def _get_single_evaluate_element(prediction: mirpb.SingleTaskAnnotations, ground
     return see
 
 
-def det_evaluate(predictions: Dict[str, mirpb.SingleTaskAnnotations], ground_truth: mirpb.SingleTaskAnnotations,
+def det_evaluate(prediction: mirpb.SingleTaskAnnotations, ground_truth: mirpb.SingleTaskAnnotations,
                  config: mirpb.EvaluateConfig) -> mirpb.Evaluation:
-    if len(ground_truth.image_annotations) == 0:
+    if len(ground_truth.image_annotations) == 0 or len(prediction.image_annotations) == 0:
         return mirpb.Evaluation()
 
     if config.conf_thr < 0 or config.conf_thr > 1:
@@ -248,32 +248,26 @@ def det_evaluate(predictions: Dict[str, mirpb.SingleTaskAnnotations], ground_tru
     class_ids = list(config.class_ids)
     iou_thrs = det_eval_utils.get_iou_thrs_array(config.iou_thrs_interval)
 
-    for pred_dataset_id, prediction in predictions.items():
-        if len(prediction.image_annotations) == 0:
-            continue
+    single_dataset_evaluation = evaluation.dataset_evaluation
+    single_dataset_evaluation.conf_thr = config.conf_thr
 
-        single_dataset_evaluation = evaluation.dataset_evaluations[pred_dataset_id]
-        single_dataset_evaluation.conf_thr = config.conf_thr
-        single_dataset_evaluation.gt_dataset_id = config.gt_dataset_id
-        single_dataset_evaluation.pred_dataset_id = pred_dataset_id
+    for iou_thr in iou_thrs:
+        match_result = DetEvalMatchResult()
+        for class_id in class_ids:
+            see = _get_single_evaluate_element(prediction=prediction,
+                                               ground_truth=ground_truth,
+                                               class_id=class_id,
+                                               iou_thr=iou_thr,
+                                               conf_thr=config.conf_thr,
+                                               need_pr_curve=config.need_pr_curve,
+                                               match_result=match_result)
+            single_dataset_evaluation.iou_evaluations[f"{iou_thr:.2f}"].ci_evaluations[class_id].CopyFrom(see)
 
-        for iou_thr in iou_thrs:
-            match_result = DetEvalMatchResult()
-            for class_id in class_ids:
-                see = _get_single_evaluate_element(prediction=prediction,
-                                                   ground_truth=ground_truth,
-                                                   class_id=class_id,
-                                                   iou_thr=iou_thr,
-                                                   conf_thr=config.conf_thr,
-                                                   need_pr_curve=config.need_pr_curve,
-                                                   match_result=match_result)
-                single_dataset_evaluation.iou_evaluations[f"{iou_thr:.2f}"].ci_evaluations[class_id].CopyFrom(see)
-
-            det_eval_utils.write_confusion_matrix(gt_annotations=ground_truth,
-                                                  pred_annotations=prediction,
-                                                  class_ids=class_ids,
-                                                  match_result=match_result,
-                                                  iou_thr=iou_thrs[0])
-        det_eval_utils.calc_averaged_evaluations(dataset_evaluation=single_dataset_evaluation, class_ids=class_ids)
+        det_eval_utils.write_confusion_matrix(gt_annotations=ground_truth,
+                                              pred_annotations=prediction,
+                                              class_ids=class_ids,
+                                              match_result=match_result,
+                                              iou_thr=iou_thrs[0])
+    det_eval_utils.calc_averaged_evaluations(dataset_evaluation=single_dataset_evaluation, class_ids=class_ids)
 
     return evaluation

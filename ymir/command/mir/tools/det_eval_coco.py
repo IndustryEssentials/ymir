@@ -515,9 +515,9 @@ class Params:
         self.need_pr_curve = False
 
 
-def det_evaluate(predictions: Dict[str, mirpb.SingleTaskAnnotations], ground_truth: mirpb.SingleTaskAnnotations,
+def det_evaluate(prediction: mirpb.SingleTaskAnnotations, ground_truth: mirpb.SingleTaskAnnotations,
                  config: mirpb.EvaluateConfig) -> mirpb.Evaluation:
-    if len(ground_truth.image_annotations) == 0:
+    if len(ground_truth.image_annotations) == 0 or len(prediction.image_annotations) == 0:
         return mirpb.Evaluation()
 
     if config.conf_thr < 0 or config.conf_thr > 1:
@@ -536,29 +536,23 @@ def det_evaluate(predictions: Dict[str, mirpb.SingleTaskAnnotations], ground_tru
     max_dets_index = len(params.maxDets) - 1  # last max det number
 
     mir_gt = MirCoco(task_annotations=ground_truth, conf_thr=None)
+    mir_dt = MirCoco(task_annotations=prediction, conf_thr=config.conf_thr)
 
-    for pred_dataset_id, prediction in predictions.items():
-        if len(prediction.image_annotations) == 0:
-            continue
+    evaluator = CocoDetEval(coco_gt=mir_gt, coco_dt=mir_dt, params=params)
+    evaluator.evaluate()
+    evaluator.accumulate()
 
-        mir_dt = MirCoco(task_annotations=prediction, conf_thr=config.conf_thr)
+    det_eval_utils.write_confusion_matrix(gt_annotations=ground_truth,
+                                          pred_annotations=prediction,
+                                          class_ids=params.catIds,
+                                          match_result=evaluator.match_result,
+                                          iou_thr=params.iouThrs[0])
 
-        evaluator = CocoDetEval(coco_gt=mir_gt, coco_dt=mir_dt, params=params)
-        evaluator.evaluate()
-        evaluator.accumulate()
+    single_dataset_evaluation = evaluator.get_evaluation_result(area_ranges_index=area_ranges_index,
+                                                                max_dets_index=max_dets_index)
+    det_eval_utils.calc_averaged_evaluations(dataset_evaluation=single_dataset_evaluation, class_ids=params.catIds)
 
-        det_eval_utils.write_confusion_matrix(gt_annotations=ground_truth,
-                                              pred_annotations=prediction,
-                                              class_ids=params.catIds,
-                                              match_result=evaluator.match_result,
-                                              iou_thr=params.iouThrs[0])
+    single_dataset_evaluation.conf_thr = config.conf_thr
+    evaluation.dataset_evaluation.CopyFrom(single_dataset_evaluation)
 
-        single_dataset_evaluation = evaluator.get_evaluation_result(area_ranges_index=area_ranges_index,
-                                                                    max_dets_index=max_dets_index)
-        det_eval_utils.calc_averaged_evaluations(dataset_evaluation=single_dataset_evaluation, class_ids=params.catIds)
-
-        single_dataset_evaluation.conf_thr = config.conf_thr
-        single_dataset_evaluation.gt_dataset_id = config.gt_dataset_id
-        single_dataset_evaluation.pred_dataset_id = pred_dataset_id
-        evaluation.dataset_evaluations[pred_dataset_id].CopyFrom(single_dataset_evaluation)
     return evaluation
