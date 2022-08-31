@@ -48,6 +48,8 @@
   
 <div>&nbsp;</div>&nbsp;</div>
 
+[English](README.md) | 简体中文
+
 # 文章引用
 
 如要在您的工作中引用YMIR，请使用下面的Bibtex：
@@ -61,9 +63,26 @@
 }
 ```
 
-## 简介
+# 更新内容
 
-[English](README.md) | 简体中文
+1.1.0版本更新时间为5/17/2022
+
+YMIR平台
+- 新增数据集/模型隐藏和还原功能；
+- 支持在迭代开始前修改项目训练类别；
+- 新增模型测试模块和模型推理结果比对功能；
+- 优化代码结构；
+
+Docker
+- 支持 [yolov5](https://github.com/ultralytics/yolov5)
+- 支持 [mmdetection](https://github.com/open-mmlab/mmdetection)
+- 支持 [yolov7](https://github.com/wongkinyiu/yolov7)
+- 支持 [detectron2](https://github.com/facebookresearch/detectron2)
+- 支持 [An Extendable, Efficient and Effective Transformer-based Object Detector](https://github.com/naver-ai/vidt)
+
+查看更多内容 [ymir-executor-fork](https://github.com/modelai/ymir-executor-fork) 
+
+## 简介
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
@@ -71,6 +90,7 @@
 **目录**
 
 - [文章引用](#文章引用)
+- [更新内容](#更新内容)
 - [1. AI SUITE-YMIR介绍](#1--ai-suite-ymir%E4%BB%8B%E7%BB%8D)
   - [1.1.	主要功能](#11-主要功能)
   - [1.2.	申请试用](#12-申请试用)
