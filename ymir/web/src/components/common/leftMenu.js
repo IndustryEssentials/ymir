@@ -63,9 +63,15 @@ function LeftMenu() {
         isSuperAdmin(role) ? getItem(t('common.top.menu.permission'), '/home/permission', UserSettingsIcon,) : null,
       ]),
       { type: 'divider' },
-      getItem(<a target="_blank" href='/docs'><BookIcon /> {t('common.menu.docs')}</a>, 'outer/docs'),
+      getItem(<a target="_blank" href='/docs'>
+        <BookIcon />
+        <span style={{ display: 'inline-block', marginLeft: 10 }}>{t('common.menu.docs')}</span>
+      </a>, 'outer/docs'),
       getItem(t('user.settings'), '/home/user', UserIcon,),
-      getItem(<a target="_blank" href='https://github.com/IndustryEssentials/ymir'><GithubIcon /> {t('common.top.menu.community')}</a>, 'outer/github'),
+      getItem(<a target="_blank" href='https://github.com/IndustryEssentials/ymir'>
+        <GithubIcon />
+        <span style={{ display: 'inline-block', marginLeft: 10 }}>{t('common.top.menu.community')}</span>
+      </a>, 'outer/github'),
     ])
   }, [id, project, role])
 
