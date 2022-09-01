@@ -418,7 +418,7 @@ class VizClient:
         extra_data["create_time"] = create_time
         extra_data["user_id"] = f"{user_id:0>4}"
         extra_data["project_id"] = f"{project_id:0>6}"
-        extra_data["key_ids"] = ','.join(map(str, user_labels.get_class_ids(keywords)))
+        extra_data["class_ids"] = ','.join(map(str, user_labels.get_class_ids(keywords)))
 
         url = f"http://127.0.0.1:{settings.VIEWER_HOST_PORT}/api/v1/user_metrics/{metrics_group}"
         self.session.post(url, data=extra_data, timeout=settings.VIZ_TIMEOUT)
@@ -429,9 +429,13 @@ class VizClient:
                       query_field: str,
                       bucket: str,
                       unit: str = "",
-                      limit: int = 10) -> Dict:
+                      limit: int = 10,
+                      user_labels: UserLabels = None,
+                      keywords: List[str] = []) -> Dict:
         url = f"http://127.0.0.1:{settings.VIEWER_HOST_PORT}/api/v1/user_metrics/{metrics_group}"
         params = {"user_id": user_id, "query_field": query_field, "bucket": bucket, "unit": unit, "limit": limit}
+        if keywords and user_labels:
+            params["class_ids"] = ','.join(map(str, user_labels.get_class_ids(keywords)))
         resp = self.get_resp(url, params=params)
         return self.parse_resp(resp)
 

@@ -134,15 +134,15 @@ func (s *MongoServer) IndexDatasetData(mirRepo *constants.MirRepo, newData []int
 func (s *MongoServer) countDatasetAssetsInClass(
 	collection *mongo.Collection,
 	queryField string,
-	classIds []int,
+	classIDs []int,
 ) (int64, int64) {
 	if len(queryField) < 1 {
 		panic("invalid queryField in countDatasetAssetsInClass")
 	}
 
 	cond := make([]bson.M, 0)
-	if len(classIds) > 0 {
-		cond = append(cond, bson.M{"$match": bson.M{queryField: bson.M{"$in": classIds}}})
+	if len(classIDs) > 0 {
+		cond = append(cond, bson.M{"$match": bson.M{queryField: bson.M{"$in": classIDs}}})
 	}
 	cond = append(cond, bson.M{"$group": bson.D{
 		bson.E{Key: "_id", Value: nil},
@@ -160,7 +160,7 @@ func (s *MongoServer) QueryDatasetAssets(
 	mirRepo *constants.MirRepo,
 	offset int,
 	limit int,
-	classIds []int,
+	classIDs []int,
 	annoTypes []string,
 	currentAssetID string,
 	cmTypes []int,
@@ -170,10 +170,10 @@ func (s *MongoServer) QueryDatasetAssets(
 	defer tools.TimeTrack(time.Now())
 
 	log.Printf(
-		"Query offset: %d, limit: %d, classIds: %v, annoTypes: %v, currentId: %s, cmTypes: %v cks: %v tags: %v\n",
+		"Query offset: %d, limit: %d, classIDs: %v, annoTypes: %v, currentId: %s, cmTypes: %v cks: %v tags: %v\n",
 		offset,
 		limit,
-		classIds,
+		classIDs,
 		annoTypes,
 		currentAssetID,
 		cmTypes,
@@ -185,8 +185,8 @@ func (s *MongoServer) QueryDatasetAssets(
 	// "and" for inter-group, "or" for inner-group
 	filterAndConditions := bson.A{}
 	// class id in either field counts.
-	if len(classIds) > 0 {
-		singleQuery := bson.M{"class_ids": bson.M{"$in": classIds}}
+	if len(classIDs) > 0 {
+		singleQuery := bson.M{"class_ids": bson.M{"$in": classIDs}}
 		filterAndConditions = append(filterAndConditions, singleQuery)
 	}
 
@@ -501,6 +501,7 @@ func (s *MongoServer) MetricsRecordSignals(collectionSuffix string, id string, d
 func (s *MongoServer) MetricsQuerySignals(
 	collectionSuffix string,
 	userID string,
+	classIDs []int,
 	queryField string,
 	bucket string,
 	unit string,
@@ -509,7 +510,7 @@ func (s *MongoServer) MetricsQuerySignals(
 	collection := s.getMetricsCollection(collectionSuffix)
 	switch bucket {
 	case "count":
-		return s.metricsQueryByCount(collection, userID, queryField, limit)
+		return s.metricsQueryByCount(collection, userID, classIDs, queryField, limit)
 	case "time":
 		return s.metricsQueryByTime(collection, userID, queryField, unit, limit)
 	default:
@@ -520,12 +521,16 @@ func (s *MongoServer) MetricsQuerySignals(
 func (s *MongoServer) metricsQueryByCount(
 	collection *mongo.Collection,
 	userID string,
+	classIDs []int,
 	queryField string,
 	limit int,
 ) *[]constants.MetricsQueryPoint {
 	cond := make([]bson.M, 0)
 	cond = append(cond, bson.M{"$unwind": "$" + queryField})
 	cond = append(cond, bson.M{"$match": bson.M{"user_id": userID}})
+	if len(classIDs) > 0 {
+		cond = append(cond, bson.M{"$match": bson.M{"class_ids": bson.M{"$in": classIDs}}})
+	}
 
 	cond = append(cond, bson.M{"$group": bson.D{
 		bson.E{Key: "_id", Value: "$" + queryField},

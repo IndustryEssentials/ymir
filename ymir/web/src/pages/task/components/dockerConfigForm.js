@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Col, Form, Input, InputNumber, Row, Space } from "antd"
 import Panel from "@/components/form/panel"
 import t from '@/utils/t'
@@ -6,8 +6,10 @@ import s from "./form.less"
 import PreProcessForm from "./preProcessForm"
 import { AddTwoIcon, AddDelTwoIcon } from '@/components/common/icons'
 
-const DockerConfigForm = ({ form, seniorConfig }) => {
+const DockerConfigForm = ({ show, form, seniorConfig }) => {
   const [visible, setVisible] = useState(false)
+
+  useEffect(() => setVisible(show), [show])
 
   async function validHyperparam(rule, value) {
 
