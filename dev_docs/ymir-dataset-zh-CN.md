@@ -137,4 +137,3 @@ task_id: t0000001000002ebb7f11653630774 # 任务id
 - 导出的标注为voc的xml格式
 
   ![](images/ymir-export-voc-sample.png)
-
