@@ -36,6 +36,7 @@ def det_evaluate_datasets(
         ground_truth=ground_truth,
         config=evaluate_config,
     )
+
     # evaluate with ck
     if main_ck:
         mir_keywords: mirpb.MirKeywords = mir_storage_ops.MirStorageOps.load_single_storage(
