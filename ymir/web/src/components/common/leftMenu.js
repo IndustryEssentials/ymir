@@ -13,8 +13,8 @@ const { Sider } = Layout
 
 const projectModule = /^.*\/project\/(\d+).*$/
 
-const getItem = (label, key, Icon, children, type = '') => ({
-  key, icon: Icon ? <Icon /> : null, children, label, type,
+const getItem = (label, key, Icon, children) => ({
+  key, icon: Icon ? <Icon /> : null, children, label,
 })
 
 const getGroupItem = (label, key, children) => getItem(label, key, undefined, children, 'group')
@@ -63,15 +63,18 @@ function LeftMenu() {
         isSuperAdmin(role) ? getItem(t('common.top.menu.permission'), '/home/permission', UserSettingsIcon,) : null,
       ]),
       { type: 'divider' },
-      getItem(<a target="_blank" href='/docs'><BookIcon /> {t('common.menu.docs')}</a>, 'docs',),
+      getItem(<a target="_blank" href='/docs'><BookIcon /> {t('common.menu.docs')}</a>, 'outer/docs'),
       getItem(t('user.settings'), '/home/user', UserIcon,),
-      getItem(<a target="_blank" href='https://github.com/IndustryEssentials/ymir'><GithubIcon /> {t('common.top.menu.community')}</a>, 'github',),
+      getItem(<a target="_blank" href='https://github.com/IndustryEssentials/ymir'><GithubIcon /> {t('common.top.menu.community')}</a>, 'outer/github'),
     ])
   }, [id, project, role])
 
   const clickHandle = ({ key }) => {
-    setDefaultKeys([key])
-    history.push(key)
+    const outer = /^outer\//.test(key)
+    if (!outer) {
+      setDefaultKeys([key])
+      history.push(key)
+    }
   }
 
   return items.length ? (
