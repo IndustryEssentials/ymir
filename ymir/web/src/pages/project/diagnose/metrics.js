@@ -1,6 +1,5 @@
 import React, { useCallback, useEffect, useState } from "react"
 import { Card, Button, Form, Row, Col, Radio, Slider, Select, InputNumber, Checkbox, Space, } from "antd"
-import s from "./index.less"
 
 import t from "@/utils/t"
 import useFetch from "@/hooks/useFetch"
@@ -10,9 +9,10 @@ import MapView from "./components/mapView"
 import CurveView from "./components/curveView"
 import PView from "./components/prView"
 import View from './components/view'
-
-import { CompareIcon } from "@/components/common/icons"
 import DefaultStages from "./components/defaultStages"
+
+import s from "./index.less"
+import { CompareIcon } from "@/components/common/icons"
 
 const metricsTabs = [
   { value: 'map', component: MapView, },
@@ -51,7 +51,7 @@ function Matrics({ pid, project }) {
     kwType: 0,
     keywords: [],
   })
-  const [ckDatasets, getCKDatasets] = useFetch('dataset/analysis', [])
+  const [ckDatasets, getCKDatasets] = useFetch('dataset/getCK', [])
   const [cks, setCKs] = useState([])
 
   useEffect(() => {
@@ -99,14 +99,15 @@ function Matrics({ pid, project }) {
   }, [selectedKeywords, keywords])
 
   useEffect(() => {
+    console.log('selectedDatasets:', selectedDatasets, selectedDatasets.map(({ id }) => id))
     if (selectedDatasets.length) {
-      getCKDatasets({ ids: selectedDatasets.map(({ id }) => id) })
+      getCKDatasets({ pid, ids: selectedDatasets.map(({ id }) => id) })
     }
   }, [selectedDatasets])
 
   useEffect(() => {
-    const allCks = ckDatasets.map(({ cks }) => cks).flat()
-    allCks.filter(({ keyword }) => {
+    const allCks = ckDatasets.map(({ cks: { keywords } }) => keywords.map(({ keyword }) => keyword)).flat()
+    const cks = allCks.filter(keyword => {
       const same = allCks.filter(k => k === keyword)
       return same.length === ckDatasets.length
     })
@@ -250,7 +251,7 @@ function Matrics({ pid, project }) {
                   <InputNumber step={0.0005} min={0.0005} max={0.9995} />
                 </Form.Item>
                 <Form.Item label={'cks'}>
-                  <Select options={cks.map(({ keyword }) => ({ value: keyword, label: keyword }))}></Select>
+                  <Select options={cks.map(ck => ({ value: ck, label: ck }))}></Select>
                 </Form.Item>
                 <Form.Item label={renderIouTitle} name='iou'>
                   <Slider style={{ display: !everageIou ? 'block' : 'none' }} min={0.25} max={0.95} step={0.05} marks={{ 0.25: '0.25', 0.5: '0.5', 0.95: '0.95' }} onChange={setIou} />

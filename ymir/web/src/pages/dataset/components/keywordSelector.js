@@ -1,4 +1,5 @@
 import { Cascader, Col, Row, Select } from "antd"
+import { useParams } from "umi"
 import t from "@/utils/t"
 import { useEffect, useState } from "react"
 
@@ -11,10 +12,11 @@ const initKeywords = [
 ]
 
 const KeywordSelector = ({ value, onChange, dataset = {} }) => {
+  const { id: pid } = useParams()
   const [keywords, setKeywords] = useState(initKeywords)
   const [currentType, setCurrentType] = useState(initKeywords[0].value)
   const [selected, setSelected] = useState([])
-  const [{ cks, tags }, getCK] = useFetch('dataset/getCK', { cks: {}, tags: {} })
+  const [[{ cks, tags }], getCK] = useFetch('dataset/getCK', [{ cks: {}, tags: {} }])
 
   useEffect(() => {
     !value?.length && setSelected([])
@@ -24,7 +26,7 @@ const KeywordSelector = ({ value, onChange, dataset = {} }) => {
     if (!dataset.id) {
       return
     }
-    getCK({ pid: dataset.projectId, id: dataset.id })
+    getCK({ pid: dataset.projectId, ids: [dataset.id] })
     generateKeywords(initKeywords[0].value, dataset.keywords.map(keyword => ({ keyword })))
   }, [dataset])
 
