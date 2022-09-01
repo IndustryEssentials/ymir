@@ -64,14 +64,14 @@ func (m *MockMongoServer) QueryDatasetAssets(
 	mirRepo *constants.MirRepo,
 	offset int,
 	limit int,
-	classIds []int,
+	classIDs []int,
 	annoTypes []string,
 	currentAssetID string,
 	cmTypes []int,
 	cks []string,
 	tags []string,
 ) *constants.QueryAssetsResult {
-	args := m.Called(mirRepo, offset, limit, classIds, annoTypes, currentAssetID, cmTypes, cks, tags)
+	args := m.Called(mirRepo, offset, limit, classIDs, annoTypes, currentAssetID, cmTypes, cks, tags)
 	return args.Get(0).(*constants.QueryAssetsResult)
 }
 
@@ -92,6 +92,7 @@ func (m *MockMongoServer) MetricsRecordSignals(collectionSuffix string, id strin
 func (m *MockMongoServer) MetricsQuerySignals(
 	collectionSuffix string,
 	userID string,
+	classIDs []int,
 	queryField string,
 	bucket string,
 	unit string,

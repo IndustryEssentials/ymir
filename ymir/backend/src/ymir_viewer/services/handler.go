@@ -51,6 +51,7 @@ type BaseMongoServer interface {
 	MetricsQuerySignals(
 		collectionSuffix string,
 		userID string,
+		classIDs []int,
 		queryField string,
 		bucket string,
 		unit string,
@@ -371,6 +372,7 @@ func (v *ViewerHandler) MetricsRecordHandler(
 func (v *ViewerHandler) MetricsQueryHandler(
 	metricsGroup string,
 	userID string,
+	classIDs []int,
 	queryField string,
 	bucket string,
 	unit string,
@@ -381,5 +383,5 @@ func (v *ViewerHandler) MetricsQueryHandler(
 		panic("unknown metrics type")
 	}
 
-	return v.mongoServer.MetricsQuerySignals(metricsGroup, userID, queryField, bucket, unit, limit)
+	return v.mongoServer.MetricsQuerySignals(metricsGroup, userID, classIDs, queryField, bucket, unit, limit)
 }

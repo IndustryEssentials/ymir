@@ -187,7 +187,7 @@ func TestCountAssetsInClassSuccess(t *testing.T) {
 
 		queryField := "abc"
 		expectedCount := int32(10)
-		classIds := []int{0, 1}
+		classIDs := []int{0, 1}
 		first := mtest.CreateCursorResponse(
 			1,
 			"a.b",
@@ -200,7 +200,7 @@ func TestCountAssetsInClassSuccess(t *testing.T) {
 			bson.D{{Key: "AssetID", Value: "aaa"}})
 		killCursors := mtest.CreateCursorResponse(0, "a.b", mtest.NextBatch)
 		mt.AddMockResponses(first, second, killCursors)
-		count, _ := mongoServer.countDatasetAssetsInClass(collection, queryField, classIds)
+		count, _ := mongoServer.countDatasetAssetsInClass(collection, queryField, classIDs)
 		assert.Equal(t, int64(expectedCount), count)
 	})
 }

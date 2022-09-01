@@ -49,6 +49,7 @@ type BaseHandler interface {
 	MetricsQueryHandler(
 		metricsGroup string,
 		userID string,
+		classIDs []int,
 		queryField string,
 		bucket string,
 		unit string,
@@ -387,7 +388,7 @@ func (s *ViewerServer) handleHealth(c *gin.Context) {
 // @Param   metricsGroup    path    string     true        "metrics_group"
 // @Param   ID              post    string     true        "id"
 // @Param   createTime      post    timestamp  true        "create_time"
-// @Param   keyIDs     		post    string     true        "e.g. key_ids=0,1,2"
+// @Param   classIDs     	post    string     true        "e.g. class_ids=0,1,2"
 // @Success 200 {string} string    "'code': 0, 'msg': 'Success', 'Success': true, 'result': ''"
 // @Router /api/v1/user_metrics/:metrics_group [post]
 func (s *ViewerServer) handleMetricsRecord(c *gin.Context) {
@@ -399,9 +400,9 @@ func (s *ViewerServer) handleMetricsRecord(c *gin.Context) {
 	}
 
 	if len(c.PostForm("id")) < 1 || len(c.PostForm("create_time")) < 1 ||
-		len(c.PostForm("user_id")) < 1 || len(c.PostForm("project_id")) < 1 || len(c.PostForm("key_ids")) < 1 {
+		len(c.PostForm("user_id")) < 1 || len(c.PostForm("project_id")) < 1 || len(c.PostForm("class_ids")) < 1 {
 		ViewerFailure(c, &FailureResult{Code: constants.FailInvalidParmsCode,
-			Msg: "Missing required fields: id or create_time or user_id or project_id or key_ids."})
+			Msg: "Missing required fields: id or create_time or user_id or project_id or class_ids."})
 		return
 	}
 
@@ -414,9 +415,9 @@ func (s *ViewerServer) handleMetricsRecord(c *gin.Context) {
 	}
 
 	// Normalize params.
-	keyIDsKey := "key_ids"
+	classIDsKey := "class_ids"
 	createTimeKey := "create_time"
-	dataMap[keyIDsKey] = s.getIntSliceFromString(dataMap[keyIDsKey].(string))
+	dataMap[classIDsKey] = s.getIntSliceFromString(dataMap[classIDsKey].(string))
 	// Parse time from timestamp.
 	createTime, err := strconv.ParseInt(dataMap[createTimeKey].(string), 10, 64)
 	if err != nil {
@@ -434,6 +435,7 @@ func (s *ViewerServer) handleMetricsRecord(c *gin.Context) {
 // @Produce  json
 // @Param   metricsGroup     path    string     true        "metrics_group"
 // @Param   userID           query   string     true        "user_id for filter"
+// @Param   classIDs         query   string     true        "class_ids for filter, e.g. 1,2,3,4,5"
 // @Param   queryField       query   string     true        "query_field: field of data to query"
 // @Param   bucket     		 query   string     true        "bucket type, e.g. bucket=count/time"
 // @Param   unit     		 query   string     true        "valid with bucket=time e.g. unit=day week month"
@@ -463,7 +465,10 @@ func (s *ViewerServer) handleMetricsQuery(c *gin.Context) {
 	}
 	unit := c.DefaultQuery("unit", "")
 
-	result := s.handler.MetricsQueryHandler(metricsGroup, userID, queryField, bucket, unit, limit)
+	// Optional filter field.
+	classIDs := s.getIntSliceFromString(c.DefaultQuery("class_ids", ""))
+
+	result := s.handler.MetricsQueryHandler(metricsGroup, userID, classIDs, queryField, bucket, unit, limit)
 	log.Printf("MetricsQuery result: %+v", result)
 	ViewerSuccess(c, result)
 }
