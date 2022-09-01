@@ -450,6 +450,7 @@ class TestMirStorage(unittest.TestCase):
                 'task_parameters': '',
                 'stages': {},
                 'best_stage_name': '',
+                'class_names': [],
             })
         # load_single_model: have no model
         with self.assertRaises(MirError):
