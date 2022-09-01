@@ -60,6 +60,7 @@ function Inference({ datasetCache, datasets, ...func }) {
   const [openpai, setOpenpai] = useState(false)
   const [sys, getSysInfo] = useFetch('common/getSysInfo', {})
   const selectOpenpai = Form.useWatch('openpai', form)
+  const [showConfig, setShowConfig] = useState(false)
 
   useEffect(() => {
     getSysInfo()
@@ -116,6 +117,33 @@ function Inference({ datasetCache, datasets, ...func }) {
       setKRTip(tip)
     }
   }, [newer])
+
+  useEffect(() => {
+    const state = location.state
+
+    if (state?.record) {
+      const { task: { parameters, config }, description, } = state.record
+      const {
+        dataset_id,
+        docker_image,
+        docker_image_id,
+        model_id,
+        model_stage_id,
+      } = parameters
+      form.setFieldsValue({
+        datasets: [dataset_id],
+        gpu_count: config.gpu_count,
+        stages: [[model_id, model_stage_id]],
+        image: docker_image_id + ',' + docker_image,
+        description,
+      })
+      setSelectedGpu(config.gpu_count)
+      setTimeout(() => setConfig(config), 500)
+      setShowConfig(true)
+
+      history.replace({ state: {} })
+    }
+  }, [location.state])
 
   function checkModelKeywords() {
     const keywords = (selectedModels.map(model => model?.keywords) || []).flat().filter(item => item)
@@ -292,7 +320,7 @@ function Inference({ datasetCache, datasets, ...func }) {
             </Form.Item>
 
             <LiveCodeForm form={form} live={live} />
-            <DockerConfigForm form={form} seniorConfig={seniorConfig} />
+            <DockerConfigForm form={form} show={showConfig} seniorConfig={seniorConfig} />
 
             <Desc form={form} />
 
