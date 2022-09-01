@@ -399,7 +399,7 @@ class VizClient:
                 "create_time": create_time,
                 "user_id": self._user_id,
                 "project_id": self._project_id,
-                "key_ids": ",".join(map(str, keyword_ids)),
+                "class_ids": ",".join(map(str, keyword_ids)),
             }
         )
         self.post(url, payload)
@@ -423,7 +423,7 @@ class VizClient:
             "limit": limit,
         }
         if keyword_ids:
-            params["key_ids"] = ",".join(map(str, keyword_ids))
+            params["class_ids"] = ",".join(map(str, keyword_ids))
         resp = self.get_resp(url, params=params)
         return self.parse_resp(resp)
 
