@@ -122,8 +122,6 @@ message SingleTaskAnnotations {
     repeated int32 eval_class_ids = 10;
     // model meta info associated with this single_task_annotations
     ModelMeta model = 11;
-    // stage name used to generate this single_task_annotations
-    string model_stage_name = 12;
 };
 
 message SingleImageAnnotations {
