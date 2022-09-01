@@ -118,6 +118,12 @@ message SingleTaskAnnotations {
     /// key: image id, value: annotations of that single image
     map<string, SingleImageAnnotations> image_annotations = 1;
     string task_id = 2;
+    // meta infos of this SingleTaskAnnotations
+    repeated int32 eval_class_ids = 10;
+    // model meta info associated with this single_task_annotations
+    ModelMeta model = 11;
+    // executor config used to generate this single task annotations
+    string executor_config = 12;
 };
 
 message SingleImageAnnotations {
@@ -251,6 +257,7 @@ message ModelMeta {
     string context = 3;
     map<string, ModelStage> stages = 4;
     string best_stage_name = 5;
+    repeated string class_names = 6;
 };
 
 message ModelStage {
