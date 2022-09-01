@@ -1,5 +1,1 @@
-# YMIR 中文文档
-
-- [简介](intro.md)
-- [专用名词](glossary.md)
-- [使用流程](workflow.md)
+# YMIR Documents

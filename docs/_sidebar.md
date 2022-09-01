@@ -1,3 +1,1 @@
-- [简介](intro.md)
-- [专用名词](glossary.md)
-- [使用流程](workflow.md)
+- [操作说明](instruction.md)
