@@ -41,7 +41,8 @@ class EvaluateInvoker(BaseMirControllerInvoker):
                                                             pred_rev_tid=rev_tid,
                                                             conf_thr=ec.conf_thr,
                                                             iou_thrs=ec.iou_thrs_interval,
-                                                            need_pr_curve=ec.need_pr_curve)
+                                                            need_pr_curve=ec.need_pr_curve,
+                                                            main_ck=self._request.singleton_op)
 
         response = backend_pb2.GeneralResp()
         response.code = CTLResponseCode.CTR_OK
