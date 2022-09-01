@@ -38,9 +38,9 @@ export default {
       }
     },
     *getRecommendKeywords({ payload }, { call, put }) {
-      const data = yield call(getRecommendKeywords, payload)
-      if (data.code === 0) {
-        return data.result.map(item => item[0])
+      const { code, result } = yield call(getRecommendKeywords, payload)
+      if (code === 0) {
+        return result.map(item => item.legend)
       }
     }
   },
