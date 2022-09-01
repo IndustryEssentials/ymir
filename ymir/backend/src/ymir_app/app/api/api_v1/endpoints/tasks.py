@@ -26,11 +26,9 @@ from app.constants.state import (
     TaskType,
 )
 from app.config import settings
-from app.utils.clickhouse import YmirClickHouse
 from app.utils.graph import GraphClient
 from app.utils.timeutil import convert_datetime_to_timestamp
 from app.utils.ymir_controller import ControllerClient, gen_user_hash
-from app.utils.ymir_viz import VizClient
 from app.libs.redis_stream import RedisStream
 from app.libs.tasks import TaskResult, create_single_task
 from common_utils.labels import UserLabels
@@ -254,8 +252,6 @@ def update_task_status(
     task_update: schemas.TaskUpdateStatus,
     graph_db: GraphClient = Depends(deps.get_graph_client),
     controller_client: ControllerClient = Depends(deps.get_controller_client),
-    viz_client: VizClient = Depends(deps.get_viz_client),
-    clickhouse: YmirClickHouse = Depends(deps.get_clickhouse_client),
 ) -> Any:
     """
     Update status of a task

@@ -5,7 +5,6 @@ alembic==1.6.5
 apscheduler==3.7.0
 arrow==1.1.1
 bcrypt==3.2.0
-clickhouse-driver==0.2.2
 connexion==2.6.0
 connexion[swagger-ui] >= 2.6.0
 cryptography==3.4.7

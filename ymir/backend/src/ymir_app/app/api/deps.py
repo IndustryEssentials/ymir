@@ -20,7 +20,6 @@ from app.constants.role import Roles
 from app.db.session import SessionLocal
 from app.utils import cache as ymir_cache
 from app.utils import graph, security, ymir_controller, ymir_viz
-from app.utils.clickhouse import YmirClickHouse
 from app.utils.security import verify_api_key
 from app.utils.ymir_controller import ControllerClient
 from common_utils.labels import UserLabels
@@ -168,11 +167,3 @@ def get_user_labels(
 
     cache.set(ymir_cache.KEYWORDS_CACHE_KEY, user_labels.json())
     return user_labels
-
-
-def get_clickhouse_client() -> Generator:
-    try:
-        clickhouse_client = YmirClickHouse(settings.CLICKHOUSE_URI)
-        yield clickhouse_client
-    finally:
-        clickhouse_client.close()
