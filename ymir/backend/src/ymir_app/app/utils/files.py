@@ -170,8 +170,7 @@ def prepare_downloaded_paths(url: str, output_dir: Union[str, Path]) -> Tuple[Pa
         save_file_content(url, tmp.name)
         logging.info("[import dataset] url content cached to %s", tmp.name)
         decompress_zip(tmp.name, output_dir)
-
-    return locate_ymir_dataset_dirs(output_dir)
+    return locate_ymir_dataset_dirs(Path(output_dir))
 
 
 def is_relative_to(path_long: Union[str, Path], path_short: Union[str, Path]) -> bool:
