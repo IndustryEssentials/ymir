@@ -6,6 +6,8 @@ import { TYPES } from '@/constants/image'
 import { HIDDENMODULES } from '@/constants/common'
 import t from '@/utils/t'
 
+const getValue = image => image.id + ',' + image.url
+
 const ImageSelect = ({ value, relatedId, type = TYPES.TRAINING, onChange = () => { }, getImages, getImage, ...resProps }) => {
   const [options, setOptions] = useState([])
 
@@ -15,7 +17,12 @@ const ImageSelect = ({ value, relatedId, type = TYPES.TRAINING, onChange = () =>
 
   useEffect(() => {
     if (options.length === 1) {
-      value = options[0].value
+      if (value) {
+        const opt = options.find(({ image }) => getValue(image) === value)
+        opt && onChange(value, opt.image)
+      } else {
+        value = options[0].value
+      }
     }
   }, [options])
 
@@ -38,7 +45,7 @@ const ImageSelect = ({ value, relatedId, type = TYPES.TRAINING, onChange = () =>
       {!HIDDENMODULES.LIVECODE ? <Col style={{ color: 'rgba(0, 0, 0, 0.45)' }}>{t(`image.livecode.label.${image.liveCode ? 'remote' : 'local'}`)}</Col> : null}
     </Row>,
     image,
-    value: image.id + ',' + image.url,
+    value: getValue(image),
   })
 
   async function generateOptions(images) {

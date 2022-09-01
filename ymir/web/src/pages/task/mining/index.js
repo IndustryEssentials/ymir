@@ -46,6 +46,7 @@ function Mining({ datasetCache, ...func }) {
   const [openpai, setOpenpai] = useState(false)
   const [sys, getSysInfo] = useFetch('common/getSysInfo', {})
   const selectOpenpai = Form.useWatch('openpai', form)
+  const [showConfig, setShowConfig] = useState(false)
 
   useEffect(() => {
     getSysInfo()
@@ -77,6 +78,37 @@ function Mining({ datasetCache, ...func }) {
     }
   }, [datasetCache])
 
+  useEffect(() => {
+    const state = location.state
+
+    if (state?.record) {
+      const { task: { parameters, config }, description, } = state.record
+      const {
+        dataset_id,
+        docker_image,
+        docker_image_id,
+        model_id,
+        model_stage_id,
+        top_k,
+        generate_annotations,
+      } = parameters
+      form.setFieldsValue({
+        datasetId: dataset_id,
+        gpu_count: config.gpu_count,
+        modelStage: [model_id, model_stage_id],
+        image: docker_image_id + ',' + docker_image,
+        topk: top_k,
+        inference: generate_annotations,
+        description,
+      })
+      setShowConfig(true)
+
+      setTimeout(() => setConfig(config), 500)
+
+      history.replace({ state: {} })
+    }
+  }, [location.state])
+
   function imageChange(_, image = {}) {
     const { url, configs = [] } = image
     const configObj = configs.find(conf => conf.type === TYPES.MINING) || {}
@@ -91,6 +123,7 @@ function Mining({ datasetCache, ...func }) {
 
   function setConfig(config) {
     const params = Object.keys(config).filter(key => key !== 'gpu_count').map(key => ({ key, value: config[key] }))
+    console.log('params:', params)
     setSeniorConfig(params)
   }
 
@@ -133,10 +166,10 @@ function Mining({ datasetCache, ...func }) {
   function setsChange(id, option) {
     setDataset(option?.dataset || {})
   }
-  
+
   function modelChange(stage, options) {
-    if(!stage[1]) {
-      form.setFieldsValue({ modelStage: [stage[0], options[1]]})
+    if (!stage[1]) {
+      form.setFieldsValue({ modelStage: [stage[0], options[1]] })
     }
     setSelectedModel(options ? options[0].model : [])
   }
@@ -228,7 +261,7 @@ function Mining({ datasetCache, ...func }) {
             </Form.Item>
 
             <LiveCodeForm form={form} live={live} />
-            <DockerConfigForm form={form} seniorConfig={seniorConfig} />
+            <DockerConfigForm form={form} show={showConfig} seniorConfig={seniorConfig} />
             <Desc form={form} />
             <Form.Item wrapperCol={{ offset: 8 }}>
               <Space size={20}>

@@ -55,12 +55,13 @@ func (h *MockViewerHandler) GetDatasetDupHandler(
 func (h *MockViewerHandler) MetricsQueryHandler(
 	metricsGroup string,
 	userID string,
+	classIDs []int,
 	queryField string,
 	bucket string,
 	unit string,
 	limit int,
 ) *[]constants.MetricsQueryPoint {
-	args := h.Called(metricsGroup, userID, queryField, bucket, unit, limit)
+	args := h.Called(metricsGroup, userID, classIDs, queryField, bucket, unit, limit)
 	return args.Get(0).(*[]constants.MetricsQueryPoint)
 }
 func (h *MockViewerHandler) MetricsRecordHandler(
