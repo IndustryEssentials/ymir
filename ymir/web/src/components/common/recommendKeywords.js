@@ -3,10 +3,11 @@ import { connect } from 'dva'
 import { useEffect, useState } from 'react'
 
 import t from "@/utils/t"
+import useFetch from '@/hooks/useFetch'
 import s from './common.less'
 
-const RecommendKeywords = ({ global = false, sets, limit = 5, onSelect = () => { }, getRecommendKeywords }) => {
-  const [keywords, setKeywords] = useState([])
+const RecommendKeywords = ({ global = false, sets, limit = 5, onSelect = () => { } }) => {
+  const [keywords, getKeywords] = useFetch('keyword/getRecommendKeywords', [])
 
   useEffect(() => {
     if (global || sets) {
@@ -14,12 +15,9 @@ const RecommendKeywords = ({ global = false, sets, limit = 5, onSelect = () => {
     }
   }, [sets])
 
-  async function fetchKeywords() {
+  function fetchKeywords() {
     const ids = Array.isArray(sets) ? sets : [sets]
-    const result = await getRecommendKeywords({ global, dataset_ids: ids, limit })
-    if (result) {
-      setKeywords(result.map(item => item.legend))
-    }
+    getKeywords({ global, dataset_ids: ids, limit })
   }
 
   return (
@@ -30,22 +28,4 @@ const RecommendKeywords = ({ global = false, sets, limit = 5, onSelect = () => {
   )
 }
 
-const props = (state) => {
-  return {
-
-  }
-}
-
-const actions = (dispatch) => {
-  return {
-    getRecommendKeywords(payload) {
-      return dispatch({
-        type: 'keyword/getRecommendKeywords',
-        payload,
-      })
-    }
-  }
-}
-
-
-export default connect(props, actions)(RecommendKeywords)
+export default RecommendKeywords
