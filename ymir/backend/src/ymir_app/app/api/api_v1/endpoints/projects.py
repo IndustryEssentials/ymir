@@ -19,7 +19,6 @@ from app.config import settings
 from app.constants.state import ResultState, RunningStates, TaskType, TrainingType
 from app.utils.cache import CacheClient
 from app.utils.ymir_controller import ControllerClient, gen_task_hash
-from app.utils.ymir_viz import VizClient
 from app.libs.projects import setup_sample_project_in_background, send_project_metrics
 from app.libs.keywords import add_keywords
 from common_utils.labels import UserLabels
@@ -75,7 +74,6 @@ def create_sample_project(
     db: Session = Depends(deps.get_db),
     current_user: models.User = Depends(deps.get_current_active_user),
     user_labels: UserLabels = Depends(deps.get_user_labels),
-    viz_client: VizClient = Depends(deps.get_viz_client),
     controller_client: ControllerClient = Depends(deps.get_controller_client),
     background_tasks: BackgroundTasks,
     cache: CacheClient = Depends(deps.get_cache),
@@ -139,7 +137,6 @@ def create_project(
     project_in: schemas.ProjectCreate,
     controller_client: ControllerClient = Depends(deps.get_controller_client),
     user_labels: UserLabels = Depends(deps.get_user_labels),
-    viz_client: VizClient = Depends(deps.get_viz_client),
 ) -> Any:
     """
     Create project
