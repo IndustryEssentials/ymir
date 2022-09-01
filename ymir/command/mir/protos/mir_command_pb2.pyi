@@ -369,6 +369,7 @@ class SingleTaskAnnotations(google.protobuf.message.Message):
     TASK_ID_FIELD_NUMBER: builtins.int
     EVAL_CLASS_IDS_FIELD_NUMBER: builtins.int
     MODEL_FIELD_NUMBER: builtins.int
+    EXECUTOR_CONFIG_FIELD_NUMBER: builtins.int
     @property
     def image_annotations(self) -> google.protobuf.internal.containers.MessageMap[typing.Text, global___SingleImageAnnotations]:
         """/ key: image id, value: annotations of that single image"""
@@ -382,15 +383,19 @@ class SingleTaskAnnotations(google.protobuf.message.Message):
     def model(self) -> global___ModelMeta:
         """model meta info associated with this single_task_annotations"""
         pass
+    executor_config: typing.Text = ...
+    """executor config used to generate this single task annotations"""
+
     def __init__(self,
         *,
         image_annotations : typing.Optional[typing.Mapping[typing.Text, global___SingleImageAnnotations]] = ...,
         task_id : typing.Text = ...,
         eval_class_ids : typing.Optional[typing.Iterable[builtins.int]] = ...,
         model : typing.Optional[global___ModelMeta] = ...,
+        executor_config : typing.Text = ...,
         ) -> None: ...
     def HasField(self, field_name: typing_extensions.Literal["model",b"model"]) -> builtins.bool: ...
-    def ClearField(self, field_name: typing_extensions.Literal["eval_class_ids",b"eval_class_ids","image_annotations",b"image_annotations","model",b"model","task_id",b"task_id"]) -> None: ...
+    def ClearField(self, field_name: typing_extensions.Literal["eval_class_ids",b"eval_class_ids","executor_config",b"executor_config","image_annotations",b"image_annotations","model",b"model","task_id",b"task_id"]) -> None: ...
 global___SingleTaskAnnotations = SingleTaskAnnotations
 
 class SingleImageAnnotations(google.protobuf.message.Message):

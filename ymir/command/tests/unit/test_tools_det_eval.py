@@ -328,6 +328,7 @@ class TestToolsDetEval(unittest.TestCase):
                 },
                 'task_id': 'a',
                 'eval_class_ids': [],
+                'executor_config': '',
             },
             'prediction': {
                 'image_annotations': {
@@ -436,6 +437,7 @@ class TestToolsDetEval(unittest.TestCase):
                 },
                 'task_id': 'a',
                 'eval_class_ids': [],
+                'executor_config': '',
             },
             'image_cks': {
                 'a1': {

@@ -122,6 +122,8 @@ message SingleTaskAnnotations {
     repeated int32 eval_class_ids = 10;
     // model meta info associated with this single_task_annotations
     ModelMeta model = 11;
+    // executor config used to generate this single task annotations
+    string executor_config = 12;
 };
 
 message SingleImageAnnotations {
