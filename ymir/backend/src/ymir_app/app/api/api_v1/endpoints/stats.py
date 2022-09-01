@@ -64,7 +64,7 @@ def get_projects_count(
     Get projects count divided by time ranges
     """
     stats = viz_client.query_metrics(
-        metrics_group="task",
+        metrics_group="project",
         user_id=current_user.id,
         query_field="create_time",
         bucket="time",
