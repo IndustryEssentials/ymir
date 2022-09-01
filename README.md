@@ -186,11 +186,41 @@ This chapter contains the installation instructions for YMIR-GUI. If you need to
 
 * Installation of Docker and Docker Compose https://docs.docker.com/get-docker/
 
-* Installation of NVIDIA Docker https://github.com/NVIDIA/nvidia-docker
+* Installation of `nvidia-docker` [nvidia-docker install-guide](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/install-guide.html#docker)
+
+```sh
+## check the maximum CUDA version supported by the host
+nvidia-smi
+## for Host support cuda 11+, check nvidia-docker
+sudo docker run --rm --gpus all nvidia/cuda:11.0.3-base-ubuntu20.04 nvidia-smi
+## for Host support cuda 10+, check nvidia-docker
+sudo docker run --rm --gpus all nvidia/cuda:10.2-base-ubuntu18.04 nvidia-smi
+## those commands should result in a console output shown below:
++-----------------------------------------------------------------------------+
+| NVIDIA-SMI 510.60.02    Driver Version: 510.60.02    CUDA Version: 11.6     |
+|-------------------------------+----------------------+----------------------+
+| GPU  Name        Persistence-M| Bus-Id        Disp.A | Volatile Uncorr. ECC |
+| Fan  Temp  Perf  Pwr:Usage/Cap|         Memory-Usage | GPU-Util  Compute M. |
+|                               |                      |               MIG M. |
+|===============================+======================+======================|
+|   0  Tesla P4            Off  | 00000000:0B:00.0 Off |                    0 |
+| N/A   62C    P0    55W /  75W |   4351MiB /  7680MiB |     94%      Default |
+|                               |                      |                  N/A |
++-------------------------------+----------------------+----------------------+
++-----------------------------------------------------------------------------+
+| Processes:                                                                  |
+|  GPU   GI   CI        PID   Type   Process name                  GPU Memory |
+|        ID   ID                                                   Usage      |
+|=============================================================================|
+|    0   N/A  N/A      8132      C                                    4349MiB |
++-----------------------------------------------------------------------------+
+```
 
 3. Hardware Suggestions
 
 * NVIDIA GeForce RTX 2080 Ti or higher is recommended.
+
+* The maximum CUDA version supported by the host >= 11.2
 
 ## 2.2. Installation of YMIR-GUI
 
