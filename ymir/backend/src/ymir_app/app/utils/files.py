@@ -115,19 +115,19 @@ def save_files(urls: List[Union[AnyHttpUrl, str]], output_basedir: Union[str, Pa
     return output_dir, {filename.name: url for filename, url in zip(res, urls)}
 
 
-def locate_dir(p: Union[str, Path], target: str) -> Path:
+def locate_dir(p: Union[str, Path], targets: List[str]) -> Path:
     """
-    Locate specifc target dir
+    Locate specifc target dirs
     """
     for _p in Path(p).iterdir():
         if not _p.is_dir():
             continue
-        if _p.name.lower() == target:
+        if _p.name.lower() in targets:
             return _p
         for __p in _p.iterdir():
             if not __p.is_dir():
                 continue
-            if __p.name.lower() == target:
+            if __p.name.lower() in targets:
                 return __p
     # Only search 3rd depth when no result was found in 2nd depth.
     for _p in Path(p).iterdir():
@@ -137,23 +137,32 @@ def locate_dir(p: Union[str, Path], target: str) -> Path:
             if not __p.is_dir():
                 continue
             for ___p in __p.iterdir():
-                if ___p.is_dir() and ___p.name.lower() == target:
+                if ___p.is_dir() and ___p.name.lower() in targets:
                     return ___p
     raise FileNotFoundError
 
 
-def locate_annotation_dir(p: Path, target: str) -> Optional[Path]:
+def locate_annotation_dir(p: Path, targets: List[str]) -> Optional[Path]:
     """
     annotation_dir (gt or pred) must be in sibling with asset_dir
     p: asset_dir.parent
-    target: "gt" or "pred"
+    targets: ["Annotations", "gt"] or ["pred"]
     """
     for _p in Path(p).iterdir():
         if not _p.is_dir():
             continue
-        if _p.name.lower() == target:
+        if _p.name.lower() in targets:
             return _p
     return None
+
+
+def locate_ymir_dataset_dirs(path: Path) -> Tuple[Path, Optional[Path], Optional[Path]]:
+    # only `asset_dir` (images) is required
+    # both `gt_dir` and `pred_dir` are optional
+    asset_dir = locate_dir(path, ["images", "jpegimages"])
+    gt_dir = locate_annotation_dir(asset_dir.parent, ["gt", "annotations"])
+    pred_dir = locate_annotation_dir(asset_dir.parent, ["pred"])
+    return asset_dir, gt_dir, pred_dir
 
 
 def prepare_downloaded_paths(url: str, output_dir: Union[str, Path]) -> Tuple[Path, Optional[Path], Optional[Path]]:
@@ -162,12 +171,7 @@ def prepare_downloaded_paths(url: str, output_dir: Union[str, Path]) -> Tuple[Pa
         logging.info("[import dataset] url content cached to %s", tmp.name)
         decompress_zip(tmp.name, output_dir)
 
-    # only `asset_dir` (images) is required
-    # both `gt_dir` and `pred_dir` are optional
-    asset_dir = locate_dir(output_dir, "images")
-    gt_dir = locate_annotation_dir(asset_dir.parent, "gt")
-    pred_dir = locate_annotation_dir(asset_dir.parent, "pred")
-    return asset_dir, gt_dir, pred_dir
+    return locate_ymir_dataset_dirs(output_dir)
 
 
 def is_relative_to(path_long: Union[str, Path], path_short: Union[str, Path]) -> bool:
@@ -179,11 +183,7 @@ def is_relative_to(path_long: Union[str, Path], path_short: Union[str, Path]) ->
 
 
 def locate_import_paths(src_path: Union[str, Path]) -> Tuple[Path, Optional[Path], Optional[Path]]:
-    src_path = Path(src_path)
-
-    asset_dir = locate_dir(src_path, "images")
-    gt_dir = locate_annotation_dir(asset_dir.parent, "gt")
-    pred_dir = locate_annotation_dir(asset_dir.parent, "pred")
+    asset_dir, gt_dir, pred_dir = locate_ymir_dataset_dirs(Path(src_path))
 
     if not is_relative_to(asset_dir, settings.SHARED_DATA_DIR):
         logger.error("import path (%s) not within shared_dir (%s)" % (asset_dir, settings.SHARED_DATA_DIR))
