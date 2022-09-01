@@ -56,7 +56,6 @@ services:
       - redis
       - viz-redis
       - tensorboard
-      - clickhouse
       - mongodb
     command: bash -c 'cd /app && supervisord -nc supervisor/supervisord.conf'
     restart: on-failure:10
@@ -153,18 +152,6 @@ services:
       timeout: 6s
       retries: 3
       start_period: 30s
-    networks:
-      - ymirnetwork
-
-  clickhouse:
-    image: clickhouse/clickhouse-server
-    ulimits:
-      nofile:
-        soft: 262144
-        hard: 262144
-    volumes:
-      - ${YMIR_PATH}/clickhouseDB:/var/lib/clickhouse
-    restart: on-failure:10
     networks:
       - ymirnetwork
 

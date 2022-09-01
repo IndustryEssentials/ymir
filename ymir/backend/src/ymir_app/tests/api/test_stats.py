@@ -6,30 +6,31 @@ from app.config import settings
 
 
 class TestGetStats:
-    def test_get_stats_for_model(
+    def test_keywords_recommend(
         self,
         client: TestClient,
         normal_user_token_headers: Dict[str, str],
         mocker,
     ):
         r = client.get(
-            f"{settings.API_V1_STR}/stats/models/hot",
+            f"{settings.API_V1_STR}/stats/keywords/recommend",
+            params={"dataset_ids": "1"},
             headers=normal_user_token_headers,
         )
         res = r.json()
         assert res["code"] == 0
         assert res["result"]
 
-    def test_get_stats_for_dataset(
+    def test_get_project_count(
         self,
         client: TestClient,
         normal_user_token_headers: Dict[str, str],
         mocker,
     ):
         r = client.get(
-            f"{settings.API_V1_STR}/stats/datasets/hot",
+            f"{settings.API_V1_STR}/stats/projects/count",
             headers=normal_user_token_headers,
-            params={"q": "dataset"},
+            params={"precision": "day"},
         )
         res = r.json()
         assert res["code"] == 0
