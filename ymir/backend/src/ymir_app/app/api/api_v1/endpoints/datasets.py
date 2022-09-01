@@ -28,7 +28,12 @@ from app.utils.iteration import get_iteration_context_converter
 from app.utils.ymir_controller import ControllerClient, gen_task_hash
 from app.utils.ymir_viz import VizClient
 from app.schemas.dataset import MergeStrategy
-from app.libs.datasets import import_dataset_in_background, evaluate_datasets, ensure_datasets_are_ready
+from app.libs.datasets import (
+    import_dataset_in_background,
+    evaluate_datasets,
+    ensure_datasets_are_ready,
+    send_keywords_metrics,
+)
 from common_utils.labels import UserLabels
 
 router = APIRouter()
@@ -508,6 +513,16 @@ def create_dataset_fusion(
     fused_dataset = crud.dataset.create_as_task_result(db, task, dataset_group.id, description=in_fusion.description)
     logger.info("[fusion] dataset record created: %s", fused_dataset.name)
 
+    if parameters.get("include_class_ids"):
+        # update keywords usage metrics when necessary
+        send_keywords_metrics(
+            current_user.id,
+            in_fusion.project_id,
+            task.hash,
+            parameters["include_class_ids"],
+            int(task.create_datetime.timestamp()),
+        )
+
     return {"result": fused_dataset}
 
 
@@ -679,6 +694,15 @@ def filter_dataset(
     filtered_dataset = crud.dataset.create_as_task_result(
         db, task, main_dataset.dataset_group_id, description=in_filter.description
     )
+    if class_ids:
+        # update keywords usage metrics when necessary
+        send_keywords_metrics(
+            current_user.id,
+            in_filter.project_id,
+            task.hash,
+            class_ids,
+            int(task.create_datetime.timestamp()),
+        )
     return {"result": filtered_dataset}
 
 

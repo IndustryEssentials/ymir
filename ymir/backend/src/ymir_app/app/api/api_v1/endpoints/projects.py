@@ -1,6 +1,4 @@
-# from datetime import datetime
 import enum
-import json
 from typing import Any
 import uuid
 
@@ -14,16 +12,14 @@ from app.api.errors.errors import (
     ProjectNotFound,
     DuplicateProjectError,
     FailedToCreateProject,
-    FailedToConnectClickHouse,
     NoDatasetPermission,
     DatasetNotFound,
 )
 from app.config import settings
 from app.constants.state import ResultState, RunningStates, TaskType, TrainingType
 from app.utils.cache import CacheClient
-from app.utils.clickhouse import YmirClickHouse
 from app.utils.ymir_controller import ControllerClient, gen_task_hash
-from app.libs.projects import setup_sample_project_in_background
+from app.libs.projects import setup_sample_project_in_background, send_project_metrics
 from app.libs.keywords import add_keywords
 from common_utils.labels import UserLabels
 
@@ -112,6 +108,15 @@ def create_sample_project(
         crud.project.soft_remove(db, id=project.id)
         raise FailedToCreateProject()
 
+    send_project_metrics(
+        current_user.id,
+        project.id,
+        project.name,
+        user_labels.get_class_ids(project_in.training_keywords),
+        TrainingType(project.training_type).name,
+        int(project.create_datetime.timestamp()),
+    )
+
     background_tasks.add_task(
         setup_sample_project_in_background,
         db,
@@ -131,7 +136,6 @@ def create_project(
     current_user: models.User = Depends(deps.get_current_active_user),
     project_in: schemas.ProjectCreate,
     controller_client: ControllerClient = Depends(deps.get_controller_client),
-    clickhouse: YmirClickHouse = Depends(deps.get_clickhouse_client),
     user_labels: UserLabels = Depends(deps.get_user_labels),
 ) -> Any:
     """
@@ -190,32 +194,14 @@ def create_project(
             ),
         )
 
-    try:
-        clickhouse.save_project_parameter(
-            dt=project.create_datetime,
-            user_id=project.user_id,
-            id_=project.id,
-            name=project.name,
-            training_type=TrainingType(project.training_type).name,
-            training_keywords=json.loads(project.training_keywords),
-        )
-
-        # viz_client = VizClient(host=settings.VIZ_HOST)
-        # viz_client.send_metrics(metrics_group="project",
-        #                         id=f"{project.id:0>6}",
-        #                         create_time=int(datetime.timestamp(project.create_datetime)),
-        #                         user_id=project.user_id,
-        #                         project_id=project.id,
-        #                         keywords=json.loads(project.training_keywords),
-        #                         user_labels=user_labels,
-        #                         extra_data=dict(project_type=TrainingType(project.training_type).name,))
-
-    except FailedToConnectClickHouse:
-        # clickhouse metric shouldn't block create task process
-        logger.exception(
-            "[create project metrics] failed to write project(%s) stats to clickhouse, continue anyway",
-            project.name,
-        )
+    send_project_metrics(
+        current_user.id,
+        project.id,
+        project.name,
+        user_labels.get_class_ids(project_in.training_keywords),
+        TrainingType(project.training_type).name,
+        int(project.create_datetime.timestamp()),
+    )
 
     logger.info("[create project] project record created: %s", project)
     return {"result": project}

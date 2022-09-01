@@ -174,13 +174,21 @@ class ViewerAsset:
         self.keywords = user_labels.get_main_names(self.class_ids)
         self.gt = [
             ViewerAssetAnnotation(
-                box=i["box"], class_id=i["class_id"], cm=i["cm"], tags=i["tags"], user_labels=user_labels
+                box=i["box"],
+                class_id=i["class_id"],
+                cm=i["cm"],
+                tags=i["tags"],
+                user_labels=user_labels,
             )
             for i in self.gt
         ]
         self.pred = [
             ViewerAssetAnnotation(
-                box=i["box"], class_id=i["class_id"], cm=i["cm"], tags=i["tags"], user_labels=user_labels
+                box=i["box"],
+                class_id=i["class_id"],
+                cm=i["cm"],
+                tags=i["tags"],
+                user_labels=user_labels,
             )
             for i in self.pred
         ]
@@ -242,6 +250,7 @@ class VizClient:
         self._user_id = None  # type: Optional[str]
         self._project_id = None  # type: Optional[str]
         self._branch_id = None  # type: Optional[str]
+        self._host = f"http://127.0.0.1:{settings.VIEWER_HOST_PORT}"
         self._url_prefix = None  # type: Optional[str]
         self._user_labels = None  # type: Optional[UserLabels]
 
@@ -254,8 +263,7 @@ class VizClient:
     ) -> None:
         self._user_id = f"{user_id:0>4}"
         self._project_id = f"{project_id:0>6}"
-        host = f"127.0.0.1:{settings.VIEWER_HOST_PORT}"
-        self._url_prefix = f"http://{host}/api/v1/users/{self._user_id}/repo/{self._project_id}"  # noqa: E501
+        self._url_prefix = f"{self._host}/api/v1/users/{self._user_id}/repo/{self._project_id}"  # noqa: E501
 
         if user_labels:
             self._user_labels = user_labels
@@ -316,14 +324,20 @@ class VizClient:
         return asdict(dataset_info)
 
     def get_dataset_analysis(
-        self, dataset_hash: str, keyword_ids: Optional[List[int]] = None, require_hist: bool = False
+        self,
+        dataset_hash: str,
+        keyword_ids: Optional[List[int]] = None,
+        require_hist: bool = False,
     ) -> Dict:
         """
         viewer: GET /dataset_stats
         """
         url = f"{self._url_prefix}/branch/{dataset_hash}/dataset_stats"
 
-        params = {"require_assets_hist": require_hist, "require_annos_hist": require_hist}  # type: Dict
+        params = {
+            "require_assets_hist": require_hist,
+            "require_annos_hist": require_hist,
+        }  # type: Dict
         if keyword_ids:
             params["class_ids"] = ",".join(str(k) for k in keyword_ids)
 
@@ -369,8 +383,66 @@ class VizClient:
         duplicated_stats = self.parse_resp(resp)
         return duplicated_stats["duplication"]
 
+    def send_metrics(
+        self,
+        metrics_group: str,
+        id: str,
+        create_time: int,
+        keyword_ids: List[int],
+        extra_data: Optional[Dict] = None,
+    ) -> None:
+        url = f"{self._host}/api/v1/user_metrics/{metrics_group}"
+        payload = extra_data or {}
+        payload.update(
+            {
+                "id": id,
+                "create_time": create_time,
+                "user_id": self._user_id,
+                "project_id": self._project_id,
+                "class_ids": ",".join(map(str, keyword_ids)),
+            }
+        )
+        self.post(url, payload)
+
+    def query_metrics(
+        self,
+        metrics_group: str,
+        user_id: int,
+        query_field: str,
+        bucket: str,
+        unit: str = "",
+        limit: int = 10,
+        keyword_ids: Optional[List[int]] = None,
+    ) -> Dict:
+        url = f"{self._host}/api/v1/user_metrics/{metrics_group}"
+        params = {
+            "user_id": f"{user_id:0>4}",
+            "query_field": query_field,
+            "bucket": bucket,
+            "unit": unit,
+            "limit": limit,
+        }
+        if keyword_ids:
+            params["class_ids"] = ",".join(map(str, keyword_ids))
+        resp = self.get_resp(url, params=params)
+        return self.parse_resp(resp)
+
+    def post(self, url: str, payload: Optional[Dict], timeout: int = settings.VIZ_TIMEOUT) -> requests.Response:
+        logger.info("[viewer] request url %s and payload %s", url, payload)
+        try:
+            resp = self.session.post(url, data=payload, timeout=timeout)
+        except ConnectionError:
+            raise VizError()
+        except Timeout:
+            raise VizTimeOut()
+        else:
+            return resp
+
     def get_resp(
-        self, url: str, params: Optional[Dict] = None, timeout: int = settings.VIZ_TIMEOUT
+        self,
+        url: str,
+        params: Optional[Dict] = None,
+        timeout: int = settings.VIZ_TIMEOUT,
     ) -> requests.Response:
         logger.info("[viewer] request url %s and params %s", url, params)
         try:
@@ -407,37 +479,6 @@ class VizClient:
                 logger.error("[viewer] missing annotations for dataset evaluation")
                 raise DatasetEvaluationMissingAnnotation()
         raise FailedToParseVizResponse()
-
-    def send_metrics(self, metrics_group: str, id: str, create_time: int, user_id: int, project_id: int,
-                     keywords: List[str], user_labels: UserLabels, extra_data: Optional[Dict]) -> None:
-        if not extra_data:
-            extra_data = {}
-
-        # fill up required fields.
-        extra_data["id"] = id
-        extra_data["create_time"] = create_time
-        extra_data["user_id"] = f"{user_id:0>4}"
-        extra_data["project_id"] = f"{project_id:0>6}"
-        extra_data["class_ids"] = ','.join(map(str, user_labels.get_class_ids(keywords)))
-
-        url = f"http://127.0.0.1:{settings.VIEWER_HOST_PORT}/api/v1/user_metrics/{metrics_group}"
-        self.session.post(url, data=extra_data, timeout=settings.VIZ_TIMEOUT)
-
-    def query_metrics(self,
-                      metrics_group: str,
-                      user_id: int,
-                      query_field: str,
-                      bucket: str,
-                      unit: str = "",
-                      limit: int = 10,
-                      user_labels: UserLabels = None,
-                      keywords: List[str] = []) -> Dict:
-        url = f"http://127.0.0.1:{settings.VIEWER_HOST_PORT}/api/v1/user_metrics/{metrics_group}"
-        params = {"user_id": user_id, "query_field": query_field, "bucket": bucket, "unit": unit, "limit": limit}
-        if keywords and user_labels:
-            params["class_ids"] = ','.join(map(str, user_labels.get_class_ids(keywords)))
-        resp = self.get_resp(url, params=params)
-        return self.parse_resp(resp)
 
     def close(self) -> None:
         self.session.close()

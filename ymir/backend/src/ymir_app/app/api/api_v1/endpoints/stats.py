@@ -1,13 +1,13 @@
-from datetime import datetime
 from enum import Enum
 import logging
-from typing import Any
+import json
+from typing import Any, Optional, List
 
 from fastapi import APIRouter, Depends, Query
+from sqlalchemy.orm import Session
 
-from app import models, schemas
+from app import crud, models, schemas
 from app.api import deps
-from app.utils.clickhouse import YmirClickHouse
 from app.utils.ymir_viz import VizClient
 from common_utils.labels import UserLabels
 
@@ -20,117 +20,75 @@ class StatsPrecision(str, Enum):
     month = "month"
 
 
-@router.get("/datasets/hot", response_model=schemas.StatsPopularDatasetsOut)
-def get_most_popular_datasets(
-    limit: int = Query(10, description="limit the data point size"),
-    current_user: models.User = Depends(deps.get_current_active_user),
-    clickhouse: YmirClickHouse = Depends(deps.get_clickhouse_client),
-) -> Any:
-    """
-    Get top datasets ordered by ref_count
-    """
-    stats = clickhouse.get_popular_items(current_user.id, column="dataset_ids", limit=limit)
-    return {"result": stats}
-
-
-@router.get("/models/hot", response_model=schemas.StatsPopularModelsOut)
-def get_most_popular_models(
-    limit: int = Query(10, description="limit the data point size"),
-    current_user: models.User = Depends(deps.get_current_active_user),
-    clickhouse: YmirClickHouse = Depends(deps.get_clickhouse_client),
-) -> Any:
-    """
-    Get top models ordered by ref_count
-    """
-    stats = clickhouse.get_popular_items(current_user.id, column="model_ids", limit=limit)
-    return {"result": stats}
-
-
-@router.get("/models/map", response_model=schemas.StatsModelmAPsOut)
-def get_best_models(
-    limit: int = Query(10, description="limit the data point size"),
-    current_user: models.User = Depends(deps.get_current_active_user),
-    clickhouse: YmirClickHouse = Depends(deps.get_clickhouse_client),
-) -> Any:
-    """
-    Get models of highest mAP score, grouped by keyword
-    """
-    stats = clickhouse.get_models_order_by_map(current_user.id, limit=limit)
-    return {"result": stats}
-
-
-@router.get("/keywords/hot", response_model=schemas.StatsPopularKeywordsOut)
-def get_most_popular_keywords(
-    limit: int = Query(10, description="limit the data point size"),
-    current_user: models.User = Depends(deps.get_current_active_user),
-    clickhouse: YmirClickHouse = Depends(deps.get_clickhouse_client),
-) -> Any:
-    """
-    Get top keywords ordered by ref_count
-    """
-    stats = clickhouse.get_popular_items(current_user.id, column="keyword_ids", limit=limit)
-    return {"result": stats}
-
-
-# @router.get("/keywords/recommend", response_model=schemas.StatsMetricsQueryOut)
-@router.get("/keywords/recommend", response_model=schemas.StatsKeywordsRecommendOut)
+@router.get("/keywords/recommend", response_model=schemas.StatsMetricsQueryOut)
 def recommend_keywords(
-    dataset_ids: str = Query(..., description="recommend keywords based on given datasets", example="1,2,3"),
+    dataset_ids: str = Query(None, description="recommend keywords based on given datasets", example="1,2,3"),
     limit: int = Query(10, description="limit the data point size"),
+    db: Session = Depends(deps.get_db),
     current_user: models.User = Depends(deps.get_current_active_user),
-    clickhouse: YmirClickHouse = Depends(deps.get_clickhouse_client),
     viz_client: VizClient = Depends(deps.get_viz_client),
     user_labels: UserLabels = Depends(deps.get_user_labels),
-
 ) -> Any:
     """
     Recommend top keywords based on history tasks.
     """
-    # stats = viz_client.query_metrics(
-    #     metrics_group="task",
-    #     user_id=current_user.id,
-    #     query_field="key_ids",
-    #     bucket="count",
-    #     limit=limit,
-    # )
-    # for element in stats["result"]:
-    #     element["legend"] = user_labels.get_main_name(int(element["legend"]))
-    # logging.info(f"viz stats: {stats}")
+    keyword_ids: Optional[List[int]] = None
+    if dataset_ids:
+        datasets = crud.dataset.get_multi_by_ids(db, ids=[int(i) for i in dataset_ids.split(",")])
+        keywords = extract_keywords(datasets)
+        keyword_ids = user_labels.get_class_ids(keywords)
 
-    dataset_ids_ = [int(id_) for id_ in dataset_ids.split(",")]
-    stats = clickhouse.get_recommend_keywords(current_user.id, dataset_ids=dataset_ids_, limit=limit)
+    stats = viz_client.query_metrics(
+        metrics_group="task",
+        user_id=current_user.id,
+        query_field="class_ids",
+        bucket="count",
+        limit=limit,
+        keyword_ids=keyword_ids,
+    )
+    for element in stats:
+        element["legend"] = user_labels.get_main_name(int(element["legend"]))
+    logging.info(f"viz stats: {stats}")
     return {"result": stats}
 
 
-# @router.get("/projects/count", response_model=schemas.StatsMetricsQueryOut)
-@router.get("/projects/count", response_model=schemas.StatsProjectsCountOut)
+@router.get("/projects/count", response_model=schemas.StatsMetricsQueryOut)
 def get_projects_count(
     precision: StatsPrecision = Query(..., description="day, week or month"),
     limit: int = Query(10, description="limit the data point size"),
     current_user: models.User = Depends(deps.get_current_active_user),
-    clickhouse: YmirClickHouse = Depends(deps.get_clickhouse_client),
     viz_client: VizClient = Depends(deps.get_viz_client),
 ) -> Any:
     """
     Get projects count divided by time ranges
     """
-    # stats = viz_client.query_metrics(
-    #     metrics_group="task",
-    #     user_id=current_user.id,
-    #     query_field="create_time",
-    #     bucket="time",
-    #     unit=precision,
-    #     limit=limit,
-    # )
-
-    end_at = datetime.now()
-    start_at = end_at.replace(end_at.year - 1)
-    stats = clickhouse.get_project_count(
-        current_user.id,
-        precision=precision.value,
-        start_at=start_at,
-        end_at=end_at,
+    stats = viz_client.query_metrics(
+        metrics_group="project",
+        user_id=current_user.id,
+        query_field="create_time",
+        bucket="time",
+        unit=precision.value,
         limit=limit,
     )
+
     logging.info(f"viz stats: {stats}")
     return {"result": stats}
+
+
+def extract_keywords(datasets: List[models.Dataset]) -> List[str]:
+    """
+    dataset got keywords column which contains:
+    {
+      "gt": {"keyword": count},
+      "pred": {"keyword": count},
+    }
+
+    extract all the keywords in gt and pred
+    """
+    datasets_keywords = [json.loads(dataset.keywords) for dataset in datasets if dataset.keywords]
+    keywords = {
+        k
+        for dataset_keywords in datasets_keywords
+        for k in (list(dataset_keywords["gt"]) + list(dataset_keywords["pred"]))
+    }
+    return list(keywords)
