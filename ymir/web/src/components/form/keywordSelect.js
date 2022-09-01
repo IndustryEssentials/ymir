@@ -53,6 +53,7 @@ const KeywordSelect = ({ value, onChange = () => { }, keywords, filter, ...resPr
 
   return (
     <Select mode="multiple" showArrow
+      value={value}
       placeholder={t('task.train.form.keywords.label')}
       filterOption={(value, option) => [option.value, ...(option.aliases || [])].some(key => key.indexOf(value) >= 0)}
       options={filterOptions(options, filter)}

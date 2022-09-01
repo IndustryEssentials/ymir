@@ -45,6 +45,8 @@ function Filter() {
     }
   }, [filterResult])
 
+  useEffect(() => console.log('test includes: ', includes), [includes])
+
   const checkInputs = (i) => {
     return i.excludes?.length || i.includes?.length || i.samples
   }
@@ -71,11 +73,11 @@ function Filter() {
   }
 
   const filterExcludes = useCallback(options => {
-    return options.filter(({ value }) => !(includes || []).includes(value))
+    return options.filter(({ value }) => !includes || !(includes || []).includes(value))
   }, [includes])
 
   const filterIncludes = useCallback(options => {
-    return options.filter(({ value }) => !(excludes || []).includes(value))
+    return options.filter(({ value }) => !excludes || !(excludes || []).includes(value))
   }, [excludes])
 
   return (

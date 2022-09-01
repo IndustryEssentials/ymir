@@ -168,6 +168,7 @@ const Add = ({ keywords, datasets, getKeywords, ...func }) => {
               <Form.Item
                 label={t('project.add.form.enableIteration')}
                 name='enableIteration'
+                hidden={true}
                 initialValue={true}
                 required
                 tooltip={t('project.add.form.enableIteration.tip')}
