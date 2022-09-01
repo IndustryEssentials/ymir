@@ -38,7 +38,6 @@ def recommend_keywords(
         keywords = extract_keywords(datasets)
         keyword_ids = user_labels.get_class_ids(keywords)
 
-    # todo pass keyword_ids to viewer as params
     stats = viz_client.query_metrics(
         metrics_group="task",
         user_id=current_user.id,
