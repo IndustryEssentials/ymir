@@ -42,7 +42,7 @@ def recommend_keywords(
     stats = viz_client.query_metrics(
         metrics_group="task",
         user_id=current_user.id,
-        query_field="key_ids",
+        query_field="class_ids",
         bucket="count",
         limit=limit,
         keyword_ids=keyword_ids,

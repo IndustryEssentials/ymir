@@ -110,13 +110,11 @@ def create_sample_project(
         crud.project.soft_remove(db, id=project.id)
         raise FailedToCreateProject()
 
-    viz_client.initialize(user_id=current_user.id, project_id=project.id)
-    keyword_ids = user_labels.get_class_ids(project_in.training_keywords)
     send_project_metrics(
-        viz_client,
+        current_user.id,
         project.id,
         project.name,
-        keyword_ids,
+        user_labels.get_class_ids(project_in.training_keywords),
         TrainingType(project.training_type).name,
         int(project.create_datetime.timestamp()),
     )
@@ -199,13 +197,11 @@ def create_project(
             ),
         )
 
-    viz_client.initialize(user_id=current_user.id, project_id=project.id)
-    keyword_ids = user_labels.get_class_ids(project_in.training_keywords)
     send_project_metrics(
-        viz_client,
+        current_user.id,
         project.id,
         project.name,
-        keyword_ids,
+        user_labels.get_class_ids(project_in.training_keywords),
         TrainingType(project.training_type).name,
         int(project.create_datetime.timestamp()),
     )

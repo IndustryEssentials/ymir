@@ -142,7 +142,7 @@ def create_single_task(db: Session, user_id: int, user_labels: UserLabels, task_
             viz_client = VizClient()
             viz_client.initialize(user_id=user_id, project_id=task_in.project_id)
             viz_client.send_metrics(
-                metrics_group="keyids",
+                metrics_group="task",
                 id=task_info.hash,
                 create_time=int(task_info.create_datetime.timestamp()),
                 keyword_ids=args["class_ids"],

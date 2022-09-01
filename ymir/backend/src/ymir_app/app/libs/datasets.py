@@ -181,3 +181,26 @@ def ensure_datasets_are_ready(db: Session, dataset_ids: List[int]) -> List[model
     if not all(dataset.result_state == ResultState.ready for dataset in datasets):
         raise PrematureDatasets()
     return datasets
+
+
+def send_keywords_metrics(
+    user_id: int,
+    project_id: int,
+    task_hash: str,
+    keyword_ids: List[int],
+    create_time: int,
+) -> None:
+    try:
+        viz_client = VizClient()
+        viz_client.initialize(user_id=user_id, project_id=project_id)
+        viz_client.send_metrics(
+            metrics_group="task",
+            id=task_hash,
+            create_time=create_time,
+            keyword_ids=keyword_ids,
+        )
+    except Exception:
+        logger.exception(
+            "[metrics] failed to send keywords(%s) stats to viewer, continue anyway",
+            keyword_ids,
+        )

@@ -151,7 +151,7 @@ def setup_sample_project_in_background(
 
 
 def send_project_metrics(
-    viz_client: VizClient,
+    user_id: int,
     project_id: int,
     project_name: str,
     keyword_ids: List[int],
@@ -159,6 +159,8 @@ def send_project_metrics(
     create_time: int,
 ) -> None:
     try:
+        viz_client = VizClient()
+        viz_client.initialize(user_id=user_id, project_id=project_id)
         viz_client.send_metrics(
             metrics_group="project",
             id=f"{project_id:0>6}",
