@@ -6,7 +6,7 @@ import { isSuperAdmin } from '@/constants/user'
 import {
   BarchartIcon, FlagIcon, GithubIcon, FileHistoryIcon, MymodelIcon,
   NavDatasetIcon, UserIcon, UserSettingsIcon, DiagnosisIcon, EditIcon, EyeOffIcon, TrainIcon,
-  BarChart2LineIcon, ProjectIcon, VectorIcon
+  BarChart2LineIcon, ProjectIcon, VectorIcon, BookIcon,
 } from '@/components/common/icons'
 
 const { Sider } = Layout
@@ -63,6 +63,7 @@ function LeftMenu() {
         isSuperAdmin(role) ? getItem(t('common.top.menu.permission'), '/home/permission', UserSettingsIcon,) : null,
       ]),
       { type: 'divider' },
+      getItem(<a target="_blank" href='/docs'><BookIcon /> {t('common.menu.docs')}</a>, 'docs',),
       getItem(t('user.settings'), '/home/user', UserIcon,),
       getItem(<a target="_blank" href='https://github.com/IndustryEssentials/ymir'><GithubIcon /> {t('common.top.menu.community')}</a>, 'github',),
     ])
