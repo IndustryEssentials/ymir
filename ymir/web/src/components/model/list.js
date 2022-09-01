@@ -25,6 +25,7 @@ import {
 } from "@/components/common/icons"
 import EditStageCell from "./editStageCell"
 import { DescPop } from "../common/descPop"
+import useRerunAction from "../../hooks/useRerunAction"
 
 const { useForm } = Form
 
@@ -43,6 +44,7 @@ function Model({ pid, project = {}, iterations, groups, modelList, versions, que
   const hideRef = useRef(null)
   const delGroupRef = useRef(null)
   const terminateRef = useRef(null)
+  const generateRerun = useRerunAction()
 
   /** use effect must put on the top */
   useEffect(() => {
@@ -321,6 +323,7 @@ function Model({ pid, project = {}, iterations, groups, modelList, versions, que
         hidden: () => taskType !== TASKTYPES.TRAINING,
         icon: <BarchartIcon />,
       },
+      generateRerun(record),
       {
         key: "hide",
         label: t("common.action.hide"),

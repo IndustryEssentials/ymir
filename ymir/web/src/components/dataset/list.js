@@ -7,7 +7,7 @@ import { Form, Button, Input, Table, Space, Modal, Row, Col, Tooltip, Pagination
 import t from "@/utils/t"
 import { humanize } from "@/utils/number"
 import { diffTime } from '@/utils/date'
-import { getTaskTypeLabel, TASKSTATES } from '@/constants/task'
+import { getTaskTypeLabel, TASKSTATES, TASKTYPES } from '@/constants/task'
 import { states } from '@/constants/dataset'
 
 import CheckProjectDirty from "@/components/common/CheckProjectDirty"
@@ -25,6 +25,8 @@ import {
   CompareListIcon,
 } from "@/components/common/icons"
 import { DescPop } from "../common/descPop"
+import { RefreshIcon } from "../common/icons"
+import useRerunAction from "../../hooks/useRerunAction"
 
 const { confirm } = Modal
 const { useForm } = Form
@@ -44,6 +46,7 @@ function Datasets({ pid, project = {}, iterations, groups, datasetList, query, v
   let [lock, setLock] = useState(true)
   const terminateRef = useRef(null)
   const [testingSetIds, setTestingSetIds] = useState([])
+  const generateRerun = useRerunAction()
 
   /** use effect must put on the top */
   useEffect(() => {
@@ -276,6 +279,7 @@ function Datasets({ pid, project = {}, iterations, groups, datasetList, query, v
         hidden: () => taskState === TASKSTATES.PENDING || !isRunning(state) || task.is_terminated,
         icon: <StopIcon />,
       },
+      generateRerun(record),
       {
         key: "hide",
         label: t("common.action.hide"),
