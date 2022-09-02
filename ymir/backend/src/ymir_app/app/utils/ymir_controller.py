@@ -328,12 +328,11 @@ class ControllerRequest:
     def prepare_evaluate(self, request: mirsvrpb.GeneralReq, args: Dict) -> mirsvrpb.GeneralReq:
         evaluate_config = mir_cmd_pb.EvaluateConfig()
         evaluate_config.conf_thr = args["confidence_threshold"]
-        evaluate_config.iou_thrs_interval = "0.5:1:0.05"
-        evaluate_config.need_pr_curve = False
+        evaluate_config.iou_thrs_interval = args["iou_thrs_interval"]
+        evaluate_config.need_pr_curve = args["need_pr_curve"]
 
         request.req_type = mirsvrpb.CMD_EVALUATE
-        request.singleton_op = args["gt_dataset_hash"]
-        request.in_dataset_ids[:] = args["other_dataset_hashes"]
+        request.in_dataset_ids[:] = args["dataset_hash"]
         request.evaluate_config.CopyFrom(evaluate_config)
         return request
 
@@ -530,20 +529,21 @@ class ControllerClient:
         self,
         user_id: int,
         project_id: int,
-        task_id: str,
         confidence_threshold: float,
-        gt_dataset_hash: str,
-        other_dataset_hashes: List[str],
+        iou_thrs_interval: str,
+        need_pr_curve: bool,
+        dataset_hash: str,
     ) -> Dict:
         req = ControllerRequest(
             type=ExtraRequestType.evaluate,
             user_id=user_id,
             project_id=project_id,
-            task_id=task_id,
+            task_id=dataset_hash,  # required by controller
             args={
                 "confidence_threshold": confidence_threshold,
-                "gt_dataset_hash": gt_dataset_hash,
-                "other_dataset_hashes": other_dataset_hashes,
+                "dataset_hash": dataset_hash,
+                "iou_thrs_interval": iou_thrs_interval,
+                "need_pr_curve": need_pr_curve,
             },
         )
         return self.send(req)

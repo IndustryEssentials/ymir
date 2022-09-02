@@ -24,20 +24,17 @@ class TestEvaluateDataset:
         iou = 0.5
         require_average_iou = True
         need_pr_curve = True
-        viz = mocker.Mock()
-        viz.get_fast_evaluation.return_value = {}
-        user_labels = mocker.Mock()
-        datasets = [mocker.Mock()]
+        ctrl = mocker.Mock(evaluate_dataset=mocker.Mock(return_value={}))
+        datasets_mapping = {"a": 1, "b": 2}
         m.evaluate_datasets(
-            viz,
+            ctrl,
             user_id,
             project_id,
-            user_labels,
             confidence_threshold,
             iou,
             require_average_iou,
             need_pr_curve,
-            datasets,
+            datasets_mapping,
         )
 
-        viz.get_fast_evaluation.assert_called()
+        ctrl.evaluate_dataset.assert_called()
