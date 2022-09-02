@@ -23,7 +23,6 @@ class Settings(BaseSettings):
     YMIR_VERSION: Optional[str]
 
     # assets viz
-    VIZ_HOST: str = "viz:9099"
     VIZ_TIMEOUT: int = 30
 
     FIRST_ADMIN: EmailStr = "admin@example.com"  # type: ignore

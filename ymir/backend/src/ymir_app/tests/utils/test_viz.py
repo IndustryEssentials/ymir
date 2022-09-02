@@ -180,14 +180,11 @@ class TestDataset:
 
 class TestVizClient:
     def test_get_viz_client(self):
-        host = random_lower_string()
-        viz = m.VizClient(host=host)
-        assert viz.host == host
+        viz = m.VizClient()
         assert viz.session
 
     def test_get_assets(self, mock_user_labels, mocker):
-        host = random_lower_string()
-        viz = m.VizClient(host=host)
+        viz = m.VizClient()
         mock_session = mocker.Mock()
         resp = mocker.Mock()
         res = {
@@ -240,8 +237,7 @@ class TestVizClient:
         assert len(ret["items"]) == len(res["elements"])
 
     def test_get_model_info(self, mocker):
-        host = random_lower_string()
-        viz = m.VizClient(host=host)
+        viz = m.VizClient()
         mock_session = mocker.Mock()
         resp = mocker.Mock()
         res = {
@@ -281,8 +277,7 @@ class TestVizClient:
         assert ret["executor_config"] == res["executor_config"]
 
     def test_get_dataset_analysis(self, mock_user_labels, mocker):
-        host = random_lower_string()
-        viz = m.VizClient(host=host)
+        viz = m.VizClient()
         mock_session = mocker.Mock()
         resp = mocker.Mock()
         res = {
@@ -330,8 +325,7 @@ class TestVizClient:
         assert ret["pred"]
 
     def test_close(self, mocker):
-        host = random_lower_string()
-        viz = m.VizClient(host=host)
+        viz = m.VizClient()
         viz.session = mock_session = mocker.Mock()
 
         viz.close()
