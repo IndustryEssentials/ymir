@@ -129,6 +129,7 @@ export function delDatasetGroup(id) {
  * @param {number} iou           iou threadhold
  * @param {number} everageIou    
  * @param {number} confidence   range: [0, 1]
+ * @param {string} ck  custom keyword
  * @returns 
  */
 export function evaluate({ projectId, datasets, iou, everageIou, confidence, ck }) {
