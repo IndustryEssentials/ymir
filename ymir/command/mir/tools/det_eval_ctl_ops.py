@@ -1,6 +1,6 @@
 from typing import Collection, Iterator, List, Optional, Tuple
 
-from mir.tools import det_eval_ops, mir_storage_ops, revs_parser
+from mir.tools import det_eval_ops, mir_storage_ops, revs_parser, settings as mir_settings
 from mir.protos import mir_command_pb2 as mirpb
 
 
@@ -68,7 +68,10 @@ def _sub_ck_and_asset_ids_from_main_ck(mir_keywords: mirpb.MirKeywords,
 
     ck_idx = mir_keywords.ck_idx[main_ck]
     yield (None, ck_idx.asset_annos)
-    for sub_ck, asset_anno_ids in ck_idx.sub_indexes.items():
+
+    for idx, (sub_ck, asset_anno_ids) in enumerate(ck_idx.sub_indexes.items()):
+        if idx >= mir_settings.DEFAULT_EVALUATE_SUB_CKS:
+            return
         yield (sub_ck, asset_anno_ids.key_ids)
 
 
