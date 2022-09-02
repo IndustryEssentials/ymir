@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from "react"
-import { Card, Button, Form, Row, Col, Radio, Slider, Select, InputNumber, Checkbox, Space, } from "antd"
+import { Card, Button, Form, Row, Col, Radio, Slider, Select, InputNumber, Checkbox, Space, Tag, } from "antd"
 
 import t from "@/utils/t"
 import useFetch from "@/hooks/useFetch"
@@ -53,6 +53,7 @@ function Matrics({ pid, project }) {
   })
   const [ckDatasets, getCKDatasets] = useFetch('dataset/getCK', [])
   const [cks, setCKs] = useState([])
+  const selectedCK = Form.useWatch('ck', form)
 
   useEffect(() => {
     setDiagnosis(remoteData)
@@ -99,7 +100,6 @@ function Matrics({ pid, project }) {
   }, [selectedKeywords, keywords])
 
   useEffect(() => {
-    console.log('selectedDatasets:', selectedDatasets, selectedDatasets.map(({ id }) => id))
     if (selectedDatasets.length) {
       getCKDatasets({ pid, ids: selectedDatasets.map(({ id }) => id) })
     }
@@ -195,11 +195,12 @@ function Matrics({ pid, project }) {
         <Select value={kwType} options={kwTypes.map(({ label, value }) => ({ value, label: t(label) }))} onChange={setKwType}></Select>
       </Col>
       <Col flex={1}>
-        <Select style={{ width: '100%' }} mode={kwType ? 'single' : "multiple"}
+        {kwTypes[0].value === kwType ? <Select style={{ width: '100%' }} mode={kwType ? 'single' : "multiple"}
           value={selectedKeywords}
           options={kws.map(kw => ({ label: kw, value: kw }))}
           placeholder={t(kwType ? 'model.diagnose.metrics.ck.placeholder' : 'model.diagnose.metrics.keyword.placeholder')}
-          showArrow onChange={kwChange}></Select>
+          showArrow onChange={kwChange}></Select> :
+          <Tag>{selectedCK}</Tag>}
       </Col>
       <Col>
         <Space size={20}>
@@ -250,7 +251,7 @@ function Matrics({ pid, project }) {
                 <Form.Item label={t('model.diagnose.form.confidence')} name='confidence'>
                   <InputNumber step={0.0005} min={0.0005} max={0.9995} />
                 </Form.Item>
-                <Form.Item label={'cks'}>
+                <Form.Item label={'cks'} name='ck'>
                   <Select options={cks.map(ck => ({ value: ck, label: ck }))}></Select>
                 </Form.Item>
                 <Form.Item label={renderIouTitle} name='iou'>
