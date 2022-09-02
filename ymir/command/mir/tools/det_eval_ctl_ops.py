@@ -62,12 +62,14 @@ def det_evaluate_datasets(
     return evaluation
 
 
-def _sub_ck_and_asset_ids_from_main_ck(mir_keywords: mirpb.MirKeywords, main_ck: str) -> List[Tuple[Optional[str], List[str]]]:
+def _sub_ck_and_asset_ids_from_main_ck(mir_keywords: mirpb.MirKeywords,
+                                       main_ck: str) -> List[Tuple[Optional[str], List[str]]]:
     if main_ck not in mir_keywords.ck_idx:
         return []
 
     ck_idx = mir_keywords.ck_idx[main_ck]
 
+    main_sub_ck_asset_ids: List[Tuple[Optional[str], List[str]]]
     main_sub_ck_asset_ids = [(sub_ck, list(asset_anno_ids.key_ids.keys()))
                              for sub_ck, asset_anno_ids in ck_idx.sub_indexes.items()]
     main_sub_ck_asset_ids.append((None, list(ck_idx.asset_annos.keys())))
@@ -88,7 +90,7 @@ def _filter_task_annotations_by_asset_ids(task_annotations: mirpb.SingleTaskAnno
 def _add_ck_evaluation_result(evaluation: mirpb.Evaluation,
                               ck_evaluation: mirpb.Evaluation,
                               main_ck: str,
-                              sub_ck: str = None) -> None:
+                              sub_ck: Optional[str] = None) -> None:
     if sub_ck is None:
         for iou_thr_str, ck_iou_evaluation in ck_evaluation.dataset_evaluation.iou_evaluations.items():
             evaluation.dataset_evaluation.iou_evaluations[iou_thr_str].ck_evaluations[main_ck].total.CopyFrom(
