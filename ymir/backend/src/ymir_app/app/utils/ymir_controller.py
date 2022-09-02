@@ -332,7 +332,7 @@ class ControllerRequest:
         evaluate_config.need_pr_curve = args["need_pr_curve"]
 
         request.req_type = mirsvrpb.CMD_EVALUATE
-        request.in_dataset_ids[:] = args["dataset_hash"]
+        request.in_dataset_ids[:] = [args["dataset_hash"]]
         request.evaluate_config.CopyFrom(evaluate_config)
         return request
 
@@ -546,7 +546,8 @@ class ControllerClient:
                 "need_pr_curve": need_pr_curve,
             },
         )
-        return self.send(req)
+        resp = self.send(req)
+        return {dataset_hash: resp["evaluation"]["dataset_evaluation"]}
 
     def check_repo_status(self, user_id: int, project_id: int) -> bool:
         req = ControllerRequest(
