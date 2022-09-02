@@ -54,10 +54,10 @@ def det_evaluate_datasets(
                 ground_truth=ck_ground_truth,
                 config=evaluate_config,
             )
-            _add_ck_evaluation_result(evaluation=evaluation,
-                                      ck_evaluation=ck_evaluation,
-                                      main_ck=main_ck,
-                                      sub_ck=sub_ck)
+            _copy_ck_evaluation_result(evaluation=evaluation,
+                                       ck_evaluation=ck_evaluation,
+                                       main_ck=main_ck,
+                                       sub_ck=sub_ck)
 
     return evaluation
 
@@ -87,10 +87,10 @@ def _filter_task_annotations_by_asset_ids(task_annotations: mirpb.SingleTaskAnno
     return filtered_task_annotations
 
 
-def _add_ck_evaluation_result(evaluation: mirpb.Evaluation,
-                              ck_evaluation: mirpb.Evaluation,
-                              main_ck: str,
-                              sub_ck: Optional[str] = None) -> None:
+def _copy_ck_evaluation_result(evaluation: mirpb.Evaluation,
+                               ck_evaluation: mirpb.Evaluation,
+                               main_ck: str,
+                               sub_ck: Optional[str] = None) -> None:
     if sub_ck is None:
         for iou_thr_str, ck_iou_evaluation in ck_evaluation.dataset_evaluation.iou_evaluations.items():
             evaluation.dataset_evaluation.iou_evaluations[iou_thr_str].ck_evaluations[main_ck].total.CopyFrom(
