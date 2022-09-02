@@ -139,7 +139,6 @@ class TestToolsDetEval(unittest.TestCase):
                     },
                 },
             },
-            'head_task_id': 'a',
             'image_cks': {
                 'a0': {
                     'cks': {
@@ -235,7 +234,6 @@ class TestToolsDetEval(unittest.TestCase):
     # private: check result
     def _check_fpfn(self, actual_mir_annotations: mirpb.MirAnnotations) -> None:
         expected_annotations_dict = {
-            'head_task_id': 'a',
             'ground_truth': {
                 'image_annotations': {
                     'a0': {

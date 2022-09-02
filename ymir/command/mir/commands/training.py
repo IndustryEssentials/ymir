@@ -10,7 +10,7 @@ import yaml
 
 from mir.commands import base
 from mir.protos import mir_command_pb2 as mirpb
-from mir.tools import checker, class_ids, context, data_reader, data_writer
+from mir.tools import checker, class_ids, data_reader, data_writer
 from mir.tools import mir_storage_ops, revs_parser
 from mir.tools import settings as mir_settings, utils as mir_utils
 from mir.tools.command_run_in_out import command_run_in_out
@@ -281,9 +281,6 @@ class CmdTrain(base.BaseCommand):
         if unknown_names:
             raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
                                   error_message=f"unknown class names: {unknown_names}")
-
-        if not context.check_class_ids(mir_root=mir_root, current_class_ids=type_ids_list):
-            raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS, error_message='user class ids mismatch')
 
         type_id_idx_mapping = {type_id: index for (index, type_id) in enumerate(type_ids_list)}
         type_ids_set = set(type_ids_list)

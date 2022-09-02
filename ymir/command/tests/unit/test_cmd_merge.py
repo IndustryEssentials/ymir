@@ -1,8 +1,7 @@
-import cmath
 import logging
 import os
 import shutil
-from typing import Dict, List, Tuple
+from typing import Any, Dict, List, Tuple
 import unittest
 
 from google.protobuf.json_format import MessageToDict, ParseDict
@@ -115,10 +114,9 @@ class TestMergeCmd(unittest.TestCase):
     def _prepare_mir_branch(self, assets_and_keywords: Dict[str, Tuple[List[int], List[str]]], size: int,
                             branch_name_and_task_id: str, commit_msg: str):
         mir_annotations = mirpb.MirAnnotations()
-        mir_keywords = mirpb.MirKeywords()
         mir_metadatas = mirpb.MirMetadatas()
 
-        dict_metadatas = {'attributes': {}}
+        dict_metadatas: Dict[str, Any] = {'attributes': {}}
         for asset_id in assets_and_keywords:
             dict_metadatas["attributes"][asset_id] = TestMergeCmd._generate_attribute_for_asset(size, size)
         ParseDict(dict_metadatas, mir_metadatas)
@@ -138,15 +136,8 @@ class TestMergeCmd(unittest.TestCase):
             "prediction": pred_and_gt,
             'ground_truth': pred_and_gt,
             'image_cks': image_cks,
-            'head_task_id': branch_name_and_task_id
         }
         ParseDict(dict_annotations, mir_annotations)
-
-        dict_keywords = {"keywords": {}}
-        for asset_id, keywords_pair in assets_and_keywords.items():
-            dict_keywords["keywords"][asset_id] = TestMergeCmd._generate_keywords_for_asset(
-                keywords_pair[0], keywords_pair[1])
-        ParseDict(dict_keywords, mir_keywords)
 
         task = mir_storage_ops.create_task(task_type=mirpb.TaskTypeMining,
                                            task_id=branch_name_and_task_id,
@@ -230,7 +221,7 @@ class TestMergeCmd(unittest.TestCase):
                                  commit_msg="prepare_branch_merge_d")
 
     # protected: check
-    def _check_result(self, expected_dict_metadatas=None, expected_dict_annotations=None, expected_dict_keywords=None):
+    def _check_result(self, expected_dict_metadatas=None, expected_dict_annotations=None):
         if expected_dict_metadatas:
             try:
                 mir_metadatas = test_utils.read_mir_pb(os.path.join(self._mir_root, "metadatas.mir"),
@@ -254,19 +245,6 @@ class TestMergeCmd(unittest.TestCase):
                 logging.info(f"e: {expected_dict_annotations}")
                 logging.info(f"a: {actual_dict_annotations}")
                 raise e
-
-        if expected_dict_keywords:
-            mir_keywords = test_utils.read_mir_pb(os.path.join(self._mir_root, "keywords.mir"), mirpb.MirKeywords)
-            actual_dict_keywords = MessageToDict(mir_keywords, preserving_proto_field_name=True)
-            for asset_id, expected_keywords in expected_dict_keywords["keywords"].items():
-                actual_keywords = actual_dict_keywords["keywords"][asset_id]
-                try:
-                    self.assertEqual(set(expected_keywords["predefined_keyids"]),
-                                     set(actual_keywords["predefined_keyids"]))
-                except AssertionError as e:
-                    logging.info(f"e: {expected_keywords}")
-                    logging.info(f"a: {actual_keywords}")
-                    raise e
 
     # public: test cases
     def test_all(self):
@@ -332,7 +310,6 @@ class TestMergeCmd(unittest.TestCase):
         expected_dict_annotations = {
             "prediction": expected_pred,
             'ground_truth': expected_gt,
-            'head_task_id': 'merge-task-id-s0',
             'image_cks': {
                 'a0': {
                     'cks': {
@@ -371,19 +348,7 @@ class TestMergeCmd(unittest.TestCase):
                 }
             }
         }
-
-        expected_dict_keywords = {
-            "keywords": {
-                "a0": TestMergeCmd._generate_keywords_for_asset([1], ["c0", "c1"]),
-                "a1": TestMergeCmd._generate_keywords_for_asset([1], ["c0", "c1"]),
-                "a2": TestMergeCmd._generate_keywords_for_asset([1], ["c0", "c1"]),
-                "a3": TestMergeCmd._generate_keywords_for_asset([1], ["c0", "c1"]),
-                "b0": TestMergeCmd._generate_keywords_for_asset([2], ["c0", "c2"]),
-                "b1": TestMergeCmd._generate_keywords_for_asset([2], ["c0", "c2"]),
-                "b2": TestMergeCmd._generate_keywords_for_asset([2], ["c0", "c2"]),
-            }
-        }
-        self._check_result(expected_dict_metadatas, expected_dict_annotations, expected_dict_keywords)
+        self._check_result(expected_dict_metadatas, expected_dict_annotations)
 
     def _test_tvt_stop_01(self):
         """ abnormal case: with tvt flag assigned, strategy stop, a + d, have joint assets """
@@ -453,7 +418,6 @@ class TestMergeCmd(unittest.TestCase):
         expected_dict_annotations = {
             "prediction": expected_pred,
             'ground_truth': expected_gt,
-            'head_task_id': 'merge-task-id-h0',
             'image_cks': {
                 'a0': {
                     'cks': {
@@ -488,17 +452,7 @@ class TestMergeCmd(unittest.TestCase):
             },
         }
 
-        expected_dict_keywords = {
-            "keywords": {
-                "a0": TestMergeCmd._generate_keywords_for_asset([1], ["c0", "c1"]),
-                "a1": TestMergeCmd._generate_keywords_for_asset([1], ["c0", "c1"]),
-                "a2": TestMergeCmd._generate_keywords_for_asset([1], ["c0", "c1"]),
-                "a3": TestMergeCmd._generate_keywords_for_asset([1], ["c0", "c1"]),
-                "d0": TestMergeCmd._generate_keywords_for_asset([1, 4], ["c0", "c1", "c4"]),
-                "d1": TestMergeCmd._generate_keywords_for_asset([1, 4], ["c0", "c1", "c4"]),
-            }
-        }
-        self._check_result(expected_dict_metadatas, expected_dict_annotations, expected_dict_keywords)
+        self._check_result(expected_dict_metadatas, expected_dict_annotations)
 
     def _test_tvt_guest_00(self):
         """ normal case: with tvt flag assigned, strategy guest, a + d, have joint assets """
@@ -552,7 +506,6 @@ class TestMergeCmd(unittest.TestCase):
         expected_dict_annotations = {
             "prediction": expected_pred,
             'ground_truth': expected_gt,
-            'head_task_id': 'merge-task-id-g0',
             'image_cks': {
                 'a0': {
                     'cks': {
@@ -587,18 +540,7 @@ class TestMergeCmd(unittest.TestCase):
             },
         }
 
-        expected_dict_keywords = {
-            "keywords": {
-                "a0": TestMergeCmd._generate_keywords_for_asset([1, 2], ["c0", "c1", "c2"]),
-                "a1": TestMergeCmd._generate_keywords_for_asset([1], ["c0", "c1"]),
-                "a2": TestMergeCmd._generate_keywords_for_asset([1], ["c0", "c1"]),
-                "a3": TestMergeCmd._generate_keywords_for_asset([1], ["c0", "c1"]),
-                "d0": TestMergeCmd._generate_keywords_for_asset([1, 4], ["c0", "c1", "c4"]),
-                "d1": TestMergeCmd._generate_keywords_for_asset([1, 4], ["c0", "c1", "c4"]),
-            }
-        }
-
-        self._check_result(expected_dict_metadatas, expected_dict_annotations, expected_dict_keywords)
+        self._check_result(expected_dict_metadatas, expected_dict_annotations)
 
     def _test_exclude_no_tvt_host_00(self):
         """ a - d with host strategy """
@@ -643,7 +585,6 @@ class TestMergeCmd(unittest.TestCase):
         expected_dict_annotations = {
             "prediction": expected_pred,
             'ground_truth': expected_gt,
-            'head_task_id': 'merge-task-id-nth0',
             'image_cks': {
                 'a1': {
                     'cks': {
@@ -663,12 +604,4 @@ class TestMergeCmd(unittest.TestCase):
             }
         }
 
-        expected_dict_keywords = {
-            "keywords": {
-                "a1": TestMergeCmd._generate_keywords_for_asset([1], ["c0", "c1"]),
-                "a2": TestMergeCmd._generate_keywords_for_asset([1], ["c0", "c1"]),
-                "a3": TestMergeCmd._generate_keywords_for_asset([1], ["c0", "c1"]),
-            }
-        }
-
-        self._check_result(expected_dict_metadatas, expected_dict_annotations, expected_dict_keywords)
+        self._check_result(expected_dict_metadatas, expected_dict_annotations)
