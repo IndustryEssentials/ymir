@@ -1,4 +1,4 @@
-from typing import List, Optional, Tuple
+from typing import Collection, Iterator, List, Optional, Tuple
 
 from mir.tools import det_eval_ops, mir_storage_ops, revs_parser
 from mir.protos import mir_command_pb2 as mirpb
@@ -62,22 +62,18 @@ def det_evaluate_datasets(
 
 
 def _sub_ck_and_asset_ids_from_main_ck(mir_keywords: mirpb.MirKeywords,
-                                       main_ck: str) -> List[Tuple[Optional[str], List[str]]]:
+                                       main_ck: str) -> Iterator[Tuple[Optional[str], Collection[str]]]:
     if main_ck not in mir_keywords.ck_idx:
-        return []
+        return
 
     ck_idx = mir_keywords.ck_idx[main_ck]
-
-    main_sub_ck_asset_ids: List[Tuple[Optional[str], List[str]]]
-    main_sub_ck_asset_ids = [(sub_ck, list(asset_anno_ids.key_ids.keys()))
-                             for sub_ck, asset_anno_ids in ck_idx.sub_indexes.items()]
-    main_sub_ck_asset_ids.append((None, list(ck_idx.asset_annos.keys())))  # main ck asset ids
-
-    return main_sub_ck_asset_ids
+    yield (None, ck_idx.asset_annos)
+    for sub_ck, asset_anno_ids in ck_idx.sub_indexes.items():
+        yield (sub_ck, asset_anno_ids.key_ids)
 
 
 def _filter_task_annotations_by_asset_ids(task_annotations: mirpb.SingleTaskAnnotations,
-                                          asset_ids: List[str]) -> mirpb.SingleTaskAnnotations:
+                                          asset_ids: Collection[str]) -> mirpb.SingleTaskAnnotations:
     filtered_task_annotations = mirpb.SingleTaskAnnotations()
     for asset_id in asset_ids:
         if asset_id not in task_annotations.image_annotations:

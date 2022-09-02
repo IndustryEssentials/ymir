@@ -484,6 +484,14 @@ class TestToolsDetEval(unittest.TestCase):
         self.assertEqual({'blue', 'red'},
                          set(evaluation.dataset_evaluation.iou_evaluations['0.50'].ck_evaluations['color'].sub.keys()))
 
+        evaluation = det_eval_ctl_ops.det_evaluate_datasets(mir_root=self._mir_root,
+                                                            gt_rev_tid=gt_pred_rev_tid,
+                                                            pred_rev_tid=gt_pred_rev_tid,
+                                                            conf_thr=0.005,
+                                                            iou_thrs='0.5',
+                                                            main_ck='FakeMainCk')
+        self.assertEqual(0, len(evaluation.dataset_evaluation.iou_averaged_evaluation.ck_evaluations))
+
     # protected: test cases
     def _test_det_eval(self, det_eval_model_name: Any) -> mirpb.SingleDatasetEvaluation:
         mir_annotations: mirpb.MirAnnotations = mir_storage_ops.MirStorageOps.load_single_storage(
