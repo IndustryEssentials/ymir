@@ -76,7 +76,6 @@ class CmdSampling(base.BaseCommand):
             # if equals
             sampled_mir_metadatas = mir_metadatas
             sampled_mir_annotations = mirpb.MirAnnotations()
-            sampled_mir_annotations.head_task_id = dst_typ_rev_tid.tid
             sampled_mir_annotations.prediction.CopyFrom(mir_annotations.prediction)
             sampled_mir_annotations.ground_truth.CopyFrom(mir_annotations.ground_truth)
             for asset_id in mir_annotations.image_cks.keys():

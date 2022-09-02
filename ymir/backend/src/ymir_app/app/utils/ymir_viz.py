@@ -244,8 +244,7 @@ class ViewerModelInfoResponse(BaseModel):
 
 
 class VizClient:
-    def __init__(self, *, host: str = settings.VIZ_HOST):
-        self.host = host
+    def __init__(self) -> None:
         self.session = requests.Session()
         self._user_id = None  # type: Optional[str]
         self._project_id = None  # type: Optional[str]
@@ -345,33 +344,6 @@ class VizClient:
         res = self.parse_resp(resp)
         dataset_info = DatasetInfo.from_dict(res, self._user_labels)
         return asdict(dataset_info)
-
-    def get_fast_evaluation(
-        self,
-        dataset_hash: str,
-        confidence_threshold: float,
-        iou_threshold: float,
-        need_pr_curve: bool,
-    ) -> Dict:
-        """
-        viz: /dataset_fast_evaluation
-        """
-        # todo
-        #  replace with controller counterpart
-        url_prefix = f"http://{self.host}/v1/users/{self._user_id}/repositories/{self._project_id}/branches"
-        url = f"{url_prefix}/{dataset_hash}/dataset_fast_evaluation"
-        params = {
-            "conf_thr": confidence_threshold,
-            "iou_thr": iou_threshold,
-            "need_pr_curve": need_pr_curve,
-        }
-        resp = self.get_resp(url, params=params)
-        res = self.parse_resp(resp)
-        evaluations = {
-            dataset_hash: VizDatasetEvaluationResult(**evaluation).dict() for dataset_hash, evaluation in res.items()
-        }
-        convert_class_id_to_keyword(evaluations, self._user_labels)
-        return evaluations
 
     def check_duplication(self, dataset_hashes: List[str]) -> int:
         """

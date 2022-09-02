@@ -91,16 +91,8 @@ class CmdFilter(base.BaseCommand):
                                                                    ms_list=mir_storage.get_all_mir_storage(),
                                                                    as_dict=False)
         task_id = dst_typ_rev_tid.tid
-        base_task_id = mir_annotations.head_task_id
 
         PhaseLoggerCenter.update_phase(phase='filter.read')
-
-        if task_id in mir_tasks.tasks:
-            raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_BRANCH_OR_TAG,
-                                  error_message=f"invalid args: task id already exists: {task_id}")
-        if not base_task_id:
-            raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_MIR_REPO,
-                                  error_message='no base task id in tasks.mir')
 
         class_manager = class_ids.ClassIdManager(mir_root=mir_root)
         in_cis_set: Set[int] = CmdFilter.__class_ids_set_from_str(in_cis, class_manager)

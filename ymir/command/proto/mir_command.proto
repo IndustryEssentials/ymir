@@ -105,13 +105,12 @@ message Timestamp {
 
 /// ========== annotations.mir ==========
 message MirAnnotations {
-    string head_task_id = 2;
     SingleTaskAnnotations ground_truth = 3;
     SingleTaskAnnotations prediction = 4;
     // key: asset id, value: cks and image quality, from pred and gt
     map<string, SingleImageCks> image_cks = 5;
 
-    reserved 1;
+    reserved 1, 2;
 };
 
 message SingleTaskAnnotations {
@@ -172,19 +171,16 @@ message Rect {
 
 /// ========== keywords.mir ==========
 message MirKeywords {
-    // key: asset hash, value: keywords list
-    map<string, Keywords> keywords = 1;
-
-    KeywordToIndex pred_idx = 7;  // ci to assets, generated from preds
-    KeywordToIndex gt_idx = 8;  // ci to assets, generated from gt
+    CiTagToIndex pred_idx = 7;  // ci to assets, generated from preds
+    CiTagToIndex gt_idx = 8;  // ci to assets, generated from gt
 
     // key: ck main key, value: assets and assets with sub keys, from (mir_annotations.image_cks) pred and gt
     map<string, AssetAnnoIndex> ck_idx = 9;
 
-    reserved 2, 3, 4, 5, 6;
+    reserved 1, 2, 3, 4, 5, 6;
 };
 
-message KeywordToIndex {
+message CiTagToIndex {
     // key: ci, value: annos
     map<int32, MapStringToInt32List> cis = 1;
     // key: ck main key, value: annos and annos with sub keys
@@ -202,13 +198,6 @@ message MapStringToInt32List {
 message Int32List {
     repeated int32 ids = 1;
 }
-
-message Keywords {
-    // class ids for predictions
-    repeated int32 predefined_keyids = 1;
-    // class ids for ground truth
-    repeated int32 gt_predefined_keyids = 2;
-};
 
 message AssetAnnoIndex {
     map<string, Int32List> asset_annos = 1;  // key: asset id, value: annotation indexes
@@ -321,28 +310,16 @@ message FloatPoint {
 message MirContext {
     /// total images count
     int32 images_cnt = 1;
-    /// total negative images count (images without any annotations), from pred
-    int32 negative_images_cnt = 2;
-    /// total negative images count (images without any project class names), from pred
-    int32 project_negative_images_cnt = 3;
-    /// key: class id, value: images count, from pred
-    map<int32, int32> predefined_keyids_cnt = 4;
-    /// key: class id (only in this project), value: images count, from pred
-    map<int32, int32> project_predefined_keyids_cnt = 5;
 
     /// from pred and gt
     map<string, SingleMapCount> cks_cnt = 6;
 
-    map<string, int32> asset_quality_hist = 8; // key: 0 (lower bnd), 0.1, 0.2, ..., 0.9, 1.0, increment 0.1
-    map<int32, int32> asset_area_hist = 9; // key: 0 (lower bnd), 10, 50, 100, 200, 400, 600, 800, unit: 10000 pixels
-    map<string, int32> asset_bytes_hist = 10;  // key: 0, 0.5, ..., 5, unit: mbytes
-    map<string, int32> asset_hw_ratio_hist = 12;  // height / width ratio histgram, key: 0, 0.1, 0.2, ..., 1.5
     int32 total_asset_mbytes = 11;
 
     AnnoStats pred_stats = 100;
     AnnoStats gt_stats = 101;
 
-    reserved 7;
+    reserved 2, 3, 4, 5, 7, 8, 9, 10, 12;
 };
 
 message SingleMapCount {
@@ -354,9 +331,8 @@ message AnnoStats {
     int32 total_cnt = 1;
     int32 positive_asset_cnt = 2;
     int32 negative_asset_cnt = 3;
-    map<string, int32> quality_hist = 4;  // key: 0 (lower bnd), 0.1, 0.2, ..., 0.9, 1.0, increment 0.1
-    map<int32, int32> area_hist = 5;  // ranges: 0 (lower bnd), 50, 500, 2500, 5000, 10000, 50000, 100000, 200000
-    map<string, int32> area_ratio_hist = 6;  // key: 0 (lower bnd), 0.1, 0.2, ..., 0.9, 1.0, increment 0.1
     map<string, SingleMapCount> tags_cnt = 7;  // key: main tag name, value: main tag count and sub tag names and counts
     map<int32, int32> class_ids_cnt = 8;  // key: class ids, value: asset count for this class id
+
+    reserved 4, 5, 6;
 };

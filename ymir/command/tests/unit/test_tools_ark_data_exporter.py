@@ -143,25 +143,10 @@ class TestArkDataExporter(unittest.TestCase):
                     },
                 }
             },
-            'head_task_id': 'a',
         }
         mir_annotations = mirpb.MirAnnotations()
         json_format.ParseDict(annotations_dict, mir_annotations)
         mir_annotations.ground_truth.CopyFrom(mir_annotations.prediction)
-
-        # keywords
-        keywords_dict = {
-            'keywords': {
-                '430df22960b0f369318705800139fcc8ec38a3e4': {
-                    'predefined_keyids': [2, 52],
-                },
-                'a3008c032eb11c8d9ffcb58208a36682ee40900f': {
-                    'predefined_keyids': [52],
-                },
-            }
-        }
-        mir_keywords = mirpb.MirKeywords()
-        json_format.ParseDict(keywords_dict, mir_keywords)
 
         # task
         task = mir_storage_ops.create_task(task_type=mirpb.TaskType.TaskTypeImportData, task_id='a', message='import')

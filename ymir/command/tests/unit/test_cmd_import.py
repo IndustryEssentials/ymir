@@ -314,8 +314,6 @@ class TestCmdImport(unittest.TestCase):
             }
         if not with_annotations:
             dict_image_annotations_expect = {}
-        self.assertEqual(mir_annotations.head_task_id, mir_annotations.prediction.task_id)
-        self.assertEqual(mir_annotations.head_task_id, mir_annotations.ground_truth.task_id)
         self.assertDictEqual(dict_image_annotations_expect, dict_image_annotations)
         self.assertDictEqual(dict_asset_cks_expected, dict_asset_cks)
 
@@ -435,16 +433,6 @@ class TestCmdImport(unittest.TestCase):
                     }
                 }
                 dict_keywords_expect = {
-                    'keywords': {
-                        'a3008c032eb11c8d9ffcb58208a36682ee40900f': {
-                            'predefined_keyids': [1],
-                            'gt_predefined_keyids': [1],
-                        },
-                        '430df22960b0f369318705800139fcc8ec38a3e4': {
-                            'predefined_keyids': [1],
-                            'gt_predefined_keyids': [1],
-                        }
-                    },
                     'pred_idx': pred_gt_idx,
                     'gt_idx': pred_gt_idx,
                     'ck_idx': {
@@ -535,52 +523,9 @@ class TestCmdImport(unittest.TestCase):
                             },
                         },
                     },
-                    'quality_hist': {
-                        '1.00': 0,
-                        '0.90': 0,
-                        '0.80': 0,
-                        '0.70': 2,
-                        '0.60': 1,
-                        '0.50': 0,
-                        '0.40': 0,
-                        '0.30': 0,
-                        '0.20': 0,
-                        '0.10': 0,
-                        '0.00': 0,
-                    },
-                    'area_hist': {
-                        200000: 0,
-                        100000: 0,
-                        50000: 0,
-                        10000: 1,
-                        5000: 1,
-                        2500: 0,
-                        500: 1,
-                        50: 0,
-                        0: 0,
-                    },
-                    'area_ratio_hist': {
-                        '1.00': 0,
-                        '0.90': 0,
-                        '0.80': 0,
-                        '0.70': 0,
-                        '0.60': 0,
-                        '0.50': 0,
-                        '0.40': 0,
-                        '0.30': 0,
-                        '0.20': 1,
-                        '0.10': 0,
-                        '0.00': 2,
-                    },
                 }
                 dict_context_expected = {
                     'images_cnt': 2,
-                    'predefined_keyids_cnt': {
-                        1: 2
-                    },
-                    'negative_images_cnt': 0,
-                    'project_negative_images_cnt': 0,
-                    'project_predefined_keyids_cnt': {},
                     'total_asset_mbytes': 1,
                     'cks_cnt': {
                         'weather': {
@@ -604,60 +549,6 @@ class TestCmdImport(unittest.TestCase):
                                 'gray sky': 1,
                             },
                         }
-                    },
-                    'asset_quality_hist': {
-                        '1.00': 0,
-                        '0.90': 1,
-                        '0.80': 1,
-                        '0.70': 0,
-                        '0.60': 0,
-                        '0.50': 0,
-                        '0.40': 0,
-                        '0.30': 0,
-                        '0.20': 0,
-                        '0.10': 0,
-                        '0.00': 0,
-                    },
-                    'asset_area_hist': {
-                        8000000: 0,
-                        6000000: 0,
-                        4000000: 0,
-                        2000000: 0,
-                        1000000: 0,
-                        500000: 0,
-                        100000: 2,
-                        0: 0,
-                    },
-                    'asset_bytes_hist': {
-                        '5.0MB': 0,
-                        '4.5MB': 0,
-                        '4.0MB': 0,
-                        '3.5MB': 0,
-                        '3.0MB': 0,
-                        '2.5MB': 0,
-                        '2.0MB': 0,
-                        '1.5MB': 0,
-                        '1.0MB': 0,
-                        '0.5MB': 0,
-                        '0.0MB': 2,
-                    },
-                    'asset_hw_ratio_hist': {
-                        '1.50': 0,
-                        '1.40': 0,
-                        '1.30': 0,
-                        '1.20': 0,
-                        '1.10': 0,
-                        '1.00': 0,
-                        '0.90': 0,
-                        '0.80': 0,
-                        '0.70': 0,
-                        '0.60': 1,
-                        '0.50': 1,
-                        '0.40': 0,
-                        '0.30': 0,
-                        '0.20': 0,
-                        '0.10': 0,
-                        '0.00': 0,
                     },
                     'pred_stats': pred_gt_stats,
                     'gt_stats': pred_gt_stats,
@@ -789,16 +680,6 @@ class TestCmdImport(unittest.TestCase):
                     }
                 }
                 dict_keywords_expect = {
-                    'keywords': {
-                        '430df22960b0f369318705800139fcc8ec38a3e4': {
-                            'predefined_keyids': [1, 2],
-                            'gt_predefined_keyids': [1, 2]
-                        },
-                        'a3008c032eb11c8d9ffcb58208a36682ee40900f': {
-                            'predefined_keyids': [1],
-                            'gt_predefined_keyids': [1]
-                        }
-                    },
                     'pred_idx': pred_gt_idx,
                     'gt_idx': pred_gt_idx,
                     'ck_idx': {
@@ -892,53 +773,9 @@ class TestCmdImport(unittest.TestCase):
                             },
                         },
                     },
-                    'quality_hist': {
-                        '1.00': 0,
-                        '0.90': 0,
-                        '0.80': 0,
-                        '0.70': 2,
-                        '0.60': 1,
-                        '0.50': 0,
-                        '0.40': 0,
-                        '0.30': 1,
-                        '0.20': 1,
-                        '0.10': 0,
-                        '0.00': 0,
-                    },
-                    'area_hist': {
-                        200000: 0,
-                        100000: 0,
-                        50000: 0,
-                        10000: 1,
-                        5000: 1,
-                        2500: 0,
-                        500: 3,
-                        50: 0,
-                        0: 0,
-                    },
-                    'area_ratio_hist': {
-                        '1.00': 0,
-                        '0.90': 0,
-                        '0.80': 0,
-                        '0.70': 0,
-                        '0.60': 0,
-                        '0.50': 0,
-                        '0.40': 0,
-                        '0.30': 0,
-                        '0.20': 1,
-                        '0.10': 0,
-                        '0.00': 4,
-                    },
                 }
                 dict_context_expected = {
                     'images_cnt': 2,
-                    'predefined_keyids_cnt': {
-                        1: 2,
-                        2: 1
-                    },
-                    'negative_images_cnt': 0,
-                    'project_negative_images_cnt': 0,
-                    'project_predefined_keyids_cnt': {},
                     'total_asset_mbytes': 1,
                     'cks_cnt': {
                         'weather': {
@@ -962,60 +799,6 @@ class TestCmdImport(unittest.TestCase):
                                 'gray sky': 1,
                             },
                         }
-                    },
-                    'asset_quality_hist': {
-                        '1.00': 0,
-                        '0.90': 1,
-                        '0.80': 1,
-                        '0.70': 0,
-                        '0.60': 0,
-                        '0.50': 0,
-                        '0.40': 0,
-                        '0.30': 0,
-                        '0.20': 0,
-                        '0.10': 0,
-                        '0.00': 0,
-                    },
-                    'asset_area_hist': {
-                        8000000: 0,
-                        6000000: 0,
-                        4000000: 0,
-                        2000000: 0,
-                        1000000: 0,
-                        500000: 0,
-                        100000: 2,
-                        0: 0,
-                    },
-                    'asset_bytes_hist': {
-                        '5.0MB': 0,
-                        '4.5MB': 0,
-                        '4.0MB': 0,
-                        '3.5MB': 0,
-                        '3.0MB': 0,
-                        '2.5MB': 0,
-                        '2.0MB': 0,
-                        '1.5MB': 0,
-                        '1.0MB': 0,
-                        '0.5MB': 0,
-                        '0.0MB': 2,
-                    },
-                    'asset_hw_ratio_hist': {
-                        '1.50': 0,
-                        '1.40': 0,
-                        '1.30': 0,
-                        '1.20': 0,
-                        '1.10': 0,
-                        '1.00': 0,
-                        '0.90': 0,
-                        '0.80': 0,
-                        '0.70': 0,
-                        '0.60': 1,
-                        '0.50': 1,
-                        '0.40': 0,
-                        '0.30': 0,
-                        '0.20': 0,
-                        '0.10': 0,
-                        '0.00': 0,
                     },
                     'pred_stats': pred_gt_stats,
                     'gt_stats': pred_gt_stats,
