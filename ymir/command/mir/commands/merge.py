@@ -74,9 +74,6 @@ def _merge_annotations(host_mir_annotations: mirpb.MirAnnotations, guest_mir_ann
     if not host_mir_annotations or not guest_mir_annotations:
         raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
                               error_message="input host/guest mir_annotations is invalid")
-    if not host_mir_annotations.head_task_id:
-        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
-                              error_message="no head_task_id found in host_mir_annotations")
 
     _merge_pair_annotations(host_annotation=host_mir_annotations.prediction,
                             guest_annotation=guest_mir_annotations.prediction,
@@ -277,8 +274,6 @@ class CmdMerge(base.BaseCommand):
         # Read host id mir data.
         host_mir_metadatas = mirpb.MirMetadatas()
         host_mir_annotations = mirpb.MirAnnotations()
-
-        host_mir_annotations.head_task_id = dst_typ_rev_tid.tid
 
         for typ_rev_tid in src_typ_rev_tids:
             ret = _merge_to_mir(host_mir_metadatas=host_mir_metadatas,

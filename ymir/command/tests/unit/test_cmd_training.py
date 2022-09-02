@@ -144,7 +144,6 @@ class TestCmdTraining(unittest.TestCase):
                     },
                 }
             },
-            'head_task_id': 'a'
         }
         mir_annotations = mirpb.MirAnnotations()
         json_format.ParseDict(annotations_dict, mir_annotations)

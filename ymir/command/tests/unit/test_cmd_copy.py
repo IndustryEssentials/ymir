@@ -60,7 +60,6 @@ class TestCmdCopy(unittest.TestCase):
         mir_metadatas.attributes['asset1'].height = 30
 
         mir_annotations = mirpb.MirAnnotations()
-        mir_annotations.head_task_id = 't0'
         mir_annotations.prediction.image_annotations['asset0'].CopyFrom(
             self.__create_image_annotations(type_ids=[1, 2, 3]))
         mir_annotations.prediction.image_annotations['asset1'].CopyFrom(
@@ -103,7 +102,6 @@ class TestCmdCopy(unittest.TestCase):
         metadatas_keys = set(mir_metadatas.attributes.keys())
         self.assertEqual({'asset0', 'asset1'}, metadatas_keys)
 
-        self.assertEqual(dst_tid, mir_annotations.head_task_id)
         if drop_annotations:
             self.assertEqual(0, len(mir_annotations.prediction.image_annotations))
         else:
@@ -118,10 +116,6 @@ class TestCmdCopy(unittest.TestCase):
             self.assertEqual({0: 2, 1: 1}, asset0_idx_ids)
             self.assertEqual({}, asset1_idx_ids)
 
-            self.assertEqual({1, 2}, set(mir_keywords.keywords['asset0'].predefined_keyids))
-            self.assertEqual(set(), set(mir_keywords.keywords['asset1'].predefined_keyids))
-
-        self.assertEqual(dst_tid, mir_tasks.head_task_id)
         mAP = mir_tasks.tasks[dst_tid].model.mean_average_precision
         self.assertTrue(mAP > 0.29999 and mAP < 0.30001)  # it's actually 0.3
 

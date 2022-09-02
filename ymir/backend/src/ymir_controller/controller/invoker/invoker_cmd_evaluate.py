@@ -1,7 +1,8 @@
 from controller.invoker.invoker_cmd_base import BaseMirControllerInvoker
 from controller.utils import checker, utils
 from id_definition.error_codes import CTLResponseCode
-from mir.tools import det_eval_ctl_ops, revs_parser
+from mir.tools.det_eval_ctl_ops import det_evaluate_datasets
+from mir.tools.revs_parser import parse_single_arg_rev
 from proto import backend_pb2
 
 
@@ -34,14 +35,14 @@ class EvaluateInvoker(BaseMirControllerInvoker):
 
     def invoke(self) -> backend_pb2.GeneralResp:
         ec = self._request.evaluate_config
-        rev_tid = revs_parser.parse_single_arg_rev(self._request.in_dataset_ids[0], need_tid=False)
+        rev_tid = parse_single_arg_rev(self._request.in_dataset_ids[0], need_tid=False)
 
-        evaluation = det_eval_ctl_ops.det_evaluate_datasets(mir_root=self._repo_root,
-                                                            gt_rev_tid=rev_tid,
-                                                            pred_rev_tid=rev_tid,
-                                                            conf_thr=ec.conf_thr,
-                                                            iou_thrs=ec.iou_thrs_interval,
-                                                            need_pr_curve=ec.need_pr_curve)
+        evaluation = det_evaluate_datasets(mir_root=self._repo_root,
+                                           gt_rev_tid=rev_tid,
+                                           pred_rev_tid=rev_tid,
+                                           conf_thr=ec.conf_thr,
+                                           iou_thrs=ec.iou_thrs_interval,
+                                           need_pr_curve=ec.need_pr_curve)
 
         response = backend_pb2.GeneralResp()
         response.code = CTLResponseCode.CTR_OK

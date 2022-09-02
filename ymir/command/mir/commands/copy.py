@@ -76,11 +76,6 @@ class CmdCopy(base.BaseCommand):
 
         PhaseLoggerCenter.update_phase(phase='copy.read')
 
-        orig_head_task_id = mir_annotations.head_task_id
-        if not orig_head_task_id:
-            logging.error('bad annotations.mir: empty head task id')
-            return MirCode.RC_CMD_INVALID_MIR_REPO
-
         pred_annotations, unknown_types = CmdCopy._change_single_task_annotations(
             data_mir_root=data_mir_root,
             dst_mir_root=mir_root,
@@ -143,7 +138,7 @@ class CmdCopy(base.BaseCommand):
         dst_class_id_mgr = class_ids.ClassIdManager(mir_root=dst_mir_root)
         src_class_id_mgr = class_ids.ClassIdManager(mir_root=data_mir_root)
 
-        for asset_id, single_image_annotations in single_task_annotations.image_annotations.items():
+        for single_image_annotations in single_task_annotations.image_annotations.values():
             dst_keyids_set: Set[int] = set()
             dst_image_annotations: List[mirpb.Annotation] = []
             for annotation in single_image_annotations.annotations:

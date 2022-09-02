@@ -7,6 +7,7 @@ import unittest
 import yaml
 
 from mir.commands.model_importing import CmdModelImport
+from mir.protos import mir_command_pb2 as mirpb
 from mir.tools import mir_storage_ops, settings as mir_settings, utils as mir_utils
 from mir.tools.code import MirCode
 from tests import utils as test_utils
@@ -76,10 +77,10 @@ class TestCmdImportModel(unittest.TestCase):
     # protected: check result
     def _check_result(self):
         """ check destination model package file """
-        model = mir_storage_ops.MirStorageOps.load_single_model(mir_root=self._mir_root,
-                                                                mir_branch='a',
-                                                                mir_task_id='a')
-        self.assertTrue(os.path.isfile(os.path.join(self._models_location, model['model_hash'])))
+        mir_storage_data: mirpb.MirTasks = mir_storage_ops.MirStorageOps.load_single_storage(
+            mir_root=self._mir_root, mir_branch='a', ms=mirpb.MirStorage.MIR_TASKS, mir_task_id='a')
+        task = mir_storage_data.tasks[mir_storage_data.head_task_id]
+        self.assertTrue(os.path.isfile(os.path.join(self._models_location, task.model.model_hash)))
 
     # public: test cases
     def test_00(self):

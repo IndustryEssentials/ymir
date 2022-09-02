@@ -65,7 +65,7 @@ class TestInvokerCmdEvaluate(unittest.TestCase):
         return mir_cmd_pb.Evaluation()
 
     # public: test cases
-    @mock.patch("mir.tools.det_eval_ctl_ops.det_evaluate_datasets", side_effect=_mock_run_func)
+    @mock.patch("controller.invoker.invoker_cmd_evaluate.det_evaluate_datasets", side_effect=_mock_run_func)
     def test_evaluate_00(self, mock_run):
         evaluate_config = mir_cmd_pb.EvaluateConfig()
         evaluate_config.conf_thr = self._conf_thr
