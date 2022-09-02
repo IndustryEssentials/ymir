@@ -485,6 +485,7 @@ class TestToolsDetEval(unittest.TestCase):
                          set(evaluation.dataset_evaluation.iou_averaged_evaluation.ck_evaluations['color'].sub.keys()))
         self.assertEqual({'blue', 'red'},
                          set(evaluation.dataset_evaluation.iou_evaluations['0.50'].ck_evaluations['color'].sub.keys()))
+        breakpoint()
 
     # protected: test cases
     def _test_det_eval(self, det_eval_model_name: Any) -> mirpb.SingleDatasetEvaluation:

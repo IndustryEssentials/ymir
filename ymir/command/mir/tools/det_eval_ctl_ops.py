@@ -1,4 +1,4 @@
-from typing import Dict, List, Tuple
+from typing import List, Optional, Tuple
 
 from mir.tools import det_eval_ops, mir_storage_ops, revs_parser
 from mir.protos import mir_command_pb2 as mirpb
@@ -44,55 +44,35 @@ def det_evaluate_datasets(
             mir_branch=pred_rev_tid.rev,
             mir_task_id=pred_rev_tid.tid,
             ms=mirpb.MirStorage.MIR_KEYWORDS)
-        main_asset_ids, sub_ck_to_asset_ids = _asset_ids_from_main_ck(mir_keywords=mir_keywords, main_ck=main_ck)
+        ck_asset_ids = _sub_ck_and_asset_ids_from_main_ck(mir_keywords=mir_keywords, main_ck=main_ck)
 
-        # evaluate with main ck
-        main_ck_prediction = _filter_task_annotations_by_asset_ids(task_annotations=prediction,
-                                                                   asset_ids=main_asset_ids)
-        main_ck_ground_truth = _filter_task_annotations_by_asset_ids(task_annotations=ground_truth,
-                                                                     asset_ids=main_asset_ids)
-        main_ck_evaluation = det_eval_ops.det_evaluate_with_pb(
-            prediction=main_ck_prediction,
-            ground_truth=main_ck_ground_truth,
-            config=evaluate_config,
-        )
-        for iou_thr_str, main_ck_iou_evaluation in main_ck_evaluation.dataset_evaluation.iou_evaluations.items():
-            evaluation.dataset_evaluation.iou_evaluations[iou_thr_str].ck_evaluations[main_ck].total.CopyFrom(
-                main_ck_iou_evaluation.ci_averaged_evaluation)
-        evaluation.dataset_evaluation.iou_averaged_evaluation.ck_evaluations[main_ck].total.CopyFrom(
-            main_ck_evaluation.dataset_evaluation.iou_averaged_evaluation.ci_averaged_evaluation)
-
-        # evaluate with sub cks
-        for sub_ck, sub_asset_ids in sub_ck_to_asset_ids.items():
-            sub_ck_prediction = _filter_task_annotations_by_asset_ids(task_annotations=prediction,
-                                                                      asset_ids=sub_asset_ids)
-            sub_ck_ground_truth = _filter_task_annotations_by_asset_ids(task_annotations=ground_truth,
-                                                                        asset_ids=sub_asset_ids)
-            sub_ck_evaluation = det_eval_ops.det_evaluate_with_pb(
-                prediction=sub_ck_prediction,
-                ground_truth=sub_ck_ground_truth,
+        for sub_ck, asset_ids in ck_asset_ids:
+            ck_prediction = _filter_task_annotations_by_asset_ids(task_annotations=prediction, asset_ids=asset_ids)
+            ck_ground_truth = _filter_task_annotations_by_asset_ids(task_annotations=ground_truth, asset_ids=asset_ids)
+            ck_evaluation = det_eval_ops.det_evaluate_with_pb(
+                prediction=ck_prediction,
+                ground_truth=ck_ground_truth,
                 config=evaluate_config,
             )
-            for iou_thr_str, sub_ck_iou_evaluation in sub_ck_evaluation.dataset_evaluation.iou_evaluations.items():
-                evaluation.dataset_evaluation.iou_evaluations[iou_thr_str].ck_evaluations[main_ck].sub[sub_ck].CopyFrom(
-                    sub_ck_iou_evaluation.ci_averaged_evaluation)
-            evaluation.dataset_evaluation.iou_averaged_evaluation.ck_evaluations[main_ck].sub[sub_ck].CopyFrom(
-                sub_ck_evaluation.dataset_evaluation.iou_averaged_evaluation.ci_averaged_evaluation)
+            _add_ck_evaluation_result(evaluation=evaluation,
+                                      ck_evaluation=ck_evaluation,
+                                      main_ck=main_ck,
+                                      sub_ck=sub_ck)
+
     return evaluation
 
 
-def _asset_ids_from_main_ck(mir_keywords: mirpb.MirKeywords, main_ck: str) -> Tuple[List[str], Dict[str, List[str]]]:
+def _sub_ck_and_asset_ids_from_main_ck(mir_keywords: mirpb.MirKeywords, main_ck: str) -> List[Tuple[Optional[str], List[str]]]:
     if main_ck not in mir_keywords.ck_idx:
-        return ([], {})
+        return []
 
     ck_idx = mir_keywords.ck_idx[main_ck]
-    main_asset_ids = list(ck_idx.asset_annos.keys())
-    sub_asset_ids = {
-        sub_ck: list(asset_anno_ids.key_ids.keys())
-        for sub_ck, asset_anno_ids in ck_idx.sub_indexes.items()
-    }
 
-    return (main_asset_ids, sub_asset_ids)
+    main_sub_ck_asset_ids = [(sub_ck, list(asset_anno_ids.key_ids.keys()))
+                             for sub_ck, asset_anno_ids in ck_idx.sub_indexes.items()]
+    main_sub_ck_asset_ids.append((None, list(ck_idx.asset_annos.keys())))
+
+    return main_sub_ck_asset_ids
 
 
 def _filter_task_annotations_by_asset_ids(task_annotations: mirpb.SingleTaskAnnotations,
@@ -105,7 +85,19 @@ def _filter_task_annotations_by_asset_ids(task_annotations: mirpb.SingleTaskAnno
     return filtered_task_annotations
 
 
-def _evaluate_ck(evaluation: mirpb.Evaluation, main_ck: str, config: mirpb.EvaluateConfig,
-                 prediction: mirpb.SingleTaskAnnotations, ground_truth: mirpb.SingleTaskAnnotations) -> None:
-    if not main_ck:
-        return
+def _add_ck_evaluation_result(evaluation: mirpb.Evaluation,
+                              ck_evaluation: mirpb.Evaluation,
+                              main_ck: str,
+                              sub_ck: str = None) -> None:
+    if sub_ck is None:
+        for iou_thr_str, ck_iou_evaluation in ck_evaluation.dataset_evaluation.iou_evaluations.items():
+            evaluation.dataset_evaluation.iou_evaluations[iou_thr_str].ck_evaluations[main_ck].total.CopyFrom(
+                ck_iou_evaluation.ci_averaged_evaluation)
+        evaluation.dataset_evaluation.iou_averaged_evaluation.ck_evaluations[main_ck].total.CopyFrom(
+            ck_evaluation.dataset_evaluation.iou_averaged_evaluation.ci_averaged_evaluation)
+    else:
+        for iou_thr_str, ck_iou_evaluation in ck_evaluation.dataset_evaluation.iou_evaluations.items():
+            evaluation.dataset_evaluation.iou_evaluations[iou_thr_str].ck_evaluations[main_ck].sub[sub_ck].CopyFrom(
+                ck_iou_evaluation.ci_averaged_evaluation)
+        evaluation.dataset_evaluation.iou_averaged_evaluation.ck_evaluations[main_ck].sub[sub_ck].CopyFrom(
+            ck_evaluation.dataset_evaluation.iou_averaged_evaluation.ci_averaged_evaluation)
