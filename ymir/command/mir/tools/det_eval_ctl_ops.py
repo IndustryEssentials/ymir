@@ -44,9 +44,8 @@ def det_evaluate_datasets(
             mir_branch=pred_rev_tid.rev,
             mir_task_id=pred_rev_tid.tid,
             ms=mirpb.MirStorage.MIR_KEYWORDS)
-        ck_asset_ids = _sub_ck_and_asset_ids_from_main_ck(mir_keywords=mir_keywords, main_ck=main_ck)
 
-        for sub_ck, asset_ids in ck_asset_ids:
+        for sub_ck, asset_ids in _sub_ck_and_asset_ids_from_main_ck(mir_keywords=mir_keywords, main_ck=main_ck):
             ck_prediction = _filter_task_annotations_by_asset_ids(task_annotations=prediction, asset_ids=asset_ids)
             ck_ground_truth = _filter_task_annotations_by_asset_ids(task_annotations=ground_truth, asset_ids=asset_ids)
             ck_evaluation = det_eval_ops.det_evaluate_with_pb(
