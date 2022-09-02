@@ -146,8 +146,8 @@ def evaluate_datasets(
     dataset_id_mapping: Dict[str, int],
 ) -> Dict:
     if require_average_iou:
-        logger.info("override iou_threshold to 0.5 because of require_average_iou")
         iou_thrs_interval = f"{iou_threshold}:0.95:0.05"
+        logger.info("set iou_thrs_interval to %s because of require_average_iou", iou_thrs_interval)
     else:
         iou_thrs_interval = str(iou_threshold)
 
