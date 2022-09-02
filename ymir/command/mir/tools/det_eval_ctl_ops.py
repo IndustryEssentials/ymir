@@ -1,4 +1,5 @@
-from typing import Collection, Iterator, List, Optional, Tuple
+from functools import partial
+from typing import Collection, Optional
 
 from mir.tools import det_eval_ops, mir_storage_ops, revs_parser, settings as mir_settings
 from mir.protos import mir_command_pb2 as mirpb
@@ -8,27 +9,21 @@ def det_evaluate_datasets(
     mir_root: str,
     gt_rev_tid: revs_parser.TypRevTid,
     pred_rev_tid: revs_parser.TypRevTid,
-    conf_thr: float,
-    iou_thrs: str,
-    class_ids: List[int] = [],
-    need_pr_curve: bool = False,
+    evaluate_config: mirpb.EvaluateConfig,
     main_ck: str = '',
-) -> mirpb.Evaluation:
-    mir_annotations: mirpb.MirAnnotations = mir_storage_ops.MirStorageOps.load_single_storage(
+) -> Optional[mirpb.Evaluation]:
+    gt_mir_annotations: mirpb.MirAnnotations = mir_storage_ops.MirStorageOps.load_single_storage(
         mir_root=mir_root, mir_branch=gt_rev_tid.rev, mir_task_id=gt_rev_tid.tid, ms=mirpb.MirStorage.MIR_ANNOTATIONS)
-    ground_truth = mir_annotations.ground_truth
+    ground_truth = gt_mir_annotations.ground_truth
 
     if pred_rev_tid != gt_rev_tid:
-        mir_annotations = mir_storage_ops.MirStorageOps.load_single_storage(mir_root=mir_root,
-                                                                            mir_branch=pred_rev_tid.rev,
-                                                                            mir_task_id=pred_rev_tid.tid,
-                                                                            ms=mirpb.MirStorage.MIR_ANNOTATIONS)
-    prediction = mir_annotations.prediction
-
-    evaluate_config = mir_storage_ops.create_evaluate_config(conf_thr=conf_thr,
-                                                             iou_thrs=iou_thrs,
-                                                             need_pr_curve=need_pr_curve,
-                                                             class_ids=class_ids)
+        pred_mir_annotations = mir_storage_ops.MirStorageOps.load_single_storage(mir_root=mir_root,
+                                                                                 mir_branch=pred_rev_tid.rev,
+                                                                                 mir_task_id=pred_rev_tid.tid,
+                                                                                 ms=mirpb.MirStorage.MIR_ANNOTATIONS)
+    else:
+        pred_mir_annotations = gt_mir_annotations
+    prediction = pred_mir_annotations.prediction
 
     # evaluate
     evaluation = det_eval_ops.det_evaluate_with_pb(
@@ -45,34 +40,34 @@ def det_evaluate_datasets(
             mir_task_id=pred_rev_tid.tid,
             ms=mirpb.MirStorage.MIR_KEYWORDS)
 
-        for sub_ck, asset_ids in _sub_ck_and_asset_ids_from_main_ck(mir_keywords=mir_keywords, main_ck=main_ck):
-            ck_prediction = _filter_task_annotations_by_asset_ids(task_annotations=prediction, asset_ids=asset_ids)
-            ck_ground_truth = _filter_task_annotations_by_asset_ids(task_annotations=ground_truth, asset_ids=asset_ids)
-            ck_evaluation = det_eval_ops.det_evaluate_with_pb(
-                prediction=ck_prediction,
-                ground_truth=ck_ground_truth,
-                config=evaluate_config,
-            )
-            _copy_ck_evaluation_result(evaluation=evaluation,
-                                       ck_evaluation=ck_evaluation,
-                                       main_ck=main_ck,
-                                       sub_ck=sub_ck)
+        if main_ck not in mir_keywords.ck_idx:
+            return None
+
+        ck_idx = mir_keywords.ck_idx[main_ck]
+        ck_evaluate_func = partial(_evaluate_on_asset_ids, ground_truth, prediction, evaluate_config)
+
+        # fill main ck.
+        ck_evaluate_func(ck_idx.asset_annos, evaluation.main_ck)
+        # fill sub ck.
+        for idx, (sub_ck, asset_anno_ids) in enumerate(ck_idx.sub_indexes.items()):
+            if idx >= mir_settings.DEFAULT_EVALUATE_SUB_CKS:
+                return evaluation
+            ck_evaluate_func(asset_anno_ids.key_ids, evaluation.sub_cks[sub_ck])
 
     return evaluation
 
 
-def _sub_ck_and_asset_ids_from_main_ck(mir_keywords: mirpb.MirKeywords,
-                                       main_ck: str) -> Iterator[Tuple[Optional[str], Collection[str]]]:
-    if main_ck not in mir_keywords.ck_idx:
-        return
-
-    ck_idx = mir_keywords.ck_idx[main_ck]
-    yield (None, ck_idx.asset_annos)
-
-    for idx, (sub_ck, asset_anno_ids) in enumerate(ck_idx.sub_indexes.items()):
-        if idx >= mir_settings.DEFAULT_EVALUATE_SUB_CKS:
-            return
-        yield (sub_ck, asset_anno_ids.key_ids)
+def _evaluate_on_asset_ids(gt: mirpb.SingleTaskAnnotations, pred: mirpb.SingleTaskAnnotations,
+                           evaluate_config: mirpb.EvaluateConfig, asset_ids: Collection[str],
+                           target: mirpb.SingleDatasetEvaluation):
+    pred = _filter_task_annotations_by_asset_ids(task_annotations=pred, asset_ids=asset_ids)
+    gt = _filter_task_annotations_by_asset_ids(task_annotations=gt, asset_ids=asset_ids)
+    target.CopyFrom(
+        det_eval_ops.det_evaluate_with_pb(
+            prediction=pred,
+            ground_truth=gt,
+            config=evaluate_config,
+        ).dataset_evaluation)
 
 
 def _filter_task_annotations_by_asset_ids(task_annotations: mirpb.SingleTaskAnnotations,
@@ -83,21 +78,3 @@ def _filter_task_annotations_by_asset_ids(task_annotations: mirpb.SingleTaskAnno
             continue
         filtered_task_annotations.image_annotations[asset_id].CopyFrom(task_annotations.image_annotations[asset_id])
     return filtered_task_annotations
-
-
-def _copy_ck_evaluation_result(evaluation: mirpb.Evaluation,
-                               ck_evaluation: mirpb.Evaluation,
-                               main_ck: str,
-                               sub_ck: Optional[str] = None) -> None:
-    if sub_ck is None:
-        for iou_thr_str, ck_iou_evaluation in ck_evaluation.dataset_evaluation.iou_evaluations.items():
-            evaluation.dataset_evaluation.iou_evaluations[iou_thr_str].ck_evaluations[main_ck].total.CopyFrom(
-                ck_iou_evaluation.ci_averaged_evaluation)
-        evaluation.dataset_evaluation.iou_averaged_evaluation.ck_evaluations[main_ck].total.CopyFrom(
-            ck_evaluation.dataset_evaluation.iou_averaged_evaluation.ci_averaged_evaluation)
-    else:
-        for iou_thr_str, ck_iou_evaluation in ck_evaluation.dataset_evaluation.iou_evaluations.items():
-            evaluation.dataset_evaluation.iou_evaluations[iou_thr_str].ck_evaluations[main_ck].sub[sub_ck].CopyFrom(
-                ck_iou_evaluation.ci_averaged_evaluation)
-        evaluation.dataset_evaluation.iou_averaged_evaluation.ck_evaluations[main_ck].sub[sub_ck].CopyFrom(
-            ck_evaluation.dataset_evaluation.iou_averaged_evaluation.ci_averaged_evaluation)
