@@ -12,7 +12,7 @@ def det_evaluate_datasets(
     iou_thrs: str,
     class_ids: List[int] = [],
     need_pr_curve: bool = False,
-    main_ck: bool = '',
+    main_ck: str = '',
 ) -> mirpb.Evaluation:
     mir_annotations: mirpb.MirAnnotations = mir_storage_ops.MirStorageOps.load_single_storage(
         mir_root=mir_root, mir_branch=gt_rev_tid.rev, mir_task_id=gt_rev_tid.tid, ms=mirpb.MirStorage.MIR_ANNOTATIONS)
@@ -56,6 +56,11 @@ def det_evaluate_datasets(
             ground_truth=main_ck_ground_truth,
             config=evaluate_config,
         )
+        for iou_thr_str, main_ck_iou_evaluation in main_ck_evaluation.dataset_evaluation.iou_evaluations.items():
+            evaluation.dataset_evaluation.iou_evaluations[iou_thr_str].ck_evaluations[main_ck].total.CopyFrom(
+                main_ck_iou_evaluation.ci_averaged_evaluation)
+        evaluation.dataset_evaluation.iou_averaged_evaluation.ck_evaluations[main_ck].total.CopyFrom(
+            main_ck_evaluation.dataset_evaluation.iou_averaged_evaluation.ci_averaged_evaluation)
 
         # evaluate with sub cks
         for sub_ck, sub_asset_ids in sub_ck_to_asset_ids.items():
@@ -68,6 +73,11 @@ def det_evaluate_datasets(
                 ground_truth=sub_ck_ground_truth,
                 config=evaluate_config,
             )
+            for iou_thr_str, sub_ck_iou_evaluation in sub_ck_evaluation.dataset_evaluation.iou_evaluations.items():
+                evaluation.dataset_evaluation.iou_evaluations[iou_thr_str].ck_evaluations[main_ck].sub[sub_ck].CopyFrom(
+                    sub_ck_iou_evaluation.ci_averaged_evaluation)
+            evaluation.dataset_evaluation.iou_averaged_evaluation.ck_evaluations[main_ck].sub[sub_ck].CopyFrom(
+                sub_ck_evaluation.dataset_evaluation.iou_averaged_evaluation.ci_averaged_evaluation)
     return evaluation
 
 
@@ -93,3 +103,9 @@ def _filter_task_annotations_by_asset_ids(task_annotations: mirpb.SingleTaskAnno
             continue
         filtered_task_annotations.image_annotations[asset_id].CopyFrom(task_annotations.image_annotations[asset_id])
     return filtered_task_annotations
+
+
+def _evaluate_ck(evaluation: mirpb.Evaluation, main_ck: str, config: mirpb.EvaluateConfig,
+                 prediction: mirpb.SingleTaskAnnotations, ground_truth: mirpb.SingleTaskAnnotations) -> None:
+    if not main_ck:
+        return

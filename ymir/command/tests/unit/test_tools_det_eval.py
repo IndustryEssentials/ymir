@@ -7,7 +7,7 @@ from google.protobuf import json_format
 import numpy as np
 
 from mir.protos import mir_command_pb2 as mirpb
-from mir.tools import det_eval_coco, det_eval_voc, mir_storage_ops
+from mir.tools import det_eval_ctl_ops, det_eval_coco, det_eval_voc, mir_storage_ops, revs_parser
 from tests import utils as test_utils
 
 
@@ -40,7 +40,6 @@ class TestToolsDetEval(unittest.TestCase):
         self._prepare_mir_repo_branch_a()
 
     def _prepare_mir_repo_branch_a(self) -> None:
-        """ branch a: a ground truth branch """
         metadatas_dict = {
             'attributes': {
                 'a0': {
@@ -472,6 +471,22 @@ class TestToolsDetEval(unittest.TestCase):
         see = sde.iou_averaged_evaluation.ci_averaged_evaluation
         self.assertTrue(np.isclose(0.833333, see.ap))
 
+    def test_det_eval_ctl_ops(self) -> None:
+        gt_pred_rev_tid = revs_parser.parse_single_arg_rev('a@a', need_tid=False)
+        evaluation = det_eval_ctl_ops.det_evaluate_datasets(mir_root=self._mir_root,
+                                                            gt_rev_tid=gt_pred_rev_tid,
+                                                            pred_rev_tid=gt_pred_rev_tid,
+                                                            conf_thr=0.005,
+                                                            iou_thrs='0.5',
+                                                            main_ck='color')
+        self.assertEqual({'color'}, set(evaluation.dataset_evaluation.iou_averaged_evaluation.ck_evaluations.keys()))
+        self.assertEqual({'color'}, set(evaluation.dataset_evaluation.iou_evaluations['0.50'].ck_evaluations.keys()))
+        self.assertEqual({'blue', 'red'},
+                         set(evaluation.dataset_evaluation.iou_averaged_evaluation.ck_evaluations['color'].sub.keys()))
+        self.assertEqual({'blue', 'red'},
+                         set(evaluation.dataset_evaluation.iou_evaluations['0.50'].ck_evaluations['color'].sub.keys()))
+
+    # protected: test cases
     def _test_det_eval(self, det_eval_model_name: Any) -> mirpb.SingleDatasetEvaluation:
         mir_annotations: mirpb.MirAnnotations = mir_storage_ops.MirStorageOps.load_single_storage(
             mir_root=self._mir_root, mir_branch='a', mir_task_id='a', ms=mirpb.MirStorage.MIR_ANNOTATIONS)
