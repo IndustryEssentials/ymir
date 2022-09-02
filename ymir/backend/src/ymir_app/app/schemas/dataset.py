@@ -221,6 +221,7 @@ class DatasetEvaluationCreate(BaseModel):
     iou_threshold: float
     require_average_iou: bool = False
     need_pr_curve: bool = True
+    ck: Optional[str] = None
 
 
 class DatasetEvaluationOut(Common):

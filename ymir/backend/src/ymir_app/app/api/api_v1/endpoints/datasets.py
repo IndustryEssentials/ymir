@@ -530,29 +530,27 @@ def create_dataset_fusion(
 def batch_evaluate_datasets(
     *,
     db: Session = Depends(deps.get_db),
-    evaluation_in: schemas.dataset.DatasetEvaluationCreate,
+    in_evaluation: schemas.dataset.DatasetEvaluationCreate,
     current_user: models.User = Depends(deps.get_current_active_user),
-    viz_client: VizClient = Depends(deps.get_viz_client),
+    controller_client: ControllerClient = Depends(deps.get_controller_client),
     user_labels: UserLabels = Depends(deps.get_user_labels),
 ) -> Any:
     """
     evaluate datasets by themselves
     """
-    logger.info("[evaluate] evaluate dataset with payload: %s", evaluation_in.json())
-    datasets = crud.dataset.get_multi_by_ids(db, ids=evaluation_in.dataset_ids)
-    if len(evaluation_in.dataset_ids) != len(datasets):
-        raise DatasetNotFound()
+    logger.info("[evaluate] evaluate datasets with payload: %s", in_evaluation.json())
+    datasets = ensure_datasets_are_ready(db, dataset_ids=in_evaluation.dataset_ids)
+    dataset_id_mapping = {dataset.hash: dataset.id for dataset in datasets}
 
     evaluations = evaluate_datasets(
-        viz_client,
+        controller_client,
         current_user.id,
-        evaluation_in.project_id,
-        user_labels,
-        evaluation_in.confidence_threshold,
-        evaluation_in.iou_threshold,
-        evaluation_in.require_average_iou,
-        evaluation_in.need_pr_curve,
-        datasets,
+        in_evaluation.project_id,
+        in_evaluation.confidence_threshold,
+        in_evaluation.iou_threshold,
+        in_evaluation.require_average_iou,
+        in_evaluation.need_pr_curve,
+        dataset_id_mapping,
     )
     return {"result": evaluations}
 
