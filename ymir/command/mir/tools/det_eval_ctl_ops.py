@@ -72,7 +72,7 @@ def _sub_ck_and_asset_ids_from_main_ck(mir_keywords: mirpb.MirKeywords,
     main_sub_ck_asset_ids: List[Tuple[Optional[str], List[str]]]
     main_sub_ck_asset_ids = [(sub_ck, list(asset_anno_ids.key_ids.keys()))
                              for sub_ck, asset_anno_ids in ck_idx.sub_indexes.items()]
-    main_sub_ck_asset_ids.append((None, list(ck_idx.asset_annos.keys())))
+    main_sub_ck_asset_ids.append((None, list(ck_idx.asset_annos.keys())))  # main ck asset ids
 
     return main_sub_ck_asset_ids
 
