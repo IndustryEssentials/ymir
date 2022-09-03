@@ -471,26 +471,24 @@ class TestToolsDetEval(unittest.TestCase):
 
     def test_det_eval_ctl_ops(self) -> None:
         gt_pred_rev_tid = revs_parser.parse_single_arg_rev('a@a', need_tid=False)
+        evaluate_config = mirpb.EvaluateConfig()
+        evaluate_config.conf_thr = 0.0005
+        evaluate_config.iou_thrs_interval = '0.5'
+        evaluate_config.need_pr_curve = False
         evaluation = det_eval_ctl_ops.det_evaluate_datasets(mir_root=self._mir_root,
                                                             gt_rev_tid=gt_pred_rev_tid,
                                                             pred_rev_tid=gt_pred_rev_tid,
-                                                            conf_thr=0.005,
-                                                            iou_thrs='0.5',
+                                                            evaluate_config=evaluate_config,
                                                             main_ck='color')
-        self.assertEqual({'color'}, set(evaluation.dataset_evaluation.iou_averaged_evaluation.ck_evaluations.keys()))
-        self.assertEqual({'color'}, set(evaluation.dataset_evaluation.iou_evaluations['0.50'].ck_evaluations.keys()))
-        self.assertEqual({'blue', 'red'},
-                         set(evaluation.dataset_evaluation.iou_averaged_evaluation.ck_evaluations['color'].sub.keys()))
-        self.assertEqual({'blue', 'red'},
-                         set(evaluation.dataset_evaluation.iou_evaluations['0.50'].ck_evaluations['color'].sub.keys()))
+        self.assertIsNotNone(evaluation)
+        self.assertEqual({'blue', 'red'}, set(evaluation.sub_cks.keys()))
 
         evaluation = det_eval_ctl_ops.det_evaluate_datasets(mir_root=self._mir_root,
                                                             gt_rev_tid=gt_pred_rev_tid,
                                                             pred_rev_tid=gt_pred_rev_tid,
-                                                            conf_thr=0.005,
-                                                            iou_thrs='0.5',
+                                                            evaluate_config=evaluate_config,
                                                             main_ck='FakeMainCk')
-        self.assertEqual(0, len(evaluation.dataset_evaluation.iou_averaged_evaluation.ck_evaluations))
+        self.assertIsNone(evaluation)
 
     # protected: test cases
     def _test_det_eval(self, det_eval_model_name: Any) -> mirpb.SingleDatasetEvaluation:
