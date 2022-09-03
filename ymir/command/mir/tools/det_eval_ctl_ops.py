@@ -59,7 +59,7 @@ def det_evaluate_datasets(
 
 def _evaluate_on_asset_ids(gt: mirpb.SingleTaskAnnotations, pred: mirpb.SingleTaskAnnotations,
                            evaluate_config: mirpb.EvaluateConfig, asset_ids: Collection[str],
-                           target: mirpb.SingleDatasetEvaluation):
+                           target: mirpb.SingleDatasetEvaluation) -> None:
     pred = _filter_task_annotations_by_asset_ids(task_annotations=pred, asset_ids=asset_ids)
     gt = _filter_task_annotations_by_asset_ids(task_annotations=gt, asset_ids=asset_ids)
     target.CopyFrom(
