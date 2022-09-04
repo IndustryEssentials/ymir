@@ -293,7 +293,8 @@ class TestMergeCmd(unittest.TestCase):
                 "b0": TestMergeCmd._generate_annotations_for_asset([2], 100, 100, cm=mirpb.ConfusionMatrixType.FP),
                 "b1": TestMergeCmd._generate_annotations_for_asset([2], 100, 200, cm=mirpb.ConfusionMatrixType.FP),
                 "b2": TestMergeCmd._generate_annotations_for_asset([2], 100, 300, cm=mirpb.ConfusionMatrixType.FP),
-            }
+            },
+            'model': {},
         }
         expected_gt = {
             'task_id': 'merge-task-id-s0',
@@ -402,7 +403,8 @@ class TestMergeCmd(unittest.TestCase):
                 "a3": TestMergeCmd._generate_annotations_for_asset([1], 100, 400, cm=mirpb.ConfusionMatrixType.FP),
                 "d0": TestMergeCmd._generate_annotations_for_asset([1, 4], 100, 200, cm=mirpb.ConfusionMatrixType.FP),
                 "d1": TestMergeCmd._generate_annotations_for_asset([1, 4], 100, 300, cm=mirpb.ConfusionMatrixType.FP),
-            }
+            },
+            'model': {},
         }
         expected_gt = {
             'task_id': 'merge-task-id-h0',
@@ -490,7 +492,8 @@ class TestMergeCmd(unittest.TestCase):
                 "a0": TestMergeCmd._generate_annotations_for_asset([1, 2], 100, 100, cm=mirpb.ConfusionMatrixType.FP),
                 "d0": TestMergeCmd._generate_annotations_for_asset([1, 4], 100, 200, cm=mirpb.ConfusionMatrixType.FP),
                 "d1": TestMergeCmd._generate_annotations_for_asset([1, 4], 100, 300, cm=mirpb.ConfusionMatrixType.FP),
-            }
+            },
+            'model': {},
         }
         expected_gt = {
             'task_id': 'merge-task-id-g0',
@@ -572,7 +575,8 @@ class TestMergeCmd(unittest.TestCase):
                 "a1": TestMergeCmd._generate_annotations_for_asset([1], 100, 200, cm=mirpb.ConfusionMatrixType.FP),
                 "a2": TestMergeCmd._generate_annotations_for_asset([1], 100, 300, cm=mirpb.ConfusionMatrixType.FP),
                 "a3": TestMergeCmd._generate_annotations_for_asset([1], 100, 400, cm=mirpb.ConfusionMatrixType.FP),
-            }
+            },
+            'model': {},
         }
         expected_gt = {
             'task_id': 'merge-task-id-nth0',
