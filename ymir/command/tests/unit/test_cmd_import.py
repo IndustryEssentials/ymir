@@ -142,7 +142,7 @@ class TestCmdImport(unittest.TestCase):
         ret = importing_instance.run()
         self.assertEqual(ret, MirCode.RC_OK)
         self._check_repo(self._mir_repo_root, with_person_ignored=False, with_annotations=True,
-                         eval_class_ids_set={0, 2})
+                         eval_class_ids_set={0, 1, 2})
         shutil.move(os.path.join(self._data_xml_path, 'meta.yaml'),
                     os.path.join(self._data_xml_path, 'pred_meta.yaml'))
 
@@ -343,7 +343,10 @@ class TestCmdImport(unittest.TestCase):
             }
         if not with_annotations:
             dict_image_annotations_expect = {}
-        self.assertDictEqual(dict_image_annotations_expect, dict_image_annotations)
+        try:
+            self.assertDictEqual(dict_image_annotations_expect, dict_image_annotations)
+        except AssertionError:
+            breakpoint()
         self.assertDictEqual(dict_asset_cks_expected, dict_asset_cks)
         self.assertEqual(eval_class_ids_set, set(mir_annotations.prediction.eval_class_ids))
 
