@@ -1,6 +1,7 @@
 import logging
 import os
 import shutil
+from typing import Set
 import unittest
 
 from google.protobuf.json_format import MessageToDict
@@ -118,12 +119,40 @@ class TestCmdImport(unittest.TestCase):
         self.assertNotEqual(CmdImport(args).run(), MirCode.RC_OK)
         args.pred_dir = self._data_xml_path
 
+    def test_import_cmd_01(self):
+        shutil.move(os.path.join(self._data_xml_path, 'pred_meta.yaml'),
+                    os.path.join(self._data_xml_path, 'meta.yaml'))
+        # test cases for import prediction meta
+        mir_root = self._mir_repo_root
+        gen_folder = os.path.join(self._storage_root, 'gen')
+        args = type('', (), {})()
+        args.mir_root = mir_root
+        args.src_revs = ''
+        args.dst_rev = 'a@import-task-0'
+        args.index_file = self._idx_file
+        args.gt_index_file = self._gt_idx_file
+        args.ck_file = self._ck_file
+        args.pred_dir = self._data_xml_path
+        args.gt_dir = self._data_xml_path
+        args.gen = gen_folder
+        args.dataset_name = ''
+        args.work_dir = self._work_dir
+        args.unknown_types_strategy = 'stop'
+        importing_instance = CmdImport(args)
+        ret = importing_instance.run()
+        self.assertEqual(ret, MirCode.RC_OK)
+        self._check_repo(self._mir_repo_root, with_person_ignored=False, with_annotations=True,
+                         eval_class_ids_set={0, 2})
+        shutil.move(os.path.join(self._data_xml_path, 'meta.yaml'),
+                    os.path.join(self._data_xml_path, 'pred_meta.yaml'))
+
     def _check_repo(self,
                     repo_root: str,
                     with_person_ignored: bool,
                     with_annotations: bool,
                     task_new_types: dict = {},
-                    task_new_types_added: bool = False):
+                    task_new_types_added: bool = False,
+                    eval_class_ids_set: Set[int] = set()):
         # check annotations.mir
         mir_annotations = mirpb.MirAnnotations()
         with open(os.path.join(repo_root, 'annotations.mir'), 'rb') as f:
@@ -316,6 +345,7 @@ class TestCmdImport(unittest.TestCase):
             dict_image_annotations_expect = {}
         self.assertDictEqual(dict_image_annotations_expect, dict_image_annotations)
         self.assertDictEqual(dict_asset_cks_expected, dict_asset_cks)
+        self.assertEqual(eval_class_ids_set, set(mir_annotations.prediction.eval_class_ids))
 
         # check keywords.mir and contexts.mir
         mir_keywords = mirpb.MirKeywords()
@@ -907,12 +937,12 @@ class TestCmdImport(unittest.TestCase):
             dst = os.path.join(data_xml_path, file)
             shutil.copyfile(src, dst)
 
+        # Copy meta file
+        shutil.copyfile(os.path.join(local_data_root, 'pred_meta.yaml'),
+                        os.path.join(data_xml_path, 'pred_meta.yaml'))
+
     def _prepare_mir_repo(self):
         # init repo
         test_utils.mir_repo_init(self._mir_repo_root)
         # prepare branch a
         test_utils.mir_repo_create_branch(self._mir_repo_root, 'a')
-
-
-if __name__ == '__main__':
-    unittest.main()
