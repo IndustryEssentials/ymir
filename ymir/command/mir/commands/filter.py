@@ -4,7 +4,7 @@ from typing import Optional, Set
 
 from mir.commands import base
 from mir.protos import mir_command_pb2 as mirpb
-from mir.tools import checker, class_ids, mir_repo_utils, mir_storage, mir_storage_ops, revs_parser
+from mir.tools import checker, class_ids, mir_repo_utils, mir_storage, mir_storage_ops, revs_parser, utils as mir_utils
 from mir.tools.code import MirCode
 from mir.tools.command_run_in_out import command_run_in_out
 from mir.tools.errors import MirRuntimeError
@@ -128,6 +128,9 @@ class CmdFilter(base.BaseCommand):
         image_ck_asset_ids = asset_ids_set & set(mir_annotations.image_cks.keys())
         for asset_id in image_ck_asset_ids:
             matched_mir_annotations.image_cks[asset_id].CopyFrom(mir_annotations.image_cks[asset_id])
+
+        mir_utils.copy_annotations_pred_meta(src_task_annotations=mir_annotations.prediction,
+                                             dst_task_annotations=matched_mir_annotations.prediction)
 
         logging.info("matched: %d, overriding current mir repo", len(matched_mir_metadatas.attributes))
 
