@@ -80,14 +80,16 @@ class TestMiningCmd(unittest.TestCase):
         infer_output_file = os.path.join(kwargs['work_dir'], 'out', 'infer-result.json')
         with open(infer_output_file, 'w') as f:
             f.write(json.dumps(fake_infer_output_dict))
-        return 0
+        return (0, TestMiningCmd._mock_prepare_model())
 
     def _mock_prepare_model(*args, **kwargs):
         mss = mir_utils.ModelStageStorage(stage_name='default', files=['0.params'], mAP=0.5, timestamp=int(time.time()))
         ms = mir_utils.ModelStorage(executor_config={'class_names': ['person', 'cat', 'unknown-car']},
                                     task_context={'task_id': '0'},
                                     stages={mss.stage_name: mss},
-                                    best_stage_name=mss.stage_name)
+                                    best_stage_name=mss.stage_name,
+                                    model_hash='xyz',
+                                    stage_name=mss.stage_name)
         return ms
 
     # protected: custom: env prepare
@@ -216,6 +218,17 @@ class TestMiningCmd(unittest.TestCase):
                                          run_as_root=args.run_as_root,
                                          run_infer=args.add_prediction,
                                          run_mining=True)
+
+        mir_annotations: mirpb.MirAnnotations = mir_storage_ops.MirStorageOps.load_single_storage(
+            mir_root=self._mir_repo_root,
+            mir_branch='a',
+            mir_task_id='mining-task-id',
+            ms=mirpb.MirStorage.MIR_ANNOTATIONS,
+            as_dict=False
+        )
+        self.assertEqual({0, 1}, set(mir_annotations.prediction.eval_class_ids))
+        expected_model_meta = TestMiningCmd._mock_prepare_model().get_model_meta()
+        self.assertEqual(expected_model_meta, mir_annotations.prediction.model)
 
         if os.path.isdir(self._sandbox_root):
             shutil.rmtree(self._sandbox_root)

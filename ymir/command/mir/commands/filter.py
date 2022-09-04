@@ -129,8 +129,8 @@ class CmdFilter(base.BaseCommand):
         for asset_id in image_ck_asset_ids:
             matched_mir_annotations.image_cks[asset_id].CopyFrom(mir_annotations.image_cks[asset_id])
 
-        mir_utils.copy_annotations_pred_meta(src_task_annotations=mir_annotations.prediction,
-                                             dst_task_annotations=matched_mir_annotations.prediction)
+        mir_utils.reset_annotations_pred_meta(src_task_annotations=mir_annotations.prediction,
+                                              dst_task_annotations=matched_mir_annotations.prediction)
 
         logging.info("matched: %d, overriding current mir repo", len(matched_mir_metadatas.attributes))
 

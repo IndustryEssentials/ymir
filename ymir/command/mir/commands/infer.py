@@ -3,7 +3,7 @@ import json
 import logging
 import os
 import time
-from typing import Any, List
+from typing import Any, List, Tuple
 
 import yaml
 
@@ -48,7 +48,7 @@ class CmdInfer(base.BaseCommand):
                                       executant_name=self.args.executant_name,
                                       run_as_root=self.args.run_as_root,
                                       run_infer=True,
-                                      run_mining=False)
+                                      run_mining=False)[0]
 
     @staticmethod
     def run_with_args(work_dir: str,
@@ -63,7 +63,7 @@ class CmdInfer(base.BaseCommand):
                       run_as_root: bool,
                       task_id: str = f"default-infer-{time.time()}",
                       run_infer: bool = False,
-                      run_mining: bool = False) -> int:
+                      run_mining: bool = False) -> Tuple[int, mir_utils.ModelStorage]:
         """run infer command
 
         This function can be called from cmd infer, or as part of minig cmd
@@ -90,36 +90,31 @@ class CmdInfer(base.BaseCommand):
         if not mir_root:
             mir_root = '.'
         if not work_dir:
-            logging.error('empty --work-dir, abort')
-            return MirCode.RC_CMD_INVALID_ARGS
+            raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
+                                  error_message='empty --work-dir')
         if not model_location:
-            logging.error('empty --model-location, abort')
-            return MirCode.RC_CMD_INVALID_ARGS
+            raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
+                                  error_message='empty --model-location')
         if not model_hash_stage:
-            logging.error('empty --model-hash, abort')
-            return MirCode.RC_CMD_INVALID_ARGS
+            raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
+                                  error_message='empty --model-hash')
         if not index_file or not os.path.isfile(index_file):
-            logging.error(f"invalid --index-file: {index_file}, abort")
-            return MirCode.RC_CMD_INVALID_ARGS
-
-        if not config_file:
-            logging.error("empty --task-config-file")
-            return MirCode.RC_CMD_INVALID_ARGS
-        if not os.path.isfile(config_file):
-            logging.error(f"invalid --task-config-file {config_file}, not a file, abort")
-            return MirCode.RC_CMD_INVALID_ARGS
-
+            raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
+                                  error_message=f"invalid --index-file: {index_file}")
+        if not config_file or not os.path.isfile(config_file):
+            raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
+                                  error_message=f"invalid --task-config-file: {config_file}")
         if not run_infer and not run_mining:
-            logging.warning('invalid run_infer and run_mining: both false')
-            return MirCode.RC_OK
-
+            raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
+                                  error_message='invalid run_infer and run_mining: both false')
         if not executor:
-            logging.error('empty --executor, abort')
-            return MirCode.RC_CMD_INVALID_ARGS
+            raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
+                                  error_message='empty --executor')
 
         return_code = checker.check(mir_root, [checker.Prerequisites.IS_INSIDE_MIR_REPO])
         if return_code != MirCode.RC_OK:
-            return return_code
+            raise MirRuntimeError(error_code=return_code,
+                                  error_message=f"check failed: {return_code}")
 
         if not executant_name:
             executant_name = task_id
@@ -181,7 +176,7 @@ class CmdInfer(base.BaseCommand):
                                    max_boxes=_get_max_boxes(config_file),
                                    mir_root=mir_root)
 
-        return MirCode.RC_OK
+        return MirCode.RC_OK, model_storage
 
 
 def _prepare_assets(index_file: str, work_index_file: str, media_path: str) -> None:

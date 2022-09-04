@@ -1,4 +1,5 @@
 from functools import wraps
+from io import StringIO
 import linecache
 import logging
 import os
@@ -103,6 +104,8 @@ class ModelStorage(BaseModel):
     task_context: Dict[str, Any]
     stages: Dict[str, ModelStageStorage]
     best_stage_name: str
+    model_hash: str = ''
+    stage_name: str = ''
 
     @root_validator(pre=True)
     def check_values(cls, values: dict) -> dict:
@@ -116,12 +119,18 @@ class ModelStorage(BaseModel):
     def class_names(self) -> List[str]:
         return self.executor_config['class_names']
 
-    def get_model_meta(self, model_hash: str) -> mirpb.ModelMeta:
+    @property
+    def executor_config_yaml(self) -> str:
+        string_io = StringIO()
+        yaml.safe_dump(self.executor_config, string_io)
+        return string_io.getvalue()
+
+    def get_model_meta(self) -> mirpb.ModelMeta:
         model_meta = mirpb.ModelMeta()
         json_format.ParseDict(
             {
                 'mean_average_precision': self.stages[self.best_stage_name].mAP,
-                'model_hash': model_hash,
+                'model_hash': self.model_hash,
                 'stages': {k: v.dict()
                            for k, v in self.stages.items()},
                 'best_stage_name': self.best_stage_name,
@@ -168,9 +177,11 @@ def prepare_model(model_location: str, model_hash: str, stage_name: str, dst_mod
         tar_file.extract('ymir-info.yaml', dst_model_path)
         with open(os.path.join(dst_model_path, 'ymir-info.yaml'), 'r') as f:
             ymir_info_dict = yaml.safe_load(f.read())
-        # TODO: HANDLE OLD MODEL FORMAT
         model_storage = ModelStorage.parse_obj(ymir_info_dict)
+        model_storage.model_hash = model_hash
+        model_storage.stage_name = stage_name
 
+        # extract files
         files: List[str]
         if stage_name:
             files = model_storage.stages[stage_name].files
@@ -186,6 +197,11 @@ def prepare_model(model_location: str, model_hash: str, stage_name: str, dst_mod
 def pack_and_copy_models(model_storage: ModelStorage, model_dir_path: str, model_location: str) -> str:
     """
     pack model, returns model hash of the new model package
+    
+    Args:
+        model_storage (ModelStorage): model storage object, note that model_hash will change after this func
+        model_dir_path (str): directory of original model files
+        model_location (str): ymir models storage directory
     """
     logging.info(f"packing models: {model_dir_path} -> {model_location}")
 
@@ -215,6 +231,8 @@ def pack_and_copy_models(model_storage: ModelStorage, model_dir_path: str, model
 
     logging.info(f"pack success, model hash: {model_hash}, best_stage_name: {model_storage.best_stage_name}, "
                  f"mAP: {model_storage.stages[model_storage.best_stage_name].mAP}")
+
+    model_storage.model_hash = model_hash
 
     return model_hash
 
@@ -300,8 +318,8 @@ def get_docker_executable(runtime: str) -> str:
     return 'docker'
 
 
-def copy_annotations_pred_meta(src_task_annotations: mirpb.SingleTaskAnnotations,
-                               dst_task_annotations: mirpb.SingleTaskAnnotations) -> None:
+def reset_annotations_pred_meta(src_task_annotations: mirpb.SingleTaskAnnotations,
+                                dst_task_annotations: mirpb.SingleTaskAnnotations) -> None:
     dst_task_annotations.eval_class_ids[:] = src_task_annotations.eval_class_ids
     dst_task_annotations.executor_config = src_task_annotations.executor_config
     dst_task_annotations.model.CopyFrom(src_task_annotations.model)
