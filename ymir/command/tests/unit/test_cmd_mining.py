@@ -228,6 +228,8 @@ class TestMiningCmd(unittest.TestCase):
         )
         self.assertEqual({0, 1}, set(mir_annotations.prediction.eval_class_ids))
         expected_model_meta = TestMiningCmd._mock_prepare_model().get_model_meta()
+        # we dont care about timestamp here
+        expected_model_meta.stages['default'].timestamp = mir_annotations.prediction.model.stages['default'].timestamp
         self.assertEqual(expected_model_meta, mir_annotations.prediction.model)
 
         if os.path.isdir(self._sandbox_root):

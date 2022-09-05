@@ -1,6 +1,6 @@
 from collections import defaultdict
 import enum
-from io import StringIO
+import json
 import logging
 import os
 from typing import Dict, List, Tuple, Union
@@ -238,9 +238,7 @@ def _import_annotation_meta(mir_root: str, annotations_dir_path: str,
 
     # executor_config
     if 'executor_config' in annotation_meta_dict:
-        executor_config_str_io = StringIO()
-        yaml.safe_dump(annotation_meta_dict['executor_config'], executor_config_str_io)
-        task_annotations.executor_config = executor_config_str_io.getvalue()
+        task_annotations.executor_config = json.dumps(annotation_meta_dict['executor_config'])
 
 
 def reset_annotations_pred_meta(src_task_annotations: mirpb.SingleTaskAnnotations,
