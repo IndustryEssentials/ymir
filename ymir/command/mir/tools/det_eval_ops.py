@@ -1,4 +1,5 @@
 import logging
+from typing import Optional
 
 from mir.tools import det_eval_coco, det_eval_voc, det_eval_utils
 from mir.protos import mir_command_pb2 as mirpb
@@ -9,11 +10,11 @@ def det_evaluate_with_pb(
         ground_truth: mirpb.SingleTaskAnnotations,
         config: mirpb.EvaluateConfig,
         mode: str = 'voc',  # voc or coco
-) -> mirpb.Evaluation:
+) -> Optional[mirpb.Evaluation]:
     if not config.class_ids:
         config.class_ids.extend(prediction.eval_class_ids)
     if not config.class_ids:
-        return mirpb.Evaluation(config=config)
+        return None
 
     det_eval_utils.reset_default_confusion_matrix(task_annotations=prediction,
                                                   cm=mirpb.ConfusionMatrixType.NotSet)
