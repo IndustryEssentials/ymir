@@ -41,9 +41,6 @@ const ListHOC = (Module) => {
     return (
       <div className={s.projectDetail}>
         <Breadcrumbs />
-        <div className={s.header}>
-          {project.enableIteration ? <Detail project={project} iterations={iterations} fresh={fresh} /> : <NoIterationDetail project={project} />}
-        </div>
         <Card className='noShadow'
           style={{ margin: '10px -20px 0', background: 'transparent' }}
           bodyStyle={{ padding: '0 20px' }}
