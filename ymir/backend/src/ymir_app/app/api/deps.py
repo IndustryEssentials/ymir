@@ -22,7 +22,7 @@ from app.utils import cache as ymir_cache
 from app.utils import graph, security, ymir_controller, ymir_viz
 from app.utils.security import verify_api_key
 from app.utils.ymir_controller import ControllerClient
-from common_utils.labels import UserLabels
+from common_utils.labels import UserLabels, YMIR_VERSION
 
 reusable_oauth2 = OAuth2PasswordBearer(
     tokenUrl=f"{settings.API_V1_STR}/auth/token",
@@ -64,7 +64,7 @@ def get_current_user(
         logger.exception("Invalid JWT token")
         raise InvalidToken()
 
-    if token_data.version != settings.YMIR_VERSION:
+    if token_data.version != YMIR_VERSION:
         raise SystemVersionConflict()
 
     user = crud.user.get(db, id=token_data.id)

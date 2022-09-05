@@ -10,6 +10,7 @@ import yaml
 
 from proto import backend_pb2
 
+YMIR_VERSION = "1.3.0"
 EXPECTED_FILE_VERSION = 1
 
 
