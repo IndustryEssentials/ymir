@@ -31,7 +31,7 @@ class EvaluateInvoker(BaseMirControllerInvoker):
             return utils.make_general_response(CTLResponseCode.ARG_VALIDATION_FAILED,
                                                "invalid evaluate iou thrs interval: {}".format(ec.iou_thrs_interval))
 
-        if self._request.singleton_op and ec.need_pr_curve:
+        if ec.main_ck and ec.need_pr_curve:
             return utils.make_general_response(CTLResponseCode.ARG_VALIDATION_FAILED,
                                                "cannot set need_pr_cuve and cks together.")
 
@@ -43,8 +43,7 @@ class EvaluateInvoker(BaseMirControllerInvoker):
         evaluation = det_evaluate_datasets(mir_root=self._repo_root,
                                            gt_rev_tid=rev_tid,
                                            pred_rev_tid=rev_tid,
-                                           evaluate_config=self._request.evaluate_config,
-                                           main_ck=self._request.singleton_op)
+                                           evaluate_config=self._request.evaluate_config)
         if not evaluation:
             return utils.make_general_response(CTLResponseCode.ARG_VALIDATION_FAILED, "no result generated.")
         response = backend_pb2.GeneralResp()

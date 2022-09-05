@@ -10,7 +10,6 @@ def det_evaluate_datasets(
     gt_rev_tid: revs_parser.TypRevTid,
     pred_rev_tid: revs_parser.TypRevTid,
     evaluate_config: mirpb.EvaluateConfig,
-    main_ck: str = '',
 ) -> Optional[mirpb.Evaluation]:
     gt_mir_annotations: mirpb.MirAnnotations = mir_storage_ops.MirStorageOps.load_single_storage(
         mir_root=mir_root, mir_branch=gt_rev_tid.rev, mir_task_id=gt_rev_tid.tid, ms=mirpb.MirStorage.MIR_ANNOTATIONS)
@@ -33,17 +32,17 @@ def det_evaluate_datasets(
     )
 
     # evaluate with ck
-    if main_ck:
+    if evaluate_config.main_ck:
         mir_keywords: mirpb.MirKeywords = mir_storage_ops.MirStorageOps.load_single_storage(
             mir_root=mir_root,
             mir_branch=pred_rev_tid.rev,
             mir_task_id=pred_rev_tid.tid,
             ms=mirpb.MirStorage.MIR_KEYWORDS)
 
-        if main_ck not in mir_keywords.ck_idx:
+        if evaluate_config.main_ck not in mir_keywords.ck_idx:
             return None
 
-        ck_idx = mir_keywords.ck_idx[main_ck]
+        ck_idx = mir_keywords.ck_idx[evaluate_config.main_ck]
         ck_evaluate_func = partial(_evaluate_on_asset_ids, ground_truth, prediction, evaluate_config)
 
         # fill main ck.
