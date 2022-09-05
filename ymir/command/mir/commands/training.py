@@ -40,9 +40,9 @@ def _process_model_storage(out_root: str, model_upload_location: str, executor_c
                                                              type=mirpb.TaskType.TaskTypeTraining),
                                            stages=model_stages,
                                            best_stage_name=best_stage_name)
-    model_sha1 = models.pack_and_copy_models(model_storage=model_storage,
-                                             model_dir_path=out_model_dir,
-                                             model_location=model_upload_location)
+    models.pack_and_copy_models(model_storage=model_storage,
+                                model_dir_path=out_model_dir,
+                                model_location=model_upload_location)
 
     return model_storage
 

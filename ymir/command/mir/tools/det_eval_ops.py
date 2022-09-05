@@ -1,10 +1,7 @@
 import logging
-from typing import Set
 
 from mir.tools import det_eval_coco, det_eval_voc, det_eval_utils
 from mir.protos import mir_command_pb2 as mirpb
-from mir.tools.code import MirCode
-from mir.tools.errors import MirRuntimeError
 
 
 def det_evaluate_with_pb(

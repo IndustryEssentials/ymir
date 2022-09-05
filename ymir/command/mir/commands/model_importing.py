@@ -59,9 +59,9 @@ class CmdModelImport(base.BaseCommand):
         model_storage.task_context['src-revs'] = src_revs
         model_storage.task_context['dst_rev'] = dst_rev
         model_storage.task_context['type'] = mirpb.TaskType.TaskTypeImportModel
-        model_hash = models.pack_and_copy_models(model_storage=model_storage,
-                                                 model_dir_path=extract_model_dir_path,
-                                                 model_location=model_location)
+        models.pack_and_copy_models(model_storage=model_storage,
+                                    model_dir_path=extract_model_dir_path,
+                                    model_location=model_location)
 
         # remove tmp files
         shutil.rmtree(extract_model_dir_path)
