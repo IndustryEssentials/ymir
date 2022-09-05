@@ -43,9 +43,11 @@ def det_evaluate_datasets(
         if evaluate_config.main_ck not in mir_keywords.ck_idx:
             return None
 
-        evaluate_config.need_pr_curve = False
-        ck_idx = mir_keywords.ck_idx[evaluate_config.main_ck]
-        ck_evaluate_func = partial(_evaluate_on_asset_ids, ground_truth, prediction, evaluate_config)
+        ck_evaluate_config = mirpb.EvaluateConfig()
+        ck_evaluate_config.CopyFrom(evaluate_config)
+        ck_evaluate_config.need_pr_curve = False
+        ck_idx = mir_keywords.ck_idx[ck_evaluate_config.main_ck]
+        ck_evaluate_func = partial(_evaluate_on_asset_ids, ground_truth, prediction, ck_evaluate_config)
 
         with ThreadPoolExecutor() as executor:
             # fill main ck.
