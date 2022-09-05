@@ -241,3 +241,10 @@ def _import_annotation_meta(mir_root: str, annotations_dir_path: str,
         executor_config_str_io = StringIO()
         yaml.safe_dump(annotation_meta_dict['executor_config'], executor_config_str_io)
         task_annotations.executor_config = executor_config_str_io.getvalue()
+
+
+def reset_annotations_pred_meta(src_task_annotations: mirpb.SingleTaskAnnotations,
+                                dst_task_annotations: mirpb.SingleTaskAnnotations) -> None:
+    dst_task_annotations.eval_class_ids[:] = src_task_annotations.eval_class_ids
+    dst_task_annotations.executor_config = src_task_annotations.executor_config
+    dst_task_annotations.model.CopyFrom(src_task_annotations.model)

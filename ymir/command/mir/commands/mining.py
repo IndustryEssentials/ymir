@@ -9,7 +9,8 @@ from google.protobuf import json_format
 
 from mir.commands import base, infer
 from mir.protos import mir_command_pb2 as mirpb
-from mir.tools import checker, class_ids, data_reader, data_writer, mir_storage_ops, revs_parser, utils as mir_utils
+from mir.tools import annotations, checker, class_ids, data_reader, data_writer
+from mir.tools import mir_storage_ops, revs_parser, utils as mir_utils
 from mir.tools.code import MirCode
 from mir.tools.command_run_in_out import command_run_in_out
 from mir.tools.data_writer import AnnoFormat
@@ -244,8 +245,8 @@ def _process_results(mir_root: str, export_out: str, dst_typ_rev_tid: revs_parse
         pred_asset_ids = set(mir_annotations.prediction.image_annotations.keys()) & asset_ids_set
         for asset_id in pred_asset_ids:
             prediction.image_annotations[asset_id].CopyFrom(mir_annotations.prediction.image_annotations[asset_id])
-        mir_utils.reset_annotations_pred_meta(src_task_annotations=mir_annotations.prediction,
-                                              dst_task_annotations=prediction)
+        annotations.reset_annotations_pred_meta(src_task_annotations=mir_annotations.prediction,
+                                                dst_task_annotations=prediction)
 
     #   update mir annotations: ground truth
     ground_truth = matched_mir_annotations.ground_truth

@@ -4,7 +4,7 @@ import random
 
 from mir.commands import base
 from mir.protos import mir_command_pb2 as mirpb
-from mir.tools import mir_storage_ops, revs_parser, utils as mir_utils
+from mir.tools import annotations, mir_storage_ops, revs_parser
 from mir.tools.code import MirCode
 from mir.tools.command_run_in_out import command_run_in_out
 from mir.tools.errors import MirRuntimeError
@@ -81,8 +81,8 @@ class CmdSampling(base.BaseCommand):
             for asset_id in mir_annotations.image_cks.keys():
                 sampled_mir_annotations.image_cks[asset_id].CopyFrom(mir_annotations.image_cks[asset_id])
 
-        mir_utils.reset_annotations_pred_meta(src_task_annotations=mir_annotations.prediction,
-                                              dst_task_annotations=sampled_mir_annotations.prediction)
+        annotations.reset_annotations_pred_meta(src_task_annotations=mir_annotations.prediction,
+                                                dst_task_annotations=sampled_mir_annotations.prediction)
 
         # commit
         message = f"sampling src: {src_revs}, dst: {dst_rev}, count: {count}, rate: {rate}"
