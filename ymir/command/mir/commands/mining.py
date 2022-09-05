@@ -237,7 +237,8 @@ def _process_results(mir_root: str, export_out: str, dst_typ_rev_tid: revs_parse
         # add new
         for asset_id, single_image_annotations in asset_id_to_annotations.items():
             prediction.image_annotations[asset_id].CopyFrom(single_image_annotations)
-        prediction.eval_class_ids[:] = {x for x in cls_id_mgr.id_for_names(model_storage.class_names)[0] if x >= 0}
+        prediction.eval_class_ids[:] = set(
+            cls_id_mgr.id_for_names(model_storage.class_names, drop_unknown_names=True)[0])
         prediction.executor_config = json.dumps(model_storage.executor_config)
         prediction.model.CopyFrom(model_storage.get_model_meta())
     else:

@@ -231,10 +231,8 @@ def _import_annotation_meta(mir_root: str, annotations_dir_path: str,
 
     # eval_class_ids
     eval_class_names = annotation_meta_dict.get('eval_class_names', []) or task_annotations.model.class_names
-    task_annotations.eval_class_ids[:] = {
-        x
-        for x in class_ids.ClassIdManager(mir_root=mir_root).id_for_names(list(eval_class_names))[0] if x >= 0
-    }
+    task_annotations.eval_class_ids[:] = set(
+        class_ids.ClassIdManager(mir_root=mir_root).id_for_names(list(eval_class_names), drop_unknown_names=True)[0])
 
     # executor_config
     if 'executor_config' in annotation_meta_dict:

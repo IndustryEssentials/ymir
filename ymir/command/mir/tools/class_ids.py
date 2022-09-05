@@ -212,12 +212,14 @@ class ClassIdManager(object):
     def main_name_for_id(self, type_id: int) -> Optional[str]:
         return self._label_storage.id_to_label(type_id)
 
-    def id_for_names(self, names: List[str]) -> Tuple[List[int], List[str]]:
+    def id_for_names(self, names: List[str], drop_unknown_names: bool = False) -> Tuple[List[int], List[str]]:
         """
         return all type ids for names
 
         Args:
             names (List[str]): main type names or alias
+            drop_unknown_names (bool): True to drop unknown names from returned id list
+                                       this will break the sequence mapping between returned class ids and names
 
         Returns:
             Tuple[List[int], List[str]]: corresponding type ids and unknown names
@@ -226,10 +228,12 @@ class ClassIdManager(object):
         unknown_names = []
         for name in names:
             class_id = self.id_and_main_name_for_name(name=name)[0]
-            class_ids.append(class_id)
-
-            if class_id < 0:
+            if class_id >= 0:
+                class_ids.append(class_id)
+            else:
                 unknown_names.append(name)
+                if not drop_unknown_names:
+                    class_ids.append(class_id)
 
         return class_ids, unknown_names
 
