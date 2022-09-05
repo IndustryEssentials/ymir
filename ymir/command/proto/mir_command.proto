@@ -270,6 +270,7 @@ message EvaluateConfig {
     string iou_thrs_interval = 4;
     bool need_pr_curve = 5;
     repeated int32 class_ids = 7;
+    string main_ck = 8;
 
     reserved 1, 2, 6;
 }
