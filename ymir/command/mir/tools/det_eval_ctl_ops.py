@@ -64,7 +64,6 @@ def _evaluate_on_asset_ids(gt: mirpb.SingleTaskAnnotations, pred: mirpb.SingleTa
                            target: mirpb.SingleDatasetEvaluation) -> None:
     pred = _filter_task_annotations_by_asset_ids(task_annotations=pred, asset_ids=asset_ids)
     gt = _filter_task_annotations_by_asset_ids(task_annotations=gt, asset_ids=asset_ids)
-    breakpoint()
     target.CopyFrom(
         det_eval_ops.det_evaluate_with_pb(
             prediction=pred,
