@@ -40,7 +40,7 @@ server {
     }
 
     # backend's Swagger UI
-    location /docs {
+    location /api_docs {
         proxy_pass http://backend_api/docs;
         add_header 'Access-Control-Allow-Origin' '*';
         proxy_set_header   Host $host;
