@@ -1,7 +1,7 @@
 import argparse
 from collections import defaultdict
 import logging
-from typing import Dict, List, Set, Tuple
+from typing import Dict, List, Tuple
 
 from mir.commands import base
 from mir.protos import mir_command_pb2 as mirpb
@@ -188,6 +188,9 @@ class CmdCopy(base.BaseCommand):
                                         drop_annotations: bool) -> Tuple[mirpb.SingleTaskAnnotations, Dict[str, int]]:
         if drop_annotations:
             return mirpb.SingleTaskAnnotations(), {}
+
+        if data_mir_root == dst_mir_root:
+            return single_task_annotations, {}
 
         # if don't want to drop annotations
         # annotations.mir and keywords.mir: change type ids

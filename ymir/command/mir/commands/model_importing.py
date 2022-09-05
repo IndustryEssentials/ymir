@@ -7,8 +7,8 @@ import yaml
 
 from mir.commands import base
 from mir.protos import mir_command_pb2 as mirpb
-from mir.tools import checker, mir_storage_ops, revs_parser
-from mir.tools import settings as mir_settings, utils as mir_utils
+from mir.tools import checker, mir_storage_ops, models, revs_parser
+from mir.tools import settings as mir_settings
 from mir.tools.code import MirCode
 from mir.tools.command_run_in_out import command_run_in_out
 from mir.tools.errors import MirRuntimeError
@@ -48,10 +48,10 @@ class CmdModelImport(base.BaseCommand):
 
         # unpack
         extract_model_dir_path = os.path.join(work_dir, 'model')
-        model_storage = mir_utils.prepare_model(model_location=os.path.dirname(package_path),
-                                                model_hash=os.path.basename(package_path),
-                                                stage_name='',
-                                                dst_model_path=extract_model_dir_path)
+        model_storage = models.prepare_model(model_location=os.path.dirname(package_path),
+                                             model_hash=os.path.basename(package_path),
+                                             stage_name='',
+                                             dst_model_path=extract_model_dir_path)
 
         logging.info(f"importing model with storage: {model_storage}")
 
@@ -59,9 +59,9 @@ class CmdModelImport(base.BaseCommand):
         model_storage.task_context['src-revs'] = src_revs
         model_storage.task_context['dst_rev'] = dst_rev
         model_storage.task_context['type'] = mirpb.TaskType.TaskTypeImportModel
-        mir_utils.pack_and_copy_models(model_storage=model_storage,
-                                       model_dir_path=extract_model_dir_path,
-                                       model_location=model_location)
+        model_hash = models.pack_and_copy_models(model_storage=model_storage,
+                                                 model_dir_path=extract_model_dir_path,
+                                                 model_location=model_location)
 
         # remove tmp files
         shutil.rmtree(extract_model_dir_path)

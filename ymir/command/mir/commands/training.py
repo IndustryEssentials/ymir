@@ -11,7 +11,7 @@ import yaml
 from mir.commands import base
 from mir.protos import mir_command_pb2 as mirpb
 from mir.tools import checker, class_ids, data_reader, data_writer
-from mir.tools import mir_storage_ops, revs_parser
+from mir.tools import mir_storage_ops, models, revs_parser
 from mir.tools import settings as mir_settings, utils as mir_utils
 from mir.tools.command_run_in_out import command_run_in_out
 from mir.tools.code import MirCode
@@ -40,9 +40,9 @@ def _process_model_storage(out_root: str, model_upload_location: str, executor_c
                                                              type=mirpb.TaskType.TaskTypeTraining),
                                            stages=model_stages,
                                            best_stage_name=best_stage_name)
-    mir_utils.pack_and_copy_models(model_storage=model_storage,
-                                   model_dir_path=out_model_dir,
-                                   model_location=model_upload_location)
+    model_sha1 = models.pack_and_copy_models(model_storage=model_storage,
+                                             model_dir_path=out_model_dir,
+                                             model_location=model_upload_location)
 
     return model_storage
 
@@ -126,10 +126,10 @@ def _prepare_pretrained_models(model_location: str, model_hash_stage: str, dst_m
     if not model_hash_stage:
         return []
     model_hash, stage_name = mir_utils.parse_model_hash_stage(model_hash_stage)
-    model_storage = mir_utils.prepare_model(model_location=model_location,
-                                            model_hash=model_hash,
-                                            stage_name=stage_name,
-                                            dst_model_path=dst_model_dir)
+    model_storage = models.prepare_model(model_location=model_location,
+                                         model_hash=model_hash,
+                                         stage_name=stage_name,
+                                         dst_model_path=dst_model_dir)
 
     return model_storage.stages[stage_name].files
 

@@ -192,8 +192,8 @@ class TestCmdImport(unittest.TestCase):
                             'rotate_angle': -0.02
                         },
                         'class_id': 1,
-                        'cm': 'FP',
-                        'det_link_id': -1,
+                        'cm': 'FP' if eval_class_ids_set else 'NotSet',
+                        'det_link_id': -1 if eval_class_ids_set else 0,
                         'score': -1.0,
                         'anno_quality': 0.75,
                         'tags': {
@@ -213,7 +213,7 @@ class TestCmdImport(unittest.TestCase):
                             'rotate_angle': 0.22
                         },
                         'class_id': 1,
-                        'cm': 'TP',
+                        'cm': 'TP' if eval_class_ids_set else 'NotSet',
                         'score': 0.5,
                         'anno_quality': 0.62,
                         'tags': {
@@ -231,8 +231,8 @@ class TestCmdImport(unittest.TestCase):
                             'rotate_angle': 0.02
                         },
                         'class_id': 1,
-                        'cm': 'FP',
-                        'det_link_id': -1,
+                        'cm': 'FP' if eval_class_ids_set else 'NotSet',
+                        'det_link_id': -1 if eval_class_ids_set else 0,
                         'score': -1.0,
                         'anno_quality': 0.75,
                         'tags': {
@@ -255,8 +255,8 @@ class TestCmdImport(unittest.TestCase):
                             'rotate_angle': -0.02
                         },
                         'class_id': 1,
-                        'cm': 'FP',
-                        'det_link_id': -1,
+                        'cm': 'FP'if eval_class_ids_set else 'NotSet',
+                        'det_link_id': -1 if eval_class_ids_set else 0,
                         'score': -1.0,
                         'anno_quality': 0.75,
                         'tags': {
@@ -276,7 +276,7 @@ class TestCmdImport(unittest.TestCase):
                             'rotate_angle': 0.22
                         },
                         'class_id': 1,
-                        'cm': 'TP',
+                        'cm': 'TP' if eval_class_ids_set else 'NotSet',
                         'score': 0.5,
                         'anno_quality': 0.62,
                         'tags': {
@@ -294,8 +294,8 @@ class TestCmdImport(unittest.TestCase):
                             'rotate_angle': 0.02
                         },
                         'class_id': 1,
-                        'cm': 'FP',
-                        'det_link_id': -1,
+                        'cm': 'FP' if eval_class_ids_set else 'NotSet',
+                        'det_link_id': -1 if eval_class_ids_set else 0,
                         'score': -1.0,
                         'anno_quality': 0.75,
                         'tags': {
@@ -312,8 +312,8 @@ class TestCmdImport(unittest.TestCase):
                             'h': 50
                         },
                         'class_id': 2,
-                        'cm': 'FP',
-                        'det_link_id': -1,
+                        'cm': 'FP' if eval_class_ids_set else 'NotSet',
+                        'det_link_id': -1 if eval_class_ids_set else 0,
                         'score': -1.0,
                         'anno_quality': 0.23,
                         'tags': {
@@ -330,8 +330,8 @@ class TestCmdImport(unittest.TestCase):
                             'rotate_angle': 0.12
                         },
                         'class_id': 2,
-                        'cm': 'FP',
-                        'det_link_id': -1,
+                        'cm': 'FP' if eval_class_ids_set else 'NotSet',
+                        'det_link_id': -1 if eval_class_ids_set else 0,
                         'score': -1.0,
                         'anno_quality': 0.35,
                         'tags': {
@@ -343,10 +343,7 @@ class TestCmdImport(unittest.TestCase):
             }
         if not with_annotations:
             dict_image_annotations_expect = {}
-        try:
-            self.assertDictEqual(dict_image_annotations_expect, dict_image_annotations)
-        except AssertionError:
-            breakpoint()
+        self.assertDictEqual(dict_image_annotations_expect, dict_image_annotations)
         self.assertDictEqual(dict_asset_cks_expected, dict_asset_cks)
         self.assertEqual(eval_class_ids_set, set(mir_annotations.prediction.eval_class_ids))
 

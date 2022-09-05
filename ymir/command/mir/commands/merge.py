@@ -284,7 +284,7 @@ class CmdMerge(base.BaseCommand):
                                 strategy=strategy)
             if ret != MirCode.RC_OK:
                 return ret
-        host_mir_annotations.prediction.model.CopyFrom(mirpb.ModelMeta())
+        host_mir_annotations.prediction.model.Clear()
         host_mir_annotations.prediction.executor_config = ''
         host_mir_annotations.prediction.eval_class_ids[:] = set(host_mir_annotations.prediction.eval_class_ids)
 

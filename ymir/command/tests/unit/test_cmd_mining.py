@@ -181,7 +181,7 @@ class TestMiningCmd(unittest.TestCase):
 
     # public: test cases
     @mock.patch("mir.commands.infer.CmdInfer.run_with_args", side_effect=_mock_run_func)
-    @mock.patch("mir.tools.utils.prepare_model", side_effect=_mock_prepare_model)
+    @mock.patch("mir.tools.models.prepare_model", side_effect=_mock_prepare_model)
     def test_mining_cmd_00(self, mock_prepare, mock_run):
         self._prepare_dirs()
         self._prepare_config()
