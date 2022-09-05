@@ -42,6 +42,7 @@ def det_evaluate_datasets(
         if evaluate_config.main_ck not in mir_keywords.ck_idx:
             return None
 
+        evaluate_config.need_pr_curve = False
         ck_idx = mir_keywords.ck_idx[evaluate_config.main_ck]
         ck_evaluate_func = partial(_evaluate_on_asset_ids, ground_truth, prediction, evaluate_config)
 
