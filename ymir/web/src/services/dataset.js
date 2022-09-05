@@ -139,7 +139,7 @@ export function evaluate({ projectId, datasets, iou, everageIou, confidence, ck 
     confidence_threshold: confidence,
     iou_threshold: iou,
     require_average_iou: everageIou,
-    ck,
+    main_ck: ck,
   })
 }
 
