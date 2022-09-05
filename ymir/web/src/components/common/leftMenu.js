@@ -13,8 +13,8 @@ const { Sider } = Layout
 
 const projectModule = /^.*\/project\/(\d+).*$/
 
-const getItem = (label, key, Icon, children) => ({
-  key, icon: Icon ? <Icon /> : null, children, label,
+const getItem = (label, key, Icon, children, type='') => ({
+  key, icon: Icon ? <Icon /> : null, children, label, type,
 })
 
 const getGroupItem = (label, key, children) => getItem(label, key, undefined, children, 'group')
