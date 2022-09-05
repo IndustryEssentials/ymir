@@ -330,6 +330,8 @@ class ControllerRequest:
         evaluate_config.conf_thr = args["confidence_threshold"]
         evaluate_config.iou_thrs_interval = args["iou_thrs_interval"]
         evaluate_config.need_pr_curve = args["need_pr_curve"]
+        if args.get("main_ck"):
+            evaluate_config.main_ck = args["main_ck"]
 
         request.req_type = mirsvrpb.CMD_EVALUATE
         request.in_dataset_ids[:] = [args["dataset_hash"]]
@@ -532,6 +534,7 @@ class ControllerClient:
         confidence_threshold: float,
         iou_thrs_interval: str,
         need_pr_curve: bool,
+        main_ck: Optional[str],
         dataset_hash: str,
     ) -> Dict:
         req = ControllerRequest(
@@ -544,6 +547,7 @@ class ControllerClient:
                 "dataset_hash": dataset_hash,
                 "iou_thrs_interval": iou_thrs_interval,
                 "need_pr_curve": need_pr_curve,
+                "main_ck": main_ck,
             },
         )
         resp = self.send(req)

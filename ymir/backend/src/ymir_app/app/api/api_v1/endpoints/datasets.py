@@ -550,6 +550,7 @@ def batch_evaluate_datasets(
         in_evaluation.iou_threshold,
         in_evaluation.require_average_iou,
         in_evaluation.need_pr_curve,
+        in_evaluation.main_ck,
         dataset_id_mapping,
     )
     return {"result": evaluations}
