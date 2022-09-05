@@ -42,15 +42,18 @@ def det_evaluate_datasets(
         if evaluate_config.main_ck not in mir_keywords.ck_idx:
             return None
 
-        ck_idx = mir_keywords.ck_idx[evaluate_config.main_ck]
-        ck_evaluate_func = partial(_evaluate_on_asset_ids, ground_truth, prediction, evaluate_config)
+        ck_evaluate_config = mirpb.EvaluateConfig()
+        ck_evaluate_config.CopyFrom(evaluate_config)
+        ck_evaluate_config.need_pr_curve = False
+        ck_idx = mir_keywords.ck_idx[ck_evaluate_config.main_ck]
+        ck_evaluate_func = partial(_evaluate_on_asset_ids, ground_truth, prediction, ck_evaluate_config)
 
         # fill main ck.
         ck_evaluate_func(ck_idx.asset_annos, evaluation.main_ck)
         # fill sub ck.
         for idx, (sub_ck, asset_anno_ids) in enumerate(ck_idx.sub_indexes.items()):
             if idx >= mir_settings.DEFAULT_EVALUATE_SUB_CKS:
-                return evaluation
+                break
             ck_evaluate_func(asset_anno_ids.key_ids, evaluation.sub_cks[sub_ck])
 
     return evaluation

@@ -31,10 +31,6 @@ class EvaluateInvoker(BaseMirControllerInvoker):
             return utils.make_general_response(CTLResponseCode.ARG_VALIDATION_FAILED,
                                                "invalid evaluate iou thrs interval: {}".format(ec.iou_thrs_interval))
 
-        if ec.main_ck and ec.need_pr_curve:
-            return utils.make_general_response(CTLResponseCode.ARG_VALIDATION_FAILED,
-                                               "cannot set need_pr_cuve and cks together.")
-
         return utils.make_general_response(CTLResponseCode.CTR_OK, "")
 
     def invoke(self) -> backend_pb2.GeneralResp:
