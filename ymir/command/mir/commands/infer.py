@@ -133,10 +133,10 @@ class CmdInfer(base.BaseCommand):
         _prepare_assets(index_file=index_file, work_index_file=work_index_file, media_path=media_path)
 
         model_hash, stage_name = mir_utils.parse_model_hash_stage(model_hash_stage)
-        model_storage: mir_utils.ModelStorage = models.prepare_model(model_location=model_location,
-                                                                     model_hash=model_hash,
-                                                                     stage_name=stage_name,
-                                                                     dst_model_path=work_dir_in_model)
+        model_storage = models.prepare_model(model_location=model_location,
+                                             model_hash=model_hash,
+                                             stage_name=stage_name,
+                                             dst_model_path=work_dir_in_model)
         model_names = model_storage.stages[stage_name].files
         class_names = model_storage.class_names
         if not class_names:
