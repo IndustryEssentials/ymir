@@ -1,4 +1,3 @@
-from concurrent.futures import ThreadPoolExecutor
 from functools import partial
 from typing import Collection, Optional
 
@@ -49,14 +48,13 @@ def det_evaluate_datasets(
         ck_idx = mir_keywords.ck_idx[ck_evaluate_config.main_ck]
         ck_evaluate_func = partial(_evaluate_on_asset_ids, ground_truth, prediction, ck_evaluate_config)
 
-        with ThreadPoolExecutor() as executor:
-            # fill main ck.
-            executor.submit(ck_evaluate_func, ck_idx.asset_annos, evaluation.main_ck)
-            # fill sub ck.
-            for idx, (sub_ck, asset_anno_ids) in enumerate(ck_idx.sub_indexes.items()):
-                if idx >= mir_settings.DEFAULT_EVALUATE_SUB_CKS:
-                    break
-                executor.submit(ck_evaluate_func, asset_anno_ids.key_ids, evaluation.sub_cks[sub_ck])
+        # fill main ck.
+        ck_evaluate_func(ck_idx.asset_annos, evaluation.main_ck)
+        # fill sub ck.
+        for idx, (sub_ck, asset_anno_ids) in enumerate(ck_idx.sub_indexes.items()):
+            if idx >= mir_settings.DEFAULT_EVALUATE_SUB_CKS:
+                break
+            ck_evaluate_func(asset_anno_ids.key_ids, evaluation.sub_cks[sub_ck])
 
     return evaluation
 
