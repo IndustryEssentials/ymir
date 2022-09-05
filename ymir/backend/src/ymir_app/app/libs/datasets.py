@@ -143,6 +143,7 @@ def evaluate_datasets(
     iou_threshold: float,
     require_average_iou: bool,
     need_pr_curve: bool,
+    main_ck: Optional[str],
     dataset_id_mapping: Dict[str, int],
 ) -> Dict:
     if require_average_iou:
@@ -152,7 +153,13 @@ def evaluate_datasets(
         iou_thrs_interval = str(iou_threshold)
 
     f_evaluate = partial(
-        controller_client.evaluate_dataset, user_id, project_id, confidence_threshold, iou_thrs_interval, need_pr_curve
+        controller_client.evaluate_dataset,
+        user_id,
+        project_id,
+        confidence_threshold,
+        iou_thrs_interval,
+        need_pr_curve,
+        main_ck,
     )
     with ThreadPoolExecutor() as executor:
         res = executor.map(f_evaluate, dataset_id_mapping.keys())
