@@ -1,3 +1,4 @@
+from concurrent.futures import ThreadPoolExecutor
 from functools import partial
 from typing import Collection, Optional
 
@@ -46,13 +47,14 @@ def det_evaluate_datasets(
         ck_idx = mir_keywords.ck_idx[evaluate_config.main_ck]
         ck_evaluate_func = partial(_evaluate_on_asset_ids, ground_truth, prediction, evaluate_config)
 
-        # fill main ck.
-        ck_evaluate_func(ck_idx.asset_annos, evaluation.main_ck)
-        # fill sub ck.
-        for idx, (sub_ck, asset_anno_ids) in enumerate(ck_idx.sub_indexes.items()):
-            if idx >= mir_settings.DEFAULT_EVALUATE_SUB_CKS:
-                return evaluation
-            ck_evaluate_func(asset_anno_ids.key_ids, evaluation.sub_cks[sub_ck])
+        with ThreadPoolExecutor() as executor:
+            # fill main ck.
+            executor.submit(ck_evaluate_func, ck_idx.asset_annos, evaluation.main_ck)
+            # fill sub ck.
+            for idx, (sub_ck, asset_anno_ids) in enumerate(ck_idx.sub_indexes.items()):
+                if idx >= mir_settings.DEFAULT_EVALUATE_SUB_CKS:
+                    break
+                executor.submit(ck_evaluate_func, asset_anno_ids.key_ids, evaluation.sub_cks[sub_ck])
 
     return evaluation
 
@@ -62,6 +64,7 @@ def _evaluate_on_asset_ids(gt: mirpb.SingleTaskAnnotations, pred: mirpb.SingleTa
                            target: mirpb.SingleDatasetEvaluation) -> None:
     pred = _filter_task_annotations_by_asset_ids(task_annotations=pred, asset_ids=asset_ids)
     gt = _filter_task_annotations_by_asset_ids(task_annotations=gt, asset_ids=asset_ids)
+    breakpoint()
     target.CopyFrom(
         det_eval_ops.det_evaluate_with_pb(
             prediction=pred,
