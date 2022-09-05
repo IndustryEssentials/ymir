@@ -54,12 +54,8 @@ class TestMergeCmd(unittest.TestCase):
         self._prepare_mir_branch_a()
         test_utils.mir_repo_create_branch(self._mir_root, "b")
         self._prepare_mir_branch_b()
-        # test_utils.mir_repo_create_branch(self._mir_root, "c")
-        # self._prepare_mir_branch_c()
         test_utils.mir_repo_create_branch(self._mir_root, "d")
         self._prepare_mir_branch_d()
-        # test_utils.mir_repo_create_branch(self._mir_root, "e")
-        # self._prepare_mir_branch_e()
         test_utils.mir_repo_checkout(self._mir_root, "master")
 
     @staticmethod
@@ -123,18 +119,25 @@ class TestMergeCmd(unittest.TestCase):
 
         image_annotations = {}
         image_cks = {}
+        class_ids_set = set()
         for asset_idx, (asset_id, keywords_pair) in enumerate(assets_and_keywords.items()):
             image_annotations[asset_id] = TestMergeCmd._generate_annotations_for_asset(type_ids=keywords_pair[0],
                                                                                        x=100,
                                                                                        y=(asset_idx + 1) * 100)
             image_cks[asset_id] = {'cks': keywords_pair[1]}
-        pred_and_gt = {
+            class_ids_set.update(keywords_pair[0])
+        pred = {
+            'task_id': branch_name_and_task_id,
+            "image_annotations": image_annotations,
+            "eval_class_ids": list(class_ids_set),
+        }
+        gt = {
             'task_id': branch_name_and_task_id,
             "image_annotations": image_annotations,
         }
         dict_annotations = {
-            "prediction": pred_and_gt,
-            'ground_truth': pred_and_gt,
+            "prediction": pred,
+            'ground_truth': gt,
             'image_cks': image_cks,
         }
         ParseDict(dict_annotations, mir_annotations)
@@ -295,6 +298,7 @@ class TestMergeCmd(unittest.TestCase):
                 "b2": TestMergeCmd._generate_annotations_for_asset([2], 100, 300, cm=mirpb.ConfusionMatrixType.FP),
             },
             'model': {},
+            'eval_class_ids': [1, 2],
         }
         expected_gt = {
             'task_id': 'merge-task-id-s0',
@@ -405,6 +409,7 @@ class TestMergeCmd(unittest.TestCase):
                 "d1": TestMergeCmd._generate_annotations_for_asset([1, 4], 100, 300, cm=mirpb.ConfusionMatrixType.FP),
             },
             'model': {},
+            'eval_class_ids': [1, 2, 4],
         }
         expected_gt = {
             'task_id': 'merge-task-id-h0',
@@ -494,6 +499,7 @@ class TestMergeCmd(unittest.TestCase):
                 "d1": TestMergeCmd._generate_annotations_for_asset([1, 4], 100, 300, cm=mirpb.ConfusionMatrixType.FP),
             },
             'model': {},
+            'eval_class_ids': [1, 2, 4],
         }
         expected_gt = {
             'task_id': 'merge-task-id-g0',
@@ -577,6 +583,7 @@ class TestMergeCmd(unittest.TestCase):
                 "a3": TestMergeCmd._generate_annotations_for_asset([1], 100, 400, cm=mirpb.ConfusionMatrixType.FP),
             },
             'model': {},
+            'eval_class_ids': [1],
         }
         expected_gt = {
             'task_id': 'merge-task-id-nth0',
