@@ -1,5 +1,4 @@
 from functools import wraps
-from io import StringIO
 import linecache
 import logging
 import os
@@ -116,12 +115,6 @@ class ModelStorage(BaseModel):
     @property
     def class_names(self) -> List[str]:
         return self.executor_config['class_names']
-
-    @property
-    def executor_config_yaml(self) -> str:
-        string_io = StringIO()
-        yaml.safe_dump(self.executor_config, string_io)
-        return string_io.getvalue()
 
     def get_model_meta(self) -> mirpb.ModelMeta:
         model_meta = mirpb.ModelMeta()
