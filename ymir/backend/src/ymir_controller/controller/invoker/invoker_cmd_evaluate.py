@@ -31,19 +31,21 @@ class EvaluateInvoker(BaseMirControllerInvoker):
             return utils.make_general_response(CTLResponseCode.ARG_VALIDATION_FAILED,
                                                "invalid evaluate iou thrs interval: {}".format(ec.iou_thrs_interval))
 
+        if ec.main_ck and ec.need_pr_curve:
+            return utils.make_general_response(CTLResponseCode.ARG_VALIDATION_FAILED,
+                                               "cannot set need_pr_cuve and cks together.")
+
         return utils.make_general_response(CTLResponseCode.CTR_OK, "")
 
     def invoke(self) -> backend_pb2.GeneralResp:
-        ec = self._request.evaluate_config
         rev_tid = parse_single_arg_rev(self._request.in_dataset_ids[0], need_tid=False)
 
         evaluation = det_evaluate_datasets(mir_root=self._repo_root,
                                            gt_rev_tid=rev_tid,
                                            pred_rev_tid=rev_tid,
-                                           conf_thr=ec.conf_thr,
-                                           iou_thrs=ec.iou_thrs_interval,
-                                           need_pr_curve=ec.need_pr_curve)
-
+                                           evaluate_config=self._request.evaluate_config)
+        if not evaluation:
+            return utils.make_general_response(CTLResponseCode.ARG_VALIDATION_FAILED, "no result generated.")
         response = backend_pb2.GeneralResp()
         response.code = CTLResponseCode.CTR_OK
         response.evaluation.CopyFrom(evaluation)
