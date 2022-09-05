@@ -7,7 +7,7 @@ from google.protobuf import json_format
 import numpy as np
 
 from mir.protos import mir_command_pb2 as mirpb
-from mir.tools import det_eval_coco, det_eval_voc, mir_storage_ops
+from mir.tools import det_eval_ctl_ops, det_eval_coco, det_eval_voc, mir_storage_ops, revs_parser
 from tests import utils as test_utils
 
 
@@ -40,7 +40,6 @@ class TestToolsDetEval(unittest.TestCase):
         self._prepare_mir_repo_branch_a()
 
     def _prepare_mir_repo_branch_a(self) -> None:
-        """ branch a: a ground truth branch """
         metadatas_dict = {
             'attributes': {
                 'a0': {
@@ -470,6 +469,28 @@ class TestToolsDetEval(unittest.TestCase):
         see = sde.iou_averaged_evaluation.ci_averaged_evaluation
         self.assertTrue(np.isclose(0.833333, see.ap))
 
+    def test_det_eval_ctl_ops(self) -> None:
+        gt_pred_rev_tid = revs_parser.parse_single_arg_rev('a@a', need_tid=False)
+        evaluate_config = mirpb.EvaluateConfig()
+        evaluate_config.conf_thr = 0.0005
+        evaluate_config.iou_thrs_interval = '0.5'
+        evaluate_config.need_pr_curve = False
+        evaluate_config.main_ck = 'color'
+        evaluation = det_eval_ctl_ops.det_evaluate_datasets(mir_root=self._mir_root,
+                                                            gt_rev_tid=gt_pred_rev_tid,
+                                                            pred_rev_tid=gt_pred_rev_tid,
+                                                            evaluate_config=evaluate_config)
+        self.assertIsNotNone(evaluation)
+        self.assertEqual({'blue', 'red'}, set(evaluation.sub_cks.keys()))
+
+        evaluate_config.main_ck = 'FakeMainCk'
+        evaluation = det_eval_ctl_ops.det_evaluate_datasets(mir_root=self._mir_root,
+                                                            gt_rev_tid=gt_pred_rev_tid,
+                                                            pred_rev_tid=gt_pred_rev_tid,
+                                                            evaluate_config=evaluate_config)
+        self.assertIsNone(evaluation)
+
+    # protected: test cases
     def _test_det_eval(self, det_eval_model_name: Any) -> mirpb.SingleDatasetEvaluation:
         mir_annotations: mirpb.MirAnnotations = mir_storage_ops.MirStorageOps.load_single_storage(
             mir_root=self._mir_root, mir_branch='a', mir_task_id='a', ms=mirpb.MirStorage.MIR_ANNOTATIONS)

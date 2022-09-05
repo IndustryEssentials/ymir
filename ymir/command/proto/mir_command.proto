@@ -259,6 +259,8 @@ message ModelStage {
 message Evaluation {
     EvaluateConfig config = 1;
     SingleDatasetEvaluation dataset_evaluation = 3;
+    SingleDatasetEvaluation main_ck = 4;
+    map<string, SingleDatasetEvaluation> sub_cks = 5;
 
     reserved 2;
 }
@@ -268,6 +270,7 @@ message EvaluateConfig {
     string iou_thrs_interval = 4;
     bool need_pr_curve = 5;
     repeated int32 class_ids = 7;
+    string main_ck = 8;
 
     reserved 1, 2, 6;
 }
@@ -283,7 +286,8 @@ message SingleDatasetEvaluation {
 message SingleIouEvaluation {
     map<int32, SingleEvaluationElement> ci_evaluations = 1;  // key: class ids
     SingleEvaluationElement ci_averaged_evaluation = 2;  // evaluations averaged by class ids
-    map<string, SingleCkTotalSubEvaluation> ck_evaluations = 3;
+
+    reserved 3;
 }
 
 message SingleEvaluationElement {
@@ -293,11 +297,6 @@ message SingleEvaluationElement {
     int32 fp = 4;
     int32 fn = 5;
     repeated FloatPoint pr_curve = 6;
-}
-
-message SingleCkTotalSubEvaluation {
-    SingleEvaluationElement total = 1;
-    map<string, SingleEvaluationElement> sub = 2;
 }
 
 message FloatPoint {
