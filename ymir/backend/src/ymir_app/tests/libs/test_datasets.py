@@ -34,6 +34,7 @@ class TestEvaluateDataset:
             iou,
             require_average_iou,
             need_pr_curve,
+            "main_ck",
             datasets_mapping,
         )
 
