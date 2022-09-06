@@ -13,6 +13,9 @@ from mir.tools.utils import ModelStorage
 
 
 def parse_model_hash_stage(model_hash_stage: str) -> Tuple[str, str]:
+    """
+    parse model hash and stage name from string: `model_hash@stage_name`
+    """
     components = model_hash_stage.split('@')
     model_hash = ''
     stage_name = ''
