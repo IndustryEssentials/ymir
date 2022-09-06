@@ -66,11 +66,11 @@ class CmdCopy(base.BaseCommand):
         mir_metadatas: mirpb.MirMetadatas
         mir_annotations: mirpb.MirAnnotations
         mir_tasks: mirpb.MirTasks
-        mir_metadatas, mir_annotations, mir_tasks = mir_storage_ops.MirStorageOps.load_multiple_storages(
+        mir_metadatas, mir_annotations, mir_context, mir_tasks = mir_storage_ops.MirStorageOps.load_multiple_storages(
             mir_root=data_mir_root,
             mir_branch=data_src_typ_rev_tid.rev,
             mir_task_id=data_src_typ_rev_tid.tid,
-            ms_list=[mirpb.MIR_METADATAS, mirpb.MIR_ANNOTATIONS, mirpb.MIR_TASKS],
+            ms_list=[mirpb.MIR_METADATAS, mirpb.MIR_ANNOTATIONS, mirpb.MIR_CONTEXT, mirpb.MIR_TASKS],
             as_dict=False)
 
         PhaseLoggerCenter.update_phase(phase='copy.read')
@@ -90,7 +90,7 @@ class CmdCopy(base.BaseCommand):
             CmdCopy._change_type_ids(single_task_annotations=mir_annotations.ground_truth,
                                      src_to_dst_ids=src_to_dst_ids)
             unknown_names_and_count = CmdCopy._gen_unknown_names_and_count(data_mir_root=data_mir_root,
-                                                                           data_rev_tid=data_src_typ_rev_tid,
+                                                                           mir_context=mir_context,
                                                                            src_to_dst_ids=src_to_dst_ids)
 
         if unknown_names_and_count:
@@ -166,18 +166,13 @@ class CmdCopy(base.BaseCommand):
         }
 
     @staticmethod
-    def _gen_unknown_names_and_count(data_mir_root: str, data_rev_tid: revs_parser.TypRevTid,
+    def _gen_unknown_names_and_count(data_mir_root: str, mir_context: mirpb.MirContext,
                                      src_to_dst_ids: Dict[int, int]) -> Dict[str, int]:
         unknown_src_class_ids = {src_id for src_id, dst_id in src_to_dst_ids.items() if dst_id == -1}
         if not unknown_src_class_ids:
             return {}
 
         src_class_id_mgr = class_ids.ClassIdManager(mir_root=data_mir_root)
-        mir_context: mirpb.MirContext = mir_storage_ops.MirStorageOps.load_single_storage(
-            mir_root=data_mir_root,
-            mir_branch=data_rev_tid.rev,
-            mir_task_id=data_rev_tid.tid,
-            ms=mirpb.MirStorage.MIR_CONTEXT)
 
         return {
             src_class_id_mgr.main_name_for_id(src_id) or 'unknown_name':
