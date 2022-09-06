@@ -224,9 +224,11 @@ class TestMiningCmd(unittest.TestCase):
             mir_branch='a',
             mir_task_id='mining-task-id',
             ms=mirpb.MirStorage.MIR_ANNOTATIONS,
-            as_dict=False
-        )
+            as_dict=False)
         self.assertEqual({0, 1}, set(mir_annotations.prediction.eval_class_ids))
+        # dont care about timestamp
+        expected_model_storage.stages['default'].timestamp = mir_annotations.prediction.model.stages[
+            'default'].timestamp
         self.assertEqual(expected_model_storage.get_model_meta(), mir_annotations.prediction.model)
 
         if os.path.isdir(self._sandbox_root):
