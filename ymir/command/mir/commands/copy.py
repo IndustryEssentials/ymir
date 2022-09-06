@@ -75,7 +75,7 @@ class CmdCopy(base.BaseCommand):
 
         PhaseLoggerCenter.update_phase(phase='copy.read')
 
-        pred_annotations, unknown_class_ids = CmdCopy._change_single_task_annotations(
+        pred_annotations, pred_unknown_class_ids = CmdCopy._change_single_task_annotations(
             data_mir_root=data_mir_root,
             dst_mir_root=mir_root,
             single_task_annotations=mir_annotations.prediction,
@@ -88,7 +88,7 @@ class CmdCopy(base.BaseCommand):
             single_task_annotations=mir_annotations.ground_truth,
             drop_annotations=drop_annotations)
         mir_annotations.ground_truth.CopyFrom(gt_annotations)
-        unknown_class_ids.update(gt_unknown_class_ids)
+        unknown_class_ids = pred_unknown_class_ids | gt_unknown_class_ids
         if unknown_class_ids:
             if ignore_unknown_types:
                 logging.warning(f"unknown types: {unknown_class_ids}")
@@ -173,8 +173,7 @@ class CmdCopy(base.BaseCommand):
         src_to_dst_ids: Dict[int, int] = {}
         for src_class_id in src_class_id_mgr.all_ids():
             src_class_name = src_class_id_mgr.main_name_for_id(src_class_id) or ''
-            dst_class_id = dst_class_id_mgr.id_and_main_name_for_name(src_class_name)[0]
-            src_to_dst_ids[src_class_id] = dst_class_id
+            src_to_dst_ids[src_class_id] = dst_class_id_mgr.id_and_main_name_for_name(src_class_name)[0]
         return src_to_dst_ids
 
     @staticmethod
