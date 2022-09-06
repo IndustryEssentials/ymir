@@ -92,7 +92,6 @@ class CmdCopy(base.BaseCommand):
                                      src_to_dst_ids=src_to_dst_ids)
             unknown_names_and_count = CmdCopy._gen_unknown_names_and_count(data_mir_root=data_mir_root,
                                                                            data_rev_tid=data_src_typ_rev_tid,
-                                                                           dst_mir_root=mir_root,
                                                                            src_to_dst_ids=src_to_dst_ids)
 
         if unknown_names_and_count:
@@ -170,9 +169,7 @@ class CmdCopy(base.BaseCommand):
     @staticmethod
     def _gen_unknown_names_and_count(data_mir_root: str,
                                      data_rev_tid: revs_parser.TypRevTid,
-                                     dst_mir_root: str,
                                      src_to_dst_ids: Dict[int, int]) -> Dict[str, int]:
-        src_to_dst_ids = CmdCopy._gen_src_to_dst_ids(data_mir_root=data_mir_root, dst_mir_root=dst_mir_root)
         unknown_src_class_ids = {src_id for src_id, dst_id in src_to_dst_ids.items() if dst_id == -1}
         if not unknown_src_class_ids:
             return {}
