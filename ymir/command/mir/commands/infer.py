@@ -38,7 +38,7 @@ class CmdInfer(base.BaseCommand):
         logging.debug("command infer: %s", self.args)
 
         work_dir_in_model = os.path.join(self.args.work_dir, 'in', 'models')
-        model_hash, stage_name = mir_utils.parse_model_hash_stage(self.args.model_hash_stage)
+        model_hash, stage_name = models.parse_model_hash_stage(self.args.model_hash_stage)
         model_storage = models.prepare_model(model_location=self.args.model_location,
                                              model_hash=model_hash,
                                              stage_name=stage_name,

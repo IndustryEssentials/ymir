@@ -4,7 +4,7 @@ import logging
 import os
 import pathlib
 import time
-from typing import Any, Callable, Dict, List, Optional, Tuple, Union
+from typing import Any, Callable, Dict, List, Optional, Union
 
 from google.protobuf import json_format
 from pydantic import BaseModel, root_validator
@@ -127,18 +127,6 @@ class ModelStorage(BaseModel):
                 'best_stage_name': self.best_stage_name,
             }, model_meta)
         return model_meta
-
-
-def parse_model_hash_stage(model_hash_stage: str) -> Tuple[str, str]:
-    components = model_hash_stage.split('@')
-    model_hash = ''
-    stage_name = ''
-    if len(components) == 2:
-        model_hash, stage_name = components
-    if not model_hash or not stage_name:
-        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
-                              error_message=f"invalid model hash stage: {model_hash_stage}")
-    return (model_hash, stage_name)
 
 
 def repo_dot_mir_path(mir_root: str) -> str:

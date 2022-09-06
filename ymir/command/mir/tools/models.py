@@ -2,7 +2,7 @@ import logging
 import os
 import shutil
 import tarfile
-from typing import List
+from typing import List, Tuple
 
 import yaml
 
@@ -10,6 +10,18 @@ from mir.tools import hash_utils
 from mir.tools.code import MirCode
 from mir.tools.errors import MirRuntimeError
 from mir.tools.utils import ModelStorage
+
+
+def parse_model_hash_stage(model_hash_stage: str) -> Tuple[str, str]:
+    components = model_hash_stage.split('@')
+    model_hash = ''
+    stage_name = ''
+    if len(components) == 2:
+        model_hash, stage_name = components
+    if not model_hash or not stage_name:
+        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
+                              error_message=f"invalid model hash stage: {model_hash_stage}")
+    return (model_hash, stage_name)
 
 
 def prepare_model(model_location: str, model_hash: str, stage_name: str, dst_model_path: str) -> ModelStorage:

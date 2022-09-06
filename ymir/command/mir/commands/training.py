@@ -125,7 +125,7 @@ def _prepare_pretrained_models(model_location: str, model_hash_stage: str, dst_m
     """
     if not model_hash_stage:
         return []
-    model_hash, stage_name = mir_utils.parse_model_hash_stage(model_hash_stage)
+    model_hash, stage_name = models.parse_model_hash_stage(model_hash_stage)
     model_storage = models.prepare_model(model_location=model_location,
                                          model_hash=model_hash,
                                          stage_name=stage_name,
