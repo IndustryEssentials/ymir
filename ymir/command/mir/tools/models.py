@@ -30,6 +30,9 @@ def prepare_model(model_location: str, model_hash: str, stage_name: str, dst_mod
     Returns:
         ModelStorage
     """
+    if not model_location or not model_hash:
+        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
+                              error_message='empty model_location or model_hash')
     tar_file_path = os.path.join(model_location, model_hash)
     if not os.path.isfile(tar_file_path):
         raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
@@ -37,7 +40,7 @@ def prepare_model(model_location: str, model_hash: str, stage_name: str, dst_mod
 
     os.makedirs(dst_model_path, exist_ok=True)
 
-    logging.info(f"extracting models: {tar_file_path}, stage: {stage_name}")
+    logging.info(f"extracting models: {tar_file_path}, stage: {stage_name or '(all)'}")
     with tarfile.open(tar_file_path, 'r') as tar_file:
         # get model_stage of this package
         tar_file.extract('ymir-info.yaml', dst_model_path)

@@ -10,7 +10,7 @@ from google.protobuf import json_format
 from mir.commands import base, infer
 from mir.protos import mir_command_pb2 as mirpb
 from mir.tools import annotations, checker, class_ids, data_reader, data_writer
-from mir.tools import mir_storage_ops, revs_parser, utils as mir_utils
+from mir.tools import mir_storage_ops, models, revs_parser, utils as mir_utils
 from mir.tools.code import MirCode
 from mir.tools.command_run_in_out import command_run_in_out
 from mir.tools.data_writer import AnnoFormat
@@ -151,22 +151,27 @@ class CmdMining(base.BaseCommand):
                         work_asset_path=work_asset_path,
                         work_index_file=work_index_file)
 
+        model_hash, stage_name = mir_utils.parse_model_hash_stage(model_hash_stage)
+        model_storage = models.prepare_model(model_location=model_location,
+                                             model_hash=model_hash,
+                                             stage_name=stage_name,
+                                             dst_model_path=work_model_path)
+
         return_code = MirCode.RC_OK
         return_msg = ''
         try:
-            _, model_storage = infer.CmdInfer.run_with_args(work_dir=work_dir,
-                                                            mir_root=mir_root,
-                                                            media_path=work_asset_path,
-                                                            model_location=model_location,
-                                                            model_hash_stage=model_hash_stage,
-                                                            index_file=work_index_file,
-                                                            config_file=config_file,
-                                                            task_id=dst_typ_rev_tid.tid,
-                                                            executor=executor,
-                                                            executant_name=executant_name,
-                                                            run_as_root=run_as_root,
-                                                            run_infer=add_prediction,
-                                                            run_mining=(topk is not None))
+            return_code = infer.CmdInfer.run_with_args(work_dir=work_dir,
+                                                       mir_root=mir_root,
+                                                       media_path=work_asset_path,
+                                                       model_storage=model_storage,
+                                                       index_file=work_index_file,
+                                                       config_file=config_file,
+                                                       task_id=dst_typ_rev_tid.tid,
+                                                       executor=executor,
+                                                       executant_name=executant_name,
+                                                       run_as_root=run_as_root,
+                                                       run_infer=add_prediction,
+                                                       run_mining=(topk is not None))
         except CalledProcessError:
             return_code = MirCode.RC_CMD_CONTAINER_ERROR
             return_msg = mir_utils.collect_executor_outlog_tail(work_dir=work_dir)

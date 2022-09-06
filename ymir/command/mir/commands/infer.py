@@ -3,7 +3,7 @@ import json
 import logging
 import os
 import time
-from typing import Any, List, Tuple
+from typing import Any, List
 
 import yaml
 
@@ -37,25 +37,30 @@ class CmdInfer(base.BaseCommand):
     def run(self) -> int:
         logging.debug("command infer: %s", self.args)
 
+        work_dir_in_model = os.path.join(self.args.work_dir, 'in', 'models')
+        model_hash, stage_name = mir_utils.parse_model_hash_stage(self.args.model_hash_stage)
+        model_storage = models.prepare_model(model_location=self.args.model_location,
+                                             model_hash=model_hash,
+                                             stage_name=stage_name,
+                                             dst_model_path=work_dir_in_model)
+
         return CmdInfer.run_with_args(work_dir=self.args.work_dir,
                                       mir_root=self.args.mir_root,
                                       media_path=os.path.join(self.args.work_dir, 'assets'),
-                                      model_location=self.args.model_location,
-                                      model_hash_stage=self.args.model_hash_stage,
+                                      model_storage=model_storage,
                                       index_file=self.args.index_file,
                                       config_file=self.args.config_file,
                                       executor=self.args.executor,
                                       executant_name=self.args.executant_name,
                                       run_as_root=self.args.run_as_root,
                                       run_infer=True,
-                                      run_mining=False)[0]
+                                      run_mining=False)
 
     @staticmethod
     def run_with_args(work_dir: str,
                       mir_root: str,
                       media_path: str,
-                      model_location: str,
-                      model_hash_stage: str,
+                      model_storage: models.ModelStorage,
                       index_file: str,
                       config_file: str,
                       executor: str,
@@ -63,7 +68,7 @@ class CmdInfer(base.BaseCommand):
                       run_as_root: bool,
                       task_id: str = f"default-infer-{time.time()}",
                       run_infer: bool = False,
-                      run_mining: bool = False) -> Tuple[int, mir_utils.ModelStorage]:
+                      run_mining: bool = False) -> int:
         """run infer command
 
         This function can be called from cmd infer, or as part of minig cmd
@@ -92,12 +97,6 @@ class CmdInfer(base.BaseCommand):
         if not work_dir:
             raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
                                   error_message='empty --work-dir')
-        if not model_location:
-            raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
-                                  error_message='empty --model-location')
-        if not model_hash_stage:
-            raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
-                                  error_message='empty --model-hash')
         if not index_file or not os.path.isfile(index_file):
             raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
                                   error_message=f"invalid --index-file: {index_file}")
@@ -125,27 +124,21 @@ class CmdInfer(base.BaseCommand):
                               work_dir_out=work_dir_out,
                               asset_cache_dir=media_path)
 
-        work_dir_in_model = os.path.join(work_dir_in, 'models')
         work_index_file = os.path.join(work_dir_in, 'candidate-index.tsv')
         work_config_file = os.path.join(work_dir_in, 'config.yaml')
         work_env_config_file = os.path.join(work_dir_in, 'env.yaml')
 
         _prepare_assets(index_file=index_file, work_index_file=work_index_file, media_path=media_path)
 
-        model_hash, stage_name = mir_utils.parse_model_hash_stage(model_hash_stage)
-        model_storage = models.prepare_model(model_location=model_location,
-                                             model_hash=model_hash,
-                                             stage_name=stage_name,
-                                             dst_model_path=work_dir_in_model)
-        model_names = model_storage.stages[stage_name].files
         class_names = model_storage.class_names
         if not class_names:
-            raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_FILE,
-                                  error_message=f"empty class names in model: {model_hash_stage}")
+            raise MirRuntimeError(
+                error_code=MirCode.RC_CMD_INVALID_FILE,
+                error_message=f"empty class names in model: {model_storage.model_hash}@{model_storage.stage_name}")
 
+        model_names = model_storage.stages[model_storage.stage_name].files
         with open(config_file, 'r') as f:
             config = yaml.safe_load(f)
-
         prepare_config_file(config=config,
                             dst_config_file=work_config_file,
                             class_names=class_names,
@@ -176,7 +169,7 @@ class CmdInfer(base.BaseCommand):
                                    max_boxes=_get_max_boxes(config_file),
                                    mir_root=mir_root)
 
-        return MirCode.RC_OK, model_storage
+        return MirCode.RC_OK
 
 
 def _prepare_assets(index_file: str, work_index_file: str, media_path: str) -> None:

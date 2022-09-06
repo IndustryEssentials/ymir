@@ -130,7 +130,11 @@ class ModelStorage(BaseModel):
 
 
 def parse_model_hash_stage(model_hash_stage: str) -> Tuple[str, str]:
-    model_hash, stage_name = model_hash_stage.split('@')
+    components = model_hash_stage.split('@')
+    model_hash = ''
+    stage_name = ''
+    if len(components) == 2:
+        model_hash, stage_name = components
     if not model_hash or not stage_name:
         raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
                               error_message=f"invalid model hash stage: {model_hash_stage}")
