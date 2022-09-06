@@ -168,7 +168,9 @@ class CmdCopy(base.BaseCommand):
     @staticmethod
     def _gen_unknown_names_and_count(data_mir_root: str, mir_context: mirpb.MirContext,
                                      src_to_dst_ids: Dict[int, int]) -> Dict[str, int]:
-        unknown_src_class_ids = {src_id for src_id, dst_id in src_to_dst_ids.items() if dst_id == -1}
+        all_src_class_ids = set(mir_context.pred_stats.class_ids_cnt.keys()) | set(
+            mir_context.gt_stats.class_ids_cnt.keys())
+        unknown_src_class_ids = {src_id for src_id in all_src_class_ids if src_to_dst_ids[src_id] == -1}
         if not unknown_src_class_ids:
             return {}
 
