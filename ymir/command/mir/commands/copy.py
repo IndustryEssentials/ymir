@@ -176,11 +176,14 @@ class CmdCopy(base.BaseCommand):
 
         src_class_id_mgr = class_ids.ClassIdManager(mir_root=data_mir_root)
 
-        return {
-            src_class_id_mgr.main_name_for_id(src_id) or 'unknown_name':
-            mir_context.pred_stats.class_ids_cnt[src_id] + mir_context.gt_stats.class_ids_cnt[src_id]
-            for src_id in unknown_src_class_ids
-        }
+        unknown_names_and_count: Dict[str, int] = {}
+        for src_id in unknown_src_class_ids:
+            name = src_class_id_mgr.main_name_for_id(src_id)
+            if name is None:
+                raise ValueError(f"copy: unknown src class id: {src_id}")
+            unknown_names_and_count[
+                name] = mir_context.pred_stats.class_ids_cnt[src_id] + mir_context.gt_stats.class_ids_cnt[src_id]
+        return unknown_names_and_count
 
 
 def bind_to_subparsers(subparsers: argparse._SubParsersAction, parent_parser: argparse.ArgumentParser) -> None:
