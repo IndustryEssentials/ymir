@@ -138,45 +138,36 @@ class CmdCopy(base.BaseCommand):
         dst_class_id_mgr = class_ids.ClassIdManager(mir_root=dst_mir_root)
         src_class_id_mgr = class_ids.ClassIdManager(mir_root=data_mir_root)
 
+        def _src_to_dst_class_id(src_class_id: int) -> int:
+            if not src_class_id_mgr.has_id(src_class_id):
+                raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
+                                      error_message=f"broken data_mir_root, unknown src id: {src_class_id}")
+            if src_class_id in src_to_dst_ids:
+                return src_to_dst_ids[src_class_id]
+
+            src_class_name = src_class_id_mgr.main_name_for_id(src_class_id) or ''
+            dst_class_id = dst_class_id_mgr.id_and_main_name_for_name(src_class_name)[0]
+            if dst_class_id >= 0:
+                src_to_dst_ids[src_class_id] = dst_class_id
+            else:
+                unknown_types_and_count[src_class_name] += 1
+            return dst_class_id
+
         for single_image_annotations in single_task_annotations.image_annotations.values():
             dst_image_annotations: List[mirpb.Annotation] = []
             for annotation in single_image_annotations.annotations:
-                src_type_id = annotation.class_id
-                if not src_class_id_mgr.has_id(src_type_id):
-                    # if we can not find src type id in data_mir_root's labels.csv, this repo in invalid and cannot copy
-                    logging.error(f"broken data_mir_root, unknown src id: {annotation.class_id}")
-                    return MirCode.RC_CMD_INVALID_MIR_REPO, unknown_types_and_count
-
-                if src_type_id in src_to_dst_ids:
-                    # get mapping from cache
-                    annotation.class_id = src_to_dst_ids[src_type_id]
+                dst_class_id = _src_to_dst_class_id(src_class_id=annotation.class_id)
+                if dst_class_id >= 0:
+                    annotation.class_id = dst_class_id
                     dst_image_annotations.append(annotation)
-                else:
-                    # if no cache, src_id -> src_type_name -> dst_id
-                    src_type_name = src_class_id_mgr.main_name_for_id(src_type_id) or ''
-                    if dst_class_id_mgr.has_name(src_type_name):
-                        annotation.class_id = dst_class_id_mgr.id_and_main_name_for_name(src_type_name)[0]
-                        dst_image_annotations.append(annotation)
-
-                        src_to_dst_ids[src_type_id] = annotation.class_id  # save cache
-                    else:
-                        unknown_types_and_count[src_type_name] += 1
-
             del single_image_annotations.annotations[:]
             single_image_annotations.annotations.extend(dst_image_annotations)
 
         dst_eval_class_ids: List[int] = []
-        for src_type_id in single_task_annotations.eval_class_ids:
-            if src_type_id in src_to_dst_ids:
-                dst_eval_class_ids.append(src_to_dst_ids[src_type_id])
-            else:
-                src_type_name = src_class_id_mgr.main_name_for_id(src_type_id) or ''
-                if dst_class_id_mgr.has_name(src_type_name):
-                    dst_type_id = dst_class_id_mgr.id_and_main_name_for_name(src_type_name)[0]
-                    dst_eval_class_ids.append(dst_type_id)
-                    src_to_dst_ids[src_type_id] = dst_type_id  # save cache
-                else:
-                    unknown_types_and_count[src_type_name] += 1
+        for src_class_id in single_task_annotations.eval_class_ids:
+            dst_class_id = _src_to_dst_class_id(src_class_id=src_class_id)
+            if dst_class_id >= 0:
+                dst_eval_class_ids.append(dst_class_id)
         single_task_annotations.eval_class_ids[:] = dst_eval_class_ids
 
         return MirCode.RC_OK, unknown_types_and_count
