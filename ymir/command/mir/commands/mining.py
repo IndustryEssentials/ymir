@@ -246,8 +246,8 @@ def _process_results(mir_root: str, export_out: str, dst_typ_rev_tid: revs_parse
         pred_asset_ids = set(mir_annotations.prediction.image_annotations.keys()) & asset_ids_set
         for asset_id in pred_asset_ids:
             prediction.image_annotations[asset_id].CopyFrom(mir_annotations.prediction.image_annotations[asset_id])
-        annotations.reset_annotations_pred_meta(src_task_annotations=mir_annotations.prediction,
-                                                dst_task_annotations=prediction)
+        annotations.copy_annotations_pred_meta(src_task_annotations=mir_annotations.prediction,
+                                               dst_task_annotations=prediction)
 
     #   update mir annotations: ground truth
     ground_truth = matched_mir_annotations.ground_truth
