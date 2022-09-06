@@ -65,6 +65,7 @@ class CmdCopy(base.BaseCommand):
         # read from src mir root
         mir_metadatas: mirpb.MirMetadatas
         mir_annotations: mirpb.MirAnnotations
+        mir_context: mirpb.MirContext
         mir_tasks: mirpb.MirTasks
         mir_metadatas, mir_annotations, mir_context, mir_tasks = mir_storage_ops.MirStorageOps.load_multiple_storages(
             mir_root=data_mir_root,
