@@ -85,11 +85,17 @@ class CmdCopy(base.BaseCommand):
             need_change_class_ids = False
 
         if need_change_class_ids:
-            src_to_dst_ids = CmdCopy._gen_src_to_dst_ids(data_mir_root=data_mir_root, dst_mir_root=mir_root)
+            src_class_id_mgr = class_ids.ClassIdManager(mir_root=data_mir_root)
+            dst_class_id_mgr = class_ids.ClassIdManager(mir_root=mir_root)
+            src_to_dst_ids = {
+                src_class_id_mgr.id_and_main_name_for_name(n)[0]: dst_class_id_mgr.id_and_main_name_for_name(n)[0]
+                for n in src_class_id_mgr.all_main_names()
+            }
+
             CmdCopy._change_type_ids(single_task_annotations=mir_annotations.prediction, src_to_dst_ids=src_to_dst_ids)
             CmdCopy._change_type_ids(single_task_annotations=mir_annotations.ground_truth,
                                      src_to_dst_ids=src_to_dst_ids)
-            unknown_names_and_count = CmdCopy._gen_unknown_names_and_count(data_mir_root=data_mir_root,
+            unknown_names_and_count = CmdCopy._gen_unknown_names_and_count(src_class_id_mgr=src_class_id_mgr,
                                                                            mir_context=mir_context,
                                                                            src_to_dst_ids=src_to_dst_ids)
 
@@ -166,15 +172,13 @@ class CmdCopy(base.BaseCommand):
         }
 
     @staticmethod
-    def _gen_unknown_names_and_count(data_mir_root: str, mir_context: mirpb.MirContext,
+    def _gen_unknown_names_and_count(src_class_id_mgr: class_ids.ClassIdManager, mir_context: mirpb.MirContext,
                                      src_to_dst_ids: Dict[int, int]) -> Dict[str, int]:
         all_src_class_ids = set(mir_context.pred_stats.class_ids_cnt.keys()) | set(
             mir_context.gt_stats.class_ids_cnt.keys())
         unknown_src_class_ids = {src_id for src_id in all_src_class_ids if src_to_dst_ids[src_id] == -1}
         if not unknown_src_class_ids:
             return {}
-
-        src_class_id_mgr = class_ids.ClassIdManager(mir_root=data_mir_root)
 
         unknown_names_and_count: Dict[str, int] = {}
         for src_id in unknown_src_class_ids:
