@@ -1,5 +1,4 @@
 import argparse
-from collections import defaultdict
 import logging
 from typing import Dict, List, Set, Tuple
 
