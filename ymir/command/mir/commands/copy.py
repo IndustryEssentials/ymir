@@ -164,15 +164,6 @@ class CmdCopy(base.BaseCommand):
         single_task_annotations.eval_class_ids[:] = dst_eval_class_ids
 
     @staticmethod
-    def _gen_src_to_dst_ids(data_mir_root: str, dst_mir_root: str) -> Dict[int, int]:
-        src_class_id_mgr = class_ids.ClassIdManager(mir_root=data_mir_root)
-        dst_class_id_mgr = class_ids.ClassIdManager(mir_root=dst_mir_root)
-        return {
-            src_class_id_mgr.id_and_main_name_for_name(n)[0]: dst_class_id_mgr.id_and_main_name_for_name(n)[0]
-            for n in src_class_id_mgr.all_main_names()
-        }
-
-    @staticmethod
     def _gen_unknown_names_and_count(src_class_id_mgr: class_ids.ClassIdManager, mir_context: mirpb.MirContext,
                                      src_to_dst_ids: Dict[int, int]) -> Dict[str, int]:
         all_src_class_ids = set(mir_context.pred_stats.class_ids_cnt.keys()) | set(
