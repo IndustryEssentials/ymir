@@ -170,11 +170,10 @@ class CmdCopy(base.BaseCommand):
     def _gen_src_to_dst_ids(data_mir_root: str, dst_mir_root: str) -> Dict[int, int]:
         src_class_id_mgr = class_ids.ClassIdManager(mir_root=data_mir_root)
         dst_class_id_mgr = class_ids.ClassIdManager(mir_root=dst_mir_root)
-        src_to_dst_ids: Dict[int, int] = {}
-        for src_class_id in src_class_id_mgr.all_ids():
-            src_class_name = src_class_id_mgr.main_name_for_id(src_class_id) or ''
-            src_to_dst_ids[src_class_id] = dst_class_id_mgr.id_and_main_name_for_name(src_class_name)[0]
-        return src_to_dst_ids
+        return {
+            src_class_id_mgr.id_and_main_name_for_name(n)[0]: dst_class_id_mgr.id_and_main_name_for_name(n)[0]
+            for n in src_class_id_mgr.all_main_names()
+        }
 
     @staticmethod
     def _gen_unknown_names_and_count(unknown_src_class_ids: Set[int], data_mir_root: str,
