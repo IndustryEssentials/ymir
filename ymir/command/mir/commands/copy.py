@@ -4,7 +4,7 @@ from typing import Dict, List
 
 from mir.commands import base
 from mir.protos import mir_command_pb2 as mirpb
-from mir.tools import checker, class_ids, revs_parser, mir_repo_utils, mir_storage, mir_storage_ops
+from mir.tools import checker, class_ids, revs_parser, mir_repo_utils, mir_storage_ops
 from mir.tools.code import MirCode
 from mir.tools.command_run_in_out import command_run_in_out
 from mir.tools.errors import MirRuntimeError
@@ -66,12 +66,12 @@ class CmdCopy(base.BaseCommand):
         mir_metadatas: mirpb.MirMetadatas
         mir_annotations: mirpb.MirAnnotations
         mir_tasks: mirpb.MirTasks
-        [mir_metadatas, mir_annotations, _, mir_tasks,
-         _] = mir_storage_ops.MirStorageOps.load_multiple_storages(mir_root=data_mir_root,
-                                                                   mir_branch=data_src_typ_rev_tid.rev,
-                                                                   mir_task_id=data_src_typ_rev_tid.tid,
-                                                                   ms_list=mir_storage.get_all_mir_storage(),
-                                                                   as_dict=False)
+        mir_metadatas, mir_annotations, mir_tasks = mir_storage_ops.MirStorageOps.load_multiple_storages(
+            mir_root=data_mir_root,
+            mir_branch=data_src_typ_rev_tid.rev,
+            mir_task_id=data_src_typ_rev_tid.tid,
+            ms_list=[mirpb.MIR_METADATAS, mirpb.MIR_ANNOTATIONS, mirpb.MIR_TASKS],
+            as_dict=False)
 
         PhaseLoggerCenter.update_phase(phase='copy.read')
 
@@ -86,8 +86,7 @@ class CmdCopy(base.BaseCommand):
 
         if need_change_class_ids:
             src_to_dst_ids = CmdCopy._gen_src_to_dst_ids(data_mir_root=data_mir_root, dst_mir_root=mir_root)
-            CmdCopy._change_type_ids(single_task_annotations=mir_annotations.prediction,
-                                     src_to_dst_ids=src_to_dst_ids)
+            CmdCopy._change_type_ids(single_task_annotations=mir_annotations.prediction, src_to_dst_ids=src_to_dst_ids)
             CmdCopy._change_type_ids(single_task_annotations=mir_annotations.ground_truth,
                                      src_to_dst_ids=src_to_dst_ids)
             unknown_names_and_count = CmdCopy._gen_unknown_names_and_count(data_mir_root=data_mir_root,
@@ -167,8 +166,7 @@ class CmdCopy(base.BaseCommand):
         }
 
     @staticmethod
-    def _gen_unknown_names_and_count(data_mir_root: str,
-                                     data_rev_tid: revs_parser.TypRevTid,
+    def _gen_unknown_names_and_count(data_mir_root: str, data_rev_tid: revs_parser.TypRevTid,
                                      src_to_dst_ids: Dict[int, int]) -> Dict[str, int]:
         unknown_src_class_ids = {src_id for src_id, dst_id in src_to_dst_ids.items() if dst_id == -1}
         if not unknown_src_class_ids:
