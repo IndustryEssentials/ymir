@@ -33,7 +33,7 @@ function findClosestPoint(target, points = [], field = 'x') {
   return points?.reduce((prev, curr) => Math.abs(prev[field] - target) <= Math.abs(curr[field] - target) ? prev : curr, 1)
 }
 
-const PView = ({ tasks, datasets, models, data, prType, prRate, xType, kw: { kwType, keywords } }) => {
+const PView = ({ tasks, datasets, models, data, prType, prRate, xType, kw: { keywords } }) => {
   const [list, setList] = useState([])
   const [dd, setDD] = useState([])
   const [kd, setKD] = useState([])
@@ -45,6 +45,7 @@ const PView = ({ tasks, datasets, models, data, prType, prRate, xType, kw: { kwT
   const [pointField, setPointField] = useState(['x', 'y'])
   const [labels, setLabels] = useState({})
   const [hiddens, setHiddens] = useState({})
+  const kwType = 0
 
   useEffect(() => {
     const min = prRate[0]
@@ -65,7 +66,7 @@ const PView = ({ tasks, datasets, models, data, prType, prRate, xType, kw: { kwT
       setDData(null)
       setKData(null)
     }
-  }, [kwType, data, keywords])
+  }, [data, keywords])
 
   useEffect(() => {
     setDD(datasets.map(opt))
@@ -73,12 +74,10 @@ const PView = ({ tasks, datasets, models, data, prType, prRate, xType, kw: { kwT
 
   useEffect(() => {
     if (data && keywords) {
-      const kws = kwType ?
-        getCK(data, keywords) :
-        keywords.map(k => ({ value: k, label: k }))
+      const kws = keywords.map(k => ({ value: k, label: k }))
       setKD(kws)
     }
-  }, [keywords, data, kwType])
+  }, [keywords, data])
 
   useEffect(() => {
     const cls = generateColumns()
@@ -112,14 +111,8 @@ const PView = ({ tasks, datasets, models, data, prType, prRate, xType, kw: { kwT
       const fiou = getKwField(data[id], kwType)
       Object.keys(fiou).forEach(key => {
         kdata[key] = kdata[key] || {}
-        if (kwType) {
-          Object.keys(fiou[key].sub).forEach(subKey => {
-            kdata[key][subKey] = kdata[key][subKey] || { _average: fiou[key].total }
-            kdata[key][subKey][id] = fiou[key].sub[subKey]
-          })
-        } else {
           kdata[key][id] = fiou[key]
-        }
+        
       })
     })
     setKData(kdata)
@@ -131,7 +124,6 @@ const PView = ({ tasks, datasets, models, data, prType, prRate, xType, kw: { kwT
       id: value, label,
       rows: isDs ? generateDsRows(value) : generateKwRows(value),
     }))
-    console.log('list:', list)
     setList(list)
   }
 
@@ -140,7 +132,7 @@ const PView = ({ tasks, datasets, models, data, prType, prRate, xType, kw: { kwT
 
     return tts.map(({ model, result: rid }) => {
       return range.map(rate => {
-        const ddata = (kwType ? dData[rid][keywords]?.sub : dData[rid]) || {}
+        const ddata = dData[rid] || {}
 
         const _model = getModelCell(rid, tasks, models)
         const kwPoints = kd.map(({ value: kw }) => {
@@ -169,7 +161,7 @@ const PView = ({ tasks, datasets, models, data, prType, prRate, xType, kw: { kwT
 
   // todo
   function generateKwRows(kw) {
-    const kdata = (kwType ? kData[keywords][kw] : kData[kw]) || {}
+    const kdata = kData[kw] || {}
 
 
     const mids = Object.values(tasks.reduce((prev, { model, stage, config }) => {

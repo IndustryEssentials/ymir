@@ -5,14 +5,6 @@ import { isSame } from '@/utils/object'
 import Panel from "@/components/form/panel"
 import { average, getCK, getKwField, getModelCell, opt, percentRender } from "./common"
 
-// const opt = d => ({ value: d.id, label: `${d.name} ${d.versionName}`, })
-
-// const average = (nums = []) => nums.reduce((prev, num) => !Number.isNaN(num) ? prev + num : prev, 0) / nums.length
-
-// const getKwField = ({ iou_evaluations, iou_averaged_evaluation }, type) => !type ?
-//   Object.values(iou_evaluations)[0]['ci_evaluations'] :
-//   iou_averaged_evaluation['ck_evaluations']
-
 const MapView = ({ tasks, datasets, models, data, xType, kw: { kwType, keywords } }) => {
   const [list, setList] = useState([])
   const [dd, setDD] = useState([])
@@ -39,9 +31,7 @@ const MapView = ({ tasks, datasets, models, data, xType, kw: { kwType, keywords 
 
   useEffect(() => {
     if (data && keywords) {
-      const kws = kwType ?
-        getCK(data, keywords) :
-        keywords.map(k => ({ value: k, label: k }))
+      const kws = keywords.map(k => ({ value: k, label: k }))
       setKD(kws)
     }
   }, [keywords, data, kwType])
@@ -78,14 +68,7 @@ const MapView = ({ tasks, datasets, models, data, xType, kw: { kwType, keywords 
       const fiou = getKwField(data[id], kwType)
       Object.keys(fiou).forEach(key => {
         kdata[key] = kdata[key] || {}
-        if (kwType) {
-          Object.keys(fiou[key].sub).forEach(subKey => {
-            kdata[key][subKey] = kdata[key][subKey] || { _average: fiou[key].total }
-            kdata[key][subKey][id] = fiou[key].sub[subKey]
-          })
-        } else {
-          kdata[key][id] = fiou[key]
-        }
+        kdata[key][id] = fiou[key]
       })
     })
     setKData(kdata)
@@ -103,7 +86,7 @@ const MapView = ({ tasks, datasets, models, data, xType, kw: { kwType, keywords 
   function generateDsRows(tid) {
     const tts = tasks.filter(({ testing }) => testing === tid)
     return tts.map(({ result: rid }) => {
-      const ddata = (kwType ? dData[rid][keywords]?.sub : dData[rid]) || {}
+      const ddata = dData[rid] || {}
       const kwAps = kd.reduce((prev, { value: kw }) => {
         return {
           ...prev,
@@ -122,7 +105,7 @@ const MapView = ({ tasks, datasets, models, data, xType, kw: { kwType, keywords 
   }
 
   const generateKwRows = (kw) => {
-    const kdata = kwType ? kData[keywords][kw] : kData[kw]
+    const kdata = kData[kw]
 
     const mids = Object.values(tasks.reduce((prev, { model, stage, config }) => {
       const id = `${model}${stage}${JSON.stringify(config)}`
@@ -142,7 +125,7 @@ const MapView = ({ tasks, datasets, models, data, xType, kw: { kwType, keywords 
           [testing]: kdata[result]?.ap,
         }
       }, {}) : {}
-      const _average = kwType ? kdata._average?.ap : average(Object.values(drow))
+      const _average = average(Object.values(drow))
       return {
         id,
         config,
