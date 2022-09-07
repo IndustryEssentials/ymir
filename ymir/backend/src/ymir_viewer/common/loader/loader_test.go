@@ -118,12 +118,12 @@ func TestLoadAssetsDetail(t *testing.T) {
 	mirAnnotations := &protos.MirAnnotations{
 		GroundTruth: &protos.SingleTaskAnnotations{
 			ImageAnnotations: map[string]*protos.SingleImageAnnotations{
-				"a": {Annotations: []*protos.Annotation{{ClassId: 1}}},
+				"a": {Boxes: []*protos.ObjectAnnotation{{ClassId: 1}}},
 			},
 		},
 		Prediction: &protos.SingleTaskAnnotations{
 			ImageAnnotations: map[string]*protos.SingleImageAnnotations{
-				"a": {Annotations: []*protos.Annotation{{ClassId: 1}}},
+				"a": {Boxes: []*protos.ObjectAnnotation{{ClassId: 1}}},
 			},
 		},
 		ImageCks: map[string]*protos.SingleImageCks{"a": {Cks: map[string]string{"abc": "1"}}},
@@ -165,6 +165,7 @@ func TestLoadAssetsDetail(t *testing.T) {
 					"cm": 0,
 					"det_link_id": 0,
 					"index": 0,
+					"polygon": [],
 					"score": 0,
 					"tags":
 					{}
@@ -176,6 +177,7 @@ func TestLoadAssetsDetail(t *testing.T) {
 					"anno_quality": 0,
 					"box": null,
 					"class_id": 1,
+					"polygon": [],
 					"class_name": "",
 					"cm": 0,
 					"det_link_id": 0,

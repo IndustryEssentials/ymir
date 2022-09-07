@@ -179,7 +179,7 @@ class TestCmdImport(unittest.TestCase):
         if with_person_ignored:
             dict_image_annotations_expect = {
                 'a3008c032eb11c8d9ffcb58208a36682ee40900f': {
-                    'annotations': [{
+                    'boxes': [{
                         'box': {
                             'x': 181,
                             'y': 127,
@@ -197,10 +197,11 @@ class TestCmdImport(unittest.TestCase):
                             'color': 'pink',
                             'pose': 'Unspecified'
                         }
-                    }]
+                    }],
+                    'img_class_ids': [1],
                 },
                 '430df22960b0f369318705800139fcc8ec38a3e4': {
-                    'annotations': [{
+                    'boxes': [{
                         'box': {
                             'x': 104,
                             'y': 78,
@@ -236,13 +237,14 @@ class TestCmdImport(unittest.TestCase):
                             'color': 'blue',
                             'pose': 'Left'
                         }
-                    }]
+                    }],
+                    'img_class_ids': [1],
                 }
             }
         else:
             dict_image_annotations_expect = {
                 'a3008c032eb11c8d9ffcb58208a36682ee40900f': {
-                    'annotations': [{
+                    'boxes': [{
                         'box': {
                             'x': 181,
                             'y': 127,
@@ -260,10 +262,11 @@ class TestCmdImport(unittest.TestCase):
                             'color': 'pink',
                             'pose': 'Unspecified'
                         }
-                    }]
+                    }],
+                    'img_class_ids': [1],
                 },
                 '430df22960b0f369318705800139fcc8ec38a3e4': {
-                    'annotations': [{
+                    'boxes': [{
                         'box': {
                             'x': 104,
                             'y': 78,
@@ -334,7 +337,8 @@ class TestCmdImport(unittest.TestCase):
                             'difficult': '1',
                             'pose': 'Rear'
                         }
-                    }]
+                    }],
+                    'img_class_ids': [1, 2],
                 }
             }
         mir_annotations_expected = mirpb.MirAnnotations()

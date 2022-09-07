@@ -58,7 +58,7 @@ class MirCoco:
                 continue
 
             single_image_annotations = single_task_annotations.image_annotations[asset_id]
-            for annotation in single_image_annotations.annotations:
+            for annotation in single_image_annotations.boxes:
                 if conf_thr is not None and annotation.score < conf_thr:
                     continue
 

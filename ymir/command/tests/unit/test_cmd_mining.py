@@ -52,7 +52,7 @@ class TestMiningCmd(unittest.TestCase):
         fake_infer_output_dict = {
             'detection': {
                 'd4e4a60147f1e35bc7f5bc89284aa16073b043c9': {
-                    'annotations': [
+                    'boxes': [
                         {
                             'box': {
                                 'x': 0,

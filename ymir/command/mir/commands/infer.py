@@ -3,7 +3,7 @@ import json
 import logging
 import os
 import time
-from typing import Any, List
+from typing import Any
 
 import yaml
 
@@ -229,14 +229,15 @@ def _process_infer_results(infer_result_file: str, max_boxes: int, mir_root: str
 
     class_id_mgr = class_ids.ClassIdManager(mir_root=mir_root)
 
-    if 'detection' in results:
-        names_annotations_dict = results['detection']
-        for _, annotations_dict in names_annotations_dict.items():
-            if 'annotations' in annotations_dict and isinstance(annotations_dict['annotations'], list):
-                annotations_list: List[dict] = annotations_dict['annotations']
-                annotations_list.sort(key=(lambda x: x['score']), reverse=True)
-                annotations_list = [a for a in annotations_list if class_id_mgr.has_name(a['class_name'])]
-                annotations_dict['annotations'] = annotations_list[:max_boxes]
+    for _, annotations_dict in results.get('detection', {}).items():
+        # Compatible with previous version of format.
+        annotations = annotations_dict.get('boxes') or annotations_dict.get('annotations')
+        if not isinstance(annotations, list):
+            continue
+
+        annotations.sort(key=(lambda x: x['score']), reverse=True)
+        annotations = [a for a in annotations if class_id_mgr.has_name(a['class_name'])]
+        annotations_dict['boxes'] = annotations[:max_boxes]
 
     with open(infer_result_file, 'w') as f:
         f.write(json.dumps(results, indent=4))

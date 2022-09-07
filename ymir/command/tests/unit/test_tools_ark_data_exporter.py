@@ -86,7 +86,7 @@ class TestArkDataExporter(unittest.TestCase):
                 'task_id': 'a',
                 'image_annotations': {
                     '430df22960b0f369318705800139fcc8ec38a3e4': {
-                        'annotations': [{
+                        'boxes': [{
                             'index': 0,
                             'box': {
                                 'x': 104,
@@ -129,7 +129,7 @@ class TestArkDataExporter(unittest.TestCase):
                         }]
                     },
                     'a3008c032eb11c8d9ffcb58208a36682ee40900f': {
-                        'annotations': [{
+                        'boxes': [{
                             'index': 0,
                             'box': {
                                 'x': 181,
@@ -224,7 +224,7 @@ class TestArkDataExporter(unittest.TestCase):
                                        class_ids={2}) as reader:
             for asset_id, attrs, image_annotations, *_ in reader.read():
                 if asset_id == '430df22960b0f369318705800139fcc8ec38a3e4':
-                    self.assertEqual(2, len(image_annotations.annotations))
+                    self.assertEqual(2, len(image_annotations.boxes))
                     self.assertEqual((500, 281), (attrs.width, attrs.height))
             self.assertEqual(2, len(list(reader.read())))
 

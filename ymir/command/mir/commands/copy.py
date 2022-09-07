@@ -147,14 +147,14 @@ class CmdCopy(base.BaseCommand):
         src_to_dst_ids: Dict[int, int],
     ) -> None:
         for single_image_annotations in single_task_annotations.image_annotations.values():
-            dst_image_annotations: List[mirpb.Annotation] = []
-            for annotation in single_image_annotations.annotations:
+            dst_image_annotations: List[mirpb.ObjectAnnotation] = []
+            for annotation in single_image_annotations.boxes:
                 dst_class_id = src_to_dst_ids[annotation.class_id]
                 if dst_class_id >= 0:
                     annotation.class_id = dst_class_id
                     dst_image_annotations.append(annotation)
-            del single_image_annotations.annotations[:]
-            single_image_annotations.annotations.extend(dst_image_annotations)
+            del single_image_annotations.boxes[:]
+            single_image_annotations.boxes.extend(dst_image_annotations)
 
         dst_eval_class_ids: List[int] = []
         for src_class_id in single_task_annotations.eval_class_ids:

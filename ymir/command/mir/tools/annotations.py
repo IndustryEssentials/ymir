@@ -34,7 +34,7 @@ class ClassTypeIdAndCount:
 AnnoNewTypes = Dict[str, ClassTypeIdAndCount]
 
 
-def _object_dict_to_annotation(object_dict: dict, cid: int) -> mirpb.Annotation:
+def _object_dict_to_annotation(object_dict: dict, cid: int) -> mirpb.ObjectAnnotation:
     bndbox_dict: dict = object_dict['bndbox']
     if not bndbox_dict:
         raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS, error_message='found no value for bndbox')
@@ -46,7 +46,7 @@ def _object_dict_to_annotation(object_dict: dict, cid: int) -> mirpb.Annotation:
     width = xmax - xmin + 1
     height = ymax - ymin + 1
 
-    annotation = mirpb.Annotation()
+    annotation = mirpb.ObjectAnnotation()
     annotation.class_id = cid
     annotation.box.x = xmin
     annotation.box.y = ymin
@@ -210,7 +210,7 @@ def _import_annotations_from_dir(mir_metadatas: mirpb.MirMetadatas, mir_annotati
                 if cid >= 0:
                     annotation = _object_dict_to_annotation(object_dict, cid)
                     annotation.index = anno_idx
-                    image_annotations.image_annotations[asset_hash].annotations.append(annotation)
+                    image_annotations.image_annotations[asset_hash].boxes.append(annotation)
                     anno_idx += 1
 
     logging.warning(f"asset count that have no annotations: {missing_annotations_counter}")

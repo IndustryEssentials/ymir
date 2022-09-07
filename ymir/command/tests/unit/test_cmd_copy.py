@@ -87,10 +87,10 @@ class TestCmdCopy(unittest.TestCase):
     def __create_image_annotations(self, type_ids: List[int]) -> mirpb.SingleImageAnnotations:
         single_image_annotations = mirpb.SingleImageAnnotations()
         for idx, type_id in enumerate(type_ids):
-            annotation = mirpb.Annotation()
+            annotation = mirpb.ObjectAnnotation()
             annotation.index = idx
             annotation.class_id = type_id
-            single_image_annotations.annotations.append(annotation)
+            single_image_annotations.boxes.append(annotation)
         return single_image_annotations
 
     # private: check results
@@ -112,11 +112,11 @@ class TestCmdCopy(unittest.TestCase):
         else:
             asset0_idx_ids = {
                 annotation.index: annotation.class_id
-                for annotation in mir_annotations.prediction.image_annotations['asset0'].annotations
+                for annotation in mir_annotations.prediction.image_annotations['asset0'].boxes
             }
             asset1_idx_ids = {
                 annotation.index: annotation.class_id
-                for annotation in mir_annotations.prediction.image_annotations['asset1'].annotations
+                for annotation in mir_annotations.prediction.image_annotations['asset1'].boxes
             }
             self.assertEqual({0: 2, 1: 1}, asset0_idx_ids)
             self.assertEqual({}, asset1_idx_ids)
