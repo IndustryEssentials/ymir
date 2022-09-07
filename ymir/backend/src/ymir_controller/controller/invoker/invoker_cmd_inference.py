@@ -73,19 +73,22 @@ class InferenceCMDInvoker(BaseMirControllerInvoker):
 
         infer_result_file = os.path.join(self._work_dir, "out", "infer-result.json")
         if not os.path.isfile(infer_result_file):
-            return utils.make_general_response(CTLResponseCode.DOCKER_IMAGE_ERROR, "empty inference result.")
+            return utils.make_general_response(CTLResponseCode.DOCKER_IMAGE_ERROR, "inference result not found.")
         with open(infer_result_file) as f:
             infer_result = json.load(f)
 
         resp = utils.make_general_response(CTLResponseCode.CTR_OK, "")
-        json_format.ParseDict(dict(imageAnnotations=infer_result["detection"]),
-                              resp.detection,
-                              ignore_unknown_fields=False)
+        detections = infer_result.get("detection")
+        if not isinstance(detections, dict):
+            return resp
 
         # class_id should be updated, as it was from outside model.
-        for _, annotations in resp.detection.image_annotations.items():
-            for annotation in annotations.annotations:
-                annotation.class_id = self._user_labels.get_class_ids(annotation.class_name, raise_if_unknown=False)[0]
+        for _, annotations in detections.items():
+            for annotation in annotations["boxes"]:
+                annotation["class_id"] = self._user_labels.get_class_ids(annotation["class_name"],
+                                                                         raise_if_unknown=False)[0]
+
+        json_format.ParseDict(dict(image_annotations=detections), resp.detection, ignore_unknown_fields=False)
 
         return resp
 

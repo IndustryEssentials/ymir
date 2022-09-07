@@ -99,8 +99,8 @@ server {
     # static files
     location ~ /ymir-assets/(?<prefix>.+)/(?<filename>.+)$ {
         types { } default_type  "image/jpeg;";
-        try_files /$filename /$prefix/$filename;
         root /data/ymir/ymir-assets;
+        try_files /$prefix/$filename /$filename =404;
     }
 
     location /ymir-models/ {

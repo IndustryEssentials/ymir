@@ -72,7 +72,7 @@ class TestMirStorage(unittest.TestCase):
                 'task_id': 'mining-task-id',
                 "image_annotations": {
                     "a001": {
-                        'annotations': [{
+                        'boxes': [{
                             'box': {
                                 'x': 26,
                                 'y': 189,
@@ -91,7 +91,7 @@ class TestMirStorage(unittest.TestCase):
                         }]
                     },
                     "a002": {
-                        'annotations': [{
+                        'boxes': [{
                             'box': {
                                 'x': 26,
                                 'y': 189,
@@ -110,7 +110,7 @@ class TestMirStorage(unittest.TestCase):
                         }]
                     },
                     "a003": {
-                        'annotations': [{
+                        'boxes': [{
                             'box': {
                                 'x': 26,
                                 'y': 189,

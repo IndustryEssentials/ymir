@@ -50,7 +50,8 @@ class MirStorageOps():
             ground_truth=mir_annotations.ground_truth,
             config=evaluate_config,
         )
-        mir_tasks.tasks[mir_tasks.head_task_id].evaluation.CopyFrom(evaluation)
+        if evaluation:
+            mir_tasks.tasks[mir_tasks.head_task_id].evaluation.CopyFrom(evaluation)
         mir_datas[mirpb.MirStorage.MIR_TASKS] = mir_tasks
 
         # gen mir_keywords
@@ -77,8 +78,11 @@ class MirStorageOps():
     @classmethod
     def __build_mir_keywords_ci_tag(cls, task_annotations: mirpb.SingleTaskAnnotations,
                                     keyword_to_index: mirpb.CiTagToIndex) -> None:
+        task_cis = set()
         for asset_id, single_image_annotations in task_annotations.image_annotations.items():
-            for annotation in single_image_annotations.annotations:
+            image_cis = set()
+            for annotation in single_image_annotations.boxes:
+                image_cis.add(annotation.class_id)
                 # ci to annos
                 keyword_to_index.cis[annotation.class_id].key_ids[asset_id].ids.append(annotation.index)
 
@@ -86,6 +90,11 @@ class MirStorageOps():
                 for k, v in annotation.tags.items():
                     keyword_to_index.tags[k].asset_annos[asset_id].ids.append(annotation.index)
                     keyword_to_index.tags[k].sub_indexes[v].key_ids[asset_id].ids.append(annotation.index)
+
+            single_image_annotations.img_class_ids[:] = image_cis
+            task_cis.update(image_cis)
+
+        task_annotations.task_class_ids[:] = task_cis
 
     @classmethod
     def __build_mir_context_stats(cls, anno_stats: mirpb.AnnoStats, mir_metadatas: mirpb.MirMetadatas,
@@ -97,11 +106,7 @@ class MirStorageOps():
         anno_stats.positive_asset_cnt = len(image_annotations)
         anno_stats.negative_asset_cnt = len(mir_metadatas.attributes) - len(image_annotations)
 
-        # anno_stats.quality_hist
-        all_annotations = [
-            annotation for image_annotation in image_annotations.values() for annotation in image_annotation.annotations
-        ]
-        anno_stats.total_cnt = len(all_annotations)
+        anno_stats.total_cnt = sum([len(image_annotation.boxes) for image_annotation in image_annotations.values()])
 
         # anno_stats.cis_cnt
         for ci, ci_assets in keyword_to_index.cis.items():

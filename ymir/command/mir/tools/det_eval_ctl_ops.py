@@ -30,6 +30,8 @@ def det_evaluate_datasets(
         ground_truth=ground_truth,
         config=evaluate_config,
     )
+    if evaluation is None:
+        return None
 
     # evaluate with ck
     if evaluate_config.main_ck:
@@ -64,12 +66,13 @@ def _evaluate_on_asset_ids(gt: mirpb.SingleTaskAnnotations, pred: mirpb.SingleTa
                            target: mirpb.SingleDatasetEvaluation) -> None:
     pred = _filter_task_annotations_by_asset_ids(task_annotations=pred, asset_ids=asset_ids)
     gt = _filter_task_annotations_by_asset_ids(task_annotations=gt, asset_ids=asset_ids)
-    target.CopyFrom(
-        det_eval_ops.det_evaluate_with_pb(
-            prediction=pred,
-            ground_truth=gt,
-            config=evaluate_config,
-        ).dataset_evaluation)
+    evaluation = det_eval_ops.det_evaluate_with_pb(
+        prediction=pred,
+        ground_truth=gt,
+        config=evaluate_config,
+    )
+    if evaluation is not None:
+        target.CopyFrom(evaluation.dataset_evaluation)
 
 
 def _filter_task_annotations_by_asset_ids(task_annotations: mirpb.SingleTaskAnnotations,

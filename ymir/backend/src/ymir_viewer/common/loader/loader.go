@@ -155,14 +155,14 @@ func (l *MirRepoLoader) LoadAssetsDetail(
 
 		mapClassIDs := map[int32]bool{}
 		if gtAnnotation, ok := gtAnnotations[assetID]; ok {
-			for _, annotation := range gtAnnotation.Annotations {
+			for _, annotation := range gtAnnotation.Boxes {
 				annotationOut := l.buildStructFromMessage(annotation, map[string]interface{}{}).(map[string]interface{})
 				mirAssetDetails[idx].Gt = append(mirAssetDetails[idx].Gt, annotationOut)
 				mapClassIDs[annotation.ClassId] = true
 			}
 		}
 		if predAnnotation, ok := predAnnotations[assetID]; ok {
-			for _, annotation := range predAnnotation.Annotations {
+			for _, annotation := range predAnnotation.Boxes {
 				annotationOut := l.buildStructFromMessage(annotation, map[string]interface{}{}).(map[string]interface{})
 				mirAssetDetails[idx].Pred = append(mirAssetDetails[idx].Pred, annotationOut)
 				mapClassIDs[annotation.ClassId] = true

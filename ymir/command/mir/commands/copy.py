@@ -1,11 +1,10 @@
 import argparse
-from collections import defaultdict
 import logging
-from typing import Dict, List, Set, Tuple
+from typing import Dict, List
 
 from mir.commands import base
 from mir.protos import mir_command_pb2 as mirpb
-from mir.tools import checker, class_ids, revs_parser, mir_repo_utils, mir_storage, mir_storage_ops
+from mir.tools import checker, class_ids, revs_parser, mir_repo_utils, mir_storage_ops
 from mir.tools.code import MirCode
 from mir.tools.command_run_in_out import command_run_in_out
 from mir.tools.errors import MirRuntimeError
@@ -66,32 +65,47 @@ class CmdCopy(base.BaseCommand):
         # read from src mir root
         mir_metadatas: mirpb.MirMetadatas
         mir_annotations: mirpb.MirAnnotations
+        mir_context: mirpb.MirContext
         mir_tasks: mirpb.MirTasks
-        [mir_metadatas, mir_annotations, _, mir_tasks,
-         _] = mir_storage_ops.MirStorageOps.load_multiple_storages(mir_root=data_mir_root,
-                                                                   mir_branch=data_src_typ_rev_tid.rev,
-                                                                   mir_task_id=data_src_typ_rev_tid.tid,
-                                                                   ms_list=mir_storage.get_all_mir_storage(),
-                                                                   as_dict=False)
+        mir_metadatas, mir_annotations, mir_context, mir_tasks = mir_storage_ops.MirStorageOps.load_multiple_storages(
+            mir_root=data_mir_root,
+            mir_branch=data_src_typ_rev_tid.rev,
+            mir_task_id=data_src_typ_rev_tid.tid,
+            ms_list=[mirpb.MIR_METADATAS, mirpb.MIR_ANNOTATIONS, mirpb.MIR_CONTEXT, mirpb.MIR_TASKS],
+            as_dict=False)
 
         PhaseLoggerCenter.update_phase(phase='copy.read')
 
-        pred_annotations, unknown_types = CmdCopy._change_single_task_annotations(
-            data_mir_root=data_mir_root,
-            dst_mir_root=mir_root,
-            single_task_annotations=mir_annotations.prediction,
-            ignore_unknown_types=ignore_unknown_types,
-            drop_annotations=drop_annotations)
-        mir_annotations.prediction.CopyFrom(pred_annotations)
+        need_change_class_ids = True
+        unknown_names_and_count = {}
+        if drop_annotations:
+            mir_annotations.prediction.Clear()
+            mir_annotations.ground_truth.Clear()
+            need_change_class_ids = False
+        if data_mir_root == mir_root:
+            need_change_class_ids = False
 
-        gt_annotations, gt_unknown_types = CmdCopy._change_single_task_annotations(
-            data_mir_root=data_mir_root,
-            dst_mir_root=mir_root,
-            single_task_annotations=mir_annotations.ground_truth,
-            ignore_unknown_types=ignore_unknown_types,
-            drop_annotations=drop_annotations)
-        mir_annotations.ground_truth.CopyFrom(gt_annotations)
-        unknown_types.update(gt_unknown_types)
+        if need_change_class_ids:
+            src_class_id_mgr = class_ids.ClassIdManager(mir_root=data_mir_root)
+            dst_class_id_mgr = class_ids.ClassIdManager(mir_root=mir_root)
+            src_to_dst_ids = {
+                src_class_id_mgr.id_and_main_name_for_name(n)[0]: dst_class_id_mgr.id_and_main_name_for_name(n)[0]
+                for n in src_class_id_mgr.all_main_names()
+            }
+
+            CmdCopy._change_type_ids(single_task_annotations=mir_annotations.prediction, src_to_dst_ids=src_to_dst_ids)
+            CmdCopy._change_type_ids(single_task_annotations=mir_annotations.ground_truth,
+                                     src_to_dst_ids=src_to_dst_ids)
+            unknown_names_and_count = CmdCopy._gen_unknown_names_and_count(src_class_id_mgr=src_class_id_mgr,
+                                                                           mir_context=mir_context,
+                                                                           src_to_dst_ids=src_to_dst_ids)
+
+        if unknown_names_and_count:
+            if ignore_unknown_types:
+                logging.warning(f"unknown types: {unknown_names_and_count}")
+            else:
+                raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_MIR_REPO,
+                                      error_message=f"copy annotations error, unknown types: {unknown_names_and_count}")
 
         # tasks.mir: get necessary head task infos, remove others and change head task id
         orig_head_task_id = mir_tasks.head_task_id
@@ -109,7 +123,7 @@ class CmdCopy(base.BaseCommand):
         task = mir_storage_ops.create_task(task_type=mirpb.TaskType.TaskTypeCopyData,
                                            task_id=dst_typ_rev_tid.tid,
                                            message=f"copy from {data_mir_root}, src: {data_src_revs}, dst: {dst_rev}",
-                                           new_types=unknown_types,
+                                           new_types=unknown_names_and_count,
                                            model_meta=orig_task.model,
                                            serialized_task_parameters=orig_task.serialized_task_parameters,
                                            serialized_executor_config=orig_task.serialized_executor_config,
@@ -130,67 +144,42 @@ class CmdCopy(base.BaseCommand):
     @staticmethod
     def _change_type_ids(
         single_task_annotations: mirpb.SingleTaskAnnotations,
-        data_mir_root: str,
-        dst_mir_root: str,
-    ) -> Tuple[int, Dict[str, int]]:
-        src_to_dst_ids: Dict[int, int] = {}
-        unknown_types_and_count: Dict[str, int] = defaultdict(int)
-        dst_class_id_mgr = class_ids.ClassIdManager(mir_root=dst_mir_root)
-        src_class_id_mgr = class_ids.ClassIdManager(mir_root=data_mir_root)
-
+        src_to_dst_ids: Dict[int, int],
+    ) -> None:
         for single_image_annotations in single_task_annotations.image_annotations.values():
-            dst_keyids_set: Set[int] = set()
-            dst_image_annotations: List[mirpb.Annotation] = []
-            for annotation in single_image_annotations.annotations:
-                src_type_id = annotation.class_id
-                if not src_class_id_mgr.has_id(src_type_id):
-                    # if we can not find src type id in data_mir_root's labels.csv, this repo in invalid and cannot copy
-                    logging.error(f"broken data_mir_root, unknown src id: {annotation.class_id}")
-                    return MirCode.RC_CMD_INVALID_MIR_REPO, unknown_types_and_count
-
-                if src_type_id in src_to_dst_ids:
-                    # get mapping from cache
-                    annotation.class_id = src_to_dst_ids[src_type_id]
+            dst_image_annotations: List[mirpb.ObjectAnnotation] = []
+            for annotation in single_image_annotations.boxes:
+                dst_class_id = src_to_dst_ids[annotation.class_id]
+                if dst_class_id >= 0:
+                    annotation.class_id = dst_class_id
                     dst_image_annotations.append(annotation)
-                else:
-                    # if no cache, src_id -> src_type_name -> dst_id
-                    src_type_name = src_class_id_mgr.main_name_for_id(src_type_id) or ''
-                    if dst_class_id_mgr.has_name(src_type_name):
-                        annotation.class_id = dst_class_id_mgr.id_and_main_name_for_name(src_type_name)[0]
-                        dst_image_annotations.append(annotation)
+            del single_image_annotations.boxes[:]
+            single_image_annotations.boxes.extend(dst_image_annotations)
 
-                        src_to_dst_ids[src_type_id] = annotation.class_id  # save cache
-                        dst_keyids_set.add(annotation.class_id)
-                    else:
-                        unknown_types_and_count[src_type_name] += 1
-
-            del single_image_annotations.annotations[:]
-            single_image_annotations.annotations.extend(dst_image_annotations)
-        return MirCode.RC_OK, unknown_types_and_count
+        dst_eval_class_ids: List[int] = []
+        for src_class_id in single_task_annotations.eval_class_ids:
+            dst_class_id = src_to_dst_ids[src_class_id]
+            if dst_class_id >= 0:
+                dst_eval_class_ids.append(dst_class_id)
+        single_task_annotations.eval_class_ids[:] = dst_eval_class_ids
 
     @staticmethod
-    def _change_single_task_annotations(data_mir_root: str, dst_mir_root: str,
-                                        single_task_annotations: mirpb.SingleTaskAnnotations,
-                                        ignore_unknown_types: bool,
-                                        drop_annotations: bool) -> Tuple[mirpb.SingleTaskAnnotations, Dict[str, int]]:
-        if drop_annotations:
-            return mirpb.SingleTaskAnnotations(), {}
+    def _gen_unknown_names_and_count(src_class_id_mgr: class_ids.ClassIdManager, mir_context: mirpb.MirContext,
+                                     src_to_dst_ids: Dict[int, int]) -> Dict[str, int]:
+        all_src_class_ids = set(mir_context.pred_stats.class_ids_cnt.keys()) | set(
+            mir_context.gt_stats.class_ids_cnt.keys())
+        unknown_src_class_ids = {src_id for src_id in all_src_class_ids if src_to_dst_ids[src_id] == -1}
+        if not unknown_src_class_ids:
+            return {}
 
-        # if don't want to drop annotations
-        # annotations.mir and keywords.mir: change type ids
-        return_code, unknown_types = CmdCopy._change_type_ids(single_task_annotations=single_task_annotations,
-                                                              data_mir_root=data_mir_root,
-                                                              dst_mir_root=dst_mir_root)
-        if return_code != MirCode.RC_OK:
-            raise MirRuntimeError(error_code=return_code, error_message='change annotation type ids failed')
-        if unknown_types:
-            if ignore_unknown_types:
-                logging.warning(f"unknown types: {unknown_types}")
-            else:
-                raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_MIR_REPO,
-                                      error_message=f"copy annotations error, unknown types: {unknown_types}")
-
-        return single_task_annotations, unknown_types
+        unknown_names_and_count: Dict[str, int] = {}
+        for src_id in unknown_src_class_ids:
+            name = src_class_id_mgr.main_name_for_id(src_id)
+            if name is None:
+                raise ValueError(f"copy: unknown src class id: {src_id}")
+            unknown_names_and_count[
+                name] = mir_context.pred_stats.class_ids_cnt[src_id] + mir_context.gt_stats.class_ids_cnt[src_id]
+        return unknown_names_and_count
 
 
 def bind_to_subparsers(subparsers: argparse._SubParsersAction, parent_parser: argparse.ArgumentParser) -> None:

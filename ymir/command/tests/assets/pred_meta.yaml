@@ -1,0 +1,13 @@
+eval_class_names:
+    - person
+    - cat
+    - airplane
+model:
+    mean_average_precision: 0.6
+    class_names:
+        - person
+        - cat
+        - airplane
+        - unknown-cat
+executor_config:
+    stage_name: default
