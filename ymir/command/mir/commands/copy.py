@@ -153,8 +153,8 @@ class CmdCopy(base.BaseCommand):
                 if dst_class_id >= 0:
                     annotation.class_id = dst_class_id
                     dst_image_annotations.append(annotation)
-            del single_image_annotations.annotations[:]
-            single_image_annotations.annotations.extend(dst_image_annotations)
+            del single_image_annotations.boxes[:]
+            single_image_annotations.boxes.extend(dst_image_annotations)
 
         dst_eval_class_ids: List[int] = []
         for src_class_id in single_task_annotations.eval_class_ids:
