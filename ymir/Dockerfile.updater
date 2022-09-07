@@ -1,0 +1,10 @@
+FROM python:3.8.13-alpine
+
+# updater app
+COPY ./updater/app /app
+RUN pip3 install -r /app/requirements.txt
+
+# ymir backend components
+COPY ./backend/src/common/common_utils/version.py /app/version.py
+
+CMD python /app/start.py
