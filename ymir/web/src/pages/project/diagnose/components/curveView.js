@@ -4,7 +4,7 @@ import PrCurve from "./prCurve"
 import Panel from "@/components/form/panel"
 import { getCK, getKwField, getModelCell, opt } from "./common"
 
-const CurveView = ({ tasks, datasets, models, data, xType, kw: { kwType, keywords } }) => {
+const CurveView = ({ tasks, datasets, models, data, xType, kw: { keywords } }) => {
   const [list, setList] = useState([])
   const [dd, setDD] = useState([])
   const [kd, setKD] = useState([])
@@ -12,6 +12,7 @@ const CurveView = ({ tasks, datasets, models, data, xType, kw: { kwType, keyword
   const [dData, setDData] = useState(null)
   const [kData, setKData] = useState(null)
   const [hiddens, setHiddens] = useState({})
+  const kwType = 0
 
   useEffect(() => {
     if (data && keywords) {
@@ -21,7 +22,7 @@ const CurveView = ({ tasks, datasets, models, data, xType, kw: { kwType, keyword
       setDData(null)
       setKData(null)
     }
-  }, [kwType, data, keywords])
+  }, [data, keywords])
 
   useEffect(() => {
     setDD(datasets.map(opt))
@@ -29,12 +30,10 @@ const CurveView = ({ tasks, datasets, models, data, xType, kw: { kwType, keyword
 
   useEffect(() => {
     if (data && keywords) {
-      const kws = kwType ?
-        getCK(data, keywords) :
-        keywords.map(k => ({ value: k, label: k }))
+      const kws = keywords.map(k => ({ value: k, label: k }))
       setKD(kws)
     }
-  }, [keywords, data, kwType])
+  }, [keywords, data])
 
   useEffect(() => {
     // list
@@ -63,14 +62,7 @@ const CurveView = ({ tasks, datasets, models, data, xType, kw: { kwType, keyword
       const fiou = getKwField(data[id], kwType)
       Object.keys(fiou).forEach(key => {
         kdata[key] = kdata[key] || {}
-        if (kwType) {
-          Object.keys(fiou[key].sub).forEach(subKey => {
-            kdata[key][subKey] = kdata[key][subKey] || { _average: fiou[key].total }
-            kdata[key][subKey][id] = fiou[key].sub[subKey]
-          })
-        } else {
-          kdata[key][id] = fiou[key]
-        }
+        kdata[key][id] = fiou[key]
       })
     })
     setKData(kdata)
@@ -90,7 +82,7 @@ const CurveView = ({ tasks, datasets, models, data, xType, kw: { kwType, keyword
 
     return kd.map(({ value }) => {
       const kwRows = tts.map(({ result: rid }) => {
-        const ddata = (kwType ? dData[rid][keywords]?.sub : dData[rid]) || {}
+        const ddata = dData[rid] || {}
         const _model = getModelCell(rid, tasks, models, 'text')
         const line = ddata[value]?.pr_curve || []
         return {
@@ -108,7 +100,7 @@ const CurveView = ({ tasks, datasets, models, data, xType, kw: { kwType, keyword
   }
 
   const generateKwRows = (kw) => {
-    const kdata = kwType ? (kData[keywords] ? kData[keywords][kw] : null) : kData[kw]
+    const kdata = kData[kw]
 
     return dd.map(({ value: tid, label }) => {
       const tks = tasks.filter(({ testing }) => testing === tid)
