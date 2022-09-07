@@ -86,7 +86,7 @@ def _single_image_annotations_to_ark(asset_id: str, attrs: mirpb.MetadataAttribu
                                      class_type_mapping: Optional[Dict[int, int]], cls_id_mgr: class_ids.ClassIdManager,
                                      asset_filename: str) -> str:
     output_str = ""
-    for annotation in image_annotations.annotations:
+    for annotation in image_annotations.boxes:
         mapped_id = class_type_mapping[annotation.class_id] if class_type_mapping else annotation.class_id
         output_str += f"{mapped_id}, {annotation.box.x}, {annotation.box.y}, "
         output_str += f"{annotation.box.x + annotation.box.w - 1}, {annotation.box.y + annotation.box.h - 1}, "
@@ -98,7 +98,7 @@ def _single_image_annotations_to_voc(asset_id: str, attrs: mirpb.MetadataAttribu
                                      image_annotations: mirpb.SingleImageAnnotations, image_cks: mirpb.SingleImageCks,
                                      class_type_mapping: Optional[Dict[int, int]], cls_id_mgr: class_ids.ClassIdManager,
                                      asset_filename: str) -> str:
-    annotations = image_annotations.annotations
+    annotations = image_annotations.boxes
 
     # annotation
     annotation_node = ElementTree.Element('annotation')
@@ -213,7 +213,7 @@ def _single_image_annotations_to_ls_json(asset_id: str, attrs: mirpb.MetadataAtt
                                          image_annotations: mirpb.SingleImageAnnotations,
                                          image_cks: mirpb.SingleImageCks, class_type_mapping: Optional[Dict[int, int]],
                                          cls_id_mgr: class_ids.ClassIdManager, asset_filename: str) -> str:
-    annotations = image_annotations.annotations
+    annotations = image_annotations.boxes
 
     out_type = "predictions"  # out_type: annotation type - "annotations" or "predictions"
     to_name = 'image'  # to_name: object name from Label Studio labeling config

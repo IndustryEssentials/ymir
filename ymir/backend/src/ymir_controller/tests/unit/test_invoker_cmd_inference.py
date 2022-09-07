@@ -80,7 +80,7 @@ class TestInvokerCMDInference(unittest.TestCase):
         mock_json = {
             "detection": {
                 "pic_hash": {
-                    "annotations": [{
+                    "boxes": [{
                         "box": {
                             "x": 300,
                             "y": 35,

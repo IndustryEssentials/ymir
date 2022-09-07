@@ -96,7 +96,7 @@ def reset_default_confusion_matrix(task_annotations: mirpb.SingleTaskAnnotations
                                    cm: Any,
                                    class_ids: Collection[int] = []) -> None:
     for image_annotations in task_annotations.image_annotations.values():
-        for annotation in image_annotations.annotations:
+        for annotation in image_annotations.boxes:
             annotation.cm = cm if (class_ids
                                    and annotation.class_id in class_ids) else mirpb.ConfusionMatrixType.IGNORED
             annotation.det_link_id = -1
@@ -114,7 +114,7 @@ def write_confusion_matrix(gt_annotations: mirpb.SingleTaskAnnotations, pred_ann
 
     for asset_id in match_result.get_asset_ids(iou_thr=iou_thr):
         for gt_pb_index, pred_pb_index in match_result.get_matches(asset_id=asset_id, iou_thr=iou_thr):
-            gt_annotations.image_annotations[asset_id].annotations[gt_pb_index].cm = mirpb.ConfusionMatrixType.MTP
-            gt_annotations.image_annotations[asset_id].annotations[gt_pb_index].det_link_id = pred_pb_index
-            pred_annotations.image_annotations[asset_id].annotations[pred_pb_index].cm = mirpb.ConfusionMatrixType.TP
-            pred_annotations.image_annotations[asset_id].annotations[pred_pb_index].det_link_id = gt_pb_index
+            gt_annotations.image_annotations[asset_id].boxes[gt_pb_index].cm = mirpb.ConfusionMatrixType.MTP
+            gt_annotations.image_annotations[asset_id].boxes[gt_pb_index].det_link_id = pred_pb_index
+            pred_annotations.image_annotations[asset_id].boxes[pred_pb_index].cm = mirpb.ConfusionMatrixType.TP
+            pred_annotations.image_annotations[asset_id].boxes[pred_pb_index].det_link_id = gt_pb_index
