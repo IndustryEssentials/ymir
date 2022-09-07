@@ -85,7 +85,7 @@ function LeftMenu() {
 
   return items.length ? (
     <Sider style={{ background: '#fff' }}>
-      <Menu items={items} mode='inline' defaultOpenKeys={['project.summary', `/home/project/${id}/dataset`]} onClick={clickHandle} selectedKeys={defaultKeys}></Menu>
+      <Menu items={items} mode='inline' defaultOpenKeys={['project.summary']} onClick={clickHandle} selectedKeys={defaultKeys}></Menu>
     </Sider>
   ) : null
 }
