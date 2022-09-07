@@ -1,10 +1,13 @@
 from collections import defaultdict
 import enum
+import json
 import logging
 import os
 from typing import Dict, List, Tuple, Union
 
+from google.protobuf.json_format import ParseDict
 import xmltodict
+import yaml
 
 from mir.tools import class_ids
 from mir.tools.code import MirCode
@@ -101,6 +104,9 @@ def import_annotations(mir_metadatas: mirpb.MirMetadatas, mir_annotation: mirpb.
             accu_new_types=anno_import_result,
             image_annotations=mir_annotation.prediction,
         )
+        _import_annotation_meta(mir_root=mir_root,
+                                annotations_dir_path=prediction_dir_path,
+                                task_annotations=mir_annotation.prediction)
     PhaseLoggerCenter.update_phase(phase=phase, local_percent=0.5)
 
     if groundtruth_dir_path:
@@ -208,3 +214,33 @@ def _import_annotations_from_dir(mir_metadatas: mirpb.MirMetadatas, mir_annotati
                     anno_idx += 1
 
     logging.warning(f"asset count that have no annotations: {missing_annotations_counter}")
+
+
+def _import_annotation_meta(mir_root: str, annotations_dir_path: str,
+                            task_annotations: mirpb.SingleTaskAnnotations) -> None:
+    annotation_meta_path = os.path.join(annotations_dir_path, 'meta.yaml')
+    if not os.path.isfile(annotation_meta_path):
+        return
+
+    with open(annotation_meta_path, 'r') as f:
+        annotation_meta_dict = yaml.safe_load(f)
+
+    # model
+    if 'model' in annotation_meta_dict:
+        ParseDict(annotation_meta_dict['model'], task_annotations.model)
+
+    # eval_class_ids
+    eval_class_names = annotation_meta_dict.get('eval_class_names', []) or task_annotations.model.class_names
+    task_annotations.eval_class_ids[:] = set(
+        class_ids.ClassIdManager(mir_root=mir_root).id_for_names(list(eval_class_names), drop_unknown_names=True)[0])
+
+    # executor_config
+    if 'executor_config' in annotation_meta_dict:
+        task_annotations.executor_config = json.dumps(annotation_meta_dict['executor_config'])
+
+
+def copy_annotations_pred_meta(src_task_annotations: mirpb.SingleTaskAnnotations,
+                               dst_task_annotations: mirpb.SingleTaskAnnotations) -> None:
+    dst_task_annotations.eval_class_ids[:] = src_task_annotations.eval_class_ids
+    dst_task_annotations.executor_config = src_task_annotations.executor_config
+    dst_task_annotations.model.CopyFrom(src_task_annotations.model)

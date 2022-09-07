@@ -11,7 +11,7 @@ import yaml
 from mir.commands import base
 from mir.protos import mir_command_pb2 as mirpb
 from mir.tools import checker, class_ids, data_reader, data_writer
-from mir.tools import mir_storage_ops, revs_parser
+from mir.tools import mir_storage_ops, models, revs_parser
 from mir.tools import settings as mir_settings, utils as mir_utils
 from mir.tools.command_run_in_out import command_run_in_out
 from mir.tools.code import MirCode
@@ -21,11 +21,11 @@ from mir.tools.executant import prepare_executant_env, run_docker_executant
 
 # private: post process
 def _process_model_storage(out_root: str, model_upload_location: str, executor_config: dict,
-                           task_context: dict) -> Tuple[str, float, mir_utils.ModelStorage]:
+                           task_context: dict) -> mir_utils.ModelStorage:
     """
     find and save models
     Returns:
-        model hash, model mAP and ModelStorage
+        ModelStorage
     """
     out_model_dir = os.path.join(out_root, "models")
     model_stages, best_stage_name = _find_model_stages(out_model_dir)
@@ -40,11 +40,11 @@ def _process_model_storage(out_root: str, model_upload_location: str, executor_c
                                                              type=mirpb.TaskType.TaskTypeTraining),
                                            stages=model_stages,
                                            best_stage_name=best_stage_name)
-    model_sha1 = mir_utils.pack_and_copy_models(model_storage=model_storage,
-                                                model_dir_path=out_model_dir,
-                                                model_location=model_upload_location)
+    models.pack_and_copy_models(model_storage=model_storage,
+                                model_dir_path=out_model_dir,
+                                model_location=model_upload_location)
 
-    return model_sha1, best_mAP, model_storage
+    return model_storage
 
 
 def _find_model_stages(model_root: str) -> Tuple[Dict[str, mir_utils.ModelStageStorage], str]:
@@ -125,11 +125,11 @@ def _prepare_pretrained_models(model_location: str, model_hash_stage: str, dst_m
     """
     if not model_hash_stage:
         return []
-    model_hash, stage_name = mir_utils.parse_model_hash_stage(model_hash_stage)
-    model_storage = mir_utils.prepare_model(model_location=model_location,
-                                            model_hash=model_hash,
-                                            stage_name=stage_name,
-                                            dst_model_path=dst_model_dir)
+    model_hash, stage_name = models.parse_model_hash_stage(model_hash_stage)
+    model_storage = models.prepare_model(model_location=model_location,
+                                         model_hash=model_hash,
+                                         stage_name=stage_name,
+                                         dst_model_path=dst_model_dir)
 
     return model_storage.stages[stage_name].files
 
@@ -436,16 +436,16 @@ class CmdTrain(base.BaseCommand):
 
         # save model
         logging.info(f"saving models:\n task_context: {task_context}")
-        model_sha1, _, model_storage = _process_model_storage(out_root=work_dir_out,
-                                                              model_upload_location=model_upload_location,
-                                                              executor_config=executor_config,
-                                                              task_context=task_context)
+        model_storage = _process_model_storage(out_root=work_dir_out,
+                                               model_upload_location=model_upload_location,
+                                               executor_config=executor_config,
+                                               task_context=task_context)
 
         # commit task
         task = mir_storage_ops.create_task(task_type=mirpb.TaskType.TaskTypeTraining,
                                            task_id=dst_typ_rev_tid.tid,
                                            message='training',
-                                           model_meta=model_storage.get_model_meta(model_hash=model_sha1),
+                                           model_meta=model_storage.get_model_meta(),
                                            return_code=task_code,
                                            return_msg=return_msg,
                                            serialized_task_parameters=task_parameters,

@@ -238,8 +238,9 @@ class TestCmdTraining(unittest.TestCase):
                                         'dst_rev': 'a@test_training_cmd'
                                     },
                                     stages={mss.stage_name: mss},
-                                    best_stage_name=mss.stage_name)
-        return ("xyz", 0.9, ms)
+                                    best_stage_name=mss.stage_name,
+                                    model_hash='xyz')
+        return ms
 
     # public: test cases
     @mock.patch('subprocess.run', side_effect=_mock_run_docker_cmd)

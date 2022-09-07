@@ -9,7 +9,8 @@ from google.protobuf import json_format
 
 from mir.commands import base, infer
 from mir.protos import mir_command_pb2 as mirpb
-from mir.tools import checker, class_ids, data_reader, data_writer, mir_storage_ops, revs_parser, utils as mir_utils
+from mir.tools import annotations, checker, class_ids, data_reader, data_writer
+from mir.tools import mir_storage_ops, models, revs_parser, utils as mir_utils
 from mir.tools.code import MirCode
 from mir.tools.command_run_in_out import command_run_in_out
 from mir.tools.data_writer import AnnoFormat
@@ -150,22 +151,27 @@ class CmdMining(base.BaseCommand):
                         work_asset_path=work_asset_path,
                         work_index_file=work_index_file)
 
+        model_hash, stage_name = models.parse_model_hash_stage(model_hash_stage)
+        model_storage = models.prepare_model(model_location=model_location,
+                                             model_hash=model_hash,
+                                             stage_name=stage_name,
+                                             dst_model_path=work_model_path)
+
         return_code = MirCode.RC_OK
         return_msg = ''
         try:
-            infer.CmdInfer.run_with_args(work_dir=work_dir,
-                                         mir_root=mir_root,
-                                         media_path=work_asset_path,
-                                         model_location=model_location,
-                                         model_hash_stage=model_hash_stage,
-                                         index_file=work_index_file,
-                                         config_file=config_file,
-                                         task_id=dst_typ_rev_tid.tid,
-                                         executor=executor,
-                                         executant_name=executant_name,
-                                         run_as_root=run_as_root,
-                                         run_infer=add_prediction,
-                                         run_mining=(topk is not None))
+            return_code = infer.CmdInfer.run_with_args(work_dir=work_dir,
+                                                       mir_root=mir_root,
+                                                       media_path=work_asset_path,
+                                                       model_storage=model_storage,
+                                                       index_file=work_index_file,
+                                                       config_file=config_file,
+                                                       task_id=dst_typ_rev_tid.tid,
+                                                       executor=executor,
+                                                       executant_name=executant_name,
+                                                       run_as_root=run_as_root,
+                                                       run_infer=add_prediction,
+                                                       run_mining=(topk is not None))
         except CalledProcessError:
             return_code = MirCode.RC_CMD_CONTAINER_ERROR
             return_msg = mir_utils.collect_executor_outlog_tail(work_dir=work_dir)
@@ -188,6 +194,7 @@ class CmdMining(base.BaseCommand):
                          src_typ_rev_tid=src_typ_rev_tid,
                          topk=topk,
                          add_prediction=add_prediction,
+                         model_storage=model_storage,
                          task=task)
         logging.info(f"mining done, results at: {work_out_path}")
 
@@ -197,7 +204,7 @@ class CmdMining(base.BaseCommand):
 # protected: post process
 def _process_results(mir_root: str, export_out: str, dst_typ_rev_tid: revs_parser.TypRevTid,
                      src_typ_rev_tid: revs_parser.TypRevTid, topk: Optional[int], add_prediction: bool,
-                     task: mirpb.Task) -> int:
+                     model_storage: mir_utils.ModelStorage, task: mirpb.Task) -> int:
     # step 1: build topk results:
     #   read old
     mir_metadatas: mirpb.MirMetadatas
@@ -218,9 +225,8 @@ def _process_results(mir_root: str, export_out: str, dst_typ_rev_tid: revs_parse
 
     infer_result_file_path = os.path.join(export_out, 'infer-result.json')
     cls_id_mgr = class_ids.ClassIdManager(mir_root=mir_root)
-    asset_id_to_annotations = (_get_infer_annotations(file_path=infer_result_file_path,
-                                                      asset_ids_set=asset_ids_set,
-                                                      cls_id_mgr=cls_id_mgr) if add_prediction else {})
+    asset_id_to_annotations = (_get_infer_annotations(
+        file_path=infer_result_file_path, asset_ids_set=asset_ids_set, cls_id_mgr=cls_id_mgr) if add_prediction else {})
 
     # step 2: update mir data files
     #   update mir metadatas
@@ -236,11 +242,17 @@ def _process_results(mir_root: str, export_out: str, dst_typ_rev_tid: revs_parse
         # add new
         for asset_id, single_image_annotations in asset_id_to_annotations.items():
             prediction.image_annotations[asset_id].CopyFrom(single_image_annotations)
+        prediction.eval_class_ids[:] = set(
+            cls_id_mgr.id_for_names(model_storage.class_names, drop_unknown_names=True)[0])
+        prediction.executor_config = json.dumps(model_storage.executor_config)
+        prediction.model.CopyFrom(model_storage.get_model_meta())
     else:
         # use old
         pred_asset_ids = set(mir_annotations.prediction.image_annotations.keys()) & asset_ids_set
         for asset_id in pred_asset_ids:
             prediction.image_annotations[asset_id].CopyFrom(mir_annotations.prediction.image_annotations[asset_id])
+        annotations.copy_annotations_pred_meta(src_task_annotations=mir_annotations.prediction,
+                                               dst_task_annotations=prediction)
 
     #   update mir annotations: ground truth
     ground_truth = matched_mir_annotations.ground_truth

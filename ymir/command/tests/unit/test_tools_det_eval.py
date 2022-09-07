@@ -1,5 +1,6 @@
 import os
 import shutil
+from tkinter import E
 from typing import Any
 import unittest
 
@@ -138,6 +139,7 @@ class TestToolsDetEval(unittest.TestCase):
                         }]
                     },
                 },
+                'eval_class_ids': [0, 1, 2],
             },
             'image_cks': {
                 'a0': {
@@ -433,7 +435,7 @@ class TestToolsDetEval(unittest.TestCase):
                     }
                 },
                 'task_id': 'a',
-                'eval_class_ids': [],
+                'eval_class_ids': [0, 1, 2],
                 'executor_config': '',
             },
             'image_cks': {
