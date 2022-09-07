@@ -542,7 +542,6 @@ class ControllerClient:
             type=ExtraRequestType.evaluate,
             user_id=user_id,
             project_id=project_id,
-            task_id=dataset_hash,  # required by controller
             args={
                 "confidence_threshold": confidence_threshold,
                 "dataset_hash": dataset_hash,
