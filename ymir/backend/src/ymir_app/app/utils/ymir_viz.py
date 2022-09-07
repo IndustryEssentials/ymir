@@ -458,12 +458,3 @@ class VizClient:
 
 def get_asset_url(asset_id: str) -> str:
     return f"{settings.NGINX_PREFIX}/ymir-assets/{asset_id[-2:]}/{asset_id}"
-
-
-def convert_class_id_to_keyword(obj: Dict, user_labels: UserLabels) -> None:
-    if isinstance(obj, dict):
-        for key, value in obj.items():
-            if key == "ci_evaluations":
-                obj[key] = {user_labels.get_main_name(k): v for k, v in value.items()}
-            else:
-                convert_class_id_to_keyword(obj[key], user_labels)
