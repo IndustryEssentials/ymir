@@ -25,11 +25,13 @@ class TestEvaluateDataset:
         require_average_iou = True
         need_pr_curve = True
         ctrl = mocker.Mock(evaluate_dataset=mocker.Mock(return_value={}))
+        user_labels = mocker.Mock()
         datasets_mapping = {"a": 1, "b": 2}
         m.evaluate_datasets(
             ctrl,
             user_id,
             project_id,
+            user_labels,
             confidence_threshold,
             iou,
             require_average_iou,

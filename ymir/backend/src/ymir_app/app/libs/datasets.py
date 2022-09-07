@@ -24,6 +24,7 @@ from app.utils.ymir_controller import (
     gen_user_hash,
     gen_repo_hash,
 )
+from common_utils.labels import UserLabels
 from id_definition.error_codes import APIErrorCode as error_codes
 
 
@@ -139,6 +140,7 @@ def evaluate_datasets(
     controller_client: ControllerClient,
     user_id: int,
     project_id: int,
+    user_labels: UserLabels,
     confidence_threshold: float,
     iou_threshold: float,
     require_average_iou: bool,
@@ -156,6 +158,7 @@ def evaluate_datasets(
         controller_client.evaluate_dataset,
         user_id,
         project_id,
+        user_labels,
         confidence_threshold,
         iou_thrs_interval,
         need_pr_curve,

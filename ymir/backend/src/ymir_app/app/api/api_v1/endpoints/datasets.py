@@ -546,6 +546,7 @@ def batch_evaluate_datasets(
         controller_client,
         current_user.id,
         in_evaluation.project_id,
+        user_labels,
         in_evaluation.confidence_threshold,
         in_evaluation.iou_threshold,
         in_evaluation.require_average_iou,
