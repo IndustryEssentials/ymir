@@ -1,6 +1,6 @@
 import os
 import sys
-from typing import List, Set
+from typing import List
 from version import YMIR_VERSION
 
 
