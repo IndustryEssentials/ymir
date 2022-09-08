@@ -87,8 +87,9 @@ const dataset = {
   "dataset.add.form.net.label": { cn: "URL地址", en: "URL", },
   "dataset.add.form.net.placeholder": { cn: "请输入压缩文件的url地址", en: "Please input a url of zip file", },
   "dataset.add.form.path.label": { cn: "相对路径", en: "Relative Path", },
+  "dataset.add.form.tip.format.detail": { cn: "查看标注格式(.xml)及meta.yaml格式", en: "View more about annotation format or meta.yaml", },
   "dataset.add.form.tip.structure": {
-    cn: "压缩包文件内图片文件需放入images文件夹内，标准值标注文件需放入gt文件夹内，模型推理标注文件需放入pred文件夹内。gt和pred都是可选的。压缩包内文件结构如下：{br}{pic}",
+    cn: "压缩包文件内图片文件需放入images文件夹内，标准值标注文件需放入gt文件夹内，模型推理标注文件需放入pred文件夹内。gt和pred都是可选的。压缩包内文件结构如下：{br}{pic}{br}{detail}",
     en: "image -> images; gt -> ground truth annotations; pred -> predictions. gt and pred is optional. zip structure: {br}{pic}"
   },
   "dataset.add.form.path.tip": {
