@@ -44,7 +44,7 @@ def batch_get_datasets(
     db: Session = Depends(deps.get_db),
     viz_client: VizClient = Depends(deps.get_viz_client),
     project_id: int = Query(None),
-    dataset_ids: str = Query(None, example="1,2,3", alias="ids"),
+    dataset_ids: str = Query(..., example="1,2,3", alias="ids", min_length=1),
     verbose_info: bool = Query(False, alias="verbose"),
     current_user: models.User = Depends(deps.get_current_active_user),
     user_labels: UserLabels = Depends(deps.get_user_labels),
