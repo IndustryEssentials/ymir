@@ -14,10 +14,10 @@ const labelStyle = { width: '15%', paddingRight: '20px', justifyContent: 'flex-e
 
 function DatasetDetail({ dataset = {} }) {
   const history = useHistory()
-  const [{ cks, tags }, getCK] = useFetch('dataset/getCK', { cks: {}, tags: {} })
+  const [[{ cks, tags }], getCK] = useFetch('dataset/getCK', [{ cks: {}, tags: {} }])
 
   useEffect(() => {
-    dataset.id && dataset.state === states.VALID && getCK({ id: dataset.id })
+    dataset.id && dataset.state === states.VALID && getCK({ pid: dataset.projectId, ids: [dataset.id] })
   }, [dataset])
 
 
