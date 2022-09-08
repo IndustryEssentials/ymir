@@ -19,6 +19,7 @@ class TestCmdImport(unittest.TestCase):
 
     def __init__(self, methodName: str) -> None:
         super().__init__(methodName=methodName)
+        self.maxDiff = None
         self._sandbox_root = test_utils.dir_test_root(self.id().split('.')[-3:])
         self._user_root = os.path.join(self._sandbox_root, self._USER_NAME)
         self._mir_repo_root = os.path.join(self._user_root, self._MIR_REPO_NAME)
@@ -366,8 +367,6 @@ class TestCmdImport(unittest.TestCase):
             mir_keywords.ParseFromString(f.read())
         with open(os.path.join(repo_root, 'context.mir'), 'rb') as f:
             mir_context.ParseFromString(f.read())
-        dict_keywords = MessageToDict(mir_keywords, preserving_proto_field_name=True)
-        dict_context = MessageToDict(mir_context, preserving_proto_field_name=True, including_default_value_fields=True)
         if with_annotations:
             if with_person_ignored:
                 pred_gt_idx = {
@@ -848,6 +847,7 @@ class TestCmdImport(unittest.TestCase):
             mir_keywords_expected = mirpb.MirKeywords()
             ParseDict(dict_keywords_expect, mir_keywords_expected)
             mir_context_expected = mirpb.MirContext()
+            mir_context_expected.pred_stats.eval_class_ids[:] = eval_class_ids_set
             ParseDict(dict_context_expected, mir_context_expected)
             try:
                 self.assertEqual(mir_keywords, mir_keywords_expected)

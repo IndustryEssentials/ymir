@@ -1287,6 +1287,7 @@ class AnnoStats(google.protobuf.message.Message):
     NEGATIVE_ASSET_CNT_FIELD_NUMBER: builtins.int
     TAGS_CNT_FIELD_NUMBER: builtins.int
     CLASS_IDS_CNT_FIELD_NUMBER: builtins.int
+    EVAL_CLASS_IDS_FIELD_NUMBER: builtins.int
     total_cnt: builtins.int = ...
     positive_asset_cnt: builtins.int = ...
     negative_asset_cnt: builtins.int = ...
@@ -1298,6 +1299,10 @@ class AnnoStats(google.protobuf.message.Message):
     def class_ids_cnt(self) -> google.protobuf.internal.containers.ScalarMap[builtins.int, builtins.int]:
         """key: class ids, value: asset count for this class id"""
         pass
+    @property
+    def eval_class_ids(self) -> google.protobuf.internal.containers.RepeatedScalarFieldContainer[builtins.int]:
+        """Shortcut of class_ids for evaluation (dup. field as in SingleTaskAnnotations)."""
+        pass
     def __init__(self,
         *,
         total_cnt : builtins.int = ...,
@@ -1305,6 +1310,7 @@ class AnnoStats(google.protobuf.message.Message):
         negative_asset_cnt : builtins.int = ...,
         tags_cnt : typing.Optional[typing.Mapping[typing.Text, global___SingleMapCount]] = ...,
         class_ids_cnt : typing.Optional[typing.Mapping[builtins.int, builtins.int]] = ...,
+        eval_class_ids : typing.Optional[typing.Iterable[builtins.int]] = ...,
         ) -> None: ...
-    def ClearField(self, field_name: typing_extensions.Literal["class_ids_cnt",b"class_ids_cnt","negative_asset_cnt",b"negative_asset_cnt","positive_asset_cnt",b"positive_asset_cnt","tags_cnt",b"tags_cnt","total_cnt",b"total_cnt"]) -> None: ...
+    def ClearField(self, field_name: typing_extensions.Literal["class_ids_cnt",b"class_ids_cnt","eval_class_ids",b"eval_class_ids","negative_asset_cnt",b"negative_asset_cnt","positive_asset_cnt",b"positive_asset_cnt","tags_cnt",b"tags_cnt","total_cnt",b"total_cnt"]) -> None: ...
 global___AnnoStats = AnnoStats

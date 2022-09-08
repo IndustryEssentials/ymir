@@ -102,6 +102,8 @@ class MirStorageOps():
                                   keyword_to_index: mirpb.CiTagToIndex) -> None:
         image_annotations = task_annotations.image_annotations
 
+        anno_stats.eval_class_ids[:] = task_annotations.eval_class_ids
+
         # anno_stats.asset_cnt
         anno_stats.positive_asset_cnt = len(image_annotations)
         anno_stats.negative_asset_cnt = len(mir_metadatas.attributes) - len(image_annotations)

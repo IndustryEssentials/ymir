@@ -268,6 +268,7 @@ func (v *ViewerHandler) fillupDatasetUniverseFields(
 	}
 
 	if mirContext.PredStats != nil && mirContext.PredStats.TagsCnt != nil {
+		result.Pred.EvalClassIDs = mirContext.PredStats.EvalClassIds
 		for k, v := range mirContext.PredStats.TagsCnt {
 			result.Pred.TagsCountTotal[k] = int64(v.Cnt)
 			result.Pred.TagsCount[k] = map[string]int64{}

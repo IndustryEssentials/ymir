@@ -327,8 +327,8 @@ message SingleEvaluationElement {
 }
 
 message IntPoint {
-    uint32 x = 1;
-    uint32 y = 2;
+    int32 x = 1;
+    int32 y = 2;
 }
 
 message FloatPoint {
@@ -364,6 +364,9 @@ message AnnoStats {
     int32 negative_asset_cnt = 3;
     map<string, SingleMapCount> tags_cnt = 7;  // key: main tag name, value: main tag count and sub tag names and counts
     map<int32, int32> class_ids_cnt = 8;  // key: class ids, value: asset count for this class id
+
+    // Shortcut of class_ids for evaluation (dup. field as in SingleTaskAnnotations).
+    repeated int32 eval_class_ids = 9;
 
     reserved 4, 5, 6;
 };
