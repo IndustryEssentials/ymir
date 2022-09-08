@@ -193,5 +193,5 @@ def bind_to_subparsers(subparsers: argparse._SubParsersAction, parent_parser: ar
                                            dest='anno_type',
                                            required=True,
                                            choices=['det-box', 'seg-poly', 'seg-mask'],
-                                           help='strategy for unknown class types in annotation files\n')
+                                           help='annotations type\n')
     import_dataset_arg_parser.set_defaults(func=CmdImport)
