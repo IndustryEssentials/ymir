@@ -113,10 +113,22 @@ message MirAnnotations {
     reserved 1, 2;
 };
 
+enum AnnoType {
+    AnnoTypeUnknown = 0;
+    AnnoTypeClass = 1; // Classification with class id, not implemented.
+    AnnoTypeDetBox = 2; // Detection w. bounding box.
+    AnnoTypeSegPolygon = 3; // Semantic Segmentation w. ploygons.
+    AnnoTypeSegMask = 4; // Instance Segmentation w. mask.
+};
+
 message SingleTaskAnnotations {
     /// key: image id, value: annotations of that single image
     map<string, SingleImageAnnotations> image_annotations = 1;
     string task_id = 2;
+    AnnoType type = 3;
+    // Set of all shown class ids.
+    repeated int32 task_class_ids = 4;
+
     // meta infos of this SingleTaskAnnotations
     repeated int32 eval_class_ids = 10;
     // model meta info associated with this single_task_annotations
@@ -126,7 +138,13 @@ message SingleTaskAnnotations {
 };
 
 message SingleImageAnnotations {
-    repeated Annotation annotations = 2;
+    repeated ObjectAnnotation boxes = 2;
+
+    repeated ObjectAnnotation polygons = 3;
+
+    MaskAnnotation mask = 4;
+    // Set of class ids shown in this image.
+    repeated int32 img_class_ids = 5;
 
     reserved 1;
 };
@@ -136,7 +154,15 @@ message SingleImageCks {
     float image_quality = 2;
 }
 
-message Annotation {
+message MaskAnnotation {
+    // PNG image with 1/3 channels where each pixel corresponds to a class_id.
+    bytes semantic_mask = 1;
+    // PNG image with 1/3 channels where each pixel corresponds to an object_id.
+    bytes instance_mask = 2;
+    repeated int32 object_ids = 3;
+}
+
+message ObjectAnnotation {
     // Index of this annotation in current single image, may be different from the index in repeated field.
     int32 index = 1;
     Rect box = 2;
@@ -147,6 +173,7 @@ message Annotation {
     ConfusionMatrixType cm = 7;
     int32 det_link_id = 8;
     string class_name = 9;  // for data parsed from outside, e.g. inference.
+    repeated IntPoint polygon = 10;
 };
 
 enum ConfusionMatrixType {
@@ -299,6 +326,11 @@ message SingleEvaluationElement {
     repeated FloatPoint pr_curve = 6;
 }
 
+message IntPoint {
+    int32 x = 1;
+    int32 y = 2;
+}
+
 message FloatPoint {
     float x = 1;
     float y = 2;
@@ -332,6 +364,9 @@ message AnnoStats {
     int32 negative_asset_cnt = 3;
     map<string, SingleMapCount> tags_cnt = 7;  // key: main tag name, value: main tag count and sub tag names and counts
     map<int32, int32> class_ids_cnt = 8;  // key: class ids, value: asset count for this class id
+
+    // Shortcut of class_ids for evaluation (dup. field as in SingleTaskAnnotations).
+    repeated int32 eval_class_ids = 9;
 
     reserved 4, 5, 6;
 };

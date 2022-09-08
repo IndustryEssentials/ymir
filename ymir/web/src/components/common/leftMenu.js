@@ -13,8 +13,8 @@ const { Sider } = Layout
 
 const projectModule = /^.*\/project\/(\d+).*$/
 
-const getItem = (label, key, Icon, children) => ({
-  key, icon: Icon ? <Icon /> : null, children, label,
+const getItem = (label, key, Icon, children, type='') => ({
+  key, icon: Icon ? <Icon /> : null, children, label, type,
 })
 
 const getGroupItem = (label, key, children) => getItem(label, key, undefined, children, 'group')
@@ -85,7 +85,7 @@ function LeftMenu() {
 
   return items.length ? (
     <Sider style={{ background: '#fff' }}>
-      <Menu items={items} mode='inline' defaultOpenKeys={['project.summary', `/home/project/${id}/dataset`]} onClick={clickHandle} selectedKeys={defaultKeys}></Menu>
+      <Menu items={items} mode='inline' defaultOpenKeys={['project.summary']} onClick={clickHandle} selectedKeys={defaultKeys}></Menu>
     </Sider>
   ) : null
 }

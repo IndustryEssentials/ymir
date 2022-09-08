@@ -531,6 +531,7 @@ class ControllerClient:
         self,
         user_id: int,
         project_id: int,
+        user_labels: UserLabels,
         confidence_threshold: float,
         iou_thrs_interval: str,
         need_pr_curve: bool,
@@ -541,7 +542,6 @@ class ControllerClient:
             type=ExtraRequestType.evaluate,
             user_id=user_id,
             project_id=project_id,
-            task_id=dataset_hash,  # required by controller
             args={
                 "confidence_threshold": confidence_threshold,
                 "dataset_hash": dataset_hash,
@@ -551,7 +551,9 @@ class ControllerClient:
             },
         )
         resp = self.send(req)
-        return {dataset_hash: resp["evaluation"]["dataset_evaluation"]}
+        evaluation_result = resp["evaluation"]
+        convert_class_id_to_keyword(evaluation_result, user_labels)
+        return {dataset_hash: evaluation_result}
 
     def check_repo_status(self, user_id: int, project_id: int) -> bool:
         req = ControllerRequest(
@@ -638,3 +640,12 @@ class ControllerClient:
             },
         )
         return self.send(req)
+
+
+def convert_class_id_to_keyword(obj: Dict, user_labels: UserLabels) -> None:
+    if isinstance(obj, dict):
+        for key, value in obj.items():
+            if key == "ci_evaluations":
+                obj[key] = {user_labels.get_main_name(k): v for k, v in value.items()}
+            else:
+                convert_class_id_to_keyword(obj[key], user_labels)

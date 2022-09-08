@@ -89,7 +89,7 @@ class TestMergeCmd(unittest.TestCase):
                     'h': 50
                 },
             })
-        return {'annotations': annotations_list}
+        return {'boxes': annotations_list, 'img_class_ids': type_ids}
 
     @staticmethod
     def _generate_keywords_for_asset(predefined: List[int], customized: List[str]):
@@ -130,10 +130,12 @@ class TestMergeCmd(unittest.TestCase):
             'task_id': branch_name_and_task_id,
             "image_annotations": image_annotations,
             "eval_class_ids": list(class_ids_set),
+            'task_class_ids': list(class_ids_set),
         }
         gt = {
             'task_id': branch_name_and_task_id,
             "image_annotations": image_annotations,
+            'task_class_ids': list(class_ids_set),
         }
         dict_annotations = {
             "prediction": pred,
@@ -297,6 +299,7 @@ class TestMergeCmd(unittest.TestCase):
                 "b1": TestMergeCmd._generate_annotations_for_asset([2], 100, 200, cm=mirpb.ConfusionMatrixType.FP),
                 "b2": TestMergeCmd._generate_annotations_for_asset([2], 100, 300, cm=mirpb.ConfusionMatrixType.FP),
             },
+            'task_class_ids': [1, 2],
             'model': {},
             'eval_class_ids': [1, 2],
         }
@@ -310,7 +313,8 @@ class TestMergeCmd(unittest.TestCase):
                 "b0": TestMergeCmd._generate_annotations_for_asset([2], 100, 100, cm=mirpb.ConfusionMatrixType.FN),
                 "b1": TestMergeCmd._generate_annotations_for_asset([2], 100, 200, cm=mirpb.ConfusionMatrixType.FN),
                 "b2": TestMergeCmd._generate_annotations_for_asset([2], 100, 300, cm=mirpb.ConfusionMatrixType.FN),
-            }
+            },
+            'task_class_ids': [1, 2],
         }
         expected_dict_annotations = {
             "prediction": expected_pred,
@@ -408,6 +412,7 @@ class TestMergeCmd(unittest.TestCase):
                 "d0": TestMergeCmd._generate_annotations_for_asset([1, 4], 100, 200, cm=mirpb.ConfusionMatrixType.FP),
                 "d1": TestMergeCmd._generate_annotations_for_asset([1, 4], 100, 300, cm=mirpb.ConfusionMatrixType.FP),
             },
+            'task_class_ids': [1, 4],
             'model': {},
             'eval_class_ids': [1, 2, 4],
         }
@@ -420,7 +425,8 @@ class TestMergeCmd(unittest.TestCase):
                 "a3": TestMergeCmd._generate_annotations_for_asset([1], 100, 400, cm=mirpb.ConfusionMatrixType.FN),
                 "d0": TestMergeCmd._generate_annotations_for_asset([1, 4], 100, 200, cm=mirpb.ConfusionMatrixType.FN),
                 "d1": TestMergeCmd._generate_annotations_for_asset([1, 4], 100, 300, cm=mirpb.ConfusionMatrixType.FN),
-            }
+            },
+            'task_class_ids': [1, 4],
         }
         expected_dict_annotations = {
             "prediction": expected_pred,
@@ -498,6 +504,7 @@ class TestMergeCmd(unittest.TestCase):
                 "d0": TestMergeCmd._generate_annotations_for_asset([1, 4], 100, 200, cm=mirpb.ConfusionMatrixType.FP),
                 "d1": TestMergeCmd._generate_annotations_for_asset([1, 4], 100, 300, cm=mirpb.ConfusionMatrixType.FP),
             },
+            'task_class_ids': [1, 2, 4],
             'model': {},
             'eval_class_ids': [1, 2, 4],
         }
@@ -510,7 +517,8 @@ class TestMergeCmd(unittest.TestCase):
                 "a0": TestMergeCmd._generate_annotations_for_asset([1, 2], 100, 100, cm=mirpb.ConfusionMatrixType.FN),
                 "d0": TestMergeCmd._generate_annotations_for_asset([1, 4], 100, 200, cm=mirpb.ConfusionMatrixType.FN),
                 "d1": TestMergeCmd._generate_annotations_for_asset([1, 4], 100, 300, cm=mirpb.ConfusionMatrixType.FN),
-            }
+            },
+            'task_class_ids': [1, 2, 4],
         }
         expected_dict_annotations = {
             "prediction": expected_pred,
@@ -582,6 +590,7 @@ class TestMergeCmd(unittest.TestCase):
                 "a2": TestMergeCmd._generate_annotations_for_asset([1], 100, 300, cm=mirpb.ConfusionMatrixType.FP),
                 "a3": TestMergeCmd._generate_annotations_for_asset([1], 100, 400, cm=mirpb.ConfusionMatrixType.FP),
             },
+            'task_class_ids': [1],
             'model': {},
             'eval_class_ids': [1],
         }
@@ -591,7 +600,8 @@ class TestMergeCmd(unittest.TestCase):
                 "a1": TestMergeCmd._generate_annotations_for_asset([1], 100, 200, cm=mirpb.ConfusionMatrixType.FN),
                 "a2": TestMergeCmd._generate_annotations_for_asset([1], 100, 300, cm=mirpb.ConfusionMatrixType.FN),
                 "a3": TestMergeCmd._generate_annotations_for_asset([1], 100, 400, cm=mirpb.ConfusionMatrixType.FN),
-            }
+            },
+            'task_class_ids': [1],
         }
         expected_dict_annotations = {
             "prediction": expected_pred,

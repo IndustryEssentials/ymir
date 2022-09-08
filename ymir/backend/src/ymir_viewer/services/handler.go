@@ -267,12 +267,15 @@ func (v *ViewerHandler) fillupDatasetUniverseFields(
 		}
 	}
 
-	if mirContext.PredStats != nil && mirContext.PredStats.TagsCnt != nil {
-		for k, v := range mirContext.PredStats.TagsCnt {
-			result.Pred.TagsCountTotal[k] = int64(v.Cnt)
-			result.Pred.TagsCount[k] = map[string]int64{}
-			for k2, v2 := range v.SubCnt {
-				result.Pred.TagsCount[k][k2] = int64(v2)
+	if mirContext.PredStats != nil {
+		result.Pred.EvalClassIDs = mirContext.PredStats.EvalClassIds
+		if mirContext.PredStats.TagsCnt != nil {
+			for k, v := range mirContext.PredStats.TagsCnt {
+				result.Pred.TagsCountTotal[k] = int64(v.Cnt)
+				result.Pred.TagsCount[k] = map[string]int64{}
+				for k2, v2 := range v.SubCnt {
+					result.Pred.TagsCount[k][k2] = int64(v2)
+				}
 			}
 		}
 	}

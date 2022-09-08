@@ -303,32 +303,36 @@ def _get_infer_annotations(file_path: str, asset_ids_set: Set[str],
     with open(file_path, 'r') as f:
         results = json.loads(f.read())
 
-    if 'detection' not in results or not isinstance(results['detection'], dict):
+    detections = results.get('detection')
+    if not isinstance(detections, dict):
         logging.error('invalid infer-result.json')
         return asset_id_to_annotations
 
-    names_annotations_dict = results['detection']
-    for asset_name, annotations_dict in names_annotations_dict.items():
-        if 'annotations' not in annotations_dict or not isinstance(annotations_dict['annotations'], list):
+    for asset_name, annotations_dict in detections.items():
+        annotations = annotations_dict.get('boxes')
+        if not isinstance(annotations, list):
+            logging.error(f"invalid annotations: {annotations}")
             continue
+
         asset_id = os.path.splitext(os.path.basename(asset_name))[0]
         if asset_id not in asset_ids_set:
-            logging.info(f"unknown asset name: {asset_name}, ignore")
+            logging.error(f"unknown asset name: {asset_name}, ignore")
             continue
+
         single_image_annotations = mirpb.SingleImageAnnotations()
         idx = 0
-        for annotation_dict in annotations_dict['annotations']:
+        for annotation_dict in annotations:
             class_id = cls_id_mgr.id_and_main_name_for_name(name=annotation_dict['class_name'])[0]
             # ignore unknown class ids
             if class_id < 0:
                 continue
 
-            annotation = mirpb.Annotation()
+            annotation = mirpb.ObjectAnnotation()
             annotation.index = idx
             json_format.ParseDict(annotation_dict['box'], annotation.box)
             annotation.class_id = class_id
             annotation.score = float(annotation_dict.get('score', 0))
-            single_image_annotations.annotations.append(annotation)
+            single_image_annotations.boxes.append(annotation)
             idx += 1
         asset_id_to_annotations[asset_id] = single_image_annotations
     return asset_id_to_annotations

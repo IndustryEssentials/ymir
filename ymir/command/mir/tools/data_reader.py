@@ -45,16 +45,16 @@ class MirDataReader:
 
             filtered_image_annotations = mirpb.SingleImageAnnotations()
             if asset_id in image_annotations:
-                for annotation in image_annotations[asset_id].annotations:
+                for annotation in image_annotations[asset_id].boxes:
                     if self._class_ids and annotation.class_id not in self._class_ids:
                         continue
-                    filtered_image_annotations.annotations.append(annotation)
+                    filtered_image_annotations.boxes.append(annotation)
 
             filtered_gt_annotations = mirpb.SingleImageAnnotations()
             if asset_id in gt_annotations:
-                for annotation in gt_annotations[asset_id].annotations:
+                for annotation in gt_annotations[asset_id].boxes:
                     if self._class_ids and annotation.class_id not in self._class_ids:
                         continue
-                    filtered_gt_annotations.annotations.append(annotation)
+                    filtered_gt_annotations.boxes.append(annotation)
 
             yield (asset_id, attributes, filtered_image_annotations, filtered_gt_annotations, self._image_cks[asset_id])

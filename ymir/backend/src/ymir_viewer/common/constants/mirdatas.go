@@ -111,6 +111,8 @@ type DatasetStatsElement struct {
 	NegativeAssetsCount int64         `json:"negative_assets_count"`
 	PositiveAssetsCount int64         `json:"positive_assets_count"`
 
+	EvalClassIDs []int32 `json:"eval_class_ids"`
+
 	// Annotations
 	AnnotationsCount int64               `json:"annos_count"`
 	AnnotationsHist  map[string]*MirHist `json:"annos_hist"`

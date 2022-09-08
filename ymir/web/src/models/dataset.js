@@ -350,15 +350,9 @@ export default {
       }
     },
     *getCK({ payload }, { select, put }) {
-      const { id } = payload
-      const { id: pid } = yield select(({ project }) => project.current)
-      const datasets = yield put.resolve({ type: 'analysis', payload: { pid, datasets: [id] } })
-      if (datasets?.length) {
-        const { cks, tags } = datasets[0]
-        return {
-          cks, tags,
-        }
-      }
+      const { ids = [], pid } = payload
+      const datasets = yield put.resolve({ type: 'analysis', payload: { pid, datasets: ids } })
+      return datasets || []
     },
   },
   reducers: {

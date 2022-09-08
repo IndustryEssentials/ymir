@@ -172,7 +172,7 @@ class TestCmdFilter(unittest.TestCase):
                 "score": 0.5,
                 "class_id": type_id,
             })
-        return {"annotations": annotations}
+        return {"boxes": annotations}
 
     # public: test cases
     def test_all(self):
