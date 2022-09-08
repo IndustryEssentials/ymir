@@ -238,6 +238,7 @@ def _process_results(mir_root: str, export_out: str, dst_typ_rev_tid: revs_parse
     #   update mir annotations: predictions
     matched_mir_annotations = mirpb.MirAnnotations()
     prediction = matched_mir_annotations.prediction
+    prediction.type = mirpb.AnnoType.AnnoTypeDetBox
     if add_prediction:
         # add new
         for asset_id, single_image_annotations in asset_id_to_annotations.items():

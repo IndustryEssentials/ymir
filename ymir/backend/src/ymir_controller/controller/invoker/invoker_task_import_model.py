@@ -8,10 +8,10 @@ from id_definition.error_codes import CTLResponseCode
 from proto import backend_pb2
 
 
-class TaskModelImportingInvoker(TaskBaseInvoker):
+class TaskImportModelInvoker(TaskBaseInvoker):
     def task_pre_invoke(self, request: backend_pb2.GeneralReq) -> backend_pb2.GeneralResp:
-        model_importing_request = request.req_create_task.model_importing
-        model_package_path = model_importing_request.model_package_path
+        import_model_request = request.req_create_task.import_model
+        model_package_path = import_model_request.model_package_path
         if not os.path.isfile(model_package_path):
             return utils.make_general_response(code=CTLResponseCode.ARG_VALIDATION_FAILED,
                                                message=f"file not exists: {model_package_path}")
@@ -26,8 +26,8 @@ class TaskModelImportingInvoker(TaskBaseInvoker):
     def subtask_invoke_import(cls, request: backend_pb2.GeneralReq, user_labels: UserLabels, sandbox_root: str,
                               assets_config: Dict[str, str], repo_root: str, master_task_id: str, subtask_id: str,
                               subtask_workdir: str, previous_subtask_id: Optional[str]) -> backend_pb2.GeneralResp:
-        model_importing_request = request.req_create_task.model_importing
-        model_package_path = model_importing_request.model_package_path
+        import_model_request = request.req_create_task.import_model
+        model_package_path = import_model_request.model_package_path
 
         cmd = [
             utils.mir_executable(), 'models', '--root', repo_root, '--package-path', model_package_path, '-w',

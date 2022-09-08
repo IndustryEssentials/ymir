@@ -11,7 +11,7 @@ from proto import backend_pb2
 import tests.utils as test_utils
 
 
-class TestInvokerTaskModelImporting(unittest.TestCase):
+class TestInvokerTaskImportModel(unittest.TestCase):
     # life cycle
     def __init__(self, methodName: str = ...) -> None:
         super().__init__(methodName)
@@ -72,7 +72,7 @@ class TestInvokerTaskModelImporting(unittest.TestCase):
         req_create_task = backend_pb2.ReqCreateTask()
         req_create_task.task_type = mir_cmd_pb.TaskType.TaskTypeImportModel
         req_create_task.no_task_monitor = True
-        req_create_task.model_importing.model_package_path = self._model_package_path
+        req_create_task.import_model.model_package_path = self._model_package_path
 
         response = make_invoker_cmd_call(invoker=RequestTypeToInvoker[backend_pb2.TASK_CREATE],
                                          sandbox_root=self._sandbox_root,
