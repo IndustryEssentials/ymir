@@ -50,7 +50,6 @@ class TestCmdImport(unittest.TestCase):
         args.src_revs = ''
         args.dst_rev = 'a@import-task-0'
         args.index_file = self._idx_file
-        args.gt_index_file = self._gt_idx_file
         args.ck_file = self._ck_file
         args.pred_dir = self._data_xml_path
         args.gt_dir = self._data_xml_path
@@ -127,7 +126,6 @@ class TestCmdImport(unittest.TestCase):
         args.src_revs = ''
         args.dst_rev = 'a@import-task-0'
         args.index_file = self._idx_file
-        args.gt_index_file = self._gt_idx_file
         args.ck_file = self._ck_file
         args.pred_dir = self._data_xml_path
         args.gt_dir = self._data_xml_path
