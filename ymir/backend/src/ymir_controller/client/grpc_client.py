@@ -126,17 +126,17 @@ def _build_task_mining_req(args: Dict) -> backend_pb2.GeneralReq:
 
 
 def _build_task_importing_req(args: Dict) -> backend_pb2.GeneralReq:
-    importing_request = backend_pb2.TaskReqImporting()
-    importing_request.asset_dir = args['asset_dir']
-    importing_request.pred_dir = args['pred_dir']
-    importing_request.gt_dir = args['gt_dir']
-    importing_request.unknown_types_strategy = backend_pb2_utils.unknown_types_strategy_enum_from_str(
+    import_dataset_request = backend_pb2.TaskReqImportDataset()
+    import_dataset_request.asset_dir = args['asset_dir']
+    import_dataset_request.pred_dir = args['pred_dir']
+    import_dataset_request.gt_dir = args['gt_dir']
+    import_dataset_request.unknown_types_strategy = backend_pb2_utils.unknown_types_strategy_enum_from_str(
         backend_pb2_utils.UnknownTypesStrategyStr(args['unknown_types_strategy']))
 
     req_create_task = backend_pb2.ReqCreateTask()
     req_create_task.task_type = mir_cmd_pb.TaskType.TaskTypeImportData
     req_create_task.no_task_monitor = args['no_task_monitor']
-    req_create_task.importing.CopyFrom(importing_request)
+    req_create_task.import_dataset.CopyFrom(import_dataset_request)
 
     return req_create_task
 
@@ -186,7 +186,7 @@ def _build_task_import_model_req(args: Dict) -> backend_pb2.GeneralReq:
     req_create_task = backend_pb2.ReqCreateTask()
     req_create_task.task_type = mir_cmd_pb.TaskType.TaskTypeImportModel
     req_create_task.no_task_monitor = args['no_task_monitor']
-    req_create_task.model_importing.model_package_path = args['model_package_path']
+    req_create_task.import_model.model_package_path = args['model_package_path']
 
     return req_create_task
 

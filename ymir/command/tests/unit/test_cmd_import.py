@@ -6,7 +6,7 @@ import unittest
 
 from google.protobuf.json_format import MessageToDict, ParseDict
 
-from mir.commands.importing import CmdImport
+from mir.commands.import_dataset import CmdImport
 from mir.protos import mir_command_pb2 as mirpb
 from mir.tools.code import MirCode
 from tests import utils as test_utils
@@ -54,10 +54,10 @@ class TestCmdImport(unittest.TestCase):
         args.ck_file = self._ck_file
         args.pred_dir = self._data_xml_path
         args.gt_dir = self._data_xml_path
-        args.gen = gen_folder
-        args.dataset_name = ''
+        args.gen_abs = gen_folder
         args.work_dir = self._work_dir
         args.unknown_types_strategy = 'stop'
+        args.anno_type = 'det-box'
         importing_instance = CmdImport(args)
         ret = importing_instance.run()
         self.assertEqual(ret, MirCode.RC_OK)
@@ -68,7 +68,6 @@ class TestCmdImport(unittest.TestCase):
 
         # ignore unknown types
         args.unknown_types_strategy = 'ignore'
-        args.dataset_name = 'import-task-0'
         args.dst_rev = 'a@import-task-1'
         importing_instance = CmdImport(args)
         ret = importing_instance.run()
@@ -76,12 +75,11 @@ class TestCmdImport(unittest.TestCase):
         self._check_repo(self._mir_repo_root,
                          with_person_ignored=True,
                          with_annotations=True,
-                         task_new_types={'person': 4},
+                         task_new_types={'person': 3},
                          task_new_types_added=False)
 
         # add unknown types
         args.unknown_types_strategy = 'add'
-        args.dataset_name = 'import-task-0'
         args.dst_rev = 'a@import-task-2'
         importing_instance = CmdImport(args)
         ret = importing_instance.run()
@@ -89,14 +87,13 @@ class TestCmdImport(unittest.TestCase):
         self._check_repo(self._mir_repo_root,
                          with_person_ignored=False,
                          with_annotations=True,
-                         task_new_types={'person': 4},
+                         task_new_types={'person': 3},
                          task_new_types_added=True)
 
         # have no annotations
         args.pred_dir = None
         args.gt_dir = None
         args.unknown_types_strategy = 'stop'
-        args.dataset_name = 'import-task-0'
         args.dst_rev = 'a@import-task-3'
         importing_instance = CmdImport(args)
         ret = importing_instance.run()
@@ -134,10 +131,10 @@ class TestCmdImport(unittest.TestCase):
         args.ck_file = self._ck_file
         args.pred_dir = self._data_xml_path
         args.gt_dir = self._data_xml_path
-        args.gen = gen_folder
-        args.dataset_name = ''
+        args.gen_abs = gen_folder
         args.work_dir = self._work_dir
         args.unknown_types_strategy = 'stop'
+        args.anno_type = 'det-box'
         importing_instance = CmdImport(args)
         ret = importing_instance.run()
         self.assertEqual(ret, MirCode.RC_OK)
@@ -866,14 +863,12 @@ class TestCmdImport(unittest.TestCase):
         dict_metadatas_expect = {
             'attributes': {
                 '430df22960b0f369318705800139fcc8ec38a3e4': {
-                    'dataset_name': 'import-task-0',
                     'asset_type': 'AssetTypeImageJpeg',
                     'width': 500,
                     'height': 281,
                     'image_channels': 3
                 },
                 'a3008c032eb11c8d9ffcb58208a36682ee40900f': {
-                    'dataset_name': 'import-task-0',
                     'asset_type': 'AssetTypeImageJpeg',
                     'width': 500,
                     'height': 333,

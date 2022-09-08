@@ -144,12 +144,12 @@ func TestLoadAssetsDetail(t *testing.T) {
 			{
 				"asset_type": 0,
 				"byte_size": 0,
-				"dataset_name": "",
 				"height": 0,
 				"image_channels": 0,
 				"timestamp": null,
 				"tvt_type": 0,
-				"width": 0
+				"width": 0,
+				"origin_filename": ""
 			},
 			"class_ids":
 			[
@@ -199,12 +199,12 @@ func TestLoadAssetsDetail(t *testing.T) {
 			{
 				"asset_type": 0,
 				"byte_size": 0,
-				"dataset_name": "",
 				"height": 0,
 				"image_channels": 0,
 				"timestamp": null,
 				"tvt_type": 0,
-				"width": 0
+				"width": 0,
+				"origin_filename": ""
 			},
 			"class_ids":
 			[],
@@ -222,12 +222,12 @@ func TestLoadAssetsDetail(t *testing.T) {
 			{
 				"asset_type": 0,
 				"byte_size": 0,
-				"dataset_name": "",
 				"height": 0,
 				"image_channels": 0,
 				"timestamp": null,
 				"tvt_type": 0,
-				"width": 0
+				"width": 0,
+				"origin_filename": ""
 			},
 			"class_ids":
 			[],

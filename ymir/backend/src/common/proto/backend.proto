@@ -119,17 +119,18 @@ message ReqCreateTask {
     float sampling_rate = 2;
     bool no_task_monitor = 3;
 
-    TaskReqFilter filter = 101 [deprecated=true];
     TaskReqTraining training = 102;
     TaskReqMining mining = 103;
-    TaskReqImporting importing = 104;
+    TaskReqImportDataset import_dataset = 104;
     TaskReqExporting exporting = 105;
     TaskReqInference inference = 106;
     TaskReqCopyData copy = 107;
     TaskReqLabeling labeling = 108;
     TaskReqFusion fusion = 109;
-    TaskReqModelImporting model_importing = 110;
+    TaskReqImportModel import_model = 110;
     TaskReqVisualization visualization = 111;
+
+    reserved 101;
 }
 
 message TaskReqFilter {
@@ -159,7 +160,7 @@ message TaskReqMining {
     reserved 3, 5;
 }
 
-message TaskReqImporting {
+message TaskReqImportDataset {
     // store media files
     string asset_dir = 1;
     // single pascal xml per asset, same base_filename as in asset-folder
@@ -219,7 +220,7 @@ message TaskReqFusion {
     }
 }
 
-message TaskReqModelImporting {
+message TaskReqImportModel {
     string model_package_path = 1;
 }
 

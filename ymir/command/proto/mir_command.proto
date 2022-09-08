@@ -86,7 +86,6 @@ message MirMetadatas {
 };
 
 message MetadataAttributes {
-    string dataset_name = 1;
     Timestamp timestamp = 2;
     TvtType tvt_type = 3;
     AssetType asset_type = 4;
@@ -94,6 +93,9 @@ message MetadataAttributes {
     int32 height = 6;  /// row number
     int32 image_channels = 7;  /// (for images) channel count
     int32 byte_size = 8;
+    string origin_filename = 9;
+
+    reserved 1;
 };
 
 message Timestamp {

@@ -114,10 +114,6 @@ def _single_image_annotations_to_voc(asset_id: str, attrs: mirpb.MetadataAttribu
     # annotation: source
     source_node = ElementTree.SubElement(annotation_node, 'source')
 
-    # annotation: source: database
-    database_node = ElementTree.SubElement(source_node, 'database')
-    database_node.text = attrs.dataset_name or 'unknown'
-
     # annotation: source: annotation
     annotation2_node = ElementTree.SubElement(source_node, 'annotation')
     annotation2_node.text = 'unknown'

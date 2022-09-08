@@ -10,11 +10,11 @@ from id_definition.error_codes import CTLResponseCode
 from proto import backend_pb2, backend_pb2_utils
 
 
-class TaskImportingInvoker(TaskBaseInvoker):
+class TaskImportDatasetInvoker(TaskBaseInvoker):
     def task_pre_invoke(self, request: backend_pb2.GeneralReq) -> backend_pb2.GeneralResp:
-        importing_request = request.req_create_task.importing
-        (media_dir, pred_dir, gt_dir) = (importing_request.asset_dir, importing_request.pred_dir,
-                                         importing_request.gt_dir)
+        import_dataset_request = request.req_create_task.import_dataset
+        (media_dir, pred_dir, gt_dir) = (import_dataset_request.asset_dir, import_dataset_request.pred_dir,
+                                         import_dataset_request.gt_dir)
         if pred_dir:
             if not os.access(pred_dir, os.R_OK):
                 return utils.make_general_response(code=CTLResponseCode.ARG_VALIDATION_FAILED,
@@ -37,10 +37,10 @@ class TaskImportingInvoker(TaskBaseInvoker):
     def subtask_invoke_import(cls, request: backend_pb2.GeneralReq, user_labels: UserLabels, sandbox_root: str,
                               assets_config: Dict[str, str], repo_root: str, master_task_id: str, subtask_id: str,
                               subtask_workdir: str, previous_subtask_id: Optional[str]) -> backend_pb2.GeneralResp:
-        importing_request = request.req_create_task.importing
+        import_dataset_request = request.req_create_task.import_dataset
 
         # Prepare media index-file
-        media_dir = importing_request.asset_dir
+        media_dir = import_dataset_request.asset_dir
         media_files = [
             os.path.join(media_dir, f) for f in os.listdir(media_dir) if os.path.isfile(os.path.join(media_dir, f))
         ]
@@ -49,31 +49,32 @@ class TaskImportingInvoker(TaskBaseInvoker):
             f.write('\n'.join(media_files))
 
         media_location = assets_config['assetskvlocation']
-        importing_response = cls.importing_cmd(repo_root=repo_root,
-                                               task_id=subtask_id,
-                                               index_file=index_file,
-                                               pred_dir=importing_request.pred_dir,
-                                               gt_dir=importing_request.gt_dir,
-                                               media_location=media_location,
-                                               work_dir=subtask_workdir,
-                                               unknown_types_strategy=importing_request.unknown_types_strategy)
+        import_dataset_response = cls.importing_cmd(
+            repo_root=repo_root,
+            task_id=subtask_id,
+            index_file=index_file,
+            pred_dir=import_dataset_request.pred_dir,
+            gt_dir=import_dataset_request.gt_dir,
+            media_location=media_location,
+            work_dir=subtask_workdir,
+            unknown_types_strategy=import_dataset_request.unknown_types_strategy)
 
-        if importing_request.clean_dirs:
+        if import_dataset_request.clean_dirs:
             logging.info("trying to clean all data dirs.")
             try:
                 shutil.rmtree(media_dir)
             except Exception:
                 pass
             try:
-                shutil.rmtree(importing_request.pred_dir)
+                shutil.rmtree(import_dataset_request.pred_dir)
             except Exception:
                 pass
             try:
-                shutil.rmtree(importing_request.gt_dir)
+                shutil.rmtree(import_dataset_request.gt_dir)
             except Exception:
                 pass
 
-        return importing_response
+        return import_dataset_response
 
     @staticmethod
     def importing_cmd(repo_root: str, task_id: str, index_file: str, pred_dir: str, gt_dir: str, media_location: str,
@@ -81,7 +82,7 @@ class TaskImportingInvoker(TaskBaseInvoker):
                       unknown_types_strategy: backend_pb2.UnknownTypesStrategy) -> backend_pb2.GeneralResp:
         importing_cmd = [
             utils.mir_executable(), 'import', '--root', repo_root, '--dataset-name', task_id, '--dst-rev',
-            f"{task_id}@{task_id}", '--src-revs', 'master', '--index-file', index_file, '--gt-index-file', index_file,
+            f"{task_id}@{task_id}", '--src-revs', 'master', '--index-file', index_file,
             '--gen-dir', media_location, '-w', work_dir
         ]
         if pred_dir:
