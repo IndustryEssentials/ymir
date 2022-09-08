@@ -14,7 +14,7 @@ const labelStyle = { width: '15%', paddingRight: '20px', justifyContent: 'flex-e
 
 function DatasetDetail({ dataset = {} }) {
   const history = useHistory()
-  const [[{ cks, tags }], getCK] = useFetch('dataset/getCK', [{ cks: {}, tags: {} }])
+  const [[{ cks, tags, inferClass }], getCK] = useFetch('dataset/getCK', [{ cks: {}, tags: {} }])
 
   useEffect(() => {
     dataset.id && dataset.state === states.VALID && getCK({ pid: dataset.projectId, ids: [dataset.id] })
@@ -60,6 +60,7 @@ function DatasetDetail({ dataset = {} }) {
         <Item label={t("dataset.detail.label.keywords")}>
           {renderKeywords(dataset.gt)}
           {renderKeywords(dataset.pred, 'prediction')}
+          {inferClass ? <div>{t('dataset.detail.infer.class')}{inferClass.map(cls => <Tag key={cls}>{cls}</Tag>)}</div> : null}
         </Item>
         <Item label={t("dataset.detail.label.assets")} contentStyle={{ minWidth: 150 }}>{dataset.assetCount}</Item>
         {dataset.hidden ? <Item label={t("common.hidden.label")}>{t('common.state.hidden')}</Item> : null}

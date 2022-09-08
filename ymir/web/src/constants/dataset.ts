@@ -106,6 +106,7 @@ export function transferDatasetAnalysis(data: BackendData): DatasetAnalysis {
     return { ...prev, [tag]: { ...gtCount, ...predCount } }
   }, {})
   const tagsTotal = { ...data.gt.tags_count_total, ...data.pred.tags_count_total }
+  console.log('data?.pred?.eval_class_ids:', data?.pred?.eval_class_ids)
   return {
     name: data.group_name,
     version: data.version_num || 0,
@@ -118,6 +119,7 @@ export function transferDatasetAnalysis(data: BackendData): DatasetAnalysis {
     assetHWRatio: hw_ratio,
     gt,
     pred,
+    inferClass: data?.pred?.eval_class_ids,
     cks: transferCK(data.cks_count, data.cks_count_total),
     tags: transferCK(tagsCounts, tagsTotal),
   }
