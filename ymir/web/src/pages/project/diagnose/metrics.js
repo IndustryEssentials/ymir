@@ -249,7 +249,7 @@ function Matrics({ pid, project }) {
                 <Form.Item label={t('model.diagnose.form.confidence')} name='confidence'>
                   <InputNumber step={0.0005} min={0.0005} max={0.9995} />
                 </Form.Item>
-                <Form.Item label={'cks'} name='ck'>
+                <Form.Item label={t('keyword.ck.label')} name='ck'>
                   <Select options={cks.map(ck => ({ value: ck, label: ck }))}></Select>
                 </Form.Item>
                 <Form.Item label={renderIouTitle} name='iou'>
