@@ -286,7 +286,6 @@ global___MirMetadatas = MirMetadatas
 
 class MetadataAttributes(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor = ...
-    DATASET_NAME_FIELD_NUMBER: builtins.int
     TIMESTAMP_FIELD_NUMBER: builtins.int
     TVT_TYPE_FIELD_NUMBER: builtins.int
     ASSET_TYPE_FIELD_NUMBER: builtins.int
@@ -294,7 +293,7 @@ class MetadataAttributes(google.protobuf.message.Message):
     HEIGHT_FIELD_NUMBER: builtins.int
     IMAGE_CHANNELS_FIELD_NUMBER: builtins.int
     BYTE_SIZE_FIELD_NUMBER: builtins.int
-    dataset_name: typing.Text = ...
+    ORIGIN_FILENAME_FIELD_NUMBER: builtins.int
     @property
     def timestamp(self) -> global___Timestamp: ...
     tvt_type: global___TvtType.V = ...
@@ -309,9 +308,9 @@ class MetadataAttributes(google.protobuf.message.Message):
     """/ (for images) channel count"""
 
     byte_size: builtins.int = ...
+    origin_filename: typing.Text = ...
     def __init__(self,
         *,
-        dataset_name : typing.Text = ...,
         timestamp : typing.Optional[global___Timestamp] = ...,
         tvt_type : global___TvtType.V = ...,
         asset_type : global___AssetType.V = ...,
@@ -319,9 +318,10 @@ class MetadataAttributes(google.protobuf.message.Message):
         height : builtins.int = ...,
         image_channels : builtins.int = ...,
         byte_size : builtins.int = ...,
+        origin_filename : typing.Text = ...,
         ) -> None: ...
     def HasField(self, field_name: typing_extensions.Literal["timestamp",b"timestamp"]) -> builtins.bool: ...
-    def ClearField(self, field_name: typing_extensions.Literal["asset_type",b"asset_type","byte_size",b"byte_size","dataset_name",b"dataset_name","height",b"height","image_channels",b"image_channels","timestamp",b"timestamp","tvt_type",b"tvt_type","width",b"width"]) -> None: ...
+    def ClearField(self, field_name: typing_extensions.Literal["asset_type",b"asset_type","byte_size",b"byte_size","height",b"height","image_channels",b"image_channels","origin_filename",b"origin_filename","timestamp",b"timestamp","tvt_type",b"tvt_type","width",b"width"]) -> None: ...
 global___MetadataAttributes = MetadataAttributes
 
 class Timestamp(google.protobuf.message.Message):

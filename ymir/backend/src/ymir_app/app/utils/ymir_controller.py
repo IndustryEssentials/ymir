@@ -163,22 +163,22 @@ class ControllerRequest:
         return request
 
     def prepare_import_data(self, request: mirsvrpb.GeneralReq, args: Dict) -> mirsvrpb.GeneralReq:
-        importing_request = mirsvrpb.TaskReqImporting()
+        import_dataset_request = mirsvrpb.TaskReqImportDataset()
 
-        importing_request.asset_dir = args["asset_dir"]
+        import_dataset_request.asset_dir = args["asset_dir"]
         strategy = args.get("strategy") or ImportStrategy.ignore_unknown_annotations
         if strategy != ImportStrategy.no_annotations:
             if args.get("gt_dir"):
-                importing_request.gt_dir = args["gt_dir"]
+                import_dataset_request.gt_dir = args["gt_dir"]
             if args.get("pred_dir"):
-                importing_request.pred_dir = args["pred_dir"]
-        importing_request.clean_dirs = args["clean_dirs"]
+                import_dataset_request.pred_dir = args["pred_dir"]
+        import_dataset_request.clean_dirs = args["clean_dirs"]
 
-        importing_request.unknown_types_strategy = IMPORTING_STRATEGY_MAPPING[strategy]
+        import_dataset_request.unknown_types_strategy = IMPORTING_STRATEGY_MAPPING[strategy]
 
         req_create_task = mirsvrpb.ReqCreateTask()
         req_create_task.task_type = mir_cmd_pb.TaskType.TaskTypeImportData
-        req_create_task.importing.CopyFrom(importing_request)
+        req_create_task.import_dataset.CopyFrom(import_dataset_request)
 
         request.req_type = mirsvrpb.RequestType.TASK_CREATE
         request.req_create_task.CopyFrom(req_create_task)
@@ -294,12 +294,12 @@ class ControllerRequest:
         return request
 
     def prepare_import_model(self, request: mirsvrpb.GeneralReq, args: Dict) -> mirsvrpb.GeneralReq:
-        model_importing = mirsvrpb.TaskReqModelImporting()
-        model_importing.model_package_path = args["model_package_path"]
+        import_model_request = mirsvrpb.TaskReqImportModel()
+        import_model_request.model_package_path = args["model_package_path"]
 
         req_create_task = mirsvrpb.ReqCreateTask()
         req_create_task.task_type = mir_cmd_pb.TaskType.TaskTypeImportModel
-        req_create_task.model_importing.CopyFrom(model_importing)
+        req_create_task.import_model.CopyFrom(import_model_request)
 
         request.req_type = mirsvrpb.RequestType.TASK_CREATE
         request.req_create_task.CopyFrom(req_create_task)

@@ -3,7 +3,7 @@ import enum
 import json
 import logging
 import os
-from typing import Dict, List, Tuple, Union
+from typing import Callable, Dict, List, Union
 
 from google.protobuf.json_format import ParseDict
 import xmltodict
@@ -22,16 +22,24 @@ class UnknownTypesStrategy(str, enum.Enum):
     ADD = 'add'
 
 
-class ClassTypeIdAndCount:
-    def __init__(self, id: int = -1, count: int = 0) -> None:
-        self.id = id
-        self.count = count
+def parse_anno_type(anno_type_str: str) -> "mirpb.AnnoType.V":
+    _anno_dict: Dict[str, mirpb.AnnoType.V] = {
+        "det-box": mirpb.AnnoType.AnnoTypeDetBox,
+        "seg-poly": mirpb.AnnoType.AnnoTypeSegPolygon,
+        "seg-mask": mirpb.AnnoType.AnnoTypeSegMask,
+    }
+    return _anno_dict.get(anno_type_str.lower(), mirpb.AnnoType.AnnoTypeUnknown)
 
-    def __repr__(self) -> str:
-        return '{' + f"id: {self.id}, count: {self.count}" + '}'
 
-
-AnnoNewTypes = Dict[str, ClassTypeIdAndCount]
+def _annotation_parse_func(anno_type: "mirpb.AnnoType.V") -> Callable:
+    _func_dict: Dict["mirpb.AnnoType.V", Callable] = {
+        mirpb.AnnoType.AnnoTypeDetBox: _import_annotations_det_box,
+        mirpb.AnnoType.AnnoTypeSegPolygon: _import_annotations_seg_poly,
+        mirpb.AnnoType.AnnoTypeSegMask: _import_annotations_seg_mask,
+    }
+    if anno_type not in _func_dict:
+        raise NotImplementedError
+    return _func_dict[anno_type]
 
 
 def _object_dict_to_annotation(object_dict: dict, cid: int) -> mirpb.ObjectAnnotation:
@@ -61,32 +69,11 @@ def _object_dict_to_annotation(object_dict: dict, cid: int) -> mirpb.ObjectAnnot
     return annotation
 
 
-def import_annotations(mir_metadatas: mirpb.MirMetadatas, mir_annotation: mirpb.MirAnnotations, in_sha1_file: str,
-                       in_sha1_gt_file: str, mir_root: str, prediction_dir_path: str, groundtruth_dir_path: str,
-                       unknown_types_strategy: UnknownTypesStrategy, task_id: str, phase: str) -> AnnoNewTypes:
-    """
-    imports annotations
-
-    Args:
-        mir_annotation (mirpb.MirAnnotations): data buf for annotations.mir
-        mir_keywords (mirpb.MirKeywords): data buf for keywords.mir
-        in_sha1_file (str): path to sha1 file
-        in_sha1_gt_file (str): path to gt sha1 file
-        mir_root (str): path to mir repo
-        prediction_dir_path (str): path to annotations root
-        groundtruth_dir_path (str): path to groundtruth root
-        unknown_types_strategy (UnknownTypesStrategy): strategy for unknown types
-        task_id (str): task id
-        phase (str): process phase
-
-    Returns:
-        AnnoImportResult: added types and unknown (ignored) types
-
-    Raises:
-        MirRuntimeError if strategy is STOP and have unknown types
-    """
-
-    anno_import_result: Dict[str, ClassTypeIdAndCount] = defaultdict(ClassTypeIdAndCount)
+def import_annotations(mir_annotation: mirpb.MirAnnotations, mir_root: str, prediction_dir_path: str,
+                       groundtruth_dir_path: str, map_hashed_filename: Dict[str, str],
+                       unknown_types_strategy: UnknownTypesStrategy, anno_type: "mirpb.AnnoType.V",
+                       phase: str) -> Dict[str, int]:
+    anno_import_result: Dict[str, int] = defaultdict(int)
 
     # read type_id_name_dict and type_name_id_dict
     class_type_manager = class_ids.ClassIdManager(mir_root=mir_root)
@@ -95,16 +82,16 @@ def import_annotations(mir_metadatas: mirpb.MirMetadatas, mir_annotation: mirpb.
     if prediction_dir_path:
         logging.info(f"wrting prediction in {prediction_dir_path}")
         _import_annotations_from_dir(
-            mir_metadatas=mir_metadatas,
+            map_hashed_filename=map_hashed_filename,
             mir_annotation=mir_annotation,
-            in_sha1_file=in_sha1_file,
             annotations_dir_path=prediction_dir_path,
             class_type_manager=class_type_manager,
             unknown_types_strategy=unknown_types_strategy,
-            accu_new_types=anno_import_result,
+            accu_new_class_names=anno_import_result,
             image_annotations=mir_annotation.prediction,
+            anno_type=anno_type,
         )
-        _import_annotation_meta(mir_root=mir_root,
+        _import_annotation_meta(class_type_manager=class_type_manager,
                                 annotations_dir_path=prediction_dir_path,
                                 task_annotations=mir_annotation.prediction)
     PhaseLoggerCenter.update_phase(phase=phase, local_percent=0.5)
@@ -112,14 +99,14 @@ def import_annotations(mir_metadatas: mirpb.MirMetadatas, mir_annotation: mirpb.
     if groundtruth_dir_path:
         logging.info(f"wrting ground-truth in {groundtruth_dir_path}")
         _import_annotations_from_dir(
-            mir_metadatas=mir_metadatas,
+            map_hashed_filename=map_hashed_filename,
             mir_annotation=mir_annotation,
-            in_sha1_file=in_sha1_gt_file,
             annotations_dir_path=groundtruth_dir_path,
             class_type_manager=class_type_manager,
             unknown_types_strategy=unknown_types_strategy,
-            accu_new_types=anno_import_result,
+            accu_new_class_names=anno_import_result,
             image_annotations=mir_annotation.ground_truth,
+            anno_type=anno_type,
         )
     PhaseLoggerCenter.update_phase(phase=phase, local_percent=1.0)
 
@@ -130,93 +117,90 @@ def import_annotations(mir_metadatas: mirpb.MirMetadatas, mir_annotation: mirpb.
     return anno_import_result
 
 
-def _import_annotations_from_dir(mir_metadatas: mirpb.MirMetadatas, mir_annotation: mirpb.MirAnnotations,
-                                 in_sha1_file: str, annotations_dir_path: str,
-                                 class_type_manager: class_ids.ClassIdManager,
-                                 unknown_types_strategy: UnknownTypesStrategy, accu_new_types: AnnoNewTypes,
+def _import_annotations_from_dir(map_hashed_filename: Dict[str, str], mir_annotation: mirpb.MirAnnotations,
+                                 annotations_dir_path: str, class_type_manager: class_ids.ClassIdManager,
+                                 unknown_types_strategy: UnknownTypesStrategy, accu_new_class_names: Dict[str, int],
+                                 image_annotations: mirpb.SingleTaskAnnotations, anno_type: "mirpb.AnnoType.V") -> None:
+    image_annotations.type = anno_type
+    _annotation_parse_func(anno_type)(
+        map_hashed_filename=map_hashed_filename,
+        mir_annotation=mir_annotation,
+        annotations_dir_path=annotations_dir_path,
+        class_type_manager=class_type_manager,
+        unknown_types_strategy=unknown_types_strategy,
+        accu_new_class_names=accu_new_class_names,
+        image_annotations=image_annotations,
+    )
+
+    logging.warning(f"imported {len(image_annotations.image_annotations)}/{len(map_hashed_filename)} annotations")
+
+
+def _import_annotations_seg_mask(map_hashed_filename: Dict[str, str], mir_annotation: mirpb.MirAnnotations,
+                                 annotations_dir_path: str, class_type_manager: class_ids.ClassIdManager,
+                                 unknown_types_strategy: UnknownTypesStrategy, accu_new_class_names: Dict[str, int],
                                  image_annotations: mirpb.SingleTaskAnnotations) -> None:
-    """
-    import annotations from root dir of voc annotation files
+    pass
 
-    Args:
-        mir_metadatas (mirpb.MirMetadatas): list of asset metadatas
-        mir_annotations (mirpb.MirAnnotations): instance of annotations
-        in_sha1_file (str): path to sha1 file, in each line: asset path and sha1sum
-        annotations_dir_path (str): path to prediction / gt dir
-        class_type_manager (class_ids.ClassIdManager): class types manager
-        accu_anno_import_result (AnnoImportResult): accumulated annotation import result
-        unknown_types_strategy (UnknownTypesStrategy): strategy of unknown type names
-        image_annotations (mirpb.SingleTaskAnnotations): asset ids and annotations
-    """
 
-    assethash_filename_list: List[Tuple[str, str]] = []  # hash id and main file name
-    with open(in_sha1_file, "r") as in_file:
-        for line in in_file.readlines():
-            line_components = line.strip().split('\t')
-            if not line_components or len(line_components) < 2:
-                logging.warning("incomplete line: %s", line)
-                continue
-            asset_hash, file_name = line_components[0], line_components[1]
-            if asset_hash not in mir_metadatas.attributes:
-                continue
-            main_file_name = os.path.splitext(os.path.basename(file_name))[0]
-            assethash_filename_list.append((asset_hash, main_file_name))
+def _import_annotations_seg_poly(map_hashed_filename: Dict[str, str], mir_annotation: mirpb.MirAnnotations,
+                                 annotations_dir_path: str, class_type_manager: class_ids.ClassIdManager,
+                                 unknown_types_strategy: UnknownTypesStrategy, accu_new_class_names: Dict[str, int],
+                                 image_annotations: mirpb.SingleTaskAnnotations) -> None:
+    pass
 
-    total_assethash_count = len(assethash_filename_list)
-    logging.info(f"wrting {total_assethash_count} annotations")
 
-    missing_annotations_counter = 0
+def _import_annotations_det_box(map_hashed_filename: Dict[str, str], mir_annotation: mirpb.MirAnnotations,
+                                annotations_dir_path: str, class_type_manager: class_ids.ClassIdManager,
+                                unknown_types_strategy: UnknownTypesStrategy, accu_new_class_names: Dict[str, int],
+                                image_annotations: mirpb.SingleTaskAnnotations) -> None:
     add_if_not_found = (unknown_types_strategy == UnknownTypesStrategy.ADD)
-    for asset_hash, main_file_name in assethash_filename_list:
+    for asset_hash, main_file_name in map_hashed_filename.items():
         # for each asset, import it's annotations
-        annotation_file = os.path.join(annotations_dir_path, main_file_name + '.xml') if annotations_dir_path else None
-        if not annotation_file or not os.path.isfile(annotation_file):
-            missing_annotations_counter += 1
-        else:
-            with open(annotation_file, 'r') as f:
-                annos_xml_str = f.read()
-            if not annos_xml_str:
-                logging.error(f"cannot open annotation_file: {annotation_file}")
-                continue
+        annotation_file = os.path.join(annotations_dir_path, main_file_name + '.xml')
+        if not os.path.isfile(annotation_file):
+            continue
 
-            annos_dict: dict = xmltodict.parse(annos_xml_str)['annotation']
+        with open(annotation_file, 'r') as f:
+            annos_xml_str = f.read()
+        if not annos_xml_str:
+            logging.error(f"cannot open annotation_file: {annotation_file}")
+            continue
 
-            # cks
-            cks = annos_dict.get('cks', {})  # cks could be None
-            if cks:
-                mir_annotation.image_cks[asset_hash].cks.update(cks)
-            mir_annotation.image_cks[asset_hash].image_quality = float(annos_dict.get('image_quality', '-1.0'))
+        annos_dict: dict = xmltodict.parse(annos_xml_str)['annotation']
+        # cks
+        cks = annos_dict.get('cks', {})  # cks could be None
+        if cks:
+            mir_annotation.image_cks[asset_hash].cks.update(cks)
+        mir_annotation.image_cks[asset_hash].image_quality = float(annos_dict.get('image_quality', '-1.0'))
 
-            # annotations and tags
-            objects: Union[List[dict], dict] = annos_dict.get('object', [])
-            if isinstance(objects, dict):
-                # when there's only ONE object node in xml, it will be parsed to a dict, not a list
-                objects = [objects]
+        # annotations and tags
+        objects: Union[List[dict], dict] = annos_dict.get('object', [])
+        if isinstance(objects, dict):
+            # when there's only ONE object node in xml, it will be parsed to a dict, not a list
+            objects = [objects]
 
-            anno_idx = 0
-            for object_dict in objects:
-                cid, new_type_name = class_type_manager.id_and_main_name_for_name(name=object_dict['name'])
+        anno_idx = 0
+        for object_dict in objects:
+            cid, new_type_name = class_type_manager.id_and_main_name_for_name(name=object_dict['name'])
 
-                # update set of new_types, add label if required.
+            # check if seen this class_name.
+            if new_type_name in accu_new_class_names:
+                accu_new_class_names[new_type_name] += 1
+            else:
+                # for unseen class_name, only care about negative cid.
                 if cid < 0:
                     if add_if_not_found:
                         cid, _ = class_type_manager.add_main_name(main_name=new_type_name)
-                    accu_new_types[new_type_name].id = cid
+                    accu_new_class_names[new_type_name] = 0
 
-                # update counts of new types.
-                if new_type_name in accu_new_types:
-                    accu_new_types[new_type_name].count += 1
-
-                if cid >= 0:
-                    annotation = _object_dict_to_annotation(object_dict, cid)
-                    annotation.index = anno_idx
-                    image_annotations.image_annotations[asset_hash].boxes.append(annotation)
-                    anno_idx += 1
-
-    logging.warning(f"asset count that have no annotations: {missing_annotations_counter}")
+            if cid >= 0:
+                annotation = _object_dict_to_annotation(object_dict, cid)
+                annotation.index = anno_idx
+                image_annotations.image_annotations[asset_hash].boxes.append(annotation)
+                anno_idx += 1
 
 
-def _import_annotation_meta(mir_root: str, annotations_dir_path: str,
+def _import_annotation_meta(class_type_manager: class_ids.ClassIdManager, annotations_dir_path: str,
                             task_annotations: mirpb.SingleTaskAnnotations) -> None:
     annotation_meta_path = os.path.join(annotations_dir_path, 'meta.yaml')
     if not os.path.isfile(annotation_meta_path):
@@ -230,9 +214,9 @@ def _import_annotation_meta(mir_root: str, annotations_dir_path: str,
         ParseDict(annotation_meta_dict['model'], task_annotations.model)
 
     # eval_class_ids
-    eval_class_names = annotation_meta_dict.get('eval_class_names', []) or task_annotations.model.class_names
+    eval_class_names = annotation_meta_dict.get('eval_class_names') or task_annotations.model.class_names
     task_annotations.eval_class_ids[:] = set(
-        class_ids.ClassIdManager(mir_root=mir_root).id_for_names(list(eval_class_names), drop_unknown_names=True)[0])
+        class_type_manager.id_for_names(list(eval_class_names), drop_unknown_names=True)[0])
 
     # executor_config
     if 'executor_config' in annotation_meta_dict:

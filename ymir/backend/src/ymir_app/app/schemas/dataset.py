@@ -151,6 +151,8 @@ class DatasetAnnotation(BaseModel):
     annos_count: Optional[int]
     ave_annos_count: Optional[float]
 
+    eval_class_ids: Optional[List]
+
 
 class DatasetInfo(DatasetInDBBase):
     gt: Optional[DatasetAnnotation]

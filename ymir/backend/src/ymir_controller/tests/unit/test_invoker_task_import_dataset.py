@@ -16,7 +16,7 @@ from proto import backend_pb2
 RET_ID = 'commit t000aaaabbbbbbzzzzzzzzzzzzzzz3\nabc'
 
 
-class TestInvokerTaskImporting(unittest.TestCase):
+class TestInvokerTaskImportDataset(unittest.TestCase):
     def __init__(self, methodName: str) -> None:
         # dir structure:
         # test_involer_CLSNAME_sandbox_root
@@ -80,15 +80,15 @@ class TestInvokerTaskImporting(unittest.TestCase):
 
     @mock.patch("subprocess.run", side_effect=_mock_run_func)
     def test_invoker_00(self, mock_run):
-        importing_request = backend_pb2.TaskReqImporting()
-        importing_request.asset_dir = self._storage_root
-        importing_request.pred_dir = self._storage_root
-        importing_request.gt_dir = self._storage_root
-        importing_request.unknown_types_strategy = backend_pb2.UnknownTypesStrategy.UTS_ADD
+        import_dataset_request = backend_pb2.TaskReqImportDataset()
+        import_dataset_request.asset_dir = self._storage_root
+        import_dataset_request.pred_dir = self._storage_root
+        import_dataset_request.gt_dir = self._storage_root
+        import_dataset_request.unknown_types_strategy = backend_pb2.UnknownTypesStrategy.UTS_ADD
         req_create_task = backend_pb2.ReqCreateTask()
         req_create_task.task_type = mir_cmd_pb.TaskType.TaskTypeImportData
         req_create_task.no_task_monitor = True
-        req_create_task.importing.CopyFrom(importing_request)
+        req_create_task.import_dataset.CopyFrom(import_dataset_request)
         assets_config = {'assetskvlocation': self._storage_root}
         response = make_invoker_cmd_call(invoker=RequestTypeToInvoker[backend_pb2.TASK_CREATE],
                                          sandbox_root=self._sandbox_root,
@@ -104,14 +104,14 @@ class TestInvokerTaskImporting(unittest.TestCase):
                                    'sub_task', self._task_id)
         os.makedirs(working_dir, exist_ok=True)
 
-        expected_cmd_importing = (
-            "mir import --root {0} --dataset-name {1} --dst-rev {1}@{1} --src-revs {2} "
-            "--index-file {3} --gt-index-file {3} --gen-dir {4} -w {5} --pred-dir {4} --gt-dir {4} "
-            "--unknown-types-strategy add".format(self._mir_repo_root, self._task_id, 'master',
-                                                  os.path.join(working_dir, 'index.txt'), self._storage_root,
-                                                  working_dir))
+        expected_cmd_import_dataset = ("mir import --root {0} --dataset-name {1} --dst-rev {1}@{1} --src-revs {2} "
+                                       "--index-file {3} --gen-dir {4} -w {5} --pred-dir {4} --gt-dir {4} "
+                                       "--unknown-types-strategy add".format(self._mir_repo_root, self._task_id,
+                                                                             'master',
+                                                                             os.path.join(working_dir, 'index.txt'),
+                                                                             self._storage_root, working_dir))
         mock_run.assert_has_calls(calls=[
-            mock.call(expected_cmd_importing.split(' '), capture_output=True, text=True),
+            mock.call(expected_cmd_import_dataset.split(' '), capture_output=True, text=True),
         ])
 
         expected_ret = backend_pb2.GeneralResp()

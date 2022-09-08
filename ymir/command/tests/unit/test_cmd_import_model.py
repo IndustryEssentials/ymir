@@ -6,7 +6,7 @@ import unittest
 
 import yaml
 
-from mir.commands.model_importing import CmdModelImport
+from mir.commands.import_model import CmdModelImport
 from mir.protos import mir_command_pb2 as mirpb
 from mir.tools import mir_storage_ops, settings as mir_settings, utils as mir_utils
 from mir.tools.code import MirCode

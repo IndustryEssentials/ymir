@@ -7,6 +7,7 @@ TASK_CONTEXT_PREPROCESS_KEY = 'preprocess'
 EXECUTOR_OUTLOG_NAME = 'ymir-executor-out.log'
 
 BYTES_PER_MB = 1048576
+ASSET_LIMIT_PER_DATASET = 1000000
 
 # about evaluate default args
 DEFAULT_EVALUATE_CONF_THR = 0.005

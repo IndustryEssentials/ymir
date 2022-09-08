@@ -33,12 +33,15 @@ class DatasetAnnotation:
     annos_count: Optional[int]
     ave_annos_count: Optional[float]
 
+    eval_class_ids: Optional[List]
+
     @classmethod
     def from_dict(cls, data: Dict, total_assets_count: int, user_labels: UserLabels) -> "DatasetAnnotation":
         ave_annos_count = round(data["annos_count"] / total_assets_count, 2) if total_assets_count else None
         keywords = {
             user_labels.get_main_name(int(class_id)): count for class_id, count in data["class_ids_count"].items()
         }
+        eval_class_ids = user_labels.get_main_names(data["eval_class_ids"]) if data.get("eval_class_ids") else None
         return cls(
             keywords=keywords,
             class_ids_count=data["class_ids_count"],
@@ -48,6 +51,7 @@ class DatasetAnnotation:
             hist=data.get("annos_hist") or None,
             annos_count=data.get("annos_count"),
             ave_annos_count=ave_annos_count,
+            eval_class_ids=eval_class_ids,
         )
 
 
