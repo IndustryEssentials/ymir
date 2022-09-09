@@ -1,6 +1,5 @@
 import os
 import shutil
-from tkinter import E
 from typing import Any
 import unittest
 
@@ -360,7 +359,7 @@ class TestToolsDetEval(unittest.TestCase):
                 'task_id': 'a',
                 'eval_class_ids': [],
                 'executor_config': '',
-                'type': 'AnnoTypeUnknown',
+                'type': 'AT_UNKNOWN',
             },
             'prediction': {
                 'image_annotations': {
@@ -480,7 +479,7 @@ class TestToolsDetEval(unittest.TestCase):
                 'task_id': 'a',
                 'eval_class_ids': [0, 1, 2],
                 'executor_config': '',
-                'type': 'AnnoTypeUnknown',
+                'type': 'AT_UNKNOWN',
                 'task_class_ids': [0, 1, 2],
             },
             'image_cks': {

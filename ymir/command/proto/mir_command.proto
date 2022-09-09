@@ -72,11 +72,19 @@ enum MirStorage {
     MIR_CONTEXT = 4;
 }
 
-enum LabelFormat {
-    NO_ANNOTATION = 0;
-    PASCAL_VOC = 1;
-    IF_ARK = 2;
-    LABEL_STUDIO_JSON = 3;
+enum AnnoFormat {
+    AF_NO_ANNOTATION = 0;
+    AF_DET_PASCAL_VOC = 1;
+    AF_DET_ARK_JSON = 2;
+    AF_DET_LS_JSON = 3;
+    AF_SEG_POLYGON = 4;
+    AF_SEG_MASK = 5;
+};
+
+enum AssetFormat {
+    AF_UNKNOWN = 0;
+    AF_RAW = 1;
+    AF_LMDB = 2;
 };
 
 /// ========== metadatas.mir ==========
@@ -116,11 +124,11 @@ message MirAnnotations {
 };
 
 enum AnnoType {
-    AnnoTypeUnknown = 0;
-    AnnoTypeClass = 1; // Classification with class id, not implemented.
-    AnnoTypeDetBox = 2; // Detection w. bounding box.
-    AnnoTypeSegPolygon = 3; // Semantic Segmentation w. ploygons.
-    AnnoTypeSegMask = 4; // Instance Segmentation w. mask.
+    AT_UNKNOWN = 0;
+    AT_CLASS = 1; // Classification with class id, not implemented.
+    AT_DET_BOX = 2; // Detection w. bounding box.
+    AT_SEG_POLYGON = 3; // Semantic Segmentation w. ploygons.
+    AT_SEG_MASK = 4; // Instance Segmentation w. mask.
 };
 
 message SingleTaskAnnotations {
