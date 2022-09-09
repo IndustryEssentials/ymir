@@ -10,7 +10,7 @@ import yaml
 from mir.commands import base
 from mir.tools import checker, class_ids, models
 from mir.tools import settings as mir_settings
-from mir.tools import utils as mir_utils
+from mir.tools import env_config
 from mir.tools.code import MirCode
 from mir.tools.errors import MirRuntimeError
 from mir.tools.executant import prepare_executant_env, run_docker_executant
@@ -147,10 +147,10 @@ class CmdInfer(base.BaseCommand):
                             run_infer=run_infer,
                             run_mining=run_mining)
 
-        mir_utils.generate_mining_infer_env_config_file(task_id=task_id,
-                                                        run_mining=run_mining,
-                                                        run_infer=run_infer,
-                                                        env_config_file_path=work_env_config_file)
+        env_config.generate_mining_infer_env_config_file(task_id=task_id,
+                                                         run_mining=run_mining,
+                                                         run_infer=run_infer,
+                                                         env_config_file_path=work_env_config_file)
 
         task_config = config.get(mir_settings.TASK_CONTEXT_KEY, {})
         run_docker_executant(

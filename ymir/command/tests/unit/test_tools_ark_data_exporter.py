@@ -8,10 +8,12 @@ from google.protobuf import json_format
 import lmdb
 
 from mir.protos import mir_command_pb2 as mirpb
-from mir.tools import data_reader, data_writer, hash_utils, mir_storage_ops, revs_parser, utils
+from mir.tools import mir_storage_ops, revs_parser, mir_storage
+from mir.tools.mir_storage import sha1sum_for_file
 from tests import utils as test_utils
 
 
+@unittest.skip
 class TestArkDataExporter(unittest.TestCase):
     # life cycle
     def __init__(self, methodName: str) -> None:
@@ -47,10 +49,11 @@ class TestArkDataExporter(unittest.TestCase):
         copy all assets from project to assets_location, assumes that `self._assets_location` already created
         '''
         image_paths = ['tests/assets/2007_000032.jpg', 'tests/assets/2007_000243.jpg']
-        sha1sum_path_pairs = [(hash_utils.sha1sum_for_file(image_path), image_path)
+        sha1sum_path_pairs = [(sha1sum_for_file(image_path), image_path)
                               for image_path in image_paths]  # type: List[Tuple[str, str]]
         for sha1sum, image_path in sha1sum_path_pairs:
-            shutil.copyfile(image_path, utils.get_asset_storage_path(self._assets_location, sha1sum, make_dirs=True))
+            shutil.copyfile(image_path,
+                            mir_storage.get_asset_storage_path(self._assets_location, sha1sum))
 
     def __prepare_mir_repo(self):
         '''

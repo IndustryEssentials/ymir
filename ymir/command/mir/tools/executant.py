@@ -5,7 +5,6 @@ from requests.exceptions import ConnectionError, HTTPError, Timeout
 from typing import Dict, List
 
 from mir.tools import settings as mir_settings
-from mir.tools import utils as mir_utils
 from mir.tools.code import MirCode
 from mir.tools.errors import MirRuntimeError
 
@@ -49,6 +48,12 @@ def _append_binds(cmd: List, bind_path: str) -> None:
         cmd.append(f"-v{actual_bind_path}:{actual_bind_path}")
 
 
+def _get_docker_executable(runtime: str) -> str:
+    if runtime == 'nvidia':
+        return 'nvidia-docker'
+    return 'docker'
+
+
 def _execute_locally(
     work_dir_in: str,
     work_dir_out: str,
@@ -59,7 +64,7 @@ def _execute_locally(
     run_as_root: bool,
     task_config: dict,
 ) -> int:
-    cmd = [mir_utils.get_docker_executable(runtime=task_config.get('server_runtime', '')), 'run', '--rm']
+    cmd = [_get_docker_executable(runtime=task_config.get('server_runtime', '')), 'run', '--rm']
     # path bindings
     cmd.append(f"-v{work_dir_in}:/in:ro")
     cmd.append(f"-v{work_dir_out}:/out")

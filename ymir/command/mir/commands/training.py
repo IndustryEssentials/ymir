@@ -3,16 +3,16 @@ import logging
 import os
 import time
 from subprocess import CalledProcessError
-from typing import Any, Dict, List, Optional, Set, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 from tensorboardX import SummaryWriter
 import yaml
 
 from mir.commands import base
 from mir.protos import mir_command_pb2 as mirpb
-from mir.tools import checker, class_ids, data_reader, data_writer
+from mir.tools import checker, class_ids, env_config, exporter
 from mir.tools import mir_storage_ops, models, revs_parser
-from mir.tools import settings as mir_settings, utils as mir_utils
+from mir.tools import settings as mir_settings
 from mir.tools.command_run_in_out import command_run_in_out
 from mir.tools.code import MirCode
 from mir.tools.errors import MirContainerError, MirRuntimeError
@@ -21,7 +21,7 @@ from mir.tools.executant import prepare_executant_env, run_docker_executant
 
 # private: post process
 def _process_model_storage(out_root: str, model_upload_location: str, executor_config: dict,
-                           task_context: dict) -> mir_utils.ModelStorage:
+                           task_context: dict) -> models.ModelStorage:
     """
     find and save models
     Returns:
@@ -34,12 +34,12 @@ def _process_model_storage(out_root: str, model_upload_location: str, executor_c
                               error_message='can not find model stages in result.yaml')
     best_mAP = model_stages[best_stage_name].mAP
 
-    model_storage = mir_utils.ModelStorage(executor_config=executor_config,
-                                           task_context=dict(**task_context,
-                                                             mAP=best_mAP,
-                                                             type=mirpb.TaskType.TaskTypeTraining),
-                                           stages=model_stages,
-                                           best_stage_name=best_stage_name)
+    model_storage = models.ModelStorage(executor_config=executor_config,
+                                        task_context=dict(**task_context,
+                                                          mAP=best_mAP,
+                                                          type=mirpb.TaskType.TaskTypeTraining),
+                                        stages=model_stages,
+                                        best_stage_name=best_stage_name)
     models.pack_and_copy_models(model_storage=model_storage,
                                 model_dir_path=out_model_dir,
                                 model_location=model_upload_location)
@@ -47,7 +47,7 @@ def _process_model_storage(out_root: str, model_upload_location: str, executor_c
     return model_storage
 
 
-def _find_model_stages(model_root: str) -> Tuple[Dict[str, mir_utils.ModelStageStorage], str]:
+def _find_model_stages(model_root: str) -> Tuple[Dict[str, models.ModelStageStorage], str]:
     """
     find models in `model_root`, and returns all model stages
 
@@ -55,11 +55,11 @@ def _find_model_stages(model_root: str) -> Tuple[Dict[str, mir_utils.ModelStageS
         model_root (str): model root
 
     Returns:
-        Tuple[Dict[str, mir_utils.ModelStageStorage], str]: all model stages and best model stage name
+        Tuple[Dict[str, models_util.ModelStageStorage], str]: all model stages and best model stage name
     """
     # model_names = []
     # model_mAP = 0.0
-    model_stages: Dict[str, mir_utils.ModelStageStorage] = {}
+    model_stages: Dict[str, models.ModelStageStorage] = {}
     best_stage_name = ''
 
     result_yaml_path = os.path.join(model_root, "result.yaml")
@@ -72,17 +72,17 @@ def _find_model_stages(model_root: str) -> Tuple[Dict[str, mir_utils.ModelStageS
             model_mAP = float(yaml_obj["map"])
 
             best_stage_name = 'default_best_stage'
-            model_stages[best_stage_name] = mir_utils.ModelStageStorage(stage_name=best_stage_name,
-                                                                        files=model_names,
-                                                                        mAP=model_mAP,
-                                                                        timestamp=int(time.time()))
+            model_stages[best_stage_name] = models.ModelStageStorage(stage_name=best_stage_name,
+                                                                     files=model_names,
+                                                                     mAP=model_mAP,
+                                                                     timestamp=int(time.time()))
         elif 'model_stages' in yaml_obj:
             # new training result file: read from model stages
             for k, v in yaml_obj['model_stages'].items():
-                model_stages[k] = mir_utils.ModelStageStorage(stage_name=k,
-                                                              files=v['files'],
-                                                              mAP=float(v['mAP']),
-                                                              timestamp=v['timestamp'])
+                model_stages[k] = models.ModelStageStorage(stage_name=k,
+                                                           files=v['files'],
+                                                           mAP=float(v['mAP']),
+                                                           timestamp=v['timestamp'])
 
             best_stage_name = yaml_obj['best_stage_name']
     except FileNotFoundError:
@@ -228,7 +228,7 @@ class CmdTrain(base.BaseCommand):
                               tensorboard_dir=tensorboard_dir)
 
         asset_dir = os.path.join(work_dir_in, 'assets')
-        work_dir_annotations = os.path.join(work_dir_in, 'prediction')
+        work_dir_pred = os.path.join(work_dir_in, 'predictions')
         work_dir_gt = os.path.join(work_dir_in, 'annotations')
         tensorboard_dir = os.path.join(work_dir_out, 'tensorboard')
 
@@ -242,35 +242,17 @@ class CmdTrain(base.BaseCommand):
                                                             model_hash_stage=pretrained_model_hash_stage,
                                                             dst_model_dir=os.path.join(work_dir_in, 'models'))
 
-        # get train_ids and val_ids
-        train_ids = set()  # type: Set[str]
-        val_ids = set()  # type: Set[str]
-        unused_ids = set()  # type: Set[str]
-        mir_metadatas: mirpb.MirMetadatas = mir_storage_ops.MirStorageOps.load_single_storage(
+        mir_metadatas: mirpb.MirMetadatas
+        mir_annotations: mirpb.MirAnnotations
+        [mir_metadatas, mir_annotations] = mir_storage_ops.MirStorageOps.load_multiple_storages(
             mir_root=mir_root,
             mir_branch=src_typ_rev_tid.rev,
             mir_task_id=src_typ_rev_tid.tid,
-            ms=mirpb.MirStorage.MIR_METADATAS)
-        for asset_id, asset_attr in mir_metadatas.attributes.items():
-            if asset_attr.tvt_type == mirpb.TvtTypeTraining:
-                train_ids.add(asset_id)
-            elif asset_attr.tvt_type == mirpb.TvtTypeValidation:
-                val_ids.add(asset_id)
-            else:
-                unused_ids.add(asset_id)
-        if not train_ids:
-            raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS, error_message='no training set')
-        if not val_ids:
-            raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS, error_message='no validation set')
-
-        if not unused_ids:
-            logging.info(f"training: {len(train_ids)}, validation: {len(val_ids)}")
-        else:
-            logging.warning(f"training: {len(train_ids)}, validation: {len(val_ids)}" f"unused: {len(unused_ids)}")
+            ms_list=[mirpb.MirStorage.MIR_METADATAS, mirpb.MirStorage.MIR_ANNOTATIONS],
+        )
 
         # export
         logging.info("exporting assets")
-
         # type names to type ids
         # ['cat', 'person'] -> [4, 2]
         cls_mgr = class_ids.ClassIdManager(mir_root=mir_root)
@@ -283,109 +265,44 @@ class CmdTrain(base.BaseCommand):
                                   error_message=f"unknown class names: {unknown_names}")
 
         type_id_idx_mapping = {type_id: index for (index, type_id) in enumerate(type_ids_list)}
-        type_ids_set = set(type_ids_list)
+        anno_format, asset_format = exporter.parse_export_type(type_str=executor_config.get('export_format', ''))
+        exporter.export_mirdatas_to_dir(
+            mir_metadatas=mir_metadatas,
+            asset_format=asset_format,
+            asset_dir=asset_dir,
+            media_location=media_location,
+            anno_format=anno_format,
+            pred_dir=work_dir_pred,
+            gt_dir=work_dir_gt,
+            mir_annotations=mir_annotations,
+            class_ids_mapping=type_id_idx_mapping,
+            cls_id_mgr=cls_mgr,
+            tvt_index_dir=work_dir_in,
+            need_sub_folder=True,
+        )
 
-        export_format, asset_format = data_writer.get_export_type(type_str=executor_config.get('export_format', ''))
-
-        dw_train: data_writer.BaseDataWriter
-        dw_val: data_writer.BaseDataWriter
-        prep_args = config.get(mir_settings.TASK_CONTEXT_KEY, {}).get(mir_settings.TASK_CONTEXT_PREPROCESS_KEY, {})
-        if asset_format == data_writer.AssetFormat.ASSET_FORMAT_RAW:
-            dw_train = data_writer.RawDataWriter(
-                mir_root=mir_root,
-                assets_location=media_location,
-                assets_dir=asset_dir,
-                annotations_dir=work_dir_annotations,
-                gt_dir=work_dir_gt,
-                need_ext=True,
-                need_id_sub_folder=True,
-                overwrite=False,
-                class_ids_mapping=type_id_idx_mapping,
-                format_type=export_format,
-                index_file_path=os.path.join(work_dir_in, 'train-index-pred.tsv'),
-                gt_index_file_path=os.path.join(work_dir_in, 'train-index.tsv'),
-                index_assets_prefix='/in/assets',
-                index_annotations_prefix='/in/prediction',
-                index_gt_prefix='/in/annotations',
-                prep_args=prep_args,
+        # replace file_path in asset/anno index files.
+        exporter.replace_index_content_inplace(filename=os.path.join(asset_dir, exporter.get_index_filename()),
+                                               asset_search=asset_dir,
+                                               asset_replace="/in/assets")
+        for tvt_type in [mirpb.TvtType.TvtTypeTraining, mirpb.TvtType.TvtTypeValidation]:
+            anno_index_file_gt = exporter.get_index_filename(is_asset=False, is_pred=False, tvt_type=tvt_type)
+            exporter.replace_index_content_inplace(
+                filename=os.path.join(work_dir_in, anno_index_file_gt),
+                asset_search=asset_dir,
+                asset_replace="/in/assets",
+                anno_search=work_dir_gt,
+                anno_replace="/in/annotations",
             )
-            dw_val = data_writer.RawDataWriter(
-                mir_root=mir_root,
-                assets_location=media_location,
-                assets_dir=asset_dir,
-                annotations_dir=work_dir_annotations,
-                gt_dir=work_dir_gt,
-                need_ext=True,
-                need_id_sub_folder=True,
-                overwrite=False,
-                class_ids_mapping=type_id_idx_mapping,
-                format_type=export_format,
-                index_file_path=os.path.join(work_dir_in, 'val-index-pred.tsv'),
-                gt_index_file_path=os.path.join(work_dir_in, 'val-index.tsv'),
-                index_assets_prefix='/in/assets',
-                index_annotations_prefix='/in/prediction',
-                index_gt_prefix='/in/annotations',
-                prep_args=prep_args,
+
+            anno_index_file_pred = exporter.get_index_filename(is_asset=False, is_pred=True, tvt_type=tvt_type)
+            exporter.replace_index_content_inplace(
+                filename=os.path.join(work_dir_in, anno_index_file_pred),
+                asset_search=asset_dir,
+                asset_replace="/in/assets",
+                anno_search=work_dir_pred,
+                anno_replace="/in/prediction",
             )
-        elif asset_format == data_writer.AssetFormat.ASSET_FORMAT_LMDB:
-            asset_dir = os.path.join(work_dir_in, 'lmdb')
-            os.makedirs(asset_dir, exist_ok=True)
-
-            # export train set
-            train_lmdb_dir = os.path.join(asset_dir, 'train')
-            dw_train = data_writer.LmdbDataWriter(
-                mir_root=mir_root,
-                assets_location=media_location,
-                lmdb_dir=train_lmdb_dir,
-                class_ids_mapping=type_id_idx_mapping,
-                format_type=export_format,
-                index_file_path=os.path.join(work_dir_in, 'train-index.tsv'),
-                prep_args=prep_args,
-            )
-            if asset_cache_dir:
-                orig_lmdb_dir = os.path.join(asset_cache_dir, 'tr', src_revs)
-                if dw_train.signature:
-                    orig_lmdb_dir = os.path.join(orig_lmdb_dir, dw_train.signature)
-                os.makedirs(orig_lmdb_dir, exist_ok=True)
-
-                os.symlink(orig_lmdb_dir, train_lmdb_dir)
-            else:
-                os.makedirs(train_lmdb_dir, exist_ok=True)
-
-            # export validation set
-            val_lmdb_dir = os.path.join(asset_dir, 'val')
-            dw_val = data_writer.LmdbDataWriter(
-                mir_root=mir_root,
-                assets_location=media_location,
-                lmdb_dir=val_lmdb_dir,
-                class_ids_mapping=type_id_idx_mapping,
-                format_type=export_format,
-                index_file_path=os.path.join(work_dir_in, 'val-index.tsv'),
-                prep_args=prep_args,
-            )
-            if asset_cache_dir:
-                orig_lmdb_dir = os.path.join(asset_cache_dir, 'va', src_revs)
-                if dw_val.signature:
-                    orig_lmdb_dir = os.path.join(orig_lmdb_dir, dw_val.signature)
-                os.makedirs(orig_lmdb_dir, exist_ok=True)
-
-                os.symlink(orig_lmdb_dir, val_lmdb_dir)
-            else:
-                os.makedirs(val_lmdb_dir, exist_ok=True)
-        else:
-            raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
-                                  error_message=f"training unsupported asset format: {asset_format}")
-
-        with data_reader.MirDataReader(mir_root=mir_root,
-                                       typ_rev_tid=src_typ_rev_tid,
-                                       asset_ids=train_ids,
-                                       class_ids=type_ids_set) as dr:
-            dw_train.write_all(dr)
-        with data_reader.MirDataReader(mir_root=mir_root,
-                                       typ_rev_tid=src_typ_rev_tid,
-                                       asset_ids=val_ids,
-                                       class_ids=type_ids_set) as dr:
-            dw_val.write_all(dr)
 
         logging.info("starting train docker container")
 
@@ -396,8 +313,8 @@ class CmdTrain(base.BaseCommand):
             out_config_path=out_config_path,
             task_id=task_id,
             pretrained_model_params=[os.path.join('/in/models', name) for name in pretrained_model_names])
-        mir_utils.generate_training_env_config_file(task_id=task_id,
-                                                    env_config_file_path=os.path.join(work_dir_in, 'env.yaml'))
+        env_config.generate_training_env_config_file(task_id=task_id,
+                                                     env_config_file_path=os.path.join(work_dir_in, 'env.yaml'))
 
         task_config = config.get(mir_settings.TASK_CONTEXT_KEY, {})
         task_code = MirCode.RC_OK
@@ -417,7 +334,7 @@ class CmdTrain(base.BaseCommand):
             logging.warning(f"training exception: {e}")
             # don't exit, proceed if model exists
             task_code = MirCode.RC_CMD_CONTAINER_ERROR
-            return_msg = mir_utils.collect_executor_outlog_tail(work_dir=work_dir)
+            return_msg = env_config.collect_executor_outlog_tail(work_dir=work_dir)
 
             # write executor tail to tensorboard
             if return_msg:

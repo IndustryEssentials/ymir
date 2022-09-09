@@ -68,12 +68,12 @@ def sub_task_id(task_id: str, offset: int) -> str:
     return task_id[0] + str(offset) + task_id[2:]
 
 
-def annotation_format_str(format: mir_cmd_pb.LabelFormat) -> str:
+def annotation_format_str(format: mir_cmd_pb.AnnoFormat) -> str:
     format_enum_dict = {
-        mir_cmd_pb.LabelFormat.NO_ANNOTATION: 'none',
-        mir_cmd_pb.LabelFormat.PASCAL_VOC: 'voc',
-        mir_cmd_pb.LabelFormat.IF_ARK: 'ark',
-        mir_cmd_pb.LabelFormat.LABEL_STUDIO_JSON: 'ls_json',
+        mir_cmd_pb.AnnoFormat.AF_NO_ANNOTATION: 'none',
+        mir_cmd_pb.AnnoFormat.AF_DET_PASCAL_VOC: 'det-voc',
+        mir_cmd_pb.AnnoFormat.AF_DET_ARK_JSON: 'det-ark',
+        mir_cmd_pb.AnnoFormat.AF_DET_LS_JSON: 'det-ls-json',
     }
     return format_enum_dict[format]
 

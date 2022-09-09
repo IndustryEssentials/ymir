@@ -22,20 +22,31 @@ class UnknownTypesStrategy(str, enum.Enum):
     ADD = 'add'
 
 
+def parse_anno_format(anno_format_str: str) -> "mirpb.AnnoFormat.V":
+    _anno_dict: Dict[str, mirpb.AnnoFormat.V] = {
+        "det-voc": mirpb.AnnoFormat.AF_DET_PASCAL_VOC,
+        "det-ark": mirpb.AnnoFormat.AF_DET_ARK_JSON,
+        "det-ls-json": mirpb.AnnoFormat.AF_DET_LS_JSON,
+        "seg-poly": mirpb.AnnoFormat.AF_SEG_POLYGON,
+        "seg-mask": mirpb.AnnoFormat.AF_SEG_MASK,
+    }
+    return _anno_dict.get(anno_format_str.lower(), mirpb.AnnoFormat.AF_NO_ANNOTATION)
+
+
 def parse_anno_type(anno_type_str: str) -> "mirpb.AnnoType.V":
     _anno_dict: Dict[str, mirpb.AnnoType.V] = {
-        "det-box": mirpb.AnnoType.AnnoTypeDetBox,
-        "seg-poly": mirpb.AnnoType.AnnoTypeSegPolygon,
-        "seg-mask": mirpb.AnnoType.AnnoTypeSegMask,
+        "det-box": mirpb.AnnoType.AT_DET_BOX,
+        "seg-poly": mirpb.AnnoType.AT_SEG_POLYGON,
+        "seg-mask": mirpb.AnnoType.AT_SEG_MASK,
     }
-    return _anno_dict.get(anno_type_str.lower(), mirpb.AnnoType.AnnoTypeUnknown)
+    return _anno_dict.get(anno_type_str.lower(), mirpb.AnnoType.AT_UNKNOWN)
 
 
 def _annotation_parse_func(anno_type: "mirpb.AnnoType.V") -> Callable:
     _func_dict: Dict["mirpb.AnnoType.V", Callable] = {
-        mirpb.AnnoType.AnnoTypeDetBox: _import_annotations_det_box,
-        mirpb.AnnoType.AnnoTypeSegPolygon: _import_annotations_seg_poly,
-        mirpb.AnnoType.AnnoTypeSegMask: _import_annotations_seg_mask,
+        mirpb.AnnoType.AT_DET_BOX: _import_annotations_det_box,
+        mirpb.AnnoType.AT_SEG_POLYGON: _import_annotations_seg_poly,
+        mirpb.AnnoType.AT_SEG_MASK: _import_annotations_seg_mask,
     }
     if anno_type not in _func_dict:
         raise NotImplementedError

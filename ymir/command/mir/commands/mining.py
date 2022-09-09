@@ -9,11 +9,10 @@ from google.protobuf import json_format
 
 from mir.commands import base, infer
 from mir.protos import mir_command_pb2 as mirpb
-from mir.tools import annotations, checker, class_ids, data_reader, data_writer
-from mir.tools import mir_storage_ops, models, revs_parser, utils as mir_utils
+from mir.tools import annotations, checker, class_ids, env_config, exporter
+from mir.tools import mir_storage_ops, models, revs_parser
 from mir.tools.code import MirCode
 from mir.tools.command_run_in_out import command_run_in_out
-from mir.tools.data_writer import AnnoFormat
 from mir.tools.errors import MirContainerError, MirRuntimeError
 
 
@@ -144,12 +143,18 @@ class CmdMining(base.BaseCommand):
             logging.error('mining enviroment prepare error!')
             return ret
 
-        _prepare_assets(mir_metadatas=mir_metadatas,
-                        mir_root=mir_root,
-                        src_rev_tid=src_typ_rev_tid,
-                        media_location=media_location,
-                        work_asset_path=work_asset_path,
-                        work_index_file=work_index_file)
+        exporter.export_mirdatas_to_dir(
+            mir_metadatas=mir_metadatas,
+            asset_format=mirpb.AssetFormat.AF_RAW,
+            anno_format=mirpb.AnnoFormat.AF_NO_ANNOTATION,
+            asset_dir=work_asset_path,
+            media_location=media_location,
+            need_sub_folder=True,
+        )
+        # replace file_path in asset index files.
+        exporter.replace_index_content_inplace(filename=os.path.join(work_asset_path, exporter.get_index_filename()),
+                                               asset_search=work_asset_path,
+                                               asset_replace="/in/assets")
 
         model_hash, stage_name = models.parse_model_hash_stage(model_hash_stage)
         model_storage = models.prepare_model(model_location=model_location,
@@ -174,7 +179,7 @@ class CmdMining(base.BaseCommand):
                                                        run_mining=(topk is not None))
         except CalledProcessError:
             return_code = MirCode.RC_CMD_CONTAINER_ERROR
-            return_msg = mir_utils.collect_executor_outlog_tail(work_dir=work_dir)
+            return_msg = env_config.collect_executor_outlog_tail(work_dir=work_dir)
         # catch other exceptions in command_run_in_out
 
         task = mir_storage_ops.create_task(task_type=mirpb.TaskTypeMining,
@@ -204,7 +209,7 @@ class CmdMining(base.BaseCommand):
 # protected: post process
 def _process_results(mir_root: str, export_out: str, dst_typ_rev_tid: revs_parser.TypRevTid,
                      src_typ_rev_tid: revs_parser.TypRevTid, topk: Optional[int], add_prediction: bool,
-                     model_storage: mir_utils.ModelStorage, task: mirpb.Task) -> int:
+                     model_storage: models.ModelStorage, task: mirpb.Task) -> int:
     # step 1: build topk results:
     #   read old
     mir_metadatas: mirpb.MirMetadatas
@@ -238,7 +243,7 @@ def _process_results(mir_root: str, export_out: str, dst_typ_rev_tid: revs_parse
     #   update mir annotations: predictions
     matched_mir_annotations = mirpb.MirAnnotations()
     prediction = matched_mir_annotations.prediction
-    prediction.type = mirpb.AnnoType.AnnoTypeDetBox
+    prediction.type = mirpb.AnnoType.AT_DET_BOX
     if add_prediction:
         # add new
         for asset_id, single_image_annotations in asset_id_to_annotations.items():
@@ -349,25 +354,6 @@ def _prepare_env(export_root: str, work_in_path: str, work_out_path: str, work_a
     os.makedirs(work_model_path, exist_ok=True)
 
     return MirCode.RC_OK
-
-
-def _prepare_assets(mir_metadatas: mirpb.MirMetadatas, mir_root: str, src_rev_tid: revs_parser.TypRevTid,
-                    media_location: str, work_asset_path: str, work_index_file: str) -> None:
-    img_list = set(mir_metadatas.attributes.keys())
-    dw = data_writer.RawDataWriter(mir_root=mir_root,
-                                   assets_location=media_location,
-                                   assets_dir=work_asset_path,
-                                   annotations_dir='',
-                                   need_ext=True,
-                                   need_id_sub_folder=True,
-                                   overwrite=False,
-                                   class_ids_mapping={},
-                                   format_type=AnnoFormat.ANNO_FORMAT_NO_ANNOTATION,
-                                   index_file_path=work_index_file,
-                                   index_assets_prefix=work_asset_path)
-    with data_reader.MirDataReader(mir_root=mir_root, typ_rev_tid=src_rev_tid, asset_ids=img_list,
-                                   class_ids=set()) as dr:
-        dw.write_all(dr)
 
 
 # public: arg parser
