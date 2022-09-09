@@ -11,15 +11,22 @@ import List from "./iterations/list"
 import s from "./index.less"
 import { CardTabs } from "@/components/tabs/cardTabs"
 
-const tabs = [
-  {tab: 'Current', key: 'current', content: <Current /> },
-  {tab: 'List', key: 'list', content: <List /> },
-]
+// const SingleIteration = () => {
+//   const SingleIter = () => {
+
+//   }
+//   return <SingleIter /> 
+// } 
 
 function Iterations() {
   const { id } = useParams()
   const [iterations, getIterations] = useFetch('iteration/getIterations', [])
   const [project, getProject, setProject] = useFetch('project/getProject', {})
+
+  const tabs = [
+    { tab: 'Current', key: 'current', content: <Current /> },
+    { tab: 'List', key: 'list', content: <List project={project} /> },
+  ]
 
   useEffect(() => {
     id && getProject({ id, force: true })
