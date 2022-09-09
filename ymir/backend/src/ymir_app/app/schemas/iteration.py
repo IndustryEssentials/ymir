@@ -1,5 +1,4 @@
-from typing import List, Optional, Tuple
-
+from typing import List, Optional
 from pydantic import BaseModel
 
 from app.constants.state import IterationStage
@@ -93,9 +92,9 @@ class MiningRatio(BaseModel):
 
 
 class IterationMiningProgress(BaseModel):
-    total_mining_ratio: Tuple[int, int]
+    total_mining_ratio: MiningRatio
     class_wise_mining_ratio: List[MiningRatio]
-    negative_ratio: Tuple[int, int]
+    negative_ratio: MiningRatio
 
 
 class IterationMiningProgressOut(Common):
