@@ -1,4 +1,4 @@
-from collections import UserDict, defaultdict
+from collections import defaultdict
 import logging
 import os
 import re
@@ -79,29 +79,31 @@ def _backup(sandbox_info: _SandboxInfo) -> str:
     if os.listdir(backup_dir):
         raise update_errors.BackupDirNotEmpty(backup_dir)
 
-    for user_id in sandbox_info.user_to_repos:
+    for user_id, repo_ids in sandbox_info.user_to_repos.items():
         src_user_dir = os.path.join(sandbox_info.root, user_id)
         dst_user_dir = os.path.join(backup_dir, user_id)
-
-        shutil.copytree(src=src_user_dir, dst=dst_user_dir, dirs_exist_ok=False)
+        _copy_user_space(src_user_dir=src_user_dir, dst_user_dir=dst_user_dir, repo_ids=repo_ids)
 
     return backup_dir
 
 
 def _roll_back(backup_dir: str, sandbox_info: _SandboxInfo) -> None:
-    for user_id in sandbox_info.user_to_repos:
+    for user_id, repo_ids in sandbox_info.user_to_repos.items():
         src_user_dir = os.path.join(backup_dir, user_id)
         dst_user_dir = os.path.join(sandbox_info.root, user_id)
-
         shutil.rmtree(dst_user_dir)
-        shutil.copytree(src=src_user_dir, dst=dst_user_dir, dirs_exist_ok=False)
+        _copy_user_space(src_user_dir=src_user_dir, dst_user_dir=dst_user_dir, repo_ids=repo_ids)
+
+
+def _copy_user_space(src_user_dir: str, dst_user_dir: str, repo_ids: Set[str]) -> None:
+    shutil.copy(src=os.path.join(src_user_dir, 'labels.yaml'),
+                dst=os.path.join(dst_user_dir, 'labels.yaml'))
+    for repo_id in repo_ids:
+        shutil.copytree(src=os.path.join())
 
 
 def main() -> int:
-    logging.info(f'ymir updater for version: {YMIR_VERSION}')
-
     sandbox_info = _SandboxInfo(root=os.environ['BACKEND_SANDBOX_ROOT'])
-    logging.info(f"sandbox info root: {sandbox_info.root}")
     _detect_user_and_repos(sandbox_info)
     if not sandbox_info.user_to_repos:
         logging.info('no need to update: found no users')
