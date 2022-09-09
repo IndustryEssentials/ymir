@@ -1,6 +1,6 @@
 import logging
 import os
-from pydantic import BaseModel, root_validator
+from pydantic import BaseModel, Field
 import shutil
 import tarfile
 from typing import Any, Dict, List, Tuple
@@ -17,16 +17,8 @@ from mir.protos import mir_command_pb2 as mirpb
 class ModelStageStorage(BaseModel):
     stage_name: str
     files: List[str]
-    mAP: float
+    mAP: float = Field(..., ge=0, le=1)
     timestamp: int
-
-    @root_validator(pre=True)
-    def check_values(cls, values: dict) -> dict:
-        if (not values['stage_name'] or not values['files'] or not values['timestamp'] or values['mAP'] < 0
-                or values['mAP'] > 1):
-            raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
-                                  error_message=f"ModelStageStorage check failed with args: {values}")
-        return values
 
 
 class ModelStorage(BaseModel):
@@ -36,14 +28,6 @@ class ModelStorage(BaseModel):
     best_stage_name: str
     model_hash: str = ''
     stage_name: str = ''
-
-    @root_validator(pre=True)
-    def check_values(cls, values: dict) -> dict:
-        if (not values.get('stages') or not values.get('best_stage_name') or not values.get('executor_config')
-                or 'class_names' not in values.get('executor_config', {}) or not values.get('task_context')):
-            raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
-                                  error_message=f"ModelStorage check failed with args: {values}")
-        return values
 
     @property
     def class_names(self) -> List[str]:
