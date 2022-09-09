@@ -76,7 +76,7 @@ def _exc_update_steps(update_steps: Tuple[str, ...], sandbox_info: _SandboxInfo)
 def _backup(sandbox_info: _SandboxInfo) -> str:
     backup_dir = os.path.join(sandbox_info.root, 'backup')
     os.makedirs(backup_dir, exist_ok=True)
-    if not os.listdir(backup_dir):
+    if os.listdir(backup_dir):
         raise update_errors.BackupDirNotEmpty(backup_dir)
 
     for user_id in sandbox_info.user_to_repos:
