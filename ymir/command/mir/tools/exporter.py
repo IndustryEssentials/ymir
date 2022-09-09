@@ -259,11 +259,10 @@ def _export_anno_to_file(asset_id: str, anno_format: "mirpb.AnnoFormat.V", anno_
                          image_cks: Optional[mirpb.SingleImageCks], class_ids_mapping: Optional[Dict[int, int]],
                          cls_id_mgr: Optional[ClassIdManager], asset_filename: str, need_sub_folder: bool) -> str:
     format_func = _format_file_output_func(anno_format=anno_format)
-    anno_str: str = format_func(asset_id=asset_id,
-                                attrs=attributes,
+    anno_str: str = format_func(attributes=attributes,
                                 image_annotations=image_annotations,
                                 image_cks=image_cks,
-                                class_type_mapping=class_ids_mapping,
+                                class_ids_mapping=class_ids_mapping,
                                 cls_id_mgr=cls_id_mgr,
                                 asset_filename=asset_filename)
 

@@ -5,15 +5,13 @@ from typing import List, Tuple
 import unittest
 
 from google.protobuf import json_format
-import lmdb
 
 from mir.protos import mir_command_pb2 as mirpb
-from mir.tools import mir_storage_ops, revs_parser, mir_storage
+from mir.tools import exporter, mir_storage_ops, revs_parser, mir_storage
 from mir.tools.mir_storage import sha1sum_for_file
 from tests import utils as test_utils
 
 
-@unittest.skip
 class TestArkDataExporter(unittest.TestCase):
     # life cycle
     def __init__(self, methodName: str) -> None:
@@ -188,81 +186,36 @@ class TestArkDataExporter(unittest.TestCase):
             for col_idx in range(2):
                 self.assertEqual(expected_first_two_cols[line_idx][col_idx], int(line_components[col_idx].strip()))
 
-    def __check_lmdb_result(self, asset_ids: List[str], export_path: str, index_file_path: str):
-        expected_asset_and_anno_and_gt_keys = {(f"asset_{asset_id}", f"anno_{asset_id}", f"gt_{asset_id}")
-                                               for asset_id in asset_ids}
-        asset_and_anno_and_gt_keys = set()
-        with open(index_file_path, 'r') as f:
-            for line in f:
-                asset_key, anno_key, gt_key = line.split()
-                asset_and_anno_and_gt_keys.add((asset_key, anno_key, gt_key))
-        self.assertEqual(expected_asset_and_anno_and_gt_keys, asset_and_anno_and_gt_keys)
-        plained_asset_and_anno_and_gtkeys = {k for t in expected_asset_and_anno_and_gt_keys for k in t}
-        lmdb_env = lmdb.open(export_path)
-        lmdb_tnx = lmdb_env.begin(write=False)
-
-        for k in plained_asset_and_anno_and_gtkeys:
-            logging.info(f"plained_asset_and_anno_and_gtkeys: {k}")
-            self.assertTrue(lmdb_tnx.get(k.encode()))
-        lmdb_env.close()
-
     def test_data_rw_00(self):
         train_path = os.path.join(self._dest_root, 'train')
 
         index_file_path = os.path.join(train_path, 'index.tsv')
-        raw_writer = data_writer.RawDataWriter(mir_root=self._mir_root,
-                                               assets_location=self._assets_location,
-                                               assets_dir=train_path,
-                                               annotations_dir=train_path,
-                                               need_ext=True,
-                                               need_id_sub_folder=False,
-                                               overwrite=False,
-                                               class_ids_mapping={
-                                                   2: 0,
-                                                   52: 1
-                                               },
-                                               format_type=data_writer.AnnoFormat.ANNO_FORMAT_ARK,
-                                               index_file_path=index_file_path)
 
-        with data_reader.MirDataReader(mir_root=self._mir_root,
-                                       typ_rev_tid=revs_parser.parse_single_arg_rev('tr:a@a', need_tid=True),
-                                       asset_ids=set(),
-                                       class_ids=set()) as reader:
-            raw_writer.write_all(reader)
-
-        self.__check_result(
-            asset_ids={'430df22960b0f369318705800139fcc8ec38a3e4', 'a3008c032eb11c8d9ffcb58208a36682ee40900f'},
-            export_path=train_path,
-            index_file_path=index_file_path)
-
-    def test_data_rw_01(self):
-        train_path = os.path.join(self._dest_root, 'train')
-
-        index_file_path = os.path.join(train_path, 'index.tsv')
-
-        raw_writer = data_writer.RawDataWriter(mir_root=self._mir_root,
-                                               assets_location=self._assets_location,
-                                               assets_dir=train_path,
-                                               annotations_dir=train_path,
-                                               need_ext=True,
-                                               need_id_sub_folder=False,
-                                               overwrite=False,
-                                               class_ids_mapping={
-                                                   2: 0,
-                                                   52: 1
-                                               },
-                                               format_type=data_writer.AnnoFormat.ANNO_FORMAT_ARK,
-                                               index_file_path=index_file_path,
-                                               prep_args={'longside_resize': {
-                                                   'dest_size': 250
-                                               }})
-        with data_reader.MirDataReader(mir_root=self._mir_root,
-                                       typ_rev_tid=revs_parser.parse_single_arg_rev('tr:a@a', need_tid=True),
-                                       asset_ids=set(),
-                                       class_ids=set()) as reader:
-            raw_writer.write_all(reader)
+        mir_metadatas: mirpb.MirMetadatas
+        mir_annotations: mirpb.MirAnnotations
+        typ_rev_tid = revs_parser.parse_single_arg_rev('tr:a@a', need_tid=True)
+        [mir_metadatas, mir_annotations] = mir_storage_ops.MirStorageOps.load_multiple_storages(
+            mir_root=self._mir_root,
+            mir_branch=typ_rev_tid.rev,
+            mir_task_id=typ_rev_tid.tid,
+            ms_list=[mirpb.MirStorage.MIR_METADATAS, mirpb.MirStorage.MIR_ANNOTATIONS],
+        )
+        exporter.export_mirdatas_to_dir(
+            mir_metadatas=mir_metadatas,
+            asset_format=mirpb.AssetFormat.AF_RAW,
+            asset_dir=train_path,
+            media_location=self._assets_location,
+            anno_format=mirpb.AnnoFormat.AF_DET_ARK_JSON,
+            gt_dir=train_path,
+            mir_annotations=mir_annotations,
+            class_ids_mapping={2: 0, 52: 1},
+            cls_id_mgr=None,
+            tvt_index_dir=None,
+            need_sub_folder=False,
+        )
 
         self.__check_result(
             asset_ids={'430df22960b0f369318705800139fcc8ec38a3e4', 'a3008c032eb11c8d9ffcb58208a36682ee40900f'},
             export_path=train_path,
             index_file_path=index_file_path)
+
