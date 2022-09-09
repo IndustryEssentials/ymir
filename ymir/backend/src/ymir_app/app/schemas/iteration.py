@@ -34,6 +34,7 @@ class IterationCreate(BaseModel):
     description: Optional[str]
     project_id: int
     current_stage: Optional[IterationStage] = IterationStage.prepare_mining
+    mining_dataset_id: Optional[int]
     mining_input_dataset_id: Optional[int]
     mining_output_dataset_id: Optional[int]
     label_output_dataset_id: Optional[int]

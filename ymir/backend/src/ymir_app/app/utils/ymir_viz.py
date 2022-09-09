@@ -248,14 +248,15 @@ class ViewerModelInfoResponse(BaseModel):
 
 
 class VizClient:
-    def __init__(self) -> None:
+    def __init__(
+        self, user_id: Optional[int] = None, project_id: Optional[int] = None, user_labels: Optional[UserLabels] = None
+    ) -> None:
         self.session = requests.Session()
-        self._user_id = None  # type: Optional[str]
-        self._project_id = None  # type: Optional[str]
-        self._branch_id = None  # type: Optional[str]
+        self._user_id = f"{user_id:0>4}" if user_id else None
+        self._project_id = f"{project_id:0>6}" if project_id else None
+        self._user_labels = user_labels
         self._host = f"http://127.0.0.1:{settings.VIEWER_HOST_PORT}"
         self._url_prefix = None  # type: Optional[str]
-        self._user_labels = None  # type: Optional[UserLabels]
 
     def initialize(
         self,
@@ -349,12 +350,30 @@ class VizClient:
         dataset_info = DatasetInfo.from_dict(res, self._user_labels)
         return asdict(dataset_info)
 
-    def check_duplication(self, dataset_hashes: List[str]) -> int:
+    def get_negative_count(self, dataset_hash: str, keyword_ids: List[int]) -> int:
+        url = f"{self._url_prefix}/branch/{dataset_hash}/dataset_stats"
+        params = {"class_ids": ",".join(str(k) for k in keyword_ids)}
+        resp = self.get_resp(url, params=params)
+        res = self.parse_resp(resp)
+        dataset_info = DatasetInfo.from_dict(res, self._user_labels)
+        return dataset_info.gt.negative_assets_count if dataset_info.gt else 0
+
+    def get_class_wise_count(self, dataset_hash: str) -> Dict[str, int]:
+        url = f"{self._url_prefix}/branch/{dataset_hash}/dataset_meta_count"
+        resp = self.get_resp(url)
+        res = self.parse_resp(resp)
+        dataset_info = DatasetInfo.from_dict(res, user_labels=self._user_labels)
+        return dataset_info.gt.keywords if dataset_info.gt else {}
+
+    def check_duplication(self, dataset_hashes: List[str], main_dataset_hash: Optional[str] = None) -> Dict:
         """
         viewer: GET /dataset_duplication
         """
         url = f"{self._url_prefix}/dataset_duplication"
-        params = {"candidate_dataset_ids": ",".join(dataset_hashes)}
+        params = {
+            "candidate_dataset_ids": ",".join(dataset_hashes),
+            "corrodee_dataset_ids": main_dataset_hash,
+        }
         resp = self.get_resp(url, params=params)
         duplicated_stats = self.parse_resp(resp)
         return duplicated_stats["duplication"]
@@ -421,6 +440,8 @@ class VizClient:
         timeout: int = settings.VIZ_TIMEOUT,
     ) -> requests.Response:
         logger.info("[viewer] request url %s and params %s", url, params)
+        if params:
+            params = {k: v for k, v in params.items() if v is not None}
         try:
             resp = self.session.get(url, params=params, timeout=timeout)
         except ConnectionError:

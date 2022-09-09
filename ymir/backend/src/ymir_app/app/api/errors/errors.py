@@ -311,6 +311,11 @@ class ProjectNotFound(NotFound):
     message = "Project Not Found"
 
 
+class InvalidProject(APIError):
+    code = error_codes.INVALID_PROJECT
+    message = "Invalid Project"
+
+
 class VisualizationNotFound(NotFound):
     code = error_codes.VISUALIZATION_NOT_FOUND
     message = "Visualization Not Found"

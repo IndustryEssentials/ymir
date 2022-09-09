@@ -2,10 +2,12 @@ from datetime import datetime
 from typing import List
 
 from sqlalchemy import Boolean, Column, DateTime, Integer, SmallInteger, String
+from sqlalchemy.orm import relationship
 
 from app.config import settings
 from app.db.base_class import Base
 from app.models.task import Task  # noqa
+from app.models.dataset import Dataset  # noqa
 
 
 class Iteration(Base):
@@ -35,6 +37,13 @@ class Iteration(Base):
         default=datetime.utcnow,
         onupdate=datetime.utcnow,
         nullable=False,
+    )
+
+    mining_dataset = relationship(
+        "Dataset",
+        primaryjoin="foreign(Dataset.id)==Iteration.mining_dataset_id",
+        uselist=False,
+        viewonly=True,
     )
 
     @property
