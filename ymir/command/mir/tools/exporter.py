@@ -62,8 +62,8 @@ def parse_export_type(type_str: str) -> Tuple["mirpb.AnnoFormat.V", "mirpb.Asset
     return (annotations.parse_anno_format(anno_str), parse_asset_format(asset_str))
 
 
-def get_index_filename(is_asset: Optional[bool] = True,
-                       is_pred: Optional[bool] = False,
+def get_index_filename(is_asset: bool = True,
+                       is_pred: bool = False,
                        tvt_type: Optional["mirpb.TvtType.V"] = None) -> str:
     index_filename = "index.tsv"
     if is_asset:
