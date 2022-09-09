@@ -24,6 +24,11 @@ class UnknownTypesStrategy(str, enum.Enum):
 
 def parse_anno_format(anno_format_str: str) -> "mirpb.AnnoFormat.V":
     _anno_dict: Dict[str, mirpb.AnnoFormat.V] = {
+        # compatible with legacy format.
+        "voc": mirpb.AnnoFormat.AF_DET_PASCAL_VOC,
+        "ark": mirpb.AnnoFormat.AF_DET_ARK_JSON,
+        "ls_json": mirpb.AnnoFormat.AF_DET_LS_JSON,
+
         "det-voc": mirpb.AnnoFormat.AF_DET_PASCAL_VOC,
         "det-ark": mirpb.AnnoFormat.AF_DET_ARK_JSON,
         "det-ls-json": mirpb.AnnoFormat.AF_DET_LS_JSON,

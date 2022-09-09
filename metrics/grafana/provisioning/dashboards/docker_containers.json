@@ -338,30 +338,6 @@
                         "uid": "ymir_metrics_prometheus"
                     },
                     "editorMode": "code",
-                    "expr": "sum(rate(container_last_seen{container_label_com_docker_compose_service=\"viz-redis\"}[15m]))",
-                    "hide": false,
-                    "legendFormat": "viz-redis",
-                    "range": true,
-                    "refId": "G"
-                },
-                {
-                    "datasource": {
-                        "type": "prometheus",
-                        "uid": "ymir_metrics_prometheus"
-                    },
-                    "editorMode": "code",
-                    "expr": "sum(rate(container_last_seen{container_label_com_docker_compose_service=\"clickhouse\"}[15m]))",
-                    "hide": false,
-                    "legendFormat": "clickhouse",
-                    "range": true,
-                    "refId": "C"
-                },
-                {
-                    "datasource": {
-                        "type": "prometheus",
-                        "uid": "ymir_metrics_prometheus"
-                    },
-                    "editorMode": "code",
                     "expr": "sum(rate(container_last_seen{container_label_com_docker_compose_service=\"tensorboard\"}[15m]))",
                     "hide": false,
                     "legendFormat": "tensorboard",
@@ -605,30 +581,6 @@
                     "legendFormat": "tensorboard",
                     "range": true,
                     "refId": "F"
-                },
-                {
-                    "datasource": {
-                        "type": "prometheus",
-                        "uid": "ymir_metrics_prometheus"
-                    },
-                    "editorMode": "code",
-                    "expr": "absent(container_last_seen{container_label_com_docker_compose_service=\"viz-redis\"})",
-                    "hide": false,
-                    "legendFormat": "viz-redis",
-                    "range": true,
-                    "refId": "G"
-                },
-                {
-                    "datasource": {
-                        "type": "prometheus",
-                        "uid": "ymir_metrics_prometheus"
-                    },
-                    "editorMode": "code",
-                    "expr": "absent(container_last_seen{container_label_com_docker_compose_service=\"clickhouse\"})",
-                    "hide": false,
-                    "legendFormat": "clickhouse",
-                    "range": true,
-                    "refId": "H"
                 },
                 {
                     "datasource": {
@@ -2542,8 +2494,8 @@
             {
                 "current": {
                     "selected": true,
-                    "text": "/var/log/ymir_crontab_monitor.log",
-                    "value": "/var/log/ymir_crontab_monitor.log"
+                    "text": "/var/log/ymir_app.log",
+                    "value": "/var/log/ymir_app.log"
                 },
                 "datasource": {
                     "type": "loki",
