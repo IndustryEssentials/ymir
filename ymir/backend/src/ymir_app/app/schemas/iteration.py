@@ -86,16 +86,16 @@ class IterationPaginationOut(Common):
     result: IterationPagination
 
 
-class MiningPercent(BaseModel):
+class MiningRatio(BaseModel):
     class_name: Optional[str]
     processed_assets_count: int
     total_assets_count: int
 
 
 class IterationMiningProgress(BaseModel):
-    total_mining_percent: Tuple[int, int]
-    class_wise_mining_percent: List[MiningPercent]
-    negative_percent: Tuple[int, int]
+    total_mining_ratio: Tuple[int, int]
+    class_wise_mining_ratio: List[MiningRatio]
+    negative_ratio: Tuple[int, int]
 
 
 class IterationMiningProgressOut(Common):
