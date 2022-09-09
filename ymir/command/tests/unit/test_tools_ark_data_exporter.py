@@ -206,38 +206,6 @@ class TestArkDataExporter(unittest.TestCase):
             self.assertTrue(lmdb_tnx.get(k.encode()))
         lmdb_env.close()
 
-    # public: test cases
-    def test_data_reader_00(self):
-        with data_reader.MirDataReader(mir_root=self._mir_root,
-                                       typ_rev_tid=revs_parser.parse_single_arg_rev('tr:a@a', need_tid=True),
-                                       asset_ids=set(),
-                                       class_ids=set()) as reader:
-            self.assertEqual(2, len(list(reader.read())))
-
-        asset_ids = {'430df22960b0f369318705800139fcc8ec38a3e4', 'a3008c032eb11c8d9ffcb58208a36682ee40900f'}
-        with data_reader.MirDataReader(mir_root=self._mir_root,
-                                       typ_rev_tid=revs_parser.parse_single_arg_rev('a@a', need_tid=True),
-                                       asset_ids=asset_ids,
-                                       class_ids=set()) as reader:
-            self.assertEqual(2, len(list(reader.read())))
-
-        with data_reader.MirDataReader(mir_root=self._mir_root,
-                                       typ_rev_tid=revs_parser.parse_single_arg_rev('a@a', need_tid=True),
-                                       asset_ids=asset_ids,
-                                       class_ids={2}) as reader:
-            for asset_id, attrs, image_annotations, *_ in reader.read():
-                if asset_id == '430df22960b0f369318705800139fcc8ec38a3e4':
-                    self.assertEqual(2, len(image_annotations.boxes))
-                    self.assertEqual((500, 281), (attrs.width, attrs.height))
-            self.assertEqual(2, len(list(reader.read())))
-
-        asset_ids = {'430df22960b0f369318705800139fcc8ec38a3e4'}
-        with data_reader.MirDataReader(mir_root=self._mir_root,
-                                       typ_rev_tid=revs_parser.parse_single_arg_rev('tr:a@a', need_tid=True),
-                                       asset_ids=asset_ids,
-                                       class_ids=set()) as reader:
-            self.assertEqual(1, len(list(reader.read())))
-
     def test_data_rw_00(self):
         train_path = os.path.join(self._dest_root, 'train')
 
@@ -255,32 +223,17 @@ class TestArkDataExporter(unittest.TestCase):
                                                },
                                                format_type=data_writer.AnnoFormat.ANNO_FORMAT_ARK,
                                                index_file_path=index_file_path)
-        lmdb_index_file_path = os.path.join(train_path, 'index-lmdb.tsv')
-        lmdb_writer = data_writer.LmdbDataWriter(mir_root=self._mir_root,
-                                                 assets_location=self._assets_location,
-                                                 lmdb_dir=train_path,
-                                                 class_ids_mapping={
-                                                     2: 0,
-                                                     52: 1
-                                                 },
-                                                 format_type=data_writer.AnnoFormat.ANNO_FORMAT_ARK,
-                                                 index_file_path=lmdb_index_file_path)
 
         with data_reader.MirDataReader(mir_root=self._mir_root,
                                        typ_rev_tid=revs_parser.parse_single_arg_rev('tr:a@a', need_tid=True),
                                        asset_ids=set(),
                                        class_ids=set()) as reader:
             raw_writer.write_all(reader)
-            lmdb_writer.write_all(reader)
 
         self.__check_result(
             asset_ids={'430df22960b0f369318705800139fcc8ec38a3e4', 'a3008c032eb11c8d9ffcb58208a36682ee40900f'},
             export_path=train_path,
             index_file_path=index_file_path)
-        self.__check_lmdb_result(
-            asset_ids={'430df22960b0f369318705800139fcc8ec38a3e4', 'a3008c032eb11c8d9ffcb58208a36682ee40900f'},
-            export_path=train_path,
-            index_file_path=lmdb_index_file_path)
 
     def test_data_rw_01(self):
         train_path = os.path.join(self._dest_root, 'train')
@@ -303,32 +256,13 @@ class TestArkDataExporter(unittest.TestCase):
                                                prep_args={'longside_resize': {
                                                    'dest_size': 250
                                                }})
-        lmdb_index_file_path = os.path.join(train_path, 'index-lmdb.tsv')
-        lmdb_writer = data_writer.LmdbDataWriter(mir_root=self._mir_root,
-                                                 assets_location=self._assets_location,
-                                                 lmdb_dir=train_path,
-                                                 class_ids_mapping={
-                                                     2: 0,
-                                                     52: 1
-                                                 },
-                                                 format_type=data_writer.AnnoFormat.ANNO_FORMAT_ARK,
-                                                 index_file_path=lmdb_index_file_path,
-                                                 prep_args={'longside_resize': {
-                                                     'dest_size': 250
-                                                 }})
-
         with data_reader.MirDataReader(mir_root=self._mir_root,
                                        typ_rev_tid=revs_parser.parse_single_arg_rev('tr:a@a', need_tid=True),
                                        asset_ids=set(),
                                        class_ids=set()) as reader:
             raw_writer.write_all(reader)
-            lmdb_writer.write_all(reader)
 
         self.__check_result(
             asset_ids={'430df22960b0f369318705800139fcc8ec38a3e4', 'a3008c032eb11c8d9ffcb58208a36682ee40900f'},
             export_path=train_path,
             index_file_path=index_file_path)
-        self.__check_lmdb_result(
-            asset_ids={'430df22960b0f369318705800139fcc8ec38a3e4', 'a3008c032eb11c8d9ffcb58208a36682ee40900f'},
-            export_path=train_path,
-            index_file_path=lmdb_index_file_path)

@@ -13,7 +13,6 @@ from mir.tools.mir_storage import sha1sum_for_file
 from tests import utils as test_utils
 
 
-@unittest.skip
 class TestCmdExport(unittest.TestCase):
     # life cycle
     def __init__(self, methodName: str) -> None:
@@ -218,23 +217,6 @@ class TestCmdExport(unittest.TestCase):
         result = runner.run()
         self.assertEqual(MirCode.RC_OK, result)
 
-        # normal case: voc:lmdb
-        fake_args = type('', (), {})()
-        fake_args.mir_root = self._mir_root
-        fake_args.asset_dir = self._dest_root
-        fake_args.pred_dir = self._dest_root
-        fake_args.gt_dir = self._gt_root
-        fake_args.media_location = self._assets_location
-        fake_args.src_revs = 'a@a'
-        fake_args.dst_rev = ''
-        fake_args.anno_format = 'voc'
-        fake_args.asset_format = 'lmdb'
-        fake_args.class_names = 'person'
-        fake_args.work_dir = ''
-        runner = export.CmdExport(fake_args)
-        result = runner.run()
-        self.assertEqual(MirCode.RC_OK, result)
-
         # abnormal case: no asset_dir, pred_dir, media_location
         fake_args = type('', (), {})()
         fake_args.mir_root = self._mir_root
@@ -243,7 +225,6 @@ class TestCmdExport(unittest.TestCase):
         fake_args.gt_dir = ''
         fake_args.media_location = ''
         fake_args.src_revs = 'a@a'
-        fake_args.dst_rev = ''  # too fast, default task_id will be the same as previous one
         fake_args.anno_format = 'voc'
         fake_args.asset_format = 'raw'
         fake_args.class_names = 'person'

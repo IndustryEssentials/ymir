@@ -24,6 +24,7 @@ class CmdExport(base.BaseCommand):
             gt_dir=self.args.gt_dir,
             media_location=self.args.media_location,
             src_revs=self.args.src_revs,
+            dst_rev=f"export-{self.args.src_revs}-{time.time()}",
             asset_format=exporter.parse_asset_format(self.args.asset_format),
             anno_format=annotations.parse_anno_format(self.args.anno_format),
             class_names=self.args.class_names.split(';') if self.args.class_names else [],
@@ -32,15 +33,25 @@ class CmdExport(base.BaseCommand):
 
     @staticmethod
     @command_run_in_out
-    def run_with_args(mir_root: str, asset_dir: str, pred_dir: str, gt_dir: str, media_location: str, src_revs: str,
-                      asset_format: "mirpb.AssetFormat.V", anno_format: "mirpb.AnnoFormat.V", class_names: List[str],
-                      work_dir: str) -> int:
+    def run_with_args(
+        mir_root: str,
+        asset_dir: str,
+        pred_dir: str,
+        gt_dir: str,
+        media_location: str,
+        src_revs: str,
+        dst_rev: str,
+        asset_format: "mirpb.AssetFormat.V",
+        anno_format: "mirpb.AnnoFormat.V",
+        class_names: List[str],
+        work_dir: str,
+    ) -> int:
         if not asset_dir or not media_location or not src_revs:
             logging.error('empty --asset-dir, --media-location or --src-revs')
             return MirCode.RC_CMD_INVALID_ARGS
 
         src_rev_tid = revs_parser.parse_single_arg_rev(src_revs, need_tid=False)
-        dst_rev_tid = revs_parser.parse_single_arg_rev(f"export-{src_revs}-{time.time()}", need_tid=False)
+        dst_rev_tid = revs_parser.parse_single_arg_rev(dst_rev, need_tid=False)
 
         PhaseLoggerCenter.create_phase_loggers(top_phase='export',
                                                monitor_file=mir_repo_utils.work_dir_to_monitor_file(work_dir),
