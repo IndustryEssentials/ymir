@@ -15,6 +15,7 @@ class IterationBase(BaseModel):
     previous_iteration: int
     description: Optional[str]
     current_stage: Optional[IterationStage]
+    mining_dataset_id: Optional[int]
     mining_input_dataset_id: Optional[int]
     mining_output_dataset_id: Optional[int]
     label_output_dataset_id: Optional[int]

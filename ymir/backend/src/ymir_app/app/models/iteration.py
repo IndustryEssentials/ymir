@@ -16,6 +16,7 @@ class Iteration(Base):
     current_stage = Column(SmallInteger, index=True, default=0, nullable=False)
     previous_iteration = Column(Integer, index=True, default=0, nullable=False)
 
+    mining_dataset_id = Column(Integer)
     mining_input_dataset_id = Column(Integer)
     mining_output_dataset_id = Column(Integer)
     label_output_dataset_id = Column(Integer)
