@@ -192,14 +192,19 @@ def _export_mirdatas_to_raw(
             if anno_format == mirpb.AnnoFormat.AF_NO_ANNOTATION:
                 continue
 
-            if (gt_dir and index_gt_f and mir_annotations
-                    and asset_id in mir_annotations.ground_truth.image_annotations):
+            if (gt_dir and index_gt_f and mir_annotations):
+                # export annotation file even annotation not exists.
+                if asset_id in mir_annotations.ground_truth.image_annotations:
+                    image_annotations = mir_annotations.ground_truth.image_annotations[asset_id]
+                else:
+                    image_annotations = mirpb.SingleImageAnnotations()
+
                 anno_gt_file = _export_anno_to_file(
                     asset_id=asset_id,
                     anno_format=anno_format,
                     anno_dir=gt_dir,
                     attributes=attributes,
-                    image_annotations=mir_annotations.ground_truth.image_annotations[asset_id],
+                    image_annotations=image_annotations,
                     image_cks=mir_annotations.image_cks[asset_id],
                     class_ids_mapping=class_ids_mapping,
                     cls_id_mgr=cls_id_mgr,
@@ -211,14 +216,19 @@ def _export_mirdatas_to_raw(
                 if tvt_index_dir:
                     index_tvt_f[(False, attributes.tvt_type)].write(asset_anno_pair_line)
 
-            if (pred_dir and index_pred_f and mir_annotations
-                    and asset_id in mir_annotations.prediction.image_annotations):
+            if (pred_dir and index_pred_f and mir_annotations):
+                # export annotation file even annotation not exists.
+                if asset_id in mir_annotations.prediction.image_annotations:
+                    image_annotations = mir_annotations.prediction.image_annotations[asset_id]
+                else:
+                    image_annotations = mirpb.SingleImageAnnotations()
+
                 anno_pred_file = _export_anno_to_file(
                     asset_id=asset_id,
                     anno_format=anno_format,
                     anno_dir=pred_dir,
                     attributes=attributes,
-                    image_annotations=mir_annotations.ground_truth.image_annotations[asset_id],
+                    image_annotations=image_annotations,
                     image_cks=None,
                     class_ids_mapping=class_ids_mapping,
                     cls_id_mgr=cls_id_mgr,
@@ -257,7 +267,8 @@ def _export_mirdatas_to_lmdb(
 def _export_anno_to_file(asset_id: str, anno_format: "mirpb.AnnoFormat.V", anno_dir: str,
                          attributes: mirpb.MetadataAttributes, image_annotations: mirpb.SingleImageAnnotations,
                          image_cks: Optional[mirpb.SingleImageCks], class_ids_mapping: Optional[Dict[int, int]],
-                         cls_id_mgr: Optional[ClassIdManager], asset_filename: str, need_sub_folder: bool) -> str:
+                         cls_id_mgr: Optional[ClassIdManager], asset_filename: str,
+                         need_sub_folder: bool) -> str:
     format_func = _format_file_output_func(anno_format=anno_format)
     anno_str: str = format_func(attributes=attributes,
                                 image_annotations=image_annotations,
@@ -282,6 +293,9 @@ def _single_image_annotations_to_det_ark(attributes: mirpb.MetadataAttributes,
                                          asset_filename: str) -> str:
     output_str = ""
     for annotation in image_annotations.boxes:
+        if class_ids_mapping and annotation.class_id not in class_ids_mapping:
+            continue
+
         mapped_id = class_ids_mapping[annotation.class_id] if class_ids_mapping else annotation.class_id
         output_str += f"{mapped_id}, {annotation.box.x}, {annotation.box.y}, "
         output_str += f"{annotation.box.x + annotation.box.w - 1}, {annotation.box.y + annotation.box.h - 1}, "
@@ -350,6 +364,9 @@ def _single_image_annotations_to_det_voc(attributes: mirpb.MetadataAttributes,
 
     # annotation: object(s)
     for annotation in annotations:
+        if class_ids_mapping and annotation.class_id not in class_ids_mapping:
+            continue
+
         object_node = ElementTree.SubElement(annotation_node, 'object')
 
         name_node = ElementTree.SubElement(object_node, 'name')
@@ -423,6 +440,9 @@ def _single_image_annotations_to_det_ls_json(attributes: mirpb.MetadataAttribute
     }
 
     for annotation in annotations:
+        if class_ids_mapping and annotation.class_id not in class_ids_mapping:
+            continue
+
         bbox_x, bbox_y = float(annotation.box.x), float(annotation.box.y)
         bbox_width, bbox_height = float(annotation.box.w), float(annotation.box.h)
         img_width, img_height = attributes.width, attributes.height
