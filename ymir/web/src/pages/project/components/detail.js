@@ -4,15 +4,13 @@ import { Link } from "umi"
 
 import t from "@/utils/t"
 import { getStageLabel } from '@/constants/project'
-import Iteration from './iteration'
 
 import s from "../detail.less"
-import Prepare from "./prepare"
 import KeywordRates from "@/components/dataset/keywordRates"
 import { TestingSet } from "./testingSet"
 import { EditIcon, SearchEyeIcon, EyeOffIcon } from "@/components/common/icons"
 
-function ProjectDetail({ project = {}, iterations = {}, fresh = () => { } }) {
+function ProjectDetail({ project = {} }) {
   const id = project.id
 
 
@@ -61,8 +59,6 @@ function ProjectDetail({ project = {}, iterations = {}, fresh = () => { } }) {
         </Space>
       </Col>
     </Row>
-    {project.round > 0 ?
-      <Iteration project={project} iterations={iterations} fresh={fresh} /> : <Prepare project={project} iterations={iterations} fresh={fresh} />}
     <div className={s.setsPanel}>
       <Row gutter={0} align='middle'>
         {renderProjectDatasetLabel()}

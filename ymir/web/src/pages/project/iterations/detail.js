@@ -3,13 +3,11 @@ import { Table, Popover, } from "antd"
 
 import t from "@/utils/t"
 import { percent, isNumber } from '@/utils/number'
-import useFetch from '@/hooks/useFetch'
-
 import KeywordRates from "@/components/dataset/keywordRates"
 
 import s from "./index.less"
 
-function List({ project }) {
+function Detail({ project }) {
   const [iterations, getIterations] = useFetch('iteration/getIterations', [])
   const [list, setList] = useState([])
 
@@ -133,4 +131,4 @@ function List({ project }) {
   )
 }
 
-export default List
+export default Detail

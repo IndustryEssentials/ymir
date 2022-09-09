@@ -1,49 +1,27 @@
-import React, { useCallback, useEffect, useState } from "react"
+import React, { useEffect } from "react"
 import { Button, Card, Col, Row, Space } from "antd"
-import { useParams, connect, useHistory } from "umi"
+import { useParams, useHistory } from "umi"
+
 import t from "@/utils/t"
+import useFetch from '@/hooks/useFetch'
 import Breadcrumbs from "@/components/common/breadcrumb"
+
 import s from "./detail.less"
 import { TrainIcon, NavDatasetIcon, ArrowRightIcon, ImportIcon } from "@/components/common/icons"
-import NoIterationDetail from "./components/noIterationDetail"
-import Detail from './components/detail'
 
 function ProjectDetail(func) {
   const history = useHistory()
   const { id } = useParams()
-  const [iterations, setIterations] = useState([])
-  const [project, setProject] = useState({})
+  const [project, getProject] = useFetch('project/getProject', {})
 
   useEffect(() => {
-    id && fetchProject(true)
-    id && fetchIterations(id)
+    id && getProject({ id, force: true })
   }, [id])
-
-  async function fetchProject(force) {
-    const result = await func.getProject(id, force)
-    if (result) {
-      setProject(result)
-    }
-  }
-  const fresh = useCallback((updateProject) => {
-    if (updateProject) {
-      setProject(updateProject)
-    } else {
-      fetchProject(true)
-    }
-  }, [])
-
-  async function fetchIterations(pid) {
-    const iterations = await func.getIterations(pid)
-    if (iterations) {
-      setIterations(iterations)
-    }
-  }
 
   const title = (Icon, label) => <div className={s.cardTitle}>
     <Icon className={s.titleIcon} />
     <span className={s.titleLabel}>{t(label)}</span>
-    </div>
+  </div>
 
   function add() {
     history.push(`/home/project/${id}/dataset/add`)
@@ -104,21 +82,4 @@ function ProjectDetail(func) {
   )
 }
 
-const actions = (dispatch) => {
-  return {
-    getProject(id, force) {
-      return dispatch({
-        type: 'project/getProject',
-        payload: { id, force },
-      })
-    },
-    getIterations(id) {
-      return dispatch({
-        type: 'iteration/getIterations',
-        payload: { id, },
-      })
-    },
-  }
-}
-
-export default connect(null, actions)(ProjectDetail)
+export default ProjectDetail

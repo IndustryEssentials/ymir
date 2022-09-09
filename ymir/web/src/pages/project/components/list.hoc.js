@@ -4,7 +4,7 @@ import { useLocation, useParams } from "umi"
 
 import useFetch from '@/hooks/useFetch'
 import Breadcrumbs from "@/components/common/breadcrumb"
-import Detail from './detail'
+// import Detail from './detail'
 import NoIterationDetail from "./noIterationDetail"
 
 import s from "../detail.less"
