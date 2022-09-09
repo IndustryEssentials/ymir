@@ -133,8 +133,8 @@ function Prepare({ project = {}, fresh = () => { }, ...func }) {
   function mergeTrainSet() {
     const params = {
       projectId: id,
-      dataset: project.trainSetVersion,
-      includes: [project.candidateTrainSet]
+      group: project.trainSet.id,
+      datasets: [project.candidateTrainSet, project.trainSetVersion],
     }
     merge(params)
   }
