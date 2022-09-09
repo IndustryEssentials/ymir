@@ -101,8 +101,8 @@ def replace_index_content_inplace(filename: str,
 
             contents = line.strip().split("\t")
             contents[0] = contents[0].replace(asset_search, asset_replace)
-            contents[1] = contents[0].replace(anno_search, anno_replace)
-            line = "\t".join(contents)
+            contents[1] = contents[1].replace(anno_search, anno_replace)
+            print("\t".join(contents), end="\n")
 
 
 def export_mirdatas_to_dir(
