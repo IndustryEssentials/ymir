@@ -82,3 +82,23 @@ def update_iteration(
         raise IterationNotFound()
     crud.iteration.update_iteration(db, iteration_id=iteration_id, iteration_update=iteration_updates)
     return {"result": iteration}
+
+
+@router.get("/{iteration_id}/mining_progress", response_model=schemas.iteration.IterationMiningProgressOut)
+def get_mining_progress_of_iteration(
+    db: Session = Depends(deps.get_db),
+    current_user: models.User = Depends(deps.get_current_active_user),
+    project_id: int = Query(...),
+    iteration_id: int = Path(...),
+) -> Any:
+    """
+    Get verbose information of specific iteration
+    """
+    iteration = crud.iteration.get(db, id=iteration_id)
+    if not iteration:
+        raise IterationNotFound()
+    previous_iterations = crud.project.get_previous_iterations(db, project_id=project_id, iteration_id=iteration_id)
+    if not previous_iterations:
+        # on first iteration
+        pass
+    return {"result": iteration}

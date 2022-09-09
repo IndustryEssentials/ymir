@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import List, Optional, Tuple
 
 from pydantic import BaseModel
 
@@ -84,3 +84,19 @@ class IterationPagination(BaseModel):
 
 class IterationPaginationOut(Common):
     result: IterationPagination
+
+
+class MiningPercent(BaseModel):
+    class_name: Optional[str]
+    processed_assets_count: int
+    total_assets_count: int
+
+
+class IterationMiningProgress(BaseModel):
+    total_mining_percent: Tuple[int, int]
+    class_wise_mining_percent: List[MiningPercent]
+    negative_percent: Tuple[int, int]
+
+
+class IterationMiningProgressOut(Common):
+    result: IterationMiningProgress
