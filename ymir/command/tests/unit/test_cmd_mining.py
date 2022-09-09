@@ -11,7 +11,7 @@ from google.protobuf.json_format import ParseDict
 import yaml
 
 from mir.commands.mining import CmdMining
-from mir.tools import mir_storage_ops, settings as mir_settings, utils as mir_utils
+from mir.tools import mir_storage_ops, models, settings as mir_settings, mir_storage
 import mir.protos.mir_command_pb2 as mirpb
 import tests.utils as test_utils
 
@@ -83,13 +83,13 @@ class TestMiningCmd(unittest.TestCase):
         return 0
 
     def _mock_prepare_model(*args, **kwargs):
-        mss = mir_utils.ModelStageStorage(stage_name='default', files=['0.params'], mAP=0.5, timestamp=int(time.time()))
-        ms = mir_utils.ModelStorage(executor_config={'class_names': ['person', 'cat', 'unknown-car']},
-                                    task_context={'task_id': '0'},
-                                    stages={mss.stage_name: mss},
-                                    best_stage_name=mss.stage_name,
-                                    model_hash='xyz',
-                                    stage_name=mss.stage_name)
+        mss = models.ModelStageStorage(stage_name='default', files=['0.params'], mAP=0.5, timestamp=int(time.time()))
+        ms = models.ModelStorage(executor_config={'class_names': ['person', 'cat', 'unknown-car']},
+                                 task_context={'task_id': '0'},
+                                 stages={mss.stage_name: mss},
+                                 best_stage_name=mss.stage_name,
+                                 model_hash='xyz',
+                                 stage_name=mss.stage_name)
         return ms
 
     # protected: custom: env prepare
@@ -120,13 +120,11 @@ class TestMiningCmd(unittest.TestCase):
         mir_annotations = mirpb.MirAnnotations()
         mir_metadatas = mirpb.MirMetadatas()
 
-        mock_image_file = mir_utils.get_asset_storage_path(self._storage_root,
-                                                           'd4e4a60147f1e35bc7f5bc89284aa16073b043c9',
-                                                           make_dirs=True)
+        mock_image_file = mir_storage.get_asset_storage_path(self._storage_root,
+                                                             'd4e4a60147f1e35bc7f5bc89284aa16073b043c9')
         shutil.copyfile("tests/assets/2007_000032.jpg", mock_image_file)
-        mock_image_file = mir_utils.get_asset_storage_path(self._storage_root,
-                                                           'a3008c032eb11c8d9ffcb58208a36682ee40900f',
-                                                           make_dirs=True)
+        mock_image_file = mir_storage.get_asset_storage_path(self._storage_root,
+                                                             'a3008c032eb11c8d9ffcb58208a36682ee40900f')
         shutil.copyfile("tests/assets/2007_000243.jpg", mock_image_file)
 
         mock_training_config_file = os.path.join(self._storage_root, 'config.yaml')

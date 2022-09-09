@@ -6,8 +6,6 @@ import fasteners  # type: ignore
 from pydantic import BaseModel, root_validator, validator
 import yaml
 
-from mir.tools import utils as mir_utils
-
 EXPECTED_FILE_VERSION = 1
 
 
@@ -139,8 +137,14 @@ def ids_file_name() -> str:
     return 'labels.yaml'
 
 
+def repo_dot_mir_path(mir_root: str) -> str:
+    dir = os.path.join(mir_root, '.mir')
+    os.makedirs(dir, exist_ok=True)
+    return dir
+
+
 def ids_file_path(mir_root: str) -> str:
-    return os.path.join(mir_utils.repo_dot_mir_path(mir_root=mir_root), ids_file_name())
+    return os.path.join(repo_dot_mir_path(mir_root=mir_root), ids_file_name())
 
 
 def parse_label_lock_path_or_link(ids_storage_file_path: str) -> str:

@@ -1,9 +1,7 @@
-import logging
 import os
 import shutil
 from typing import Type
 import unittest
-import zlib
 
 import google.protobuf.json_format as pb_format
 

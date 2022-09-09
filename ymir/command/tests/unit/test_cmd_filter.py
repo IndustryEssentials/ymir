@@ -8,7 +8,6 @@ from google.protobuf import json_format
 
 from mir.commands import filter as cmd_filter
 from mir.protos import mir_command_pb2 as mirpb
-from mir.tools import utils as mir_utils
 from mir.tools import mir_storage_ops
 from mir.tools.code import MirCode
 from mir.tools.mir_storage_ops import MirStorageOps
@@ -230,9 +229,6 @@ class TestCmdFilter(unittest.TestCase):
         self.assertEqual(expected_asset_ids, set(mir_annotations.image_cks.keys()))
         self.assertEqual(1, len(mir_tasks.tasks))
         self.assertEqual('t1', mir_tasks.head_task_id)
-
-        current_branch_name = mir_utils.mir_repo_head_name(self._mir_root)
-        self.assertEqual(dst_branch, current_branch_name)
 
     def __test_multiprocess(self, dst_branch: str, child_conn):
         fake_args = type('', (), {})()

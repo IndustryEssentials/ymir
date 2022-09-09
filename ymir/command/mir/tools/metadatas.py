@@ -3,7 +3,7 @@ import os
 import time
 from PIL import Image, ImageFile, UnidentifiedImageError
 from typing import Dict
-from mir.tools import utils
+from mir.tools import mir_storage
 
 from mir.tools.code import MirCode
 from mir.tools.errors import MirRuntimeError
@@ -75,7 +75,7 @@ def import_metadatas(mir_metadatas: mirpb.MirMetadatas,
 
         # read file
         # if any exception occured, exit without any handler
-        hashed_asset_path = utils.get_asset_storage_path(location=hashed_asset_root, hash=asset_id, make_dirs=False)
+        hashed_asset_path = mir_storage.locate_asset_path(location=hashed_asset_root, hash=asset_id)
         _fill_type_shape_size_for_asset(hashed_asset_path, metadata_attributes)
         if metadata_attributes.asset_type == mirpb.AssetTypeUnknown:
             logging.warning(f"ignore asset with unknown format, id: {asset_id}")

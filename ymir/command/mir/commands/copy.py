@@ -177,8 +177,10 @@ class CmdCopy(base.BaseCommand):
             name = src_class_id_mgr.main_name_for_id(src_id)
             if name is None:
                 raise ValueError(f"copy: unknown src class id: {src_id}")
-            unknown_names_and_count[
-                name] = mir_context.pred_stats.class_ids_cnt[src_id] + mir_context.gt_stats.class_ids_cnt[src_id]
+
+            cnt_gt: int = mir_context.pred_stats.class_ids_cnt[src_id]
+            cnt_pred: int = mir_context.gt_stats.class_ids_cnt[src_id]
+            unknown_names_and_count[name] = cnt_gt + cnt_pred
         return unknown_names_and_count
 
 

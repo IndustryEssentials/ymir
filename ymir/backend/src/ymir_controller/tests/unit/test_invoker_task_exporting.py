@@ -81,7 +81,7 @@ class TestInvokerTaskExporting(unittest.TestCase):
     def test_invoker_00(self, mock_run):
         exporting_request = backend_pb2.TaskReqExporting()
         exporting_request.dataset_id = self._base_task_id
-        exporting_request.format = mir_cmd_pb.LabelFormat.PASCAL_VOC
+        exporting_request.format = mir_cmd_pb.AnnoFormat.AF_DET_PASCAL_VOC
         exporting_request.asset_dir = self._storage_root
         exporting_request.pred_dir = self._storage_root
         exporting_request.gt_dir = self._storage_root
@@ -105,8 +105,8 @@ class TestInvokerTaskExporting(unittest.TestCase):
         print(MessageToDict(response))
 
         expected_cmd_exporting = (
-            "mir export --root {0} --media-location {1} --asset-dir {1} --src-revs {2}@{2} --format {3} -w {4} "
-            "--pred-dir {1} --gt-dir {1}".format(self._mir_repo_root, self._storage_root, self._base_task_id, 'voc',
+            "mir export --root {0} --media-location {1} --asset-dir {1} --src-revs {2}@{2} --anno_format {3} -w {4} "
+            "--pred-dir {1} --gt-dir {1}".format(self._mir_repo_root, self._storage_root, self._base_task_id, 'det-voc',
                                                  working_dir))
         mock_run.assert_has_calls(calls=[
             mock.call(expected_cmd_exporting.split(' '), capture_output=True, text=True),

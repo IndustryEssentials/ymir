@@ -6,11 +6,12 @@ from typing import Dict
 
 from mir.commands import base
 from mir.protos import mir_command_pb2 as mirpb
-from mir.tools import annotations, checker, hash_utils, metadatas
-from mir.tools import mir_repo_utils, mir_storage_ops, revs_parser, settings, utils
+from mir.tools import annotations, checker, metadatas
+from mir.tools import mir_repo_utils, mir_storage_ops, revs_parser, settings
 from mir.tools.code import MirCode
 from mir.tools.command_run_in_out import command_run_in_out
 from mir.tools.phase_logger import PhaseLoggerCenter
+from mir.tools.mir_storage import get_asset_storage_path, sha1sum_for_file
 
 
 class CmdImport(base.BaseCommand):
@@ -129,10 +130,10 @@ def _generate_sha_and_copy(index_file: str, map_hashed_filename: Dict[str, str],
         if not media_src or not os.path.isfile(media_src):
             continue
 
-        sha1 = hash_utils.sha1sum_for_file(media_src)
+        sha1 = sha1sum_for_file(media_src)
         if sha1 not in map_hashed_filename:
             map_hashed_filename[sha1] = os.path.splitext(os.path.basename(media_src))[0]
-            media_dst = utils.get_asset_storage_path(location=sha_folder, hash=sha1, make_dirs=True)
+            media_dst = get_asset_storage_path(location=sha_folder, hash=sha1)
             if not os.path.isfile(media_dst):
                 shutil.copyfile(media_src, media_dst)
 

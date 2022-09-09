@@ -30,7 +30,7 @@ class TaskVisualizationInvoker(TaskBaseInvoker):
         visualization = request.req_create_task.visualization
 
         media_location = assets_config["assetskvlocation"]
-        format_str = utils.annotation_format_str(backend_pb2.LabelFormat.PASCAL_VOC)
+        format_str = utils.annotation_format_str(backend_pb2.AnnoFormat.AF_DET_PASCAL_VOC)
 
         iou_thr = visualization.iou_thr
         conf_thr = visualization.conf_thr

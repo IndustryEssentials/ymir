@@ -1,15 +1,49 @@
 import logging
 import os
+from pydantic import BaseModel, Field
 import shutil
 import tarfile
-from typing import List, Tuple
+from typing import Any, Dict, List, Tuple
 
+from google.protobuf import json_format
 import yaml
 
-from mir.tools import hash_utils
 from mir.tools.code import MirCode
 from mir.tools.errors import MirRuntimeError
-from mir.tools.utils import ModelStorage
+from mir.tools.mir_storage import sha1sum_for_file
+from mir.protos import mir_command_pb2 as mirpb
+
+
+class ModelStageStorage(BaseModel):
+    stage_name: str
+    files: List[str]
+    mAP: float = Field(..., ge=0, le=1)
+    timestamp: int
+
+
+class ModelStorage(BaseModel):
+    executor_config: Dict[str, Any]
+    task_context: Dict[str, Any]
+    stages: Dict[str, ModelStageStorage]
+    best_stage_name: str
+    model_hash: str = ''
+    stage_name: str = ''
+
+    @property
+    def class_names(self) -> List[str]:
+        return self.executor_config['class_names']
+
+    def get_model_meta(self) -> mirpb.ModelMeta:
+        model_meta = mirpb.ModelMeta()
+        json_format.ParseDict(
+            {
+                'mean_average_precision': self.stages[self.best_stage_name].mAP,
+                'model_hash': self.model_hash,
+                'stages': {k: v.dict()
+                           for k, v in self.stages.items()},
+                'best_stage_name': self.best_stage_name,
+            }, model_meta)
+        return model_meta
 
 
 def parse_model_hash_stage(model_hash_stage: str) -> Tuple[str, str]:
@@ -104,7 +138,7 @@ def pack_and_copy_models(model_storage: ModelStorage, model_dir_path: str, model
         tar_gz_f.add(ymir_info_file_path, ymir_info_file_name)
 
     os.makedirs(model_location, exist_ok=True)
-    model_hash = hash_utils.sha1sum_for_file(tar_file_path)
+    model_hash = sha1sum_for_file(tar_file_path)
     shutil.copyfile(tar_file_path, os.path.join(model_location, model_hash))
     os.remove(tar_file_path)
 

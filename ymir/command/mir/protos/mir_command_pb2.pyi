@@ -170,22 +170,42 @@ MIR_CONTEXT = MirStorage.V(4)
 global___MirStorage = MirStorage
 
 
-class LabelFormat(_LabelFormat, metaclass=_LabelFormatEnumTypeWrapper):
+class AnnoFormat(_AnnoFormat, metaclass=_AnnoFormatEnumTypeWrapper):
     pass
-class _LabelFormat:
+class _AnnoFormat:
     V = typing.NewType('V', builtins.int)
-class _LabelFormatEnumTypeWrapper(google.protobuf.internal.enum_type_wrapper._EnumTypeWrapper[_LabelFormat.V], builtins.type):
+class _AnnoFormatEnumTypeWrapper(google.protobuf.internal.enum_type_wrapper._EnumTypeWrapper[_AnnoFormat.V], builtins.type):
     DESCRIPTOR: google.protobuf.descriptor.EnumDescriptor = ...
-    NO_ANNOTATION = LabelFormat.V(0)
-    PASCAL_VOC = LabelFormat.V(1)
-    IF_ARK = LabelFormat.V(2)
-    LABEL_STUDIO_JSON = LabelFormat.V(3)
+    AF_NO_ANNOTATION = AnnoFormat.V(0)
+    AF_DET_PASCAL_VOC = AnnoFormat.V(1)
+    AF_DET_ARK_JSON = AnnoFormat.V(2)
+    AF_DET_LS_JSON = AnnoFormat.V(3)
+    AF_SEG_POLYGON = AnnoFormat.V(4)
+    AF_SEG_MASK = AnnoFormat.V(5)
 
-NO_ANNOTATION = LabelFormat.V(0)
-PASCAL_VOC = LabelFormat.V(1)
-IF_ARK = LabelFormat.V(2)
-LABEL_STUDIO_JSON = LabelFormat.V(3)
-global___LabelFormat = LabelFormat
+AF_NO_ANNOTATION = AnnoFormat.V(0)
+AF_DET_PASCAL_VOC = AnnoFormat.V(1)
+AF_DET_ARK_JSON = AnnoFormat.V(2)
+AF_DET_LS_JSON = AnnoFormat.V(3)
+AF_SEG_POLYGON = AnnoFormat.V(4)
+AF_SEG_MASK = AnnoFormat.V(5)
+global___AnnoFormat = AnnoFormat
+
+
+class AssetFormat(_AssetFormat, metaclass=_AssetFormatEnumTypeWrapper):
+    pass
+class _AssetFormat:
+    V = typing.NewType('V', builtins.int)
+class _AssetFormatEnumTypeWrapper(google.protobuf.internal.enum_type_wrapper._EnumTypeWrapper[_AssetFormat.V], builtins.type):
+    DESCRIPTOR: google.protobuf.descriptor.EnumDescriptor = ...
+    AF_UNKNOWN = AssetFormat.V(0)
+    AF_RAW = AssetFormat.V(1)
+    AF_LMDB = AssetFormat.V(2)
+
+AF_UNKNOWN = AssetFormat.V(0)
+AF_RAW = AssetFormat.V(1)
+AF_LMDB = AssetFormat.V(2)
+global___AssetFormat = AssetFormat
 
 
 class AnnoType(_AnnoType, metaclass=_AnnoTypeEnumTypeWrapper):
@@ -194,31 +214,31 @@ class _AnnoType:
     V = typing.NewType('V', builtins.int)
 class _AnnoTypeEnumTypeWrapper(google.protobuf.internal.enum_type_wrapper._EnumTypeWrapper[_AnnoType.V], builtins.type):
     DESCRIPTOR: google.protobuf.descriptor.EnumDescriptor = ...
-    AnnoTypeUnknown = AnnoType.V(0)
-    AnnoTypeClass = AnnoType.V(1)
+    AT_UNKNOWN = AnnoType.V(0)
+    AT_CLASS = AnnoType.V(1)
     """Classification with class id, not implemented."""
 
-    AnnoTypeDetBox = AnnoType.V(2)
+    AT_DET_BOX = AnnoType.V(2)
     """Detection w. bounding box."""
 
-    AnnoTypeSegPolygon = AnnoType.V(3)
+    AT_SEG_POLYGON = AnnoType.V(3)
     """Semantic Segmentation w. ploygons."""
 
-    AnnoTypeSegMask = AnnoType.V(4)
+    AT_SEG_MASK = AnnoType.V(4)
     """Instance Segmentation w. mask."""
 
 
-AnnoTypeUnknown = AnnoType.V(0)
-AnnoTypeClass = AnnoType.V(1)
+AT_UNKNOWN = AnnoType.V(0)
+AT_CLASS = AnnoType.V(1)
 """Classification with class id, not implemented."""
 
-AnnoTypeDetBox = AnnoType.V(2)
+AT_DET_BOX = AnnoType.V(2)
 """Detection w. bounding box."""
 
-AnnoTypeSegPolygon = AnnoType.V(3)
+AT_SEG_POLYGON = AnnoType.V(3)
 """Semantic Segmentation w. ploygons."""
 
-AnnoTypeSegMask = AnnoType.V(4)
+AT_SEG_MASK = AnnoType.V(4)
 """Instance Segmentation w. mask."""
 
 global___AnnoType = AnnoType

@@ -10,9 +10,10 @@ import yaml
 
 from mir.commands import training
 from mir.protos import mir_command_pb2 as mirpb
-from mir.tools import hash_utils, mir_repo_utils, mir_storage_ops, settings as mir_settings, utils as mir_utils
+from mir.tools import mir_repo_utils, mir_storage_ops, models, settings as mir_settings, mir_storage
 from mir.tools.code import MirCode
 from mir.tools.errors import MirRuntimeError
+from mir.tools.mir_storage import sha1sum_for_file
 from tests import utils as test_utils
 
 
@@ -27,7 +28,6 @@ class TestCmdTraining(unittest.TestCase):
         self._assets_cache = os.path.join(self._test_root, 'cache')
         self._mir_root = os.path.join(self._test_root, "mir-root")
         self._config_file = os.path.join(self._test_root, 'config.yaml')
-        self._config_file_lmdb = os.path.join(self._test_root, 'config-lmdb.yaml')
 
     def setUp(self) -> None:
         self.__prepare_dirs()
@@ -200,11 +200,11 @@ class TestCmdTraining(unittest.TestCase):
         copy all assets from project to assets_location, assumes that `self._assets_location` already created
         """
         image_paths = ["tests/assets/2007_000032.jpg", "tests/assets/2007_000243.jpg"]
-        sha1sum_path_pairs = [(hash_utils.sha1sum_for_file(image_path), image_path)
+        sha1sum_path_pairs = [(sha1sum_for_file(image_path), image_path)
                               for image_path in image_paths]  # type: List[Tuple[str, str]]
         for sha1sum, image_path in sha1sum_path_pairs:
-            shutil.copyfile(image_path, mir_utils.get_asset_storage_path(self._assets_location, sha1sum,
-                                                                         make_dirs=True))
+            shutil.copyfile(image_path,
+                            mir_storage.get_asset_storage_path(self._assets_location, sha1sum))
 
         shutil.copyfile('tests/assets/training-template.yaml', self._config_file)
         with open(self._config_file, 'r') as f:
@@ -213,10 +213,6 @@ class TestCmdTraining(unittest.TestCase):
         executor_config['gpu_id'] = '0'
         config = {mir_settings.EXECUTOR_CONFIG_KEY: executor_config}
         with open(self._config_file, 'w') as f:
-            yaml.dump(config, f)
-
-        executor_config['export_format'] = 'ark:lmdb'
-        with open(self._config_file_lmdb, 'w') as f:
             yaml.dump(config, f)
 
     def __deprepare_dirs(self):
@@ -228,18 +224,18 @@ class TestCmdTraining(unittest.TestCase):
         pass
 
     def __mock_process_model_storage(*args, **kwargs):
-        mss = mir_utils.ModelStageStorage(stage_name='default',
-                                          files=['default.weights'],
-                                          mAP=0.9,
-                                          timestamp=int(time.time()))
-        ms = mir_utils.ModelStorage(executor_config={'class_names': ['cat']},
-                                    task_context={
-                                        'src_revs': 'a@a',
-                                        'dst_rev': 'a@test_training_cmd'
-                                    },
-                                    stages={mss.stage_name: mss},
-                                    best_stage_name=mss.stage_name,
-                                    model_hash='xyz')
+        mss = models.ModelStageStorage(stage_name='default',
+                                       files=['default.weights'],
+                                       mAP=0.9,
+                                       timestamp=int(time.time()))
+        ms = models.ModelStorage(executor_config={'class_names': ['cat']},
+                                 task_context={
+                                     'src_revs': 'a@a',
+                                     'dst_rev': 'a@test_training_cmd'
+                                 },
+                                 stages={mss.stage_name: mss},
+                                 best_stage_name=mss.stage_name,
+                                 model_hash='xyz')
         return ms
 
     # public: test cases
@@ -269,56 +265,3 @@ class TestCmdTraining(unittest.TestCase):
 
         # check result
         self.assertEqual(MirCode.RC_OK, cmd_run_result)
-
-    @mock.patch('subprocess.run', side_effect=_mock_run_docker_cmd)
-    @mock.patch("mir.commands.training._process_model_storage", side_effect=__mock_process_model_storage)
-    def test_normal_01(self, *mock_run):
-        """ normal case """
-        fake_args = type('', (), {})()
-        fake_args.src_revs = "a@a"
-        fake_args.dst_rev = "a@test_training_cmd_lmdb"
-        fake_args.mir_root = self._mir_root
-        fake_args.model_path = self._models_location
-        fake_args.media_location = self._assets_location
-        fake_args.model_hash_stage = ''
-        fake_args.work_dir = self._working_root
-        fake_args.force = True
-        fake_args.force_rebuild = False
-        fake_args.executor = "executor"
-        fake_args.executant_name = 'executor-instance'
-        fake_args.tensorboard_dir = ''
-        fake_args.config_file = self._config_file_lmdb
-        fake_args.run_as_root = False
-        fake_args.asset_cache_dir = self._assets_cache
-
-        cmd = training.CmdTrain(fake_args)
-        cmd_run_result = cmd.run()
-
-        # check result
-        self.assertEqual(MirCode.RC_OK, cmd_run_result)
-        self.assertTrue(os.path.isfile(os.path.join(self._assets_cache, 'tr', 'a@a', 'data.mdb')))
-        self.assertTrue(os.path.isfile(os.path.join(self._assets_cache, 'va', 'a@a', 'data.mdb')))
-
-    def test_abnormal_00(self):
-        """ no training set """
-        fake_args = type('', (), {})()
-        fake_args.src_revs = "a@b"
-        fake_args.dst_rev = "b@test_training_cmd"
-        fake_args.mir_root = self._mir_root
-        fake_args.model_path = self._models_location
-        fake_args.media_location = self._assets_location
-        fake_args.model_hash_stage = ''
-        fake_args.work_dir = self._working_root
-        fake_args.force = True
-        fake_args.force_rebuild = False
-        fake_args.executor = "executor"
-        fake_args.executant_name = 'executor-instance'
-        fake_args.tensorboard_dir = ''
-        fake_args.config_file = self._config_file
-        fake_args.run_as_root = False
-        fake_args.asset_cache_dir = ''
-
-        cmd = training.CmdTrain(fake_args)
-        with self.assertRaises(MirRuntimeError):
-            cmd.run()
-        self.assertTrue(mir_repo_utils.mir_check_branch_exists(self._mir_root, 'b@test_training_cmd'))

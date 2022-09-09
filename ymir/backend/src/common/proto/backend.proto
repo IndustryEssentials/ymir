@@ -175,7 +175,7 @@ message TaskReqImportDataset {
 
 message TaskReqExporting {
     string dataset_id = 1;
-    mir.command.LabelFormat format = 2;
+    mir.command.AnnoFormat format = 2;
     string asset_dir = 3;
     string pred_dir = 4;
     string gt_dir = 5;
