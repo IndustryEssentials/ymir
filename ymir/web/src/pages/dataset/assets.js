@@ -18,7 +18,7 @@ import EvaluationSelector from "@/components/form/evaluationSelector"
 const { Option } = Select
 
 const Dataset = () => {
-  const { did: id } = useParams()
+  const { id: pid, did: id } = useParams()
   const initQuery = {
     id,
     keywords: [],
@@ -36,9 +36,11 @@ const Dataset = () => {
   const windowWidth = useWindowResize()
   const [dataset, getDataset] = useFetch('dataset/getDataset', {})
   const [{ items: assets, total }, getAssets, setAssets] = useFetch('dataset/getAssetsOfDataset', { items: [], total: 0 })
+  const [[{ cks, tags, inferClass }], getCK] = useFetch('dataset/getCK', [{ cks: {}, tags: {} }])
 
   useEffect(() => {
     getDataset({ id })
+    getCK({ pid, ids: [id]})
   }, [id])
 
   useEffect(() => {
@@ -154,6 +156,7 @@ const Dataset = () => {
       <Space>
         <strong>{dataset.name} {dataset.versionName}</strong>
         <span>{t("dataset.detail.pager.total", { total: total + '/' + dataset.assetCount })}</span>
+        {inferClass ? <div>{t('dataset.detail.infer.class')}{inferClass.map(cls => <Tag key={cls}>{cls}</Tag>)}</div> : null}
       </Space>
     </Col>
     <Col span={12}>

@@ -118,6 +118,7 @@ export function transferDatasetAnalysis(data: BackendData): DatasetAnalysis {
     assetHWRatio: hw_ratio,
     gt,
     pred,
+    inferClass: data?.pred?.eval_class_ids,
     cks: transferCK(data.cks_count, data.cks_count_total),
     tags: transferCK(tagsCounts, tagsTotal),
   }
