@@ -1,4 +1,3 @@
-import logging
 import os
 import shutil
 from typing import List, Tuple
@@ -218,4 +217,3 @@ class TestArkDataExporter(unittest.TestCase):
             asset_ids={'430df22960b0f369318705800139fcc8ec38a3e4', 'a3008c032eb11c8d9ffcb58208a36682ee40900f'},
             export_path=train_path,
             index_file_path=index_file_path)
-
