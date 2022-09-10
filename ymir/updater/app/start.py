@@ -29,14 +29,14 @@ def _exc_update_steps(update_steps: Tuple[str, ...], sandbox_info: SandboxInfo) 
         logging.info(f"step: {step_module_name}")
         step_module = sys.modules[step_module_name]
         step_func: Callable = getattr(step_module, 'update_sandbox')
-        step_func()
+        step_func(sandbox_info)
 
 
 def _backup(sandbox_info: SandboxInfo) -> str:
     backup_dir = os.path.join(sandbox_info.root, 'backup')
     os.makedirs(backup_dir, exist_ok=True)
     if os.listdir(backup_dir):
-        raise upgrade_errors.BackupDirNotEmpty(backup_dir)
+        raise upgrade_errors.BackupDirNotEmpty()
 
     for user_id, repo_ids in sandbox_info.user_to_repos.items():
         src_user_dir = os.path.join(sandbox_info.root, user_id)
