@@ -16,10 +16,9 @@ _DEFAULT_YMIR_SRC_VERSION = '1.1.0'
 
 
 class SandboxState(IntEnum):
-    UNKNOWN = 0
+    VALID = 0
 
-    VALID = 1
-
+    SANDBOX_STATE_UNKNOWN = UpgradeErrorCode.SANDBOX_STATE_UNKNOWN
     MULTIPLE_USER_SPACE_VERSIONS = UpgradeErrorCode.MULTIPLE_USER_SPACE_VERSIONS
     INVALID_USER_LABEL_FILE = UpgradeErrorCode.INVALID_USER_LABEL_FILE
 
@@ -29,7 +28,7 @@ class SandboxInfo:
         self.root = root
         self.src_ver = ''
         self.user_to_repos: Dict[str, Set[str]] = defaultdict(set)
-        self.state = SandboxState.UNKNOWN
+        self.state = SandboxState.SANDBOX_STATE_UNKNOWN
 
         self._detect_users_and_repos()
         self._detect_sandbox_src_ver()

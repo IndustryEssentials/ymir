@@ -10,6 +10,12 @@ class UpgradeError(Exception):
         self.message = message
 
 
+class SandboxStateUnknown(UpgradeError):
+    def __init__(self) -> None:
+        super().__init__(code=UpgradeErrorCode.SANDBOX_STATE_UNKNOWN,
+                         message='Sandbox state unknown')
+
+
 class InvalidUserLabelFile(UpgradeError):
     def __init__(self) -> None:
         super().__init__(code=UpgradeErrorCode.INVALID_USER_LABEL_FILE,

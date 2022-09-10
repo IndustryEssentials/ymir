@@ -17,6 +17,7 @@ _UPDATE_STEPS: Dict[Tuple[str, str], Tuple[str, ...]] = {
 
 def _raise_if_sandbox_invalid(sandbox_info: SandboxInfo) -> None:
     errors_dict = {
+        SandboxState.SANDBOX_STATE_UNKNOWN: upgrade_errors.SandboxStateUnknown,
         SandboxState.MULTIPLE_USER_SPACE_VERSIONS: upgrade_errors.MultipleUserSpaceVersions,
         SandboxState.INVALID_USER_LABEL_FILE: upgrade_errors.InvalidUserLabelFile,
     }
