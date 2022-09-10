@@ -105,6 +105,7 @@ message GeneralResp {
     int32 available_gpu_counts = 8;
     LabelCollection label_collection = 9;
     bool ops_ret = 10;
+    string sandbox_version = 11;
     RespCMDInference detection = 1001;
     bool enable_livecode = 1002;
     mir.command.Evaluation evaluation = 1003;

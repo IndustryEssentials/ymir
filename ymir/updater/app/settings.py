@@ -1,2 +1,0 @@
-USER_ID_PATTERN = '\d{4}'
-REPO_ID_PATTERN = '\d{6}'
