@@ -47,6 +47,7 @@ enum RequestType {
     REPO_LIST = 104;
     REPO_CREATE = 105;
     REPO_REMOVE = 106;
+    SANDBOX_VERSION = 107;
 
     // Long task
     TASK_CREATE = 1001;

@@ -27,7 +27,7 @@ class TestCmdSandboxVersion(unittest.TestCase):
         self._deprepare_test_root()
         return super().tearDown()
 
-    # prepare and de-prepare
+    # protected: prepare and de-prepare
     def _prepare_test_root(self) -> None:
         if os.path.isdir(self._test_root):
             shutil.rmtree(self._test_root)
@@ -63,4 +63,19 @@ class TestCmdSandboxVersion(unittest.TestCase):
         """
         sandbox c: sandbox with multiple user space versions
         """
+        for user_id, repo_ids in {'0001': ['000001', '000002'], '0002': ['000001']}.items():
+            os.makedirs(os.path.join(self._sandbox_a_root, user_id))
+
+            for repo_id in repo_ids:
+                os.makedirs(os.path.join(self._sandbox_a_root, user_id, repo_id))
+
+            labels_dict = {'labels': [], 'version': 1, 'ymir_version': f"0.0.{int(user_id)}"}
+            with open(os.path.join(self._sandbox_a_root, user_id, 'labels.yaml'), 'w') as f:
+                yaml.safe_dump(labels_dict, f)
+
+    # public: test cases
+    def test_all(self) -> None:
+        # sandbox a: normal
+        # sandbox b: no users
+        # sandbox c: multiple versions
         pass
