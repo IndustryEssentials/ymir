@@ -2,7 +2,12 @@ import os
 import shutil
 import unittest
 
+from google.protobuf.json_format import MessageToDict
 import yaml
+
+from controller.utils.invoker_call import make_invoker_cmd_call
+from controller.utils.invoker_mapping import RequestTypeToInvoker
+from proto import backend_pb2
 
 from tests import utils as test_utils
 
@@ -49,7 +54,7 @@ class TestCmdSandboxVersion(unittest.TestCase):
             for repo_id in repo_ids:
                 os.makedirs(os.path.join(self._sandbox_a_root, user_id, repo_id))
 
-            labels_dict = {'labels': [], 'version': 1, 'ymir_version': '0.4.2'}
+            labels_dict = {'labels': [], 'version': 1, 'ymir_version': '42.0.0'}
             with open(os.path.join(self._sandbox_a_root, user_id, 'labels.yaml'), 'w') as f:
                 yaml.safe_dump(labels_dict, f)
 
@@ -64,18 +69,37 @@ class TestCmdSandboxVersion(unittest.TestCase):
         sandbox c: sandbox with multiple user space versions
         """
         for user_id, repo_ids in {'0001': ['000001', '000002'], '0002': ['000001']}.items():
-            os.makedirs(os.path.join(self._sandbox_a_root, user_id))
+            os.makedirs(os.path.join(self._sandbox_c_root, user_id))
 
             for repo_id in repo_ids:
-                os.makedirs(os.path.join(self._sandbox_a_root, user_id, repo_id))
+                os.makedirs(os.path.join(self._sandbox_c_root, user_id, repo_id))
 
             labels_dict = {'labels': [], 'version': 1, 'ymir_version': f"0.0.{int(user_id)}"}
-            with open(os.path.join(self._sandbox_a_root, user_id, 'labels.yaml'), 'w') as f:
+            with open(os.path.join(self._sandbox_c_root, user_id, 'labels.yaml'), 'w') as f:
                 yaml.safe_dump(labels_dict, f)
 
     # public: test cases
     def test_all(self) -> None:
         # sandbox a: normal
+        response_a = make_invoker_cmd_call(invoker=RequestTypeToInvoker[backend_pb2.SANDBOX_VERSION],
+                                         sandbox_root=self._sandbox_a_root,
+                                         req_type=backend_pb2.SANDBOX_VERSION)
+        print(MessageToDict(response_a))
+        self.assertEqual(0, response_a.code)
+        self.assertEqual('42.0.0', response_a.sandbox_version)
+
         # sandbox b: no users
+        response_b = make_invoker_cmd_call(invoker=RequestTypeToInvoker[backend_pb2.SANDBOX_VERSION],
+                                         sandbox_root=self._sandbox_b_root,
+                                         req_type=backend_pb2.SANDBOX_VERSION)
+        print(MessageToDict(response_b))
+        self.assertEqual(0, response_b.code)
+        self.assertEqual('1.1.0', response_b.sandbox_version)
+
         # sandbox c: multiple versions
-        pass
+        response_c = make_invoker_cmd_call(invoker=RequestTypeToInvoker[backend_pb2.SANDBOX_VERSION],
+                                         sandbox_root=self._sandbox_c_root,
+                                         req_type=backend_pb2.SANDBOX_VERSION)
+        print(MessageToDict(response_c))
+        self.assertNotEqual(0, response_c.code)
+        self.assertEqual('', response_c.sandbox_version)

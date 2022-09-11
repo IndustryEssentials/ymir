@@ -11,6 +11,7 @@ from controller.invoker import (
     invoker_cmd_pull_image,
     invoker_cmd_repo_check,
     invoker_cmd_repo_clear,
+    invoker_cmd_sandbox_version,
     invoker_cmd_sampling,
     invoker_cmd_terminate,
     invoker_cmd_user_create,
@@ -33,8 +34,9 @@ RequestTypeToInvoker = {
     backend_pb2.CMD_TERMINATE: invoker_cmd_terminate.CMDTerminateInvoker,
     backend_pb2.CMD_REPO_CHECK: invoker_cmd_repo_check.RepoCheckInvoker,
     backend_pb2.CMD_REPO_CLEAR: invoker_cmd_repo_clear.RepoClearInvoker,
+    backend_pb2.CMD_SAMPLING: invoker_cmd_sampling.SamplingInvoker,
     backend_pb2.REPO_CREATE: invoker_cmd_init.InitInvoker,
+    backend_pb2.SANDBOX_VERSION: invoker_cmd_sandbox_version.SandboxVersionInvoker,
     backend_pb2.TASK_CREATE: invoker_task_factory.CreateTaskInvokerFactory,
     backend_pb2.USER_CREATE: invoker_cmd_user_create.UserCreateInvoker,
-    backend_pb2.CMD_SAMPLING: invoker_cmd_sampling.SamplingInvoker,
 }

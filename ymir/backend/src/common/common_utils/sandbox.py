@@ -7,7 +7,7 @@ from typing import List, Dict, Set
 
 import yaml
 
-from error_codes import UpgradeErrorCode
+from id_definition.error_codes import UpgradeErrorCode
 
 
 _USER_ID_PATTERN = '\d{4}'
@@ -73,11 +73,14 @@ class SandboxInfo:
             except (FileNotFoundError, yaml.YAMLError):
                 logging.error(f"invalid label file: {user_label_file}")
                 self.state = SandboxState.INVALID_USER_LABEL_FILE
+                return
+
             ver_to_users[user_label_dict.get('ymir_version', _DEFAULT_YMIR_SRC_VERSION)].append(user_id)
 
         if len(ver_to_users) > 1:
             logging.error(f"multiple user space versions: {ver_to_users}")
             self.state = SandboxState.MULTIPLE_USER_SPACE_VERSIONS
+            return
 
         self.src_ver = list(ver_to_users.keys())[0] if ver_to_users else _DEFAULT_YMIR_SRC_VERSION
         self.state = SandboxState.VALID
