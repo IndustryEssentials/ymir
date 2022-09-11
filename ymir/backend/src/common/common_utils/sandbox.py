@@ -9,9 +9,8 @@ import yaml
 
 from id_definition.error_codes import UpgradeErrorCode
 
-
-_USER_ID_PATTERN = '\d{4}'
-_REPO_ID_PATTERN = '\d{6}'
+_USER_ID_PATTERN = r'\d{4}'
+_REPO_ID_PATTERN = r'\d{6}'
 _DEFAULT_YMIR_SRC_VERSION = '1.1.0'
 
 
@@ -60,7 +59,7 @@ class SandboxInfo:
     def _detect_sandbox_src_ver(self) -> None:
         """
         detect user space versions in this sandbox
-        
+
         Side Effects:
             `self.state` and `self.src_ver` will be reset
         """

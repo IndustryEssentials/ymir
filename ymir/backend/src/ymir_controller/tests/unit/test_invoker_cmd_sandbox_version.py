@@ -82,24 +82,24 @@ class TestCmdSandboxVersion(unittest.TestCase):
     def test_all(self) -> None:
         # sandbox a: normal
         response_a = make_invoker_cmd_call(invoker=RequestTypeToInvoker[backend_pb2.SANDBOX_VERSION],
-                                         sandbox_root=self._sandbox_a_root,
-                                         req_type=backend_pb2.SANDBOX_VERSION)
+                                           sandbox_root=self._sandbox_a_root,
+                                           req_type=backend_pb2.SANDBOX_VERSION)
         print(MessageToDict(response_a))
         self.assertEqual(0, response_a.code)
         self.assertEqual('42.0.0', response_a.sandbox_version)
 
         # sandbox b: no users
         response_b = make_invoker_cmd_call(invoker=RequestTypeToInvoker[backend_pb2.SANDBOX_VERSION],
-                                         sandbox_root=self._sandbox_b_root,
-                                         req_type=backend_pb2.SANDBOX_VERSION)
+                                           sandbox_root=self._sandbox_b_root,
+                                           req_type=backend_pb2.SANDBOX_VERSION)
         print(MessageToDict(response_b))
         self.assertEqual(0, response_b.code)
         self.assertEqual('1.1.0', response_b.sandbox_version)
 
         # sandbox c: multiple versions
         response_c = make_invoker_cmd_call(invoker=RequestTypeToInvoker[backend_pb2.SANDBOX_VERSION],
-                                         sandbox_root=self._sandbox_c_root,
-                                         req_type=backend_pb2.SANDBOX_VERSION)
+                                           sandbox_root=self._sandbox_c_root,
+                                           req_type=backend_pb2.SANDBOX_VERSION)
         print(MessageToDict(response_c))
         self.assertNotEqual(0, response_c.code)
         self.assertEqual('', response_c.sandbox_version)
