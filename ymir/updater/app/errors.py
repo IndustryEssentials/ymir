@@ -1,5 +1,3 @@
-from typing import Dict, List
-
 from id_definition.error_codes import UpdateErrorCode
 
 
