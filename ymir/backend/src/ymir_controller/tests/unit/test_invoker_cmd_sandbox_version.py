@@ -7,6 +7,7 @@ import yaml
 
 from controller.utils.invoker_call import make_invoker_cmd_call
 from controller.utils.invoker_mapping import RequestTypeToInvoker
+from id_definition.error_codes import CTLResponseCode, UpgradeErrorCode
 from proto import backend_pb2
 
 from tests import utils as test_utils
@@ -85,7 +86,7 @@ class TestCmdSandboxVersion(unittest.TestCase):
                                            sandbox_root=self._sandbox_a_root,
                                            req_type=backend_pb2.SANDBOX_VERSION)
         print(MessageToDict(response_a))
-        self.assertEqual(0, response_a.code)
+        self.assertEqual(CTLResponseCode.CTR_OK, response_a.code)
         self.assertEqual('42.0.0', response_a.sandbox_version)
 
         # sandbox b: no users
@@ -93,7 +94,7 @@ class TestCmdSandboxVersion(unittest.TestCase):
                                            sandbox_root=self._sandbox_b_root,
                                            req_type=backend_pb2.SANDBOX_VERSION)
         print(MessageToDict(response_b))
-        self.assertEqual(0, response_b.code)
+        self.assertEqual(CTLResponseCode.CTR_OK, response_b.code)
         self.assertEqual('1.1.0', response_b.sandbox_version)
 
         # sandbox c: multiple versions
@@ -101,5 +102,5 @@ class TestCmdSandboxVersion(unittest.TestCase):
                                            sandbox_root=self._sandbox_c_root,
                                            req_type=backend_pb2.SANDBOX_VERSION)
         print(MessageToDict(response_c))
-        self.assertNotEqual(0, response_c.code)
+        self.assertEqual(UpgradeErrorCode.MULTIPLE_USER_SPACE_VERSIONS, response_c.code)
         self.assertEqual('', response_c.sandbox_version)
