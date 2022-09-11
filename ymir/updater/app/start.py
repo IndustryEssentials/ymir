@@ -4,7 +4,7 @@ import shutil
 import sys
 from typing import Callable, Dict, Set, Tuple
 
-import errors as upgrade_errors
+import errors as update_errors
 from common_utils.sandbox import SandboxInfo, SandboxState
 from common_utils.version import YMIR_VERSION
 
@@ -17,9 +17,9 @@ _UPDATE_STEPS: Dict[Tuple[str, str], Tuple[str, ...]] = {
 
 def _raise_if_sandbox_invalid(sandbox_info: SandboxInfo) -> None:
     errors_dict = {
-        SandboxState.SANDBOX_STATE_UNKNOWN: upgrade_errors.SandboxStateUnknown,
-        SandboxState.MULTIPLE_USER_SPACE_VERSIONS: upgrade_errors.MultipleUserSpaceVersions,
-        SandboxState.INVALID_USER_LABEL_FILE: upgrade_errors.InvalidUserLabelFile,
+        SandboxState.SANDBOX_STATE_UNKNOWN: update_errors.SandboxStateUnknown,
+        SandboxState.MULTIPLE_USER_SPACE_VERSIONS: update_errors.MultipleUserSpaceVersions,
+        SandboxState.INVALID_USER_LABEL_FILE: update_errors.InvalidUserLabelFile,
     }
     if sandbox_info.state in errors_dict:
         raise errors_dict[sandbox_info.state]()
@@ -37,7 +37,7 @@ def _backup(sandbox_info: SandboxInfo) -> str:
     backup_dir = os.path.join(sandbox_info.root, 'backup')
     os.makedirs(backup_dir, exist_ok=True)
     if os.listdir(backup_dir):
-        raise upgrade_errors.BackupDirNotEmpty()
+        raise update_errors.BackupDirNotEmpty()
 
     for user_id, repo_ids in sandbox_info.user_to_repos.items():
         src_user_dir = os.path.join(sandbox_info.root, user_id)
@@ -81,7 +81,7 @@ def main() -> int:
         _roll_back(backup_dir=backup_dir, sandbox_info=sandbox_info)
         raise e
 
-    # upgrade done, cleanup
+    # cleanup
     shutil.rmtree(backup_dir)
 
     return 0

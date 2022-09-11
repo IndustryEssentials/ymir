@@ -7,7 +7,7 @@ from typing import List, Dict, Set
 
 import yaml
 
-from id_definition.error_codes import UpgradeErrorCode
+from id_definition.error_codes import UpdateErrorCode
 
 _USER_ID_PATTERN = r'\d{4}'
 _REPO_ID_PATTERN = r'\d{6}'
@@ -17,9 +17,9 @@ _DEFAULT_YMIR_SRC_VERSION = '1.1.0'
 class SandboxState(IntEnum):
     VALID = 0
 
-    SANDBOX_STATE_UNKNOWN = UpgradeErrorCode.SANDBOX_STATE_UNKNOWN
-    MULTIPLE_USER_SPACE_VERSIONS = UpgradeErrorCode.MULTIPLE_USER_SPACE_VERSIONS
-    INVALID_USER_LABEL_FILE = UpgradeErrorCode.INVALID_USER_LABEL_FILE
+    SANDBOX_STATE_UNKNOWN = UpdateErrorCode.SANDBOX_STATE_UNKNOWN
+    MULTIPLE_USER_SPACE_VERSIONS = UpdateErrorCode.MULTIPLE_USER_SPACE_VERSIONS
+    INVALID_USER_LABEL_FILE = UpdateErrorCode.INVALID_USER_LABEL_FILE
 
 
 class SandboxInfo:

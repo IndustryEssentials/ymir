@@ -7,7 +7,7 @@ import yaml
 
 from controller.utils.invoker_call import make_invoker_cmd_call
 from controller.utils.invoker_mapping import RequestTypeToInvoker
-from id_definition.error_codes import CTLResponseCode, UpgradeErrorCode
+from id_definition.error_codes import CTLResponseCode, UpdateErrorCode
 from proto import backend_pb2
 
 from tests import utils as test_utils
@@ -102,5 +102,5 @@ class TestCmdSandboxVersion(unittest.TestCase):
                                            sandbox_root=self._sandbox_c_root,
                                            req_type=backend_pb2.SANDBOX_VERSION)
         print(MessageToDict(response_c))
-        self.assertEqual(UpgradeErrorCode.MULTIPLE_USER_SPACE_VERSIONS, response_c.code)
+        self.assertEqual(UpdateErrorCode.MULTIPLE_USER_SPACE_VERSIONS, response_c.code)
         self.assertEqual('', response_c.sandbox_version)
