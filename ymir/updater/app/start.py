@@ -5,7 +5,7 @@ import sys
 from typing import Callable, Dict, Set, Tuple
 
 import errors as update_errors
-from common_utils.sandbox import SandboxInfo, SandboxState
+from common_utils.sandbox import SandboxInfo
 from common_utils.version import YMIR_VERSION
 
 import update_1_1_0_to_1_3_0.step_updater
@@ -13,16 +13,6 @@ import update_1_1_0_to_1_3_0.step_updater
 _UPDATE_STEPS: Dict[Tuple[str, str], Tuple[str, ...]] = {
     ('1.1.0', '1.3.0'): ('update_1_1_0_to_1_3_0.step_updater', ),
 }
-
-
-def _raise_if_sandbox_invalid(sandbox_info: SandboxInfo) -> None:
-    errors_dict = {
-        SandboxState.SANDBOX_STATE_UNKNOWN: update_errors.SandboxStateUnknown,
-        SandboxState.MULTIPLE_USER_SPACE_VERSIONS: update_errors.MultipleUserSpaceVersions,
-        SandboxState.INVALID_USER_LABEL_FILE: update_errors.InvalidUserLabelFile,
-    }
-    if sandbox_info.state in errors_dict:
-        raise errors_dict[sandbox_info.state]()
 
 
 def _exc_update_steps(update_steps: Tuple[str, ...], sandbox_info: SandboxInfo) -> None:
@@ -64,8 +54,6 @@ def _copy_user_space(src_user_dir: str, dst_user_dir: str, repo_ids: Set[str]) -
 
 def main() -> int:
     sandbox_info = SandboxInfo(root=os.environ['BACKEND_SANDBOX_ROOT'])
-    _raise_if_sandbox_invalid(sandbox_info)
-
     if not sandbox_info.user_to_repos:
         logging.info('no need to update: found no users')
         return 0

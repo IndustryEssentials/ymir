@@ -5,6 +5,7 @@ import unittest
 from google.protobuf.json_format import MessageToDict
 import yaml
 
+from common_utils.sandbox import SandboxError
 from controller.utils.invoker_call import make_invoker_cmd_call
 from controller.utils.invoker_mapping import RequestTypeToInvoker
 from id_definition.error_codes import CTLResponseCode, UpdateErrorCode
@@ -98,9 +99,8 @@ class TestCmdSandboxVersion(unittest.TestCase):
         self.assertEqual('1.1.0', response_b.sandbox_version)
 
         # sandbox c: multiple versions
-        response_c = make_invoker_cmd_call(invoker=RequestTypeToInvoker[backend_pb2.SANDBOX_VERSION],
-                                           sandbox_root=self._sandbox_c_root,
-                                           req_type=backend_pb2.SANDBOX_VERSION)
-        print(MessageToDict(response_c))
-        self.assertEqual(UpdateErrorCode.MULTIPLE_USER_SPACE_VERSIONS, response_c.code)
-        self.assertEqual('', response_c.sandbox_version)
+        with self.assertRaises(SandboxError) as e:
+            make_invoker_cmd_call(invoker=RequestTypeToInvoker[backend_pb2.SANDBOX_VERSION],
+                                  sandbox_root=self._sandbox_c_root,
+                                  req_type=backend_pb2.SANDBOX_VERSION)
+            self.assertEqual(UpdateErrorCode.MULTIPLE_USER_SPACE_VERSIONS, e.error_code)

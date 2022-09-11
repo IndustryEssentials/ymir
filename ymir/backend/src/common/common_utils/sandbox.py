@@ -1,6 +1,4 @@
 from collections import defaultdict
-from enum import IntEnum
-import logging
 import os
 import re
 from typing import List, Dict, Set
@@ -14,12 +12,14 @@ _REPO_ID_PATTERN = r'\d{6}'
 _DEFAULT_YMIR_SRC_VERSION = '1.1.0'
 
 
-class SandboxState(IntEnum):
-    VALID = 0
+class SandboxError(Exception):
+    def __init__(self, error_code: int, error_message: str) -> None:
+        super().__init__()
+        self.error_code = error_code
+        self.error_message = error_message
 
-    SANDBOX_STATE_UNKNOWN = UpdateErrorCode.SANDBOX_STATE_UNKNOWN
-    MULTIPLE_USER_SPACE_VERSIONS = UpdateErrorCode.MULTIPLE_USER_SPACE_VERSIONS
-    INVALID_USER_LABEL_FILE = UpdateErrorCode.INVALID_USER_LABEL_FILE
+    def __str__(self) -> str:
+        return f"code: {self.error_code}, content: {self.error_message}"
 
 
 class SandboxInfo:
@@ -27,7 +27,6 @@ class SandboxInfo:
         self.root = root
         self.src_ver = ''
         self.user_to_repos: Dict[str, Set[str]] = defaultdict(set)
-        self.state = SandboxState.SANDBOX_STATE_UNKNOWN
 
         self._detect_users_and_repos()
         self._detect_sandbox_src_ver()
@@ -69,17 +68,14 @@ class SandboxInfo:
             try:
                 with open(user_label_file, 'r') as f:
                     user_label_dict = yaml.safe_load(f)
-            except (FileNotFoundError, yaml.YAMLError):
-                logging.error(f"invalid label file: {user_label_file}")
-                self.state = SandboxState.INVALID_USER_LABEL_FILE
-                return
+            except (FileNotFoundError, yaml.YAMLError) as e:
+                raise SandboxError(error_code=UpdateErrorCode.INVALID_USER_LABEL_FILE,
+                                   error_message=f"invalid label file: {user_label_file}") from e
 
             ver_to_users[user_label_dict.get('ymir_version', _DEFAULT_YMIR_SRC_VERSION)].append(user_id)
 
         if len(ver_to_users) > 1:
-            logging.error(f"multiple user space versions: {ver_to_users}")
-            self.state = SandboxState.MULTIPLE_USER_SPACE_VERSIONS
-            return
+            raise SandboxError(error_code=UpdateErrorCode.MULTIPLE_USER_SPACE_VERSIONS,
+                               error_message=f"multiple user space versions: {ver_to_users}")
 
         self.src_ver = list(ver_to_users.keys())[0] if ver_to_users else _DEFAULT_YMIR_SRC_VERSION
-        self.state = SandboxState.VALID
