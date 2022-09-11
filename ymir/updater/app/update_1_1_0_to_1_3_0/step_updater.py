@@ -1,7 +1,7 @@
 
 import logging
 
-from sandbox import SandboxInfo
+from common_utils.sandbox import SandboxInfo
 
 
 def update_sandbox(sandbox_info: SandboxInfo) -> None:

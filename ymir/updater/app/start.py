@@ -5,8 +5,8 @@ import sys
 from typing import Callable, Dict, Set, Tuple
 
 import errors as upgrade_errors
-from sandbox import SandboxInfo, SandboxState
-from version import YMIR_VERSION
+from common_utils.sandbox import SandboxInfo, SandboxState
+from common_utils.version import YMIR_VERSION
 
 import update_1_1_0_to_1_3_0.step_updater
 

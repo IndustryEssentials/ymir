@@ -1,6 +1,6 @@
 from typing import Dict, List
 
-from error_codes import UpgradeErrorCode
+from id_definition.error_codes import UpgradeErrorCode
 
 
 class UpgradeError(Exception):

@@ -5,8 +5,8 @@ COPY ./updater/app /app
 RUN pip3 install -r /app/requirements.txt
 
 # ymir backend components
-COPY ./backend/src/common/common_utils/version.py /app/version.py
-COPY ./backend/src/common/common_utils/sandbox.py /app/sandbox.py
-COPY ./backend/src/common/id_definition/error_codes.py /app/error_codes.py
+COPY ./backend/src/common/common_utils/version.py /app/common_utils/version.py
+COPY ./backend/src/common/common_utils/sandbox.py /app/common_utils/sandbox.py
+COPY ./backend/src/common/id_definition/error_codes.py /app/id_definition/error_codes.py
 
 CMD python /app/start.py
