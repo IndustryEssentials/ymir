@@ -29,7 +29,7 @@ def _exc_update_steps(update_steps: Tuple[str, ...], sandbox_info: SandboxInfo) 
     for step_module_name in update_steps:
         logging.info(f"step: {step_module_name}")
         step_module = sys.modules[step_module_name]
-        step_func: Callable = getattr(step_module, 'update_sandbox')
+        step_func: Callable = getattr(step_module, 'update_all')
         step_func(sandbox_info)
 
 

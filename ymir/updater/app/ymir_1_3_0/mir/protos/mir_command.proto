@@ -42,9 +42,11 @@ enum TaskType {
     TaskTypeFusion = 11;
     TaskTypeInit = 12;
     TaskTypeImportModel = 13;
+    TaskTypeCopyModel = 14;
+    TaskTypeDatasetInfer = 15;
     TaskTypeEvaluate = 16;
+    TaskTypeVisualization = 17;
 
-    reserved 14, 15;
 };
 
 enum TaskState {
@@ -70,10 +72,19 @@ enum MirStorage {
     MIR_CONTEXT = 4;
 }
 
-enum LabelFormat {
-    NO_ANNOTATION = 0;
-    PASCAL_VOC = 1;
-    IF_ARK = 2;
+enum AnnoFormat {
+    AF_NO_ANNOTATION = 0;
+    AF_DET_PASCAL_VOC = 1;
+    AF_DET_ARK_JSON = 2;
+    AF_DET_LS_JSON = 3;
+    AF_SEG_POLYGON = 4;
+    AF_SEG_MASK = 5;
+};
+
+enum AssetFormat {
+    AF_UNKNOWN = 0;
+    AF_RAW = 1;
+    AF_LMDB = 2;
 };
 
 /// ========== metadatas.mir ==========
@@ -83,7 +94,6 @@ message MirMetadatas {
 };
 
 message MetadataAttributes {
-    string dataset_name = 1;
     Timestamp timestamp = 2;
     TvtType tvt_type = 3;
     AssetType asset_type = 4;
@@ -91,6 +101,9 @@ message MetadataAttributes {
     int32 height = 6;  /// row number
     int32 image_channels = 7;  /// (for images) channel count
     int32 byte_size = 8;
+    string origin_filename = 9;
+
+    reserved 1;
 };
 
 message Timestamp {
@@ -102,23 +115,46 @@ message Timestamp {
 
 /// ========== annotations.mir ==========
 message MirAnnotations {
-    string head_task_id = 2;
     SingleTaskAnnotations ground_truth = 3;
     SingleTaskAnnotations prediction = 4;
     // key: asset id, value: cks and image quality, from pred and gt
     map<string, SingleImageCks> image_cks = 5;
 
-    reserved 1;
+    reserved 1, 2;
+};
+
+enum AnnoType {
+    AT_UNKNOWN = 0;
+    AT_CLASS = 1; // Classification with class id, not implemented.
+    AT_DET_BOX = 2; // Detection w. bounding box.
+    AT_SEG_POLYGON = 3; // Semantic Segmentation w. ploygons.
+    AT_SEG_MASK = 4; // Instance Segmentation w. mask.
 };
 
 message SingleTaskAnnotations {
     /// key: image id, value: annotations of that single image
     map<string, SingleImageAnnotations> image_annotations = 1;
     string task_id = 2;
+    AnnoType type = 3;
+    // Set of all shown class ids.
+    repeated int32 task_class_ids = 4;
+
+    // meta infos of this SingleTaskAnnotations
+    repeated int32 eval_class_ids = 10;
+    // model meta info associated with this single_task_annotations
+    ModelMeta model = 11;
+    // executor config used to generate this single task annotations
+    string executor_config = 12;
 };
 
 message SingleImageAnnotations {
-    repeated Annotation annotations = 2;
+    repeated ObjectAnnotation boxes = 2;
+
+    repeated ObjectAnnotation polygons = 3;
+
+    MaskAnnotation mask = 4;
+    // Set of class ids shown in this image.
+    repeated int32 img_class_ids = 5;
 
     reserved 1;
 };
@@ -128,7 +164,15 @@ message SingleImageCks {
     float image_quality = 2;
 }
 
-message Annotation {
+message MaskAnnotation {
+    // PNG image with 1/3 channels where each pixel corresponds to a class_id.
+    bytes semantic_mask = 1;
+    // PNG image with 1/3 channels where each pixel corresponds to an object_id.
+    bytes instance_mask = 2;
+    repeated int32 object_ids = 3;
+}
+
+message ObjectAnnotation {
     // Index of this annotation in current single image, may be different from the index in repeated field.
     int32 index = 1;
     Rect box = 2;
@@ -138,6 +182,8 @@ message Annotation {
     map<string, string> tags = 6;
     ConfusionMatrixType cm = 7;
     int32 det_link_id = 8;
+    string class_name = 9;  // for data parsed from outside, e.g. inference.
+    repeated IntPoint polygon = 10;
 };
 
 enum ConfusionMatrixType {
@@ -162,19 +208,16 @@ message Rect {
 
 /// ========== keywords.mir ==========
 message MirKeywords {
-    // key: asset hash, value: keywords list
-    map<string, Keywords> keywords = 1;
-
-    KeywordToIndex pred_idx = 7;  // ci to assets, generated from preds
-    KeywordToIndex gt_idx = 8;  // ci to assets, generated from gt
+    CiTagToIndex pred_idx = 7;  // ci to assets, generated from preds
+    CiTagToIndex gt_idx = 8;  // ci to assets, generated from gt
 
     // key: ck main key, value: assets and assets with sub keys, from (mir_annotations.image_cks) pred and gt
     map<string, AssetAnnoIndex> ck_idx = 9;
 
-    reserved 2, 3, 4, 5, 6;
+    reserved 1, 2, 3, 4, 5, 6;
 };
 
-message KeywordToIndex {
+message CiTagToIndex {
     // key: ci, value: annos
     map<int32, MapStringToInt32List> cis = 1;
     // key: ck main key, value: annos and annos with sub keys
@@ -192,13 +235,6 @@ message MapStringToInt32List {
 message Int32List {
     repeated int32 ids = 1;
 }
-
-message Keywords {
-    // class ids for predictions
-    repeated int32 predefined_keyids = 1;
-    // class ids for ground truth
-    repeated int32 gt_predefined_keyids = 2;
-};
 
 message AssetAnnoIndex {
     map<string, Int32List> asset_annos = 1;  // key: asset id, value: annotation indexes
@@ -247,6 +283,7 @@ message ModelMeta {
     string context = 3;
     map<string, ModelStage> stages = 4;
     string best_stage_name = 5;
+    repeated string class_names = 6;
 };
 
 message ModelStage {
@@ -258,32 +295,36 @@ message ModelStage {
 
 message Evaluation {
     EvaluateConfig config = 1;
-    // key: prediction dataset id, value: evaluation result for ground truth and prediction dataset
-    map<string, SingleDatasetEvaluation> dataset_evaluations = 2;
+    SingleDatasetEvaluation dataset_evaluation = 3;
+    SingleDatasetEvaluation main_ck = 4;
+    map<string, SingleDatasetEvaluation> sub_cks = 5;
+
+    reserved 2;
 }
 
 message EvaluateConfig {
-    string gt_dataset_id = 1;
-    repeated string pred_dataset_ids = 2;
     float conf_thr = 3;
     string iou_thrs_interval = 4;
     bool need_pr_curve = 5;
+    repeated int32 class_ids = 7;
+    string main_ck = 8;
 
-    reserved 6;
+    reserved 1, 2, 6;
 }
 
 message SingleDatasetEvaluation {
     float conf_thr = 1;
-    string gt_dataset_id = 2;
-    string pred_dataset_id = 3;
     map<string, SingleIouEvaluation> iou_evaluations = 4;  // key: string of iou threshold
     SingleIouEvaluation iou_averaged_evaluation = 5;  // average for all ious
+
+    reserved 2, 3;
 }
 
 message SingleIouEvaluation {
     map<int32, SingleEvaluationElement> ci_evaluations = 1;  // key: class ids
     SingleEvaluationElement ci_averaged_evaluation = 2;  // evaluations averaged by class ids
-    map<string, SingleCkTotalSubEvaluation> ck_evaluations = 3;
+
+    reserved 3;
 }
 
 message SingleEvaluationElement {
@@ -295,9 +336,9 @@ message SingleEvaluationElement {
     repeated FloatPoint pr_curve = 6;
 }
 
-message SingleCkTotalSubEvaluation {
-    SingleEvaluationElement total = 1;
-    map<string, SingleEvaluationElement> sub = 2;
+message IntPoint {
+    int32 x = 1;
+    int32 y = 2;
 }
 
 message FloatPoint {
@@ -310,28 +351,16 @@ message FloatPoint {
 message MirContext {
     /// total images count
     int32 images_cnt = 1;
-    /// total negative images count (images without any annotations), from pred
-    int32 negative_images_cnt = 2;
-    /// total negative images count (images without any project class names), from pred
-    int32 project_negative_images_cnt = 3;
-    /// key: class id, value: images count, from pred
-    map<int32, int32> predefined_keyids_cnt = 4;
-    /// key: class id (only in this project), value: images count, from pred
-    map<int32, int32> project_predefined_keyids_cnt = 5;
 
     /// from pred and gt
     map<string, SingleMapCount> cks_cnt = 6;
 
-    map<string, int32> asset_quality_hist = 8; // key: 0 (lower bnd), 0.1, 0.2, ..., 0.9, 1.0, increment 0.1
-    map<int32, int32> asset_area_hist = 9; // key: 0 (lower bnd), 10, 50, 100, 200, 400, 600, 800, unit: 10000 pixels
-    map<string, int32> asset_bytes_hist = 10;  // key: 0, 0.5, ..., 5, unit: mbytes
-    map<string, int32> asset_hw_ratio_hist = 12;  // height / width ratio histgram, key: 0, 0.1, 0.2, ..., 1.5
     int32 total_asset_mbytes = 11;
 
     AnnoStats pred_stats = 100;
     AnnoStats gt_stats = 101;
 
-    reserved 7;
+    reserved 2, 3, 4, 5, 7, 8, 9, 10, 12;
 };
 
 message SingleMapCount {
@@ -343,9 +372,11 @@ message AnnoStats {
     int32 total_cnt = 1;
     int32 positive_asset_cnt = 2;
     int32 negative_asset_cnt = 3;
-    map<string, int32> quality_hist = 4;  // key: 0 (lower bnd), 0.1, 0.2, ..., 0.9, 1.0, increment 0.1
-    map<int32, int32> area_hist = 5;  // ranges: 0 (lower bnd), 50, 500, 2500, 5000, 10000, 50000, 100000, 200000
-    map<string, int32> area_ratio_hist = 6;  // key: 0 (lower bnd), 0.1, 0.2, ..., 0.9, 1.0, increment 0.1
     map<string, SingleMapCount> tags_cnt = 7;  // key: main tag name, value: main tag count and sub tag names and counts
     map<int32, int32> class_ids_cnt = 8;  // key: class ids, value: asset count for this class id
+
+    // Shortcut of class_ids for evaluation (dup. field as in SingleTaskAnnotations).
+    repeated int32 eval_class_ids = 9;
+
+    reserved 4, 5, 6;
 };
