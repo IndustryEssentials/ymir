@@ -36,24 +36,20 @@ class SandboxInfo:
         detect user and repo directories in this sandbox
 
         Side Effects:
-            `self.user_to_repos` will be filled
+            `self.user_to_repos` will be filled with all users and repos in this sandbox
         """
         for user_id in os.listdir(self.root):
-            match_result = re.match(pattern=_USER_ID_PATTERN, string=user_id)
+            match_result = re.match(_USER_ID_PATTERN, user_id)
             if not match_result:
                 continue
             user_dir = os.path.join(self.root, user_id)
             if not os.path.isdir(user_dir):
                 continue
 
-            for repo_id in os.listdir(user_dir):
-                if not re.match(pattern=_REPO_ID_PATTERN, string=repo_id):
-                    continue
-                repo_dir = os.path.join(user_dir, repo_id)
-                if not os.path.isdir(repo_dir):
-                    continue
-
-                self.user_to_repos[user_id].add(repo_id)
+            self.user_to_repos[user_id].update([
+                repo_id for repo_id in os.listdir(user_dir)
+                if re.match(_REPO_ID_PATTERN, repo_id) and os.path.isdir(os.path.join(user_dir, repo_id))
+            ])
 
     def _detect_sandbox_src_ver(self) -> None:
         """

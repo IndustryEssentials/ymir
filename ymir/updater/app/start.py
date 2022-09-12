@@ -2,7 +2,8 @@ import logging
 import os
 import shutil
 import sys
-from typing import Callable, Dict, Set, Tuple
+from types import ModuleType
+from typing import Any, Callable, Dict, Set, Tuple
 
 import errors as update_errors
 from common_utils.sandbox import SandboxInfo
@@ -10,15 +11,14 @@ from common_utils.version import YMIR_VERSION
 
 import update_1_1_0_to_1_3_0.step_updater
 
-_UPDATE_STEPS: Dict[Tuple[str, str], Tuple[str, ...]] = {
-    ('1.1.0', '1.3.0'): ('update_1_1_0_to_1_3_0.step_updater', ),
+
+_UPDATE_STEPS: Dict[Tuple[str, str], Tuple[ModuleType, ...]] = {
+    ('1.1.0', '1.3.0'): (update_1_1_0_to_1_3_0.step_updater, ),
 }
 
 
-def _exc_update_steps(update_steps: Tuple[str, ...], sandbox_info: SandboxInfo) -> None:
-    for step_module_name in update_steps:
-        logging.info(f"step: {step_module_name}")
-        step_module = sys.modules[step_module_name]
+def _exc_update_steps(update_steps: Tuple[ModuleType, ...], sandbox_info: SandboxInfo) -> None:
+    for step_module in update_steps:
         step_func: Callable = getattr(step_module, 'update_all')
         step_func(sandbox_info)
 
