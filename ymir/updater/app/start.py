@@ -57,10 +57,10 @@ def main() -> int:
     if not sandbox_info.user_to_repos:
         logging.info('no need to update: found no users')
         return 0
-    update_steps = _UPDATE_STEPS.get((sandbox_info.src_ver, YMIR_VERSION), [])
+
+    update_steps = _UPDATE_STEPS.get((sandbox_info.src_ver, YMIR_VERSION), None)
     if not update_steps:
-        logging.info('no need to update')
-        return 0
+        raise update_errors.SandboxVersionNotSupported(sandbox_version=sandbox_info.src_ver)
 
     backup_dir = _backup(sandbox_info)
     try:

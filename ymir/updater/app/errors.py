@@ -30,3 +30,9 @@ class BackupDirNotEmpty(UpdateError):
     def __init__(self) -> None:
         super().__init__(code=UpdateErrorCode.BACKUP_DIR_NOT_EMPTY,
                          message='Backup directory not empty')
+
+
+class SandboxVersionNotSupported(UpdateError):
+    def __init__(self, sandbox_version: str) -> None:
+        super().__init__(code=UpdateErrorCode.SANDBOX_VERSION_NOT_SUPPORTED,
+                         message=f"Sandbox version: {sandbox_version} not supported")
