@@ -79,6 +79,7 @@ services:
 
   loki:
     image: grafana/loki:main-87e20d9
+    user: "0:0"
     volumes:
       - ${YMIR_PATH}/metrics/loki/:/etc/loki/
       - ./metrics/config/loki.yml:/etc/loki/loki.yml:ro
