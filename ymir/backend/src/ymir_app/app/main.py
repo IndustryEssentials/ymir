@@ -1,5 +1,6 @@
 import asyncio
 import logging
+import os
 
 import aioredis
 import sentry_sdk
@@ -25,6 +26,12 @@ from app.api.errors import errors
 from app.config import settings
 from app.libs.redis_stream import RedisStream
 from app.libs.tasks import batch_update_task_status
+from common_utils import version
+
+
+env_ymir_version = os.environ['YMIR_VERSION']
+if env_ymir_version != version.YMIR_VERSION:
+    raise Exception(f"env file mismatch: {env_ymir_version} != {version.YMIR_VERSION}")
 
 app = FastAPI(
     docs_url=None,
