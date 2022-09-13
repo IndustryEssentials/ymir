@@ -1,5 +1,7 @@
 from typing import Dict, List, Tuple
 from collections import Counter
+from concurrent.futures import ThreadPoolExecutor
+from functools import partial
 
 from fastapi.logger import logger
 from sqlalchemy.orm import Session
@@ -31,12 +33,7 @@ def calculate_mining_progress(
         logger.warning("previous iteration(%s) got NO labelled datasets", iteration_id)
         return generate_empty_progress(viz, mining_dataset, training_class_ids)
 
-    processed_assets_count = get_processed_assets_count(viz, mining_dataset, previous_labelled_datasets)
-    total_mining_ratio = {
-        "processed_assets_count": processed_assets_count,
-        "total_assets_count": mining_dataset.asset_count,
-    }
-
+    total_mining_ratio = get_processed_assets_ratio(viz, mining_dataset, previous_labelled_datasets)
     class_wise_mining_ratio = get_class_wise_mining_ratio(
         viz, mining_dataset, previous_labelled_datasets, training_targets
     )
@@ -66,13 +63,16 @@ def get_training_classes(db: Session, project_id: int, user_labels: UserLabels) 
     return project.training_targets, user_labels.get_class_ids(project.training_targets)
 
 
-def get_processed_assets_count(
+def get_processed_assets_ratio(
     viz: VizClient,
     mining_dataset: models.Dataset,
     previous_labelled_datasets: List[models.Dataset],
-) -> int:
+) -> Dict:
     count_stats = viz.check_duplication([dataset.hash for dataset in previous_labelled_datasets], mining_dataset.hash)
-    return mining_dataset.asset_count - count_stats["residual_count"][mining_dataset.hash]
+    return {
+        "processed_assets_count": mining_dataset.asset_count - count_stats["residual_count"][mining_dataset.hash],
+        "total_assets_count": mining_dataset.asset_count,
+    }
 
 
 def get_negative_ratio(
@@ -81,14 +81,14 @@ def get_negative_ratio(
     previous_labelled_datasets: List[models.Dataset],
     training_class_ids: List[int],
 ) -> Dict[str, int]:
-    total_negative_asset_count = viz.get_negative_count(mining_dataset.hash, training_class_ids)
+    f_get_negative_count = partial(viz.get_negative_count, keyword_ids=training_class_ids)
+    total_negative_asset_count = f_get_negative_count(mining_dataset.hash)
 
-    processed_count = 0
-    for dataset in previous_labelled_datasets:
-        negative_count = viz.get_negative_count(dataset.hash, training_class_ids)
-        processed_count += negative_count
+    with ThreadPoolExecutor() as executor:
+        negative_counts = executor.map(f_get_negative_count, [dataset.hash for dataset in previous_labelled_datasets])
+
     return {
-        "processed_assets_count": processed_count,
+        "processed_assets_count": sum(negative_counts),
         "total_assets_count": total_negative_asset_count,
     }
 
@@ -100,17 +100,21 @@ def get_class_wise_mining_ratio(
     training_targets: List[str],
 ) -> List[Dict]:
     total_assets_counts = viz.get_class_wise_count(mining_dataset.hash)
+    total_assets_counter = Counter(total_assets_counts)
 
     processed_assets_counter: Counter = Counter()
-    for dataset in previous_labelled_datasets:
-        class_wise_counts = viz.get_class_wise_count(dataset.hash)
-        processed_assets_counter += Counter(class_wise_counts)
+    with ThreadPoolExecutor() as executor:
+        class_wise_counters = executor.map(
+            viz.get_class_wise_count, [dataset.hash for dataset in previous_labelled_datasets]
+        )
+    for class_wise_counter in class_wise_counters:
+        processed_assets_counter += Counter(class_wise_counter)
 
     return [
         {
             "class_name": class_name,
             "processed_assets_count": processed_assets_counter[class_name],
-            "total_assets_count": total_assets_counts.get(class_name, 0),
+            "total_assets_count": total_assets_counter[class_name],
         }
         for class_name in training_targets
     ]
