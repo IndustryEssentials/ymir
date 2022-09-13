@@ -376,7 +376,7 @@ class VizClient:
         }
         resp = self.get_resp(url, params=params)
         duplicated_stats = self.parse_resp(resp)
-        return duplicated_stats["duplication"]
+        return duplicated_stats
 
     def send_metrics(
         self,
