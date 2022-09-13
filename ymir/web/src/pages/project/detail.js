@@ -32,10 +32,7 @@ function ProjectDetail(func) {
   function goTraining() {
     history.push(`/home/project/${id}/train`)
   }
-  t('project.iteration.entrance.status')
-  t('project.iteration.entrance.empty.info')
-  t('project.iteration.entrance.empty.label')
-  t('project.iteration.entrance.empty.btn')
+
   return (
     <div>
       <Breadcrumbs />
