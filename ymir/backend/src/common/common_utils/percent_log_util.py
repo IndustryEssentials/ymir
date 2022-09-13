@@ -32,8 +32,11 @@ class PercentLogHandlerError(Exception):
 class PercentLogHandler:
     @staticmethod
     def parse_percent_log(log_file: str) -> PercentResult:
-        with open(log_file, "r") as f:
-            monitor_file_lines = f.readlines()
+        try:
+            with open(log_file, "r") as f:
+                monitor_file_lines = f.readlines()
+        except FileNotFoundError as e:
+            raise PercentLogHandlerError(f"can not open log file: {log_file}") from e
         content_row_one = monitor_file_lines[0].strip().split("\t")
         if not monitor_file_lines or len(content_row_one) < 4:
             raise PercentLogHandlerError(f"invalid percent log file: {log_file}")
