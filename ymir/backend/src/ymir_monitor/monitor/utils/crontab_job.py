@@ -8,7 +8,7 @@ from typing import List
 import sentry_sdk
 from apscheduler.schedulers.blocking import BlockingScheduler
 
-from common_utils.percent_log_util import PercentLogHandler, PercentLogHandlerError, PercentResult, LogState
+from common_utils.percent_log_util import PercentLogHandler, PercentResult, LogState
 from id_definition.error_codes import MonitorErrorCode
 from monitor.config import settings
 from monitor.libs import redis_handler
@@ -53,11 +53,12 @@ def update_monitor_percent_log() -> None:
         logging.info(f"content: {content}")
         for log_path, previous_log_content in content["raw_log_contents"].items():
             if not os.path.isfile(log_path):
+                logging.info(f"log file not exists: {log_path}")
                 continue
 
             try:
                 runtime_log_content = PercentLogHandler.parse_percent_log(log_path)
-            except PercentLogHandlerError as e:
+            except EOFError as e:
                 sentry_sdk.capture_exception(e)
                 logging.exception(e)
                 continue
