@@ -57,7 +57,11 @@ function Merge() {
       message.info(t('task.fusion.create.success.msg'))
       clearCache()
       const group = mergeResult.dataset_group_id || ''
-      history.replace(`/home/project/${pid}/dataset#${group}`)
+      let redirect = `/home/project/${pid}/dataset#${group}`
+      if (iterationId) {
+        redirect = `/home/project/${pid}/iterations`
+      }
+      history.replace(redirect)
     }
   }, [mergeResult])
 

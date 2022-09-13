@@ -214,7 +214,11 @@ function Train({ allDatasets, datasetCache, ...func }) {
       }
       await func.clearCache()
       const group = result.result_model?.model_group_id || ''
-      history.replace(`/home/project/${pid}/model#${group}`)
+      let redirect = `/home/project/${pid}/model#${group}`
+      if (iterationId) {
+        redirect = `/home/project/${pid}/iterations`
+      }
+      history.replace(redirect)
     }
   }
 
