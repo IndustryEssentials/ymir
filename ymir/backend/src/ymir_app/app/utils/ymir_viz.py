@@ -256,7 +256,9 @@ class VizClient:
         self._project_id = f"{project_id:0>6}" if project_id else None
         self._user_labels = user_labels
         self._host = f"http://127.0.0.1:{settings.VIEWER_HOST_PORT}"
-        self._url_prefix = None  # type: Optional[str]
+        self._url_prefix = (
+            f"{self._host}/api/v1/users/{self._user_id}/repo/{self._project_id}" if user_id and project_id else None
+        )
 
     def initialize(
         self,
