@@ -625,19 +625,27 @@
             "type": "row"
         },
         {
-            "aliasColors": {},
-            "breakPoint": "50%",
-            "combine": {
-                "label": "Others",
-                "threshold": 0
-            },
             "datasource": {
                 "type": "prometheus",
                 "uid": "ymir_metrics_prometheus"
             },
             "description": "",
-            "fontSize": "80%",
-            "format": "none",
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "palette-classic"
+                    },
+                    "custom": {
+                        "hideFrom": {
+                            "legend": false,
+                            "tooltip": false,
+                            "viz": false
+                        }
+                    },
+                    "mappings": []
+                },
+                "overrides": []
+            },
             "gridPos": {
                 "h": 4,
                 "w": 8,
@@ -645,16 +653,31 @@
                 "y": 36
             },
             "id": 23,
-            "legend": {
-                "show": true,
-                "values": true
-            },
-            "legendType": "Right side",
             "links": [],
-            "nullPointMode": "connected",
-            "pieType": "pie",
-            "pluginVersion": "7.2.0",
-            "strokeWidth": 1,
+            "options": {
+                "displayLabels": [
+                    "percent"
+                ],
+                "legend": {
+                    "displayMode": "list",
+                    "placement": "right",
+                    "showLegend": true,
+                    "values": []
+                },
+                "pieType": "pie",
+                "reduceOptions": {
+                    "calcs": [
+                        "lastNotNull"
+                    ],
+                    "fields": "",
+                    "values": false
+                },
+                "tooltip": {
+                    "mode": "single",
+                    "sort": "none"
+                }
+            },
+            "pluginVersion": "9.1.0",
             "targets": [
                 {
                     "datasource": {
@@ -671,9 +694,8 @@
                     "refId": "A"
                 }
             ],
-            "title": "Requests",
-            "type": "grafana-piechart-panel",
-            "valueName": "current"
+            "title": "App-Requests",
+            "type": "piechart"
         },
         {
             "aliasColors": {},
@@ -914,19 +936,27 @@
             "type": "row"
         },
         {
-            "aliasColors": {},
-            "breakPoint": "50%",
-            "combine": {
-                "label": "Others",
-                "threshold": 0
-            },
             "datasource": {
                 "type": "prometheus",
                 "uid": "ymir_metrics_prometheus"
             },
             "description": "",
-            "fontSize": "80%",
-            "format": "none",
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "palette-classic"
+                    },
+                    "custom": {
+                        "hideFrom": {
+                            "legend": false,
+                            "tooltip": false,
+                            "viz": false
+                        }
+                    },
+                    "mappings": []
+                },
+                "overrides": []
+            },
             "gridPos": {
                 "h": 4,
                 "w": 8,
@@ -941,8 +971,31 @@
             "legendType": "Right side",
             "links": [],
             "nullPointMode": "connected",
+            "options": {
+                "displayLabels": [
+                    "percent"
+                ],
+                "legend": {
+                    "displayMode": "list",
+                    "placement": "right",
+                    "showLegend": true,
+                    "values": []
+                },
+                "pieType": "pie",
+                "reduceOptions": {
+                    "calcs": [
+                        "lastNotNull"
+                    ],
+                    "fields": "",
+                    "values": false
+                },
+                "tooltip": {
+                    "mode": "single",
+                    "sort": "none"
+                }
+            },
             "pieType": "pie",
-            "pluginVersion": "7.2.0",
+            "pluginVersion": "9.1.0",
             "strokeWidth": 1,
             "targets": [
                 {
@@ -959,9 +1012,8 @@
                     "refId": "A"
                 }
             ],
-            "title": "Requests",
-            "type": "grafana-piechart-panel",
-            "valueName": "current"
+            "title": "Viewer-Requests",
+            "type": "piechart"
         },
         {
             "aliasColors": {},
@@ -999,9 +1051,22 @@
             },
             "lines": true,
             "linewidth": 1,
+            "links": [],
             "nullPointMode": "null",
             "options": {
-                "alertThreshold": true
+                "alertThreshold": true,
+                "displayMode": "gradient",
+                "minVizHeight": 10,
+                "minVizWidth": 0,
+                "orientation": "horizontal",
+                "reduceOptions": {
+                    "calcs": [
+                        "lastNotNull"
+                    ],
+                    "fields": "",
+                    "values": false
+                },
+                "showUnfilled": true
             },
             "percentage": false,
             "pluginVersion": "9.1.0",
@@ -2493,7 +2558,7 @@
         "list": [
             {
                 "current": {
-                    "selected": true,
+                    "selected": false,
                     "text": "/var/log/ymir_app.log",
                     "value": "/var/log/ymir_app.log"
                 },
