@@ -2,6 +2,7 @@ import argparse
 import json
 import logging
 import os
+import shutil
 from subprocess import CalledProcessError
 from typing import Dict, Optional, Set
 
@@ -155,6 +156,8 @@ class CmdMining(base.BaseCommand):
         exporter.replace_index_content_inplace(filename=os.path.join(work_asset_path, exporter.get_index_filename()),
                                                asset_search=work_asset_path,
                                                asset_replace="/in/assets")
+        shutil.copyfile(src=os.path.join(work_asset_path, exporter.get_index_filename()),
+                        dst=os.path.join(work_in_path, 'candidate-src-index.tsv'))
 
         model_hash, stage_name = models.parse_model_hash_stage(model_hash_stage)
         model_storage = models.prepare_model(model_location=model_location,

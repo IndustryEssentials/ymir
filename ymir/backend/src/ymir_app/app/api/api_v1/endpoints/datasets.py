@@ -50,13 +50,16 @@ def batch_get_datasets(
     user_labels: UserLabels = Depends(deps.get_user_labels),
 ) -> Any:
     ids = [int(i) for i in dataset_ids.split(",")]
-    datasets = ensure_datasets_are_ready(db, dataset_ids=ids)
+    datasets = crud.dataset.get_multi_by_ids(db, ids=ids)
+    if len(ids) != len(datasets):
+        raise DatasetNotFound()
 
     datasets_info = [schemas.dataset.DatasetInDB.from_orm(dataset).dict() for dataset in datasets]
-
     if verbose_info:
         viz_client.initialize(user_id=current_user.id, project_id=project_id, user_labels=user_labels)
         for dataset in datasets_info:
+            if dataset["result_state"] != ResultState.ready:
+                continue
             dataset_analysis = viz_client.get_dataset_analysis(dataset["hash"], require_hist=True)
             dataset.update(dataset_analysis)
     return {"result": datasets_info}
