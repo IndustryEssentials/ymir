@@ -36,3 +36,9 @@ class SandboxVersionNotSupported(UpdateError):
     def __init__(self, sandbox_version: str) -> None:
         super().__init__(code=UpdateErrorCode.SANDBOX_VERSION_NOT_SUPPORTED,
                          message=f"Sandbox version: {sandbox_version} not supported")
+
+
+class EnvVersionNotMatch(UpdateError):
+    def __init__(self) -> None:
+        super().__init__(code=UpdateErrorCode.ENV_VERSION_NOT_MATCH,
+                         message='.env version not matched')
