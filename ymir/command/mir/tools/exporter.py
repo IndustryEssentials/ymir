@@ -97,6 +97,7 @@ def replace_index_content_inplace(filename: str,
         for line in f:
             if not (anno_search and anno_replace):
                 line = line.replace(asset_search, asset_replace)
+                print(line, end='\n')
                 continue
 
             contents = line.strip().split("\t")
