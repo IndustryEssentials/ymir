@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useState } from "react"
 import { useParams } from "umi"
 
+import t from "@/utils/t"
 import useFetch from '@/hooks/useFetch'
 import Breadcrumbs from "@/components/common/breadcrumb"
 import Iteration from './iterations/iteration'
@@ -24,8 +25,8 @@ function Iterations() {
   const [project, getProject, setProject] = useFetch('project/getProject', {})
 
   const tabs = [
-    { tab: 'Current', key: 'current', content: <Current /> },
-    { tab: 'List', key: 'list', content: <List project={project} /> },
+    { tab: t('project.iteration.tabs.current'), key: 'current', content: <Current project={project} /> },
+    { tab: t('project.iteration.tabs.list'), key: 'list', content: <List project={project} /> },
   ]
 
   useEffect(() => {

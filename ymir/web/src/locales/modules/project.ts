@@ -159,6 +159,8 @@ const project = {
   'project.iteration.entrance.empty.label': { en: 'No Iterations', cn: '暂无迭代', },
   'project.iteration.entrance.empty.btn': { en: 'Processing Models Training', cn: '系统辅助式模型生产', },
   'project.iteration.entrance.btn': { en: 'Enter Iterations', cn: '进入迭代', },
+  'project.iteration.tabs.current': { en: 'Current Iteration', cn: '当前迭代', },
+  'project.iteration.tabs.list': { en: 'Iteration Records', cn: '迭代历史', },
 }
 
 export default project
