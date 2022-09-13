@@ -12,12 +12,15 @@ def create_iteration_record(
     project_id: Optional[int] = None,
     iteration_round: Optional[int] = None,
     previous_iteration: Optional[int] = None,
+    mining_dataset_id: Optional[int] = None,
 ):
     j = {
         "project_id": project_id or randint(1000, 2000),
         "iteration_round": iteration_round or 1,
         "previous_iteration": previous_iteration or 0,
     }
+    if mining_dataset_id:
+        j["mining_dataset_id"] = mining_dataset_id
     in_ = schemas.IterationCreate(**j)
     record = crud.iteration.create_with_user_id(db, obj_in=in_, user_id=user_id)
     return record

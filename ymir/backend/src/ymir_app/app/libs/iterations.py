@@ -1,4 +1,4 @@
-from typing import Dict, List, Tuple
+from typing import Dict, List
 from collections import Counter
 from concurrent.futures import ThreadPoolExecutor
 from functools import partial
@@ -19,7 +19,8 @@ def calculate_mining_progress(
     if not iteration:
         raise IterationNotFound()
     mining_dataset = iteration.mining_dataset
-    training_targets, training_class_ids = get_training_classes(db, project_id, user_labels)
+    training_classes = get_training_classes(db, project_id, user_labels)
+    training_class_ids = list(training_classes.values())
 
     viz = VizClient(user_id, project_id, user_labels)
     previous_iterations = crud.project.get_previous_iterations(db, project_id=project_id, iteration_id=iteration_id)
@@ -35,7 +36,7 @@ def calculate_mining_progress(
 
     total_mining_ratio = get_processed_assets_ratio(viz, mining_dataset, previous_labelled_datasets)
     class_wise_mining_ratio = get_class_wise_mining_ratio(
-        viz, mining_dataset, previous_labelled_datasets, training_targets
+        viz, mining_dataset, previous_labelled_datasets, training_classes
     )
     negative_ratio = get_negative_ratio(viz, mining_dataset, previous_labelled_datasets, training_class_ids)
 
@@ -56,11 +57,12 @@ def generate_empty_progress(viz: VizClient, mining_dataset: models.Dataset, trai
     }
 
 
-def get_training_classes(db: Session, project_id: int, user_labels: UserLabels) -> Tuple[List[str], List[int]]:
+def get_training_classes(db: Session, project_id: int, user_labels: UserLabels) -> Dict[str, int]:
     project = crud.project.get(db, id=project_id)
     if not project or not project.training_targets:
         raise InvalidProject()
-    return project.training_targets, user_labels.get_class_ids(project.training_targets)
+    class_ids = user_labels.get_class_ids(project.training_targets)
+    return dict(zip(project.training_targets, class_ids))
 
 
 def get_processed_assets_ratio(
@@ -97,7 +99,7 @@ def get_class_wise_mining_ratio(
     viz: VizClient,
     mining_dataset: models.Dataset,
     previous_labelled_datasets: List[models.Dataset],
-    training_targets: List[str],
+    training_classes: Dict[str, int],
 ) -> List[Dict]:
     total_assets_counts = viz.get_class_wise_count(mining_dataset.hash)
     total_assets_counter = Counter(total_assets_counts)
@@ -116,5 +118,5 @@ def get_class_wise_mining_ratio(
             "processed_assets_count": processed_assets_counter[class_name],
             "total_assets_count": total_assets_counter[class_name],
         }
-        for class_name in training_targets
+        for class_name in training_classes
     ]
