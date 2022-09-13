@@ -5,6 +5,8 @@ import { useParams, useHistory } from "umi"
 import t from "@/utils/t"
 import useFetch from '@/hooks/useFetch'
 import Breadcrumbs from "@/components/common/breadcrumb"
+import Empty from "@/components/empty/default"
+import { getStageLabel } from '@/constants/project'
 
 import s from "./detail.less"
 import { TrainIcon, NavDatasetIcon, ArrowRightIcon, ImportIcon } from "@/components/common/icons"
@@ -30,12 +32,27 @@ function ProjectDetail(func) {
   function goTraining() {
     history.push(`/home/project/${id}/train`)
   }
-
+  t('project.iteration.entrance.status')
+  t('project.iteration.entrance.empty.info')
+  t('project.iteration.entrance.empty.label')
+  t('project.iteration.entrance.empty.btn')
   return (
     <div>
       <Breadcrumbs />
       <div className={s.header}>
-        <Button onClick={() => history.push(`/home/project/${id}/iterations`)}>Go Iterations</Button>
+        {project.round > 0 ? <div>
+          <span style={{ marginRight: 20 }}>{t('project.iteration.entrance.status', {
+            stateLabel: <span className='orange'>{t(getStageLabel(project.currentStage, project.round))}</span>
+          })}</span>
+          <Button type="primary" onClick={() => history.push(`/home/project/${id}/iterations`)}><TrainIcon />{t('project.iteration.entrance.btn')}</Button>
+        </div> :
+          <div style={{ textAlign: 'center' }}>
+            <Empty description={t('project.iteration.entrance.empty.label')} />
+            <p>{t('project.iteration.entrance.empty.info')}</p>
+            <Button type="primary" onClick={() => history.push(`/home/project/${id}/iterations`)}>
+              <TrainIcon /> {t('project.iteration.entrance.empty.btn')}
+              </Button>
+          </div>}
       </div>
       <Space className="actions">
         <Button type="primary" onClick={add}><ImportIcon /> {t("dataset.import.label")}</Button>
