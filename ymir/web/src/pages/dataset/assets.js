@@ -163,7 +163,7 @@ const Dataset = () => {
       <Space size={10} wrap={true}>
         <GtSelector layout='inline' value={filterParams.annoType} onChange={checked => updateFilterParams(checked, 'annoType')} />
         <EvaluationSelector value={filterParams.cm} onChange={checked => updateFilterParams(checked, 'cm')} labelAlign={'right'} />
-        <KeywordSelector value={filterParams.keywords} onChange={filterKw} dataset={dataset} labelAlign={'right'} />
+        <KeywordSelector value={filterParams.keywords} onChange={filterKw} cks={cks} tags={tags} labelAlign={'right'} />
         <Button onClick={reset}>{t('common.reset')}</Button>
       </Space>
     </Col>
