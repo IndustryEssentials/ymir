@@ -148,6 +148,19 @@ const project = {
   },
   'project.workspace.status.clean': { en: 'Project current workspace is {cleanLabel}, Training is enabled.', cn: '项目当前的工作空间状态为{cleanLabel}, 可以正常创建训练任务', },
   'project.testing.dataset.label': { en: 'Project Testing Dataset', cn: '项目测试集', },
+  'project.iteration.entrance.status': {
+    en: 'You have processing iterations, current step is {stateLabel}',
+    cn: '您有正在进行中的迭代，当前进度为{stateLabel}',
+  },
+  'project.iteration.entrance.empty.info': {
+    en: 'iterations supplied all-processing model Optimization production Recommanded for valueable data mining, training dataset expended, and comparison between datasets or models',
+    cn: '由系统辅助您进行全流程模型优化生产，包括有效数据的挖掘、训练集的扩充以及数据模型版本间的比对，推荐您使用',
+  },
+  'project.iteration.entrance.empty.label': { en: 'No Iterations', cn: '暂无迭代', },
+  'project.iteration.entrance.empty.btn': { en: 'Processing Models Training', cn: '系统辅助式模型生产', },
+  'project.iteration.entrance.btn': { en: 'Enter Iterations', cn: '进入迭代', },
+  'project.iteration.tabs.current': { en: 'Current Iteration', cn: '当前迭代', },
+  'project.iteration.tabs.list': { en: 'Iteration Records', cn: '迭代历史', },
 }
 
 export default project

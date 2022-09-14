@@ -65,7 +65,11 @@ function Label({ datasets, keywords, ...func }) {
       }
       await func.clearCache()
       const group = result.result_dataset?.dataset_group_id || ''
-      history.replace(`/home/project/${pid}/dataset#${group}`)
+      let redirect = `/home/project/${pid}/dataset#${group}`
+      if (iterationId) {
+        redirect = `/home/project/${pid}/iterations`
+      }
+      history.replace(redirect)
     }
   }
 
