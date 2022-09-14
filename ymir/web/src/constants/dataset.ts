@@ -60,6 +60,14 @@ export function transferDatasetGroup(data: BackendData) {
   return group
 }
 
+
+const tagsCounts = (gt: BackendData = {}, pred: BackendData = {}) => Object.keys(gt).reduce((prev, tag) => {
+  const gtCount = gt[tag] || {}
+  const predCount = pred[tag] || {}
+  return { ...prev, [tag]: { ...gtCount, ...predCount } }
+}, {})
+const tagsTotal = (gt: BackendData = {}, pred: BackendData = {}) => ({ ...gt, ...pred })
+
 export function transferDataset(data: BackendData): Dataset {
   const { gt = {}, pred = {} } = data.keywords
   const assetCount = data.asset_count || 0
@@ -91,6 +99,8 @@ export function transferDataset(data: BackendData): Dataset {
     task: data.related_task,
     hidden: !data.is_visible,
     description: data.description || '',
+    cks: transferCK(data.cks_count, data.cks_count_total),
+    tags: transferCK(tagsCounts(data.gt.tags_count, data.pred?.tags_count), tagsTotal(data.gt?.tags_count_total, data.pred?.tags_count_total)),
   }
 }
 
@@ -100,12 +110,6 @@ export function transferDatasetAnalysis(data: BackendData): DatasetAnalysis {
   const assetTotal = data.total_assets_count || 0
   const gt = generateAnno(data.gt)
   const pred = generateAnno(data.pred)
-  const tagsCounts = Object.keys(data.gt.tags_count).reduce((prev, tag) => {
-    const gtCount = data.gt.tags_count[tag] || {}
-    const predCount = data.pred.tags_count[tag] || {}
-    return { ...prev, [tag]: { ...gtCount, ...predCount } }
-  }, {})
-  const tagsTotal = { ...data.gt.tags_count_total, ...data.pred.tags_count_total }
   return {
     name: data.group_name,
     version: data.version_num || 0,
@@ -120,7 +124,7 @@ export function transferDatasetAnalysis(data: BackendData): DatasetAnalysis {
     pred,
     inferClass: data?.pred?.eval_class_ids,
     cks: transferCK(data.cks_count, data.cks_count_total),
-    tags: transferCK(tagsCounts, tagsTotal),
+    tags: transferCK(tagsCounts(data.gt.tags_count, data.pred?.tags_count), tagsTotal(data.gt?.tags_count_total, data.pred?.tags_count_total)),
   }
 }
 
