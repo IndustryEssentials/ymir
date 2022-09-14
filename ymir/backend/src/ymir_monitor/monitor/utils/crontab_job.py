@@ -1,6 +1,7 @@
 from datetime import datetime
 import json
 import logging
+import os
 import sys
 from typing import List
 
@@ -51,8 +52,16 @@ def update_monitor_percent_log() -> None:
         runtime_log_contents = dict()
         logging.info(f"content: {content}")
         for log_path, previous_log_content in content["raw_log_contents"].items():
+            if not os.path.isfile(log_path):
+                logging.info(f"log file not exists: {log_path}")
+                continue
+
             try:
                 runtime_log_content = PercentLogHandler.parse_percent_log(log_path)
+            except EOFError as e:
+                sentry_sdk.capture_exception(e)
+                logging.exception(e)
+                continue
             except Exception as e:
                 sentry_sdk.capture_exception(e)
                 logging.exception(e)
