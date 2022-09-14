@@ -15,7 +15,7 @@ const SettingsSelection = (Select) => {
   return Selection
 }
 
-export default function Stage({ pid, stage, project = {} }) {
+export default function Stage({ pid, stage, form, project = {} }) {
   const [value, setValue] = useState(null)
   const [valid, setValid] = useState(false)
   const Selection = useMemo(() => SettingsSelection(stage.type ? ModelSelect : DatasetSelect), [stage.type])
@@ -26,8 +26,10 @@ export default function Stage({ pid, stage, project = {} }) {
 
   useEffect(() => {
     const value = getAttrFromProject(stage.field, project)
-    console.log('test value:', value, stage.field, project)
     setValue(value)
+    form.setFieldsValue({
+      [stage.field]: value || null,
+    })
   }, [stage, project])
 
   const renderIcon = () => {

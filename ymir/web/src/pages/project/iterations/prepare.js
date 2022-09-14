@@ -1,96 +1,31 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { useEffect, useState } from "react"
 import { Row, Col, Form, Button } from "antd"
 import { useLocation } from 'umi'
 import { connect } from "dva"
 
 import t from '@/utils/t'
 import useFetch from '@/hooks/useFetch'
-import DatasetSelect from '@/components/form/datasetSelect'
-import ModelSelect from '@/components/form/modelSelect'
 
 import s from "./iteration.less"
-import { YesIcon, LoaderIcon } from "@/components/common/icons"
-
-const matchKeywords = (dataset, project) => dataset.keywords.some(kw => project.keywords?.includes(kw))
-
-const stages = [
-  { field: 'candidateTrainSet', option: true, label: 'project.prepare.trainset', tip: 'project.add.trainset.tip', filter: matchKeywords, },
-  { field: 'testSet', label: 'project.prepare.validationset', tip: 'project.add.testset.tip', filter: matchKeywords, },
-  { field: 'miningSet', label: 'project.prepare.miningset', tip: 'project.add.miningset.tip', },
-  { field: 'modelStage', label: 'project.prepare.model', tip: 'tip.task.filter.model', type: 1 },
-]
-
-const SettingsSelection = (Select) => {
-  const Selection = (props) => {
-    return <Select {...props} />
-  }
-  return Selection
-}
-
-const Stage = ({ pid, stage, project = {} }) => {
-  const [value, setValue] = useState(null)
-  const [valid, setValid] = useState(false)
-  const Selection = useMemo(() => SettingsSelection(stage.type ? ModelSelect : DatasetSelect), [stage.type])
-  // const [newProject, updateProject] = useUpdateProject(pid)
-
-  useEffect(() => {
-    setValid(value)
-  }, [value])
-
-  useEffect(() => {
-    const value = getAttrFromProject(stage.field, project)
-    console.log('test value:', value, stage.field, project)
-    setValue(value)
-  }, [stage, project])
-
-  const renderIcon = () => {
-    return valid ? <YesIcon /> : <LoaderIcon />
-  }
-  const renderState = () => {
-    return valid ? t('project.stage.state.done') : t('project.stage.state.waiting')
-  }
-
-  const filters = datasets => {
-    const fields = stages.filter(({ type, field }) => !type && stage.field !== field).map(({ field }) => field)
-    const ids = fields.map(field => project[field]?.id || project[field])
-    const notTestingSet = (did) => ![...ids, ...(project.testingSets || [])].includes(did)
-    return datasets.filter(dataset => notTestingSet(dataset.id) && (!stage.filter || stage.filter(dataset, project)))
-  }
-
-  return <Row wrap={false}>
-    <Col flex={'60px'}>
-      <div className={s.state}>{renderIcon()}</div>
-      <div className={s.state}>{renderState()}</div>
-    </Col>
-    <Col flex={1}>
-      {/* <Form.Item name={stage.field} label={t(stage.label)}
-        tooltip={t(stage.tip)}
-        rules={[{ required: !stage.option }]}
-      > */}
-        <Selection value={value} pid={pid} changeByUser filters={filters} allowClear={!!stage.option} />
-      {/* </Form.Item> */}
-    </Col>
-  </Row>
-}
-
-function getAttrFromProject(field, project = {}) {
-  const attr = project[field]
-  console.log('field, project:', field, project, attr)
-  return attr?.id ? attr.id : attr
-}
+import Stage from "./prepareStage"
+import generateStages from "./generateStages"
 
 function Prepare({ project = {}, fresh = () => { }, ...func }) {
   const location = useLocation()
   const [validPrepare, setValidPrepare] = useState(false)
   const [id, setId] = useState(null)
+  const [stages, setStages] = useState([])
   const [result, updateProject] = useFetch('project/updateProject')
   const [mergeResult, merge] = useFetch('task/merge')
+  const [createdResult, createIteration] = useFetch('iteration/createIteration')
+  const [form] = Form.useForm()
 
   useEffect(() => {
-    console.log('test project in prepare:', project)
     project.id && setId(project.id)
     project.id && updatePrepareStatus()
   }, [project])
+
+  useEffect(() => setStages(generateStages(project)), [project])
 
   useEffect(() => {
     if (result) {
@@ -104,29 +39,32 @@ function Prepare({ project = {}, fresh = () => { }, ...func }) {
     }
   }, [mergeResult])
 
+  useEffect(() => {
+    if (createdResult) {
+      fresh(createdResult)
+      window.location.reload()
+    }
+  }, [createdResult])
+
   const formChange = (value, values) => {
     updateProject({ id, ...value })
     updatePrepareStatus(values)
   }
 
-  async function createIteration() {
+  function create() {
     const params = {
       iterationRound: 1,
       projectId: project.id,
       prevIteration: 0,
       testSet: project?.testSet?.id,
     }
-    const result = await func.createIteration(params)
-    if (result) {
-      fresh()
-      window.location.reload()
-    }
+    createIteration(params)
   }
 
   async function updateAndCreateIteration(trainSetVersion) {
     const updateResult = updateProject({ id, trainSetVersion })
     if (updateResult) {
-      createIteration()
+      create()
     }
   }
 
@@ -140,7 +78,6 @@ function Prepare({ project = {}, fresh = () => { }, ...func }) {
   }
 
   function updatePrepareStatus() {
-    console.log('stages:', stages)
     const fields = stages.filter(stage => !stage.option).map(stage => stage.field)
     const valid = fields.every(field => project[field]?.id || project[field])
     setValidPrepare(valid)
@@ -156,11 +93,11 @@ function Prepare({ project = {}, fresh = () => { }, ...func }) {
 
   return (
     <div className={s.iteration}>
-      <Form layout="vertical" onValuesChange={formChange}>
+      <Form layout="vertical" form={form} onValuesChange={formChange}>
         <Row style={{ justifyContent: 'flex-end' }}>
           {stages.map((stage, index) => (
             <Col key={stage.field} span={6}>
-              <Stage stage={stage} value={getAttrFromProject(stage.field, project)} project={project} pid={id} />
+              <Stage stage={stage} form={form} project={project} pid={id} />
             </Col>
           ))}
         </Row>
@@ -172,25 +109,4 @@ function Prepare({ project = {}, fresh = () => { }, ...func }) {
   )
 }
 
-const props = (state) => {
-  return {}
-}
-
-const actions = (dispacth) => {
-  return {
-    createIteration(params) {
-      return dispacth({
-        type: 'iteration/createIteration',
-        payload: params,
-      })
-    },
-    queryTrainDataset(group_id) {
-      return dispacth({
-        type: 'dataset/queryDatasets',
-        payload: { group_id, is_desc: false, limit: 1 }
-      })
-    }
-  }
-}
-
-export default connect(props, actions)(Prepare)
+export default Prepare
