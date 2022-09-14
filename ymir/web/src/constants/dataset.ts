@@ -99,8 +99,9 @@ export function transferDataset(data: BackendData): Dataset {
     task: data.related_task,
     hidden: !data.is_visible,
     description: data.description || '',
-    cks: transferCK(data.cks_count, data.cks_count_total),
-    tags: transferCK(tagsCounts(data.gt.tags_count, data.pred?.tags_count), tagsTotal(data.gt?.tags_count_total, data.pred?.tags_count_total)),
+    inferClass: data?.pred?.eval_class_ids,
+    cks: data.cks_count ? transferCK(data.cks_count, data.cks_count_total) : undefined,
+    tags: data.gt ? transferCK(tagsCounts(data?.gt?.tags_count, data?.pred?.tags_count), tagsTotal(data?.gt?.tags_count_total, data?.pred?.tags_count_total)) : undefined,
   }
 }
 

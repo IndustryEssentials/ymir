@@ -36,11 +36,9 @@ const Dataset = () => {
   const windowWidth = useWindowResize()
   const [dataset, getDataset] = useFetch('dataset/getDataset', {})
   const [{ items: assets, total }, getAssets, setAssets] = useFetch('dataset/getAssetsOfDataset', { items: [], total: 0 })
-  const [[{ cks, tags, inferClass }], getCK] = useFetch('dataset/getCK', [{ cks: {}, tags: {} }])
 
   useEffect(() => {
-    getDataset({ id })
-    getCK({ pid, ids: [id]})
+    getDataset({ id, verbose: true })
   }, [id])
 
   useEffect(() => {
@@ -156,14 +154,14 @@ const Dataset = () => {
       <Space>
         <strong>{dataset.name} {dataset.versionName}</strong>
         <span>{t("dataset.detail.pager.total", { total: total + '/' + dataset.assetCount })}</span>
-        {inferClass ? <div>{t('dataset.detail.infer.class')}{inferClass.map(cls => <Tag key={cls}>{cls}</Tag>)}</div> : null}
+        {dataset?.inferClass ? <div>{t('dataset.detail.infer.class')}{dataset?.inferClass?.map(cls => <Tag key={cls}>{cls}</Tag>)}</div> : null}
       </Space>
     </Col>
     <Col span={12}>
       <Space size={10} wrap={true}>
         <GtSelector layout='inline' value={filterParams.annoType} onChange={checked => updateFilterParams(checked, 'annoType')} />
         <EvaluationSelector value={filterParams.cm} onChange={checked => updateFilterParams(checked, 'cm')} labelAlign={'right'} />
-        <KeywordSelector value={filterParams.keywords} onChange={filterKw} cks={cks} tags={tags} labelAlign={'right'} />
+        <KeywordSelector value={filterParams.keywords} onChange={filterKw} cks={dataset?.cks} tags={dataset?.tags} labelAlign={'right'} />
         <Button onClick={reset}>{t('common.reset')}</Button>
       </Space>
     </Col>
