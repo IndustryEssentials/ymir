@@ -96,7 +96,7 @@ def get_mining_progress_of_iteration(
     user_labels: UserLabels = Depends(deps.get_user_labels),
 ) -> Any:
     """
-    Get verbose information of specific iteration
+    Get mining progress of specific iteration
     """
     stats = calculate_mining_progress(db, user_labels, current_user.id, project_id, iteration_id)
     return {"result": stats}
