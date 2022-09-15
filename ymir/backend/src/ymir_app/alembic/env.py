@@ -1,22 +1,22 @@
 from __future__ import with_statement
 
+from contextlib import contextmanager
 import os
 import time
 from logging.config import fileConfig
 import uuid
+import subprocess
+from typing import Dict, Optional, Generator
 
 from alembic import context
 from sqlalchemy import engine_from_config, pool
 
 from app.db.base import Base  # noqa
 
-from .backup_util import create_backup, recover_from_backup
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
 config = context.config
-migration_context = context.get_context()
-current_alembic_version = context.get_current_revision()
 
 # Interpret the config file for Python logging.
 # This line sets up loggers basically.
@@ -38,6 +38,55 @@ target_metadata = Base.metadata
 
 def get_url() -> str:
     return os.getenv("DATABASE_URI", "sqlite:///app.db")
+
+
+def get_mysql_credentials() -> Dict:
+    credentials = {
+        "MYSQL_USER": os.getenv("MYSQL_INITIAL_USER"),
+        "MYSQL_PASSWORD": os.getenv("MYSQL_INITIAL_PASSWORD"),
+        "MYSQL_DATABASE": os.getenv("MYSQL_DATABASE"),
+        "MYSQL_HOST": "db",
+    }
+    if None in credentials.values():
+        raise ValueError("Invalid MySQL Environments")
+    return credentials
+
+
+def create_backup(backup_filename: str) -> None:
+    credentials = get_mysql_credentials()
+    mysqldump_command = (
+        "mysqldump --host {MYSQL_HOST} -u {MYSQL_USER} -p{MYSQL_PASSWORD} --databases {MYSQL_DATABASE} --no-tablespaces --ignore-table {MYSQL_DATABASE}.alembic_version --result-file %s"
+    ).format(**credentials)
+    subprocess.run(mysqldump_command % backup_filename, shell=True, check=True)
+
+
+def recover_from_backup(backup_filename: str) -> None:
+    credentials = get_mysql_credentials()
+    recover_command = "mysql --host {MYSQL_HOST} -u {MYSQL_USER} -p{MYSQL_PASSWORD} < %s".format(**credentials)
+    subprocess.run(recover_command % backup_filename, shell=True, check=True)
+
+
+@contextmanager
+def backup_database() -> Generator[None, None, None]:
+    current_alembic_version = get_current_alembic_version()
+    if current_alembic_version:
+        # Only when legacy database exists, should we backup database
+        backup_filename = f"backup_{current_alembic_version}_{int(time.time())}_{uuid.uuid4().hex}.sql"
+        create_backup(backup_filename)
+        print("Created MySQL backup to %s" % backup_filename)
+    else:
+        backup_filename = None  # type:ignore
+    try:
+        yield
+    except Exception as e:
+        if backup_filename:
+            recover_from_backup(backup_filename)
+            print("Failed to upgrade database (%s), rollback with backup %s" % (e, backup_filename))
+
+
+def get_current_alembic_version() -> Optional[str]:
+    migration_context = context.get_context()
+    return migration_context.get_current_revision()
 
 
 def run_migrations_offline() -> None:
@@ -88,16 +137,9 @@ def run_migrations_online() -> None:
             render_as_batch=True,
         )
 
-        # todo
-        #  specify backup locations in alembic.ini
-        backup_filename = f"backup_{current_alembic_version}_{time.time()}_{uuid.uuid4().hex}"
-        create_backup(backup_filename)
-        with context.begin_transaction():
-            try:
+        with backup_database():
+            with context.begin_transaction():
                 context.run_migrations()
-            except Exception as e:
-                print("Failed to upgrade database (%s), rollback with backup %s" % (e, backup_filename))
-                recover_from_backup(backup_filename)
 
 
 if context.is_offline_mode():
