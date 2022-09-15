@@ -11,7 +11,7 @@ interface IconProps extends React.SVGProps<SVGSVGElement> {
     stroke?: string;
 }
 
-export default function Bushu(props: IconProps) {
+export default function Xiangmudiedai(props: IconProps) {
     const root = useRef<SVGSVGElement>(null)
     const { size = '1em', width, height, spin, rtl, color, fill, stroke, className, ...rest } = props;
     const _width = width || size;
@@ -37,13 +37,13 @@ export default function Bushu(props: IconProps) {
           height={_height}
           viewBox="0 0 20 20"
           preserveAspectRatio="xMidYMid meet"
-          fill="none"
+          fill={_fill}
           role="presentation"
           xmlns="http://www.w3.org/2000/svg"
           className={`${className || ''} ${spin ? styles.spin : ''} ${rtl ? styles.rtl : ''}`.trim()}
           {...rest}
         >
-          <g><path d="M12.5 2.5c.46 0 .833.373.833.833v3.334c0 .46-.373.833-.833.833h-1.667v1.667h3.334c.46 0 .833.373.833.833v2.5h1.667c.46 0 .833.373.833.833v3.334c0 .46-.373.833-.833.833h-5a.834.834 0 0 1-.834-.833v-3.334c0-.46.374-.833.834-.833h1.666v-1.667H6.667V12.5h1.666c.46 0 .834.373.834.833v3.334c0 .46-.374.833-.834.833h-5a.834.834 0 0 1-.833-.833v-3.334c0-.46.373-.833.833-.833H5V10c0-.46.373-.833.833-.833h3.334V7.5H7.5a.834.834 0 0 1-.833-.833V3.333c0-.46.373-.833.833-.833h5Zm-5 11.667H4.167v1.666H7.5v-1.666Zm8.333 0H12.5v1.666h3.333v-1.666Zm-4.166-10H8.333v1.666h3.334V4.167Z" data-follow-fill="#000" fill={_fill}/></g>
+          <g><path d="M13.596 4.5 11.97 2.873l1.06-1.06 3.359 3.359L13.03 8.53l-1.06-1.06L13.44 6H3v7H1.5V4.5h12.096ZM7.06 14l1.47-1.47-1.06-1.06-3.359 3.358 3.359 3.36 1.06-1.061L6.904 15.5H18.5V7H17v7H7.06Z" data-follow-fill="#000" fill='currentColor' /></g>
         </svg>
     )
 }
