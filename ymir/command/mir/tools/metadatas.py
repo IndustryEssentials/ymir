@@ -29,7 +29,7 @@ def _fill_type_shape_size_for_asset(asset_path: str, metadata_attributes: mirpb.
     try:
         asset_image = Image.open(asset_path)
         asset_type_str: str = asset_image.format.lower()  # type: ignore
-    except UnidentifiedImageError as e:
+    except (UnidentifiedImageError, OSError) as e:
         logging.info(f"{type(e).__name__}: {e} asset_path: {asset_path}")
         asset_type_str = ''  # didn't set it to 'unknown' as what i did in utils.py, because this is easy to compare
 
