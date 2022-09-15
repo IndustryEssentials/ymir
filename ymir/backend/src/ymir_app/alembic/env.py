@@ -69,13 +69,12 @@ def recover_from_backup(backup_filename: str) -> None:
 @contextmanager
 def backup_database() -> Generator[None, None, None]:
     current_alembic_version = get_current_alembic_version()
+    backup_filename: Optional[str] = None
     if current_alembic_version:
         # Only when legacy database exists, should we backup database
         backup_filename = f"backup_{current_alembic_version}_{int(time.time())}_{uuid.uuid4().hex}.sql"
         create_backup(backup_filename)
         print("Created MySQL backup to %s" % backup_filename)
-    else:
-        backup_filename = None  # type:ignore
     try:
         yield
     except Exception as e:
