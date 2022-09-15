@@ -60,7 +60,13 @@ class CmdInit(base.BaseCommand):
         repo_git.config(['core.fileMode', 'false'])
 
         CmdInit.__update_ignore(mir_root=mir_root, git=repo_git, ignored_items=['.mir_lock', '.mir'])
-        repo_git.commit(["-m", "first commit"])
+
+        # git lfs support
+        repo_git.lfs('install')
+        repo_git.lfs(['track', '*.mir'])
+        repo_git.add('.')
+
+        repo_git.commit(["-m", "first commit with git-lfs support"])
 
         # creates an empty dataset if empty_rev provided
         CmdInit.__commit_empty_dataset(mir_root=mir_root, empty_rev=empty_rev)
