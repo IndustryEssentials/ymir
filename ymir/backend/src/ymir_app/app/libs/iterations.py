@@ -19,6 +19,10 @@ def calculate_mining_progress(
     if not iteration:
         raise IterationNotFound()
     mining_dataset = iteration.mining_dataset
+    if not mining_dataset:
+        logger.warning("Attempt to get mining_progress of legacy projects, skip")
+        raise InvalidProject()
+
     training_classes = get_training_classes(db, project_id, user_labels)
     training_class_ids = list(training_classes.values())
 
