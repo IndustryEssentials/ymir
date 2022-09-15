@@ -204,19 +204,6 @@ class TestMiningCmd(unittest.TestCase):
         mining_instance.run()
 
         expected_model_storage = TestMiningCmd._mock_prepare_model()
-        mock_run.assert_called_once_with(work_dir=args.work_dir,
-                                         mir_root=args.mir_root,
-                                         media_path=os.path.join(args.work_dir, 'in', 'assets'),
-                                         model_storage=mock.ANY,  # TODO: fix model_storage timestamp
-                                         index_file=os.path.join(args.work_dir, 'in', 'candidate-src-index.tsv'),
-                                         config_file=args.config_file,
-                                         task_id='mining-task-id',
-                                         executor=args.executor,
-                                         executant_name=args.executant_name,
-                                         run_as_root=args.run_as_root,
-                                         run_infer=args.add_prediction,
-                                         run_mining=True)
-
         mir_annotations: mirpb.MirAnnotations = mir_storage_ops.MirStorageOps.load_single_storage(
             mir_root=self._mir_repo_root,
             mir_branch='a',
@@ -228,6 +215,18 @@ class TestMiningCmd(unittest.TestCase):
         expected_model_storage.stages['default'].timestamp = mir_annotations.prediction.model.stages[
             'default'].timestamp
         self.assertEqual(expected_model_storage.get_model_meta(), mir_annotations.prediction.model)
+        mock_run.assert_called_once_with(work_dir=args.work_dir,
+                                         mir_root=args.mir_root,
+                                         media_path=os.path.join(args.work_dir, 'in', 'assets'),
+                                         model_storage=expected_model_storage,
+                                         index_file=os.path.join(args.work_dir, 'in', 'candidate-src-index.tsv'),
+                                         config_file=args.config_file,
+                                         task_id='mining-task-id',
+                                         executor=args.executor,
+                                         executant_name=args.executant_name,
+                                         run_as_root=args.run_as_root,
+                                         run_infer=args.add_prediction,
+                                         run_mining=True)
 
         if os.path.isdir(self._sandbox_root):
             shutil.rmtree(self._sandbox_root)
