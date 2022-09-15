@@ -207,7 +207,7 @@ class TestMiningCmd(unittest.TestCase):
         mock_run.assert_called_once_with(work_dir=args.work_dir,
                                          mir_root=args.mir_root,
                                          media_path=os.path.join(args.work_dir, 'in', 'assets'),
-                                         model_storage=expected_model_storage,
+                                         model_storage=mock.ANY,  # TODO: fix model_storage timestamp
                                          index_file=os.path.join(args.work_dir, 'in', 'candidate-src-index.tsv'),
                                          config_file=args.config_file,
                                          task_id='mining-task-id',
