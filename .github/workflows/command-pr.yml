@@ -30,6 +30,7 @@ jobs:
         key: ${{ env.pythonLocation }}-${{ hashFiles('ymir/command/requirements.txt', 'ymir/command/requirements-ci.txt') }}
     - name: Install dependencies
       run: |
+        time apt install -y git-lfs
         time pip install -r requirements.txt
         time pip install -r requirements-ci.txt
       working-directory: ymir/command
