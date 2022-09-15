@@ -61,7 +61,7 @@
                 "x": 0,
                 "y": 0
             },
-            "id": 36,
+            "id": 1,
             "title": "YMIR-logs",
             "type": "row"
         },
@@ -89,7 +89,7 @@
                 "y": 1
             },
             "hiddenSeries": false,
-            "id": 6,
+            "id": 2,
             "legend": {
                 "avg": false,
                 "current": false,
@@ -168,7 +168,7 @@
                 "x": 0,
                 "y": 4
             },
-            "id": 2,
+            "id": 3,
             "maxDataPoints": "",
             "options": {
                 "dedupStrategy": "none",
@@ -207,7 +207,7 @@
                 "x": 0,
                 "y": 26
             },
-            "id": 28,
+            "id": 4,
             "panels": [],
             "targets": [
                 {
@@ -258,7 +258,7 @@
                 "x": 0,
                 "y": 27
             },
-            "id": 30,
+            "id": 5,
             "options": {
                 "orientation": "auto",
                 "reduceOptions": {
@@ -489,7 +489,7 @@
                 "x": 15,
                 "y": 27
             },
-            "id": 32,
+            "id": 6,
             "links": [],
             "options": {
                 "alignValue": "left",
@@ -610,7 +610,7 @@
                 "x": 0,
                 "y": 35
             },
-            "id": 28,
+            "id": 7,
             "panels": [],
             "targets": [
                 {
@@ -652,7 +652,7 @@
                 "x": 0,
                 "y": 36
             },
-            "id": 23,
+            "id": 8,
             "links": [],
             "options": {
                 "displayLabels": [
@@ -721,7 +721,7 @@
                 "y": 36
             },
             "hiddenSeries": false,
-            "id": 22,
+            "id": 9,
             "legend": {
                 "avg": false,
                 "current": false,
@@ -878,7 +878,7 @@
                 "x": 16,
                 "y": 36
             },
-            "id": 37,
+            "id": 10,
             "options": {
                 "legend": {
                     "calcs": [],
@@ -921,7 +921,7 @@
                 "x": 0,
                 "y": 40
             },
-            "id": 28,
+            "id": 11,
             "panels": [],
             "targets": [
                 {
@@ -963,7 +963,7 @@
                 "x": 0,
                 "y": 41
             },
-            "id": 23,
+            "id": 12,
             "legend": {
                 "show": true,
                 "values": true
@@ -1039,7 +1039,7 @@
                 "y": 41
             },
             "hiddenSeries": false,
-            "id": 22,
+            "id": 13,
             "legend": {
                 "avg": false,
                 "current": false,
@@ -1170,7 +1170,7 @@
                 "x": 16,
                 "y": 41
             },
-            "id": 24,
+            "id": 14,
             "links": [],
             "options": {
                 "displayMode": "basic",
@@ -1217,7 +1217,7 @@
                 "x": 0,
                 "y": 45
             },
-            "id": 28,
+            "id": 15,
             "panels": [],
             "targets": [
                 {
@@ -1283,7 +1283,7 @@
                 "y": 46
             },
             "hideTimeOverride": true,
-            "id": 4,
+            "id": 16,
             "links": [],
             "maxDataPoints": 100,
             "options": {
@@ -1361,7 +1361,7 @@
                 "x": 4,
                 "y": 46
             },
-            "id": 7,
+            "id": 17,
             "links": [],
             "maxDataPoints": 100,
             "options": {
@@ -1448,7 +1448,7 @@
                 "y": 46
             },
             "hideTimeOverride": true,
-            "id": 5,
+            "id": 18,
             "links": [],
             "maxDataPoints": 100,
             "options": {
@@ -1528,7 +1528,7 @@
                 "y": 46
             },
             "hideTimeOverride": true,
-            "id": 2,
+            "id": 19,
             "links": [],
             "maxDataPoints": 100,
             "options": {
@@ -1615,7 +1615,7 @@
                 "y": 46
             },
             "hideTimeOverride": true,
-            "id": 6,
+            "id": 20,
             "links": [],
             "maxDataPoints": 100,
             "options": {
@@ -1695,7 +1695,7 @@
                 "y": 46
             },
             "hideTimeOverride": true,
-            "id": 3,
+            "id": 21,
             "links": [],
             "maxDataPoints": 100,
             "options": {
@@ -1752,7 +1752,7 @@
                 "y": 50
             },
             "hiddenSeries": false,
-            "id": 9,
+            "id": 22,
             "isNew": true,
             "legend": {
                 "avg": false,
@@ -1848,7 +1848,7 @@
                 "y": 50
             },
             "hiddenSeries": false,
-            "id": 10,
+            "id": 23,
             "isNew": true,
             "legend": {
                 "avg": false,
@@ -1948,7 +1948,7 @@
                 "y": 50
             },
             "hiddenSeries": false,
-            "id": 15,
+            "id": 24,
             "isNew": true,
             "legend": {
                 "alignAsTable": true,
@@ -2084,7 +2084,7 @@
                 "y": 54
             },
             "hiddenSeries": false,
-            "id": 8,
+            "id": 25,
             "isNew": true,
             "legend": {
                 "alignAsTable": true,
@@ -2181,7 +2181,7 @@
                 "y": 61
             },
             "hiddenSeries": false,
-            "id": 11,
+            "id": 26,
             "isNew": true,
             "legend": {
                 "alignAsTable": true,
@@ -2278,7 +2278,7 @@
                 "y": 68
             },
             "hiddenSeries": false,
-            "id": 12,
+            "id": 27,
             "isNew": true,
             "legend": {
                 "alignAsTable": true,
@@ -2375,7 +2375,7 @@
                 "y": 75
             },
             "hiddenSeries": false,
-            "id": 13,
+            "id": 28,
             "isNew": true,
             "legend": {
                 "alignAsTable": true,
@@ -2472,7 +2472,7 @@
                 "y": 82
             },
             "hiddenSeries": false,
-            "id": 14,
+            "id": 29,
             "isNew": true,
             "legend": {
                 "alignAsTable": true,

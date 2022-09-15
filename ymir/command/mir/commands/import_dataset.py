@@ -130,7 +130,12 @@ def _generate_sha_and_copy(index_file: str, map_hashed_filename: Dict[str, str],
         if not media_src or not os.path.isfile(media_src):
             continue
 
-        sha1 = sha1sum_for_file(media_src)
+        try:
+            sha1 = sha1sum_for_file(media_src)
+        except OSError:
+            logging.info(f"{media_src} is not accessable.")
+            continue
+
         if sha1 not in map_hashed_filename:
             map_hashed_filename[sha1] = os.path.splitext(os.path.basename(media_src))[0]
             media_dst = get_asset_storage_path(location=sha_folder, hash=sha1)
