@@ -31,6 +31,7 @@ const DatasetSelect = ({
   }, [options])
 
   useEffect(() => {
+    console.log('datasets update:', datasets)
     const needReload = datasets.some(ds => ds.needReload)
     if (needReload) {
       fetchDatasets()

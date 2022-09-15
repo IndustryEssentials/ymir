@@ -47,7 +47,9 @@ function Prepare({ project = {}, fresh = () => { }, ...func }) {
   }, [createdResult])
 
   const formChange = (value, values) => {
-    updateProject({ id, ...value })
+    console.log('form change value:', value)
+    const target = Object.keys(value).reduce((prev, curr) => ({ ...prev, [curr]: value[curr] || null }), {})
+    updateProject({ id, ...target })
     updatePrepareStatus(values)
   }
 

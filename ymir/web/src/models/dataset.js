@@ -191,7 +191,7 @@ export default {
     *createDataset({ payload }, { call, put }) {
       const { code, result } = yield call(createDataset, payload)
       if (code === 0) {
-        yield put.resolve({ type: 'clearCache' })
+        // yield put.resolve({ type: 'clearCache' })
         return result
       }
     },
@@ -217,8 +217,6 @@ export default {
     *updateDatasets({ payload }, { put, select }) {
       const versions = yield select(state => state.dataset.versions)
       const tasks = payload || {}
-      const all = yield select(state => state.dataset.allDatasets)
-      const newDatasets = []
       Object.keys(versions).forEach(gid => {
         const datasets = versions[gid]
         let updatedDatasets = datasets.map(dataset => {
@@ -228,18 +226,22 @@ export default {
         })
         versions[gid] = updatedDatasets
       })
-      const validDatasets = newDatasets.filter(d => d?.needReload)
-      if (validDatasets.length) {
-        yield put({
-          type: 'UPDATE_ALL_DATASETS',
-          payload: [...validDatasets, ...all],
-        })
-      }
       yield put({
         type: 'UPDATE_ALL_VERSIONS',
         payload: { ...versions },
       })
       return { ...versions }
+    },
+    *updateAllDatasets({ payload: tasks = {} }, { put, select }) {
+      const all = yield select(state => state.dataset.allDatasets)
+      const newDatasets = Object.values(tasks).map(task => ({ id: task?.result_dataset?.id, needReload: true }))
+      const pid = yield select(({ project }) => project.current?.id)
+      if (newDatasets.length) {
+        yield put({
+          type: 'queryAllDatasets',
+          payload: { pid, force: true },
+        })
+      }
     },
     *updateDatasetState({ payload }, { put, select }) {
       const datasetCache = yield select(state => state.dataset.dataset)

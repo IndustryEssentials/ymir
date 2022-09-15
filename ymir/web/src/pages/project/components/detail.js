@@ -53,20 +53,9 @@ function ProjectDetail({ project = {} }) {
         </Space>
       </Col>
       <Col>
-        <Space>
-          <Link to={`/home/project/${id}/iterations/settings`}><EditIcon /><span>{t('project.iteration.settings.title')}</span></Link>
-          <Link to={`/home/project/${id}/iterations`}><SearchEyeIcon /><span>{t('breadcrumbs.project.iterations')}</span></Link>
-        </Space>
+        <Link to={`/home/project/${id}/iterations/settings`}><EditIcon /><span>{t('project.iteration.settings.title')}</span></Link>
       </Col>
     </Row>
-    <div className={s.setsPanel}>
-      <Row gutter={0} align='middle'>
-        {renderProjectDatasetLabel()}
-        <Col span={24} style={{ marginTop: 10 }}>
-          <TestingSet project={project} />
-        </Col>
-      </Row>
-    </div>
   </div>
 }
 export default ProjectDetail
