@@ -4,8 +4,10 @@ some mir commands, such as `mir search`, `mir merge` will use this module
 """
 
 import io
+import subprocess
 
 from mir import scm
+from mir.scm.cmd import stream_copy
 from mir.tools.code import MirCode
 from mir.tools.errors import MirRuntimeError
 
@@ -19,6 +21,14 @@ def read_mir(mir_root: str, rev: str, file_name: str) -> bytes:
     if not blob_hash:
         raise MirRuntimeError(MirCode.RC_CMD_INVALID_MIR_REPO, f"found no file: {rev}:{file_name}")
 
+    # git lfs: git cat-file -p blob_hash | git lfs smudge
+    catfile_ps = subprocess.Popen(['git', 'cat-file', '-p', blob_hash], stdout=subprocess.PIPE, cwd=mir_root)
+    smudge_ps = subprocess.Popen(['git', 'lfs', 'smudge'],
+                                 stdin=catfile_ps.stdout,
+                                 stdout=subprocess.PIPE,
+                                 stderr=subprocess.DEVNULL,
+                                 cwd=mir_root)
+
     bio = io.BytesIO()
-    scm_git.cat_file(['-p', blob_hash], output_stream=bio)
+    stream_copy(source=smudge_ps.stdout, destination=bio, chunk_size=io.DEFAULT_BUFFER_SIZE)
     return bio.getvalue()

@@ -204,6 +204,17 @@ class TestMiningCmd(unittest.TestCase):
         mining_instance.run()
 
         expected_model_storage = TestMiningCmd._mock_prepare_model()
+        mir_annotations: mirpb.MirAnnotations = mir_storage_ops.MirStorageOps.load_single_storage(
+            mir_root=self._mir_repo_root,
+            mir_branch='a',
+            mir_task_id='mining-task-id',
+            ms=mirpb.MirStorage.MIR_ANNOTATIONS,
+            as_dict=False)
+        self.assertEqual({0, 1}, set(mir_annotations.prediction.eval_class_ids))
+        # dont care about timestamp
+        expected_model_storage.stages['default'].timestamp = mir_annotations.prediction.model.stages[
+            'default'].timestamp
+        self.assertEqual(expected_model_storage.get_model_meta(), mir_annotations.prediction.model)
         mock_run.assert_called_once_with(work_dir=args.work_dir,
                                          mir_root=args.mir_root,
                                          media_path=os.path.join(args.work_dir, 'in', 'assets'),
@@ -216,18 +227,6 @@ class TestMiningCmd(unittest.TestCase):
                                          run_as_root=args.run_as_root,
                                          run_infer=args.add_prediction,
                                          run_mining=True)
-
-        mir_annotations: mirpb.MirAnnotations = mir_storage_ops.MirStorageOps.load_single_storage(
-            mir_root=self._mir_repo_root,
-            mir_branch='a',
-            mir_task_id='mining-task-id',
-            ms=mirpb.MirStorage.MIR_ANNOTATIONS,
-            as_dict=False)
-        self.assertEqual({0, 1}, set(mir_annotations.prediction.eval_class_ids))
-        # dont care about timestamp
-        expected_model_storage.stages['default'].timestamp = mir_annotations.prediction.model.stages[
-            'default'].timestamp
-        self.assertEqual(expected_model_storage.get_model_meta(), mir_annotations.prediction.model)
 
         if os.path.isdir(self._sandbox_root):
             shutil.rmtree(self._sandbox_root)
