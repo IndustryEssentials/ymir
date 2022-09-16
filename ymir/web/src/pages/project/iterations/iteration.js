@@ -117,6 +117,7 @@ function Iteration({ project, fresh = () => { }, ...func }) {
       projectId: project.id,
       prevIteration: iteration.id,
       testSet: project.testSet.id,
+      miningSet: project.miningSet.id,
     }
     const result = await func.createIteration(params)
     if (result) {

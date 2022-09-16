@@ -40,6 +40,7 @@ export function createIteration({
   prevIteration,
   projectId,
   testSet,
+  miningSet,
 }) {
   return request.post("/iterations/", {
     name,
@@ -48,6 +49,7 @@ export function createIteration({
     project_id: projectId,
     previous_iteration: prevIteration,
     validation_dataset_id: testSet,
+    mining_dataset_id: miningSet,
   })
 }
 /**
