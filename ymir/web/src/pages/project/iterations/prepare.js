@@ -62,6 +62,7 @@ function Prepare({ project = {}, fresh = () => { }, ...func }) {
       projectId: project.id,
       prevIteration: 0,
       testSet: project?.testSet?.id,
+      miningSet: project?.miningSet?.id,
     }
     createIteration(params)
   }
@@ -89,10 +90,11 @@ function Prepare({ project = {}, fresh = () => { }, ...func }) {
   }
 
   function start() {
+    console.log('project.candidateTrainSet:', project.candidateTrainSet)
     if (project.candidateTrainSet) {
       mergeTrainSet()
     } else {
-      createIteration()
+      create()
     }
   }
 
