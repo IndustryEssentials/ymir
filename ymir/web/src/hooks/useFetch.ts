@@ -1,13 +1,12 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { useDispatch } from 'umi'
 
-const useFetch = (effect: string, initResult: any = null, loading: Boolean = true) => {
+const useFetch = (effect: string, initResult: any = null, hideLoading: Boolean = false) => {
   const dispatch = useDispatch()
   const setLoading = (loading: Boolean) => dispatch({
     type: 'common/setLoading',
     payload: loading
   })
-  useEffect(() => setLoading(loading), [loading])
 
   const fetch = (payload: any) => dispatch({
     type: effect,
@@ -16,6 +15,7 @@ const useFetch = (effect: string, initResult: any = null, loading: Boolean = tru
   const [result, setResult] = useState(initResult)
 
   const getResult = async (payload: any) => {
+    setLoading(!hideLoading)
     const result = await fetch(payload)
     setLoading(true)
     if (typeof result !== 'undefined') {
