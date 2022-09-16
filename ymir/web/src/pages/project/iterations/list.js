@@ -5,7 +5,7 @@ import t from "@/utils/t"
 import { percent, isNumber } from '@/utils/number'
 import useFetch from '@/hooks/useFetch'
 
-import KeywordRates from "@/components/dataset/sampleRates"
+import SampleRates from "@/components/dataset/sampleRates"
 
 import s from "./index.less"
 
@@ -72,7 +72,7 @@ function List({ project }) {
 
   function renderPop(label, dataset = {}, extra) {
     dataset.project = project
-    const content = <KeywordRates keywords={project.keywords} dataset={dataset} progressWidth={0.4}></KeywordRates>
+    const content = <SampleRates keywords={project.keywords} dataset={dataset} progressWidth={0.4} />
     return <Popover content={content} overlayInnerStyle={{ minWidth: 500 }}>
       <span>{label}</span>
       {extra}

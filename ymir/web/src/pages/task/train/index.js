@@ -15,7 +15,7 @@ import useFetch from '@/hooks/useFetch'
 import Breadcrumbs from "@/components/common/breadcrumb"
 import ImageSelect from "@/components/form/imageSelect"
 import ModelSelect from "@/components/form/modelSelect"
-import KeywordRates from "@/components/dataset/keywordRates"
+import SampleRates from "@/components/dataset/sampleRates"
 import CheckProjectDirty from "@/components/common/CheckProjectDirty"
 import LiveCodeForm from "../components/liveCodeForm"
 import { removeLiveCodeConfig } from "../components/liveCodeConfig"
@@ -305,7 +305,7 @@ function Train({ allDatasets, datasetCache, ...func }) {
                 />
               </Form.Item>}
             <Form.Item label={t('dataset.train.form.samples')}>
-              <KeywordRates keywords={selectedKeywords} dataset={trainDataset} negative />
+              <SampleRates keywords={selectedKeywords} dataset={trainDataset} negative />
             </Form.Item>
             <Form.Item
               label={t('task.train.form.testsets.label')}

@@ -3,7 +3,6 @@ import { useParams } from 'umi'
 import t from "@/utils/t"
 
 import s from "./keywordRates.less"
-import { percent } from "@/utils/number"
 import useFetch from '@/hooks/useFetch'
 import { Button } from "antd"
 import KeywordRates from "./keywordRates"
@@ -11,8 +10,7 @@ import KeywordRates from "./keywordRates"
 function SampleRates({ keywords, dataset, negative, progressWidth = 0.5 }) {
   const { id: pid } = useParams()
   const [did, setDid] = useState(null)
-  const [kws, setKws] = useState([])
-  const [stats, getNegativeKeywords, setStats] = useFetch('dataset/getNegativeKeywords', {})
+  const [stats, getNegativeKeywords, setStats] = useFetch('dataset/getNegativeKeywords', {}, true)
 
   useEffect(() => {
     dataset?.id && setDid(dataset.id)
@@ -22,26 +20,23 @@ function SampleRates({ keywords, dataset, negative, progressWidth = 0.5 }) {
     setStats({})
   }, [did, keywords])
 
-  useEffect(() => {
-    setKws(keywords)
-  }, [keywords])
 
   useEffect(() => {
-    const synced = kws?.length && did === dataset?.id && kws.every(k => keywords.includes(k))
+    const synced = keywords?.length && did === dataset?.id
     if (!negative && did && synced) {
-      fetchKeywords(pid, kws, did)
+      fetchKeywords(pid, keywords, did)
     }
-  }, [did, kws])
+  }, [did, keywords])
 
   function fetchKeywords(projectId, keywords, dataset) {
     getNegativeKeywords({ projectId, keywords, dataset })
   }
 
-  return <div className={s.rates}>
-    {negative && !list.gt.length ? <div>
+  return <div>
+    {negative && !stats.gt ? <div>
       <Button type="primary"
-        disabled={!did}
-        onClick={() => fetchKeywords(pid, kws, did)}
+        disabled={!did || !keywords?.length}
+        onClick={() => fetchKeywords(pid, keywords, did)}
       >
         {t('task.train.btn.calc.negative')}
       </Button>

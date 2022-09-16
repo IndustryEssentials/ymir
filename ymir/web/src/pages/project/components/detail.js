@@ -6,7 +6,7 @@ import t from "@/utils/t"
 import { getStageLabel } from '@/constants/project'
 
 import s from "../detail.less"
-import KeywordRates from "@/components/dataset/keywordRates"
+import SampleRates from "@/components/dataset/sampleRates"
 import { TestingSet } from "./testingSet"
 import { EditIcon, SearchEyeIcon, EyeOffIcon } from "@/components/common/icons"
 
@@ -31,7 +31,7 @@ function ProjectDetail({ project = {} }) {
 
   function renderPop(label, dataset = {}) {
     dataset.project = project
-    const content = <KeywordRates keywords={project?.keywords} dataset={dataset} progressWidth={0.4}></KeywordRates>
+    const content = <SampleRates keywords={project?.keywords} dataset={dataset} progressWidth={0.4} />
     return <Popover content={content} overlayInnerStyle={{ minWidth: 500 }}>
       <Tag className={s.nameTag}>{label}</Tag>
     </Popover>
