@@ -25,7 +25,7 @@ class CmdCommit(base.BaseCommand):
         git_attr_path = os.path.join(mir_root, '.gitattributes')
         if not os.path.isfile(git_attr_path):
             with open(git_attr_path, 'w') as f:
-                f.write('*.mir binary')
+                f.write('*.mir binary\n')
         repo_git.add('.')
         output_str = repo_git.commit(["-m", msg])
         logging.info("\n%s" % output_str)
