@@ -43,9 +43,10 @@ router = APIRouter()
 def batch_get_datasets(
     db: Session = Depends(deps.get_db),
     viz_client: VizClient = Depends(deps.get_viz_client),
-    project_id: int = Query(None),
+    project_id: int = Query(...),
     dataset_ids: str = Query(..., example="1,2,3", alias="ids", min_length=1),
-    verbose_info: bool = Query(False, alias="verbose"),
+    require_ck: bool = Query(False, alias="ck"),
+    require_hist: bool = Query(False, alias="hist"),
     current_user: models.User = Depends(deps.get_current_active_user),
     user_labels: UserLabels = Depends(deps.get_user_labels),
 ) -> Any:
@@ -55,13 +56,16 @@ def batch_get_datasets(
         raise DatasetNotFound()
 
     datasets_info = [schemas.dataset.DatasetInDB.from_orm(dataset).dict() for dataset in datasets]
-    if verbose_info:
+    if require_ck or require_hist:
         viz_client.initialize(user_id=current_user.id, project_id=project_id, user_labels=user_labels)
         for dataset in datasets_info:
             if dataset["result_state"] != ResultState.ready:
                 continue
-            dataset_analysis = viz_client.get_dataset_analysis(dataset["hash"], require_hist=True)
-            dataset.update(dataset_analysis)
+            if require_ck:
+                dataset_extra_info = viz_client.get_dataset_info(dataset["hash"])
+            elif require_hist:
+                dataset_extra_info = viz_client.get_dataset_analysis(dataset["hash"], require_hist=True)
+            dataset.update(dataset_extra_info)
     return {"result": datasets_info}
 
 
@@ -325,7 +329,6 @@ def get_assets_of_dataset(
     dataset_id: int = Path(..., example="12"),
     offset: int = 0,
     limit: int = settings.DEFAULT_LIMIT,
-    keyword: Optional[str] = Query(None),
     keywords_str: Optional[str] = Query(None, example="person,cat", alias="keywords"),
     cm_types_str: Optional[str] = Query(None, example="tp,mtp", alias="cm_types"),
     cks_str: Optional[str] = Query(None, example="shenzhen,shanghai", alias="cks"),
@@ -343,14 +346,7 @@ def get_assets_of_dataset(
     if not dataset:
         raise DatasetNotFound()
 
-    if keyword:
-        # fixme
-        #  remove upon replacing all viz endpoints
-        keywords = [keyword]  # type: Optional[List]
-    elif keywords_str:
-        keywords = keywords_str.split(",")
-    else:
-        keywords = None
+    keywords = keywords_str.split(",") if keywords_str else None
     keyword_ids = user_labels.get_class_ids(keywords) if keywords else None
 
     viz_client.initialize(
