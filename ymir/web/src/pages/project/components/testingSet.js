@@ -9,7 +9,7 @@ export const TestingSet = ({ project }) => {
   const [datasets, fetchDatasets] = useFetch('dataset/batchDatasets', [])
 
   useEffect(() => {
-    project?.testingSets?.length && fetchDatasets(project.testingSets)
+    project?.testingSets?.length && fetchDatasets({ pid: project.id, ids: project.testingSets })
   }, [project.testingSets])
 
   function renderProjectTestingSetLabel() {
@@ -34,12 +34,13 @@ export const TestingSet = ({ project }) => {
           <span>{t(label)}: </span>
         </Col>
         <Col flex={1}>
-          {datasetGroup.map(({name, dataset, assetCount}) => {
+          {datasetGroup.map(({ name, dataset, assetCount }) => {
             const rlabel = name ? <Tag className={s.nameTag}>{name}{assetCount ? `(${assetCount})` : ''}</Tag> : ''
-            return <span key={name} title={name}>{dataset ? renderPop(rlabel, dataset) : rlabel}</span>})}
+            return <span key={name} title={name}>{dataset ? renderPop(rlabel, dataset) : rlabel}</span>
+          })}
         </Col>
       </Row>
-      
+
     })
   }
 

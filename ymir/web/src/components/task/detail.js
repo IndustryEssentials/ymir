@@ -1,12 +1,8 @@
-import React, { useEffect, useRef, useState } from "react"
-import { connect } from "dva"
-import { Link, useHistory } from "umi"
+import React, { useEffect, useState } from "react"
+import { Link, useHistory, useParams } from "umi"
 import {
-  Button,
-  Card,
   Col,
   Descriptions,
-  Progress,
   Row,
   Space,
   Tag,
@@ -16,21 +12,33 @@ import t from "@/utils/t"
 import { format } from "@/utils/date"
 import { getTensorboardLink } from "@/services/common"
 import { TASKTYPES } from "@/constants/task"
-import s from "./detail.less"
+import useFetch from '@/hooks/useFetch'
+
 import renderLiveCodeItem from '@/components/task/items/livecode'
 
 const { Item } = Descriptions
 
-function TaskDetail({ task = {}, batchDatasets, getModel }) {
+function TaskDetail({ task = {} }) {
   const history = useHistory()
   const id = task.id
-  const [datasets, setDatasets] = useState({})
-  const [model, setModel] = useState({})
+  const { id: pid } = useParams()
+  const [datasetNames, setDatasetNames] = useState({})
+  const [datasets, getDatasets] = useFetch('dataset/batchDatasets', [])
+  const [model, getModel] = useState({})
 
   useEffect(() => {
     task.id && !isImport(task.type) && fetchDatasets()
-    hasValidModel(task.type) && task?.parameters?.model_id && fetchModel(task.parameters.model_id)
+    hasValidModel(task.type) && task?.parameters?.model_id && getModel(task.parameters.model_id)
   }, [task.id])
+
+  useEffect(() => {
+    if (!datasets.length) {
+      return
+    }
+    const names = {}
+    datasets.forEach((ds) => (names[ds.id] = ds))
+    setDatasetNames(names)
+  }, [datasets])
 
   async function fetchDatasets() {
     const pa = task.parameters || {}
@@ -46,16 +54,7 @@ function TaskDetail({ task = {}, batchDatasets, getModel }) {
     if (!ids.length) {
       return
     }
-    const dss = await batchDatasets(ids)
-    const names = {}
-    dss.forEach((ds) => (names[ds.id] = ds))
-    setDatasets(names)
-  }
-
-  async function fetchModel(id) {
-    const result = await getModel(id)
-
-    result && setModel(result)
+    getDatasets({ pid, ids })
   }
 
   const labelStyle = {
@@ -73,7 +72,7 @@ function TaskDetail({ task = {}, batchDatasets, getModel }) {
   }
 
   function renderDatasetName(id) {
-    const ds = datasets[id]
+    const ds = datasetNames[id]
     const name = ds ? `${ds.name} ${ds.versionName}` : id
     return (
       <Link key={id} to={`/home/project/${task.project_id}/dataset/${id}`}>
@@ -98,7 +97,7 @@ function TaskDetail({ task = {}, batchDatasets, getModel }) {
   }
 
   function renderKeepAnnotations(type) {
-    const maps = {1: 'gt', 2: 'pred' }
+    const maps = { 1: 'gt', 2: 'pred' }
     const label = type ? maps[type] : 'none'
     return t(`task.label.form.keep_anno.${label}`)
   }
@@ -361,28 +360,4 @@ function TaskDetail({ task = {}, batchDatasets, getModel }) {
   )
 }
 
-const props = (state) => {
-  return {
-    logined: state.user.logined,
-    taskItem: state.task.task,
-  }
-}
-
-const actions = (dispatch) => {
-  return {
-    batchDatasets(ids) {
-      return dispatch({
-        type: "dataset/batchDatasets",
-        payload: ids,
-      })
-    },
-    getModel(id, force) {
-      return dispatch({
-        type: "model/getModel",
-        payload: { id, force },
-      })
-    },
-  }
-}
-
-export default connect(props, actions)(TaskDetail)
+export default TaskDetail
