@@ -63,7 +63,7 @@ def batch_get_datasets(
                 continue
             if require_ck:
                 dataset_extra_info = viz_client.get_dataset_info(dataset["hash"])
-            else:
+            elif require_hist:
                 dataset_extra_info = viz_client.get_dataset_analysis(dataset["hash"], require_hist=True)
             dataset.update(dataset_extra_info)
     return {"result": datasets_info}
