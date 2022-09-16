@@ -329,7 +329,6 @@ def get_assets_of_dataset(
     dataset_id: int = Path(..., example="12"),
     offset: int = 0,
     limit: int = settings.DEFAULT_LIMIT,
-    keyword: Optional[str] = Query(None),
     keywords_str: Optional[str] = Query(None, example="person,cat", alias="keywords"),
     cm_types_str: Optional[str] = Query(None, example="tp,mtp", alias="cm_types"),
     cks_str: Optional[str] = Query(None, example="shenzhen,shanghai", alias="cks"),
@@ -347,14 +346,7 @@ def get_assets_of_dataset(
     if not dataset:
         raise DatasetNotFound()
 
-    if keyword:
-        # fixme
-        #  remove upon replacing all viz endpoints
-        keywords = [keyword]  # type: Optional[List]
-    elif keywords_str:
-        keywords = keywords_str.split(",")
-    else:
-        keywords = None
+    keywords = keywords_str.split(",") if keywords_str else None
     keyword_ids = user_labels.get_class_ids(keywords) if keywords else None
 
     viz_client.initialize(
