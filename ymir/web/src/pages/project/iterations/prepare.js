@@ -16,7 +16,7 @@ function Prepare({ project = {}, fresh = () => { }, ...func }) {
   const [id, setId] = useState(null)
   const [stages, setStages] = useState([])
   const [result, updateProject] = useFetch('project/updateProject')
-  const [mergeResult, merge] = useFetch('task/merge')
+  const [mergeResult, merge] = useFetch('task/merge', null, true)
   const [createdResult, createIteration] = useFetch('iteration/createIteration')
   const [form] = Form.useForm()
 
@@ -30,6 +30,7 @@ function Prepare({ project = {}, fresh = () => { }, ...func }) {
   useEffect(() => {
     if (result) {
       fresh(result)
+      updatePrepareStatus()
     }
   }, [result])
 
@@ -46,11 +47,13 @@ function Prepare({ project = {}, fresh = () => { }, ...func }) {
     }
   }, [createdResult])
 
-  const formChange = (value, values) => {
+  const updateSettings = (value) => {
     console.log('form change value:', value)
-    const target = Object.keys(value).reduce((prev, curr) => ({ ...prev, [curr]: value[curr] || null }), {})
+    const target = Object.keys(value).reduce((prev, curr) => ({ 
+      ...prev, 
+      [curr]: value[curr] || null 
+    }), {})
     updateProject({ id, ...target })
-    updatePrepareStatus(values)
   }
 
   function create() {
@@ -64,7 +67,7 @@ function Prepare({ project = {}, fresh = () => { }, ...func }) {
   }
 
   async function updateAndCreateIteration(trainSetVersion) {
-    const updateResult = updateProject({ id, trainSetVersion })
+    const updateResult = await updateProject({ id, trainSetVersion })
     if (updateResult) {
       create()
     }
@@ -95,11 +98,11 @@ function Prepare({ project = {}, fresh = () => { }, ...func }) {
 
   return (
     <div className={s.iteration}>
-      <Form layout="vertical" form={form} onValuesChange={formChange}>
-        <Row style={{ justifyContent: 'flex-end' }}>
+      <Form layout="vertical" form={form} onValuesChange={updateSettings}>
+        <Row style={{ justifyContent: 'flex-end' }} gutter={30}>
           {stages.map((stage, index) => (
             <Col key={stage.field} span={6}>
-              <Stage stage={stage} form={form} project={project} pid={id} />
+              <Stage stage={stage} form={form} project={project} pid={id} update={updateSettings} />
             </Col>
           ))}
         </Row>

@@ -18,14 +18,14 @@ const SettingsSelection = (Select) => {
   return Selection
 }
 
-export default function Stage({ pid, stage, form, project = {} }) {
+export default function Stage({ pid, stage, form, project = {}, update }) {
   const [value, setValue] = useState(null)
   const [valid, setValid] = useState(false)
   const Selection = useMemo(() => SettingsSelection(stage.type ? ModelSelect : DatasetSelect), [stage.type])
   const [candidateList, setCandidateList] = useState(true)
   const [file, setFile] = useState({ name: '', url: '' })
-  const [addResult, addDataset] = useFetch('dataset/createDataset', null, false)
-  const [updateResult, updateSettings] = useFetch('project/updateProject')
+  const [addResult, addDataset] = useFetch('dataset/createDataset')
+  // const [updateResult, updateSettings] = useFetch('project/updateProject', null, true)
 
   useEffect(() => {
     setValid(value)
@@ -33,11 +33,8 @@ export default function Stage({ pid, stage, form, project = {} }) {
 
   useEffect(() => {
     const value = getAttrFromProject(stage.field, project)
-    console.log('value:', value, stage, project)
     setValue(value)
-    form.setFieldsValue({
-      [stage.field]: value || null,
-    })
+    setFieldValue(value)
   }, [stage, project])
 
   useEffect(() => {
@@ -50,11 +47,13 @@ export default function Stage({ pid, stage, form, project = {} }) {
 
   useEffect(() => {
     if (addResult?.id) {
-      // update iterations settings
-      console.log('addResult:', addResult, stage.field)
-      updateSettings({ id: pid, [stage.field]: addResult.id })
+      update({[stage.field]: addResult.id })
     }
   }, [addResult])
+
+  const setFieldValue = value => form.setFieldsValue({
+    [stage.field]: value || null,
+  })
 
   const renderIcon = () => {
     return valid ? <YesIcon /> : <LoaderIcon />
@@ -68,14 +67,10 @@ export default function Stage({ pid, stage, form, project = {} }) {
     console.log('result:', datasets, result, stage.field)
     setCandidateList(!!result.filter(item => item.assetCount).length)
     return result
-  }, [stage.field]) : null
+  }, [stage.field, project]) : null
 
   return <Row wrap={false}>
-    <Col flex={'60px'}>
-      <div className={s.state}>{renderIcon()}</div>
-      <div className={s.state}>{renderState()}</div>
-    </Col>
-    <Col flex={1}>
+    <Col>
       {!candidateList ? <Uploader
         onChange={(files, result) => { setFile({name: generateName(files[0].name), url: result}); console.log('files uploaded: ', files); }}
         max={1024}
