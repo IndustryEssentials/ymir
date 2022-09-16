@@ -75,7 +75,7 @@ export function getDatasetGroups(project_id, { name, offset = 0, limit = 10 }) {
 export function batchDatasets(pid, ids = [], ck) {
   return request.get('datasets/batch', {
     params: {
-      projectId: pid,
+      project_id: pid,
       ids: ids.toString(), 
       ck,
     }
