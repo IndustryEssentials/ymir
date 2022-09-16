@@ -45,7 +45,8 @@ def batch_get_datasets(
     viz_client: VizClient = Depends(deps.get_viz_client),
     project_id: int = Query(None),
     dataset_ids: str = Query(..., example="1,2,3", alias="ids", min_length=1),
-    verbose_info: bool = Query(False, alias="verbose"),
+    require_ck: bool = Query(False, alias="ck"),
+    require_hist: bool = Query(False, alias="hist"),
     current_user: models.User = Depends(deps.get_current_active_user),
     user_labels: UserLabels = Depends(deps.get_user_labels),
 ) -> Any:
@@ -55,13 +56,16 @@ def batch_get_datasets(
         raise DatasetNotFound()
 
     datasets_info = [schemas.dataset.DatasetInDB.from_orm(dataset).dict() for dataset in datasets]
-    if verbose_info:
+    if require_ck or require_hist:
         viz_client.initialize(user_id=current_user.id, project_id=project_id, user_labels=user_labels)
         for dataset in datasets_info:
             if dataset["result_state"] != ResultState.ready:
                 continue
-            dataset_analysis = viz_client.get_dataset_analysis(dataset["hash"], require_hist=True)
-            dataset.update(dataset_analysis)
+            if require_ck:
+                dataset_extra_info = viz_client.get_dataset_info(dataset["hash"])
+            else:
+                dataset_extra_info = viz_client.get_dataset_analysis(dataset["hash"], require_hist=True)
+            dataset.update(dataset_extra_info)
     return {"result": datasets_info}
 
 
