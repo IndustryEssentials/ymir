@@ -42,7 +42,9 @@ export default {
       }
     },
     *batchDatasets({ payload }, { call, put }) {
-      const { code, result } = yield call(batchDatasets, payload)
+      const { pid, ids, ck } = payload
+      console.log('pid, ids, ck:', pid, ids, ck)
+      const { code, result } = yield call(batchDatasets, pid, ids, ck)
       if (code === 0) {
         const datasets = result.map(ds => transferDataset(ds))
         return datasets || []
