@@ -65,7 +65,7 @@ class CmdInit(base.BaseCommand):
             f.write('*.mir binary')
         repo_git.add('.')
 
-        repo_git.commit(["-m", "first commit with git-lfs support"])
+        repo_git.commit(["-m", "first commit"])
 
         # creates an empty dataset if empty_rev provided
         CmdInit.__commit_empty_dataset(mir_root=mir_root, empty_rev=empty_rev)
