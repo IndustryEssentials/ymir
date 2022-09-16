@@ -256,27 +256,6 @@ export default {
         payload: { ...datasetCache },
       })
     },
-    *getHotDatasets({ payload }, { call, put }) {
-      const { code, result } = yield call(getStats, { ...payload, q: 'ds' })
-      let datasets = []
-      if (code === 0) {
-        const refs = {}
-        const ids = result.map(item => {
-          refs[item[0]] = item[1]
-          return item[0]
-        })
-        if (ids.length) {
-          const datasetsObj = yield put.resolve({ type: 'batchDatasets', payload: ids })
-          if (datasetsObj) {
-            datasets = datasetsObj.map(dataset => {
-              dataset.count = refs[dataset.id]
-              return dataset
-            })
-          }
-        }
-      }
-      return datasets
-    },
     *updateQuery({ payload = {} }, { put, select }) {
       const query = yield select(({ task }) => task.query)
       yield put({
@@ -353,7 +332,7 @@ export default {
     },
     *getCK({ payload }, { select, put }) {
       const { ids = [], pid } = payload
-      const datasets = yield put.resolve({ type: 'analysis', payload: { pid, datasets: ids } })
+      const datasets = yield put.resolve({ type: 'batchDatasets', payload: { pid, ids, ck: true } })
       return datasets || []
     },
   },
