@@ -5,7 +5,7 @@ import { useHistory, Link } from "umi"
 import { List, Skeleton, Space, Pagination, Col, Row, Card, Button, Form, Input, message, ConfigProvider, } from "antd"
 
 import t from "@/utils/t"
-import { getStageLabel } from '@/constants/project'
+import { getStageLabel } from '@/constants/iteration'
 import ProjectEmpty from '@/components/empty/project'
 import Del from './del'
 import s from "./list.less"

@@ -1,7 +1,7 @@
 import { getLocale } from "umi"
 import { DatasetGroup, Dataset, DatasetAnalysis, Annotation, Asset } from "@/interface/dataset"
 import { calDuration, format } from '@/utils/date'
-import { getIterationVersion, transferIteration } from "./project"
+import { getIterationVersion, transferIteration } from "./iteration"
 import { BackendData } from "@/interface/common"
 
 export enum states {

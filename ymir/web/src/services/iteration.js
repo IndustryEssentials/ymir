@@ -8,7 +8,7 @@ import request from "@/utils/request"
  * @returns
  */
 export function getIteration(project_id, id) {
-  return request.get(`iterations/${id}`, { params: { project_id }})
+  return request.get(`iterations/${id}`, { params: { project_id } })
 }
 
 /**
@@ -88,4 +88,14 @@ export function updateIteration(
       training_output_model_id: model,
     },
   })
+}
+
+/**
+ * get mining dataset stats for iterations
+ * @param {number} projectId 
+ * @param {number} iterationId 
+ * @returns 
+ */
+function getMiningStats(projectId, iterationId) {
+  return request.get(`/iterations/${iterationId}/mining_progress?project_id=${projectId}`)
 }

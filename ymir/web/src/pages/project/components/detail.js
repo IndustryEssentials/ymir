@@ -3,7 +3,7 @@ import { Col, Popover, Row, Space, Tag } from "antd"
 import { Link } from "umi"
 
 import t from "@/utils/t"
-import { getStageLabel } from '@/constants/project'
+import { getStageLabel } from '@/constants/iteration'
 
 import s from "../detail.less"
 import SampleRates from "@/components/dataset/sampleRates"

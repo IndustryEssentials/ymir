@@ -3,8 +3,9 @@ import {
   getIteration,
   createIteration,
   updateIteration,
+  getMiningStats,
 } from "@/services/iteration"
-import { Stages, transferIteration } from "@/constants/project"
+import { Stages, transferIteration } from "@/constants/iteration"
 import { updateResultState } from '@/constants/common'
 
 
@@ -82,6 +83,20 @@ export default {
           payload: iteration,
         })
         return iteration
+      }
+    },
+    *getMiningStats({ payload }, { call, put }) {
+      const { pid, id } = payload
+      const { code, result } = yield call(getMiningStats, pid, id)
+      if (code === 0) {
+        const { total_mining_ratio, class_wise_mining_ratio, negative_ratio } = result
+
+        // const iteration = transferIteration(result)
+        // yield put({
+        //   type: "UPDATE_ITERATION",
+        //   payload: iteration,
+        // })
+        // return iteration
       }
     },
     *getIterationStagesResult({ payload }, { put }) {

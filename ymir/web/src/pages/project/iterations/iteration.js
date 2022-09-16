@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from "react"
 import { Row, Col } from "antd"
 import { connect } from "dva"
 
-import { Stages, StageList } from '@/constants/project'
+import { Stages, StageList } from '@/constants/iteration'
 import { templateString } from '@/utils/string'
 import Stage from './stage'
 import s from "./iteration.less"
