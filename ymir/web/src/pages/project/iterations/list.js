@@ -14,8 +14,7 @@ function List({ project }) {
   const [list, setList] = useState([])
 
   useEffect(() => {
-    console.log('project in list:', project)
-    project?.id && getIterations({ id: project.id })
+    project?.id && getIterations({ id: project.id, more: true })
   }, [project])
 
   useEffect(() => iterations.length && setList(fetchHandle(iterations)), [iterations])
