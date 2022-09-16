@@ -24,7 +24,7 @@ export default function Error({ code, msg = '', terminated }) {
 
   const renderError = <>
     <Item label={t("task.detail.error.code")}>
-      {t(`error${code}`)}
+      {code ? t(`error${code}`) : null}
       {msg ? <span className='more' onClick={() => setVisible(!visible)}>{visible ? <ArrowUpIcon /> : <ArrowDownIcon />}</span> : null}
     </Item>
     {msg && visible ? <Item label={t('task.detail.error.desc')} style={{ lineHeight: 1.25 }}>

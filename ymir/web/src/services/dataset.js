@@ -6,8 +6,8 @@ import request from "@/utils/request"
  * @param {array[number]} id
  * @returns
  */
-export function getDataset(id) {
-  return request.get(`datasets/${id}`)
+export function getDataset(id, verbose) {
+  return request.get(`datasets/${id}`, { params: { verbose } })
 }
 
 /**

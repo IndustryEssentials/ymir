@@ -130,8 +130,8 @@ function Fusion({ allDatasets, datasetCache, ...func }) {
       }
       message.info(t('task.fusion.create.success.msg'))
       func.clearCache()
-      const group = result.dataset_group_id || ''
-      history.replace(`/home/project/${dataset.projectId}/dataset#${group}`)
+      // const group = result.dataset_group_id || ''
+      history.replace(`/home/project/${dataset.projectId}/iterations`)
     }
   }
 

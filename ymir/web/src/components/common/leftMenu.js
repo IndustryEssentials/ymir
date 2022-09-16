@@ -63,7 +63,7 @@ function LeftMenu() {
         isSuperAdmin(role) ? getItem(t('common.top.menu.permission'), '/home/permission', UserSettingsIcon,) : null,
       ]),
       { type: 'divider' },
-      getItem(<a target="_blank" href='/docs'>
+      getItem(<a target="_blank" href='/docs/'>
         <BookIcon />
         <span style={{ display: 'inline-block', marginLeft: 10 }}>{t('common.menu.docs')}</span>
       </a>, 'outer/docs'),

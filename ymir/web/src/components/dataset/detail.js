@@ -32,7 +32,7 @@ function DatasetDetail({ dataset = {} }) {
   }
 
   const renderCk = (label = 'ck', keywords = []) => keywords.length ? <Item label={label}>
-    {keywords.map(({ keyword, children }) => <Row>
+    {keywords.map(({ keyword, children }) => <Row key={keyword}>
       <Col flex={'160px'}>{keyword}</Col>
       <Col>{children.map(({ keyword, count }) => <Tag key={keyword}>{keyword}({count})</Tag>)}</Col>
     </Row>)}

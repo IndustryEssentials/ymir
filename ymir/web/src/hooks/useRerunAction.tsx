@@ -2,15 +2,16 @@ import { useHistory } from "umi"
 import t from "@/utils/t"
 import { TASKTYPES } from '@/constants/task'
 import { RefreshIcon } from "@/components/common/icons"
+import { Result } from "@/interface/common"
 
 export default function useRerunAction() {
   const history = useHistory()
 
-  const rerun = (pid, type, record) => {
+  const rerun = (pid: number, type: string, record: Result) => {
     history.push({ pathname: `/home/project/${pid}/${type}`, state: { record } })
   }
 
-  const generateRerunAction = record => {
+  const generateRerunAction = (record: Result) => {
     const maps = {
       [TASKTYPES.TRAINING]: 'train',
       [TASKTYPES.MINING]: 'mining',
