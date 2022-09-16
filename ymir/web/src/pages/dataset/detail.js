@@ -1,25 +1,28 @@
 import React, { useEffect, useRef, useState } from "react"
-import { connect } from "dva"
-import { useHistory, useParams, Link } from "umi"
+import { useHistory, useParams, Link, useSelector } from "umi"
 import { Button, Card, message, Space } from "antd"
 
 import t from "@/utils/t"
 import { TASKTYPES, getTaskTypeLabel } from "@/constants/task"
+import useFetch from '@/hooks/useFetch'
+import useRestore from "@/hooks/useRestore"
+
 import Breadcrumbs from "@/components/common/breadcrumb"
 import TaskDetail from "@/components/task/detail"
 import Detail from "@/components/dataset/detail"
-import s from "./detail.less"
 import TaskProgress from "@/components/task/progress"
 import Error from "@/components/task/error"
 import Hide from "@/components/common/hide"
-import useRestore from "@/hooks/useRestore"
+
+import s from "./detail.less"
 
 const taskTypes = ["merge", "filter", "train", "mining", "label", 'inference', 'copy']
 
-function DatasetDetail({ datasetCache, getDataset }) {
+function DatasetDetail() {
   const history = useHistory()
   const { id: pid, did: id } = useParams()
-  const [dataset, setDataset] = useState({})
+  const [dataset, getDataset, setDataset] = useFetch('dataset/getDataset', {})
+  const datasetCache = useSelector(({ dataset }) => dataset.dataset)
   const hideRef = useRef(null)
   const restoreAction = useRestore(pid)
 
@@ -35,8 +38,8 @@ function DatasetDetail({ datasetCache, getDataset }) {
     }
   }, [datasetCache])
 
-  async function fetchDataset(force) {
-    await getDataset(id, force)
+  function fetchDataset(force) {
+    getDataset({ id, verbose: true, force })
   }
 
   const hide = (version) => {
@@ -90,7 +93,7 @@ function DatasetDetail({ datasetCache, getDataset }) {
               ) : null)}
               {dataset.assetCount > 0 ? <Button type="primary" onClick={() => hide(dataset)}>
                 {t(`common.action.hide`)}
-              </Button> : null }
+              </Button> : null}
             </> :
               <Button type="primary" onClick={restore}>
                 {t("common.action.restore")}
@@ -105,21 +108,4 @@ function DatasetDetail({ datasetCache, getDataset }) {
   )
 }
 
-const props = (state) => {
-  return {
-    datasetCache: state.dataset.dataset,
-  }
-}
-
-const actions = (dispatch) => {
-  return {
-    getDataset: (id, force) => {
-      return dispatch({
-        type: "dataset/getDataset",
-        payload: { id, force },
-      })
-    },
-  }
-}
-
-export default connect(props, actions)(DatasetDetail)
+export default DatasetDetail

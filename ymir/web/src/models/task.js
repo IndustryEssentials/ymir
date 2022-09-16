@@ -46,7 +46,7 @@ export default {
     },
     *queryInferTasks({ payload }, { call, put }) {
       const params = { ...payload, type: TASKTYPES.INFERENCE, state: TASKSTATES.FINISH, limit: 1000 }
-      const result = yield put.resolve({ type: 'getTasks', payload: params})
+      const result = yield put.resolve({ type: 'getTasks', payload: params })
       if (result) {
         console.log('result:', result)
         return result.items
@@ -67,7 +67,7 @@ export default {
           ...excludeSets,
         ]
         if (ids.length) {
-          const datasets = yield put.resolve({ type: 'dataset/batchDatasets', payload: ids })
+          const datasets = yield put.resolve({ type: 'dataset/batchDatasets', payload: { pid: result?.project_id, ids } })
           const findDs = (dss) => dss.map(sid => datasets.find(ds => ds.id === sid))
           if (datasets && datasets.length) {
             result['filterSets'] = findDs(filterSets)
@@ -227,7 +227,7 @@ export default {
         }
       })
     },
-    *resetQuery({}, { put }) {
+    *resetQuery({ }, { put }) {
       yield put({
         type: 'UPDATE_QUERY',
         payload: initQuery,
