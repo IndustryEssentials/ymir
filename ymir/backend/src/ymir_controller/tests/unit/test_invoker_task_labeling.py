@@ -32,10 +32,10 @@ def mock_many(mocker):
 class TestTaskLabelingInvoker:
     def test_task_invoke(self, mocker, mock_many):
         label_req = backend_pb2.TaskReqLabeling()
-        label_req.in_class_ids[:] = [0, 1]
+        in_class_ids = [0, 1]
         label_req.labeler_accounts[:] = ["a@a.com"]
         label_req.project_name = "fake_project_name"
-        label_req.dataset_id = "id"
+        in_dataset_ids = ["id"]
         label_req.expert_instruction_url = "url"
         label_req.export_annotation = False
 
@@ -78,6 +78,8 @@ class TestTaskLabelingInvoker:
                                          user_id=user_name,
                                          repo_id=mir_repo_name,
                                          task_id=task_id,
+                                         in_dataset_ids=in_dataset_ids,
+                                         in_class_ids=in_class_ids,
                                          req_create_task=req_create_task)
         assert mock_post.call_count == 4
 
@@ -92,6 +94,8 @@ class TestTaskLabelingInvoker:
                                          user_id=user_name,
                                          repo_id=mir_repo_name,
                                          task_id=task_id,
+                                         in_dataset_ids=in_dataset_ids,
+                                         in_class_ids=in_class_ids,
                                          req_create_task=req_create_task)
         assert mock_post.call_count == 8
         expected_ret = backend_pb2.GeneralResp()

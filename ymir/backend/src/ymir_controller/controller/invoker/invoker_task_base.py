@@ -14,8 +14,9 @@ from id_definition.error_codes import CTLResponseCode
 from proto import backend_pb2
 
 
-SubTaskType = Callable[[backend_pb2.GeneralReq, UserLabels, str, Dict[str, str], str, str, str, str, Optional[str]],
-                       backend_pb2.GeneralResp]
+SubTaskType = Callable[
+    [backend_pb2.GeneralReq, UserLabels, str, Dict[str, str], str, str, str, str, Optional[str], List[str]],
+    backend_pb2.GeneralResp]
 
 
 class TaskBaseInvoker(BaseMirControllerInvoker):
@@ -176,7 +177,7 @@ class TaskBaseInvoker(BaseMirControllerInvoker):
     def task_invoke(cls, task_id: str, sandbox_root: str, repo_root: str, assets_config: Dict[str,
                                                                                               str], working_dir: str,
                     user_labels: UserLabels, request: backend_pb2.GeneralReq) -> backend_pb2.GeneralResp:
-        sub_tasks = cls.register_subtasks()
+        sub_tasks = cls.register_subtasks(request)
 
         subtask_weights = [sub_task[1] for sub_task in sub_tasks]
         cls._register_subtask_monitor(task_id=task_id,
@@ -184,7 +185,10 @@ class TaskBaseInvoker(BaseMirControllerInvoker):
                                       subtask_weights=subtask_weights,
                                       register_monitor=(not request.req_create_task.no_task_monitor))
 
-        previous_subtask_id = None
+        in_dataset_ids: List[str] = request.in_dataset_ids
+        his_task_id: Optional[str] = None
+        if in_dataset_ids:
+            his_task_id = in_dataset_ids[0]
         for subtask_idx, subtask in enumerate(sub_tasks):
             # revsersed id, to make sure the last subtask idx is 0.
             subtask_id = utils.sub_task_id(request.task_id, len(sub_tasks) - 1 - subtask_idx)
@@ -200,13 +204,15 @@ class TaskBaseInvoker(BaseMirControllerInvoker):
                 task_id,
                 subtask_id,
                 subtask_work_dir,
-                previous_subtask_id,
+                his_task_id,
+                in_dataset_ids,
             )
             if ret.code != CTLResponseCode.CTR_OK:
                 logging.info(f"subtask failed: {subtask_id}\nret: {ret}")
                 return ret
 
-            previous_subtask_id = subtask_id
+            his_task_id = subtask_id
+            in_dataset_ids = [task_id]
 
         return ret
 
@@ -214,6 +220,6 @@ class TaskBaseInvoker(BaseMirControllerInvoker):
         raise NotImplementedError
 
     @classmethod
-    def register_subtasks(cls) -> List[Tuple[SubTaskType, float]]:
+    def register_subtasks(cls, request: backend_pb2.GeneralReq) -> List[Tuple[SubTaskType, float]]:
         # register sub_tasks in executing orders.
         raise NotImplementedError
