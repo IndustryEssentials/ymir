@@ -24,6 +24,10 @@ function KeywordRates({ keywords, dataset, negative, progressWidth = 0.5 }) {
   const [colors, setColors] = useState({})
 
   useEffect(() => {
+    dataset?.id && setDid(dataset.id)
+  }, [dataset])
+
+  useEffect(() => {
     setStats({})
   }, [did, keywords])
 
@@ -64,9 +68,9 @@ function KeywordRates({ keywords, dataset, negative, progressWidth = 0.5 }) {
     }
   }
 
-  // function fetchKeywords(projectId, keywords, dataset) {
-  //   getNegativeKeywords({ projectId, keywords, dataset })
-  // }
+  function fetchKeywords(projectId, keywords, dataset) {
+    getNegativeKeywords({ projectId, keywords, dataset })
+  }
 
   function transfer({ count = {}, keywords, negative = 0, total }, colors) {
     const klist = [
@@ -93,15 +97,6 @@ function KeywordRates({ keywords, dataset, negative, progressWidth = 0.5 }) {
   function label({ count = 0, label = '', total }) {
     return `${label} ${count}/${total} ${percent(count / total)}`
   }
-//   return <div className={s.rates}>
-//   <div className={s.title}>{title}</div>
-//   {list.map(item => (
-//     <div key={item.key} className={s.rate}>
-//       <span className={s.bar} style={{ width: getWidth(item, progressWidth), background: item.color }}>&nbsp;</span>
-//       <span>{label(item)}</span>
-//     </div>
-//   ))}
-// </div>
 
   const renderList = (list = [], title = 'Ground Truth') => list.length ? <div className={s.rates}>
     <div className={s.title}>{title}</div>
