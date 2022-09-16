@@ -8,7 +8,7 @@ export const HIDDENMODULES = {
   LIVECODE: true,
 }
 
-export enum states {
+export enum ResultStates {
   READY = 0,
   VALID = 1,
   INVALID = 2,

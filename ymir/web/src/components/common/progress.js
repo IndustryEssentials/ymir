@@ -1,14 +1,14 @@
 import { Col, Progress, Row } from "antd"
 import { getLocale, Link } from "umi"
 
-import { states } from "@/constants/dataset"
+import { ResultStates } from "@/constants/common"
 import t from "@/utils/t"
 import StateTag from "../task/stateTag"
 import { calTimeLeft } from "@/utils/date"
 import { InprogressIcon } from "./icons"
 
 function RenderProgress(state, { id, progress, createTime, taskState, task = {} }, simple = false) {
-  if (states.READY === state && task?.is_terminated) {
+  if (ResultStates.READY === state && task?.is_terminated) {
     return t('task.state.terminating')
   }
   if (!taskState) {
@@ -16,7 +16,7 @@ function RenderProgress(state, { id, progress, createTime, taskState, task = {} 
   }
   const percent = Math.floor(progress * 100)
   const stateTag = <StateTag mode={simple ? 'icon' : 'text'} state={state} />
-  return state === states.READY ? (
+  return state === ResultStates.READY ? (
     <Row gutter={10} style={{ alignItems: 'center', padding: '0 7px', textAlign: 'left' }}>
       <Col>
         {stateTag}

@@ -3,9 +3,8 @@ import {
   getAssetsOfDataset, getAsset, batchAct, delDataset, delDatasetGroup, createDataset, updateDataset, getInternalDataset,
   getNegativeKeywords,
 } from "@/services/dataset"
-import { getStats } from "../services/common"
-import { transferDatasetGroup, transferDataset, transferDatasetAnalysis, states, transferAsset, transferAnnotationsCount } from '@/constants/dataset'
-import { actions, updateResultState } from '@/constants/common'
+import { transferDatasetGroup, transferDataset, transferDatasetAnalysis, transferAsset, transferAnnotationsCount } from '@/constants/dataset'
+import { actions, updateResultState, ResultStates } from '@/constants/common'
 import { deepClone } from '@/utils/object'
 import { checkDuplication } from "../services/dataset"
 
@@ -122,7 +121,7 @@ export default {
           return dssCache
         }
       }
-      const dss = yield put.resolve({ type: 'queryDatasets', payload: { project_id: pid, state: states.VALID, limit: 10000 } })
+      const dss = yield put.resolve({ type: 'queryDatasets', payload: { project_id: pid, state: ResultStates.VALID, limit: 10000 } })
       if (dss) {
         yield put({
           type: "UPDATE_ALL_DATASETS",
@@ -234,7 +233,9 @@ export default {
     },
     *updateAllDatasets({ payload: tasks = {} }, { put, select }) {
       const all = yield select(state => state.dataset.allDatasets)
-      const newDatasets = Object.values(tasks).map(task => ({ id: task?.result_dataset?.id, needReload: true }))
+      const newDatasets = Object.values(tasks)
+        .filter(task => task.result_state === ResultStates.VALID)
+        .map(task => ({ id: task?.result_dataset?.id, needReload: true }))
       const pid = yield select(({ project }) => project.current?.id)
       if (newDatasets.length) {
         yield put({

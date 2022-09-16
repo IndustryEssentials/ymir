@@ -40,9 +40,10 @@ export default {
           let datasets = []
           let models = []
           if (datasetIds?.length) {
+            console.log('datasetIds:', datasetIds)
             datasets = yield put.resolve({
               type: 'dataset/batchDatasets',
-              payload: datasetIds,
+              payload: { pid: id, ids: datasetIds },
             })
           }
           if (modelIds?.length) {
@@ -91,10 +92,11 @@ export default {
       const modelId = iteration.model
       let datasets = []
       let model = []
+      console.log('datasetIds:', datasetIds, payload)
       if (datasetIds?.length) {
         datasets = yield put.resolve({
           type: 'dataset/batchDatasets',
-          payload: datasetIds,
+          payload: { pid: iteration.projectId, ids: datasetIds },
         })
       }
       if (modelId) {

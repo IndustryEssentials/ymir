@@ -5,7 +5,7 @@ import t from "@/utils/t"
 import { percent, isNumber } from '@/utils/number'
 import useFetch from '@/hooks/useFetch'
 
-import KeywordRates from "@/components/dataset/keywordRates"
+import KeywordRates from "@/components/dataset/sampleRates"
 
 import s from "./index.less"
 
