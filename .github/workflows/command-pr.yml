@@ -30,7 +30,6 @@ jobs:
         key: ${{ env.pythonLocation }}-${{ hashFiles('ymir/command/requirements.txt', 'ymir/command/requirements-ci.txt') }}
     - name: Install dependencies
       run: |
-        time sudo apt install -y git-lfs
         time pip install -r requirements.txt
         time pip install -r requirements-ci.txt
       working-directory: ymir/command
@@ -44,7 +43,6 @@ jobs:
       working-directory: ymir/command
     - name: Test with pytest
       run: |
-        git lfs install
         git config --global user.name 'CI-TEST'
         git config --global user.email 'ci-test@ymir-team'
         time python tests/__main__.py

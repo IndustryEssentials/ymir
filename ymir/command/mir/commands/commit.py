@@ -22,9 +22,10 @@ class CmdCommit(base.BaseCommand):
             return MirCode.RC_CMD_INVALID_MIR_REPO
 
         repo_git = scm.Scm(root_dir=mir_root, scm_executable='git')
-        if not os.path.isfile(os.path.join(mir_root, '.gitattributes')):
-            repo_git.lfs('install')
-            repo_git.lfs(['track', '*.mir'])
+        git_attr_path = os.path.join(mir_root, '.gitattributes')
+        if not os.path.isfile(git_attr_path):
+            with open(git_attr_path, 'w') as f:
+                f.write('*.mir binary')
         repo_git.add('.')
         output_str = repo_git.commit(["-m", msg])
         logging.info("\n%s" % output_str)
