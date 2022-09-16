@@ -104,7 +104,8 @@ function Matrics({ pid, project }) {
       const same = allCks.filter(k => k === keyword)
       return same.length === ckDatasets.length
     })
-    setCKs(cks)
+    const uniqueCks = [...new Set(cks)]
+    setCKs(uniqueCks)
   }, [ckDatasets])
 
   const onFinish = async (values) => {
