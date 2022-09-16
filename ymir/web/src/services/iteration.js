@@ -96,6 +96,6 @@ export function updateIteration(
  * @param {number} iterationId 
  * @returns 
  */
-function getMiningStats(projectId, iterationId) {
+export function getMiningStats(projectId, iterationId) {
   return request.get(`/iterations/${iterationId}/mining_progress?project_id=${projectId}`)
 }

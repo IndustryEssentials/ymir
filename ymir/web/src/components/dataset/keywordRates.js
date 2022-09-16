@@ -10,13 +10,13 @@ function randomColor() {
 
 const getWidth = ({ count = 0, max }, progressWidth) => percent(count * progressWidth / max)
 
+// type stats = { count = {}, keywords, negative = 0, total }
 function KeywordRates({ title = '', stats, progressWidth = 0.5 }) {
   const [list, setList] = useState([])
   const [keywords, setKws] = useState([])
   const [colors, setColors] = useState({})
 
   useEffect(() => {
-    console.log('stats:', stats)
     const kws = stats?.keywords || []
     setKws(kws)
   }, [stats])

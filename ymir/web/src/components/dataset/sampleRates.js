@@ -2,7 +2,6 @@ import { useState, useEffect, useCallback } from "react"
 import { useParams } from 'umi'
 import t from "@/utils/t"
 
-import s from "./keywordRates.less"
 import useFetch from '@/hooks/useFetch'
 import { Button } from "antd"
 import KeywordRates from "./keywordRates"
