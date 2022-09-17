@@ -53,7 +53,7 @@ def _copy_user_space(src_user_dir: str, dst_user_dir: str, repo_ids: Set[str]) -
 
 
 def main() -> int:
-    if os.environ['YMIR_VERSION'] != YMIR_VERSION:
+    if os.environ['EXPECTED_YMIR_VERSION'] != YMIR_VERSION:
         raise update_errors.EnvVersionNotMatch()
     sandbox_info = SandboxInfo(root=os.environ['BACKEND_SANDBOX_ROOT'])
     if not sandbox_info.user_to_repos:
