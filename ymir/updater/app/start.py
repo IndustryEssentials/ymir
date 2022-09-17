@@ -3,7 +3,7 @@ import os
 import shutil
 import sys
 from types import ModuleType
-from typing import Any, Callable, Dict, Set, Tuple
+from typing import Callable, Dict, Set, Tuple
 
 import errors as update_errors
 from common_utils.sandbox import SandboxInfo

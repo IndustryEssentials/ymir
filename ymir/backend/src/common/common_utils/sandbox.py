@@ -6,9 +6,10 @@ from typing import List, Dict, Set
 import yaml
 
 from id_definition.error_codes import UpdateErrorCode
+from id_definition.task_id import IDProto
 
-_USER_ID_PATTERN = r'\d{4}'
-_REPO_ID_PATTERN = r'\d{6}'
+_USER_ID_PATTERN = f"\\d{{{IDProto.ID_LEN_USER_ID}}}"  # r'\d{4}'
+_REPO_ID_PATTERN = f"\\d{{{IDProto.ID_LEN_REPO_ID}}}"  # r'\d{6}'
 _DEFAULT_YMIR_SRC_VERSION = '1.1.0'
 
 
