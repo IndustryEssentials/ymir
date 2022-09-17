@@ -7,10 +7,10 @@ import yaml
 
 from id_definition.error_codes import UpdateErrorCode
 from id_definition.task_id import IDProto
+from mir import version
 
 _USER_ID_PATTERN = f"\\d{{{IDProto.ID_LEN_USER_ID}}}"  # r'\d{4}'
 _REPO_ID_PATTERN = f"\\d{{{IDProto.ID_LEN_REPO_ID}}}"  # r'\d{6}'
-_DEFAULT_YMIR_SRC_VERSION = '1.1.0'
 
 
 class SandboxError(Exception):
@@ -60,7 +60,7 @@ def detect_sandbox_src_ver(sandbox_root: str) -> str:
             raise SandboxError(error_code=UpdateErrorCode.INVALID_USER_LABEL_FILE,
                                error_message=f"invalid label file: {user_label_file}") from e
 
-        ver_to_users[user_label_dict.get('ymir_version', _DEFAULT_YMIR_SRC_VERSION)].append(user_id)
+        ver_to_users[user_label_dict.get('ymir_version', version.DEFAULT_YMIR_SRC_VERSION)].append(user_id)
 
     if len(ver_to_users) != 1:
         raise SandboxError(error_code=UpdateErrorCode.INVALID_USER_SPACE_VERSIONS,

@@ -12,9 +12,12 @@ from mir.version import YMIR_VERSION
 import update_1_1_0_to_1_3_0.step_updater
 
 
-_UPDATE_STEPS: Dict[Tuple[str, str], Tuple[ModuleType, ...]] = {
-    ('1.1.0', '1.3.0'): (update_1_1_0_to_1_3_0.step_updater, ),
-}
+
+def _get_update_steps(src_ver: str) -> Tuple[ModuleType, ...]:
+    _UPDATE_STEPS: Dict[Tuple[str, str], Tuple[ModuleType, ...]] = {
+        ('1.1.0', '1.3.0'): (update_1_1_0_to_1_3_0.step_updater, ),
+    }
+    return _UPDATE_STEPS.get((src_ver, YMIR_VERSION), None)
 
 
 def _exc_update_steps(update_steps: Tuple[ModuleType, ...], sandbox_root: str) -> None:
@@ -57,15 +60,10 @@ def _copy_user_space(src_user_dir: str, dst_user_dir: str, repo_ids: Set[str]) -
 def main() -> int:
     if os.environ['EXPECTED_YMIR_VERSION'] != YMIR_VERSION:
         raise update_errors.EnvVersionNotMatch()
-    
-    sandbox_root = os.environ['BACKEND_SANDBOX_ROOT']
-    user_to_repos = sandbox.detect_users_and_repos(sandbox_root)
-    if not user_to_repos:
-        logging.info('no need to update: found no users')
-        return 0
 
+    sandbox_root = os.environ['BACKEND_SANDBOX_ROOT']
     src_ver = sandbox.detect_sandbox_src_ver(sandbox_root)
-    update_steps = _UPDATE_STEPS.get((src_ver, YMIR_VERSION), None)
+    update_steps = _get_update_steps(src_ver)
     if not update_steps:
         raise update_errors.SandboxVersionNotSupported(sandbox_version=src_ver)
 
