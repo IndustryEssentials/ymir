@@ -172,7 +172,7 @@ class APIErrorCode(IntEnum):
     VISUALIZATION_NOT_FOUND = 112201
 
 
-class UpdateErrorCode(IntEnum):
+class UpdaterErrorCode(IntEnum):
     SANDBOX_STATE_UNKNOWN = 170001
     INVALID_USER_LABEL_FILE = 170002
     INVALID_USER_SPACE_VERSIONS = 170003

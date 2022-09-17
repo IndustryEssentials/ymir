@@ -5,7 +5,7 @@ from typing import List, Dict, Set
 
 import yaml
 
-from id_definition.error_codes import UpdateErrorCode
+from id_definition.error_codes import UpdaterErrorCode
 from id_definition.task_id import IDProto
 from mir import version
 
@@ -29,6 +29,7 @@ def detect_users_and_repos(sandbox_root: str) -> Dict[str, Set[str]]:
 
     Args:
         sandbox_root (str): root of this sandbox
+
     Returns:
         Dict[str, List[str]]: key: user id, value: repo ids
     """
@@ -48,6 +49,16 @@ def detect_users_and_repos(sandbox_root: str) -> Dict[str, Set[str]]:
 def detect_sandbox_src_ver(sandbox_root: str) -> str:
     """
     detect user space versions in this sandbox
+
+    Args:
+        sandbox_root (str): root of this sandbox
+
+    Returns:
+        str: sandbox version
+
+    Raises:
+        SandboxError if labels.yaml not found, or can not be parsed as yaml;
+        found no user space version or multiple user space versions.
     """
     user_to_repos = detect_users_and_repos(sandbox_root)
     ver_to_users: Dict[str, List[str]] = defaultdict(list)
@@ -57,13 +68,13 @@ def detect_sandbox_src_ver(sandbox_root: str) -> str:
             with open(user_label_file, 'r') as f:
                 user_label_dict = yaml.safe_load(f)
         except (FileNotFoundError, yaml.YAMLError) as e:
-            raise SandboxError(error_code=UpdateErrorCode.INVALID_USER_LABEL_FILE,
+            raise SandboxError(error_code=UpdaterErrorCode.INVALID_USER_LABEL_FILE,
                                error_message=f"invalid label file: {user_label_file}") from e
 
         ver_to_users[user_label_dict.get('ymir_version', version.DEFAULT_YMIR_SRC_VERSION)].append(user_id)
 
     if len(ver_to_users) != 1:
-        raise SandboxError(error_code=UpdateErrorCode.INVALID_USER_SPACE_VERSIONS,
+        raise SandboxError(error_code=UpdaterErrorCode.INVALID_USER_SPACE_VERSIONS,
                            error_message=f"invalid user space versions: {ver_to_users}")
 
     return list(ver_to_users.keys())[0]
