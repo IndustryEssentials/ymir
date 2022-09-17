@@ -40,7 +40,7 @@ def trigger_ymir_export(repo_root: str, dataset_id: str, input_asset_dir: str, m
         pred_dir = input_asset_dir
 
     TaskExportingInvoker.exporting_cmd(repo_root=repo_root,
-                                       dataset_id_with_tid=f"{dataset_id}@{dataset_id}",
+                                       in_dataset_id=dataset_id,
                                        annotation_format=format_str,
                                        asset_dir=input_asset_dir,
                                        pred_dir=pred_dir,

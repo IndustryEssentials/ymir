@@ -1,11 +1,11 @@
 from concurrent.futures import ThreadPoolExecutor
 from functools import partial
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Tuple
 
 import requests
 from requests.exceptions import ConnectionError, HTTPError, Timeout
 
-from controller.invoker.invoker_task_base import TaskBaseInvoker
+from controller.invoker.invoker_task_base import SubTaskType, TaskBaseInvoker
 from controller.invoker.invoker_task_exporting import TaskExportingInvoker
 from controller.utils import utils
 from proto import backend_pb2
@@ -16,16 +16,20 @@ from controller.config.fiftyone_task import FIFTYONE_HOST_URL, FIFTYONE_TIMEOUT,
 
 class TaskVisualizationInvoker(TaskBaseInvoker):
     def task_pre_invoke(self, request: backend_pb2.GeneralReq) -> backend_pb2.GeneralResp:
+        if not request.in_dataset_ids:
+            return utils.make_general_response(CTLResponseCode.ARG_VALIDATION_FAILED, "invalid_data_ids")
+
         return utils.make_general_response(CTLResponseCode.CTR_OK, "")
 
     @classmethod
-    def subtask_weights(cls) -> List[float]:
-        return [1.0]
+    def register_subtasks(cls, request: backend_pb2.GeneralReq) -> List[Tuple[SubTaskType, float]]:
+        return [(cls.subtask_invoke_visualization, 1.0)]
 
     @classmethod
-    def subtask_invoke_0(cls, request: backend_pb2.GeneralReq, user_labels: UserLabels, sandbox_root: str,
-                         assets_config: Dict[str, str], repo_root: str, master_task_id: str, subtask_id: str,
-                         subtask_workdir: str, previous_subtask_id: Optional[str]) -> backend_pb2.GeneralResp:
+    def subtask_invoke_visualization(cls, request: backend_pb2.GeneralReq, user_labels: UserLabels, sandbox_root: str,
+                                     assets_config: Dict[str, str], repo_root: str, master_task_id: str,
+                                     subtask_id: str, subtask_workdir: str, his_task_id: Optional[str],
+                                     in_dataset_ids: List[str]) -> backend_pb2.GeneralResp:
         # export as PASCAL_VOC format
         visualization = request.req_create_task.visualization
 
@@ -38,7 +42,7 @@ class TaskVisualizationInvoker(TaskBaseInvoker):
         f_export = partial(cls.evaluate_and_export_single_dataset, repo_root, subtask_id, subtask_workdir,
                            media_location, format_str, iou_thr, conf_thr)
         with ThreadPoolExecutor(FIFTYONE_CONCURRENT_LIMIT) as executor:
-            res = executor.map(f_export, visualization.in_dataset_ids)
+            res = executor.map(f_export, request.in_dataset_ids)
         dataset_export_dirs = list(res)
 
         # create fiftyone task

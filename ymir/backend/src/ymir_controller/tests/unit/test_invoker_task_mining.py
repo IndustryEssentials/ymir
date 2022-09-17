@@ -90,8 +90,8 @@ class TestInvokerTaskMining(unittest.TestCase):
         top_k, model_hash, model_stage = 300, 'abc', 'first_stage'
         mine_task_req = backend_pb2.TaskReqMining()
         mine_task_req.top_k = top_k
-        mine_task_req.in_dataset_ids[:] = [self._guest_id1, self._guest_id2]
-        mine_task_req.ex_dataset_ids[:] = [self._guest_id3]
+        in_dataset_ids = [self._guest_id1, self._guest_id2]
+        ex_dataset_ids = [self._guest_id3]
         mine_task_req.generate_annotations = False
 
         req_create_task = backend_pb2.ReqCreateTask()
@@ -135,6 +135,8 @@ class TestInvokerTaskMining(unittest.TestCase):
             singleton_op='mining_image',
             model_hash=model_hash,
             model_stage=model_stage,
+            in_dataset_ids=in_dataset_ids,
+            ex_dataset_ids=ex_dataset_ids,
             docker_image_config=json.dumps(mining_config),
         )
         print(MessageToDict(response))

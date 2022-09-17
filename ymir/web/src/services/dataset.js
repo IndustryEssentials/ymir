@@ -65,8 +65,21 @@ export function getDatasetGroups(project_id, { name, offset = 0, limit = 10 }) {
   return request.get("dataset_groups/", { params: { project_id, name, offset, limit } })
 }
 
-export function batchDatasets(ids) {
-  return request.get('datasets/batch', { params: { ids: ids.toString() } })
+/**
+ * batch getting dataset
+ * @param {array<number>} ids dataset ids
+ * @param {number} pid project id
+ * @param {boolean} ck need ck
+ * @returns 
+ */
+export function batchDatasets(pid, ids = [], ck) {
+  return request.get('datasets/batch', {
+    params: {
+      project_id: pid,
+      ids: ids.toString(), 
+      ck,
+    }
+  })
 }
 
 /**
@@ -152,7 +165,7 @@ export function analysis(projectId, datasets) {
     params: {
       project_id: projectId,
       ids: datasets.toString(),
-      verbose: true,
+      hist: true,
     }
   })
 }

@@ -25,7 +25,6 @@ const KeywordSelector = ({ value, onChange, dataset = {}, cks, tags }) => {
     if (!dataset.id) {
       return
     }
-    getCK({ pid: dataset.projectId, ids: [dataset.id] })
     generateKeywords(initKeywords[0].value, dataset.keywords.map(keyword => ({ keyword })))
   }, [dataset])
 
