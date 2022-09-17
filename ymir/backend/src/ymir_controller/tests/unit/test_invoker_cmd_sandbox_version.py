@@ -103,4 +103,4 @@ class TestCmdSandboxVersion(unittest.TestCase):
             make_invoker_cmd_call(invoker=RequestTypeToInvoker[backend_pb2.SANDBOX_VERSION],
                                   sandbox_root=self._sandbox_c_root,
                                   req_type=backend_pb2.SANDBOX_VERSION)
-            self.assertEqual(UpdateErrorCode.MULTIPLE_USER_SPACE_VERSIONS, e.error_code)
+            self.assertEqual(UpdateErrorCode.INVALID_USER_SPACE_VERSIONS, e.error_code)

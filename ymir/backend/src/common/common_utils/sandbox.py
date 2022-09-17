@@ -38,12 +38,9 @@ def detect_users_and_repos(sandbox_root: str) -> Dict[str, Set[str]]:
         if not match_result:
             continue
         user_dir = os.path.join(sandbox_root, user_id)
-        if not os.path.isdir(user_dir):
-            continue
-
         user_to_repos[user_id].update([
             repo_id for repo_id in os.listdir(user_dir)
-            if re.match(_REPO_ID_PATTERN, repo_id) and os.path.isdir(os.path.join(user_dir, repo_id))
+            if re.match(_REPO_ID_PATTERN, repo_id) and os.path.isdir(os.path.join(user_dir, repo_id, '.git'))
         ])
     return user_to_repos
 
@@ -65,8 +62,8 @@ def detect_sandbox_src_ver(sandbox_root: str) -> str:
 
         ver_to_users[user_label_dict.get('ymir_version', _DEFAULT_YMIR_SRC_VERSION)].append(user_id)
 
-    if len(ver_to_users) > 1:
-        raise SandboxError(error_code=UpdateErrorCode.MULTIPLE_USER_SPACE_VERSIONS,
-                           error_message=f"multiple user space versions: {ver_to_users}")
+    if len(ver_to_users) != 1:
+        raise SandboxError(error_code=UpdateErrorCode.INVALID_USER_SPACE_VERSIONS,
+                           error_message=f"invalid user space versions: {ver_to_users}")
 
-    return list(ver_to_users.keys())[0] if ver_to_users else _DEFAULT_YMIR_SRC_VERSION
+    return list(ver_to_users.keys())[0]
