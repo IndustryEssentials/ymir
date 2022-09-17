@@ -1,2 +1,2 @@
 # Package version
-__version__ = '1.2.1'
+YMIR_VERSION = '1.3.0'

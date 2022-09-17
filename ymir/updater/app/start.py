@@ -7,7 +7,7 @@ from typing import Any, Callable, Dict, Set, Tuple
 
 import errors as update_errors
 from common_utils.sandbox import SandboxInfo
-from common_utils.version import YMIR_VERSION
+from mir.version import YMIR_VERSION
 
 import update_1_1_0_to_1_3_0.step_updater
 
