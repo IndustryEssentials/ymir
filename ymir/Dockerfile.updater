@@ -10,9 +10,9 @@ ARG ymir_130_dst=/app/ymir_1_3_0/mir/protos
 RUN mkdir -p ${ymir_130_dst} && wget ${ymir_130_src}/ymir/command/mir/protos/mir_command_pb2.py -P ${ymir_130_dst}
 
 # ymir backend components
-COPY ./backend/src/common/common_utils/version.py /app/common_utils/version.py
 COPY ./backend/src/common/common_utils/sandbox.py /app/common_utils/sandbox.py
 COPY ./backend/src/common/id_definition/error_codes.py /app/id_definition/error_codes.py
+COPY ./command/mir/version.py /app/mir/version.py
 
 # updater app
 COPY ./updater/app /app
