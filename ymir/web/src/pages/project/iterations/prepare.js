@@ -11,7 +11,7 @@ import ModelSelect from '@/components/form/modelSelect'
 import s from "./iteration.less"
 import { YesIcon, LoaderIcon } from "@/components/common/icons"
 
-const matchKeywords = (dataset, project) => dataset.keywords.some(kw => project.keywords.includes(kw))
+const matchKeywords = (dataset, project) => dataset.keywords.some(kw => project.keywords?.includes(kw))
 
 const stages = [
   { field: 'candidateTrainSet', option: true, label: 'project.prepare.trainset', tip: 'project.add.trainset.tip', filter: matchKeywords, },
@@ -27,7 +27,8 @@ const SettingsSelection = (Select) => {
   return Selection
 }
 
-const Stage = ({ pid, value, stage, project = {} }) => {
+const Stage = ({ pid, stage, project = {} }) => {
+  const [value, setValue] = useState(null)
   const [valid, setValid] = useState(false)
   const Selection = useMemo(() => SettingsSelection(stage.type ? ModelSelect : DatasetSelect), [stage.type])
   // const [newProject, updateProject] = useUpdateProject(pid)
@@ -36,6 +37,12 @@ const Stage = ({ pid, value, stage, project = {} }) => {
     setValid(value)
   }, [value])
 
+  useEffect(() => {
+    const value = getAttrFromProject(stage.field, project)
+    console.log('test value:', value, stage.field, project)
+    setValue(value)
+  }, [stage, project])
+
   const renderIcon = () => {
     return valid ? <YesIcon /> : <LoaderIcon />
   }
@@ -43,13 +50,11 @@ const Stage = ({ pid, value, stage, project = {} }) => {
     return valid ? t('project.stage.state.done') : t('project.stage.state.waiting')
   }
 
-
   const filters = datasets => {
-    const fields = stages.filter(({ type, field }) => !type && stage.field !== field)
-      .map(({ field }) => field)
+    const fields = stages.filter(({ type, field }) => !type && stage.field !== field).map(({ field }) => field)
     const ids = fields.map(field => project[field]?.id || project[field])
-
-    return datasets.filter(dataset => ![...ids, ...project.testingSets].includes(dataset.id) && (!stage.filter || stage.filter(dataset, project)))
+    const notTestingSet = (did) => ![...ids, ...(project.testingSets || [])].includes(did)
+    return datasets.filter(dataset => notTestingSet(dataset.id) && (!stage.filter || stage.filter(dataset, project)))
   }
 
   return <Row wrap={false}>
@@ -58,18 +63,19 @@ const Stage = ({ pid, value, stage, project = {} }) => {
       <div className={s.state}>{renderState()}</div>
     </Col>
     <Col flex={1}>
-      <Form.Item name={stage.field} label={t(stage.label)}
-        tooltip={t(stage.tip)} initialValue={value || null}
+      {/* <Form.Item name={stage.field} label={t(stage.label)}
+        tooltip={t(stage.tip)}
         rules={[{ required: !stage.option }]}
-      >
-        <Selection pid={pid} changeByUser filters={filters} allowClear={!!stage.option} />
-      </Form.Item>
+      > */}
+        <Selection value={value} pid={pid} changeByUser filters={filters} allowClear={!!stage.option} />
+      {/* </Form.Item> */}
     </Col>
   </Row>
 }
 
 function getAttrFromProject(field, project = {}) {
   const attr = project[field]
+  console.log('field, project:', field, project, attr)
   return attr?.id ? attr.id : attr
 }
 
@@ -81,6 +87,7 @@ function Prepare({ project = {}, fresh = () => { }, ...func }) {
   const [mergeResult, merge] = useFetch('task/merge')
 
   useEffect(() => {
+    console.log('test project in prepare:', project)
     project.id && setId(project.id)
     project.id && updatePrepareStatus()
   }, [project])
@@ -126,13 +133,14 @@ function Prepare({ project = {}, fresh = () => { }, ...func }) {
   function mergeTrainSet() {
     const params = {
       projectId: id,
-      dataset: project.trainSetVersion,
-      includes: [project.candidateTrainSet]
+      group: project.trainSet.id,
+      datasets: [project.candidateTrainSet, project.trainSetVersion],
     }
     merge(params)
   }
 
   function updatePrepareStatus() {
+    console.log('stages:', stages)
     const fields = stages.filter(stage => !stage.option).map(stage => stage.field)
     const valid = fields.every(field => project[field]?.id || project[field])
     setValidPrepare(valid)

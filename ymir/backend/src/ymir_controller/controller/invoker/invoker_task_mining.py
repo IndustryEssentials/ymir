@@ -12,15 +12,15 @@ from proto import backend_pb2
 
 class TaskMiningInvoker(TaskBaseInvoker):
     def task_pre_invoke(self, request: backend_pb2.GeneralReq) -> backend_pb2.GeneralResp:
+        if not request.in_dataset_ids:
+            return utils.make_general_response(CTLResponseCode.ARG_VALIDATION_FAILED, "invalid_data_ids")
+
         mining_request = request.req_create_task.mining
         if mining_request.top_k < 0:
             return utils.make_general_response(CTLResponseCode.ARG_VALIDATION_FAILED,
-                                               "invalid topk: {}".format(mining_request.top_k))
+                                               f"invalid topk: {mining_request.top_k}")
         if not request.model_hash or not request.model_stage:
             return utils.make_general_response(CTLResponseCode.ARG_VALIDATION_FAILED, "invalid model_hash")
-
-        if not mining_request.in_dataset_ids:
-            return utils.make_general_response(CTLResponseCode.ARG_VALIDATION_FAILED, "invalid_data_ids")
 
         # store executor config in task_0 work_dir
         subtask_work_dir_0 = self.subtask_work_dir(self._work_dir, utils.sub_task_id(self._task_id, 0))
@@ -38,14 +38,19 @@ class TaskMiningInvoker(TaskBaseInvoker):
         return utils.make_general_response(CTLResponseCode.CTR_OK, "")
 
     @classmethod
-    def register_subtasks(cls) -> List[Tuple[SubTaskType, float]]:
-        return [(cls.subtask_invoke_merge, 0), (cls.subtask_invoke_mining, 1.0)]
+    def register_subtasks(cls, request: backend_pb2.GeneralReq) -> List[Tuple[SubTaskType, float]]:
+        subtasks_queue: List[Tuple[SubTaskType, float]] = []
+        if len(request.in_dataset_ids) > 1 or request.ex_dataset_ids:
+            subtasks_queue.append((cls.subtask_invoke_merge, 0))
+        subtasks_queue.append((cls.subtask_invoke_mining, 1.0))
+
+        return subtasks_queue
 
     @classmethod
     def subtask_invoke_merge(ccls, request: backend_pb2.GeneralReq, user_labels: UserLabels, sandbox_root: str,
                              assets_config: Dict[str, str], repo_root: str, master_task_id: str, subtask_id: str,
-                             subtask_workdir: str, previous_subtask_id: Optional[str]) -> backend_pb2.GeneralResp:
-        mining_request = request.req_create_task.mining
+                             subtask_workdir: str, his_task_id: Optional[str],
+                             in_dataset_ids: List[str]) -> backend_pb2.GeneralResp:
         merge_response = invoker_call.make_invoker_cmd_call(
             invoker=MergeInvoker,
             sandbox_root=sandbox_root,
@@ -53,10 +58,10 @@ class TaskMiningInvoker(TaskBaseInvoker):
             user_id=request.user_id,
             repo_id=request.repo_id,
             task_id=subtask_id,
-            his_task_id=mining_request.in_dataset_ids[0],
+            his_task_id=his_task_id,
             dst_dataset_id=master_task_id,
-            in_dataset_ids=mining_request.in_dataset_ids,
-            ex_dataset_ids=mining_request.ex_dataset_ids,
+            in_dataset_ids=in_dataset_ids,
+            ex_dataset_ids=request.ex_dataset_ids,
             merge_strategy=request.merge_strategy,
             work_dir=subtask_workdir,
         )
@@ -65,9 +70,14 @@ class TaskMiningInvoker(TaskBaseInvoker):
     @classmethod
     def subtask_invoke_mining(cls, request: backend_pb2.GeneralReq, user_labels: UserLabels, sandbox_root: str,
                               assets_config: Dict[str, str], repo_root: str, master_task_id: str, subtask_id: str,
-                              subtask_workdir: str, previous_subtask_id: Optional[str]) -> backend_pb2.GeneralResp:
-        if not previous_subtask_id:
+                              subtask_workdir: str, his_task_id: Optional[str],
+                              in_dataset_ids: List[str]) -> backend_pb2.GeneralResp:
+        if not his_task_id:
             raise MirCtrError(CTLResponseCode.INVOKER_GENERAL_ERROR, "empty previous_subtask_id in subtask_mining")
+
+        if len(in_dataset_ids) != 1:
+            return utils.make_general_response(code=CTLResponseCode.ARG_VALIDATION_FAILED,
+                                               message=f"Invalid single in_dataset_ids {in_dataset_ids}")
 
         mining_request = request.req_create_task.mining
         executant_name = request.task_id
@@ -87,8 +97,8 @@ class TaskMiningInvoker(TaskBaseInvoker):
                                          top_k=mining_request.top_k,
                                          model_hash=request.model_hash,
                                          model_stage=request.model_stage,
-                                         in_dataset_id=master_task_id,
-                                         his_task_id=previous_subtask_id,
+                                         in_dataset_id=in_dataset_ids[0],
+                                         his_task_id=his_task_id,
                                          executor=mining_image,
                                          executant_name=executant_name,
                                          generate_annotations=mining_request.generate_annotations)

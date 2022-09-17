@@ -1,9 +1,9 @@
 version: "3.3"
 services:
   updater:
-    image: ymir-updater:test
+    image: industryessentials/ymir-updater:1.3.0
     env_file:
-      - .env.mine
+      - .env
     volumes:
       - "${BACKEND_SANDBOX_ROOT}:${BACKEND_SANDBOX_ROOT}"
       - "${YMIR_PATH}/ymir-data/logs:/app_logs"

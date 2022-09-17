@@ -17,7 +17,7 @@ from app.api.errors.errors import (
 from app.config import settings
 from app.utils import security
 from app.utils.email import send_reset_password_email
-from common_utils.version import YMIR_VERSION
+from mir.version import YMIR_VERSION
 
 router = APIRouter()
 

@@ -4,7 +4,6 @@ import { Button, Col, Descriptions, Row, Tag } from "antd"
 
 import t from "@/utils/t"
 import { states } from '@/constants/common'
-import useFetch from '@/hooks/useFetch'
 import styles from "./detail.less"
 import { SearchIcon } from "@/components/common/icons"
 import { DescPop } from "../common/descPop"
@@ -14,12 +13,7 @@ const labelStyle = { width: '15%', paddingRight: '20px', justifyContent: 'flex-e
 
 function DatasetDetail({ dataset = {} }) {
   const history = useHistory()
-  const [[{ cks, tags, inferClass }], getCK] = useFetch('dataset/getCK', [{ cks: {}, tags: {} }])
-
-  useEffect(() => {
-    dataset.id && dataset.state === states.VALID && getCK({ pid: dataset.projectId, ids: [dataset.id] })
-  }, [dataset])
-
+  const { cks = {}, tags = {}, inferClass } = dataset
 
   const renderKeywords = (anno, label = 'ground truth') => {
     if (!anno) {
@@ -32,7 +26,7 @@ function DatasetDetail({ dataset = {} }) {
   }
 
   const renderCk = (label = 'ck', keywords = []) => keywords.length ? <Item label={label}>
-    {keywords.map(({ keyword, children }) => <Row>
+    {keywords.map(({ keyword, children }) => <Row key={keyword}>
       <Col flex={'160px'}>{keyword}</Col>
       <Col>{children.map(({ keyword, count }) => <Tag key={keyword}>{keyword}({count})</Tag>)}</Col>
     </Row>)}

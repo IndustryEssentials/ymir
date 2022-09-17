@@ -11,12 +11,11 @@ const initKeywords = [
   { value: 'tags', list: [], }
 ]
 
-const KeywordSelector = ({ value, onChange, dataset = {} }) => {
+const KeywordSelector = ({ value, onChange, dataset = {}, cks, tags }) => {
   const { id: pid } = useParams()
   const [keywords, setKeywords] = useState(initKeywords)
   const [currentType, setCurrentType] = useState(initKeywords[0].value)
   const [selected, setSelected] = useState([])
-  const [[{ cks, tags }], getCK] = useFetch('dataset/getCK', [{ cks: {}, tags: {} }])
 
   useEffect(() => {
     !value?.length && setSelected([])
@@ -26,16 +25,15 @@ const KeywordSelector = ({ value, onChange, dataset = {} }) => {
     if (!dataset.id) {
       return
     }
-    getCK({ pid: dataset.projectId, ids: [dataset.id] })
     generateKeywords(initKeywords[0].value, dataset.keywords.map(keyword => ({ keyword })))
   }, [dataset])
 
   useEffect(() => {
-    generateKeywords(initKeywords[1].value, cks.keywords)
-  }, [cks, tags])
+    generateKeywords(initKeywords[1].value, cks?.keywords)
+  }, [cks])
 
   useEffect(() => {
-    generateKeywords(initKeywords[2].value, tags.keywords)
+    generateKeywords(initKeywords[2].value, tags?.keywords)
   }, [tags])
 
   useEffect(() => {

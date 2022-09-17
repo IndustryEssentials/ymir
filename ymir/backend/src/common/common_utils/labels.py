@@ -8,7 +8,7 @@ from google.protobuf import json_format
 from pydantic import BaseModel, root_validator, validator
 import yaml
 
-from common_utils.version import YMIR_VERSION
+from mir.version import YMIR_VERSION
 from proto import backend_pb2
 
 EXPECTED_FILE_VERSION = 1

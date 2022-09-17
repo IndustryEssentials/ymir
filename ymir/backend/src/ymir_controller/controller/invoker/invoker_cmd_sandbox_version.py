@@ -13,10 +13,8 @@ class SandboxVersionInvoker(BaseMirControllerInvoker):
         return utils.make_general_response(CTLResponseCode.CTR_OK, "")
 
     def invoke(self) -> backend_pb2.GeneralResp:
-        sandbox_info = sandbox.SandboxInfo(root=self._sandbox_root)
-
         response = backend_pb2.GeneralResp()
         response.code = CTLResponseCode.CTR_OK
-        response.sandbox_version = sandbox_info.src_ver
+        response.sandbox_version = sandbox.detect_sandbox_src_ver(self._sandbox_root)
 
         return response

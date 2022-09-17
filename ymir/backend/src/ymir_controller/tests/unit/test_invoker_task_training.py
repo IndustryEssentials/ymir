@@ -109,7 +109,7 @@ class TestInvokerTaskTraining(unittest.TestCase):
         train_task_req = backend_pb2.TaskReqTraining()
         train_task_req.in_dataset_types.append(training_data_type_2)
         train_task_req.in_dataset_types.append(training_data_type_1)
-        train_task_req.in_class_ids[:] = [0, 1]
+        in_class_ids = [0, 1]
 
         req_create_task = backend_pb2.ReqCreateTask()
         req_create_task.task_type = mir_cmd_pb.TaskType.TaskTypeTraining
@@ -145,6 +145,7 @@ class TestInvokerTaskTraining(unittest.TestCase):
                                          req_create_task=req_create_task,
                                          merge_strategy=backend_pb2.MergeStrategy.Value('HOST'),
                                          singleton_op=training_image,
+                                         in_class_ids=in_class_ids,
                                          docker_image_config=json.dumps(training_config))
         print(MessageToDict(response))
 

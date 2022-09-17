@@ -3,44 +3,49 @@ import os
 import shutil
 import sys
 from types import ModuleType
-from typing import Any, Callable, Dict, Set, Tuple
+from typing import Callable, Dict, Set, Tuple
 
 import errors as update_errors
-from common_utils.sandbox import SandboxInfo
-from common_utils.version import YMIR_VERSION
+from common_utils import sandbox
+from mir.version import YMIR_VERSION
 
 import update_1_1_0_to_1_3_0.step_updater
 
 
-_UPDATE_STEPS: Dict[Tuple[str, str], Tuple[ModuleType, ...]] = {
-    ('1.1.0', '1.3.0'): (update_1_1_0_to_1_3_0.step_updater, ),
-}
+
+def _get_update_steps(src_ver: str) -> Tuple[ModuleType, ...]:
+    _UPDATE_STEPS: Dict[Tuple[str, str], Tuple[ModuleType, ...]] = {
+        ('1.1.0', '1.3.0'): (update_1_1_0_to_1_3_0.step_updater, ),
+    }
+    return _UPDATE_STEPS.get((src_ver, YMIR_VERSION), None)
 
 
-def _exc_update_steps(update_steps: Tuple[ModuleType, ...], sandbox_info: SandboxInfo) -> None:
+def _exc_update_steps(update_steps: Tuple[ModuleType, ...], sandbox_root: str) -> None:
     for step_module in update_steps:
         step_func: Callable = getattr(step_module, 'update_all')
-        step_func(sandbox_info)
+        step_func(sandbox_root)
 
 
-def _backup(sandbox_info: SandboxInfo) -> str:
-    backup_dir = os.path.join(sandbox_info.root, 'backup')
+def _backup(sandbox_root: str) -> str:
+    backup_dir = os.path.join(sandbox_root, 'backup')
     os.makedirs(backup_dir, exist_ok=True)
     if os.listdir(backup_dir):
         raise update_errors.BackupDirNotEmpty()
 
-    for user_id, repo_ids in sandbox_info.user_to_repos.items():
-        src_user_dir = os.path.join(sandbox_info.root, user_id)
+    user_to_repos = sandbox.detect_users_and_repos(sandbox_root)
+    for user_id, repo_ids in user_to_repos.items():
+        src_user_dir = os.path.join(sandbox_root, user_id)
         dst_user_dir = os.path.join(backup_dir, user_id)
         _copy_user_space(src_user_dir=src_user_dir, dst_user_dir=dst_user_dir, repo_ids=repo_ids)
 
     return backup_dir
 
 
-def _roll_back(backup_dir: str, sandbox_info: SandboxInfo) -> None:
-    for user_id, repo_ids in sandbox_info.user_to_repos.items():
+def _roll_back(backup_dir: str, sandbox_root: str) -> None:
+    user_to_repos = sandbox.detect_users_and_repos(sandbox_root)
+    for user_id, repo_ids in user_to_repos.items():
         src_user_dir = os.path.join(backup_dir, user_id)
-        dst_user_dir = os.path.join(sandbox_info.root, user_id)
+        dst_user_dir = os.path.join(sandbox_root, user_id)
         shutil.rmtree(dst_user_dir)
         _copy_user_space(src_user_dir=src_user_dir, dst_user_dir=dst_user_dir, repo_ids=repo_ids)
 
@@ -53,22 +58,20 @@ def _copy_user_space(src_user_dir: str, dst_user_dir: str, repo_ids: Set[str]) -
 
 
 def main() -> int:
-    if os.environ['YMIR_VERSION'] != YMIR_VERSION:
+    if os.environ['EXPECTED_YMIR_VERSION'] != YMIR_VERSION:
         raise update_errors.EnvVersionNotMatch()
-    sandbox_info = SandboxInfo(root=os.environ['BACKEND_SANDBOX_ROOT'])
-    if not sandbox_info.user_to_repos:
-        logging.info('no need to update: found no users')
-        return 0
 
-    update_steps = _UPDATE_STEPS.get((sandbox_info.src_ver, YMIR_VERSION), None)
+    sandbox_root = os.environ['BACKEND_SANDBOX_ROOT']
+    src_ver = sandbox.detect_sandbox_src_ver(sandbox_root)
+    update_steps = _get_update_steps(src_ver)
     if not update_steps:
-        raise update_errors.SandboxVersionNotSupported(sandbox_version=sandbox_info.src_ver)
+        raise update_errors.SandboxVersionNotSupported(sandbox_version=src_ver)
 
-    backup_dir = _backup(sandbox_info)
+    backup_dir = _backup(sandbox_root)
     try:
-        _exc_update_steps(update_steps=update_steps, sandbox_info=sandbox_info)
+        _exc_update_steps(update_steps=update_steps, sandbox_root=sandbox_root)
     except Exception as e:
-        _roll_back(backup_dir=backup_dir, sandbox_info=sandbox_info)
+        _roll_back(backup_dir=backup_dir, sandbox_root=sandbox_root)
         raise e
 
     # cleanup
