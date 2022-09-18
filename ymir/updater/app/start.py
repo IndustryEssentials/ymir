@@ -44,6 +44,7 @@ def _backup(sandbox_root: str) -> str:
 def _roll_back(backup_dir: str, sandbox_root: str) -> None:
     user_to_repos = sandbox.detect_users_and_repos(sandbox_root)
     for user_id, repo_ids in user_to_repos.items():
+        logging.info(f"rolling back: {user_to_repos}")
         src_user_dir = os.path.join(backup_dir, user_id)
         dst_user_dir = os.path.join(sandbox_root, user_id)
         shutil.rmtree(dst_user_dir)
@@ -71,7 +72,9 @@ def main() -> int:
     try:
         _exc_update_steps(update_steps=update_steps, sandbox_root=sandbox_root)
     except Exception as e:
+        logging.info(f"step updater exception: {e}")
         _roll_back(backup_dir=backup_dir, sandbox_root=sandbox_root)
+        shutil.rmtree(backup_dir)
         raise e
 
     # cleanup

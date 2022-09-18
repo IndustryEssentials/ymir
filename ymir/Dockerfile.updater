@@ -1,5 +1,11 @@
 FROM python:3.8.13-alpine
 
+RUN apk update \
+  && apk add git
+
+COPY ./updater/app/requirements.txt /app/requirements.txt
+RUN pip3 install -r /app/requirements.txt
+
 # mir pb components: 1.1.0
 ARG ymir_110_src=https://raw.githubusercontent.com/IndustryEssentials/ymir/release-1.1.0
 ARG ymir_110_dst=/app/ymir_1_1_0/mir/protos
@@ -14,9 +20,10 @@ COPY ./backend/src/common/common_utils/sandbox.py /app/common_utils/sandbox.py
 COPY ./backend/src/common/id_definition/error_codes.py /app/id_definition/error_codes.py
 COPY ./backend/src/common/id_definition/task_id.py /app/id_definition/task_id.py
 COPY ./command/mir/version.py /app/mir/version.py
+COPY ./command/mir/scm/base.py /app/mir/scm/base.py
+COPY ./command/mir/scm/cmd.py /app/mir/scm/cmd.py
 
 # updater app
 COPY ./updater/app /app
-RUN pip3 install -r /app/requirements.txt
 
 CMD python /app/start.py
