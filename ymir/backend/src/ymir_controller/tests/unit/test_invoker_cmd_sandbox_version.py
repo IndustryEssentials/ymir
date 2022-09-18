@@ -1,5 +1,6 @@
 import os
 import shutil
+import subprocess
 import unittest
 
 from google.protobuf.json_format import MessageToDict
@@ -54,7 +55,7 @@ class TestCmdSandboxVersion(unittest.TestCase):
             os.makedirs(os.path.join(self._sandbox_a_root, user_id))
 
             for repo_id in repo_ids:
-                os.makedirs(os.path.join(self._sandbox_a_root, user_id, repo_id))
+                self._prepare_repo(os.path.join(self._sandbox_a_root, user_id, repo_id))
 
             labels_dict = {'labels': [], 'version': 1, 'ymir_version': '42.0.0'}
             with open(os.path.join(self._sandbox_a_root, user_id, 'labels.yaml'), 'w') as f:
@@ -74,11 +75,17 @@ class TestCmdSandboxVersion(unittest.TestCase):
             os.makedirs(os.path.join(self._sandbox_c_root, user_id))
 
             for repo_id in repo_ids:
-                os.makedirs(os.path.join(self._sandbox_c_root, user_id, repo_id))
+                self._prepare_repo(os.path.join(self._sandbox_c_root, user_id, repo_id))
 
             labels_dict = {'labels': [], 'version': 1, 'ymir_version': f"0.0.{int(user_id)}"}
             with open(os.path.join(self._sandbox_c_root, user_id, 'labels.yaml'), 'w') as f:
                 yaml.safe_dump(labels_dict, f)
+
+    @classmethod
+    def _prepare_repo(cls, mir_root: str) -> None:
+        os.makedirs(mir_root, exist_ok=True)
+        subprocess.run(['git', 'config', '--global', 'init.defaultBranch', 'master'], cwd=mir_root)
+        subprocess.run(['git', 'init'], cwd=mir_root)
 
     # public: test cases
     def test_all(self) -> None:
@@ -91,12 +98,11 @@ class TestCmdSandboxVersion(unittest.TestCase):
         self.assertEqual('42.0.0', response_a.sandbox_version)
 
         # sandbox b: no users
-        response_b = make_invoker_cmd_call(invoker=RequestTypeToInvoker[backend_pb2.SANDBOX_VERSION],
-                                           sandbox_root=self._sandbox_b_root,
-                                           req_type=backend_pb2.SANDBOX_VERSION)
-        print(MessageToDict(response_b))
-        self.assertEqual(CTLResponseCode.CTR_OK, response_b.code)
-        self.assertEqual('1.1.0', response_b.sandbox_version)
+        with self.assertRaises(SandboxError) as e:
+            make_invoker_cmd_call(invoker=RequestTypeToInvoker[backend_pb2.SANDBOX_VERSION],
+                                  sandbox_root=self._sandbox_b_root,
+                                  req_type=backend_pb2.SANDBOX_VERSION)
+            self.assertEqual(UpdaterErrorCode.INVALID_USER_SPACE_VERSIONS, e.error_code)
 
         # sandbox c: multiple versions
         with self.assertRaises(SandboxError) as e:
