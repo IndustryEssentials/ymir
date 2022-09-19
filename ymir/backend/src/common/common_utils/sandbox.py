@@ -9,6 +9,7 @@ import yaml
 from id_definition.error_codes import UpdaterErrorCode
 from id_definition.task_id import IDProto
 from mir import version
+from mir.scm.cmd import CmdScm
 
 
 class SandboxError(Exception):
@@ -80,8 +81,6 @@ def roll_back(sandbox_root: str) -> None:
         _copy_user_space(src_user_dir=src_user_dir, dst_user_dir=dst_user_dir, repo_ids=repo_ids)
     remove_backup(sandbox_root)
 
-    remove_backup(sandbox_root)
-
 
 def remove_backup(sandbox_root: str) -> None:
     shutil.rmtree(os.path.join(sandbox_root, 'backup'))
@@ -90,6 +89,11 @@ def remove_backup(sandbox_root: str) -> None:
 def get_all_repo_rel_paths(sandbox_root: str) -> Set[str]:
     user_to_repos = _detect_users_and_repos(sandbox_root)
     return {os.path.join(user_id, repo_id) for user_id, repo_ids in user_to_repos.items() for repo_id in repo_ids}
+
+
+def get_tags_for_repo(mir_root: str) -> List[str]:
+    repo_git = CmdScm(working_dir=mir_root, scm_executable='git')
+    return [tag.strip() for tag in repo_git.tag().splitlines() if tag != 'master']
 
 
 def _detect_users_and_repos(sandbox_root: str) -> Dict[str, Set[str]]:
