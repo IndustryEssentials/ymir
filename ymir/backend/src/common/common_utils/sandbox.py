@@ -55,29 +55,24 @@ def detect_sandbox_src_ver(sandbox_root: str) -> str:
     return list(ver_to_users.keys())[0]
 
 
-def backup(sandbox_root: str) -> str:
+def backup(sandbox_root: str) -> None:
     backup_dir = os.path.join(sandbox_root, 'backup')
     os.makedirs(backup_dir, exist_ok=True)
     if os.listdir(backup_dir):
         raise SandboxError(error_code=UpdaterErrorCode.BACKUP_DIR_NOT_EMPTY,
                            error_message=f"Backup directory not empty: {backup_dir}")
 
-    user_to_repos = _detect_users_and_repos(sandbox_root)
-    for user_id, repo_ids in user_to_repos.items():
-        src_user_dir = os.path.join(sandbox_root, user_id)
-        dst_user_dir = os.path.join(backup_dir, user_id)
-        _copy_user_space(src_user_dir=src_user_dir, dst_user_dir=dst_user_dir, repo_ids=repo_ids)
-
-    return backup_dir
+    for user_id in _detect_users_and_repos(sandbox_root):
+        shutil.copytree(src=os.path.join(sandbox_root, user_id), dst=os.path.join(backup_dir, user_id))
 
 
 def roll_back(sandbox_root: str) -> None:
-    user_to_repos = _detect_users_and_repos(sandbox_root)
-    for user_id, repo_ids in user_to_repos.items():
-        src_user_dir = os.path.join(os.path.join(sandbox_root, 'backup'), user_id)
+    backup_dir = os.path.join(sandbox_root, 'backup')
+    for user_id in _detect_users_and_repos(sandbox_root):
+        src_user_dir = os.path.join(backup_dir, user_id)
         dst_user_dir = os.path.join(sandbox_root, user_id)
         shutil.rmtree(dst_user_dir)
-        _copy_user_space(src_user_dir=src_user_dir, dst_user_dir=dst_user_dir, repo_ids=repo_ids)
+        shutil.copytree(src_user_dir, dst_user_dir)
 
     remove_backup(sandbox_root)
 
