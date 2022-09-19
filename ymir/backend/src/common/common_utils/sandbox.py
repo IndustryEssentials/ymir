@@ -79,6 +79,8 @@ def roll_back(sandbox_root: str) -> None:
         shutil.rmtree(dst_user_dir)
         _copy_user_space(src_user_dir=src_user_dir, dst_user_dir=dst_user_dir, repo_ids=repo_ids)
 
+    remove_backup(sandbox_root)
+
 
 def remove_backup(sandbox_root: str) -> None:
     shutil.rmtree(os.path.join(sandbox_root, 'backup'))
