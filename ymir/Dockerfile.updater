@@ -1,13 +1,9 @@
 FROM python:3.8.13-alpine
 
-# mir pb components: 1.1.0
-ARG ymir_110_src=https://raw.githubusercontent.com/IndustryEssentials/ymir/release-1.1.0
-ARG ymir_110_dst=/app/ymir_1_1_0/mir/protos
-RUN mkdir -p ${ymir_110_dst} && wget ${ymir_110_src}/ymir/command/mir/protos/mir_command_pb2.py -P ${ymir_110_dst}
-# mir pb components: 1.3.0 (dev)
-ARG ymir_130_src=https://raw.githubusercontent.com/IndustryEssentials/ymir/dev
-ARG ymir_130_dst=/app/ymir_1_3_0/mir/protos
-RUN mkdir -p ${ymir_130_dst} && wget ${ymir_130_src}/ymir/command/mir/protos/mir_command_pb2.py -P ${ymir_130_dst}
+# requirements
+COPY ./updater/app/requirements.txt /app/requirements.txt
+ARG PIP_SOURCE=https://pypi.org/simple
+RUN pip3 install -r /app/requirements.txt -i ${PIP_SOURCE}
 
 # ymir backend components
 COPY ./backend/src/common/common_utils/sandbox.py /app/common_utils/sandbox.py
@@ -17,6 +13,5 @@ COPY ./command/mir/version.py /app/mir/version.py
 
 # updater app
 COPY ./updater/app /app
-RUN pip3 install -r /app/requirements.txt
 
 CMD python /app/start.py
