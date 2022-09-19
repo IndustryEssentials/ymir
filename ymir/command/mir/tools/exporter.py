@@ -36,9 +36,9 @@ def _anno_file_ext(anno_format: "mirpb.AnnoFormat.V") -> str:
 def _format_file_output_func(anno_format: "mirpb.AnnoFormat.V") -> Callable:
     _format_func_map = {
         mirpb.AnnoFormat.AF_DET_ARK_JSON: _single_image_annotations_to_det_ark,
-        mirpb.AnnoFormat.AF_DET_PASCAL_VOC: _single_image_annotations_to_det_voc,
+        mirpb.AnnoFormat.AF_DET_PASCAL_VOC: _single_image_annotations_to_voc,
         mirpb.AnnoFormat.AF_DET_LS_JSON: _single_image_annotations_to_det_ls_json,
-        mirpb.AnnoFormat.AF_SEG_POLYGON: _single_image_annotations_to_seg_polygon,
+        mirpb.AnnoFormat.AF_SEG_POLYGON: _single_image_annotations_to_voc,
         mirpb.AnnoFormat.AF_SEG_MASK: _single_image_annotations_to_seg_mask,
     }
     if anno_format not in _format_func_map:
@@ -241,6 +241,26 @@ def _export_mirdatas_to_raw(
                 if tvt_index_dir:
                     index_tvt_f[(True, attributes.tvt_type)].write(asset_anno_pair_line)
 
+    # write labelmap.txt.
+    if gt_dir and mir_annotations and mir_annotations.ground_truth.map_id_color:
+        if not cls_id_mgr:
+            raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
+                                  error_message="cls_id_mgr is not set in exporter.")
+        labelmap_file = os.path.join(gt_dir, 'labelmap.txt')
+        with open(labelmap_file, 'w') as f:
+            for cid, point in mir_annotations.ground_truth.map_id_color.items():
+                color = f"{point.x},{point.y},{point.z}"
+                f.write(f"{cls_id_mgr.main_name_for_id(cid)}:{color}::\n")
+    if pred_dir and mir_annotations and mir_annotations.prediction.map_id_color:
+        if not cls_id_mgr:
+            raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
+                                  error_message="cls_id_mgr is not set in exporter.")
+        labelmap_file = os.path.join(pred_dir, 'labelmap.txt')
+        with open(labelmap_file, 'w') as f:
+            for cid, point in mir_annotations.prediction.map_id_color.items():
+                color = f"{point.x},{point.y},{point.z}"
+                f.write(f"{cls_id_mgr.main_name_for_id(cid)}:{color}::\n")
+
     # Clean up.
     if gt_dir and index_gt_f:
         index_gt_f.close()
@@ -304,11 +324,11 @@ def _single_image_annotations_to_det_ark(attributes: mirpb.MetadataAttributes,
     return output_str
 
 
-def _single_image_annotations_to_det_voc(attributes: mirpb.MetadataAttributes,
-                                         image_annotations: mirpb.SingleImageAnnotations,
-                                         image_cks: Optional[mirpb.SingleImageCks],
-                                         class_ids_mapping: Optional[Dict[int, int]], cls_id_mgr: ClassIdManager,
-                                         asset_filename: str) -> str:
+def _single_image_annotations_to_voc(attributes: mirpb.MetadataAttributes,
+                                     image_annotations: mirpb.SingleImageAnnotations,
+                                     image_cks: Optional[mirpb.SingleImageCks],
+                                     class_ids_mapping: Optional[Dict[int, int]],
+                                     cls_id_mgr: ClassIdManager, asset_filename: str) -> str:
     annotations = image_annotations.boxes
 
     # annotation
@@ -382,22 +402,26 @@ def _single_image_annotations_to_det_voc(attributes: mirpb.MetadataAttributes,
         occluded_node = ElementTree.SubElement(object_node, 'occluded')
         occluded_node.text = '0'
 
-        bndbox_node = ElementTree.SubElement(object_node, 'bndbox')
+        w, h = annotation.box.w, annotation.box.h
+        if w and h:  # det box
+            bndbox_node = ElementTree.SubElement(object_node, 'bndbox')
 
-        xmin_node = ElementTree.SubElement(bndbox_node, 'xmin')
-        xmin_node.text = str(annotation.box.x)
+            xmin_node = ElementTree.SubElement(bndbox_node, 'xmin')
+            xmin_node.text = str(annotation.box.x)
 
-        ymin_node = ElementTree.SubElement(bndbox_node, 'ymin')
-        ymin_node.text = str(annotation.box.y)
+            ymin_node = ElementTree.SubElement(bndbox_node, 'ymin')
+            ymin_node.text = str(annotation.box.y)
 
-        xmax_node = ElementTree.SubElement(bndbox_node, 'xmax')
-        xmax_node.text = str(annotation.box.x + annotation.box.w - 1)
+            xmax_node = ElementTree.SubElement(bndbox_node, 'xmax')
+            xmax_node.text = str(annotation.box.x + w - 1)
 
-        ymax_node = ElementTree.SubElement(bndbox_node, 'ymax')
-        ymax_node.text = str(annotation.box.y + annotation.box.h - 1)
+            ymax_node = ElementTree.SubElement(bndbox_node, 'ymax')
+            ymax_node.text = str(annotation.box.y + h - 1)
 
-        rotate_angle_node = ElementTree.SubElement(bndbox_node, 'rotate_angle')
-        rotate_angle_node.text = f"{annotation.box.rotate_angle:.4f}"
+            rotate_angle_node = ElementTree.SubElement(bndbox_node, 'rotate_angle')
+            rotate_angle_node.text = f"{annotation.box.rotate_angle:.4f}"
+        elif len(annotation.polygon) > 0:  # seg polygon
+            raise NotImplementedError
 
         difficult_node = ElementTree.SubElement(object_node, 'difficult')
         difficult_node.text = '0'
@@ -470,17 +494,9 @@ def _single_image_annotations_to_det_ls_json(attributes: mirpb.MetadataAttribute
     return json.dumps(task)
 
 
-def _single_image_annotations_to_seg_polygon(attributes: mirpb.MetadataAttributes,
-                                             image_annotations: mirpb.SingleImageAnnotations,
-                                             image_cks: Optional[mirpb.SingleImageCks],
-                                             class_ids_mapping: Optional[Dict[int, int]], cls_id_mgr: ClassIdManager,
-                                             asset_filename: str) -> str:
-    raise NotImplementedError("seg exporter not implemented")
-
-
 def _single_image_annotations_to_seg_mask(attributes: mirpb.MetadataAttributes,
                                           image_annotations: mirpb.SingleImageAnnotations,
                                           image_cks: Optional[mirpb.SingleImageCks],
                                           class_ids_mapping: Optional[Dict[int, int]], cls_id_mgr: ClassIdManager,
                                           asset_filename: str) -> str:
-    raise NotImplementedError("seg exporter not implemented")
+    return image_annotations.mask.semantic_mask.decode("utf-8")
