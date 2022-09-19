@@ -186,7 +186,7 @@ class CRUDDataset(CRUDBase[Dataset, DatasetCreate, DatasetUpdate]):
         keywords = json.loads(dataset.keywords)
         if "gt" in keywords:
             return dataset
-        dataset.keywords = json.dumps({"gt": keywords})
+        dataset.keywords = json.dumps({"gt": keywords, "pred": {}})
         db.add(dataset)
         db.commit()
         db.refresh(dataset)
