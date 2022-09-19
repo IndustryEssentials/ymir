@@ -57,10 +57,13 @@ def init_db(db: Session) -> None:
                 )
                 crud.image_config.create(db, obj_in=image_config_in)
 
-    migrate_data(db)
-
 
 def migrate_data(db: Session) -> None:
+    """
+    migrate data from pre-1.3.0 version:
+    1. create default model stage
+    2. update dataset keywords structure (in {"gt": <content>, "pred": <content>} format)
+    """
     total_models = crud.model.total(db)
     models = crud.model.get_multi(db, limit=total_models)
     for model in models:
