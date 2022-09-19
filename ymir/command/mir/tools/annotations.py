@@ -173,7 +173,7 @@ def _import_annotations_seg_mask(map_hashed_filename: Dict[str, str], mir_annota
     label_map_file = os.path.join(annotations_dir_path, 'labelmap.txt')
     if not os.path.isfile(label_map_file):
         raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS, error_message="labelmap.txt is required.")
-    with open(label_map_file, 'w') as f:
+    with open(label_map_file) as f:
         records = f.readlines()
 
     # parse label_map.txt into map_cname_color.
@@ -202,7 +202,7 @@ def _import_annotations_seg_mask(map_hashed_filename: Dict[str, str], mir_annota
         class_type_manager.add_main_names(list(map_cname_color.keys()))
 
     # build color map, map all unknown classes to background (0, 0, 0).
-    map_color_pixel: Dict[Tuple[int, int, int], Tuple[int, int, int]] = {}
+    map_color_pixel: Dict[Tuple[int, int, int], Tuple[int, int, int]] = {(0, 0, 0): (0, 0, 0)}
     map_color_cid: Dict[Tuple[int, int, int], int] = {}
     for name, color in map_cname_color.items():
         cid, cname = class_type_manager.id_and_main_name_for_name(name=name)
@@ -210,22 +210,23 @@ def _import_annotations_seg_mask(map_hashed_filename: Dict[str, str], mir_annota
             accu_new_class_names[cname] = 0
 
         if cid >= 0:
-            image_annotations.map_id_color[cid] = mirpb.IntPoint(x=color[0], y=color[1], z=color[2])
+            point = mirpb.IntPoint()
+            point.x, point.y, point.z = color
+            image_annotations.map_id_color[cid].CopyFrom(point)
             map_color_pixel[color] = color
             map_color_cid[color] = cid
         else:
             map_color_pixel[color] = (0, 0, 0)
 
     semantic_mask_dir = os.path.join(annotations_dir_path, "SegmentationClass")
-    unknown_color: Set[Tuple[int, int, int]] = set()
+    unexpected_color: Set[Tuple[int, int, int]] = set()
     for asset_hash, main_file_name in map_hashed_filename.items():
         # for each asset, import it's annotations
         annotation_file = os.path.join(semantic_mask_dir, main_file_name + '.png')
         if not os.path.isfile(annotation_file):
             continue
-
         try:
-            mask_image = Image.open(annotation_file).convert('RGB')
+            mask_image = Image.open(annotation_file)
         except (UnidentifiedImageError, OSError) as e:
             logging.info(f"{type(e).__name__}: {e}\nannotation_file: {annotation_file}\n")
             continue
@@ -234,23 +235,26 @@ def _import_annotations_seg_mask(map_hashed_filename: Dict[str, str], mir_annota
             logging.error(f"cannot import annotation_file: {annotation_file} as type: {asset_type_str}")
             continue
 
-        # read image and map pixel color: unknown to (0,0,0).
+        mask_image = mask_image.convert('RGB')
         img_class_ids: Set[int] = set()
         width, height = mask_image.size
         for x in range(width):
             for y in range(height):
                 color = mask_image.getpixel((x, y))
-                if color not in map_color_pixel:
-                    unknown_color.add(color)
+                if color in map_color_pixel:
+                    unexpected_color.add(color)
+
+                # map_color_cid (known class names) is subset of map_color_pixel (including known/unknown).
                 if color in map_color_cid:
                     img_class_ids.add(map_color_cid[color])
-                mask_image.putpixel(map_color_pixel.get(color, (0, 0, 0)))
+                elif color != (0, 0, 0):   # map unknown color to (0,0,0).
+                    mask_image.putpixel((x, y), (0, 0, 0))
         with io.BytesIO() as output:
             mask_image.save(output, format="PNG")
             image_annotations.image_annotations[asset_hash].mask.semantic_mask = output.getvalue()
         image_annotations.image_annotations[asset_hash].img_class_ids[:] = list(img_class_ids)
-    if unknown_color:
-        logging.info(f"find color not in labelmap.txt: {unknown_color}")
+    if unexpected_color:
+        logging.info(f"find color not in labelmap.txt: {unexpected_color}")
 
 
 def _import_annotations_voc_xml(map_hashed_filename: Dict[str, str], mir_annotation: mirpb.MirAnnotations,
