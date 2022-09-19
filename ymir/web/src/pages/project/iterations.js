@@ -9,7 +9,7 @@ import Prepare from "./iterations/prepare"
 import Current from './iterations/detail'
 import List from "./iterations/list"
 
-import s from "./index.less"
+import s from "./iterations/index.less"
 import { CardTabs } from "@/components/tabs/cardTabs"
 import ProjectDetail from "./components/detail"
 
