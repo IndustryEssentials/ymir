@@ -9,7 +9,7 @@ import ModelSelect from '@/components/form/modelSelect'
 import Uploader from '@/components/form/uploader'
 
 import s from "./iteration.less"
-import { YesIcon, LoaderIcon } from "@/components/common/icons"
+import { YesIcon, LoaderIcon, AddIcon } from "@/components/common/icons"
 
 const SettingsSelection = (Select) => {
   const Selection = (props) => {
@@ -47,7 +47,7 @@ export default function Stage({ pid, stage, form, project = {}, update }) {
 
   useEffect(() => {
     if (addResult?.id) {
-      update({[stage.field]: addResult.id })
+      update({ [stage.field]: addResult.id })
     }
   }, [addResult])
 
@@ -64,27 +64,32 @@ export default function Stage({ pid, stage, form, project = {}, update }) {
 
   const filters = stage.filter ? useCallback(datasets => {
     const result = stage.filter(datasets, project)
-    console.log('result:', datasets, result, stage.field)
     setCandidateList(!!result.filter(item => item.assetCount).length)
     return result
   }, [stage.field, project]) : null
 
-  return <Row wrap={false}>
-    <Col>
-      {!candidateList ? <Uploader
-        onChange={(files, result) => { setFile({name: generateName(files[0].name), url: result}); console.log('files uploaded: ', files); }}
-        max={1024}
-        onRemove={() => setFile('')}
-      /> : null}
-      <Form.Item hidden={!candidateList} name={stage.field} label={t(stage.label)}
-        tooltip={t(stage.tip)}
-        rules={[{ required: !stage.option }]}
-        preserve={null}
-      >
-        <Selection pid={pid} changeByUser filters={filters} allowClear={!!stage.option} />
-      </Form.Item>
-    </Col>
-  </Row>
+  return <Form.Item tooltip={t(stage.tip)} label={t(stage.label)}>
+    <div>{!candidateList ? <Uploader
+      className={s.uploader}
+      label={t(stage.label)}
+      onChange={(files, result) => { setFile({ name: generateName(files[0].name), url: result }) }}
+      max={1024}
+      onRemove={() => setFile('')}
+      btnProps={{
+        ghost: false,
+        block: true,
+        icon: <AddIcon />,
+      }}
+    /> : null}</div>
+    <Form.Item hidden={!candidateList} name={stage.field}
+      noStyle
+      rules={[{ required: !stage.option }]}
+      preserve={null}
+    >
+      <Selection pid={pid} changeByUser filters={filters} allowClear={!!stage.option} />
+    </Form.Item>
+  </Form.Item>
+
 }
 
 function getAttrFromProject(field, project = {}) {
