@@ -82,24 +82,24 @@ type Ratio = {
 
 export function transferMiningStats(data: BackendData) {
   const { total_mining_ratio, class_wise_mining_ratio, negative_ratio } = data
-  const transfer = (ratio: Ratio) => ({
-    keywords: ratio.class_name || [''],
-    total: ratio.total_assets_count,
-    negative: ratio.total_assets_count - ratio.processed_assets_count,
-  })
-  const keywords = class_wise_mining_ratio.map((item: Ratio) => item.class_name)
-  const count = class_wise_mining_ratio.recude((prev: {[key: string]: string}, item: Ratio) => {
+  const transfer = (ratios: Array<Ratio>) => {
+    const getName = (ratio: Ratio) => ratio.class_name || ''
+    const keywords  = ratios.map(getName)
+    const count = ratios.reduce((prev, item) => {
+      const name = getName(item)
+      return {
+        ...prev,
+        [name]: item.processed_assets_count,
+        [name + '_total']: item.total_assets_count,
+      }
+    }, {})
     return {
-      ...prev,
-      [item.class_name]: item.processed_assets_count,
-    }
-  }, {})
-  return {
-    total: transfer(total_mining_ratio),
-    keywords: {
       keywords,
       count,
-      negative: negative_ratio.total_assets_count,
     }
+  }
+  return {
+    totalList: transfer([total_mining_ratio]),
+    keywordList: transfer(class_wise_mining_ratio),
   }
 }

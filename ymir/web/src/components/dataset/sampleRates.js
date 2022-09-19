@@ -19,6 +19,20 @@ function SampleRates({ keywords, dataset, negative, progressWidth = 0.5 }) {
     setStats({})
   }, [did, keywords])
 
+  const addNegativeInfo = (stat = {}) => {
+    if (!stat.keywords?.length) {
+      return {}
+    }
+    const key = t('dataset.samples.negative')
+    return {
+      ...stat,
+      keywords: [...stat.keywords, key],
+      count: {
+        ...stat.count,
+        [key]: stat.negative,
+      }
+    }
+  }
 
   useEffect(() => {
     const synced = keywords?.length && did === dataset?.id
@@ -40,8 +54,8 @@ function SampleRates({ keywords, dataset, negative, progressWidth = 0.5 }) {
         {t('task.train.btn.calc.negative')}
       </Button>
     </div> : null}
-    <KeywordRates title="Ground Truth" stats={stats.gt} progressWidth={progressWidth} />
-    <KeywordRates title="Prediction" stats={stats.pred} progressWidth={progressWidth} />
+    <KeywordRates title="Ground Truth" stats={addNegativeInfo(stats.gt)} progressWidth={progressWidth} />
+    <KeywordRates title="Prediction" stats={addNegativeInfo(stats.pred)} progressWidth={progressWidth} />
   </div>
 }
 

@@ -5,7 +5,7 @@ import {
   updateIteration,
   getMiningStats,
 } from "@/services/iteration"
-import { Stages, transferIteration } from "@/constants/iteration"
+import { Stages, transferIteration, transferMiningStats } from "@/constants/iteration"
 import { updateResultState } from '@/constants/common'
 
 
@@ -41,7 +41,6 @@ export default {
           let datasets = []
           let models = []
           if (datasetIds?.length) {
-            console.log('datasetIds:', datasetIds)
             datasets = yield put.resolve({
               type: 'dataset/batchDatasets',
               payload: { pid: id, ids: datasetIds },
@@ -89,14 +88,7 @@ export default {
       const { pid, id } = payload
       const { code, result } = yield call(getMiningStats, pid, id)
       if (code === 0) {
-        const { total_mining_ratio, class_wise_mining_ratio, negative_ratio } = result
-
-        // const iteration = transferIteration(result)
-        // yield put({
-        //   type: "UPDATE_ITERATION",
-        //   payload: iteration,
-        // })
-        // return iteration
+        return transferMiningStats(result)
       }
     },
     *getIterationStagesResult({ payload }, { put }) {
@@ -107,7 +99,6 @@ export default {
       const modelId = iteration.model
       let datasets = []
       let model = []
-      console.log('datasetIds:', datasetIds, payload)
       if (datasetIds?.length) {
         datasets = yield put.resolve({
           type: 'dataset/batchDatasets',

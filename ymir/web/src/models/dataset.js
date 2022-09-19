@@ -220,7 +220,6 @@ export default {
         const datasets = versions[gid]
         let updatedDatasets = datasets.map(dataset => {
           const updatedDataset = updateResultState(dataset, tasks)
-          newDatasets.push(updatedDataset)
           return updatedDataset ? { ...updatedDataset } : dataset
         })
         versions[gid] = updatedDatasets

@@ -42,17 +42,12 @@ function KeywordRates({ title = '', stats, progressWidth = 0.5 }) {
         key: kw,
         label: kw,
         count: count[kw],
+        total: total ? total : count[kw + '_total'],
       }))),
-      {
-        key: 0,
-        label: t('dataset.samples.negative'),
-        count: negative,
-      }
     ]
     const max = Math.max(...(klist.map(item => item.count || 0)), progressWidth)
     return klist.map(item => ({
       ...item,
-      total,
       max,
       color: colors[item.key],
     }))

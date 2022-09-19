@@ -161,6 +161,8 @@ const project = {
   'project.iteration.entrance.btn': { en: 'Enter Iterations', cn: '进入迭代', },
   'project.iteration.tabs.current': { en: 'Current Iteration', cn: '当前迭代', },
   'project.iteration.tabs.list': { en: 'Iteration Records', cn: '迭代历史', },
+  'project.iteration.mining.all.processed': { en: 'Iteration Records', cn: '已挖掘数据占比', },
+  'project.iteration.mining.keywords.processed': { en: 'Iteration Records', cn: '已挖掘数据中正负样本占比', },
 }
 
 export default project
