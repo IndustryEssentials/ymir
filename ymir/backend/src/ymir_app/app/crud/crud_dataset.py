@@ -177,5 +177,20 @@ class CRUDDataset(CRUDBase[Dataset, DatasetCreate, DatasetUpdate]):
         db.commit()
         return objs
 
+    def migrate_keywords(self, db: Session, *, id: int) -> Optional[Dataset]:
+        dataset = self.get(db, id=id)
+        if not dataset:
+            return dataset
+        if not dataset.keywords:
+            return dataset
+        keywords = json.loads(dataset.keywords)
+        if "gt" in keywords:
+            return dataset
+        dataset.keywords = json.dumps({"gt": keywords})
+        db.add(dataset)
+        db.commit()
+        db.refresh(dataset)
+        return dataset
+
 
 dataset = CRUDDataset(Dataset)

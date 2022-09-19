@@ -23,10 +23,10 @@ class Dataset(Base):
     task_id = Column(Integer, index=True, nullable=False)
 
     keywords = Column(Text(settings.TEXT_LEN_LIMIT))
-    ignored_keywords = Column(Text(settings.TEXT_LEN_LIMIT))
-    negative_info = Column(String(settings.STRING_LEN_LIMIT))
+    ignored_keywords = Column(Text(settings.TEXT_LEN_LIMIT))  # deprecated
+    negative_info = Column(String(settings.STRING_LEN_LIMIT))  # deprecated
     asset_count = Column(Integer)
-    keyword_count = Column(Integer)
+    keyword_count = Column(Integer)  # deprecated
 
     related_task = relationship(
         "Task",

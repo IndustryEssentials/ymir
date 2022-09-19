@@ -1,3 +1,4 @@
+import time
 import json
 
 from sqlalchemy.orm import Session
@@ -55,3 +56,29 @@ def init_db(db: Session) -> None:
                     type=int(config["type"]),
                 )
                 crud.image_config.create(db, obj_in=image_config_in)
+
+    migrate_data(db)
+
+
+def migrate_data(db: Session) -> None:
+    total_models = crud.model.total(db)
+    models = crud.model.get_multi(db, limit=total_models)
+    for model in models:
+        if model.recommended_stage:
+            # no need to migrate
+            continue
+        if not model.map:
+            # skip model without map
+            continue
+        stage = crud.model_stage.create(
+            db,
+            obj_in=schemas.ModelStageCreate(
+                name="default_stage", map=model.map, timestamp=int(time.time()), model_id=model.id
+            ),
+        )
+        crud.model.update_recommonded_stage(db, model_id=model.id, stage_id=stage.id)
+
+    total_datasets = crud.dataset.total(db)
+    datasets = crud.dataset.get_multi(db, limit=total_datasets)
+    for dataset in datasets:
+        crud.dataset.migrate_keywords(db, id=dataset.id)
