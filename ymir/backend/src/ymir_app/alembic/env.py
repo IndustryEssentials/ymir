@@ -3,6 +3,7 @@ from __future__ import with_statement
 from contextlib import contextmanager
 import os
 import time
+import logging
 from logging.config import fileConfig
 import uuid
 import subprocess
@@ -70,17 +71,23 @@ def recover_from_backup(backup_filename: str) -> None:
 def backup_database() -> Generator[None, None, None]:
     current_alembic_version = get_current_alembic_version()
     backup_filename: Optional[str] = None
-    if current_alembic_version:
-        # Only when legacy database exists, should we backup database
+    if is_alembic_migration_command() and current_alembic_version:
+        # Only when alembic is upgrading or downgrading
+        # and legacy database exists, should we backup database
         backup_filename = f"backup_{current_alembic_version}_{int(time.time())}_{uuid.uuid4().hex}.sql"
         create_backup(backup_filename)
-        print("Created MySQL backup to %s" % backup_filename)
+        logging.info("Created MySQL backup to %s" % backup_filename)
     try:
         yield
     except Exception as e:
         if backup_filename:
             recover_from_backup(backup_filename)
-            print("Failed to upgrade database (%s), rollback with backup %s" % (e, backup_filename))
+            logging.info("Failed to upgrade database (%s), rollback with backup %s" % (e, backup_filename))
+
+
+def is_alembic_migration_command() -> bool:
+    command = context.config.cmd_opts.cmd[0].__name__
+    return command in ["upgrade", "downgrade"]
 
 
 def get_current_alembic_version() -> Optional[str]:
