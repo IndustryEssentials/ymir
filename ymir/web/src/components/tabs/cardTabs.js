@@ -22,7 +22,16 @@ export const CardTabs = ({ data = [], initialTab, ...props }) => {
     setContents(data.reduce((prev, { content, key }) => ({ ...prev, [key]: content }), {}))
   }, [data])
 
-  return <Card {...props} tabList={tabs} activeTabKey={active} onTabChange={(key) => history.replace({ state: { type: key }})}>
+  return <Card
+    className="fullTab"
+    {...props}
+    tabList={tabs}
+    activeTabKey={active}
+    onTabChange={(key) => history.replace({ state: { type: key } })}
+    tabProps={{
+      moreIcon: null,
+    }}
+  >
     {contents[active]}
   </Card>
 }
