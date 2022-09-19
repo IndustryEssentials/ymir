@@ -107,10 +107,3 @@ def _detect_users_and_repos(sandbox_root: str) -> Dict[str, Set[str]]:
             and os.path.isdir(os.path.join(user_dir, repo_id, '.git'))
         ])
     return user_to_repos
-
-
-def _copy_user_space(src_user_dir: str, dst_user_dir: str, repo_ids: Set[str]) -> None:
-    os.makedirs(dst_user_dir, exist_ok=True)
-    shutil.copy(src=os.path.join(src_user_dir, 'labels.yaml'), dst=os.path.join(dst_user_dir, 'labels.yaml'))
-    for repo_id in repo_ids:
-        shutil.copytree(src=os.path.join(src_user_dir, repo_id), dst=os.path.join(dst_user_dir, repo_id))
