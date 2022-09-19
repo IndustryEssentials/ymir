@@ -52,5 +52,8 @@ def main(base_alembic_revision: Optional[str]) -> None:
 
 
 if __name__ == "__main__":
-    _, base_alembic_revision = sys.argv
+    try:
+        base_alembic_revision: Optional[str] = sys.argv[1]
+    except IndexError:
+        base_alembic_revision = None
     main(base_alembic_revision)
