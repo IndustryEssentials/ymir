@@ -60,9 +60,9 @@ def update(sandbox_root: str, update_funcs: List[Callable]) -> None:
 
     user_to_repos = _detect_users_and_repos(sandbox_root)
     try:
-        for user_id, repo_ids in user_to_repos.items():
-            for repo_id in repo_ids:
-                for update_func in update_funcs:
+        for update_func in update_funcs:
+            for user_id, repo_ids in user_to_repos.items():
+                for repo_id in repo_ids:
                     update_func(mir_root=os.path.join(sandbox_root, user_id, repo_id))
     except Exception as e:
         _roll_back(sandbox_root)
