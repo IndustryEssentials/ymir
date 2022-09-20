@@ -69,7 +69,7 @@ def update(sandbox_root: str, update_funcs: List[Callable]) -> None:
         raise e
 
     # cleanup
-    _remove_backup(sandbox_root)
+    shutil.rmtree(os.path.join(sandbox_root, 'backup'))
 
 
 def _backup(sandbox_root: str) -> None:
@@ -91,10 +91,6 @@ def _roll_back(sandbox_root: str) -> None:
         shutil.rmtree(dst_user_dir)
         shutil.copytree(src_user_dir, dst_user_dir)
 
-    _remove_backup(sandbox_root)
-
-
-def _remove_backup(sandbox_root: str) -> None:
     shutil.rmtree(os.path.join(sandbox_root, 'backup'))
 
 
