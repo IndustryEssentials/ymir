@@ -85,3 +85,14 @@ def _import_model(
     except ValueError as e:
         logger.exception("[import model] controller error: %s", e)
         raise FailedtoImportModel()
+
+
+def create_model_stages(db: Session, model_id: int, model_info: Dict) -> None:
+    stages_in = [
+        schemas.ModelStageCreate(
+            name=stage_name, map=stage_info["mAP"], timestamp=stage_info["timestamp"], model_id=model_id
+        )
+        for stage_name, stage_info in model_info["model_stages"].items()
+    ]
+    crud.model_stage.batch_create(db, objs_in=stages_in)
+    crud.model.update_recommonded_stage_by_name(db, model_id=model_id, stage_name=model_info["best_stage_name"])
