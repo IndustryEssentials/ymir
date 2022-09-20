@@ -4,11 +4,18 @@ import sys
 from types import ModuleType
 from typing import Dict, Tuple
 
-import errors as update_errors
 from common_utils import sandbox
+from id_definition.error_codes import UpdaterErrorCode
 from mir.version import YMIR_VERSION
 
 import update_1_1_0_to_1_3_0.step_updater
+
+
+class UpdateError(Exception):
+    def __init__(self, code: int, message: str) -> None:
+        super().__init__()
+        self.code = code
+        self.message = message
 
 
 def _get_update_steps(src_ver: str) -> Tuple[ModuleType, ...]:
@@ -20,13 +27,14 @@ def _get_update_steps(src_ver: str) -> Tuple[ModuleType, ...]:
 
 def main() -> int:
     if os.environ['EXPECTED_YMIR_VERSION'] != YMIR_VERSION:
-        raise update_errors.EnvVersionNotMatch()
+        raise UpdateError(code=UpdaterErrorCode.ENV_VERSION_NOT_MATCH, message='.env version not matched')
 
     sandbox_root = os.environ['BACKEND_SANDBOX_ROOT']
     src_ver = sandbox.detect_sandbox_src_ver(sandbox_root)
     update_step_modules = _get_update_steps(src_ver)
     if not update_step_modules:
-        raise update_errors.SandboxVersionNotSupported(sandbox_version=src_ver)
+        raise UpdateError(code=UpdaterErrorCode.SANDBOX_VERSION_NOT_SUPPORTED,
+                          message=f"Sandbox version: {src_ver} not supported")
 
     update_funcs = [getattr(update_module, 'update_all') for update_module in update_step_modules]
     sandbox.update(sandbox_root=sandbox_root, update_funcs=update_funcs)
