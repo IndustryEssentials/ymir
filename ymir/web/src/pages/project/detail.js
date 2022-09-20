@@ -6,7 +6,7 @@ import t from "@/utils/t"
 import useFetch from '@/hooks/useFetch'
 import Breadcrumbs from "@/components/common/breadcrumb"
 import Empty from "@/components/empty/default"
-import { getStageLabel } from '@/constants/project'
+import { getStageLabel } from '@/constants/iteration'
 
 import s from "./detail.less"
 import { TrainIcon, NavDatasetIcon, ArrowRightIcon, ImportIcon } from "@/components/common/icons"

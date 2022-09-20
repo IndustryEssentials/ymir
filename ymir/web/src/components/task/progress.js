@@ -4,7 +4,7 @@ import { Button, Col, Descriptions, Progress, Row } from "antd"
 import t from "@/utils/t"
 import { toFixed } from "@/utils/number"
 import Terminate from "./terminate"
-import { states } from "@/constants/dataset"
+import { ResultStates } from "@/constants/common"
 import { TASKSTATES } from "@/constants/task"
 import StateTag from "@/components/task/stateTag"
 import s from "./detail.less"
@@ -25,7 +25,7 @@ function TaskProgress({ state, result = {}, task = {}, fresh = () => { }, progre
   }
 
   function terminateVisible() {
-    const resultReady = state === states.READY
+    const resultReady = state === ResultStates.READY
     const isTerminated = task.is_terminated
     const isPending = task.state === TASKSTATES.PENDING
     return !isPending && resultReady && !isTerminated
@@ -46,14 +46,14 @@ function TaskProgress({ state, result = {}, task = {}, fresh = () => { }, progre
         <Item label={t("task.detail.state.current")}>
           <Row>
             <Col>
-              {task.is_terminated && state === states.READY ? t('task.state.terminating') : <>
+              {task.is_terminated && state === ResultStates.READY ? t('task.state.terminating') : <>
                 <StateTag state={state} />
-                {state === states.VALID
+                {state === ResultStates.VALID
                   ? t("task.column.duration") + ": " + duration
                   : null}
               </>}
             </Col>
-            <Col hidden={state !== states.READY} flex={1}>
+            <Col hidden={state !== ResultStates.READY} flex={1}>
               <Progress
                 style={{ width: '90%'}}
                 strokeColor={"#FAD337"}
