@@ -18,9 +18,6 @@ def _get_update_steps(src_ver: str) -> Tuple[ModuleType, ...]:
 
 
 def main() -> int:
-    if os.environ['EXPECTED_YMIR_VERSION'] != YMIR_VERSION:
-        raise Exception('.env version not matched')
-
     sandbox_root = os.environ['BACKEND_SANDBOX_ROOT']
     src_ver = sandbox.detect_sandbox_src_ver(sandbox_root)
     update_step_modules = _get_update_steps(src_ver)
