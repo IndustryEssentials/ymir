@@ -6,7 +6,7 @@ import unittest
 from google.protobuf.json_format import MessageToDict
 import yaml
 
-from common_utils.sandbox import SandboxError
+from common_utils.sandbox_util import SandboxError
 from controller.utils.invoker_call import make_invoker_cmd_call
 from controller.utils.invoker_mapping import RequestTypeToInvoker
 from id_definition.error_codes import CTLResponseCode, UpdaterErrorCode

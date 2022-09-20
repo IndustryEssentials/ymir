@@ -1,6 +1,6 @@
 from controller.invoker.invoker_cmd_base import BaseMirControllerInvoker
 from controller.utils import utils
-from common_utils.sandbox import detect_sandbox_src_ver
+from common_utils.sandbox_util import detect_sandbox_src_ver
 from id_definition.error_codes import CTLResponseCode
 from proto import backend_pb2
 

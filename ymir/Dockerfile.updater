@@ -6,10 +6,11 @@ ARG PIP_SOURCE=https://pypi.org/simple
 RUN pip3 install -r /app/requirements.txt -i ${PIP_SOURCE}
 
 # ymir backend components
-COPY ./backend/src/common/common_utils/sandbox.py /app/common_utils/sandbox.py
-COPY ./backend/src/common/id_definition/error_codes.py /app/id_definition/error_codes.py
-COPY ./backend/src/common/id_definition/task_id.py /app/id_definition/task_id.py
-COPY ./command/mir/version.py /app/mir/version.py
+COPY ./backend/src/common/common_utils/sandbox_updater.py /app/common_utils/
+COPY ./backend/src/common/common_utils/sandbox_util.py /app/common_utils/
+COPY ./backend/src/common/id_definition/error_codes.py /app/id_definition/
+COPY ./backend/src/common/id_definition/task_id.py /app/id_definition/
+COPY ./command/mir/version.py /app/mir/
 
 # updater app
 COPY ./updater/app /app

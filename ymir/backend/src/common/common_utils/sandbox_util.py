@@ -1,9 +1,7 @@
 from collections import defaultdict
 import os
 import re
-import shutil
-import sys
-from typing import Callable, List, Dict, Set, Tuple
+from typing import List, Dict, Set
 
 import yaml
 
@@ -36,7 +34,7 @@ def detect_sandbox_src_ver(sandbox_root: str) -> str:
         SandboxError if labels.yaml not found, or can not be parsed as yaml;
         found no user space version or multiple user space versions.
     """
-    user_to_repos = _detect_users_and_repos(sandbox_root)
+    user_to_repos = detect_users_and_repos(sandbox_root)
     ver_to_users: Dict[str, List[str]] = defaultdict(list)
     for user_id in user_to_repos:
         user_label_file = os.path.join(sandbox_root, user_id, 'labels.yaml')
@@ -56,52 +54,7 @@ def detect_sandbox_src_ver(sandbox_root: str) -> str:
     return list(ver_to_users.keys())[0]
 
 
-def update(sandbox_root: str, src_ver: str, dst_ver: str) -> None:
-    _backup(sandbox_root)
-
-    step_module_namess = _get_update_steps(src_ver=src_ver, dst_ver=dst_ver)
-    if not step_module_namess:
-        raise SandboxError(error_code=UpdaterErrorCode.SANDBOX_VERSION_NOT_SUPPORTED,
-                           error_message=f"Sandbox version: {src_ver} not supported")
-
-    user_to_repos = _detect_users_and_repos(sandbox_root)
-    try:
-        for name in step_module_namess:
-            update_func: Callable = getattr(sys.modules[name], 'update_all')
-            for user_id, repo_ids in user_to_repos.items():
-                for repo_id in repo_ids:
-                    update_func(mir_root=os.path.join(sandbox_root, user_id, repo_id))
-    except Exception as e:
-        _roll_back(sandbox_root)
-        raise e
-
-    # cleanup
-    shutil.rmtree(os.path.join(sandbox_root, 'backup'))
-
-
-def _backup(sandbox_root: str) -> None:
-    backup_dir = os.path.join(sandbox_root, 'backup')
-    os.makedirs(backup_dir, exist_ok=True)
-    if os.listdir(backup_dir):
-        raise SandboxError(error_code=UpdaterErrorCode.BACKUP_DIR_NOT_EMPTY,
-                           error_message=f"Backup directory not empty: {backup_dir}")
-
-    for user_id in _detect_users_and_repos(sandbox_root):
-        shutil.copytree(src=os.path.join(sandbox_root, user_id), dst=os.path.join(backup_dir, user_id))
-
-
-def _roll_back(sandbox_root: str) -> None:
-    backup_dir = os.path.join(sandbox_root, 'backup')
-    for user_id in _detect_users_and_repos(sandbox_root):
-        src_user_dir = os.path.join(backup_dir, user_id)
-        dst_user_dir = os.path.join(sandbox_root, user_id)
-        shutil.rmtree(dst_user_dir)
-        shutil.copytree(src_user_dir, dst_user_dir)
-
-    shutil.rmtree(os.path.join(sandbox_root, 'backup'))
-
-
-def _detect_users_and_repos(sandbox_root: str) -> Dict[str, Set[str]]:
+def detect_users_and_repos(sandbox_root: str) -> Dict[str, Set[str]]:
     """
     detect user and repo directories in this sandbox
 
@@ -122,10 +75,3 @@ def _detect_users_and_repos(sandbox_root: str) -> Dict[str, Set[str]]:
             and os.path.isdir(os.path.join(user_dir, repo_id, '.git'))
         ])
     return user_to_repos
-
-
-def _get_update_steps(src_ver: str, dst_ver: str) -> Tuple[str, ...]:
-    _UPDATE_STEPS: Dict[Tuple[str, str], Tuple[str, ...]] = {
-        ('1.1.0', '1.3.0'): ('update_1_1_0_to_1_3_0.step_updater', ),
-    }
-    return _UPDATE_STEPS.get((src_ver, dst_ver))
