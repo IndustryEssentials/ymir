@@ -38,7 +38,13 @@ class LabelStorage(BaseModel):
     @validator('version')
     def _check_version(cls, v: int) -> int:
         if v != EXPECTED_FILE_VERSION:
-            raise ValueError(f"incorrect version: {v}, needed {EXPECTED_FILE_VERSION}")
+            raise ValueError(f"incorrect version: {v}, expect: {EXPECTED_FILE_VERSION}")
+        return v
+
+    @validator('ymir_version')
+    def _check_ymir_version(cls, v: str) -> str:
+        if v != YMIR_VERSION:
+            raise ValueError(f"incorrect ymir version: {v}, expect: {YMIR_VERSION}")
         return v
 
     @validator('labels')

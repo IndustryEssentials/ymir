@@ -2,7 +2,7 @@ from collections import defaultdict
 import os
 import re
 import shutil
-from typing import List, Dict, Set
+from typing import Callable, List, Dict, Set
 
 import yaml
 
@@ -19,7 +19,7 @@ class SandboxError(Exception):
         self.error_message = error_message
 
     def __str__(self) -> str:
-        return f"code: {self.error_code}, content: {self.error_message}"
+        return f"code: {self.error_code}, message: {self.error_message}"
 
 
 def detect_sandbox_src_ver(sandbox_root: str) -> str:
@@ -56,39 +56,43 @@ def detect_sandbox_src_ver(sandbox_root: str) -> str:
     return list(ver_to_users.keys())[0]
 
 
-def backup(sandbox_root: str) -> str:
+def update(sandbox_root: str, update_funcs: List[Callable]) -> None:
+    _backup(sandbox_root)
+
+    user_to_repos = _detect_users_and_repos(sandbox_root)
+    try:
+        for update_func in update_funcs:
+            for user_id, repo_ids in user_to_repos.items():
+                for repo_id in repo_ids:
+                    update_func(mir_root=os.path.join(sandbox_root, user_id, repo_id))
+    except Exception as e:
+        _roll_back(sandbox_root)
+        raise e
+
+    # cleanup
+    shutil.rmtree(os.path.join(sandbox_root, 'backup'))
+
+
+def _backup(sandbox_root: str) -> None:
     backup_dir = os.path.join(sandbox_root, 'backup')
     os.makedirs(backup_dir, exist_ok=True)
     if os.listdir(backup_dir):
         raise SandboxError(error_code=UpdaterErrorCode.BACKUP_DIR_NOT_EMPTY,
                            error_message=f"Backup directory not empty: {backup_dir}")
 
-    user_to_repos = _detect_users_and_repos(sandbox_root)
-    for user_id, repo_ids in user_to_repos.items():
-        src_user_dir = os.path.join(sandbox_root, user_id)
-        dst_user_dir = os.path.join(backup_dir, user_id)
-        _copy_user_space(src_user_dir=src_user_dir, dst_user_dir=dst_user_dir, repo_ids=repo_ids)
-
-    return backup_dir
+    for user_id in _detect_users_and_repos(sandbox_root):
+        shutil.copytree(src=os.path.join(sandbox_root, user_id), dst=os.path.join(backup_dir, user_id))
 
 
-def roll_back(sandbox_root: str) -> None:
-    user_to_repos = _detect_users_and_repos(sandbox_root)
-    for user_id, repo_ids in user_to_repos.items():
-        src_user_dir = os.path.join(os.path.join(sandbox_root, 'backup'), user_id)
+def _roll_back(sandbox_root: str) -> None:
+    backup_dir = os.path.join(sandbox_root, 'backup')
+    for user_id in _detect_users_and_repos(sandbox_root):
+        src_user_dir = os.path.join(backup_dir, user_id)
         dst_user_dir = os.path.join(sandbox_root, user_id)
         shutil.rmtree(dst_user_dir)
-        _copy_user_space(src_user_dir=src_user_dir, dst_user_dir=dst_user_dir, repo_ids=repo_ids)
-    remove_backup(sandbox_root)
+        shutil.copytree(src_user_dir, dst_user_dir)
 
-
-def remove_backup(sandbox_root: str) -> None:
     shutil.rmtree(os.path.join(sandbox_root, 'backup'))
-
-
-def get_all_repo_rel_paths(sandbox_root: str) -> Set[str]:
-    user_to_repos = _detect_users_and_repos(sandbox_root)
-    return {os.path.join(user_id, repo_id) for user_id, repo_ids in user_to_repos.items() for repo_id in repo_ids}
 
 
 def get_tags_for_repo(mir_root: str) -> List[str]:
@@ -104,7 +108,7 @@ def _detect_users_and_repos(sandbox_root: str) -> Dict[str, Set[str]]:
         sandbox_root (str): root of this sandbox
 
     Returns:
-        Dict[str, List[str]]: key: user id, value: repo ids
+        Dict[str, Set[str]]: key: user id, value: repo ids
     """
     user_to_repos = defaultdict(set)
     for user_id in os.listdir(sandbox_root):
@@ -117,10 +121,3 @@ def _detect_users_and_repos(sandbox_root: str) -> Dict[str, Set[str]]:
             and os.path.isdir(os.path.join(user_dir, repo_id, '.git'))
         ])
     return user_to_repos
-
-
-def _copy_user_space(src_user_dir: str, dst_user_dir: str, repo_ids: Set[str]) -> None:
-    os.makedirs(dst_user_dir, exist_ok=True)
-    shutil.copy(src=os.path.join(src_user_dir, 'labels.yaml'), dst=os.path.join(dst_user_dir, 'labels.yaml'))
-    for repo_id in repo_ids:
-        shutil.copytree(src=os.path.join(src_user_dir, repo_id), dst=os.path.join(dst_user_dir, repo_id))
