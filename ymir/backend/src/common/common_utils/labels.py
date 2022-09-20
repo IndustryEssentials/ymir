@@ -44,7 +44,7 @@ class LabelStorage(BaseModel):
 
     @validator('ymir_version')
     def _check_ymir_version(cls, v: str) -> str:
-        if not re.match(pattern=r'^\d+\.\d+\.\d+$', string=v):
+        if v and not re.match(pattern=r'^\d+\.\d+\.\d+$', string=v):
             raise ValueError(f"incorrect ymir version: {v}, expect: #.#.#")
         return v
 
