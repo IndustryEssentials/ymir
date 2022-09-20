@@ -52,7 +52,7 @@ enum RequestType {
     // Long task
     TASK_CREATE = 1001;
 
-    reserved 15, 1002;
+    reserved 15;
 }
 
 message GeneralReq {
@@ -93,7 +93,7 @@ message GeneralReq {
     string model_stage = 27;
     ReqCreateTask req_create_task = 1001;
 
-    reserved 17, 1002;
+    reserved 17;
 }
 
 message GeneralResp {
@@ -107,29 +107,27 @@ message GeneralResp {
     LabelCollection label_collection = 9;
     bool ops_ret = 10;
     string sandbox_version = 11;
-    RespCMDInference detection = 1001;
-    bool enable_livecode = 1002;
-    mir.command.Evaluation evaluation = 1003;
+    RespCMDInference detection = 1000;
+    bool enable_livecode = 1001;
+    mir.command.Evaluation evaluation = 1002;
 
-    reserved 5, 1000;
+    reserved 5;
 }
 
 // base args for create task request
 message ReqCreateTask {
     // task type
     mir.command.TaskType task_type = 1;
-    bool no_task_monitor = 3;
+    bool no_task_monitor = 2;
 
-    TaskReqTraining training = 102;
-    TaskReqMining mining = 103;
-    TaskReqImportDataset import_dataset = 104;
-    TaskReqExporting exporting = 105;
-    TaskReqCopyData copy = 107;
-    TaskReqLabeling labeling = 108;
-    TaskReqImportModel import_model = 110;
-    TaskReqVisualization visualization = 111;
-
-    reserved 2, 101, 106, 109;
+    TaskReqTraining training = 101;
+    TaskReqMining mining = 102;
+    TaskReqImportDataset import_dataset = 103;
+    TaskReqExporting exporting = 104;
+    TaskReqCopyData copy = 105;
+    TaskReqLabeling labeling = 106;
+    TaskReqImportModel import_model = 107;
+    TaskReqVisualization visualization = 108;
 }
 
 message TaskReqTraining {
@@ -138,16 +136,12 @@ message TaskReqTraining {
         mir.command.TvtType dataset_type = 2;
     }
     repeated TrainingDatasetType in_dataset_types = 1;
-    string preprocess_config = 4;
-
-    reserved 2, 3;
+    string preprocess_config = 2;
 }
 
 message TaskReqMining {
-    int32 top_k = 4;  // > 0, will keep all if set to 0.
-    bool generate_annotations = 6;
-
-    reserved 1, 2, 3, 5;
+    int32 top_k = 1;  // > 0, will keep all if set to 0.
+    bool generate_annotations = 2;
 }
 
 message TaskReqImportDataset {
@@ -155,12 +149,10 @@ message TaskReqImportDataset {
     string asset_dir = 1;
     // single pascal xml per asset, same base_filename as in asset-folder
     string pred_dir = 2;
-    string gt_dir = 4;
+    string gt_dir = 3;
     // strategy for unknown class types: stop, ignore or add
-    UnknownTypesStrategy unknown_types_strategy = 5;
-    bool clean_dirs = 6;
-
-    reserved 3;
+    UnknownTypesStrategy unknown_types_strategy = 4;
+    bool clean_dirs = 5;
 }
 
 message TaskReqExporting {
@@ -174,10 +166,8 @@ message TaskReqExporting {
 message TaskReqCopyData {
     string src_user_id = 1;
     string src_repo_id = 2;
-    bool name_strategy_ignore = 4;
-    bool drop_annotations = 5;
-
-    reserved 3;
+    bool name_strategy_ignore = 3;
+    bool drop_annotations = 4;
 }
 
 enum AnnotationType {
@@ -187,13 +177,11 @@ enum AnnotationType {
 }
 
 message TaskReqLabeling {
-    repeated string labeler_accounts = 2;
-    string expert_instruction_url = 4;
-    string project_name = 5;
-    bool export_annotation = 6;
-    AnnotationType annotation_type = 7;
-
-    reserved 1, 3;
+    repeated string labeler_accounts = 1;
+    string expert_instruction_url = 2;
+    string project_name = 3;
+    bool export_annotation = 4;
+    AnnotationType annotation_type = 5;
 }
 
 message TaskReqImportModel {
@@ -202,11 +190,9 @@ message TaskReqImportModel {
 
 message TaskReqVisualization {
     string vis_tool_id = 1;
-    repeated string in_dataset_names = 3;
-    float iou_thr = 4;
-    float conf_thr = 5;
-
-    reserved 2;
+    repeated string in_dataset_names = 2;
+    float iou_thr = 3;
+    float conf_thr = 4;
 }
 
 message RespCMDInference {

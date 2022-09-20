@@ -5,17 +5,24 @@ import t from "@/utils/t"
 import { percent, isNumber } from '@/utils/number'
 import useFetch from '@/hooks/useFetch'
 
-import KeywordRates from "@/components/dataset/keywordRates"
+import SampleRates from "@/components/dataset/sampleRates"
+import MiningSampleRates from "@/components/dataset/miningSampleRates"
 
 import s from "./index.less"
+
+function RatesHOC(Rates) {
+  function RatesRender(props) {
+    return <Rates {...props} />
+  }
+  return RatesRender
+}
 
 function List({ project }) {
   const [iterations, getIterations] = useFetch('iteration/getIterations', [])
   const [list, setList] = useState([])
 
   useEffect(() => {
-    console.log('project in list:', project)
-    project?.id && getIterations({ id: project.id })
+    project?.id && getIterations({ id: project.id, more: true })
   }, [project])
 
   useEffect(() => iterations.length && setList(fetchHandle(iterations)), [iterations])
@@ -29,7 +36,7 @@ function List({ project }) {
     {
       title: showTitle("iteration.column.premining"),
       dataIndex: "miningDatasetLabel",
-      render: (label, { versionName, miningDataset }) => renderPop(label, miningDataset),
+      render: (label, { id, versionName, miningDataset }) => renderPop(label, miningDataset, <MiningSampleRates iid={id} />),
       ellipsis: true,
     },
     {
@@ -56,7 +63,7 @@ function List({ project }) {
       title: showTitle("iteration.column.merging"),
       dataIndex: "trainUpdateDatasetLabel",
       render: (label, { trainEffect, trainUpdateDataset }) => renderPop(label, trainUpdateDataset,
-        <span className={s.extraTag}>{renderExtra(trainEffect)}</span>),
+        null, <span className={s.extraTag}>{renderExtra(trainEffect)}</span>),
       align: 'center',
       ellipsis: true,
     },
@@ -71,9 +78,9 @@ function List({ project }) {
     },
   ]
 
-  function renderPop(label, dataset = {}, extra) {
+  function renderPop(label, dataset = {}, ccontent, extra = '') {
     dataset.project = project
-    const content = <KeywordRates keywords={project.keywords} dataset={dataset} progressWidth={0.4}></KeywordRates>
+    const content = ccontent || <SampleRates keywords={project.keywords} dataset={dataset} progressWidth={0.4} />
     return <Popover content={content} overlayInnerStyle={{ minWidth: 500 }}>
       <span>{label}</span>
       {extra}
@@ -87,7 +94,6 @@ function List({ project }) {
   }
 
   function fetchHandle(iterations) {
-    console.log('iterations in list:', iterations)
     const iters = iterations.map(iteration => {
       return {
         ...iteration,
@@ -125,12 +131,12 @@ function List({ project }) {
 
   return (
     <div className={s.list}>
-          <Table
-            dataSource={list}
-            pagination={false}
-            rowKey={(record) => record.id}
-            columns={columns}
-          ></Table>
+      <Table
+        dataSource={list}
+        pagination={false}
+        rowKey={(record) => record.id}
+        columns={columns}
+      ></Table>
     </div>
   )
 }

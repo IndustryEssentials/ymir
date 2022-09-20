@@ -6,7 +6,7 @@ import { useHistory, useLocation, useParams } from "umi"
 import { formLayout } from "@/config/antd"
 import t from "@/utils/t"
 import { randomNumber } from "@/utils/number"
-import { MiningStrategy } from '@/constants/project'
+import { MiningStrategy } from '@/constants/iteration'
 
 import Breadcrumbs from "@/components/common/breadcrumb"
 import RecommendKeywords from "@/components/common/recommendKeywords"

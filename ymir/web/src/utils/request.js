@@ -13,8 +13,6 @@ const getBaseURL = () => {
   return window.baseConfig?.APIURL || envUrl
 }
 
-// console.log('base url: ', getBaseURL(), process.env)
-
 const request = axios.create({
   baseURL: getBaseURL(),
   // timeout: 1,

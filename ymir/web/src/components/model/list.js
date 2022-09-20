@@ -5,7 +5,7 @@ import { Link, useHistory } from "umi"
 import { Form, Input, Table, Modal, Row, Col, Tooltip, Pagination, Space, Empty, Button, message, Popover, } from "antd"
 
 import { diffTime } from '@/utils/date'
-import { states } from '@/constants/model'
+import { ResultStates } from '@/constants/common'
 import { TASKTYPES, TASKSTATES } from '@/constants/task'
 import t from "@/utils/t"
 
@@ -429,11 +429,11 @@ function Model({ pid, project = {}, iterations, groups, modelList, versions, que
   }
 
   function isValidModel(state) {
-    return states.VALID === state
+    return ResultStates.VALID === state
   }
 
   function isRunning(state) {
-    return states.READY === state
+    return ResultStates.READY === state
   }
 
   function add() {

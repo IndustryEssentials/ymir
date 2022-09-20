@@ -8,7 +8,7 @@ import t from "@/utils/t"
 import { humanize } from "@/utils/number"
 import { diffTime } from '@/utils/date'
 import { getTaskTypeLabel, TASKSTATES, TASKTYPES } from '@/constants/task'
-import { states } from '@/constants/dataset'
+import { ResultStates } from '@/constants/common'
 
 import CheckProjectDirty from "@/components/common/CheckProjectDirty"
 import StateTag from "@/components/task/stateTag"
@@ -490,11 +490,11 @@ function Datasets({ pid, project = {}, iterations, groups, datasetList, query, v
   }
 
   function isValidDataset(state) {
-    return states.VALID === state
+    return ResultStates.VALID === state
   }
 
   function isRunning(state) {
-    return state === states.READY
+    return state === ResultStates.READY
   }
 
   function isTestingDataset(id) {

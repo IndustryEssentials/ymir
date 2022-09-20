@@ -72,7 +72,7 @@ export const FormatDetailModal = props => {
       footer={null}
     >
       <Card tabList={tabs} activeTabKey={active} onTabChange={setActive}>
-        {console.log(contents, contents[active])} {contents[active]}
+        {contents[active]}
       </Card>
     </Modal>
   )

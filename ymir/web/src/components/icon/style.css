@@ -1,0 +1,9 @@
+.spin,.spin svg {animation: iconpark-spin 1s infinite linear;}
+.rtl,.rtl svg {transform: scaleX(-1);}
+.spin.rtl,.spin.rtl svg {animation: iconpark-spin-rtl 1s infinite linear;}
+@keyframes iconpark-spin {
+  0% { -webkit-transform: rotate(0); transform: rotate(0);} 100% {-webkit-transform: rotate(360deg); transform: rotate(360deg);}
+}
+@keyframes iconpark-spin-rtl {
+  0% {-webkit-transform: scaleX(-1) rotate(0); transform: scaleX(-1) rotate(0);} 100% {-webkit-transform: scaleX(-1) rotate(360deg); transform: scaleX(-1) rotate(360deg);}
+}
