@@ -18,7 +18,7 @@ class SandboxError(Exception):
         self.error_message = error_message
 
     def __str__(self) -> str:
-        return f"code: {self.error_code}, content: {self.error_message}"
+        return f"code: {self.error_code}, message: {self.error_message}"
 
 
 def detect_sandbox_src_ver(sandbox_root: str) -> str:
