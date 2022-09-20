@@ -2,7 +2,8 @@ from collections import defaultdict
 import os
 import re
 import shutil
-from typing import Callable, List, Dict, Set
+import sys
+from typing import Callable, List, Dict, Set, Tuple
 
 import yaml
 
@@ -55,12 +56,17 @@ def detect_sandbox_src_ver(sandbox_root: str) -> str:
     return list(ver_to_users.keys())[0]
 
 
-def update(sandbox_root: str, update_funcs: List[Callable]) -> None:
+def update(sandbox_root: str, src_ver: str, dst_ver: str) -> None:
     _backup(sandbox_root)
+
+    step_module_namess = _get_update_steps(src_ver=src_ver, dst_ver=dst_ver)
+    if not step_module_namess:
+        raise Exception(f"Sandbox version: {src_ver} not supported")
 
     user_to_repos = _detect_users_and_repos(sandbox_root)
     try:
-        for update_func in update_funcs:
+        for name in step_module_namess:
+            update_func: Callable = getattr(sys.modules[name], 'update_all')
             for user_id, repo_ids in user_to_repos.items():
                 for repo_id in repo_ids:
                     update_func(mir_root=os.path.join(sandbox_root, user_id, repo_id))
@@ -115,3 +121,10 @@ def _detect_users_and_repos(sandbox_root: str) -> Dict[str, Set[str]]:
             and os.path.isdir(os.path.join(user_dir, repo_id, '.git'))
         ])
     return user_to_repos
+
+
+def _get_update_steps(src_ver: str, dst_ver: str) -> Tuple[str, ...]:
+    _UPDATE_STEPS: Dict[Tuple[str, str], Tuple[str, ...]] = {
+        ('1.1.0', '1.3.0'): ('update_1_1_0_to_1_3_0.step_updater', ),
+    }
+    return _UPDATE_STEPS.get((src_ver, dst_ver))

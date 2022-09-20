@@ -1,6 +1,6 @@
 from controller.invoker.invoker_cmd_base import BaseMirControllerInvoker
 from controller.utils import utils
-from common_utils import sandbox
+from common_utils.sandbox import detect_sandbox_src_ver
 from id_definition.error_codes import CTLResponseCode
 from proto import backend_pb2
 
@@ -15,6 +15,6 @@ class SandboxVersionInvoker(BaseMirControllerInvoker):
     def invoke(self) -> backend_pb2.GeneralResp:
         response = backend_pb2.GeneralResp()
         response.code = CTLResponseCode.CTR_OK
-        response.sandbox_version = sandbox.detect_sandbox_src_ver(self._sandbox_root)
+        response.sandbox_version = detect_sandbox_src_ver(self._sandbox_root)
 
         return response
