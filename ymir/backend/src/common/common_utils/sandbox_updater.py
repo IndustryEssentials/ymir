@@ -6,8 +6,9 @@ from typing import Callable, List
 
 from common_utils.sandbox_util import detect_users_and_repos, SandboxError
 from id_definition.error_codes import UpdaterErrorCode
+from mir.version import DEFAULT_YMIR_SRC_VERSION
 
-# import update_1_1_0_to_1_3_0.step_updater  # type: ignore
+import update_1_1_0_to_1_3_0.step_updater  # noqa
 
 
 def update(sandbox_root: str, src_ver: str, dst_ver: str) -> None:
@@ -58,18 +59,18 @@ def _roll_back(sandbox_root: str) -> None:
 
 
 def _get_equivalent_version(ver: str, default_ver: str = '') -> str:
-    _EQUUIVALENT_VERSIONS = {
+    _EQUIVALENT_VERSIONS = {
         '1.1.0': {'1.1.0'},
-        '1.3.1': {'1.3.0', '1.3.1'},
+        '1.3.0': {'1.3.0'},
     }
-    for k, v in _EQUUIVALENT_VERSIONS.items():
+    for k, v in _EQUIVALENT_VERSIONS.items():
         if ver in v:
             return k
     return default_ver
 
 
 def _get_update_steps(src_ver: str, dst_ver: str) -> List[Callable]:
-    eq_src_ver = _get_equivalent_version(src_ver, default_ver='1.1.0')
+    eq_src_ver = _get_equivalent_version(src_ver, default_ver=DEFAULT_YMIR_SRC_VERSION)
     eq_dst_ver = _get_equivalent_version(dst_ver)
 
     _UPDATE_NODES = ['1.1.0', '1.3.0']
@@ -80,6 +81,5 @@ def _get_update_steps(src_ver: str, dst_ver: str) -> List[Callable]:
         src_step_ver = _UPDATE_NODES[idx].replace('.', '_')
         dst_step_ver = _UPDATE_NODES[idx + 1].replace('.', '_')
         step_module_name = f"update_{src_step_ver}_to_{dst_step_ver}.step_updater"
-        logging.info(f"module name: {step_module_name}")
         steps.append(getattr(sys.modules[step_module_name], 'update_all'))
     return steps
