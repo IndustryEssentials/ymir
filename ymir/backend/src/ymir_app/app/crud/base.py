@@ -2,7 +2,7 @@ from typing import Any, Dict, Generic, List, Optional, Type, TypeVar, Union
 
 from fastapi.encoders import jsonable_encoder
 from pydantic import BaseModel
-from sqlalchemy import not_
+from sqlalchemy import func, not_
 from sqlalchemy.orm import Session
 
 from app.config import settings
@@ -41,14 +41,14 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         )
 
     def get_by_name(self, db: Session, name: str) -> Optional[ModelType]:
-        return db.query(self.model).filter(self.model.name == name).first()  # type: ignore
+        return db.query(self.model).filter(self.model.name == func.binary(name)).first()  # type: ignore
 
     def get_by_user_and_name(self, db: Session, user_id: int, name: str) -> Optional[ModelType]:
         return (
             db.query(self.model)
             .filter(
                 self.model.user_id == user_id,  # type: ignore
-                self.model.name == name,  # type: ignore
+                self.model.name == func.binary(name),  # type: ignore
                 not_(self.model.is_deleted),  # type: ignore
             )
             .one_or_none()
