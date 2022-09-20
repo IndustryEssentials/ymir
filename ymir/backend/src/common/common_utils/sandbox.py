@@ -2,7 +2,7 @@ from collections import defaultdict
 import os
 import re
 import shutil
-from typing import List, Dict, Set
+from typing import Callable, List, Dict, Set
 
 import yaml
 
@@ -55,7 +55,24 @@ def detect_sandbox_src_ver(sandbox_root: str) -> str:
     return list(ver_to_users.keys())[0]
 
 
-def backup(sandbox_root: str) -> None:
+def update(sandbox_root: str, update_funcs: List[Callable]) -> None:
+    _backup(sandbox_root)
+
+    user_to_repos = _detect_users_and_repos(sandbox_root)
+    try:
+        for user_id, repo_ids in user_to_repos.items():
+            for repo_id in repo_ids:
+                for update_func in update_funcs:
+                    update_func(mir_root=os.path.join(sandbox_root, user_id, repo_id))
+    except Exception as e:
+        _roll_back(sandbox_root)
+        raise e
+
+    # cleanup
+    _remove_backup(sandbox_root)
+
+
+def _backup(sandbox_root: str) -> None:
     backup_dir = os.path.join(sandbox_root, 'backup')
     os.makedirs(backup_dir, exist_ok=True)
     if os.listdir(backup_dir):
@@ -66,7 +83,7 @@ def backup(sandbox_root: str) -> None:
         shutil.copytree(src=os.path.join(sandbox_root, user_id), dst=os.path.join(backup_dir, user_id))
 
 
-def roll_back(sandbox_root: str) -> None:
+def _roll_back(sandbox_root: str) -> None:
     backup_dir = os.path.join(sandbox_root, 'backup')
     for user_id in _detect_users_and_repos(sandbox_root):
         src_user_dir = os.path.join(backup_dir, user_id)
@@ -74,16 +91,11 @@ def roll_back(sandbox_root: str) -> None:
         shutil.rmtree(dst_user_dir)
         shutil.copytree(src_user_dir, dst_user_dir)
 
-    remove_backup(sandbox_root)
+    _remove_backup(sandbox_root)
 
 
-def remove_backup(sandbox_root: str) -> None:
+def _remove_backup(sandbox_root: str) -> None:
     shutil.rmtree(os.path.join(sandbox_root, 'backup'))
-
-
-def get_all_repo_rel_paths(sandbox_root: str) -> Set[str]:
-    user_to_repos = _detect_users_and_repos(sandbox_root)
-    return {os.path.join(user_id, repo_id) for user_id, repo_ids in user_to_repos.items() for repo_id in repo_ids}
 
 
 def _detect_users_and_repos(sandbox_root: str) -> Dict[str, Set[str]]:
