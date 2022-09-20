@@ -111,7 +111,7 @@ class Settings(BaseSettings):
 
     # migration
     # todo update
-    MIGRATION_CHECKPOINT: str = ""
+    MIGRATION_CHECKPOINT: str = "9bb7bb8b71c3"
 
 
 settings = Settings(_env_file=".env")  # type: ignore

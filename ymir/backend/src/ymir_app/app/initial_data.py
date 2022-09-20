@@ -27,9 +27,10 @@ def should_migrate_data(base_alembic_revision: Optional[str]) -> bool:
     try:
         revisions = list(script_dir.walk_revisions(base_alembic_revision, settings.MIGRATION_CHECKPOINT))
     except CommandError:
-        # base alembic revision already newer than 1.3.0
+        # base alembic revision already newer than MIGRATION_CHECKPOINT
         return False
-    # at least two migration revisions indicate that we do migrate from previous version to 1.3.0
+    # at least two migration revisions indicate that
+    # we do migrate from previous version to MIGRATION_CHECKPOINT
     return len(revisions) > 1
 
 
