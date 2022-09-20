@@ -69,7 +69,7 @@ def _get_equivalent_version(ver: str, default_ver: str = '') -> str:
     return default_ver
 
 
-def _get_update_steps(src_ver: str, dst_ver: str) -> List[Callable]:
+def _get_update_steps(src_ver: str, dst_ver: str) -> List[Callable[[str], None]]:
     eq_src_ver = _get_equivalent_version(src_ver, default_ver=DEFAULT_YMIR_SRC_VERSION)
     eq_dst_ver = _get_equivalent_version(dst_ver)
 
