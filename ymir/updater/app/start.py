@@ -5,7 +5,6 @@ from types import ModuleType
 from typing import Dict, Tuple
 
 from common_utils import sandbox
-from id_definition.error_codes import UpdaterErrorCode
 from mir.version import YMIR_VERSION
 
 import update_1_1_0_to_1_3_0.step_updater
