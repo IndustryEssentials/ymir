@@ -105,7 +105,7 @@ class TestInvokerTaskImportDataset(unittest.TestCase):
         os.makedirs(working_dir, exist_ok=True)
 
         expected_cmd_import_dataset = (
-            "mir import --root {0} --dataset-name {1} --dst-rev {1}@{1} --src-revs {2} "
+            "mir import --root {0} --dst-rev {1}@{1} --src-revs {2} "
             "--index-file {3} --gen-dir {4} -w {5} --anno-type {6} --pred-dir {4} --gt-dir {4} "
             "--unknown-types-strategy add".format(self._mir_repo_root, self._task_id, 'master',
                                                   os.path.join(working_dir, 'index.txt'), self._storage_root,
