@@ -61,7 +61,8 @@ def update(sandbox_root: str, src_ver: str, dst_ver: str) -> None:
 
     step_module_namess = _get_update_steps(src_ver=src_ver, dst_ver=dst_ver)
     if not step_module_namess:
-        raise Exception(f"Sandbox version: {src_ver} not supported")
+        raise SandboxError(error_code=UpdaterErrorCode.SANDBOX_VERSION_NOT_SUPPORTED,
+                           error_message=f"Sandbox version: {src_ver} not supported")
 
     user_to_repos = _detect_users_and_repos(sandbox_root)
     try:
