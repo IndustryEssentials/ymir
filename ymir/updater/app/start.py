@@ -10,13 +10,6 @@ from mir.version import YMIR_VERSION
 import update_1_1_0_to_1_3_0.step_updater
 
 
-class UpdateError(Exception):
-    def __init__(self, code: int, message: str) -> None:
-        super().__init__()
-        self.code = code
-        self.message = message
-
-
 def _get_update_steps(src_ver: str) -> Tuple[ModuleType, ...]:
     _UPDATE_STEPS: Dict[Tuple[str, str], Tuple[ModuleType, ...]] = {
         ('1.1.0', '1.3.0'): (update_1_1_0_to_1_3_0.step_updater, ),
