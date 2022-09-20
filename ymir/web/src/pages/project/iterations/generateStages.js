@@ -16,7 +16,6 @@ export default (project = {}, results) => {
     results?.candidateTrainSet,
     results?.testSet,
   ].reduce((prev, curr) => prev && validDataset(curr), true)
-  console.log('trainValid:', trainValid, results)
 
   const modelStage = {
     field: 'modelStage',

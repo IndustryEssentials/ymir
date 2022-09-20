@@ -202,7 +202,6 @@ export default {
       const tasks = payload || {}
       const updatedResults = Object.keys(results).reduce((prev, key) => {
         const result = results[key]
-        console.log('result:', result, results)
         const updated = result ? updateResultState(result, tasks) : undefined
         return { ...prev, [key]: updated }
       }, {})
