@@ -22,6 +22,7 @@ export default {
     iterations: {},
     iteration: {},
     currentStageResult: {},
+    prepareStagesResult: {},
   },
   effects: {
     *getIterations({ payload }, { call, put }) {
@@ -118,6 +119,39 @@ export default {
         imodel: model,
       }
     },
+    *getPrepareStagesResult({ payload }, { put }) {
+      const project = yield put.resolve({
+        type: 'project/getProject',
+        payload,
+      })
+      const results = {
+        testSet: project.testSet,
+        miningSet: project.miningSet,
+      }
+
+      if (project.candidateTrainSet) {
+        const candidateTrainSet = yield put.resolve({
+          type: 'dataset/getDataset',
+          payload: { id: project.candidateTrainSet, }
+        })
+        results.candidateTrainSet = candidateTrainSet
+      }
+
+      if (project.model) {
+        const model = yield put.resolve({
+          type: 'model/getModel',
+          payload: { id: project.model, }
+        })
+        results.modelStage = model
+      }
+
+      yield put({
+        type: 'UPDATE_PREPARE_STAGES_RESULT',
+        payload: results,
+      })
+
+      return results
+    },
     *setCurrentStageResult({ payload }, { call, put }) {
       const result = payload
       if (result) {
@@ -163,6 +197,23 @@ export default {
         })
       }
     },
+    *updatePrepareStagesResult({ payload }, { put, select }) {
+      const results = yield select(state => state.iteration.prepareStagesResult)
+      const tasks = payload || {}
+      const updatedResults = Object.keys(results).reduce((prev, key) => {
+        const result = results[key]
+        console.log('result:', result, results)
+        const updated = result ? updateResultState(result, tasks) : undefined
+        return { ...prev, [key]: updated }
+      }, {})
+
+      if (updatedResults) {
+        yield put({
+          type: 'UPDATE_PREPARE_STAGES_RESULT',
+          payload: updatedResults,
+        })
+      }
+    },
   },
   reducers: {
     UPDATE_ITERATIONS(state, { payload }) {
@@ -185,6 +236,12 @@ export default {
       return {
         ...state,
         currentStageResult: payload,
+      }
+    },
+    UPDATE_PREPARE_STAGES_RESULT(state, { payload }) {
+      return {
+        ...state,
+        prepareStagesResult: payload,
       }
     },
   },

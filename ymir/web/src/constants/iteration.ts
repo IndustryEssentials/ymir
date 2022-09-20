@@ -27,7 +27,7 @@ type stageObject = {
 }
 
 export const StageList = () => {
-  const iterationParams = 'iterationId={id}&currentStage={stage}&outputKey={output}'
+  const iterationParams = 'iterationId={id}&currentStage={stage}&outputKey={output}&from=iteration'
   const list = [
     { label: 'ready', value: Stages.prepareMining, output: 'miningSet', input: '', url: `/home/project/{pid}/fusion?did={s0d}&strategy={s0s}&chunk={s0c}&${iterationParams}` },
     { label: 'mining', value: Stages.mining, output: 'miningResult', input: 'miningSet', url: `/home/project/{pid}/mining?did={s1d}&mid={s1m}&${iterationParams}` },

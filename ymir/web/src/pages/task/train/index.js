@@ -36,7 +36,7 @@ function Train({ allDatasets, datasetCache, ...func }) {
   const pid = Number(pageParams.id)
   const history = useHistory()
   const location = useLocation()
-  const { mid, image, iterationId, outputKey, currentStage, test } = location.query
+  const { mid, image, iterationId, outputKey, currentStage, test, from } = location.query
   const stage = string2Array(mid)
   const did = Number(location.query.did)
   const [project, setProject] = useState({})
@@ -55,8 +55,11 @@ function Train({ allDatasets, datasetCache, ...func }) {
   const [openpai, setOpenpai] = useState(false)
   const checkDuplicated = useDuplicatedCheck(submit)
   const [sys, getSysInfo] = useFetch('common/getSysInfo', {})
+  const [updated, updateProject] = useFetch('project/updateProject')
+
   const selectOpenpai = Form.useWatch('openpai', form)
   const [showConfig, setShowConfig] = useState(false)
+  const iterationContext = from === 'iteration'
 
   const renderRadio = (types) => <Radio.Group options={types.map(type => ({ ...type, label: t(type.label) }))} />
 
@@ -78,7 +81,7 @@ function Train({ allDatasets, datasetCache, ...func }) {
 
   useEffect(() => {
     setTestingSetIds(project?.testingSets || [])
-    iterationId && setSelectedKeywords(project?.keywords || [])
+    iterationContext && setSelectedKeywords(project?.keywords || [])
   }, [project])
 
   useEffect(() => {
@@ -107,7 +110,7 @@ function Train({ allDatasets, datasetCache, ...func }) {
     form.setFieldsValue({ hyperparam: seniorConfig })
   }, [seniorConfig])
 
-  useEffect(() => (trainDataset && !iterationId) && setAllKeywords(), [trainDataset])
+  useEffect(() => (trainDataset && !iterationContext) && setAllKeywords(), [trainDataset])
 
   useEffect(() => {
     const state = location.state
@@ -119,7 +122,7 @@ function Train({ allDatasets, datasetCache, ...func }) {
         validation_dataset_id,
         strategy,
         docker_image,
-        docker_image_id, 
+        docker_image_id,
         model_id,
         model_stage_id,
         keywords,
@@ -202,7 +205,7 @@ function Train({ allDatasets, datasetCache, ...func }) {
       strategy,
       name: 'group_' + randomNumber(),
       projectId: pid,
-      keywords: iterationId ? project.keywords : values.keywords,
+      keywords: iterationContext ? project.keywords : values.keywords,
       image,
       imageId,
       config,
@@ -212,10 +215,13 @@ function Train({ allDatasets, datasetCache, ...func }) {
       if (iterationId) {
         func.updateIteration({ id: iterationId, currentStage, [outputKey]: result.result_model.id })
       }
+      if (iterationContext && !iterationId) {
+        await updateProject({ modelStage: [result.result_model?.id] })
+      }
       await func.clearCache()
       const group = result.result_model?.model_group_id || ''
       let redirect = `/home/project/${pid}/model#${group}`
-      if (iterationId) {
+      if (iterationContext) {
         redirect = `/home/project/${pid}/iterations`
       }
       history.replace(redirect)

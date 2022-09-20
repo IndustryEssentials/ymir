@@ -105,6 +105,14 @@ export function transferDataset(data: BackendData): Dataset {
   }
 }
 
+export function validDataset(dataset: Dataset | undefined) {
+  return dataset && dataset.state === states.VALID
+}
+
+export function runningDataset(dataset: Dataset | undefined) {
+  return dataset && dataset.state === states.READY
+}
+
 export function transferDatasetAnalysis(data: BackendData): DatasetAnalysis {
   const { bytes, area, quality, hw_ratio, } = data.hist
 

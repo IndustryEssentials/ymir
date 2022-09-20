@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useMemo, useState } from "react"
-import { Row, Col, Form } from "antd"
+import { Row, Col, Form, Button, Space } from "antd"
+import { useHistory } from "umi"
 
+import { runningDataset } from '@/constants/dataset'
 import t from '@/utils/t'
 import { generateName } from '@/utils/string'
 import useFetch from '@/hooks/useFetch'
@@ -9,7 +11,8 @@ import ModelSelect from '@/components/form/modelSelect'
 import Uploader from '@/components/form/uploader'
 
 import s from "./iteration.less"
-import { YesIcon, LoaderIcon, AddIcon } from "@/components/common/icons"
+import { YesIcon, LoaderIcon, AddIcon, TrainIcon, ImportIcon } from "@/components/common/icons"
+import RenderProgress from "@/components/common/progress"
 
 const SettingsSelection = (Select) => {
   const Selection = (props) => {
@@ -18,14 +21,14 @@ const SettingsSelection = (Select) => {
   return Selection
 }
 
-export default function Stage({ pid, stage, form, project = {}, update }) {
+export default function Stage({ pid, stage, form, project = {}, result, update }) {
+  const history = useHistory()
   const [value, setValue] = useState(null)
   const [valid, setValid] = useState(false)
   const Selection = useMemo(() => SettingsSelection(stage.type ? ModelSelect : DatasetSelect), [stage.type])
   const [candidateList, setCandidateList] = useState(true)
   const [file, setFile] = useState({ name: '', url: '' })
   const [addResult, addDataset] = useFetch('dataset/createDataset')
-  // const [updateResult, updateSettings] = useFetch('project/updateProject', null, true)
 
   useEffect(() => {
     setValid(value)
@@ -38,7 +41,6 @@ export default function Stage({ pid, stage, form, project = {}, update }) {
   }, [stage, project])
 
   useEffect(() => {
-    console.log('file:', file)
     file.url && addDataset({
       ...file,
       projectId: pid,
@@ -55,23 +57,21 @@ export default function Stage({ pid, stage, form, project = {}, update }) {
     [stage.field]: value || null,
   })
 
-  const renderIcon = () => {
-    return valid ? <YesIcon /> : <LoaderIcon />
-  }
-  const renderState = () => {
-    return valid ? t('project.stage.state.done') : t('project.stage.state.waiting')
+  const goTraining = () => {
+    const iparams = `from=iteration`
+    history.push(`/home/project/${pid}/train?did=${project.candidateTrainSet}&test=${project.testSet.id}&${iparams}`)
   }
 
   const filters = stage.filter ? useCallback(datasets => {
     const result = stage.filter(datasets, project)
-    setCandidateList(!!result.filter(item => item.assetCount).length)
+    setCandidateList(!stage.type ? !!result.filter(item => item.assetCount).length : !!result.length)
     return result
   }, [stage.field, project]) : null
 
-  return <Form.Item tooltip={t(stage.tip)} label={t(stage.label)}>
-    <div>{!candidateList ? <Uploader
+  const renderEmptyState = (type) => !type ?
+    <Uploader
       className={s.uploader}
-      label={t(stage.label)}
+      label={t(`${stage.label}.upload`)}
       onChange={(files, result) => { setFile({ name: generateName(files[0].name), url: result }) }}
       max={1024}
       onRemove={() => setFile('')}
@@ -80,16 +80,32 @@ export default function Stage({ pid, stage, form, project = {}, update }) {
         block: true,
         icon: <AddIcon />,
       }}
-    /> : null}</div>
-    <Form.Item hidden={!candidateList} name={stage.field}
+    /> : <Row gutter={20}>
+      <Col flex={1}>
+        <Button type='primary' disabled={!stage.trainValid} block onClick={goTraining}>
+          <TrainIcon /> {t("project.iteration.stage.training")}
+        </Button>
+      </Col>
+      <Col flex={1}>
+        <Button block onClick={() => history.push(`/home/project/${pid}/model/import`)}>
+          <ImportIcon /> {t("model.import.label")}
+        </Button>
+      </Col>
+    </Row>
+
+  return <Form.Item tooltip={t(stage.tip)} label={t(stage.label)}>
+    <div>{!candidateList ? renderEmptyState(stage.type) : null}</div>
+    <Form.Item
+      hidden={!candidateList}
+      name={stage.field}
       noStyle
       rules={[{ required: !stage.option }]}
       preserve={null}
     >
       <Selection pid={pid} changeByUser filters={filters} allowClear={!!stage.option} />
     </Form.Item>
+    {runningDataset(result) ? <div className="state">{RenderProgress(result?.state, result, true)}</div> : null}
   </Form.Item>
-
 }
 
 function getAttrFromProject(field, project = {}) {

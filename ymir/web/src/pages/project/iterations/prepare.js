@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react"
 import { Row, Col, Form, Button } from "antd"
-import { useLocation } from 'umi'
-import { connect } from "dva"
+import { useLocation, useSelector } from 'umi'
 
 import t from '@/utils/t'
 import useFetch from '@/hooks/useFetch'
@@ -18,14 +17,17 @@ function Prepare({ project = {}, fresh = () => { }, ...func }) {
   const [result, updateProject] = useFetch('project/updateProject')
   const [mergeResult, merge] = useFetch('task/merge', null, true)
   const [createdResult, createIteration] = useFetch('iteration/createIteration')
+  const [_, getPrepareStagesResult] = useFetch('iteration/getPrepareStagesResult', {})
+  const results = useSelector(({ iteration }) => iteration.prepareStagesResult)
   const [form] = Form.useForm()
 
   useEffect(() => {
     project.id && setId(project.id)
     project.id && updatePrepareStatus()
+    project.id && getPrepareStagesResult({ id: project.id })
   }, [project])
 
-  useEffect(() => setStages(generateStages(project)), [project])
+  useEffect(() => setStages(generateStages(project, results)), [project, results])
 
   useEffect(() => {
     if (result) {
@@ -48,10 +50,9 @@ function Prepare({ project = {}, fresh = () => { }, ...func }) {
   }, [createdResult])
 
   const updateSettings = (value) => {
-    console.log('form change value:', value)
-    const target = Object.keys(value).reduce((prev, curr) => ({ 
-      ...prev, 
-      [curr]: value[curr] || null 
+    const target = Object.keys(value).reduce((prev, curr) => ({
+      ...prev,
+      [curr]: value[curr] || null
     }), {})
     updateProject({ id, ...target })
   }
@@ -90,7 +91,6 @@ function Prepare({ project = {}, fresh = () => { }, ...func }) {
   }
 
   function start() {
-    console.log('project.candidateTrainSet:', project.candidateTrainSet)
     if (project.candidateTrainSet) {
       mergeTrainSet()
     } else {
@@ -104,7 +104,14 @@ function Prepare({ project = {}, fresh = () => { }, ...func }) {
         <Row style={{ justifyContent: 'flex-end' }} gutter={30}>
           {stages.map((stage, index) => (
             <Col key={stage.field} span={6}>
-              <Stage stage={stage} form={form} project={project} pid={id} update={updateSettings} />
+              <Stage
+                stage={stage}
+                form={form}
+                project={project}
+                result={results[stage.field]}
+                pid={id}
+                update={updateSettings}
+              />
             </Col>
           ))}
         </Row>

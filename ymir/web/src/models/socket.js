@@ -7,6 +7,7 @@ const pageMaps = [
   { path: '/home/project/\\d+/dataset/\\d+', method: 'dataset/updateDatasetState' },
   { path: '/home/project/\\d+/iterations', method: 'dataset/updateAllDatasets' },
   { path: '/home/project/\\d+/iterations', method: 'iteration/updateCurrentStageResult' },
+  { path: '/home/project/\\d+/iterations', method: 'iteration/updatePrepareStagesResult' },
   { path: '/home/project/\\d+/iterations', method: 'project/updateProjectTrainSet' },
 ]
 

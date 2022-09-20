@@ -163,6 +163,9 @@ const project = {
   'project.iteration.tabs.list': { en: 'Iteration Records', cn: '迭代历史', },
   'project.iteration.mining.all.processed': { en: 'Iteration Records', cn: '已挖掘数据占比', },
   'project.iteration.mining.keywords.processed': { en: 'Iteration Records', cn: '已挖掘数据中正负样本占比', },
+  "project.prepare.trainset.upload": { en: "Upload Training Dataset", cn: "上传训练集", },
+  "project.prepare.validationset.upload": { en: "Upload Testing Dataset", cn: "上传测试集", },
+  "project.prepare.miningset.upload": { en: "Upload Mining Dataset", cn: "上传挖掘集", },
 }
 
 export default project

@@ -1,7 +1,9 @@
 
+import { validDataset } from '@/constants/dataset'
+
 const matchKeywords = (dataset, project, field) => field !== 'testSet' || dataset.keywords.some(kw => project.keywords?.includes(kw))
 
-export default (project = {}) => {
+export default (project = {}, results) => {
   if (!project.id) {
     return []
   }
@@ -10,7 +12,21 @@ export default (project = {}) => {
     { field: 'testSet', label: 'project.prepare.validationset', tip: 'project.add.testset.tip', },
     { field: 'miningSet', label: 'project.prepare.miningset', tip: 'project.add.miningset.tip', allowEmptyKeywords: true },
   ]
-  const modelStage = { field: 'modelStage', label: 'project.prepare.model', tip: 'tip.task.filter.model', type: 1 }
+  let trainValid = [
+    results?.candidateTrainSet,
+    results?.testSet,
+  ].reduce((prev, curr) => prev && validDataset(curr), true)
+  console.log('trainValid:', trainValid, results)
+
+  const modelStage = {
+    field: 'modelStage',
+    label: 'project.prepare.model',
+    tip: 'tip.task.filter.model',
+    type: 1,
+    filter: x => x,
+    trainValid,
+  }
+
   const generateFilters = (field, project) => {
     const notTestingSet = (did) => !(project.testingSets || []).includes(did)
     const excludeSelected = (currentField, dataset, project) => {
