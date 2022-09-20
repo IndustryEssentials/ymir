@@ -73,12 +73,15 @@ def migrate_data(db: Session) -> None:
         if not model.map:
             # skip model without map
             continue
-        stage = crud.model_stage.create(
-            db,
-            obj_in=schemas.ModelStageCreate(
-                name="default_stage", map=model.map, timestamp=int(time.time()), model_id=model.id
-            ),
-        )
+        if model.default_stage:
+            stage = model.default_stage
+        else:
+            stage = crud.model_stage.create(
+                db,
+                obj_in=schemas.ModelStageCreate(
+                    name="default_stage", map=model.map, timestamp=int(time.time()), model_id=model.id
+                ),
+            )
         crud.model.update_recommonded_stage(db, model_id=model.id, stage_id=stage.id)
 
     total_datasets = crud.dataset.total(db)
