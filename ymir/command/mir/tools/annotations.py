@@ -194,6 +194,9 @@ def _import_annotations_seg_mask(map_hashed_filename: Dict[str, str], mir_annota
         if len(pos_ints) != 3:
             logging.info(f"invalid labelmap color idx: {pos_ints}")
             continue
+        if pos_ints == (0, 0, 0):
+            logging.info("ignore background color.")
+            continue
         _, cname = class_type_manager.id_and_main_name_for_name(name=record_split[0])
         map_cname_color[cname] = (pos_ints[0], pos_ints[1], pos_ints[2])
 
