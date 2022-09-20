@@ -102,7 +102,7 @@ def _detect_users_and_repos(sandbox_root: str) -> Dict[str, Set[str]]:
         sandbox_root (str): root of this sandbox
 
     Returns:
-        Dict[str, List[str]]: key: user id, value: repo ids
+        Dict[str, Set[str]]: key: user id, value: repo ids
     """
     user_to_repos = defaultdict(set)
     for user_id in os.listdir(sandbox_root):
