@@ -7,6 +7,9 @@ from sqlalchemy.orm import Session
 from app import crud, models, schemas
 from app.api import deps
 from app.api.errors.errors import IterationNotFound
+from app.libs.iterations import calculate_mining_progress
+
+from common_utils.labels import UserLabels
 
 router = APIRouter()
 
@@ -82,3 +85,18 @@ def update_iteration(
         raise IterationNotFound()
     crud.iteration.update_iteration(db, iteration_id=iteration_id, iteration_update=iteration_updates)
     return {"result": iteration}
+
+
+@router.get("/{iteration_id}/mining_progress", response_model=schemas.iteration.IterationMiningProgressOut)
+def get_mining_progress_of_iteration(
+    db: Session = Depends(deps.get_db),
+    current_user: models.User = Depends(deps.get_current_active_user),
+    project_id: int = Query(...),
+    iteration_id: int = Path(...),
+    user_labels: UserLabels = Depends(deps.get_user_labels),
+) -> Any:
+    """
+    Get mining progress of specific iteration
+    """
+    stats = calculate_mining_progress(db, user_labels, current_user.id, project_id, iteration_id)
+    return {"result": stats}
