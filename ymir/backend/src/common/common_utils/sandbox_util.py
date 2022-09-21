@@ -8,7 +8,6 @@ import yaml
 from id_definition.error_codes import UpdaterErrorCode
 from id_definition.task_id import IDProto
 from mir import version
-from mir.scm.cmd import CmdScm
 
 
 class SandboxError(Exception):
