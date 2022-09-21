@@ -2,7 +2,7 @@ import itertools
 import logging
 import sys
 import time
-from typing import List
+from typing import List, Optional
 
 import sentry_sdk
 from apscheduler.schedulers.blocking import BlockingScheduler
@@ -55,9 +55,14 @@ def update_monitor_redis(redis_client: RedisHandler, task_infos: List[TaskStorag
             _update_redis_for_running_tasks(redis_client, list(tasks))
 
 
-def read_latest_log(log_path: str, task_id: str) -> PercentResult:
+def read_latest_log(log_path: str, task_id: str) -> Optional[PercentResult]:
     try:
         percent_result = PercentLogHandler.parse_percent_log(log_path)
+    except EOFError:
+        msg = f"skip empty log file: {log_path}"
+        sentry_sdk.capture_exception()
+        logging.exception(msg)
+        return None
     except Exception:
         msg = f"failed to parse log file: {log_path}"
         sentry_sdk.capture_exception()
@@ -89,6 +94,8 @@ def monitor_task_logs() -> None:
         logging.info(f"previous percent_result: {task_info['percent_result']}")
         for log_path, previous_percent_result in task_info["raw_log_contents"].items():
             percent_result = read_latest_log(log_path, task_id)
+            if not percent_result:
+                continue
             logging.info(f"current percent_result: {percent_result}")
             raw_log_contents[log_path] = percent_result
             if percent_result.timestamp != previous_percent_result["timestamp"]:

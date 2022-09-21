@@ -33,7 +33,7 @@ class TaskService:
         task_id: str, raw_log_contents: Dict[str, PercentResult], log_path_weights: Dict[str, float]
     ) -> PercentResult:
         """
-        calculate comprehensive progress (in percent) from multi-stages tasks
+        calculate weighted sum progress (in percent) from multi-stages tasks
         """
         percent = 0.0
         log_files_state_set = set()

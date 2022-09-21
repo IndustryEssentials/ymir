@@ -8,11 +8,11 @@ def test_monitor_percent_log(client: TestClient, clear_redislite, mocker, tmp_pa
     log_path = tmp_path / "monitor.txt"
     log_path.write_text("task_id_1	21245543	0.50	2")
 
-    body = dict(
-        task_id="task_id_1",
-        user_id="12",
-        log_path_weights={str(log_path): 1.0},
-    )
+    body = {
+        "task_id": "task_id_1",
+        "user_id": "12",
+        "log_path_weights": {str(log_path): 1.0},
+    }
     client.post("/api/v1/tasks", json=body)
 
     log_path.write_text("task_id_1	21245567	1	3")
