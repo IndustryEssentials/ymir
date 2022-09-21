@@ -10,7 +10,7 @@ export enum states {
   INVALID = 2,
 }
 
-export function transferModelGroup (data: BackendData) {
+export function transferModelGroup(data: BackendData) {
   const group: ModelGroup = {
     id: data.id,
     name: data.name,
@@ -20,7 +20,7 @@ export function transferModelGroup (data: BackendData) {
   return group
 }
 
-export function transferModel (data: BackendData): ModelVersion {
+export function transferModel(data: BackendData): ModelVersion {
   const durationLabel = calDuration(data.related_task.duration, getLocale())
   return {
     id: data.id,
@@ -51,14 +51,42 @@ export function transferModel (data: BackendData): ModelVersion {
   }
 }
 
-export function validModel (model: ModelVersion) {
+/**
+ * is valid model
+ * @param {ModelVersion} model 
+ * @returns {Boolean}
+ */
+export function validModel(model: ModelVersion): Boolean {
+  return model.state === states.VALID
+}
 
+/**
+ * is invalid model
+ * @param {ModelVersion} model 
+ * @returns {Boolean}
+ */
+export function invalidModel(model: ModelVersion): Boolean {
+  return model.state === states.INVALID
+}
+
+/**
+ * is running model
+ * @param {ModelVersion} model 
+ * @returns {Boolean}
+ */
+export function runningModel(model: ModelVersion): Boolean {
+  return model.state === states.READY
 }
 
 export function getModelName(data: BackendData) {
   return `${data.model?.group_name} ${getVersionLabel(data.model?.version_num)}`
 }
 
+/**
+ * transfer backend data into stage object
+ * @param {BackendData} data 
+ * @returns {Stage}
+ */
 export function transferStage(data: BackendData): Stage {
   return {
     id: data.id,
@@ -69,3 +97,11 @@ export function transferStage(data: BackendData): Stage {
   }
 }
 
+/**
+ * get recommend stage from model
+ * @param {ModelVersion} model 
+ * @returns {Stage|undefined}
+ */
+export function getRecommendStage(model: ModelVersion): Stage| undefined {
+  return model.stages?.find(stage => stage.id === model.recommendStage)
+}
