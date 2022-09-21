@@ -3,7 +3,7 @@ import { useHistory } from "umi"
 import { Button, Col, Descriptions, Row, Tag } from "antd"
 
 import t from "@/utils/t"
-import { states } from '@/constants/common'
+import { ResultStates } from '@/constants/common'
 import styles from "./detail.less"
 import { SearchIcon } from "@/components/common/icons"
 import { DescPop } from "../common/descPop"
@@ -42,7 +42,7 @@ function DatasetDetail({ dataset = {} }) {
         <Item label={t("dataset.detail.label.name")} span={2}>
           <Row>
             <Col flex={1}>{dataset.name} {dataset.versionName}</Col>
-            <Col hidden={dataset.state !== states.VALID}>
+            <Col hidden={dataset.state !== ResultStates.VALID}>
               <Button
                 type='primary'
                 icon={<SearchIcon />}

@@ -378,11 +378,10 @@ describe("models: dataset", () => {
 
     const generator = saga(creator, { put, call })
     generator.next()
-    generator.next({
+    const end = generator.next({
       code: 0,
       result: expected,
     })
-    const end = generator.next()
 
     expect(end.value).toEqual(expected)
     expect(end.done).toBe(true)
@@ -427,8 +426,6 @@ describe("models: dataset", () => {
     const generator = saga(creator, { put, call, select })
     generator.next()
     const d = generator.next(versions)
-    generator.next([])
-    generator.next()
     const end = generator.next()
 
     expect(end.value).toEqual(expected)
@@ -449,7 +446,6 @@ describe("models: dataset", () => {
     const generator = saga(creator, { put, call, select })
     generator.next()
     const d = generator.next(versions)
-    generator.next([])
     const end = generator.next()
 
     expect(end.value).toEqual(versions)

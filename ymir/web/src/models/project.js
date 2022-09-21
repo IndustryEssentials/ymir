@@ -9,7 +9,6 @@ import {
 } from "@/services/project"
 import { transferProject } from '@/constants/project'
 import { deepClone } from '@/utils/object'
-import { validState } from '@/constants/common'
 
 const initQuery = {
   name: "",

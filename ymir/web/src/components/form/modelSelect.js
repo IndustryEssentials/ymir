@@ -8,10 +8,9 @@ import useFetch from '@/hooks/useFetch'
 import EmptyStateModel from '@/components/empty/model'
 
 const ModelSelect = ({ pid, value, onlyModel, changeByUser, onChange = () => { }, filters, ...resProps }) => {
-  const allModels = useSelector(state => state.model.allModels)
+  const models = useSelector(state => state.model.allModels)
   const [ms, setMS] = useState(null)
   const [options, setOptions] = useState([])
-  const [models, setModels] = useState([])
   const [_, getModels] = useFetch('model/queryAllModels')
 
   useEffect(() => {
@@ -37,10 +36,6 @@ const ModelSelect = ({ pid, value, onlyModel, changeByUser, onChange = () => { }
   }, [options])
 
   useEffect(() => {
-    setModels(allModels)
-  }, [allModels])
-
-  useEffect(() => {
     if (value && !value[1]) {
       const model = models.find(md => md.id === value[0])
       if (model) {
@@ -55,10 +50,11 @@ const ModelSelect = ({ pid, value, onlyModel, changeByUser, onChange = () => { }
 
   useEffect(() => {
     generateOptions()
-  }, [models])
+  }, [models, filters])
 
   function generateOptions() {
-    const opts = models.map(model => {
+    const mds = filters ? filters(models) : models
+    const opts = mds.map(model => {
       const name = `${model.name} ${model.versionName}`
       const childrenNode = onlyModel ? {} : {
         children: model.stages.map(stage => ({

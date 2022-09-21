@@ -138,6 +138,7 @@ message SingleTaskAnnotations {
     AnnoType type = 3;
     // Set of all shown class ids.
     repeated int32 task_class_ids = 4;
+    map<int32, IntPoint> map_id_color = 5;
 
     // meta infos of this SingleTaskAnnotations
     repeated int32 eval_class_ids = 10;
@@ -165,9 +166,9 @@ message SingleImageCks {
 }
 
 message MaskAnnotation {
-    // PNG image with 1/3 channels where each pixel corresponds to a class_id.
+    // PNG image with 3 channels where each pixel corresponds to a class_id.
     bytes semantic_mask = 1;
-    // PNG image with 1/3 channels where each pixel corresponds to an object_id.
+    // PNG image with 3 channels where each pixel corresponds to an object_id.
     bytes instance_mask = 2;
     repeated int32 object_ids = 3;
 }
@@ -339,6 +340,7 @@ message SingleEvaluationElement {
 message IntPoint {
     int32 x = 1;
     int32 y = 2;
+    int32 z = 3;
 }
 
 message FloatPoint {

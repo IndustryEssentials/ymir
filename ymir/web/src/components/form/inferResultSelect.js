@@ -158,7 +158,6 @@ const InferResultSelect = ({ pid, form, value, onChange = () => { } }) => {
   }
 
   function configChange(values, options = []) {
-    console.log('options:', options)
     setSelectedConfigs(options.map((opt) => opt ? opt.config : null))
   }
 

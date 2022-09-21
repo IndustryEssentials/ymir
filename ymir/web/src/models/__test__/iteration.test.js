@@ -1,7 +1,7 @@
 import iteration from "../iteration"
 import { put, putResolve, call, select } from "redux-saga/effects"
 import { product, products, errorCode, normalReducer, generatorCreator } from "./func"
-import { Stages, transferIteration } from '@/constants/project'
+import { Stages, transferIteration } from '@/constants/iteration'
 
 put.resolve = putResolve
 
