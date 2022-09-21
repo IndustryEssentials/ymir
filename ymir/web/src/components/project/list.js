@@ -2,7 +2,7 @@ import { List, Skeleton, Space, Col, Row, Popover } from "antd"
 import t from "@/utils/t"
 import s from "./list.less"
 import { useHistory } from "umi"
-import { getStageLabel } from '@/constants/project'
+import { getStageLabel } from '@/constants/iteration'
 import KeywordsItem from "./keywordsItem"
 
 export const Lists = ({ projects = [], more = '' }) => {

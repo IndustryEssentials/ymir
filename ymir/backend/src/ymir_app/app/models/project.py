@@ -1,4 +1,5 @@
 from datetime import datetime
+import json
 from typing import List
 
 from sqlalchemy import (
@@ -180,3 +181,7 @@ class Project(Base):
             current_iteration_model_ids + [self.initial_model_id] + all_iterations_training_model_ids,  # type: ignore
         )
         return list(set(model_ids))
+
+    @property
+    def training_targets(self) -> List[str]:
+        return json.loads(self.training_keywords) if self.training_keywords else []

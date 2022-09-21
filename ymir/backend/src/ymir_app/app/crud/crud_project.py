@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 
 from app.config import settings
 from app.crud.base import CRUDBase
-from app.models import Project
+from app.models import Project, Iteration
 from app.schemas.project import ProjectCreate, ProjectUpdate
 from app.api.errors.errors import ProjectNotFound
 
@@ -108,6 +108,12 @@ class CRUDProject(CRUDBase[Project, ProjectCreate, ProjectUpdate]):
         if not project:
             raise ProjectNotFound()
         return self.update(db, db_obj=project, obj_in=project_update)
+
+    def get_previous_iterations(self, db: Session, *, project_id: int, iteration_id: int) -> List[Iteration]:
+        project = self.get(db, id=project_id)
+        if not project:
+            raise ProjectNotFound()
+        return [iteration for iteration in project.iterations if iteration.id < iteration_id]
 
 
 project = CRUDProject(Project)

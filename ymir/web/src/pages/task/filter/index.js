@@ -45,8 +45,6 @@ function Filter() {
     }
   }, [filterResult])
 
-  useEffect(() => console.log('test includes: ', includes), [includes])
-
   const checkInputs = (i) => {
     return i.excludes?.length || i.includes?.length || i.samples
   }

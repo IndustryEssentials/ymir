@@ -357,6 +357,7 @@ class TestToolsDetEval(unittest.TestCase):
                 },
                 'task_class_ids': [0, 1, 2],
                 'task_id': 'a',
+                'map_id_color': {},
                 'eval_class_ids': [],
                 'executor_config': '',
                 'type': 'AT_UNKNOWN',
@@ -477,6 +478,7 @@ class TestToolsDetEval(unittest.TestCase):
                     }
                 },
                 'task_id': 'a',
+                'map_id_color': {},
                 'eval_class_ids': [0, 1, 2],
                 'executor_config': '',
                 'type': 'AT_UNKNOWN',

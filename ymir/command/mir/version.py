@@ -1,2 +1,3 @@
 # Package version
-__version__ = '1.2.1'
+YMIR_VERSION = '1.3.0'
+DEFAULT_YMIR_SRC_VERSION = '1.1.0'

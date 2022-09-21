@@ -27,6 +27,7 @@ from app.constants.state import (
 )
 from app.config import settings
 from app import schemas, crud, models
+from app.libs.models import create_model_stages
 from app.utils.cache import CacheClient
 from app.utils.ymir_controller import ControllerClient, gen_task_hash
 from app.utils.ymir_viz import VizClient
@@ -200,6 +201,7 @@ class TaskResult:
             logger.exception("[update task] failed to get model_info: unknown error")
             return None
         else:
+            logger.info(f"[viewer_model] model_info: {result}")
             return result
 
     @property
@@ -299,59 +301,55 @@ class TaskResult:
         )
 
     def update_task_result(self, task_result: schemas.TaskUpdateStatus, task_in_db: models.Task) -> None:
+        """
+        task_result: task update from monitor
+        task_in_db: is required to add back model config to task
+        """
         if self.result_type is ResultType.dataset:
-            crud_func = crud.dataset
+            self.update_dataset_result(task_result)
         elif self.result_type is ResultType.model:
-            crud_func = crud.model  # type: ignore
-        else:
-            logger.info("[update task] no task result to update")
+            self.update_model_result(task_result, task_in_db)
+
+    def update_model_result(self, task_result: schemas.TaskUpdateStatus, task_in_db: models.Task) -> None:
+        """
+        Criterion for ready model: viewer returns valid model_info
+        """
+        model_record = crud.model.get_by_task_id(self.db, task_id=self.task.id)
+        if not model_record:
+            logger.error("[update task] task result (model) not found, skip")
             return
-
-        result_record = crud_func.get_by_task_id(self.db, task_id=self.task.id)
-        if not result_record:
-            logger.error("[update task] task result record not found, skip")
-            return
-
-        if self.result_type is ResultType.model:
-            # special path for model
-            # as long as we can get model_info, set model as ready and
-            # save related task parameters and config accordingly
-            model_info = self.model_info
-            logger.info(f"[viz_model] model_info: {model_info}")
-
-            # todo refactor
-            if model_info:
-                crud.task.update_parameters_and_config(
-                    self.db,
-                    task=task_in_db,
-                    parameters=model_info["task_parameters"],
-                    config=json.dumps(model_info["executor_config"]),
-                )
-                current_model = crud.model.finish(
-                    self.db, result_record.id, result_state=ResultState.ready, result=model_info
-                )
-                if current_model:
-                    stages_in = []
-                    for stage_name, body in model_info["model_stages"].items():
-                        stage_obj = schemas.ModelStageCreate(
-                            name=stage_name, map=body["mAP"], timestamp=body["timestamp"], model_id=current_model.id
-                        )
-                        stages_in.append(stage_obj)
-                    crud.model_stage.batch_create(self.db, objs_in=stages_in)
-                    crud.model.update_recommonded_stage_by_name(
-                        self.db, model_id=current_model.id, stage_name=model_info["best_stage_name"]
-                    )
-
-        if task_result.state is TaskState.done and self.result_info:
-            crud_func.finish(
+        model_info = self.model_info
+        if model_info:
+            # as long as model info is ready, regardless of task status, just set model as ready
+            crud.task.update_parameters_and_config(
                 self.db,
-                result_record.id,
+                task=task_in_db,
+                parameters=model_info["task_parameters"],
+                config=json.dumps(model_info["executor_config"]),
+            )
+            crud.model.finish(self.db, model_record.id, result_state=ResultState.ready, result=model_info)
+            create_model_stages(self.db, model_record.id, model_info)
+        else:
+            crud.model.finish(self.db, model_record.id, result_state=ResultState.error)
+
+    def update_dataset_result(self, task_result: schemas.TaskUpdateStatus) -> None:
+        """
+        Criterion for ready dataset: task state is DONE and viewer returns valid dataset_info
+        """
+        dataset_record = crud.dataset.get_by_task_id(self.db, task_id=self.task.id)
+        if not dataset_record:
+            logger.error("[update task] task result (dataset) not found, skip")
+            return
+        if task_result.state is TaskState.done and self.dataset_info:
+            crud.dataset.finish(
+                self.db,
+                dataset_record.id,
                 result_state=ResultState.ready,
-                result=self.result_info,
+                result=self.dataset_info,
             )
         else:
-            crud_func.finish(
+            crud.dataset.finish(
                 self.db,
-                result_record.id,
+                dataset_record.id,
                 result_state=ResultState.error,
             )

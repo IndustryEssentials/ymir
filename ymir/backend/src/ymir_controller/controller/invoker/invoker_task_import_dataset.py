@@ -82,7 +82,7 @@ class TaskImportDatasetInvoker(TaskBaseInvoker):
                       work_dir: str,
                       unknown_types_strategy: backend_pb2.UnknownTypesStrategy) -> backend_pb2.GeneralResp:
         importing_cmd = [
-            utils.mir_executable(), 'import', '--root', repo_root, '--dataset-name', task_id, '--dst-rev',
+            utils.mir_executable(), 'import', '--root', repo_root, '--dst-rev',
             f"{task_id}@{task_id}", '--src-revs', 'master', '--index-file', index_file, '--gen-dir', media_location,
             '-w', work_dir, "--anno-type", "det-box"
         ]

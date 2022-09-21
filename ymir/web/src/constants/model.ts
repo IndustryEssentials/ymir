@@ -1,6 +1,6 @@
 import { ModelGroup, ModelVersion, Stage } from "@/interface/model"
 import { calDuration, format } from '@/utils/date'
-import { getIterationVersion } from "./project"
+import { getIterationVersion } from "./iteration"
 import { BackendData } from "@/interface/common"
 import { getLocale } from "umi"
 

@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 from mir import version
 
-print(version.__version__)
+print(version.YMIR_VERSION)
 
 # Module dependencies
 requirements = []
@@ -12,7 +12,7 @@ with open('requirements.txt') as f:
 
 setup(
     name='ymir-cmd',
-    version=version.__version__,
+    version=version.YMIR_VERSION,
     python_requires=">=3.8.10",
     author_email="contact.viesc@gmail.com",
     description="mir: A data version control tool for YMIR",

@@ -1,7 +1,7 @@
 import { getLocale } from "umi"
 import { DatasetGroup, Dataset, DatasetAnalysis, Annotation, Asset } from "@/interface/dataset"
 import { calDuration, format } from '@/utils/date'
-import { getIterationVersion, transferIteration } from "./project"
+import { getIterationVersion, transferIteration } from "./iteration"
 import { BackendData } from "@/interface/common"
 
 export enum states {
@@ -103,6 +103,14 @@ export function transferDataset(data: BackendData): Dataset {
     cks: data.cks_count ? transferCK(data.cks_count, data.cks_count_total) : undefined,
     tags: data.gt ? transferCK(tagsCounts(data?.gt?.tags_count, data?.pred?.tags_count), tagsTotal(data?.gt?.tags_count_total, data?.pred?.tags_count_total)) : undefined,
   }
+}
+
+export function validDataset(dataset: Dataset | undefined) {
+  return dataset && dataset.state === states.VALID
+}
+
+export function runningDataset(dataset: Dataset | undefined) {
+  return dataset && dataset.state === states.READY
 }
 
 export function transferDatasetAnalysis(data: BackendData): DatasetAnalysis {

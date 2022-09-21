@@ -1,7 +1,7 @@
 import React, { useEffect } from "react"
 import useFetch from "@/hooks/useFetch"
 import { Col, Popover, Row, Tag } from "antd"
-import KeywordRates from "@/components/dataset/keywordRates"
+import SampleRates from "@/components/dataset/sampleRates"
 import t from "@/utils/t"
 import s from "../detail.less"
 
@@ -46,7 +46,7 @@ export const TestingSet = ({ project }) => {
 
   function renderPop(label, dataset = {}) {
     dataset.project = project
-    const content = <KeywordRates keywords={project?.keywords} dataset={dataset} progressWidth={0.4}></KeywordRates>
+    const content = <SampleRates keywords={project?.keywords} dataset={dataset} progressWidth={0.4} />
     return <Popover content={content} overlayInnerStyle={{ minWidth: 500 }}>
       <span>{label}</span>
     </Popover>
