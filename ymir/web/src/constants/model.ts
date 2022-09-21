@@ -56,7 +56,7 @@ export function validModel (model: ModelVersion) {
 }
 
 export function getModelName(data: BackendData) {
-  return `${data.model?.group_name} ${getIterationVersion(data.model?.version_num)}`
+  return `${data.model?.group_name} ${getVersionLabel(data.model?.version_num)}`
 }
 
 export function transferStage(data: BackendData): Stage {
