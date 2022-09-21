@@ -7,7 +7,7 @@ from common_utils.sandbox_util import detect_users_and_repos, SandboxError
 from id_definition.error_codes import UpdaterErrorCode
 from mir.version import DEFAULT_YMIR_SRC_VERSION
 
-import update_1_1_0_to_1_3_0.step_updater
+from update_1_1_0_to_1_3_0.step_updater import update_all as update_110_130
 
 
 def update(sandbox_root: str, src_ver: str, dst_ver: str) -> None:
@@ -70,7 +70,7 @@ def _get_update_steps(src_ver: str, dst_ver: str) -> List[Callable[[str], None]]
     eq_dst_ver = _get_equivalent_version(dst_ver)
 
     _UPDATE_NODES = ['1.1.0', '1.3.0']
-    _UPDATE_MODULES = [update_1_1_0_to_1_3_0.step_updater]
+    _UPDATE_FUNCS = [update_110_130]
     src_idx = _UPDATE_NODES.index(eq_src_ver)
     dst_idx = _UPDATE_NODES.index(eq_dst_ver)
-    return [getattr(m, 'update_all') for m in _UPDATE_MODULES[src_idx:dst_idx]]
+    return _UPDATE_FUNCS[src_idx:dst_idx]
