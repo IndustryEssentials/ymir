@@ -39,6 +39,7 @@ enum RequestType {
     CMD_EVALUATE = 19;
     CMD_REPO_CHECK = 20;
     CMD_REPO_CLEAR = 21;
+    CMD_VERSION_GET = 22;
 
     // Sandbox path operation
     USER_LIST = 101;
@@ -47,7 +48,6 @@ enum RequestType {
     REPO_LIST = 104;
     REPO_CREATE = 105;
     REPO_REMOVE = 106;
-    SANDBOX_VERSION = 107;
 
     // Long task
     TASK_CREATE = 1001;
