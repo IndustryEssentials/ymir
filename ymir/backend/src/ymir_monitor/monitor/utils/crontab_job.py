@@ -21,23 +21,18 @@ def notify_updated_task(redis_client: RedisHandler, task_infos: List[TaskStorage
     Enqueue updated task to Redis Stream.
     Ymir App will fetch and pass them to Frontend.
     """
-    for task_info in task_infos:
-        logging.info("notify_updated_task: %s to redis stream", task_info.percent_result)
-        redis_client.xadd(settings.APP_REDIS_STREAM, {"payload": task_info.json()})
+    payloads = [{"payload": task_info.json()} for task_info in task_infos]
+    logging.info("notify_updated_task: %s to redis stream", payloads)
+    redis_client.batch_xadd(settings.APP_REDIS_STREAM, payloads)
 
 
 def _update_redis_for_running_tasks(redis_client: RedisHandler, task_infos: List[TaskStorageStructure]) -> None:
-    # sentry will catch Exception
-    if not task_infos:
-        return
     task_info_mapping = {task_info.percent_result.task_id: task_info.dict() for task_info in task_infos}
     redis_client.hmset(settings.MONITOR_RUNNING_KEY, mapping=task_info_mapping)
     logging.info(f"processed redis key for updated task ids {task_info_mapping.keys()}")
 
 
 def _update_redis_for_finished_tasks(redis_client: RedisHandler, task_infos: List[TaskStorageStructure]) -> None:
-    if not task_infos:
-        return
     task_info_mapping = {task_info.percent_result.task_id: task_info.dict() for task_info in task_infos}
     redis_client.hmset(settings.MONITOR_FINISHED_KEY, mapping=task_info_mapping)
     redis_client.hdel(settings.MONITOR_RUNNING_KEY, *task_info_mapping.keys())
@@ -117,6 +112,8 @@ def monitor_task_logs() -> None:
                 )
             )
 
+    if not updated_tasks:
+        return
     notify_updated_task(redis_client, updated_tasks)
     update_monitor_redis(redis_client, updated_tasks)
 
