@@ -39,10 +39,6 @@ export const StageList = () => {
   return { list, ...singleList(list) }
 }
 
-export function getIterationVersion(version: number) {
-  return `V${version}`
-}
-
 export function transferIteration(data: BackendData): Iteration | undefined {
   if (!data) {
     return

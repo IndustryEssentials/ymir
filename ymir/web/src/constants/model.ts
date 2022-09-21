@@ -1,6 +1,6 @@
 import { ModelGroup, ModelVersion, Stage } from "@/interface/model"
 import { calDuration, format } from '@/utils/date'
-import { getIterationVersion } from "./iteration"
+import { getVersionLabel } from "./common"
 import { BackendData } from "@/interface/common"
 import { getLocale } from "umi"
 
@@ -29,7 +29,7 @@ export function transferModel (data: BackendData): ModelVersion {
     projectId: data.project_id,
     hash: data.hash,
     version: data.version_num || 0,
-    versionName: getIterationVersion(data.version_num),
+    versionName: getVersionLabel(data.version_num),
     state: data.result_state,
     keywords: data?.keywords || [],
     map: data.map || 0,
@@ -49,6 +49,10 @@ export function transferModel (data: BackendData): ModelVersion {
     recommendStage: data.recommended_stage || 0,
     description: data.description || '',
   }
+}
+
+export function validModel (model: ModelVersion) {
+
 }
 
 export function getModelName(data: BackendData) {

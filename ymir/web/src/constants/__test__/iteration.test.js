@@ -2,7 +2,6 @@ import {
   Stages,
   getStageLabel,
   StageList,
-  getIterationVersion,
   transferIteration,
 } from '../iteration'
 
@@ -41,9 +40,6 @@ describe("constants: project", () => {
       expect(stageObj.label).toBeDefined()
     })
 
-  })
-  it("function -> getIterationVersion.", () => {
-    expect(getIterationVersion(1)).toBe('V1')
   })
   it("function -> transferIteration.", () => {
     const origin = {
