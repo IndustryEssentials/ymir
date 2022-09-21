@@ -41,7 +41,7 @@ class MirParser(argparse.ArgumentParser):
 class VersionAction(argparse.Action):
     """Show mir version and exits"""
     def __call__(self, parser: Any, namespace: Any, values: Any, option_string: Any = None) -> None:
-        logging.info("mir version: {0}".format(version.__version__))
+        logging.info(f"mir version: {version.YMIR_VERSION}")
         sys.exit(0)
 
 
