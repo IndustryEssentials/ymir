@@ -1,6 +1,7 @@
 from datetime import datetime
 import logging
 import os
+import re
 from typing import Any, Dict, Iterator, List, Set, Union
 
 import fasteners  # type: ignore
@@ -43,8 +44,8 @@ class LabelStorage(BaseModel):
 
     @validator('ymir_version')
     def _check_ymir_version(cls, v: str) -> str:
-        if v != YMIR_VERSION:
-            raise ValueError(f"incorrect ymir version: {v}, expect: {YMIR_VERSION}")
+        if v and not re.match(pattern=r'^\d+\.\d+\.\d+$', string=v):
+            raise ValueError(f"incorrect ymir version: {v}, expect: #.#.#")
         return v
 
     @validator('labels')

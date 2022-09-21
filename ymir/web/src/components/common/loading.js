@@ -1,19 +1,15 @@
 import { Spin } from "antd"
-import { connect } from "dva"
+import { useSelector } from 'umi'
 import styles from "./common.less"
 
-function Loading({ loading }) {
+function Loading() {
+  const globalLoading = useSelector(({ loading }) => loading.global && !loading.models.Verify)
+  const commonLoading = useSelector(({ common }) => common.loading)
   return (
-    <div className={styles.loading} style={{ display: loading ? "" : "none" }}>
+    <div className={styles.loading} style={{ display: globalLoading && commonLoading ? "" : "none" }}>
       <Spin size="large" />
     </div>
   )
 }
 
-const mapStateToProps = (state) => {
-  return {
-    loading: state.loading.global && !state.loading.models.Verify,
-  }
-}
-
-export default connect(mapStateToProps, null)(Loading)
+export default Loading

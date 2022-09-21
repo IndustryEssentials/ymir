@@ -4,7 +4,7 @@ import { useParams, useHistory } from "umi"
 
 import s from './add.less'
 import t from '@/utils/t'
-import { MiningStrategy } from '@/constants/project'
+import { MiningStrategy } from '@/constants/iteration'
 import Breadcrumbs from '@/components/common/breadcrumb'
 import DatasetSelect from '../../components/form/datasetSelect'
 import useFetch from '../../hooks/useFetch'

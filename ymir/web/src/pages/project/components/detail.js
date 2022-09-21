@@ -3,10 +3,10 @@ import { Col, Popover, Row, Space, Tag } from "antd"
 import { Link } from "umi"
 
 import t from "@/utils/t"
-import { getStageLabel } from '@/constants/project'
+import { getStageLabel } from '@/constants/iteration'
 
 import s from "../detail.less"
-import KeywordRates from "@/components/dataset/keywordRates"
+import SampleRates from "@/components/dataset/sampleRates"
 import { TestingSet } from "./testingSet"
 import { EditIcon, SearchEyeIcon, EyeOffIcon } from "@/components/common/icons"
 
@@ -31,7 +31,7 @@ function ProjectDetail({ project = {} }) {
 
   function renderPop(label, dataset = {}) {
     dataset.project = project
-    const content = <KeywordRates keywords={project?.keywords} dataset={dataset} progressWidth={0.4}></KeywordRates>
+    const content = <SampleRates keywords={project?.keywords} dataset={dataset} progressWidth={0.4} />
     return <Popover content={content} overlayInnerStyle={{ minWidth: 500 }}>
       <Tag className={s.nameTag}>{label}</Tag>
     </Popover>
@@ -53,20 +53,9 @@ function ProjectDetail({ project = {} }) {
         </Space>
       </Col>
       <Col>
-        <Space>
-          <Link to={`/home/project/${id}/iterations/settings`}><EditIcon /><span>{t('project.iteration.settings.title')}</span></Link>
-          <Link to={`/home/project/${id}/iterations`}><SearchEyeIcon /><span>{t('breadcrumbs.project.iterations')}</span></Link>
-        </Space>
+        <Link to={`/home/project/${id}/iterations/settings`}><EditIcon /><span>{t('project.iteration.settings.title')}</span></Link>
       </Col>
     </Row>
-    <div className={s.setsPanel}>
-      <Row gutter={0} align='middle'>
-        {renderProjectDatasetLabel()}
-        <Col span={24} style={{ marginTop: 10 }}>
-          <TestingSet project={project} />
-        </Col>
-      </Row>
-    </div>
   </div>
 }
 export default ProjectDetail

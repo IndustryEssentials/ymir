@@ -7,6 +7,7 @@ import {
 export default {
   namespace: "common",
   state: {
+    loading: true,
   },
   effects: {
     *getHistory({ payload }, { call }) {
@@ -27,7 +28,19 @@ export default {
         return result
       }
     },
+    *setLoading({ payload }, { put }) {
+      yield put({
+        type: 'SET_LOADING',
+        payload,
+      })
+    },
   },
   reducers: {
+    SET_LOADING (state, { payload }) {
+      return {
+        ...state,
+        loading: payload,
+      }
+    }
   },
 }

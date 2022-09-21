@@ -262,15 +262,29 @@ class ClassIdManager(object):
         return (self.main_name_for_id(type_id=type_id) is not None)
 
     def add_main_name(self, main_name: str) -> Tuple[int, str]:
+        return self.add_main_names([main_name])[0]
+
+    def add_main_names(self, main_names: List[str]) -> List[Tuple[int, str]]:
         # only trigger reload at saving, not read safe, main_name may already been added in another process.
         self.__reload()
-        if self.has_name(main_name):
-            return self.id_and_main_name_for_name(main_name)
+        ret_val: List[Tuple[int, str]] = []
 
+        # shortcut, return if all names are known.
+        for main_name in main_names:
+            class_id, main_name = self.id_and_main_name_for_name(main_name)
+            if class_id < 0:
+                break
+            ret_val.append((class_id, main_name))
+        if len(ret_val) == len(main_names):  # all known names.
+            return ret_val
+
+        ret_val.clear()
         with fasteners.InterProcessLock(path=parse_label_lock_path_or_link(self._storage_file_path)):
-            added_class_id, main_name = self._label_storage.add_new_label(name=main_name)
+            for main_name in main_names:
+                added_class_id, main_name = self._label_storage.add_new_label(name=main_name)
+                ret_val.append((added_class_id, main_name))
             self.__save()
-            return added_class_id, main_name
+        return ret_val
 
 
 def _normalize_and_check_name(name: str) -> str:

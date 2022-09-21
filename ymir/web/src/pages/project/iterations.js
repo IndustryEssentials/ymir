@@ -9,15 +9,9 @@ import Prepare from "./iterations/prepare"
 import Current from './iterations/detail'
 import List from "./iterations/list"
 
-import s from "./index.less"
+import s from "./iterations/index.less"
 import { CardTabs } from "@/components/tabs/cardTabs"
-
-// const SingleIteration = () => {
-//   const SingleIter = () => {
-
-//   }
-//   return <SingleIter /> 
-// } 
+import ProjectDetail from "./components/detail"
 
 function Iterations() {
   const { id } = useParams()
@@ -46,6 +40,7 @@ function Iterations() {
     <div className={s.iterations}>
       <Breadcrumbs />
       <div className={s.header}>
+        <ProjectDetail project={project} />
         {project.round > 0 ?
           <Iteration project={project} iterations={iterations} fresh={fresh} /> : <Prepare project={project} iterations={iterations} fresh={fresh} />}
       </div>

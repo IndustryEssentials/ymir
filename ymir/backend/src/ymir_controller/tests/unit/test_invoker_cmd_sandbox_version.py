@@ -6,7 +6,7 @@ import unittest
 from google.protobuf.json_format import MessageToDict
 import yaml
 
-from common_utils.sandbox import SandboxError
+from common_utils.sandbox_util import SandboxError
 from controller.utils.invoker_call import make_invoker_cmd_call
 from controller.utils.invoker_mapping import RequestTypeToInvoker
 from id_definition.error_codes import CTLResponseCode, UpdaterErrorCode
@@ -90,23 +90,23 @@ class TestCmdSandboxVersion(unittest.TestCase):
     # public: test cases
     def test_all(self) -> None:
         # sandbox a: normal
-        response_a = make_invoker_cmd_call(invoker=RequestTypeToInvoker[backend_pb2.SANDBOX_VERSION],
+        response_a = make_invoker_cmd_call(invoker=RequestTypeToInvoker[backend_pb2.CMD_VERSION_GET],
                                            sandbox_root=self._sandbox_a_root,
-                                           req_type=backend_pb2.SANDBOX_VERSION)
+                                           req_type=backend_pb2.CMD_VERSION_GET)
         print(MessageToDict(response_a))
         self.assertEqual(CTLResponseCode.CTR_OK, response_a.code)
         self.assertEqual('42.0.0', response_a.sandbox_version)
 
         # sandbox b: no users
         with self.assertRaises(SandboxError) as e:
-            make_invoker_cmd_call(invoker=RequestTypeToInvoker[backend_pb2.SANDBOX_VERSION],
+            make_invoker_cmd_call(invoker=RequestTypeToInvoker[backend_pb2.CMD_VERSION_GET],
                                   sandbox_root=self._sandbox_b_root,
-                                  req_type=backend_pb2.SANDBOX_VERSION)
+                                  req_type=backend_pb2.CMD_VERSION_GET)
             self.assertEqual(UpdaterErrorCode.INVALID_USER_SPACE_VERSIONS, e.error_code)
 
         # sandbox c: multiple versions
         with self.assertRaises(SandboxError) as e:
-            make_invoker_cmd_call(invoker=RequestTypeToInvoker[backend_pb2.SANDBOX_VERSION],
+            make_invoker_cmd_call(invoker=RequestTypeToInvoker[backend_pb2.CMD_VERSION_GET],
                                   sandbox_root=self._sandbox_c_root,
-                                  req_type=backend_pb2.SANDBOX_VERSION)
+                                  req_type=backend_pb2.CMD_VERSION_GET)
             self.assertEqual(UpdaterErrorCode.INVALID_USER_SPACE_VERSIONS, e.error_code)
