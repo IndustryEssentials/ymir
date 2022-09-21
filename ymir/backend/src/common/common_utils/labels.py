@@ -1,6 +1,7 @@
 from datetime import datetime
 import logging
 import os
+import re
 from typing import Any, Dict, Iterator, List, Set, Union
 
 import fasteners  # type: ignore
@@ -8,9 +9,9 @@ from google.protobuf import json_format
 from pydantic import BaseModel, root_validator, validator
 import yaml
 
+from mir.version import YMIR_VERSION
 from proto import backend_pb2
 
-YMIR_VERSION = "1.3.0"
 EXPECTED_FILE_VERSION = 1
 
 
@@ -32,12 +33,19 @@ class SingleLabel(BaseModel):
 
 class LabelStorage(BaseModel):
     version: int = EXPECTED_FILE_VERSION
+    ymir_version: str = YMIR_VERSION
     labels: List[SingleLabel] = []
 
     @validator('version')
     def _check_version(cls, v: int) -> int:
         if v != EXPECTED_FILE_VERSION:
-            raise ValueError(f"incorrect version: {v}, needed {EXPECTED_FILE_VERSION}")
+            raise ValueError(f"incorrect version: {v}, expect: {EXPECTED_FILE_VERSION}")
+        return v
+
+    @validator('ymir_version')
+    def _check_ymir_version(cls, v: str) -> str:
+        if v and not re.match(pattern=r'^\d+\.\d+\.\d+$', string=v):
+            raise ValueError(f"incorrect ymir version: {v}, expect: #.#.#")
         return v
 
     @validator('labels')
