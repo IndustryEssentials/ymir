@@ -352,7 +352,7 @@ function Train({ allDatasets, datasetCache, ...func }) {
               </Form.Item>
               <span style={{ marginLeft: 20 }}>{t('task.gpu.tip', { count: gpu_count })}</span>
             </Form.Item>
-            <Form.Item hidden={!live} label={t('task.train.export.format')} tooltip={t('tip.train.export.format')} name='trainFormat' initialValue={'ark:raw'}>
+            <Form.Item hidden={!live} label={t('task.train.export.format')} tooltip={t('tip.train.export.format')} name='trainFormat'>
               <TrainFormat />
             </Form.Item>
             <LiveCodeForm form={form} live={live} />

@@ -192,7 +192,8 @@ def _export_mirdatas_to_raw(
                                                                      need_sub_folder=need_sub_folder)
             asset_ext = _asset_file_ext(attributes.asset_type)
             asset_dst_file = f"{asset_dst_path}.{asset_ext}"
-            shutil.copyfile(asset_src_file, asset_dst_file)
+            if not os.path.isfile(asset_dst_file) or os.stat(asset_src_file).st_size != os.stat(asset_dst_file).st_size:
+                shutil.copyfile(asset_src_file, asset_dst_file)
             index_f.write(f"{asset_dst_file}\n")
 
             if anno_format == mirpb.AnnoFormat.AF_NO_ANNOTATION:
