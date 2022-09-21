@@ -60,13 +60,10 @@ def _roll_back(sandbox_root: str) -> None:
 
 def _get_equivalent_version(ver: str, default_ver: str = '') -> str:
     _EQUIVALENT_VERSIONS = {
-        '1.1.0': {'1.1.0'},
-        '1.3.0': {'1.3.0'},
+        '1.1.0': '1.1.0',
+        '1.3.0': '1.3.0',
     }
-    for k, v in _EQUIVALENT_VERSIONS.items():
-        if ver in v:
-            return k
-    return default_ver
+    return _EQUIVALENT_VERSIONS.get(ver, default_ver)
 
 
 def _get_update_steps(src_ver: str, dst_ver: str) -> List[Callable[[str], None]]:
