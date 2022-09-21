@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react"
+import { useSelector } from 'umi'
 
 import t from "@/utils/t"
 import useFetch from '@/hooks/useFetch'
@@ -8,20 +9,20 @@ import s from "./index.less"
 
 const filterExsit = list => list.filter(item => item)
 
-function Detail({ project }) {
+function Detail({ project = {} }) {
 
   const [settings, setSettings] = useState([])
   const [intermediations, setIntermediations] = useState([])
   const [models, setModels] = useState([])
-  const [iteration, getIteration] = useFetch('iteration/getIteration')
+  const [_, getIteration] = useFetch('iteration/getIteration')
+  const iteration = useSelector(({ iteration }) => iteration.iteration)
   const iid = project.currentIteration?.id
 
   useEffect(() => {
     project.id && iid && getIteration({ pid: project.id, id: iid, more: true })
-  }, [project, iid])
+  }, [project.id, iid])
 
   useEffect(() => {
-    console.log('project:', project)
     if (!project?.id) {
       return
     }
@@ -45,9 +46,9 @@ function Detail({ project }) {
 
   return (
     <div className={s.detail}>
-      <Panel list={settings} title='迭代设置' />
-      { intermediations.length ? <Panel list={intermediations} title='中间数据' /> : null }
-      { models.length ? <Panel list={models} title='结果模型' type='model' /> : null }
+      <Panel list={settings} title={t('project.iteration.detail.settings.title')} />
+      { intermediations.length ? <Panel list={intermediations} title={t('project.iteration.detail.intermediations.title')} /> : null }
+      { models.length ? <Panel list={models} title={t('project.iteration.detail.models.title')} type='model' /> : null }
     </div>
   )
 }

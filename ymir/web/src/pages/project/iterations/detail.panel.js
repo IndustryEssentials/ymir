@@ -14,8 +14,6 @@ function Panel({ list = [], customColumns, title = '', type = 'dataset' }) {
 
   useEffect(() => customColumns && setColumns(customColumns), [customColumns])
 
-  useEffect(() => { console.log('detail panel: ', type, list) }, [list])
-
   return <div className={s.panel}>
     <div className={s.title}>{title}</div>
     <div className={s.content}>

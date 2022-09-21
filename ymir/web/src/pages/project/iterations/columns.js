@@ -45,7 +45,8 @@ function showTitle(str) {
   const keywordCol = {
     title: showTitle("dataset.column.keyword"),
     dataIndex: "keywords",
-    render: (_, { gt, pred, state, }) => {
+    render: (_, record) => {
+      const { gt, pred, } = record
       const renderLine = (keywords, label = 'ground truth') => <div>
         <div>{label}:</div>
         {t('dataset.column.keyword.label', {
@@ -54,7 +55,7 @@ function showTitle(str) {
         })}
       </div>
       const label = <>{renderLine(gt.keywords)}{renderLine(pred.keywords, 'prediction')}</>
-      return validDataset(state) ? <Tooltip title={label}
+      return validDataset(record) ? <Tooltip title={label}
         color='white' overlayInnerStyle={{ color: 'rgba(0,0,0,0.45)', fontSize: 12 }}
         mouseEnterDelay={0.5}
       ><div>{label}</div></Tooltip> : null
