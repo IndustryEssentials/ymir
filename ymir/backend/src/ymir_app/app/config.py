@@ -110,7 +110,6 @@ class Settings(BaseSettings):
     VIEWER_HOST_PORT: Optional[int] = None
 
     # migration
-    # todo update
     MIGRATION_CHECKPOINT: str = "9bb7bb8b71c3"
 
 
