@@ -311,6 +311,14 @@ function Inference({ datasetCache, datasets, ...func }) {
               <Form.Item
                 noStyle
                 name="gpu_count"
+                rules={[
+                  {
+                    validator: (rules, value) => value <= Math.floor(gpu_count / taskCount) ?
+                      Promise.resolve() :
+                      Promise.reject(),
+                    message: t('task.infer.gpu.tip', { total: gpu_count, selected: taskCount * selectedGpu })
+                  }
+                ]}
               >
                 <InputNumber min={0} max={Math.floor(gpu_count / taskCount)} precision={0} onChange={setSelectedGpu} />
               </Form.Item>

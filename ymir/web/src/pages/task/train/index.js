@@ -113,9 +113,9 @@ function Train({ allDatasets, datasetCache, ...func }) {
 
   useEffect(() => {
     trainDataset &&
-    !iterationContext &&
-    !fromCopy &&
-    setAllKeywords()
+      !iterationContext &&
+      !fromCopy &&
+      setAllKeywords()
   }, [trainDataset])
 
   useEffect(() => {
@@ -367,7 +367,18 @@ function Train({ allDatasets, datasetCache, ...func }) {
               label={t('task.gpu.count')}
               tooltip={t('tip.task.filter.gpucount')}
             >
-              <Form.Item noStyle name="gpu_count">
+              <Form.Item
+                noStyle
+                name="gpu_count"
+                rules={[
+                  {
+                    validator: (rules, value) => value <= gpu_count ?
+                      Promise.resolve() :
+                      Promise.reject(),
+                    message: t('task.gpu.tip', { count: gpu_count })
+                  }
+                ]}
+              >
                 <InputNumber min={0} max={gpu_count} precision={0} />
               </Form.Item>
               <span style={{ marginLeft: 20 }}>{t('task.gpu.tip', { count: gpu_count })}</span>
