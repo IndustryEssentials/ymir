@@ -20,15 +20,15 @@ from mir.tools.executant import prepare_executant_env, run_docker_executant
 
 
 # private: post process
-def _process_model_storage(out_root: str, model_upload_location: str, executor_config: dict,
-                           task_context: dict) -> models.ModelStorage:
+def _find_and_save_model(out_root: str, model_upload_location: str, executor_config: dict,
+                         task_context: dict) -> models.ModelStorage:
     """
     find and save models
     Returns:
         ModelStorage
     """
     out_model_dir = os.path.join(out_root, "models")
-    model_stages, best_stage_name, attachments = _find_model_stages(out_model_dir)
+    model_stages, best_stage_name, attachments = _find_model(out_model_dir)
     if not model_stages:
         raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
                               error_message='can not find model stages in result.yaml')
@@ -48,9 +48,9 @@ def _process_model_storage(out_root: str, model_upload_location: str, executor_c
     return model_storage
 
 
-def _find_model_stages(model_root: str) -> Tuple[Dict[str, models.ModelStageStorage], str, Dict[str, Any]]:
+def _find_model(model_root: str) -> Tuple[Dict[str, models.ModelStageStorage], str, Dict[str, Any]]:
     """
-    find models in `model_root`, and returns all model stages
+    find models in `model_root`, and returns all model stages and attachments
 
     Args:
         model_root (str): model root
@@ -358,10 +358,10 @@ class CmdTrain(base.BaseCommand):
 
         # save model
         logging.info(f"saving models:\n task_context: {task_context}")
-        model_storage = _process_model_storage(out_root=work_dir_out,
-                                               model_upload_location=model_upload_location,
-                                               executor_config=executor_config,
-                                               task_context=task_context)
+        model_storage = _find_and_save_model(out_root=work_dir_out,
+                                             model_upload_location=model_upload_location,
+                                             executor_config=executor_config,
+                                             task_context=task_context)
 
         # commit task
         task = mir_storage_ops.create_task(task_type=mirpb.TaskType.TaskTypeTraining,
