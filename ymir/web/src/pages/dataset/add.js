@@ -182,7 +182,7 @@ const Add = (props) => {
   }
 
   function onInternalDatasetChange(value, { dataset }) {
-    setDefaultName(`${dataset.name} ${dataset.versionName}`)
+    setDefaultName(`${dataset.name}`)
     setSelectedDataset(value)
   }
 
