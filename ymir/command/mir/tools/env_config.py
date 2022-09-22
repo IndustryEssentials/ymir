@@ -4,6 +4,7 @@ from pydantic import BaseModel
 
 import yaml
 
+from mir import version
 from mir.tools import settings as mir_settings
 
 
@@ -30,6 +31,7 @@ class _EnvOutputConfig(BaseModel):
 
 
 class _EnvConfig(BaseModel):
+    protocol_version = version.TMI_PROTOCOL_VERSION
     task_id: str = 'default-task'
     run_training: bool = False
     run_mining: bool = False
