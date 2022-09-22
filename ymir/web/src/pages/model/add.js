@@ -33,7 +33,8 @@ const Add = ({ importModel }) => {
 
   const history = useHistory()
   const { query } = useLocation()
-  const { mid } = query
+  const { mid, from, stepKey } = query
+  const iterationContext = from === 'iteration'
   const { id: pid } = useParams()
   const [form] = useForm()
   const [path, setPath] = useState('')
@@ -42,6 +43,13 @@ const Add = ({ importModel }) => {
     name: generateName('import_model'),
     modelId: Number(mid) ? [Number(pid), Number(mid)] : undefined,
   }
+  const [updateResult, updateProject] = useFetch('project/updateProject')
+
+  useEffect(() => {
+    if (updateResult) {
+      history.replace(`/home/project/${pid}/iterations`)
+    }
+  }, [updateResult])
 
   async function submit(values) {
     const params = {
@@ -62,6 +70,9 @@ const Add = ({ importModel }) => {
     const result = await importModel(params)
     if (result) {
       message.success(t('model.add.success'))
+      if (iterationContext && stepKey) {
+        return updateProject({ id: pid, [stepKey]: result.id })
+      }
       const group = result.model_group_id || ''
       history.push(`/home/project/${pid}/model#${group}`)
     }

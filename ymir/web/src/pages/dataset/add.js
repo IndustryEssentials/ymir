@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Button, Card, Form, Input, message, Radio, Select, Space, Tag } from 'antd'
-import { useParams, useHistory } from 'umi'
+import { useParams, useHistory, useLocation } from 'umi'
 
 import { formLayout } from "@/config/antd"
 import t from '@/utils/t'
@@ -44,9 +44,12 @@ const strategies = [
 
 const Add = (props) => {
   const history = useHistory()
+  const { query } = useLocation()
   const pageParams = useParams()
   const pid = Number(pageParams.id)
-  const { id } = history.location.query
+  const { id, from, stepKey } = query
+  console.log('url query:', query)
+  const iterationContext = from === 'iteration'
 
   const [form] = useForm()
   const [currentType, setCurrentType] = useState(TYPES.INTERNAL)
@@ -64,6 +67,7 @@ const Add = (props) => {
   const netUrl = Form.useWatch('url', form)
   const path = Form.useWatch('path', form)
   const [formatDetailModal, setFormatDetailModal] = useState(false)
+  const [updateResult, updateProject] = useFetch('project/updateProject')
 
   useEffect(() => {
     form.setFieldsValue({ datasetId: null })
@@ -97,10 +101,19 @@ const Add = (props) => {
   useEffect(() => {
     if (addResult) {
       message.success(t('dataset.add.success.msg'))
+      if (iterationContext && stepKey) {
+        return updateProject({ id: pid, [stepKey]: addResult.id })
+      }
       const group = addResult.dataset_group_id || ''
       history.replace(`/home/project/${pid}/dataset#${group}`)
     }
   }, [addResult])
+
+  useEffect(() => {
+    if (updateResult) {
+      history.replace(`/home/project/${pid}/iterations`)
+    }
+  }, [updateResult])
 
   useEffect(() => {
     const opts = strategies.map(opt => ({ ...opt, label: t(`dataset.add.label_strategy.${opt.label}`) }))
