@@ -1,18 +1,17 @@
 from datetime import datetime
 import logging
 import os
-import re
 
 import fasteners  # type: ignore
 from google.protobuf import json_format
 import yaml
 
-from mir.tools.class_ids import ids_file_name, load_or_create_userlabels  # type: ignore    # noqa
 from mir.tools.class_ids import LabelStorage, SingleLabel, UserLabels
-from mir.version import YMIR_VERSION
 from proto import backend_pb2
 
-YMIR_VERSION = "1.3.0"
+# indirect imports so that ymir_app does not need to import mir-cmd package.
+from mir.version import YMIR_VERSION  # type: ignore # noqa
+from mir.tools.class_ids import ids_file_name, load_or_create_userlabels  # type: ignore # noqa
 
 
 def merge_labels(label_storage_file: str,
