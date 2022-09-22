@@ -82,7 +82,7 @@ export default function Stage({ pid, stage, form, project = {}, result, update }
         </Button>
       </Col>
       <Col flex={1}>
-        <Button block onClick={() => history.push(`/home/project/${pid}/model/import`)}>
+        <Button block onClick={() => history.push(`/home/project/${pid}/model/import?from=iteration&stepKey=${stage.field}`)}>
           <ImportIcon /> {t("model.import.label")}
         </Button>
       </Col>
