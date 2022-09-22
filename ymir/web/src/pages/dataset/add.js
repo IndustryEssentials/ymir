@@ -199,7 +199,7 @@ const Add = (props) => {
 
   function setCopyDefaultName(value, option) {
     const label = value ? option[1]?.label : ''
-    const datasetname = label.replace(/ \(assets: \d+\)/, '')
+    const datasetname = label.replace(/\sV\d+\s\(assets: \d+\)/, '')
     setDefaultName(datasetname)
   }
 
