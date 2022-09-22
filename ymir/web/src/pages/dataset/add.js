@@ -89,12 +89,18 @@ const Add = (props) => {
   }, [newer])
 
   useEffect(() => {
-    // todo get name
     const filename = (netUrl || '').replace(/^.+\/([^\/]+)\.zip$/, '$1')
     setDefaultName(filename)
   }, [netUrl])
 
-  useEffect(() => setDefaultName(path), [path])
+  useEffect(() => {
+    if (typeof path === 'undefined') {
+      return
+    }
+    const matchfinalDir = path.match(/[^\/]+$/) || []
+    const finalDir = matchfinalDir[0]
+    setDefaultName(finalDir)
+  }, [path])
 
   useEffect(() => addDefaultName(defaultName), [defaultName])
 
@@ -343,7 +349,7 @@ const Add = (props) => {
               <Form.Item label={t('dataset.add.form.path.label')} required
                 name='path'
                 help={renderTip('path')}
-                rules={[{ required: true, message: t('dataset.add.form.path.tip') }]}
+                rules={[{ required: true, message: renderTip('path') }]}
               >
                 <Input placeholder={t('dataset.add.form.path.placeholder')} max={512} allowClear />
               </Form.Item>
