@@ -39,7 +39,7 @@ function Train({ allDatasets, datasetCache, ...func }) {
   const { mid, image, iterationId, outputKey, currentStage, test, from } = location.query
   const stage = string2Array(mid)
   const did = Number(location.query.did)
-  const [project, setProject] = useState({})
+  // const [project, setProject] = useState({})
   const [selectedKeywords, setSelectedKeywords] = useState([])
   const [dataset, setDataset] = useState({})
   const [trainSet, setTrainSet] = useState(null)
@@ -55,6 +55,7 @@ function Train({ allDatasets, datasetCache, ...func }) {
   const [openpai, setOpenpai] = useState(false)
   const checkDuplicated = useDuplicatedCheck(submit)
   const [sys, getSysInfo] = useFetch('common/getSysInfo', {})
+  const [project, getProject] = useFetch('project/getProject', {})
   const [updated, updateProject] = useFetch('project/updateProject')
   const [fromCopy, setFromCopy] = useState(false)
 
@@ -66,7 +67,7 @@ function Train({ allDatasets, datasetCache, ...func }) {
 
   useEffect(() => {
     getSysInfo()
-    fetchProject()
+    getProject({ id: pid })
   }, [])
 
   useEffect(() => {
@@ -153,11 +154,6 @@ function Train({ allDatasets, datasetCache, ...func }) {
       history.replace({ state: {} })
     }
   }, [location.state])
-
-  async function fetchProject() {
-    const project = await func.getProject(pid)
-    project && setProject(project)
-  }
 
   function setAllKeywords() {
     const kws = trainDataset?.gt?.keywords
@@ -304,7 +300,7 @@ function Train({ allDatasets, datasetCache, ...func }) {
                 onChange={trainSetChange}
               />
             </Form.Item>
-            {iterationId ? <Form.Item label={t('task.train.form.keywords.label')}>
+            {iterationContext ? <Form.Item label={t('task.train.form.keywords.label')}>
               {project?.keywords?.map(keyword => <Tag key={keyword}>{keyword}</Tag>)}
             </Form.Item> :
               <Form.Item
@@ -423,12 +419,6 @@ const props = (state) => {
 
 const dis = (dispatch) => {
   return {
-    getProject(id) {
-      return dispatch({
-        type: "project/getProject",
-        payload: { id },
-      })
-    },
     getDatasets(pid, force = true) {
       return dispatch({
         type: "dataset/queryAllDatasets",
