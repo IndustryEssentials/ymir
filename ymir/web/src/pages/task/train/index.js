@@ -177,7 +177,10 @@ function Train({ allDatasets, datasetCache, ...func }) {
   }
 
   function setConfig(config = {}) {
-    const params = Object.keys(config).filter(key => key !== 'gpu_count').map(key => ({ key, value: config[key] }))
+    const params = Object.keys(config).filter(key => key !== 'gpu_count').map(key => ({
+      key,
+      value: config[key]
+    }))
     setSeniorConfig(params)
   }
 
@@ -259,7 +262,12 @@ function Train({ allDatasets, datasetCache, ...func }) {
       <Breadcrumbs />
       <Card className={commonStyles.container} title={t('breadcrumbs.task.training')}>
         <div className={commonStyles.formContainer}>
-          <CheckProjectDirty style={{ marginBottom: 20, width: '100%' }} pid={pid} initialCheck={true} callback={(dirty) => setProjectDirty(dirty)} />
+          <CheckProjectDirty
+            style={{ marginBottom: 20, width: '100%' }}
+            pid={pid}
+            initialCheck={true}
+            callback={(dirty) => setProjectDirty(dirty)}
+          />
           <Form
             name='trainForm'
             className={styles.form}
@@ -357,9 +365,13 @@ function Train({ allDatasets, datasetCache, ...func }) {
               </Form.Item>
               <span style={{ marginLeft: 20 }}>{t('task.gpu.tip', { count: gpu_count })}</span>
             </Form.Item>
-            { live ? <Form.Item label={t('task.train.export.format')} tooltip={t('tip.train.export.format')} name='trainFormat' initialValue={'ark:raw'}>
+            {live ? <Form.Item
+              label={t('task.train.export.format')}
+              tooltip={t('tip.train.export.format')}
+              name='trainFormat'
+              initialValue={'ark:raw'}>
               <TrainFormat />
-            </Form.Item> : null }
+            </Form.Item> : null}
             <LiveCodeForm form={form} live={live} />
             <DockerConfigForm show={showConfig} seniorConfig={seniorConfig} form={form} />
             <Desc form={form} />
