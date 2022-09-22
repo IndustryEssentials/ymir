@@ -216,7 +216,7 @@ function Train({ allDatasets, datasetCache, ...func }) {
         func.updateIteration({ id: iterationId, currentStage, [outputKey]: result.result_model.id })
       }
       if (iterationContext && !iterationId) {
-        await updateProject({ modelStage: [result.result_model?.id] })
+        await updateProject({ id: pid, modelStage: [result.result_model?.id] })
       }
       await func.clearCache()
       const group = result.result_model?.model_group_id || ''
@@ -352,9 +352,9 @@ function Train({ allDatasets, datasetCache, ...func }) {
               </Form.Item>
               <span style={{ marginLeft: 20 }}>{t('task.gpu.tip', { count: gpu_count })}</span>
             </Form.Item>
-            <Form.Item hidden={!live} label={t('task.train.export.format')} tooltip={t('tip.train.export.format')} name='trainFormat' initialValue={'ark:raw'}>
+            { live ? <Form.Item label={t('task.train.export.format')} tooltip={t('tip.train.export.format')} name='trainFormat' initialValue={'ark:raw'}>
               <TrainFormat />
-            </Form.Item>
+            </Form.Item> : null }
             <LiveCodeForm form={form} live={live} />
             <DockerConfigForm show={showConfig} seniorConfig={seniorConfig} form={form} />
             <Desc form={form} />
