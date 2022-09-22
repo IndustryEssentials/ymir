@@ -219,7 +219,7 @@ export default {
       }
     },
     *updatePrepareStagesResult({ payload }, { put, select }) {
-      const results = yield select(state => state.iteration.prepareStagesResult)
+      const results = yield select(({ iteration }) => iteration.prepareStagesResult)
       const tasks = payload || {}
       const updatedResults = Object.keys(results).reduce((prev, key) => {
         const result = results[key]

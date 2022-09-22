@@ -26,7 +26,7 @@ function Detail({ project = {} }) {
     if (!project?.id) {
       return
     }
-    setSettings([project.miningSet, project.testSet])
+    setSettings(filterExsit([project.miningSet, project.testSet]))
     if (!iteration.id) {
       return
     }
