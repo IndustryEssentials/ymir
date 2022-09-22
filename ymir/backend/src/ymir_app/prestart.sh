@@ -1,4 +1,8 @@
 #! /usr/bin/env bash
+set -e
+
+# Make sure existing mir repos are up to date
+python app/check_mir_repo_version.py
 
 # Let the DB start
 python app/backend_pre_start.py
