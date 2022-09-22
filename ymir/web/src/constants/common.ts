@@ -44,6 +44,14 @@ export function updateResultState(result: Result, tasks: BackendData) {
 export function validState(state: number) {
   return ResultStates.VALID === state
 }
+export const statesLabel = (state: ResultStates) => {
+  const maps = {
+    [ResultStates.READY]: 'dataset.state.ready',
+    [ResultStates.VALID]: 'dataset.state.valid',
+    [ResultStates.INVALID]: 'dataset.state.invalid',
+  }
+  return maps[state]
+}
 
 export function getVersionLabel(version: number) {
   return `V${version}`

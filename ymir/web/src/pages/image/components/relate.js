@@ -4,23 +4,35 @@ import { connect } from 'dva'
 
 import t from '@/utils/t'
 import { TYPES, STATES } from '@/constants/image'
+import useFetch from '@/hooks/useFetch'
 
 const { useForm } = Form
-const RelateModal = forwardRef(({ getMiningImage, relate, ok = () => { } }, ref) => {
+const RelateModal = forwardRef(({ ok = () => { } }, ref) => {
   const [visible, setVisible] = useState(false)
   const [links, setLinks] = useState([])
-  const [images, setImages] = useState([])
   const [id, setId] = useState(null)
   const [imageName, setImageName] = useState('')
   const [linkForm] = useForm()
+  const [relateResult, relate] = useFetch('image/relateImage')
+  const [{ items: images }, getMiningImages] = useFetch('image/getImages', { items: [] })
+
+  useEffect(() => linkForm.setFieldsValue({
+    relations: links.map(image => image.id)
+  }), [links, visible])
+
+  useEffect(() => visible && getMiningImages({
+    type: TYPES.MINING,
+    offset: 0,
+    limit: 10000,
+  }), [visible])
 
   useEffect(() => {
-    linkForm.setFieldsValue({ relations: links.map(image => image.id) })
-  }, [links, visible])
-
-  useEffect(() => {
-    visible && fetchMiningImages()
-  }, [visible])
+    if (relateResult) {
+      message.success(t('image.link.success'))
+      setVisible(false)
+      ok()
+    }
+  }, [relateResult])
 
   useImperativeHandle(ref, () => ({
     show: ({ id, name, related }) => {
@@ -34,25 +46,20 @@ const RelateModal = forwardRef(({ getMiningImage, relate, ok = () => { } }, ref)
   const linkModalCancel = () => setVisible(false)
 
   const submitLink = () => {
-    linkForm.validateFields().then(async () => {
+    linkForm.validateFields().then(() => {
       const { relations } = linkForm.getFieldValue()
-      const result = await relate(id, relations)
-      if (result) {
-        message.success(t('image.link.success'))
-        setVisible(false)
-        ok()
-      }
+      relate({ id, relations })
     })
   }
 
-  async function fetchMiningImages() {
-    const result = await getMiningImage()
-    if (result) {
-      setImages(result.items)
-    }
-  }
-
-  return <Modal visible={visible} onCancel={linkModalCancel} onOk={submitLink} destroyOnClose title={t('image.link.title')}>
+  return <Modal
+    visible={visible}
+    onCancel={linkModalCancel}
+    onOk={submitLink}
+    destroyOnClose
+    forceRender
+    title={t('image.link.title')}
+  >
     <Form
       form={linkForm}
       name='linkForm'
@@ -73,31 +80,4 @@ const RelateModal = forwardRef(({ getMiningImage, relate, ok = () => { } }, ref)
   </Modal>
 })
 
-const props = (state) => {
-  return {
-    username: state.user.username,
-  }
-}
-const actions = (dispatch) => {
-  return {
-    getImageRelated(id) {
-      return dispatch({
-        type: 'image/getImageRelated',
-        payload: id,
-      })
-    },
-    relate(id, relations) {
-      return dispatch({
-        type: 'image/relateImage',
-        payload: { id, relations },
-      })
-    },
-    getMiningImage() {
-      return dispatch({
-        type: 'image/getImages',
-        payload: { type: TYPES.MINING, offset: 0, limit: 10000, },
-      })
-    }
-  }
-}
-export default connect(props, actions, null, { forwardRef: true })(RelateModal)
+export default RelateModal
