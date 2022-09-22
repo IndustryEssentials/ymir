@@ -12,12 +12,9 @@ services:
       - MODELS_PATH=${YMIR_PATH}/ymir-models
       - ASSETS_PATH=${YMIR_PATH}/ymir-assets
       - CONTROLLER_LOG_PATH=${YMIR_PATH}/ymir-data/logs
-      # viz
-      - VIZ_REDIS_URI=redis://:@viz-redis
       # app
       - DATABASE_URI=mysql+pymysql://${MYSQL_INITIAL_USER}:${MYSQL_INITIAL_PASSWORD}@db/ymir
       - GRPC_CHANNEL=127.0.0.1:50066
-      - VIZ_HOST=127.0.0.1:9099
       - SHARED_DATA_DIR=/ymir-sharing
       - NGINX_DATA_PATH=/ymir-storage
       # arq
@@ -54,9 +51,7 @@ services:
     depends_on:
       - db
       - redis
-      - viz-redis
       - tensorboard
-      - clickhouse
       - mongodb
     command: bash -c 'cd /app && supervisord -nc supervisor/supervisord.conf'
     restart: on-failure:10
@@ -85,24 +80,13 @@ services:
     networks:
       - ymirnetwork
 
-  viz-redis:
-    image: industryessentials/ymir-viz-redis
-    restart: on-failure:10
-    healthcheck:
-      test: ["CMD", "redis-cli","ping"]
-      interval: 60s
-      timeout: 6s
-      retries: 3
-      start_period: 30s
-    networks:
-      - ymirnetwork
-
   web:
     image: industryessentials/ymir-web
     volumes:
       - "${YMIR_PATH}/ymir-models:/data/ymir/ymir-models"
       - "${YMIR_PATH}/ymir-assets:/data/ymir/ymir-assets"
       - "${YMIR_PATH}/ymir-storage:/data/ymir/ymir-storage"
+      - "./docs:/data/ymir/docs"
     environment:
       - LABEL_TOOL_HOST_URL=${LABEL_TOOL_HOST_URL}
       - FIFTYONE_HOST_URL=${FIFTYONE_HOST_URL}
@@ -153,18 +137,6 @@ services:
       timeout: 6s
       retries: 3
       start_period: 30s
-    networks:
-      - ymirnetwork
-
-  clickhouse:
-    image: clickhouse/clickhouse-server
-    ulimits:
-      nofile:
-        soft: 262144
-        hard: 262144
-    volumes:
-      - ${YMIR_PATH}/clickhouseDB:/var/lib/clickhouse
-    restart: on-failure:10
     networks:
       - ymirnetwork
 

@@ -74,14 +74,12 @@ def _merge_annotations(host_mir_annotations: mirpb.MirAnnotations, guest_mir_ann
     if not host_mir_annotations or not guest_mir_annotations:
         raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
                               error_message="input host/guest mir_annotations is invalid")
-    if not host_mir_annotations.head_task_id:
-        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
-                              error_message="no head_task_id found in host_mir_annotations")
 
     _merge_pair_annotations(host_annotation=host_mir_annotations.prediction,
                             guest_annotation=guest_mir_annotations.prediction,
                             target_annotation=host_mir_annotations.prediction,
                             strategy=strategy)
+    host_mir_annotations.prediction.eval_class_ids.extend(guest_mir_annotations.prediction.eval_class_ids)
 
     _merge_pair_annotations(host_annotation=host_mir_annotations.ground_truth,
                             guest_annotation=guest_mir_annotations.ground_truth,
@@ -278,8 +276,6 @@ class CmdMerge(base.BaseCommand):
         host_mir_metadatas = mirpb.MirMetadatas()
         host_mir_annotations = mirpb.MirAnnotations()
 
-        host_mir_annotations.head_task_id = dst_typ_rev_tid.tid
-
         for typ_rev_tid in src_typ_rev_tids:
             ret = _merge_to_mir(host_mir_metadatas=host_mir_metadatas,
                                 host_mir_annotations=host_mir_annotations,
@@ -288,6 +284,9 @@ class CmdMerge(base.BaseCommand):
                                 strategy=strategy)
             if ret != MirCode.RC_OK:
                 return ret
+        host_mir_annotations.prediction.model.Clear()
+        host_mir_annotations.prediction.executor_config = ''
+        host_mir_annotations.prediction.eval_class_ids[:] = set(host_mir_annotations.prediction.eval_class_ids)
 
         ex_typ_rev_tids = revs_parser.parse_arg_revs(ex_src_revs) if ex_src_revs else []
         for typ_rev_tid in ex_typ_rev_tids:

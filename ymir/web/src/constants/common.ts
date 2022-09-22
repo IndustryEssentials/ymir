@@ -8,7 +8,7 @@ export const HIDDENMODULES = {
   LIVECODE: true,
 }
 
-export enum states {
+export enum ResultStates {
   READY = 0,
   VALID = 1,
   INVALID = 2,
@@ -30,7 +30,7 @@ export function updateResultState(result: Result, tasks: BackendData) {
   if (!result || !task) {
     return
   }
-  if ([states.VALID, states.INVALID].includes(task.result_state)) {
+  if ([ResultStates.VALID, ResultStates.INVALID].includes(task.result_state)) {
     result.needReload = true
   }
   result.state = task.result_state
@@ -42,5 +42,9 @@ export function updateResultState(result: Result, tasks: BackendData) {
 }
 
 export function validState(state: number) {
-  return states.VALID === state
+  return ResultStates.VALID === state
+}
+
+export function getVersionLabel(version: number) {
+  return `V${version}`
 }

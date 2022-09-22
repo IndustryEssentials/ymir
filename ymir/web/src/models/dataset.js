@@ -3,9 +3,8 @@ import {
   getAssetsOfDataset, getAsset, batchAct, delDataset, delDatasetGroup, createDataset, updateDataset, getInternalDataset,
   getNegativeKeywords,
 } from "@/services/dataset"
-import { getStats } from "../services/common"
-import { transferDatasetGroup, transferDataset, transferDatasetAnalysis, states, transferAsset, transferAnnotationsCount } from '@/constants/dataset'
-import { actions, updateResultState } from '@/constants/common'
+import { transferDatasetGroup, transferDataset, transferDatasetAnalysis, transferAsset, transferAnnotationsCount } from '@/constants/dataset'
+import { actions, updateResultState, ResultStates } from '@/constants/common'
 import { deepClone } from '@/utils/object'
 import { checkDuplication } from "../services/dataset"
 
@@ -42,21 +41,22 @@ export default {
       }
     },
     *batchDatasets({ payload }, { call, put }) {
-      const { code, result } = yield call(batchDatasets, payload)
+      const { pid, ids, ck } = payload
+      const { code, result } = yield call(batchDatasets, pid, ids, ck)
       if (code === 0) {
         const datasets = result.map(ds => transferDataset(ds))
         return datasets || []
       }
     },
     *getDataset({ payload }, { call, put, select }) {
-      const { id, force } = payload
+      const { id, verbose, force } = payload
       if (!force) {
         const dataset = yield select(state => state.dataset.dataset[id])
         if (dataset) {
           return dataset
         }
       }
-      const { code, result } = yield call(getDataset, id)
+      const { code, result } = yield call(getDataset, id, verbose)
       if (code === 0) {
         const dataset = transferDataset(result)
 
@@ -121,7 +121,7 @@ export default {
           return dssCache
         }
       }
-      const dss = yield put.resolve({ type: 'queryDatasets', payload: { project_id: pid, state: states.VALID, limit: 10000 } })
+      const dss = yield put.resolve({ type: 'queryDatasets', payload: { project_id: pid, state: ResultStates.VALID, limit: 10000 } })
       if (dss) {
         yield put({
           type: "UPDATE_ALL_DATASETS",
@@ -190,7 +190,7 @@ export default {
     *createDataset({ payload }, { call, put }) {
       const { code, result } = yield call(createDataset, payload)
       if (code === 0) {
-        yield put.resolve({ type: 'clearCache' })
+        // yield put.resolve({ type: 'clearCache' })
         return result
       }
     },
@@ -216,29 +216,32 @@ export default {
     *updateDatasets({ payload }, { put, select }) {
       const versions = yield select(state => state.dataset.versions)
       const tasks = payload || {}
-      const all = yield select(state => state.dataset.allDatasets)
-      const newDatasets = []
       Object.keys(versions).forEach(gid => {
         const datasets = versions[gid]
         let updatedDatasets = datasets.map(dataset => {
           const updatedDataset = updateResultState(dataset, tasks)
-          newDatasets.push(updatedDataset)
           return updatedDataset ? { ...updatedDataset } : dataset
         })
         versions[gid] = updatedDatasets
       })
-      const validDatasets = newDatasets.filter(d => d?.needReload)
-      if (validDatasets.length) {
-        yield put({
-          type: 'UPDATE_ALL_DATASETS',
-          payload: [...validDatasets, ...all],
-        })
-      }
       yield put({
         type: 'UPDATE_ALL_VERSIONS',
         payload: { ...versions },
       })
       return { ...versions }
+    },
+    *updateAllDatasets({ payload: tasks = {} }, { put, select }) {
+      const all = yield select(state => state.dataset.allDatasets)
+      const newDatasets = Object.values(tasks)
+        .filter(task => task.result_state === ResultStates.VALID)
+        .map(task => ({ id: task?.result_dataset?.id, needReload: true }))
+      const pid = yield select(({ project }) => project.current?.id)
+      if (newDatasets.length) {
+        yield put({
+          type: 'queryAllDatasets',
+          payload: { pid, force: true },
+        })
+      }
     },
     *updateDatasetState({ payload }, { put, select }) {
       const datasetCache = yield select(state => state.dataset.dataset)
@@ -253,27 +256,6 @@ export default {
         type: 'UPDATE_ALL_DATASET',
         payload: { ...datasetCache },
       })
-    },
-    *getHotDatasets({ payload }, { call, put }) {
-      const { code, result } = yield call(getStats, { ...payload, q: 'ds' })
-      let datasets = []
-      if (code === 0) {
-        const refs = {}
-        const ids = result.map(item => {
-          refs[item[0]] = item[1]
-          return item[0]
-        })
-        if (ids.length) {
-          const datasetsObj = yield put.resolve({ type: 'batchDatasets', payload: ids })
-          if (datasetsObj) {
-            datasets = datasetsObj.map(dataset => {
-              dataset.count = refs[dataset.id]
-              return dataset
-            })
-          }
-        }
-      }
-      return datasets
     },
     *updateQuery({ payload = {} }, { put, select }) {
       const query = yield select(({ task }) => task.query)
@@ -350,15 +332,9 @@ export default {
       }
     },
     *getCK({ payload }, { select, put }) {
-      const { id } = payload
-      const { id: pid } = yield select(({ project }) => project.current)
-      const datasets = yield put.resolve({ type: 'analysis', payload: { pid, datasets: [id] } })
-      if (datasets?.length) {
-        const { cks, tags } = datasets[0]
-        return {
-          cks, tags,
-        }
-      }
+      const { ids = [], pid } = payload
+      const datasets = yield put.resolve({ type: 'batchDatasets', payload: { pid, ids, ck: true } })
+      return datasets || []
     },
   },
   reducers: {

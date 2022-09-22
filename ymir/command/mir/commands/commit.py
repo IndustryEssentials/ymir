@@ -1,5 +1,6 @@
 import argparse
 import logging
+import os
 
 from mir import scm
 from mir.commands import base
@@ -21,6 +22,10 @@ class CmdCommit(base.BaseCommand):
             return MirCode.RC_CMD_INVALID_MIR_REPO
 
         repo_git = scm.Scm(root_dir=mir_root, scm_executable='git')
+        git_attr_path = os.path.join(mir_root, '.gitattributes')
+        if not os.path.isfile(git_attr_path):
+            with open(git_attr_path, 'w') as f:
+                f.write('*.mir binary\n')
         repo_git.add('.')
         output_str = repo_git.commit(["-m", msg])
         logging.info("\n%s" % output_str)

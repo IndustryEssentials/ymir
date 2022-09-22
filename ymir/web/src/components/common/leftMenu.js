@@ -6,15 +6,16 @@ import { isSuperAdmin } from '@/constants/user'
 import {
   BarchartIcon, FlagIcon, GithubIcon, FileHistoryIcon, MymodelIcon,
   NavDatasetIcon, UserIcon, UserSettingsIcon, DiagnosisIcon, EditIcon, EyeOffIcon, TrainIcon,
-  BarChart2LineIcon, ProjectIcon, VectorIcon
+  BarChart2LineIcon, ProjectIcon, VectorIcon, BookIcon,
 } from '@/components/common/icons'
+import IterationIcon from '@/components/icon/Xiangmudiedai'
 
 const { Sider } = Layout
 
 const projectModule = /^.*\/project\/(\d+).*$/
 
-const getItem = (label, key, Icon, children, type = '') => ({
-  key, icon: Icon ? <Icon /> : null, children, label, type,
+const getItem = (label, key, Icon, children, type='') => ({
+  key, icon: Icon ? <Icon size='20' fill='rgba(0, 0, 0, 0.6)'  /> : null, children, label, type,
 })
 
 const getGroupItem = (label, key, children) => getItem(label, key, undefined, children, 'group')
@@ -46,6 +47,7 @@ function LeftMenu() {
         getItem(t('projects.title'), `/home/project`, ProjectIcon,),
         showLeftMenu ? getItem(project.name, `project.summary`, VectorIcon, [
           getItem(t('project.summary'), `/home/project/${id}/detail`, BarchartIcon,),
+          getItem(t('project.iterations.title'), `/home/project/${id}/iterations`, IterationIcon,),
           getItem(t('dataset.list'), `/home/project/${id}/dataset`, NavDatasetIcon,),
           getItem(t('breadcrumbs.dataset.analysis'), `/home/project/${id}/dataset/analysis`, BarChart2LineIcon),
           getItem(t('model.management'), `/home/project/${id}/model`, MymodelIcon,),
@@ -63,19 +65,29 @@ function LeftMenu() {
         isSuperAdmin(role) ? getItem(t('common.top.menu.permission'), '/home/permission', UserSettingsIcon,) : null,
       ]),
       { type: 'divider' },
+      getItem(<a target="_blank" href='/docs/'>
+        <BookIcon />
+        <span style={{ display: 'inline-block', marginLeft: 10 }}>{t('common.menu.docs')}</span>
+      </a>, 'outer/docs'),
       getItem(t('user.settings'), '/home/user', UserIcon,),
-      getItem(<a target="_blank" href='https://github.com/IndustryEssentials/ymir'><GithubIcon /> {t('common.top.menu.community')}</a>, 'github',),
+      getItem(<a target="_blank" href='https://github.com/IndustryEssentials/ymir'>
+        <GithubIcon />
+        <span style={{ display: 'inline-block', marginLeft: 10 }}>{t('common.top.menu.community')}</span>
+      </a>, 'outer/github'),
     ])
   }, [id, project, role])
 
   const clickHandle = ({ key }) => {
-    setDefaultKeys([key])
-    history.push(key)
+    const outer = /^outer\//.test(key)
+    if (!outer) {
+      setDefaultKeys([key])
+      history.push(key)
+    }
   }
 
   return items.length ? (
     <Sider style={{ background: '#fff' }}>
-      <Menu items={items} mode='inline' defaultOpenKeys={['project.summary', `/home/project/${id}/dataset`]} onClick={clickHandle} selectedKeys={defaultKeys}></Menu>
+      <Menu items={items} mode='inline' defaultOpenKeys={['project.summary']} onClick={clickHandle} selectedKeys={defaultKeys}></Menu>
     </Sider>
   ) : null
 }

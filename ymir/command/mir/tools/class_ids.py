@@ -6,8 +6,6 @@ import fasteners  # type: ignore
 from pydantic import BaseModel, root_validator, validator
 import yaml
 
-from mir.tools import utils as mir_utils
-
 EXPECTED_FILE_VERSION = 1
 
 
@@ -139,8 +137,14 @@ def ids_file_name() -> str:
     return 'labels.yaml'
 
 
+def repo_dot_mir_path(mir_root: str) -> str:
+    dir = os.path.join(mir_root, '.mir')
+    os.makedirs(dir, exist_ok=True)
+    return dir
+
+
 def ids_file_path(mir_root: str) -> str:
-    return os.path.join(mir_utils.repo_dot_mir_path(mir_root=mir_root), ids_file_name())
+    return os.path.join(repo_dot_mir_path(mir_root=mir_root), ids_file_name())
 
 
 def parse_label_lock_path_or_link(ids_storage_file_path: str) -> str:
@@ -212,12 +216,14 @@ class ClassIdManager(object):
     def main_name_for_id(self, type_id: int) -> Optional[str]:
         return self._label_storage.id_to_label(type_id)
 
-    def id_for_names(self, names: List[str]) -> Tuple[List[int], List[str]]:
+    def id_for_names(self, names: List[str], drop_unknown_names: bool = False) -> Tuple[List[int], List[str]]:
         """
         return all type ids for names
 
         Args:
             names (List[str]): main type names or alias
+            drop_unknown_names (bool): True to drop unknown names from returned id list
+                                       this will break the sequence mapping between returned class ids and names
 
         Returns:
             Tuple[List[int], List[str]]: corresponding type ids and unknown names
@@ -226,10 +232,12 @@ class ClassIdManager(object):
         unknown_names = []
         for name in names:
             class_id = self.id_and_main_name_for_name(name=name)[0]
-            class_ids.append(class_id)
-
-            if class_id < 0:
+            if class_id >= 0:
+                class_ids.append(class_id)
+            else:
                 unknown_names.append(name)
+                if not drop_unknown_names:
+                    class_ids.append(class_id)
 
         return class_ids, unknown_names
 
@@ -254,15 +262,29 @@ class ClassIdManager(object):
         return (self.main_name_for_id(type_id=type_id) is not None)
 
     def add_main_name(self, main_name: str) -> Tuple[int, str]:
+        return self.add_main_names([main_name])[0]
+
+    def add_main_names(self, main_names: List[str]) -> List[Tuple[int, str]]:
         # only trigger reload at saving, not read safe, main_name may already been added in another process.
         self.__reload()
-        if self.has_name(main_name):
-            return self.id_and_main_name_for_name(main_name)
+        ret_val: List[Tuple[int, str]] = []
 
+        # shortcut, return if all names are known.
+        for main_name in main_names:
+            class_id, main_name = self.id_and_main_name_for_name(main_name)
+            if class_id < 0:
+                break
+            ret_val.append((class_id, main_name))
+        if len(ret_val) == len(main_names):  # all known names.
+            return ret_val
+
+        ret_val.clear()
         with fasteners.InterProcessLock(path=parse_label_lock_path_or_link(self._storage_file_path)):
-            added_class_id, main_name = self._label_storage.add_new_label(name=main_name)
+            for main_name in main_names:
+                added_class_id, main_name = self._label_storage.add_new_label(name=main_name)
+                ret_val.append((added_class_id, main_name))
             self.__save()
-            return added_class_id, main_name
+        return ret_val
 
 
 def _normalize_and_check_name(name: str) -> str:

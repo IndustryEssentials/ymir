@@ -18,7 +18,7 @@ import EvaluationSelector from "@/components/form/evaluationSelector"
 const { Option } = Select
 
 const Dataset = () => {
-  const { did: id } = useParams()
+  const { id: pid, did: id } = useParams()
   const initQuery = {
     id,
     keywords: [],
@@ -38,7 +38,7 @@ const Dataset = () => {
   const [{ items: assets, total }, getAssets, setAssets] = useFetch('dataset/getAssetsOfDataset', { items: [], total: 0 })
 
   useEffect(() => {
-    getDataset({ id })
+    getDataset({ id, verbose: true })
   }, [id])
 
   useEffect(() => {
@@ -154,13 +154,14 @@ const Dataset = () => {
       <Space>
         <strong>{dataset.name} {dataset.versionName}</strong>
         <span>{t("dataset.detail.pager.total", { total: total + '/' + dataset.assetCount })}</span>
+        {dataset?.inferClass ? <div>{t('dataset.detail.infer.class')}{dataset?.inferClass?.map(cls => <Tag key={cls}>{cls}</Tag>)}</div> : null}
       </Space>
     </Col>
     <Col span={12}>
       <Space size={10} wrap={true}>
         <GtSelector layout='inline' value={filterParams.annoType} onChange={checked => updateFilterParams(checked, 'annoType')} />
         <EvaluationSelector value={filterParams.cm} onChange={checked => updateFilterParams(checked, 'cm')} labelAlign={'right'} />
-        <KeywordSelector value={filterParams.keywords} onChange={filterKw} dataset={dataset} labelAlign={'right'} />
+        <KeywordSelector value={filterParams.keywords} onChange={filterKw} cks={dataset?.cks} tags={dataset?.tags} labelAlign={'right'} />
         <Button onClick={reset}>{t('common.reset')}</Button>
       </Space>
     </Col>

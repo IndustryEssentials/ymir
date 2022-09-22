@@ -6,7 +6,7 @@ import shutil
 import traceback
 from typing import Any, Callable, Set
 
-from mir.tools import mir_repo_utils, mir_storage_ops, phase_logger, revs_parser, utils
+from mir.tools import mir_repo_utils, mir_storage_ops, phase_logger, revs_parser
 from mir.tools.code import MirCode
 from mir.tools.errors import MirRuntimeError
 from mir.protos import mir_command_pb2 as mirpb
@@ -17,7 +17,6 @@ def _get_task_name(dst_rev: str) -> str:
     return revs_parser.parse_single_arg_rev(dst_rev, need_tid=True).tid if dst_rev else 'default_task'
 
 
-@utils.time_it
 def _commit_error(code: int, error_msg: str, mir_root: str, src_revs: str, dst_rev: str, predefined_task: Any) -> None:
     if not src_revs:
         raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,

@@ -136,22 +136,8 @@ class ImportDatasetPaths:
         return str(self._pred_path) if self._pred_path else None
 
 
-def evaluate_dataset(
-    viz: VizClient,
-    confidence_threshold: float,
-    iou_threshold: float,
-    require_average_iou: bool,
-    need_pr_curve: bool,
-    dataset_hash: str,
-) -> Dict:
-    if require_average_iou:
-        # fixme temporary walkaround
-        iou_threshold = 0.5
-    return viz.get_fast_evaluation(dataset_hash, confidence_threshold, iou_threshold, need_pr_curve)
-
-
 def evaluate_datasets(
-    viz: VizClient,
+    controller_client: ControllerClient,
     user_id: int,
     project_id: int,
     user_labels: UserLabels,
@@ -159,12 +145,25 @@ def evaluate_datasets(
     iou_threshold: float,
     require_average_iou: bool,
     need_pr_curve: bool,
-    datasets: List[models.Dataset],
+    main_ck: Optional[str],
+    dataset_id_mapping: Dict[str, int],
 ) -> Dict:
-    dataset_id_mapping = {dataset.hash: dataset.id for dataset in datasets}
-    viz.initialize(user_id=user_id, project_id=project_id, user_labels=user_labels)
+    if require_average_iou:
+        iou_thrs_interval = f"{iou_threshold}:0.95:0.05"
+        logger.info("set iou_thrs_interval to %s because of require_average_iou", iou_thrs_interval)
+    else:
+        iou_thrs_interval = str(iou_threshold)
 
-    f_evaluate = partial(evaluate_dataset, viz, confidence_threshold, iou_threshold, require_average_iou, need_pr_curve)
+    f_evaluate = partial(
+        controller_client.evaluate_dataset,
+        user_id,
+        project_id,
+        user_labels,
+        confidence_threshold,
+        iou_thrs_interval,
+        need_pr_curve,
+        main_ck,
+    )
     with ThreadPoolExecutor() as executor:
         res = executor.map(f_evaluate, dataset_id_mapping.keys())
 
@@ -181,3 +180,26 @@ def ensure_datasets_are_ready(db: Session, dataset_ids: List[int]) -> List[model
     if not all(dataset.result_state == ResultState.ready for dataset in datasets):
         raise PrematureDatasets()
     return datasets
+
+
+def send_keywords_metrics(
+    user_id: int,
+    project_id: int,
+    task_hash: str,
+    keyword_ids: List[int],
+    create_time: int,
+) -> None:
+    try:
+        viz_client = VizClient()
+        viz_client.initialize(user_id=user_id, project_id=project_id)
+        viz_client.send_metrics(
+            metrics_group="task",
+            id=task_hash,
+            create_time=create_time,
+            keyword_ids=keyword_ids,
+        )
+    except Exception:
+        logger.exception(
+            "[metrics] failed to send keywords(%s) stats to viewer, continue anyway",
+            keyword_ids,
+        )

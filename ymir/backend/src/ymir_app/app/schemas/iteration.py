@@ -1,5 +1,4 @@
 from typing import List, Optional
-
 from pydantic import BaseModel
 
 from app.constants.state import IterationStage
@@ -16,6 +15,7 @@ class IterationBase(BaseModel):
     previous_iteration: int
     description: Optional[str]
     current_stage: Optional[IterationStage]
+    mining_dataset_id: Optional[int]
     mining_input_dataset_id: Optional[int]
     mining_output_dataset_id: Optional[int]
     label_output_dataset_id: Optional[int]
@@ -34,6 +34,7 @@ class IterationCreate(BaseModel):
     description: Optional[str]
     project_id: int
     current_stage: Optional[IterationStage] = IterationStage.prepare_mining
+    mining_dataset_id: Optional[int]
     mining_input_dataset_id: Optional[int]
     mining_output_dataset_id: Optional[int]
     label_output_dataset_id: Optional[int]
@@ -84,3 +85,19 @@ class IterationPagination(BaseModel):
 
 class IterationPaginationOut(Common):
     result: IterationPagination
+
+
+class MiningRatio(BaseModel):
+    class_name: Optional[str]
+    processed_assets_count: int
+    total_assets_count: int
+
+
+class IterationMiningProgress(BaseModel):
+    total_mining_ratio: MiningRatio
+    class_wise_mining_ratio: List[MiningRatio]
+    negative_ratio: MiningRatio
+
+
+class IterationMiningProgressOut(Common):
+    result: IterationMiningProgress

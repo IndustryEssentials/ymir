@@ -1,7 +1,7 @@
 import { getLocale } from "umi"
 import { DatasetGroup, Dataset, DatasetAnalysis, Annotation, Asset } from "@/interface/dataset"
 import { calDuration, format } from '@/utils/date'
-import { getIterationVersion, transferIteration } from "./project"
+import { getVersionLabel } from "./common"
 import { BackendData } from "@/interface/common"
 
 export enum states {
@@ -60,6 +60,14 @@ export function transferDatasetGroup(data: BackendData) {
   return group
 }
 
+
+const tagsCounts = (gt: BackendData = {}, pred: BackendData = {}) => Object.keys(gt).reduce((prev, tag) => {
+  const gtCount = gt[tag] || {}
+  const predCount = pred[tag] || {}
+  return { ...prev, [tag]: { ...gtCount, ...predCount } }
+}, {})
+const tagsTotal = (gt: BackendData = {}, pred: BackendData = {}) => ({ ...gt, ...pred })
+
 export function transferDataset(data: BackendData): Dataset {
   const { gt = {}, pred = {} } = data.keywords
   const assetCount = data.asset_count || 0
@@ -70,7 +78,7 @@ export function transferDataset(data: BackendData): Dataset {
     projectId: data.project_id,
     name: data.group_name,
     version: data.version_num || 0,
-    versionName: getIterationVersion(data.version_num),
+    versionName: getVersionLabel(data.version_num),
     assetCount,
     keywords,
     keywordCount: keywords.length,
@@ -91,7 +99,18 @@ export function transferDataset(data: BackendData): Dataset {
     task: data.related_task,
     hidden: !data.is_visible,
     description: data.description || '',
+    inferClass: data?.pred?.eval_class_ids,
+    cks: data.cks_count ? transferCK(data.cks_count, data.cks_count_total) : undefined,
+    tags: data.gt ? transferCK(tagsCounts(data?.gt?.tags_count, data?.pred?.tags_count), tagsTotal(data?.gt?.tags_count_total, data?.pred?.tags_count_total)) : undefined,
   }
+}
+
+export function validDataset(dataset: Dataset | undefined) {
+  return dataset && dataset.state === states.VALID
+}
+
+export function runningDataset(dataset: Dataset | undefined) {
+  return dataset && dataset.state === states.READY
 }
 
 export function transferDatasetAnalysis(data: BackendData): DatasetAnalysis {
@@ -100,16 +119,10 @@ export function transferDatasetAnalysis(data: BackendData): DatasetAnalysis {
   const assetTotal = data.total_assets_count || 0
   const gt = generateAnno(data.gt)
   const pred = generateAnno(data.pred)
-  const tagsCounts = Object.keys(data.gt.tags_count).reduce((prev, tag) => {
-    const gtCount = data.gt.tags_count[tag] || {}
-    const predCount = data.pred.tags_count[tag] || {}
-    return { ...prev, [tag]: { ...gtCount, ...predCount } }
-  }, {})
-  const tagsTotal = { ...data.gt.tags_count_total, ...data.pred.tags_count_total }
   return {
     name: data.group_name,
     version: data.version_num || 0,
-    versionName: getIterationVersion(data.version_num),
+    versionName: getVersionLabel(data.version_num),
     assetCount: assetTotal,
     totalAssetMbytes: data.total_assets_mbytes,
     assetBytes: bytes,
@@ -118,8 +131,9 @@ export function transferDatasetAnalysis(data: BackendData): DatasetAnalysis {
     assetHWRatio: hw_ratio,
     gt,
     pred,
+    inferClass: data?.pred?.eval_class_ids,
     cks: transferCK(data.cks_count, data.cks_count_total),
-    tags: transferCK(tagsCounts, tagsTotal),
+    tags: transferCK(tagsCounts(data.gt.tags_count, data.pred?.tags_count), tagsTotal(data.gt?.tags_count_total, data.pred?.tags_count_total)),
   }
 }
 

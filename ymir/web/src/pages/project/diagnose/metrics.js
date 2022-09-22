@@ -1,6 +1,5 @@
 import React, { useCallback, useEffect, useState } from "react"
-import { Card, Button, Form, Row, Col, Radio, Slider, Select, InputNumber, Checkbox, Space, } from "antd"
-import s from "./index.less"
+import { Card, Button, Form, Row, Col, Radio, Slider, Select, InputNumber, Checkbox, Space, Tag, } from "antd"
 
 import t from "@/utils/t"
 import useFetch from "@/hooks/useFetch"
@@ -10,12 +9,13 @@ import MapView from "./components/mapView"
 import CurveView from "./components/curveView"
 import PView from "./components/prView"
 import View from './components/view'
-
-import { CompareIcon } from "@/components/common/icons"
 import DefaultStages from "./components/defaultStages"
 
+import s from "./index.less"
+import { CompareIcon } from "@/components/common/icons"
+
 const metricsTabs = [
-  { value: 'map', component: MapView, },
+  { value: 'map', component: MapView, ck: true },
   { value: 'curve', component: CurveView, },
   { value: 'rp', component: PView, },
   { value: 'pr', component: PView, },
@@ -40,7 +40,7 @@ function Matrics({ pid, project }) {
   const [prRate, setPrRate] = useState([0.8, 0.95])
   const [keywords, setKeywords] = useState([])
   const [selectedKeywords, setSelectedKeywords] = useState([])
-  const [ck, setCK] = useState([])
+  const [subCks, setSubCks] = useState([])
   const [kwType, setKwType] = useState(0)
   const [kws, setKws] = useState([])
   const [xAxis, setXAsix] = useState(xAxisOptions[0].value)
@@ -51,6 +51,9 @@ function Matrics({ pid, project }) {
     kwType: 0,
     keywords: [],
   })
+  const [ckDatasets, getCKDatasets] = useFetch('dataset/getCK', [])
+  const [cks, setCKs] = useState([])
+  const selectedCK = Form.useWatch('ck', form)
 
   useEffect(() => {
     setDiagnosis(remoteData)
@@ -68,33 +71,42 @@ function Matrics({ pid, project }) {
   useEffect(() => {
     // calculate ck
     const cks = diagnosis ?
-      Object.values(diagnosis).map(({ iou_averaged_evaluation }) =>
-        Object.keys(iou_averaged_evaluation.ck_evaluations)).flat() :
-      []
+      Object.values(diagnosis).map(({ sub_cks }) => Object.keys(sub_cks)).flat() : []
 
-    setCK([...new Set(cks)])
+      setSubCks([...new Set(cks)])
   }, [diagnosis])
 
   useEffect(() => {
-    const kws = !kwType ? keywords : ck
-    setKws(kws)
-  }, [kwType, keywords, ck])
-
-  useEffect(() => {
-    setSelectedKeywords(kwType ? undefined : [])
-  }, [kwType])
+    setKws(!kwType ? keywords : subCks)
+  }, [kwType, keywords, subCks])
 
   useEffect(() => {
     setDiagnosing(!!diagnosis)
     setSelectedKeywords([])
   }, [diagnosis])
 
-  useEffect(() => {
+  useEffect(() => {    
     setKwFilter({
-      keywords: selectedKeywords?.length ? selectedKeywords : (kwType ? null : keywords),
+      keywords: selectedKeywords?.length ? selectedKeywords : kws,
       kwType,
     })
-  }, [selectedKeywords, keywords])
+  }, [selectedKeywords, kws])
+
+  useEffect(() => {
+    if (selectedDatasets.length) {
+      getCKDatasets({ pid, ids: selectedDatasets.map(({ id }) => id) })
+    }
+  }, [selectedDatasets])
+
+  useEffect(() => {
+    const allCks = ckDatasets.map(({ cks: { keywords } }) => keywords.map(({ keyword }) => keyword)).flat()
+    const cks = allCks.filter(keyword => {
+      const same = allCks.filter(k => k === keyword)
+      return same.length === ckDatasets.length
+    })
+    const uniqueCks = [...new Set(cks)]
+    setCKs(uniqueCks)
+  }, [ckDatasets])
 
   const onFinish = async (values) => {
     const inferDataset = inferTasks.map(({ result }) => result)
@@ -121,10 +133,13 @@ function Matrics({ pid, project }) {
 
   function metricsChange({ target: { value } }) {
     setSelectedMetric(value)
+    const tab = metricsTabs.find(t => t.value === value)
+    if (!tab.ck) {
+      setKwType(0)
+    }
   }
 
   function prRateChange(value) {
-    console.log('value:', value)
     setPrRate(value)
   }
 
@@ -174,19 +189,23 @@ function Matrics({ pid, project }) {
     </Space>
     <Row gutter={20}>
       <Col>
-        <Select value={kwType} options={kwTypes.map(({ label, value }) => ({ value, label: t(label) }))} onChange={setKwType}></Select>
+        <Select value={kwType} options={kwTypes.filter(type => {
+          const tab = metricsTabs.find(({ value }) => selectedMetric === value)
+          return tab.ck || !type.value
+        }).map(({ label, value }) => ({ value, label: t(label) }))} onChange={setKwType}></Select>
       </Col>
       <Col flex={1}>
-        <Select style={{ width: '100%' }} mode={kwType ? 'single' : "multiple"}
+        {kwTypes[0].value === kwType ? <Select style={{ width: '100%' }} mode={kwType ? 'single' : "multiple"}
           value={selectedKeywords}
           options={kws.map(kw => ({ label: kw, value: kw }))}
           placeholder={t(kwType ? 'model.diagnose.metrics.ck.placeholder' : 'model.diagnose.metrics.keyword.placeholder')}
-          showArrow onChange={kwChange}></Select>
+          showArrow onChange={kwChange}></Select> :
+          <Tag>{selectedCK}</Tag>}
       </Col>
       <Col>
         <Space size={20}>
           <span>{t('model.diagnose.metrics.dimension.label')}</span>
-          <Radio.Group defaultValue={xAxisOptions[0].value} options={xAxisOptions.map(({ key, value }) => ({ value, label: t(`model.diagnose.metrics.x.${key}`)}))} onChange={xAxisChange} />
+          <Radio.Group defaultValue={xAxisOptions[0].value} options={xAxisOptions.map(({ key, value }) => ({ value, label: t(`model.diagnose.metrics.x.${key}`) }))} onChange={xAxisChange} />
         </Space>
       </Col>
     </Row>
@@ -213,7 +232,6 @@ function Matrics({ pid, project }) {
         </Col>
         <Col span={6}>
           <div className={s.formContainer}>
-
             <div className={s.mask} hidden={!diagnosing}>
               <Button style={{ marginBottom: 10 }} size='large' type="primary" onClick={() => retry()}><CompareIcon /> {t('model.diagnose.metrics.btn.retry')}</Button>
             </div>
@@ -231,6 +249,9 @@ function Matrics({ pid, project }) {
                 <InferResultSelect form={form} pid={pid} onChange={inferResultChange} />
                 <Form.Item label={t('model.diagnose.form.confidence')} name='confidence'>
                   <InputNumber step={0.0005} min={0.0005} max={0.9995} />
+                </Form.Item>
+                <Form.Item label={t('keyword.ck.label')} name='ck'>
+                  <Select options={cks.map(ck => ({ value: ck, label: ck }))}></Select>
                 </Form.Item>
                 <Form.Item label={renderIouTitle} name='iou'>
                   <Slider style={{ display: !everageIou ? 'block' : 'none' }} min={0.25} max={0.95} step={0.05} marks={{ 0.25: '0.25', 0.5: '0.5', 0.95: '0.95' }} onChange={setIou} />

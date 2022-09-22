@@ -71,7 +71,6 @@ describe("models: dataset", () => {
   errorCode(dataset, 'createDataset')
   errorCode(dataset, 'updateDataset')
   errorCode(dataset, 'getInternalDataset')
-  errorCode(dataset, 'getHotDatasets', 10034, [])
   const gid = 534234
   const items = products(4)
   const datasets = { items, total: items.length }
@@ -165,7 +164,7 @@ describe("models: dataset", () => {
     const saga = dataset.effects.batchDatasets
     const creator = {
       type: "batchDatasets",
-      payload: { ids: '1,2' },
+      payload: { pid: 23434, ids: [1,2] },
     }
     const recieved = [1, 3, 4].map(id => ds(id))
     const expected = recieved.map(item => transferDataset(item))
@@ -379,11 +378,10 @@ describe("models: dataset", () => {
 
     const generator = saga(creator, { put, call })
     generator.next()
-    generator.next({
+    const end = generator.next({
       code: 0,
       result: expected,
     })
-    const end = generator.next()
 
     expect(end.value).toEqual(expected)
     expect(end.done).toBe(true)
@@ -428,8 +426,6 @@ describe("models: dataset", () => {
     const generator = saga(creator, { put, call, select })
     generator.next()
     const d = generator.next(versions)
-    generator.next([])
-    generator.next()
     const end = generator.next()
 
     expect(end.value).toEqual(expected)
@@ -450,7 +446,6 @@ describe("models: dataset", () => {
     const generator = saga(creator, { put, call, select })
     generator.next()
     const d = generator.next(versions)
-    generator.next([])
     const end = generator.next()
 
     expect(end.value).toEqual(versions)
@@ -478,67 +473,6 @@ describe("models: dataset", () => {
     const updated = d.value.payload.action.payload
 
     expect(updated).toEqual(expected)
-    expect(end.done).toBe(true)
-  })
-  it("effects: getHotDatasets -> get stats result success-> batch datasets success", () => {
-    const saga = dataset.effects.getHotDatasets
-    const creator = {
-      type: "getHotDatasets",
-      payload: { limit: 3 },
-    }
-    const result = [[1, 34], [1001, 31], [23, 2]]
-    const datasets = [{ id: 1 }, { id: 1001 }, { id: 23 }]
-    const expected = [{ id: 1, count: 34 }, { id: 1001, count: 31 }, { id: 23, count: 2 }]
-
-    const generator = saga(creator, { put, call, select })
-    generator.next()
-    generator.next({
-      code: 0,
-      result,
-    })
-    const end = generator.next(datasets)
-
-    expect(end.value).toEqual(expected)
-    expect(end.done).toBe(true)
-  })
-  it("effects: getHotDatasets -> get stats result success-> batch datasets failed", () => {
-    const saga = dataset.effects.getHotDatasets
-    const creator = {
-      type: "getHotDatasets",
-      payload: { limit: 3 },
-    }
-    const result = [[1, 34], [1001, 31], [23, 2]]
-    const datasets = undefined
-    const expected = []
-
-    const generator = saga(creator, { put, call, select })
-    generator.next()
-    generator.next({
-      code: 0,
-      result,
-    })
-    const end = generator.next(datasets)
-
-    expect(end.value).toEqual(expected)
-    expect(end.done).toBe(true)
-  })
-  it("effects: getHotDatasets -> stats result = []", () => {
-    const saga = dataset.effects.getHotDatasets
-    const creator = {
-      type: "getHotDatasets",
-      payload: { limit: 4 },
-    }
-    const result = []
-    const expected = []
-
-    const generator = saga(creator, { put, call, select })
-    generator.next()
-    const end = generator.next({
-      code: 0,
-      result,
-    })
-
-    expect(end.value).toEqual(expected)
     expect(end.done).toBe(true)
   })
   it("effects: getInternalDataset", () => {

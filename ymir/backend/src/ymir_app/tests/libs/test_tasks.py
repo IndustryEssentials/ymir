@@ -58,27 +58,11 @@ class TestNormalizeParameters:
         assert "model_stage_name" in res
 
 
-class TestWriteClickhouseMetrics:
-    def test_write_clickhouse_metrics(self, mocker: Any) -> None:
-        ch = mocker.Mock()
-        mocker.patch.object(m, "YmirClickHouse", return_value=ch)
-        task_info = mocker.Mock(type=TaskType.training.value)
-        dataset_id = randint(100, 200)
-        dataset_group_id = randint(1000, 2000)
-        model_id = randint(10000, 20000)
-        keywords = [random_lower_string() for _ in range(3)]
-
-        m.write_clickhouse_metrics(task_info, dataset_group_id, dataset_id, model_id, keywords)
-        ch.save_task_parameter.assert_called()
-        ch.save_dataset_keyword.assert_called()
-
-
 class TestCreateSingleTask:
     def test_create_single_task(self, db: Session, mocker: Any) -> None:
         mocker.patch.object(m, "normalize_parameters")
         ctrl = mocker.Mock()
         mocker.patch.object(m, "ControllerClient", return_value=ctrl)
-        mocker.patch.object(m, "YmirClickHouse")
         user_id = randint(100, 200)
         project_id = randint(1000, 2000)
         user_labels = mocker.Mock()

@@ -7,8 +7,7 @@ import google.protobuf.json_format as pb_format
 from google.protobuf.json_format import MessageToDict
 
 from mir.protos import mir_command_pb2 as mirpb
-from mir.tools import context, mir_storage, mir_storage_ops, settings as mir_settings
-from mir.tools.errors import MirError
+from mir.tools import mir_storage, mir_storage_ops, settings as mir_settings
 from tests import utils as test_utils
 
 
@@ -73,7 +72,7 @@ class TestMirStorage(unittest.TestCase):
                 'task_id': 'mining-task-id',
                 "image_annotations": {
                     "a001": {
-                        'annotations': [{
+                        'boxes': [{
                             'box': {
                                 'x': 26,
                                 'y': 189,
@@ -92,7 +91,7 @@ class TestMirStorage(unittest.TestCase):
                         }]
                     },
                     "a002": {
-                        'annotations': [{
+                        'boxes': [{
                             'box': {
                                 'x': 26,
                                 'y': 189,
@@ -111,7 +110,7 @@ class TestMirStorage(unittest.TestCase):
                         }]
                     },
                     "a003": {
-                        'annotations': [{
+                        'boxes': [{
                             'box': {
                                 'x': 26,
                                 'y': 189,
@@ -134,88 +133,8 @@ class TestMirStorage(unittest.TestCase):
         }
         pb_format.ParseDict(dict_annotations, mir_annotations)
 
-        dict_keywords = {
-            'keywords': {
-                'a001': {
-                    'predefined_keyids': [1, 2]
-                },
-                'a002': {
-                    'predefined_keyids': [2, 3]
-                },
-                'a003': {
-                    'predefined_keyids': [3]
-                },
-            },
-        }
-        pb_format.ParseDict(dict_keywords, mir_keywords)
-
         dict_context = {
             'images_cnt': 3,
-            'negative_images_cnt': 0,
-            'project_negative_images_cnt': (1 if with_project else 0),
-            'predefined_keyids_cnt': {
-                1: 1,
-                2: 2,
-                3: 2,
-            },
-            'project_predefined_keyids_cnt': ({
-                3: 2,
-                4: 0
-            } if with_project else {}),
-            'asset_quality_hist': {
-                '0.00': 0,
-                '0.10': 0,
-                '0.20': 0,
-                '0.30': 0,
-                '0.40': 0,
-                '0.50': 0,
-                '0.60': 0,
-                '0.70': 0,
-                '0.80': 0,
-                '0.90': 0,
-                '1.00': 0
-            },
-            'asset_bytes_hist': {
-                '5.0MB': 0,
-                '4.5MB': 0,
-                '4.0MB': 0,
-                '3.5MB': 0,
-                '3.0MB': 0,
-                '2.5MB': 0,
-                '2.0MB': 0,
-                '1.5MB': 0,
-                '1.0MB': 0,
-                '0.5MB': 0,
-                '0.0MB': 3,
-            },
-            'asset_area_hist': {
-                2000000: 0,
-                8000000: 0,
-                6000000: 0,
-                4000000: 0,
-                1000000: 3,
-                500000: 0,
-                100000: 0,
-                0: 0,
-            },
-            'asset_hw_ratio_hist': {
-                '1.50': 3,
-                '1.40': 0,
-                '1.30': 0,
-                '1.20': 0,
-                '1.10': 0,
-                '1.00': 0,
-                '0.90': 0,
-                '0.80': 0,
-                '0.70': 0,
-                '0.60': 0,
-                '0.50': 0,
-                '0.40': 0,
-                '0.30': 0,
-                '0.20': 0,
-                '0.10': 0,
-                '0.00': 0,
-            },
             'pred_stats': {
                 'total_cnt': 6,
                 'positive_asset_cnt': 3,
@@ -225,83 +144,9 @@ class TestMirStorage(unittest.TestCase):
                     2: 2,
                     3: 2,
                 },
-                'quality_hist': {
-                    '0.00': 6,
-                    '0.10': 0,
-                    '0.20': 0,
-                    '0.30': 0,
-                    '0.40': 0,
-                    '0.50': 0,
-                    '0.60': 0,
-                    '0.70': 0,
-                    '0.80': 0,
-                    '0.90': 0,
-                    '1.00': 0
-                },
-                'area_hist': {
-                    0: 0,
-                    50: 0,
-                    500: 6,
-                    2500: 0,
-                    5000: 0,
-                    10000: 0,
-                    50000: 0,
-                    100000: 0,
-                    200000: 0
-                },
-                'area_ratio_hist': {
-                    '1.00': 0,
-                    '0.90': 0,
-                    '0.80': 0,
-                    '0.70': 0,
-                    '0.60': 0,
-                    '0.50': 0,
-                    '0.40': 0,
-                    '0.30': 0,
-                    '0.20': 0,
-                    '0.10': 0,
-                    '0.00': 6,
-                }
             },
             'gt_stats': {
-                'negative_asset_cnt': 3,
-                'quality_hist': {
-                    '1.00': 0,
-                    '0.90': 0,
-                    '0.80': 0,
-                    '0.70': 0,
-                    '0.60': 0,
-                    '0.50': 0,
-                    '0.40': 0,
-                    '0.30': 0,
-                    '0.20': 0,
-                    '0.10': 0,
-                    '0.00': 0,
-                },
-                'area_hist': {
-                    200000: 0,
-                    100000: 0,
-                    50000: 0,
-                    10000: 0,
-                    5000: 0,
-                    2500: 0,
-                    500: 0,
-                    50: 0,
-                    0: 0,
-                },
-                'area_ratio_hist': {
-                    '1.00': 0,
-                    '0.90': 0,
-                    '0.80': 0,
-                    '0.70': 0,
-                    '0.60': 0,
-                    '0.50': 0,
-                    '0.40': 0,
-                    '0.30': 0,
-                    '0.20': 0,
-                    '0.10': 0,
-                    '0.00': 0,
-                }
+                'negative_asset_cnt': 3
             }
         }
         pb_format.ParseDict(dict_context, mir_context)
@@ -339,7 +184,7 @@ class TestMirStorage(unittest.TestCase):
         """
         normal cases: no project context, commit twice
         """
-        mir_metadatas, mir_annotations, mir_keywords, mir_tasks, mir_context = self._prepare_mir_pb(with_project=False)
+        mir_metadatas, mir_annotations, _, mir_tasks, mir_context = self._prepare_mir_pb(with_project=False)
         mir_datas_expect = {
             mirpb.MirStorage.MIR_METADATAS: mir_metadatas,
             mirpb.MirStorage.MIR_ANNOTATIONS: mir_annotations,
@@ -363,14 +208,6 @@ class TestMirStorage(unittest.TestCase):
         )
         actual_data = dict(zip(mir_storage_list, mir_datas))
         self.assertDictEqual(actual_data, mir_datas_expect)
-        loaded_mir_keywords = mir_storage_ops.MirStorageOps.load_single_storage(mir_root=self._mir_root,
-                                                                                mir_branch='a',
-                                                                                ms=mirpb.MirStorage.MIR_KEYWORDS,
-                                                                                mir_task_id='mining-task-id',
-                                                                                as_dict=False)
-        self.assertDictEqual(
-            pb_format.MessageToDict(mir_keywords)['keywords'],
-            pb_format.MessageToDict(loaded_mir_keywords)['keywords'])
         loaded_mir_context = mir_storage_ops.MirStorageOps.load_single_storage(mir_root=self._mir_root,
                                                                                mir_branch='a',
                                                                                ms=mirpb.MirStorage.MIR_CONTEXT,
@@ -400,7 +237,6 @@ class TestMirStorage(unittest.TestCase):
                 "ground_truth": {
                     'task_id': 't2',
                 },
-                "head_task_id": "t2",
             }, mirpb.MirAnnotations()),
             mirpb.MirStorage.MIR_TASKS:
             mir_tasks_2,
@@ -437,24 +273,6 @@ class TestMirStorage(unittest.TestCase):
         print(f"mir_datas_expect_2: {mir_datas_expect_2}")
         self.assertDictEqual(actual_data, mir_datas_expect_2)
 
-        # load_single_model: have model
-        actual_dict_model = mir_storage_ops.MirStorageOps.load_single_model(mir_root=self._mir_root,
-                                                                            mir_branch='a',
-                                                                            mir_task_id='mining-task-id')
-        self.assertEqual(
-            actual_dict_model, {
-                'model_hash': 'abc123',
-                'mean_average_precision': 0.5,
-                'context': 'fake_context',
-                'executor_config': {},
-                'task_parameters': '',
-                'stages': {},
-                'best_stage_name': '',
-            })
-        # load_single_model: have no model
-        with self.assertRaises(MirError):
-            mir_storage_ops.MirStorageOps.load_single_model(mir_root=self._mir_root, mir_branch='a', mir_task_id='t2')
-
         actual_contents_list = mir_storage_ops.MirStorageOps.load_multiple_storages(
             mir_root=self._mir_root,
             mir_branch='a',
@@ -464,9 +282,6 @@ class TestMirStorage(unittest.TestCase):
         self.assertEqual(len(actual_contents_list), 5)
 
     def test_normal_01(self):
-        # change project settings
-        context.save(mir_root=self._mir_root, project_class_ids=[3, 4])
-
         mir_metadatas, mir_annotations, mir_keywords, mir_tasks, mir_context = self._prepare_mir_pb(with_project=True)
 
         mir_datas_expect = {
@@ -478,14 +293,6 @@ class TestMirStorage(unittest.TestCase):
                                                       his_branch='master',
                                                       mir_datas=mir_datas_expect,
                                                       task=mir_tasks.tasks[mir_tasks.head_task_id])
-        loaded_mir_keywords = mir_storage_ops.MirStorageOps.load_single_storage(mir_root=self._mir_root,
-                                                                                mir_branch='a',
-                                                                                ms=mirpb.MirStorage.MIR_KEYWORDS,
-                                                                                mir_task_id='mining-task-id',
-                                                                                as_dict=False)
-        self.assertDictEqual(
-            pb_format.MessageToDict(mir_keywords)['keywords'],
-            pb_format.MessageToDict(loaded_mir_keywords)['keywords'])
         loaded_mir_context = mir_storage_ops.MirStorageOps.load_single_storage(mir_root=self._mir_root,
                                                                                mir_branch='a',
                                                                                ms=mirpb.MirStorage.MIR_CONTEXT,

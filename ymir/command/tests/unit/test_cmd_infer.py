@@ -9,7 +9,7 @@ from unittest import mock
 import yaml
 
 from mir.commands.infer import CmdInfer
-from mir.tools import settings as mir_settings, utils as mir_utils
+from mir.tools import models, settings as mir_settings
 from mir.tools.code import MirCode
 from tests import utils as test_utils
 
@@ -80,17 +80,17 @@ class TestCmdInfer(unittest.TestCase):
         training_config['anchors'] = '12, 16, 19, 36, 40, 28, 36, 75, 76, 55, 72, 146, 142, 110, 192, 243, 459, 401'
         training_config['class_names'] = ['person', 'cat', 'unknown-car']
 
-        model_stage = mir_utils.ModelStageStorage(stage_name='default_best_stage',
-                                                  files=['model.params', 'model.json'],
-                                                  mAP=0.5,
-                                                  timestamp=int(time.time()))
-        model_storage = mir_utils.ModelStorage(executor_config=training_config,
-                                               task_context={
-                                                   'src_revs': 'master',
-                                                   'dst_rev': 'a'
-                                               },
-                                               stages={model_stage.stage_name: model_stage},
-                                               best_stage_name=model_stage.stage_name)
+        model_stage = models.ModelStageStorage(stage_name='default_best_stage',
+                                               files=['model.params', 'model.json'],
+                                               mAP=0.5,
+                                               timestamp=int(time.time()))
+        model_storage = models.ModelStorage(executor_config=training_config,
+                                            task_context={
+                                                'src_revs': 'master',
+                                                'dst_rev': 'a'
+                                            },
+                                            stages={model_stage.stage_name: model_stage},
+                                            best_stage_name=model_stage.stage_name)
 
         with open(os.path.join(self._models_location, 'ymir-info.yaml'), 'w') as f:
             yaml.dump(model_storage.dict(), f)

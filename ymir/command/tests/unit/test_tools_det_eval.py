@@ -7,7 +7,7 @@ from google.protobuf import json_format
 import numpy as np
 
 from mir.protos import mir_command_pb2 as mirpb
-from mir.tools import det_eval_coco, det_eval_voc, mir_storage_ops
+from mir.tools import det_eval_ctl_ops, det_eval_coco, det_eval_voc, mir_storage_ops, revs_parser
 from tests import utils as test_utils
 
 
@@ -15,6 +15,7 @@ class TestToolsDetEval(unittest.TestCase):
     # life cycle
     def __init__(self, methodName: str = ...) -> None:
         super().__init__(methodName)
+        self.maxDiff = None
         self._test_root = test_utils.dir_test_root(self.id().split('.')[-3:])
         self._working_root = os.path.join(self._test_root, 'work')
         self._mir_root = os.path.join(self._test_root, 'mir-root')
@@ -40,7 +41,6 @@ class TestToolsDetEval(unittest.TestCase):
         self._prepare_mir_repo_branch_a()
 
     def _prepare_mir_repo_branch_a(self) -> None:
-        """ branch a: a ground truth branch """
         metadatas_dict = {
             'attributes': {
                 'a0': {
@@ -73,7 +73,7 @@ class TestToolsDetEval(unittest.TestCase):
             'prediction': {
                 'image_annotations': {
                     'a0': {
-                        'annotations': [{
+                        'boxes': [{
                             'index': 0,
                             'box': {
                                 'x': 45,
@@ -82,6 +82,7 @@ class TestToolsDetEval(unittest.TestCase):
                                 'h': 52,
                             },
                             'class_id': 0,
+                            'polygon': [],
                             'score': 0.7,
                         }, {
                             'index': 1,
@@ -91,6 +92,7 @@ class TestToolsDetEval(unittest.TestCase):
                                 'w': 73,
                                 'h': 73,
                             },
+                            'polygon': [],
                             'class_id': 0,
                             'score': 0.8,
                         }, {
@@ -101,6 +103,7 @@ class TestToolsDetEval(unittest.TestCase):
                                 'w': 76,
                                 'h': 76,
                             },
+                            'polygon': [],
                             'class_id': 0,
                             'score': 0.9,
                         }, {
@@ -111,6 +114,7 @@ class TestToolsDetEval(unittest.TestCase):
                                 'w': 78,
                                 'h': 78,
                             },
+                            'polygon': [],
                             'class_id': 1,
                             'score': 0.9,
                         }, {
@@ -122,11 +126,14 @@ class TestToolsDetEval(unittest.TestCase):
                                 'h': 103,
                             },
                             'class_id': 2,
+                            'polygon': [],
                             'score': 0.9,
-                        }]
+                        }],
+                        'img_class_ids': [0, 1, 2],
+                        'polygons': [],
                     },
                     'a1': {
-                        'annotations': [{
+                        'boxes': [{
                             'index': 0,
                             'box': {
                                 'x': 300,
@@ -134,13 +141,17 @@ class TestToolsDetEval(unittest.TestCase):
                                 'w': 103,
                                 'h': 110,
                             },
+                            'polygon': [],
                             'class_id': 2,
                             'score': 0.9,
-                        }]
+                        }],
+                        'img_class_ids': [2],
+                        'polygons': [],
                     },
                 },
+                'eval_class_ids': [0, 1, 2],
+                'task_class_ids': [0, 1, 2],
             },
-            'head_task_id': 'a',
             'image_cks': {
                 'a0': {
                     'cks': {
@@ -158,7 +169,7 @@ class TestToolsDetEval(unittest.TestCase):
             'ground_truth': {
                 'image_annotations': {
                     'a0': {
-                        'annotations': [{
+                        'boxes': [{
                             'index': 0,
                             'box': {
                                 'x': 50,
@@ -166,6 +177,7 @@ class TestToolsDetEval(unittest.TestCase):
                                 'w': 50,
                                 'h': 50,
                             },
+                            'polygon': [],
                             'class_id': 0,
                             'score': 1,
                         }, {
@@ -176,6 +188,7 @@ class TestToolsDetEval(unittest.TestCase):
                                 'w': 75,
                                 'h': 75,
                             },
+                            'polygon': [],
                             'class_id': 0,
                             'score': 1,
                         }, {
@@ -186,6 +199,7 @@ class TestToolsDetEval(unittest.TestCase):
                                 'w': 75,
                                 'h': 75,
                             },
+                            'polygon': [],
                             'class_id': 1,
                             'score': 1,
                         }, {
@@ -196,12 +210,15 @@ class TestToolsDetEval(unittest.TestCase):
                                 'w': 100,
                                 'h': 100,
                             },
+                            'polygon': [],
                             'class_id': 2,
                             'score': 1,
-                        }]
+                        }],
+                        'img_class_ids': [0, 1, 2],
+                        'polygons': [],
                     },
                     'a1': {
-                        'annotations': [{
+                        'boxes': [{
                             'index': 0,
                             'box': {
                                 'x': 300,
@@ -209,11 +226,15 @@ class TestToolsDetEval(unittest.TestCase):
                                 'w': 100,
                                 'h': 100,
                             },
+                            'polygon': [],
                             'class_id': 2,
                             'score': 1,
-                        }]
+                        }],
+                        'img_class_ids': [2],
+                        'polygons': [],
                     },
-                }
+                },
+                'task_class_ids': [0, 1, 2],
             }
         }
         mir_annotations = mirpb.MirAnnotations()
@@ -236,11 +257,10 @@ class TestToolsDetEval(unittest.TestCase):
     # private: check result
     def _check_fpfn(self, actual_mir_annotations: mirpb.MirAnnotations) -> None:
         expected_annotations_dict = {
-            'head_task_id': 'a',
             'ground_truth': {
                 'image_annotations': {
                     'a0': {
-                        'annotations': [{
+                        'boxes': [{
                             'box': {
                                 'x': 50,
                                 'y': 50,
@@ -254,6 +274,7 @@ class TestToolsDetEval(unittest.TestCase):
                             'class_id': 0,
                             'anno_quality': 0.0,
                             'tags': {},
+                            'polygon': [],
                             'det_link_id': 0,
                             'class_name': ''
                         }, {
@@ -266,6 +287,7 @@ class TestToolsDetEval(unittest.TestCase):
                                 'rotate_angle': 0.0
                             },
                             'score': 1.0,
+                            'polygon': [],
                             'cm': 'MTP',
                             'det_link_id': 1,
                             'class_id': 0,
@@ -285,6 +307,7 @@ class TestToolsDetEval(unittest.TestCase):
                             'score': 1.0,
                             'cm': 'MTP',
                             'det_link_id': 3,
+                            'polygon': [],
                             'anno_quality': 0.0,
                             'tags': {},
                             'class_name': ''
@@ -301,13 +324,16 @@ class TestToolsDetEval(unittest.TestCase):
                             'score': 1.0,
                             'cm': 'IGNORED',
                             'det_link_id': -1,
+                            'polygon': [],
                             'anno_quality': 0.0,
                             'tags': {},
                             'class_name': ''
-                        }]
+                        }],
+                        'img_class_ids': [0, 1, 2],
+                        'polygons': [],
                     },
                     'a1': {
-                        'annotations': [{
+                        'boxes': [{
                             'box': {
                                 'x': 300,
                                 'y': 300,
@@ -319,19 +345,27 @@ class TestToolsDetEval(unittest.TestCase):
                             'score': 1.0,
                             'cm': 'IGNORED',
                             'det_link_id': -1,
+                            'polygon': [],
                             'index': 0,
                             'anno_quality': 0.0,
                             'tags': {},
                             'class_name': ''
-                        }]
+                        }],
+                        'img_class_ids': [2],
+                        'polygons': [],
                     },
                 },
-                'task_id': 'a'
+                'task_class_ids': [0, 1, 2],
+                'task_id': 'a',
+                'map_id_color': {},
+                'eval_class_ids': [],
+                'executor_config': '',
+                'type': 'AT_UNKNOWN',
             },
             'prediction': {
                 'image_annotations': {
                     'a1': {
-                        'annotations': [{
+                        'boxes': [{
                             'box': {
                                 'x': 300,
                                 'y': 300,
@@ -342,15 +376,18 @@ class TestToolsDetEval(unittest.TestCase):
                             'class_id': 2,
                             'score': 0.9,
                             'cm': 'IGNORED',
+                            'polygon': [],
                             'det_link_id': -1,
                             'index': 0,
                             'anno_quality': 0.0,
                             'tags': {},
                             'class_name': ''
-                        }]
+                        }],
+                        'img_class_ids': [2],
+                        'polygons': [],
                     },
                     'a0': {
-                        'annotations': [{
+                        'boxes': [{
                             'box': {
                                 'x': 45,
                                 'y': 45,
@@ -361,6 +398,7 @@ class TestToolsDetEval(unittest.TestCase):
                             'score': 0.7,
                             'cm': 'TP',
                             'index': 0,
+                            'polygon': [],
                             'class_id': 0,
                             'anno_quality': 0.0,
                             'tags': {},
@@ -378,6 +416,7 @@ class TestToolsDetEval(unittest.TestCase):
                             'score': 0.8,
                             'cm': 'TP',
                             'det_link_id': 1,
+                            'polygon': [],
                             'class_id': 0,
                             'anno_quality': 0.0,
                             'tags': {},
@@ -394,6 +433,7 @@ class TestToolsDetEval(unittest.TestCase):
                             'score': 0.9,
                             'cm': 'FP',
                             'det_link_id': -1,
+                            'polygon': [],
                             'class_id': 0,
                             'anno_quality': 0.0,
                             'tags': {},
@@ -410,6 +450,7 @@ class TestToolsDetEval(unittest.TestCase):
                             'class_id': 1,
                             'score': 0.9,
                             'cm': 'TP',
+                            'polygon': [],
                             'det_link_id': 2,
                             'anno_quality': 0.0,
                             'tags': {},
@@ -425,15 +466,23 @@ class TestToolsDetEval(unittest.TestCase):
                             },
                             'class_id': 2,
                             'score': 0.9,
+                            'polygon': [],
                             'cm': 'IGNORED',
                             'det_link_id': -1,
                             'anno_quality': 0.0,
                             'tags': {},
                             'class_name': ''
-                        }]
+                        }],
+                        'img_class_ids': [0, 1, 2],
+                        'polygons': [],
                     }
                 },
-                'task_id': 'a'
+                'task_id': 'a',
+                'map_id_color': {},
+                'eval_class_ids': [0, 1, 2],
+                'executor_config': '',
+                'type': 'AT_UNKNOWN',
+                'task_class_ids': [0, 1, 2],
             },
             'image_cks': {
                 'a1': {
@@ -455,11 +504,7 @@ class TestToolsDetEval(unittest.TestCase):
         actual_annotations_dict = json_format.MessageToDict(actual_mir_annotations,
                                                             including_default_value_fields=True,
                                                             preserving_proto_field_name=True)
-        try:
-            self.assertEqual(expected_annotations_dict, actual_annotations_dict)
-        except AssertionError:
-            breakpoint()
-            print('')
+        self.assertEqual(expected_annotations_dict, actual_annotations_dict)
 
     # public: test cases
     def test_det_eval_coco_00(self) -> None:
@@ -472,6 +517,28 @@ class TestToolsDetEval(unittest.TestCase):
         see = sde.iou_averaged_evaluation.ci_averaged_evaluation
         self.assertTrue(np.isclose(0.833333, see.ap))
 
+    def test_det_eval_ctl_ops(self) -> None:
+        gt_pred_rev_tid = revs_parser.parse_single_arg_rev('a@a', need_tid=False)
+        evaluate_config = mirpb.EvaluateConfig()
+        evaluate_config.conf_thr = 0.0005
+        evaluate_config.iou_thrs_interval = '0.5'
+        evaluate_config.need_pr_curve = False
+        evaluate_config.main_ck = 'color'
+        evaluation = det_eval_ctl_ops.det_evaluate_datasets(mir_root=self._mir_root,
+                                                            gt_rev_tid=gt_pred_rev_tid,
+                                                            pred_rev_tid=gt_pred_rev_tid,
+                                                            evaluate_config=evaluate_config)
+        self.assertIsNotNone(evaluation)
+        self.assertEqual({'blue', 'red'}, set(evaluation.sub_cks.keys()))
+
+        evaluate_config.main_ck = 'FakeMainCk'
+        evaluation = det_eval_ctl_ops.det_evaluate_datasets(mir_root=self._mir_root,
+                                                            gt_rev_tid=gt_pred_rev_tid,
+                                                            pred_rev_tid=gt_pred_rev_tid,
+                                                            evaluate_config=evaluate_config)
+        self.assertIsNone(evaluation)
+
+    # protected: test cases
     def _test_det_eval(self, det_eval_model_name: Any) -> mirpb.SingleDatasetEvaluation:
         mir_annotations: mirpb.MirAnnotations = mir_storage_ops.MirStorageOps.load_single_storage(
             mir_root=self._mir_root, mir_branch='a', mir_task_id='a', ms=mirpb.MirStorage.MIR_ANNOTATIONS)

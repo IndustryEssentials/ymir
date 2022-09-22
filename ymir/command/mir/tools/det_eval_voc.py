@@ -171,7 +171,7 @@ def _get_single_evaluate_element(prediction: mirpb.SingleTaskAnnotations, ground
     class_recs: Dict[str, Dict[str, Any]] = {}
     npos = 0
     for asset_id, image_annotations in ground_truth.image_annotations.items():
-        img_gts = [x for x in image_annotations.annotations if x.class_id == class_id]
+        img_gts = [x for x in image_annotations.boxes if x.class_id == class_id]
         if len(img_gts) == 0:
             continue
 
@@ -195,7 +195,7 @@ def _get_single_evaluate_element(prediction: mirpb.SingleTaskAnnotations, ground
     bboxes: List[List[int]] = []
     pred_pb_index_ids: List[int] = []
     for asset_id, image_annotations in prediction.image_annotations.items():
-        img_preds = [x for x in image_annotations.annotations if x.class_id == class_id and x.score > conf_thr]
+        img_preds = [x for x in image_annotations.boxes if x.class_id == class_id and x.score > conf_thr]
         for annotation in img_preds:
             box = annotation.box
             bboxes.append([box.x, box.y, box.x + box.w, box.y + box.h])

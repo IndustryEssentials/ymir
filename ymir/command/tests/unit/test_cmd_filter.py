@@ -8,7 +8,6 @@ from google.protobuf import json_format
 
 from mir.commands import filter as cmd_filter
 from mir.protos import mir_command_pb2 as mirpb
-from mir.tools import utils as mir_utils
 from mir.tools import mir_storage_ops
 from mir.tools.code import MirCode
 from mir.tools.mir_storage_ops import MirStorageOps
@@ -115,7 +114,6 @@ class TestCmdFilter(unittest.TestCase):
                     TestCmdFilter.__annotations_for_single_image([0, 4]),
                 }
             },
-            'head_task_id': 't0',
             'image_cks': {
                 'a0000000000000000000000000000000000000000000000000': {
                     'cks': {
@@ -173,7 +171,7 @@ class TestCmdFilter(unittest.TestCase):
                 "score": 0.5,
                 "class_id": type_id,
             })
-        return {"annotations": annotations}
+        return {"boxes": annotations}
 
     # public: test cases
     def test_all(self):
@@ -225,18 +223,12 @@ class TestCmdFilter(unittest.TestCase):
         # check mir repo
         mir_metadatas = test_utils.read_mir_pb(os.path.join(self._mir_root, 'metadatas.mir'), mirpb.MirMetadatas)
         mir_annotations = test_utils.read_mir_pb(os.path.join(self._mir_root, 'annotations.mir'), mirpb.MirAnnotations)
-        mir_keywords = test_utils.read_mir_pb(os.path.join(self._mir_root, 'keywords.mir'), mirpb.MirKeywords)
         mir_tasks = test_utils.read_mir_pb(os.path.join(self._mir_root, 'tasks.mir'), mirpb.MirTasks)
         self.assertEqual(expected_asset_ids, set(mir_metadatas.attributes.keys()))
-        self.assertEqual(expected_asset_ids, set(mir_keywords.keywords.keys()))
         self.assertEqual(expected_asset_ids, set(mir_annotations.prediction.image_annotations.keys()))
         self.assertEqual(expected_asset_ids, set(mir_annotations.image_cks.keys()))
         self.assertEqual(1, len(mir_tasks.tasks))
         self.assertEqual('t1', mir_tasks.head_task_id)
-        self.assertEqual('t1', mir_annotations.head_task_id)
-
-        current_branch_name = mir_utils.mir_repo_head_name(self._mir_root)
-        self.assertEqual(dst_branch, current_branch_name)
 
     def __test_multiprocess(self, dst_branch: str, child_conn):
         fake_args = type('', (), {})()

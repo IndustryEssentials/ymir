@@ -2,7 +2,6 @@ import { useState } from 'react'
 import { useDispatch } from 'umi'
 
 const useUpdateProject = (id) => {
-  console.log('id:', id)
   const dispatch = useDispatch()
   const updateProject = payload => dispatch({
     type: 'project/updateProject',

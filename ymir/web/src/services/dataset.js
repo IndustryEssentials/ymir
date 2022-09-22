@@ -6,8 +6,8 @@ import request from "@/utils/request"
  * @param {array[number]} id
  * @returns
  */
-export function getDataset(id) {
-  return request.get(`datasets/${id}`)
+export function getDataset(id, verbose) {
+  return request.get(`datasets/${id}`, { params: { verbose } })
 }
 
 /**
@@ -65,8 +65,21 @@ export function getDatasetGroups(project_id, { name, offset = 0, limit = 10 }) {
   return request.get("dataset_groups/", { params: { project_id, name, offset, limit } })
 }
 
-export function batchDatasets(ids) {
-  return request.get('datasets/batch', { params: { ids: ids.toString() } })
+/**
+ * batch getting dataset
+ * @param {array<number>} ids dataset ids
+ * @param {number} pid project id
+ * @param {boolean} ck need ck
+ * @returns 
+ */
+export function batchDatasets(pid, ids = [], ck) {
+  return request.get('datasets/batch', {
+    params: {
+      project_id: pid,
+      ids: ids.toString(), 
+      ck,
+    }
+  })
 }
 
 /**
@@ -129,15 +142,17 @@ export function delDatasetGroup(id) {
  * @param {number} iou           iou threadhold
  * @param {number} everageIou    
  * @param {number} confidence   range: [0, 1]
+ * @param {string} ck  custom keyword
  * @returns 
  */
-export function evaluate({ projectId, datasets, iou, everageIou, confidence }) {
+export function evaluate({ projectId, datasets, iou, everageIou, confidence, ck }) {
   return request.post(`/datasets/evaluation`, {
     project_id: projectId,
     dataset_ids: datasets,
     confidence_threshold: confidence,
     iou_threshold: iou,
     require_average_iou: everageIou,
+    main_ck: ck,
   })
 }
 
@@ -150,7 +165,7 @@ export function analysis(projectId, datasets) {
     params: {
       project_id: projectId,
       ids: datasets.toString(),
-      verbose: true,
+      hist: true,
     }
   })
 }

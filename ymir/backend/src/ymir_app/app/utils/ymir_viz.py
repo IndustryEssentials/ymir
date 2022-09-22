@@ -33,12 +33,15 @@ class DatasetAnnotation:
     annos_count: Optional[int]
     ave_annos_count: Optional[float]
 
+    eval_class_ids: Optional[List]
+
     @classmethod
     def from_dict(cls, data: Dict, total_assets_count: int, user_labels: UserLabels) -> "DatasetAnnotation":
         ave_annos_count = round(data["annos_count"] / total_assets_count, 2) if total_assets_count else None
         keywords = {
             user_labels.get_main_name(int(class_id)): count for class_id, count in data["class_ids_count"].items()
         }
+        eval_class_ids = user_labels.get_main_names(data["eval_class_ids"]) if data.get("eval_class_ids") else None
         return cls(
             keywords=keywords,
             class_ids_count=data["class_ids_count"],
@@ -48,6 +51,7 @@ class DatasetAnnotation:
             hist=data.get("annos_hist") or None,
             annos_count=data.get("annos_count"),
             ave_annos_count=ave_annos_count,
+            eval_class_ids=eval_class_ids,
         )
 
 
@@ -174,13 +178,21 @@ class ViewerAsset:
         self.keywords = user_labels.get_main_names(self.class_ids)
         self.gt = [
             ViewerAssetAnnotation(
-                box=i["box"], class_id=i["class_id"], cm=i["cm"], tags=i["tags"], user_labels=user_labels
+                box=i["box"],
+                class_id=i["class_id"],
+                cm=i["cm"],
+                tags=i["tags"],
+                user_labels=user_labels,
             )
             for i in self.gt
         ]
         self.pred = [
             ViewerAssetAnnotation(
-                box=i["box"], class_id=i["class_id"], cm=i["cm"], tags=i["tags"], user_labels=user_labels
+                box=i["box"],
+                class_id=i["class_id"],
+                cm=i["cm"],
+                tags=i["tags"],
+                user_labels=user_labels,
             )
             for i in self.pred
         ]
@@ -236,14 +248,17 @@ class ViewerModelInfoResponse(BaseModel):
 
 
 class VizClient:
-    def __init__(self, *, host: str = settings.VIZ_HOST):
-        self.host = host
+    def __init__(
+        self, user_id: Optional[int] = None, project_id: Optional[int] = None, user_labels: Optional[UserLabels] = None
+    ) -> None:
         self.session = requests.Session()
-        self._user_id = None  # type: Optional[str]
-        self._project_id = None  # type: Optional[str]
-        self._branch_id = None  # type: Optional[str]
-        self._url_prefix = None  # type: Optional[str]
-        self._user_labels = None  # type: Optional[UserLabels]
+        self._user_id = f"{user_id:0>4}" if user_id else None
+        self._project_id = f"{project_id:0>6}" if project_id else None
+        self._user_labels = user_labels
+        self._host = f"http://127.0.0.1:{settings.VIEWER_HOST_PORT}"
+        self._url_prefix = (
+            f"{self._host}/api/v1/users/{self._user_id}/repo/{self._project_id}" if user_id and project_id else None
+        )
 
     def initialize(
         self,
@@ -254,8 +269,7 @@ class VizClient:
     ) -> None:
         self._user_id = f"{user_id:0>4}"
         self._project_id = f"{project_id:0>6}"
-        host = f"127.0.0.1:{settings.VIEWER_HOST_PORT}"
-        self._url_prefix = f"http://{host}/api/v1/users/{self._user_id}/repo/{self._project_id}"  # noqa: E501
+        self._url_prefix = f"{self._host}/api/v1/users/{self._user_id}/repo/{self._project_id}"  # noqa: E501
 
         if user_labels:
             self._user_labels = user_labels
@@ -316,14 +330,20 @@ class VizClient:
         return asdict(dataset_info)
 
     def get_dataset_analysis(
-        self, dataset_hash: str, keyword_ids: Optional[List[int]] = None, require_hist: bool = False
+        self,
+        dataset_hash: str,
+        keyword_ids: Optional[List[int]] = None,
+        require_hist: bool = False,
     ) -> Dict:
         """
         viewer: GET /dataset_stats
         """
         url = f"{self._url_prefix}/branch/{dataset_hash}/dataset_stats"
 
-        params = {"require_assets_hist": require_hist, "require_annos_hist": require_hist}  # type: Dict
+        params = {
+            "require_assets_hist": require_hist,
+            "require_annos_hist": require_hist,
+        }  # type: Dict
         if keyword_ids:
             params["class_ids"] = ",".join(str(k) for k in keyword_ids)
 
@@ -332,47 +352,98 @@ class VizClient:
         dataset_info = DatasetInfo.from_dict(res, self._user_labels)
         return asdict(dataset_info)
 
-    def get_fast_evaluation(
-        self,
-        dataset_hash: str,
-        confidence_threshold: float,
-        iou_threshold: float,
-        need_pr_curve: bool,
-    ) -> Dict:
-        """
-        viz: /dataset_fast_evaluation
-        """
-        # todo
-        #  replace with controller counterpart
-        url_prefix = f"http://{self.host}/v1/users/{self._user_id}/repositories/{self._project_id}/branches"
-        url = f"{url_prefix}/{dataset_hash}/dataset_fast_evaluation"
-        params = {
-            "conf_thr": confidence_threshold,
-            "iou_thr": iou_threshold,
-            "need_pr_curve": need_pr_curve,
-        }
+    def get_negative_count(self, dataset_hash: str, keyword_ids: List[int]) -> int:
+        url = f"{self._url_prefix}/branch/{dataset_hash}/dataset_stats"
+        params = {"class_ids": ",".join(str(k) for k in keyword_ids)}
         resp = self.get_resp(url, params=params)
         res = self.parse_resp(resp)
-        evaluations = {
-            dataset_hash: VizDatasetEvaluationResult(**evaluation).dict() for dataset_hash, evaluation in res.items()
-        }
-        convert_class_id_to_keyword(evaluations, self._user_labels)
-        return evaluations
+        dataset_info = DatasetInfo.from_dict(res, self._user_labels)
+        return dataset_info.gt.negative_assets_count if dataset_info.gt else 0
 
-    def check_duplication(self, dataset_hashes: List[str]) -> int:
+    def get_class_wise_count(self, dataset_hash: str) -> Dict[str, int]:
+        url = f"{self._url_prefix}/branch/{dataset_hash}/dataset_meta_count"
+        resp = self.get_resp(url)
+        res = self.parse_resp(resp)
+        dataset_info = DatasetInfo.from_dict(res, user_labels=self._user_labels)
+        return dataset_info.gt.keywords if dataset_info.gt else {}
+
+    def check_duplication(self, dataset_hashes: List[str], main_dataset_hash: Optional[str] = None) -> Dict:
         """
         viewer: GET /dataset_duplication
         """
         url = f"{self._url_prefix}/dataset_duplication"
-        params = {"candidate_dataset_ids": ",".join(dataset_hashes)}
+        params = {
+            "candidate_dataset_ids": ",".join(dataset_hashes),
+            "corrodee_dataset_ids": main_dataset_hash,
+        }
         resp = self.get_resp(url, params=params)
         duplicated_stats = self.parse_resp(resp)
-        return duplicated_stats["duplication"]
+        return duplicated_stats
+
+    def send_metrics(
+        self,
+        metrics_group: str,
+        id: str,
+        create_time: int,
+        keyword_ids: List[int],
+        extra_data: Optional[Dict] = None,
+    ) -> None:
+        url = f"{self._host}/api/v1/user_metrics/{metrics_group}"
+        payload = extra_data or {}
+        payload.update(
+            {
+                "id": id,
+                "create_time": create_time,
+                "user_id": self._user_id,
+                "project_id": self._project_id,
+                "class_ids": ",".join(map(str, keyword_ids)),
+            }
+        )
+        self.post(url, payload)
+
+    def query_metrics(
+        self,
+        metrics_group: str,
+        user_id: int,
+        query_field: str,
+        bucket: str,
+        unit: str = "",
+        limit: int = 10,
+        keyword_ids: Optional[List[int]] = None,
+    ) -> Dict:
+        url = f"{self._host}/api/v1/user_metrics/{metrics_group}"
+        params = {
+            "user_id": f"{user_id:0>4}",
+            "query_field": query_field,
+            "bucket": bucket,
+            "unit": unit,
+            "limit": limit,
+        }
+        if keyword_ids:
+            params["class_ids"] = ",".join(map(str, keyword_ids))
+        resp = self.get_resp(url, params=params)
+        return self.parse_resp(resp)
+
+    def post(self, url: str, payload: Optional[Dict], timeout: int = settings.VIZ_TIMEOUT) -> requests.Response:
+        logger.info("[viewer] request url %s and payload %s", url, payload)
+        try:
+            resp = self.session.post(url, data=payload, timeout=timeout)
+        except ConnectionError:
+            raise VizError()
+        except Timeout:
+            raise VizTimeOut()
+        else:
+            return resp
 
     def get_resp(
-        self, url: str, params: Optional[Dict] = None, timeout: int = settings.VIZ_TIMEOUT
+        self,
+        url: str,
+        params: Optional[Dict] = None,
+        timeout: int = settings.VIZ_TIMEOUT,
     ) -> requests.Response:
         logger.info("[viewer] request url %s and params %s", url, params)
+        if params:
+            params = {k: v for k, v in params.items() if v is not None}
         try:
             resp = self.session.get(url, params=params, timeout=timeout)
         except ConnectionError:
@@ -408,49 +479,9 @@ class VizClient:
                 raise DatasetEvaluationMissingAnnotation()
         raise FailedToParseVizResponse()
 
-    def send_metrics(self, metrics_group: str, id: str, create_time: int, user_id: int, project_id: int,
-                     keywords: List[str], user_labels: UserLabels, extra_data: Optional[Dict]) -> None:
-        if not extra_data:
-            extra_data = {}
-
-        # fill up required fields.
-        extra_data["id"] = id
-        extra_data["create_time"] = create_time
-        extra_data["user_id"] = f"{user_id:0>4}"
-        extra_data["project_id"] = f"{project_id:0>6}"
-        extra_data["class_ids"] = ','.join(map(str, user_labels.get_class_ids(keywords)))
-
-        url = f"http://127.0.0.1:{settings.VIEWER_HOST_PORT}/api/v1/user_metrics/{metrics_group}"
-        self.session.post(url, data=extra_data, timeout=settings.VIZ_TIMEOUT)
-
-    def query_metrics(self,
-                      metrics_group: str,
-                      user_id: int,
-                      query_field: str,
-                      bucket: str,
-                      unit: str = "",
-                      limit: int = 10,
-                      user_labels: UserLabels = None,
-                      keywords: List[str] = []) -> Dict:
-        url = f"http://127.0.0.1:{settings.VIEWER_HOST_PORT}/api/v1/user_metrics/{metrics_group}"
-        params = {"user_id": user_id, "query_field": query_field, "bucket": bucket, "unit": unit, "limit": limit}
-        if keywords and user_labels:
-            params["class_ids"] = ','.join(map(str, user_labels.get_class_ids(keywords)))
-        resp = self.get_resp(url, params=params)
-        return self.parse_resp(resp)
-
     def close(self) -> None:
         self.session.close()
 
 
 def get_asset_url(asset_id: str) -> str:
     return f"{settings.NGINX_PREFIX}/ymir-assets/{asset_id[-2:]}/{asset_id}"
-
-
-def convert_class_id_to_keyword(obj: Dict, user_labels: UserLabels) -> None:
-    if isinstance(obj, dict):
-        for key, value in obj.items():
-            if key == "ci_evaluations":
-                obj[key] = {user_labels.get_main_name(k): v for k, v in value.items()}
-            else:
-                convert_class_id_to_keyword(obj[key], user_labels)

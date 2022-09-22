@@ -151,6 +151,8 @@ class DatasetAnnotation(BaseModel):
     annos_count: Optional[int]
     ave_annos_count: Optional[float]
 
+    eval_class_ids: Optional[List]
+
 
 class DatasetInfo(DatasetInDBBase):
     gt: Optional[DatasetAnnotation]
@@ -221,6 +223,7 @@ class DatasetEvaluationCreate(BaseModel):
     iou_threshold: float
     require_average_iou: bool = False
     need_pr_curve: bool = True
+    main_ck: Optional[str] = None
 
 
 class DatasetEvaluationOut(Common):

@@ -86,6 +86,7 @@ const common = {
   'common.recommend': {cn: '推荐', en: 'Recommend', },
   "common.desc": { en: "Description", cn: "描述", },
   "common.reset": { en: "Reset", cn: "重置", },
+  "common.menu.docs": { en: "Documents", cn: "说明文档", },
 }
 
 export default common

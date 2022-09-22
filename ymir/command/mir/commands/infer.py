@@ -3,14 +3,14 @@ import json
 import logging
 import os
 import time
-from typing import Any, List
+from typing import Any
 
 import yaml
 
 from mir.commands import base
-from mir.tools import checker, class_ids
+from mir.tools import checker, class_ids, models
 from mir.tools import settings as mir_settings
-from mir.tools import utils as mir_utils
+from mir.tools import env_config
 from mir.tools.code import MirCode
 from mir.tools.errors import MirRuntimeError
 from mir.tools.executant import prepare_executant_env, run_docker_executant
@@ -37,11 +37,17 @@ class CmdInfer(base.BaseCommand):
     def run(self) -> int:
         logging.debug("command infer: %s", self.args)
 
+        work_dir_in_model = os.path.join(self.args.work_dir, 'in', 'models')
+        model_hash, stage_name = models.parse_model_hash_stage(self.args.model_hash_stage)
+        model_storage = models.prepare_model(model_location=self.args.model_location,
+                                             model_hash=model_hash,
+                                             stage_name=stage_name,
+                                             dst_model_path=work_dir_in_model)
+
         return CmdInfer.run_with_args(work_dir=self.args.work_dir,
                                       mir_root=self.args.mir_root,
                                       media_path=os.path.join(self.args.work_dir, 'assets'),
-                                      model_location=self.args.model_location,
-                                      model_hash_stage=self.args.model_hash_stage,
+                                      model_storage=model_storage,
                                       index_file=self.args.index_file,
                                       config_file=self.args.config_file,
                                       executor=self.args.executor,
@@ -54,8 +60,7 @@ class CmdInfer(base.BaseCommand):
     def run_with_args(work_dir: str,
                       mir_root: str,
                       media_path: str,
-                      model_location: str,
-                      model_hash_stage: str,
+                      model_storage: models.ModelStorage,
                       index_file: str,
                       config_file: str,
                       executor: str,
@@ -90,36 +95,25 @@ class CmdInfer(base.BaseCommand):
         if not mir_root:
             mir_root = '.'
         if not work_dir:
-            logging.error('empty --work-dir, abort')
-            return MirCode.RC_CMD_INVALID_ARGS
-        if not model_location:
-            logging.error('empty --model-location, abort')
-            return MirCode.RC_CMD_INVALID_ARGS
-        if not model_hash_stage:
-            logging.error('empty --model-hash, abort')
-            return MirCode.RC_CMD_INVALID_ARGS
+            raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
+                                  error_message='empty --work-dir')
         if not index_file or not os.path.isfile(index_file):
-            logging.error(f"invalid --index-file: {index_file}, abort")
-            return MirCode.RC_CMD_INVALID_ARGS
-
-        if not config_file:
-            logging.error("empty --task-config-file")
-            return MirCode.RC_CMD_INVALID_ARGS
-        if not os.path.isfile(config_file):
-            logging.error(f"invalid --task-config-file {config_file}, not a file, abort")
-            return MirCode.RC_CMD_INVALID_ARGS
-
+            raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
+                                  error_message=f"invalid --index-file: {index_file}")
+        if not config_file or not os.path.isfile(config_file):
+            raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
+                                  error_message=f"invalid --task-config-file: {config_file}")
         if not run_infer and not run_mining:
-            logging.warning('invalid run_infer and run_mining: both false')
-            return MirCode.RC_OK
-
+            raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
+                                  error_message='invalid run_infer and run_mining: both false')
         if not executor:
-            logging.error('empty --executor, abort')
-            return MirCode.RC_CMD_INVALID_ARGS
+            raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
+                                  error_message='empty --executor')
 
         return_code = checker.check(mir_root, [checker.Prerequisites.IS_INSIDE_MIR_REPO])
         if return_code != MirCode.RC_OK:
-            return return_code
+            raise MirRuntimeError(error_code=return_code,
+                                  error_message=f"check failed: {return_code}")
 
         if not executant_name:
             executant_name = task_id
@@ -130,27 +124,21 @@ class CmdInfer(base.BaseCommand):
                               work_dir_out=work_dir_out,
                               asset_cache_dir=media_path)
 
-        work_dir_in_model = os.path.join(work_dir_in, 'models')
         work_index_file = os.path.join(work_dir_in, 'candidate-index.tsv')
         work_config_file = os.path.join(work_dir_in, 'config.yaml')
         work_env_config_file = os.path.join(work_dir_in, 'env.yaml')
 
         _prepare_assets(index_file=index_file, work_index_file=work_index_file, media_path=media_path)
 
-        model_hash, stage_name = mir_utils.parse_model_hash_stage(model_hash_stage)
-        model_storage: mir_utils.ModelStorage = mir_utils.prepare_model(model_location=model_location,
-                                                                        model_hash=model_hash,
-                                                                        stage_name=stage_name,
-                                                                        dst_model_path=work_dir_in_model)
-        model_names = model_storage.stages[stage_name].files
         class_names = model_storage.class_names
         if not class_names:
-            raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_FILE,
-                                  error_message=f"empty class names in model: {model_hash_stage}")
+            raise MirRuntimeError(
+                error_code=MirCode.RC_CMD_INVALID_FILE,
+                error_message=f"empty class names in model: {model_storage.model_hash}@{model_storage.stage_name}")
 
+        model_names = model_storage.stages[model_storage.stage_name].files
         with open(config_file, 'r') as f:
             config = yaml.safe_load(f)
-
         prepare_config_file(config=config,
                             dst_config_file=work_config_file,
                             class_names=class_names,
@@ -159,10 +147,10 @@ class CmdInfer(base.BaseCommand):
                             run_infer=run_infer,
                             run_mining=run_mining)
 
-        mir_utils.generate_mining_infer_env_config_file(task_id=task_id,
-                                                        run_mining=run_mining,
-                                                        run_infer=run_infer,
-                                                        env_config_file_path=work_env_config_file)
+        env_config.generate_mining_infer_env_config_file(task_id=task_id,
+                                                         run_mining=run_mining,
+                                                         run_infer=run_infer,
+                                                         env_config_file_path=work_env_config_file)
 
         task_config = config.get(mir_settings.TASK_CONTEXT_KEY, {})
         run_docker_executant(
@@ -241,14 +229,15 @@ def _process_infer_results(infer_result_file: str, max_boxes: int, mir_root: str
 
     class_id_mgr = class_ids.ClassIdManager(mir_root=mir_root)
 
-    if 'detection' in results:
-        names_annotations_dict = results['detection']
-        for _, annotations_dict in names_annotations_dict.items():
-            if 'annotations' in annotations_dict and isinstance(annotations_dict['annotations'], list):
-                annotations_list: List[dict] = annotations_dict['annotations']
-                annotations_list.sort(key=(lambda x: x['score']), reverse=True)
-                annotations_list = [a for a in annotations_list if class_id_mgr.has_name(a['class_name'])]
-                annotations_dict['annotations'] = annotations_list[:max_boxes]
+    for _, annotations_dict in results.get('detection', {}).items():
+        # Compatible with previous version of format.
+        annotations = annotations_dict.get('boxes') or annotations_dict.get('annotations')
+        if not isinstance(annotations, list):
+            continue
+
+        annotations.sort(key=(lambda x: x['score']), reverse=True)
+        annotations = [a for a in annotations if class_id_mgr.has_name(a['class_name'])]
+        annotations_dict['boxes'] = annotations[:max_boxes]
 
     with open(infer_result_file, 'w') as f:
         f.write(json.dumps(results, indent=4))

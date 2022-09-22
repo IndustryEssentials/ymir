@@ -3,8 +3,7 @@ import { useHistory } from "umi"
 import { Button, Col, Descriptions, Row, Tag } from "antd"
 
 import t from "@/utils/t"
-import { states } from '@/constants/common'
-import useFetch from '@/hooks/useFetch'
+import { ResultStates } from '@/constants/common'
 import styles from "./detail.less"
 import { SearchIcon } from "@/components/common/icons"
 import { DescPop } from "../common/descPop"
@@ -14,12 +13,7 @@ const labelStyle = { width: '15%', paddingRight: '20px', justifyContent: 'flex-e
 
 function DatasetDetail({ dataset = {} }) {
   const history = useHistory()
-  const [{ cks, tags }, getCK] = useFetch('dataset/getCK', { cks: {}, tags: {} })
-
-  useEffect(() => {
-    dataset.id && dataset.state === states.VALID && getCK({ id: dataset.id })
-  }, [dataset])
-
+  const { cks = {}, tags = {}, inferClass } = dataset
 
   const renderKeywords = (anno, label = 'ground truth') => {
     if (!anno) {
@@ -32,7 +26,7 @@ function DatasetDetail({ dataset = {} }) {
   }
 
   const renderCk = (label = 'ck', keywords = []) => keywords.length ? <Item label={label}>
-    {keywords.map(({ keyword, children }) => <Row>
+    {keywords.map(({ keyword, children }) => <Row key={keyword}>
       <Col flex={'160px'}>{keyword}</Col>
       <Col>{children.map(({ keyword, count }) => <Tag key={keyword}>{keyword}({count})</Tag>)}</Col>
     </Row>)}
@@ -48,7 +42,7 @@ function DatasetDetail({ dataset = {} }) {
         <Item label={t("dataset.detail.label.name")} span={2}>
           <Row>
             <Col flex={1}>{dataset.name} {dataset.versionName}</Col>
-            <Col hidden={dataset.state !== states.VALID}>
+            <Col hidden={dataset.state !== ResultStates.VALID}>
               <Button
                 type='primary'
                 icon={<SearchIcon />}
@@ -60,6 +54,7 @@ function DatasetDetail({ dataset = {} }) {
         <Item label={t("dataset.detail.label.keywords")}>
           {renderKeywords(dataset.gt)}
           {renderKeywords(dataset.pred, 'prediction')}
+          {inferClass ? <div>{t('dataset.detail.infer.class')}{inferClass.map(cls => <Tag key={cls}>{cls}</Tag>)}</div> : null}
         </Item>
         <Item label={t("dataset.detail.label.assets")} contentStyle={{ minWidth: 150 }}>{dataset.assetCount}</Item>
         {dataset.hidden ? <Item label={t("common.hidden.label")}>{t('common.state.hidden')}</Item> : null}

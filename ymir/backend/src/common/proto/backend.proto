@@ -39,6 +39,7 @@ enum RequestType {
     CMD_EVALUATE = 19;
     CMD_REPO_CHECK = 20;
     CMD_REPO_CLEAR = 21;
+    CMD_VERSION_GET = 22;
 
     // Sandbox path operation
     USER_LIST = 101;
@@ -51,7 +52,7 @@ enum RequestType {
     // Long task
     TASK_CREATE = 1001;
 
-    reserved 15, 1002;
+    reserved 15;
 }
 
 message GeneralReq {
@@ -92,7 +93,7 @@ message GeneralReq {
     string model_stage = 27;
     ReqCreateTask req_create_task = 1001;
 
-    reserved 17, 1002;
+    reserved 17;
 }
 
 message GeneralResp {
@@ -105,37 +106,28 @@ message GeneralResp {
     int32 available_gpu_counts = 8;
     LabelCollection label_collection = 9;
     bool ops_ret = 10;
-    RespCMDInference detection = 1001;
-    bool enable_livecode = 1002;
-    mir.command.Evaluation evaluation = 1003;
+    string sandbox_version = 11;
+    RespCMDInference detection = 1000;
+    bool enable_livecode = 1001;
+    mir.command.Evaluation evaluation = 1002;
 
-    reserved 5, 1000;
+    reserved 5;
 }
 
 // base args for create task request
 message ReqCreateTask {
     // task type
     mir.command.TaskType task_type = 1;
-    float sampling_rate = 2;
-    bool no_task_monitor = 3;
+    bool no_task_monitor = 2;
 
-    TaskReqFilter filter = 101 [deprecated=true];
-    TaskReqTraining training = 102;
-    TaskReqMining mining = 103;
-    TaskReqImporting importing = 104;
-    TaskReqExporting exporting = 105;
-    TaskReqInference inference = 106;
-    TaskReqCopyData copy = 107;
-    TaskReqLabeling labeling = 108;
-    TaskReqFusion fusion = 109;
-    TaskReqModelImporting model_importing = 110;
-    TaskReqVisualization visualization = 111;
-}
-
-message TaskReqFilter {
-    repeated string in_dataset_ids = 1;
-    repeated int32 in_class_ids = 2;
-    repeated int32 ex_class_ids = 3;
+    TaskReqTraining training = 101;
+    TaskReqMining mining = 102;
+    TaskReqImportDataset import_dataset = 103;
+    TaskReqExporting exporting = 104;
+    TaskReqCopyData copy = 105;
+    TaskReqLabeling labeling = 106;
+    TaskReqImportModel import_model = 107;
+    TaskReqVisualization visualization = 108;
 }
 
 message TaskReqTraining {
@@ -144,51 +136,38 @@ message TaskReqTraining {
         mir.command.TvtType dataset_type = 2;
     }
     repeated TrainingDatasetType in_dataset_types = 1;
-    repeated int32 in_class_ids = 2;
-    string preprocess_config = 4;
-
-    reserved 3;
+    string preprocess_config = 2;
 }
 
 message TaskReqMining {
-    repeated string in_dataset_ids = 1;
-    repeated string ex_dataset_ids = 2;
-    int32 top_k = 4;  // > 0, will keep all if set to 0.
-    bool generate_annotations = 6;
-
-    reserved 3, 5;
+    int32 top_k = 1;  // > 0, will keep all if set to 0.
+    bool generate_annotations = 2;
 }
 
-message TaskReqImporting {
+message TaskReqImportDataset {
     // store media files
     string asset_dir = 1;
     // single pascal xml per asset, same base_filename as in asset-folder
     string pred_dir = 2;
-    string gt_dir = 4;
+    string gt_dir = 3;
     // strategy for unknown class types: stop, ignore or add
-    UnknownTypesStrategy unknown_types_strategy = 5;
-    bool clean_dirs = 6;
-
-    reserved 3;
+    UnknownTypesStrategy unknown_types_strategy = 4;
+    bool clean_dirs = 5;
 }
 
 message TaskReqExporting {
     string dataset_id = 1;
-    mir.command.LabelFormat format = 2;
+    mir.command.AnnoFormat format = 2;
     string asset_dir = 3;
     string pred_dir = 4;
     string gt_dir = 5;
 }
 
-message TaskReqInference {
-}
-
 message TaskReqCopyData {
     string src_user_id = 1;
     string src_repo_id = 2;
-    string src_dataset_id = 3;
-    bool name_strategy_ignore = 4;
-    bool drop_annotations = 5;
+    bool name_strategy_ignore = 3;
+    bool drop_annotations = 4;
 }
 
 enum AnnotationType {
@@ -198,37 +177,22 @@ enum AnnotationType {
 }
 
 message TaskReqLabeling {
-    string dataset_id = 1;
-    repeated string labeler_accounts = 2;
-    repeated int32 in_class_ids = 3;
-    string expert_instruction_url = 4;
-    string project_name = 5;
-    bool export_annotation = 6;
-    AnnotationType annotation_type = 7;
+    repeated string labeler_accounts = 1;
+    string expert_instruction_url = 2;
+    string project_name = 3;
+    bool export_annotation = 4;
+    AnnotationType annotation_type = 5;
 }
 
-message TaskReqFusion {
-    repeated string in_dataset_ids = 1;
-    repeated string ex_dataset_ids = 2;
-    MergeStrategy merge_strategy = 3;
-    repeated int32 in_class_ids = 4;
-    repeated int32 ex_class_ids = 5;
-    oneof sampling {
-        int32 count = 6;
-        float rate = 7;
-    }
-}
-
-message TaskReqModelImporting {
+message TaskReqImportModel {
     string model_package_path = 1;
 }
 
 message TaskReqVisualization {
     string vis_tool_id = 1;
-    repeated string in_dataset_ids = 2;
-    repeated string in_dataset_names = 3;
-    float iou_thr = 4;
-    float conf_thr = 5;
+    repeated string in_dataset_names = 2;
+    float iou_thr = 3;
+    float conf_thr = 4;
 }
 
 message RespCMDInference {

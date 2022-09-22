@@ -60,6 +60,11 @@ class CmdInit(base.BaseCommand):
         repo_git.config(['core.fileMode', 'false'])
 
         CmdInit.__update_ignore(mir_root=mir_root, git=repo_git, ignored_items=['.mir_lock', '.mir'])
+
+        with open(os.path.join(mir_root, '.gitattributes'), 'w') as f:
+            f.write('*.mir binary\n')
+        repo_git.add('.')
+
         repo_git.commit(["-m", "first commit"])
 
         # creates an empty dataset if empty_rev provided

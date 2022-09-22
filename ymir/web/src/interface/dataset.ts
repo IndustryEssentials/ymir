@@ -35,6 +35,9 @@ export interface Dataset extends Result {
   assetCount: number,
   gt?: AnnotationsCount,
   pred?: AnnotationsCount,
+  inferClass?: Array<string>,
+  cks?: BackendData,
+  tags?: BackendData,
 }
 
 export interface DatasetAnalysis {
@@ -49,6 +52,7 @@ export interface DatasetAnalysis {
   assetQuality: Array<BackendData>,
   gt: AnylysisAnnotation,
   pred: AnylysisAnnotation,
+  inferClass?: Array<string>,
   cks?: BackendData,
   tags?: BackendData,
 }

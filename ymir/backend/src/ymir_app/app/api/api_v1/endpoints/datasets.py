@@ -28,7 +28,12 @@ from app.utils.iteration import get_iteration_context_converter
 from app.utils.ymir_controller import ControllerClient, gen_task_hash
 from app.utils.ymir_viz import VizClient
 from app.schemas.dataset import MergeStrategy
-from app.libs.datasets import import_dataset_in_background, evaluate_datasets, ensure_datasets_are_ready
+from app.libs.datasets import (
+    import_dataset_in_background,
+    evaluate_datasets,
+    ensure_datasets_are_ready,
+    send_keywords_metrics,
+)
 from common_utils.labels import UserLabels
 
 router = APIRouter()
@@ -38,22 +43,29 @@ router = APIRouter()
 def batch_get_datasets(
     db: Session = Depends(deps.get_db),
     viz_client: VizClient = Depends(deps.get_viz_client),
-    project_id: int = Query(None),
-    dataset_ids: str = Query(None, example="1,2,3", alias="ids"),
-    verbose_info: bool = Query(False, alias="verbose"),
+    project_id: int = Query(...),
+    dataset_ids: str = Query(..., example="1,2,3", alias="ids", min_length=1),
+    require_ck: bool = Query(False, alias="ck"),
+    require_hist: bool = Query(False, alias="hist"),
     current_user: models.User = Depends(deps.get_current_active_user),
     user_labels: UserLabels = Depends(deps.get_user_labels),
 ) -> Any:
     ids = [int(i) for i in dataset_ids.split(",")]
-    datasets = ensure_datasets_are_ready(db, dataset_ids=ids)
+    datasets = crud.dataset.get_multi_by_ids(db, ids=ids)
+    if len(ids) != len(datasets):
+        raise DatasetNotFound()
 
     datasets_info = [schemas.dataset.DatasetInDB.from_orm(dataset).dict() for dataset in datasets]
-
-    if verbose_info:
+    if require_ck or require_hist:
         viz_client.initialize(user_id=current_user.id, project_id=project_id, user_labels=user_labels)
         for dataset in datasets_info:
-            dataset_analysis = viz_client.get_dataset_analysis(dataset["hash"], require_hist=True)
-            dataset.update(dataset_analysis)
+            if dataset["result_state"] != ResultState.ready:
+                continue
+            if require_ck:
+                dataset_extra_info = viz_client.get_dataset_info(dataset["hash"])
+            elif require_hist:
+                dataset_extra_info = viz_client.get_dataset_analysis(dataset["hash"], require_hist=True)
+            dataset.update(dataset_extra_info)
     return {"result": datasets_info}
 
 
@@ -317,7 +329,6 @@ def get_assets_of_dataset(
     dataset_id: int = Path(..., example="12"),
     offset: int = 0,
     limit: int = settings.DEFAULT_LIMIT,
-    keyword: Optional[str] = Query(None),
     keywords_str: Optional[str] = Query(None, example="person,cat", alias="keywords"),
     cm_types_str: Optional[str] = Query(None, example="tp,mtp", alias="cm_types"),
     cks_str: Optional[str] = Query(None, example="shenzhen,shanghai", alias="cks"),
@@ -335,14 +346,7 @@ def get_assets_of_dataset(
     if not dataset:
         raise DatasetNotFound()
 
-    if keyword:
-        # fixme
-        #  remove upon replacing all viz endpoints
-        keywords = [keyword]  # type: Optional[List]
-    elif keywords_str:
-        keywords = keywords_str.split(",")
-    else:
-        keywords = None
+    keywords = keywords_str.split(",") if keywords_str else None
     keyword_ids = user_labels.get_class_ids(keywords) if keywords else None
 
     viz_client.initialize(
@@ -508,6 +512,16 @@ def create_dataset_fusion(
     fused_dataset = crud.dataset.create_as_task_result(db, task, dataset_group.id, description=in_fusion.description)
     logger.info("[fusion] dataset record created: %s", fused_dataset.name)
 
+    if parameters.get("include_class_ids"):
+        # update keywords usage metrics when necessary
+        send_keywords_metrics(
+            current_user.id,
+            in_fusion.project_id,
+            task.hash,
+            parameters["include_class_ids"],
+            int(task.create_datetime.timestamp()),
+        )
+
     return {"result": fused_dataset}
 
 
@@ -515,29 +529,29 @@ def create_dataset_fusion(
 def batch_evaluate_datasets(
     *,
     db: Session = Depends(deps.get_db),
-    evaluation_in: schemas.dataset.DatasetEvaluationCreate,
+    in_evaluation: schemas.dataset.DatasetEvaluationCreate,
     current_user: models.User = Depends(deps.get_current_active_user),
-    viz_client: VizClient = Depends(deps.get_viz_client),
+    controller_client: ControllerClient = Depends(deps.get_controller_client),
     user_labels: UserLabels = Depends(deps.get_user_labels),
 ) -> Any:
     """
     evaluate datasets by themselves
     """
-    logger.info("[evaluate] evaluate dataset with payload: %s", evaluation_in.json())
-    datasets = crud.dataset.get_multi_by_ids(db, ids=evaluation_in.dataset_ids)
-    if len(evaluation_in.dataset_ids) != len(datasets):
-        raise DatasetNotFound()
+    logger.info("[evaluate] evaluate datasets with payload: %s", in_evaluation.json())
+    datasets = ensure_datasets_are_ready(db, dataset_ids=in_evaluation.dataset_ids)
+    dataset_id_mapping = {dataset.hash: dataset.id for dataset in datasets}
 
     evaluations = evaluate_datasets(
-        viz_client,
+        controller_client,
         current_user.id,
-        evaluation_in.project_id,
+        in_evaluation.project_id,
         user_labels,
-        evaluation_in.confidence_threshold,
-        evaluation_in.iou_threshold,
-        evaluation_in.require_average_iou,
-        evaluation_in.need_pr_curve,
-        datasets,
+        in_evaluation.confidence_threshold,
+        in_evaluation.iou_threshold,
+        in_evaluation.require_average_iou,
+        in_evaluation.need_pr_curve,
+        in_evaluation.main_ck,
+        dataset_id_mapping,
     )
     return {"result": evaluations}
 
@@ -556,7 +570,8 @@ def check_duplication(
     datasets = ensure_datasets_are_ready(db, dataset_ids=in_datasets.dataset_ids)
 
     viz_client.initialize(user_id=current_user.id, project_id=in_datasets.project_id)
-    duplicated_asset_count = viz_client.check_duplication([dataset.hash for dataset in datasets])
+    duplicated_stats = viz_client.check_duplication([dataset.hash for dataset in datasets])
+    duplicated_asset_count = duplicated_stats["duplication"]
     return {"result": duplicated_asset_count}
 
 
@@ -679,6 +694,15 @@ def filter_dataset(
     filtered_dataset = crud.dataset.create_as_task_result(
         db, task, main_dataset.dataset_group_id, description=in_filter.description
     )
+    if class_ids:
+        # update keywords usage metrics when necessary
+        send_keywords_metrics(
+            current_user.id,
+            in_filter.project_id,
+            task.hash,
+            class_ids,
+            int(task.create_datetime.timestamp()),
+        )
     return {"result": filtered_dataset}
 
 

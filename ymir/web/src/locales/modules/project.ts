@@ -148,6 +148,27 @@ const project = {
   },
   'project.workspace.status.clean': { en: 'Project current workspace is {cleanLabel}, Training is enabled.', cn: '项目当前的工作空间状态为{cleanLabel}, 可以正常创建训练任务', },
   'project.testing.dataset.label': { en: 'Project Testing Dataset', cn: '项目测试集', },
+  'project.iteration.entrance.status': {
+    en: 'You have processing iterations, current step is {stateLabel}',
+    cn: '您有正在进行中的迭代，当前进度为{stateLabel}',
+  },
+  'project.iteration.entrance.empty.info': {
+    en: 'iterations supplied all-processing model Optimization production Recommanded for valueable data mining, training dataset expended, and comparison between datasets or models',
+    cn: '由系统辅助您进行全流程模型优化生产，包括有效数据的挖掘、训练集的扩充以及数据模型版本间的比对，推荐您使用',
+  },
+  'project.iteration.entrance.empty.label': { en: 'No Iterations', cn: '暂无迭代', },
+  'project.iteration.entrance.empty.btn': { en: 'Processing Models Training', cn: '系统辅助式模型生产', },
+  'project.iteration.entrance.btn': { en: 'Enter Iterations', cn: '进入迭代', },
+  'project.iteration.tabs.current': { en: 'Current Iteration', cn: '当前迭代', },
+  'project.iteration.tabs.list': { en: 'Iteration Records', cn: '迭代历史', },
+  'project.iteration.mining.all.processed': { en: 'Iteration Records', cn: '已挖掘数据占比', },
+  'project.iteration.mining.keywords.processed': { en: 'Iteration Records', cn: '已挖掘数据中正负样本占比', },
+  "project.prepare.trainset.upload": { en: "Upload Training Dataset", cn: "上传训练集", },
+  "project.prepare.validationset.upload": { en: "Upload Testing Dataset", cn: "上传测试集", },
+  "project.prepare.miningset.upload": { en: "Upload Mining Dataset", cn: "上传挖掘集", },
+  "project.iteration.detail.settings.title": { en: "Iteration Settings", cn: "迭代设置", },
+  "project.iteration.detail.intermediations.title": { en: "Intermediation", cn: "中间数据", },
+  "project.iteration.detail.models.title": { en: "Models", cn: "结果模型", },
 }
 
 export default project

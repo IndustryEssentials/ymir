@@ -1,5 +1,5 @@
 from random import randint
-from typing import Optional
+from typing import Optional, List
 
 from sqlalchemy.orm import Session
 
@@ -12,10 +12,12 @@ def create_project_record(
     db: Session,
     user_id: Optional[int] = None,
     name: Optional[str] = None,
+    training_keywords: Optional[List[str]] = None,
 ):
     name = name or random_lower_string()
     user_id = user_id or randint(1, 20)
-    j = {"name": name, "training_keywords": [random_lower_string() for _ in range(3)]}
+    training_keywords = training_keywords or [random_lower_string() for _ in range(3)]
+    j = {"name": name, "training_keywords": training_keywords}
     in_ = schemas.ProjectCreate(**j)
     record = crud.project.create_project(db, obj_in=in_, user_id=user_id)
 
