@@ -68,7 +68,7 @@ class TaskExportingInvoker(TaskBaseInvoker):
                       gt_dir: Optional[str] = None) -> backend_pb2.GeneralResp:
         exporting_cmd = [
             utils.mir_executable(), 'export', '--root', repo_root, '--media-location', media_location, '--asset-dir',
-            asset_dir, '--src-revs', f"{in_dataset_id}@{in_dataset_id}", '--anno_format', annotation_format
+            asset_dir, '--src-revs', f"{in_dataset_id}@{in_dataset_id}", '--anno-format', annotation_format
         ]
         if keywords:
             exporting_cmd.append('--class_names')
