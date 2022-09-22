@@ -44,3 +44,7 @@ export function updateResultState(result: Result, tasks: BackendData) {
 export function validState(state: number) {
   return ResultStates.VALID === state
 }
+
+export function getVersionLabel(version: number) {
+  return `V${version}`
+}

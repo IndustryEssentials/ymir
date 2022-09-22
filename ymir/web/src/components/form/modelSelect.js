@@ -50,7 +50,7 @@ const ModelSelect = ({ pid, value, onlyModel, changeByUser, onChange = () => { }
 
   useEffect(() => {
     generateOptions()
-  }, [models, filters])
+  }, [models])
 
   function generateOptions() {
     const mds = filters ? filters(models) : models
