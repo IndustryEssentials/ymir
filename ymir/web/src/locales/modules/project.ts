@@ -166,6 +166,9 @@ const project = {
   "project.prepare.trainset.upload": { en: "Upload Training Dataset", cn: "上传训练集", },
   "project.prepare.validationset.upload": { en: "Upload Testing Dataset", cn: "上传测试集", },
   "project.prepare.miningset.upload": { en: "Upload Mining Dataset", cn: "上传挖掘集", },
+  "project.iteration.detail.settings.title": { en: "Iteration Settings", cn: "迭代设置", },
+  "project.iteration.detail.intermediations.title": { en: "Intermediation", cn: "中间数据", },
+  "project.iteration.detail.models.title": { en: "Models", cn: "结果模型", },
 }
 
 export default project

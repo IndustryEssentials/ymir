@@ -8,6 +8,9 @@ import {
 import { Stages, transferIteration, transferMiningStats } from "@/constants/iteration"
 import { updateResultState } from '@/constants/common'
 
+function getMoreInfo() {
+
+}
 
 const initQuery = {
   name: "",
@@ -31,39 +34,9 @@ export default {
       if (code === 0) {
         let iterations = result.map((iteration) => transferIteration(iteration))
         if (more && iterations.length) {
-          const datasetIds = [...new Set(iterations.map(i => [
-            i.miningSet,
-            i.miningResult,
-            i.labelSet,
-            i.trainUpdateSet,
-            i.testSet,
-          ]).flat())].filter(id => id)
-          const modelIds = [...new Set(iterations.map(i => i.model))].filter(id => id)
-          let datasets = []
-          let models = []
-          if (datasetIds?.length) {
-            datasets = yield put.resolve({
-              type: 'dataset/batchDatasets',
-              payload: { pid: id, ids: datasetIds },
-            })
-          }
-          if (modelIds?.length) {
-            models = yield put.resolve({
-              type: 'model/batchModels',
-              payload: modelIds,
-            })
-          }
-          iterations = iterations.map(i => {
-            const ds = id => datasets.find(d => d.id === id)
-            return {
-              ...i,
-              trainUpdateDataset: ds(i.trainUpdateSet),
-              miningDataset: ds(i.miningSet),
-              miningResultDataset: ds(i.miningResult),
-              labelDataset: ds(i.labelSet),
-              testDataset: ds(i.testSet),
-              trainingModel: models.find(m => m.id === i.model),
-            }
+          iterations = yield put.resolve({
+            type: 'moreIterationsInfo',
+            payload: { iterations, id },
           })
         }
         yield put({
@@ -74,16 +47,64 @@ export default {
       }
     },
     *getIteration({ payload }, { call, put }) {
-      const { pid, id } = payload
+      const { pid, id, more } = payload
       const { code, result } = yield call(getIteration, pid, id)
       if (code === 0) {
-        const iteration = transferIteration(result)
+        let iteration = transferIteration(result)
+        if (more) {
+          [iteration] = yield put.resolve({
+            type: 'moreIterationsInfo',
+            payload: { iterations: [iteration], id: pid },
+          })
+        }
         yield put({
           type: "UPDATE_ITERATION",
           payload: iteration,
         })
         return iteration
       }
+    },
+    *moreIterationsInfo({ payload: { iterations, id } }, { put }) {
+      if (!iterations.length) {
+        return
+      }
+      const datasetIds = [...new Set(iterations.map(i => [
+        i.wholeMiningSet,
+        i.miningSet,
+        i.miningResult,
+        i.labelSet,
+        i.trainUpdateSet,
+        i.testSet,
+      ]).flat())].filter(id => id)
+      const modelIds = [...new Set(iterations.map(i => i.model))].filter(id => id)
+      let datasets = []
+      let models = []
+      if (datasetIds?.length) {
+        datasets = yield put.resolve({
+          type: 'dataset/batchDatasets',
+          payload: { pid: id, ids: datasetIds },
+        })
+      }
+      if (modelIds?.length) {
+        models = yield put.resolve({
+          type: 'model/batchModels',
+          payload: modelIds,
+        })
+      }
+      const result = iterations.map(i => {
+        const ds = id => datasets.find(d => d.id === id)
+        return {
+          ...i,
+          wholeMiningDataset: ds(i.wholeMiningSet),
+          trainUpdateDataset: ds(i.trainUpdateSet),
+          miningDataset: ds(i.miningSet),
+          miningResultDataset: ds(i.miningResult),
+          labelDataset: ds(i.labelSet),
+          testDataset: ds(i.testSet),
+          trainingModel: models.find(m => m.id === i.model),
+        }
+      })
+      return result
     },
     *getMiningStats({ payload }, { call, put }) {
       const { pid, id } = payload
