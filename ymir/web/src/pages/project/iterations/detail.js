@@ -27,7 +27,7 @@ function Detail({ project = {} }) {
       return
     }
     setSettings([project.miningSet, project.testSet])
-    if (!iteration) {
+    if (!iteration.id) {
       return
     }
     const {
