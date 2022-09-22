@@ -80,15 +80,13 @@ def _run_training(env_config: env.EnvConfig) -> None:
 
     #! use write_trainig_attachment to add any attachment to model package
     validation_dataset = list(dr.item_paths(dataset_type=env.DatasetType.VALIDATION))
-    sampled_images_names = [
-        os.path.basename(x[0]) for x in validation_dataset[0:5]
+    sampled_images = [
+        x[0] for x in validation_dataset[0:5]
     ]
-    os.makedirs('/out/attachments', exist_ok=True)
-    for image_name in sampled_images_names:
-        shutil.copyfile(os.path.join('/in', 'assets', image_name),
-                        os.path.join('/out', 'attachments', image_name))
-    rw.write_training_attachments(sampled_images=sampled_images_names)
-    logging.info(f"sampled iamges: {sampled_images_names}")
+    for image in sampled_images:
+        shutil.copyfile(image,
+                        os.path.join(env_config.output.models_dir, os.path.basename(image)))
+    rw.write_training_attachments(sampled_images=[os.path.basename(x) for x in sampled_images])
 
     #! if task done, write 100% percent log
     logging.info('training done')

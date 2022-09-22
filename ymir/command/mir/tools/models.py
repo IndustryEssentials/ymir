@@ -28,6 +28,7 @@ class ModelStorage(BaseModel):
     best_stage_name: str
     model_hash: str = ''
     stage_name: str = ''
+    attachments: Dict[str, Any] = {}
 
     @property
     def class_names(self) -> List[str]:
@@ -132,6 +133,12 @@ def pack_and_copy_models(model_storage: ModelStorage, model_dir_path: str, model
                 file_path = os.path.join(model_dir_path, file_name)
                 logging.info(f"    packing {file_path} -> {file_name}")
                 tar_gz_f.add(file_path, file_name)
+
+        # packing attachments:sampled_images
+        for image_name in model_storage.attachments.get('sampled_images', []):
+            image_path = os.path.join(model_dir_path, image_name)
+            logging.info(f"    packing {image_path} -> {image_name}")
+            tar_gz_f.add(image_path, image_name)
 
         # packing ymir-info.yaml
         logging.info(f"  packing {ymir_info_file_path} -> {ymir_info_file_name}")

@@ -28,7 +28,7 @@ def _process_model_storage(out_root: str, model_upload_location: str, executor_c
         ModelStorage
     """
     out_model_dir = os.path.join(out_root, "models")
-    model_stages, best_stage_name = _find_model_stages(out_model_dir)
+    model_stages, best_stage_name, attachments = _find_model_stages(out_model_dir)
     if not model_stages:
         raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
                               error_message='can not find model stages in result.yaml')
@@ -39,7 +39,8 @@ def _process_model_storage(out_root: str, model_upload_location: str, executor_c
                                                           mAP=best_mAP,
                                                           type=mirpb.TaskType.TaskTypeTraining),
                                         stages=model_stages,
-                                        best_stage_name=best_stage_name)
+                                        best_stage_name=best_stage_name,
+                                        attachments=attachments)
     models.pack_and_copy_models(model_storage=model_storage,
                                 model_dir_path=out_model_dir,
                                 model_location=model_upload_location)
@@ -47,7 +48,7 @@ def _process_model_storage(out_root: str, model_upload_location: str, executor_c
     return model_storage
 
 
-def _find_model_stages(model_root: str) -> Tuple[Dict[str, models.ModelStageStorage], str]:
+def _find_model_stages(model_root: str) -> Tuple[Dict[str, models.ModelStageStorage], str, Dict[str, Any]]:
     """
     find models in `model_root`, and returns all model stages
 
@@ -55,12 +56,14 @@ def _find_model_stages(model_root: str) -> Tuple[Dict[str, models.ModelStageStor
         model_root (str): model root
 
     Returns:
-        Tuple[Dict[str, models_util.ModelStageStorage], str]: all model stages and best model stage name
+        Tuple[Dict[str, models_util.ModelStageStorage], str, Dict[str, Any]]:
+            all model stages, best model stage name, attachments
     """
     # model_names = []
     # model_mAP = 0.0
     model_stages: Dict[str, models.ModelStageStorage] = {}
     best_stage_name = ''
+    attachments: Dict[str, Any] = {}
 
     result_yaml_path = os.path.join(model_root, "result.yaml")
     try:
@@ -85,11 +88,13 @@ def _find_model_stages(model_root: str) -> Tuple[Dict[str, models.ModelStageStor
                                                            timestamp=v['timestamp'])
 
             best_stage_name = yaml_obj['best_stage_name']
+        if 'attachments' in yaml_obj:
+            attachments = yaml_obj['attachments']
     except FileNotFoundError:
         error_message = f"can not find file: {result_yaml_path}, executor may have errors, see ymir-executor-out.log"
         raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_FILE, error_message=error_message)
 
-    return (model_stages, best_stage_name)
+    return (model_stages, best_stage_name, attachments)
 
 
 # private: pre process
