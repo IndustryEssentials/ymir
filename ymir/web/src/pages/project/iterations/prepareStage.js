@@ -27,7 +27,6 @@ export default function Stage({ pid, stage, form, project = {}, result, update }
   const [valid, setValid] = useState(false)
   const Selection = useMemo(() => SettingsSelection(stage.type ? ModelSelect : DatasetSelect), [stage.type])
   const [candidateList, setCandidateList] = useState(true)
-  const [file, setFile] = useState({ name: '', url: '' })
   const [addResult, addDataset] = useFetch('dataset/createDataset')
 
   useEffect(() => {
@@ -39,13 +38,6 @@ export default function Stage({ pid, stage, form, project = {}, result, update }
     setValue(value)
     setFieldValue(value)
   }, [stage, project])
-
-  useEffect(() => {
-    file.url && addDataset({
-      ...file,
-      projectId: pid,
-    })
-  }, [file])
 
   useEffect(() => {
     if (addResult?.id) {
