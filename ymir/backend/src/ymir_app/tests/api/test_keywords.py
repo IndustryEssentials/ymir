@@ -30,6 +30,7 @@ class TestCreateKeyword:
             json=j,
         )
         res = r.json()
+        print(f"res: {res}")
         assert sorted(res["result"]["failed"]) == ['kitten', 'tabby']
 
 
@@ -46,4 +47,5 @@ class TestUpdateKeyword:
             json={"aliases": ["kitten", "tabby"]},
         )
         res = r.json()
+        print(f"res: {res}")
         assert sorted(res["result"]["failed"]) == ["kitten", "tabby"]

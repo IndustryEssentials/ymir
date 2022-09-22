@@ -297,7 +297,7 @@ def get_dataset(
     keyword_ids: Optional[List[int]] = None
     if keywords_for_negative_info:
         keywords = keywords_for_negative_info.split(",")
-        keyword_ids = user_labels.get_class_ids(keywords)
+        keyword_ids = user_labels.id_for_names(names=keywords, raise_if_unknown=True)[0]
 
     dataset_info = schemas.dataset.DatasetInDB.from_orm(dataset).dict()
     if verbose_info or keyword_ids:
@@ -347,7 +347,7 @@ def get_assets_of_dataset(
         raise DatasetNotFound()
 
     keywords = keywords_str.split(",") if keywords_str else None
-    keyword_ids = user_labels.get_class_ids(keywords) if keywords else None
+    keyword_ids = user_labels.id_for_names(names=keywords, raise_if_unknown=True)[0] if keywords else None
 
     viz_client.initialize(
         user_id=current_user.id,
@@ -456,11 +456,15 @@ def normalize_fusion_parameter(
     ex_datasets = crud.dataset.get_multi_by_ids(db, ids=fusion_params.exclude_datasets)
     return {
         "include_datasets": [dataset.hash for dataset in in_datasets],
-        "strategy": fusion_params.include_strategy,
+        "strategy":
+        fusion_params.include_strategy,
         "exclude_datasets": [dataset.hash for dataset in ex_datasets],
-        "include_class_ids": user_labels.get_class_ids(names_or_aliases=fusion_params.include_labels),
-        "exclude_class_ids": user_labels.get_class_ids(names_or_aliases=fusion_params.exclude_labels),
-        "sampling_count": fusion_params.sampling_count,
+        "include_class_ids":
+        user_labels.id_for_names(names=fusion_params.include_labels, raise_if_unknown=True)[0],
+        "exclude_class_ids":
+        user_labels.id_for_names(names=fusion_params.exclude_labels, raise_if_unknown=True)[0],
+        "sampling_count":
+        fusion_params.sampling_count,
     }
 
 
@@ -659,12 +663,10 @@ def filter_dataset(
     datasets = ensure_datasets_are_ready(db, dataset_ids=[in_filter.dataset_id])
     main_dataset = datasets[0]
 
-    class_ids = (
-        user_labels.get_class_ids(names_or_aliases=in_filter.include_keywords) if in_filter.include_keywords else None
-    )
-    ex_class_ids = (
-        user_labels.get_class_ids(names_or_aliases=in_filter.exclude_keywords) if in_filter.exclude_keywords else None
-    )
+    class_ids = (user_labels.id_for_names(names=in_filter.include_keywords, raise_if_unknown=True)[0]
+                 if in_filter.include_keywords else None)
+    ex_class_ids = (user_labels.id_for_names(names=in_filter.exclude_keywords, raise_if_unknown=True)[0]
+                    if in_filter.exclude_keywords else None)
 
     task_hash = gen_task_hash(current_user.id, in_filter.project_id)
     try:

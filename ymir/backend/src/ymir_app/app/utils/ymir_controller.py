@@ -14,7 +14,7 @@ from app.config import settings
 from app.constants.state import TaskType, AnnotationType
 from app.schemas.dataset import ImportStrategy, MergeStrategy
 from app.schemas.task import TrainingDatasetsStrategy
-from common_utils.labels import UserLabels
+from common_utils.labels import UserLabels, userlabels_to_proto
 from id_definition.task_id import TaskId
 from mir.protos import mir_command_pb2 as mir_cmd_pb
 from proto import backend_pb2 as mirsvrpb
@@ -242,7 +242,7 @@ class ControllerRequest:
     def prepare_add_label(self, request: mirsvrpb.GeneralReq, args: Dict) -> mirsvrpb.GeneralReq:
         request.check_only = args["dry_run"]
         request.req_type = mirsvrpb.CMD_LABEL_ADD
-        request.label_collection.CopyFrom(args["labels"].to_proto())
+        request.label_collection.CopyFrom(userlabels_to_proto(args["labels"]))
         return request
 
     def prepare_get_label(self, request: mirsvrpb.GeneralReq, args: Dict) -> mirsvrpb.GeneralReq:
@@ -642,6 +642,6 @@ def convert_class_id_to_keyword(obj: Dict, user_labels: UserLabels) -> None:
     if isinstance(obj, dict):
         for key, value in obj.items():
             if key == "ci_evaluations":
-                obj[key] = {user_labels.get_main_name(k): v for k, v in value.items()}
+                obj[key] = {user_labels.main_name_for_id(k): v for k, v in value.items()}
             else:
                 convert_class_id_to_keyword(obj[key], user_labels)

@@ -255,7 +255,7 @@ class CmdTrain(base.BaseCommand):
         logging.info("exporting assets")
         # type names to type ids
         # ['cat', 'person'] -> [4, 2]
-        cls_mgr = class_ids.ClassIdManager(mir_root=mir_root)
+        cls_mgr = class_ids.load_or_create_userlabels(mir_root=mir_root)
         type_ids_list, unknown_names = cls_mgr.id_for_names(class_names)
         if not type_ids_list:
             logging.info(f"type ids empty, please check config file: {config_file}")

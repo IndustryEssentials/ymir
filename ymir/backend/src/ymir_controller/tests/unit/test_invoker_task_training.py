@@ -83,7 +83,7 @@ class TestInvokerTaskTraining(unittest.TestCase):
         rds.zremrangebyscore = mock.Mock()
         gpu_utils.GPUInfo.get_gpus_info = mock.Mock(return_value={'0': 0.99, '1': 0.9, '2': 0.89})
 
-        labels.UserLabels.get_main_names = mock.Mock(return_value=["frisbee", "car"])
+        labels.UserLabels.main_name_for_ids = mock.Mock(return_value=["frisbee", "car"])
 
         training_config = {
             'anchors': '12, 16, 19, 36, 40, 28, 36, 75, 76, 55, 72, 146, 142, 110, 192, 243, 459, 401',

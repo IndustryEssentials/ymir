@@ -15,7 +15,7 @@ from mir.tools.phase_logger import PhaseLoggerCenter
 class CmdFilter(base.BaseCommand):
     # private: misc
     @staticmethod
-    def __class_ids_set_from_str(preds_str: str, cls_mgr: class_ids.ClassIdManager) -> Set[int]:
+    def __class_ids_set_from_str(preds_str: str, cls_mgr: class_ids.UserLabels) -> Set[int]:
         if not preds_str:
             return set()
 
@@ -95,7 +95,7 @@ class CmdFilter(base.BaseCommand):
 
         PhaseLoggerCenter.update_phase(phase='filter.read')
 
-        class_manager = class_ids.ClassIdManager(mir_root=mir_root)
+        class_manager = class_ids.load_or_create_userlabels(mir_root=mir_root)
         in_cis_set: Set[int] = CmdFilter.__class_ids_set_from_str(in_cis, class_manager)
         ex_cis_set: Set[int] = CmdFilter.__class_ids_set_from_str(ex_cis, class_manager)
 

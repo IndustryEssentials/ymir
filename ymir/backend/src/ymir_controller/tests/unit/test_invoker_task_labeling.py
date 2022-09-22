@@ -26,7 +26,7 @@ def mock_many(mocker):
     mocker.patch("builtins.open", mocker.mock_open(read_data="data"))
     mocker.patch("os.listdir", return_value=[])
     mocker.patch.object(Path, "touch")
-    labels.UserLabels.get_main_names = mock.Mock(return_value=["fake"])
+    labels.UserLabels.main_name_for_ids = mock.Mock(return_value=["fake"])
 
 
 class TestTaskLabelingInvoker:

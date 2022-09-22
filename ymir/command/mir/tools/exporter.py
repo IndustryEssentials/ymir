@@ -6,7 +6,7 @@ from typing import Callable, Dict, Optional, TextIO, Tuple
 import uuid
 import xml.etree.ElementTree as ElementTree
 
-from mir.tools.class_ids import ClassIdManager
+from mir.tools.class_ids import UserLabels
 from mir.tools.code import MirCode
 from mir.tools import annotations, mir_storage
 from mir.protos import mir_command_pb2 as mirpb
@@ -37,7 +37,7 @@ def _format_file_output_func(
     anno_format: "mirpb.AnnoFormat.V"
 ) -> Callable[[
         mirpb.MetadataAttributes, mirpb.SingleImageAnnotations, Optional[mirpb.SingleImageCks], Optional[Dict[
-            int, int]], Optional[ClassIdManager], str, str
+            int, int]], Optional[UserLabels], str, str
 ], None]:
     _format_func_map = {
         mirpb.AnnoFormat.AF_DET_ARK_JSON: _single_image_annotations_to_det_ark,
@@ -121,7 +121,7 @@ def export_mirdatas_to_dir(
     gt_dir: Optional[str] = None,
     mir_annotations: Optional[mirpb.MirAnnotations] = None,
     class_ids_mapping: Optional[Dict[int, int]] = None,
-    cls_id_mgr: Optional[ClassIdManager] = None,
+    cls_id_mgr: Optional[UserLabels] = None,
     tvt_index_dir: Optional[str] = None,
     need_sub_folder: bool = True,
 ) -> int:
@@ -163,7 +163,7 @@ def _export_mirdatas_to_raw(
     gt_dir: Optional[str] = None,
     mir_annotations: Optional[mirpb.MirAnnotations] = None,
     class_ids_mapping: Optional[Dict[int, int]] = None,
-    cls_id_mgr: Optional[ClassIdManager] = None,
+    cls_id_mgr: Optional[UserLabels] = None,
     tvt_index_dir: Optional[str] = None,
     need_sub_folder: bool = True,
 ) -> int:
@@ -288,7 +288,7 @@ def _export_mirdatas_to_lmdb(
     anno_format: "mirpb.AnnoFormat.V",
     mir_annotations: Optional[mirpb.MirAnnotations] = None,
     class_ids_mapping: Optional[Dict[int, int]] = None,
-    cls_id_mgr: Optional[ClassIdManager] = None,
+    cls_id_mgr: Optional[UserLabels] = None,
     tvt_index_dir: Optional[str] = None,
 ) -> int:
     raise NotImplementedError("LMDB format is not supported yet.")
@@ -297,7 +297,7 @@ def _export_mirdatas_to_lmdb(
 def _export_anno_to_file(asset_id: str, anno_format: "mirpb.AnnoFormat.V", anno_dir: str,
                          attributes: mirpb.MetadataAttributes, image_annotations: mirpb.SingleImageAnnotations,
                          image_cks: Optional[mirpb.SingleImageCks], class_ids_mapping: Optional[Dict[int, int]],
-                         cls_id_mgr: Optional[ClassIdManager], asset_filename: str,
+                         cls_id_mgr: Optional[UserLabels], asset_filename: str,
                          need_sub_folder: bool) -> str:
     anno_dst_path: str = mir_storage.get_asset_storage_path(location=anno_dir,
                                                             hash=asset_id,
@@ -318,7 +318,7 @@ def _single_image_annotations_to_det_ark(attributes: mirpb.MetadataAttributes,
                                          image_annotations: mirpb.SingleImageAnnotations,
                                          image_cks: Optional[mirpb.SingleImageCks],
                                          class_ids_mapping: Optional[Dict[int, int]],
-                                         cls_id_mgr: Optional[ClassIdManager], asset_filename: str,
+                                         cls_id_mgr: Optional[UserLabels], asset_filename: str,
                                          anno_dst_file: str) -> None:
     output_str = ""
     for annotation in image_annotations.boxes:
@@ -337,7 +337,7 @@ def _single_image_annotations_to_det_ark(attributes: mirpb.MetadataAttributes,
 def _single_image_annotations_to_voc(attributes: mirpb.MetadataAttributes,
                                      image_annotations: mirpb.SingleImageAnnotations,
                                      image_cks: Optional[mirpb.SingleImageCks],
-                                     class_ids_mapping: Optional[Dict[int, int]], cls_id_mgr: Optional[ClassIdManager],
+                                     class_ids_mapping: Optional[Dict[int, int]], cls_id_mgr: Optional[UserLabels],
                                      asset_filename: str, anno_dst_file: str) -> None:
     if not cls_id_mgr:
         raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS, error_message="invalid cls_id_mgr.")
@@ -404,7 +404,7 @@ def _single_image_annotations_to_voc(attributes: mirpb.MetadataAttributes,
         object_node = ElementTree.SubElement(annotation_node, 'object')
 
         name_node = ElementTree.SubElement(object_node, 'name')
-        name_node.text = cls_id_mgr.main_name_for_id(annotation.class_id) or 'unknown'
+        name_node.text = cls_id_mgr.main_name_for_id(annotation.class_id)
 
         pose_node = ElementTree.SubElement(object_node, 'pose')
         pose_node.text = 'unknown'
@@ -462,7 +462,7 @@ def _single_image_annotations_to_det_ls_json(attributes: mirpb.MetadataAttribute
                                              image_annotations: mirpb.SingleImageAnnotations,
                                              image_cks: Optional[mirpb.SingleImageCks],
                                              class_ids_mapping: Optional[Dict[int, int]],
-                                             cls_id_mgr: Optional[ClassIdManager], asset_filename: str,
+                                             cls_id_mgr: Optional[UserLabels], asset_filename: str,
                                              anno_dst_file: str) -> None:
     if not cls_id_mgr:
         raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS, error_message="invalid cls_id_mgr.")
@@ -500,7 +500,7 @@ def _single_image_annotations_to_det_ls_json(attributes: mirpb.MetadataAttribute
                 "width": bbox_width / img_width * 100,
                 "height": bbox_height / img_height * 100,
                 "rotation": 0,
-                "rectanglelabels": [cls_id_mgr.main_name_for_id(annotation.class_id) or 'unknown']
+                "rectanglelabels": [cls_id_mgr.main_name_for_id(annotation.class_id)]
             },
             "to_name": to_name,
             "from_name": from_name,
@@ -518,7 +518,7 @@ def _single_image_annotations_to_seg_mask(attributes: mirpb.MetadataAttributes,
                                           image_annotations: mirpb.SingleImageAnnotations,
                                           image_cks: Optional[mirpb.SingleImageCks],
                                           class_ids_mapping: Optional[Dict[int, int]],
-                                          cls_id_mgr: Optional[ClassIdManager],
+                                          cls_id_mgr: Optional[UserLabels],
                                           asset_filename: str, anno_dst_file: str) -> None:
     with open(anno_dst_file, 'wb') as af:
         af.write(image_annotations.mask.semantic_mask)
