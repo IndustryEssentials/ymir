@@ -36,17 +36,13 @@ const ModelSelect = ({ pid, value, onlyModel, changeByUser, onChange = () => { }
   }, [options])
 
   useEffect(() => {
-    if (value && !value[1]) {
-      const model = models.find(md => md.id === value[0])
-      if (model) {
-        setMS([value[0], model.recommendStage])
-      }
+    const model = models.find(md => md.id === value[0])
+    if (value && !value[1] && model) {
+      setMS([value[0], model.recommendStage])
+    } else {
+      setMS(value)
     }
-  }, [options])
-
-  useEffect(() => {
-    setMS(value)
-  }, [value])
+  }, [options, value])
 
   useEffect(() => {
     generateOptions()

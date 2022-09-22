@@ -81,9 +81,9 @@ export default function Stage({ pid, stage, form, project = {}, result, update }
     </Row>
 
   return <Form.Item tooltip={t(stage.tip)} label={t(stage.label)} required={!stage.option}>
-    <div>{!candidateList ? renderEmptyState(stage.type) : null}</div>
+    <div>{!candidateList && !project[stage.field] ? renderEmptyState(stage.type) : null}</div>
     <Form.Item
-      hidden={!candidateList}
+      hidden={!candidateList && !project[stage.field]}
       name={stage.field}
       noStyle
       rules={[{ required: !stage.option }]}

@@ -48,7 +48,6 @@ const Add = (props) => {
   const pageParams = useParams()
   const pid = Number(pageParams.id)
   const { id, from, stepKey } = query
-  console.log('url query:', query)
   const iterationContext = from === 'iteration'
 
   const [form] = useForm()
