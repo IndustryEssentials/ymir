@@ -105,7 +105,7 @@ def replace_index_content_inplace(filename: str,
             ret_line = contents[0].replace(asset_search, asset_replace)
             if len(contents) > 1 and anno_search and anno_replace:
                 ret_line = f"{ret_line}\t{contents[1].replace(anno_search, anno_replace)}"
-            f.write("{ret_line}\n")
+            f.write(f"{ret_line}\n")
 
 
 def export_mirdatas_to_dir(
