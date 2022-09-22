@@ -56,6 +56,7 @@ function Train({ allDatasets, datasetCache, ...func }) {
   const checkDuplicated = useDuplicatedCheck(submit)
   const [sys, getSysInfo] = useFetch('common/getSysInfo', {})
   const [updated, updateProject] = useFetch('project/updateProject')
+  const [fromCopy, setFromCopy] = useState(false)
 
   const selectOpenpai = Form.useWatch('openpai', form)
   const [showConfig, setShowConfig] = useState(false)
@@ -110,12 +111,18 @@ function Train({ allDatasets, datasetCache, ...func }) {
     form.setFieldsValue({ hyperparam: seniorConfig })
   }, [seniorConfig])
 
-  useEffect(() => (trainDataset && !iterationContext) && setAllKeywords(), [trainDataset])
+  useEffect(() => {
+    trainDataset &&
+    !iterationContext &&
+    !fromCopy &&
+    setAllKeywords()
+  }, [trainDataset])
 
   useEffect(() => {
     const state = location.state
 
     if (state?.record) {
+      setFromCopy(true)
       const { task: { parameters, config }, description, } = state.record
       const {
         dataset_id,
