@@ -1,5 +1,5 @@
 import json
-from typing import Dict
+from typing import Dict, List
 
 from redis import StrictRedis, Redis
 
@@ -29,6 +29,12 @@ class RedisHandler:
 
     def xadd(self, name: str, fields: Dict) -> None:
         self._redis.xadd(name, fields)
+
+    def batch_xadd(self, name: str, payloads: List[Dict]) -> None:
+        pipe = self._redis.pipeline()
+        for payload in payloads:
+            pipe.xadd(name, payload)
+        pipe.execute()
 
     def hset(self, name: str, key: str, value: Dict) -> None:
         self._redis.hset(name=name, key=key, value=json.dumps(value))
