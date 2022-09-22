@@ -259,6 +259,14 @@ function Mining({ datasetCache, ...func }) {
               <Form.Item
                 noStyle
                 name="gpu_count"
+                rules={[
+                  {
+                    validator: (rules, value) => value <= gpu_count ?
+                      Promise.resolve() :
+                      Promise.reject(),
+                    message: t('task.gpu.tip', { count: gpu_count })
+                  }
+                ]}
               >
                 <InputNumber min={0} max={gpu_count} precision={0} /></Form.Item>
               <span style={{ marginLeft: 20 }}>{t('task.gpu.tip', { count: gpu_count })}</span>

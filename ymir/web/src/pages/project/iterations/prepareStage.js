@@ -27,7 +27,6 @@ export default function Stage({ pid, stage, form, project = {}, result, update }
   const [valid, setValid] = useState(false)
   const Selection = useMemo(() => SettingsSelection(stage.type ? ModelSelect : DatasetSelect), [stage.type])
   const [candidateList, setCandidateList] = useState(true)
-  const [file, setFile] = useState({ name: '', url: '' })
   const [addResult, addDataset] = useFetch('dataset/createDataset')
 
   useEffect(() => {
@@ -39,13 +38,6 @@ export default function Stage({ pid, stage, form, project = {}, result, update }
     setValue(value)
     setFieldValue(value)
   }, [stage, project])
-
-  useEffect(() => {
-    file.url && addDataset({
-      ...file,
-      projectId: pid,
-    })
-  }, [file])
 
   useEffect(() => {
     if (addResult?.id) {
@@ -88,10 +80,10 @@ export default function Stage({ pid, stage, form, project = {}, result, update }
       </Col>
     </Row>
 
-  return <Form.Item tooltip={t(stage.tip)} label={t(stage.label)}>
-    <div>{!candidateList ? renderEmptyState(stage.type) : null}</div>
+  return <Form.Item tooltip={t(stage.tip)} label={t(stage.label)} required={!stage.option}>
+    <div>{!candidateList && !project[stage.field] ? renderEmptyState(stage.type) : null}</div>
     <Form.Item
-      hidden={!candidateList}
+      hidden={!candidateList && !project[stage.field]}
       name={stage.field}
       noStyle
       rules={[{ required: !stage.option }]}

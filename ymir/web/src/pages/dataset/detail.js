@@ -15,6 +15,7 @@ import Error from "@/components/task/error"
 import Hide from "@/components/common/hide"
 
 import s from "./detail.less"
+import useRerunAction from "../../hooks/useRerunAction"
 
 const taskTypes = ["merge", "filter", "train", "mining", "label", 'inference', 'copy']
 
@@ -25,6 +26,7 @@ function DatasetDetail() {
   const datasetCache = useSelector(({ dataset }) => dataset.dataset)
   const hideRef = useRef(null)
   const restoreAction = useRestore(pid)
+  const generateRerunBtn = useRerunAction('btn')
 
   useEffect(() => {
     fetchDataset(true)
@@ -68,7 +70,14 @@ function DatasetDetail() {
       >
         <div className={s.content}>
           <Detail dataset={dataset} />
-          <TaskProgress state={dataset.state} result={dataset} task={dataset.task} duration={dataset.durationLabel} progress={dataset.progress} fresh={() => fetchDataset(true)} />
+          <TaskProgress
+            state={dataset.state}
+            result={dataset}
+            task={dataset.task}
+            duration={dataset.durationLabel}
+            progress={dataset.progress}
+            fresh={() => fetchDataset(true)}
+          />
           <Error code={dataset.task?.error_code} msg={dataset.task?.error_message} terminated={dataset?.task?.is_terminated} />
           <TaskDetail
             task={dataset.task}
@@ -99,7 +108,7 @@ function DatasetDetail() {
                 {t("common.action.restore")}
               </Button>
             }
-
+            {generateRerunBtn(dataset)}
           </Space>
         </div>
       </Card>

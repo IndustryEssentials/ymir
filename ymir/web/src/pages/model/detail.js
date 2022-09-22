@@ -15,6 +15,7 @@ import Hide from "@/components/common/hide"
 import useRestore from "@/hooks/useRestore"
 import keywordsItem from "@/components/task/items/keywords"
 import { DescPop } from "../../components/common/descPop"
+import useRerunAction from "../../hooks/useRerunAction"
 
 const { Item } = Descriptions
 
@@ -24,6 +25,7 @@ function ModelDetail({ modelCache, getModel }) {
   const [model, setModel] = useState({ id })
   const hideRef = useRef(null)
   const restoreAction = useRestore(pid)
+  const generateRerunBtn = useRerunAction('btn')
 
   useEffect(async () => {
     id && fetchModel(true)
@@ -103,6 +105,7 @@ function ModelDetail({ modelCache, getModel }) {
               {t("common.action.restore")}
             </Button>
           }
+          {generateRerunBtn(model)}
           </Space>
         </div>
       </Card>
