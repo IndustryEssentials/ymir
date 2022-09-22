@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react"
 import { connect } from "dva"
-import { Select, Card, Radio, Button, Form, Space, InputNumber, Tag } from "antd"
+import { Select, Card, Radio, Button, Form, Space, InputNumber, Tag, Tooltip } from "antd"
 import { formLayout } from "@/config/antd"
 import { useHistory, useParams, useLocation } from "umi"
 
@@ -308,6 +308,11 @@ function Train({ allDatasets, datasetCache, ...func }) {
                   onChange={setSelectedKeywords}
                   options={(trainDataset?.gt?.keywords || []).map(k => ({ label: k, value: k }))}
                   maxTagCount={5}
+                  maxTagPlaceholder={
+                    <Tooltip trigger={'hover'} color='white' title={(trainDataset?.gt?.keywords || []).map(k =>
+                      <Tag key={k}>{k}</Tag>)}>
+                      {trainDataset?.gt?.keywords.length - 5}+
+                    </Tooltip>}
                 />
               </Form.Item>}
             <Form.Item label={t('dataset.train.form.samples')}>
