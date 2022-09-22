@@ -129,6 +129,9 @@ function Matrics({ pid, project }) {
         ({ config, configName, testing: dataset_id, model: model_id, stage: model_stage_id, result: id })))
     setSelectedDatasets(datasets)
     setSelectedModels(models)
+    form.setFieldsValue({
+      ck: undefined
+    })
   }
 
   function metricsChange({ target: { value } }) {
