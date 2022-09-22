@@ -1,7 +1,7 @@
 
 import { validDataset } from '@/constants/dataset'
 
-const matchKeywords = (dataset, project, field) => field !== 'testSet' || dataset.keywords.some(kw => project.keywords?.includes(kw))
+const matchKeywords = (dataset, project, field) => field === 'miningSet' || dataset.keywords.some(kw => project.keywords?.includes(kw))
 
 export default (project = {}, results) => {
   if (!project.id) {
@@ -10,7 +10,7 @@ export default (project = {}, results) => {
   const datasetStages = [
     { field: 'candidateTrainSet', option: true, label: 'project.prepare.trainset', tip: 'project.add.trainset.tip', },
     { field: 'testSet', label: 'project.prepare.validationset', tip: 'project.add.testset.tip', },
-    { field: 'miningSet', label: 'project.prepare.miningset', tip: 'project.add.miningset.tip', allowEmptyKeywords: true },
+    { field: 'miningSet', label: 'project.prepare.miningset', tip: 'project.add.miningset.tip', },
   ]
   let trainValid = [
     results?.candidateTrainSet,
