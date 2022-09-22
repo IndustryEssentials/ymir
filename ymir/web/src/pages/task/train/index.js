@@ -216,7 +216,7 @@ function Train({ allDatasets, datasetCache, ...func }) {
         func.updateIteration({ id: iterationId, currentStage, [outputKey]: result.result_model.id })
       }
       if (iterationContext && !iterationId) {
-        await updateProject({ modelStage: [result.result_model?.id] })
+        await updateProject({ id: pid, modelStage: [result.result_model?.id] })
       }
       await func.clearCache()
       const group = result.result_model?.model_group_id || ''

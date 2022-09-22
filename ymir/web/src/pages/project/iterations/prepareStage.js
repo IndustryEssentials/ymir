@@ -69,18 +69,13 @@ export default function Stage({ pid, stage, form, project = {}, result, update }
   }, [stage.field, project]) : null
 
   const renderEmptyState = (type) => !type ?
-    <Uploader
-      className={s.uploader}
-      label={t(`${stage.label}.upload`)}
-      onChange={(files, result) => { setFile({ name: generateName(files[0].name), url: result }) }}
-      max={1024}
-      onRemove={() => setFile('')}
-      btnProps={{
-        ghost: false,
-        block: true,
-        icon: <AddIcon />,
-      }}
-    /> : <Row gutter={20}>
+    <Button 
+    type="primary" 
+    block 
+    icon={<AddIcon />} 
+    onClick={() => history.push(`/home/project/${pid}/dataset/add?from=iteration&stepKey=${stage.field}`)}
+    >{t(`${stage.label}.upload`)}</Button>
+    : <Row gutter={20}>
       <Col flex={1}>
         <Button type='primary' disabled={!stage.trainValid} block onClick={goTraining}>
           <TrainIcon /> {t("project.iteration.stage.training")}
