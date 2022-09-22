@@ -6,7 +6,7 @@ from typing import List
 from mir.commands import base
 from mir.protos import mir_command_pb2 as mirpb
 from mir.tools import annotations, checker, exporter, mir_repo_utils, mir_storage_ops, revs_parser
-from mir.tools.class_ids import ClassIdManager
+from mir.tools.class_ids import load_or_create_userlabels
 from mir.tools.code import MirCode
 from mir.tools.command_run_in_out import command_run_in_out
 from mir.tools.errors import MirRuntimeError
@@ -62,7 +62,7 @@ class CmdExport(base.BaseCommand):
             return check_code
 
         # prepare
-        cls_mgr = ClassIdManager(mir_root=mir_root)
+        cls_mgr = load_or_create_userlabels(mir_root=mir_root)
         class_ids_list, unknown_names = cls_mgr.id_for_names(class_names)
         if unknown_names:
             raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,

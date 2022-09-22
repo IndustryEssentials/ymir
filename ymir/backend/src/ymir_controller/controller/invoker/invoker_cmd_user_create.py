@@ -23,6 +23,6 @@ class UserCreateInvoker(BaseMirControllerInvoker):
         # create user root
         os.makedirs(self._user_root, exist_ok=True)
         # create label file
-        labels.create_empty(label_storage_file=self._label_storage_file)
+        labels.load_or_create_userlabels(label_storage_file=self._label_storage_file, create_ok=True)
 
         return utils.make_general_response(code=CTLResponseCode.CTR_OK, message='')

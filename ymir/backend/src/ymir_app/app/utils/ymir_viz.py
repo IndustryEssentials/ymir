@@ -39,9 +39,10 @@ class DatasetAnnotation:
     def from_dict(cls, data: Dict, total_assets_count: int, user_labels: UserLabels) -> "DatasetAnnotation":
         ave_annos_count = round(data["annos_count"] / total_assets_count, 2) if total_assets_count else None
         keywords = {
-            user_labels.get_main_name(int(class_id)): count for class_id, count in data["class_ids_count"].items()
+            user_labels.main_name_for_id(int(class_id)): count
+            for class_id, count in data["class_ids_count"].items()
         }
-        eval_class_ids = user_labels.get_main_names(data["eval_class_ids"]) if data.get("eval_class_ids") else None
+        eval_class_ids = user_labels.main_name_for_ids(data["eval_class_ids"]) if data.get("eval_class_ids") else None
         return cls(
             keywords=keywords,
             class_ids_count=data["class_ids_count"],
@@ -156,7 +157,7 @@ class ViewerAssetAnnotation:
     user_labels: InitVar[UserLabels] = None
 
     def __post_init__(self, user_labels: UserLabels) -> None:
-        self.keyword = user_labels.get_main_name(self.class_id)
+        self.keyword = user_labels.main_name_for_id(self.class_id)
 
 
 @dataclasses.dataclass
@@ -175,7 +176,7 @@ class ViewerAsset:
     def __post_init__(self, user_labels: UserLabels) -> None:
         self.url = get_asset_url(self.asset_id)
         self.hash = self.asset_id
-        self.keywords = user_labels.get_main_names(self.class_ids)
+        self.keywords = user_labels.main_name_for_ids(self.class_ids)
         self.gt = [
             ViewerAssetAnnotation(
                 box=i["box"],

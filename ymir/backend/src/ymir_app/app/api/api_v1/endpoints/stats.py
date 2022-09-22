@@ -36,7 +36,7 @@ def recommend_keywords(
     if dataset_ids:
         datasets = crud.dataset.get_multi_by_ids(db, ids=[int(i) for i in dataset_ids.split(",")])
         keywords = extract_keywords(datasets)
-        keyword_ids = user_labels.get_class_ids(keywords)
+        keyword_ids = user_labels.id_for_names(names=keywords, raise_if_unknown=True)[0]
 
     stats = viz_client.query_metrics(
         metrics_group="task",
@@ -47,7 +47,7 @@ def recommend_keywords(
         keyword_ids=keyword_ids,
     )
     for element in stats:
-        element["legend"] = user_labels.get_main_name(int(element["legend"]))
+        element["legend"] = user_labels.main_name_for_id(int(element["legend"]))
     logging.info(f"viz stats: {stats}")
     return {"result": stats}
 

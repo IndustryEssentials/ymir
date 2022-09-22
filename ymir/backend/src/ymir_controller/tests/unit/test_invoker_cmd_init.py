@@ -37,8 +37,9 @@ class TestInvokerInit(unittest.TestCase):
     def setUp(self):
         test_utils.check_commands()
         self._prepare_dirs()
-        labels.create_empty(label_storage_file=os.path.join(self._user_root, 'labels.yaml'))
-        labels.UserLabels.get_main_names = mock.Mock(return_value=["person", "cat"])
+        labels.load_or_create_userlabels(label_storage_file=os.path.join(self._user_root, 'labels.yaml'),
+                                         create_ok=True)
+        labels.UserLabels.main_name_for_ids = mock.Mock(return_value=["person", "cat"])
         logging.info("preparing done.")
 
     def tearDown(self):

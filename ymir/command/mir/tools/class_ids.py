@@ -1,16 +1,16 @@
 from datetime import datetime
 import os
-from typing import Dict, List, Optional, Set, Tuple
+from typing import Dict, Iterator, List, Optional, Set, Tuple, Union
 
 import fasteners  # type: ignore
-from pydantic import BaseModel, root_validator, validator
+from pydantic import BaseModel, root_validator, validator, validate_model
 import yaml
 
 EXPECTED_FILE_VERSION = 1
 
 
-class _SingleLabel(BaseModel):
-    id: int
+class SingleLabel(BaseModel):
+    id: int = -1
     name: str
     create_time: datetime = datetime(year=2022, month=1, day=1)
     update_time: datetime = datetime(year=2022, month=1, day=1)
@@ -25,11 +25,9 @@ class _SingleLabel(BaseModel):
         return _normalize_and_check_name(v)
 
 
-class _LabelStorage(BaseModel):
+class LabelStorage(BaseModel):
     version: int = EXPECTED_FILE_VERSION
-    labels: List[_SingleLabel] = []
-    _label_to_ids: Dict[str, Tuple[int, str]] = {}  # store main_name for main_name/alias lookup.
-    _id_to_labels: Dict[int, str] = {}
+    labels: List[SingleLabel] = []
 
     # protected: validators
     @validator('version')
@@ -39,9 +37,11 @@ class _LabelStorage(BaseModel):
         return v
 
     @validator('labels')
-    def _check_labels(cls, labels: List[_SingleLabel]) -> List[_SingleLabel]:
+    def _check_labels(cls, labels: List[SingleLabel]) -> List[SingleLabel]:
         label_names_set: Set[str] = set()
         for idx, label in enumerate(labels):
+            if label.id < 0:
+                label.id = idx
             if label.id != idx:
                 raise ValueError(f"invalid label id: {label.id}, expected {idx}")
 
@@ -56,36 +56,64 @@ class _LabelStorage(BaseModel):
             label_names_set.update(name_and_aliases_set)
         return labels
 
+
+class UserLabels(LabelStorage):
+    _id_to_name: Dict[int, str] = {}
+    _name_aliases_to_id: Dict[str, int] = {}
+    storage_file: Optional[str] = None
+
     @root_validator
     def _generate_dicts(cls, values: dict) -> dict:
-        labels: List[_SingleLabel] = values['labels']
+        # source priority: storage_file > labels.
+        # in most cases, UserLabels is bind to a storage_file.
+        storage_file = values.get("storage_file")
+        if storage_file and os.path.isfile(storage_file):
+            with open(storage_file, 'r') as f:
+                file_obj = yaml.safe_load(f)
+            if file_obj is None:
+                file_obj = {}
+            values["labels"] = LabelStorage(**file_obj).labels
 
-        label_to_ids: Dict[str, Tuple[int, str]] = {}
-        id_to_labels: Dict[int, str] = {}
-        for label in labels:
-            label_to_ids[label.name] = (label.id, label.name)
+        name_aliases_to_id: Dict[str, int] = {}
+        id_to_name: Dict[int, str] = {}
+        for label in values['labels']:
+            name_aliases_to_id[label.name] = label.id
             for label_alias in label.aliases:
-                label_to_ids[label_alias] = (label.id, label.name)
+                name_aliases_to_id[label_alias] = label.id
 
-            id_to_labels[label.id] = label.name
+            id_to_name[label.id] = label.name
 
-        values['_label_to_ids'] = label_to_ids
-        values['_id_to_labels'] = id_to_labels
+        values['_name_aliases_to_id'] = name_aliases_to_id
+        values['_id_to_name'] = id_to_name
         return values
 
-    # public: general
-    def dict(self) -> Dict:  # type: ignore
-        return super().dict(exclude={'_label_to_ids', '_id_to_labels'})
+    def __reload(self) -> None:
+        if not (self.storage_file and os.path.isfile(self.storage_file)):
+            raise RuntimeError("cannot reload with empty storage_file.")
 
-    def add_new_label(self, name: str) -> Tuple[int, str]:
+        *_, validation_error = validate_model(self.__class__, self.__dict__)
+        if validation_error:
+            raise validation_error
+
+    def __save(self) -> None:
+        if not self.storage_file:
+            raise RuntimeError("empty storage_file.")
+
+        with open(self.storage_file, 'w') as f:
+            yaml.safe_dump(self.dict(), f)
+
+    def _add_new_cname(self, name: str, exist_ok: bool = True) -> Tuple[int, str]:
         name = _normalize_and_check_name(name)
-        if name in self._label_to_ids:
-            return self._label_to_ids[name]
+        if name in self._name_aliases_to_id:
+            if not exist_ok:
+                raise ValueError("{name} already exists in userlabels.")
+            cid = self._name_aliases_to_id[name]
+            return (cid, self._id_to_name[cid])
 
         current_datetime = datetime.now()
         added_class_id = len(self.labels)
         self.labels.append(
-            _SingleLabel(
+            SingleLabel(
                 id=added_class_id,
                 name=name,
                 create_time=current_datetime,
@@ -93,173 +121,66 @@ class _LabelStorage(BaseModel):
             ))
 
         # update lookup dict.
-        self._label_to_ids[name] = added_class_id, name
-        self._id_to_labels[added_class_id] = name
+        self._name_aliases_to_id[name] = added_class_id
+        self._id_to_name[added_class_id] = name
 
         return added_class_id, name
 
-    def id_to_label(self, type_id: int) -> Optional[str]:
-        """
-        get main type name for type id, if not found, returns None
+    class Config:
+        fields = {'labels': {'include': True}}
 
-        Args:
-            type_id (int): type id
-
-        Returns:
-            Optional[str]: corresponding main type name, if not found, returns None
-        """
-        return self._id_to_labels.get(type_id, None)
-
-    def label_to_id_name(self, type_label: str) -> Tuple[int, str]:
-        """
-        returns type id and main type name for main type name or alias
-
-        Args:
-            name (str): main type name or alias
-
-        Returns:
-            Tuple[int, str]: (type id, main type name),
-            if name not found, returns (-1, name)
-        """
-        type_label = _normalize_and_check_name(type_label)
-        return self._label_to_ids.get(type_label, (-1, type_label))
-
-    @property
-    def all_main_names(self) -> List[str]:
-        return list(self._id_to_labels.values())
-
-    @property
-    def all_ids(self) -> List[int]:
-        return list(self._id_to_labels.keys())
-
-
-def ids_file_name() -> str:
-    return 'labels.yaml'
-
-
-def repo_dot_mir_path(mir_root: str) -> str:
-    dir = os.path.join(mir_root, '.mir')
-    os.makedirs(dir, exist_ok=True)
-    return dir
-
-
-def ids_file_path(mir_root: str) -> str:
-    return os.path.join(repo_dot_mir_path(mir_root=mir_root), ids_file_name())
-
-
-def parse_label_lock_path_or_link(ids_storage_file_path: str) -> str:
-    # for ymir-command users, file_path points to a real file
-    # for ymir-controller users, file_path points to a link, need to lock all write request for user
-    file_path = ids_storage_file_path
-    if os.path.islink(file_path):
-        file_path = os.path.realpath(file_path)
-    lock_file_path = os.path.join(os.path.dirname(file_path), 'labels.lock')
-    return lock_file_path
-
-
-def create_empty_if_not_exists(mir_root: str) -> None:
-    file_path = ids_file_path(mir_root=mir_root)
-    if os.path.isfile(file_path):
-        return
-
-    label_storage = _LabelStorage()
-    with open(file_path, 'w') as f:
-        yaml.safe_dump(label_storage.dict(), f)
-
-
-class ClassIdManagerError(BaseException):
-    pass
-
-
-class ClassIdManager(object):
-    """
-    a query tool for label storage file
-    """
-    __slots__ = ("_storage_file_path", "_label_storage")
-
-    # life cycle
-    def __init__(self, mir_root: str) -> None:
-        super().__init__()
-
-        # it will have value iff successfully loaded
-        self._storage_file_path = ''
-
-        if not self.__load(ids_file_path(mir_root=mir_root)):
-            raise ClassIdManagerError("ClassIdManager initialize failed in mir_root: {mir_root}")
-
-    # private: load and unload
-    def __load(self, file_path: str) -> bool:
-        if not file_path:
-            raise ClassIdManagerError('ClassIdManager: empty path received')
-
-        self._storage_file_path = file_path
-        self.__reload()
-
-        return True
-
-    def __reload(self) -> None:
-        with open(self._storage_file_path, 'r') as f:
-            file_obj = yaml.safe_load(f)
-        if file_obj is None:
-            file_obj = {}
-
-        self._label_storage = _LabelStorage(**file_obj)
-
-    def __save(self) -> None:
-        with open(self._storage_file_path, 'w') as f:
-            yaml.safe_dump(self._label_storage.dict(), f)
-
-    # public: general
+    # public interfaces.
     def id_and_main_name_for_name(self, name: str) -> Tuple[int, str]:
-        return self._label_storage.label_to_id_name(name)
+        name = _normalize_and_check_name(name)
+        id = self._name_aliases_to_id.get(name, -1)
+        name = self._id_to_name.get(id, name)
+        return (id, name)
 
-    def main_name_for_id(self, type_id: int) -> Optional[str]:
-        return self._label_storage.id_to_label(type_id)
+    def id_for_names(self,
+                     names: Union[str, List[str]],
+                     drop_unknown_names: bool = False,
+                     raise_if_unknown: bool = False) -> Tuple[List[int], List[str]]:
+        if isinstance(names, str):
+            names = [names]
 
-    def id_for_names(self, names: List[str], drop_unknown_names: bool = False) -> Tuple[List[int], List[str]]:
-        """
-        return all type ids for names
-
-        Args:
-            names (List[str]): main type names or alias
-            drop_unknown_names (bool): True to drop unknown names from returned id list
-                                       this will break the sequence mapping between returned class ids and names
-
-        Returns:
-            Tuple[List[int], List[str]]: corresponding type ids and unknown names
-        """
-        class_ids = []
-        unknown_names = []
+        class_ids: List[int] = []
+        unknown_names: List[str] = []
         for name in names:
-            class_id = self.id_and_main_name_for_name(name=name)[0]
+            class_id, cname = self.id_and_main_name_for_name(name=name)
             if class_id >= 0:
                 class_ids.append(class_id)
             else:
-                unknown_names.append(name)
+                unknown_names.append(cname)
                 if not drop_unknown_names:
                     class_ids.append(class_id)
 
+        if raise_if_unknown and unknown_names:
+            raise ValueError(f"unknown class found: {unknown_names}")
+
         return class_ids, unknown_names
 
+    def main_name_for_id(self, class_id: int) -> str:
+        if class_id not in self._id_to_name:
+            raise ValueError(f"copy: unknown src class id: {class_id}")
+        return self._id_to_name[class_id]
+
+    def main_name_for_ids(self, class_ids: List[int]) -> List[str]:
+        return [self.main_name_for_id(class_id) for class_id in class_ids]
+
     def all_main_names(self) -> List[str]:
-        """
-        Returns:
-            List[str]: all main names, if not loaded, returns empty list
-        """
-        return self._label_storage.all_main_names
+        return list(self._id_to_name.values())
+
+    def all_main_name_aliases(self) -> List[str]:
+        return list(self._name_aliases_to_id.keys())
 
     def all_ids(self) -> List[int]:
-        """
-        Returns:
-            List[int]: all class_ids, if not loaded, returns empty list
-        """
-        return self._label_storage.all_ids
+        return list(self._id_to_name.keys())
 
     def has_name(self, name: str) -> bool:
-        return (self.id_and_main_name_for_name(name=name)[0] >= 0)
+        return self.id_for_names(name)[0][0] >= 0
 
-    def has_id(self, type_id: int) -> bool:
-        return (self.main_name_for_id(type_id=type_id) is not None)
+    def has_id(self, cid: int) -> bool:
+        return cid in self._id_to_name
 
     def add_main_name(self, main_name: str) -> Tuple[int, str]:
         return self.add_main_names([main_name])[0]
@@ -278,13 +199,73 @@ class ClassIdManager(object):
         if len(ret_val) == len(main_names):  # all known names.
             return ret_val
 
+        if not self.storage_file:
+            raise RuntimeError("empty storage_file.")
+
         ret_val.clear()
-        with fasteners.InterProcessLock(path=parse_label_lock_path_or_link(self._storage_file_path)):
+        with fasteners.InterProcessLock(path=os.path.realpath(self.storage_file) + '.lock'):
             for main_name in main_names:
-                added_class_id, main_name = self._label_storage.add_new_label(name=main_name)
+                added_class_id, main_name = self._add_new_cname(name=main_name)
                 ret_val.append((added_class_id, main_name))
             self.__save()
         return ret_val
+
+    def find_dups(self, new_labels: Union[str, List, "UserLabels"]) -> List[str]:
+        if isinstance(new_labels, str):
+            new_set = {new_labels}
+        elif isinstance(new_labels, list):
+            new_set = set(new_labels)
+        elif isinstance(new_labels, type(self)):
+            new_set = set(new_labels.all_main_name_aliases())
+        return list(set(self.all_main_name_aliases()) & new_set)
+
+    # keyword: {"name": "dog", "aliases": ["puppy", "pup", "canine"]}
+    def filter_labels(
+        self,
+        required_name_aliaes: List[str] = None,
+        required_ids: List[int] = None,
+    ) -> Iterator[SingleLabel]:
+        if required_name_aliaes and required_ids:
+            raise ValueError("required_name_alias and required_ids cannot be both set.")
+        if required_name_aliaes:
+            required_ids = self.id_for_names(names=required_name_aliaes, raise_if_unknown=True)[0]
+
+        for label in self.labels:
+            if required_ids is None or label.id in required_ids:
+                yield label
+
+
+def ids_file_name() -> str:
+    return 'labels.yaml'
+
+
+def ids_file_path(mir_root: str) -> str:
+    mir_dir = os.path.join(mir_root, '.mir')
+    os.makedirs(mir_dir, exist_ok=True)
+    return os.path.join(mir_dir, ids_file_name())
+
+
+def load_or_create_userlabels(mir_root: Optional[str] = None,
+                              label_storage_file: Optional[str] = None,
+                              create_ok: bool = False) -> UserLabels:
+    if mir_root:
+        if label_storage_file:
+            raise RuntimeError("mir_root and label_storage_file cannot both set.")
+        label_storage_file = ids_file_path(mir_root=mir_root)
+
+    if not label_storage_file:
+        raise ValueError("empty label_storage_file")
+
+    if os.path.isfile(label_storage_file):
+        return UserLabels(storage_file=label_storage_file)
+
+    if not create_ok:
+        raise RuntimeError("label file miss in mir_root.")
+
+    user_labels = UserLabels()
+    with open(label_storage_file, 'w') as f:
+        yaml.safe_dump(user_labels.dict(), f)
+    return user_labels
 
 
 def _normalize_and_check_name(name: str) -> str:

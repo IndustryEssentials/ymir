@@ -227,7 +227,7 @@ def _process_infer_results(infer_result_file: str, max_boxes: int, mir_root: str
     with open(infer_result_file, 'r') as f:
         results = json.loads(f.read())
 
-    class_id_mgr = class_ids.ClassIdManager(mir_root=mir_root)
+    class_id_mgr = class_ids.load_or_create_userlabels(mir_root=mir_root)
 
     for _, annotations_dict in results.get('detection', {}).items():
         # Compatible with previous version of format.

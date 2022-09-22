@@ -33,9 +33,9 @@ class FilterBranchInvoker(BaseMirControllerInvoker):
         if self._request.in_class_ids:
             filter_command.append('--cis')
             filter_command.append(';'.join(
-                self._user_labels.get_main_names(class_ids=list(self._request.in_class_ids))))
+                self._user_labels.main_name_for_ids(class_ids=list(self._request.in_class_ids))))
         if self._request.ex_class_ids:
             filter_command.append('--ex-cis')
             filter_command.append(';'.join(
-                self._user_labels.get_main_names(class_ids=list(self._request.ex_class_ids))))
+                self._user_labels.main_name_for_ids(class_ids=list(self._request.ex_class_ids))))
         return utils.run_command(filter_command)
