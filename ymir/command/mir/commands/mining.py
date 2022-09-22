@@ -7,7 +7,6 @@ from subprocess import CalledProcessError
 from typing import Dict, Optional, Set
 
 from google.protobuf import json_format
-import yaml
 
 from mir.commands import base, infer
 from mir.protos import mir_command_pb2 as mirpb
@@ -145,14 +144,10 @@ class CmdMining(base.BaseCommand):
             logging.error('mining enviroment prepare error!')
             return ret
 
-        with open(config_file, 'r') as f:
-            config: dict = yaml.safe_load(f)
-        executor_config: dict = config.get('executor_config', {})
-        anno_format, asset_format = exporter.parse_export_type(type_str=executor_config.get('export_format', ''))
         exporter.export_mirdatas_to_dir(
             mir_metadatas=mir_metadatas,
-            asset_format=asset_format,
-            anno_format=anno_format,
+            asset_format=mirpb.AssetFormat.AF_RAW,
+            anno_format=mirpb.AnnoFormat.AF_NO_ANNOTATION,
             asset_dir=work_asset_path,
             media_location=media_location,
             need_sub_folder=True,
