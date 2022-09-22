@@ -27,7 +27,7 @@ import Desc from "@/components/form/desc"
 import styles from "./index.less"
 import commonStyles from "../common.less"
 import OpenpaiForm from "../components/openpaiForm"
-import useDuplicatedCheck from "../../../hooks/useDuplicatedCheck"
+import useDuplicatedCheck from "@/hooks/useDuplicatedCheck"
 
 const TrainType = [{ value: "detection", label: 'task.train.form.traintypes.detect', checked: true }]
 
