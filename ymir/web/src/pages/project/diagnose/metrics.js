@@ -154,6 +154,7 @@ function Matrics({ pid, project }) {
   function retry() {
     setDiagnosis(null)
     setDiagnosing(false)
+    setKwType(0)
   }
 
   function renderView() {
