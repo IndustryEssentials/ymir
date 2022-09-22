@@ -1,26 +1,28 @@
 import requests
 from fastapi.testclient import TestClient
 
-from monitor.utils.crontab_job import update_monitor_percent_log
+from monitor.utils.crontab_job import monitor_task_logs
 
 
-def test_monitor_percent_log(client: TestClient, clear_redislite, mocker):
-    mocker.patch("os.path.exists", return_value=True)
-    mocker.patch("os.path.isfile", return_value=True)
-    data = "task_id_1	21245543	0.50	2"
-    mocker.patch("builtins.open", mocker.mock_open(read_data=data))
-    body = dict(task_id="task_id_1", log_path_weights={"/data/test/monitor.txt": 1.0},)
+def test_monitor_percent_log(client: TestClient, clear_redislite, mocker, tmp_path):
+    log_path = tmp_path / "monitor.txt"
+    log_path.write_text("task_id_1	21245543	0.50	2")
+
+    body = {
+        "task_id": "task_id_1",
+        "user_id": "12",
+        "log_path_weights": {str(log_path): 1.0},
+    }
     client.post("/api/v1/tasks", json=body)
 
-    data = "task_id_1	21245567	1	3"
-    mocker.patch("builtins.open", mocker.mock_open(read_data=data))
+    log_path.write_text("task_id_1	21245567	1	3")
 
     mock_resp = mocker.Mock()
     mock_resp.raise_for_status = mocker.Mock()
     mock_resp.status_code = 200
     mocker.patch.object(requests, "post", return_value=mock_resp)
 
-    update_monitor_percent_log()
+    monitor_task_logs()
 
     r = client.get("/api/v1/finished_tasks")
 
@@ -28,7 +30,7 @@ def test_monitor_percent_log(client: TestClient, clear_redislite, mocker):
         "result": {
             "task_id_1": {
                 "raw_log_contents": {
-                    "/data/test/monitor.txt": {
+                    str(log_path): {
                         "task_id": "task_id_1",
                         "timestamp": "21245567.0",
                         "percent": 1.0,
@@ -40,9 +42,7 @@ def test_monitor_percent_log(client: TestClient, clear_redislite, mocker):
                 },
                 "task_extra_info": {
                     "monitor_type": 1,
-                    "log_path_weights": {
-                        "/data/test/monitor.txt": 1.0
-                    },
+                    "log_path_weights": {str(log_path): 1.0},
                     "description": None,
                 },
                 "percent_result": {
