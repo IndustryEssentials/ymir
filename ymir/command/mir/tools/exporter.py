@@ -1,8 +1,7 @@
-import fileinput
 import json
 import os
 import shutil
-from typing import Callable, Dict, Optional, TextIO, Tuple
+from typing import Callable, Dict, List, Optional, TextIO, Tuple
 import uuid
 import xml.etree.ElementTree as ElementTree
 
@@ -98,17 +97,15 @@ def replace_index_content_inplace(filename: str,
         raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
                               error_message=f"index file {filename} not exists.")
 
-    with fileinput.input(filename, inplace=True) as f:
-        for line in f:
-            if not (anno_search and anno_replace):
-                line = line.replace(asset_search, asset_replace)
-                print(line, end='\n')
-                continue
-
+    with open(filename) as f:
+        records: List[str] = f.readlines()
+    with open(filename, 'w') as f:
+        for line in records:
             contents = line.strip().split("\t")
-            contents[0] = contents[0].replace(asset_search, asset_replace)
-            contents[1] = contents[1].replace(anno_search, anno_replace)
-            print("\t".join(contents), end="\n")
+            ret_line = contents[0].replace(asset_search, asset_replace)
+            if len(contents) > 1 and anno_search and anno_replace:
+                ret_line = f"{ret_line}\t{contents[1].replace(anno_search, anno_replace)}"
+            f.write("{ret_line}\n")
 
 
 def export_mirdatas_to_dir(
