@@ -10,7 +10,7 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
-def generate_msg_box(msg: str, indent: int = 1, width: Optional[int] = None, title: Optional[str] = None):
+def generate_msg_box(msg: str, indent: int = 1, width: Optional[int] = None, title: Optional[str] = None) -> str:
     """https://stackoverflow.com/a/58780542/2888638"""
     lines = msg.split("\n")
     space = " " * indent
@@ -43,8 +43,8 @@ def main() -> None:
     except ValueError:
         logger.error(
             generate_msg_box(
-                "Incompatible mir version!\nPlease upgrade existing mir repo manually.",
-                title="ERROR",
+                "Please upgrade existing mir repo with:\nbash ymir.sh upgrade",
+                title="ERROR: Incompatible Mir Version",
             )
         )
         exit(errno.EPERM)
