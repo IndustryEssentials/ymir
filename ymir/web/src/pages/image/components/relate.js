@@ -1,9 +1,8 @@
-import { Modal, Form, Input, Select, message } from "antd"
+import { Modal, Form, Select, message } from "antd"
 import { forwardRef, useEffect, useState, useImperativeHandle } from "react"
-import { connect } from 'dva'
 
 import t from '@/utils/t'
-import { TYPES, STATES } from '@/constants/image'
+import { TYPES } from '@/constants/image'
 import useFetch from '@/hooks/useFetch'
 
 const { useForm } = Form
