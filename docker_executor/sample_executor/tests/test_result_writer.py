@@ -64,6 +64,11 @@ class TestResultWriter(unittest.TestCase):
         self.assertEqual(best_stage_name, result_obj['best_stage_name'])
         self.assertEqual(mAP, result_obj['map'])
 
+    def _check_training_attachments(self, attachment: List[str]) -> None:
+        with open(self._training_result_file, 'r') as f:
+            result_obj: dict = yaml.safe_load(f)
+        self.assertEqual(result_obj['attachments'], attachment)
+
     def _check_mining_result(self, mining_result: List[Tuple[str, float]]) -> None:
         with open(self._mining_result_file, 'r') as f:
             lines = f.read().splitlines()
@@ -96,6 +101,11 @@ class TestResultWriter(unittest.TestCase):
     def test_write_training_result(self) -> None:
         rw.write_training_result(model_names=['fake.model'], mAP=0.9, classAPs={})
         self._check_model_stages(stage_names=['default_best_stage'], best_stage_name='default_best_stage', mAP=0.9)
+
+    def test_write_training_attachment(self) -> None:
+        sampled_images = ['01.jpg', '02.jpg']
+        rw.write_training_attachments(sampled_images=sampled_images)
+        self._check_training_attachments({'sampled_images': sampled_images})
 
     def test_write_mining_result(self) -> None:
         mining_result = [('a', '0.1'), ('b', '0.3'), ('c', '0.2')]

@@ -2,7 +2,7 @@ import json
 import logging
 import os
 import time
-from typing import Dict, List, Tuple
+from typing import Any, Dict, List, Tuple
 
 from pydantic import BaseModel
 import yaml
@@ -35,14 +35,9 @@ def write_model_stage(stage_name: str,
         raise ValueError(
             f"invalid stage_name: {stage_name}, need alphabets, numbers and underlines, start with alphabets")
 
-    training_result: dict = {}  # key: stage name, value: stage name, files, timestamp, mAP
-
     env_config = env.get_current_env()
-    try:
-        with open(env_config.output.training_result_file, 'r') as f:
-            training_result = yaml.safe_load(stream=f)
-    except FileNotFoundError:
-        pass  # will create new if not exists, so dont care this exception
+    # key: stage name, value: stage name, files, timestamp, mAP
+    training_result: dict = __read_yaml(env_config.output.training_result_file)
 
     model_stages = training_result.get('model_stages', {})
 
@@ -77,6 +72,16 @@ def write_training_result(model_names: List[str], mAP: float, classAPs: Dict[str
     write_model_stage(stage_name='default_best_stage', files=model_names, mAP=mAP)
 
 
+def write_training_attachments(sampled_images: List[str]) -> None:
+    env_config = env.get_current_env()
+    training_result: dict = __read_yaml(env_config.output.training_result_file)
+
+    training_result['attachments'] = {'sampled_images': sampled_images}
+
+    with open(env_config.output.training_result_file, 'w') as f:
+        yaml.safe_dump(data=training_result, stream=f)
+
+
 def write_mining_result(mining_result: List[Tuple[str, float]]) -> None:
     # sort desc by score
     sorted_mining_result = sorted(mining_result, reverse=True, key=(lambda v: v[1]))
@@ -97,3 +102,11 @@ def write_infer_result(infer_result: Dict[str, List[Annotation]]) -> None:
     env_config = env.get_current_env()
     with open(env_config.output.infer_result_file, 'w') as f:
         f.write(json.dumps(result))
+
+
+def __read_yaml(file_path: str) -> Dict[str, Any]:
+    try:
+        with open(file_path, 'r') as f:
+            return yaml.safe_load(f)
+    except FileNotFoundError:
+        return {}  # will create new if not exists, so dont care this exception

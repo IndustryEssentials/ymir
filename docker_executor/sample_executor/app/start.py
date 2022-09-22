@@ -1,6 +1,7 @@
 import logging
 import os
 import random
+import shutil
 import sys
 import time
 from typing import List
@@ -65,9 +66,7 @@ def _run_training(env_config: env.EnvConfig) -> None:
     with open(os.path.join(env_config.output.models_dir, 'model-symbols.json'), 'w') as f:
         f.write('fake model-symbols.json')
     #! use `rw.write_model_stage` to save training result
-    rw.write_model_stage(stage_name='stage_00',
-                         files=['model-0000.params', 'model-symbols.json'],
-                         mAP=expected_mAP / 2)
+    rw.write_model_stage(stage_name='stage_00', files=['model-0000.params', 'model-symbols.json'], mAP=expected_mAP / 2)
 
     _dummy_work(idle_seconds=idle_seconds, trigger_crash=trigger_crash)
 
@@ -77,8 +76,19 @@ def _run_training(env_config: env.EnvConfig) -> None:
         f.write('fake model-0010.params')
     with open(os.path.join(env_config.output.models_dir, 'model-symbols.json'), 'w') as f:
         f.write('fake model-symbols.json')
-    rw.write_model_stage(stage_name='stage_10', files=[
-                         'model-0010.params', 'model-symbols.json'], mAP=expected_mAP)
+    rw.write_model_stage(stage_name='stage_10', files=['model-0010.params', 'model-symbols.json'], mAP=expected_mAP)
+
+    #! use write_trainig_attachment to add any attachment to model package
+    validation_dataset = list(dr.item_paths(dataset_type=env.DatasetType.VALIDATION))
+    sampled_images_names = [
+        os.path.basename(x[0]) for x in validation_dataset[0:5]
+    ]
+    os.makedirs('/out/attachments', exist_ok=True)
+    for image_name in sampled_images_names:
+        shutil.copyfile(os.path.join('/in', 'assets', image_name),
+                        os.path.join('/out', 'attachments', image_name))
+    rw.write_training_attachments(sampled_images=sampled_images_names)
+    logging.info(f"sampled iamges: {sampled_images_names}")
 
     #! if task done, write 100% percent log
     logging.info('training done')
@@ -117,8 +127,7 @@ def _run_mining(env_config: env.EnvConfig) -> None:
     #! write mining result
     #   here we give a fake score to each assets
     total_length = len(asset_paths)
-    mining_result = [(asset_path, index / total_length)
-                     for index, asset_path in enumerate(asset_paths)]
+    mining_result = [(asset_path, index / total_length) for index, asset_path in enumerate(asset_paths)]
     rw.write_mining_result(mining_result=mining_result)
 
     #! if task done, write 100% percent log
@@ -165,15 +174,11 @@ def _run_infer(env_config: env.EnvConfig) -> None:
         y = random.randint(0, 100)
         w = random.randint(50, 100)
         h = random.randint(50, 100)
-        ann = rw.Annotation(
-            class_name=class_name,
-            score=random.random(),
-            box=rw.Box(x=x, y=y, w=w, h=h))
+        ann = rw.Annotation(class_name=class_name, score=random.random(), box=rw.Box(x=x, y=y, w=w, h=h))
 
         fake_anns.append(ann)
 
-    infer_result = {asset_path: fake_anns
-                    for asset_path in asset_paths}
+    infer_result = {asset_path: fake_anns for asset_path in asset_paths}
     rw.write_infer_result(infer_result=infer_result)
 
     #! if task done, write 100% percent log
@@ -193,9 +198,9 @@ def write_tensorboard_log(tensorboard_dir: str) -> None:
 
     total_epoch = 30
     for e in range(total_epoch):
-        tb_log.add_scalar("fake_loss", 10/(1+e), e)
+        tb_log.add_scalar("fake_loss", 10 / (1 + e), e)
         time.sleep(1)
-        monitor.write_monitor_logger(percent=e/total_epoch)
+        monitor.write_monitor_logger(percent=e / total_epoch)
 
 
 if __name__ == '__main__':
