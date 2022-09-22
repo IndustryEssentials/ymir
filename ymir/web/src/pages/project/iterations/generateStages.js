@@ -1,8 +1,6 @@
 
 import { validDataset } from '@/constants/dataset'
 
-const matchKeywords = (dataset, project, field) => field === 'miningSet' || dataset.keywords.some(kw => project.keywords?.includes(kw))
-
 export default (project = {}, results) => {
   if (!project.id) {
     return []
@@ -35,7 +33,6 @@ export default (project = {}, results) => {
     }
     return (datasets, project) => {
       return datasets.filter(dataset =>
-        matchKeywords(dataset, project, field) &&
         notTestingSet(dataset.id) &&
         excludeSelected(field, dataset, project)
       )
