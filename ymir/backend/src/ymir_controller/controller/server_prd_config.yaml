@@ -14,6 +14,8 @@ ASSETS:
   openpai_token: ${OPENPAI_TOKEN}
   openpai_storage: ${OPENPAI_STORAGE}
   openpai_user: ${OPENPAI_USER}
+  openpai_cluster: ${OPENPAI_CLUSTER}
+  openpai_gputype: ${OPENPAI_GPUTYPE}
   server_runtime: ${SERVER_RUNTIME}
 SANDBOX:
   sandboxowner: ymir-root
