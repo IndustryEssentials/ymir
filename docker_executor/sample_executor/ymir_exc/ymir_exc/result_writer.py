@@ -72,11 +72,11 @@ def write_training_result(model_names: List[str], mAP: float, classAPs: Dict[str
     write_model_stage(stage_name='default_best_stage', files=model_names, mAP=mAP)
 
 
-def write_training_attachments(sampled_images: List[str]) -> None:
+def write_training_attachments(**kwargs: List[str]) -> None:
     env_config = env.get_current_env()
     training_result: dict = __read_yaml(env_config.output.training_result_file)
 
-    training_result['attachments'] = {'sampled_images': sampled_images}
+    training_result['attachments'] = kwargs
 
     with open(env_config.output.training_result_file, 'w') as f:
         yaml.safe_dump(data=training_result, stream=f)

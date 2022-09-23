@@ -78,16 +78,6 @@ def _run_training(env_config: env.EnvConfig) -> None:
         f.write('fake model-symbols.json')
     rw.write_model_stage(stage_name='stage_10', files=['model-0010.params', 'model-symbols.json'], mAP=expected_mAP)
 
-    #! use write_trainig_attachment to add any attachment to model package
-    sampled_images_dir = os.path.join(env_config.output.attachments_dir, 'sampled_images')
-    os.makedirs(sampled_images_dir, exist_ok=True)
-
-    validation_dataset = list(dr.item_paths(dataset_type=env.DatasetType.VALIDATION))
-    sampled_images = [x[0] for x in validation_dataset[0:5]]
-    for image in sampled_images:
-        shutil.copyfile(image, os.path.join(sampled_images_dir, os.path.basename(image)))
-    rw.write_training_attachments(sampled_images=[os.path.basename(x) for x in sampled_images])
-
     #! if task done, write 100% percent log
     logging.info('training done')
     monitor.write_monitor_logger(percent=1.0)

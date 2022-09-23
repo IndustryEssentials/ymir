@@ -103,9 +103,9 @@ class TestResultWriter(unittest.TestCase):
         self._check_model_stages(stage_names=['default_best_stage'], best_stage_name='default_best_stage', mAP=0.9)
 
     def test_write_training_attachment(self) -> None:
-        sampled_images = ['01.jpg', '02.jpg']
-        rw.write_training_attachments(sampled_images=sampled_images)
-        self._check_training_attachments({'sampled_images': sampled_images})
+        attachment_files = ['01.jpg', '02.jpg']
+        rw.write_training_attachments(section_name=attachment_files)
+        self._check_training_attachments({'section_name': attachment_files})
 
     def test_write_mining_result(self) -> None:
         mining_result = [('a', '0.1'), ('b', '0.3'), ('c', '0.2')]
