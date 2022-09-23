@@ -119,8 +119,11 @@ class TaskBaseInvoker(BaseMirControllerInvoker):
             openpai_token = assets_config.get("openpai_token", None)
             openpai_storage = assets_config.get("openpai_storage", None)
             openpai_user = assets_config.get("openpai_user", "")
+            openpai_cluster = assets_config.get("openpai_cluster")
+            openpai_gputype = assets_config.get("openpai_gputype")
             logging.info(f"OpenPAI host: {openpai_host}, token: {openpai_token}, "
-                         f"storage: {openpai_storage}, user: {openpai_user}")
+                         f"storage: {openpai_storage}, user: {openpai_user}",
+                         f"cluster: {openpai_cluster}, gpu_type: {openpai_gputype}")
 
             if not (openpai_host and openpai_token and openpai_storage and openpai_user):
                 raise errors.MirCtrError(
@@ -132,6 +135,8 @@ class TaskBaseInvoker(BaseMirControllerInvoker):
             task_context["openpai_token"] = openpai_token
             task_context["openpai_storage"] = openpai_storage
             task_context["openpai_user"] = openpai_user
+            task_context["openpai_cluster"] = openpai_cluster
+            task_context["openpai_gputype"] = openpai_gputype
 
             task_context["available_gpu_id"] = executor_config["gpu_id"]
         else:

@@ -39,6 +39,7 @@ describe("models: iteration", () => {
     const pid = 64321
     const iterations = products(3).map(({ id }) => ({
       id,
+      mining_dataset_id: id,
       mining_input_dataset_id: id,
       mining_output_dataset_id: id,
       label_output_dataset_id: id,
@@ -50,6 +51,7 @@ describe("models: iteration", () => {
     const models = products(3)
     const expected = iterations.map(i => ({
       ...transferIteration(i),
+      wholeMiningDataset: product(i.id),
       trainUpdateDataset: product(i.id),
       miningDataset: product(i.id),
       miningResultDataset: product(i.id),
@@ -64,8 +66,7 @@ describe("models: iteration", () => {
       code: 0,
       result: iterations,
     })
-    generator.next(datasets)
-    generator.next(models)
+    generator.next(expected)
     const end = generator.next()
 
     expect(end.value).toEqual(expected)

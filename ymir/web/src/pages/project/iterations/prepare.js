@@ -23,11 +23,12 @@ function Prepare({ project = {}, fresh = () => { }, ...func }) {
 
   useEffect(() => {
     project.id && setId(project.id)
-    project.id && updatePrepareStatus()
     project.id && getPrepareStagesResult({ id: project.id })
   }, [project])
 
   useEffect(() => setStages(generateStages(project, results)), [project, results])
+
+  useEffect(() => updatePrepareStatus(), [stages])
 
   useEffect(() => {
     if (result) {

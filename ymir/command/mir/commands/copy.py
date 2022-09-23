@@ -86,8 +86,8 @@ class CmdCopy(base.BaseCommand):
             need_change_class_ids = False
 
         if need_change_class_ids:
-            src_class_id_mgr = class_ids.ClassIdManager(mir_root=data_mir_root)
-            dst_class_id_mgr = class_ids.ClassIdManager(mir_root=mir_root)
+            src_class_id_mgr = class_ids.load_or_create_userlabels(mir_root=data_mir_root)
+            dst_class_id_mgr = class_ids.load_or_create_userlabels(mir_root=mir_root)
             src_to_dst_ids = {
                 src_class_id_mgr.id_and_main_name_for_name(n)[0]: dst_class_id_mgr.id_and_main_name_for_name(n)[0]
                 for n in src_class_id_mgr.all_main_names()
@@ -164,7 +164,7 @@ class CmdCopy(base.BaseCommand):
         single_task_annotations.eval_class_ids[:] = dst_eval_class_ids
 
     @staticmethod
-    def _gen_unknown_names_and_count(src_class_id_mgr: class_ids.ClassIdManager, mir_context: mirpb.MirContext,
+    def _gen_unknown_names_and_count(src_class_id_mgr: class_ids.UserLabels, mir_context: mirpb.MirContext,
                                      src_to_dst_ids: Dict[int, int]) -> Dict[str, int]:
         all_src_class_ids = set(mir_context.pred_stats.class_ids_cnt.keys()) | set(
             mir_context.gt_stats.class_ids_cnt.keys())
@@ -175,9 +175,6 @@ class CmdCopy(base.BaseCommand):
         unknown_names_and_count: Dict[str, int] = {}
         for src_id in unknown_src_class_ids:
             name = src_class_id_mgr.main_name_for_id(src_id)
-            if name is None:
-                raise ValueError(f"copy: unknown src class id: {src_id}")
-
             cnt_gt: int = mir_context.pred_stats.class_ids_cnt[src_id]
             cnt_pred: int = mir_context.gt_stats.class_ids_cnt[src_id]
             unknown_names_and_count[name] = cnt_gt + cnt_pred

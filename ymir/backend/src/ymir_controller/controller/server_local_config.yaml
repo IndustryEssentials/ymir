@@ -14,6 +14,8 @@ ASSETS:
   openpai_token: fake_token
   openpai_storage: fake_storage
   openpai_user: fake_user
+  openpai_cluster: default
+  openpai_gputype: gpu-machine
   server_runtime: runc
 SANDBOX:
   sandboxowner: ymir-root

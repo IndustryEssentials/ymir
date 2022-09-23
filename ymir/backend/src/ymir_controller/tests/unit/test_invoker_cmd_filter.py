@@ -68,7 +68,7 @@ class TestInvokerFilterBranch(unittest.TestCase):
 
     @mock.patch("subprocess.run", side_effect=_mock_run_func)
     def test_invoker_00(self, mock_run):
-        labels.UserLabels.get_main_names = mock.Mock(return_value=["car", "person"])
+        labels.UserLabels.main_name_for_ids = mock.Mock(return_value=["car", "person"])
         in_class_ids = [1, 2]
         ex_class_ids = [3]
         response = make_invoker_cmd_call(invoker=RequestTypeToInvoker[backend_pb2.CMD_FILTER],

@@ -4,8 +4,6 @@ import { transferDatasetGroup, transferDataset } from '@/constants/dataset'
 import { format } from '@/utils/date'
 import { transferIteration } from "./iteration"
 
-
-
 export const tabs = [
   { tab: 'project.tab.set.title', key: 'dataset', },
   { tab: 'project.tab.model.title', key: 'model', },

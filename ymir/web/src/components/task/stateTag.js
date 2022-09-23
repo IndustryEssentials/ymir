@@ -1,6 +1,6 @@
 import { Tag } from 'antd'
 import t from '@/utils/t'
-import { states, statesLabel } from '@/constants/dataset'
+import { ResultStates as states, statesLabel } from '@/constants/common'
 import s from './stateTag.less'
 import { InprogressIcon, SuccessIcon, FailIcon, } from '@/components/common/icons'
 

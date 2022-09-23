@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react"
 import { connect } from "dva"
-import { Select, Card, Radio, Button, Form, Space, InputNumber, Tag } from "antd"
+import { Select, Card, Radio, Button, Form, Space, InputNumber, Tag, Tooltip } from "antd"
 import { formLayout } from "@/config/antd"
 import { useHistory, useParams, useLocation } from "umi"
 
@@ -27,7 +27,7 @@ import Desc from "@/components/form/desc"
 import styles from "./index.less"
 import commonStyles from "../common.less"
 import OpenpaiForm from "../components/openpaiForm"
-import useDuplicatedCheck from "../../../hooks/useDuplicatedCheck"
+import useDuplicatedCheck from "@/hooks/useDuplicatedCheck"
 
 const TrainType = [{ value: "detection", label: 'task.train.form.traintypes.detect', checked: true }]
 
@@ -39,7 +39,7 @@ function Train({ allDatasets, datasetCache, ...func }) {
   const { mid, image, iterationId, outputKey, currentStage, test, from } = location.query
   const stage = string2Array(mid)
   const did = Number(location.query.did)
-  const [project, setProject] = useState({})
+  // const [project, setProject] = useState({})
   const [selectedKeywords, setSelectedKeywords] = useState([])
   const [dataset, setDataset] = useState({})
   const [trainSet, setTrainSet] = useState(null)
@@ -55,7 +55,9 @@ function Train({ allDatasets, datasetCache, ...func }) {
   const [openpai, setOpenpai] = useState(false)
   const checkDuplicated = useDuplicatedCheck(submit)
   const [sys, getSysInfo] = useFetch('common/getSysInfo', {})
+  const [project, getProject] = useFetch('project/getProject', {})
   const [updated, updateProject] = useFetch('project/updateProject')
+  const [fromCopy, setFromCopy] = useState(false)
 
   const selectOpenpai = Form.useWatch('openpai', form)
   const [showConfig, setShowConfig] = useState(false)
@@ -65,7 +67,7 @@ function Train({ allDatasets, datasetCache, ...func }) {
 
   useEffect(() => {
     getSysInfo()
-    fetchProject()
+    getProject({ id: pid })
   }, [])
 
   useEffect(() => {
@@ -110,12 +112,18 @@ function Train({ allDatasets, datasetCache, ...func }) {
     form.setFieldsValue({ hyperparam: seniorConfig })
   }, [seniorConfig])
 
-  useEffect(() => (trainDataset && !iterationContext) && setAllKeywords(), [trainDataset])
+  useEffect(() => {
+    trainDataset &&
+      !iterationContext &&
+      !fromCopy &&
+      setAllKeywords()
+  }, [trainDataset])
 
   useEffect(() => {
     const state = location.state
 
     if (state?.record) {
+      setFromCopy(true)
       const { task: { parameters, config }, description, } = state.record
       const {
         dataset_id,
@@ -147,11 +155,6 @@ function Train({ allDatasets, datasetCache, ...func }) {
     }
   }, [location.state])
 
-  async function fetchProject() {
-    const project = await func.getProject(pid)
-    project && setProject(project)
-  }
-
   function setAllKeywords() {
     const kws = trainDataset?.gt?.keywords
     setSelectedKeywords(kws)
@@ -177,7 +180,10 @@ function Train({ allDatasets, datasetCache, ...func }) {
   }
 
   function setConfig(config = {}) {
-    const params = Object.keys(config).filter(key => key !== 'gpu_count').map(key => ({ key, value: config[key] }))
+    const params = Object.keys(config).filter(key => key !== 'gpu_count').map(key => ({
+      key,
+      value: config[key]
+    }))
     setSeniorConfig(params)
   }
 
@@ -216,7 +222,7 @@ function Train({ allDatasets, datasetCache, ...func }) {
         func.updateIteration({ id: iterationId, currentStage, [outputKey]: result.result_model.id })
       }
       if (iterationContext && !iterationId) {
-        await updateProject({ modelStage: [result.result_model?.id] })
+        await updateProject({ id: pid, modelStage: [result.result_model?.id] })
       }
       await func.clearCache()
       const group = result.result_model?.model_group_id || ''
@@ -259,7 +265,12 @@ function Train({ allDatasets, datasetCache, ...func }) {
       <Breadcrumbs />
       <Card className={commonStyles.container} title={t('breadcrumbs.task.training')}>
         <div className={commonStyles.formContainer}>
-          <CheckProjectDirty style={{ marginBottom: 20, width: '100%' }} pid={pid} initialCheck={true} callback={(dirty) => setProjectDirty(dirty)} />
+          <CheckProjectDirty
+            style={{ marginBottom: 20, width: '100%' }}
+            pid={pid}
+            initialCheck={true}
+            callback={(dirty) => setProjectDirty(dirty)}
+          />
           <Form
             name='trainForm'
             className={styles.form}
@@ -289,7 +300,7 @@ function Train({ allDatasets, datasetCache, ...func }) {
                 onChange={trainSetChange}
               />
             </Form.Item>
-            {iterationId ? <Form.Item label={t('task.train.form.keywords.label')}>
+            {iterationContext ? <Form.Item label={t('task.train.form.keywords.label')}>
               {project?.keywords?.map(keyword => <Tag key={keyword}>{keyword}</Tag>)}
             </Form.Item> :
               <Form.Item
@@ -308,6 +319,11 @@ function Train({ allDatasets, datasetCache, ...func }) {
                   onChange={setSelectedKeywords}
                   options={(trainDataset?.gt?.keywords || []).map(k => ({ label: k, value: k }))}
                   maxTagCount={5}
+                  maxTagPlaceholder={
+                    <Tooltip trigger={'hover'} color='white' title={(trainDataset?.gt?.keywords || []).map(k =>
+                      <Tag key={k}>{k}</Tag>)}>
+                      {trainDataset?.gt?.keywords.length - 5}+
+                    </Tooltip>}
                 />
               </Form.Item>}
             <Form.Item label={t('dataset.train.form.samples')}>
@@ -347,14 +363,29 @@ function Train({ allDatasets, datasetCache, ...func }) {
               label={t('task.gpu.count')}
               tooltip={t('tip.task.filter.gpucount')}
             >
-              <Form.Item noStyle name="gpu_count">
+              <Form.Item
+                noStyle
+                name="gpu_count"
+                rules={[
+                  {
+                    validator: (rules, value) => value <= gpu_count ?
+                      Promise.resolve() :
+                      Promise.reject(),
+                    message: t('task.gpu.tip', { count: gpu_count })
+                  }
+                ]}
+              >
                 <InputNumber min={0} max={gpu_count} precision={0} />
               </Form.Item>
               <span style={{ marginLeft: 20 }}>{t('task.gpu.tip', { count: gpu_count })}</span>
             </Form.Item>
-            <Form.Item hidden={!live} label={t('task.train.export.format')} tooltip={t('tip.train.export.format')} name='trainFormat' initialValue={'ark:raw'}>
+            {live ? <Form.Item
+              label={t('task.train.export.format')}
+              tooltip={t('tip.train.export.format')}
+              name='trainFormat'
+              initialValue={'ark:raw'}>
               <TrainFormat />
-            </Form.Item>
+            </Form.Item> : null}
             <LiveCodeForm form={form} live={live} />
             <DockerConfigForm show={showConfig} seniorConfig={seniorConfig} form={form} />
             <Desc form={form} />
@@ -388,12 +419,6 @@ const props = (state) => {
 
 const dis = (dispatch) => {
   return {
-    getProject(id) {
-      return dispatch({
-        type: "project/getProject",
-        payload: { id },
-      })
-    },
     getDatasets(pid, force = true) {
       return dispatch({
         type: "dataset/queryAllDatasets",

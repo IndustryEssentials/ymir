@@ -105,7 +105,7 @@ def normalize_parameters(
         normalized["model_stage_name"] = model_stage.name
 
     if parameters.keywords:
-        normalized["class_ids"] = user_labels.get_class_ids(names_or_aliases=parameters.keywords)
+        normalized["class_ids"] = user_labels.id_for_names(names=parameters.keywords, raise_if_unknown=True)[0]
 
     if parameters.preprocess:
         normalized["preprocess"] = parameters.preprocess.json()

@@ -129,6 +129,9 @@ function Matrics({ pid, project }) {
         ({ config, configName, testing: dataset_id, model: model_id, stage: model_stage_id, result: id })))
     setSelectedDatasets(datasets)
     setSelectedModels(models)
+    form.setFieldsValue({
+      ck: undefined
+    })
   }
 
   function metricsChange({ target: { value } }) {
@@ -154,6 +157,7 @@ function Matrics({ pid, project }) {
   function retry() {
     setDiagnosis(null)
     setDiagnosing(false)
+    setKwType(0)
   }
 
   function renderView() {
@@ -251,7 +255,7 @@ function Matrics({ pid, project }) {
                   <InputNumber step={0.0005} min={0.0005} max={0.9995} />
                 </Form.Item>
                 <Form.Item label={t('keyword.ck.label')} name='ck'>
-                  <Select options={cks.map(ck => ({ value: ck, label: ck }))}></Select>
+                  <Select options={cks.map(ck => ({ value: ck, label: ck }))} allowClear></Select>
                 </Form.Item>
                 <Form.Item label={renderIouTitle} name='iou'>
                   <Slider style={{ display: !everageIou ? 'block' : 'none' }} min={0.25} max={0.95} step={0.05} marks={{ 0.25: '0.25', 0.5: '0.5', 0.95: '0.95' }} onChange={setIou} />

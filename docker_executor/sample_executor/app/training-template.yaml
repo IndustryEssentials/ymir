@@ -6,6 +6,7 @@ gpu_id: '0'
 task_id: 'default-training-task'
 pretrained_model_params: []
 class_names: []
+export_format: 'det-voc:raw'
 
 # just for test, remove this key in your own docker image
 expected_map: 0.983  # expected map for training task

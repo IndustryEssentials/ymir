@@ -2,7 +2,6 @@ import {
   Stages,
   getStageLabel,
   StageList,
-  getIterationVersion,
   transferIteration,
 } from '../iteration'
 
@@ -42,15 +41,13 @@ describe("constants: project", () => {
     })
 
   })
-  it("function -> getIterationVersion.", () => {
-    expect(getIterationVersion(1)).toBe('V1')
-  })
   it("function -> transferIteration.", () => {
     const origin = {
       "iteration_round": 1,
       "previous_iteration": 0,
       "description": null,
       "current_stage": 1,
+      "mining_dataset_id": 20,
       "mining_input_dataset_id": 39,
       "mining_output_dataset_id": null,
       "label_output_dataset_id": null,
@@ -70,6 +67,7 @@ describe("constants: project", () => {
       name: undefined,
       round: 1,
       currentStage: 1,
+      wholeMiningSet: 20,
       miningSet: 39,
       miningResult: null,
       labelSet: null,

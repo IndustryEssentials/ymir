@@ -1,7 +1,7 @@
 import { getLocale } from "umi"
 import { DatasetGroup, Dataset, DatasetAnalysis, Annotation, Asset } from "@/interface/dataset"
 import { calDuration, format } from '@/utils/date'
-import { getIterationVersion, transferIteration } from "./iteration"
+import { getVersionLabel } from "./common"
 import { BackendData } from "@/interface/common"
 
 export enum states {
@@ -78,7 +78,7 @@ export function transferDataset(data: BackendData): Dataset {
     projectId: data.project_id,
     name: data.group_name,
     version: data.version_num || 0,
-    versionName: getIterationVersion(data.version_num),
+    versionName: getVersionLabel(data.version_num),
     assetCount,
     keywords,
     keywordCount: keywords.length,
@@ -122,7 +122,7 @@ export function transferDatasetAnalysis(data: BackendData): DatasetAnalysis {
   return {
     name: data.group_name,
     version: data.version_num || 0,
-    versionName: getIterationVersion(data.version_num),
+    versionName: getVersionLabel(data.version_num),
     assetCount: assetTotal,
     totalAssetMbytes: data.total_assets_mbytes,
     assetBytes: bytes,

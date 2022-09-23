@@ -43,6 +43,7 @@ export interface Iteration {
   trainSet?: DatasetId,
   trainUpdateSet: DatasetId,
   trainUpdateDataset?: Dataset,
+  wholeMiningSet: DatasetId,
   miningSet?: DatasetId,
   miningDataset?: Dataset,
   miningResult?: DatasetId,

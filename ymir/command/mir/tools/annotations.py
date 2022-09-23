@@ -30,7 +30,6 @@ def parse_anno_format(anno_format_str: str) -> "mirpb.AnnoFormat.V":
         "voc": mirpb.AnnoFormat.AF_DET_PASCAL_VOC,
         "ark": mirpb.AnnoFormat.AF_DET_ARK_JSON,
         "ls_json": mirpb.AnnoFormat.AF_DET_LS_JSON,
-
         "det-voc": mirpb.AnnoFormat.AF_DET_PASCAL_VOC,
         "det-ark": mirpb.AnnoFormat.AF_DET_ARK_JSON,
         "det-ls-json": mirpb.AnnoFormat.AF_DET_LS_JSON,
@@ -98,7 +97,7 @@ def import_annotations(mir_annotation: mirpb.MirAnnotations, mir_root: str, pred
     anno_import_result: Dict[str, int] = defaultdict(int)
 
     # read type_id_name_dict and type_name_id_dict
-    class_type_manager = class_ids.ClassIdManager(mir_root=mir_root)
+    class_type_manager = class_ids.load_or_create_userlabels(mir_root=mir_root)
     logging.info("loaded type id and names: %d", len(class_type_manager.all_ids()))
 
     if prediction_dir_path:
@@ -140,7 +139,7 @@ def import_annotations(mir_annotation: mirpb.MirAnnotations, mir_root: str, pred
 
 
 def _import_annotations_from_dir(map_hashed_filename: Dict[str, str], mir_annotation: mirpb.MirAnnotations,
-                                 annotations_dir_path: str, class_type_manager: class_ids.ClassIdManager,
+                                 annotations_dir_path: str, class_type_manager: class_ids.UserLabels,
                                  unknown_types_strategy: UnknownTypesStrategy, accu_new_class_names: Dict[str, int],
                                  image_annotations: mirpb.SingleTaskAnnotations, anno_type: "mirpb.AnnoType.V") -> None:
     # temp solution: set to seg type if SegmentationClass and labelmap.txt exist.
@@ -164,7 +163,7 @@ def _import_annotations_from_dir(map_hashed_filename: Dict[str, str], mir_annota
 
 
 def _import_annotations_seg_mask(map_hashed_filename: Dict[str, str], mir_annotation: mirpb.MirAnnotations,
-                                 annotations_dir_path: str, class_type_manager: class_ids.ClassIdManager,
+                                 annotations_dir_path: str, class_type_manager: class_ids.UserLabels,
                                  unknown_types_strategy: UnknownTypesStrategy, accu_new_class_names: Dict[str, int],
                                  image_annotations: mirpb.SingleTaskAnnotations) -> None:
     # fortmat ref:
@@ -250,7 +249,7 @@ def _import_annotations_seg_mask(map_hashed_filename: Dict[str, str], mir_annota
                 # map_color_cid (known class names) is subset of map_color_pixel (including known/unknown).
                 if color in map_color_cid:
                     img_class_ids.add(map_color_cid[color])
-                elif color != (0, 0, 0):   # map unknown color to (0,0,0).
+                elif color != (0, 0, 0):  # map unknown color to (0,0,0).
                     mask_image.putpixel((x, y), (0, 0, 0))
         with io.BytesIO() as output:
             mask_image.save(output, format="PNG")
@@ -261,7 +260,7 @@ def _import_annotations_seg_mask(map_hashed_filename: Dict[str, str], mir_annota
 
 
 def _import_annotations_voc_xml(map_hashed_filename: Dict[str, str], mir_annotation: mirpb.MirAnnotations,
-                                annotations_dir_path: str, class_type_manager: class_ids.ClassIdManager,
+                                annotations_dir_path: str, class_type_manager: class_ids.UserLabels,
                                 unknown_types_strategy: UnknownTypesStrategy, accu_new_class_names: Dict[str, int],
                                 image_annotations: mirpb.SingleTaskAnnotations) -> None:
     add_if_not_found = (unknown_types_strategy == UnknownTypesStrategy.ADD)
@@ -311,7 +310,7 @@ def _import_annotations_voc_xml(map_hashed_filename: Dict[str, str], mir_annotat
                 anno_idx += 1
 
 
-def _import_annotation_meta(class_type_manager: class_ids.ClassIdManager, annotations_dir_path: str,
+def _import_annotation_meta(class_type_manager: class_ids.UserLabels, annotations_dir_path: str,
                             task_annotations: mirpb.SingleTaskAnnotations) -> None:
     annotation_meta_path = os.path.join(annotations_dir_path, 'meta.yaml')
     if not os.path.isfile(annotation_meta_path):

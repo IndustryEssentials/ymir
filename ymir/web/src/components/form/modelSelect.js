@@ -36,21 +36,20 @@ const ModelSelect = ({ pid, value, onlyModel, changeByUser, onChange = () => { }
   }, [options])
 
   useEffect(() => {
-    if (value && !value[1]) {
-      const model = models.find(md => md.id === value[0])
-      if (model) {
-        setMS([value[0], model.recommendStage])
-      }
+    if (!value) {
+      return
     }
-  }, [options])
-
-  useEffect(() => {
-    setMS(value)
-  }, [value])
+    const model = models.find(md => md.id === value[0])
+    if (value && !value[1] && model) {
+      setMS([value[0], model.recommendStage])
+    } else {
+      setMS(value)
+    }
+  }, [options, value])
 
   useEffect(() => {
     generateOptions()
-  }, [models, filters])
+  }, [models])
 
   function generateOptions() {
     const mds = filters ? filters(models) : models
