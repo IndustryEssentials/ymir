@@ -23,7 +23,7 @@ class _EnvInputConfig(BaseModel):
 class _EnvOutputConfig(BaseModel):
     root_dir: str = '/out'
     models_dir: str = '/out/models'
-    attachments_dir: str = '/out/models'
+    attachments_dir: str = '/out/models/attachments'
     tensorboard_dir: str = '/out/tensorboard'
     training_result_file: str = '/out/models/result.yaml'
     mining_result_file: str = '/out/result.tsv'
