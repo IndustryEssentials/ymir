@@ -6,10 +6,9 @@ import unittest
 from google.protobuf.json_format import MessageToDict
 import yaml
 
-from common_utils.sandbox_util import SandboxError
 from controller.utils.invoker_call import make_invoker_cmd_call
 from controller.utils.invoker_mapping import RequestTypeToInvoker
-from id_definition.error_codes import CTLResponseCode, UpdaterErrorCode
+from id_definition.error_codes import CTLResponseCode
 from proto import backend_pb2
 
 from tests import utils as test_utils
@@ -90,23 +89,21 @@ class TestCmdSandboxVersion(unittest.TestCase):
     # public: test cases
     def test_all(self) -> None:
         # sandbox a: normal
-        response_a = make_invoker_cmd_call(invoker=RequestTypeToInvoker[backend_pb2.CMD_VERSION_GET],
+        response_a = make_invoker_cmd_call(invoker=RequestTypeToInvoker[backend_pb2.CMD_VERSIONS_GET],
                                            sandbox_root=self._sandbox_a_root,
-                                           req_type=backend_pb2.CMD_VERSION_GET)
+                                           req_type=backend_pb2.CMD_VERSIONS_GET)
         print(MessageToDict(response_a))
         self.assertEqual(CTLResponseCode.CTR_OK, response_a.code)
-        self.assertEqual('42.0.0', response_a.sandbox_version)
+        self.assertEqual(['42.0.0'], response_a.sandbox_versions)
 
         # sandbox b: no users
-        with self.assertRaises(SandboxError) as e:
-            make_invoker_cmd_call(invoker=RequestTypeToInvoker[backend_pb2.CMD_VERSION_GET],
-                                  sandbox_root=self._sandbox_b_root,
-                                  req_type=backend_pb2.CMD_VERSION_GET)
-            self.assertEqual(UpdaterErrorCode.INVALID_USER_SPACE_VERSIONS, e.error_code)
+        response_b = make_invoker_cmd_call(invoker=RequestTypeToInvoker[backend_pb2.CMD_VERSIONS_GET],
+                                           sandbox_root=self._sandbox_b_root,
+                                           req_type=backend_pb2.CMD_VERSIONS_GET)
+        self.assertEqual([], response_b.sandbox_versions)
 
         # sandbox c: multiple versions
-        with self.assertRaises(SandboxError) as e:
-            make_invoker_cmd_call(invoker=RequestTypeToInvoker[backend_pb2.CMD_VERSION_GET],
-                                  sandbox_root=self._sandbox_c_root,
-                                  req_type=backend_pb2.CMD_VERSION_GET)
-            self.assertEqual(UpdaterErrorCode.INVALID_USER_SPACE_VERSIONS, e.error_code)
+        response_c = make_invoker_cmd_call(invoker=RequestTypeToInvoker[backend_pb2.CMD_VERSIONS_GET],
+                                           sandbox_root=self._sandbox_c_root,
+                                           req_type=backend_pb2.CMD_VERSIONS_GET)
+        self.assertEqual({'0.0.1', '0.0.2'}, set(response_c.sandbox_versions))

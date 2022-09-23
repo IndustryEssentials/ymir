@@ -106,7 +106,7 @@ class TestInvokerTaskExporting(unittest.TestCase):
         print(MessageToDict(response))
 
         expected_cmd_exporting = (
-            "mir export --root {0} --media-location {1} --asset-dir {1} --src-revs {2}@{2} --anno_format {3} -w {4} "
+            "mir export --root {0} --media-location {1} --asset-dir {1} --src-revs {2}@{2} --anno-format {3} -w {4} "
             "--pred-dir {1} --gt-dir {1}".format(self._mir_repo_root, self._storage_root, in_dataset_ids[0], 'det-voc',
                                                  working_dir))
         mock_run.assert_has_calls(calls=[

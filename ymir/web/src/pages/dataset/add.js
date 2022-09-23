@@ -48,7 +48,6 @@ const Add = (props) => {
   const pageParams = useParams()
   const pid = Number(pageParams.id)
   const { id, from, stepKey } = query
-  console.log('url query:', query)
   const iterationContext = from === 'iteration'
 
   const [form] = useForm()
@@ -89,12 +88,18 @@ const Add = (props) => {
   }, [newer])
 
   useEffect(() => {
-    // todo get name
     const filename = (netUrl || '').replace(/^.+\/([^\/]+)\.zip$/, '$1')
     setDefaultName(filename)
   }, [netUrl])
 
-  useEffect(() => setDefaultName(path), [path])
+  useEffect(() => {
+    if (typeof path === 'undefined') {
+      return
+    }
+    const matchfinalDir = path.match(/[^\/]+$/) || []
+    const finalDir = matchfinalDir[0]
+    setDefaultName(finalDir)
+  }, [path])
 
   useEffect(() => addDefaultName(defaultName), [defaultName])
 
@@ -182,7 +187,7 @@ const Add = (props) => {
   }
 
   function onInternalDatasetChange(value, { dataset }) {
-    setDefaultName(`${dataset.name} ${dataset.versionName}`)
+    setDefaultName(`${dataset.name}`)
     setSelectedDataset(value)
   }
 
@@ -193,7 +198,7 @@ const Add = (props) => {
 
   function setCopyDefaultName(value, option) {
     const label = value ? option[1]?.label : ''
-    const datasetname = label.replace(/ \(assets: \d+\)/, '')
+    const datasetname = label.replace(/\sV\d+\s\(assets: \d+\)/, '')
     setDefaultName(datasetname)
   }
 
@@ -343,7 +348,7 @@ const Add = (props) => {
               <Form.Item label={t('dataset.add.form.path.label')} required
                 name='path'
                 help={renderTip('path')}
-                rules={[{ required: true, message: t('dataset.add.form.path.tip') }]}
+                rules={[{ required: true, message: renderTip('path') }]}
               >
                 <Input placeholder={t('dataset.add.form.path.placeholder')} max={512} allowClear />
               </Form.Item>

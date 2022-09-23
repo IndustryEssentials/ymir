@@ -95,6 +95,8 @@ class Settings(BaseSettings):
     OPENPAI_TOKEN: Optional[str] = None
     OPENPAI_STORAGE: Optional[str] = None
     OPENPAI_USER: Optional[str] = None
+    OPENPAI_CLUSTER: Optional[str] = None
+    OPENPAI_GPUTYPE: Optional[str] = None
 
     @root_validator(pre=True)
     def get_openpai_enabled(cls, values: Dict[str, Any]) -> Dict:

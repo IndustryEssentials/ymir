@@ -89,13 +89,14 @@ const dataset = {
   "dataset.add.form.path.label": { cn: "相对路径", en: "Relative Path", },
   "dataset.add.form.tip.format.detail": { cn: "查看标注格式(.xml)及meta.yaml格式", en: "View more about annotation format or meta.yaml", },
   "dataset.add.form.tip.structure": {
-    cn: "压缩包文件内图片文件需放入images文件夹内，标准值标注文件需放入gt文件夹内，模型推理标注文件需放入pred文件夹内。gt和pred都是可选的。压缩包内文件结构如下：{br}{pic}{br}{detail}",
-    en: "image -> images; gt -> ground truth annotations; pred -> predictions. gt and pred is optional. zip structure: {br}{pic}"
+    cn: "图片文件需放入images文件夹内，标准值标注文件需放入gt文件夹内，模型推理标注文件需放入pred文件夹内。gt和pred都是可选的。文件结构如下：{br}{pic}{br}{detail}",
+    en: "image -> images; gt -> ground truth annotations; pred -> predictions. gt and pred is optional. structure: {br}{pic}"
   },
   "dataset.add.form.path.tip": {
     cn: `1. 将数据文件夹存放到ymir工作空间目录下的ymir-sharing目录，如 /home/ymir/ymir-workspace/ymir-sharing/VOC2012, 输入基于ymir-sharing相对路径：VOC2012{br}
     2. {structure}`,
-    en: "Save the data in 'ymir-sharing' under ymir workspace directory, such as /home/ymir/ymir-workspace/ymir-sharing/VOC2012, and input relative path base on ymir-sharing: VOC2012",
+    en: `1. Save the data in 'ymir-sharing' under ymir workspace directory, such as /home/ymir/ymir-workspace/ymir-sharing/VOC2012, and input relative path base on ymir-sharing: VOC2012{br}
+    2. {structure}`,
   },
   "dataset.add.form.path.placeholder": { cn: "请输入路径", en: "Please input path on server", },
   "dataset.add.form.upload.btn": { cn: "上传文件", en: "Upload", },

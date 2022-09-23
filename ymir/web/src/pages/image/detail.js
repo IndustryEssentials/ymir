@@ -1,39 +1,38 @@
-import React, { useEffect, useRef, useState } from "react"
-import { Descriptions, List, Space, Tag, Card, Button, Row, Col } from "antd"
-import { connect } from 'dva'
-import { useParams, Link, useHistory } from "umi"
+import React, { useEffect, useRef } from "react"
+import { Descriptions, Space, Card, Button, Row, Col } from "antd"
+import { useParams, Link, useHistory, useSelector } from "umi"
 
 import t from "@/utils/t"
-import Breadcrumbs from "@/components/common/breadcrumb"
 import { TYPES, STATES, getImageTypeLabel } from '@/constants/image'
 import { ROLES } from '@/constants/user'
+import useFetch from '@/hooks/useFetch'
+
+import Breadcrumbs from "@/components/common/breadcrumb"
 import LinkModal from "./components/relate"
 import ShareModal from "./components/share"
 import Del from './components/del'
+import ImagesLink from "./components/imagesLink"
+import StateTag from '@/components/task/stateTag'
+
 import styles from "./detail.less"
 import { EditIcon, VectorIcon, TrainIcon, } from '@/components/common/icons'
-import ImagesLink from "./components/imagesLink"
-import StateTag from '../../components/task/stateTag'
 
 const { Item } = Descriptions
 
-function ImageDetail({ role, getImage }) {
+function ImageDetail() {
   const { id } = useParams()
   const history = useHistory()
-  const [image, setImage] = useState({ id })
+  // const [image, setImage] = useState({ id })
   const shareModalRef = useRef(null)
   const linkModalRef = useRef(null)
   const delRef = useRef(null)
+  const [image, getImage] = useFetch('image/getImage', { id })
+  const role = useSelector(({ user }) => user.role)
 
-  useEffect(async () => {
-    fetchImage()
-  }, [id])
+  useEffect(fetchImage, [id])
 
-  async function fetchImage() {
-    const result = await getImage(id)
-    if (result) {
-      setImage(result)
-    }
+  function fetchImage() {
+    getImage(id)
   }
 
   function relateImage() {
@@ -70,10 +69,10 @@ function ImageDetail({ role, getImage }) {
 
   function renderConfigs(configs = []) {
     return configs.map(({config, type }) => {
-      return <>
+      return <div key={type} style={{ margin: '10px 0 20px'}}>
       <h3>{t(getImageTypeLabel([type])[0])}</h3>
       <div>{renderConfig(config)}</div>
-      </>
+      </div>
     })
   }
 
@@ -136,22 +135,4 @@ function ImageDetail({ role, getImage }) {
   )
 }
 
-
-const props = (state) => {
-  return {
-    role: state.user.role,
-  }
-}
-
-const actions = (dispatch) => {
-  return {
-    getImage(id) {
-      return dispatch({
-        type: 'image/getImage',
-        payload: id,
-      })
-    },
-  }
-}
-
-export default connect(props, actions)(ImageDetail)
+export default ImageDetail
