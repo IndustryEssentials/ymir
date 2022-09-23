@@ -319,11 +319,13 @@ function Train({ allDatasets, datasetCache, ...func }) {
                   onChange={setSelectedKeywords}
                   options={(trainDataset?.gt?.keywords || []).map(k => ({ label: k, value: k }))}
                   maxTagCount={5}
-                  maxTagPlaceholder={
-                    <Tooltip trigger={'hover'} color='white' title={(trainDataset?.gt?.keywords || []).map(k =>
-                      <Tag key={k}>{k}</Tag>)}>
-                      {trainDataset?.gt?.keywords.length - 5}+
-                    </Tooltip>}
+                  maxTagPlaceholder={<Tooltip
+                    trigger='hover'
+                    color='white'
+                    title={selectedKeywords.map(k => <Tag key={k}>{k}</Tag>)}
+                  >
+                    {selectedKeywords.length - 5}+
+                  </Tooltip>}
                 />
               </Form.Item>}
             <Form.Item label={t('dataset.train.form.samples')}>
