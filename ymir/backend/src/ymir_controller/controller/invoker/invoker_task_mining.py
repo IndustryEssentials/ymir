@@ -86,7 +86,7 @@ class TaskMiningInvoker(TaskBaseInvoker):
         mining_image = request.singleton_op
 
         config_file = cls.gen_executor_config_path(subtask_workdir)
-        asset_cache_dir = os.path.join(sandbox_root, request.user_id, "mining_asset_cache")
+        asset_cache_dir = os.path.join(sandbox_root, request.user_id, "asset_cache")
         mining_response = cls.mining_cmd(repo_root=repo_root,
                                          config_file=config_file,
                                          task_id=subtask_id,
