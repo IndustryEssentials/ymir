@@ -28,15 +28,10 @@ def _find_and_save_model(out_root: str, model_upload_location: str, executor_con
         ModelStorage
     """
     out_model_dir = os.path.join(out_root, "models")
-    model_stages, best_stage_name, attachments = _find_model(out_model_dir)
-    if not model_stages:
-        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
-                              error_message='can not find model stages in result.yaml')
-    best_mAP = model_stages[best_stage_name].mAP
-
+    model_stages, best_stage_name, attachments = _find_model_stages_and_attachments(out_model_dir)
     model_storage = models.ModelStorage(executor_config=executor_config,
                                         task_context=dict(**task_context,
-                                                          mAP=best_mAP,
+                                                          mAP=model_stages[best_stage_name].mAP,
                                                           type=mirpb.TaskType.TaskTypeTraining),
                                         stages=model_stages,
                                         best_stage_name=best_stage_name,
@@ -48,7 +43,8 @@ def _find_and_save_model(out_root: str, model_upload_location: str, executor_con
     return model_storage
 
 
-def _find_model(model_root: str) -> Tuple[Dict[str, models.ModelStageStorage], str, Dict[str, Any]]:
+def _find_model_stages_and_attachments(
+        model_root: str) -> Tuple[Dict[str, models.ModelStageStorage], str, Dict[str, Any]]:
     """
     find models in `model_root`, and returns all model stages and attachments
 
@@ -93,6 +89,10 @@ def _find_model(model_root: str) -> Tuple[Dict[str, models.ModelStageStorage], s
     except FileNotFoundError:
         error_message = f"can not find file: {result_yaml_path}, executor may have errors, see ymir-executor-out.log"
         raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_FILE, error_message=error_message)
+
+    if not model_stages:
+        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
+                              error_message='can not find model stages in result.yaml')
 
     return (model_stages, best_stage_name, attachments)
 

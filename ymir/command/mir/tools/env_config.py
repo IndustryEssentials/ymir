@@ -23,11 +23,13 @@ class _EnvInputConfig(BaseModel):
 class _EnvOutputConfig(BaseModel):
     root_dir: str = '/out'
     models_dir: str = '/out/models'
+    attachments_dir: str = '/out/models'
     tensorboard_dir: str = '/out/tensorboard'
     training_result_file: str = '/out/models/result.yaml'
     mining_result_file: str = '/out/result.tsv'
     infer_result_file: str = '/out/infer-result.json'
     monitor_file: str = '/out/monitor.txt'
+    executor_log_file: str = '/out/ymir-executor-out.log'
 
 
 class _EnvConfig(BaseModel):
