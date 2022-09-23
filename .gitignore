@@ -84,7 +84,7 @@ output/
 mysql/
 redis/
 ymir-data/
-ymir-workplace
+ymir-workplace*
 .mir_lock
 .local
 .pre-commit-config.yaml

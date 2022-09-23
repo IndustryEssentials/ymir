@@ -37,6 +37,7 @@ def detect_sandbox_src_versions(sandbox_root: str) -> List[str]:
     """
     user_to_repos = detect_users_and_repos(sandbox_root)
     if not user_to_repos:
+        logging.warning(f"can not find user and repos in sandbox: {sandbox_root}")
         return []
 
     ver_to_users: Dict[str, List[str]] = defaultdict(list)
@@ -68,6 +69,7 @@ def detect_users_and_repos(sandbox_root: str) -> Dict[str, Set[str]]:
         Dict[str, Set[str]]: key: user id, value: repo ids
     """
     if not os.path.isdir(sandbox_root):
+        logging.warning(f"sandbox not exists: {sandbox_root}")
         return {}
 
     user_to_repos = defaultdict(set)
