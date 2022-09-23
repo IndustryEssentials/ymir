@@ -32,7 +32,7 @@ def check_mir_repo_version() -> None:
     except ValueError:
         logger.exception("[start up] Failed to get mir repo version")
         raise
-    if sandbox_versions != [YMIR_VERSION]:
+    if sandbox_versions and sandbox_versions != [YMIR_VERSION]:
         raise ValueError("mir repo out of date")
 
 
