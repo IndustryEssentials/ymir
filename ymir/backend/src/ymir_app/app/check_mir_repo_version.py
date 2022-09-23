@@ -28,11 +28,11 @@ def generate_msg_box(msg: str, indent: int = 1, width: Optional[int] = None, tit
 def check_mir_repo_version() -> None:
     controller = ControllerClient(settings.GRPC_CHANNEL)
     try:
-        current_version = controller.get_cmd_version()
+        sandbox_versions = controller.get_cmd_version()
     except ValueError:
         logger.exception("[start up] Failed to get mir repo version")
         raise
-    if current_version != YMIR_VERSION:
+    if sandbox_versions != [YMIR_VERSION]:
         raise ValueError("mir repo out of date")
 
 
