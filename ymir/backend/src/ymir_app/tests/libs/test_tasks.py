@@ -98,9 +98,9 @@ class TestTaskResult:
         tr.user_labels
         ctrl.get_labels_of_user.assert_called()
 
-        tr.model_info
+        tr.model_info()
         viz.get_model_info.assert_called()
-        tr.dataset_info
+        tr.dataset_info()
         viz.get_dataset_info.assert_called()
 
     def test_get_dest_group_info_is_dataset(self, db: Session, mocker: Any) -> None:

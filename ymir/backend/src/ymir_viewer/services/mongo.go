@@ -77,7 +77,7 @@ func (s *MongoServer) CheckDatasetExistenceReady(mirRepo *constants.MirRepo) (bo
 }
 
 func (s *MongoServer) IndexDatasetData(mirRepo *constants.MirRepo, newData []interface{}) {
-	defer tools.TimeTrack(time.Now())
+	defer tools.TimeTrack(time.Now(), mirRepo.TaskID)
 
 	if len(newData) <= 0 {
 		return
@@ -91,7 +91,6 @@ func (s *MongoServer) IndexDatasetData(mirRepo *constants.MirRepo, newData []int
 		panic(err)
 	}
 
-	defer tools.TimeTrack(time.Now())
 	index := []mongo.IndexModel{
 		{
 			Keys: bson.M{"asset_id": bsonx.Int32(1)}, Options: options.Index(),
@@ -167,7 +166,7 @@ func (s *MongoServer) QueryDatasetAssets(
 	cks []string,
 	tags []string,
 ) *constants.QueryAssetsResult {
-	defer tools.TimeTrack(time.Now())
+	defer tools.TimeTrack(time.Now(), mirRepo.TaskID)
 
 	log.Printf(
 		"Query offset: %d, limit: %d, classIDs: %v, annoTypes: %v, currentId: %s, cmTypes: %v cks: %v tags: %v\n",

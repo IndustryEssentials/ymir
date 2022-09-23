@@ -9,7 +9,6 @@ import (
 	"github.com/IndustryEssentials/ymir-viewer/common/constants"
 	"github.com/IndustryEssentials/ymir-viewer/common/loader"
 	"github.com/IndustryEssentials/ymir-viewer/common/protos"
-	"github.com/IndustryEssentials/ymir-viewer/tools"
 	"github.com/mitchellh/mapstructure"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -100,14 +99,16 @@ func NewViewerHandler(
 }
 
 func (v *ViewerHandler) loadAndIndexAssets(mirRepo *constants.MirRepo) {
-	defer tools.TimeTrack(time.Now())
-
 	exist, ready := v.mongoServer.CheckDatasetExistenceReady(mirRepo)
 	// Dataset not exist, need to load&index.
 	if !exist {
-		log.Printf("No data for %s, reading & building cache.", fmt.Sprint(mirRepo))
+		log.Printf("No data for %s, reading & building cache.", mirRepo.TaskID)
 
 		mirAssetsDetail, _, _ := v.mirLoader.LoadAssetsDetail(mirRepo, "", 0, 0)
+		newData := make([]interface{}, 0)
+		for _, v := range mirAssetsDetail {
+			newData = append(newData, v)
+		}
 
 		// check again, in case cache process started during data loading.
 		exist, _ = v.mongoServer.CheckDatasetExistenceReady(mirRepo)
@@ -115,18 +116,13 @@ func (v *ViewerHandler) loadAndIndexAssets(mirRepo *constants.MirRepo) {
 			log.Printf("Cache exists, skip data indexing.")
 			return
 		}
-
-		newData := make([]interface{}, 0)
-		for _, v := range mirAssetsDetail {
-			newData = append(newData, v)
-		}
 		v.mongoServer.IndexDatasetData(mirRepo, newData)
 		return
 	}
 
 	// Data set exist, return if ready.
 	if ready {
-		log.Printf("Mongodb ready for %s.", fmt.Sprint(mirRepo))
+		log.Printf("Mongodb ready for %s.", mirRepo.TaskID)
 		return
 	}
 
@@ -137,7 +133,7 @@ func (v *ViewerHandler) loadAndIndexAssets(mirRepo *constants.MirRepo) {
 		time.Sleep(1 * time.Second)
 		waitExist, waitReady := v.mongoServer.CheckDatasetExistenceReady(mirRepo)
 		if waitExist && waitReady {
-			log.Printf("Mongodb ready for %s, after wait %d rounds.", fmt.Sprint(mirRepo), i)
+			log.Printf("Mongodb ready for %s, after wait %d rounds.", mirRepo.TaskID, i)
 			return
 		}
 	}
@@ -203,8 +199,6 @@ func (v *ViewerHandler) GetAssetsHandler(
 func (v *ViewerHandler) GetDatasetMetaCountsHandler(
 	mirRepo *constants.MirRepo,
 ) *constants.QueryDatasetStatsResult {
-	defer tools.TimeTrack(time.Now())
-
 	result := constants.NewQueryDatasetStatsResult()
 
 	mirContext := v.mirLoader.LoadSingleMirData(mirRepo, constants.MirfileContext).(*protos.MirContext)
