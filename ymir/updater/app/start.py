@@ -9,8 +9,12 @@ from mir.version import YMIR_VERSION
 def main() -> int:
     sandbox_root = os.environ['BACKEND_SANDBOX_ROOT']
 
+    sandbox_versions = sandbox_util.detect_sandbox_src_versions(sandbox_root)
+    if len(sandbox_versions) != 1:
+        raise Exception(f"invalid sandbox versions: {sandbox_versions}")
+
     sandbox_updater.update(sandbox_root=sandbox_root,
-                           src_ver=sandbox_util.detect_sandbox_src_ver(sandbox_root),
+                           src_ver=sandbox_versions[0],
                            dst_ver=YMIR_VERSION)
 
     return 0

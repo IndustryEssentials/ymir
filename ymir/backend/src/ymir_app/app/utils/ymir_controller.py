@@ -362,7 +362,7 @@ class ControllerRequest:
         return request
 
     def prepare_get_cmd_version(self, request: mirsvrpb.GeneralReq, args: Dict) -> mirsvrpb.GeneralReq:
-        request.req_type = mirsvrpb.CMD_VERSION_GET
+        request.req_type = mirsvrpb.CMD_VERSIONS_GET
         return request
 
 
@@ -642,10 +642,10 @@ class ControllerClient:
         )
         return self.send(req)
 
-    def get_cmd_version(self) -> str:
+    def get_cmd_version(self) -> List[str]:
         req = ControllerRequest(type=ExtraRequestType.get_cmd_version, user_id=0)
         resp = self.send(req)
-        return resp["sandbox_version"]
+        return resp["sandbox_versions"]
 
 
 def convert_class_id_to_keyword(obj: Dict, user_labels: UserLabels) -> None:
