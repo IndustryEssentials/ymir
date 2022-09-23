@@ -15,7 +15,8 @@ class TestCalculateMiningProgress:
         dataset = create_dataset_record(db, user_id=project.user_id, project_id=project.id)
         iteration = create_iteration_record(db, project.user_id, project.id, mining_dataset_id=dataset.id)
 
-        user_labels = mocker.Mock(get_class_ids=lambda x: [randint(1, 100)] * len(x))
+        id_for_names = mocker.Mock(return_value=([randint(1, 10)] * 3,))
+        user_labels = mocker.Mock(id_for_names=id_for_names)
 
         mocker.patch.object(m, "VizClient")
         res = m.calculate_mining_progress(db, user_labels, project.user_id, project.id, iteration.id)
@@ -27,6 +28,7 @@ class TestCalculateMiningProgress:
 class TestGetTrainingClasses:
     def test_get_training_classes(self, db: Session, mocker: Any) -> None:
         project = create_project_record(db)
-        user_labels = mocker.Mock(get_class_ids=lambda x: [randint(1, 100)] * len(x))
+        id_for_names = mocker.Mock(return_value=([randint(1, 10)] * 3,))
+        user_labels = mocker.Mock(id_for_names=id_for_names)
         classes = m.get_training_classes(db, project.id, user_labels)
         assert list(classes.keys()) == project.training_targets
