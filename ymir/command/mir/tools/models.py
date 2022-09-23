@@ -135,10 +135,13 @@ def pack_and_copy_models(model_storage: ModelStorage, model_dir_path: str, model
                 tar_gz_f.add(file_path, file_name)
 
         # packing attachments:sampled_images
-        for image_name in model_storage.attachments.get('sampled_images', []):
-            image_path = os.path.join(model_dir_path, image_name)
-            logging.info(f"    packing {image_path} -> {image_name}")
-            tar_gz_f.add(image_path, image_name)
+        for section, file_names in model_storage.attachments.items():
+            section_dir = os.path.join(model_dir_path, 'attachments', section)
+            for file_name in file_names:
+                file_path = os.path.join(section_dir, file_name)
+                tar_file_key = f"attachments/{section}/{file_name}"
+                logging.info(f"    packing {file_path} -> {tar_file_key}")
+                tar_gz_f.add(file_path, tar_file_key)
 
         # packing ymir-info.yaml
         logging.info(f"  packing {ymir_info_file_path} -> {ymir_info_file_name}")
