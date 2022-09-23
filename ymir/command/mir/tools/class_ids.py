@@ -3,6 +3,7 @@ import os
 from typing import Dict, Iterator, List, Optional, Set, Tuple, Union
 
 import fasteners  # type: ignore
+from mir.version import YMIR_VERSION
 from pydantic import BaseModel, root_validator, validator, validate_model
 import yaml
 
@@ -61,6 +62,7 @@ class UserLabels(LabelStorage):
     _id_to_name: Dict[int, str] = {}
     _name_aliases_to_id: Dict[str, int] = {}
     storage_file: Optional[str] = None
+    ymir_version = YMIR_VERSION
 
     @root_validator
     def _generate_dicts(cls, values: dict) -> dict:
