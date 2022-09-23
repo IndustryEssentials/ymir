@@ -6,9 +6,15 @@ const options = [
   { value: 0, label: 'new' },
   { value: 1, label: 'exist' },
 ]
-const MergeType = ({ initialValue = 0 }) => (
+const MergeType = ({ initialValue = 0, disabled = [] }) => (
   <Form.Item name='type' initialValue={initialValue} label={t('task.merge.type.label')}>
-    <RadioGroup options={options} labelPrefix='task.merge.type.' />
+    <RadioGroup
+      options={options.map(option => ({
+        ...option,
+        disabled: disabled.includes(option.value)
+      }))}
+      labelPrefix='task.merge.type.'
+    />
   </Form.Item>
 )
 
