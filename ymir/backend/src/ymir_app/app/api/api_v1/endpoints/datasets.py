@@ -17,6 +17,7 @@ from app.api.errors.errors import (
     DuplicateDatasetGroupError,
     NoDatasetPermission,
     FailedToHideProtectedResources,
+    FailedToParseVizResponse,
     ProjectNotFound,
     MissingOperations,
     RefuseToProcessMixedOperations,
@@ -306,15 +307,20 @@ def get_dataset(
             project_id=dataset.project_id,
             user_labels=user_labels,
         )
-        if verbose_info:
-            # get cks and tags
-            dataset_stats = viz_client.get_dataset_info(dataset_hash=dataset.hash)
+        try:
+            if verbose_info:
+                # get cks and tags
+                dataset_stats = viz_client.get_dataset_info(dataset_hash=dataset.hash)
+            else:
+                # get negative info based on given keywords
+                dataset_stats = viz_client.get_dataset_analysis(
+                    dataset_hash=dataset.hash, keyword_ids=keyword_ids, require_hist=False
+                )
+        except FailedToParseVizResponse:
+            logger.warning("[dataset info] could not get dataset info from viewer, return with basic info")
+            pass
         else:
-            # get negative info based on given keywords
-            dataset_stats = viz_client.get_dataset_analysis(
-                dataset_hash=dataset.hash, keyword_ids=keyword_ids, require_hist=False
-            )
-        dataset_info.update(dataset_stats)
+            dataset_info.update(dataset_stats)
 
     return {"result": dataset_info}
 
@@ -456,15 +462,11 @@ def normalize_fusion_parameter(
     ex_datasets = crud.dataset.get_multi_by_ids(db, ids=fusion_params.exclude_datasets)
     return {
         "include_datasets": [dataset.hash for dataset in in_datasets],
-        "strategy":
-        fusion_params.include_strategy,
+        "strategy": fusion_params.include_strategy,
         "exclude_datasets": [dataset.hash for dataset in ex_datasets],
-        "include_class_ids":
-        user_labels.id_for_names(names=fusion_params.include_labels, raise_if_unknown=True)[0],
-        "exclude_class_ids":
-        user_labels.id_for_names(names=fusion_params.exclude_labels, raise_if_unknown=True)[0],
-        "sampling_count":
-        fusion_params.sampling_count,
+        "include_class_ids": user_labels.id_for_names(names=fusion_params.include_labels, raise_if_unknown=True)[0],
+        "exclude_class_ids": user_labels.id_for_names(names=fusion_params.exclude_labels, raise_if_unknown=True)[0],
+        "sampling_count": fusion_params.sampling_count,
     }
 
 
@@ -663,10 +665,16 @@ def filter_dataset(
     datasets = ensure_datasets_are_ready(db, dataset_ids=[in_filter.dataset_id])
     main_dataset = datasets[0]
 
-    class_ids = (user_labels.id_for_names(names=in_filter.include_keywords, raise_if_unknown=True)[0]
-                 if in_filter.include_keywords else None)
-    ex_class_ids = (user_labels.id_for_names(names=in_filter.exclude_keywords, raise_if_unknown=True)[0]
-                    if in_filter.exclude_keywords else None)
+    class_ids = (
+        user_labels.id_for_names(names=in_filter.include_keywords, raise_if_unknown=True)[0]
+        if in_filter.include_keywords
+        else None
+    )
+    ex_class_ids = (
+        user_labels.id_for_names(names=in_filter.exclude_keywords, raise_if_unknown=True)[0]
+        if in_filter.exclude_keywords
+        else None
+    )
 
     task_hash = gen_task_hash(current_user.id, in_filter.project_id)
     try:
