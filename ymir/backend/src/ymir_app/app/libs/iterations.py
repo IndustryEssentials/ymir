@@ -65,7 +65,7 @@ def get_training_classes(db: Session, project_id: int, user_labels: UserLabels) 
     project = crud.project.get(db, id=project_id)
     if not project or not project.training_targets:
         raise InvalidProject()
-    class_ids = user_labels.get_class_ids(project.training_targets)
+    class_ids = user_labels.id_for_names(names=project.training_targets, raise_if_unknown=True)[0]
     return dict(zip(project.training_targets, class_ids))
 
 
