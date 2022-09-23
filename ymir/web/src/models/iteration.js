@@ -8,10 +8,6 @@ import {
 import { Stages, transferIteration, transferMiningStats } from "@/constants/iteration"
 import { updateResultState } from '@/constants/common'
 
-function getMoreInfo() {
-
-}
-
 const initQuery = {
   name: "",
   offset: 0,
@@ -141,6 +137,7 @@ export default {
       }
     },
     *getPrepareStagesResult({ payload }, { put }) {
+      const { id } = payload
       const project = yield put.resolve({
         type: 'project/getProject',
         payload,
@@ -168,7 +165,7 @@ export default {
 
       yield put({
         type: 'UPDATE_PREPARE_STAGES_RESULT',
-        payload: results,
+        payload: { pid: id, results },
       })
 
       return results
@@ -219,7 +216,8 @@ export default {
       }
     },
     *updatePrepareStagesResult({ payload }, { put, select }) {
-      const results = yield select(({ iteration }) => iteration.prepareStagesResult)
+      const { id } = yield select(({ project }) => project.current)
+      const results = yield select(({ iteration }) => iteration.prepareStagesResult[id])
       const tasks = payload || {}
       const updatedResults = Object.keys(results).reduce((prev, key) => {
         const result = results[key]
@@ -230,7 +228,7 @@ export default {
       if (updatedResults) {
         yield put({
           type: 'UPDATE_PREPARE_STAGES_RESULT',
-          payload: updatedResults,
+          payload: { pid: id, results: updatedResults },
         })
       }
     },
@@ -259,9 +257,13 @@ export default {
       }
     },
     UPDATE_PREPARE_STAGES_RESULT(state, { payload }) {
+      const { pid, results } = payload
       return {
         ...state,
-        prepareStagesResult: payload,
+        prepareStagesResult: {
+          ...state.prepareStagesResult,
+          [pid]: results,
+        },
       }
     },
   },
