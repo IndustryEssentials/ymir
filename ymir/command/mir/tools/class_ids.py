@@ -2,7 +2,7 @@ from datetime import datetime
 import os
 from typing import Dict, Iterator, List, Optional, Set, Tuple, Union
 
-import fasteners
+import fasteners  # type: ignore
 from mir.version import YMIR_VERSION
 from pydantic import BaseModel, root_validator, validator, validate_model
 import yaml
