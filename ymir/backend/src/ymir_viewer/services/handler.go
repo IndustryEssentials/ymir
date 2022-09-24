@@ -43,6 +43,7 @@ type BaseMongoServer interface {
 	) *constants.QueryAssetsResult
 	QueryDatasetStats(
 		mirRepo *constants.MirRepo,
+		context *protos.MirContext,
 		classIDs []int,
 		requireAssetsHist bool,
 		requireAnnotationsHist bool,
@@ -286,8 +287,9 @@ func (v *ViewerHandler) GetDatasetStatsHandler(
 	if len(classIDs) < 1 && !requireAssetsHist && !requireAnnotationsHist {
 		panic("same result as dataset_meta_count, should use lightweight interface instead.")
 	}
+	mirContext := v.mirLoader.LoadSingleMirData(mirRepo, constants.MirfileContext).(*protos.MirContext)
 	v.loadAndIndexAssets(mirRepo)
-	result := v.mongoServer.QueryDatasetStats(mirRepo, classIDs, requireAssetsHist, requireAnnotationsHist)
+	result := v.mongoServer.QueryDatasetStats(mirRepo, mirContext, classIDs, requireAssetsHist, requireAnnotationsHist)
 
 	// Backfill task and context info, to align with GetDatasetMetaCountsHandler result.
 	return v.fillupDatasetUniverseFields(mirRepo, result)
