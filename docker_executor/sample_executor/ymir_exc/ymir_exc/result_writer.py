@@ -2,7 +2,7 @@ import json
 import logging
 import os
 import time
-from typing import Any, Dict, List, Tuple
+from typing import Dict, List, Tuple
 
 from pydantic import BaseModel
 import yaml
@@ -111,11 +111,3 @@ def write_infer_result(infer_result: Dict[str, List[Annotation]]) -> None:
     env_config = env.get_current_env()
     with open(env_config.output.infer_result_file, 'w') as f:
         f.write(json.dumps(result))
-
-
-def __read_yaml(file_path: str) -> Dict[str, Any]:
-    try:
-        with open(file_path, 'r') as f:
-            return yaml.safe_load(f)
-    except FileNotFoundError:
-        return {}  # will create new if not exists, so dont care this exception
