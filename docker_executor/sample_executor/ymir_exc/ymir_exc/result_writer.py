@@ -47,7 +47,6 @@ def write_model_stage(stage_name: str,
             f"invalid stage_name: {stage_name}, need alphabets, numbers and underlines, start with alphabets")
 
     env_config = env.get_current_env()
-    # key: stage name, value: stage name, files, timestamp, mAP
     training_result: dict = {}
     try:
         with open(env_config.output.training_result_file, 'r') as f:
