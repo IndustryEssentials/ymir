@@ -10,12 +10,12 @@ from google.protobuf import json_format
 from mir import scm
 from mir.commands.checkout import CmdCheckout
 from mir.commands.commit import CmdCommit
-from mir.protos import mir_command_pb2 as mirpb
 from mir.tools import det_eval_ops, exodus
 from mir.tools import mir_storage, mir_repo_utils, revs_parser
 from mir.tools import settings as mir_settings
 from mir.tools.code import MirCode
 from mir.tools.errors import MirRuntimeError
+from ymir_1_3_0.mir.protos import mir_command_pb2 as mirpb
 
 
 def create_evaluate_config(conf_thr: float = mir_settings.DEFAULT_EVALUATE_CONF_THR,
