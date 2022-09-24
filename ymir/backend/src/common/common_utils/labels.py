@@ -10,7 +10,6 @@ from mir.tools.class_ids import LabelStorage, SingleLabel, UserLabels
 from proto import backend_pb2
 
 # indirect imports so that ymir_app does not need to import mir-cmd package.
-from mir.version import YMIR_VERSION  # type: ignore # noqa
 from mir.tools.class_ids import ids_file_name, load_or_create_userlabels  # type: ignore # noqa
 
 

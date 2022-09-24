@@ -85,7 +85,7 @@ class TaskTrainingInvoker(TaskBaseInvoker):
         tensorboard_dir = os.path.join(tensorboard_root, request.user_id, request.task_id)
         os.makedirs(tensorboard_dir, exist_ok=True)
 
-        asset_cache_dir = os.path.join(sandbox_root, request.user_id, "training_asset_cache")
+        asset_cache_dir = os.path.join(sandbox_root, request.user_id, "asset_cache")
         os.makedirs(asset_cache_dir, exist_ok=True)
 
         config_file = cls.gen_executor_config_path(subtask_workdir)
