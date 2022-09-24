@@ -6,9 +6,9 @@ from typing import List, Dict, Set
 
 import yaml
 
+from common_utils.version import DEFAULT_YMIR_SRC_VERSION
 from id_definition.error_codes import UpdaterErrorCode
 from id_definition.task_id import IDProto
-from mir import version
 
 
 class SandboxError(Exception):
@@ -49,7 +49,7 @@ def detect_sandbox_src_versions(sandbox_root: str) -> List[str]:
             raise SandboxError(error_code=UpdaterErrorCode.INVALID_USER_LABEL_FILE,
                                error_message=f"invalid label file: {user_label_file}") from e
 
-        ver_to_users[user_label_dict.get('ymir_version', version.DEFAULT_YMIR_SRC_VERSION)].append(user_id)
+        ver_to_users[user_label_dict.get('ymir_version', DEFAULT_YMIR_SRC_VERSION)].append(user_id)
 
     if len(ver_to_users) > 1:
         logging.info(f"[detect_sandbox_src_versions]: multiple sandbox versions detected: {ver_to_users}")

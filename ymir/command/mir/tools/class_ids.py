@@ -3,11 +3,9 @@ import os
 from typing import Dict, Iterator, List, Optional, Set, Tuple, Union
 
 import fasteners  # type: ignore
-from mir.version import YMIR_VERSION
+from mir.version import YMIR_VERSION, ymir_salient_version
 from pydantic import BaseModel, root_validator, validator, validate_model
 import yaml
-
-EXPECTED_FILE_VERSION = 1
 
 
 class SingleLabel(BaseModel):
@@ -27,14 +25,16 @@ class SingleLabel(BaseModel):
 
 
 class LabelStorage(BaseModel):
-    version: int = EXPECTED_FILE_VERSION
     labels: List[SingleLabel] = []
+    ymir_version: str = YMIR_VERSION
 
     # protected: validators
-    @validator('version')
-    def _check_version(cls, v: int) -> int:
-        if v != EXPECTED_FILE_VERSION:
-            raise ValueError(f"incorrect version: {v}, needed {EXPECTED_FILE_VERSION}")
+    @validator('ymir_version')
+    def _check_version(cls, v: str) -> str:
+        expected_sversion = ymir_salient_version(YMIR_VERSION)
+        current_sversion = ymir_salient_version(v)
+        if current_sversion != expected_sversion:
+            raise ValueError(f"{v}/{current_sversion}, mismatch {YMIR_VERSION}/{expected_sversion}")
         return v
 
     @validator('labels')
@@ -62,7 +62,6 @@ class UserLabels(LabelStorage):
     _id_to_name: Dict[int, str] = {}
     _name_aliases_to_id: Dict[str, int] = {}
     storage_file: Optional[str] = None
-    ymir_version = YMIR_VERSION
 
     @root_validator
     def _generate_dicts(cls, values: dict) -> dict:
@@ -129,7 +128,7 @@ class UserLabels(LabelStorage):
         return added_class_id, name
 
     class Config:
-        fields = {'labels': {'include': True}}
+        fields = {'labels': {'include': True}, 'ymir_version': {'include': True}}
 
     # public interfaces.
     def id_and_main_name_for_name(self, name: str) -> Tuple[int, str]:
