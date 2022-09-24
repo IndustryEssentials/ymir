@@ -60,6 +60,12 @@ function LeftMenu() {
       getGroupItem(t('breadcrumbs.keyword'), 'keyword', [
         getItem(t('breadcrumbs.keyword'), '/home/keyword', FlagIcon,),
       ]),
+      getGroupItem(t('algo.label'), 'algo', [
+        getItem(t('algo.public.label'), '/home/algo/public', FileHistoryIcon,),
+        getItem(t('algo.mine.label'), '/home/algo/mine', FileHistoryIcon,),
+        getItem(t('algo.device.label'), '/home/algo/device', FileHistoryIcon,),
+        getItem(t('algo.support.label'), '/home/algo/support', FileHistoryIcon,),
+      ]),
       getGroupItem(t('common.top.menu.configure'), 'settings', [
         getItem(t('common.top.menu.image'), '/home/image', FileHistoryIcon,),
         isSuperAdmin(role) ? getItem(t('common.top.menu.permission'), '/home/permission', UserSettingsIcon,) : null,

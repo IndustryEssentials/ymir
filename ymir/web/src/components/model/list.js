@@ -8,6 +8,7 @@ import { diffTime } from '@/utils/date'
 import { ResultStates } from '@/constants/common'
 import { TASKTYPES, TASKSTATES } from '@/constants/task'
 import t from "@/utils/t"
+import usePublish from "@/hooks/usePublish"
 
 import CheckProjectDirty from "@/components/common/CheckProjectDirty"
 import Actions from "@/components/table/actions"
@@ -45,6 +46,7 @@ function Model({ pid, project = {}, iterations, groups, modelList, versions, que
   const delGroupRef = useRef(null)
   const terminateRef = useRef(null)
   const generateRerun = useRerunAction()
+  const publish = usePublish()
 
   /** use effect must put on the top */
   useEffect(() => {
@@ -272,6 +274,13 @@ function Model({ pid, project = {}, iterations, groups, modelList, versions, que
     const { id, name, url, state, taskState, taskType, task, isProtected, stages, recommendStage } = record
 
     const actions = [
+      {
+        key: "publish",
+        label: t("model.action.publish"),
+        hidden: () => !isValidModel(state),
+        onclick: () => publish(),
+        icon: <ShieldIcon />,
+      },
       {
         key: "verify",
         label: t("model.action.verify"),
