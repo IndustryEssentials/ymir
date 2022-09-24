@@ -46,11 +46,12 @@ def write_model_stage(stage_name: str,
         raise ValueError(
             f"invalid stage_name: {stage_name}, need alphabets, numbers and underlines, start with alphabets")
 
+    training_result: dict = {}  # key: stage name, value: stage name, files, timestamp, mAP
+
     env_config = env.get_current_env()
-    training_result: dict = {}
     try:
         with open(env_config.output.training_result_file, 'r') as f:
-            training_result = yaml.safe_load(f)
+            training_result = yaml.safe_load(stream=f)
     except FileNotFoundError:
         pass  # will create new if not exists, so dont care this exception
 
