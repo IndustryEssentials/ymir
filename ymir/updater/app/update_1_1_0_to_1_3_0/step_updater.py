@@ -9,13 +9,14 @@ from ymir_1_3_0.mir.protos import mir_command_pb2 as mirpb130
 
 
 def update_all(mir_root: str) -> None:
-    logging.info('1.1.0 -> 1.3.0')
-    logging.info(f"mir root: {mir_root}")
+    logging.info(f"updating repo: {mir_root}, 110 -> 130")
 
     for tag in get_repo_tags(mir_root):
+        logging.info(f"    {tag}")
+
         mir_datas = _load(mir_root, tag)
         _update(mir_datas)
-        _save(mir_root, tag)
+        _save(mir_root, tag, mir_datas)
 
 
 def _load(mir_root: str, tag: str) -> dict:
