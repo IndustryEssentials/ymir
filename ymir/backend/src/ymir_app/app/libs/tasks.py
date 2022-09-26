@@ -10,7 +10,8 @@ from fastapi.encoders import jsonable_encoder
 from sqlalchemy.orm import Session
 
 from app.api.errors.errors import (
-    FailedToUpdateTaskStatus,
+    DatasetIndexNotReady,
+    FailedToUpdateTaskStatusTemporally,
     FailedtoCreateTask,
     ModelNotReady,
     ModelNotFound,
@@ -44,7 +45,7 @@ async def should_retry(resp: aiohttp.ClientResponse) -> bool:
         # server returned 500, for example
         return True
     response = await resp.json()
-    if int(response["code"]) == FailedToUpdateTaskStatus.code:
+    if int(response["code"]) == FailedToUpdateTaskStatusTemporally.code:
         # server explicitly asked for retry
         return True
     return False
@@ -203,6 +204,8 @@ class TaskResult:
     def dataset_info(self) -> Optional[Dict]:
         try:
             dataset_info = self.viz.get_dataset_info(self.task_hash, user_labels=self.user_labels)
+        except DatasetIndexNotReady:
+            raise FailedToUpdateTaskStatusTemporally()
         except Exception:
             logger.exception("[update task] failed to get dataset_info, check viz log")
             return None

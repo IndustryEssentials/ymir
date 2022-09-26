@@ -14,7 +14,7 @@ from app import crud, models, schemas
 from app.api import deps
 from app.api.errors.errors import (
     DuplicateTaskError,
-    FailedToUpdateTaskStatus,
+    FailedToUpdateTaskStatusTemporally,
     ModelNotReady,
     NoTaskPermission,
     ObsoleteTaskStatus,
@@ -285,7 +285,7 @@ def update_task_status(
         updated_task = task_result.update(task_result=task_update)
     except (ConnectionError, HTTPError, Timeout):
         logger.exception("Failed to update update task status. Try again later")
-        raise FailedToUpdateTaskStatus()
+        raise FailedToUpdateTaskStatusTemporally()
     except ModelNotReady:
         logger.warning("Model Not Ready")
     else:

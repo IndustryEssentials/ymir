@@ -163,6 +163,11 @@ class DatasetEvaluationMissingAnnotation(NotFound):
     message = "Could Not Evaluate Dataset Without Annotations"
 
 
+class DatasetIndexNotReady(APIError):
+    code = error_codes.DATASET_INDEX_NOT_READY
+    message = "Dataset Index In MongoDB Not Ready"
+
+
 class ModelNotReady(APIError):
     code = error_codes.MODEL_NOT_READY
     message = "Model Not Ready"
@@ -296,7 +301,7 @@ class ObsoleteTaskStatus(APIError):
     message = "Obsolete Task Status"
 
 
-class FailedToUpdateTaskStatus(APIError):
+class FailedToUpdateTaskStatusTemporally(APIError):
     code = error_codes.FAILED_TO_UPDATE_TASK_STATUS
     message = "Failed to Update Task Status"
 
