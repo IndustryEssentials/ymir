@@ -4,6 +4,7 @@ import { Table, Popover, } from "antd"
 import t from "@/utils/t"
 import { percent, isNumber } from '@/utils/number'
 import useFetch from '@/hooks/useFetch'
+import { validModel } from '@/constants/model'
 
 import SampleRates from "@/components/dataset/sampleRates"
 import MiningSampleRates from "@/components/dataset/miningSampleRates"
@@ -70,13 +71,13 @@ function List({ project }) {
     {
       title: showTitle("iteration.column.training"),
       dataIndex: 'map',
-      render: (map, { trainingModel, mapEffect }) => <div className={s.td}>
+      render: (map, { trainingModel, mapEffect }) => validModel(trainingModel || {}) ? <div className={s.td}>
         <span style={{ display: 'inline-block', width: '70%', overflow: 'hidden', textOverflow: 'ellipsis'}}>
           {trainingModel?.name}
         </span>
         <span>{map >= 0 ? percent(map) : null}</span>
         <span className={s.extraTag}>{renderExtra(mapEffect, true)}</span>
-      </div>,
+      </div> : null,
       align: 'center',
     },
   ]

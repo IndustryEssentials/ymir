@@ -9,7 +9,7 @@ import s from "./iteration.less"
 import Stage from "./prepareStage"
 import generateStages from "./generateStages"
 
-function Prepare({ project = {}, fresh = () => { }, ...func }) {
+function Prepare({ project = {}, fresh = () => { } }) {
   const location = useLocation()
   const [validPrepare, setValidPrepare] = useState(false)
   const [id, setId] = useState(null)
@@ -18,7 +18,7 @@ function Prepare({ project = {}, fresh = () => { }, ...func }) {
   const [mergeResult, merge] = useFetch('task/merge', null, true)
   const [createdResult, createIteration] = useFetch('iteration/createIteration')
   const [_, getPrepareStagesResult] = useFetch('iteration/getPrepareStagesResult', {})
-  const results = useSelector(({ iteration }) => iteration.prepareStagesResult)
+  const results = useSelector(({ iteration }) => iteration.prepareStagesResult[project.id] || {})
   const [form] = Form.useForm()
 
   useEffect(() => {

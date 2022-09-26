@@ -24,11 +24,11 @@ function TaskDetail({ task = {} }) {
   const { id: pid } = useParams()
   const [datasetNames, setDatasetNames] = useState({})
   const [datasets, getDatasets] = useFetch('dataset/batchDatasets', [])
-  const [model, getModel] = useState({})
+  const [model, getModel] = useFetch('model/getModel', {})
 
   useEffect(() => {
     task.id && !isImport(task.type) && fetchDatasets()
-    hasValidModel(task.type) && task?.parameters?.model_id && getModel(task.parameters.model_id)
+    hasValidModel(task.type) && task?.parameters?.model_id && getModel({ id: task.parameters.model_id })
   }, [task.id])
 
   useEffect(() => {

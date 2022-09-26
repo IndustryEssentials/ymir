@@ -219,7 +219,7 @@ export default {
       const { id } = yield select(({ project }) => project.current)
       const results = yield select(({ iteration }) => iteration.prepareStagesResult[id])
       const tasks = payload || {}
-      const updatedResults = Object.keys(results).reduce((prev, key) => {
+      const updatedResults = Object.keys(results || {}).reduce((prev, key) => {
         const result = results[key]
         const updated = result ? updateResultState(result, tasks) : undefined
         return { ...prev, [key]: updated }
@@ -231,6 +231,24 @@ export default {
           payload: { pid: id, results: updatedResults },
         })
       }
+    },
+    *updateIterationCache({ payload: tasks = {} }, { put, select }) {
+      // const tasks = payload || {}
+      const iteration = yield select(state => state.iteration.iteration)
+      const updateItertion = Object.keys(iteration).reduce((prev, key) => {
+        let item = iteration[key]
+        if (item.id) {
+          item = updateResultState(item, tasks)
+        }
+        return {
+          ...prev,
+          [key]: item,
+        }
+      }, {})
+      yield put({
+        type: 'UPDATE_ITERATION',
+        payload: updateItertion,
+      })
     },
   },
   reducers: {
@@ -245,9 +263,13 @@ export default {
     },
     UPDATE_ITERATION(state, { payload }) {
       const iteration = payload
+      const cache = state.iteration
       return {
         ...state,
-        iteration,
+        iteration: {
+          ...cache,
+          [iteration.id]: iteration,
+        },
       }
     },
     UPDATE_CURRENT_STAGE_RESULT(state, { payload }) {
