@@ -22,9 +22,10 @@ const Algo = () => {
   const [post, recieved] = usePostMessage(base)
 
   useEffect(() => {
-    const self = window.location.origin
-    const url = `${base}${pages[module].path}?from=${self}`
     if (!location.state?.reload) {
+      const self = window.location.origin
+      const lang = getLocale()
+      const url = `${base}${pages[module].path}?from=${self}&userId=${userId}&userName=${userName}&lang=${lang}`
       setUrl(url)
     }
     history.replace({ state: {} })
@@ -35,9 +36,9 @@ const Algo = () => {
       return
     }
     if (recieved.type === 'loaded') {
-      send()
+      // send()
     } else if (recieved.type === 'pageChanged') {
-      const page = Object.keys(pages).find(key =>  pages[key].path === recieved.data.path)
+      const page = Object.keys(pages).find(key => (recieved.data?.path || '').includes(pages[key].path))
       if (page !== module) {
         history.push(`/home/algo/${page}`, { reload: true })
       }
