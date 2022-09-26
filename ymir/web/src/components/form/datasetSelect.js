@@ -11,6 +11,7 @@ const defaultLabelRender = item => <>{item.name} {item.versionName}(assets: {ite
 const DatasetSelect = ({
   pid, filter = [], allowEmpty, filterGroup = [],
   filters, value, onChange = () => { }, renderLabel = defaultLabelRender,
+  onReady = () => {},
   extra, changeByUser, ...resProps
 }) => {
   const [options, setOptions] = useState([])
@@ -20,6 +21,10 @@ const DatasetSelect = ({
   useEffect(() => {
     pid && fetchDatasets()
   }, [pid])
+
+  useEffect(() => {
+    _ && onReady(_)
+  }, [_])
 
   useEffect(() => {
     let selected = null
