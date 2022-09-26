@@ -190,7 +190,6 @@ class TaskResult:
             self._user_labels = self.controller.get_labels_of_user(self.user_id)
         return self._user_labels
 
-    @property
     def model_info(self) -> Optional[Dict]:
         try:
             result = self.viz.get_model_info(self.task_hash)
@@ -204,7 +203,6 @@ class TaskResult:
             logger.info(f"[viewer_model] model_info: {result}")
             return result
 
-    @property
     def dataset_info(self) -> Optional[Dict]:
         try:
             dataset_info = self.viz.get_dataset_info(self.task_hash, user_labels=self.user_labels)
@@ -215,12 +213,6 @@ class TaskResult:
             logger.info("[update task] delete user keywords cache for new keywords from dataset")
             self.cache.delete_personal_keywords_cache()
         return dataset_info
-
-    @property
-    def result_info(self) -> Optional[Dict]:
-        if self._result is None:
-            self._result = self.model_info if self.result_type is ResultType.model else self.dataset_info
-        return self._result
 
     def get_dest_group_info(self, dataset_id: int) -> Tuple[int, str]:
         if self.result_type is ResultType.dataset:
@@ -318,7 +310,7 @@ class TaskResult:
         if not model_record:
             logger.error("[update task] task result (model) not found, skip")
             return
-        model_info = self.model_info
+        model_info = self.model_info()
         if model_info:
             # as long as model info is ready, regardless of task status, just set model as ready
             crud.task.update_parameters_and_config(
@@ -340,13 +332,15 @@ class TaskResult:
         if not dataset_record:
             logger.error("[update task] task result (dataset) not found, skip")
             return
-        if task_result.state is TaskState.done and self.dataset_info:
-            crud.dataset.finish(
-                self.db,
-                dataset_record.id,
-                result_state=ResultState.ready,
-                result=self.dataset_info,
-            )
+        if task_result.state is TaskState.done:
+            dataset_info = self.dataset_info()
+            if dataset_info:
+                crud.dataset.finish(
+                    self.db,
+                    dataset_record.id,
+                    result_state=ResultState.ready,
+                    result=dataset_info,
+                )
         else:
             crud.dataset.finish(
                 self.db,

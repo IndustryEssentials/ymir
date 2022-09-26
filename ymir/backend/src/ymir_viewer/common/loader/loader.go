@@ -31,7 +31,6 @@ func (l *MirRepoLoader) LoadMutipleMirDatas(
 	mirRepo *constants.MirRepo,
 	mirFiles []constants.MirFile,
 ) []interface{} {
-	defer tools.TimeTrack(time.Now())
 	mirRoot, mirRev := mirRepo.BuildRepoID()
 
 	repo, err := gitreader.OpenRepo(mirRoot)
@@ -92,7 +91,8 @@ func (l *MirRepoLoader) LoadAssetsDetail(
 	offset int,
 	limit int,
 ) ([]constants.MirAssetDetail, int64, int64) {
-	defer tools.TimeTrack(time.Now())
+	defer tools.TimeTrack(time.Now(), mirRepo.TaskID)
+
 	filesToLoad := []constants.MirFile{constants.MirfileMetadatas, constants.MirfileAnnotations}
 	mirDatas := l.LoadMutipleMirDatas(mirRepo, filesToLoad)
 	mirMetadatas := mirDatas[0].(*protos.MirMetadatas)
