@@ -13,7 +13,6 @@ const options = [
 ]
 
 const ContentRender = ({ duplicated, strategy, disabled, onChange = () => { } }) => {
-  console.log('strategy:', strategy)
   const [s, setS] = useState(strategy)
   useEffect(() => onChange(s), [s])
   return <div>
