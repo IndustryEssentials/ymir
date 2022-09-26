@@ -1,19 +1,25 @@
 FROM golang:1.18.5-buster AS build
 
+# --build-arg GO_SOURCE='https://mirrors.aliyun.com/goproxy/,direct'
+ARG GO_SOURCE=https://goproxy.io,direct
+
 WORKDIR /app
 COPY ./backend/src/ymir_viewer/go.mod .
 COPY ./backend/src/ymir_viewer/go.sum .
+RUN go env -w GO111MODULE=on
+RUN go env -w GOPROXY=${GO_SOURCE}
 RUN go mod download -x
+RUN go install github.com/grpc-ecosystem/grpc-health-probe@v0.4.12
 
 COPY ./backend/src/ymir_viewer/ /ymir_viewer
 WORKDIR /ymir_viewer
 RUN go build -mod=readonly -v -o viewer_server
-RUN go install github.com/grpc-ecosystem/grpc-health-probe@v0.4.12
 
 FROM ubuntu:20.04
 
 ENV DEBIAN_FRONTEND=noninteractive
 
+# --build-arg PIP_SOURCE=https://pypi.mirrors.ustc.edu.cn/simple
 ARG PIP_SOURCE=https://pypi.org/simple
 
 RUN apt-get update \
