@@ -3,8 +3,8 @@ import { useEffect, useRef, useState } from 'react'
 import { getLocale, history, useLocation, useParams, useSelector } from 'umi'
 type Params = { [key: string]: any }
 
-// const base = 'http://192.168.28.58:8000'
-const base = 'http://192.168.34.14:8001'
+const base = 'http://192.168.28.58:8000'
+// const base = 'http://192.168.34.14:8001'
 
 const pages: Params = {
   public: { path: '/publicAlgorithm', action: 'pageInit' },
@@ -22,7 +22,8 @@ const Algo = () => {
   const [post, recieved] = usePostMessage(base)
 
   useEffect(() => {
-    const url = `${base}${pages[module].path}`
+    const self = window.location.origin
+    const url = `${base}${pages[module].path}?from=${self}`
     if (!location.state?.reload) {
       setUrl(url)
     }
