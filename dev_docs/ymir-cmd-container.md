@@ -1,5 +1,10 @@
 # ymir 与功能性 docker container 数据传输接口
 
+| 协议文档版本 | ymir 版本 | 说明 |
+| --- | --- | --- |
+| [0.0.0](https://raw.githubusercontent.com/IndustryEssentials/ymir/release-1.1.0/docs/ymir-cmd-container.md) | 0.0.0 - 1.1.0 | 初始版本 |
+| 1.0.0 | 1.2.0 - 现在 | 增加关于中间模型的描述 |
+
 ## 1. 关于此文档
 
 此文档用于规定 ymir 与功能性 docker container 之间的数据交互方式，这些 docker container 用于模型训练，挖掘及推理任务。
@@ -232,13 +237,25 @@ task_0    1622552975    1    done
 | /out/monitor-log.txt | 参考共同部分 |
 | /out/models | 必要，最终生成的模型的输出目录，里面直接存放模型文件，没有下级子目录。<br>必须有一个 `result.yaml` 文件，格式参考注1 |
 
-注1. `result.yaml` 文件的格式如下，其中 model 节点填入 `/out/models` 下的模型文件名（不带目录名 `/out/models`）：
+注1. `result.yaml` 文件的格式如下：
 
-```
-map: 1.000
-model:
- - 149_1.000-symbol.json
- - 149_1.000-0149.params
+``` yaml
+best_stage_name: epoch_50  # 最优的中间模型名称
+model_stages:
+  epoch_10:  # 中间模型名称：epoch_10
+    files:   # 中间模型对应的文件列表，这些文件在 /out/models 下面
+      - 149_1.000-symbol.json
+      - 149_1.000-0149.params
+    mAP: 0.6 # 中间模型对应的 mAP
+    stage_name: epoch_10
+    timestamp: 1663934682 # 创建时间对应的 timestamp
+  epoch_50:
+    files:
+      - 149_1.000-symbol.json
+      - 149_1.000-0149.params
+    mAP: 0.8
+    stage_name: epoch_50
+    timestamp: 1663934682
 ```
 
 ### 4.4. inference / mining 镜像输入/输出挂载格式

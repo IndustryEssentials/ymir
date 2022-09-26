@@ -240,7 +240,7 @@ class TestCmdTraining(unittest.TestCase):
 
     # public: test cases
     @mock.patch('subprocess.run', side_effect=_mock_run_docker_cmd)
-    @mock.patch("mir.commands.training._process_model_storage", side_effect=__mock_process_model_storage)
+    @mock.patch("mir.commands.training._find_and_save_model", side_effect=__mock_process_model_storage)
     def test_normal_00(self, *mock_run):
         """ normal case """
         fake_args = type('', (), {})()
