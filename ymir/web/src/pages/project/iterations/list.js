@@ -70,7 +70,10 @@ function List({ project }) {
     {
       title: showTitle("iteration.column.training"),
       dataIndex: 'map',
-      render: (map, { mapEffect }) => <div className={s.td}>
+      render: (map, { trainingModel, mapEffect }) => <div className={s.td}>
+        <span style={{ display: 'inline-block', width: '70%', overflow: 'hidden', textOverflow: 'ellipsis'}}>
+          {trainingModel?.name}
+        </span>
         <span>{map >= 0 ? percent(map) : null}</span>
         <span className={s.extraTag}>{renderExtra(mapEffect, true)}</span>
       </div>,
@@ -80,9 +83,9 @@ function List({ project }) {
 
   function renderPop(label, dataset = {}, ccontent, extra = '') {
     dataset.project = project
-    const content = ccontent || <SampleRates keywords={project.keywords} dataset={dataset} progressWidth={0.4} />
+    const content = ccontent || <SampleRates label={label} keywords={project.keywords} dataset={dataset} progressWidth={0.4} />
     return <Popover content={content} overlayInnerStyle={{ minWidth: 500 }}>
-      <span>{label}</span>
+      <span title={label}>{label}</span>
       {extra}
     </Popover>
   }
@@ -122,7 +125,11 @@ function List({ project }) {
   }
 
   function renderDatasetLabel(dataset) {
-    return dataset ? `${dataset.name} ${dataset.versionName} (${dataset.assetCount})` : ''
+    if (!dataset) {
+      return
+    }
+    const label = `${dataset.name} ${dataset.versionName} (${dataset.assetCount})`
+    return <span title={label}>{label}</span>
   }
 
   function showTitle(str) {
