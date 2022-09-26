@@ -7,7 +7,7 @@ import (
 	"time"
 )
 
-func TimeTrack(start time.Time) {
+func TimeTrack(start time.Time, output string) {
 	elapsed := time.Since(start)
 
 	// Skip this function, and fetch the PC and file for its parent.
@@ -20,5 +20,5 @@ func TimeTrack(start time.Time) {
 	runtimeFunc := regexp.MustCompile(`^.*\.(.*)$`)
 	name := runtimeFunc.ReplaceAllString(funcObj.Name(), "$1")
 
-	log.Printf("%s took %s\n", name, elapsed)
+	log.Printf("%s %s took %s\n", name, output, elapsed)
 }

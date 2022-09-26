@@ -28,7 +28,18 @@ class Annotation(BaseModel):
 def write_model_stage(stage_name: str,
                       files: List[str],
                       mAP: float,
-                      timestamp: int = None) -> None:
+                      timestamp: int = None,
+                      attachments: Dict[str, List[str]] = None) -> None:
+    """
+    Write model stage and model attachments
+
+    Args:
+        stage_name (str): name to this model stage
+        files (List[str]): model file names for this stage
+            All files should under directory: `/out/models`
+        mAP (float): mean average precision of this stage
+        timestamp (int): timestamp (in seconds)
+    """
     if not stage_name or not files:
         raise ValueError('empty stage_name or files')
     if not stage_name.isidentifier():
@@ -67,6 +78,9 @@ def write_model_stage(stage_name: str,
         del model_stages[del_stage_name]
         logging.info(f"data_writer removed model stage: {del_stage_name}")
     training_result['model_stages'] = model_stages
+
+    # attachments
+    training_result['attachments'] = attachments or {}
 
     # save all
     with open(env_config.output.training_result_file, 'w') as f:

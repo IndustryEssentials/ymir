@@ -1,3 +1,4 @@
+from functools import cached_property
 import json
 import itertools
 import asyncio
@@ -179,18 +180,12 @@ class TaskResult:
         self.cache = CacheClient(user_id=self.user_id)
 
         self._result: Optional[Dict] = None
-        self._user_labels: Optional[Dict] = None
 
-    @property
+    @cached_property
     def user_labels(self) -> Dict:
-        """
-        Lazy evaluate labels from controller
-        """
-        if self._user_labels is None:
-            self._user_labels = self.controller.get_labels_of_user(self.user_id)
-        return self._user_labels
+        return self.controller.get_labels_of_user(self.user_id)
 
-    @property
+    @cached_property
     def model_info(self) -> Optional[Dict]:
         try:
             result = self.viz.get_model_info(self.task_hash)
@@ -204,7 +199,7 @@ class TaskResult:
             logger.info(f"[viewer_model] model_info: {result}")
             return result
 
-    @property
+    @cached_property
     def dataset_info(self) -> Optional[Dict]:
         try:
             dataset_info = self.viz.get_dataset_info(self.task_hash, user_labels=self.user_labels)
@@ -215,12 +210,6 @@ class TaskResult:
             logger.info("[update task] delete user keywords cache for new keywords from dataset")
             self.cache.delete_personal_keywords_cache()
         return dataset_info
-
-    @property
-    def result_info(self) -> Optional[Dict]:
-        if self._result is None:
-            self._result = self.model_info if self.result_type is ResultType.model else self.dataset_info
-        return self._result
 
     def get_dest_group_info(self, dataset_id: int) -> Tuple[int, str]:
         if self.result_type is ResultType.dataset:

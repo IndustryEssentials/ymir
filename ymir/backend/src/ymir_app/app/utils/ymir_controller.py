@@ -403,7 +403,11 @@ class ControllerClient:
         # if not set labels, lost the key label_collection
         if not resp.get("label_collection"):
             raise ValueError(f"Missing labels for user {user_id}")
-        return UserLabels.parse_obj(dict(labels=resp["label_collection"]["labels"]))
+        return UserLabels.parse_obj(
+            dict(
+                labels=resp["label_collection"]["labels"],
+                ymir_version=resp["label_collection"]["ymir_version"],
+            ))
 
     def create_task(
         self,
