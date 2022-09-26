@@ -6,6 +6,7 @@ import { isSuperAdmin } from '@/constants/user'
 import {
   BarchartIcon, FlagIcon, GithubIcon, FileHistoryIcon, MymodelIcon,
   NavDatasetIcon, UserIcon, UserSettingsIcon, DiagnosisIcon, EditIcon, EyeOffIcon, TrainIcon,
+  DeviceListIcon, DeviceSupportedIcon, MyAlgoIcon, StoreIcon,
   BarChart2LineIcon, ProjectIcon, VectorIcon, BookIcon,
 } from '@/components/common/icons'
 import IterationIcon from '@/components/icon/Xiangmudiedai'
@@ -61,10 +62,10 @@ function LeftMenu() {
         getItem(t('breadcrumbs.keyword'), '/home/keyword', FlagIcon,),
       ]),
       getGroupItem(t('algo.label'), 'algo', [
-        getItem(t('algo.public.label'), '/home/algo/public', FileHistoryIcon,),
-        getItem(t('algo.mine.label'), '/home/algo/mine', FileHistoryIcon,),
-        getItem(t('algo.device.label'), '/home/algo/device', FileHistoryIcon,),
-        getItem(t('algo.support.label'), '/home/algo/support', FileHistoryIcon,),
+        getItem(t('algo.public.label'), '/home/algo/public', StoreIcon,),
+        getItem(t('algo.mine.label'), '/home/algo/mine', MyAlgoIcon,),
+        getItem(t('algo.device.label'), '/home/algo/device', DeviceListIcon,),
+        getItem(t('algo.support.label'), '/home/algo/support', DeviceSupportedIcon,),
       ]),
       getGroupItem(t('common.top.menu.configure'), 'settings', [
         getItem(t('common.top.menu.image'), '/home/image', FileHistoryIcon,),
