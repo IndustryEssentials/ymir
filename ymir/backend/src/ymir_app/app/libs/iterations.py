@@ -29,20 +29,18 @@ def calculate_mining_progress(
     viz = VizClient(user_id, project_id, user_labels)
     previous_iterations = crud.project.get_previous_iterations(db, project_id=project_id, iteration_id=iteration_id)
     if not previous_iterations:
-        return generate_empty_progress(viz, mining_dataset, training_class_ids)
+        return generate_empty_progress()
 
     previous_labelled_datasets = crud.dataset.get_multi_by_ids(
         db, ids=[i.label_output_dataset_id for i in previous_iterations if i.label_output_dataset_id]
     )
     if not previous_labelled_datasets:
         logger.warning("previous iteration(%s) got NO labelled datasets", iteration_id)
-        return generate_empty_progress(viz, mining_dataset, training_class_ids)
+        return generate_empty_progress()
 
     total_mining_ratio = get_processed_assets_ratio(viz, mining_dataset, previous_labelled_datasets)
-    class_wise_mining_ratio = get_class_wise_mining_ratio(
-        viz, mining_dataset, previous_labelled_datasets, training_classes
-    )
-    negative_ratio = get_negative_ratio(viz, mining_dataset, previous_labelled_datasets, training_class_ids)
+    class_wise_mining_ratio = get_class_wise_mining_ratio(viz, previous_labelled_datasets, training_classes)
+    negative_ratio = get_negative_ratio(viz, previous_labelled_datasets, training_class_ids)
 
     return {
         "total_mining_ratio": total_mining_ratio,
@@ -51,13 +49,11 @@ def calculate_mining_progress(
     }
 
 
-def generate_empty_progress(viz: VizClient, mining_dataset: models.Dataset, training_class_ids: List[int]) -> Dict:
-    total_assets_count = mining_dataset.asset_count
-    total_negative_asset_count = viz.get_negative_count(mining_dataset.hash, training_class_ids)
+def generate_empty_progress() -> Dict:
     return {
-        "total_mining_ratio": {"processed_assets_count": 0, "total_assets_count": total_assets_count},
+        "total_mining_ratio": {"processed_assets_count": 0, "total_assets_count": 0},
         "class_wise_mining_ratio": [],
-        "negative_ratio": {"processed_assets_count": 0, "total_assets_count": total_negative_asset_count},
+        "negative_ratio": {"processed_assets_count": 0, "total_assets_count": 0},
     }
 
 
@@ -83,31 +79,31 @@ def get_processed_assets_ratio(
 
 def get_negative_ratio(
     viz: VizClient,
-    mining_dataset: models.Dataset,
     previous_labelled_datasets: List[models.Dataset],
     training_class_ids: List[int],
 ) -> Dict[str, int]:
+    """
+    calculate negative assets count against total assets count
+    """
     f_get_negative_count = partial(viz.get_negative_count, keyword_ids=training_class_ids)
-    total_negative_asset_count = f_get_negative_count(mining_dataset.hash)
-
     with ThreadPoolExecutor() as executor:
         negative_counts = executor.map(f_get_negative_count, [dataset.hash for dataset in previous_labelled_datasets])
 
+    total_assets_count = sum(dataset.asset_count for dataset in previous_labelled_datasets if dataset.asset_count)
     return {
         "processed_assets_count": sum(negative_counts),
-        "total_assets_count": total_negative_asset_count,
+        "total_assets_count": total_assets_count,
     }
 
 
 def get_class_wise_mining_ratio(
     viz: VizClient,
-    mining_dataset: models.Dataset,
     previous_labelled_datasets: List[models.Dataset],
     training_classes: Dict[str, int],
 ) -> List[Dict]:
-    total_assets_counts = viz.get_class_wise_count(mining_dataset.hash)
-    total_assets_counter = Counter(total_assets_counts)
-
+    """
+    calculate assets count for each training_classes, against total assets count
+    """
     processed_assets_counter: Counter = Counter()
     with ThreadPoolExecutor() as executor:
         class_wise_counters = executor.map(
@@ -116,11 +112,12 @@ def get_class_wise_mining_ratio(
     for class_wise_counter in class_wise_counters:
         processed_assets_counter += Counter(class_wise_counter)
 
+    total_assets_count = sum(dataset.asset_count for dataset in previous_labelled_datasets if dataset.asset_count)
     return [
         {
             "class_name": class_name,
             "processed_assets_count": processed_assets_counter[class_name],
-            "total_assets_count": total_assets_counter[class_name],
+            "total_assets_count": total_assets_count,
         }
         for class_name in training_classes
     ]

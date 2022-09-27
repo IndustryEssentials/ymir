@@ -107,8 +107,8 @@ message MetadataAttributes {
 };
 
 message Timestamp {
-    /// start time stamp
-    int64 start = 1;
+    /// start time stamp, use int32 as int64 is not correctly parsed.
+    int32 start = 1;
     /// duration (in seconds), for images, it's always 0
     float duration = 2;
 };
@@ -255,7 +255,7 @@ message Task {
     /// auto generated unique id
     string task_id = 3;
     /// execution time of this task
-    int64 timestamp = 5;  // RFC 3339 date strings
+    int32 timestamp = 5;  // RFC 3339 date strings
     /// (for training task): result model for cmd train
     ModelMeta model = 6;
     int32 return_code = 8;
@@ -290,7 +290,7 @@ message ModelMeta {
 message ModelStage {
     string stage_name = 1;
     repeated string files = 2;
-    int64 timestamp = 3;
+    int32 timestamp = 3;
     float mAP = 4;
 };
 
