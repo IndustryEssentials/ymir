@@ -1,5 +1,6 @@
 import logging
 import os
+import re
 from typing import Set, Tuple
 
 from google.protobuf.json_format import MessageToDict, ParseDict
@@ -19,8 +20,11 @@ def update_all(mir_root: str) -> None:
     logging.info(f"updating repo: {mir_root}, 110 -> 130")
 
     for tag in get_repo_tags(mir_root):
-        logging.info(f"    {tag}")
+        if re.match(pattern=r'^t.{29}@t.{29}$', string=tag) == None:
+            logging.info(f"    skip: {tag}")
+            continue
 
+        logging.info(f"    updating: {tag}")
         rev_tid = revs_parser.parse_single_arg_rev(src_rev=tag, need_tid=True)
         datas = _load(mir_root, rev_tid)
         updated_datas = _update(datas)
@@ -64,7 +68,6 @@ def _update_metadatas(mm110: mirpb110.MirMetadatas) -> mirpb130.MirMetadatas:
 
 
 def _update_annotations(ma110: mirpb110.MirAnnotations) -> mirpb130.MirAnnotations:
-    logging.info(f"ma110: {type(ma110)}")
     ta110 = ma110.task_annotations[ma110.head_task_id]
 
     ma130 = mirpb130.MirAnnotations()
@@ -79,9 +82,9 @@ def _update_annotations(ma110: mirpb110.MirAnnotations) -> mirpb130.MirAnnotatio
             oa130.det_link_id = -1
             sia130.boxes.append(oa130)
 
-            task_class_ids.update(oa130.class_id)
+            task_class_ids.add(oa130.class_id)
 
-        sia130.img_class_ids[:] = list({b.class_id for b in sia130.boxes})
+        sia130.img_class_ids[:] = {b.class_id for b in sia130.boxes}
 
     ma130.prediction.task_id = ma110.head_task_id
     ma130.prediction.type = mirpb130.AnnoType.AT_DET_BOX
@@ -89,13 +92,12 @@ def _update_annotations(ma110: mirpb110.MirAnnotations) -> mirpb130.MirAnnotatio
 
     ma130.ground_truth.CopyFrom(ma130.prediction)
 
-    logging.info(f"pred: {len(ma130.prediction.image_annotations)}, gt: {len(ma130.ground_truth.image_annotations)}")
-
     return ma130
 
 
 def _update_tasks(mt110: mirpb110.MirTasks) -> mirpb130.MirTasks:
-    pass
+    mt130 = mirpb130.MirTasks()
+    return mt130
 
 
 def _save(mir_root: str, rev_tid: revs_parser.TypRevTid, updated_datas: _MirDatas130) -> None:
