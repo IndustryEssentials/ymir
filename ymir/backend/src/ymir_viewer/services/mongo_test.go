@@ -190,10 +190,6 @@ func TestQueryAssetsSuccess(t *testing.T) {
 		mockMetricsDatabase := MockDatabase{}
 		mockMirDatabase.On("Collection", getDatasetExistenceName(), []*options.CollectionOptions(nil)).
 			Return(mockCollection)
-		mockMirDatabase.On("Collection", getDatasetExistenceName(), []*options.CollectionOptions(nil)).
-			Return(mockCollection)
-		mockMirDatabase.On("Collection", getDatasetExistenceName(), []*options.CollectionOptions(nil)).
-			Return(mockCollection)
 		mockMirDatabase.On("Collection", "@", []*options.CollectionOptions(nil)).
 			Return(mockCollection)
 
@@ -266,10 +262,6 @@ func TestQueryDatasetStatsSuccess(t *testing.T) {
 		mockCollection := mt.Coll
 		mockMirDatabase := MockDatabase{}
 		mockMetricsDatabase := MockDatabase{}
-		mockMirDatabase.On("Collection", getDatasetExistenceName(), []*options.CollectionOptions(nil)).
-			Return(mockCollection)
-		mockMirDatabase.On("Collection", getDatasetExistenceName(), []*options.CollectionOptions(nil)).
-			Return(mockCollection)
 		mockMirDatabase.On("Collection", getDatasetExistenceName(), []*options.CollectionOptions(nil)).
 			Return(mockCollection)
 		mockMirDatabase.On("Collection", "@", []*options.CollectionOptions(nil)).
@@ -487,8 +479,6 @@ func TestLoadAssetsDetail(t *testing.T) {
 		mockMirDatabase.On("Collection", "@", []*options.CollectionOptions(nil)).
 			Return(mockCollection)
 		mockMirDatabase.On("Collection", getDatasetExistenceName(), []*options.CollectionOptions(nil)).
-			Return(mockCollection)
-		mockMirDatabase.On("Collection", "@", []*options.CollectionOptions(nil)).
 			Return(mockCollection)
 
 		find := mtest.CreateCursorResponse(
