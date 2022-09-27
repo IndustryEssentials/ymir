@@ -3,6 +3,7 @@ import { DatasetGroup, Dataset, DatasetAnalysis, Annotation, Asset } from "@/int
 import { calDuration, format } from '@/utils/date'
 import { getVersionLabel } from "./common"
 import { BackendData } from "@/interface/common"
+import { Project } from "@/interface/project"
 
 export enum states {
   READY = 0,
@@ -111,6 +112,12 @@ export function validDataset(dataset: Dataset | undefined) {
 
 export function runningDataset(dataset: Dataset | undefined) {
   return dataset && dataset.state === states.READY
+}
+
+export function canHide(dataset: Dataset, project: Project | undefined) {
+  const p = project || dataset.project
+  console.log('p:', p, project, dataset.project)
+  return !runningDataset(dataset) && !p?.hiddenDatasets?.includes(dataset.id)
 }
 
 export function transferDatasetAnalysis(data: BackendData): DatasetAnalysis {
