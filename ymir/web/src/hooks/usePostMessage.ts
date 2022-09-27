@@ -23,7 +23,7 @@ const usePostMessage = (domain: string = '*', fixWin: Window | null = null): Arr
           const recieveData: Data = JSON.parse(data)
 
           if (recieveData.type === 'redirect' && recieveData?.data?.url) {
-            history.push(recieveData.data.url)
+            history.push(recieveData.data.path)
           } else {
             recievedHandle(recieveData)
           }
