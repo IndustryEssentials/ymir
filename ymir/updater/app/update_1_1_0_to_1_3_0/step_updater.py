@@ -1,10 +1,10 @@
 import logging
 import os
-import re
 import tarfile
 from typing import List, Set, Tuple
 
 from google.protobuf.json_format import MessageToDict, ParseDict
+import yaml
 
 from mir.protos import mir_command_110_pb2 as mirpb110, mir_command_130_pb2 as mirpb130
 from mir.tools import revs_parser
@@ -22,15 +22,21 @@ def update_all(mir_root: str) -> None:
     logging.info(f"updating repo: {mir_root}, 110 -> 130")
 
     for tag in get_repo_tags(mir_root):
-        if re.match(pattern=r'^t.{29}@t.{29}$', string=tag) == None:
-            logging.info(f"    skip: {tag}")
-            continue
-
         logging.info(f"    updating: {tag}")
         rev_tid = revs_parser.parse_single_arg_rev(src_rev=tag, need_tid=True)
         datas = _load(mir_root, rev_tid)
         updated_datas = _update(datas)
         _save(mir_root, rev_tid, updated_datas)
+
+
+def update_user_labels(label_path: str) -> None:
+    logging.info(f"updating user labels: {label_path}, 110 -> 130")
+
+    with open(label_path, 'r') as f:
+        label_contents = yaml.safe_load(f)
+    label_contents['ymir_version'] = '1.3.0'
+    with open(label_path, 'w') as f:
+        yaml.safe_dump(label_contents, f)
 
 
 def _load(mir_root: str, rev_tid: revs_parser.TypRevTid) -> _MirDatas110:
