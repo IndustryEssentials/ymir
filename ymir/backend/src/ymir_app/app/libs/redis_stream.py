@@ -43,7 +43,7 @@ class RedisStream:
             # Pick the ID based on the iteration: the first time we want to
             # read our pending messages, in case we crashed and are recovering.
             # Once we consumed our history, we can start getting new messages.
-            _, payloads = self._conn.xautoclaim(self.stream_name, self.group_name, self.consumer_name, 120000)
+            _, payloads = await self._conn.xautoclaim(self.stream_name, self.group_name, self.consumer_name, 120000)
             id_ = last_id if check_backlog else ">"
             for _, messages in await self._conn.xreadgroup(
                 groupname=self.group_name,
@@ -57,9 +57,9 @@ class RedisStream:
                     logger.info("handled all the legacy msgs")
                     check_backlog = False
                     continue
+                last_id = messages[-1][0]
                 payloads += messages
             logger.info("handling payloads %s", payloads)
             successful_ids = await f_processor(payloads)
             if successful_ids:
                 await self._conn.xack(self.stream_name, self.group_name, *successful_ids)
-            last_id = messages[-1][0]
