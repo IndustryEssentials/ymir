@@ -96,12 +96,12 @@ func NewViewerHandler(
 }
 
 func (v *ViewerHandler) loadAndIndexAssets(mirRepo *constants.MirRepo) {
-	exist, ready := v.mongoServer.CheckDatasetExistenceReady(mirRepo)
+	exist, _ := v.mongoServer.CheckDatasetExistenceReady(mirRepo)
 	if exist {
-		log.Printf("Mongodb %s exist: %v ready: %v", mirRepo.TaskID, exist, ready)
 		return
 	}
 
+	log.Printf("Mongodb %s not exist, loading mirdatas.", mirRepo.TaskID)
 	filesToLoad := []constants.MirFile{constants.MirfileMetadatas, constants.MirfileAnnotations}
 	mirDatas := v.mirLoader.LoadMutipleMirDatas(mirRepo, filesToLoad)
 	mirMetadatas := mirDatas[0].(*protos.MirMetadatas)
@@ -167,7 +167,7 @@ func (v *ViewerHandler) GetDatasetMetaCountsHandler(
 	}
 
 	exist, ready := v.mongoServer.CheckDatasetExistenceReady(mirRepo)
-	result.QueryContext.RepoIndexReady = exist
+	result.QueryContext.RepoIndexExist = exist
 	result.QueryContext.RepoIndexReady = ready
 	if !exist {
 		go v.loadAndIndexAssets(mirRepo)

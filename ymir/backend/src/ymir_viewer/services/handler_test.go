@@ -213,7 +213,7 @@ func TestGetDatasetMetaCountsHandler(t *testing.T) {
 		},
 		"new_types_added": true,
 		"query_context": {
-			"repo_index_exist": false,
+			"repo_index_exist": true,
 			"repo_index_ready": true
 		}
 	}`), &expectedResult)

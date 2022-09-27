@@ -83,18 +83,19 @@ func (s *MongoServer) IndexDatasetData(
 	mirMetadatas *protos.MirMetadatas,
 	mirAnnotations *protos.MirAnnotations,
 ) {
-	exist, ready := s.CheckDatasetExistenceReady(mirRepo)
+	exist, _ := s.CheckDatasetExistenceReady(mirRepo)
 	if exist {
-		log.Printf("Mongodb exist: %v ready: %v", exist, ready)
 		return
 	}
+
+	defer tools.TimeTrack(time.Now(), mirRepo.TaskID)
+	log.Printf("Load/Build index for %v, %d assets", mirRepo.TaskID, len(mirMetadatas.Attributes))
 
 	collection, collectionName := s.getRepoCollection(mirRepo)
 	s.setDatasetExistence(collectionName, false, true)
 	collection.Database().CreateCollection(s.Ctx, collectionName)
 	// Cleanup if error
 	defer func() {
-		tools.TimeTrack(time.Now(), mirRepo.TaskID)
 		if r := recover(); r != nil {
 			s.setDatasetExistence(collectionName, false, false)
 			collection.Drop(s.Ctx)
@@ -176,6 +177,8 @@ func (s *MongoServer) buildMirAssetDetail(
 }
 
 func (s *MongoServer) buildCollectionIndex(collection *mongo.Collection) {
+	defer tools.TimeTrack(time.Now(), "")
+
 	index := []mongo.IndexModel{
 		{
 			Keys: bson.M{"asset_id": bsonx.Int32(1)}, Options: options.Index(),
