@@ -7,7 +7,7 @@ const base = 'http://192.168.28.58:8000'
 const id = 'publishIframe'
 
 const createIframe = (params = {}) => {
-  const url = `/postModelMsg?data=${encodeURIComponent(JSON.stringify(params))}`
+  const url = `${base}/postModelMsg?data=${encodeURIComponent(JSON.stringify(params))}`
   console.log('url:', url)
   let iframe = document.createElement('iframe')
   document.body.appendChild(iframe)
