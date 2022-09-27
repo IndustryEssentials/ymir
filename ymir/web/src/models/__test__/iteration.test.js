@@ -12,7 +12,7 @@ function equalObject(obj1, obj2) {
 describe("models: iteration", () => {
   const createGenerator = generatorCreator(iteration)
   normalReducer(iteration, 'UPDATE_ITERATIONS', { id: 13424, iterations: product(34) }, { 13424: product(34) }, 'iterations', {})
-  normalReducer(iteration, 'UPDATE_ITERATION', product(100434), product(100434), 'iteration', {})
+  normalReducer(iteration, 'UPDATE_ITERATION', product(100434), { 100434: product(100434) }, 'iteration', {})
   normalReducer(iteration, 'UPDATE_CURRENT_STAGE_RESULT', product(100435), product(100435), 'currentStageResult', {})
 
   errorCode(iteration, "getIterations")

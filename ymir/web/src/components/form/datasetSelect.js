@@ -1,22 +1,30 @@
 import { Col, ConfigProvider, Row, Select } from 'antd'
-import { connect } from 'umi'
+import { connect, useSelector } from 'umi'
 import { useEffect, useState } from 'react'
-import t from '@/utils/t'
 
+import t from '@/utils/t'
+import useFetch from '@/hooks/useFetch'
 import EmptyState from '@/components/empty/dataset'
 
 const defaultLabelRender = item => <>{item.name} {item.versionName}(assets: {item.assetCount})</>
 
 const DatasetSelect = ({
   pid, filter = [], allowEmpty, filterGroup = [],
-  filters, value, datasets = [], onChange = () => { }, renderLabel = defaultLabelRender,
-  extra, changeByUser, getDatasets, ...resProps
+  filters, value, onChange = () => { }, renderLabel = defaultLabelRender,
+  onReady = () => {},
+  extra, changeByUser, ...resProps
 }) => {
   const [options, setOptions] = useState([])
+  const datasets = useSelector(({ dataset }) => dataset.allDatasets)
+  const [_, getDatasets] = useFetch('dataset/queryAllDatasets', [], true)
 
   useEffect(() => {
     pid && fetchDatasets()
   }, [pid])
+
+  useEffect(() => {
+    _ && onReady(_)
+  }, [_])
 
   useEffect(() => {
     let selected = null
@@ -51,7 +59,7 @@ const DatasetSelect = ({
   }, [filters, datasets])
 
   function fetchDatasets() {
-    getDatasets(pid, true)
+    getDatasets({ pid, force: true })
   }
 
   function filterEmptyAsset(datasets) {
@@ -76,19 +84,4 @@ const DatasetSelect = ({
   return extra ? <Row gutter={20} wrap={false}><Col flex={1}>{select}</Col><Col>{extra}</Col></Row> : select
 }
 
-const props = (state) => {
-  return {
-    datasets: state.dataset.allDatasets,
-  }
-}
-const actions = (dispatch) => {
-  return {
-    getDatasets(pid, force) {
-      return dispatch({
-        type: 'dataset/queryAllDatasets',
-        payload: { pid, force },
-      })
-    }
-  }
-}
-export default connect(props, actions)(DatasetSelect)
+export default DatasetSelect

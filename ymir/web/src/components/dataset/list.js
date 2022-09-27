@@ -254,7 +254,7 @@ function Datasets({ pid, project = {}, iterations, groups, datasetList, query, v
       {
         key: "filter",
         label: t("common.action.filter"),
-        hidden: () => !isValidDataset(state),
+        hidden: () => invalidDataset(record),
         onclick: () => history.push(`/home/project/${pid}/filter?did=${id}`),
         icon: <ScreenIcon className={styles.addBtnIcon} />,
       },

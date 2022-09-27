@@ -54,18 +54,25 @@ export default function Stage({ pid, stage, form, project = {}, result, update }
     history.push(`/home/project/${pid}/train?did=${project.candidateTrainSet}&test=${project.testSet.id}&${iparams}`)
   }
 
-  const filters = stage.filter ? useCallback(datasets => {
-    const result = stage.filter(datasets, project)
-    setCandidateList(!stage.type ? !!result.filter(item => item.assetCount).length : !!result.length)
-    return result
-  }, [stage.field, project]) : null
+  const filters = stage.filter ?
+    useCallback(datasets =>
+      stage.filter(datasets, project),
+      [stage.field, project]) : null
+
+  function onSelectionReady(list = []) {
+    const candidateList = stage.filter(list, project)
+    const candidated = !stage.type ?
+      candidateList.some(({ assetCount }) => assetCount) :
+      !!candidateList.length
+    setCandidateList(candidated)
+  }
 
   const renderEmptyState = (type) => !type ?
-    <Button 
-    type="primary" 
-    block 
-    icon={<AddIcon />} 
-    onClick={() => history.push(`/home/project/${pid}/dataset/add?from=iteration&stepKey=${stage.field}`)}
+    <Button
+      type="primary"
+      block
+      icon={<AddIcon />}
+      onClick={() => history.push(`/home/project/${pid}/dataset/add?from=iteration&stepKey=${stage.field}`)}
     >{t(`${stage.label}.upload`)}</Button>
     : <Row gutter={20}>
       <Col flex={1}>
@@ -89,7 +96,7 @@ export default function Stage({ pid, stage, form, project = {}, result, update }
       rules={[{ required: !stage.option }]}
       preserve={null}
     >
-      <Selection pid={pid} changeByUser filters={filters} allowClear={!!stage.option} />
+      <Selection pid={pid} changeByUser filters={filters} onReady={onSelectionReady} allowClear={!!stage.option} />
     </Form.Item>
     {runningDataset(result) ? <div className="state">{RenderProgress(result?.state, result, true)}</div> : null}
   </Form.Item>

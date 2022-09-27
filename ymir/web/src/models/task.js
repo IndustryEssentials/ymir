@@ -48,7 +48,6 @@ export default {
       const params = { ...payload, type: TASKTYPES.INFERENCE, state: TASKSTATES.FINISH, limit: 1000 }
       const result = yield put.resolve({ type: 'getTasks', payload: params })
       if (result) {
-        console.log('result:', result)
         return result.items
       }
     },

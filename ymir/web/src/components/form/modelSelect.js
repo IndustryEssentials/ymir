@@ -7,7 +7,11 @@ import t from '@/utils/t'
 import useFetch from '@/hooks/useFetch'
 import EmptyStateModel from '@/components/empty/model'
 
-const ModelSelect = ({ pid, value, onlyModel, changeByUser, onChange = () => { }, filters, ...resProps }) => {
+const ModelSelect = ({
+  pid, value, onlyModel, changeByUser,
+  onChange = () => { }, onReady = () => { },
+  filters, ...resProps
+}) => {
   const models = useSelector(state => state.model.allModels)
   const [ms, setMS] = useState(null)
   const [options, setOptions] = useState([])
@@ -16,6 +20,10 @@ const ModelSelect = ({ pid, value, onlyModel, changeByUser, onChange = () => { }
   useEffect(() => {
     pid && getModels(pid)
   }, [pid])
+
+  useEffect(() => {
+    _ && onReady(_)
+  }, [_])
 
   useEffect(() => {
     if (options.length) {
