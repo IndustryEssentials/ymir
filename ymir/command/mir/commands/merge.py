@@ -8,7 +8,7 @@ from typing import Any, Tuple
 
 from mir.commands import base
 from mir.protos import mir_command_pb2 as mirpb
-from mir.tools import checker, mir_storage_ops, revs_parser
+from mir.tools import checker, mir_storage, mir_storage_ops, revs_parser
 from mir.tools.command_run_in_out import command_run_in_out
 from mir.tools.code import MirCode
 from mir.tools.errors import MirRuntimeError
@@ -185,7 +185,7 @@ def _merge_to_mir(host_mir_metadatas: mirpb.MirMetadatas, host_mir_annotations: 
      _] = mir_storage_ops.MirStorageOps.load_multiple_storages(mir_root=mir_root,
                                                                mir_branch=guest_typ_rev_tid.rev,
                                                                mir_task_id=guest_typ_rev_tid.tid,
-                                                               ms_list=mir_storage_ops.get_all_mir_storage(),
+                                                               ms_list=mir_storage.get_all_mir_storage(),
                                                                as_dict=False)
 
     if not guest_mir_metadatas:

@@ -5,7 +5,7 @@ import unittest
 
 from mir.commands import copy
 from mir.protos import mir_command_pb2 as mirpb
-from mir.tools import mir_storage_ops
+from mir.tools import mir_storage, mir_storage_ops
 from mir.tools.code import MirCode
 
 from tests import utils as test_utils
@@ -101,7 +101,7 @@ class TestCmdCopy(unittest.TestCase):
              mir_root=self._mir_root,
              mir_branch=dst_branch,
              mir_task_id='',
-             ms_list=mir_storage_ops.get_all_mir_storage(),
+             ms_list=mir_storage.get_all_mir_storage(),
              as_dict=False,
          )
         metadatas_keys = set(mir_metadatas.attributes.keys())
