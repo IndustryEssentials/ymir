@@ -161,7 +161,7 @@ func TestIndexDatasetDataSuccess(t *testing.T) {
 			Return(mockCollection)
 
 		mongoServer := NewMongoServer(context.Background(), &mockMirDatabase, &mockMetricsDatabase)
-		mongoServer.IndexDatasetData(&mirRepo, []interface{}{})
+		mongoServer.IndexDatasetData(&mirRepo, []constants.MirAssetDetail{})
 
 		mt.AddMockResponses(
 			mtest.CreateSuccessResponse(),
@@ -169,7 +169,7 @@ func TestIndexDatasetDataSuccess(t *testing.T) {
 			mtest.CreateSuccessResponse(),
 			mtest.CreateSuccessResponse(),
 		)
-		mongoServer.IndexDatasetData(&mirRepo, []interface{}{mockAssetsDetail[0]})
+		mongoServer.IndexDatasetData(&mirRepo, []constants.MirAssetDetail{mockAssetsDetail[0]})
 	})
 }
 

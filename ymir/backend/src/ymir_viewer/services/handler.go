@@ -28,7 +28,7 @@ type BaseMirRepoLoader interface {
 
 type BaseMongoServer interface {
 	CheckDatasetExistenceReady(mirRepo *constants.MirRepo) (bool, bool)
-	IndexDatasetData(mirRepo *constants.MirRepo, newData []interface{})
+	IndexDatasetData(mirRepo *constants.MirRepo, newDatas []constants.MirAssetDetail)
 	RemoveNonReadyDataset()
 	QueryDatasetAssets(
 		mirRepo *constants.MirRepo,
@@ -106,18 +106,13 @@ func (v *ViewerHandler) loadAndIndexAssets(mirRepo *constants.MirRepo) {
 		log.Printf("No data for %s, reading & building cache.", mirRepo.TaskID)
 
 		mirAssetsDetail, _, _ := v.mirLoader.LoadAssetsDetail(mirRepo, "", 0, 0)
-		newData := make([]interface{}, 0)
-		for _, v := range mirAssetsDetail {
-			newData = append(newData, v)
-		}
-
 		// check again, in case cache process started during data loading.
 		exist, _ = v.mongoServer.CheckDatasetExistenceReady(mirRepo)
 		if exist {
 			log.Printf("Cache exists, skip data indexing.")
 			return
 		}
-		v.mongoServer.IndexDatasetData(mirRepo, newData)
+		v.mongoServer.IndexDatasetData(mirRepo, mirAssetsDetail)
 		return
 	}
 
@@ -229,7 +224,12 @@ func (v *ViewerHandler) GetDatasetMetaCountsHandler(
 		result.Pred.AnnotationsCount = int64(predStats.TotalCnt)
 	}
 
-	go v.loadAndCacheAssetsNoPanic(mirRepo)
+	exist, ready := v.mongoServer.CheckDatasetExistenceReady(mirRepo)
+	result.QueryContext.RepoIndexReady = exist
+	result.QueryContext.RepoIndexReady = ready
+	if !exist {
+		go v.loadAndCacheAssetsNoPanic(mirRepo)
+	}
 
 	return v.fillupDatasetUniverseFields(mirRepo, result)
 }
@@ -290,6 +290,8 @@ func (v *ViewerHandler) GetDatasetStatsHandler(
 	mirContext := v.mirLoader.LoadSingleMirData(mirRepo, constants.MirfileContext).(*protos.MirContext)
 	v.loadAndIndexAssets(mirRepo)
 	result := v.mongoServer.QueryDatasetStats(mirRepo, mirContext, classIDs, requireAssetsHist, requireAnnotationsHist)
+	result.QueryContext.RepoIndexReady = true
+	result.QueryContext.RepoIndexReady = true
 
 	// Backfill task and context info, to align with GetDatasetMetaCountsHandler result.
 	return v.fillupDatasetUniverseFields(mirRepo, result)
