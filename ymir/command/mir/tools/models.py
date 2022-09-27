@@ -43,6 +43,7 @@ class ModelStorage(BaseModel):
                 'stages': {k: v.dict()
                            for k, v in self.stages.items()},
                 'best_stage_name': self.best_stage_name,
+                'class_names': self.class_names,
             }, model_meta)
         return model_meta
 

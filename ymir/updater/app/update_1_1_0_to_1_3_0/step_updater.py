@@ -1,3 +1,21 @@
+"""
+Updater from 1.1.0 to 1.3.0
+
+# Update items for mir repos
+* `MirMetadatas`:
+    * add `byte_size` to `MetadataAttributes`
+* `MirAnnotations`
+    * use previous annotations as both `prediction` and `ground_truth`
+* `MirTasks`:
+    * create default_best_stage
+    * ignore all evaluation result in previous datasets
+* `MirKeywords` & `MirContext`:
+    * regenerated using new data structures
+
+# Update items for user label files
+* update ymir_version from 1.1.0 to 1.3.0
+"""
+
 import logging
 import os
 import tarfile
@@ -12,8 +30,8 @@ from mir.tools import mir_storage_ops_110 as mso110, mir_storage_ops_130 as mso1
 
 from tools import get_repo_tags, remove_old_tag
 
-_MirDatas110 = Tuple[mirpb110.MirMetadatas, mirpb110.MirAnnotations, mirpb110.MirTasks]
-_MirDatas130 = Tuple[mirpb130.MirMetadatas, mirpb130.MirAnnotations, mirpb130.MirTasks]
+_MirDatas110 = Tuple[mirpb110.MirMetadatas, mirpb110.MirAnnotations, mirpb110.Task]
+_MirDatas130 = Tuple[mirpb130.MirMetadatas, mirpb130.MirAnnotations, mirpb130.Task]
 
 _DEFAULT_STAGE_NAME = 'default_best_stage'
 
@@ -40,23 +58,24 @@ def update_user_labels(label_path: str) -> None:
 
 
 def _load(mir_root: str, rev_tid: revs_parser.TypRevTid) -> _MirDatas110:
-    return mso110.MirStorageOps.load_multiple_storages(
+    m, a, t = mso110.MirStorageOps.load_multiple_storages(
         mir_root=mir_root,
         mir_branch=rev_tid.rev,
         mir_task_id=rev_tid.tid,
         ms_list=[mirpb110.MIR_METADATAS, mirpb110.MIR_ANNOTATIONS, mirpb110.MIR_TASKS])
+    return (m, a, t.tasks[t.head_task_id])
 
 
 def _update(datas: _MirDatas110) -> _MirDatas130:
-    mm110, ma110, mt110 = datas
-    return (_update_metadatas(mm110), _update_annotations(ma110), _update_tasks(mt110))
+    mm110, ma110, t110 = datas
+    return (_update_metadatas(mm110), _update_annotations(ma110), _update_task(t110))
 
 
 def _save(mir_root: str, rev_tid: revs_parser.TypRevTid, updated_datas: _MirDatas130) -> None:
     # remove old tag
     remove_old_tag(mir_root=mir_root, tag=rev_tid.rev_tid)
     # save
-    mm130, ma130, mt130 = updated_datas
+    mm130, ma130, t130 = updated_datas
     mso130.MirStorageOps.save_and_commit(mir_root=mir_root,
                                          mir_branch=rev_tid.rev,
                                          his_branch=rev_tid.rev,
@@ -64,7 +83,7 @@ def _save(mir_root: str, rev_tid: revs_parser.TypRevTid, updated_datas: _MirData
                                              mirpb130.MirStorage.MIR_METADATAS: mm130,
                                              mirpb130.MirStorage.MIR_ANNOTATIONS: ma130,
                                          },
-                                         task=mt130.tasks[mt130.head_task_id])
+                                         task=t130)
 
 
 def _update_metadatas(mm110: mirpb110.MirMetadatas) -> mirpb130.MirMetadatas:
@@ -118,10 +137,7 @@ def _update_annotations(ma110: mirpb110.MirAnnotations) -> mirpb130.MirAnnotatio
     return ma130
 
 
-def _update_tasks(mt110: mirpb110.MirTasks) -> mirpb130.MirTasks:
-    mt130 = mirpb130.MirTasks()
-
-    t110 = mt110.tasks[mt110.head_task_id]
+def _update_task(t110: mirpb110.Task) -> mirpb130.Task:
     t130 = mirpb130.Task(type=t110.type,
                          name=t110.name,
                          task_id=t110.task_id,
@@ -149,19 +165,25 @@ def _update_tasks(mt110: mirpb110.MirTasks) -> mirpb130.MirTasks:
                                     mAP=m110.mean_average_precision,
                                     timestamp=t110.timestamp)
         ms130.files[:] = _get_model_file_names(m110.model_hash)
-
         m130.stages[_DEFAULT_STAGE_NAME].CopyFrom(ms130)
+
+        m130.class_names[:] = _get_model_class_names(t110.serialized_executor_config)
         t130.model.CopyFrom(m130)
 
     # evaluation: no need to update
 
-    mt130.head_task_id = mt110.head_task_id
-    mt130.tasks[mt130.head_task_id].CopyFrom(t130)
-
-    return mt130
+    return t130
 
 
 def _get_model_file_names(model_hash: str) -> List[str]:
     with tarfile.open(os.path.join('/ymir-models', model_hash), 'r') as f:
         file_names = [x.name for x in f.getmembers() if x.name != 'ymir-info.yaml']
     return file_names
+
+
+def _get_model_class_names(serialized_executor_config: str) -> List[str]:
+    if not serialized_executor_config:
+        return []
+
+    executor_config = yaml.safe_load(serialized_executor_config)
+    return executor_config.get('class_names', [])
