@@ -28,17 +28,6 @@ def mir_path(mir_storage: 'mirpb.MirStorage.V') -> str:
     return MIR_PATH[mir_storage]
 
 
-def mir_attr_name(mir_storage: 'mirpb.MirStorage.V') -> str:
-    MIR_STORAGE_TO_ATTR_NAME = {
-        mirpb.MirStorage.MIR_METADATAS: 'mir_metadatas',
-        mirpb.MirStorage.MIR_ANNOTATIONS: 'mir_annotations',
-        mirpb.MirStorage.MIR_KEYWORDS: 'mir_keywords',
-        mirpb.MirStorage.MIR_TASKS: 'mir_tasks',
-        mirpb.MirStorage.MIR_CONTEXT: 'mir_context',
-    }
-    return MIR_STORAGE_TO_ATTR_NAME[mir_storage]
-
-
 def get_all_mir_paths() -> List[str]:
     return [mir_path(ms) for ms in get_all_mir_storage()]
 
