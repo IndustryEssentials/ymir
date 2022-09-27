@@ -22,7 +22,7 @@ const usePostMessage = (domain: string = '*', fixWin: Window | null = null): Arr
         if (origin === domain) {
           const recieveData: Data = JSON.parse(data)
 
-          if (recieveData.type === 'redirect' && recieveData?.data?.url) {
+          if (recieveData.type === 'redirect' && recieveData?.data?.path) {
             history.push(recieveData.data.path)
           } else {
             recievedHandle(recieveData)
@@ -47,7 +47,7 @@ const usePostMessage = (domain: string = '*', fixWin: Window | null = null): Arr
     })
     target.postMessage(message, domain)
   }
-  
+
   function recievedHandle(recieveData: Data) {
     setRecieved({
       ...recieveData,
