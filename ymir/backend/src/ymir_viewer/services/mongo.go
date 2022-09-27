@@ -93,12 +93,18 @@ func (s *MongoServer) IndexDatasetData(
 
 	collection, collectionName := s.getRepoCollection(mirRepo)
 	s.setDatasetExistence(collectionName, false, true)
-	collection.Database().CreateCollection(s.Ctx, collectionName)
+	err := collection.Database().CreateCollection(s.Ctx, collectionName)
+	if err != nil {
+		panic(err)
+	}
 	// Cleanup if error
 	defer func() {
 		if r := recover(); r != nil {
 			s.setDatasetExistence(collectionName, false, false)
-			collection.Drop(s.Ctx)
+			err := collection.Drop(s.Ctx)
+			if err != nil {
+				panic(err)
+			}
 			log.Printf("IndexDatasetData %s panic %v", mirRepo.TaskID, r)
 		}
 	}()
