@@ -6,7 +6,7 @@ import useFetch from '@/hooks/useFetch'
 import { Button } from "antd"
 import KeywordRates from "./keywordRates"
 
-function SampleRates({ keywords, dataset, negative, progressWidth = 0.5 }) {
+function SampleRates({ keywords, dataset, negative, label, progressWidth = 0.5 }) {
   const { id: pid } = useParams()
   const [did, setDid] = useState(null)
   const [stats, getNegativeKeywords, setStats] = useFetch('dataset/getNegativeKeywords', {}, true)
@@ -46,6 +46,7 @@ function SampleRates({ keywords, dataset, negative, progressWidth = 0.5 }) {
   }
 
   return <div>
+    {label ? <h3 style={{ marginBottom: 10, fontWeight: 'bold' }}>{label}</h3> : null}
     {negative && !stats.gt ? <div>
       <Button type="primary"
         disabled={!did || !keywords?.length}

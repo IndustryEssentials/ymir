@@ -5,6 +5,7 @@ import { useParams, connect, useHistory, useLocation } from 'umi'
 import { formLayout } from "@/config/antd"
 import t from '@/utils/t'
 import { generateName } from '@/utils/string'
+import useFetch from '@/hooks/useFetch'
 
 import { urlValidator } from '@/components/form/validators'
 import Breadcrumbs from '@/components/common/breadcrumb'

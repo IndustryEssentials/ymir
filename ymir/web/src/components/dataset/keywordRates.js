@@ -36,7 +36,7 @@ function KeywordRates({ title = '', stats, progressWidth = 0.5 }) {
   }, [stats, colors])
 
 
-  function generateList({ count = {}, keywords, negative = 0, total }, colors) {
+  function generateList({ count = {}, keywords = [], negative = 0, total }, colors) {
     const klist = [
       ...(keywords.map(kw => ({
         key: kw,

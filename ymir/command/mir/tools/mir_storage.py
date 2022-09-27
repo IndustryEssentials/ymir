@@ -4,9 +4,6 @@ import os
 from mir.tools.errors import MirCode, MirRuntimeError
 
 
-MIR_ASSOCIATED_FILES = ['.git', '.gitattributes', '.gitignore', '.mir', '.mir_lock']
-
-
 # assets
 def locate_asset_path(location: str, hash: str) -> str:
     asset_path = get_asset_storage_path(location=location, hash=hash, make_dirs=False, need_sub_folder=True)
