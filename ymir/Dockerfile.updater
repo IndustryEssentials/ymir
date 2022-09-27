@@ -21,7 +21,6 @@ COPY ./backend/src/common/id_definition/task_id.py /app/id_definition/
 COPY ./command/mir/commands/base.py /app/mir/commands/
 COPY ./command/mir/commands/checkout.py /app/mir/commands/
 COPY ./command/mir/commands/commit.py /app/mir/commands/
-# COPY ./command/mir/protos/mir_command_pb2.py /app/mir/protos/
 COPY ./command/mir/scm/__init__.py /app/mir/scm/
 COPY ./command/mir/scm/base.py /app/mir/scm/
 COPY ./command/mir/scm/cmd.py /app/mir/scm/
@@ -29,7 +28,6 @@ COPY ./command/mir/tools/checker.py /app/mir/tools/
 COPY ./command/mir/tools/code.py /app/mir/tools/
 COPY ./command/mir/tools/errors.py /app/mir/tools/
 COPY ./command/mir/tools/exodus.py /app/mir/tools/
-# COPY ./command/mir/tools/mir_storage.py /app/mir/tools/
 COPY ./command/mir/tools/mir_repo_utils.py /app/mir/tools/
 COPY ./command/mir/tools/revs_parser.py /app/mir/tools/
 COPY ./command/mir/tools/settings.py /app/mir/tools/
