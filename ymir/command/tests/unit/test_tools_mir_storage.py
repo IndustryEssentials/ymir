@@ -7,7 +7,7 @@ import google.protobuf.json_format as pb_format
 from google.protobuf.json_format import MessageToDict
 
 from mir.protos import mir_command_pb2 as mirpb
-from mir.tools import mir_storage, mir_storage_ops, settings as mir_settings
+from mir.tools import mir_storage_ops, settings as mir_settings
 from tests import utils as test_utils
 
 
@@ -277,7 +277,7 @@ class TestMirStorage(unittest.TestCase):
             mir_root=self._mir_root,
             mir_branch='a',
             mir_task_id='mining-task-id',
-            ms_list=mir_storage.get_all_mir_storage(),
+            ms_list=mir_storage_ops.get_all_mir_storage(),
             as_dict=False)
         self.assertEqual(len(actual_contents_list), 5)
 

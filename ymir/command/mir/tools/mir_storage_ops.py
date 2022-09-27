@@ -12,7 +12,7 @@ from mir.commands.checkout import CmdCheckout
 from mir.commands.commit import CmdCommit
 from mir.protos import mir_command_pb2 as mirpb
 from mir.tools import det_eval_ops, exodus
-from mir.tools import mir_storage, mir_repo_utils, revs_parser
+from mir.tools import mir_repo_utils, revs_parser
 from mir.tools import settings as mir_settings
 from mir.tools.code import MirCode
 from mir.tools.errors import MirRuntimeError
@@ -232,7 +232,7 @@ class MirStorageOps():
 
             # save to file
             for ms, mir_data in mir_datas.items():
-                mir_file_path = os.path.join(mir_root, mir_storage.mir_path(ms))
+                mir_file_path = os.path.join(mir_root, _mir_path(ms))
                 with open(mir_file_path, "wb") as m_f:
                     m_f.write(mir_data.SerializeToString())
 
@@ -255,10 +255,9 @@ class MirStorageOps():
                             as_dict: bool = False) -> Any:
         rev = revs_parser.join_rev_tid(mir_branch, mir_task_id)
 
-        mir_pb_type = mir_storage.mir_type(ms)
-        mir_storage_data = mir_pb_type()
+        mir_storage_data = _mir_type(ms)()
         mir_storage_data.ParseFromString(exodus.read_mir(mir_root=mir_root, rev=rev,
-                                                         file_name=mir_storage.mir_path(ms)))
+                                                         file_name=_mir_path(ms)))
 
         if as_dict:
             mir_storage_data = cls.__message_to_dict(mir_storage_data)
@@ -329,3 +328,39 @@ def create_task(task_type: 'mirpb.TaskType.V',
         task.evaluation.CopyFrom(evaluation)
 
     return task
+
+
+def _mir_type(ms: 'mirpb.MirStorage.V') -> Any:
+    MIR_TYPE = {
+        mirpb.MirStorage.MIR_METADATAS: mirpb.MirMetadatas,
+        mirpb.MirStorage.MIR_ANNOTATIONS: mirpb.MirAnnotations,
+        mirpb.MirStorage.MIR_KEYWORDS: mirpb.MirKeywords,
+        mirpb.MirStorage.MIR_TASKS: mirpb.MirTasks,
+        mirpb.MirStorage.MIR_CONTEXT: mirpb.MirContext,
+    }
+    return MIR_TYPE[ms]
+
+
+def _mir_path(ms: 'mirpb.MirStorage.V') -> str:
+    MIR_PATH = {
+        mirpb.MirStorage.MIR_METADATAS: 'metadatas.mir',
+        mirpb.MirStorage.MIR_ANNOTATIONS: 'annotations.mir',
+        mirpb.MirStorage.MIR_KEYWORDS: 'keywords.mir',
+        mirpb.MirStorage.MIR_TASKS: 'tasks.mir',
+        mirpb.MirStorage.MIR_CONTEXT: 'context.mir',
+    }
+    return MIR_PATH[ms]
+
+
+def get_all_mir_paths() -> List[str]:
+    return [_mir_path(ms) for ms in get_all_mir_storage()]
+
+
+def get_all_mir_storage() -> List['mirpb.MirStorage.V']:
+    return [
+        mirpb.MirStorage.MIR_METADATAS,
+        mirpb.MirStorage.MIR_ANNOTATIONS,
+        mirpb.MirStorage.MIR_KEYWORDS,
+        mirpb.MirStorage.MIR_TASKS,
+        mirpb.MirStorage.MIR_CONTEXT,
+    ]

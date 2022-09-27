@@ -7,6 +7,6 @@ services:
     volumes:
       - "${BACKEND_SANDBOX_ROOT}:${BACKEND_SANDBOX_ROOT}"
       - "${YMIR_PATH}/ymir-data/logs:/app_logs"
-      - "${YMIR_PATH}/ymir-models:${YMIR_PATH}/ymir-models"
-      - "${YMIR_PATH}/ymir-assets:${YMIR_PATH}/ymir-assets"
+      - "${YMIR_PATH}/ymir-models:/ymir-models"
+      - "${YMIR_PATH}/ymir-assets:/ymir-assets"
     command: python /app/start.py
