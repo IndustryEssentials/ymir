@@ -4,7 +4,7 @@ from google.protobuf import json_format
 
 from mir.commands import base
 from mir.protos import mir_command_pb2 as mirpb
-from mir.tools import checker, mir_storage_ops, revs_parser
+from mir.tools import checker, mir_storage, mir_storage_ops, revs_parser
 from mir.tools.code import MirCode
 
 
@@ -29,7 +29,7 @@ class CmdShow(base.BaseCommand):
          context] = mir_storage_ops.MirStorageOps.load_multiple_storages(mir_root=mir_root,
                                                                          mir_branch=src_typ_rev_tid.rev,
                                                                          mir_task_id=src_typ_rev_tid.tid,
-                                                                         ms_list=mir_storage_ops.get_all_mir_storage(),
+                                                                         ms_list=mir_storage.get_all_mir_storage(),
                                                                          as_dict=False)
         cls._show_general_metadatas(metadatas)
         cls._show_general_annotations(annotations)
