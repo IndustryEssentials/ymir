@@ -46,11 +46,6 @@ def mock_db(mocker):
 
 
 @pytest.fixture(scope="function")
-def mock_graph_db(mocker):
-    return mocker.Mock()
-
-
-@pytest.fixture(scope="function")
 def mock_viz(mocker):
     return mocker.Mock()
 

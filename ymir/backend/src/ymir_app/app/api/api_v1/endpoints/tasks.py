@@ -26,7 +26,6 @@ from app.constants.state import (
     TaskType,
 )
 from app.config import settings
-from app.utils.graph import GraphClient
 from app.utils.timeutil import convert_datetime_to_timestamp
 from app.utils.ymir_controller import ControllerClient, gen_user_hash
 from app.libs.redis_stream import RedisStream
@@ -250,7 +249,6 @@ def update_task_status(
     db: Session = Depends(deps.get_db),
     request: Request,
     task_update: schemas.TaskUpdateStatus,
-    graph_db: GraphClient = Depends(deps.get_graph_client),
     controller_client: ControllerClient = Depends(deps.get_controller_client),
 ) -> Any:
     """

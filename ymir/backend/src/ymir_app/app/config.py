@@ -41,9 +41,6 @@ class Settings(BaseSettings):
     # redis
     BACKEND_REDIS_URL: str = "redis://redis:6379/0"
 
-    # graph
-    MAX_HOPS: int = 5
-
     # all the emails things
     EMAILS_ENABLED: bool = False
     SMTP_TLS: bool = True
