@@ -1,6 +1,9 @@
 #!/bin/bash
 set -e
 
+# pip/conda(mac) install grpcio==1.38.0
+# pip install grpcio_tools==1.38.0
+
 INPUT_DIR=./
 OUTPUT_DIR=./
 

@@ -75,23 +75,70 @@ func NewMirdataModel(taskParameters string) *MirdataModel {
 	return &modelData
 }
 
+type MirTimestamp struct {
+	Start    int32   `json:"start"    bson:"start"`
+	Duration float32 `json:"duration" bson:"duration"`
+}
+
+type MirAssetAttributes struct {
+	Timestamp      *MirTimestamp `json:"timestamp"       bson:"timestamp"`
+	TvtType        int32         `json:"tvt_type"        bson:"tvt_type"`
+	AssetType      int32         `json:"asset_type"      bson:"asset_type"`
+	Width          int32         `json:"width"           bson:"width"`
+	Height         int32         `json:"height"          bson:"height"`
+	ImageChannels  int32         `json:"image_channels"  bson:"image_channels"`
+	ByteSize       int32         `json:"byte_size"       bson:"byte_size"`
+	OriginFilename string        `json:"origin_filename" bson:"origin_filename"`
+}
+
+type MirObjectAnnotation struct {
+	Index       int32             `json:"index"        bson:"index"`
+	Box         *MirRect          `json:"box"          bson:"box"`
+	ClassId     int32             `json:"class_id"     bson:"class_id"`
+	Score       float64           `json:"score"        bson:"score"`
+	AnnoQuality float32           `json:"anno_quality" bson:"anno_quality"`
+	Tags        map[string]string `json:"tags"         bson:"tags"`
+	Cm          int32             `json:"cm"           bson:"cm"`
+	DetLinkId   int32             `json:"det_link_id"  bson:"det_link_id"`
+	ClassName   string            `json:"class_name"   bson:"class_name"`
+	Polygon     []*MirIntPoint    `json:"polygon"      bson:"polygon"`
+}
+
+type MirIntPoint struct {
+	X int32 `json:"x" bson:"x"`
+	Y int32 `json:"y" bson:"y"`
+	Z int32 `json:"z" bson:"z"`
+}
+
+type MirRect struct {
+	X           int32   `json:"x"            bson:"x"`
+	Y           int32   `json:"y"            bson:"y"`
+	W           int32   `json:"w"            bson:"w"`
+	H           int32   `json:"h"            bson:"h"`
+	RotateAngle float32 `json:"rotate_angle" bson:"rotate_angle"` // unit in pi.
+}
+
 type MirAssetDetail struct {
 	// Export fields.
-	AssetID        string                   `json:"asset_id"      bson:"asset_id"`
-	MetaData       map[string]interface{}   `json:"metadata"      bson:"metadata"`
-	JoinedClassIDs []int32                  `json:"class_ids"     bson:"class_ids"`
-	Gt             []map[string]interface{} `json:"gt"            bson:"gt"`
-	Pred           []map[string]interface{} `json:"pred"          bson:"pred"`
-	Cks            map[string]string        `json:"cks"           bson:"cks"`
-	Quality        float32                  `json:"image_quality" bson:"quality"`
+	AssetID        string                 `json:"asset_id"      bson:"asset_id"`
+	MetaData       *MirAssetAttributes    `json:"metadata"      bson:"metadata"`
+	JoinedClassIDs []int32                `json:"class_ids"     bson:"class_ids"`
+	Gt             []*MirObjectAnnotation `json:"gt"            bson:"gt"`
+	Pred           []*MirObjectAnnotation `json:"pred"          bson:"pred"`
+	Cks            map[string]string      `json:"cks"           bson:"cks"`
+	Quality        float32                `json:"image_quality" bson:"quality"`
+}
+
+func NewMirObjectAnnotation() MirObjectAnnotation {
+	return MirObjectAnnotation{Box: &MirRect{}, Tags: map[string]string{}, Polygon: []*MirIntPoint{}}
 }
 
 func NewMirAssetDetail() MirAssetDetail {
 	mirAssetDetail := MirAssetDetail{}
-	mirAssetDetail.MetaData = map[string]interface{}{}
+	mirAssetDetail.MetaData = &MirAssetAttributes{Timestamp: &MirTimestamp{}}
 	mirAssetDetail.JoinedClassIDs = []int32{}
-	mirAssetDetail.Pred = make([]map[string]interface{}, 0)
-	mirAssetDetail.Gt = make([]map[string]interface{}, 0)
+	mirAssetDetail.Pred = make([]*MirObjectAnnotation, 0)
+	mirAssetDetail.Gt = make([]*MirObjectAnnotation, 0)
 	mirAssetDetail.Cks = map[string]string{}
 	mirAssetDetail.Quality = -1
 	return mirAssetDetail
@@ -125,6 +172,8 @@ type DatasetStatsElement struct {
 type QueryDatasetStatsContext struct {
 	RequireAssetsHist      bool `json:"require_assets_hist"`
 	RequireAnnotationsHist bool `json:"require_annos_hist"`
+	RepoIndexExist         bool `json:"repo_index_exist"`
+	RepoIndexReady         bool `json:"repo_index_ready"`
 }
 
 type QueryDatasetStatsResult struct {

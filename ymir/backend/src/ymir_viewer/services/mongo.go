@@ -77,19 +77,21 @@ func (s *MongoServer) CheckDatasetExistenceReady(mirRepo *constants.MirRepo) (bo
 	return data["exist"].(bool), data["ready"].(bool)
 }
 
-func (s *MongoServer) IndexDatasetData(mirRepo *constants.MirRepo, newData []interface{}) {
+func (s *MongoServer) IndexDatasetData(mirRepo *constants.MirRepo, newDatas []constants.MirAssetDetail) {
 	defer tools.TimeTrack(time.Now(), mirRepo.TaskID)
 
-	if len(newData) <= 0 {
+	if len(newDatas) <= 0 {
 		return
 	}
 
 	collection, collectionName := s.getRepoCollection(mirRepo)
 	s.setDatasetExistence(collectionName, false, true)
 
-	_, err := collection.InsertMany(s.Ctx, newData)
-	if err != nil {
-		panic(err)
+	for _, newData := range newDatas {
+		_, err := collection.InsertOne(s.Ctx, newData)
+		if err != nil {
+			panic(err)
+		}
 	}
 
 	index := []mongo.IndexModel{
@@ -122,8 +124,8 @@ func (s *MongoServer) IndexDatasetData(mirRepo *constants.MirRepo, newData []int
 		},
 	}
 
-	opts := options.CreateIndexes().SetMaxTime(60 * time.Second)
-	_, err = collection.Indexes().CreateMany(s.Ctx, index, opts)
+	opts := options.CreateIndexes().SetMaxTime(3600 * time.Second)
+	_, err := collection.Indexes().CreateMany(s.Ctx, index, opts)
 	if err != nil {
 		panic(err)
 	}
