@@ -1,9 +1,11 @@
 package constants
 
 import (
+	"encoding/json"
 	"fmt"
 	"path"
 
+	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/proto"
 
 	"github.com/IndustryEssentials/ymir-viewer/common/protos"
@@ -221,4 +223,16 @@ type QueryDatasetDupResult struct {
 	Duplication   int              `json:"duplication"`
 	TotalCount    map[string]int64 `json:"total_count"`
 	ResidualCount map[string]int64 `json:"residual_count"`
+}
+
+func BuildStructFromMessage(message proto.Message, structOut interface{}) interface{} {
+	m := protojson.MarshalOptions{EmitUnpopulated: true, AllowPartial: true, UseProtoNames: true, UseEnumNumbers: true}
+	jsonBytes, err := m.Marshal(message)
+	if err != nil {
+		panic(err)
+	}
+	if err := json.Unmarshal(jsonBytes, &structOut); err != nil {
+		panic(err)
+	}
+	return structOut
 }
