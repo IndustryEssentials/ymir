@@ -43,7 +43,6 @@ function Inference({ datasetCache, datasets, ...func }) {
   const history = useHistory()
   const location = useLocation()
   const { image } = location.query
-  const did = location.query.did ? getArray(location.query.did).map(Number) : undefined
   const stage = parseModelStage(location.query.mid)
   const [selectedModels, setSelectedModels] = useState([])
   const [form] = Form.useForm()
@@ -86,8 +85,10 @@ function Inference({ datasetCache, datasets, ...func }) {
   }, [seniorConfig])
 
   useEffect(() => {
+    const did = location.query?.did ? getArray(location.query.did).map(Number) : undefined
+
     did && form.setFieldsValue({ datasets: did })
-  }, [did])
+  }, [location.query.did])
 
   useEffect(() => {
 
@@ -271,6 +272,7 @@ function Inference({ datasetCache, datasets, ...func }) {
                 pid={pid}
                 filters={testSetFilters}
                 renderLabel={renderLabel}
+                // onChange={(value) => console.log('value: ', value)}
                 placeholder={t('task.inference.form.dataset.placeholder')}
               />
             </Form.Item>
