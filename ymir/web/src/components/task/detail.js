@@ -13,6 +13,7 @@ import { format } from "@/utils/date"
 import { getTensorboardLink } from "@/services/common"
 import { TASKTYPES } from "@/constants/task"
 import useFetch from '@/hooks/useFetch'
+import { getRecommendStage } from '@/constants/model'
 
 import renderLiveCodeItem from '@/components/task/items/livecode'
 
@@ -85,9 +86,10 @@ function TaskDetail({ task = {} }) {
   }
 
   function renderModel(id, pid, model = {}, label = 'task.mining.form.model.label') {
+    const name = model.id ? `${model.name} ${model.versionName} ${getRecommendStage(model).name}` : id
     return id ? <Item label={t(label)}>
       <Link to={`/home/project/${pid}/model/${id}`}>
-        {model?.name || id}
+        {name}
       </Link>
     </Item> : null
   }
