@@ -1,6 +1,6 @@
 from typing import Any, Callable
 
-import aioredis
+import redis.asyncio as redis
 from fastapi.logger import logger
 
 
@@ -25,7 +25,7 @@ class RedisStream:
             await self._conn.xgroup_create(name=self.stream_name, groupname=self.group_name, mkstream=True)
 
     async def connect(self) -> None:
-        self._conn = await aioredis.from_url(self.redis_uri, decode_responses=True)
+        self._conn = await redis.from_url(self.redis_uri, decode_responses=True)
 
     async def disconnect(self) -> None:
         await self._conn.close()
@@ -43,6 +43,7 @@ class RedisStream:
             # Pick the ID based on the iteration: the first time we want to
             # read our pending messages, in case we crashed and are recovering.
             # Once we consumed our history, we can start getting new messages.
+            # self._conn.xpending_range(self.stream_name, self.group_name, "-", "+", 10, self.consumer_name, idle=60000)
             id_ = last_id if check_backlog else ">"
             for _, payloads in await self._conn.xreadgroup(
                 groupname=self.group_name,
