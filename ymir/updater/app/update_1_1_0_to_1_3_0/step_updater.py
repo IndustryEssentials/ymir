@@ -1,7 +1,8 @@
 import logging
 import os
 import re
-from typing import Set, Tuple
+import tarfile
+from typing import List, Set, Tuple
 
 from google.protobuf.json_format import MessageToDict, ParseDict
 
@@ -9,11 +10,12 @@ from mir.protos import mir_command_110_pb2 as mirpb110, mir_command_130_pb2 as m
 from mir.tools import revs_parser
 from mir.tools import mir_storage_ops_110 as mso110, mir_storage_ops_130 as mso130
 
-from tools import get_repo_tags
-
+from tools import get_repo_tags, remove_old_tag
 
 _MirDatas110 = Tuple[mirpb110.MirMetadatas, mirpb110.MirAnnotations, mirpb110.MirTasks]
 _MirDatas130 = Tuple[mirpb130.MirMetadatas, mirpb130.MirAnnotations, mirpb130.MirTasks]
+
+_DEFAULT_STAGE_NAME = 'default_best_stage'
 
 
 def update_all(mir_root: str) -> None:
@@ -42,6 +44,21 @@ def _load(mir_root: str, rev_tid: revs_parser.TypRevTid) -> _MirDatas110:
 def _update(datas: _MirDatas110) -> _MirDatas130:
     mm110, ma110, mt110 = datas
     return (_update_metadatas(mm110), _update_annotations(ma110), _update_tasks(mt110))
+
+
+def _save(mir_root: str, rev_tid: revs_parser.TypRevTid, updated_datas: _MirDatas130) -> None:
+    # remove old tag
+    remove_old_tag(mir_root=mir_root, tag=rev_tid.rev_tid)
+    # save
+    mm130, ma130, mt130 = updated_datas
+    mso130.MirStorageOps.save_and_commit(mir_root=mir_root,
+                                         mir_branch=rev_tid.rev,
+                                         his_branch=rev_tid.rev,
+                                         mir_datas={
+                                             mirpb130.MirStorage.MIR_METADATAS: mm130,
+                                             mirpb130.MirStorage.MIR_ANNOTATIONS: ma130,
+                                         },
+                                         task=mt130.tasks[mt130.head_task_id])
 
 
 def _update_metadatas(mm110: mirpb110.MirMetadatas) -> mirpb130.MirMetadatas:
@@ -97,8 +114,48 @@ def _update_annotations(ma110: mirpb110.MirAnnotations) -> mirpb130.MirAnnotatio
 
 def _update_tasks(mt110: mirpb110.MirTasks) -> mirpb130.MirTasks:
     mt130 = mirpb130.MirTasks()
+
+    t110 = mt110.tasks[mt110.head_task_id]
+    t130 = mirpb130.Task(type=t110.type,
+                         name=t110.name,
+                         task_id=t110.task_id,
+                         timestamp=t110.timestamp,
+                         return_code=t110.return_code,
+                         return_msg=t110.return_msg,
+                         serialized_task_parameters=t110.serialized_task_parameters,
+                         serialized_executor_config=t110.serialized_executor_config,
+                         src_revs=t110.src_revs,
+                         dst_rev=t110.dst_rev,
+                         executor=t110.executor)
+    for k, v in t110.unknown_types.items():
+        t130.new_types[k] = v
+    t130.new_types_added = (len(t130.new_types) > 0)
+
+    # model meta
+    m110 = t110.model
+    if m110.model_hash:
+        m130 = mirpb130.ModelMeta(model_hash=m110.model_hash,
+                                  mean_average_precision=m110.mean_average_precision,
+                                  context=m110.context,
+                                  best_stage_name=_DEFAULT_STAGE_NAME)
+
+        ms130 = mirpb130.ModelStage(stage_name=_DEFAULT_STAGE_NAME,
+                                    mAP=m110.mean_average_precision,
+                                    timestamp=t110.timestamp)
+        ms130.files[:] = _get_model_file_names(m110.model_hash)
+
+        m130.stages[_DEFAULT_STAGE_NAME].CopyFrom(ms130)
+        t130.model.CopyFrom(m130)
+
+    # evaluation: no need to update
+
+    mt130.head_task_id = mt110.head_task_id
+    mt130.tasks[mt130.head_task_id].CopyFrom(t130)
+
     return mt130
 
 
-def _save(mir_root: str, rev_tid: revs_parser.TypRevTid, updated_datas: _MirDatas130) -> None:
-    pass
+def _get_model_file_names(model_hash: str) -> List[str]:
+    with tarfile.open(os.path.join('/ymir-models', model_hash), 'r') as f:
+        file_names = [x.name for x in f.getmembers() if x.name != 'ymir-info.yaml']
+    return file_names

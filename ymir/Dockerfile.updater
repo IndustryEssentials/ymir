@@ -8,6 +8,9 @@ COPY ./updater/app/requirements.txt /app/requirements.txt
 ARG PIP_SOURCE=https://pypi.org/simple
 RUN pip3 install -r /app/requirements.txt -i ${PIP_SOURCE}
 
+# git config
+COPY ./backend/deploy/git.config /root/.gitconfig
+
 # ymir backend components
 COPY ./backend/src/common/common_utils/sandbox_updater.py /app/common_utils/
 COPY ./backend/src/common/common_utils/sandbox_util.py /app/common_utils/
