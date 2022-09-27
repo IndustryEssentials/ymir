@@ -257,8 +257,7 @@ class MirStorageOps():
                             as_dict: bool = False) -> Any:
         rev = revs_parser.join_rev_tid(mir_branch, mir_task_id)
 
-        mir_pb_type = _mir_type(ms)
-        mir_storage_data = mir_pb_type()
+        mir_storage_data = _mir_type(ms)()
         mir_storage_data.ParseFromString(exodus.read_mir(mir_root=mir_root, rev=rev,
                                                          file_name=_mir_path(ms)))
 
