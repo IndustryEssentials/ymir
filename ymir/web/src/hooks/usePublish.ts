@@ -12,7 +12,9 @@ const createIframe = (params = {}) => {
   let iframe = document.createElement('iframe')
   document.body.appendChild(iframe)
   iframe.id = id
-  iframe.style.display = 'none'
+  iframe.style.position = 'absolute'
+  iframe.style.top = '-1000px'
+  iframe.style.left = '-1000px'
   iframe.src = url
   return iframe
 }
