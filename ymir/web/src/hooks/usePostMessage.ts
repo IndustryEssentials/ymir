@@ -1,12 +1,14 @@
 import { useEffect, useState } from "react"
+import { useHistory } from 'umi'
 
 type Data = {
   type: string,
-  data: Object,
+  data: any,
   [key: string]: any,
 }
 const usePostMessage = (domain: string = '*', fixWin: Window | null = null): Array<Function | any> => {
   const [recieved, setRecieved] = useState<Object | null>(null)
+  const history = useHistory()
 
   useEffect(() => {
     //// send loaded if have parent window
@@ -20,7 +22,11 @@ const usePostMessage = (domain: string = '*', fixWin: Window | null = null): Arr
         if (origin === domain) {
           const recieveData: Data = JSON.parse(data)
 
-          recievedHandle(recieveData)
+          if (recieveData.type === 'redirect' && recieveData?.data?.url) {
+            history.push(recieveData.data.url)
+          } else {
+            recievedHandle(recieveData)
+          }
         }
       } catch (e) {
         console.error('post message parse error')
