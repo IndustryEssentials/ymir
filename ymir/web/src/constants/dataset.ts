@@ -116,7 +116,6 @@ export function runningDataset(dataset: Dataset | undefined) {
 
 export function canHide(dataset: Dataset, project: Project | undefined) {
   const p = project || dataset.project
-  console.log('p:', p, project, dataset.project)
   return !runningDataset(dataset) && !p?.hiddenDatasets?.includes(dataset.id)
 }
 
