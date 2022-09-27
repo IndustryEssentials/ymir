@@ -25,7 +25,7 @@ const Algo = () => {
     if (!location.state?.reload) {
       const self = window.location.origin
       const lang = getLocale()
-      const url = `${base}${pages[module].path}?from=${self}&userId=${userId}&userName=${userName || ''}&lang=${lang}`
+      const url = `${base}${pages[module].path}?from=${self}&userId=${userId}&userName=${userName || ''}&lang=${lang}&r=${Math.random()}`
       setUrl(url)
     }
     history.replace({ state: {} })
