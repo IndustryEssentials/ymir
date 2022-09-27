@@ -46,7 +46,7 @@ function Model({ pid, project = {}, iterations, groups, modelList, versions, que
   const delGroupRef = useRef(null)
   const terminateRef = useRef(null)
   const generateRerun = useRerunAction()
-  const publish = usePublish()
+  const [publish, publishResult] = usePublish()
 
   /** use effect must put on the top */
   useEffect(() => {
@@ -278,7 +278,7 @@ function Model({ pid, project = {}, iterations, groups, modelList, versions, que
         key: "publish",
         label: t("model.action.publish"),
         hidden: () => !isValidModel(state),
-        onclick: () => publish(),
+        onclick: () => publish(record),
         icon: <ShieldIcon />,
       },
       {
