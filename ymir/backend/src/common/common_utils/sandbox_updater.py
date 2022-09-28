@@ -49,7 +49,7 @@ def _backup(sandbox_root: str) -> None:
                            error_message=f"Backup directory not empty: {backup_dir}")
 
     for user_id in detect_users_and_repos(sandbox_root):
-        shutil.copytree(src=os.path.join(sandbox_root, user_id), dst=os.path.join(backup_dir, user_id))
+        shutil.copytree(src=os.path.join(sandbox_root, user_id), dst=os.path.join(backup_dir, user_id), symlinks=True)
 
 
 def _roll_back(sandbox_root: str) -> None:
@@ -58,7 +58,7 @@ def _roll_back(sandbox_root: str) -> None:
         src_user_dir = os.path.join(backup_dir, user_id)
         dst_user_dir = os.path.join(sandbox_root, user_id)
         shutil.rmtree(dst_user_dir)
-        shutil.copytree(src_user_dir, dst_user_dir)
+        shutil.copytree(src=src_user_dir, dst=dst_user_dir, symlinks=True)
 
     shutil.rmtree(os.path.join(sandbox_root, 'backup'))
 

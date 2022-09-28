@@ -74,12 +74,12 @@ def detect_users_and_repos(sandbox_root: str) -> Dict[str, Set[str]]:
 
     user_to_repos = defaultdict(set)
     for user_id in os.listdir(sandbox_root):
-        match_result = re.match(f"\\d{{{IDProto.ID_LEN_USER_ID}}}", user_id)
+        match_result = re.match(f"^\\d{{{IDProto.ID_LEN_USER_ID}}}$", user_id)
         if not match_result:
             continue
         user_dir = os.path.join(sandbox_root, user_id)
         user_to_repos[user_id].update([
-            repo_id for repo_id in os.listdir(user_dir) if re.match(f"\\d{{{IDProto.ID_LEN_REPO_ID}}}", repo_id)
+            repo_id for repo_id in os.listdir(user_dir) if re.match(f"^\\d{{{IDProto.ID_LEN_REPO_ID}}}$", repo_id)
             and os.path.isdir(os.path.join(user_dir, repo_id, '.git'))
         ])
     return user_to_repos

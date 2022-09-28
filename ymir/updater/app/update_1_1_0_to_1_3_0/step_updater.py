@@ -18,12 +18,14 @@ Updater from 1.1.0 to 1.3.0
 
 import logging
 import os
+import re
 import tarfile
 from typing import List, Tuple
 
 from google.protobuf.json_format import MessageToDict, ParseDict
 import yaml
 
+from id_definition.task_id import IDProto
 from mir.protos import mir_command_110_pb2 as pb_src, mir_command_130_pb2 as pb_dst
 from mir.tools import revs_parser
 from mir.tools import mir_storage_ops_110 as mso_src, mir_storage_ops_130 as mso_dst
@@ -44,6 +46,10 @@ def update_all(mir_root: str, assets_root: str, models_root: str) -> None:
         raise RuntimeError(f"Repo label file: {mir_label_file} is not linked to user labels")
 
     for tag in get_repo_tags(mir_root):
+        if not re.match(f"^.{{{IDProto.ID_LENGTH}}}@.{{{IDProto.ID_LENGTH}}}$", tag):
+            logging.info(f"    skip: {tag}")
+            continue
+
         logging.info(f"    updating: {tag}")
         rev_tid = revs_parser.parse_single_arg_rev(src_rev=tag, need_tid=True)
         datas_src = _load(mir_root, rev_tid)
@@ -93,11 +99,7 @@ def _update_metadatas(mir_metadatas_src: pb_src.MirMetadatas, assets_root: str) 
         attr_dst.timestamp.start = attr_src.timestamp.start
         attr_dst.timestamp.duration = attr_src.timestamp.duration
 
-        asset_path = ''
-        if os.path.isfile(os.path.join(assets_root, asset_id)):
-            asset_path = os.path.join(assets_root, asset_id)
-        elif os.path.isfile(os.path.join(assets_root, asset_id[-2:], asset_id)):
-            asset_path = os.path.join(assets_root, asset_id[-2:], asset_id)
+        asset_path = mso_dst.locate_asset_path(location=assets_root, hash=asset_id)
         attr_dst.byte_size = os.stat(asset_path).st_size if asset_path else 0
 
         mir_metadatas_dst.attributes[asset_id].CopyFrom(attr_dst)
