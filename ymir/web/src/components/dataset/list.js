@@ -9,6 +9,7 @@ import { humanize } from "@/utils/number"
 import { diffTime } from '@/utils/date'
 import { getTaskTypeLabel, TASKSTATES, TASKTYPES } from '@/constants/task'
 import { ResultStates } from '@/constants/common'
+import { canHide } from '@/constants/dataset'
 
 import CheckProjectDirty from "@/components/common/CheckProjectDirty"
 import StateTag from "@/components/task/stateTag"
@@ -284,7 +285,7 @@ function Datasets({ pid, project = {}, iterations, groups, datasetList, query, v
         key: "hide",
         label: t("common.action.hide"),
         onclick: () => hide(record),
-        hidden: () => hideHidden(record),
+        hidden: () => !canHide(record, project),
         icon: <EyeOffIcon />,
       },
     ]
@@ -293,8 +294,6 @@ function Datasets({ pid, project = {}, iterations, groups, datasetList, query, v
 
   const tableChange = ({ current, pageSize }, filters, sorters = {}) => {
   }
-
-  const hideHidden = ({ state, id }) => isRunning(state) || project?.hiddenDatasets?.includes(id)
 
   const getTypeFilter = gid => {
     return getFilters(gid, 'taskType', (type) => t(getTaskTypeLabel(type)))

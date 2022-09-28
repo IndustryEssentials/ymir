@@ -31,6 +31,8 @@ import useDuplicatedCheck from "@/hooks/useDuplicatedCheck"
 
 const TrainType = [{ value: "detection", label: 'task.train.form.traintypes.detect', checked: true }]
 
+const KeywordsMaxCount = 5
+
 function Train({ allDatasets, datasetCache, ...func }) {
   const pageParams = useParams()
   const pid = Number(pageParams.id)
@@ -318,13 +320,13 @@ function Train({ allDatasets, datasetCache, ...func }) {
                   placeholder={t('project.add.form.keyword.required')}
                   onChange={setSelectedKeywords}
                   options={(trainDataset?.gt?.keywords || []).map(k => ({ label: k, value: k }))}
-                  maxTagCount={5}
+                  maxTagCount={KeywordsMaxCount}
                   maxTagPlaceholder={<Tooltip
                     trigger='hover'
                     color='white'
-                    title={selectedKeywords.map(k => <Tag key={k}>{k}</Tag>)}
+                    title={selectedKeywords.slice(KeywordsMaxCount).map(k => <Tag key={k}>{k}</Tag>)}
                   >
-                    {selectedKeywords.length - 5}+
+                    {selectedKeywords.length - KeywordsMaxCount}+
                   </Tooltip>}
                 />
               </Form.Item>}
