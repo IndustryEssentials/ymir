@@ -41,9 +41,6 @@ class Settings(BaseSettings):
     # redis
     BACKEND_REDIS_URL: str = "redis://redis:6379/0"
 
-    # graph
-    MAX_HOPS: int = 5
-
     # all the emails things
     EMAILS_ENABLED: bool = False
     SMTP_TLS: bool = True
@@ -113,6 +110,10 @@ class Settings(BaseSettings):
 
     # migration
     MIGRATION_CHECKPOINT: str = "9bb7bb8b71c3"
+
+    # cron job
+    CRON_MIN_IDLE_TIME: int = 2 * 60 * 1000  # 2 minutes
+    CRON_CHECK_INTERVAL: int = 10000  # 10 seconds
 
 
 settings = Settings(_env_file=".env")  # type: ignore
