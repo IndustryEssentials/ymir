@@ -1,4 +1,5 @@
 import { ModelVersion } from '@/interface/model'
+import { message } from 'antd'
 import { useEffect, useState } from 'react'
 import { getLocale, useSelector } from 'umi'
 import usePostMessage from './usePostMessage'
@@ -27,8 +28,12 @@ const usePublish = () => {
   useEffect(() => {
     // finish publish
     console.log('recieved:', recieved)
-    if (recieved?.type === 'loaded') {
-
+    if (recieved?.type === 'publish_finish') {
+      if (recieved.data) {
+        message.success('publish success.')
+      } else {
+        message.error('publish failure.')
+      }
     }
   }, [recieved])
 
