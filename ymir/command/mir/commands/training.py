@@ -126,7 +126,7 @@ def _prepare_pretrained_models(model_location: str, model_hash_stage: str, dst_m
         dst_model_dir (str): dir where you want to extract model files to
 
     Returns:
-        List[str]: model names
+        List[str]: stage_name/model_names
     """
     if not model_hash_stage:
         return []
@@ -136,7 +136,7 @@ def _prepare_pretrained_models(model_location: str, model_hash_stage: str, dst_m
                                          stage_name=stage_name,
                                          dst_model_path=dst_model_dir)
 
-    return model_storage.stages[stage_name].files
+    return [f"{stage_name}/{file_name}" for file_name in model_storage.stages[stage_name].files]
 
 
 def _get_task_parameters(config: dict) -> str:
@@ -243,9 +243,9 @@ class CmdTrain(base.BaseCommand):
         os.symlink(docker_log_src, docker_log_dst)
 
         # if have model_hash_stage, export model
-        pretrained_model_names = _prepare_pretrained_models(model_location=model_upload_location,
-                                                            model_hash_stage=pretrained_model_hash_stage,
-                                                            dst_model_dir=os.path.join(work_dir_in, 'models'))
+        pretrained_model_stage_and_names = _prepare_pretrained_models(model_location=model_upload_location,
+                                                                      model_hash_stage=pretrained_model_hash_stage,
+                                                                      dst_model_dir=os.path.join(work_dir_in, 'models'))
 
         mir_metadatas: mirpb.MirMetadatas
         mir_annotations: mirpb.MirAnnotations
@@ -317,7 +317,7 @@ class CmdTrain(base.BaseCommand):
             executor_config=executor_config,
             out_config_path=out_config_path,
             task_id=task_id,
-            pretrained_model_params=[os.path.join('/in/models', name) for name in pretrained_model_names])
+            pretrained_model_params=[os.path.join('/in/models', name) for name in pretrained_model_stage_and_names])
         env_config.generate_training_env_config_file(task_id=task_id,
                                                      env_config_file_path=os.path.join(work_dir_in, 'env.yaml'))
 

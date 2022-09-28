@@ -97,8 +97,9 @@ class TestCmdInfer(unittest.TestCase):
 
         # pack model
         with tarfile.open(os.path.join(self._models_location, 'fake_model_hash'), "w:gz") as dest_tar_gz:
-            dest_tar_gz.add(os.path.join(self._models_location, 'model.params'), 'model.params')
-            dest_tar_gz.add(os.path.join(self._models_location, 'model.json'), 'model.json')
+            dest_tar_gz.add(os.path.join(self._models_location, 'model.params'),
+                            f"{model_stage.stage_name}/model.params")
+            dest_tar_gz.add(os.path.join(self._models_location, 'model.json'), f"{model_stage.stage_name}/model.json")
             dest_tar_gz.add(os.path.join(self._models_location, 'ymir-info.yaml'), 'ymir-info.yaml')
 
     def _prepare_config_file(self):
@@ -182,4 +183,4 @@ class TestCmdInfer(unittest.TestCase):
             self.assertTrue('model_params_path' in infer_config)
 
         # check model params
-        self.assertTrue(os.path.isfile(os.path.join(fake_args.work_dir, 'in', 'models', 'model.params')))
+        self.assertTrue(os.path.isfile(os.path.join(fake_args.work_dir, 'in', 'models', 'default_best_stage', 'model.params')))
