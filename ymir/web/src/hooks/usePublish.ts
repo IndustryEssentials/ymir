@@ -8,7 +8,6 @@ const id = 'publishIframe'
 
 const createIframe = (params = {}) => {
   const url = `${base}/postModelMsg?data=${encodeURIComponent(JSON.stringify(params))}`
-  console.log('url:', url)
   let iframe = document.createElement('iframe')
   document.body.appendChild(iframe)
   iframe.id = id
@@ -39,16 +38,17 @@ const usePublish = () => {
     }
     setLoading(true)
     const lang = getLocale()
-    console.log('data:', data, lang, userId, userName)
     const url = window.location.origin + data.url
+    const stage = data.stages?.find(stg => stg.id === data.recommendStage)?.name
     const params = {
       lang, userId, userName,
       modelId: data.id,
       modelName: data.name,
-      stage: data.recommendStage,
+      stage,
       url,
     }
     // create iframe
+    console.log('publish params:', params)
     createIframe(params)
   }
 
