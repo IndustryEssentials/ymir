@@ -95,8 +95,7 @@ class CmdInfer(base.BaseCommand):
         if not mir_root:
             mir_root = '.'
         if not work_dir:
-            raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
-                                  error_message='empty --work-dir')
+            raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS, error_message='empty --work-dir')
         if not index_file or not os.path.isfile(index_file):
             raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
                                   error_message=f"invalid --index-file: {index_file}")
@@ -107,22 +106,18 @@ class CmdInfer(base.BaseCommand):
             raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
                                   error_message='invalid run_infer and run_mining: both false')
         if not executor:
-            raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
-                                  error_message='empty --executor')
+            raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS, error_message='empty --executor')
 
         return_code = checker.check(mir_root, [checker.Prerequisites.IS_INSIDE_MIR_REPO])
         if return_code != MirCode.RC_OK:
-            raise MirRuntimeError(error_code=return_code,
-                                  error_message=f"check failed: {return_code}")
+            raise MirRuntimeError(error_code=return_code, error_message=f"check failed: {return_code}")
 
         if not executant_name:
             executant_name = task_id
 
         work_dir_in = os.path.join(work_dir, "in")
         work_dir_out = os.path.join(work_dir, "out")
-        prepare_executant_env(work_dir_in=work_dir_in,
-                              work_dir_out=work_dir_out,
-                              asset_cache_dir=media_path)
+        prepare_executant_env(work_dir_in=work_dir_in, work_dir_out=work_dir_out, asset_cache_dir=media_path)
 
         work_index_file = os.path.join(work_dir_in, 'candidate-index.tsv')
         work_config_file = os.path.join(work_dir_in, 'config.yaml')
@@ -139,13 +134,14 @@ class CmdInfer(base.BaseCommand):
         model_names = model_storage.stages[model_storage.stage_name].files
         with open(config_file, 'r') as f:
             config = yaml.safe_load(f)
-        prepare_config_file(config=config,
-                            dst_config_file=work_config_file,
-                            class_names=class_names,
-                            task_id=task_id,
-                            model_params_path=[os.path.join('/in/models', name) for name in model_names],
-                            run_infer=run_infer,
-                            run_mining=run_mining)
+        prepare_config_file(
+            config=config,
+            dst_config_file=work_config_file,
+            class_names=class_names,
+            task_id=task_id,
+            model_params_path=[os.path.join('/in/models', model_storage.stage_name, name) for name in model_names],
+            run_infer=run_infer,
+            run_mining=run_mining)
 
         env_config.generate_mining_infer_env_config_file(task_id=task_id,
                                                          run_mining=run_mining,

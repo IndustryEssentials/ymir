@@ -102,14 +102,17 @@ def prepare_model(model_location: str, model_hash: str, stage_name: str, dst_mod
         model_storage.model_hash = model_hash
         model_storage.stage_name = stage_name
 
-        files: List[str]
+        entry_names: List[str]
         if stage_name:
-            files = model_storage.stages[stage_name].files
+            entry_names = [f"{stage_name}/{file_name}" for file_name in model_storage.stages[stage_name].files]
+            os.makedirs(os.path.join(dst_model_path, stage_name), exist_ok=True)
         else:
-            files = list({f for v in model_storage.stages.values() for f in v.files})
-        for file_name in files:
-            logging.info(f"    extracting {file_name} -> {dst_model_path}")
-            tar_file.extract(file_name, dst_model_path)
+            entry_names = [f"{k}/{f}" for k, v in model_storage.stages.items() for f in v.files]
+            for stage_name in model_storage.stages:
+                os.makedirs(os.path.join(dst_model_path, stage_name), exist_ok=True)
+        for name in entry_names:
+            logging.info(f"    extracting {name} -> {dst_model_path}")
+            tar_file.extract(name, dst_model_path)
 
     return model_storage
 
@@ -130,10 +133,14 @@ def pack_and_copy_models(model_storage: ModelStorage, model_dir_path: str, model
         # packing models
         for stage_name, stage in model_storage.stages.items():
             logging.info(f"  model stage: {stage_name}")
+            stage_dir = os.path.join(model_dir_path, stage_name)
             for file_name in stage.files:
-                file_path = os.path.join(model_dir_path, file_name)
-                logging.info(f"    packing {file_path} -> {file_name}")
-                tar_gz_f.add(file_path, file_name)
+                # find model file in `stage_dir`, and then `model_dir`
+                # compatible with old docker images
+                file_path = _find_model_file(model_dirs=[stage_dir, model_dir_path], file_name=file_name)
+                tar_file_key = f"{stage_name}/{file_name}"
+                logging.info(f"    packing {file_path} -> {tar_file_key}")
+                tar_gz_f.add(file_path, tar_file_key)
 
         # packing attachments
         for section, file_names in model_storage.attachments.items():
@@ -158,3 +165,11 @@ def pack_and_copy_models(model_storage: ModelStorage, model_dir_path: str, model
 
     model_storage.model_hash = model_hash
     return model_hash
+
+
+def _find_model_file(model_dirs: List[str], file_name: str) -> str:
+    for model_dir in model_dirs:
+        file_path = os.path.join(model_dir, file_name)
+        if os.path.isfile(file_path):
+            return file_path
+    raise FileNotFoundError(f"File not found: {file_name} in following dirs: {model_dirs}")
