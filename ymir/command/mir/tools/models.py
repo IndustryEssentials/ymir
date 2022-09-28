@@ -3,7 +3,7 @@ import os
 from pydantic import BaseModel, Field
 import shutil
 import tarfile
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, List, Set, Tuple
 
 from google.protobuf import json_format
 import yaml
@@ -128,25 +128,42 @@ def pack_and_copy_models(model_storage: ModelStorage, model_dir_path: str, model
     tar_file_path = os.path.join(model_dir_path, 'model.tar.gz')
     with tarfile.open(tar_file_path, 'w:gz') as tar_gz_f:
         # packing models
+        entry_names_set: Set[str] = set()  # avoid duplicated tar items
+
         for stage_name, stage in model_storage.stages.items():
             logging.info(f"  model stage: {stage_name}")
             for file_name in stage.files:
+                if file_name in entry_names_set:
+                    logging.info(f"    already have {file_name}")
+                    continue
+
                 file_path = os.path.join(model_dir_path, file_name)
                 logging.info(f"    packing {file_path} -> {file_name}")
                 tar_gz_f.add(file_path, file_name)
+
+                entry_names_set.add(file_name)
 
         # packing attachments
         for section, file_names in model_storage.attachments.items():
             section_dir = os.path.join(model_dir_path, 'attachments', section)
             for file_name in file_names:
+                entry_name = f"attachments/{section}/{file_name}"
+                if entry_name in entry_names_set:
+                    logging.info(f"    already have {entry_name}")
+                    continue
+
                 file_path = os.path.join(section_dir, file_name)
-                tar_file_key = f"attachments/{section}/{file_name}"
-                logging.info(f"    packing {file_path} -> {tar_file_key}")
-                tar_gz_f.add(file_path, tar_file_key)
+                logging.info(f"    packing {file_path} -> {entry_name}")
+                tar_gz_f.add(file_path, entry_name)
+
+                entry_names_set.add(entry_name)
 
         # packing ymir-info.yaml
-        logging.info(f"  packing {ymir_info_file_path} -> {ymir_info_file_name}")
-        tar_gz_f.add(ymir_info_file_path, ymir_info_file_name)
+        if ymir_info_file_name not in entry_names_set:
+            logging.info(f"  packing {ymir_info_file_path} -> {ymir_info_file_name}")
+            tar_gz_f.add(ymir_info_file_path, ymir_info_file_name)
+        else:
+            logging.info(f"  already have {ymir_info_file_name}")
 
     os.makedirs(model_location, exist_ok=True)
     model_hash = sha1sum_for_file(tar_file_path)
