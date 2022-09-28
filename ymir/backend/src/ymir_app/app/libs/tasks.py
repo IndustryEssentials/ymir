@@ -203,7 +203,9 @@ class TaskResult:
     @cached_property
     def dataset_info(self) -> Optional[Dict]:
         try:
-            dataset_info = self.viz.get_dataset_info(self.task_hash, user_labels=self.user_labels)
+            dataset_info = self.viz.get_dataset_info(
+                self.task_hash, user_labels=self.user_labels, check_index_status=True
+            )
         except DatasetIndexNotReady:
             raise FailedToUpdateTaskStatusTemporally()
         except Exception:
