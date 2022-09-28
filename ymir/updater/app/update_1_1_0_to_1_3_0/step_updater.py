@@ -39,22 +39,16 @@ _DEFAULT_STAGE_NAME = 'default_best_stage'
 def update_all(mir_root: str) -> None:
     logging.info(f"updating repo: {mir_root}, 110 -> 130")
 
+    mir_label_file = os.path.join(mir_root, '.mir', 'labels.yaml')
+    if not os.path.islink(mir_label_file):
+        raise RuntimeError(f"Repo label file: {mir_label_file} is not linked to user labels")
+
     for tag in get_repo_tags(mir_root):
         logging.info(f"    updating: {tag}")
         rev_tid = revs_parser.parse_single_arg_rev(src_rev=tag, need_tid=True)
         datas = _load(mir_root, rev_tid)
         updated_datas = _update(datas)
         _save(mir_root, rev_tid, updated_datas)
-
-
-def update_user_labels(label_path: str) -> None:
-    logging.info(f"updating user labels: {label_path}, 110 -> 130")
-
-    with open(label_path, 'r') as f:
-        label_contents = yaml.safe_load(f)
-    label_contents['ymir_version'] = '1.3.0'
-    with open(label_path, 'w') as f:
-        yaml.safe_dump(label_contents, f)
 
 
 def _load(mir_root: str, rev_tid: revs_parser.TypRevTid) -> _MirDatas110:
