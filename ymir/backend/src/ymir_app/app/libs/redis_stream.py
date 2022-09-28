@@ -3,6 +3,8 @@ from typing import Any, Callable
 import redis.asyncio as redis
 from fastapi.logger import logger
 
+from app.config import settings
+
 
 class RedisStream:
     def __init__(
@@ -35,7 +37,12 @@ class RedisStream:
         await self._conn.xadd(self.stream_name, {"payload": msg})
         logger.info("[redis stream] enqueue %s", msg)
 
-    async def consume(self, f_processor: Callable, block_timeout: int = 10000, min_idle_time: int = 120000) -> None:
+    async def consume(
+        self,
+        f_processor: Callable,
+        block_timeout: int = settings.CRON_CHECK_INTERVAL,
+        min_idle_time: int = settings.CRON_MIN_IDLE_TIME,
+    ) -> None:
         """
         block_timeout and min_idle_time are both in ms
         """

@@ -111,5 +111,9 @@ class Settings(BaseSettings):
     # migration
     MIGRATION_CHECKPOINT: str = "9bb7bb8b71c3"
 
+    # cron job
+    CRON_MIN_IDLE_TIME: int = 2 * 60 * 1000  # 2 minutes
+    CRON_CHECK_INTERVAL: int = 10000  # 10 seconds
+
 
 settings = Settings(_env_file=".env")  # type: ignore
