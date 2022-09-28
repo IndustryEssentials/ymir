@@ -316,8 +316,11 @@ def get_dataset(
                 dataset_stats = viz_client.get_dataset_analysis(
                     dataset_hash=dataset.hash, keyword_ids=keyword_ids, require_hist=False
                 )
+        except ValueError:
+            logger.exception("[dataset info] could not convert class_id to class_name, return with basic info")
+            pass
         except FailedToParseVizResponse:
-            logger.warning("[dataset info] could not get dataset info from viewer, return with basic info")
+            logger.exception("[dataset info] could not get dataset info from viewer, return with basic info")
             pass
         else:
             dataset_info.update(dataset_stats)
