@@ -92,7 +92,7 @@ def create_sample_project(
     project_task_hash = gen_task_hash(current_user.id, project.id)
 
     try:
-        user_labels.get_class_ids(names_or_aliases=settings.SAMPLE_PROJECT_KEYWORDS)
+        user_labels.id_for_names(names=settings.SAMPLE_PROJECT_KEYWORDS, raise_if_unknown=True)[0]
     except ValueError:
         # todo refactor keywords dependencies to handle ensure given keywords exist
         add_keywords(controller_client, cache, current_user.id, settings.SAMPLE_PROJECT_KEYWORDS)
@@ -112,7 +112,7 @@ def create_sample_project(
         current_user.id,
         project.id,
         project.name,
-        user_labels.get_class_ids(project_in.training_keywords),
+        user_labels.id_for_names(names=project_in.training_keywords, raise_if_unknown=True)[0],
         TrainingType(project.training_type).name,
         int(project.create_datetime.timestamp()),
     )
@@ -198,7 +198,7 @@ def create_project(
         current_user.id,
         project.id,
         project.name,
-        user_labels.get_class_ids(project_in.training_keywords),
+        user_labels.id_for_names(names=project_in.training_keywords, raise_if_unknown=True)[0],
         TrainingType(project.training_type).name,
         int(project.create_datetime.timestamp()),
     )

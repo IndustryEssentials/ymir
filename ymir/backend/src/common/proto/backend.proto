@@ -39,7 +39,7 @@ enum RequestType {
     CMD_EVALUATE = 19;
     CMD_REPO_CHECK = 20;
     CMD_REPO_CLEAR = 21;
-    CMD_VERSION_GET = 22;
+    CMD_VERSIONS_GET = 22;
 
     // Sandbox path operation
     USER_LIST = 101;
@@ -106,7 +106,7 @@ message GeneralResp {
     int32 available_gpu_counts = 8;
     LabelCollection label_collection = 9;
     bool ops_ret = 10;
-    string sandbox_version = 11;
+    repeated string sandbox_versions = 11;
     RespCMDInference detection = 1000;
     bool enable_livecode = 1001;
     mir.command.Evaluation evaluation = 1002;
@@ -202,6 +202,7 @@ message RespCMDInference {
 
 message LabelCollection {
     repeated Label labels = 1;
+    string ymir_version = 2;
 }
 
 message Label {

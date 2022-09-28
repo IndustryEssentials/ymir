@@ -62,11 +62,16 @@ const useDuplicatedCheck = (onChange = () => { }) => {
   const PopConfirm = (duplicated, allValidation, allTrain) => {
 
     const disabled = allValidation ? MERGESTRATEGY.GUEST : (allTrain ? MERGESTRATEGY.HOST : null)
-    const value = allValidation ? MERGESTRATEGY.HOST : (allTrain ? MERGESTRATEGY.GUEST : strategy)
+    const value = allTrain ? MERGESTRATEGY.GUEST : MERGESTRATEGY.HOST
     strategy = value
     confirm({
       visible: true,
-      content: <ContentRender duplicated={duplicated} disabled={disabled} strategy={value} onChange={value => (strategy = value)} />,
+      content: <ContentRender
+        duplicated={duplicated}
+        disabled={disabled}
+        strategy={value}
+        onChange={value => (strategy = value)}
+      />,
       onOk: ok,
       destroyOnClose: true,
     })

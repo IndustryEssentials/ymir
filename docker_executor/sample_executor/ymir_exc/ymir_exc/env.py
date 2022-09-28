@@ -85,6 +85,7 @@ class EnvConfig(BaseModel):
     run_training: bool = False
     run_mining: bool = False
     run_infer: bool = False
+    protocol_version: str = ''
 
     input: EnvInputConfig = EnvInputConfig()
     output: EnvOutputConfig = EnvOutputConfig()

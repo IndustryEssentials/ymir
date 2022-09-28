@@ -13,6 +13,7 @@ import { format } from "@/utils/date"
 import { getTensorboardLink } from "@/services/common"
 import { TASKTYPES } from "@/constants/task"
 import useFetch from '@/hooks/useFetch'
+import { getRecommendStage } from '@/constants/model'
 
 import renderLiveCodeItem from '@/components/task/items/livecode'
 
@@ -24,11 +25,11 @@ function TaskDetail({ task = {} }) {
   const { id: pid } = useParams()
   const [datasetNames, setDatasetNames] = useState({})
   const [datasets, getDatasets] = useFetch('dataset/batchDatasets', [])
-  const [model, getModel] = useState({})
+  const [model, getModel] = useFetch('model/getModel', {})
 
   useEffect(() => {
     task.id && !isImport(task.type) && fetchDatasets()
-    hasValidModel(task.type) && task?.parameters?.model_id && getModel(task.parameters.model_id)
+    hasValidModel(task.type) && task?.parameters?.model_id && getModel({ id: task.parameters.model_id })
   }, [task.id])
 
   useEffect(() => {
@@ -85,9 +86,10 @@ function TaskDetail({ task = {} }) {
   }
 
   function renderModel(id, pid, model = {}, label = 'task.mining.form.model.label') {
+    const name = model.id ? `${model.name} ${model.versionName} ${getRecommendStage(model).name}` : id
     return id ? <Item label={t(label)}>
       <Link to={`/home/project/${pid}/model/${id}`}>
-        {model?.name || id}
+        {name}
       </Link>
     </Item> : null
   }

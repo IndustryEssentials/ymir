@@ -36,7 +36,7 @@ function KeywordRates({ title = '', stats, progressWidth = 0.5 }) {
   }, [stats, colors])
 
 
-  function generateList({ count = {}, keywords, negative = 0, total }, colors) {
+  function generateList({ count = {}, keywords = [], negative = 0, total }, colors) {
     const klist = [
       ...(keywords.map(kw => ({
         key: kw,
@@ -54,7 +54,8 @@ function KeywordRates({ title = '', stats, progressWidth = 0.5 }) {
   }
 
   function label({ count = 0, label = '', total }) {
-    return `${label} ${count}/${total} ${percent(count / total)}`
+    const countLabel = total ? count / total : 0
+    return `${label} ${count}/${total} ${percent(countLabel)}`
   }
   return list.length ? <div className={s.rates}>
     <div className={s.title}>{title}</div>

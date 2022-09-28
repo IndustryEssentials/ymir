@@ -53,7 +53,7 @@ class CmdInit(base.BaseCommand):
         if return_code != MirCode.RC_OK:
             return return_code
 
-        class_ids.create_empty_if_not_exists(mir_root=mir_root)
+        class_ids.load_or_create_userlabels(mir_root=mir_root, create_ok=True)
 
         repo_git = scm.Scm(root_dir=mir_root, scm_executable='git')
         repo_git.init()

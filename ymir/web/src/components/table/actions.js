@@ -6,7 +6,13 @@ const actions = (menus) => menus.map((menu, i) => action(menu, i === menus.lengt
 
 const isOuterLink = (link) => /^http(s)?:/i.test(link)
 
-const moreActions = (menus) => <Menu className={s.more} style={{ color: 'rgba(0, 0, 0, 0.65)'}} items={menus.map(menu =>({key: menu.key, label: action(menu)}))} />
+const moreActions = (menus) => <Menu
+  className={s.more}
+  style={{ color: 'rgba(0, 0, 0, 0.65)' }}
+  items={menus.map(menu => ({
+    key: menu.key,
+    label: action(menu)
+  }))} />
 
 function action({ key, onclick = () => { }, icon, label, link, target, disabled }, last) {
   const cls = `${s.action} ${last ? s.last : ''}`
@@ -15,7 +21,14 @@ function action({ key, onclick = () => { }, icon, label, link, target, disabled 
       {icon}{label}
     </Button>
   )
-  return link ? <a key={key} className={cls} target={target ? target : (isOuterLink(link) && '_blank')} href={link}>{icon}{label}</a> : btn
+  return link ? <a
+    key={key}
+    className={`${cls} ant-btn ant-btn-link`}
+    target={target ? target : (isOuterLink(link) && '_blank')}
+    href={link}
+  >
+    {icon} {label}
+  </a> : btn
 }
 
 const Actions = ({ menus, showCount = 3 }) => {

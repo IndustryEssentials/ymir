@@ -95,6 +95,8 @@ class Settings(BaseSettings):
     OPENPAI_TOKEN: Optional[str] = None
     OPENPAI_STORAGE: Optional[str] = None
     OPENPAI_USER: Optional[str] = None
+    OPENPAI_CLUSTER: Optional[str] = None
+    OPENPAI_GPUTYPE: Optional[str] = None
 
     @root_validator(pre=True)
     def get_openpai_enabled(cls, values: Dict[str, Any]) -> Dict:
@@ -108,6 +110,9 @@ class Settings(BaseSettings):
 
     # ymir_viewer
     VIEWER_HOST_PORT: Optional[int] = None
+
+    # migration
+    MIGRATION_CHECKPOINT: str = "9bb7bb8b71c3"
 
 
 settings = Settings(_env_file=".env")  # type: ignore

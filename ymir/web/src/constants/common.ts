@@ -28,7 +28,7 @@ type Result = {
 export function updateResultState(result: Result, tasks: BackendData) {
   const task = tasks[result?.task?.hash]
   if (!result || !task) {
-    return
+    return result
   }
   if ([ResultStates.VALID, ResultStates.INVALID].includes(task.result_state)) {
     result.needReload = true
@@ -43,6 +43,14 @@ export function updateResultState(result: Result, tasks: BackendData) {
 
 export function validState(state: number) {
   return ResultStates.VALID === state
+}
+export const statesLabel = (state: ResultStates) => {
+  const maps = {
+    [ResultStates.READY]: 'dataset.state.ready',
+    [ResultStates.VALID]: 'dataset.state.valid',
+    [ResultStates.INVALID]: 'dataset.state.invalid',
+  }
+  return maps[state]
 }
 
 export function getVersionLabel(version: number) {

@@ -2,9 +2,11 @@ package services
 
 import (
 	"context"
+	"encoding/json"
 	"testing"
 
 	"github.com/IndustryEssentials/ymir-viewer/common/constants"
+	"github.com/IndustryEssentials/ymir-viewer/common/protos"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"go.mongodb.org/mongo-driver/bson"
@@ -159,7 +161,7 @@ func TestIndexDatasetDataSuccess(t *testing.T) {
 			Return(mockCollection)
 
 		mongoServer := NewMongoServer(context.Background(), &mockMirDatabase, &mockMetricsDatabase)
-		mongoServer.IndexDatasetData(&mirRepo, []interface{}{})
+		mongoServer.IndexDatasetData(&mirRepo, []constants.MirAssetDetail{})
 
 		mt.AddMockResponses(
 			mtest.CreateSuccessResponse(),
@@ -167,7 +169,7 @@ func TestIndexDatasetDataSuccess(t *testing.T) {
 			mtest.CreateSuccessResponse(),
 			mtest.CreateSuccessResponse(),
 		)
-		mongoServer.IndexDatasetData(&mirRepo, []interface{}{mockAssetsDetail[0]})
+		mongoServer.IndexDatasetData(&mirRepo, []constants.MirAssetDetail{mockAssetsDetail[0]})
 	})
 }
 
@@ -282,18 +284,40 @@ func TestQueryDatasetStatsSuccess(t *testing.T) {
 		mockMirDatabase.On("Collection", "@", []*options.CollectionOptions(nil)).
 			Return(mockCollection)
 
+		mockMirContext := protos.MirContext{}
+		err := json.Unmarshal([]byte(`{
+			"pred_stats":
+			{
+				"class_ids_cnt":
+				{
+					"0": 7,
+					"1": 8
+				}
+			},
+			"gt_stats":
+			{
+				"class_ids_cnt":
+				{
+					"0": 3,
+					"2": 3
+				}
+			}
+		}`), &mockMirContext)
+		if err != nil {
+			panic(err)
+		}
 		mongoServer := NewMongoServer(context.Background(), &mockMirDatabase, &mockMetricsDatabase)
 
 		classIDs := []int{0, 1}
 		expectedCount := int32(1)
 		expectedResult := constants.NewQueryDatasetStatsResult()
 		expectedResult.TotalAssetsCount = 1
-		expectedResult.Gt.ClassIDsCount[0] = 1
-		expectedResult.Gt.ClassIDsCount[1] = 1
+		expectedResult.Gt.ClassIDsCount[0] = 3
+		expectedResult.Gt.ClassIDsCount[1] = 0
 		expectedResult.Gt.AnnotationsCount = 1
 		expectedResult.Gt.PositiveAssetsCount = 1
-		expectedResult.Pred.ClassIDsCount[0] = 1
-		expectedResult.Pred.ClassIDsCount[1] = 1
+		expectedResult.Pred.ClassIDsCount[0] = 7
+		expectedResult.Pred.ClassIDsCount[1] = 8
 		expectedResult.Pred.PositiveAssetsCount = 1
 		expectedResult.Pred.AnnotationsCount = 1
 		expectedResult.QueryContext.RequireAssetsHist = false
@@ -322,7 +346,7 @@ func TestQueryDatasetStatsSuccess(t *testing.T) {
 		mt.AddMockResponses(first, second, killCursors)
 		mt.AddMockResponses(first, second, killCursors)
 		mt.AddMockResponses(first, second, killCursors)
-		result := mongoServer.QueryDatasetStats(&mirRepo, classIDs, false, false)
+		result := mongoServer.QueryDatasetStats(&mirRepo, &mockMirContext, classIDs, false, false)
 		assert.Equal(t, expectedResult, result)
 	})
 }

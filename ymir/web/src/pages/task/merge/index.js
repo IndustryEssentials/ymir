@@ -107,7 +107,7 @@ function Merge() {
           onFinish={onFinish}
           onFinishFailed={onFinishFailed}
         >
-          <MergeType initialValue={mid ? 0 : 1} />
+          <MergeType disabled={[iterationId ? 0 : null]} initialValue={!iterationId && mid ? 0 : 1} />
           {!type ? <DatasetName /> : null}
           {did ? <Form.Item label={t('task.fusion.form.dataset')}>
             <span>{dataset.name} {dataset.versionName} (assets: {dataset.assetCount})</span>

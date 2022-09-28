@@ -9,7 +9,6 @@ import (
 	"github.com/IndustryEssentials/ymir-viewer/common/constants"
 	"github.com/IndustryEssentials/ymir-viewer/common/loader"
 	"github.com/IndustryEssentials/ymir-viewer/common/protos"
-	"github.com/IndustryEssentials/ymir-viewer/tools"
 	"github.com/mitchellh/mapstructure"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -29,7 +28,7 @@ type BaseMirRepoLoader interface {
 
 type BaseMongoServer interface {
 	CheckDatasetExistenceReady(mirRepo *constants.MirRepo) (bool, bool)
-	IndexDatasetData(mirRepo *constants.MirRepo, newData []interface{})
+	IndexDatasetData(mirRepo *constants.MirRepo, newDatas []constants.MirAssetDetail)
 	RemoveNonReadyDataset()
 	QueryDatasetAssets(
 		mirRepo *constants.MirRepo,
@@ -44,6 +43,7 @@ type BaseMongoServer interface {
 	) *constants.QueryAssetsResult
 	QueryDatasetStats(
 		mirRepo *constants.MirRepo,
+		context *protos.MirContext,
 		classIDs []int,
 		requireAssetsHist bool,
 		requireAnnotationsHist bool,
@@ -100,33 +100,25 @@ func NewViewerHandler(
 }
 
 func (v *ViewerHandler) loadAndIndexAssets(mirRepo *constants.MirRepo) {
-	defer tools.TimeTrack(time.Now())
-
 	exist, ready := v.mongoServer.CheckDatasetExistenceReady(mirRepo)
 	// Dataset not exist, need to load&index.
 	if !exist {
-		log.Printf("No data for %s, reading & building cache.", fmt.Sprint(mirRepo))
+		log.Printf("No data for %s, reading & building cache.", mirRepo.TaskID)
 
 		mirAssetsDetail, _, _ := v.mirLoader.LoadAssetsDetail(mirRepo, "", 0, 0)
-
 		// check again, in case cache process started during data loading.
 		exist, _ = v.mongoServer.CheckDatasetExistenceReady(mirRepo)
 		if exist {
 			log.Printf("Cache exists, skip data indexing.")
 			return
 		}
-
-		newData := make([]interface{}, 0)
-		for _, v := range mirAssetsDetail {
-			newData = append(newData, v)
-		}
-		v.mongoServer.IndexDatasetData(mirRepo, newData)
+		v.mongoServer.IndexDatasetData(mirRepo, mirAssetsDetail)
 		return
 	}
 
 	// Data set exist, return if ready.
 	if ready {
-		log.Printf("Mongodb ready for %s.", fmt.Sprint(mirRepo))
+		log.Printf("Mongodb ready for %s.", mirRepo.TaskID)
 		return
 	}
 
@@ -137,7 +129,7 @@ func (v *ViewerHandler) loadAndIndexAssets(mirRepo *constants.MirRepo) {
 		time.Sleep(1 * time.Second)
 		waitExist, waitReady := v.mongoServer.CheckDatasetExistenceReady(mirRepo)
 		if waitExist && waitReady {
-			log.Printf("Mongodb ready for %s, after wait %d rounds.", fmt.Sprint(mirRepo), i)
+			log.Printf("Mongodb ready for %s, after wait %d rounds.", mirRepo.TaskID, i)
 			return
 		}
 	}
@@ -203,8 +195,6 @@ func (v *ViewerHandler) GetAssetsHandler(
 func (v *ViewerHandler) GetDatasetMetaCountsHandler(
 	mirRepo *constants.MirRepo,
 ) *constants.QueryDatasetStatsResult {
-	defer tools.TimeTrack(time.Now())
-
 	result := constants.NewQueryDatasetStatsResult()
 
 	mirContext := v.mirLoader.LoadSingleMirData(mirRepo, constants.MirfileContext).(*protos.MirContext)
@@ -234,7 +224,12 @@ func (v *ViewerHandler) GetDatasetMetaCountsHandler(
 		result.Pred.AnnotationsCount = int64(predStats.TotalCnt)
 	}
 
-	go v.loadAndCacheAssetsNoPanic(mirRepo)
+	exist, ready := v.mongoServer.CheckDatasetExistenceReady(mirRepo)
+	result.QueryContext.RepoIndexReady = exist
+	result.QueryContext.RepoIndexReady = ready
+	if !exist {
+		go v.loadAndCacheAssetsNoPanic(mirRepo)
+	}
 
 	return v.fillupDatasetUniverseFields(mirRepo, result)
 }
@@ -292,8 +287,11 @@ func (v *ViewerHandler) GetDatasetStatsHandler(
 	if len(classIDs) < 1 && !requireAssetsHist && !requireAnnotationsHist {
 		panic("same result as dataset_meta_count, should use lightweight interface instead.")
 	}
+	mirContext := v.mirLoader.LoadSingleMirData(mirRepo, constants.MirfileContext).(*protos.MirContext)
 	v.loadAndIndexAssets(mirRepo)
-	result := v.mongoServer.QueryDatasetStats(mirRepo, classIDs, requireAssetsHist, requireAnnotationsHist)
+	result := v.mongoServer.QueryDatasetStats(mirRepo, mirContext, classIDs, requireAssetsHist, requireAnnotationsHist)
+	result.QueryContext.RepoIndexReady = true
+	result.QueryContext.RepoIndexReady = true
 
 	// Backfill task and context info, to align with GetDatasetMetaCountsHandler result.
 	return v.fillupDatasetUniverseFields(mirRepo, result)

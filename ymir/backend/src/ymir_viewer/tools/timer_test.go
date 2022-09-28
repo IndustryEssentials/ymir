@@ -6,5 +6,5 @@ import (
 )
 
 func TestTimeTrack(t *testing.T) {
-	TimeTrack(time.Now())
+	TimeTrack(time.Now(), "test")
 }

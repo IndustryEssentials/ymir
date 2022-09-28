@@ -4,17 +4,17 @@ import shutil
 from typing import Callable, List
 
 from common_utils.sandbox_util import detect_users_and_repos, SandboxError
+from common_utils.version import ymir_salient_version
 from id_definition.error_codes import UpdaterErrorCode
-from mir.version import DEFAULT_YMIR_SRC_VERSION
 
 from update_1_1_0_to_1_3_0.step_updater import update_all as update_110_130
 
 
 def update(sandbox_root: str, src_ver: str, dst_ver: str) -> None:
-    steps = _get_update_steps(src_ver=src_ver, dst_ver=dst_ver)
+    steps: List[Callable[[str], None]] = _get_update_steps(src_ver=src_ver, dst_ver=dst_ver)
     if not steps:
-        raise SandboxError(error_code=UpdaterErrorCode.SANDBOX_VERSION_NOT_SUPPORTED,
-                           error_message=f"Sandbox version: {src_ver} not supported")
+        logging.info('nothing to update {src_ver}:{dst_ver}')
+        return
 
     _backup(sandbox_root)
 
@@ -24,7 +24,7 @@ def update(sandbox_root: str, src_ver: str, dst_ver: str) -> None:
         for update_func in steps:
             for user_id, repo_ids in user_to_repos.items():
                 for repo_id in repo_ids:
-                    update_func(mir_root=os.path.join(sandbox_root, user_id, repo_id))
+                    update_func(os.path.join(sandbox_root, user_id, repo_id))
     except Exception as e:
         _roll_back(sandbox_root)
         raise e
@@ -57,20 +57,10 @@ def _roll_back(sandbox_root: str) -> None:
     logging.info('roll back done')
 
 
-def _get_equivalent_version(ver: str, default_ver: str = '') -> str:
-    _EQUIVALENT_VERSIONS = {
-        '1.1.0': '1.1.0',
-        '1.3.0': '1.3.0',
-    }
-    return _EQUIVALENT_VERSIONS.get(ver, default_ver)
-
-
 def _get_update_steps(src_ver: str, dst_ver: str) -> List[Callable[[str], None]]:
-    eq_src_ver = _get_equivalent_version(src_ver, default_ver=DEFAULT_YMIR_SRC_VERSION)
-    eq_dst_ver = _get_equivalent_version(dst_ver)
+    eq_src_ver = ymir_salient_version(src_ver)
+    eq_dst_ver = ymir_salient_version(dst_ver)
 
-    _UPDATE_NODES = ['1.1.0', '1.3.0']
-    _UPDATE_FUNCS = [update_110_130]
-    src_idx = _UPDATE_NODES.index(eq_src_ver)
-    dst_idx = _UPDATE_NODES.index(eq_dst_ver)
-    return _UPDATE_FUNCS[src_idx:dst_idx]
+    _UPDATE_NODES: List[str] = ['1.1.0', '1.3.0']
+    _UPDATE_FUNCS: List[Callable[[str], None]] = [update_110_130]
+    return _UPDATE_FUNCS[_UPDATE_NODES.index(eq_src_ver):_UPDATE_NODES.index(eq_dst_ver)]

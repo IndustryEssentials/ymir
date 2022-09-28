@@ -17,6 +17,7 @@ from app.api.errors.errors import (
     DuplicateDatasetGroupError,
     NoDatasetPermission,
     FailedToHideProtectedResources,
+    FailedToParseVizResponse,
     ProjectNotFound,
     MissingOperations,
     RefuseToProcessMixedOperations,
@@ -297,7 +298,7 @@ def get_dataset(
     keyword_ids: Optional[List[int]] = None
     if keywords_for_negative_info:
         keywords = keywords_for_negative_info.split(",")
-        keyword_ids = user_labels.get_class_ids(keywords)
+        keyword_ids = user_labels.id_for_names(names=keywords, raise_if_unknown=True)[0]
 
     dataset_info = schemas.dataset.DatasetInDB.from_orm(dataset).dict()
     if verbose_info or keyword_ids:
@@ -306,15 +307,20 @@ def get_dataset(
             project_id=dataset.project_id,
             user_labels=user_labels,
         )
-        if verbose_info:
-            # get cks and tags
-            dataset_stats = viz_client.get_dataset_info(dataset_hash=dataset.hash)
+        try:
+            if verbose_info:
+                # get cks and tags
+                dataset_stats = viz_client.get_dataset_info(dataset_hash=dataset.hash)
+            else:
+                # get negative info based on given keywords
+                dataset_stats = viz_client.get_dataset_analysis(
+                    dataset_hash=dataset.hash, keyword_ids=keyword_ids, require_hist=False
+                )
+        except FailedToParseVizResponse:
+            logger.warning("[dataset info] could not get dataset info from viewer, return with basic info")
+            pass
         else:
-            # get negative info based on given keywords
-            dataset_stats = viz_client.get_dataset_analysis(
-                dataset_hash=dataset.hash, keyword_ids=keyword_ids, require_hist=False
-            )
-        dataset_info.update(dataset_stats)
+            dataset_info.update(dataset_stats)
 
     return {"result": dataset_info}
 
@@ -347,7 +353,7 @@ def get_assets_of_dataset(
         raise DatasetNotFound()
 
     keywords = keywords_str.split(",") if keywords_str else None
-    keyword_ids = user_labels.get_class_ids(keywords) if keywords else None
+    keyword_ids = user_labels.id_for_names(names=keywords, raise_if_unknown=True)[0] if keywords else None
 
     viz_client.initialize(
         user_id=current_user.id,
@@ -458,8 +464,8 @@ def normalize_fusion_parameter(
         "include_datasets": [dataset.hash for dataset in in_datasets],
         "strategy": fusion_params.include_strategy,
         "exclude_datasets": [dataset.hash for dataset in ex_datasets],
-        "include_class_ids": user_labels.get_class_ids(names_or_aliases=fusion_params.include_labels),
-        "exclude_class_ids": user_labels.get_class_ids(names_or_aliases=fusion_params.exclude_labels),
+        "include_class_ids": user_labels.id_for_names(names=fusion_params.include_labels, raise_if_unknown=True)[0],
+        "exclude_class_ids": user_labels.id_for_names(names=fusion_params.exclude_labels, raise_if_unknown=True)[0],
         "sampling_count": fusion_params.sampling_count,
     }
 
@@ -660,10 +666,14 @@ def filter_dataset(
     main_dataset = datasets[0]
 
     class_ids = (
-        user_labels.get_class_ids(names_or_aliases=in_filter.include_keywords) if in_filter.include_keywords else None
+        user_labels.id_for_names(names=in_filter.include_keywords, raise_if_unknown=True)[0]
+        if in_filter.include_keywords
+        else None
     )
     ex_class_ids = (
-        user_labels.get_class_ids(names_or_aliases=in_filter.exclude_keywords) if in_filter.exclude_keywords else None
+        user_labels.id_for_names(names=in_filter.exclude_keywords, raise_if_unknown=True)[0]
+        if in_filter.exclude_keywords
+        else None
     )
 
     task_hash = gen_task_hash(current_user.id, in_filter.project_id)

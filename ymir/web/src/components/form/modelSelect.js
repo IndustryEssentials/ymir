@@ -7,7 +7,11 @@ import t from '@/utils/t'
 import useFetch from '@/hooks/useFetch'
 import EmptyStateModel from '@/components/empty/model'
 
-const ModelSelect = ({ pid, value, onlyModel, changeByUser, onChange = () => { }, filters, ...resProps }) => {
+const ModelSelect = ({
+  pid, value, onlyModel, changeByUser,
+  onChange = () => { }, onReady = () => { },
+  filters, ...resProps
+}) => {
   const models = useSelector(state => state.model.allModels)
   const [ms, setMS] = useState(null)
   const [options, setOptions] = useState([])
@@ -16,6 +20,10 @@ const ModelSelect = ({ pid, value, onlyModel, changeByUser, onChange = () => { }
   useEffect(() => {
     pid && getModels(pid)
   }, [pid])
+
+  useEffect(() => {
+    _ && onReady(_)
+  }, [_])
 
   useEffect(() => {
     if (options.length) {
@@ -36,17 +44,16 @@ const ModelSelect = ({ pid, value, onlyModel, changeByUser, onChange = () => { }
   }, [options])
 
   useEffect(() => {
-    if (value && !value[1]) {
-      const model = models.find(md => md.id === value[0])
-      if (model) {
-        setMS([value[0], model.recommendStage])
-      }
+    if (!value) {
+      return
     }
-  }, [options])
-
-  useEffect(() => {
-    setMS(value)
-  }, [value])
+    const model = models.find(md => md.id === value[0])
+    if (value && !value[1] && model) {
+      setMS([value[0], model.recommendStage])
+    } else {
+      setMS(value)
+    }
+  }, [options, value])
 
   useEffect(() => {
     generateOptions()

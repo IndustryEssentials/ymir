@@ -20,5 +20,5 @@ class LabelAddInvoker(BaseMirControllerInvoker):
         conflict_labels = labels.merge_labels(label_storage_file=self._label_storage_file,
                                               new_labels=labels.parse_labels_from_proto(self._request.label_collection),
                                               check_only=self._request.check_only)
-        response.label_collection.CopyFrom(conflict_labels.to_proto())
+        response.label_collection.CopyFrom(labels.userlabels_to_proto(conflict_labels))
         return response

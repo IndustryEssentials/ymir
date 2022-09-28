@@ -4,6 +4,7 @@ from pydantic import BaseModel
 
 import yaml
 
+from mir import version
 from mir.tools import settings as mir_settings
 
 
@@ -27,9 +28,11 @@ class _EnvOutputConfig(BaseModel):
     mining_result_file: str = '/out/result.tsv'
     infer_result_file: str = '/out/infer-result.json'
     monitor_file: str = '/out/monitor.txt'
+    executor_log_file: str = '/out/ymir-executor-out.log'
 
 
 class _EnvConfig(BaseModel):
+    protocol_version = version.TMI_PROTOCOL_VERSION
     task_id: str = 'default-task'
     run_training: bool = False
     run_mining: bool = False

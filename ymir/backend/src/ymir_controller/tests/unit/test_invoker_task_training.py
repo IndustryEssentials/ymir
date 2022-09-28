@@ -83,7 +83,7 @@ class TestInvokerTaskTraining(unittest.TestCase):
         rds.zremrangebyscore = mock.Mock()
         gpu_utils.GPUInfo.get_gpus_info = mock.Mock(return_value={'0': 0.99, '1': 0.9, '2': 0.89})
 
-        labels.UserLabels.get_main_names = mock.Mock(return_value=["frisbee", "car"])
+        labels.UserLabels.main_name_for_ids = mock.Mock(return_value=["frisbee", "car"])
 
         training_config = {
             'anchors': '12, 16, 19, 36, 40, 28, 36, 75, 76, 55, 72, 146, 142, 110, 192, 243, 459, 401',
@@ -171,7 +171,7 @@ class TestInvokerTaskTraining(unittest.TestCase):
         self.assertDictEqual(expected_config, config)
 
         tensorboard_dir = os.path.join(self._tensorboard_root, self._user_name, self._task_id)
-        asset_cache_dir = os.path.join(self._sandbox_root, self._user_name, "training_asset_cache")
+        asset_cache_dir = os.path.join(self._sandbox_root, self._user_name, "asset_cache")
 
         training_cmd = ("mir train --root {0} --dst-rev {1}@{1} --model-location {2} "
                         "--media-location {2} -w {3} --src-revs {1}@{4} --task-config-file {5} --executor {6} "

@@ -232,7 +232,7 @@ def _process_results(mir_root: str, export_out: str, dst_typ_rev_tid: revs_parse
                      if topk is not None else set(mir_metadatas.attributes.keys()))
 
     infer_result_file_path = os.path.join(export_out, 'infer-result.json')
-    cls_id_mgr = class_ids.ClassIdManager(mir_root=mir_root)
+    cls_id_mgr = class_ids.load_or_create_userlabels(mir_root=mir_root)
     asset_id_to_annotations = (_get_infer_annotations(
         file_path=infer_result_file_path, asset_ids_set=asset_ids_set, cls_id_mgr=cls_id_mgr) if add_prediction else {})
 
@@ -307,7 +307,7 @@ def _get_topk_asset_ids(file_path: str, topk: int) -> Set[str]:
 
 
 def _get_infer_annotations(file_path: str, asset_ids_set: Set[str],
-                           cls_id_mgr: class_ids.ClassIdManager) -> Dict[str, mirpb.SingleImageAnnotations]:
+                           cls_id_mgr: class_ids.UserLabels) -> Dict[str, mirpb.SingleImageAnnotations]:
     asset_id_to_annotations: dict = {}
     with open(file_path, 'r') as f:
         results = json.loads(f.read())

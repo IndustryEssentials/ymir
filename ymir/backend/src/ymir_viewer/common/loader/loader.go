@@ -31,7 +31,6 @@ func (l *MirRepoLoader) LoadMutipleMirDatas(
 	mirRepo *constants.MirRepo,
 	mirFiles []constants.MirFile,
 ) []interface{} {
-	defer tools.TimeTrack(time.Now())
 	mirRoot, mirRev := mirRepo.BuildRepoID()
 
 	repo, err := gitreader.OpenRepo(mirRoot)
@@ -83,6 +82,9 @@ func (l *MirRepoLoader) LoadModelInfo(mirRepo *constants.MirRepo) *constants.Mir
 		}
 	}
 	l.buildStructFromMessage(task.Model, &modelData)
+	if len(modelData.ModelHash) < 1 {
+		panic("invalid model")
+	}
 	return modelData
 }
 
@@ -92,7 +94,8 @@ func (l *MirRepoLoader) LoadAssetsDetail(
 	offset int,
 	limit int,
 ) ([]constants.MirAssetDetail, int64, int64) {
-	defer tools.TimeTrack(time.Now())
+	defer tools.TimeTrack(time.Now(), mirRepo.TaskID)
+
 	filesToLoad := []constants.MirFile{constants.MirfileMetadatas, constants.MirfileAnnotations}
 	mirDatas := l.LoadMutipleMirDatas(mirRepo, filesToLoad)
 	mirMetadatas := mirDatas[0].(*protos.MirMetadatas)
@@ -156,15 +159,17 @@ func (l *MirRepoLoader) LoadAssetsDetail(
 		mapClassIDs := map[int32]bool{}
 		if gtAnnotation, ok := gtAnnotations[assetID]; ok {
 			for _, annotation := range gtAnnotation.Boxes {
-				annotationOut := l.buildStructFromMessage(annotation, map[string]interface{}{}).(map[string]interface{})
-				mirAssetDetails[idx].Gt = append(mirAssetDetails[idx].Gt, annotationOut)
+				annotationOut := constants.NewMirObjectAnnotation()
+				l.buildStructFromMessage(annotation, &annotationOut)
+				mirAssetDetails[idx].Gt = append(mirAssetDetails[idx].Gt, &annotationOut)
 				mapClassIDs[annotation.ClassId] = true
 			}
 		}
 		if predAnnotation, ok := predAnnotations[assetID]; ok {
 			for _, annotation := range predAnnotation.Boxes {
-				annotationOut := l.buildStructFromMessage(annotation, map[string]interface{}{}).(map[string]interface{})
-				mirAssetDetails[idx].Pred = append(mirAssetDetails[idx].Pred, annotationOut)
+				annotationOut := constants.NewMirObjectAnnotation()
+				l.buildStructFromMessage(annotation, &annotationOut)
+				mirAssetDetails[idx].Pred = append(mirAssetDetails[idx].Pred, &annotationOut)
 				mapClassIDs[annotation.ClassId] = true
 			}
 		}

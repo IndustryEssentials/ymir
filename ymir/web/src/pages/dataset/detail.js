@@ -6,6 +6,7 @@ import t from "@/utils/t"
 import { TASKTYPES, getTaskTypeLabel } from "@/constants/task"
 import useFetch from '@/hooks/useFetch'
 import useRestore from "@/hooks/useRestore"
+import { canHide } from '@/constants/dataset'
 
 import Breadcrumbs from "@/components/common/breadcrumb"
 import TaskDetail from "@/components/task/detail"
@@ -15,6 +16,7 @@ import Error from "@/components/task/error"
 import Hide from "@/components/common/hide"
 
 import s from "./detail.less"
+import useRerunAction from "../../hooks/useRerunAction"
 
 const taskTypes = ["merge", "filter", "train", "mining", "label", 'inference', 'copy']
 
@@ -25,6 +27,7 @@ function DatasetDetail() {
   const datasetCache = useSelector(({ dataset }) => dataset.dataset)
   const hideRef = useRef(null)
   const restoreAction = useRestore(pid)
+  const generateRerunBtn = useRerunAction('btn')
 
   useEffect(() => {
     fetchDataset(true)
@@ -68,7 +71,14 @@ function DatasetDetail() {
       >
         <div className={s.content}>
           <Detail dataset={dataset} />
-          <TaskProgress state={dataset.state} result={dataset} task={dataset.task} duration={dataset.durationLabel} progress={dataset.progress} fresh={() => fetchDataset(true)} />
+          <TaskProgress
+            state={dataset.state}
+            result={dataset}
+            task={dataset.task}
+            duration={dataset.durationLabel}
+            progress={dataset.progress}
+            fresh={() => fetchDataset(true)}
+          />
           <Error code={dataset.task?.error_code} msg={dataset.task?.error_message} terminated={dataset?.task?.is_terminated} />
           <TaskDetail
             task={dataset.task}
@@ -91,7 +101,7 @@ function DatasetDetail() {
                   {t(`common.action.${type}`)}
                 </Button>
               ) : null)}
-              {dataset.assetCount > 0 ? <Button type="primary" onClick={() => hide(dataset)}>
+              {canHide(dataset) ? <Button type="primary" onClick={() => hide(dataset)}>
                 {t(`common.action.hide`)}
               </Button> : null}
             </> :
@@ -99,7 +109,7 @@ function DatasetDetail() {
                 {t("common.action.restore")}
               </Button>
             }
-
+            {generateRerunBtn(dataset)}
           </Space>
         </div>
       </Card>

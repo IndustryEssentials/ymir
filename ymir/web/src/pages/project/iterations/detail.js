@@ -15,8 +15,8 @@ function Detail({ project = {} }) {
   const [intermediations, setIntermediations] = useState([])
   const [models, setModels] = useState([])
   const [_, getIteration] = useFetch('iteration/getIteration')
-  const iteration = useSelector(({ iteration }) => iteration.iteration)
   const iid = project.currentIteration?.id
+  const iteration = useSelector(({ iteration }) => iteration.iteration[iid] || {})
 
   useEffect(() => {
     project.id && iid && getIteration({ pid: project.id, id: iid, more: true })
@@ -26,8 +26,8 @@ function Detail({ project = {} }) {
     if (!project?.id) {
       return
     }
-    setSettings([project.miningSet, project.testSet])
-    if (!iteration) {
+    setSettings(filterExsit([project.miningSet, project.testSet]))
+    if (!iteration.id) {
       return
     }
     const {

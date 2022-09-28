@@ -349,7 +349,7 @@ class Timestamp(google.protobuf.message.Message):
     START_FIELD_NUMBER: builtins.int
     DURATION_FIELD_NUMBER: builtins.int
     start: builtins.int = ...
-    """/ start time stamp"""
+    """/ start time stamp, use int32 as int64 is not correctly parsed."""
 
     duration: builtins.float = ...
     """/ duration (in seconds), for images, it's always 0"""

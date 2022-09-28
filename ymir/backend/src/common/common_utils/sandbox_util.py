@@ -1,13 +1,14 @@
 from collections import defaultdict
+import logging
 import os
 import re
 from typing import List, Dict, Set
 
 import yaml
 
+from common_utils.version import DEFAULT_YMIR_SRC_VERSION
 from id_definition.error_codes import UpdaterErrorCode
 from id_definition.task_id import IDProto
-from mir import version
 
 
 class SandboxError(Exception):
@@ -20,7 +21,7 @@ class SandboxError(Exception):
         return f"code: {self.error_code}, message: {self.error_message}"
 
 
-def detect_sandbox_src_ver(sandbox_root: str) -> str:
+def detect_sandbox_src_versions(sandbox_root: str) -> List[str]:
     """
     detect user space versions in this sandbox
 
@@ -28,13 +29,16 @@ def detect_sandbox_src_ver(sandbox_root: str) -> str:
         sandbox_root (str): root of this sandbox
 
     Returns:
-        str: sandbox version
+        str: sandbox versions
 
     Raises:
         SandboxError if labels.yaml not found, or can not be parsed as yaml;
         found no user space version or multiple user space versions.
     """
     user_to_repos = detect_users_and_repos(sandbox_root)
+    if not user_to_repos:
+        return []
+
     ver_to_users: Dict[str, List[str]] = defaultdict(list)
     for user_id in user_to_repos:
         user_label_file = os.path.join(sandbox_root, user_id, 'labels.yaml')
@@ -45,13 +49,12 @@ def detect_sandbox_src_ver(sandbox_root: str) -> str:
             raise SandboxError(error_code=UpdaterErrorCode.INVALID_USER_LABEL_FILE,
                                error_message=f"invalid label file: {user_label_file}") from e
 
-        ver_to_users[user_label_dict.get('ymir_version', version.DEFAULT_YMIR_SRC_VERSION)].append(user_id)
+        ver_to_users[user_label_dict.get('ymir_version', DEFAULT_YMIR_SRC_VERSION)].append(user_id)
 
-    if len(ver_to_users) != 1:
-        raise SandboxError(error_code=UpdaterErrorCode.INVALID_USER_SPACE_VERSIONS,
-                           error_message=f"invalid user space versions: {ver_to_users}")
+    if len(ver_to_users) > 1:
+        logging.info(f"[detect_sandbox_src_versions]: multiple sandbox versions detected: {ver_to_users}")
 
-    return list(ver_to_users.keys())[0]
+    return list(ver_to_users.keys())
 
 
 def detect_users_and_repos(sandbox_root: str) -> Dict[str, Set[str]]:
@@ -64,6 +67,9 @@ def detect_users_and_repos(sandbox_root: str) -> Dict[str, Set[str]]:
     Returns:
         Dict[str, Set[str]]: key: user id, value: repo ids
     """
+    if not os.path.isdir(sandbox_root):
+        return {}
+
     user_to_repos = defaultdict(set)
     for user_id in os.listdir(sandbox_root):
         match_result = re.match(f"\\d{{{IDProto.ID_LEN_USER_ID}}}", user_id)

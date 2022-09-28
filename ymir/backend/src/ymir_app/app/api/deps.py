@@ -22,7 +22,8 @@ from app.utils import cache as ymir_cache
 from app.utils import graph, security, ymir_controller, ymir_viz
 from app.utils.security import verify_api_key
 from app.utils.ymir_controller import ControllerClient
-from common_utils.labels import UserLabels, YMIR_VERSION
+from common_utils.labels import UserLabels
+from common_utils.version import YMIR_VERSION
 
 reusable_oauth2 = OAuth2PasswordBearer(
     tokenUrl=f"{settings.API_V1_STR}/auth/token",

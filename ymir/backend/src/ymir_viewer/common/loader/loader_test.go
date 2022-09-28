@@ -167,8 +167,7 @@ func TestLoadAssetsDetail(t *testing.T) {
 					"index": 0,
 					"polygon": [],
 					"score": 0,
-					"tags":
-					{}
+					"tags": {}
 				}
 			],
 			"pred":
@@ -183,8 +182,7 @@ func TestLoadAssetsDetail(t *testing.T) {
 					"det_link_id": 0,
 					"index": 0,
 					"score": 0,
-					"tags":
-					{}
+					"tags": {}
 				}
 			],
 			"cks":

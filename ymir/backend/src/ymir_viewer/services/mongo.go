@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/IndustryEssentials/ymir-viewer/common/constants"
+	"github.com/IndustryEssentials/ymir-viewer/common/protos"
 	"github.com/IndustryEssentials/ymir-viewer/tools"
 	"github.com/jinzhu/now"
 	"go.mongodb.org/mongo-driver/bson"
@@ -76,22 +77,23 @@ func (s *MongoServer) CheckDatasetExistenceReady(mirRepo *constants.MirRepo) (bo
 	return data["exist"].(bool), data["ready"].(bool)
 }
 
-func (s *MongoServer) IndexDatasetData(mirRepo *constants.MirRepo, newData []interface{}) {
-	defer tools.TimeTrack(time.Now())
+func (s *MongoServer) IndexDatasetData(mirRepo *constants.MirRepo, newDatas []constants.MirAssetDetail) {
+	defer tools.TimeTrack(time.Now(), mirRepo.TaskID)
 
-	if len(newData) <= 0 {
+	if len(newDatas) <= 0 {
 		return
 	}
 
 	collection, collectionName := s.getRepoCollection(mirRepo)
 	s.setDatasetExistence(collectionName, false, true)
 
-	_, err := collection.InsertMany(s.Ctx, newData)
-	if err != nil {
-		panic(err)
+	for _, newData := range newDatas {
+		_, err := collection.InsertOne(s.Ctx, newData)
+		if err != nil {
+			panic(err)
+		}
 	}
 
-	defer tools.TimeTrack(time.Now())
 	index := []mongo.IndexModel{
 		{
 			Keys: bson.M{"asset_id": bsonx.Int32(1)}, Options: options.Index(),
@@ -122,8 +124,8 @@ func (s *MongoServer) IndexDatasetData(mirRepo *constants.MirRepo, newData []int
 		},
 	}
 
-	opts := options.CreateIndexes().SetMaxTime(60 * time.Second)
-	_, err = collection.Indexes().CreateMany(s.Ctx, index, opts)
+	opts := options.CreateIndexes().SetMaxTime(3600 * time.Second)
+	_, err := collection.Indexes().CreateMany(s.Ctx, index, opts)
 	if err != nil {
 		panic(err)
 	}
@@ -167,7 +169,7 @@ func (s *MongoServer) QueryDatasetAssets(
 	cks []string,
 	tags []string,
 ) *constants.QueryAssetsResult {
-	defer tools.TimeTrack(time.Now())
+	defer tools.TimeTrack(time.Now(), mirRepo.TaskID)
 
 	log.Printf(
 		"Query offset: %d, limit: %d, classIDs: %v, annoTypes: %v, currentId: %s, cmTypes: %v cks: %v tags: %v\n",
@@ -375,6 +377,7 @@ func (s *MongoServer) RemoveNonReadyDataset() {
 
 func (s *MongoServer) QueryDatasetStats(
 	mirRepo *constants.MirRepo,
+	mirContext *protos.MirContext,
 	classIDs []int,
 	requireAssetsHist bool,
 	requireAnnotationsHist bool,
@@ -385,28 +388,15 @@ func (s *MongoServer) QueryDatasetStats(
 	var predClassIDs []int
 	// If classIDs is empty, fill by all class_ids.
 	if len(classIDs) < 1 {
-		gtUniqueClassIDs, err := collection.Distinct(s.Ctx, "gt.class_id", bson.D{})
-		if err != nil {
-			panic(err)
-		}
-		gtClassIDs = []int{}
-		for _, v := range gtUniqueClassIDs {
-			if id, ok := v.(float64); ok {
-				gtClassIDs = append(gtClassIDs, int(id))
-			}
+		gtClassIDs = make([]int, 0, len(mirContext.GtStats.ClassIdsCnt))
+		for k := range mirContext.GtStats.ClassIdsCnt {
+			gtClassIDs = append(gtClassIDs, int(k))
 		}
 
-		predUniqueClassIDs, err := collection.Distinct(s.Ctx, "pred.class_id", bson.D{})
-		if err != nil {
-			panic(err)
+		predClassIDs = make([]int, 0, len(mirContext.PredStats.ClassIdsCnt))
+		for k := range mirContext.PredStats.ClassIdsCnt {
+			predClassIDs = append(predClassIDs, int(k))
 		}
-		predClassIDs = []int{}
-		for _, v := range predUniqueClassIDs {
-			if id, ok := v.(float64); ok {
-				predClassIDs = append(predClassIDs, int(id))
-			}
-		}
-
 	} else {
 		gtClassIDs = classIDs
 		predClassIDs = classIDs
@@ -437,7 +427,7 @@ func (s *MongoServer) QueryDatasetStats(
 
 	// Build Annotation fields.
 	for _, classID := range gtClassIDs {
-		queryData.Gt.ClassIDsCount[classID], _ = s.countDatasetAssetsInClass(collection, "gt.class_id", []int{classID})
+		queryData.Gt.ClassIDsCount[classID] = int64(mirContext.GtStats.ClassIdsCnt[int32(classID)])
 	}
 	queryData.Gt.PositiveAssetsCount, queryData.Gt.AnnotationsCount = s.countDatasetAssetsInClass(
 		collection,
@@ -447,11 +437,7 @@ func (s *MongoServer) QueryDatasetStats(
 	queryData.Gt.NegativeAssetsCount = totalAssetsCount - queryData.Gt.PositiveAssetsCount
 
 	for _, classID := range predClassIDs {
-		queryData.Pred.ClassIDsCount[classID], _ = s.countDatasetAssetsInClass(
-			collection,
-			"pred.class_id",
-			[]int{classID},
-		)
+		queryData.Pred.ClassIDsCount[classID] = int64(mirContext.PredStats.ClassIdsCnt[int32(classID)])
 	}
 	queryData.Pred.PositiveAssetsCount, queryData.Pred.AnnotationsCount = s.countDatasetAssetsInClass(
 		collection,

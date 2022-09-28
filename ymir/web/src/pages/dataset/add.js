@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Button, Card, Form, Input, message, Radio, Select, Space, Tag } from 'antd'
-import { useParams, useHistory } from 'umi'
+import { useParams, useHistory, useLocation } from 'umi'
 
 import { formLayout } from "@/config/antd"
 import t from '@/utils/t'
@@ -44,9 +44,11 @@ const strategies = [
 
 const Add = (props) => {
   const history = useHistory()
+  const { query } = useLocation()
   const pageParams = useParams()
   const pid = Number(pageParams.id)
-  const { id } = history.location.query
+  const { id, from, stepKey } = query
+  const iterationContext = from === 'iteration'
 
   const [form] = useForm()
   const [currentType, setCurrentType] = useState(TYPES.INTERNAL)
@@ -64,6 +66,7 @@ const Add = (props) => {
   const netUrl = Form.useWatch('url', form)
   const path = Form.useWatch('path', form)
   const [formatDetailModal, setFormatDetailModal] = useState(false)
+  const [updateResult, updateProject] = useFetch('project/updateProject')
 
   useEffect(() => {
     form.setFieldsValue({ datasetId: null })
@@ -85,22 +88,37 @@ const Add = (props) => {
   }, [newer])
 
   useEffect(() => {
-    // todo get name
     const filename = (netUrl || '').replace(/^.+\/([^\/]+)\.zip$/, '$1')
     setDefaultName(filename)
   }, [netUrl])
 
-  useEffect(() => setDefaultName(path), [path])
+  useEffect(() => {
+    if (typeof path === 'undefined') {
+      return
+    }
+    const matchfinalDir = path.match(/[^\/]+$/) || []
+    const finalDir = matchfinalDir[0]
+    setDefaultName(finalDir)
+  }, [path])
 
   useEffect(() => addDefaultName(defaultName), [defaultName])
 
   useEffect(() => {
     if (addResult) {
       message.success(t('dataset.add.success.msg'))
+      if (iterationContext && stepKey) {
+        return updateProject({ id: pid, [stepKey]: addResult.id })
+      }
       const group = addResult.dataset_group_id || ''
       history.replace(`/home/project/${pid}/dataset#${group}`)
     }
   }, [addResult])
+
+  useEffect(() => {
+    if (updateResult) {
+      history.replace(`/home/project/${pid}/iterations`)
+    }
+  }, [updateResult])
 
   useEffect(() => {
     const opts = strategies.map(opt => ({ ...opt, label: t(`dataset.add.label_strategy.${opt.label}`) }))
@@ -169,7 +187,7 @@ const Add = (props) => {
   }
 
   function onInternalDatasetChange(value, { dataset }) {
-    setDefaultName(`${dataset.name} ${dataset.versionName}`)
+    setDefaultName(`${dataset.name}`)
     setSelectedDataset(value)
   }
 
@@ -180,7 +198,7 @@ const Add = (props) => {
 
   function setCopyDefaultName(value, option) {
     const label = value ? option[1]?.label : ''
-    const datasetname = label.replace(/ \(assets: \d+\)/, '')
+    const datasetname = label.replace(/\sV\d+\s\(assets: \d+\)/, '')
     setDefaultName(datasetname)
   }
 
@@ -330,7 +348,7 @@ const Add = (props) => {
               <Form.Item label={t('dataset.add.form.path.label')} required
                 name='path'
                 help={renderTip('path')}
-                rules={[{ required: true, message: t('dataset.add.form.path.tip') }]}
+                rules={[{ required: true, message: renderTip('path') }]}
               >
                 <Input placeholder={t('dataset.add.form.path.placeholder')} max={512} allowClear />
               </Form.Item>

@@ -64,6 +64,11 @@ class TestResultWriter(unittest.TestCase):
         self.assertEqual(best_stage_name, result_obj['best_stage_name'])
         self.assertEqual(mAP, result_obj['map'])
 
+    def _check_training_attachments(self, attachments: Dict[str, List[str]]) -> None:
+        with open(self._training_result_file, 'r') as f:
+            result_obj: dict = yaml.safe_load(f)
+        self.assertEqual(result_obj['attachments'], attachments)
+
     def _check_mining_result(self, mining_result: List[Tuple[str, float]]) -> None:
         with open(self._mining_result_file, 'r') as f:
             lines = f.read().splitlines()
@@ -88,10 +93,12 @@ class TestResultWriter(unittest.TestCase):
         rw.write_model_stage(stage_name='best',
                              files=[f"model-best.params", 'model-symbol.json'],
                              mAP=1,
-                             timestamp=900000)
+                             timestamp=900000,
+                             attachments={'section_a': ['01', '02']})
         expected_stage_names = [f"epoch_{idx}" for idx in range(2, 12)]
         expected_stage_names.append('best')
         self._check_model_stages(stage_names=expected_stage_names, best_stage_name='best', mAP=1.0)
+        self._check_training_attachments(attachments={'section_a': ['01', '02']})
 
     def test_write_training_result(self) -> None:
         rw.write_training_result(model_names=['fake.model'], mAP=0.9, classAPs={})
