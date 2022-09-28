@@ -3,7 +3,8 @@
 | 协议文档版本 | ymir 版本 | 说明 |
 | --- | --- | --- |
 | [0.0.0](https://raw.githubusercontent.com/IndustryEssentials/ymir/release-1.1.0/docs/ymir-cmd-container.md) | 0.0.0 - 1.1.0 | 初始版本 |
-| 1.0.0 | 1.2.0 - 现在 | 增加关于中间模型的描述 |
+| [1.0.0](https://raw.githubusercontent.com/IndustryEssentials/ymir/ymir-pa/docs/ymir-cmd-container.md) | 1.2.0 - 1.2.2 | 增加关于中间模型的描述 |
+| 1.1.0 | 1.3.0 - | 4.3.2 节，训练完成后，模型保存策略更改 |
 
 ## 1. 关于此文档
 
@@ -235,7 +236,7 @@ task_0    1622552975    1    done
 | /out/log.txt | 参考共同部分 |
 | /out/monitor.txt | 参考共同部分 |
 | /out/monitor-log.txt | 参考共同部分 |
-| /out/models | 必要，最终生成的模型的输出目录，里面直接存放模型文件，没有下级子目录。<br>必须有一个 `result.yaml` 文件，格式参考注1 |
+| /out/models | 必要，最终生成的模型的输出目录，模型文件存放在以 stage_name 命名的子目录中。<br>/out/models 下必须有一个 `result.yaml` 文件，格式参考注1 |
 
 注1. `result.yaml` 文件的格式如下：
 

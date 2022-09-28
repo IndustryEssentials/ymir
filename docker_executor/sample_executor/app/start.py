@@ -59,10 +59,12 @@ def _run_training(env_config: env.EnvConfig) -> None:
     monitor.write_monitor_logger(percent=0.5)
 
     # suppose we have a long time training, and have saved the final model
-    #! use `env_config.output.models_dir` to get model output dir
-    with open(os.path.join(env_config.output.models_dir, 'model-0000.params'), 'w') as f:
+    #! model output dir: os.path.join(env_config.output.models_dir, your_stage_name)
+    stage_dir = os.path.join(env_config.output.models_dir, 'stage_00')
+    os.makedirs(stage_dir, exist_ok=True)
+    with open(os.path.join(stage_dir, 'model-0000.params'), 'w') as f:
         f.write('fake model-0000.params')
-    with open(os.path.join(env_config.output.models_dir, 'model-symbols.json'), 'w') as f:
+    with open(os.path.join(stage_dir, 'model-symbols.json'), 'w') as f:
         f.write('fake model-symbols.json')
     #! use `rw.write_model_stage` to save training result
     rw.write_model_stage(stage_name='stage_00', files=['model-0000.params', 'model-symbols.json'], mAP=expected_mAP / 2)
@@ -71,9 +73,11 @@ def _run_training(env_config: env.EnvConfig) -> None:
 
     write_tensorboard_log(env_config.output.tensorboard_dir)
 
-    with open(os.path.join(env_config.output.models_dir, 'model-0010.params'), 'w') as f:
+    stage_dir = os.path.join(env_config.output.models_dir, 'stage_10')
+    os.makedirs(stage_dir, exist_ok=True)
+    with open(os.path.join(stage_dir, 'model-0010.params'), 'w') as f:
         f.write('fake model-0010.params')
-    with open(os.path.join(env_config.output.models_dir, 'model-symbols.json'), 'w') as f:
+    with open(os.path.join(stage_dir, 'model-symbols.json'), 'w') as f:
         f.write('fake model-symbols.json')
     rw.write_model_stage(stage_name='stage_10', files=['model-0010.params', 'model-symbols.json'], mAP=expected_mAP)
 
