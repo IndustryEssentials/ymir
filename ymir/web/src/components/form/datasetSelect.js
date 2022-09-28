@@ -6,7 +6,10 @@ import t from '@/utils/t'
 import useFetch from '@/hooks/useFetch'
 import EmptyState from '@/components/empty/dataset'
 
-const defaultLabelRender = item => <>{item.name} {item.versionName}(assets: {item.assetCount})</>
+const defaultLabelRender = ({ name, versionName, assetCount}) => {
+  const label = `${name} ${versionName}(assets: ${assetCount})`
+  return <span title={label}>{label}</span>
+}
 
 const DatasetSelect = ({
   pid, filter = [], allowEmpty, filterGroup = [],
