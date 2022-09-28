@@ -49,6 +49,8 @@ class RedisStream:
             _, payloads = await self._conn.xautoclaim(
                 self.stream_name, self.group_name, self.consumer_name, min_idle_time
             )
+            if payloads:
+                logger.info("received %d pending monitor msgs to retry", len(payloads))
             id_ = last_id if check_backlog else ">"
             for _, messages in await self._conn.xreadgroup(
                 groupname=self.group_name,
@@ -59,12 +61,12 @@ class RedisStream:
                 if not messages:
                     # If we receive an empty reply, it means we were consuming our history
                     # and that the history is now empty. Let's start to consume new messages.
-                    logger.info("handled all the legacy msgs")
+                    logger.info("handled all the legacy monitor msgs")
                     check_backlog = False
                     continue
                 last_id = messages[-1][0]
                 payloads += messages
-            logger.info("handling payloads %s", payloads)
+            logger.info("handling monitor payloads %s", payloads)
             successful_ids = await f_processor(payloads)
             if successful_ids:
                 await self._conn.xack(self.stream_name, self.group_name, *successful_ids)
