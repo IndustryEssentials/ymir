@@ -4,13 +4,12 @@ import { getLocale, history, useLocation, useParams, useSelector } from 'umi'
 type Params = { [key: string]: any }
 
 const base = 'http://192.168.28.58:8000'
-// const base = 'http://192.168.34.14:8001'
 
 const pages: Params = {
   public: { path: '/publicAlgorithm', action: 'pageInit' },
-  mine: { path: '/algorithmManagement/list', action: 'pageInit' },
-  device: { path: '/device/list', action: 'pageInit' },
-  support: { path: '/device/supportList', action: 'pageInit' },
+  mine: { path: '/algorithmManagement', action: 'pageInit' },
+  device: { path: '/device', action: 'pageInit' },
+  support: { path: '/supportDeviceList', action: 'pageInit' },
 }
 
 const Algo = () => {
