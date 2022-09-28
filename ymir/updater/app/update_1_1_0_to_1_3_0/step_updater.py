@@ -24,14 +24,14 @@ from typing import List, Tuple
 from google.protobuf.json_format import MessageToDict, ParseDict
 import yaml
 
-from mir.protos import mir_command_110_pb2 as mirpb110, mir_command_130_pb2 as mirpb130
+from mir.protos import mir_command_110_pb2 as pb_src, mir_command_130_pb2 as pb_dst
 from mir.tools import revs_parser
-from mir.tools import mir_storage_ops_110 as mso110, mir_storage_ops_130 as mso130
+from mir.tools import mir_storage_ops_110 as mso_src, mir_storage_ops_130 as mso_dst
 
 from tools import get_repo_tags, remove_old_tag
 
-_MirDatas110 = Tuple[mirpb110.MirMetadatas, mirpb110.MirAnnotations, mirpb110.Task]
-_MirDatas130 = Tuple[mirpb130.MirMetadatas, mirpb130.MirAnnotations, mirpb130.Task]
+_MirDatasSrc = Tuple[pb_src.MirMetadatas, pb_src.MirAnnotations, pb_src.Task]
+_MirDatasDst = Tuple[pb_dst.MirMetadatas, pb_dst.MirAnnotations, pb_dst.Task]
 
 _DEFAULT_STAGE_NAME = 'default_best_stage'
 
@@ -46,123 +46,123 @@ def update_all(mir_root: str, assets_root: str, models_root: str) -> None:
     for tag in get_repo_tags(mir_root):
         logging.info(f"    updating: {tag}")
         rev_tid = revs_parser.parse_single_arg_rev(src_rev=tag, need_tid=True)
-        datas = _load(mir_root, rev_tid)
-        updated_datas = _update(datas, assets_root, models_root)
-        _save(mir_root, rev_tid, updated_datas)
+        datas_src = _load(mir_root, rev_tid)
+        datas_dst = _update(datas_src, assets_root, models_root)
+        _save(mir_root, rev_tid, datas_dst)
 
 
-def _load(mir_root: str, rev_tid: revs_parser.TypRevTid) -> _MirDatas110:
-    m, a, t = mso110.MirStorageOps.load_multiple_storages(
+def _load(mir_root: str, rev_tid: revs_parser.TypRevTid) -> _MirDatasSrc:
+    m, a, t = mso_src.MirStorageOps.load_multiple_storages(
         mir_root=mir_root,
         mir_branch=rev_tid.rev,
         mir_task_id=rev_tid.tid,
-        ms_list=[mirpb110.MIR_METADATAS, mirpb110.MIR_ANNOTATIONS, mirpb110.MIR_TASKS])
+        ms_list=[pb_src.MIR_METADATAS, pb_src.MIR_ANNOTATIONS, pb_src.MIR_TASKS])
     return (m, a, t.tasks[t.head_task_id])
 
 
-def _update(datas: _MirDatas110, assets_root: str, models_root: str) -> _MirDatas130:
-    mm110, ma110, t110 = datas
-    return (_update_metadatas(mm110, assets_root),
-            _update_annotations(ma110),
-            _update_task(t110, models_root))
+def _update(datas_src: _MirDatasSrc, assets_root: str, models_root: str) -> _MirDatasDst:
+    mir_metadatas_src, mir_annotations_src, task_src = datas_src
+    return (_update_metadatas(mir_metadatas_src, assets_root), _update_annotations(mir_annotations_src),
+            _update_task(task_src, models_root))
 
 
-def _save(mir_root: str, rev_tid: revs_parser.TypRevTid, updated_datas: _MirDatas130) -> None:
+def _save(mir_root: str, rev_tid: revs_parser.TypRevTid, datas_dst: _MirDatasDst) -> None:
     # remove old tag
     remove_old_tag(mir_root=mir_root, tag=rev_tid.rev_tid)
     # save
-    mm130, ma130, t130 = updated_datas
-    mso130.MirStorageOps.save_and_commit(mir_root=mir_root,
-                                         mir_branch=rev_tid.rev,
-                                         his_branch=rev_tid.rev,
-                                         mir_datas={
-                                             mirpb130.MirStorage.MIR_METADATAS: mm130,
-                                             mirpb130.MirStorage.MIR_ANNOTATIONS: ma130,
-                                         },
-                                         task=t130)
+    mir_metadatas_dst, mir_annotations_dst, task_dst = datas_dst
+    mso_dst.MirStorageOps.save_and_commit(mir_root=mir_root,
+                                          mir_branch=rev_tid.rev,
+                                          his_branch=rev_tid.rev,
+                                          mir_datas={
+                                              pb_dst.MirStorage.MIR_METADATAS: mir_metadatas_dst,
+                                              pb_dst.MirStorage.MIR_ANNOTATIONS: mir_annotations_dst,
+                                          },
+                                          task=task_dst)
 
 
-def _update_metadatas(mm110: mirpb110.MirMetadatas, assets_root: str) -> mirpb130.MirMetadatas:
-    mm130 = mirpb130.MirMetadatas()
-    for asset_id, attr110 in mm110.attributes.items():
-        attr130 = mirpb130.MetadataAttributes(tvt_type=attr110.tvt_type,
-                                              asset_type=attr110.asset_type,
-                                              width=attr110.width,
-                                              height=attr110.height,
-                                              image_channels=attr110.image_channels)
+def _update_metadatas(mir_metadatas_src: pb_src.MirMetadatas, assets_root: str) -> pb_dst.MirMetadatas:
+    mir_metadatas_dst = pb_dst.MirMetadatas()
+    for asset_id, attr_src in mir_metadatas_src.attributes.items():
+        attr_dst = pb_dst.MetadataAttributes(tvt_type=attr_src.tvt_type,
+                                             asset_type=attr_src.asset_type,
+                                             width=attr_src.width,
+                                             height=attr_src.height,
+                                             image_channels=attr_src.image_channels)
 
-        attr130.timestamp.start = attr110.timestamp.start
-        attr130.timestamp.duration = attr110.timestamp.duration
+        attr_dst.timestamp.start = attr_src.timestamp.start
+        attr_dst.timestamp.duration = attr_src.timestamp.duration
 
         asset_path = ''
         if os.path.isfile(os.path.join(assets_root, asset_id)):
             asset_path = os.path.join(assets_root, asset_id)
         elif os.path.isfile(os.path.join(assets_root, asset_id[-2:], asset_id)):
             asset_path = os.path.join(assets_root, asset_id[-2:], asset_id)
-        attr130.byte_size = os.stat(asset_path).st_size if asset_path else 0
+        attr_dst.byte_size = os.stat(asset_path).st_size if asset_path else 0
 
-        mm130.attributes[asset_id].CopyFrom(attr130)
-    return mm130
-
-
-def _update_annotations(ma110: mirpb110.MirAnnotations) -> mirpb130.MirAnnotations:
-    ta110 = ma110.task_annotations[ma110.head_task_id]
-
-    ma130 = mirpb130.MirAnnotations()
-    for asset_id, sia110 in ta110.image_annotations.items():
-        sia130 = ma130.prediction.image_annotations[asset_id]
-        for anno110 in sia110.annotations:
-            oa130 = mirpb130.ObjectAnnotation()
-            ParseDict(MessageToDict(anno110, preserving_proto_field_name=True, use_integers_for_enums=True), oa130)
-            oa130.anno_quality = -1
-            oa130.cm = mirpb130.ConfusionMatrixType.NotSet
-            oa130.det_link_id = -1
-            sia130.boxes.append(oa130)
-
-    ma130.prediction.task_id = ma110.head_task_id
-    ma130.prediction.type = mirpb130.AnnoType.AT_DET_BOX
-
-    ma130.ground_truth.CopyFrom(ma130.prediction)
-
-    return ma130
+        mir_metadatas_dst.attributes[asset_id].CopyFrom(attr_dst)
+    return mir_metadatas_dst
 
 
-def _update_task(t110: mirpb110.Task, models_root: str) -> mirpb130.Task:
-    t130 = mirpb130.Task(type=t110.type,
-                         name=t110.name,
-                         task_id=t110.task_id,
-                         timestamp=t110.timestamp,
-                         return_code=t110.return_code,
-                         return_msg=t110.return_msg,
-                         serialized_task_parameters=t110.serialized_task_parameters,
-                         serialized_executor_config=t110.serialized_executor_config,
-                         src_revs=t110.src_revs,
-                         dst_rev=t110.dst_rev,
-                         executor=t110.executor)
-    for k, v in t110.unknown_types.items():
-        t130.new_types[k] = v
-    t130.new_types_added = (len(t130.new_types) > 0)
+def _update_annotations(mir_annotations_src: pb_src.MirAnnotations) -> pb_dst.MirAnnotations:
+    task_annotations_src = mir_annotations_src.task_annotations[mir_annotations_src.head_task_id]
+
+    mir_annotations_dst = pb_dst.MirAnnotations()
+    for asset_id, single_image_annotations_src in task_annotations_src.image_annotations.items():
+        single_image_annotations_dst = mir_annotations_dst.prediction.image_annotations[asset_id]
+        for annotation_src in single_image_annotations_src.annotations:
+            object_annotation_dst = pb_dst.ObjectAnnotation()
+            ParseDict(MessageToDict(annotation_src, preserving_proto_field_name=True, use_integers_for_enums=True),
+                      object_annotation_dst)
+            object_annotation_dst.anno_quality = -1
+            object_annotation_dst.cm = pb_dst.ConfusionMatrixType.NotSet
+            object_annotation_dst.det_link_id = -1
+            single_image_annotations_dst.boxes.append(object_annotation_dst)
+
+    mir_annotations_dst.prediction.task_id = mir_annotations_src.head_task_id
+    mir_annotations_dst.prediction.type = pb_dst.AnnoType.AT_DET_BOX
+
+    mir_annotations_dst.ground_truth.CopyFrom(mir_annotations_dst.prediction)
+
+    return mir_annotations_dst
+
+
+def _update_task(task_src: pb_src.Task, models_root: str) -> pb_dst.Task:
+    task_dst = pb_dst.Task(type=task_src.type,
+                           name=task_src.name,
+                           task_id=task_src.task_id,
+                           timestamp=task_src.timestamp,
+                           return_code=task_src.return_code,
+                           return_msg=task_src.return_msg,
+                           serialized_task_parameters=task_src.serialized_task_parameters,
+                           serialized_executor_config=task_src.serialized_executor_config,
+                           src_revs=task_src.src_revs,
+                           dst_rev=task_src.dst_rev,
+                           executor=task_src.executor)
+    for k, v in task_src.unknown_types.items():
+        task_dst.new_types[k] = v
+    task_dst.new_types_added = (len(task_dst.new_types) > 0)
 
     # model meta
-    m110 = t110.model
-    if m110.model_hash:
-        m130 = mirpb130.ModelMeta(model_hash=m110.model_hash,
-                                  mean_average_precision=m110.mean_average_precision,
-                                  context=m110.context,
-                                  best_stage_name=_DEFAULT_STAGE_NAME)
+    model_src = task_src.model
+    if model_src.model_hash:
+        model_dst = pb_dst.ModelMeta(model_hash=model_src.model_hash,
+                                     mean_average_precision=model_src.mean_average_precision,
+                                     context=model_src.context,
+                                     best_stage_name=_DEFAULT_STAGE_NAME)
 
-        ms130 = mirpb130.ModelStage(stage_name=_DEFAULT_STAGE_NAME,
-                                    mAP=m110.mean_average_precision,
-                                    timestamp=t110.timestamp)
-        ms130.files[:] = _get_model_file_names(os.path.join(models_root, m110.model_hash))
-        m130.stages[_DEFAULT_STAGE_NAME].CopyFrom(ms130)
+        stage_dst = pb_dst.ModelStage(stage_name=_DEFAULT_STAGE_NAME,
+                                      mAP=model_src.mean_average_precision,
+                                      timestamp=task_src.timestamp)
+        stage_dst.files[:] = _get_model_file_names(os.path.join(models_root, model_src.model_hash))
+        model_dst.stages[_DEFAULT_STAGE_NAME].CopyFrom(stage_dst)
 
-        m130.class_names[:] = _get_model_class_names(t110.serialized_executor_config)
-        t130.model.CopyFrom(m130)
+        model_dst.class_names[:] = _get_model_class_names(task_src.serialized_executor_config)
+        task_dst.model.CopyFrom(model_dst)
 
     # evaluation: no need to update
 
-    return t130
+    return task_dst
 
 
 def _get_model_file_names(model_path: str) -> List[str]:
