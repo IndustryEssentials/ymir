@@ -28,16 +28,6 @@ func (m *MockMirRepoLoader) LoadMutipleMirDatas(
 	return args.Get(0).([]interface{})
 }
 
-func (m *MockMirRepoLoader) LoadAssetsDetail(
-	mirRepo *constants.MirRepo,
-	anchorAssetID string,
-	offset int,
-	limit int,
-) ([]constants.MirAssetDetail, int64, int64) {
-	args := m.Called(mirRepo, anchorAssetID, offset, limit)
-	return args.Get(0).([]constants.MirAssetDetail), args.Get(1).(int64), args.Get(2).(int64)
-}
-
 func (m *MockMirRepoLoader) LoadModelInfo(mirRepo *constants.MirRepo) *constants.MirdataModel {
 	args := m.Called(mirRepo)
 	return args.Get(0).(*constants.MirdataModel)
@@ -56,8 +46,12 @@ func (m *MockMongoServer) RemoveNonReadyDataset() {
 	m.Called()
 }
 
-func (m *MockMongoServer) IndexDatasetData(mirRepo *constants.MirRepo, newDatas []constants.MirAssetDetail) {
-	m.Called(mirRepo, newDatas)
+func (m *MockMongoServer) IndexDatasetData(
+	mirRepo *constants.MirRepo,
+	mirMetadatas *protos.MirMetadatas,
+	mirAnnotations *protos.MirAnnotations,
+) {
+	m.Called(mirRepo, mirMetadatas, mirAnnotations)
 }
 
 func (m *MockMongoServer) QueryDatasetAssets(
@@ -217,7 +211,11 @@ func TestGetDatasetMetaCountsHandler(t *testing.T) {
 				"hangzhou": 1
 			}
 		},
-		"new_types_added": true
+		"new_types_added": true,
+		"query_context": {
+			"repo_index_exist": true,
+			"repo_index_ready": true
+		}
 	}`), &expectedResult)
 	if err != nil {
 		panic(err)
@@ -230,7 +228,7 @@ func TestGetDatasetMetaCountsHandler(t *testing.T) {
 		Return(&protos.MirTasks{HeadTaskId: "h", Tasks: map[string]*protos.Task{"h": {NewTypesAdded: true}}}, 0, 0).
 		Once()
 	mockMongoServer := MockMongoServer{}
-	mockMongoServer.On("CheckDatasetExistenceReady", &mirRepo).Return(false, false)
+	mockMongoServer.On("CheckDatasetExistenceReady", &mirRepo).Return(true, true).Twice()
 
 	handler := &ViewerHandler{mongoServer: &mockMongoServer, mirLoader: &mockLoader}
 	result := handler.GetDatasetMetaCountsHandler(&mirRepo)
@@ -276,16 +274,15 @@ func TestGetDatasetStatsHandler(t *testing.T) {
 	mirRepo := constants.MirRepo{}
 	mockLoader := MockMirRepoLoader{}
 	mockLoader.On("LoadAssetsDetail", &mirRepo, "", 0, 0).Return(mockAssetsDetail, int64(0), int64(0))
-	mockLoader.On("LoadSingleMirData", &mirRepo, mirFileContext).Return(&mockMirContext, 0, 0).Twice()
+	mockLoader.On("LoadSingleMirData", &mirRepo, mirFileContext).Return(&mockMirContext).Twice()
 	mockLoader.On("LoadSingleMirData", &mirRepo, mirFileTasks).
-		Return(&protos.MirTasks{HeadTaskId: "h", Tasks: map[string]*protos.Task{"h": {NewTypesAdded: true}}}, 0, 0).
+		Return(&protos.MirTasks{HeadTaskId: "h", Tasks: map[string]*protos.Task{"h": {NewTypesAdded: true}}}).
 		Once()
 
 	classIDs := []int{0, 1}
-	expectedResult := &constants.QueryDatasetStatsResult{}
+	expectedResult := &constants.QueryDatasetStatsResult{QueryContext: constants.QueryDatasetStatsContext{RepoIndexExist: true, RepoIndexReady: true}}
 	mockMongoServer := MockMongoServer{}
-	mockMongoServer.On("CheckDatasetExistenceReady", &mirRepo).Return(false, false)
-	mockMongoServer.On("IndexDatasetData", &mirRepo, []constants.MirAssetDetail{mockAssetsDetail[0]})
+	mockMongoServer.On("CheckDatasetExistenceReady", &mirRepo).Return(true, true).Twice()
 	mockMongoServer.On("QueryDatasetStats", &mirRepo, &mockMirContext, classIDs, true, true).Return(expectedResult)
 	handler := &ViewerHandler{mongoServer: &mockMongoServer, mirLoader: &mockLoader}
 
@@ -310,61 +307,6 @@ func TestGetAssetsHandler(t *testing.T) {
 	mockMongoServer.On("CheckDatasetExistenceReady", &mirRepo).Return(true, true)
 	mockMongoServer.On("QueryDatasetAssets", &mirRepo, offset, limit, classIDs, annoTypes, currentAssetID, cmTypes, cks, tags).
 		Return(expectedResult)
-	handler := &ViewerHandler{mongoServer: &mockMongoServer, mirLoader: &mockLoader}
-
-	result := handler.GetAssetsHandler(
-		&mirRepo,
-		offset,
-		limit,
-		classIDs,
-		annoTypes,
-		currentAssetID,
-		cmTypes,
-		cks,
-		tags,
-	)
-	assert.Equal(t, expectedResult, result)
-}
-
-func TestLoadAndIndexAssets(t *testing.T) {
-	mirRepo := constants.MirRepo{}
-	mockLoader := MockMirRepoLoader{}
-	mockMongoServer := MockMongoServer{}
-	mockMongoServer.On("CheckDatasetExistenceReady", &mirRepo).Return(true, false).Once()
-	mockMongoServer.On("CheckDatasetExistenceReady", &mirRepo).Return(true, true)
-	handler := &ViewerHandler{mongoServer: &mockMongoServer, mirLoader: &mockLoader}
-	handler.loadAndIndexAssets(&mirRepo)
-}
-
-func TestGetAssetsHandlerShortcut(t *testing.T) {
-	offset := 100
-	limit := 10
-	classIDs := []int{}
-	annoTypes := []string{}
-	currentAssetID := "abc"
-	cmTypes := []int{}
-	cks := []string{}
-	tags := []string{}
-	anchor := int64(0)
-	totalAssetsCount := int64(100)
-
-	expectedResult := &constants.QueryAssetsResult{
-		AssetsDetail:     []constants.MirAssetDetail{},
-		Offset:           offset,
-		Limit:            limit,
-		Anchor:           anchor,
-		TotalAssetsCount: totalAssetsCount}
-
-	mockAssetsDetail := []constants.MirAssetDetail{}
-	mirRepo := constants.MirRepo{}
-	mockLoader := MockMirRepoLoader{}
-	mockLoader.On("LoadAssetsDetail", &mirRepo, "", 0, 0).Return(mockAssetsDetail, int64(0), int64(0))
-	mockLoader.On("LoadAssetsDetail", &mirRepo, currentAssetID, offset, limit).
-		Return(mockAssetsDetail, anchor, totalAssetsCount)
-
-	mockMongoServer := MockMongoServer{}
-	mockMongoServer.On("CheckDatasetExistenceReady", &mirRepo).Return(false, false)
-	mockMongoServer.On("IndexDatasetData", &mirRepo, []constants.MirAssetDetail{})
 	handler := &ViewerHandler{mongoServer: &mockMongoServer, mirLoader: &mockLoader}
 
 	result := handler.GetAssetsHandler(

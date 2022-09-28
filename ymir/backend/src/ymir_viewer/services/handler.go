@@ -2,9 +2,7 @@ package services
 
 import (
 	"context"
-	"fmt"
 	"log"
-	"time"
 
 	"github.com/IndustryEssentials/ymir-viewer/common/constants"
 	"github.com/IndustryEssentials/ymir-viewer/common/loader"
@@ -17,18 +15,16 @@ import (
 type BaseMirRepoLoader interface {
 	LoadSingleMirData(mirRepo *constants.MirRepo, mirFile constants.MirFile) interface{}
 	LoadMutipleMirDatas(mirRepo *constants.MirRepo, mirFiles []constants.MirFile) []interface{}
-	LoadAssetsDetail(
-		mirRepo *constants.MirRepo,
-		anchorAssetID string,
-		offset int,
-		limit int,
-	) ([]constants.MirAssetDetail, int64, int64)
 	LoadModelInfo(mirRepo *constants.MirRepo) *constants.MirdataModel
 }
 
 type BaseMongoServer interface {
 	CheckDatasetExistenceReady(mirRepo *constants.MirRepo) (bool, bool)
-	IndexDatasetData(mirRepo *constants.MirRepo, newDatas []constants.MirAssetDetail)
+	IndexDatasetData(
+		mirRepo *constants.MirRepo,
+		mirMetadatas *protos.MirMetadatas,
+		mirAnnotations *protos.MirAnnotations,
+	)
 	RemoveNonReadyDataset()
 	QueryDatasetAssets(
 		mirRepo *constants.MirRepo,
@@ -100,49 +96,17 @@ func NewViewerHandler(
 }
 
 func (v *ViewerHandler) loadAndIndexAssets(mirRepo *constants.MirRepo) {
-	exist, ready := v.mongoServer.CheckDatasetExistenceReady(mirRepo)
-	// Dataset not exist, need to load&index.
-	if !exist {
-		log.Printf("No data for %s, reading & building cache.", mirRepo.TaskID)
-
-		mirAssetsDetail, _, _ := v.mirLoader.LoadAssetsDetail(mirRepo, "", 0, 0)
-		// check again, in case cache process started during data loading.
-		exist, _ = v.mongoServer.CheckDatasetExistenceReady(mirRepo)
-		if exist {
-			log.Printf("Cache exists, skip data indexing.")
-			return
-		}
-		v.mongoServer.IndexDatasetData(mirRepo, mirAssetsDetail)
+	exist, _ := v.mongoServer.CheckDatasetExistenceReady(mirRepo)
+	if exist {
 		return
 	}
 
-	// Data set exist, return if ready.
-	if ready {
-		log.Printf("Mongodb ready for %s.", mirRepo.TaskID)
-		return
-	}
-
-	// Exist, but not ready, wait up to 30s.
-	timeout := 30
-	for i := 1; i <= timeout; i++ {
-		log.Printf("Mongodb %s exists, but not ready, sleep %d/%d", fmt.Sprint(mirRepo), i, timeout)
-		time.Sleep(1 * time.Second)
-		waitExist, waitReady := v.mongoServer.CheckDatasetExistenceReady(mirRepo)
-		if waitExist && waitReady {
-			log.Printf("Mongodb ready for %s, after wait %d rounds.", mirRepo.TaskID, i)
-			return
-		}
-	}
-	panic("loadAndIndexAssets timeout")
-}
-
-func (v *ViewerHandler) loadAndCacheAssetsNoPanic(mirRepo *constants.MirRepo) {
-	defer func() {
-		if r := recover(); r != nil {
-			log.Printf("loadAndCacheAssetsNoPanic panic %v", r)
-		}
-	}()
-	v.loadAndIndexAssets(mirRepo)
+	log.Printf("Mongodb %s not exist, loading mirdatas.", mirRepo.TaskID)
+	filesToLoad := []constants.MirFile{constants.MirfileMetadatas, constants.MirfileAnnotations}
+	mirDatas := v.mirLoader.LoadMutipleMirDatas(mirRepo, filesToLoad)
+	mirMetadatas := mirDatas[0].(*protos.MirMetadatas)
+	mirAnnotations := mirDatas[1].(*protos.MirAnnotations)
+	v.mongoServer.IndexDatasetData(mirRepo, mirMetadatas, mirAnnotations)
 }
 
 func (v *ViewerHandler) GetAssetsHandler(
@@ -156,28 +120,6 @@ func (v *ViewerHandler) GetAssetsHandler(
 	cks []string,
 	tags []string,
 ) *constants.QueryAssetsResult {
-	// Speed up when "first time" loading, i.e.: cache miss && only offset/limit/currentAssetID are set at most.
-	_, ready := v.mongoServer.CheckDatasetExistenceReady(mirRepo)
-	if !ready {
-		if len(classIDs) < 1 && len(annoTypes) < 1 && len(cmTypes) < 1 && len(cks) < 1 && len(tags) < 1 {
-			go v.loadAndCacheAssetsNoPanic(mirRepo)
-
-			mirAssetsDetail, anchor, totalAssetsCount := v.mirLoader.LoadAssetsDetail(
-				mirRepo,
-				currentAssetID,
-				offset,
-				limit,
-			)
-			return &constants.QueryAssetsResult{
-				AssetsDetail:     mirAssetsDetail,
-				Offset:           offset,
-				Limit:            limit,
-				Anchor:           anchor,
-				TotalAssetsCount: totalAssetsCount,
-			}
-		}
-	}
-
 	v.loadAndIndexAssets(mirRepo)
 	return v.mongoServer.QueryDatasetAssets(
 		mirRepo,
@@ -225,10 +167,10 @@ func (v *ViewerHandler) GetDatasetMetaCountsHandler(
 	}
 
 	exist, ready := v.mongoServer.CheckDatasetExistenceReady(mirRepo)
-	result.QueryContext.RepoIndexReady = exist
+	result.QueryContext.RepoIndexExist = exist
 	result.QueryContext.RepoIndexReady = ready
 	if !exist {
-		go v.loadAndCacheAssetsNoPanic(mirRepo)
+		go v.loadAndIndexAssets(mirRepo)
 	}
 
 	return v.fillupDatasetUniverseFields(mirRepo, result)
@@ -287,8 +229,8 @@ func (v *ViewerHandler) GetDatasetStatsHandler(
 	if len(classIDs) < 1 && !requireAssetsHist && !requireAnnotationsHist {
 		panic("same result as dataset_meta_count, should use lightweight interface instead.")
 	}
-	mirContext := v.mirLoader.LoadSingleMirData(mirRepo, constants.MirfileContext).(*protos.MirContext)
 	v.loadAndIndexAssets(mirRepo)
+	mirContext := v.mirLoader.LoadSingleMirData(mirRepo, constants.MirfileContext).(*protos.MirContext)
 	result := v.mongoServer.QueryDatasetStats(mirRepo, mirContext, classIDs, requireAssetsHist, requireAnnotationsHist)
 	result.QueryContext.RepoIndexReady = true
 	result.QueryContext.RepoIndexReady = true
