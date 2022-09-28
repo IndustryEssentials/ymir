@@ -12,10 +12,10 @@ from id_definition.error_codes import UpdaterErrorCode
 from update_1_1_0_to_1_3_0.step_updater import update_all as update_110_130
 
 
-_RepoUpdaterType = Callable[[str], None]
+_RepoUpdaterType = Callable[[str, str, str], None]
 
 
-def update(sandbox_root: str, src_ver: str, dst_ver: str) -> None:
+def update(sandbox_root: str, assets_root: str, models_root: str, src_ver: str, dst_ver: str) -> None:
     steps = _get_update_steps(src_ver=src_ver, dst_ver=dst_ver)
     if not steps:
         logging.info(f"nothing to update {src_ver} -> {dst_ver}")
@@ -29,7 +29,7 @@ def update(sandbox_root: str, src_ver: str, dst_ver: str) -> None:
         for repo_func in steps:
             for user_id, repo_ids in user_to_repos.items():
                 for repo_id in repo_ids:
-                    repo_func(os.path.join(sandbox_root, user_id, repo_id))
+                    repo_func(os.path.join(sandbox_root, user_id, repo_id), assets_root, models_root)
 
         for user_id in user_to_repos:
             _update_user_labels(label_path=os.path.join(sandbox_root, user_id, 'labels.yaml'), dst_ver=dst_ver)

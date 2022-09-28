@@ -4,9 +4,11 @@ services:
     image: industryessentials/ymir-updater:1.3.0
     env_file:
       - .env
+    environment:
+      - MODELS_PATH=${YMIR_PATH}/ymir-models
+      - ASSETS_PATH=${YMIR_PATH}/ymir-assets
     volumes:
       - "${BACKEND_SANDBOX_ROOT}:${BACKEND_SANDBOX_ROOT}"
-      - "${YMIR_PATH}/ymir-data/logs:/app_logs"
-      - "${YMIR_PATH}/ymir-models:/ymir-models"
-      - "${YMIR_PATH}/ymir-assets:/ymir-assets"
+      - "${YMIR_PATH}/ymir-assets:${YMIR_PATH}/ymir-assets"
+      - "${YMIR_PATH}/ymir-models:${YMIR_PATH}/ymir-models"
     command: python /app/start.py

@@ -36,7 +36,7 @@ _MirDatas130 = Tuple[mirpb130.MirMetadatas, mirpb130.MirAnnotations, mirpb130.Ta
 _DEFAULT_STAGE_NAME = 'default_best_stage'
 
 
-def update_all(mir_root: str) -> None:
+def update_all(mir_root: str, assets_root: str, models_root: str) -> None:
     logging.info(f"updating repo: {mir_root}, 110 -> 130")
 
     mir_label_file = os.path.join(mir_root, '.mir', 'labels.yaml')
@@ -47,7 +47,7 @@ def update_all(mir_root: str) -> None:
         logging.info(f"    updating: {tag}")
         rev_tid = revs_parser.parse_single_arg_rev(src_rev=tag, need_tid=True)
         datas = _load(mir_root, rev_tid)
-        updated_datas = _update(datas)
+        updated_datas = _update(datas, assets_root, models_root)
         _save(mir_root, rev_tid, updated_datas)
 
 
@@ -60,9 +60,11 @@ def _load(mir_root: str, rev_tid: revs_parser.TypRevTid) -> _MirDatas110:
     return (m, a, t.tasks[t.head_task_id])
 
 
-def _update(datas: _MirDatas110) -> _MirDatas130:
+def _update(datas: _MirDatas110, assets_root: str, models_root: str) -> _MirDatas130:
     mm110, ma110, t110 = datas
-    return (_update_metadatas(mm110), _update_annotations(ma110), _update_task(t110))
+    return (_update_metadatas(mm110, assets_root),
+            _update_annotations(ma110),
+            _update_task(t110, models_root))
 
 
 def _save(mir_root: str, rev_tid: revs_parser.TypRevTid, updated_datas: _MirDatas130) -> None:
@@ -80,7 +82,7 @@ def _save(mir_root: str, rev_tid: revs_parser.TypRevTid, updated_datas: _MirData
                                          task=t130)
 
 
-def _update_metadatas(mm110: mirpb110.MirMetadatas) -> mirpb130.MirMetadatas:
+def _update_metadatas(mm110: mirpb110.MirMetadatas, assets_root: str) -> mirpb130.MirMetadatas:
     mm130 = mirpb130.MirMetadatas()
     for asset_id, attr110 in mm110.attributes.items():
         attr130 = mirpb130.MetadataAttributes(tvt_type=attr110.tvt_type,
@@ -93,10 +95,10 @@ def _update_metadatas(mm110: mirpb110.MirMetadatas) -> mirpb130.MirMetadatas:
         attr130.timestamp.duration = attr110.timestamp.duration
 
         asset_path = ''
-        if os.path.isfile(os.path.join('/ymir-assets', asset_id)):
-            asset_path = os.path.join('/ymir-assets', asset_id)
-        elif os.path.isfile(os.path.join('/ymir-assets', asset_id[-2:], asset_id)):
-            asset_path = os.path.join('/ymir-assets', asset_id[-2:], asset_id)
+        if os.path.isfile(os.path.join(assets_root, asset_id)):
+            asset_path = os.path.join(assets_root, asset_id)
+        elif os.path.isfile(os.path.join(assets_root, asset_id[-2:], asset_id)):
+            asset_path = os.path.join(assets_root, asset_id[-2:], asset_id)
         attr130.byte_size = os.stat(asset_path).st_size if asset_path else 0
 
         mm130.attributes[asset_id].CopyFrom(attr130)
@@ -131,7 +133,7 @@ def _update_annotations(ma110: mirpb110.MirAnnotations) -> mirpb130.MirAnnotatio
     return ma130
 
 
-def _update_task(t110: mirpb110.Task) -> mirpb130.Task:
+def _update_task(t110: mirpb110.Task, models_root: str) -> mirpb130.Task:
     t130 = mirpb130.Task(type=t110.type,
                          name=t110.name,
                          task_id=t110.task_id,
@@ -158,7 +160,7 @@ def _update_task(t110: mirpb110.Task) -> mirpb130.Task:
         ms130 = mirpb130.ModelStage(stage_name=_DEFAULT_STAGE_NAME,
                                     mAP=m110.mean_average_precision,
                                     timestamp=t110.timestamp)
-        ms130.files[:] = _get_model_file_names(m110.model_hash)
+        ms130.files[:] = _get_model_file_names(os.path.join(models_root, m110.model_hash))
         m130.stages[_DEFAULT_STAGE_NAME].CopyFrom(ms130)
 
         m130.class_names[:] = _get_model_class_names(t110.serialized_executor_config)
@@ -169,8 +171,8 @@ def _update_task(t110: mirpb110.Task) -> mirpb130.Task:
     return t130
 
 
-def _get_model_file_names(model_hash: str) -> List[str]:
-    with tarfile.open(os.path.join('/ymir-models', model_hash), 'r') as f:
+def _get_model_file_names(model_path: str) -> List[str]:
+    with tarfile.open(model_path, 'r') as f:
         file_names = [x.name for x in f.getmembers() if x.name != 'ymir-info.yaml']
     return file_names
 
