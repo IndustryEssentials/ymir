@@ -6,6 +6,7 @@ import t from "@/utils/t"
 import { TASKTYPES, getTaskTypeLabel } from "@/constants/task"
 import useFetch from '@/hooks/useFetch'
 import useRestore from "@/hooks/useRestore"
+import { canHide } from '@/constants/dataset'
 
 import Breadcrumbs from "@/components/common/breadcrumb"
 import TaskDetail from "@/components/task/detail"
@@ -100,7 +101,7 @@ function DatasetDetail() {
                   {t(`common.action.${type}`)}
                 </Button>
               ) : null)}
-              {dataset.assetCount > 0 ? <Button type="primary" onClick={() => hide(dataset)}>
+              {canHide(dataset) ? <Button type="primary" onClick={() => hide(dataset)}>
                 {t(`common.action.hide`)}
               </Button> : null}
             </> :
