@@ -19,7 +19,7 @@ Updater from 1.1.0 to 1.3.0
 import logging
 import os
 import tarfile
-from typing import List, Set, Tuple
+from typing import List, Tuple
 
 from google.protobuf.json_format import MessageToDict, ParseDict
 import yaml
