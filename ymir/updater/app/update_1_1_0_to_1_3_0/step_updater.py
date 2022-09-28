@@ -109,7 +109,6 @@ def _update_annotations(ma110: mirpb110.MirAnnotations) -> mirpb130.MirAnnotatio
     ta110 = ma110.task_annotations[ma110.head_task_id]
 
     ma130 = mirpb130.MirAnnotations()
-    task_class_ids: Set[int] = set()
     for asset_id, sia110 in ta110.image_annotations.items():
         sia130 = ma130.prediction.image_annotations[asset_id]
         for anno110 in sia110.annotations:
@@ -120,13 +119,8 @@ def _update_annotations(ma110: mirpb110.MirAnnotations) -> mirpb130.MirAnnotatio
             oa130.det_link_id = -1
             sia130.boxes.append(oa130)
 
-            task_class_ids.add(oa130.class_id)
-
-        sia130.img_class_ids[:] = {b.class_id for b in sia130.boxes}
-
     ma130.prediction.task_id = ma110.head_task_id
     ma130.prediction.type = mirpb130.AnnoType.AT_DET_BOX
-    ma130.prediction.task_class_ids[:] = list(task_class_ids)
 
     ma130.ground_truth.CopyFrom(ma130.prediction)
 
