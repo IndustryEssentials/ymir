@@ -19,7 +19,7 @@ from app.config import settings
 from app.constants.role import Roles
 from app.db.session import SessionLocal
 from app.utils import cache as ymir_cache
-from app.utils import graph, security, ymir_controller, ymir_viz
+from app.utils import security, ymir_controller, ymir_viz
 from app.utils.security import verify_api_key
 from app.utils.ymir_controller import ControllerClient
 from common_utils.labels import UserLabels
@@ -118,25 +118,6 @@ def get_controller_client() -> Generator:
 def get_viz_client() -> Generator:
     try:
         client = ymir_viz.VizClient()
-        yield client
-    finally:
-        client.close()
-
-
-def get_graph_client() -> Generator:
-    try:
-        client = graph.GraphClient(redis_uri=settings.BACKEND_REDIS_URL)
-        yield client
-    finally:
-        client.close()
-
-
-def get_graph_client_of_user(
-    current_user: models.User = Depends(get_current_active_user),
-) -> Generator:
-    try:
-        client = graph.GraphClient(redis_uri=settings.BACKEND_REDIS_URL)
-        client.user_id = current_user.id
         yield client
     finally:
         client.close()

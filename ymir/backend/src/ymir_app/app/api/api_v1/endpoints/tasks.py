@@ -14,7 +14,7 @@ from app import crud, models, schemas
 from app.api import deps
 from app.api.errors.errors import (
     DuplicateTaskError,
-    FailedToUpdateTaskStatus,
+    FailedToUpdateTaskStatusTemporally,
     ModelNotReady,
     NoTaskPermission,
     ObsoleteTaskStatus,
@@ -26,7 +26,6 @@ from app.constants.state import (
     TaskType,
 )
 from app.config import settings
-from app.utils.graph import GraphClient
 from app.utils.timeutil import convert_datetime_to_timestamp
 from app.utils.ymir_controller import ControllerClient, gen_user_hash
 from app.libs.redis_stream import RedisStream
@@ -250,7 +249,6 @@ def update_task_status(
     db: Session = Depends(deps.get_db),
     request: Request,
     task_update: schemas.TaskUpdateStatus,
-    graph_db: GraphClient = Depends(deps.get_graph_client),
     controller_client: ControllerClient = Depends(deps.get_controller_client),
 ) -> Any:
     """
@@ -284,8 +282,8 @@ def update_task_status(
     try:
         updated_task = task_result.update(task_result=task_update)
     except (ConnectionError, HTTPError, Timeout):
-        logger.error("Failed to update update task status")
-        raise FailedToUpdateTaskStatus()
+        logger.exception("Failed to update update task status. Try again later")
+        raise FailedToUpdateTaskStatusTemporally()
     except ModelNotReady:
         logger.warning("Model Not Ready")
     else:

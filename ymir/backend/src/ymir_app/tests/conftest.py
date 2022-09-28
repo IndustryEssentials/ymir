@@ -109,20 +109,6 @@ def fake_viz_client() -> Generator:
         client.close()
 
 
-def fake_graph_client() -> Generator:
-    try:
-        client = Mock()
-        nodes = [
-            {"id": 1, "name": "n1", "hash": "h1", "type": 1},
-            {"id": 2, "name": "n2", "hash": "h2", "type": 2},
-        ]
-        edges = [{"target": "h1", "source": "h2", "task": {"id": 1}}]
-        client.query_history.return_value = {"nodes": nodes, "edges": edges}
-        yield client
-    finally:
-        client.close()
-
-
 def fake_cache_client() -> Generator:
     try:
         client = Mock()
@@ -152,7 +138,6 @@ def fake_cache_client() -> Generator:
 
 app.dependency_overrides[deps.get_controller_client] = fake_controller_client
 app.dependency_overrides[deps.get_viz_client] = fake_viz_client
-app.dependency_overrides[deps.get_graph_client_of_user] = fake_graph_client
 app.dependency_overrides[deps.get_cache] = fake_cache_client
 
 
