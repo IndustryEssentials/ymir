@@ -35,7 +35,10 @@ class RedisStream:
         await self._conn.xadd(self.stream_name, {"payload": msg})
         logger.info("[redis stream] enqueue %s", msg)
 
-    async def consume(self, f_processor: Callable, block_timeout: int = 10000) -> None:
+    async def consume(self, f_processor: Callable, block_timeout: int = 10000, min_idle_time: int = 120000) -> None:
+        """
+        block_timeout and min_idle_time are both in ms
+        """
         await self.init_group_and_stream()
         last_id = "0"
         check_backlog = True
@@ -43,7 +46,9 @@ class RedisStream:
             # Pick the ID based on the iteration: the first time we want to
             # read our pending messages, in case we crashed and are recovering.
             # Once we consumed our history, we can start getting new messages.
-            _, payloads = await self._conn.xautoclaim(self.stream_name, self.group_name, self.consumer_name, 120000)
+            _, payloads = await self._conn.xautoclaim(
+                self.stream_name, self.group_name, self.consumer_name, min_idle_time
+            )
             id_ = last_id if check_backlog else ">"
             for _, messages in await self._conn.xreadgroup(
                 groupname=self.group_name,
