@@ -125,6 +125,7 @@ def _generate_sha_and_copy(index_file: str, map_hashed_filename: Dict[str, str],
         return MirCode.RC_CMD_INVALID_ARGS
 
     idx = 0
+    copied_assets = 0
     for line in lines:
         media_src = line.strip()
         if not media_src or not os.path.isfile(media_src):
@@ -140,6 +141,7 @@ def _generate_sha_and_copy(index_file: str, map_hashed_filename: Dict[str, str],
             map_hashed_filename[sha1] = os.path.splitext(os.path.basename(media_src))[0]
             media_dst = get_asset_storage_path(location=sha_folder, hash=sha1)
             if not os.path.isfile(media_dst):
+                copied_assets += 1
                 shutil.copyfile(media_src, media_dst)
 
         idx += 1
@@ -147,7 +149,7 @@ def _generate_sha_and_copy(index_file: str, map_hashed_filename: Dict[str, str],
             PhaseLoggerCenter.update_phase(phase=hash_phase_name, local_percent=(idx / total_count))
             logging.info(f"finished {idx} / {total_count} hashes")
 
-    logging.info(f"skipped assets: {len(lines) - len(map_hashed_filename)}")
+    logging.info(f"skipped assets: {len(lines) - len(map_hashed_filename)}\ncopied assets: {copied_assets}")
     PhaseLoggerCenter.update_phase(phase=hash_phase_name)
     return MirCode.RC_OK
 
