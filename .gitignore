@@ -88,3 +88,5 @@ ymir-workplace*
 .mir_lock
 .local
 .pre-commit-config.yaml
+
+updater/app/mir/protos/*.pyi
