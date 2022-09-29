@@ -108,10 +108,6 @@ def prepare_model(model_location: str, model_hash: str, stage_name: str, dst_mod
             logging.info(f"    extracting {name} -> {dst_model_path}")
             tar_file.extract(name, dst_model_path)
 
-        for section, file_names in model_storage.attachments.items():
-            for file_name in file_names:
-                tar_file.extract(f"attachments/{section}/{file_name}", dst_model_path)
-
     return model_storage
 
 
