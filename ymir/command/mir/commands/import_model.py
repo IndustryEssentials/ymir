@@ -2,6 +2,7 @@ import argparse
 import logging
 import os
 import shutil
+import tarfile
 
 import yaml
 
@@ -48,10 +49,12 @@ class CmdModelImport(base.BaseCommand):
 
         # unpack
         extract_model_dir_path = os.path.join(work_dir, 'model')
-        model_storage = models.prepare_model(model_location=os.path.dirname(package_path),
-                                             model_hash=os.path.basename(package_path),
-                                             stage_name='',
-                                             dst_model_path=extract_model_dir_path)
+        with tarfile.open(package_path, 'r') as tf:
+            tf.extractall(extract_model_dir_path)
+
+        with open(os.path.join(extract_model_dir_path, 'ymir-info.yaml'), 'r') as f:
+            ymir_info_dict = yaml.safe_load(f.read())
+        model_storage = models.ModelStorage.parse_obj(ymir_info_dict)
 
         logging.info(f"importing model with storage: {model_storage}")
 
