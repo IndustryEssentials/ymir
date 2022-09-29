@@ -1,9 +1,11 @@
+import { ALGORITHM_STORE_URL } from '@/constants/common'
 import usePostMessage from '@/hooks/usePostMessage'
+import { message } from 'antd'
 import { useEffect, useRef, useState } from 'react'
 import { getLocale, history, useLocation, useParams, useSelector } from 'umi'
 type Params = { [key: string]: any }
 
-const base = 'http://192.168.28.58:8000'
+const base = ALGORITHM_STORE_URL || ''
 
 const pages: Params = {
   public: { path: '/publicAlgorithm', action: 'pageInit' },
@@ -13,6 +15,9 @@ const pages: Params = {
 }
 
 const Algo = () => {
+  if (!base) {
+    return <div>Algorithm Store is not READY</div>
+  }
   const { username: userName, id: userId } = useSelector((state: Params) => state.user)
   const { module } = useParams<Params>()
   const location: Params = useLocation()

@@ -1,10 +1,11 @@
+import { ALGORITHM_STORE_URL } from '@/constants/common'
 import { ModelVersion } from '@/interface/model'
 import { message } from 'antd'
 import { useEffect, useState } from 'react'
 import { getLocale, useSelector } from 'umi'
 import usePostMessage from './usePostMessage'
 
-const base = 'http://192.168.28.58:8000'
+const base = ALGORITHM_STORE_URL || ''
 const id = 'publishIframe'
 
 const createIframe = (params = {}) => {
@@ -41,7 +42,7 @@ const usePublish = () => {
     if (loading) {
       return
     }
-    setLoading(true)
+    setLoading(false)
     const lang = getLocale()
     const url = window.location.origin + data.url
     const stage = data.stages?.find(stg => stg.id === data.recommendStage)?.name
