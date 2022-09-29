@@ -1,4 +1,5 @@
 import logging
+import time
 from typing import Optional
 
 from mir.tools import det_eval_coco, det_eval_voc, det_eval_utils
@@ -16,14 +17,17 @@ def det_evaluate_with_pb(
     if not config.class_ids:
         return None
 
+    start_time = time.time()
     det_eval_utils.reset_default_confusion_matrix(task_annotations=prediction,
                                                   cm=mirpb.ConfusionMatrixType.NotSet)
     det_eval_utils.reset_default_confusion_matrix(task_annotations=ground_truth,
                                                   cm=mirpb.ConfusionMatrixType.NotSet)
-
+    mid_time = time.time()
+    logging.info(f"|-det_evaluate_with_pb-reset costs {(mid_time - start_time):.2f}s.")
     eval_model_name = det_eval_voc if mode == 'voc' else det_eval_coco
     evaluation = eval_model_name.det_evaluate(  # type: ignore
         prediction=prediction, ground_truth=ground_truth, config=config)
+    logging.info(f"|-det_evaluate_with_pb-eval costs {(time.time() - mid_time):.2f}s.")
 
     _show_evaluation(evaluation=evaluation)
 
