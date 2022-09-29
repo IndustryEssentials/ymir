@@ -90,4 +90,3 @@ ymir-workplace*
 .pre-commit-config.yaml
 
 */updater/app/mir/protos/*.pyi
-
