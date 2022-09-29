@@ -22,11 +22,12 @@ def det_evaluate_with_pb(
                                                   cm=mirpb.ConfusionMatrixType.NotSet)
     det_eval_utils.reset_default_confusion_matrix(task_annotations=ground_truth,
                                                   cm=mirpb.ConfusionMatrixType.NotSet)
-
+    mid_time = time.time()
+    logging.info(f"|-det_evaluate_with_pb-reset costs {(mid_time - start_time):.2f}s.")
     eval_model_name = det_eval_voc if mode == 'voc' else det_eval_coco
     evaluation = eval_model_name.det_evaluate(  # type: ignore
         prediction=prediction, ground_truth=ground_truth, config=config)
-    logging.info(f"|-det_evaluate_with_pb costs {(time.time() - start_time):.2f}s.")
+    logging.info(f"|-det_evaluate_with_pb-eval costs {(time.time() - mid_time):.2f}s.")
 
     _show_evaluation(evaluation=evaluation)
 
