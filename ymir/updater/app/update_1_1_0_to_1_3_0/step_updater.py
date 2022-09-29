@@ -12,13 +12,14 @@ Updater from 1.1.0 to 1.3.0
 * `MirKeywords` & `MirContext`:
     * regenerated using new data structures
 
-# Update items for user label files
-* update ymir_version from 1.1.0 to 1.3.0
+# Update items for user models
+* update structure of all model packages
 """
 
 import logging
 import os
 import re
+import shutil
 import tarfile
 from typing import List, Tuple
 
@@ -26,11 +27,11 @@ from google.protobuf.json_format import MessageToDict, ParseDict
 import yaml
 
 from id_definition.task_id import IDProto
+from mir.tools import revs_parser, models
 from mir.protos import mir_command_110_pb2 as pb_src, mir_command_130_pb2 as pb_dst
-from mir.tools import revs_parser
 from mir.tools import mir_storage_ops_110 as mso_src, mir_storage_ops_130 as mso_dst
 
-from tools import get_repo_tags, remove_old_tag
+from tools import get_repo_tags, remove_old_tag, get_model_hashes
 
 _MirDatasSrc = Tuple[pb_src.MirMetadatas, pb_src.MirAnnotations, pb_src.Task]
 _MirDatasDst = Tuple[pb_dst.MirMetadatas, pb_dst.MirAnnotations, pb_dst.Task]
@@ -38,7 +39,8 @@ _MirDatasDst = Tuple[pb_dst.MirMetadatas, pb_dst.MirAnnotations, pb_dst.Task]
 _DEFAULT_STAGE_NAME = 'default_best_stage'
 
 
-def update_all(mir_root: str, assets_root: str, models_root: str) -> None:
+# update user repo
+def update_repo(mir_root: str, assets_root: str, models_root: str) -> None:
     logging.info(f"updating repo: {mir_root}, 110 -> 130")
 
     mir_label_file = os.path.join(mir_root, '.mir', 'labels.yaml')
@@ -179,3 +181,26 @@ def _get_model_class_names(serialized_executor_config: str) -> List[str]:
 
     executor_config = yaml.safe_load(serialized_executor_config)
     return executor_config.get('class_names', [])
+
+
+# update models root
+def update_models(models_root: str) -> None:
+    logging.info(f"updating models: {models_root}")
+
+    for model_hash in get_model_hashes(models_root):
+        logging.info(f"model hash: {model_hash}")
+
+        model_path = os.path.join(models_root, model_hash)
+        model_work_dir = os.path.join(models_root, f"{model_hash}_work_dir")
+        os.makedirs(model_work_dir, exist_ok=True)
+
+        # extract
+        with tarfile.open(model_path, 'r') as f:
+            f.extractall(model_work_dir)
+
+        # update and pack again
+        os.remove(model_path)
+        
+
+        # cleanup
+        shutil.rmtree(model_work_dir)
