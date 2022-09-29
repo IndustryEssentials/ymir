@@ -40,7 +40,7 @@ const usePublish = () => {
     const params = {
       lang, userId, userName,
       modelId: data.id,
-      modelName: data.name,
+      modelName: `${data.name} ${data.versionName}`,
       stage,
       url,
     }
