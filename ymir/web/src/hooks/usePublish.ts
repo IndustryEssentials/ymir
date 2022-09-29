@@ -1,9 +1,10 @@
-import { ALGORITHM_STORE_URL } from '@/constants/common'
-import { ModelVersion } from '@/interface/model'
 import { message } from 'antd'
 import { useEffect, useState } from 'react'
 import { getLocale, useSelector } from 'umi'
-import usePostMessage from './usePostMessage'
+
+import { ALGORITHM_STORE_URL } from '@/constants/common'
+import { ModelVersion } from '@/interface/model'
+import t from '@/utils/t'
 
 const base = ALGORITHM_STORE_URL || ''
 const id = 'publishIframe'
@@ -21,28 +22,18 @@ const createIframe = (params = {}) => {
 }
 
 const usePublish = () => {
-  const [post, recieved] = usePostMessage(base)
   const [result, setResult] = useState(null)
   const [loading, setLoading] = useState(false)
   const { id: userId, username: userName } = useSelector((state: { user: any }) => state.user)
 
-  useEffect(() => {
-    // finish publish
-    console.log('recieved:', recieved)
-    if (recieved?.type === 'publish_finish') {
-      if (recieved.data) {
-        message.success('publish success.')
-      } else {
-        message.error('publish failure.')
-      }
-    }
-  }, [recieved])
-
-  const publish = (data: ModelVersion, callback = () => { }) => {
+  const publish = (data: ModelVersion) => {
+    const key = 'publish'
     if (loading) {
       return
     }
-    setLoading(false)
+    setLoading(true)
+    message.loading({ content: t('algo.publish.tip.loading'), key })
+
     const lang = getLocale()
     const url = window.location.origin + data.url
     const stage = data.stages?.find(stg => stg.id === data.recommendStage)?.name
@@ -56,6 +47,10 @@ const usePublish = () => {
     // create iframe
     console.log('publish params:', params)
     createIframe(params)
+    setTimeout(() => {
+      setLoading(false)
+      message.success({ content: t('algo.publish.tip.success'), key })
+    }, 2000)
   }
 
   return [publish, result]
