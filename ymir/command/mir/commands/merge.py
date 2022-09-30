@@ -280,6 +280,9 @@ class CmdMerge(base.BaseCommand):
                                                                   mir_task_id=host_typ_rev_tid.tid,
                                                                   ms_list=[mirpb.MIR_METADATAS, mirpb.MIR_ANNOTATIONS],
                                                                   as_dict=False)
+        host_tvt_type = _tvt_type_from_str(host_typ_rev_tid.typ)
+        for asset_id in host_mir_metadatas.attributes:
+            host_mir_metadatas.attributes[asset_id].tvt_type = host_tvt_type
 
         for typ_rev_tid in src_typ_rev_tids[1:]:
             ret = _merge_to_mir(host_mir_metadatas=host_mir_metadatas,
