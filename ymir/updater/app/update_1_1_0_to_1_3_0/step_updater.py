@@ -202,6 +202,9 @@ def update_models(models_root: str) -> None:
         os.remove(model_path)
         with open(os.path.join(model_work_dir, 'ymir-info.yaml'), 'r') as f:
             ymir_info_dict = yaml.safe_load(f.read())
+        # update ymir-info.yaml
+        
+        # pack again
         model_storage = models.ModelStorage.parse_obj(ymir_info_dict)
         new_model_hash = models.pack_and_copy_models(model_storage=model_storage,
                                                      model_dir_path=model_work_dir,
