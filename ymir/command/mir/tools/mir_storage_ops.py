@@ -14,7 +14,7 @@ from mir.protos import mir_command_pb2 as mirpb
 from mir.tools import det_eval_ops, exodus
 from mir.tools import mir_storage, mir_repo_utils, revs_parser
 from mir.tools import settings as mir_settings
-from mir.tools.code import MirCode
+from mir.tools.code import MirCode, time_it
 from mir.tools.errors import MirRuntimeError
 
 
@@ -76,6 +76,7 @@ class MirStorageOps():
         mir_datas[mirpb.MirStorage.MIR_CONTEXT] = mir_context
 
     @classmethod
+    @time_it
     def __build_mir_keywords_ci_tag(cls, task_annotations: mirpb.SingleTaskAnnotations,
                                     keyword_to_index: mirpb.CiTagToIndex) -> None:
         task_cis = set()
@@ -124,6 +125,7 @@ class MirStorageOps():
                     anno_stats.tags_cnt[tag].sub_cnt[sub_tag] += len(anno_idxes.ids)
 
     @classmethod
+    @time_it
     def __build_mir_context(cls, mir_metadatas: mirpb.MirMetadatas, mir_annotations: mirpb.MirAnnotations,
                             mir_keywords: mirpb.MirKeywords, mir_context: mirpb.MirContext) -> None:
         mir_context.images_cnt = len(mir_metadatas.attributes)

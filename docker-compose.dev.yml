@@ -53,6 +53,9 @@ services:
       timeout: 6s
       retries: 3
       start_period: 30s
+    command:
+      - '-housekeeping_interval=10s'
+      - '-docker_only=true'
     networks:
       - ymirnetwork
 
