@@ -8,6 +8,8 @@ from io import BytesIO
 from typing import Dict, List, Optional
 from xml.etree import ElementTree
 
+import requests
+
 from controller.label_model.base import LabelBase, catch_label_task_error, NotReadyError
 from controller.label_model.request_handler import RequestHandler
 
@@ -153,7 +155,7 @@ class LabelFree(LabelBase):
         """
         export_task_id = self.get_export_task(project_id)
         export_url = self.get_export_url(project_id, export_task_id)
-        resp = self._requests.get(export_url)
+        resp = requests.get(export_url)
         self.unzip_annotation_files(BytesIO(resp), des_path)
         logging.info(f"success convert_annotation_to_ymir: {des_path}")
 
