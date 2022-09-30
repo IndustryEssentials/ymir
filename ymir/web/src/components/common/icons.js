@@ -2,6 +2,13 @@ import { createFromIconfontCN } from '@ant-design/icons'
 import iconUrl from '@/assets/icons/iconfont'
 import s from './common.less'
 
+import Icon from './icons/Icon'
+
+import DeviceListSVG from './icons/DeviceListSVG'
+import DeviceSupportedSVG from './icons/DeviceSupportedSVG'
+import MyAlgoSVG from './icons/MyAlgoSVG'
+import StoreSVG from './icons/StoreSVG'
+
 const IconFont = createFromIconfontCN({
   scriptUrl: iconUrl,
 })
@@ -9,6 +16,11 @@ const IconFont = createFromIconfontCN({
 const iconFont = type => props => <IconFont type={`icon-${type}`} {...props} className={`${props.className || ''} ${s.cicon}`} />
 
 export default iconFont
+
+export const DeviceListIcon = Icon(DeviceListSVG)
+export const DeviceSupportedIcon = Icon(DeviceSupportedSVG)
+export const MyAlgoIcon = Icon(MyAlgoSVG)
+export const StoreIcon = Icon(StoreSVG)
 
 export const AddDelTwoIcon = iconFont('add-del-two')
 export const ArrowDownIcon = iconFont('arrow-down')

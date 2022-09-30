@@ -1,0 +1,4 @@
+window.baseConfig = {
+  "DEPLOY_MODULE_URL": "${DEPLOY_MODULE_URL}",
+  "APIURL": "/api/v1/"
+}

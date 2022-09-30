@@ -67,7 +67,6 @@ function Verify({ verify }) {
   function urlChange(files, url) {
     setUrl('')
     setUrl(files.length ? url : '')
-    // 上传图片后，清除上次的标注结果
     setAnnotations([])
   }
 
@@ -95,7 +94,6 @@ function Verify({ verify }) {
     </div>
   )
 
-  // annotations.filter(anno => anno.confidence > confidence)
   function renderUploadBtn(label = t('model.verify.upload.label')) {
     return (
       <Uploader
@@ -118,13 +116,8 @@ function Verify({ verify }) {
     setSelectedKeywords(selected)
   }
 
-  function toggleAnnotation() {
-    setSelectedKeywords(selectedKeywords.length ? [] : model.keywords)
-  }
-
   function confidenceChange(value) {
     const cfc = Number(value) || 0
-    // console.log('number: ', cfc, value)
     setConfidence(cfc)
   }
 
@@ -134,9 +127,8 @@ function Verify({ verify }) {
     // reinit annotations
     setAnnotations([])
     const result = await verify({ projectId: pid, modelStage: [id, model.recommendStage], urls: [url], image, config })
-    // console.log('result: ', result)
     if (result) {
-      const all = result.annotations[0]?.detection || []
+      const all = result || []
 
       setAnnotations(all)
       if (all.length) {
@@ -259,11 +251,9 @@ function Verify({ verify }) {
                                   <Col flex={'150px'}>
                                     <Form.Item
                                       {...field}
-                                      // label="Key"
                                       name={[field.name, 'key']}
                                       fieldKey={[field.fieldKey, 'key']}
                                       rules={[
-                                        // {required: true, message: 'Missing Key'},
                                         { validator: validHyperparam }
                                       ]}
                                     >
@@ -273,11 +263,9 @@ function Verify({ verify }) {
                                   <Col flex={1}>
                                     <Form.Item
                                       {...field}
-                                      // label="Value"
                                       name={[field.name, 'value']}
                                       fieldKey={[field.fieldKey, 'value']}
                                       rules={[
-                                        // {required: true, message: 'Missing Value'},
                                       ]}
                                     >
                                       {seniorConfig[field.name] && typeof seniorConfig[field.name].value === 'number' ?
