@@ -12,6 +12,7 @@ from controller.config import label_task as label_task_config
 from controller.invoker.invoker_task_import_dataset import TaskImportDatasetInvoker
 from controller.utils import utils
 from controller.utils.redis import rds
+from controller.label_model.base import NotReadyError
 from proto import backend_pb2
 
 
@@ -80,6 +81,9 @@ def lable_task_monitor() -> None:
                 label_instance.sync_export_storage(project_info["storage_id"])
                 label_instance.convert_annotation_to_voc(project_info["project_id"],
                                                          project_info["des_annotation_path"])
+            except NotReadyError:
+                logging.info("label result not ready, try agiain later")
+                continue
             except (ConnectionError, HTTPError, Timeout) as e:
                 sentry_sdk.capture_exception(e)
                 logging.error(f"get label task {task_id} error: {e}, set task_id:{task_id} error")

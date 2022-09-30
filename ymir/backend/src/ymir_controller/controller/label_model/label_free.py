@@ -5,10 +5,10 @@ import os
 import shutil
 import zipfile
 from io import BytesIO
-from typing import Dict, List
+from typing import Dict, List, Optional
 from xml.etree import ElementTree
 
-from controller.label_model.base import LabelBase, catch_label_task_error
+from controller.label_model.base import LabelBase, catch_label_task_error, NotReadyError
 from controller.label_model.request_handler import RequestHandler
 
 
@@ -143,11 +143,50 @@ class LabelFree(LabelBase):
         cls._move_voc_files(des_path)
 
     def convert_annotation_to_voc(self, project_id: int, des_path: str) -> None:
+        """
         url_path = f"/api/projects/{project_id}/export?exportType=VOC"
         resp = self._requests.get(url_path=url_path)
         self.unzip_annotation_files(BytesIO(resp), des_path)
 
         logging.info(f"success convert_annotation_to_ymir: {des_path}")
+        """
+        export_task_id = self.get_export_task(project_id)
+        export_url = self.get_export_url(project_id, export_task_id)
+        resp = self._requests.get(export_url)
+        self.unzip_annotation_files(BytesIO(resp), des_path)
+        logging.info(f"success convert_annotation_to_ymir: {des_path}")
+
+    def get_export_task(self, project_id: int) -> str:
+        url_path = f"/api/v1/projects/{project_id}/export"
+        params = {"project_id": project_id, "page_size": 1}
+        resp = self._requests.get(url_path=url_path, params=params)
+        export_tasks = json.loads(resp)["data"]["export_tasks"]
+        if export_tasks:
+            return export_tasks[0]["task_id"]
+        else:
+            self.create_export_task(project_id)
+            raise NotReadyError()
+
+    def create_export_task(self, project_id: int) -> None:
+        url_path = f"/api/v1/projects/{project_id}/export"
+        payload = {"project_id": project_id, "export_type": 1, "export_image": False}
+        resp = self._requests.post(url_path=url_path, json_data=payload)
+        try:
+            export_task_id = json.loads(resp)["data"]["task_id"]
+        except Exception:
+            logging.exception("failed to create export task for label project %s", project_id)
+        else:
+            logging.info("created export task %s for label project %s", export_task_id, project_id)
+
+    def get_export_url(self, project_id: int, export_task_id: str) -> str:
+        url_path = f"/api/v1/projects/{project_id}/export/{export_task_id}"
+        resp = self._requests.get(url_path=url_path)
+        try:
+            export_url = json.loads(resp)["data"]["store_path"]
+        except Exception:
+            logging.info("label task %s not finished", export_task_id)
+            raise NotReadyError()
+        return export_url
 
     @catch_label_task_error
     def run(

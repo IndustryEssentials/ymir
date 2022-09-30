@@ -12,6 +12,10 @@ from controller.utils.redis import rds
 from id_definition.error_codes import CTLResponseCode
 
 
+class NotReadyError(Exception):
+    pass
+
+
 def catch_label_task_error(f: Callable) -> Callable:
     @wraps(f)
     def wrapper(*args: tuple, **kwargs: Any) -> object:
