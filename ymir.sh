@@ -161,6 +161,7 @@ docker-compose up -d
 }
 
 update() {
+    stop
     printf "\nUpdating...\n"
     docker-compose -f docker-compose.updater.yml up
 }
