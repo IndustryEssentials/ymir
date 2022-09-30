@@ -118,17 +118,17 @@ def command_run_in_out(f: Callable) -> Callable:
                 mir_logger.update_percent_info(local_percent=1, task_state=phase_logger.PhaseStateEnum.DONE)
                 # no need to call _commit_error, already committed inside command run function
             else:
+                mir_logger.update_percent_info(local_percent=1,
+                                               task_state=phase_logger.PhaseStateEnum.ERROR,
+                                               state_code=ret,
+                                               state_content=state_message,
+                                               trace_message='')
                 _commit_error(code=ret,
                               error_msg=state_message,
                               mir_root=mir_root,
                               src_revs=src_revs,
                               dst_rev=dst_rev,
                               predefined_task=None)
-                mir_logger.update_percent_info(local_percent=1,
-                                               task_state=phase_logger.PhaseStateEnum.ERROR,
-                                               state_code=ret,
-                                               state_content=state_message,
-                                               trace_message='')
 
             logging.info(f"command done: {dst_rev}, return code: {ret}")
 

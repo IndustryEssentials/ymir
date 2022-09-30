@@ -24,7 +24,7 @@ class TaskFusionInvoker(TaskBaseInvoker):
             subtasks_queue.append(cls.subtask_invoke_merge)
         if request.in_class_ids or request.ex_class_ids:
             subtasks_queue.append(cls.subtask_invoke_filter)
-        if request.sampling_count or (request.sampling_rate <= 1 and request.sampling_rate > 0):
+        if request.sampling_count or (request.sampling_rate < (1.0 - 1e-9) and request.sampling_rate > 0):
             subtasks_queue.append(cls.subtask_invoke_sample)
         if not subtasks_queue:
             return utils.make_general_response(CTLResponseCode.ARG_VALIDATION_FAILED, 'empty ops')

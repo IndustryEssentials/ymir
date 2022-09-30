@@ -273,10 +273,15 @@ class CmdMerge(base.BaseCommand):
             return return_code
 
         # Read host id mir data.
-        host_mir_metadatas = mirpb.MirMetadatas()
-        host_mir_annotations = mirpb.MirAnnotations()
+        host_typ_rev_tid = src_typ_rev_tids[0]
+        [host_mir_metadatas, host_mir_annotations
+         ] = mir_storage_ops.MirStorageOps.load_multiple_storages(mir_root=mir_root,
+                                                                  mir_branch=host_typ_rev_tid.rev,
+                                                                  mir_task_id=host_typ_rev_tid.tid,
+                                                                  ms_list=[mirpb.MIR_METADATAS, mirpb.MIR_ANNOTATIONS],
+                                                                  as_dict=False)
 
-        for typ_rev_tid in src_typ_rev_tids:
+        for typ_rev_tid in src_typ_rev_tids[1:]:
             ret = _merge_to_mir(host_mir_metadatas=host_mir_metadatas,
                                 host_mir_annotations=host_mir_annotations,
                                 mir_root=mir_root,
