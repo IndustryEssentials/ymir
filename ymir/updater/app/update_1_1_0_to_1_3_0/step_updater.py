@@ -187,15 +187,16 @@ def _get_model_class_names(serialized_executor_config: str) -> List[str]:
 # update models root
 def update_models(models_root: str) -> None:
     logging.info(f"updating models: {models_root}")
+    model_work_dir = os.path.join(models_root, 'work_dir')
 
     for model_hash in get_model_hashes(models_root):
         logging.info(f"model hash: {model_hash}")
 
-        model_path = os.path.join(models_root, model_hash)
-        model_work_dir = os.path.join(models_root, f"{model_hash}_work_dir")
         if os.path.isdir(model_work_dir):
             shutil.rmtree(model_work_dir)
         os.makedirs(model_work_dir, exist_ok=False)
+
+        model_path = os.path.join(models_root, model_hash)
 
         # extract
         with tarfile.open(model_path, 'r') as f:
@@ -234,5 +235,5 @@ def update_models(models_root: str) -> None:
                                                      model_location=model_work_dir)  # avoid hash conflict
         shutil.move(os.path.join(model_work_dir, new_model_hash), model_path)
 
-        # cleanup
-        shutil.rmtree(model_work_dir)
+    # cleanup
+    shutil.rmtree(model_work_dir)
