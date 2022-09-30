@@ -1,11 +1,11 @@
-import { ALGORITHM_STORE_URL } from '@/constants/common'
+import { DEPLOY_MODULE_URL } from '@/constants/common'
 import usePostMessage from '@/hooks/usePostMessage'
 import { message } from 'antd'
 import { useEffect, useRef, useState } from 'react'
 import { getLocale, history, useLocation, useParams, useSelector } from 'umi'
 type Params = { [key: string]: any }
 
-const base = ALGORITHM_STORE_URL || ''
+const base = DEPLOY_MODULE_URL || ''
 
 const pages: Params = {
   public: { path: '/publicAlgorithm', action: 'pageInit' },

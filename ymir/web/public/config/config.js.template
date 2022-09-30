@@ -1,4 +1,4 @@
 window.baseConfig = {
-  "ALGORITHM_STORE_URL": "${ALGORITHM_STORE_URL}",
+  "DEPLOY_MODULE_URL": "${DEPLOY_MODULE_URL}",
   "APIURL": "/api/v1/"
 }

@@ -2,11 +2,11 @@ import { message } from 'antd'
 import { useEffect, useState } from 'react'
 import { getLocale, useSelector } from 'umi'
 
-import { ALGORITHM_STORE_URL } from '@/constants/common'
+import { DEPLOY_MODULE_URL } from '@/constants/common'
 import { ModelVersion } from '@/interface/model'
 import t from '@/utils/t'
 
-const base = ALGORITHM_STORE_URL || ''
+const base = DEPLOY_MODULE_URL || ''
 const id = 'publishIframe'
 
 const createIframe = (params = {}) => {

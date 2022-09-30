@@ -65,4 +65,4 @@ export function getVersionLabel(version: number) {
   return `V${version}`
 }
 
-export const ALGORITHM_STORE_URL = window?.baseConfig?.ALGORITHM_STORE_URL
+export const DEPLOY_MODULE_URL = window?.baseConfig?.DEPLOY_MODULE_URL
