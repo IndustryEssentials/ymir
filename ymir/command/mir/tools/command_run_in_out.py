@@ -138,6 +138,11 @@ def command_run_in_out(f: Callable) -> Callable:
 
         # if MirContainerError, MirRuntimeError and BaseException occured
         # exception saved in exc
+        mir_logger.update_percent_info(local_percent=1,
+                                       task_state=phase_logger.PhaseStateEnum.ERROR,
+                                       state_code=error_code,
+                                       state_content=state_message,
+                                       trace_message=trace_message)
         if needs_new_commit:
             _commit_error(code=error_code,
                           error_msg=trace_message,
@@ -145,11 +150,6 @@ def command_run_in_out(f: Callable) -> Callable:
                           src_revs=src_revs,
                           dst_rev=dst_rev,
                           predefined_task=predefined_task)
-        mir_logger.update_percent_info(local_percent=1,
-                                       task_state=phase_logger.PhaseStateEnum.ERROR,
-                                       state_code=error_code,
-                                       state_content=state_message,
-                                       trace_message=trace_message)
 
         logging.info(f"command failed: {dst_rev}; exc: {exc}")
         logging.info(f"trace: {trace_message}")
