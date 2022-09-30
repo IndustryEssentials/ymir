@@ -5,7 +5,7 @@ import os
 import shutil
 import zipfile
 from io import BytesIO
-from typing import Dict, List, Optional
+from typing import Dict, List
 from xml.etree import ElementTree
 
 import requests
@@ -153,7 +153,7 @@ class LabelFree(LabelBase):
         logging.info(f"success convert_annotation_to_ymir: {des_path}")
 
     def get_export_task(self, project_id: int) -> str:
-        url_path = f"/api/v1/export"
+        url_path = "/api/v1/export"
         params = {"project_id": project_id, "page_size": 1}
         resp = self._requests.get(url_path=url_path, params=params)
         export_tasks = json.loads(resp)["data"]["export_tasks"]
@@ -164,7 +164,7 @@ class LabelFree(LabelBase):
             raise NotReadyError()
 
     def create_export_task(self, project_id: int) -> None:
-        url_path = f"/api/v1/export"
+        url_path = "/api/v1/export"
         payload = {"project_id": project_id, "export_type": 1}
         resp = self._requests.post(url_path=url_path, json_data=payload)
         try:
