@@ -21,6 +21,7 @@ import os
 import re
 import shutil
 import tarfile
+import time
 from typing import List, Tuple
 
 from google.protobuf.json_format import MessageToDict, ParseDict
@@ -192,20 +193,42 @@ def update_models(models_root: str) -> None:
 
         model_path = os.path.join(models_root, model_hash)
         model_work_dir = os.path.join(models_root, f"{model_hash}_work_dir")
-        os.makedirs(model_work_dir, exist_ok=True)
+        if os.path.isdir(model_work_dir):
+            shutil.rmtree(model_work_dir)
+        os.makedirs(model_work_dir, exist_ok=False)
 
         # extract
         with tarfile.open(model_path, 'r') as f:
             f.extractall(model_work_dir)
 
-        # update and pack again
         os.remove(model_path)
         with open(os.path.join(model_work_dir, 'ymir-info.yaml'), 'r') as f:
-            ymir_info_dict = yaml.safe_load(f.read())
+            ymir_info_src = yaml.safe_load(f.read())
+
         # update ymir-info.yaml
-        
+        executor_config_dict = ymir_info_src.get('executor_config', {})
+        task_context_dict = ymir_info_src.get('task_context', {})
+        models_list = ymir_info_src['models']
+
+        best_stage_name = 'default_best_stage'
+        model_stage_dict = {
+            best_stage_name: {
+                'files': models_list,
+                'mAP': task_context_dict.get('mAP', 0),
+                'stage_name': best_stage_name,
+                'timestamp': int(time.time()),
+            }
+        }
+
+        ymir_info_dst = {
+            'executor_config': executor_config_dict,
+            'task_context': task_context_dict,
+            'stages': model_stage_dict,
+            'best_stage_name': best_stage_name,
+        }
+
         # pack again
-        model_storage = models.ModelStorage.parse_obj(ymir_info_dict)
+        model_storage = models.ModelStorage.parse_obj(ymir_info_dst)
         new_model_hash = models.pack_and_copy_models(model_storage=model_storage,
                                                      model_dir_path=model_work_dir,
                                                      model_location=model_work_dir)  # avoid hash conflict
