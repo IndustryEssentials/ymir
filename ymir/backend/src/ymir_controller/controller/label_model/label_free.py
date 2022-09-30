@@ -146,13 +146,6 @@ class LabelFree(LabelBase):
         cls._move_voc_files(des_path)
 
     def convert_annotation_to_voc(self, project_id: int, des_path: str) -> None:
-        """
-        url_path = f"/api/projects/{project_id}/export?exportType=VOC"
-        resp = self._requests.get(url_path=url_path)
-        self.unzip_annotation_files(BytesIO(resp), des_path)
-
-        logging.info(f"success convert_annotation_to_ymir: {des_path}")
-        """
         export_task_id = self.get_export_task(project_id)
         export_url = self.get_export_url(project_id, export_task_id)
         resp = requests.get(export_url)
@@ -172,7 +165,7 @@ class LabelFree(LabelBase):
 
     def create_export_task(self, project_id: int) -> None:
         url_path = f"/api/v1/export"
-        payload = {"project_id": project_id, "export_type": 1, "export_image": False}
+        payload = {"project_id": project_id, "export_type": 1}
         resp = self._requests.post(url_path=url_path, json_data=payload)
         try:
             export_task_id = json.loads(resp)["data"]["task_id"]
