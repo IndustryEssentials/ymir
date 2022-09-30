@@ -12,6 +12,7 @@ const model = {
   "model.column.action": { en: "Actions", cn: "操作", },
   "model.action.download": { en: "Download", cn: "下载", },
   "model.action.verify": { en: "Verify", cn: "验证", },
+  "model.action.publish": { en: "Publish", cn: "发布", },
   "model.empty.label": { en: "Train A Model", cn: "训练出一个模型", },
   "model.empty.btn.label": { en: "Import Model", cn: '导入模型', },
   "model.import.label": { en: "Import Model", cn: "导入模型", },

@@ -15,6 +15,7 @@ import image from './modules/image'
 import tip from './modules/tip'
 import project from './modules/project'
 import visualization from './modules/visualization'
+import algo from './modules/algo'
 
 export default {
   ...common,
@@ -33,4 +34,5 @@ export default {
   ...tip,
   ...project,
   ...visualization,
+  ...algo,
 }
