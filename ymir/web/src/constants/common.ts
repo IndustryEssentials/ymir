@@ -65,4 +65,4 @@ export function getVersionLabel(version: number) {
   return `V${version}`
 }
 
-export const ALGORITHM_STORE_URL = window?.baseConfig?.ALGORITHM_STORE_URL || 'http://192.168.28.58:8000'
+export const ALGORITHM_STORE_URL = window?.baseConfig?.ALGORITHM_STORE_URL
