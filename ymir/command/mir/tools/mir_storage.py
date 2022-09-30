@@ -6,6 +6,9 @@ from mir.protos import mir_command_pb2 as mirpb
 from mir.tools.errors import MirCode, MirRuntimeError
 
 
+MIR_ASSOCIATED_FILES = ['.git', '.gitattributes', '.gitignore', '.mir', '.mir_lock']
+
+
 def mir_type(mir_storage: 'mirpb.MirStorage.V') -> Any:
     MIR_TYPE = {
         mirpb.MirStorage.MIR_METADATAS: mirpb.MirMetadatas,
