@@ -160,6 +160,12 @@ docker-compose -f docker-compose.fiftyone.yml up -d
 docker-compose up -d
 }
 
+update() {
+    stop
+    printf "\nUpdating...\n"
+    docker-compose -f docker-compose.updater.yml up
+}
+
 print_help() {
     printf '\nUsage: \n  bash ymir.sh start/stop.\n'
 }

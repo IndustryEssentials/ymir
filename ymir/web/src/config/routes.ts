@@ -310,6 +310,15 @@ export const homeRoutes = [
     id: 28,
     breadcrumbLabel: 'breadcrumbs.project.initmodel',
   },
+  {
+    path: "/home/algo/:module",
+    name: "initModel",
+    component: "@/pages/algo/index",
+    title: "algo.title",
+    pid: 0,
+    id: 39,
+    breadcrumbLabel: 'algo.title',
+  },
 ]
 
 const Routes = [

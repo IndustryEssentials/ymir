@@ -8,6 +8,14 @@ export const HIDDENMODULES = {
   LIVECODE: true,
 }
 
+
+declare global {
+  interface Window {
+    baseConfig: {
+      [name: string]: string,
+    }
+  }
+}
 export enum ResultStates {
   READY = 0,
   VALID = 1,
@@ -56,3 +64,5 @@ export const statesLabel = (state: ResultStates) => {
 export function getVersionLabel(version: number) {
   return `V${version}`
 }
+
+export const DEPLOY_MODULE_URL = window?.baseConfig?.DEPLOY_MODULE_URL

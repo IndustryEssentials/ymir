@@ -31,8 +31,6 @@ RUN apt-get update \
   && ln -s /usr/bin/python3 python \
   && pip3 install -i ${PIP_SOURCE} --upgrade pip
 
-RUN git config --global core.fileMode false
-
 RUN mkdir -p /data/sharing/
 RUN mkdir -p /app_logs/
 

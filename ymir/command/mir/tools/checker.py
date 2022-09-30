@@ -4,7 +4,7 @@ import os
 import sys
 from typing import Callable, List
 
-from mir.tools import class_ids, mir_repo_utils
+from mir.tools import mir_repo_utils
 from mir.tools.code import MirCode
 
 
@@ -85,5 +85,5 @@ def _check_is_clean(mir_root: str) -> int:
 
 
 def _check_have_labels(mir_root: str) -> int:
-    have_labels = os.path.isfile(class_ids.ids_file_path(mir_root))
+    have_labels = os.path.isfile(os.path.join(mir_root, '.mir', 'labels.yaml'))
     return MirCode.RC_OK if have_labels else MirCode.RC_CMD_INVALID_MIR_REPO

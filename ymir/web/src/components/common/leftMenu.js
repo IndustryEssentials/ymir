@@ -2,10 +2,12 @@ import { useEffect, useState } from "react"
 import { Menu, Layout } from "antd"
 import { useHistory, useLocation, withRouter, useSelector } from "umi"
 import t from '@/utils/t'
+import { DEPLOY_MODULE_URL } from '@/constants/common'
 import { isSuperAdmin } from '@/constants/user'
 import {
   BarchartIcon, FlagIcon, GithubIcon, FileHistoryIcon, MymodelIcon,
   NavDatasetIcon, UserIcon, UserSettingsIcon, DiagnosisIcon, EditIcon, EyeOffIcon, TrainIcon,
+  DeviceListIcon, DeviceSupportedIcon, MyAlgoIcon, StoreIcon,
   BarChart2LineIcon, ProjectIcon, VectorIcon, BookIcon,
 } from '@/components/common/icons'
 import IterationIcon from '@/components/icon/Xiangmudiedai'
@@ -14,8 +16,8 @@ const { Sider } = Layout
 
 const projectModule = /^.*\/project\/(\d+).*$/
 
-const getItem = (label, key, Icon, children, type='') => ({
-  key, icon: Icon ? <Icon size='20' fill='rgba(0, 0, 0, 0.6)'  /> : null, children, label, type,
+const getItem = (label, key, Icon, children, type = '') => ({
+  key, icon: Icon ? <Icon size='20' fill='rgba(0, 0, 0, 0.6)' /> : null, children, label, type,
 })
 
 const getGroupItem = (label, key, children) => getItem(label, key, undefined, children, 'group')
@@ -60,6 +62,12 @@ function LeftMenu() {
       getGroupItem(t('breadcrumbs.keyword'), 'keyword', [
         getItem(t('breadcrumbs.keyword'), '/home/keyword', FlagIcon,),
       ]),
+      DEPLOY_MODULE_URL ? getGroupItem(t('algo.label'), 'algo', [
+        getItem(t('algo.public.label'), '/home/algo/public', StoreIcon,),
+        getItem(t('algo.mine.label'), '/home/algo/mine', MyAlgoIcon,),
+        getItem(t('algo.device.label'), '/home/algo/device', DeviceListIcon,),
+        getItem(t('algo.support.label'), '/home/algo/support', DeviceSupportedIcon,),
+      ]) : null,
       getGroupItem(t('common.top.menu.configure'), 'settings', [
         getItem(t('common.top.menu.image'), '/home/image', FileHistoryIcon,),
         isSuperAdmin(role) ? getItem(t('common.top.menu.permission'), '/home/permission', UserSettingsIcon,) : null,
@@ -86,8 +94,14 @@ function LeftMenu() {
   }
 
   return items.length ? (
-    <Sider style={{ background: '#fff' }}>
-      <Menu items={items} mode='inline' defaultOpenKeys={['project.summary']} onClick={clickHandle} selectedKeys={defaultKeys}></Menu>
+    <Sider className="sidebar scrollbar">
+      <Menu
+        items={items}
+        mode='inline'
+        defaultOpenKeys={['project.summary']}
+        onClick={clickHandle}
+        selectedKeys={defaultKeys}
+      />
     </Sider>
   ) : null
 }
