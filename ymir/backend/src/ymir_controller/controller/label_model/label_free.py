@@ -158,7 +158,7 @@ class LabelFree(LabelBase):
         logging.info(f"success convert_annotation_to_ymir: {des_path}")
 
     def get_export_task(self, project_id: int) -> str:
-        url_path = f"/api/v1/projects/{project_id}/export"
+        url_path = f"/api/v1/export"
         params = {"project_id": project_id, "page_size": 1}
         resp = self._requests.get(url_path=url_path, params=params)
         export_tasks = json.loads(resp)["data"]["export_tasks"]
@@ -169,7 +169,7 @@ class LabelFree(LabelBase):
             raise NotReadyError()
 
     def create_export_task(self, project_id: int) -> None:
-        url_path = f"/api/v1/projects/{project_id}/export"
+        url_path = f"/api/v1/export"
         payload = {"project_id": project_id, "export_type": 1, "export_image": False}
         resp = self._requests.post(url_path=url_path, json_data=payload)
         try:
@@ -180,7 +180,7 @@ class LabelFree(LabelBase):
             logging.info("created export task %s for label project %s", export_task_id, project_id)
 
     def get_export_url(self, project_id: int, export_task_id: str) -> str:
-        url_path = f"/api/v1/projects/{project_id}/export/{export_task_id}"
+        url_path = f"/api/v1/export/{export_task_id}"
         resp = self._requests.get(url_path=url_path)
         try:
             export_url = json.loads(resp)["data"]["store_path"]
