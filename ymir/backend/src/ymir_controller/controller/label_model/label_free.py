@@ -156,7 +156,7 @@ class LabelFree(LabelBase):
         export_task_id = self.get_export_task(project_id)
         export_url = self.get_export_url(project_id, export_task_id)
         resp = requests.get(export_url)
-        self.unzip_annotation_files(BytesIO(resp), des_path)
+        self.unzip_annotation_files(BytesIO(resp.content), des_path)
         logging.info(f"success convert_annotation_to_ymir: {des_path}")
 
     def get_export_task(self, project_id: int) -> str:
