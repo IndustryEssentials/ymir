@@ -114,6 +114,7 @@ class LabelFree(LabelBase):
             return a / b
 
         content = self.get_project_info(project_id)
+        logging.info("label task percent info: %s", content)
         percent = safe_div(content["num_tasks_with_annotations"], content["task_number"])
 
         return percent
