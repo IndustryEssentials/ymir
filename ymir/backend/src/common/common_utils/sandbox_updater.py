@@ -40,9 +40,8 @@ def update(sandbox_root: str, assets_root: str, models_root: str, src_ver: str, 
             if models_func:
                 models_func(models_root)
 
-        # todo: uncomment this
-        # for user_id in user_to_repos:
-        #     _update_user_labels(label_path=os.path.join(sandbox_root, user_id, 'labels.yaml'), dst_ver=dst_ver)
+        for user_id in user_to_repos:
+            _update_user_labels(label_path=os.path.join(sandbox_root, user_id, 'labels.yaml'), dst_ver=dst_ver)
     except Exception as e:
         _roll_back(sandbox_root=sandbox_root, models_root=models_root)
         raise e
@@ -94,8 +93,7 @@ def _get_update_steps(src_ver: str, dst_ver: str) -> List[_StepUpdaterType]:
     eq_dst_ver = ymir_salient_version(dst_ver)
 
     _UPDATE_NODES: List[str] = ['1.1.0', '1.3.0']
-    # _UPDATE_FUNCS: List[_StepUpdaterType] = [(update_repo_110_130, update_models_110_130)]
-    _UPDATE_FUNCS: List[_StepUpdaterType] = [(None, update_models_110_130)]
+    _UPDATE_FUNCS: List[_StepUpdaterType] = [(update_repo_110_130, update_models_110_130)]
     return _UPDATE_FUNCS[_UPDATE_NODES.index(eq_src_ver):_UPDATE_NODES.index(eq_dst_ver)]
 
 
