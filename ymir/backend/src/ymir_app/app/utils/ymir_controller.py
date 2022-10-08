@@ -373,7 +373,7 @@ class ControllerClient:
     def close(self) -> None:
         pass
 
-    def send(self, req: mirsvrpb.GeneralReq) -> Dict:
+    def send(self, req: mirsvrpb.GeneralReq, verbose: bool = True) -> Dict:
         logger.info("[controller] request: %s", req.req)
         with grpc.insecure_channel(self.channel_ep) as channel:
             stub = mir_grpc.mir_controller_serviceStub(channel)
@@ -381,7 +381,10 @@ class ControllerClient:
 
         if resp.code != 0:
             raise ValueError(f"gRPC error. response: {resp.code} {resp.message}")
-        logger.info("[controller] response: %s", MessageToString(resp, as_one_line=True))
+        msg = "[controller] successfully get response"
+        if verbose:
+            msg = "%s: %s" % (msg, MessageToString(resp, as_one_line=True))
+        logger.info(msg)
         return MessageToDict(
             resp,
             preserving_proto_field_name=True,
@@ -399,7 +402,7 @@ class ControllerClient:
 
     def get_labels_of_user(self, user_id: int) -> UserLabels:
         req = ControllerRequest(ExtraRequestType.get_label, user_id)
-        resp = self.send(req)
+        resp = self.send(req, verbose=False)
         # if not set labels, lost the key label_collection
         if not resp.get("label_collection"):
             raise ValueError(f"Missing labels for user {user_id}")
@@ -407,7 +410,8 @@ class ControllerClient:
             dict(
                 labels=resp["label_collection"]["labels"],
                 ymir_version=resp["label_collection"]["ymir_version"],
-            ))
+            )
+        )
 
     def create_task(
         self,
