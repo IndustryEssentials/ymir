@@ -78,6 +78,7 @@ class MiningStrategy(IntEnum):
 
 class TrainingType(IntEnum):
     object_detect = 1
+    segmentation = 2
 
 
 class AnnotationType(IntEnum):
@@ -88,6 +89,11 @@ class AnnotationType(IntEnum):
 class DatasetType(IntEnum):
     validation = mir_cmd_pb.TvtTypeValidation
     training = mir_cmd_pb.TvtTypeTraining
+
+
+class LabelFormat(IntEnum):
+    mask = 1
+    polygon = 2
 
 
 @dataclass(frozen=True)
