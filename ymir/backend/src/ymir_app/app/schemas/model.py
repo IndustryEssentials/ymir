@@ -23,6 +23,7 @@ class ModelBase(BaseModel):
     source: TaskType
     description: Optional[str]
     map: Optional[float] = Field(description="Mean Average Precision")
+    miou: Optional[float] = Field(description="Mean IoU")
     keywords: Optional[str]
     result_state: ResultState = ResultState.processing
     model_group_id: int
