@@ -165,7 +165,7 @@ class LabelFree(LabelBase):
 
     def create_export_task(self, project_id: int) -> None:
         url_path = "/api/v1/export"
-        payload = {"project_id": project_id, "export_type": 1}
+        payload = {"project_id": project_id, "export_type": 1, "export_image": False}
         resp = self._requests.post(url_path=url_path, json_data=payload)
         try:
             export_task_id = json.loads(resp)["data"]["task_id"]

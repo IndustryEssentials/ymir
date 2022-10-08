@@ -1,7 +1,9 @@
 import json
 import logging
 import os
+from pathlib import Path
 import sys
+import xml.etree.ElementTree as ElementTree
 
 from requests.exceptions import ConnectionError, HTTPError, Timeout
 import sentry_sdk
@@ -34,35 +36,40 @@ def remove_json_file(des_annotation_path: str) -> None:
         logging.error(f"des_annotation_path not exist: {des_annotation_path}")
         return
 
-    for one_file in os.listdir(des_annotation_path):
-        if one_file.endswith(".json"):
-            os.remove(os.path.join(des_annotation_path, one_file))
+    for annotation_file in os.listdir(des_annotation_path):
+        if annotation_file.endswith(".json"):
+            os.remove(os.path.join(des_annotation_path, annotation_file))
 
 
-def _gen_index_file(des_annotation_path: str) -> str:
+def _gen_index_file(des_annotation_dir: str, media_location: str) -> str:
     media_files = []
+    des_annotation_path = Path(des_annotation_dir)
+    media_path = Path(media_location)
 
-    if label_task_config.LABEL_STUDIO == label_task_config.LABEL_TOOL:
-        for one_file in os.listdir(des_annotation_path):
-            if one_file.endswith(".json"):
-                with open(os.path.join(des_annotation_path, one_file)) as f:
+    if label_task_config.LABEL_TOOL == label_task_config.LABEL_STUDIO:
+        for annotation_file in des_annotation_path.iterdir():
+            if annotation_file.suffix == ".json":
+                with open(annotation_file) as f:
                     json_content = json.load(f)
                     pic_path = json_content["task"]["data"]["image"].replace("data/local-files/?d=", "")
                     media_files.append(pic_path)
-    elif label_task_config.LABEL_FREE == label_task_config.LABEL_TOOL:
-        des_annotation_media_path = os.path.join(des_annotation_path, "images")
-        if os.path.isdir(des_annotation_media_path):
-            for one_file in os.listdir(des_annotation_media_path):
-                if os.path.splitext(one_file)[1].lower() in [".jpeg", ".jpg", ".png"]:
-                    media_files.append(os.path.join(des_annotation_media_path, one_file))
+    elif label_task_config.LABEL_TOOL == label_task_config.LABEL_FREE:
+        for annotation_file in des_annotation_path.iterdir():
+            if annotation_file.suffix == ".xml":
+                annotation = ElementTree.parse(annotation_file)
+                media_filename = annotation.findtext("filename")
+                if media_filename:
+                    media_filename = Path(media_filename).stem
+                    # compatible with assets path pattern
+                    media_files.append(str(media_path / media_filename[-2:] / media_filename))
     else:
         raise ValueError("LABEL_TOOL Error")
 
-    index_file = os.path.join(des_annotation_path, "index.txt")
+    index_file = des_annotation_path / "index.txt"
     with open(index_file, "w") as f:
         f.write("\n".join(media_files))
 
-    return index_file
+    return str(index_file)
 
 
 def lable_task_monitor() -> None:
@@ -88,7 +95,7 @@ def lable_task_monitor() -> None:
                 sentry_sdk.capture_exception(e)
                 logging.error(f"get label task {task_id} error: {e}, set task_id:{task_id} error")
                 state = LogState.ERROR
-            index_file = _gen_index_file(project_info["des_annotation_path"])
+            index_file = _gen_index_file(project_info["des_annotation_path"], project_info["media_location"])
             trigger_mir_import(
                 repo_root=project_info["repo_root"],
                 task_id=task_id,
