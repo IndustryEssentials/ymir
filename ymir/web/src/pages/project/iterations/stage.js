@@ -8,7 +8,7 @@ import { useEffect, useState } from "react"
 import RenderProgress from "../../../components/common/progress"
 import { YesIcon } from '@/components/common/icons'    
 
-function Stage({ pid, stage, stageResult, current = 0, end = false, callback = () => { }, ...func }) {
+function Stage({ pid, stage, current = 0, end = false, callback = () => { }, ...func }) {
   const history = useHistory()
   const [result, setResult] = useState({})
   const [state, setState] = useState(-1)
@@ -23,18 +23,8 @@ function Stage({ pid, stage, stageResult, current = 0, end = false, callback = (
   }, [stage.result])
 
   useEffect(() => {
-    const res = currentStage() && stageResult?.id === stage?.result?.id ? stageResult : stage.result
-    setResult(res || {})
-  }, [stage.result, stageResult])
-
-  useEffect(() => {
-    if (stageResult?.id !== stage.result?.id) {
-      return
-    }
-    if (stageResult.needReload) {
-      fetchStageResult(true)
-    }
-  }, [stageResult])
+    setResult(stage.result || {})
+  }, [stage.result])
 
   function skip() {
     callback({
@@ -150,7 +140,6 @@ function Stage({ pid, stage, stageResult, current = 0, end = false, callback = (
 const props = (state) => {
   return {
     userId: state.user.id,
-    stageResult: state.iteration.currentStageResult,
   }
 }
 
