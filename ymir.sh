@@ -21,10 +21,8 @@ FIELD_LABEL_TOOL_LF='label_free'
 ENV_FILE='.env'
 
 stop() {
-docker-compose down
-docker-compose -f docker-compose.label_studio.yml down
-docker-compose -f docker-compose.labelfree.yml down
-docker-compose -f docker-compose.fiftyone.yml down
+docker-compose -f docker-compose.yml -f docker-compose.dev.yml -f docker-compose.label_studio.yml \
+-f docker-compose.labelfree.yml -f docker-compose.fiftyone.yml down
 }
 
 pre_start() {
@@ -162,12 +160,23 @@ docker-compose up -d
 
 update() {
     stop
-    printf "\nUpdating...\n"
-    docker-compose -f docker-compose.updater.yml up
+
+cat <<- EOF
+Before proceed, make sure to BACKUP your YMIR-workplace folder.
+Only supports to upgrade from 1.1.0 (22-May) to 1.3.0 (22-Oct), otherwise may cause data damage.
+EOF
+
+while true; do
+    read -p "Continue (y/n)?" yn
+    case $yn in
+        [Yy]* ) docker-compose -f docker-compose.updater.yml up; break;;
+        * ) break;;
+    esac
+done
 }
 
 print_help() {
-    printf '\nUsage: \n  bash ymir.sh start/stop.\n'
+    printf '\nUsage: \n  bash ymir.sh start/stop/update.\n'
 }
 
 # main
