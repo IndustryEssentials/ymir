@@ -14,6 +14,7 @@ class Dataset(Base):
     hash = Column(String(settings.STRING_LEN_LIMIT), index=True, unique=True, nullable=False)
     source = Column(SmallInteger, index=True, nullable=False)
     description = Column(String(settings.STRING_LEN_LIMIT))
+    label_type = Column(SmallInteger, index=True)
     version_num = Column(Integer, index=True, nullable=False)
     result_state = Column(SmallInteger, index=True, nullable=False)
 

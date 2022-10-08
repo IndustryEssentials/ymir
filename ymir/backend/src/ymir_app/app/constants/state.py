@@ -78,11 +78,17 @@ class MiningStrategy(IntEnum):
 
 class TrainingType(IntEnum):
     object_detect = 1
+    segmentation = 2
 
 
 class AnnotationType(IntEnum):
     gt = 1
     pred = 2
+
+
+class LabelType(IntEnum):
+    object_detect = 1
+    segmentation = 2
 
 
 RunningStates = [TaskState.pending, TaskState.running]
