@@ -64,10 +64,10 @@ def _update_metadatas(mir_metadatas_src: pb_src.MirMetadatas, assets_root: str) 
 
 def _update_annotations(mir_annotations_src: pb_src.MirAnnotations) -> pb_dst.MirAnnotations:
     mir_annotations_dst = pb_dst.MirAnnotations()
-    ParseDict(MessageToDict(mir_annotations_src, preserving_proto_field_name=True, use_integers_for_enums=True),
-              mir_annotations_dst)
-    mir_annotations_dst.prediction.type = pb_dst.AnnoType.AT_DET_BOX
-    mir_annotations_dst.ground_truth.type = pb_dst.AnnoType.AT_DET_BOX
+    _update_task_annotations(task_annotations_src=mir_annotations_src.prediction,
+                             task_annotations_dst=mir_annotations_dst.prediction)
+    _update_task_annotations(task_annotations_src=mir_annotations_src.ground_truth,
+                             task_annotations_dst=mir_annotations_dst.ground_truth)
     return mir_annotations_dst
 
 
@@ -78,6 +78,11 @@ def _update_task(task_src: pb_src.Task, models_root: str) -> pb_dst.Task:
 
 def update_models(models_root: str) -> None:
     logging.info(f"updating models: {models_root}, 122 -> 130")
+
+
+def _update_task_annotations(task_annotations_src: pb_src.SingleTaskAnnotations,
+                             task_annotations_dst: pb_dst.SingleTaskAnnotations) -> None:
+    task_annotations_dst.type = pb_dst.AnnoType.AT_DET_BOX
 
 
 # MetadataAttributes:
