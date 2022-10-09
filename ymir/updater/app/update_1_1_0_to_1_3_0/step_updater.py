@@ -208,9 +208,10 @@ def update_models(models_root: str) -> None:
         os.remove(model_path)
         with open(os.path.join(model_work_dir, 'ymir-info.yaml'), 'r') as f:
             ymir_info_src = yaml.safe_load(f.read())
+        _check_model(ymir_info_src)
 
         # check model producer version
-        package_version = ymir_info_src.get('package_version') or DEFAULT_YMIR_SRC_VERSION
+        package_version = ymir_info_src.get('package_version', DEFAULT_YMIR_SRC_VERSION)
         if ymir_model_salient_version(package_version) == ymir_model_salient_version(_DST_YMIR_VER):
             logging.info('  no need to update, skip')
             continue
@@ -247,3 +248,13 @@ def update_models(models_root: str) -> None:
 
     # cleanup
     shutil.rmtree(model_work_dir)
+
+
+def _check_model(ymir_info: dict) -> None:
+    # executor_config: must be dict
+    # # models: must be list
+    executor_config = ymir_info['executor_config']
+    models_list = ymir_info['models']
+    if not executor_config or not isinstance(executor_config, dict) or not models_list or not isinstance(
+            models_list, list):
+        raise ValueError('Invalid ymir-info.yaml for model version 1.1.0')
