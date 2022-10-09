@@ -16,9 +16,12 @@ def ymir_salient_version(ver: str) -> str:
     return _SALIENT_VERSIONS[ver]
 
 
-def ymir_model_salient_version(ver: str) -> str:
-    _SALIENT_VERSIONS = {
+def ymir_model_package_version(ver: str) -> str:
+    """
+    get model package version from ymir version
+    """
+    _PACKAGE_VERSIONS = {
         DEFAULT_YMIR_SRC_VERSION: DEFAULT_YMIR_SRC_VERSION,
         '1.3.0': '1.3.0',
     }
-    return _SALIENT_VERSIONS[ver]
+    return _PACKAGE_VERSIONS[ver]

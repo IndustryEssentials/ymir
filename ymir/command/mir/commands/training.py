@@ -4,7 +4,7 @@ import os
 import time
 from subprocess import CalledProcessError
 from typing import Any, Dict, List, Optional, Tuple
-from mir.version import YMIR_VERSION
+from mir.version import ymir_model_package_version, YMIR_VERSION
 
 from tensorboardX import SummaryWriter
 import yaml
@@ -37,7 +37,7 @@ def _find_and_save_model(out_root: str, model_upload_location: str, executor_con
                                         stages=model_stages,
                                         best_stage_name=best_stage_name,
                                         attachments=attachments,
-                                        ymir_version=YMIR_VERSION)
+                                        package_version=ymir_model_package_version(YMIR_VERSION))
     models.pack_and_copy_models(model_storage=model_storage,
                                 model_dir_path=out_model_dir,
                                 model_location=model_upload_location)
