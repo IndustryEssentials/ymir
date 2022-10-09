@@ -39,6 +39,8 @@ _MirDatasSrc = Tuple[pb_src.MirMetadatas, pb_src.MirAnnotations, pb_src.Task]
 _MirDatasDst = Tuple[pb_dst.MirMetadatas, pb_dst.MirAnnotations, pb_dst.Task]
 
 _DEFAULT_STAGE_NAME = 'default_best_stage'
+_SRC_YMIR_VER = '1.1.0'
+_DST_YMIR_VER = '1.3.0'
 
 
 # update user repo
@@ -209,7 +211,7 @@ def update_models(models_root: str) -> None:
 
         # check model producer version
         if ymir_model_salient_version(ymir_info_src.get('ymir_version',
-                                                        DEFAULT_YMIR_SRC_VERSION)) != DEFAULT_YMIR_SRC_VERSION:
+                                                        DEFAULT_YMIR_SRC_VERSION)) != _SRC_YMIR_VER:
             logging.info('  no need to update, skip')
             continue
 
@@ -233,7 +235,7 @@ def update_models(models_root: str) -> None:
             'task_context': task_context_dict,
             'stages': model_stage_dict,
             'best_stage_name': best_stage_name,
-            'ymir_version': '1.3.0',
+            'ymir_version': _DST_YMIR_VER,
         }
 
         # pack again
