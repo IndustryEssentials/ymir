@@ -26,6 +26,6 @@ def main() -> int:
 if __name__ == '__main__':
     logging.basicConfig(stream=sys.stdout,
                         format='[%(asctime)s]: %(message)s',
-                        datefmt='%y%m%d-%H:%M:%S',
+                        datefmt='%Y%m%d-%H:%M:%S',
                         level=logging.INFO)
     sys.exit(main())

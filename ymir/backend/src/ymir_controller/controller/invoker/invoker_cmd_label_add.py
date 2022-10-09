@@ -22,3 +22,6 @@ class LabelAddInvoker(BaseMirControllerInvoker):
                                               check_only=self._request.check_only)
         response.label_collection.CopyFrom(labels.userlabels_to_proto(conflict_labels))
         return response
+
+    def _parse_response(self, response: backend_pb2.GeneralResp) -> str:
+        return f"LabelAdd conflict: {len(response.label_collection.labels)}, {response.label_collection.ymir_version}"
