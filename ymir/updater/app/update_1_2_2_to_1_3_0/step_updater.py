@@ -3,6 +3,8 @@ import os
 import re
 from typing import Tuple
 
+from google.protobuf.json_format import MessageToDict, ParseDict
+
 from id_definition.task_id import IDProto
 from mir.tools import revs_parser
 from mir.protos import mir_command_122_pb2 as pb_src, mir_command_130_pb2 as pb_dst
@@ -54,15 +56,20 @@ def _save(mir_root: str, rev_tid: revs_parser.TypRevTid, datas_dst: _MirDatasDst
 
 
 def _update_metadatas(mir_metadatas_src: pb_src.MirMetadatas, assets_root: str) -> pb_dst.MirMetadatas:
-    pass
+    mir_metadatas_dst = pb_dst.MirMetadatas()
+    ParseDict(MessageToDict(mir_metadatas_src, preserving_proto_field_name=True, use_integers_for_enums=True),
+              mir_metadatas_dst)
+    return mir_metadatas_dst
 
 
 def _update_annotations(mir_annotations_src: pb_src.MirAnnotations) -> pb_dst.MirAnnotations:
-    pass
+    mir_annotations_dst = pb_dst.MirAnnotations()
+    return mir_annotations_dst
 
 
 def _update_task(task_src: pb_src.Task, models_root: str) -> pb_dst.Task:
-    pass
+    task_dst = pb_dst.Task()
+    return task_dst
 
 
 def update_models(models_root: str) -> None:
@@ -89,13 +96,13 @@ def update_models(models_root: str) -> None:
 # 	add: polygons = empty
 # 	add: mask = empty
 # 	add: img_class_ids = empty
-	
+
 # Annotation:
 # 	add: class_name = empty
 # 	add: polygon = empty
 
 # ModelMeta:
 # 	add: class_names = (from serialized executor config)
-	
+
 # Evaluation: no need to update
 # EvaluateConfig: no need to update
