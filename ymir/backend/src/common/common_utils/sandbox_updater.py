@@ -68,7 +68,7 @@ def _roll_back(sandbox_root: str, models_root: str) -> None:
         src_user_dir = os.path.join(sandbox_backup_dir, user_id)
         dst_user_dir = os.path.join(sandbox_root, user_id)
         shutil.rmtree(dst_user_dir)
-        shutil.copytree(src=src_user_dir, dst=dst_user_dir, symlinks=True)
+        shutil.move(src=src_user_dir, dst=dst_user_dir)
 
     # models_root
     models_backup_dir = os.path.join(sandbox_root, 'ymir-models-bk')
