@@ -7,10 +7,8 @@ services:
     environment:
       - MODELS_PATH=${YMIR_PATH}/ymir-models
       - ASSETS_PATH=${YMIR_PATH}/ymir-assets
-      - BACKUP_PATH=${YMIR_PATH}/updater-bk
     volumes:
       - "${BACKEND_SANDBOX_ROOT}:${BACKEND_SANDBOX_ROOT}"
       - "${YMIR_PATH}/ymir-assets:${YMIR_PATH}/ymir-assets"
       - "${YMIR_PATH}/ymir-models:${YMIR_PATH}/ymir-models"
-      - "${YMIR_PATH}/updater-bk:${YMIR_PATH}/updater-bk"
     command: python /app/start.py

@@ -45,28 +45,25 @@ def update(sandbox_root: str, assets_root: str, models_root: str, src_ver: str, 
         raise e
 
     # cleanup
-    backup_path = os.environ['BACKUP_PATH']
-    shutil.rmtree(os.path.join(backup_path, 'sandbox'))
-    shutil.rmtree(os.path.join(backup_path, 'ymir-models'))
+    shutil.rmtree(os.path.join(sandbox_root, 'sandbox-bk'))
+    shutil.rmtree(os.path.join(sandbox_root, 'ymir-models-bk'))
 
 
 def _backup(sandbox_root: str, models_root: str) -> None:
     # user dirs in sandbox_root
-    backup_path = os.environ['BACKUP_PATH']
-    sandbox_backup_dir = os.path.join(backup_path, 'sandbox')
+    sandbox_backup_dir = os.path.join(sandbox_root, 'sandbox-bk')
     os.makedirs(sandbox_backup_dir, exist_ok=False)
     for user_id in detect_users_and_repos(sandbox_root):
         shutil.copytree(src=os.path.join(sandbox_root, user_id),
                         dst=os.path.join(sandbox_backup_dir, user_id),
                         symlinks=True)
 
-    models_backup_dir = os.path.join(backup_path, 'ymir-models')
+    models_backup_dir = os.path.join(sandbox_root, 'ymir-models-bk')
     shutil.copytree(src=models_root, dst=models_backup_dir)
 
 
 def _roll_back(sandbox_root: str, models_root: str) -> None:
-    backup_path = os.environ['BACKUP_PATH']
-    sandbox_backup_dir = os.path.join(backup_path, 'sandbox')
+    sandbox_backup_dir = os.path.join(sandbox_root, 'sandbox-bk')
     for user_id in detect_users_and_repos(sandbox_root):
         src_user_dir = os.path.join(sandbox_backup_dir, user_id)
         dst_user_dir = os.path.join(sandbox_root, user_id)
@@ -74,7 +71,7 @@ def _roll_back(sandbox_root: str, models_root: str) -> None:
         shutil.copytree(src=src_user_dir, dst=dst_user_dir, symlinks=True)
 
     # models_root
-    models_backup_dir = os.path.join(backup_path, 'ymir-models')
+    models_backup_dir = os.path.join(sandbox_root, 'ymir-models-bk')
     shutil.copytree(models_backup_dir, models_root, dirs_exist_ok=True)
 
     shutil.rmtree(sandbox_backup_dir)
