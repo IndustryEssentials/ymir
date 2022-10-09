@@ -64,10 +64,21 @@ def _update_metadatas(mir_metadatas_src: pb_src.MirMetadatas, assets_root: str) 
 
 def _update_annotations(mir_annotations_src: pb_src.MirAnnotations) -> pb_dst.MirAnnotations:
     mir_annotations_dst = pb_dst.MirAnnotations()
+
+    # prediction and ground_truth
     _update_task_annotations(task_annotations_src=mir_annotations_src.prediction,
                              task_annotations_dst=mir_annotations_dst.prediction)
     _update_task_annotations(task_annotations_src=mir_annotations_src.ground_truth,
                              task_annotations_dst=mir_annotations_dst.ground_truth)
+
+    # image_cks
+    for asset_id, single_image_cks_src in mir_annotations_src.image_cks.items():
+        single_image_cks_dst = mir_annotations_dst.image_cks[asset_id]
+
+        for k, v in single_image_cks_src.cks.items():
+            single_image_cks_dst.cks[k] = v
+        single_image_cks_dst.image_quality = single_image_cks_src.image_quality
+
     return mir_annotations_dst
 
 
@@ -83,6 +94,14 @@ def update_models(models_root: str) -> None:
 def _update_task_annotations(task_annotations_src: pb_src.SingleTaskAnnotations,
                              task_annotations_dst: pb_dst.SingleTaskAnnotations) -> None:
     task_annotations_dst.type = pb_dst.AnnoType.AT_DET_BOX
+    task_annotations_dst.task_id = task_annotations_src.task_id
+    for asset_id, single_image_annotations_src in task_annotations_src.image_annotations.items():
+        single_image_annotations_dst = task_annotations_dst.image_annotations[asset_id]
+        for annotation_src in single_image_annotations_src.annotations:
+            object_annotation_dst = pb_dst.ObjectAnnotation()
+            ParseDict(MessageToDict(annotation_src, preserving_proto_field_name=True, use_integers_for_enums=True),
+                      object_annotation_dst)
+            single_image_annotations_dst.boxes.append(object_annotation_dst)
 
 
 # MetadataAttributes:
