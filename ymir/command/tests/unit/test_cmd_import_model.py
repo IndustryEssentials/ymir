@@ -10,6 +10,7 @@ from mir.commands.import_model import CmdModelImport
 from mir.protos import mir_command_pb2 as mirpb
 from mir.tools import mir_storage_ops, models, settings as mir_settings
 from mir.tools.code import MirCode
+from mir.version import YMIR_VERSION
 from tests import utils as test_utils
 
 
@@ -64,7 +65,8 @@ class TestCmdImportModel(unittest.TestCase):
                                                 'mAP': 0.5
                                             },
                                             stages={mss.stage_name: mss},
-                                            best_stage_name=mss.stage_name)
+                                            best_stage_name=mss.stage_name,
+                                            package_version=YMIR_VERSION)
         with open(os.path.join(self._src_model_root, 'ymir-info.yaml'), 'w') as f:
             yaml.safe_dump(model_storage.dict(), f)
         with tarfile.open(self._src_model_package_path, 'w:gz') as tar_gz_f:
