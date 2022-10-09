@@ -31,6 +31,7 @@ from id_definition.task_id import IDProto
 from mir.tools import revs_parser, models
 from mir.protos import mir_command_110_pb2 as pb_src, mir_command_130_pb2 as pb_dst
 from mir.tools import mir_storage_ops_110 as mso_src, mir_storage_ops_130 as mso_dst
+from mir.version import ymir_model_salient_version, DEFAULT_YMIR_SRC_VERSION
 
 from tools import get_repo_tags, remove_old_tag, get_model_hashes
 
@@ -206,6 +207,11 @@ def update_models(models_root: str) -> None:
         with open(os.path.join(model_work_dir, 'ymir-info.yaml'), 'r') as f:
             ymir_info_src = yaml.safe_load(f.read())
 
+        # check model producer version
+        if ymir_model_salient_version(ymir_info_src.get('ymir_version', DEFAULT_YMIR_SRC_VERSION)) == '1.3.0':
+            logging.info('  already 1.3.0, skip')
+            continue
+
         # update ymir-info.yaml
         executor_config_dict = ymir_info_src.get('executor_config', {})
         task_context_dict = ymir_info_src.get('task_context', {})
@@ -226,6 +232,7 @@ def update_models(models_root: str) -> None:
             'task_context': task_context_dict,
             'stages': model_stage_dict,
             'best_stage_name': best_stage_name,
+            'ymir_version': '1.3.0',
         }
 
         # pack again
