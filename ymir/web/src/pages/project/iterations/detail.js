@@ -26,8 +26,7 @@ function Detail({ project = {} }) {
     if (!project.id) {
       return
     }
-    setSettings(filterExsit([project.miningSet, project.testSet]))
-    console.log('iteration:', iteration, project)
+    setSettings(filterExsit([project.miningSet?.id, project.testSet?.id]))
     if (!iteration?.id) {
       return
     }
@@ -39,8 +38,7 @@ function Detail({ project = {} }) {
       labelSet,
       testSet,
       model,
-    } = iteration.entities || {}
-    console.log('wholeMiningDataset, testDataset:', wholeMiningSet, testSet)
+    } = iteration || {}
     setSettings(filterExsit([wholeMiningSet, testSet]))
     setIntermediations(filterExsit([miningSet, miningResult, labelSet, trainUpdateSet]))
     setModels(filterExsit([model]))

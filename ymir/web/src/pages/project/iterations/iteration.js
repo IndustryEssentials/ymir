@@ -10,8 +10,7 @@ import Stage from './stage'
 import s from "./iteration.less"
 
 function Iteration({ project, fresh = () => { } }) {
-  const iteration = useSelector(({ iteration }) => iteration.iteration[project.currentIteration?.id]) || {}
-  console.log('iteration from redux:', iteration, project)
+  const iteration = useSelector(({ iteration }) => iteration.iteration[project.currentIteration?.id] || {})
   const [_, getIteration] = useFetch('iteration/getIteration', {})
   const [stages, setStages] = useState([])
   const [prevIteration, getPrevIteration] = useFetch('iteration/getIteration', {})
@@ -61,8 +60,7 @@ function Iteration({ project, fresh = () => { } }) {
   function rerenderStages() {
     const initStages = getInitStages()
     const ss = initStages.map(stage => {
-      const iEntities = iteration?.entities || {}
-      const result = iEntities[stage.output] || iteration[stage.output]
+      const result = iteration[stage.output]
       const urlParams = {
         s0d: project.miningSet.id || 0,
         s0s: project.miningStrategy,

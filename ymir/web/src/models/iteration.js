@@ -172,7 +172,8 @@ export default {
         return result
       }
     },
-    *createIteration({ payload }, { call, put }) {
+    *createIteration({ payload }, { call, put, select }) {
+      const { projectId } = payload
       const { code, result } = yield call(createIteration, payload)
       if (code === 0) {
         const iteration = transferIteration(result)
@@ -180,10 +181,15 @@ export default {
           type: 'updateLocalIterations',
           payload: [iteration],
         })
+        const iterations = yield select(( {iteration }) => iteration.iterations[projectId])
+        yield put({
+          type: 'UPDATE_ITERATIONS',
+          payload: { id: projectId, iterations: [...iterations, iteration] },
+        })
         return iteration
       }
     },
-    *updateIteration({ payload }, { call, put }) {
+    *updateIteration({ payload }, { call, put, select }) {
       const { id, ...params } = payload
       const { code, result } = yield call(updateIteration, id, params)
       if (code === 0) {
@@ -191,6 +197,11 @@ export default {
         yield put({
           type: 'updateLocalIterations',
           payload: [{ ...iteration, needReload: true }],
+        })
+        const iterations = yield select(( {iteration: it }) => it.iterations[iteration.projectId])
+        yield put({
+          type: 'UPDATE_ITERATIONS',
+          payload: { id: iteration.projectId, iterations: iterations.map(it => it.id === iteration.id ? iteration : it) },
         })
         return iteration
       }
@@ -203,10 +214,7 @@ export default {
         type,
         payload: { id, force },
       })
-      if (result) {
-        yield put({ type: 'UPDATE_CURRENT_STAGE_RESULT', payload: result })
-        return result
-      }
+      return result
     },
     *updateLocalIterations({ payload: iterations = [] }, { put, select }) {
       for (let i = 0; i < iterations.length; i++) {

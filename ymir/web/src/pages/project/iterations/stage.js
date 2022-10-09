@@ -1,30 +1,27 @@
 import { Button, Col, Popover, Row, Space } from "antd"
-import { useHistory, connect } from "umi"
+import { useHistory, connect, useSelector } from "umi"
 
 import t from '@/utils/t'
 import { states, statesLabel } from '@/constants/dataset'
 import s from './iteration.less'
+import { Stages } from "@/constants/iteration"
 import { useEffect, useState } from "react"
 import RenderProgress from "../../../components/common/progress"
 import { YesIcon } from '@/components/common/icons'    
 
-function Stage({ pid, stage, current = 0, end = false, callback = () => { }, ...func }) {
+function Stage({ pid, stage, current = 0, end = false, callback = () => { } }) {
   const history = useHistory()
-  const [result, setResult] = useState({})
+  const result = useSelector(({ dataset, model }) => {
+    const isModel = stage.value === Stages.training
+    const res = isModel ? model.model: dataset.dataset
+    return res[stage.result] || {}
+  })
   const [state, setState] = useState(-1)
 
   useEffect(() => {
     const st = typeof result.state !== 'undefined' ? result.state : stage.state
     setState(st)
-  }, [result, stage])
-
-  useEffect(() => {
-    currentStage() && func.setCurrentStageResult(stage.result)
-  }, [stage.result])
-
-  useEffect(() => {
-    setResult(stage.result || {})
-  }, [stage.result])
+  }, [result?.state, stage])
 
   function skip() {
     callback({
@@ -68,10 +65,6 @@ function Stage({ pid, stage, current = 0, end = false, callback = () => { }, ...
 
   function act() {
     stage.url && history.push(stage.url)
-  }
-
-  async function fetchStageResult(force) {
-    await func.getStageResult(stage.result?.id, stage.current, force)
   }
 
   const stateClass = `${s.stage} ${currentStage() ? s.current : (finishStage() ? s.finish : s.pending)}`
@@ -137,33 +130,4 @@ function Stage({ pid, stage, current = 0, end = false, callback = () => { }, ...
   )
 }
 
-const props = (state) => {
-  return {
-    userId: state.user.id,
-  }
-}
-
-const actions = (dispacth) => {
-  return {
-    getStageResult(id, stage, force) {
-      return dispacth({
-        type: 'iteration/getStageResult',
-        payload: { id, stage, force },
-      })
-    },
-    setCurrentStageResult(result) {
-      return dispacth({
-        type: 'iteration/setCurrentStageResult',
-        payload: result,
-      })
-    },
-    createIteration(params) {
-      return dispacth({
-        type: 'iteration/createIteration',
-        payload: params,
-      })
-    }
-  }
-}
-
-export default connect(props, actions)(Stage)
+export default Stage
