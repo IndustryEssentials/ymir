@@ -1,6 +1,6 @@
 import logging
 import os
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel, Field
 import shutil
 import tarfile
 from typing import Any, Dict, List, Tuple
@@ -29,13 +29,7 @@ class ModelStorage(BaseModel):
     model_hash: str = ''
     stage_name: str = ''
     attachments: Dict[str, List[str]] = {}
-    package_version: str
-
-    @validator('package_version')
-    def _validate_package_version(cls, v: str) -> str:
-        if not v:
-            raise ValueError('package_version must not be empty')
-        return v
+    package_version: str = Field(min_length=1)
 
     @property
     def class_names(self) -> List[str]:
