@@ -73,7 +73,7 @@ class CmdSampling(base.BaseCommand):
         else:
             # if equals
             sampled_mir_metadatas = mir_metadatas
-            sampled_mir_annotations = sampled_mir_annotations
+            sampled_mir_annotations = mir_annotations
 
         annotations.copy_annotations_pred_meta(src_task_annotations=mir_annotations.prediction,
                                                dst_task_annotations=sampled_mir_annotations.prediction)

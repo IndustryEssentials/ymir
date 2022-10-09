@@ -68,8 +68,13 @@ def _cleanup(work_dir: str) -> None:
     if not work_dir:
         return
 
-    _cleanup_dir_sub_items(work_dir, ignored_items={'out'})
+    _cleanup_dir_sub_items(work_dir, ignored_items={'in', 'out'})
 
+    _cleanup_dir_sub_items(
+        os.path.join(work_dir, 'in'),
+        ignored_items={
+            'config.yaml',  # training, mining & infer executor config file
+        })
     _cleanup_dir_sub_items(
         os.path.join(work_dir, 'out'),
         ignored_items={
@@ -78,6 +83,8 @@ def _cleanup(work_dir: str) -> None:
             'monitor-log.txt',  # monitor detail file
             'tensorboard',  # default root directory for tensorboard event files
             'ymir-executor-out.log',  # container output
+            'infer-result.json',  # infer result file
+            'result.yaml',  # mining result file
         })
 
 
