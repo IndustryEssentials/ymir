@@ -28,7 +28,6 @@ def update(sandbox_root: str, assets_root: str, models_root: str, src_ver: str, 
     # update
     user_to_repos = detect_users_and_repos(sandbox_root)
     try:
-        raise ValueError('fake error')
         for repo_func, models_func in steps:
             # update user repos
             if repo_func:
