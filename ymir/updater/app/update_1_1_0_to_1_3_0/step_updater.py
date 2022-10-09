@@ -31,6 +31,7 @@ from id_definition.task_id import IDProto
 from mir.tools import revs_parser, models
 from mir.protos import mir_command_110_pb2 as pb_src, mir_command_130_pb2 as pb_dst
 from mir.tools import mir_storage_ops_110 as mso_src, mir_storage_ops_130 as mso_dst
+from mir.version import ymir_model_package_version, DEFAULT_YMIR_SRC_VERSION
 
 from tools import get_repo_tags, remove_old_tag, get_model_hashes
 
@@ -38,6 +39,8 @@ _MirDatasSrc = Tuple[pb_src.MirMetadatas, pb_src.MirAnnotations, pb_src.Task]
 _MirDatasDst = Tuple[pb_dst.MirMetadatas, pb_dst.MirAnnotations, pb_dst.Task]
 
 _DEFAULT_STAGE_NAME = 'default_best_stage'
+_SRC_YMIR_VER = '1.1.0'
+_DST_YMIR_VER = '1.3.0'
 
 
 # update user repo
@@ -206,6 +209,11 @@ def update_models(models_root: str) -> None:
         with open(os.path.join(model_work_dir, 'ymir-info.yaml'), 'r') as f:
             ymir_info_src = yaml.safe_load(f.read())
 
+        # check model producer version
+        if ymir_info_src.get('package_version', DEFAULT_YMIR_SRC_VERSION) != _SRC_YMIR_VER:
+            logging.info('  no need to update, skip')
+            continue
+
         # update ymir-info.yaml
         executor_config_dict = ymir_info_src.get('executor_config', {})
         task_context_dict = ymir_info_src.get('task_context', {})
@@ -226,6 +234,7 @@ def update_models(models_root: str) -> None:
             'task_context': task_context_dict,
             'stages': model_stage_dict,
             'best_stage_name': best_stage_name,
+            'package_version': ymir_model_package_version(_DST_YMIR_VER),
         }
 
         # pack again
