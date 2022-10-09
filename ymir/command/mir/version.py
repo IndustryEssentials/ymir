@@ -16,7 +16,7 @@ def ymir_salient_version(ver: str) -> str:
     return _SALIENT_VERSIONS[ver]
 
 
-def ymir_model_package_version(ver: str) -> str:
+def ymir_model_salient_version(ver: str) -> str:
     """
     get model package version from ymir version
     """

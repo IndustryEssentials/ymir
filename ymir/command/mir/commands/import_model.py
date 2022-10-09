@@ -3,7 +3,7 @@ import logging
 import os
 import shutil
 import tarfile
-from mir.version import YMIR_VERSION, ymir_model_package_version
+from mir.version import DEFAULT_YMIR_SRC_VERSION, YMIR_VERSION, ymir_model_salient_version
 
 import yaml
 
@@ -55,6 +55,11 @@ class CmdModelImport(base.BaseCommand):
 
         with open(os.path.join(extract_model_dir_path, 'ymir-info.yaml'), 'r') as f:
             ymir_info_dict = yaml.safe_load(f.read())
+
+        package_version = ymir_info_dict.get('package_version') or DEFAULT_YMIR_SRC_VERSION
+        if ymir_model_salient_version(package_version) != ymir_model_salient_version(YMIR_VERSION):
+            raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_MODEL_PACKAGE_VERSION,
+                                  error_message=f"Invalid model package version: {package_version}")
         model_storage = models.ModelStorage.parse_obj(ymir_info_dict)
 
         logging.info(f"importing model with storage: {model_storage}")
@@ -63,7 +68,6 @@ class CmdModelImport(base.BaseCommand):
         model_storage.task_context['src-revs'] = src_revs
         model_storage.task_context['dst_rev'] = dst_rev
         model_storage.task_context['type'] = mirpb.TaskType.TaskTypeImportModel
-        model_storage.package_version = ymir_model_package_version(YMIR_VERSION)
         models.pack_and_copy_models(model_storage=model_storage,
                                     model_dir_path=extract_model_dir_path,
                                     model_location=model_location)
