@@ -5,8 +5,6 @@ from typing import Callable, List, Optional, Tuple
 
 import yaml
 
-from tools import get_model_hashes
-
 from common_utils.sandbox_util import detect_users_and_repos
 from common_utils.version import ymir_salient_version
 
@@ -30,6 +28,7 @@ def update(sandbox_root: str, assets_root: str, models_root: str, src_ver: str, 
     # update
     user_to_repos = detect_users_and_repos(sandbox_root)
     try:
+        raise ValueError('fake error')
         for repo_func, models_func in steps:
             # update user repos
             if repo_func:
@@ -47,28 +46,28 @@ def update(sandbox_root: str, assets_root: str, models_root: str, src_ver: str, 
         raise e
 
     # cleanup
-    shutil.rmtree(os.path.join(sandbox_root, 'backup'))
-    shutil.rmtree(os.path.join(models_root, 'backup'))
+    backup_path = os.environ['BACKUP_PATH']
+    shutil.rmtree(os.path.join(backup_path, 'sandbox'))
+    shutil.rmtree(os.path.join(backup_path, 'ymir-models'))
 
 
 def _backup(sandbox_root: str, models_root: str) -> None:
     # user dirs in sandbox_root
-    sandbox_backup_dir = os.path.join(sandbox_root, 'backup')
+    backup_path = os.environ['BACKUP_PATH']
+    sandbox_backup_dir = os.path.join(backup_path, 'sandbox')
     os.makedirs(sandbox_backup_dir, exist_ok=False)
     for user_id in detect_users_and_repos(sandbox_root):
         shutil.copytree(src=os.path.join(sandbox_root, user_id),
                         dst=os.path.join(sandbox_backup_dir, user_id),
                         symlinks=True)
 
-    # all models in models_root
-    models_backup_dir = os.path.join(models_root, 'backup')
-    os.makedirs(models_backup_dir, exist_ok=False)
-    for model_hash in get_model_hashes(models_root):
-        shutil.copyfile(src=os.path.join(models_root, model_hash), dst=os.path.join(models_backup_dir, model_hash))
+    models_backup_dir = os.path.join(backup_path, 'ymir-models')
+    shutil.copytree(src=models_root, dst=models_backup_dir)
 
 
 def _roll_back(sandbox_root: str, models_root: str) -> None:
-    sandbox_backup_dir = os.path.join(sandbox_root, 'backup')
+    backup_path = os.environ['BACKUP_PATH']
+    sandbox_backup_dir = os.path.join(backup_path, 'sandbox')
     for user_id in detect_users_and_repos(sandbox_root):
         src_user_dir = os.path.join(sandbox_backup_dir, user_id)
         dst_user_dir = os.path.join(sandbox_root, user_id)
@@ -76,12 +75,9 @@ def _roll_back(sandbox_root: str, models_root: str) -> None:
         shutil.copytree(src=src_user_dir, dst=dst_user_dir, symlinks=True)
 
     # models_root
-    models_backup_dir = os.path.join(models_root, 'backup')
-    for model_hash in get_model_hashes(models_backup_dir):
-        model_path = os.path.join(models_root, model_hash)
-        if os.path.isfile(model_path):
-            os.remove(model_path)
-        shutil.copyfile(src=os.path.join(models_backup_dir, model_hash), dst=model_path)
+    models_backup_dir = os.path.join(backup_path, 'ymir-models')
+    for model_hash in os.listdir(models_backup_dir):
+        shutil.copy(os.path.join(models_backup_dir, model_hash), os.path.join(models_root, model_hash))
 
     shutil.rmtree(sandbox_backup_dir)
     shutil.rmtree(models_backup_dir)

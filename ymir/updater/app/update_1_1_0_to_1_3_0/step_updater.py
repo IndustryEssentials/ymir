@@ -208,7 +208,8 @@ def update_models(models_root: str) -> None:
             ymir_info_src = yaml.safe_load(f.read())
 
         # check model producer version
-        if ymir_model_salient_version(ymir_info_src.get('ymir_version', DEFAULT_YMIR_SRC_VERSION)) != '1.1.0':
+        if ymir_model_salient_version(ymir_info_src.get('ymir_version',
+                                                        DEFAULT_YMIR_SRC_VERSION)) != DEFAULT_YMIR_SRC_VERSION:
             logging.info('  no need to update, skip')
             continue
 
