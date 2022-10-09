@@ -74,6 +74,8 @@ def _roll_back(sandbox_root: str, models_root: str) -> None:
     models_backup_dir = os.path.join(sandbox_root, 'ymir-models-bk')
     for model_hash in os.listdir(models_backup_dir):
         src_model_path = os.path.join(models_backup_dir, model_hash)
+        if not os.path.isfile(src_model_path):
+            continue
         dst_model_path = os.path.join(models_root, model_hash)
         os.remove(dst_model_path)
         shutil.move(src=src_model_path, dst=dst_model_path)
