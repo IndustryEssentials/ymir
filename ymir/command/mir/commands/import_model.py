@@ -56,7 +56,7 @@ class CmdModelImport(base.BaseCommand):
         with open(os.path.join(extract_model_dir_path, 'ymir-info.yaml'), 'r') as f:
             ymir_info_dict = yaml.safe_load(f.read())
 
-        package_version = ymir_info_dict.get('package_version') or DEFAULT_YMIR_SRC_VERSION
+        package_version = ymir_info_dict.get('package_version', DEFAULT_YMIR_SRC_VERSION)
         if ymir_model_salient_version(package_version) != ymir_model_salient_version(YMIR_VERSION):
             raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_MODEL_PACKAGE_VERSION,
                                   error_message=f"Invalid model package version: {package_version}")
