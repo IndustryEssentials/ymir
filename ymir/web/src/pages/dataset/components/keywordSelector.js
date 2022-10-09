@@ -11,11 +11,12 @@ const initKeywords = [
   { value: 'tags', list: [], }
 ]
 
-const KeywordSelector = ({ value, onChange, dataset = {}, cks, tags }) => {
+const KeywordSelector = ({ value, onChange, dataset = {} }) => {
   const { id: pid } = useParams()
   const [keywords, setKeywords] = useState(initKeywords)
   const [currentType, setCurrentType] = useState(initKeywords[0].value)
   const [selected, setSelected] = useState([])
+  const { cks, tags } = dataset
 
   useEffect(() => {
     !value?.length && setSelected([])

@@ -2,7 +2,8 @@ import logging
 import os
 from abc import ABC, abstractmethod
 
-from google.protobuf import json_format
+from google.protobuf.json_format import MessageToDict
+from google.protobuf.text_format import MessageToString
 
 from common_utils import labels
 from controller.utils import errors, metrics, utils
@@ -80,9 +81,12 @@ class BaseMirControllerInvoker(ABC):
 
         response = self.pre_invoke()
         if response.code != CTLResponseCode.CTR_OK:
+            logging.info(f"pre_invoke fails: {response}")
             return response
 
-        return self.invoke()
+        response = self.invoke()
+        logging.info(self._parse_response(response))
+        return response
 
     @abstractmethod
     def pre_invoke(self) -> backend_pb2.GeneralResp:
@@ -112,9 +116,22 @@ class BaseMirControllerInvoker(ABC):
 
     def __repr__(self) -> str:
         """show infos about this invoker and the request"""
-        req_info = json_format.MessageToDict(self._request,
-                                             preserving_proto_field_name=True,
-                                             use_integers_for_enums=True)
+        request = self._request
+        if request.req_type in [
+                backend_pb2.RequestType.CMD_GPU_INFO_GET,
+                backend_pb2.RequestType.CMD_LABEL_ADD,
+                backend_pb2.RequestType.CMD_LABEL_GET,
+                backend_pb2.RequestType.CMD_PULL_IMAGE,
+                backend_pb2.RequestType.CMD_REPO_CHECK,
+                backend_pb2.RequestType.CMD_REPO_CLEAR,
+                backend_pb2.RequestType.CMD_TERMINATE,
+                backend_pb2.RequestType.CMD_VERSIONS_GET,
+        ]:
+            return f"task_id: {request.task_id} req_type: {request.req_type}"
 
-        return (f" request: \n {req_info}\n assets_config: {self._assets_config}\n async_mode: {self._async_mode} \n"
-                "work_dir: {self._work_dir}")
+        pb_dict = MessageToDict(request, preserving_proto_field_name=True, use_integers_for_enums=True)
+        return (f"{self.__class__}\n request: {pb_dict}\n assets_config: {self._assets_config}\n"
+                f" async_mode: {self._async_mode}\n work_dir: {self._work_dir}")
+
+    def _parse_response(self, response: backend_pb2.GeneralResp) -> str:
+        return f"task id: {self._request.task_id} response: {MessageToString(response, as_one_line=True)}"

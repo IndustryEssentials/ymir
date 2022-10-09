@@ -52,7 +52,7 @@ class DebugModeAction(argparse.Action):
             logging.root.removeHandler(handler)
 
         logging.basicConfig(stream=sys.stdout,
-                            format='%(levelname)-8s: [%(asctime)s] %(filename)s:%(lineno)s:%(funcName)s(): %(message)s',
+                            format='%(levelname)-8s: [%(asctime)s] %(filename)s:%(lineno)-03s: %(message)s',
                             datefmt='%Y%m%d-%H:%M:%S',
                             level=logging.DEBUG)
         logging.debug("in debug mode")

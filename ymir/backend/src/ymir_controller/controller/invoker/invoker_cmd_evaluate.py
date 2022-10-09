@@ -46,3 +46,6 @@ class EvaluateInvoker(BaseMirControllerInvoker):
         response.code = CTLResponseCode.CTR_OK
         response.evaluation.CopyFrom(evaluation)
         return response
+
+    def _parse_response(self, response: backend_pb2.GeneralResp) -> str:
+        return f"Evaluation result config: {response.evaluation.config}"
