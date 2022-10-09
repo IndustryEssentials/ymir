@@ -75,8 +75,7 @@ def _roll_back(sandbox_root: str, models_root: str) -> None:
 
     # models_root
     models_backup_dir = os.path.join(backup_path, 'ymir-models')
-    for model_hash in os.listdir(models_backup_dir):
-        shutil.copy(os.path.join(models_backup_dir, model_hash), os.path.join(models_root, model_hash))
+    shutil.copytree(models_backup_dir, models_root, dirs_exist_ok=True)
 
     shutil.rmtree(sandbox_backup_dir)
     shutil.rmtree(models_backup_dir)
