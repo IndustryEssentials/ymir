@@ -16,7 +16,6 @@ describe("models: iteration", () => {
   normalReducer(iteration, 'UPDATE_CURRENT_STAGE_RESULT', product(100435), product(100435), 'currentStageResult', {})
 
   errorCode(iteration, "getIterations")
-  errorCode(iteration, "getIteration")
   errorCode(iteration, "createIteration")
   errorCode(iteration, "updateIteration")
 
@@ -30,45 +29,7 @@ describe("models: iteration", () => {
       code: 0,
       result: iterations,
     })
-    const end = generator.next()
-
-    expect(end.value).toEqual(expected)
-    expect(end.done).toBe(true)
-  })
-  it("effects: getIterations -> success -> get more info with data.", () => {
-    const pid = 64321
-    const iterations = products(3).map(({ id }) => ({
-      id,
-      mining_dataset_id: id,
-      mining_input_dataset_id: id,
-      mining_output_dataset_id: id,
-      label_output_dataset_id: id,
-      training_input_dataset_id: id,
-      training_output_model_id: id,
-      validation_dataset_id: id,
-    }))
-    const datasets = products(3)
-    const models = products(3)
-    const expected = iterations.map(i => ({
-      ...transferIteration(i),
-      entities: {
-        wholeMiningSet: product(i.id),
-        trainUpdateSet: product(i.id),
-        miningSet: product(i.id),
-        miningResult: product(i.id),
-        labelSet: product(i.id),
-        testSet: product(i.id),
-        model: product(i.id),
-      }
-    }))
-
-    const generator = createGenerator('getIterations', { id: pid, more: true })
     generator.next()
-    generator.next({
-      code: 0,
-      result: iterations,
-    })
-    generator.next(expected)
     const end = generator.next()
 
     expect(end.value).toEqual(expected)
@@ -83,10 +44,8 @@ describe("models: iteration", () => {
 
     const generator = createGenerator('getIteration', { pid, id })
     generator.next()
-    generator.next({
-      code: 0,
-      result,
-    })
+    generator.next()
+    generator.next(expected)
     const end = generator.next()
 
     expect(end.value).toEqual(expected)
@@ -100,8 +59,7 @@ describe("models: iteration", () => {
 
     const generator = createGenerator('getStageResult', { id: pid, stage, })
     generator.next()
-    generator.next(result)
-    const end = generator.next()
+    const end = generator.next(result)
 
     expect(end.value).toEqual(expected)
     expect(end.done).toBe(true)
@@ -114,25 +72,27 @@ describe("models: iteration", () => {
 
     const generator = createGenerator('getStageResult', { id: pid, stage, force: true })
     generator.next()
-    generator.next(result)
-    const end = generator.next()
+    const end = generator.next(result)
 
     expect(end.value).toEqual(expected)
     expect(end.done).toBe(true)
   })
   it("effects: createIteration", () => {
     const id = 10015
-    const expected = { id, name: "new_iteration_name" }
-
+    const result = { id, name: "new_iteration_name" }
+    const expected = transferIteration(result)
 
     const generator = createGenerator('createIteration', { name: "new_iteration_name", type: 1 })
     generator.next()
-    const end = generator.next({
+    generator.next({
       code: 0,
-      result: expected,
+      result,
     })
+    generator.next()
+    generator.next([])
+    const end = generator.next()
 
-    equalObject(expected, end.value)
+    expect(end.value).toEqual(expected)
     expect(end.done).toBe(true)
   })
   it("effects: updateIteration", () => {
@@ -142,10 +102,13 @@ describe("models: iteration", () => {
     const generator = createGenerator('updateIteration', origin)
 
     generator.next()
-    const end = generator.next({
+    generator.next({
       code: 0,
       result: expected,
     })
+    generator.next()
+    generator.next([])
+    const end = generator.next()
 
     expect(end.value).toEqual(expected)
     expect(end.done).toBe(true)

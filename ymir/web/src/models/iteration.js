@@ -61,7 +61,7 @@ export default {
         })
       }
       if (iteration && more) {
-        [iteration] = yield put.resolve({
+        yield put.resolve({
           type: 'moreIterationsInfo',
           payload: { iterations: [iteration], id: pid },
         })
@@ -106,23 +106,6 @@ export default {
           payload: modelIds,
         })
       }
-      const find = (id, arr = []) => arr.find(({ id: aid }) => aid === id)
-      const result = iterations.map(i => {
-        const ds = id => find(id, datasets)
-        return {
-          ...i,
-          entities: {
-            wholeMiningSet: ds(i.wholeMiningSet),
-            trainUpdateSet: ds(i.trainUpdateSet),
-            miningSet: ds(i.miningSet),
-            miningResult: ds(i.miningResult),
-            labelSet: ds(i.labelSet),
-            testSet: ds(i.testSet),
-            model: find(i.model, models),
-          },
-        }
-      })
-      return result
     },
     *getMiningStats({ payload }, { call, put }) {
       const { pid, id } = payload
