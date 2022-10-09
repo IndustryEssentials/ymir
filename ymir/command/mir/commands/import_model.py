@@ -3,7 +3,6 @@ import logging
 import os
 import shutil
 import tarfile
-from mir.version import YMIR_VERSION
 
 import yaml
 
