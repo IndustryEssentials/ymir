@@ -8,6 +8,8 @@ import yaml
 from common_utils.sandbox_util import detect_users_and_repos
 from common_utils.version import ymir_salient_version
 
+from update_1_1_0_to_1_3_0.step_updater import update_models as update_models_110_130
+from update_1_1_0_to_1_3_0.step_updater import update_repo as update_repo_110_130
 from update_1_2_2_to_1_3_0.step_updater import update_models as update_models_122_130
 from update_1_2_2_to_1_3_0.step_updater import update_repo as update_repo_122_130
 
@@ -89,6 +91,8 @@ def _get_update_steps(src_ver: str, dst_ver: str) -> List[_StepUpdaterType]:
     eq_src_ver = ymir_salient_version(src_ver)
     eq_dst_ver = ymir_salient_version(dst_ver)
 
+    # _UPDATE_NODES: List[str] = ['1.1.0', '1.3.0']
+    # _UPDATE_FUNCS: List[_StepUpdaterType] = [(update_repo_110_130, update_models_110_130)]
     _UPDATE_NODES: List[str] = ['1.2.2', '1.3.0']
     _UPDATE_FUNCS: List[_StepUpdaterType] = [(update_repo_122_130, update_models_122_130)]
     return _UPDATE_FUNCS[_UPDATE_NODES.index(eq_src_ver):_UPDATE_NODES.index(eq_dst_ver)]

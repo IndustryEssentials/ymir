@@ -98,10 +98,29 @@ export default {
         return dss.items
       }
     },
+    *batchLocalModels({ payload: ids = [] }, { call, put }) {
+      const cache = yield put.resolve({
+        type: 'getLocalModels',
+        payload: ids,
+      })
+      if (ids.length === cache.length) {
+        return cache
+      }
+      const fetchIds = ids.filter(id => cache.every(ds => ds.id !== id))
+      const remoteModels = yield put.resolve({
+        type: 'batchModels',
+        payload: fetchIds
+      })
+      return [...cache, ...remoteModels]
+    },
     *batchModels({ payload }, { call, put }) {
       const { code, result } = yield call(batchModels, payload)
       if (code === 0) {
         const models = result.map(model => transferModel(model))
+        yield put({
+          type: 'updateLocalModels',
+          payload: models,
+        })
         return models
       }
     },
@@ -273,6 +292,19 @@ export default {
     },
     *clearCache({ }, { put }) {
       yield put({ type: 'CLEAR_ALL', })
+    },
+    *updateLocalModels({ payload: models = [] }, { put }) {
+      for (let i = 0; i < models.length; i++) {
+        const model = models[i]
+        yield put({
+          type: "UPDATE_MODEL",
+          payload: { id: model.id, model },
+        })
+      }
+    },
+    *getLocalModels({ payload: ids = [] }, { put, select }) {
+      const models = yield select(({ model }) => model.model)
+      return ids.map((id) => models[id]).filter(d => d)
     },
   },
   reducers: {

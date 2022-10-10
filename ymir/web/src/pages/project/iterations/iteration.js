@@ -1,42 +1,44 @@
 import { useCallback, useEffect, useState } from "react"
 import { Row, Col } from "antd"
-import { connect } from "dva"
+import { useSelector } from "umi"
 
 import { Stages, StageList } from '@/constants/iteration'
 import { templateString } from '@/utils/string'
+import useFetch from '@/hooks/useFetch'
+
 import Stage from './stage'
 import s from "./iteration.less"
 
-function Iteration({ project, fresh = () => { }, ...func }) {
-  const [iteration, setIteration] = useState({})
+function Iteration({ project, fresh = () => { } }) {
+  const iteration = useSelector(({ iteration }) => iteration.iteration[project.currentIteration?.id] || {})
+  const [_, getIteration] = useFetch('iteration/getIteration', {})
   const [stages, setStages] = useState([])
-  const [prevIteration, setPrevIteration] = useState({})
+  const [prevIteration, getPrevIteration] = useFetch('iteration/getIteration', {})
+  const [createResult, create] = useFetch('iteration/createIteration')
+  const [_u, update] = useFetch('iteration/updateIteration')
 
   useEffect(() => {
-    initStages()
-  }, [project])
-
-  useEffect(() => {
-    if (project.id && project.currentIteration) {
-      fetchStagesResult(project.currentIteration)
+    if ((project.id && project.currentIteration) || iteration?.needReload) {
+      getIteration({ pid: project.id, id: project.currentIteration?.id, more: true })
     }
-  }, [project.currentIteration])
+  }, [project.currentIteration, iteration?.needReload])
 
-  useEffect(() => {
-    if (iteration.prevIteration) {
-      fetchPrevIteration()
-    }
-  }, [iteration])
+  useEffect(() => iteration.prevIteration && getPrevIteration({
+    pid: project.id,
+    id: iteration.prevIteration
+  }), [iteration])
 
   useEffect(() => {
     iteration.id && rerenderStages()
   }, [iteration, prevIteration])
 
+  useEffect(() => createResult && fresh(), [createResult])
+
   const callback = useCallback(iterationHandle, [iteration])
 
-  function initStages() {
+  function getInitStages() {
     const stageList = StageList()
-    const ss = stageList.list.map(({ label, value, url, output, input }) => {
+    return stageList.list.map(({ label, value, url, output, input }) => {
       const slabel = `project.iteration.stage.${label}`
       return {
         value: value,
@@ -53,13 +55,12 @@ function Iteration({ project, fresh = () => { }, ...func }) {
         callback,
       }
     })
-
-    setStages(ss)
   }
 
   function rerenderStages() {
-    const ss = stages.map(stage => {
-      const result = iteration[`i${stage.output}`] || iteration[stage.output]
+    const initStages = getInitStages()
+    const ss = initStages.map(stage => {
+      const result = iteration[stage.output]
       const urlParams = {
         s0d: project.miningSet.id || 0,
         s0s: project.miningStrategy,
@@ -99,19 +100,7 @@ function Iteration({ project, fresh = () => { }, ...func }) {
     }
   }
 
-  async function fetchStagesResult(iteration) {
-    const iterationWithResult = await func.getIterationStagesResult(iteration)
-    setIteration(iterationWithResult)
-  }
-
-  async function fetchPrevIteration() {
-    const result = await func.getIteration(project.id, iteration.prevIteration)
-    if (result) {
-      setPrevIteration(result)
-    }
-  }
-
-  async function createIteration(data = {}) {
+  function createIteration(data = {}) {
     const params = {
       iterationRound: data.round,
       projectId: project.id,
@@ -119,33 +108,22 @@ function Iteration({ project, fresh = () => { }, ...func }) {
       testSet: project.testSet.id,
       miningSet: project.miningSet.id,
     }
-    const result = await func.createIteration(params)
-    if (result) {
-      fresh()
-    }
+    create(params)
   }
-  async function updateIteration(data = {}) {
+  function updateIteration(data = {}) {
     const params = {
       id: iteration.id,
       currentStage: data.stage.value,
     }
-    const result = await func.updateIteration(params)
-    if (result) {
-      fetchStagesResult(result)
-      // setIteration(result)
-    }
+    update(params)
   }
-  async function skipStage({ stage = {} }) {
+  function skipStage({ stage = {} }) {
     const params = {
       id: iteration.id,
       currentStage: stage.value,
       [stage.input]: 0,
     }
-    const result = await func.updateIteration(params)
-    if (result) {
-      fetchStagesResult(result)
-      // setIteration(result)
-    }
+    update(params)
   }
   return (
     <div className={s.iteration}>
@@ -160,43 +138,4 @@ function Iteration({ project, fresh = () => { }, ...func }) {
   )
 }
 
-const props = (state) => {
-  return {}
-}
-
-const actions = (dispacth) => {
-  return {
-    getIteration(pid, id) {
-      return dispacth({
-        type: 'iteration/getIteration',
-        payload: { pid, id },
-      })
-    },
-    getIterationStagesResult(iteration) {
-      return dispacth({
-        type: 'iteration/getIterationStagesResult',
-        payload: iteration,
-      })
-    },
-    updateIteration(params) {
-      return dispacth({
-        type: 'iteration/updateIteration',
-        payload: params,
-      })
-    },
-    createIteration(params) {
-      return dispacth({
-        type: 'iteration/createIteration',
-        payload: params,
-      })
-    },
-    queryFirstTrainDataset(group_id) {
-      return dispacth({
-        type: 'dataset/queryDatasets',
-        payload: { group_id, is_desc: false, limit: 1 }
-      })
-    }
-  }
-}
-
-export default connect(props, actions)(Iteration)
+export default Iteration

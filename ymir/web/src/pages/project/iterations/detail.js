@@ -16,39 +16,39 @@ function Detail({ project = {} }) {
   const [models, setModels] = useState([])
   const [_, getIteration] = useFetch('iteration/getIteration')
   const iid = project.currentIteration?.id
-  const iteration = useSelector(({ iteration }) => iteration.iteration[iid] || {})
+  const iteration = useSelector(({ iteration }) => iteration.iteration[iid])
 
   useEffect(() => {
     project.id && iid && getIteration({ pid: project.id, id: iid, more: true })
   }, [project.id, iid])
 
   useEffect(() => {
-    if (!project?.id) {
+    if (!project.id) {
       return
     }
-    setSettings(filterExsit([project.miningSet, project.testSet]))
-    if (!iteration.id) {
+    setSettings(filterExsit([project.miningSet?.id, project.testSet?.id]))
+    if (!iteration?.id) {
       return
     }
     const {
-      wholeMiningDataset,
-      trainUpdateDataset,
-      miningDataset,
-      miningResultDataset,
-      labelDataset,
-      testDataset,
-      trainingModel,
-    } = iteration
-    setSettings(filterExsit([wholeMiningDataset, testDataset]))
-    setIntermediations(filterExsit([miningDataset, miningResultDataset, labelDataset, trainUpdateDataset]))
-    setModels(filterExsit([trainingModel]))
+      wholeMiningSet,
+      trainUpdateSet,
+      miningSet,
+      miningResult,
+      labelSet,
+      testSet,
+      model,
+    } = iteration || {}
+    setSettings(filterExsit([wholeMiningSet, testSet]))
+    setIntermediations(filterExsit([miningSet, miningResult, labelSet, trainUpdateSet]))
+    setModels(filterExsit([model]))
   }, [iteration, project])
 
   return (
     <div className={s.detail}>
       <Panel list={settings} title={t('project.iteration.detail.settings.title')} />
-      { intermediations.length ? <Panel list={intermediations} title={t('project.iteration.detail.intermediations.title')} /> : null }
-      { models.length ? <Panel list={models} title={t('project.iteration.detail.models.title')} type='model' /> : null }
+      {intermediations.length ? <Panel list={intermediations} title={t('project.iteration.detail.intermediations.title')} /> : null}
+      {models.length ? <Panel list={models} title={t('project.iteration.detail.models.title')} type='model' /> : null}
     </div>
   )
 }
