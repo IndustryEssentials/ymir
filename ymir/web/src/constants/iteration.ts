@@ -1,4 +1,4 @@
-import { Iteration, } from "@/interface/project"
+import { Iteration, } from "@/interface/iteration"
 import { BackendData } from "@/interface/common"
 
 export enum Stages {

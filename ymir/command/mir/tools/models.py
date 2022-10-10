@@ -29,6 +29,7 @@ class ModelStorage(BaseModel):
     model_hash: str = ''
     stage_name: str = ''
     attachments: Dict[str, List[str]] = {}
+    package_version: str = Field(..., min_length=1)
 
     @property
     def class_names(self) -> List[str]:
