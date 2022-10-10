@@ -30,7 +30,7 @@ def det_evaluate_datasets(
         ground_truth=ground_truth,
         config=evaluate_config,
     )
-    if evaluation is None:
+    if evaluation.state != mirpb.EvaluationState.ES_READY:
         return None
 
     # evaluate with ck

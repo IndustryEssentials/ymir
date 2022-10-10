@@ -28,8 +28,6 @@ import numpy as np
 from mir.protos import mir_command_pb2 as mirpb
 from mir.tools import det_eval_utils
 from mir.tools.det_eval_utils import DetEvalMatchResult
-from mir.tools.code import MirCode
-from mir.tools.errors import MirRuntimeError
 
 
 def _voc_ap(rec: np.ndarray, prec: np.ndarray, use_07_metric: bool) -> float:
@@ -236,13 +234,8 @@ def _get_single_evaluate_element(prediction: mirpb.SingleTaskAnnotations, ground
 
 def det_evaluate(prediction: mirpb.SingleTaskAnnotations, ground_truth: mirpb.SingleTaskAnnotations,
                  config: mirpb.EvaluateConfig) -> mirpb.Evaluation:
-    if config.conf_thr < 0 or config.conf_thr > 1:
-        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS, error_message='invalid conf_thr')
-
     evaluation = mirpb.Evaluation()
     evaluation.config.CopyFrom(config)
-    if len(ground_truth.image_annotations) == 0 or len(prediction.image_annotations) == 0:
-        return evaluation
 
     class_ids = list(config.class_ids)
     iou_thrs = det_eval_utils.get_iou_thrs_array(config.iou_thrs_interval)
