@@ -87,6 +87,15 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
             .all()
         )
 
+    def get_multi_by_iteration(self, db: Session, *, iteration_id: int) -> List[ModelType]:
+        return (
+            db.query(self.model)
+            .filter(
+                self.model.iteration_id == iteration_id,  # type: ignore
+            )
+            .all()
+        )
+
     def create(self, db: Session, *, obj_in: CreateSchemaType) -> ModelType:
         obj_in_data = jsonable_encoder(obj_in)
         db_obj = self.model(**obj_in_data)  # type: ignore
