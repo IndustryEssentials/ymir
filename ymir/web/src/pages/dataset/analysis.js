@@ -280,7 +280,7 @@ function Analysis() {
             <div className={style.filters}>
               <Radio.Group
                 value={annotationsType}
-                options={options.map(opt => ({ ...opt, label: t(`dataset.analysis.annotations.${opt.value}`) }))}
+                options={options.map(opt => ({ ...opt, label: t(`annotation.${opt.value}`) }))}
                 onChange={({ target: { value } }) => setAnnotationType(value)}
               ></Radio.Group>
             </div>
