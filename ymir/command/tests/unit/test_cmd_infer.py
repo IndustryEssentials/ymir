@@ -5,6 +5,7 @@ import tarfile
 import time
 import unittest
 from unittest import mock
+from mir.version import YMIR_VERSION
 
 import yaml
 
@@ -90,7 +91,8 @@ class TestCmdInfer(unittest.TestCase):
                                                 'dst_rev': 'a'
                                             },
                                             stages={model_stage.stage_name: model_stage},
-                                            best_stage_name=model_stage.stage_name)
+                                            best_stage_name=model_stage.stage_name,
+                                            package_version=YMIR_VERSION)
 
         with open(os.path.join(self._models_location, 'ymir-info.yaml'), 'w') as f:
             yaml.dump(model_storage.dict(), f)
