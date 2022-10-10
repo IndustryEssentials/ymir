@@ -88,5 +88,7 @@ ymir-workplace*
 .mir_lock
 .local
 .pre-commit-config.yaml
+ymir/backend/alembic
+ymir/backend/static
 
 */updater/app/mir/protos/*.pyi

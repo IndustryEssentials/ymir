@@ -129,12 +129,13 @@ func (s *MongoServer) IndexDatasetData(
 		assetIDs = append(assetIDs, assetID)
 	}
 	sort.Strings(assetIDs)
-	for _, assetID := range assetIDs {
-		mirAssetDetail := s.buildMirAssetDetail(assetID, mirMetadatas, mirCks, gtAnnotations, predAnnotations)
-		_, err := collection.InsertOne(s.Ctx, mirAssetDetail)
-		if err != nil {
-			panic(err)
-		}
+	mirAssetDetails := make([]interface{}, len(assetIDs))
+	for idx, assetID := range assetIDs {
+		mirAssetDetails[idx] = s.buildMirAssetDetail(assetID, mirMetadatas, mirCks, gtAnnotations, predAnnotations)
+	}
+	_, err = collection.InsertMany(s.Ctx, mirAssetDetails)
+	if err != nil {
+		panic(err)
 	}
 	s.buildCollectionIndex(collection)
 	s.setDatasetExistence(collectionName, true, true)
