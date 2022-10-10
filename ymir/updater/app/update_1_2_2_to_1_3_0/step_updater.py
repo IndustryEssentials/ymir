@@ -12,6 +12,7 @@ from mir.tools import mir_storage_ops_122 as mso_src, mir_storage_ops_130 as mso
 
 from tools import get_repo_tags, remove_old_tag, get_model_hashes, get_model_class_names
 
+
 _MirDatasSrc = Tuple[pb_src.MirMetadatas, pb_src.MirAnnotations, pb_src.Task]
 _MirDatasDst = Tuple[pb_dst.MirMetadatas, pb_dst.MirAnnotations, pb_dst.Task]
 
@@ -92,8 +93,24 @@ def _update_annotations(mir_annotations_src: pb_src.MirAnnotations) -> pb_dst.Mi
 
 
 def _update_task(task_src: pb_src.Task, models_root: str) -> pb_dst.Task:
+    # task_dst = pb_dst.Task(type=task_src.type,
+    #                        name=task_src.name,
+    #                        task_id=task_src.task_id,
+    #                        timestamp=task_src.timestamp,
+    #                        return_code=task_src.return_code,
+    #                        return_msg=task_src.return_msg,
+    #                        new_types_added=task_src.new_types_added,
+    #                        serialized_task_parameters=task_src.serialized_task_parameters,
+    #                        serialized_executor_config=task_src.serialized_executor_config,
+    #                        src_revs=task_src.src_revs,
+    #                        dst_rev=task_src.dst_rev,
+    #                        executor=task_src.executor)
+    # for k, v in task_src.new_types.items():
+    #     task_dst.new_types[k] = v
     task_dst = pb_dst.Task()
-    ParseDict(MessageToDict(task_src, preserving_proto_field_name=True, use_integers_for_enums=True), task_dst)
+    ParseDict(MessageToDict(task_src, preserving_proto_field_name=True, use_integers_for_enums=True),
+              task_dst,
+              ignore_unknown_fields=True)
     if task_src.model.model_hash:
         task_dst.model.class_names[:] = get_model_class_names(task_src.serialized_executor_config)
     return task_dst
