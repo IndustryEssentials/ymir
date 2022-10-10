@@ -164,17 +164,18 @@ describe("models: dataset", () => {
     const saga = dataset.effects.batchDatasets
     const creator = {
       type: "batchDatasets",
-      payload: { pid: 23434, ids: [1,2] },
+      payload: { pid: 23434, ids: [1, 2] },
     }
     const recieved = [1, 3, 4].map(id => ds(id))
     const expected = recieved.map(item => transferDataset(item))
 
     const generator = saga(creator, { put, call })
     generator.next()
-    const end = generator.next({
+    generator.next({
       code: 0,
       result: recieved,
     })
+    const end = generator.next()
 
     expect(expected).toEqual(end.value)
     expect(end.done).toBe(true)
@@ -498,14 +499,14 @@ describe("models: dataset", () => {
 
   it("effects: evaluate", () => {
     const saga = dataset.effects.evaluate
-    const item = () => ({ ap: Math.random()})
-    const list = (list, it) => list.reduce((p, c) => ({ ...p, [c]: it ? it : item()}), {})
+    const item = () => ({ ap: Math.random() })
+    const list = (list, it) => list.reduce((p, c) => ({ ...p, [c]: it ? it : item() }), {})
     const keywords = ['dog', 'cat', 'person']
     const ious = [0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95].map(n => toFixed(n, 2))
     const iitems = () => ({
-        ci_evaluations: list(keywords),
-        ci_everage_evaluations: item(),
-      })
+      ci_evaluations: list(keywords),
+      ci_everage_evaluations: item(),
+    })
     const expected = {
       iou_evaluations: list(ious, iitems()),
       iou_everage_evaluations: iitems(),

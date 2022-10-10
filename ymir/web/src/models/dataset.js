@@ -40,11 +40,34 @@ export default {
         return payload
       }
     },
+    *batchLocalDatasets({ payload }, { call, put }) {
+      const { pid, ids, ck } = payload
+      const cache = yield put.resolve({
+        type: 'getLocalDatasets',
+        payload: ids,
+      })
+      if (ids.length === cache.length) {
+        return cache
+      }
+      const fetchIds = ids.filter(id => cache.every(ds => ds.id !== id))
+      const remoteDatasets = yield put.resolve({
+        type: 'batchDatasets',
+        payload: { pid, ids: fetchIds, ck }
+      })
+      return [...cache, ...remoteDatasets]
+    },
     *batchDatasets({ payload }, { call, put }) {
       const { pid, ids, ck } = payload
+      if (!ids?.length) {
+        return []
+      }
       const { code, result } = yield call(batchDatasets, pid, ids, ck)
       if (code === 0) {
         const datasets = result.map(ds => transferDataset(ds))
+        yield put({
+          type: 'updateLocalDatasets',
+          payload: datasets,
+        })
         return datasets || []
       }
     },
@@ -335,6 +358,19 @@ export default {
       const { ids = [], pid } = payload
       const datasets = yield put.resolve({ type: 'batchDatasets', payload: { pid, ids, ck: true } })
       return datasets || []
+    },
+    *updateLocalDatasets({ payload: datasets }, { put }) {
+      for (let i = 0; i < datasets.length; i++) {
+        const dataset = datasets[i]
+        yield put({
+          type: "UPDATE_DATASET",
+          payload: { id: dataset.id, dataset },
+        })
+      }
+    },
+    *getLocalDatasets({ payload: ids = [] }, { put, select }) {
+      const datasets = yield select(({ dataset }) => dataset.dataset)
+      return ids.map((id) => datasets[id]).filter(d => d)
     },
   },
   reducers: {

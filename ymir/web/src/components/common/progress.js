@@ -14,7 +14,8 @@ function RenderProgress(state, { id, progress, createTime, taskState, task = {} 
   if (!taskState) {
     return
   }
-  const percent = Math.floor(progress * 100)
+  const fixedProgress = ResultStates.VALID !== state && progress === 1 ? 0.99 : progress
+  const percent = Math.floor(fixedProgress * 100)
   const stateTag = <StateTag mode={simple ? 'icon' : 'text'} state={state} />
   return state === ResultStates.READY ? (
     <Row gutter={10} style={{ alignItems: 'center', padding: '0 7px', textAlign: 'left' }}>

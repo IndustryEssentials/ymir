@@ -24,7 +24,7 @@ function Prepare({ project = {}, fresh = () => { } }) {
   useEffect(() => {
     project.id && setId(project.id)
     project.id && getPrepareStagesResult({ id: project.id })
-  }, [project])
+  }, [project?.id])
 
   useEffect(() => setStages(generateStages(project, results)), [project, results])
 
