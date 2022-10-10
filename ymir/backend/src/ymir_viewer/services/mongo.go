@@ -37,8 +37,7 @@ func NewMongoServer(mongoCtx context.Context, mirDatabase BaseDatabase, metricsD
 		metricsDatabase: metricsDatabase,
 		Ctx:             mongoCtx,
 		metadataName:    "__collection_metadata__",
-		// metadataName:    "__collection_metadata__",
-		metricsPrefix: "__metrics__",
+		metricsPrefix:   "__metrics__",
 	}
 }
 
