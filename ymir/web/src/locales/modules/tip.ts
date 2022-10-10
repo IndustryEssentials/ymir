@@ -12,12 +12,12 @@ const tip = {
     en: "Image description for type, function etc.",
   },
   "tip.task.fusion.includelable": {
-    cn: "期望生成的数据集包含选中的标签值",
-    en: "Filtering tips: the generated dataset  expect to contain the selected keyword",
+    cn: "期望生成的数据集包含选中的类别",
+    en: "Filtering tips: the generated dataset  expect to contain the selected classes",
   },
   "tip.task.fusion.excludelable": {
-    cn: "期望生成的数据集不包含选中的标签值",
-    en: "Excluding tips: the generated dataset expect to not contain the selected keyword",
+    cn: "期望生成的数据集不包含选中的类别",
+    en: "Excluding tips: the generated dataset expect to not contain the selected classes",
   },
   "tip.task.fusion.sampling": {
     cn: "期望的最大采样数量",

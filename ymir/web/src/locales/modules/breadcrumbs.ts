@@ -20,7 +20,7 @@ const breadcrumbs = {
   'breadcrumbs.model.diagnose': { cn: '模型诊断', en: 'Model Diagnose', },
   'breadcrumbs.model.verify': { cn: '模型验证', en: 'Model Verification', },
   'breadcrumbs.history': { cn: '历史树', en: 'History Tree', },
-  'breadcrumbs.keyword': { cn: '标签管理', en: 'Keyword List', },
+  'breadcrumbs.keyword': { cn: '类别管理', en: 'Class List', },
   'breadcrumbs.configure.permission': { cn: '权限配置', en: 'Permission', },
   'breadcrumbs.user.info': { cn: '个人中心', en: 'User', },
   'breadcrumbs.images': { cn: '我的镜像', en: 'My Images', },

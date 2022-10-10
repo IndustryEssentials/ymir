@@ -35,11 +35,11 @@ const project = {
   'project.add.form.keyword.required': { en: 'Training classes is required', cn: '训练目标为必选项', },
   'project.add.form.keyword.placeholder': {
     en: 'Please select training classes, or input new classes, separated by comma',
-    cn: '请输入训练目标，可选择已有的或输入新标签，英文逗号分隔',
+    cn: '请输入训练目标，可选择已有的或输入新类别，英文逗号分隔',
   },
   'project.add.form.keyword.tip': {
-    en: 'The target tags used for training need to match the categories in the user\'s tag list. If the input tag does not exist in the current user\'s tag list, it will be prompted to add it to the list when creating the project.',
-    cn: '用于训练的目标标签，需要和用户的标签列表里的类别一致，如果输入的标签在当前用户的标签列表中不存在，则会在创建项目时提示将其加入列表。',
+    en: 'The target classes need to match user\'s classes. If the input tag does not exist in user\'s classes, it will be prompted to add it to the list when creating the project.',
+    cn: '用于训练的目标类别，需要和用户的类别一致，如果输入的类别在当前用户的类别列表中不存在，则会在创建项目时提示将其加入列表。',
   },
   'project.add.form.enableIteration': { en: 'Open A Semi-automated Iterative Process', cn: '开启半自动化迭代流程', },
   'project.add.form.enableIteration.tip': {
@@ -130,10 +130,10 @@ const project = {
     cn: '删除项目会将项目中的所有资源（数据集、模型）删除，请谨慎操作！',
   },
   'project.add.confirm.title': {
-    en: 'Whether this new keywords will add to your KEYWORD LIST?',
-    cn: '标签管理列表未查询到下列标签，是否要添加至标签列表',
+    en: 'Whether this new keywords will add to your Classes?',
+    cn: '类别管理列表未查询到下列类别，是否要添加至类别列表',
   },
-  'project.add.confirm.ok': { en: 'Add Keywords and Create Project', cn: '添加标签并创建项目', },
+  'project.add.confirm.ok': { en: 'Add Classes and Create Project', cn: '添加类别并创建项目', },
   'project.add.confirm.cancel': { en: 'Cancel Create Project', cn: '取消创建项目', },
   'project.empty.label': {
     en: 'You can manage datasets, train models, and create data iterations.',
