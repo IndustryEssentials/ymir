@@ -55,8 +55,8 @@ function SampleRates({ keywords, dataset, negative, label, progressWidth = 0.5 }
         {t('task.train.btn.calc.negative')}
       </Button>
     </div> : null}
-    <KeywordRates title="Ground Truth" stats={addNegativeInfo(stats.gt)} progressWidth={progressWidth} />
-    <KeywordRates title="Prediction" stats={addNegativeInfo(stats.pred)} progressWidth={progressWidth} />
+    <KeywordRates title={t('annotation.gt')} stats={addNegativeInfo(stats.gt)} progressWidth={progressWidth} />
+    <KeywordRates title={t('annotation.pred')} stats={addNegativeInfo(stats.pred)} progressWidth={progressWidth} />
   </div>
 }
 

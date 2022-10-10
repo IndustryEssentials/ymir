@@ -61,7 +61,6 @@ const model = {
   "model.diagnose.tab.visualization": { cn: '图像可视化', en: 'Image Visualization', },
   "model.diagnose.form.model": { cn: '诊断模型', en: 'Diagnosing Models', },
   'model.diagnose.form.testset': { cn: '测试集', en: 'Testing Datasets', },
-  'model.diagnose.form.gt': { cn: '真值(Ground Truth)', en: 'Ground Truth', },
   'model.diagnose.form.confidence': { cn: '置信度', en: 'Confidence', },
   'model.diagnose.form.iou': { cn: '重叠度(IoU)', en: 'IoU(Intersection over Union)', },
   'model.diagnose.restart': { cn: '重新比对', en: 'Compare Again', },

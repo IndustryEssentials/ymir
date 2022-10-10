@@ -15,7 +15,7 @@ function DatasetDetail({ dataset = {} }) {
   const history = useHistory()
   const { cks = {}, tags = {}, inferClass } = dataset
 
-  const renderKeywords = (anno, label = 'ground truth') => {
+  const renderKeywords = (anno, label = t('annotation.gt')) => {
     if (!anno) {
       return
     }

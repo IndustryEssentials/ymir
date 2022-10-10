@@ -4,7 +4,7 @@ const common = {
   'common.top.menu.community': { cn: '开源社区', en: 'GitHub', },
   'common.top.menu.home': { cn: "首页", en: "Home", },
   'common.top.menu.project': { cn: "项目管理", en: "Project", },
-  'common.top.menu.keyword': { cn: "类别管理", en: "Class", },
+  'common.top.menu.keyword': { cn: "类别管理", en: "Classes", },
   'common.top.menu.configure': { cn: "系统配置", en: "Configure", },
   'common.top.menu.permission': { cn: "权限配置", en: "Permission", },
   'common.top.menu.image': { cn: "我的镜像", en: "My Images", },
@@ -87,6 +87,8 @@ const common = {
   "common.desc": { en: "Description", cn: "描述", },
   "common.reset": { en: "Reset", cn: "重置", },
   "common.menu.docs": { en: "Documents", cn: "说明文档", },
+  "annotation.gt": { en: "GT", cn: "标准值", },
+  "annotation.pred": { en: "Prediction", cn: "预测标注", },
 }
 
 export default common

@@ -90,7 +90,7 @@ const dataset = {
   "dataset.add.form.tip.format.detail": { cn: "查看标注格式(.xml)及meta.yaml格式", en: "View more about annotation format or meta.yaml", },
   "dataset.add.form.tip.structure": {
     cn: "图片文件需放入images文件夹内，标准值标注文件需放入gt文件夹内，模型推理标注文件需放入pred文件夹内。gt和pred都是可选的。文件结构如下：{br}{pic}{br}{detail}",
-    en: "image -> images; gt -> ground truth annotations; pred -> predictions. gt and pred is optional. structure: {br}{pic}"
+    en: "image -> images; gt -> GT annotations; pred -> predictions. gt and pred is optional. structure: {br}{pic}"
   },
   "dataset.add.form.path.tip": {
     cn: `1. 将数据文件夹存放到ymir工作空间目录下的ymir-sharing目录，如 /home/ymir/ymir-workspace/ymir-sharing/VOC2012, 输入基于ymir-sharing相对路径：VOC2012{br}
@@ -162,8 +162,6 @@ const dataset = {
   "dataset.analysis.title.keyword_ratio": { cn: "类别占比", en: "Classes Ratio", },
   "dataset.analysis.bar.asset.tooltip": { cn: " 占比：{ratio} 数量：{amount} 张", en: " Ratio：{ratio} Amount：{amount}", },
   "dataset.analysis.bar.anno.tooltip": { cn: " 占比：{ratio} 数量：{amount} 个", en: " Ratio：{ratio} Amount：{amount}", },
-  "dataset.analysis.annotations.gt": { cn: "GT标注", en: "Ground Truth Annotations", },
-  "dataset.analysis.annotations.pred": { cn: "预测标注", en: "Predicted Annotations", },
   "dataset.train.all.train.target": { cn: "将训练集的所有类别作为训练目标", en: "All training dataset classes as training target", },
   'dataset.assets.keyword.selector.types.keywords': { en: 'Classes', cn: '类别' },
   'dataset.assets.keyword.selector.types.cks': { en: 'Asset Tag', cn: '数据标签' },

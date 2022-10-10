@@ -129,7 +129,7 @@ function Compare({ ...func }) {
       title: t("dataset.column.name"),
       dataIndex: "name",
       render: (name, { id }) => {
-        const extra = id === gt.id ? <span className={s.extra}>Ground Truth</span> : null
+        const extra = id === gt.id ? <span className={s.extra}>{t('annotation.gt')}</span> : null
         return <>{name} {extra}</>
       },
       ellipsis: {

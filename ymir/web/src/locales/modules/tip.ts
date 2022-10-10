@@ -28,12 +28,12 @@ const tip = {
     en: "The images of the training set and the validation set cannot be duplicated.",
   },
   "tip.task.filter.keywords": {
-    cn: "训练目标标签必须同时包含在训练集和验证集中",
-    en: "Both the training and validation sets must contain target keyword",
+    cn: "训练目标类别必须同时包含在训练集和验证集中",
+    en: "Both the training and validation sets must contain target classes",
   },
   "tip.task.train.image": {
     cn: "平台提供默认训练镜像，同时支持开发者自主开发并接入。镜像会附带默认配置参数，可按需调整。",
-    en: "Default training image supported, and you can add your own training image. Training docker image have its own senior config, you can modify it for training task.",
+    en: "Default training image supported, and you can add your own training docker image. Training docker image have its own senior config, you can modify it for training task.",
   },
   "tip.task.mining.image": {
     cn: "平台提供默认挖掘镜像，同时支持开发者自主开发并接入。镜像会附带默认配置参数，可按需调整。",
@@ -100,16 +100,16 @@ const tip = {
     en: "The account can be used to view the labeling progress on the labeling platform, please register in advance",
   },
   "tip.task.filter.labeltarget": {
-    cn: "仅支持在当前用户标签列表中选择，如果当前列表没有期望标注的目标标签，请前往标签列表添加",
-    en: "Only support the current user‘s keyword list to choose,if the current list does not have the target keyword, please go to the keyword list to add ",
+    cn: "仅支持在当前用户类别中选择，如果没有期望标注的目标类别，请前往类别管理添加",
+    en: "Only support the current user‘s classes, please add if user's classes does not include the target classes",
   },
   "tip.task.filter.datasets": {
     cn: "公共数据集为系统内置数据集，支持用户复用",
     en: "Dataset tips: public dataset is the system built-in dataset, support user to reuse",
   },
   "tip.task.filter.alias": {
-    cn: "和主名表示同一类标签，当导入的数据集标签为别名时，界面展示为主名",
-    en: "The same type of keyword as the main name, when the imported dataset contains an alias keyword, the interface shows the keyword's main name",
+    cn: "和主名表示同一类类别，当导入的数据集类别为别名时，界面展示为主名",
+    en: "As same meaning as the main class, when the imported dataset contains an alias, the main class show",
   },
   "project.add.trainset.tip": {
     cn: '每轮迭代都会更新该训练集的训练数据，需要包含目标标注',
