@@ -22,19 +22,19 @@ def det_evaluate_with_pb(
     evaluation = mirpb.Evaluation()
     evaluation.config.CopyFrom(config)
     if not config.class_ids:
-        logging.info('skip evaluation: no evaluate class ids')
+        logging.warning('skip evaluation: no evaluate class ids')
         evaluation.state = mirpb.EvaluationState.ES_NO_CLASS_IDS
         return evaluation
     gt_cnt = len(ground_truth.image_annotations)
     pred_cnt = len(prediction.image_annotations)
     if gt_cnt == 0 or pred_cnt == 0:
-        logging.info('skip evaluation: no gt or pred')
+        logging.warning('skip evaluation: no gt or pred')
         evaluation.state = mirpb.EvaluationState.ES_NO_GT_OR_PRED
         return evaluation
     if (len(config.class_ids) > mir_settings.MAX_EVALUATION_CLASS_IDS_COUNT
             or max(gt_cnt, pred_cnt) > mir_settings.MAX_EVALUATION_ASSETS_COUNT):
-        logging.info(f"skip evaluation: too many class ids, gt or pred, cis: {len(config.class_ids)}, "
-                     f"pred: {pred_cnt}, gt: {gt_cnt}")
+        logging.warning(f"skip evaluation: too many class ids, gt or pred, cis: {len(config.class_ids)}, "
+                        f"pred: {pred_cnt}, gt: {gt_cnt}")
         evaluation.state = mirpb.EvaluationState.ES_EXCEEDS_LIMIT
         return evaluation
 
