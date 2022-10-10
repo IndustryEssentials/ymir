@@ -18,8 +18,7 @@ class MirStorageOps():
                             as_dict: bool = False) -> Any:
         rev = revs_parser.join_rev_tid(mir_branch, mir_task_id)
 
-        mir_pb_type = mir_storage.mir_type(ms)
-        mir_storage_data = mir_pb_type()
+        mir_storage_data = _mir_type(ms)()
         mir_storage_data.ParseFromString(exodus.read_mir(mir_root=mir_root, rev=rev,
                                                          file_name=mir_storage.mir_path(ms)))
 
@@ -51,3 +50,14 @@ class MirStorageOps():
                                          preserving_proto_field_name=True,
                                          use_integers_for_enums=True,
                                          including_default_value_fields=True)
+
+
+def _mir_type(ms: 'mirpb.MirStorage.V') -> Any:
+    MIR_TYPE = {
+        mirpb.MirStorage.MIR_METADATAS: mirpb.MirMetadatas,
+        mirpb.MirStorage.MIR_ANNOTATIONS: mirpb.MirAnnotations,
+        mirpb.MirStorage.MIR_KEYWORDS: mirpb.MirKeywords,
+        mirpb.MirStorage.MIR_TASKS: mirpb.MirTasks,
+        mirpb.MirStorage.MIR_CONTEXT: mirpb.MirContext,
+    }
+    return MIR_TYPE[ms]

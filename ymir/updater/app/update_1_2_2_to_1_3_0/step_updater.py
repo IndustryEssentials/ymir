@@ -10,7 +10,7 @@ from mir.tools import revs_parser
 from mir.protos import mir_command_122_pb2 as pb_src, mir_command_130_pb2 as pb_dst
 from mir.tools import mir_storage_ops_122 as mso_src, mir_storage_ops_130 as mso_dst
 
-from tools import get_repo_tags, remove_old_tag, get_model_hashes
+from tools import get_repo_tags, remove_old_tag, get_model_hashes, get_model_class_names
 
 _MirDatasSrc = Tuple[pb_src.MirMetadatas, pb_src.MirAnnotations, pb_src.Task]
 _MirDatasDst = Tuple[pb_dst.MirMetadatas, pb_dst.MirAnnotations, pb_dst.Task]
@@ -57,8 +57,17 @@ def _save(mir_root: str, rev_tid: revs_parser.TypRevTid, datas_dst: _MirDatasDst
 
 def _update_metadatas(mir_metadatas_src: pb_src.MirMetadatas, assets_root: str) -> pb_dst.MirMetadatas:
     mir_metadatas_dst = pb_dst.MirMetadatas()
-    ParseDict(MessageToDict(mir_metadatas_src, preserving_proto_field_name=True, use_integers_for_enums=True),
-              mir_metadatas_dst)
+    for asset_id, attr_src in mir_metadatas_src.attributes.items():
+        attr_dst = pb_dst.MetadataAttributes(tvt_type=attr_src.tvt_type,
+                                             asset_type=attr_src.asset_type,
+                                             width=attr_src.width,
+                                             height=attr_src.height,
+                                             image_channels=attr_src.image_channels,
+                                             byte_size=attr_src.byte_size)
+        attr_dst.timestamp.start = attr_src.timestamp.start
+        attr_dst.timestamp.duration = attr_src.timestamp.duration
+
+        mir_metadatas_dst.attributes[asset_id].CopyFrom(attr_dst)
     return mir_metadatas_dst
 
 
@@ -84,11 +93,10 @@ def _update_annotations(mir_annotations_src: pb_src.MirAnnotations) -> pb_dst.Mi
 
 def _update_task(task_src: pb_src.Task, models_root: str) -> pb_dst.Task:
     task_dst = pb_dst.Task()
+    ParseDict(MessageToDict(task_src, preserving_proto_field_name=True, use_integers_for_enums=True), task_dst)
+    if task_src.model.model_hash:
+        task_dst.model.class_names[:] = get_model_class_names(task_src.serialized_executor_config)
     return task_dst
-
-
-def update_models(models_root: str) -> None:
-    logging.info(f"updating models: {models_root}, 122 -> 130")
 
 
 def _update_task_annotations(task_annotations_src: pb_src.SingleTaskAnnotations,
@@ -103,6 +111,9 @@ def _update_task_annotations(task_annotations_src: pb_src.SingleTaskAnnotations,
                       object_annotation_dst)
             single_image_annotations_dst.boxes.append(object_annotation_dst)
 
+
+def update_models(models_root: str) -> None:
+    logging.info(f"updating models: {models_root}, 122 -> 130")
 
 # MetadataAttributes:
 # 	remove: dataset_name

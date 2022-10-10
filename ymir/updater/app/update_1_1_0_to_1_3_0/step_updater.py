@@ -33,13 +33,12 @@ from mir.protos import mir_command_110_pb2 as pb_src, mir_command_130_pb2 as pb_
 from mir.tools import mir_storage_ops_110 as mso_src, mir_storage_ops_130 as mso_dst
 from mir.version import ymir_model_salient_version, DEFAULT_YMIR_SRC_VERSION
 
-from tools import get_repo_tags, remove_old_tag, get_model_hashes
+from tools import get_repo_tags, remove_old_tag, get_model_hashes, get_model_class_names
 
 _MirDatasSrc = Tuple[pb_src.MirMetadatas, pb_src.MirAnnotations, pb_src.Task]
 _MirDatasDst = Tuple[pb_dst.MirMetadatas, pb_dst.MirAnnotations, pb_dst.Task]
 
 _DEFAULT_STAGE_NAME = 'default_best_stage'
-_SRC_YMIR_VER = '1.1.0'
 _DST_YMIR_VER = '1.3.0'
 
 
@@ -165,7 +164,7 @@ def _update_task(task_src: pb_src.Task, models_root: str) -> pb_dst.Task:
         stage_dst.files[:] = _get_model_file_names(os.path.join(models_root, model_src.model_hash))
         model_dst.stages[_DEFAULT_STAGE_NAME].CopyFrom(stage_dst)
 
-        model_dst.class_names[:] = _get_model_class_names(task_src.serialized_executor_config)
+        model_dst.class_names[:] = get_model_class_names(task_src.serialized_executor_config)
         task_dst.model.CopyFrom(model_dst)
 
     # evaluation: no need to update
@@ -177,14 +176,6 @@ def _get_model_file_names(model_path: str) -> List[str]:
     with tarfile.open(model_path, 'r') as f:
         file_names = [x.name for x in f.getmembers() if x.name != 'ymir-info.yaml']
     return file_names
-
-
-def _get_model_class_names(serialized_executor_config: str) -> List[str]:
-    if not serialized_executor_config:
-        return []
-
-    executor_config = yaml.safe_load(serialized_executor_config)
-    return executor_config.get('class_names', [])
 
 
 # update models root
