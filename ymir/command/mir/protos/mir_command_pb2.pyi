@@ -274,6 +274,46 @@ IGNORED = ConfusionMatrixType.V(12)
 global___ConfusionMatrixType = ConfusionMatrixType
 
 
+class EvaluationState(_EvaluationState, metaclass=_EvaluationStateEnumTypeWrapper):
+    pass
+class _EvaluationState:
+    V = typing.NewType('V', builtins.int)
+class _EvaluationStateEnumTypeWrapper(google.protobuf.internal.enum_type_wrapper._EnumTypeWrapper[_EvaluationState.V], builtins.type):
+    DESCRIPTOR: google.protobuf.descriptor.EnumDescriptor = ...
+    ES_NOT_STARTED = EvaluationState.V(0)
+    """evaluation process has not started yet"""
+
+    ES_DONE = EvaluationState.V(1)
+    """evaluation finished successfully"""
+
+    ES_NO_GT_OR_PRED = EvaluationState.V(2)
+    """evaluation not finished because there's no gt or pred"""
+
+    ES_EXCEEDS_LIMIT = EvaluationState.V(3)
+    """evaluation not finished because there're too many images or too many class ids"""
+
+    ES_NO_TARGET = EvaluationState.V(4)
+    """evaluation not finished because there's no evaluate target"""
+
+
+ES_NOT_STARTED = EvaluationState.V(0)
+"""evaluation process has not started yet"""
+
+ES_DONE = EvaluationState.V(1)
+"""evaluation finished successfully"""
+
+ES_NO_GT_OR_PRED = EvaluationState.V(2)
+"""evaluation not finished because there's no gt or pred"""
+
+ES_EXCEEDS_LIMIT = EvaluationState.V(3)
+"""evaluation not finished because there're too many images or too many class ids"""
+
+ES_NO_TARGET = EvaluationState.V(4)
+"""evaluation not finished because there's no evaluate target"""
+
+global___EvaluationState = EvaluationState
+
+
 class MirMetadatas(google.protobuf.message.Message):
     """/ ========== metadatas.mir =========="""
     DESCRIPTOR: google.protobuf.descriptor.Descriptor = ...
@@ -1040,6 +1080,7 @@ class Evaluation(google.protobuf.message.Message):
     DATASET_EVALUATION_FIELD_NUMBER: builtins.int
     MAIN_CK_FIELD_NUMBER: builtins.int
     SUB_CKS_FIELD_NUMBER: builtins.int
+    STATE_FIELD_NUMBER: builtins.int
     @property
     def config(self) -> global___EvaluateConfig: ...
     @property
@@ -1048,15 +1089,17 @@ class Evaluation(google.protobuf.message.Message):
     def main_ck(self) -> global___SingleDatasetEvaluation: ...
     @property
     def sub_cks(self) -> google.protobuf.internal.containers.MessageMap[typing.Text, global___SingleDatasetEvaluation]: ...
+    state: global___EvaluationState.V = ...
     def __init__(self,
         *,
         config : typing.Optional[global___EvaluateConfig] = ...,
         dataset_evaluation : typing.Optional[global___SingleDatasetEvaluation] = ...,
         main_ck : typing.Optional[global___SingleDatasetEvaluation] = ...,
         sub_cks : typing.Optional[typing.Mapping[typing.Text, global___SingleDatasetEvaluation]] = ...,
+        state : global___EvaluationState.V = ...,
         ) -> None: ...
     def HasField(self, field_name: typing_extensions.Literal["config",b"config","dataset_evaluation",b"dataset_evaluation","main_ck",b"main_ck"]) -> builtins.bool: ...
-    def ClearField(self, field_name: typing_extensions.Literal["config",b"config","dataset_evaluation",b"dataset_evaluation","main_ck",b"main_ck","sub_cks",b"sub_cks"]) -> None: ...
+    def ClearField(self, field_name: typing_extensions.Literal["config",b"config","dataset_evaluation",b"dataset_evaluation","main_ck",b"main_ck","state",b"state","sub_cks",b"sub_cks"]) -> None: ...
 global___Evaluation = Evaluation
 
 class EvaluateConfig(google.protobuf.message.Message):
