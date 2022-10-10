@@ -10,10 +10,10 @@ import yaml
 
 from mir.commands import training
 from mir.protos import mir_command_pb2 as mirpb
-from mir.tools import mir_repo_utils, mir_storage_ops, models, settings as mir_settings, mir_storage
+from mir.tools import mir_storage_ops, models, settings as mir_settings, mir_storage
 from mir.tools.code import MirCode
-from mir.tools.errors import MirRuntimeError
 from mir.tools.mir_storage import sha1sum_for_file
+from mir.version import ymir_model_salient_version, YMIR_VERSION
 from tests import utils as test_utils
 
 
@@ -235,7 +235,8 @@ class TestCmdTraining(unittest.TestCase):
                                  },
                                  stages={mss.stage_name: mss},
                                  best_stage_name=mss.stage_name,
-                                 model_hash='xyz')
+                                 model_hash='xyz',
+                                 package_version=ymir_model_salient_version(YMIR_VERSION))
         return ms
 
     # public: test cases
