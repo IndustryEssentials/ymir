@@ -19,6 +19,11 @@ server {
     # use 'listen 80 deferred;' for Linux
     # use 'listen 80 accept_filter=httpready;' for FreeBSD
     client_max_body_size 4G;
+    
+    gzip  on;
+    gzip_min_length 1k; 
+    gzip_comp_level 5;
+    gzip_types text/plain application/javascript application/x-javascript text/javascript text/xml text/css;
 
     # set the correct host(s) for your site
     server_name localhost;
