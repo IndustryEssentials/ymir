@@ -71,7 +71,7 @@ def _evaluate_on_asset_ids(gt: mirpb.SingleTaskAnnotations, pred: mirpb.SingleTa
         ground_truth=gt,
         config=evaluate_config,
     )
-    if evaluation is not None:
+    if evaluation.state == mirpb.EvaluationState.ES_READY:
         target.CopyFrom(evaluation.dataset_evaluation)
 
 
