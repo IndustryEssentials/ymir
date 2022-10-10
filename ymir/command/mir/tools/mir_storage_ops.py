@@ -50,8 +50,7 @@ class MirStorageOps():
             ground_truth=mir_annotations.ground_truth,
             config=evaluate_config,
         )
-        if evaluation:
-            mir_tasks.tasks[mir_tasks.head_task_id].evaluation.CopyFrom(evaluation)
+        mir_tasks.tasks[mir_tasks.head_task_id].evaluation.CopyFrom(evaluation)
         mir_datas[mirpb.MirStorage.MIR_TASKS] = mir_tasks
 
         # gen mir_keywords
