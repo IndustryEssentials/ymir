@@ -188,7 +188,13 @@ func (s *MongoServer) buildMirAssetDetail(
 func (s *MongoServer) postIndexDatasetData(collection *mongo.Collection, collectionName string) {
 	defer tools.TimeTrack(time.Now(), collectionName)
 
-	indexedMetadata := constants.IndexedDatasetMetadata{HistAssets: &map[string]*constants.MirHist{}, HistAnnosGt: &map[string]*constants.MirHist{}, HistAnnosPred: &map[string]*constants.MirHist{}, Ready: true, Exist: true}
+	indexedMetadata := constants.IndexedDatasetMetadata{
+		HistAssets:    &map[string]*constants.MirHist{},
+		HistAnnosGt:   &map[string]*constants.MirHist{},
+		HistAnnosPred: &map[string]*constants.MirHist{},
+		Ready:         true,
+		Exist:         true,
+	}
 	for histKey, hist := range constants.ConstAssetsMirHist {
 		assetHist := hist
 		assetHist.BuildMirHist(s.queryHistogram(
