@@ -280,29 +280,35 @@ class _EvaluationState:
     V = typing.NewType('V', builtins.int)
 class _EvaluationStateEnumTypeWrapper(google.protobuf.internal.enum_type_wrapper._EnumTypeWrapper[_EvaluationState.V], builtins.type):
     DESCRIPTOR: google.protobuf.descriptor.EnumDescriptor = ...
-    ES_READY = EvaluationState.V(0)
+    ES_NOT_SET = EvaluationState.V(0)
+    """evaluate not started"""
+
+    ES_READY = EvaluationState.V(1)
     """evaluation result ready to use"""
 
-    ES_NO_GT_OR_PRED = EvaluationState.V(1)
+    ES_NO_GT_OR_PRED = EvaluationState.V(2)
     """evaluation not finished because there's no gt or pred"""
 
-    ES_EXCEEDS_LIMIT = EvaluationState.V(2)
+    ES_EXCEEDS_LIMIT = EvaluationState.V(3)
     """evaluation not finished because there're too many images or too many class ids"""
 
-    ES_NO_CLASS_IDS = EvaluationState.V(3)
+    ES_NO_CLASS_IDS = EvaluationState.V(4)
     """evaluation not finished because there's no evaluate class ids"""
 
 
-ES_READY = EvaluationState.V(0)
+ES_NOT_SET = EvaluationState.V(0)
+"""evaluate not started"""
+
+ES_READY = EvaluationState.V(1)
 """evaluation result ready to use"""
 
-ES_NO_GT_OR_PRED = EvaluationState.V(1)
+ES_NO_GT_OR_PRED = EvaluationState.V(2)
 """evaluation not finished because there's no gt or pred"""
 
-ES_EXCEEDS_LIMIT = EvaluationState.V(2)
+ES_EXCEEDS_LIMIT = EvaluationState.V(3)
 """evaluation not finished because there're too many images or too many class ids"""
 
-ES_NO_CLASS_IDS = EvaluationState.V(3)
+ES_NO_CLASS_IDS = EvaluationState.V(4)
 """evaluation not finished because there's no evaluate class ids"""
 
 global___EvaluationState = EvaluationState

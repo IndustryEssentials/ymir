@@ -351,14 +351,16 @@ message FloatPoint {
 }
 
 enum EvaluationState {
+    // evaluate not started
+    ES_NOT_SET = 0;
     // evaluation result ready to use
-    ES_READY = 0;
+    ES_READY = 1;
     // evaluation not finished because there's no gt or pred
-    ES_NO_GT_OR_PRED = 1;
+    ES_NO_GT_OR_PRED = 2;
     // evaluation not finished because there're too many images or too many class ids
-    ES_EXCEEDS_LIMIT = 2;
+    ES_EXCEEDS_LIMIT = 3;
     // evaluation not finished because there's no evaluate class ids
-    ES_NO_CLASS_IDS = 3;
+    ES_NO_CLASS_IDS = 4;
 }
 
 /// ========== context.mir ==========

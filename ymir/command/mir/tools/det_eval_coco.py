@@ -549,4 +549,5 @@ def det_evaluate(prediction: mirpb.SingleTaskAnnotations, ground_truth: mirpb.Si
     single_dataset_evaluation.conf_thr = config.conf_thr
     evaluation.dataset_evaluation.CopyFrom(single_dataset_evaluation)
 
+    evaluation.state = mirpb.EvaluationState.ES_READY
     return evaluation

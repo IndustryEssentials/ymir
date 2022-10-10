@@ -262,4 +262,5 @@ def det_evaluate(prediction: mirpb.SingleTaskAnnotations, ground_truth: mirpb.Si
                                               iou_thr=iou_thrs[0])
     det_eval_utils.calc_averaged_evaluations(dataset_evaluation=single_dataset_evaluation, class_ids=class_ids)
 
+    evaluation.state = mirpb.EvaluationState.ES_READY
     return evaluation
