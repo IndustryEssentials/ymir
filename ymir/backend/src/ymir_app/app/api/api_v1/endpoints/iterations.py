@@ -8,6 +8,7 @@ from app import crud, models, schemas
 from app.api import deps
 from app.api.errors.errors import IterationNotFound
 from app.libs.iterations import calculate_mining_progress
+from app.libs.iteration_steps import initialize_steps
 from app.libs.tasks import create_single_task
 
 from common_utils.labels import UserLabels
@@ -28,6 +29,7 @@ def create_iteration(
     iteration = crud.iteration.create_with_user_id(db, user_id=current_user.id, obj_in=obj_in)
     logger.info("[create iteration] iteration record created: %s", iteration)
     crud.project.update_current_iteration(db, project_id=obj_in.project_id, iteration_id=iteration.id)
+    initialize_steps(db, iteration.id)
     return {"result": iteration}
 
 
@@ -114,7 +116,7 @@ def list_iteration_steps(
     current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Any:
     steps = crud.iteration_step.get_multi_by_iteration(db, iteration_id=iteration_id)
-    return steps
+    return {"result": steps}
 
 
 @router.post(
@@ -142,7 +144,7 @@ def start_iteration_step(
     step = crud.iteration_step.record_result(
         db, id=step_id, task_id=task_in_db.id, result_model_id=result_model_id, result_dataset_id=result_dataset_id
     )
-    return step
+    return {"result": step}
 
 
 @router.post(
@@ -157,4 +159,4 @@ def finish_iteration_step(
     current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Any:
     step = crud.iteration_step.finish(db, id=step_id)
-    return step
+    return {"result": step}
