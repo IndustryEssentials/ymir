@@ -119,6 +119,10 @@ function Train({ allDatasets, datasetCache, ...func }) {
       !iterationContext &&
       !fromCopy &&
       setAllKeywords()
+      if (!trainDataset && fromCopy){
+         setSelectedKeywords([])
+         form.setFieldsValue({ keywords: []})
+      }
   }, [trainDataset])
 
   useEffect(() => {
