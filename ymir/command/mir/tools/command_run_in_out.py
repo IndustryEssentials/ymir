@@ -58,7 +58,9 @@ def _cleanup_dir_sub_items(dir: str, ignored_items: Set[str]) -> None:
             continue
 
         item_path = os.path.join(dir, item)
-        if os.path.isdir(item_path):
+        if os.path.islink(item_path):
+            os.unlink(item_path)
+        elif os.path.isdir(item_path):
             shutil.rmtree(item_path)
         elif os.path.isfile(item_path):
             os.remove(item_path)
