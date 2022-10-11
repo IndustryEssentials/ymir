@@ -53,5 +53,5 @@ class IterationStepOut(Common):
     result: IterationStep
 
 
-class IterationStepsOut(IterationStepInDBBase):
+class IterationStepsOut(Common):
     result: List[IterationStep]
