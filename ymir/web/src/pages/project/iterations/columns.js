@@ -47,7 +47,7 @@ function showTitle(str) {
     dataIndex: "keywords",
     render: (_, record) => {
       const { gt, pred, } = record
-      const renderLine = (keywords, label = 'ground truth') => <div>
+      const renderLine = (keywords, label = t('annotation.gt')) => <div>
         <div>{label}:</div>
         {t('dataset.column.keyword.label', {
           keywords: keywords.join(', '),

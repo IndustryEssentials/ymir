@@ -10,6 +10,9 @@ function SampleRates({ keywords, dataset, negative, label, progressWidth = 0.5 }
   const { id: pid } = useParams()
   const [did, setDid] = useState(null)
   const [stats, getNegativeKeywords, setStats] = useFetch('dataset/getNegativeKeywords', {}, true)
+  const [loading, setLoading] = useState(false)
+
+  useEffect(() => setLoading(false), [stats])
 
   useEffect(() => {
     dataset?.id && setDid(dataset.id)
@@ -42,6 +45,7 @@ function SampleRates({ keywords, dataset, negative, label, progressWidth = 0.5 }
   }, [did, keywords])
 
   function fetchKeywords(projectId, keywords, dataset) {
+    setLoading(true)
     getNegativeKeywords({ projectId, keywords, dataset })
   }
 
@@ -51,12 +55,13 @@ function SampleRates({ keywords, dataset, negative, label, progressWidth = 0.5 }
       <Button type="primary"
         disabled={!did || !keywords?.length}
         onClick={() => fetchKeywords(pid, keywords, did)}
+        loading={loading}
       >
         {t('task.train.btn.calc.negative')}
       </Button>
     </div> : null}
-    <KeywordRates title="Ground Truth" stats={addNegativeInfo(stats.gt)} progressWidth={progressWidth} />
-    <KeywordRates title="Prediction" stats={addNegativeInfo(stats.pred)} progressWidth={progressWidth} />
+    <KeywordRates title={t('annotation.gt')} stats={addNegativeInfo(stats.gt)} progressWidth={progressWidth} />
+    <KeywordRates title={t('annotation.pred')} stats={addNegativeInfo(stats.pred)} progressWidth={progressWidth} />
   </div>
 }
 

@@ -299,6 +299,7 @@ message Evaluation {
     SingleDatasetEvaluation dataset_evaluation = 3;
     SingleDatasetEvaluation main_ck = 4;
     map<string, SingleDatasetEvaluation> sub_cks = 5;
+    EvaluationState state = 6;
 
     reserved 2;
 }
@@ -347,6 +348,19 @@ message FloatPoint {
     float x = 1;
     float y = 2;
     float z = 3;
+}
+
+enum EvaluationState {
+    // evaluate not started
+    ES_NOT_SET = 0;
+    // evaluation result ready to use
+    ES_READY = 1;
+    // evaluation not finished because there's no gt or pred
+    ES_NO_GT_OR_PRED = 2;
+    // evaluation not finished because there're too many images or too many class ids
+    ES_EXCEEDS_LIMIT = 3;
+    // evaluation not finished because there's no evaluate class ids
+    ES_NO_CLASS_IDS = 4;
 }
 
 /// ========== context.mir ==========

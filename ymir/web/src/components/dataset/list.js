@@ -177,7 +177,7 @@ function Datasets({ pid, project = {}, iterations, groups, datasetList, query, v
         title: showTitle("dataset.column.keyword"),
         dataIndex: "keywords",
         render: (_, { gt, pred, state, }) => {
-          const renderLine = (keywords, label = 'ground truth') => <div>
+          const renderLine = (keywords, label = 'GT') => <div>
             <div>{label}:</div>
             {t('dataset.column.keyword.label', {
               keywords: keywords.join(', '),

@@ -1,8 +1,9 @@
 import logging
 import time
-from typing import Optional
 
-from mir.tools import det_eval_coco, det_eval_voc, det_eval_utils
+from mir.tools import det_eval_coco, det_eval_voc, det_eval_utils, settings as mir_settings
+from mir.tools.code import MirCode
+from mir.tools.errors import MirRuntimeError
 from mir.protos import mir_command_pb2 as mirpb
 
 
@@ -11,23 +12,43 @@ def det_evaluate_with_pb(
         ground_truth: mirpb.SingleTaskAnnotations,
         config: mirpb.EvaluateConfig,
         mode: str = 'voc',  # voc or coco
-) -> Optional[mirpb.Evaluation]:
+) -> mirpb.Evaluation:
+    if config.conf_thr < 0 or config.conf_thr > 1:
+        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS, error_message='invalid conf_thr')
+
     if not config.class_ids:
         config.class_ids.extend(prediction.eval_class_ids)
+
+    evaluation = mirpb.Evaluation()
+    evaluation.config.CopyFrom(config)
     if not config.class_ids:
-        return None
+        logging.warning('skip evaluation: no evaluate class ids')
+        evaluation.state = mirpb.EvaluationState.ES_NO_CLASS_IDS
+        return evaluation
+    gt_cnt = len(ground_truth.image_annotations)
+    pred_cnt = len(prediction.image_annotations)
+    if gt_cnt == 0 or pred_cnt == 0:
+        logging.warning('skip evaluation: no gt or pred')
+        evaluation.state = mirpb.EvaluationState.ES_NO_GT_OR_PRED
+        return evaluation
+    if (len(config.class_ids) > mir_settings.MAX_EVALUATION_CLASS_IDS_COUNT
+            or max(gt_cnt, pred_cnt) > mir_settings.MAX_EVALUATION_ASSETS_COUNT):
+        logging.warning(f"skip evaluation: too many class ids, gt or pred, cis: {len(config.class_ids)}, "
+                        f"pred: {pred_cnt}, gt: {gt_cnt}")
+        evaluation.state = mirpb.EvaluationState.ES_EXCEEDS_LIMIT
+        return evaluation
 
     start_time = time.time()
+
     det_eval_utils.reset_default_confusion_matrix(task_annotations=prediction,
                                                   cm=mirpb.ConfusionMatrixType.NotSet)
     det_eval_utils.reset_default_confusion_matrix(task_annotations=ground_truth,
                                                   cm=mirpb.ConfusionMatrixType.NotSet)
-    mid_time = time.time()
-    logging.info(f"|-det_evaluate_with_pb-reset costs {(mid_time - start_time):.2f}s.")
     eval_model_name = det_eval_voc if mode == 'voc' else det_eval_coco
     evaluation = eval_model_name.det_evaluate(  # type: ignore
         prediction=prediction, ground_truth=ground_truth, config=config)
-    logging.info(f"|-det_evaluate_with_pb-eval costs {(time.time() - mid_time):.2f}s.")
+
+    logging.info(f"|-det_evaluate_with_pb-eval costs {(time.time() - start_time):.2f}s.")
 
     _show_evaluation(evaluation=evaluation)
 
