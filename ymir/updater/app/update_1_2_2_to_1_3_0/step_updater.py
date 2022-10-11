@@ -1,20 +1,27 @@
 import logging
 import os
 import re
+import shutil
+import tarfile
+import time
 from typing import Tuple
 
 from google.protobuf.json_format import MessageToDict, ParseDict
+import yaml
 
 from id_definition.task_id import IDProto
-from mir.tools import revs_parser
+from mir.tools import revs_parser, models
 from mir.protos import mir_command_122_pb2 as pb_src, mir_command_130_pb2 as pb_dst
 from mir.tools import mir_storage_ops_122 as mso_src, mir_storage_ops_130 as mso_dst
+from mir.version import ymir_model_salient_version, DEFAULT_YMIR_SRC_VERSION
 
 from tools import get_repo_tags, remove_old_tag, get_model_hashes, get_model_class_names
 
 
 _MirDatasSrc = Tuple[pb_src.MirMetadatas, pb_src.MirAnnotations, pb_src.Task]
 _MirDatasDst = Tuple[pb_dst.MirMetadatas, pb_dst.MirAnnotations, pb_dst.Task]
+
+_DST_YMIR_VER = '1.3.0'
 
 
 # update user repo
@@ -53,7 +60,18 @@ def _update(datas_src: _MirDatasSrc, assets_root: str, models_root: str) -> _Mir
 
 
 def _save(mir_root: str, rev_tid: revs_parser.TypRevTid, datas_dst: _MirDatasDst) -> None:
-    pass
+    # remove old tag
+    remove_old_tag(mir_root=mir_root, tag=rev_tid.rev_tid)
+    # save
+    mir_metadatas_dst, mir_annotations_dst, task_dst = datas_dst
+    mso_dst.MirStorageOps.save_and_commit(mir_root=mir_root,
+                                          mir_branch=rev_tid.rev,
+                                          his_branch=rev_tid.rev,
+                                          mir_datas={
+                                              pb_dst.MirStorage.MIR_METADATAS: mir_metadatas_dst,
+                                              pb_dst.MirStorage.MIR_ANNOTATIONS: mir_annotations_dst,
+                                          },
+                                          task=task_dst)
 
 
 def _update_metadatas(mir_metadatas_src: pb_src.MirMetadatas, assets_root: str) -> pb_dst.MirMetadatas:
@@ -93,26 +111,32 @@ def _update_annotations(mir_annotations_src: pb_src.MirAnnotations) -> pb_dst.Mi
 
 
 def _update_task(task_src: pb_src.Task, models_root: str) -> pb_dst.Task:
-    # task_dst = pb_dst.Task(type=task_src.type,
-    #                        name=task_src.name,
-    #                        task_id=task_src.task_id,
-    #                        timestamp=task_src.timestamp,
-    #                        return_code=task_src.return_code,
-    #                        return_msg=task_src.return_msg,
-    #                        new_types_added=task_src.new_types_added,
-    #                        serialized_task_parameters=task_src.serialized_task_parameters,
-    #                        serialized_executor_config=task_src.serialized_executor_config,
-    #                        src_revs=task_src.src_revs,
-    #                        dst_rev=task_src.dst_rev,
-    #                        executor=task_src.executor)
-    # for k, v in task_src.new_types.items():
-    #     task_dst.new_types[k] = v
-    task_dst = pb_dst.Task()
-    ParseDict(MessageToDict(task_src, preserving_proto_field_name=True, use_integers_for_enums=True),
-              task_dst,
-              ignore_unknown_fields=True)
+    task_dst = pb_dst.Task(type=task_src.type,
+                           name=task_src.name,
+                           task_id=task_src.task_id,
+                           timestamp=task_src.timestamp,
+                           return_code=task_src.return_code,
+                           return_msg=task_src.return_msg,
+                           new_types_added=task_src.new_types_added,
+                           serialized_task_parameters=task_src.serialized_task_parameters,
+                           serialized_executor_config=task_src.serialized_executor_config,
+                           src_revs=task_src.src_revs,
+                           dst_rev=task_src.dst_rev,
+                           executor=task_src.executor)
+    for k, v in task_src.new_types.items():
+        task_dst.new_types[k] = v
+
+    # model
     if task_src.model.model_hash:
-        task_dst.model.class_names[:] = get_model_class_names(task_src.serialized_executor_config)
+        model_src = task_src.model
+        model_dst = task_dst.model
+        ParseDict(MessageToDict(model_src, preserving_proto_field_name=True, use_integers_for_enums=True),
+                  model_dst,
+                  ignore_unknown_fields=True)
+        model_dst.class_names[:] = get_model_class_names(task_src.serialized_executor_config)
+
+    # evaluations: no need to update
+
     return task_dst
 
 
@@ -131,34 +155,49 @@ def _update_task_annotations(task_annotations_src: pb_src.SingleTaskAnnotations,
 
 def update_models(models_root: str) -> None:
     logging.info(f"updating models: {models_root}, 122 -> 130")
+    model_work_dir = os.path.join(models_root, 'work_dir')
 
-# MetadataAttributes:
-# 	remove: dataset_name
-# 	add: origin_filename = empty
+    for model_hash in get_model_hashes(models_root):
+        logging.info(f"model hash: {model_hash}")
 
-# MirAnnotations:
-# 	remove: head_task_id
+        if os.path.isdir(model_work_dir):
+            shutil.rmtree(model_work_dir)
+        os.makedirs(model_work_dir, exist_ok=False)
 
-# SingleTaskAnnotations:
-# 	add: type = AnnoType.AT_DET_BOX
-# 	add: task_class_ids = empty
-# 	add: map_id_color = empty
-# 	add: eval_class_ids = empty
-# 	add: model = empty
-# 	add: executor_config = empty
+        model_path = os.path.join(models_root, model_hash)
 
-# SingleImageAnnotations:
-# 	move: annotations -> boxes
-# 	add: polygons = empty
-# 	add: mask = empty
-# 	add: img_class_ids = empty
+        # extract
+        with tarfile.open(model_path, 'r') as f:
+            f.extractall(model_work_dir)
 
-# Annotation:
-# 	add: class_name = empty
-# 	add: polygon = empty
+        os.remove(model_path)
+        with open(os.path.join(model_work_dir, 'ymir-info.yaml'), 'r') as f:
+            ymir_info = yaml.safe_load(f.read())
+        _check_model(ymir_info)
 
-# ModelMeta:
-# 	add: class_names = (from serialized executor config)
+        # check model producer version
+        package_version = ymir_info.get('package_version', DEFAULT_YMIR_SRC_VERSION)
+        if ymir_model_salient_version(package_version) == ymir_model_salient_version(_DST_YMIR_VER):
+            logging.info('  no need to update, skip')
+            continue
 
-# Evaluation: no need to update
-# EvaluateConfig: no need to update
+        # update ymir-info.yaml
+        ymir_info['package_version'] = _DST_YMIR_VER
+
+        # pack again
+        model_storage = models.ModelStorage.parse_obj(ymir_info)
+        new_model_hash = models.pack_and_copy_models(model_storage=model_storage,
+                                                     model_dir_path=model_work_dir,
+                                                     model_location=model_work_dir)  # avoid hash conflict
+        shutil.move(os.path.join(model_work_dir, new_model_hash), model_path)
+
+    # cleanup
+    shutil.rmtree(model_work_dir)
+
+
+def _check_model(ymir_info: dict) -> None:
+    # `executor_config` and `stages` should be dict
+    executor_config = ymir_info['executor_config']
+    stages = ymir_info['stages']
+    if not executor_config or not isinstance(executor_config, dict) or not stages or not isinstance(stages, dict):
+        raise ValueError('Invalid ymir-info.yaml for model version 1.2.2')
