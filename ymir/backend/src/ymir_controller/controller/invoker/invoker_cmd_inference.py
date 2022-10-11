@@ -27,7 +27,7 @@ class InferenceCMDInvoker(BaseMirControllerInvoker):
 
     @classmethod
     def prepare_inference_assets(cls, asset_dir: str, dst_dir: str) -> str:
-        dst_assets = os.path.join(asset_dir, "assets")
+        dst_assets = os.path.join(dst_dir, "assets")
         os.makedirs(dst_assets, exist_ok=True)
 
         media_files = []
