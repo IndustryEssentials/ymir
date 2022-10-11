@@ -308,7 +308,7 @@ class CmdTrain(base.BaseCommand):
                 asset_search=asset_dir,
                 asset_replace="/in/assets",
                 anno_search=work_dir_pred,
-                anno_replace="/in/prediction",
+                anno_replace="/in/predictions",
             )
 
         logging.info("starting train docker container")
