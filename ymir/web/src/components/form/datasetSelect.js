@@ -6,20 +6,23 @@ import t from '@/utils/t'
 import useFetch from '@/hooks/useFetch'
 import EmptyState from '@/components/empty/dataset'
 
-const defaultLabelRender = ({ name, versionName, assetCount}) => {
+const defaultLabelRender = ({ name, versionName, assetCount }) => {
   const label = `${name} ${versionName}(assets: ${assetCount})`
-  return <span title={label}>{label}</span>
+  return name ? <span title={label}>{label}</span> : null
 }
 
 const DatasetSelect = ({
   pid, filter = [], allowEmpty, filterGroup = [],
   filters, value, onChange = () => { }, renderLabel = defaultLabelRender,
-  onReady = () => {},
+  onReady = () => { },
   extra, changeByUser, ...resProps
 }) => {
   const [options, setOptions] = useState([])
   const datasets = useSelector(({ dataset }) => dataset.allDatasets)
   const [_, getDatasets] = useFetch('dataset/queryAllDatasets', [], true)
+  const [val, setVal] = useState(value)
+
+  useEffect(() => setVal(value), [value])
 
   useEffect(() => {
     pid && fetchDatasets()
@@ -31,13 +34,18 @@ const DatasetSelect = ({
 
   useEffect(() => {
     let selected = null
-    if (value && !changeByUser) {
+    if (options.length && value && !changeByUser) {
       if (resProps.mode) {
         selected = options.filter(opt => value.includes(opt.value))
       } else {
         selected = options.find(opt => value === opt.value)
       }
-      onChange(value, selected)
+      if (selected) {
+        onChange(value, selected)
+      } else {
+        onChange(undefined, null)
+        setVal(undefined)
+      }
     }
   }, [options])
 
@@ -71,7 +79,7 @@ const DatasetSelect = ({
 
   const select = <ConfigProvider renderEmpty={() => <EmptyState />}>
     <Select
-      value={value}
+      value={val}
       placeholder={t('task.train.form.training.datasets.placeholder')}
       onChange={onChange}
       showArrow

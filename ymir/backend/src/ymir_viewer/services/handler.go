@@ -39,10 +39,10 @@ type BaseMongoServer interface {
 	) *constants.QueryAssetsResult
 	QueryDatasetStats(
 		mirRepo *constants.MirRepo,
-		context *protos.MirContext,
 		classIDs []int,
 		requireAssetsHist bool,
 		requireAnnotationsHist bool,
+		result *constants.QueryDatasetStatsResult,
 	) *constants.QueryDatasetStatsResult
 	MetricsQuerySignals(
 		collectionSuffix string,
@@ -173,18 +173,10 @@ func (v *ViewerHandler) GetDatasetMetaCountsHandler(
 		go v.loadAndIndexAssets(mirRepo)
 	}
 
-	return v.fillupDatasetUniverseFields(mirRepo, result)
-}
-
-func (v *ViewerHandler) fillupDatasetUniverseFields(
-	mirRepo *constants.MirRepo,
-	result *constants.QueryDatasetStatsResult,
-) *constants.QueryDatasetStatsResult {
 	mirTasks := v.mirLoader.LoadSingleMirData(mirRepo, constants.MirfileTasks).(*protos.MirTasks)
 	task := mirTasks.Tasks[mirTasks.HeadTaskId]
 	result.NewTypesAdded = task.NewTypesAdded
 
-	mirContext := v.mirLoader.LoadSingleMirData(mirRepo, constants.MirfileContext).(*protos.MirContext)
 	result.TotalAssetsFileSize = int64(mirContext.TotalAssetMbytes)
 	for k, v := range mirContext.CksCnt {
 		result.CksCountTotal[k] = int64(v.Cnt)
@@ -229,14 +221,14 @@ func (v *ViewerHandler) GetDatasetStatsHandler(
 	if len(classIDs) < 1 && !requireAssetsHist && !requireAnnotationsHist {
 		panic("same result as dataset_meta_count, should use lightweight interface instead.")
 	}
-	v.loadAndIndexAssets(mirRepo)
-	mirContext := v.mirLoader.LoadSingleMirData(mirRepo, constants.MirfileContext).(*protos.MirContext)
-	result := v.mongoServer.QueryDatasetStats(mirRepo, mirContext, classIDs, requireAssetsHist, requireAnnotationsHist)
-	result.QueryContext.RepoIndexReady = true
-	result.QueryContext.RepoIndexReady = true
 
-	// Backfill task and context info, to align with GetDatasetMetaCountsHandler result.
-	return v.fillupDatasetUniverseFields(mirRepo, result)
+	v.loadAndIndexAssets(mirRepo)
+	// Use metadata_handler to fill basic info.
+	result := v.GetDatasetMetaCountsHandler(mirRepo)
+	// Two fields need indexed data:
+	// 1. negative counts (classIDs)
+	// 2. build histogram (requireAssetsHist, requireAnnotationsHist)
+	return v.mongoServer.QueryDatasetStats(mirRepo, classIDs, requireAssetsHist, requireAnnotationsHist, result)
 }
 
 func (v *ViewerHandler) GetDatasetDupHandler(

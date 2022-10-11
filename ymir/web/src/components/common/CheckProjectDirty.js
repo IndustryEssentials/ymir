@@ -1,24 +1,29 @@
-import { Button, Row, Col, Space, Tag } from "antd"
-import useProjectStatus from "@/hooks/useProjectStatus"
+import { Button, Row, Col } from "antd"
+import useFetch from "@/hooks/useFetch"
 import { useEffect, useState } from "react"
+import { useSelector } from 'umi'
 
 import t from '@/utils/t'
 import s from './common.less'
 import { FailIcon, SuccessIcon } from "./icons"
 
 const CheckProjectDirty = ({ pid, initialCheck, callback = () => { }, ...props }) => {
-  const { checkDirty } = useProjectStatus(pid)
-  const [isDirty, setDirty] = useState(null)
+  const effect = 'project/checkStatus'
+  const [{ is_dirty: isDirty }, check] = useFetch(effect, {}, true)
   const [checked, setChecked] = useState(false)
+  const loading = useSelector(({ loading }) => loading.effects[effect])
+
   useEffect(() => {
     initialCheck && checkStatus()
   }, [])
 
-  async function checkStatus() {
-    const dirty = await checkDirty()
-    setDirty(dirty)
+  useEffect(() => {
+    checked && callback(isDirty)
+  }, [checked])
+
+  function checkStatus() {
+    check(pid)
     setChecked(true)
-    callback(dirty)
   }
 
   return <Row className={s.checkPanel} gutter={20} {...props}>
@@ -35,7 +40,7 @@ const CheckProjectDirty = ({ pid, initialCheck, callback = () => { }, ...props }
       </Col>
       : null}
     <Col>
-      <Button className={s.checkBtn} onClick={checkStatus}>{t(`common.action.check${checked ? '.again' : ''}`)}</Button>
+      <Button className={s.checkBtn} onClick={checkStatus} loading={loading}>{t(`common.action.check${checked ? '.again' : ''}`)}</Button>
     </Col>
   </Row>
 }

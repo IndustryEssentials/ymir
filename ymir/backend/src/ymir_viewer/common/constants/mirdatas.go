@@ -163,8 +163,8 @@ type DatasetStatsElement struct {
 	EvalClassIDs []int32 `json:"eval_class_ids"`
 
 	// Annotations
-	AnnotationsCount int64               `json:"annos_count"`
-	AnnotationsHist  map[string]*MirHist `json:"annos_hist"`
+	AnnotationsCount int64                `json:"annos_count"`
+	AnnotationsHist  *map[string]*MirHist `json:"annos_hist"`
 
 	// Tags
 	TagsCountTotal map[string]int64            `json:"tags_count_total"`
@@ -180,9 +180,9 @@ type QueryDatasetStatsContext struct {
 
 type QueryDatasetStatsResult struct {
 	// Assets
-	TotalAssetsCount    int64               `json:"total_assets_count"`
-	TotalAssetsFileSize int64               `json:"total_assets_mbytes"`
-	AssetsHist          map[string]*MirHist `json:"assets_hist"`
+	TotalAssetsCount    int64                `json:"total_assets_count"`
+	TotalAssetsFileSize int64                `json:"total_assets_mbytes"`
+	AssetsHist          *map[string]*MirHist `json:"assets_hist"`
 
 	// Annotations
 	Gt   DatasetStatsElement `json:"gt"`
@@ -197,20 +197,26 @@ type QueryDatasetStatsResult struct {
 	QueryContext  QueryDatasetStatsContext `json:"query_context"`
 }
 
+type IndexedDatasetMetadata struct {
+	Exist bool `json:"exist"     bson:"exist"`
+	Ready bool `json:"ready"     bson:"ready"`
+
+	HistAssets    *map[string]*MirHist `json:"hist_assets"     bson:"hist_assets"`
+	HistAnnosGt   *map[string]*MirHist `json:"hist_annos_gt"   bson:"hist_annos_gt"`
+	HistAnnosPred *map[string]*MirHist `json:"hist_annos_pred" bson:"hist_annos_pred"`
+}
+
 func NewQueryDatasetStatsResult() *QueryDatasetStatsResult {
 	queryResult := QueryDatasetStatsResult{
-		AssetsHist: map[string]*MirHist{},
 		Gt: DatasetStatsElement{
-			ClassIDsCount:   map[int]int64{},
-			AnnotationsHist: map[string]*MirHist{},
-			TagsCount:       map[string]map[string]int64{},
-			TagsCountTotal:  map[string]int64{},
+			ClassIDsCount:  map[int]int64{},
+			TagsCount:      map[string]map[string]int64{},
+			TagsCountTotal: map[string]int64{},
 		},
 		Pred: DatasetStatsElement{
-			ClassIDsCount:   map[int]int64{},
-			AnnotationsHist: map[string]*MirHist{},
-			TagsCount:       map[string]map[string]int64{},
-			TagsCountTotal:  map[string]int64{},
+			ClassIDsCount:  map[int]int64{},
+			TagsCount:      map[string]map[string]int64{},
+			TagsCountTotal: map[string]int64{},
 		},
 
 		CksCount:      map[string]map[string]int64{},
