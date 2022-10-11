@@ -24,24 +24,28 @@ type Config struct {
 }
 
 type MirHist struct {
-	SparseBuckets *map[string]int32 `json:"-"`
-	LowerBNDs     []float64         `json:"-"`
-	Ops           interface{}       `json:"-"`
+	SparseBuckets *map[string]int32    `json:"-" bson:"-"`
+	LowerBNDs     []float64            `json:"-" bson:"-"`
+	Ops           interface{}          `json:"-" bson:"-"`
+	Output        *[]map[string]string `json:"-" bson:"output"`
 }
 
-// MarshalJSON return json as array, not a sub-field of struct.
-func (h *MirHist) MarshalJSON() ([]byte, error) {
-	output := []map[string]string{}
+func (h *MirHist) BuildMirHist(bucket *map[string]int32) {
+	h.Output = &[]map[string]string{}
+	h.SparseBuckets = bucket
 	for _, LowerBND := range h.LowerBNDs {
 		histKey := fmt.Sprintf("%.2f", LowerBND)
 		value := "0"
 		if data, ok := (*h.SparseBuckets)[histKey]; ok {
 			value = fmt.Sprintf("%d", data)
 		}
-		output = append(output, map[string]string{"x": histKey, "y": value})
+		*h.Output = append(*h.Output, map[string]string{"x": histKey, "y": value})
 	}
+}
 
-	return json.Marshal(&output)
+// MarshalJSON return json as array, not a sub-field of struct.
+func (h *MirHist) MarshalJSON() ([]byte, error) {
+	return json.Marshal(&h.Output)
 }
 
 const (

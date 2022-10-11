@@ -23,6 +23,11 @@ func InitViperConfig() constants.Config {
 	if err != nil {
 		panic(err)
 	}
+	err = viper.BindEnv("MongoDataDBCache", "MONGODB_USE_CACHE")
+	if err != nil {
+		panic(err)
+	}
+
 
 	viper.SetConfigName("config")
 	viper.SetConfigType("yml")
