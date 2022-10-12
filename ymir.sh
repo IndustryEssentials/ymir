@@ -22,7 +22,7 @@ ENV_FILE='.env'
 
 stop() {
 docker-compose -f docker-compose.yml -f docker-compose.dev.yml -f docker-compose.label_studio.yml \
--f docker-compose.labelfree.yml -f docker-compose.fiftyone.yml down
+-f docker-compose.labelfree.yml down
 }
 
 pre_start() {
@@ -124,18 +124,10 @@ else
 fi
 }
 
-set_fiftyone() {
-if ! cat ${ENV_FILE} | grep -oE "${FIELD_FIFTYONE_HOST_IP}=http://\b([0-9]{1,3}\.){3}[0-9]{1,3}\b"; then
-    echo "fiftyone's IP is not set, expected format: http://xxx.xxx.xxx.xxx"
-    exit
-fi
-}
-
 start() {
 check_permission
 pre_start
 
-set_fiftyone
 start_label_tool
 
 if [[ $1 == 'dev' ]]; then
@@ -152,8 +144,6 @@ if [[ $1 == 'dev' ]]; then
 else
     printf '\nin prod mode, starting service.\n'
 fi
-
-docker-compose -f docker-compose.fiftyone.yml up -d
 
 docker-compose up -d
 }

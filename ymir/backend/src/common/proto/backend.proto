@@ -127,7 +127,6 @@ message ReqCreateTask {
     TaskReqCopyData copy = 105;
     TaskReqLabeling labeling = 106;
     TaskReqImportModel import_model = 107;
-    TaskReqVisualization visualization = 108;
 }
 
 message TaskReqTraining {
@@ -186,13 +185,6 @@ message TaskReqLabeling {
 
 message TaskReqImportModel {
     string model_package_path = 1;
-}
-
-message TaskReqVisualization {
-    string vis_tool_id = 1;
-    repeated string in_dataset_names = 2;
-    float iou_thr = 3;
-    float conf_thr = 4;
 }
 
 message RespCMDInference {
