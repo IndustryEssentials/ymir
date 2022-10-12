@@ -119,6 +119,21 @@ def list_iteration_steps(
     return {"result": steps}
 
 
+@router.get(
+    "/{iteration_id}/steps/{step_id}",
+    response_model=schemas.IterationStepOut,
+)
+def get_iteration_step(
+    *,
+    db: Session = Depends(deps.get_db),
+    iteration_id: int = Path(...),
+    step_id: int = Path(...),
+    current_user: models.User = Depends(deps.get_current_active_user),
+) -> Any:
+    step = crud.iteration_step.get(db, step_id)
+    return {"result": step}
+
+
 @router.post(
     "/{iteration_id}/steps/{step_id}/start",
     response_model=schemas.IterationStepOut,
