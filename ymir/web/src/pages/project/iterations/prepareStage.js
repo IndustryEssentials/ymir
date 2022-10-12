@@ -88,6 +88,7 @@ export default function Stage({ pid, stage, form, project = {}, result, update }
     </Row>
 
   return <Form.Item tooltip={t(stage.tip)} label={t(stage.label)} required={!stage.option}>
+    {runningDataset(result) ? <>running</> : <>
     <div>{!candidateList && !project[stage.field] ? renderEmptyState(stage.type) : null}</div>
     <Form.Item
       hidden={!candidateList && !project[stage.field]}
@@ -97,7 +98,7 @@ export default function Stage({ pid, stage, form, project = {}, result, update }
       preserve={null}
     >
       <Selection pid={pid} changeByUser filters={filters} onReady={onSelectionReady} allowClear={!!stage.option} />
-    </Form.Item>
+    </Form.Item> </>}
     {runningDataset(result) ? <div className="state">{RenderProgress(result?.state, result, true)}</div> : null}
   </Form.Item>
 }
