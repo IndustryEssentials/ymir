@@ -275,16 +275,16 @@ class CmdTrain(base.BaseCommand):
         anno_format, asset_format = exporter.parse_export_type(type_str=executor_config.get('export_format', ''))
         ec = mirpb.ExportConfig(asset_format=asset_format,
                                 asset_dir=asset_dir,
-                                asset_index_file=os.path.join(work_dir_in, "idx-assets.tcv"),
+                                asset_index_file=os.path.join(work_dir_in, "idx-assets.tsv"),
                                 asset_index_prefix="/in/assets",
                                 media_location=media_location,
                                 need_sub_folder=True,
                                 anno_format=anno_format,
                                 gt_dir=work_dir_gt,
-                                gt_index_file=os.path.join(work_dir_in, "idx-gt.tcv"),
+                                gt_index_file=os.path.join(work_dir_in, "idx-gt.tsv"),
                                 gt_index_prefix="/in/annotations",
                                 pred_dir=work_dir_pred,
-                                pred_index_file=os.path.join(work_dir_in, "idx-pred.tcv"),
+                                pred_index_file=os.path.join(work_dir_in, "idx-pred.tsv"),
                                 pred_index_prefix="/in/predictions",
                                 tvt_index_dir=work_dir_in,)
         export_code = exporter.export_mirdatas_to_dir(
