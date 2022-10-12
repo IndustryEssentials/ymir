@@ -10,6 +10,7 @@ from pydantic import BaseModel, dataclasses, validator, root_validator
 from app.api.errors.errors import (
     DatasetEvaluationNotFound,
     DatasetEvaluationMissingAnnotation,
+    DatasetIndexNotReady,
     ModelNotFound,
     FailedToParseVizResponse,
     VizError,
@@ -39,8 +40,7 @@ class DatasetAnnotation:
     def from_dict(cls, data: Dict, total_assets_count: int, user_labels: UserLabels) -> "DatasetAnnotation":
         ave_annos_count = round(data["annos_count"] / total_assets_count, 2) if total_assets_count else None
         keywords = {
-            user_labels.main_name_for_id(int(class_id)): count
-            for class_id, count in data["class_ids_count"].items()
+            user_labels.main_name_for_id(int(class_id)): count for class_id, count in data["class_ids_count"].items()
         }
         eval_class_ids = user_labels.main_name_for_ids(data["eval_class_ids"]) if data.get("eval_class_ids") else None
         return cls(
@@ -72,6 +72,8 @@ class DatasetInfo:
     hist: Optional[Dict] = None
     total_assets_mbytes: Optional[int] = None
 
+    repo_index_ready: Optional[bool] = None
+
     @classmethod
     def from_dict(cls, res: Dict, user_labels: UserLabels) -> "DatasetInfo":
         total_assets_count = res["total_assets_count"]
@@ -91,6 +93,7 @@ class DatasetInfo:
             total_assets_count=total_assets_count,
             hist=res.get("assets_hist") or None,
             total_assets_mbytes=res.get("total_assets_mbytes"),
+            repo_index_ready=res.get("query_context", {}).get("repo_index_ready"),
         )
 
 
@@ -319,7 +322,9 @@ class VizClient:
         model_info = ViewerModelInfoResponse.parse_obj(res).dict()
         return model_info
 
-    def get_dataset_info(self, dataset_hash: str, user_labels: Optional[UserLabels] = None) -> Dict:
+    def get_dataset_info(
+        self, dataset_hash: str, user_labels: Optional[UserLabels] = None, check_index_status: bool = False
+    ) -> Dict:
         """
         viewer: GET /dataset_meta_count
         """
@@ -328,6 +333,9 @@ class VizClient:
         resp = self.get_resp(url)
         res = self.parse_resp(resp)
         dataset_info = DatasetInfo.from_dict(res, user_labels=user_labels)
+        if check_index_status and not dataset_info.repo_index_ready:
+            logger.error("[viewer] dataset index not ready, try again later")
+            raise DatasetIndexNotReady()
         return asdict(dataset_info)
 
     def get_dataset_analysis(

@@ -144,12 +144,14 @@ export function transferDatasetAnalysis(data: BackendData): DatasetAnalysis {
 }
 
 export function transferAsset(data: BackendData, keywords: Array<string>): Asset {
-  const transferAnnotations = (annotations = [], gt = false) =>
-    annotations.map((an: BackendData) => transferAnnotation(an, gt))
+  const colors = generateDatasetColors(keywords || data.keywords)
+  const transferAnnotations = (annotations = [], gt = false) => 
+    annotations.map((an: BackendData) => transferAnnotation(an, gt, colors[an.keyword]))
+
   const annotations = [
     ...transferAnnotations(data.gt, true),
     ...transferAnnotations(data.pred),
-  ].map(annotation => ({ ...annotation, color: generateColor(annotation.keyword, keywords || data.keywords) }))
+  ]
   const evaluated = annotations.some(annotation => evaluationTags[annotation.cm])
   return {
     id: data.id,
@@ -164,7 +166,7 @@ export function transferAsset(data: BackendData, keywords: Array<string>): Asset
   }
 }
 
-export function transferAnnotation(data: BackendData, gt: boolean = false): Annotation {
+export function transferAnnotation(data: BackendData, gt: boolean = false, color = ''): Annotation {
   return {
     ...data,
     keyword: data.keyword,
@@ -172,6 +174,7 @@ export function transferAnnotation(data: BackendData, gt: boolean = false): Anno
     cm: data.cm,
     gt,
     tags: data.tags || {},
+    color,
   }
 }
 
@@ -216,9 +219,8 @@ const generateAnno = (data: BackendData) => {
   }
 }
 
-function generateColor(keyword: string, keywords: Array<string> = []) {
+function generateDatasetColors(keywords: Array<string> = []): {[name: string]: string} {
   const KeywordColor = ["green", "red", "cyan", "blue", "yellow", "purple", "magenta", "orange", "gold"]
-  const colors: { [key: string]: any } = keywords.reduce((prev, curr, i) =>
+  return keywords.reduce((prev, curr, i) =>
     ({ ...prev, [curr]: KeywordColor[i % KeywordColor.length] }), {})
-  return colors[keyword]
 }

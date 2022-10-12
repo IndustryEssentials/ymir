@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"sort"
 	"strings"
 	"time"
 
@@ -16,6 +17,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/x/bsonx"
+	"golang.org/x/exp/slices"
 )
 
 type BaseDatabase interface {
@@ -25,7 +27,7 @@ type MongoServer struct {
 	mirDatabase     BaseDatabase
 	metricsDatabase BaseDatabase
 	Ctx             context.Context
-	existenceName   string
+	metadataName    string
 	metricsPrefix   string
 }
 
@@ -34,7 +36,7 @@ func NewMongoServer(mongoCtx context.Context, mirDatabase BaseDatabase, metricsD
 		mirDatabase:     mirDatabase,
 		metricsDatabase: metricsDatabase,
 		Ctx:             mongoCtx,
-		existenceName:   "__collection_existence__",
+		metadataName:    "__collection_metadata__",
 		metricsPrefix:   "__metrics__",
 	}
 }
@@ -44,13 +46,13 @@ func (s *MongoServer) getRepoCollection(mirRepo *constants.MirRepo) (*mongo.Coll
 	return s.mirDatabase.Collection(mirRev), mirRev
 }
 
-func (s *MongoServer) getExistenceCollection() *mongo.Collection {
-	collection, _ := s.getRepoCollection(&constants.MirRepo{BranchID: s.existenceName})
+func (s *MongoServer) getMetadataCollection() *mongo.Collection {
+	collection, _ := s.getRepoCollection(&constants.MirRepo{BranchID: s.metadataName})
 	return collection
 }
 
 func (s *MongoServer) setDatasetExistence(collectionName string, ready bool, exist bool) {
-	collection := s.getExistenceCollection()
+	collection := s.getMetadataCollection()
 	data := bson.M{"ready": ready, "exist": exist}
 	s.upsertDocument(collection, collectionName, data)
 }
@@ -65,34 +67,169 @@ func (s *MongoServer) upsertDocument(collection *mongo.Collection, id string, da
 	}
 }
 
-func (s *MongoServer) CheckDatasetExistenceReady(mirRepo *constants.MirRepo) (bool, bool) {
-	_, collectionName := s.getRepoCollection(mirRepo)
-	collectionExistence := s.getExistenceCollection()
-	filter := bson.M{"_id": collectionName}
-	data := make(map[string]interface{})
-	err := collectionExistence.FindOne(s.Ctx, filter).Decode(data)
-	if err != nil {
-		return false, false
-	}
-	return data["exist"].(bool), data["ready"].(bool)
+func (s *MongoServer) CheckDatasetExistenceReady(mirRepo *constants.MirRepo) (exist bool, ready bool) {
+	defer func() {
+		if r := recover(); r != nil {
+			exist = false
+			ready = false
+		}
+	}()
+
+	metadata := s.loadDatasetMetaData(mirRepo)
+	return metadata.Exist, metadata.Ready
 }
 
-func (s *MongoServer) IndexDatasetData(mirRepo *constants.MirRepo, newDatas []constants.MirAssetDetail) {
-	defer tools.TimeTrack(time.Now(), mirRepo.TaskID)
-
-	if len(newDatas) <= 0 {
+func (s *MongoServer) IndexDatasetData(
+	mirRepo *constants.MirRepo,
+	mirMetadatas *protos.MirMetadatas,
+	mirAnnotations *protos.MirAnnotations,
+) {
+	exist, _ := s.CheckDatasetExistenceReady(mirRepo)
+	if exist {
 		return
 	}
 
+	defer tools.TimeTrack(time.Now(), mirRepo.TaskID)
+	log.Printf("Load/Build index for %v, %d assets", mirRepo.TaskID, len(mirMetadatas.Attributes))
+
 	collection, collectionName := s.getRepoCollection(mirRepo)
 	s.setDatasetExistence(collectionName, false, true)
+	err := collection.Database().CreateCollection(s.Ctx, collectionName)
+	if err != nil {
+		log.Printf("Collection %s exist, skip creating.", collectionName)
+	}
+	// Cleanup if error
+	defer func() {
+		if r := recover(); r != nil {
+			s.setDatasetExistence(collectionName, false, false)
+			err := collection.Drop(s.Ctx)
+			if err != nil {
+				panic(err)
+			}
+			log.Printf("IndexDatasetData %s panic %v", mirRepo.TaskID, r)
+		}
+	}()
 
-	for _, newData := range newDatas {
-		_, err := collection.InsertOne(s.Ctx, newData)
-		if err != nil {
-			panic(err)
+	// Prepare mirdatas: mirMetadatas, mirCks, gtAnnotations, predAnnotations.
+	gtAnnotations := map[string]*protos.SingleImageAnnotations{}
+	if mirAnnotations.GroundTruth != nil && len(mirAnnotations.GroundTruth.ImageAnnotations) > 0 {
+		gtAnnotations = mirAnnotations.GroundTruth.ImageAnnotations
+	}
+	predAnnotations := map[string]*protos.SingleImageAnnotations{}
+	if mirAnnotations.Prediction != nil && len(mirAnnotations.Prediction.ImageAnnotations) > 0 {
+		predAnnotations = mirAnnotations.Prediction.ImageAnnotations
+	}
+	mirCks := map[string]*protos.SingleImageCks{}
+	if mirAnnotations.ImageCks != nil && len(mirAnnotations.ImageCks) > 0 {
+		mirCks = mirAnnotations.ImageCks
+	}
+
+	// Order assets, which is inpersistent in protobuf map.
+	assetIDs := make([]string, 0)
+	for assetID := range mirMetadatas.Attributes {
+		assetIDs = append(assetIDs, assetID)
+	}
+	sort.Strings(assetIDs)
+	mirAssetDetails := make([]interface{}, len(assetIDs))
+	for idx, assetID := range assetIDs {
+		mirAssetDetails[idx] = s.buildMirAssetDetail(assetID, mirMetadatas, mirCks, gtAnnotations, predAnnotations)
+	}
+	_, err = collection.InsertMany(s.Ctx, mirAssetDetails)
+	if err != nil {
+		panic(err)
+	}
+	s.buildCollectionIndex(collection)
+	s.postIndexDatasetData(collection, collectionName)
+}
+
+func (s *MongoServer) buildMirAssetDetail(
+	assetID string,
+	mirMetadatas *protos.MirMetadatas,
+	mirCks map[string]*protos.SingleImageCks,
+	gtAnnotations map[string]*protos.SingleImageAnnotations,
+	predAnnotations map[string]*protos.SingleImageAnnotations,
+) *constants.MirAssetDetail {
+	mirAssetDetail := constants.NewMirAssetDetail()
+	mirAssetDetail.AssetID = assetID
+	constants.BuildStructFromMessage(mirMetadatas.Attributes[assetID], &mirAssetDetail.MetaData)
+	if cks, ok := mirCks[assetID]; ok {
+		if len(cks.Cks) > 0 {
+			mirAssetDetail.Cks = cks.Cks
+		}
+		mirAssetDetail.Quality = cks.ImageQuality
+	}
+
+	mapClassIDs := map[int32]bool{}
+	if gtAnnotation, ok := gtAnnotations[assetID]; ok {
+		for _, annotation := range gtAnnotation.Boxes {
+			annotationOut := constants.NewMirObjectAnnotation()
+			constants.BuildStructFromMessage(annotation, &annotationOut)
+			mirAssetDetail.Gt = append(mirAssetDetail.Gt, &annotationOut)
+			mapClassIDs[annotation.ClassId] = true
 		}
 	}
+	if predAnnotation, ok := predAnnotations[assetID]; ok {
+		for _, annotation := range predAnnotation.Boxes {
+			annotationOut := constants.NewMirObjectAnnotation()
+			constants.BuildStructFromMessage(annotation, &annotationOut)
+			mirAssetDetail.Pred = append(mirAssetDetail.Pred, &annotationOut)
+			mapClassIDs[annotation.ClassId] = true
+		}
+	}
+
+	mirAssetDetail.JoinedClassIDs = make([]int32, 0, len(mapClassIDs))
+	for k := range mapClassIDs {
+		mirAssetDetail.JoinedClassIDs = append(mirAssetDetail.JoinedClassIDs, k)
+	}
+	return &mirAssetDetail
+}
+
+func (s *MongoServer) postIndexDatasetData(collection *mongo.Collection, collectionName string) {
+	defer tools.TimeTrack(time.Now(), collectionName)
+
+	indexedMetadata := constants.IndexedDatasetMetadata{
+		HistAssets:    &map[string]*constants.MirHist{},
+		HistAnnosGt:   &map[string]*constants.MirHist{},
+		HistAnnosPred: &map[string]*constants.MirHist{},
+		Ready:         true,
+		Exist:         true,
+	}
+	for histKey, hist := range constants.ConstAssetsMirHist {
+		assetHist := hist
+		assetHist.BuildMirHist(s.queryHistogram(
+			collection,
+			assetHist.Ops,
+			assetHist.LowerBNDs,
+			"$metadata",
+		))
+		(*indexedMetadata.HistAssets)[histKey] = &assetHist
+	}
+	for histKey, hist := range constants.ConstGtMirHist {
+		annoHist := hist
+		annoHist.BuildMirHist(s.queryHistogram(
+			collection,
+			annoHist.Ops,
+			annoHist.LowerBNDs,
+			"$gt",
+		))
+		(*indexedMetadata.HistAnnosGt)[histKey] = &annoHist
+	}
+	for histKey, hist := range constants.ConstPredMirHist {
+		annoHist := hist
+		annoHist.BuildMirHist(s.queryHistogram(
+			collection,
+			annoHist.Ops,
+			annoHist.LowerBNDs,
+			"$pred",
+		))
+		(*indexedMetadata.HistAnnosPred)[histKey] = &annoHist
+	}
+	metadataCollection := s.getMetadataCollection()
+	s.upsertDocument(metadataCollection, collectionName, indexedMetadata)
+}
+
+func (s *MongoServer) buildCollectionIndex(collection *mongo.Collection) {
+	defer tools.TimeTrack(time.Now(), "")
 
 	index := []mongo.IndexModel{
 		{
@@ -129,8 +266,6 @@ func (s *MongoServer) IndexDatasetData(mirRepo *constants.MirRepo, newDatas []co
 	if err != nil {
 		panic(err)
 	}
-
-	s.setDatasetExistence(collectionName, true, true)
 }
 
 func (s *MongoServer) countDatasetAssetsInClass(
@@ -170,6 +305,11 @@ func (s *MongoServer) QueryDatasetAssets(
 	tags []string,
 ) *constants.QueryAssetsResult {
 	defer tools.TimeTrack(time.Now(), mirRepo.TaskID)
+
+	_, ready := s.CheckDatasetExistenceReady(mirRepo)
+	if !ready {
+		panic("QueryDatasetAssets repo not ready: " + mirRepo.TaskID)
+	}
 
 	log.Printf(
 		"Query offset: %d, limit: %d, classIDs: %v, annoTypes: %v, currentId: %s, cmTypes: %v cks: %v tags: %v\n",
@@ -353,7 +493,7 @@ func (s *MongoServer) aggregateMongoQuery(collection *mongo.Collection, cond []b
 }
 
 func (s *MongoServer) RemoveNonReadyDataset() {
-	collectionExistence := s.getExistenceCollection()
+	collectionExistence := s.getMetadataCollection()
 	filter := bson.M{"ready": false, "exist": true}
 	queryCursor, err := collectionExistence.Find(s.Ctx, filter)
 	if err != nil {
@@ -363,7 +503,6 @@ func (s *MongoServer) RemoveNonReadyDataset() {
 	if err = queryCursor.All(s.Ctx, &queryDatas); err != nil {
 		panic(err)
 	}
-	log.Printf("queryDatas %+v", queryDatas)
 	for _, record := range queryDatas {
 		collectionName := record["_id"].(string)
 		log.Printf("  Dropping non-ready collection %s", collectionName)
@@ -375,104 +514,72 @@ func (s *MongoServer) RemoveNonReadyDataset() {
 	log.Printf("Dropped %d non-ready collections.", len(queryDatas))
 }
 
-func (s *MongoServer) QueryDatasetStats(
-	mirRepo *constants.MirRepo,
-	mirContext *protos.MirContext,
-	classIDs []int,
-	requireAssetsHist bool,
-	requireAnnotationsHist bool,
-) *constants.QueryDatasetStatsResult {
-	collection, _ := s.getRepoCollection(mirRepo)
-
-	var gtClassIDs []int
-	var predClassIDs []int
-	// If classIDs is empty, fill by all class_ids.
-	if len(classIDs) < 1 {
-		gtClassIDs = make([]int, 0, len(mirContext.GtStats.ClassIdsCnt))
-		for k := range mirContext.GtStats.ClassIdsCnt {
-			gtClassIDs = append(gtClassIDs, int(k))
-		}
-
-		predClassIDs = make([]int, 0, len(mirContext.PredStats.ClassIdsCnt))
-		for k := range mirContext.PredStats.ClassIdsCnt {
-			predClassIDs = append(predClassIDs, int(k))
-		}
-	} else {
-		gtClassIDs = classIDs
-		predClassIDs = classIDs
-	}
-	log.Printf("gtClassIDs: %#v predClassIDs: %#v", gtClassIDs, predClassIDs)
-
-	totalAssetsCount, err := collection.CountDocuments(s.Ctx, bson.M{}, &options.CountOptions{})
+func (s *MongoServer) loadDatasetMetaData(
+	mirRepo *constants.MirRepo) *constants.IndexedDatasetMetadata {
+	_, collectionName := s.getRepoCollection(mirRepo)
+	collectionExistence := s.getMetadataCollection()
+	filter := bson.M{"_id": collectionName}
+	metadata := &constants.IndexedDatasetMetadata{}
+	err := collectionExistence.FindOne(s.Ctx, filter).Decode(metadata)
 	if err != nil {
 		panic(err)
 	}
+	return metadata
+}
 
-	queryData := constants.NewQueryDatasetStatsResult()
-
-	// Build Asset fields.
-	queryData.TotalAssetsCount = totalAssetsCount
-	if requireAssetsHist {
-		for histKey, hist := range constants.ConstAssetsMirHist {
-			assetHist := hist
-			assetHist.SparseBuckets = s.queryHistogram(
-				collection,
-				assetHist.Ops,
-				assetHist.LowerBNDs,
-				"$metadata",
-			)
-			queryData.AssetsHist[histKey] = &assetHist
-		}
+func (s *MongoServer) QueryDatasetStats(
+	mirRepo *constants.MirRepo,
+	classIDs []int,
+	requireAssetsHist bool,
+	requireAnnotationsHist bool,
+	queryData *constants.QueryDatasetStatsResult,
+) *constants.QueryDatasetStatsResult {
+	_, ready := s.CheckDatasetExistenceReady(mirRepo)
+	if !ready {
+		panic("QueryDatasetStats repo not ready: " + mirRepo.TaskID)
 	}
+	collection, _ := s.getRepoCollection(mirRepo)
 
-	// Build Annotation fields.
-	for _, classID := range gtClassIDs {
-		queryData.Gt.ClassIDsCount[classID] = int64(mirContext.GtStats.ClassIdsCnt[int32(classID)])
-	}
-	queryData.Gt.PositiveAssetsCount, queryData.Gt.AnnotationsCount = s.countDatasetAssetsInClass(
-		collection,
-		"gt.class_id",
-		gtClassIDs,
-	)
-	queryData.Gt.NegativeAssetsCount = totalAssetsCount - queryData.Gt.PositiveAssetsCount
-
-	for _, classID := range predClassIDs {
-		queryData.Pred.ClassIDsCount[classID] = int64(mirContext.PredStats.ClassIdsCnt[int32(classID)])
-	}
-	queryData.Pred.PositiveAssetsCount, queryData.Pred.AnnotationsCount = s.countDatasetAssetsInClass(
-		collection,
-		"pred.class_id",
-		predClassIDs,
-	)
-	queryData.Pred.NegativeAssetsCount = totalAssetsCount - queryData.Pred.PositiveAssetsCount
-
-	if requireAnnotationsHist {
-
-		for histKey, hist := range constants.ConstGtMirHist {
-			annoHist := hist
-			annoHist.SparseBuckets = s.queryHistogram(
-				collection,
-				annoHist.Ops,
-				annoHist.LowerBNDs,
-				"$gt",
-			)
-			queryData.Gt.AnnotationsHist[histKey] = &annoHist
-		}
-		for histKey, hist := range constants.ConstPredMirHist {
-			annoHist := hist
-			annoHist.SparseBuckets = s.queryHistogram(
-				collection,
-				annoHist.Ops,
-				annoHist.LowerBNDs,
-				"$pred",
-			)
-			queryData.Pred.AnnotationsHist[histKey] = &annoHist
-		}
-	}
-
-	// Build Query Context.
+	// Build Query Context - hists request.
 	queryData.QueryContext.RequireAssetsHist = requireAssetsHist
 	queryData.QueryContext.RequireAnnotationsHist = requireAnnotationsHist
+	if requireAssetsHist || requireAnnotationsHist {
+		metadata := s.loadDatasetMetaData(mirRepo)
+		if requireAssetsHist {
+			queryData.AssetsHist = metadata.HistAssets
+		}
+		if requireAnnotationsHist {
+			queryData.Gt.AnnotationsHist = metadata.HistAnnosGt
+			queryData.Pred.AnnotationsHist = metadata.HistAnnosPred
+		}
+	}
+
+	// Count negative samples in specific classes.
+	if len(classIDs) > 0 {
+		for k := range queryData.Gt.ClassIDsCount {
+			if !slices.Contains(classIDs, k) {
+				delete(queryData.Gt.ClassIDsCount, k)
+			}
+		}
+		for k := range queryData.Pred.ClassIDsCount {
+			if !slices.Contains(classIDs, k) {
+				delete(queryData.Pred.ClassIDsCount, k)
+			}
+		}
+		queryData.Gt.PositiveAssetsCount, queryData.Gt.AnnotationsCount = s.countDatasetAssetsInClass(
+			collection,
+			"gt.class_id",
+			classIDs,
+		)
+		queryData.Gt.NegativeAssetsCount = queryData.TotalAssetsCount - queryData.Gt.PositiveAssetsCount
+
+		queryData.Pred.PositiveAssetsCount, queryData.Pred.AnnotationsCount = s.countDatasetAssetsInClass(
+			collection,
+			"pred.class_id",
+			classIDs,
+		)
+		queryData.Pred.NegativeAssetsCount = queryData.TotalAssetsCount - queryData.Pred.PositiveAssetsCount
+	}
 
 	return queryData
 }

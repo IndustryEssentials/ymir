@@ -1,15 +1,17 @@
-import { useState, useEffect, useCallback } from "react"
-import { useParams } from 'umi'
-import t from "@/utils/t"
-
-import useFetch from '@/hooks/useFetch'
+import { useState, useEffect } from "react"
+import { useParams, useSelector } from 'umi'
 import { Button } from "antd"
+
+import t from "@/utils/t"
+import useFetch from '@/hooks/useFetch'
 import KeywordRates from "./keywordRates"
 
 function SampleRates({ keywords, dataset, negative, label, progressWidth = 0.5 }) {
   const { id: pid } = useParams()
   const [did, setDid] = useState(null)
-  const [stats, getNegativeKeywords, setStats] = useFetch('dataset/getNegativeKeywords', {}, true)
+  const effect = 'dataset/getNegativeKeywords'
+  const [stats, getNegativeKeywords, setStats] = useFetch(effect, {}, true)
+  const loading = useSelector(({ loading }) => loading.effects[effect])
 
   useEffect(() => {
     dataset?.id && setDid(dataset.id)
@@ -51,12 +53,13 @@ function SampleRates({ keywords, dataset, negative, label, progressWidth = 0.5 }
       <Button type="primary"
         disabled={!did || !keywords?.length}
         onClick={() => fetchKeywords(pid, keywords, did)}
+        loading={loading}
       >
         {t('task.train.btn.calc.negative')}
       </Button>
     </div> : null}
-    <KeywordRates title="Ground Truth" stats={addNegativeInfo(stats.gt)} progressWidth={progressWidth} />
-    <KeywordRates title="Prediction" stats={addNegativeInfo(stats.pred)} progressWidth={progressWidth} />
+    <KeywordRates title={t('annotation.gt')} stats={addNegativeInfo(stats.gt)} progressWidth={progressWidth} />
+    <KeywordRates title={t('annotation.pred')} stats={addNegativeInfo(stats.pred)} progressWidth={progressWidth} />
   </div>
 }
 

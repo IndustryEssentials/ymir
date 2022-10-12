@@ -7,12 +7,10 @@ from concurrent import futures
 from distutils.util import strtobool
 from typing import Any, Dict
 
-from google.protobuf.text_format import MessageToString
 import grpc
 from grpc_health.v1 import health
 from grpc_health.v1 import health_pb2_grpc
 from requests.exceptions import ConnectionError, HTTPError, Timeout
-import sentry_sdk
 import yaml
 
 from controller.utils import errors, metrics, utils, invoker_mapping
@@ -50,7 +48,6 @@ class MirControllerService(backend_pb2_grpc.mir_controller_serviceServicer):
                                 assets_config=self.assets_config,
                                 async_mode=True)
         try:
-            logging.info(f"task {task_id} process:\n {invoker}")
             invoker_result = invoker.server_invoke()
         except errors.MirCtrError as e:
             logging.exception(f"task {task_id} MirCtrError error: {e}")
@@ -63,7 +60,6 @@ class MirControllerService(backend_pb2_grpc.mir_controller_serviceServicer):
             return utils.make_general_response(CTLResponseCode.INVOKER_UNKNOWN_ERROR, str(e))
 
         if isinstance(invoker_result, backend_pb2.GeneralResp):
-            logging.info(f"task {task_id} result:\n {MessageToString(invoker_result, as_one_line=True)}")
             return invoker_result
 
         return utils.make_general_response(CTLResponseCode.UNKOWN_RESPONSE_FORMAT,
@@ -101,18 +97,6 @@ def parse_config_file(config_file: str) -> Any:
         return yaml.safe_load(f)
 
 
-def _set_debug_info(debug_mode: bool = False) -> None:
-    if debug_mode:
-        logging.basicConfig(stream=sys.stdout,
-                            format='%(levelname)-8s: [%(asctime)s] %(filename)s:%(lineno)s:%(funcName)s(): %(message)s',
-                            datefmt='%Y%m%d-%H:%M:%S',
-                            level=logging.DEBUG)
-        logging.debug("in debug mode")
-    else:
-        logging.basicConfig(stream=sys.stdout, format='%(message)s', level=logging.INFO)
-    sentry_sdk.init(os.environ.get("CONTROLLER_SENTRY_DSN", None))
-
-
 def _init_metrics(metrics_config: Dict) -> None:
     try:
         metrics_permission_pass = bool(strtobool(metrics_config['allow_feedback']))
@@ -127,7 +111,12 @@ def _init_metrics(metrics_config: Dict) -> None:
 
 
 def main(main_args: Any) -> int:
-    _set_debug_info(main_args.debug)
+    for handler in logging.root.handlers[:]:
+        logging.root.removeHandler(handler)
+    logging.basicConfig(stream=sys.stdout,
+                        format='%(levelname)-4s: [%(asctime)s] %(filename)s:%(lineno)-03s:\t%(message)s',
+                        datefmt='%Y%m%d-%H:%M:%S',
+                        level=logging.INFO)
 
     server_config = parse_config_file(main_args.config_file)
     sandbox_root = server_config['SANDBOX']['sandboxroot']

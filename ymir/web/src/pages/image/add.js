@@ -60,7 +60,7 @@ const Add = ({ getImage, createImage, updateImage }) => {
   }
 
   const checkImageUrl = (_, value) => {
-    const reg = /^([a-zA-Z0-9]{4,30}\/)?[a-z0-9]+(?:[._-][a-z0-9]+)*(:[a-zA-Z0-9._-]+)?$/
+    const reg = /^[^\s]+$/
     if (!value || reg.test(value.trim())) {
       return Promise.resolve()
     }

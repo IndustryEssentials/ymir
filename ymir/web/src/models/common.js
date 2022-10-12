@@ -34,6 +34,11 @@ export default {
         payload,
       })
     },
+    *updateResultState({ payload }, { put }) {
+      const { result, tasks } = payload
+      const action = 'dataset/getDataset'
+      
+    },
   },
   reducers: {
     SET_LOADING (state, { payload }) {

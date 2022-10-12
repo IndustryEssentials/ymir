@@ -2,6 +2,8 @@ import argparse
 import logging
 import os
 import shutil
+import tarfile
+from mir.version import DEFAULT_YMIR_SRC_VERSION, YMIR_VERSION, ymir_model_salient_version
 
 import yaml
 
@@ -48,10 +50,17 @@ class CmdModelImport(base.BaseCommand):
 
         # unpack
         extract_model_dir_path = os.path.join(work_dir, 'model')
-        model_storage = models.prepare_model(model_location=os.path.dirname(package_path),
-                                             model_hash=os.path.basename(package_path),
-                                             stage_name='',
-                                             dst_model_path=extract_model_dir_path)
+        with tarfile.open(package_path, 'r') as tf:
+            tf.extractall(extract_model_dir_path)
+
+        with open(os.path.join(extract_model_dir_path, 'ymir-info.yaml'), 'r') as f:
+            ymir_info_dict = yaml.safe_load(f.read())
+
+        package_version = ymir_info_dict.get('package_version', DEFAULT_YMIR_SRC_VERSION)
+        if ymir_model_salient_version(package_version) != ymir_model_salient_version(YMIR_VERSION):
+            raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_MODEL_PACKAGE_VERSION,
+                                  error_message=f"Invalid model package version: {package_version}")
+        model_storage = models.ModelStorage.parse_obj(ymir_info_dict)
 
         logging.info(f"importing model with storage: {model_storage}")
 

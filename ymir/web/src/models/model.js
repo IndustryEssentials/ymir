@@ -15,6 +15,7 @@ import {
 } from "@/services/model"
 import { getStats } from "../services/common"
 import { transferModelGroup, transferModel, getModelStateFromTask, states, transferStage, } from '@/constants/model'
+import { transferAnnotation } from '@/constants/dataset'
 import { actions, updateResultState } from '@/constants/common'
 import { deepClone } from '@/utils/object'
 
@@ -97,10 +98,29 @@ export default {
         return dss.items
       }
     },
+    *batchLocalModels({ payload: ids = [] }, { call, put }) {
+      const cache = yield put.resolve({
+        type: 'getLocalModels',
+        payload: ids,
+      })
+      if (ids.length === cache.length) {
+        return cache
+      }
+      const fetchIds = ids.filter(id => cache.every(ds => ds.id !== id))
+      const remoteModels = yield put.resolve({
+        type: 'batchModels',
+        payload: fetchIds
+      })
+      return [...cache, ...remoteModels]
+    },
     *batchModels({ payload }, { call, put }) {
       const { code, result } = yield call(batchModels, payload)
       if (code === 0) {
         const models = result.map(model => transferModel(model))
+        yield put({
+          type: 'updateLocalModels',
+          payload: models,
+        })
         return models
       }
     },
@@ -183,7 +203,7 @@ export default {
     *verify({ payload }, { call }) {
       const { code, result } = yield call(verify, payload)
       if (code === 0) {
-        return result
+        return result.annotations[0]?.detection?.map(transferAnnotation)
       }
     },
     *batchModelStages({ payload }, { call, put }) {
@@ -272,6 +292,19 @@ export default {
     },
     *clearCache({ }, { put }) {
       yield put({ type: 'CLEAR_ALL', })
+    },
+    *updateLocalModels({ payload: models = [] }, { put }) {
+      for (let i = 0; i < models.length; i++) {
+        const model = models[i]
+        yield put({
+          type: "UPDATE_MODEL",
+          payload: { id: model.id, model },
+        })
+      }
+    },
+    *getLocalModels({ payload: ids = [] }, { put, select }) {
+      const models = yield select(({ model }) => model.model)
+      return ids.map((id) => models[id]).filter(d => d)
     },
   },
   reducers: {

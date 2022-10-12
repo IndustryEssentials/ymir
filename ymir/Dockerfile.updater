@@ -1,16 +1,20 @@
 FROM python:3.8.13-alpine
 
+RUN apk update \
+  && apk add git
+
 # requirements
 COPY ./updater/app/requirements.txt /app/requirements.txt
 ARG PIP_SOURCE=https://pypi.org/simple
 RUN pip3 install -r /app/requirements.txt -i ${PIP_SOURCE}
 
-# ymir backend components
-COPY ./backend/src/common/common_utils/sandbox_updater.py /app/common_utils/
-COPY ./backend/src/common/common_utils/sandbox_util.py /app/common_utils/
-COPY ./backend/src/common/id_definition/error_codes.py /app/id_definition/
-COPY ./backend/src/common/id_definition/task_id.py /app/id_definition/
-COPY ./command/mir/version.py /app/mir/
+# git config
+COPY ./backend/deploy/git.config /root/.gitconfig
+
+# ymir controller and command components
+COPY ./backend/src/common/common_utils/ /app/common_utils/
+COPY ./backend/src/common/id_definition/ /app/id_definition/
+COPY ./command/mir/ /app/mir/
 
 # updater app
 COPY ./updater/app /app

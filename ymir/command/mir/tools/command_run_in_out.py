@@ -58,7 +58,9 @@ def _cleanup_dir_sub_items(dir: str, ignored_items: Set[str]) -> None:
             continue
 
         item_path = os.path.join(dir, item)
-        if os.path.isdir(item_path):
+        if os.path.islink(item_path):
+            os.unlink(item_path)
+        elif os.path.isdir(item_path):
             shutil.rmtree(item_path)
         elif os.path.isfile(item_path):
             os.remove(item_path)
@@ -68,8 +70,13 @@ def _cleanup(work_dir: str) -> None:
     if not work_dir:
         return
 
-    _cleanup_dir_sub_items(work_dir, ignored_items={'out'})
+    _cleanup_dir_sub_items(work_dir, ignored_items={'in', 'out'})
 
+    _cleanup_dir_sub_items(
+        os.path.join(work_dir, 'in'),
+        ignored_items={
+            'config.yaml',  # training, mining & infer executor config file
+        })
     _cleanup_dir_sub_items(
         os.path.join(work_dir, 'out'),
         ignored_items={
@@ -78,6 +85,8 @@ def _cleanup(work_dir: str) -> None:
             'monitor-log.txt',  # monitor detail file
             'tensorboard',  # default root directory for tensorboard event files
             'ymir-executor-out.log',  # container output
+            'infer-result.json',  # infer result file
+            'result.yaml',  # mining result file
         })
 
 
@@ -118,17 +127,17 @@ def command_run_in_out(f: Callable) -> Callable:
                 mir_logger.update_percent_info(local_percent=1, task_state=phase_logger.PhaseStateEnum.DONE)
                 # no need to call _commit_error, already committed inside command run function
             else:
+                mir_logger.update_percent_info(local_percent=1,
+                                               task_state=phase_logger.PhaseStateEnum.ERROR,
+                                               state_code=ret,
+                                               state_content=state_message,
+                                               trace_message='')
                 _commit_error(code=ret,
                               error_msg=state_message,
                               mir_root=mir_root,
                               src_revs=src_revs,
                               dst_rev=dst_rev,
                               predefined_task=None)
-                mir_logger.update_percent_info(local_percent=1,
-                                               task_state=phase_logger.PhaseStateEnum.ERROR,
-                                               state_code=ret,
-                                               state_content=state_message,
-                                               trace_message='')
 
             logging.info(f"command done: {dst_rev}, return code: {ret}")
 
@@ -138,6 +147,11 @@ def command_run_in_out(f: Callable) -> Callable:
 
         # if MirContainerError, MirRuntimeError and BaseException occured
         # exception saved in exc
+        mir_logger.update_percent_info(local_percent=1,
+                                       task_state=phase_logger.PhaseStateEnum.ERROR,
+                                       state_code=error_code,
+                                       state_content=state_message,
+                                       trace_message=trace_message)
         if needs_new_commit:
             _commit_error(code=error_code,
                           error_msg=trace_message,
@@ -145,11 +159,6 @@ def command_run_in_out(f: Callable) -> Callable:
                           src_revs=src_revs,
                           dst_rev=dst_rev,
                           predefined_task=predefined_task)
-        mir_logger.update_percent_info(local_percent=1,
-                                       task_state=phase_logger.PhaseStateEnum.ERROR,
-                                       state_code=error_code,
-                                       state_content=state_message,
-                                       trace_message=trace_message)
 
         logging.info(f"command failed: {dst_rev}; exc: {exc}")
         logging.info(f"trace: {trace_message}")

@@ -77,7 +77,7 @@ function Merge() {
       ...values,
       group: type ? group : undefined,
       projectId: pid,
-      datasets: [did, selectedDataset, ...values.includes].filter(item => item),
+      datasets: [did, selectedDataset, ...(values.includes || [])].filter(item => item),
     }
     await merge(params)
   }

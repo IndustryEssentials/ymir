@@ -37,33 +37,33 @@ function List({ project }) {
     {
       title: showTitle("iteration.column.premining"),
       dataIndex: "miningDatasetLabel",
-      render: (label, { id, versionName, miningDataset }) => renderPop(label, miningDataset, <MiningSampleRates iid={id} />),
+      render: (label, { id, versionName, entities }) => renderPop(label, entities?.miningSet, <MiningSampleRates iid={id} />),
       ellipsis: true,
     },
     {
       title: showTitle("iteration.column.mining"),
       dataIndex: "miningResultDatasetLabel",
-      render: (label, { miningResultDataset }) => renderPop(label, miningResultDataset),
+      render: (label, { entities }) => renderPop(label, entities?.miningResult),
       ellipsis: true,
     },
     {
       title: showTitle("iteration.column.label"),
       dataIndex: "labelDatasetLabel",
-      render: (label, { labelDataset }) => renderPop(label, labelDataset),
+      render: (label, { entities }) => renderPop(label, entities?.labelSet),
       align: 'center',
       ellipsis: true,
     },
     {
       title: showTitle("iteration.column.test"),
       dataIndex: "testDatasetLabel",
-      render: (label, { testDataset }) => renderPop(label, testDataset),
+      render: (label, { entities }) => renderPop(label, entities?.testSet),
       align: 'center',
       ellipsis: true,
     },
     {
       title: showTitle("iteration.column.merging"),
       dataIndex: "trainUpdateDatasetLabel",
-      render: (label, { trainEffect, trainUpdateDataset }) => renderPop(label, trainUpdateDataset,
+      render: (label, { trainEffect, entities }) => renderPop(label, entities?.trainUpdateSet,
         null, <span className={s.extraTag}>{renderExtra(trainEffect)}</span>),
       align: 'center',
       ellipsis: true,
@@ -71,9 +71,9 @@ function List({ project }) {
     {
       title: showTitle("iteration.column.training"),
       dataIndex: 'map',
-      render: (map, { trainingModel, mapEffect }) => validModel(trainingModel || {}) ? <div className={s.td}>
+      render: (map, { entities, mapEffect }) => validModel(entities?.model || {}) ? <div className={s.td}>
         <span style={{ display: 'inline-block', width: '70%', overflow: 'hidden', textOverflow: 'ellipsis'}}>
-          {trainingModel?.name}
+          {entities?.model?.name}
         </span>
         <span>{map >= 0 ? percent(map) : null}</span>
         <span className={s.extraTag}>{renderExtra(mapEffect, true)}</span>
@@ -99,25 +99,35 @@ function List({ project }) {
 
   function fetchHandle(iterations) {
     const iters = iterations.map(iteration => {
+      const {
+        trainUpdateSet,
+        miningSet,
+        miningResult,
+        labelSet,
+        testSet,
+        model,
+      } = iteration.entities
       return {
         ...iteration,
-        trainUpdateDatasetLabel: renderDatasetLabel(iteration.trainUpdateDataset),
-        miningDatasetLabel: renderDatasetLabel(iteration.miningDataset),
-        miningResultDatasetLabel: renderDatasetLabel(iteration.miningResultDataset),
-        labelDatasetLabel: renderDatasetLabel(iteration.labelDataset),
-        testDatasetLabel: renderDatasetLabel(iteration.testDataset),
-        map: iteration?.trainingModel?.map,
+        trainUpdateDatasetLabel: renderDatasetLabel(trainUpdateSet),
+        miningDatasetLabel: renderDatasetLabel(miningSet),
+        miningResultDatasetLabel: renderDatasetLabel(miningResult),
+        labelDatasetLabel: renderDatasetLabel(labelSet),
+        testDatasetLabel: renderDatasetLabel(testSet),
+        map: model?.map,
       }
     })
     iters.reduce((prev, current) => {
       const prevMap = prev.map || 0
       const currentMap = current.map || 0
-      const validModels = prev.trainingModel && current.trainingModel
+      const prevEntities = prev?.entities || {}
+      const currentEntities = current?.entities || {}
+      const validModels = prevEntities.model && currentEntities.model
       current.mapEffect = validModels ? (currentMap - prevMap) : null
 
-      const validTrainSet = prev.trainUpdateDataset && current.trainUpdateDataset
-      const prevUpdatedTrainSetCount = prev?.trainUpdateDataset?.assetCount || 0
-      const currentUpdatedTrainSetCount = current?.trainUpdateDataset?.assetCount || 0
+      const validTrainSet = prevEntities.trainUpdateSet && currentEntities.trainUpdateSet
+      const prevUpdatedTrainSetCount = prevEntities.trainUpdateSet?.assetCount || 0
+      const currentUpdatedTrainSetCount = currentEntities.trainUpdateSet?.assetCount || 0
       current.trainEffect = validTrainSet ? (currentUpdatedTrainSetCount - prevUpdatedTrainSetCount) : null
 
       return current

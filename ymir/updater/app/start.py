@@ -14,14 +14,18 @@ def main() -> int:
     if len(sandbox_versions) != 1:
         raise Exception(f"invalid sandbox versions: {sandbox_versions}")
 
-    update(sandbox_root=sandbox_root, src_ver=sandbox_versions[0], dst_ver=YMIR_VERSION)
+    update(sandbox_root=sandbox_root,
+           assets_root=os.environ['ASSETS_PATH'],
+           models_root=os.environ['MODELS_PATH'],
+           src_ver=sandbox_versions[0],
+           dst_ver=YMIR_VERSION)
 
     return 0
 
 
 if __name__ == '__main__':
     logging.basicConfig(stream=sys.stdout,
-                        format='%(levelname)-8s: [%(asctime)s]: %(message)s',
+                        format='[%(asctime)s]: %(message)s',
                         datefmt='%Y%m%d-%H:%M:%S',
-                        level=logging.DEBUG)
+                        level=logging.INFO)
     sys.exit(main())

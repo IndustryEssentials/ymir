@@ -27,3 +27,6 @@ class LabelGetInvoker(BaseMirControllerInvoker):
         response = utils.make_general_response(CTLResponseCode.CTR_OK, "")
         response.label_collection.CopyFrom(labels.userlabels_to_proto(self._user_labels))
         return response
+
+    def _parse_response(self, response: backend_pb2.GeneralResp) -> str:
+        return f"LabelGet: {len(response.label_collection.labels)}, version: {response.label_collection.ymir_version}"

@@ -25,7 +25,7 @@ const routeTitle = {
   "task.inference.title": { cn: `${SysName}-数据推理`, en: `${SysName} - Dataset Inference`, },
   "task.label.title": { cn: `${SysName}-数据标注`, en: `${SysName} - Dataset Labeling`, },
   "history.title": { cn: `${SysName}-历史树`, en: `${SysName} - History Tree`, },
-  "keywords.title": { cn: `${SysName}-标签管理`, en: `${SysName} - Keywords`, },
+  "keywords.title": { cn: `${SysName}-类别管理`, en: `${SysName} - Classes`, },
   "projects.title": { cn: `${SysName}-项目管理`, en: `${SysName} - Project`, },
   "project.title": { cn: `${SysName}-项目详情`, en: `${SysName} - Project Detail`, },
   "project.add.title": { cn: `${SysName}-项目设置`, en: `${SysName} - Project Settings`, },

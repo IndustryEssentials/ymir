@@ -24,8 +24,8 @@ func (m *MockDatabase) Collection(name string, opts ...*options.CollectionOption
 	return args.Get(0).(*mongo.Collection)
 }
 
-func getDatasetExistenceName() string {
-	return "__collection_existence__@"
+func getDatasetMetadataName() string {
+	return "__collection_metadata__@"
 }
 
 func TestSetDatasetExistenceSuccess(t *testing.T) {
@@ -36,7 +36,7 @@ func TestSetDatasetExistenceSuccess(t *testing.T) {
 		mockCollection := mt.Coll
 		mockMirDatabase := MockDatabase{}
 		mockMetricsDatabase := MockDatabase{}
-		mockMirDatabase.On("Collection", getDatasetExistenceName(), []*options.CollectionOptions(nil)).
+		mockMirDatabase.On("Collection", getDatasetMetadataName(), []*options.CollectionOptions(nil)).
 			Return(mockCollection)
 
 		mongoServer := NewMongoServer(context.Background(), &mockMirDatabase, &mockMetricsDatabase)
@@ -58,7 +58,7 @@ func TestSetDatasetExistenceFailure(t *testing.T) {
 		mockCollection := mt.Coll
 		mockMirDatabase := MockDatabase{}
 		mockMetricsDatabase := MockDatabase{}
-		mockMirDatabase.On("Collection", getDatasetExistenceName(), []*options.CollectionOptions(nil)).
+		mockMirDatabase.On("Collection", getDatasetMetadataName(), []*options.CollectionOptions(nil)).
 			Return(mockCollection)
 
 		mongoServer := NewMongoServer(context.Background(), &mockMirDatabase, &mockMetricsDatabase)
@@ -76,7 +76,7 @@ func TestCheckDatasetExistenceSuccess(t *testing.T) {
 		mockCollection := mt.Coll
 		mockMirDatabase := MockDatabase{}
 		mockMetricsDatabase := MockDatabase{}
-		mockMirDatabase.On("Collection", getDatasetExistenceName(), []*options.CollectionOptions(nil)).
+		mockMirDatabase.On("Collection", getDatasetMetadataName(), []*options.CollectionOptions(nil)).
 			Return(mockCollection)
 		mockMirDatabase.On("Collection", "@", []*options.CollectionOptions(nil)).
 			Return(mockCollection)
@@ -99,21 +99,17 @@ func TestCheckDatasetExistenceFailure0(t *testing.T) {
 	defer mt.Close()
 
 	mt.Run("success", func(mt *mtest.T) {
-		defer func() {
-			if r := recover(); r == nil {
-				t.Errorf("The code did not panic")
-			}
-		}()
-
 		mirRepo := constants.MirRepo{}
 		mockCollection := mt.Coll
 		mockMirDatabase := MockDatabase{}
 		mockMetricsDatabase := MockDatabase{}
-		mockMirDatabase.On("Collection", getDatasetExistenceName(), []*options.CollectionOptions(nil)).
+		mockMirDatabase.On("Collection", getDatasetMetadataName(), []*options.CollectionOptions(nil)).
 			Return(mockCollection)
 
 		mongoServer := NewMongoServer(context.Background(), &mockMirDatabase, &mockMetricsDatabase)
-		mongoServer.CheckDatasetExistenceReady(&mirRepo)
+		existence, ready := mongoServer.CheckDatasetExistenceReady(&mirRepo)
+		assert.Equal(t, existence, false)
+		assert.Equal(t, ready, false)
 	})
 }
 
@@ -126,7 +122,7 @@ func TestCheckDatasetExistenceFailure1(t *testing.T) {
 		mockCollection := mt.Coll
 		mockMirDatabase := MockDatabase{}
 		mockMetricsDatabase := MockDatabase{}
-		mockMirDatabase.On("Collection", getDatasetExistenceName(), []*options.CollectionOptions(nil)).
+		mockMirDatabase.On("Collection", getDatasetMetadataName(), []*options.CollectionOptions(nil)).
 			Return(mockCollection)
 		mockMirDatabase.On("Collection", "@", []*options.CollectionOptions(nil)).
 			Return(mockCollection)
@@ -142,34 +138,6 @@ func TestCheckDatasetExistenceFailure1(t *testing.T) {
 		existence, ready := mongoServer.CheckDatasetExistenceReady(&mirRepo)
 		assert.Equal(t, existence, false)
 		assert.Equal(t, ready, false)
-	})
-}
-
-func TestIndexDatasetDataSuccess(t *testing.T) {
-	mt := mtest.New(t, mtest.NewOptions().ClientType(mtest.Mock))
-	defer mt.Close()
-
-	mt.Run("success", func(mt *mtest.T) {
-		mirRepo := constants.MirRepo{}
-		mockAssetsDetail := []constants.MirAssetDetail{{AssetID: "a"}}
-		mockCollection := mt.Coll
-		mockMirDatabase := MockDatabase{}
-		mockMetricsDatabase := MockDatabase{}
-		mockMirDatabase.On("Collection", getDatasetExistenceName(), []*options.CollectionOptions(nil)).
-			Return(mockCollection)
-		mockMirDatabase.On("Collection", "@", []*options.CollectionOptions(nil)).
-			Return(mockCollection)
-
-		mongoServer := NewMongoServer(context.Background(), &mockMirDatabase, &mockMetricsDatabase)
-		mongoServer.IndexDatasetData(&mirRepo, []constants.MirAssetDetail{})
-
-		mt.AddMockResponses(
-			mtest.CreateSuccessResponse(),
-			mtest.CreateSuccessResponse(),
-			mtest.CreateSuccessResponse(),
-			mtest.CreateSuccessResponse(),
-		)
-		mongoServer.IndexDatasetData(&mirRepo, []constants.MirAssetDetail{mockAssetsDetail[0]})
 	})
 }
 
@@ -216,6 +184,8 @@ func TestQueryAssetsSuccess(t *testing.T) {
 		mockCollection := mt.Coll
 		mockMirDatabase := MockDatabase{}
 		mockMetricsDatabase := MockDatabase{}
+		mockMirDatabase.On("Collection", getDatasetMetadataName(), []*options.CollectionOptions(nil)).
+			Return(mockCollection)
 		mockMirDatabase.On("Collection", "@", []*options.CollectionOptions(nil)).
 			Return(mockCollection)
 
@@ -238,6 +208,13 @@ func TestQueryAssetsSuccess(t *testing.T) {
 			TotalAssetsCount: expectedCount,
 		}
 
+		find := mtest.CreateCursorResponse(
+			1,
+			"a.b",
+			mtest.FirstBatch,
+			bson.D{{Key: "exist", Value: true}, {Key: "ready", Value: true}})
+		mt.AddMockResponses(find)
+		mt.AddMockResponses(find)
 		first := mtest.CreateCursorResponse(
 			1,
 			"a.b",
@@ -281,6 +258,8 @@ func TestQueryDatasetStatsSuccess(t *testing.T) {
 		mockCollection := mt.Coll
 		mockMirDatabase := MockDatabase{}
 		mockMetricsDatabase := MockDatabase{}
+		mockMirDatabase.On("Collection", getDatasetMetadataName(), []*options.CollectionOptions(nil)).
+			Return(mockCollection)
 		mockMirDatabase.On("Collection", "@", []*options.CollectionOptions(nil)).
 			Return(mockCollection)
 
@@ -311,18 +290,30 @@ func TestQueryDatasetStatsSuccess(t *testing.T) {
 		classIDs := []int{0, 1}
 		expectedCount := int32(1)
 		expectedResult := constants.NewQueryDatasetStatsResult()
-		expectedResult.TotalAssetsCount = 1
+		expectedResult.TotalAssetsCount = 0
 		expectedResult.Gt.ClassIDsCount[0] = 3
 		expectedResult.Gt.ClassIDsCount[1] = 0
 		expectedResult.Gt.AnnotationsCount = 1
+		expectedResult.Gt.NegativeAssetsCount = -1
 		expectedResult.Gt.PositiveAssetsCount = 1
 		expectedResult.Pred.ClassIDsCount[0] = 7
 		expectedResult.Pred.ClassIDsCount[1] = 8
 		expectedResult.Pred.PositiveAssetsCount = 1
+		expectedResult.Pred.NegativeAssetsCount = -1
 		expectedResult.Pred.AnnotationsCount = 1
 		expectedResult.QueryContext.RequireAssetsHist = false
 		expectedResult.QueryContext.RequireAnnotationsHist = false
 
+		metaResult := expectedResult
+		metaResult.Gt.ClassIDsCount[2] = 5
+		metaResult.Pred.ClassIDsCount[2] = 6
+
+		find := mtest.CreateCursorResponse(
+			1,
+			"a.b",
+			mtest.FirstBatch,
+			bson.D{{Key: "exist", Value: true}, {Key: "ready", Value: true}})
+		mt.AddMockResponses(find)
 		countCursor := mtest.CreateCursorResponse(
 			1,
 			"a.b",
@@ -342,11 +333,167 @@ func TestQueryDatasetStatsSuccess(t *testing.T) {
 		killCursors := mtest.CreateCursorResponse(0, "a.b", mtest.NextBatch)
 		mt.AddMockResponses(first, second, killCursors)
 		mt.AddMockResponses(first, second, killCursors)
-		mt.AddMockResponses(first, second, killCursors)
-		mt.AddMockResponses(first, second, killCursors)
-		mt.AddMockResponses(first, second, killCursors)
-		mt.AddMockResponses(first, second, killCursors)
-		result := mongoServer.QueryDatasetStats(&mirRepo, &mockMirContext, classIDs, false, false)
+		result := mongoServer.QueryDatasetStats(&mirRepo, classIDs, false, false, metaResult)
 		assert.Equal(t, expectedResult, result)
+	})
+}
+
+func TestLoadAssetsDetail(t *testing.T) {
+	mirRepo := constants.MirRepo{}
+	attributes := map[string]*protos.MetadataAttributes{
+		"a": {},
+		"b": {},
+		"c": {},
+	}
+	mirMetadatas := &protos.MirMetadatas{Attributes: attributes}
+	mirAnnotations := &protos.MirAnnotations{
+		GroundTruth: &protos.SingleTaskAnnotations{
+			ImageAnnotations: map[string]*protos.SingleImageAnnotations{
+				"a": {Boxes: []*protos.ObjectAnnotation{{ClassId: 1}}},
+			},
+		},
+		Prediction: &protos.SingleTaskAnnotations{
+			ImageAnnotations: map[string]*protos.SingleImageAnnotations{
+				"a": {Boxes: []*protos.ObjectAnnotation{{ClassId: 1}}},
+			},
+		},
+		ImageCks: map[string]*protos.SingleImageCks{"a": {Cks: map[string]string{"abc": "1"}}},
+	}
+
+	expectedAssetsDetail := []constants.MirAssetDetail{}
+	err := json.Unmarshal([]byte(`[
+		{
+			"asset_id": "a",
+			"metadata":
+			{
+				"asset_type": 0,
+				"byte_size": 0,
+				"height": 0,
+				"image_channels": 0,
+				"timestamp": null,
+				"tvt_type": 0,
+				"width": 0,
+				"origin_filename": ""
+			},
+			"class_ids":
+			[
+				1
+			],
+			"gt":
+			[
+				{
+					"anno_quality": 0,
+					"box": null,
+					"class_id": 1,
+					"class_name": "",
+					"cm": 0,
+					"det_link_id": 0,
+					"index": 0,
+					"polygon": [],
+					"score": 0,
+					"tags": {}
+				}
+			],
+			"pred":
+			[
+				{
+					"anno_quality": 0,
+					"box": null,
+					"class_id": 1,
+					"polygon": [],
+					"class_name": "",
+					"cm": 0,
+					"det_link_id": 0,
+					"index": 0,
+					"score": 0,
+					"tags": {}
+				}
+			],
+			"cks":
+			{
+				"abc": "1"
+			},
+			"image_quality": 0
+		},
+		{
+			"asset_id": "b",
+			"metadata":
+			{
+				"asset_type": 0,
+				"byte_size": 0,
+				"height": 0,
+				"image_channels": 0,
+				"timestamp": null,
+				"tvt_type": 0,
+				"width": 0,
+				"origin_filename": ""
+			},
+			"class_ids":
+			[],
+			"gt":
+			[],
+			"pred":
+			[],
+			"cks":
+			{},
+			"image_quality": -1
+		},
+		{
+			"asset_id": "c",
+			"metadata":
+			{
+				"asset_type": 0,
+				"byte_size": 0,
+				"height": 0,
+				"image_channels": 0,
+				"timestamp": null,
+				"tvt_type": 0,
+				"width": 0,
+				"origin_filename": ""
+			},
+			"class_ids":
+			[],
+			"gt":
+			[],
+			"pred":
+			[],
+			"cks":
+			{},
+			"image_quality": -1
+		}
+	]`), &expectedAssetsDetail)
+	if err != nil {
+		panic(err)
+	}
+
+	mt := mtest.New(t, mtest.NewOptions().ClientType(mtest.Mock))
+	defer mt.Close()
+	mt.Run("success", func(mt *mtest.T) {
+		mockCollection := mt.Coll
+		mockMirDatabase := MockDatabase{}
+		mockMetricsDatabase := MockDatabase{}
+		mockMirDatabase.On("Collection", "@", []*options.CollectionOptions(nil)).
+			Return(mockCollection)
+		mockMirDatabase.On("Collection", getDatasetMetadataName(), []*options.CollectionOptions(nil)).
+			Return(mockCollection)
+
+		find := mtest.CreateCursorResponse(
+			1,
+			"a.b",
+			mtest.FirstBatch,
+			bson.D{{Key: "exist", Value: false}, {Key: "ready", Value: false}})
+		mt.AddMockResponses(find)
+		mt.AddMockResponses(
+			mtest.CreateSuccessResponse(),
+			mtest.CreateSuccessResponse(),
+			mtest.CreateSuccessResponse(),
+			mtest.CreateSuccessResponse(),
+			mtest.CreateSuccessResponse(),
+			mtest.CreateSuccessResponse(),
+			mtest.CreateSuccessResponse(),
+			mtest.CreateSuccessResponse(),
+		)
+		mongoServer := NewMongoServer(context.Background(), &mockMirDatabase, &mockMetricsDatabase)
+		mongoServer.IndexDatasetData(&mirRepo, mirMetadatas, mirAnnotations)
 	})
 }
