@@ -188,7 +188,11 @@ def _export_mirdatas_to_raw(
         if ec.anno_format == mirpb.AnnoFormat.AF_NO_ANNOTATION:
             continue
 
-        if (ec.gt_dir and mir_annotations):
+        if not mir_annotations:
+            raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
+                                  error_message="empty mir_annotations")
+
+        if ec.gt_dir:
             # export annotation file even annotation not exists.
             if asset_id in mir_annotations.ground_truth.image_annotations:
                 image_annotations = mir_annotations.ground_truth.image_annotations[asset_id]
@@ -215,7 +219,7 @@ def _export_mirdatas_to_raw(
             if ec.tvt_index_dir:
                 index_tvt_f[(False, attributes.tvt_type)].write(asset_anno_pair_line)
 
-        if (ec.pred_dir and mir_annotations):
+        if ec.pred_dir:
             # export annotation file even annotation not exists.
             if asset_id in mir_annotations.prediction.image_annotations:
                 image_annotations = mir_annotations.prediction.image_annotations[asset_id]
@@ -243,7 +247,7 @@ def _export_mirdatas_to_raw(
                 index_tvt_f[(True, attributes.tvt_type)].write(asset_anno_pair_line)
 
     # write labelmap.txt.
-    if ec.gt_dir and mir_annotations and mir_annotations.ground_truth.map_id_color:
+    if ec.gt_dir and mir_annotations.ground_truth.map_id_color:
         if not cls_id_mgr:
             raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
                                   error_message="cls_id_mgr is not set in exporter.")
@@ -254,7 +258,7 @@ def _export_mirdatas_to_raw(
                 point = mir_annotations.ground_truth.map_id_color[cid]
                 color = f"{point.x},{point.y},{point.z}"
                 f.write(f"{cls_id_mgr.main_name_for_id(cid)}:{color}::\n")
-    if ec.pred_dir and mir_annotations and mir_annotations.prediction.map_id_color:
+    if ec.pred_dir and mir_annotations.prediction.map_id_color:
         if not cls_id_mgr:
             raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
                                   error_message="cls_id_mgr is not set in exporter.")
