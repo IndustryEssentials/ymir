@@ -50,7 +50,7 @@ function Train({ allDatasets, datasetCache, ...func }) {
   const [trainDataset, setTrainDataset] = useState(null)
   const [testingSetIds, setTestingSetIds] = useState([])
   const [form] = Form.useForm()
-  const [seniorConfig, setSeniorConfig] = useState([])
+  const [seniorConfig, setSeniorConfig] = useState({})
   const [gpu_count, setGPU] = useState(0)
   const [projectDirty, setProjectDirty] = useState(false)
   const [live, setLiveCode] = useState(false)
@@ -110,9 +110,9 @@ function Train({ allDatasets, datasetCache, ...func }) {
     pid && func.getDatasets(pid)
   }, [pid])
 
-  useEffect(() => {
-    form.setFieldsValue({ hyperparam: seniorConfig })
-  }, [seniorConfig])
+  // useEffect(() => {
+  //   form.setFieldsValue({ hyperparam: seniorConfig })
+  // }, [seniorConfig])
 
   useEffect(() => {
     trainDataset &&
@@ -186,11 +186,7 @@ function Train({ allDatasets, datasetCache, ...func }) {
   }
 
   function setConfig(config = {}) {
-    const params = Object.keys(config).filter(key => key !== 'gpu_count').map(key => ({
-      key,
-      value: config[key]
-    }))
-    setSeniorConfig(params)
+    setSeniorConfig(config)
   }
 
   const onFinish = () => checkDuplicated(trainDataset, validationDataset)

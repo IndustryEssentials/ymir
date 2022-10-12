@@ -5,15 +5,30 @@ import t from '@/utils/t'
 import s from "./form.less"
 import PreProcessForm from "./preProcessForm"
 import { AddTwoIcon, AddDelTwoIcon } from '@/components/common/icons'
+function getArrayConfig(config = {}) {
+  const excludes = ['gpu_count', 'task_id']
+  return Object.keys(config)
+    .filter(key => !excludes.includes(key))
+    .map(key => ({
+      key,
+      value: config[key]
+    }))
+}
 
-const DockerConfigForm = ({ show, form, seniorConfig }) => {
+const DockerConfigForm = ({ show, form, seniorConfig, name = 'hyperparam' }) => {
   const [visible, setVisible] = useState(false)
+  const [config, setConfig] = useState([])
+  const hyperParams = Form.useWatch('hyperparam', form)
+
+  useEffect(() => setConfig(getArrayConfig(seniorConfig)), [seniorConfig])
+
+  useEffect(() => form.setFieldsValue({ [name]: config }), [config])
 
   useEffect(() => setVisible(show), [show])
 
-  async function validHyperparam(rule, value) {
+  async function validHyperParams(rule, value) {
 
-    const params = form.getFieldValue('hyperparam').map(({ key }) => key)
+    const params = hyperParams.map(({ key }) => key)
       .filter(item => item && item.trim() && item === value)
     if (params.length > 1) {
       return Promise.reject(t('task.validator.same.param'))
@@ -26,13 +41,13 @@ const DockerConfigForm = ({ show, form, seniorConfig }) => {
     <span style={{ fontSize: 14, color: 'gray' }}>{t('task.train.form.hyperparam.label.tip')}</span>
   </>
 
-  return seniorConfig.length ?
+  return config.length ?
     <Panel label={renderTitle} visible={visible} setVisible={setVisible}>
       <Form.Item
         wrapperCol={{ offset: 8, span: 12 }}
-        rules={[{ validator: validHyperparam }]}
+        rules={[{ validator: validHyperParams }]}
       >
-        <Form.List name='hyperparam'>
+        <Form.List name={name}>
           {(fields, { add, remove }) => (
             <>
               <div className={s.paramContainer} hidden={!visible}>
@@ -49,10 +64,10 @@ const DockerConfigForm = ({ show, form, seniorConfig }) => {
                         name={[field.name, 'key']}
                         fieldKey={[field.fieldKey, 'key']}
                         rules={[
-                          { validator: validHyperparam }
+                          { validator: validHyperParams }
                         ]}
                       >
-                        <Input disabled={field.name < seniorConfig.length} allowClear maxLength={50} />
+                        <Input disabled={field.name < config.length} allowClear maxLength={50} />
                       </Form.Item>
                     </Col>
                     <Col flex={1}>
@@ -60,10 +75,8 @@ const DockerConfigForm = ({ show, form, seniorConfig }) => {
                         {...field}
                         name={[field.name, 'value']}
                         fieldKey={[field.fieldKey, 'value']}
-                        rules={[
-                        ]}
                       >
-                        {seniorConfig[field.name] && typeof seniorConfig[field.name].value === 'number' ?
+                        {config[field.name] && typeof config[field.name].value === 'number' ?
                           <InputNumber maxLength={20} style={{ minWidth: '100%' }} /> : <Input allowClear maxLength={100} />}
                       </Form.Item>
                     </Col>
@@ -72,7 +85,7 @@ const DockerConfigForm = ({ show, form, seniorConfig }) => {
                         {field.name === fields.length - 1 ?
                           <AddTwoIcon style={{ color: '#36cbcb' }} onClick={() => add()} title={t('task.train.parameter.add.label')} /> :
                           null}
-                        {field.name < seniorConfig.length ? null : <AddDelTwoIcon onClick={() => remove(field.name)} />}
+                        {field.name < config.length ? null : <AddDelTwoIcon onClick={() => remove(field.name)} />}
                       </Space>
                     </Col>
                   </Row>

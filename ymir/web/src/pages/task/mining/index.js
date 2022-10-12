@@ -38,7 +38,7 @@ function Mining({ datasetCache, ...func }) {
   const [dataset, setDataset] = useState({})
   const [selectedModel, setSelectedModel] = useState({})
   const [form] = Form.useForm()
-  const [seniorConfig, setSeniorConfig] = useState([])
+  const [seniorConfig, setSeniorConfig] = useState({})
   const [topk, setTopk] = useState(true)
   const [gpu_count, setGPU] = useState(0)
   const [imageHasInference, setImageHasInference] = useState(false)
@@ -62,10 +62,6 @@ function Mining({ datasetCache, ...func }) {
   useEffect(() => {
     setGPU(selectOpenpai ? OPENPAI_MAX_GPU_COUNT : sys.gpu_count || 0)
   }, [selectOpenpai])
-
-  useEffect(() => {
-    form.setFieldsValue({ hyperparam: seniorConfig })
-  }, [seniorConfig])
 
   useEffect(() => {
     did && func.getDataset(did)
@@ -121,10 +117,8 @@ function Mining({ datasetCache, ...func }) {
     setConfig(removeLiveCodeConfig(configObj.config))
   }
 
-  function setConfig(config) {
-    const params = Object.keys(config).filter(key => key !== 'gpu_count').map(key => ({ key, value: config[key] }))
-    console.log('params:', params)
-    setSeniorConfig(params)
+  function setConfig(config = {}) {
+    setSeniorConfig(config)
   }
 
   const onFinish = async (values) => {
