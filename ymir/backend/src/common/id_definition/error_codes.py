@@ -169,6 +169,8 @@ class APIErrorCode(IntEnum):
     FAILED_TO_PARSE_VIZ_RESP = 112102
     VIZ_TIMEOUT = 112103
 
+    VISUALIZATION_NOT_FOUND = 112201
+
 
 class UpdaterErrorCode(IntEnum):
     INVALID_USER_LABEL_FILE = 170001
