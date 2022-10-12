@@ -563,29 +563,6 @@ class ControllerClient:
         )
         return self.send(req)
 
-    def create_visualization(
-        self,
-        user_id: int,
-        project_id: int,
-        vis_tool_id: str,
-        iou_thr: Optional[float],
-        conf_thr: Optional[float],
-        datasets: List[Dict],
-    ) -> Dict:
-        req = ControllerRequest(
-            type=TaskType.visualization,
-            user_id=user_id,
-            project_id=project_id,
-            args={
-                "vis_tool_id": vis_tool_id,
-                "in_dataset_ids": [dataset["hash"] for dataset in datasets],
-                "in_dataset_names": [dataset["name"] for dataset in datasets],
-                "iou_thr": iou_thr,
-                "conf_thr": conf_thr,
-            },
-        )
-        return self.send(req)
-
     def merge_datasets(
         self,
         user_id: int,
