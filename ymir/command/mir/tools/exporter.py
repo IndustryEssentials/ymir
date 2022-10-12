@@ -60,7 +60,7 @@ def parse_asset_format(asset_format_str: str) -> "mirpb.AssetFormat.V":
 
 def parse_export_type(type_str: str) -> Tuple["mirpb.AnnoFormat.V", "mirpb.AssetFormat.V"]:
     if not type_str:
-        return (mirpb.AnnoFormat.AF_NO_ANNOTATION, mirpb.AssetFormat.AF_RAW)
+        return (mirpb.AnnoFormat.AF_DET_PASCAL_VOC, mirpb.AssetFormat.AF_RAW)
 
     anno_str, asset_str = type_str.split(':')
     return (annotations.parse_anno_format(anno_str), parse_asset_format(asset_str))
@@ -273,8 +273,8 @@ def _export_mirdatas_to_raw(
         index_gt_f.close()
     if pred_dir and index_pred_f:
         index_pred_f.close()
-    for index_f in index_tvt_f.values():
-        index_f.close()
+    for single_idx_f in index_tvt_f.values():
+        single_idx_f.close()
 
     return MirCode.RC_OK
 
