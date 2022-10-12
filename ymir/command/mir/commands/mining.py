@@ -144,10 +144,10 @@ class CmdMining(base.BaseCommand):
             return ret
 
         # export assets.
+        # mining export abs assets path, which will be converted in-docker path in infer.py.
         ec = mirpb.ExportConfig(asset_format=mirpb.AssetFormat.AF_RAW,
                                 asset_dir=work_asset_path,
-                                asset_index_file=os.path.join(work_in_path, "candidate-src-index.tsv"),
-                                asset_index_prefix="/in/assets",
+                                asset_index_file=work_index_file,
                                 media_location=media_location,
                                 need_sub_folder=True,
                                 anno_format=mirpb.AnnoFormat.AF_NO_ANNOTATION,)
