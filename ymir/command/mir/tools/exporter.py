@@ -94,10 +94,12 @@ def _gen_abs_idx_file_path(abs_dir: str,
                            need_sub_folder: bool,) -> Tuple[str, str]:
     abs_path: str = mir_storage.get_asset_storage_path(location=abs_dir,
                                                        hash=file_name,
+                                                       make_dirs=True,
                                                        need_sub_folder=need_sub_folder)
     abs_file = f"{abs_path}.{file_ext}"
     index_path: str = mir_storage.get_asset_storage_path(location=idx_dir,
                                                          hash=file_name,
+                                                         make_dirs=False,
                                                          need_sub_folder=need_sub_folder)
     idx_file = f"{index_path}.{file_ext}"
     return (abs_file, idx_file)
