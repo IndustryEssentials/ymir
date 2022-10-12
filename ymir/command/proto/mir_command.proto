@@ -396,3 +396,24 @@ message AnnoStats {
 
     reserved 4, 5, 6;
 };
+
+message ExportConfig {
+    // Asset config.
+    AssetFormat asset_format = 1;
+    string asset_dir = 2;
+    string asset_index_file = 3;
+    // Index file writes abs path. In TMI case, path should be converted, e.g. /in/assets.
+    string asset_index_prefix = 4;
+    string media_location = 5;
+    bool need_sub_folder = 6;
+
+    // Annotation config.
+    AnnoFormat anno_format = 50;
+    string gt_dir = 51;
+    string gt_index_file = 52;
+    string gt_index_prefix = 53;
+    string pred_dir = 54;
+    string pred_index_file = 55;
+    string pred_index_prefix = 56;
+    string tvt_index_dir = 57;
+}

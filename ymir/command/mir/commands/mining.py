@@ -2,7 +2,6 @@ import argparse
 import json
 import logging
 import os
-import shutil
 from subprocess import CalledProcessError
 from typing import Dict, Optional, Set
 
@@ -144,20 +143,20 @@ class CmdMining(base.BaseCommand):
             logging.error('mining enviroment prepare error!')
             return ret
 
-        exporter.export_mirdatas_to_dir(
+        # export assets.
+        # mining export abs assets path, which will be converted in-docker path in infer.py.
+        ec = mirpb.ExportConfig(asset_format=mirpb.AssetFormat.AF_RAW,
+                                asset_dir=work_asset_path,
+                                asset_index_file=work_index_file,
+                                media_location=media_location,
+                                need_sub_folder=True,
+                                anno_format=mirpb.AnnoFormat.AF_NO_ANNOTATION,)
+        export_code = exporter.export_mirdatas_to_dir(
             mir_metadatas=mir_metadatas,
-            asset_format=mirpb.AssetFormat.AF_RAW,
-            anno_format=mirpb.AnnoFormat.AF_NO_ANNOTATION,
-            asset_dir=work_asset_path,
-            media_location=media_location,
-            need_sub_folder=True,
+            ec=ec,
         )
-        # replace file_path in asset index files.
-        exporter.replace_index_content_inplace(filename=os.path.join(work_asset_path, exporter.get_index_filename()),
-                                               asset_search=work_asset_path,
-                                               asset_replace="/in/assets")
-        shutil.copyfile(src=os.path.join(work_asset_path, exporter.get_index_filename()),
-                        dst=os.path.join(work_in_path, 'candidate-src-index.tsv'))
+        if export_code != MirCode.RC_OK:
+            return export_code
 
         model_hash, stage_name = models.parse_model_hash_stage(model_hash_stage)
         model_storage = models.prepare_model(model_location=model_location,
