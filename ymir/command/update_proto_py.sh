@@ -2,13 +2,13 @@
 
 # Python version == 3.8.10
 # protoc version == 3.13.0
-# https://github.com/protocolbuffers/protobuf/releases/download/v3.14.0
+# https://github.com/protocolbuffers/protobuf/releases/download/v3.13.0
 # mv bin/protoc /usr/local
 # mv include/google /usr/local/include/
 
 # pip install protobuf==3.13.0
 # pip install mypy-protobuf==3.0.0
-# protoc-gen-go 1.28.1
+# go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.28.1
 
 set -e
 

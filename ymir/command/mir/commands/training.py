@@ -273,45 +273,30 @@ class CmdTrain(base.BaseCommand):
 
         type_id_idx_mapping = {type_id: index for (index, type_id) in enumerate(type_ids_list)}
         anno_format, asset_format = exporter.parse_export_type(type_str=executor_config.get('export_format', ''))
-        exporter.export_mirdatas_to_dir(
+        ec = mirpb.ExportConfig(asset_format=asset_format,
+                                asset_dir=asset_dir,
+                                asset_index_file=os.path.join(work_dir_in, "idx-assets.tsv"),
+                                asset_index_prefix="/in/assets",
+                                media_location=media_location,
+                                need_sub_folder=True,
+                                anno_format=anno_format,
+                                gt_dir=work_dir_gt,
+                                gt_index_file=os.path.join(work_dir_in, "idx-gt.tsv"),
+                                gt_index_prefix="/in/annotations",
+                                pred_dir=work_dir_pred,
+                                pred_index_file=os.path.join(work_dir_in, "idx-pred.tsv"),
+                                pred_index_prefix="/in/predictions",
+                                tvt_index_dir=work_dir_in,)
+        export_code = exporter.export_mirdatas_to_dir(
             mir_metadatas=mir_metadatas,
-            asset_format=asset_format,
-            asset_dir=asset_dir,
-            media_location=media_location,
-            anno_format=anno_format,
-            pred_dir=work_dir_pred,
-            gt_dir=work_dir_gt,
+            ec=ec,
             mir_annotations=mir_annotations,
             class_ids_mapping=type_id_idx_mapping,
             cls_id_mgr=cls_mgr,
-            tvt_index_dir=work_dir_in,
-            need_sub_folder=True,
         )
-
-        # replace file_path in asset/anno index files.
-        exporter.replace_index_content_inplace(filename=os.path.join(asset_dir, exporter.get_index_filename()),
-                                               asset_search=asset_dir,
-                                               asset_replace="/in/assets")
-        for tvt_type in [mirpb.TvtType.TvtTypeTraining, mirpb.TvtType.TvtTypeValidation]:
-            anno_index_file_gt = exporter.get_index_filename(is_asset=False, is_pred=False, tvt_type=tvt_type)
-            exporter.replace_index_content_inplace(
-                filename=os.path.join(work_dir_in, anno_index_file_gt),
-                asset_search=asset_dir,
-                asset_replace="/in/assets",
-                anno_search=work_dir_gt,
-                anno_replace="/in/annotations",
-            )
-
-            anno_index_file_pred = exporter.get_index_filename(is_asset=False, is_pred=True, tvt_type=tvt_type)
-            exporter.replace_index_content_inplace(
-                filename=os.path.join(work_dir_in, anno_index_file_pred),
-                asset_search=asset_dir,
-                asset_replace="/in/assets",
-                anno_search=work_dir_pred,
-                anno_replace="/in/prediction",
-            )
-
-        logging.info("starting train docker container")
+        if export_code != MirCode.RC_OK:
+            return export_code
+        logging.info("finish exporting, starting train docker container")
 
         # generate configs
         out_config_path = os.path.join(work_dir_in, "config.yaml")
