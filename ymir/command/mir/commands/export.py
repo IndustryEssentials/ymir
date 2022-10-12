@@ -77,15 +77,17 @@ class CmdExport(base.BaseCommand):
             mir_task_id=src_rev_tid.tid,
             ms_list=[mirpb.MirStorage.MIR_METADATAS, mirpb.MirStorage.MIR_ANNOTATIONS])
 
+        ec = mirpb.ExportConfig(asset_format=asset_format,
+                                asset_dir=asset_dir,
+                                media_location=media_location,
+                                need_sub_folder=True,
+                                anno_format=anno_format,
+                                gt_dir=gt_dir,
+                                pred_dir=pred_dir,)
         export_code = exporter.export_mirdatas_to_dir(
             mir_metadatas=mir_metadatas,
+            ec=ec,
             mir_annotations=mir_annotations,
-            asset_format=asset_format,
-            anno_format=anno_format,
-            asset_dir=asset_dir,
-            pred_dir=pred_dir,
-            gt_dir=gt_dir,
-            media_location=media_location,
             class_ids_mapping=class_ids_mapping,
             cls_id_mgr=cls_mgr,
         )
