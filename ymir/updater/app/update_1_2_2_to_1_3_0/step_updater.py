@@ -42,8 +42,11 @@ def update_repo(mir_root: str, assets_root: str, models_root: str) -> None:
         datas_src = _load(mir_root, rev_tid)
         if datas_src is None:
             continue
+        logging.info('    loaded')
         datas_dst = _update(datas_src, assets_root, models_root)
+        logging.info('    updated')
         _save(mir_root, rev_tid, datas_dst)
+        logging.info('    saved')
 
 
 def _load(mir_root: str, rev_tid: revs_parser.TypRevTid) -> _MirDatasSrc:
@@ -94,6 +97,7 @@ def _update_metadatas(mir_metadatas_src: pb_src.MirMetadatas, assets_root: str) 
         attr_dst.timestamp.duration = attr_src.timestamp.duration
 
         mir_metadatas_dst.attributes[asset_id].CopyFrom(attr_dst)
+    logging.info('    updated mir_metadatas')
     return mir_metadatas_dst
 
 
@@ -114,6 +118,7 @@ def _update_annotations(mir_annotations_src: pb_src.MirAnnotations) -> pb_dst.Mi
             single_image_cks_dst.cks[k] = v
         single_image_cks_dst.image_quality = single_image_cks_src.image_quality
 
+    logging.info('    updated mir_annotations')
     return mir_annotations_dst
 
 
@@ -143,7 +148,7 @@ def _update_task(task_src: pb_src.Task, models_root: str) -> pb_dst.Task:
         model_dst.class_names[:] = get_model_class_names(task_src.serialized_executor_config)
 
     # evaluations: no need to update
-
+    logging.info('    updated task')
     return task_dst
 
 
