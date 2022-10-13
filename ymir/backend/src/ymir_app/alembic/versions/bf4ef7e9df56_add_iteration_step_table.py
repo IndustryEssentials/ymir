@@ -1,8 +1,8 @@
 """add iteration_step table
 
-Revision ID: 2278df7c86ad
+Revision ID: bf4ef7e9df56
 Revises: 9bb7bb8b71c3
-Create Date: 2022-10-11 10:48:28.244903
+Create Date: 2022-10-13 17:20:49.088223
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = "2278df7c86ad"
+revision = "bf4ef7e9df56"
 down_revision = "9bb7bb8b71c3"
 branch_labels = None
 depends_on = None
@@ -22,12 +22,10 @@ def upgrade() -> None:
         "iteration_step",
         sa.Column("id", sa.Integer(), autoincrement=True, nullable=False),
         sa.Column("name", sa.String(length=100), nullable=False),
-        sa.Column("task_type", sa.Integer(), nullable=False),
         sa.Column("iteration_id", sa.Integer(), nullable=False),
+        sa.Column("task_type", sa.Integer(), nullable=False),
         sa.Column("task_id", sa.Integer(), nullable=True),
-        sa.Column("input_dataset_id", sa.Integer(), nullable=True),
-        sa.Column("output_dataset_id", sa.Integer(), nullable=True),
-        sa.Column("output_model_id", sa.Integer(), nullable=True),
+        sa.Column("task_parameters", sa.Text(length=20000), nullable=True),
         sa.Column("is_finished", sa.Boolean(), nullable=False),
         sa.Column("is_deleted", sa.Boolean(), nullable=False),
         sa.Column("create_datetime", sa.DateTime(), nullable=False),
@@ -36,13 +34,11 @@ def upgrade() -> None:
     )
     with op.batch_alter_table("iteration_step", schema=None) as batch_op:
         batch_op.create_index(batch_op.f("ix_iteration_step_id"), ["id"], unique=False)
-        batch_op.create_index(batch_op.f("ix_iteration_step_input_dataset_id"), ["input_dataset_id"], unique=False)
         batch_op.create_index(batch_op.f("ix_iteration_step_iteration_id"), ["iteration_id"], unique=False)
         batch_op.create_index(batch_op.f("ix_iteration_step_name"), ["name"], unique=False)
-        batch_op.create_index(batch_op.f("ix_iteration_step_output_dataset_id"), ["output_dataset_id"], unique=False)
-        batch_op.create_index(batch_op.f("ix_iteration_step_output_model_id"), ["output_model_id"], unique=False)
         batch_op.create_index(batch_op.f("ix_iteration_step_task_id"), ["task_id"], unique=False)
         batch_op.create_index(batch_op.f("ix_iteration_step_task_type"), ["task_type"], unique=False)
+
     # ### end Alembic commands ###
 
 
@@ -51,11 +47,8 @@ def downgrade() -> None:
     with op.batch_alter_table("iteration_step", schema=None) as batch_op:
         batch_op.drop_index(batch_op.f("ix_iteration_step_task_type"))
         batch_op.drop_index(batch_op.f("ix_iteration_step_task_id"))
-        batch_op.drop_index(batch_op.f("ix_iteration_step_output_model_id"))
-        batch_op.drop_index(batch_op.f("ix_iteration_step_output_dataset_id"))
         batch_op.drop_index(batch_op.f("ix_iteration_step_name"))
         batch_op.drop_index(batch_op.f("ix_iteration_step_iteration_id"))
-        batch_op.drop_index(batch_op.f("ix_iteration_step_input_dataset_id"))
         batch_op.drop_index(batch_op.f("ix_iteration_step_id"))
 
     op.drop_table("iteration_step")

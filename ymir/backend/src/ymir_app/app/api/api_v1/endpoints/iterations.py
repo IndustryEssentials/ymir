@@ -155,11 +155,7 @@ def start_iteration_step(
     if not task_in_db:
         raise TaskNotFound()
     task = schemas.Task.from_orm(task_in_db)
-    result_model_id = task.result_model.id if task.result_model else None
-    result_dataset_id = task.result_dataset.id if task.result_dataset else None
-    step = crud.iteration_step.record_result(
-        db, id=step_id, task_id=task_in_db.id, result_model_id=result_model_id, result_dataset_id=result_dataset_id
-    )
+    step = crud.iteration_step.start(db, id=step_id, task_id=task_in_db.id, task_parameters=task_in_db.parameters)
     return {"result": step}
 
 

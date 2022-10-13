@@ -1,3 +1,4 @@
+import json
 from typing import Optional
 from sqlalchemy.orm import Session
 
@@ -13,30 +14,27 @@ class StepNotFound(Exception):
 
 class CRUDIterationStep(CRUDBase[IterationStep, IterationStepCreate, IterationStepUpdate]):
     def get_next_step(self, db: Session, id: int) -> Optional[IterationStep]:
-        step = self.get(db, id=id)
+        step = self.get(db, id)
         if not step:
             raise StepNotFound()
         steps_in_same_iteration = self.get_multi_by_iteration(db, iteration_id=step.iteration_id)
         current_idx = [i.id for i in steps_in_same_iteration].index(step.id)
         return steps_in_same_iteration[current_idx - 1]
 
-    def record_result(
-        self, db: Session, id: int, task_id: int, result_dataset_id: Optional[int], result_model_id: Optional[int]
-    ) -> IterationStep:
+    def start(self, db: Session, id: int, task_id: int, task_parameters: Optional[str]) -> IterationStep:
         """
         start given iteration_step:
         1. create task
         2. save task result in related step
         """
-        step = self.get(db, id=id)
+        step = self.get(db, id)
         if not step:
             raise StepNotFound()
-        updates = {"task_id": task_id, "output_dataset_id": result_dataset_id, "output_model_id": result_model_id}
-        updates = {k: v for k, v in updates.items() if v is not None}
+        updates = {"task_id": task_id, "task_parameters": task_parameters}
         return self.update(db, db_obj=step, obj_in=updates)
 
     def finish(self, db: Session, id: int) -> IterationStep:
-        step = self.get(db, id=id)
+        step = self.get(db, id)
         if not step:
             raise StepNotFound()
 
@@ -44,7 +42,13 @@ class CRUDIterationStep(CRUDBase[IterationStep, IterationStepCreate, IterationSt
             # save result as input of next step when possible
             next_step = self.get_next_step(db, step.id)
             if next_step:
-                self.update(db, db_obj=next_step, obj_in={"input_dataset_id": step.output_dataset_id})
+                if step.result:
+                    task_parameters = json.loads(next_step.task_parameters) if next_step.task_parameters else {}
+                    if step.result_dataset:
+                        task_parameters["dataset_id"] = step.result_dataset.id
+                    if step.result_model:
+                        task_parameters["model_id"] = step.result_model.id
+                    self.update(db, db_obj=next_step, obj_in={"task_parameters": json.dumps(task_parameters)})
 
         # set current step as finished no matter what
         return self.update(db, db_obj=step, obj_in={"is_finished": True})
