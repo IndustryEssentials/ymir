@@ -97,7 +97,7 @@ def _update_metadatas(mir_metadatas_src: pb_src.MirMetadatas, assets_root: str) 
         attr_dst.timestamp.duration = attr_src.timestamp.duration
 
         mir_metadatas_dst.attributes[asset_id].CopyFrom(attr_dst)
-    logging.info('    updated mir_metadatas')
+    logging.info(f"    updated mir_metadatas, assets: {len(mir_metadatas_dst.attributes)}")
     return mir_metadatas_dst
 
 
@@ -118,7 +118,8 @@ def _update_annotations(mir_annotations_src: pb_src.MirAnnotations) -> pb_dst.Mi
             single_image_cks_dst.cks[k] = v
         single_image_cks_dst.image_quality = single_image_cks_src.image_quality
 
-    logging.info('    updated mir_annotations')
+    logging.info(f"    updated mir_annotations, gt: {len(mir_annotations_dst.ground_truth.image_annotations)}, "
+                 f"prediction: {len(mir_annotations_dst.prediction.image_annotations)}")
     return mir_annotations_dst
 
 
