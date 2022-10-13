@@ -105,9 +105,8 @@ def _get_update_steps(src_ver: str, dst_ver: str) -> List[_StepUpdaterType]:
 def _update_user_labels(label_path: str, dst_ver: str) -> None:
     logging.info(f"updating user labels: {label_path}, 110 -> 130")
 
-    # todo: uncomment this
-    # with open(label_path, 'r') as f:
-    #     label_contents = yaml.safe_load(f)
-    # label_contents['ymir_version'] = dst_ver
-    # with open(label_path, 'w') as f:
-    #     yaml.safe_dump(label_contents, f)
+    with open(label_path, 'r') as f:
+        label_contents = yaml.safe_load(f)
+    label_contents['ymir_version'] = dst_ver
+    with open(label_path, 'w') as f:
+        yaml.safe_dump(label_contents, f)
