@@ -11,7 +11,7 @@ import {
 import t from "@/utils/t"
 import { format } from "@/utils/date"
 import { getTensorboardLink } from "@/services/common"
-import { TASKTYPES } from "@/constants/task"
+import { TASKTYPES, getTaskTypeLabel } from "@/constants/task"
 import useFetch from '@/hooks/useFetch'
 import { getRecommendStage } from '@/constants/model'
 
@@ -353,7 +353,7 @@ function TaskDetail({ task = {} }) {
         column={2}
         bordered
         labelStyle={labelStyle}
-        title={<div className='title'>{t("dataset.column.source")}</div>}
+        title={<div className='title'>{t("dataset.column.source") + " > " + t(getTaskTypeLabel(task.type))}</div>}
         className='infoTable'
       >
         {task.id ? renderTypes() : null}
