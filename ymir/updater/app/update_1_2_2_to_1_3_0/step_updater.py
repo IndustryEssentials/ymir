@@ -36,6 +36,10 @@ def update_repo(mir_root: str, assets_root: str, models_root: str) -> None:
         if not re.match(f"^.{{{IDProto.ID_LENGTH}}}@.{{{IDProto.ID_LENGTH}}}$", tag):
             logging.info(f"    skip: {tag}")
             continue
+        if tag[32] != '0':
+            logging.info(f"    skip: {tag}, middle step")
+            remove_old_tag(mir_root=mir_root, tag=tag)
+            continue
 
         logging.info(f"    updating: {tag}")
         rev_tid = revs_parser.parse_single_arg_rev(src_rev=tag, need_tid=True)
@@ -56,7 +60,7 @@ def _load(mir_root: str, rev_tid: revs_parser.TypRevTid) -> _MirDatasSrc:
             ms_list=[pb_src.MIR_METADATAS, pb_src.MIR_ANNOTATIONS, pb_src.MIR_TASKS])
         return (m, a, t.tasks[t.head_task_id])
     except DecodeError as e:
-        logging.warning(f"{e}, remove this tag: {rev_tid.rev_tid}")
+        logging.warning(f"skip: {rev_tid.rev_tid}, {e}")
         remove_old_tag(mir_root=mir_root, tag=rev_tid.rev_tid)
         return None
 
