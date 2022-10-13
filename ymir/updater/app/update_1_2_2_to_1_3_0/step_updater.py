@@ -34,14 +34,14 @@ def update_repo(mir_root: str, assets_root: str, models_root: str) -> None:
 
     for tag in get_repo_tags(mir_root):
         if not re.match(f"^.{{{IDProto.ID_LENGTH}}}@.{{{IDProto.ID_LENGTH}}}$", tag):
-            logging.info(f"    skip: {tag}")
+            logging.info(f"  skip: {tag}")
             continue
         if tag[32] != '0':
-            logging.info(f"    skip: {tag}, middle step")
+            logging.info(f"  skip: {tag}, middle step")
             remove_old_tag(mir_root=mir_root, tag=tag)
             continue
 
-        logging.info(f"    updating: {tag}")
+        logging.info(f"  updating: {tag}")
         rev_tid = revs_parser.parse_single_arg_rev(src_rev=tag, need_tid=True)
         datas_src = _load(mir_root, rev_tid)
         if datas_src is None:
@@ -60,7 +60,7 @@ def _load(mir_root: str, rev_tid: revs_parser.TypRevTid) -> _MirDatasSrc:
             ms_list=[pb_src.MIR_METADATAS, pb_src.MIR_ANNOTATIONS, pb_src.MIR_TASKS])
         return (m, a, t.tasks[t.head_task_id])
     except DecodeError as e:
-        logging.warning(f"skip: {rev_tid.rev_tid}, {e}")
+        logging.warning(f"    skip: {rev_tid.rev_tid}, {e}")
         remove_old_tag(mir_root=mir_root, tag=rev_tid.rev_tid)
         return None
 
@@ -151,7 +151,7 @@ def _update_task(task_src: pb_src.Task, models_root: str) -> pb_dst.Task:
         model_dst.class_names[:] = get_model_class_names(task_src.serialized_executor_config)
 
     # evaluations: no need to update
-    logging.info('    updated task')
+    logging.info('  updated task')
     return task_dst
 
 

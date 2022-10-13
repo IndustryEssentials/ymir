@@ -34,7 +34,8 @@ def update(sandbox_root: str, assets_root: str, models_root: str, src_ver: str, 
             # update user repos
             if repo_func:
                 for user_id, repo_ids in user_to_repos.items():
-                    for repo_id in repo_ids:
+                    sorted_repo_ids = sorted(repo_ids)
+                    for repo_id in sorted_repo_ids:
                         repo_func(os.path.join(sandbox_root, user_id, repo_id), assets_root, models_root)
             # update models
             if models_func:
