@@ -44,9 +44,7 @@ def update_repo(mir_root: str, assets_root: str, models_root: str) -> None:
             continue
         logging.info('    loaded')
         datas_dst = _update(datas_src, assets_root, models_root)
-        logging.info('    updated')
         _save(mir_root, rev_tid, datas_dst)
-        logging.info('    saved')
 
 
 def _load(mir_root: str, rev_tid: revs_parser.TypRevTid) -> _MirDatasSrc:
