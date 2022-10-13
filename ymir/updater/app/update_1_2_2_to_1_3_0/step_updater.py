@@ -151,7 +151,7 @@ def _update_task(task_src: pb_src.Task, models_root: str) -> pb_dst.Task:
         model_dst.class_names[:] = get_model_class_names(task_src.serialized_executor_config)
 
     # evaluations: no need to update
-    logging.info('  updated task')
+    logging.info('    updated task')
     return task_dst
 
 
