@@ -41,7 +41,6 @@ function Train({ allDatasets, datasetCache, ...func }) {
   const { mid, image, iterationId, outputKey, currentStage, test, from } = location.query
   const stage = string2Array(mid)
   const did = Number(location.query.did)
-  // const [project, setProject] = useState({})
   const [selectedKeywords, setSelectedKeywords] = useState([])
   const [dataset, setDataset] = useState({})
   const [trainSet, setTrainSet] = useState(null)
@@ -109,10 +108,6 @@ function Train({ allDatasets, datasetCache, ...func }) {
   useEffect(() => {
     pid && func.getDatasets(pid)
   }, [pid])
-
-  // useEffect(() => {
-  //   form.setFieldsValue({ hyperparam: seniorConfig })
-  // }, [seniorConfig])
 
   useEffect(() => {
     trainDataset &&
