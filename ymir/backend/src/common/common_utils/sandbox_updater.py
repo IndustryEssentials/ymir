@@ -53,6 +53,7 @@ def update(sandbox_root: str, assets_root: str, models_root: str, src_ver: str, 
 
 def _backup(sandbox_root: str, models_root: str) -> None:
     # user dirs in sandbox_root
+    logging.info('Backing up sandboxes, this will take a few minutes')
     sandbox_backup_dir = os.path.join(sandbox_root, 'sandbox-bk')
     os.makedirs(sandbox_backup_dir, exist_ok=False)
     for user_id in detect_users_and_repos(sandbox_root):
@@ -60,8 +61,11 @@ def _backup(sandbox_root: str, models_root: str) -> None:
                         dst=os.path.join(sandbox_backup_dir, user_id),
                         symlinks=True)
 
+    logging.info('Backing up models, this will take a few minutes')
     models_backup_dir = os.path.join(sandbox_root, 'ymir-models-bk')
     shutil.copytree(src=models_root, dst=models_backup_dir)
+    
+    logging.info('Backup done')
 
 
 def _roll_back(sandbox_root: str, models_root: str) -> None:

@@ -3,10 +3,10 @@ import os
 import re
 import shutil
 import tarfile
-import time
 from typing import Tuple
 
 from google.protobuf.json_format import MessageToDict, ParseDict
+from google.protobuf.message import DecodeError
 import yaml
 
 from id_definition.task_id import IDProto
@@ -40,17 +40,24 @@ def update_repo(mir_root: str, assets_root: str, models_root: str) -> None:
         logging.info(f"    updating: {tag}")
         rev_tid = revs_parser.parse_single_arg_rev(src_rev=tag, need_tid=True)
         datas_src = _load(mir_root, rev_tid)
+        if datas_src is None:
+            continue
         datas_dst = _update(datas_src, assets_root, models_root)
         _save(mir_root, rev_tid, datas_dst)
 
 
 def _load(mir_root: str, rev_tid: revs_parser.TypRevTid) -> _MirDatasSrc:
-    m, a, t = mso_src.MirStorageOps.load_multiple_storages(
-        mir_root=mir_root,
-        mir_branch=rev_tid.rev,
-        mir_task_id=rev_tid.tid,
-        ms_list=[pb_src.MIR_METADATAS, pb_src.MIR_ANNOTATIONS, pb_src.MIR_TASKS])
-    return (m, a, t.tasks[t.head_task_id])
+    try:
+        m, a, t = mso_src.MirStorageOps.load_multiple_storages(
+            mir_root=mir_root,
+            mir_branch=rev_tid.rev,
+            mir_task_id=rev_tid.tid,
+            ms_list=[pb_src.MIR_METADATAS, pb_src.MIR_ANNOTATIONS, pb_src.MIR_TASKS])
+        return (m, a, t.tasks[t.head_task_id])
+    except DecodeError as e:
+        logging.warning(f"{e}, remove this tag: {rev_tid.rev_tid}")
+        remove_old_tag(mir_root=mir_root, tag=rev_tid.rev_tid)
+        return None
 
 
 def _update(datas_src: _MirDatasSrc, assets_root: str, models_root: str) -> _MirDatasDst:
