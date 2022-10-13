@@ -23,7 +23,7 @@ class CmdCommit(base.BaseCommand):
 
         repo_git = scm.Scm(root_dir=mir_root, scm_executable='git')
         git_attr_path = os.path.join(mir_root, '.gitattributes')
-        if not os.path.isfile(git_attr_path):
+        if _need_to_update_git_attr(git_attr_path):
             with open(git_attr_path, 'w') as f:
                 f.write('*.mir binary\n')
         repo_git.add('.')
@@ -36,6 +36,17 @@ class CmdCommit(base.BaseCommand):
         logging.debug("command commit: %s", self.args)
 
         return CmdCommit.run_with_args(mir_root=self.args.mir_root, msg=self.args.cmt_msg)
+
+
+def _need_to_update_git_attr(git_attr_path: str) -> bool:
+    if not os.path.isfile(git_attr_path):
+        return True
+    with open(git_attr_path, 'r') as f:
+        lines = f.read().splitlines()
+    for line in lines:
+        if line == '*.mir binary':
+            return False
+    return True
 
 
 def bind_to_subparsers(subparsers: argparse._SubParsersAction,
