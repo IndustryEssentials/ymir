@@ -33,33 +33,33 @@ function List({ project }) {
     {
       title: showTitle("iteration.column.premining"),
       dataIndex: "miningDatasetLabel",
-      render: (label, { id, versionName, entities }) => renderPop(label, entities?.miningSet, <MiningSampleRates iid={id} />),
+      render: (label, { id, versionName, miningSet }) => renderPop(label, datasets[miningSet], <MiningSampleRates iid={id} />),
       ellipsis: true,
     },
     {
       title: showTitle("iteration.column.mining"),
       dataIndex: "miningResultDatasetLabel",
-      render: (label, { entities }) => renderPop(label, entities?.miningResult),
+      render: (label, { miningResult }) => renderPop(label, datasets[miningResult]),
       ellipsis: true,
     },
     {
       title: showTitle("iteration.column.label"),
       dataIndex: "labelDatasetLabel",
-      render: (label, { entities }) => renderPop(label, entities?.labelSet),
+      render: (label, { labelSet }) => renderPop(label, datasets[labelSet]),
       align: 'center',
       ellipsis: true,
     },
     {
       title: showTitle("iteration.column.test"),
       dataIndex: "testDatasetLabel",
-      render: (label, { entities }) => renderPop(label, entities?.testSet),
+      render: (label, { testSet }) => renderPop(label, datasets[testSet]),
       align: 'center',
       ellipsis: true,
     },
     {
       title: showTitle("iteration.column.merging"),
       dataIndex: "trainUpdateDatasetLabel",
-      render: (label, { trainEffect, entities }) => renderPop(label, entities?.trainUpdateSet,
+      render: (label, { trainEffect, trainUpdateSet }) => renderPop(label, datasets[trainUpdateSet],
         null, <span className={s.extraTag}>{renderExtra(trainEffect)}</span>),
       align: 'center',
       ellipsis: true,
@@ -82,6 +82,7 @@ function List({ project }) {
   ]
 
   function renderPop(label, dataset = {}, ccontent, extra = '') {
+    console.log('dataset:', dataset)
     dataset.project = project
     const content = ccontent || <SampleRates label={label} keywords={project.keywords} dataset={dataset} progressWidth={0.4} />
     return <Popover content={content} overlayInnerStyle={{ minWidth: 500 }}>
