@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react"
 import { Table, Popover, } from "antd"
+import { useSelector } from 'umi'
 
 import t from "@/utils/t"
 import { percent, isNumber } from '@/utils/number'
@@ -11,22 +12,17 @@ import MiningSampleRates from "@/components/dataset/miningSampleRates"
 
 import s from "./index.less"
 
-function RatesHOC(Rates) {
-  function RatesRender(props) {
-    return <Rates {...props} />
-  }
-  return RatesRender
-}
-
 function List({ project }) {
   const [iterations, getIterations] = useFetch('iteration/getIterations', [])
   const [list, setList] = useState([])
+  const datasets = useSelector(({ dataset }) => dataset.dataset)
+  const models = useSelector(({ model }) => model.model)
 
   useEffect(() => {
     project?.id && getIterations({ id: project.id, more: true })
   }, [project])
 
-  useEffect(() => iterations.length && setList(fetchHandle(iterations)), [iterations])
+  useEffect(() => setList(iterations.length ? fetchHandle(iterations) : []), [iterations])
 
   const columns = [
     {
@@ -71,13 +67,16 @@ function List({ project }) {
     {
       title: showTitle("iteration.column.training"),
       dataIndex: 'map',
-      render: (map, { entities, mapEffect }) => validModel(entities?.model || {}) ? <div className={s.td}>
-        <span style={{ display: 'inline-block', width: '70%', overflow: 'hidden', textOverflow: 'ellipsis'}}>
-          {entities?.model?.name}
+      render: (map, { model, mapEffect }) => {
+        const md = models[model] || {}
+        return validModel(md) ? <div className={s.td}>
+        <span style={{ display: 'inline-block', width: '70%', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+          {md.name}
         </span>
         <span>{map >= 0 ? percent(map) : null}</span>
         <span className={s.extraTag}>{renderExtra(mapEffect, true)}</span>
-      </div> : null,
+      </div> : null 
+      },
       align: 'center',
     },
   ]
@@ -106,28 +105,26 @@ function List({ project }) {
         labelSet,
         testSet,
         model,
-      } = iteration.entities
+      } = iteration
       return {
         ...iteration,
-        trainUpdateDatasetLabel: renderDatasetLabel(trainUpdateSet),
-        miningDatasetLabel: renderDatasetLabel(miningSet),
-        miningResultDatasetLabel: renderDatasetLabel(miningResult),
-        labelDatasetLabel: renderDatasetLabel(labelSet),
-        testDatasetLabel: renderDatasetLabel(testSet),
-        map: model?.map,
+        trainUpdateDatasetLabel: renderDatasetLabel(datasets[trainUpdateSet]),
+        miningDatasetLabel: renderDatasetLabel(datasets[miningSet]),
+        miningResultDatasetLabel: renderDatasetLabel(datasets[miningResult]),
+        labelDatasetLabel: renderDatasetLabel(datasets[labelSet]),
+        testDatasetLabel: renderDatasetLabel(datasets[testSet]),
+        map: models[model]?.map,
       }
     })
     iters.reduce((prev, current) => {
       const prevMap = prev.map || 0
       const currentMap = current.map || 0
-      const prevEntities = prev?.entities || {}
-      const currentEntities = current?.entities || {}
-      const validModels = prevEntities.model && currentEntities.model
+      const validModels = prev.model && current.model
       current.mapEffect = validModels ? (currentMap - prevMap) : null
 
-      const validTrainSet = prevEntities.trainUpdateSet && currentEntities.trainUpdateSet
-      const prevUpdatedTrainSetCount = prevEntities.trainUpdateSet?.assetCount || 0
-      const currentUpdatedTrainSetCount = currentEntities.trainUpdateSet?.assetCount || 0
+      const validTrainSet = prev.trainUpdateSet && current.trainUpdateSet
+      const prevUpdatedTrainSetCount = datasets[prev.trainUpdateSet]?.assetCount || 0
+      const currentUpdatedTrainSetCount = datasets[current.trainUpdateSet]?.assetCount || 0
       current.trainEffect = validTrainSet ? (currentUpdatedTrainSetCount - prevUpdatedTrainSetCount) : null
 
       return current

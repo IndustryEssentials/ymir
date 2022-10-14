@@ -343,24 +343,6 @@ class ControllerRequest:
         request.req_type = mirsvrpb.CMD_REPO_CLEAR
         return request
 
-    def prepare_visualization(self, request: mirsvrpb.GeneralReq, args: Dict) -> mirsvrpb.GeneralReq:
-        visualization_task_req = mirsvrpb.TaskReqVisualization()
-        visualization_task_req.vis_tool_id = args["vis_tool_id"]
-        visualization_task_req.in_dataset_ids[:] = args["in_dataset_ids"]
-        visualization_task_req.in_dataset_names[:] = args["in_dataset_names"]
-        if args.get("iou_thr"):
-            visualization_task_req.iou_thr = args["iou_thr"]
-        if args.get("conf_thr"):
-            visualization_task_req.conf_thr = args["conf_thr"]
-
-        req_create_task = mirsvrpb.ReqCreateTask()
-        req_create_task.task_type = mir_cmd_pb.TaskType.TaskTypeVisualization
-        req_create_task.visualization.CopyFrom(visualization_task_req)
-
-        request.req_type = mirsvrpb.RequestType.TASK_CREATE
-        request.req_create_task.CopyFrom(req_create_task)
-        return request
-
     def prepare_get_cmd_version(self, request: mirsvrpb.GeneralReq, args: Dict) -> mirsvrpb.GeneralReq:
         request.req_type = mirsvrpb.CMD_VERSIONS_GET
         return request
@@ -578,29 +560,6 @@ class ControllerClient:
             type=ExtraRequestType.fix_repo,
             user_id=user_id,
             project_id=project_id,
-        )
-        return self.send(req)
-
-    def create_visualization(
-        self,
-        user_id: int,
-        project_id: int,
-        vis_tool_id: str,
-        iou_thr: Optional[float],
-        conf_thr: Optional[float],
-        datasets: List[Dict],
-    ) -> Dict:
-        req = ControllerRequest(
-            type=TaskType.visualization,
-            user_id=user_id,
-            project_id=project_id,
-            args={
-                "vis_tool_id": vis_tool_id,
-                "in_dataset_ids": [dataset["hash"] for dataset in datasets],
-                "in_dataset_names": [dataset["name"] for dataset in datasets],
-                "iou_thr": iou_thr,
-                "conf_thr": conf_thr,
-            },
         )
         return self.send(req)
 

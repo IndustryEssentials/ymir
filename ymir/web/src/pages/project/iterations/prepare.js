@@ -9,7 +9,7 @@ import s from "./iteration.less"
 import Stage from "./prepareStage"
 import generateStages from "./generateStages"
 
-function Prepare({ project = {}, fresh = () => { } }) {
+function Prepare({ project, fresh = () => { } }) {
   const location = useLocation()
   const [validPrepare, setValidPrepare] = useState(false)
   const [id, setId] = useState(null)
@@ -18,15 +18,15 @@ function Prepare({ project = {}, fresh = () => { } }) {
   const [mergeResult, merge] = useFetch('task/merge', null, true)
   const [createdResult, createIteration] = useFetch('iteration/createIteration')
   const [_, getPrepareStagesResult] = useFetch('iteration/getPrepareStagesResult', {})
-  const results = useSelector(({ iteration }) => iteration.prepareStagesResult[project.id] || {})
+  const results = useSelector(({ iteration }) => iteration.prepareStagesResult[project?.id] || {})
   const [form] = Form.useForm()
 
   useEffect(() => {
-    project.id && setId(project.id)
-    project.id && getPrepareStagesResult({ id: project.id })
-  }, [project?.id])
+    project?.id && setId(project.id)
+    project?.id && getPrepareStagesResult({ id: project?.id })
+  }, [project])
 
-  useEffect(() => setStages(generateStages(project, results)), [project, results])
+  useEffect(() => project?.id && setStages(generateStages(project, results)), [project?.id, results])
 
   useEffect(() => updatePrepareStatus(), [stages])
 
@@ -61,7 +61,7 @@ function Prepare({ project = {}, fresh = () => { } }) {
   function create() {
     const params = {
       iterationRound: 1,
-      projectId: project.id,
+      projectId: id,
       prevIteration: 0,
       testSet: project?.testSet?.id,
       miningSet: project?.miningSet?.id,

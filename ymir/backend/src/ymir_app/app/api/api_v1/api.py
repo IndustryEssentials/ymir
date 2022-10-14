@@ -13,7 +13,6 @@ from app.api.api_v1.endpoints import (
     tasks,
     upload,
     users,
-    visualizations,
     projects,
     iterations,
     dataset_groups,
@@ -26,7 +25,6 @@ api_router = APIRouter()
 api_router.include_router(login.router, tags=["auth"])
 api_router.include_router(users.router, prefix="/users", tags=["users"])
 api_router.include_router(projects.router, prefix="/projects", tags=["projects"])
-api_router.include_router(visualizations.router, prefix="/visualizations", tags=["visualizations"])
 api_router.include_router(iterations.router, prefix="/iterations", tags=["iterations"])
 api_router.include_router(dataset_groups.router, prefix="/dataset_groups", tags=["dataset_groups"])
 api_router.include_router(datasets.router, prefix="/datasets", tags=["datasets"])

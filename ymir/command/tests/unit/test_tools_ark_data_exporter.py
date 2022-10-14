@@ -199,18 +199,18 @@ class TestArkDataExporter(unittest.TestCase):
             mir_task_id=typ_rev_tid.tid,
             ms_list=[mirpb.MirStorage.MIR_METADATAS, mirpb.MirStorage.MIR_ANNOTATIONS],
         )
+        ec = mirpb.ExportConfig(asset_format=mirpb.AssetFormat.AF_RAW,
+                                asset_dir=train_path,
+                                media_location=self._assets_location,
+                                need_sub_folder=False,
+                                anno_format=mirpb.AnnoFormat.AF_DET_ARK_JSON,
+                                gt_dir=train_path,)
         exporter.export_mirdatas_to_dir(
             mir_metadatas=mir_metadatas,
-            asset_format=mirpb.AssetFormat.AF_RAW,
-            asset_dir=train_path,
-            media_location=self._assets_location,
-            anno_format=mirpb.AnnoFormat.AF_DET_ARK_JSON,
-            gt_dir=train_path,
+            ec=ec,
             mir_annotations=mir_annotations,
             class_ids_mapping={2: 0, 52: 1},
             cls_id_mgr=None,
-            tvt_index_dir=None,
-            need_sub_folder=False,
         )
 
         self.__check_result(

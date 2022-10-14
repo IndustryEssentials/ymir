@@ -150,6 +150,7 @@ func (s *MongoServer) buildMirAssetDetail(
 	predAnnotations map[string]*protos.SingleImageAnnotations,
 ) *constants.MirAssetDetail {
 	mirAssetDetail := constants.NewMirAssetDetail()
+	mirAssetDetail.DocID = assetID
 	mirAssetDetail.AssetID = assetID
 	constants.BuildStructFromMessage(mirMetadatas.Attributes[assetID], &mirAssetDetail.MetaData)
 	if cks, ok := mirCks[assetID]; ok {
@@ -629,6 +630,10 @@ func (s *MongoServer) metricsQueryByCount(
 		bson.E{Key: "_id", Value: "$" + queryField},
 		bson.E{Key: "value", Value: bson.M{"$sum": 1}}}})
 	cond = append(cond, bson.M{"$sort": bson.M{"value": -1}})
+	if limit <= 0 {
+		limit = 5
+	}
+	cond = append(cond, bson.M{"$limit": limit})
 	aggreData := s.aggregateMongoQuery(collection, cond)
 
 	result := []constants.MetricsQueryPoint{}

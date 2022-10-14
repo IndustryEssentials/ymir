@@ -253,4 +253,5 @@ class LabelStudio(LabelBase):
             media_location,
             import_work_dir,
             exported_storage_id,
+            input_asset_dir,
         )

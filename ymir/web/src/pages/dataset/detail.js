@@ -67,7 +67,7 @@ function DatasetDetail() {
     <div>
       <Breadcrumbs />
       <Card
-        title={t("dataset.detail.title") + ">" + t(getTaskTypeLabel(dataset.taskType))}
+        title={t("dataset.detail.title")}
       >
         <div className={s.content}>
           <Detail dataset={dataset} />
