@@ -1,9 +1,10 @@
-import { useEffect, useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 import { Row, Col, Form, Button } from "antd"
 import { useLocation, useSelector } from 'umi'
 
 import t from '@/utils/t'
 import useFetch from '@/hooks/useFetch'
+import { validDataset } from '@/constants/dataset'
 
 import s from "./iteration.less"
 import Stage from "./prepareStage"
@@ -18,7 +19,10 @@ function Prepare({ project, fresh = () => { } }) {
   const [mergeResult, merge] = useFetch('task/merge', null, true)
   const [createdResult, createIteration] = useFetch('iteration/createIteration')
   const [_, getPrepareStagesResult] = useFetch('iteration/getPrepareStagesResult', {})
-  const results = useSelector(({ iteration }) => iteration.prepareStagesResult[project?.id] || {})
+  const [results, setResults] = useState({})
+  const candidateTrainSet = useSelector(({ dataset }) => dataset.dataset[project?.candidateTrainSet])
+  const model = useSelector(({ model }) => model.model[project?.model])
+  const [trainValid, setTrainValid] = useState(false)
   const [form] = Form.useForm()
 
   useEffect(() => {
@@ -26,7 +30,20 @@ function Prepare({ project, fresh = () => { } }) {
     project?.id && getPrepareStagesResult({ id: project?.id })
   }, [project])
 
-  useEffect(() => project?.id && setStages(generateStages(project, results)), [project?.id, results])
+  useEffect(() => {
+    if (project?.id) {
+      setStages(generateStages(project))
+    }
+  }, [project?.id])
+
+  useEffect(() => {
+    _ && setResults({
+      testSet: project.testSet,
+      miningSet: project.miningSet,
+      candidateTrainSet,
+      modelStage: model,
+    })
+  }, [_, project])
 
   useEffect(() => updatePrepareStatus(), [stages])
 
@@ -49,6 +66,13 @@ function Prepare({ project, fresh = () => { } }) {
       window.location.reload()
     }
   }, [createdResult])
+
+  useEffect(() => {
+    setTrainValid([
+      results?.candidateTrainSet,
+      results?.testSet,
+    ].reduce((prev, curr) => prev && validDataset(curr), true))
+  }, [results])
 
   const updateSettings = (value) => {
     const target = Object.keys(value).reduce((prev, curr) => ({
@@ -108,6 +132,7 @@ function Prepare({ project, fresh = () => { } }) {
               <Stage
                 stage={stage}
                 form={form}
+                trainValid={trainValid}
                 project={project}
                 result={results[stage.field]}
                 pid={id}

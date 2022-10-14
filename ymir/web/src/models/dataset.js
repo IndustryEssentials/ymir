@@ -8,8 +8,6 @@ import { actions, updateResultState, ResultStates } from '@/constants/common'
 import { deepClone } from '@/utils/object'
 import { checkDuplication } from "../services/dataset"
 
-let loading = false
-
 const initQuery = { name: "", type: "", time: 0, current: 1, offset: 0, limit: 20 }
 
 const initState = {
@@ -132,17 +130,18 @@ export default {
       })
     },
     *queryAllDatasets({ payload }, { select, call, put }) {
-      if (loading) {
-        return
-      }
-      loading = true
+      const loading = yield select(({ loading }) => {
+        return loading.effects['dataset/queryDatasets']
+      })
       const { pid, force } = payload
       if (!force) {
         const dssCache = yield select(state => state.dataset.allDatasets)
         if (dssCache.length) {
-          loading = false
           return dssCache
         }
+      }
+      if (loading) {
+        return
       }
       const dss = yield put.resolve({ type: 'queryDatasets', payload: { project_id: pid, state: ResultStates.VALID, limit: 10000 } })
       if (dss) {
@@ -150,10 +149,8 @@ export default {
           type: "UPDATE_ALL_DATASETS",
           payload: dss.items,
         })
-        loading = false
         return dss.items
       }
-      loading = false
     },
     *getAssetsOfDataset({ payload }, { call, put }) {
       const { datasetKeywords } = payload

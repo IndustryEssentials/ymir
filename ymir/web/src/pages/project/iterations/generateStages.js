@@ -1,7 +1,5 @@
 
-import { validDataset } from '@/constants/dataset'
-
-export default (project = {}, results) => {
+export default (project = {}) => {
   if (!project.id) {
     return []
   }
@@ -10,10 +8,6 @@ export default (project = {}, results) => {
     { field: 'testSet', label: 'project.prepare.validationset', tip: 'project.add.testset.tip', },
     { field: 'miningSet', label: 'project.prepare.miningset', tip: 'project.add.miningset.tip', },
   ]
-  let trainValid = [
-    results?.candidateTrainSet,
-    results?.testSet,
-  ].reduce((prev, curr) => prev && validDataset(curr), true)
 
   const modelStage = {
     field: 'modelStage',
@@ -21,7 +15,6 @@ export default (project = {}, results) => {
     tip: 'tip.task.filter.model',
     type: 1,
     filter: x => x,
-    trainValid,
   }
 
   const generateFilters = (field, project) => {

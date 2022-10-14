@@ -82,7 +82,6 @@ function List({ project }) {
   ]
 
   function renderPop(label, dataset = {}, ccontent, extra = '') {
-    console.log('dataset:', dataset)
     dataset.project = project
     const content = ccontent || <SampleRates label={label} keywords={project.keywords} dataset={dataset} progressWidth={0.4} />
     return <Popover content={content} overlayInnerStyle={{ minWidth: 500 }}>

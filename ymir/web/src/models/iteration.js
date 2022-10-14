@@ -115,38 +115,25 @@ export default {
       }
     },
     *getPrepareStagesResult({ payload }, { put }) {
-      const { id } = payload
       const project = yield put.resolve({
         type: 'project/getProject',
         payload,
       })
-      const results = {
-        testSet: project.testSet,
-        miningSet: project.miningSet,
-      }
 
       if (project.candidateTrainSet) {
-        const candidateTrainSet = yield put.resolve({
+        yield put.resolve({
           type: 'dataset/getDataset',
           payload: { id: project.candidateTrainSet, }
         })
-        results.candidateTrainSet = candidateTrainSet
       }
 
       if (project.model) {
-        const model = yield put.resolve({
+        yield put.resolve({
           type: 'model/getModel',
           payload: { id: project.model, }
         })
-        results.modelStage = model
       }
-
-      yield put({
-        type: 'UPDATE_PREPARE_STAGES_RESULT',
-        payload: { pid: id, results },
-      })
-
-      return results
+      return true
     },
     *setCurrentStageResult({ payload }, { call, put }) {
       const result = payload
