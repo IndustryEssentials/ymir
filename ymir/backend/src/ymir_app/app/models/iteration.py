@@ -49,7 +49,7 @@ class Iteration(Base):
 
     iteration_steps = relationship(
         "IterationStep",
-        primaryjoin="foreign(IterationStep.id)==Iteration.id",
+        primaryjoin="foreign(IterationStep.iteration_id)==Iteration.id",
         uselist=True,
         viewonly=True,
     )
