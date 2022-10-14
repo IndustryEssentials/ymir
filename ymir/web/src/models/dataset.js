@@ -402,7 +402,6 @@ export default {
     },
     UPDATE_DATASET(state, { payload }) {
       const { id, dataset } = payload
-      console.log('id, dataset:', id, dataset)
       const dss = { ...state.dataset, [id]: dataset, }
       return {
         ...state,
