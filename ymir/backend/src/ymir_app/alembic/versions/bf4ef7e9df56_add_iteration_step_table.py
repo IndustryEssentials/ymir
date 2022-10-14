@@ -38,7 +38,6 @@ def upgrade() -> None:
         batch_op.create_index(batch_op.f("ix_iteration_step_name"), ["name"], unique=False)
         batch_op.create_index(batch_op.f("ix_iteration_step_task_id"), ["task_id"], unique=False)
         batch_op.create_index(batch_op.f("ix_iteration_step_task_type"), ["task_type"], unique=False)
-
     # ### end Alembic commands ###
 
 
