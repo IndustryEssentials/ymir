@@ -173,7 +173,7 @@ def update_models(models_root: str) -> None:
     model_work_dir = os.path.join(models_root, 'work_dir')
 
     for model_hash in get_model_hashes(models_root):
-        logging.info(f"model hash: {model_hash}")
+        logging.info(f"  model hash: {model_hash}")
 
         if os.path.isdir(model_work_dir):
             shutil.rmtree(model_work_dir)
@@ -182,8 +182,11 @@ def update_models(models_root: str) -> None:
         model_path = os.path.join(models_root, model_hash)
 
         # extract
-        with tarfile.open(model_path, 'r') as f:
-            f.extractall(model_work_dir)
+        try:
+            with tarfile.open(model_path, 'r') as f:
+                f.extractall(model_work_dir)
+        except Exception as e:
+            logging.warning(f"    skip: {model_hash}, {e}")
 
         os.remove(model_path)
         with open(os.path.join(model_work_dir, 'ymir-info.yaml'), 'r') as f:
