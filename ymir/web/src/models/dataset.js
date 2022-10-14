@@ -359,10 +359,12 @@ export default {
     *updateLocalDatasets({ payload: datasets }, { put }) {
       for (let i = 0; i < datasets.length; i++) {
         const dataset = datasets[i]
-        yield put({
-          type: "UPDATE_DATASET",
-          payload: { id: dataset.id, dataset },
-        })
+        if (dataset?.id) {
+          yield put({
+            type: "UPDATE_DATASET",
+            payload: { id: dataset.id, dataset },
+          })
+        }
       }
     },
     *getLocalDatasets({ payload: ids = [] }, { put, select }) {
@@ -400,6 +402,7 @@ export default {
     },
     UPDATE_DATASET(state, { payload }) {
       const { id, dataset } = payload
+      console.log('id, dataset:', id, dataset)
       const dss = { ...state.dataset, [id]: dataset, }
       return {
         ...state,

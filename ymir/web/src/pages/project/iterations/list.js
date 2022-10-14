@@ -19,6 +19,7 @@ function List({ project }) {
   const models = useSelector(({ model }) => model.model)
 
   useEffect(() => {
+    console.log('update project?.id:', project)
     project?.id && getIterations({ id: project.id, more: true })
   }, [project])
 
@@ -97,6 +98,7 @@ function List({ project }) {
   }
 
   function fetchHandle(iterations) {
+    console.log('iterations:', iterations)
     const iters = iterations.map(iteration => {
       const {
         trainUpdateSet,

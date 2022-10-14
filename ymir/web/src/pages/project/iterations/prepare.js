@@ -19,9 +19,18 @@ function Prepare({ project, fresh = () => { } }) {
   const [mergeResult, merge] = useFetch('task/merge', null, true)
   const [createdResult, createIteration] = useFetch('iteration/createIteration')
   const [_, getPrepareStagesResult] = useFetch('iteration/getPrepareStagesResult', {})
-  const [results, setResults] = useState({})
-  const candidateTrainSet = useSelector(({ dataset }) => dataset.dataset[project?.candidateTrainSet])
-  const model = useSelector(({ model }) => model.model[project?.model])
+  const results = useSelector(({ dataset, model }) => {
+    const candidateTrainSet = dataset.dataset[project?.candidateTrainSet]
+    const testSet = dataset.dataset[project?.testSet?.id]
+    const miningSet = dataset.dataset[project?.miningSet?.id]
+    const modelStage = model.model[project?.model]
+    return {
+      candidateTrainSet,
+      testSet,
+      miningSet,
+      modelStage,
+    }
+  })
   const [trainValid, setTrainValid] = useState(false)
   const [form] = Form.useForm()
 
@@ -35,15 +44,6 @@ function Prepare({ project, fresh = () => { } }) {
       setStages(generateStages(project))
     }
   }, [project?.id])
-
-  useEffect(() => {
-    _ && setResults({
-      testSet: project.testSet,
-      miningSet: project.miningSet,
-      candidateTrainSet,
-      modelStage: model,
-    })
-  }, [_, project])
 
   useEffect(() => updatePrepareStatus(), [stages])
 

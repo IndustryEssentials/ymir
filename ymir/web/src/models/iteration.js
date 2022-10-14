@@ -115,6 +115,7 @@ export default {
       }
     },
     *getPrepareStagesResult({ payload }, { put }) {
+
       const project = yield put.resolve({
         type: 'project/getProject',
         payload,
@@ -126,6 +127,11 @@ export default {
           payload: { id: project.candidateTrainSet, }
         })
       }
+
+      yield put.resolve({
+        type: 'dataset/updateLocalDatasets',
+        payload: [project.testSet, project.miningSet],
+      })
 
       if (project.model) {
         yield put.resolve({
@@ -151,7 +157,7 @@ export default {
           type: 'updateLocalIterations',
           payload: [iteration],
         })
-        const iterations = yield select(( {iteration }) => iteration.iterations[projectId])
+        const iterations = yield select(({ iteration }) => iteration.iterations[projectId])
         yield put({
           type: 'UPDATE_ITERATIONS',
           payload: { id: projectId, iterations: [...iterations, iteration] },
@@ -168,7 +174,7 @@ export default {
           type: 'updateLocalIterations',
           payload: [{ ...iteration, needReload: true }],
         })
-        const iterations = yield select(( {iteration: it }) => it.iterations[iteration.projectId])
+        const iterations = yield select(({ iteration: it }) => it.iterations[iteration.projectId])
         yield put({
           type: 'UPDATE_ITERATIONS',
           payload: { id: iteration.projectId, iterations: iterations.map(it => it.id === iteration.id ? iteration : it) },

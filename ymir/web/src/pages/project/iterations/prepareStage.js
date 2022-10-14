@@ -24,7 +24,6 @@ export default function Stage({ pid, stage, form, project = {}, result, trainVal
   const [valid, setValid] = useState(false)
   const Selection = useMemo(() => SettingsSelection(stage.type ? ModelSelect : DatasetSelect), [stage.type])
   const [candidateList, setCandidateList] = useState(true)
-  const [addResult, addDataset] = useFetch('dataset/createDataset')
 
   useEffect(() => {
     setValid(value)
@@ -35,12 +34,6 @@ export default function Stage({ pid, stage, form, project = {}, result, trainVal
     setValue(value)
     setFieldValue(value)
   }, [stage, project])
-
-  useEffect(() => {
-    if (addResult?.id) {
-      update({ [stage.field]: addResult.id })
-    }
-  }, [addResult])
 
   const setFieldValue = value => form.setFieldsValue({
     [stage.field]: value || null,
@@ -86,16 +79,16 @@ export default function Stage({ pid, stage, form, project = {}, result, trainVal
 
   return <Form.Item tooltip={t(stage.tip)} label={t(stage.label)} required={!stage.option}>
     {runningDataset(result) ? <>{result.name} {result.versionName}</> : <>
-    <div>{!candidateList && !project[stage.field] ? renderEmptyState(stage.type) : null}</div>
-    <Form.Item
-      hidden={!candidateList && !project[stage.field]}
-      name={stage.field}
-      noStyle
-      rules={[{ required: !stage.option }]}
-      preserve={null}
-    >
-      <Selection pid={pid} changeByUser filters={filters} onReady={onSelectionReady} allowClear={!!stage.option} />
-    </Form.Item> </>}
+      <div>{!candidateList && !project[stage.field] ? renderEmptyState(stage.type) : null}</div>
+      <Form.Item
+        hidden={!candidateList && !project[stage.field]}
+        name={stage.field}
+        noStyle
+        rules={[{ required: !stage.option }]}
+        preserve={null}
+      >
+        <Selection pid={pid} changeByUser filters={filters} onReady={onSelectionReady} allowClear={!!stage.option} />
+      </Form.Item> </>}
     {runningDataset(result) ? <div className="state">{RenderProgress(result?.state, result, true)}</div> : null}
   </Form.Item>
 }
