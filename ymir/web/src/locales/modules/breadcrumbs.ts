@@ -23,7 +23,7 @@ const breadcrumbs = {
   'breadcrumbs.keyword': { cn: '类别管理', en: 'Classes', },
   'breadcrumbs.configure.permission': { cn: '权限配置', en: 'Permission', },
   'breadcrumbs.user.info': { cn: '个人中心', en: 'User', },
-  'breadcrumbs.images': { cn: '我的镜像', en: 'My Docker Images', },
+  'breadcrumbs.images': { cn: '我的镜像', en: 'My Images', },
   'breadcrumbs.image': { cn: '镜像详情', en: 'Image Detail', },
   'breadcrumbs.projects': { cn: '项目管理', en: 'Project', },
   'breadcrumbs.project': { cn: '项目详情', en: 'Detail', },
