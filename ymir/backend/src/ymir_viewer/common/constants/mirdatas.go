@@ -122,6 +122,7 @@ type MirRect struct {
 
 type MirAssetDetail struct {
 	// Export fields.
+	DocID          string                 `json:"-"             bson:"_id"`
 	AssetID        string                 `json:"asset_id"      bson:"asset_id"`
 	MetaData       *MirAssetAttributes    `json:"metadata"      bson:"metadata"`
 	JoinedClassIDs []int32                `json:"class_ids"     bson:"class_ids"`
@@ -198,8 +199,8 @@ type QueryDatasetStatsResult struct {
 }
 
 type IndexedDatasetMetadata struct {
-	Exist bool `json:"exist"     bson:"exist"`
-	Ready bool `json:"ready"     bson:"ready"`
+	Exist bool `json:"exist" bson:"exist"`
+	Ready bool `json:"ready" bson:"ready"`
 
 	HistAssets    *map[string]*MirHist `json:"hist_assets"     bson:"hist_assets"`
 	HistAnnosGt   *map[string]*MirHist `json:"hist_annos_gt"   bson:"hist_annos_gt"`

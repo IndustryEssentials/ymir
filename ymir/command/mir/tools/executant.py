@@ -108,7 +108,7 @@ def prepare_executant_env(work_dir_in: str,
         os.makedirs(asset_dir, exist_ok=True)
     work_dir_annotations = os.path.join(work_dir_in, 'annotations')
     os.makedirs(work_dir_annotations, exist_ok=True)
-    work_dir_pred = os.path.join(work_dir_in, 'prediction')
+    work_dir_pred = os.path.join(work_dir_in, 'predictions')
     os.makedirs(work_dir_pred, exist_ok=True)
     work_dir_in_model = os.path.join(work_dir_in, 'models')
     os.makedirs(work_dir_in_model, exist_ok=True)

@@ -183,6 +183,8 @@ class TaskBaseInvoker(BaseMirControllerInvoker):
                                                                                               str], working_dir: str,
                     user_labels: UserLabels, request: backend_pb2.GeneralReq) -> backend_pb2.GeneralResp:
         sub_tasks = cls.register_subtasks(request)
+        if not sub_tasks:
+            return utils.make_general_response(CTLResponseCode.ARG_VALIDATION_FAILED, 'empty ops')
 
         subtask_weights = [sub_task[1] for sub_task in sub_tasks]
         cls._register_subtask_monitor(task_id=task_id,

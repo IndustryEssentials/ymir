@@ -1,12 +1,12 @@
 import json
 import os
 import shutil
-from typing import Callable, Dict, List, Optional, TextIO, Tuple
+from typing import Callable, Dict, Optional, TextIO, Tuple
 import uuid
 import xml.etree.ElementTree as ElementTree
 
 from mir.tools.class_ids import UserLabels
-from mir.tools.code import MirCode
+from mir.tools.code import MirCode, time_it
 from mir.tools import annotations, mir_storage
 from mir.protos import mir_command_pb2 as mirpb
 from mir.tools.errors import MirRuntimeError
@@ -60,7 +60,7 @@ def parse_asset_format(asset_format_str: str) -> "mirpb.AssetFormat.V":
 
 def parse_export_type(type_str: str) -> Tuple["mirpb.AnnoFormat.V", "mirpb.AssetFormat.V"]:
     if not type_str:
-        return (mirpb.AnnoFormat.AF_NO_ANNOTATION, mirpb.AssetFormat.AF_RAW)
+        return (mirpb.AnnoFormat.AF_DET_PASCAL_VOC, mirpb.AssetFormat.AF_RAW)
 
     anno_str, asset_str = type_str.split(':')
     return (annotations.parse_anno_format(anno_str), parse_asset_format(asset_str))
@@ -87,180 +87,178 @@ def get_index_filename(is_asset: bool = True,
     return index_filename
 
 
-def replace_index_content_inplace(filename: str,
-                                  asset_search: str,
-                                  asset_replace: str,
-                                  anno_search: Optional[str] = None,
-                                  anno_replace: Optional[str] = None,
-                                  ) -> None:
-    if not os.path.isfile(filename):
-        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
-                              error_message=f"index file {filename} not exists.")
-
-    with open(filename) as f:
-        records: List[str] = f.readlines()
-    with open(filename, 'w') as f:
-        for line in records:
-            contents = line.strip().split("\t")
-            ret_line = contents[0].replace(asset_search, asset_replace)
-            if len(contents) > 1 and anno_search and anno_replace:
-                ret_line = f"{ret_line}\t{contents[1].replace(anno_search, anno_replace)}"
-            f.write(f"{ret_line}\n")
+def _gen_abs_idx_file_path(abs_dir: str,
+                           idx_prefix: str,
+                           file_name: str,
+                           file_ext: str,
+                           need_sub_folder: bool,) -> Tuple[str, str]:
+    abs_path: str = mir_storage.get_asset_storage_path(location=abs_dir,
+                                                       hash=file_name,
+                                                       make_dirs=True,
+                                                       need_sub_folder=need_sub_folder)
+    abs_file = f"{abs_path}.{file_ext}"
+    index_path: str = mir_storage.get_asset_storage_path(location=idx_prefix,
+                                                         hash=file_name,
+                                                         make_dirs=False,
+                                                         need_sub_folder=need_sub_folder)
+    idx_file = f"{index_path}.{file_ext}"
+    return (abs_file, idx_file)
 
 
+@time_it
 def export_mirdatas_to_dir(
     mir_metadatas: mirpb.MirMetadatas,
-    asset_format: "mirpb.AssetFormat.V",
-    asset_dir: str,
-    media_location: str,
-    anno_format: "mirpb.AnnoFormat.V",
-    pred_dir: Optional[str] = None,
-    gt_dir: Optional[str] = None,
+    ec: mirpb.ExportConfig,
     mir_annotations: Optional[mirpb.MirAnnotations] = None,
     class_ids_mapping: Optional[Dict[int, int]] = None,
     cls_id_mgr: Optional[UserLabels] = None,
-    tvt_index_dir: Optional[str] = None,
-    need_sub_folder: bool = True,
 ) -> int:
-    if asset_format == mirpb.AssetFormat.AF_LMDB:
+    if not (ec.asset_dir and ec.media_location and os.path.isdir(ec.media_location)):
+        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
+                              error_message=f"invalid export config {ec}")
+    os.makedirs(ec.asset_dir, exist_ok=True)
+
+    if ec.asset_format == mirpb.AssetFormat.AF_LMDB:
         return _export_mirdatas_to_lmdb(
             mir_metadatas=mir_metadatas,
+            ec=ec,
             mir_annotations=mir_annotations,
-            anno_format=anno_format,
-            asset_dir=asset_dir,
-            media_location=media_location,
             class_ids_mapping=class_ids_mapping,
             cls_id_mgr=cls_id_mgr,
-            tvt_index_dir=tvt_index_dir,
         )
-    elif asset_format == mirpb.AssetFormat.AF_RAW:
+    elif ec.asset_format == mirpb.AssetFormat.AF_RAW:
         return _export_mirdatas_to_raw(
             mir_metadatas=mir_metadatas,
+            ec=ec,
             mir_annotations=mir_annotations,
-            anno_format=anno_format,
-            asset_dir=asset_dir,
-            pred_dir=pred_dir,
-            gt_dir=gt_dir,
-            media_location=media_location,
             class_ids_mapping=class_ids_mapping,
             cls_id_mgr=cls_id_mgr,
-            need_sub_folder=need_sub_folder,
-            tvt_index_dir=tvt_index_dir,
         )
 
-    raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS, error_message=f"unknown asset format: {asset_format}")
+    raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
+                          error_message=f"unknown asset format: {ec.asset_format}")
 
 
 def _export_mirdatas_to_raw(
     mir_metadatas: mirpb.MirMetadatas,
-    asset_dir: str,
-    media_location: str,
-    anno_format: "mirpb.AnnoFormat.V",
-    pred_dir: Optional[str] = None,
-    gt_dir: Optional[str] = None,
+    ec: mirpb.ExportConfig,
     mir_annotations: Optional[mirpb.MirAnnotations] = None,
     class_ids_mapping: Optional[Dict[int, int]] = None,
     cls_id_mgr: Optional[UserLabels] = None,
-    tvt_index_dir: Optional[str] = None,
-    need_sub_folder: bool = True,
 ) -> int:
-    # Setup.
-    if gt_dir:
-        os.makedirs(gt_dir, exist_ok=True)
-        index_gt_f = open(os.path.join(gt_dir, get_index_filename()), 'w')
-    if pred_dir:
-        os.makedirs(pred_dir, exist_ok=True)
-        index_pred_f = open(os.path.join(pred_dir, get_index_filename()), 'w')
+    # Setup path and file handler.
+    ec.asset_index_file = ec.asset_index_file or os.path.join(ec.asset_dir, get_index_filename())
+    ec.asset_index_prefix = ec.asset_index_prefix or ec.asset_dir
+    index_asset_f = open(ec.asset_index_file, 'w')
+
+    if ec.gt_dir:
+        if not ec.gt_index_file:
+            ec.gt_index_file = os.path.join(ec.gt_dir, get_index_filename())
+        os.makedirs(ec.gt_dir, exist_ok=True)
+        index_gt_f = open(ec.gt_index_file, 'w')
+        ec.gt_index_prefix = ec.gt_index_prefix or ec.gt_dir
+
+    if ec.pred_dir:
+        if not ec.pred_index_file:
+            ec.pred_index_file = os.path.join(ec.pred_dir, get_index_filename())
+        os.makedirs(ec.pred_dir, exist_ok=True)
+        index_pred_f = open(ec.pred_index_file, 'w')
+        ec.pred_index_prefix = ec.pred_index_prefix or ec.pred_dir
 
     index_tvt_f: Dict[Tuple[bool, "mirpb.TvtType.V"], TextIO] = {}
-    if tvt_index_dir:
-        os.makedirs(tvt_index_dir, exist_ok=True)
+    if ec.tvt_index_dir:
+        os.makedirs(ec.tvt_index_dir, exist_ok=True)
         for is_pred in [True, False]:
             for tvt_type in [mirpb.TvtType.TvtTypeTraining, mirpb.TvtType.TvtTypeValidation, mirpb.TvtType.TvtTypeTest]:
                 file_name = get_index_filename(is_asset=False, is_pred=is_pred, tvt_type=tvt_type)
-                index_tvt_f[(is_pred, tvt_type)] = open(os.path.join(tvt_index_dir, file_name), 'w')
+                index_tvt_f[(is_pred, tvt_type)] = open(os.path.join(ec.tvt_index_dir, file_name), 'w')
 
-    with open(os.path.join(asset_dir, 'index.tsv'), 'w') as index_f:
-        for asset_id, attributes in mir_metadatas.attributes.items():
-            # export asset.
-            asset_src_file: str = mir_storage.locate_asset_path(location=media_location, hash=asset_id)
-            asset_dst_path: str = mir_storage.get_asset_storage_path(location=asset_dir,
-                                                                     hash=asset_id,
-                                                                     need_sub_folder=need_sub_folder)
-            asset_ext = _asset_file_ext(attributes.asset_type)
-            asset_dst_file = f"{asset_dst_path}.{asset_ext}"
-            if not os.path.isfile(asset_dst_file) or os.stat(asset_src_file).st_size != os.stat(asset_dst_file).st_size:
-                shutil.copyfile(asset_src_file, asset_dst_file)
-            index_f.write(f"{asset_dst_file}\n")
+    for asset_id, attributes in mir_metadatas.attributes.items():
+        # export asset.
+        asset_src_file: str = mir_storage.locate_asset_path(location=ec.media_location, hash=asset_id)
+        asset_abs_file, asset_idx_file = _gen_abs_idx_file_path(abs_dir=ec.asset_dir,
+                                                                idx_prefix=ec.asset_index_prefix,
+                                                                file_name=asset_id,
+                                                                file_ext=_asset_file_ext(attributes.asset_type),
+                                                                need_sub_folder=ec.need_sub_folder)
+        if not os.path.isfile(asset_abs_file) or os.stat(asset_src_file).st_size != os.stat(asset_abs_file).st_size:
+            shutil.copyfile(asset_src_file, asset_abs_file)
+        index_asset_f.write(f"{asset_idx_file}\n")
 
-            if anno_format == mirpb.AnnoFormat.AF_NO_ANNOTATION:
-                continue
+        if ec.anno_format == mirpb.AnnoFormat.AF_NO_ANNOTATION:
+            continue
 
-            if (gt_dir and index_gt_f and mir_annotations):
-                # export annotation file even annotation not exists.
-                if asset_id in mir_annotations.ground_truth.image_annotations:
-                    image_annotations = mir_annotations.ground_truth.image_annotations[asset_id]
-                else:
-                    image_annotations = mirpb.SingleImageAnnotations()
+        if ec.gt_dir and mir_annotations:
+            # export annotation file even annotation not exists.
+            if asset_id in mir_annotations.ground_truth.image_annotations:
+                image_annotations = mir_annotations.ground_truth.image_annotations[asset_id]
+            else:
+                image_annotations = mirpb.SingleImageAnnotations()
 
-                anno_gt_file = _export_anno_to_file(
-                    asset_id=asset_id,
-                    anno_format=anno_format,
-                    anno_dir=gt_dir,
-                    attributes=attributes,
-                    image_annotations=image_annotations,
-                    image_cks=mir_annotations.image_cks[asset_id],
-                    class_ids_mapping=class_ids_mapping,
-                    cls_id_mgr=cls_id_mgr,
-                    asset_filename=asset_dst_file,
-                    need_sub_folder=need_sub_folder,
-                )
-                asset_anno_pair_line = f"{asset_dst_file}\t{anno_gt_file}\n"
-                index_gt_f.write(asset_anno_pair_line)
-                if tvt_index_dir:
-                    index_tvt_f[(False, attributes.tvt_type)].write(asset_anno_pair_line)
+            gt_abs_file, gt_idx_file = _gen_abs_idx_file_path(abs_dir=ec.gt_dir,
+                                                              idx_prefix=ec.gt_index_prefix,
+                                                              file_name=asset_id,
+                                                              file_ext=_anno_file_ext(anno_format=ec.anno_format),
+                                                              need_sub_folder=ec.need_sub_folder)
+            _export_anno_to_file(
+                anno_dst_file=gt_abs_file,
+                anno_format=ec.anno_format,
+                attributes=attributes,
+                image_annotations=image_annotations,
+                image_cks=mir_annotations.image_cks[asset_id],
+                class_ids_mapping=class_ids_mapping,
+                cls_id_mgr=cls_id_mgr,
+                asset_filename=asset_idx_file,
+            )
+            asset_anno_pair_line = f"{asset_idx_file}\t{gt_idx_file}\n"
+            index_gt_f.write(asset_anno_pair_line)
+            if ec.tvt_index_dir:
+                index_tvt_f[(False, attributes.tvt_type)].write(asset_anno_pair_line)
 
-            if (pred_dir and index_pred_f and mir_annotations):
-                # export annotation file even annotation not exists.
-                if asset_id in mir_annotations.prediction.image_annotations:
-                    image_annotations = mir_annotations.prediction.image_annotations[asset_id]
-                else:
-                    image_annotations = mirpb.SingleImageAnnotations()
+        if ec.pred_dir and mir_annotations:
+            # export annotation file even annotation not exists.
+            if asset_id in mir_annotations.prediction.image_annotations:
+                image_annotations = mir_annotations.prediction.image_annotations[asset_id]
+            else:
+                image_annotations = mirpb.SingleImageAnnotations()
 
-                anno_pred_file = _export_anno_to_file(
-                    asset_id=asset_id,
-                    anno_format=anno_format,
-                    anno_dir=pred_dir,
-                    attributes=attributes,
-                    image_annotations=image_annotations,
-                    image_cks=None,
-                    class_ids_mapping=class_ids_mapping,
-                    cls_id_mgr=cls_id_mgr,
-                    asset_filename=asset_dst_file,
-                    need_sub_folder=need_sub_folder,
-                )
-                asset_anno_pair_line = f"{asset_dst_file}\t{anno_pred_file}\n"
-                index_pred_f.write(asset_anno_pair_line)
-                if tvt_index_dir:
-                    index_tvt_f[(True, attributes.tvt_type)].write(asset_anno_pair_line)
+            pred_abs_file, pred_idx_file = _gen_abs_idx_file_path(abs_dir=ec.pred_dir,
+                                                                  idx_prefix=ec.pred_index_prefix,
+                                                                  file_name=asset_id,
+                                                                  file_ext=_anno_file_ext(anno_format=ec.anno_format),
+                                                                  need_sub_folder=ec.need_sub_folder)
+            _export_anno_to_file(
+                anno_dst_file=pred_abs_file,
+                anno_format=ec.anno_format,
+                attributes=attributes,
+                image_annotations=image_annotations,
+                image_cks=None,
+                class_ids_mapping=class_ids_mapping,
+                cls_id_mgr=cls_id_mgr,
+                asset_filename=asset_idx_file,
+            )
+            asset_anno_pair_line = f"{asset_idx_file}\t{pred_idx_file}\n"
+            index_pred_f.write(asset_anno_pair_line)
+            if ec.tvt_index_dir:
+                index_tvt_f[(True, attributes.tvt_type)].write(asset_anno_pair_line)
 
     # write labelmap.txt.
-    if gt_dir and mir_annotations and mir_annotations.ground_truth.map_id_color:
+    if ec.gt_dir and mir_annotations and mir_annotations.ground_truth.map_id_color:
         if not cls_id_mgr:
             raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
                                   error_message="cls_id_mgr is not set in exporter.")
-        labelmap_file = os.path.join(gt_dir, 'labelmap.txt')
+        labelmap_file = os.path.join(ec.gt_dir, 'labelmap.txt')
         with open(labelmap_file, 'w') as f:
             cids = sorted(mir_annotations.ground_truth.map_id_color.keys())
             for cid in cids:
                 point = mir_annotations.ground_truth.map_id_color[cid]
                 color = f"{point.x},{point.y},{point.z}"
                 f.write(f"{cls_id_mgr.main_name_for_id(cid)}:{color}::\n")
-    if pred_dir and mir_annotations and mir_annotations.prediction.map_id_color:
+    if ec.pred_dir and mir_annotations and mir_annotations.prediction.map_id_color:
         if not cls_id_mgr:
             raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
                                   error_message="cls_id_mgr is not set in exporter.")
-        labelmap_file = os.path.join(pred_dir, 'labelmap.txt')
+        labelmap_file = os.path.join(ec.pred_dir, 'labelmap.txt')
         with open(labelmap_file, 'w') as f:
             cids = sorted(mir_annotations.prediction.map_id_color.keys())
             for cid in cids:
@@ -268,39 +266,32 @@ def _export_mirdatas_to_raw(
                 color = f"{point.x},{point.y},{point.z}"
                 f.write(f"{cls_id_mgr.main_name_for_id(cid)}:{color}::\n")
 
+    index_asset_f.close()
     # Clean up.
-    if gt_dir and index_gt_f:
+    if ec.gt_dir:
         index_gt_f.close()
-    if pred_dir and index_pred_f:
+    if ec.pred_dir:
         index_pred_f.close()
-    for index_f in index_tvt_f.values():
-        index_f.close()
+    for single_idx_f in index_tvt_f.values():
+        single_idx_f.close()
 
     return MirCode.RC_OK
 
 
 def _export_mirdatas_to_lmdb(
     mir_metadatas: mirpb.MirMetadatas,
-    asset_dir: str,
-    media_location: str,
-    anno_format: "mirpb.AnnoFormat.V",
+    ec: mirpb.ExportConfig,
     mir_annotations: Optional[mirpb.MirAnnotations] = None,
     class_ids_mapping: Optional[Dict[int, int]] = None,
     cls_id_mgr: Optional[UserLabels] = None,
-    tvt_index_dir: Optional[str] = None,
 ) -> int:
     raise NotImplementedError("LMDB format is not supported yet.")
 
 
-def _export_anno_to_file(asset_id: str, anno_format: "mirpb.AnnoFormat.V", anno_dir: str,
+def _export_anno_to_file(anno_dst_file: str, anno_format: "mirpb.AnnoFormat.V",
                          attributes: mirpb.MetadataAttributes, image_annotations: mirpb.SingleImageAnnotations,
                          image_cks: Optional[mirpb.SingleImageCks], class_ids_mapping: Optional[Dict[int, int]],
-                         cls_id_mgr: Optional[UserLabels], asset_filename: str,
-                         need_sub_folder: bool) -> str:
-    anno_dst_path: str = mir_storage.get_asset_storage_path(location=anno_dir,
-                                                            hash=asset_id,
-                                                            need_sub_folder=need_sub_folder)
-    anno_dst_file = f"{anno_dst_path}.{_anno_file_ext(anno_format=anno_format)}"
+                         cls_id_mgr: Optional[UserLabels], asset_filename: str) -> None:
     format_func = _format_file_output_func(anno_format=anno_format)
     format_func(attributes,
                 image_annotations,
@@ -309,7 +300,6 @@ def _export_anno_to_file(asset_id: str, anno_format: "mirpb.AnnoFormat.V", anno_
                 cls_id_mgr,
                 asset_filename,
                 anno_dst_file)
-    return anno_dst_file
 
 
 def _single_image_annotations_to_det_ark(attributes: mirpb.MetadataAttributes,

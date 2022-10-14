@@ -46,7 +46,7 @@ function Inference({ datasetCache, datasets, ...func }) {
   const stage = parseModelStage(location.query.mid)
   const [selectedModels, setSelectedModels] = useState([])
   const [form] = Form.useForm()
-  const [seniorConfig, setSeniorConfig] = useState([])
+  const [seniorConfig, setSeniorConfig] = useState({})
   const [gpu_count, setGPU] = useState(0)
   const [taskCount, setTaskCount] = useState(1)
   const [selectedGpu, setSelectedGpu] = useState(0)
@@ -79,10 +79,6 @@ function Inference({ datasetCache, datasets, ...func }) {
   useEffect(() => {
     pid && getProject({ id: pid, force: true })
   }, [pid])
-
-  useEffect(() => {
-    form.setFieldsValue({ hyperparam: seniorConfig })
-  }, [seniorConfig])
 
   useEffect(() => {
     const did = location.query?.did ? getArray(location.query.did).map(Number) : undefined
@@ -167,9 +163,8 @@ function Inference({ datasetCache, datasets, ...func }) {
     setConfig(removeLiveCodeConfig(configObj.config))
   }
 
-  function setConfig(config) {
-    const params = Object.keys(config).filter(key => key !== 'gpu_count').map(key => ({ key, value: config[key] }))
-    setSeniorConfig(params)
+  function setConfig(config = {}) {
+    setSeniorConfig(config)
   }
 
   const onFinish = async (values) => {

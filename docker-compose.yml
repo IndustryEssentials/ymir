@@ -27,8 +27,6 @@ services:
       - OPENPAI_TOKEN=${OPENPAI_TOKEN}
       - OPENPAI_STORAGE=${OPENPAI_STORAGE}
       - OPENPAI_USER=${OPENPAI_USER}
-      # fiftyone
-      - FIFTYONE_HOST_URL=${FIFTYONE_HOST_URL}
       # viewer
       - VIEWER_HOST_PORT=9527
       - MONGODB_URI=mongodb://${MYSQL_INITIAL_USER}:${MYSQL_INITIAL_PASSWORD}@mongodb:${MONGODB_HOST_PORT}
@@ -89,7 +87,6 @@ services:
       - "./docs:/data/ymir/docs"
     environment:
       - LABEL_TOOL_HOST_URL=${LABEL_TOOL_HOST_URL}
-      - FIFTYONE_HOST_URL=${FIFTYONE_HOST_URL}
       - DEPLOY_MODULE_URL=${DEPLOY_MODULE_URL}
     ports:
       - ${NGINX_PORT}:80

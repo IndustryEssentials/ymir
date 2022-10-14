@@ -33,7 +33,6 @@ class TaskType(IntEnum):
     copy_model = mir_cmd_pb.TaskType.TaskTypeCopyModel
     import_model = mir_cmd_pb.TaskType.TaskTypeImportModel
     dataset_infer = mir_cmd_pb.TaskType.TaskTypeDatasetInfer
-    visualization = mir_cmd_pb.TaskType.TaskTypeVisualization
 
     # fixme
     #  create_project is not the type of TASK_CREATE, but empty dataset need a task
