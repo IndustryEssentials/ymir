@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import List
+from typing import List, Optional
 
 from sqlalchemy import Boolean, Column, DateTime, Integer, SmallInteger, String
 from sqlalchemy.orm import relationship
@@ -8,6 +8,7 @@ from app.config import settings
 from app.db.base_class import Base
 from app.models.task import Task  # noqa
 from app.models.dataset import Dataset  # noqa
+from app.models.iteration_step import IterationStep
 
 
 class Iteration(Base):
@@ -46,6 +47,13 @@ class Iteration(Base):
         viewonly=True,
     )
 
+    iteration_steps = relationship(
+        "IterationStep",
+        primaryjoin="foreign(IterationStep.id)==Iteration.id",
+        uselist=True,
+        viewonly=True,
+    )
+
     @property
     def referenced_dataset_ids(self) -> List[int]:
         datasets = [
@@ -60,3 +68,12 @@ class Iteration(Base):
     @property
     def referenced_model_ids(self) -> List[int]:
         return [self.training_output_model_id] if self.training_output_model_id else []
+
+    @property
+    def current_step(self) -> Optional[IterationStep]:
+        """
+        list all the remaining steps in current iteration and return the first one when possible
+        if no remaining steps exist, current iteration should have finished
+        """
+        remaining_steps = sorted(filter(lambda i: not i.is_finished, self.iteration_steps), key=lambda i: i.id)
+        return remaining_steps[0] if remaining_steps else None

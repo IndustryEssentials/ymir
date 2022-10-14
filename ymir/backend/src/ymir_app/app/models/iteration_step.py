@@ -1,5 +1,6 @@
 from datetime import datetime
-from typing import Optional, Union
+import json
+from typing import Dict, Optional, Union
 
 from sqlalchemy import Boolean, Column, DateTime, Integer, String, Text
 from sqlalchemy.orm import relationship
@@ -19,7 +20,7 @@ class IterationStep(Base):
 
     task_type = Column(Integer, index=True, nullable=False)
     task_id = Column(Integer, index=True)
-    task_parameters = Column(Text(settings.TEXT_LEN_LIMIT))
+    serialized_presetting = Column(Text(settings.TEXT_LEN_LIMIT))
 
     is_finished = Column(Boolean, default=False, nullable=False)
     is_deleted = Column(Boolean, default=False, nullable=False)
@@ -66,3 +67,7 @@ class IterationStep(Base):
         task's state considered internal
         """
         return self.result.result_state if self.result else None
+
+    @property
+    def presetting(self) -> Dict:
+        return json.loads(self.serialized_presetting) if self.serialized_presetting else {}

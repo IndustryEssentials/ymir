@@ -1,8 +1,8 @@
 """add iteration_step table
 
-Revision ID: bf4ef7e9df56
+Revision ID: c91513775753
 Revises: 9bb7bb8b71c3
-Create Date: 2022-10-13 17:20:49.088223
+Create Date: 2022-10-14 14:50:55.795359
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = "bf4ef7e9df56"
+revision = "c91513775753"
 down_revision = "9bb7bb8b71c3"
 branch_labels = None
 depends_on = None
@@ -25,7 +25,7 @@ def upgrade() -> None:
         sa.Column("iteration_id", sa.Integer(), nullable=False),
         sa.Column("task_type", sa.Integer(), nullable=False),
         sa.Column("task_id", sa.Integer(), nullable=True),
-        sa.Column("task_parameters", sa.Text(length=20000), nullable=True),
+        sa.Column("serialized_presetting", sa.Text(length=20000), nullable=True),
         sa.Column("is_finished", sa.Boolean(), nullable=False),
         sa.Column("is_deleted", sa.Boolean(), nullable=False),
         sa.Column("create_datetime", sa.DateTime(), nullable=False),
@@ -38,6 +38,7 @@ def upgrade() -> None:
         batch_op.create_index(batch_op.f("ix_iteration_step_name"), ["name"], unique=False)
         batch_op.create_index(batch_op.f("ix_iteration_step_task_id"), ["task_id"], unique=False)
         batch_op.create_index(batch_op.f("ix_iteration_step_task_type"), ["task_type"], unique=False)
+
     # ### end Alembic commands ###
 
 

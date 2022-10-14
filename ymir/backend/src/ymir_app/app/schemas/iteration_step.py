@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import Dict, List, Optional
 from pydantic import BaseModel
 
 from app.constants.state import TaskType, ResultState
@@ -14,11 +14,8 @@ class IterationStepBase(BaseModel):
     name: str
     task_type: TaskType
     iteration_id: int
-    is_finished: Optional[bool]
     task_id: Optional[int]
-    input_dataset_id: Optional[int]
-    output_dataset_id: Optional[int]
-    output_model_id: Optional[int]
+    is_finished: Optional[bool]
     state: Optional[ResultState]
     percent: Optional[float]
 
@@ -32,14 +29,13 @@ class IterationStepCreate(BaseModel):
 class IterationStepUpdate(BaseModel):
     is_finished: Optional[bool]
     task_id: Optional[int]
-    input_dataset_id: Optional[int]
-    output_dataset_id: Optional[int]
-    output_model_id: Optional[int]
+    serialized_presetting: str
 
 
 class IterationStepInDBBase(IdModelMixin, DateTimeModelMixin, IsDeletedModelMixin, IterationStepBase):
     percent: Optional[float]
     state: Optional[ResultState]
+    presetting: Optional[Dict]
 
     class Config:
         orm_mode = True

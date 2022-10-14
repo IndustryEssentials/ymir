@@ -21,7 +21,7 @@ class CRUDIterationStep(CRUDBase[IterationStep, IterationStepCreate, IterationSt
         current_idx = [i.id for i in steps_in_same_iteration].index(step.id)
         return steps_in_same_iteration[current_idx - 1]
 
-    def start(self, db: Session, id: int, task_id: int, task_parameters: Optional[str]) -> IterationStep:
+    def start(self, db: Session, id: int, task_id: int) -> IterationStep:
         """
         start given iteration_step:
         1. create task
@@ -30,7 +30,7 @@ class CRUDIterationStep(CRUDBase[IterationStep, IterationStepCreate, IterationSt
         step = self.get(db, id)
         if not step:
             raise StepNotFound()
-        updates = {"task_id": task_id, "task_parameters": task_parameters}
+        updates = {"task_id": task_id}
         return self.update(db, db_obj=step, obj_in=updates)
 
     def finish(self, db: Session, id: int) -> IterationStep:
@@ -39,16 +39,15 @@ class CRUDIterationStep(CRUDBase[IterationStep, IterationStepCreate, IterationSt
             raise StepNotFound()
 
         if step.state == ResultState.ready:
-            # save result as input of next step when possible
+            # save result as task presetting for next_step
             next_step = self.get_next_step(db, step.id)
-            if next_step:
-                if step.result:
-                    task_parameters = json.loads(next_step.task_parameters) if next_step.task_parameters else {}
-                    if step.result_dataset:
-                        task_parameters["dataset_id"] = step.result_dataset.id
-                    if step.result_model:
-                        task_parameters["model_id"] = step.result_model.id
-                    self.update(db, db_obj=next_step, obj_in={"task_parameters": json.dumps(task_parameters)})
+            if next_step and step.result:
+                task_presetting = dict(next_step.presetting)
+                if step.result_dataset:
+                    task_presetting["dataset_id"] = step.result_dataset.id
+                if step.result_model:
+                    task_presetting["model_id"] = step.result_model.id
+                self.update(db, db_obj=next_step, obj_in={"serialized_presetting": json.dumps(task_presetting)})
 
         # set current step as finished no matter what
         return self.update(db, db_obj=step, obj_in={"is_finished": True})
