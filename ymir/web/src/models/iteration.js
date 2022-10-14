@@ -195,23 +195,6 @@ export default {
         })
       }
     },
-    *updatePrepareStagesResult({ payload }, { put, select }) {
-      const { id } = yield select(({ project }) => project.current)
-      const results = yield select(({ iteration }) => iteration.prepareStagesResult[id])
-      const tasks = payload || {}
-      const updatedResults = Object.keys(results || {}).reduce((prev, key) => {
-        const result = results[key]
-        const updated = result ? updateResultState(result, tasks) : undefined
-        return { ...prev, [key]: updated }
-      }, {})
-
-      if (updatedResults) {
-        yield put({
-          type: 'UPDATE_PREPARE_STAGES_RESULT',
-          payload: { pid: id, results: updatedResults },
-        })
-      }
-    },
     *updateIterationCache({ payload: tasks = {} }, { put, select }) {
       // const tasks = payload || {}
       const iteration = yield select(state => state.iteration.iteration)
