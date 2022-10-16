@@ -168,7 +168,7 @@ def _update_task_annotations(task_annotations_src: pb_src.SingleTaskAnnotations,
             single_image_annotations_dst.boxes.append(object_annotation_dst)
 
 
-def update_models(models_root: str) -> None:
+def update_models(models_root: str, error_models_root: str) -> None:
     logging.info(f"updating models: {models_root}, 122 -> 130")
     model_work_dir = os.path.join(models_root, 'work_dir')
 
@@ -186,6 +186,7 @@ def update_models(models_root: str) -> None:
             with tarfile.open(model_path, 'r') as f:
                 f.extractall(model_work_dir)
         except Exception as e:
+            shutil.move(model_path, os.path.join(error_models_root, model_hash))
             logging.warning(f"    skip: {model_hash}, {e}")
 
         os.remove(model_path)

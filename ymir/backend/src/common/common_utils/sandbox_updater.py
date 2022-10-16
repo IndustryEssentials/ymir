@@ -39,7 +39,9 @@ def update(sandbox_root: str, assets_root: str, models_root: str, src_ver: str, 
                         repo_func(os.path.join(sandbox_root, user_id, repo_id), assets_root, models_root)
             # update models
             if models_func:
-                models_func(models_root)
+                error_models_root = os.path.join(sandbox_root, 'ymir-models-error')
+                os.makedirs(error_models_root)
+                models_func(models_root, error_models_root)
 
         for user_id in user_to_repos:
             _update_user_labels(label_path=os.path.join(sandbox_root, user_id, 'labels.yaml'), dst_ver=dst_ver)

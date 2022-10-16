@@ -180,7 +180,7 @@ def _get_model_file_names(model_path: str) -> List[str]:
 
 
 # update models root
-def update_models(models_root: str) -> None:
+def update_models(models_root: str, error_models_root: str) -> None:
     logging.info(f"updating models: {models_root}")
     model_work_dir = os.path.join(models_root, 'work_dir')
 
@@ -194,8 +194,12 @@ def update_models(models_root: str) -> None:
         model_path = os.path.join(models_root, model_hash)
 
         # extract
-        with tarfile.open(model_path, 'r') as f:
-            f.extractall(model_work_dir)
+        try:
+            with tarfile.open(model_path, 'r') as f:
+                f.extractall(model_work_dir)
+        except Exception as e:
+            shutil.move(model_path, os.path.join(error_models_root, model_hash))
+            logging.warning(f"    skip: {model_hash}, {e}")
 
         os.remove(model_path)
         with open(os.path.join(model_work_dir, 'ymir-info.yaml'), 'r') as f:
