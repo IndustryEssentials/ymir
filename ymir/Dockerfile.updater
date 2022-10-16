@@ -1,7 +1,8 @@
 FROM python:3.8.13-alpine
 
 RUN apk update \
-  && apk add git
+  && apk add git git-lfs
+RUN git lfs install
 
 # requirements
 COPY ./updater/app/requirements.txt /app/requirements.txt

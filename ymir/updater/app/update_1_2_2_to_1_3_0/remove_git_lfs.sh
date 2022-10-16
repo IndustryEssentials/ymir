@@ -6,6 +6,8 @@ set -e
 
 
 remove_git_lfs_for_single_repo() {
+    echo "checking $1"
+
     old=$PWD
     cd $1
     git config --global --add safe.directory $1
@@ -16,11 +18,11 @@ remove_git_lfs_for_single_repo() {
         git checkout $bid
 
         if [ ! -f $1/.gitattributes ]; then continue; fi
-        if [ ! grep -q lfs $1/.gitattributes ]; then continue; fi
+        if [ ! $(grep -q lfs $1/.gitattributes) ]; then continue; fi
 
         echo "disabling git lfs in $bid"
         echo "*.mir binary" > .gitattributes
-        git touch *
+        touch *
         git add .
         git commit -m 'remove git lfs'
     done
