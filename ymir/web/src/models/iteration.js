@@ -30,7 +30,7 @@ export default {
       if (code === 0) {
         let iterations = result.map((iteration) => transferIteration(iteration))
         if (more && iterations.length) {
-          iterations = yield put.resolve({
+          yield put.resolve({
             type: 'moreIterationsInfo',
             payload: { iterations, id },
           })

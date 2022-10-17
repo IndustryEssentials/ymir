@@ -69,8 +69,8 @@ const DatasetSelect = ({
     setOptions(opts)
   }, [filters, datasets])
 
-  function fetchDatasets() {
-    getDatasets({ pid, force: true })
+  async function fetchDatasets() {
+    await getDatasets({ pid, force: true })
   }
 
   function filterEmptyAsset(datasets) {

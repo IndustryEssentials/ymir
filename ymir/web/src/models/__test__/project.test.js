@@ -49,7 +49,7 @@ describe("models: project", () => {
       type: "getProjects",
       payload: {},
     }
-    const projects = products(9)
+    const projects = products(6)
     const expected = projects.map(item => transferProject(item))
     const result = { items: projects, total: projects.length }
 
