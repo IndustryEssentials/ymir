@@ -6,7 +6,8 @@ from sqlalchemy.orm import Session
 
 from app import crud, models, schemas
 from app.api import deps
-from app.api.errors.errors import IterationNotFound, TaskNotFound
+from app.api.errors.errors import IterationNotFound, TaskNotFound, IterationStepNotFound, IterationStepHasFinished
+from app.crud.crud_iteration_step import StepNotFound
 from app.libs.iterations import calculate_mining_progress
 from app.libs.iteration_steps import initialize_steps
 
@@ -151,6 +152,12 @@ def start_iteration_step(
     1. bind existing task to given step
     2. record task result and record dataset_id or model_id in step record
     """
+    step = crud.iteration_step.get(db, step_id)
+    if not step:
+        raise IterationStepNotFound()
+    if step.is_finished:
+        raise IterationStepHasFinished()
+
     task_in_db = crud.task.get(db, task_id)
     if not task_in_db:
         raise TaskNotFound()
@@ -169,5 +176,8 @@ def finish_iteration_step(
     step_id: int = Path(...),
     current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Any:
-    step = crud.iteration_step.finish(db, id=step_id)
+    try:
+        step = crud.iteration_step.finish(db, id=step_id)
+    except StepNotFound:
+        raise IterationStepNotFound()
     return {"result": step}
