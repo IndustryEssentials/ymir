@@ -18,35 +18,41 @@ branch_labels = None
 depends_on = None
 
 
-def parse_steps_info_from_iterations(conn: Any, iteration: Any) -> List:
+def get_record(conn: Any, table: str, id_: int) -> Any:
+    result = conn.execute(f"SELECT * FROM {table} WHERE id = {id_}").fetchall()
+    return result[0] if result else None
+
+
+def parse_steps_info_from_iteration(conn: Any, iteration: Any) -> List:
     """
-    prepare_mining -> mining_input_dataset_id
-    mining -> mining_output_dataset_id
-    label -> label_output_dataset_id
-    prepare_training -> training_input_dataset_id
-    training -> training_output_model_id
+    parse necessary information for each steps from iteration:
+
+    - prepare_mining -> mining_input_dataset_id
+    - mining -> mining_output_dataset_id
+    - label -> label_output_dataset_id
+    - prepare_training -> training_input_dataset_id
+    - training -> training_output_model_id
     """
-    try:
-        datasets_query = "SELECT * FROM dataset where id in (%s, %s, %s, %s)" % (
-            iteration.mining_input_dataset_id,
-            iteration.mining_output_dataset_id,
-            iteration.label_output_dataset_id,
-            iteration.training_input_dataset_id,
-        )
-        prepare_mining_result, mining_result, label_result, prepare_training_result = conn.execute(
-            datasets_query
-        ).fetchall()
-        training_result = conn.execute(
-            f"SELECT * FROM model where id == {iteration.training_output_model_id}"
-        ).fetchall()[0]
-    except Exception:
-        return []
+    prepare_mining_result = get_record(conn, "dataset", iteration.mining_input_dataset_id)
+    mining_result = get_record(conn, "dataset", iteration.mining_output_dataset_id)
+    label_result = get_record(conn, "dataset", iteration.label_output_dataset_id)
+    prepare_training_result = get_record(conn, "dataset", iteration.training_input_dataset_id)
+    training_result = get_record(conn, "model", iteration.training_output_model_id)
+
     steps = [
-        {"name": "prepare_mining", "task_type": 11, "task_id": prepare_mining_result.task_id},
-        {"name": "mining", "task_type": 2, "task_id": mining_result.task_id},
-        {"name": "label", "task_type": 3, "task_id": label_result.task_id},
-        {"name": "prepare_training", "task_type": 11, "task_id": prepare_training_result.task_id},
-        {"name": "training", "task_type": 1, "task_id": training_result.task_id},
+        {
+            "name": "prepare_mining",
+            "task_type": 11,
+            "task_id": prepare_mining_result.task_id if prepare_mining_result else None,
+        },
+        {"name": "mining", "task_type": 2, "task_id": mining_result.task_id if mining_result else None},
+        {"name": "label", "task_type": 3, "task_id": label_result.task_id if label_result else None},
+        {
+            "name": "prepare_training",
+            "task_type": 11,
+            "task_id": prepare_training_result.task_id if prepare_training_result else None,
+        },
+        {"name": "training", "task_type": 1, "task_id": training_result.task_id if training_result else None},
     ]
     for step in steps:
         step.update(
@@ -84,11 +90,14 @@ def upgrade() -> None:
         batch_op.create_index(batch_op.f("ix_iteration_step_task_id"), ["task_id"], unique=False)
         batch_op.create_index(batch_op.f("ix_iteration_step_task_type"), ["task_type"], unique=False)
 
-    # copy data from iteration table to new created iteration_step table
     conn = op.get_bind()
-    iterations = conn.execute("SELECT * FROM iteration").fetchall()
-    steps_data = [step for iteration in iterations for step in parse_steps_info_from_iterations(conn, iteration)]
-    op.bulk_insert(iteration_step_table, steps_data)
+    try:
+        # copy data from iteration table to new created iteration_step table
+        iterations = conn.execute("SELECT * FROM iteration").fetchall()
+        steps_data = [step for iteration in iterations for step in parse_steps_info_from_iteration(conn, iteration)]
+        op.bulk_insert(iteration_step_table, steps_data)
+    except Exception as e:
+        print("Could not migrate iteration data to iteration_step, skip: %s" % e)
     # ### end Alembic commands ###
 
 
