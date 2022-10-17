@@ -14,14 +14,14 @@ function Stage({ pid, stage, current = 0, end = false, callback = () => { } }) {
   const result = useSelector(({ dataset, model }) => {
     const isModel = stage.value === Stages.training
     const res = isModel ? model.model: dataset.dataset
-    return res[stage.result] || {}
+    return { ...res[stage.result]} || {}
   })
   const [state, setState] = useState(-1)
 
   useEffect(() => {
-    const st = typeof result.state !== 'undefined' ? result.state : stage.state
+    const st = typeof result?.state !== 'undefined' ? result.state : stage.state
     setState(st)
-  }, [result?.state, stage])
+  }, [result, stage])
 
   function skip() {
     callback({
@@ -80,7 +80,7 @@ function Stage({ pid, stage, current = 0, end = false, callback = () => { } }) {
 
   const renderMainBtn = () => {
     // show by task state and result
-    const content = RenderProgress(result.state, result, true)
+    const content = RenderProgress(state, result, true)
     const disabled = isReady() || isInvalid()
     const label = isValid() && stage.next ? t('common.step.next') : t(stage.act)
     const btn = <Button disabled={disabled} type='primary' onClick={() => stage.next ? next() : ending()}>{label}</Button>

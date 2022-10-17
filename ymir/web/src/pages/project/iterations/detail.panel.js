@@ -13,7 +13,13 @@ function Panel({ list = [], customColumns, title = '', type = 'dataset' }) {
   const rows = useSelector(({ dataset, model }) => {
     const isModel = type !== 'dataset'
     const res = isModel ? model.model: dataset.dataset
-    return [...(list.map(id => res[id]).filter(item => item))]
+    return list.length ? [...(list.map(id => {
+      const result = res[id]
+      return res[id] ? {
+        ...result,
+        id: `${result.id}${new Date().getTime()}`,
+      } : null
+    }).filter(item => item))] : []
   })
 
   useEffect(() => setColumns(getColumns(type)), [type])
@@ -26,7 +32,7 @@ function Panel({ list = [], customColumns, title = '', type = 'dataset' }) {
       <Table
         dataSource={rows}
         columns={columns}
-        rowKey={(record) => record?.id + Date.now()}
+        rowKey={(record) => record?.id}
         rowClassName={(_, index) => index % 2 === 0 ? '' : 'oddRow'}
         pagination={false}
       />
