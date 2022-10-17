@@ -7,6 +7,7 @@ import { templateString } from '@/utils/string'
 import useFetch from '@/hooks/useFetch'
 
 import Stage from './stage'
+import StepAction from "./stepAction"
 import s from "./iteration.less"
 
 function Iteration({ project, fresh = () => { } }) {
@@ -128,12 +129,14 @@ function Iteration({ project, fresh = () => { } }) {
   return (
     <div className={s.iteration}>
       <Row style={{ justifyContent: 'flex-end' }}>
-        {stages.map((stage) => (
-          <Col key={stage.value} flex={stage.next ? 1 : null}>
-            <Stage stage={stage} end={!stage.next} callback={callback} />
-          </Col>
-        ))}
+        {stages.map((stage) => <Col key={stage.value} flex={stage.next ? 1 : null}>
+          <Stage stage={stage} end={!stage.next} />
+        </Col>
+        )}
       </Row>
+      <div className={s.stepContent}>
+        <StepAction stages={stages} iteration={iteration} project={project} prevIteration={prevIteration} callback={callback} />
+      </div>
     </div>
   )
 }
