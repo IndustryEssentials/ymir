@@ -53,7 +53,7 @@ function DatasetDetail({ dataset = {} }) {
         </Item>
         <Item label={t("dataset.detail.label.keywords")}>
           {renderKeywords(dataset.gt)}
-          {renderKeywords(dataset.pred, 'prediction')}
+          {renderKeywords(dataset.pred, t('annotation.pred'))}
           {inferClass ? <div>{t('dataset.detail.infer.class')}{inferClass.map(cls => <Tag key={cls}>{cls}</Tag>)}</div> : null}
         </Item>
         <Item label={t("dataset.detail.label.assets")} contentStyle={{ minWidth: 150 }}>{dataset.assetCount}</Item>

@@ -22,7 +22,9 @@ function List({ project }) {
     project?.id && getIterations({ id: project.id, more: true })
   }, [project])
 
-  useEffect(() => setList(iterations.length ? fetchHandle(iterations) : []), [iterations])
+  useEffect(() => {
+    setList(iterations.length ? fetchHandle(iterations) : [])
+  }, [iterations, datasets, models])
 
   const columns = [
     {
@@ -33,33 +35,33 @@ function List({ project }) {
     {
       title: showTitle("iteration.column.premining"),
       dataIndex: "miningDatasetLabel",
-      render: (label, { id, versionName, entities }) => renderPop(label, entities?.miningSet, <MiningSampleRates iid={id} />),
+      render: (label, { id, versionName, miningSet }) => renderPop(label, datasets[miningSet], <MiningSampleRates iid={id} />),
       ellipsis: true,
     },
     {
       title: showTitle("iteration.column.mining"),
       dataIndex: "miningResultDatasetLabel",
-      render: (label, { entities }) => renderPop(label, entities?.miningResult),
+      render: (label, { miningResult }) => renderPop(label, datasets[miningResult]),
       ellipsis: true,
     },
     {
       title: showTitle("iteration.column.label"),
       dataIndex: "labelDatasetLabel",
-      render: (label, { entities }) => renderPop(label, entities?.labelSet),
+      render: (label, { labelSet }) => renderPop(label, datasets[labelSet]),
       align: 'center',
       ellipsis: true,
     },
     {
       title: showTitle("iteration.column.test"),
       dataIndex: "testDatasetLabel",
-      render: (label, { entities }) => renderPop(label, entities?.testSet),
+      render: (label, { testSet }) => renderPop(label, datasets[testSet]),
       align: 'center',
       ellipsis: true,
     },
     {
       title: showTitle("iteration.column.merging"),
       dataIndex: "trainUpdateDatasetLabel",
-      render: (label, { trainEffect, entities }) => renderPop(label, entities?.trainUpdateSet,
+      render: (label, { trainEffect, trainUpdateSet }) => renderPop(label, datasets[trainUpdateSet],
         null, <span className={s.extraTag}>{renderExtra(trainEffect)}</span>),
       align: 'center',
       ellipsis: true,
@@ -70,12 +72,12 @@ function List({ project }) {
       render: (map, { model, mapEffect }) => {
         const md = models[model] || {}
         return validModel(md) ? <div className={s.td}>
-        <span style={{ display: 'inline-block', width: '70%', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-          {md.name}
-        </span>
-        <span>{map >= 0 ? percent(map) : null}</span>
-        <span className={s.extraTag}>{renderExtra(mapEffect, true)}</span>
-      </div> : null 
+          <span style={{ display: 'inline-block', width: '70%', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+            {md.name}
+          </span>
+          <span>{map >= 0 ? percent(map) : null}</span>
+          <span className={s.extraTag}>{renderExtra(mapEffect, true)}</span>
+        </div> : null
       },
       align: 'center',
     },
@@ -108,6 +110,7 @@ function List({ project }) {
       } = iteration
       return {
         ...iteration,
+        id: `${iteration.id}${new Date().getTime()}`,
         trainUpdateDatasetLabel: renderDatasetLabel(datasets[trainUpdateSet]),
         miningDatasetLabel: renderDatasetLabel(datasets[miningSet]),
         miningResultDatasetLabel: renderDatasetLabel(datasets[miningResult]),

@@ -1,5 +1,5 @@
 import { Col, ConfigProvider, Row, Select } from 'antd'
-import { connect, useSelector } from 'umi'
+import { useSelector } from 'umi'
 import { useEffect, useState } from 'react'
 
 import t from '@/utils/t'
@@ -29,8 +29,8 @@ const DatasetSelect = ({
   }, [pid])
 
   useEffect(() => {
-    _ && onReady(_)
-  }, [_])
+    onReady(datasets)
+  }, [datasets])
 
   useEffect(() => {
     let selected = null
