@@ -9,8 +9,8 @@
 5. 确认升级所需硬盘空间是否足够：如果 ymir-workplace 占用 500G 硬盘空间，其中 ymir-assets 200G，则其余内容都会在升级过程中自动备份。即至少需要额外 300G 空间进行升级
 6. 下载 ymir 目标版本，并依据旧版本的配置修改 .env 文件
 特别的，MYSQL_INITIAL_USER 及 MYSQL_INITIAL_PASSWORD 直接将旧版本的值复制过来。需要这些旧值登录，MYSQL_INITIAL_USER=user MYSQL_INITIAL_PASSWORD=password
-7. 如果是内网，需要先取得与 ymir 系统对应的升级镜像：例如想升级到 ymir 1.3.0，对应的升级镜像名称为 industryessentials/ymir-updater:1.1.0-1.3.0
-8. 如果使用labelfree作为标注工作，1.3.0系统需要搭配 0.2.2 版本的 LabelFree 镜像运行
+7. 如果位于内网，或是位于无法连接 dockerhub 的网络环境中，需要先取得与 ymir 系统对应的升级镜像，镜佝名称可以通过 docker-compose.updater.yml 中的 image 配置项得到
+8. 如果使用labelfree作为标注工作，请注意 LabelFree 版本与 ymir 版本的对应关系，ymir 1.3.0 系统需要搭配 0.2.2 版本的 LabelFree 镜像运行
 
 ## 升级操作
 
