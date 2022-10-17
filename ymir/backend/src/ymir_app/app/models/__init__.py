@@ -4,6 +4,7 @@ from .image import DockerImage
 from .image_config import DockerImageConfig
 from .image_relationship import DockerImageRelationship
 from .iteration import Iteration
+from .iteration_step import IterationStep
 from .model import Model
 from .model_group import ModelGroup
 from .model_stage import ModelStage
