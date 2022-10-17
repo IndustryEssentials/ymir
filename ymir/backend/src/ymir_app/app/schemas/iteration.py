@@ -1,7 +1,7 @@
 from typing import List, Optional
 from pydantic import BaseModel
 
-from app.constants.state import IterationStage
+from app.constants.state import IterationStage, ResultState, TaskType
 from app.schemas.common import (
     Common,
     DateTimeModelMixin,
@@ -60,7 +60,26 @@ class IterationUpdate(BaseModel):
         use_enum_values = True
 
 
+class IterationStepLite(BaseModel):
+    """
+    Copied from iteration_step, to avoid circular importing
+    """
+
+    id: int
+    name: str
+    task_type: TaskType
+    task_id: Optional[int]
+    is_finished: Optional[bool]
+    state: Optional[ResultState]
+    percent: Optional[float]
+
+    class Config:
+        orm_mode = True
+
+
 class IterationInDBBase(IdModelMixin, DateTimeModelMixin, IsDeletedModelMixin, IterationBase):
+    current_step: Optional[IterationStepLite]
+
     class Config:
         orm_mode = True
 

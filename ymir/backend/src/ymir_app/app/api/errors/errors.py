@@ -376,6 +376,16 @@ class FailedToUpdateIterationStage(APIError):
     message = "Failed to Update Iteration Stage"
 
 
+class IterationStepNotFound(NotFound):
+    code = error_codes.ITERATION_STEP_NOT_FOUND
+    message = "IterationStep Not Found"
+
+
+class IterationStepHasFinished(APIError):
+    code = error_codes.ITERATION_STEP_ALREADY_FINISHED
+    message = "IterationStep Has Finished"
+
+
 class RefuseToProcessMixedOperations(APIError):
     code = error_codes.REFUSE_TO_PROCESS_MIXED_OPERATIONS
     message = "Refuse To Process Mixed Operations"
