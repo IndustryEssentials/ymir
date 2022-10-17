@@ -5,7 +5,7 @@ Revises: 9bb7bb8b71c3
 Create Date: 2022-10-14 14:50:55.795359
 
 """
-from typing import Any, List
+from typing import Any, List, Optional
 
 from alembic import op
 import sqlalchemy as sa
@@ -18,7 +18,9 @@ branch_labels = None
 depends_on = None
 
 
-def get_record(conn: Any, table: str, id_: int) -> Any:
+def get_record(conn: Any, table: str, id_: Optional[int]) -> Any:
+    if id_ is None:
+        return None
     result = conn.execute(f"SELECT * FROM {table} WHERE id = {id_}").fetchall()
     return result[0] if result else None
 
