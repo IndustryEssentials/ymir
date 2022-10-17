@@ -1,4 +1,3 @@
-import logging
 import os
 from typing import List, Optional
 
@@ -19,7 +18,6 @@ def mir_check_repo_git_dirty(mir_root: str = ".") -> bool:
     git_scm = scm.Scm(mir_root, scm_executable="git")
     git_result = git_scm.status("-s")  # if clean, returns nothing
     if (git_result or len(git_result) > 0):
-        # logging.info(f"git result: \n{git_result}")
         return True
     return False  # clean
 

@@ -25,7 +25,7 @@ const TYPES = Object.freeze({
   NET: 3,
 })
 
-const Add = ({ importModel }) => {
+const Add = () => {
   const types = [
     { id: TYPES.COPY, label: t('model.add.types.copy') },
     { id: TYPES.NET, label: t('model.add.types.net') },
@@ -44,6 +44,7 @@ const Add = ({ importModel }) => {
     name: generateName('import_model'),
     modelId: Number(mid) ? [Number(pid), Number(mid)] : undefined,
   }
+  const [importResult, importModel] = useFetch('model/importModel')
   const [updateResult, updateProject] = useFetch('project/updateProject')
 
   useEffect(() => {
@@ -52,7 +53,18 @@ const Add = ({ importModel }) => {
     }
   }, [updateResult])
 
-  async function submit(values) {
+  useEffect(() => {
+    if (importResult) {
+      message.success(t('model.add.success'))
+      if (iterationContext && stepKey) {
+        return updateProject({ id: pid, [stepKey]: [importResult.id] })
+      }
+      const group = importResult.model_group_id || ''
+      history.push(`/home/project/${pid}/model#${group}`)
+    }
+  }, [importResult])
+
+  function submit(values) {
     const params = {
       ...values,
       projectId: pid,
@@ -68,15 +80,7 @@ const Add = ({ importModel }) => {
     if (values.modelId) {
       params.modelId = values.modelId[values.modelId.length - 1]
     }
-    const result = await importModel(params)
-    if (result) {
-      message.success(t('model.add.success'))
-      if (iterationContext && stepKey) {
-        return updateProject({ id: pid, [stepKey]: result.id })
-      }
-      const group = result.model_group_id || ''
-      history.push(`/home/project/${pid}/model#${group}`)
-    }
+    importModel(params)
   }
 
   const typeChange = (type) => {
@@ -166,16 +170,4 @@ const Add = ({ importModel }) => {
   )
 }
 
-
-const actions = (dispatch) => {
-  return {
-    importModel: (payload) => {
-      return dispatch({
-        type: 'model/importModel',
-        payload,
-      })
-    },
-  }
-}
-
-export default connect(null, actions)(Add)
+export default Add

@@ -1,9 +1,10 @@
-import { useEffect, useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 import { Row, Col, Form, Button } from "antd"
 import { useLocation, useSelector } from 'umi'
 
 import t from '@/utils/t'
 import useFetch from '@/hooks/useFetch'
+import { validDataset } from '@/constants/dataset'
 
 import s from "./iteration.less"
 import Stage from "./prepareStage"
@@ -18,7 +19,19 @@ function Prepare({ project, fresh = () => { } }) {
   const [mergeResult, merge] = useFetch('task/merge', null, true)
   const [createdResult, createIteration] = useFetch('iteration/createIteration')
   const [_, getPrepareStagesResult] = useFetch('iteration/getPrepareStagesResult', {})
-  const results = useSelector(({ iteration }) => iteration.prepareStagesResult[project?.id] || {})
+  const results = useSelector(({ dataset, model }) => {
+    const candidateTrainSet = dataset.dataset[project?.candidateTrainSet]
+    const testSet = dataset.dataset[project?.testSet?.id]
+    const miningSet = dataset.dataset[project?.miningSet?.id]
+    const modelStage = model.model[project?.model]
+    return {
+      candidateTrainSet,
+      testSet,
+      miningSet,
+      modelStage,
+    }
+  })
+  const [trainValid, setTrainValid] = useState(false)
   const [form] = Form.useForm()
 
   useEffect(() => {
@@ -26,9 +39,13 @@ function Prepare({ project, fresh = () => { } }) {
     project?.id && getPrepareStagesResult({ id: project?.id })
   }, [project])
 
-  useEffect(() => project?.id && setStages(generateStages(project, results)), [project?.id, results])
+  useEffect(() => {
+    if (project?.id) {
+      setStages(generateStages(project))
+    }
+  }, [project?.id])
 
-  useEffect(() => updatePrepareStatus(), [stages])
+  useEffect(() => updatePrepareStatus(), [stages, results])
 
   useEffect(() => {
     if (result) {
@@ -49,6 +66,13 @@ function Prepare({ project, fresh = () => { } }) {
       window.location.reload()
     }
   }, [createdResult])
+
+  useEffect(() => {
+    setTrainValid([
+      results?.candidateTrainSet,
+      results?.testSet,
+    ].reduce((prev, curr) => prev && validDataset(curr), true))
+  }, [results])
 
   const updateSettings = (value) => {
     const target = Object.keys(value).reduce((prev, curr) => ({
@@ -87,7 +111,7 @@ function Prepare({ project, fresh = () => { } }) {
 
   function updatePrepareStatus() {
     const fields = stages.filter(stage => !stage.option).map(stage => stage.field)
-    const valid = fields.every(field => project[field]?.id || project[field])
+    const valid = fields.every(field => (project[field]?.id || project[field]) && validDataset(results[field]))
     setValidPrepare(valid)
   }
 
@@ -108,6 +132,7 @@ function Prepare({ project, fresh = () => { } }) {
               <Stage
                 stage={stage}
                 form={form}
+                trainValid={trainValid}
                 project={project}
                 result={results[stage.field]}
                 pid={id}

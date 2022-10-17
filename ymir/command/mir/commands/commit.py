@@ -27,8 +27,7 @@ class CmdCommit(base.BaseCommand):
             with open(git_attr_path, 'w') as f:
                 f.write('*.mir binary\n')
         repo_git.add('.')
-        output_str = repo_git.commit(["-m", msg])
-        # logging.info("\n%s" % output_str)
+        repo_git.commit(["-m", msg])
 
         return MirCode.RC_OK
 

@@ -1,17 +1,14 @@
 import { useCallback, useEffect, useMemo, useState } from "react"
-import { Row, Col, Form, Button, Space } from "antd"
+import { Row, Col, Form, Button } from "antd"
 import { useHistory } from "umi"
 
 import { runningDataset } from '@/constants/dataset'
 import t from '@/utils/t'
-import { generateName } from '@/utils/string'
 import useFetch from '@/hooks/useFetch'
 import DatasetSelect from '@/components/form/datasetSelect'
 import ModelSelect from '@/components/form/modelSelect'
-import Uploader from '@/components/form/uploader'
 
-import s from "./iteration.less"
-import { YesIcon, LoaderIcon, AddIcon, TrainIcon, ImportIcon } from "@/components/common/icons"
+import { AddIcon, TrainIcon, ImportIcon } from "@/components/common/icons"
 import RenderProgress from "@/components/common/progress"
 
 const SettingsSelection = (Select) => {
@@ -21,13 +18,12 @@ const SettingsSelection = (Select) => {
   return Selection
 }
 
-export default function Stage({ pid, stage, form, project = {}, result, update }) {
+export default function Stage({ pid, stage, form, project = {}, result, trainValid, update }) {
   const history = useHistory()
   const [value, setValue] = useState(null)
   const [valid, setValid] = useState(false)
   const Selection = useMemo(() => SettingsSelection(stage.type ? ModelSelect : DatasetSelect), [stage.type])
   const [candidateList, setCandidateList] = useState(true)
-  const [addResult, addDataset] = useFetch('dataset/createDataset')
 
   useEffect(() => {
     setValid(value)
@@ -38,12 +34,6 @@ export default function Stage({ pid, stage, form, project = {}, result, update }
     setValue(value)
     setFieldValue(value)
   }, [stage, project])
-
-  useEffect(() => {
-    if (addResult?.id) {
-      update({ [stage.field]: addResult.id })
-    }
-  }, [addResult])
 
   const setFieldValue = value => form.setFieldsValue({
     [stage.field]: value || null,
@@ -76,7 +66,7 @@ export default function Stage({ pid, stage, form, project = {}, result, update }
     >{t(`${stage.label}.upload`)}</Button>
     : <Row gutter={20}>
       <Col flex={1}>
-        <Button type='primary' disabled={!stage.trainValid} block onClick={goTraining}>
+        <Button type='primary' disabled={!trainValid} block onClick={goTraining}>
           <TrainIcon /> {t("project.iteration.stage.training")}
         </Button>
       </Col>
@@ -89,16 +79,16 @@ export default function Stage({ pid, stage, form, project = {}, result, update }
 
   return <Form.Item tooltip={t(stage.tip)} label={t(stage.label)} required={!stage.option}>
     {runningDataset(result) ? <>{result.name} {result.versionName}</> : <>
-    <div>{!candidateList && !project[stage.field] ? renderEmptyState(stage.type) : null}</div>
-    <Form.Item
-      hidden={!candidateList && !project[stage.field]}
-      name={stage.field}
-      noStyle
-      rules={[{ required: !stage.option }]}
-      preserve={null}
-    >
-      <Selection pid={pid} changeByUser filters={filters} onReady={onSelectionReady} allowClear={!!stage.option} />
-    </Form.Item> </>}
+      <div>{!candidateList && !project[stage.field] ? renderEmptyState(stage.type) : null}</div>
+      <Form.Item
+        hidden={!candidateList && !project[stage.field]}
+        name={stage.field}
+        noStyle
+        rules={[{ required: !stage.option }]}
+        preserve={null}
+      >
+        <Selection pid={pid} changeByUser filters={filters} onReady={onSelectionReady} allowClear={!!stage.option} />
+      </Form.Item> </>}
     {runningDataset(result) ? <div className="state">{RenderProgress(result?.state, result, true)}</div> : null}
   </Form.Item>
 }

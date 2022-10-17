@@ -8,8 +8,8 @@ import yaml
 from common_utils.sandbox_util import detect_users_and_repos
 from common_utils.version import ymir_salient_version
 
-from update_1_1_0_to_1_3_0.step_updater import update_models as update_models_110_130
-from update_1_1_0_to_1_3_0.step_updater import update_repo as update_repo_110_130
+# from update_1_1_0_to_1_3_0.step_updater import update_models as update_models_110_130
+# from update_1_1_0_to_1_3_0.step_updater import update_repo as update_repo_110_130
 from update_1_2_2_to_1_3_0.step_updater import update_models as update_models_122_130
 from update_1_2_2_to_1_3_0.step_updater import update_repo as update_repo_122_130
 
@@ -67,7 +67,7 @@ def _backup(sandbox_root: str, models_root: str) -> None:
     logging.info('Backing up models, this will take a few minutes')
     models_backup_dir = os.path.join(sandbox_root, 'ymir-models-bk')
     shutil.copytree(src=models_root, dst=models_backup_dir)
-    
+
     logging.info('Backup done')
 
 
