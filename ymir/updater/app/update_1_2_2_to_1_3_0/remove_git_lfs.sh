@@ -12,19 +12,29 @@ remove_git_lfs_for_single_repo() {
     cd $1
     git config --global --add safe.directory $1
 
+    # ignore all uncommited contents
+    git checkout .
+    git checkout master
+
     for bid in $(git for-each-ref --format='%(refname:short)' refs/heads/); do
         if [ ${#bid} -ne 30 ]; then continue; fi
 
         git checkout $bid
 
-        if [ ! -f $1/.gitattributes ]; then continue; fi
-        if [ ! $(grep -q lfs $1/.gitattributes) ]; then continue; fi
-
-        echo "disabling git lfs in $bid"
-        echo "*.mir binary" > .gitattributes
-        touch *
-        git add .
-        git commit -m 'remove git lfs'
+        if [ ! -f .gitattributes ]; then
+            echo "skip: gitattributes not found"
+            continue
+        fi
+        if grep -q lfs .gitattributes; then
+            echo "disabling git lfs in $bid"
+            echo "*.mir binary" > .gitattributes
+            touch *.mir
+            git add *.mir .gitattributes
+            git commit -m 'remove git lfs'
+        else
+            echo "skip: lfs not found in gitattributes"
+            continue
+        fi
     done
 
     git lfs uninstall
