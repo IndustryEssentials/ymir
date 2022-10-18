@@ -17,7 +17,7 @@ function Panel({ list = [], customColumns, title = '', type = 'dataset' }) {
       const result = res[id]
       return res[id] ? {
         ...result,
-        id: `${result.id}${new Date().getTime()}`,
+        index: `${result.id}${new Date().getTime()}`,
       } : null
     }).filter(item => item))] : []
   })
@@ -32,7 +32,7 @@ function Panel({ list = [], customColumns, title = '', type = 'dataset' }) {
       <Table
         dataSource={rows}
         columns={columns}
-        rowKey={(record) => record?.id}
+        rowKey={(record) => record.index}
         rowClassName={(_, index) => index % 2 === 0 ? '' : 'oddRow'}
         pagination={false}
       />

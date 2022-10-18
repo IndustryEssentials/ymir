@@ -37,7 +37,14 @@ export function updateResultState(result: Result, tasks: BackendData) {
   if (!result || !task) {
     return result
   }
-  if ([ResultStates.VALID, ResultStates.INVALID].includes(task.result_state)) {
+  return updateResultByTask(result, task)
+}
+
+export function updateResultByTask(result: Result, task: BackendData) {
+  if (!result || !task) {
+    return
+  }
+  if (ResultStates.VALID === task.result_state) {
     result.needReload = true
   }
   result.state = task.result_state
