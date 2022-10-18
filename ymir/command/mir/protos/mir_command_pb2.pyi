@@ -87,7 +87,6 @@ class _TaskTypeEnumTypeWrapper(google.protobuf.internal.enum_type_wrapper._EnumT
     TaskTypeCopyModel = TaskType.V(14)
     TaskTypeDatasetInfer = TaskType.V(15)
     TaskTypeEvaluate = TaskType.V(16)
-    TaskTypeVisualization = TaskType.V(17)
 
 TaskTypeUnknown = TaskType.V(0)
 TaskTypeTraining = TaskType.V(1)
@@ -108,7 +107,6 @@ TaskTypeImportModel = TaskType.V(13)
 TaskTypeCopyModel = TaskType.V(14)
 TaskTypeDatasetInfer = TaskType.V(15)
 TaskTypeEvaluate = TaskType.V(16)
-TaskTypeVisualization = TaskType.V(17)
 global___TaskType = TaskType
 
 
@@ -1402,19 +1400,6 @@ global___AnnoStats = AnnoStats
 
 class ExportConfig(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor = ...
-    class ClassIdsMappingEntry(google.protobuf.message.Message):
-        DESCRIPTOR: google.protobuf.descriptor.Descriptor = ...
-        KEY_FIELD_NUMBER: builtins.int
-        VALUE_FIELD_NUMBER: builtins.int
-        key: builtins.int = ...
-        value: builtins.int = ...
-        def __init__(self,
-            *,
-            key : builtins.int = ...,
-            value : builtins.int = ...,
-            ) -> None: ...
-        def ClearField(self, field_name: typing_extensions.Literal["key",b"key","value",b"value"]) -> None: ...
-
     ASSET_FORMAT_FIELD_NUMBER: builtins.int
     ASSET_DIR_FIELD_NUMBER: builtins.int
     ASSET_INDEX_FILE_FIELD_NUMBER: builtins.int
@@ -1429,7 +1414,6 @@ class ExportConfig(google.protobuf.message.Message):
     PRED_INDEX_FILE_FIELD_NUMBER: builtins.int
     PRED_INDEX_PREFIX_FIELD_NUMBER: builtins.int
     TVT_INDEX_DIR_FIELD_NUMBER: builtins.int
-    CLASS_IDS_MAPPING_FIELD_NUMBER: builtins.int
     asset_format: global___AssetFormat.V = ...
     """Asset config."""
 
@@ -1450,8 +1434,6 @@ class ExportConfig(google.protobuf.message.Message):
     pred_index_file: typing.Text = ...
     pred_index_prefix: typing.Text = ...
     tvt_index_dir: typing.Text = ...
-    @property
-    def class_ids_mapping(self) -> google.protobuf.internal.containers.ScalarMap[builtins.int, builtins.int]: ...
     def __init__(self,
         *,
         asset_format : global___AssetFormat.V = ...,
@@ -1468,7 +1450,6 @@ class ExportConfig(google.protobuf.message.Message):
         pred_index_file : typing.Text = ...,
         pred_index_prefix : typing.Text = ...,
         tvt_index_dir : typing.Text = ...,
-        class_ids_mapping : typing.Optional[typing.Mapping[builtins.int, builtins.int]] = ...,
         ) -> None: ...
-    def ClearField(self, field_name: typing_extensions.Literal["anno_format",b"anno_format","asset_dir",b"asset_dir","asset_format",b"asset_format","asset_index_file",b"asset_index_file","asset_index_prefix",b"asset_index_prefix","class_ids_mapping",b"class_ids_mapping","gt_dir",b"gt_dir","gt_index_file",b"gt_index_file","gt_index_prefix",b"gt_index_prefix","media_location",b"media_location","need_sub_folder",b"need_sub_folder","pred_dir",b"pred_dir","pred_index_file",b"pred_index_file","pred_index_prefix",b"pred_index_prefix","tvt_index_dir",b"tvt_index_dir"]) -> None: ...
+    def ClearField(self, field_name: typing_extensions.Literal["anno_format",b"anno_format","asset_dir",b"asset_dir","asset_format",b"asset_format","asset_index_file",b"asset_index_file","asset_index_prefix",b"asset_index_prefix","gt_dir",b"gt_dir","gt_index_file",b"gt_index_file","gt_index_prefix",b"gt_index_prefix","media_location",b"media_location","need_sub_folder",b"need_sub_folder","pred_dir",b"pred_dir","pred_index_file",b"pred_index_file","pred_index_prefix",b"pred_index_prefix","tvt_index_dir",b"tvt_index_dir"]) -> None: ...
 global___ExportConfig = ExportConfig
