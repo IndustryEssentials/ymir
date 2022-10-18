@@ -244,10 +244,17 @@ export default {
       const updatedModel = updateResultState(models[id], tasks)
 
       if (updatedModel) {
-        yield put({
-          type: 'UPDATE_MODEL',
-          payload: { id: updatedModel.id, model: { ...updatedModel } },
-        })
+        if (updateModel.needReload) {
+          yield put({
+            type: 'getModel',
+            payload: { id: updateModel.id, force: true, }
+          })
+        } else {
+          yield put({
+            type: 'UPDATE_MODEL',
+            payload: { id: updatedModel.id, model: { ...updatedModel } },
+          })
+        }
       }
     },
     *getModelsByMap({ payload }, { call, put }) {
