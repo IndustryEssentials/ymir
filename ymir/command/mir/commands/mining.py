@@ -317,7 +317,7 @@ def _get_infer_annotations(file_path: str, asset_ids_set: Set[str],
         return asset_id_to_annotations
 
     for asset_name, annotations_dict in detections.items():
-        annotations = annotations_dict.get('boxes') or annotations_dict.get('annotations')
+        annotations = annotations_dict.get('boxes')
         if not isinstance(annotations, list):
             logging.error(f"invalid annotations: {annotations}")
             continue
