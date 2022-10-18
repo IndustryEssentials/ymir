@@ -47,10 +47,6 @@ _DST_YMIR_VER = '1.3.0'
 def update_repo(mir_root: str, assets_root: str, models_root: str) -> None:
     logging.info(f"updating repo: {mir_root}, 110 -> 130")
 
-    mir_label_file = os.path.join(mir_root, '.mir', 'labels.yaml')
-    if not os.path.islink(mir_label_file):
-        raise RuntimeError(f"Repo label file: {mir_label_file} is not linked to user labels")
-
     for tag in get_repo_tags(mir_root):
         if not re.match(f"^.{{{IDProto.ID_LENGTH}}}@.{{{IDProto.ID_LENGTH}}}$", tag):
             logging.info(f"    skip: {tag}")
@@ -243,7 +239,8 @@ def update_models(models_root: str, error_models_root: str) -> None:
         shutil.move(os.path.join(model_work_dir, new_model_hash), model_path)
 
     # cleanup
-    shutil.rmtree(model_work_dir)
+    if os.path.isdir(model_work_dir):
+        shutil.rmtree(model_work_dir)
 
 
 def _check_model(ymir_info: dict) -> None:

@@ -1,12 +1,12 @@
 import logging
 import os
 import subprocess
-from requests.exceptions import ConnectionError, HTTPError, Timeout
 from typing import Dict, List
 
 from mir.tools import settings as mir_settings
 from mir.tools.code import MirCode
 from mir.tools.errors import MirRuntimeError
+from requests.exceptions import ConnectionError, HTTPError, Timeout
 
 
 def _execute_in_openpai(
@@ -36,10 +36,16 @@ def _execute_in_openpai(
     )
 
 
-def _get_shm_size(executor_config: Dict) -> str:
-    if 'shm_size' not in executor_config:
-        return '16G'
-    return executor_config['shm_size']
+def _get_shm_size(executor_config: Dict, shm_size_count: int) -> str:
+    """
+    shm_size_count: shm_size_count = gpu_count if use_gpu else 1
+    """
+    # increase share memory according to shm_size_count
+    if 'shm_size' in executor_config:
+        return executor_config['shm_size']
+    else:
+        shm_size = 16 * shm_size_count
+        return f'{shm_size}G'
 
 
 def _append_binds(cmd: List, bind_path: str) -> None:
@@ -78,7 +84,10 @@ def _execute_locally(
         cmd.extend(['--user', f"{os.getuid()}:{os.getgid()}"])
     if gpu_id:
         cmd.extend(['--gpus', f"\"device={gpu_id}\""])
-    cmd.append(f"--shm-size={_get_shm_size(executor_config=executor_config)}")
+        shm_size_count = len(gpu_id.split(','))
+    else:
+        shm_size_count = 1
+    cmd.append(f"--shm-size={_get_shm_size(executor_config=executor_config, shm_size_count=shm_size_count)}")
     cmd.extend(['--name', executant_name])
     cmd.append(executor)
 

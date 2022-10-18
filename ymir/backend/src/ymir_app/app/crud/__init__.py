@@ -4,6 +4,7 @@ from .crud_image import docker_image
 from .crud_image_config import image_config
 from .crud_image_relationship import image_relationship
 from .crud_iteration import iteration
+from .crud_iteration_step import iteration_step
 from .crud_model import model
 from .crud_model_stage import model_stage
 from .crud_model_group import model_group

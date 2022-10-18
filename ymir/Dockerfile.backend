@@ -3,17 +3,17 @@ FROM golang:1.18.5-buster AS build
 # --build-arg GO_SOURCE='https://mirrors.aliyun.com/goproxy/,direct'
 ARG GO_SOURCE=https://goproxy.io,direct
 
-WORKDIR /app
-COPY ./backend/src/ymir_viewer/go.mod .
-COPY ./backend/src/ymir_viewer/go.sum .
 RUN go env -w GO111MODULE=on
 RUN go env -w GOPROXY=${GO_SOURCE}
-RUN go mod download -x
 RUN go install github.com/grpc-ecosystem/grpc-health-probe@v0.4.12
 
-COPY ./backend/src/ymir_viewer/ /ymir_viewer
-WORKDIR /ymir_viewer
-RUN go build -mod=readonly -v -o viewer_server
+WORKDIR /app
+COPY ./backend/src/ymir_hel/go.mod .
+COPY ./backend/src/ymir_hel/go.sum .
+RUN go mod download -x
+COPY ./backend/src/ymir_hel/ /ymir_hel
+WORKDIR /ymir_hel
+RUN go build -mod=readonly -v -o hel_server
 
 FROM ubuntu:20.04
 
@@ -45,8 +45,8 @@ RUN pip3 install -U /command -i ${PIP_SOURCE}
 
 COPY ./backend/src /app
 
-COPY --from=build /ymir_viewer/viewer_server /app/ymir_viewer/viewer_server
 COPY --from=build /go/bin/grpc-health-probe /app/grpc_health_probe
+COPY --from=build /ymir_hel/hel_server /app/ymir_hel/hel_server
 
 WORKDIR /app
 COPY ./backend/deploy/git.config /root/.gitconfig

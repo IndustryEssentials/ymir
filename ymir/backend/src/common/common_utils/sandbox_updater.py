@@ -5,7 +5,7 @@ from typing import Callable, List, Optional, Tuple
 
 import yaml
 
-from common_utils.sandbox_util import detect_users_and_repos
+from common_utils.sandbox_util import check_sandbox, detect_users_and_repos
 from common_utils.version import ymir_salient_version
 
 # from update_1_1_0_to_1_3_0.step_updater import update_models as update_models_110_130
@@ -25,6 +25,7 @@ def update(sandbox_root: str, assets_root: str, models_root: str, src_ver: str, 
         logging.info(f"nothing to update {src_ver} -> {dst_ver}")
         return
 
+    check_sandbox(sandbox_root)
     _backup(sandbox_root=sandbox_root, models_root=models_root)
 
     # update

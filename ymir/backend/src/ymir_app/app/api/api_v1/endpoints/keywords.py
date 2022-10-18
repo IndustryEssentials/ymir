@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, Optional
 
 from fastapi import APIRouter, Depends, Query
 from fastapi.logger import logger
@@ -14,6 +14,8 @@ from app.schemas import (
 )
 from app.utils.cache import CacheClient
 from app.utils.ymir_controller import ControllerClient
+from app.libs.common import pagination
+from app.libs.labels import upsert_labels
 from common_utils.labels import SingleLabel, UserLabels
 
 router = APIRouter()
@@ -42,7 +44,7 @@ def get_keywords(
     if settings.REVERSE_KEYWORDS_OUTPUT:
         items.reverse()
 
-    res = {"total": len(items), "items": paginate(items, offset, limit)}
+    res = {"total": len(items), "items": pagination(items, offset, limit)}
     return {"result": res}
 
 
@@ -59,19 +61,15 @@ def create_keywords(
     Batch create given keywords and aliases to keywords list
     """
     new_user_labels = UserLabels(labels=keywords_input.keywords)
-    dups = user_labels.find_dups(new_user_labels)
-    if dups:
-        logger.info(f"find dups in new_user_labels {new_user_labels}")
-        return {"result": {"failed": dups}}
-
-    return process_update_labels(
+    result = upsert_labels(
         user_id=current_user.id,
         user_labels=user_labels,
         new_user_labels=new_user_labels,
-        dry_run=keywords_input.dry_run,
         controller_client=controller_client,
-        cache=cache,
+        dry_run=keywords_input.dry_run,
     )
+    cache.delete_personal_keywords_cache()
+    return {"result": result}
 
 
 @router.patch(
@@ -89,42 +87,11 @@ def update_keyword_aliases(
 ) -> Any:
     updated_label = SingleLabel(name=keyword, aliases=aliases_in.aliases)
     new_user_labels = UserLabels(labels=[updated_label])
-    return process_update_labels(
+    result = upsert_labels(
         user_id=current_user.id,
         user_labels=user_labels,
         new_user_labels=new_user_labels,
-        dry_run=False,
         controller_client=controller_client,
-        cache=cache,
     )
-
-
-def paginate(items: List[Any], offset: int = 0, limit: Optional[int] = None) -> List[Any]:
-    """
-    Mimic the behavior of database query's offset-limit pagination
-    """
-    end = limit + offset if limit is not None else None
-    return items[offset:end]
-
-
-def process_update_labels(
-    user_id: int,
-    user_labels: UserLabels,
-    new_user_labels: UserLabels,
-    dry_run: bool,
-    controller_client: ControllerClient,
-    cache: CacheClient,
-) -> Dict:
-    logger.info(f"old labels: {user_labels.json()}\nnew labels: {new_user_labels.json()}")
-    resp = controller_client.add_labels(user_id, new_user_labels, dry_run)
-    logger.info(f"[controller] response for update label: {resp}")
-
-    conflict_labels = []
-    if resp.get("label_collection"):
-        for conflict_label in resp["label_collection"]["labels"]:
-            conflict_labels += [conflict_label["name"]] + conflict_label["aliases"]
-
-    if not conflict_labels:
-        # clean cached key when changes happen
-        cache.delete_personal_keywords_cache()
-    return {"result": {"failed": conflict_labels}}
+    cache.delete_personal_keywords_cache()
+    return {"result": result}

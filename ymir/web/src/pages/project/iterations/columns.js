@@ -15,19 +15,19 @@ function showTitle(str) {
   return <strong>{t(str)}</strong>
 }
 
-  const nameCol = {
-    title: showTitle("dataset.column.name"),
+  const nameCol = (type = 'dataset') => ({
+    title: showTitle(`${type}.column.name`),
     key: "name",
     dataIndex: "versionName",
     render: (name, { id, name: groupName, projectId: pid, description }) => {
       const popContent = <DescPop description={description} style={{ maxWidth: '30vw' }} />
-      const content = <Link to={`/home/project/${pid}/dataset/${id}`}>{groupName} {name}</Link>
+      const content = <Link to={`/home/project/${pid}/${type}/${id}`}>{groupName} {name}</Link>
       return description ? <Popover title={t('common.desc')} content={popContent}>
         {content}
       </Popover> : content
     },
     ellipsis: true,
-  }
+  })
   const sourceCol = {
     title: showTitle("dataset.column.source"),
     dataIndex: "taskType",
@@ -91,8 +91,8 @@ function showTitle(str) {
   
 const getColumns = (type) => {
   const maps = {
-    dataset: [nameCol, sourceCol, countCol, keywordCol, stateCol, createTimeCol],
-    model: [nameCol, stageCol, sourceCol, stateCol, createTimeCol],
+    dataset: [nameCol(), sourceCol, countCol, keywordCol, stateCol, createTimeCol],
+    model: [nameCol('model'), stageCol, sourceCol, stateCol, createTimeCol],
   }
   return maps[type]
 }

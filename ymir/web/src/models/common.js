@@ -3,6 +3,7 @@ import {
   getStats,
   getSysInfo,
 } from "@/services/common"
+import { actions, updateResultByTask, ResultStates } from '@/constants/common'
 
 export default {
   namespace: "common",
@@ -33,11 +34,6 @@ export default {
         type: 'SET_LOADING',
         payload,
       })
-    },
-    *updateResultState({ payload }, { put }) {
-      const { result, tasks } = payload
-      const action = 'dataset/getDataset'
-      
     },
   },
   reducers: {

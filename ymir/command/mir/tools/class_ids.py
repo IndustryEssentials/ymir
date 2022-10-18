@@ -211,6 +211,48 @@ class UserLabels(LabelStorage):
             self.__save()
         return ret_val
 
+    def upsert_labels(self, new_labels: "UserLabels", check_only: bool = False) -> "UserLabels":
+        """
+        update or insert new_labels, return labels that are failed to add
+        """
+        if not self.storage_file:
+            raise RuntimeError("empty storage_file.")
+
+        self.__reload()
+        with fasteners.InterProcessLock(path=os.path.realpath(self.storage_file) + '.lock'):
+            current_time = datetime.now()
+
+            conflict_labels = []
+            for label in new_labels.labels:
+                new_label = SingleLabel.parse_obj(label.dict())
+                idx = self.id_and_main_name_for_name(label.name)[0]
+
+                # in case any alias is in other labels.
+                conflict_alias = []
+                for alias in label.aliases:
+                    alias_idx = self.id_and_main_name_for_name(alias)[0]
+                    if alias_idx >= 0 and alias_idx != idx:
+                        conflict_alias.append(alias)
+                if conflict_alias:
+                    new_label.id = -1
+                    conflict_labels.append(new_label)
+                    continue
+
+                new_label.update_time = current_time
+                if idx >= 0:  # update alias.
+                    new_label.id = idx
+                    new_label.create_time = self.labels[idx].create_time
+                    self.labels[idx] = new_label
+                else:  # insert new record.
+                    new_label.id = len(self.labels)
+                    new_label.create_time = current_time
+                    self.labels.append(new_label)
+
+            if not (check_only or conflict_labels):
+                self.__save()
+
+            return UserLabels(labels=conflict_labels)
+
     def find_dups(self, new_labels: Union[str, List, "UserLabels"]) -> List[str]:
         if isinstance(new_labels, str):
             new_set = {new_labels}
