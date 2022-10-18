@@ -246,7 +246,6 @@ export default {
         if (!model) {
           continue
         }
-        console.log('model, task:', model, task)
         const updated = updateResultByTask(model, task)
         if (updated) {
           if (updated.needReload) {

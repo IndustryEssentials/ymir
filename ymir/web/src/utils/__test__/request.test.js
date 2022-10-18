@@ -158,14 +158,12 @@ describe("utils: request", () => {
     expect(error400110104Result).toBeUndefined()
 
     // 405
-    expect(() => {
-      reqHandler.rejected(error405)
-    }).toThrow()
+    const error405Result = reqHandler.rejected(error405)
+    expect(error405Result).toEqual({ code: 405 })
 
     // 504
-    expect(() => {
-      reqHandler.rejected(error504)
-    }).toThrow()
+    const error504Result = reqHandler.rejected(error504)
     expect(msgSpy).toHaveBeenCalled()
+    expect(error504Result).toEqual({ code: 504 })
   })
 })
