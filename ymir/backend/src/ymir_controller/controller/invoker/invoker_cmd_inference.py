@@ -81,7 +81,7 @@ class InferenceCMDInvoker(BaseMirControllerInvoker):
         detections = infer_result.get("detection")
         if not isinstance(detections, dict):
             return resp
- 
+
         # class_id should be updated, as it was from outside model.
         for _, annos_dict in detections.items():
             annos = annos_dict.get("annotations", [])
