@@ -83,3 +83,26 @@ def detect_users_and_repos(sandbox_root: str) -> Dict[str, Set[str]]:
             and os.path.isdir(os.path.join(user_dir, repo_id, '.git'))
         ])
     return user_to_repos
+
+
+def check_sandbox(sandbox_root: str) -> None:
+    user_to_repos = detect_users_and_repos(sandbox_root)
+    for user_id, repo_ids in user_to_repos.items():
+        user_labels_path = os.path.join(sandbox_root, user_id, 'labels.yaml')
+        if not os.path.isfile(user_labels_path):
+            raise SandboxError(error_code=UpdaterErrorCode.INVALID_USER_LABEL_FILE,
+                               error_message=f"Invalid user labels: {user_labels_path} is not a file")
+
+        user_labels_inode = os.stat(user_labels_path).st_ino
+        for repo_id in repo_ids:
+            repo_labels_path = os.path.join(sandbox_root, user_id, repo_id, '.mir', 'labels.yaml')
+            if os.path.islink(repo_labels_path):
+                if os.path.realpath(repo_labels_path) != user_labels_path:
+                    raise SandboxError(
+                        error_code=UpdaterErrorCode.INVALID_USER_LABEL_FILE,
+                        error_message=f"Invalid user labels: {user_labels_path} not symlinked to user labels")
+            else:
+                if os.stat(repo_labels_path).st_ino != user_labels_inode:
+                    raise SandboxError(
+                        error_code=UpdaterErrorCode.INVALID_USER_LABEL_FILE,
+                        error_message=f"Invalid user labels: {user_labels_path} not hardlinked to user labels")
