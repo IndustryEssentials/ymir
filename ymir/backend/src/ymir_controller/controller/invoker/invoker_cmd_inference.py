@@ -85,7 +85,8 @@ class InferenceCMDInvoker(BaseMirControllerInvoker):
         # class_id should be updated, as it was from outside model.
         for _, annos_dict in detections.items():
             if "annotations" in annos_dict:
-                annos_dict["boxes"] = annos_dict["annotations"]
+                if "boxes" not in annos_dict:
+                    annos_dict["boxes"] = annos_dict["annotations"]
                 del annos_dict["annotations"]
 
             annos = annos_dict.get("boxes", [])
