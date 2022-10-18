@@ -4,6 +4,8 @@ package ymir.backend;
 
 import "mir_command.proto";
 
+option go_package = "/protos";
+
 enum MergeStrategy {
     STOP = 0;
     HOST = 1;

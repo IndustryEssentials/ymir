@@ -13,16 +13,18 @@
 set -e
 
 INPUT_DIR="./proto"
-OUTPUT_DIR="./mir/protos"
-VIEWER_GO_DIR="../backend/src/ymir_viewer/common"
-rm -rf $OUTPUT_DIR
-mkdir -p $OUTPUT_DIR
+PY_OUTPUT_DIR="./mir/protos"
+GO_DIR_VIEWER="../backend/src/ymir_viewer/common"
+GO_DIR_HEL="../backend/src/ymir_hel"
+rm -rf ${PY_OUTPUT_DIR}
+mkdir -p ${PY_OUTPUT_DIR}
 
 # gen protobuf py
-protoc -I "$INPUT_DIR" \
-      --python_out="$OUTPUT_DIR" \
-      --go_out="$VIEWER_GO_DIR" \
-      --plugin=protoc-gen-mypy=$(which protoc-gen-mypy) --mypy_out=$OUTPUT_DIR  \
+protoc -I "${INPUT_DIR}" \
+      --python_out="${PY_OUTPUT_DIR}" \
+      --go_out="${GO_DIR_VIEWER}" \
+      --go_out="${GO_DIR_HEL}" \
+      --plugin=protoc-gen-mypy=$(which protoc-gen-mypy) --mypy_out=${PY_OUTPUT_DIR}  \
       "$INPUT_DIR/mir_command.proto"
 
-touch $OUTPUT_DIR/__init__.py
+touch ${PY_OUTPUT_DIR}/__init__.py

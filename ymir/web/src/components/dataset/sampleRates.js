@@ -41,7 +41,7 @@ function SampleRates({ keywords, dataset, negative, label, progressWidth = 0.5 }
     if (!negative && did && synced) {
       fetchKeywords(pid, keywords, did)
     }
-  }, [did, dataset?.state, keywords])
+  }, [did, keywords])
 
   function fetchKeywords(projectId, keywords = [], dataset) {
     keywords.length && getNegativeKeywords({ projectId, keywords, dataset })

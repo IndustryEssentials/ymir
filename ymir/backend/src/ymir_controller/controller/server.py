@@ -13,6 +13,7 @@ from grpc_health.v1 import health_pb2_grpc
 from requests.exceptions import ConnectionError, HTTPError, Timeout
 import yaml
 
+from common_utils.sandbox_util import check_sandbox
 from controller.utils import errors, metrics, utils, invoker_mapping
 from id_definition.error_codes import CTLResponseCode
 from proto import backend_pb2, backend_pb2_grpc
@@ -86,6 +87,7 @@ def path_constructor(loader: Any, node: Any) -> str:
     env_value = os.environ.get(env_var)
     if not env_value:
         logging.info(f"env empty for key: {env_var}")
+        return ""
     return env_value + value[match.end():]
 
 
@@ -122,6 +124,7 @@ def main(main_args: Any) -> int:
     sandbox_root = server_config['SANDBOX']['sandboxroot']
     os.makedirs(sandbox_root, exist_ok=True)
 
+    check_sandbox(sandbox_root)
     _init_metrics(server_config['METRICS'])
 
     # start grpc server

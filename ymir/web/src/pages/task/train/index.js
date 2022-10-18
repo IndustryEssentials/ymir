@@ -141,7 +141,7 @@ function Train({ allDatasets, datasetCache, ...func }) {
         keywords: keywords,
         testset: validation_dataset_id,
         gpu_count: config.gpu_count,
-        model: [model_id, model_stage_id],
+        modelStage: [model_id, model_stage_id],
         image: docker_image_id + ',' + docker_image,
         strategy,
         description,
