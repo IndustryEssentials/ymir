@@ -2,14 +2,14 @@
 
 ## 升级前的准备工作
 
-1. 确认当前运行的 ymir 系统版本是 1.1.0 或以上版本，ymir-updater 不支持 1.1.0 以下版本的升级
-2. 确认 ymir 中所有训练，挖掘及推理任务都已经停止，之后再停止 ymir 系统：bash ymir.sh stop
-3. 建议备份 ymir-workplace 目录。如果空间不够，可以略过 ymir-assets 目录及 work_dir 下面的目录
+1. 确认当前运行的 YMIR 系统版本是 1.1.0 或以上版本，ymir-updater 不支持 1.1.0 以下版本的升级
+2. 确认 YMIR 中所有训练，挖掘及推理任务都已经停止，之后再停止 ymir 系统：bash ymir.sh stop
+3. 建议备份 .env 的 YMIR_PATH 所指向的目录，默认为 YMIR 代码目录的 ymir-workplace
 4. 确认升级所需硬盘空间是否足够：如果 ymir-workplace 占用 500G 硬盘空间，其中 ymir-assets 200G，则其余内容都会在升级过程中自动备份。即至少需要额外 300G 空间进行升级
-5. 下载 ymir 目标版本，并依据旧版本的配置修改 .env 文件
-特别的，MYSQL_INITIAL_USER 及 MYSQL_INITIAL_PASSWORD 直接将旧版本的值复制过来。需要这些旧值登录，如果这些值未修改过，它们将是 1.1.0 的默认值：MYSQL_INITIAL_USER=user MYSQL_INITIAL_PASSWORD=password，如果有修改过，请用修改后的值
-6. 如果位于内网，或是位于无法连接 dockerhub 的网络环境中，需要先取得与 ymir 系统对应的升级镜像，镜佝名称可以通过 docker-compose.updater.yml 中的 image 配置项得到
-7. 如果使用labelfree作为标注工作，请注意 LabelFree 版本与 ymir 版本的对应关系，ymir 1.3.0 系统需要搭配 0.2.2 版本的 LabelFree 镜像运行
+5. 下载 YMIR 目标版本，并依据旧版本的配置修改 .env 文件
+特别的，MYSQL_INITIAL_USER 及 MYSQL_INITIAL_PASSWORD 直接将旧版本的值复制过来。需要这些旧值登录
+6. 如果位于内网，或是位于无法连接 dockerhub 的网络环境中，需要先取得与 YMIR 系统对应的升级镜像，镜像名称可以通过 docker-compose.updater.yml 中的 image 配置项得到
+7. 如果使用 labelfree 作为标注工作，请注意 LabelFree 版本与 YMIR 版本的对应关系，YMIR 1.3.0 系统需要搭配 0.2.2 版本的 LabelFree 镜像运行
 
 ## 升级操作
 
