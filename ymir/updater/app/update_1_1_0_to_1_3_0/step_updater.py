@@ -39,17 +39,12 @@ _MirDatasSrc = Tuple[pb_src.MirMetadatas, pb_src.MirAnnotations, pb_src.Task]
 _MirDatasDst = Tuple[pb_dst.MirMetadatas, pb_dst.MirAnnotations, pb_dst.Task]
 
 _DEFAULT_STAGE_NAME = 'default_best_stage'
-_SRC_YMIR_VER = '1.1.0'
 _DST_YMIR_VER = '1.3.0'
 
 
 # update user repo
 def update_repo(mir_root: str, assets_root: str, models_root: str) -> None:
     logging.info(f"updating repo: {mir_root}, 110 -> 130")
-
-    mir_label_file = os.path.join(mir_root, '.mir', 'labels.yaml')
-    if not os.path.islink(mir_label_file):
-        raise RuntimeError(f"Repo label file: {mir_label_file} is not linked to user labels")
 
     for tag in get_repo_tags(mir_root):
         if not re.match(f"^.{{{IDProto.ID_LENGTH}}}@.{{{IDProto.ID_LENGTH}}}$", tag):
