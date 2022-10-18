@@ -84,13 +84,14 @@ class InferenceCMDInvoker(BaseMirControllerInvoker):
 
         # class_id should be updated, as it was from outside model.
         for _, annos_dict in detections.items():
-            annos = annos_dict.get("boxes", []) or annos_dict.get("annotations", [])
+            if "annotations" in annos_dict:
+                annos_dict["boxes"] = annos_dict["annotations"]
+                del annos_dict["annotations"]
+
+            annos = annos_dict.get("boxes", [])
             for annotation in annos:
                 annotation["class_id"] = self._user_labels.id_for_names(names=annotation["class_name"],
                                                                         raise_if_unknown=False)[0][0]
-            if 'annotations' in annos_dict:
-                annos_dict['boxes'] = annos
-                del annos_dict['annotations']
 
         json_format.ParseDict(dict(image_annotations=detections), resp.detection, ignore_unknown_fields=False)
 
