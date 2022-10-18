@@ -242,7 +242,8 @@ def update_models(models_root: str) -> None:
         shutil.move(os.path.join(model_work_dir, new_model_hash), model_path)
 
     # cleanup
-    shutil.rmtree(model_work_dir)
+    if os.path.isdir(model_work_dir):
+        shutil.rmtree(model_work_dir)
 
 
 def _check_model(ymir_info: dict) -> None:
