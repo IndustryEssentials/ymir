@@ -69,7 +69,7 @@ const ModelSelect = ({
 
   return (
     <ConfigProvider renderEmpty={() => <EmptyStateModel />}>
-      <Cascader value={ms} onChange={onChange} options={options}
+      <Cascader value={ms} onChange={onChange} options={options} displayRender={(label) => label.join('/')}
         showCheckedStrategy={Cascader.SHOW_CHILD} showSearch={{ filter }}
         placeholder={t('task.train.form.model.placeholder')}
         allowClear {...resProps}></Cascader>

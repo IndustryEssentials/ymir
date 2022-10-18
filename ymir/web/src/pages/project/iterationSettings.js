@@ -35,7 +35,7 @@ const Add = ({ }) => {
   }, [id])
 
   useEffect(() => {
-    initForm(project)
+    setTimeout(() => initForm(project), 1000)
   }, [project])
 
   useEffect(() => {

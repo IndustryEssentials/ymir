@@ -16,7 +16,7 @@ import {
 import { getStats } from "../services/common"
 import { transferModelGroup, transferModel, getModelStateFromTask, states, transferStage, } from '@/constants/model'
 import { transferAnnotation } from '@/constants/dataset'
-import { actions, updateResultState } from '@/constants/common'
+import { actions, updateResultState, updateResultByTask } from '@/constants/common'
 import { deepClone } from '@/utils/object'
 
 const initQuery = {
@@ -238,22 +238,28 @@ export default {
       })
     },
     *updateModelState({ payload }, { put, select }) {
-      const models = yield select(state => state.model.model)
-      const tasks = payload || {}
-      const id = Object.keys(models).find(id => models[id])
-      const updatedModel = updateResultState(models[id], tasks)
-
-      if (updatedModel) {
-        if (updateModel.needReload) {
-          yield put({
-            type: 'getModel',
-            payload: { id: updateModel.id, force: true, }
-          })
-        } else {
-          yield put({
-            type: 'UPDATE_MODEL',
-            payload: { id: updatedModel.id, model: { ...updatedModel } },
-          })
+      const caches = yield select(state => state.model.model)
+      const tasks = Object.values(payload || {})
+      for (let index = 0; index < tasks.length; index++) {
+        const task = tasks[index]
+        const model = caches[task?.result_model?.id]
+        if (!model) {
+          continue
+        }
+        console.log('model, task:', model, task)
+        const updated = updateResultByTask(model, task)
+        if (updated) {
+          if (updated.needReload) {
+            yield put({
+              type: 'getModel',
+              payload: { id: updated.id, force: true }
+            })
+          } else {
+            yield put({
+              type: 'UPDATE_MODEL',
+              payload: { id: updated.id, model: { ...updated } },
+            })
+          }
         }
       }
     },
