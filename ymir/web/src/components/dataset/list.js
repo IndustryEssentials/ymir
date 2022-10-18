@@ -177,14 +177,14 @@ function Datasets({ pid, project = {}, iterations, groups, datasetList, query, v
         title: showTitle("dataset.column.keyword"),
         dataIndex: "keywords",
         render: (_, { gt, pred, state, }) => {
-          const renderLine = (keywords, label = 'GT') => <div>
-            <div>{label}:</div>
+          const renderLine = (keywords, label = 'gt') => <div>
+            <div>{t(`annotation.${label}`)}:</div>
             {t('dataset.column.keyword.label', {
               keywords: keywords.join(', '),
               total: keywords.length
             })}
           </div>
-          const label = <>{renderLine(gt.keywords)}{renderLine(pred.keywords, 'prediction')}</>
+          const label = <>{renderLine(gt.keywords)}{renderLine(pred.keywords, 'pred')}</>
           return isValidDataset(state) ? <Tooltip title={label}
             color='white' overlayInnerStyle={{ color: 'rgba(0,0,0,0.45)', fontSize: 12 }}
             mouseEnterDelay={0.5}

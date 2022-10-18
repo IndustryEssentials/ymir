@@ -9,7 +9,7 @@ const image = {
   "image.state.pending": { en: "Pending", cn: "加载中", },
   "image.state.done": { en: "Done", cn: "完成", },
   "image.state.error": { en: "Error", cn: "失败", },
-  "image.query.name": { en: "Docker Image Name", cn: "镜像名称", },
+  "image.query.name": { en: "Image Name", cn: "镜像名称", },
   "image.query.name.placeholder": { en: "Input image name", cn: "请输入名称", },
   "image.column.type": { en: "Image Type", cn: "镜像类型", },
   "image.action.link": { en: "Relate Images", cn: "关联镜像", },
