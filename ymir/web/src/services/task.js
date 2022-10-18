@@ -217,7 +217,7 @@ export function label({
       dataset_group_id: groupId,
       dataset_id: datasetId,
       keywords,
-      labellers,
+      labellers: ['hide@label.com'],
       extra_url: doc,
       annotation_type: keepAnnotations,
     },

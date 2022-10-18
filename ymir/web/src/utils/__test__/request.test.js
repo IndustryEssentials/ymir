@@ -149,7 +149,7 @@ describe("utils: request", () => {
     // 400 -> 1003
     const error4001003Result = reqHandler.rejected(error4001003)
     expect(msgSpy).toHaveBeenCalled()
-    expect(error4001003Result).toBe('error1003')
+    expect(error4001003Result).toEqual({ code: 1003 })
 
     // 400 -> 110104
     const error400110104Result = reqHandler.rejected(error400110104)
@@ -158,14 +158,12 @@ describe("utils: request", () => {
     expect(error400110104Result).toBeUndefined()
 
     // 405
-    expect(() => {
-      reqHandler.rejected(error405)
-    }).toThrow()
+    const error405Result = reqHandler.rejected(error405)
+    expect(error405Result).toEqual({ code: 405 })
 
     // 504
-    expect(() => {
-      reqHandler.rejected(error504)
-    }).toThrow()
+    const error504Result = reqHandler.rejected(error504)
     expect(msgSpy).toHaveBeenCalled()
+    expect(error504Result).toEqual({ code: 504 })
   })
 })
