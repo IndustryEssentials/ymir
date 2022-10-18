@@ -204,7 +204,7 @@ export function filter({
 export function label({
   projectId, iteration, stage,
   groupId, name, datasetId, keywords,
-  labellers, keepAnnotations, doc, description,
+  labellers = ['hide@label.com'], keepAnnotations, doc, description,
 }) {
   return createTask({
     name,

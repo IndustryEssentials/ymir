@@ -105,6 +105,7 @@ function Label({ datasets, keywords, ...func }) {
               <DatasetSelect pid={pid} />
             </Form.Item>
             <Form.Item
+              hidden={true}
               label={t('task.label.form.member')}
               tooltip={t('tip.task.filter.labelmember')}
               required
