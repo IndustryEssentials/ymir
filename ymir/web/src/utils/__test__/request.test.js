@@ -149,7 +149,7 @@ describe("utils: request", () => {
     // 400 -> 1003
     const error4001003Result = reqHandler.rejected(error4001003)
     expect(msgSpy).toHaveBeenCalled()
-    expect(error4001003Result).toBe('error1003')
+    expect(error4001003Result).toEqual({ code: 1003 })
 
     // 400 -> 110104
     const error400110104Result = reqHandler.rejected(error400110104)
