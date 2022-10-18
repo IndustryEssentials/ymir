@@ -104,8 +104,7 @@ function Label({ datasets, keywords, ...func }) {
             <Form.Item label={t('task.fusion.form.dataset')} name='datasetId'>
               <DatasetSelect pid={pid} />
             </Form.Item>
-            <Form.Item
-              hidden={true}
+            {false ? <Form.Item
               label={t('task.label.form.member')}
               tooltip={t('tip.task.filter.labelmember')}
               required
@@ -127,7 +126,7 @@ function Label({ datasets, keywords, ...func }) {
                   <Checkbox checked={asChecker} onChange={({ target }) => setAsChecker(target.checked)}>{t('task.label.form.plat.checker')}</Checkbox>
                 </Col>
               </Row>
-            </Form.Item>
+            </Form.Item> : null }
             <Form.Item hidden={!asChecker}
               tooltip={t('tip.task.filter.labelplatacc')}
               label={t('task.label.form.plat.label')} required>
