@@ -87,6 +87,7 @@ def path_constructor(loader: Any, node: Any) -> str:
     env_value = os.environ.get(env_var)
     if not env_value:
         logging.info(f"env empty for key: {env_var}")
+        return ""
     return env_value + value[match.end():]
 
 
