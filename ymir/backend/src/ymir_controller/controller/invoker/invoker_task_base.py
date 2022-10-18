@@ -188,12 +188,12 @@ class TaskBaseInvoker(BaseMirControllerInvoker):
 
         # append subtask_id, in revsersed order, to make sure the last subtask idx is 0.
         # format: (task_func, weight, sub_task_id)
-        sub_tasks = [(sub_task[0], sub_task[1], utils.sub_task_id(request.task_id,
-                                                                  len(sub_tasks) - 1 - subtask_idx))
-                     for subtask_idx, sub_task in enumerate(sub_tasks)]
+        sub_tasks_join = [(sub_task[0], sub_task[1], utils.sub_task_id(request.task_id,
+                                                                       len(sub_tasks) - 1 - subtask_idx))
+                          for subtask_idx, sub_task in enumerate(sub_tasks)]
 
         sub_task_id_weights: Dict[str, float] = {}
-        for sub_task in sub_tasks:
+        for sub_task in sub_tasks_join:
             sub_task_id_weights[sub_task[2]] = sub_task[1]
         cls._register_subtask_monitor(task_id=task_id,
                                       master_work_dir=working_dir,
@@ -204,7 +204,7 @@ class TaskBaseInvoker(BaseMirControllerInvoker):
         his_task_id: Optional[str] = None
         if in_dataset_ids:
             his_task_id = in_dataset_ids[0]
-        for sub_task in sub_tasks:
+        for sub_task in sub_tasks_join:
             subtask_id = sub_task[2]
             logging.info(f"processing subtask {subtask_id}")
             subtask_work_dir = cls.subtask_work_dir(master_work_dir=working_dir, subtask_id=subtask_id)
