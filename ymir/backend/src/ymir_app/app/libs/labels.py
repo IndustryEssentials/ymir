@@ -2,7 +2,6 @@ from typing import Dict
 
 from fastapi.logger import logger
 
-from app.utils.cache import CacheClient
 from app.utils.ymir_controller import ControllerClient
 from common_utils.labels import UserLabels
 
@@ -12,7 +11,6 @@ def upsert_labels(
     user_labels: UserLabels,
     new_user_labels: UserLabels,
     controller_client: ControllerClient,
-    cache: CacheClient,
     dry_run: bool = False,
 ) -> Dict:
     """
