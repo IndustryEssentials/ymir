@@ -33,7 +33,7 @@ type Config struct {
 	RedisURLHelTask string
 }
 
-func InitViperConfig() *Config {
+func InitViperConfig(configFile string) *Config {
 	err := viper.BindEnv("YmirSandbox", "BACKEND_SANDBOX_ROOT")
 	if err != nil {
 		panic(err)
@@ -61,9 +61,7 @@ func InitViperConfig() *Config {
 		panic(err)
 	}
 
-	viper.SetConfigName("configs/config")
-	viper.SetConfigType("yml")
-	viper.AddConfigPath(".")
+	viper.SetConfigFile(configFile)
 	err = viper.ReadInConfig()
 	if err != nil {
 		panic(err)

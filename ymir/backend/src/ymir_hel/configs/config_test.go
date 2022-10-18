@@ -16,7 +16,7 @@ func TestViperConfig(t *testing.T) {
 	fakeHostPort := 1001
 	os.Setenv("VIEWER_HOST_PORT", fmt.Sprintf("%d", fakeHostPort))
 
-	config := InitViperConfig()
+	config := InitViperConfig("./config.yml")
 	assert.Equal(t, fakeURI, config.MongoDBURI)
 	assert.Equal(t, fakeSandbox, config.YmirSandbox)
 	assert.Equal(t, fakeHostPort, config.ViewerPort)

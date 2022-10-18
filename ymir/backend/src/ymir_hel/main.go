@@ -49,7 +49,7 @@ func BuildCliApp(config *configs.Config) (*cli.App, error) {
 }
 
 func main() {
-	helConfig := configs.InitViperConfig()
+	helConfig := configs.InitViperConfig("configs/config.yml")
 
 	app, err := BuildCliApp(helConfig)
 	if err != nil {
