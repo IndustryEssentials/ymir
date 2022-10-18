@@ -81,12 +81,16 @@ class InferenceCMDInvoker(BaseMirControllerInvoker):
         detections = infer_result.get("detection")
         if not isinstance(detections, dict):
             return resp
-
+ 
         # class_id should be updated, as it was from outside model.
-        for _, annotations in detections.items():
-            for annotation in annotations["boxes"]:
+        for _, annos_dict in detections.items():
+            annos = annos_dict.get("annotations", [])
+            for annotation in annos:
                 annotation["class_id"] = self._user_labels.id_for_names(names=annotation["class_name"],
                                                                         raise_if_unknown=False)[0][0]
+            annos_dict['boxes'] = annos
+            if 'annotations' in annos_dict:
+                del annos_dict['annotations']
 
         json_format.ParseDict(dict(image_annotations=detections), resp.detection, ignore_unknown_fields=False)
 
