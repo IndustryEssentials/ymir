@@ -204,7 +204,7 @@ export function filter({
 export function label({
   projectId, iteration, stage,
   groupId, name, datasetId, keywords,
-  labellers = ['hide@label.com'], keepAnnotations, doc, description,
+  labellers, keepAnnotations, doc, description,
 }) {
   return createTask({
     name,
@@ -217,7 +217,7 @@ export function label({
       dataset_group_id: groupId,
       dataset_id: datasetId,
       keywords,
-      labellers,
+      labellers: ['hide@label.com'],
       extra_url: doc,
       annotation_type: keepAnnotations,
     },
