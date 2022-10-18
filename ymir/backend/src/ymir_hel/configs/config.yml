@@ -1,0 +1,28 @@
+# Common
+YmirSandbox: ""
+
+# Viewer
+ViewerHost: "0.0.0.0"
+ViewerPort: 9527
+# ViewerURI has higher priority than above fields, if set.
+ViewerURI: ""
+ViewerTimeout: 61 # +1 for elder, in seconds.
+
+# MongoDBs
+MongoDBURI: "mongodb://127.0.0.1:27017"
+MongoDataDBName: "YMIR-data"
+MongoDataDBCache: true
+MongoMetricsDBName: "YMIR-metrics"
+
+# Hel-grpc
+HelGrpcHost: "0.0.0.0"
+HelGrpcPort: 9542
+# HelURI has higher priority than above fields, if set.
+HelGrpcURL: ""
+
+# Redis
+RedisURLHel: "redis://redis:6379"
+RedisNumHelGrpc: 12
+RedisURLHelGrpc: ""
+RedisNumHelTask: 14
+RedisURLHelTask: ""

@@ -1,0 +1,48 @@
+name: hel-unittest
+
+on:
+  pull_request:
+    branches:
+      - master
+      - dev
+      - ymir-pa
+
+jobs:
+  hel-ci:
+    runs-on: ubuntu-20.04
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Set up Go
+      uses: actions/setup-go@v2
+      with:
+        go-version: 1.18
+
+    - name: Cache Go Environment
+      uses: actions/cache@v3
+      with:
+        path: |
+          ~/.cache/go-build
+          ~/go/pkg/mod
+        key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+        restore-keys: |
+          ${{ runner.os }}-go-
+
+    - name: Verify dependencies
+      working-directory: ymir/backend/src/ymir_hel
+      run: |
+        time go mod verify
+        time go install honnef.co/go/tools/cmd/staticcheck@latest
+
+    - name: golangci-lint
+      uses: golangci/golangci-lint-action@v3
+      with:
+        version: v1.48
+        working-directory: ymir/backend/src/ymir_hel
+
+    - name: Lint and test code
+      working-directory: ymir/backend/src/ymir_hel
+      run: |
+        git config --global user.name 'CI-TEST'
+        git config --global user.email 'ci-test@ymir-team'
+        bash run_tests.sh
