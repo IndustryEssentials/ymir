@@ -17,47 +17,31 @@ const ModelSelect = ({
   const [options, setOptions] = useState([])
   const [_, getModels] = useFetch('model/queryAllModels')
 
-  useEffect(() => {
-    pid && getModels(pid)
-  }, [pid])
+  useEffect(() => pid && getModels(pid), [pid])
+
+  useEffect(() => setMS(value), [value])
+
+  useEffect(() => onReady(models), [models])
 
   useEffect(() => {
-    _ && onReady(_)
-  }, [_])
-
-  useEffect(() => {
-    if (options.length) {
-      if (value && !changeByUser) {
-        if (resProps.multiple) {
-          const opts = options.filter(opt => value.some(([model]) => opt.model.id === model)).map(opt => [opt, opt.value])
-          onChange(value, opts)
-        } else {
-          const opt = options.find(opt => opt?.model?.id === value[0])
-          if (!opt) {
-            return
-          }
-          const stage = value[1] || opt.model?.recommendStage
-          onChange(value, [opt, stage])
-        }
+    if (options.length && value && !changeByUser) {
+      let selected = null
+      if (resProps.multiple) {
+        selected = options.filter(opt => value.some(([model]) => opt.model.id === model)).map(opt => [opt, opt.value])
+      } else {
+        const opt = options.find(opt => opt?.model?.id === value[0])
+        selected = opt ? [opt, value[1] || opt?.model?.recommendStage] : undefined
+      }
+      if (!selected) {
+        onChange(undefined, undefined)
+        setMS(undefined)
+      } else {
+        onChange(value, selected)
       }
     }
   }, [options])
 
-  useEffect(() => {
-    if (!value) {
-      return
-    }
-    const model = models.find(md => md.id === value[0])
-    if (value && !value[1] && model) {
-      setMS([value[0], model.recommendStage])
-    } else {
-      setMS(value)
-    }
-  }, [options, value])
-
-  useEffect(() => {
-    generateOptions()
-  }, [models])
+  useEffect(() => generateOptions(), [models])
 
   function generateOptions() {
     const mds = filters ? filters(models) : models
