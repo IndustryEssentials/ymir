@@ -98,7 +98,7 @@ def create_sample_project(
         add_keywords(controller_client, cache, current_user.id, settings.SAMPLE_PROJECT_KEYWORDS)
 
     try:
-        resp = controller_client.create_project(
+        controller_client.create_project(
             user_id=current_user.id,
             project_id=project.id,
             task_id=project_task_hash,
