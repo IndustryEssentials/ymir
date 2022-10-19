@@ -1,12 +1,13 @@
-import { useHistory } from 'umi'
+import { useHistory, useParams } from 'umi'
 
 function useSubmitHandle(type = 'dataset') {
   const history = useHistory()
+  const { id: pid } = useParams()
 
   const handle = (result = {}) => {
-    const group = type === 'dataset' ?
-      result?.result_dataset?.dataset_group_id : result?.result_model?.result_group_id
-    let redirect = `/home/project/${pid}/dataset#${group || ''}`
+    const group =(result[`result_${type}`] || {})[`${type}_group_id`]
+    console.log('group:', group)
+    let redirect = `/home/project/${pid}/${type}#${group || ''}`
     history.replace(redirect)
   }
   return handle
