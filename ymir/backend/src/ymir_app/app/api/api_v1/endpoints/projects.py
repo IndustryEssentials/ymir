@@ -103,19 +103,27 @@ def create_sample_project(
             project_id=project.id,
             task_id=project_task_hash,
         )
-        logger.info("[create task] controller response: %s", resp)
     except ValueError:
         crud.project.soft_remove(db, id=project.id)
         raise FailedToCreateProject()
 
-    send_project_metrics(
-        current_user.id,
-        project.id,
-        project.name,
-        user_labels.id_for_names(names=project_in.training_keywords, raise_if_unknown=True)[0],
-        TrainingType(project.training_type).name,
-        int(project.create_datetime.timestamp()),
-    )
+    try:
+        project_training_class_ids = user_labels.id_for_names(
+            names=project_in.training_keywords, raise_if_unknown=True
+        )[0]
+    except Exception:
+        logger.exception(
+            "[create sample project] failed to parse project training class_ids, skip send_project_metrics"
+        )
+    else:
+        send_project_metrics(
+            current_user.id,
+            project.id,
+            project.name,
+            project_training_class_ids,
+            TrainingType(project.training_type).name,
+            int(project.create_datetime.timestamp()),
+        )
 
     background_tasks.add_task(
         setup_sample_project_in_background,
