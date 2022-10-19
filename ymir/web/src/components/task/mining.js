@@ -15,12 +15,12 @@ import useFetch from '@/hooks/useFetch'
 
 import ModelSelect from "@/components/form/modelSelect"
 import ImageSelect from "@/components/form/imageSelect"
-import LiveCodeForm from "@/pages/task/components/liveCodeForm"
-import { removeLiveCodeConfig } from "@/pages/task/components/liveCodeConfig"
-import DockerConfigForm from "@/pages/task/components/dockerConfigForm"
 import DatasetSelect from "@/components/form/datasetSelect"
+import LiveCodeForm from "@/components/form/items/liveCode"
+import { removeLiveCodeConfig } from "@/components/form/items/liveCodeConfig"
+import DockerConfigForm from "@/components/form/items/dockerConfig"
+import OpenpaiForm from "@/components/form/items/openpai"
 import Desc from "@/components/form/desc"
-import OpenpaiForm from "@/pages/task/components/openpaiForm"
 
 import styles from "./mining.less"
 
