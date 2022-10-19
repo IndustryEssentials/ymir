@@ -14,7 +14,7 @@ function LabelPage() {
     <div className={commonStyles.wrapper}>
       <Breadcrumbs />
       <Card className={commonStyles.container} title={t('breadcrumbs.task.label')}>
-        <Label query={{ ...query }} />
+        <Label query={query} />
       </Card>
     </div>
   )

@@ -9,12 +9,12 @@ import Mining from "@/components/task/mining"
 import commonStyles from "../common.less"
 
 function MiningPage() {
-  const location = useLocation()
+  const { query } = useLocation()
   return (
     <div className={commonStyles.wrapper}>
       <Breadcrumbs />
       <Card className={commonStyles.container} title={t('breadcrumbs.task.mining')}>
-        <Mining query={{ ...location.query }} />
+        <Mining query={query} />
       </Card>
     </div>
   )
