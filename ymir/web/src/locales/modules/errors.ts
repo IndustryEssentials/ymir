@@ -15,7 +15,7 @@ const errors = {
     cn: '无法隐藏受保护的资源，如当前迭代的产出、项目中的训练集、验证集、挖掘集或者正在进行的数据集/模型',
     en: 'Can not hide protected resource, such as result of current iteration, training, validation, and mining dataset related to project, or in-progress dataset/model',
   },
-  'error110112': { cn: '升级导致token失效，需要重新登录', en: 'Invalid token by system upgrading, please login again', },
+  'error110112': { cn: '系统升级导致token失效，需要重新登录', en: 'Invalid token by system upgrading, please login again', },
   'error110201': { cn: '找不到该用户，请重试', en: 'USER_NOT_FOUND: User Not Found, retry or contact admin.', },
   'error110202': { cn: '邮箱已注册，请选择新的邮箱注册', en: 'USER_DUPLICATED_NAME: Duplicated Email, try another one', },
   'error110203': { cn: '用户未授权访问', en: 'USER_NOT_ACCESSIBLE: User is Unaccessable', },
