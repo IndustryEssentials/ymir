@@ -96,7 +96,7 @@ YMIR 为用户提供成熟的挖掘算法，数据挖掘的主要目的是为了
 
 ![mining_2.jpg](https://raw.githubusercontent.com/IndustryEssentials/ymir-images/main/doc_v2/mining_2.jpg)
 
-挖掘模型应选用期望提升效果的模型，其中 topk 值为挖掘出的数据总量。
+挖掘模型应选用期望提升效果的模型，如果缺少模型，应前往【模型训练】或【模型导入】获取，其中 topk 值为挖掘出的数据总量。
 
 ## 数据标注
 
