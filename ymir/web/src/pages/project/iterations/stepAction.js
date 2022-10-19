@@ -8,9 +8,10 @@ import useFetch from '@/hooks/useFetch'
 import Fusion from "@/components/task/fusion"
 
 const Action = (Comp) => {
-  function Generate(props) { return <Comp {...props} /> }
+  function Generate(props) { return <><Comp {...props} /></> }
   return Generate
 }
+const Test = Action(Fusion)
 
 const StepAction = ({ stages, iteration, project, prevIteration }) => {
   const [updated, updateIteration] = useFetch('iteration/updateIteration')
@@ -22,7 +23,7 @@ const StepAction = ({ stages, iteration, project, prevIteration }) => {
 
   const comps = {
     [Stages.prepareMining]: {
-      comp: Action(Fusion), query: {
+      comp: Fusion, query: {
         did: project.miningSet?.id,
         merging: project.miningSet.id || 0,
         strategy: project.miningStrategy,
@@ -30,30 +31,30 @@ const StepAction = ({ stages, iteration, project, prevIteration }) => {
       },
     },
     [Stages.mining]: {
-      comp: Action(Fusion), query: {
+      comp: Fusion, query: {
         did: iteration.miningSet,
         mid: prevIteration.id ? [prevIteration.model, null] : project.modelStage,
       },
     },
     [Stages.labelling]: {
-      comp: Action(Fusion), query: {
+      comp: Fusion, query: {
         did: iteration.miningResult,
       },
     },
     [Stages.merging]: {
-      comp: Action(Fusion), query: {
+      comp: Fusion, query: {
         did: prevIteration.trainUpdateSet || project.trainSetVersion,
         mid: iteration.labelSet,
       },
     },
     [Stages.training]: {
-      comp: Action(Fusion), query: {
+      comp: Fusion, query: {
         did: iteration.trainUpdateSet,
         test: iteration.testSet,
       },
     },
     [Stages.next]: {
-      comp: Action(Fusion), query: {}
+      comp: Fusion, query: {}
     },
   }
   const fixedQuery = {
@@ -62,12 +63,17 @@ const StepAction = ({ stages, iteration, project, prevIteration }) => {
     from: 'iteration'
   }
   const [currentContent, setCurrentContent] = useState(null)
-  const [CurrentAction, setCurrentAction] = useState(() => {})
+  const [CurrentAction, setCurrentAction] = useState(null)
 
   useEffect(() => {
     console.log('comps[iteration.currentStage]:', comps[iteration.currentStage])
-    setCurrentAction(comps[iteration.currentStage].comp)
+    if(comps[iteration.currentStage]) {
+
+      // setCurrentAction(comps[iteration.currentStage].comp)
+      setCurrentAction(Action(Fusion))
+    }
   }, [iteration?.currentStage])
+
 
   useEffect(() => {
 
@@ -145,11 +151,11 @@ const StepAction = ({ stages, iteration, project, prevIteration }) => {
   }
 
   return currentContent && CurrentAction ?
-    <CurrentAction
+    <Test
       step={currentContent}
       result={result}
       {...fixedQuery}
-      {...(currentContent.query || {})}
+      {...currentContent.query}
       ok={ok}
       next={next}
       skip={skip}
