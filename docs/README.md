@@ -62,7 +62,7 @@ YMIR系统的使用流程一般分为两类，一类是系统的元操作，包�
 
 * 如果需要同步导入标注文件，则标注的文件格式需要为Pascal VOC；
 
-* 压缩包文件内图片文件需放入images文件夹内，标准值文件需放入gt文件夹内，预测标注文件需放入pred文件夹内，且pred文件夹内应包含产生该预测结果的模型信息。gt和pred均为可选，如不上传，则需要该文件夹为空，压缩包内文件结构如下。点击下载示例文件：[Sample.zip](http://192.168.13.144:26001/sample_dataset.zip)
+* 压缩包文件内图片文件需放入images文件夹内，标准值文件需放入gt文件夹内，预测标注文件需放入pred文件夹内，且pred文件夹内应包含产生该预测结果的模型信息。gt和pred均为可选，如不上传，则需要该文件夹为空，压缩包内文件结构如下。点击下载示例文件：[sample_dataset.zip](https://github.com/IndustryEssentials/ymir-images/blob/main/doc_v2/sample_dataset.zip?raw=true)
 
 ![sample_zip.jpg](https://raw.githubusercontent.com/IndustryEssentials/ymir-images/main/doc_v2/sample_zip.jpg)
 
