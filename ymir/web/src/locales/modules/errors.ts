@@ -100,6 +100,7 @@ const errors = {
   'error160009': { cn: 'CMD: mir repo不可用', en: 'RC_CMD_INVALID_MIR_REPO: invalid mir repo.', },
   'error160010': { cn: 'CMD: 文件不可用', en: 'RC_CMD_INVALID_FILE: invalid file', },
   'error160011': { cn: 'CMD: 无结果生成', en: 'RC_CMD_NO_RESULT: no result', },
+  'error160016': { cn: 'CMD: 读取meta.yaml文件失败', en: 'Reading meta.yaml file failed', },
   'error169999': { cn: 'CMD: 未知错误', en: 'RC_CMD_ERROR_UNKNOWN: unkown error', },
 }
 
