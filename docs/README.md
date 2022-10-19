@@ -54,9 +54,9 @@ YMIR系统的使用流程一般分为两类，一类是系统的元操作，包�
 
 基于添加好的类别准备数据集，格式要求如下：
 
-* 仅支持zip格式压缩包文件上传；
+* 仅支持 zip 格式压缩包文件上传；
 
-* 局域网内上传压缩包大小\<1G, 互联网建议\<200MB；
+* 局域网内上传压缩包大小\<1G, 互联网建议\<200MB，超过 1G 的数据集可以通过路径导入（见下文说明）；
 
 * 目前支持图片类型.jpg、jpg、bmp、jpeg，格式不符的图片将不会导入；
 
@@ -74,11 +74,13 @@ YMIR系统的使用流程一般分为两类，一类是系统的元操作，包�
 
 可以通过以下方式导入数据：
 
-①用户本地数据：支持上传压缩包，或通过网络url、路径导入。
+1\. 用户本地数据：支持上传压缩包，或通过网络url、路径导入。
+
+  1\. 路径导入：将数据文件夹存放到ymir工作空间目录下的ymir-sharing目录，如 /home/ymir/ymir-workspace/ymir-sharing/VOC2012, 输入基于ymir-sharing相对路径：VOC2012
 
 ![create_a_dataset_2.jpg](https://raw.githubusercontent.com/IndustryEssentials/ymir-images/main/doc_v2/create_a_dataset_2.jpg)
 
-②平台已有数据：支持复制该用户下的其他数据集或导入平台已有的公共数据集。
+2\. 平台已有数据：支持复制该用户下的其他数据集或导入平台已有的公共数据集。
 
 ![create_a_dataset_3.jpg](https://raw.githubusercontent.com/IndustryEssentials/ymir-images/main/doc_v2/create_a_dataset_3.jpg)
 
