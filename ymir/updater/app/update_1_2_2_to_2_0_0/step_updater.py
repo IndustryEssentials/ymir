@@ -11,8 +11,8 @@ import yaml
 
 from id_definition.task_id import IDProto
 from mir.tools import revs_parser, models
-from mir.protos import mir_command_122_pb2 as pb_src, mir_command_130_pb2 as pb_dst
-from mir.tools import mir_storage_ops_122 as mso_src, mir_storage_ops_130 as mso_dst
+from mir.protos import mir_command_122_pb2 as pb_src, mir_command_200_pb2 as pb_dst
+from mir.tools import mir_storage_ops_122 as mso_src, mir_storage_ops_200 as mso_dst
 from mir.version import ymir_model_salient_version, DEFAULT_YMIR_SRC_VERSION
 
 from tools import get_repo_tags, remove_old_tag, get_model_hashes, get_model_class_names

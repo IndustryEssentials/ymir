@@ -98,7 +98,7 @@ def _get_update_steps(src_ver: str, dst_ver: str) -> List[_StepUpdaterType]:
     eq_dst_ver = ymir_salient_version(dst_ver)
 
     _UPDATE_NODES: List[str] = ['1.2.2', '2.0.0']
-    _UPDATE_FUNCS: List[_StepUpdaterType] = [(update_repo_122_130, update_models_122_130)]
+    _UPDATE_FUNCS: List[_StepUpdaterType] = [(update_repo_122_200, update_models_122_200)]
     return _UPDATE_FUNCS[_UPDATE_NODES.index(eq_src_ver):_UPDATE_NODES.index(eq_dst_ver)]
 
 
