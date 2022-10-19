@@ -1,10 +1,10 @@
 # ymir 与功能性 docker container 数据传输接口
 
-| 协议文档版本 | ymir 版本 | 说明 |
-| --- | --- | --- |
-| [0.0.0](https://raw.githubusercontent.com/IndustryEssentials/ymir/release-1.1.0/docs/ymir-cmd-container.md) | 0.0.0 - 1.1.0 | 初始版本 |
-| [1.0.0](https://raw.githubusercontent.com/IndustryEssentials/ymir/ymir-pa/docs/ymir-cmd-container.md) | 1.2.0 - 1.2.2 | 增加关于中间模型的描述 |
-| 1.1.0 | 1.3.0 - | 4.3.2 节，训练完成后，模型保存策略更改 |
+| 协议文档版本 | ymir 版本 | 说明 | 镜像适配方式 |
+| --- | --- | --- | --- |
+| [0.0.0](https://raw.githubusercontent.com/IndustryEssentials/ymir/release-1.1.0/docs/ymir-cmd-container.md) | 0.0.0 - 1.1.0 | 初始版本 | |
+| [1.0.0](https://raw.githubusercontent.com/IndustryEssentials/ymir/ymir-pa/docs/ymir-cmd-container.md) | 1.2.0 - 1.2.2 | 增加关于中间模型的描述 | 使用 `write_model_stage` 方法保存训练产出的中间模型 |
+| 1.1.0 | 2.0.0 - | 4.3.2 节，训练完成后，模型保存策略更改<br>4.4.2 节，推理完成后，推理结果保存的节点由 annotations 改为 boxes | 1. 保存中间模型时，将模型文件保存至以 `中间模型名称` 命名的子目录中<br>2. 保存推理结果时，将原来的 annotations 键改为 boxes |
 
 ## 1. 关于此文档
 
