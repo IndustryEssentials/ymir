@@ -6,7 +6,6 @@ function useSubmitHandle(type = 'dataset') {
 
   const handle = (result = {}) => {
     const group =(result[`result_${type}`] || {})[`${type}_group_id`]
-    console.log('group:', group)
     let redirect = `/home/project/${pid}/${type}#${group || ''}`
     history.replace(redirect)
   }
