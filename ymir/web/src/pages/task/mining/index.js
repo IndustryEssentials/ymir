@@ -166,7 +166,7 @@ function Mining({ datasetCache, ...func }) {
   }
 
   function modelChange(stage, options) {
-    if (!stage[1]) {
+    if (stage && !stage[1] && options && options[1]) {
       form.setFieldsValue({ modelStage: [stage[0], options[1]] })
     }
     setSelectedModel(options ? options[0].model : [])
