@@ -18,8 +18,8 @@ services:
     env_file:
       - .env
     volumes:
-      - ${DEPLOY_MODULE_ROOT}/model_deployment_server/media:/svc/app/model_deployment_server/media
-      - ${DEPLOY_MODULE_ROOT}/model_deployment_server/logs:/svc/app/model_deployment_server/logs
+      - ${YMIR_PATH}/deploy_module/model_deployment_server/media:/svc/app/model_deployment_server/media
+      - ${YMIR_PATH}/deploy_module/model_deployment_server/logs:/svc/app/model_deployment_server/logs
     working_dir: /svc/app/model_deployment_server
     environment:
       TZ: Asia/Shanghai
@@ -38,7 +38,7 @@ services:
       MYSQL_ROOT_PASSWORD: ${DEPLOY_MODULE_MYSQL_ROOT_PASSWORD}
       MYSQL_DATABASE: model_deployment_db
     volumes:
-      - ${DEPLOY_MODULE_ROOT}/mysql/data:/var/lib/mysql
+      - ${YMIR_PATH}/deploy_module/mysql/data:/var/lib/mysql
     networks:
       - model_deploy_network
     restart: always
