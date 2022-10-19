@@ -9,7 +9,7 @@
 5. 下载 YMIR 目标版本，并依据旧版本的配置修改 .env 文件
 特别的，MYSQL_INITIAL_USER 及 MYSQL_INITIAL_PASSWORD 直接将旧版本的值复制过来。需要这些旧值登录
 6. 如果位于内网，或是位于无法连接 dockerhub 的网络环境中，需要先取得与 YMIR 系统对应的升级镜像，镜像名称可以通过 docker-compose.updater.yml 中的 image 配置项得到
-7. 如果使用 labelfree 作为标注工作，请注意 LabelFree 版本与 YMIR 版本的对应关系，YMIR 1.3.0 系统需要搭配 0.2.2 版本的 LabelFree 镜像运行
+7. 如果使用 labelfree 作为标注工作，请注意 LabelFree 版本与 YMIR 版本的对应关系，YMIR 2.0.0 系统需要搭配 0.2.2 版本的 LabelFree 镜像运行
 
 ## 升级操作
 

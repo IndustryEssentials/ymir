@@ -29,8 +29,8 @@ import yaml
 
 from id_definition.task_id import IDProto
 from mir.tools import revs_parser, models
-from mir.protos import mir_command_110_pb2 as pb_src, mir_command_130_pb2 as pb_dst
-from mir.tools import mir_storage_ops_110 as mso_src, mir_storage_ops_130 as mso_dst
+from mir.protos import mir_command_110_pb2 as pb_src, mir_command_200_pb2 as pb_dst
+from mir.tools import mir_storage_ops_110 as mso_src, mir_storage_ops_200 as mso_dst
 from mir.version import ymir_model_salient_version, DEFAULT_YMIR_SRC_VERSION
 
 from tools import get_repo_tags, remove_old_tag, get_model_hashes
@@ -39,12 +39,13 @@ _MirDatasSrc = Tuple[pb_src.MirMetadatas, pb_src.MirAnnotations, pb_src.Task]
 _MirDatasDst = Tuple[pb_dst.MirMetadatas, pb_dst.MirAnnotations, pb_dst.Task]
 
 _DEFAULT_STAGE_NAME = 'default_best_stage'
-_DST_YMIR_VER = '1.3.0'
+_SRC_YMIR_VER = '1.1.0'
+_DST_YMIR_VER = '2.0.0'
 
 
 # update user repo
 def update_repo(mir_root: str, assets_root: str, models_root: str) -> None:
-    logging.info(f"updating repo: {mir_root}, 110 -> 130")
+    logging.info(f"updating repo: {mir_root}, {_SRC_YMIR_VER} -> {_DST_YMIR_VER}")
 
     for tag in get_repo_tags(mir_root):
         if not re.match(f"^.{{{IDProto.ID_LENGTH}}}@.{{{IDProto.ID_LENGTH}}}$", tag):

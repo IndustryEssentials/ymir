@@ -153,7 +153,7 @@ update() {
 
 cat <<- EOF
 Before proceed, make sure to BACKUP your YMIR-workplace folder.
-Only supports to upgrade from 1.1.0 (22-May) to 1.3.0 (22-Oct), otherwise may cause data damage.
+Only supports to upgrade from 1.1.0 (22-May) to 2.0.0 (22-Oct), otherwise may cause data damage.
 EOF
 
 while true; do
