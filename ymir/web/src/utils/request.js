@@ -35,7 +35,7 @@ request.interceptors.response.use(
   (res) => {
     if (res.data.code !== 0) {
       message.error(t(`error${res.data.code}`))
-      if (res.data.code === 110104) {
+      if ([110104, 110112].includes(res.data.code)) {
         return logout()
       }
     }
