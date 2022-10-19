@@ -48,6 +48,8 @@ request.interceptors.response.use(
       return logout()
     } else if (err.request.status === 504) {
       message.error(t('error.timeout'))
+    } else if (err.request.status === 502) {
+      message.error(t('error.502'))
     } else {
       const res = err.response
       if (res?.data?.code) {

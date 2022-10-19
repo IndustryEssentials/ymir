@@ -4,7 +4,7 @@
 | --- | --- | --- |
 | [0.0.0](https://raw.githubusercontent.com/IndustryEssentials/ymir/release-1.1.0/docs/ymir-cmd-container.md) | 0.0.0 - 1.1.0 | 初始版本 |
 | [1.0.0](https://raw.githubusercontent.com/IndustryEssentials/ymir/ymir-pa/docs/ymir-cmd-container.md) | 1.2.0 - 1.2.2 | 增加关于中间模型的描述 |
-| 1.1.0 | 1.3.0 - | 4.3.2 节，训练完成后，模型保存策略更改 |
+| 1.1.0 | 2.0.0 - | 4.3.2 节，训练完成后，模型保存策略更改 |
 
 ## 1. 关于此文档
 
