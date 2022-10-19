@@ -12,7 +12,10 @@ function FusionIndex() {
     <div>
       <Breadcrumbs />
       <Card title={t('breadcrumbs.task.fusion')}>
-        <Fusion did={did} merging={merging} />
+        <Fusion query={{
+          did,
+          merging,
+        }} />
       </Card>
     </div>
   )

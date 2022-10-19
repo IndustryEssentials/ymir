@@ -7,11 +7,7 @@ import useFetch from '@/hooks/useFetch'
 
 import Fusion from "@/components/task/fusion"
 
-const Action = (Comp) => {
-  function Generate(props) { return <><Comp {...props} /></> }
-  return Generate
-}
-const Test = Action(Fusion)
+const Action = (Comp, props = {}) => <Comp {...props} />
 
 const StepAction = ({ stages, iteration, project, prevIteration }) => {
   const [updated, updateIteration] = useFetch('iteration/updateIteration')
@@ -66,13 +62,18 @@ const StepAction = ({ stages, iteration, project, prevIteration }) => {
   const [CurrentAction, setCurrentAction] = useState(null)
 
   useEffect(() => {
-    console.log('comps[iteration.currentStage]:', comps[iteration.currentStage])
-    if(comps[iteration.currentStage]) {
-
-      // setCurrentAction(comps[iteration.currentStage].comp)
-      setCurrentAction(Action(Fusion))
+    if (currentContent) {
+      const props = {
+        step: currentContent,
+        result,
+        query: { ...fixedQuery, ...currentContent.query },
+        ok,
+        next,
+        skip,
+      }
+      setCurrentAction(Action(currentContent.comp, props))
     }
-  }, [iteration?.currentStage])
+  }, [currentContent])
 
 
   useEffect(() => {
@@ -92,10 +93,6 @@ const StepAction = ({ stages, iteration, project, prevIteration }) => {
       ...comps[iteration.currentStage],
     })
   }, [iteration?.currentStage, stages])
-
-  useEffect(() => {
-    console.log('currentContent:', currentContent, iteration?.currentStage, Stages.prepareMining)
-  }, [currentContent])
 
   useEffect(() => {
     if (updated) {
@@ -150,16 +147,7 @@ const StepAction = ({ stages, iteration, project, prevIteration }) => {
     })
   }
 
-  return currentContent && CurrentAction ?
-    <Test
-      step={currentContent}
-      result={result}
-      {...fixedQuery}
-      {...currentContent.query}
-      ok={ok}
-      next={next}
-      skip={skip}
-    /> : null
+  return CurrentAction
 }
 
 export default StepAction

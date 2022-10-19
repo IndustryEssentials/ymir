@@ -14,9 +14,9 @@ import DatasetSelect from "@/components/form/datasetSelect"
 import Desc from "@/components/form/desc"
 import BottomButtons from "./BottomButtons"
 
-function Fusion({ did, merging, iterationId, currentStage, strategy = '', chunk, ok = () => { }, skip = () => { }, bottom }) {
-  console.log('did, merging, iterationId, currentStage, strategy = ', did, merging, iterationId, currentStage, strategy)
-  // console.log('did, merging:', did, merging)
+function Fusion({ query = {},  ok = () => { }, skip = () => { }, bottom }) {
+  const { did, iterationId, currentStage, chunk, strategy = '', merging } = query
+
   const pageParams = useParams()
   const pid = Number(pageParams.id)
   const history = useHistory()
