@@ -34,9 +34,9 @@ YMIR系统的使用流程一般分为两类，一类是系统的元操作，包�
 
 首先，我们需要在项目管理中【创建项目】，YMIR系统以项目为维度进行数据、模型的管理。
 
-![create_a_project_1.png](https://raw.githubusercontent.com/IndustryEssentials/ymir-images/main/doc_v2/create_a_project_1.png)
+![create_a_project_1.jpg](https://raw.githubusercontent.com/IndustryEssentials/ymir-images/main/doc_v2/create_a_project_1.jpg)
 
-![create_a_project_2.png](https://raw.githubusercontent.com/IndustryEssentials/ymir-images/main/doc_v2/create_a_project_2.png)
+![create_a_project_2.jpg](https://raw.githubusercontent.com/IndustryEssentials/ymir-images/main/doc_v2/create_a_project_2.jpg)
 
 请注意，项目的训练目标将会默认设为您在启用【迭代流程】时的训练目标。
 
@@ -58,29 +58,29 @@ YMIR系统的使用流程一般分为两类，一类是系统的元操作，包�
 
 * 局域网内上传压缩包大小\<1G, 互联网建议\<200MB；
 
-* 目前支持图片类型为png、jpg、bmp、jpeg，格式不符的图片将不会导入；
+* 目前支持图片类型.jpg、jpg、bmp、jpeg，格式不符的图片将不会导入；
 
 * 如果需要同步导入标注文件，则标注的文件格式需要为Pascal VOC；
 
 * 压缩包文件内图片文件需放入images文件夹内，标准值文件需放入gt文件夹内，预测标注文件需放入pred文件夹内，且pred文件夹内应包含产生该预测结果的模型信息。gt和pred均为可选，如不上传，则需要该文件夹为空，压缩包内文件结构如下。点击下载示例文件：[Sample.zip](http://192.168.13.144:26001/sample_dataset.zip)
 
-![sample_zip.png](https://raw.githubusercontent.com/IndustryEssentials/ymir-images/main/doc_v2/sample_zip.png)
+![sample_zip.jpg](https://raw.githubusercontent.com/IndustryEssentials/ymir-images/main/doc_v2/sample_zip.jpg)
 
 ### 上传数据集
 
 在完成了添加类别与数据准备后，点击【添加数据集】按钮，进入添加数据集页面。
 
-![create_a_dataset_1.png](https://raw.githubusercontent.com/IndustryEssentials/ymir-images/main/doc_v2/create_a_dataset_1.png)
+![create_a_dataset_1.jpg](https://raw.githubusercontent.com/IndustryEssentials/ymir-images/main/doc_v2/create_a_dataset_1.jpg)
 
 可以通过以下方式导入数据：
 
 ①用户本地数据：支持上传压缩包，或通过网络url、路径导入。
 
-![create_a_dataset_2.png](https://raw.githubusercontent.com/IndustryEssentials/ymir-images/main/doc_v2/create_a_dataset_2.png)
+![create_a_dataset_2.jpg](https://raw.githubusercontent.com/IndustryEssentials/ymir-images/main/doc_v2/create_a_dataset_2.jpg)
 
 ②平台已有数据：支持复制该用户下的其他数据集或导入平台已有的公共数据集。
 
-![create_a_dataset_3.png](https://raw.githubusercontent.com/IndustryEssentials/ymir-images/main/doc_v2/create_a_dataset_3.png)
+![create_a_dataset_3.jpg](https://raw.githubusercontent.com/IndustryEssentials/ymir-images/main/doc_v2/create_a_dataset_3.jpg)
 
 ## 数据挖掘
 
@@ -88,9 +88,9 @@ YMIR为用户提供成熟的挖掘算法，数据挖掘的主要目的是为了�
 
 首先选择要挖掘的数据集，点击\[挖掘\]操作，创建挖掘任务。
 
-![mining_1.png](https://raw.githubusercontent.com/IndustryEssentials/ymir-images/main/doc_v2/mining_1.png)
+![mining_1.jpg](https://raw.githubusercontent.com/IndustryEssentials/ymir-images/main/doc_v2/mining_1.jpg)
 
-![mining_2.png](https://raw.githubusercontent.com/IndustryEssentials/ymir-images/main/doc_v2/mining_2.png)
+![mining_2.jpg](https://raw.githubusercontent.com/IndustryEssentials/ymir-images/main/doc_v2/mining_2.jpg)
 
 挖掘模型应选用期望提升效果的模型，其中topk值为挖掘出的数据总量。
 
@@ -100,15 +100,15 @@ YMIR为用户提供成熟的挖掘算法，数据挖掘的主要目的是为了�
 
 Step 1 首先选择要标注的数据集，点击\[标注\]操作，创建标注任务。
 
-![labelling_1.png](https://raw.githubusercontent.com/IndustryEssentials/ymir-images/main/doc_v2/labelling_1.png)
+![labelling_1.jpg](https://raw.githubusercontent.com/IndustryEssentials/ymir-images/main/doc_v2/labelling_1.jpg)
 
 Step 2 填写标注需要的内容，标注目标可在当前用户下的类别列表中选择，支持上传标注标准文档，如果用户尚未注册标注平台的账户，可点击下方链接跳转至标注平台注册账号。
 
-![labelling_2.png](https://raw.githubusercontent.com/IndustryEssentials/ymir-images/main/doc_v2/labelling_2.png)
+![labelling_2.jpg](https://raw.githubusercontent.com/IndustryEssentials/ymir-images/main/doc_v2/labelling_2.jpg)
 
 Step 3 标注任务创建完成后，用户可以通过查看标注数据集的详情，跳转至标注平台自行标注。
 
-![labelling_3.png](https://raw.githubusercontent.com/IndustryEssentials/ymir-images/main/doc_v2/labelling_3.png)
+![labelling_3.jpg](https://raw.githubusercontent.com/IndustryEssentials/ymir-images/main/doc_v2/labelling_3.jpg)
 
 ## 数据分析
 
@@ -122,7 +122,7 @@ Step 3 标注任务创建完成后，用户可以通过查看标注数据集的
 
 可以通过切换数据集查看不同数据集的分析报告，支持多选数据集进行比对。
 
-![data_analysis_1.png](https://raw.githubusercontent.com/IndustryEssentials/ymir-images/main/doc_v2/data_analysis_1.png)
+![data_analysis_1.jpg](https://raw.githubusercontent.com/IndustryEssentials/ymir-images/main/doc_v2/data_analysis_1.jpg)
 
 ## 模型训练
 
@@ -130,15 +130,15 @@ Step 3 标注任务创建完成后，用户可以通过查看标注数据集的
 
 您可从【项目管理】下左侧菜单操作列点击【模型训练】进入该功能页面。
 
-![training_1.png](https://raw.githubusercontent.com/IndustryEssentials/ymir-images/main/doc_v2/training_1.png)
+![training_1.jpg](https://raw.githubusercontent.com/IndustryEssentials/ymir-images/main/doc_v2/training_1.jpg)
 
 如果有指定的数据集作为训练集，也可以在数据集的右侧操作入口中进入训练页面。
 
-![training_2.png](https://raw.githubusercontent.com/IndustryEssentials/ymir-images/main/doc_v2/training_2.png)
+![training_2.jpg](https://raw.githubusercontent.com/IndustryEssentials/ymir-images/main/doc_v2/training_2.jpg)
 
 ### 训练配置
 
-![training_3.png](https://raw.githubusercontent.com/IndustryEssentials/ymir-images/main/doc_v2/training_3.png)
+![training_3.jpg](https://raw.githubusercontent.com/IndustryEssentials/ymir-images/main/doc_v2/training_3.jpg)
 
 Step 1 选择镜像
 
@@ -180,13 +180,13 @@ Step 7 超参数配置
 
 * 模型训练过程中，可以到【模型列表】页面查看模型的训练进度。
 
-![training_4.png](https://raw.githubusercontent.com/IndustryEssentials/ymir-images/main/doc_v2/training_4.png)
+![training_4.jpg](https://raw.githubusercontent.com/IndustryEssentials/ymir-images/main/doc_v2/training_4.jpg)
 
 * 想要查看更多的模型训练过程中的信息，可打开【模型详情】页面，点击【训练过程】按钮，查看训练信息。
 
-![training_5.png](https://raw.githubusercontent.com/IndustryEssentials/ymir-images/main/doc_v2/training_5.png)
+![training_5.jpg](https://raw.githubusercontent.com/IndustryEssentials/ymir-images/main/doc_v2/training_5.jpg)
 
-![training_6.png](https://raw.githubusercontent.com/IndustryEssentials/ymir-images/main/doc_v2/training_6.png)
+![training_6.jpg](https://raw.githubusercontent.com/IndustryEssentials/ymir-images/main/doc_v2/training_6.jpg)
 
 ## 模型诊断 
 
@@ -196,17 +196,17 @@ Step 7 超参数配置
 
 通过模型的【推理】操作，在选中的测试集上生成推理结果，支持同时选中多个数据集或模型进行推理。
 
-![inference_1.png](https://raw.githubusercontent.com/IndustryEssentials/ymir-images/main/doc_v2/inference_1.png)
+![inference_1.jpg](https://raw.githubusercontent.com/IndustryEssentials/ymir-images/main/doc_v2/inference_1.jpg)
 
-![inference_2.png](https://raw.githubusercontent.com/IndustryEssentials/ymir-images/main/doc_v2/inference_2.png)
+![inference_2.jpg](https://raw.githubusercontent.com/IndustryEssentials/ymir-images/main/doc_v2/inference_2.jpg)
 
 推理完成后，支持对推理结果进行可视化查看。
 
-![inference_3.png](https://raw.githubusercontent.com/IndustryEssentials/ymir-images/main/doc_v2/inference_3.png)
+![inference_3.jpg](https://raw.githubusercontent.com/IndustryEssentials/ymir-images/main/doc_v2/inference_3.jpg)
 
-![inference_4.png](https://raw.githubusercontent.com/IndustryEssentials/ymir-images/main/doc_v2/inference_4.png)
+![inference_4.jpg](https://raw.githubusercontent.com/IndustryEssentials/ymir-images/main/doc_v2/inference_4.jpg)
 
-![inference_5.png](https://raw.githubusercontent.com/IndustryEssentials/ymir-images/main/doc_v2/inference_5.png)
+![inference_5.jpg](https://raw.githubusercontent.com/IndustryEssentials/ymir-images/main/doc_v2/inference_5.jpg)
 
 当前可视化结果支持对推理结果的指标评估，包括FP、FN、TP以及MTP，支持按类别进行筛选查看。
 
@@ -224,9 +224,9 @@ MTP：Match True Positive，即在目标预测类别下，和模型预测结果�
 
 * 可以通过切换指标来查看不同参数下的模型诊断结果，诊断结果包括mAP、PR曲线、精确率、召回率。显示结果示例如下：
 
-![diagnosis_1.png](https://raw.githubusercontent.com/IndustryEssentials/ymir-images/main/doc_v2/diagnosis_1.png)
+![diagnosis_1.jpg](https://raw.githubusercontent.com/IndustryEssentials/ymir-images/main/doc_v2/diagnosis_1.jpg)
 
-![diagnosis_2.png](https://raw.githubusercontent.com/IndustryEssentials/ymir-images/main/doc_v2/diagnosis_2.png)
+![diagnosis_2.jpg](https://raw.githubusercontent.com/IndustryEssentials/ymir-images/main/doc_v2/diagnosis_2.jpg)
 
 查看模型诊断结果时，需要思考在当前业务场景，更关注精确率与召回率哪个指标。是更希望减少误识别，还是更希望减少漏识别。前者更需要关注精确率的指标，后者更需要关注召回率的指标。评估指标说明如下：
 
@@ -244,19 +244,19 @@ mAP： mAP(mean average precision)是目标检测(Object Detection)算法中衡
 
 管理员进入【我的镜像】页面， 点击\[新增镜像\]按钮，填写镜像名称和地址，完成镜像的添加。
 
-![docker_1.png](https://raw.githubusercontent.com/IndustryEssentials/ymir-images/main/doc_v2/docker_1.png)
+![docker_1.jpg](https://raw.githubusercontent.com/IndustryEssentials/ymir-images/main/doc_v2/docker_1.jpg)
 
 也可通过复制公共镜像的方式进行镜像的添加，进入【公共镜像】页面，点击\[复制\]按钮，修改名称和描述，完成公共镜像的复制。
 
-![docker_2.png](https://raw.githubusercontent.com/IndustryEssentials/ymir-images/main/doc_v2/docker_2.png)
+![docker_2.jpg](https://raw.githubusercontent.com/IndustryEssentials/ymir-images/main/doc_v2/docker_2.jpg)
 
 ### 关联镜像
 
 用户自定义的训练、挖掘和推理镜像，一般来说需要具有关联性，才可保证操作流程可串联。也就是说用户A制作的训练镜像所训练出的模型，一般情况下无法适配用户B所制作的挖掘或推理镜像。为了便于用户记忆不同类别间的镜像关系，平台特别设计了镜像关联功能。点击训练镜像的\[关联\]按钮，选择对应的挖掘镜像：
 
-![docker_3.png](https://raw.githubusercontent.com/IndustryEssentials/ymir-images/main/doc_v2/docker_3.png)
+![docker_3.jpg](https://raw.githubusercontent.com/IndustryEssentials/ymir-images/main/doc_v2/docker_3.jpg)
 
-![docker_4.png](https://raw.githubusercontent.com/IndustryEssentials/ymir-images/main/doc_v2/docker_4.png)
+![docker_4.jpg](https://raw.githubusercontent.com/IndustryEssentials/ymir-images/main/doc_v2/docker_4.jpg)
 
 注：目前仅支持由训练镜像关联到挖掘镜像。
 
@@ -268,7 +268,7 @@ mAP： mAP(mean average precision)是目标检测(Object Detection)算法中衡
 
 为此我们设计了模型迭代功能，下图为一个完整的模型迭代流程，用户通过多次迭代，不断地调整训练数据和算法，多次训练，获得更好的模型效果。
 
-![workflow.png](https://raw.githubusercontent.com/IndustryEssentials/ymir-images/main/doc_v2/workflow.png)
+![workflow.jpg](https://raw.githubusercontent.com/IndustryEssentials/ymir-images/main/doc_v2/workflow.jpg)
 
 开启迭代后，YMIR提供标准化的模型迭代流程，并且会在每一步操作中帮助用户默认填入上一次的操作结果，普通用户按照既定步骤操作，即可完成完整的模型迭代流程。当前操作结果如不符合您的预期，您也可以选择跳过当前操作。
 
@@ -276,7 +276,7 @@ mAP： mAP(mean average precision)是目标检测(Object Detection)算法中衡
 
 创建项目完成后，您可以在【项目概览】页面中点击\[系统辅助式模型生产\]按钮进入该页面，也可以直接从【项目管理】下左侧菜单操作列点击【项目迭代】进入。
 
-![iteration_1.png](https://raw.githubusercontent.com/IndustryEssentials/ymir-images/main/doc_v2/iteration_1.png)
+![iteration_1.jpg](https://raw.githubusercontent.com/IndustryEssentials/ymir-images/main/doc_v2/iteration_1.jpg)
 
 ### 迭代前准备
 
@@ -295,7 +295,7 @@ mAP： mAP(mean average precision)是目标检测(Object Detection)算法中衡
 
 在迭代准备界面对以上的数据类别分别进行设置，完成后点击\[使用迭代功能提升模型效果\]按钮，进入迭代流程。
 
-![Iteration_2.png](https://raw.githubusercontent.com/IndustryEssentials/ymir-images/main/doc_v2/Iteration_2.png)
+![Iteration_2.jpg](https://raw.githubusercontent.com/IndustryEssentials/ymir-images/main/doc_v2/Iteration_2.jpg)
 
 ### 迭代流程
 
@@ -303,31 +303,31 @@ step 1 挖掘数据准备
 
 该操作用于确定待挖掘的数据，在所选挖掘集上进行数据筛选或去重，最终获得的结果就是下一步用于挖掘的数据，此步骤可跳过。
 
-![Iteration_pre_1.png](https://raw.githubusercontent.com/IndustryEssentials/ymir-images/main/doc_v2/Iteration_pre_1.png)
+![Iteration_pre_1.jpg](https://raw.githubusercontent.com/IndustryEssentials/ymir-images/main/doc_v2/Iteration_pre_1.jpg)
 
 step 2 数据挖掘
 
 根据上一步获取到的待挖掘数据， 设置用户想要挖掘的数据量，其他参数均有迭代系统辅助填写，具体操作可参考[数据挖掘](README.md#数据挖掘)。注意，这里用于挖掘的模型是您上次迭代获取到的最终训练模型（如果是第一次迭代，则这里是您设置的初始模型），挖掘任务完成后获取挖掘结果数据，此步骤可跳过。
 
-![Iteration_mine_1.png](https://raw.githubusercontent.com/IndustryEssentials/ymir-images/main/doc_v2/Iteration_mine_1.png)
+![Iteration_mine_1.jpg](https://raw.githubusercontent.com/IndustryEssentials/ymir-images/main/doc_v2/Iteration_mine_1.jpg)
 
 step 3 数据标注
 
 挖掘后的结果一般不带有用户想要训练的目标类别标注，这是需要对挖掘结果进行人工标注，在迭代流程中点击\[数据标注\]按钮，进入标注页面，待标注数据为上一步中的挖掘结果，其他操作参考[数据标注](README.md#数据标注)，此步骤可跳过。
 
-![Iteration_label.png](https://raw.githubusercontent.com/IndustryEssentials/ymir-images/main/doc_v2/Iteration_label.png)
+![Iteration_label.jpg](https://raw.githubusercontent.com/IndustryEssentials/ymir-images/main/doc_v2/Iteration_label.jpg)
 
 step 4 更新训练集
 
 迭代的主要目的是扩充用户的训练数据，将已经标注好的挖掘结果合并到之前的训练集中，生成新的训练集版本，用于模型训练。
 
-![Iteration_merge.png](https://raw.githubusercontent.com/IndustryEssentials/ymir-images/main/doc_v2/Iteration_merge.png)
+![Iteration_merge.jpg](https://raw.githubusercontent.com/IndustryEssentials/ymir-images/main/doc_v2/Iteration_merge.jpg)
 
 step 5 模型训练
 
 已合并后的训练集需要再次进行训练产生新的模型，注意，这里的验证集是用户在迭代前所设置的验证集，为了保证模型效果的一致性，暂不支持更改，其他操作参考[模型训练](README.md#模型训练)。点击\[训练\]按钮后获得本次迭代的模型结果。
 
-![Iteration_train_1.png](https://raw.githubusercontent.com/IndustryEssentials/ymir-images/main/doc_v2/Iteration_train_1.png)
+![Iteration_train_1.jpg](https://raw.githubusercontent.com/IndustryEssentials/ymir-images/main/doc_v2/Iteration_train_1.jpg)
 
 step 6 下一轮迭代
 
@@ -337,7 +337,7 @@ step7 查看迭代历史
 
 在完成迭代过程后，如果需要查看之前或者当前迭代的信息，可点击\[迭代历史\]页签，查看历史的迭代信息。
 
-![Iteration_history.png](https://raw.githubusercontent.com/IndustryEssentials/ymir-images/main/doc_v2/Iteration_history.png)
+![Iteration_history.jpg](https://raw.githubusercontent.com/IndustryEssentials/ymir-images/main/doc_v2/Iteration_history.jpg)
 
 ## 模型部署
 
@@ -347,28 +347,28 @@ step7 查看迭代历史
 
 step 1 进入【模型列表】页面，点击\[发布\]按钮，发布完成后请前往【模型部署】模块【我的算法】页面查看发布结果。
 
-![release_1.png](https://raw.githubusercontent.com/IndustryEssentials/ymir-images/main/doc_v2/release_1.png)
+![release_1.jpg](https://raw.githubusercontent.com/IndustryEssentials/ymir-images/main/doc_v2/release_1.jpg)
 
-![release_2.png](https://raw.githubusercontent.com/IndustryEssentials/ymir-images/main/doc_v2/release_2.png)
+![release_2.jpg](https://raw.githubusercontent.com/IndustryEssentials/ymir-images/main/doc_v2/release_2.jpg)
 
 step 2 进入【我的算法】页面， 对选中的已发布模型点击\[部署\]按钮，进入【模型部署】页面，选择要部署的设备。设备列表为当前服务器环境下的设备，如需要选择其他设备，请前往【设备列表】页面添加。
 
-![deploy_1.png](https://raw.githubusercontent.com/IndustryEssentials/ymir-images/main/doc_v2/deploy_1.png)
+![deploy_1.jpg](https://raw.githubusercontent.com/IndustryEssentials/ymir-images/main/doc_v2/deploy_1.jpg)
 
-![deploy_2.png](https://raw.githubusercontent.com/IndustryEssentials/ymir-images/main/doc_v2/deploy_2.png)
+![deploy_2.jpg](https://raw.githubusercontent.com/IndustryEssentials/ymir-images/main/doc_v2/deploy_2.jpg)
 
-![deploy_3.png](https://raw.githubusercontent.com/IndustryEssentials/ymir-images/main/doc_v2/deploy_3.png)
+![deploy_3.jpg](https://raw.githubusercontent.com/IndustryEssentials/ymir-images/main/doc_v2/deploy_3.jpg)
 
 step 3 部署完成后，可前往设备页面查看模型运行情况。前往【设备列表】页面，点击设备名称，进入设备详情页面查看。在设备的【算法中心】页面可设置算法的开启状态。
 
-![device_1.png](https://raw.githubusercontent.com/IndustryEssentials/ymir-images/main/doc_v2/device_1.png)
+![device_1.jpg](https://raw.githubusercontent.com/IndustryEssentials/ymir-images/main/doc_v2/device_1.jpg)
 
-![device_2.png](https://raw.githubusercontent.com/IndustryEssentials/ymir-images/main/doc_v2/device_2.png)
+![device_2.jpg](https://raw.githubusercontent.com/IndustryEssentials/ymir-images/main/doc_v2/device_2.jpg)
 
 ### 发布到公共算法库
 
 进入【我的算法】页面， 对选中的已发布模型点击\[发布到公有算法\]按钮，点击\[确定\]后，算法会交给后台人工审核打包，完成后即可前往【模型部署】-【公有算法】页面查看对应的模型。
 
-![public_alg_1.png](https://raw.githubusercontent.com/IndustryEssentials/ymir-images/main/doc_v2/public_alg_1.png)
+![public_alg_1.jpg](https://raw.githubusercontent.com/IndustryEssentials/ymir-images/main/doc_v2/public_alg_1.jpg)
 
-![public_alg_2.png](https://raw.githubusercontent.com/IndustryEssentials/ymir-images/main/doc_v2/public_alg_2.png)
+![public_alg_2.jpg](https://raw.githubusercontent.com/IndustryEssentials/ymir-images/main/doc_v2/public_alg_2.jpg)
