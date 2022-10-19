@@ -16,7 +16,7 @@ from mir.tools import settings as mir_settings
 from mir.tools.code import MirCode
 from mir.tools.errors import MirRuntimeError
 
-from mir.protos import mir_command_130_pb2 as mirpb
+from mir.protos import mir_command_200_pb2 as mirpb
 
 
 def create_evaluate_config(conf_thr: float = mir_settings.DEFAULT_EVALUATE_CONF_THR,

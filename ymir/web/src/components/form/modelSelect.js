@@ -33,8 +33,8 @@ const ModelSelect = ({
         selected = opt ? [opt, value[1] || opt?.model?.recommendStage] : undefined
       }
       if (!selected) {
-        onChange(undefined, undefined)
-        setMS(undefined)
+        onChange([], undefined)
+        setMS([])
       } else {
         onChange(value, selected)
       }
