@@ -1,7 +1,7 @@
 version: "3.1"
 services:
   label_nginx:
-    image: labelfree/open_frontend:v0.2.2
+    image: labelfree/open_frontend:0.2.2
     env_file:
       - .env
     ports:
@@ -11,7 +11,7 @@ services:
     restart: always
 
   label_api:
-    image: labelfree/open:v0.2.2
+    image: labelfree/open:0.2.2
     command: gunicorn --conf /code/config/gunicorn.py  --log-config /code/config/logging.conf --chdir /code/labelfree app:app
     env_file:
       - .env
@@ -33,7 +33,7 @@ services:
     restart: always
 
   label_celery_worker:
-    image: labelfree/open:v0.2.2
+    image: labelfree/open:0.2.2
     command: celery -A labelfree.app.celery worker -l info
     env_file:
       - .env
