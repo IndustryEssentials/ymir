@@ -15,6 +15,7 @@ import Desc from "@/components/form/desc"
 import BottomButtons from "./BottomButtons"
 
 function Fusion({ did, merging, iterationId, currentStage, strategy = '', chunk, ok = () => { }, skip = () => { }, bottom }) {
+  console.log('did, merging, iterationId, currentStage, strategy = ', did, merging, iterationId, currentStage, strategy)
   // console.log('did, merging:', did, merging)
   const pageParams = useParams()
   const pid = Number(pageParams.id)

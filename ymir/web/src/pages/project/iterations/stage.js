@@ -13,7 +13,6 @@ function Stage({ pid, stage, current = 0, end = false, callback = () => { } }) {
   const history = useHistory()
   const result = useSelector(({ dataset, model }) => {
     const isModel = stage.value === Stages.training
-    console.log('isModel:', isModel)
     const res = isModel ? model.model: dataset.dataset
     return { ...res[stage.result]} || {}
   })
