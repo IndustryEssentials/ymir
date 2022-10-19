@@ -29,7 +29,7 @@ class InitInvoker(BaseMirControllerInvoker):
         link_dst_dir = os.path.join(self._repo_root, '.mir')
         os.makedirs(link_dst_dir, exist_ok=True)
         link_dst_file = os.path.join(link_dst_dir, labels.ids_file_name())
-        os.symlink(self._label_storage_file, link_dst_file)
+        os.link(self._label_storage_file, link_dst_file)
 
         command = [utils.mir_executable(), 'init', '--root', self._repo_root]
         command.extend(
