@@ -13,6 +13,7 @@ function Stage({ pid, stage, current = 0, end = false, callback = () => { } }) {
   const history = useHistory()
   const result = useSelector(({ dataset, model }) => {
     const isModel = stage.value === Stages.training
+    console.log('isModel:', isModel)
     const res = isModel ? model.model: dataset.dataset
     return { ...res[stage.result]} || {}
   })
@@ -21,7 +22,7 @@ function Stage({ pid, stage, current = 0, end = false, callback = () => { } }) {
   useEffect(() => {
     const st = typeof result?.state !== 'undefined' ? result.state : stage.state
     setState(st)
-  }, [result, stage])
+  }, [result?.state, stage])
 
   function skip() {
     callback({

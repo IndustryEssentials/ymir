@@ -1,8 +1,11 @@
-import { Stages, StageList } from '@/constants/iteration'
-import Fusion from "@/components/task/fusion"
 import { useEffect, useState } from 'react'
-import useFetch from '@/hooks/useFetch'
+import { useSelector } from 'umi'
 import { Space } from 'antd'
+
+import { Stages, StageList } from '@/constants/iteration'
+import useFetch from '@/hooks/useFetch'
+
+import Fusion from "@/components/task/fusion"
 
 const Action = (Comp) => (props) => <Comp {...props} />
 
@@ -10,7 +13,7 @@ const StepAction = ({ stages, iteration, project, prevIteration }) => {
   const [updated, updateIteration] = useFetch('iteration/updateIteration')
   const result = useSelector(({ dataset, model }) => {
     const isModel = currentContent?.value === Stages.training
-    const res = isModel ? model.model: dataset.dataset
+    const res = isModel ? model.model : dataset.dataset
     return res[currentContent?.result] || {}
   })
 
@@ -50,15 +53,6 @@ const StepAction = ({ stages, iteration, project, prevIteration }) => {
       comp: Fusion, query: {}
     },
   }
-  const contents = stages.reduce((prev, stage) => {
-    return {
-      ...prev,
-      [stage.value]: {
-        ...stage,
-        ...comps[stage.value],
-      }
-    }
-  }, {})
   const fixedQuery = {
     iterationId: iteration.id,
     currentStage: iteration.currentStage,
@@ -67,8 +61,21 @@ const StepAction = ({ stages, iteration, project, prevIteration }) => {
   const [currentContent, setCurrentContent] = useState(null)
 
   useEffect(() => {
-    iteration?.currentStage && setCurrentContent(contents[iteration.currentStage])
-  }, [iteration?.currentStage])
+    console.log('len: ', stages)
+    if (!stages.length) {
+      return
+    }
+    const targetStage = stages.find(({ value }) => value === iteration.currentStage)
+
+    setCurrentContent({
+      ...targetStage,
+      ...comps[iteration.currentStage],
+    })
+  }, [iteration?.currentStage, stages])
+
+  useEffect(() => {
+    console.log('currentContent:', currentContent, iteration?.currentStage, Stages.prepareMining)
+  }, [currentContent])
 
   useEffect(() => {
     if (updated) {
