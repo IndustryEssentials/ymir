@@ -308,8 +308,8 @@ model_stages:
 ```
 {'detection':
   {
-    asset-name-0: {'annotations': [{'box': {'x': 30, 'y': 30, 'w': 50, 'h': 50}, 'class_name': 'cat','score': 0.8}, ...]},
-    asset-name-1: {'annotations': [...]},
+    asset-name-0: {'boxes': [{'box': {'x': 30, 'y': 30, 'w': 50, 'h': 50}, 'class_name': 'cat','score': 0.8}, ...]},
+    asset-name-1: {'boxes': [...]},
     ...
   }
 }
