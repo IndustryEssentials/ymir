@@ -31,7 +31,7 @@ const TrainType = [{ value: "detection", label: 'task.train.form.traintypes.dete
 
 const KeywordsMaxCount = 5
 
-function Train({ query = {}, allDatasets, datasetCache, ...func }) {
+function Train({ query = {}, ok = () => {}, allDatasets, datasetCache, ...func }) {
   const pageParams = useParams()
   const pid = Number(pageParams.id)
   const history = useHistory()
@@ -211,21 +211,7 @@ function Train({ query = {}, allDatasets, datasetCache, ...func }) {
       config,
     }
     const result = await func.train(params)
-    if (result) {
-      if (iterationId) {
-        func.updateIteration({ id: iterationId, currentStage, [outputKey]: result.result_model.id })
-      }
-      if (iterationContext && !iterationId) {
-        await updateProject({ id: pid, modelStage: [result.result_model?.id] })
-      }
-      await func.clearCache()
-      const group = result.result_model?.model_group_id || ''
-      let redirect = `/home/project/${pid}/model#${group}`
-      if (iterationContext) {
-        redirect = `/home/project/${pid}/iterations`
-      }
-      history.replace(redirect)
-    }
+    result && ok(result)
   }
 
   function onFinishFailed(errorInfo) {

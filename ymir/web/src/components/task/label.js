@@ -56,9 +56,7 @@ function Label({ query = {}, datasets, keywords, ok = () => {}, ...func }) {
       name: 'task_label_' + randomNumber(),
     }
     const result = await func.label(params)
-    if (result) {
-      ok()
-    }
+    result && ok(result)
   }
 
   function docChange(files, docFile) {

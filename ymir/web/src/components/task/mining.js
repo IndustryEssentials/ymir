@@ -30,7 +30,7 @@ function Mining({ query = {}, ok = () => {}, datasetCache, ...func }) {
   const history = useHistory()
   const location = useLocation()
   const { mid, image, iterationId, currentStage, outputKey } = query
-  const stage = string2Array(mid)
+  const stage = mid
   const did = Number(query.did)
   const [dataset, setDataset] = useState({})
   const [selectedModel, setSelectedModel] = useState({})
@@ -140,19 +140,7 @@ function Mining({ query = {}, ok = () => {}, datasetCache, ...func }) {
       config,
     }
     const result = await func.mine(params)
-    if (result) {
-      ok()
-      // if (iterationId) {
-      //   func.updateIteration({ id: iterationId, currentStage, [outputKey]: result.result_dataset.id })
-      // }
-      // await func.clearCache()
-      // const group = result.result_dataset?.dataset_group_id || ''
-      // let redirect = `/home/project/${pid}/dataset#${group}`
-      // if (iterationId) {
-      //   redirect = `/home/project/${pid}/iterations`
-      // }
-      // history.replace(redirect)
-    }
+    result && ok(result)
   }
 
   function onFinishFailed(errorInfo) {

@@ -6,6 +6,10 @@ import { Stages, StageList } from '@/constants/iteration'
 import useFetch from '@/hooks/useFetch'
 
 import Fusion from "@/components/task/fusion"
+import Mining from "@/components/task/mining"
+import Label from "@/components/task/label"
+import Merge from "@/components/task/merge"
+import Training from "@/components/task/training"
 
 const Action = (Comp, props = {}) => <Comp {...props} />
 
@@ -27,24 +31,24 @@ const StepAction = ({ stages, iteration, project, prevIteration }) => {
       },
     },
     [Stages.mining]: {
-      comp: Fusion, query: {
+      comp: Mining, query: {
         did: iteration.miningSet,
         mid: prevIteration.id ? [prevIteration.model, null] : project.modelStage,
       },
     },
     [Stages.labelling]: {
-      comp: Fusion, query: {
+      comp: Label, query: {
         did: iteration.miningResult,
       },
     },
     [Stages.merging]: {
-      comp: Fusion, query: {
+      comp: Merge, query: {
         did: prevIteration.trainUpdateSet || project.trainSetVersion,
         mid: iteration.labelSet,
       },
     },
     [Stages.training]: {
-      comp: Fusion, query: {
+      comp: Training, query: {
         did: iteration.trainUpdateSet,
         test: iteration.testSet,
       },

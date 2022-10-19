@@ -17,7 +17,7 @@ import s from "./merge/merge.less"
 
 const { useWatch, useForm } = Form
 
-function Merge({ query = {} }) {
+function Merge({ query = {}, ok = () => {} }) {
   const [dataset, getDataset, setDataset] = useFetch('dataset/getDataset', {})
   const [_, clearCache] = useFetch('dataset/clearCache')
   const [mergeResult, merge] = useFetch('task/merge')
@@ -47,19 +47,8 @@ function Merge({ query = {} }) {
   useEffect(() => dataset.id && setGroup(dataset.groupId), [dataset])
 
   useEffect(() => {
-    if (mergeResult) {
-      if (iterationId) {
-        updateIteration({ id: iterationId, currentStage, [outputKey]: mergeResult.id })
-      }
-      message.info(t('task.fusion.create.success.msg'))
-      clearCache()
-      const group = mergeResult.dataset_group_id || ''
-      let redirect = `/home/project/${pid}/dataset#${group}`
-      if (iterationId) {
-        redirect = `/home/project/${pid}/iterations`
-      }
-      history.replace(redirect)
-    }
+    mergeResult && ok(mergeResult)
+    message.info(t('task.fusion.create.success.msg'))
   }, [mergeResult])
 
   const checkInputs = (i) => {
