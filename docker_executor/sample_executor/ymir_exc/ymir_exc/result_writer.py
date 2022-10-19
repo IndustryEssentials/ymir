@@ -105,7 +105,7 @@ def write_infer_result(infer_result: Dict[str, List[Annotation]]) -> None:
     detection_result = {}
     for asset_path, annotations in infer_result.items():
         asset_basename = os.path.basename(asset_path)
-        detection_result[asset_basename] = {'annotations': [annotation.dict() for annotation in annotations]}
+        detection_result[asset_basename] = {'boxes': [annotation.dict() for annotation in annotations]}
 
     result = {'detection': detection_result}
     env_config = env.get_current_env()
