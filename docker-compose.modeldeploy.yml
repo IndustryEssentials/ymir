@@ -14,7 +14,6 @@ services:
 
   model_deploy_api:
     image: pubalglib/model_deployment_server:1.0.0
-    command: /bin/bash start.sh
     env_file:
       - .env
     volumes:
