@@ -7,7 +7,7 @@ from mir.protos import mir_command_pb2 as mirpb
 from mir.tools import annotations, checker, class_ids
 from mir.tools import mir_repo_utils, mir_storage, mir_storage_ops, revs_parser
 from mir.tools.code import MirCode
-from mir.tools.command_run_in_out import command_run_in_out
+from mir.tools.command_run_in_out import command_cleanup, command_run_in_out
 from mir.tools.errors import MirRuntimeError
 from mir.tools.phase_logger import PhaseLoggerCenter
 
@@ -64,6 +64,7 @@ class CmdFilter(base.BaseCommand):
 
     # public: run cmd
     @staticmethod
+    @command_cleanup
     @command_run_in_out
     def run_with_args(mir_root: str, in_cis: Optional[str], ex_cis: Optional[str], src_revs: str, dst_rev: str,
                       work_dir: str) -> int:  # type: ignore

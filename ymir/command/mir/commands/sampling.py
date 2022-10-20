@@ -6,7 +6,7 @@ from mir.commands import base
 from mir.protos import mir_command_pb2 as mirpb
 from mir.tools import annotations, mir_storage_ops, revs_parser
 from mir.tools.code import MirCode
-from mir.tools.command_run_in_out import command_run_in_out
+from mir.tools.command_run_in_out import command_cleanup, command_run_in_out
 from mir.tools.errors import MirRuntimeError
 
 
@@ -21,6 +21,7 @@ class CmdSampling(base.BaseCommand):
                                          rate=self.args.rate)
 
     @staticmethod
+    @command_cleanup
     @command_run_in_out
     def run_with_args(mir_root: str, work_dir: str, src_revs: str, dst_rev: str, count: int, rate: float) -> int:
         src_typ_rev_tid = revs_parser.parse_single_arg_rev(src_revs, need_tid=False)

@@ -9,7 +9,7 @@ from mir.protos import mir_command_pb2 as mirpb
 from mir.tools import annotations, checker, metadatas
 from mir.tools import mir_repo_utils, mir_storage_ops, revs_parser, settings
 from mir.tools.code import MirCode
-from mir.tools.command_run_in_out import command_run_in_out
+from mir.tools.command_run_in_out import command_cleanup, command_run_in_out
 from mir.tools.phase_logger import PhaseLoggerCenter
 from mir.tools.mir_storage import get_asset_storage_path, sha1sum_for_file
 
@@ -31,6 +31,7 @@ class CmdImport(base.BaseCommand):
                                        anno_type=annotations.parse_anno_type(self.args.anno_type))
 
     @staticmethod
+    @command_cleanup
     @command_run_in_out
     def run_with_args(mir_root: str, index_file: str, pred_abs: str, gt_abs: str, gen_abs: str,
                       dst_rev: str, src_revs: str, work_dir: str,

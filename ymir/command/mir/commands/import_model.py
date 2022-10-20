@@ -12,7 +12,7 @@ from mir.protos import mir_command_pb2 as mirpb
 from mir.tools import checker, mir_storage_ops, models, revs_parser
 from mir.tools import settings as mir_settings
 from mir.tools.code import MirCode
-from mir.tools.command_run_in_out import command_run_in_out
+from mir.tools.command_run_in_out import command_cleanup, command_run_in_out
 from mir.tools.errors import MirRuntimeError
 
 
@@ -28,6 +28,7 @@ class CmdModelImport(base.BaseCommand):
                                             model_location=self.args.model_location)
 
     @staticmethod
+    @command_cleanup
     @command_run_in_out
     def run_with_args(mir_root: str, dst_rev: str, src_revs: str, work_dir: str, package_path: str,
                       model_location: str) -> int:

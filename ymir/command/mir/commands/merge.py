@@ -9,7 +9,7 @@ from typing import Any, Tuple
 from mir.commands import base
 from mir.protos import mir_command_pb2 as mirpb
 from mir.tools import checker, mir_storage, mir_storage_ops, revs_parser
-from mir.tools.command_run_in_out import command_run_in_out
+from mir.tools.command_run_in_out import command_cleanup, command_run_in_out
 from mir.tools.code import MirCode
 from mir.tools.errors import MirRuntimeError
 
@@ -262,6 +262,7 @@ class CmdMerge(base.BaseCommand):
                                       work_dir=self.args.work_dir)
 
     @staticmethod
+    @command_cleanup
     @command_run_in_out
     def run_with_args(mir_root: str, src_revs: str, ex_src_revs: str, dst_rev: str, strategy: str,
                       work_dir: str) -> int:

@@ -14,7 +14,7 @@ from mir.protos import mir_command_pb2 as mirpb
 from mir.tools import checker, class_ids, env_config, exporter
 from mir.tools import mir_storage_ops, models, revs_parser
 from mir.tools import settings as mir_settings
-from mir.tools.command_run_in_out import command_run_in_out
+from mir.tools.command_run_in_out import command_cleanup, command_run_in_out
 from mir.tools.code import MirCode
 from mir.tools.errors import MirContainerError, MirRuntimeError
 from mir.tools.executant import prepare_executant_env, run_docker_executant
@@ -164,6 +164,7 @@ class CmdTrain(base.BaseCommand):
                                       config_file=self.args.config_file)
 
     @staticmethod
+    @command_cleanup
     @command_run_in_out
     def run_with_args(work_dir: str,
                       asset_cache_dir: str,

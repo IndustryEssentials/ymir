@@ -6,7 +6,7 @@ from mir.commands import base
 from mir.protos import mir_command_pb2 as mirpb
 from mir.tools import checker, class_ids, revs_parser, mir_repo_utils, mir_storage_ops
 from mir.tools.code import MirCode
-from mir.tools.command_run_in_out import command_run_in_out
+from mir.tools.command_run_in_out import command_cleanup, command_run_in_out
 from mir.tools.errors import MirRuntimeError
 from mir.tools.phase_logger import PhaseLoggerCenter
 
@@ -25,6 +25,7 @@ class CmdCopy(base.BaseCommand):
                                      work_dir=self.args.work_dir)
 
     @staticmethod
+    @command_cleanup
     @command_run_in_out
     def run_with_args(mir_root: str,
                       data_mir_root: str,

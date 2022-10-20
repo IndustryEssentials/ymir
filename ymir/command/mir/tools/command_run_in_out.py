@@ -92,7 +92,7 @@ def _cleanup(work_dir: str) -> None:
 
 def command_run_in_out(f: Callable) -> Callable:
     """
-    record monitor.txt and commit on errors
+    Decorator to record monitor.txt and commit on errors
     """
     @wraps(f)
     def wrapper(mir_root: str, src_revs: str, dst_rev: str, work_dir: str, *args: tuple, **kwargs: dict) -> Any:
@@ -141,8 +141,6 @@ def command_run_in_out(f: Callable) -> Callable:
 
             logging.info(f"command done: {dst_rev}, return code: {ret}")
 
-            _cleanup(work_dir=work_dir)
-
             return ret
 
         # if MirContainerError, MirRuntimeError and BaseException occured
@@ -163,9 +161,19 @@ def command_run_in_out(f: Callable) -> Callable:
         logging.info(f"command failed: {dst_rev}; exc: {exc}")
         logging.info(f"trace: {trace_message}")
 
-        # should not cleanup task env if failed.
-        # _cleanup(work_dir=work_dir)
-
         raise exc
 
+    return wrapper
+
+
+def command_cleanup(f: Callable) -> Callable:
+    """
+    Clean up iff commands returns without any error codes or any exceptions
+    """
+    @wraps(f)
+    def wrapper(work_dir: str, *args: tuple, **kwargs: dict) -> Any:
+        ret = f(work_dir=work_dir, *args, **kwargs)  # raise exceptions if you wish
+        if ret == MirCode.RC_OK:
+            _cleanup(work_dir)
+        return ret
     return wrapper

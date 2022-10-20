@@ -8,7 +8,7 @@ from mir.protos import mir_command_pb2 as mirpb
 from mir.tools import annotations, checker, exporter, mir_repo_utils, mir_storage_ops, revs_parser
 from mir.tools.class_ids import load_or_create_userlabels
 from mir.tools.code import MirCode
-from mir.tools.command_run_in_out import command_run_in_out
+from mir.tools.command_run_in_out import command_cleanup, command_run_in_out
 from mir.tools.errors import MirRuntimeError
 from mir.tools.phase_logger import PhaseLoggerCenter
 
@@ -32,6 +32,7 @@ class CmdExport(base.BaseCommand):
         )
 
     @staticmethod
+    @command_cleanup
     @command_run_in_out
     def run_with_args(
         mir_root: str,

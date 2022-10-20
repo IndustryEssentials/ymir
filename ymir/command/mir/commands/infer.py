@@ -4,6 +4,7 @@ import logging
 import os
 import time
 from typing import Any
+from mir.tools.command_run_in_out import command_cleanup
 
 import yaml
 
@@ -57,6 +58,7 @@ class CmdInfer(base.BaseCommand):
                                       run_mining=False)
 
     @staticmethod
+    @command_cleanup
     def run_with_args(work_dir: str,
                       mir_root: str,
                       media_path: str,

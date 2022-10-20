@@ -12,7 +12,7 @@ from mir.protos import mir_command_pb2 as mirpb
 from mir.tools import annotations, checker, class_ids, env_config, exporter
 from mir.tools import mir_storage_ops, models, revs_parser
 from mir.tools.code import MirCode
-from mir.tools.command_run_in_out import command_run_in_out
+from mir.tools.command_run_in_out import command_cleanup, command_run_in_out
 from mir.tools.errors import MirContainerError, MirRuntimeError
 
 
@@ -46,6 +46,7 @@ class CmdMining(base.BaseCommand):
                                        run_as_root=self.args.run_as_root)
 
     @staticmethod
+    @command_cleanup
     @command_run_in_out
     def run_with_args(work_dir: str,
                       asset_cache_dir: Optional[str],
