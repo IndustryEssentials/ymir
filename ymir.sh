@@ -127,9 +127,9 @@ fi
 }
 
 start_deploy_module() {
-        if cat ${ENV_FILE} | grep -oE "^${FIELD_DEPLOY_MODULE_HOST_PORT}=$"; then
+    if cat ${ENV_FILE} | grep -oE "^${FIELD_DEPLOY_MODULE_HOST_PORT}=$"; then
         echo "DEPLOY_MODULE_HOST_PORT not set, skip deploy module startup"
-        exit
+        return
     fi
 
     if ! cat ${ENV_FILE} | grep -oE "^${FIELD_DEPLOY_MODULE_HOST_PORT}=[0-9]{1,5}$"; then
@@ -139,7 +139,6 @@ start_deploy_module() {
 
     echo "deploy module, starting..."
     docker-compose -f docker-compose.modeldeploy.yml up -d
-    exit
 }
 
 start() {
