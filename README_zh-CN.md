@@ -639,7 +639,7 @@ $ mir import --index-file /path/to/mining-dataset-index.tsv \
              --dst-rev 'dataset-mining@import'
 ```
 
-* 注：可以将 prediction 和 ground truth 结果导入同一个数据集，将 `--gt-dir` 指向 ground truth 目录，并将 `--pred-dir` 指向 prediction 目录即可。
+* 注：将可选参数 `--gt-dir` 指向 ground truth 目录，并将可选参数 `--pred-dir` 指向 prediction 目录，可以将 prediction 和 ground truth 结果导入同一个数据集。
 
 任务全部执行成功以后，可以通过以下命令：
 

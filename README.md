@@ -660,7 +660,7 @@ $ mir import --index-file /path/to/mining-dataset-index.tsv \
              --dst-rev 'dataset-mining@import'
 ```
 
-* Note: Set `--gt-dir` to ground truth directory, `--pred-dir` to prediction directory to import prediction and ground truth to ONE dataset.
+* Note: Set optional `--gt-dir` to ground truth directory, and optional `--pred-dir` to prediction directory to import prediction and ground truth to ONE dataset.
 
 Users can use this command to see the branches of the current mir repo:
 
