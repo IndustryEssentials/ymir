@@ -34,7 +34,7 @@ services:
 
   label_celery_worker:
     image: labelfree/open:0.2.2
-    command: celery -A labelfree.app.celery worker -l info
+    command: celery -A labelfree.app.celery worker -l info -B
     env_file:
       - .env
     volumes:
