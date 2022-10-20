@@ -1,7 +1,7 @@
 import logging
 import time
 
-from mir.tools import det_eval_coco, det_eval_voc, det_eval_utils, settings as mir_settings
+from mir.tools import det_eval_coco, det_eval_voc, settings as mir_settings
 from mir.tools.code import MirCode
 from mir.tools.errors import MirRuntimeError
 from mir.protos import mir_command_pb2 as mirpb
@@ -40,10 +40,14 @@ def det_evaluate_with_pb(
 
     start_time = time.time()
 
-    det_eval_utils.reset_default_confusion_matrix(task_annotations=prediction,
-                                                  cm=mirpb.ConfusionMatrixType.NotSet)
-    det_eval_utils.reset_default_confusion_matrix(task_annotations=ground_truth,
-                                                  cm=mirpb.ConfusionMatrixType.NotSet)
+    for image_annotations in prediction.image_annotations.values():
+        for annotation in image_annotations.boxes:
+            annotation.cm = mirpb.ConfusionMatrixType.IGNORED
+            annotation.det_link_id = -1
+    for image_annotations in ground_truth.image_annotations.values():
+        for annotation in image_annotations.boxes:
+            annotation.cm = mirpb.ConfusionMatrixType.IGNORED
+            annotation.det_link_id = -1
     eval_model_name = det_eval_voc if mode == 'voc' else det_eval_coco
     evaluation = eval_model_name.det_evaluate(  # type: ignore
         prediction=prediction, ground_truth=ground_truth, config=config)
