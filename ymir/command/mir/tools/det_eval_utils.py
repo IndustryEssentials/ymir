@@ -1,5 +1,5 @@
 from collections import defaultdict
-from typing import Any, Collection, Dict, List, Optional, Set, Tuple
+from typing import Collection, Dict, List, Set, Tuple
 
 import numpy as np
 
@@ -90,19 +90,6 @@ def _get_average_ee(average_ee: mirpb.SingleEvaluationElement, ees: List[mirpb.S
     ees_cnt = len(ees)
     average_ee.ap /= ees_cnt
     average_ee.ar /= ees_cnt
-
-
-def reset_default_confusion_matrix(task_annotations: mirpb.SingleTaskAnnotations,
-                                   cm: Any,
-                                   class_ids: Collection[int] = [],
-                                   conf_thr: Optional[float] = None) -> None:
-    for image_annotations in task_annotations.image_annotations.values():
-        for annotation in image_annotations.boxes:
-            if ((not class_ids or annotation.class_id in class_ids) and (not conf_thr or annotation.score >= conf_thr)):
-                annotation.cm = cm
-            else:
-                annotation.cm = mirpb.ConfusionMatrixType.IGNORED
-            annotation.det_link_id = -1
 
 
 def write_confusion_matrix(gt_annotations: mirpb.SingleTaskAnnotations, pred_annotations: mirpb.SingleTaskAnnotations,
