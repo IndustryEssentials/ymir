@@ -1,5 +1,6 @@
 from typing import Dict, List
 
+from app.utils.cache import CacheClient
 from app.utils.ymir_controller import ControllerClient
 from common_utils.labels import SingleLabel, UserLabels
 
@@ -24,7 +25,11 @@ def upsert_labels(
 
 
 def ensure_labels_exist(
-    user_id: int, user_labels: UserLabels, controller_client: ControllerClient, keywords: List[str]
+    user_id: int,
+    user_labels: UserLabels,
+    controller_client: ControllerClient,
+    keywords: List[str],
+    cache: CacheClient,
 ) -> List[int]:
     try:
         return keywords_to_class_ids(user_labels, keywords)
@@ -32,6 +37,7 @@ def ensure_labels_exist(
         new_labels = UserLabels(labels=[SingleLabel(name=k) for k in keywords])
         upsert_labels(user_id=user_id, new_labels=new_labels, controller_client=controller_client)
         user_labels = controller_client.get_labels_of_user(user_id)
+        cache.delete_personal_keywords_cache()
     return keywords_to_class_ids(user_labels, keywords)
 
 

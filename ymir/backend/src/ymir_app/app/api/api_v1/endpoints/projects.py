@@ -95,6 +95,7 @@ def create_sample_project(
         user_labels=user_labels,
         controller_client=controller_client,
         keywords=settings.SAMPLE_PROJECT_KEYWORDS,
+        cache=cache,
     )
 
     try:
