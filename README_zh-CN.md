@@ -618,49 +618,40 @@ labels:
 ```
 $ cd ~/mir-demo-repo
 $ mir import --index-file /path/to/training-dataset-index.tsv \ # 数据集index.tsv路径
-             --pred-dir /path/to/training-dataset-annotation-dir \ # 标注路径
+             --gt-dir /path/to/training-dataset-annotation-dir \ # 标注路径
              --gen-dir ~/ymir-assets \ # 资源存储路径
-             --dataset-name 'dataset-training' \ # 数据集名称
+             --unknown-types-strategy stop \ # 未知类别处理策略，可以从 stop, ignore, add 中选择
+             --anno-type det-box \ # 标注类别，可以从 det-box, seg-poly, seg-mask 中选择
              --dst-rev 'dataset-training@import' # 结果分支及操作任务名称
 $ mir checkout master
 $ mir import --index-file /path/to/val-dataset-index.tsv \
-             --pred-dir /path/to/val-dataset-annotation-dir \
+             --gt-dir /path/to/val-dataset-annotation-dir \
              --gen-dir ~/ymir-assets \
-             --dataset-name 'dataset-val' \
+             --unknown-types-strategy stop \
+             --anno-type det-box \
              --dst-rev 'dataset-val@import'
 $ mir checkout master
 $ mir import --index-file /path/to/mining-dataset-index.tsv \
-             --pred-dir /path/to/mining-dataset-annotation-dir \
+             --gt-dir /path/to/mining-dataset-annotation-dir \
              --gen-dir ~/ymir-assets \
-             --dataset-name 'dataset-mining' \
+             --unknown-types-strategy stop \
+             --anno-type det-box \
              --dst-rev 'dataset-mining@import'
 ```
 
 任务全部执行成功以后，可以通过以下命令：
 
 ```
-$ mir branch
+$ git branch
 ```
 
 查看当前 mir repo 的分支情况，现在用户应该可以看到此 repo 有四个分支：master, dataset-training, dataset-val, dataset-mining，并且当前 repo 位于分支dataset-mining上。
 
-用户也可以通过以下命令查看任何一个分支的情况：
+用户也可以通过以下命令查看任何一个分支的摘要信息：
 
 ```
 $ mir show --src-rev dataset-mining
 ```
-
-系统会有以下输出：
-
-```
-person;cat;car;airplane
-
-metadatas.mir: 200 assets, tr: 0, va: 0, te: 0, unknown: 200
-annotations.mir: hid: import, 113 assets
-tasks.mir: hid: import
-```
-
-第一行和第二行分别是预定义关键字和用户自定义关键字（在这个输出中，用户自定义关键字为空），后面几行分别是当前分支下的资源数量，标注数量以及任务情况。
 
 ### 4.2.3 合并及筛选
 训练模型需要训练集和验证集，通过以下命令将 dataset-training 和 dataset-val 合成一个：
@@ -677,46 +668,37 @@ $ mir merge --src-revs tr:dataset-training@import;va:dataset-val@import \ # 待�
 $ mir show --src-revs HEAD # HEAD指代当前分支，也可以用tr-va这个具体的分支名称代替
 ```
 
-系统会有以下输出：
-
-```
-person;cat;car;airplane
-
-metadatas.mir: 3510 assets, tr: 2000, va: 1510, te: 0, unknown: 0
-annotations.mir: hid: merged, 1515 assets
-tasks.mir: hid: merged
-```
-
-假设合并之前的 dataset-training 和 dataset-val 分别有2000和1510张图像，可以看到合并后的分支中有2000张图像作为训练集，1510张图像作为验证集。
+假设合并之前的 dataset-training 和 dataset-val 分别有2000和1510张图像，合并后的分支中有2000张图像作为训练集，1510张图像作为验证集。
 假设我们只想训练识别人和猫的模型，我们首先从这个大数据集里面筛选出现人或猫的资源：
 
 ```
-mir filter --src-revs tr-va@merged \
-           --dst-rev tr-va@filtered \
-           -p 'person;cat'
+$ mir filter --src-revs tr-va@merged \
+             --dst-rev tr-va@filtered \
+             -p 'person;cat'
 ```
 
 ### 4.2.4 训练第一个模型
 首先从 dockerhub 上拉取训练镜像和挖掘镜像：
 
 ```
-docker pull industryessentials/executor-det-yolov4-training:release-0.1.2
-docker pull industryessentials/executor-det-yolov4-mining:release-0.1.2
+$ docker pull youdaoyzbx/ymir-executor:ymir1.3.0-yolov5-cu111-tmi
 ```
 
 并使用以下命令开始训练过程：
 
 ```
-mir train -w /tmp/ymir/training/train-0 \
-          --media-location ~/ymir-assets \ # import时的资源存储路径
-          --model-location ~/ymir-models \ # 训练完成后的模型存储路径
-          --task-config-file ~/training-config.yaml \ # 训练参数配置文件，到训练镜像中获取
-          --src-revs tr-va@filtered \
-          --dst-rev training-0@trained \
-          --executor industryessentials/executor-det-yolov4-training:release-0.1.2 # 训练镜像
+$ mir train -w /tmp/ymir/training/train-0 \
+            --media-location ~/ymir-assets \ # import时的资源存储路径
+            --model-location ~/ymir-models \ # 训练完成后的模型存储路径
+            --task-config-file ~/training-config.yaml \ # 训练参数配置文件，到训练镜像中获取
+            --src-revs tr-va@filtered \
+            --dst-rev training-0@trained \
+            --executor youdaoyzbx/ymir-executor:ymir1.3.0-yolov5-cu111-tmi # 训练镜像
 ```
 
 模型训练完成后，系统会输出模型id，用户可以在~/ymir-models中看到本次训练好的模型打包文件。
+
+在模型的训练过程中，训练镜像会产生多个中间模型，这些中间模型的名称会在训练完成时显示，YMIR 最终记录的，是本次训练过程中产生的所有中间模型的集合。
 
 ### 4.2.5 挖掘
 
@@ -724,16 +706,16 @@ mir train -w /tmp/ymir/training/train-0 \
 用户使用下述命令完成挖掘过程：
 
 ```
-mir mining --src-revs dataset-mining@import \ # 导入的挖掘分支
-           --dst-rev mining-0@mining \ # 挖掘的结果分支
-           -w /tmp/ymir/mining/mining-0 \ # 本次任务的临时工作目录
-           --topk 200 \ # 挖掘结果的图片数量
-           --model-location ~/ymir-models \
-           --media-location ~/ymir-assets \
-           --model-hash <hash> \ # 上一步训练出来的模型id
-           --asset-cache-dir /tmp/ymir/cache \ # 资源缓存
-           --task-config-file ~/mining-config.yaml \ # 挖掘参数配置文件，到挖掘镜像中获取
-           --executor industryessentials/executor-det-yolov4-mining:release-0.1.2
+$ mir mining --src-revs dataset-mining@import \ # 导入的挖掘分支
+             --dst-rev mining-0@mining \ # 挖掘的结果分支
+             -w /tmp/ymir/mining/mining-0 \ # 本次任务的临时工作目录
+             --topk 200 \ # 挖掘结果的图片数量
+             --model-location ~/ymir-models \
+             --media-location ~/ymir-assets \
+             --model-hash <hash>@<inter-model-name> \ # 上一步训练出来的模型id，以及想要用于推理的中间模型名称
+             --asset-cache-dir /tmp/ymir/cache \ # 资源缓存
+             --task-config-file ~/mining-config.yaml \ # 挖掘参数配置文件，到挖掘镜像中获取
+             --executor youdaoyzbx/ymir-executor:ymir1.3.0-yolov5-cu111-tmi # 挖掘镜像
 ```
 
 ### 4.2.6 标注
@@ -741,12 +723,13 @@ mir mining --src-revs dataset-mining@import \ # 导入的挖掘分支
 用户可以通过下述命令完成导出过程：
 
 ```
-mir export --asset-dir /tmp/ymir/export/export-0/assets \ # 资源导出目录
-           --pred-dir /tmp/ymir/export/export-0/annotations \ # 导出标注目录
-           --media-location ~/ymir-assets \ # 资源存储目录
-           --src-revs mining-0@mining \
-           --format none # 不导出标注
-find /tmp/ymir/export/export-0/assets > /tmp/ymir/export/export-0/index.tsv
+$ mir export --asset-dir /tmp/ymir/export/export-0/assets \ # 资源导出目录
+             --pred-dir /tmp/ymir/export/export-0/annotations \ # 导出标注目录
+             --media-location ~/ymir-assets \ # 资源存储目录
+             --src-revs mining-0@mining \
+             --asset-format raw \ # 导出原图
+             --anno-format none # 不导出标注
+$ find /tmp/ymir/export/export-0/assets > /tmp/ymir/export/export-0/index.tsv
 ```
 
 导出完成后，可以在/tmp/ymir/export/export-0/assets位置看到导出的图片，用户可以将这些图片送去标注，标注需要按VOC格式保存，假设保存路径仍然为/tmp/ymir/export/export-0/annotations。
@@ -754,9 +737,10 @@ find /tmp/ymir/export/export-0/assets > /tmp/ymir/export/export-0/index.tsv
 
 ```
 $ mir import --index-file /tmp/ymir/export/export-0/index.tsv
-             --pred-dir /tmp/ymir/export/export-0/annotations \ # 标注路径
+             --gt-dir /tmp/ymir/export/export-0/annotations \ # 标注路径
              --gen-dir ~/ymir-assets \ # 资源存储路径
-             --dataset-name 'dataset-mining' \ # 数据集名称
+             --unknown-types-strategy stop \
+             --anno-type det-box \
              --dst-rev 'labeled-0@import' # 结果分支及操作任务名称
 ```
 
@@ -773,14 +757,33 @@ $ mir merge --src-revs tr-va@filtered;tr:labeled-0@import \ # 待合并分支
 现在在分支tr-va-1上，已经包含了前一次训练所用的训练集和验证集，也包含了后来通过数据挖掘得出的新的200张训练集加人工标注，可以通过以下命令在此集合上训练一个新的模型出来：
 
 ```
-mir train -w /tmp/ymir/training/train-1 \ # 每个不同的训练和挖掘任务都用不同的工作目录
-          --media-location ~/ymir-assets \
-          --model-location ~/ymir-models \
-          --task-config-file ~/training-config.yaml \ # 训练参数配置文件，到训练镜像中获取
-          --src-revs tr-va-1@merged \ # 使用合成以后的分支
-          --dst-rev training-1@trained \
-          --executor industryessentials/executor-det-yolov4-training:release-0.1.2
+$ mir train -w /tmp/ymir/training/train-1 \ # 每个不同的训练和挖掘任务都用不同的工作目录
+            --media-location ~/ymir-assets \
+            --model-location ~/ymir-models \
+            --task-config-file ~/training-config.yaml \ # 训练参数配置文件，到训练镜像中获取
+            --src-revs tr-va-1@merged \ # 使用合成以后的分支
+            --dst-rev training-1@trained \
+            --executor youdaoyzbx/ymir-executor:ymir1.3.0-yolov5-cu111-tmi
 ```
+
+### 4.2.9 推理
+
+使用以下命令进行数据集推理：
+
+```
+$ mir mining --src-revs dataset-mining@import \ # 导入的挖掘分支
+             --dst-rev infer-0@infer \ # 推理的结果分支
+             -w /tmp/ymir/infer/infer-0 \ # 本次任务的临时工作目录
+             --add-prediction \ # 为这个数据集增加推理结果
+             --model-location ~/ymir-models \
+             --media-location ~/ymir-assets \
+             --model-hash <hash>@<inter-model-name> \ # 上一步训练出来的模型id，以及想要用于推理的中间模型名称
+             --asset-cache-dir /tmp/ymir/cache \ # 资源缓存
+             --task-config-file ~/mining-config.yaml \ # 挖掘参数配置文件，到挖掘镜像中获取
+             --executor youdaoyzbx/ymir-executor:ymir1.3.0-yolov5-cu111-tmi # 挖掘镜像
+```
+
+它和数据集挖掘的唯一区别在于：数据集挖掘指定了 --topk，而数据集推理指定了 --add-prediction 参数。
 
 ## 4.3. 命令参数手册
 
