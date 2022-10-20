@@ -20,7 +20,7 @@ from app.constants.state import ResultState, RunningStates, TaskType, TrainingTy
 from app.utils.cache import CacheClient
 from app.utils.ymir_controller import ControllerClient, gen_task_hash
 from app.libs.projects import setup_sample_project_in_background, send_project_metrics
-from app.libs.keywords import add_keywords
+from app.libs.labels import ensure_labels_exist
 from common_utils.labels import UserLabels
 
 router = APIRouter()
@@ -90,12 +90,12 @@ def create_sample_project(
     )
     project = crud.project.create_project(db, user_id=current_user.id, obj_in=project_in)
     project_task_hash = gen_task_hash(current_user.id, project.id)
-
-    try:
-        user_labels.id_for_names(names=settings.SAMPLE_PROJECT_KEYWORDS, raise_if_unknown=True)[0]
-    except ValueError:
-        # todo refactor keywords dependencies to handle ensure given keywords exist
-        add_keywords(controller_client, cache, current_user.id, settings.SAMPLE_PROJECT_KEYWORDS)
+    training_class_ids = ensure_labels_exist(
+        user_id=current_user.id,
+        user_labels=user_labels,
+        controller_client=controller_client,
+        keywords=settings.SAMPLE_PROJECT_KEYWORDS,
+    )
 
     try:
         controller_client.create_project(
@@ -107,23 +107,14 @@ def create_sample_project(
         crud.project.soft_remove(db, id=project.id)
         raise FailedToCreateProject()
 
-    try:
-        project_training_class_ids = user_labels.id_for_names(
-            names=project_in.training_keywords, raise_if_unknown=True
-        )[0]
-    except Exception:
-        logger.exception(
-            "[create sample project] failed to parse project training class_ids, skip send_project_metrics"
-        )
-    else:
-        send_project_metrics(
-            current_user.id,
-            project.id,
-            project.name,
-            project_training_class_ids,
-            TrainingType(project.training_type).name,
-            int(project.create_datetime.timestamp()),
-        )
+    send_project_metrics(
+        current_user.id,
+        project.id,
+        project.name,
+        training_class_ids,
+        TrainingType(project.training_type).name,
+        int(project.create_datetime.timestamp()),
+    )
 
     background_tasks.add_task(
         setup_sample_project_in_background,
