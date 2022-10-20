@@ -86,8 +86,8 @@ const stageCol = {
     const stage = getRecommendStage(record)
     return validModel(record) ?
       <Row wrap={false}>
-        <Col flex={1}>{stage.name}</Col>
-        <Col style={{ color }}>mAP: {percent(stage.map)}</Col>
+        <Col flex={1}>{stage?.name}</Col>
+        <Col style={{ color: 'orange' }}>mAP: {percent(stage?.map)}</Col>
       </Row> : null
   },
   width: 300,
