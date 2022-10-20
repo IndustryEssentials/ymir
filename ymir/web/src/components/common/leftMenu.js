@@ -63,7 +63,7 @@ function LeftMenu() {
         getItem(t('breadcrumbs.keyword'), '/home/keyword', FlagIcon,),
       ]),
       DEPLOY_MODULE_URL ? getGroupItem(t('algo.label'), 'algo', [
-        getItem(t('algo.public.label'), '/home/algo/public', StoreIcon,),
+        getItem(t('algo.public.label'), '/home/algo', StoreIcon,),
         getItem(t('algo.mine.label'), '/home/algo/mine', MyAlgoIcon,),
         getItem(t('algo.device.label'), '/home/algo/device', DeviceListIcon,),
         getItem(t('algo.support.label'), '/home/algo/support', DeviceSupportedIcon,),

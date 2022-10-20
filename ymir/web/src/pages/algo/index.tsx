@@ -19,7 +19,7 @@ const Algo = () => {
     return <div>Algorithm Store is not READY</div>
   }
   const { username: userName, id: userId } = useSelector((state: Params) => state.user)
-  const { module } = useParams<Params>()
+  const { module = 'public' } = useParams<Params>()
   const location: Params = useLocation()
   const iframe: { current: HTMLIFrameElement | null } = useRef(null)
   const [url, setUrl] = useState(base)

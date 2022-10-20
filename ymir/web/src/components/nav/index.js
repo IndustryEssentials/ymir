@@ -13,7 +13,7 @@ import styles from "./index.less"
 import './menu.less'
 import logo from '@/assets/logo_a.png'
 import { NavHomeIcon, NavModelmanageIcon, NavDatasetIcon, ArrowDownIcon } from '@/components/common/icons'
-import { GithubIcon, UserIcon, NavTaskIcon, FlagIcon, EqualizerIcon } from "../common/icons"
+import { GithubIcon, UserIcon, NavTaskIcon, FlagIcon, EqualizerIcon, StoreIcon } from "../common/icons"
 
 const menus = () => [
   {
@@ -35,6 +35,11 @@ const menus = () => [
     label: 'common.top.menu.image',
     key: "/home/image",
     icon: <EqualizerIcon className={styles.navIcon} />,
+  },
+  {
+    label: 'algo.label',
+    key: "/home/algo",
+    icon: <StoreIcon className={styles.navIcon} />,
   },
   {
     label: 'common.top.menu.permission',
