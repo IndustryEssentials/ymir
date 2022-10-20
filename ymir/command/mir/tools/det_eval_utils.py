@@ -98,18 +98,13 @@ def write_confusion_matrix(gt_annotations: mirpb.SingleTaskAnnotations, pred_ann
     class_ids_set = set(class_ids)
     for image_annotations in gt_annotations.image_annotations.values():
         for annotation in image_annotations.boxes:
-            if (not class_ids_set or annotation.class_id in class_ids_set):
-                annotation.cm = mirpb.ConfusionMatrixType.FN
-            else:
-                annotation.cm = mirpb.ConfusionMatrixType.IGNORED
+            annotation.cm = (mirpb.ConfusionMatrixType.FN
+                             if annotation.class_id in class_ids_set else mirpb.ConfusionMatrixType.IGNORED)
             annotation.det_link_id = -1
     for image_annotations in pred_annotations.image_annotations.values():
         for annotation in image_annotations.boxes:
-            if ((not class_ids_set or annotation.class_id in class_ids_set)
-                    and (not conf_thr or annotation.score >= conf_thr)):
-                annotation.cm = mirpb.ConfusionMatrixType.FP
-            else:
-                annotation.cm = mirpb.ConfusionMatrixType.IGNORED
+            annotation.cm = (mirpb.ConfusionMatrixType.FP if annotation.class_id in class_ids_set
+                             and annotation.score >= conf_thr else mirpb.ConfusionMatrixType.IGNORED)
             annotation.det_link_id = -1
 
     for asset_id in match_result.get_asset_ids(iou_thr=iou_thr):
