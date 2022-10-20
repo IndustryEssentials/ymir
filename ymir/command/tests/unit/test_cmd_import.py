@@ -249,7 +249,7 @@ class TestCmdImport(unittest.TestCase):
                             'rotate_angle': -0.02
                         },
                         'class_id': 1,
-                        'cm': 'FP' if eval_class_ids_set else 'NotSet',
+                        'cm': 'IGNORED' if eval_class_ids_set else 'NotSet',
                         'det_link_id': -1 if eval_class_ids_set else 0,
                         'score': -1.0,
                         'anno_quality': 0.75,
@@ -289,7 +289,7 @@ class TestCmdImport(unittest.TestCase):
                             'rotate_angle': 0.02
                         },
                         'class_id': 1,
-                        'cm': 'FP' if eval_class_ids_set else 'NotSet',
+                        'cm': 'IGNORED' if eval_class_ids_set else 'NotSet',
                         'det_link_id': -1 if eval_class_ids_set else 0,
                         'score': -1.0,
                         'anno_quality': 0.75,
@@ -307,7 +307,7 @@ class TestCmdImport(unittest.TestCase):
                             'h': 50
                         },
                         'class_id': 2,
-                        'cm': 'FP' if eval_class_ids_set else 'NotSet',
+                        'cm': 'IGNORED' if eval_class_ids_set else 'NotSet',
                         'det_link_id': -1 if eval_class_ids_set else 0,
                         'score': -1.0,
                         'anno_quality': 0.23,
@@ -325,7 +325,7 @@ class TestCmdImport(unittest.TestCase):
                             'rotate_angle': 0.12
                         },
                         'class_id': 2,
-                        'cm': 'FP' if eval_class_ids_set else 'NotSet',
+                        'cm': 'IGNORED' if eval_class_ids_set else 'NotSet',
                         'det_link_id': -1 if eval_class_ids_set else 0,
                         'score': -1.0,
                         'anno_quality': 0.35,
