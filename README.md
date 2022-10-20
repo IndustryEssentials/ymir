@@ -660,6 +660,8 @@ $ mir import --index-file /path/to/mining-dataset-index.tsv \
              --dst-rev 'dataset-mining@import'
 ```
 
+* Note: Set `--gt-dir` to ground truth directory, `--pred-dir` to prediction directory to import prediction and ground truth to ONE dataset.
+
 Users can use this command to see the branches of the current mir repo:
 
 ```
@@ -733,6 +735,8 @@ $ mir mining --src-revs dataset-mining@import \ # mining dataset branch
              --executor youdaoyzbx/ymir-executor:ymir1.3.0-yolov5-cu111-tmi # mining docker image name
 ```
 
+* Note: Argument `--add-prediction` will add prediction boxes to result dataset.
+
 ### 4.2.6 Data labeling
 
 Now the user has 200 images on the branch "mining-0". These images will be most useful in the next training step. The next task is to export these resources and send them to the annotators for labeling.
@@ -784,25 +788,6 @@ $ mir train -w /tmp/ymir/training/train-1 \ # use different working dir for trai
             --dst-rev training-1@trained \
             --executor youdaoyzbx/ymir-executor:ymir1.3.0-yolov5-cu111-tmi
 ```
-
-### 4.2.9 Inference
-
-Use this command to infer with models:
-
-```
-$ mir mining --src-revs dataset-mining@import \
-             --dst-rev infer-0@infer \
-             -w /tmp/ymir/infer/infer-0 \
-             --add-prediction \
-             --model-location ~/ymir-models \
-             --media-location ~/ymir-assets \
-             --model-hash <hash>@<inter-model-name> \ #
-             --asset-cache-dir /tmp/ymir/cache \
-             --task-config-file ~/mining-config.yaml \
-             --executor youdaoyzbx/ymir-executor:ymir1.3.0-yolov5-cu111-tmi
-```
-
-In dataset mining we set --topk argument, and when dataset inference we set --add-prediction argument.
 
 ## 4.3. YMIR-CMD manual
 

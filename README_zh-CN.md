@@ -639,6 +639,8 @@ $ mir import --index-file /path/to/mining-dataset-index.tsv \
              --dst-rev 'dataset-mining@import'
 ```
 
+* 注：可以将 prediction 和 ground truth 结果导入同一个数据集，将 `--gt-dir` 指向 ground truth 目录，并将 `--pred-dir` 指向 prediction 目录即可。
+
 任务全部执行成功以后，可以通过以下命令：
 
 ```
@@ -718,6 +720,8 @@ $ mir mining --src-revs dataset-mining@import \ # 导入的挖掘分支
              --executor youdaoyzbx/ymir-executor:ymir1.3.0-yolov5-cu111-tmi # 挖掘镜像
 ```
 
+* 注：mir mining 中如果添加了 `--add-prediction` 参数，即可以同时在结果数据集中生成模型的推理结果。
+
 ### 4.2.6 标注
 现在，系统已经挖掘出了对于模型训练最有效的200张图像，这些图像被保存在分支mining中，接下来的任务是将这些资源导出，送给标注人员进行标注。
 用户可以通过下述命令完成导出过程：
@@ -765,25 +769,6 @@ $ mir train -w /tmp/ymir/training/train-1 \ # 每个不同的训练和挖掘任�
             --dst-rev training-1@trained \
             --executor youdaoyzbx/ymir-executor:ymir1.3.0-yolov5-cu111-tmi
 ```
-
-### 4.2.9 推理
-
-使用以下命令进行数据集推理：
-
-```
-$ mir mining --src-revs dataset-mining@import \ # 导入的挖掘分支
-             --dst-rev infer-0@infer \ # 推理的结果分支
-             -w /tmp/ymir/infer/infer-0 \ # 本次任务的临时工作目录
-             --add-prediction \ # 为这个数据集增加推理结果
-             --model-location ~/ymir-models \
-             --media-location ~/ymir-assets \
-             --model-hash <hash>@<inter-model-name> \ # 上一步训练出来的模型id，以及想要用于推理的中间模型名称
-             --asset-cache-dir /tmp/ymir/cache \ # 资源缓存
-             --task-config-file ~/mining-config.yaml \ # 挖掘参数配置文件，到挖掘镜像中获取
-             --executor youdaoyzbx/ymir-executor:ymir1.3.0-yolov5-cu111-tmi # 挖掘镜像
-```
-
-它和数据集挖掘的唯一区别在于：数据集挖掘指定了 --topk，而数据集推理指定了 --add-prediction 参数。
 
 ## 4.3. 命令参数手册
 
