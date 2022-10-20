@@ -109,14 +109,21 @@ def write_confusion_matrix(gt_annotations: mirpb.SingleTaskAnnotations, pred_ann
                            class_ids: List[int], conf_thr: float, match_result: DetEvalMatchResult,
                            iou_thr: float) -> None:
     class_ids_set = set(class_ids)
-    reset_default_confusion_matrix(task_annotations=gt_annotations,
-                                   cm=mirpb.ConfusionMatrixType.FN,
-                                   class_ids=class_ids_set,
-                                   conf_thr=None)
-    reset_default_confusion_matrix(task_annotations=pred_annotations,
-                                   cm=mirpb.ConfusionMatrixType.FP,
-                                   class_ids=class_ids_set,
-                                   conf_thr=conf_thr)
+    for image_annotations in gt_annotations.image_annotations.values():
+        for annotation in image_annotations.boxes:
+            if (not class_ids_set or annotation.class_id in class_ids_set):
+                annotation.cm = mirpb.ConfusionMatrixType.FN
+            else:
+                annotation.cm = mirpb.ConfusionMatrixType.IGNORED
+            annotation.det_link_id = -1
+    for image_annotations in pred_annotations.image_annotations.values():
+        for annotation in image_annotations.boxes:
+            if ((not class_ids_set or annotation.class_id in class_ids_set)
+                    and (not conf_thr or annotation.score >= conf_thr)):
+                annotation.cm = mirpb.ConfusionMatrixType.FP
+            else:
+                annotation.cm = mirpb.ConfusionMatrixType.IGNORED
+            annotation.det_link_id = -1
 
     for asset_id in match_result.get_asset_ids(iou_thr=iou_thr):
         id_to_gts = {box.index: box for box in gt_annotations.image_annotations[asset_id].boxes}
