@@ -11,14 +11,12 @@ function Buttons({
   skip = () => { },
   react = () => { },
 }) {
-  console.log('step:', step, state)
   const actLabel = t(step.act)
   const reactLabel = t(step.react)
   const end = !step.next
   const finished = step.value < step.current
   const current = step.value === step.current
   const pending = step.value > step.current
-  console.log('finished:', finished, current, pending)
 
   const stepPending = state < 0
   const retry = state === -2

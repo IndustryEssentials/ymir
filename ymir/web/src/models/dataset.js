@@ -272,7 +272,6 @@ export default {
         if (!dataset) {
           continue
         }
-        console.log('dataset, task:', dataset, task)
         const updated = updateResultByTask(dataset, task)
         if (updated) {
           if (updated.needReload) {

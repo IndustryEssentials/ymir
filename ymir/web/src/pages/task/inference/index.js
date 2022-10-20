@@ -267,7 +267,6 @@ function Inference({ datasetCache, datasets, ...func }) {
                 pid={pid}
                 filters={testSetFilters}
                 renderLabel={renderLabel}
-                // onChange={(value) => console.log('value: ', value)}
                 placeholder={t('task.inference.form.dataset.placeholder')}
               />
             </Form.Item>
