@@ -2,11 +2,11 @@ import { message } from 'antd'
 import { useEffect, useState } from 'react'
 import { getLocale, useSelector } from 'umi'
 
-import { DEPLOY_MODULE_URL } from '@/constants/common'
+import { getDeploayUrl } from '@/constants/common'
 import { ModelVersion } from '@/interface/model'
 import t from '@/utils/t'
 
-const base = DEPLOY_MODULE_URL || ''
+const base = getDeploayUrl()
 const id = 'publishIframe'
 
 const createIframe = (params = {}) => {

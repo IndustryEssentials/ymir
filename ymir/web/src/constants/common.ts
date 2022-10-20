@@ -71,4 +71,8 @@ export function getVersionLabel(version: number) {
   return `V${version}`
 }
 
-export const DEPLOY_MODULE_URL = window?.baseConfig?.DEPLOY_MODULE_URL
+export const getDeploayUrl = () => {
+  let url = window?.baseConfig?.DEPLOY_MODULE_URL
+  const onlyPort = /^\d+$/.test(url)
+  return onlyPort ? `${location.host}:${url}` : url
+}
