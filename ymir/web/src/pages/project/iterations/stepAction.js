@@ -79,19 +79,11 @@ const StepAction = ({ stages, iteration, project, prevIteration }) => {
     }
   }, [currentContent])
 
-
   useEffect(() => {
-
-    console.log('CurrentAction:', CurrentAction)
-  }, [CurrentAction])
-
-  useEffect(() => {
-    console.log('stages:', stages, currentContent)
     if (!stages.length) {
       return
     }
     const targetStage = stages.find(({ value }) => value === iteration.currentStage)
-    console.log('iteration?.currentStage, stages: ', iteration?.currentStage, stages, targetStage)
     setCurrentContent({
       ...targetStage,
       ...comps[iteration.currentStage],
