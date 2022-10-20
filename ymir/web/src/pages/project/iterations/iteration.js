@@ -101,9 +101,9 @@ function Iteration({ project, fresh = () => { } }) {
     }
   }
 
-  function createIteration(data = {}) {
+  function createIteration() {
     const params = {
-      iterationRound: data.round,
+      iterationRound: project.round + 1,
       projectId: project.id,
       prevIteration: iteration.id,
       testSet: project.testSet.id,
@@ -114,15 +114,15 @@ function Iteration({ project, fresh = () => { } }) {
   function updateIteration(data = {}) {
     const params = {
       id: iteration.id,
-      currentStage: data.stage.value,
+      ...data,
     }
     update(params)
   }
-  function skipStage({ stage = {} }) {
+  function skipStage({ input, value }) {
     const params = {
       id: iteration.id,
-      currentStage: stage.value,
-      [stage.input]: 0,
+      currentStage: value,
+      [input]: 0,
     }
     update(params)
   }

@@ -21,7 +21,7 @@ const LabelTypes = () => [
   { id: "all", label: t('task.label.form.type.all') },
 ]
 
-function Label({ query = {}, datasets, keywords, ok = () => {}, ...func }) {
+function Label({ query = {}, hidden, datasets, keywords, ok = () => { }, bottom, ...func }) {
   const pageParams = useParams()
   const pid = Number(pageParams.id)
   const { iterationId, outputKey, currentStage } = query
@@ -56,7 +56,7 @@ function Label({ query = {}, datasets, keywords, ok = () => {}, ...func }) {
       name: 'task_label_' + randomNumber(),
     }
     const result = await func.label(params)
-    result && ok(result)
+    result && ok(result.result_dataset)
   }
 
   function docChange(files, docFile) {
@@ -83,93 +83,84 @@ function Label({ query = {}, datasets, keywords, ok = () => {}, ...func }) {
         onFinish={onFinish}
         onFinishFailed={onFinishFailed}
       >
-        <Form.Item wrapperCol={{ span: 20 }}><Tip content={t('task.label.header.tip')} /></Form.Item>
-        <Form.Item label={t('task.fusion.form.dataset')} name='datasetId'>
-          <DatasetSelect pid={pid} />
-        </Form.Item>
-        {false ? <Form.Item
-          label={t('task.label.form.member')}
-          tooltip={t('tip.task.filter.labelmember')}
-          required
-        >
-          <Row gutter={20}>
-            <Col flex={1}>
-              <Form.Item
-                name="labellers"
-                noStyle
-                rules={[
-                  { required: true, message: t('task.label.form.member.required') },
-                  { type: 'email', message: t('task.label.form.member.email.msg') },
-                ]}
-              >
-                <Input placeholder={t('task.label.form.member.placeholder')} allowClear />
-              </Form.Item>
-            </Col>
-            <Col style={{ lineHeight: '30px' }}>
-              <Checkbox checked={asChecker} onChange={({ target }) => setAsChecker(target.checked)}>{t('task.label.form.plat.checker')}</Checkbox>
-            </Col>
-          </Row>
-        </Form.Item> : null}
-        <Form.Item hidden={!asChecker}
-          tooltip={t('tip.task.filter.labelplatacc')}
-          label={t('task.label.form.plat.label')} required>
-          <Row gutter={20}>
-            <Col flex={1}>
-              <Form.Item
-                name="checker"
-                noStyle
-                rules={asChecker ? [
-                  { required: true, message: t('task.label.form.member.required') },
-                  { type: 'email', message: t('task.label.form.member.email.msg') },
-                ] : []}
-              >
-                <Input placeholder={t('task.label.form.member.labelplatacc')} allowClear />
-              </Form.Item>
-            </Col>
-            <Col>
-              <a target='_blank' href={'/label_tool/'}>{t('task.label.form.plat.go')}</a>
-            </Col>
-          </Row>
-        </Form.Item>
-        <Form.Item
-          label={t('task.label.form.target.label')}
-          tooltip={t('tip.task.filter.labeltarget')}
-          name="keywords"
-          rules={[
-            { required: true, message: t('task.label.form.target.placeholder') }
-          ]}
-        >
-          <Select mode="multiple" showArrow
-            placeholder={t('task.label.form.member.labeltarget')}
-            filterOption={(value, option) => [option.value, ...(option.aliases || [])].some(key => key.indexOf(value) >= 0)}>
-            {keywords.map(keyword => (
-              <Select.Option key={keyword.name} value={keyword.name} aliases={keyword.aliases}>
-                <Row>
-                  <Col flex={1}>{keyword.name}</Col>
-                </Row>
-              </Select.Option>
-            ))}
-          </Select>
-        </Form.Item>
-        <KeepAnnotations />
-        <Form.Item label={t('task.label.form.desc.label')} name='desc'>
-          <Uploader onChange={docChange} onRemove={() => setDoc(undefined)} format="doc"
-            max={50} info={t('task.label.form.desc.info', { br: <br /> })}></Uploader>
-        </Form.Item>
-        <Desc form={form} />
+        <div hidden={hidden}>
+          <Form.Item wrapperCol={{ span: 20 }}><Tip content={t('task.label.header.tip')} /></Form.Item>
+          <Form.Item label={t('task.fusion.form.dataset')} name='datasetId'>
+            <DatasetSelect pid={pid} />
+          </Form.Item>
+          {false ? <Form.Item
+            label={t('task.label.form.member')}
+            tooltip={t('tip.task.filter.labelmember')}
+            required
+          >
+            <Row gutter={20}>
+              <Col flex={1}>
+                <Form.Item
+                  name="labellers"
+                  noStyle
+                  rules={[
+                    { required: true, message: t('task.label.form.member.required') },
+                    { type: 'email', message: t('task.label.form.member.email.msg') },
+                  ]}
+                >
+                  <Input placeholder={t('task.label.form.member.placeholder')} allowClear />
+                </Form.Item>
+              </Col>
+              <Col style={{ lineHeight: '30px' }}>
+                <Checkbox checked={asChecker} onChange={({ target }) => setAsChecker(target.checked)}>{t('task.label.form.plat.checker')}</Checkbox>
+              </Col>
+            </Row>
+          </Form.Item> : null}
+          <Form.Item hidden={!asChecker}
+            tooltip={t('tip.task.filter.labelplatacc')}
+            label={t('task.label.form.plat.label')} required>
+            <Row gutter={20}>
+              <Col flex={1}>
+                <Form.Item
+                  name="checker"
+                  noStyle
+                  rules={asChecker ? [
+                    { required: true, message: t('task.label.form.member.required') },
+                    { type: 'email', message: t('task.label.form.member.email.msg') },
+                  ] : []}
+                >
+                  <Input placeholder={t('task.label.form.member.labelplatacc')} allowClear />
+                </Form.Item>
+              </Col>
+              <Col>
+                <a target='_blank' href={'/label_tool/'}>{t('task.label.form.plat.go')}</a>
+              </Col>
+            </Row>
+          </Form.Item>
+          <Form.Item
+            label={t('task.label.form.target.label')}
+            tooltip={t('tip.task.filter.labeltarget')}
+            name="keywords"
+            rules={[
+              { required: true, message: t('task.label.form.target.placeholder') }
+            ]}
+          >
+            <Select mode="multiple" showArrow
+              placeholder={t('task.label.form.member.labeltarget')}
+              filterOption={(value, option) => [option.value, ...(option.aliases || [])].some(key => key.indexOf(value) >= 0)}>
+              {keywords.map(keyword => (
+                <Select.Option key={keyword.name} value={keyword.name} aliases={keyword.aliases}>
+                  <Row>
+                    <Col flex={1}>{keyword.name}</Col>
+                  </Row>
+                </Select.Option>
+              ))}
+            </Select>
+          </Form.Item>
+          <KeepAnnotations />
+          <Form.Item label={t('task.label.form.desc.label')} name='desc'>
+            <Uploader onChange={docChange} onRemove={() => setDoc(undefined)} format="doc"
+              max={50} info={t('task.label.form.desc.info', { br: <br /> })}></Uploader>
+          </Form.Item>
+          <Desc form={form} />
+        </div>
         <Form.Item wrapperCol={{ offset: 8 }}>
-          <Space size={20}>
-            <Form.Item name='submitBtn' noStyle>
-              <Button type="primary" size="large" htmlType="submit">
-                {t('common.action.label')}
-              </Button>
-            </Form.Item>
-            <Form.Item name='backBtn' noStyle>
-              <Button size="large" onClick={() => history.goBack()}>
-                {t('task.btn.back')}
-              </Button>
-            </Form.Item>
-          </Space>
+          {bottom ? bottom : <SubmitButtons label="common.action.label" />}
           <div className={styles.bottomTip}>{t('task.label.bottomtip', { link: <Link target='_blank' to={'/label_tool/'}>{t('task.label.bottomtip.link.label')}</Link> })}</div>
         </Form.Item>
       </Form>

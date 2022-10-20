@@ -13,8 +13,9 @@ import Panel from "@/components/form/panel"
 import DatasetSelect from "@/components/form/datasetSelect"
 import Desc from "@/components/form/desc"
 import BottomButtons from "./BottomButtons"
+import SubmitButtons from "./submitButtons"
 
-function Fusion({ query = {},  ok = () => { }, skip = () => { }, bottom }) {
+function Fusion({ query = {}, hidden, ok = () => { }, bottom }) {
   const { did, iterationId, currentStage, chunk, strategy = '', merging } = query
 
   const pageParams = useParams()
@@ -145,89 +146,93 @@ function Fusion({ query = {},  ok = () => { }, skip = () => { }, bottom }) {
       onFinish={onFinish}
       onFinishFailed={onFinishFailed}
     >
-      <Panel hasHeader={false}>
-        <Form.Item label={t('task.fusion.form.dataset')}><span>{dataset.name} {dataset.versionName} (assets: {dataset.assetCount})</span></Form.Item>
-      </Panel>
-      <Panel label={t('task.fusion.header.merge')} visible={visibles['merge']} setVisible={(value) => setVisibles(old => ({ ...old, merge: value }))}>
-        <Form.Item label={t('task.fusion.form.merge.include.label')} name="include_datasets">
-          <DatasetSelect
-            placeholder={t('task.fusion.form.datasets.placeholder')}
-            mode='multiple'
-            pid={pid}
-            filter={[...excludeDatasets, did]}
-            allowEmpty={true}
-            onChange={onIncludeDatasetChange}
-            showArrow
-          />
-        </Form.Item>
-        <Form.Item name='strategy'
-          hidden={includeDatasets.length < 1}
-          label={t('task.train.form.repeatdata.label')}>
-          <Radio.Group options={[
-            { value: 2, label: t('task.train.form.repeatdata.latest') },
-            { value: 3, label: t('task.train.form.repeatdata.original') },
-            { value: 1, label: t('task.train.form.repeatdata.terminate') },
-          ]} />
-        </Form.Item>
-        {strategy.length ?
-          <Form.Item noStyle>
-            <Row><Col offset={8} flex={1}>
-              <Checkbox defaultChecked={Number(strategy) !== MiningStrategy.free} onChange={miningStrategyChanged}>
-                {t(`project.mining.strategy.${strategy}.label`)}
-              </Checkbox>
-            </Col></Row>
+      <div hidden={hidden}>
+        <Panel hasHeader={false}>
+          <Form.Item label={t('task.fusion.form.dataset')}><span>{dataset.name} {dataset.versionName} (assets: {dataset.assetCount})</span></Form.Item>
+        </Panel>
+        <Panel label={t('task.fusion.header.merge')} visible={visibles['merge']} setVisible={(value) => setVisibles(old => ({ ...old, merge: value }))}>
+          <Form.Item label={t('task.fusion.form.merge.include.label')} name="include_datasets">
+            <DatasetSelect
+              placeholder={t('task.fusion.form.datasets.placeholder')}
+              mode='multiple'
+              pid={pid}
+              filters={(dss) => dss.filter(ds => ![...excludeDatasets, did].includes(ds.id))}
+              allowEmpty={true}
+              onChange={onIncludeDatasetChange}
+              showArrow
+            />
           </Form.Item>
-          : null}
-        <Form.Item label={t('task.fusion.form.merge.exclude.label')} name="exclude_datasets">
-          <DatasetSelect
-            placeholder={t('task.fusion.form.datasets.placeholder')}
-            mode='multiple'
-            pid={pid}
-            filter={[...includeDatasets, did]}
-            onChange={onExcludeDatasetChange}
-            showArrow
-          />
-        </Form.Item>
-      </Panel>
-      <Panel label={t('task.fusion.header.filter')} visible={visibles['filter']} setVisible={(value) => setVisibles(old => ({ ...old, filter: value }))}>
-        <Form.Item label={t('task.fusion.form.include.label')}
-          tooltip={t('tip.task.fusion.includelable')}
-          name='inc'
-          help={<RecommendKeywords sets={form.getFieldValue('datasets')} onSelect={selectRecommendKeywords} />}
-        >
-          <Select
-            mode='multiple'
-            onChange={(value) => setSelectedKeywords(value)}
-            showArrow
+          <Form.Item name='strategy'
+            hidden={includeDatasets.length < 1}
+            label={t('task.train.form.repeatdata.label')}>
+            <Radio.Group options={[
+              { value: 2, label: t('task.train.form.repeatdata.latest') },
+              { value: 3, label: t('task.train.form.repeatdata.original') },
+              { value: 1, label: t('task.train.form.repeatdata.terminate') },
+            ]} />
+          </Form.Item>
+          {strategy.length ?
+            <Form.Item noStyle>
+              <Row><Col offset={8} flex={1}>
+                <Checkbox defaultChecked={Number(strategy) !== MiningStrategy.free} onChange={miningStrategyChanged}>
+                  {t(`project.mining.strategy.${strategy}.label`)}
+                </Checkbox>
+              </Col></Row>
+            </Form.Item>
+            : null}
+          <Form.Item label={t('task.fusion.form.merge.exclude.label')} name="exclude_datasets">
+            <DatasetSelect
+              placeholder={t('task.fusion.form.datasets.placeholder')}
+              mode='multiple'
+              pid={pid}
+              filter={[...includeDatasets, did]}
+              onChange={onExcludeDatasetChange}
+              showArrow
+            />
+          </Form.Item>
+        </Panel>
+        <Panel label={t('task.fusion.header.filter')} visible={visibles['filter']} setVisible={(value) => setVisibles(old => ({ ...old, filter: value }))}>
+          <Form.Item label={t('task.fusion.form.include.label')}
+            tooltip={t('tip.task.fusion.includelable')}
+            name='inc'
+            help={<RecommendKeywords sets={form.getFieldValue('datasets')} onSelect={selectRecommendKeywords} />}
           >
-            {keywords.map(keyword => selectedExcludeKeywords.indexOf(keyword) < 0
-              ? <Select.Option key={keyword} value={keyword}>{keyword}</Select.Option>
-              : null)}
-          </Select>
-        </Form.Item>
-        <Form.Item
-          label={t('task.fusion.form.exclude.label')}
-          tooltip={t('tip.task.fusion.excludelable')}
-          name='exc'
-        >
-          <Select
-            mode='multiple'
-            onChange={(value) => setExcludeKeywords(value)}
-            showArrow
+            <Select
+              mode='multiple'
+              onChange={(value) => setSelectedKeywords(value)}
+              showArrow
+            >
+              {keywords.map(keyword => selectedExcludeKeywords.indexOf(keyword) < 0
+                ? <Select.Option key={keyword} value={keyword}>{keyword}</Select.Option>
+                : null)}
+            </Select>
+          </Form.Item>
+          <Form.Item
+            label={t('task.fusion.form.exclude.label')}
+            tooltip={t('tip.task.fusion.excludelable')}
+            name='exc'
           >
-            {keywords.map(keyword => selectedKeywords.indexOf(keyword) < 0
-              ? <Select.Option key={keyword} value={keyword}>{keyword}</Select.Option>
-              : null)}
-          </Select>
-        </Form.Item>
-      </Panel>
-      <Panel label={t('task.fusion.header.sampling')} visible={visibles['sampling']} setVisible={(value) => setVisibles(old => ({ ...old, sampling: value }))}>
-        <Form.Item label={t('task.fusion.form.sampling')} tooltip={t('tip.task.fusion.sampling')} name='samples'>
-          <InputNumber step={1} min={1} style={{ width: '100%' }} />
-        </Form.Item>
-      </Panel>
-      <Desc form={form} />
-      {bottom ? bottom : <BottomButtons />}
+            <Select
+              mode='multiple'
+              onChange={(value) => setExcludeKeywords(value)}
+              showArrow
+            >
+              {keywords.map(keyword => selectedKeywords.indexOf(keyword) < 0
+                ? <Select.Option key={keyword} value={keyword}>{keyword}</Select.Option>
+                : null)}
+            </Select>
+          </Form.Item>
+        </Panel>
+        <Panel label={t('task.fusion.header.sampling')} visible={visibles['sampling']} setVisible={(value) => setVisibles(old => ({ ...old, sampling: value }))}>
+          <Form.Item label={t('task.fusion.form.sampling')} tooltip={t('tip.task.fusion.sampling')} name='samples'>
+            <InputNumber step={1} min={1} style={{ width: '100%' }} />
+          </Form.Item>
+        </Panel>
+        <Desc form={form} />
+      </div>
+      <Form.Item wrapperCol={{ offset: 8 }}>
+        {bottom ? bottom : <SubmitButtons />}
+      </Form.Item>
     </Form>
   )
 }

@@ -1,9 +1,8 @@
 import { getTaskTypeLabel } from '@/constants/task'
 import t from '@/utils/t'
 
-const TypeTag = ({ type = 0 }) => {
-
-  return t(getTaskTypeLabel(type))
+const TypeTag = ({ type }) => {
+  return type ? t(getTaskTypeLabel(type)) : null
 }
 
 export default TypeTag

@@ -26,12 +26,13 @@ import useDuplicatedCheck from "@/hooks/useDuplicatedCheck"
 import TrainFormat from "./training/trainFormat"
 
 import styles from "./training/training.less"
+import SubmitButtons from "./submitButtons"
 
 const TrainType = [{ value: "detection", label: 'task.train.form.traintypes.detect', checked: true }]
 
 const KeywordsMaxCount = 5
 
-function Train({ query = {}, ok = () => {}, allDatasets, datasetCache, ...func }) {
+function Train({ query = {}, hidden, ok = () => { }, bottom, allDatasets, datasetCache, ...func }) {
   const pageParams = useParams()
   const pid = Number(pageParams.id)
   const history = useHistory()
@@ -211,7 +212,7 @@ function Train({ query = {}, ok = () => {}, allDatasets, datasetCache, ...func }
       config,
     }
     const result = await func.train(params)
-    result && ok(result)
+    result && ok(result.result_model)
   }
 
   function onFinishFailed(errorInfo) {
@@ -242,12 +243,14 @@ function Train({ query = {}, ok = () => {}, allDatasets, datasetCache, ...func }
   }
   return (
     <div>
-      <CheckProjectDirty
-        style={{ marginBottom: 20, width: '100%' }}
-        pid={pid}
-        initialCheck={true}
-        callback={(dirty) => setProjectDirty(dirty)}
-      />
+      <div hidden={hidden}>
+        <CheckProjectDirty
+          style={{ marginBottom: 20, width: '100%' }}
+          pid={pid}
+          initialCheck={true}
+          callback={(dirty) => setProjectDirty(dirty)}
+        />
+      </div>
       <Form
         name='trainForm'
         className={styles.form}
@@ -257,130 +260,121 @@ function Train({ query = {}, ok = () => {}, allDatasets, datasetCache, ...func }
         onFinish={onFinish}
         onFinishFailed={onFinishFailed}
       >
-        <Form.Item name='image' label={t('task.train.form.image.label')} rules={[
-          { required: true, message: t('task.train.form.image.required') }
-        ]} tooltip={t('tip.task.train.image')}>
-          <ImageSelect placeholder={t('task.train.form.image.placeholder')} onChange={imageChange} />
-        </Form.Item>
-        <OpenpaiForm form={form} openpai={openpai} />
-        <Form.Item
-          label={t('task.train.form.trainsets.label')}
-          required
-          name="datasetId"
-          rules={[
-            { required: true, message: t('task.train.form.trainset.required') },
-          ]}
-        >
-          <DatasetSelect
-            pid={pid}
-            filters={trainsetFilters}
-            onChange={trainSetChange}
-          />
-        </Form.Item>
-        {iterationContext ? <Form.Item label={t('task.train.form.keywords.label')}>
-          {project?.keywords?.map(keyword => <Tag key={keyword}>{keyword}</Tag>)}
-        </Form.Item> :
-          <Form.Item
-            label={t('task.train.form.keywords.label')}
-            name="keywords"
-            rules={[
-              { required: true, message: t('project.add.form.keyword.required') }
-            ]}
-            tooltip={t('tip.task.filter.keywords')}
-            help={trainDataset && selectedKeywords.length !== trainDataset.gt.keywords.length ?
-              <Button type="link" onClick={() => setAllKeywords()}>{t('dataset.train.all.train.target')}</Button>
-              : null}
-          >
-            <Select mode="multiple" showArrow allowClear
-              placeholder={t('project.add.form.keyword.required')}
-              onChange={setSelectedKeywords}
-              options={(trainDataset?.gt?.keywords || []).map(k => ({ label: k, value: k }))}
-              maxTagCount={KeywordsMaxCount}
-              maxTagPlaceholder={<Tooltip
-                trigger='hover'
-                color='white'
-                title={selectedKeywords.slice(KeywordsMaxCount).map(k => <Tag key={k}>{k}</Tag>)}
-              >
-                {selectedKeywords.length - KeywordsMaxCount}+
-              </Tooltip>}
-            />
-          </Form.Item>}
-        <Form.Item label={t('dataset.train.form.samples')}>
-          <SampleRates keywords={selectedKeywords} dataset={trainDataset} negative />
-        </Form.Item>
-        <Form.Item
-          label={t('task.train.form.testsets.label')}
-          name="testset"
-          rules={[
-            { required: true, message: t('task.train.form.testset.required') },
-          ]}
-          tooltip={t('tip.task.filter.testsets')}
-        >
-          <DatasetSelect
-            pid={pid}
-            filters={validationSetFilters}
-            placeholder={t('task.train.form.test.datasets.placeholder')}
-            onChange={validationSetChange}
-          />
-        </Form.Item>
-        <Form.Item
-          label={t('task.detail.label.premodel')}
-          name="modelStage"
-          tooltip={t('tip.task.train.model')}
-        >
-          <ModelSelect placeholder={t('task.train.form.model.placeholder')} pid={pid} />
-        </Form.Item>
-        <Form.Item
-          hidden
-          label={t('task.train.form.traintype.label')}
-          name="trainType"
-        >
-          {renderRadio(TrainType)}
-        </Form.Item>
-
-        <Form.Item
-          label={t('task.gpu.count')}
-          tooltip={t('tip.task.filter.gpucount')}
-        >
-          <Form.Item
-            noStyle
-            name="gpu_count"
-            rules={[
-              {
-                validator: (rules, value) => value <= gpu_count ?
-                  Promise.resolve() :
-                  Promise.reject(),
-                message: t('task.gpu.tip', { count: gpu_count })
-              }
-            ]}
-          >
-            <InputNumber min={0} max={gpu_count} precision={0} />
+        <div hidden={hidden}>
+          <Form.Item name='image' label={t('task.train.form.image.label')} rules={[
+            { required: true, message: t('task.train.form.image.required') }
+          ]} tooltip={t('tip.task.train.image')}>
+            <ImageSelect placeholder={t('task.train.form.image.placeholder')} onChange={imageChange} />
           </Form.Item>
-          <span style={{ marginLeft: 20 }}>{t('task.gpu.tip', { count: gpu_count })}</span>
-        </Form.Item>
-        {live ? <Form.Item
-          label={t('task.train.export.format')}
-          tooltip={t('tip.train.export.format')}
-          name='trainFormat'
-          initialValue={'ark:raw'}>
-          <TrainFormat />
-        </Form.Item> : null}
-        <LiveCodeForm form={form} live={live} />
-        <DockerConfigForm show={showConfig} seniorConfig={seniorConfig} form={form} />
-        <Desc form={form} />
+          <OpenpaiForm form={form} openpai={openpai} />
+          <Form.Item
+            label={t('task.train.form.trainsets.label')}
+            required
+            name="datasetId"
+            rules={[
+              { required: true, message: t('task.train.form.trainset.required') },
+            ]}
+          >
+            <DatasetSelect
+              pid={pid}
+              filters={trainsetFilters}
+              onChange={trainSetChange}
+            />
+          </Form.Item>
+          {iterationContext ? <Form.Item label={t('task.train.form.keywords.label')}>
+            {project?.keywords?.map(keyword => <Tag key={keyword}>{keyword}</Tag>)}
+          </Form.Item> :
+            <Form.Item
+              label={t('task.train.form.keywords.label')}
+              name="keywords"
+              rules={[
+                { required: true, message: t('project.add.form.keyword.required') }
+              ]}
+              tooltip={t('tip.task.filter.keywords')}
+              help={trainDataset && selectedKeywords.length !== trainDataset.gt.keywords.length ?
+                <Button type="link" onClick={() => setAllKeywords()}>{t('dataset.train.all.train.target')}</Button>
+                : null}
+            >
+              <Select mode="multiple" showArrow allowClear
+                placeholder={t('project.add.form.keyword.required')}
+                onChange={setSelectedKeywords}
+                options={(trainDataset?.gt?.keywords || []).map(k => ({ label: k, value: k }))}
+                maxTagCount={KeywordsMaxCount}
+                maxTagPlaceholder={<Tooltip
+                  trigger='hover'
+                  color='white'
+                  title={selectedKeywords.slice(KeywordsMaxCount).map(k => <Tag key={k}>{k}</Tag>)}
+                >
+                  {selectedKeywords.length - KeywordsMaxCount}+
+                </Tooltip>}
+              />
+            </Form.Item>}
+          <Form.Item label={t('dataset.train.form.samples')}>
+            <SampleRates keywords={selectedKeywords} dataset={trainDataset} negative />
+          </Form.Item>
+          <Form.Item
+            label={t('task.train.form.testsets.label')}
+            name="testset"
+            rules={[
+              { required: true, message: t('task.train.form.testset.required') },
+            ]}
+            tooltip={t('tip.task.filter.testsets')}
+          >
+            <DatasetSelect
+              pid={pid}
+              filters={validationSetFilters}
+              placeholder={t('task.train.form.test.datasets.placeholder')}
+              onChange={validationSetChange}
+            />
+          </Form.Item>
+          <Form.Item
+            label={t('task.detail.label.premodel')}
+            name="modelStage"
+            tooltip={t('tip.task.train.model')}
+          >
+            <ModelSelect placeholder={t('task.train.form.model.placeholder')} pid={pid} />
+          </Form.Item>
+          <Form.Item
+            hidden
+            label={t('task.train.form.traintype.label')}
+            name="trainType"
+          >
+            {renderRadio(TrainType)}
+          </Form.Item>
+
+          <Form.Item
+            label={t('task.gpu.count')}
+            tooltip={t('tip.task.filter.gpucount')}
+          >
+            <Form.Item
+              noStyle
+              name="gpu_count"
+              rules={[
+                {
+                  validator: (rules, value) => value <= gpu_count ?
+                    Promise.resolve() :
+                    Promise.reject(),
+                  message: t('task.gpu.tip', { count: gpu_count })
+                }
+              ]}
+            >
+              <InputNumber min={0} max={gpu_count} precision={0} />
+            </Form.Item>
+            <span style={{ marginLeft: 20 }}>{t('task.gpu.tip', { count: gpu_count })}</span>
+          </Form.Item>
+          {live ? <Form.Item
+            label={t('task.train.export.format')}
+            tooltip={t('tip.train.export.format')}
+            name='trainFormat'
+            initialValue={'ark:raw'}>
+            <TrainFormat />
+          </Form.Item> : null}
+          <LiveCodeForm form={form} live={live} />
+          <DockerConfigForm show={showConfig} seniorConfig={seniorConfig} form={form} />
+          <Desc form={form} />
+        </div>
         <Form.Item wrapperCol={{ offset: 8 }}>
-          <Space size={20}>
-            <Form.Item name='submitBtn' noStyle>
-              <Button type="primary" size="large" disabled={projectDirty} htmlType="submit">
-                {t('common.action.train')}
-              </Button>
-            </Form.Item>
-            <Form.Item name='backBtn' noStyle>
-              <Button size="large" onClick={() => history.goBack()}>
-                {t('task.btn.back')}
-              </Button>
-            </Form.Item>
-          </Space>
+          {bottom ? bottom : <SubmitButtons label="common.action.train" />}
         </Form.Item>
       </Form>
     </div>

@@ -10,22 +10,27 @@ import Mining from "@/components/task/mining"
 import Label from "@/components/task/label"
 import Merge from "@/components/task/merge"
 import Training from "@/components/task/training"
+import IterationStepButtons from './buttons'
+import Buttons from './buttons'
+import NextIteration from './nextIteration'
 
 const Action = (Comp, props = {}) => <Comp {...props} />
 
-const StepAction = ({ stages, iteration, project, prevIteration }) => {
+const StepAction = ({ stages, iteration, project, prevIteration, callback = () => {} }) => {
   const [updated, updateIteration] = useFetch('iteration/updateIteration')
+  const [currentContent, setCurrentContent] = useState(null)
+  const [CurrentAction, setCurrentAction] = useState(null)
   const result = useSelector(({ dataset, model }) => {
     const isModel = currentContent?.value === Stages.training
     const res = isModel ? model.model : dataset.dataset
     return res[currentContent?.result] || {}
   })
+  const [state, setState] = useState(-1)
 
   const comps = {
     [Stages.prepareMining]: {
       comp: Fusion, query: {
         did: project.miningSet?.id,
-        merging: project.miningSet.id || 0,
         strategy: project.miningStrategy,
         chunk: project.chunkSize || undefined,
       },
@@ -54,7 +59,7 @@ const StepAction = ({ stages, iteration, project, prevIteration }) => {
       },
     },
     [Stages.next]: {
-      comp: Fusion, query: {}
+      comp: NextIteration, query: {}
     },
   }
   const fixedQuery = {
@@ -62,22 +67,27 @@ const StepAction = ({ stages, iteration, project, prevIteration }) => {
     currentStage: iteration.currentStage,
     from: 'iteration'
   }
-  const [currentContent, setCurrentContent] = useState(null)
-  const [CurrentAction, setCurrentAction] = useState(null)
 
   useEffect(() => {
     if (currentContent) {
+      const bottom = <Buttons step={currentContent} state={state} next={next} skip={skip} react={react} />
       const props = {
+        bottom,
         step: currentContent,
-        result,
+        hidden: state >= 0,
         query: { ...fixedQuery, ...currentContent.query },
         ok,
-        next,
-        skip,
       }
       setCurrentAction(Action(currentContent.comp, props))
     }
-  }, [currentContent])
+  }, [currentContent, state])
+
+  useEffect(() => {
+    if (currentContent) {
+      const state = result?.id ? result.state : currentContent.state
+      setState(state)
+    }
+  }, [result?.state, currentContent?.state])
 
   useEffect(() => {
     if (!stages.length) {
@@ -98,49 +108,44 @@ const StepAction = ({ stages, iteration, project, prevIteration }) => {
     }
   }, [updated])
 
-  const next = (result) => {
-    if (!currentContent.next) {
-      // next iteration
-      callback({
-        type: 'create',
-        data: {
-          round: project.round + 1,
-        },
-      })
-    } else {
-      // next
-      callback({
-        type: 'update',
-        params: {
-          id: iteration.id,
-          currentStage: currentContent.next,
-        },
-      })
-    }
+  const react = () => {
+    setState(-2)
+  }
+
+  const next = () => {
+    // next
+    callback({
+      type: 'update',
+      data: {
+        currentStage: currentContent.next.value,
+      },
+    })
   }
 
   const skip = () => {
     // skip
     callback({
       type: 'skip',
-      params: {
-        id: iteration.id,
-        currentStage: stages.next,
-        [currentContent.output]: 0,
-      }
+      data: currentContent.next,
     })
   }
 
   const ok = (result) => {
-    // update current stage
-    callback({
-      type: 'update',
-      params: {
-        id: iteration.id,
-        currentStage: currentContent.value,
-        [currentContent.output]: result.id,
-      }
-    })
+    if (!currentContent.next) {
+      // next iteration
+      callback({
+        type: 'create',
+      })
+    } else {
+      // update current stage
+      callback({
+        type: 'update',
+        data: {
+          currentStage: currentContent.value,
+          [currentContent.output]: result.id,
+        }
+      })
+    }
   }
 
   return CurrentAction

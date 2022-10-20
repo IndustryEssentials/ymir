@@ -27,7 +27,7 @@ export enum actions {
   del = 'delete',
 }
 
-export const OPENPAI_MAX_GPU_COUNT  = 8
+export const OPENPAI_MAX_GPU_COUNT = 8
 
 type Result = {
   [key: string]: any,
@@ -57,6 +57,12 @@ export function updateResultByTask(result: Result, task: BackendData) {
 
 export function validState(state: number) {
   return ResultStates.VALID === state
+}
+export function invalidState(state: number) {
+  return ResultStates.INVALID === state
+}
+export function readyState(state: number) {
+  return ResultStates.READY === state
 }
 export const statesLabel = (state: ResultStates) => {
   const maps = {

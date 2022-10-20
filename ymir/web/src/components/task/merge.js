@@ -1,10 +1,9 @@
 import React, { useEffect, useState } from "react"
-import { Button, Form, message, Space } from "antd"
+import { Form, message } from "antd"
 import { useHistory, useParams } from "umi"
 
 import { formLayout } from "@/config/antd"
 import t from "@/utils/t"
-import { string2Array } from '@/utils/string'
 import useFetch from '@/hooks/useFetch'
 
 import DatasetSelect from "@/components/form/datasetSelect"
@@ -17,16 +16,14 @@ import s from "./merge/merge.less"
 
 const { useWatch, useForm } = Form
 
-function Merge({ query = {}, ok = () => {} }) {
+function Merge({ query = {}, hidden, ok = () => { }, bottom, }) {
   const [dataset, getDataset, setDataset] = useFetch('dataset/getDataset', {})
   const [_, clearCache] = useFetch('dataset/clearCache')
   const [mergeResult, merge] = useFetch('task/merge')
-  const [__, updateIteration] = useFetch('iteration/updateIteration')
   const pageParams = useParams()
   const pid = Number(pageParams.id)
-  const { iterationId, currentStage, outputKey, } = query
-  const did = Number(query.did)
-  const mid = string2Array(query.mid)
+  console.log('query:', query)
+  const { did, mid, iterationId, currentStage, outputKey, } = query
   const history = useHistory()
   const [form] = useForm()
   const [group, setGroup] = useState()
@@ -37,7 +34,7 @@ function Merge({ query = {}, ok = () => {} }) {
 
 
   const initialValues = {
-    includes: mid,
+    includes: Array.isArray(mid) ? mid : [mid],
   }
 
   useEffect(() => {
@@ -47,8 +44,10 @@ function Merge({ query = {}, ok = () => {} }) {
   useEffect(() => dataset.id && setGroup(dataset.groupId), [dataset])
 
   useEffect(() => {
-    mergeResult && ok(mergeResult)
-    message.info(t('task.fusion.create.success.msg'))
+    if (mergeResult) {
+      ok(mergeResult)
+      message.info(t('task.fusion.create.success.msg'))
+    }
   }, [mergeResult])
 
   const checkInputs = (i) => {
@@ -90,52 +89,43 @@ function Merge({ query = {}, ok = () => {} }) {
       onFinish={onFinish}
       onFinishFailed={onFinishFailed}
     >
-      <MergeType disabled={[iterationId ? 0 : null]} initialValue={!iterationId && mid ? 0 : 1} />
-      {!type ? <DatasetName /> : null}
-      {did ? <Form.Item label={t('task.fusion.form.dataset')}>
-        <span>{dataset.name} {dataset.versionName} (assets: {dataset.assetCount})</span>
-      </Form.Item> : null}
-      {!did && (type || dataset.id) ? <Form.Item name='dataset' label={t('task.fusion.form.dataset')}>
-        <DatasetSelect
-          pid={pid}
-          onChange={originDatasetChange}
-          filters={datasets => filter(datasets, [...(includes || []), ...(excludes || [])])}
-        />
-      </Form.Item> : null}
-      <Form.Item label={t('task.fusion.form.merge.include.label')} name="includes" tooltip={t('tip.task.merge.include')}>
-        <DatasetSelect
-          placeholder={t('task.fusion.form.datasets.placeholder')}
-          mode='multiple'
-          pid={pid}
-          filters={datasets => filter(datasets, [selectedDataset, ...(excludes || [])])}
-          allowEmpty={true}
-          showArrow
-        />
-      </Form.Item>
-      <Strategy hidden={includes?.length < 1} />
-      <Form.Item label={t('task.fusion.form.merge.exclude.label')} name="excludes" tooltip={t('tip.task.merge.exclude')}>
-        <DatasetSelect
-          placeholder={t('task.fusion.form.datasets.placeholder')}
-          mode='multiple'
-          pid={pid}
-          filters={datasets => filter(datasets, [selectedDataset, ...(includes || [])])}
-          showArrow
-        />
-      </Form.Item>
-      <Desc form={form} />
+      <div hidden={hidden}>
+        <MergeType disabled={[iterationId ? 0 : null]} initialValue={!iterationId && mid ? 0 : 1} />
+        {!type ? <DatasetName /> : null}
+        {did ? <Form.Item label={t('task.fusion.form.dataset')}>
+          <span>{dataset.name} {dataset.versionName} (assets: {dataset.assetCount})</span>
+        </Form.Item> : null}
+        {!did && (type || dataset.id) ? <Form.Item name='dataset' label={t('task.fusion.form.dataset')}>
+          <DatasetSelect
+            pid={pid}
+            onChange={originDatasetChange}
+            filters={datasets => filter(datasets, [...(includes || []), ...(excludes || [])])}
+          />
+        </Form.Item> : null}
+        <Form.Item label={t('task.fusion.form.merge.include.label')} name="includes" tooltip={t('tip.task.merge.include')}>
+          <DatasetSelect
+            placeholder={t('task.fusion.form.datasets.placeholder')}
+            mode='multiple'
+            pid={pid}
+            filters={datasets => filter(datasets, [selectedDataset, ...(excludes || [])])}
+            allowEmpty={true}
+            showArrow
+          />
+        </Form.Item>
+        <Strategy hidden={includes?.length < 1} />
+        <Form.Item label={t('task.fusion.form.merge.exclude.label')} name="excludes" tooltip={t('tip.task.merge.exclude')}>
+          <DatasetSelect
+            placeholder={t('task.fusion.form.datasets.placeholder')}
+            mode='multiple'
+            pid={pid}
+            filters={datasets => filter(datasets, [selectedDataset, ...(includes || [])])}
+            showArrow
+          />
+        </Form.Item>
+        <Desc form={form} />
+      </div>
       <Form.Item className={s.submit} wrapperCol={{ offset: 8 }}>
-        <Space size={20}>
-          <Form.Item name='submitBtn' noStyle>
-            <Button type="primary" size="large" htmlType="submit">
-              {t('common.confirm')}
-            </Button>
-          </Form.Item>
-          <Form.Item name='backBtn' noStyle>
-            <Button size="large" onClick={() => history.goBack()}>
-              {t('task.btn.back')}
-            </Button>
-          </Form.Item>
-        </Space>
+        {bottom ? bottom : <SubmitButtons />}
       </Form.Item>
     </Form>
   )
