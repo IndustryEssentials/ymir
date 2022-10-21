@@ -40,6 +40,19 @@ def remove_json_file(des_annotation_path: str) -> None:
             os.remove(os.path.join(des_annotation_path, annotation_file))
 
 
+def generate_label_index_file(input_file: Path, annotation_dir: Path) -> Path:
+    """
+    filter assets paths against related annotation files
+    """
+    labeled_assets_hashes = [i.stem for i in annotation_dir.iterdir() if i.suffix == ".xml"]
+    output_file = input_file.with_name("label_index.tsv")
+    with open(input_file) as in_, open(output_file, "w") as out_:
+        for asset_path in in_:
+            if Path(asset_path.strip()).stem in labeled_assets_hashes:
+                out_.write(asset_path)
+    return output_file
+
+
 def lable_task_monitor() -> None:
     label_instance = utils.create_label_instance()
     project_mapping = rds.hgetall(label_task_config.MONITOR_MAPPING_KEY)
@@ -63,11 +76,12 @@ def lable_task_monitor() -> None:
                 sentry_sdk.capture_exception(e)
                 logging.error(f"get label task {task_id} error: {e}, set task_id:{task_id} error")
                 state = LogState.ERROR
-            index_file = str(Path(project_info["input_asset_dir"]) / "index.tsv")
+            export_index_file = Path(project_info["input_asset_dir"]) / "index.tsv"
+            label_index_file = generate_label_index_file(export_index_file, Path(project_info["des_annotation_path"]))
             trigger_mir_import(
                 repo_root=project_info["repo_root"],
                 task_id=task_id,
-                index_file=index_file,
+                index_file=str(label_index_file),
                 des_annotation_path=project_info["des_annotation_path"],
                 media_location=project_info["media_location"],
                 import_work_dir=project_info["import_work_dir"],
