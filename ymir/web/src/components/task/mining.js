@@ -31,7 +31,7 @@ function Mining({ query = {}, hidden, ok = () => { }, datasetCache, bottom, ...f
   const history = useHistory()
   const location = useLocation()
   const { mid, image, iterationId, currentStage, outputKey } = query
-  const stage = mid ? mid.split(',').map(Number) : undefined
+  const stage = mid ? (Array.isArray(mid) ? mid : mid.split(',').map(Number)) : undefined
   const did = Number(query.did)
   const [dataset, setDataset] = useState({})
   const [selectedModel, setSelectedModel] = useState({})
