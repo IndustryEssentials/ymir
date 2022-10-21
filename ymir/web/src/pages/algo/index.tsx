@@ -1,11 +1,11 @@
-import { DEPLOY_MODULE_URL } from '@/constants/common'
+import { getDeploayUrl } from '@/constants/common'
 import usePostMessage from '@/hooks/usePostMessage'
 import { message } from 'antd'
 import { useEffect, useRef, useState } from 'react'
 import { getLocale, history, useLocation, useParams, useSelector } from 'umi'
 type Params = { [key: string]: any }
 
-const base = DEPLOY_MODULE_URL || ''
+const base = getDeploayUrl()
 
 const pages: Params = {
   public: { path: '/publicAlgorithm', action: 'pageInit' },
@@ -19,17 +19,20 @@ const Algo = () => {
     return <div>Algorithm Store is not READY</div>
   }
   const { username: userName, id: userId } = useSelector((state: Params) => state.user)
-  const { module } = useParams<Params>()
+  const { module = 'public' } = useParams<Params>()
   const location: Params = useLocation()
   const iframe: { current: HTMLIFrameElement | null } = useRef(null)
   const [url, setUrl] = useState(base)
   const [post, recieved] = usePostMessage(base)
+  const [key, setKey] = useState(Math.random())
 
   useEffect(() => {
     if (!location.state?.reload) {
+      const r = Math.random()
+      setKey(r)
       const self = window.location.origin
       const lang = getLocale()
-      const url = `${base}${pages[module].path}?from=${self}&userId=${userId}&userName=${userName || ''}&lang=${lang}&r=${Math.random()}`
+      const url = `${base}${pages[module].path}?from=${self}&userId=${userId}&userName=${userName || ''}&lang=${lang}&r=${r}`
       setUrl(url)
     }
     history.replace({ state: {} })
@@ -44,7 +47,8 @@ const Algo = () => {
     } else if (recieved.type === 'pageChanged') {
       const page = Object.keys(pages).find(key => (recieved.data?.path || '').includes(pages[key].path))
       if (page !== module) {
-        history.push(`/home/algo/${page}`, { reload: true })
+        const mod = page === 'public' ? '' : `/${page}`
+        history.push(`/home/algo${mod}`, { reload: true })
       }
     }
   }, [recieved])
@@ -72,7 +76,7 @@ const Algo = () => {
     height: 'calc(100vh - 120px)',
   }
   return <div style={{ margin: '0 -20px' }}>
-    <iframe ref={iframe} src={url} style={iframeStyles}></iframe>
+    <iframe key={key} ref={iframe} src={url} style={iframeStyles}></iframe>
   </div>
 }
 

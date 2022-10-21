@@ -9,7 +9,7 @@ import { ResultStates } from '@/constants/common'
 import { TASKTYPES, TASKSTATES } from '@/constants/task'
 import t from "@/utils/t"
 import usePublish from "@/hooks/usePublish"
-import { DEPLOY_MODULE_URL } from '@/constants/common'
+import { getDeploayUrl } from '@/constants/common'
 
 import CheckProjectDirty from "@/components/common/CheckProjectDirty"
 import Actions from "@/components/table/actions"
@@ -278,7 +278,7 @@ function Model({ pid, project = {}, iterations, groups, modelList, versions, que
       {
         key: "publish",
         label: t("model.action.publish"),
-        hidden: () => !isValidModel(state) || !DEPLOY_MODULE_URL,
+        hidden: () => !isValidModel(state) || !getDeploayUrl(),
         onclick: () => publish(record),
         icon: <ShieldIcon />,
       },
