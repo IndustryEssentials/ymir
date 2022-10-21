@@ -61,7 +61,7 @@ Prepare the dataset based on the added classes, with the following format requir
     
 - If the annotation files need to be imported simultaneously, the annotation file format needs to be Pascal VOC.
     
-- The image files should be placed in the images folder, the groundtruth files should be placed in the gt folder, and the prediction annotation files should be placed in the pred folder, and the pred folder should contain the model information that generated the prediction results. gt and pred are optional, if not uploaded, the folder should be empty, and the file structure in the zip package is as follows. Click to download the example file: [Sample.zip](https://github.com/IndustryEssentials/ymir/pull/1261)
+- The image files should be placed in the images folder, the groundtruth files should be placed in the gt folder, and the prediction annotation files should be placed in the pred folder, and the pred folder should contain the model information that generated the prediction results. gt and pred are optional, if not uploaded, the folder should be empty, and the file structure in the zip package is as follows. Click to download the example file: [Sample.zip](https://github.com/IndustryEssentials/ymir-images/blob/main/doc_v2/sample_dataset.zip?raw=true)
 
 ![sample_zip](https://user-images.githubusercontent.com/90443348/197174963-a5d818aa-5d26-4742-99c8-3b23f693be1d.png)
 
