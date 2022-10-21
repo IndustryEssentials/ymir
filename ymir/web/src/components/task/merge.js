@@ -34,7 +34,7 @@ function Merge({ query = {}, hidden, ok = () => { }, bottom, }) {
 
 
   const initialValues = {
-    includes: mid ? (Array.isArray(mid) ? mid : [mid]) : [],
+    includes: mid ? (Array.isArray(mid) ? mid : mid.split(',').map(Number)) : [],
   }
 
   useEffect(() => {
