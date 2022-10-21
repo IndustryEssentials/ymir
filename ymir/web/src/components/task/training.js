@@ -121,7 +121,6 @@ function Train({ query = {}, hidden, ok = () => { }, bottom, allDatasets, datase
 
   useEffect(() => {
     const state = location.state
-    console.log('state:', state)
 
     if (state?.record) {
       setFromCopy(true)
@@ -226,12 +225,12 @@ function Train({ query = {}, hidden, ok = () => { }, bottom, allDatasets, datase
   const trainsetFilters = useCallback(datasets => datasets.filter(ds => {
     const notTestSet = ds.id !== testSet
     return notTestSet && notTestingSet(ds.id)
-  }), [testSet])
+  }), [testSet, testingSetIds])
 
   const validationSetFilters = useCallback(datasets => datasets.filter(ds => {
     const notTrainSet = ds.id !== trainSet
     return matchKeywords(ds) && notTrainSet && notTestingSet(ds.id)
-  }), [trainSet])
+  }), [trainSet, selectedKeywords, testingSetIds])
 
   const getCheckedValue = (list) => list.find((item) => item.checked)["value"]
   const initialValues = {
