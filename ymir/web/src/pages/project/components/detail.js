@@ -18,11 +18,6 @@ function ProjectDetail({ project = {} }) {
   const unfold = useSelector(({ iteration }) => iteration.actionPanelExpand)
   const [_, toggleActionPanel] = useFetch('iteration/toggleActionPanel', true)
 
-  useEffect(() => {
-
-    console.log('unfold:', unfold)
-  }, [unfold])
-
   function renderProjectDatasetLabel() {
     const getDsName = (ds = {}) => ds.name ? (ds.name + ' ' + (ds.versionName || '')) : ''
     const maps = [

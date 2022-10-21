@@ -38,7 +38,7 @@ function Train({ query = {}, hidden, ok = () => { }, bottom, allDatasets, datase
   const history = useHistory()
   const location = useLocation()
   const { mid, image, iterationId, outputKey, currentStage, test, from } = query
-  const stage = string2Array(mid)
+  const stage = mid ? (Array.isArray(mid) ? mid : mid.split(',').map(Number)) : undefined
   const did = Number(query.did)
   const [selectedKeywords, setSelectedKeywords] = useState([])
   const [dataset, setDataset] = useState({})
