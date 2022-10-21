@@ -11,6 +11,7 @@ import Desc from "@/components/form/desc"
 import MergeType from "./merge/formItem.mergeType"
 import DatasetName from "@/components/form/items/datasetName"
 import Strategy from "./merge/formItem.strategy"
+import SubmitButtons from "./submitButtons"
 
 import s from "./merge/merge.less"
 
@@ -33,7 +34,7 @@ function Merge({ query = {}, hidden, ok = () => { }, bottom, }) {
 
 
   const initialValues = {
-    includes: Array.isArray(mid) ? mid : [mid],
+    includes: mid ? (Array.isArray(mid) ? mid : [mid]) : [],
   }
 
   useEffect(() => {

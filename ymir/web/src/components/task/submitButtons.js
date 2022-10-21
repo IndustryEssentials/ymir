@@ -1,6 +1,8 @@
 import { Button, Form, Space } from "antd"
 import { useHistory } from "umi"
 
+import t from "@/utils/t"
+
 const SubmitButtons = ({ label = 'common.confirm' }) => {
   const history = useHistory()
   return <Space size={20}><Form.Item name='submitBtn' noStyle>

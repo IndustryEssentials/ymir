@@ -24,9 +24,9 @@ import DatasetSelect from "@/components/form/datasetSelect"
 import Desc from "@/components/form/desc"
 import useDuplicatedCheck from "@/hooks/useDuplicatedCheck"
 import TrainFormat from "./training/trainFormat"
+import SubmitButtons from "./submitButtons"
 
 import styles from "./training/training.less"
-import SubmitButtons from "./submitButtons"
 
 const TrainType = [{ value: "detection", label: 'task.train.form.traintypes.detect', checked: true }]
 
