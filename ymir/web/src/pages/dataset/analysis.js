@@ -38,11 +38,6 @@ function Analysis() {
     setSource(remoteSource)
   }, [remoteSource])
 
-  useEffect(() => {
-    // todo show by annotations type
-    console.log('annotationsType:', annotationsType)
-  }, [annotationsType])
-
   function setAnalysisData(datasets) {
     const chartsMap = [
       {

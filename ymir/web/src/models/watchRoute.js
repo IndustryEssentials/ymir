@@ -7,7 +7,6 @@ const WatchRoute = {
   },
   effects: {
     *updateRoute({ payload }, { put }) {
-      //    console.log('effect--updateRoute', payload)
       put({
         type: 'UPDATEROUTE',
         payload,
@@ -16,7 +15,6 @@ const WatchRoute = {
   },
   reducers: {
     UPDATEROUTE(state, { payload }) {
-      // console.log('STATE,',state, payload)
       return {
         ...state,
         current: payload,

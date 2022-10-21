@@ -120,10 +120,8 @@ export default {
       let { code, result } = yield call(fusion, payload)
       if (code === 0) {
         yield put.resolve({
-          type: 'dataset/clearCache'
-        })
-        yield put.resolve({
-          type: 'project/clearCache'
+          type: 'dataset/update',
+          payload: result,
         })
         return result
       }
@@ -151,11 +149,9 @@ export default {
     *train({ payload }, { call, put }) {
       let { code, result } = yield call(train, payload)
       if (code === 0) {
-        yield put.resolve({
-          type: 'model/clearCache'
-        })
-        yield put.resolve({
-          type: 'project/clearCache'
+        yield put({
+          type: 'model/getModel',
+          payload: { id: result?.result_model?.id, force: true }
         })
         return result
       }
@@ -164,10 +160,8 @@ export default {
       let { code, result } = yield call(mine, payload)
       if (code === 0) {
         yield put({
-          type: 'dataset/clearCache'
-        })
-        yield put({
-          type: 'project/clearCache'
+          type: 'dataset/getDataset',
+          payload: { id: result?.result_dataset?.id, force: true }
         })
         return result
       }
@@ -175,11 +169,9 @@ export default {
     *label({ payload }, { call, put }) {
       let { code, result } = yield call(label, payload)
       if (code === 0) {
-        yield put.resolve({
-          type: 'dataset/clearCache'
-        })
-        yield put.resolve({
-          type: 'project/clearCache'
+        yield put({
+          type: 'dataset/getDataset',
+          payload: { id: result?.result_dataset?.id, force: true }
         })
         return result
       }
@@ -187,11 +179,9 @@ export default {
     *infer({ payload }, { call, put }) {
       let { code, result } = yield call(infer, payload)
       if (code === 0) {
-        yield put.resolve({
-          type: 'dataset/clearCache'
-        })
-        yield put.resolve({
-          type: 'project/clearCache'
+        yield put({
+          type: 'dataset/getDataset',
+          payload: { id: result?.result_dataset?.id, force: true }
         })
         return result
       }

@@ -22,7 +22,6 @@ const Chart = ({ option = {}, height = 300, style = {}, ...rest }) => {
 
   useEffect(() => {
     let lineChart = null
-    // console.log('option: ', option, chartRef)
     if (chartRef.current) {
       setTimeout(() => {
         lineChart = echarts.init(chartRef.current)

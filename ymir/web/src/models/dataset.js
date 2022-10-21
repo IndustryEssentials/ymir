@@ -52,7 +52,7 @@ export default {
         type: 'batchDatasets',
         payload: { pid, ids: fetchIds, ck }
       })
-      return [...cache, ...remoteDatasets]
+      return [...cache, ...(remoteDatasets || [])]
     },
     *batchDatasets({ payload }, { call, put }) {
       const { pid, ids, ck } = payload
@@ -272,12 +272,11 @@ export default {
         if (!dataset) {
           continue
         }
-        console.log('dataset, task:', dataset, task)
         const updated = updateResultByTask(dataset, task)
         if (updated) {
           if (updated.needReload) {
             yield put({
-              type: 'dataset/getDataset',
+              type: 'getDataset',
               payload: { id: updated.id, force: true }
             })
           } else {
@@ -331,8 +330,8 @@ export default {
       }
     },
     *update({ payload }, { put, select }) {
-      const ds = payload
-      if (!ds) {
+      const ds = transferDataset(payload)
+      if (!ds.id) {
         return
       }
       const { versions } = yield select(({ dataset }) => dataset)

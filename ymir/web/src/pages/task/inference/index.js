@@ -18,14 +18,14 @@ import ImageSelect from "@/components/form/imageSelect"
 import DatasetSelect from "@/components/form/datasetSelect"
 import useAddKeywords from "@/hooks/useAddKeywords"
 import AddKeywordsBtn from "@/components/keyword/addKeywordsBtn"
-import LiveCodeForm from "../components/liveCodeForm"
-import { removeLiveCodeConfig } from "../components/liveCodeConfig"
-import DockerConfigForm from "../components/dockerConfigForm"
+import LiveCodeForm from "@/components/form/items/liveCode"
+import { removeLiveCodeConfig } from "@/components/form/items/liveCodeConfig"
+import DockerConfigForm from "@/components/form/items/dockerConfig"
 import Desc from "@/components/form/desc"
 
 import commonStyles from "../common.less"
 import styles from "./index.less"
-import OpenpaiForm from "../components/openpaiForm"
+import OpenpaiForm from "@/components/form/items/openpai"
 import Tip from "@/components/form/tip"
 
 const { Option } = Select
@@ -267,7 +267,6 @@ function Inference({ datasetCache, datasets, ...func }) {
                 pid={pid}
                 filters={testSetFilters}
                 renderLabel={renderLabel}
-                // onChange={(value) => console.log('value: ', value)}
                 placeholder={t('task.inference.form.dataset.placeholder')}
               />
             </Form.Item>
