@@ -89,6 +89,10 @@ func (s *MongoServer) IndexDatasetData(
 		return
 	}
 
+	if len(mirMetadatas.Attributes) < 1 {
+		panic("empty dataset")
+	}
+
 	defer tools.TimeTrack(time.Now(), mirRepo.TaskID)
 	log.Printf("Load/Build index for %v, %d assets", mirRepo.TaskID, len(mirMetadatas.Attributes))
 

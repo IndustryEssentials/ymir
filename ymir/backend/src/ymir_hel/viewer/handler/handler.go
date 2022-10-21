@@ -107,6 +107,10 @@ func (v *ViewerHandler) loadAndIndexAssets(mirRepo *constants.MirRepo) {
 	mirDatas := v.mirLoader.LoadMutipleMirDatas(mirRepo, filesToLoad)
 	mirMetadatas := mirDatas[0].(*protos.MirMetadatas)
 	mirAnnotations := mirDatas[1].(*protos.MirAnnotations)
+	if len(mirMetadatas.Attributes) < 1 {
+		log.Printf("[viewer] empty dataset %s, skip indexing.\n", mirRepo.TaskID)
+		return
+	}
 	v.mongoServer.IndexDatasetData(mirRepo, mirMetadatas, mirAnnotations)
 }
 
