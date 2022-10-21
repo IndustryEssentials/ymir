@@ -35,7 +35,7 @@ function Fusion({ query = {}, hidden, ok = () => { }, bottom }) {
 
   const initialValues = {
     name: 'task_fusion_' + randomNumber(),
-    samples: chunk,
+    samples: chunk || 1000,
     include_datasets: Number(merging) ? [Number(merging)] : [],
     strategy: 2,
   }
