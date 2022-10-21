@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react"
+import React, { useState, useEffect, useCallback } from "react"
 import { Select, Button, Form, message, Card, Space, Radio, Row, Col, InputNumber, Checkbox } from "antd"
 import { useHistory, useParams, useSelector } from "umi"
 
@@ -155,7 +155,7 @@ function Fusion({ query = {}, hidden, ok = () => { }, bottom }) {
               placeholder={t('task.fusion.form.datasets.placeholder')}
               mode='multiple'
               pid={pid}
-              filters={(dss) => dss.filter(ds => ![...excludeDatasets, did].includes(ds.id))}
+              filters={useCallback((dss) => dss.filter(ds => ![...excludeDatasets, did].includes(ds.id)), [excludeDatasets, did])}
               allowEmpty={true}
               onChange={onIncludeDatasetChange}
               showArrow

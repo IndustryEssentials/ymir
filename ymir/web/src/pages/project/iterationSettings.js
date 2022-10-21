@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { Button, Card, Form, message, Modal, Select, Space, Row, Col, InputNumber } from 'antd'
 import { useParams, useHistory } from "umi"
 
@@ -97,7 +97,7 @@ const Add = ({ }) => {
                 pid={id}
                 filter={[miningSet]}
                 filterGroup={[project?.trainSet?.id, project?.miningSet?.groupId]}
-                filters={datasets => datasets.filter(ds => ds.keywords.some(kw => project?.keywords?.includes(kw)))}
+                filters={useCallback(datasets => datasets.filter(ds => ds.keywords.some(kw => project?.keywords?.includes(kw))), [project?.keywords])}
                 onChange={(value) => setTestSet(value)}
                 allowClear
               />

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react"
+import React, { useCallback, useEffect, useState } from "react"
 import { Form, message } from "antd"
 import { useHistory, useParams } from "umi"
 
@@ -99,7 +99,7 @@ function Merge({ query = {}, hidden, ok = () => { }, bottom, }) {
           <DatasetSelect
             pid={pid}
             onChange={originDatasetChange}
-            filters={datasets => filter(datasets, [...(includes || []), ...(excludes || [])])}
+            filters={useCallback(datasets => filter(datasets, [...(includes || []), ...(excludes || [])]), [includes, excludes])}
           />
         </Form.Item> : null}
         <Form.Item label={t('task.fusion.form.merge.include.label')} name="includes" tooltip={t('tip.task.merge.include')}>
@@ -107,7 +107,7 @@ function Merge({ query = {}, hidden, ok = () => { }, bottom, }) {
             placeholder={t('task.fusion.form.datasets.placeholder')}
             mode='multiple'
             pid={pid}
-            filters={datasets => filter(datasets, [selectedDataset, ...(excludes || [])])}
+            filters={useCallback(datasets => filter(datasets, [selectedDataset, ...(excludes || [])]), [selectedDataset, excludes])}
             allowEmpty={true}
             showArrow
           />
@@ -118,7 +118,7 @@ function Merge({ query = {}, hidden, ok = () => { }, bottom, }) {
             placeholder={t('task.fusion.form.datasets.placeholder')}
             mode='multiple'
             pid={pid}
-            filters={datasets => filter(datasets, [selectedDataset, ...(includes || [])])}
+            filters={useCallback(datasets => filter(datasets, [selectedDataset, ...(includes || [])]), [selectedDataset, includes])}
             showArrow
           />
         </Form.Item>

@@ -20,6 +20,7 @@ const Add = ({ keywords, datasets, getKeywords, ...func }) => {
   const [form] = useForm()
   const [isEdit, setEdit] = useState(false)
   const [project, getProject] = useFetch('project/getProject', {})
+  const [_, checkDuplication] = useFetch('keyword/checkDuplication')
 
   useEffect(() => {
     setEdit(!!id)
@@ -77,16 +78,15 @@ const Add = ({ keywords, datasets, getKeywords, ...func }) => {
     }
     // create project
     const kws = params.keywords.map(kw => (kw || '').trim()).filter(kw => kw)
-    const { failed } = await func.checkKeywords(kws)
-    const newKws = kws.filter(keyword => !failed.includes(keyword))
+    const { newer } = await checkDuplication(kws)
 
-    if (newKws?.length) {
+    if (newer?.length) {
       // confirm
       confirm({
         title: t('project.add.confirm.title'),
-        content: <ol>{newKws.map(keyword => <li key={keyword}>{keyword}</li>)}</ol>,
+        content: <ol>{newer.map(keyword => <li key={keyword}>{keyword}</li>)}</ol>,
         onOk: () => {
-          addNewKeywords(newKws, send)
+          addNewKeywords(newer, send)
         },
         okText: t('project.add.confirm.ok'),
         cancelText: t('project.add.confirm.cancel'),
@@ -183,7 +183,7 @@ const Add = ({ keywords, datasets, getKeywords, ...func }) => {
                   <DatasetSelect
                     pid={id}
                     mode='multiple'
-                    filters={datasets => datasets.filter(ds => ds.keywordCount > 0 && ds.groupId !== project?.trainSet?.id)}
+                    filters={useCallback(datasets => datasets.filter(ds => ds.keywordCount > 0 && ds.groupId !== project?.trainSet?.id), [project?.trainSet?.id])}
                     allowClear
                   />
                 </Form.Item> : null}

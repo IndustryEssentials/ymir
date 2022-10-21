@@ -24,6 +24,12 @@ export function updateKeywords({ keywords = [], dry_run = false }) {
   })
 }
 
+export function checkDuplication(keywords = []) {
+  return request.post('/keywords/check_duplication', {
+    keywords: keywords.map(keyword => ({ name: keyword })),
+  })
+}
+
 /**
  * update keyword
  * @param {string} name
