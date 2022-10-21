@@ -27,7 +27,7 @@ Hi, welcome to the YMIR model production platform, which promote algorithm techn
 
 # Usage Process
 
-The usage flow of YMIR system is generally divided into two categories, one is the meta-operation of the system, including data management, processing, analysis, labeling, and model training, diagnosis, deployment and other functions, the whole process is visualized and easy to operate. Other one is the iterative process provided by the system, which breaks down the key steps in model training and helps users fill in the data to support them in optimizing the model and obtaining the final training results. To learn more about iteration-related operations, please jump to [[#Model iteration]].
+The usage flow of YMIR system is generally divided into two categories, one is the meta-operation of the system, including data management, processing, analysis, labeling, and model training, diagnosis, deployment and other functions, the whole process is visualized and easy to operate. Other one is the iterative process provided by the system, which breaks down the key steps in model training and helps users fill in the data to support them in optimizing the model and obtaining the final training results. To learn more about iteration-related operations, please jump to [Model iteration](en-us/README.md#model-iteration).
 
 We will talk about each step in detail next, and if you have any other questions, please email us at contact.viesc@gmail.com.
 
@@ -141,7 +141,7 @@ If you have a specified dataset as the training set, you can also access the tra
 
 Step 1 Select a dockerimage
 
-YMIR provides the default dockerimage, which supports yolo v5 training. If you need other images, you can go to [My images] - [Public images] list page by the administrator to pull more images, refer to [[#docker management]] for details.
+YMIR provides the default dockerimage, which supports yolo v5 training. If you need other images, you can go to [My images] - [Public images] list page by the administrator to pull more images, refer to [docker management](en-us/README.md#docker-management) for details.
 
 Step 2 Select training set
 
@@ -219,7 +219,7 @@ MTP: Matched True Positive, i.e., the criterion that matches the prediction resu
 
 ### Model Diagnosis
 
-Find the [Model Diagnosis] module in the left navigation bar of [Project Management] to evaluate the effect of the model online. The specific operations are: ① select the model you want to evaluate, ② select the test set (the selected test set needs to have completed inference on the model, refer to [[#Model Inference]] for the specific steps), ③ adjust the evaluation parameters and click Diagnosis.
+Find the [Model Diagnosis] module in the left navigation bar of [Project Management] to evaluate the effect of the model online. The specific operations are: ① select the model you want to evaluate, ② select the test set (the selected test set needs to have completed inference on the model, refer to [Model Inference](en-us/README.md#model-inference) for the specific steps), ③ adjust the evaluation parameters and click Diagnosis.
 
 - You can switch the metrics to view the model diagnosis results under different parameters. The diagnosis results include mAP, PR curve, precision rate, and recall rate. Examples of the displayed results are as follows.
 
@@ -310,7 +310,7 @@ According to the data to be mined obtained in the previous step, set the amount 
 
 step 3 Data Annotation
 
-The result after mining usually does not have the label of the target category that the user wants to train, which requires manual labeling of the mining result, click the [Data Label] button in the iterative process to enter the labeling page, the data to be labeled is the mining result in the previous step, other operations refer to [[#Data Label]], this step can be skipped.
+The result after mining usually does not have the label of the target category that the user wants to train, which requires manual labeling of the mining result, click the [Data Label] button in the iterative process to enter the labeling page, the data to be labeled is the mining result in the previous step, other operations refer to [Data Label](en-us/README.md#data-label), this step can be skipped.
 
 step 4 Update the training set
 
