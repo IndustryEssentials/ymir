@@ -191,7 +191,7 @@ YMIR平台主要满足用户规模化生产模型的需求，为用户提供良�
 
 2.如需要修改系统默认的配置，推荐安装CMD；
 
-3.如已经部署ymir的已有版本，请参考[升级说明](https://github.com/IndustryEssentials/ymir/blob/dev/ymir/updater/readme.md)。
+3.如已经部署ymir的已有版本，请参考[升级说明](https://github.com/IndustryEssentials/ymir/blob/dev/ymir/updater/readme_zh-CN.md)。
 
 本章节为YMIR-GUI的安装说明，如需使用CMD，请参考[Ymir-CMD line使用指南](#4-进阶版ymir-cmd-line使用指南)。
 
