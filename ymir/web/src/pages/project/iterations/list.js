@@ -102,7 +102,7 @@ function List({ project }) {
   }
 
   function fetchHandle(iterations) {
-    const iters = iterations.reverse().map(iteration => {
+    const iters = iterations.map(iteration => {
       const {
         trainUpdateSet,
         miningSet,
@@ -135,7 +135,7 @@ function List({ project }) {
 
       return current
     }, {})
-    return iters
+    return iters.reverse()
   }
 
   function renderDatasetLabel(dataset) {
