@@ -20,9 +20,11 @@ FIELD_LABEL_TOOL_LS='label_studio'
 FIELD_LABEL_TOOL_LF='label_free'
 ENV_FILE='.env'
 
+FIELD_DEPLOY_MODULE_HOST_PORT='DEPLOY_MODULE_HOST_PORT'
+
 stop() {
 docker-compose -f docker-compose.yml -f docker-compose.dev.yml -f docker-compose.label_studio.yml \
--f docker-compose.labelfree.yml down
+-f docker-compose.labelfree.yml -f docker-compose.modeldeploy.yml down
 }
 
 pre_start() {
@@ -124,11 +126,28 @@ else
 fi
 }
 
+start_deploy_module() {
+    if cat ${ENV_FILE} | grep -oE "^${FIELD_DEPLOY_MODULE_HOST_PORT}=$"; then
+        echo "DEPLOY_MODULE_HOST_PORT not set, skip deploy module startup"
+        return
+    fi
+
+    if ! cat ${ENV_FILE} | grep -oE "^${FIELD_DEPLOY_MODULE_HOST_PORT}=[0-9]{1,5}$"; then
+        echo "DEPLOY_MODULE_HOST_PORT is invalid"
+        exit
+    fi
+
+    echo "deploy module, starting..."
+    docker-compose -f docker-compose.modeldeploy.yml up -d
+}
+
 start() {
 check_permission
 pre_start
 
 start_label_tool
+
+start_deploy_module
 
 if [[ $1 == 'dev' ]]; then
     printf '\nin dev mode, building images.\n'
