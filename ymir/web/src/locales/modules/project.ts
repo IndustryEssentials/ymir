@@ -69,7 +69,7 @@ const project = {
   'project.iteration.stage.label': { en: 'Label', cn: '数据标注', },
   'project.iteration.stage.merge': { en: 'Merge', cn: '更新训练集', },
   'project.iteration.stage.training': { en: 'Training', cn: '模型训练', },
-  'project.iteration.stage.next': { en: 'Next Iteration', cn: '开启下一轮迭代', },
+  'project.iteration.stage.next': { en: 'Next Iteration', cn: '下一轮迭代', },
   'project.iteration.stage.datasets.react': { en: 'Re-process', cn: '重新设置数据', },
   'project.iteration.stage.model.react': { en: 'Re-process', cn: '重新选择模型', },
   'project.iteration.stage.ready.react': { en: 'Re-process', cn: '重新处理', },
