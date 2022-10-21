@@ -183,7 +183,7 @@ const Add = ({ keywords, datasets, getKeywords, ...func }) => {
                   <DatasetSelect
                     pid={id}
                     mode='multiple'
-                    filters={datasets => datasets.filter(ds => ds.keywordCount > 0 && ds.groupId !== project?.trainSet?.id)}
+                    filters={useCallback(datasets => datasets.filter(ds => ds.keywordCount > 0 && ds.groupId !== project?.trainSet?.id), [project?.trainSet?.id])}
                     allowClear
                   />
                 </Form.Item> : null}

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react"
+import React, { useCallback, useEffect, useState } from "react"
 import { connect } from "dva"
 import { Select, Radio, Button, Form, Space, InputNumber, Tag, Tooltip } from "antd"
 import { formLayout } from "@/config/antd"
@@ -221,15 +221,15 @@ function Train({ query = {}, hidden, ok = () => { }, bottom, allDatasets, datase
 
   const matchKeywords = dataset => dataset.keywords.some(kw => selectedKeywords.includes(kw))
   const notTestingSet = id => !testingSetIds.includes(id)
-  const trainsetFilters = datasets => datasets.filter(ds => {
+  const trainsetFilters = useCallback(datasets => datasets.filter(ds => {
     const notTestSet = ds.id !== testSet
     return notTestSet && notTestingSet(ds.id)
-  })
+  }), [testSet])
 
-  const validationSetFilters = datasets => datasets.filter(ds => {
+  const validationSetFilters = useCallback(datasets => datasets.filter(ds => {
     const notTrainSet = ds.id !== trainSet
     return matchKeywords(ds) && notTrainSet && notTestingSet(ds.id)
-  })
+  }), [trainSet])
 
   const getCheckedValue = (list) => list.find((item) => item.checked)["value"]
   const initialValues = {

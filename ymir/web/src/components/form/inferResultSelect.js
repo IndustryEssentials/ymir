@@ -162,6 +162,7 @@ const InferResultSelect = ({ pid, form, value, onChange = () => { } }) => {
   }
 
   const filterDatasets = useCallback((all) => {
+    console.log('all:', all, datasets)
     return all.filter(({ id }) => datasets.includes(id))
   }, [datasets])
 

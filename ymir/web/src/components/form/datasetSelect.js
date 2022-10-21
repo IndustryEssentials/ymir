@@ -67,7 +67,7 @@ const DatasetSelect = ({
       }
     })
     setOptions(opts)
-  }, [datasets])
+  }, [filters, datasets])
 
   async function fetchDatasets() {
     await getDatasets({ pid, force: true })
