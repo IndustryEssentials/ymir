@@ -14,6 +14,7 @@ import Detail from "@/components/dataset/detail"
 import TaskProgress from "@/components/task/progress"
 import Error from "@/components/task/error"
 import Hide from "@/components/common/hide"
+import useCardTitle from '@/hooks/useCardTitle'
 
 import s from "./detail.less"
 import useRerunAction from "../../hooks/useRerunAction"
@@ -28,6 +29,7 @@ function DatasetDetail() {
   const hideRef = useRef(null)
   const restoreAction = useRestore(pid)
   const generateRerunBtn = useRerunAction('btn')
+  const cardTitle = useCardTitle('dataset.detail.title')
 
   useEffect(() => {
     fetchDataset(true)
@@ -67,7 +69,7 @@ function DatasetDetail() {
     <div>
       <Breadcrumbs />
       <Card
-        title={t("dataset.detail.title")}
+        title={cardTitle}
       >
         <div className={s.content}>
           <Detail dataset={dataset} />

@@ -108,7 +108,7 @@ function Mining({ query = {}, hidden, ok = () => { }, datasetCache, bottom, ...f
     const configObj = configs.find(conf => conf.type === TYPES.MINING) || {}
     const hasInference = configs.some(conf => conf.type === TYPES.INFERENCE)
     setImageHasInference(hasInference)
-    !hasInference && form.setFieldsValue({ inference: false })
+    form.setFieldsValue({ inference: hasInference })
     if (!HIDDENMODULES.LIVECODE) {
       setLiveCode(image.liveCode || false)
     }

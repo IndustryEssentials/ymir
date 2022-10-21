@@ -69,7 +69,7 @@ const project = {
   'project.iteration.stage.label': { en: 'Label', cn: '数据标注', },
   'project.iteration.stage.merge': { en: 'Merge', cn: '更新训练集', },
   'project.iteration.stage.training': { en: 'Training', cn: '模型训练', },
-  'project.iteration.stage.next': { en: 'Next Iteration', cn: '开启下一轮迭代', },
+  'project.iteration.stage.next': { en: 'Next Iteration', cn: '下一轮迭代', },
   'project.iteration.stage.datasets.react': { en: 'Re-process', cn: '重新设置数据', },
   'project.iteration.stage.model.react': { en: 'Re-process', cn: '重新选择模型', },
   'project.iteration.stage.ready.react': { en: 'Re-process', cn: '重新处理', },
@@ -169,6 +169,8 @@ const project = {
   "project.iteration.detail.settings.title": { en: "Iteration Settings", cn: "迭代设置", },
   "project.iteration.detail.intermediations.title": { en: "Intermediation", cn: "中间数据", },
   "project.iteration.detail.models.title": { en: "Models", cn: "结果模型", },
+  "iteration.fold": { en: "Fold", cn: "收起操作项", },
+  "iteration.unfold": { en: "Unfold", cn: "展开操作项", },
 }
 
 export default project

@@ -22,6 +22,7 @@ export default {
     iteration: {},
     currentStageResult: {},
     prepareStagesResult: {},
+    actionPanelExpand: true,
   },
   effects: {
     *getIterations({ payload }, { call, put }) {
@@ -219,6 +220,12 @@ export default {
         payload: updateItertion,
       })
     },
+    *toggleActionPanel({ payload }, { call, put, select }) {
+      yield put.resolve({
+        type: 'UPDATE_ACTIONPANELEXPAND',
+        payload,
+      })
+    },
   },
   reducers: {
     UPDATE_ITERATIONS(state, { payload }) {
@@ -257,5 +264,11 @@ export default {
         },
       }
     },
+    UPDATE_ACTIONPANELEXPAND(state, { payload }) {
+      return {
+        ...state,
+        actionPanelExpand: payload,
+      }
+    }
   },
 }
