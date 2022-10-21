@@ -82,6 +82,7 @@ Docker
 - 支持 [ymir镜像测试工具库](https://github.com/modelai/ymir-executor-verifier)
 - 支持 [demo 示例镜像制作文档](https://github.com/modelai/ymir-executor-fork/tree/ymir-dev/det-demo-tmi)
 - 支持 [ymir镜像开发扩展库](https://github.com/modelai/ymir-executor-sdk)
+
 查看更多内容 [ymir-executor-fork](https://github.com/modelai/ymir-executor-fork) 
 
 在公共镜像内
@@ -89,7 +90,8 @@ Docker
 - 更新mmdetection训练镜像：youdaoyzbx/ymir-executor:ymir1.3.0-mmdet-cu111-tmi
 - 更新支持rv1126芯片部署的yolov5训练镜像：youdaoyzbx/ymir-executor:ymir1.3.0-yolov5-cu111-modelstore
 - 更新支持yolov5-v6.2的训练镜像：youdaoyzbx/ymir-executor:ymir1.3.0-yolov5-v6.2-cu111-tmi
-更多代码更新 [ymir-dev](https://github.com/modelai/ymir-executor-fork/tree/ymir-dev)
+
+更多代码更新请查看 [ymir-dev](https://github.com/modelai/ymir-executor-fork/tree/ymir-dev)
 
 ## 简介
 
@@ -114,15 +116,10 @@ Docker
     - [方式一：通过pip安装](#%E6%96%B9%E5%BC%8F%E4%B8%80%E9%80%9A%E8%BF%87pip%E5%AE%89%E8%A3%85)
     - [方式二：通过源码安装](#%E6%96%B9%E5%BC%8F%E4%BA%8C%E9%80%9A%E8%BF%87%E6%BA%90%E7%A0%81%E5%AE%89%E8%A3%85)
   - [4.2 典型模型生产流程](#42-%E5%85%B8%E5%9E%8B%E6%A8%A1%E5%9E%8B%E7%94%9F%E4%BA%A7%E6%B5%81%E7%A8%8B)
-  - [4.3. 命令参数手册](#43-%E5%91%BD%E4%BB%A4%E5%8F%82%E6%95%B0%E6%89%8B%E5%86%8C)
 - [5.  获取代码](#5--%E8%8E%B7%E5%8F%96%E4%BB%A3%E7%A0%81)
-  - [5.1  YMIR repos](#51--ymir-repos)
-  - [5.2  代码贡献](#52--%E4%BB%A3%E7%A0%81%E8%B4%A1%E7%8C%AE)
-  - [5.3  关于训练，推理与挖掘镜像](#53-%E5%85%B3%E4%BA%8E%E8%AE%AD%E7%BB%83%E6%8E%A8%E7%90%86%E4%B8%8E%E6%8C%96%E6%8E%98%E9%95%9C%E5%83%8F)
+  - [5.1 代码贡献](#51--%E4%BB%A3%E7%A0%81%E8%B4%A1%E7%8C%AE)
+  - [5.2 关于训练，推理与挖掘镜像](#52-%E5%85%B3%E4%BA%8E%E8%AE%AD%E7%BB%83%E6%8E%A8%E7%90%86%E4%B8%8E%E6%8C%96%E6%8E%98%E9%95%9C%E5%83%8F)
 - [6. 设计理念](#6-设计理念)
-  - [6.1.	Life of a dataset](#61-life-of-a-dataset)
-    - [6.1.1 数据集介绍](#611-数据集介绍)
-    - [6.1.2 分支与数据集的管理](#612-分支与数据集的管理)
 - [7.MISC](#7misc)
   - [7.1 常见问题](#71-%E5%B8%B8%E8%A7%81%E9%97%AE%E9%A2%98)
 
@@ -373,61 +370,10 @@ $ mir --version
 
 上图所示的是模型训练的一个典型流程：用户准备好外部数据，导入本系统，对数据进行适当筛选，开始训练得到一个（可能是粗精度的）模型，并依据这个模型，在一个待挖掘数据集中挑选适合进一步训练的图片，将这些图片进行标注，标注完成的结果与原训练集合并，用合并以后的结果再次执行训练过程，得到效果更好的模型。
 在这一节里，我们需要使用命令行实现上图所示的流程，其他流程也可以类似实现。具体操作请查看[命令行使用说明](https://github.com/IndustryEssentials/ymir/wiki/%E5%91%BD%E4%BB%A4%E8%A1%8C%E4%BD%BF%E7%94%A8%E8%AF%B4%E6%98%8E)。
-  
- ## 4.3. 命令参数手册
-
-Ymir-command-api.211028
-
-**通用参数格式与定义**
-
-| 参数名         | 变量名      | 类型与格式       | 定义                                                       |
-|----------------|----------|-------------|----------------------------------------------------------|
-| --root / -r | mir_root | str         | 需要初始化的路径，如果没有指定，则为当前路径                                   |
-| --dst-rev   | dst_rev  | str         | 1. 目标rev，仅限单个                                            |
-|             |          | rev@tid     | 2. 所有修改将保存在此rev的tid上                                     |
-|             |          |             | 3. 如果是一个新的rev则先checkout到第一个src-revs再创建                   |
-|             |          |             | 4. tid必须，rev必须                                           |
-| --src-revs  | src_revs | str         | 1. 数据来源rev，多个用分号隔开（仅merge支持，其他cmd仅支持单个）                  |
-|             |          | typ:rev@bid | 2. typ可选，只在merge有效果，支持前置用途标识符（tr/va/te），为空，则表示使用原rev中的设置 |
-|             |          |             | 3. bid可选，若为空则读head task id                               |
-|             |          |             | 4. rev不能为空                                               |
-|             |          |             | 注意：当出现多个revs，例如a1@b1;a2@b2，需要用引号将其括起来，因为分号是Linux命令分隔符。   |
-
-**mir init**
-
-| DESCRIPTION                                             |          |           |
-| ------------------------------------------------------- | -------- | --------- |
-| mir init [--root <mir_root>]                            |          |           |
-| 将当前路径，或者-root指定的路径初始化为一个mir root。   |          |           |
-| ARGS（ARGS名称、run_with_args中的参数名称、类型、说明） |          |           |
-| --root / -r                                             | mir_root | str，可选 |
-| RETURNS                                                 |          |           |
-| 正常初始化：返回0                                       |          |           |
-| 异常：其他error code                                    |          |           |
-
-**mir branch**
-
-| DESCRIPTION                    |          |           |
-| ------------------------------ | -------- | --------- |
-| mir branch [--root <mir_root>] |          |           |
-| 列出当前本地或远程的所有分支   |          |           |
-| ARGS                           |          |           |
-| --root / -r                    | mir_root | str，可选 |
-| RETURNS                        |          |           |
 
 # 5.  获取代码
 
-## 5.1  YMIR repos
-
-YMIR项目由三部分组成:
-
-1. 后端 [https://github.com/IndustryEssentials/ymir-backend](https://github.com/IndustryEssentials/ymir/tree/master/ymir/backend)，负责任务分发与管理
-
-2. 前端 [https://github.com/IndustryEssentials/ymir-web](https://github.com/IndustryEssentials/ymir/tree/master/ymir/web)，交互界面
-
-3. 命令行 [https://github.com/IndustryEssentials/ymir-cmd](https://github.com/IndustryEssentials/ymir/tree/master/ymir/command)，CLI界面，管理底层标注与图像数据
-  
-## 5.2  代码贡献
+## 5.1  代码贡献
 
 YMIR repo中的任何代码都应遵循编码标准，并将在CI测试中进行检查。
 
@@ -439,78 +385,14 @@ YMIR repo中的任何代码都应遵循编码标准，并将在CI测试中进行
 
 也可以查看 [MSFT编码风格](https://github.com/Microsoft/Recommenders/wiki/Coding-Guidelines) 来获取更多的建议。
 
-## 5.3 关于训练，推理与挖掘镜像
+## 5.2 关于训练，推理与挖掘镜像
 
 [查看这篇文档](docs/ymir-cmd-container.md)获取更多细节。
 
 # 6. 设计理念
-
-## 6.1. Life of a dataset
-
-### 6.1.1 数据集介绍
-
-数据集由Metadata（元数据）与媒体文件组成，元数据具有下述特征:
-
-*  它拥有唯一ID，系统有一个初始的默认Metadata状态，为空；
-*  它拥有一个资源列表，列表中每个元素都指向一个实际的资源，Metadata不实际保存资源，只维护此资源列表；
-*  它拥有若干keywords，用户可以通过这些keywords搜索到某个特定的Metadata状态；
-*  用户可以为某个metadata新开分支，并在新开的分支上进行操作，在新分支上的操作不影响原metadata的状态，且原metadata仍可以被用户追溯，这些操作包括但不限于：
-
-    (1)添加资源
-    (2)添加或修改标注
-    (3)添加或修改关键词
-    (4)过滤资源
-    (5)合并两个不同的metadatas
-
-*  用户可以在不同metadata之间自由跳转；
-*  用户可以查询metadata的历史；
-*  用户可以将metadata打上自己的tag，便于通过tag精确查找；
-*  用户也可以向metadata添加keywords，便于keywords模糊搜索；
-*  用户可以通过某种方式读取一个metadata中所包含的资源，并将这些资源用于浏览、训练等。
-
-从以上描述可以看出，对于metadata的管理，类似于VCS（版本管理系统），用户可以有下面几种完全不同的使用方式与场景：
-
-**场景一**: 直接从最开始的metadata，进行筛选过程，选出并使用符合要求的数据，如下图所示：
-
-![场景一](https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/%E5%9C%BA%E6%99%AF%E4%B8%80.jpeg)
-
-每当用户需要开始一项新任务时：
-* 用户从当前的主分支内签出一个新的feature分支，得到处于feature#1状态的metadata；
-* 用户在此新分支的metadata上进行数据筛选和其他任务，得到处于feature#2状态的metadata；
-* 当确认这个metadata适合自己的训练任务，则可以使用这个数据开始训练；
-* 此时，其他用户对master分支的metadata进行更改，也不会影响到用户正在使用的训练数据。
-
-**场景二**：通过tag或keywords搜索到某个metadata，并开始筛选过程，直到得出符合要求的数据，然后使用该数据，如下图所示：
-
-![场景二](https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/%E5%9C%BA%E6%99%AF%E4%BA%8C.jpeg)
-
-此时，每当用户需要开展一项新任务时：
-* 通过keywords和tag等方式，搜索到一个基本符合自己要求的metadata
-* 在此基础上，签出一个新分支
-* 在新分支上继续进行数据筛选或清洗，得到真正符合要求的数据
-* 利用此数据进行训练
-
-**场景三**：增量合并。假设用户已经使用某个metadata完成了模型的训练任务，此时资源库与主分支的metadata有更新，用户希望将这一部分更新合并到当前使用的metadata中：
-
-![场景三](https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/%E5%9C%BA%E6%99%AF%E4%B8%89.jpeg)
-
-假设用户现在在feature#2，用户需要进行如下操作：
-* 切回主分支master
-* 对master#2 - master#1这个增量部分，重复之前做过的任务，得到feature#2+
-* 切回feature#2，合并feature#2+，得到feature#3
-
-### 6.1.2 分支与数据集的管理
-
-本节的论述基于以下假设：
-* 用户数据以数据集为单位分批导入
-* 每个数据集是一个独立分支；
-* 对每个数据集的更改及维护都在本分支上进行；
-* master分支始终为空。
-这种管理方式如下图所示：
-
-![分支及数据集管理](https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/%E5%88%86%E6%94%AF%E5%8F%8A%E6%95%B0%E6%8D%AE%E9%9B%86%E7%AE%A1%E7%90%86.jpeg)
-
-我们使用Git中代码版本控制的概念来管理我们的数据和模型。我们使用分支的概念创建新项目，以便同一组映像上的不同任务可以并行运行。数据集的增加、检索、更新和删除以及基本操作都创建提交到分支。从逻辑上讲，每次提交都存储数据集或新模型的更新版本，以及导致此更改的操作的元数据。最后，只有数据更改被合并到主分支，这在概念上，聚合了该平台上许多项目注释的所有数据。
+  
+我们使用Git中代码版本控制的概念来管理我们的数据和模型。我们使用分支的概念创建新项目，以便同一组映像上的不同任务可以并行运行。数据集的增加、检索、更新和删除以及基本操作都创建提交到分支。从逻辑上讲，每次提交都存储数据集或新模型的更新版本，以及导致此更改的操作的元数据。最后，只有数据更改被合并到主分支，这在概念上，聚合了该平台上许多项目注释的所有数据。具体设计理念请查看
+[Life of a dataset](https://github.com/IndustryEssentials/ymir/wiki/%E6%95%B0%E6%8D%AE%E9%9B%86%E6%B5%81%E8%BD%AC%E8%BF%87%E7%A8%8B)。
 
 # 7.MISC
 
