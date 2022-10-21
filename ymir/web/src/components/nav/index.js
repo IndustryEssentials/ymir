@@ -32,14 +32,14 @@ const menus = () => [
     icon: <FlagIcon className={styles.navIcon} />,
   },
   {
-    label: 'common.top.menu.image',
-    key: "/home/image",
-    icon: <EqualizerIcon className={styles.navIcon} />,
-  },
-  {
     label: 'algo.label',
     key: "/home/algo",
     icon: <StoreIcon className={styles.navIcon} />,
+  },
+  {
+    label: 'common.top.menu.image',
+    key: "/home/image",
+    icon: <EqualizerIcon className={styles.navIcon} />,
   },
   {
     label: 'common.top.menu.permission',
