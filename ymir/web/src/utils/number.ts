@@ -6,7 +6,7 @@ export function humanize(num: number | string) {
   if (isNaN(Number(num))) {
     return num
   }
-  const units = ['', 'K', 'M', 'B']
+  const units = ['', 'k', 'm', 'b']
   num = typeof num == 'string' ? parseFloat(num) : num
   num = num.toLocaleString()
   const ell = num.match(/,/ig)
@@ -28,7 +28,11 @@ export function randomNumber(count = 6) {
  * @returns 
  */
 export function randomBetween(n: number, m: number, exclude: number): number {
-  const result = Math.min(m, n) + Math.floor(Math.random() * Math.abs(m - n))
+  const gap = Math.abs(m - n)
+  if (!gap) {
+    return gap
+  }
+  const result = Math.min(m, n) + Math.floor(Math.random() * gap)
 
   if (result === exclude) {
     return randomBetween(n, m, exclude)

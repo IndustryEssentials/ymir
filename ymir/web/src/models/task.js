@@ -4,13 +4,15 @@ import {
   deleteTask,
   updateTask,
   stopTask,
-  createFusionTask,
-  createMiningTask,
-  createTrainTask,
-  createLabelTask,
-  createInferenceTask,
+  fusion,
+  merge,
+  filter,
+  mine,
+  train,
+  label,
+  infer,
 } from "@/services/task"
-import { isFinalState } from '@/constants/task'
+import { TASKTYPES, TASKSTATES, isFinalState } from '@/constants/task'
 
 const initQuery = {
   name: '',
@@ -42,6 +44,13 @@ export default {
         return result
       }
     },
+    *queryInferTasks({ payload }, { call, put }) {
+      const params = { ...payload, type: TASKTYPES.INFERENCE, state: TASKSTATES.FINISH, limit: 1000 }
+      const result = yield put.resolve({ type: 'getTasks', payload: params })
+      if (result) {
+        return result.items
+      }
+    },
     *getTask({ payload }, { call, put }) {
       let { code, result } = yield call(getTask, payload)
       if (code === 0) {
@@ -57,7 +66,7 @@ export default {
           ...excludeSets,
         ]
         if (ids.length) {
-          const datasets = yield put.resolve({ type: 'dataset/batchDatasets', payload: ids })
+          const datasets = yield put.resolve({ type: 'dataset/batchDatasets', payload: { pid: result?.project_id, ids } })
           const findDs = (dss) => dss.map(sid => datasets.find(ds => ds.id === sid))
           if (datasets && datasets.length) {
             result['filterSets'] = findDs(filterSets)
@@ -107,63 +116,77 @@ export default {
         return result
       }
     },
-    *createFusionTask({ payload }, { call, put }) {
-      let { code, result } = yield call(createFusionTask, payload)
+    *fusion({ payload }, { call, put }) {
+      let { code, result } = yield call(fusion, payload)
       if (code === 0) {
         yield put.resolve({
-          type: 'dataset/clearCache'
-        })
-        yield put.resolve({
-          type: 'project/clearCache'
+          type: 'dataset/update',
+          payload: result,
         })
         return result
       }
     },
-    *createTrainTask({ payload }, { call, put }) {
-      let { code, result } = yield call(createTrainTask, payload)
+    *merge({ payload }, { call, put }) {
+      let { code, result } = yield call(merge, payload)
       if (code === 0) {
         yield put.resolve({
-          type: 'model/clearCache'
-        })
-        yield put.resolve({
-          type: 'project/clearCache'
+          type: 'dataset/update',
+          payload: result,
         })
         return result
       }
     },
-    *createMiningTask({ payload }, { call, put }) {
-      let { code, result } = yield call(createMiningTask, payload)
+    *filter({ payload }, { call, put }) {
+      let { code, result } = yield call(filter, payload)
+      if (code === 0) {
+        yield put.resolve({
+          type: 'dataset/update',
+          payload: result,
+        })
+        return result
+      }
+    },
+    *train({ payload }, { call, put }) {
+      let { code, result } = yield call(train, payload)
       if (code === 0) {
         yield put({
-          type: 'dataset/clearCache'
+          type: 'model/getModel',
+          payload: { id: result?.result_model?.id, force: true }
         })
+        return result
+      }
+    },
+    *mine({ payload }, { call, put }) {
+      let { code, result } = yield call(mine, payload)
+      if (code === 0) {
         yield put({
-          type: 'project/clearCache'
+          type: 'dataset/getDataset',
+          payload: { id: result?.result_dataset?.id, force: true }
         })
         return result
       }
     },
-    *createLabelTask({ payload }, { call, put }) {
-      let { code, result } = yield call(createLabelTask, payload)
+    *label({ payload }, { call, put }) {
+      let { code, result } = yield call(label, payload)
       if (code === 0) {
-        yield put.resolve({
-          type: 'dataset/clearCache'
-        })
-        yield put.resolve({
-          type: 'project/clearCache'
+        yield put({
+          type: 'dataset/getDataset',
+          payload: { id: result?.result_dataset?.id, force: true }
         })
         return result
       }
     },
-    *createInferenceTask({ payload }, { call, put }) {
-      let { code, result } = yield call(createInferenceTask, payload)
+    *infer({ payload }, { call, put }) {
+      let { code, result } = yield call(infer, payload)
       if (code === 0) {
-        yield put.resolve({
-          type: 'dataset/clearCache'
-        })
-        yield put.resolve({
-          type: 'project/clearCache'
-        })
+        const ids = result.map(item => item?.result_dataset?.id).filter(i => i)
+        const pid = result[0]?.project_id
+        if (pid && ids?.length) {
+          yield put({
+            type: 'dataset/batchLocalDatasets',
+            payload: { ids, pid }
+          })
+        }
         return result
       }
     },
@@ -186,22 +209,6 @@ export default {
         payload: { items: result, total: tasks.total },
       })
     },
-    *updateTaskState({ payload }, { put, select }) {
-      const task = yield select(state => state.task.task)
-      const updateList = payload || {}
-      const updateItem = updateList[task.hash]
-      if (updateItem) {
-        task.state = updateItem.state
-        task.progress = updateItem.percent * 100
-        if (isFinalState(updateItem.state)) {
-          task.forceUpdate = true
-        }
-      }
-      yield put({
-        type: 'UPDATE_TASK',
-        payload: { ...task },
-      })
-    },
     *updateQuery({ payload = {} }, { put, select }) {
       const query = yield select(({ task }) => task.query)
       yield put({
@@ -213,7 +220,7 @@ export default {
         }
       })
     },
-    *resetQuery({}, { put }) {
+    *resetQuery({ }, { put }) {
       yield put({
         type: 'UPDATE_QUERY',
         payload: initQuery,

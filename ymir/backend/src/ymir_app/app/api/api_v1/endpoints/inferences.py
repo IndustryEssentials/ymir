@@ -11,7 +11,7 @@ from app.api.errors.errors import (
     FailedToCallInference,
     FailedtoDownloadError,
     InvalidInferenceConfig,
-    ModelNotFound,
+    ModelStageNotFound,
 )
 from app.config import settings
 from app.utils.files import FailedToDownload, save_files
@@ -34,10 +34,10 @@ def call_inference(
     """
     Call Inference
     """
-    model = crud.model.get(db, id=inference_in.model_id)
-    if not model:
-        logger.error("Failed to find model id: %s", inference_in.model_id)
-        raise ModelNotFound()
+    model_stage = crud.model_stage.get(db, id=inference_in.model_stage_id)
+    if not model_stage:
+        logger.error("Failed to find model stage id: %s", inference_in.model_stage_id)
+        raise ModelStageNotFound()
 
     docker_image = crud.docker_image.get_inference_docker_image(db, url=inference_in.docker_image)
     if not docker_image:
@@ -53,8 +53,9 @@ def call_inference(
     try:
         resp = controller_client.call_inference(
             current_user.id,
-            model.project_id,
-            model.hash,
+            inference_in.project_id,
+            model_stage.model.hash,  # type: ignore
+            model_stage.name,
             asset_dir,
             docker_image.url,
             json.dumps(inference_in.docker_image_config),
@@ -64,7 +65,7 @@ def call_inference(
         raise FailedToCallInference()
 
     result = {
-        "model_id": inference_in.model_id,
+        "model_stage_id": inference_in.model_stage_id,
         "annotations": extract_inference_annotations(resp, filename_mapping=filename_mapping),
     }
     return {"result": result}
@@ -76,5 +77,5 @@ def extract_inference_annotations(
     for filename, annotations in resp[inference_type]["image_annotations"].items():
         yield {
             "image_url": filename_mapping[filename],
-            "detection": annotations["annotations"],
+            "detection": annotations["boxes"],
         }

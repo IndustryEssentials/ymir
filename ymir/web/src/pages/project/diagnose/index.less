@@ -1,0 +1,73 @@
+.wrapper {
+  height: 100%;
+}
+.container {
+  background: #fff;
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 180px);
+  :global(.ant-card-body) {
+    flex: 1;
+    overflow-y: auto;
+  }
+}
+.formContainer {
+  position: relative;
+}
+.mask {
+  position: absolute;
+  width: calc(100% + 20px);
+  height: calc(100% + 10px);
+  display: flex;
+  align-items: end;
+  justify-content: center;
+  background-color: rgba(0, 0, 0, 0.1);
+  z-index: 5;
+  margin: 0 -10px -10px;
+}
+.trainingMask {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  // background-color: rgba(0, 0, 0, 0.1);
+    background-color: #fff;
+  z-index: 5;
+  .nameList {
+    flex: 1;
+  }
+}
+
+.extra {
+  padding: 2px 8px;
+  font-size: 12px;
+  color:rgba(232, 185, 0, 1);
+  background-color: rgba(250, 211, 55, 0.1);
+}
+:global(body .ant-tooltip-placement-top) {
+  z-index: 1000;
+}
+.filterPanel {
+  padding: 10px 20px;
+  background: rgba(44, 189, 233, 0.1);
+}
+.prRate {
+  width: 200px;
+  &:hover {
+
+    :global(.ant-slider-rail) {
+      background-color: lighten(@primary-color, 10) !important;
+    }
+    :global(.ant-slider-track) {
+        background-color: darken(@primary-color, 5) !important;
+    }
+  }
+  :global(.ant-slider-rail) {
+    background-color: lighten(@primary-color, 30);
+  }
+  :global(.ant-slider-track) {
+    background-color: darken(@primary-color, 10);
+  }
+}

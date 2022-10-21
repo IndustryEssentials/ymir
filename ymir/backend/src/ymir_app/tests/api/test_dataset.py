@@ -30,11 +30,6 @@ def mock_db(mocker):
 
 
 @pytest.fixture(scope="function")
-def mock_graph_db(mocker):
-    return mocker.Mock()
-
-
-@pytest.fixture(scope="function")
 def mock_viz(mocker):
     return mocker.Mock()
 
@@ -64,7 +59,7 @@ class TestBatchGetDatasets:
         r = client.get(
             f"{settings.API_V1_STR}/datasets/batch",
             headers=normal_user_token_headers,
-            params={"ids": "1000,2000,3000"},
+            params={"project_id": 233, "ids": "1000,2000,3000"},
         )
         assert r.status_code == 404
 
@@ -82,7 +77,7 @@ class TestBatchGetDatasets:
         r = client.get(
             f"{settings.API_V1_STR}/datasets/batch",
             headers=normal_user_token_headers,
-            params={"ids": ids},
+            params={"project_id": group.project_id, "ids": ids},
         )
         datasets = r.json()["result"]
         assert len(datasets) == 3
@@ -254,7 +249,7 @@ class TestCreateDataFusion:
             "dataset_group_id": dataset_group_obj.id,
             "main_dataset_id": dataset_obj.id,
             "include_datasets": [],
-            "include_strategy": 1,
+            "strategy": 1,
             "exclude_datasets": [],
             "include_labels": [],
             "exclude_labels": [],

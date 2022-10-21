@@ -8,10 +8,12 @@ from distutils.util import strtobool
 from typing import Any, Dict
 
 import grpc
+from grpc_health.v1 import health
+from grpc_health.v1 import health_pb2_grpc
 from requests.exceptions import ConnectionError, HTTPError, Timeout
-import sentry_sdk
 import yaml
 
+from common_utils.sandbox_util import check_sandbox
 from controller.utils import errors, metrics, utils, invoker_mapping
 from id_definition.error_codes import CTLResponseCode
 from proto import backend_pb2, backend_pb2_grpc
@@ -58,9 +60,9 @@ class MirControllerService(backend_pb2_grpc.mir_controller_serviceServicer):
             logging.exception(f"task {task_id} general error: {e}")
             return utils.make_general_response(CTLResponseCode.INVOKER_UNKNOWN_ERROR, str(e))
 
-        logging.info(f"task {task_id} result: {invoker_result}")
         if isinstance(invoker_result, backend_pb2.GeneralResp):
             return invoker_result
+
         return utils.make_general_response(CTLResponseCode.UNKOWN_RESPONSE_FORMAT,
                                            "unknown result type: {}".format(type(invoker_result)))
 
@@ -85,6 +87,7 @@ def path_constructor(loader: Any, node: Any) -> str:
     env_value = os.environ.get(env_var)
     if not env_value:
         logging.info(f"env empty for key: {env_var}")
+        return ""
     return env_value + value[match.end():]
 
 
@@ -94,18 +97,6 @@ def parse_config_file(config_file: str) -> Any:
 
     with open(config_file) as f:
         return yaml.safe_load(f)
-
-
-def _set_debug_info(debug_mode: bool = False) -> None:
-    if debug_mode:
-        logging.basicConfig(stream=sys.stdout,
-                            format='%(levelname)-8s: [%(asctime)s] %(filename)s:%(lineno)s:%(funcName)s(): %(message)s',
-                            datefmt='%Y%m%d-%H:%M:%S',
-                            level=logging.DEBUG)
-        logging.debug("in debug mode")
-    else:
-        logging.basicConfig(stream=sys.stdout, format='%(message)s', level=logging.INFO)
-    sentry_sdk.init(os.environ.get("CONTROLLER_SENTRY_DSN", None))
 
 
 def _init_metrics(metrics_config: Dict) -> None:
@@ -122,12 +113,18 @@ def _init_metrics(metrics_config: Dict) -> None:
 
 
 def main(main_args: Any) -> int:
-    _set_debug_info(main_args.debug)
+    for handler in logging.root.handlers[:]:
+        logging.root.removeHandler(handler)
+    logging.basicConfig(stream=sys.stdout,
+                        format='%(levelname)-4s: [%(asctime)s] %(filename)s:%(lineno)-03s:\t%(message)s',
+                        datefmt='%Y%m%d-%H:%M:%S',
+                        level=logging.INFO)
 
     server_config = parse_config_file(main_args.config_file)
     sandbox_root = server_config['SANDBOX']['sandboxroot']
     os.makedirs(sandbox_root, exist_ok=True)
 
+    check_sandbox(sandbox_root)
     _init_metrics(server_config['METRICS'])
 
     # start grpc server
@@ -135,6 +132,9 @@ def main(main_args: Any) -> int:
     mc_service_impl = MirControllerService(sandbox_root=sandbox_root, assets_config=server_config['ASSETS'])
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
     backend_pb2_grpc.add_mir_controller_serviceServicer_to_server(mc_service_impl, server)
+
+    health_pb2_grpc.add_HealthServicer_to_server(health.HealthServicer(), server)
+
     server.add_insecure_port("[::]:{}".format(port))
     server.start()
 

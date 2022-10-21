@@ -41,6 +41,7 @@ export function delProject(id) {
  *   {number}  [target_map]
  *   {number}  [target_dataset]
  *   {array<string>}  keywords
+ *   {boolean} enableIteration
  * }
  * @returns
  */
@@ -48,12 +49,16 @@ export function createProject({
   name,
   description,
   keywords,
+  strategy = 1,
+  enableIteration,
 }) {
   return request.post("/projects/", {
     name,
     description,
     training_type: 1,
     training_keywords: keywords,
+    mining_strategy: strategy,
+    enable_iteration: enableIteration
   })
 }
 
@@ -77,7 +82,9 @@ export function addExampleProject() {
  * {number} trainSetVersion
  * {number} miningSet
  * {number} testSet
- * {number} model
+ * {number} [modelStage]
+ * {boolean} enableIteration
+ * {array<number>} [testingSets]
  * }
  * @returns 
  */
@@ -87,11 +94,15 @@ export function updateProject(id, {
   strategy,
   chunkSize,
   description,
+  candidateTrainSet,
   trainSetVersion,
   miningSet,
   testSet,
-  model,
+  modelStage = [],
+  enableIteration,
+  testingSets,
 }) {
+  const [model, stage] = modelStage
   return request({
     method: "patch",
     url: `/projects/${id}`,
@@ -101,10 +112,14 @@ export function updateProject(id, {
       mining_strategy: strategy,
       chunk_size: chunkSize,
       mining_dataset_id: miningSet,
-      testing_dataset_id: testSet,
+      validation_dataset_id: testSet,
       description,
       initial_model_id: model,
+      initial_model_stage_id: stage,
       initial_training_dataset_id: trainSetVersion,
+      candidate_training_dataset_id: candidateTrainSet,
+      enable_iteration: enableIteration,
+      testing_dataset_ids: testingSets ? testingSets?.toString() : undefined,
     },
   })
 }

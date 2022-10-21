@@ -144,11 +144,40 @@ export function updateModel(id, name) {
 
 /**
  * model verification
- * @param {number} model_id model id
- * @param {array} image_urls image urls
+ * @param {number} projectId project id
+ * @param {array<model, stage>} modelStage model stage
+ * @param {array} urls image urls
  * @param {number} image docker image url
+ * @param {object<key: value>} config docker image configure
  * @returns 
  */
-export function verify(model_id, image_urls, image, config) {
-  return request.post(`/inferences/`, { model_id, image_urls, docker_image: image, docker_image_config: config })
+export function verify({ projectId, modelStage, urls, image, config }) {
+  const [model, stage] = modelStage
+  return request.post(`/inferences/`, {
+    project_id: projectId,
+    model_id: model,
+    model_stage_id: stage,
+    image_urls: urls,
+    docker_image: image,
+    docker_image_config: config
+  })
+}
+
+export function setRecommendStage(model, stage) {
+  return request({
+    method: 'PATCH',
+    url: `/models/${model}`,
+    data: {
+      stage_id: stage,
+    }
+  })
+}
+
+/**
+ * batch fetch model stages
+ * @param {array} ids 
+ * @returns 
+ */
+export function batchModelStages(ids) {
+  return request.get('model_stages/batch', { params: { ids: ids.toString() } })
 }

@@ -3,7 +3,7 @@ import { formLayout, tailLayout, layout420 } from "../antd"
 describe("config: antd", () => {
   it("formLayout", () => {
     expect(formLayout.labelCol.span).toBe(6)
-    expect(formLayout.wrapperCol.span).toBe(16)
+    expect(formLayout.wrapperCol.span).toBe(12)
   })
   it("tailLayout", () => {
     expect(tailLayout.wrapperCol.offset).toBe(6)

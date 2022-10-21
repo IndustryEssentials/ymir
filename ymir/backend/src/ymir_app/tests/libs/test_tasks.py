@@ -19,7 +19,7 @@ class TestNormalizeParameters:
         params = {
             "keywords": "cat,dog,boy".split(","),
             "dataset_id": 1,
-            "model_id": 233,
+            "model_stage_id": 233,
             "name": random_lower_string(5),
             "else": None,
         }
@@ -55,21 +55,7 @@ class TestNormalizeParameters:
         assert res["class_ids"] == [0, 1, 2]
         assert "dataset_hash" in res
         assert "model_hash" in res
-
-
-class TestWriteClickhouseMetrics:
-    def test_write_clickhouse_metrics(self, mocker: Any) -> None:
-        ch = mocker.Mock()
-        mocker.patch.object(m, "YmirClickHouse", return_value=ch)
-        task_info = mocker.Mock(type=TaskType.training.value)
-        dataset_id = randint(100, 200)
-        dataset_group_id = randint(1000, 2000)
-        model_id = randint(10000, 20000)
-        keywords = [random_lower_string() for _ in range(3)]
-
-        m.write_clickhouse_metrics(task_info, dataset_group_id, dataset_id, model_id, keywords)
-        ch.save_task_parameter.assert_called()
-        ch.save_dataset_keyword.assert_called()
+        assert "model_stage_name" in res
 
 
 class TestCreateSingleTask:
@@ -77,7 +63,6 @@ class TestCreateSingleTask:
         mocker.patch.object(m, "normalize_parameters")
         ctrl = mocker.Mock()
         mocker.patch.object(m, "ControllerClient", return_value=ctrl)
-        mocker.patch.object(m, "YmirClickHouse")
         user_id = randint(100, 200)
         project_id = randint(1000, 2000)
         user_labels = mocker.Mock()
@@ -102,21 +87,21 @@ class TestTaskResult:
 
         ctrl = mocker.Mock()
         mocker.patch.object(m, "ControllerClient", return_value=ctrl)
-        viz = mocker.Mock()
+        viz = mocker.MagicMock()
         mocker.patch.object(m, "VizClient", return_value=viz)
 
         tr = m.TaskResult(db, task_in_db)
         ctrl.get_labels_of_user.assert_not_called()
-        viz.get_model.assert_not_called()
-        viz.get_dataset.assert_not_called()
+        viz.get_model_info.assert_not_called()
+        viz.get_dataset_info.assert_not_called()
 
         tr.user_labels
         ctrl.get_labels_of_user.assert_called()
 
-        tr.model_info
-        viz.get_model.assert_called()
-        tr.dataset_info
-        viz.get_dataset.assert_called()
+        tr.model_info()
+        viz.get_model_info.assert_called()
+        tr.dataset_info()
+        viz.get_dataset_info.assert_called()
 
     def test_get_dest_group_info_is_dataset(self, db: Session, mocker: Any) -> None:
         user_id = randint(100, 200)
@@ -159,8 +144,8 @@ class TestTaskResult:
 class TestShouldRetry:
     @pytest.mark.asyncio()
     async def test_should_retry(self, mocker: Any) -> None:
-        resp = mocker.Mock(ok=False)
+        resp = mocker.AsyncMock(ok=False)
         assert await m.should_retry(resp)
 
-        resp = mocker.Mock(ok=True)
+        resp = mocker.AsyncMock(ok=True)
         assert not await m.should_retry(resp)

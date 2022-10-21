@@ -96,9 +96,13 @@ app/start.py 展示了一个简单的镜像执行部分，此文档也将基于�
 
 3. 模型的保存
 
-  * 在 `EnvConfig.output.models_dir` 中提供了模型的保存目录，用户可以使用 pytorch, mxnet, darknet 等训练框架自带的保存方法将模型保存在此目录下
+  * 模型按当前正在进行的 stage name，分目录保存
 
-  * 之后，可以使用 `result_writer.write_training_result()` 方法保存训练结果的摘要，这些内容包括：不带目录的模型名称，mAP，每个类别的 APs
+  * 在 `EnvConfig.output.models_dir` 中提供了模型的保存目录，用户可以使用 pytorch, mxnet, darknet 等训练框架自带的保存方法将模型保存在此目录下的以当前 stage_name 命名的子目录中
+
+    * 例如，如果需要保存 stage_name 为 'epoch-5000' 的模型，则需要把这些模型文件保存到 `os.path.join(env.get_current_env().output.model_dir, 'epoch-5000')` 目录下
+
+  * 之后，可以使用 `result_writer.write_model_stage()` 方法保存训练结果的摘要，这些内容包括：不带目录的模型名称列表，mAP，每个类别的 APs
 
 4. 进度的记录：使用 `monitor.write_monitor_logger(percent)` 方法记录任务当前的进度，实际使用时，可以每隔若干轮迭代，根据当前迭代次数和总迭代次数来估算当前进度（一个 0 到 1 之间的数），调用此方法记录
 

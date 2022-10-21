@@ -1,6 +1,7 @@
 from typing import Any, List
 
 from proto import backend_pb2
+from mir.protos import mir_command_pb2 as mir_cmd_pb
 
 
 def make_cmd_request(user_id: str = None,
@@ -18,6 +19,7 @@ def make_cmd_request(user_id: str = None,
                      asset_dir: str = None,
                      model_config: str = None,
                      model_hash: str = None,
+                     model_stage: str = None,
                      force: bool = None,
                      commit_message: str = None,
                      executant_name: str = None,
@@ -28,7 +30,7 @@ def make_cmd_request(user_id: str = None,
                      sampling_count: int = None,
                      sampling_rate: float = None,
                      task_parameters: str = None,
-                     evaluate_config: backend_pb2.EvaluateConfig = None) -> backend_pb2.GeneralReq:
+                     evaluate_config: mir_cmd_pb.EvaluateConfig = None) -> backend_pb2.GeneralReq:
     request = backend_pb2.GeneralReq()
     if user_id is not None:
         request.user_id = user_id
@@ -64,6 +66,8 @@ def make_cmd_request(user_id: str = None,
         request.model_config = model_config
     if model_hash is not None:
         request.model_hash = model_hash
+    if model_stage is not None:
+        request.model_stage = model_stage
     if req_create_task is not None:
         request.req_create_task.CopyFrom(req_create_task)
     if executant_name is not None:
@@ -107,12 +111,13 @@ def make_invoker_cmd_call(invoker: Any,
                           async_mode: bool = False,
                           merge_strategy: int = None,
                           model_hash: str = None,
+                          model_stage: str = None,
                           docker_image_config: str = None,
                           terminated_task_type: str = None,
                           sampling_count: int = None,
                           sampling_rate: float = None,
                           work_dir: str = '',
-                          evaluate_config: backend_pb2.EvaluateConfig = None) -> backend_pb2.GeneralReq:
+                          evaluate_config: mir_cmd_pb.EvaluateConfig = None) -> backend_pb2.GeneralReq:
     request = make_cmd_request(req_type=req_type,
                                user_id=user_id,
                                repo_id=repo_id,
@@ -131,6 +136,7 @@ def make_invoker_cmd_call(invoker: Any,
                                executant_name=executant_name,
                                merge_strategy=merge_strategy,
                                model_hash=model_hash,
+                               model_stage=model_stage,
                                docker_image_config=docker_image_config,
                                terminated_task_type=terminated_task_type,
                                sampling_count=sampling_count,

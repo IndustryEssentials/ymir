@@ -8,6 +8,7 @@ from common_utils import labels
 from controller.utils import utils
 from controller.utils.invoker_call import make_invoker_cmd_call
 from controller.utils.invoker_mapping import RequestTypeToInvoker
+from mir.protos import mir_command_pb2 as mir_cmd_pb
 from proto import backend_pb2
 import tests.utils as test_utils
 
@@ -40,7 +41,7 @@ class TestInvokerTaskFusion(unittest.TestCase):
         self._storage_root = os.path.join(self._sandbox_root, self._storage_name)
 
         self._work_dir = os.path.join(self._sandbox_root, "work_dir",
-                                      backend_pb2.TaskType.Name(backend_pb2.TaskTypeFusion), self._task_id)
+                                      mir_cmd_pb.TaskType.Name(mir_cmd_pb.TaskType.TaskTypeFusion), self._task_id)
         self._sub_work_dir_0 = os.path.join(self._work_dir, 'sub_task', self._sub_task_id_0)
         self._sub_work_dir_1 = os.path.join(self._work_dir, 'sub_task', self._sub_task_id_1)
         self._sub_work_dir_2 = os.path.join(self._work_dir, 'sub_task', self._sub_task_id_2)
@@ -49,7 +50,7 @@ class TestInvokerTaskFusion(unittest.TestCase):
         test_utils.check_commands()
         self._prepare_dirs()
         self._prepare_mir_repo()
-        labels.UserLabels.get_main_names = mock.Mock(return_value=["person", "cat", "table"])
+        labels.UserLabels.main_name_for_ids = mock.Mock(return_value=["person", "cat", "table"])
         return super().setUp()
 
     def tearDown(self) -> None:
@@ -83,17 +84,17 @@ class TestInvokerTaskFusion(unittest.TestCase):
     @mock.patch("subprocess.run", side_effect=_mock_run_func)
     def test_invoker_00(self, mock_run):
         req_create_task = backend_pb2.ReqCreateTask()
-        req_create_task.task_type = backend_pb2.TaskTypeFusion
+        req_create_task.task_type = mir_cmd_pb.TaskType.TaskTypeFusion
         req_create_task.no_task_monitor = True
 
-        req_create_task.fusion.in_dataset_ids.extend([self._guest_id1, self._guest_id2])
-        req_create_task.fusion.ex_dataset_ids.extend([self._guest_id3])
-        req_create_task.fusion.merge_strategy = backend_pb2.MergeStrategy.HOST
-        req_create_task.fusion.in_class_ids.extend([1, 3, 5])
-        req_create_task.fusion.count = 100
+        in_dataset_ids = [self._guest_id1, self._guest_id2]
+        ex_dataset_ids = [self._guest_id3]
+        merge_strategy = backend_pb2.MergeStrategy.HOST
+        in_class_ids = [1, 3, 5]
+        sampling_count = 100
 
         work_dir_root = os.path.join(self._sandbox_root, "work_dir",
-                                     backend_pb2.TaskType.Name(backend_pb2.TaskTypeFusion), self._task_id)
+                                     mir_cmd_pb.TaskType.Name(mir_cmd_pb.TaskType.TaskTypeFusion), self._task_id)
         expected_merge_work_dir = os.path.join(work_dir_root, 'sub_task', self._sub_task_id_2)
         expected_filter_work_dir = os.path.join(work_dir_root, 'sub_task', self._sub_task_id_1)
         expected_sampling_work_dir = os.path.join(work_dir_root, 'sub_task', self._sub_task_id_0)
@@ -107,7 +108,7 @@ class TestInvokerTaskFusion(unittest.TestCase):
         expected_filter_cmd = f"mir filter --root {self._mir_repo_root}"
         expected_filter_cmd += f" --dst-rev {self._task_id}@{self._sub_task_id_1}"
         expected_filter_cmd += f" --src-revs {self._task_id}@{self._sub_task_id_2}"
-        expected_filter_cmd += f" -w {expected_filter_work_dir} -p person;cat;table"
+        expected_filter_cmd += f" -w {expected_filter_work_dir} --cis person;cat;table"
 
         expected_sampling_cmd = f"mir sampling --root {self._mir_repo_root}"
         expected_sampling_cmd += f" --dst-rev {self._task_id}@{self._task_id}"
@@ -124,7 +125,11 @@ class TestInvokerTaskFusion(unittest.TestCase):
             repo_id=self._mir_repo_name,
             task_id=self._task_id,
             req_create_task=req_create_task,
-            merge_strategy=backend_pb2.MergeStrategy.HOST,
+            in_dataset_ids=in_dataset_ids,
+            ex_dataset_ids=ex_dataset_ids,
+            merge_strategy=merge_strategy,
+            in_class_ids=in_class_ids,
+            sampling_count=sampling_count,
         )
         logging.info(response)
 

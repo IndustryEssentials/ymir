@@ -6,7 +6,7 @@ import shutil
 import traceback
 from typing import Any, Callable, Set
 
-from mir.tools import mir_repo_utils, mir_storage_ops, phase_logger, revs_parser, utils
+from mir.tools import mir_repo_utils, mir_storage_ops, phase_logger, revs_parser
 from mir.tools.code import MirCode
 from mir.tools.errors import MirRuntimeError
 from mir.protos import mir_command_pb2 as mirpb
@@ -17,7 +17,6 @@ def _get_task_name(dst_rev: str) -> str:
     return revs_parser.parse_single_arg_rev(dst_rev, need_tid=True).tid if dst_rev else 'default_task'
 
 
-@utils.time_it
 def _commit_error(code: int, error_msg: str, mir_root: str, src_revs: str, dst_rev: str, predefined_task: Any) -> None:
     if not src_revs:
         raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
@@ -42,7 +41,10 @@ def _commit_error(code: int, error_msg: str, mir_root: str, src_revs: str, dst_r
     mir_storage_ops.MirStorageOps.save_and_commit(mir_root=mir_root,
                                                   mir_branch=dst_typ_rev_tid.rev,
                                                   his_branch=src_typ_rev_tid.rev,
-                                                  mir_datas={},
+                                                  mir_datas={
+                                                      mirpb.MirStorage.MIR_METADATAS: mirpb.MirMetadatas(),
+                                                      mirpb.MirStorage.MIR_ANNOTATIONS: mirpb.MirAnnotations()
+                                                  },
                                                   task=predefined_task)
 
 
@@ -56,7 +58,9 @@ def _cleanup_dir_sub_items(dir: str, ignored_items: Set[str]) -> None:
             continue
 
         item_path = os.path.join(dir, item)
-        if os.path.isdir(item_path):
+        if os.path.islink(item_path):
+            os.unlink(item_path)
+        elif os.path.isdir(item_path):
             shutil.rmtree(item_path)
         elif os.path.isfile(item_path):
             os.remove(item_path)
@@ -66,8 +70,13 @@ def _cleanup(work_dir: str) -> None:
     if not work_dir:
         return
 
-    _cleanup_dir_sub_items(work_dir, ignored_items={'out'})
+    _cleanup_dir_sub_items(work_dir, ignored_items={'in', 'out'})
 
+    _cleanup_dir_sub_items(
+        os.path.join(work_dir, 'in'),
+        ignored_items={
+            'config.yaml',  # training, mining & infer executor config file
+        })
     _cleanup_dir_sub_items(
         os.path.join(work_dir, 'out'),
         ignored_items={
@@ -76,6 +85,8 @@ def _cleanup(work_dir: str) -> None:
             'monitor-log.txt',  # monitor detail file
             'tensorboard',  # default root directory for tensorboard event files
             'ymir-executor-out.log',  # container output
+            'infer-result.json',  # infer result file
+            'result.yaml',  # mining result file
         })
 
 
@@ -116,17 +127,17 @@ def command_run_in_out(f: Callable) -> Callable:
                 mir_logger.update_percent_info(local_percent=1, task_state=phase_logger.PhaseStateEnum.DONE)
                 # no need to call _commit_error, already committed inside command run function
             else:
+                mir_logger.update_percent_info(local_percent=1,
+                                               task_state=phase_logger.PhaseStateEnum.ERROR,
+                                               state_code=ret,
+                                               state_content=state_message,
+                                               trace_message='')
                 _commit_error(code=ret,
                               error_msg=state_message,
                               mir_root=mir_root,
                               src_revs=src_revs,
                               dst_rev=dst_rev,
                               predefined_task=None)
-                mir_logger.update_percent_info(local_percent=1,
-                                               task_state=phase_logger.PhaseStateEnum.ERROR,
-                                               state_code=ret,
-                                               state_content=state_message,
-                                               trace_message='')
 
             logging.info(f"command done: {dst_rev}, return code: {ret}")
 
@@ -136,6 +147,11 @@ def command_run_in_out(f: Callable) -> Callable:
 
         # if MirContainerError, MirRuntimeError and BaseException occured
         # exception saved in exc
+        mir_logger.update_percent_info(local_percent=1,
+                                       task_state=phase_logger.PhaseStateEnum.ERROR,
+                                       state_code=error_code,
+                                       state_content=state_message,
+                                       trace_message=trace_message)
         if needs_new_commit:
             _commit_error(code=error_code,
                           error_msg=trace_message,
@@ -143,16 +159,12 @@ def command_run_in_out(f: Callable) -> Callable:
                           src_revs=src_revs,
                           dst_rev=dst_rev,
                           predefined_task=predefined_task)
-        mir_logger.update_percent_info(local_percent=1,
-                                       task_state=phase_logger.PhaseStateEnum.ERROR,
-                                       state_code=error_code,
-                                       state_content=state_message,
-                                       trace_message=trace_message)
 
         logging.info(f"command failed: {dst_rev}; exc: {exc}")
         logging.info(f"trace: {trace_message}")
 
-        _cleanup(work_dir=work_dir)
+        # should not cleanup task env if failed.
+        # _cleanup(work_dir=work_dir)
 
         raise exc
 

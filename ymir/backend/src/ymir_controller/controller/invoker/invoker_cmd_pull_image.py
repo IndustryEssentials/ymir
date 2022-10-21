@@ -13,11 +13,11 @@ from proto import backend_pb2
 
 
 class ImageHandler(BaseMirControllerInvoker):
+    def _need_work_dir(self) -> bool:
+        return False
+
     def pre_invoke(self) -> backend_pb2.GeneralResp:
-        return checker.check_request(
-            request=self._request,
-            prerequisites=[checker.Prerequisites.CHECK_USER_ID],
-        )
+        return checker.check_invoker(invoker=self, prerequisites=[checker.Prerequisites.CHECK_USER_ID])
 
     @staticmethod
     def convert_image_config(raw_image_config: str) -> Optional[str]:
@@ -34,11 +34,6 @@ class ImageHandler(BaseMirControllerInvoker):
         return json.dumps(image_config)
 
     def invoke(self) -> backend_pb2.GeneralResp:
-        expected_type = backend_pb2.RequestType.CMD_PULL_IMAGE
-        if self._request.req_type != expected_type:
-            return utils.make_general_response(CTLResponseCode.MIS_MATCHED_INVOKER_TYPE,
-                                               f"expected: {expected_type} vs actual: {self._request.req_type}")
-
         check_image_command = ['docker', 'image', 'inspect', self._request.singleton_op, '--format', 'ignore_me']
         check_response = utils.run_command(check_image_command)
         if check_response.code != CTLResponseCode.CTR_OK:
@@ -60,6 +55,16 @@ class ImageHandler(BaseMirControllerInvoker):
             image_config = self.convert_image_config(config_response.message)
             if image_config:
                 response.docker_image_config[image_type] = image_config
+
+        # livecode
+        config_command = [
+            'docker', 'run', '--rm', self._request.singleton_op,
+            'cat', common_task_config.IMAGE_LIVECODE_CONFIG_PATH
+        ]
+        config_response = utils.run_command(config_command)
+        livecode_config = self.convert_image_config(config_response.message)
+        if livecode_config:
+            response.enable_livecode = True
 
         if len(response.docker_image_config) == 0:
             return utils.make_general_response(

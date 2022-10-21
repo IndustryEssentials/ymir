@@ -1,11 +1,14 @@
-import { Select } from 'antd'
+import { Col, Row, Select } from 'antd'
 import { connect } from 'dva'
 import { useEffect, useState } from 'react'
 
 import { TYPES } from '@/constants/image'
+import { HIDDENMODULES } from '@/constants/common'
 import t from '@/utils/t'
 
-const ImageSelect = ({ value, relatedId, type = TYPES.TRAINING, onChange = () => {}, getImages, getImage, ...resProps }) => {
+const getValue = image => image.id + ',' + image.url
+
+const ImageSelect = ({ value, relatedId, type = TYPES.TRAINING, onChange = () => { }, getImages, getImage, ...resProps }) => {
   const [options, setOptions] = useState([])
 
   useEffect(() => {
@@ -14,7 +17,12 @@ const ImageSelect = ({ value, relatedId, type = TYPES.TRAINING, onChange = () =>
 
   useEffect(() => {
     if (options.length === 1) {
-      value = options[0].value
+      if (value) {
+        const opt = options.find(({ image }) => getValue(image) === value)
+        opt && onChange(value, opt.image)
+      } else {
+        value = options[0].value
+      }
     }
   }, [options])
 
@@ -32,9 +40,12 @@ const ImageSelect = ({ value, relatedId, type = TYPES.TRAINING, onChange = () =>
   }
 
   const generateOption = image => ({
-    label: image.name,
+    label: <Row>
+      <Col flex={1}>{image.name}</Col>
+      {!HIDDENMODULES.LIVECODE ? <Col style={{ color: 'rgba(0, 0, 0, 0.45)' }}>{t(`image.livecode.label.${image.liveCode ? 'remote' : 'local'}`)}</Col> : null}
+    </Row>,
     image,
-    value: image.id + ',' + image.url,
+    value: getValue(image),
   })
 
   async function generateOptions(images) {
@@ -59,14 +70,16 @@ const ImageSelect = ({ value, relatedId, type = TYPES.TRAINING, onChange = () =>
   async function getRelatedOptions() {
     const trainImage = await getImage(relatedId)
     let relatedOptions = []
-    if(trainImage?.related) {
+    if (trainImage?.related) {
       relatedOptions = trainImage.related.map(generateOption)
     }
     return relatedOptions
   }
 
   return (
-    <Select value={value} {...resProps} onChange={(value, opt) => onChange(value, opt?.image)} options={options} optionFilterProp="label" allowClear></Select>
+    <Select value={value} optionFilterProp="label" allowClear
+      {...resProps} onChange={(value, opt) => onChange(value, opt?.image)} options={options}
+    ></Select>
   )
 }
 

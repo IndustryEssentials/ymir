@@ -1,0 +1,46 @@
+version: "3.1"
+services:
+  model_deploy_nginx:
+    image: pubalglib/model_deploy_nginx:1.0.0
+    env_file:
+      - .env
+    ports:
+      - ${DEPLOY_MODULE_HOST_PORT}:80
+    networks:
+      - model_deploy_network
+    restart: always
+    depends_on:
+      - model_deploy_api
+
+  model_deploy_api:
+    image: pubalglib/model_deployment_server:1.0.0
+    env_file:
+      - .env
+    volumes:
+      - ${YMIR_PATH}/deploy_module/model_deployment_server/media:/svc/app/model_deployment_server/media
+      - ${YMIR_PATH}/deploy_module/model_deployment_server/logs:/svc/app/model_deployment_server/logs
+    working_dir: /svc/app/model_deployment_server
+    environment:
+      TZ: Asia/Shanghai
+    networks:
+      - model_deploy_network
+    restart: always
+    depends_on:
+      - model_deploy_mysql
+
+  model_deploy_mysql:
+    image: mysql:8
+    env_file:
+      - .env
+    environment:
+      TZ: Asia/Shanghai
+      MYSQL_ROOT_PASSWORD: ${DEPLOY_MODULE_MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: model_deployment_db
+    volumes:
+      - ${YMIR_PATH}/deploy_module/mysql/data:/var/lib/mysql
+    networks:
+      - model_deploy_network
+    restart: always
+
+networks:
+  model_deploy_network:

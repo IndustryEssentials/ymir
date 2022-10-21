@@ -1,8 +1,7 @@
 from abc import ABC, abstractmethod
 import logging
 from typing import Any
-
-from mir.tools import utils
+from mir.tools.code import time_it
 
 
 class BaseCommand(ABC):
@@ -12,7 +11,7 @@ class BaseCommand(ABC):
     def __init__(self, args: Any):
         self.args = args
 
-    @utils.time_it
+    @time_it
     def cmd_run(self) -> int:
         return self.run()
 

@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react'
 import ImgCrop from 'antd-img-crop'
 
 import { CloudUploadOutlined } from "@ant-design/icons"
-import { getUploadUrl } from "../../services/common"
+import { getUploadUrl } from "@/services/common"
 import storage from '@/utils/storage'
 import t from '@/utils/t'
 import 'antd/es/slider/style'
@@ -16,8 +16,12 @@ const fileSuffix = {
   all: ['*'],
 }
 
-function Uploader({ className, value=null, format="zip", label, max = 200, 
-  maxCount = 1, info = '', type='', crop = false, showUploadList = true, onChange = ()=> {}, onRemove = () => {}}) {
+function Uploader({
+  className, value = null, format = "zip", label, max = 200,
+  maxCount = 1, info = '', type = 'primary', crop = false,
+  btnProps = {},
+  showUploadList = true, onChange = () => { }, onRemove = () => { }
+}) {
 
   label = label || t('model.add.form.upload.btn')
   const [files, setFiles] = useState(null)
@@ -61,25 +65,25 @@ function Uploader({ className, value=null, format="zip", label, max = 200,
   }
 
   const uploader = <Upload
-        className={className}
-        fileList={files}
-        action={getUploadUrl()}
-        name='file'
-        headers={{ "Authorization": `Bearer ${storage.get("access_token")}` }}
-        // accept={fileSuffix[format].join(',')}
-        onChange={onFileChange}
-        onRemove={onRemove}
-        beforeUpload={beforeUpload}
-        maxCount={maxCount}
-        showUploadList={showUploadList}
-      >
-        <Button type={type} icon={<CloudUploadOutlined />}>{label}</Button>
-      </Upload>
+    className={className}
+    fileList={files}
+    action={getUploadUrl()}
+    name='file'
+    headers={{ "Authorization": `Bearer ${storage.get("access_token")}` }}
+    // accept={fileSuffix[format].join(',')}
+    onChange={onFileChange}
+    onRemove={onRemove}
+    beforeUpload={beforeUpload}
+    maxCount={maxCount}
+    showUploadList={showUploadList}
+  >
+    <Button type={type} ghost icon={<CloudUploadOutlined />} {...btnProps}>{label}</Button>
+  </Upload>
 
   return (
     <>
-      { format === 'avatar' && crop ? <ImgCrop rotate beforeCrop={beforeCrop}>{uploader}</ImgCrop> : uploader}
-      {info ? <p style={{ margin: '10px 0' }}>{info}</p> : null }
+      {format === 'avatar' && crop ? <ImgCrop rotate beforeCrop={beforeCrop}>{uploader}</ImgCrop> : uploader}
+      {info ? <p style={{ margin: '10px 0' }}>{info}</p> : null}
     </>
   )
 }

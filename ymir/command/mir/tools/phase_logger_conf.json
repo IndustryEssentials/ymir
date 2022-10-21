@@ -1,8 +1,12 @@
 {
     "import": [
         {
+            "name": "init",
+            "delta": 0.05
+        },
+        {
             "name": "hash",
-            "delta": 0.4
+            "delta": 0.35
         },
         {
             "name": "metadatas",
@@ -15,8 +19,12 @@
     ],
     "copy": [
         {
+            "name": "init",
+            "delta": 0.05
+        },
+        {
             "name": "read",
-            "delta": 0.4
+            "delta": 0.35
         },
         {
             "name": "change",
@@ -35,8 +43,12 @@
     ],
     "filter": [
         {
+            "name": "init",
+            "delta": 0.05
+        },
+        {
             "name": "read",
-            "delta": 0.2
+            "delta": 0.15
         },
         {
             "name": "change",

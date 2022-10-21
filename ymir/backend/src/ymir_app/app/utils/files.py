@@ -68,7 +68,7 @@ def save_file_content(url: Union[AnyHttpUrl, str], output_filename: Union[Path, 
 
     # if file is hosted by nginx on the same host, just copy it
     file_path = Path(NGINX_DATA_PATH) / url
-    shutil.copy(file_path, output_filename)
+    shutil.move(str(file_path), output_filename)
 
 
 def download_file(url: AnyHttpUrl, output_filename: str) -> None:
@@ -95,39 +95,6 @@ def decompress_zip(zip_file_path: Union[str, Path], output_dir: Union[str, Path]
         zip_ref.extractall(str(output_dir))
 
 
-def locate_dir(p: Union[str, Path], target: str) -> Path:
-    """
-    Locate specifc target dirs
-    """
-    for _p in Path(p).iterdir():
-        if _p.is_dir() and _p.name.lower() == target:
-            return _p
-        for __p in _p.iterdir():
-            if __p.is_dir() and __p.name.lower() == target:
-                return __p
-    # Only search 3rd depth when no result was found in 2nd depth.
-    for _p in Path(p).iterdir():
-        for __p in _p.iterdir():
-            for ___p in __p.iterdir():
-                if ___p.is_dir() and ___p.name.lower() == target:
-                    return ___p
-    raise FileNotFoundError()
-
-
-def prepare_imported_dataset_dir(url: str, output_dir: Union[str, Path]) -> str:
-    with NamedTemporaryFile("wb") as tmp:
-        save_file_content(url, tmp.name)
-        logging.info("[import dataset] url content cached to %s", tmp.name)
-        decompress_zip(tmp.name, output_dir)
-
-    image_dir = locate_dir(output_dir, "images")
-    annotation_dir = locate_dir(output_dir, "annotations")
-    if image_dir.parent != annotation_dir.parent:
-        logging.error("[import dataset] image(%s) and annotation(%s) not in the same dir", image_dir, annotation_dir)
-        raise InvalidFileStructure()
-    return str(image_dir.parent)
-
-
 def save_file(
     url: Union[AnyHttpUrl, str],
     output_dir: Union[str, Path],
@@ -148,6 +115,64 @@ def save_files(urls: List[Union[AnyHttpUrl, str]], output_basedir: Union[str, Pa
     return output_dir, {filename.name: url for filename, url in zip(res, urls)}
 
 
+def locate_dir(p: Union[str, Path], targets: List[str]) -> Path:
+    """
+    Locate specifc target dirs
+    """
+    for _p in Path(p).iterdir():
+        if not _p.is_dir():
+            continue
+        if _p.name.lower() in targets:
+            return _p
+        for __p in _p.iterdir():
+            if not __p.is_dir():
+                continue
+            if __p.name.lower() in targets:
+                return __p
+    # Only search 3rd depth when no result was found in 2nd depth.
+    for _p in Path(p).iterdir():
+        if not _p.is_dir():
+            continue
+        for __p in _p.iterdir():
+            if not __p.is_dir():
+                continue
+            for ___p in __p.iterdir():
+                if ___p.is_dir() and ___p.name.lower() in targets:
+                    return ___p
+    raise FileNotFoundError
+
+
+def locate_annotation_dir(p: Path, targets: List[str]) -> Optional[Path]:
+    """
+    annotation_dir (gt or pred) must be in sibling with asset_dir
+    p: asset_dir.parent
+    targets: ["Annotations", "gt"] or ["pred"]
+    """
+    for _p in Path(p).iterdir():
+        if not _p.is_dir():
+            continue
+        if _p.name.lower() in targets:
+            return _p
+    return None
+
+
+def locate_ymir_dataset_dirs(path: Path) -> Tuple[Path, Optional[Path], Optional[Path]]:
+    # only `asset_dir` (images) is required
+    # both `gt_dir` and `pred_dir` are optional
+    asset_dir = locate_dir(path, ["images", "jpegimages"])
+    gt_dir = locate_annotation_dir(asset_dir.parent, ["gt", "annotations"])
+    pred_dir = locate_annotation_dir(asset_dir.parent, ["pred"])
+    return asset_dir, gt_dir, pred_dir
+
+
+def prepare_downloaded_paths(url: str, output_dir: Union[str, Path]) -> Tuple[Path, Optional[Path], Optional[Path]]:
+    with NamedTemporaryFile("wb") as tmp:
+        save_file_content(url, tmp.name)
+        logging.info("[import dataset] url content cached to %s", tmp.name)
+        decompress_zip(tmp.name, output_dir)
+    return locate_ymir_dataset_dirs(Path(output_dir))
+
+
 def is_relative_to(path_long: Union[str, Path], path_short: Union[str, Path]) -> bool:
     """
     mimic the behavior of Path.is_relative_to in Python 3.9
@@ -156,11 +181,10 @@ def is_relative_to(path_long: Union[str, Path], path_short: Union[str, Path]) ->
     return Path(path_short) in Path(path_long).parents
 
 
-def verify_import_path(src_path: Union[str, Path]) -> None:
-    src_path = Path(src_path)
-    annotation_path = src_path / "annotations"
-    if not (src_path.is_dir() and annotation_path.is_dir()):
+def locate_import_paths(src_path: Union[str, Path]) -> Tuple[Path, Optional[Path], Optional[Path]]:
+    asset_dir, gt_dir, pred_dir = locate_ymir_dataset_dirs(Path(src_path))
+
+    if not is_relative_to(asset_dir, settings.SHARED_DATA_DIR):
+        logger.error("import path (%s) not within shared_dir (%s)" % (asset_dir, settings.SHARED_DATA_DIR))
         raise InvalidFileStructure()
-    if not is_relative_to(annotation_path, settings.SHARED_DATA_DIR):
-        logger.error("import path (%s) not within shared_dir (%s)" % (annotation_path, settings.SHARED_DATA_DIR))
-        raise InvalidFileStructure()
+    return asset_dir, gt_dir, pred_dir

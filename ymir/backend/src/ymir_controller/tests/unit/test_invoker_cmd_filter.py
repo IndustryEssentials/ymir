@@ -68,7 +68,7 @@ class TestInvokerFilterBranch(unittest.TestCase):
 
     @mock.patch("subprocess.run", side_effect=_mock_run_func)
     def test_invoker_00(self, mock_run):
-        labels.UserLabels.get_main_names = mock.Mock(return_value=["car", "person"])
+        labels.UserLabels.main_name_for_ids = mock.Mock(return_value=["car", "person"])
         in_class_ids = [1, 2]
         ex_class_ids = [3]
         response = make_invoker_cmd_call(invoker=RequestTypeToInvoker[backend_pb2.CMD_FILTER],
@@ -88,9 +88,9 @@ class TestInvokerFilterBranch(unittest.TestCase):
                                    self._task_id)
         os.makedirs(working_dir, exist_ok=True)
 
-        expected_cmd = "mir filter --root {0} --dst-rev {1}@{1} --src-revs {2}@{2} -w {3} -p {4} -P {5}".format(
+        expect_cmd = "mir filter --root {0} --dst-rev {1}@{1} --src-revs {2}@{2} -w {3} --cis {4} --ex-cis {5}".format(
             self._mir_repo_root, self._task_id, self.in_dataset_ids[0], working_dir, 'car;person', 'car;person')
-        mock_run.assert_called_once_with(expected_cmd.split(' '), capture_output=True, text=True)
+        mock_run.assert_called_once_with(expect_cmd.split(' '), capture_output=True, text=True)
 
         expected_ret = backend_pb2.GeneralResp()
         expected_dict = {'message': RET_ID}

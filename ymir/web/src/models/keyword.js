@@ -3,6 +3,7 @@ import {
   updateKeyword,
   updateKeywords,
   getRecommendKeywords,
+  checkDuplication,
 } from "@/services/keyword"
 
 export default {
@@ -31,6 +32,13 @@ export default {
         return result
       }
     },
+    *checkDuplication({ payload: keywords }, { call, put }) {
+      const { code, result } = yield call(checkDuplication, keywords)
+      if (code === 0) {
+        const newer = keywords.filter(kw => !result.includes(kw))
+        return {dup: result, newer }
+      }
+    },
     *updateKeyword({ payload }, { call, put }) {
       const { code, result } = yield call(updateKeyword, payload)
       if (code === 0) {
@@ -38,9 +46,9 @@ export default {
       }
     },
     *getRecommendKeywords({ payload }, { call, put }) {
-      const data = yield call(getRecommendKeywords, payload)
-      if (data.code === 0) {
-        return data.result.map(item => item[0])
+      const { code, result } = yield call(getRecommendKeywords, payload)
+      if (code === 0) {
+        return result.map(item => item.legend)
       }
     }
   },

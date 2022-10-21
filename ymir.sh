@@ -20,10 +20,11 @@ FIELD_LABEL_TOOL_LS='label_studio'
 FIELD_LABEL_TOOL_LF='label_free'
 ENV_FILE='.env'
 
+FIELD_DEPLOY_MODULE_HOST_PORT='DEPLOY_MODULE_HOST_PORT'
+
 stop() {
-docker-compose down
-docker-compose -f docker-compose.label_studio.yml down
-docker-compose -f docker-compose.labelfree.yml down
+docker-compose -f docker-compose.yml -f docker-compose.dev.yml -f docker-compose.label_studio.yml \
+-f docker-compose.labelfree.yml -f docker-compose.modeldeploy.yml down
 }
 
 pre_start() {
@@ -125,11 +126,28 @@ else
 fi
 }
 
+start_deploy_module() {
+    if cat ${ENV_FILE} | grep -oE "^${FIELD_DEPLOY_MODULE_HOST_PORT}=$"; then
+        echo "DEPLOY_MODULE_HOST_PORT not set, skip deploy module startup"
+        return
+    fi
+
+    if ! cat ${ENV_FILE} | grep -oE "^${FIELD_DEPLOY_MODULE_HOST_PORT}=[0-9]{1,5}$"; then
+        echo "DEPLOY_MODULE_HOST_PORT is invalid"
+        exit
+    fi
+
+    echo "deploy module, starting..."
+    docker-compose -f docker-compose.modeldeploy.yml up -d
+}
+
 start() {
 check_permission
 pre_start
 
 start_label_tool
+
+start_deploy_module
 
 if [[ $1 == 'dev' ]]; then
     printf '\nin dev mode, building images.\n'
@@ -145,11 +163,29 @@ if [[ $1 == 'dev' ]]; then
 else
     printf '\nin prod mode, starting service.\n'
 fi
+
 docker-compose up -d
 }
 
+update() {
+    stop
+
+cat <<- EOF
+Before proceed, make sure to BACKUP your YMIR-workplace folder.
+Only supports to upgrade from 1.1.0 (22-May) to 2.0.0 (22-Oct), otherwise may cause data damage.
+EOF
+
+while true; do
+    read -p "Continue (y/n)?" yn
+    case $yn in
+        [Yy]* ) docker-compose -f docker-compose.updater.yml up; break;;
+        * ) break;;
+    esac
+done
+}
+
 print_help() {
-    printf '\nUsage: \n  bash ymir.sh start/stop.\n'
+    printf '\nUsage: \n  bash ymir.sh start/stop/update.\n'
 }
 
 # main

@@ -16,6 +16,7 @@ from controller.label_model.label_free import LabelFree
 from controller.utils import utils
 from controller.utils.invoker_call import make_invoker_cmd_call
 from controller.utils.invoker_mapping import RequestTypeToInvoker
+from mir.protos import mir_command_pb2 as mir_cmd_pb
 from proto import backend_pb2
 
 
@@ -25,21 +26,21 @@ def mock_many(mocker):
     mocker.patch("builtins.open", mocker.mock_open(read_data="data"))
     mocker.patch("os.listdir", return_value=[])
     mocker.patch.object(Path, "touch")
-    labels.UserLabels.get_main_names = mock.Mock(return_value=["fake"])
+    labels.UserLabels.main_name_for_ids = mock.Mock(return_value=["fake"])
 
 
 class TestTaskLabelingInvoker:
     def test_task_invoke(self, mocker, mock_many):
         label_req = backend_pb2.TaskReqLabeling()
-        label_req.in_class_ids[:] = [0, 1]
+        in_class_ids = [0, 1]
         label_req.labeler_accounts[:] = ["a@a.com"]
         label_req.project_name = "fake_project_name"
-        label_req.dataset_id = "id"
+        in_dataset_ids = ["id"]
         label_req.expert_instruction_url = "url"
         label_req.export_annotation = False
 
         req_create_task = backend_pb2.ReqCreateTask()
-        req_create_task.task_type = backend_pb2.TaskTypeLabel
+        req_create_task.task_type = mir_cmd_pb.TaskType.TaskTypeLabel
         req_create_task.labeling.CopyFrom(label_req)
         req_create_task.no_task_monitor = True
 
@@ -63,8 +64,9 @@ class TestTaskLabelingInvoker:
         os.makedirs(mir_repo_root)
         test_utils.mir_repo_init(mir_repo_root)
 
-        working_dir = os.path.join(sandbox_root, "work_dir", backend_pb2.TaskType.Name(backend_pb2.TaskTypeLabel),
-                                   task_id, 'sub_task', task_id)
+        working_dir = os.path.join(sandbox_root, "work_dir",
+                                   mir_cmd_pb.TaskType.Name(mir_cmd_pb.TaskType.TaskTypeLabel), task_id, 'sub_task',
+                                   task_id)
         if os.path.isdir(working_dir):
             logging.info("working_dir exists, remove it first")
             shutil.rmtree(working_dir)
@@ -76,6 +78,8 @@ class TestTaskLabelingInvoker:
                                          user_id=user_name,
                                          repo_id=mir_repo_name,
                                          task_id=task_id,
+                                         in_dataset_ids=in_dataset_ids,
+                                         in_class_ids=in_class_ids,
                                          req_create_task=req_create_task)
         assert mock_post.call_count == 4
 
@@ -90,6 +94,8 @@ class TestTaskLabelingInvoker:
                                          user_id=user_name,
                                          repo_id=mir_repo_name,
                                          task_id=task_id,
+                                         in_dataset_ids=in_dataset_ids,
+                                         in_class_ids=in_class_ids,
                                          req_create_task=req_create_task)
         assert mock_post.call_count == 8
         expected_ret = backend_pb2.GeneralResp()

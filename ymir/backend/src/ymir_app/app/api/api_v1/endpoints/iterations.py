@@ -6,7 +6,12 @@ from sqlalchemy.orm import Session
 
 from app import crud, models, schemas
 from app.api import deps
-from app.api.errors.errors import IterationNotFound
+from app.api.errors.errors import IterationNotFound, TaskNotFound, IterationStepNotFound, IterationStepHasFinished
+from app.crud.crud_iteration_step import StepNotFound
+from app.libs.iterations import calculate_mining_progress
+from app.libs.iteration_steps import initialize_steps
+
+from common_utils.labels import UserLabels
 
 router = APIRouter()
 
@@ -24,6 +29,7 @@ def create_iteration(
     iteration = crud.iteration.create_with_user_id(db, user_id=current_user.id, obj_in=obj_in)
     logger.info("[create iteration] iteration record created: %s", iteration)
     crud.project.update_current_iteration(db, project_id=obj_in.project_id, iteration_id=iteration.id)
+    initialize_steps(db, iteration.id)
     return {"result": iteration}
 
 
@@ -82,3 +88,96 @@ def update_iteration(
         raise IterationNotFound()
     crud.iteration.update_iteration(db, iteration_id=iteration_id, iteration_update=iteration_updates)
     return {"result": iteration}
+
+
+@router.get("/{iteration_id}/mining_progress", response_model=schemas.iteration.IterationMiningProgressOut)
+def get_mining_progress_of_iteration(
+    db: Session = Depends(deps.get_db),
+    current_user: models.User = Depends(deps.get_current_active_user),
+    project_id: int = Query(...),
+    iteration_id: int = Path(...),
+    user_labels: UserLabels = Depends(deps.get_user_labels),
+) -> Any:
+    """
+    Get mining progress of specific iteration
+    """
+    stats = calculate_mining_progress(db, user_labels, current_user.id, project_id, iteration_id)
+    return {"result": stats}
+
+
+@router.get(
+    "/{iteration_id}/steps",
+    response_model=schemas.IterationStepsOut,
+)
+def list_iteration_steps(
+    *,
+    db: Session = Depends(deps.get_db),
+    iteration_id: int = Path(...),
+    current_user: models.User = Depends(deps.get_current_active_user),
+) -> Any:
+    steps = crud.iteration_step.get_multi_by_iteration(db, iteration_id=iteration_id)
+    return {"result": steps}
+
+
+@router.get(
+    "/{iteration_id}/steps/{step_id}",
+    response_model=schemas.IterationStepOut,
+)
+def get_iteration_step(
+    *,
+    db: Session = Depends(deps.get_db),
+    iteration_id: int = Path(...),
+    step_id: int = Path(...),
+    current_user: models.User = Depends(deps.get_current_active_user),
+) -> Any:
+    step = crud.iteration_step.get(db, step_id)
+    return {"result": step}
+
+
+@router.post(
+    "/{iteration_id}/steps/{step_id}/start",
+    response_model=schemas.IterationStepOut,
+)
+def start_iteration_step(
+    *,
+    db: Session = Depends(deps.get_db),
+    iteration_id: int = Path(...),
+    step_id: int = Path(...),
+    task_id: int = Query(...),
+    user_labels: UserLabels = Depends(deps.get_user_labels),
+    current_user: models.User = Depends(deps.get_current_active_user),
+) -> Any:
+    """
+    start given step:
+    1. bind existing task to given step
+    2. record task result and record dataset_id or model_id in step record
+    """
+    step = crud.iteration_step.get(db, step_id)
+    if not step:
+        raise IterationStepNotFound()
+    if step.is_finished:
+        raise IterationStepHasFinished()
+
+    task_in_db = crud.task.get(db, task_id)
+    if not task_in_db:
+        raise TaskNotFound()
+    step = crud.iteration_step.start(db, id=step_id, task_id=task_in_db.id)
+    return {"result": step}
+
+
+@router.post(
+    "/{iteration_id}/steps/{step_id}/finish",
+    response_model=schemas.IterationStepOut,
+)
+def finish_iteration_step(
+    *,
+    db: Session = Depends(deps.get_db),
+    iteration_id: int = Path(...),
+    step_id: int = Path(...),
+    current_user: models.User = Depends(deps.get_current_active_user),
+) -> Any:
+    try:
+        step = crud.iteration_step.finish(db, id=step_id)
+    except StepNotFound:
+        raise IterationStepNotFound()
+    return {"result": step}

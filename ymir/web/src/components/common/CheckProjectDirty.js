@@ -1,31 +1,48 @@
-import { Button, Space, Tag } from "antd"
-import useProjectStatus from "@/hooks/useProjectStatus"
+import { Button, Row, Col } from "antd"
+import useFetch from "@/hooks/useFetch"
 import { useEffect, useState } from "react"
+import { useSelector } from 'umi'
 
 import t from '@/utils/t'
+import s from './common.less'
+import { FailIcon, SuccessIcon } from "./icons"
 
-const CheckProjectDirty = ({ pid, initialCheck, callback = () => {}, ...props }) => {
-  const { checkDirty } = useProjectStatus(pid)
-  const [isDirty, setDirty] = useState(null)
+const CheckProjectDirty = ({ pid, initialCheck, callback = () => { }, ...props }) => {
+  const effect = 'project/checkStatus'
+  const [{ is_dirty: isDirty }, check] = useFetch(effect, {}, true)
   const [checked, setChecked] = useState(false)
+  const loading = useSelector(({ loading }) => loading.effects[effect])
+
   useEffect(() => {
     initialCheck && checkStatus()
   }, [])
 
-  async function checkStatus() {
-    const dirty = await checkDirty()
-    setDirty(dirty)
+  useEffect(() => {
+    checked && callback(isDirty)
+  }, [checked])
+
+  function checkStatus() {
+    check(pid)
     setChecked(true)
-    callback(dirty)
   }
 
-  return <Space {...props}>
+  return <Row className={s.checkPanel} gutter={20} {...props}>
     {checked ?
-      isDirty ? t('project.workspace.status.dirty', { dirtyLabel: <Tag color={'error'}>Dirty</Tag> })
-        : t('project.workspace.status.clean', { cleanLabel: <Tag color={'success'}>Clean</Tag> })
+      <Col flex={1} className={isDirty ? s.checkerError : s.checkerSuccess}>
+        {isDirty ?
+          <><FailIcon className={s.error} />{t('project.workspace.status.dirty', {
+            dirtyLabel: <span className={s.error}>Dirty</span>
+          })}</> :
+          <><SuccessIcon className={s.success} /> {t('project.workspace.status.clean', {
+            cleanLabel: <span className={s.success}>Clean</span>
+          })}</>
+        }
+      </Col>
       : null}
-    <Button type='primary' size="small" onClick={checkStatus}>{t(`common.action.check${checked ? '.again' : ''}`)}</Button>
-  </Space>
+    <Col>
+      <Button className={s.checkBtn} onClick={checkStatus} loading={loading}>{t(`common.action.check${checked ? '.again' : ''}`)}</Button>
+    </Col>
+  </Row>
 }
 
 export default CheckProjectDirty

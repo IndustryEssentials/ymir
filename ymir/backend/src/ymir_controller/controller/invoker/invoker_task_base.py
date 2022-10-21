@@ -1,7 +1,8 @@
+from distutils.util import strtobool
 import logging
 import os
 import threading
-from typing import Dict, List
+from typing import Any, Callable, Dict, List, Optional, Tuple
 
 import yaml
 
@@ -13,19 +14,26 @@ from id_definition.error_codes import CTLResponseCode
 from proto import backend_pb2
 
 
+SubTaskType = Callable[
+    [backend_pb2.GeneralReq, UserLabels, str, Dict[str, str], str, str, str, str, Optional[str], List[str]],
+    backend_pb2.GeneralResp]
+
+
 class TaskBaseInvoker(BaseMirControllerInvoker):
+    def _need_work_dir(self) -> bool:
+        return True
+
     def pre_invoke(self) -> backend_pb2.GeneralResp:
         # still in sync mode.
-        checker_ret = checker.check_request(request=self._request,
+        checker_ret = checker.check_invoker(invoker=self,
                                             prerequisites=[
                                                 checker.Prerequisites.CHECK_USER_ID,
                                                 checker.Prerequisites.CHECK_REPO_ID,
                                                 checker.Prerequisites.CHECK_REPO_ROOT_EXIST,
-                                            ],
-                                            mir_root=self._repo_root)
+                                            ])
         if checker_ret.code != CTLResponseCode.CTR_OK:
             return checker_ret
-        return self.task_pre_invoke(request=self._request, sandbox_root=self._sandbox_root)
+        return self.task_pre_invoke(request=self._request)
 
     @classmethod
     def subtask_work_dir(cls, master_work_dir: str, subtask_id: str) -> str:
@@ -45,38 +53,33 @@ class TaskBaseInvoker(BaseMirControllerInvoker):
         return sub_monitor_file
 
     @classmethod
-    def create_subtask_workdir_monitor(
+    def _register_subtask_monitor(
         cls,
         task_id: str,
-        user_id: str,
         master_work_dir: str,
-        subtask_weights: List[float],
+        sub_task_id_weights: Dict[str, float],
         register_monitor: bool,
     ) -> None:
-        if not (subtask_weights and task_id and user_id and master_work_dir):
+        if not (sub_task_id_weights and task_id and master_work_dir):
             raise errors.MirCtrError(CTLResponseCode.ARG_VALIDATION_FAILED,
-                                     "create_subtask_workdir_monitor args error, abort.")
+                                     "_register_subtask_monitor args error, abort.")
 
         delta = 0.001
-        if abs(sum(subtask_weights) - 1) >= delta:
+        if abs(sum(sub_task_id_weights.values()) - 1) >= delta:
             raise errors.MirCtrError(CTLResponseCode.ARG_VALIDATION_FAILED, "invalid weights, abort.")
         sub_monitor_files_weights = {}
-        for idx in range(len(subtask_weights)):
-            subtask_id = utils.sub_task_id(task_id, idx)
-            subtask_monitor_file = cls.subtask_monitor_file(master_work_dir=master_work_dir, subtask_id=subtask_id)
+        # format: (task_func, weight, sub_task_id)
+        for sub_task_id in sub_task_id_weights:
+            subtask_monitor_file = cls.subtask_monitor_file(master_work_dir=master_work_dir, subtask_id=sub_task_id)
             PercentLogHandler.write_percent_log(log_file=subtask_monitor_file,
-                                                tid=utils.sub_task_id(task_id, idx),
+                                                tid=sub_task_id,
                                                 percent=0.0,
                                                 state=LogState.RUNNING)
-            sub_monitor_files_weights[subtask_monitor_file] = subtask_weights[idx]
+            sub_monitor_files_weights[subtask_monitor_file] = sub_task_id_weights[sub_task_id]
 
         logging.info(f"task {task_id} logging weights:\n{sub_monitor_files_weights}\n")
         if register_monitor:
-            tasks_util.register_monitor_log(
-                task_id=task_id,
-                user_id=user_id,
-                log_path_weights=sub_monitor_files_weights,
-            )
+            tasks_util.register_monitor_log(task_id=task_id, log_path_weights=sub_monitor_files_weights)
         return
 
     @staticmethod
@@ -86,51 +89,76 @@ class TaskBaseInvoker(BaseMirControllerInvoker):
         return os.path.join(work_dir, "task_config.yaml")
 
     @staticmethod
-    def gen_executor_config_lock_gpus(req_executor_config: str, class_names: List, task_parameters: str,
-                                      output_config_file: str) -> bool:
+    def gen_executor_config_lock_gpus(req_executor_config: str,
+                                      class_names: List,
+                                      task_parameters: str,
+                                      output_config_file: str,
+                                      assets_config: Dict = {},
+                                      preprocess: Optional[str] = None) -> bool:
         executor_config = yaml.safe_load(req_executor_config)
-        task_context = {}
+        preprocess_config = yaml.safe_load(preprocess) if preprocess else None
+        task_context: Dict[str, Any] = {}
 
         if class_names:
             executor_config["class_names"] = class_names
 
-        # when gpu_count > 0, use gpu model
-        gpu_count = executor_config["gpu_count"]
-        if gpu_count > 0:
-            gpu_ids = gpu_utils.GPUInfo().find_gpu_ids_by_config(gpu_count, lock_gpu=True)
-            if not gpu_ids:
-                return False
-
-            task_context["available_gpu_id"] = gpu_ids
-            executor_config['gpu_id'] = ','.join([str(i) for i in range(gpu_count)])
-        else:
-            task_context["available_gpu_id"] = ''
-            executor_config['gpu_id'] = ''
-
         if task_parameters:
-            task_context['task_parameters'] = task_parameters
+            task_context["task_parameters"] = task_parameters
 
-        config = {'executor_config': executor_config, 'task_context': task_context}
+        if preprocess_config:
+            task_context["preprocess"] = preprocess_config
+
+        task_context['server_runtime'] = assets_config['server_runtime']
+
+        gpu_count = executor_config.get("gpu_count", 0)
+        executor_config["gpu_id"] = ",".join([str(i) for i in range(gpu_count)])
+
+        # Openpai enabled
+        if strtobool(str(executor_config.get("openpai_enable", "False"))):
+            openpai_host = assets_config.get("openpai_host", None)
+            openpai_token = assets_config.get("openpai_token", None)
+            openpai_storage = assets_config.get("openpai_storage", None)
+            openpai_user = assets_config.get("openpai_user", "")
+            openpai_cluster = assets_config.get("openpai_cluster")
+            openpai_gputype = assets_config.get("openpai_gputype")
+            logging.info(f"OpenPAI host: {openpai_host}, token: {openpai_token}, "
+                         f"storage: {openpai_storage}, user: {openpai_user}",
+                         f"cluster: {openpai_cluster}, gpu_type: {openpai_gputype}")
+
+            if not (openpai_host and openpai_token and openpai_storage and openpai_user):
+                raise errors.MirCtrError(
+                    CTLResponseCode.INVOKER_INVALID_ARGS,
+                    "openpai enabled with invalid host, token, storage or user",
+                )
+            task_context["openpai_enable"] = True
+            task_context["openpai_host"] = openpai_host
+            task_context["openpai_token"] = openpai_token
+            task_context["openpai_storage"] = openpai_storage
+            task_context["openpai_user"] = openpai_user
+            task_context["openpai_cluster"] = openpai_cluster
+            task_context["openpai_gputype"] = openpai_gputype
+
+            task_context["available_gpu_id"] = executor_config["gpu_id"]
+        else:
+            # lock local gpus.
+            gpu_ids = gpu_utils.GPUInfo().find_gpu_ids_by_config(gpu_count, lock_gpu=True)
+            if gpu_ids is None:
+                return False
+            task_context["available_gpu_id"] = gpu_ids
 
         with open(output_config_file, "w") as f:
-            yaml.dump(config, f)
+            yaml.safe_dump(dict(
+                executor_config=executor_config,
+                task_context=task_context,
+            ), f)
 
         return True
 
     def invoke(self) -> backend_pb2.GeneralResp:
-        expected_type = backend_pb2.RequestType.TASK_CREATE
-        if self._request.req_type != expected_type:
-            return utils.make_general_response(CTLResponseCode.MIS_MATCHED_INVOKER_TYPE,
-                                               f"expected: {expected_type} vs actual: {self._request.req_type}")
-        self.create_subtask_workdir_monitor(task_id=self._task_id,
-                                            user_id=self._user_id,
-                                            master_work_dir=self._work_dir,
-                                            subtask_weights=self.subtask_weights(),
-                                            register_monitor=(not self._request.req_create_task.no_task_monitor))
-
         if self._async_mode:
             thread = threading.Thread(target=self.task_invoke,
                                       args=(
+                                          self._task_id,
                                           self._sandbox_root,
                                           self._repo_root,
                                           self._assets_config,
@@ -142,7 +170,8 @@ class TaskBaseInvoker(BaseMirControllerInvoker):
             thread.start()
             return utils.make_general_response(CTLResponseCode.CTR_OK, "")
         else:
-            return self.task_invoke(sandbox_root=self._sandbox_root,
+            return self.task_invoke(task_id=self._task_id,
+                                    sandbox_root=self._sandbox_root,
                                     repo_root=self._repo_root,
                                     assets_config=self._assets_config,
                                     working_dir=self._work_dir,
@@ -150,60 +179,61 @@ class TaskBaseInvoker(BaseMirControllerInvoker):
                                     request=self._request)
 
     @classmethod
-    def task_invoke(cls, sandbox_root: str, repo_root: str, assets_config: Dict[str, str], working_dir: str,
+    def task_invoke(cls, task_id: str, sandbox_root: str, repo_root: str, assets_config: Dict[str,
+                                                                                              str], working_dir: str,
                     user_labels: UserLabels, request: backend_pb2.GeneralReq) -> backend_pb2.GeneralResp:
-        subtask_weights = cls.subtask_weights()
-        previous_subtask_id = None
-        # revsersed, to makesure the last subtask idx is 0.
-        for subtask_idx in reversed(range(len(subtask_weights))):
-            logging.info(f"processing subtask {subtask_idx}")
+        sub_tasks = cls.register_subtasks(request)
+        if not sub_tasks:
+            return utils.make_general_response(CTLResponseCode.ARG_VALIDATION_FAILED, 'empty ops')
 
-            subtask_id = utils.sub_task_id(request.task_id, subtask_idx)
+        # append subtask_id, in revsersed order, to make sure the last subtask idx is 0.
+        # format: (task_func, weight, sub_task_id)
+        sub_tasks_join = [(sub_task[0], sub_task[1], utils.sub_task_id(request.task_id,
+                                                                       len(sub_tasks) - 1 - subtask_idx))
+                          for subtask_idx, sub_task in enumerate(sub_tasks)]
+
+        sub_task_id_weights: Dict[str, float] = {}
+        for sub_task in sub_tasks_join:
+            sub_task_id_weights[sub_task[2]] = sub_task[1]
+        cls._register_subtask_monitor(task_id=task_id,
+                                      master_work_dir=working_dir,
+                                      sub_task_id_weights=sub_task_id_weights,
+                                      register_monitor=(not request.req_create_task.no_task_monitor))
+
+        in_dataset_ids: List[str] = request.in_dataset_ids
+        his_task_id: Optional[str] = None
+        if in_dataset_ids:
+            his_task_id = in_dataset_ids[0]
+        for sub_task in sub_tasks_join:
+            subtask_id = sub_task[2]
+            logging.info(f"processing subtask {subtask_id}")
             subtask_work_dir = cls.subtask_work_dir(master_work_dir=working_dir, subtask_id=subtask_id)
 
-            subtask_func_name = f"subtask_invoke_{subtask_idx}"
-            subtask_func = getattr(cls, subtask_func_name)
-            ret = subtask_func(
-                sandbox_root=sandbox_root,
-                repo_root=repo_root,
-                assets_config=assets_config,
-                request=request,
-                subtask_id=subtask_id,
-                subtask_workdir=subtask_work_dir,
-                previous_subtask_id=previous_subtask_id,
-                user_labels=user_labels,
+            ret = sub_task[0](
+                request,
+                user_labels,
+                sandbox_root,
+                assets_config,
+                repo_root,
+                task_id,
+                subtask_id,
+                subtask_work_dir,
+                his_task_id,
+                in_dataset_ids,
             )
             if ret.code != CTLResponseCode.CTR_OK:
-                logging.info(f"subtask failed: {subtask_func_name}\nret: {ret}")
+                logging.info(f"subtask failed: {subtask_id}\nret: {ret}")
                 return ret
 
-            previous_subtask_id = subtask_id
+            his_task_id = subtask_id
+            in_dataset_ids = [task_id]
 
         return ret
 
-    def task_pre_invoke(self, sandbox_root: str, request: backend_pb2.GeneralReq) -> backend_pb2.GeneralResp:
+    def task_pre_invoke(self, request: backend_pb2.GeneralReq) -> backend_pb2.GeneralResp:
         raise NotImplementedError
 
     @classmethod
-    def subtask_weights(cls) -> List:
-        # Subtasks are called in reversed order of index so the index 0 submask is last called,
-        # as a result, the weight list should also be organized in reversed index order.
-        raise NotImplementedError
-
-    @classmethod
-    def subtask_invoke_2(cls, sandbox_root: str, repo_root: str, assets_config: Dict[str, str],
-                         request: backend_pb2.GeneralReq, subtask_id: str, subtask_workdir: str,
-                         previous_subtask_id: str, user_labels: UserLabels) -> backend_pb2.GeneralResp:
-        raise NotImplementedError
-
-    @classmethod
-    def subtask_invoke_1(cls, sandbox_root: str, repo_root: str, assets_config: Dict[str, str],
-                         request: backend_pb2.GeneralReq, subtask_id: str, subtask_workdir: str,
-                         previous_subtask_id: str, user_labels: UserLabels) -> backend_pb2.GeneralResp:
-        raise NotImplementedError
-
-    @classmethod
-    def subtask_invoke_0(cls, sandbox_root: str, repo_root: str, assets_config: Dict[str, str],
-                         request: backend_pb2.GeneralReq, subtask_id: str, subtask_workdir: str,
-                         previous_subtask_id: str, user_labels: UserLabels) -> backend_pb2.GeneralResp:
+    def register_subtasks(cls, request: backend_pb2.GeneralReq) -> List[Tuple[SubTaskType, float]]:
+        # register sub_tasks in executing orders.
         raise NotImplementedError

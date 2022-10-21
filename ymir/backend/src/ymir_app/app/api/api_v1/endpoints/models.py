@@ -149,7 +149,6 @@ def import_model(
     model_group_in = schemas.ModelGroupCreate(
         name=model_import.group_name,
         project_id=model_import.project_id,
-        description=model_import.description,
     )
     model_group = crud.model_group.create_with_user_id(db=db, user_id=current_user.id, obj_in=model_group_in)
 
@@ -217,6 +216,27 @@ def delete_model(
         raise ModelNotFound()
 
     model = crud.model.soft_remove(db, id=model_id)
+    return {"result": model}
+
+
+@router.patch(
+    "/{model_id}",
+    response_model=schemas.ModelOut,
+    responses={
+        400: {"description": "No permission"},
+        404: {"description": "Model Not Found"},
+    },
+)
+def update_model(
+    *,
+    db: Session = Depends(deps.get_db),
+    model_id: int = Path(..., example="12"),
+    stage: schemas.StageChange,
+    current_user: models.User = Depends(deps.get_current_active_user),
+) -> Any:
+
+    model = crud.model.update_recommonded_stage(db, model_id=model_id, stage_id=stage.stage_id)
+
     return {"result": model}
 
 

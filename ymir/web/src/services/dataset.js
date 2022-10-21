@@ -6,8 +6,8 @@ import request from "@/utils/request"
  * @param {array[number]} id
  * @returns
  */
-export function getDataset(id) {
-  return request.get(`datasets/${id}`)
+export function getDataset(id, verbose) {
+  return request.get(`datasets/${id}`, { params: { verbose } })
 }
 
 /**
@@ -65,8 +65,21 @@ export function getDatasetGroups(project_id, { name, offset = 0, limit = 10 }) {
   return request.get("dataset_groups/", { params: { project_id, name, offset, limit } })
 }
 
-export function batchDatasets(ids) {
-  return request.get('datasets/batch', { params: { ids: ids.toString() } })
+/**
+ * batch getting dataset
+ * @param {array<number>} ids dataset ids
+ * @param {number} pid project id
+ * @param {boolean} ck need ck
+ * @returns 
+ */
+export function batchDatasets(pid, ids = [], ck) {
+  return request.get('datasets/batch', {
+    params: {
+      project_id: pid,
+      ids: ids.toString(), 
+      ck,
+    }
+  })
 }
 
 /**
@@ -76,13 +89,18 @@ export function batchDatasets(ids) {
  */
 export function getAssetsOfDataset({
   id,
-  keyword = null,
+  type = 'keywords',
+  keywords = [],
+  cm = [],
+  annoType = [],
   offset = 0,
   limit = 20,
 }) {
   return request.get(`datasets/${id}/assets`, {
     params: {
-      keyword,
+      [type]: keywords.toString() || undefined,
+      cm_types: cm.toString() || undefined,
+      annotation_types: annoType.toString() || undefined,
       offset,
       limit,
     },
@@ -121,16 +139,34 @@ export function delDatasetGroup(id) {
  * evalute between gt and target dataset
  * @param {number} projectId    project id
  * @param {number} datasets      evaluational datasets
- * @param {number} gt           ground truth dataset
+ * @param {number} iou           iou threadhold
+ * @param {number} everageIou    
  * @param {number} confidence   range: [0, 1]
+ * @param {string} ck  custom keyword
  * @returns 
  */
-export function evaluate({ projectId, datasets, gt, confidence }) {
+export function evaluate({ projectId, datasets, iou, everageIou, confidence, ck }) {
   return request.post(`/datasets/evaluation`, {
     project_id: projectId,
-    other_dataset_ids: datasets,
-    gt_dataset_id: gt,
+    dataset_ids: datasets,
     confidence_threshold: confidence,
+    iou_threshold: iou,
+    require_average_iou: everageIou,
+    main_ck: ck,
+  })
+}
+
+/**
+ * @param {array} datasets  analysis datasets
+ * @returns 
+ */
+export function analysis(projectId, datasets) {
+  return request.get(`/datasets/batch`, {
+    params: {
+      project_id: projectId,
+      ids: datasets.toString(),
+      hist: true,
+    }
   })
 }
 
@@ -161,7 +197,7 @@ export function batchAct(action, projectId, ids = []) {
  * }
  * @returns
  */
-export function createDataset({ name, projectId, url, datasetId, path, strategy, description }) {
+export function createDataset({ name, projectId, url, datasetId, path, strategy = 2, description }) {
   return request.post("/datasets/importing", {
     group_name: name, strategy,
     project_id: projectId,
@@ -184,4 +220,31 @@ export function updateDataset(id, name) {
 
 export function getInternalDataset() {
   return request.get('/datasets/public')
+}
+
+/**
+ * check train set and validation set duplication
+ * @param {number} projectId 
+ * @param {number} trainSet 
+ * @param {number} validationSet 
+ * @returns 
+ */
+export function checkDuplication(projectId, trainSet, validationSet) {
+  return request.post('/datasets/check_duplication', {
+    project_id: projectId,
+    dataset_ids: [trainSet, validationSet],
+  })
+}
+
+export function getNegativeKeywords({
+  projectId,
+  dataset,
+  keywords,
+}) {
+  return request.get(`/datasets/${dataset}`, {
+    params: {
+      project_id: projectId,
+      keywords: keywords.toString(),
+    }
+  })
 }

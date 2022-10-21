@@ -44,9 +44,9 @@ const ProjectChart = ({ getProjectStats }) => {
 
   useEffect(async () => {
     const result = await getProjectStats(type)
-    if (result && result.records) {
-      const transData = transferData(result.records)
-      setTimestamps(result.timestamps)
+    if (result?.length) {
+      const transData = transferData(result)
+      setTimestamps(result.map(item => item.legend))
       setSeries(transData)
     }
   }, [type])
@@ -75,7 +75,7 @@ const ProjectChart = ({ getProjectStats }) => {
     let result = [];
     data.forEach(item => {
       // filter
-      result.push(item[1])
+      result.push(item.count)
     })
      const series = [{
       name: t('portal.project'),
@@ -124,7 +124,6 @@ const ProjectChart = ({ getProjectStats }) => {
     >
       {series.length ? (
       <>
-        {console.log('option: ',option)}
         <Radio.Group className={styles.taskTimeBtn} options={times} optionType='button' value={type} onChange={timeChange}></Radio.Group>
         <BarChart option={option} height={241}></BarChart>
       </>) : <Empty /> }

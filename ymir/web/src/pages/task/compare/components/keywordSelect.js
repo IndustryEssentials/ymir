@@ -12,7 +12,7 @@ const KeywordSelect = ({ value, keywords, onChange = () => {} }) => {
     if (keywords?.length) {
       setOptions([
         ...keywords.map(label => ({ key: label, label: label })),
-        { key: '', label: t('common.everage') }
+        { key: '', label: t('common.average') }
       ])
     } else {
       setOptions([])
@@ -37,7 +37,7 @@ const KeywordSelect = ({ value, keywords, onChange = () => {} }) => {
     <span>{t('dataset.column.keyword')}:</span>
     <Dropdown overlay={menus}>
       <Space>
-        {selected === '' ? t('common.everage') : selected}
+        {selected === '' ? t('common.average') : selected}
         <ArrowDownIcon />
       </Space>
     </Dropdown>

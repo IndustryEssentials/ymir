@@ -4,16 +4,18 @@ import unittest
 
 import yaml
 
-from executor import dataset_reader as dr, env, settings
+from ymir_exc import dataset_reader as dr, env, settings
 
 
 class TestDatasetReader(unittest.TestCase):
     # life cycle
     def __init__(self, methodName: str = ...) -> None:
         super().__init__(methodName)
-        self._test_root = os.path.join('/tmp', 'test_tmi', *self.id().split(".")[-3:])
+        self._test_root = os.path.join(
+            '/tmp', 'test_tmi', *self.id().split(".")[-3:])
         self._custom_env_file = os.path.join(self._test_root, 'env.yml')
-        self._training_index_file = os.path.join(self._test_root, 'training-index.tsv')
+        self._training_index_file = os.path.join(
+            self._test_root, 'training-index.tsv')
 
     def setUp(self) -> None:
         settings.DEFAULT_ENV_FILE_PATH = self._custom_env_file
@@ -69,15 +71,17 @@ class TestDatasetReader(unittest.TestCase):
             shutil.rmtree(self._test_root)
 
     def test_00(self) -> None:
-        training_list = list(dr.item_paths(dataset_type=dr.DatasetType.TRAINING))
+        training_list = list(dr.item_paths(
+            dataset_type=env.DatasetType.TRAINING))
         self.assertEqual(len(training_list), 3)  # have 3 items
-        self.assertEqual(len(training_list[0]), 2)  # each item have asset and annotations
+        # each item have asset and annotations
+        self.assertEqual(len(training_list[0]), 2)
 
         try:
-            dr.item_paths(dataset_type=dr.DatasetType.VALIDATION)
+            dr.item_paths(dataset_type=env.DatasetType.VALIDATION)
         except Exception as e:
             self.assertTrue(isinstance(e, ValueError))
         try:
-            dr.item_paths(dataset_type=dr.DatasetType.CANDIDATE)
+            dr.item_paths(dataset_type=env.DatasetType.CANDIDATE)
         except Exception as e:
             self.assertTrue(isinstance(e, ValueError))

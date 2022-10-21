@@ -2,17 +2,16 @@ import React, { useEffect, useState, useRef } from "react"
 import { connect } from 'dva'
 import styles from "./list.less"
 import { Link, useHistory } from "umi"
-import { Form, Input, Table, Modal, Row, Col, Tooltip, Pagination, Space, Empty, Button, } from "antd"
-import {
-  SearchOutlined,
-} from "@ant-design/icons"
+import { Form, Input, Table, Modal, Row, Col, Tooltip, Pagination, Space, Empty, Button, message, Popover, } from "antd"
 
 import { diffTime } from '@/utils/date'
-import { states } from '@/constants/model'
+import { ResultStates } from '@/constants/common'
 import { TASKTYPES, TASKSTATES } from '@/constants/task'
 import t from "@/utils/t"
-import { percent } from '@/utils/number'
+import usePublish from "@/hooks/usePublish"
+import { getDeployUrl } from '@/constants/common'
 
+import CheckProjectDirty from "@/components/common/CheckProjectDirty"
 import Actions from "@/components/table/actions"
 import TypeTag from "@/components/task/typeTag"
 import RenderProgress from "@/components/common/progress"
@@ -23,26 +22,32 @@ import { getTensorboardLink } from "@/services/common"
 
 import {
   ShieldIcon, VectorIcon, EditIcon,
-  EyeOffIcon, DeleteIcon, FileDownloadIcon, TrainIcon, WajueIcon, StopIcon,SearchIcon,
+  EyeOffIcon, DeleteIcon, FileDownloadIcon, TrainIcon, WajueIcon, StopIcon, SearchIcon,
   ArrowDownIcon, ArrowRightIcon, ImportIcon, BarchartIcon
 } from "@/components/common/icons"
+import EditStageCell from "./editStageCell"
+import { DescPop } from "../common/descPop"
+import useRerunAction from "../../hooks/useRerunAction"
 
 const { useForm } = Form
 
-function Model({ pid, project = {}, iterations, group, modelList, versions, query, ...func }) {
+function Model({ pid, project = {}, iterations, groups, modelList, versions, query, ...func }) {
   const history = useHistory()
   const { name } = history.location.query
   const [models, setModels] = useState([])
   const [modelVersions, setModelVersions] = useState({})
   const [total, setTotal] = useState(1)
-  const [selectedVersions, setSelectedVersions] = useState({})
+  const [selectedVersions, setSelectedVersions] = useState({ selected: [], versions: {} })
   const [form] = useForm()
   const [current, setCurrent] = useState({})
-  const [visibles, setVisibles] = useState(group ? { [group]: true } : {})
+  const [visibles, setVisibles] = useState({})
+  const [trainingUrl, setTrainingUrl] = useState('')
   let [lock, setLock] = useState(true)
   const hideRef = useRef(null)
   const delGroupRef = useRef(null)
   const terminateRef = useRef(null)
+  const generateRerun = useRerunAction()
+  const [publish, publishResult] = usePublish()
 
   /** use effect must put on the top */
   useEffect(() => {
@@ -51,6 +56,11 @@ function Model({ pid, project = {}, iterations, group, modelList, versions, quer
     }
     setLock(false)
   }, [history.location])
+
+  useEffect(() => {
+    const initVisibles = groups.reduce((prev, group) => ({ ...prev, [group]: true }), {})
+    setVisibles(initVisibles)
+  }, [groups])
 
   useEffect(() => {
     const mds = setGroupLabelsByProject(modelList.items, project)
@@ -106,6 +116,14 @@ function Model({ pid, project = {}, iterations, group, modelList, versions, quer
     }
   }, [query, lock])
 
+  useEffect(() => {
+    const selected = selectedVersions.selected
+    const mvs = Object.values(modelVersions).flat().filter(version => selected.includes(version.id))
+    const hashs = mvs.map(version => version.task.hash)
+    const url = getTensorboardLink(hashs)
+    setTrainingUrl(url)
+  }, [selectedVersions])
+
   async function initState() {
     await func.resetQuery()
     form.resetFields()
@@ -116,13 +134,19 @@ function Model({ pid, project = {}, iterations, group, modelList, versions, quer
       title: showTitle("model.column.name"),
       dataIndex: "versionName",
       className: styles[`column_name`],
-      render: (name, { id, state, projectLabel, iterationLabel }) => <Row>
-        <Col flex={1}><Link to={`/home/project/${pid}/model/${id}`}>{name}</Link></Col>
-        <Col flex={'50px'}>
-          {projectLabel ? <div className={styles.extraTag}>{projectLabel}</div> : null}
-          {iterationLabel ? <div className={styles.extraIterTag}>{iterationLabel}</div> : null}
-        </Col>
-      </Row>,
+      render: (name, { id, description, projectLabel, iterationLabel }) => {
+        const popContent = <DescPop description={description} style={{ maxWidth: '30vw' }} />
+        const content = <Row>
+          <Col flex={1}><Link to={`/home/project/${pid}/model/${id}`}>{name}</Link></Col>
+          <Col flex={'50px'}>
+            {projectLabel ? <div className={styles.extraTag}>{projectLabel}</div> : null}
+            {iterationLabel ? <div className={styles.extraIterTag}>{iterationLabel}</div> : null}
+          </Col>
+        </Row>
+        return description ? <Popover title={t('common.desc')} content={popContent}>
+          {content}
+        </Popover> : content
+      },
       ellipsis: true,
     },
     {
@@ -131,16 +155,17 @@ function Model({ pid, project = {}, iterations, group, modelList, versions, quer
       render: (type) => <TypeTag type={type} />,
     },
     {
-      title: showTitle("model.column.map"),
-      dataIndex: "map",
-      render: map => <span title={map}>{percent(map)}</span>,
-      sorter: (a, b) => a - b,
-      align: 'center',
+      title: showTitle("model.column.stage"),
+      dataIndex: "recommendStage",
+      render: (_, record) => isValidModel(record.state) ?
+        <EditStageCell record={record} saveHandle={updateModelVersion} /> : null,
+      // align: 'center',
+      width: 300,
     },
     {
       title: showTitle('dataset.column.state'),
       dataIndex: 'state',
-      render: (state, record) => RenderProgress(state, record, true),
+      render: (state, record) => RenderProgress(state, record),
       // width: 60,
     },
     {
@@ -169,9 +194,19 @@ function Model({ pid, project = {}, iterations, group, modelList, versions, quer
   const listChange = (current, pageSize) => {
     const limit = pageSize
     const offset = (current - 1) * pageSize
-    func.updateQuery({ ...query, limit, offset })
+    func.updateQuery({ ...query, current, limit, offset })
   }
 
+  function updateModelVersion(result) {
+    setModelVersions(mvs => {
+      return {
+        ...mvs,
+        [result.groupId]: mvs[result.groupId].map(version => {
+          return version.id === result.id ? result : version
+        })
+      }
+    })
+  }
 
   async function showVersions(id) {
     setVisibles((old) => ({ ...old, [id]: !old[id] }))
@@ -182,6 +217,7 @@ function Model({ pid, project = {}, iterations, group, modelList, versions, quer
     Object.keys(versions).forEach(gid => {
       const list = versions[gid]
       const updatedList = list.map(item => {
+        delete item.iterationLabel
         const iteration = iterations.find(iter => iter.model === item.id)
         if (iteration) {
           item.iterationLabel = t('iteration.tag.round', iteration)
@@ -197,6 +233,7 @@ function Model({ pid, project = {}, iterations, group, modelList, versions, quer
     Object.keys(versions).forEach(gid => {
       const list = versions[gid]
       const updatedList = list.map(item => {
+        delete item.projectLabel
         item = setLabelByProject(project?.model, 'isInitModel', item)
         return { ...item }
       })
@@ -207,6 +244,7 @@ function Model({ pid, project = {}, iterations, group, modelList, versions, quer
 
   function setGroupLabelsByProject(items, project) {
     return items.map(item => {
+      delete item.projectLabel
       item = setLabelByProject(project?.model, 'isInitModel', item)
       return { ...item }
     })
@@ -234,8 +272,16 @@ function Model({ pid, project = {}, iterations, group, modelList, versions, quer
   }
 
   const actionMenus = (record) => {
-    const { id, name, url, state, taskState, taskType, task, isProtected } = record
+    const { id, name, url, state, taskState, taskType, task, isProtected, stages, recommendStage } = record
+
     const actions = [
+      {
+        key: "publish",
+        label: t("model.action.publish"),
+        hidden: () => !isValidModel(state) || !getDeployUrl(),
+        onclick: () => publish(record),
+        icon: <ShieldIcon />,
+      },
       {
         key: "verify",
         label: t("model.action.verify"),
@@ -255,21 +301,21 @@ function Model({ pid, project = {}, iterations, group, modelList, versions, quer
         key: "mining",
         label: t("dataset.action.mining"),
         hidden: () => !isValidModel(state),
-        onclick: () => history.push(`/home/task/mining/${pid}?mid=${id}`),
+        onclick: () => history.push(`/home/project/${pid}/mining?mid=${id},${recommendStage}`),
         icon: <VectorIcon />,
       },
       {
         key: "train",
         label: t("dataset.action.train"),
         hidden: () => !isValidModel(state),
-        onclick: () => history.push(`/home/task/train/${pid}?mid=${id}`),
+        onclick: () => history.push(`/home/project/${pid}/train?mid=${id},${recommendStage}`),
         icon: <TrainIcon />,
       },
       {
         key: "inference",
         label: t("dataset.action.inference"),
         hidden: () => !isValidModel(state),
-        onclick: () => history.push(`/home/task/inference/${pid}?mid=${id}`),
+        onclick: () => history.push(`/home/project/${pid}/inference?mid=${id},${recommendStage}`),
         icon: <WajueIcon />,
       },
       {
@@ -281,17 +327,18 @@ function Model({ pid, project = {}, iterations, group, modelList, versions, quer
       },
       {
         key: "tensor",
-        label: 'Tensorboard',
+        label: t('task.action.training'),
         target: '_blank',
         link: getTensorboardLink(task.hash),
         hidden: () => taskType !== TASKTYPES.TRAINING,
         icon: <BarchartIcon />,
       },
+      generateRerun(record),
       {
         key: "hide",
         label: t("common.action.hide"),
         onclick: () => hide(record),
-        hidden: ()=> hideHidden(record),
+        hidden: () => hideHidden(record),
         icon: <EyeOffIcon />,
       },
     ]
@@ -304,15 +351,32 @@ function Model({ pid, project = {}, iterations, group, modelList, versions, quer
   }
 
   const multipleInfer = () => {
-    const ids = Object.values(selectedVersions)
-    history.push(`/home/task/inference/${pid}?mid=${ids}`)
+    const { selected } = selectedVersions
+    const versionsObject = Object.values(versions).flat()
+    const stages = versionsObject.filter(md => selected.includes(md.id)).map(md => {
+      return [md.id, md.recommendStage].toString()
+    })
+    if (stages.length) {
+      history.push(`/home/project/${pid}/inference?mid=${stages.join('|')}`)
+    } else {
+      message.warning(t('model.list.batch.invalid'))
+    }
   }
 
   const multipleHide = () => {
-    const ids = Object.values(selectedVersions).flat()
     const allVss = Object.values(versions).flat()
-    const vss = allVss.filter(({id}) => ids.includes(id))
-    hideRef.current.hide(vss, project.hiddenModels)
+    const vss = allVss.filter(({ id, state }) => selectedVersions.selected.includes(id))
+    if (vss.length) {
+      hideRef.current.hide(vss, project.hiddenModels)
+    } else {
+      message.warning(t('model.list.batch.invalid'))
+    }
+  }
+
+  const getDisabledStatus = (filter = () => { }) => {
+    const allVss = Object.values(versions).flat()
+    const { selected } = selectedVersions
+    return !selected.length || allVss.filter(({ id }) => selected.includes(id)).some(version => filter(version))
   }
 
   const hide = (version) => {
@@ -325,12 +389,18 @@ function Model({ pid, project = {}, iterations, group, modelList, versions, quer
   const hideOk = (result) => {
     result.forEach(item => fetchVersions(item.model_group_id, true))
     getData()
-    setSelectedVersions({})
+    setSelectedVersions({ selected: [], versions: {} })
   }
 
-  
+
   function rowSelectChange(gid, rowKeys) {
-    setSelectedVersions(old => ({ ...old, [gid]: rowKeys }))
+    setSelectedVersions(({ versions }) => {
+      versions[gid] = rowKeys
+      return {
+        selected: Object.values(versions).flat(),
+        versions: { ...versions },
+      }
+    })
   }
 
   const stop = (dataset) => {
@@ -369,15 +439,15 @@ function Model({ pid, project = {}, iterations, group, modelList, versions, quer
   }
 
   function isValidModel(state) {
-    return states.VALID === state
+    return ResultStates.VALID === state
   }
 
   function isRunning(state) {
-    return states.READY === state
+    return ResultStates.READY === state
   }
 
   function add() {
-    history.push(`/home/model/import/${pid}`)
+    history.push(`/home/project/${pid}/model/import`)
   }
 
   const addBtn = (
@@ -386,16 +456,17 @@ function Model({ pid, project = {}, iterations, group, modelList, versions, quer
     </Button>
   )
 
-  const renderMultipleActions = Object.values(selectedVersions).flat().length ? (
-    <>
-      <Button type="primary" onClick={multipleHide}>
-        <EyeOffIcon /> {t("common.action.multiple.hide")}
-      </Button>
-      <Button type="primary" onClick={multipleInfer}>
-        <WajueIcon /> {t("common.action.multiple.infer")}
-      </Button>
-    </>
-  ) : null
+  const renderMultipleActions = <>
+    <Button type="primary" disabled={getDisabledStatus(({ state }) => isRunning(state))} onClick={multipleHide}>
+      <EyeOffIcon /> {t("common.action.multiple.hide")}
+    </Button>
+    <Button type="primary" disabled={getDisabledStatus(({ state }) => !isValidModel(state))} onClick={multipleInfer}>
+      <WajueIcon /> {t("common.action.multiple.infer")}
+    </Button>
+    <a href={trainingUrl} target='_blank'><Button type="primary" disabled={getDisabledStatus()}>
+      <BarchartIcon /> {t('task.action.training.batch')}
+    </Button></a>
+  </>
 
   const renderGroups = (<>
     <div className='groupList'>
@@ -416,8 +487,8 @@ function Model({ pid, project = {}, iterations, group, modelList, versions, quer
             onChange={tableChange}
             rowKey={(record) => record.id}
             rowSelection={{
+              selectedRowKeys: selectedVersions.versions[group.id],
               onChange: (keys) => rowSelectChange(group.id, keys),
-              getCheckboxProps: (record) => ({ disabled: isRunning(record.state), }),
             }}
             rowClassName={(record, index) => index % 2 === 0 ? '' : 'oddRow'}
             columns={columns}
@@ -426,17 +497,23 @@ function Model({ pid, project = {}, iterations, group, modelList, versions, quer
         </div>
       </div>) : <Empty />}
     </div>
-    <Pagination className={`pager ${styles.pager}`} showQuickJumper showSizeChanger total={total} defaultCurrent={1} defaultPageSize={query.limit} onChange={listChange} />
+    <Pagination className={`pager ${styles.pager}`} showQuickJumper showSizeChanger total={total}
+      current={query.current} pageSize={query.limit} onChange={listChange} />
   </>)
 
   return (
     <div className={styles.model}>
-      <div className='actions'>
-        <Space>
-          {addBtn}
-          {renderMultipleActions}
-        </Space>
-      </div>
+      <Row className='actions'>
+        <Col flex={1}>
+          <Space>
+            {addBtn}
+            {renderMultipleActions}
+          </Space>
+        </Col>
+        <Col>
+          <CheckProjectDirty pid={pid} />
+        </Col>
+      </Row>
       <div className={`list ${styles.list}`}>
         <div className={`search ${styles.search}`}>
           <Form

@@ -14,6 +14,7 @@ import user from './modules/user'
 import image from './modules/image'
 import tip from './modules/tip'
 import project from './modules/project'
+import algo from './modules/algo'
 
 export default {
   ...common,
@@ -31,4 +32,5 @@ export default {
   ...image,
   ...tip,
   ...project,
+  ...algo,
 }

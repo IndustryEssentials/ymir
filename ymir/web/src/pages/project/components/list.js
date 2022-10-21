@@ -5,11 +5,12 @@ import { useHistory, Link } from "umi"
 import { List, Skeleton, Space, Pagination, Col, Row, Card, Button, Form, Input, message, ConfigProvider, } from "antd"
 
 import t from "@/utils/t"
-import { getStageLabel } from '@/constants/project'
+import { getStageLabel } from '@/constants/iteration'
 import ProjectEmpty from '@/components/empty/project'
 import Del from './del'
 import s from "./list.less"
 import { EditIcon, DeleteIcon, AddIcon, SearchIcon } from "@/components/common/icons"
+import KeywordsItem from "@/components/project/keywordsItem"
 
 const ProjectList = ({ list, query, ...func }) => {
 
@@ -38,7 +39,7 @@ const ProjectList = ({ list, query, ...func }) => {
   const pageChange = (current, pageSize) => {
     const limit = pageSize
     const offset = (current - 1) * pageSize
-    func.updateQuery({ ...query, limit, offset })
+    func.updateQuery({ ...query, current, limit, offset })
   }
 
   async function getData() {
@@ -54,7 +55,7 @@ const ProjectList = ({ list, query, ...func }) => {
         label: t("project.action.edit"),
         onclick: (e) => {
           e.stopPropagation()
-          history.push(`/home/project/add/${id}`)
+          history.push(`/home/project/${id}/add`)
         },
         icon: <EditIcon />,
       },
@@ -97,7 +98,7 @@ const ProjectList = ({ list, query, ...func }) => {
       getData()
     }
   }
-  
+
   async function initState() {
     await func.resetQuery()
     form.resetFields()
@@ -146,15 +147,15 @@ const ProjectList = ({ list, query, ...func }) => {
     const title = <Row wrap={false} className='title'>
       <Col flex={1}>
         <Space>
-          <span className={s.name}><a>{item.name}</a></span>
+          <span className={s.name}><a>{item.name}</a> {item.isExample ? <span className="nameExtra">{t('project.example')}</span> : null}</span>
           <span className='titleItem'>
             <span className='titleLabel'>{t('project.train_classes')}:</span>
-            <span className='titleContent'>{item.keywords.join(',')}</span>
+            <span className='titleContent'><KeywordsItem keywords={item.keywords} /></span>
           </span>
-          <span className='titleItem'>
+          {item.enableIteration ? <span className='titleItem'>
             <span className='titleLabel'>{t('project.iteration.current')}:</span>
             <span className='titleContent emphasis'>{t(getStageLabel(item.currentStage, item.round))}</span>
-          </span>
+          </span> : null}
         </Space>
       </Col>
       <Col>{more(item)}</Col>
@@ -175,12 +176,14 @@ const ProjectList = ({ list, query, ...func }) => {
             <span className='setLabel'>{item.trainSet?.name}</span><span>|</span>
             <span className='setLabel'>{item.testSet?.name}</span><span>|</span>
             <span className='setLabel'>{item.miningSet?.name}</span>
-            </div>
+          </div>
         </Col>
-        <Col span={4} className={s.stats}>
+        {item.enableIteration ? <Col span={4} className={s.stats}>
           <div className='contentLabel'>{t('project.iteration.number')}</div>
-          <div className='contentContent'><span className='currentIteration'>{item.round}</span></div>
-        </Col>
+          <div className='contentContent'>
+            <span className='currentIteration'>{item.round}</span>
+          </div>
+        </Col> : null}
       </Row>
       <Row>
         <Col flex={1}><span className='bottomLabel'>{t('project.content.desc')}:</span> <span className={s.bottomContent}>{item.description}</span></Col>
@@ -190,7 +193,7 @@ const ProjectList = ({ list, query, ...func }) => {
 
     return <List.Item>
       <Skeleton active loading={item.loading}>
-        <List.Item.Meta title={title} description={desc} onClick={() => history.push(`/home/project/detail/${item.id}`)}>
+        <List.Item.Meta title={title} description={desc} onClick={() => history.push(`/home/project/${item.id}/detail`)}>
         </List.Item.Meta>
       </Skeleton>
     </List.Item>
@@ -208,8 +211,8 @@ const ProjectList = ({ list, query, ...func }) => {
             renderItem={renderItem}
           />
         </ConfigProvider>
-        <Pagination className= 'pager' onChange={pageChange}
-          defaultCurrent={1} defaultPageSize={query.limit} total={total}
+        <Pagination className='pager' onChange={pageChange}
+          current={query.current} pageSize={query.limit} total={total}
           showTotal={() => t('project.list.total', { total })}
           showQuickJumper showSizeChanger />
         <Del ref={delRef} ok={delOk} />

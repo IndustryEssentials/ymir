@@ -47,3 +47,12 @@ class StatsProjectsCountOut(Common):
 
 class StatsModelmAPsOut(Common):
     result: Dict[str, List[Tuple[int, float]]]
+
+
+class StatsMetricsQueryPoint(BaseModel):
+    legend: str
+    count: int
+
+
+class StatsMetricsQueryOut(Common):
+    result: List[StatsMetricsQueryPoint]

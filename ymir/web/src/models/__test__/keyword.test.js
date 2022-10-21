@@ -31,7 +31,7 @@ describe("models: keyword", () => {
     const kw = { name: 'cat', aliases: ['kitty', 'hunney'] }
     const creator = {
       type: "updateKeywords",
-      payload: { keywords: [kw], dry_run: false},
+      payload: { keywords: [kw], dry_run: false },
     }
     const keywords = [kw]
     const response = { code: 0, result: keywords }
@@ -61,13 +61,13 @@ describe("models: keyword", () => {
   })
   it("effects: getRecommendKeywords", () => {
     const saga = keyword.effects.getRecommendKeywords
-    const kw = [['cat', 12], ['dog', 6], ['person', 3]]
-    const expected = kw.map(item => item[0])
+    const result = [{ legend: 'cat', count: 12 }, { legend: 'dog', count: 6 }, { legend: 'person', count: 3 }]
+    const expected = result.map(item => item.legend)
     const creator = {
       type: "getRecommendKeywords",
-      payload: kw,
+      payload: { datasets: [34, 4], limit: 5 },
     }
-    const response = { code: 0, result: kw }
+    const response = { code: 0, result }
 
     const generator = saga(creator, { put, call, select })
     generator.next()

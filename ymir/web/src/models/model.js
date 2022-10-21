@@ -10,15 +10,19 @@ import {
   importModel,
   updateModel,
   verify,
+  setRecommendStage,
+  batchModelStages,
 } from "@/services/model"
 import { getStats } from "../services/common"
-import { transferModelGroup, transferModel, getModelStateFromTask, states, } from '@/constants/model'
-import { actions, updateResultState } from '@/constants/common'
+import { transferModelGroup, transferModel, getModelStateFromTask, states, transferStage, } from '@/constants/model'
+import { transferAnnotation } from '@/constants/dataset'
+import { actions, updateResultState, updateResultByTask } from '@/constants/common'
 import { deepClone } from '@/utils/object'
 
 const initQuery = {
   name: "",
   time: 0,
+  current: 1,
   offset: 0,
   limit: 20,
 }
@@ -94,10 +98,29 @@ export default {
         return dss.items
       }
     },
+    *batchLocalModels({ payload: ids = [] }, { call, put }) {
+      const cache = yield put.resolve({
+        type: 'getLocalModels',
+        payload: ids,
+      })
+      if (ids.length === cache.length) {
+        return cache
+      }
+      const fetchIds = ids.filter(id => cache.every(ds => ds.id !== id))
+      const remoteModels = yield put.resolve({
+        type: 'batchModels',
+        payload: fetchIds
+      })
+      return [...cache, ...remoteModels]
+    },
     *batchModels({ payload }, { call, put }) {
       const { code, result } = yield call(batchModels, payload)
       if (code === 0) {
         const models = result.map(model => transferModel(model))
+        yield put({
+          type: 'updateLocalModels',
+          payload: models,
+        })
         return models
       }
     },
@@ -170,23 +193,44 @@ export default {
         return result
       }
     },
-    *verify({ payload }, { call }) {
-      const { id, urls, image, config } = payload
-      const { code, result } = yield call(verify, id, urls, image, config)
+    *setRecommendStage({ payload }, { call, put }) {
+      const { model, stage } = payload
+      const { code, result } = yield call(setRecommendStage, model, stage)
       if (code === 0) {
-        return result
+        return transferModel(result)
+      }
+    },
+    *verify({ payload }, { call }) {
+      const { code, result } = yield call(verify, payload)
+      if (code === 0) {
+        return result.annotations[0]?.detection?.map(transferAnnotation)
+      }
+    },
+    *batchModelStages({ payload }, { call, put }) {
+      const { code, result } = yield call(batchModelStages, payload)
+      if (code === 0) {
+        const stages = result.map(stage => transferStage(stage))
+        return stages || []
       }
     },
     *updateModelsStates({ payload }, { put, select }) {
       const versions = yield select(state => state.model.versions)
       const tasks = payload || {}
+      const all = yield select(({ model }) => model.allModels)
+      const newModels = []
       Object.keys(versions).forEach(gid => {
         const models = versions[gid]
         const updatedModels = models.map(model => {
           const updatedModel = updateResultState(model, tasks)
+          newModels.push(updatedModel)
           return updatedModel ? { ...updatedModel } : model
         })
         versions[gid] = updatedModels
+      })
+      const validNewModels = newModels.filter(model => model?.needReload)
+      yield put({
+        type: 'UPDATE_ALL_MODELS',
+        payload: [...validNewModels, ...all],
       })
       yield put({
         type: 'UPDATE_ALL_VERSIONS',
@@ -194,16 +238,28 @@ export default {
       })
     },
     *updateModelState({ payload }, { put, select }) {
-      const models = yield select(state => state.model.model)
-      const tasks = payload || {}
-      const id = Object.keys(models).find(id => models[id])
-      const updatedModel = updateResultState(models[id], tasks)
-
-      if (updatedModel) {
-        yield put({
-          type: 'UPDATE_MODEL',
-          payload: { id: updatedModel.id, model: { ...updatedModel } },
-        })
+      const caches = yield select(state => state.model.model)
+      const tasks = Object.values(payload || {})
+      for (let index = 0; index < tasks.length; index++) {
+        const task = tasks[index]
+        const model = caches[task?.result_model?.id]
+        if (!model) {
+          continue
+        }
+        const updated = updateResultByTask(model, task)
+        if (updated) {
+          if (updated.needReload) {
+            yield put({
+              type: 'getModel',
+              payload: { id: updated.id, force: true }
+            })
+          } else {
+            yield put({
+              type: 'UPDATE_MODEL',
+              payload: { id: updated.id, model: { ...updated } },
+            })
+          }
+        }
       }
     },
     *getModelsByMap({ payload }, { call, put }) {
@@ -248,6 +304,19 @@ export default {
     },
     *clearCache({ }, { put }) {
       yield put({ type: 'CLEAR_ALL', })
+    },
+    *updateLocalModels({ payload: models = [] }, { put }) {
+      for (let i = 0; i < models.length; i++) {
+        const model = models[i]
+        yield put({
+          type: "UPDATE_MODEL",
+          payload: { id: model.id, model },
+        })
+      }
+    },
+    *getLocalModels({ payload: ids = [] }, { put, select }) {
+      const models = yield select(({ model }) => model.model)
+      return ids.map((id) => models[id]).filter(d => d)
     },
   },
   reducers: {

@@ -3,14 +3,16 @@ import logging
 import os
 import shutil
 import tarfile
+import time
 import unittest
 from unittest import mock
 
 from google.protobuf.json_format import ParseDict
+from mir.version import YMIR_VERSION, ymir_model_salient_version
 import yaml
 
 from mir.commands.mining import CmdMining
-from mir.tools import mir_storage_ops, settings as mir_settings, utils as mir_utils
+from mir.tools import mir_storage_ops, models, settings as mir_settings, mir_storage
 import mir.protos.mir_command_pb2 as mirpb
 import tests.utils as test_utils
 
@@ -51,7 +53,7 @@ class TestMiningCmd(unittest.TestCase):
         fake_infer_output_dict = {
             'detection': {
                 'd4e4a60147f1e35bc7f5bc89284aa16073b043c9': {
-                    'annotations': [
+                    'boxes': [
                         {
                             'box': {
                                 'x': 0,
@@ -61,7 +63,8 @@ class TestMiningCmd(unittest.TestCase):
                             },
                             'score': 0.5,
                             'class_name': 'cat',
-                        }, {
+                        },
+                        {
                             'box': {
                                 'x': 50,
                                 'y': 0,
@@ -81,10 +84,15 @@ class TestMiningCmd(unittest.TestCase):
         return 0
 
     def _mock_prepare_model(*args, **kwargs):
-        model_storage = mir_utils.ModelStorage(models=['0.params'],
-                                               executor_config={'class_names': ['person', 'cat', 'unknown-car']},
-                                               task_context={'task_id': '0'})
-        return model_storage
+        mss = models.ModelStageStorage(stage_name='default', files=['0.params'], mAP=0.5, timestamp=int(time.time()))
+        ms = models.ModelStorage(executor_config={'class_names': ['person', 'cat', 'unknown-car']},
+                                 task_context={'task_id': '0'},
+                                 stages={mss.stage_name: mss},
+                                 best_stage_name=mss.stage_name,
+                                 model_hash='xyz',
+                                 stage_name=mss.stage_name,
+                                 package_version=ymir_model_salient_version(YMIR_VERSION))
+        return ms
 
     # protected: custom: env prepare
     def _prepare_dirs(self):
@@ -113,11 +121,12 @@ class TestMiningCmd(unittest.TestCase):
     def _prepare_mir_repo_branch_mining(self):
         mir_annotations = mirpb.MirAnnotations()
         mir_metadatas = mirpb.MirMetadatas()
-        mir_tasks = mirpb.MirTasks()
 
-        mock_image_file = os.path.join(self._storage_root, 'd4e4a60147f1e35bc7f5bc89284aa16073b043c9')
+        mock_image_file = mir_storage.get_asset_storage_path(self._storage_root,
+                                                             'd4e4a60147f1e35bc7f5bc89284aa16073b043c9')
         shutil.copyfile("tests/assets/2007_000032.jpg", mock_image_file)
-        mock_image_file = os.path.join(self._storage_root, 'a3008c032eb11c8d9ffcb58208a36682ee40900f')
+        mock_image_file = mir_storage.get_asset_storage_path(self._storage_root,
+                                                             'a3008c032eb11c8d9ffcb58208a36682ee40900f')
         shutil.copyfile("tests/assets/2007_000243.jpg", mock_image_file)
 
         mock_training_config_file = os.path.join(self._storage_root, 'config.yaml')
@@ -172,7 +181,7 @@ class TestMiningCmd(unittest.TestCase):
 
     # public: test cases
     @mock.patch("mir.commands.infer.CmdInfer.run_with_args", side_effect=_mock_run_func)
-    @mock.patch("mir.tools.utils.prepare_model", side_effect=_mock_prepare_model)
+    @mock.patch("mir.tools.models.prepare_model", side_effect=_mock_prepare_model)
     def test_mining_cmd_00(self, mock_prepare, mock_run):
         self._prepare_dirs()
         self._prepare_config()
@@ -181,32 +190,44 @@ class TestMiningCmd(unittest.TestCase):
         args = type('', (), {})()
         args.src_revs = 'a@5928508c-1bc0-43dc-a094-0352079e39b5'
         args.dst_rev = 'a@mining-task-id'
-        args.model_hash = 'xyz'
+        args.model_hash_stage = 'xyz@default'
         args.work_dir = os.path.join(self._storage_root, "mining-task-id")
         args.asset_cache_dir = ''
         args.model_location = self._storage_root
         args.media_location = self._storage_root
         args.topk = 1
-        args.add_annotations = True
+        args.add_prediction = True
         args.mir_root = self._mir_repo_root
         args.config_file = self._config_file
         args.executor = 'al:0.0.1'
         args.executant_name = 'executor-instance'
+        args.run_as_root = False
         mining_instance = CmdMining(args)
         mining_instance.run()
 
+        expected_model_storage = TestMiningCmd._mock_prepare_model()
+        mir_annotations: mirpb.MirAnnotations = mir_storage_ops.MirStorageOps.load_single_storage(
+            mir_root=self._mir_repo_root,
+            mir_branch='a',
+            mir_task_id='mining-task-id',
+            ms=mirpb.MirStorage.MIR_ANNOTATIONS,
+            as_dict=False)
+        self.assertEqual({0, 1}, set(mir_annotations.prediction.eval_class_ids))
+        # dont care about timestamp
+        expected_model_storage.stages['default'].timestamp = mir_annotations.prediction.model.stages[
+            'default'].timestamp
+        self.assertEqual(expected_model_storage.get_model_meta(), mir_annotations.prediction.model)
         mock_run.assert_called_once_with(work_dir=args.work_dir,
                                          mir_root=args.mir_root,
                                          media_path=os.path.join(args.work_dir, 'in', 'assets'),
-                                         model_location=args.model_location,
-                                         model_hash=args.model_hash,
+                                         model_storage=expected_model_storage,
                                          index_file=os.path.join(args.work_dir, 'in', 'candidate-src-index.tsv'),
                                          config_file=args.config_file,
                                          task_id='mining-task-id',
-                                         shm_size='16G',
                                          executor=args.executor,
                                          executant_name=args.executant_name,
-                                         run_infer=args.add_annotations,
+                                         run_as_root=args.run_as_root,
+                                         run_infer=args.add_prediction,
                                          run_mining=True)
 
         if os.path.isdir(self._sandbox_root):

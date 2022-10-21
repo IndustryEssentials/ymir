@@ -2,6 +2,8 @@ syntax = "proto3";
 
 package mir.command;
 
+option go_package = "/protos";
+
 /// assertion type: training, validation or test
 enum TvtType {
     TvtTypeUnknown = 0;
@@ -40,9 +42,9 @@ enum TaskType {
     TaskTypeFusion = 11;
     TaskTypeInit = 12;
     TaskTypeImportModel = 13;
+    TaskTypeCopyModel = 14;
+    TaskTypeDatasetInfer = 15;
     TaskTypeEvaluate = 16;
-
-    reserved 14, 15;
 };
 
 enum TaskState {
@@ -68,10 +70,19 @@ enum MirStorage {
     MIR_CONTEXT = 4;
 }
 
-enum LabelFormat {
-    NO_ANNOTATION = 0;
-    PASCAL_VOC = 1;
-    IF_ARK = 2;
+enum AnnoFormat {
+    AF_NO_ANNOTATION = 0;
+    AF_DET_PASCAL_VOC = 1;
+    AF_DET_ARK_JSON = 2;
+    AF_DET_LS_JSON = 3;
+    AF_SEG_POLYGON = 4;
+    AF_SEG_MASK = 5;
+};
+
+enum AssetFormat {
+    AF_UNKNOWN = 0;
+    AF_RAW = 1;
+    AF_LMDB = 2;
 };
 
 /// ========== metadatas.mir ==========
@@ -81,44 +92,109 @@ message MirMetadatas {
 };
 
 message MetadataAttributes {
-    string dataset_name = 1;
     Timestamp timestamp = 2;
     TvtType tvt_type = 3;
     AssetType asset_type = 4;
     int32 width = 5;  /// column number
     int32 height = 6;  /// row number
     int32 image_channels = 7;  /// (for images) channel count
+    int32 byte_size = 8;
+    string origin_filename = 9;
+
+    reserved 1;
 };
 
 message Timestamp {
-    /// start time stamp
-    int64 start = 1;
+    /// start time stamp, use int32 as int64 is not correctly parsed.
+    int32 start = 1;
     /// duration (in seconds), for images, it's always 0
     float duration = 2;
 };
 
 /// ========== annotations.mir ==========
 message MirAnnotations {
-    /// key: task id, value: annotations of that single task
-    map<string, SingleTaskAnnotations> task_annotations = 1;
-    string head_task_id = 2;
+    SingleTaskAnnotations ground_truth = 3;
+    SingleTaskAnnotations prediction = 4;
+    // key: asset id, value: cks and image quality, from pred and gt
+    map<string, SingleImageCks> image_cks = 5;
+
+    reserved 1, 2;
+};
+
+enum AnnoType {
+    AT_UNKNOWN = 0;
+    AT_CLASS = 1; // Classification with class id, not implemented.
+    AT_DET_BOX = 2; // Detection w. bounding box.
+    AT_SEG_POLYGON = 3; // Semantic Segmentation w. ploygons.
+    AT_SEG_MASK = 4; // Instance Segmentation w. mask.
 };
 
 message SingleTaskAnnotations {
     /// key: image id, value: annotations of that single image
     map<string, SingleImageAnnotations> image_annotations = 1;
+    string task_id = 2;
+    AnnoType type = 3;
+    // Set of all shown class ids.
+    repeated int32 task_class_ids = 4;
+    map<int32, IntPoint> map_id_color = 5;
+
+    // meta infos of this SingleTaskAnnotations
+    repeated int32 eval_class_ids = 10;
+    // model meta info associated with this single_task_annotations
+    ModelMeta model = 11;
+    // executor config used to generate this single task annotations
+    string executor_config = 12;
 };
 
 message SingleImageAnnotations {
-    repeated Annotation annotations = 2;
+    repeated ObjectAnnotation boxes = 2;
+
+    repeated ObjectAnnotation polygons = 3;
+
+    MaskAnnotation mask = 4;
+    // Set of class ids shown in this image.
+    repeated int32 img_class_ids = 5;
+
+    reserved 1;
 };
 
-message Annotation {
+message SingleImageCks {
+    map<string, string> cks = 1;
+    float image_quality = 2;
+}
+
+message MaskAnnotation {
+    // PNG image with 3 channels where each pixel corresponds to a class_id.
+    bytes semantic_mask = 1;
+    // PNG image with 3 channels where each pixel corresponds to an object_id.
+    bytes instance_mask = 2;
+    repeated int32 object_ids = 3;
+}
+
+message ObjectAnnotation {
     // Index of this annotation in current single image, may be different from the index in repeated field.
     int32 index = 1;
     Rect box = 2;
     int32 class_id = 3;
     double score = 4;
+    float anno_quality = 5;
+    map<string, string> tags = 6;
+    ConfusionMatrixType cm = 7;
+    int32 det_link_id = 8;
+    string class_name = 9;  // for data parsed from outside, e.g. inference.
+    repeated IntPoint polygon = 10;
+};
+
+enum ConfusionMatrixType {
+    NotSet = 0;
+    TP = 1;
+    FP = 2;
+    FN = 3;
+    TN = 4;
+    Unknown = 5;
+    // Matched True Positive, only for gt.
+    MTP = 11;
+    IGNORED = 12;
 };
 
 message Rect {
@@ -126,28 +202,42 @@ message Rect {
     int32 y = 2;
     int32 w = 3;
     int32 h = 4;
+    float rotate_angle = 5; // unit in pi.
 };
 
 /// ========== keywords.mir ==========
 message MirKeywords {
-    // key: asset hash, value: keywords list
-    // cnt: count of keywords
-    map<string, Keywords> keywords = 1;
-    // key: class id, value: assert ids
-    map<int32, Assets> index_predifined_keyids = 6;
+    CiTagToIndex pred_idx = 7;  // ci to assets, generated from preds
+    CiTagToIndex gt_idx = 8;  // ci to assets, generated from gt
 
-    reserved 2, 3, 4, 5;
+    // key: ck main key, value: assets and assets with sub keys, from (mir_annotations.image_cks) pred and gt
+    map<string, AssetAnnoIndex> ck_idx = 9;
+
+    reserved 1, 2, 3, 4, 5, 6;
 };
 
-message Assets {
+message CiTagToIndex {
+    // key: ci, value: annos
+    map<int32, MapStringToInt32List> cis = 1;
+    // key: ck main key, value: annos and annos with sub keys
+    map<string, AssetAnnoIndex> tags = 2;
+};
+
+message StringList {
     repeated string asset_ids = 1;
 };
 
-message Keywords {
-    // predefined: managed id-keyword map
-    repeated int32 predifined_keyids = 1;
-    // customized: arbitrary user defined keywords
-    repeated string customized_keywords = 2;
+message MapStringToInt32List {
+    map<string, Int32List> key_ids = 1;
+};
+
+message Int32List {
+    repeated int32 ids = 1;
+}
+
+message AssetAnnoIndex {
+    map<string, Int32List> asset_annos = 1;  // key: asset id, value: annotation indexes
+    map<string, MapStringToInt32List> sub_indexes = 2;  // key: ck value, value: asset and it's annotation indexes
 };
 
 /// ========== tasks.mir ==========
@@ -163,14 +253,16 @@ message Task {
     /// auto generated unique id
     string task_id = 3;
     /// execution time of this task
-    int64 timestamp = 5;  // RFC 3339 date strings
-    /// (special for training task): result model for cmd train
+    int32 timestamp = 5;  // RFC 3339 date strings
+    /// (for training task): result model for cmd train
     ModelMeta model = 6;
-    /// (special for import task): unknown types for cmd import
-    map<string, int32> unknown_types = 7;
     int32 return_code = 8;
     string return_msg = 9;
     Evaluation evaluation = 10;
+    /// (for import task): new types for cmd import, key: class name, value: asset count
+    map<string, int32> new_types = 11;
+    /// (for import task): reason for new types, True: added, False: ignored
+    bool new_types_added = 12;
 
     string serialized_task_parameters = 102;
     string serialized_executor_config = 103;
@@ -178,7 +270,7 @@ message Task {
     string dst_rev = 105;
     string executor = 106;
 
-    reserved 4, 100, 101;
+    reserved 4, 7, 100, 101;
 };
 
 message ModelMeta {
@@ -188,37 +280,54 @@ message ModelMeta {
     float mean_average_precision = 2;
     /// context generated by train command
     string context = 3;
+    map<string, ModelStage> stages = 4;
+    string best_stage_name = 5;
+    repeated string class_names = 6;
+};
+
+message ModelStage {
+    string stage_name = 1;
+    repeated string files = 2;
+    int32 timestamp = 3;
+    float mAP = 4;
 };
 
 message Evaluation {
     EvaluateConfig config = 1;
-    // key: prediction dataset id, value: evaluation result for ground truth and prediction dataset
-    map<string, SingleDatasetEvaluation> dataset_evaluations = 2;
+    SingleDatasetEvaluation dataset_evaluation = 3;
+    SingleDatasetEvaluation main_ck = 4;
+    map<string, SingleDatasetEvaluation> sub_cks = 5;
+    EvaluationState state = 6;
+
+    reserved 2;
 }
 
 message EvaluateConfig {
-    string gt_dataset_id = 1;
-    repeated string pred_dataset_ids = 2;
     float conf_thr = 3;
     string iou_thrs_interval = 4;
     bool need_pr_curve = 5;
+    repeated int32 class_ids = 7;
+    string main_ck = 8;
+
+    reserved 1, 2, 6;
 }
 
 message SingleDatasetEvaluation {
     float conf_thr = 1;
-    string gt_dataset_id = 2;
-    string pred_dataset_id = 3;
     map<string, SingleIouEvaluation> iou_evaluations = 4;  // key: string of iou threshold
     SingleIouEvaluation iou_averaged_evaluation = 5;  // average for all ious
+
+    reserved 2, 3;
 }
 
 message SingleIouEvaluation {
-    map<int32, SingleTopicEvaluation> ci_evaluations = 1;  // key: class ids
-    SingleTopicEvaluation ci_averaged_evaluation = 2;  // evaluations averaged by class ids
-    map<string, SingleTopicEvaluation> topic_evaluations = 3;  // key: topic names
+    map<int32, SingleEvaluationElement> ci_evaluations = 1;  // key: class ids
+    SingleEvaluationElement ci_averaged_evaluation = 2;  // evaluations averaged by class ids
+
+    reserved 3;
 }
 
-message SingleTopicEvaluation {
+message SingleEvaluationElement {
     float ap = 1;
     float ar = 2;
     int32 tp = 3;
@@ -227,23 +336,82 @@ message SingleTopicEvaluation {
     repeated FloatPoint pr_curve = 6;
 }
 
+message IntPoint {
+    int32 x = 1;
+    int32 y = 2;
+    int32 z = 3;
+}
+
 message FloatPoint {
     float x = 1;
     float y = 2;
+    float z = 3;
+}
+
+enum EvaluationState {
+    // evaluate not started
+    ES_NOT_SET = 0;
+    // evaluation result ready to use
+    ES_READY = 1;
+    // evaluation not finished because there's no gt or pred
+    ES_NO_GT_OR_PRED = 2;
+    // evaluation not finished because there're too many images or too many class ids
+    ES_EXCEEDS_LIMIT = 3;
+    // evaluation not finished because there's no evaluate class ids
+    ES_NO_CLASS_IDS = 4;
 }
 
 /// ========== context.mir ==========
 message MirContext {
     /// total images count
     int32 images_cnt = 1;
-    /// total negative images count (images without any annotations)
-    int32 negative_images_cnt = 2;
-    /// total negative images count (images without any project class names)
-    int32 project_negative_images_cnt = 3;
-    /// key: class id, value: images count
-    map<int32, int32> predefined_keyids_cnt = 4;
-    /// key: class id (only in this project), value: images count
-    map<int32, int32> project_predefined_keyids_cnt = 5;
-    /// key: customized keywords, value: images count
-    map<string, int32> customized_keywords_cnt = 6;
+
+    /// from pred and gt
+    map<string, SingleMapCount> cks_cnt = 6;
+
+    int32 total_asset_mbytes = 11;
+
+    AnnoStats pred_stats = 100;
+    AnnoStats gt_stats = 101;
+
+    reserved 2, 3, 4, 5, 7, 8, 9, 10, 12;
+};
+
+message SingleMapCount {
+    int32 cnt = 1;
+    map<string, int32> sub_cnt = 2;
+};
+
+message AnnoStats {
+    int32 total_cnt = 1;
+    int32 positive_asset_cnt = 2;
+    int32 negative_asset_cnt = 3;
+    map<string, SingleMapCount> tags_cnt = 7;  // key: main tag name, value: main tag count and sub tag names and counts
+    map<int32, int32> class_ids_cnt = 8;  // key: class ids, value: asset count for this class id
+
+    // Shortcut of class_ids for evaluation (dup. field as in SingleTaskAnnotations).
+    repeated int32 eval_class_ids = 9;
+
+    reserved 4, 5, 6;
+};
+
+message ExportConfig {
+    // Asset config.
+    AssetFormat asset_format = 1;
+    string asset_dir = 2;
+    string asset_index_file = 3;
+    // Index file writes abs path. In TMI case, path should be converted, e.g. /in/assets.
+    string asset_index_prefix = 4;
+    string media_location = 5;
+    bool need_sub_folder = 6;
+
+    // Annotation config.
+    AnnoFormat anno_format = 50;
+    string gt_dir = 51;
+    string gt_index_file = 52;
+    string gt_index_prefix = 53;
+    string pred_dir = 54;
+    string pred_index_file = 55;
+    string pred_index_prefix = 56;
+    string tvt_index_dir = 57;
 }

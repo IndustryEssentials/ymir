@@ -1,6 +1,7 @@
 import json
 import logging
 import os
+from pathlib import Path
 import sys
 
 from requests.exceptions import ConnectionError, HTTPError, Timeout
@@ -9,18 +10,24 @@ from apscheduler.schedulers.blocking import BlockingScheduler
 
 from common_utils.percent_log_util import LogState, PercentLogHandler
 from controller.config import label_task as label_task_config
-from controller.invoker.invoker_task_importing import TaskImportingInvoker
+from controller.invoker.invoker_task_import_dataset import TaskImportDatasetInvoker
 from controller.utils import utils
 from controller.utils.redis import rds
+from controller.label_model.base import NotReadyError
+from proto import backend_pb2
 
 
-def trigger_mir_import(
-    repo_root: str, task_id: str, index_file: str, des_annotation_path: str, media_location: str, import_work_dir: str
-) -> None:
+def trigger_mir_import(repo_root: str, task_id: str, index_file: str, des_annotation_path: str, media_location: str,
+                       import_work_dir: str) -> None:
     # trigger mir import
-    TaskImportingInvoker.importing_cmd(
-        repo_root, task_id, index_file, des_annotation_path, media_location, import_work_dir, name_strategy_ignore=False
-    )
+    TaskImportDatasetInvoker.importing_cmd(repo_root=repo_root,
+                                           task_id=task_id,
+                                           index_file=index_file,
+                                           pred_dir='',
+                                           gt_dir=des_annotation_path,
+                                           media_location=media_location,
+                                           work_dir=import_work_dir,
+                                           unknown_types_strategy=backend_pb2.UnknownTypesStrategy.UTS_STOP)
 
 
 def remove_json_file(des_annotation_path: str) -> None:
@@ -28,35 +35,22 @@ def remove_json_file(des_annotation_path: str) -> None:
         logging.error(f"des_annotation_path not exist: {des_annotation_path}")
         return
 
-    for one_file in os.listdir(des_annotation_path):
-        if one_file.endswith(".json"):
-            os.remove(os.path.join(des_annotation_path, one_file))
+    for annotation_file in os.listdir(des_annotation_path):
+        if annotation_file.endswith(".json"):
+            os.remove(os.path.join(des_annotation_path, annotation_file))
 
 
-def _gen_index_file(des_annotation_path: str) -> str:
-    media_files = []
-
-    if label_task_config.LABEL_STUDIO == label_task_config.LABEL_TOOL:
-        for one_file in os.listdir(des_annotation_path):
-            if one_file.endswith(".json"):
-                with open(os.path.join(des_annotation_path, one_file)) as f:
-                    json_content = json.load(f)
-                    pic_path = json_content["task"]["data"]["image"].replace("data/local-files/?d=", "")
-                    media_files.append(pic_path)
-    elif label_task_config.LABEL_FREE == label_task_config.LABEL_TOOL:
-        des_annotation_media_path = os.path.join(des_annotation_path, "images")
-        if os.path.isdir(des_annotation_media_path):
-            for one_file in os.listdir(des_annotation_media_path):
-                if os.path.splitext(one_file)[1].lower() in [".jpeg", ".jpg", ".png"]:
-                    media_files.append(os.path.join(des_annotation_media_path, one_file))
-    else:
-        raise ValueError("LABEL_TOOL Error")
-
-    index_file = os.path.join(des_annotation_path, "index.txt")
-    with open(index_file, "w") as f:
-        f.write("\n".join(media_files))
-
-    return index_file
+def generate_label_index_file(input_file: Path, annotation_dir: Path) -> Path:
+    """
+    filter assets paths against related annotation files
+    """
+    labeled_assets_hashes = [i.stem for i in annotation_dir.iterdir() if i.suffix == ".xml"]
+    output_file = input_file.with_name("label_index.tsv")
+    with open(input_file) as in_, open(output_file, "w") as out_:
+        for asset_path in in_:
+            if Path(asset_path.strip()).stem in labeled_assets_hashes:
+                out_.write(asset_path)
+    return output_file
 
 
 def lable_task_monitor() -> None:
@@ -73,21 +67,24 @@ def lable_task_monitor() -> None:
             remove_json_file(project_info["des_annotation_path"])
             try:
                 label_instance.sync_export_storage(project_info["storage_id"])
-                label_instance.convert_annotation_to_voc(
-                    project_info["project_id"], project_info["des_annotation_path"]
-                )
+                label_instance.convert_annotation_to_voc(project_info["project_id"],
+                                                         project_info["des_annotation_path"])
+            except NotReadyError:
+                logging.info("label result not ready, try agiain later")
+                continue
             except (ConnectionError, HTTPError, Timeout) as e:
                 sentry_sdk.capture_exception(e)
                 logging.error(f"get label task {task_id} error: {e}, set task_id:{task_id} error")
                 state = LogState.ERROR
-            index_file = _gen_index_file(project_info["des_annotation_path"])
+            export_index_file = Path(project_info["input_asset_dir"]) / "index.tsv"
+            label_index_file = generate_label_index_file(export_index_file, Path(project_info["des_annotation_path"]))
             trigger_mir_import(
-                project_info["repo_root"],
-                task_id,
-                index_file,
-                project_info["des_annotation_path"],
-                project_info["media_location"],
-                project_info["import_work_dir"],
+                repo_root=project_info["repo_root"],
+                task_id=task_id,
+                index_file=str(label_index_file),
+                des_annotation_path=project_info["des_annotation_path"],
+                media_location=project_info["media_location"],
+                import_work_dir=project_info["import_work_dir"],
             )
 
             rds.hdel(label_task_config.MONITOR_MAPPING_KEY, task_id)

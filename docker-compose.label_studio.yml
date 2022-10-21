@@ -1,6 +1,6 @@
 version: "3.3"
 services:
-  label-studio:
+  labelstudio:
     image: heartexlabs/label-studio:latest
     env_file:
       - .env

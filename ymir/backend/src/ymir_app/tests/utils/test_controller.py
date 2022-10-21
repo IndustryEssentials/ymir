@@ -33,8 +33,8 @@ class TestControllerRequest:
                 "docker_config": "{}",
             },
         )
-        assert ret.req.req_type == m.mirsvrpb.TASK_CREATE
-        assert ret.req.req_create_task.task_type == m.mirsvrpb.TaskTypeTraining
+        assert ret.req.req_type == m.mirsvrpb.RequestType.TASK_CREATE
+        assert ret.req.req_create_task.task_type == m.mir_cmd_pb.TaskType.TaskTypeTraining
 
     def test_mining(self):
         task_type = m.TaskType.mining
@@ -48,14 +48,15 @@ class TestControllerRequest:
                 "dataset_hash": random_lower_string(),
                 "top_k": 1000,
                 "model_hash": random_lower_string(),
+                "model_stage_name": random_lower_string(),
                 "generate_annotations": True,
                 "strategy": MergeStrategy.prefer_newest,
                 "docker_image": "yolov4-training:test",
                 "docker_config": "{}",
             },
         )
-        assert ret.req.req_type == m.mirsvrpb.TASK_CREATE
-        assert ret.req.req_create_task.task_type == m.mirsvrpb.TaskTypeMining
+        assert ret.req.req_type == m.mirsvrpb.RequestType.TASK_CREATE
+        assert ret.req.req_create_task.task_type == m.mir_cmd_pb.TaskType.TaskTypeMining
 
     def test_label(self):
         task_type = m.TaskType.label
@@ -72,12 +73,12 @@ class TestControllerRequest:
                 "labellers": [],
                 "class_ids": [1, 2],
                 "extra_url": random_url(),
-                "keep_annotations": True,
+                "annotation_type": 2,
             },
         )
-        assert ret.req.req_type == m.mirsvrpb.TASK_CREATE
-        assert ret.req.req_create_task.task_type == m.mirsvrpb.TaskTypeLabel
-        assert ret.req.req_create_task.labeling.export_annotation
+        assert ret.req.req_type == m.mirsvrpb.RequestType.TASK_CREATE
+        assert ret.req.req_create_task.task_type == m.mir_cmd_pb.TaskType.TaskTypeLabel
+        assert ret.req.req_create_task.labeling.annotation_type == m.mirsvrpb.AnnotationType.PRED
 
     def test_copy_data(self):
         task_type = m.TaskType.copy_data
@@ -93,8 +94,8 @@ class TestControllerRequest:
                 "src_resource_id": random_lower_string(),
             },
         )
-        assert ret.req.req_type == m.mirsvrpb.TASK_CREATE
-        assert ret.req.req_create_task.task_type == m.mirsvrpb.TaskTypeCopyData
+        assert ret.req.req_type == m.mirsvrpb.RequestType.TASK_CREATE
+        assert ret.req.req_create_task.task_type == m.mir_cmd_pb.TaskType.TaskTypeCopyData
 
     def test_kill(self, mocker):
         task_type = m.ExtraRequestType.kill
@@ -114,47 +115,49 @@ class TestControllerRequest:
 
 
 class TestControllerClient:
-    def test_close_controller(self, mocker):
-        channel_str = random_lower_string()
-        mock_grpc = mocker.Mock()
-        mocker.patch.object(m, "grpc", return_value=mock_grpc)
-        cc = m.ControllerClient(channel_str)
-        cc.channel = mock_channel = mocker.Mock()
-        cc.close()
-        mock_channel.close.assert_called()
-
     def test_send_with_grpc_error(self, mocker):
         channel_str = random_lower_string()
+
+        mock_grpc = mocker.Mock()
+        mocker.patch.object(m, "grpc", return_value=mock_grpc)
+
+        mock_mir_grpc = mocker.Mock()
+        mock_mir_grpc.mir_controller_serviceStub().data_manage_request.return_value = mocker.Mock(code=-1)
+        mocker.patch.object(m, "mir_grpc", mock_mir_grpc)
+
         cc = m.ControllerClient(channel_str)
-        mock_stub = mocker.Mock()
-        mock_stub.data_manage_request.return_value = mocker.Mock(code=-1)
-        cc.stub = mock_stub
         req = mocker.Mock()
         with pytest.raises(ValueError):
             cc.send(req)
 
     def test_send(self, mocker):
         channel_str = random_lower_string()
+
+        mock_grpc = mocker.Mock()
+        mocker.patch.object(m, "grpc", return_value=mock_grpc)
+
+        mock_mir_grpc = mocker.Mock()
+        mock_mir_grpc.mir_controller_serviceStub().data_manage_request.return_value = mocker.Mock(code=0)
+        mocker.patch.object(m, "mir_grpc", mock_mir_grpc)
+
         cc = m.ControllerClient(channel_str)
-        mock_stub = mocker.Mock()
-        mock_stub.data_manage_request.return_value = mocker.Mock(code=0)
-        cc.stub = mock_stub
         req = mocker.Mock()
-        mocker.patch.object(m, "json_format")
+        mocker.patch.object(m, "MessageToDict")
+        mocker.patch.object(m, "MessageToString")
         cc.send(req)
-        mock_stub.data_manage_request.assert_called()
 
     def test_inference(self, mocker):
         user_id = random.randint(1000, 9000)
         project_id = random.randint(1000, 9000)
         model_hash = random_lower_string()
+        model_stage = random_lower_string()
         asset_dir = random_lower_string()
         channel_str = random_lower_string()
         docker_image = random_lower_string()
         docker_config = random_lower_string()
         cc = m.ControllerClient(channel_str)
         cc.send = mock_send = mocker.Mock()
-        cc.call_inference(user_id, project_id, model_hash, asset_dir, docker_image, docker_config)
+        cc.call_inference(user_id, project_id, model_hash, model_stage, asset_dir, docker_image, docker_config)
         mock_send.assert_called()
         generated_req = mock_send.call_args[0][0].req
         assert generated_req.user_id == str(user_id)

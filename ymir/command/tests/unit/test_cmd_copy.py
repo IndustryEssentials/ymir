@@ -1,6 +1,6 @@
 import os
 import shutil
-from typing import List
+from typing import List, Set
 import unittest
 
 from mir.commands import copy
@@ -50,31 +50,34 @@ class TestCmdCopy(unittest.TestCase):
         test_utils.mir_repo_init(self._src_mir_root)
 
         test_utils.mir_repo_create_branch(self._src_mir_root, 'a')
+        self.__prepare_src_mir_branch_a(task_id='t0')
+        self.__prepare_src_mir_branch_a(task_id='t1', eval_class_ids=[0, 1])
 
+    def __prepare_src_mir_branch_a(self, task_id: str, eval_class_ids: List[int] = []) -> None:
         mir_metadatas = mirpb.MirMetadatas()
         mir_metadatas.attributes['asset0']
+        mir_metadatas.attributes['asset0'].width = 30
+        mir_metadatas.attributes['asset0'].height = 30
         mir_metadatas.attributes['asset1']
+        mir_metadatas.attributes['asset1'].width = 30
+        mir_metadatas.attributes['asset1'].height = 30
 
         mir_annotations = mirpb.MirAnnotations()
-        mir_annotations.head_task_id = 't0'
-        mir_annotations.task_annotations['t0']
-        mir_annotations.task_annotations['t0'].image_annotations['asset0'].CopyFrom(
+        mir_annotations.prediction.image_annotations['asset0'].CopyFrom(
             self.__create_image_annotations(type_ids=[1, 2, 3]))
-        mir_annotations.task_annotations['t0'].image_annotations['asset1'].CopyFrom(
+        mir_annotations.prediction.image_annotations['asset1'].CopyFrom(
             self.__create_image_annotations(type_ids=[3]))
+        mir_annotations.prediction.eval_class_ids[:] = eval_class_ids
 
-        mir_keywords = mirpb.MirKeywords()
-        mir_keywords.keywords['asset0'].predifined_keyids.extend([1, 2, 3])
-        mir_keywords.keywords['asset1'].predifined_keyids.extend([3])
-
+        model_meta = mirpb.ModelMeta(mean_average_precision=0.3)
         task = mir_storage_ops.create_task(task_type=mirpb.TaskType.TaskTypeTraining,
-                                           task_id='t0',
+                                           task_id=task_id,
                                            message='training',
-                                           model_mAP=0.3)
+                                           model_meta=model_meta)
 
         mir_storage_ops.MirStorageOps.save_and_commit(mir_root=self._src_mir_root,
                                                       mir_branch='a',
-                                                      his_branch='master',
+                                                      his_branch='a',
                                                       mir_datas={
                                                           mirpb.MirStorage.MIR_METADATAS: mir_metadatas,
                                                           mirpb.MirStorage.MIR_ANNOTATIONS: mir_annotations,
@@ -84,14 +87,15 @@ class TestCmdCopy(unittest.TestCase):
     def __create_image_annotations(self, type_ids: List[int]) -> mirpb.SingleImageAnnotations:
         single_image_annotations = mirpb.SingleImageAnnotations()
         for idx, type_id in enumerate(type_ids):
-            annotation = mirpb.Annotation()
+            annotation = mirpb.ObjectAnnotation()
             annotation.index = idx
             annotation.class_id = type_id
-            single_image_annotations.annotations.append(annotation)
+            single_image_annotations.boxes.append(annotation)
         return single_image_annotations
 
     # private: check results
-    def __check_results(self, dst_branch: str, dst_tid: str, ignore_unknown_types: bool, drop_annotations: bool):
+    def __check_results(self, dst_branch: str, dst_tid: str, ignore_unknown_types: bool, drop_annotations: bool,
+                        eval_class_ids_set: Set[int] = set()):
         [mir_metadatas, mir_annotations, mir_keywords, mir_tasks,
          _] = mir_storage_ops.MirStorageOps.load_multiple_storages(
              mir_root=self._mir_root,
@@ -103,25 +107,21 @@ class TestCmdCopy(unittest.TestCase):
         metadatas_keys = set(mir_metadatas.attributes.keys())
         self.assertEqual({'asset0', 'asset1'}, metadatas_keys)
 
-        self.assertEqual(dst_tid, mir_annotations.head_task_id)
         if drop_annotations:
-            self.assertEqual(0, len(mir_annotations.task_annotations[dst_tid].image_annotations))
+            self.assertEqual(0, len(mir_annotations.prediction.image_annotations))
         else:
             asset0_idx_ids = {
                 annotation.index: annotation.class_id
-                for annotation in mir_annotations.task_annotations[dst_tid].image_annotations['asset0'].annotations
+                for annotation in mir_annotations.prediction.image_annotations['asset0'].boxes
             }
             asset1_idx_ids = {
                 annotation.index: annotation.class_id
-                for annotation in mir_annotations.task_annotations[dst_tid].image_annotations['asset1'].annotations
+                for annotation in mir_annotations.prediction.image_annotations['asset1'].boxes
             }
             self.assertEqual({0: 2, 1: 1}, asset0_idx_ids)
             self.assertEqual({}, asset1_idx_ids)
+        self.assertEqual(eval_class_ids_set, set(mir_annotations.prediction.eval_class_ids))
 
-            self.assertEqual({1, 2}, set(mir_keywords.keywords['asset0'].predifined_keyids))
-            self.assertEqual(set(), set(mir_keywords.keywords['asset1'].predifined_keyids))
-
-        self.assertEqual(dst_tid, mir_tasks.head_task_id)
         mAP = mir_tasks.tasks[dst_tid].model.mean_average_precision
         self.assertTrue(mAP > 0.29999 and mAP < 0.30001)  # it's actually 0.3
 
@@ -183,3 +183,19 @@ class TestCmdCopy(unittest.TestCase):
         cmd_copy = copy.CmdCopy(fake_args)
         return_code = cmd_copy.run()
         self.assertNotEqual(MirCode.RC_OK, return_code)
+        
+    def test_normal_01(self) -> None:
+        # test cases for pred meta
+        fake_args = type('', (), {})()
+        fake_args.mir_root = self._mir_root
+        fake_args.data_mir_root = self._src_mir_root
+        fake_args.data_src_revs = 'a@t1'
+        fake_args.dst_rev = 'b@t1'
+        fake_args.work_dir = self._work_dir
+        fake_args.ignore_unknown_types = True
+        fake_args.drop_annotations = False
+        cmd_copy = copy.CmdCopy(fake_args)
+        return_code = cmd_copy.run()
+        self.assertEqual(MirCode.RC_OK, return_code)
+        self.__check_results(dst_branch='b', dst_tid='t1', ignore_unknown_types=True, drop_annotations=False,
+                             eval_class_ids_set={0, 2})

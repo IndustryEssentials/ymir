@@ -10,6 +10,7 @@ import tests.utils as test_utils
 from controller.utils import utils
 from controller.utils.invoker_call import make_invoker_cmd_call
 from controller.utils.invoker_mapping import RequestTypeToInvoker
+from mir.protos import mir_command_pb2 as mir_cmd_pb
 from proto import backend_pb2
 
 RET_ID = 'commit t000aaaabbbbbbzzzzzzzzzzzzzzz3\nabc'
@@ -79,18 +80,19 @@ class TestInvokerTaskExporting(unittest.TestCase):
     @mock.patch("subprocess.run", side_effect=_mock_run_func)
     def test_invoker_00(self, mock_run):
         exporting_request = backend_pb2.TaskReqExporting()
-        exporting_request.dataset_id = self._base_task_id
-        exporting_request.format = backend_pb2.LabelFormat.PASCAL_VOC
+        in_dataset_ids = [self._base_task_id]
+        exporting_request.format = mir_cmd_pb.AnnoFormat.AF_DET_PASCAL_VOC
         exporting_request.asset_dir = self._storage_root
-        exporting_request.annotation_dir = self._storage_root
+        exporting_request.pred_dir = self._storage_root
+        exporting_request.gt_dir = self._storage_root
         req_create_task = backend_pb2.ReqCreateTask()
-        req_create_task.task_type = backend_pb2.TaskTypeExportData
+        req_create_task.task_type = mir_cmd_pb.TaskType.TaskTypeExportData
         req_create_task.no_task_monitor = True
         req_create_task.exporting.CopyFrom(exporting_request)
         assets_config = {'assetskvlocation': self._storage_root}
         working_dir = os.path.join(self._sandbox_root, "work_dir",
-                                   backend_pb2.TaskType.Name(backend_pb2.TaskTypeExportData), self._task_id, 'sub_task',
-                                   self._task_id)
+                                   mir_cmd_pb.TaskType.Name(mir_cmd_pb.TaskType.TaskTypeExportData), self._task_id,
+                                   'sub_task', self._task_id)
 
         response = make_invoker_cmd_call(invoker=RequestTypeToInvoker[backend_pb2.TASK_CREATE],
                                          sandbox_root=self._sandbox_root,
@@ -99,15 +101,16 @@ class TestInvokerTaskExporting(unittest.TestCase):
                                          user_id=self._user_name,
                                          repo_id=self._mir_repo_name,
                                          task_id=self._task_id,
+                                         in_dataset_ids=in_dataset_ids,
                                          req_create_task=req_create_task)
         print(MessageToDict(response))
 
-        expected_cmd_importing = (
-            "mir export --root {0} --media-location {1} --asset-dir {1} --annotation-dir {1} --src-revs {2}@{2} "
-            "--format {3} -w {4}".format(self._mir_repo_root, self._storage_root, self._base_task_id, 'voc',
-                                         working_dir))
+        expected_cmd_exporting = (
+            "mir export --root {0} --media-location {1} --asset-dir {1} --src-revs {2}@{2} --anno-format {3} -w {4} "
+            "--pred-dir {1} --gt-dir {1}".format(self._mir_repo_root, self._storage_root, in_dataset_ids[0], 'det-voc',
+                                                 working_dir))
         mock_run.assert_has_calls(calls=[
-            mock.call(expected_cmd_importing.split(' '), capture_output=True, text=True),
+            mock.call(expected_cmd_exporting.split(' '), capture_output=True, text=True),
         ])
 
         expected_ret = backend_pb2.GeneralResp()

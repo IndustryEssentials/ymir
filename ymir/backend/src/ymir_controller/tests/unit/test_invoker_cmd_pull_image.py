@@ -93,6 +93,11 @@ class TestInvokerPullImage(unittest.TestCase):
                 capture_output=True,
                 text=True,
             ),
+            mock.call(
+                "docker run --rm docker_image_name cat /img-man/code-access.yaml".split(" "),
+                capture_output=True,
+                text=True
+            )
         ]
 
         assert mock_run.call_args_list == args_list

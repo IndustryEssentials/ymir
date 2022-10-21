@@ -37,24 +37,26 @@ const MyProject = ({ count = 6, ...func }) => {
   return (
     <Card id='mydataset' className={`${styles.box} ${styles.myProject}`} bordered={false}
       headStyle={cardHead} bodyStyle={cardBody}
-      title={<Title title={<><MydatasetIcon className={styles.headIcon} /><span className={styles.headTitle}>{t('portal.project.my.title')}</span></>} link='/home/project'>
+      title={<Title title={<>
+        <MydatasetIcon className={styles.headIcon} />
+        <span className={styles.headTitle}>{t('portal.project.my.title')}</span>
+        </>} link='/home/project'>
       </Title>}
     >
-      <div className={styles.rowContainer}>
+      <div className={`${styles.rowContainer} scrollbar`}>
         <div className={styles.addBtn}>
           <Link className={styles.emptyBoxAction} to={'/home/project/add'}>
             <AddtaskIcon style={{ fontSize: 20, color: '#36cbcb' }} />
             <span style={{ color: '#36cbcb', fontSize: 16, marginLeft: 10 }}>{t('portal.action.new.project')}</span>
           </Link>
         </div>
-        {projects.length ? <Lists projects={projects} /> : 
-        <div className={styles.addBtn} style={{ marginTop: 20 }}>
+        <div className={styles.addBtn} style={{ marginTop: 10 }}>
           <Link className={styles.emptyBoxAction} to={''} onClick={() => addExample()}>
             <AddtaskIcon style={{ fontSize: 20, color: '#36cbcb' }} />
             <span style={{ color: '#36cbcb', fontSize: 16, marginLeft: 10 }}>{t('project.new.example.label')}</span>
           </Link>
         </div>
-        }
+        {projects.length ? <Lists projects={projects} /> : null}
       </div>
     </Card>
   )

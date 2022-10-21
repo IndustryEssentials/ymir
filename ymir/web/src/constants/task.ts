@@ -1,11 +1,11 @@
-import { states } from './dataset'
-
 export enum TASKTYPES {
   TRAINING = 1,
   MINING = 2,
   LABEL = 3,
+  FILTER = 4,
   IMPORT = 5,
   COPY = 7,
+  MERGE = 8,
   INFERENCE = 15,
   FUSION = 11,
   MODELIMPORT = 13,
@@ -31,6 +31,8 @@ export const getTaskTypeLabel = (type: TASKTYPES) => {
     [TASKTYPES.MINING]: 'task.type.mining',
     [TASKTYPES.LABEL]: 'task.type.label',
     [TASKTYPES.FUSION]: 'task.type.fusion',
+    [TASKTYPES.FILTER]: 'task.type.filter',
+    [TASKTYPES.MERGE]: 'task.type.merge',
     [TASKTYPES.COPY]: 'task.type.copy',
     [TASKTYPES.INFERENCE]: 'task.type.inference',
     [TASKTYPES.IMPORT]: 'task.type.import',

@@ -13,15 +13,16 @@ class RequestHandler:
     ):
         self.url = url
         self.headers = headers
+        self.timeout = label_task_config.LABEL_TOOL_TIMEOUT
 
     def get(self, url_path: str, params: Dict = {}) -> bytes:
-        resp = requests.get(url=f"{self.url}{url_path}", headers=self.headers, params=params, timeout=600)
+        resp = requests.get(url=f"{self.url}{url_path}", headers=self.headers, params=params, timeout=self.timeout)
         resp.raise_for_status()
         return resp.content
 
     def post(self, url_path: str, params: Dict = {}, json_data: Dict = {}) -> bytes:
         resp = requests.post(
-            url=f"{self.url}{url_path}", headers=self.headers, params=params, json=json_data, timeout=600
+            url=f"{self.url}{url_path}", headers=self.headers, params=params, json=json_data, timeout=self.timeout
         )
         resp.raise_for_status()
         return resp.content

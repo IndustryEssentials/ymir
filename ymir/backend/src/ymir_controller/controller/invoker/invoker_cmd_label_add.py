@@ -6,21 +6,24 @@ from proto import backend_pb2
 
 
 class LabelAddInvoker(BaseMirControllerInvoker):
+    def _need_work_dir(self) -> bool:
+        return False
+
     def pre_invoke(self) -> backend_pb2.GeneralResp:
-        return checker.check_request(
-            request=self._request,
+        return checker.check_invoker(
+            invoker=self,
             prerequisites=[checker.Prerequisites.CHECK_USER_ID],
         )
 
     def invoke(self) -> backend_pb2.GeneralResp:
-        expected_type = backend_pb2.RequestType.CMD_LABEL_ADD
-        if self._request.req_type != expected_type:
-            return utils.make_general_response(CTLResponseCode.MIS_MATCHED_INVOKER_TYPE,
-                                               f"expected: {expected_type} vs actual: {self._request.req_type}")
-
         response = utils.make_general_response(CTLResponseCode.CTR_OK, "")
-        conflict_labels = labels.merge_labels(label_storage_file=self._label_storage_file,
-                                              new_labels=labels.parse_labels_from_proto(self._request.label_collection),
-                                              check_only=self._request.check_only)
-        response.label_collection.CopyFrom(conflict_labels.to_proto())
+        user_labels = labels.UserLabels(storage_file=self._label_storage_file)
+        conflict_labels = user_labels.upsert_labels(
+            new_labels=labels.parse_labels_from_proto(self._request.label_collection),
+            check_only=self._request.check_only
+        )
+        response.label_collection.CopyFrom(labels.userlabels_to_proto(conflict_labels))
         return response
+
+    def _parse_response(self, response: backend_pb2.GeneralResp) -> str:
+        return f"LabelAdd conflict: {len(response.label_collection.labels)}, {response.label_collection.ymir_version}"

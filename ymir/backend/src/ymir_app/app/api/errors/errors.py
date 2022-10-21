@@ -103,6 +103,11 @@ class FailedToEvaluate(ControllerError):
     message = "Failed to RUN EVALUATE CMD via Controller"
 
 
+class PrematureDatasets(APIError):
+    code = error_codes.PREMATURE_DATASETS
+    message = "Not All The Datasets Are Ready"
+
+
 class RequiredFieldMissing(APIError):
     code = error_codes.REQUIRED_FIELD_MISSING
     message = "Required Field Missing"
@@ -143,9 +148,24 @@ class ModelNotFound(NotFound):
     message = "Model Not Found"
 
 
+class ModelStageNotFound(NotFound):
+    code = error_codes.MODEL_STAGE_NOT_FOUND
+    message = "Model Stage Not Found"
+
+
 class DatasetEvaluationNotFound(NotFound):
     code = error_codes.DATASET_EVALUATION_NOT_FOUND
     message = "Dataset Evaluation Not Found"
+
+
+class DatasetEvaluationMissingAnnotation(NotFound):
+    code = error_codes.DATASET_EVALUATION_NO_ANNOTATIONS
+    message = "Could Not Evaluate Dataset Without Annotations"
+
+
+class DatasetIndexNotReady(APIError):
+    code = error_codes.DATASET_INDEX_NOT_READY
+    message = "Dataset Index In MongoDB Not Ready"
 
 
 class ModelNotReady(APIError):
@@ -197,6 +217,12 @@ class InvalidToken(APIError):
     status_code = 401
     code = error_codes.INVALID_TOKEN
     message = "Invalid Token"
+
+
+class SystemVersionConflict(APIError):
+    status_code = 401
+    code = error_codes.SYSTEM_VERSION_CONFLICT
+    message = "System Version Conflict"
 
 
 class InvalidScope(APIError):
@@ -275,14 +301,9 @@ class ObsoleteTaskStatus(APIError):
     message = "Obsolete Task Status"
 
 
-class FailedToUpdateTaskStatus(APIError):
+class FailedToUpdateTaskStatusTemporally(APIError):
     code = error_codes.FAILED_TO_UPDATE_TASK_STATUS
     message = "Failed to Update Task Status"
-
-
-class FailedToConnectClickHouse(APIError):
-    code = error_codes.FAILED_TO_CONNECT_CLICKHOUSE
-    message = "Failed to Connect ClickHouse"
 
 
 class FailedToCreateProject(APIError):
@@ -293,6 +314,11 @@ class FailedToCreateProject(APIError):
 class ProjectNotFound(NotFound):
     code = error_codes.PROJECT_NOT_FOUND
     message = "Project Not Found"
+
+
+class InvalidProject(APIError):
+    code = error_codes.INVALID_PROJECT
+    message = "Invalid Project"
 
 
 class DuplicateProjectError(DuplicateError):
@@ -350,6 +376,16 @@ class FailedToUpdateIterationStage(APIError):
     message = "Failed to Update Iteration Stage"
 
 
+class IterationStepNotFound(NotFound):
+    code = error_codes.ITERATION_STEP_NOT_FOUND
+    message = "IterationStep Not Found"
+
+
+class IterationStepHasFinished(APIError):
+    code = error_codes.ITERATION_STEP_ALREADY_FINISHED
+    message = "IterationStep Has Finished"
+
+
 class RefuseToProcessMixedOperations(APIError):
     code = error_codes.REFUSE_TO_PROCESS_MIXED_OPERATIONS
     message = "Refuse To Process Mixed Operations"
@@ -363,3 +399,23 @@ class MissingOperations(APIError):
 class DatasetsNotInSameGroup(APIError):
     code = error_codes.DATASETS_NOT_IN_SAME_GROUP
     message = "Datasets Not in the Same Group"
+
+
+class InvalidModelStageName(APIError):
+    code = error_codes.INVALID_MODEL_STAGE_NAME
+    message = "Invalid Model Stage Name"
+
+
+class VizError(APIError):
+    code = error_codes.VIZ_ERROR
+    message = "General Viz Error"
+
+
+class FailedToParseVizResponse(VizError):
+    code = error_codes.FAILED_TO_PARSE_VIZ_RESP
+    message = "Failed to Parse Viz Response"
+
+
+class VizTimeOut(VizError):
+    code = error_codes.VIZ_TIMEOUT
+    message = "Internal Viz Service Timeout"

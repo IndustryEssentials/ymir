@@ -5,28 +5,39 @@ from tests.utils.utils import random_lower_string
 
 
 class TestImportDatasetPaths:
-    def test_import_dataset_paths(self, mocker: Any) -> None:
-        mocker.patch.object(m, "verify_import_path", return_value=True)
-        input_path = random_lower_string()
+    def test_import_dataset_paths(self, mocker: Any, tmp_path: Any) -> None:
+        input_path = tmp_path
+        m.settings.SHARED_DATA_DIR = str(tmp_path)
+        (tmp_path / "images").mkdir()
+        (tmp_path / "pred").mkdir()
         p = m.ImportDatasetPaths(input_path, random_lower_string())
-        assert p.annotation_dir == f"{input_path}/annotations"
-        assert p.asset_dir == f"{input_path}/images"
+        assert p.pred_dir == str(input_path / "pred")
+        assert p.asset_dir == str(input_path / "images")
+        assert p.gt_dir is None
 
 
 class TestEvaluateDataset:
-    def test_evaluate_dataset(self, mocker: Any) -> None:
+    def test_evaluate_datasets(self, mocker: Any) -> None:
         user_id = randint(100, 200)
         project_id = randint(1000, 2000)
         confidence_threshold = 0.233
-        ctrl = mocker.Mock()
-        viz = mocker.Mock()
-        viz.get_evaluations.return_value = {}
+        iou = 0.5
+        require_average_iou = True
+        need_pr_curve = True
+        ctrl = mocker.Mock(evaluate_dataset=mocker.Mock(return_value={}))
         user_labels = mocker.Mock()
-        gt_dataset = mocker.Mock()
-        other_datasets = [mocker.Mock()]
-        m.evaluate_dataset(
-            ctrl, viz, user_id, project_id, user_labels, confidence_threshold, gt_dataset, other_datasets
+        datasets_mapping = {"a": 1, "b": 2}
+        m.evaluate_datasets(
+            ctrl,
+            user_id,
+            project_id,
+            user_labels,
+            confidence_threshold,
+            iou,
+            require_average_iou,
+            need_pr_curve,
+            "main_ck",
+            datasets_mapping,
         )
 
         ctrl.evaluate_dataset.assert_called()
-        viz.get_evaluations.assert_called()

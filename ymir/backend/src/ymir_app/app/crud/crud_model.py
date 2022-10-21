@@ -87,6 +87,7 @@ class CRUDModel(CRUDBase[Model, ModelCreate, ModelUpdate]):
         db_obj = Model(
             version_num=version_num,
             hash=obj_in.hash,
+            description=obj_in.description,
             source=int(obj_in.source),
             result_state=int(obj_in.result_state),
             model_group_id=obj_in.model_group_id,
@@ -100,10 +101,16 @@ class CRUDModel(CRUDBase[Model, ModelCreate, ModelUpdate]):
         return db_obj
 
     def create_as_task_result(
-        self, db: Session, task: schemas.TaskInternal, dest_group_id: int, dest_group_name: str
+        self,
+        db: Session,
+        task: schemas.TaskInternal,
+        dest_group_id: int,
+        dest_group_name: str,
+        description: Optional[str] = None,
     ) -> Model:
         model_in = ModelCreate(
             hash=task.hash,
+            description=description,
             source=task.type,
             result_state=ResultState.processing,
             model_group_id=dest_group_id,
@@ -129,6 +136,40 @@ class CRUDModel(CRUDBase[Model, ModelCreate, ModelUpdate]):
         db.refresh(model)
         return model
 
+    def update_recommonded_stage(
+        self,
+        db: Session,
+        *,
+        model_id: int,
+        stage_id: int,
+    ) -> Optional[Model]:
+        model = self.get(db, id=model_id)
+        if not model:
+            return model
+        model.recommended_stage = stage_id
+        db.add(model)
+        db.commit()
+        db.refresh(model)
+        return model
+
+    def update_recommonded_stage_by_name(
+        self,
+        db: Session,
+        *,
+        model_id: int,
+        stage_name: str,
+    ) -> Optional[Model]:
+        model = self.get(db, id=model_id)
+        if not model:
+            return model
+        for stage in model.related_stages:
+            if stage.name == stage_name:
+                model.recommended_stage = stage.id
+        db.add(model)
+        db.commit()
+        db.refresh(model)
+        return model
+
     def finish(
         self,
         db: Session,
@@ -143,6 +184,7 @@ class CRUDModel(CRUDBase[Model, ModelCreate, ModelUpdate]):
         if result:
             model.map = result["map"]
             model.hash = result["hash"]
+            model.keywords = result["keywords"]
 
         model.result_state = int(result_state)
 

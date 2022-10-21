@@ -5,8 +5,8 @@ const portal = {
   'portal.dataset.origin.title': { cn: '公共数据集', en: 'Public Dataset', },
   'portal.project.my.title': { cn: '我的项目', en: 'My Project', },
   'portal.dataset.asset.count': { cn: '图片数', en: 'Assets', },
-  'portal.dataset.keyword.count': { cn: '标签数', en: 'Keywords', },
-  'portal.dataset.keyword': { cn: '标签', en: 'Keywords', },
+  'portal.dataset.keyword.count': { cn: '类别数', en: 'Classes', },
+  'portal.dataset.keyword': { cn: '类别', en: 'Classes', },
   'portal.action.new.project': { cn: '新建一个项目', en: 'Create Project', },
 }
 
