@@ -73,7 +73,7 @@ function Matrics({ pid, project }) {
     const cks = diagnosis ?
       Object.values(diagnosis).map(({ sub_cks }) => Object.keys(sub_cks)).flat() : []
 
-      setSubCks([...new Set(cks)])
+    setSubCks([...new Set(cks)])
   }, [diagnosis])
 
   useEffect(() => {
@@ -85,7 +85,7 @@ function Matrics({ pid, project }) {
     setSelectedKeywords([])
   }, [diagnosis])
 
-  useEffect(() => {    
+  useEffect(() => {
     setKwFilter({
       keywords: selectedKeywords?.length ? selectedKeywords : kws,
       kwType,
@@ -222,6 +222,11 @@ function Matrics({ pid, project }) {
     <Checkbox checked={everageIou} onChange={({ target: { checked } }) => setEverageIou(checked)}>Average IOU</Checkbox>
   </Space>
 
+  const iouOptions = [
+    { value: true, label: t('model.diagnose.form.iou.everage') },
+    { value: false, label: t('model.diagnose.form.iou.single') },
+  ]
+
   // todo form initial values
   const initialValues = {
     iou,
@@ -257,8 +262,11 @@ function Matrics({ pid, project }) {
                 <Form.Item label={t('keyword.ck.label')} name='ck'>
                   <Select options={cks.map(ck => ({ value: ck, label: ck }))} allowClear></Select>
                 </Form.Item>
-                <Form.Item label={renderIouTitle} name='iou'>
-                  <Slider style={{ display: !everageIou ? 'block' : 'none' }} min={0.25} max={0.95} step={0.05} marks={{ 0.25: '0.25', 0.5: '0.5', 0.95: '0.95' }} onChange={setIou} />
+                <Form.Item label={t('model.diagnose.form.iou')}>
+                  <Radio.Group value={everageIou} onChange={({ target: { value }}) => setEverageIou(value)} options={iouOptions}></Radio.Group>
+                  <Form.Item noStyle name='iou'>
+                    <Slider style={{ display: !everageIou ? 'block' : 'none' }} min={0.25} max={0.95} step={0.05} marks={{ 0.25: '0.25', 0.5: '0.5', 0.95: '0.95' }} onChange={setIou} />
+                  </Form.Item>
                 </Form.Item>
                 <Form.Item name='submitBtn'>
                   <div style={{ textAlign: 'center' }}>

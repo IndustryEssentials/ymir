@@ -33,9 +33,8 @@
 
 [📘Usage Instruction](https://github.com/IndustryEssentials/ymir/blob/master/README_zh-CN.md#3-gui%E4%BD%BF%E7%94%A8-%E5%85%B8%E5%9E%8B%E6%A8%A1%E5%9E%8B%E7%94%9F%E4%BA%A7%E6%B5%81%E7%A8%8B) |
 [🛠️Installation](https://github.com/IndustryEssentials/ymir/blob/master/README_zh-CN.md#2-%E5%AE%89%E8%A3%85) |
-[👀Equipment](https://c1n.cn/obvHf) |
-[🚀Projects](https://github.com/IndustryEssentials/ymir/projects) |
-[🤔Issues Report](https://github.com/IndustryEssentials/ymir/issues/new/choose) |
+[🚀Projects](https://github.com/IndustryEssentials/ymir/projects) | 
+[🤔Issues Report](https://github.com/IndustryEssentials/ymir/issues/new/choose) | 
 [📰Lisence](https://github.com/IndustryEssentials/ymir/blob/master/LICENSE)
 
 </div>&nbsp;</div>
@@ -46,6 +45,8 @@
 
   📫 Feedback on usage issues: contact.viesc@gmail.com / Professional consulting for server equipment: tensor.station@gmail.com
 <div>&nbsp;</div>&nbsp;</div>
+
+English | [简体中文](README_zh-CN.md)
 
 # Citations
 
@@ -59,15 +60,33 @@ If you wish to refer to YMIR in your work, please use the following BibTeX entry
 }
 ```
 
-## Introduction
+# What's New
 
-English | [简体中文](README_zh-CN.md)
+1.1.0 was released in 5/17/2022
+
+system
+- new dataset/model hiding and restoring functions.
+- support for modifying the project training category before the start of the iteration.
+- adding a new model testing module and model inference result comparison function.
+- optimizing the code structure.
+
+docker
+- support [yolov5](https://github.com/ultralytics/yolov5)
+- support [mmdetection](https://github.com/open-mmlab/mmdetection)
+- support [yolov7](https://github.com/wongkinyiu/yolov7)
+- support [detectron2](https://github.com/facebookresearch/detectron2)
+- support [An Extendable, Efficient and Effective Transformer-based Object Detector](https://github.com/naver-ai/vidt)
+
+view [ymir-executor-fork](https://github.com/modelai/ymir-executor-fork) for detail 
+
+## Introduction
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 **Catalog**
 
 - [Citations](#citations)
+- [What's New](#whats-new)
 - [1. Introduction to AI SUITE-YMIR](#1-introduction-to-ai-suite-ymir)
   - [1.1. Main functions](#11-main-functions)
   - [1.2. Apply for trial](#12-apply-for-trial)
