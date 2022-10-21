@@ -40,7 +40,7 @@ function Detail({ project = {} }) {
       model,
     } = iteration || {}
     setSettings(filterExsit([wholeMiningSet, testSet]))
-    setIntermediations(filterExsit([miningSet, miningResult, labelSet, trainUpdateSet]))
+    setIntermediations(filterExsit([trainUpdateSet, labelSet, miningResult, miningSet,]))
     setModels(filterExsit([model]))
   }, [iteration, project])
 
