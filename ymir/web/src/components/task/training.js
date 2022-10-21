@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useState } from "react"
 import { connect } from "dva"
 import { Select, Radio, Button, Form, Space, InputNumber, Tag, Tooltip } from "antd"
 import { formLayout } from "@/config/antd"
-import { useHistory, useParams } from "umi"
+import { useHistory, useLocation, useParams } from "umi"
 
 import t from "@/utils/t"
 import { HIDDENMODULES } from '@/constants/common'
@@ -36,6 +36,7 @@ function Train({ query = {}, hidden, ok = () => { }, bottom, allDatasets, datase
   const pageParams = useParams()
   const pid = Number(pageParams.id)
   const history = useHistory()
+  const location = useLocation()
   const { mid, image, iterationId, outputKey, currentStage, test, from } = query
   const stage = string2Array(mid)
   const did = Number(query.did)
@@ -120,6 +121,7 @@ function Train({ query = {}, hidden, ok = () => { }, bottom, allDatasets, datase
 
   useEffect(() => {
     const state = location.state
+    console.log('state:', state)
 
     if (state?.record) {
       setFromCopy(true)
