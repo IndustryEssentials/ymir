@@ -15,7 +15,7 @@ If you are using labelfree as a labeling job, please note the correspondence bet
 
 After confirming the above preparations, run bash ymir.sh update to upgrade and wait for the upgrade to complete
 
-## Frequently Asked Questions
+## FAQ
 
 ### 1. The upgrade script reports an error: sandbox not exists
 
