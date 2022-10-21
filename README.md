@@ -80,6 +80,7 @@ Docker
 - Support [ymir image testing tool library](https://github.com/modelai/ymir-executor-verifier)
 - Support [demo sample image creation documentation](https://github.com/modelai/ymir-executor-fork/tree/ymir-dev/det-demo-tmi)
 - Support [ymir mirror development extension library](https://github.com/modelai/ymir-executor-sdk)
+
 View more [ymir-executor-fork](https://github.com/modelai/ymir-executor-fork) 
 
 Within the public dockerimage
@@ -87,6 +88,7 @@ Within the public dockerimage
 - Update the mmdetection training image: youdaoyzbx/ymir-executor:ymir1.3.0-mmdet-cu111-tmi
 - Update the yolov5 training image to support rv1126 chip deployment: youdaoyzbx/ymir-executor:ymir1.3.0-yolov5-cu111-modelstore
 - Update the training image to support yolov5-v6.2: youdaoyzbx/ymir-executor:ymir1.3.0-yolov5-v6.2-cu111-tmi
+
 More code updates [ymir-dev](https://github.com/modelai/ymir-executor-fork/tree/ymir-dev)
 
 ## Introduction
@@ -109,15 +111,10 @@ More code updates [ymir-dev](https://github.com/modelai/ymir-executor-fork/tree/
 - [4. For advanced users: YMIR-CMD (command line) user's guide](#4-for-advanced-users-ymir-cmd-command-line-users-guide)
   - [4.1 Installation](#41-installation)
   - [4.2 Typical model production process](#42-typical-model-production-process)
-  - [4.3. YMIR-CMD manual](#43-ymir-cmd-manual)
 - [5. Get the code](#5-get-the-code)
-  - [5.1. YMIR repos](#51-ymir-repos)
-  - [5.2. Code contribution](#52-code-contribution)
-  - [5.3. About training, inference and mining docker images](#53-about-training-inference-and-mining-docker-images)
+  - [5.1. Code contribution](#51-code-contribution)
+  - [5.2. About training, inference and mining docker images](#52-about-training-inference-and-mining-docker-images)
 - [6. Design concept](#6-design-concept)
-  - [6.1. Life of a dataset](#61-life-of-a-dataset)
-    - [6.1.1. Introduction to a dataset](#611-introduction-to-a-dataset)
-    - [6.1.2. Branch and dataset management](#612-branch-and-dataset-management)
 - [7. MISC](#7-misc)
   - [7.1. FAQ](#71-faq)
 
@@ -394,60 +391,9 @@ $ mir --version
 
 The above figure shows a typical process of model training: 1) the user prepares external data, 2) imports it into the system, 3) appropriately filters the data, and 4) begins training to obtain a model (possibly with low accuracy). 5) selects images in a dataset to be mined that are suitable for further training based on this model, 6) annotates these images, 7) merges the annotated results with the original training set, and 8) uses the merged results to run the training process again to obtain a better model. This section implement the process shown above using the command line. For details, please check the [CMD usage instructions](https://github.com/IndustryEssentials/ymir/wiki/CMD-usage-instructions).
 
-## 4.3. YMIR-CMD manual
-
-YMIR-command-api.211028
-
-**Common parameter format and definitions**
-
-| Parameter Name | Variable Name | Type and Format | Definition                                                   |
-| -------------- | ------------- | --------------- | ------------------------------------------------------------ |
-| --root / -r    | mir_root      | str             | The path the user needs to initialize. If not specified, it is the current path. |
-| --dst-rev      | dst_rev       | str             | 1. target-rev, single only                                   |
-|                |               | rev@tid         | 2. All changes will be saved to this rev's tid               |
-|                |               |                 | 3. If it is a new rev, checkout the first src-revs before creating |
-|                |               |                 | 4. tid is required. rev is required.                         |
-| --src-revs     | src_revs      | str             | 1. Multiple data source revisions separated by semicolons (only supported by merge, other cmd only support single) |
-|                |               | typ:rev@bid     | 2. typ is optional. Only effective in merge and supports pre-use identifiers (tr/va/te). If typ is empty, it means that the settings in the original rev are used |
-|                |               |                 | 3. bid is optional. If it is empty, read the head task id    |
-|                |               |                 | 4. rev cannot be empty                                       |
-|                |               |                 | Note: When there are multiple revs, e.g. a1@b1; a2@b2, you need to enclose them in quotes because the semicolon is a Linux command separator |
-
-**mir init**
-
-| DESCRIPTION                                                  |          |               |
-| ------------------------------------------------------------ | -------- | ------------- |
-| mir init [--root <mir_root>]                                 |          |               |
-| Initialize the current path, or the path specified by -root as a mir root |          |               |
-| ARGS (name of ARGS, name, type, description of arguments in run_with_args) |          |               |
-| --root / -r                                                  | mir_root | str, optional |
-| RETURNS                                                      |          |               |
-| Normal initialization: returns 0                             |          |               |
-| Exception: other error code                                  |          |               |
-
-**mir branch**
-
-| DESCRIPTION                    |          |               |
-| ------------------------------ | -------- | ------------- |
-| mir branch [--root <mir_root>] |          |               |
-| List all local branches        |          |               |
-| ARGS                           |          |               |
-| --root / -r                    | mir_root | str, optional |
-| RETURNS                        |          |               |
-
 # 5. Get the code
 
-## 5.1. YMIR repos
-
-The YMIR project consists of three components:
-
-1. [Back-end](https://github.com/IndustryEssentials/ymir/tree/master/ymir/backend), task distribution and management.
-
-2. [Front-end](https://github.com/IndustryEssentials/ymir/tree/master/ymir/web), interactive interface.
-
-3. [Command line](https://github.com/IndustryEssentials/ymir/tree/master/ymir/command), a command-line interface (CLI) for managing the underlying annotation and image data.
-
-## 5.2. Code contribution
+## 5.1. Code contribution
 
 Any code in the YMIR repo should follow the coding standards and will be checked in the CI tests.
 
@@ -459,86 +405,13 @@ Any code in the YMIR repo should follow the coding standards and will be checked
 
 Also check out [MSFT Encoding Style](https://github.com/Microsoft/Recommenders/wiki/Coding-Guidelines) for more advice.
 
-## 5.3 About training, inference and mining docker images
+## 5.2. About training, inference and mining docker images
 
 [Check this document](docs/ymir-cmd-container.md) for details
 
 # 6. Design concept
-
-## 6.1. Life of a dataset
-
-### 6.1.1. Introduction to a dataset
-
-The dataset consists of metadata and media files, and the metadata has the following characteristics:
-
-* A unique ID and the system has an initial default metadata status of null.
-
-* A list of resources, where each element points to an actual resource; Metadata doesn't actually hold resources, but only maintains this list of resources.
-
-* A number of keywords by which a user can search for a particular metadata status.
-
-* Support users to create a new metadata branch and perform operations on the newly created branch. The operations on the new branch do not affect the status of the original metadata, and the original metadata is still traceable by the user. These operations include but are not limited to the following:
-
-  (1) Adding resources
-  (2) Adding or modifying annotations
-  (3) Add or modify keywords
-  (4) Filtering resources
-  (5) Merging two different metadatas
-
-* You can switch freely between different metadata.
-
-* You can query the history of the metadata.
-
-* You can tag the metadata to facilitate precise search by tag.
-
-* You can also add keywords to metadata to facilitate fuzzy search through keywords.
-
-* You can read the resources contained in a metadata and use those resources for browsing, training and so on.
-
-From the above description, it can be seen that the management of metadata is similar to that of VCS (Version Control System), and users can have the following completely different usage methods and scenarios:
-
-**The first scene**: Directly from the very first metadata, a filtering process is carried out to select and use the data that meets the requirements, as shown in the following figure:
-
-![Scenario1](https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/Scenario1.jpeg)
-
-Whenever the user needs to start a new task,
-:: The user checks out a new feature branch from within the current master branch, getting the metadata in feature#1 state.
-:: The user performs data filtering and other tasks on the metadata of this new branch. The user can obtain the metadata in the feature #2 state.
-:: When it is confirmed that this metadata is suitable for the user's training task, then the user can start training using this data.
-
-* At this point, changes made by other users to the master branch's metadata will not affect the training data the user is using either.
-
-**The second scene**: Search for certain metadata by label or keyword. The user starts the screening process until the data meets the requirements, and then the data is used. As shown below:
-
-![Scenario2](https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/Scenario2.jpeg)
-
-At this point, whenever a user needs to carry out a new task,
-:: Users can search for metadata that basically matches the user's requirements by means of keywords, labels, and so on.
-:: On this basis, users need sign out a new branch.
-:: Users can continue data filtering or cleansing on the new branch to obtain data that actually meets the requirements.
-:: Users can use this data for training.
-
-**The third scene**: incremental merging. Suppose the user has completed the training task of the model using certain metadata. At this point, there is an update to the metadata of the repository and the master branch. The user wishes to merge this part of the update into the currently used metadata.
-
-![Scenario3](https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/Scenario3.jpeg)
-
-Suppose the user is now in FEATURE#2 and needs to do the following:
-:: You need switch back to master branch master.
-:: You need repeat the task previously done for the incremental part master#2 - master#1 to obtain feature#2+.
-:: You need cut back to feature#2 and merge feature#2+ to get feature#3.
-
-### 6.1.2. Branch and dataset management
-
-The discussion in this section is based on the following assumptions:
-:: The user's data is imported in batches in units of datasets.
-:: Each dataset is a separate branch.
-:: Changes to and maintenance of each dataset are carried out on this branch.
-:: Master branch is always empty.
-This management approach is shown in the following figure:
-
-![branch and dataset](https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/branch-and-dataset.jpeg)
-
-We use the concept of code version control in Git to manage our data and models, use the concept of branches to create new projects so that different tasks on the same set of images can run in parallel. The additions, retrievals, updates, and deletions of datasets and basic operations are created by commits to branches. Logically, each commit stores an updated version of the dataset or new model, as well as the metadata of the operation that led to this change. Finally, only the data changes are merged into the main branch. This branch conceptually aggregates all the data annotated by many projects on the platform.
+ 
+We use the concept of code version control in Git to manage our data and models, use the concept of branches to create new projects so that different tasks on the same set of images can run in parallel. The additions, retrievals, updates, and deletions of datasets and basic operations are created by commits to branches. Logically, each commit stores an updated version of the dataset or new model, as well as the metadata of the operation that led to this change. Finally, only the data changes are merged into the main branch. This branch conceptually aggregates all the data annotated by many projects on the platform. Please see [Life of a dataset](https://github.com/IndustryEssentials/ymir/wiki/Life-of-a-dataset) for specific design concepts.
 
 # 7. MISC
 
