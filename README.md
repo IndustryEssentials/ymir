@@ -638,29 +638,34 @@ The user imports the three data sets with the following command:
 
 ```
 $ cd ~/mir-demo-repo
-$ mir import --index-file /path/to/training-dataset-index.tsv \ # index.tsv path
-             --pred-dir /path/to/training-dataset-annotation-dir \ # annotations dir
-             --gen-dir ~/ymir-assets \ # assets storage dir
-             --dataset-name 'dataset-training' \ # dataset name
-             --dst-rev 'dataset-training@import' # destination branch and task name
+$ mir import --index-file /path/to/training-dataset-index.tsv \ # Path to dataset index
+             --gt-dir /path/to/training-dataset-annotation-dir \ # Path to annotation dir
+             --gen-dir ~/ymir-assets \ # Path to ymir-assets
+             --unknown-types-strategy stop \ # Choose from stop, ignore, add
+             --anno-type det-box \ # Choose from det-box, seg-poly, seg-mask
+             --dst-rev 'dataset-training@import' # branch and task name
 $ mir checkout master
 $ mir import --index-file /path/to/val-dataset-index.tsv \
-             --pred-dir /path/to/val-dataset-annotation-dir \
+             --gt-dir /path/to/val-dataset-annotation-dir \
              --gen-dir ~/ymir-assets \
-             --dataset-name 'dataset-val' \
+             --unknown-types-strategy stop \
+             --anno-type det-box \
              --dst-rev 'dataset-val@import'
 $ mir checkout master
 $ mir import --index-file /path/to/mining-dataset-index.tsv \
-             --pred-dir /path/to/mining-dataset-annotation-dir \
+             --gt-dir /path/to/mining-dataset-annotation-dir \
              --gen-dir ~/ymir-assets \
-             --dataset-name 'dataset-mining' \
+             --unknown-types-strategy stop \
+             --anno-type det-box \
              --dst-rev 'dataset-mining@import'
 ```
+
+* Note: Set optional `--gt-dir` to ground truth directory, and optional `--pred-dir` to prediction directory to import prediction and ground truth to ONE dataset.
 
 Users can use this command to see the branches of the current mir repo:
 
 ```
-$ mir branch
+$ git branch
 ```
 
 This repo has four branches: master, dataset-training, dataset-val, and dataset-mining. The current repo is on the branch dataset-mining.
@@ -670,18 +675,6 @@ Users can also view the status of branch with:
 ```
 $ mir show --src-rev dataset-mining
 ```
-
-And output as follow:
-
-```
-person;cat;car;airplane
-
-metadatas.mir: 200 assets, tr: 0, va: 0, te: 0, unknown: 200
-annotations.mir: hid: import, 113 assets
-tasks.mir: hid: import
-```
-
-The first and second rows are predefined keywords and custom keywords (in this output, there are no custom keywords). The next lines are the number of resources, the number of comments, and the status of tasks under the current branch.
 
 ### 4.2.3 Merge and filter
 
@@ -693,29 +686,14 @@ $ mir merge --src-revs tr:dataset-training@import;va:dataset-val@import \ # sour
             -s host # conflicts resolve strategy: use infos on host branch (the first branch in --src-revs)
 ```
 
-After the merge is complete, you can see that the current repo is under the tr-va branch and you can check the status with mir show:
-
-```
-$ mir show --src-revs HEAD # HEAD refers to the current head branch, and can be replaced by the specific branch name tr-va
-```
-
-The output is as follows:
-
-```
-person;cat;car;airplane
-
-metadatas.mir: 3510 assets, tr: 2000, va: 1510, te: 0, unknown: 0
-annotations.mir: hid: merged, 1515 assets
-tasks.mir: hid: merged
-```
-
 If the dataset-training and dataset-val before merging have 2000 and 1510 images, you can see that the merge branch has 2000 images as the training set and 1510 images as the validation set.
+
 If the user only wants to train the model to detect humans and cats, we first filter out the resources of humans and cats from the tr-va branch:
 
 ```
-mir filter --src-revs tr-va@merged \
-           --dst-rev tr-va@filtered \
-           -p 'person;cat'
+$ mir filter --src-revs tr-va@merged \
+             --dst-rev tr-va@filtered \
+             -p 'person;cat'
 ```
 
 ### 4.2.4 Train the initial model
@@ -723,8 +701,7 @@ mir filter --src-revs tr-va@merged \
 First, users need to pull the training and mining docker images from the docker hub as follows:
 
 ```
-docker pull industryessentials/executor-det-yolov4-training:release-0.1.2
-docker pull industryessentials/executor-det-yolov4-mining:release-0.1.2
+$ docker pull youdaoyzbx/ymir-executor:ymir1.3.0-yolov5-cu111-tmi
 ```
 
 and start the training process with the following command:
@@ -736,7 +713,7 @@ mir train -w /tmp/ymir/training/train-0 \
           --task-config-file ~/training-config.yaml \ # training config file, get it from training docker image
           --src-revs tr-va@filtered \
           --dst-rev training-0@trained \
-          --executor industryessentials/executor-det-yolov4-training:release-0.1.2 # docker image name
+          --executor youdaoyzbx/ymir-executor:ymir1.3.0-yolov5-cu111-tmi # docker image name
 ```
 
 After the model training is completed, the system will output the model ID. The user can view the package file of the model in "/ymir-models".
@@ -746,17 +723,19 @@ After the model training is completed, the system will output the model ID. The 
 This model is trained on a small dataset, and users can get the best images for the next training step in this mining process with the following command:
 
 ```
-mir mining --src-revs dataset-mining@import \ # mining dataset branch
-           --dst-rev mining-0@mining \ # destination branch
-           -w /tmp/ymir/mining/mining-0 \ # tmp working dir for this task
-           --topk 200 \ # topk
-           --model-location ~/ymir-models \
-           --media-location ~/ymir-assets \
-           --model-hash <hash> \ # model id
-           --asset-cache-dir /tmp/ymir/cache \ # asset cache
-           --task-config-file ~/mining-config.yaml \ # mining config file, get it from mining docker image
-           --executor industryessentials/executor-det-yolov4-mining:release-0.1.2 # mining docker image name
+$ mir mining --src-revs dataset-mining@import \ # mining dataset branch
+             --dst-rev mining-0@mining \ # destination branch
+             -w /tmp/ymir/mining/mining-0 \ # tmp working dir for this task
+             --topk 200 \ # topk
+             --model-location ~/ymir-models \
+             --media-location ~/ymir-assets \
+             --model-hash <hash> \ # model id
+             --asset-cache-dir /tmp/ymir/cache \ # asset cache
+             --task-config-file ~/mining-config.yaml \ # mining config file, get it from mining docker image
+             --executor youdaoyzbx/ymir-executor:ymir1.3.0-yolov5-cu111-tmi # mining docker image name
 ```
+
+* Note: Argument `--add-prediction` will add prediction boxes to result dataset.
 
 ### 4.2.6 Data labeling
 
@@ -765,12 +744,13 @@ Now the user has 200 images on the branch "mining-0". These images will be most 
 Users can export assets with the following command:
 
 ```
-mir export --asset-dir /tmp/ymir/export/export-0/assets \ # export directory for assets
-           --pred-dir /tmp/ymir/export/export-0/annotations \ # export directory for annotations
-           --media-location ~/ymir-assets \ # assets storage directory
-           --src-revs mining-0@mining \
-           --format none # no annotations needed
-find /tmp/ymir/export/export-0/assets > /tmp/ymir/export/export-0/index.tsv
+$ mir export --asset-dir /tmp/ymir/export/export-0/assets \ # export directory for assets
+             --pred-dir /tmp/ymir/export/export-0/annotations \ # export directory for annotations
+             --media-location ~/ymir-assets \ # assets storage directory
+             --src-revs mining-0@mining \
+             --asset-format raw \ # export raw images
+             --anno-format none # no annotations needed
+$ find /tmp/ymir/export/export-0/assets > /tmp/ymir/export/export-0/index.tsv
 ```
 
 After the export is done, users can see images at /tmp/ymir/export/export-0/assets. Users can send these pictures for annotation, and the annotations need to be saved in VOC format (assuming the save path is still /tmp/ymir/export/export-0/annotations).
@@ -778,9 +758,10 @@ Once the annotation is finished, the user can import the data using a similar ap
 
 ```
 $ mir import --index-file /tmp/ymir/export/export-0/index.tsv
-             --pred-dir /tmp/ymir/export/export-0/annotations \ # annotation directory
+             --gt-dir /tmp/ymir/export/export-0/annotations \ # annotation directory
              --gen-dir ~/ymir-assets \ # asset storage directory
-             --dataset-name 'dataset-mining' \ # dataset name
+             --unknown-types-strategy stop \
+             --anno-type det-box \
              --dst-rev 'labeled-0@import' # destination branch and task name
 ```
 
@@ -799,13 +780,13 @@ $ mir merge --src-revs tr-va@filtered;tr:labeled-0@import \ # source branch
 Now branch tr-va-1 contains the previous training and validation set and 200 new images we have just mined and labeled. A new model can be trained on this set with the following command:
 
 ```
-mir train -w /tmp/ymir/training/train-1 \ # different working directory for each different training and mining task
-          --media-location ~/ymir-assets \
-          --model-location ~/ymir-models \
-          --task-config-file ~/training-config.yaml \
-          --src-revs tr-va-1@merged \ # use new-merged branch
-          --dst-rev training-1@trained \
-          --executor industryessentials/executor-det-yolov4-training:release-0.1.2
+$ mir train -w /tmp/ymir/training/train-1 \ # use different working dir for training and mining task
+            --media-location ~/ymir-assets \
+            --model-location ~/ymir-models \
+            --task-config-file ~/training-config.yaml \
+            --src-revs tr-va-1@merged \ # use new-merged branch
+            --dst-rev training-1@trained \
+            --executor youdaoyzbx/ymir-executor:ymir1.3.0-yolov5-cu111-tmi
 ```
 
 ## 4.3. YMIR-CMD manual

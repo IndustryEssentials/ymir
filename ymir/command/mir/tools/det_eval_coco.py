@@ -539,6 +539,7 @@ def det_evaluate(prediction: mirpb.SingleTaskAnnotations, ground_truth: mirpb.Si
     det_eval_utils.write_confusion_matrix(gt_annotations=ground_truth,
                                           pred_annotations=prediction,
                                           class_ids=params.catIds,
+                                          conf_thr=config.conf_thr,
                                           match_result=evaluator.match_result,
                                           iou_thr=params.iouThrs[0])
 

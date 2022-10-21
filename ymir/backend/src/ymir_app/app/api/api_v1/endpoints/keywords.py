@@ -55,16 +55,14 @@ def create_keywords(
     current_user: models.User = Depends(deps.get_current_active_user),
     controller_client: ControllerClient = Depends(deps.get_controller_client),
     cache: CacheClient = Depends(deps.get_cache),
-    user_labels: UserLabels = Depends(deps.get_user_labels),
 ) -> Any:
     """
     Batch create given keywords and aliases to keywords list
     """
-    new_user_labels = UserLabels(labels=keywords_input.keywords)
+    new_labels = UserLabels(labels=keywords_input.keywords)
     result = upsert_labels(
         user_id=current_user.id,
-        user_labels=user_labels,
-        new_user_labels=new_user_labels,
+        new_labels=new_labels,
         controller_client=controller_client,
         dry_run=keywords_input.dry_run,
     )
@@ -83,14 +81,12 @@ def update_keyword_aliases(
     current_user: models.User = Depends(deps.get_current_active_user),
     controller_client: ControllerClient = Depends(deps.get_controller_client),
     cache: CacheClient = Depends(deps.get_cache),
-    user_labels: UserLabels = Depends(deps.get_user_labels),
 ) -> Any:
     updated_label = SingleLabel(name=keyword, aliases=aliases_in.aliases)
-    new_user_labels = UserLabels(labels=[updated_label])
+    new_labels = UserLabels(labels=[updated_label])
     result = upsert_labels(
         user_id=current_user.id,
-        user_labels=user_labels,
-        new_user_labels=new_user_labels,
+        new_labels=new_labels,
         controller_client=controller_client,
     )
     cache.delete_personal_keywords_cache()
