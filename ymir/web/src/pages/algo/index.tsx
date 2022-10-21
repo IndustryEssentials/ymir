@@ -1,11 +1,11 @@
-import { getDeploayUrl } from '@/constants/common'
+import { getDeployUrl } from '@/constants/common'
 import usePostMessage from '@/hooks/usePostMessage'
 import { message } from 'antd'
 import { useEffect, useRef, useState } from 'react'
 import { getLocale, history, useLocation, useParams, useSelector } from 'umi'
 type Params = { [key: string]: any }
 
-const base = getDeploayUrl()
+const base = getDeployUrl()
 
 const pages: Params = {
   public: { path: '/publicAlgorithm', action: 'pageInit' },
