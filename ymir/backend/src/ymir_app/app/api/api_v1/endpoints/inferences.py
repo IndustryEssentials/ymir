@@ -77,5 +77,5 @@ def extract_inference_annotations(
     for filename, annotations in resp[inference_type]["image_annotations"].items():
         yield {
             "image_url": filename_mapping[filename],
-            "detection": annotations["annotations"],
+            "detection": annotations["boxes"],
         }
