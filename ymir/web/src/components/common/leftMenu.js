@@ -2,7 +2,7 @@ import { useEffect, useState } from "react"
 import { Menu, Layout } from "antd"
 import { useHistory, useLocation, withRouter, useSelector } from "umi"
 import t from '@/utils/t'
-import { getDeploayUrl } from '@/constants/common'
+import { getDeployUrl } from '@/constants/common'
 import { isSuperAdmin } from '@/constants/user'
 import {
   BarchartIcon, FlagIcon, GithubIcon, FileHistoryIcon, MymodelIcon,
@@ -62,7 +62,7 @@ function LeftMenu() {
       getGroupItem(t('breadcrumbs.keyword'), 'keyword', [
         getItem(t('breadcrumbs.keyword'), '/home/keyword', FlagIcon,),
       ]),
-      getDeploayUrl() ? getGroupItem(t('algo.label'), 'algo', [
+      getDeployUrl() ? getGroupItem(t('algo.label'), 'algo', [
         getItem(t('algo.public.label'), '/home/algo', StoreIcon,),
         getItem(t('algo.mine.label'), '/home/algo/mine', MyAlgoIcon,),
         getItem(t('algo.device.label'), '/home/algo/device', DeviceListIcon,),

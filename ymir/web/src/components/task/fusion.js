@@ -12,7 +12,6 @@ import RecommendKeywords from "@/components/common/recommendKeywords"
 import Panel from "@/components/form/panel"
 import DatasetSelect from "@/components/form/datasetSelect"
 import Desc from "@/components/form/desc"
-import BottomButtons from "./BottomButtons"
 import SubmitButtons from "./submitButtons"
 
 function Fusion({ query = {}, hidden, ok = () => { }, bottom }) {

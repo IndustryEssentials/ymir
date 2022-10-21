@@ -8,6 +8,7 @@ import { Link, useHistory, useLocation } from "umi"
 
 import t from '@/utils/t'
 import { ROLES } from '@/constants/user'
+import { getDeployUrl } from '@/constants/common'
 import LangBtn from "../common/langBtn"
 import styles from "./index.less"
 import './menu.less'
@@ -35,6 +36,7 @@ const menus = () => [
     label: 'algo.label',
     key: "/home/algo",
     icon: <StoreIcon className={styles.navIcon} />,
+    hide: !getDeployUrl(),
   },
   {
     label: 'common.top.menu.image',
@@ -104,7 +106,7 @@ function HeaderNav({ simple = false, username, loginout, avatar, role }) {
         menu.children = handleMenus(menu.children)
       }
       menu.label = t(menu.label)
-      validPermission(role, menu.permission) && result.push(menu)
+      !menu.hide && validPermission(role, menu.permission) && result.push(menu)
     })
     return result
   }

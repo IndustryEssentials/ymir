@@ -12,6 +12,7 @@ import useFetch from '@/hooks/useFetch'
 import DatasetSelect from "@/components/form/datasetSelect"
 import Desc from "@/components/form/desc"
 import Tip from "@/components/form/tip"
+import SubmitButtons from "./submitButtons"
 
 import styles from "./label.less"
 import KeepAnnotations from "./label/keepAnnotations"
