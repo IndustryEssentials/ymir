@@ -4,7 +4,7 @@ import {
   getNegativeKeywords,
 } from "@/services/dataset"
 import { transferDatasetGroup, transferDataset, transferDatasetAnalysis, transferAsset, transferAnnotationsCount } from '@/constants/dataset'
-import { actions, updateResultState, ResultStates } from '@/constants/common'
+import { actions, updateResultState, updateResultByTask, ResultStates } from '@/constants/common'
 import { deepClone } from '@/utils/object'
 import { checkDuplication } from "../services/dataset"
 
@@ -52,7 +52,7 @@ export default {
         type: 'batchDatasets',
         payload: { pid, ids: fetchIds, ck }
       })
-      return [...cache, ...remoteDatasets]
+      return [...cache, ...(remoteDatasets || [])]
     },
     *batchDatasets({ payload }, { call, put }) {
       const { pid, ids, ck } = payload
@@ -264,18 +264,29 @@ export default {
       }
     },
     *updateDatasetState({ payload }, { put, select }) {
-      const datasetCache = yield select(state => state.dataset.dataset)
-      const tasks = payload || {}
-      Object.keys(datasetCache).forEach(did => {
-        const dataset = datasetCache[did]
-        const updatedDataset = updateResultState(dataset, tasks)
-        datasetCache[did] = updatedDataset ? updatedDataset : dataset
-      })
-
-      yield put({
-        type: 'UPDATE_ALL_DATASET',
-        payload: { ...datasetCache },
-      })
+      const caches = yield select(state => state.dataset.dataset)
+      const tasks = Object.values(payload || {})
+      for (let index = 0; index < tasks.length; index++) {
+        const task = tasks[index]
+        const dataset = caches[task?.result_dataset?.id]
+        if (!dataset) {
+          continue
+        }
+        const updated = updateResultByTask(dataset, task)
+        if (updated) {
+          if (updated.needReload) {
+            yield put({
+              type: 'getDataset',
+              payload: { id: updated.id, force: true }
+            })
+          } else {
+            yield put({
+              type: 'UPDATE_DATASET',
+              payload: { id: updated.id, dataset: { ...updated } },
+            })
+          }
+        }
+      }
     },
     *updateQuery({ payload = {} }, { put, select }) {
       const query = yield select(({ task }) => task.query)
@@ -319,8 +330,8 @@ export default {
       }
     },
     *update({ payload }, { put, select }) {
-      const ds = payload
-      if (!ds) {
+      const ds = transferDataset(payload)
+      if (!ds.id) {
         return
       }
       const { versions } = yield select(({ dataset }) => dataset)

@@ -10,7 +10,7 @@ const Del = forwardRef(({ ok = () => {} }, ref) => {
 
   useEffect(() => {
     if (delResult) {
-      ok(id)
+      ok(delResult.id)
     }
   }, [delResult])
 

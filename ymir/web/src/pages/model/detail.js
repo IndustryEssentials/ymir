@@ -16,6 +16,7 @@ import useRestore from "@/hooks/useRestore"
 import keywordsItem from "@/components/task/items/keywords"
 import { DescPop } from "../../components/common/descPop"
 import useRerunAction from "../../hooks/useRerunAction"
+import useCardTitle from '@/hooks/useCardTitle'
 
 const { Item } = Descriptions
 
@@ -26,6 +27,7 @@ function ModelDetail({ modelCache, getModel }) {
   const hideRef = useRef(null)
   const restoreAction = useRestore(pid)
   const generateRerunBtn = useRerunAction('btn')
+  const cardTitle = useCardTitle(model.name)
 
   useEffect(async () => {
     id && fetchModel(true)
@@ -42,16 +44,6 @@ function ModelDetail({ modelCache, getModel }) {
   async function fetchModel(force) {
     await getModel(id, force)
   }
-
-  function renderTitle() {
-    return (
-      <Row>
-        <Col flex={1}>{model.name} &gt; {t(getTaskTypeLabel(model.taskType))}</Col>
-        <Col><Button type='link' onClick={() => history.goBack()}>{t('common.back')}&gt;</Button></Col>
-      </Row>
-    )
-  }
-
 
   const hide = (version) => {
     if (model?.project?.hiddenDatasets?.includes(version.id)) {
@@ -79,7 +71,7 @@ function ModelDetail({ modelCache, getModel }) {
   return (
     <div className={styles.modelDetail}>
       <Breadcrumbs suffix={model.name} />
-      <Card title={renderTitle()}>
+      <Card title={cardTitle}>
         <div className={styles.content}>
           <Descriptions bordered column={2} labelStyle={{ width: '200px' }} title={t('model.detail.title')} className='infoTable'>
             <Item label={t('model.detail.label.name')}>{model.name} {model.versionName}</Item>

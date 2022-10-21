@@ -35,7 +35,7 @@ request.interceptors.response.use(
   (res) => {
     if (res.data.code !== 0) {
       message.error(t(`error${res.data.code}`))
-      if (res.data.code === 110104) {
+      if ([110104, 110112].includes(res.data.code)) {
         return logout()
       }
     }
@@ -48,18 +48,20 @@ request.interceptors.response.use(
       return logout()
     } else if (err.request.status === 504) {
       message.error(t('error.timeout'))
+    } else if (err.request.status === 502) {
+      message.error(t('error.502'))
     } else {
       const res = err.response
-      if (res && res.data && res.data.code) {
+      if (res?.data?.code) {
         if (res.data.code === 110104) {
           return logout()
         }
-        return message.error(t(`error${res.data.code}`))
+        message.error(t(`error${res.data.code}`))
+        return res.data
       }
     }
 
-    console.error(err.request.statusText)
-    throw new Error(err)
+    return { code: err.request.status }
   }
 )
 

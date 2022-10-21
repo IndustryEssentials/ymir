@@ -1,5 +1,5 @@
 from collections import defaultdict
-from typing import Any, Collection, Dict, List, Set, Tuple
+from typing import Collection, Dict, List, Set, Tuple
 
 import numpy as np
 
@@ -92,29 +92,26 @@ def _get_average_ee(average_ee: mirpb.SingleEvaluationElement, ees: List[mirpb.S
     average_ee.ar /= ees_cnt
 
 
-def reset_default_confusion_matrix(task_annotations: mirpb.SingleTaskAnnotations,
-                                   cm: Any,
-                                   class_ids: Collection[int] = []) -> None:
-    for image_annotations in task_annotations.image_annotations.values():
+def write_confusion_matrix(gt_annotations: mirpb.SingleTaskAnnotations, pred_annotations: mirpb.SingleTaskAnnotations,
+                           class_ids: List[int], conf_thr: float, match_result: DetEvalMatchResult,
+                           iou_thr: float) -> None:
+    class_ids_set = set(class_ids)
+    for image_annotations in gt_annotations.image_annotations.values():
         for annotation in image_annotations.boxes:
-            annotation.cm = cm if (class_ids
-                                   and annotation.class_id in class_ids) else mirpb.ConfusionMatrixType.IGNORED
+            annotation.cm = (mirpb.ConfusionMatrixType.FN
+                             if annotation.class_id in class_ids_set else mirpb.ConfusionMatrixType.IGNORED)
+            annotation.det_link_id = -1
+    for image_annotations in pred_annotations.image_annotations.values():
+        for annotation in image_annotations.boxes:
+            annotation.cm = (mirpb.ConfusionMatrixType.FP if annotation.class_id in class_ids_set
+                             and annotation.score >= conf_thr else mirpb.ConfusionMatrixType.IGNORED)
             annotation.det_link_id = -1
 
-
-def write_confusion_matrix(gt_annotations: mirpb.SingleTaskAnnotations, pred_annotations: mirpb.SingleTaskAnnotations,
-                           class_ids: List[int], match_result: DetEvalMatchResult, iou_thr: float) -> None:
-    class_ids_set = set(class_ids)
-    reset_default_confusion_matrix(task_annotations=gt_annotations,
-                                   cm=mirpb.ConfusionMatrixType.FN,
-                                   class_ids=class_ids_set)
-    reset_default_confusion_matrix(task_annotations=pred_annotations,
-                                   cm=mirpb.ConfusionMatrixType.FP,
-                                   class_ids=class_ids_set)
-
     for asset_id in match_result.get_asset_ids(iou_thr=iou_thr):
+        id_to_gts = {box.index: box for box in gt_annotations.image_annotations[asset_id].boxes}
+        id_to_preds = {box.index: box for box in pred_annotations.image_annotations[asset_id].boxes}
         for gt_pb_index, pred_pb_index in match_result.get_matches(asset_id=asset_id, iou_thr=iou_thr):
-            gt_annotations.image_annotations[asset_id].boxes[gt_pb_index].cm = mirpb.ConfusionMatrixType.MTP
-            gt_annotations.image_annotations[asset_id].boxes[gt_pb_index].det_link_id = pred_pb_index
-            pred_annotations.image_annotations[asset_id].boxes[pred_pb_index].cm = mirpb.ConfusionMatrixType.TP
-            pred_annotations.image_annotations[asset_id].boxes[pred_pb_index].det_link_id = gt_pb_index
+            id_to_gts[gt_pb_index].cm = mirpb.ConfusionMatrixType.MTP
+            id_to_gts[gt_pb_index].det_link_id = pred_pb_index
+            id_to_preds[pred_pb_index].cm = mirpb.ConfusionMatrixType.TP
+            id_to_preds[pred_pb_index].det_link_id = gt_pb_index

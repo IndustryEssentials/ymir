@@ -57,7 +57,7 @@ const Add = (props) => {
   const [newKeywords, setNewKeywords] = useState([])
   const [strategyOptions, setStrategyOptions] = useState([])
   const [ignoredKeywords, setIgnoredKeywords] = useState([])
-  const [{ newer }, checkKeywords] = useAddKeywords(true)
+  const [{ newer }, checkKeywords] = useFetch('keyword/checkDuplication', { newer: [] })
   const [_, updateKeywords] = useAddKeywords()
   const [addResult, newDataset] = useFetch('dataset/createDataset')
   const [{ items: publicDatasets }, getPublicDatasets] = useFetch('dataset/getInternalDataset', { items: [] })

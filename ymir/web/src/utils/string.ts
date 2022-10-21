@@ -19,7 +19,7 @@ export function string2Array(str: string, seprate = ',') {
     return
   }
   const arr = str.split(seprate)
-  return arr.map(item => Number.isNaN(Number(item)) ? item : Number(item))
+  return arr.map(item => Number.isNaN(Number(item)) ? item : Number(item)).filter(i => i)
 }
 
 export const getRandomRGB = (level = 1) => {

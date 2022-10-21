@@ -7,6 +7,7 @@ import { templateString } from '@/utils/string'
 import useFetch from '@/hooks/useFetch'
 
 import Stage from './stage'
+import StepAction from "./stepAction"
 import s from "./iteration.less"
 
 function Iteration({ project, fresh = () => { } }) {
@@ -61,29 +62,11 @@ function Iteration({ project, fresh = () => { } }) {
     const initStages = getInitStages()
     const ss = initStages.map(stage => {
       const result = iteration[stage.output]
-      const urlParams = {
-        s0d: project.miningSet.id || 0,
-        s0s: project.miningStrategy,
-        s0c: project.chunkSize || undefined,
-        s1d: iteration.miningSet,
-        s1m: prevIteration.id ? [prevIteration.model, null] : project.modelStage,
-        s2d: iteration.miningResult,
-        s3d: prevIteration.trainUpdateSet || project.trainSetVersion,
-        s3m: iteration.labelSet,
-        s4d: iteration.trainUpdateSet,
-        s4t: iteration.testSet,
-        id: iteration.id,
-        pid: project.id,
-        stage: iteration.currentStage,
-        output: stage.output,
-      }
-      const url = templateString(stage.temp || '', urlParams)
       return {
         ...stage,
         iterationId: iteration.id,
         round: iteration.round,
         current: iteration.currentStage,
-        url,
         result,
       }
     })
@@ -100,9 +83,9 @@ function Iteration({ project, fresh = () => { } }) {
     }
   }
 
-  function createIteration(data = {}) {
+  function createIteration() {
     const params = {
-      iterationRound: data.round,
+      iterationRound: project.round + 1,
       projectId: project.id,
       prevIteration: iteration.id,
       testSet: project.testSet.id,
@@ -113,27 +96,29 @@ function Iteration({ project, fresh = () => { } }) {
   function updateIteration(data = {}) {
     const params = {
       id: iteration.id,
-      currentStage: data.stage.value,
+      ...data,
     }
     update(params)
   }
-  function skipStage({ stage = {} }) {
+  function skipStage({ input, value }) {
     const params = {
       id: iteration.id,
-      currentStage: stage.value,
-      [stage.input]: 0,
+      currentStage: value,
+      [input]: 0,
     }
     update(params)
   }
   return (
     <div className={s.iteration}>
       <Row style={{ justifyContent: 'flex-end' }}>
-        {stages.map((stage) => (
-          <Col key={stage.value} flex={stage.next ? 1 : null}>
-            <Stage stage={stage} end={!stage.next} callback={callback} />
-          </Col>
-        ))}
+        {stages.map((stage) => <Col key={stage.value} flex={stage.next ? 1 : null}>
+          <Stage stage={stage} end={!stage.next} callback={callback} />
+        </Col>
+        )}
       </Row>
+      <div className={s.stepContent}>
+        <StepAction stages={stages} iteration={iteration} project={project} prevIteration={prevIteration} callback={callback} />
+      </div>
     </div>
   )
 }

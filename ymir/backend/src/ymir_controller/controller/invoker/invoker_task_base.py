@@ -57,25 +57,25 @@ class TaskBaseInvoker(BaseMirControllerInvoker):
         cls,
         task_id: str,
         master_work_dir: str,
-        subtask_weights: List[float],
+        sub_task_id_weights: Dict[str, float],
         register_monitor: bool,
     ) -> None:
-        if not (subtask_weights and task_id and master_work_dir):
+        if not (sub_task_id_weights and task_id and master_work_dir):
             raise errors.MirCtrError(CTLResponseCode.ARG_VALIDATION_FAILED,
                                      "_register_subtask_monitor args error, abort.")
 
         delta = 0.001
-        if abs(sum(subtask_weights) - 1) >= delta:
+        if abs(sum(sub_task_id_weights.values()) - 1) >= delta:
             raise errors.MirCtrError(CTLResponseCode.ARG_VALIDATION_FAILED, "invalid weights, abort.")
         sub_monitor_files_weights = {}
-        for idx in range(len(subtask_weights)):
-            subtask_id = utils.sub_task_id(task_id, idx)
-            subtask_monitor_file = cls.subtask_monitor_file(master_work_dir=master_work_dir, subtask_id=subtask_id)
+        # format: (task_func, weight, sub_task_id)
+        for sub_task_id in sub_task_id_weights:
+            subtask_monitor_file = cls.subtask_monitor_file(master_work_dir=master_work_dir, subtask_id=sub_task_id)
             PercentLogHandler.write_percent_log(log_file=subtask_monitor_file,
-                                                tid=utils.sub_task_id(task_id, idx),
+                                                tid=sub_task_id,
                                                 percent=0.0,
                                                 state=LogState.RUNNING)
-            sub_monitor_files_weights[subtask_monitor_file] = subtask_weights[idx]
+            sub_monitor_files_weights[subtask_monitor_file] = sub_task_id_weights[sub_task_id]
 
         logging.info(f"task {task_id} logging weights:\n{sub_monitor_files_weights}\n")
         if register_monitor:
@@ -186,23 +186,30 @@ class TaskBaseInvoker(BaseMirControllerInvoker):
         if not sub_tasks:
             return utils.make_general_response(CTLResponseCode.ARG_VALIDATION_FAILED, 'empty ops')
 
-        subtask_weights = [sub_task[1] for sub_task in sub_tasks]
+        # append subtask_id, in revsersed order, to make sure the last subtask idx is 0.
+        # format: (task_func, weight, sub_task_id)
+        sub_tasks_join = [(sub_task[0], sub_task[1], utils.sub_task_id(request.task_id,
+                                                                       len(sub_tasks) - 1 - subtask_idx))
+                          for subtask_idx, sub_task in enumerate(sub_tasks)]
+
+        sub_task_id_weights: Dict[str, float] = {}
+        for sub_task in sub_tasks_join:
+            sub_task_id_weights[sub_task[2]] = sub_task[1]
         cls._register_subtask_monitor(task_id=task_id,
                                       master_work_dir=working_dir,
-                                      subtask_weights=subtask_weights,
+                                      sub_task_id_weights=sub_task_id_weights,
                                       register_monitor=(not request.req_create_task.no_task_monitor))
 
         in_dataset_ids: List[str] = request.in_dataset_ids
         his_task_id: Optional[str] = None
         if in_dataset_ids:
             his_task_id = in_dataset_ids[0]
-        for subtask_idx, subtask in enumerate(sub_tasks):
-            # revsersed id, to make sure the last subtask idx is 0.
-            subtask_id = utils.sub_task_id(request.task_id, len(sub_tasks) - 1 - subtask_idx)
+        for sub_task in sub_tasks_join:
+            subtask_id = sub_task[2]
             logging.info(f"processing subtask {subtask_id}")
             subtask_work_dir = cls.subtask_work_dir(master_work_dir=working_dir, subtask_id=subtask_id)
 
-            ret = subtask[0](
+            ret = sub_task[0](
                 request,
                 user_labels,
                 sandbox_root,

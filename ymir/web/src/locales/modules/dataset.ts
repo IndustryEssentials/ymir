@@ -121,7 +121,7 @@ const dataset = {
   "dataset.copy.form.dataset": { cn: "原数据集", en: "Original Dataset", },
   "dataset.copy.form.desc.label": { cn: '备注', en: 'Description', },
   "dataset.copy.success.msg": { cn: "数据集正在复制，请稍等", en: "Dataset copying", },
-  'dataset.detail.action.fusion': { cn: '数据预处理', en: 'Data Pretreatment', },
+  'dataset.detail.action.fusion': { cn: '挖掘数据准备', en: 'Data Pretreatment', },
   'dataset.detail.action.train': { cn: '训练模型', en: 'Train Model', },
   'dataset.detail.action.mining': { cn: '挖掘数据', en: 'Mining', },
   'dataset.detail.action.label': { cn: '数据标注', en: 'Label', },

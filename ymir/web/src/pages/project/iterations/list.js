@@ -6,11 +6,13 @@ import t from "@/utils/t"
 import { percent, isNumber } from '@/utils/number'
 import useFetch from '@/hooks/useFetch'
 import { validModel } from '@/constants/model'
+import { validDataset } from '@/constants/dataset'
 
 import SampleRates from "@/components/dataset/sampleRates"
 import MiningSampleRates from "@/components/dataset/miningSampleRates"
 
 import s from "./index.less"
+import StateTag from "@/components/task/stateTag"
 
 function List({ project }) {
   const [iterations, getIterations] = useFetch('iteration/getIterations', [])
@@ -71,9 +73,10 @@ function List({ project }) {
       dataIndex: 'map',
       render: (map, { model, mapEffect }) => {
         const md = models[model] || {}
+        const label = <>{md.name} {md.versionName} {!validModel(md) ? <StateTag mode='text' state={md.state} /> : null}</>
         return validModel(md) ? <div className={s.td}>
           <span style={{ display: 'inline-block', width: '70%', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-            {md.name}
+            {label}
           </span>
           <span>{map >= 0 ? percent(map) : null}</span>
           <span className={s.extraTag}>{renderExtra(mapEffect, true)}</span>
@@ -99,7 +102,7 @@ function List({ project }) {
   }
 
   function fetchHandle(iterations) {
-    const iters = iterations.map(iteration => {
+    const iters = iterations.reverse().map(iteration => {
       const {
         trainUpdateSet,
         miningSet,
@@ -110,7 +113,7 @@ function List({ project }) {
       } = iteration
       return {
         ...iteration,
-        id: `${iteration.id}${new Date().getTime()}`,
+        index: `${iteration.id}${new Date().getTime()}`,
         trainUpdateDatasetLabel: renderDatasetLabel(datasets[trainUpdateSet]),
         miningDatasetLabel: renderDatasetLabel(datasets[miningSet]),
         miningResultDatasetLabel: renderDatasetLabel(datasets[miningResult]),
@@ -140,7 +143,10 @@ function List({ project }) {
       return
     }
     const label = `${dataset.name} ${dataset.versionName} (${dataset.assetCount})`
-    return <span title={label}>{label}</span>
+    return <span title={label}>
+      {label}
+      {!validDataset(dataset) ? <StateTag mode='text' state={dataset.state} /> : null}
+    </span>
   }
 
   function showTitle(str) {
@@ -152,7 +158,7 @@ function List({ project }) {
       <Table
         dataSource={list}
         pagination={false}
-        rowKey={(record) => record.id}
+        rowKey={(record) => record.index}
         columns={columns}
       ></Table>
     </div>
