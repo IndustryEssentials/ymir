@@ -102,7 +102,7 @@ function List({ project }) {
   }
 
   function fetchHandle(iterations) {
-    const iters = iterations.map(iteration => {
+    const iters = iterations.reverse().map(iteration => {
       const {
         trainUpdateSet,
         miningSet,
