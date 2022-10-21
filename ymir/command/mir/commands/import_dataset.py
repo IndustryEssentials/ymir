@@ -128,8 +128,10 @@ def _generate_sha_and_copy(index_file: str, map_hashed_filename: Dict[str, str],
     copied_assets = 0
     for line in lines:
         components = line.strip().split()
-        media_src = components[0] if components else ''
-        if not media_src or not os.path.isfile(media_src):
+        if not components:
+            continue
+        media_src = components[0]
+        if not os.path.isfile(media_src):
             continue
 
         try:
