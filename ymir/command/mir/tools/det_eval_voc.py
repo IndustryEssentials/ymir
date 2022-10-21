@@ -258,6 +258,7 @@ def det_evaluate(prediction: mirpb.SingleTaskAnnotations, ground_truth: mirpb.Si
         det_eval_utils.write_confusion_matrix(gt_annotations=ground_truth,
                                               pred_annotations=prediction,
                                               class_ids=class_ids,
+                                              conf_thr=config.conf_thr,
                                               match_result=match_result,
                                               iou_thr=iou_thrs[0])
     det_eval_utils.calc_averaged_evaluations(dataset_evaluation=single_dataset_evaluation, class_ids=class_ids)
