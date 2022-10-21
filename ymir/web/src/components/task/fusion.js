@@ -28,11 +28,7 @@ function Fusion({ query = {}, hidden, ok = () => { }, bottom }) {
   const [keywords, setKeywords] = useState([])
   const [selectedKeywords, setSelectedKeywords] = useState([])
   const [selectedExcludeKeywords, setExcludeKeywords] = useState([])
-  const [visibles, setVisibles] = useState({
-    merge: true,
-    filter: true,
-    sampling: true,
-  })
+  const [visible, setVisible] = useState(false)
   const [fusionResult, fusion] = useFetch("task/fusion")
   const dataset = useSelector(({ dataset }) => dataset.dataset[did] || {})
   const [_d, getDataset] = useFetch('dataset/getDataset')
@@ -148,9 +144,13 @@ function Fusion({ query = {}, hidden, ok = () => { }, bottom }) {
       <div hidden={hidden}>
         <Panel hasHeader={false}>
           <Form.Item label={t('task.fusion.form.dataset')}><span>{dataset.name} {dataset.versionName} (assets: {dataset.assetCount})</span></Form.Item>
+          <Form.Item label={t('task.fusion.form.sampling')} tooltip={t('tip.task.fusion.sampling')} name='samples'>
+            <InputNumber step={1} min={1} style={{ width: '100%' }} />
+          </Form.Item>
+          <Desc form={form} />
         </Panel>
-        <Panel label={t('task.fusion.header.merge')} visible={visibles['merge']} setVisible={(value) => setVisibles(old => ({ ...old, merge: value }))}>
-          <Form.Item label={t('task.fusion.form.merge.include.label')} name="include_datasets">
+        <Panel label={t('task.panel.settings.advanced')} visible={visible} setVisible={(value) => setVisible(value)}>
+          <Form.Item label={t('task.fusion.form.includes.label')} name="include_datasets">
             <DatasetSelect
               placeholder={t('task.fusion.form.datasets.placeholder')}
               mode='multiple'
@@ -179,7 +179,7 @@ function Fusion({ query = {}, hidden, ok = () => { }, bottom }) {
               </Col></Row>
             </Form.Item>
             : null}
-          <Form.Item label={t('task.fusion.form.merge.exclude.label')} name="exclude_datasets">
+          <Form.Item label={t('task.fusion.form.excludes.label')} name="exclude_datasets">
             <DatasetSelect
               placeholder={t('task.fusion.form.datasets.placeholder')}
               mode='multiple'
@@ -189,9 +189,7 @@ function Fusion({ query = {}, hidden, ok = () => { }, bottom }) {
               showArrow
             />
           </Form.Item>
-        </Panel>
-        <Panel label={t('task.fusion.header.filter')} visible={visibles['filter']} setVisible={(value) => setVisibles(old => ({ ...old, filter: value }))}>
-          <Form.Item label={t('task.fusion.form.include.label')}
+          <Form.Item label={t('task.fusion.form.class.include.label')}
             tooltip={t('tip.task.fusion.includelable')}
             name='inc'
             help={<RecommendKeywords sets={form.getFieldValue('datasets')} onSelect={selectRecommendKeywords} />}
@@ -207,7 +205,7 @@ function Fusion({ query = {}, hidden, ok = () => { }, bottom }) {
             </Select>
           </Form.Item>
           <Form.Item
-            label={t('task.fusion.form.exclude.label')}
+            label={t('task.fusion.form.class.exclude.label')}
             tooltip={t('tip.task.fusion.excludelable')}
             name='exc'
           >
@@ -222,12 +220,6 @@ function Fusion({ query = {}, hidden, ok = () => { }, bottom }) {
             </Select>
           </Form.Item>
         </Panel>
-        <Panel label={t('task.fusion.header.sampling')} visible={visibles['sampling']} setVisible={(value) => setVisibles(old => ({ ...old, sampling: value }))}>
-          <Form.Item label={t('task.fusion.form.sampling')} tooltip={t('tip.task.fusion.sampling')} name='samples'>
-            <InputNumber step={1} min={1} style={{ width: '100%' }} />
-          </Form.Item>
-        </Panel>
-        <Desc form={form} />
       </div>
       <Form.Item wrapperCol={{ offset: 8 }}>
         {bottom ? bottom : <SubmitButtons />}

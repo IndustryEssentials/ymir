@@ -34,3 +34,11 @@ class KeywordsCreateResult(BaseModel):
 
 class KeywordsCreateOut(Common):
     result: KeywordsCreateResult
+
+
+class KeywordsInput(Common):
+    keywords: List[SingleLabel]
+
+
+class KeywordsCheckDupOut(Common):
+    result: List[str]
