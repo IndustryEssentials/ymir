@@ -190,7 +190,7 @@ How do users choose to install GUI or CMD?
 
 2. If you need to modify the default configuration of the system, it is recommended to install CMD;
 
-3. If you have already deployed the existing version of ymir, please refer to the [Upgrade Instructions](https://github.com/Aryalfrat/ymir/blob/dev/ymir/updater/readme_en.md).
+3. If you have already deployed the existing version of ymir, please refer to the [Upgrade Instructions](https://github.com/Aryalfrat/ymir/blob/dev/ymir/updater/readme.md).
 
 This chapter contains the installation instructions for YMIR-GUI. If you need to use CMD, please refer to the [Ymir-CMD user guide](#4-for-advanced-users-ymir-cmd-command-line-users-guide).
 
