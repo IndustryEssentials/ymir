@@ -179,10 +179,14 @@ export default {
     *infer({ payload }, { call, put }) {
       let { code, result } = yield call(infer, payload)
       if (code === 0) {
-        yield put({
-          type: 'dataset/getDataset',
-          payload: { id: result?.result_dataset?.id, force: true }
-        })
+        const ids = result.map(item => item?.result_dataset?.id).filter(i => i)
+        const pid = result[0]?.project_id
+        if (pid && ids?.length) {
+          yield put({
+            type: 'dataset/batchLocalDatasets',
+            payload: { ids, pid }
+          })
+        }
         return result
       }
     },

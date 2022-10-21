@@ -198,6 +198,7 @@ function Inference({ datasetCache, datasets, ...func }) {
       }
       await func.clearCache()
       const groups = result.map(item => item.result_dataset?.dataset_group_id || '')
+      console.log('groups:', groups, resultCount, taskCount, result)
       history.replace(`/home/project/${pid}/dataset#${groups.join(',')}`)
     }
   }
