@@ -127,7 +127,7 @@ def _generate_sha_and_copy(index_file: str, map_hashed_filename: Dict[str, str],
     idx = 0
     copied_assets = 0
     for line in lines:
-        components = line.strip().split()
+        components = line.strip().split('\t')
         if not components:
             continue
         media_src = components[0]
