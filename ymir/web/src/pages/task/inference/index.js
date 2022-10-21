@@ -51,7 +51,7 @@ function Inference({ datasetCache, datasets, ...func }) {
   const [taskCount, setTaskCount] = useState(1)
   const [selectedGpu, setSelectedGpu] = useState(0)
   const [keywordRepeatTip, setKRTip] = useState('')
-  const [{ newer }, checkKeywords] = useAddKeywords(true)
+  const [{ newer }, checkKeywords] = useFetch('keyword/checkDuplication', { newer: [] })
   const [live, setLiveCode] = useState(false)
   const [project, getProject] = useFetch('project/getProject', {})
   const watchStages = Form.useWatch('stages', form)
