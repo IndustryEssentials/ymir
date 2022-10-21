@@ -92,13 +92,13 @@ def prepare_model(model_location: str, model_hash: str, stage_name: str, dst_mod
 
     os.makedirs(dst_model_path, exist_ok=True)
 
-    logging.info(f"extracting models: {tar_file_path}, stage: {stage_name or '(all)'}")
+    logging.info(f"extracting models: {tar_file_path}, stage: {stage_name}")
     with tarfile.open(tar_file_path, 'r') as tar_file:
         # get model_stage of this package
         tar_file.extract('ymir-info.yaml', dst_model_path)
         with open(os.path.join(dst_model_path, 'ymir-info.yaml'), 'r') as f:
             ymir_info_dict = yaml.safe_load(f.read())
-        # TODO: HANDLE OLD MODEL FORMAT
+
         model_storage = ModelStorage.parse_obj(ymir_info_dict)
         model_storage.model_hash = model_hash
         model_storage.stage_name = stage_name
@@ -106,7 +106,6 @@ def prepare_model(model_location: str, model_hash: str, stage_name: str, dst_mod
         stage_and_file_names = [f"{stage_name}/{file_name}" for file_name in model_storage.stages[stage_name].files]
         os.makedirs(os.path.join(dst_model_path, stage_name), exist_ok=True)
         for name in stage_and_file_names:
-            logging.info(f"    extracting {name} -> {dst_model_path}")
             tar_file.extract(name, dst_model_path)
 
     return model_storage
@@ -116,7 +115,7 @@ def pack_and_copy_models(model_storage: ModelStorage, model_dir_path: str, model
     """
     pack model, returns model hash of the new model package
     """
-    logging.info(f"packing models: {model_dir_path} -> {model_location}")
+    logging.info(f"packing models: {model_dir_path} -> {model_location}, stages: {model_storage.stages.keys()}")
 
     ymir_info_file_name = 'ymir-info.yaml'
     ymir_info_file_path = os.path.join(model_dir_path, ymir_info_file_name)
@@ -127,14 +126,12 @@ def pack_and_copy_models(model_storage: ModelStorage, model_dir_path: str, model
     with tarfile.open(tar_file_path, 'w:gz') as tar_gz_f:
         # packing models
         for stage_name, stage in model_storage.stages.items():
-            logging.info(f"  model stage: {stage_name}")
             stage_dir = os.path.join(model_dir_path, stage_name)
             for file_name in stage.files:
                 # find model file in `stage_dir`, and then `model_dir`
                 # compatible with old docker images
                 file_path = _find_model_file(model_dirs=[stage_dir, model_dir_path], file_name=file_name)
                 tar_file_key = f"{stage_name}/{file_name}"
-                logging.info(f"    packing {file_path} -> {tar_file_key}")
                 tar_gz_f.add(file_path, tar_file_key)
 
         # packing attachments
@@ -143,11 +140,9 @@ def pack_and_copy_models(model_storage: ModelStorage, model_dir_path: str, model
             for file_name in file_names:
                 file_path = os.path.join(section_dir, file_name)
                 tar_file_key = f"attachments/{section}/{file_name}"
-                logging.info(f"    packing {file_path} -> {tar_file_key}")
                 tar_gz_f.add(file_path, tar_file_key)
 
         # packing ymir-info.yaml
-        logging.info(f"  packing {ymir_info_file_path} -> {ymir_info_file_name}")
         tar_gz_f.add(ymir_info_file_path, ymir_info_file_name)
 
     os.makedirs(model_location, exist_ok=True)
