@@ -39,7 +39,7 @@ function Buttons({
     </Button>
   </Form.Item> : null
 
-  const reactBtn = current && validState(state) ? <Form.Item name='nextBtn' noStyle>
+  const reactBtn = current && (validState(state) || invalidState(state)) ? <Form.Item name='nextBtn' noStyle>
     <Button type="primary" size="large" onClick={react}>
       {reactLabel}
     </Button>

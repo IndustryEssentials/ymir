@@ -6,11 +6,12 @@ from fastapi.logger import logger
 from app import models
 from app.api import deps
 from app.config import settings
-from app.schemas import (
-    KeywordsCreate,
+from app.schemas.keyword import (
     KeywordsCreateOut,
     KeywordsPaginationOut,
     KeywordUpdate,
+    KeywordsInput,
+    KeywordsCheckDupOut,
 )
 from app.utils.cache import CacheClient
 from app.utils.ymir_controller import ControllerClient
@@ -51,7 +52,7 @@ def get_keywords(
 @router.post("/", response_model=KeywordsCreateOut)
 def create_keywords(
     *,
-    keywords_input: KeywordsCreate,
+    keywords_input: KeywordsInput,
     current_user: models.User = Depends(deps.get_current_active_user),
     controller_client: ControllerClient = Depends(deps.get_controller_client),
     cache: CacheClient = Depends(deps.get_cache),
@@ -64,10 +65,20 @@ def create_keywords(
         user_id=current_user.id,
         new_labels=new_labels,
         controller_client=controller_client,
-        dry_run=keywords_input.dry_run,
     )
     cache.delete_personal_keywords_cache()
     return {"result": result}
+
+
+@router.post("/check_duplication", response_model=KeywordsCheckDupOut)
+def check_keywords_duplication(
+    *,
+    keywords_input: KeywordsInput,
+    user_labels: UserLabels = Depends(deps.get_user_labels),
+) -> Any:
+    new_user_labels = UserLabels(labels=keywords_input.keywords)
+    dups = user_labels.find_dups(new_user_labels)
+    return {"result": dups}
 
 
 @router.patch(

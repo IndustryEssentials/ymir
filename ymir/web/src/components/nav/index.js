@@ -36,7 +36,7 @@ const menus = () => [
     label: 'algo.label',
     key: "/home/algo",
     icon: <StoreIcon className={styles.navIcon} />,
-    hide: !getDeployUrl(),
+    hidden: !getDeployUrl(),
   },
   {
     label: 'common.top.menu.image',
@@ -106,7 +106,7 @@ function HeaderNav({ simple = false, username, loginout, avatar, role }) {
         menu.children = handleMenus(menu.children)
       }
       menu.label = t(menu.label)
-      !menu.hide && validPermission(role, menu.permission) && result.push(menu)
+      !menu.hidden && validPermission(role, menu.permission) && result.push(menu)
     })
     return result
   }
