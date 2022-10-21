@@ -60,24 +60,34 @@ If you wish to refer to YMIR in your work, please use the following BibTeX entry
 }
 ```
 
-# What's New
+# What's new
 
-1.1.0 was released in 5/17/2022
+Version 2.0.0 updated on 10/21/2022
 
-system
-- new dataset/model hiding and restoring functions.
-- support for modifying the project training category before the start of the iteration.
-- adding a new model testing module and model inference result comparison function.
-- optimizing the code structure.
+YMIR platform
+- New dataset/model hiding and restoring functions.
+- support for modifying project training categories before the start of an iteration.
+- addition of model testing module and model inference result comparison function.
+- optimization of code structure.
+- the addition of a model deployment module.
 
-docker
-- support [yolov5](https://github.com/ultralytics/yolov5)
-- support [mmdetection](https://github.com/open-mmlab/mmdetection)
-- support [yolov7](https://github.com/wongkinyiu/yolov7)
-- support [detectron2](https://github.com/facebookresearch/detectron2)
-- support [An Extendable, Efficient and Effective Transformer-based Object Detector](https://github.com/naver-ai/vidt)
+Docker
+- Support [yolov5](https://github.com/ultralytics/yolov5)
+- Support [mmdetection](https://github.com/open-mmlab/mmdetection)
+- Support [yolov7](https://github.com/wongkinyiu/yolov7)
+- Support [detectron2](https://github.com/facebookresearch/detectron2)
+- Support [An Extendable, Efficient and Effective Transformer-based Object Detector](https://github.com/naver-ai/vidt)
+- Support [ymir image testing tool library](https://github.com/modelai/ymir-executor-verifier)
+- Support [demo sample image creation documentation](https://github.com/modelai/ymir-executor-fork/tree/ymir-dev/det-demo-tmi)
+- Support [ymir mirror development extension library](https://github.com/modelai/ymir-executor-sdk)
+View more [ymir-executor-fork](https://github.com/modelai/ymir-executor-fork) 
 
-view [ymir-executor-fork](https://github.com/modelai/ymir-executor-fork) for detail 
+Within the public dockerimage
+- Update yolov5 training image: youdaoyzbx/ymir-executor:ymir1.3.0-yolov5-cu111-tmi
+- Update the mmdetection training image: youdaoyzbx/ymir-executor:ymir1.3.0-mmdet-cu111-tmi
+- Update the yolov5 training image to support rv1126 chip deployment: youdaoyzbx/ymir-executor:ymir1.3.0-yolov5-cu111-modelstore
+- Update the training image to support yolov5-v6.2: youdaoyzbx/ymir-executor:ymir1.3.0-yolov5-v6.2-cu111-tmi
+More code updates [ymir-dev](https://github.com/modelai/ymir-executor-fork/tree/ymir-dev)
 
 ## Introduction
 
@@ -94,29 +104,11 @@ view [ymir-executor-fork](https://github.com/modelai/ymir-executor-fork) for det
   - [2.1. Environment dependencies](#21-environment-dependencies)
   - [2.2. Installation of YMIR-GUI](#22-installation-of-ymir-gui)
   - [2.3. Installation of label studio (optional)](#23-installation-of-label-studio-optional)
+  - [2.4. Installation of Model Deployment (optional)](#24-installation-of-model-deployment-optional)
 - [3. Use YMIR-GUI: typical model production process](#3-use-ymir-gui-typical-model-production-process)
-  - [3.1. Label management](#31-label-management)
-  - [3.2. Project management](#32-project-management)
-    - [3.2.1 Iteration data preparation](#321-iteration-data-preparation)
-    - [3.2.2 Initial model preparation](#322-initial-model-preparation)
-    - [3.2.3 Mining data preparation](#323-mining-data-preparation)
-    - [3.2.4 Data mining](#324-data-mining)
-    - [3.2.5 Data labeling](#325-data-labeling)
-    - [3.2.6 Update trainingset](#326-update-trainingset)
-    - [3.2.7 Model iteration](#327-model-iteration)
-    - [3.2.8 Model validation](#328-model-validation)
-    - [3.2.9 Model download](#328-model-download)
 - [4. For advanced users: YMIR-CMD (command line) user's guide](#4-for-advanced-users-ymir-cmd-command-line-users-guide)
   - [4.1 Installation](#41-installation)
   - [4.2 Typical model production process](#42-typical-model-production-process)
-    - [4.2.1 Preparation of external data](#421-preparation-of-external-data)
-    - [4.2.2 Create local repo and import data](#422-create-local-repo-and-import-data)
-    - [4.2.3 Merge and filter](#423-merge-and-filter)
-    - [4.2.4 Train the initial model](#424-train-the-initial-model)
-    - [4.2.5 Data mining](#425-data-mining)
-    - [4.2.6 Data labeling](#426-data-labeling)
-    - [4.2.7 Model iteration-data merging](#427-model-iteration-data-merging)
-    - [4.2.8 Model iteration-model training](#428-model-iteration-model-training)
   - [4.3. YMIR-CMD manual](#43-ymir-cmd-manual)
 - [5. Get the code](#5-get-the-code)
   - [5.1. YMIR repos](#51-ymir-repos)
@@ -159,28 +151,34 @@ A typical model development process can usually be summarized in a few steps: de
 
 *  Deploy model: Models are developed and trained based on previously available data (possibly test data). After a satisfactory model is obtained, it will be applied to real data to make predictions at scale.
 
-YMIR platform mainly meets the needs of users to produce models at scale, provides users with a good and easy-to-use display interface, and facilitates the management and viewing of data and models. The platform contains main functional modules such as project management, tag management, system configuration, etc. It supports the realization of the following main functions.
+YMIR platform mainly meets the needs of users to produce models at scale, provides users with a good and easy-to-use display interface, and facilitates the management and viewing of data and models. The platform contains main functional modules such as project management, tag management, model deployment, system configuration, dockerimage management, etc. It supports the realization of the following main functions.
 
-|Function Module|Primary Function|Secondary Function|Function Description|
+| Function Module | Primary Function | Secondary Function | Function Description |
 |----------|-----------|------------|-----------------------------------------|
 |Project Management|Project Management|Project Editing|Supports adding, deleting, and editing projects and project information|
 |Project Management|Iteration Management|Iteration Preparation|Supports setting up the dataset and model information needed for iteration|
 |Project Management|Iteration Management|Iteration Steps|Support to populate the data from the previous round to the next step corresponding to the task parameters|
 |Project Management|Iteration Management|Iteration Charts|Support to display the datasets and models generated during the iterative process in the interface as a graphical comparison|
-|Project Management|Dataset Management|Import datasets|Support users to import prepared datasets by copying public datasets, url addresses, paths and local imports|
+|Project Management|Dataset Management|Import datasets|Support users to import prepared datasets by copying public datasets, url addresses, paths, and local imports|
 |Project Management|Data Set Management|View Data Sets|Supports visualization of image data and annotations, and viewing of historical information|
 |Project Management|Data Set Management|Edit Data Set|Support editing and deleting data sets
 |Project Management|Dataset Management|Dataset Versions|Support creating new dataset versions on the source dataset, with the version number incremented by time|
 |Project Management|Data Set Management|Data Preprocessing|Support image data fusion, filtering, sampling operations|
-|Project Management|Dataset Management|Data Mining|Supports finding the most beneficial data for model optimization in a large number of datasets|
+|Project Management|Data Set Management|Data Mining|Supports finding the most beneficial data for model optimization in a large number of data sets|
 |Project Management|Data Set Management|Data Annotation|Support for adding annotations to image data|
 |Project Management|Data Set Management|Data Inference|Supports adding annotations to a data set by specifying a model|
 |Project Management|Model Management|Model Import|Support local import of model files to the platform|
-|Project Management|Model Management|Training Models|Supports training models by selecting datasets, labels, and adjusting training parameters according to requirements, and viewing the corresponding model results after completion
+|Project Management|Model Management|Training Models|Support to select datasets, labels, and adjust training parameters to train models according to requirements, and view the corresponding model results after completion|
 |Project Management|Model Management|Model Validation|Support uploading a single image to check the performance of the model in real images through visualization to verify the accuracy of the model|
 |Tag management|Tag management|Add tags|Support adding primary names and aliases of training tags|
-|System configuration|Mirror management|My mirrors|Support adding custom mirrors to the system (available for administrators only)|
-|System Configuration|Mirror Management|Public Mirror|Support to view public mirrors uploaded by others and copy them to your own system|
+|Model Deployment|Algorithm Management|Public Algorithms|Support algorithm customization, view public algorithms uploaded by others and add them to my algorithms|
+|Model Deployment|Algorithm Management|My Algorithms|Support for viewing and editing my published algorithms and added algorithms|
+|Model Deployment|Algorithm Management|Deploy Algorithms|Support deploying my algorithms to devices and viewing deployment history|
+|Model Deployment|Device Management|View Devices|Support viewing device information and deployment history|
+|Model Deployment|Device Management|Edit Device|Support adding, deploying, and deleting devices|
+|Model Deployment|Device Management|Support Devices|Support viewing and purchasing of supported devices|
+|System Configuration|Mirror Management|My Mirrors|Support for adding custom mirrors to the system (available to administrators only)|
+|System Configuration|Mirror Management|Public Mirror|Support for viewing public mirrors uploaded by others and copying them to your own system|
 |System Configuration|Permissions Configuration|Permissions Management|Support for configuring user permissions (available only to administrators)|
 
 ## 1.2. Apply for trial
@@ -332,14 +330,32 @@ The user can access label studio through the default URL [http://localhost:12007
   ```sh
 docker-compose -f docker-compose.label_studio.yml down
   ```
+  
+ ## 2.4. Installation of Model Deployment (optional)
+ 
+ModelDeployment is a model deployment system supported by YMIR and can be installed as an optional model deployment tool.
+
+1. In the YMIR directory in the previous section, modify the .env file to configure the ModelDeployment port and MySQL access password as follows.
+```
+DEPLOY_MODULE_HOST_PORT=18801
+DEPLOY_MODULE_URL=${DEPLOY_MODULE_HOST_PORT}
+DEPLOY_MODULE_MYSQL_ROOT_PASSWORD=deploy_db_passwd
+```
+
+2. start the installation ModelDeployment command as follows.
+`docker-compose -f docker-compose.modeldeploy.yml up -d`
+
+3.The command to check the status of ModelDeployment after completion is as follows.
+`docker-compose -f docker-compose.modeldeploy.yml ps`
+
+4. Stop the ModelDeployment service with the following command.
+`docker-compose -f docker-compose.modeldeploy.yml down`
 
 # 3. Use YMIR-GUI: typical model production process
 
-This section uses a complete model iteration process as an example to illustrate how to use the YMIR platform.
-
 ![YMIR-GUI process](https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/YMIR-GUI-process.jpeg)
 
-As shown in the figure above, YMIR divides the model development process into multiple steps. Details about how to run each step are listed in the subsequent sections.
+As shown in the figure, YMIR divides the model development process into multiple steps. Details about how to run each step are listed in the subsequent sections.
 
 Data and labels are necessary for the training of deep learning, and the training requires a large amount of data with labels. However, what exists in reality is a large amount of unlabeled data, which is too costly in terms of labor and time if all of them are manually labeled.
 
@@ -347,151 +363,7 @@ Therefore, YMIR platform, through active learning, first attains an initial mode
 
 The updated dataset is used to train the model again to improve the model capability. The YMIR platform provides a more efficient approach than labeling the entire data and then training it, reducing the cost of labeling low-quality data. Through the cycle of mining, labeling, and training, high quality data is expanded and the model capability is improved.
 
-## 3.1. Label management
-
-When you need to import a dataset with annotation files, please make sure the annotation type belongs to the existing label list of the system, otherwise you need to go to the label management interface to add custom labels in order to import the data. The following figure shows:
-
-![Label management](https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/label%20management.jpg)
-
-This time we add the tags 'helmet_head' 'no_helmet_head' to the list, the primary name and alias of the label indicate the same type of label. When the annotation of some dataset contains alias, it will be merged to primary name when importing. For example, if the label list contains the 'bike' (alias 'bicycle'), and a dataset A (containing only the 'bicycle') is imported, it will be displayed as 'bike' in the dataset details after import.
-
-## 3.2. Project management
-
-Users create projects according to their training goals(helmet_head，no_helmet_head) and set the target information such as mAP value, iteration rounds, etc. of the goals. As shown in the figure below：
-
-## 3.2.1. Iteration data preparation
-
-The user prepares the mining set to be used for data mining (which may not need to contain annotation files) and datasets with training targets (training set and test set) for training an initial model. Before importing, please ensure that the format of the dataset meets the following requirements:
-
-*  The dataset is in.zip format, it should contain two folders named as "images" and "annotations" respectively;
-*  Images: create an ''images'' folder and place images in it. The formats currently supported by this platform are limited to jpg, jpeg, and png;
-*  Annotations: create an "annotations" folder and place annotation files formatted as [Pascal VOC](http://host.robots.ox.ac.uk/pascal/VOC/voc2012/htmldoc/devkit_doc.html#SECTION00093000000000000000) (if there are no annotation files, leave the folder empty);
-
-The platform supports four kinds of dataset importing: public dataset replication, network importing, local importing, and path importing.
-
-![import guide](https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/import1.jpg)
-
-(1) public dataset replication: the user can copy the built-in dataset of the super administrator to the current operating user. The user can filter and import the label categories they need, as shown in the figure below:
-
-![public dataset](https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/public%20dataset.jpg)
-
-Select the dataset and choose whether you want to synchronize the labels contained in the public dataset, click [OK] to start copying.
-
-(2) Network import: users need to enter the URL path corresponding to the dataset as shown in the following:
-
-![inter import](https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/net%20import.jpg)
-
-(3) Local import: users needs to upload a zip file of the local dataset in the following format. The zip size is recommended to be no more than 200MB.
-
-Users can download the example **Sample.zip** for reference as follows:
-
-![local import](https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/local%20import.jpg)
-
-(4) Path Import:
-
-1. Download the open-source dataset VOC2012 ([Click to download VOC2012](http://host.robots.ox.ac.uk/pascal/VOC/voc2012/VOCtrainval_11-May-2012.tar)) and unzip it. Change the folder name as required, and then compressing them separately into zip packages that meet the import requirements.
-
-2. Place dataset VOC2012 under `ymir-workplace/ymir-sharing`.
-
-3. Select 'path import' and enter the absolute path of the dataset in the server: `voc2012`, as shown in the figure below:
-
-![path import](https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/path%20import.jpg)
-
-After finishing the import of the initial dataset, click [Dataset Setting] to complete the corresponding dataset and mining strategy settings. The training set has been set as the default system training set when creating the project, and cannot be changed.
-
-![Iteration data prepare](https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/iteration%20data%20prepare.jpg)
-
-## 3.2.2. Initial model preparation
-
-The user prepares the model for the initial iteration, either by local import or by model training. For local import, it is necessary to ensure that the model is in the required format.
-
-* Only models generated by the YMIR system are supported.
-* The uploaded file should be less than 1024 MB.
-* the detection target of the uploaded model file should be consistent with the project target.
-
-Model training can be done by clicking the [Training] operation button on the dataset list interface to jump to the Create Model Training interface, as shown in the following figure：
-
-![training1](https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/training1.jpg)
-
-Select the training set (train1 V1), select the test set (val V1), select the training target (helmet_head, no_helmet_head), select the pre-training model (not required), training docker, training type, algorithm framework, backbone network structure, number of GPUs and configure the training parameters (training parameters provide default values, the default parameters in the key value can not be modified, the value value can be modified, if you want to add parameters can be added), click create task. If you want to add parameters, you can add them yourself), click Create Task. As shown in the figure below, the initial model is trained.
-
-![training2](https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/training2.jpg)
-
-After successful creation, users can view the corresponding task progress and information on the task management page. Users can view the accuracy of the trained model (mAP value) after the task is completed.
-
-After finishing the import or training of the initial model, click [Select Model] to select the initial model and finish the setup.After both the iteration data and the model are prepared, the iteration is started.
-
-- **Model iterations (Improve accuracy through iteration)**
-
-When iteration is enabled, YMIR provides a standardized model iteration process and helps users fill in the results of the previous operation by default in each step of the operation, so that ordinary users can follow the established steps to complete the complete model iteration process.
-
-## 3.2.3. Mining data preparation
-
-YMIR provides data mining algorithms that support million-level data mining to quickly find the most favorite data for model optimization.
-
-[Mining Data Preparation] provides users with the data to be mined, and the original data set here is the mining set set set by project setting by default. The operation process is shown in the following figure.
-
-![mining data preparation 1](https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/miningdata%20preparation.jpg)
-![mining data preparation 2](https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/miningdata%20preparation2.jpg)
-
-Click [Next] after the operation is completed to open the [Data Mining] process.
-
-## 3.2.4. Data mining
-
-The user can use the model obtained from the initial training to perform data mining on the dataset to be mined. Click the [Data Mining] button to jump to the data mining interface, as shown in the following figure.
-
-![mine1](https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/mining1.jpg)
-![mine2](https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/mining2.jpg)
-
-The default original dataset is the result dataset prepared from the last mining data, and the default model is the initial model set in the iterative preparation. The user must also enter the filter TOPK as 500 (the first 500 successfully mined images), and set custom parameters if necessary.
-
-After successful creation, users can view the mining progress and the result on the dataset management page.
-
-## 3.2.5. Data labeling
-
-If the data mined in the previous step does not have labels, users need to label them. Users can click the [Label] button on the task management page to jump to the data annotation interface as shown in the following figure.
-
-![label1](https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/labeling1.jpg)
-
-The default original dataset is the result dataset obtained from the last mining. The user must also ente rthe email address of the annotator, and the labeling target (helmet_head, no_helmet_head). If you want to check the labeling platform by yourself, please click "View on labeling platform" and fill in your labeling platform account. If you have more detailed requirements for the annotation, you can upload the annotation description document for the annotator's reference. You must register with the labeling system in advance. You can click "Register Labeling Platform Account" at the bottom to jump to the Label Studio labeling platform to register their labeling account. Click on Create Task, as shown in the figure below:
-
-![label2](https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/labeling2.jpg)
-
-After successful creation, users can view the labeling progress and other information on the dataset management interface. After the operation completed, the YMIR will automatically retrieve the annotation results and generate a new dataset with the new annotation.
-
-## 3.2.6. Update trainingset
-
-After the labeling is completed, the labeled data set is merged into the training set and the merged results are generated into a new version of the training set. The following figure shows.
-
-![update1](https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/update1.jpg)
-![update2](https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/update2.jpg)
-
-## 3.2.7. Model iteration
-
-![process-en](https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images//process-en.jpeg)
-
-After the merging is completed, the model is trained again to generate a new version of the model, as shown below.
-
-![model iteration1](https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/model%20iteration1.jpg)
-![model iteration2](https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/model%20iteration2.jpg)
-
-Users can download the models that meet their expectations. Or continue to the next iteration to further optimize the model.
-
-## 3.2.8. Model validation
-
-After training the model, users can validate the model. On the [Model Management] page, you can click the [Verify] button of the corresponding model to jump to the [Model Validation] page. As shown in the following figure:
-
-![model val1](https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images//model%20ver1.jpg)
-
-Select the validation mirror, adjust the parameters, click the [Upload Image] button, select the local image to upload, click [Model Validation], and display the results as follows.
-
-![model val2](https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/model_ver2.jpg)
-
-## 3.2.9. Model download
-
-Users can click the [Download] button on the [Model List] page. The downloaded file is a tar package, which contains the network structure of the model, network weights, hyper-parameter configuration files, training environment parameters, and results. As shown below:
-
-![model download](https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/model-download.jpeg)
+This section uses a complete model iteration process as an example to illustrate how to use the YMIR platform. Please check [Operating Instructions](https://github.com/IndustryEssentials/ymir/wiki/Operating-Instructions)
 
 # 4. For advanced users: YMIR-CMD (command line) user's guide
 
@@ -520,293 +392,7 @@ $ mir --version
 
 ![process-en](https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/process-en.jpeg)
 
-The above figure shows a typical process of model training: 1) the user prepares external data, 2) imports it into the system, 3) appropriately filters the data, and 4) begins training to obtain a model (possibly with low accuracy). 5) selects images in a dataset to be mined that are suitable for further training based on this model, 6) annotates these images, 7) merges the annotated results with the original training set, and 8) uses the merged results to run the training process again to obtain a better model.
-This section implement the process shown above using the command line.
-All the following commands are prefixed with $ (which is also the Linux prompt under the normal user). When entering a command in the console, the user does not need to enter $ at the same time.
-
-### 4.2.1 Preparation of external data
-
-The system has the following requirements for external data.
-
-1. With [VOC annotations](https://towardsdatascience.com/coco-data-format-for-object-detection-a4c5eaf518c5)
-
-2. The paths to all images (collectively referred to as assets or media in this system) need to be written uniformly in the "index.tsv" file. All annotation files need to be in the same directory.
-
-3. The user must have read access to "index.tsv," all images, and all annotation files.
-
-We take the pascal 2017 test dataset as an example. Download the dataset "VOC2012test.tar" from the official website and unpack.
-
-```
-$ tar -xvf VOC2012test.tar
-```
-
-After unpacking, the following directory structure is available (assuming VOCdevkit is in the /data directory).
-
-```
-/data/VOCdevkit
-` - VOC2012
-    |-- Annotations
-    |-- ImageSets
-    |-- Action
-    |-- Layout
-    |-- Main
-    | `-- Segmentation
-    ` -- JPEGImages
-```
-
-Note that all annotations are in the annotations directory and all images are located in the JPEGImages directory.
-
-Users can use the following command to generate the "index.tsv" file.
-
-```
-$ find /data/VOCdevkit/VOC2012/JPEGImages -type f > index.tsv
-```
-
-The generated "index.tsv" is as follows:
-
-```
-/data/VOCdevkit/VOC2012/JPEGImages/2009_001200.jpg
-/data/VOCdevkit/VOC2012/JPEGImages/2009_004006.jpg
-/data/VOCdevkit/VOC2012/JPEGImages/2008_006022.jpg
-/data/VOCdevkit/VOC2012/JPEGImages/2008_006931.jpg
-/data/VOCdevkit/VOC2012/JPEGImages/2009_003016.jpg
-...
-```
-
-And this "index.tsv" can be used for the next step of data import.
-
-In addition, each annotation in the Annotations folder has the same main file name as the image. One of the <name>xxx</name> attributes will be extracted as a predefined keyword to be used in a later step of data filtering.
-
-### 4.2.2 Create local repo and import data
-
-The command line on this system uses a method similar to Git to manage user resources. Users create their own mir repository and perform all the following tasks in this mir repo.
-
-Use the following command to create a mir repo:
-
-```
-$ mkdir ~/mir-demo-repo && cd ~/mir-demo-repo # Create the directory and enter
-$ mir init # init this directory to a mir repo
-$ mkdir ~/ymir-assets ~/ymir-models # Creates assets and models storage directory, mir repo only keeps reference to assets and models
-```
-
-All type labels in mir repo are managed by `labels.yaml`. Open file `~/mir-demo-repo/.mir/labels.yaml`, and you can see the following contents:
-
-``` yaml
-labels:
-- create_time: 1646728410.570311
-  id: 0
-  update_time: 1646728410.570311
-  name: frisbee
-- create_time: 1646728410.570311
-  id: 1
-  update_time: 1646728410.570311
-  name: car
-```
-
-You can add your own class ids and names, just like:
-
-``` yaml
-labels:
-- create_time: 1646728410.570311
-  id: 0
-  update_time: 1646728410.570311
-  name: frisbee
-- create_time: 1646728410.570311
-  id: 1
-  update_time: 1646728410.570311
-  name: car
-- create_time: 1646728410.570311
-  id: 2
-  update_time: 1646728410.570311
-  name: tv
-```
-
-There could be one or more alias for each type label, for example: if television and tv_monitor sepecified as the alias for tv, the `labels.yaml` could be changed to:
-
-``` yaml
-- create_time: 1646728410.570311
-  id: 0
-  update_time: 1646728410.570311
-  name: frisbee
-- create_time: 1646728410.570311
-  id: 1
-  update_time: 1646728410.570311
-  name: car
-- create_time: 1646728410.570311
-  id: 2
-  update_time: 1646728410.570311
-  name: tv
-  aliases:
-  - television
-  - tv_monitor
-```
-
-You can edit this file by vi and other text editing tools. You can add alias to type labels or add new type labels, but it is not recommended to change or remove the id and name of any type label that already exists.
-
-The file `labels.yaml` can be shared among multiple mir repos by establishing soft links.
-
-Users are required to prepare three data sets in advance.
-
-1. A training set (for example, named "dataset-training"), with annotations, for initial model training.
-
-2. A validation set (named "dataset-val") that includes annotations.
-
-3. Mining set (named "dataset-mining"): a large dataset to be mined from.
-
-The user imports the three data sets with the following command:
-
-```
-$ cd ~/mir-demo-repo
-$ mir import --index-file /path/to/training-dataset-index.tsv \ # Path to dataset index
-             --gt-dir /path/to/training-dataset-annotation-dir \ # Path to annotation dir
-             --gen-dir ~/ymir-assets \ # Path to ymir-assets
-             --unknown-types-strategy stop \ # Choose from stop, ignore, add
-             --anno-type det-box \ # Choose from det-box, seg-poly, seg-mask
-             --dst-rev 'dataset-training@import' # branch and task name
-$ mir checkout master
-$ mir import --index-file /path/to/val-dataset-index.tsv \
-             --gt-dir /path/to/val-dataset-annotation-dir \
-             --gen-dir ~/ymir-assets \
-             --unknown-types-strategy stop \
-             --anno-type det-box \
-             --dst-rev 'dataset-val@import'
-$ mir checkout master
-$ mir import --index-file /path/to/mining-dataset-index.tsv \
-             --gt-dir /path/to/mining-dataset-annotation-dir \
-             --gen-dir ~/ymir-assets \
-             --unknown-types-strategy stop \
-             --anno-type det-box \
-             --dst-rev 'dataset-mining@import'
-```
-
-* Note: Set optional `--gt-dir` to ground truth directory, and optional `--pred-dir` to prediction directory to import prediction and ground truth to ONE dataset.
-
-Users can use this command to see the branches of the current mir repo:
-
-```
-$ git branch
-```
-
-This repo has four branches: master, dataset-training, dataset-val, and dataset-mining. The current repo is on the branch dataset-mining.
-
-Users can also view the status of branch with:
-
-```
-$ mir show --src-rev dataset-mining
-```
-
-### 4.2.3 Merge and filter
-
-Users can merge dataset-training and dataset-val with:
-
-```
-$ mir merge --src-revs tr:dataset-training@import;va:dataset-val@import \ # source branches to be merged
-            --dst-rev tr-va@merged \ # destination branch and task name
-            -s host # conflicts resolve strategy: use infos on host branch (the first branch in --src-revs)
-```
-
-If the dataset-training and dataset-val before merging have 2000 and 1510 images, you can see that the merge branch has 2000 images as the training set and 1510 images as the validation set.
-
-If the user only wants to train the model to detect humans and cats, we first filter out the resources of humans and cats from the tr-va branch:
-
-```
-$ mir filter --src-revs tr-va@merged \
-             --dst-rev tr-va@filtered \
-             -p 'person;cat'
-```
-
-### 4.2.4 Train the initial model
-
-First, users need to pull the training and mining docker images from the docker hub as follows:
-
-```
-$ docker pull youdaoyzbx/ymir-executor:ymir1.3.0-yolov5-cu111-tmi
-```
-
-and start the training process with the following command:
-
-```
-mir train -w /tmp/ymir/training/train-0 \
-          --media-location ~/ymir-assets \ # assets storage dir
-          --model-location ~/ymir-models \ # model storage dir
-          --task-config-file ~/training-config.yaml \ # training config file, get it from training docker image
-          --src-revs tr-va@filtered \
-          --dst-rev training-0@trained \
-          --executor youdaoyzbx/ymir-executor:ymir1.3.0-yolov5-cu111-tmi # docker image name
-```
-
-After the model training is completed, the system will output the model ID. The user can view the package file of the model in "/ymir-models".
-
-### 4.2.5 Data mining
-
-This model is trained on a small dataset, and users can get the best images for the next training step in this mining process with the following command:
-
-```
-$ mir mining --src-revs dataset-mining@import \ # mining dataset branch
-             --dst-rev mining-0@mining \ # destination branch
-             -w /tmp/ymir/mining/mining-0 \ # tmp working dir for this task
-             --topk 200 \ # topk
-             --model-location ~/ymir-models \
-             --media-location ~/ymir-assets \
-             --model-hash <hash> \ # model id
-             --asset-cache-dir /tmp/ymir/cache \ # asset cache
-             --task-config-file ~/mining-config.yaml \ # mining config file, get it from mining docker image
-             --executor youdaoyzbx/ymir-executor:ymir1.3.0-yolov5-cu111-tmi # mining docker image name
-```
-
-* Note: Argument `--add-prediction` will add prediction boxes to result dataset.
-
-### 4.2.6 Data labeling
-
-Now the user has 200 images on the branch "mining-0". These images will be most useful in the next training step. The next task is to export these resources and send them to the annotators for labeling.
-
-Users can export assets with the following command:
-
-```
-$ mir export --asset-dir /tmp/ymir/export/export-0/assets \ # export directory for assets
-             --pred-dir /tmp/ymir/export/export-0/annotations \ # export directory for annotations
-             --media-location ~/ymir-assets \ # assets storage directory
-             --src-revs mining-0@mining \
-             --asset-format raw \ # export raw images
-             --anno-format none # no annotations needed
-$ find /tmp/ymir/export/export-0/assets > /tmp/ymir/export/export-0/index.tsv
-```
-
-After the export is done, users can see images at /tmp/ymir/export/export-0/assets. Users can send these pictures for annotation, and the annotations need to be saved in VOC format (assuming the save path is still /tmp/ymir/export/export-0/annotations).
-Once the annotation is finished, the user can import the data using a similar approach to the import command in [4.2.2](#422-create-local-repo-and-import-data).
-
-```
-$ mir import --index-file /tmp/ymir/export/export-0/index.tsv
-             --gt-dir /tmp/ymir/export/export-0/annotations \ # annotation directory
-             --gen-dir ~/ymir-assets \ # asset storage directory
-             --unknown-types-strategy stop \
-             --anno-type det-box \
-             --dst-rev 'labeled-0@import' # destination branch and task name
-```
-
-### 4.2.7 Model iteration-data merging
-
-The branch "labeled-0" now contains the 200 new training images. Users can be merged together with the original training set by the merge command.
-
-```
-$ mir merge --src-revs tr-va@filtered;tr:labeled-0@import \ # source branch
-            --dst-rev tr-va-1@merged \ # destination branch and task name
-            -s host
-```
-
-### 4.2.8 Model iteration-model training
-
-Now branch tr-va-1 contains the previous training and validation set and 200 new images we have just mined and labeled. A new model can be trained on this set with the following command:
-
-```
-$ mir train -w /tmp/ymir/training/train-1 \ # use different working dir for training and mining task
-            --media-location ~/ymir-assets \
-            --model-location ~/ymir-models \
-            --task-config-file ~/training-config.yaml \
-            --src-revs tr-va-1@merged \ # use new-merged branch
-            --dst-rev training-1@trained \
-            --executor youdaoyzbx/ymir-executor:ymir1.3.0-yolov5-cu111-tmi
-```
+The above figure shows a typical process of model training: 1) the user prepares external data, 2) imports it into the system, 3) appropriately filters the data, and 4) begins training to obtain a model (possibly with low accuracy). 5) selects images in a dataset to be mined that are suitable for further training based on this model, 6) annotates these images, 7) merges the annotated results with the original training set, and 8) uses the merged results to run the training process again to obtain a better model. This section implement the process shown above using the command line. For details, please check the [CMD usage instructions](https://github.com/IndustryEssentials/ymir/wiki/CMD-usage-instructions).
 
 ## 4.3. YMIR-CMD manual
 
