@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react"
-import { Row, Col, Form, Button } from "antd"
+import { Row, Col, Form, Button, Select } from "antd"
 import { useHistory } from "umi"
 
 import { runningDataset } from '@/constants/dataset'
@@ -77,8 +77,10 @@ export default function Stage({ pid, stage, form, project = {}, result, trainVal
       </Col>
     </Row>
 
+  const running = <Select disabled labelInValue value={`${result?.name} ${result?.versionName}`}></Select>
+
   return <Form.Item tooltip={t(stage.tip)} label={t(stage.label)} required={!stage.option}>
-    {runningDataset(result) ? <>{result.name} {result.versionName}</> : <>
+    {runningDataset(result) ? running : <>
       <div>{!candidateList && !project[stage.field] ? renderEmptyState(stage.type) : null}</div>
       <Form.Item
         hidden={!candidateList && !project[stage.field]}

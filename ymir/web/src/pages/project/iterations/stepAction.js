@@ -10,7 +10,6 @@ import Mining from "@/components/task/mining"
 import Label from "@/components/task/label"
 import Merge from "@/components/task/merge"
 import Training from "@/components/task/training"
-import IterationStepButtons from './buttons'
 import Buttons from './buttons'
 import NextIteration from './nextIteration'
 
@@ -18,6 +17,7 @@ const Action = (Comp, props = {}) => <Comp {...props} />
 
 const StepAction = ({ stages, iteration, project, prevIteration, callback = () => {} }) => {
   const [updated, updateIteration] = useFetch('iteration/updateIteration')
+  const actionPanelExpand = useSelector(({iteration}) => iteration.actionPanelExpand)
   const [currentContent, setCurrentContent] = useState(null)
   const [CurrentAction, setCurrentAction] = useState(null)
   const result = useSelector(({ dataset, model }) => {
@@ -148,7 +148,7 @@ const StepAction = ({ stages, iteration, project, prevIteration, callback = () =
     }
   }
 
-  return CurrentAction
+  return <div hidden={!actionPanelExpand}>{CurrentAction}</div>
 }
 
 export default StepAction

@@ -62,29 +62,11 @@ function Iteration({ project, fresh = () => { } }) {
     const initStages = getInitStages()
     const ss = initStages.map(stage => {
       const result = iteration[stage.output]
-      const urlParams = {
-        s0d: project.miningSet.id || 0,
-        s0s: project.miningStrategy,
-        s0c: project.chunkSize || undefined,
-        s1d: iteration.miningSet,
-        s1m: prevIteration.id ? [prevIteration.model, null] : project.modelStage,
-        s2d: iteration.miningResult,
-        s3d: prevIteration.trainUpdateSet || project.trainSetVersion,
-        s3m: iteration.labelSet,
-        s4d: iteration.trainUpdateSet,
-        s4t: iteration.testSet,
-        id: iteration.id,
-        pid: project.id,
-        stage: iteration.currentStage,
-        output: stage.output,
-      }
-      const url = templateString(stage.temp || '', urlParams)
       return {
         ...stage,
         iterationId: iteration.id,
         round: iteration.round,
         current: iteration.currentStage,
-        url,
         result,
       }
     })
