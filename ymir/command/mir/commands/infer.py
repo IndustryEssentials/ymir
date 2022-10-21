@@ -234,6 +234,8 @@ def _process_infer_results(infer_result_file: str, max_boxes: int, mir_root: str
         annotations.sort(key=(lambda x: x['score']), reverse=True)
         annotations = [a for a in annotations if class_id_mgr.has_name(a['class_name'])]
         annotations_dict['boxes'] = annotations[:max_boxes]
+        if 'annotations' in annotations_dict:
+            del annotations_dict['annotations']
 
     with open(infer_result_file, 'w') as f:
         f.write(json.dumps(results, indent=4))
