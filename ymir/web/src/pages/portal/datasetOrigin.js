@@ -24,9 +24,7 @@ function Sets({ title, count = 2, getPublicDataset }) {
         list.push(items.slice(r, r + count))
         r += count
       }
-      // console.log('public dataset: ', result)
       setSets(list)
-      // setSets(result.items.slice(r, r + count))
     }
   }, [])
 

@@ -1,4 +1,4 @@
-import { Project, Iteration, } from "@/interface/project"
+import { Project, } from "@/interface/project"
 import { BackendData } from "@/interface/common"
 import { transferDatasetGroup, transferDataset } from '@/constants/dataset'
 import { format } from '@/utils/date'

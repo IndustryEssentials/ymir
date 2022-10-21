@@ -27,7 +27,7 @@ export enum actions {
   del = 'delete',
 }
 
-export const OPENPAI_MAX_GPU_COUNT  = 8
+export const OPENPAI_MAX_GPU_COUNT = 8
 
 type Result = {
   [key: string]: any,
@@ -58,6 +58,12 @@ export function updateResultByTask(result: Result, task: BackendData) {
 export function validState(state: number) {
   return ResultStates.VALID === state
 }
+export function invalidState(state: number) {
+  return ResultStates.INVALID === state
+}
+export function readyState(state: number) {
+  return ResultStates.READY === state
+}
 export const statesLabel = (state: ResultStates) => {
   const maps = {
     [ResultStates.READY]: 'dataset.state.ready',
@@ -71,4 +77,8 @@ export function getVersionLabel(version: number) {
   return `V${version}`
 }
 
-export const DEPLOY_MODULE_URL = window?.baseConfig?.DEPLOY_MODULE_URL
+export const getDeployUrl = () => {
+  let url = window?.baseConfig?.DEPLOY_MODULE_URL
+  const onlyPort = /^\d+$/.test(url)
+  return onlyPort ? `${location.protocol}//${location.hostname}:${url}` : url
+}

@@ -477,10 +477,6 @@ describe("models: dataset", () => {
     generator.next()
     const d = generator.next(datasets)
     const end = generator.next()
-    console.log('end:', end, d)
-    // const updated = d.value.payload.action.payload
-
-    // expect(updated).toEqual(expected)
     expect(end.done).toBe(true)
   })
   it("effects: getInternalDataset", () => {

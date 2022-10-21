@@ -3,7 +3,7 @@ import { Col, Form, Input, InputNumber, Row, Space } from "antd"
 import Panel from "@/components/form/panel"
 import t from '@/utils/t'
 import s from "./form.less"
-import PreProcessForm from "./preProcessForm"
+import PreProcessForm from "./preProcess"
 import { AddTwoIcon, AddDelTwoIcon } from '@/components/common/icons'
 function getArrayConfig(config = {}) {
   const excludes = ['gpu_count', 'task_id']

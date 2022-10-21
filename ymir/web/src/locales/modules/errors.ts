@@ -105,6 +105,8 @@ const errors = {
   'error160015': { cn: '模型解析失败', en: 'Model parse failed', },
   'error160016': { cn: 'CMD: 读取meta.yaml文件失败', en: 'Reading meta.yaml file failed', },
   'error169999': { cn: 'CMD: 未知错误', en: 'RC_CMD_ERROR_UNKNOWN: unkown error', },
+  'error111705': {cn: '找不到迭代步骤', en: 'Iteration step is not found.', },
+  'error111706': {cn: '迭代步骤已经完成', en: 'Iteration step is already finished.', },
 }
 
 export default errors

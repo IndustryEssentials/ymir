@@ -1,7 +1,7 @@
 import Panel from "@/components/form/panel"
 import { Button, Col, Form, Input, Row } from "antd"
 import t from '@/utils/t'
-import { getConfigUrl } from "@/pages/task/components/liveCodeConfig"
+import { getConfigUrl } from "./liveCodeConfig"
 import { useEffect, useState } from "react"
 
 
