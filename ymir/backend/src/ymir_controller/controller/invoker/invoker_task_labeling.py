@@ -14,6 +14,11 @@ class TaskLabelingInvoker(TaskBaseInvoker):
         if len(request.in_dataset_ids) != 1:
             return utils.make_general_response(code=CTLResponseCode.ARG_VALIDATION_FAILED,
                                                message=f"Invalid in_dataset_ids {request.in_dataset_ids}")
+        try:
+            utils.create_label_instance()
+        except ValueError:
+            return utils.make_general_response(code=CTLResponseCode.ARG_VALIDATION_FAILED,
+                                               message="ill-configured label_tool")
 
         return utils.make_general_response(CTLResponseCode.CTR_OK, "")
 
