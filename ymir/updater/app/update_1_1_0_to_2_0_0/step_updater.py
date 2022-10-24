@@ -113,7 +113,7 @@ def _update_annotations(mir_annotations_src: pb_src.MirAnnotations) -> pb_dst.Mi
 
     mir_annotations_dst = pb_dst.MirAnnotations()
     for asset_id, single_image_annotations_src in task_annotations_src.image_annotations.items():
-        single_image_annotations_dst = mir_annotations_dst.prediction.image_annotations[asset_id]
+        single_image_annotations_dst = mir_annotations_dst.ground_truth.image_annotations[asset_id]
         for annotation_src in single_image_annotations_src.annotations:
             object_annotation_dst = pb_dst.ObjectAnnotation()
             ParseDict(MessageToDict(annotation_src, preserving_proto_field_name=True, use_integers_for_enums=True),
@@ -123,10 +123,8 @@ def _update_annotations(mir_annotations_src: pb_src.MirAnnotations) -> pb_dst.Mi
             object_annotation_dst.det_link_id = -1
             single_image_annotations_dst.boxes.append(object_annotation_dst)
 
-    mir_annotations_dst.prediction.task_id = mir_annotations_src.head_task_id
-    mir_annotations_dst.prediction.type = pb_dst.AnnoType.AT_DET_BOX
-
-    mir_annotations_dst.ground_truth.CopyFrom(mir_annotations_dst.prediction)
+    mir_annotations_dst.ground_truth.task_id = mir_annotations_src.head_task_id
+    mir_annotations_dst.ground_truth.type = pb_dst.AnnoType.AT_DET_BOX
 
     return mir_annotations_dst
 
