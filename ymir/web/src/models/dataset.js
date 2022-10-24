@@ -273,7 +273,7 @@ export default {
           continue
         }
         const updated = updateResultByTask(dataset, task)
-        if (updated) {
+        if (updated?.id) {
           if (updated.needReload) {
             yield put({
               type: 'getDataset',
