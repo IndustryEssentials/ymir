@@ -49,7 +49,7 @@ const StepAction = ({ stages, iteration, project, prevIteration, callback = () =
     [Stages.merging]: {
       comp: Merge, query: {
         did: prevIteration.trainUpdateSet || project.trainSetVersion,
-        mid: iteration.labelSet,
+        mid: iteration.labelSet ? [iteration.labelSet] : undefined,
       },
     },
     [Stages.training]: {
