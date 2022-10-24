@@ -1,7 +1,7 @@
 FROM golang:1.18.5 AS build
 
 # --build-arg GO_SOURCE='https://mirrors.aliyun.com/goproxy/,direct'
-ARG GO_SOURCE=https://goproxy.io,direct
+ARG GO_SOURCE=https://proxy.golang.org,direct
 
 RUN go env -w GO111MODULE=on
 RUN go env -w GOPROXY=${GO_SOURCE}
