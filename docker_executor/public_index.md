@@ -17,5 +17,5 @@
 |youdaoyzbx/ymir-executor:ymir1.1.0-mmdet-cu102-tmi|training mining inference|industryessentials|-|mmdetection|
 |youdaoyzbx/ymir-executor:ymir1.1.0-mmdet-cu111-tmi|training mining inference|industryessentials|-|mmdetection|
 |youdaoyzbx/ymir-executor:ymir1.1.0-detectron2-cu111-tmi|training mining inference|yzbx|-|detectron2|
-|youdaoyzbx/ymir-executor:ymir1.1.0-nanodet-cu111-tmi|training mining inference|industryessentials|-|nanodet|
-|youdaoyzbx/ymir-executor:ymir1.1.0-vidt-cu111-tmi|training mining inference|industryessentials|-|vidt|
+|youdaoyzbx/ymir-executor:ymir1.1.0-nanodet-cu111-tmi|training mining inference|modelai|-|nanodet|
+|youdaoyzbx/ymir-executor:ymir1.1.0-vidt-cu111-tmi|training mining inference|modelai|-|vidt|
