@@ -79,7 +79,7 @@ def migrate_data(db: Session) -> None:
             stage = crud.model_stage.create(
                 db,
                 obj_in=schemas.ModelStageCreate(
-                    name="default_stage", map=model.map, timestamp=int(time.time()), model_id=model.id
+                    name="default_best_stage", map=model.map, timestamp=int(time.time()), model_id=model.id
                 ),
             )
         crud.model.update_recommonded_stage(db, model_id=model.id, stage_id=stage.id)
