@@ -5,6 +5,7 @@ import { useParams, useHistory, useLocation } from "umi"
 
 import s from './add.less'
 import t from '@/utils/t'
+import { HIDDENMODULES } from '@/constants/common'
 import Breadcrumbs from '@/components/common/breadcrumb'
 import DatasetSelect from '@/components/form/datasetSelect'
 import Panel from '@/components/form/panel'
@@ -170,8 +171,8 @@ const Add = ({ keywords, datasets, getKeywords, ...func }) => {
               <Form.Item
                 label={t('project.add.form.enableIteration')}
                 name='enableIteration'
-                hidden={true}
-                initialValue={true}
+                hidden={HIDDENMODULES.ENABLEITERATION}
+                initialValue={HIDDENMODULES.ENABLEITERATION}
                 required
                 tooltip={t('project.add.form.enableIteration.tip')}
               >
