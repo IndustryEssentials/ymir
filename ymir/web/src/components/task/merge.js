@@ -80,6 +80,12 @@ function Merge({ query = {}, hidden, ok = () => { }, bottom, }) {
     setGroup(option?.dataset?.groupId || undefined)
   }
 
+  const originFilter = useCallback(datasets => filter(datasets, [...(includes || []), ...(excludes || [])]), [includes, excludes])
+
+  const includesFilter = useCallback(datasets => filter(datasets, [selectedDataset, ...(excludes || [])]), [selectedDataset, excludes])
+
+  const excludesFilter = useCallback(datasets => filter(datasets, [selectedDataset, ...(includes || [])]), [selectedDataset, includes])
+
   return (
     <Form
       form={form}
@@ -99,7 +105,7 @@ function Merge({ query = {}, hidden, ok = () => { }, bottom, }) {
           <DatasetSelect
             pid={pid}
             onChange={originDatasetChange}
-            filters={useCallback(datasets => filter(datasets, [...(includes || []), ...(excludes || [])]), [includes, excludes])}
+            filters={originFilter}
           />
         </Form.Item> : null}
         <Form.Item label={t('task.fusion.form.merge.include.label')} name="includes" tooltip={t('tip.task.merge.include')}>
@@ -107,7 +113,7 @@ function Merge({ query = {}, hidden, ok = () => { }, bottom, }) {
             placeholder={t('task.fusion.form.datasets.placeholder')}
             mode='multiple'
             pid={pid}
-            filters={useCallback(datasets => filter(datasets, [selectedDataset, ...(excludes || [])]), [selectedDataset, excludes])}
+            filters={includesFilter}
             allowEmpty={true}
             showArrow
           />
@@ -118,7 +124,7 @@ function Merge({ query = {}, hidden, ok = () => { }, bottom, }) {
             placeholder={t('task.fusion.form.datasets.placeholder')}
             mode='multiple'
             pid={pid}
-            filters={useCallback(datasets => filter(datasets, [selectedDataset, ...(includes || [])]), [selectedDataset, includes])}
+            filters={excludesFilter}
             showArrow
           />
         </Form.Item>

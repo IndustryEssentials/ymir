@@ -132,6 +132,8 @@ function Fusion({ query = {}, hidden, ok = () => { }, bottom }) {
     form.setFieldsValue({ inc: kws })
   }
 
+  const includesFilter = useCallback((dss) => dss.filter(ds => ![...excludeDatasets, did].includes(ds.id)), [excludeDatasets, did])
+
   return (
     <Form
       form={form}
@@ -155,7 +157,7 @@ function Fusion({ query = {}, hidden, ok = () => { }, bottom }) {
               placeholder={t('task.fusion.form.datasets.placeholder')}
               mode='multiple'
               pid={pid}
-              filters={useCallback((dss) => dss.filter(ds => ![...excludeDatasets, did].includes(ds.id)), [excludeDatasets, did])}
+              filters={includesFilter}
               allowEmpty={true}
               onChange={onIncludeDatasetChange}
               showArrow

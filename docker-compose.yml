@@ -84,7 +84,6 @@ services:
       - "${YMIR_PATH}/ymir-models:/data/ymir/ymir-models"
       - "${YMIR_PATH}/ymir-assets:/data/ymir/ymir-assets"
       - "${YMIR_PATH}/ymir-storage:/data/ymir/ymir-storage"
-      - "./docs:/data/ymir/docs"
     environment:
       - LABEL_TOOL_HOST_URL=${LABEL_TOOL_HOST_URL}
       - DEPLOY_MODULE_URL=${DEPLOY_MODULE_URL}
