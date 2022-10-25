@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useCallback, useState } from 'react'
 import { Button, Card, Form, Input, message, Modal, Select, Space, Radio, Row, Col } from 'antd'
 import { connect } from 'dva'
 import { useParams, useHistory, useLocation } from "umi"
@@ -104,6 +104,8 @@ const Add = ({ keywords, datasets, getKeywords, ...func }) => {
     }
   }
 
+  const testingFilter = useCallback(datasets => datasets.filter(ds => ds.keywordCount > 0 && ds.groupId !== project?.trainSet?.id), [project?.trainSet?.id])
+
   function validateKeywords(_, kws) {
     if (kws?.length) {
       const valid = kws.every(kw => (kw || '').trim())
@@ -183,7 +185,7 @@ const Add = ({ keywords, datasets, getKeywords, ...func }) => {
                   <DatasetSelect
                     pid={id}
                     mode='multiple'
-                    filters={useCallback(datasets => datasets.filter(ds => ds.keywordCount > 0 && ds.groupId !== project?.trainSet?.id), [project?.trainSet?.id])}
+                    filters={testingFilter}
                     allowClear
                   />
                 </Form.Item> : null}
