@@ -3,6 +3,7 @@
 
 import { BackendData } from "@/interface/common"
 export const HIDDENMODULES = {
+  ENABLEITERATION: true,
   OPENPAI: true,
   LIVECODE: true,
 }
