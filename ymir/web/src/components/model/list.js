@@ -17,7 +17,7 @@ import TypeTag from "@/components/task/typeTag"
 import RenderProgress from "@/components/common/progress"
 import Terminate from "@/components/task/terminate"
 import Hide from "../common/hide"
-import EditBox from "@/components/form/editBox"
+import EditNameBox from "@/components/form/editNameBox"
 import { getTensorboardLink } from "@/services/common"
 
 import {
@@ -411,13 +411,12 @@ function Model({ pid, project = {}, iterations, groups, modelList, versions, que
     groupId && func.getVersions(groupId, true)
   }
 
-  const saveName = async (record, name) => {
-    const result = await func.updateModel(record.id, name)
+  const saveNameHandle = (result) => {
     if (result) {
       setModels((models) =>
         models.map((model) => {
-          if (model.id === record.id) {
-            model.name = name
+          if (model.id === result.id) {
+            model.name = result.name
           }
           return model
         })
@@ -536,7 +535,7 @@ function Model({ pid, project = {}, iterations, groups, modelList, versions, que
 
         {renderGroups}
       </div>
-      <EditBox record={current} max={80} action={saveName}></EditBox>
+      <EditNameBox type='model' record={current} max={80} handle={saveNameHandle} />
       <Hide ref={hideRef} type={1} msg='model.action.hide.confirm.content' ok={hideOk} />
       <Terminate ref={terminateRef} ok={terminateOk} />
     </div>
@@ -564,12 +563,6 @@ const actions = (dispatch) => {
       return dispatch({
         type: 'model/getModelVersions',
         payload: { gid, force },
-      })
-    },
-    updateModel: (id, name) => {
-      return dispatch({
-        type: 'model/updateModel',
-        payload: { id, name },
       })
     },
     updateQuery: (query) => {

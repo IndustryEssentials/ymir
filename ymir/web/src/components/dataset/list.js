@@ -13,7 +13,7 @@ import { canHide, validDataset } from '@/constants/dataset'
 
 import CheckProjectDirty from "@/components/common/CheckProjectDirty"
 import StateTag from "@/components/task/stateTag"
-import EditBox from "@/components/form/editBox"
+import EditNameBox from "@/components/form/editNameBox"
 import Terminate from "@/components/task/terminate"
 import Hide from "../common/hide"
 import RenderProgress from "@/components/common/progress"
@@ -427,13 +427,12 @@ function Datasets({ pid, project = {}, iterations, groups, datasetList, query, v
     setTimeout(() => setCurrent(record), 0)
   }
 
-  const saveName = async (record, name) => {
-    const result = await func.updateDataset(record.id, name)
+  const saveNameHandle = (result) => {
     if (result) {
       setDatasets((datasets) =>
         datasets.map((dataset) => {
-          if (dataset.id === record.id) {
-            dataset.name = name
+          if (dataset.id === result.id) {
+            dataset.name = result.name
           }
           return dataset
         })
@@ -593,18 +592,7 @@ function Datasets({ pid, project = {}, iterations, groups, datasetList, query, v
         </div>
         {renderGroups}
       </div>
-      <EditBox record={current} max={80} action={saveName}>
-        {current.type ? <Form.Item
-          label={t('dataset.column.source')}
-        >
-          <TypeTag type={current.type} id={current.id} name={current.task_name} />
-        </Form.Item> : null}
-        {current.state ? <Form.Item
-          label={t('dataset.column.state')}
-        >
-          <StateTag mode='text' state={current.state} />
-        </Form.Item> : null}
-      </EditBox>
+      <EditNameBox record={current} max={80} handle={saveNameHandle} />
       <Hide ref={hideRef} ok={hideOk} />
       <Terminate ref={terminateRef} ok={terminateOk} />
     </div>
@@ -632,12 +620,6 @@ const actions = (dispatch) => {
       return dispatch({
         type: 'dataset/getDatasetVersions',
         payload: { gid, force },
-      })
-    },
-    updateDataset(id, name) {
-      return dispatch({
-        type: 'dataset/updateDataset',
-        payload: { id, name },
       })
     },
     updateQuery(query) {
