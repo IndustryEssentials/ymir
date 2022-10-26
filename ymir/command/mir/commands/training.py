@@ -272,7 +272,8 @@ class CmdTrain(base.BaseCommand):
                                   error_message=f"unknown class names: {unknown_names}")
 
         type_id_idx_mapping = {type_id: index for (index, type_id) in enumerate(type_ids_list)}
-        anno_format, asset_format = exporter.parse_export_type(type_str=executor_config.get('export_format', ''))
+        anno_format, asset_format = exporter.parse_export_type(type_str=executor_config.get('export_format', ''),
+                                                               anno_type=mir_annotations.ground_truth.type)
         ec = mirpb.ExportConfig(asset_format=asset_format,
                                 asset_dir=asset_dir,
                                 asset_index_file=os.path.join(work_dir_in, "idx-assets.tsv"),

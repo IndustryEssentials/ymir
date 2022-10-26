@@ -50,6 +50,14 @@ def _format_file_output_func(
     return _format_func_map[anno_format]
 
 
+def _anno_type_to_default_anno_format(anno_type: "mirpb.AnnoType.V") -> "mirpb.AnnoFormat.V":
+    _af_map = {
+        mirpb.AnnoType.AT_DET_BOX: mirpb.AnnoFormat.AF_DET_PASCAL_VOC,
+        mirpb.AnnoType.AT_SEG_MASK: mirpb.AnnoFormat.AF_SEG_MASK,
+    }
+    return _af_map[anno_type]
+
+
 def parse_asset_format(asset_format_str: str) -> "mirpb.AssetFormat.V":
     _asset_dict: Dict[str, mirpb.AssetFormat.V] = {
         "raw": mirpb.AssetFormat.AF_RAW,
@@ -58,9 +66,9 @@ def parse_asset_format(asset_format_str: str) -> "mirpb.AssetFormat.V":
     return _asset_dict.get(asset_format_str.lower(), mirpb.AssetFormat.AF_UNKNOWN)
 
 
-def parse_export_type(type_str: str) -> Tuple["mirpb.AnnoFormat.V", "mirpb.AssetFormat.V"]:
+def parse_export_type(type_str: str, anno_type: mirpb.AnnoType) -> Tuple["mirpb.AnnoFormat.V", "mirpb.AssetFormat.V"]:
     if not type_str:
-        return (mirpb.AnnoFormat.AF_DET_PASCAL_VOC, mirpb.AssetFormat.AF_RAW)
+        return (_anno_type_to_default_anno_format(anno_type), mirpb.AssetFormat.AF_RAW)
 
     anno_str, asset_str = type_str.split(':')
     return (annotations.parse_anno_format(anno_str), parse_asset_format(asset_str))

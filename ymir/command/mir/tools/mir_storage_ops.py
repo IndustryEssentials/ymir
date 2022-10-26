@@ -78,23 +78,29 @@ class MirStorageOps():
     @time_it
     def __build_mir_keywords_ci_tag(cls, task_annotations: mirpb.SingleTaskAnnotations,
                                     keyword_to_index: mirpb.CiTagToIndex) -> None:
-        task_cis = set()
-        for asset_id, single_image_annotations in task_annotations.image_annotations.items():
-            image_cis = set()
-            for annotation in single_image_annotations.boxes:
-                image_cis.add(annotation.class_id)
-                # ci to annos
-                keyword_to_index.cis[annotation.class_id].key_ids[asset_id].ids.append(annotation.index)
+        # todo: remove AT_UNKNOWN
+        if task_annotations.type == mirpb.AnnoType.AT_DET_BOX or task_annotations.type == mirpb.AnnoType.AT_UNKNOWN:
+            for asset_id, single_image_annotations in task_annotations.image_annotations.items():
+                for box in single_image_annotations.boxes:
+                    # ci to annos
+                    keyword_to_index.cis[box.class_id].key_ids[asset_id].ids.append(box.index)
 
-                # tags to annos
-                for k, v in annotation.tags.items():
-                    keyword_to_index.tags[k].asset_annos[asset_id].ids.append(annotation.index)
-                    keyword_to_index.tags[k].sub_indexes[v].key_ids[asset_id].ids.append(annotation.index)
+                    # tags to annos
+                    for k, v in box.tags.items():
+                        keyword_to_index.tags[k].asset_annos[asset_id].ids.append(box.index)
+                        keyword_to_index.tags[k].sub_indexes[v].key_ids[asset_id].ids.append(box.index)
+        elif task_annotations.type == mirpb.AnnoType.AT_SEG_MASK:
+            for asset_id, single_image_annotations in task_annotations.image_annotations.items():
+                for ci in single_image_annotations.img_class_ids:
+                    # ci to assets with empty annos list
+                    keyword_to_index.cis[ci].key_ids[asset_id]  # placeholder
 
-            single_image_annotations.img_class_ids[:] = image_cis
-            task_cis.update(image_cis)
+                    # tags to annos: not supported here
 
-        task_annotations.task_class_ids[:] = task_cis
+        task_annotations.task_class_ids[:] = {
+            ci
+            for v in task_annotations.image_annotations.values() for ci in v.img_class_ids
+        }
 
     @classmethod
     def __build_mir_context_stats(cls, anno_stats: mirpb.AnnoStats, mir_metadatas: mirpb.MirMetadatas,
@@ -108,7 +114,13 @@ class MirStorageOps():
         anno_stats.positive_asset_cnt = len(image_annotations)
         anno_stats.negative_asset_cnt = len(mir_metadatas.attributes) - len(image_annotations)
 
-        anno_stats.total_cnt = sum([len(image_annotation.boxes) for image_annotation in image_annotations.values()])
+        # todo: remove AT_UNKNOWN
+        if task_annotations.type == mirpb.AnnoType.AT_DET_BOX or task_annotations.type == mirpb.AnnoType.AT_UNKNOWN:
+            anno_stats.total_cnt = sum([len(image_annotation.boxes) for image_annotation in image_annotations.values()])
+        elif task_annotations.type == mirpb.AnnoType.AT_SEG_MASK:
+            anno_stats.total_cnt = sum([
+                len(image_annotation.img_class_ids) for image_annotation in image_annotations.values()
+            ])
 
         # anno_stats.cis_cnt
         for ci, ci_assets in keyword_to_index.cis.items():

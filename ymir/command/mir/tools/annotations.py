@@ -268,6 +268,7 @@ def _import_annotations_voc_xml(map_hashed_filename: Dict[str, str], mir_annotat
                                 unknown_types_strategy: UnknownTypesStrategy, accu_new_class_names: Dict[str, int],
                                 image_annotations: mirpb.SingleTaskAnnotations) -> None:
     add_if_not_found = (unknown_types_strategy == UnknownTypesStrategy.ADD)
+    task_class_ids: Set[int] = set()
     for asset_hash, main_file_name in map_hashed_filename.items():
         # for each asset, import it's annotations
         annotation_file = os.path.join(annotations_dir_path, main_file_name + '.xml')
@@ -294,6 +295,7 @@ def _import_annotations_voc_xml(map_hashed_filename: Dict[str, str], mir_annotat
             objects = [objects]
 
         anno_idx = 0
+        img_class_ids: Set[int] = set()
         for object_dict in objects:
             cid, new_type_name = class_type_manager.id_and_main_name_for_name(name=object_dict['name'])
 
@@ -312,6 +314,14 @@ def _import_annotations_voc_xml(map_hashed_filename: Dict[str, str], mir_annotat
                 annotation.index = anno_idx
                 image_annotations.image_annotations[asset_hash].boxes.append(annotation)
                 anno_idx += 1
+
+                img_class_ids.add(cid)
+
+        task_class_ids.update(img_class_ids)
+
+        image_annotations.image_annotations[asset_hash].img_class_ids[:] = list(img_class_ids)
+
+    image_annotations.task_class_ids[:] = list(task_class_ids)
 
 
 def _import_annotation_meta(class_type_manager: class_ids.UserLabels, annotations_dir_path: str,
