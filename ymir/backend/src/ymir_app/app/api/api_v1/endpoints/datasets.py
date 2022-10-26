@@ -274,6 +274,22 @@ def delete_dataset(
     return {"result": dataset}
 
 
+@router.patch("/{dataset_id}", response_model=schemas.DatasetOut)
+def update_dataset(
+    *,
+    db: Session = Depends(deps.get_db),
+    dataset_id: int = Path(..., example="12"),
+    dataset_update: schemas.DatasetUpdate,
+    current_user: models.User = Depends(deps.get_current_active_user),
+) -> Any:
+    dataset = crud.dataset.get_by_user_and_id(db, user_id=current_user.id, id=dataset_id)
+    if not dataset:
+        raise DatasetNotFound()
+
+    dataset = crud.dataset.update(db, db_obj=dataset, obj_in=dataset_update)
+    return {"result": dataset}
+
+
 @router.get(
     "/{dataset_id}",
     response_model=schemas.DatasetInfoOut,
