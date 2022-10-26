@@ -52,6 +52,7 @@ function Train({ query = {}, hidden, ok = () => { }, bottom, allDatasets, datase
   const [gpu_count, setGPU] = useState(0)
   const [projectDirty, setProjectDirty] = useState(false)
   const [live, setLiveCode] = useState(false)
+  const [liveInitialValues, setLiveInitialValues] = useState({})
   const [openpai, setOpenpai] = useState(false)
   const checkDuplicated = useDuplicatedCheck(submit)
   const [sys, getSysInfo] = useFetch('common/getSysInfo', {})
@@ -145,7 +146,11 @@ function Train({ query = {}, hidden, ok = () => { }, bottom, allDatasets, datase
         strategy,
         description,
       })
-      setTimeout(() => setConfig(config), 500)
+      if (!HIDDENMODULES.LIVECODE) {
+        setLiveCode(!!config.git_url)
+        setLiveInitialValues(config)
+      }
+      setTimeout(() => setConfig(removeLiveCodeConfig(config)), 500)
       setTestSet(validation_dataset_id)
       setTrainSet(dataset_id)
       setSelectedKeywords(keywords)
@@ -370,7 +375,7 @@ function Train({ query = {}, hidden, ok = () => { }, bottom, allDatasets, datase
             initialValue={'ark:raw'}>
             <TrainFormat />
           </Form.Item> : null}
-          <LiveCodeForm form={form} live={live} />
+          <LiveCodeForm form={form} live={live} initialValues={liveInitialValues} />
           <DockerConfigForm show={showConfig} seniorConfig={seniorConfig} form={form} />
           <Desc form={form} />
         </div>

@@ -3,7 +3,6 @@ import { Button, Card, Col, Row, Space } from "antd"
 import { useParams, useHistory } from "umi"
 
 import t from "@/utils/t"
-import { HIDDENMODULES } from '@/constants/common'
 import useFetch from '@/hooks/useFetch'
 import Breadcrumbs from "@/components/common/breadcrumb"
 import Empty from "@/components/empty/default"
@@ -37,7 +36,7 @@ function ProjectDetail(func) {
   return (
     <div>
       <Breadcrumbs />
-      {HIDDENMODULES.ITERATIONSWITCH ? <div className={s.header}>
+      {project.enableIteration ? <div className={s.header}>
         {project.round > 0 ? <div>
           <span style={{ marginRight: 20 }}>{t('project.iteration.entrance.status', {
             stateLabel: <span className='orange'>{t(getStageLabel(project.currentStage, project.round))}</span>
