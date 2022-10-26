@@ -53,6 +53,7 @@ function Inference({ datasetCache, datasets, ...func }) {
   const [keywordRepeatTip, setKRTip] = useState('')
   const [{ newer }, checkKeywords] = useFetch('keyword/checkDuplication', { newer: [] })
   const [live, setLiveCode] = useState(false)
+  const [liveInitialValues, setLiveInitialValues] = useState({})
   const [project, getProject] = useFetch('project/getProject', {})
   const watchStages = Form.useWatch('stages', form)
   const watchTestingSets = Form.useWatch('datasets', form)
@@ -77,7 +78,7 @@ function Inference({ datasetCache, datasets, ...func }) {
   }, [selectOpenpai])
 
   useEffect(() => {
-    pid && getProject({ id: pid, force: true })
+    pid && getProject({ id: pid })
   }, [pid])
 
   useEffect(() => {
@@ -135,7 +136,11 @@ function Inference({ datasetCache, datasets, ...func }) {
         description,
       })
       setSelectedGpu(config.gpu_count)
-      setTimeout(() => setConfig(config), 500)
+      if (!HIDDENMODULES.LIVECODE) {
+        setLiveCode(!!config.git_url)
+        setLiveInitialValues(config)
+      }
+      setTimeout(() => setConfig(removeLiveCodeConfig(config)), 500)
       setShowConfig(true)
 
       history.replace({ state: {} })
@@ -198,7 +203,6 @@ function Inference({ datasetCache, datasets, ...func }) {
       }
       await func.clearCache()
       const groups = result.map(item => item.result_dataset?.dataset_group_id || '')
-      console.log('groups:', groups, resultCount, taskCount, result)
       history.replace(`/home/project/${pid}/dataset#${groups.join(',')}`)
     }
   }
@@ -215,8 +219,8 @@ function Inference({ datasetCache, datasets, ...func }) {
   async function selectModelFromIteration() {
     const iterations = await func.getIterations(pid)
     if (iterations) {
-      const models = iterations.map(iter => iter.model) || []
-      form.setFieldsValue({ model: models })
+      const models = iterations.map(iter => iter.model ? [iter.model] : null).filter(i => i) || []
+      form.setFieldsValue({ stages: models })
     }
   }
 
@@ -283,11 +287,11 @@ function Inference({ datasetCache, datasets, ...func }) {
               >
                 <ModelSelect multiple placeholder={t('task.inference.form.model.required')} onChange={modelChange} pid={pid} />
               </Form.Item>
-              <div style={{ marginTop: 10 }}>
+              {project.enableIteration ? <div style={{ marginTop: 10 }}>
                 <Button size='small' type="primary" onClick={() => selectModelFromIteration()}>
                   {t('task.inference.model.iters')}
                 </Button>
-              </div>
+              </div> : null}
             </Form.Item>
 
             <Form.Item name='image' tooltip={t('tip.task.inference.image')} label={t('task.inference.form.image.label')} rules={[
@@ -324,7 +328,7 @@ function Inference({ datasetCache, datasets, ...func }) {
               </span>
             </Form.Item>
 
-            <LiveCodeForm form={form} live={live} />
+            <LiveCodeForm form={form} live={live} initialValues={liveInitialValues} />
             <DockerConfigForm form={form} show={showConfig} seniorConfig={seniorConfig} />
 
             <Desc form={form} />
@@ -388,7 +392,7 @@ const dis = (dispatch) => {
     getIterations(id) {
       return dispatch({
         type: 'iteration/getIterations',
-        payload: { id, more: true },
+        payload: { id },
       })
     },
   }
