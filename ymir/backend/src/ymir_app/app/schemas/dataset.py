@@ -17,7 +17,7 @@ from app.schemas.task import TaskInternal
 class DatasetBase(BaseModel):
     source: TaskType
     description: Optional[str]
-    label_format: LabelFormat = LabelFormat.mask
+    label_format: Optional[LabelFormat] = LabelFormat.mask
     result_state: ResultState = ResultState.processing
     dataset_group_id: int
     project_id: int
