@@ -84,6 +84,9 @@ function Analysis() {
         label: 'dataset.analysis.title.keyword_ratio',
         sourceField: 'keywords',
         totalField: 'total',
+        customOptions: {
+          tooltipLable: 'dataset.analysis.bar.anno.tooltip',
+        },
         color: ['#2CBDE9', '#E8B900'],
         annoType: true,
         xType: 'attribute'
