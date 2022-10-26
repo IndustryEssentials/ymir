@@ -171,8 +171,8 @@ const Add = ({ keywords, datasets, getKeywords, ...func }) => {
               <Form.Item
                 label={t('project.add.form.enableIteration')}
                 name='enableIteration'
-                hidden={HIDDENMODULES.ENABLEITERATION}
-                initialValue={HIDDENMODULES.ENABLEITERATION}
+                hidden={HIDDENMODULES.ITERATIONSWITCH}
+                initialValue={HIDDENMODULES.ITERATIONSWITCH}
                 required
                 tooltip={t('project.add.form.enableIteration.tip')}
               >
