@@ -77,7 +77,7 @@ function Inference({ datasetCache, datasets, ...func }) {
   }, [selectOpenpai])
 
   useEffect(() => {
-    pid && getProject({ id: pid, force: true })
+    pid && getProject({ id: pid })
   }, [pid])
 
   useEffect(() => {
@@ -215,8 +215,8 @@ function Inference({ datasetCache, datasets, ...func }) {
   async function selectModelFromIteration() {
     const iterations = await func.getIterations(pid)
     if (iterations) {
-      const models = iterations.map(iter => iter.model) || []
-      form.setFieldsValue({ model: models })
+      const models = iterations.map(iter => iter.model ? [iter.model] : null).filter(i => i) || []
+      form.setFieldsValue({ stages: models })
     }
   }
 
@@ -283,11 +283,11 @@ function Inference({ datasetCache, datasets, ...func }) {
               >
                 <ModelSelect multiple placeholder={t('task.inference.form.model.required')} onChange={modelChange} pid={pid} />
               </Form.Item>
-              <div style={{ marginTop: 10 }}>
+              { project.enableIteration ? <div style={{ marginTop: 10 }}>
                 <Button size='small' type="primary" onClick={() => selectModelFromIteration()}>
                   {t('task.inference.model.iters')}
                 </Button>
-              </div>
+              </div> : null }
             </Form.Item>
 
             <Form.Item name='image' tooltip={t('tip.task.inference.image')} label={t('task.inference.form.image.label')} rules={[
@@ -388,7 +388,7 @@ const dis = (dispatch) => {
     getIterations(id) {
       return dispatch({
         type: 'iteration/getIterations',
-        payload: { id, more: true },
+        payload: { id },
       })
     },
   }
