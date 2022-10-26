@@ -2,7 +2,7 @@ import { useEffect, useState } from "react"
 import { Menu, Layout } from "antd"
 import { useHistory, useLocation, withRouter, useSelector } from "umi"
 import t from '@/utils/t'
-import { getDeployUrl } from '@/constants/common'
+import { getDeployUrl, HIDDENMODULES } from '@/constants/common'
 import { isSuperAdmin } from '@/constants/user'
 import {
   BarchartIcon, FlagIcon, GithubIcon, FileHistoryIcon, MymodelIcon,
@@ -49,7 +49,7 @@ function LeftMenu() {
         getItem(t('projects.title'), `/home/project`, ProjectIcon,),
         showLeftMenu ? getItem(project.name, `project.summary`, VectorIcon, [
           getItem(t('project.summary'), `/home/project/${id}/detail`, BarchartIcon,),
-          getItem(t('project.iterations.title'), `/home/project/${id}/iterations`, IterationIcon,),
+          HIDDENMODULES.ITERATIONSWITCH ? getItem(t('project.iterations.title'), `/home/project/${id}/iterations`, IterationIcon,) : null,
           getItem(t('dataset.list'), `/home/project/${id}/dataset`, NavDatasetIcon,),
           getItem(t('breadcrumbs.dataset.analysis'), `/home/project/${id}/dataset/analysis`, BarChart2LineIcon),
           getItem(t('model.management'), `/home/project/${id}/model`, MymodelIcon,),

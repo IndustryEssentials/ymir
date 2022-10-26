@@ -69,6 +69,8 @@ const Add = ({ }) => {
     updateIteration(params)
   }
 
+  const miningFilter = useCallback(datasets => datasets.filter(ds => ds.keywords.some(kw => project?.keywords?.includes(kw))), [project?.keywords])
+
   return (
     <div className={s.projectAdd}>
       <Breadcrumbs />
@@ -97,7 +99,7 @@ const Add = ({ }) => {
                 pid={id}
                 filter={[miningSet]}
                 filterGroup={[project?.trainSet?.id, project?.miningSet?.groupId]}
-                filters={useCallback(datasets => datasets.filter(ds => ds.keywords.some(kw => project?.keywords?.includes(kw))), [project?.keywords])}
+                filters={miningFilter}
                 onChange={(value) => setTestSet(value)}
                 allowClear
               />
