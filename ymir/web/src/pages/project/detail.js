@@ -3,6 +3,7 @@ import { Button, Card, Col, Row, Space } from "antd"
 import { useParams, useHistory } from "umi"
 
 import t from "@/utils/t"
+import { HIDDENMODULES } from '@/constants/common'
 import useFetch from '@/hooks/useFetch'
 import Breadcrumbs from "@/components/common/breadcrumb"
 import Empty from "@/components/empty/default"
@@ -36,7 +37,7 @@ function ProjectDetail(func) {
   return (
     <div>
       <Breadcrumbs />
-      <div className={s.header}>
+      {HIDDENMODULES.ITERATIONSWITCH ? <div className={s.header}>
         {project.round > 0 ? <div>
           <span style={{ marginRight: 20 }}>{t('project.iteration.entrance.status', {
             stateLabel: <span className='orange'>{t(getStageLabel(project.currentStage, project.round))}</span>
@@ -48,9 +49,9 @@ function ProjectDetail(func) {
             <p>{t('project.iteration.entrance.empty.info')}</p>
             <Button type="primary" onClick={() => history.push(`/home/project/${id}/iterations`)}>
               <TrainIcon /> {t('project.iteration.entrance.empty.btn')}
-              </Button>
+            </Button>
           </div>}
-      </div>
+      </div> : null}
       <Space className="actions">
         <Button type="primary" onClick={add}><ImportIcon /> {t("dataset.import.label")}</Button>
         <Button type="primary" onClick={goTraining}><TrainIcon /> {t("project.iteration.stage.training")}</Button>
