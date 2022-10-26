@@ -16,16 +16,16 @@ _sym_db = _symbol_database.Default()
 
 DESCRIPTOR = _descriptor.FileDescriptor(
   name='mir_command_200.proto',
-  package='mir.command130',
+  package='mir.command200',
   syntax='proto3',
   serialized_options=b'Z\007/protos',
   create_key=_descriptor._internal_create_key,
-  serialized_pb=b'\n\x15mir_command_200.proto\x12\x0emir.command130\"\xa7\x01\n\x0cMirMetadatas\x12@\n\nattributes\x18\x01 \x03(\x0b\x32,.mir.command130.MirMetadatas.AttributesEntry\x1aU\n\x0f\x41ttributesEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\x31\n\x05value\x18\x02 \x01(\x0b\x32\".mir.command130.MetadataAttributes:\x02\x38\x01\"\x85\x02\n\x12MetadataAttributes\x12,\n\ttimestamp\x18\x02 \x01(\x0b\x32\x19.mir.command130.Timestamp\x12)\n\x08tvt_type\x18\x03 \x01(\x0e\x32\x17.mir.command130.TvtType\x12-\n\nasset_type\x18\x04 \x01(\x0e\x32\x19.mir.command130.AssetType\x12\r\n\x05width\x18\x05 \x01(\x05\x12\x0e\n\x06height\x18\x06 \x01(\x05\x12\x16\n\x0eimage_channels\x18\x07 \x01(\x05\x12\x11\n\tbyte_size\x18\x08 \x01(\x05\x12\x17\n\x0forigin_filename\x18\t \x01(\tJ\x04\x08\x01\x10\x02\",\n\tTimestamp\x12\r\n\x05start\x18\x01 \x01(\x03\x12\x10\n\x08\x64uration\x18\x02 \x01(\x02\"\xa6\x02\n\x0eMirAnnotations\x12;\n\x0cground_truth\x18\x03 \x01(\x0b\x32%.mir.command130.SingleTaskAnnotations\x12\x39\n\nprediction\x18\x04 \x01(\x0b\x32%.mir.command130.SingleTaskAnnotations\x12?\n\timage_cks\x18\x05 \x03(\x0b\x32,.mir.command130.MirAnnotations.ImageCksEntry\x1aO\n\rImageCksEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12-\n\x05value\x18\x02 \x01(\x0b\x32\x1e.mir.command130.SingleImageCks:\x02\x38\x01J\x04\x08\x01\x10\x02J\x04\x08\x02\x10\x03\"\x96\x04\n\x15SingleTaskAnnotations\x12V\n\x11image_annotations\x18\x01 \x03(\x0b\x32;.mir.command130.SingleTaskAnnotations.ImageAnnotationsEntry\x12\x0f\n\x07task_id\x18\x02 \x01(\t\x12&\n\x04type\x18\x03 \x01(\x0e\x32\x18.mir.command130.AnnoType\x12\x16\n\x0etask_class_ids\x18\x04 \x03(\x05\x12K\n\x0cmap_id_color\x18\x05 \x03(\x0b\x32\x35.mir.command130.SingleTaskAnnotations.MapIdColorEntry\x12\x16\n\x0e\x65val_class_ids\x18\n \x03(\x05\x12(\n\x05model\x18\x0b \x01(\x0b\x32\x19.mir.command130.ModelMeta\x12\x17\n\x0f\x65xecutor_config\x18\x0c \x01(\t\x1a_\n\x15ImageAnnotationsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\x35\n\x05value\x18\x02 \x01(\x0b\x32&.mir.command130.SingleImageAnnotations:\x02\x38\x01\x1aK\n\x0fMapIdColorEntry\x12\x0b\n\x03key\x18\x01 \x01(\x05\x12\'\n\x05value\x18\x02 \x01(\x0b\x32\x18.mir.command130.IntPoint:\x02\x38\x01\"\xc8\x01\n\x16SingleImageAnnotations\x12/\n\x05\x62oxes\x18\x02 \x03(\x0b\x32 .mir.command130.ObjectAnnotation\x12\x32\n\x08polygons\x18\x03 \x03(\x0b\x32 .mir.command130.ObjectAnnotation\x12,\n\x04mask\x18\x04 \x01(\x0b\x32\x1e.mir.command130.MaskAnnotation\x12\x15\n\rimg_class_ids\x18\x05 \x03(\x05J\x04\x08\x01\x10\x02\"\x89\x01\n\x0eSingleImageCks\x12\x34\n\x03\x63ks\x18\x01 \x03(\x0b\x32\'.mir.command130.SingleImageCks.CksEntry\x12\x15\n\rimage_quality\x18\x02 \x01(\x02\x1a*\n\x08\x43ksEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\"R\n\x0eMaskAnnotation\x12\x15\n\rsemantic_mask\x18\x01 \x01(\x0c\x12\x15\n\rinstance_mask\x18\x02 \x01(\x0c\x12\x12\n\nobject_ids\x18\x03 \x03(\x05\"\xe7\x02\n\x10ObjectAnnotation\x12\r\n\x05index\x18\x01 \x01(\x05\x12!\n\x03\x62ox\x18\x02 \x01(\x0b\x32\x14.mir.command130.Rect\x12\x10\n\x08\x63lass_id\x18\x03 \x01(\x05\x12\r\n\x05score\x18\x04 \x01(\x01\x12\x14\n\x0c\x61nno_quality\x18\x05 \x01(\x02\x12\x38\n\x04tags\x18\x06 \x03(\x0b\x32*.mir.command130.ObjectAnnotation.TagsEntry\x12/\n\x02\x63m\x18\x07 \x01(\x0e\x32#.mir.command130.ConfusionMatrixType\x12\x13\n\x0b\x64\x65t_link_id\x18\x08 \x01(\x05\x12\x12\n\nclass_name\x18\t \x01(\t\x12)\n\x07polygon\x18\n \x03(\x0b\x32\x18.mir.command130.IntPoint\x1a+\n\tTagsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\"H\n\x04Rect\x12\t\n\x01x\x18\x01 \x01(\x05\x12\t\n\x01y\x18\x02 \x01(\x05\x12\t\n\x01w\x18\x03 \x01(\x05\x12\t\n\x01h\x18\x04 \x01(\x05\x12\x14\n\x0crotate_angle\x18\x05 \x01(\x02\"\x95\x02\n\x0bMirKeywords\x12.\n\x08pred_idx\x18\x07 \x01(\x0b\x32\x1c.mir.command130.CiTagToIndex\x12,\n\x06gt_idx\x18\x08 \x01(\x0b\x32\x1c.mir.command130.CiTagToIndex\x12\x36\n\x06\x63k_idx\x18\t \x03(\x0b\x32&.mir.command130.MirKeywords.CkIdxEntry\x1aL\n\nCkIdxEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12-\n\x05value\x18\x02 \x01(\x0b\x32\x1e.mir.command130.AssetAnnoIndex:\x02\x38\x01J\x04\x08\x01\x10\x02J\x04\x08\x02\x10\x03J\x04\x08\x03\x10\x04J\x04\x08\x04\x10\x05J\x04\x08\x05\x10\x06J\x04\x08\x06\x10\x07\"\x97\x02\n\x0c\x43iTagToIndex\x12\x32\n\x03\x63is\x18\x01 \x03(\x0b\x32%.mir.command130.CiTagToIndex.CisEntry\x12\x34\n\x04tags\x18\x02 \x03(\x0b\x32&.mir.command130.CiTagToIndex.TagsEntry\x1aP\n\x08\x43isEntry\x12\x0b\n\x03key\x18\x01 \x01(\x05\x12\x33\n\x05value\x18\x02 \x01(\x0b\x32$.mir.command130.MapStringToInt32List:\x02\x38\x01\x1aK\n\tTagsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12-\n\x05value\x18\x02 \x01(\x0b\x32\x1e.mir.command130.AssetAnnoIndex:\x02\x38\x01\"\x1f\n\nStringList\x12\x11\n\tasset_ids\x18\x01 \x03(\t\"\xa3\x01\n\x14MapStringToInt32List\x12\x41\n\x07key_ids\x18\x01 \x03(\x0b\x32\x30.mir.command130.MapStringToInt32List.KeyIdsEntry\x1aH\n\x0bKeyIdsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12(\n\x05value\x18\x02 \x01(\x0b\x32\x19.mir.command130.Int32List:\x02\x38\x01\"\x18\n\tInt32List\x12\x0b\n\x03ids\x18\x01 \x03(\x05\"\xc1\x02\n\x0e\x41ssetAnnoIndex\x12\x43\n\x0b\x61sset_annos\x18\x01 \x03(\x0b\x32..mir.command130.AssetAnnoIndex.AssetAnnosEntry\x12\x43\n\x0bsub_indexes\x18\x02 \x03(\x0b\x32..mir.command130.AssetAnnoIndex.SubIndexesEntry\x1aL\n\x0f\x41ssetAnnosEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12(\n\x05value\x18\x02 \x01(\x0b\x32\x19.mir.command130.Int32List:\x02\x38\x01\x1aW\n\x0fSubIndexesEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\x33\n\x05value\x18\x02 \x01(\x0b\x32$.mir.command130.MapStringToInt32List:\x02\x38\x01\"\x98\x01\n\x08MirTasks\x12\x32\n\x05tasks\x18\x01 \x03(\x0b\x32#.mir.command130.MirTasks.TasksEntry\x12\x14\n\x0chead_task_id\x18\x02 \x01(\t\x1a\x42\n\nTasksEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12#\n\x05value\x18\x02 \x01(\x0b\x32\x14.mir.command130.Task:\x02\x38\x01\"\xf9\x03\n\x04Task\x12&\n\x04type\x18\x01 \x01(\x0e\x32\x18.mir.command130.TaskType\x12\x0c\n\x04name\x18\x02 \x01(\t\x12\x0f\n\x07task_id\x18\x03 \x01(\t\x12\x11\n\ttimestamp\x18\x05 \x01(\x03\x12(\n\x05model\x18\x06 \x01(\x0b\x32\x19.mir.command130.ModelMeta\x12\x13\n\x0breturn_code\x18\x08 \x01(\x05\x12\x12\n\nreturn_msg\x18\t \x01(\t\x12.\n\nevaluation\x18\n \x01(\x0b\x32\x1a.mir.command130.Evaluation\x12\x35\n\tnew_types\x18\x0b \x03(\x0b\x32\".mir.command130.Task.NewTypesEntry\x12\x17\n\x0fnew_types_added\x18\x0c \x01(\x08\x12\"\n\x1aserialized_task_parameters\x18\x66 \x01(\t\x12\"\n\x1aserialized_executor_config\x18g \x01(\t\x12\x10\n\x08src_revs\x18h \x01(\t\x12\x0f\n\x07\x64st_rev\x18i \x01(\t\x12\x10\n\x08\x65xecutor\x18j \x01(\t\x1a/\n\rNewTypesEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\x05:\x02\x38\x01J\x04\x08\x04\x10\x05J\x04\x08\x07\x10\x08J\x04\x08\x64\x10\x65J\x04\x08\x65\x10\x66\"\x80\x02\n\tModelMeta\x12\x12\n\nmodel_hash\x18\x01 \x01(\t\x12\x1e\n\x16mean_average_precision\x18\x02 \x01(\x02\x12\x0f\n\x07\x63ontext\x18\x03 \x01(\t\x12\x35\n\x06stages\x18\x04 \x03(\x0b\x32%.mir.command130.ModelMeta.StagesEntry\x12\x17\n\x0f\x62\x65st_stage_name\x18\x05 \x01(\t\x12\x13\n\x0b\x63lass_names\x18\x06 \x03(\t\x1aI\n\x0bStagesEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12)\n\x05value\x18\x02 \x01(\x0b\x32\x1a.mir.command130.ModelStage:\x02\x38\x01\"O\n\nModelStage\x12\x12\n\nstage_name\x18\x01 \x01(\t\x12\r\n\x05\x66iles\x18\x02 \x03(\t\x12\x11\n\ttimestamp\x18\x03 \x01(\x03\x12\x0b\n\x03mAP\x18\x04 \x01(\x02\"\xd2\x02\n\nEvaluation\x12.\n\x06\x63onfig\x18\x01 \x01(\x0b\x32\x1e.mir.command130.EvaluateConfig\x12\x43\n\x12\x64\x61taset_evaluation\x18\x03 \x01(\x0b\x32\'.mir.command130.SingleDatasetEvaluation\x12\x38\n\x07main_ck\x18\x04 \x01(\x0b\x32\'.mir.command130.SingleDatasetEvaluation\x12\x37\n\x07sub_cks\x18\x05 \x03(\x0b\x32&.mir.command130.Evaluation.SubCksEntry\x1aV\n\x0bSubCksEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\x36\n\x05value\x18\x02 \x01(\x0b\x32\'.mir.command130.SingleDatasetEvaluation:\x02\x38\x01J\x04\x08\x02\x10\x03\"\x8a\x01\n\x0e\x45valuateConfig\x12\x10\n\x08\x63onf_thr\x18\x03 \x01(\x02\x12\x19\n\x11iou_thrs_interval\x18\x04 \x01(\t\x12\x15\n\rneed_pr_curve\x18\x05 \x01(\x08\x12\x11\n\tclass_ids\x18\x07 \x03(\x05\x12\x0f\n\x07main_ck\x18\x08 \x01(\tJ\x04\x08\x01\x10\x02J\x04\x08\x02\x10\x03J\x04\x08\x06\x10\x07\"\xaf\x02\n\x17SingleDatasetEvaluation\x12\x10\n\x08\x63onf_thr\x18\x01 \x01(\x02\x12T\n\x0fiou_evaluations\x18\x04 \x03(\x0b\x32;.mir.command130.SingleDatasetEvaluation.IouEvaluationsEntry\x12\x44\n\x17iou_averaged_evaluation\x18\x05 \x01(\x0b\x32#.mir.command130.SingleIouEvaluation\x1aZ\n\x13IouEvaluationsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\x32\n\x05value\x18\x02 \x01(\x0b\x32#.mir.command130.SingleIouEvaluation:\x02\x38\x01J\x04\x08\x02\x10\x03J\x04\x08\x03\x10\x04\"\x93\x02\n\x13SingleIouEvaluation\x12N\n\x0e\x63i_evaluations\x18\x01 \x03(\x0b\x32\x36.mir.command130.SingleIouEvaluation.CiEvaluationsEntry\x12G\n\x16\x63i_averaged_evaluation\x18\x02 \x01(\x0b\x32\'.mir.command130.SingleEvaluationElement\x1a]\n\x12\x43iEvaluationsEntry\x12\x0b\n\x03key\x18\x01 \x01(\x05\x12\x36\n\x05value\x18\x02 \x01(\x0b\x32\'.mir.command130.SingleEvaluationElement:\x02\x38\x01J\x04\x08\x03\x10\x04\"\x83\x01\n\x17SingleEvaluationElement\x12\n\n\x02\x61p\x18\x01 \x01(\x02\x12\n\n\x02\x61r\x18\x02 \x01(\x02\x12\n\n\x02tp\x18\x03 \x01(\x05\x12\n\n\x02\x66p\x18\x04 \x01(\x05\x12\n\n\x02\x66n\x18\x05 \x01(\x05\x12,\n\x08pr_curve\x18\x06 \x03(\x0b\x32\x1a.mir.command130.FloatPoint\"+\n\x08IntPoint\x12\t\n\x01x\x18\x01 \x01(\x05\x12\t\n\x01y\x18\x02 \x01(\x05\x12\t\n\x01z\x18\x03 \x01(\x05\"-\n\nFloatPoint\x12\t\n\x01x\x18\x01 \x01(\x02\x12\t\n\x01y\x18\x02 \x01(\x02\x12\t\n\x01z\x18\x03 \x01(\x02\"\xd6\x02\n\nMirContext\x12\x12\n\nimages_cnt\x18\x01 \x01(\x05\x12\x37\n\x07\x63ks_cnt\x18\x06 \x03(\x0b\x32&.mir.command130.MirContext.CksCntEntry\x12\x1a\n\x12total_asset_mbytes\x18\x0b \x01(\x05\x12-\n\npred_stats\x18\x64 \x01(\x0b\x32\x19.mir.command130.AnnoStats\x12+\n\x08gt_stats\x18\x65 \x01(\x0b\x32\x19.mir.command130.AnnoStats\x1aM\n\x0b\x43ksCntEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12-\n\x05value\x18\x02 \x01(\x0b\x32\x1e.mir.command130.SingleMapCount:\x02\x38\x01J\x04\x08\x02\x10\x03J\x04\x08\x03\x10\x04J\x04\x08\x04\x10\x05J\x04\x08\x05\x10\x06J\x04\x08\x07\x10\x08J\x04\x08\x08\x10\tJ\x04\x08\t\x10\nJ\x04\x08\n\x10\x0bJ\x04\x08\x0c\x10\r\"\x89\x01\n\x0eSingleMapCount\x12\x0b\n\x03\x63nt\x18\x01 \x01(\x05\x12;\n\x07sub_cnt\x18\x02 \x03(\x0b\x32*.mir.command130.SingleMapCount.SubCntEntry\x1a-\n\x0bSubCntEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\x05:\x02\x38\x01\"\x81\x03\n\tAnnoStats\x12\x11\n\ttotal_cnt\x18\x01 \x01(\x05\x12\x1a\n\x12positive_asset_cnt\x18\x02 \x01(\x05\x12\x1a\n\x12negative_asset_cnt\x18\x03 \x01(\x05\x12\x38\n\x08tags_cnt\x18\x07 \x03(\x0b\x32&.mir.command130.AnnoStats.TagsCntEntry\x12\x41\n\rclass_ids_cnt\x18\x08 \x03(\x0b\x32*.mir.command130.AnnoStats.ClassIdsCntEntry\x12\x16\n\x0e\x65val_class_ids\x18\t \x03(\x05\x1aN\n\x0cTagsCntEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12-\n\x05value\x18\x02 \x01(\x0b\x32\x1e.mir.command130.SingleMapCount:\x02\x38\x01\x1a\x32\n\x10\x43lassIdsCntEntry\x12\x0b\n\x03key\x18\x01 \x01(\x05\x12\r\n\x05value\x18\x02 \x01(\x05:\x02\x38\x01J\x04\x08\x04\x10\x05J\x04\x08\x05\x10\x06J\x04\x08\x06\x10\x07*Z\n\x07TvtType\x12\x12\n\x0eTvtTypeUnknown\x10\x00\x12\x13\n\x0fTvtTypeTraining\x10\x01\x12\x15\n\x11TvtTypeValidation\x10\x02\x12\x0f\n\x0bTvtTypeTest\x10\x03*\x88\x02\n\tAssetType\x12\x14\n\x10\x41ssetTypeUnknown\x10\x00\x12\x16\n\x12\x41ssetTypeImageJpeg\x10\x01\x12\x15\n\x11\x41ssetTypeImagePng\x10\x02\x12\x1a\n\x16\x41ssetTypeImagePixelMat\x10\x03\x12\x19\n\x15\x41ssetTypeImageYuv420p\x10\x04\x12\x1a\n\x16\x41ssetTypeImageYuv420sp\x10\x05\x12\x19\n\x15\x41ssetTypeImageYuv422p\x10\x06\x12\x1a\n\x16\x41ssetTypeImageYuv422sp\x10\x07\x12\x15\n\x11\x41ssetTypeImageBmp\x10\x08\x12\x15\n\x11\x41ssetTypeVideoMp4\x10\x65*\x93\x03\n\x08TaskType\x12\x13\n\x0fTaskTypeUnknown\x10\x00\x12\x14\n\x10TaskTypeTraining\x10\x01\x12\x12\n\x0eTaskTypeMining\x10\x02\x12\x11\n\rTaskTypeLabel\x10\x03\x12\x12\n\x0eTaskTypeFilter\x10\x04\x12\x16\n\x12TaskTypeImportData\x10\x05\x12\x16\n\x12TaskTypeExportData\x10\x06\x12\x14\n\x10TaskTypeCopyData\x10\x07\x12\x11\n\rTaskTypeMerge\x10\x08\x12\x11\n\rTaskTypeInfer\x10\t\x12\x14\n\x10TaskTypeSampling\x10\n\x12\x12\n\x0eTaskTypeFusion\x10\x0b\x12\x10\n\x0cTaskTypeInit\x10\x0c\x12\x17\n\x13TaskTypeImportModel\x10\r\x12\x15\n\x11TaskTypeCopyModel\x10\x0e\x12\x18\n\x14TaskTypeDatasetInfer\x10\x0f\x12\x14\n\x10TaskTypeEvaluate\x10\x10\x12\x19\n\x15TaskTypeVisualization\x10\x11*\x87\x01\n\tTaskState\x12\x14\n\x10TaskStateUnknown\x10\x00\x12\x14\n\x10TaskStatePending\x10\x01\x12\x14\n\x10TaskStateRunning\x10\x02\x12\x11\n\rTaskStateDone\x10\x03\x12\x12\n\x0eTaskStateError\x10\x04\x12\x11\n\rTaskStateMiss\x10\x05*L\n\x08Sha1Type\x12\x15\n\x11SHA1_TYPE_UNKNOWN\x10\x00\x12\x13\n\x0fSHA1_TYPE_ASSET\x10\x01\x12\x14\n\x10SHA1_TYPE_COMMIT\x10\x02*f\n\nMirStorage\x12\x11\n\rMIR_METADATAS\x10\x00\x12\x13\n\x0fMIR_ANNOTATIONS\x10\x01\x12\x10\n\x0cMIR_KEYWORDS\x10\x02\x12\r\n\tMIR_TASKS\x10\x03\x12\x0f\n\x0bMIR_CONTEXT\x10\x04*\x87\x01\n\nAnnoFormat\x12\x14\n\x10\x41\x46_NO_ANNOTATION\x10\x00\x12\x15\n\x11\x41\x46_DET_PASCAL_VOC\x10\x01\x12\x13\n\x0f\x41\x46_DET_ARK_JSON\x10\x02\x12\x12\n\x0e\x41\x46_DET_LS_JSON\x10\x03\x12\x12\n\x0e\x41\x46_SEG_POLYGON\x10\x04\x12\x0f\n\x0b\x41\x46_SEG_MASK\x10\x05*6\n\x0b\x41ssetFormat\x12\x0e\n\nAF_UNKNOWN\x10\x00\x12\n\n\x06\x41\x46_RAW\x10\x01\x12\x0b\n\x07\x41\x46_LMDB\x10\x02*]\n\x08\x41nnoType\x12\x0e\n\nAT_UNKNOWN\x10\x00\x12\x0c\n\x08\x41T_CLASS\x10\x01\x12\x0e\n\nAT_DET_BOX\x10\x02\x12\x12\n\x0e\x41T_SEG_POLYGON\x10\x03\x12\x0f\n\x0b\x41T_SEG_MASK\x10\x04*d\n\x13\x43onfusionMatrixType\x12\n\n\x06NotSet\x10\x00\x12\x06\n\x02TP\x10\x01\x12\x06\n\x02\x46P\x10\x02\x12\x06\n\x02\x46N\x10\x03\x12\x06\n\x02TN\x10\x04\x12\x0b\n\x07Unknown\x10\x05\x12\x07\n\x03MTP\x10\x0b\x12\x0b\n\x07IGNORED\x10\x0c\x42\tZ\x07/protosb\x06proto3'
+  serialized_pb=b'\n\x15mir_command_200.proto\x12\x0emir.command200\"\xa7\x01\n\x0cMirMetadatas\x12@\n\nattributes\x18\x01 \x03(\x0b\x32,.mir.command200.MirMetadatas.AttributesEntry\x1aU\n\x0f\x41ttributesEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\x31\n\x05value\x18\x02 \x01(\x0b\x32\".mir.command200.MetadataAttributes:\x02\x38\x01\"\x85\x02\n\x12MetadataAttributes\x12,\n\ttimestamp\x18\x02 \x01(\x0b\x32\x19.mir.command200.Timestamp\x12)\n\x08tvt_type\x18\x03 \x01(\x0e\x32\x17.mir.command200.TvtType\x12-\n\nasset_type\x18\x04 \x01(\x0e\x32\x19.mir.command200.AssetType\x12\r\n\x05width\x18\x05 \x01(\x05\x12\x0e\n\x06height\x18\x06 \x01(\x05\x12\x16\n\x0eimage_channels\x18\x07 \x01(\x05\x12\x11\n\tbyte_size\x18\x08 \x01(\x05\x12\x17\n\x0forigin_filename\x18\t \x01(\tJ\x04\x08\x01\x10\x02\",\n\tTimestamp\x12\r\n\x05start\x18\x01 \x01(\x05\x12\x10\n\x08\x64uration\x18\x02 \x01(\x02\"\xa6\x02\n\x0eMirAnnotations\x12;\n\x0cground_truth\x18\x03 \x01(\x0b\x32%.mir.command200.SingleTaskAnnotations\x12\x39\n\nprediction\x18\x04 \x01(\x0b\x32%.mir.command200.SingleTaskAnnotations\x12?\n\timage_cks\x18\x05 \x03(\x0b\x32,.mir.command200.MirAnnotations.ImageCksEntry\x1aO\n\rImageCksEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12-\n\x05value\x18\x02 \x01(\x0b\x32\x1e.mir.command200.SingleImageCks:\x02\x38\x01J\x04\x08\x01\x10\x02J\x04\x08\x02\x10\x03\"\x96\x04\n\x15SingleTaskAnnotations\x12V\n\x11image_annotations\x18\x01 \x03(\x0b\x32;.mir.command200.SingleTaskAnnotations.ImageAnnotationsEntry\x12\x0f\n\x07task_id\x18\x02 \x01(\t\x12&\n\x04type\x18\x03 \x01(\x0e\x32\x18.mir.command200.AnnoType\x12\x16\n\x0etask_class_ids\x18\x04 \x03(\x05\x12K\n\x0cmap_id_color\x18\x05 \x03(\x0b\x32\x35.mir.command200.SingleTaskAnnotations.MapIdColorEntry\x12\x16\n\x0e\x65val_class_ids\x18\n \x03(\x05\x12(\n\x05model\x18\x0b \x01(\x0b\x32\x19.mir.command200.ModelMeta\x12\x17\n\x0f\x65xecutor_config\x18\x0c \x01(\t\x1a_\n\x15ImageAnnotationsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\x35\n\x05value\x18\x02 \x01(\x0b\x32&.mir.command200.SingleImageAnnotations:\x02\x38\x01\x1aK\n\x0fMapIdColorEntry\x12\x0b\n\x03key\x18\x01 \x01(\x05\x12\'\n\x05value\x18\x02 \x01(\x0b\x32\x18.mir.command200.IntPoint:\x02\x38\x01\"\xc8\x01\n\x16SingleImageAnnotations\x12/\n\x05\x62oxes\x18\x02 \x03(\x0b\x32 .mir.command200.ObjectAnnotation\x12\x32\n\x08polygons\x18\x03 \x03(\x0b\x32 .mir.command200.ObjectAnnotation\x12,\n\x04mask\x18\x04 \x01(\x0b\x32\x1e.mir.command200.MaskAnnotation\x12\x15\n\rimg_class_ids\x18\x05 \x03(\x05J\x04\x08\x01\x10\x02\"\x89\x01\n\x0eSingleImageCks\x12\x34\n\x03\x63ks\x18\x01 \x03(\x0b\x32\'.mir.command200.SingleImageCks.CksEntry\x12\x15\n\rimage_quality\x18\x02 \x01(\x02\x1a*\n\x08\x43ksEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\"R\n\x0eMaskAnnotation\x12\x15\n\rsemantic_mask\x18\x01 \x01(\x0c\x12\x15\n\rinstance_mask\x18\x02 \x01(\x0c\x12\x12\n\nobject_ids\x18\x03 \x03(\x05\"\xe7\x02\n\x10ObjectAnnotation\x12\r\n\x05index\x18\x01 \x01(\x05\x12!\n\x03\x62ox\x18\x02 \x01(\x0b\x32\x14.mir.command200.Rect\x12\x10\n\x08\x63lass_id\x18\x03 \x01(\x05\x12\r\n\x05score\x18\x04 \x01(\x01\x12\x14\n\x0c\x61nno_quality\x18\x05 \x01(\x02\x12\x38\n\x04tags\x18\x06 \x03(\x0b\x32*.mir.command200.ObjectAnnotation.TagsEntry\x12/\n\x02\x63m\x18\x07 \x01(\x0e\x32#.mir.command200.ConfusionMatrixType\x12\x13\n\x0b\x64\x65t_link_id\x18\x08 \x01(\x05\x12\x12\n\nclass_name\x18\t \x01(\t\x12)\n\x07polygon\x18\n \x03(\x0b\x32\x18.mir.command200.IntPoint\x1a+\n\tTagsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\"H\n\x04Rect\x12\t\n\x01x\x18\x01 \x01(\x05\x12\t\n\x01y\x18\x02 \x01(\x05\x12\t\n\x01w\x18\x03 \x01(\x05\x12\t\n\x01h\x18\x04 \x01(\x05\x12\x14\n\x0crotate_angle\x18\x05 \x01(\x02\"\x95\x02\n\x0bMirKeywords\x12.\n\x08pred_idx\x18\x07 \x01(\x0b\x32\x1c.mir.command200.CiTagToIndex\x12,\n\x06gt_idx\x18\x08 \x01(\x0b\x32\x1c.mir.command200.CiTagToIndex\x12\x36\n\x06\x63k_idx\x18\t \x03(\x0b\x32&.mir.command200.MirKeywords.CkIdxEntry\x1aL\n\nCkIdxEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12-\n\x05value\x18\x02 \x01(\x0b\x32\x1e.mir.command200.AssetAnnoIndex:\x02\x38\x01J\x04\x08\x01\x10\x02J\x04\x08\x02\x10\x03J\x04\x08\x03\x10\x04J\x04\x08\x04\x10\x05J\x04\x08\x05\x10\x06J\x04\x08\x06\x10\x07\"\x97\x02\n\x0c\x43iTagToIndex\x12\x32\n\x03\x63is\x18\x01 \x03(\x0b\x32%.mir.command200.CiTagToIndex.CisEntry\x12\x34\n\x04tags\x18\x02 \x03(\x0b\x32&.mir.command200.CiTagToIndex.TagsEntry\x1aP\n\x08\x43isEntry\x12\x0b\n\x03key\x18\x01 \x01(\x05\x12\x33\n\x05value\x18\x02 \x01(\x0b\x32$.mir.command200.MapStringToInt32List:\x02\x38\x01\x1aK\n\tTagsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12-\n\x05value\x18\x02 \x01(\x0b\x32\x1e.mir.command200.AssetAnnoIndex:\x02\x38\x01\"\x1f\n\nStringList\x12\x11\n\tasset_ids\x18\x01 \x03(\t\"\xa3\x01\n\x14MapStringToInt32List\x12\x41\n\x07key_ids\x18\x01 \x03(\x0b\x32\x30.mir.command200.MapStringToInt32List.KeyIdsEntry\x1aH\n\x0bKeyIdsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12(\n\x05value\x18\x02 \x01(\x0b\x32\x19.mir.command200.Int32List:\x02\x38\x01\"\x18\n\tInt32List\x12\x0b\n\x03ids\x18\x01 \x03(\x05\"\xc1\x02\n\x0e\x41ssetAnnoIndex\x12\x43\n\x0b\x61sset_annos\x18\x01 \x03(\x0b\x32..mir.command200.AssetAnnoIndex.AssetAnnosEntry\x12\x43\n\x0bsub_indexes\x18\x02 \x03(\x0b\x32..mir.command200.AssetAnnoIndex.SubIndexesEntry\x1aL\n\x0f\x41ssetAnnosEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12(\n\x05value\x18\x02 \x01(\x0b\x32\x19.mir.command200.Int32List:\x02\x38\x01\x1aW\n\x0fSubIndexesEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\x33\n\x05value\x18\x02 \x01(\x0b\x32$.mir.command200.MapStringToInt32List:\x02\x38\x01\"\x98\x01\n\x08MirTasks\x12\x32\n\x05tasks\x18\x01 \x03(\x0b\x32#.mir.command200.MirTasks.TasksEntry\x12\x14\n\x0chead_task_id\x18\x02 \x01(\t\x1a\x42\n\nTasksEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12#\n\x05value\x18\x02 \x01(\x0b\x32\x14.mir.command200.Task:\x02\x38\x01\"\xf9\x03\n\x04Task\x12&\n\x04type\x18\x01 \x01(\x0e\x32\x18.mir.command200.TaskType\x12\x0c\n\x04name\x18\x02 \x01(\t\x12\x0f\n\x07task_id\x18\x03 \x01(\t\x12\x11\n\ttimestamp\x18\x05 \x01(\x05\x12(\n\x05model\x18\x06 \x01(\x0b\x32\x19.mir.command200.ModelMeta\x12\x13\n\x0breturn_code\x18\x08 \x01(\x05\x12\x12\n\nreturn_msg\x18\t \x01(\t\x12.\n\nevaluation\x18\n \x01(\x0b\x32\x1a.mir.command200.Evaluation\x12\x35\n\tnew_types\x18\x0b \x03(\x0b\x32\".mir.command200.Task.NewTypesEntry\x12\x17\n\x0fnew_types_added\x18\x0c \x01(\x08\x12\"\n\x1aserialized_task_parameters\x18\x66 \x01(\t\x12\"\n\x1aserialized_executor_config\x18g \x01(\t\x12\x10\n\x08src_revs\x18h \x01(\t\x12\x0f\n\x07\x64st_rev\x18i \x01(\t\x12\x10\n\x08\x65xecutor\x18j \x01(\t\x1a/\n\rNewTypesEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\x05:\x02\x38\x01J\x04\x08\x04\x10\x05J\x04\x08\x07\x10\x08J\x04\x08\x64\x10\x65J\x04\x08\x65\x10\x66\"\x80\x02\n\tModelMeta\x12\x12\n\nmodel_hash\x18\x01 \x01(\t\x12\x1e\n\x16mean_average_precision\x18\x02 \x01(\x02\x12\x0f\n\x07\x63ontext\x18\x03 \x01(\t\x12\x35\n\x06stages\x18\x04 \x03(\x0b\x32%.mir.command200.ModelMeta.StagesEntry\x12\x17\n\x0f\x62\x65st_stage_name\x18\x05 \x01(\t\x12\x13\n\x0b\x63lass_names\x18\x06 \x03(\t\x1aI\n\x0bStagesEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12)\n\x05value\x18\x02 \x01(\x0b\x32\x1a.mir.command200.ModelStage:\x02\x38\x01\"O\n\nModelStage\x12\x12\n\nstage_name\x18\x01 \x01(\t\x12\r\n\x05\x66iles\x18\x02 \x03(\t\x12\x11\n\ttimestamp\x18\x03 \x01(\x05\x12\x0b\n\x03mAP\x18\x04 \x01(\x02\"\x82\x03\n\nEvaluation\x12.\n\x06\x63onfig\x18\x01 \x01(\x0b\x32\x1e.mir.command200.EvaluateConfig\x12\x43\n\x12\x64\x61taset_evaluation\x18\x03 \x01(\x0b\x32\'.mir.command200.SingleDatasetEvaluation\x12\x38\n\x07main_ck\x18\x04 \x01(\x0b\x32\'.mir.command200.SingleDatasetEvaluation\x12\x37\n\x07sub_cks\x18\x05 \x03(\x0b\x32&.mir.command200.Evaluation.SubCksEntry\x12.\n\x05state\x18\x06 \x01(\x0e\x32\x1f.mir.command200.EvaluationState\x1aV\n\x0bSubCksEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\x36\n\x05value\x18\x02 \x01(\x0b\x32\'.mir.command200.SingleDatasetEvaluation:\x02\x38\x01J\x04\x08\x02\x10\x03\"\x8a\x01\n\x0e\x45valuateConfig\x12\x10\n\x08\x63onf_thr\x18\x03 \x01(\x02\x12\x19\n\x11iou_thrs_interval\x18\x04 \x01(\t\x12\x15\n\rneed_pr_curve\x18\x05 \x01(\x08\x12\x11\n\tclass_ids\x18\x07 \x03(\x05\x12\x0f\n\x07main_ck\x18\x08 \x01(\tJ\x04\x08\x01\x10\x02J\x04\x08\x02\x10\x03J\x04\x08\x06\x10\x07\"\xaf\x02\n\x17SingleDatasetEvaluation\x12\x10\n\x08\x63onf_thr\x18\x01 \x01(\x02\x12T\n\x0fiou_evaluations\x18\x04 \x03(\x0b\x32;.mir.command200.SingleDatasetEvaluation.IouEvaluationsEntry\x12\x44\n\x17iou_averaged_evaluation\x18\x05 \x01(\x0b\x32#.mir.command200.SingleIouEvaluation\x1aZ\n\x13IouEvaluationsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\x32\n\x05value\x18\x02 \x01(\x0b\x32#.mir.command200.SingleIouEvaluation:\x02\x38\x01J\x04\x08\x02\x10\x03J\x04\x08\x03\x10\x04\"\x93\x02\n\x13SingleIouEvaluation\x12N\n\x0e\x63i_evaluations\x18\x01 \x03(\x0b\x32\x36.mir.command200.SingleIouEvaluation.CiEvaluationsEntry\x12G\n\x16\x63i_averaged_evaluation\x18\x02 \x01(\x0b\x32\'.mir.command200.SingleEvaluationElement\x1a]\n\x12\x43iEvaluationsEntry\x12\x0b\n\x03key\x18\x01 \x01(\x05\x12\x36\n\x05value\x18\x02 \x01(\x0b\x32\'.mir.command200.SingleEvaluationElement:\x02\x38\x01J\x04\x08\x03\x10\x04\"\x83\x01\n\x17SingleEvaluationElement\x12\n\n\x02\x61p\x18\x01 \x01(\x02\x12\n\n\x02\x61r\x18\x02 \x01(\x02\x12\n\n\x02tp\x18\x03 \x01(\x05\x12\n\n\x02\x66p\x18\x04 \x01(\x05\x12\n\n\x02\x66n\x18\x05 \x01(\x05\x12,\n\x08pr_curve\x18\x06 \x03(\x0b\x32\x1a.mir.command200.FloatPoint\"+\n\x08IntPoint\x12\t\n\x01x\x18\x01 \x01(\x05\x12\t\n\x01y\x18\x02 \x01(\x05\x12\t\n\x01z\x18\x03 \x01(\x05\"-\n\nFloatPoint\x12\t\n\x01x\x18\x01 \x01(\x02\x12\t\n\x01y\x18\x02 \x01(\x02\x12\t\n\x01z\x18\x03 \x01(\x02\"\xd6\x02\n\nMirContext\x12\x12\n\nimages_cnt\x18\x01 \x01(\x05\x12\x37\n\x07\x63ks_cnt\x18\x06 \x03(\x0b\x32&.mir.command200.MirContext.CksCntEntry\x12\x1a\n\x12total_asset_mbytes\x18\x0b \x01(\x05\x12-\n\npred_stats\x18\x64 \x01(\x0b\x32\x19.mir.command200.AnnoStats\x12+\n\x08gt_stats\x18\x65 \x01(\x0b\x32\x19.mir.command200.AnnoStats\x1aM\n\x0b\x43ksCntEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12-\n\x05value\x18\x02 \x01(\x0b\x32\x1e.mir.command200.SingleMapCount:\x02\x38\x01J\x04\x08\x02\x10\x03J\x04\x08\x03\x10\x04J\x04\x08\x04\x10\x05J\x04\x08\x05\x10\x06J\x04\x08\x07\x10\x08J\x04\x08\x08\x10\tJ\x04\x08\t\x10\nJ\x04\x08\n\x10\x0bJ\x04\x08\x0c\x10\r\"\x89\x01\n\x0eSingleMapCount\x12\x0b\n\x03\x63nt\x18\x01 \x01(\x05\x12;\n\x07sub_cnt\x18\x02 \x03(\x0b\x32*.mir.command200.SingleMapCount.SubCntEntry\x1a-\n\x0bSubCntEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\x05:\x02\x38\x01\"\x81\x03\n\tAnnoStats\x12\x11\n\ttotal_cnt\x18\x01 \x01(\x05\x12\x1a\n\x12positive_asset_cnt\x18\x02 \x01(\x05\x12\x1a\n\x12negative_asset_cnt\x18\x03 \x01(\x05\x12\x38\n\x08tags_cnt\x18\x07 \x03(\x0b\x32&.mir.command200.AnnoStats.TagsCntEntry\x12\x41\n\rclass_ids_cnt\x18\x08 \x03(\x0b\x32*.mir.command200.AnnoStats.ClassIdsCntEntry\x12\x16\n\x0e\x65val_class_ids\x18\t \x03(\x05\x1aN\n\x0cTagsCntEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12-\n\x05value\x18\x02 \x01(\x0b\x32\x1e.mir.command200.SingleMapCount:\x02\x38\x01\x1a\x32\n\x10\x43lassIdsCntEntry\x12\x0b\n\x03key\x18\x01 \x01(\x05\x12\r\n\x05value\x18\x02 \x01(\x05:\x02\x38\x01J\x04\x08\x04\x10\x05J\x04\x08\x05\x10\x06J\x04\x08\x06\x10\x07\"\x89\x03\n\x0c\x45xportConfig\x12\x31\n\x0c\x61sset_format\x18\x01 \x01(\x0e\x32\x1b.mir.command200.AssetFormat\x12\x11\n\tasset_dir\x18\x02 \x01(\t\x12\x18\n\x10\x61sset_index_file\x18\x03 \x01(\t\x12\x1a\n\x12\x61sset_index_prefix\x18\x04 \x01(\t\x12\x16\n\x0emedia_location\x18\x05 \x01(\t\x12\x17\n\x0fneed_sub_folder\x18\x06 \x01(\x08\x12/\n\x0b\x61nno_format\x18\x32 \x01(\x0e\x32\x1a.mir.command200.AnnoFormat\x12\x0e\n\x06gt_dir\x18\x33 \x01(\t\x12\x15\n\rgt_index_file\x18\x34 \x01(\t\x12\x17\n\x0fgt_index_prefix\x18\x35 \x01(\t\x12\x10\n\x08pred_dir\x18\x36 \x01(\t\x12\x17\n\x0fpred_index_file\x18\x37 \x01(\t\x12\x19\n\x11pred_index_prefix\x18\x38 \x01(\t\x12\x15\n\rtvt_index_dir\x18\x39 \x01(\t*Z\n\x07TvtType\x12\x12\n\x0eTvtTypeUnknown\x10\x00\x12\x13\n\x0fTvtTypeTraining\x10\x01\x12\x15\n\x11TvtTypeValidation\x10\x02\x12\x0f\n\x0bTvtTypeTest\x10\x03*\x88\x02\n\tAssetType\x12\x14\n\x10\x41ssetTypeUnknown\x10\x00\x12\x16\n\x12\x41ssetTypeImageJpeg\x10\x01\x12\x15\n\x11\x41ssetTypeImagePng\x10\x02\x12\x1a\n\x16\x41ssetTypeImagePixelMat\x10\x03\x12\x19\n\x15\x41ssetTypeImageYuv420p\x10\x04\x12\x1a\n\x16\x41ssetTypeImageYuv420sp\x10\x05\x12\x19\n\x15\x41ssetTypeImageYuv422p\x10\x06\x12\x1a\n\x16\x41ssetTypeImageYuv422sp\x10\x07\x12\x15\n\x11\x41ssetTypeImageBmp\x10\x08\x12\x15\n\x11\x41ssetTypeVideoMp4\x10\x65*\xf8\x02\n\x08TaskType\x12\x13\n\x0fTaskTypeUnknown\x10\x00\x12\x14\n\x10TaskTypeTraining\x10\x01\x12\x12\n\x0eTaskTypeMining\x10\x02\x12\x11\n\rTaskTypeLabel\x10\x03\x12\x12\n\x0eTaskTypeFilter\x10\x04\x12\x16\n\x12TaskTypeImportData\x10\x05\x12\x16\n\x12TaskTypeExportData\x10\x06\x12\x14\n\x10TaskTypeCopyData\x10\x07\x12\x11\n\rTaskTypeMerge\x10\x08\x12\x11\n\rTaskTypeInfer\x10\t\x12\x14\n\x10TaskTypeSampling\x10\n\x12\x12\n\x0eTaskTypeFusion\x10\x0b\x12\x10\n\x0cTaskTypeInit\x10\x0c\x12\x17\n\x13TaskTypeImportModel\x10\r\x12\x15\n\x11TaskTypeCopyModel\x10\x0e\x12\x18\n\x14TaskTypeDatasetInfer\x10\x0f\x12\x14\n\x10TaskTypeEvaluate\x10\x10*\x87\x01\n\tTaskState\x12\x14\n\x10TaskStateUnknown\x10\x00\x12\x14\n\x10TaskStatePending\x10\x01\x12\x14\n\x10TaskStateRunning\x10\x02\x12\x11\n\rTaskStateDone\x10\x03\x12\x12\n\x0eTaskStateError\x10\x04\x12\x11\n\rTaskStateMiss\x10\x05*L\n\x08Sha1Type\x12\x15\n\x11SHA1_TYPE_UNKNOWN\x10\x00\x12\x13\n\x0fSHA1_TYPE_ASSET\x10\x01\x12\x14\n\x10SHA1_TYPE_COMMIT\x10\x02*f\n\nMirStorage\x12\x11\n\rMIR_METADATAS\x10\x00\x12\x13\n\x0fMIR_ANNOTATIONS\x10\x01\x12\x10\n\x0cMIR_KEYWORDS\x10\x02\x12\r\n\tMIR_TASKS\x10\x03\x12\x0f\n\x0bMIR_CONTEXT\x10\x04*\x87\x01\n\nAnnoFormat\x12\x14\n\x10\x41\x46_NO_ANNOTATION\x10\x00\x12\x15\n\x11\x41\x46_DET_PASCAL_VOC\x10\x01\x12\x13\n\x0f\x41\x46_DET_ARK_JSON\x10\x02\x12\x12\n\x0e\x41\x46_DET_LS_JSON\x10\x03\x12\x12\n\x0e\x41\x46_SEG_POLYGON\x10\x04\x12\x0f\n\x0b\x41\x46_SEG_MASK\x10\x05*6\n\x0b\x41ssetFormat\x12\x0e\n\nAF_UNKNOWN\x10\x00\x12\n\n\x06\x41\x46_RAW\x10\x01\x12\x0b\n\x07\x41\x46_LMDB\x10\x02*]\n\x08\x41nnoType\x12\x0e\n\nAT_UNKNOWN\x10\x00\x12\x0c\n\x08\x41T_CLASS\x10\x01\x12\x0e\n\nAT_DET_BOX\x10\x02\x12\x12\n\x0e\x41T_SEG_POLYGON\x10\x03\x12\x0f\n\x0b\x41T_SEG_MASK\x10\x04*d\n\x13\x43onfusionMatrixType\x12\n\n\x06NotSet\x10\x00\x12\x06\n\x02TP\x10\x01\x12\x06\n\x02\x46P\x10\x02\x12\x06\n\x02\x46N\x10\x03\x12\x06\n\x02TN\x10\x04\x12\x0b\n\x07Unknown\x10\x05\x12\x07\n\x03MTP\x10\x0b\x12\x0b\n\x07IGNORED\x10\x0c*p\n\x0f\x45valuationState\x12\x0e\n\nES_NOT_SET\x10\x00\x12\x0c\n\x08\x45S_READY\x10\x01\x12\x14\n\x10\x45S_NO_GT_OR_PRED\x10\x02\x12\x14\n\x10\x45S_EXCEEDS_LIMIT\x10\x03\x12\x13\n\x0f\x45S_NO_CLASS_IDS\x10\x04\x42\tZ\x07/protosb\x06proto3'
 )
 
 _TVTTYPE = _descriptor.EnumDescriptor(
   name='TvtType',
-  full_name='mir.command130.TvtType',
+  full_name='mir.command200.TvtType',
   filename=None,
   file=DESCRIPTOR,
   create_key=_descriptor._internal_create_key,
@@ -53,15 +53,15 @@ _TVTTYPE = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   serialized_options=None,
-  serialized_start=6497,
-  serialized_end=6587,
+  serialized_start=6941,
+  serialized_end=7031,
 )
 _sym_db.RegisterEnumDescriptor(_TVTTYPE)
 
 TvtType = enum_type_wrapper.EnumTypeWrapper(_TVTTYPE)
 _ASSETTYPE = _descriptor.EnumDescriptor(
   name='AssetType',
-  full_name='mir.command130.AssetType',
+  full_name='mir.command200.AssetType',
   filename=None,
   file=DESCRIPTOR,
   create_key=_descriptor._internal_create_key,
@@ -119,15 +119,15 @@ _ASSETTYPE = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   serialized_options=None,
-  serialized_start=6590,
-  serialized_end=6854,
+  serialized_start=7034,
+  serialized_end=7298,
 )
 _sym_db.RegisterEnumDescriptor(_ASSETTYPE)
 
 AssetType = enum_type_wrapper.EnumTypeWrapper(_ASSETTYPE)
 _TASKTYPE = _descriptor.EnumDescriptor(
   name='TaskType',
-  full_name='mir.command130.TaskType',
+  full_name='mir.command200.TaskType',
   filename=None,
   file=DESCRIPTOR,
   create_key=_descriptor._internal_create_key,
@@ -217,23 +217,18 @@ _TASKTYPE = _descriptor.EnumDescriptor(
       serialized_options=None,
       type=None,
       create_key=_descriptor._internal_create_key),
-    _descriptor.EnumValueDescriptor(
-      name='TaskTypeVisualization', index=17, number=17,
-      serialized_options=None,
-      type=None,
-      create_key=_descriptor._internal_create_key),
   ],
   containing_type=None,
   serialized_options=None,
-  serialized_start=6857,
-  serialized_end=7260,
+  serialized_start=7301,
+  serialized_end=7677,
 )
 _sym_db.RegisterEnumDescriptor(_TASKTYPE)
 
 TaskType = enum_type_wrapper.EnumTypeWrapper(_TASKTYPE)
 _TASKSTATE = _descriptor.EnumDescriptor(
   name='TaskState',
-  full_name='mir.command130.TaskState',
+  full_name='mir.command200.TaskState',
   filename=None,
   file=DESCRIPTOR,
   create_key=_descriptor._internal_create_key,
@@ -271,15 +266,15 @@ _TASKSTATE = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   serialized_options=None,
-  serialized_start=7263,
-  serialized_end=7398,
+  serialized_start=7680,
+  serialized_end=7815,
 )
 _sym_db.RegisterEnumDescriptor(_TASKSTATE)
 
 TaskState = enum_type_wrapper.EnumTypeWrapper(_TASKSTATE)
 _SHA1TYPE = _descriptor.EnumDescriptor(
   name='Sha1Type',
-  full_name='mir.command130.Sha1Type',
+  full_name='mir.command200.Sha1Type',
   filename=None,
   file=DESCRIPTOR,
   create_key=_descriptor._internal_create_key,
@@ -302,15 +297,15 @@ _SHA1TYPE = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   serialized_options=None,
-  serialized_start=7400,
-  serialized_end=7476,
+  serialized_start=7817,
+  serialized_end=7893,
 )
 _sym_db.RegisterEnumDescriptor(_SHA1TYPE)
 
 Sha1Type = enum_type_wrapper.EnumTypeWrapper(_SHA1TYPE)
 _MIRSTORAGE = _descriptor.EnumDescriptor(
   name='MirStorage',
-  full_name='mir.command130.MirStorage',
+  full_name='mir.command200.MirStorage',
   filename=None,
   file=DESCRIPTOR,
   create_key=_descriptor._internal_create_key,
@@ -343,15 +338,15 @@ _MIRSTORAGE = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   serialized_options=None,
-  serialized_start=7478,
-  serialized_end=7580,
+  serialized_start=7895,
+  serialized_end=7997,
 )
 _sym_db.RegisterEnumDescriptor(_MIRSTORAGE)
 
 MirStorage = enum_type_wrapper.EnumTypeWrapper(_MIRSTORAGE)
 _ANNOFORMAT = _descriptor.EnumDescriptor(
   name='AnnoFormat',
-  full_name='mir.command130.AnnoFormat',
+  full_name='mir.command200.AnnoFormat',
   filename=None,
   file=DESCRIPTOR,
   create_key=_descriptor._internal_create_key,
@@ -389,15 +384,15 @@ _ANNOFORMAT = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   serialized_options=None,
-  serialized_start=7583,
-  serialized_end=7718,
+  serialized_start=8000,
+  serialized_end=8135,
 )
 _sym_db.RegisterEnumDescriptor(_ANNOFORMAT)
 
 AnnoFormat = enum_type_wrapper.EnumTypeWrapper(_ANNOFORMAT)
 _ASSETFORMAT = _descriptor.EnumDescriptor(
   name='AssetFormat',
-  full_name='mir.command130.AssetFormat',
+  full_name='mir.command200.AssetFormat',
   filename=None,
   file=DESCRIPTOR,
   create_key=_descriptor._internal_create_key,
@@ -420,15 +415,15 @@ _ASSETFORMAT = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   serialized_options=None,
-  serialized_start=7720,
-  serialized_end=7774,
+  serialized_start=8137,
+  serialized_end=8191,
 )
 _sym_db.RegisterEnumDescriptor(_ASSETFORMAT)
 
 AssetFormat = enum_type_wrapper.EnumTypeWrapper(_ASSETFORMAT)
 _ANNOTYPE = _descriptor.EnumDescriptor(
   name='AnnoType',
-  full_name='mir.command130.AnnoType',
+  full_name='mir.command200.AnnoType',
   filename=None,
   file=DESCRIPTOR,
   create_key=_descriptor._internal_create_key,
@@ -461,15 +456,15 @@ _ANNOTYPE = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   serialized_options=None,
-  serialized_start=7776,
-  serialized_end=7869,
+  serialized_start=8193,
+  serialized_end=8286,
 )
 _sym_db.RegisterEnumDescriptor(_ANNOTYPE)
 
 AnnoType = enum_type_wrapper.EnumTypeWrapper(_ANNOTYPE)
 _CONFUSIONMATRIXTYPE = _descriptor.EnumDescriptor(
   name='ConfusionMatrixType',
-  full_name='mir.command130.ConfusionMatrixType',
+  full_name='mir.command200.ConfusionMatrixType',
   filename=None,
   file=DESCRIPTOR,
   create_key=_descriptor._internal_create_key,
@@ -517,12 +512,53 @@ _CONFUSIONMATRIXTYPE = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   serialized_options=None,
-  serialized_start=7871,
-  serialized_end=7971,
+  serialized_start=8288,
+  serialized_end=8388,
 )
 _sym_db.RegisterEnumDescriptor(_CONFUSIONMATRIXTYPE)
 
 ConfusionMatrixType = enum_type_wrapper.EnumTypeWrapper(_CONFUSIONMATRIXTYPE)
+_EVALUATIONSTATE = _descriptor.EnumDescriptor(
+  name='EvaluationState',
+  full_name='mir.command200.EvaluationState',
+  filename=None,
+  file=DESCRIPTOR,
+  create_key=_descriptor._internal_create_key,
+  values=[
+    _descriptor.EnumValueDescriptor(
+      name='ES_NOT_SET', index=0, number=0,
+      serialized_options=None,
+      type=None,
+      create_key=_descriptor._internal_create_key),
+    _descriptor.EnumValueDescriptor(
+      name='ES_READY', index=1, number=1,
+      serialized_options=None,
+      type=None,
+      create_key=_descriptor._internal_create_key),
+    _descriptor.EnumValueDescriptor(
+      name='ES_NO_GT_OR_PRED', index=2, number=2,
+      serialized_options=None,
+      type=None,
+      create_key=_descriptor._internal_create_key),
+    _descriptor.EnumValueDescriptor(
+      name='ES_EXCEEDS_LIMIT', index=3, number=3,
+      serialized_options=None,
+      type=None,
+      create_key=_descriptor._internal_create_key),
+    _descriptor.EnumValueDescriptor(
+      name='ES_NO_CLASS_IDS', index=4, number=4,
+      serialized_options=None,
+      type=None,
+      create_key=_descriptor._internal_create_key),
+  ],
+  containing_type=None,
+  serialized_options=None,
+  serialized_start=8390,
+  serialized_end=8502,
+)
+_sym_db.RegisterEnumDescriptor(_EVALUATIONSTATE)
+
+EvaluationState = enum_type_wrapper.EnumTypeWrapper(_EVALUATIONSTATE)
 TvtTypeUnknown = 0
 TvtTypeTraining = 1
 TvtTypeValidation = 2
@@ -554,7 +590,6 @@ TaskTypeImportModel = 13
 TaskTypeCopyModel = 14
 TaskTypeDatasetInfer = 15
 TaskTypeEvaluate = 16
-TaskTypeVisualization = 17
 TaskStateUnknown = 0
 TaskStatePending = 1
 TaskStateRunning = 2
@@ -591,26 +626,31 @@ TN = 4
 Unknown = 5
 MTP = 11
 IGNORED = 12
+ES_NOT_SET = 0
+ES_READY = 1
+ES_NO_GT_OR_PRED = 2
+ES_EXCEEDS_LIMIT = 3
+ES_NO_CLASS_IDS = 4
 
 
 
 _MIRMETADATAS_ATTRIBUTESENTRY = _descriptor.Descriptor(
   name='AttributesEntry',
-  full_name='mir.command130.MirMetadatas.AttributesEntry',
+  full_name='mir.command200.MirMetadatas.AttributesEntry',
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
   create_key=_descriptor._internal_create_key,
   fields=[
     _descriptor.FieldDescriptor(
-      name='key', full_name='mir.command130.MirMetadatas.AttributesEntry.key', index=0,
+      name='key', full_name='mir.command200.MirMetadatas.AttributesEntry.key', index=0,
       number=1, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=b"".decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='value', full_name='mir.command130.MirMetadatas.AttributesEntry.value', index=1,
+      name='value', full_name='mir.command200.MirMetadatas.AttributesEntry.value', index=1,
       number=2, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
@@ -634,14 +674,14 @@ _MIRMETADATAS_ATTRIBUTESENTRY = _descriptor.Descriptor(
 
 _MIRMETADATAS = _descriptor.Descriptor(
   name='MirMetadatas',
-  full_name='mir.command130.MirMetadatas',
+  full_name='mir.command200.MirMetadatas',
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
   create_key=_descriptor._internal_create_key,
   fields=[
     _descriptor.FieldDescriptor(
-      name='attributes', full_name='mir.command130.MirMetadatas.attributes', index=0,
+      name='attributes', full_name='mir.command200.MirMetadatas.attributes', index=0,
       number=1, type=11, cpp_type=10, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
@@ -666,63 +706,63 @@ _MIRMETADATAS = _descriptor.Descriptor(
 
 _METADATAATTRIBUTES = _descriptor.Descriptor(
   name='MetadataAttributes',
-  full_name='mir.command130.MetadataAttributes',
+  full_name='mir.command200.MetadataAttributes',
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
   create_key=_descriptor._internal_create_key,
   fields=[
     _descriptor.FieldDescriptor(
-      name='timestamp', full_name='mir.command130.MetadataAttributes.timestamp', index=0,
+      name='timestamp', full_name='mir.command200.MetadataAttributes.timestamp', index=0,
       number=2, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='tvt_type', full_name='mir.command130.MetadataAttributes.tvt_type', index=1,
+      name='tvt_type', full_name='mir.command200.MetadataAttributes.tvt_type', index=1,
       number=3, type=14, cpp_type=8, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='asset_type', full_name='mir.command130.MetadataAttributes.asset_type', index=2,
+      name='asset_type', full_name='mir.command200.MetadataAttributes.asset_type', index=2,
       number=4, type=14, cpp_type=8, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='width', full_name='mir.command130.MetadataAttributes.width', index=3,
+      name='width', full_name='mir.command200.MetadataAttributes.width', index=3,
       number=5, type=5, cpp_type=1, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='height', full_name='mir.command130.MetadataAttributes.height', index=4,
+      name='height', full_name='mir.command200.MetadataAttributes.height', index=4,
       number=6, type=5, cpp_type=1, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='image_channels', full_name='mir.command130.MetadataAttributes.image_channels', index=5,
+      name='image_channels', full_name='mir.command200.MetadataAttributes.image_channels', index=5,
       number=7, type=5, cpp_type=1, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='byte_size', full_name='mir.command130.MetadataAttributes.byte_size', index=6,
+      name='byte_size', full_name='mir.command200.MetadataAttributes.byte_size', index=6,
       number=8, type=5, cpp_type=1, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='origin_filename', full_name='mir.command130.MetadataAttributes.origin_filename', index=7,
+      name='origin_filename', full_name='mir.command200.MetadataAttributes.origin_filename', index=7,
       number=9, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=b"".decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
@@ -747,21 +787,21 @@ _METADATAATTRIBUTES = _descriptor.Descriptor(
 
 _TIMESTAMP = _descriptor.Descriptor(
   name='Timestamp',
-  full_name='mir.command130.Timestamp',
+  full_name='mir.command200.Timestamp',
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
   create_key=_descriptor._internal_create_key,
   fields=[
     _descriptor.FieldDescriptor(
-      name='start', full_name='mir.command130.Timestamp.start', index=0,
-      number=1, type=3, cpp_type=2, label=1,
+      name='start', full_name='mir.command200.Timestamp.start', index=0,
+      number=1, type=5, cpp_type=1, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='duration', full_name='mir.command130.Timestamp.duration', index=1,
+      name='duration', full_name='mir.command200.Timestamp.duration', index=1,
       number=2, type=2, cpp_type=6, label=1,
       has_default_value=False, default_value=float(0),
       message_type=None, enum_type=None, containing_type=None,
@@ -786,21 +826,21 @@ _TIMESTAMP = _descriptor.Descriptor(
 
 _MIRANNOTATIONS_IMAGECKSENTRY = _descriptor.Descriptor(
   name='ImageCksEntry',
-  full_name='mir.command130.MirAnnotations.ImageCksEntry',
+  full_name='mir.command200.MirAnnotations.ImageCksEntry',
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
   create_key=_descriptor._internal_create_key,
   fields=[
     _descriptor.FieldDescriptor(
-      name='key', full_name='mir.command130.MirAnnotations.ImageCksEntry.key', index=0,
+      name='key', full_name='mir.command200.MirAnnotations.ImageCksEntry.key', index=0,
       number=1, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=b"".decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='value', full_name='mir.command130.MirAnnotations.ImageCksEntry.value', index=1,
+      name='value', full_name='mir.command200.MirAnnotations.ImageCksEntry.value', index=1,
       number=2, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
@@ -824,28 +864,28 @@ _MIRANNOTATIONS_IMAGECKSENTRY = _descriptor.Descriptor(
 
 _MIRANNOTATIONS = _descriptor.Descriptor(
   name='MirAnnotations',
-  full_name='mir.command130.MirAnnotations',
+  full_name='mir.command200.MirAnnotations',
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
   create_key=_descriptor._internal_create_key,
   fields=[
     _descriptor.FieldDescriptor(
-      name='ground_truth', full_name='mir.command130.MirAnnotations.ground_truth', index=0,
+      name='ground_truth', full_name='mir.command200.MirAnnotations.ground_truth', index=0,
       number=3, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='prediction', full_name='mir.command130.MirAnnotations.prediction', index=1,
+      name='prediction', full_name='mir.command200.MirAnnotations.prediction', index=1,
       number=4, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='image_cks', full_name='mir.command130.MirAnnotations.image_cks', index=2,
+      name='image_cks', full_name='mir.command200.MirAnnotations.image_cks', index=2,
       number=5, type=11, cpp_type=10, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
@@ -870,21 +910,21 @@ _MIRANNOTATIONS = _descriptor.Descriptor(
 
 _SINGLETASKANNOTATIONS_IMAGEANNOTATIONSENTRY = _descriptor.Descriptor(
   name='ImageAnnotationsEntry',
-  full_name='mir.command130.SingleTaskAnnotations.ImageAnnotationsEntry',
+  full_name='mir.command200.SingleTaskAnnotations.ImageAnnotationsEntry',
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
   create_key=_descriptor._internal_create_key,
   fields=[
     _descriptor.FieldDescriptor(
-      name='key', full_name='mir.command130.SingleTaskAnnotations.ImageAnnotationsEntry.key', index=0,
+      name='key', full_name='mir.command200.SingleTaskAnnotations.ImageAnnotationsEntry.key', index=0,
       number=1, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=b"".decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='value', full_name='mir.command130.SingleTaskAnnotations.ImageAnnotationsEntry.value', index=1,
+      name='value', full_name='mir.command200.SingleTaskAnnotations.ImageAnnotationsEntry.value', index=1,
       number=2, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
@@ -908,21 +948,21 @@ _SINGLETASKANNOTATIONS_IMAGEANNOTATIONSENTRY = _descriptor.Descriptor(
 
 _SINGLETASKANNOTATIONS_MAPIDCOLORENTRY = _descriptor.Descriptor(
   name='MapIdColorEntry',
-  full_name='mir.command130.SingleTaskAnnotations.MapIdColorEntry',
+  full_name='mir.command200.SingleTaskAnnotations.MapIdColorEntry',
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
   create_key=_descriptor._internal_create_key,
   fields=[
     _descriptor.FieldDescriptor(
-      name='key', full_name='mir.command130.SingleTaskAnnotations.MapIdColorEntry.key', index=0,
+      name='key', full_name='mir.command200.SingleTaskAnnotations.MapIdColorEntry.key', index=0,
       number=1, type=5, cpp_type=1, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='value', full_name='mir.command130.SingleTaskAnnotations.MapIdColorEntry.value', index=1,
+      name='value', full_name='mir.command200.SingleTaskAnnotations.MapIdColorEntry.value', index=1,
       number=2, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
@@ -946,63 +986,63 @@ _SINGLETASKANNOTATIONS_MAPIDCOLORENTRY = _descriptor.Descriptor(
 
 _SINGLETASKANNOTATIONS = _descriptor.Descriptor(
   name='SingleTaskAnnotations',
-  full_name='mir.command130.SingleTaskAnnotations',
+  full_name='mir.command200.SingleTaskAnnotations',
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
   create_key=_descriptor._internal_create_key,
   fields=[
     _descriptor.FieldDescriptor(
-      name='image_annotations', full_name='mir.command130.SingleTaskAnnotations.image_annotations', index=0,
+      name='image_annotations', full_name='mir.command200.SingleTaskAnnotations.image_annotations', index=0,
       number=1, type=11, cpp_type=10, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='task_id', full_name='mir.command130.SingleTaskAnnotations.task_id', index=1,
+      name='task_id', full_name='mir.command200.SingleTaskAnnotations.task_id', index=1,
       number=2, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=b"".decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='type', full_name='mir.command130.SingleTaskAnnotations.type', index=2,
+      name='type', full_name='mir.command200.SingleTaskAnnotations.type', index=2,
       number=3, type=14, cpp_type=8, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='task_class_ids', full_name='mir.command130.SingleTaskAnnotations.task_class_ids', index=3,
+      name='task_class_ids', full_name='mir.command200.SingleTaskAnnotations.task_class_ids', index=3,
       number=4, type=5, cpp_type=1, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='map_id_color', full_name='mir.command130.SingleTaskAnnotations.map_id_color', index=4,
+      name='map_id_color', full_name='mir.command200.SingleTaskAnnotations.map_id_color', index=4,
       number=5, type=11, cpp_type=10, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='eval_class_ids', full_name='mir.command130.SingleTaskAnnotations.eval_class_ids', index=5,
+      name='eval_class_ids', full_name='mir.command200.SingleTaskAnnotations.eval_class_ids', index=5,
       number=10, type=5, cpp_type=1, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='model', full_name='mir.command130.SingleTaskAnnotations.model', index=6,
+      name='model', full_name='mir.command200.SingleTaskAnnotations.model', index=6,
       number=11, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='executor_config', full_name='mir.command130.SingleTaskAnnotations.executor_config', index=7,
+      name='executor_config', full_name='mir.command200.SingleTaskAnnotations.executor_config', index=7,
       number=12, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=b"".decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
@@ -1027,35 +1067,35 @@ _SINGLETASKANNOTATIONS = _descriptor.Descriptor(
 
 _SINGLEIMAGEANNOTATIONS = _descriptor.Descriptor(
   name='SingleImageAnnotations',
-  full_name='mir.command130.SingleImageAnnotations',
+  full_name='mir.command200.SingleImageAnnotations',
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
   create_key=_descriptor._internal_create_key,
   fields=[
     _descriptor.FieldDescriptor(
-      name='boxes', full_name='mir.command130.SingleImageAnnotations.boxes', index=0,
+      name='boxes', full_name='mir.command200.SingleImageAnnotations.boxes', index=0,
       number=2, type=11, cpp_type=10, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='polygons', full_name='mir.command130.SingleImageAnnotations.polygons', index=1,
+      name='polygons', full_name='mir.command200.SingleImageAnnotations.polygons', index=1,
       number=3, type=11, cpp_type=10, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='mask', full_name='mir.command130.SingleImageAnnotations.mask', index=2,
+      name='mask', full_name='mir.command200.SingleImageAnnotations.mask', index=2,
       number=4, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='img_class_ids', full_name='mir.command130.SingleImageAnnotations.img_class_ids', index=3,
+      name='img_class_ids', full_name='mir.command200.SingleImageAnnotations.img_class_ids', index=3,
       number=5, type=5, cpp_type=1, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
@@ -1080,21 +1120,21 @@ _SINGLEIMAGEANNOTATIONS = _descriptor.Descriptor(
 
 _SINGLEIMAGECKS_CKSENTRY = _descriptor.Descriptor(
   name='CksEntry',
-  full_name='mir.command130.SingleImageCks.CksEntry',
+  full_name='mir.command200.SingleImageCks.CksEntry',
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
   create_key=_descriptor._internal_create_key,
   fields=[
     _descriptor.FieldDescriptor(
-      name='key', full_name='mir.command130.SingleImageCks.CksEntry.key', index=0,
+      name='key', full_name='mir.command200.SingleImageCks.CksEntry.key', index=0,
       number=1, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=b"".decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='value', full_name='mir.command130.SingleImageCks.CksEntry.value', index=1,
+      name='value', full_name='mir.command200.SingleImageCks.CksEntry.value', index=1,
       number=2, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=b"".decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
@@ -1118,21 +1158,21 @@ _SINGLEIMAGECKS_CKSENTRY = _descriptor.Descriptor(
 
 _SINGLEIMAGECKS = _descriptor.Descriptor(
   name='SingleImageCks',
-  full_name='mir.command130.SingleImageCks',
+  full_name='mir.command200.SingleImageCks',
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
   create_key=_descriptor._internal_create_key,
   fields=[
     _descriptor.FieldDescriptor(
-      name='cks', full_name='mir.command130.SingleImageCks.cks', index=0,
+      name='cks', full_name='mir.command200.SingleImageCks.cks', index=0,
       number=1, type=11, cpp_type=10, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='image_quality', full_name='mir.command130.SingleImageCks.image_quality', index=1,
+      name='image_quality', full_name='mir.command200.SingleImageCks.image_quality', index=1,
       number=2, type=2, cpp_type=6, label=1,
       has_default_value=False, default_value=float(0),
       message_type=None, enum_type=None, containing_type=None,
@@ -1157,28 +1197,28 @@ _SINGLEIMAGECKS = _descriptor.Descriptor(
 
 _MASKANNOTATION = _descriptor.Descriptor(
   name='MaskAnnotation',
-  full_name='mir.command130.MaskAnnotation',
+  full_name='mir.command200.MaskAnnotation',
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
   create_key=_descriptor._internal_create_key,
   fields=[
     _descriptor.FieldDescriptor(
-      name='semantic_mask', full_name='mir.command130.MaskAnnotation.semantic_mask', index=0,
+      name='semantic_mask', full_name='mir.command200.MaskAnnotation.semantic_mask', index=0,
       number=1, type=12, cpp_type=9, label=1,
       has_default_value=False, default_value=b"",
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='instance_mask', full_name='mir.command130.MaskAnnotation.instance_mask', index=1,
+      name='instance_mask', full_name='mir.command200.MaskAnnotation.instance_mask', index=1,
       number=2, type=12, cpp_type=9, label=1,
       has_default_value=False, default_value=b"",
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='object_ids', full_name='mir.command130.MaskAnnotation.object_ids', index=2,
+      name='object_ids', full_name='mir.command200.MaskAnnotation.object_ids', index=2,
       number=3, type=5, cpp_type=1, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
@@ -1203,21 +1243,21 @@ _MASKANNOTATION = _descriptor.Descriptor(
 
 _OBJECTANNOTATION_TAGSENTRY = _descriptor.Descriptor(
   name='TagsEntry',
-  full_name='mir.command130.ObjectAnnotation.TagsEntry',
+  full_name='mir.command200.ObjectAnnotation.TagsEntry',
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
   create_key=_descriptor._internal_create_key,
   fields=[
     _descriptor.FieldDescriptor(
-      name='key', full_name='mir.command130.ObjectAnnotation.TagsEntry.key', index=0,
+      name='key', full_name='mir.command200.ObjectAnnotation.TagsEntry.key', index=0,
       number=1, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=b"".decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='value', full_name='mir.command130.ObjectAnnotation.TagsEntry.value', index=1,
+      name='value', full_name='mir.command200.ObjectAnnotation.TagsEntry.value', index=1,
       number=2, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=b"".decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
@@ -1241,77 +1281,77 @@ _OBJECTANNOTATION_TAGSENTRY = _descriptor.Descriptor(
 
 _OBJECTANNOTATION = _descriptor.Descriptor(
   name='ObjectAnnotation',
-  full_name='mir.command130.ObjectAnnotation',
+  full_name='mir.command200.ObjectAnnotation',
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
   create_key=_descriptor._internal_create_key,
   fields=[
     _descriptor.FieldDescriptor(
-      name='index', full_name='mir.command130.ObjectAnnotation.index', index=0,
+      name='index', full_name='mir.command200.ObjectAnnotation.index', index=0,
       number=1, type=5, cpp_type=1, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='box', full_name='mir.command130.ObjectAnnotation.box', index=1,
+      name='box', full_name='mir.command200.ObjectAnnotation.box', index=1,
       number=2, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='class_id', full_name='mir.command130.ObjectAnnotation.class_id', index=2,
+      name='class_id', full_name='mir.command200.ObjectAnnotation.class_id', index=2,
       number=3, type=5, cpp_type=1, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='score', full_name='mir.command130.ObjectAnnotation.score', index=3,
+      name='score', full_name='mir.command200.ObjectAnnotation.score', index=3,
       number=4, type=1, cpp_type=5, label=1,
       has_default_value=False, default_value=float(0),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='anno_quality', full_name='mir.command130.ObjectAnnotation.anno_quality', index=4,
+      name='anno_quality', full_name='mir.command200.ObjectAnnotation.anno_quality', index=4,
       number=5, type=2, cpp_type=6, label=1,
       has_default_value=False, default_value=float(0),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='tags', full_name='mir.command130.ObjectAnnotation.tags', index=5,
+      name='tags', full_name='mir.command200.ObjectAnnotation.tags', index=5,
       number=6, type=11, cpp_type=10, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='cm', full_name='mir.command130.ObjectAnnotation.cm', index=6,
+      name='cm', full_name='mir.command200.ObjectAnnotation.cm', index=6,
       number=7, type=14, cpp_type=8, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='det_link_id', full_name='mir.command130.ObjectAnnotation.det_link_id', index=7,
+      name='det_link_id', full_name='mir.command200.ObjectAnnotation.det_link_id', index=7,
       number=8, type=5, cpp_type=1, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='class_name', full_name='mir.command130.ObjectAnnotation.class_name', index=8,
+      name='class_name', full_name='mir.command200.ObjectAnnotation.class_name', index=8,
       number=9, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=b"".decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='polygon', full_name='mir.command130.ObjectAnnotation.polygon', index=9,
+      name='polygon', full_name='mir.command200.ObjectAnnotation.polygon', index=9,
       number=10, type=11, cpp_type=10, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
@@ -1336,42 +1376,42 @@ _OBJECTANNOTATION = _descriptor.Descriptor(
 
 _RECT = _descriptor.Descriptor(
   name='Rect',
-  full_name='mir.command130.Rect',
+  full_name='mir.command200.Rect',
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
   create_key=_descriptor._internal_create_key,
   fields=[
     _descriptor.FieldDescriptor(
-      name='x', full_name='mir.command130.Rect.x', index=0,
+      name='x', full_name='mir.command200.Rect.x', index=0,
       number=1, type=5, cpp_type=1, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='y', full_name='mir.command130.Rect.y', index=1,
+      name='y', full_name='mir.command200.Rect.y', index=1,
       number=2, type=5, cpp_type=1, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='w', full_name='mir.command130.Rect.w', index=2,
+      name='w', full_name='mir.command200.Rect.w', index=2,
       number=3, type=5, cpp_type=1, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='h', full_name='mir.command130.Rect.h', index=3,
+      name='h', full_name='mir.command200.Rect.h', index=3,
       number=4, type=5, cpp_type=1, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='rotate_angle', full_name='mir.command130.Rect.rotate_angle', index=4,
+      name='rotate_angle', full_name='mir.command200.Rect.rotate_angle', index=4,
       number=5, type=2, cpp_type=6, label=1,
       has_default_value=False, default_value=float(0),
       message_type=None, enum_type=None, containing_type=None,
@@ -1396,21 +1436,21 @@ _RECT = _descriptor.Descriptor(
 
 _MIRKEYWORDS_CKIDXENTRY = _descriptor.Descriptor(
   name='CkIdxEntry',
-  full_name='mir.command130.MirKeywords.CkIdxEntry',
+  full_name='mir.command200.MirKeywords.CkIdxEntry',
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
   create_key=_descriptor._internal_create_key,
   fields=[
     _descriptor.FieldDescriptor(
-      name='key', full_name='mir.command130.MirKeywords.CkIdxEntry.key', index=0,
+      name='key', full_name='mir.command200.MirKeywords.CkIdxEntry.key', index=0,
       number=1, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=b"".decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='value', full_name='mir.command130.MirKeywords.CkIdxEntry.value', index=1,
+      name='value', full_name='mir.command200.MirKeywords.CkIdxEntry.value', index=1,
       number=2, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
@@ -1434,28 +1474,28 @@ _MIRKEYWORDS_CKIDXENTRY = _descriptor.Descriptor(
 
 _MIRKEYWORDS = _descriptor.Descriptor(
   name='MirKeywords',
-  full_name='mir.command130.MirKeywords',
+  full_name='mir.command200.MirKeywords',
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
   create_key=_descriptor._internal_create_key,
   fields=[
     _descriptor.FieldDescriptor(
-      name='pred_idx', full_name='mir.command130.MirKeywords.pred_idx', index=0,
+      name='pred_idx', full_name='mir.command200.MirKeywords.pred_idx', index=0,
       number=7, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='gt_idx', full_name='mir.command130.MirKeywords.gt_idx', index=1,
+      name='gt_idx', full_name='mir.command200.MirKeywords.gt_idx', index=1,
       number=8, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='ck_idx', full_name='mir.command130.MirKeywords.ck_idx', index=2,
+      name='ck_idx', full_name='mir.command200.MirKeywords.ck_idx', index=2,
       number=9, type=11, cpp_type=10, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
@@ -1480,21 +1520,21 @@ _MIRKEYWORDS = _descriptor.Descriptor(
 
 _CITAGTOINDEX_CISENTRY = _descriptor.Descriptor(
   name='CisEntry',
-  full_name='mir.command130.CiTagToIndex.CisEntry',
+  full_name='mir.command200.CiTagToIndex.CisEntry',
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
   create_key=_descriptor._internal_create_key,
   fields=[
     _descriptor.FieldDescriptor(
-      name='key', full_name='mir.command130.CiTagToIndex.CisEntry.key', index=0,
+      name='key', full_name='mir.command200.CiTagToIndex.CisEntry.key', index=0,
       number=1, type=5, cpp_type=1, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='value', full_name='mir.command130.CiTagToIndex.CisEntry.value', index=1,
+      name='value', full_name='mir.command200.CiTagToIndex.CisEntry.value', index=1,
       number=2, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
@@ -1518,21 +1558,21 @@ _CITAGTOINDEX_CISENTRY = _descriptor.Descriptor(
 
 _CITAGTOINDEX_TAGSENTRY = _descriptor.Descriptor(
   name='TagsEntry',
-  full_name='mir.command130.CiTagToIndex.TagsEntry',
+  full_name='mir.command200.CiTagToIndex.TagsEntry',
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
   create_key=_descriptor._internal_create_key,
   fields=[
     _descriptor.FieldDescriptor(
-      name='key', full_name='mir.command130.CiTagToIndex.TagsEntry.key', index=0,
+      name='key', full_name='mir.command200.CiTagToIndex.TagsEntry.key', index=0,
       number=1, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=b"".decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='value', full_name='mir.command130.CiTagToIndex.TagsEntry.value', index=1,
+      name='value', full_name='mir.command200.CiTagToIndex.TagsEntry.value', index=1,
       number=2, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
@@ -1556,21 +1596,21 @@ _CITAGTOINDEX_TAGSENTRY = _descriptor.Descriptor(
 
 _CITAGTOINDEX = _descriptor.Descriptor(
   name='CiTagToIndex',
-  full_name='mir.command130.CiTagToIndex',
+  full_name='mir.command200.CiTagToIndex',
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
   create_key=_descriptor._internal_create_key,
   fields=[
     _descriptor.FieldDescriptor(
-      name='cis', full_name='mir.command130.CiTagToIndex.cis', index=0,
+      name='cis', full_name='mir.command200.CiTagToIndex.cis', index=0,
       number=1, type=11, cpp_type=10, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='tags', full_name='mir.command130.CiTagToIndex.tags', index=1,
+      name='tags', full_name='mir.command200.CiTagToIndex.tags', index=1,
       number=2, type=11, cpp_type=10, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
@@ -1595,14 +1635,14 @@ _CITAGTOINDEX = _descriptor.Descriptor(
 
 _STRINGLIST = _descriptor.Descriptor(
   name='StringList',
-  full_name='mir.command130.StringList',
+  full_name='mir.command200.StringList',
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
   create_key=_descriptor._internal_create_key,
   fields=[
     _descriptor.FieldDescriptor(
-      name='asset_ids', full_name='mir.command130.StringList.asset_ids', index=0,
+      name='asset_ids', full_name='mir.command200.StringList.asset_ids', index=0,
       number=1, type=9, cpp_type=9, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
@@ -1627,21 +1667,21 @@ _STRINGLIST = _descriptor.Descriptor(
 
 _MAPSTRINGTOINT32LIST_KEYIDSENTRY = _descriptor.Descriptor(
   name='KeyIdsEntry',
-  full_name='mir.command130.MapStringToInt32List.KeyIdsEntry',
+  full_name='mir.command200.MapStringToInt32List.KeyIdsEntry',
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
   create_key=_descriptor._internal_create_key,
   fields=[
     _descriptor.FieldDescriptor(
-      name='key', full_name='mir.command130.MapStringToInt32List.KeyIdsEntry.key', index=0,
+      name='key', full_name='mir.command200.MapStringToInt32List.KeyIdsEntry.key', index=0,
       number=1, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=b"".decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='value', full_name='mir.command130.MapStringToInt32List.KeyIdsEntry.value', index=1,
+      name='value', full_name='mir.command200.MapStringToInt32List.KeyIdsEntry.value', index=1,
       number=2, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
@@ -1665,14 +1705,14 @@ _MAPSTRINGTOINT32LIST_KEYIDSENTRY = _descriptor.Descriptor(
 
 _MAPSTRINGTOINT32LIST = _descriptor.Descriptor(
   name='MapStringToInt32List',
-  full_name='mir.command130.MapStringToInt32List',
+  full_name='mir.command200.MapStringToInt32List',
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
   create_key=_descriptor._internal_create_key,
   fields=[
     _descriptor.FieldDescriptor(
-      name='key_ids', full_name='mir.command130.MapStringToInt32List.key_ids', index=0,
+      name='key_ids', full_name='mir.command200.MapStringToInt32List.key_ids', index=0,
       number=1, type=11, cpp_type=10, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
@@ -1697,14 +1737,14 @@ _MAPSTRINGTOINT32LIST = _descriptor.Descriptor(
 
 _INT32LIST = _descriptor.Descriptor(
   name='Int32List',
-  full_name='mir.command130.Int32List',
+  full_name='mir.command200.Int32List',
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
   create_key=_descriptor._internal_create_key,
   fields=[
     _descriptor.FieldDescriptor(
-      name='ids', full_name='mir.command130.Int32List.ids', index=0,
+      name='ids', full_name='mir.command200.Int32List.ids', index=0,
       number=1, type=5, cpp_type=1, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
@@ -1729,21 +1769,21 @@ _INT32LIST = _descriptor.Descriptor(
 
 _ASSETANNOINDEX_ASSETANNOSENTRY = _descriptor.Descriptor(
   name='AssetAnnosEntry',
-  full_name='mir.command130.AssetAnnoIndex.AssetAnnosEntry',
+  full_name='mir.command200.AssetAnnoIndex.AssetAnnosEntry',
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
   create_key=_descriptor._internal_create_key,
   fields=[
     _descriptor.FieldDescriptor(
-      name='key', full_name='mir.command130.AssetAnnoIndex.AssetAnnosEntry.key', index=0,
+      name='key', full_name='mir.command200.AssetAnnoIndex.AssetAnnosEntry.key', index=0,
       number=1, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=b"".decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='value', full_name='mir.command130.AssetAnnoIndex.AssetAnnosEntry.value', index=1,
+      name='value', full_name='mir.command200.AssetAnnoIndex.AssetAnnosEntry.value', index=1,
       number=2, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
@@ -1767,21 +1807,21 @@ _ASSETANNOINDEX_ASSETANNOSENTRY = _descriptor.Descriptor(
 
 _ASSETANNOINDEX_SUBINDEXESENTRY = _descriptor.Descriptor(
   name='SubIndexesEntry',
-  full_name='mir.command130.AssetAnnoIndex.SubIndexesEntry',
+  full_name='mir.command200.AssetAnnoIndex.SubIndexesEntry',
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
   create_key=_descriptor._internal_create_key,
   fields=[
     _descriptor.FieldDescriptor(
-      name='key', full_name='mir.command130.AssetAnnoIndex.SubIndexesEntry.key', index=0,
+      name='key', full_name='mir.command200.AssetAnnoIndex.SubIndexesEntry.key', index=0,
       number=1, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=b"".decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='value', full_name='mir.command130.AssetAnnoIndex.SubIndexesEntry.value', index=1,
+      name='value', full_name='mir.command200.AssetAnnoIndex.SubIndexesEntry.value', index=1,
       number=2, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
@@ -1805,21 +1845,21 @@ _ASSETANNOINDEX_SUBINDEXESENTRY = _descriptor.Descriptor(
 
 _ASSETANNOINDEX = _descriptor.Descriptor(
   name='AssetAnnoIndex',
-  full_name='mir.command130.AssetAnnoIndex',
+  full_name='mir.command200.AssetAnnoIndex',
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
   create_key=_descriptor._internal_create_key,
   fields=[
     _descriptor.FieldDescriptor(
-      name='asset_annos', full_name='mir.command130.AssetAnnoIndex.asset_annos', index=0,
+      name='asset_annos', full_name='mir.command200.AssetAnnoIndex.asset_annos', index=0,
       number=1, type=11, cpp_type=10, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='sub_indexes', full_name='mir.command130.AssetAnnoIndex.sub_indexes', index=1,
+      name='sub_indexes', full_name='mir.command200.AssetAnnoIndex.sub_indexes', index=1,
       number=2, type=11, cpp_type=10, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
@@ -1844,21 +1884,21 @@ _ASSETANNOINDEX = _descriptor.Descriptor(
 
 _MIRTASKS_TASKSENTRY = _descriptor.Descriptor(
   name='TasksEntry',
-  full_name='mir.command130.MirTasks.TasksEntry',
+  full_name='mir.command200.MirTasks.TasksEntry',
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
   create_key=_descriptor._internal_create_key,
   fields=[
     _descriptor.FieldDescriptor(
-      name='key', full_name='mir.command130.MirTasks.TasksEntry.key', index=0,
+      name='key', full_name='mir.command200.MirTasks.TasksEntry.key', index=0,
       number=1, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=b"".decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='value', full_name='mir.command130.MirTasks.TasksEntry.value', index=1,
+      name='value', full_name='mir.command200.MirTasks.TasksEntry.value', index=1,
       number=2, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
@@ -1882,21 +1922,21 @@ _MIRTASKS_TASKSENTRY = _descriptor.Descriptor(
 
 _MIRTASKS = _descriptor.Descriptor(
   name='MirTasks',
-  full_name='mir.command130.MirTasks',
+  full_name='mir.command200.MirTasks',
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
   create_key=_descriptor._internal_create_key,
   fields=[
     _descriptor.FieldDescriptor(
-      name='tasks', full_name='mir.command130.MirTasks.tasks', index=0,
+      name='tasks', full_name='mir.command200.MirTasks.tasks', index=0,
       number=1, type=11, cpp_type=10, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='head_task_id', full_name='mir.command130.MirTasks.head_task_id', index=1,
+      name='head_task_id', full_name='mir.command200.MirTasks.head_task_id', index=1,
       number=2, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=b"".decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
@@ -1921,21 +1961,21 @@ _MIRTASKS = _descriptor.Descriptor(
 
 _TASK_NEWTYPESENTRY = _descriptor.Descriptor(
   name='NewTypesEntry',
-  full_name='mir.command130.Task.NewTypesEntry',
+  full_name='mir.command200.Task.NewTypesEntry',
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
   create_key=_descriptor._internal_create_key,
   fields=[
     _descriptor.FieldDescriptor(
-      name='key', full_name='mir.command130.Task.NewTypesEntry.key', index=0,
+      name='key', full_name='mir.command200.Task.NewTypesEntry.key', index=0,
       number=1, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=b"".decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='value', full_name='mir.command130.Task.NewTypesEntry.value', index=1,
+      name='value', full_name='mir.command200.Task.NewTypesEntry.value', index=1,
       number=2, type=5, cpp_type=1, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
@@ -1959,112 +1999,112 @@ _TASK_NEWTYPESENTRY = _descriptor.Descriptor(
 
 _TASK = _descriptor.Descriptor(
   name='Task',
-  full_name='mir.command130.Task',
+  full_name='mir.command200.Task',
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
   create_key=_descriptor._internal_create_key,
   fields=[
     _descriptor.FieldDescriptor(
-      name='type', full_name='mir.command130.Task.type', index=0,
+      name='type', full_name='mir.command200.Task.type', index=0,
       number=1, type=14, cpp_type=8, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='name', full_name='mir.command130.Task.name', index=1,
+      name='name', full_name='mir.command200.Task.name', index=1,
       number=2, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=b"".decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='task_id', full_name='mir.command130.Task.task_id', index=2,
+      name='task_id', full_name='mir.command200.Task.task_id', index=2,
       number=3, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=b"".decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='timestamp', full_name='mir.command130.Task.timestamp', index=3,
-      number=5, type=3, cpp_type=2, label=1,
+      name='timestamp', full_name='mir.command200.Task.timestamp', index=3,
+      number=5, type=5, cpp_type=1, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='model', full_name='mir.command130.Task.model', index=4,
+      name='model', full_name='mir.command200.Task.model', index=4,
       number=6, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='return_code', full_name='mir.command130.Task.return_code', index=5,
+      name='return_code', full_name='mir.command200.Task.return_code', index=5,
       number=8, type=5, cpp_type=1, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='return_msg', full_name='mir.command130.Task.return_msg', index=6,
+      name='return_msg', full_name='mir.command200.Task.return_msg', index=6,
       number=9, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=b"".decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='evaluation', full_name='mir.command130.Task.evaluation', index=7,
+      name='evaluation', full_name='mir.command200.Task.evaluation', index=7,
       number=10, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='new_types', full_name='mir.command130.Task.new_types', index=8,
+      name='new_types', full_name='mir.command200.Task.new_types', index=8,
       number=11, type=11, cpp_type=10, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='new_types_added', full_name='mir.command130.Task.new_types_added', index=9,
+      name='new_types_added', full_name='mir.command200.Task.new_types_added', index=9,
       number=12, type=8, cpp_type=7, label=1,
       has_default_value=False, default_value=False,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='serialized_task_parameters', full_name='mir.command130.Task.serialized_task_parameters', index=10,
+      name='serialized_task_parameters', full_name='mir.command200.Task.serialized_task_parameters', index=10,
       number=102, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=b"".decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='serialized_executor_config', full_name='mir.command130.Task.serialized_executor_config', index=11,
+      name='serialized_executor_config', full_name='mir.command200.Task.serialized_executor_config', index=11,
       number=103, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=b"".decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='src_revs', full_name='mir.command130.Task.src_revs', index=12,
+      name='src_revs', full_name='mir.command200.Task.src_revs', index=12,
       number=104, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=b"".decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='dst_rev', full_name='mir.command130.Task.dst_rev', index=13,
+      name='dst_rev', full_name='mir.command200.Task.dst_rev', index=13,
       number=105, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=b"".decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='executor', full_name='mir.command130.Task.executor', index=14,
+      name='executor', full_name='mir.command200.Task.executor', index=14,
       number=106, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=b"".decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
@@ -2089,21 +2129,21 @@ _TASK = _descriptor.Descriptor(
 
 _MODELMETA_STAGESENTRY = _descriptor.Descriptor(
   name='StagesEntry',
-  full_name='mir.command130.ModelMeta.StagesEntry',
+  full_name='mir.command200.ModelMeta.StagesEntry',
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
   create_key=_descriptor._internal_create_key,
   fields=[
     _descriptor.FieldDescriptor(
-      name='key', full_name='mir.command130.ModelMeta.StagesEntry.key', index=0,
+      name='key', full_name='mir.command200.ModelMeta.StagesEntry.key', index=0,
       number=1, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=b"".decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='value', full_name='mir.command130.ModelMeta.StagesEntry.value', index=1,
+      name='value', full_name='mir.command200.ModelMeta.StagesEntry.value', index=1,
       number=2, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
@@ -2127,49 +2167,49 @@ _MODELMETA_STAGESENTRY = _descriptor.Descriptor(
 
 _MODELMETA = _descriptor.Descriptor(
   name='ModelMeta',
-  full_name='mir.command130.ModelMeta',
+  full_name='mir.command200.ModelMeta',
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
   create_key=_descriptor._internal_create_key,
   fields=[
     _descriptor.FieldDescriptor(
-      name='model_hash', full_name='mir.command130.ModelMeta.model_hash', index=0,
+      name='model_hash', full_name='mir.command200.ModelMeta.model_hash', index=0,
       number=1, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=b"".decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='mean_average_precision', full_name='mir.command130.ModelMeta.mean_average_precision', index=1,
+      name='mean_average_precision', full_name='mir.command200.ModelMeta.mean_average_precision', index=1,
       number=2, type=2, cpp_type=6, label=1,
       has_default_value=False, default_value=float(0),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='context', full_name='mir.command130.ModelMeta.context', index=2,
+      name='context', full_name='mir.command200.ModelMeta.context', index=2,
       number=3, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=b"".decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='stages', full_name='mir.command130.ModelMeta.stages', index=3,
+      name='stages', full_name='mir.command200.ModelMeta.stages', index=3,
       number=4, type=11, cpp_type=10, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='best_stage_name', full_name='mir.command130.ModelMeta.best_stage_name', index=4,
+      name='best_stage_name', full_name='mir.command200.ModelMeta.best_stage_name', index=4,
       number=5, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=b"".decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='class_names', full_name='mir.command130.ModelMeta.class_names', index=5,
+      name='class_names', full_name='mir.command200.ModelMeta.class_names', index=5,
       number=6, type=9, cpp_type=9, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
@@ -2194,35 +2234,35 @@ _MODELMETA = _descriptor.Descriptor(
 
 _MODELSTAGE = _descriptor.Descriptor(
   name='ModelStage',
-  full_name='mir.command130.ModelStage',
+  full_name='mir.command200.ModelStage',
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
   create_key=_descriptor._internal_create_key,
   fields=[
     _descriptor.FieldDescriptor(
-      name='stage_name', full_name='mir.command130.ModelStage.stage_name', index=0,
+      name='stage_name', full_name='mir.command200.ModelStage.stage_name', index=0,
       number=1, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=b"".decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='files', full_name='mir.command130.ModelStage.files', index=1,
+      name='files', full_name='mir.command200.ModelStage.files', index=1,
       number=2, type=9, cpp_type=9, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='timestamp', full_name='mir.command130.ModelStage.timestamp', index=2,
-      number=3, type=3, cpp_type=2, label=1,
+      name='timestamp', full_name='mir.command200.ModelStage.timestamp', index=2,
+      number=3, type=5, cpp_type=1, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='mAP', full_name='mir.command130.ModelStage.mAP', index=3,
+      name='mAP', full_name='mir.command200.ModelStage.mAP', index=3,
       number=4, type=2, cpp_type=6, label=1,
       has_default_value=False, default_value=float(0),
       message_type=None, enum_type=None, containing_type=None,
@@ -2247,21 +2287,21 @@ _MODELSTAGE = _descriptor.Descriptor(
 
 _EVALUATION_SUBCKSENTRY = _descriptor.Descriptor(
   name='SubCksEntry',
-  full_name='mir.command130.Evaluation.SubCksEntry',
+  full_name='mir.command200.Evaluation.SubCksEntry',
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
   create_key=_descriptor._internal_create_key,
   fields=[
     _descriptor.FieldDescriptor(
-      name='key', full_name='mir.command130.Evaluation.SubCksEntry.key', index=0,
+      name='key', full_name='mir.command200.Evaluation.SubCksEntry.key', index=0,
       number=1, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=b"".decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='value', full_name='mir.command130.Evaluation.SubCksEntry.value', index=1,
+      name='value', full_name='mir.command200.Evaluation.SubCksEntry.value', index=1,
       number=2, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
@@ -2279,43 +2319,50 @@ _EVALUATION_SUBCKSENTRY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=4579,
-  serialized_end=4665,
+  serialized_start=4627,
+  serialized_end=4713,
 )
 
 _EVALUATION = _descriptor.Descriptor(
   name='Evaluation',
-  full_name='mir.command130.Evaluation',
+  full_name='mir.command200.Evaluation',
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
   create_key=_descriptor._internal_create_key,
   fields=[
     _descriptor.FieldDescriptor(
-      name='config', full_name='mir.command130.Evaluation.config', index=0,
+      name='config', full_name='mir.command200.Evaluation.config', index=0,
       number=1, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='dataset_evaluation', full_name='mir.command130.Evaluation.dataset_evaluation', index=1,
+      name='dataset_evaluation', full_name='mir.command200.Evaluation.dataset_evaluation', index=1,
       number=3, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='main_ck', full_name='mir.command130.Evaluation.main_ck', index=2,
+      name='main_ck', full_name='mir.command200.Evaluation.main_ck', index=2,
       number=4, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='sub_cks', full_name='mir.command130.Evaluation.sub_cks', index=3,
+      name='sub_cks', full_name='mir.command200.Evaluation.sub_cks', index=3,
       number=5, type=11, cpp_type=10, label=3,
       has_default_value=False, default_value=[],
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='state', full_name='mir.command200.Evaluation.state', index=4,
+      number=6, type=14, cpp_type=8, label=1,
+      has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
@@ -2332,48 +2379,48 @@ _EVALUATION = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=4333,
-  serialized_end=4671,
+  serialized_end=4719,
 )
 
 
 _EVALUATECONFIG = _descriptor.Descriptor(
   name='EvaluateConfig',
-  full_name='mir.command130.EvaluateConfig',
+  full_name='mir.command200.EvaluateConfig',
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
   create_key=_descriptor._internal_create_key,
   fields=[
     _descriptor.FieldDescriptor(
-      name='conf_thr', full_name='mir.command130.EvaluateConfig.conf_thr', index=0,
+      name='conf_thr', full_name='mir.command200.EvaluateConfig.conf_thr', index=0,
       number=3, type=2, cpp_type=6, label=1,
       has_default_value=False, default_value=float(0),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='iou_thrs_interval', full_name='mir.command130.EvaluateConfig.iou_thrs_interval', index=1,
+      name='iou_thrs_interval', full_name='mir.command200.EvaluateConfig.iou_thrs_interval', index=1,
       number=4, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=b"".decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='need_pr_curve', full_name='mir.command130.EvaluateConfig.need_pr_curve', index=2,
+      name='need_pr_curve', full_name='mir.command200.EvaluateConfig.need_pr_curve', index=2,
       number=5, type=8, cpp_type=7, label=1,
       has_default_value=False, default_value=False,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='class_ids', full_name='mir.command130.EvaluateConfig.class_ids', index=3,
+      name='class_ids', full_name='mir.command200.EvaluateConfig.class_ids', index=3,
       number=7, type=5, cpp_type=1, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='main_ck', full_name='mir.command130.EvaluateConfig.main_ck', index=4,
+      name='main_ck', full_name='mir.command200.EvaluateConfig.main_ck', index=4,
       number=8, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=b"".decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
@@ -2391,28 +2438,28 @@ _EVALUATECONFIG = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=4674,
-  serialized_end=4812,
+  serialized_start=4722,
+  serialized_end=4860,
 )
 
 
 _SINGLEDATASETEVALUATION_IOUEVALUATIONSENTRY = _descriptor.Descriptor(
   name='IouEvaluationsEntry',
-  full_name='mir.command130.SingleDatasetEvaluation.IouEvaluationsEntry',
+  full_name='mir.command200.SingleDatasetEvaluation.IouEvaluationsEntry',
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
   create_key=_descriptor._internal_create_key,
   fields=[
     _descriptor.FieldDescriptor(
-      name='key', full_name='mir.command130.SingleDatasetEvaluation.IouEvaluationsEntry.key', index=0,
+      name='key', full_name='mir.command200.SingleDatasetEvaluation.IouEvaluationsEntry.key', index=0,
       number=1, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=b"".decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='value', full_name='mir.command130.SingleDatasetEvaluation.IouEvaluationsEntry.value', index=1,
+      name='value', full_name='mir.command200.SingleDatasetEvaluation.IouEvaluationsEntry.value', index=1,
       number=2, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
@@ -2430,34 +2477,34 @@ _SINGLEDATASETEVALUATION_IOUEVALUATIONSENTRY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=5016,
-  serialized_end=5106,
+  serialized_start=5064,
+  serialized_end=5154,
 )
 
 _SINGLEDATASETEVALUATION = _descriptor.Descriptor(
   name='SingleDatasetEvaluation',
-  full_name='mir.command130.SingleDatasetEvaluation',
+  full_name='mir.command200.SingleDatasetEvaluation',
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
   create_key=_descriptor._internal_create_key,
   fields=[
     _descriptor.FieldDescriptor(
-      name='conf_thr', full_name='mir.command130.SingleDatasetEvaluation.conf_thr', index=0,
+      name='conf_thr', full_name='mir.command200.SingleDatasetEvaluation.conf_thr', index=0,
       number=1, type=2, cpp_type=6, label=1,
       has_default_value=False, default_value=float(0),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='iou_evaluations', full_name='mir.command130.SingleDatasetEvaluation.iou_evaluations', index=1,
+      name='iou_evaluations', full_name='mir.command200.SingleDatasetEvaluation.iou_evaluations', index=1,
       number=4, type=11, cpp_type=10, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='iou_averaged_evaluation', full_name='mir.command130.SingleDatasetEvaluation.iou_averaged_evaluation', index=2,
+      name='iou_averaged_evaluation', full_name='mir.command200.SingleDatasetEvaluation.iou_averaged_evaluation', index=2,
       number=5, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
@@ -2475,28 +2522,28 @@ _SINGLEDATASETEVALUATION = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=4815,
-  serialized_end=5118,
+  serialized_start=4863,
+  serialized_end=5166,
 )
 
 
 _SINGLEIOUEVALUATION_CIEVALUATIONSENTRY = _descriptor.Descriptor(
   name='CiEvaluationsEntry',
-  full_name='mir.command130.SingleIouEvaluation.CiEvaluationsEntry',
+  full_name='mir.command200.SingleIouEvaluation.CiEvaluationsEntry',
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
   create_key=_descriptor._internal_create_key,
   fields=[
     _descriptor.FieldDescriptor(
-      name='key', full_name='mir.command130.SingleIouEvaluation.CiEvaluationsEntry.key', index=0,
+      name='key', full_name='mir.command200.SingleIouEvaluation.CiEvaluationsEntry.key', index=0,
       number=1, type=5, cpp_type=1, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='value', full_name='mir.command130.SingleIouEvaluation.CiEvaluationsEntry.value', index=1,
+      name='value', full_name='mir.command200.SingleIouEvaluation.CiEvaluationsEntry.value', index=1,
       number=2, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
@@ -2514,27 +2561,27 @@ _SINGLEIOUEVALUATION_CIEVALUATIONSENTRY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=5297,
-  serialized_end=5390,
+  serialized_start=5345,
+  serialized_end=5438,
 )
 
 _SINGLEIOUEVALUATION = _descriptor.Descriptor(
   name='SingleIouEvaluation',
-  full_name='mir.command130.SingleIouEvaluation',
+  full_name='mir.command200.SingleIouEvaluation',
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
   create_key=_descriptor._internal_create_key,
   fields=[
     _descriptor.FieldDescriptor(
-      name='ci_evaluations', full_name='mir.command130.SingleIouEvaluation.ci_evaluations', index=0,
+      name='ci_evaluations', full_name='mir.command200.SingleIouEvaluation.ci_evaluations', index=0,
       number=1, type=11, cpp_type=10, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='ci_averaged_evaluation', full_name='mir.command130.SingleIouEvaluation.ci_averaged_evaluation', index=1,
+      name='ci_averaged_evaluation', full_name='mir.command200.SingleIouEvaluation.ci_averaged_evaluation', index=1,
       number=2, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
@@ -2552,56 +2599,56 @@ _SINGLEIOUEVALUATION = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=5121,
-  serialized_end=5396,
+  serialized_start=5169,
+  serialized_end=5444,
 )
 
 
 _SINGLEEVALUATIONELEMENT = _descriptor.Descriptor(
   name='SingleEvaluationElement',
-  full_name='mir.command130.SingleEvaluationElement',
+  full_name='mir.command200.SingleEvaluationElement',
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
   create_key=_descriptor._internal_create_key,
   fields=[
     _descriptor.FieldDescriptor(
-      name='ap', full_name='mir.command130.SingleEvaluationElement.ap', index=0,
+      name='ap', full_name='mir.command200.SingleEvaluationElement.ap', index=0,
       number=1, type=2, cpp_type=6, label=1,
       has_default_value=False, default_value=float(0),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='ar', full_name='mir.command130.SingleEvaluationElement.ar', index=1,
+      name='ar', full_name='mir.command200.SingleEvaluationElement.ar', index=1,
       number=2, type=2, cpp_type=6, label=1,
       has_default_value=False, default_value=float(0),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='tp', full_name='mir.command130.SingleEvaluationElement.tp', index=2,
+      name='tp', full_name='mir.command200.SingleEvaluationElement.tp', index=2,
       number=3, type=5, cpp_type=1, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='fp', full_name='mir.command130.SingleEvaluationElement.fp', index=3,
+      name='fp', full_name='mir.command200.SingleEvaluationElement.fp', index=3,
       number=4, type=5, cpp_type=1, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='fn', full_name='mir.command130.SingleEvaluationElement.fn', index=4,
+      name='fn', full_name='mir.command200.SingleEvaluationElement.fn', index=4,
       number=5, type=5, cpp_type=1, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='pr_curve', full_name='mir.command130.SingleEvaluationElement.pr_curve', index=5,
+      name='pr_curve', full_name='mir.command200.SingleEvaluationElement.pr_curve', index=5,
       number=6, type=11, cpp_type=10, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
@@ -2619,35 +2666,35 @@ _SINGLEEVALUATIONELEMENT = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=5399,
-  serialized_end=5530,
+  serialized_start=5447,
+  serialized_end=5578,
 )
 
 
 _INTPOINT = _descriptor.Descriptor(
   name='IntPoint',
-  full_name='mir.command130.IntPoint',
+  full_name='mir.command200.IntPoint',
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
   create_key=_descriptor._internal_create_key,
   fields=[
     _descriptor.FieldDescriptor(
-      name='x', full_name='mir.command130.IntPoint.x', index=0,
+      name='x', full_name='mir.command200.IntPoint.x', index=0,
       number=1, type=5, cpp_type=1, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='y', full_name='mir.command130.IntPoint.y', index=1,
+      name='y', full_name='mir.command200.IntPoint.y', index=1,
       number=2, type=5, cpp_type=1, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='z', full_name='mir.command130.IntPoint.z', index=2,
+      name='z', full_name='mir.command200.IntPoint.z', index=2,
       number=3, type=5, cpp_type=1, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
@@ -2665,35 +2712,35 @@ _INTPOINT = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=5532,
-  serialized_end=5575,
+  serialized_start=5580,
+  serialized_end=5623,
 )
 
 
 _FLOATPOINT = _descriptor.Descriptor(
   name='FloatPoint',
-  full_name='mir.command130.FloatPoint',
+  full_name='mir.command200.FloatPoint',
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
   create_key=_descriptor._internal_create_key,
   fields=[
     _descriptor.FieldDescriptor(
-      name='x', full_name='mir.command130.FloatPoint.x', index=0,
+      name='x', full_name='mir.command200.FloatPoint.x', index=0,
       number=1, type=2, cpp_type=6, label=1,
       has_default_value=False, default_value=float(0),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='y', full_name='mir.command130.FloatPoint.y', index=1,
+      name='y', full_name='mir.command200.FloatPoint.y', index=1,
       number=2, type=2, cpp_type=6, label=1,
       has_default_value=False, default_value=float(0),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='z', full_name='mir.command130.FloatPoint.z', index=2,
+      name='z', full_name='mir.command200.FloatPoint.z', index=2,
       number=3, type=2, cpp_type=6, label=1,
       has_default_value=False, default_value=float(0),
       message_type=None, enum_type=None, containing_type=None,
@@ -2711,28 +2758,28 @@ _FLOATPOINT = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=5577,
-  serialized_end=5622,
+  serialized_start=5625,
+  serialized_end=5670,
 )
 
 
 _MIRCONTEXT_CKSCNTENTRY = _descriptor.Descriptor(
   name='CksCntEntry',
-  full_name='mir.command130.MirContext.CksCntEntry',
+  full_name='mir.command200.MirContext.CksCntEntry',
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
   create_key=_descriptor._internal_create_key,
   fields=[
     _descriptor.FieldDescriptor(
-      name='key', full_name='mir.command130.MirContext.CksCntEntry.key', index=0,
+      name='key', full_name='mir.command200.MirContext.CksCntEntry.key', index=0,
       number=1, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=b"".decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='value', full_name='mir.command130.MirContext.CksCntEntry.value', index=1,
+      name='value', full_name='mir.command200.MirContext.CksCntEntry.value', index=1,
       number=2, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
@@ -2750,48 +2797,48 @@ _MIRCONTEXT_CKSCNTENTRY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=5836,
-  serialized_end=5913,
+  serialized_start=5884,
+  serialized_end=5961,
 )
 
 _MIRCONTEXT = _descriptor.Descriptor(
   name='MirContext',
-  full_name='mir.command130.MirContext',
+  full_name='mir.command200.MirContext',
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
   create_key=_descriptor._internal_create_key,
   fields=[
     _descriptor.FieldDescriptor(
-      name='images_cnt', full_name='mir.command130.MirContext.images_cnt', index=0,
+      name='images_cnt', full_name='mir.command200.MirContext.images_cnt', index=0,
       number=1, type=5, cpp_type=1, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='cks_cnt', full_name='mir.command130.MirContext.cks_cnt', index=1,
+      name='cks_cnt', full_name='mir.command200.MirContext.cks_cnt', index=1,
       number=6, type=11, cpp_type=10, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='total_asset_mbytes', full_name='mir.command130.MirContext.total_asset_mbytes', index=2,
+      name='total_asset_mbytes', full_name='mir.command200.MirContext.total_asset_mbytes', index=2,
       number=11, type=5, cpp_type=1, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='pred_stats', full_name='mir.command130.MirContext.pred_stats', index=3,
+      name='pred_stats', full_name='mir.command200.MirContext.pred_stats', index=3,
       number=100, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='gt_stats', full_name='mir.command130.MirContext.gt_stats', index=4,
+      name='gt_stats', full_name='mir.command200.MirContext.gt_stats', index=4,
       number=101, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
@@ -2809,28 +2856,28 @@ _MIRCONTEXT = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=5625,
-  serialized_end=5967,
+  serialized_start=5673,
+  serialized_end=6015,
 )
 
 
 _SINGLEMAPCOUNT_SUBCNTENTRY = _descriptor.Descriptor(
   name='SubCntEntry',
-  full_name='mir.command130.SingleMapCount.SubCntEntry',
+  full_name='mir.command200.SingleMapCount.SubCntEntry',
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
   create_key=_descriptor._internal_create_key,
   fields=[
     _descriptor.FieldDescriptor(
-      name='key', full_name='mir.command130.SingleMapCount.SubCntEntry.key', index=0,
+      name='key', full_name='mir.command200.SingleMapCount.SubCntEntry.key', index=0,
       number=1, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=b"".decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='value', full_name='mir.command130.SingleMapCount.SubCntEntry.value', index=1,
+      name='value', full_name='mir.command200.SingleMapCount.SubCntEntry.value', index=1,
       number=2, type=5, cpp_type=1, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
@@ -2848,27 +2895,27 @@ _SINGLEMAPCOUNT_SUBCNTENTRY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=6062,
-  serialized_end=6107,
+  serialized_start=6110,
+  serialized_end=6155,
 )
 
 _SINGLEMAPCOUNT = _descriptor.Descriptor(
   name='SingleMapCount',
-  full_name='mir.command130.SingleMapCount',
+  full_name='mir.command200.SingleMapCount',
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
   create_key=_descriptor._internal_create_key,
   fields=[
     _descriptor.FieldDescriptor(
-      name='cnt', full_name='mir.command130.SingleMapCount.cnt', index=0,
+      name='cnt', full_name='mir.command200.SingleMapCount.cnt', index=0,
       number=1, type=5, cpp_type=1, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='sub_cnt', full_name='mir.command130.SingleMapCount.sub_cnt', index=1,
+      name='sub_cnt', full_name='mir.command200.SingleMapCount.sub_cnt', index=1,
       number=2, type=11, cpp_type=10, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
@@ -2886,28 +2933,28 @@ _SINGLEMAPCOUNT = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=5970,
-  serialized_end=6107,
+  serialized_start=6018,
+  serialized_end=6155,
 )
 
 
 _ANNOSTATS_TAGSCNTENTRY = _descriptor.Descriptor(
   name='TagsCntEntry',
-  full_name='mir.command130.AnnoStats.TagsCntEntry',
+  full_name='mir.command200.AnnoStats.TagsCntEntry',
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
   create_key=_descriptor._internal_create_key,
   fields=[
     _descriptor.FieldDescriptor(
-      name='key', full_name='mir.command130.AnnoStats.TagsCntEntry.key', index=0,
+      name='key', full_name='mir.command200.AnnoStats.TagsCntEntry.key', index=0,
       number=1, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=b"".decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='value', full_name='mir.command130.AnnoStats.TagsCntEntry.value', index=1,
+      name='value', full_name='mir.command200.AnnoStats.TagsCntEntry.value', index=1,
       number=2, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
@@ -2925,27 +2972,27 @@ _ANNOSTATS_TAGSCNTENTRY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=6347,
-  serialized_end=6425,
+  serialized_start=6395,
+  serialized_end=6473,
 )
 
 _ANNOSTATS_CLASSIDSCNTENTRY = _descriptor.Descriptor(
   name='ClassIdsCntEntry',
-  full_name='mir.command130.AnnoStats.ClassIdsCntEntry',
+  full_name='mir.command200.AnnoStats.ClassIdsCntEntry',
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
   create_key=_descriptor._internal_create_key,
   fields=[
     _descriptor.FieldDescriptor(
-      name='key', full_name='mir.command130.AnnoStats.ClassIdsCntEntry.key', index=0,
+      name='key', full_name='mir.command200.AnnoStats.ClassIdsCntEntry.key', index=0,
       number=1, type=5, cpp_type=1, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='value', full_name='mir.command130.AnnoStats.ClassIdsCntEntry.value', index=1,
+      name='value', full_name='mir.command200.AnnoStats.ClassIdsCntEntry.value', index=1,
       number=2, type=5, cpp_type=1, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
@@ -2963,55 +3010,55 @@ _ANNOSTATS_CLASSIDSCNTENTRY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=6427,
-  serialized_end=6477,
+  serialized_start=6475,
+  serialized_end=6525,
 )
 
 _ANNOSTATS = _descriptor.Descriptor(
   name='AnnoStats',
-  full_name='mir.command130.AnnoStats',
+  full_name='mir.command200.AnnoStats',
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
   create_key=_descriptor._internal_create_key,
   fields=[
     _descriptor.FieldDescriptor(
-      name='total_cnt', full_name='mir.command130.AnnoStats.total_cnt', index=0,
+      name='total_cnt', full_name='mir.command200.AnnoStats.total_cnt', index=0,
       number=1, type=5, cpp_type=1, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='positive_asset_cnt', full_name='mir.command130.AnnoStats.positive_asset_cnt', index=1,
+      name='positive_asset_cnt', full_name='mir.command200.AnnoStats.positive_asset_cnt', index=1,
       number=2, type=5, cpp_type=1, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='negative_asset_cnt', full_name='mir.command130.AnnoStats.negative_asset_cnt', index=2,
+      name='negative_asset_cnt', full_name='mir.command200.AnnoStats.negative_asset_cnt', index=2,
       number=3, type=5, cpp_type=1, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='tags_cnt', full_name='mir.command130.AnnoStats.tags_cnt', index=3,
+      name='tags_cnt', full_name='mir.command200.AnnoStats.tags_cnt', index=3,
       number=7, type=11, cpp_type=10, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='class_ids_cnt', full_name='mir.command130.AnnoStats.class_ids_cnt', index=4,
+      name='class_ids_cnt', full_name='mir.command200.AnnoStats.class_ids_cnt', index=4,
       number=8, type=11, cpp_type=10, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='eval_class_ids', full_name='mir.command130.AnnoStats.eval_class_ids', index=5,
+      name='eval_class_ids', full_name='mir.command200.AnnoStats.eval_class_ids', index=5,
       number=9, type=5, cpp_type=1, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
@@ -3029,8 +3076,131 @@ _ANNOSTATS = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=6110,
-  serialized_end=6495,
+  serialized_start=6158,
+  serialized_end=6543,
+)
+
+
+_EXPORTCONFIG = _descriptor.Descriptor(
+  name='ExportConfig',
+  full_name='mir.command200.ExportConfig',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  create_key=_descriptor._internal_create_key,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='asset_format', full_name='mir.command200.ExportConfig.asset_format', index=0,
+      number=1, type=14, cpp_type=8, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='asset_dir', full_name='mir.command200.ExportConfig.asset_dir', index=1,
+      number=2, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=b"".decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='asset_index_file', full_name='mir.command200.ExportConfig.asset_index_file', index=2,
+      number=3, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=b"".decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='asset_index_prefix', full_name='mir.command200.ExportConfig.asset_index_prefix', index=3,
+      number=4, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=b"".decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='media_location', full_name='mir.command200.ExportConfig.media_location', index=4,
+      number=5, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=b"".decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='need_sub_folder', full_name='mir.command200.ExportConfig.need_sub_folder', index=5,
+      number=6, type=8, cpp_type=7, label=1,
+      has_default_value=False, default_value=False,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='anno_format', full_name='mir.command200.ExportConfig.anno_format', index=6,
+      number=50, type=14, cpp_type=8, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='gt_dir', full_name='mir.command200.ExportConfig.gt_dir', index=7,
+      number=51, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=b"".decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='gt_index_file', full_name='mir.command200.ExportConfig.gt_index_file', index=8,
+      number=52, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=b"".decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='gt_index_prefix', full_name='mir.command200.ExportConfig.gt_index_prefix', index=9,
+      number=53, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=b"".decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='pred_dir', full_name='mir.command200.ExportConfig.pred_dir', index=10,
+      number=54, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=b"".decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='pred_index_file', full_name='mir.command200.ExportConfig.pred_index_file', index=11,
+      number=55, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=b"".decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='pred_index_prefix', full_name='mir.command200.ExportConfig.pred_index_prefix', index=12,
+      number=56, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=b"".decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='tvt_index_dir', full_name='mir.command200.ExportConfig.tvt_index_dir', index=13,
+      number=57, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=b"".decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=6546,
+  serialized_end=6939,
 )
 
 _MIRMETADATAS_ATTRIBUTESENTRY.fields_by_name['value'].message_type = _METADATAATTRIBUTES
@@ -3099,6 +3269,7 @@ _EVALUATION.fields_by_name['config'].message_type = _EVALUATECONFIG
 _EVALUATION.fields_by_name['dataset_evaluation'].message_type = _SINGLEDATASETEVALUATION
 _EVALUATION.fields_by_name['main_ck'].message_type = _SINGLEDATASETEVALUATION
 _EVALUATION.fields_by_name['sub_cks'].message_type = _EVALUATION_SUBCKSENTRY
+_EVALUATION.fields_by_name['state'].enum_type = _EVALUATIONSTATE
 _SINGLEDATASETEVALUATION_IOUEVALUATIONSENTRY.fields_by_name['value'].message_type = _SINGLEIOUEVALUATION
 _SINGLEDATASETEVALUATION_IOUEVALUATIONSENTRY.containing_type = _SINGLEDATASETEVALUATION
 _SINGLEDATASETEVALUATION.fields_by_name['iou_evaluations'].message_type = _SINGLEDATASETEVALUATION_IOUEVALUATIONSENTRY
@@ -3120,6 +3291,8 @@ _ANNOSTATS_TAGSCNTENTRY.containing_type = _ANNOSTATS
 _ANNOSTATS_CLASSIDSCNTENTRY.containing_type = _ANNOSTATS
 _ANNOSTATS.fields_by_name['tags_cnt'].message_type = _ANNOSTATS_TAGSCNTENTRY
 _ANNOSTATS.fields_by_name['class_ids_cnt'].message_type = _ANNOSTATS_CLASSIDSCNTENTRY
+_EXPORTCONFIG.fields_by_name['asset_format'].enum_type = _ASSETFORMAT
+_EXPORTCONFIG.fields_by_name['anno_format'].enum_type = _ANNOFORMAT
 DESCRIPTOR.message_types_by_name['MirMetadatas'] = _MIRMETADATAS
 DESCRIPTOR.message_types_by_name['MetadataAttributes'] = _METADATAATTRIBUTES
 DESCRIPTOR.message_types_by_name['Timestamp'] = _TIMESTAMP
@@ -3150,6 +3323,7 @@ DESCRIPTOR.message_types_by_name['FloatPoint'] = _FLOATPOINT
 DESCRIPTOR.message_types_by_name['MirContext'] = _MIRCONTEXT
 DESCRIPTOR.message_types_by_name['SingleMapCount'] = _SINGLEMAPCOUNT
 DESCRIPTOR.message_types_by_name['AnnoStats'] = _ANNOSTATS
+DESCRIPTOR.message_types_by_name['ExportConfig'] = _EXPORTCONFIG
 DESCRIPTOR.enum_types_by_name['TvtType'] = _TVTTYPE
 DESCRIPTOR.enum_types_by_name['AssetType'] = _ASSETTYPE
 DESCRIPTOR.enum_types_by_name['TaskType'] = _TASKTYPE
@@ -3160,6 +3334,7 @@ DESCRIPTOR.enum_types_by_name['AnnoFormat'] = _ANNOFORMAT
 DESCRIPTOR.enum_types_by_name['AssetFormat'] = _ASSETFORMAT
 DESCRIPTOR.enum_types_by_name['AnnoType'] = _ANNOTYPE
 DESCRIPTOR.enum_types_by_name['ConfusionMatrixType'] = _CONFUSIONMATRIXTYPE
+DESCRIPTOR.enum_types_by_name['EvaluationState'] = _EVALUATIONSTATE
 _sym_db.RegisterFileDescriptor(DESCRIPTOR)
 
 MirMetadatas = _reflection.GeneratedProtocolMessageType('MirMetadatas', (_message.Message,), {
@@ -3167,12 +3342,12 @@ MirMetadatas = _reflection.GeneratedProtocolMessageType('MirMetadatas', (_messag
   'AttributesEntry' : _reflection.GeneratedProtocolMessageType('AttributesEntry', (_message.Message,), {
     'DESCRIPTOR' : _MIRMETADATAS_ATTRIBUTESENTRY,
     '__module__' : 'mir_command_200_pb2'
-    # @@protoc_insertion_point(class_scope:mir.command130.MirMetadatas.AttributesEntry)
+    # @@protoc_insertion_point(class_scope:mir.command200.MirMetadatas.AttributesEntry)
     })
   ,
   'DESCRIPTOR' : _MIRMETADATAS,
   '__module__' : 'mir_command_200_pb2'
-  # @@protoc_insertion_point(class_scope:mir.command130.MirMetadatas)
+  # @@protoc_insertion_point(class_scope:mir.command200.MirMetadatas)
   })
 _sym_db.RegisterMessage(MirMetadatas)
 _sym_db.RegisterMessage(MirMetadatas.AttributesEntry)
@@ -3180,14 +3355,14 @@ _sym_db.RegisterMessage(MirMetadatas.AttributesEntry)
 MetadataAttributes = _reflection.GeneratedProtocolMessageType('MetadataAttributes', (_message.Message,), {
   'DESCRIPTOR' : _METADATAATTRIBUTES,
   '__module__' : 'mir_command_200_pb2'
-  # @@protoc_insertion_point(class_scope:mir.command130.MetadataAttributes)
+  # @@protoc_insertion_point(class_scope:mir.command200.MetadataAttributes)
   })
 _sym_db.RegisterMessage(MetadataAttributes)
 
 Timestamp = _reflection.GeneratedProtocolMessageType('Timestamp', (_message.Message,), {
   'DESCRIPTOR' : _TIMESTAMP,
   '__module__' : 'mir_command_200_pb2'
-  # @@protoc_insertion_point(class_scope:mir.command130.Timestamp)
+  # @@protoc_insertion_point(class_scope:mir.command200.Timestamp)
   })
 _sym_db.RegisterMessage(Timestamp)
 
@@ -3196,12 +3371,12 @@ MirAnnotations = _reflection.GeneratedProtocolMessageType('MirAnnotations', (_me
   'ImageCksEntry' : _reflection.GeneratedProtocolMessageType('ImageCksEntry', (_message.Message,), {
     'DESCRIPTOR' : _MIRANNOTATIONS_IMAGECKSENTRY,
     '__module__' : 'mir_command_200_pb2'
-    # @@protoc_insertion_point(class_scope:mir.command130.MirAnnotations.ImageCksEntry)
+    # @@protoc_insertion_point(class_scope:mir.command200.MirAnnotations.ImageCksEntry)
     })
   ,
   'DESCRIPTOR' : _MIRANNOTATIONS,
   '__module__' : 'mir_command_200_pb2'
-  # @@protoc_insertion_point(class_scope:mir.command130.MirAnnotations)
+  # @@protoc_insertion_point(class_scope:mir.command200.MirAnnotations)
   })
 _sym_db.RegisterMessage(MirAnnotations)
 _sym_db.RegisterMessage(MirAnnotations.ImageCksEntry)
@@ -3211,19 +3386,19 @@ SingleTaskAnnotations = _reflection.GeneratedProtocolMessageType('SingleTaskAnno
   'ImageAnnotationsEntry' : _reflection.GeneratedProtocolMessageType('ImageAnnotationsEntry', (_message.Message,), {
     'DESCRIPTOR' : _SINGLETASKANNOTATIONS_IMAGEANNOTATIONSENTRY,
     '__module__' : 'mir_command_200_pb2'
-    # @@protoc_insertion_point(class_scope:mir.command130.SingleTaskAnnotations.ImageAnnotationsEntry)
+    # @@protoc_insertion_point(class_scope:mir.command200.SingleTaskAnnotations.ImageAnnotationsEntry)
     })
   ,
 
   'MapIdColorEntry' : _reflection.GeneratedProtocolMessageType('MapIdColorEntry', (_message.Message,), {
     'DESCRIPTOR' : _SINGLETASKANNOTATIONS_MAPIDCOLORENTRY,
     '__module__' : 'mir_command_200_pb2'
-    # @@protoc_insertion_point(class_scope:mir.command130.SingleTaskAnnotations.MapIdColorEntry)
+    # @@protoc_insertion_point(class_scope:mir.command200.SingleTaskAnnotations.MapIdColorEntry)
     })
   ,
   'DESCRIPTOR' : _SINGLETASKANNOTATIONS,
   '__module__' : 'mir_command_200_pb2'
-  # @@protoc_insertion_point(class_scope:mir.command130.SingleTaskAnnotations)
+  # @@protoc_insertion_point(class_scope:mir.command200.SingleTaskAnnotations)
   })
 _sym_db.RegisterMessage(SingleTaskAnnotations)
 _sym_db.RegisterMessage(SingleTaskAnnotations.ImageAnnotationsEntry)
@@ -3232,7 +3407,7 @@ _sym_db.RegisterMessage(SingleTaskAnnotations.MapIdColorEntry)
 SingleImageAnnotations = _reflection.GeneratedProtocolMessageType('SingleImageAnnotations', (_message.Message,), {
   'DESCRIPTOR' : _SINGLEIMAGEANNOTATIONS,
   '__module__' : 'mir_command_200_pb2'
-  # @@protoc_insertion_point(class_scope:mir.command130.SingleImageAnnotations)
+  # @@protoc_insertion_point(class_scope:mir.command200.SingleImageAnnotations)
   })
 _sym_db.RegisterMessage(SingleImageAnnotations)
 
@@ -3241,12 +3416,12 @@ SingleImageCks = _reflection.GeneratedProtocolMessageType('SingleImageCks', (_me
   'CksEntry' : _reflection.GeneratedProtocolMessageType('CksEntry', (_message.Message,), {
     'DESCRIPTOR' : _SINGLEIMAGECKS_CKSENTRY,
     '__module__' : 'mir_command_200_pb2'
-    # @@protoc_insertion_point(class_scope:mir.command130.SingleImageCks.CksEntry)
+    # @@protoc_insertion_point(class_scope:mir.command200.SingleImageCks.CksEntry)
     })
   ,
   'DESCRIPTOR' : _SINGLEIMAGECKS,
   '__module__' : 'mir_command_200_pb2'
-  # @@protoc_insertion_point(class_scope:mir.command130.SingleImageCks)
+  # @@protoc_insertion_point(class_scope:mir.command200.SingleImageCks)
   })
 _sym_db.RegisterMessage(SingleImageCks)
 _sym_db.RegisterMessage(SingleImageCks.CksEntry)
@@ -3254,7 +3429,7 @@ _sym_db.RegisterMessage(SingleImageCks.CksEntry)
 MaskAnnotation = _reflection.GeneratedProtocolMessageType('MaskAnnotation', (_message.Message,), {
   'DESCRIPTOR' : _MASKANNOTATION,
   '__module__' : 'mir_command_200_pb2'
-  # @@protoc_insertion_point(class_scope:mir.command130.MaskAnnotation)
+  # @@protoc_insertion_point(class_scope:mir.command200.MaskAnnotation)
   })
 _sym_db.RegisterMessage(MaskAnnotation)
 
@@ -3263,12 +3438,12 @@ ObjectAnnotation = _reflection.GeneratedProtocolMessageType('ObjectAnnotation', 
   'TagsEntry' : _reflection.GeneratedProtocolMessageType('TagsEntry', (_message.Message,), {
     'DESCRIPTOR' : _OBJECTANNOTATION_TAGSENTRY,
     '__module__' : 'mir_command_200_pb2'
-    # @@protoc_insertion_point(class_scope:mir.command130.ObjectAnnotation.TagsEntry)
+    # @@protoc_insertion_point(class_scope:mir.command200.ObjectAnnotation.TagsEntry)
     })
   ,
   'DESCRIPTOR' : _OBJECTANNOTATION,
   '__module__' : 'mir_command_200_pb2'
-  # @@protoc_insertion_point(class_scope:mir.command130.ObjectAnnotation)
+  # @@protoc_insertion_point(class_scope:mir.command200.ObjectAnnotation)
   })
 _sym_db.RegisterMessage(ObjectAnnotation)
 _sym_db.RegisterMessage(ObjectAnnotation.TagsEntry)
@@ -3276,7 +3451,7 @@ _sym_db.RegisterMessage(ObjectAnnotation.TagsEntry)
 Rect = _reflection.GeneratedProtocolMessageType('Rect', (_message.Message,), {
   'DESCRIPTOR' : _RECT,
   '__module__' : 'mir_command_200_pb2'
-  # @@protoc_insertion_point(class_scope:mir.command130.Rect)
+  # @@protoc_insertion_point(class_scope:mir.command200.Rect)
   })
 _sym_db.RegisterMessage(Rect)
 
@@ -3285,12 +3460,12 @@ MirKeywords = _reflection.GeneratedProtocolMessageType('MirKeywords', (_message.
   'CkIdxEntry' : _reflection.GeneratedProtocolMessageType('CkIdxEntry', (_message.Message,), {
     'DESCRIPTOR' : _MIRKEYWORDS_CKIDXENTRY,
     '__module__' : 'mir_command_200_pb2'
-    # @@protoc_insertion_point(class_scope:mir.command130.MirKeywords.CkIdxEntry)
+    # @@protoc_insertion_point(class_scope:mir.command200.MirKeywords.CkIdxEntry)
     })
   ,
   'DESCRIPTOR' : _MIRKEYWORDS,
   '__module__' : 'mir_command_200_pb2'
-  # @@protoc_insertion_point(class_scope:mir.command130.MirKeywords)
+  # @@protoc_insertion_point(class_scope:mir.command200.MirKeywords)
   })
 _sym_db.RegisterMessage(MirKeywords)
 _sym_db.RegisterMessage(MirKeywords.CkIdxEntry)
@@ -3300,19 +3475,19 @@ CiTagToIndex = _reflection.GeneratedProtocolMessageType('CiTagToIndex', (_messag
   'CisEntry' : _reflection.GeneratedProtocolMessageType('CisEntry', (_message.Message,), {
     'DESCRIPTOR' : _CITAGTOINDEX_CISENTRY,
     '__module__' : 'mir_command_200_pb2'
-    # @@protoc_insertion_point(class_scope:mir.command130.CiTagToIndex.CisEntry)
+    # @@protoc_insertion_point(class_scope:mir.command200.CiTagToIndex.CisEntry)
     })
   ,
 
   'TagsEntry' : _reflection.GeneratedProtocolMessageType('TagsEntry', (_message.Message,), {
     'DESCRIPTOR' : _CITAGTOINDEX_TAGSENTRY,
     '__module__' : 'mir_command_200_pb2'
-    # @@protoc_insertion_point(class_scope:mir.command130.CiTagToIndex.TagsEntry)
+    # @@protoc_insertion_point(class_scope:mir.command200.CiTagToIndex.TagsEntry)
     })
   ,
   'DESCRIPTOR' : _CITAGTOINDEX,
   '__module__' : 'mir_command_200_pb2'
-  # @@protoc_insertion_point(class_scope:mir.command130.CiTagToIndex)
+  # @@protoc_insertion_point(class_scope:mir.command200.CiTagToIndex)
   })
 _sym_db.RegisterMessage(CiTagToIndex)
 _sym_db.RegisterMessage(CiTagToIndex.CisEntry)
@@ -3321,7 +3496,7 @@ _sym_db.RegisterMessage(CiTagToIndex.TagsEntry)
 StringList = _reflection.GeneratedProtocolMessageType('StringList', (_message.Message,), {
   'DESCRIPTOR' : _STRINGLIST,
   '__module__' : 'mir_command_200_pb2'
-  # @@protoc_insertion_point(class_scope:mir.command130.StringList)
+  # @@protoc_insertion_point(class_scope:mir.command200.StringList)
   })
 _sym_db.RegisterMessage(StringList)
 
@@ -3330,12 +3505,12 @@ MapStringToInt32List = _reflection.GeneratedProtocolMessageType('MapStringToInt3
   'KeyIdsEntry' : _reflection.GeneratedProtocolMessageType('KeyIdsEntry', (_message.Message,), {
     'DESCRIPTOR' : _MAPSTRINGTOINT32LIST_KEYIDSENTRY,
     '__module__' : 'mir_command_200_pb2'
-    # @@protoc_insertion_point(class_scope:mir.command130.MapStringToInt32List.KeyIdsEntry)
+    # @@protoc_insertion_point(class_scope:mir.command200.MapStringToInt32List.KeyIdsEntry)
     })
   ,
   'DESCRIPTOR' : _MAPSTRINGTOINT32LIST,
   '__module__' : 'mir_command_200_pb2'
-  # @@protoc_insertion_point(class_scope:mir.command130.MapStringToInt32List)
+  # @@protoc_insertion_point(class_scope:mir.command200.MapStringToInt32List)
   })
 _sym_db.RegisterMessage(MapStringToInt32List)
 _sym_db.RegisterMessage(MapStringToInt32List.KeyIdsEntry)
@@ -3343,7 +3518,7 @@ _sym_db.RegisterMessage(MapStringToInt32List.KeyIdsEntry)
 Int32List = _reflection.GeneratedProtocolMessageType('Int32List', (_message.Message,), {
   'DESCRIPTOR' : _INT32LIST,
   '__module__' : 'mir_command_200_pb2'
-  # @@protoc_insertion_point(class_scope:mir.command130.Int32List)
+  # @@protoc_insertion_point(class_scope:mir.command200.Int32List)
   })
 _sym_db.RegisterMessage(Int32List)
 
@@ -3352,19 +3527,19 @@ AssetAnnoIndex = _reflection.GeneratedProtocolMessageType('AssetAnnoIndex', (_me
   'AssetAnnosEntry' : _reflection.GeneratedProtocolMessageType('AssetAnnosEntry', (_message.Message,), {
     'DESCRIPTOR' : _ASSETANNOINDEX_ASSETANNOSENTRY,
     '__module__' : 'mir_command_200_pb2'
-    # @@protoc_insertion_point(class_scope:mir.command130.AssetAnnoIndex.AssetAnnosEntry)
+    # @@protoc_insertion_point(class_scope:mir.command200.AssetAnnoIndex.AssetAnnosEntry)
     })
   ,
 
   'SubIndexesEntry' : _reflection.GeneratedProtocolMessageType('SubIndexesEntry', (_message.Message,), {
     'DESCRIPTOR' : _ASSETANNOINDEX_SUBINDEXESENTRY,
     '__module__' : 'mir_command_200_pb2'
-    # @@protoc_insertion_point(class_scope:mir.command130.AssetAnnoIndex.SubIndexesEntry)
+    # @@protoc_insertion_point(class_scope:mir.command200.AssetAnnoIndex.SubIndexesEntry)
     })
   ,
   'DESCRIPTOR' : _ASSETANNOINDEX,
   '__module__' : 'mir_command_200_pb2'
-  # @@protoc_insertion_point(class_scope:mir.command130.AssetAnnoIndex)
+  # @@protoc_insertion_point(class_scope:mir.command200.AssetAnnoIndex)
   })
 _sym_db.RegisterMessage(AssetAnnoIndex)
 _sym_db.RegisterMessage(AssetAnnoIndex.AssetAnnosEntry)
@@ -3375,12 +3550,12 @@ MirTasks = _reflection.GeneratedProtocolMessageType('MirTasks', (_message.Messag
   'TasksEntry' : _reflection.GeneratedProtocolMessageType('TasksEntry', (_message.Message,), {
     'DESCRIPTOR' : _MIRTASKS_TASKSENTRY,
     '__module__' : 'mir_command_200_pb2'
-    # @@protoc_insertion_point(class_scope:mir.command130.MirTasks.TasksEntry)
+    # @@protoc_insertion_point(class_scope:mir.command200.MirTasks.TasksEntry)
     })
   ,
   'DESCRIPTOR' : _MIRTASKS,
   '__module__' : 'mir_command_200_pb2'
-  # @@protoc_insertion_point(class_scope:mir.command130.MirTasks)
+  # @@protoc_insertion_point(class_scope:mir.command200.MirTasks)
   })
 _sym_db.RegisterMessage(MirTasks)
 _sym_db.RegisterMessage(MirTasks.TasksEntry)
@@ -3390,12 +3565,12 @@ Task = _reflection.GeneratedProtocolMessageType('Task', (_message.Message,), {
   'NewTypesEntry' : _reflection.GeneratedProtocolMessageType('NewTypesEntry', (_message.Message,), {
     'DESCRIPTOR' : _TASK_NEWTYPESENTRY,
     '__module__' : 'mir_command_200_pb2'
-    # @@protoc_insertion_point(class_scope:mir.command130.Task.NewTypesEntry)
+    # @@protoc_insertion_point(class_scope:mir.command200.Task.NewTypesEntry)
     })
   ,
   'DESCRIPTOR' : _TASK,
   '__module__' : 'mir_command_200_pb2'
-  # @@protoc_insertion_point(class_scope:mir.command130.Task)
+  # @@protoc_insertion_point(class_scope:mir.command200.Task)
   })
 _sym_db.RegisterMessage(Task)
 _sym_db.RegisterMessage(Task.NewTypesEntry)
@@ -3405,12 +3580,12 @@ ModelMeta = _reflection.GeneratedProtocolMessageType('ModelMeta', (_message.Mess
   'StagesEntry' : _reflection.GeneratedProtocolMessageType('StagesEntry', (_message.Message,), {
     'DESCRIPTOR' : _MODELMETA_STAGESENTRY,
     '__module__' : 'mir_command_200_pb2'
-    # @@protoc_insertion_point(class_scope:mir.command130.ModelMeta.StagesEntry)
+    # @@protoc_insertion_point(class_scope:mir.command200.ModelMeta.StagesEntry)
     })
   ,
   'DESCRIPTOR' : _MODELMETA,
   '__module__' : 'mir_command_200_pb2'
-  # @@protoc_insertion_point(class_scope:mir.command130.ModelMeta)
+  # @@protoc_insertion_point(class_scope:mir.command200.ModelMeta)
   })
 _sym_db.RegisterMessage(ModelMeta)
 _sym_db.RegisterMessage(ModelMeta.StagesEntry)
@@ -3418,7 +3593,7 @@ _sym_db.RegisterMessage(ModelMeta.StagesEntry)
 ModelStage = _reflection.GeneratedProtocolMessageType('ModelStage', (_message.Message,), {
   'DESCRIPTOR' : _MODELSTAGE,
   '__module__' : 'mir_command_200_pb2'
-  # @@protoc_insertion_point(class_scope:mir.command130.ModelStage)
+  # @@protoc_insertion_point(class_scope:mir.command200.ModelStage)
   })
 _sym_db.RegisterMessage(ModelStage)
 
@@ -3427,12 +3602,12 @@ Evaluation = _reflection.GeneratedProtocolMessageType('Evaluation', (_message.Me
   'SubCksEntry' : _reflection.GeneratedProtocolMessageType('SubCksEntry', (_message.Message,), {
     'DESCRIPTOR' : _EVALUATION_SUBCKSENTRY,
     '__module__' : 'mir_command_200_pb2'
-    # @@protoc_insertion_point(class_scope:mir.command130.Evaluation.SubCksEntry)
+    # @@protoc_insertion_point(class_scope:mir.command200.Evaluation.SubCksEntry)
     })
   ,
   'DESCRIPTOR' : _EVALUATION,
   '__module__' : 'mir_command_200_pb2'
-  # @@protoc_insertion_point(class_scope:mir.command130.Evaluation)
+  # @@protoc_insertion_point(class_scope:mir.command200.Evaluation)
   })
 _sym_db.RegisterMessage(Evaluation)
 _sym_db.RegisterMessage(Evaluation.SubCksEntry)
@@ -3440,7 +3615,7 @@ _sym_db.RegisterMessage(Evaluation.SubCksEntry)
 EvaluateConfig = _reflection.GeneratedProtocolMessageType('EvaluateConfig', (_message.Message,), {
   'DESCRIPTOR' : _EVALUATECONFIG,
   '__module__' : 'mir_command_200_pb2'
-  # @@protoc_insertion_point(class_scope:mir.command130.EvaluateConfig)
+  # @@protoc_insertion_point(class_scope:mir.command200.EvaluateConfig)
   })
 _sym_db.RegisterMessage(EvaluateConfig)
 
@@ -3449,12 +3624,12 @@ SingleDatasetEvaluation = _reflection.GeneratedProtocolMessageType('SingleDatase
   'IouEvaluationsEntry' : _reflection.GeneratedProtocolMessageType('IouEvaluationsEntry', (_message.Message,), {
     'DESCRIPTOR' : _SINGLEDATASETEVALUATION_IOUEVALUATIONSENTRY,
     '__module__' : 'mir_command_200_pb2'
-    # @@protoc_insertion_point(class_scope:mir.command130.SingleDatasetEvaluation.IouEvaluationsEntry)
+    # @@protoc_insertion_point(class_scope:mir.command200.SingleDatasetEvaluation.IouEvaluationsEntry)
     })
   ,
   'DESCRIPTOR' : _SINGLEDATASETEVALUATION,
   '__module__' : 'mir_command_200_pb2'
-  # @@protoc_insertion_point(class_scope:mir.command130.SingleDatasetEvaluation)
+  # @@protoc_insertion_point(class_scope:mir.command200.SingleDatasetEvaluation)
   })
 _sym_db.RegisterMessage(SingleDatasetEvaluation)
 _sym_db.RegisterMessage(SingleDatasetEvaluation.IouEvaluationsEntry)
@@ -3464,12 +3639,12 @@ SingleIouEvaluation = _reflection.GeneratedProtocolMessageType('SingleIouEvaluat
   'CiEvaluationsEntry' : _reflection.GeneratedProtocolMessageType('CiEvaluationsEntry', (_message.Message,), {
     'DESCRIPTOR' : _SINGLEIOUEVALUATION_CIEVALUATIONSENTRY,
     '__module__' : 'mir_command_200_pb2'
-    # @@protoc_insertion_point(class_scope:mir.command130.SingleIouEvaluation.CiEvaluationsEntry)
+    # @@protoc_insertion_point(class_scope:mir.command200.SingleIouEvaluation.CiEvaluationsEntry)
     })
   ,
   'DESCRIPTOR' : _SINGLEIOUEVALUATION,
   '__module__' : 'mir_command_200_pb2'
-  # @@protoc_insertion_point(class_scope:mir.command130.SingleIouEvaluation)
+  # @@protoc_insertion_point(class_scope:mir.command200.SingleIouEvaluation)
   })
 _sym_db.RegisterMessage(SingleIouEvaluation)
 _sym_db.RegisterMessage(SingleIouEvaluation.CiEvaluationsEntry)
@@ -3477,21 +3652,21 @@ _sym_db.RegisterMessage(SingleIouEvaluation.CiEvaluationsEntry)
 SingleEvaluationElement = _reflection.GeneratedProtocolMessageType('SingleEvaluationElement', (_message.Message,), {
   'DESCRIPTOR' : _SINGLEEVALUATIONELEMENT,
   '__module__' : 'mir_command_200_pb2'
-  # @@protoc_insertion_point(class_scope:mir.command130.SingleEvaluationElement)
+  # @@protoc_insertion_point(class_scope:mir.command200.SingleEvaluationElement)
   })
 _sym_db.RegisterMessage(SingleEvaluationElement)
 
 IntPoint = _reflection.GeneratedProtocolMessageType('IntPoint', (_message.Message,), {
   'DESCRIPTOR' : _INTPOINT,
   '__module__' : 'mir_command_200_pb2'
-  # @@protoc_insertion_point(class_scope:mir.command130.IntPoint)
+  # @@protoc_insertion_point(class_scope:mir.command200.IntPoint)
   })
 _sym_db.RegisterMessage(IntPoint)
 
 FloatPoint = _reflection.GeneratedProtocolMessageType('FloatPoint', (_message.Message,), {
   'DESCRIPTOR' : _FLOATPOINT,
   '__module__' : 'mir_command_200_pb2'
-  # @@protoc_insertion_point(class_scope:mir.command130.FloatPoint)
+  # @@protoc_insertion_point(class_scope:mir.command200.FloatPoint)
   })
 _sym_db.RegisterMessage(FloatPoint)
 
@@ -3500,12 +3675,12 @@ MirContext = _reflection.GeneratedProtocolMessageType('MirContext', (_message.Me
   'CksCntEntry' : _reflection.GeneratedProtocolMessageType('CksCntEntry', (_message.Message,), {
     'DESCRIPTOR' : _MIRCONTEXT_CKSCNTENTRY,
     '__module__' : 'mir_command_200_pb2'
-    # @@protoc_insertion_point(class_scope:mir.command130.MirContext.CksCntEntry)
+    # @@protoc_insertion_point(class_scope:mir.command200.MirContext.CksCntEntry)
     })
   ,
   'DESCRIPTOR' : _MIRCONTEXT,
   '__module__' : 'mir_command_200_pb2'
-  # @@protoc_insertion_point(class_scope:mir.command130.MirContext)
+  # @@protoc_insertion_point(class_scope:mir.command200.MirContext)
   })
 _sym_db.RegisterMessage(MirContext)
 _sym_db.RegisterMessage(MirContext.CksCntEntry)
@@ -3515,12 +3690,12 @@ SingleMapCount = _reflection.GeneratedProtocolMessageType('SingleMapCount', (_me
   'SubCntEntry' : _reflection.GeneratedProtocolMessageType('SubCntEntry', (_message.Message,), {
     'DESCRIPTOR' : _SINGLEMAPCOUNT_SUBCNTENTRY,
     '__module__' : 'mir_command_200_pb2'
-    # @@protoc_insertion_point(class_scope:mir.command130.SingleMapCount.SubCntEntry)
+    # @@protoc_insertion_point(class_scope:mir.command200.SingleMapCount.SubCntEntry)
     })
   ,
   'DESCRIPTOR' : _SINGLEMAPCOUNT,
   '__module__' : 'mir_command_200_pb2'
-  # @@protoc_insertion_point(class_scope:mir.command130.SingleMapCount)
+  # @@protoc_insertion_point(class_scope:mir.command200.SingleMapCount)
   })
 _sym_db.RegisterMessage(SingleMapCount)
 _sym_db.RegisterMessage(SingleMapCount.SubCntEntry)
@@ -3530,23 +3705,30 @@ AnnoStats = _reflection.GeneratedProtocolMessageType('AnnoStats', (_message.Mess
   'TagsCntEntry' : _reflection.GeneratedProtocolMessageType('TagsCntEntry', (_message.Message,), {
     'DESCRIPTOR' : _ANNOSTATS_TAGSCNTENTRY,
     '__module__' : 'mir_command_200_pb2'
-    # @@protoc_insertion_point(class_scope:mir.command130.AnnoStats.TagsCntEntry)
+    # @@protoc_insertion_point(class_scope:mir.command200.AnnoStats.TagsCntEntry)
     })
   ,
 
   'ClassIdsCntEntry' : _reflection.GeneratedProtocolMessageType('ClassIdsCntEntry', (_message.Message,), {
     'DESCRIPTOR' : _ANNOSTATS_CLASSIDSCNTENTRY,
     '__module__' : 'mir_command_200_pb2'
-    # @@protoc_insertion_point(class_scope:mir.command130.AnnoStats.ClassIdsCntEntry)
+    # @@protoc_insertion_point(class_scope:mir.command200.AnnoStats.ClassIdsCntEntry)
     })
   ,
   'DESCRIPTOR' : _ANNOSTATS,
   '__module__' : 'mir_command_200_pb2'
-  # @@protoc_insertion_point(class_scope:mir.command130.AnnoStats)
+  # @@protoc_insertion_point(class_scope:mir.command200.AnnoStats)
   })
 _sym_db.RegisterMessage(AnnoStats)
 _sym_db.RegisterMessage(AnnoStats.TagsCntEntry)
 _sym_db.RegisterMessage(AnnoStats.ClassIdsCntEntry)
+
+ExportConfig = _reflection.GeneratedProtocolMessageType('ExportConfig', (_message.Message,), {
+  'DESCRIPTOR' : _EXPORTCONFIG,
+  '__module__' : 'mir_command_200_pb2'
+  # @@protoc_insertion_point(class_scope:mir.command200.ExportConfig)
+  })
+_sym_db.RegisterMessage(ExportConfig)
 
 
 DESCRIPTOR._options = None
