@@ -18,6 +18,7 @@ import RenderProgress from "@/components/common/progress"
 import Terminate from "@/components/task/terminate"
 import Hide from "../common/hide"
 import EditNameBox from "@/components/form/editNameBox"
+import EditDescBox from "@/components/form/editDescBox"
 import { getTensorboardLink } from "@/services/common"
 
 import {
@@ -48,6 +49,7 @@ function Model({ pid, project = {}, iterations, groups, modelList, versions, que
   const terminateRef = useRef(null)
   const generateRerun = useRerunAction()
   const [publish, publishResult] = usePublish()
+  const [editingModel, setEditingModel] = useState({})
 
   /** use effect must put on the top */
   useEffect(() => {
@@ -319,6 +321,12 @@ function Model({ pid, project = {}, iterations, groups, modelList, versions, que
         icon: <WajueIcon />,
       },
       {
+        key: "edit.desc",
+        label: t("common.action.edit.desc"),
+        onclick: () => editDesc(record),
+        icon: <EditIcon />,
+      },
+      {
         key: "stop",
         label: t("task.action.terminate"),
         onclick: () => stop(record),
@@ -422,6 +430,24 @@ function Model({ pid, project = {}, iterations, groups, modelList, versions, que
         })
       )
     }
+  }
+  const saveDescHandle = result => {
+    if (result) {
+      setModelVersions((models) => ({
+        ...models,
+        [result.groupId]: models[result.groupId].map((model) => {
+          if (model.id === result.id) {
+            model.description = result.description
+          }
+          return model
+        })
+      }))
+    }
+  }
+
+  const editDesc = model => {
+    setEditingModel({})
+    setTimeout(() => setEditingModel(model), 0)
   }
 
   const search = (values) => {
@@ -536,6 +562,7 @@ function Model({ pid, project = {}, iterations, groups, modelList, versions, que
         {renderGroups}
       </div>
       <EditNameBox type='model' record={current} max={80} handle={saveNameHandle} />
+      <EditDescBox type='model' record={editingModel} handle={saveDescHandle} />
       <Hide ref={hideRef} type={1} msg='model.action.hide.confirm.content' ok={hideOk} />
       <Terminate ref={terminateRef} ok={terminateOk} />
     </div>

@@ -2,13 +2,13 @@ import { Form, Input } from "antd"
 import t from '@/utils/t'
 
 import EditBox from "./editBox"
-import { Result } from "@/interface/common"
+import { Group } from "@/interface/common"
 import useFetch from "@/hooks/useFetch"
 import { useEffect } from "react"
 
 interface Props {
   type: string,
-  record: Result,
+  record: Group,
   max: number,
   handle?: Function,
 }
@@ -20,7 +20,7 @@ const EditNameBox: React.FC<Props> = ({ type = 'dataset', record, max = 50, hand
 
   useEffect(() => handle && handle(updated), [updated])
 
-  function update(record: Result, values: any) {
+  function update(record: Group, values: any) {
     const fname = values.name.trim()
     if (name === fname) {
       return

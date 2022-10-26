@@ -14,6 +14,7 @@ import { canHide, validDataset } from '@/constants/dataset'
 import CheckProjectDirty from "@/components/common/CheckProjectDirty"
 import StateTag from "@/components/task/stateTag"
 import EditNameBox from "@/components/form/editNameBox"
+import EditDescBox from "@/components/form/editDescBox"
 import Terminate from "@/components/task/terminate"
 import Hide from "../common/hide"
 import RenderProgress from "@/components/common/progress"
@@ -48,6 +49,7 @@ function Datasets({ pid, project = {}, iterations, groups, datasetList, query, v
   const terminateRef = useRef(null)
   const [testingSetIds, setTestingSetIds] = useState([])
   const generateRerun = useRerunAction()
+  const [editingDataset, setEditingDataset] = useState({})
 
   /** use effect must put on the top */
   useEffect(() => {
@@ -281,6 +283,12 @@ function Datasets({ pid, project = {}, iterations, groups, datasetList, query, v
         icon: <CopyIcon />,
       },
       {
+        key: "edit",
+        label: t("common.action.edit.desc"),
+        onclick: () => editDesc(record),
+        icon: <EditIcon />,
+      },
+      {
         key: "stop",
         label: t("task.action.terminate"),
         onclick: () => stop(record),
@@ -440,6 +448,25 @@ function Datasets({ pid, project = {}, iterations, groups, datasetList, query, v
     }
   }
 
+  const saveDescHandle = result => {
+    if (result) {
+      setDatasetVersions((versions) => ({
+        ...versions,
+        [result.groupId]: versions[result.groupId].map((dataset) => {
+          if (dataset.id === result.id) {
+            dataset.description = result.description
+          }
+          return dataset
+        })
+      }))
+    }
+  }
+
+  const editDesc = dataset => {
+    setEditingDataset({})
+    setTimeout(() => setEditingDataset(dataset), 0)
+  }
+
   const add = () => {
     history.push(`/home/project/${pid}/dataset/add`)
   }
@@ -592,6 +619,7 @@ function Datasets({ pid, project = {}, iterations, groups, datasetList, query, v
         </div>
         {renderGroups}
       </div>
+      <EditDescBox record={editingDataset} handle={saveDescHandle} />
       <EditNameBox record={current} max={80} handle={saveNameHandle} />
       <Hide ref={hideRef} ok={hideOk} />
       <Terminate ref={terminateRef} ok={terminateOk} />

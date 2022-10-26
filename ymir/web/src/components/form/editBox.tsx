@@ -1,10 +1,10 @@
 import { useState, useEffect, ComponentProps, ReactComponentElement, ReactChildren } from "react"
 import { Modal, Form, Input } from "antd"
 import t from '@/utils/t'
-import { Result } from "@/interface/common"
+import { Group, Result } from "@/interface/common"
 
 interface Props {
-    record: Result,
+    record: Group | Result,
     update?: Function,
 }
 
