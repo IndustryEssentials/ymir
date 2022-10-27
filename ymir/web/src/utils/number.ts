@@ -5,7 +5,7 @@ export function humanize(num: number | string, digit: number = 2) {
   if (isNaN(n)) {
     return num
   }
-  const fixed = (m: number) => (n > 1000 ? m.toFixed(digit) : String(m))
+  const fixed = (n: number) => (num > 1000 ? n.toFixed(digit) : String(n))
   return humanNumber(n, fixed)
 }
 
