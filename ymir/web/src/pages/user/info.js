@@ -3,7 +3,7 @@ import { connect } from "dva"
 import { Card, Input, Button, Form, Row, Col, List, Modal, message } from "antd"
 
 import t from "@/utils/t"
-import { getRolesLabel } from "@/constants/user"
+import { ROLES, getRolesLabel } from "@/constants/user"
 import Breadcrumbs from "@/components/common/breadcrumb"
 import Uploader from '@/components/form/uploader'
 import { phoneValidate } from "@/components/form/validators"
@@ -33,7 +33,6 @@ function Info({ user, updateUserInfo, validatePwd, modifyPwd, getToken, }) {
         key: 'username', title: t('user.info.list.username'), value: user.username, icon: <UserIcon />,
         action: () => { setUsernameModify(true) }
       },
-      { key: 'role', title: t('user.info.list.role'), value: t(getRolesLabel(user.role)), icon: <UserSettingsIcon /> },
       { key: 'email', title: t('user.info.list.email'), value: user.email, icon: <EmailIcon />, color: 'rgb(233, 192, 28)' },
       {
         key: 'phone', title: t('user.info.list.phone'), value: user.phone, icon: <SmartphoneIcon />,
@@ -135,7 +134,12 @@ function Info({ user, updateUserInfo, validatePwd, modifyPwd, getToken, }) {
           <Col flex={1} md={{ span: 20, justify: 'center' }} lg={{ offset: 6, span: 12 }} xl={{ offset: 4, span: 12, }}>
             <Row className={s.avatarContent} justify='center'>
               <Col flex={1}>
-                <div className={s.avatar}>{user.avatar ? <img src={user.avatar} /> : <UserIcon style={{ color: '#fff', fontSize: 70 }} />}</div>
+                <div className={s.avatar}>
+                  {user.avatar ? <img src={user.avatar} /> : <UserIcon style={{ color: '#fff', fontSize: 70 }} />}
+                  {user.role > ROLES.USER ? <span className={s.admin}>
+                    {t(getRolesLabel(user.role))}
+                  </span> : null}
+                </div>
                 <Uploader
                   onChange={onAvatarOk}
                   format='avatar'

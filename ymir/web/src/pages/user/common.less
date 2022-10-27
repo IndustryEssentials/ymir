@@ -144,18 +144,30 @@
     margin: 20px 0;
     text-align: center;
     .avatar {
+      position: relative;
       margin: 10px auto;
       width: 100px;
       height: 100px;
       background: rgba(0, 0, 0, 0.15);
       border-radius: 200px;
-      overflow: hidden;
+      // overflow: hidden;
       :global(.anticon) {
         line-height: 146px;
       }
       img {
         display: block;
         width: 100px;
+      }
+      .admin {
+        position: absolute;
+        left: 9px;
+        bottom: 0;
+        width: 82px;
+        font-size: 12px;
+        background-color: @btn-primary-bg;
+        line-height: 20px;
+        border-radius: 6px;
+        color: #fff;
       }
     }
   }
