@@ -199,7 +199,8 @@ YMIR平台主要满足用户规模化生产模型的需求，为用户提供良�
 
 1. GPU版本需要GPU，并安装nvidia驱动: [https://www.nvidia.cn/geforce/drivers/](https://www.nvidia.cn/geforce/drivers/)
 
-2. 需要安装docker：
+2. 需要安装 docker 及 docker compose：
+*  docker compose >= 1.29.2, docker >= 20.10
 *  Docker & Docker Compose 安装： [https://docs.docker.com/get-docker/](https://docs.docker.com/get-docker/)
 *  `NVIDIA Docker`安装： [nvidia-docker install-guide](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/install-guide.html#docker)
 
