@@ -98,7 +98,7 @@ def check_sandbox(sandbox_root: str) -> None:
                 if os.path.realpath(repo_labels_path) != user_labels_path:
                     raise SandboxError(
                         error_code=UpdaterErrorCode.INVALID_USER_LABEL_FILE,
-                        error_message=f"Invalid user labels: {user_labels_path} not symlinked to user labels")
+                        error_message=f"Invalid user labels: {repo_labels_path} not symlinked to user labels")
             else:
                 if os.stat(repo_labels_path).st_ino != user_labels_inode:
                     raise SandboxError(
