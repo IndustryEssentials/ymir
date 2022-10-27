@@ -1,17 +1,12 @@
+import humanNumber from 'human-number'
 
-export function humanize(num: number | string) {
-  if (!num) {
-    return 0
+export function humanize(num: number | string, digit: number = 2) {
+  num = Number(num)
+  if (isNaN(num)) {
+    return String(num)
   }
-  if (isNaN(Number(num))) {
-    return num
-  }
-  const units = ['', 'k', 'm', 'b']
-  num = typeof num == 'string' ? parseFloat(num) : num
-  num = num.toLocaleString()
-  const ell = num.match(/,/ig)
-
-  return num.replace(/^(\d+)[,]?.*$/, '$1' + units[ell ? ell.length : 0])
+  const fixed = (n: number) => (n > 1000 ? n.toFixed(digit) : String(n))
+  return humanNumber(num, fixed)
 }
 
 export function randomNumber(count = 6) {
