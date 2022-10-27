@@ -135,7 +135,9 @@ function Info({ user, updateUserInfo, validatePwd, modifyPwd, getToken, }) {
             <Row className={s.avatarContent} justify='center'>
               <Col flex={1}>
                 <div className={s.avatar}>
-                  {user.avatar ? <img src={user.avatar} /> : <UserIcon style={{ color: '#fff', fontSize: 70 }} />}
+                  <div className={s.avatarBox}>
+                  {user.avatar ? <img src={user.avatar} /> : <UserIcon style={{ color: '#fff', fontSize: 80 }} />}
+                  </div>
                   {user.role > ROLES.USER ? <span className={s.admin}>
                     {t(getRolesLabel(user.role))}
                   </span> : null}

@@ -145,22 +145,25 @@
     text-align: center;
     .avatar {
       position: relative;
-      margin: 10px auto;
-      width: 100px;
-      height: 100px;
-      background: rgba(0, 0, 0, 0.15);
-      border-radius: 200px;
-      // overflow: hidden;
-      :global(.anticon) {
-        line-height: 146px;
+      .avatarBox {
+        margin: 10px auto;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+        width: 100px;
+        height: 100px;
+        background: rgba(0, 0, 0, 0.15);
+        border-radius: 200px;
       }
       img {
         display: block;
         width: 100px;
+        height: 100px;
       }
       .admin {
         position: absolute;
-        left: 9px;
+        left: calc(50% - 41px);
         bottom: 0;
         width: 82px;
         font-size: 12px;
