@@ -198,7 +198,7 @@ This chapter contains the installation instructions for YMIR-GUI. If you need to
 
 1.NVIDIA drivers shall be properly installed before installing YMIR. For detailed instructions, see https://www.nvidia.cn/geforce/drivers/.
 
-2. Docker installation:
+2. Docker and Docker Compose installation:
 
 * docker compose >= 1.29.2, docker >= 20.10
 
