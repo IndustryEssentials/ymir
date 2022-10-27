@@ -3,11 +3,12 @@ import { connect } from "dva"
 import { Card, Input, Button, Form, Row, Col, List, Modal, message } from "antd"
 
 import t from "@/utils/t"
+import { getRolesLabel } from "@/constants/user"
 import Breadcrumbs from "@/components/common/breadcrumb"
 import Uploader from '@/components/form/uploader'
 import { phoneValidate } from "@/components/form/validators"
 import s from "./common.less"
-import { EmailIcon, KeyIcon, LockIcon, SmartphoneIcon, UserIcon } from "@/components/common/icons"
+import { EmailIcon, KeyIcon, LockIcon, SmartphoneIcon, UserIcon, UserSettingsIcon } from "@/components/common/icons"
 
 const { useForm } = Form
 
@@ -32,6 +33,7 @@ function Info({ user, updateUserInfo, validatePwd, modifyPwd, getToken, }) {
         key: 'username', title: t('user.info.list.username'), value: user.username, icon: <UserIcon />,
         action: () => { setUsernameModify(true) }
       },
+      { key: 'role', title: t('user.info.list.role'), value: t(getRolesLabel(user.role)), icon: <UserSettingsIcon /> },
       { key: 'email', title: t('user.info.list.email'), value: user.email, icon: <EmailIcon />, color: 'rgb(233, 192, 28)' },
       {
         key: 'phone', title: t('user.info.list.phone'), value: user.phone, icon: <SmartphoneIcon />,
@@ -41,7 +43,6 @@ function Info({ user, updateUserInfo, validatePwd, modifyPwd, getToken, }) {
         key: 'password', title: t('user.info.list.password'), value: '********', icon: <LockIcon />,
         action: () => { setPasswordModify(true) }
       },
-      // { key: 'permission', title: t('user.info.list.permission'), value: 'role', icon: <UserSettingsIcon />, action: () => { } },
     ])
   }
 
@@ -121,7 +122,7 @@ function Info({ user, updateUserInfo, validatePwd, modifyPwd, getToken, }) {
           title={title}
           description={value}
         />
-        {key !== 'email' ? <Button type='link' onClick={action}>{t('common.modify')}</Button> : null}
+        {action ? <Button type='link' onClick={action}>{t('common.modify')}</Button> : null}
       </List.Item>
     )
   }
