@@ -14,7 +14,7 @@ import styles from "./index.less"
 import './menu.less'
 import logo from '@/assets/logo_a.png'
 import { NavHomeIcon, NavModelmanageIcon, NavDatasetIcon, ArrowDownIcon } from '@/components/common/icons'
-import { GithubIcon, UserIcon, NavTaskIcon, FlagIcon, EqualizerIcon, StoreIcon } from "../common/icons"
+import { GithubIcon, UserIcon, NavTaskIcon, FlagIcon, EqualizerIcon, StoreIcon, UserSettingsIcon } from "../common/icons"
 
 const menus = () => [
   {
@@ -121,10 +121,11 @@ function HeaderNav({ simple = false, username, loginout, avatar, role }) {
         <Col style={{ textAlign: "right" }}>
           <Space size={20}>
             <Dropdown overlay={menu} placement="bottomRight">
-              <div className={styles.user}>
+              <div className={`${styles.user} ${role> ROLES.USER ? styles.admin: ''}`}>
                 <span className={styles.avatar}>{avatar ? <img src={avatar} /> : (username || 'Y').charAt(0).toUpperCase()}</span>
                 <span>{username}</span>
                 <ArrowDownIcon />
+                <UserSettingsIcon className={styles.adminIcon} />
               </div>
             </Dropdown>
             <LangBtn />
