@@ -170,7 +170,7 @@ export const homeRoutes = [
     path: "/home/user",
     name: "user",
     component: "@/pages/user/info",
-    title: "keywords.title",
+    title: "user.title",
     pid: 2,
     id: 18,
     breadcrumbLabel: 'breadcrumbs.user.info',
