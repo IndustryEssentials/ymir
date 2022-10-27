@@ -8,7 +8,7 @@ import Breadcrumbs from "@/components/common/breadcrumb"
 import Uploader from '@/components/form/uploader'
 import { phoneValidate } from "@/components/form/validators"
 import s from "./common.less"
-import { EmailIcon, KeyIcon, LockIcon, SmartphoneIcon, UserIcon, UserSettingsIcon } from "@/components/common/icons"
+import { EmailIcon, KeyIcon, LockIcon, SmartphoneIcon, UserIcon } from "@/components/common/icons"
 
 const { useForm } = Form
 
