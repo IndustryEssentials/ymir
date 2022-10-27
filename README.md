@@ -415,7 +415,7 @@ Also check out [MSFT Encoding Style](https://github.com/Microsoft/Recommenders/w
 
 # 6. Design concept
  
-We use the concept of code version control in Git to manage our data and models, use the concept of branches to create new projects so that different tasks on the same set of images can run in parallel. The additions, retrievals, updates, and deletions of datasets and basic operations are created by cgommits to branches. Logically, each commit stores an updated version of the dataset or new model, as well as the metadata of the operation that led to this change. Finally, only the data changes are merged into the main branch. This branch conceptually aggregates all the data annotated by many projects on the platform. Please see [Life of a dataset](https://github.com/IndustryEssentials/ymir/wiki/Life-of-a-dataset) for specific design concepts.
+We use the concept of code version control in Git to manage our data and models, use the concept of branches to create new projects so that different tasks on the same set of images can run in parallel. The additions, retrievals, updates, and deletions of datasets and basic operations are created by commits to branches. Logically, each commit stores an updated version of the dataset or new model, as well as the metadata of the operation that led to this change. Finally, only the data changes are merged into the main branch. This branch conceptually aggregates all the data annotated by many projects on the platform. Please see [Life of a dataset](https://github.com/IndustryEssentials/ymir/wiki/Life-of-a-dataset) for specific design concepts.
 
 # 7. MISC
 
