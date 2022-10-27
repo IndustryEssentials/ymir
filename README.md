@@ -249,7 +249,7 @@ The YMIR-GUI project package is on DockerHub and the steps to install and deploy
 1.  Clone the deployment project YMIR to the local server:
 
   ```sh
-git clone git@github.com:IndustryEssentials/ymir.git
+git clone https://github.com/IndustryEssentials/ymir.git
   ```
 
 2. If there is no available GPU and you need to install CPU mode, please change it to CPU boot mode by modifying the .env file to change the SERVER_RUNTIME parameter to runc:
@@ -383,8 +383,8 @@ $ mir --vesion
 **Mode II. Installation from the source**
 
 ```
-$ git clone --recursive git@github.com:IndustryEssentials/ymir.git
-$ cd ymir/command
+$ git clone --recursive https://github.com/IndustryEssentials/ymir.git
+$ cd ymir/ymir/command
 $ python setup.py clean --all install
 $ mir --version
 ```

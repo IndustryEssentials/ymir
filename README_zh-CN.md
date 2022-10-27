@@ -246,7 +246,7 @@ YMIR-GUI项目包在DockerHub上，安装部署YMIR步骤如下：
 1. 登录Git地址：[https://github.com/IndustryEssentials/ymir](https://github.com/IndustryEssentials/ymir)
 
 将部署项目YMIR下拉到本地服务器，克隆仓库地址命令：
-`git clone git@github.com:IndustryEssentials/ymir.git`
+`git clone https://github.com/IndustryEssentials/ymir.git`
 
 2. 如无可用显卡，用户需要安装CPU模式，请修改为CPU启动模式，修改.env文件将SERVER_RUNTIME参数修改为runc：
 
@@ -361,8 +361,8 @@ $ mir --vesion
 
 ### 方式二：通过源码安装
 ```
-$ git clone --recursive git@github.com:IndustryEssentials/ymir.git
-$ cd ymir/command
+$ git clone --recursive https://github.com/IndustryEssentials/ymir.git
+$ cd ymir/ymir/command
 $ python setup.py clean --all install
 $ mir --version
 ```
