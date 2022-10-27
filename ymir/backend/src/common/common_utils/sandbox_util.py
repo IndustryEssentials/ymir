@@ -6,7 +6,7 @@ from typing import List, Dict, Set
 
 import yaml
 
-from common_utils.version import DEFAULT_YMIR_SRC_VERSION, ymir_salient_version
+from common_utils.version import ymir_salient_version_from_label_file
 from id_definition.error_codes import UpdaterErrorCode
 from id_definition.task_id import IDProto
 
@@ -44,14 +44,11 @@ def detect_sandbox_src_versions(sandbox_root: str) -> List[str]:
     for user_id in user_to_repos:
         user_label_file = os.path.join(sandbox_root, user_id, 'labels.yaml')
         try:
-            with open(user_label_file, 'r') as f:
-                user_label_dict = yaml.safe_load(f)
+            ver = ymir_salient_version_from_label_file(user_label_file)
         except (FileNotFoundError, yaml.YAMLError) as e:
             raise SandboxError(error_code=UpdaterErrorCode.INVALID_USER_LABEL_FILE,
                                error_message=f"invalid label file: {user_label_file}") from e
-
-        ver_to_users[ymir_salient_version(user_label_dict.get('ymir_version',
-                                                              DEFAULT_YMIR_SRC_VERSION))].append(user_id)
+        ver_to_users[ver].append(user_id)
 
     if len(ver_to_users) > 1:
         logging.info(f"[detect_sandbox_src_versions]: multiple sandbox versions detected: {ver_to_users}")
