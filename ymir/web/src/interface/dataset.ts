@@ -29,7 +29,6 @@ export interface Dataset extends Result {
   keywordCount: number,
   isProtected: Boolean,
   assetCount: number,
-  humanizeAssetCount?: string,
   gt?: AnnotationsCount,
   pred?: AnnotationsCount,
   inferClass?: Array<string>,

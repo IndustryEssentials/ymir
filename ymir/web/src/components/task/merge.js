@@ -12,6 +12,7 @@ import MergeType from "./merge/formItem.mergeType"
 import DatasetName from "@/components/form/items/datasetName"
 import Strategy from "./merge/formItem.strategy"
 import SubmitButtons from "./submitButtons"
+import Dataset from '@/components/form/option/Dataset'
 
 import s from "./merge/merge.less"
 
@@ -99,7 +100,7 @@ function Merge({ query = {}, hidden, ok = () => { }, bottom, }) {
         <MergeType disabled={[iterationId ? 0 : null]} initialValue={!iterationId && mid ? 0 : 1} />
         {!type ? <DatasetName /> : null}
         {did ? <Form.Item label={t('task.fusion.form.dataset')}>
-          <span>{dataset.name} {dataset.versionName} (assets: {dataset.assetCount})</span>
+          <Dataset dataset={dataset} />
         </Form.Item> : null}
         {!did && (type || dataset.id) ? <Form.Item name='dataset' label={t('task.fusion.form.dataset')}>
           <DatasetSelect

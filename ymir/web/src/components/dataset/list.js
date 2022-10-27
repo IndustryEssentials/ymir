@@ -5,7 +5,6 @@ import { Link, useHistory, useLocation } from "umi"
 import { Form, Button, Input, Table, Space, Modal, Row, Col, Tooltip, Pagination, message, Popover, } from "antd"
 
 import t from "@/utils/t"
-import { humanize } from "@/utils/number"
 import { diffTime } from '@/utils/date'
 import { getTaskTypeLabel, TASKSTATES, TASKTYPES } from '@/constants/task'
 import { ResultStates } from '@/constants/common'
@@ -20,6 +19,7 @@ import Hide from "../common/hide"
 import RenderProgress from "@/components/common/progress"
 import TypeTag from "@/components/task/typeTag"
 import Actions from "@/components/table/actions"
+import AssetCount from '@/components/dataset/AssetCount'
 
 import {
   ImportIcon, ScreenIcon, TaggingIcon, TrainIcon, VectorIcon, WajueIcon, SearchIcon,
@@ -27,7 +27,6 @@ import {
   CompareListIcon,
 } from "@/components/common/icons"
 import { DescPop } from "../common/descPop"
-import { RefreshIcon } from "../common/icons"
 import useRerunAction from "../../hooks/useRerunAction"
 
 const { confirm } = Modal
@@ -171,7 +170,7 @@ function Datasets({ pid, project = {}, iterations, groups, datasetList, query, v
       {
         title: showTitle("dataset.column.asset_count"),
         dataIndex: "assetCount",
-        render: (num) => humanize(num),
+        render: (num, record) => <AssetCount dataset={record} />,
         sorter: (a, b) => a.assetCount - b.assetCount,
         width: 120,
       },

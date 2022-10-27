@@ -22,6 +22,7 @@ import LiveCodeForm from "@/components/form/items/liveCode"
 import { removeLiveCodeConfig } from "@/components/form/items/liveCodeConfig"
 import DockerConfigForm from "@/components/form/items/dockerConfig"
 import Desc from "@/components/form/desc"
+import Dataset from '@/components/form/option/Dataset'
 
 import commonStyles from "../common.less"
 import styles from "./index.less"
@@ -231,7 +232,7 @@ function Inference({ datasetCache, datasets, ...func }) {
   }, [project.testingSets])
 
   const renderLabel = item => <Row>
-    <Col flex={1}>{item.name} {item.versionName}(assets: {item.assetCount})</Col>
+    <Col flex={1}><Dataset dataset={item} /></Col>
     <Col>{item.isProjectTesting ? t('project.testing.dataset.label') : null}</Col>
   </Row>
 

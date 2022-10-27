@@ -17,6 +17,7 @@ import keywordsItem from "@/components/task/items/keywords"
 import { DescPop } from "../../components/common/descPop"
 import useRerunAction from "../../hooks/useRerunAction"
 import useCardTitle from '@/hooks/useCardTitle'
+import VersionName from '@/components/result/VersionName'
 import EditDescBox from "@/components/form/editDescBox"
 
 const { Item } = Descriptions
@@ -85,7 +86,7 @@ function ModelDetail({ modelCache, getModel }) {
       <Card title={cardTitle}>
         <div className={styles.content}>
           <Descriptions bordered column={2} labelStyle={{ width: '200px' }} title={t('model.detail.title')} className='infoTable'>
-            <Item label={t('model.detail.label.name')}>{model.name} {model.versionName}</Item>
+            <Item label={t('model.detail.label.name')}><VersionName result={model} /></Item>
             {model.hidden ? <Item label={t("common.hidden.label")}>{t('common.state.hidden')}</Item> : null}
             {keywordsItem(model.keywords)}
             <Item label={t('model.detail.label.stage')} span={2}>

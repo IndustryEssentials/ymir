@@ -1,5 +1,5 @@
-import React, { useEffect } from "react"
-import { Button, Col, Popover, Row, Space, Tag } from "antd"
+import React from "react"
+import { Button, Col, Row, Space } from "antd"
 import { Link, useSelector } from "umi"
 
 import t from "@/utils/t"
@@ -7,9 +7,7 @@ import { getStageLabel } from '@/constants/iteration'
 import useFetch from '@/hooks/useFetch'
 
 import s from "../detail.less"
-import SampleRates from "@/components/dataset/sampleRates"
-import { TestingSet } from "./testingSet"
-import { EditIcon, SearchEyeIcon, EyeOffIcon } from "@/components/common/icons"
+import { EditIcon } from "@/components/common/icons"
 import { ArrowDownIcon, ArrowRightIcon } from '@/components/common/icons'
 
 function ProjectDetail({ project = {} }) {
@@ -17,29 +15,6 @@ function ProjectDetail({ project = {} }) {
 
   const unfold = useSelector(({ iteration }) => iteration.actionPanelExpand)
   const [_, toggleActionPanel] = useFetch('iteration/toggleActionPanel', true)
-
-  function renderProjectDatasetLabel() {
-    const getDsName = (ds = {}) => ds.name ? (ds.name + ' ' + (ds.versionName || '')) : ''
-    const maps = [
-      { label: 'project.add.form.training.set', name: getDsName(project.trainSet) },
-      { dataset: project.testSet, label: 'project.add.form.test.set', name: getDsName(project.testSet) },
-      { dataset: project.miningSet, label: 'project.add.form.mining.set', name: getDsName(project.miningSet) },
-    ]
-
-    return maps.map(({ name, label, dataset }) => {
-      return <Col key={label} className={s.ellipsis} span={8} title={name}>
-        <span className={s.datasetTitle}>{t(label)}: </span>{dataset ? renderPop(name, dataset) : name}
-      </Col>
-    })
-  }
-
-  function renderPop(label, dataset = {}) {
-    dataset.project = project
-    const content = <SampleRates keywords={project?.keywords} dataset={dataset} progressWidth={0.4} />
-    return <Popover content={content} overlayInnerStyle={{ minWidth: 500 }}>
-      <Tag className={s.nameTag}>{label}</Tag>
-    </Popover>
-  }
 
   return <div className={s.detailContainer}>
     <Row>

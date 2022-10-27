@@ -4,7 +4,6 @@ import { calDuration, format } from '@/utils/date'
 import { getVersionLabel } from "./common"
 import { BackendData } from "@/interface/common"
 import { Project } from "@/interface/project"
-import { humanize } from "@/utils/number"
 
 export enum states {
   READY = 0,
@@ -82,7 +81,6 @@ export function transferDataset(data: BackendData): Dataset {
     version: data.version_num || 0,
     versionName: getVersionLabel(data.version_num),
     assetCount,
-    humanizeAssetCount: humanize(assetCount),
     keywords,
     keywordCount: keywords.length,
     gt: transferAnnotationsCount(gt, data.negative_info?.gt, assetCount),
