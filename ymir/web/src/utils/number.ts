@@ -1,12 +1,12 @@
 import humanNumber from 'human-number'
 
 export function humanize(num: number | string, digit: number = 2) {
-  num = Number(num)
-  if (isNaN(num)) {
-    return String(num)
+  const n = Number(num)
+  if (isNaN(n)) {
+    return num
   }
-  const fixed = (n: number) => (num > 1000 ? n.toFixed(digit) : String(n))
-  return humanNumber(num, fixed)
+  const fixed = (m: number) => (n > 1000 ? m.toFixed(digit) : String(m))
+  return humanNumber(n, fixed)
 }
 
 export function randomNumber(count = 6) {
