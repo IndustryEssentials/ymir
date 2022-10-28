@@ -41,6 +41,7 @@ function Mining({ query = {}, hidden, ok = () => { }, datasetCache, bottom, ...f
   const [gpu_count, setGPU] = useState(0)
   const [imageHasInference, setImageHasInference] = useState(false)
   const [live, setLiveCode] = useState(false)
+  const [liveInitialValues, setLiveInitialValues] = useState({})
   const [openpai, setOpenpai] = useState(false)
   const [sys, getSysInfo] = useFetch('common/getSysInfo', {})
   const selectOpenpai = Form.useWatch('openpai', form)
@@ -96,8 +97,11 @@ function Mining({ query = {}, hidden, ok = () => { }, datasetCache, bottom, ...f
         description,
       })
       setShowConfig(true)
-
-      setTimeout(() => setConfig(config), 500)
+      if (!HIDDENMODULES.LIVECODE) {
+        setLiveCode(!!config.git_url)
+        setLiveInitialValues(config)
+      }
+      setTimeout(() => setConfig(removeLiveCodeConfig(config)), 500)
 
       history.replace({ state: {} })
     }
@@ -250,7 +254,7 @@ function Mining({ query = {}, hidden, ok = () => { }, datasetCache, bottom, ...f
             <span style={{ marginLeft: 20 }}>{t('task.gpu.tip', { count: gpu_count })}</span>
           </Form.Item>
 
-          <LiveCodeForm form={form} live={live} />
+          <LiveCodeForm form={form} live={live} initialValues={liveInitialValues} />
           <DockerConfigForm form={form} show={showConfig} seniorConfig={seniorConfig} />
           <Desc form={form} />
         </div>

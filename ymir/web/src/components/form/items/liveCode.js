@@ -5,7 +5,7 @@ import { getConfigUrl } from "./liveCodeConfig"
 import { useEffect, useState } from "react"
 
 
-const LiveCodeForm = ({ form, live }) => {
+const LiveCodeForm = ({ form, live, initialValues }) => {
   const url = Form.useWatch(['live', 'git_url'], form)
   const id = Form.useWatch(['live', 'git_branch'], form)
   const config = Form.useWatch(['live', 'code_config'], form)
@@ -23,6 +23,14 @@ const LiveCodeForm = ({ form, live }) => {
       setConfigUrl('')
     }
   }, [url, id, config])
+
+  useEffect(() => {
+    if (initialValues) {
+      form.setFieldsValue({
+        live: initialValues
+      })
+    }
+  }, [initialValues])
 
   return live ? <Panel label={t('task.train.live.title')} toogleVisible={false}>
 
