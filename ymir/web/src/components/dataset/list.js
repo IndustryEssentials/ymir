@@ -26,7 +26,8 @@ import {
   EditIcon, EyeOffIcon, CopyIcon, StopIcon, ArrowDownIcon, ArrowRightIcon, CompareIcon,
   CompareListIcon,
 } from "@/components/common/icons"
-import { DescPop } from "../common/descPop"
+import { DescPop } from "../common/DescPop"
+import { RefreshIcon } from "../common/icons"
 import useRerunAction from "../../hooks/useRerunAction"
 
 const { confirm } = Modal

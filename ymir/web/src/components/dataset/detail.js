@@ -6,7 +6,7 @@ import t from "@/utils/t"
 import { ResultStates } from '@/constants/common'
 import styles from "./detail.less"
 import { SearchIcon } from "@/components/common/icons"
-import { DescPop } from "../common/descPop"
+import { DescPop } from "../common/DescPop"
 
 const { Item } = Descriptions
 const labelStyle = { width: '15%', paddingRight: '20px', justifyContent: 'flex-end' }

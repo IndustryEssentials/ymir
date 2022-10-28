@@ -7,7 +7,7 @@ import { percent } from '@/utils/number'
 import { diffTime } from '@/utils/date'
 import { getRecommendStage, validModel } from '@/constants/model'
 
-import { DescPop } from "@/components/common/descPop"
+import { DescPop } from "@/components/common/DescPop"
 import TypeTag from "@/components/task/typeTag"
 import RenderProgress from "@/components/common/progress"
 import AssetCount from '@/components/dataset/AssetCount'

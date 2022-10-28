@@ -27,7 +27,7 @@ import {
   ArrowDownIcon, ArrowRightIcon, ImportIcon, BarchartIcon
 } from "@/components/common/icons"
 import EditStageCell from "./editStageCell"
-import { DescPop } from "../common/descPop"
+import { DescPop } from "../common/DescPop"
 import useRerunAction from "../../hooks/useRerunAction"
 
 const { useForm } = Form
