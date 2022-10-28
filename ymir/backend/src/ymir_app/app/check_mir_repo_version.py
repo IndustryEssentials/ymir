@@ -16,7 +16,7 @@ def generate_msg_box(msg: str, indent: int = 1, width: Optional[int] = None, tit
     space = " " * indent
     if not width:
         width = max(map(len, lines))
-    box = f'╔{"═" * (width + indent * 2)}╗\n'
+    box = f'\n╔{"═" * (width + indent * 2)}╗\n'
     if title:
         box += f"║{space}{title:<{width}}{space}║\n"
         box += f'║{space}{"-" * len(title):<{width}}{space}║\n'
