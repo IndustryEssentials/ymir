@@ -6,7 +6,7 @@ from typing import List, Dict, Set
 
 import yaml
 
-from common_utils.version import DEFAULT_YMIR_SRC_VERSION
+from common_utils.version import ymir_salient_version_from_label_file
 from id_definition.error_codes import UpdaterErrorCode
 from id_definition.task_id import IDProto
 
@@ -44,13 +44,11 @@ def detect_sandbox_src_versions(sandbox_root: str) -> List[str]:
     for user_id in user_to_repos:
         user_label_file = os.path.join(sandbox_root, user_id, 'labels.yaml')
         try:
-            with open(user_label_file, 'r') as f:
-                user_label_dict = yaml.safe_load(f)
+            ver = ymir_salient_version_from_label_file(user_label_file)
         except (FileNotFoundError, yaml.YAMLError) as e:
             raise SandboxError(error_code=UpdaterErrorCode.INVALID_USER_LABEL_FILE,
                                error_message=f"invalid label file: {user_label_file}") from e
-
-        ver_to_users[user_label_dict.get('ymir_version', DEFAULT_YMIR_SRC_VERSION)].append(user_id)
+        ver_to_users[ver].append(user_id)
 
     if len(ver_to_users) > 1:
         logging.info(f"[detect_sandbox_src_versions]: multiple sandbox versions detected: {ver_to_users}")
@@ -100,7 +98,7 @@ def check_sandbox(sandbox_root: str) -> None:
                 if os.path.realpath(repo_labels_path) != user_labels_path:
                     raise SandboxError(
                         error_code=UpdaterErrorCode.INVALID_USER_LABEL_FILE,
-                        error_message=f"Invalid user labels: {user_labels_path} not symlinked to user labels")
+                        error_message=f"Invalid user labels: {repo_labels_path} not symlinked to user labels")
             else:
                 if os.stat(repo_labels_path).st_ino != user_labels_inode:
                     raise SandboxError(
