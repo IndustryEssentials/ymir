@@ -5,7 +5,7 @@ import { useSelector } from 'umi'
 import t from "@/utils/t"
 
 import s from "./index.less"
-import getColumns from "@components/table/Columns"
+import getColumns from "@/components/table/Columns"
 
 function Panel({ list = [], customColumns, title = '', type = 'dataset' }) {
 
