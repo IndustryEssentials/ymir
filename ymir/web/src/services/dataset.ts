@@ -1,91 +1,164 @@
 import request from "@/utils/request"
+import { AxiosResponse } from "axios"
+
+type QueryParams = {
+  pid?: number,
+  gid?: number,
+  did?: number,
+  type?: number | string,
+  state?: number,
+  name?: string,
+  visible?: boolean,
+  limit?: number,
+  offset?: number,
+  desc?: boolean,
+  orderBy?: 'id' | 'create_datetime' | 'asset_count' | 'source',
+  keywords?: string[],
+}
+
+interface AssetQueryParams extends QueryParams {
+  id: number,
+  cm?: number[],
+  annoType?: number[],
+  type?: string,
+}
+
+interface EvaluationParams extends QueryParams {
+  datasets: number[],
+  confidence: number,
+  iou: number,
+  everageIou: boolean,
+  ck: string,
+}
+
+interface CreateParams {
+  name: string,
+  pid: number,
+  url?: string,
+  did?: number,
+  path?: string,
+  strategy?: number,
+  description?: string,
+}
 
 /** dataset service */
 /**
- *
- * @param {array[number]} id
- * @returns
+ * get dataset 
+ * @export
+ * @param {number} id dataset id
+ * @param {boolean} verbose for more infomation
  */
-export function getDataset(id, verbose) {
+export function getDataset(id: number, verbose: boolean) {
   return request.get(`datasets/${id}`, { params: { verbose } })
 }
 
 /**
- * get dataset versions by group id
- * @param {number} group_id 
- * @returns 
+ * @description get dataset versions by group id
+ * @export
+ * @param {number} gid
  */
-export function getDatasetByGroup(group_id) {
-  return request.get(`datasets/`, { params: { group_id, limit: 10000 } })
+export function getDatasetByGroup(gid: number) {
+  return request.get(`datasets/`, { params: { group_id: gid, limit: 10000 } })
 }
 
 /**
  * get datasets
- * @param {object} param1 {
- *   {number}   project_id
- *   {number}   [group_id]
- *   {number}   [type]        task type
- *   {number}   [state]       dataset state
- *   {string}   [name]        dataset name
- *   {number}   [offset]      query start
- *   {number}   [limit]       query count 
- *   {boolean}  [visible]     default as true
- *   {boolean}  [is_desc]     default as true
- *   {string}   [order_by]    value as: id, create_datetime, asset_count, source. default as id
+ *
+ * @export
+ * @param {QueryParams} {
+ *   pid,
+ *   gid,
+ *   type,
+ *   state,
+ *   name,
+ *   visible = true,
+ *   offset = 0,
+ *   limit = 10,
+ *   desc = true,
+ *   orderBy
  * }
- * @returns 
  */
 export function queryDatasets({
-  project_id,
-  group_id,
+  pid,
+  gid,
   type,
   state,
   name,
   visible = true,
   offset = 0,
   limit = 10,
-  is_desc = true,
-  order_by
-}) {
+  desc = true,
+  orderBy
+}: QueryParams) {
   return request.get("datasets/", {
-    params: { project_id, group_id, type, state, name, offset, limit, is_desc, order_by, visible }
+    params: {
+      project_id: pid,
+      group_id: gid,
+      type,
+      state,
+      name,
+      offset,
+      limit,
+      is_desc: desc,
+      order_by: orderBy,
+      visible
+    }
   })
 }
 /**
  * get dataset groups
- * @param {object} param1 {
- *   {number} project_id 
- *   {string} name dataset name
- *   {number} offset  query start
- *   {number} limit query count 
+ *
+ * @export
+ * @param {number} pid
+ * @param {QueryParams} {
+ *   name, 
+ *   offset = 0, 
+ *   limit = 10 
  * }
- * @returns 
+ * @return {*} 
  */
-export function getDatasetGroups(project_id, { name, offset = 0, limit = 10 }) {
-  return request.get("dataset_groups/", { params: { project_id, name, offset, limit } })
+export function getDatasetGroups(pid: number, {
+  name,
+  offset = 0,
+  limit = 10
+}: QueryParams) {
+  return request.get("dataset_groups/", {
+    params: {
+      project_id: pid, name, offset, limit
+    }
+  })
 }
 
 /**
  * batch getting dataset
- * @param {array<number>} ids dataset ids
- * @param {number} pid project id
- * @param {boolean} ck need ck
- * @returns 
+ *
+ * @export
+ * @param {number} pid
+ * @param {number[]} [ids=[]]
+ * @param {boolean} ck
  */
-export function batchDatasets(pid, ids = [], ck) {
+export function batchDatasets(pid: number, ids: number[] = [], ck: boolean) {
   return request.get('datasets/batch', {
     params: {
       project_id: pid,
-      ids: ids.toString(), 
+      ids: ids.toString(),
       ck,
     }
   })
 }
 
 /**
- * get assets of dataset
- * @param {object} param0 fitler condition
- * @returns
+ * @description get assets of dataset
+ * @export
+ * @param {AssetQueryParams} {
+ *   id,
+ *   type = 'keywords',
+ *   keywords = [],
+ *   cm = [],
+ *   annoType = [],
+ *   offset = 0,
+ *   limit = 20,
+ * }
  */
 export function getAssetsOfDataset({
   id,
@@ -95,7 +168,7 @@ export function getAssetsOfDataset({
   annoType = [],
   offset = 0,
   limit = 20,
-}) {
+}: AssetQueryParams) {
   return request.get(`datasets/${id}/assets`, {
     params: {
       [type]: keywords.toString() || undefined,
@@ -107,16 +180,22 @@ export function getAssetsOfDataset({
   })
 }
 
-export function getAsset(id, hash) {
+/**
+ * @description get asset
+ * @export
+ * @param {number} id
+ * @param {string} hash
+ */
+export function getAsset(id: number, hash: string): Promise<AxiosResponse> {
   return request.get(`datasets/${id}/assets/${hash}`)
 }
 
 /**
- * delete dataset
+ * @description delete dataset
+ * @export
  * @param {number} id
- * @returns
  */
-export function delDataset(id) {
+export function delDataset(id: number) {
   return request({
     method: "delete",
     url: `/datasets/${id}`,
@@ -124,11 +203,11 @@ export function delDataset(id) {
 }
 
 /**
- * delete dataset
+ * @description delete dataset group
+ * @export
  * @param {number} id
- * @returns
  */
-export function delDatasetGroup(id) {
+export function delDatasetGroup(id: number) {
   return request({
     method: "delete",
     url: `/dataset_groups/${id}`,
@@ -136,18 +215,17 @@ export function delDatasetGroup(id) {
 }
 
 /**
- * evalute between gt and target dataset
- * @param {number} projectId    project id
- * @param {number} datasets      evaluational datasets
- * @param {number} iou           iou threadhold
- * @param {number} everageIou    
- * @param {number} confidence   range: [0, 1]
- * @param {string} ck  custom keyword
- * @returns 
+ * @description evalution between gt and prediction annotations by dataset
+ * @export
+ * @param {EvaluationParams} {
+ *   pid, datasets, iou, everageIou, confidence, ck
+ * }
  */
-export function evaluate({ projectId, datasets, iou, everageIou, confidence, ck }) {
+export function evaluate({
+  pid, datasets, iou, everageIou, confidence, ck
+}: EvaluationParams) {
   return request.post(`/datasets/evaluation`, {
-    project_id: projectId,
+    project_id: pid,
     dataset_ids: datasets,
     confidence_threshold: confidence,
     iou_threshold: iou,
@@ -157,13 +235,15 @@ export function evaluate({ projectId, datasets, iou, everageIou, confidence, ck 
 }
 
 /**
- * @param {array} datasets  analysis datasets
- * @returns 
+ * @description get more analysis info from datasets
+ * @export
+ * @param {number} pid
+ * @param {number[]} datasets
  */
-export function analysis(projectId, datasets) {
+export function analysis(pid: number, datasets: number[]) {
   return request.get(`/datasets/batch`, {
     params: {
-      project_id: projectId,
+      project_id: pid,
       ids: datasets.toString(),
       hist: true,
     }
@@ -171,14 +251,15 @@ export function analysis(projectId, datasets) {
 }
 
 /**
- * hide datasets
- * @param {number} projectId
- * @param {number} ids
- * @returns
+ * @description batch task: hide datasets
+ * @export
+ * @param {string} action
+ * @param {number} pid
+ * @param {number[]} [ids=[]]
  */
-export function batchAct(action, projectId, ids = []) {
+export function batchAct(action: string, pid: number, ids: number[] = []) {
   return request.post(`/datasets/batch`, {
-    project_id: projectId,
+    project_id: pid,
     operations: ids.map(id => ({ id, action, }))
   })
 }
@@ -197,18 +278,41 @@ export function batchAct(action, projectId, ids = []) {
  * }
  * @returns
  */
-export function createDataset({ name, projectId, url, datasetId, path, strategy = 2, description }) {
+
+/**
+ * @description import a dataset
+ * @export
+ * @param {CreateParams} {
+ *  name,   group name
+ *  pid,    project id
+ *  [url],    remote dataset url
+ *  [did],    copied dataset id
+ *  [path],   server relative path
+ *  [strategy]    annotation strategy 
+ *  [description]
+ * }
+ */
+export function createDataset({
+  name, pid, url, did, path, strategy = 2, description
+}: CreateParams) {
   return request.post("/datasets/importing", {
-    group_name: name, strategy,
-    project_id: projectId,
+    group_name: name, 
+    strategy,
+    project_id: pid,
     input_url: url,
-    input_dataset_id: datasetId,
+    input_dataset_id: did,
     input_path: path,
     description,
   })
 }
 
-export function updateDataset(id, name) {
+/**
+ * @description update dataset, only group name now
+ * @export
+ * @param {number} id
+ * @param {string} name
+ */
+export function updateDataset(id: number, name: string) {
   return request({
     method: "patch",
     url: `/dataset_groups/${id}`,
@@ -224,7 +328,7 @@ export function updateDataset(id, name) {
  * @param {string} description 
  * @returns 
  */
-export function updateVersion(id, description = '') {
+export function updateVersion(id: number, description = '') {
   return request({
     method: "patch",
     url: `/datasets/${id}`,
@@ -239,27 +343,37 @@ export function getInternalDataset() {
 }
 
 /**
- * check train set and validation set duplication
- * @param {number} projectId 
- * @param {number} trainSet 
- * @param {number} validationSet 
- * @returns 
+ * @description check train set and validation set duplication
+ * @export
+ * @param {number} pid
+ * @param {number} trainSet
+ * @param {number} validationSet
  */
-export function checkDuplication(projectId, trainSet, validationSet) {
+export function checkDuplication(pid: number, trainSet: number, validationSet: number) {
   return request.post('/datasets/check_duplication', {
-    project_id: projectId,
+    project_id: pid,
     dataset_ids: [trainSet, validationSet],
   })
 }
 
+
+/**
+ * @description get negative samples info from dataset limit by keywords
+ * @export
+ * @param {QueryParams} {
+ *   pid,
+ *   did,
+ *   keywords = [],
+ * }
+ */
 export function getNegativeKeywords({
-  projectId,
-  dataset,
-  keywords,
-}) {
-  return request.get(`/datasets/${dataset}`, {
+  pid,
+  did,
+  keywords = [],
+}: QueryParams) {
+  return request.get(`/datasets/${did}`, {
     params: {
-      project_id: projectId,
+      project_id: pid,
       keywords: keywords.toString(),
     }
   })

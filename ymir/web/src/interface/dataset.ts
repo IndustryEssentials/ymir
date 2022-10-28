@@ -1,5 +1,6 @@
 
 import { Result, BackendData, Group } from "@/interface/common"
+import { ModelVersion } from "./model"
 type Keywords = {
   [key: string]: number,
 }
@@ -34,6 +35,13 @@ export interface Dataset extends Result {
   inferClass?: Array<string>,
   cks?: BackendData,
   tags?: BackendData,
+}
+
+export interface InferDataset extends Dataset {
+  modelId?: number,
+  model?: ModelVersion,
+  validationDatasetId?: number,
+  validationDataset?: Dataset,
 }
 
 export interface DatasetAnalysis {

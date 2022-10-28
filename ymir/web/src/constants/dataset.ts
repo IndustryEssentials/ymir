@@ -1,5 +1,5 @@
 import { getLocale } from "umi"
-import { DatasetGroup, Dataset, DatasetAnalysis, Annotation, Asset } from "@/interface/dataset"
+import { DatasetGroup, Dataset, DatasetAnalysis, Annotation, Asset, InferDataset } from "@/interface/dataset"
 import { calDuration, format } from '@/utils/date'
 import { getVersionLabel } from "./common"
 import { BackendData } from "@/interface/common"
@@ -117,6 +117,14 @@ export function runningDataset(dataset: Dataset | undefined) {
 export function canHide(dataset: Dataset, project: Project | undefined) {
   const p = project || dataset.project
   return !runningDataset(dataset) && !p?.hiddenDatasets?.includes(dataset.id)
+}
+
+export function transferInferDataset(dataset: Dataset): InferDataset {
+  return {
+    ...dataset,
+    modelId: dataset.task?.parameters?.model_id,
+    validationDatasetId: dataset.task?.parameters?.validation_dataset_id,
+  }
 }
 
 export function transferDatasetAnalysis(data: BackendData): DatasetAnalysis {

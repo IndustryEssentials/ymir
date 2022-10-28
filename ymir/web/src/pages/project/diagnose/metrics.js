@@ -113,7 +113,7 @@ function Matrics({ pid, project }) {
     const inferDataset = inferTasks.map(({ result }) => result)
     const params = {
       ...values,
-      projectId: pid,
+      pid,
       everageIou,
       datasets: inferDataset,
     }

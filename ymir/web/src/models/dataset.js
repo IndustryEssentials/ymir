@@ -7,6 +7,7 @@ import { transferDatasetGroup, transferDataset, transferDatasetAnalysis, transfe
 import { actions, updateResultState, updateResultByTask, ResultStates } from '@/constants/common'
 import { deepClone } from '@/utils/object'
 import { checkDuplication } from "../services/dataset"
+import { TASKTYPES } from '@/constants/task'
 
 const initQuery = { name: "", type: "", time: 0, current: 1, offset: 0, limit: 20 }
 
@@ -122,6 +123,17 @@ export default {
         return { items: result.items.map(ds => transferDataset(ds)), total: result.total }
       }
     },
+    *queryInferDatasets({ payload }, { call, put }) {
+      const datasets = yield put({
+        type: 'qeuryDatasets',
+        payload: { ...payload, type: TASKTYPES.INFERENCE }
+      })
+
+      return {
+        items: datasets.map(transferInferDataset),
+        total: datasets.total,
+      }
+    },
     *getHiddenList({ payload }, { put }) {
       const query = { ...{ order_by: 'update_datetime' }, ...payload, visible: false }
       return yield put({
@@ -143,7 +155,7 @@ export default {
       if (loading) {
         return
       }
-      const dss = yield put.resolve({ type: 'queryDatasets', payload: { project_id: pid, state: ResultStates.VALID, limit: 10000 } })
+      const dss = yield put.resolve({ type: 'queryDatasets', payload: { pid, state: ResultStates.VALID, limit: 10000 } })
       if (dss) {
         yield put({
           type: "UPDATE_ALL_DATASETS",

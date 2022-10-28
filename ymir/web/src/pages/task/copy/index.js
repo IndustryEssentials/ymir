@@ -13,40 +13,37 @@ import DatasetName from "@/components/form/items/datasetName"
 import Dataset from '@/components/form/option/Dataset'
 
 function Copy({ allDatasets, datasetCache, ...props }) {
+  const [_, getDataset] = useFetch('dataset/getDataset')
+  const [createResult, createDataset] = useFetch('dataset/createDataset')
+  const [__, clearCache] = useFetch('dataset/clearCache')
   const pageParams = useParams()
   const pid = Number(pageParams.id)
   const history = useHistory()
   const location = useLocation()
   const { did } = location.query
   const [form] = Form.useForm()
-  const [dataset, setDataset] = useState({})
+  const dataset = useSelector(({ dataset }) => dataset.dataset[did])
 
   useEffect(() => {
-    pid && props.getDatasets(pid)
-  }, [pid])
-
-  useEffect(() => {
-    did && props.getDataset(did)
+    did && getDataset({ id: did })
   }, [did])
 
   useEffect(() => {
-    const dst = datasetCache[did]
-    dst && setDataset(dst)
-  }, [datasetCache])
+    if (createResult) {
+      message.success(t('dataset.copy.success.msg'))
+      clearCache()
+      const group = createResult.dataset_group_id || ''
+      history.replace(`/home/project/${pid}/dataset#${group}`)
+    }
+  }, [createResult])
 
   const onFinish = async (values) => {
     const params = {
       ...values,
-      projectId: pid,
-      datasetId: did,
+      pid,
+      did,
     }
-    const result = await props.createDataset(params)
-    if (result) {
-      message.success(t('dataset.copy.success.msg'))
-      props.clearCache()
-      const group = result.dataset_group_id || ''
-      history.replace(`/home/project/${pid}/dataset#${group}`)
-    }
+    createDataset(params)
   }
 
   const onFinishFailed = (err) => {
@@ -91,36 +88,4 @@ function Copy({ allDatasets, datasetCache, ...props }) {
   )
 }
 
-const props = (state) => {
-  return {
-    allDatasets: state.dataset.allDatasets,
-    datasetCache: state.dataset.dataset,
-  }
-}
-const mapDispatchToProps = (dispatch) => {
-  return {
-    getDatasets(pid) {
-      return dispatch({
-        type: "dataset/queryAllDatasets",
-        payload: { pid, force: true },
-      })
-    },
-    getDataset(id, force) {
-      return dispatch({
-        type: "dataset/getDataset",
-        payload: { id, force },
-      })
-    },
-    createDataset: (payload) => {
-      return dispatch({
-        type: 'dataset/createDataset',
-        payload,
-      })
-    },
-    clearCache() {
-      return dispatch({ type: "dataset/clearCache", })
-    },
-  }
-}
-
-export default connect(props, mapDispatchToProps)(Copy)
+export default Copy
