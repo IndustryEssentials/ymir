@@ -20,9 +20,10 @@ const request = axios.create({
 
 request.interceptors.request.use(
   (config) => {
-    config.headers["Content-Type"] =
-      config.headers["Content-Type"] || "application/json"
-    config.headers["Authorization"] = `Bearer ${storage.get("access_token")}`
+    const headers = config.headers || {}
+    headers["Content-Type"] = headers["Content-Type"] || "application/json"
+    headers["Authorization"] = `Bearer ${storage.get("access_token")}`
+    config.headers = headers
     return config
   },
   (err) => {

@@ -1,13 +1,13 @@
 class Storage {
   constructor() {}
-  set(key, value) {
+  set(key: string, value: any) {
     localStorage.setItem(key, JSON.stringify(value))
   }
-  get(key) {
+  get(key: string) {
     const data = localStorage.getItem(key)
-    return JSON.parse(data)
+    return data ? JSON.parse(data) : data
   }
-  remove(key) {
+  remove(key: string) {
     localStorage.removeItem(key)
   }
 }
