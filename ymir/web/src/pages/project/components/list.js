@@ -9,7 +9,7 @@ import { getStageLabel } from '@/constants/iteration'
 import ProjectEmpty from '@/components/empty/project'
 import Del from './del'
 import s from "./list.less"
-import { EditIcon, DeleteIcon, AddIcon, SearchIcon } from "@/components/common/icons"
+import { EditIcon, DeleteIcon, AddIcon, SearchIcon } from "@/components/common/Icons"
 import KeywordsItem from "@/components/project/keywordsItem"
 
 const ProjectList = ({ list, query, ...func }) => {

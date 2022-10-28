@@ -3,7 +3,7 @@ import { Button, Space } from 'antd'
 
 import t from '@/utils/t'
 import styles from './empty.less'
-import { NoSjjIcon, ImportIcon, } from '@/components/common/icons'
+import { NoSjjIcon, ImportIcon, } from '@/components/common/Icons'
 import { useHistory, useParams } from 'umi'
 
 export default ({ style = {} }) => {

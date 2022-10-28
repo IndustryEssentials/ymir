@@ -8,7 +8,7 @@ import { layout420 } from "@/config/antd"
 import HeaderNav from "@/components/nav"
 import Foot from "@/components/common/footer"
 import styles from "../common.less"
-import { EmailIcon } from "@/components/common/icons"
+import { EmailIcon } from "@/components/common/Icons"
 
 const { Header, Footer, Content } = Layout
 

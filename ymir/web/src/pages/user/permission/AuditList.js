@@ -6,7 +6,7 @@ import t from "@/utils/t"
 import { format } from '@/utils/date'
 import { STATES } from '@/constants/user'
 import Actions from "@/components/table/actions"
-import { AddDelTwoIcon, AddTwoIcon, SuccessIcon } from "@/components/common/icons"
+import { AddDelTwoIcon, AddTwoIcon, SuccessIcon } from "@/components/common/Icons"
 import s from '../permission.less'
 import StateTag from "@/components/user/stateTag"
 

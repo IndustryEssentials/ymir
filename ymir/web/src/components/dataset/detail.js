@@ -5,7 +5,7 @@ import { Button, Col, Descriptions, Row, Tag } from "antd"
 import t from "@/utils/t"
 import { ResultStates } from '@/constants/common'
 import styles from "./detail.less"
-import { SearchIcon } from "@/components/common/icons"
+import { SearchIcon } from "@/components/common/Icons"
 import { DescPop } from "../common/DescPop"
 
 const { Item } = Descriptions

@@ -5,7 +5,7 @@ import { useState, useEffect } from "react"
 import t from "@/utils/t"
 import { format } from '@/utils/date'
 import { ROLES, getRolesLabel } from '@/constants/user'
-import { AddDelTwoIcon, AddTwoIcon, ShutIcon } from "@/components/common/icons"
+import { AddDelTwoIcon, AddTwoIcon, ShutIcon } from "@/components/common/Icons"
 import s from '../permission.less'
 import Actions from "@/components/table/actions"
 import confirm from '@/components/common/dangerConfirm'

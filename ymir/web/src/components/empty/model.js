@@ -4,7 +4,7 @@ import { useHistory, useParams } from 'umi'
 
 import t from '@/utils/t'
 import styles from './empty.less'
-import { NoXlmxIcon, TrainIcon, ImportIcon } from '@/components/common/icons'
+import { NoXlmxIcon, TrainIcon, ImportIcon } from '@/components/common/Icons'
 
 export default ({ style = {} }) => {
   const { id } = useParams()

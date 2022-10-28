@@ -1,7 +1,7 @@
 import { useHistory } from "umi"
 import t from "@/utils/t"
 import { TASKTYPES } from '@/constants/task'
-import { RefreshIcon } from "@/components/common/icons"
+import { RefreshIcon } from "@/components/common/Icons"
 import { Result } from "@/interface/common"
 import { Button } from "antd"
 

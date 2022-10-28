@@ -7,7 +7,7 @@ import ModelSelect from "@/components/form/modelSelect"
 import VersionName from '@/components/result/VersionName'
 
 import s from "./index.less"
-import { CompareIcon } from "@/components/common/icons"
+import { CompareIcon } from "@/components/common/Icons"
 import { getTensorboardLink } from "../../../services/common"
 
 function Training({ pid, project }) {

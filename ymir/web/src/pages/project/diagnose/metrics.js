@@ -13,7 +13,7 @@ import DefaultStages from "./components/defaultStages"
 import Tip from "@/components/form/singleTip"
 
 import s from "./index.less"
-import { CompareIcon } from "@/components/common/icons"
+import { CompareIcon } from "@/components/common/Icons"
 
 const metricsTabs = [
   { value: 'map', component: MapView, ck: true },

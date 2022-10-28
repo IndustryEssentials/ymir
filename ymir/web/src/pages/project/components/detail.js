@@ -7,8 +7,10 @@ import { getStageLabel } from '@/constants/iteration'
 import useFetch from '@/hooks/useFetch'
 
 import s from "../detail.less"
-import { EditIcon } from "@/components/common/icons"
-import { ArrowDownIcon, ArrowRightIcon } from '@/components/common/icons'
+import SampleRates from "@/components/dataset/sampleRates"
+import { TestingSet } from "./testingSet"
+import { EditIcon, SearchEyeIcon, EyeOffIcon } from "@/components/common/Icons"
+import { ArrowDownIcon, ArrowRightIcon } from '@/components/common/Icons'
 
 function ProjectDetail({ project = {} }) {
   const id = project.id

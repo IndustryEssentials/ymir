@@ -12,9 +12,9 @@ import ShareModal from "./share"
 import RelateModal from './relate'
 import Del from './del'
 import s from "./list.less"
-import { VectorIcon, TrainIcon, TipsIcon, EditIcon, DeleteIcon, AddIcon, MoreIcon, ShareIcon, LinkIcon } from "@/components/common/icons"
+import { VectorIcon, TrainIcon, TipsIcon, EditIcon, DeleteIcon, AddIcon, MoreIcon, ShareIcon, LinkIcon } from "@/components/common/Icons"
 import ImagesLink from "./imagesLink"
-import { FailIcon, SuccessIcon } from "@/components/common/icons"
+import { FailIcon, SuccessIcon } from "@/components/common/Icons"
 import { LoadingOutlined } from '@ant-design/icons'
 
 const initQuery = {

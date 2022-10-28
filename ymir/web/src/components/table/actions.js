@@ -1,6 +1,6 @@
 import { Button, Dropdown, Menu, Space } from "antd"
 import s from './table.less'
-import { More1Icon } from "../common/icons"
+import { More1Icon } from "../common/Icons"
 
 const actions = (menus) => menus.map((menu, i) => action(menu, i === menus.length - 1))
 

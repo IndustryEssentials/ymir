@@ -6,7 +6,7 @@ import { toFixed } from "@/utils/number"
 import Terminate from "./terminate"
 import { ResultStates } from "@/constants/common"
 import { TASKSTATES } from "@/constants/task"
-import StateTag from "@/components/task/stateTag"
+import StateTag from "@/components/task/StateTag"
 import s from "./detail.less"
 
 const { Item } = Descriptions

@@ -13,8 +13,8 @@ import { getDeployUrl } from '@/constants/common'
 
 import CheckProjectDirty from "@/components/common/CheckProjectDirty"
 import Actions from "@/components/table/actions"
-import TypeTag from "@/components/task/typeTag"
-import RenderProgress from "@/components/common/progress"
+import TypeTag from "@/components/task/TypeTag"
+import RenderProgress from "@/components/common/Progress"
 import Terminate from "@/components/task/terminate"
 import Hide from "../common/hide"
 import EditNameBox from "@/components/form/editNameBox"
@@ -25,7 +25,7 @@ import {
   ShieldIcon, VectorIcon, EditIcon,
   EyeOffIcon, DeleteIcon, FileDownloadIcon, TrainIcon, WajueIcon, StopIcon, SearchIcon,
   ArrowDownIcon, ArrowRightIcon, ImportIcon, BarchartIcon
-} from "@/components/common/icons"
+} from "@/components/common/Icons"
 import EditStageCell from "./editStageCell"
 import { DescPop } from "../common/DescPop"
 import useRerunAction from "../../hooks/useRerunAction"

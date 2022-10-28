@@ -16,4 +16,5 @@ export interface Task {
   parameters: object,
   config: object,
   result_type: number,
+  is_terminated: boolean,
 }

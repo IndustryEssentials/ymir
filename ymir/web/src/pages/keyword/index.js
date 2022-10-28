@@ -16,7 +16,7 @@ import EmptyState from '@/components/empty/keyword'
 import Actions from "@/components/table/actions"
 import Add from './add'
 import MultiAdd from "./multiAdd"
-import { AddIcon, AddtaskIcon, EditIcon, SearchIcon, } from "@/components/common/icons"
+import { AddIcon, AddtaskIcon, EditIcon, SearchIcon, } from "@/components/common/Icons"
 
 
 const { confirm } = Modal
