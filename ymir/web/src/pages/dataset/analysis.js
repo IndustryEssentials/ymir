@@ -19,6 +19,8 @@ const options = [
   { value: 'pred' }
 ]
 
+const getVersionName = ({ name, versionName }) => `${name} ${versionName}`
+
 function Analysis() {
   const [form] = Form.useForm()
   const { id: pid } = useParams()
@@ -134,7 +136,7 @@ function Analysis() {
   function getYData({ sourceField, annoType, totalField }, datasets) {
     const yData = datasets && datasets.map(dataset => {
       const total = getField(dataset, totalField, annoType)
-      const name = `${dataset.name} ${dataset.versionName}`
+      const name = getVersionName(dataset)
       const field = getField(dataset, sourceField, annoType)
       return {
         name,
@@ -158,7 +160,7 @@ function Analysis() {
   function getAttrYData({ sourceField, annoType, totalField }, datasets, xData) {
     const yData = datasets && datasets.map(dataset => {
       const total = getField(dataset, totalField, annoType)
-      const name = `${dataset.name} ${dataset.versionName}`
+      const name = getVersionName(dataset)
       const attrObj = getField(dataset, sourceField, annoType)
       return {
         name,
@@ -286,7 +288,7 @@ function Analysis() {
               size="small"
               align='right'
               dataSource={tableSource}
-              rowKey={(record) => record.name + record.versionName}
+              rowKey={(record) => getVersionName(record)}
               rowClassName={style.rowClass}
               className={style.tableClass}
               columns={columns}

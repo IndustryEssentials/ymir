@@ -10,6 +10,8 @@ import { validDataset } from '@/constants/dataset'
 
 import SampleRates from "@/components/dataset/sampleRates"
 import MiningSampleRates from "@/components/dataset/miningSampleRates"
+import Dataset from '@/components/form/option/Dataset'
+import VersionName from '@/components/result/VersionName'
 
 import s from "./index.less"
 import StateTag from "@/components/task/stateTag"
@@ -73,7 +75,7 @@ function List({ project }) {
       dataIndex: 'map',
       render: (map, { model, mapEffect }) => {
         const md = models[model] || {}
-        const label = <>{md.name} {md.versionName} {!validModel(md) ? <StateTag mode='text' state={md.state} /> : null}</>
+        const label = <><VersionName result={md} /> {!validModel(md) ? <StateTag mode='text' state={md.state} /> : null}</>
         return validModel(md) ? <div className={s.td}>
           <span style={{ display: 'inline-block', width: '70%', overflow: 'hidden', textOverflow: 'ellipsis' }}>
             {label}
@@ -144,7 +146,7 @@ function List({ project }) {
     }
     const label = `${dataset.name} ${dataset.versionName} (${dataset.assetCount})`
     return <span title={label}>
-      {label}
+      <Dataset dataset={dataset} />
       {!validDataset(dataset) ? <StateTag mode='text' state={dataset.state} /> : null}
     </span>
   }

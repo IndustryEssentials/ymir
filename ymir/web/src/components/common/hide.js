@@ -1,11 +1,18 @@
-import t from "@/utils/t"
-import confirm from '@/components/common/dangerConfirm'
-import { connect } from "dva"
-import { forwardRef, useImperativeHandle } from "react"
+import { forwardRef, useEffect, useImperativeHandle } from "react"
 import { message, Tag } from "antd"
 
+import t from "@/utils/t"
+import confirm from '@/components/common/dangerConfirm'
+import useFetch from '@/hooks/useFetch'
+
+import VersionName from '@/components/result/VersionName'
+
 const Hide = forwardRef(({ type = 0, msg = 'dataset.action.hide.confirm.content',
-  excludeMsg = 'dataset.action.hide.confirm.exclude', ok = () => { }, ...func }, ref) => {
+  excludeMsg = 'dataset.action.hide.confirm.exclude', ok = () => { }}, ref) => {
+  const [hideResult, remoteHide] = useFetch(`${!type ? 'dataset' : 'model'}/hide`)
+
+  useEffect(() => hideResult && ok(hideResult), [hideResult])
+
   useImperativeHandle(ref, () => {
     return {
       hide,
@@ -30,12 +37,7 @@ const Hide = forwardRef(({ type = 0, msg = 'dataset.action.hide.confirm.content'
         <p>{t(msg, { name: labels })} </p>
         {excludeLabels.length ? emsg : null}
       </div>,
-      onOk: async () => {
-        const result = await func.hide(!type ? 'dataset' : 'model', pid, ids)
-        if (result) {
-          ok(result)
-        }
-      },
+      onOk: () => remoteHide({ pid, ids }),
       okText: t('common.action.hide'),
     })
   }
@@ -46,19 +48,7 @@ const Hide = forwardRef(({ type = 0, msg = 'dataset.action.hide.confirm.content'
 const getLabels = (labels) => labels.map(version => <Tag
   style={{ margin: '0 5px', display: 'inline-block' }}
   key={version.id}>
-  {version.name} {version.versionName}
+  <VersionName result={version} />
 </Tag>)
 
-const actions = (dispatch) => {
-  return {
-    hide(module = 'dataset', pid, ids) {
-      const type = `${module}/hide`
-      return dispatch({
-        type,
-        payload: { pid, ids, },
-      })
-    },
-  }
-}
-
-export default connect(null, actions, null, { forwardRef: true })(Hide)
+export default Hide

@@ -8,6 +8,7 @@ import { Stages } from "@/constants/iteration"
 import { useEffect, useState } from "react"
 import RenderProgress from "../../../components/common/progress"
 import { YesIcon } from '@/components/common/icons'
+import VersionName from '@/components/result/VersionName'
 
 function Stage({ stage, end = false, }) {
   const result = useSelector(({ dataset, model }) => {
@@ -41,7 +42,7 @@ function Stage({ stage, end = false, }) {
 
   const renderState = () => {
     const pendingLabel = 'project.stage.state.pending'
-    const valid = result.name ? `${result.name} ${result.versionName}` : (end ? null : t('common.done'))
+    const valid = result.name ? <VersionName result={result} /> : (end ? null : t('common.done'))
     const currentPending = t('project.stage.state.pending.current')
     const currentState = isReady() ? RenderProgress(state, result, true) : t(statesLabel(state))
     const notValid = <span className={s.current}>{isPending() && currentStage() ? currentPending : currentState}</span>

@@ -10,6 +10,7 @@ import Breadcrumbs from "@/components/common/breadcrumb"
 import RecommendKeywords from "@/components/common/recommendKeywords"
 import Desc from "@/components/form/desc"
 import KeywordSelect from "@/components/form/keywordSelect"
+import Dataset from '@/components/form/option/Dataset'
 
 import commonStyles from "../common.less"
 import s from "./index.less"
@@ -90,7 +91,7 @@ function Filter() {
           onFinishFailed={onFinishFailed}
         >
           <Form.Item label={t('task.fusion.form.dataset')}>
-            <span>{dataset.name} {dataset.versionName} (assets: {dataset.assetCount})</span>
+          <Dataset dataset={dataset} />
           </Form.Item>
           <Form.Item
             label={t('task.fusion.form.include.label')}

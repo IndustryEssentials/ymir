@@ -4,6 +4,7 @@ import { Card, Button, Form, Row, Col, Table, } from "antd"
 import t from "@/utils/t"
 import Panel from "@/components/form/panel"
 import ModelSelect from "@/components/form/modelSelect"
+import VersionName from '@/components/result/VersionName'
 
 import s from "./index.less"
 import { CompareIcon } from "@/components/common/icons"
@@ -24,7 +25,7 @@ function Training({ pid, project }) {
   useEffect(() => {
     const maps = selectedModels.map(model => ({
       id: model.id,
-      name: `${model.name} ${model.versionName}`,
+      name: <VersionName result={model} />,
       hash: model.task.hash,
     }))
     setModelMap(maps)
