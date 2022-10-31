@@ -2,6 +2,7 @@ import { Cascader, Col, Row, Select } from 'antd'
 import { connect } from 'dva'
 import { useEffect, useState } from 'react'
 
+import Dataset from '@/components/form/option/Dataset'
 
 const ProjectDatasetSelect = ({ pid, value, projects = [], onChange = () => { }, getProjects, getDatasets, ...resProps }) => {
   const [options, setOptions] = useState([])
@@ -40,7 +41,7 @@ const ProjectDatasetSelect = ({ pid, value, projects = [], onChange = () => { },
     if (result) {
       target.children = result.map(dataset => {
         return {
-          label: `${dataset.name} ${dataset.versionName} (assets: ${dataset.assetCount})`,
+          label: <Dataset dataset={dataset} />,
           value: dataset.id,
           isLeaf: true,
         }

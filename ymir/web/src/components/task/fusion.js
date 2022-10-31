@@ -13,6 +13,7 @@ import Panel from "@/components/form/panel"
 import DatasetSelect from "@/components/form/datasetSelect"
 import Desc from "@/components/form/desc"
 import SubmitButtons from "./submitButtons"
+import Dataset from '@/components/form/option/Dataset'
 
 function Fusion({ query = {}, hidden, ok = () => { }, bottom }) {
   const { did, iterationId, currentStage, chunk, strategy = '', merging } = query
@@ -145,7 +146,9 @@ function Fusion({ query = {}, hidden, ok = () => { }, bottom }) {
     >
       <div hidden={hidden}>
         <Panel hasHeader={false}>
-          <Form.Item label={t('task.fusion.form.dataset')}><span>{dataset.name} {dataset.versionName} (assets: {dataset.assetCount})</span></Form.Item>
+          <Form.Item label={t('task.fusion.form.dataset')}>
+            <Dataset dataset={dataset} />
+          </Form.Item>
           <Form.Item label={t('task.fusion.form.sampling')} tooltip={t('tip.task.fusion.sampling')} name='samples'>
             <InputNumber step={1} min={1} style={{ width: '100%' }} />
           </Form.Item>

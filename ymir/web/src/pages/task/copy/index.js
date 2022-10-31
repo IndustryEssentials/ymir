@@ -10,6 +10,7 @@ import Breadcrumbs from "@/components/common/breadcrumb"
 import commonStyles from "../common.less"
 import Desc from "@/components/form/desc"
 import DatasetName from "@/components/form/items/datasetName"
+import Dataset from '@/components/form/option/Dataset'
 
 function Copy({ allDatasets, datasetCache, ...props }) {
   const pageParams = useParams()
@@ -65,7 +66,9 @@ function Copy({ allDatasets, datasetCache, ...props }) {
           labelAlign={'left'}
           colon={false}
         >
-          <Form.Item label={t('dataset.copy.form.dataset')}><span>{dataset.name} {dataset.versionName} (assets: {dataset.assetCount})</span></Form.Item>
+          <Form.Item label={t('dataset.copy.form.dataset')}>
+            <Dataset dataset={dataset} />
+          </Form.Item>
           <DatasetName itemProps={{ initialValue: 'dataset_copy_' + randomNumber() }} />
           <Desc form={form} />
           <Form.Item wrapperCol={{ offset: 8 }}>

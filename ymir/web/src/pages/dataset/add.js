@@ -13,11 +13,12 @@ import Breadcrumbs from '@/components/common/breadcrumb'
 import Uploader from '@/components/form/uploader'
 import ProjectDatasetSelect from '@/components/form/projectDatasetSelect'
 import Desc from "@/components/form/desc"
+import DatasetName from '../../components/form/items/datasetName'
+import { FormatDetailModal } from './components/formatDetailModal'
+import Dataset from '@/components/form/option/Dataset'
 
 import s from './add.less'
 import samplePic from '@/assets/sample.png'
-import DatasetName from '../../components/form/items/datasetName'
-import { FormatDetailModal } from './components/formatDetailModal'
 
 const { Option } = Select
 const { useForm } = Form
@@ -288,7 +289,7 @@ const Add = (props) => {
                     options={publicDatasets.map(dataset => ({
                       value: dataset.id,
                       dataset,
-                      label: `${dataset.name} ${dataset.versionName} (Total: ${dataset.assetCount})`
+                      label: <Dataset dataset={dataset} />
                     }))}>
                   </Select>
                 </Form.Item>

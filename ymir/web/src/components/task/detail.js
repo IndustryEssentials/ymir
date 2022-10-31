@@ -16,6 +16,7 @@ import useFetch from '@/hooks/useFetch'
 import { getRecommendStage } from '@/constants/model'
 
 import renderLiveCodeItem from '@/components/task/items/livecode'
+import VersionName from '@/components/result/VersionName'
 
 const { Item } = Descriptions
 
@@ -74,7 +75,7 @@ function TaskDetail({ task = {} }) {
 
   function renderDatasetName(id) {
     const ds = datasetNames[id]
-    const name = ds ? `${ds.name} ${ds.versionName}` : id
+    const name = ds ? <VersionName result={ds} /> : id
     return (
       <Link key={id} to={`/home/project/${task.project_id}/dataset/${id}`}>
         {name}
@@ -86,7 +87,7 @@ function TaskDetail({ task = {} }) {
   }
 
   function renderModel(id, pid, model = {}, label = 'task.mining.form.model.label') {
-    const name = model.id ? `${model.name} ${model.versionName} ${getRecommendStage(model).name}` : id
+    const name = model.id ? <VersionName result={model} extra={getRecommendStage(model).name} /> : id
     return id ? <Item label={t(label)}>
       <Link to={`/home/project/${pid}/model/${id}`}>
         {name}

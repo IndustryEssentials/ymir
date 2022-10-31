@@ -5,20 +5,21 @@ import { Link, useHistory, useLocation } from "umi"
 import { Form, Button, Input, Table, Space, Modal, Row, Col, Tooltip, Pagination, message, Popover, } from "antd"
 
 import t from "@/utils/t"
-import { humanize } from "@/utils/number"
 import { diffTime } from '@/utils/date'
 import { getTaskTypeLabel, TASKSTATES, TASKTYPES } from '@/constants/task'
 import { ResultStates } from '@/constants/common'
-import { canHide } from '@/constants/dataset'
+import { canHide, validDataset } from '@/constants/dataset'
 
 import CheckProjectDirty from "@/components/common/CheckProjectDirty"
 import StateTag from "@/components/task/stateTag"
-import EditBox from "@/components/form/editBox"
+import EditNameBox from "@/components/form/editNameBox"
+import EditDescBox from "@/components/form/editDescBox"
 import Terminate from "@/components/task/terminate"
 import Hide from "../common/hide"
 import RenderProgress from "@/components/common/progress"
 import TypeTag from "@/components/task/typeTag"
 import Actions from "@/components/table/actions"
+import AssetCount from '@/components/dataset/AssetCount'
 
 import {
   ImportIcon, ScreenIcon, TaggingIcon, TrainIcon, VectorIcon, WajueIcon, SearchIcon,
@@ -26,7 +27,6 @@ import {
   CompareListIcon,
 } from "@/components/common/icons"
 import { DescPop } from "../common/descPop"
-import { RefreshIcon } from "../common/icons"
 import useRerunAction from "../../hooks/useRerunAction"
 
 const { confirm } = Modal
@@ -48,6 +48,7 @@ function Datasets({ pid, project = {}, iterations, groups, datasetList, query, v
   const terminateRef = useRef(null)
   const [testingSetIds, setTestingSetIds] = useState([])
   const generateRerun = useRerunAction()
+  const [editingDataset, setEditingDataset] = useState({})
 
   /** use effect must put on the top */
   useEffect(() => {
@@ -169,7 +170,7 @@ function Datasets({ pid, project = {}, iterations, groups, datasetList, query, v
       {
         title: showTitle("dataset.column.asset_count"),
         dataIndex: "assetCount",
-        render: (num) => humanize(num),
+        render: (num, record) => <AssetCount dataset={record} />,
         sorter: (a, b) => a.assetCount - b.assetCount,
         width: 120,
       },
@@ -246,6 +247,13 @@ function Datasets({ pid, project = {}, iterations, groups, datasetList, query, v
         icon: <VectorIcon />,
       },
       {
+        key: "preview",
+        label: t("common.action.preview"),
+        hidden: () => !validDataset(record),
+        onclick: () => history.push(`/home/project/${pid}/dataset/${id}/assets`),
+        icon: <SearchIcon className={styles.addBtnIcon} />,
+      },
+      {
         key: "merge",
         label: t("common.action.merge"),
         hidden: () => !isValidDataset(state),
@@ -272,6 +280,12 @@ function Datasets({ pid, project = {}, iterations, groups, datasetList, query, v
         hidden: () => invalidDataset(record),
         onclick: () => history.push(`/home/project/${pid}/copy?did=${id}`),
         icon: <CopyIcon />,
+      },
+      {
+        key: "edit",
+        label: t("common.action.edit.desc"),
+        onclick: () => editDesc(record),
+        icon: <EditIcon />,
       },
       {
         key: "stop",
@@ -420,18 +434,36 @@ function Datasets({ pid, project = {}, iterations, groups, datasetList, query, v
     setTimeout(() => setCurrent(record), 0)
   }
 
-  const saveName = async (record, name) => {
-    const result = await func.updateDataset(record.id, name)
+  const saveNameHandle = (result) => {
     if (result) {
       setDatasets((datasets) =>
         datasets.map((dataset) => {
-          if (dataset.id === record.id) {
-            dataset.name = name
+          if (dataset.id === result.id) {
+            dataset.name = result.name
           }
           return dataset
         })
       )
     }
+  }
+
+  const saveDescHandle = result => {
+    if (result) {
+      setDatasetVersions((versions) => ({
+        ...versions,
+        [result.groupId]: versions[result.groupId].map((dataset) => {
+          if (dataset.id === result.id) {
+            dataset.description = result.description
+          }
+          return dataset
+        })
+      }))
+    }
+  }
+
+  const editDesc = dataset => {
+    setEditingDataset({})
+    setTimeout(() => setEditingDataset(dataset), 0)
   }
 
   const add = () => {
@@ -586,18 +618,8 @@ function Datasets({ pid, project = {}, iterations, groups, datasetList, query, v
         </div>
         {renderGroups}
       </div>
-      <EditBox record={current} max={80} action={saveName}>
-        {current.type ? <Form.Item
-          label={t('dataset.column.source')}
-        >
-          <TypeTag type={current.type} id={current.id} name={current.task_name} />
-        </Form.Item> : null}
-        {current.state ? <Form.Item
-          label={t('dataset.column.state')}
-        >
-          <StateTag mode='text' state={current.state} />
-        </Form.Item> : null}
-      </EditBox>
+      <EditDescBox record={editingDataset} handle={saveDescHandle} />
+      <EditNameBox record={current} max={80} handle={saveNameHandle} />
       <Hide ref={hideRef} ok={hideOk} />
       <Terminate ref={terminateRef} ok={terminateOk} />
     </div>
@@ -625,12 +647,6 @@ const actions = (dispatch) => {
       return dispatch({
         type: 'dataset/getDatasetVersions',
         payload: { gid, force },
-      })
-    },
-    updateDataset(id, name) {
-      return dispatch({
-        type: 'dataset/updateDataset',
-        payload: { id, name },
       })
     },
     updateQuery(query) {

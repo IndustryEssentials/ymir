@@ -14,6 +14,7 @@ import ImageAnnotation from "@/components/dataset/imageAnnotation"
 import useWindowResize from "@/hooks/useWindowResize"
 import KeywordSelector from "./components/keywordSelector"
 import EvaluationSelector from "@/components/form/evaluationSelector"
+import VersionName from '@/components/result/VersionName'
 
 const { Option } = Select
 
@@ -152,7 +153,7 @@ const Dataset = () => {
   const renderTitle = <Row className={styles.labels}>
     <Col span={12}>
       <Space>
-        <strong>{dataset.name} {dataset.versionName}</strong>
+        <strong><VersionName result={dataset} /></strong>
         <span>{t("dataset.detail.pager.total", { total: total + '/' + dataset.assetCount })}</span>
         {dataset?.inferClass ? <div>{t('dataset.detail.infer.class')}{dataset?.inferClass?.map(cls => <Tag key={cls}>{cls}</Tag>)}</div> : null}
       </Space>

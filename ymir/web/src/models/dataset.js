@@ -1,7 +1,7 @@
 import {
   getDatasetGroups, getDatasetByGroup, queryDatasets, getDataset, batchDatasets, evaluate, analysis,
   getAssetsOfDataset, getAsset, batchAct, delDataset, delDatasetGroup, createDataset, updateDataset, getInternalDataset,
-  getNegativeKeywords,
+  getNegativeKeywords, updateVersion
 } from "@/services/dataset"
 import { transferDatasetGroup, transferDataset, transferDatasetAnalysis, transferAsset, transferAnnotationsCount } from '@/constants/dataset'
 import { actions, updateResultState, updateResultByTask, ResultStates } from '@/constants/common'
@@ -219,6 +219,13 @@ export default {
       const { code, result } = yield call(updateDataset, id, name)
       if (code === 0) {
         return result
+      }
+    },
+    *updateVersion({ payload }, { call, put }) {
+      const { id, description } = payload
+      const { code, result } = yield call(updateVersion, id, description)
+      if (code === 0) {
+        return transferDataset(result)
       }
     },
     *getInternalDataset({ payload }, { call, put }) {
