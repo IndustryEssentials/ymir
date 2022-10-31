@@ -7,15 +7,14 @@ import CreateTime from './columns/CreateTime'
 import Stages from './columns/Stages'
 import { TableColumnsType } from 'antd'
 import { Result } from '@/interface/common'
-import { InferDataset } from '@/interface/dataset'
 
-type Type = 'dataset' | 'model' | 'inferDataset'
+type Type = 'inferDataset'
 
 function getColumns<T extends Result> (type: Type) {
-  const inferDataset: TableColumnsType<T> = [State, CreateTime]
+  const inferDataset: TableColumnsType<T> = [State<T>(), CreateTime<T>()]
   const maps = {
-    dataset: [Name(), Source, Count, Keywords, State, CreateTime],
-    model: [Name('model'), Stages, Source, State, CreateTime],
+    // dataset: [Name(), Source, Count, Keywords, State<T>(), CreateTime<T>()],
+    // model: [Name('model'), Stages, Source, State<T>(), CreateTime<T>()],
     inferDataset,
   }
   return maps[type]

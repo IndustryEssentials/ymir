@@ -3,7 +3,14 @@ import {
   getAssetsOfDataset, getAsset, batchAct, delDataset, delDatasetGroup, createDataset, updateDataset, getInternalDataset,
   getNegativeKeywords, updateVersion
 } from "@/services/dataset"
-import { transferDatasetGroup, transferDataset, transferDatasetAnalysis, transferAsset, transferAnnotationsCount } from '@/constants/dataset'
+import {
+  transferDatasetGroup,
+  transferDataset,
+  transferDatasetAnalysis,
+  transferAsset,
+  transferAnnotationsCount,
+  transferInferDataset,
+} from '@/constants/dataset'
 import { actions, updateResultState, updateResultByTask, ResultStates } from '@/constants/common'
 import { deepClone } from '@/utils/object'
 import { checkDuplication } from "../services/dataset"
@@ -124,14 +131,30 @@ export default {
       }
     },
     *queryInferDatasets({ payload }, { call, put }) {
-      const datasets = yield put({
-        type: 'qeuryDatasets',
+      const result = yield put.resolve({
+        type: 'queryDatasets',
         payload: { ...payload, type: TASKTYPES.INFERENCE }
       })
-
-      return {
-        items: datasets.map(transferInferDataset),
-        total: datasets.total,
+      if (result) {
+        const { items: datasets = [], total } = result
+        const getIds = key => datasets.map(ds => {
+          const param = ds.task?.parameters || {}
+          return param[key]
+        }).filter(notEmpty => notEmpty)
+        const modelIds = getIds('model_id')
+        const validationIds = getIds('validation_dataset_id')
+        yield put({
+          type: 'model/batchModels',
+          payload: { ids: modelIds }
+        })
+        yield put({
+          type: 'batchDatasets',
+          payload: { ids: validationIds, }
+        })
+        return {
+          items: datasets.map(transferInferDataset),
+          total,
+        }
       }
     },
     *getHiddenList({ payload }, { put }) {
