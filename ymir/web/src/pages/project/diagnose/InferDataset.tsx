@@ -22,7 +22,7 @@ type ModelState = {
     model: ResultCache<ModelVersion>,
   }
 }
-const initQuery = { current: 1, offset: 0, limit: 2 }
+const initQuery = { current: 1, offset: 0, limit: 20 }
 
 const InferDataset: React.FC = () => {
   const { id: pid } = useParams<{ id?: string }>()
