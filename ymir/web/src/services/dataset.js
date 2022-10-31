@@ -218,6 +218,22 @@ export function updateDataset(id, name) {
   })
 }
 
+/**
+ * update dataset version description
+ * @param {number} id   dataset version id
+ * @param {string} description 
+ * @returns 
+ */
+export function updateVersion(id, description = '') {
+  return request({
+    method: "patch",
+    url: `/datasets/${id}`,
+    data: {
+      description,
+    },
+  })
+}
+
 export function getInternalDataset() {
   return request.get('/datasets/public')
 }
