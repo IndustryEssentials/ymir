@@ -143,6 +143,22 @@ export function updateModel(id, name) {
 }
 
 /**
+ * update model version description
+ * @param {number} id 
+ * @param {string} description 
+ * @returns 
+ */
+export function updateVersion(id, description = '') {
+  return request({
+    method: "patch",
+    url: `/models/${id}`,
+    data: {
+      description,
+    },
+  })
+}
+
+/**
  * model verification
  * @param {number} projectId project id
  * @param {array<model, stage>} modelStage model stage
@@ -165,7 +181,7 @@ export function verify({ projectId, modelStage, urls, image, config }) {
 
 export function setRecommendStage(model, stage) {
   return request({
-    method: 'PATCH',
+    method: 'patch',
     url: `/models/${model}`,
     data: {
       stage_id: stage,

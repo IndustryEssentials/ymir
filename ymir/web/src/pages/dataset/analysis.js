@@ -84,6 +84,9 @@ function Analysis() {
         label: 'dataset.analysis.title.keyword_ratio',
         sourceField: 'keywords',
         totalField: 'total',
+        customOptions: {
+          tooltipLable: 'dataset.analysis.bar.anno.tooltip',
+        },
         color: ['#2CBDE9', '#E8B900'],
         annoType: true,
         xType: 'attribute'
@@ -299,41 +302,43 @@ function Analysis() {
             </Row>
           </Col>
           <Col span={6} className='rightForm'>
-            <div className='mask' hidden={!source}>
-              <Button style={{ marginBottom: 24 }} size='large' type="primary" onClick={() => retry()}>
-                <CompareIcon /> {t('dataset.analysis.btn.retry')}
-              </Button>
+            <div className={style.formContainer}>
+              <div className='mask' hidden={!source}>
+                <Button style={{ marginBottom: 24 }} size='large' type="primary" onClick={() => retry()}>
+                  <CompareIcon /> {t('dataset.analysis.btn.retry')}
+                </Button>
+              </div>
+              <Panel label={t('dataset.analysis.param.title')} style={{ marginTop: -10 }} toogleVisible={false}>
+                <Form
+                  className={style.analysisForm}
+                  form={form}
+                  layout='vertical'
+                  name='labelForm'
+                  initialValues={initialValues}
+                  onFinish={onFinish}
+                  onFinishFailed={onFinishFailed}
+                  labelAlign='left'
+                  colon={false}
+                >
+                  <Form.Item
+                    label={t('dataset.analysis.column.name')}
+                    name='datasets'
+                    rules={[
+                      { required: true },
+                      { validator: validDatasetCount }
+                    ]}>
+                    <DatasetSelect pid={pid} mode='multiple' onChange={datasetsChange} />
+                  </Form.Item>
+                  <Form.Item name='submitBtn'>
+                    <div style={{ textAlign: 'center' }}>
+                      <Button type="primary" size="large" htmlType="submit">
+                        <CompareIcon /> {t('dataset.analysis.btn.start')}
+                      </Button>
+                    </div>
+                  </Form.Item>
+                </Form>
+              </Panel>
             </div>
-            <Panel label={t('dataset.analysis.param.title')} style={{ marginTop: -10 }} toogleVisible={false}>
-              <Form
-                className={style.analysisForm}
-                form={form}
-                layout='vertical'
-                name='labelForm'
-                initialValues={initialValues}
-                onFinish={onFinish}
-                onFinishFailed={onFinishFailed}
-                labelAlign='left'
-                colon={false}
-              >
-                <Form.Item
-                  label={t('dataset.analysis.column.name')}
-                  name='datasets'
-                  rules={[
-                    { required: true },
-                    { validator: validDatasetCount }
-                  ]}>
-                  <DatasetSelect pid={pid} mode='multiple' onChange={datasetsChange} />
-                </Form.Item>
-                <Form.Item name='submitBtn'>
-                  <div style={{ textAlign: 'center' }}>
-                    <Button type="primary" size="large" htmlType="submit">
-                      <CompareIcon /> {t('dataset.analysis.btn.start')}
-                    </Button>
-                  </div>
-                </Form.Item>
-              </Form>
-            </Panel>
           </Col>
         </Row>
 
