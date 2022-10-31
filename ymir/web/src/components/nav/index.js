@@ -1,20 +1,24 @@
 import React, { useState, useEffect } from "react"
 import { Menu, Dropdown, Row, Col, Space } from "antd"
-import {
-  LogoutOutlined,
-} from "@ant-design/icons"
-import { connect } from "dva"
-import { Link, useHistory, useLocation } from "umi"
+import { Link, useHistory, useLocation, useSelector } from "umi"
 
 import t from '@/utils/t'
-import { ROLES } from '@/constants/user'
+import { ROLES, getRolesLabel } from '@/constants/user'
 import { getDeployUrl } from '@/constants/common'
+import useFetch from '@/hooks/useFetch'
+
 import LangBtn from "../common/langBtn"
+
 import styles from "./index.less"
 import './menu.less'
 import logo from '@/assets/logo_a.png'
-import { NavHomeIcon, NavModelmanageIcon, NavDatasetIcon, ArrowDownIcon } from '@/components/common/icons'
-import { GithubIcon, UserIcon, NavTaskIcon, FlagIcon, EqualizerIcon, StoreIcon } from "../common/icons"
+import {
+  NavHomeIcon, ArrowDownIcon, GithubIcon, UserIcon,
+  NavTaskIcon, FlagIcon, EqualizerIcon, StoreIcon
+} from '@/components/common/icons'
+import {
+  LogoutOutlined,
+} from "@ant-design/icons"
 
 const menus = () => [
   {
@@ -59,11 +63,13 @@ function validPermission(role, permission) {
   return role >= (permission || role)
 }
 
-function HeaderNav({ simple = false, username, loginout, avatar, role }) {
+function HeaderNav({ simple = false }) {
   const [defaultKeys, setDefaultKeys] = useState(null)
   const location = useLocation()
   const history = useHistory()
   const [mainMenu, setMainMenu] = useState([])
+  const { avatar, role, username, email } = useSelector(({ user }) => user)
+  const [logoutResult, loginout] = useFetch('user/loginout')
 
   useEffect(() => {
     const key = getParantPath(location.pathname)
@@ -74,12 +80,9 @@ function HeaderNav({ simple = false, username, loginout, avatar, role }) {
     setMainMenu(handleMenus(menus()))
   }, [role])
 
-  const out = async () => {
-    const res = await loginout()
-    if (res) {
-      history.push("/login")
-    }
-  }
+  useEffect(() => logoutResult && history.push('/login'), [logoutResult])
+
+  const out = () => loginout()
 
   const handleClick = ({ key }) => {
     setDefaultKeys([key])
@@ -111,6 +114,8 @@ function HeaderNav({ simple = false, username, loginout, avatar, role }) {
     return result
   }
 
+  const name = `${role > ROLES.USER ? `${t(getRolesLabel(role))} -` : ''}${username || email}`
+
   return (
     <Row className={styles.nav} gutter={24} align="middle">
       <div className={styles.logo} style={{ overflow: simple ? 'initial' : 'hidden' }}><Link to='/' title={'YMIR'}><img src={logo} /></Link></div>
@@ -121,9 +126,9 @@ function HeaderNav({ simple = false, username, loginout, avatar, role }) {
         <Col style={{ textAlign: "right" }}>
           <Space size={20}>
             <Dropdown overlay={menu} placement="bottomRight">
-              <div className={styles.user}>
+              <div className={styles.user} title={name}>
                 <span className={styles.avatar}>{avatar ? <img src={avatar} /> : (username || 'Y').charAt(0).toUpperCase()}</span>
-                <span>{username}</span>
+                <span className={styles.username}>{name}</span>
                 <ArrowDownIcon />
               </div>
             </Dropdown>
@@ -135,25 +140,4 @@ function HeaderNav({ simple = false, username, loginout, avatar, role }) {
   )
 }
 
-const mapStateToProps = (state) => {
-  return {
-    logined: state.user.logined,
-    username: state.user.username,
-    avatar: state.user.avatar,
-    current: state.watchRoute.current,
-    role: state.user.role,
-  }
-}
-
-const mapDispatchToProps = (dispatch) => {
-  return {
-    updateCurrentPath(newPath) {
-    },
-    loginout() {
-      return dispatch({
-        type: "user/loginout",
-      })
-    },
-  }
-}
-export default connect(mapStateToProps, mapDispatchToProps)(HeaderNav)
+export default HeaderNav

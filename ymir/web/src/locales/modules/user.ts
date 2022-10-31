@@ -18,7 +18,7 @@ const user = {
   "user.info.list.email": { cn: "注册邮箱", en: "Email", },
   "user.info.list.phone": { cn: "手机号码", en: "Phone", },
   "user.info.list.password": { cn: "账户密码", en: "Password", },
-  "user.info.list.permission": { cn: "用户权限", en: "Permission", },
+  "user.info.list.role": { cn: "用户角色", en: "Role", },
   "user.info.username.success": { cn: "用户名称修改成功", en: "Username updated", },
   "user.info.avatar.success": { cn: "头像上传成功", en: "Avatar updated", },
   "user.info.avatar.failure": { cn: "头像上传失败", en: "Avatar upload failure", },
