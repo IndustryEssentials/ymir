@@ -19,7 +19,6 @@ import useRerunAction from "../../hooks/useRerunAction"
 import useCardTitle from '@/hooks/useCardTitle'
 import VersionName from '@/components/result/VersionName'
 import EditDescBox from "@/components/form/editDescBox"
-import VersionName from '@/components/result/VersionName'
 
 const { Item } = Descriptions
 
