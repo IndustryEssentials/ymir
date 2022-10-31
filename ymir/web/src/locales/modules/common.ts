@@ -68,6 +68,7 @@ const common = {
   'common.action.import': {cn: '添加', en: 'Add', },
   'common.action.hide': {cn: '隐藏', en: 'Hide', },
   'common.action.check': {cn: '检查', en: 'Check', },
+  'common.action.preview': {cn: '图片预览', en: 'Preview', },
   'common.action.check.again': {cn: '重新检查', en: 'Recheck', },
   'common.action.multiple.hide': {cn: '批量隐藏', en: 'Batch Hide', },
   'common.action.multiple.restore': {cn: '批量显示', en: 'Batch Show', },
