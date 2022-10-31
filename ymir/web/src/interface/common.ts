@@ -4,6 +4,14 @@ import { Task } from "./task"
 export type BackendData = {
   [key: string]: any,
 }
+
+export interface Group {
+  id: number,
+  name: string,
+  projectId: number,
+  createTime: string,
+}
+
 export interface Result {
   id: number,
   groupId: number,

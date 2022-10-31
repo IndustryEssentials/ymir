@@ -1,5 +1,5 @@
 
-import { Result, BackendData } from "@/interface/common"
+import { Result, BackendData, Group } from "@/interface/common"
 type Keywords = {
   [key: string]: number,
 }
@@ -21,11 +21,7 @@ type AnylysisAnnotation = {
   area: Array<BackendData>,
   areaRatio: Array<BackendData>,
 }
-export interface DatasetGroup {
-  id: number,
-  name: string,
-  projectId: number,
-  createTime: string,
+export interface DatasetGroup extends Group {
   versions?: Array<Dataset>,
 }
 
