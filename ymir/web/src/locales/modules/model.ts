@@ -58,7 +58,7 @@ const model = {
   'model.verify.upload.tip': { cn: '模型验证需要较长时间，请耐心等待', en: 'Verification need more time, be patient...' },
   "model.diagnose.tab.metrics": { cn: '衡量指标', en: 'Metrics', },
   "model.diagnose.tab.training": { cn: '训练过程', en: 'Training Fitting', },
-  "model.diagnose.tab.visualization": { cn: '图像可视化', en: 'Image Visualization', },
+  "model.diagnose.tab.infer_datasets": { cn: '推理结果', en: 'Inference Results', },
   "model.diagnose.form.model": { cn: '诊断模型', en: 'Diagnosing Models', },
   'model.diagnose.form.testset': { cn: '测试集', en: 'Testing Datasets', },
   'model.diagnose.form.confidence': { cn: '置信度', en: 'Confidence', },

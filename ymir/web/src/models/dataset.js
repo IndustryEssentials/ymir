@@ -131,25 +131,29 @@ export default {
       }
     },
     *queryInferDatasets({ payload }, { call, put }) {
+      const { pid } = payload
       const result = yield put.resolve({
         type: 'queryDatasets',
         payload: { ...payload, type: TASKTYPES.INFERENCE }
       })
       if (result) {
         const { items: datasets = [], total } = result
-        const getIds = key => datasets.map(ds => {
-          const param = ds.task?.parameters || {}
-          return param[key]
-        }).filter(notEmpty => notEmpty)
+        const getIds = key => {
+          const ids = datasets.map(ds => {
+            const param = ds.task?.parameters || {}
+            return param[key]
+          }).filter(notEmpty => notEmpty)
+          return [...new Set(ids)]
+        }
         const modelIds = getIds('model_id')
-        const validationIds = getIds('validation_dataset_id')
+        const datasetIds = getIds('dataset_id')
         yield put({
-          type: 'model/batchModels',
-          payload: { ids: modelIds }
+          type: 'model/batchLocalModels',
+          payload: modelIds
         })
         yield put({
-          type: 'batchDatasets',
-          payload: { ids: validationIds, }
+          type: 'batchLocalDatasets',
+          payload: { pid, ids: datasetIds, }
         })
         return {
           items: datasets.map(transferInferDataset),

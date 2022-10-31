@@ -1,6 +1,7 @@
 
 import { Result, BackendData, Group } from "@/interface/common"
 import { ModelVersion } from "./model"
+import { ImageConfig } from './image'
 type Keywords = {
   [key: string]: number,
 }
@@ -38,10 +39,11 @@ export interface Dataset extends Result {
 }
 
 export interface InferDataset extends Dataset {
-  modelId?: number,
-  model?: ModelVersion,
-  validationDatasetId?: number,
-  validationDataset?: Dataset,
+  inferModelId: number[],
+  inferModel?: ModelVersion,
+  inferDatasetId: number,
+  inferDataset?: Dataset,
+  inferConfig: ImageConfig,
 }
 
 export interface DatasetAnalysis {

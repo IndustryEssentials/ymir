@@ -6,7 +6,7 @@ import { getRecommendStage, validModel } from '@/constants/model'
 import { percent } from '@/utils/number'
 import StrongTitle from "./StrongTitle"
 
-const Stages: ColumnType<ModelVersion> = {
+const Stages = <T extends ModelVersion>(): ColumnType<T> => ({
   title: StrongTitle("model.column.stage"),
   dataIndex: "recommendStage",
   render: (_, record) => {
@@ -18,6 +18,6 @@ const Stages: ColumnType<ModelVersion> = {
       </Row> : null
   },
   width: 300,
-}
+})
 
 export default Stages

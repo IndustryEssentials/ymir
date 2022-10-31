@@ -5,9 +5,9 @@ import { ColumnType } from "antd/lib/table"
 import t from '@/utils/t'
 import { DescPop } from "@/components/common/DescPop"
 import StrongTitle from "./StrongTitle"
-import { Dataset } from "@/interface/dataset"
+import { Result } from "@/interface/common"
 
-const Name = (type = 'dataset'): ColumnType<Dataset> => ({
+const Name = <T extends Result>(type = 'dataset'): ColumnType<T> => ({
   title: StrongTitle(`${type}.column.name`),
   dataIndex: "versionName",
   render: (name, { id, name: groupName, projectId: pid, description }) => {

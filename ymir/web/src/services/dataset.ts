@@ -94,7 +94,7 @@ export function queryDatasets({
     params: {
       project_id: pid,
       group_id: gid,
-      type,
+      source: type,
       state,
       name,
       offset,
