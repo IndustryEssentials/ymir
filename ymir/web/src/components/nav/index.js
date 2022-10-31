@@ -14,6 +14,9 @@ import './menu.less'
 import logo from '@/assets/logo_a.png'
 import { NavHomeIcon, NavModelmanageIcon, NavDatasetIcon, ArrowDownIcon } from '@/components/common/Icons'
 import { GithubIcon, UserIcon, NavTaskIcon, FlagIcon, EqualizerIcon, StoreIcon } from "../common/Icons"
+import {
+  LogoutOutlined,
+} from "@ant-design/icons"
 
 const menus = () => [
   {
