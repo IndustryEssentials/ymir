@@ -7,6 +7,7 @@ from unittest import mock
 from google.protobuf.json_format import ParseDict
 
 import tests.utils as test_utils
+from common_utils.labels import label_storage_file_path
 from controller.utils import utils
 from controller.utils.invoker_call import make_invoker_cmd_call
 from controller.utils.invoker_mapping import RequestTypeToInvoker
@@ -105,11 +106,11 @@ class TestInvokerTaskImportDataset(unittest.TestCase):
         os.makedirs(working_dir, exist_ok=True)
 
         expected_cmd_import_dataset = (
-            "mir import --root {0} --dst-rev {1}@{1} --src-revs {2} "
-            "--index-file {3} --gen-dir {4} -w {5} --anno-type {6} --pred-dir {4} --gt-dir {4} "
-            "--unknown-types-strategy add".format(self._mir_repo_root, self._task_id, 'master',
-                                                  os.path.join(working_dir, 'index.txt'), self._storage_root,
-                                                  working_dir, "det-box"))
+            f"mir import --root {self._mir_repo_root} --dst-rev {self._task_id}@{self._task_id} --src-revs master "
+            f"--index-file {os.path.join(working_dir, 'index.txt')} --gen-dir {self._storage_root} -w {working_dir} "
+            f"--label-storage-file {label_storage_file_path(sandbox_root=self._sandbox_root, user_id=self._user_name)} "
+            f"--anno-type det-box --pred-dir {self._storage_root} --gt-dir {self._storage_root} "
+            "--unknown-types-strategy add")
         mock_run.assert_has_calls(calls=[
             mock.call(expected_cmd_import_dataset.split(' '), capture_output=True, text=True),
         ])

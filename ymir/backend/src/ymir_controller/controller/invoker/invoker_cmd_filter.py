@@ -27,7 +27,7 @@ class FilterBranchInvoker(BaseMirControllerInvoker):
             utils.mir_executable(), 'filter', '--root', self._repo_root, '--dst-rev',
             revs.join_tvt_branch_tid(branch_id=self._request.dst_dataset_id, tid=self._task_id), '--src-revs',
             revs.join_tvt_branch_tid(branch_id=self._request.in_dataset_ids[0], tid=self._request.his_task_id), '-w',
-            self._work_dir
+            self._work_dir, '--label-storage-file', self._label_storage_file
         ]
 
         if self._request.in_class_ids:

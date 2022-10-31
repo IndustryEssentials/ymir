@@ -62,6 +62,7 @@ class InferenceCMDInvoker(BaseMirControllerInvoker):
 
         self.inference_cmd(
             repo_root=self._repo_root,
+            label_storage_file=self._label_storage_file,
             work_dir=self._work_dir,
             config_file=config_file,
             model_location=self._assets_config["modelskvlocation"],
@@ -99,11 +100,12 @@ class InferenceCMDInvoker(BaseMirControllerInvoker):
         return resp
 
     @classmethod
-    def inference_cmd(cls, repo_root: str, work_dir: str, model_location: str, config_file: str, model_hash: str,
-                      model_stage: str, index_file: str, executor: str) -> backend_pb2.GeneralResp:
+    def inference_cmd(cls, repo_root: str, label_storage_file: str, work_dir: str, model_location: str,
+                      config_file: str, model_hash: str, model_stage: str, index_file: str,
+                      executor: str) -> backend_pb2.GeneralResp:
         infer_cmd = [
-            utils.mir_executable(), 'infer', '--root', repo_root, '-w', work_dir, '--model-location', model_location,
-            '--index-file', index_file, '--model-hash', f"{model_hash}@{model_stage}", '--task-config-file',
-            config_file, "--executor", executor
+            utils.mir_executable(), 'infer', '--root', repo_root, '--label-storage-file', label_storage_file, '-w',
+            work_dir, '--model-location', model_location, '--index-file', index_file, '--model-hash',
+            f"{model_hash}@{model_stage}", '--task-config-file', config_file, "--executor", executor
         ]
         return utils.run_command(infer_cmd)
