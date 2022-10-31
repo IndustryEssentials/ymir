@@ -243,7 +243,7 @@ def _import_annotations_seg_mask(map_hashed_filename: Dict[str, str], mir_annota
         width, height = mask_image.size
         img: np.ndarray = np.array(mask_image)
         np_mask: np.ndarray = np.zeros(shape=(height, width, 3), dtype=np.uint8)
-        for color in map_color_pixel:
+        for color in map_color_cid:
             r = img[:, :, 0] == color[0]
             g = img[:, :, 1] == color[1]
             b = img[:, :, 2] == color[2]
@@ -252,9 +252,7 @@ def _import_annotations_seg_mask(map_hashed_filename: Dict[str, str], mir_annota
             if np.any(mask):
                 expected_color.add(color)
                 np_mask[mask] = color
-
-                if color in map_color_cid:
-                    img_class_ids.add(map_color_cid[color])
+                img_class_ids.add(map_color_cid[color])
 
         new_mask_image: Image.Image = Image.fromarray(np_mask)
         with io.BytesIO() as output:
