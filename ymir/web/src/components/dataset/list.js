@@ -9,7 +9,7 @@ import { humanize } from "@/utils/number"
 import { diffTime } from '@/utils/date'
 import { getTaskTypeLabel, TASKSTATES, TASKTYPES } from '@/constants/task'
 import { ResultStates } from '@/constants/common'
-import { canHide } from '@/constants/dataset'
+import { canHide, validDataset } from '@/constants/dataset'
 
 import CheckProjectDirty from "@/components/common/CheckProjectDirty"
 import StateTag from "@/components/task/stateTag"
@@ -244,6 +244,13 @@ function Datasets({ pid, project = {}, iterations, groups, datasetList, query, v
         hidden: () => invalidDataset(record),
         onclick: () => history.push(`/home/project/${pid}/mining?did=${id}`),
         icon: <VectorIcon />,
+      },
+      {
+        key: "preview",
+        label: t("common.action.preview"),
+        hidden: () => !validDataset(record),
+        onclick: () => history.push(`/home/project/${pid}/dataset/${id}/assets`),
+        icon: <SearchIcon className={styles.addBtnIcon} />,
       },
       {
         key: "merge",
