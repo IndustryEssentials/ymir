@@ -5,19 +5,18 @@ import Keywords from './columns/Keywords'
 import State from './columns/State'
 import CreateTime from './columns/CreateTime'
 import Stages from './columns/Stages'
-import { Dataset, InferDataset } from '@/interface/dataset'
-import { ModelVersion } from '@/interface/model'
 import { TableColumnsType } from 'antd'
+import { Result } from '@/interface/common'
+import { InferDataset } from '@/interface/dataset'
 
 type Type = 'dataset' | 'model' | 'inferDataset'
-type ResultType = Dataset | ModelVersion | InferDataset
 
-const getColumns = (type: Type) => {
-  const inferDataset: TableColumnsType<ResultType> = [State, CreateTime]
+function getColumns<T extends Result> (type: Type) {
+  const inferDataset: TableColumnsType<T> = [State, CreateTime]
   const maps = {
     dataset: [Name(), Source, Count, Keywords, State, CreateTime],
     model: [Name('model'), Stages, Source, State, CreateTime],
-    inferDataset: [State, CreateTime],
+    inferDataset,
   }
   return maps[type]
 }
