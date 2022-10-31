@@ -288,14 +288,8 @@ def ids_file_path(mir_root: str) -> str:
     return os.path.join(mir_dir, ids_file_name())
 
 
-def load_or_create_userlabels(mir_root: Optional[str] = None,
-                              label_storage_file: Optional[str] = None,
+def load_or_create_userlabels(label_storage_file: str,
                               create_ok: bool = False) -> UserLabels:
-    if mir_root:
-        if label_storage_file:
-            raise RuntimeError("mir_root and label_storage_file cannot both set.")
-        label_storage_file = ids_file_path(mir_root=mir_root)
-
     if not label_storage_file:
         raise ValueError("empty label_storage_file")
 
@@ -303,7 +297,7 @@ def load_or_create_userlabels(mir_root: Optional[str] = None,
         return UserLabels(storage_file=label_storage_file)
 
     if not create_ok:
-        raise RuntimeError("label file miss in mir_root.")
+        raise RuntimeError(f"label file miss in path: {label_storage_file}")
 
     user_labels = UserLabels()
     with open(label_storage_file, 'w') as f:

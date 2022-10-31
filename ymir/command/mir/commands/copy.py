@@ -16,8 +16,10 @@ class CmdCopy(base.BaseCommand):
     def run(self) -> int:
         logging.debug("command copy: %s", self.args)
         return CmdCopy.run_with_args(mir_root=self.args.mir_root,
+                                     label_storage_file=self.args.label_storage_file,
                                      data_mir_root=self.args.data_mir_root,
                                      data_src_revs=self.args.data_src_revs,
+                                     data_label_storage_file=self.args.data_label_storage_file,
                                      dst_rev=self.args.dst_rev,
                                      ignore_unknown_types=self.args.ignore_unknown_types,
                                      drop_annotations=self.args.drop_annotations,
@@ -27,8 +29,10 @@ class CmdCopy(base.BaseCommand):
     @staticmethod
     @command_run_in_out
     def run_with_args(mir_root: str,
+                      label_storage_file: str,
                       data_mir_root: str,
                       data_src_revs: str,
+                      data_label_storage_file: str,
                       dst_rev: str,
                       ignore_unknown_types: bool,
                       drop_annotations: bool,
@@ -86,8 +90,8 @@ class CmdCopy(base.BaseCommand):
             need_change_class_ids = False
 
         if need_change_class_ids:
-            src_class_id_mgr = class_ids.load_or_create_userlabels(mir_root=data_mir_root)
-            dst_class_id_mgr = class_ids.load_or_create_userlabels(mir_root=mir_root)
+            src_class_id_mgr = class_ids.load_or_create_userlabels(label_storage_file=data_label_storage_file)
+            dst_class_id_mgr = class_ids.load_or_create_userlabels(label_storage_file=label_storage_file)
             src_to_dst_ids = {
                 src_class_id_mgr.id_and_main_name_for_name(n)[0]: dst_class_id_mgr.id_and_main_name_for_name(n)[0]
                 for n in src_class_id_mgr.all_main_names()
@@ -196,6 +200,11 @@ def bind_to_subparsers(subparsers: argparse._SubParsersAction, parent_parser: ar
                                  type=str,
                                  required=True,
                                  help="type:rev@bid, branch in source mir root")
+    copy_arg_parser.add_argument("--src-label-storage-file",
+                                 dest="data_label_storage_file",
+                                 type=str,
+                                 required=False,
+                                 help="source label storage file path you want to copy from")
     copy_arg_parser.add_argument("--dst-rev", dest="dst_rev", type=str, required=True, help="rev@tid")
     copy_arg_parser.add_argument('-w', dest='work_dir', type=str, required=False, help='working directory')
     copy_arg_parser.add_argument('--ignore-unknown-types',

@@ -7,6 +7,7 @@ from unittest import mock
 from google.protobuf.json_format import ParseDict
 
 import tests.utils as test_utils
+from common_utils.labels import label_storage_file_path
 from controller.utils import utils
 from controller.utils.invoker_call import make_invoker_cmd_call
 from controller.utils.invoker_mapping import RequestTypeToInvoker
@@ -103,8 +104,12 @@ class TestInvokerTaskCopy(unittest.TestCase):
                                          in_dataset_ids=in_dataset_ids,
                                          req_create_task=req_create_task)
 
-        expected_cmd_copy = ("mir copy --root {0} --src-root {1} --dst-rev {2}@{2} --src-revs {3}@{3} -w {4}".format(
-            self._mir_repo_root, mir_src_root, self._task_id, in_dataset_ids[0], working_dir))
+        expected_cmd_copy = (
+            f"mir copy --root {self._mir_repo_root} --src-root {mir_src_root} "
+            f"--dst-rev {self._task_id}@{self._task_id} "
+            f"--src-revs {in_dataset_ids[0]}@{in_dataset_ids[0]} -w {working_dir} "
+            f"--label-storage-file {label_storage_file_path(self._sandbox_root, self._user_name)} "
+            f"--src-label-storage-file {label_storage_file_path(self._sandbox_root, copy_request.src_user_id)}")
         mock_run.assert_has_calls(calls=[
             mock.call(expected_cmd_copy.split(' '), capture_output=True, text=True),
         ])

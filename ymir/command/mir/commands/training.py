@@ -156,6 +156,7 @@ class CmdTrain(base.BaseCommand):
                                       src_revs=self.args.src_revs,
                                       dst_rev=self.args.dst_rev,
                                       mir_root=self.args.mir_root,
+                                      label_storage_file=self.args.label_storage_file,
                                       media_location=self.args.media_location,
                                       tensorboard_dir=self.args.tensorboard_dir,
                                       executor=self.args.executor,
@@ -176,6 +177,7 @@ class CmdTrain(base.BaseCommand):
                       config_file: Optional[str],
                       tensorboard_dir: str,
                       run_as_root: bool,
+                      label_storage_file: str,
                       mir_root: str = '.',
                       media_location: str = '') -> int:
         if not model_upload_location:
@@ -262,7 +264,7 @@ class CmdTrain(base.BaseCommand):
         logging.info("exporting assets")
         # type names to type ids
         # ['cat', 'person'] -> [4, 2]
-        cls_mgr = class_ids.load_or_create_userlabels(mir_root=mir_root)
+        cls_mgr = class_ids.load_or_create_userlabels(label_storage_file=label_storage_file)
         type_ids_list, unknown_names = cls_mgr.id_for_names(class_names)
         if not type_ids_list:
             logging.info(f"type ids empty, please check config file: {config_file}")

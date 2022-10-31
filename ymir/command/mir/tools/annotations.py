@@ -90,14 +90,14 @@ def _object_dict_to_annotation(object_dict: dict, cid: int) -> mirpb.ObjectAnnot
     return annotation
 
 
-def import_annotations(mir_annotation: mirpb.MirAnnotations, mir_root: str, prediction_dir_path: str,
+def import_annotations(mir_annotation: mirpb.MirAnnotations, label_storage_file: str, prediction_dir_path: str,
                        groundtruth_dir_path: str, map_hashed_filename: Dict[str, str],
                        unknown_types_strategy: UnknownTypesStrategy, anno_type: "mirpb.AnnoType.V",
                        phase: str) -> Dict[str, int]:
     anno_import_result: Dict[str, int] = defaultdict(int)
 
     # read type_id_name_dict and type_name_id_dict
-    class_type_manager = class_ids.load_or_create_userlabels(mir_root=mir_root)
+    class_type_manager = class_ids.load_or_create_userlabels(label_storage_file=label_storage_file)
     logging.info("loaded type id and names: %d", len(class_type_manager.all_ids()))
 
     if prediction_dir_path:

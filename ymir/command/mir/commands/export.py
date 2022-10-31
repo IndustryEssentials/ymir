@@ -19,6 +19,7 @@ class CmdExport(base.BaseCommand):
 
         return CmdExport.run_with_args(
             mir_root=self.args.mir_root,
+            label_storage_file=self.args.label_storage_file,
             asset_dir=self.args.asset_dir,
             pred_dir=self.args.pred_dir,
             gt_dir=self.args.gt_dir,
@@ -35,6 +36,7 @@ class CmdExport(base.BaseCommand):
     @command_run_in_out
     def run_with_args(
         mir_root: str,
+        label_storage_file: str,
         asset_dir: str,
         pred_dir: str,
         gt_dir: str,
@@ -62,7 +64,7 @@ class CmdExport(base.BaseCommand):
             return check_code
 
         # prepare
-        cls_mgr = load_or_create_userlabels(mir_root=mir_root)
+        cls_mgr = load_or_create_userlabels(label_storage_file=label_storage_file)
         class_ids_list, unknown_names = cls_mgr.id_for_names(class_names)
         if unknown_names:
             raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,

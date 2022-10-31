@@ -35,9 +35,10 @@ class MirParser(argparse.ArgumentParser):
         if argv:
             msg = "unrecognized arguments: %s"
             self.error(msg % " ".join(argv), getattr(args, "func", None))
-        breakpoint()  # todo: for test
-        if not args.user_labels:
-            args.user_labels = os.path.join(args.mir_root, '.mir', 'labels.yaml')
+        # add default user labels if necessary
+        if hasattr(args, 'mir_root') and hasattr(args, 'label_storage_file'):
+            if not args.label_storage_file:
+                args.label_storage_file = os.path.join(args.mir_root, '.mir', 'labels.yaml')
         return args
 
 
@@ -82,8 +83,8 @@ def create_main_parser() -> argparse.ArgumentParser:
                               type=str,
                               default=os.getcwd(),
                               help="Root path to the mir repo, use . if not set.")
-    share_parser.add_argument("--user-labels",
-                              dest="user_labels",
+    share_parser.add_argument("--label-storage-file",
+                              dest="label_storage_file",
                               type=str,
                               default='',
                               required=False,
