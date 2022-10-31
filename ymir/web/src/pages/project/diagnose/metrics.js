@@ -10,6 +10,7 @@ import CurveView from "./components/curveView"
 import PView from "./components/prView"
 import View from './components/view'
 import DefaultStages from "./components/defaultStages"
+import Tip from "@/components/form/singleTip"
 
 import s from "./index.less"
 import { CompareIcon } from "@/components/common/icons"
@@ -217,14 +218,14 @@ function Matrics({ pid, project }) {
 
   const renderViewPanel = () => <div className={s.metricsPanel}>{renderView()}</div>
 
-  const renderIouTitle = <Space>
-    <span>{t('model.diagnose.form.iou')}</span>
-    <Checkbox checked={everageIou} onChange={({ target: { checked } }) => setEverageIou(checked)}>Average IOU</Checkbox>
-  </Space>
+  const renderIouOptionLabel = type => <>
+    {t(`model.diagnose.form.iou.${type}`)}
+    <Tip className={s.iouTip} content={t(`model.diagnose.form.iou.${type}.tip`)} placement='top' arrowPointAtCenter />
+    </>
 
   const iouOptions = [
-    { value: true, label: t('model.diagnose.form.iou.everage') },
-    { value: false, label: t('model.diagnose.form.iou.single') },
+    { value: true, label: renderIouOptionLabel('everage') },
+    { value: false, label: renderIouOptionLabel('single') },
   ]
 
   // todo form initial values
