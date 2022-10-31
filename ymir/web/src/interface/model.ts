@@ -1,4 +1,4 @@
-import { Result } from "@/interface/common"
+import { Group, Result } from "@/interface/common"
 
 export interface Stage {
   id: number,
@@ -7,12 +7,7 @@ export interface Stage {
   modelId?: number,
   modelName?: string,
 }
-export interface ModelGroup {
-  id: number,
-  projectId: number,
-  name: string,
-  createTime: string,
-}
+export interface ModelGroup extends Group { }
 export interface ModelVersion extends Result {
   map: number,
   url: string,

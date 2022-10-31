@@ -17,7 +17,8 @@ import TypeTag from "@/components/task/typeTag"
 import RenderProgress from "@/components/common/progress"
 import Terminate from "@/components/task/terminate"
 import Hide from "../common/hide"
-import EditBox from "@/components/form/editBox"
+import EditNameBox from "@/components/form/editNameBox"
+import EditDescBox from "@/components/form/editDescBox"
 import { getTensorboardLink } from "@/services/common"
 
 import {
@@ -48,6 +49,7 @@ function Model({ pid, project = {}, iterations, groups, modelList, versions, que
   const terminateRef = useRef(null)
   const generateRerun = useRerunAction()
   const [publish, publishResult] = usePublish()
+  const [editingModel, setEditingModel] = useState({})
 
   /** use effect must put on the top */
   useEffect(() => {
@@ -319,6 +321,12 @@ function Model({ pid, project = {}, iterations, groups, modelList, versions, que
         icon: <WajueIcon />,
       },
       {
+        key: "edit.desc",
+        label: t("common.action.edit.desc"),
+        onclick: () => editDesc(record),
+        icon: <EditIcon />,
+      },
+      {
         key: "stop",
         label: t("task.action.terminate"),
         onclick: () => stop(record),
@@ -411,18 +419,35 @@ function Model({ pid, project = {}, iterations, groups, modelList, versions, que
     groupId && func.getVersions(groupId, true)
   }
 
-  const saveName = async (record, name) => {
-    const result = await func.updateModel(record.id, name)
+  const saveNameHandle = (result) => {
     if (result) {
       setModels((models) =>
         models.map((model) => {
-          if (model.id === record.id) {
-            model.name = name
+          if (model.id === result.id) {
+            model.name = result.name
           }
           return model
         })
       )
     }
+  }
+  const saveDescHandle = result => {
+    if (result) {
+      setModelVersions((models) => ({
+        ...models,
+        [result.groupId]: models[result.groupId].map((model) => {
+          if (model.id === result.id) {
+            model.description = result.description
+          }
+          return model
+        })
+      }))
+    }
+  }
+
+  const editDesc = model => {
+    setEditingModel({})
+    setTimeout(() => setEditingModel(model), 0)
   }
 
   const search = (values) => {
@@ -536,7 +561,8 @@ function Model({ pid, project = {}, iterations, groups, modelList, versions, que
 
         {renderGroups}
       </div>
-      <EditBox record={current} max={80} action={saveName}></EditBox>
+      <EditNameBox type='model' record={current} max={80} handle={saveNameHandle} />
+      <EditDescBox type='model' record={editingModel} handle={saveDescHandle} />
       <Hide ref={hideRef} type={1} msg='model.action.hide.confirm.content' ok={hideOk} />
       <Terminate ref={terminateRef} ok={terminateOk} />
     </div>
@@ -564,12 +590,6 @@ const actions = (dispatch) => {
       return dispatch({
         type: 'model/getModelVersions',
         payload: { gid, force },
-      })
-    },
-    updateModel: (id, name) => {
-      return dispatch({
-        type: 'model/updateModel',
-        payload: { id, name },
       })
     },
     updateQuery: (query) => {
