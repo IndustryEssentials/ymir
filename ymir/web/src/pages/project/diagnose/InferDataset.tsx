@@ -1,6 +1,6 @@
 import getColumns from "@/components/table/Columns"
 import useFetch from "@/hooks/useFetch"
-import { Dataset, InferDataset as DatasetType, InferDataset } from "@/interface/dataset"
+import { Dataset, InferDataset as DatasetType } from "@/interface/dataset"
 import { ModelVersion } from "@/interface/model"
 import { Card, Table, TableColumnsType } from "antd"
 import React, { useEffect, useState } from "react"
@@ -22,7 +22,7 @@ type ModelState = {
 
 const InferDataset: React.FC = () => {
   const { id: pid } = useParams<{ id?: string }>()
-  const [datasets, setDatasets] = useState<InferDataset[]>([])
+  const [datasets, setDatasets] = useState<DatasetType[]>([])
   const [{ items, total }, getDatasets] = useFetch('dataset/queryInferDatasets', { items: [], total: 0 })
   const cols = getColumns<DatasetType>('inferDataset')
   const cacheDatasets = useSelector((state: DatasetState) => state.dataset.dataset)
