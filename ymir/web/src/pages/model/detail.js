@@ -17,6 +17,7 @@ import keywordsItem from "@/components/task/items/keywords"
 import { DescPop } from "../../components/common/descPop"
 import useRerunAction from "../../hooks/useRerunAction"
 import useCardTitle from '@/hooks/useCardTitle'
+import EditDescBox from "@/components/form/editDescBox"
 
 const { Item } = Descriptions
 
@@ -28,6 +29,7 @@ function ModelDetail({ modelCache, getModel }) {
   const restoreAction = useRestore(pid)
   const generateRerunBtn = useRerunAction('btn')
   const cardTitle = useCardTitle(model.name)
+  const [editing, setEditing] = useState({})
 
   useEffect(async () => {
     id && fetchModel(true)
@@ -43,6 +45,15 @@ function ModelDetail({ modelCache, getModel }) {
 
   async function fetchModel(force) {
     await getModel(id, force)
+  }
+
+  function editDesc() {
+    setEditing({})
+    setTimeout(() => setEditing(model), 0)
+  }
+
+  function saveDescHandle(result) {
+    result && setModel(model => ({ ...model, description: result.description }))
   }
 
   const hide = (version) => {
@@ -92,15 +103,19 @@ function ModelDetail({ modelCache, getModel }) {
             <Button type='primary' onClick={() => history.push(`/home/project/${model.projectId}/inference?mid=${getModelStage()}`)}>{t('dataset.action.inference')}</Button>
             <Button type='primary' onClick={() => history.push(`/home/project/${model.projectId}/train?mid=${getModelStage()}`)}>{t('dataset.action.train')}</Button>
             <Button type='primary' onClick={() => hide(model)}>{t('common.action.hide')}</Button>
+            <Button type="primary" onClick={() => editDesc()}>
+              {t(`common.action.edit.desc`)}
+            </Button>
           </> :
             <Button type="primary" onClick={restore}>
               {t("common.action.restore")}
             </Button>
           }
-          {generateRerunBtn(model)}
+            {generateRerunBtn(model)}
           </Space>
         </div>
       </Card>
+      <EditDescBox record={editing} handle={saveDescHandle} />
       <Hide ref={hideRef} type={1} msg='model.action.hide.confirm.content' ok={hideOk} />
     </div>
   )

@@ -56,7 +56,7 @@ class TestCmdSandboxVersion(unittest.TestCase):
             for repo_id in repo_ids:
                 self._prepare_repo(os.path.join(self._sandbox_a_root, user_id, repo_id))
 
-            labels_dict = {'labels': [], 'version': 1, 'ymir_version': '42.0.0'}
+            labels_dict = {'labels': [], 'version': 1, 'ymir_version': '2.0.0'}
             with open(os.path.join(self._sandbox_a_root, user_id, 'labels.yaml'), 'w') as f:
                 yaml.safe_dump(labels_dict, f)
 
@@ -70,13 +70,14 @@ class TestCmdSandboxVersion(unittest.TestCase):
         """
         sandbox c: sandbox with multiple user space versions
         """
+        vers = {'0001': '1.1.0', '0002': '2.0.0'}
         for user_id, repo_ids in {'0001': ['000001', '000002'], '0002': ['000001']}.items():
             os.makedirs(os.path.join(self._sandbox_c_root, user_id))
 
             for repo_id in repo_ids:
                 self._prepare_repo(os.path.join(self._sandbox_c_root, user_id, repo_id))
 
-            labels_dict = {'labels': [], 'version': 1, 'ymir_version': f"0.0.{int(user_id)}"}
+            labels_dict = {'labels': [], 'version': 1, 'ymir_version': vers[user_id]}
             with open(os.path.join(self._sandbox_c_root, user_id, 'labels.yaml'), 'w') as f:
                 yaml.safe_dump(labels_dict, f)
 
@@ -94,7 +95,7 @@ class TestCmdSandboxVersion(unittest.TestCase):
                                            req_type=backend_pb2.CMD_VERSIONS_GET)
         print(MessageToDict(response_a))
         self.assertEqual(CTLResponseCode.CTR_OK, response_a.code)
-        self.assertEqual(['42.0.0'], response_a.sandbox_versions)
+        self.assertEqual(['2.0.0'], response_a.sandbox_versions)
 
         # sandbox b: no users
         response_b = make_invoker_cmd_call(invoker=RequestTypeToInvoker[backend_pb2.CMD_VERSIONS_GET],
@@ -106,4 +107,4 @@ class TestCmdSandboxVersion(unittest.TestCase):
         response_c = make_invoker_cmd_call(invoker=RequestTypeToInvoker[backend_pb2.CMD_VERSIONS_GET],
                                            sandbox_root=self._sandbox_c_root,
                                            req_type=backend_pb2.CMD_VERSIONS_GET)
-        self.assertEqual({'0.0.1', '0.0.2'}, set(response_c.sandbox_versions))
+        self.assertEqual({'1.1.0', '2.0.0'}, set(response_c.sandbox_versions))

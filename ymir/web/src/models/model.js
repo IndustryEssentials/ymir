@@ -12,6 +12,7 @@ import {
   verify,
   setRecommendStage,
   batchModelStages,
+  updateVersion,
 } from "@/services/model"
 import { getStats } from "../services/common"
 import { transferModelGroup, transferModel, getModelStateFromTask, states, transferStage, } from '@/constants/model'
@@ -191,6 +192,13 @@ export default {
       const { code, result } = yield call(updateModel, id, name)
       if (code === 0) {
         return result
+      }
+    },
+    *updateVersion({ payload }, { call, put }) {
+      const { id, description } = payload
+      const { code, result } = yield call(updateVersion, id, description)
+      if (code === 0) {
+        return transferModel(result)
       }
     },
     *setRecommendStage({ payload }, { call, put }) {
