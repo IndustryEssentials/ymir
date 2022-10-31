@@ -5,11 +5,9 @@ import { useEffect, useState } from 'react'
 import t from '@/utils/t'
 import useFetch from '@/hooks/useFetch'
 import EmptyState from '@/components/empty/dataset'
+import Dataset from '@/components/form/option/Dataset'
 
-const defaultLabelRender = ({ name, versionName, assetCount }) => {
-  const label = `${name} ${versionName}(assets: ${assetCount})`
-  return name ? <span title={label}>{label}</span> : null
-}
+const defaultLabelRender = (dataset) => <Dataset dataset={dataset} />
 
 const DatasetSelect = ({
   pid, filter = [], allowEmpty, filterGroup = [],

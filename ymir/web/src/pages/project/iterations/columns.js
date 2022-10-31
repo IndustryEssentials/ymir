@@ -2,7 +2,6 @@ import t from '@/utils/t'
 import { Col, Popover, Row, Tooltip } from 'antd'
 import { Link } from 'umi'
 
-import { humanize } from "@/utils/number"
 import { validDataset } from '@/constants/dataset'
 import { percent } from '@/utils/number'
 import { diffTime } from '@/utils/date'
@@ -11,6 +10,7 @@ import { getRecommendStage, validModel } from '@/constants/model'
 import { DescPop } from "@/components/common/descPop"
 import TypeTag from "@/components/task/typeTag"
 import RenderProgress from "@/components/common/progress"
+import AssetCount from '@/components/dataset/AssetCount'
 
 function showTitle(str) {
   return <strong>{t(str)}</strong>
@@ -39,7 +39,7 @@ const sourceCol = {
 const countCol = {
   title: showTitle("dataset.column.asset_count"),
   dataIndex: "assetCount",
-  render: (num) => humanize(num),
+  render: (num, dataset) => <AssetCount dataset={dataset} />,
   sorter: (a, b) => a.assetCount - b.assetCount,
   width: 120,
 }
