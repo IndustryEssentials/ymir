@@ -3,7 +3,7 @@ import { connect } from 'dva'
 import { useCallback, useEffect, useState } from 'react'
 
 import t from '@/utils/t'
-import { INFER_DATASET_MAX_COUNT } from '@/constants/common'
+import { INFER_DATASET_MAX_COUNT, INFER_CLASSES_MAX_COUNT } from '@/constants/common'
 import useFetch from '@/hooks/useFetch'
 import ModelSelect from './modelSelect'
 import DatasetSelect from './datasetSelect'
@@ -171,6 +171,12 @@ const InferResultSelect = ({ pid, form, value, onChange = () => { } }) => {
       } : ds)
   }, [datasets])
 
+  const filterModels = (models) => models.map(model =>
+    model.keywords.length > INFER_CLASSES_MAX_COUNT ? {
+      ...model,
+      disabled: true,
+    } : model)
+
   const goInfer = useCallback(() => {
     const mids = selectedStages?.map(String)?.join('|')
     const query = selectedStages?.length ? `?mid=${mids}` : ''
@@ -184,13 +190,24 @@ const InferResultSelect = ({ pid, form, value, onChange = () => { } }) => {
 
   return (
     <>
-      <Form.Item name='stage' label={t('model.diagnose.label.model')} rules={[{ required: true }, { type: 'array', max: 5 }]} extra={renderInferBtn}>
-        <ModelSelect pid={pid} multiple onChange={modelChange} />
-      </Form.Item>
-      <Form.Item name='dataset'
+      <Form.Item
+        name='stage'
+        label={t('model.diagnose.label.model')}
         help={<Alert
           style={{ marginBottom: 20 }}
-          message={t('model.diagnose.metrics.tip.exceed', { max: humanize(INFER_DATASET_MAX_COUNT, 0) })}
+          message={t('model.diagnose.metrics.tip.exceed.classes', { max: INFER_CLASSES_MAX_COUNT })}
+          type="warning"
+        />}
+        rules={[{ required: true }, { type: 'array', max: 5 }]}
+        extra={renderInferBtn}
+      >
+        <ModelSelect pid={pid} multiple filters={filterModels} onChange={modelChange} />
+      </Form.Item>
+      <Form.Item
+        name='dataset'
+        help={<Alert
+          style={{ marginBottom: 20 }}
+          message={t('model.diagnose.metrics.tip.exceed.assets', { max: humanize(INFER_DATASET_MAX_COUNT, 0) })}
           type="warning"
         />}
         hidden={!datasets.length}
