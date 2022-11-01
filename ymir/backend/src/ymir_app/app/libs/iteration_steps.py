@@ -1,3 +1,4 @@
+import json
 from dataclasses import dataclass
 from typing import Dict, List, Optional
 
@@ -15,10 +16,12 @@ class IterationStepTemplate:
     previous_iteration: Optional[models.Iteration]
 
     presetting: Optional[Dict] = None
+    serialized_presetting: Optional[str] = None
 
     def __post_init__(self) -> None:
         method_name = f"{self.name}_initializer"
         self.presetting = getattr(self, method_name)(self.name, self.project, self.previous_iteration)
+        self.serialized_presetting = json.dumps(self.presetting)
 
     @staticmethod
     def get_step(step_name: str, iteration: Optional[models.Iteration]) -> Optional[models.IterationStep]:
@@ -106,7 +109,9 @@ def initialize_steps(
             iteration_id=iteration_id,
             name=step_template.name,
             task_type=step_template.task_type,
-            presetting=IterationStepTemplate(step_template.name, project, previous_iteration).presetting,
+            serialized_presetting=IterationStepTemplate(
+                step_template.name, project, previous_iteration
+            ).serialized_presetting,
         )
         for step_template in IterationStepTemplates
     ]
