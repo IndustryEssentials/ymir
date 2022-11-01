@@ -70,7 +70,7 @@ const Add = (props) => {
   const [updateResult, updateProject] = useFetch('project/updateProject')
 
   useEffect(() => {
-    form.setFieldsValue({ datasetId: null })
+    form.setFieldsValue({ did: null })
     setDefaultName('')
   }, [currentType])
 
@@ -164,11 +164,11 @@ const Add = (props) => {
   function addDataset(values) {
     let params = {
       ...values,
-      projectId: pid,
+      pid,
       url: (values.url || '').trim(),
     }
     if (currentType === TYPES.COPY) {
-      params.datasetId = params.datasetId[1]
+      params.did = params.did[1]
     }
     if (currentType === TYPES.LOCAL) {
       if (file) {
@@ -277,7 +277,7 @@ const Add = (props) => {
                 <Form.Item
                   label={t('dataset.add.form.internal.label')}
                   tooltip={t('tip.task.filter.datasets')}
-                  name='datasetId'
+                  name='did'
                   initialValue={selectedDataset}
                   rules={isType(TYPES.INTERNAL) ? [
                     { required: true, message: t('dataset.add.form.internal.required') }
@@ -317,7 +317,7 @@ const Add = (props) => {
             {isType(TYPES.COPY) ? (
               <Form.Item
                 label={t('dataset.add.form.copy.label')}
-                name='datasetId'
+                name='did'
                 rules={[
                   { required: true, message: t('dataset.add.form.copy.required') }
                 ]}

@@ -4,7 +4,7 @@ import { connect } from 'dva'
 
 import t from '@/utils/t'
 import Title from "./components/boxTitle"
-import { AddtaskIcon, MydatasetIcon } from '@/components/common/icons'
+import { AddtaskIcon, MydatasetIcon } from '@/components/common/Icons'
 import { cardHead, cardBody } from "./components/styles"
 import styles from './index.less'
 

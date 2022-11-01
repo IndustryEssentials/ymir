@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
 import { setLocale, getLocale } from "umi"
-import { EnglishIcon, ChinaIcon } from '@/components/common/icons'
+import { EnglishIcon, ChinaIcon } from '@/components/common/Icons'
 
 function LangBtn({ dark = false }) {
   const color = dark ? 'rgba(0, 0, 0, 0.45)' : '#fff'

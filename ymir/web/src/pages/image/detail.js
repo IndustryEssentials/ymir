@@ -12,10 +12,10 @@ import LinkModal from "./components/relate"
 import ShareModal from "./components/share"
 import Del from './components/del'
 import ImagesLink from "./components/imagesLink"
-import StateTag from '@/components/task/stateTag'
+import StateTag from '@/components/task/StateTag'
 
 import styles from "./detail.less"
-import { EditIcon, VectorIcon, TrainIcon, } from '@/components/common/icons'
+import { EditIcon, VectorIcon, TrainIcon, } from '@/components/common/Icons'
 
 const { Item } = Descriptions
 

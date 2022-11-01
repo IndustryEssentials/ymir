@@ -12,10 +12,8 @@ import LangBtn from "../common/langBtn"
 import styles from "./index.less"
 import './menu.less'
 import logo from '@/assets/logo_a.png'
-import {
-  NavHomeIcon, ArrowDownIcon, GithubIcon, UserIcon,
-  NavTaskIcon, FlagIcon, EqualizerIcon, StoreIcon
-} from '@/components/common/icons'
+import { NavHomeIcon, NavModelmanageIcon, NavDatasetIcon, ArrowDownIcon } from '@/components/common/Icons'
+import { GithubIcon, UserIcon, NavTaskIcon, FlagIcon, EqualizerIcon, StoreIcon } from "../common/Icons"
 import {
   LogoutOutlined,
 } from "@ant-design/icons"

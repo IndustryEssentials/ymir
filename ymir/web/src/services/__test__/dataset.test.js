@@ -127,7 +127,7 @@ describe("service: dataset", () => {
   it("evaluate -> normal return", () => {
     const datasets = [2342353, 2345]
     const iou = 0.65
-    const params = { projectId: 25343, datasets, iou, everageIou: false, confidence: 0.6 }
+    const params = { pid: 25343, datasets, iou, everageIou: false, confidence: 0.6 }
     const expected = datasets.reduce((prev, ds) => ({
       ...prev,
       [ds]: { [iou]: iou }

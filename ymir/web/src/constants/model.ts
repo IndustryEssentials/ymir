@@ -103,5 +103,16 @@ export function transferStage(data: BackendData): Stage {
  * @returns {Stage|undefined}
  */
 export function getRecommendStage(model: ModelVersion): Stage| undefined {
-  return model.stages?.find(stage => stage.id === model.recommendStage)
+  return getStage(model, model.recommendStage)
+}
+
+/**
+ * @description get Model stage
+ * @export
+ * @param {ModelVersion} model
+ * @param {number} stageId
+ * @return {Stage | undefined} 
+ */
+export function getStage(model: ModelVersion, stageId: number): Stage | undefined {
+  return model.stages?.find(stage => stage.id === stageId)
 }

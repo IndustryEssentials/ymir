@@ -3,11 +3,12 @@ import { getLocale, Link } from "umi"
 
 import { ResultStates } from "@/constants/common"
 import t from "@/utils/t"
-import StateTag from "../task/stateTag"
+import StateTag from "../task/StateTag"
 import { calTimeLeft } from "@/utils/date"
-import { InprogressIcon } from "./icons"
+import { Result } from "@/interface/common"
 
-function RenderProgress(state, { id, progress, createTime, taskState, task = {} }, simple = false) {
+function RenderProgress(state: ResultStates, result: Result, simple = false) {
+  const { id, progress, createTime, taskState, task } = result
   if (ResultStates.READY === state && task?.is_terminated) {
     return t('task.state.terminating')
   }

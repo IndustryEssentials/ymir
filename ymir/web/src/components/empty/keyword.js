@@ -4,8 +4,8 @@ import { useHistory } from 'umi'
 
 import t from '@/utils/t'
 import styles from './empty.less'
-import { NoXlmxIcon, } from '@/components/common/icons'
-import { AddtaskIcon } from '../common/icons'
+import { NoXlmxIcon, } from '@/components/common/Icons'
+import { AddtaskIcon } from '../common/Icons'
 
 export default ({ style={} }) => {
   const history = useHistory()

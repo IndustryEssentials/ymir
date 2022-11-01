@@ -4,7 +4,7 @@ import Panel from "@/components/form/panel"
 import t from '@/utils/t'
 import s from "./form.less"
 import PreProcessForm from "./preProcess"
-import { AddTwoIcon, AddDelTwoIcon } from '@/components/common/icons'
+import { AddTwoIcon, AddDelTwoIcon } from '@/components/common/Icons'
 function getArrayConfig(config = {}) {
   const excludes = ['gpu_count', 'task_id']
   return Object.keys(config)

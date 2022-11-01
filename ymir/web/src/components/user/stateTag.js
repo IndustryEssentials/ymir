@@ -2,7 +2,7 @@ import { Tag } from 'antd'
 import { STATES, getUserState } from '@/constants/user'
 import t from '@/utils/t'
 import s from './stateTag.less'
-import { SuccessIcon, FailIcon, ShutIcon, TipsIcon } from '../common/icons'
+import { SuccessIcon, FailIcon, ShutIcon, TipsIcon } from '../common/Icons'
 
 export default function StateTag({ state }) {
   const maps = {

@@ -12,9 +12,9 @@ import usePublish from "@/hooks/usePublish"
 import { getDeployUrl } from '@/constants/common'
 
 import CheckProjectDirty from "@/components/common/CheckProjectDirty"
-import Actions from "@/components/table/actions"
-import TypeTag from "@/components/task/typeTag"
-import RenderProgress from "@/components/common/progress"
+import Actions from "@/components/table/Actions"
+import TypeTag from "@/components/task/TypeTag"
+import RenderProgress from "@/components/common/Progress"
 import Terminate from "@/components/task/terminate"
 import Hide from "../common/hide"
 import EditNameBox from "@/components/form/editNameBox"
@@ -25,9 +25,9 @@ import {
   ShieldIcon, VectorIcon, EditIcon,
   EyeOffIcon, DeleteIcon, FileDownloadIcon, TrainIcon, WajueIcon, StopIcon, SearchIcon,
   ArrowDownIcon, ArrowRightIcon, ImportIcon, BarchartIcon
-} from "@/components/common/icons"
+} from "@/components/common/Icons"
 import EditStageCell from "./editStageCell"
-import { DescPop } from "../common/descPop"
+import { DescPop } from "../common/DescPop"
 import useRerunAction from "../../hooks/useRerunAction"
 
 const { useForm } = Form
@@ -181,7 +181,7 @@ function Model({ pid, project = {}, iterations, groups, modelList, versions, que
       title: showTitle("model.column.action"),
       key: "action",
       dataIndex: "action",
-      render: (text, record) => <Actions menus={actionMenus(record)} showCount={4} />,
+      render: (text, record) => <Actions actions={actionMenus(record)} showCount={4} />,
       className: styles.tab_actions,
       align: "center",
       width: "280px",

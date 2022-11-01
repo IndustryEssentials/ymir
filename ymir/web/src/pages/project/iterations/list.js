@@ -14,7 +14,7 @@ import Dataset from '@/components/form/option/Dataset'
 import VersionName from '@/components/result/VersionName'
 
 import s from "./index.less"
-import StateTag from "@/components/task/stateTag"
+import StateTag from "@/components/task/StateTag"
 
 function List({ project }) {
   const [iterations, getIterations] = useFetch('iteration/getIterations', [])

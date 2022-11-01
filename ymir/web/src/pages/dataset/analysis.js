@@ -12,7 +12,7 @@ import DatasetSelect from "@/components/form/datasetSelect"
 import AnalysisChart from "./components/analysisChart"
 
 import style from "./analysis.less"
-import { CompareIcon } from "@/components/common/icons"
+import { CompareIcon } from "@/components/common/Icons"
 
 const options = [
   { value: 'gt' },

@@ -81,6 +81,7 @@ const common = {
   'common.action.rerun.mining': {cn: '再次挖掘', en: 'ReMine', },
   'common.action.rerun.inference': {cn: '再次推理', en: 'ReInfer', },
   'common.action.restore': {cn: '显示', en: 'Show', },
+  'common.action.diagnose': {cn: '诊断', en: 'Diagnose', },
   'common.action.diagnose.training': {cn: '训练过程诊断', en: 'Training Diagnose', },
   'common.hidden.label': {cn: '显示状态', en: 'Visible Status', },
   'common.state.hidden': {cn: '隐藏', en: 'Hidden', },

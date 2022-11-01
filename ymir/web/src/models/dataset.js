@@ -3,10 +3,18 @@ import {
   getAssetsOfDataset, getAsset, batchAct, delDataset, delDatasetGroup, createDataset, updateDataset, getInternalDataset,
   getNegativeKeywords, updateVersion
 } from "@/services/dataset"
-import { transferDatasetGroup, transferDataset, transferDatasetAnalysis, transferAsset, transferAnnotationsCount } from '@/constants/dataset'
+import {
+  transferDatasetGroup,
+  transferDataset,
+  transferDatasetAnalysis,
+  transferAsset,
+  transferAnnotationsCount,
+  transferInferDataset,
+} from '@/constants/dataset'
 import { actions, updateResultState, updateResultByTask, ResultStates } from '@/constants/common'
 import { deepClone } from '@/utils/object'
 import { checkDuplication } from "../services/dataset"
+import { TASKTYPES } from '@/constants/task'
 
 const initQuery = { name: "", type: "", time: 0, current: 1, offset: 0, limit: 20 }
 
@@ -122,6 +130,37 @@ export default {
         return { items: result.items.map(ds => transferDataset(ds)), total: result.total }
       }
     },
+    *queryInferDatasets({ payload }, { call, put }) {
+      const { pid } = payload
+      const result = yield put.resolve({
+        type: 'queryDatasets',
+        payload: { ...payload, type: TASKTYPES.INFERENCE }
+      })
+      if (result) {
+        const { items: datasets = [], total } = result
+        const getIds = key => {
+          const ids = datasets.map(ds => {
+            const param = ds.task?.parameters || {}
+            return param[key]
+          }).filter(notEmpty => notEmpty)
+          return [...new Set(ids)]
+        }
+        const modelIds = getIds('model_id')
+        const datasetIds = getIds('dataset_id')
+        yield put({
+          type: 'model/batchLocalModels',
+          payload: modelIds
+        })
+        yield put({
+          type: 'batchLocalDatasets',
+          payload: { pid, ids: datasetIds, }
+        })
+        return {
+          items: datasets.map(transferInferDataset),
+          total,
+        }
+      }
+    },
     *getHiddenList({ payload }, { put }) {
       const query = { ...{ order_by: 'update_datetime' }, ...payload, visible: false }
       return yield put({
@@ -143,7 +182,7 @@ export default {
       if (loading) {
         return
       }
-      const dss = yield put.resolve({ type: 'queryDatasets', payload: { project_id: pid, state: ResultStates.VALID, limit: 10000 } })
+      const dss = yield put.resolve({ type: 'queryDatasets', payload: { pid, state: ResultStates.VALID, limit: 10000 } })
       if (dss) {
         yield put({
           type: "UPDATE_ALL_DATASETS",

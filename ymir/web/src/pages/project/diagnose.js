@@ -8,13 +8,12 @@ import Breadcrumbs from "@/components/common/breadcrumb"
 
 import Metrics from "./diagnose/metrics"
 import Training from "./diagnose/training"
+import InferDataset from './diagnose/InferDataset'
 
 import s from "./detail.less"
-
-const tabs = [
-  { tab: 'model.diagnose.tab.metrics', key: 'metrics', },
-  { tab: 'model.diagnose.tab.training', key: 'training', },
-]
+const TabsKey = ['infer_datasets', 'metrics', 'training']
+const tab = key => ({ tab: `model.diagnose.tab.${key}`, key })
+const tabs = TabsKey.map(key => tab(key))
 
 function ProjectDetail() {
   const history = useHistory()
@@ -23,8 +22,9 @@ function ProjectDetail() {
   const [active, setActive] = useState(tabs[0].key)
   const [project, fetchProject] = useFetch('project/getProject')
   const content = {
-    [tabs[0].key]: <Metrics pid={id} project={project} />,
-    [tabs[1].key]: <Training pid={id} project={project} />,
+    [TabsKey[0]]: <InferDataset pid={id} />,
+    [TabsKey[1]]: <Metrics pid={id} project={project} />,
+    [TabsKey[2]]: <Training pid={id} project={project} />,
   }
 
   useEffect(() => {
