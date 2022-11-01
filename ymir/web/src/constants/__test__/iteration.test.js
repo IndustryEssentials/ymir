@@ -46,6 +46,10 @@ describe("constants: project", () => {
       "iteration_round": 1,
       "previous_iteration": 0,
       "description": null,
+      current_step: {
+        id: 34
+      },
+      steps: [],
       "current_stage": 1,
       "mining_dataset_id": 20,
       "mining_input_dataset_id": 39,
@@ -66,6 +70,17 @@ describe("constants: project", () => {
       projectId: 8,
       name: undefined,
       round: 1,
+      currentStep: {
+        finished: undefined,
+        id: 34,
+        name: undefined,
+        percent: undefined,
+        presetting: undefined,
+        state: undefined,
+        taskId: undefined,
+        taskType: undefined,
+      },
+      steps: [],
       currentStage: 1,
       wholeMiningSet: 20,
       miningSet: 39,
