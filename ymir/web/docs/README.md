@@ -370,7 +370,7 @@ step 3 部署完成后，可前往设备页面查看模型运行情况。前往�
 
 ### 发布到公共算法库
 
-step 1 进入【我的算法】页面， 对选中的已发布模型点击[发布到公有算法]按钮，填写信息点击[确定]后，算法会交给后台人工审核打包。
+step 1 进入【我的算法】页面， 对选中的已发布模型点击[发布到公共算法]按钮，填写信息点击[确定]后，算法会交给后台人工审核打包。
 
 ![public_alg_1](https://user-images.githubusercontent.com/90443348/197187010-a2d5d212-aacb-4e30-8c20-04ad1f910fab.jpg)
 
@@ -378,7 +378,7 @@ step 1 进入【我的算法】页面， 对选中的已发布模型点击[发�
 
 ![public_alg_3](https://user-images.githubusercontent.com/90443348/197187016-31fc5b8d-1b35-4a19-849e-7d265cff7ce8.jpg)
 
-step 2 审核通过后即可前往【模型部署】-【公有算法】页面查看对应的模型。
+step 2 审核通过后即可前往【模型部署】-【公共算法】页面查看对应的模型。
 
 ![public_alg_4](https://user-images.githubusercontent.com/90443348/197187018-6ffa9aaf-66e3-40de-8f11-24732ae3af4d.jpg)
 
