@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react"
 import { Card, Table, TableColumnsType } from "antd"
-import { useParams, useSelector } from "umi"
+import { useHistory, useParams, useSelector } from "umi"
 
 import { Dataset, InferDataset as DatasetType } from "@/interface/dataset"
 import { ModelVersion } from "@/interface/model"
@@ -8,6 +8,7 @@ import { ModelVersion } from "@/interface/model"
 import useFetch from "@/hooks/useFetch"
 import t from '@/utils/t'
 import { getInferDatasetColumns } from "@/components/table/Columns"
+import Actions from "@/components/table/Actions"
 
 import s from './index.less'
 
@@ -22,20 +23,36 @@ type ModelState = {
     model: ResultCache<ModelVersion>,
   }
 }
+
 const initQuery = { current: 1, offset: 0, limit: 20 }
 
 const InferDataset: React.FC = () => {
   const { id: pid } = useParams<{ id?: string }>()
+  const history = useHistory()
   const [datasets, setDatasets] = useState<DatasetType[]>([])
   const [query, setQuery] = useState(initQuery)
   const [{ items, total }, getDatasets] = useFetch('dataset/queryInferDatasets', { items: [], total: 0 })
   const cols = getInferDatasetColumns()
   const cacheDatasets = useSelector((state: DatasetState) => state.dataset.dataset)
   const cacheModels = useSelector((state: ModelState) => state.model.model)
+const actions = (id: number): Action[] => [
+  {
+    key: "label",
+    label: t("common.action.diagnose"),
+    onclick: () => history.push(`/home/project/${pid}/model/${id}`),
+    // icon: <TaggingIcon />,
+  },
+  {
+    key: "label",
+    label: t("common.action.preview"),
+    onclick: () => history.push(`/home/project/${pid}/label?did=${id}`),
+    // icon: <ViewIcon />,
+  },
+]
   const actionCol: TableColumnsType<DatasetType> = [{
     dataIndex: 'action',
-    title: 'action',
-    render: () => <div>action</div>,
+    title: t('common.action'),
+    render: (_, record) => <Actions actions={actions(record.id)} />,
   }]
   const columns = [...cols, ...actionCol]
 
