@@ -155,7 +155,8 @@ class TestInvokerTaskMining(unittest.TestCase):
         self.assertDictEqual(expected_config, config)
 
         asset_cache_dir = os.path.join(self._user_root, 'asset_cache')
-        mining_cmd = (f"mir mining --root {self._mir_repo_root} --label-storage-file "
+        mining_cmd = (f"mir mining --root {self._mir_repo_root} "
+                      f"--label-storage-file {label_storage_file_path(self._sandbox_root, self._user_name)} "
                       f"--dst-rev {self._task_id}@{self._task_id} "
                       f"-w {working_dir_0} --model-location {self._storage_root} --media-location {self._storage_root} "
                       f"--model-hash {model_hash}@{model_stage} --src-revs {self._task_id}@{self._sub_task_id_1} "

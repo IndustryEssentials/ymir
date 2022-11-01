@@ -91,7 +91,7 @@ class TestInvokerFilterBranch(unittest.TestCase):
         expect_cmd = (
             f"mir filter --root {self._mir_repo_root} --dst-rev {self._task_id}@{self._task_id} "
             f"--src-revs {self.in_dataset_ids[0]}@{self.in_dataset_ids[0]} -w {working_dir} "
-            f"--label-storage-file {labels.label_storage_file_path(sandbox_root=self._sandbox_root, user_id=self._user_name)} "
+            f"--label-storage-file {labels.label_storage_file_path(self._sandbox_root, self._user_name)} "
             "--cis car;person --ex-cis car;person")
         mock_run.assert_called_once_with(expect_cmd.split(' '), capture_output=True, text=True)
 

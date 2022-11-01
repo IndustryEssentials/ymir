@@ -1,7 +1,7 @@
 import os
 from typing import Dict, List, Optional, Tuple
 
-from common_utils.labels import UserLabels
+from common_utils.labels import UserLabels, label_storage_file_path
 from controller.invoker.invoker_cmd_merge import MergeInvoker
 from controller.invoker.invoker_task_base import SubTaskType, TaskBaseInvoker
 from controller.utils import invoker_call, revs, utils
@@ -91,6 +91,7 @@ class TaskTrainingInvoker(TaskBaseInvoker):
         config_file = cls.gen_executor_config_path(subtask_workdir)
         train_response = cls.training_cmd(
             repo_root=repo_root,
+            label_storage_file=label_storage_file_path(sandbox_root=sandbox_root, user_id=request.user_id),
             config_file=config_file,
             models_upload_location=models_upload_location,
             media_location=media_location,
@@ -111,6 +112,7 @@ class TaskTrainingInvoker(TaskBaseInvoker):
     def training_cmd(
         cls,
         repo_root: str,
+        label_storage_file: str,
         config_file: str,
         models_upload_location: str,
         media_location: str,
@@ -126,11 +128,11 @@ class TaskTrainingInvoker(TaskBaseInvoker):
         model_stage: str,
     ) -> backend_pb2.GeneralResp:
         training_cmd = [
-            utils.mir_executable(), 'train', '--root', repo_root, '--dst-rev', f"{task_id}@{task_id}",
-            '--model-location', models_upload_location, '--media-location', media_location, '-w', work_dir,
-            '--src-revs', f"{in_dataset_id}@{his_task_id}", '--task-config-file', config_file, '--executor',
-            training_image, '--executant-name', executant_name, '--tensorboard-dir', tensorboard, '--asset-cache-dir',
-            asset_cache_dir
+            utils.mir_executable(), 'train', '--root', repo_root, '--label-storage-file', label_storage_file,
+            '--dst-rev', f"{task_id}@{task_id}", '--model-location', models_upload_location, '--media-location',
+            media_location, '-w', work_dir, '--src-revs', f"{in_dataset_id}@{his_task_id}", '--task-config-file',
+            config_file, '--executor', training_image, '--executant-name', executant_name, '--tensorboard-dir',
+            tensorboard, '--asset-cache-dir', asset_cache_dir
         ]
         if model_hash and model_stage:
             training_cmd.append('--model-hash')
