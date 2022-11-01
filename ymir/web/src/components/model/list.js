@@ -12,7 +12,7 @@ import usePublish from "@/hooks/usePublish"
 import { getDeployUrl } from '@/constants/common'
 
 import CheckProjectDirty from "@/components/common/CheckProjectDirty"
-import Actions from "@/components/table/actions"
+import Actions from "@/components/table/Actions"
 import TypeTag from "@/components/task/TypeTag"
 import RenderProgress from "@/components/common/Progress"
 import Terminate from "@/components/task/terminate"
@@ -181,7 +181,7 @@ function Model({ pid, project = {}, iterations, groups, modelList, versions, que
       title: showTitle("model.column.action"),
       key: "action",
       dataIndex: "action",
-      render: (text, record) => <Actions menus={actionMenus(record)} showCount={4} />,
+      render: (text, record) => <Actions actions={actionMenus(record)} showCount={4} />,
       className: styles.tab_actions,
       align: "center",
       width: "280px",

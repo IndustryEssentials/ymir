@@ -13,7 +13,7 @@ import t from "@/utils/t"
 import { format } from '@/utils/date'
 import Breadcrumbs from "@/components/common/breadcrumb"
 import EmptyState from '@/components/empty/keyword'
-import Actions from "@/components/table/actions"
+import Actions from "@/components/table/Actions"
 import Add from './add'
 import MultiAdd from "./multiAdd"
 import { AddIcon, AddtaskIcon, EditIcon, SearchIcon, } from "@/components/common/Icons"
@@ -85,7 +85,7 @@ function Keyword({ getKeywords }) {
     {
       title: showTitle("keyword.column.action"),
       dataIndex: "action",
-      render: (text, record) => <Actions menus={actionMenus(record)} />,
+      render: (text, record) => <Actions actions={actionMenus(record)} />,
       className: styles.tab_actions,
       align: "center",
       width: "280px",

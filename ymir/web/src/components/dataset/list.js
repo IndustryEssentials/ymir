@@ -213,7 +213,7 @@ function Datasets({ pid, project = {}, iterations, groups, datasetList, query, v
         title: showTitle("dataset.column.action"),
         key: "action",
         dataIndex: "action",
-        render: (text, record) => <Actions menus={actionMenus(record)} />,
+        render: (text, record) => <Actions actions={actionMenus(record)} />,
         className: styles.tab_actions,
         align: "center",
         width: 300,
