@@ -1,4 +1,4 @@
-import { Iteration, } from "@/interface/iteration"
+import { Iteration, Step, } from "@/interface/iteration"
 import { BackendData } from "@/interface/common"
 
 export enum Stages {
@@ -48,6 +48,8 @@ export function transferIteration(data: BackendData): Iteration | undefined {
     projectId: data.project_id,
     name: data.name,
     round: data.iteration_round || 0,
+    currentStep: transferStep(data.current_step),
+    steps: (data.iteration_steps || []).map(transferStep),
     currentStage: data.current_stage || 0,
     testSet: data.validation_dataset_id || 0,
     wholeMiningSet: data.mining_dataset_id || 0,
@@ -58,6 +60,19 @@ export function transferIteration(data: BackendData): Iteration | undefined {
     model: data.training_output_model_id,
     trainSet: data.previous_training_dataset_id,
     prevIteration: data.previous_iteration || 0,
+  }
+}
+
+function transferStep(data: BackendData = {}): Step {
+  return {
+    id: data.id,
+    finished: data.is_finished,
+    name: data.name,
+    percent: data.percent,
+    presetting: data.presetting,
+    state: data.state,
+    taskId: data.task_id,
+    taskType: data.task_type,
   }
 }
 
@@ -81,7 +96,7 @@ export function transferMiningStats(data: BackendData) {
   const { total_mining_ratio, class_wise_mining_ratio, negative_ratio } = data
   const transfer = (ratios: Array<Ratio>) => {
     const getName = (ratio: Ratio) => ratio.class_name || ''
-    const keywords  = ratios.map(getName)
+    const keywords = ratios.map(getName)
     const count = ratios.reduce((prev, item) => {
       const name = getName(item)
       return {

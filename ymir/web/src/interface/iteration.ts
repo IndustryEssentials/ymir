@@ -5,6 +5,8 @@ export interface Iteration {
   projectId: number,
   name?: string,
   round: number,
+  currentStep: Step,
+  steps: Step[],
   currentStage: number,
   testSet?: DatasetId,
   trainSet?: DatasetId,
@@ -15,4 +17,15 @@ export interface Iteration {
   labelSet?: DatasetId,
   model?: number,
   prevIteration: number,
+}
+
+export interface Step {
+  id: number,
+  finished: boolean,
+  name: string,
+  percent: number,
+  presetting: any,
+  state: number,
+  taskId: number,
+  taskType: number,
 }
