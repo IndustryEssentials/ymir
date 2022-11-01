@@ -57,6 +57,7 @@ const ModelSelect = ({
         label: name,
         model,
         value: model.id,
+        disabled: model.disabled,
         ...childrenNode,
       }
     })
