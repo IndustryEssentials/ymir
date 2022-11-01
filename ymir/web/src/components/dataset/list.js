@@ -17,7 +17,7 @@ import Terminate from "@/components/task/terminate"
 import Hide from "../common/hide"
 import RenderProgress from "@/components/common/Progress"
 import TypeTag from "@/components/task/TypeTag"
-import Actions from "@/components/table/actions"
+import Actions from "@/components/table/Actions"
 import AssetCount from '@/components/dataset/AssetCount'
 
 import {

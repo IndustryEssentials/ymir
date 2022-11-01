@@ -3,22 +3,6 @@ import s from './table.less'
 import { More1Icon } from "../common/Icons"
 import React from "react"
 
-type Action = {
-  key: string, 
-  label: string, 
-  onclick?: Function,
-  icon?: string, 
-  link?: string, 
-  target?: string,
-  disabled?: boolean,
-  hidden?: Function,
-}
-
-type Props = {
-  actions: Action[],
-  showCount?: number,
-}
-
 const renderActions = (menus: Action[]) => menus.map((menu, i) => renderAction(menu, i === menus.length - 1))
 
 const isOuterLink = (link: string) => /^http(s)?:/i.test(link)
@@ -49,7 +33,7 @@ function renderAction(action: Action, last: boolean = false) {
   </a> : btn
 }
 
-const Actions: React.FC<Props> = ({ actions = [], showCount = 3 }) => {
+const Actions: React.FC<ComponentsTableActionsProps> = ({ actions = [], showCount = 3 }) => {
   const showActions = actions.filter(action => !(action.hidden && action.hidden()))
   const isMore = () => showActions.length > showCount
   return (
