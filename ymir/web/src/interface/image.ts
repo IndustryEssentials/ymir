@@ -1,8 +1,7 @@
-export interface InferConfig {
+export type ImageConfig ={ [key: string]: number | string,}
+export type DockerImageConfig = {
   type: number,
-  config: {
-    [key: string]: any,
-  },
+  config: ImageConfig,
 }
 export interface Image {
   id: number,
@@ -10,7 +9,7 @@ export interface Image {
   state: number,
   isShared: boolean,
   functions:Array<number>,
-  configs: Array<InferConfig>,
+  configs: Array<DockerImageConfig>,
   url: string,
   liveCode?: boolean,
   description: string,

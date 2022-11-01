@@ -11,22 +11,22 @@ import { ResultStates } from '@/constants/common'
 import { canHide, validDataset } from '@/constants/dataset'
 
 import CheckProjectDirty from "@/components/common/CheckProjectDirty"
-import StateTag from "@/components/task/stateTag"
-import EditNameBox from "@/components/form/editNameBox"
-import EditDescBox from "@/components/form/editDescBox"
+import StateTag from "@/components/task/StateTag"
+import EditBox from "@/components/form/editBox"
 import Terminate from "@/components/task/terminate"
 import Hide from "../common/hide"
-import RenderProgress from "@/components/common/progress"
-import TypeTag from "@/components/task/typeTag"
-import Actions from "@/components/table/actions"
+import RenderProgress from "@/components/common/Progress"
+import TypeTag from "@/components/task/TypeTag"
+import Actions from "@/components/table/Actions"
 import AssetCount from '@/components/dataset/AssetCount'
 
 import {
   ImportIcon, ScreenIcon, TaggingIcon, TrainIcon, VectorIcon, WajueIcon, SearchIcon,
   EditIcon, EyeOffIcon, CopyIcon, StopIcon, ArrowDownIcon, ArrowRightIcon, CompareIcon,
   CompareListIcon,
-} from "@/components/common/icons"
-import { DescPop } from "../common/descPop"
+} from "@/components/common/Icons"
+import { DescPop } from "../common/DescPop"
+import { RefreshIcon } from "../common/Icons"
 import useRerunAction from "../../hooks/useRerunAction"
 
 const { confirm } = Modal
@@ -213,7 +213,7 @@ function Datasets({ pid, project = {}, iterations, groups, datasetList, query, v
         title: showTitle("dataset.column.action"),
         key: "action",
         dataIndex: "action",
-        render: (text, record) => <Actions menus={actionMenus(record)} />,
+        render: (text, record) => <Actions actions={actionMenus(record)} />,
         className: styles.tab_actions,
         align: "center",
         width: 300,

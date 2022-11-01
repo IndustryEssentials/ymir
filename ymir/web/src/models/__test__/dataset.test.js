@@ -516,7 +516,7 @@ describe("models: dataset", () => {
     }
     const creator = {
       type: "evaluate",
-      payload: { projectId: 51234, gt: 1324536, datasets: [534243234, 64311234], confidence: 0.6 },
+      payload: { pid: 51234, gt: 1324536, datasets: [534243234, 64311234], confidence: 0.6 },
     }
 
     const generator = saga(creator, { put, call })

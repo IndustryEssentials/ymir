@@ -5,8 +5,8 @@ import { useState, useEffect } from "react"
 import t from "@/utils/t"
 import { format } from '@/utils/date'
 import { STATES } from '@/constants/user'
-import Actions from "@/components/table/actions"
-import { AddDelTwoIcon, AddTwoIcon, SuccessIcon } from "@/components/common/icons"
+import Actions from "@/components/table/Actions"
+import { AddDelTwoIcon, AddTwoIcon, SuccessIcon } from "@/components/common/Icons"
 import s from '../permission.less'
 import StateTag from "@/components/user/stateTag"
 
@@ -51,7 +51,7 @@ function AuditList({ getUsers, setUserState }) {
       title: showTitle("common.action"),
       key: "action",
       dataIndex: "action",
-      render: (text, record) => <Actions menus={actionMenus(record)} />,
+      render: (text, record) => <Actions actions={actionMenus(record)} />,
       className: s.tab_actions,
       align: "center",
       width: "280px",

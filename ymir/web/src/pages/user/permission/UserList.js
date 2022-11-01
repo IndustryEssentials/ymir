@@ -5,9 +5,9 @@ import { useState, useEffect } from "react"
 import t from "@/utils/t"
 import { format } from '@/utils/date'
 import { ROLES, getRolesLabel } from '@/constants/user'
-import { AddDelTwoIcon, AddTwoIcon, ShutIcon } from "@/components/common/icons"
+import { AddDelTwoIcon, AddTwoIcon, ShutIcon } from "@/components/common/Icons"
 import s from '../permission.less'
-import Actions from "@/components/table/actions"
+import Actions from "@/components/table/Actions"
 import confirm from '@/components/common/dangerConfirm'
 
 const initQuery = {
@@ -52,7 +52,7 @@ function UserList({ getUsers, setUserRole, off }) {
       title: showTitle("common.action"),
       key: "action",
       dataIndex: "action",
-      render: (text, record) => <Actions menus={actionMenus(record)} />,
+      render: (text, record) => <Actions actions={actionMenus(record)} />,
       className: s.tab_actions,
       align: "center",
       width: "280px",

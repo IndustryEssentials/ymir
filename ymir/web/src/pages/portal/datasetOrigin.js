@@ -9,7 +9,7 @@ import t from '@/utils/t'
 import Empty from "@/components/empty/default"
 import AssetCount from '@/components/dataset/AssetCount'
 import { cardBody, cardHead } from "./components/styles"
-import { FlagIcon, CopyIcon, MetadatasetIcon } from '@/components/common/icons'
+import { FlagIcon, CopyIcon, MetadatasetIcon } from '@/components/common/Icons'
 
 function Sets({ title, count = 2, getPublicDataset }) {
   const history = useHistory()

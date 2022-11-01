@@ -6,8 +6,8 @@ import { states, statesLabel } from '@/constants/dataset'
 import s from './iteration.less'
 import { Stages } from "@/constants/iteration"
 import { useEffect, useState } from "react"
-import RenderProgress from "../../../components/common/progress"
-import { YesIcon } from '@/components/common/icons'
+import RenderProgress from "../../../components/common/Progress"
+import { YesIcon } from '@/components/common/Icons'
 import VersionName from '@/components/result/VersionName'
 
 function Stage({ stage, end = false, }) {

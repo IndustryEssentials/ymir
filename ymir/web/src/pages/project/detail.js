@@ -9,7 +9,7 @@ import Empty from "@/components/empty/default"
 import { getStageLabel } from '@/constants/iteration'
 
 import s from "./detail.less"
-import { TrainIcon, NavDatasetIcon, ArrowRightIcon, ImportIcon } from "@/components/common/icons"
+import { TrainIcon, NavDatasetIcon, ArrowRightIcon, ImportIcon } from "@/components/common/Icons"
 
 function ProjectDetail(func) {
   const history = useHistory()

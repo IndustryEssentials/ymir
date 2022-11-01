@@ -2,7 +2,7 @@ import { Col, Row, Space } from "antd"
 import { Link } from "umi"
 import t from "@/utils/t"
 import s from "../detail.less"
-import { EditIcon, EyeOffIcon } from "@/components/common/icons"
+import { EditIcon, EyeOffIcon } from "@/components/common/Icons"
 import { TestingSet } from "./testingSet"
 
 const NoIterationDetail = ({ project }) => {

@@ -5,14 +5,14 @@ import { useSelector } from 'umi'
 import t from "@/utils/t"
 
 import s from "./index.less"
-import getColumns from "./columns"
+import { getDatasetColumns, getModelColumns } from "@/components/table/Columns"
 
 function Panel({ list = [], customColumns, title = '', type = 'dataset' }) {
 
   const [columns, setColumns] = useState([])
   const rows = useSelector(({ dataset, model }) => {
     const isModel = type !== 'dataset'
-    const res = isModel ? model.model: dataset.dataset
+    const res = isModel ? model.model : dataset.dataset
     return list.length ? [...(list.map(id => {
       const result = res[id]
       return res[id] ? {
@@ -22,7 +22,7 @@ function Panel({ list = [], customColumns, title = '', type = 'dataset' }) {
     }).filter(item => item))] : []
   })
 
-  useEffect(() => setColumns(getColumns(type)), [type])
+  useEffect(() => setColumns(type === 'dataset' ? getDatasetColumns() : getModelColumns()), [type])
 
   useEffect(() => customColumns && setColumns(customColumns), [customColumns])
 
