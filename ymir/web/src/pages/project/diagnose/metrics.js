@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useState } from "react"
 import { Card, Button, Form, Row, Col, Radio, Slider, Select, InputNumber, Checkbox, Space, Tag, } from "antd"
+import { useLocation } from "umi"
 
 import t from "@/utils/t"
 import useFetch from "@/hooks/useFetch"
@@ -30,6 +31,7 @@ const xAxisOptions = [
 const kwTypes = [{ label: 'keyword.add.name.label', value: 0 }, { label: 'keyword.ck.label', value: 1 }]
 
 function Matrics({ pid, project }) {
+  const { state } = useLocation()
   const [form] = Form.useForm()
   const [inferTasks, setInferTasks] = useState([])
   const [selectedModels, setSelectedModels] = useState([])
@@ -59,6 +61,15 @@ function Matrics({ pid, project }) {
   useEffect(() => {
     setDiagnosis(remoteData)
   }, [remoteData])
+
+  useEffect(() => {
+    if (state?.mid) {
+      form.setFieldsValue({
+        stage: [state.mid],
+      })
+    }
+  console.log('state:', state)
+  }, [state])
 
   useEffect(() => {
     if (diagnosing) {

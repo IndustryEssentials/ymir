@@ -1,3 +1,6 @@
+import { Dataset } from "@/interface/dataset";
+import { ModelVersion } from "@/interface/model";
+
 declare module '*.css';
 declare module '*.less';
 declare module '*.png';
@@ -23,4 +26,17 @@ type Action = {
 type ComponentsTableActionsProps = {
   actions: Action[],
   showCount?: number,
+}
+
+// dva models type
+type ResultCache<T> = { [key: string | number]: T }
+type DatasetState = {
+  dataset: {
+    dataset: ResultCache<Dataset>
+  }
+}
+type ModelState = {
+  model: {
+    model: ResultCache<ModelVersion>,
+  }
 }

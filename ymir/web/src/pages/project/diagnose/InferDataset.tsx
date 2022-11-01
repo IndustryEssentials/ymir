@@ -11,18 +11,7 @@ import { getInferDatasetColumns } from "@/components/table/Columns"
 import Actions from "@/components/table/Actions"
 
 import s from './index.less'
-
-type ResultCache<T> = { [key: string | number]: T }
-type DatasetState = {
-  dataset: {
-    dataset: ResultCache<Dataset>
-  }
-}
-type ModelState = {
-  model: {
-    model: ResultCache<ModelVersion>,
-  }
-}
+import {EyeOnIcon, DiagnosisIcon } from '@/components/common/Icons'
 
 const initQuery = { current: 1, offset: 0, limit: 20 }
 
@@ -35,24 +24,24 @@ const InferDataset: React.FC = () => {
   const cols = getInferDatasetColumns()
   const cacheDatasets = useSelector((state: DatasetState) => state.dataset.dataset)
   const cacheModels = useSelector((state: ModelState) => state.model.model)
-const actions = (id: number): Action[] => [
+const actions = (record: DatasetType): Action[] => [
   {
     key: "label",
     label: t("common.action.diagnose"),
-    onclick: () => history.push(`/home/project/${pid}/model/${id}`),
-    // icon: <TaggingIcon />,
+    onclick: () => history.push(`/home/project/${pid}/diagnose#metrics`, { mid: record.inferModelId}),
+    icon: <DiagnosisIcon />,
   },
   {
     key: "label",
     label: t("common.action.preview"),
-    onclick: () => history.push(`/home/project/${pid}/label?did=${id}`),
-    // icon: <ViewIcon />,
+    onclick: () => history.push(`/home/project/${pid}/dataset/${record.id}/assets`),
+    icon: <EyeOnIcon />,
   },
 ]
   const actionCol: TableColumnsType<DatasetType> = [{
     dataIndex: 'action',
     title: t('common.action'),
-    render: (_, record) => <Actions actions={actions(record.id)} />,
+    render: (_, record) => <Actions actions={actions(record)} />,
   }]
   const columns = [...cols, ...actionCol]
 
