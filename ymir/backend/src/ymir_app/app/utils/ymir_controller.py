@@ -401,7 +401,7 @@ class ControllerClient:
         project_id: int,
         task_id: str,
         task_type: TaskType,
-        args: Optional[Dict],
+        task_parameters: Optional[Dict],
         archived_task_parameters: Optional[str],
     ) -> Dict:
         req = ControllerRequest(
@@ -409,7 +409,7 @@ class ControllerClient:
             user_id=user_id,
             project_id=project_id,
             task_id=task_id,
-            args=args,
+            args=task_parameters,
             archived_task_parameters=archived_task_parameters,
         )
         return self.send(req)
@@ -500,10 +500,10 @@ class ControllerClient:
         user_id: int,
         project_id: int,
         task_id: str,
-        args: Optional[Dict],
+        parameters: Optional[Dict],
     ) -> Dict:
         req = ControllerRequest(
-            type=TaskType.data_fusion, user_id=user_id, project_id=project_id, task_id=task_id, args=args
+            type=TaskType.data_fusion, user_id=user_id, project_id=project_id, task_id=task_id, args=parameters
         )
 
         return self.send(req)

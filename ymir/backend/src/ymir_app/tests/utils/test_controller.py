@@ -24,7 +24,7 @@ class TestControllerRequest:
             task_type,
             user_id,
             project_id,
-            args={
+            task_parameters={
                 "dataset_hash": random_lower_string(),
                 "validation_dataset_hash": random_lower_string(),
                 "class_ids": [],
@@ -44,7 +44,7 @@ class TestControllerRequest:
             task_type,
             user_id,
             project_id,
-            args={
+            task_parameters={
                 "dataset_hash": random_lower_string(),
                 "top_k": 1000,
                 "model_hash": random_lower_string(),
@@ -66,7 +66,7 @@ class TestControllerRequest:
             task_type,
             user_id,
             project_id,
-            args={
+            task_parameters={
                 "name": random_lower_string(),
                 "dataset_hash": random_lower_string(),
                 "dataset_name": random_lower_string(),
@@ -88,7 +88,7 @@ class TestControllerRequest:
             task_type,
             user_id,
             project_id,
-            args={
+            task_parameters={
                 "src_user_id": f"{random.randint(1000, 2000):0>4}",
                 "src_repo_id": random_lower_string(),
                 "src_resource_id": random_lower_string(),
@@ -107,7 +107,7 @@ class TestControllerRequest:
             task_type,
             user_id,
             project_id,
-            args={"target_container": task.hash, "task_type": task.type},
+            task_parameters={"target_container": task.hash, "task_type": task.type},
         )
         assert kill_other_task.req.req_type == m.mirsvrpb.CMD_TERMINATE
         assert kill_other_task.req.terminated_task_type == task.type

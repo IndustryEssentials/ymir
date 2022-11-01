@@ -92,7 +92,7 @@ class TaskCreate(TaskBase):
             return v
 
     @root_validator(pre=True)
-    def tuck_preprocess_into_parameters(cls, values: Any) -> Any:
+    def tuck_into_parameters(cls, values: Any) -> Any:
         """
         For frontend, preprocess is a separate task configuration,
         however, the underlying reads preprocess stuff from task_parameter,
@@ -101,6 +101,9 @@ class TaskCreate(TaskBase):
         preprocess = values.get("preprocess")
         if preprocess:
             values["parameters"]["preprocess"] = preprocess
+        docker_image_config = values.get("docker_image_config")
+        if docker_image_config:
+            values["parameters"]["docker_config"] = docker_image_config
         return values
 
     class Config:

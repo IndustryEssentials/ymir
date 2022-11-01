@@ -190,8 +190,7 @@ def send_keywords_metrics(
     create_time: int,
 ) -> None:
     try:
-        viz_client = VizClient()
-        viz_client.initialize(user_id=user_id, project_id=project_id)
+        viz_client = VizClient(user_id=user_id, project_id=project_id)
         viz_client.send_metrics(
             metrics_group="task",
             id=task_hash,

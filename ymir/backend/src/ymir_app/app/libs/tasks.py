@@ -1,8 +1,9 @@
+from contextlib import contextmanager
 from functools import cached_property
 import json
 import itertools
 import asyncio
-from typing import Any, Dict, List, Tuple, Optional
+from typing import Dict, Generator, List, Optional, Tuple
 
 import aiohttp
 from fastapi.logger import logger
@@ -10,6 +11,7 @@ from fastapi.encoders import jsonable_encoder
 from sqlalchemy.orm import Session
 
 from app.api.errors.errors import (
+    ControllerError,
     DatasetIndexNotReady,
     FailedToUpdateTaskStatusTemporally,
     FailedtoCreateTask,
@@ -24,12 +26,14 @@ from app.api.errors.errors import (
 from app.constants.state import (
     FinalStates,
     TaskState,
+    TaskType,
     ResultType,
     ResultState,
 )
 from app.config import settings
 from app import schemas, crud, models
 from app.libs.models import create_model_stages
+from app.libs.labels import keywords_to_class_ids
 from app.utils.cache import CacheClient
 from app.utils.ymir_controller import ControllerClient, gen_task_hash
 from app.utils.ymir_viz import VizClient
@@ -72,50 +76,34 @@ async def batch_update_task_status(events: List[Tuple[str, Dict]]) -> List[str]:
         return list(itertools.compress(ids, success_id_selectors))
 
 
-def normalize_parameters(
-    db: Session,
-    parameters: schemas.TaskParameter,
-    docker_image_config: Optional[Dict],
-    user_labels: UserLabels,
-) -> Dict:
-    normalized = parameters.dict()  # type: Dict[str, Any]
-
-    # training, mining and inference task has docker_config
-    normalized["docker_config"] = docker_image_config
-
-    dataset = crud.dataset.get(db, id=parameters.dataset_id)
-    if not dataset:
-        logger.error("[create task] main dataset(%s) not exists", parameters.dataset_id)
-        raise DatasetNotFound()
-    normalized["dataset_hash"] = dataset.hash
-    normalized["dataset_group_id"] = dataset.dataset_group_id
-    # label task uses dataset name as task name for LabelStudio
-    normalized["dataset_name"] = dataset.name
-
-    if parameters.validation_dataset_id:
-        validation_dataset = crud.dataset.get(db, id=parameters.validation_dataset_id)
-        if not validation_dataset:
-            logger.error("[create task] validation dataset(%s) not exists", parameters.validation_dataset_id)
-            raise DatasetNotFound()
-        normalized["validation_dataset_hash"] = validation_dataset.hash
-
-    if parameters.model_stage_id:
-        model_stage = crud.model_stage.get(db, id=parameters.model_stage_id)
-        if not model_stage:
-            raise ModelStageNotFound()
-        normalized["model_hash"] = model_stage.model.hash  # type: ignore
-        normalized["model_stage_name"] = model_stage.name
-
-    if parameters.keywords:
-        normalized["class_ids"] = user_labels.id_for_names(names=parameters.keywords, raise_if_unknown=True)[0]
-
-    if parameters.preprocess:
-        normalized["preprocess"] = parameters.preprocess.json()
-    return normalized
+def parameter_converter(parameters: Dict, db: Session, user_labels: UserLabels) -> Dict:
+    converted = dict(parameters)
+    for k, v in parameters.items():
+        if k == "dataset_id":
+            dataset = crud.dataset.get(db, v)
+            if not dataset:
+                raise DatasetNotFound()
+            converted["dataset_hash"] = dataset.hash
+            converted["dataset_group_id"] = dataset.dataset_group_id
+            converted["dataset_name"] = dataset.name
+        elif k == "validation_dataset_id":
+            dataset = crud.dataset.get(db, v)
+            if not dataset:
+                raise DatasetNotFound()
+            converted["validation_dataset_hash"] = dataset.hash
+        elif k == "model_stage_id":
+            model_stage = crud.model_stage.get(db, v)
+            if not model_stage:
+                raise ModelStageNotFound()
+            converted["model_hash"] = model_stage.model.hash  # type: ignore
+            converted["model_stage_name"] = model_stage.name
+        elif k == "keywords":
+            converted["class_ids"] = keywords_to_class_ids(user_labels, v)
+    return converted
 
 
 def create_single_task(db: Session, user_id: int, user_labels: UserLabels, task_in: schemas.TaskCreate) -> models.Task:
-    args = normalize_parameters(db, task_in.parameters, task_in.docker_image_config, user_labels)
+    parameters = parameter_converter(task_in.parameters.dict(), db, user_labels)
     task_hash = gen_task_hash(user_id, task_in.project_id)
     try:
         controller_client = ControllerClient()
@@ -124,7 +112,7 @@ def create_single_task(db: Session, user_id: int, user_labels: UserLabels, task_
             project_id=task_in.project_id,
             task_id=task_hash,
             task_type=task_in.type,
-            args=args,
+            task_parameters=parameters,
             archived_task_parameters=task_in.parameters.json() if task_in.parameters else None,
         )
         logger.info("[create task] controller response: %s", resp)
@@ -140,15 +128,14 @@ def create_single_task(db: Session, user_id: int, user_labels: UserLabels, task_
     task_result.create(task_in.parameters.dataset_id, task_in.result_description)
 
     logger.info("[create task] created task name: %s", task_info.name)
-    if args.get("class_ids"):
+    if parameters.get("class_ids"):
         try:
-            viz_client = VizClient()
-            viz_client.initialize(user_id=user_id, project_id=task_in.project_id)
+            viz_client = VizClient(user_id=user_id, project_id=task_in.project_id)
             viz_client.send_metrics(
                 metrics_group="task",
                 id=task_info.hash,
                 create_time=int(task_info.create_datetime.timestamp()),
-                keyword_ids=args["class_ids"],
+                keyword_ids=parameters["class_ids"],
             )
         except Exception:
             logger.exception(
@@ -347,3 +334,24 @@ class TaskResult:
                 dataset_record.id,
                 result_state=ResultState.error,
             )
+
+
+@contextmanager
+def task_placeholder(
+    db: Session, user_id: int, project_id: int, task_type: TaskType, serialized_parameters: Optional[str]
+) -> Generator:
+    task_hash = gen_task_hash(user_id, project_id)
+    task = crud.task.create_placeholder(
+        db,
+        type_=task_type,
+        user_id=user_id,
+        project_id=project_id,
+        hash_=task_hash,
+        state_=TaskState.pending,
+        parameters=serialized_parameters,
+    )
+    try:
+        yield task_hash
+    except ValueError:
+        logger.exception("[controller] failed to call controller method")
+        raise ControllerError()

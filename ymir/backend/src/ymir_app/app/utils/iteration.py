@@ -42,19 +42,13 @@ def convert_iteration_fusion_parameter(
     parameter: schemas.DatasetsFusionParameter,
     db: Session,
 ) -> schemas.DatasetsFusionParameter:
-    if parameter.iteration_context and parameter.iteration_context.exclude_last_result:
-        iterations = crud.iteration.get_multi_by_project(db=db, project_id=parameter.project_id)
-        if parameter.iteration_context.mining_strategy == MiningStrategy.chunk:
-            parameter.exclude_datasets += [
-                one_iteration.mining_input_dataset_id
-                for one_iteration in iterations
-                if one_iteration.mining_input_dataset_id
-            ]
-        elif parameter.iteration_context.mining_strategy == MiningStrategy.dedup:
-            parameter.exclude_datasets += [
-                one_iteration.mining_output_dataset_id
-                for one_iteration in iterations
-                if one_iteration.mining_output_dataset_id
-            ]
-        parameter.exclude_datasets = list(set(parameter.exclude_datasets))
+    if not parameter.iteration_context or not parameter.iteration_context.exclude_last_result:
+        return parameter
+
+    iterations = crud.iteration.get_multi_by_project(db=db, project_id=parameter.project_id)
+    if parameter.iteration_context.mining_strategy == MiningStrategy.chunk:
+        parameter.exclude_datasets += [i.mining_input_dataset_id for i in iterations if i.mining_input_dataset_id]
+    elif parameter.iteration_context.mining_strategy == MiningStrategy.dedup:
+        parameter.exclude_datasets += [i.mining_output_dataset_id for i in iterations if i.mining_output_dataset_id]
+    parameter.exclude_datasets = list(set(parameter.exclude_datasets))
     return parameter

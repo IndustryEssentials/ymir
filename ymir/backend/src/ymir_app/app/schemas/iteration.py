@@ -79,6 +79,7 @@ class IterationStepLite(BaseModel):
 
 class IterationInDBBase(IdModelMixin, DateTimeModelMixin, IsDeletedModelMixin, IterationBase):
     current_step: Optional[IterationStepLite]
+    iteration_steps: List[IterationStepLite]
 
     class Config:
         orm_mode = True
