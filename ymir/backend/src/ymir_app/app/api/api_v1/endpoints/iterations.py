@@ -6,7 +6,13 @@ from sqlalchemy.orm import Session
 
 from app import crud, models, schemas
 from app.api import deps
-from app.api.errors.errors import IterationNotFound, TaskNotFound, IterationStepNotFound, IterationStepHasFinished
+from app.api.errors.errors import (
+    IterationNotFound,
+    ProjectNotFound,
+    TaskNotFound,
+    IterationStepNotFound,
+    IterationStepHasFinished,
+)
 from app.crud.crud_iteration_step import StepNotFound
 from app.libs.iterations import calculate_mining_progress
 from app.libs.iteration_steps import initialize_steps
@@ -26,10 +32,15 @@ def create_iteration(
     """
     Create iteration
     """
+    project = crud.project.get(db, obj_in.project_id)
+    if not project:
+        raise ProjectNotFound()
+    previous_iteration = project.current_iteration
+
     iteration = crud.iteration.create_with_user_id(db, user_id=current_user.id, obj_in=obj_in)
     logger.info("[create iteration] iteration record created: %s", iteration)
+    initialize_steps(db, iteration.id, project, previous_iteration)
     crud.project.update_current_iteration(db, project_id=obj_in.project_id, iteration_id=iteration.id)
-    initialize_steps(db, iteration.id)
     return {"result": iteration}
 
 

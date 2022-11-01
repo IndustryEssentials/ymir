@@ -24,6 +24,7 @@ class IterationStepCreate(BaseModel):
     name: str
     task_type: TaskType
     iteration_id: int
+    presetting: Optional[Dict]
 
 
 class IterationStepUpdate(BaseModel):

@@ -49,16 +49,16 @@ class TaskParameter(BaseModel):
 
     # training
     validation_dataset_id: Optional[int]
-    network: Optional[str]
-    backbone: Optional[str]
-    hyperparameter: Optional[str]
+    network: Optional[str]  # obsolete
+    backbone: Optional[str]  # obsolete
+    hyperparameter: Optional[str]  # obsolete
     strategy: Optional[TrainingDatasetsStrategy] = TrainingDatasetsStrategy.stop
     preprocess: Optional[TaskPreprocess] = Field(description="preprocess to apply to related dataset")
 
     # mining & dataset_infer
     model_id: Optional[int]
     model_stage_id: Optional[int]
-    mining_algorithm: Optional[str]
+    mining_algorithm: Optional[str]  # obsolete
     top_k: Optional[int]
     generate_annotations: Optional[bool]
 

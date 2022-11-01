@@ -50,7 +50,15 @@ class Iteration(Base):
     iteration_steps = relationship(
         "IterationStep",
         primaryjoin="foreign(IterationStep.iteration_id)==Iteration.id",
+        backref="iteration",
         uselist=True,
+        viewonly=True,
+    )
+    _previous_iteration = relationship(
+        "Iteration",
+        primaryjoin="foreign(Iteration.previous_iteration)==Iteration.id",
+        remote_side=[id],
+        uselist=False,
         viewonly=True,
     )
 
@@ -77,3 +85,10 @@ class Iteration(Base):
         """
         remaining_steps = sorted(filter(lambda i: not i.is_finished, self.iteration_steps), key=lambda i: i.id)
         return remaining_steps[0] if remaining_steps else None
+
+    @property
+    def previous_steps(self) -> List[IterationStep]:
+        if self._previous_iteration:
+            return self._previous_iteration.iteration_steps
+        else:
+            return []

@@ -71,3 +71,8 @@ class IterationStep(Base):
     @property
     def presetting(self) -> Dict:
         return json.loads(self.serialized_presetting) if self.serialized_presetting else {}
+
+    @property
+    def step_from_previous_iteration(self) -> "IterationStep":
+        steps = self.iteration.previous_steps  # type: ignore
+        return next(step for step in steps if step.name == self.name)

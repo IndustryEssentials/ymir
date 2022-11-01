@@ -1,18 +1,113 @@
-from typing import List
+from dataclasses import dataclass
+from typing import Dict, List, Optional
 
+from fastapi.logger import logger
 from sqlalchemy.orm import Session
 
 from app import crud, schemas, models
 from app.constants.state import IterationStepTemplates
 
 
-def initialize_steps(db: Session, iteration_id: int) -> List[models.IterationStep]:
+@dataclass
+class IterationStepTemplate:
+    name: str
+    project: models.Project
+    previous_iteration: Optional[models.Iteration]
+
+    presetting: Optional[Dict] = None
+
+    def __post_init__(self) -> None:
+        method_name = f"{self.name}_initializer"
+        self.presetting = getattr(self, method_name)(self.name, self.project, self.previous_iteration)
+
+    @staticmethod
+    def get_step(step_name: str, iteration: Optional[models.Iteration]) -> Optional[models.IterationStep]:
+        """
+        get corresponding step from previous iteration
+        """
+        if not iteration:
+            return None
+        return next(step for step in iteration.iteration_steps if step.name == step_name)
+
+    def get_prior_presetting(
+        self, iteration: Optional[models.Iteration], parameter_names: Optional[List[str]] = None
+    ) -> Dict:
+        prior_step = self.get_step(self.name, iteration)
+        if not prior_step:
+            return {}
+        if parameter_names:
+            return {k: v for k, v in prior_step.presetting.items() if k in parameter_names}
+        return prior_step.presetting
+
+    def prepare_mining_initalizer(
+        self, name: str, project: models.Project, previous_iteration: Optional[models.Iteration]
+    ) -> Dict:
+        return {"mining_dataset_id": project.mining_dataset_id}
+
+    def mining_initalizer(
+        self, name: str, project: models.Project, previous_iteration: Optional[models.Iteration]
+    ) -> Dict:
+        if not previous_iteration:
+            return {"model": project.initial_model_id}
+        sticky_parameters = ["top_k", "generate_annotations"]
+        presetting = self.get_prior_presetting(previous_iteration, sticky_parameters)
+        try:
+            last_training_step = self.get_step("training", previous_iteration)
+            presetting["model"] = last_training_step.result_model.id  # type: ignore
+        except Exception:
+            logger.exception("failed to get model from previous iteration, skip")
+            pass
+        return presetting
+
+    def label_initalizer(self, name: str, project: models.Project, previous_iteration: models.Iteration) -> Dict:
+        presetting = {"keywords": project.training_targets}
+        if not previous_iteration:
+            return presetting
+        sticky_parameters = ["annotation_type", "extra_url"]
+        prior_presetting = self.get_prior_presetting(previous_iteration, sticky_parameters)
+        presetting.update(prior_presetting)
+        return presetting
+
+    def prepare_training_initalizer(
+        self, name: str, project: models.Project, previous_iteration: models.Iteration
+    ) -> Dict:
+        if not previous_iteration:
+            return {"training_dataset_id": project.initial_training_dataset_id}
+        sticky_parameters = ["training_dataset_id"]
+        return self.get_prior_presetting(previous_iteration, sticky_parameters)
+
+    def training_initalizer(self, name: str, project: models.Project, previous_iteration: models.Iteration) -> Dict:
+        presetting = {"validation_dataset_id": project.validation_dataset_id}
+        if not previous_iteration:
+            return presetting
+        sticky_parameters = ["docker_image"]
+        prior_presetting = self.get_prior_presetting(previous_iteration, sticky_parameters)
+        presetting.update(prior_presetting)
+        return presetting
+
+
+def initialize_steps(
+    db: Session,
+    iteration_id: int,
+    project: models.Project,
+    previous_iteration: models.Iteration,
+) -> List[models.IterationStep]:
     """
-    initialize all the necessary steps upon new iteration
+    Initialize all the necessary steps upon new iteration with project and iteration context.
+
+    project context:
+    - candidate_training_dataset_id
+
+    previous iteration context:
+    - task parameters
+    -
     """
     steps = [
         schemas.iteration_step.IterationStepCreate(
-            iteration_id=iteration_id, name=step_template.name, task_type=step_template.task_type
+            iteration_id=iteration_id,
+            name=step_template.name,
+            task_type=step_template.task_type,
+            presetting=IterationStepTemplate(step_template.name, project, previous_iteration).presetting,
         )
         for step_template in IterationStepTemplates
     ]
