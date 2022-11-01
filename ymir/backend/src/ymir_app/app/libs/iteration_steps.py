@@ -39,12 +39,12 @@ class IterationStepTemplate:
             return {k: v for k, v in prior_step.presetting.items() if k in parameter_names}
         return prior_step.presetting
 
-    def prepare_mining_initalizer(
+    def prepare_mining_initializer(
         self, name: str, project: models.Project, previous_iteration: Optional[models.Iteration]
     ) -> Dict:
         return {"mining_dataset_id": project.mining_dataset_id}
 
-    def mining_initalizer(
+    def mining_initializer(
         self, name: str, project: models.Project, previous_iteration: Optional[models.Iteration]
     ) -> Dict:
         if not previous_iteration:
@@ -59,7 +59,7 @@ class IterationStepTemplate:
             pass
         return presetting
 
-    def label_initalizer(self, name: str, project: models.Project, previous_iteration: models.Iteration) -> Dict:
+    def label_initializer(self, name: str, project: models.Project, previous_iteration: models.Iteration) -> Dict:
         presetting = {"keywords": project.training_targets}
         if not previous_iteration:
             return presetting
@@ -68,7 +68,7 @@ class IterationStepTemplate:
         presetting.update(prior_presetting)
         return presetting
 
-    def prepare_training_initalizer(
+    def prepare_training_initializer(
         self, name: str, project: models.Project, previous_iteration: models.Iteration
     ) -> Dict:
         if not previous_iteration:
@@ -76,7 +76,7 @@ class IterationStepTemplate:
         sticky_parameters = ["training_dataset_id"]
         return self.get_prior_presetting(previous_iteration, sticky_parameters)
 
-    def training_initalizer(self, name: str, project: models.Project, previous_iteration: models.Iteration) -> Dict:
+    def training_initializer(self, name: str, project: models.Project, previous_iteration: models.Iteration) -> Dict:
         presetting = {"validation_dataset_id": project.validation_dataset_id}
         if not previous_iteration:
             return presetting
@@ -100,7 +100,6 @@ def initialize_steps(
 
     previous iteration context:
     - task parameters
-    -
     """
     steps = [
         schemas.iteration_step.IterationStepCreate(
