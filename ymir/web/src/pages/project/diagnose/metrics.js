@@ -68,7 +68,6 @@ function Matrics({ pid, project }) {
         stage: [state.mid],
       })
     }
-  console.log('state:', state)
   }, [state])
 
   useEffect(() => {
