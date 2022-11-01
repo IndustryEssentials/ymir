@@ -120,7 +120,6 @@ export function canHide(dataset: Dataset, project: Project | undefined) {
 }
 
 export function transferInferDataset(dataset: Dataset): InferDataset {
-  console.log('dataset:', dataset)
   const params = dataset.task?.parameters || {}
   const config = dataset.task?.config || {}
   return {

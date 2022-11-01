@@ -170,6 +170,7 @@ const dataset = {
   'dataset.assets.selector.gt.label': { en: 'Annotation Type:', cn: '标注类型：' },
   'dataset.assets.selector.evaluation.label': { en: 'Evaluation:', cn: '预测：' },
   'dataset.detail.infer.class': { en: 'Prediction Classes:', cn: '模型预测类别：' },
+  "dataset.type.testing": { cn: "测试集", en: "Testing Datasets", },
 
 }
 

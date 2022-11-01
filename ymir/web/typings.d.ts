@@ -1,9 +1,10 @@
-import { Dataset } from "@/interface/dataset";
-import { ModelVersion } from "@/interface/model";
+import { Dataset } from "@/interface/dataset"
+import { ModelVersion } from "@/interface/model"
+import { ReactElement } from "react"
 
-declare module '*.css';
-declare module '*.less';
-declare module '*.png';
+declare module '*.css'
+declare module '*.less'
+declare module '*.png'
 declare module '*.svg' {
   export function ReactComponent(
     props: React.SVGProps<SVGSVGElement>,
@@ -16,7 +17,7 @@ type Action = {
   key: string, 
   label: string, 
   onclick?: Function,
-  icon?: string, 
+  icon?: ReactElement, 
   link?: string, 
   target?: string,
   disabled?: boolean,

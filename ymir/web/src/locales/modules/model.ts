@@ -82,7 +82,7 @@ const model = {
   "model.action.diagnose.training.retry": { cn: '重新诊断', en: 'Retry', },
   "model.diagnose.label.model": { cn: "模型", en: "Models", },
   "model.diagnose.label.testing_dataset": { cn: "测试集", en: "Testing Datasets", },
-  "model.diagnose.label.config": { cn: "推理配置", en: "Infer Configs", },
+  "model.diagnose.label.config": { cn: "推理配置", en: "Inference Config", },
   "model.diagnose.stage.label": { cn: "设置中间模型", en: "Set Recommended Intermediate", },
   "model.diagnose.metrics.precision.label": { cn: '精确率', en: 'Precision', },
   "model.diagnose.metrics.precision.average.label": { cn: '平均召回率', en: 'Average Recall', },

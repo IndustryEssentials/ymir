@@ -14,7 +14,7 @@ import InferDataset from './columns/InferDataset'
 import InferConfig from './columns/InferConfig'
 
 export function getInferDatasetColumns() {
-  const inferDataset :TableColumnsType<InferDatasetType> = [InferDataset(), InferModel(), InferConfig(), State(), CreateTime()]
+  const inferDataset :TableColumnsType<InferDatasetType> = [InferModel(), InferDataset(), InferConfig(), State(), CreateTime()]
   return inferDataset
 }
 export function getDatasetColumns() {

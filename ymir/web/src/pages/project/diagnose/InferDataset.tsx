@@ -26,13 +26,13 @@ const InferDataset: React.FC = () => {
   const cacheModels = useSelector((state: ModelState) => state.model.model)
 const actions = (record: DatasetType): Action[] => [
   {
-    key: "label",
+    key: "diagnose",
     label: t("common.action.diagnose"),
     onclick: () => history.push(`/home/project/${pid}/diagnose#metrics`, { mid: record.inferModelId}),
     icon: <DiagnosisIcon />,
   },
   {
-    key: "label",
+    key: "preview",
     label: t("common.action.preview"),
     onclick: () => history.push(`/home/project/${pid}/dataset/${record.id}/assets`),
     icon: <EyeOnIcon />,
@@ -69,8 +69,7 @@ const actions = (record: DatasetType): Action[] => [
   }
 
   return <div className={s.inferDataset}>
-    <Card title={t('model.diagnose.tab.infer_datasets')}>
-      <Table
+    <Table
         columns={columns}
         dataSource={datasets}
         rowKey={(record) => record.id}
@@ -83,7 +82,6 @@ const actions = (record: DatasetType): Action[] => [
           showSizeChanger: true,
         }}
       />
-    </Card>
   </div>
 }
 
