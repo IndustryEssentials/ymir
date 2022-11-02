@@ -79,7 +79,7 @@ class CmdFilter(base.BaseCommand):
                                                task_name=dst_typ_rev_tid.tid)
 
         return_code = checker.check(mir_root,
-                                    [checker.Prerequisites.IS_INSIDE_MIR_REPO, checker.Prerequisites.HAVE_LABELS])
+                                    [checker.Prerequisites.IS_INSIDE_MIR_REPO])
         if return_code != MirCode.RC_OK:
             return return_code
 

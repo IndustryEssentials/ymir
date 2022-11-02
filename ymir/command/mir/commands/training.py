@@ -195,7 +195,7 @@ class CmdTrain(base.BaseCommand):
                                   error_message=f"invalid --cache {config_file}, not an absolute path for directory")
 
         return_code = checker.check(mir_root,
-                                    [checker.Prerequisites.IS_INSIDE_MIR_REPO, checker.Prerequisites.HAVE_LABELS])
+                                    [checker.Prerequisites.IS_INSIDE_MIR_REPO])
         if return_code != MirCode.RC_OK:
             return return_code
 

@@ -17,11 +17,9 @@ class Prerequisites(enum.IntEnum):
     IS_OUTSIDE_MIR_REPO = enum.auto()
     IS_DIRTY = enum.auto()
     IS_CLEAN = enum.auto()
-    HAVE_LABELS = enum.auto()
-    HAVE_NO_LABELS = enum.auto()
 
 
-_DEFAULT_PREREQUISTITES = [Prerequisites.IS_INSIDE_MIR_REPO, Prerequisites.IS_CLEAN, Prerequisites.HAVE_LABELS]
+_DEFAULT_PREREQUISTITES = [Prerequisites.IS_INSIDE_MIR_REPO, Prerequisites.IS_CLEAN]
 
 
 # error messages for check failed (if prerequisites not satisfied)
@@ -33,7 +31,6 @@ _ERROR_INFOS = {
     Prerequisites.IS_OUTSIDE_MIR_REPO: 'mir_root is already a mir repo',
     Prerequisites.IS_DIRTY: 'mir repo is clean (need dirty)',
     Prerequisites.IS_CLEAN: 'mir repo is dirty (need clean)',
-    Prerequisites.HAVE_LABELS: "can not find userlabel file",
 }
 
 
@@ -82,8 +79,3 @@ def _check_is_dirty(mir_root: str) -> int:
 def _check_is_clean(mir_root: str) -> int:
     is_dirty = mir_repo_utils.mir_check_repo_git_dirty(mir_root)
     return MirCode.RC_OK if not is_dirty else MirCode.RC_CMD_DIRTY_REPO
-
-
-def _check_have_labels(mir_root: str) -> int:
-    have_labels = os.path.isfile(os.path.join(mir_root, '.mir', 'labels.yaml'))
-    return MirCode.RC_OK if have_labels else MirCode.RC_CMD_INVALID_MIR_REPO

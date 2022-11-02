@@ -54,7 +54,7 @@ class CmdImport(base.BaseCommand):
                                                task_name=dst_typ_rev_tid.tid)
 
         check_code = checker.check(mir_root,
-                                   [checker.Prerequisites.IS_INSIDE_MIR_REPO, checker.Prerequisites.HAVE_LABELS])
+                                   [checker.Prerequisites.IS_INSIDE_MIR_REPO])
         if check_code != MirCode.RC_OK:
             return check_code
 
