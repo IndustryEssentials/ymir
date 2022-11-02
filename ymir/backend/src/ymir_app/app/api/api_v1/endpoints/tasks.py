@@ -121,7 +121,6 @@ def create_task(
     """
     Create task
     """
-    # 1. validation
     logger.info("[create task] create task with payload: %s", jsonable_encoder(task_in))
     if crud.task.is_duplicated_name_in_project(db, project_id=task_in.project_id, name=task_in.name):
         raise DuplicateTaskError()

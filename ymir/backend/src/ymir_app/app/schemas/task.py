@@ -38,40 +38,43 @@ class TaskPreprocess(BaseModel):
     longside_resize: LongsideResizeParameter
 
 
-class TaskParameter(BaseModel):
-    dataset_id: int
+class TaskParameterBase(BaseModel):
+    dataset_id: Optional[int]
     keywords: Optional[List[str]]
-
-    # label
-    extra_url: Optional[str]
-    labellers: Optional[List[EmailStr]]
-    annotation_type: Optional[AnnotationType] = None
-
-    # training
-    validation_dataset_id: Optional[int]
-    network: Optional[str]  # obsolete
-    backbone: Optional[str]  # obsolete
-    hyperparameter: Optional[str]  # obsolete
-    strategy: Optional[TrainingDatasetsStrategy] = TrainingDatasetsStrategy.stop
-    preprocess: Optional[TaskPreprocess] = Field(description="preprocess to apply to related dataset")
-
-    # mining & dataset_infer
-    model_id: Optional[int]
-    model_stage_id: Optional[int]
-    mining_algorithm: Optional[str]  # obsolete
-    top_k: Optional[int]
-    generate_annotations: Optional[bool]
-
-    # training & mining & infer
-    docker_image: Optional[str]
-    # todo replace docker_image with docker_image_id
-    docker_image_id: Optional[int]
 
     @validator("keywords")
     def normalize_keywords(cls, v: Optional[List[str]]) -> Optional[List[str]]:
         if v is None:
             return v
         return [keyword.strip() for keyword in v]
+
+
+class LabelParameter(TaskParameterBase):
+    extra_url: Optional[str]
+    labellers: Optional[List[EmailStr]]
+    annotation_type: Optional[AnnotationType] = None
+
+
+class TrainingParameter(TaskParameterBase):
+    validation_dataset_id: Optional[int]
+    strategy: Optional[TrainingDatasetsStrategy] = TrainingDatasetsStrategy.stop
+    preprocess: Optional[TaskPreprocess] = Field(description="preprocess to apply to related dataset")
+    docker_image: Optional[str]
+
+
+class MiningAndInferParameter(TaskParameterBase):
+    model_id: Optional[int]
+    model_stage_id: Optional[int]
+    top_k: Optional[int]
+    generate_annotations: Optional[bool]
+    docker_image: Optional[str]
+
+
+class TaskParameter(BaseModel):
+    label: Optional[LabelParameter]
+    training: Optional[TrainingParameter]
+    mining: Optional[MiningAndInferParameter]
+    dataset_infer: Optional[MiningAndInferParameter]
 
 
 class TaskCreate(TaskBase):
@@ -98,12 +101,10 @@ class TaskCreate(TaskBase):
         however, the underlying reads preprocess stuff from task_parameter,
         so we just tuck preprocess into task_parameter
         """
-        preprocess = values.get("preprocess")
-        if preprocess:
-            values["parameters"]["preprocess"] = preprocess
-        docker_image_config = values.get("docker_image_config")
-        if docker_image_config:
-            values["parameters"]["docker_config"] = docker_image_config
+        if values.get("preprocess"):
+            values["parameters"]["preprocess"] = values["preprocess"]
+        if values.get("docker_image_config"):
+            values["parameters"]["docker_config"] = values["docker_image_config"]
         return values
 
     class Config:
