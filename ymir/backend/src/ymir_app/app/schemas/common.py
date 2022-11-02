@@ -1,6 +1,6 @@
 from datetime import datetime
 from enum import Enum, IntEnum
-from typing import Dict, Optional, List
+from typing import Any, Dict, Optional, List
 
 from pydantic import BaseModel, Field, validator
 
@@ -80,7 +80,7 @@ class TypedLabel(BaseModel):
     exclude: bool = False
 
 
-def dataset_normalize(values: Dict) -> Dict:
+def dataset_normalize(cls: Any, values: Dict) -> Dict:
     datasets = []
     if values.get("dataset_id"):
         datasets.append(TypedDataset(id=values["dataset_id"]))
@@ -94,7 +94,7 @@ def dataset_normalize(values: Dict) -> Dict:
     return values
 
 
-def model_normalize(values: Dict) -> Dict:
+def model_normalize(cls: Any, values: Dict) -> Dict:
     models = []
     if values.get("model_id"):
         models.append(TypedModel(id=values["model_id"], stage_id=values.get("model_stage_id")))
@@ -102,7 +102,7 @@ def model_normalize(values: Dict) -> Dict:
     return values
 
 
-def label_normalize(values: Dict) -> Dict:
+def label_normalize(cls: Any, values: Dict) -> Dict:
     labels = []
     if values.get("keywords"):
         labels.extend([TypedLabel(name=i) for i in values["keywords"]])
