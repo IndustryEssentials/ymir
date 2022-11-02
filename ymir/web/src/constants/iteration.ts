@@ -1,6 +1,3 @@
-import { Iteration, Step, } from "@/interface/iteration"
-import { BackendData } from "@/interface/common"
-
 export enum Stages {
   prepareMining = 0,
   mining = 1,
@@ -39,7 +36,7 @@ export const StageList = () => {
   return { list, ...singleList(list) }
 }
 
-export function transferIteration(data: BackendData): Iteration | undefined {
+export function transferIteration(data: YModels.BackendData): YModels.Iteration | undefined {
   if (!data) {
     return
   }
@@ -63,7 +60,7 @@ export function transferIteration(data: BackendData): Iteration | undefined {
   }
 }
 
-function transferStep(data: BackendData = {}): Step {
+function transferStep(data: YModels.BackendData = {}): YModels.Step {
   return {
     id: data.id,
     finished: data.is_finished,
@@ -92,7 +89,7 @@ type Ratio = {
   total_assets_count: number,
 }
 
-export function transferMiningStats(data: BackendData) {
+export function transferMiningStats(data: YModels.BackendData) {
   const { total_mining_ratio, class_wise_mining_ratio, negative_ratio } = data
   const transfer = (ratios: Array<Ratio>) => {
     const getName = (ratio: Ratio) => ratio.class_name || ''

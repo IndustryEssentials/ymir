@@ -2,9 +2,6 @@ import React, { useEffect, useState } from "react"
 import { Card, Table, TableColumnsType } from "antd"
 import { useHistory, useParams, useSelector } from "umi"
 
-import { Dataset, InferDataset as DatasetType } from "@/interface/dataset"
-import { ModelVersion } from "@/interface/model"
-
 import useFetch from "@/hooks/useFetch"
 import t from '@/utils/t'
 import { getInferDatasetColumns } from "@/components/table/Columns"
@@ -18,13 +15,13 @@ const initQuery = { current: 1, offset: 0, limit: 20 }
 const InferDataset: React.FC = () => {
   const { id: pid } = useParams<{ id?: string }>()
   const history = useHistory()
-  const [datasets, setDatasets] = useState<DatasetType[]>([])
+  const [datasets, setDatasets] = useState<YModels.InferDataset[]>([])
   const [query, setQuery] = useState(initQuery)
   const [{ items, total }, getDatasets] = useFetch('dataset/queryInferDatasets', { items: [], total: 0 })
   const cols = getInferDatasetColumns()
-  const cacheDatasets = useSelector((state: DatasetState) => state.dataset.dataset)
-  const cacheModels = useSelector((state: ModelState) => state.model.model)
-const actions = (record: DatasetType): Action[] => [
+  const cacheDatasets = useSelector((state: YStates.DatasetState) => state.dataset.dataset)
+  const cacheModels = useSelector((state: YStates.ModelState) => state.model.model)
+const actions = (record: YModels.InferDataset): YComponents.Action[] => [
   {
     key: "diagnose",
     label: t("common.action.diagnose"),
@@ -38,7 +35,7 @@ const actions = (record: DatasetType): Action[] => [
     icon: <EyeOnIcon />,
   },
 ]
-  const actionCol: TableColumnsType<DatasetType> = [{
+  const actionCol: TableColumnsType<YModels.InferDataset> = [{
     dataIndex: 'action',
     title: t('common.action'),
     render: (_, record) => <Actions actions={actions(record)} />,

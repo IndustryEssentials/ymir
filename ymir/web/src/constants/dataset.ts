@@ -1,9 +1,6 @@
 import { getLocale } from "umi"
-import { DatasetGroup, Dataset, DatasetAnalysis, Annotation, Asset, InferDataset } from "@/interface/dataset"
 import { calDuration, format } from '@/utils/date'
 import { getVersionLabel } from "./common"
-import { BackendData } from "@/interface/common"
-import { Project } from "@/interface/project"
 
 export enum states {
   READY = 0,
@@ -50,26 +47,26 @@ export enum MERGESTRATEGY {
   GUEST = 2,
 }
 
-export function transferDatasetGroup(data: BackendData) {
-  const group: DatasetGroup = {
+export function transferDatasetGroup(data: YModels.BackendData) {
+  const group: YModels.DatasetGroup = {
     id: data.id,
     projectId: data.project_id,
     name: data.name,
     createTime: format(data.create_datetime),
-    versions: data.datasets ? data.datasets.map((ds: BackendData) => transferDataset(ds)) : [],
+    versions: data.datasets ? data.datasets.map((ds: YModels.BackendData) => transferDataset(ds)) : [],
   }
   return group
 }
 
 
-const tagsCounts = (gt: BackendData = {}, pred: BackendData = {}) => Object.keys(gt).reduce((prev, tag) => {
+const tagsCounts = (gt: YModels.BackendData = {}, pred: YModels.BackendData = {}) => Object.keys(gt).reduce((prev, tag) => {
   const gtCount = gt[tag] || {}
   const predCount = pred[tag] || {}
   return { ...prev, [tag]: { ...gtCount, ...predCount } }
 }, {})
-const tagsTotal = (gt: BackendData = {}, pred: BackendData = {}) => ({ ...gt, ...pred })
+const tagsTotal = (gt: YModels.BackendData = {}, pred: YModels.BackendData = {}) => ({ ...gt, ...pred })
 
-export function transferDataset(data: BackendData): Dataset {
+export function transferDataset(data: YModels.BackendData): YModels.Dataset {
   const { gt = {}, pred = {} } = data.keywords
   const assetCount = data.asset_count || 0
   const keywords = [...new Set([...Object.keys(gt), ...Object.keys(pred)])]
@@ -106,20 +103,20 @@ export function transferDataset(data: BackendData): Dataset {
   }
 }
 
-export function validDataset(dataset: Dataset | undefined) {
+export function validDataset(dataset: YModels.Dataset | undefined) {
   return dataset && dataset.state === states.VALID
 }
 
-export function runningDataset(dataset: Dataset | undefined) {
+export function runningDataset(dataset: YModels.Dataset | undefined) {
   return dataset && dataset.state === states.READY
 }
 
-export function canHide(dataset: Dataset, project: Project | undefined) {
+export function canHide(dataset: YModels.Dataset, project: YModels.Project | undefined) {
   const p = project || dataset.project
   return !runningDataset(dataset) && !p?.hiddenDatasets?.includes(dataset.id)
 }
 
-export function transferInferDataset(dataset: Dataset): InferDataset {
+export function transferInferDataset(dataset: YModels.Dataset): YModels.InferDataset {
   const params = dataset.task?.parameters || {}
   const config = dataset.task?.config || {}
   return {
@@ -130,7 +127,7 @@ export function transferInferDataset(dataset: Dataset): InferDataset {
   }
 }
 
-export function transferDatasetAnalysis(data: BackendData): DatasetAnalysis {
+export function transferDatasetAnalysis(data: YModels.BackendData): YModels.DatasetAnalysis {
   const { bytes, area, quality, hw_ratio, } = data.hist
 
   const assetTotal = data.total_assets_count || 0
@@ -154,10 +151,10 @@ export function transferDatasetAnalysis(data: BackendData): DatasetAnalysis {
   }
 }
 
-export function transferAsset(data: BackendData, keywords: Array<string>): Asset {
+export function transferAsset(data: YModels.BackendData, keywords: Array<string>): YModels.Asset {
   const colors = generateDatasetColors(keywords || data.keywords)
-  const transferAnnotations = (annotations = [], gt = false) => 
-    annotations.map((an: BackendData) => transferAnnotation(an, gt, colors[an.keyword]))
+  const transferAnnotations = (annotations = [], gt = false) =>
+    annotations.map((an: YModels.BackendData) => transferAnnotation(an, gt, colors[an.keyword]))
 
   const annotations = [
     ...transferAnnotations(data.gt, true),
@@ -177,7 +174,7 @@ export function transferAsset(data: BackendData, keywords: Array<string>): Asset
   }
 }
 
-export function transferAnnotation(data: BackendData, gt: boolean = false, color = ''): Annotation {
+export function transferAnnotation(data: YModels.BackendData, gt: boolean = false, color = ''): YModels.Annotation {
   return {
     ...data,
     keyword: data.keyword,
@@ -198,7 +195,7 @@ export function transferAnnotationsCount(count = {}, negative = 0, total = 1) {
   }
 }
 
-const transferCK = (counts: BackendData = {}, total: BackendData = {}) => {
+const transferCK = (counts: YModels.BackendData = {}, total: YModels.BackendData = {}) => {
   const keywords = Object.keys(counts).map(keyword => {
     const children = counts[keyword]
     return {
@@ -217,7 +214,7 @@ const transferCK = (counts: BackendData = {}, total: BackendData = {}) => {
   }
 }
 
-const generateAnno = (data: BackendData) => {
+const generateAnno = (data: YModels.BackendData) => {
   const { quality, area, area_ratio } = data.hist
   return {
     keywords: data.keywords,
@@ -230,7 +227,7 @@ const generateAnno = (data: BackendData) => {
   }
 }
 
-function generateDatasetColors(keywords: Array<string> = []): {[name: string]: string} {
+function generateDatasetColors(keywords: Array<string> = []): { [name: string]: string } {
   const KeywordColor = ["green", "red", "cyan", "blue", "yellow", "purple", "magenta", "orange", "gold"]
   return keywords.reduce((prev, curr, i) =>
     ({ ...prev, [curr]: KeywordColor[i % KeywordColor.length] }), {})

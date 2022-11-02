@@ -1,5 +1,3 @@
-import { Project, } from "@/interface/project"
-import { BackendData } from "@/interface/common"
 import { transferDatasetGroup, transferDataset } from '@/constants/dataset'
 import { format } from '@/utils/date'
 import { transferIteration } from "./iteration"
@@ -9,9 +7,9 @@ export const tabs = [
   { tab: 'project.tab.model.title', key: 'model', },
 ]
 
-export function transferProject(data: BackendData) {
+export function transferProject(data: YModels.BackendData) {
   const iteration = transferIteration(data.current_iteration)
-  const project: Project = {
+  const project: YModels.Project = {
     id: data.id,
     name: data.name,
     keywords: data.training_keywords,
