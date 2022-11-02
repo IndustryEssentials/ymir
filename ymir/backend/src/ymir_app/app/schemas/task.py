@@ -111,10 +111,13 @@ class FusionParameter(TaskParameterBase, IterationContext):
     normalize_labels = root_validator(allow_reuse=True)(label_normalize)
 
 
-TaskParameter = Annotated[Union[LabelParameter, TrainingParameter, MiningAndInferParameter, FusionParameter]]
+TaskParameter = Annotated[
+    Union[LabelParameter, TrainingParameter, MiningAndInferParameter, FusionParameter],
+    Field(description="Generic Task Parameters"),
+]
 
 
-class TaskCreate(TaskBase, IterationContext):
+class TaskCreate(TaskBase):
     parameters: TaskParameter
     docker_image_config: Optional[Dict] = Field(description="docker runtime configuration")
     preprocess: Optional[TaskPreprocess] = Field(description="preprocess to apply to related dataset")
