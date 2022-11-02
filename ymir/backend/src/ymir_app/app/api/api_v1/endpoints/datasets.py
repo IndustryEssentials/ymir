@@ -27,15 +27,15 @@ from app.constants.state import TaskState, TaskType, ResultState
 from app.utils.iteration import get_iteration_context_converter
 from app.utils.ymir_controller import ControllerClient
 from app.utils.ymir_viz import VizClient
-from app.schemas.dataset import MergeStrategy
+from app.schemas.common import MergeStrategy
 from app.libs.datasets import (
     import_dataset_in_background,
     evaluate_datasets,
     ensure_datasets_are_ready,
-    send_keywords_metrics,
 )
 from app.libs.tasks import task_placeholder
 from app.libs.labels import keywords_to_class_ids
+from app.libs.metrics import send_keywords_metrics
 from common_utils.labels import UserLabels
 
 router = APIRouter()

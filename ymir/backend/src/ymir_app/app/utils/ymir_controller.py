@@ -1,5 +1,4 @@
 import enum
-import itertools
 import secrets
 import time
 from dataclasses import dataclass
@@ -64,11 +63,11 @@ ANNOTATION_TYPE_MAPPING = {
 }
 
 
-def gen_typed_datasets(dataset_type: int, datasets: List[str]) -> Generator:
-    for dataset_id in datasets:
+def gen_typed_datasets(typed_datasets: List[Dict]) -> Generator:
+    for typed_dataset in typed_datasets:
         dataset_with_type = mirsvrpb.TaskReqTraining.TrainingDatasetType()
-        dataset_with_type.dataset_type = dataset_type
-        dataset_with_type.dataset_id = dataset_id
+        dataset_with_type.dataset_type = typed_dataset["type"]
+        dataset_with_type.dataset_id = typed_dataset["hash"]
         yield dataset_with_type
 
 
@@ -118,14 +117,10 @@ class ControllerRequest:
         return request
 
     def prepare_training(self, request: mirsvrpb.GeneralReq, args: Dict) -> mirsvrpb.GeneralReq:
-        request.in_class_ids[:] = args["class_ids"]
+        request.in_class_ids[:] = [label.class_id for label in args["typed_labels"]]
         train_task_req = mirsvrpb.TaskReqTraining()
-        datasets = itertools.chain(
-            gen_typed_datasets(mir_cmd_pb.TvtTypeTraining, [args["dataset_hash"]]),
-            gen_typed_datasets(mir_cmd_pb.TvtTypeValidation, [args["validation_dataset_hash"]]),
-        )
-        for dataset in datasets:
-            train_task_req.in_dataset_types.append(dataset)
+        train_task_req.in_dataset_types[:] = list(gen_typed_datasets(args["typed_datasets"]))
+
         if args.get("preprocess"):
             train_task_req.preprocess_config = args["preprocess"]
 
@@ -133,9 +128,10 @@ class ControllerRequest:
         req_create_task.task_type = mir_cmd_pb.TaskType.TaskTypeTraining
         req_create_task.training.CopyFrom(train_task_req)
 
-        if args.get("model_hash"):
-            request.model_hash = args["model_hash"]
-            request.model_stage = args["model_stage_name"]
+        for typed_model in args.get("typed_models", []):
+            request.model_hash = typed_model["hash"]
+            request.model_stage = typed_model["stage_name"]
+
         request.req_type = mirsvrpb.RequestType.TASK_CREATE
         request.singleton_op = args["docker_image"]
         request.docker_image_config = args["docker_config"]
@@ -145,7 +141,7 @@ class ControllerRequest:
         return request
 
     def prepare_mining(self, request: mirsvrpb.GeneralReq, args: Dict) -> mirsvrpb.GeneralReq:
-        request.in_dataset_ids[:] = [args["dataset_hash"]]
+        request.in_dataset_ids[:] = [dataset["hash"] for dataset in args["typed_datasets"]]
         mine_task_req = mirsvrpb.TaskReqMining()
         if args.get("top_k"):
             mine_task_req.top_k = args["top_k"]
@@ -158,8 +154,8 @@ class ControllerRequest:
         request.req_type = mirsvrpb.RequestType.TASK_CREATE
         request.singleton_op = args["docker_image"]
         request.docker_image_config = args["docker_config"]
-        request.model_hash = args["model_hash"]
-        request.model_stage = args["model_stage_name"]
+        request.model_hash = args["typed_models"][0]["hash"]
+        request.model_stage = args["typed_models"][0]["stage_name"]
         request.req_create_task.CopyFrom(req_create_task)
         return request
 
@@ -186,10 +182,10 @@ class ControllerRequest:
         return request
 
     def prepare_label(self, request: mirsvrpb.GeneralReq, args: Dict) -> mirsvrpb.GeneralReq:
-        request.in_dataset_ids[:] = [args["dataset_hash"]]
-        request.in_class_ids[:] = args["class_ids"]
+        request.in_dataset_ids[:] = [dataset["hash"] for dataset in args["typed_datasets"]]
+        request.in_class_ids[:] = [label.class_id for label in args["typed_labels"]]
         label_request = mirsvrpb.TaskReqLabeling()
-        label_request.project_name = f"label_${args['dataset_name']}"
+        label_request.project_name = f"label_{args['dataset_name']}"
         label_request.labeler_accounts[:] = args["labellers"]
 
         # pre annotation
@@ -266,15 +262,15 @@ class ControllerRequest:
         return request
 
     def prepare_data_fusion(self, request: mirsvrpb.GeneralReq, args: Dict) -> mirsvrpb.GeneralReq:
-        request.in_dataset_ids[:] = args["include_datasets"]
-        request.merge_strategy = MERGE_STRATEGY_MAPPING[args.get("strategy", MergeStrategy.stop_upon_conflict)]
+        request.in_dataset_ids[:] = [dataset["hash"] for dataset in args["typed_datasets"] if not dataset["exclude"]]
         if args.get("exclude_datasets"):
-            request.ex_dataset_ids[:] = args["exclude_datasets"]
+            request.ex_dataset_ids[:] = [dataset["hash"] for dataset in args["typed_datasets"] if dataset["exclude"]]
+        request.merge_strategy = MERGE_STRATEGY_MAPPING[args.get("strategy", MergeStrategy.stop_upon_conflict)]
 
         if args.get("include_class_ids"):
-            request.in_class_ids[:] = args["include_class_ids"]
+            request.in_class_ids[:] = [label.class_id for label in args["typed_labels"] if not label["exclude"]]
         if args.get("exclude_class_ids"):
-            request.ex_class_ids[:] = args["exclude_class_ids"]
+            request.ex_class_ids[:] = [label.class_id for label in args["typed_labels"] if label["exclude"]]
 
         if args.get("sampling_count"):
             request.sampling_count = args["sampling_count"]

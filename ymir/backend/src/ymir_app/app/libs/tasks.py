@@ -17,7 +17,6 @@ from app.api.errors.errors import (
     FailedtoCreateTask,
     ModelNotReady,
     ModelNotFound,
-    ModelStageNotFound,
     TaskNotFound,
     DatasetNotFound,
     DatasetGroupNotFound,
@@ -32,6 +31,7 @@ from app.constants.state import (
 )
 from app.config import settings
 from app import schemas, crud, models
+from app.libs.metrics import send_keywords_metrics
 from app.libs.models import create_model_stages
 from app.libs.labels import keywords_to_class_ids
 from app.utils.cache import CacheClient
@@ -76,34 +76,45 @@ async def batch_update_task_status(events: List[Tuple[str, Dict]]) -> List[str]:
         return list(itertools.compress(ids, success_id_selectors))
 
 
-def parameter_converter(parameters: Dict, db: Session, user_labels: UserLabels) -> Dict:
-    converted = dict(parameters)
-    for k, v in parameters.items():
-        if k == "dataset_id":
-            dataset = crud.dataset.get(db, v)
-            if not dataset:
-                raise DatasetNotFound()
-            converted["dataset_hash"] = dataset.hash
-            converted["dataset_group_id"] = dataset.dataset_group_id
-            converted["dataset_name"] = dataset.name
-        elif k == "validation_dataset_id":
-            dataset = crud.dataset.get(db, v)
-            if not dataset:
-                raise DatasetNotFound()
-            converted["validation_dataset_hash"] = dataset.hash
-        elif k == "model_stage_id":
-            model_stage = crud.model_stage.get(db, v)
-            if not model_stage:
-                raise ModelStageNotFound()
-            converted["model_hash"] = model_stage.model.hash  # type: ignore
-            converted["model_stage_name"] = model_stage.name
-        elif k == "keywords":
-            converted["class_ids"] = keywords_to_class_ids(user_labels, v)
-    return converted
+def fillin_dataset_hashes(db: Session, typed_datasets: List[schemas.common.TypedDataset]) -> None:
+    if not typed_datasets:
+        return
+    datasets_in_db = crud.dataset.get_multi_by_ids(db, ids=[i.id for i in typed_datasets])
+    hashes = {i.id: i.hash for i in datasets_in_db}
+    for dataset in typed_datasets:
+        dataset.hash = hashes[dataset.id]
+
+
+def fillin_model_hashes(db: Session, typed_models: List[schemas.common.TypedModel]) -> None:
+    if not typed_models:
+        return
+    model_stages_in_db = crud.model_stage.get_multi_by_ids(db, ids=[i.stage_id for i in typed_models if i.stage_id])
+    hashes = {stage.id: {"hash": stage.model.hash, "stage_name": stage.name} for stage in model_stages_in_db}  # type: ignore
+    for model in typed_models:
+        _hashes = hashes[model.id]
+        model.hash, model.stage_name = _hashes["hash"], _hashes["stage_name"]
+
+
+def fillin_label_ids(user_labels: UserLabels, typed_labels: List[schemas.common.TypedLabel]) -> None:
+    if not typed_labels:
+        return
+    class_ids = keywords_to_class_ids(user_labels, [i.name for i in typed_labels])
+    for label in typed_labels:
+        label.class_id = class_ids[label.name]
+
+
+def fillin_parameter(db: Session, user_labels: UserLabels, parameters: schemas.task.TaskParameter) -> Dict:
+    if parameters.typed_datasets:
+        fillin_dataset_hashes(db, parameters.typed_datasets)
+    if parameters.typed_labels:
+        fillin_label_ids(user_labels, parameters.typed_labels)
+    if parameters.typed_models:
+        fillin_model_hashes(db, parameters.typed_models)
+    return parameters.dict()
 
 
 def create_single_task(db: Session, user_id: int, user_labels: UserLabels, task_in: schemas.TaskCreate) -> models.Task:
-    parameters = parameter_converter(task_in.parameters.dict(), db, user_labels)
+    parameters = fillin_parameter(db, user_labels, task_in.parameters)
     task_hash = gen_task_hash(user_id, task_in.project_id)
     try:
         controller_client = ControllerClient()
@@ -122,26 +133,18 @@ def create_single_task(db: Session, user_id: int, user_labels: UserLabels, task_
         raise RequiredFieldMissing()
 
     task = crud.task.create_task(db, obj_in=task_in, task_hash=task_hash, user_id=user_id)
-    task_info = schemas.TaskInternal.from_orm(task)
-
     task_result = TaskResult(db=db, task_in_db=task)
     task_result.create(task_in.parameters.dataset_id, task_in.result_description)
 
-    logger.info("[create task] created task name: %s", task_info.name)
-    if parameters.get("class_ids"):
-        try:
-            viz_client = VizClient(user_id=user_id, project_id=task_in.project_id)
-            viz_client.send_metrics(
-                metrics_group="task",
-                id=task_info.hash,
-                create_time=int(task_info.create_datetime.timestamp()),
-                keyword_ids=parameters["class_ids"],
-            )
-        except Exception:
-            logger.exception(
-                "[create task] failed to write task(%s) stats to viewer, continue anyway",
-                task.hash,
-            )
+    logger.info("[create task] created task hash: %s", task_hash)
+    if parameters.get("typed_labels"):
+        send_keywords_metrics(
+            user_id,
+            task_in.project_id,
+            task_hash,
+            [label.class_id for label in parameters["typed_labels"]],
+            int(task.create_datetime.timestamp()),
+        )
     return task
 
 

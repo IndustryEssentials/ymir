@@ -3,14 +3,24 @@ import json
 from datetime import datetime
 from typing import Any, Dict, List, Optional, Union
 
+from typing_extensions import Annotated
+
 from pydantic import BaseModel, EmailStr, Field, validator, root_validator
 
-from app.constants.state import AnnotationType, TaskState, TaskType, ResultState, ResultType, IterationStage
+from app.constants.state import AnnotationType, ResultState, ResultType, TaskState, TaskType
 from app.schemas.common import (
     Common,
     DateTimeModelMixin,
     IdModelMixin,
     IsDeletedModelMixin,
+    IterationContext,
+    TypedDataset,
+    TypedModel,
+    TypedLabel,
+    MergeStrategy,
+    dataset_normalize,
+    label_normalize,
+    model_normalize,
 )
 from id_definition.task_id import TaskId
 
@@ -39,8 +49,16 @@ class TaskPreprocess(BaseModel):
 
 
 class TaskParameterBase(BaseModel):
-    dataset_id: Optional[int]
+    dataset_id: int
+    dataset_group_id: Optional[int]
+    model_id: Optional[int]
+    model_stage_id: Optional[int]
     keywords: Optional[List[str]]
+    description: Optional[str]
+
+    typed_datasets: Optional[List[TypedDataset]]
+    typed_models: Optional[List[TypedModel]]
+    typed_labels: Optional[List[TypedLabel]]
 
     @validator("keywords")
     def normalize_keywords(cls, v: Optional[List[str]]) -> Optional[List[str]]:
@@ -54,6 +72,9 @@ class LabelParameter(TaskParameterBase):
     labellers: Optional[List[EmailStr]]
     annotation_type: Optional[AnnotationType] = None
 
+    normalize_datasets = root_validator(allow_reuse=True)(dataset_normalize)
+    normalize_labels = root_validator(allow_reuse=True)(label_normalize)
+
 
 class TrainingParameter(TaskParameterBase):
     validation_dataset_id: Optional[int]
@@ -61,38 +82,44 @@ class TrainingParameter(TaskParameterBase):
     preprocess: Optional[TaskPreprocess] = Field(description="preprocess to apply to related dataset")
     docker_image: Optional[str]
 
+    normalize_datasets = root_validator(allow_reuse=True)(dataset_normalize)
+    normalize_models = root_validator(allow_reuse=True)(model_normalize)
+    normalize_labels = root_validator(allow_reuse=True)(label_normalize)
+
 
 class MiningAndInferParameter(TaskParameterBase):
-    model_id: Optional[int]
-    model_stage_id: Optional[int]
     top_k: Optional[int]
     generate_annotations: Optional[bool]
     docker_image: Optional[str]
 
-
-class TaskParameter(BaseModel):
-    label: Optional[LabelParameter]
-    training: Optional[TrainingParameter]
-    mining: Optional[MiningAndInferParameter]
-    dataset_infer: Optional[MiningAndInferParameter]
+    normalize_datasets = root_validator(allow_reuse=True)(dataset_normalize)
+    normalize_models = root_validator(allow_reuse=True)(model_normalize)
+    normalize_labels = root_validator(allow_reuse=True)(label_normalize)
 
 
-class TaskCreate(TaskBase):
-    iteration_id: Optional[int]
-    iteration_stage: Optional[IterationStage]
-    parameters: TaskParameter = Field(description="task specific parameters")
+class FusionParameter(TaskParameterBase, IterationContext):
+    include_datasets: List[int]
+    include_strategy: Optional[MergeStrategy] = MergeStrategy.prefer_newest
+    exclude_datasets: List[int]
+
+    include_labels: List[str]
+    exclude_labels: List[str]
+
+    sampling_count: int = 0
+
+    normalize_datasets = root_validator(allow_reuse=True)(dataset_normalize)
+    normalize_labels = root_validator(allow_reuse=True)(label_normalize)
+
+
+TaskParameter = Annotated[Union[LabelParameter, TrainingParameter, MiningAndInferParameter, FusionParameter]]
+
+
+class TaskCreate(TaskBase, IterationContext):
+    parameters: TaskParameter
     docker_image_config: Optional[Dict] = Field(description="docker runtime configuration")
     preprocess: Optional[TaskPreprocess] = Field(description="preprocess to apply to related dataset")
-    result_description: Optional[str] = Field(description="description for task result, not task itself")
 
-    @validator("docker_image_config")
-    def dumps_docker_image_config(cls, v: Optional[Union[str, Dict]], values: Dict[str, Any]) -> Optional[str]:
-        # we don't care what's inside of config
-        # just dumps it as string and save to db
-        if isinstance(v, dict):
-            return json.dumps(v)
-        else:
-            return v
+    result_description: Optional[str] = Field(description="description for task result, not task itself")
 
     @root_validator(pre=True)
     def tuck_into_parameters(cls, values: Any) -> Any:
@@ -104,7 +131,8 @@ class TaskCreate(TaskBase):
         if values.get("preprocess"):
             values["parameters"]["preprocess"] = values["preprocess"]
         if values.get("docker_image_config"):
-            values["parameters"]["docker_config"] = values["docker_image_config"]
+            # will pass dumped docker config to controller
+            values["parameters"]["docker_config"] = json.dumps(values["docker_image_config"])
         return values
 
     class Config:

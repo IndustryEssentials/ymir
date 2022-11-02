@@ -11,6 +11,8 @@ from app.schemas.common import (
     IdModelMixin,
     IsDeletedModelMixin,
     RequestParameterBase,
+    dataset_normalize,
+    label_normalize,
 )
 from app.schemas.task import TaskInternal
 
@@ -203,9 +205,7 @@ class DatasetsFusionParameter(RequestParameterBase):
     main_dataset_id: int
 
     include_datasets: List[int]
-    include_strategy: Optional[MergeStrategy] = Field(
-        MergeStrategy.prefer_newest, description="strategy to merge multiple datasets"
-    )
+    include_strategy: Optional[MergeStrategy] = MergeStrategy.prefer_newest
     exclude_datasets: List[int]
 
     include_labels: List[str]
@@ -213,7 +213,13 @@ class DatasetsFusionParameter(RequestParameterBase):
 
     sampling_count: int = 0
 
-    description: Optional[str] = Field(description="description for fusion result")
+    description: Optional[str]
+
+    _datasets: Optional[List[Dict]]
+    _labels: Optional[List[Dict]]
+
+    normalize_datasets = root_validator(allow_reuse=True)(dataset_normalize)
+    normalize_labels = root_validator(allow_reuse=True)(label_normalize)
 
 
 class DatasetEvaluationCreate(BaseModel):
