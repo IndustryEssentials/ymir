@@ -1,18 +1,14 @@
 import enum
 import json
 from datetime import datetime
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Callable, Dict, List, Optional, Union
 from operator import attrgetter
 
 from typing_extensions import Annotated
 
 from pydantic import BaseModel, EmailStr, Field, validator, root_validator
-from sqlalchemy.orm import Session
 
-from app import crud
 from app.constants.state import AnnotationType, ResultState, ResultType, TaskState, TaskType, MiningStrategy
-from app.libs.labels import keywords_to_class_ids
-from app.libs.datasets import ensure_datasets_are_ready
 from app.schemas.common import (
     Common,
     DateTimeModelMixin,
@@ -27,7 +23,6 @@ from app.schemas.common import (
     label_normalize,
     model_normalize,
 )
-from common_utils.labels import UserLabels
 from id_definition.task_id import TaskId
 
 
@@ -122,10 +117,11 @@ class FusionParameter(TaskParameterBase, IterationContext):
         # when add new exclude_datasets, update normalize_datasets as well
         validate_assignment = True
 
-    def update_with_iteration_context(self, db: Session) -> None:
+    def update_with_iteration_context(self, iterations_getter: Callable) -> None:
         if not self.exclude_last_result:
             return
-        iterations = crud.iteration.get_multi_by_project(db=db, project_id=self.project_id)
+        iterations = iterations_getter(project_id=self.project_id)
+
         if self.mining_strategy == MiningStrategy.chunk:
             datasets_to_exclude = [i.mining_input_dataset_id for i in iterations if i.mining_input_dataset_id]
         elif self.mining_strategy == MiningStrategy.dedup:
@@ -143,28 +139,30 @@ TaskParameter = Annotated[
 ]
 
 
-def fillin_dataset_hashes(db: Session, typed_datasets: List[TypedDataset]) -> None:
+def fillin_dataset_hashes(datasets_getter: Callable, typed_datasets: List[TypedDataset]) -> None:
     if not typed_datasets:
         return
-    datasets_in_db = ensure_datasets_are_ready(db, dataset_ids=[i.id for i in typed_datasets])
+    datasets_in_db = datasets_getter(dataset_ids=[i.id for i in typed_datasets])
     data = {d.id: (d.hash, d.create_datetime) for d in datasets_in_db}
     for dataset in typed_datasets:
         dataset.hash, dataset.create_datetime = data[dataset.id]
 
 
-def fillin_model_hashes(db: Session, typed_models: List[TypedModel]) -> None:
+def fillin_model_hashes(model_stages_getter: Callable, typed_models: List[TypedModel]) -> None:
+    pass
+
     if not typed_models:
         return
-    model_stages_in_db = crud.model_stage.get_multi_by_ids(db, ids=[i.stage_id for i in typed_models if i.stage_id])
+    model_stages_in_db = model_stages_getter(ids=[i.stage_id for i in typed_models if i.stage_id])
     data = {stage.id: (stage.model.hash, stage.name) for stage in model_stages_in_db}  # type: ignore
     for model in typed_models:
         model.hash, model.stage_name = data[model.id]
 
 
-def fillin_label_ids(user_labels: UserLabels, typed_labels: List[TypedLabel]) -> None:
+def fillin_label_ids(labels_getter: Callable, typed_labels: List[TypedLabel]) -> None:
     if not typed_labels:
         return
-    class_ids = keywords_to_class_ids(user_labels, [i.name for i in typed_labels])
+    class_ids = labels_getter([i.name for i in typed_labels])
     for label in typed_labels:
         label.class_id = class_ids[label.name]
 
@@ -173,8 +171,6 @@ class TaskCreate(TaskBase):
     parameters: TaskParameter
     docker_image_config: Optional[Dict] = Field(description="docker runtime configuration")
     preprocess: Optional[TaskPreprocess] = Field(description="preprocess to apply to related dataset")
-
-    result_description: Optional[str] = Field(description="description for task result, not task itself")
 
     class Config:
         use_enum_values = True
@@ -193,21 +189,27 @@ class TaskCreate(TaskBase):
             values["parameters"]["docker_config"] = json.dumps(values["docker_image_config"])
         return values
 
-    def fulfill_parameters(self, db: Session, user_labels: UserLabels) -> None:
+    def fulfill_parameters(
+        self,
+        datasets_getter: Callable,
+        model_stages_getter: Callable,
+        iterations_getter: Callable,
+        labels_getter: Callable,
+    ) -> None:
         """
         Update task parameters when database and user_labels are ready
         """
         if self.parameters.typed_datasets:
-            fillin_dataset_hashes(db, self.parameters.typed_datasets)
+            fillin_dataset_hashes(datasets_getter, self.parameters.typed_datasets)
         if self.parameters.typed_labels:
-            fillin_label_ids(user_labels, self.parameters.typed_labels)
+            fillin_label_ids(labels_getter, self.parameters.typed_labels)
         if self.parameters.typed_models:
-            fillin_model_hashes(db, self.parameters.typed_models)
+            fillin_model_hashes(model_stages_getter, self.parameters.typed_models)
 
         # extra logic for dataset fusion:
         #   reorder datasets based on merge_strategy
         if isinstance(self.parameters, FusionParameter) and self.parameters.typed_datasets:
-            # todo
+            self.parameters.update_with_iteration_context(iterations_getter)
             self.parameters.typed_datasets.sort(
                 key=attrgetter("create_datetime"),
                 reverse=(self.parameters.merge_strategy == MergeStrategy.prefer_newest),

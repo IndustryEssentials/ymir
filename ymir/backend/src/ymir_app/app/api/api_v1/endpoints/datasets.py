@@ -22,7 +22,6 @@ from app.api.errors.errors import (
 )
 from app.config import settings
 from app.constants.state import TaskState, TaskType, ResultState
-from app.utils.iteration import get_iteration_context_converter
 from app.utils.ymir_controller import ControllerClient
 from app.utils.ymir_viz import VizClient
 from app.libs.datasets import (
@@ -529,13 +528,10 @@ def create_dataset_fusion_task(
     if not dataset_group:
         raise DatasetGroupNotFound()
 
-    with get_iteration_context_converter(db, user_labels) as iteration_context_converter:
-        parameters = iteration_context_converter(in_fusion)
-
     task_in = schemas.TaskCreate(
         type=TaskType.data_fusion,
         project_id=in_fusion.project_id,
-        parameters=parameters,
+        parameters=in_fusion,
     )
     task_in_db = create_single_task(db, current_user.id, user_labels, task_in)
     return {"result": task_in_db}

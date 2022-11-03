@@ -1,4 +1,4 @@
-from functools import cached_property
+from functools import cached_property, partial
 import json
 import itertools
 import asyncio
@@ -29,6 +29,8 @@ from app.constants.state import (
 )
 from app.config import settings
 from app import schemas, crud, models
+from app.libs.datasets import ensure_datasets_are_ready
+from app.libs.labels import keywords_to_class_ids
 from app.libs.metrics import send_keywords_metrics
 from app.libs.models import create_model_stages
 from app.utils.cache import CacheClient
@@ -74,7 +76,17 @@ async def batch_update_task_status(events: List[Tuple[str, Dict]]) -> List[str]:
 
 
 def create_single_task(db: Session, user_id: int, user_labels: UserLabels, task_in: schemas.TaskCreate) -> models.Task:
-    task_in.fulfill_parameters(db, user_labels)
+    iterations_getter = partial(crud.iteration.get_multi_by_project, db)
+    datasets_getter = partial(ensure_datasets_are_ready, db)
+    model_stages_getter = partial(crud.model_stage.get_multi_by_ids, db)
+    labels_getter = partial(keywords_to_class_ids, user_labels)
+
+    task_in.fulfill_parameters(
+        datasets_getter,
+        model_stages_getter,
+        iterations_getter,
+        labels_getter,
+    )
     task_hash = gen_task_hash(user_id, task_in.project_id)
     try:
         controller_client = ControllerClient()
@@ -98,7 +110,7 @@ def create_single_task(db: Session, user_id: int, user_labels: UserLabels, task_
         task_in.parameters.dataset_id,
         task_in.parameters.dataset_group_id,
         task_in.parameters.dataset_group_name,
-        task_in.result_description,
+        task_in.parameters.description,
     )
 
     logger.info("[create task] created task hash: %s", task_hash)
