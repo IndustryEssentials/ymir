@@ -107,11 +107,11 @@ class MiningAndInferParameter(TaskParameterBase):
 class FusionParameter(TaskParameterBase, IterationContext):
     merge_strategy: Optional[MergeStrategy] = MergeStrategy.prefer_newest
 
-    include_datasets: List[int]
-    exclude_datasets: List[int]
+    include_datasets: List[int] = []
+    exclude_datasets: List[int] = []
 
-    include_labels: List[str]
-    exclude_labels: List[str]
+    include_labels: List[str] = []
+    exclude_labels: List[str] = []
 
     sampling_count: int = 0
 
