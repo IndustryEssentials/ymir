@@ -1,23 +1,41 @@
 import request from "@/utils/request"
 
+type CreateParams = {
+  iterationRound: number
+  prevIteration: number
+  projectId: number
+  testSet: number
+  miningSet: number
+}
+
+function post(id: number, data: any, url = "") {
+  return request.post(`/iterations/${id}/${url}`, data)
+}
+
+function get(id: number, params: any, url = "") {
+  return request.get(`/iterations/${id}/${url}`, { params })
+}
+
 /** iteration service */
 /**
- * get iteration by id
- * @param {number} project_id project id
- * @param {number} id iteration id
- * @returns
+ * @description get iteration by id
+ * @export
+ * @param {number} pid project id
+ * @param {number} id  iteration id
+ * @return {*}
  */
-export function getIteration(project_id, id) {
-  return request.get(`iterations/${id}`, { params: { project_id } })
+export function getIteration(pid: number, id: number) {
+  return get(id, { project_id: pid })
 }
 
 /**
- * get project iterations by id
- * @param {number} id
- * @returns
+ * @description get project iterations by id
+ * @export
+ * @param {number} pid project id
+ * @return
  */
-export function getIterations(id) {
-  return request.get(`iterations/`, { params: { project_id: id } })
+export function getIterations(pid: number) {
+  return request.get(`iterations/`, { params: { project_id: pid } })
 }
 
 /**
@@ -34,17 +52,13 @@ export function getIterations(id) {
  * @returns
  */
 export function createIteration({
-  name,
-  currentStage,
   iterationRound,
   prevIteration,
   projectId,
   testSet,
   miningSet,
-}) {
+}: CreateParams) {
   return request.post("/iterations/", {
-    name,
-    current_stage: currentStage,
     iteration_round: iterationRound,
     project_id: projectId,
     previous_iteration: prevIteration,
@@ -66,8 +80,15 @@ export function createIteration({
  * @returns
  */
 export function updateIteration(
-  id,
-  { currentStage, miningSet, miningResult, labelSet, trainUpdateSet, model }
+  id: number,
+  {
+    currentStage,
+    miningSet,
+    miningResult,
+    labelSet,
+    trainUpdateSet,
+    model,
+  }: { [key: string]: number }
 ) {
   return request({
     method: "patch",
@@ -84,13 +105,45 @@ export function updateIteration(
 }
 
 /**
- * get mining dataset stats for iterations
- * @param {number} projectId
- * @param {number} iterationId
- * @returns
+ * @description get mining dataset stats for iterations
+ * @export
+ * @param {number} pid
+ * @param {number} id
+ * @return
  */
-export function getMiningStats(projectId, iterationId) {
-  return request.get(
-    `/iterations/${iterationId}/mining_progress?project_id=${projectId}`
-  )
+export function getMiningStats(pid: number, id: number) {
+  return get(id, null, `mining_progress?project_id=${pid}`)
+}
+
+/**
+ * @description
+ * @export
+ * @param {number} id
+ * @param {number} sid
+ * @param {number} tid
+ * @return
+ */
+export function bindStep(id: number, sid: number, tid: number) {
+  return post(id, { task_id: tid }, `/step/${sid}/start`)
+}
+
+/**
+ * @description
+ * @export
+ * @param {number} id
+ * @param {number} sid
+ * @return
+ */
+export function nextStep(id: number, sid: number) {
+  return post(id, null, `/step/${sid}/finish`)
+}
+/**
+ * @description
+ * @export
+ * @param {number} id
+ * @param {number} sid
+ * @return
+ */
+export function skipStep(id: number, sid: number) {
+  return post(id, null, `/step/${sid}/finish`)
 }
