@@ -10,7 +10,7 @@ from pydantic import BaseModel, EmailStr, Field, validator, root_validator
 from sqlalchemy.orm import Session
 
 from app import crud
-from app.constants.state import AnnotationType, ResultState, ResultType, TaskState, TaskType
+from app.constants.state import AnnotationType, ResultState, ResultType, TaskState, TaskType, MiningStrategy
 from app.libs.labels import keywords_to_class_ids
 from app.libs.datasets import ensure_datasets_are_ready
 from app.schemas.common import (
@@ -118,6 +118,24 @@ class FusionParameter(TaskParameterBase, IterationContext):
     normalize_datasets = root_validator(allow_reuse=True)(dataset_normalize)
     normalize_labels = root_validator(allow_reuse=True)(label_normalize)
 
+    class Config:
+        # when add new exclude_datasets, update normalize_datasets as well
+        validate_assignment = True
+
+    def update_with_iteration_context(self, db: Session) -> None:
+        if not self.exclude_last_result:
+            return
+        iterations = crud.iteration.get_multi_by_project(db=db, project_id=self.project_id)
+        if self.mining_strategy == MiningStrategy.chunk:
+            datasets_to_exclude = [i.mining_input_dataset_id for i in iterations if i.mining_input_dataset_id]
+        elif self.mining_strategy == MiningStrategy.dedup:
+            datasets_to_exclude = [i.mining_output_dataset_id for i in iterations if i.mining_output_dataset_id]
+        else:
+            return
+        datasets_to_exclude += self.exclude_datasets
+        self.exclude_datasets = list(set(datasets_to_exclude))
+        return
+
 
 TaskParameter = Annotated[
     Union[LabelParameter, TrainingParameter, MiningAndInferParameter, FusionParameter],
@@ -189,6 +207,7 @@ class TaskCreate(TaskBase):
         # extra logic for dataset fusion:
         #   reorder datasets based on merge_strategy
         if isinstance(self.parameters, FusionParameter) and self.parameters.typed_datasets:
+            # todo
             self.parameters.typed_datasets.sort(
                 key=attrgetter("create_datetime"),
                 reverse=(self.parameters.merge_strategy == MergeStrategy.prefer_newest),

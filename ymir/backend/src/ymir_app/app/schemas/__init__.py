@@ -7,7 +7,6 @@ from .dataset import (
     DatasetPaginationOut,
     DatasetUpdate,
     DatasetsOut,
-    DatasetsFusionParameter,
     DatasetsAnalysesOut,
     DatasetInfoOut,
     ImportStrategy,
@@ -103,4 +102,4 @@ from .user import (
     UserState,
     UserUpdate,
 )
-from .common import RequestParameterBase, BatchOperations
+from .common import BatchOperations

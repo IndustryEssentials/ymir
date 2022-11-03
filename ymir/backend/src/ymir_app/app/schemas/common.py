@@ -40,11 +40,6 @@ class IterationContext(BaseModel):
     mining_strategy: MiningStrategy = MiningStrategy.customize
 
 
-class RequestParameterBase(BaseModel):
-    iteration_context: Optional[IterationContext]
-    project_id: int
-
-
 class OperationAction(str, Enum):
     hide = "hide"
     unhide = "unhide"

@@ -2,7 +2,7 @@ import enum
 import json
 from typing import Any, Dict, List, Optional, Union
 
-from pydantic import BaseModel, Field, validator, root_validator
+from pydantic import BaseModel, Field, validator
 
 from app.constants.state import ResultState, TaskType
 from app.schemas.common import (
@@ -10,9 +10,6 @@ from app.schemas.common import (
     DateTimeModelMixin,
     IdModelMixin,
     IsDeletedModelMixin,
-    RequestParameterBase,
-    dataset_normalize,
-    label_normalize,
 )
 from app.schemas.task import TaskInternal
 
@@ -200,28 +197,6 @@ class DatasetPaginationOut(Common):
     result: DatasetPagination
 
 
-class DatasetsFusionParameter(RequestParameterBase):
-    dataset_group_id: int
-    main_dataset_id: int
-
-    include_datasets: List[int]
-    include_strategy: Optional[MergeStrategy] = MergeStrategy.prefer_newest
-    exclude_datasets: List[int]
-
-    include_labels: List[str]
-    exclude_labels: List[str]
-
-    sampling_count: int = 0
-
-    description: Optional[str]
-
-    _datasets: Optional[List[Dict]]
-    _labels: Optional[List[Dict]]
-
-    normalize_datasets = root_validator(allow_reuse=True)(dataset_normalize)
-    normalize_labels = root_validator(allow_reuse=True)(label_normalize)
-
-
 class DatasetEvaluationCreate(BaseModel):
     project_id: int
     dataset_ids: List[int]
@@ -244,42 +219,3 @@ class MultiDatasetsWithProjectID(BaseModel):
 
 class DatasetCheckDuplicationOut(Common):
     result: int
-
-
-class DatasetMergeCreate(BaseModel):
-    project_id: int
-
-    dest_group_id: Optional[int]
-    dest_group_name: Optional[str]
-
-    include_datasets: List[int]
-    exclude_datasets: Optional[List[int]]
-    merge_strategy: MergeStrategy = Field(
-        MergeStrategy.prefer_newest, description="strategy to merge multiple datasets"
-    )
-    description: Optional[str] = Field(description="description for merge result")
-
-    @root_validator
-    def confine_parameters(cls, values: Any) -> Any:
-        if values.get("dest_group_id") is None and values.get("dest_group_name") is None:
-            raise ValueError("dest_group_id and dest_group_name cannot both be None")
-        return values
-
-
-class DatasetFilterCreate(BaseModel):
-    project_id: int
-    dataset_id: int
-    include_keywords: Optional[List[str]]
-    exclude_keywords: Optional[List[str]]
-    sampling_count: Optional[int]
-    description: Optional[str] = Field(description="description for filter result")
-
-    @root_validator
-    def confine_parameters(cls, values: Any) -> Any:
-        if (
-            values.get("include_keywords") is None
-            and values.get("exclude_keywords") is None
-            and values.get("sampling_count") is None
-        ):
-            raise ValueError("include_keywords, exclude_keywords and sampling_count cannot all be None")
-        return values
