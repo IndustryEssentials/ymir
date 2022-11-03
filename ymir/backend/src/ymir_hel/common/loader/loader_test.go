@@ -77,10 +77,10 @@ func TestLoadModelInfo(t *testing.T) {
 	mirTaskMap := map[string]*protos.Task{}
 	mirTaskMap[headTaskID] = &protos.Task{
 		Model: &protos.ModelMeta{
-			ModelHash:            "model_hash",
-			MeanAveragePrecision: 0.42,
-			Context:              "context",
-			BestStageName:        "best_stage",
+			ModelHash:     "model_hash",
+			MAP:           0.42,
+			Context:       "context",
+			BestStageName: "best_stage",
 		},
 		SerializedExecutorConfig: "{abc: 1}",
 	}
@@ -89,12 +89,12 @@ func TestLoadModelInfo(t *testing.T) {
 	createGitRepo(t, mirRoot, map[string][]byte{"tasks.mir": encodedData}, mirRev)
 
 	expectedModel := &constants.MirdataModel{
-		ModelHash:            "model_hash",
-		Stages:               map[string]interface{}{},
-		MeanAveragePrecision: 0.42,
-		Context:              "context",
-		BestStageName:        "best_stage",
-		ExecutorConfig:       map[string]interface{}{"abc": 1}}
+		ModelHash:      "model_hash",
+		Stages:         map[string]interface{}{},
+		MAP:            0.42,
+		Context:        "context",
+		BestStageName:  "best_stage",
+		ExecutorConfig: map[string]interface{}{"abc": 1}}
 
 	mirRepoLoader := MirRepoLoader{}
 	mirModel := mirRepoLoader.LoadModelInfo(mirRepo)
