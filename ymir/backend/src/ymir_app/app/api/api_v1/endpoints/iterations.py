@@ -172,7 +172,7 @@ def start_iteration_step(
     task_in_db = crud.task.get(db, task_id)
     if not task_in_db:
         raise TaskNotFound()
-    step = crud.iteration_step.start(db, id=step_id, task_id=task_in_db.id)
+    step = crud.iteration_step.start(db, id=step_id, task_id=task_id)
     return {"result": step}
 
 
