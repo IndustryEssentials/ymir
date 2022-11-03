@@ -9,7 +9,7 @@ import (
 
 type MirdataModel struct {
 	ModelHash            string                 `json:"model_hash"`
-	MeanAveragePrecision float32                `json:"mean_average_precision"`
+	MeanAveragePrecision float32                `json:"mAP"`
 	Context              string                 `json:"context"`
 	Stages               map[string]interface{} `json:"stages"`
 	BestStageName        string                 `json:"best_stage_name"`
