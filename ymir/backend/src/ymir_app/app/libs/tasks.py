@@ -80,12 +80,14 @@ def create_single_task(db: Session, user_id: int, user_labels: UserLabels, task_
     datasets_getter = partial(ensure_datasets_are_ready, db)
     model_stages_getter = partial(crud.model_stage.get_multi_by_ids, db)
     labels_getter = partial(keywords_to_class_ids, user_labels)
+    docker_image_getter = partial(crud.docker_image.get, db)
 
     task_in.fulfill_parameters(
         datasets_getter,
         model_stages_getter,
         iterations_getter,
         labels_getter,
+        docker_image_getter,
     )
     task_hash = gen_task_hash(user_id, task_in.project_id)
     try:

@@ -9,6 +9,7 @@ from typing_extensions import Annotated
 from pydantic import BaseModel, EmailStr, Field, validator, root_validator
 
 from app.constants.state import AnnotationType, ResultState, ResultType, TaskState, TaskType, MiningStrategy
+from app.api.errors.errors import DockerImageNotFound
 from app.schemas.common import (
     Common,
     DateTimeModelMixin,
@@ -53,9 +54,15 @@ class TaskParameterBase(BaseModel):
     dataset_id: int
     dataset_group_id: Optional[int]
     dataset_group_name: Optional[str]
+
     model_id: Optional[int]
     model_stage_id: Optional[int]
+
     keywords: Optional[List[str]]
+
+    docker_image_id: Optional[int]
+    docker_image: Optional[str]
+
     description: Optional[str]
 
     typed_datasets: Optional[List[TypedDataset]]
@@ -82,7 +89,6 @@ class TrainingParameter(TaskParameterBase):
     validation_dataset_id: Optional[int]
     strategy: Optional[TrainingDatasetsStrategy] = TrainingDatasetsStrategy.stop
     preprocess: Optional[TaskPreprocess] = Field(description="preprocess to apply to related dataset")
-    docker_image: Optional[str]
 
     normalize_datasets = root_validator(allow_reuse=True)(dataset_normalize)
     normalize_models = root_validator(allow_reuse=True)(model_normalize)
@@ -92,7 +98,6 @@ class TrainingParameter(TaskParameterBase):
 class MiningAndInferParameter(TaskParameterBase):
     top_k: Optional[int]
     generate_annotations: Optional[bool]
-    docker_image: Optional[str]
 
     normalize_datasets = root_validator(allow_reuse=True)(dataset_normalize)
     normalize_models = root_validator(allow_reuse=True)(model_normalize)
@@ -170,7 +175,6 @@ def fillin_label_ids(labels_getter: Callable, typed_labels: List[TypedLabel]) ->
 class TaskCreate(TaskBase):
     parameters: TaskParameter
     docker_image_config: Optional[Dict] = Field(description="docker runtime configuration")
-    preprocess: Optional[TaskPreprocess] = Field(description="preprocess to apply to related dataset")
 
     class Config:
         use_enum_values = True
@@ -178,15 +182,12 @@ class TaskCreate(TaskBase):
     @root_validator(pre=True)
     def tuck_into_parameters(cls, values: Any) -> Any:
         """
-        For frontend, preprocess is a separate task configuration,
-        however, the underlying reads preprocess stuff from task_parameter,
-        so we just tuck preprocess into task_parameter
+        For frontend, docker image config is a separate task configuration,
+        however, the underlying controller treat docker image config as parameter
+        so we just tuck docker image config into task_parameter
         """
-        if values.get("preprocess"):
-            values["parameters"]["preprocess"] = values["preprocess"]
         if values.get("docker_image_config"):
-            # will pass dumped docker config to controller
-            values["parameters"]["docker_config"] = json.dumps(values["docker_image_config"])
+            values["parameters"]["docker_image_config"] = json.dumps(values["docker_image_config"])
         return values
 
     def fulfill_parameters(
@@ -195,6 +196,7 @@ class TaskCreate(TaskBase):
         model_stages_getter: Callable,
         iterations_getter: Callable,
         labels_getter: Callable,
+        docker_image_getter: Callable,
     ) -> None:
         """
         Update task parameters when database and user_labels are ready
@@ -205,6 +207,11 @@ class TaskCreate(TaskBase):
             fillin_label_ids(labels_getter, self.parameters.typed_labels)
         if self.parameters.typed_models:
             fillin_model_hashes(model_stages_getter, self.parameters.typed_models)
+        if self.parameters.docker_image_id:
+            docker_image = docker_image_getter(self.parameters.docker_image_id)
+            if not docker_image:
+                raise DockerImageNotFound()
+            self.parameters.docker_image = docker_image.url
 
         # extra logic for dataset fusion:
         #   reorder datasets based on merge_strategy

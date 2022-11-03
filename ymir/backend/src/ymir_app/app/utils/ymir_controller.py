@@ -134,7 +134,7 @@ class ControllerRequest:
 
         request.req_type = mirsvrpb.RequestType.TASK_CREATE
         request.singleton_op = args["docker_image"]
-        request.docker_image_config = args["docker_config"]
+        request.docker_image_config = args["docker_image_config"]
         # stop if training_dataset and validation_dataset share any assets
         request.merge_strategy = TRAINING_DATASET_STRATEGY_MAPPING[args["strategy"]]
         request.req_create_task.CopyFrom(req_create_task)
@@ -153,7 +153,7 @@ class ControllerRequest:
 
         request.req_type = mirsvrpb.RequestType.TASK_CREATE
         request.singleton_op = args["docker_image"]
-        request.docker_image_config = args["docker_config"]
+        request.docker_image_config = args["docker_image_config"]
         request.model_hash = args["typed_models"][0]["hash"]
         request.model_stage = args["typed_models"][0]["stage_name"]
         request.req_create_task.CopyFrom(req_create_task)
@@ -233,7 +233,7 @@ class ControllerRequest:
         request.model_stage = args["model_stage_name"]
         request.asset_dir = args["asset_dir"]
         request.singleton_op = args["docker_image"]
-        request.docker_image_config = args["docker_config"]
+        request.docker_image_config = args["docker_image_config"]
         return request
 
     def prepare_add_label(self, request: mirsvrpb.GeneralReq, args: Dict) -> mirsvrpb.GeneralReq:
@@ -477,9 +477,9 @@ class ControllerClient:
         model_stage_name: Optional[str],
         asset_dir: str,
         docker_image: Optional[str],
-        docker_config: Optional[str],
+        docker_image_config: Optional[str],
     ) -> Dict:
-        if None in (model_hash, docker_image, docker_config):
+        if None in (model_hash, docker_image, docker_image_config):
             raise ValueError("Missing model or docker image")
         req = ControllerRequest(
             type=ExtraRequestType.inference,
@@ -490,7 +490,7 @@ class ControllerClient:
                 "model_stage_name": model_stage_name,
                 "asset_dir": asset_dir,
                 "docker_image": docker_image,
-                "docker_config": docker_config,
+                "docker_image_config": docker_image_config,
             },
         )
         return self.send(req)
