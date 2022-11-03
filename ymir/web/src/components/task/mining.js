@@ -1,17 +1,24 @@
 import React, { useEffect, useState } from "react"
 import { connect } from "dva"
-import { Card, Radio, Button, Form, ConfigProvider, Space, InputNumber } from "antd"
+import {
+  Card,
+  Radio,
+  Button,
+  Form,
+  ConfigProvider,
+  Space,
+  InputNumber,
+} from "antd"
 import { useHistory, useParams, useLocation } from "umi"
-
 
 import { formLayout } from "@/config/antd"
 import t from "@/utils/t"
-import { HIDDENMODULES } from '@/constants/common'
-import { string2Array } from '@/utils/string'
-import { OPENPAI_MAX_GPU_COUNT } from '@/constants/common'
-import { TYPES } from '@/constants/image'
+import { HIDDENMODULES } from "@/constants/common"
+import { string2Array } from "@/utils/string"
+import { OPENPAI_MAX_GPU_COUNT } from "@/constants/common"
+import { TYPES } from "@/constants/image"
 import { randomNumber } from "@/utils/number"
-import useFetch from '@/hooks/useFetch'
+import useFetch from "@/hooks/useFetch"
 
 import ModelSelect from "@/components/form/modelSelect"
 import ImageSelect from "@/components/form/imageSelect"
@@ -25,13 +32,24 @@ import Desc from "@/components/form/desc"
 import styles from "./mining.less"
 import SubmitButtons from "./submitButtons"
 
-function Mining({ query = {}, hidden, ok = () => { }, datasetCache, bottom, ...func }) {
+function Mining({
+  query = {},
+  hidden,
+  ok = () => {},
+  datasetCache,
+  bottom,
+  ...func
+}) {
   const pageParams = useParams()
   const pid = Number(pageParams.id)
   const history = useHistory()
   const location = useLocation()
   const { mid, image, iterationId, currentStage, outputKey } = query
-  const stage = mid ? (Array.isArray(mid) ? mid : mid.split(',').map(Number)) : undefined
+  const stage = mid
+    ? Array.isArray(mid)
+      ? mid
+      : mid.split(",").map(Number)
+    : undefined
   const did = Number(query.did)
   const [dataset, setDataset] = useState({})
   const [selectedModel, setSelectedModel] = useState({})
@@ -43,8 +61,8 @@ function Mining({ query = {}, hidden, ok = () => { }, datasetCache, bottom, ...f
   const [live, setLiveCode] = useState(false)
   const [liveInitialValues, setLiveInitialValues] = useState({})
   const [openpai, setOpenpai] = useState(false)
-  const [sys, getSysInfo] = useFetch('common/getSysInfo', {})
-  const selectOpenpai = Form.useWatch('openpai', form)
+  const [sys, getSysInfo] = useFetch("common/getSysInfo", {})
+  const selectOpenpai = Form.useWatch("openpai", form)
   const [showConfig, setShowConfig] = useState(false)
 
   useEffect(() => {
@@ -77,7 +95,10 @@ function Mining({ query = {}, hidden, ok = () => { }, datasetCache, bottom, ...f
     const state = location.state
 
     if (state?.record) {
-      const { task: { parameters, config }, description, } = state.record
+      const {
+        task: { parameters, config },
+        description,
+      } = state.record
       const {
         dataset_id,
         docker_image,
@@ -91,7 +112,7 @@ function Mining({ query = {}, hidden, ok = () => { }, datasetCache, bottom, ...f
         datasetId: dataset_id,
         gpu_count: config.gpu_count,
         modelStage: [model_id, model_stage_id],
-        image: docker_image_id + ',' + docker_image,
+        image: docker_image_id + "," + docker_image,
         topk: top_k,
         inference: generate_annotations,
         description,
@@ -109,8 +130,8 @@ function Mining({ query = {}, hidden, ok = () => { }, datasetCache, bottom, ...f
 
   function imageChange(_, image = {}) {
     const { url, configs = [] } = image
-    const configObj = configs.find(conf => conf.type === TYPES.MINING) || {}
-    const hasInference = configs.some(conf => conf.type === TYPES.INFERENCE)
+    const configObj = configs.find((conf) => conf.type === TYPES.MINING) || {}
+    const hasInference = configs.some((conf) => conf.type === TYPES.INFERENCE)
     setImageHasInference(hasInference)
     form.setFieldsValue({ inference: hasInference })
     if (!HIDDENMODULES.LIVECODE) {
@@ -126,19 +147,21 @@ function Mining({ query = {}, hidden, ok = () => { }, datasetCache, bottom, ...f
   const onFinish = async (values) => {
     const config = {
       ...values.hyperparam?.reduce(
-        (prev, { key, value }) => key && value ? { ...prev, [key]: value } : prev,
-        {}),
+        (prev, { key, value }) =>
+          key && value ? { ...prev, [key]: value } : prev,
+        {}
+      ),
       ...(values.live || {}),
     }
 
-    config['gpu_count'] = form.getFieldValue('gpu_count') || 0
+    config["gpu_count"] = form.getFieldValue("gpu_count") || 0
 
-    const img = (form.getFieldValue('image') || '').split(',')
+    const img = (form.getFieldValue("image") || "").split(",")
     const imageId = Number(img[0])
     const image = img[1]
     const params = {
       ...values,
-      name: 'task_mining_' + randomNumber(),
+      name: "task_mining_" + randomNumber(),
       projectId: pid,
       imageId,
       image,
@@ -176,86 +199,127 @@ function Mining({ query = {}, hidden, ok = () => { }, datasetCache, bottom, ...f
         className={styles.form}
         {...formLayout}
         form={form}
-        name='miningForm'
+        name="miningForm"
         initialValues={initialValues}
         onFinish={onFinish}
         onFinishFailed={onFinishFailed}
       >
         <div hidden={hidden}>
-          <Form.Item name='image' tooltip={t('tip.task.mining.image')} label={t('task.mining.form.image.label')} rules={[
-            { required: true, message: t('task.train.form.image.required') }
-          ]}>
-            <ImageSelect placeholder={t('task.train.form.image.placeholder')}
-              relatedId={selectedModel?.task?.parameters?.docker_image_id} type={TYPES.MINING} onChange={imageChange} />
+          <Form.Item
+            name="image"
+            tooltip={t("tip.task.mining.image")}
+            label={t("task.mining.form.image.label")}
+            rules={[
+              { required: true, message: t("task.train.form.image.required") },
+            ]}
+          >
+            <ImageSelect
+              placeholder={t("task.train.form.image.placeholder")}
+              relatedId={selectedModel?.task?.parameters?.docker_image_id}
+              type={TYPES.MINING}
+              onChange={imageChange}
+            />
           </Form.Item>
           <OpenpaiForm form={form} openpai={openpai} />
           <Form.Item
-            label={t('task.mining.form.dataset.label')}
-            tooltip={t('tip.task.mining.dataset')}
+            label={t("task.mining.form.dataset.label")}
+            tooltip={t("tip.task.mining.dataset")}
             required
             name="datasetId"
             rules={[
-              { required: true, message: t('task.mining.form.dataset.required') },
+              {
+                required: true,
+                message: t("task.mining.form.dataset.required"),
+              },
             ]}
           >
             <DatasetSelect
               pid={pid}
-              placeholder={t('task.mining.form.dataset.placeholder')}
+              placeholder={t("task.mining.form.dataset.placeholder")}
               onChange={setsChange}
             />
           </Form.Item>
           <Form.Item
-            label={t('task.mining.form.model.label')}
-            tooltip={t('tip.task.filter.model')}
+            label={t("task.mining.form.model.label")}
+            tooltip={t("tip.task.filter.model")}
             name="modelStage"
             rules={[
-              { required: true, message: t('task.mining.form.model.required') },
+              { required: true, message: t("task.mining.form.model.required") },
             ]}
           >
-            <ModelSelect placeholder={t('task.mining.form.mining.model.required')} onChange={modelChange} pid={pid} />
+            <ModelSelect
+              placeholder={t("task.mining.form.mining.model.required")}
+              onChange={modelChange}
+              pid={pid}
+            />
           </Form.Item>
           <Form.Item
-            tooltip={t('tip.task.filter.strategy')}
-            label={t('task.mining.form.topk.label')}
-            name='topk' rules={topk ? [
-              { type: 'number', min: 1, max: (dataset.assetCount - 1) || 1 }
-            ] : null}>
-            <InputNumber style={{ width: 120 }} min={1} max={dataset.assetCount - 1} precision={0} />
+            tooltip={t("tip.task.filter.strategy")}
+            label={t("task.mining.form.topk.label")}
+            name="topk"
+            rules={
+              topk
+                ? [{ type: "number", min: 1, max: dataset.assetCount - 1 || 1 }]
+                : null
+            }
+          >
+            <InputNumber
+              style={{ width: 120 }}
+              min={1}
+              max={dataset.assetCount - 1}
+              precision={0}
+            />
           </Form.Item>
           <Form.Item
-            tooltip={t('tip.task.filter.newlable')}
-            label={t('task.mining.form.label.label')}
-            name='inference'
+            tooltip={t("tip.task.filter.newlable")}
+            label={t("task.mining.form.label.label")}
+            name="inference"
             initialValue={imageHasInference}
           >
-            <Radio.Group options={[
-              { value: true, label: t('common.yes'), disabled: !imageHasInference },
-              { value: false, label: t('common.no') },
-            ]} />
+            <Radio.Group
+              options={[
+                {
+                  value: true,
+                  label: t("common.yes"),
+                  disabled: !imageHasInference,
+                },
+                { value: false, label: t("common.no") },
+              ]}
+            />
           </Form.Item>
 
           <Form.Item
-            tooltip={t('tip.task.filter.mgpucount')}
-            label={t('task.gpu.count')}
+            tooltip={t("tip.task.filter.mgpucount")}
+            label={t("task.gpu.count")}
           >
             <Form.Item
               noStyle
               name="gpu_count"
               rules={[
                 {
-                  validator: (rules, value) => value <= gpu_count ?
-                    Promise.resolve() :
-                    Promise.reject(),
-                  message: t('task.gpu.tip', { count: gpu_count })
-                }
+                  validator: (rules, value) =>
+                    value <= gpu_count ? Promise.resolve() : Promise.reject(),
+                  message: t("task.gpu.tip", { count: gpu_count }),
+                },
               ]}
             >
-              <InputNumber min={0} max={gpu_count} precision={0} /></Form.Item>
-            <span style={{ marginLeft: 20 }}>{t('task.gpu.tip', { count: gpu_count })}</span>
+              <InputNumber min={0} max={gpu_count} precision={0} />
+            </Form.Item>
+            <span style={{ marginLeft: 20 }}>
+              {t("task.gpu.tip", { count: gpu_count })}
+            </span>
           </Form.Item>
 
-          <LiveCodeForm form={form} live={live} initialValues={liveInitialValues} />
-          <DockerConfigForm form={form} show={showConfig} seniorConfig={seniorConfig} />
+          <LiveCodeForm
+            form={form}
+            live={live}
+            initialValues={liveInitialValues}
+          />
+          <DockerConfigForm
+            form={form}
+            show={showConfig}
+            seniorConfig={seniorConfig}
+          />
           <Desc form={form} />
         </div>
         <Form.Item wrapperCol={{ offset: 8 }}>
@@ -292,18 +356,12 @@ const dis = (dispatch) => {
       })
     },
     clearCache() {
-      return dispatch({ type: "dataset/clearCache", })
+      return dispatch({ type: "dataset/clearCache" })
     },
     mine(payload) {
       return dispatch({
         type: "task/mine",
         payload,
-      })
-    },
-    updateIteration(params) {
-      return dispatch({
-        type: 'iteration/updateIteration',
-        payload: params,
       })
     },
   }

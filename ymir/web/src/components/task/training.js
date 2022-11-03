@@ -1,16 +1,25 @@
 import React, { useCallback, useEffect, useState } from "react"
 import { connect } from "dva"
-import { Select, Radio, Button, Form, Space, InputNumber, Tag, Tooltip } from "antd"
+import {
+  Select,
+  Radio,
+  Button,
+  Form,
+  Space,
+  InputNumber,
+  Tag,
+  Tooltip,
+} from "antd"
 import { formLayout } from "@/config/antd"
 import { useHistory, useLocation, useParams } from "umi"
 
 import t from "@/utils/t"
-import { HIDDENMODULES } from '@/constants/common'
-import { string2Array, generateName } from '@/utils/string'
-import { OPENPAI_MAX_GPU_COUNT } from '@/constants/common'
-import { TYPES } from '@/constants/image'
+import { HIDDENMODULES } from "@/constants/common"
+import { string2Array, generateName } from "@/utils/string"
+import { OPENPAI_MAX_GPU_COUNT } from "@/constants/common"
+import { TYPES } from "@/constants/image"
 import { randomNumber } from "@/utils/number"
-import useFetch from '@/hooks/useFetch'
+import useFetch from "@/hooks/useFetch"
 
 import ImageSelect from "@/components/form/imageSelect"
 import ModelSelect from "@/components/form/modelSelect"
@@ -28,17 +37,35 @@ import SubmitButtons from "./submitButtons"
 
 import styles from "./training/training.less"
 
-const TrainType = [{ value: "detection", label: 'task.train.form.traintypes.detect', checked: true }]
+const TrainType = [
+  {
+    value: "detection",
+    label: "task.train.form.traintypes.detect",
+    checked: true,
+  },
+]
 
 const KeywordsMaxCount = 5
 
-function Train({ query = {}, hidden, ok = () => { }, bottom, allDatasets, datasetCache, ...func }) {
+function Train({
+  query = {},
+  hidden,
+  ok = () => {},
+  bottom,
+  allDatasets,
+  datasetCache,
+  ...func
+}) {
   const pageParams = useParams()
   const pid = Number(pageParams.id)
   const history = useHistory()
   const location = useLocation()
   const { mid, image, iterationId, outputKey, currentStage, test, from } = query
-  const stage = mid ? (Array.isArray(mid) ? mid : mid.split(',').map(Number)) : undefined
+  const stage = mid
+    ? Array.isArray(mid)
+      ? mid
+      : mid.split(",").map(Number)
+    : undefined
   const did = Number(query.did)
   const [selectedKeywords, setSelectedKeywords] = useState([])
   const [dataset, setDataset] = useState({})
@@ -55,16 +82,20 @@ function Train({ query = {}, hidden, ok = () => { }, bottom, allDatasets, datase
   const [liveInitialValues, setLiveInitialValues] = useState({})
   const [openpai, setOpenpai] = useState(false)
   const checkDuplicated = useDuplicatedCheck(submit)
-  const [sys, getSysInfo] = useFetch('common/getSysInfo', {})
-  const [project, getProject] = useFetch('project/getProject', {})
-  const [updated, updateProject] = useFetch('project/updateProject')
+  const [sys, getSysInfo] = useFetch("common/getSysInfo", {})
+  const [project, getProject] = useFetch("project/getProject", {})
+  const [updated, updateProject] = useFetch("project/updateProject")
   const [fromCopy, setFromCopy] = useState(false)
 
-  const selectOpenpai = Form.useWatch('openpai', form)
+  const selectOpenpai = Form.useWatch("openpai", form)
   const [showConfig, setShowConfig] = useState(false)
-  const iterationContext = from === 'iteration'
+  const iterationContext = from === "iteration"
 
-  const renderRadio = (types) => <Radio.Group options={types.map(type => ({ ...type, label: t(type.label) }))} />
+  const renderRadio = (types) => (
+    <Radio.Group
+      options={types.map((type) => ({ ...type, label: t(type.label) }))}
+    />
+  )
 
   useEffect(() => {
     getSysInfo()
@@ -89,7 +120,7 @@ function Train({ query = {}, hidden, ok = () => { }, bottom, allDatasets, datase
 
   useEffect(() => {
     if (did && allDatasets?.length) {
-      const isValid = allDatasets.some(ds => ds.id === did)
+      const isValid = allDatasets.some((ds) => ds.id === did)
       const visibleValue = isValid ? did : null
       setTrainSet(visibleValue)
       form.setFieldsValue({ datasetId: visibleValue })
@@ -110,10 +141,7 @@ function Train({ query = {}, hidden, ok = () => { }, bottom, allDatasets, datase
   }, [pid])
 
   useEffect(() => {
-    trainDataset &&
-      !iterationContext &&
-      !fromCopy &&
-      setAllKeywords()
+    trainDataset && !iterationContext && !fromCopy && setAllKeywords()
     if (!trainDataset && fromCopy) {
       setSelectedKeywords([])
       form.setFieldsValue({ keywords: [] })
@@ -125,7 +153,10 @@ function Train({ query = {}, hidden, ok = () => { }, bottom, allDatasets, datase
 
     if (state?.record) {
       setFromCopy(true)
-      const { task: { parameters, config }, description, } = state.record
+      const {
+        task: { parameters, config },
+        description,
+      } = state.record
       const {
         dataset_id,
         validation_dataset_id,
@@ -142,7 +173,7 @@ function Train({ query = {}, hidden, ok = () => { }, bottom, allDatasets, datase
         testset: validation_dataset_id,
         gpu_count: config.gpu_count,
         modelStage: [model_id, model_stage_id],
-        image: docker_image_id + ',' + docker_image,
+        image: docker_image_id + "," + docker_image,
         strategy,
         description,
       })
@@ -177,7 +208,8 @@ function Train({ query = {}, hidden, ok = () => { }, bottom, allDatasets, datase
 
   function imageChange(_, image = {}) {
     const { configs } = image
-    const configObj = (configs || []).find(conf => conf.type === TYPES.TRAINING) || {}
+    const configObj =
+      (configs || []).find((conf) => conf.type === TYPES.TRAINING) || {}
     if (!HIDDENMODULES.LIVECODE) {
       setLiveCode(image.liveCode || false)
     }
@@ -194,23 +226,25 @@ function Train({ query = {}, hidden, ok = () => { }, bottom, allDatasets, datase
     const values = form.getFieldsValue()
     const config = {
       ...values.hyperparam?.reduce(
-        (prev, { key, value }) => key !== '' && value !== '' ? { ...prev, [key]: value } : prev,
-        {}),
+        (prev, { key, value }) =>
+          key !== "" && value !== "" ? { ...prev, [key]: value } : prev,
+        {}
+      ),
       ...(values.live || {}),
     }
-    values.trainFormat && (config['export_format'] = values.trainFormat)
+    values.trainFormat && (config["export_format"] = values.trainFormat)
 
-    const gpuCount = form.getFieldValue('gpu_count')
+    const gpuCount = form.getFieldValue("gpu_count")
 
-    config['gpu_count'] = gpuCount || 0
+    config["gpu_count"] = gpuCount || 0
 
-    const img = (form.getFieldValue('image') || '').split(',')
+    const img = (form.getFieldValue("image") || "").split(",")
     const imageId = Number(img[0])
     const image = img[1]
     const params = {
       ...values,
       strategy,
-      name: 'group_' + randomNumber(),
+      name: "group_" + randomNumber(),
       projectId: pid,
       keywords: iterationContext ? project.keywords : values.keywords,
       image,
@@ -225,21 +259,30 @@ function Train({ query = {}, hidden, ok = () => { }, bottom, allDatasets, datase
     console.log("Failed:", errorInfo)
   }
 
-  const matchKeywords = dataset => dataset.keywords.some(kw => selectedKeywords.includes(kw))
-  const notTestingSet = id => !testingSetIds.includes(id)
-  const trainsetFilters = useCallback(datasets => datasets.filter(ds => {
-    const notTestSet = ds.id !== testSet
-    return notTestSet && notTestingSet(ds.id)
-  }), [testSet, testingSetIds])
+  const matchKeywords = (dataset) =>
+    dataset.keywords.some((kw) => selectedKeywords.includes(kw))
+  const notTestingSet = (id) => !testingSetIds.includes(id)
+  const trainsetFilters = useCallback(
+    (datasets) =>
+      datasets.filter((ds) => {
+        const notTestSet = ds.id !== testSet
+        return notTestSet && notTestingSet(ds.id)
+      }),
+    [testSet, testingSetIds]
+  )
 
-  const validationSetFilters = useCallback(datasets => datasets.filter(ds => {
-    const notTrainSet = ds.id !== trainSet
-    return matchKeywords(ds) && notTrainSet && notTestingSet(ds.id)
-  }), [trainSet, selectedKeywords, testingSetIds])
+  const validationSetFilters = useCallback(
+    (datasets) =>
+      datasets.filter((ds) => {
+        const notTrainSet = ds.id !== trainSet
+        return matchKeywords(ds) && notTrainSet && notTestingSet(ds.id)
+      }),
+    [trainSet, selectedKeywords, testingSetIds]
+  )
 
   const getCheckedValue = (list) => list.find((item) => item.checked)["value"]
   const initialValues = {
-    name: generateName('train_model'),
+    name: generateName("train_model"),
     datasetId: did ? did : undefined,
     testset: Number(test) ? Number(test) : undefined,
     image: image ? parseInt(image) : undefined,
@@ -251,14 +294,14 @@ function Train({ query = {}, hidden, ok = () => { }, bottom, allDatasets, datase
     <div>
       <div hidden={hidden}>
         <CheckProjectDirty
-          style={{ marginBottom: 20, width: '100%' }}
+          style={{ marginBottom: 20, width: "100%" }}
           pid={pid}
           initialCheck={true}
           callback={(dirty) => setProjectDirty(dirty)}
         />
       </div>
       <Form
-        name='trainForm'
+        name="trainForm"
         className={styles.form}
         {...formLayout}
         form={form}
@@ -267,18 +310,29 @@ function Train({ query = {}, hidden, ok = () => { }, bottom, allDatasets, datase
         onFinishFailed={onFinishFailed}
       >
         <div hidden={hidden}>
-          <Form.Item name='image' label={t('task.train.form.image.label')} rules={[
-            { required: true, message: t('task.train.form.image.required') }
-          ]} tooltip={t('tip.task.train.image')}>
-            <ImageSelect placeholder={t('task.train.form.image.placeholder')} onChange={imageChange} />
+          <Form.Item
+            name="image"
+            label={t("task.train.form.image.label")}
+            rules={[
+              { required: true, message: t("task.train.form.image.required") },
+            ]}
+            tooltip={t("tip.task.train.image")}
+          >
+            <ImageSelect
+              placeholder={t("task.train.form.image.placeholder")}
+              onChange={imageChange}
+            />
           </Form.Item>
           <OpenpaiForm form={form} openpai={openpai} />
           <Form.Item
-            label={t('task.train.form.trainsets.label')}
+            label={t("task.train.form.trainsets.label")}
             required
             name="datasetId"
             rules={[
-              { required: true, message: t('task.train.form.trainset.required') },
+              {
+                required: true,
+                message: t("task.train.form.trainset.required"),
+              },
             ]}
           >
             <DatasetSelect
@@ -287,96 +341,141 @@ function Train({ query = {}, hidden, ok = () => { }, bottom, allDatasets, datase
               onChange={trainSetChange}
             />
           </Form.Item>
-          {iterationContext ? <Form.Item label={t('task.train.form.keywords.label')}>
-            {project?.keywords?.map(keyword => <Tag key={keyword}>{keyword}</Tag>)}
-          </Form.Item> :
+          {iterationContext ? (
+            <Form.Item label={t("task.train.form.keywords.label")}>
+              {project?.keywords?.map((keyword) => (
+                <Tag key={keyword}>{keyword}</Tag>
+              ))}
+            </Form.Item>
+          ) : (
             <Form.Item
-              label={t('task.train.form.keywords.label')}
+              label={t("task.train.form.keywords.label")}
               name="keywords"
               rules={[
-                { required: true, message: t('project.add.form.keyword.required') }
+                {
+                  required: true,
+                  message: t("project.add.form.keyword.required"),
+                },
               ]}
-              tooltip={t('tip.task.filter.keywords')}
-              help={trainDataset && selectedKeywords.length !== trainDataset.gt.keywords.length ?
-                <Button type="link" onClick={() => setAllKeywords()}>{t('dataset.train.all.train.target')}</Button>
-                : null}
+              tooltip={t("tip.task.filter.keywords")}
+              help={
+                trainDataset &&
+                selectedKeywords.length !== trainDataset.gt.keywords.length ? (
+                  <Button type="link" onClick={() => setAllKeywords()}>
+                    {t("dataset.train.all.train.target")}
+                  </Button>
+                ) : null
+              }
             >
-              <Select mode="multiple" showArrow allowClear
-                placeholder={t('project.add.form.keyword.required')}
+              <Select
+                mode="multiple"
+                showArrow
+                allowClear
+                placeholder={t("project.add.form.keyword.required")}
                 onChange={setSelectedKeywords}
-                options={(trainDataset?.gt?.keywords || []).map(k => ({ label: k, value: k }))}
+                options={(trainDataset?.gt?.keywords || []).map((k) => ({
+                  label: k,
+                  value: k,
+                }))}
                 maxTagCount={KeywordsMaxCount}
-                maxTagPlaceholder={<Tooltip
-                  trigger='hover'
-                  color='white'
-                  title={selectedKeywords.slice(KeywordsMaxCount).map(k => <Tag key={k}>{k}</Tag>)}
-                >
-                  {selectedKeywords.length - KeywordsMaxCount}+
-                </Tooltip>}
+                maxTagPlaceholder={
+                  <Tooltip
+                    trigger="hover"
+                    color="white"
+                    title={selectedKeywords.slice(KeywordsMaxCount).map((k) => (
+                      <Tag key={k}>{k}</Tag>
+                    ))}
+                  >
+                    {selectedKeywords.length - KeywordsMaxCount}+
+                  </Tooltip>
+                }
               />
-            </Form.Item>}
-          <Form.Item label={t('dataset.train.form.samples')}>
-            <SampleRates keywords={selectedKeywords} dataset={trainDataset} negative />
+            </Form.Item>
+          )}
+          <Form.Item label={t("dataset.train.form.samples")}>
+            <SampleRates
+              keywords={selectedKeywords}
+              dataset={trainDataset}
+              negative
+            />
           </Form.Item>
           <Form.Item
-            label={t('task.train.form.testsets.label')}
+            label={t("task.train.form.testsets.label")}
             name="testset"
             rules={[
-              { required: true, message: t('task.train.form.testset.required') },
+              {
+                required: true,
+                message: t("task.train.form.testset.required"),
+              },
             ]}
-            tooltip={t('tip.task.filter.testsets')}
+            tooltip={t("tip.task.filter.testsets")}
           >
             <DatasetSelect
               pid={pid}
               filters={validationSetFilters}
-              placeholder={t('task.train.form.test.datasets.placeholder')}
+              placeholder={t("task.train.form.test.datasets.placeholder")}
               onChange={validationSetChange}
             />
           </Form.Item>
           <Form.Item
-            label={t('task.detail.label.premodel')}
+            label={t("task.detail.label.premodel")}
             name="modelStage"
-            tooltip={t('tip.task.train.model')}
+            tooltip={t("tip.task.train.model")}
           >
-            <ModelSelect placeholder={t('task.train.form.model.placeholder')} pid={pid} />
+            <ModelSelect
+              placeholder={t("task.train.form.model.placeholder")}
+              pid={pid}
+            />
           </Form.Item>
           <Form.Item
             hidden
-            label={t('task.train.form.traintype.label')}
+            label={t("task.train.form.traintype.label")}
             name="trainType"
           >
             {renderRadio(TrainType)}
           </Form.Item>
 
           <Form.Item
-            label={t('task.gpu.count')}
-            tooltip={t('tip.task.filter.gpucount')}
+            label={t("task.gpu.count")}
+            tooltip={t("tip.task.filter.gpucount")}
           >
             <Form.Item
               noStyle
               name="gpu_count"
               rules={[
                 {
-                  validator: (rules, value) => value <= gpu_count ?
-                    Promise.resolve() :
-                    Promise.reject(),
-                  message: t('task.gpu.tip', { count: gpu_count })
-                }
+                  validator: (rules, value) =>
+                    value <= gpu_count ? Promise.resolve() : Promise.reject(),
+                  message: t("task.gpu.tip", { count: gpu_count }),
+                },
               ]}
             >
               <InputNumber min={0} max={gpu_count} precision={0} />
             </Form.Item>
-            <span style={{ marginLeft: 20 }}>{t('task.gpu.tip', { count: gpu_count })}</span>
+            <span style={{ marginLeft: 20 }}>
+              {t("task.gpu.tip", { count: gpu_count })}
+            </span>
           </Form.Item>
-          {live ? <Form.Item
-            label={t('task.train.export.format')}
-            tooltip={t('tip.train.export.format')}
-            name='trainFormat'
-            initialValue={'ark:raw'}>
-            <TrainFormat />
-          </Form.Item> : null}
-          <LiveCodeForm form={form} live={live} initialValues={liveInitialValues} />
-          <DockerConfigForm show={showConfig} seniorConfig={seniorConfig} form={form} />
+          {live ? (
+            <Form.Item
+              label={t("task.train.export.format")}
+              tooltip={t("tip.train.export.format")}
+              name="trainFormat"
+              initialValue={"ark:raw"}
+            >
+              <TrainFormat />
+            </Form.Item>
+          ) : null}
+          <LiveCodeForm
+            form={form}
+            live={live}
+            initialValues={liveInitialValues}
+          />
+          <DockerConfigForm
+            show={showConfig}
+            seniorConfig={seniorConfig}
+            form={form}
+          />
           <Desc form={form} />
         </div>
         <Form.Item wrapperCol={{ offset: 8 }}>
@@ -409,18 +508,12 @@ const dis = (dispatch) => {
       })
     },
     clearCache() {
-      return dispatch({ type: "model/clearCache", })
+      return dispatch({ type: "model/clearCache" })
     },
     train(payload) {
       return dispatch({
         type: "task/train",
         payload,
-      })
-    },
-    updateIteration(params) {
-      return dispatch({
-        type: 'iteration/updateIteration',
-        payload: params,
       })
     },
   }
