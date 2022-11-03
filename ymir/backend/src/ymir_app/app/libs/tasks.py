@@ -1,9 +1,8 @@
-from contextlib import contextmanager
 from functools import cached_property
 import json
 import itertools
 import asyncio
-from typing import Dict, Generator, List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple
 
 import aiohttp
 from fastapi.logger import logger
@@ -11,7 +10,6 @@ from fastapi.encoders import jsonable_encoder
 from sqlalchemy.orm import Session
 
 from app.api.errors.errors import (
-    ControllerError,
     DatasetIndexNotReady,
     DuplicateDatasetGroupError,
     FailedToUpdateTaskStatusTemporally,
@@ -26,7 +24,6 @@ from app.api.errors.errors import (
 from app.constants.state import (
     FinalStates,
     TaskState,
-    TaskType,
     ResultType,
     ResultState,
 )
@@ -331,24 +328,3 @@ class TaskResult:
                 dataset_record.id,
                 result_state=ResultState.error,
             )
-
-
-@contextmanager
-def task_placeholder(
-    db: Session, user_id: int, project_id: int, task_type: TaskType, serialized_parameters: Optional[str]
-) -> Generator:
-    task_hash = gen_task_hash(user_id, project_id)
-    task = crud.task.create_placeholder(
-        db,
-        type_=task_type,
-        user_id=user_id,
-        project_id=project_id,
-        hash_=task_hash,
-        state_=TaskState.pending,
-        parameters=serialized_parameters,
-    )
-    try:
-        yield task_hash
-    except ValueError:
-        logger.exception("[controller] failed to call controller method")
-        raise ControllerError()
