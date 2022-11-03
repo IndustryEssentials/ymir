@@ -83,7 +83,7 @@ class IterationStepTemplate:
         presetting = {"validation_dataset_id": project.validation_dataset_id}
         if not previous_iteration:
             return presetting
-        sticky_parameters = ["docker_image"]
+        sticky_parameters = ["docker_image_id"]
         prior_presetting = self.get_prior_presetting(previous_iteration, sticky_parameters)
         presetting.update(prior_presetting)
         return presetting

@@ -2,7 +2,7 @@ import random
 
 import pytest
 
-from app.schemas.dataset import MergeStrategy
+from app.schemas.common import MergeStrategy
 from app.utils import ymir_controller as m
 from tests.utils.utils import random_lower_string, random_url
 
