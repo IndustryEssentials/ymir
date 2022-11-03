@@ -117,7 +117,7 @@ class TestTaskResult:
         group = create_dataset_group_record(db, user_id, project_id)
         dataset = create_dataset_record(db, user_id, project_id, dataset_group_id=group.id)
 
-        result_group_id, result_group_name = tr.get_dest_group_info(dataset.id)
+        result_group_id, result_group_name = tr.get_dest_group_id(dataset.id)
         assert group.id == result_group_id
         assert group.name == result_group_name
 
@@ -136,7 +136,7 @@ class TestTaskResult:
         dataset = create_dataset_record(db, user_id, project_id, dataset_group_id=dataset_group.id)
         model_group = create_model_group_record(db, user_id, project_id, dataset.id)
 
-        result_group_id, result_group_name = tr.get_dest_group_info(dataset.id)
+        result_group_id, result_group_name = tr.get_dest_group_id(dataset.id)
         assert model_group.id == result_group_id
         assert model_group.name == result_group_name
 

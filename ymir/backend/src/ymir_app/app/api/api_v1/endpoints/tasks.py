@@ -107,10 +107,7 @@ def list_tasks(
     return {"result": {"total": total, "items": tasks}}
 
 
-@router.post(
-    "/",
-    response_model=schemas.TaskOut,
-)
+@router.post("/", response_model=schemas.TaskOut)
 def create_task(
     *,
     db: Session = Depends(deps.get_db),
@@ -127,7 +124,6 @@ def create_task(
 
     task_in_db = create_single_task(db, current_user.id, user_labels, task_in)
     logger.info("[create task] created task name: %s", task_in.name)
-
     return {"result": task_in_db}
 
 

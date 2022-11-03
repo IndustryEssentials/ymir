@@ -248,8 +248,10 @@ class DatasetCheckDuplicationOut(Common):
 
 class DatasetMergeCreate(BaseModel):
     project_id: int
+
     dest_group_id: Optional[int]
     dest_group_name: Optional[str]
+
     include_datasets: List[int]
     exclude_datasets: Optional[List[int]]
     merge_strategy: MergeStrategy = Field(

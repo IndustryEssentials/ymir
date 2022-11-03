@@ -34,7 +34,7 @@ class IsDeletedModelMixin(BaseModel):
 
 class IterationContext(BaseModel):
     project_id: int
-    iteration_id: int
+    iteration_id: Optional[int]
     iteration_stage: Optional[IterationStage]
     exclude_last_result: bool = True
     mining_strategy: MiningStrategy = MiningStrategy.customize
@@ -65,6 +65,7 @@ class TypedDataset(BaseModel):
     hash: Optional[str] = None
     type: Optional[int] = None
     exclude: bool = False
+    create_datetime: Optional[datetime] = None  # type: ignore
 
 
 class TypedModel(BaseModel):

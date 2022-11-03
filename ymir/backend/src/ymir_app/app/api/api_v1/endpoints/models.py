@@ -161,7 +161,7 @@ def import_model(
         user_id=current_user.id,
         task_id=task.id,
     )
-    model = crud.model.create_with_version(db=db, obj_in=model_in, dest_group_name=model_import.group_name)
+    model = crud.model.create_with_version(db=db, obj_in=model_in)
     logger.info("[import model] model record created: %s", model)
 
     # 5. run background task

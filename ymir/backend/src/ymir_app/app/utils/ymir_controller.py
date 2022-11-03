@@ -263,14 +263,10 @@ class ControllerRequest:
 
     def prepare_data_fusion(self, request: mirsvrpb.GeneralReq, args: Dict) -> mirsvrpb.GeneralReq:
         request.in_dataset_ids[:] = [dataset["hash"] for dataset in args["typed_datasets"] if not dataset["exclude"]]
-        if args.get("exclude_datasets"):
-            request.ex_dataset_ids[:] = [dataset["hash"] for dataset in args["typed_datasets"] if dataset["exclude"]]
+        request.ex_dataset_ids[:] = [dataset["hash"] for dataset in args["typed_datasets"] if dataset["exclude"]]
         request.merge_strategy = MERGE_STRATEGY_MAPPING[args.get("strategy", MergeStrategy.stop_upon_conflict)]
-
-        if args.get("include_class_ids"):
-            request.in_class_ids[:] = [label.class_id for label in args["typed_labels"] if not label["exclude"]]
-        if args.get("exclude_class_ids"):
-            request.ex_class_ids[:] = [label.class_id for label in args["typed_labels"] if label["exclude"]]
+        request.in_class_ids[:] = [label.class_id for label in args["typed_labels"] if not label["exclude"]]
+        request.in_class_ids[:] = [label.class_id for label in args["typed_labels"] if label["exclude"]]
 
         if args.get("sampling_count"):
             request.sampling_count = args["sampling_count"]
@@ -285,6 +281,14 @@ class ControllerRequest:
         request.req_type = mirsvrpb.RequestType.TASK_CREATE
         request.req_create_task.CopyFrom(req_create_task)
         return request
+
+    def prepare_merge(self, request: mirsvrpb.GeneralReq, args: Dict) -> mirsvrpb.GeneralReq:
+        # need different app type for web, controller use same endpoint
+        return self.prepare_data_fusion(request, args)
+
+    def prepare_filter(self, request: mirsvrpb.GeneralReq, args: Dict) -> mirsvrpb.GeneralReq:
+        # need different app type for web, controller use same endpoint
+        return self.prepare_data_fusion(request, args)
 
     def prepare_import_model(self, request: mirsvrpb.GeneralReq, args: Dict) -> mirsvrpb.GeneralReq:
         import_model_request = mirsvrpb.TaskReqImportModel()
@@ -491,19 +495,6 @@ class ControllerClient:
         )
         return self.send(req)
 
-    def create_data_fusion(
-        self,
-        user_id: int,
-        project_id: int,
-        task_id: str,
-        parameters: Optional[Dict],
-    ) -> Dict:
-        req = ControllerRequest(
-            type=TaskType.data_fusion, user_id=user_id, project_id=project_id, task_id=task_id, args=parameters
-        )
-
-        return self.send(req)
-
     def import_model(self, user_id: int, project_id: int, task_id: str, task_type: Any, args: Dict) -> Dict:
         req = ControllerRequest(
             type=task_type,
@@ -556,28 +547,6 @@ class ControllerClient:
             type=ExtraRequestType.fix_repo,
             user_id=user_id,
             project_id=project_id,
-        )
-        return self.send(req)
-
-    def merge_datasets(
-        self,
-        user_id: int,
-        project_id: int,
-        task_id: str,
-        dataset_hashes: Optional[List[str]],
-        ex_dataset_hashes: Optional[List[str]],
-        merge_strategy: Optional[MergeStrategy] = None,
-    ) -> Dict:
-        req = ControllerRequest(
-            type=TaskType.data_fusion,
-            user_id=user_id,
-            project_id=project_id,
-            task_id=task_id,
-            args={
-                "include_datasets": dataset_hashes,
-                "exclude_datasets": ex_dataset_hashes,
-                "strategy": merge_strategy,
-            },
         )
         return self.send(req)
 

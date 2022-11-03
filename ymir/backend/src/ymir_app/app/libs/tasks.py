@@ -13,6 +13,7 @@ from sqlalchemy.orm import Session
 from app.api.errors.errors import (
     ControllerError,
     DatasetIndexNotReady,
+    DuplicateDatasetGroupError,
     FailedToUpdateTaskStatusTemporally,
     FailedtoCreateTask,
     ModelNotReady,
@@ -33,7 +34,6 @@ from app.config import settings
 from app import schemas, crud, models
 from app.libs.metrics import send_keywords_metrics
 from app.libs.models import create_model_stages
-from app.libs.labels import keywords_to_class_ids
 from app.utils.cache import CacheClient
 from app.utils.ymir_controller import ControllerClient, gen_task_hash
 from app.utils.ymir_viz import VizClient
@@ -76,45 +76,8 @@ async def batch_update_task_status(events: List[Tuple[str, Dict]]) -> List[str]:
         return list(itertools.compress(ids, success_id_selectors))
 
 
-def fillin_dataset_hashes(db: Session, typed_datasets: List[schemas.common.TypedDataset]) -> None:
-    if not typed_datasets:
-        return
-    datasets_in_db = crud.dataset.get_multi_by_ids(db, ids=[i.id for i in typed_datasets])
-    hashes = {i.id: i.hash for i in datasets_in_db}
-    for dataset in typed_datasets:
-        dataset.hash = hashes[dataset.id]
-
-
-def fillin_model_hashes(db: Session, typed_models: List[schemas.common.TypedModel]) -> None:
-    if not typed_models:
-        return
-    model_stages_in_db = crud.model_stage.get_multi_by_ids(db, ids=[i.stage_id for i in typed_models if i.stage_id])
-    hashes = {stage.id: {"hash": stage.model.hash, "stage_name": stage.name} for stage in model_stages_in_db}  # type: ignore
-    for model in typed_models:
-        _hashes = hashes[model.id]
-        model.hash, model.stage_name = _hashes["hash"], _hashes["stage_name"]
-
-
-def fillin_label_ids(user_labels: UserLabels, typed_labels: List[schemas.common.TypedLabel]) -> None:
-    if not typed_labels:
-        return
-    class_ids = keywords_to_class_ids(user_labels, [i.name for i in typed_labels])
-    for label in typed_labels:
-        label.class_id = class_ids[label.name]
-
-
-def fillin_parameter(db: Session, user_labels: UserLabels, parameters: schemas.task.TaskParameter) -> Dict:
-    if parameters.typed_datasets:
-        fillin_dataset_hashes(db, parameters.typed_datasets)
-    if parameters.typed_labels:
-        fillin_label_ids(user_labels, parameters.typed_labels)
-    if parameters.typed_models:
-        fillin_model_hashes(db, parameters.typed_models)
-    return parameters.dict()
-
-
 def create_single_task(db: Session, user_id: int, user_labels: UserLabels, task_in: schemas.TaskCreate) -> models.Task:
-    parameters = fillin_parameter(db, user_labels, task_in.parameters)
+    task_in.fulfill_parameters(db, user_labels)
     task_hash = gen_task_hash(user_id, task_in.project_id)
     try:
         controller_client = ControllerClient()
@@ -123,8 +86,8 @@ def create_single_task(db: Session, user_id: int, user_labels: UserLabels, task_
             project_id=task_in.project_id,
             task_id=task_hash,
             task_type=task_in.type,
-            task_parameters=parameters,
-            archived_task_parameters=task_in.parameters.json() if task_in.parameters else None,
+            task_parameters=task_in.parameters.dict(),
+            archived_task_parameters=task_in.parameters.json(),
         )
         logger.info("[create task] controller response: %s", resp)
     except ValueError:
@@ -133,16 +96,21 @@ def create_single_task(db: Session, user_id: int, user_labels: UserLabels, task_
         raise RequiredFieldMissing()
 
     task = crud.task.create_task(db, obj_in=task_in, task_hash=task_hash, user_id=user_id)
-    task_result = TaskResult(db=db, task_in_db=task)
-    task_result.create(task_in.parameters.dataset_id, task_in.result_description)
+    task_result = TaskResult(db, task)
+    task_result.create(
+        task_in.parameters.dataset_id,
+        task_in.parameters.dataset_group_id,
+        task_in.parameters.dataset_group_name,
+        task_in.result_description,
+    )
 
     logger.info("[create task] created task hash: %s", task_hash)
-    if parameters.get("typed_labels"):
+    if task_in.parameters.typed_labels:
         send_keywords_metrics(
             user_id,
             task_in.project_id,
             task_hash,
-            [label.class_id for label in parameters["typed_labels"]],
+            [label.class_id for label in task_in.parameters.typed_labels],
             int(task.create_datetime.timestamp()),
         )
     return task
@@ -206,45 +174,71 @@ class TaskResult:
             self.cache.delete_personal_keywords_cache()
         return dataset_info
 
-    def get_dest_group_info(self, dataset_id: int) -> Tuple[int, str]:
-        if self.result_type is ResultType.dataset:
-            dataset = crud.dataset.get(self.db, id=dataset_id)
+    def ensure_dest_model_group_exists(self, dataset_id: int) -> int:
+        model_group = crud.model_group.get_from_training_dataset(self.db, training_dataset_id=dataset_id)
+        if not model_group:
+            model_group = crud.model_group.create_model_group(
+                self.db,
+                user_id=self.user_id,
+                project_id=self.project_id,
+                training_dataset_id=dataset_id,
+            )
+            logger.info("created model_group(%s) based on training_dataset(%s)", model_group.id, dataset_id)
+        return model_group.id
+
+    def ensure_dest_dataset_group_exists(
+        self, dataset_id: int, dataset_group_id: Optional[int], dataset_group_name: Optional[str]
+    ) -> int:
+        if dataset_group_id:
+            dataset_group = crud.dataset_group.get(self.db, dataset_group_id)
+            if not dataset_group:
+                raise DatasetGroupNotFound()
+        elif dataset_group_name:
+            if crud.dataset_group.is_duplicated_name_in_project(
+                self.db, project_id=self.project_id, name=dataset_group_name
+            ):
+                raise DuplicateDatasetGroupError()
+            dataset_group = crud.dataset_group.create_dataset_group(
+                self.db,
+                name=dataset_group_name,
+                user_id=self.user_id,
+                project_id=self.project_id,
+            )
+        else:
+            # if no extra dataset group info provided, save result to the same group as dataset_id
+            dataset = crud.dataset.get(self.db, dataset_id)
             if not dataset:
                 logger.error(
                     "Failed to predict dest dataset_group_id from non-existing dataset(%s)",
                     dataset_id,
                 )
                 raise DatasetNotFound()
-            dataset_group = crud.dataset_group.get(self.db, id=dataset.dataset_group_id)
+            dataset_group = crud.dataset_group.get(self.db, dataset.dataset_group_id)
             if not dataset_group:
                 raise DatasetGroupNotFound()
-            return dataset_group.id, dataset_group.name
-        else:
-            model_group = crud.model_group.get_from_training_dataset(self.db, training_dataset_id=dataset_id)
-            if not model_group:
-                model_group = crud.model_group.create_model_group(
-                    self.db,
-                    user_id=self.user_id,
-                    project_id=self.project_id,
-                    training_dataset_id=dataset_id,
-                )
-                logger.info(
-                    "[create task] created model_group(%s) for dataset(%s)",
-                    model_group.id,
-                    dataset_id,
-                )
-            return model_group.id, model_group.name
+        return dataset_group.id
 
-    def create(self, dataset_id: int, description: Optional[str] = None) -> Dict[str, Dict]:
-        dest_group_id, dest_group_name = self.get_dest_group_info(dataset_id)
+    def get_dest_group_id(
+        self, dataset_id: int, dataset_group_id: Optional[int], dataset_group_name: Optional[str]
+    ) -> int:
         if self.result_type is ResultType.dataset:
-            dataset = crud.dataset.create_as_task_result(
-                self.db, self.task, dest_group_id, dest_group_name, description
-            )
+            return self.ensure_dest_dataset_group_exists(dataset_id, dataset_group_id, dataset_group_name)
+        return self.ensure_dest_model_group_exists(dataset_id)
+
+    def create(
+        self,
+        dataset_id: int,
+        dataset_group_id: Optional[int],
+        dataset_group_name: Optional[str],
+        description: Optional[str] = None,
+    ) -> Dict[str, Dict]:
+        dest_group_id = self.get_dest_group_id(dataset_id, dataset_group_id, dataset_group_name)
+        if self.result_type is ResultType.dataset:
+            dataset = crud.dataset.create_as_task_result(self.db, self.task, dest_group_id, description)
             logger.info("[create task] created new dataset(%s) as task result", dataset.name)
             return {"dataset": jsonable_encoder(dataset)}
         elif self.result_type is ResultType.model:
-            model = crud.model.create_as_task_result(self.db, self.task, dest_group_id, dest_group_name, description)
+            model = crud.model.create_as_task_result(self.db, self.task, dest_group_id, description)
             logger.info("[create task] created new model(%s) as task result", model.name)
             return {"model": jsonable_encoder(model)}
         else:

@@ -2,12 +2,17 @@ import enum
 import json
 from datetime import datetime
 from typing import Any, Dict, List, Optional, Union
+from operator import attrgetter
 
 from typing_extensions import Annotated
 
 from pydantic import BaseModel, EmailStr, Field, validator, root_validator
+from sqlalchemy.orm import Session
 
+from app import crud
 from app.constants.state import AnnotationType, ResultState, ResultType, TaskState, TaskType
+from app.libs.labels import keywords_to_class_ids
+from app.libs.datasets import ensure_datasets_are_ready
 from app.schemas.common import (
     Common,
     DateTimeModelMixin,
@@ -22,11 +27,12 @@ from app.schemas.common import (
     label_normalize,
     model_normalize,
 )
+from common_utils.labels import UserLabels
 from id_definition.task_id import TaskId
 
 
 class TaskBase(BaseModel):
-    name: str
+    name: str = ""
     type: TaskType
     project_id: int
 
@@ -51,6 +57,7 @@ class TaskPreprocess(BaseModel):
 class TaskParameterBase(BaseModel):
     dataset_id: int
     dataset_group_id: Optional[int]
+    dataset_group_name: Optional[str]
     model_id: Optional[int]
     model_stage_id: Optional[int]
     keywords: Optional[List[str]]
@@ -98,8 +105,9 @@ class MiningAndInferParameter(TaskParameterBase):
 
 
 class FusionParameter(TaskParameterBase, IterationContext):
+    merge_strategy: Optional[MergeStrategy] = MergeStrategy.prefer_newest
+
     include_datasets: List[int]
-    include_strategy: Optional[MergeStrategy] = MergeStrategy.prefer_newest
     exclude_datasets: List[int]
 
     include_labels: List[str]
@@ -117,12 +125,41 @@ TaskParameter = Annotated[
 ]
 
 
+def fillin_dataset_hashes(db: Session, typed_datasets: List[TypedDataset]) -> None:
+    if not typed_datasets:
+        return
+    datasets_in_db = ensure_datasets_are_ready(db, dataset_ids=[i.id for i in typed_datasets])
+    data = {d.id: (d.hash, d.create_datetime) for d in datasets_in_db}
+    for dataset in typed_datasets:
+        dataset.hash, dataset.create_datetime = data[dataset.id]
+
+
+def fillin_model_hashes(db: Session, typed_models: List[TypedModel]) -> None:
+    if not typed_models:
+        return
+    model_stages_in_db = crud.model_stage.get_multi_by_ids(db, ids=[i.stage_id for i in typed_models if i.stage_id])
+    data = {stage.id: (stage.model.hash, stage.name) for stage in model_stages_in_db}  # type: ignore
+    for model in typed_models:
+        model.hash, model.stage_name = data[model.id]
+
+
+def fillin_label_ids(user_labels: UserLabels, typed_labels: List[TypedLabel]) -> None:
+    if not typed_labels:
+        return
+    class_ids = keywords_to_class_ids(user_labels, [i.name for i in typed_labels])
+    for label in typed_labels:
+        label.class_id = class_ids[label.name]
+
+
 class TaskCreate(TaskBase):
     parameters: TaskParameter
     docker_image_config: Optional[Dict] = Field(description="docker runtime configuration")
     preprocess: Optional[TaskPreprocess] = Field(description="preprocess to apply to related dataset")
 
     result_description: Optional[str] = Field(description="description for task result, not task itself")
+
+    class Config:
+        use_enum_values = True
 
     @root_validator(pre=True)
     def tuck_into_parameters(cls, values: Any) -> Any:
@@ -138,8 +175,24 @@ class TaskCreate(TaskBase):
             values["parameters"]["docker_config"] = json.dumps(values["docker_image_config"])
         return values
 
-    class Config:
-        use_enum_values = True
+    def fulfill_parameters(self, db: Session, user_labels: UserLabels) -> None:
+        """
+        Update task parameters when database and user_labels are ready
+        """
+        if self.parameters.typed_datasets:
+            fillin_dataset_hashes(db, self.parameters.typed_datasets)
+        if self.parameters.typed_labels:
+            fillin_label_ids(user_labels, self.parameters.typed_labels)
+        if self.parameters.typed_models:
+            fillin_model_hashes(db, self.parameters.typed_models)
+
+        # extra logic for dataset fusion:
+        #   reorder datasets based on merge_strategy
+        if isinstance(self.parameters, FusionParameter) and self.parameters.typed_datasets:
+            self.parameters.typed_datasets.sort(
+                key=attrgetter("create_datetime"),
+                reverse=(self.parameters.merge_strategy == MergeStrategy.prefer_newest),
+            )
 
 
 class BatchTasksCreate(BaseModel):
