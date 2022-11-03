@@ -114,3 +114,10 @@ class MergeStrategy(IntEnum):
     stop_upon_conflict = 1
     prefer_newest = 2
     prefer_oldest = 3
+
+
+class ImportStrategy(IntEnum):
+    no_annotations = 1
+    ignore_unknown_annotations = 2
+    stop_upon_unknown_annotations = 3
+    add_unknown_annotations = 4

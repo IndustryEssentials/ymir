@@ -1,4 +1,3 @@
-import enum
 import json
 from typing import Any, Dict, List, Optional, Union
 
@@ -10,15 +9,9 @@ from app.schemas.common import (
     DateTimeModelMixin,
     IdModelMixin,
     IsDeletedModelMixin,
+    ImportStrategy,
 )
 from app.schemas.task import TaskInternal
-
-
-class ImportStrategy(enum.IntEnum):
-    no_annotations = 1
-    ignore_unknown_annotations = 2
-    stop_upon_unknown_annotations = 3
-    add_unknown_annotations = 4
 
 
 class DatasetBase(BaseModel):

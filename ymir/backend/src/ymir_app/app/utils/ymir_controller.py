@@ -11,8 +11,7 @@ from google.protobuf.text_format import MessageToString
 
 from app.config import settings
 from app.constants.state import TaskType, AnnotationType
-from app.schemas.dataset import ImportStrategy
-from app.schemas.common import MergeStrategy
+from app.schemas.common import ImportStrategy, MergeStrategy
 from app.schemas.task import TrainingDatasetsStrategy
 from common_utils.labels import UserLabels, userlabels_to_proto
 from id_definition.task_id import TaskId
