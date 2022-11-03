@@ -221,13 +221,13 @@ declare namespace YModels {
 
   export interface Step {
     id: number
-    finished: boolean
+    finished?: boolean
     name: string
-    percent: number
-    presetting: any
-    state: number
-    taskId: number
-    taskType: number
+    percent?: number
+    preSetting?: any
+    state?: number
+    taskId?: number
+    taskType?: number
   }
 
   interface ShareImage {
@@ -255,75 +255,68 @@ declare namespace YModels {
     error_code: number
     duration: number
     percent: number
-    parameters: Parameters
+    parameters: TaskParams
     config: PlainObject
     result_type: number
     is_terminated: boolean
   }
 
   type MergeStrategy = 0 | 1 | 2
+  type MiningStrategy = 0 | 1 | 2
   type Preprocess = {
     [func: string]: PlainObject
   }
 
-  interface Parameters {
-    dataset_id?: number
-    keywords?: Labels
-    extra_url?: string
-    labellers?: string[]
-    annotation_type?: number
-    validation_dataset_id?: number
-    network?: string
-    backbone?: string
-    hyperparameter?: string
-    strategy?: MergeStrategy
-    preprocess?: Preprocess
-    model_id?: number
-    model_stage_id?: number
-    mining_algorithm?: string
-    top_k?: number
-    generate_annotations?: boolean
-    docker_image?: string
-    docker_image_id?: number
-  }
+  type TaskParams =
+    | FilterParams
+    | MergeParams
+    | TrainingParams
+    | LabelParams
+    | MiningParams
+    | InferenceParams
 
   interface Params {
     dataset_id: DatasetId | DatasetId[]
     dataset_group_id?: number
-    dataset_group_name?: number
+    dataset_group_name?: string
     description?: string
   }
 
   interface DockerParams extends Params {
-    docker_image_id: number
+    docker_image_id: ImageId
     docker_image_config: ImageConfig
     model_id?: ModelId
-    model_stage_id?: number
+    model_stage_id?: StageId
     labels: Labels
+  }
+
+  interface FilterParams extends Params {
+    include_labels?: Labels
+    exclude_labels?: Labels
+    samplings?: number
   }
 
   interface MergeParams extends Params {
     iteration_id?: number
     iteration_stage?: number
-    exclude_last_result?: number
+    exclude_last_result?: boolean
     exclude_dataset_ids: DatasetId[]
-    mining_strategy?: number
+    mining_strategy?: MiningStrategy
     labels?: Labels
-    merge_strategy?: number
+    merge_strategy?: MergeStrategy
   }
 
   interface LabelParams extends Params {
     labels: Labels
-    extra_url?: number
+    extra_url?: string
     labellers?: string[]
-    annotation_type: number
+    annotation_type: 0 | 1 | 2
   }
 
   interface TrainingParams extends DockerParams {
     validation_dataset_id: DatasetId
     strategy: number
     preprocess: Preprocess
-    docker_image_id: number
   }
 
   interface MiningParams extends DockerParams {
