@@ -21,12 +21,6 @@ class ImportStrategy(enum.IntEnum):
     add_unknown_annotations = 4
 
 
-class MergeStrategy(enum.IntEnum):
-    stop_upon_conflict = 1
-    prefer_newest = 2
-    prefer_oldest = 3
-
-
 class DatasetBase(BaseModel):
     source: TaskType
     description: Optional[str]
