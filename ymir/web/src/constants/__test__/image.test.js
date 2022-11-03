@@ -2,22 +2,16 @@ import { format } from '@/utils/date'
 import { TYPES, STATES, imageIsPending, getImageTypeLabel, getImageStateLabel, transferImage } from '../image'
 
 describe("constants: image", () => {
-  it("image type have right mapping and object is freeze", () => {
+  it("image type have right mapping", () => {
     expect(TYPES.TRAINING).toBe(1)
     expect(TYPES.MINING).toBe(2)
     expect(TYPES.UNKOWN).toBe(0)
     expect(TYPES.INFERENCE).toBe(9)
-
-    function tryExtendAttr() { TYPES.newAttr = 'test' }
-    expect(tryExtendAttr).toThrowError('object is not extensible')
   })
-  it("image states have right mapping and object is freeze", () => {
+  it("image states have right mapping", () => {
     expect(STATES.PENDING).toBe(1)
     expect(STATES.DONE).toBe(3)
     expect(STATES.ERROR).toBe(4)
-
-    function tryExtendAttr() { STATES.newAttr = 'test' }
-    expect(tryExtendAttr).toThrowError('object is not extensible')
   })
   it('imageIsPending: image state is pending', () => {
 

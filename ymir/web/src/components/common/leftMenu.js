@@ -9,7 +9,7 @@ import {
   NavDatasetIcon, UserIcon, UserSettingsIcon, DiagnosisIcon, EditIcon, EyeOffIcon, TrainIcon,
   DeviceListIcon, DeviceSupportedIcon, MyAlgoIcon, StoreIcon,
   BarChart2LineIcon, ProjectIcon, VectorIcon, BookIcon,
-} from '@/components/common/icons'
+} from '@/components/common/Icons'
 import IterationIcon from '@/components/icon/Xiangmudiedai'
 
 const { Sider } = Layout

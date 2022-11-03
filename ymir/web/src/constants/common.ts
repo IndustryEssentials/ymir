@@ -8,6 +8,8 @@ export const HIDDENMODULES = {
   LIVECODE: true,
 }
 
+export const INFER_DATASET_MAX_COUNT = 50000
+export const INFER_CLASSES_MAX_COUNT = 20
 
 declare global {
   interface Window {

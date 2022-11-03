@@ -14,12 +14,11 @@ import Error from "@/components/task/error"
 import Hide from "@/components/common/hide"
 import useRestore from "@/hooks/useRestore"
 import keywordsItem from "@/components/task/items/keywords"
-import { DescPop } from "../../components/common/descPop"
+import { DescPop } from "../../components/common/DescPop"
 import useRerunAction from "../../hooks/useRerunAction"
 import useCardTitle from '@/hooks/useCardTitle'
 import VersionName from '@/components/result/VersionName'
 import EditDescBox from "@/components/form/editDescBox"
-import VersionName from '@/components/result/VersionName'
 
 const { Item } = Descriptions
 

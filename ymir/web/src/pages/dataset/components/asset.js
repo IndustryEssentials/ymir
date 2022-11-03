@@ -12,7 +12,7 @@ import AssetAnnotation from "@/components/dataset/assetAnnotation"
 import GtSelector from "@/components/form/gtSelector"
 
 import styles from "./asset.less"
-import { NavDatasetIcon, EyeOffIcon, EyeOnIcon } from '@/components/common/icons'
+import { NavDatasetIcon, EyeOffIcon, EyeOnIcon } from '@/components/common/Icons'
 import { LeftOutlined, RightOutlined } from '@ant-design/icons'
 import EvaluationSelector from "@/components/form/evaluationSelector"
 

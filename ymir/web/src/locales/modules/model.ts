@@ -58,7 +58,7 @@ const model = {
   'model.verify.upload.tip': { cn: '模型验证需要较长时间，请耐心等待', en: 'Verification need more time, be patient...' },
   "model.diagnose.tab.metrics": { cn: '衡量指标', en: 'Metrics', },
   "model.diagnose.tab.training": { cn: '训练过程', en: 'Training Fitting', },
-  "model.diagnose.tab.visualization": { cn: '图像可视化', en: 'Image Visualization', },
+  "model.diagnose.tab.infer_datasets": { cn: '推理结果', en: 'Inference Results', },
   "model.diagnose.form.model": { cn: '诊断模型', en: 'Diagnosing Models', },
   'model.diagnose.form.testset': { cn: '测试集', en: 'Testing Datasets', },
   'model.diagnose.form.confidence': { cn: '置信度', en: 'Confidence', },
@@ -82,7 +82,7 @@ const model = {
   "model.action.diagnose.training.retry": { cn: '重新诊断', en: 'Retry', },
   "model.diagnose.label.model": { cn: "模型", en: "Models", },
   "model.diagnose.label.testing_dataset": { cn: "测试集", en: "Testing Datasets", },
-  "model.diagnose.label.config": { cn: "推理配置", en: "Infer Configs", },
+  "model.diagnose.label.config": { cn: "推理配置", en: "Inference Config", },
   "model.diagnose.stage.label": { cn: "设置中间模型", en: "Set Recommended Intermediate", },
   "model.diagnose.metrics.precision.label": { cn: '精确率', en: 'Precision', },
   "model.diagnose.metrics.precision.average.label": { cn: '平均召回率', en: 'Average Recall', },
@@ -105,6 +105,8 @@ const model = {
   'model.diagnose.metrics.x.dataset': { en: "Testing Dataset", cn: "测试集", },
   'model.diagnose.metrics.x.keyword': { en: "Class", cn: "类别", },
   'model.list.batch.invalid': { en: "Please select valid model to batch", cn: "请选择有效的模型进行批量操作", },
+  'model.diagnose.metrics.tip.exceed.assets': { en: "Datasets exceeding {max} are not supported for diagnosis", cn: "暂不支持超过{max}的数据集可视化评估诊断", },
+  'model.diagnose.metrics.tip.exceed.classes': { en: "Model classes exceeding {max} are not supported for diagnosis", cn: "暂不支持拥有超过{max}个类别的模型进行诊断", },
 }
 
 export default model

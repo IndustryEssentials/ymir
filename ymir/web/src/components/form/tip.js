@@ -1,4 +1,4 @@
-import { FailIcon, TipsIcon } from "@/components/common/icons"
+import { FailIcon, TipsIcon } from "@/components/common/Icons"
 import s from './tip.less'
 
 const Tip = ({ type = 'success', content = '' }) => {

@@ -8,8 +8,8 @@ import useFetch from '@/hooks/useFetch'
 import DatasetSelect from '@/components/form/datasetSelect'
 import ModelSelect from '@/components/form/modelSelect'
 
-import { AddIcon, TrainIcon, ImportIcon } from "@/components/common/icons"
-import RenderProgress from "@/components/common/progress"
+import { AddIcon, TrainIcon, ImportIcon } from "@/components/common/Icons"
+import RenderProgress from "@/components/common/Progress"
 
 const SettingsSelection = (Select) => {
   const Selection = (props) => {

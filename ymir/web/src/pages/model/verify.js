@@ -14,7 +14,7 @@ import Uploader from "@/components/form/uploader"
 import AssetAnnotation from "@/components/dataset/assetAnnotation"
 import { TYPES } from '@/constants/image'
 import styles from './verify.less'
-import { NavDatasetIcon, SearchEyeIcon, NoXlmxIcon } from '@/components/common/icons'
+import { NavDatasetIcon, SearchEyeIcon, NoXlmxIcon } from '@/components/common/Icons'
 import ImgDef from '@/assets/img_def.png'
 import ImageSelect from "@/components/form/imageSelect"
 import { percent } from "@/utils/number"

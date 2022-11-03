@@ -9,7 +9,7 @@ import { layout420 } from "@/config/antd"
 import HeaderNav from "@/components/nav"
 import Foot from "@/components/common/footer"
 import styles from "../common.less"
-import { EmailIcon, UserIcon, SmartphoneIcon, LockIcon, KeyIcon, EqualizerIcon, NavHomeIcon } from '@/components/common/icons'
+import { EmailIcon, UserIcon, SmartphoneIcon, LockIcon, KeyIcon, EqualizerIcon, NavHomeIcon } from '@/components/common/Icons'
 import { phoneValidate } from "@/components/form/validators"
 
 const { Header, Footer, Content } = Layout

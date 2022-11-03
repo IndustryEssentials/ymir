@@ -5,10 +5,10 @@ import { useHistory } from "umi"
 
 import t from "@/utils/t"
 import { tabs } from '@/constants/project'
-import Actions from "@/components/table/actions"
+import Actions from "@/components/table/Actions"
 import AssetCount from '@/components/dataset/AssetCount'
 import s from "../index.less"
-import { EyeOnIcon } from "@/components/common/icons"
+import { EyeOnIcon } from "@/components/common/Icons"
 import useRestore from "@/hooks/useRestore"
 import VersionName from '@/components/result/VersionName'
 
@@ -59,7 +59,7 @@ const HiddenList = ({ module, pid, ...func }) => {
     {
       title: showTitle("dataset.column.action"),
       dataIndex: "id",
-      render: (id, record) => <Actions menus={actionMenus(record)} />,
+      render: (id, record) => <Actions actions={actionMenus(record)} />,
       align: "center",
     },
   ]

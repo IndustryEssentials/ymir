@@ -8,12 +8,16 @@ import DeviceListSVG from './icons/DeviceListSVG'
 import DeviceSupportedSVG from './icons/DeviceSupportedSVG'
 import MyAlgoSVG from './icons/MyAlgoSVG'
 import StoreSVG from './icons/StoreSVG'
+import React from 'react'
+type Props = {
+  [key: string]: any,
+}
 
 const IconFont = createFromIconfontCN({
   scriptUrl: iconUrl,
 })
 
-const iconFont = type => props => <IconFont type={`icon-${type}`} {...props} className={`${props.className || ''} ${s.cicon}`} />
+const iconFont = (type: string): React.FC<Props> => props => <IconFont type={`icon-${type}`} {...props} className={`${props.className || ''} ${s.cicon}`} />
 
 export default iconFont
 

@@ -62,6 +62,7 @@ const DatasetSelect = ({
         label: renderLabel(item),
         dataset: item,
         value: item.id,
+        disabled: item.disabled,
       }
     })
     setOptions(opts)
