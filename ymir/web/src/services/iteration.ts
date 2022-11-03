@@ -67,14 +67,7 @@ export function createIteration({
  */
 export function updateIteration(
   id,
-  {
-    currentStage,
-    miningSet,
-    miningResult,
-    labelSet,
-    trainUpdateSet,
-    model,
-  }
+  { currentStage, miningSet, miningResult, labelSet, trainUpdateSet, model }
 ) {
   return request({
     method: "patch",
@@ -92,10 +85,12 @@ export function updateIteration(
 
 /**
  * get mining dataset stats for iterations
- * @param {number} projectId 
- * @param {number} iterationId 
- * @returns 
+ * @param {number} projectId
+ * @param {number} iterationId
+ * @returns
  */
 export function getMiningStats(projectId, iterationId) {
-  return request.get(`/iterations/${iterationId}/mining_progress?project_id=${projectId}`)
+  return request.get(
+    `/iterations/${iterationId}/mining_progress?project_id=${projectId}`
+  )
 }
