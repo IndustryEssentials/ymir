@@ -5,6 +5,8 @@ from app.constants.state import TaskType, ResultState
 from app.schemas.common import (
     Common,
     DateTimeModelMixin,
+    DatasetResult,
+    ModelResult,
     IdModelMixin,
     IsDeletedModelMixin,
 )
@@ -46,7 +48,8 @@ class IterationStepInDBBase(IdModelMixin, DateTimeModelMixin, IsDeletedModelMixi
 
 
 class IterationStep(IterationStepInDBBase):
-    pass
+    result_model: Optional[ModelResult]
+    result_dataset: Optional[DatasetResult]
 
 
 class IterationStepOut(Common):

@@ -8,11 +8,13 @@ from typing_extensions import Annotated
 
 from pydantic import BaseModel, EmailStr, Field, validator, root_validator
 
-from app.constants.state import AnnotationType, ResultState, ResultType, TaskState, TaskType, MiningStrategy
+from app.constants.state import AnnotationType, MiningStrategy, ResultType, TaskState, TaskType
 from app.api.errors.errors import DockerImageNotFound
 from app.schemas.common import (
     Common,
     DateTimeModelMixin,
+    DatasetResult,
+    ModelResult,
     IdModelMixin,
     IsDeletedModelMixin,
     IterationContext,
@@ -299,24 +301,6 @@ class TaskInternal(TaskInDBBase):
 
     class Config:
         use_enum_values = True
-
-
-class DatasetResult(BaseModel):
-    id: int
-    dataset_group_id: int
-    result_state: ResultState
-
-    class Config:
-        orm_mode = True
-
-
-class ModelResult(BaseModel):
-    id: int
-    model_group_id: int
-    result_state: ResultState
-
-    class Config:
-        orm_mode = True
 
 
 class Task(TaskInternal):

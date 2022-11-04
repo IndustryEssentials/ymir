@@ -4,7 +4,7 @@ from typing import Any, Dict, Optional, List
 
 from pydantic import BaseModel, Field, validator
 
-from app.constants.state import MiningStrategy, IterationStage, DatasetType
+from app.constants.state import MiningStrategy, IterationStage, DatasetType, ResultState
 
 
 class Common(BaseModel):
@@ -121,3 +121,21 @@ class ImportStrategy(IntEnum):
     ignore_unknown_annotations = 2
     stop_upon_unknown_annotations = 3
     add_unknown_annotations = 4
+
+
+class DatasetResult(BaseModel):
+    id: int
+    dataset_group_id: int
+    result_state: ResultState
+
+    class Config:
+        orm_mode = True
+
+
+class ModelResult(BaseModel):
+    id: int
+    model_group_id: int
+    result_state: ResultState
+
+    class Config:
+        orm_mode = True
