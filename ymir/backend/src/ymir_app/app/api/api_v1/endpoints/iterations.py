@@ -155,7 +155,6 @@ def start_iteration_step(
     iteration_id: int = Path(...),
     step_id: int = Path(...),
     task_id: int = Query(...),
-    user_labels: UserLabels = Depends(deps.get_user_labels),
     current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Any:
     """
@@ -163,7 +162,7 @@ def start_iteration_step(
     1. bind existing task to given step
     2. record task result and record dataset_id or model_id in step record
     """
-    step = crud.iteration_step.get(db, step_id)
+    step = crud.iteration_step.get_by_user_and_id(db, user_id=current_user.id, id=step_id)
     if not step:
         raise IterationStepNotFound()
     if step.is_finished:
@@ -172,7 +171,28 @@ def start_iteration_step(
     task_in_db = crud.task.get(db, task_id)
     if not task_in_db:
         raise TaskNotFound()
-    step = crud.iteration_step.start(db, id=step_id, task_id=task_id)
+    step = crud.iteration_step.bind_task(db, id=step_id, task_id=task_id)
+    return {"result": step}
+
+
+@router.post(
+    "/{iteration_id}/steps/{step_id}/skip",
+    response_model=schemas.IterationStepOut,
+)
+def skip_iteration_step(
+    *,
+    db: Session = Depends(deps.get_db),
+    iteration_id: int = Path(...),
+    step_id: int = Path(...),
+    user_labels: UserLabels = Depends(deps.get_user_labels),
+    current_user: models.User = Depends(deps.get_current_active_user),
+) -> Any:
+    step = crud.iteration_step.get_by_user_and_id(db, user_id=current_user.id, id=step_id)
+    if not step:
+        raise IterationStepNotFound()
+    if step.is_finished:
+        raise IterationStepHasFinished()
+    step = crud.iteration_step.unbind_task(db, id=step_id)
     return {"result": step}
 
 

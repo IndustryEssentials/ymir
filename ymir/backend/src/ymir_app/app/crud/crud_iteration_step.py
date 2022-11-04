@@ -21,7 +21,7 @@ class CRUDIterationStep(CRUDBase[IterationStep, IterationStepCreate, IterationSt
         current_idx = [i.id for i in steps_in_same_iteration].index(step.id)
         return steps_in_same_iteration[current_idx - 1]
 
-    def start(self, db: Session, id: int, task_id: int) -> IterationStep:
+    def bind_task(self, db: Session, id: int, task_id: int) -> IterationStep:
         """
         start given iteration_step:
         1. create task
@@ -32,6 +32,16 @@ class CRUDIterationStep(CRUDBase[IterationStep, IterationStepCreate, IterationSt
             raise StepNotFound()
         updates = {"task_id": task_id}
         return self.update(db, db_obj=step, obj_in=updates)
+
+    def unbind_task(self, db: Session, id: int) -> IterationStep:
+        step = self.get(db, id)
+        if not step:
+            raise StepNotFound()
+        step.task_id = None
+        db.add(step)
+        db.commit()
+        db.refresh(step)
+        return step
 
     def finish(self, db: Session, id: int) -> IterationStep:
         step = self.get(db, id)
