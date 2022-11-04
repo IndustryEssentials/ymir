@@ -1,7 +1,7 @@
 import enum
 import json
 from datetime import datetime
-from typing import Any, Callable, Dict, List, Optional, Union
+from typing import Any, Callable, Dict, List, Literal, Optional, Union
 from operator import attrgetter
 
 from typing_extensions import Annotated
@@ -79,6 +79,8 @@ class TaskParameterBase(BaseModel):
 
 
 class LabelParameter(TaskParameterBase):
+    task_type: Literal["label"]
+
     extra_url: Optional[str]
     labellers: Optional[List[EmailStr]]
     annotation_type: Optional[AnnotationType] = None
@@ -88,6 +90,8 @@ class LabelParameter(TaskParameterBase):
 
 
 class TrainingParameter(TaskParameterBase):
+    task_type: Literal["training"]
+
     validation_dataset_id: Optional[int]
     strategy: Optional[TrainingDatasetsStrategy] = TrainingDatasetsStrategy.stop
     preprocess: Optional[TaskPreprocess] = Field(description="preprocess to apply to related dataset")
@@ -98,6 +102,8 @@ class TrainingParameter(TaskParameterBase):
 
 
 class MiningAndInferParameter(TaskParameterBase):
+    task_type: Literal["mining"]
+
     top_k: Optional[int]
     generate_annotations: Optional[bool]
 
@@ -107,6 +113,8 @@ class MiningAndInferParameter(TaskParameterBase):
 
 
 class FusionParameter(TaskParameterBase, IterationContext):
+    task_type: Literal["fusion"]
+
     merge_strategy: Optional[MergeStrategy] = MergeStrategy.prefer_newest
 
     include_datasets: List[int] = []
@@ -142,7 +150,7 @@ class FusionParameter(TaskParameterBase, IterationContext):
 
 TaskParameter = Annotated[
     Union[LabelParameter, TrainingParameter, MiningAndInferParameter, FusionParameter],
-    Field(description="Generic Task Parameters"),
+    Field(description="Generic Task Parameters", discriminator="task_type"),
 ]
 
 
