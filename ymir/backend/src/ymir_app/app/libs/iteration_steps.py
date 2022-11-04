@@ -51,12 +51,12 @@ class IterationStepTemplate:
         self, name: str, project: models.Project, previous_iteration: Optional[models.Iteration]
     ) -> Dict:
         if not previous_iteration:
-            return {"model": project.initial_model_id}
+            return {"model_id": project.initial_model_id}
         sticky_parameters = ["top_k", "generate_annotations"]
         presetting = self.get_prior_presetting(previous_iteration, sticky_parameters)
         try:
             last_training_step = self.get_step("training", previous_iteration)
-            presetting["model"] = last_training_step.result_model.id  # type: ignore
+            presetting["model_id"] = last_training_step.result_model.id  # type: ignore
         except Exception:
             logger.exception("failed to get model from previous iteration, skip")
             pass
