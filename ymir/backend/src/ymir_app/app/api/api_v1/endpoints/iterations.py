@@ -146,10 +146,10 @@ def get_iteration_step(
 
 
 @router.post(
-    "/{iteration_id}/steps/{step_id}/start",
+    "/{iteration_id}/steps/{step_id}/bind",
     response_model=schemas.IterationStepOut,
 )
-def start_iteration_step(
+def bind_iteration_step(
     *,
     db: Session = Depends(deps.get_db),
     iteration_id: int = Path(...),
@@ -176,10 +176,10 @@ def start_iteration_step(
 
 
 @router.post(
-    "/{iteration_id}/steps/{step_id}/skip",
+    "/{iteration_id}/steps/{step_id}/unbind",
     response_model=schemas.IterationStepOut,
 )
-def skip_iteration_step(
+def unbind_iteration_step(
     *,
     db: Session = Depends(deps.get_db),
     iteration_id: int = Path(...),
