@@ -65,7 +65,7 @@ function Label({
       name: "task_label_" + randomNumber(),
     }
     const result = await func.label(params)
-    result && ok(result.result_dataset)
+    result && ok(result)
   }
 
   function docChange(files, docFile) {

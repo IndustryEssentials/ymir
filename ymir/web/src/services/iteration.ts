@@ -9,7 +9,7 @@ type CreateParams = {
 }
 
 function post(id: number, data: any, url = "") {
-  return request.post(`/iterations/${id}/${url}`, data)
+  return request.post(`/iterations/${id}${url}`, data)
 }
 
 function get(id: number, params: any, url = "") {
@@ -113,7 +113,7 @@ export function updateIteration(
  * @return
  */
 export function getMiningStats(pid: number, id: number) {
-  return get(id, null, `mining_progress?project_id=${pid}`)
+  return get(id, null, `/mining_progress?project_id=${pid}`)
 }
 
 /**
@@ -125,7 +125,7 @@ export function getMiningStats(pid: number, id: number) {
  * @return
  */
 export function bindStep(id: number, sid: number, tid: number) {
-  return post(id, { task_id: tid }, `/step/${sid}/bind`)
+  return post(id, null, `/steps/${sid}/bind?task_id=${tid}`)
 }
 
 /**
@@ -136,7 +136,7 @@ export function bindStep(id: number, sid: number, tid: number) {
  * @return
  */
 export function unbindStep(id: number, sid: number) {
-  return post(id, null, `/step/${sid}/unbind`)
+  return post(id, null, `/steps/${sid}/unbind`)
 }
 
 /**
@@ -147,5 +147,5 @@ export function unbindStep(id: number, sid: number) {
  * @return
  */
 export function nextStep(id: number, sid: number) {
-  return post(id, null, `/step/${sid}/finish`)
+  return post(id, null, `/steps/${sid}/finish`)
 }

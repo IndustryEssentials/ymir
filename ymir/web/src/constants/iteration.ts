@@ -6,6 +6,16 @@ export enum Stages {
   training = 4,
   next = 5,
 }
+
+export enum STEP {
+  prepareMining = "prepareMining",
+  mining = "mining",
+  labelling = "labelling",
+  merging = "merging",
+  training = "training",
+  next = "next",
+}
+
 export enum MiningStrategy {
   block = 0,
   unique = 1,

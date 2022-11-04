@@ -168,7 +168,7 @@ function Mining({
       config,
     }
     const result = await func.mine(params)
-    result && ok(result.result_dataset)
+    result && ok(result)
   }
 
   function onFinishFailed(errorInfo) {

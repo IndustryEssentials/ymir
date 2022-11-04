@@ -252,7 +252,7 @@ function Train({
       config,
     }
     const result = await func.train(params)
-    result && ok(result.result_model)
+    result && ok(result)
   }
 
   function onFinishFailed(errorInfo) {
