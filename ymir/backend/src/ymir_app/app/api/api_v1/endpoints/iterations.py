@@ -216,9 +216,15 @@ def finish_iteration_step(
     iteration = crud.iteration.get_by_user_and_id(db, user_id=current_user.id, id=iteration_id)
     if not iteration:
         raise IterationNotFound()
+    step = crud.iteration_step.get(db, id=step_id)
+    if not step:
+        raise IterationStepNotFound()
+    if step.is_finished:
+        raise IterationStepHasFinished()
 
     try:
         step_result = crud.iteration_step.get_result(db, id=step_id)
+        logger.info("[finish step] result from current step: %s", step_result)
         if step_result:
             next_step = crud.iteration_step.get_next_step(db, id=step_id)
             if next_step:
