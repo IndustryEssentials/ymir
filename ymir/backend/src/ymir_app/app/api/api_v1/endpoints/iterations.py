@@ -162,6 +162,9 @@ def bind_iteration_step(
     1. bind existing task to given step
     2. record task result and record dataset_id or model_id in step record
     """
+    iteration = crud.iteration.get_by_user_and_id(db, user_id=current_user.id, id=iteration_id)
+    if not iteration:
+        raise IterationNotFound()
     step = crud.iteration_step.get(db, id=step_id)
     if not step:
         raise IterationStepNotFound()
@@ -187,6 +190,9 @@ def unbind_iteration_step(
     user_labels: UserLabels = Depends(deps.get_user_labels),
     current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Any:
+    iteration = crud.iteration.get_by_user_and_id(db, user_id=current_user.id, id=iteration_id)
+    if not iteration:
+        raise IterationNotFound()
     step = crud.iteration_step.get(db, id=step_id)
     if not step:
         raise IterationStepNotFound()
@@ -207,6 +213,9 @@ def finish_iteration_step(
     step_id: int = Path(...),
     current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Any:
+    iteration = crud.iteration.get_by_user_and_id(db, user_id=current_user.id, id=iteration_id)
+    if not iteration:
+        raise IterationNotFound()
     try:
         step = crud.iteration_step.finish(db, id=step_id)
     except StepNotFound:

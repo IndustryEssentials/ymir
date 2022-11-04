@@ -1,5 +1,5 @@
 import json
-from typing import Optional
+from typing import Dict, Optional
 from sqlalchemy.orm import Session
 
 from app.crud.base import CRUDBase
@@ -52,15 +52,25 @@ class CRUDIterationStep(CRUDBase[IterationStep, IterationStepCreate, IterationSt
             # save result as task presetting for next_step
             next_step = self.get_next_step(db, step.id)
             if next_step and step.result:
-                task_presetting = dict(next_step.presetting)
-                if step.result_dataset:
-                    task_presetting["dataset_id"] = step.result_dataset.id
-                if step.result_model:
-                    task_presetting["model_id"] = step.result_model.id
-                self.update(db, db_obj=next_step, obj_in={"serialized_presetting": json.dumps(task_presetting)})
+                extra_presetting = {
+                    "dataset_id": step.result_dataset.id if step.result_dataset else None,
+                    "model_id": step.result_model.id if step.result_model else None,
+                }
+                self.update_presetting(db, next_step.id, extra_presetting)
 
         # set current step as finished no matter what
+        db.refresh(step)
         return self.update(db, db_obj=step, obj_in={"is_finished": True})
+
+    def update_presetting(self, db: Session, id: int, presetting: Dict) -> IterationStep:
+        step = self.get(db, id)
+        if not step:
+            raise StepNotFound()
+        step.serialized_presetting = json.dumps({**presetting, **step.presetting})
+        db.add(step)
+        db.commit()
+        db.refresh(step)
+        return step
 
 
 iteration_step = CRUDIterationStep(IterationStep)
