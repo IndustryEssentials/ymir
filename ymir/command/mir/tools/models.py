@@ -39,10 +39,19 @@ class ModelStorage(BaseModel):
         model_meta = mirpb.ModelMeta()
         json_format.ParseDict(
             {
-                'mean_average_precision': self.stages[self.best_stage_name].mAP,
+                'mAP': self.stages[self.best_stage_name].mAP,
                 'model_hash': self.model_hash,
-                'stages': {k: v.dict()
-                           for k, v in self.stages.items()},
+                'stages': {
+                    k: {
+                        'stage_name': v.stage_name,
+                        'files': v.files,
+                        'timestamp': v.timestamp,
+                        'ci_averaged_evaluation': {
+                            'ap': v.mAP
+                        }
+                    }
+                    for k, v in self.stages.items()
+                },
                 'best_stage_name': self.best_stage_name,
                 'class_names': self.class_names,
             }, model_meta)

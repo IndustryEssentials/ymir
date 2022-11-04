@@ -244,7 +244,7 @@ class ViewerModelInfoResponse(BaseModel):
         keywords = values["executor_config"].get("class_names")
         values.update(
             hash=values["model_hash"],
-            map=values["mean_average_precision"],
+            map=values["mAP"],
             model_stages=values["stages"],
             keywords=json.dumps(keywords) if keywords else None,
         )

@@ -247,7 +247,11 @@ model_stages:
     files:   # 中间模型对应的文件列表，这些文件在 /out/models 下面
       - 149_1.000-symbol.json
       - 149_1.000-0149.params
-    mAP: 0.6 # 中间模型对应的 mAP
+    mAP: 0.6 # 中间模型对应的 mean average precision
+    mAR: 0.6 # 中间模型对应的 mean average recall
+    TP: 50 # true positive 框个数
+    FP: 30 # false positive 框个数
+    FN: 30 # false negative 框个数
     stage_name: epoch_10
     timestamp: 1663934682 # 创建时间对应的 timestamp
   epoch_50:
@@ -257,6 +261,9 @@ model_stages:
     mAP: 0.8
     stage_name: epoch_50
     timestamp: 1663934682
+evaluate_config: # 计算 mAP, mAR, TP, FP, FN 时使用的配置信息
+  conf_thr: 0.005
+  iou_thr: 0.5
 ```
 
 ### 4.4. inference / mining 镜像输入/输出挂载格式
