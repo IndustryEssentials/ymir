@@ -186,7 +186,7 @@ class ControllerRequest:
         request.in_dataset_ids[:] = [dataset["hash"]]
         request.in_class_ids[:] = [label["class_id"] for label in args["typed_labels"]]
         label_request = mirsvrpb.TaskReqLabeling()
-        label_request.project_name = f"label_{dataset['dataset_name']}"
+        label_request.project_name = f"label_{dataset['name']}"
         label_request.labeler_accounts[:] = args["labellers"]
 
         # pre annotation
