@@ -239,9 +239,13 @@ class TestCmdTraining(unittest.TestCase):
                                  package_version=ymir_model_salient_version(YMIR_VERSION))
         return ms
 
+    def _mock_pack_and_copy_model(*args, **kwargs):
+        pass
+
     # public: test cases
     @mock.patch('subprocess.run', side_effect=_mock_run_docker_cmd)
-    @mock.patch("mir.commands.training._find_and_save_model", side_effect=__mock_process_model_storage)
+    @mock.patch("mir.commands.training._find_model_storage", side_effect=__mock_process_model_storage)
+    @mock.patch("mir.tools.models.pack_and_copy_models", side_effect=_mock_pack_and_copy_model)
     def test_normal_00(self, *mock_run):
         """ normal case """
         fake_args = type('', (), {})()

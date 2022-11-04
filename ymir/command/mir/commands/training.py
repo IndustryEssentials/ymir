@@ -3,7 +3,7 @@ import logging
 import os
 import time
 from subprocess import CalledProcessError
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional
 from mir.version import ymir_model_salient_version, YMIR_VERSION
 
 from tensorboardX import SummaryWriter
@@ -21,24 +21,6 @@ from mir.tools.executant import prepare_executant_env, run_docker_executant
 
 
 # private: post process
-def _find_and_save_model(out_root: str, model_upload_location: str, executor_config: dict,
-                         task_context: dict) -> models.ModelStorage:
-    """
-    find and save models
-    Returns:
-        ModelStorage
-    """
-    out_model_dir = os.path.join(out_root, "models")
-    model_storage = _find_model_storage(model_root=out_model_dir,
-                                        executor_config=executor_config,
-                                        task_context=task_context)
-    models.pack_and_copy_models(model_storage=model_storage,
-                                model_dir_path=out_model_dir,
-                                model_location=model_upload_location)
-
-    return model_storage
-
-
 def _find_model_storage(model_root: str, executor_config: dict, task_context: dict) -> models.ModelStorage:
     """
     find models in `model_root`, and returns all model stages and attachments
