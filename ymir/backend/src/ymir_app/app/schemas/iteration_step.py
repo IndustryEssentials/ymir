@@ -1,5 +1,5 @@
-from typing import Dict, List, Optional
-from pydantic import BaseModel
+from typing import Dict, List, Optional, Union
+from pydantic import BaseModel, Field
 
 from app.constants.state import TaskType, ResultState
 from app.schemas.common import (
@@ -48,8 +48,7 @@ class IterationStepInDBBase(IdModelMixin, DateTimeModelMixin, IsDeletedModelMixi
 
 
 class IterationStep(IterationStepInDBBase):
-    result_model: Optional[ModelResult]
-    result_dataset: Optional[DatasetResult]
+    result: Optional[Union[ModelResult, DatasetResult]] = Field(..., discriminator="result_type")
 
 
 class IterationStepOut(Common):

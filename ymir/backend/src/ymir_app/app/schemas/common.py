@@ -4,7 +4,7 @@ from typing import Any, Dict, Optional, List
 
 from pydantic import BaseModel, Field, validator
 
-from app.constants.state import MiningStrategy, IterationStage, DatasetType, ResultState
+from app.constants.state import MiningStrategy, IterationStage, DatasetType, ResultState, ResultType
 
 
 class Common(BaseModel):
@@ -127,6 +127,7 @@ class DatasetResult(BaseModel):
     id: int
     dataset_group_id: int
     result_state: ResultState
+    result_type: ResultType = ResultType.dataset
 
     class Config:
         orm_mode = True
@@ -136,6 +137,7 @@ class ModelResult(BaseModel):
     id: int
     model_group_id: int
     result_state: ResultState
+    result_type: ResultType = ResultType.model
 
     class Config:
         orm_mode = True

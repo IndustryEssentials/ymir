@@ -6,6 +6,7 @@ from sqlalchemy import Boolean, Column, DateTime, Integer, String, Text
 from sqlalchemy.orm import relationship
 
 from app.db.base_class import Base
+from app.constants.state import ResultType
 from app.models.task import Task  # noqa
 from app.models.dataset import Dataset  # noqa
 from app.models.model import Model  # noqa
@@ -54,6 +55,14 @@ class IterationStep(Base):
         if not self.task:
             return None
         return self.task.result_model  # type: ignore
+
+    @property
+    def result_type(self) -> Optional[ResultType]:
+        if self.result_dataset:
+            return ResultType.dataset
+        if self.result_model:
+            return ResultType.model
+        return None
 
     @property
     def result(self) -> Optional[Union[Dataset, Model]]:
