@@ -15,7 +15,7 @@ export const isSame = (obj1: obj, obj2: obj) => {
  * @param {*} obj object to inspect
  * @return {*}  {boolean}
  */
-export default function isPlainObject(obj: any): boolean {
+export function isPlainObject(obj: any): boolean {
   if (typeof obj !== "object" || obj === null) return false
 
   let proto = obj
