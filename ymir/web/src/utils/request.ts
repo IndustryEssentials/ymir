@@ -2,12 +2,12 @@ import axios from "axios"
 import storage from "@/utils/storage"
 import t from "@/utils/t"
 import { history } from "umi"
-import { getDvaApp } from 'umi'
+import { getDvaApp } from "umi"
 import { message } from "antd"
 
 const getBaseURL = () => {
   const envUrl = process.env.APIURL
-  if (process.env.NODE_ENV === 'development') {
+  if (process.env.NODE_ENV === "development") {
     return envUrl
   }
   return window.baseConfig?.APIURL || envUrl
@@ -37,7 +37,7 @@ request.interceptors.response.use(
     if (res.data.code !== 0) {
       message.error(t(`error${res.data.code}`))
       if ([110104, 110112].includes(res.data.code)) {
-        return logout()
+        logout()
       }
     }
 
@@ -48,9 +48,9 @@ request.interceptors.response.use(
     if (authrized.includes(err.request.status)) {
       return logout()
     } else if (err.request.status === 504) {
-      message.error(t('error.timeout'))
+      message.error(t("error.timeout"))
     } else if (err.request.status === 502) {
-      message.error(t('error.502'))
+      message.error(t("error.502"))
     } else {
       const res = err.response
       if (res?.data?.code) {
@@ -68,7 +68,7 @@ request.interceptors.response.use(
 
 function logout() {
   getDvaApp()._store.dispatch({
-    type: 'user/loginout'
+    type: "user/loginout",
   })
 }
 
