@@ -1,5 +1,6 @@
 import json
 from typing import Dict, Optional
+
 from sqlalchemy.orm import Session
 
 from app.crud.base import CRUDBase
@@ -20,6 +21,19 @@ class CRUDIterationStep(CRUDBase[IterationStep, IterationStepCreate, IterationSt
         steps_in_same_iteration = self.get_multi_by_iteration(db, iteration_id=step.iteration_id)
         current_idx = [i.id for i in steps_in_same_iteration].index(step.id)
         return steps_in_same_iteration[current_idx - 1]
+
+    def get_result(self, db: Session, id: int) -> Optional[Dict]:
+        step = self.get(db, id)
+        if not step:
+            raise StepNotFound()
+        if step.state != ResultState.ready:
+            return None
+        result = {}
+        if step.result_dataset:
+            result["dataset_id"] = step.result_dataset.id
+        if step.result_model:
+            result["model_id"] = step.result_model.id
+        return result or None
 
     def bind_task(self, db: Session, id: int, task_id: int) -> IterationStep:
         """
@@ -47,26 +61,13 @@ class CRUDIterationStep(CRUDBase[IterationStep, IterationStepCreate, IterationSt
         step = self.get(db, id)
         if not step:
             raise StepNotFound()
-
-        if step.state == ResultState.ready:
-            # save result as task presetting for next_step
-            next_step = self.get_next_step(db, step.id)
-            if next_step and step.result:
-                extra_presetting = {
-                    "dataset_id": step.result_dataset.id if step.result_dataset else None,
-                    "model_id": step.result_model.id if step.result_model else None,
-                }
-                self.update_presetting(db, next_step.id, extra_presetting)
-
-        # set current step as finished no matter what
-        db.refresh(step)
         return self.update(db, db_obj=step, obj_in={"is_finished": True})
 
     def update_presetting(self, db: Session, id: int, presetting: Dict) -> IterationStep:
         step = self.get(db, id)
         if not step:
             raise StepNotFound()
-        step.serialized_presetting = json.dumps({**presetting, **step.presetting})
+        step.serialized_presetting = json.dumps({**step.presetting, **presetting})
         db.add(step)
         db.commit()
         db.refresh(step)

@@ -216,7 +216,13 @@ def finish_iteration_step(
     iteration = crud.iteration.get_by_user_and_id(db, user_id=current_user.id, id=iteration_id)
     if not iteration:
         raise IterationNotFound()
+
     try:
+        step_result = crud.iteration_step.get_result(db, id=step_id)
+        if step_result:
+            next_step = crud.iteration_step.get_next_step(db, id=step_id)
+            if next_step:
+                crud.iteration_step.update_presetting(db, next_step.id, step_result)
         step = crud.iteration_step.finish(db, id=step_id)
     except StepNotFound:
         raise IterationStepNotFound()
