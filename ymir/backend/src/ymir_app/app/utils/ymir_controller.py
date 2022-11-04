@@ -117,7 +117,7 @@ class ControllerRequest:
         return request
 
     def prepare_training(self, request: mirsvrpb.GeneralReq, args: Dict) -> mirsvrpb.GeneralReq:
-        request.in_class_ids[:] = [label.class_id for label in args["typed_labels"]]
+        request.in_class_ids[:] = [label["class_id"] for label in args["typed_labels"]]
         train_task_req = mirsvrpb.TaskReqTraining()
         train_task_req.in_dataset_types[:] = list(gen_typed_datasets(args["typed_datasets"]))
 
@@ -183,7 +183,7 @@ class ControllerRequest:
 
     def prepare_label(self, request: mirsvrpb.GeneralReq, args: Dict) -> mirsvrpb.GeneralReq:
         request.in_dataset_ids[:] = [dataset["hash"] for dataset in args["typed_datasets"]]
-        request.in_class_ids[:] = [label.class_id for label in args["typed_labels"]]
+        request.in_class_ids[:] = [label["class_id"] for label in args["typed_labels"]]
         label_request = mirsvrpb.TaskReqLabeling()
         label_request.project_name = f"label_{args['dataset_name']}"
         label_request.labeler_accounts[:] = args["labellers"]
@@ -265,8 +265,8 @@ class ControllerRequest:
         request.in_dataset_ids[:] = [dataset["hash"] for dataset in args["typed_datasets"] if not dataset["exclude"]]
         request.ex_dataset_ids[:] = [dataset["hash"] for dataset in args["typed_datasets"] if dataset["exclude"]]
         request.merge_strategy = MERGE_STRATEGY_MAPPING[args.get("strategy", MergeStrategy.stop_upon_conflict)]
-        request.in_class_ids[:] = [label.class_id for label in args["typed_labels"] if not label["exclude"]]
-        request.in_class_ids[:] = [label.class_id for label in args["typed_labels"] if label["exclude"]]
+        request.in_class_ids[:] = [label["class_id"] for label in args["typed_labels"] if not label["exclude"]]
+        request.in_class_ids[:] = [label["class_id"] for label in args["typed_labels"] if label["exclude"]]
 
         if args.get("sampling_count"):
             request.sampling_count = args["sampling_count"]

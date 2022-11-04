@@ -170,8 +170,8 @@ def fillin_label_ids(labels_getter: Callable, typed_labels: List[TypedLabel]) ->
     if not typed_labels:
         return
     class_ids = labels_getter([i.name for i in typed_labels])
-    for label in typed_labels:
-        label.class_id = class_ids[label.name]
+    for label, class_id in zip(typed_labels, class_ids):
+        label.class_id = class_id
 
 
 class TaskCreate(TaskBase):
