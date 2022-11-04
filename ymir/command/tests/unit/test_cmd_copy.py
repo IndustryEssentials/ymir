@@ -69,7 +69,7 @@ class TestCmdCopy(unittest.TestCase):
             self.__create_image_annotations(type_ids=[3]))
         mir_annotations.prediction.eval_class_ids[:] = eval_class_ids
 
-        model_meta = mirpb.ModelMeta(mean_average_precision=0.3)
+        model_meta = mirpb.ModelMeta(mAP=0.3)
         task = mir_storage_ops.create_task(task_type=mirpb.TaskType.TaskTypeTraining,
                                            task_id=task_id,
                                            message='training',
@@ -122,7 +122,7 @@ class TestCmdCopy(unittest.TestCase):
             self.assertEqual({}, asset1_idx_ids)
         self.assertEqual(eval_class_ids_set, set(mir_annotations.prediction.eval_class_ids))
 
-        mAP = mir_tasks.tasks[dst_tid].model.mean_average_precision
+        mAP = mir_tasks.tasks[dst_tid].model.mAP
         self.assertTrue(mAP > 0.29999 and mAP < 0.30001)  # it's actually 0.3
 
     # public: test cases

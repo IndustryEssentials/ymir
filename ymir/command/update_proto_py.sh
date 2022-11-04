@@ -14,7 +14,6 @@ set -e
 
 INPUT_DIR="./proto"
 PY_OUTPUT_DIR="./mir/protos"
-GO_DIR_VIEWER="../backend/src/ymir_viewer/common"
 GO_DIR_HEL="../backend/src/ymir_hel"
 rm -rf ${PY_OUTPUT_DIR}
 mkdir -p ${PY_OUTPUT_DIR}
@@ -22,7 +21,6 @@ mkdir -p ${PY_OUTPUT_DIR}
 # gen protobuf py
 protoc -I "${INPUT_DIR}" \
       --python_out="${PY_OUTPUT_DIR}" \
-      --go_out="${GO_DIR_VIEWER}" \
       --go_out="${GO_DIR_HEL}" \
       --plugin=protoc-gen-mypy=$(which protoc-gen-mypy) --mypy_out=${PY_OUTPUT_DIR}  \
       "$INPUT_DIR/mir_command.proto"
