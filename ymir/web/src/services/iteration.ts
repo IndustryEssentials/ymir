@@ -22,7 +22,7 @@ function get(id: number, params: any, url = "") {
  * @export
  * @param {number} pid project id
  * @param {number} id  iteration id
- * @return {*}
+ * @return
  */
 export function getIteration(pid: number, id: number) {
   return get(id, { project_id: pid })
@@ -116,7 +116,7 @@ export function getMiningStats(pid: number, id: number) {
 }
 
 /**
- * @description
+ * @description bind task to iteration step
  * @export
  * @param {number} id
  * @param {number} sid
@@ -124,26 +124,27 @@ export function getMiningStats(pid: number, id: number) {
  * @return
  */
 export function bindStep(id: number, sid: number, tid: number) {
-  return post(id, { task_id: tid }, `/step/${sid}/start`)
+  return post(id, { task_id: tid }, `/step/${sid}/bind`)
 }
 
 /**
- * @description
+ * @description unbind task from iteration step
+ * @export
+ * @param {number} id
+ * @param {number} sid
+ * @return
+ */
+export function unbindStep(id: number, sid: number) {
+  return post(id, null, `/step/${sid}/unbind`)
+}
+
+/**
+ * @description goto next step
  * @export
  * @param {number} id
  * @param {number} sid
  * @return
  */
 export function nextStep(id: number, sid: number) {
-  return post(id, null, `/step/${sid}/finish`)
-}
-/**
- * @description
- * @export
- * @param {number} id
- * @param {number} sid
- * @return
- */
-export function skipStep(id: number, sid: number) {
   return post(id, null, `/step/${sid}/finish`)
 }
