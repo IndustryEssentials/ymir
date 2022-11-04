@@ -1,5 +1,6 @@
 import request from "@/utils/request"
 import { TASKTYPES } from "@/constants/task"
+import { randomNumber } from "@/utils/number"
 
 /**
  * get (or filter) task list
@@ -126,9 +127,11 @@ export function fusion({
   result_description: description,
 }) {
   return createTask({
+    name: "fusion" + randomNumber(10),
     type: TASKTYPES.FUSION,
     project_id,
     parameters: {
+      task_type: "fusion",
       include_datasets,
       exclude_datasets,
       iteration_id: iteration,
@@ -163,19 +166,24 @@ export function merge({
   projectId,
   group,
   name,
+  dataset,
   datasets = [],
   strategy = 2,
   excludes = [],
   description,
 }) {
   return createTask({
+    name: "merge" + randomNumber(10),
     type: TASKTYPES.MERGE,
     project_id: projectId,
     parameters: {
+      task_type: "merge",
+      project_id: projectId,
+      dataset_id: dataset,
       include_datasets: datasets,
       exclude_datasets: excludes,
-      dest_group_name: name,
-      dest_group_id: group,
+      dataset_group_name: name,
+      dataset_group_id: group,
       merge_strategy: strategy,
       description,
     },
@@ -203,9 +211,11 @@ export function filter({
   description,
 }) {
   return createTask({
+    name: "filter" + randomNumber(10),
     type: TASKTYPES.FILTER,
     project_id: projectId,
     parameters: {
+      task_type: "filter",
       dataset_id: dataset,
       include_keywords: includes,
       exclude_keywords: excludes,
@@ -246,6 +256,7 @@ export function label({
     iteration_id: iteration,
     iteration_stage: stage,
     parameters: {
+      task_type: "label",
       dataset_group_id: groupId,
       dataset_id: datasetId,
       keywords,
@@ -305,6 +316,7 @@ export function train({
     docker_image_config: { ...config, openpai_enable: openpai },
     preprocess,
     parameters: {
+      task_type: "training",
       strategy,
       dataset_id: datasetId,
       validation_dataset_id: testset,
@@ -397,6 +409,7 @@ export function infer({
     result_description: description,
     docker_image_config: { ...config, openpai_enable: openpai },
     parameters: {
+      task_type: "infer",
       model_id: model,
       model_stage_id: stage,
       generate_annotations: true,

@@ -8,10 +8,10 @@ export enum Stages {
 }
 
 export enum STEP {
-  prepareMining = "prepareMining",
+  prepareMining = "prepare_mining",
   mining = "mining",
-  labelling = "labelling",
-  merging = "merging",
+  labelling = "label",
+  merging = "prepare_training",
   training = "training",
   next = "next",
 }
@@ -22,59 +22,43 @@ export enum MiningStrategy {
   free = 2,
 }
 
-export function getStageLabel(stage: Stages, round: number = 0) {
-  const labels = StageList().list.map((item) => item.label)
-  return `project.iteration.stage.${round ? labels[stage] : "prepare"}`
+export function getStepLabel(step: STEP, round: number = 0) {
+  const list = getSteps()
+  const target = list.find((item) => item.value === step)
+  return `project.iteration.stage.${round ? target?.label : "prepare"}`
 }
 
-type stageObject = {
-  value: Stages
-  result?: string
-  url?: string
+type StepObj = {
+  label: string
+  value: STEP
+  unskippable?: boolean
+  act?: string
+  react?: string
+  state?: number
 }
 
-export const StageList = () => {
-  const iterationParams =
-    "iterationId={id}&currentStage={stage}&outputKey={output}&from=iteration"
+export const getSteps = (): StepObj[] => {
+  const glabels = (label: string) => `project.iteration.stage.${label}`
   const list = [
-    {
-      label: "ready",
-      value: Stages.prepareMining,
-      output: "miningSet",
-      input: "",
-      url: `/home/project/{pid}/fusion?did={s0d}&strategy={s0s}&chunk={s0c}&${iterationParams}`,
-    },
-    {
-      label: "mining",
-      value: Stages.mining,
-      output: "miningResult",
-      input: "miningSet",
-      url: `/home/project/{pid}/mining?did={s1d}&mid={s1m}&${iterationParams}`,
-    },
-    {
-      label: "label",
-      value: Stages.labelling,
-      output: "labelSet",
-      input: "miningResult",
-      url: `/home/project/{pid}/label?did={s2d}&${iterationParams}`,
-    },
-    {
-      label: "merge",
-      value: Stages.merging,
-      output: "trainUpdateSet",
-      input: "labelSet",
-      url: `/home/project/{pid}/merge?did={s3d}&mid={s3m}&${iterationParams}`,
-    },
-    {
-      label: "training",
-      value: Stages.training,
-      output: "model",
-      input: "trainUpdateSet",
-      url: `/home/project/{pid}/train?did={s4d}&test={s4t}&${iterationParams}`,
-    },
-    { label: "next", value: Stages.next, output: "", input: "trainSet" },
+    { label: "ready", value: STEP.prepareMining },
+    { label: "mining", value: STEP.mining },
+    { label: "label", value: STEP.labelling },
+    { label: "merge", value: STEP.merging, unskippable: true },
+    { label: "training", value: STEP.training, unskippable: true },
+    { label: "next", value: STEP.next },
   ]
-  return { list, ...singleList(list) }
+  return list.map((item, index) => {
+    const label = glabels(item.label)
+    const ind = index + 1
+    return {
+      ...item,
+      act: label,
+      react: `${label}.react`,
+      state: -1,
+      index: ind,
+      next: list[ind]?.value,
+    }
+  })
 }
 
 export function transferIteration(
@@ -114,19 +98,6 @@ function transferStep(data: YModels.BackendData = {}): YModels.Step {
     taskId: data.task_id,
     taskType: data.task_type,
   }
-}
-
-function singleList(arr: Array<stageObject>) {
-  return arr.reduce(
-    (prev, item, index) => ({
-      ...prev,
-      [item.value]: {
-        ...item,
-        next: arr[index + 1] ? arr[index + 1] : null,
-      },
-    }),
-    {}
-  )
 }
 
 type Ratio = {

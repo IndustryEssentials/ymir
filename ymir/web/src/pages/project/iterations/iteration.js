@@ -2,11 +2,11 @@ import { useCallback, useEffect, useState } from "react"
 import { Row, Col } from "antd"
 import { useSelector } from "umi"
 
-import { Stages, StageList } from "@/constants/iteration"
+import { getSteps } from "@/constants/iteration"
 import { templateString } from "@/utils/string"
 import useFetch from "@/hooks/useFetch"
 
-import Stage from "./stage"
+import Step from "./step"
 import StepAction from "./stepAction"
 import s from "./iteration.less"
 
@@ -15,7 +15,7 @@ function Iteration({ project, fresh = () => {} }) {
     ({ iteration }) => iteration.iteration[project.currentIteration?.id] || {}
   )
   const [_, getIteration] = useFetch("iteration/getIteration", {})
-  const [stages, setStages] = useState([])
+  const [steps, setSteps] = useState([])
   const [prevIteration, getPrevIteration] = useFetch(
     "iteration/getIteration",
     {}
@@ -24,7 +24,6 @@ function Iteration({ project, fresh = () => {} }) {
   const [_b, bind] = useFetch("iteration/bindStep")
   const [_n, next] = useFetch("iteration/nextStep")
   const [_k, skip] = useFetch("iteration/skipStep")
-  const [_u, update] = useFetch("iteration/updateIteration")
 
   useEffect(() => {
     if ((project.id && project.currentIteration) || iteration?.needReload) {
@@ -47,47 +46,26 @@ function Iteration({ project, fresh = () => {} }) {
   )
 
   useEffect(() => {
-    iteration.id && rerenderStages()
+    iteration.id && generateSteps()
   }, [iteration, prevIteration])
 
   useEffect(() => createResult && fresh(), [createResult])
 
   const callback = useCallback(iterationHandle, [iteration])
 
-  function getInitStages() {
-    const stageList = StageList()
-    return stageList.list.map(({ label, value, url, output, input }) => {
-      const slabel = `project.iteration.stage.${label}`
+  function generateSteps() {
+    const list = getSteps()
+    const steps = list.map((step, index) => {
+      const remoteStep = iteration.steps[index] || {}
+      const current = iteration.currentStep.name
       return {
-        value: value,
-        label,
-        act: slabel,
-        react: `${slabel}.react`,
-        state: -1,
-        next: stageList[value].next,
-        temp: url,
-        output,
-        input,
-        project,
-        unskippable: [Stages.merging, Stages.training].includes(value),
-        callback,
+        ...step,
+        ...remoteStep,
+        index: index + 1,
+        current,
       }
     })
-  }
-
-  function rerenderStages() {
-    const initStages = getInitStages()
-    const ss = initStages.map((stage) => {
-      const result = iteration[stage.output]
-      return {
-        ...stage,
-        iterationId: iteration.id,
-        round: iteration.round,
-        current: iteration.currentStage,
-        result,
-      }
-    })
-    setStages(ss)
+    setSteps(steps)
   }
 
   const getParams = (data = {}) => ({
@@ -130,15 +108,16 @@ function Iteration({ project, fresh = () => {} }) {
   return (
     <div className={s.iteration}>
       <Row style={{ justifyContent: "flex-end" }}>
-        {stages.map((stage) => (
-          <Col key={stage.value} flex={stage.next ? 1 : null}>
-            <Stage stage={stage} end={!stage.next} callback={callback} />
+        {steps.map((step) => (
+          <Col key={step.value} flex={step.next ? 1 : null}>
+            {console.log("steps:", steps)}
+            <Step step={step} end={!step.next} />
           </Col>
         ))}
       </Row>
       <div className={s.stepContent}>
         <StepAction
-          stages={stages}
+          steps={steps}
           iteration={iteration}
           project={project}
           prevIteration={prevIteration}

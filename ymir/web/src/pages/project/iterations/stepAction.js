@@ -1,9 +1,7 @@
 import { useEffect, useState } from "react"
 import { useSelector } from "umi"
-import { Space } from "antd"
 
-import { Stages, StageList } from "@/constants/iteration"
-import useFetch from "@/hooks/useFetch"
+import { STEP } from "@/constants/iteration"
 
 import Fusion from "@/components/task/fusion"
 import Mining from "@/components/task/mining"
@@ -16,7 +14,7 @@ import NextIteration from "./nextIteration"
 const Action = (Comp, props = {}) => <Comp {...props} />
 
 const StepAction = ({
-  stages,
+  steps,
   iteration,
   project,
   prevIteration,
@@ -28,14 +26,14 @@ const StepAction = ({
   const [currentContent, setCurrentContent] = useState(null)
   const [CurrentAction, setCurrentAction] = useState(null)
   const result = useSelector(({ dataset, model }) => {
-    const isModel = currentContent?.value === Stages.training
+    const isModel = currentContent?.value === STEP.training
     const res = isModel ? model.model : dataset.dataset
     return res[currentContent?.result] || {}
   })
   const [state, setState] = useState(-1)
 
   const comps = {
-    [Stages.prepareMining]: {
+    [STEP.prepareMining]: {
       comp: Fusion,
       query: {
         did: project.miningSet?.id,
@@ -43,7 +41,7 @@ const StepAction = ({
         chunk: project.chunkSize || undefined,
       },
     },
-    [Stages.mining]: {
+    [STEP.mining]: {
       comp: Mining,
       query: {
         did: iteration.miningSet,
@@ -52,34 +50,34 @@ const StepAction = ({
           : project.modelStage,
       },
     },
-    [Stages.labelling]: {
+    [STEP.labelling]: {
       comp: Label,
       query: {
         did: iteration.miningResult,
       },
     },
-    [Stages.merging]: {
+    [STEP.merging]: {
       comp: Merge,
       query: {
         did: prevIteration.trainUpdateSet || project.trainSetVersion,
         mid: iteration.labelSet ? [iteration.labelSet] : undefined,
       },
     },
-    [Stages.training]: {
+    [STEP.training]: {
       comp: Training,
       query: {
         did: iteration.trainUpdateSet,
         test: iteration.testSet,
       },
     },
-    [Stages.next]: {
+    [STEP.next]: {
       comp: NextIteration,
       query: {},
     },
   }
   const fixedQuery = {
     iterationId: iteration.id,
-    currentStage: iteration.currentStage,
+    currentStep: iteration.currentStep.name,
     from: "iteration",
   }
 
@@ -101,50 +99,45 @@ const StepAction = ({
         query: { ...fixedQuery, ...currentContent.query },
         ok,
       }
+      console.log("props:", props)
       setCurrentAction(Action(currentContent.comp, props))
     }
+    console.log("currentContent:", currentContent, state)
   }, [currentContent, state])
 
   useEffect(() => {
     if (currentContent) {
       const state = result?.id ? result.state : currentContent.state
-      setState(state)
+      setState(Number.isInteger(state) ? state : -1)
     }
   }, [result?.state, currentContent?.state])
 
   useEffect(() => {
-    if (!stages.length) {
+    if (!iteration || !steps.length) {
       return
     }
-    const targetStage = stages.find(
-      ({ value }) => value === iteration.currentStage
+    const targetStep = steps.find(
+      ({ value }) => value === iteration.currentStep.name
     )
     setCurrentContent({
-      ...targetStage,
-      ...comps[iteration.currentStage],
+      ...targetStep,
+      ...comps[iteration.currentStep.name],
     })
-  }, [iteration?.currentStage, stages])
+  }, [steps, iteration])
 
   const react = () => {
     setState(-2)
   }
 
-  const next = () => {
-    // next
+  const next = () =>
     callback({
       type: "next",
-      data: {
-        currentStage: currentContent.next.value,
-      },
     })
-  }
 
-  const skip = () => {
-    // skip
+  const skip = () =>
     callback({
       type: "skip",
     })
-  }
 
   const ok = (result) => {
     if (!currentContent.next) {
