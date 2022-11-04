@@ -18,6 +18,10 @@ class ModelStageStorage(BaseModel):
     stage_name: str
     files: List[str]
     mAP: float = Field(..., ge=0, le=1)
+    mAR: float = Field(..., ge=0, le=1)
+    tp: int = Field(..., ge=0)
+    fp: int = Field(..., ge=0)
+    fn: int = Field(..., ge=0)
     timestamp: int
 
 
