@@ -3,7 +3,7 @@ eval_class_names:
     - cat
     - airplane
 model:
-    mean_average_precision: 0.6
+    mAP: 0.6
     class_names:
         - person
         - cat
