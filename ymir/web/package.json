@@ -15,6 +15,7 @@
     "test": "umi-test",
     "test:coverage": "umi-test --coverage",
     "lint-staged": "lint-staged",
+    "eslint": "eslint src/**/*",
     "prepare": "cd ../.. && husky install"
   },
   "prettier": {
