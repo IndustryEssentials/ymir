@@ -182,10 +182,11 @@ class ControllerRequest:
         return request
 
     def prepare_label(self, request: mirsvrpb.GeneralReq, args: Dict) -> mirsvrpb.GeneralReq:
-        request.in_dataset_ids[:] = [dataset["hash"] for dataset in args["typed_datasets"]]
+        dataset = args["typed_datasets"][0]  # label need only one dataset
+        request.in_dataset_ids[:] = [dataset["hash"]]
         request.in_class_ids[:] = [label["class_id"] for label in args["typed_labels"]]
         label_request = mirsvrpb.TaskReqLabeling()
-        label_request.project_name = f"label_{args['dataset_name']}"
+        label_request.project_name = f"label_{dataset['dataset_name']}"
         label_request.labeler_accounts[:] = args["labellers"]
 
         # pre annotation

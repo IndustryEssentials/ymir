@@ -58,6 +58,7 @@ class BatchOperations(BaseModel):
 class TypedDataset(BaseModel):
     id: int
     hash: Optional[str] = None
+    name: Optional[str] = None
     type: Optional[int] = None
     exclude: bool = False
     create_datetime: Optional[datetime] = None  # type: ignore

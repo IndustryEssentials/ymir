@@ -102,8 +102,10 @@ def create_single_task(db: Session, user_id: int, user_labels: UserLabels, task_
         )
         logger.info("[create task] controller response: %s", resp)
     except ValueError:
+        logger.exception("[create task] controller error")
         raise FailedtoCreateTask()
     except KeyError:
+        logger.exception("[create task] parameter check failed")
         raise RequiredFieldMissing()
 
     task = crud.task.create_task(db, obj_in=task_in, task_hash=task_hash, user_id=user_id)

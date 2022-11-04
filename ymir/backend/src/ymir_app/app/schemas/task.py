@@ -150,9 +150,9 @@ def fillin_dataset_hashes(datasets_getter: Callable, typed_datasets: List[TypedD
     if not typed_datasets:
         return
     datasets_in_db = datasets_getter(dataset_ids=[i.id for i in typed_datasets])
-    data = {d.id: (d.hash, d.create_datetime) for d in datasets_in_db}
+    data = {d.id: (d.hash, d.create_datetime, d.name) for d in datasets_in_db}
     for dataset in typed_datasets:
-        dataset.hash, dataset.create_datetime = data[dataset.id]
+        dataset.hash, dataset.create_datetime, dataset.name = data[dataset.id]
 
 
 def fillin_model_hashes(model_stages_getter: Callable, typed_models: List[TypedModel]) -> None:
