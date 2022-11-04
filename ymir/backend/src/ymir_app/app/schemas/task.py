@@ -64,6 +64,7 @@ class TaskParameterBase(BaseModel):
 
     docker_image_id: Optional[int]
     docker_image: Optional[str]
+    docker_image_config: Optional[str]
 
     description: Optional[str]
 
@@ -101,8 +102,7 @@ class TrainingParameter(TaskParameterBase):
     normalize_labels = root_validator(allow_reuse=True)(label_normalize)
 
 
-class MiningAndInferParameter(TaskParameterBase):
-    task_type: Literal["mining"]
+class MiningParameterBase(TaskParameterBase):
 
     top_k: Optional[int]
     generate_annotations: Optional[bool]
@@ -112,9 +112,15 @@ class MiningAndInferParameter(TaskParameterBase):
     normalize_labels = root_validator(allow_reuse=True)(label_normalize)
 
 
-class FusionParameter(TaskParameterBase, IterationContext):
-    task_type: Literal["fusion"]
+class MiningParameter(MiningParameterBase):
+    task_type: Literal["mining"]
 
+
+class InferParameter(MiningParameterBase):
+    task_type: Literal["infer"]
+
+
+class FusionParameterBase(TaskParameterBase, IterationContext):
     merge_strategy: Optional[MergeStrategy] = MergeStrategy.prefer_newest
 
     include_datasets: List[int] = []
@@ -148,8 +154,28 @@ class FusionParameter(TaskParameterBase, IterationContext):
         return
 
 
+class FusionParameter(FusionParameterBase):
+    task_type: Literal["fusion"]
+
+
+class MergeParameter(FusionParameterBase):
+    task_type: Literal["merge"]
+
+
+class FilterParameter(FusionParameterBase):
+    task_type: Literal["filter"]
+
+
 TaskParameter = Annotated[
-    Union[LabelParameter, TrainingParameter, MiningAndInferParameter, FusionParameter],
+    Union[
+        LabelParameter,
+        TrainingParameter,
+        MiningParameter,
+        InferParameter,
+        FusionParameter,
+        MergeParameter,
+        FilterParameter,
+    ],
     Field(description="Generic Task Parameters", discriminator="task_type"),
 ]
 
