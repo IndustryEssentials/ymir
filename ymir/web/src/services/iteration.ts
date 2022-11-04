@@ -39,17 +39,16 @@ export function getIterations(pid: number) {
 }
 
 /**
- * create a iteration
- * @param {object} iteration
- * {
- *   {string}  [name]
- *   {number}  [currentStage]
- *   {number}  iterationRound
- *   {number}  prevTrainingDataset
- *   {number}  projectId
- *   {number}  testSet
+ * @description create a iteration
+ * @export
+ * @param {CreateParams} {
+ *   iterationRound,
+ *   prevIteration,
+ *   projectId,
+ *   testSet,
+ *   miningSet,
  * }
- * @returns
+ * @return
  */
 export function createIteration({
   iterationRound,
@@ -66,18 +65,20 @@ export function createIteration({
     mining_dataset_id: miningSet,
   })
 }
+
 /**
- * update iteration stage
- * @param {object} iteration
- * {
- *   {number}  [currentStage]
- *   {number}  [trainUpdateSet]
- *   {number}  [miningSet]
- *   {number}  [miningResult]
- *   {number}  [labelSet]
- *   {number}  [model]
- * }
- * @returns
+ * @description update iteration stage
+ * @export
+ * @param {number} id
+ * @param {{ [key: string]: number }} {
+ *     currentStage,
+ *     miningSet,
+ *     miningResult,
+ *     labelSet,
+ *     trainUpdateSet,
+ *     model,
+ *   }
+ * @return
  */
 export function updateIteration(
   id: number,
