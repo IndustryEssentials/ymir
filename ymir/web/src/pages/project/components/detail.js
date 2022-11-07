@@ -28,7 +28,7 @@ function ProjectDetail({ project = {} }) {
               {t("project.detail.info.iteration", {
                 stageLabel: (
                   <span className={s.orange}>
-                    {t(getStepLabel(project.currentStep?.name, project.round))}
+                    {t(getStepLabel(project.currentStep, project.round))}
                   </span>
                 ),
                 current: <span className={s.orange}>{project.round}</span>,

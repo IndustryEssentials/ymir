@@ -168,7 +168,7 @@ declare namespace YModels {
     chunkSize?: number
     currentIteration?: Iteration
     round: number
-    currentStage: number
+    currentStep: string
     createTime: string
     updateTime: string
     description?: string
@@ -200,12 +200,13 @@ declare namespace YModels {
     related?: Array<Image>
   }
 
+  type ResultType = "dataset" | "model"
   export interface Iteration {
     id: number
     projectId: number
     name?: string
     round: number
-    currentStep: Step
+    currentStep?: Step
     steps: Step[]
     currentStage: number
     testSet?: DatasetId
@@ -217,6 +218,7 @@ declare namespace YModels {
     labelSet?: DatasetId
     model?: number
     prevIteration: number
+    end: boolean
   }
 
   export interface Step {
@@ -224,10 +226,12 @@ declare namespace YModels {
     finished?: boolean
     name: string
     percent?: number
-    preSetting?: any
+    preSetting?: PlainObject
     state?: number
     taskId?: number
     taskType?: number
+    resultType?: ResultType
+    resultId?: number
   }
 
   interface ShareImage {

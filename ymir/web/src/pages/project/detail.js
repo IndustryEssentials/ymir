@@ -51,9 +51,7 @@ function ProjectDetail(func) {
                 {t("project.iteration.entrance.status", {
                   stateLabel: (
                     <span className="orange">
-                      {t(
-                        getStepLabel(project.currentStep?.name, project.round)
-                      )}
+                      {t(getStepLabel(project.currentStep, project.round))}
                     </span>
                   ),
                 })}

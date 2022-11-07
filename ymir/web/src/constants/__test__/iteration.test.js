@@ -3,6 +3,8 @@ import {
   getStepLabel,
   StageList,
   transferIteration,
+  STEP,
+  getSteps,
 } from "../iteration"
 
 jest.mock("umi", () => {
@@ -17,39 +19,32 @@ const createTime = "2022-03-10T03:39:09"
 
 describe("constants: project", () => {
   it("function -> getStepLabel.", () => {
-    expect(getStepLabel(Stages.prepareMining, 1)).toBe(
+    expect(getStepLabel(STEP.prepareMining, 1)).toBe(
       "project.iteration.stage.ready"
     )
-    expect(getStepLabel(Stages.mining, 1)).toBe(
-      "project.iteration.stage.mining"
-    )
-    expect(getStepLabel(Stages.labelling, 1)).toBe(
+    expect(getStepLabel(STEP.mining, 1)).toBe("project.iteration.stage.mining")
+    expect(getStepLabel(STEP.labelling, 1)).toBe(
       "project.iteration.stage.label"
     )
-    expect(getStepLabel(Stages.merging, 1)).toBe(
-      "project.iteration.stage.merge"
-    )
-    expect(getStepLabel(Stages.training, 1)).toBe(
+    expect(getStepLabel(STEP.merging, 1)).toBe("project.iteration.stage.merge")
+    expect(getStepLabel(STEP.training, 1)).toBe(
       "project.iteration.stage.training"
     )
-    expect(getStepLabel(Stages.next, 1)).toBe("project.iteration.stage.next")
-    expect(getStepLabel(Stages.next)).toBe("project.iteration.stage.prepare")
-    expect(getStepLabel(Stages.next, 0)).toBe("project.iteration.stage.prepare")
+    expect(getStepLabel(STEP.next, 1)).toBe("project.iteration.stage.next")
+    expect(getStepLabel(STEP.next)).toBe("project.iteration.stage.prepare")
+    expect(getStepLabel(STEP.next, 0)).toBe("project.iteration.stage.prepare")
   })
-  it("function -> StageList.", () => {
-    const stageList = StageList()
+  it("function -> getSteps.", () => {
+    const steps = getSteps()
 
-    expect(stageList.list).toBeInstanceOf(Array)
-    expect(stageList.list.length).toBe(6)
+    expect(steps).toBeInstanceOf(Array)
+    expect(steps.length).toBe(6)
 
-    stageList.list
-      .map(({ value }) => value)
-      .forEach((stage) => {
-        const stageObj = stageList[stage]
-        expect(stageObj).toBeInstanceOf(Object)
-        expect(stageObj.value).toBeDefined()
-        expect(stageObj.label).toBeDefined()
-      })
+    steps.forEach((step) => {
+      expect(step).toBeInstanceOf(Object)
+      expect(step.value).toBeDefined()
+      expect(step.label).toBeDefined()
+    })
   })
   it("function -> transferIteration.", () => {
     const origin = {

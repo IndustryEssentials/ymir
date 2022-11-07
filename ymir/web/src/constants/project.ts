@@ -1,10 +1,10 @@
-import { transferDatasetGroup, transferDataset } from '@/constants/dataset'
-import { format } from '@/utils/date'
+import { transferDatasetGroup, transferDataset } from "@/constants/dataset"
+import { format } from "@/utils/date"
 import { transferIteration } from "./iteration"
 
 export const tabs = [
-  { tab: 'project.tab.set.title', key: 'dataset', },
-  { tab: 'project.tab.model.title', key: 'model', },
+  { tab: "project.tab.set.title", key: "dataset" },
+  { tab: "project.tab.model.title", key: "model" },
 ]
 
 export function transferProject(data: YModels.BackendData) {
@@ -13,20 +13,30 @@ export function transferProject(data: YModels.BackendData) {
     id: data.id,
     name: data.name,
     keywords: data.training_keywords,
-    trainSet: data.training_dataset_group ? transferDatasetGroup(data.training_dataset_group) : undefined,
-    testSet: data.validation_dataset ? transferDataset(data.validation_dataset) : undefined,
-    miningSet: data.mining_dataset ? transferDataset(data.mining_dataset) : undefined,
-    testingSets: data.testing_dataset_ids ? data.testing_dataset_ids.split(',').map(Number) : [],
+    trainSet: data.training_dataset_group
+      ? transferDatasetGroup(data.training_dataset_group)
+      : undefined,
+    testSet: data.validation_dataset
+      ? transferDataset(data.validation_dataset)
+      : undefined,
+    miningSet: data.mining_dataset
+      ? transferDataset(data.mining_dataset)
+      : undefined,
+    testingSets: data.testing_dataset_ids
+      ? data.testing_dataset_ids.split(",").map(Number)
+      : [],
     setCount: data.dataset_count,
     candidateTrainSet: data.candidate_training_dataset_id || 0,
     trainSetVersion: data.initial_training_dataset_id || 0,
     model: data.initial_model_id || 0,
-    modelStage: data.initial_model_id ? [data.initial_model_id, data.initial_model_stage_id] : undefined,
+    modelStage: data.initial_model_id
+      ? [data.initial_model_id, data.initial_model_stage_id]
+      : undefined,
     modelCount: data.model_count,
     miningStrategy: data.mining_strategy,
     chunkSize: data.chunk_size,
     currentIteration: iteration,
-    currentStage: iteration?.currentStage || 0,
+    currentStep: iteration?.currentStep?.name || "",
     round: iteration?.round || 0,
     isExample: data.is_example || false,
     createTime: format(data.create_datetime),

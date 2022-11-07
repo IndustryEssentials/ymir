@@ -22,9 +22,9 @@ export enum MiningStrategy {
   free = 2,
 }
 
-export function getStepLabel(step: STEP, round: number = 0) {
+export function getStepLabel(step: STEP | undefined, round: number = 0) {
   const list = getSteps()
-  const target = list.find((item) => item.value === step)
+  const target = list.find((item) => item.value === (step || STEP.next))
   return `project.iteration.stage.${round ? target?.label : "prepare"}`
 }
 
@@ -35,6 +35,7 @@ type StepObj = {
   act?: string
   react?: string
   state?: number
+  index: number
 }
 
 export const getSteps = (): StepObj[] => {
@@ -49,7 +50,7 @@ export const getSteps = (): StepObj[] => {
   ]
   return list.map((item, index) => {
     const label = glabels(item.label)
-    const ind = index + 1
+    const ind: number = index
     return {
       ...item,
       act: label,
@@ -67,12 +68,13 @@ export function transferIteration(
   if (!data) {
     return
   }
+  const currentStep = transferStep(data?.current_step)
   return {
     id: data.id,
     projectId: data.project_id,
     name: data.name,
     round: data.iteration_round || 0,
-    currentStep: transferStep(data.current_step),
+    currentStep,
     steps: (data.iteration_steps || []).map(transferStep),
     currentStage: data.current_stage || 0,
     testSet: data.validation_dataset_id || 0,
@@ -84,10 +86,15 @@ export function transferIteration(
     model: data.training_output_model_id,
     trainSet: data.previous_training_dataset_id,
     prevIteration: data.previous_iteration || 0,
+    end: !currentStep,
   }
 }
 
-function transferStep(data: YModels.BackendData = {}): YModels.Step {
+function transferStep(data: YModels.BackendData): YModels.Step | undefined {
+  if (!data) {
+    return
+  }
+
   return {
     id: data.id,
     finished: data.is_finished,
@@ -97,6 +104,8 @@ function transferStep(data: YModels.BackendData = {}): YModels.Step {
     state: data.state,
     taskId: data.task_id,
     taskType: data.task_type,
+    resultId: data?.result?.id,
+    resultType: data?.result?.result_type == 1 ? "dataset" : "model",
   }
 }
 

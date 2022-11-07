@@ -207,7 +207,7 @@ const ProjectList = ({ list, query, ...func }) => {
                   {t("project.iteration.current")}:
                 </span>
                 <span className="titleContent emphasis">
-                  {t(getStepLabel(item.currentStep?.name, item.round))}
+                  {t(getStepLabel(item.currentStep, item.round))}
                 </span>
               </span>
             ) : null}

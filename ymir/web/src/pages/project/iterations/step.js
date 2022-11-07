@@ -11,10 +11,10 @@ import { YesIcon } from "@/components/common/Icons"
 import VersionName from "@/components/result/VersionName"
 
 function Step({ step, end = false }) {
-  const result = useSelector(({ dataset, model }) => {
-    const isModel = step.value === STEP.training
-    const res = isModel ? model.model : dataset.dataset
-    return { ...res[step.result] } || {}
+  const result = useSelector((state) => {
+    const res = step.resultType ? state[step.resultType][step.resultType] : {}
+    console.log("res[step.resultId]:", res[step.resultId])
+    return res[step.resultId] || {}
   })
   const [state, setState] = useState(-1)
 

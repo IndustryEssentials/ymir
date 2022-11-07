@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from "react"
 import { Row, Col } from "antd"
 import { useSelector } from "umi"
 
-import { getSteps } from "@/constants/iteration"
+import { getSteps, STEP } from "@/constants/iteration"
 import { templateString } from "@/utils/string"
 import useFetch from "@/hooks/useFetch"
 
@@ -11,57 +11,51 @@ import StepAction from "./stepAction"
 import s from "./iteration.less"
 
 function Iteration({ project, fresh = () => {} }) {
-  const iteration = useSelector(
-    ({ iteration }) => iteration.iteration[project.currentIteration?.id] || {}
-  )
+  const [iteration, setIteration] = useState({})
   const [_, getIteration] = useFetch("iteration/getIteration", {})
   const [steps, setSteps] = useState([])
-  const [prevIteration, getPrevIteration] = useFetch(
-    "iteration/getIteration",
-    {}
-  )
   const [createResult, create] = useFetch("iteration/createIteration")
   const [_b, bind] = useFetch("iteration/bindStep")
   const [_n, next] = useFetch("iteration/nextStep")
   const [_k, skip] = useFetch("iteration/skipStep")
 
   useEffect(() => {
-    if ((project.id && project.currentIteration) || iteration?.needReload) {
-      getIteration({
-        pid: project.id,
-        id: project.currentIteration?.id,
-        more: true,
-      })
+    if (project.id && project.currentIteration) {
+      setIteration(project.currentIteration)
     }
-  }, [project.currentIteration, iteration?.needReload])
-
-  useEffect(
-    () =>
-      iteration.prevIteration &&
-      getPrevIteration({
-        pid: project.id,
-        id: iteration.prevIteration,
-      }),
-    [iteration]
-  )
+  }, [
+    project?.currentIteration,
+    iteration?.needReload,
+    project?.currentIteration?.currentStep,
+  ])
 
   useEffect(() => {
     iteration.id && generateSteps()
-  }, [iteration, prevIteration])
+  }, [iteration])
 
-  useEffect(() => createResult && fresh(), [createResult])
+  useEffect(() => {
+    ;(createResult || _b || _n || _k) && fresh()
+    console.log("createResult, _b, _n, _k:", createResult, _b, _n, _k)
+  }, [createResult, _b, _n, _k])
 
   const callback = useCallback(iterationHandle, [iteration])
+
+  const fetchIteration = () =>
+    getIteration({
+      pid: project.id,
+      id: project.currentIteration?.id,
+      more: true,
+    })
 
   function generateSteps() {
     const list = getSteps()
     const steps = list.map((step, index) => {
       const remoteStep = iteration.steps[index] || {}
-      const current = iteration.currentStep.name
+      const current = iteration?.currentStep?.name || STEP.next
       return {
         ...step,
         ...remoteStep,
-        index: index + 1,
+        index,
         current,
       }
     })
@@ -110,8 +104,7 @@ function Iteration({ project, fresh = () => {} }) {
       <Row style={{ justifyContent: "flex-end" }}>
         {steps.map((step) => (
           <Col key={step.value} flex={step.next ? 1 : null}>
-            {console.log("steps:", steps)}
-            <Step step={step} end={!step.next} />
+            <Step step={step} end={step.end} />
           </Col>
         ))}
       </Row>
@@ -120,7 +113,6 @@ function Iteration({ project, fresh = () => {} }) {
           steps={steps}
           iteration={iteration}
           project={project}
-          prevIteration={prevIteration}
           callback={callback}
         />
       </div>

@@ -44,7 +44,7 @@ function Mining({
   const pid = Number(pageParams.id)
   const history = useHistory()
   const location = useLocation()
-  const { mid, image, iterationId, currentStage, outputKey } = query
+  const { mid, image, topK } = query
   const stage = mid
     ? Array.isArray(mid)
       ? mid
@@ -190,7 +190,7 @@ function Mining({
     modelStage: stage,
     image: image ? parseInt(image) : undefined,
     datasetId: did ? did : undefined,
-    topk: 0,
+    topk: topK || 0,
     gpu_count: 0,
   }
   return (

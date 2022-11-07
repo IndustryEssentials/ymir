@@ -13,71 +13,63 @@ import NextIteration from "./nextIteration"
 
 const Action = (Comp, props = {}) => <Comp {...props} />
 
-const StepAction = ({
-  steps,
-  iteration,
-  project,
-  prevIteration,
-  callback = () => {},
-}) => {
+const StepAction = ({ steps, iteration, callback = () => {} }) => {
   const actionPanelExpand = useSelector(
     ({ iteration }) => iteration.actionPanelExpand
   )
   const [currentContent, setCurrentContent] = useState(null)
   const [CurrentAction, setCurrentAction] = useState(null)
-  const result = useSelector(({ dataset, model }) => {
-    const isModel = currentContent?.value === STEP.training
-    const res = isModel ? model.model : dataset.dataset
-    return res[currentContent?.result] || {}
+  const result = useSelector((state) => {
+    const res = currentContent?.resultType
+      ? state[currentContent.resultType][currentContent.resultType]
+      : {}
+    return res[currentContent?.resultId] || {}
   })
   const [state, setState] = useState(-1)
 
   const comps = {
     [STEP.prepareMining]: {
       comp: Fusion,
-      query: {
-        did: project.miningSet?.id,
-        strategy: project.miningStrategy,
-        chunk: project.chunkSize || undefined,
-      },
+      query: (settings = {}) => ({
+        did: settings.mining_dataset_id,
+        strategy: settings.mining_strategy,
+        chunk: settings.chunk_size,
+      }),
     },
     [STEP.mining]: {
       comp: Mining,
-      query: {
-        did: iteration.miningSet,
-        mid: prevIteration.id
-          ? [prevIteration.model, null]
-          : project.modelStage,
-      },
+      query: (settings = {}) => ({
+        did: settings.dataset_id,
+        mid: [settings.model_id, null],
+        topK: settings.top_k,
+      }),
     },
     [STEP.labelling]: {
       comp: Label,
-      query: {
-        did: iteration.miningResult,
-      },
+      query: (settings = {}) => ({
+        did: settings.dataset_id,
+      }),
     },
     [STEP.merging]: {
       comp: Merge,
-      query: {
-        did: prevIteration.trainUpdateSet || project.trainSetVersion,
-        mid: iteration.labelSet ? [iteration.labelSet] : undefined,
-      },
+      query: (settings = {}) => ({
+        did: settings.training_dataset_id,
+        mid: settings.dataset_id ? [settings.dataset_id] : undefined,
+      }),
     },
     [STEP.training]: {
       comp: Training,
-      query: {
-        did: iteration.trainUpdateSet,
-        test: iteration.testSet,
-      },
+      query: (settings = {}) => ({
+        did: settings.dataset_id,
+        test: settings.validation_dataset_id,
+      }),
     },
     [STEP.next]: {
       comp: NextIteration,
-      query: {},
     },
   }
   const fixedQuery = {
     iterationId: iteration.id,
-    currentStep: iteration.currentStep.name,
     from: "iteration",
   }
 
@@ -96,13 +88,12 @@ const StepAction = ({
         bottom,
         step: currentContent,
         hidden: state >= 0,
-        query: { ...fixedQuery, ...currentContent.query },
+        query: { ...fixedQuery, ...(currentContent.query || {}) },
         ok,
       }
-      console.log("props:", props)
+      console.log("currentContent:", currentContent, props)
       setCurrentAction(Action(currentContent.comp, props))
     }
-    console.log("currentContent:", currentContent, state)
   }, [currentContent, state])
 
   useEffect(() => {
@@ -117,12 +108,24 @@ const StepAction = ({
       return
     }
     const targetStep = steps.find(
-      ({ value }) => value === iteration.currentStep.name
+      ({ value }) => value === (iteration?.currentStep?.name || STEP.next)
     )
-    setCurrentContent({
-      ...targetStep,
-      ...comps[iteration.currentStep.name],
-    })
+    console.log("iteration:", iteration, targetStep)
+    if (!iteration.end) {
+      const targetComps = comps[iteration.currentStep.name]
+      const query = targetComps.query(targetStep.preSetting)
+      setCurrentContent({
+        ...targetStep,
+        ...targetComps,
+        query,
+      })
+    } else {
+      setCurrentContent({
+        ...comps[STEP.next],
+        ...targetStep,
+        current: STEP.next,
+      })
+    }
   }, [steps, iteration])
 
   const react = () => {
