@@ -54,13 +54,15 @@ class Iteration(Base):
         uselist=True,
         viewonly=True,
     )
-    _previous_iteration = relationship(
-        "Iteration",
-        primaryjoin="foreign(Iteration.previous_iteration)==Iteration.id",
-        remote_side=[id],
-        uselist=False,
-        viewonly=True,
-    )
+
+    @property
+    def current_step(self) -> Optional[IterationStep]:
+        """
+        list all the remaining steps in current iteration and return the first one when possible
+        if no remaining steps exist, current iteration should have finished
+        """
+        remaining_steps = sorted(filter(lambda i: not i.is_finished, self.iteration_steps), key=lambda i: i.id)
+        return remaining_steps[0] if remaining_steps else None
 
     @property
     def referenced_dataset_ids(self) -> List[int]:
@@ -76,19 +78,3 @@ class Iteration(Base):
     @property
     def referenced_model_ids(self) -> List[int]:
         return [self.training_output_model_id] if self.training_output_model_id else []
-
-    @property
-    def current_step(self) -> Optional[IterationStep]:
-        """
-        list all the remaining steps in current iteration and return the first one when possible
-        if no remaining steps exist, current iteration should have finished
-        """
-        remaining_steps = sorted(filter(lambda i: not i.is_finished, self.iteration_steps), key=lambda i: i.id)
-        return remaining_steps[0] if remaining_steps else None
-
-    @property
-    def previous_steps(self) -> List[IterationStep]:
-        if self._previous_iteration:
-            return self._previous_iteration.iteration_steps
-        else:
-            return []

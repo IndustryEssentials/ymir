@@ -213,6 +213,7 @@ def finish_iteration_step(
     step_id: int = Path(...),
     current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Any:
+    # make sure iteration belongs to user
     iteration = crud.iteration.get_by_user_and_id(db, user_id=current_user.id, id=iteration_id)
     if not iteration:
         raise IterationNotFound()
@@ -224,11 +225,13 @@ def finish_iteration_step(
 
     try:
         step_result = crud.iteration_step.get_result(db, id=step_id)
-        logger.info("[finish step] result from current step: %s", step_result)
         if step_result:
             next_step = crud.iteration_step.get_next_step(db, id=step_id)
             if next_step:
+                logger.info("[finish step] update next step presetting with current step result: %s", step_result)
                 crud.iteration_step.update_presetting(db, next_step.id, step_result)
+        logger.info("[finish step] update current step presetting with task parameter")
+        crud.iteration_step.update_presetting(db, step_id, step.task.task_parameters)
         step = crud.iteration_step.finish(db, id=step_id)
     except StepNotFound:
         raise IterationStepNotFound()
