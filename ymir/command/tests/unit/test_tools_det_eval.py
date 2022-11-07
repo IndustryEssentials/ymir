@@ -131,6 +131,7 @@ class TestToolsDetEval(unittest.TestCase):
                         }],
                         'img_class_ids': [0, 1, 2],
                         'polygons': [],
+                        'masks': [],
                     },
                     'a1': {
                         'boxes': [{
@@ -147,6 +148,7 @@ class TestToolsDetEval(unittest.TestCase):
                         }],
                         'img_class_ids': [2],
                         'polygons': [],
+                        'masks': [],
                     },
                 },
                 'eval_class_ids': [0, 1, 2],
@@ -216,6 +218,7 @@ class TestToolsDetEval(unittest.TestCase):
                         }],
                         'img_class_ids': [0, 1, 2],
                         'polygons': [],
+                        'masks': [],
                     },
                     'a1': {
                         'boxes': [{
@@ -232,6 +235,7 @@ class TestToolsDetEval(unittest.TestCase):
                         }],
                         'img_class_ids': [2],
                         'polygons': [],
+                        'masks': [],
                     },
                 },
                 'task_class_ids': [0, 1, 2],
@@ -331,6 +335,7 @@ class TestToolsDetEval(unittest.TestCase):
                         }],
                         'img_class_ids': [0, 1, 2],
                         'polygons': [],
+                        'masks': [],
                     },
                     'a1': {
                         'boxes': [{
@@ -353,6 +358,7 @@ class TestToolsDetEval(unittest.TestCase):
                         }],
                         'img_class_ids': [2],
                         'polygons': [],
+                        'masks': [],
                     },
                 },
                 'task_class_ids': [0, 1, 2],
@@ -385,6 +391,7 @@ class TestToolsDetEval(unittest.TestCase):
                         }],
                         'img_class_ids': [2],
                         'polygons': [],
+                        'masks': [],
                     },
                     'a0': {
                         'boxes': [{
@@ -475,6 +482,7 @@ class TestToolsDetEval(unittest.TestCase):
                         }],
                         'img_class_ids': [0, 1, 2],
                         'polygons': [],
+                        'masks': [],
                     }
                 },
                 'task_id': 'a',
