@@ -257,7 +257,8 @@ def _import_annotations_seg_mask(map_hashed_filename: Dict[str, str], mir_annota
         new_mask_image: Image.Image = Image.fromarray(np_mask)
         with io.BytesIO() as output:
             new_mask_image.save(output, format="PNG")
-            image_annotations.image_annotations[asset_hash].mask.semantic_mask = output.getvalue()
+            image_annotations.image_annotations[asset_hash].masks.append(
+                mirpb.MaskAnnotation(semantic_mask=output.getvalue()))
         image_annotations.image_annotations[asset_hash].img_class_ids[:] = list(img_class_ids)
     if expected_color:
         logging.info(f"mapped color in labelmap.txt: {expected_color}")
