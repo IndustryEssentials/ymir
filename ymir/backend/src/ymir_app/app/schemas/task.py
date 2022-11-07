@@ -190,14 +190,12 @@ def fillin_dataset_hashes(datasets_getter: Callable, typed_datasets: List[TypedD
 
 
 def fillin_model_hashes(model_stages_getter: Callable, typed_models: List[TypedModel]) -> None:
-    pass
-
     if not typed_models:
         return
     model_stages_in_db = model_stages_getter(ids=[i.stage_id for i in typed_models if i.stage_id])
     data = {stage.id: (stage.model.hash, stage.name) for stage in model_stages_in_db}  # type: ignore
     for model in typed_models:
-        model.hash, model.stage_name = data[model.id]
+        model.hash, model.stage_name = data[model.stage_id]
 
 
 def fillin_label_ids(labels_getter: Callable, typed_labels: List[TypedLabel]) -> None:

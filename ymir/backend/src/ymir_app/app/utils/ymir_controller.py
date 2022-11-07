@@ -10,7 +10,7 @@ from google.protobuf.json_format import MessageToDict
 from google.protobuf.text_format import MessageToString
 
 from app.config import settings
-from app.constants.state import TaskType, AnnotationType
+from app.constants.state import TaskType, AnnotationType, DatasetType
 from app.schemas.common import ImportStrategy, MergeStrategy
 from app.schemas.task import TrainingDatasetsStrategy
 from common_utils.labels import UserLabels, userlabels_to_proto
@@ -66,7 +66,7 @@ ANNOTATION_TYPE_MAPPING = {
 def gen_typed_datasets(typed_datasets: List[Dict]) -> Generator:
     for typed_dataset in typed_datasets:
         dataset_with_type = mirsvrpb.TaskReqTraining.TrainingDatasetType()
-        dataset_with_type.dataset_type = typed_dataset["type"]
+        dataset_with_type.dataset_type = typed_dataset.get("type") or int(DatasetType.training)
         dataset_with_type.dataset_id = typed_dataset["hash"]
         yield dataset_with_type
 
@@ -119,7 +119,8 @@ class ControllerRequest:
     def prepare_training(self, request: mirsvrpb.GeneralReq, args: Dict) -> mirsvrpb.GeneralReq:
         request.in_class_ids[:] = [label["class_id"] for label in args["typed_labels"]]
         train_task_req = mirsvrpb.TaskReqTraining()
-        train_task_req.in_dataset_types[:] = list(gen_typed_datasets(args["typed_datasets"]))
+        for dataset in gen_typed_datasets(args["typed_datasets"]):
+            train_task_req.in_dataset_types.append(dataset)
 
         if args.get("preprocess"):
             train_task_req.preprocess_config = args["preprocess"]

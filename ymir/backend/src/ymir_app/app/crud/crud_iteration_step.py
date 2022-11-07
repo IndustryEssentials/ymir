@@ -20,7 +20,7 @@ class CRUDIterationStep(CRUDBase[IterationStep, IterationStepCreate, IterationSt
             raise StepNotFound()
         steps_in_same_iteration = self.get_multi_by_iteration(db, iteration_id=step.iteration_id)
         current_idx = [i.id for i in steps_in_same_iteration].index(step.id)
-        if current_idx >= len(steps_in_same_iteration):
+        if current_idx >= len(steps_in_same_iteration) - 1:
             return None
         return steps_in_same_iteration[current_idx + 1]
 
