@@ -45,14 +45,20 @@ class IterationStepTemplate:
     def prepare_mining_initializer(
         self, name: str, project: models.Project, previous_iteration: Optional[models.Iteration]
     ) -> Dict:
-        return {"mining_dataset_id": project.mining_dataset_id}
+        presetting = {"mining_dataset_id": project.mining_dataset_id}
+        if not previous_iteration:
+            return presetting
+        sticky_parameters = ["mining_strategy", "exclude_last_result", "sampling_count"]
+        prior_presetting = self.get_prior_presetting(previous_iteration, sticky_parameters)
+        presetting.update(prior_presetting)
+        return presetting
 
     def mining_initializer(
         self, name: str, project: models.Project, previous_iteration: Optional[models.Iteration]
     ) -> Dict:
         if not previous_iteration:
             return {"model_id": project.initial_model_id}
-        sticky_parameters = ["top_k", "generate_annotations"]
+        sticky_parameters = ["top_k", "generate_annotations", "docker_image_id", "docker_image_config"]
         presetting = self.get_prior_presetting(previous_iteration, sticky_parameters)
         try:
             last_training_step = self.get_step("training", previous_iteration)
@@ -83,7 +89,7 @@ class IterationStepTemplate:
         presetting = {"validation_dataset_id": project.validation_dataset_id}
         if not previous_iteration:
             return presetting
-        sticky_parameters = ["docker_image_id"]
+        sticky_parameters = ["docker_image_id", "docker_image_config"]
         prior_presetting = self.get_prior_presetting(previous_iteration, sticky_parameters)
         presetting.update(prior_presetting)
         return presetting
