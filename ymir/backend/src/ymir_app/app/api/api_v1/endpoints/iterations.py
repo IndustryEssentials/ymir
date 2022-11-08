@@ -230,8 +230,9 @@ def finish_iteration_step(
             if next_step:
                 logger.info("[finish step] update next step presetting with current step result: %s", step_result)
                 crud.iteration_step.update_presetting(db, next_step.id, step_result)
-        logger.info("[finish step] update current step presetting with task parameter")
-        crud.iteration_step.update_presetting(db, step_id, step.task.task_parameters)
+        if step.task:
+            logger.info("[finish step] update current step presetting with task parameter")
+            crud.iteration_step.update_presetting(db, step_id, step.task.task_parameters)
         step = crud.iteration_step.finish(db, id=step_id)
     except StepNotFound:
         raise IterationStepNotFound()
