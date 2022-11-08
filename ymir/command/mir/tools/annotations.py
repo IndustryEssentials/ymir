@@ -143,8 +143,8 @@ def _import_annotations_from_dir(map_hashed_filename: Dict[str, str], mir_annota
                                  annotations_dir_path: str, class_type_manager: class_ids.UserLabels,
                                  unknown_types_strategy: UnknownTypesStrategy, accu_new_class_names: Dict[str, int],
                                  image_annotations: mirpb.SingleTaskAnnotations, anno_type: "mirpb.AnnoType.V") -> None:
-    # temp solution: set to seg type if SegmentationClass and labelmap.txt exist.
-    # will be removed once seg type can be passed via web.
+    # todo: temp solution: set to seg type if SegmentationClass and labelmap.txt exist.
+    #   will be removed once seg type can be passed via web.
     if (os.path.isdir(os.path.join(annotations_dir_path, "SegmentationClass"))
             and os.path.isfile(os.path.join(annotations_dir_path, "labelmap.txt"))):
         anno_type = mirpb.AnnoType.AT_SEG_MASK

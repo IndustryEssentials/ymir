@@ -66,7 +66,8 @@ def parse_asset_format(asset_format_str: str) -> "mirpb.AssetFormat.V":
     return _asset_dict.get(asset_format_str.lower(), mirpb.AssetFormat.AF_UNKNOWN)
 
 
-def parse_export_type(type_str: str, anno_type: mirpb.AnnoType) -> Tuple["mirpb.AnnoFormat.V", "mirpb.AssetFormat.V"]:
+def parse_export_type(type_str: str,
+                      anno_type: "mirpb.AnnoType.V") -> Tuple["mirpb.AnnoFormat.V", "mirpb.AssetFormat.V"]:
     if not type_str:
         return (_anno_type_to_default_anno_format(anno_type), mirpb.AssetFormat.AF_RAW)
 

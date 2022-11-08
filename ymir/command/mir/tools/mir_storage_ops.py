@@ -210,6 +210,16 @@ class MirStorageOps():
         if not task.task_id:
             raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS, error_message='empty task id')
 
+        # todo: tmp solution: gt and pred should have the same anno type
+        #   will be updated if todo in annotations.py updated
+        mir_annotations: mirpb.MirAnnotations = mir_datas[mirpb.MirStorage.MIR_ANNOTATIONS]
+        if ((mir_annotations.ground_truth.type == mirpb.AnnoType.AT_UNKNOWN
+            and mir_annotations.ground_truth.image_annotations)
+            or (mir_annotations.prediction.type == mirpb.AnnoType.AT_UNKNOWN
+            and mir_annotations.prediction.image_annotations)):
+            raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ANNO_TYPE,
+                                  error_message='Unknown ground truth or prediction annotation type')
+
         if not evaluate_config:
             evaluate_config = create_evaluate_config()
 

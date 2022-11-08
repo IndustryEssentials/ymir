@@ -85,6 +85,7 @@ class TestCmdTraining(unittest.TestCase):
         annotations_dict = {
             "prediction": {
                 'task_id': 'a',
+                'type': mirpb.AnnoType.AT_DET_BOX,
                 "image_annotations": {
                     "430df22960b0f369318705800139fcc8ec38a3e4": {
                         "boxes": [{
