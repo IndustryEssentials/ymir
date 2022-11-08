@@ -15,7 +15,7 @@ from app.api.errors.errors import (
 )
 from app.crud.crud_iteration_step import StepNotFound
 from app.libs.iterations import calculate_mining_progress
-from app.libs.iteration_steps import initialize_steps
+from app.libs.iteration_steps import initialize_steps, backfill_iteration_slots
 
 from common_utils.labels import UserLabels
 
@@ -224,8 +224,9 @@ def finish_iteration_step(
         raise IterationStepHasFinished()
 
     try:
-        step_result = crud.iteration_step.get_result(db, id=step_id)
+        step_result = crud.iteration_step.get_ready_result(db, id=step_id)
         if step_result:
+            backfill_iteration_slots(db, step.iteration_id, step.name, step.result.id)  # type: ignore
             next_step = crud.iteration_step.get_next_step(db, id=step_id)
             if next_step:
                 logger.info("[finish step] update next step presetting with current step result: %s", step_result)

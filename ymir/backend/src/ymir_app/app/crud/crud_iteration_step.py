@@ -24,18 +24,18 @@ class CRUDIterationStep(CRUDBase[IterationStep, IterationStepCreate, IterationSt
             return None
         return steps_in_same_iteration[current_idx + 1]
 
-    def get_result(self, db: Session, id: int) -> Optional[Dict]:
+    def get_ready_result(self, db: Session, id: int) -> Dict:
         step = self.get(db, id)
         if not step:
             raise StepNotFound()
         if step.state != ResultState.ready:
-            return None
-        result = {}
+            return {}
         if step.result_dataset:
-            result["dataset_id"] = step.result_dataset.id
+            return {"dataset_id": step.result_dataset.id}
         if step.result_model:
-            result["model_id"] = step.result_model.id
-        return result or None
+            return {"model_id": step.result_model.id}
+        else:
+            return {}
 
     def bind_task(self, db: Session, id: int, task_id: int) -> IterationStep:
         """

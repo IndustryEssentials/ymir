@@ -2,11 +2,19 @@ import json
 from dataclasses import dataclass
 from typing import Dict, List, Optional
 
-from fastapi.logger import logger
 from sqlalchemy.orm import Session
 
 from app import crud, schemas, models
 from app.constants.state import IterationStepTemplates
+
+
+STEP_TO_ITERATION_SLOT_MAPPING = {
+    "prepare_mining": "mining_input_dataset_id",
+    "mining": "mining_output_dataset_id",
+    "label": "label_output_dataset_id",
+    "prepare_training": "training_input_dataset_id",
+    "training": "training_output_model_id",
+}
 
 
 @dataclass
@@ -60,12 +68,9 @@ class IterationStepTemplate:
             return {"model_id": project.initial_model_id}
         sticky_parameters = ["top_k", "generate_annotations", "docker_image_id", "docker_image_config"]
         presetting = self.get_prior_presetting(previous_iteration, sticky_parameters)
-        try:
-            last_training_step = self.get_step("training", previous_iteration)
-            presetting["model_id"] = last_training_step.result_model.id  # type: ignore
-        except Exception:
-            logger.exception("failed to get model from previous iteration, skip")
-            pass
+
+        last_training_step = self.get_step("training", previous_iteration)
+        presetting["model_id"] = last_training_step.result_model.id  # type: ignore
         return presetting
 
     def label_initializer(self, name: str, project: models.Project, previous_iteration: models.Iteration) -> Dict:
@@ -82,8 +87,8 @@ class IterationStepTemplate:
     ) -> Dict:
         if not previous_iteration:
             return {"training_dataset_id": project.initial_training_dataset_id}
-        sticky_parameters = ["training_dataset_id"]
-        return self.get_prior_presetting(previous_iteration, sticky_parameters)
+        last_prepare_training_step = self.get_step("prepare_training", previous_iteration)
+        return {"training_dataset_id": last_prepare_training_step.result_dataset.id}  # type: ignore
 
     def training_initializer(self, name: str, project: models.Project, previous_iteration: models.Iteration) -> Dict:
         presetting = {"validation_dataset_id": project.validation_dataset_id}
@@ -122,3 +127,11 @@ def initialize_steps(
         for step_template in IterationStepTemplates
     ]
     return crud.iteration_step.batch_create(db, objs_in=steps)
+
+
+def backfill_iteration_slots(db: Session, iteration_id: int, step_name: str, result_id: int) -> None:
+    """
+    backfill iteration step result to iteration table for compatibility
+    """
+    updates = {STEP_TO_ITERATION_SLOT_MAPPING[step_name]: result_id}
+    crud.iteration.update_iteration(db, iteration_id=iteration_id, iteration_update=schemas.IterationUpdate(**updates))
