@@ -32,9 +32,8 @@ function Panel({ list = [], customColumns, title = "", type = "dataset" }) {
 
   useEffect(() => {
     const labelCol = {
-      title: "iteration label",
       dataIndex: "label",
-      render: (label) => t(label),
+      render: (label) => (label ? t(label) : null),
     }
     const cols = type === "dataset" ? getDatasetColumns() : getModelColumns()
     setColumns([labelCol, ...cols])

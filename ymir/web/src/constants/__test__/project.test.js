@@ -1,10 +1,10 @@
-import { format } from '@/utils/date'
-import { transferProject, } from '../project'
+import { format } from "@/utils/date"
+import { transferProject } from "../project"
 
-jest.mock('umi', () => {
+jest.mock("umi", () => {
   return {
     getLocale() {
-      return 'zh-CN'
+      return "zh-CN"
     },
   }
 })
@@ -14,58 +14,55 @@ const createTime = "2022-03-10T03:39:09"
 describe("constants: project", () => {
   it("function -> transferProject.", () => {
     const origin = {
-      "name": "project002",
-      "description": "project002 desc",
-      "mining_strategy": 0,
-      "chunk_size": 0,
-      "training_type": 1,
-      "iteration_target": null,
-      "map_target": 88,
-      "training_dataset_count_target": null,
-      "is_deleted": false,
-      "create_datetime": createTime,
-      "update_datetime": createTime,
-      "id": 1,
-      "training_dataset_group_id": 1,
-      "mining_dataset_id": null,
-      "validation_dataset_id": null,
-      "initial_model_id": null,
-      "initial_training_dataset_id": 1,
-      "current_iteration": null,
-      "training_dataset_group": {
-        "name": "project002_training_dataset",
-        "project_id": 1,
-        "user_id": 3,
-        "description": null,
-        "is_deleted": false,
-        "create_datetime": createTime,
-        "update_datetime": createTime,
-        "id": 1,
+      name: "project002",
+      description: "project002 desc",
+      mining_strategy: 0,
+      chunk_size: 0,
+      training_type: 1,
+      iteration_target: null,
+      map_target: 88,
+      training_dataset_count_target: null,
+      is_deleted: false,
+      create_datetime: createTime,
+      update_datetime: createTime,
+      id: 1,
+      training_dataset_group_id: 1,
+      mining_dataset_id: null,
+      validation_dataset_id: null,
+      initial_model_id: null,
+      initial_training_dataset_id: 1,
+      current_iteration: null,
+      training_dataset_group: {
+        name: "project002_training_dataset",
+        project_id: 1,
+        user_id: 3,
+        description: null,
+        is_deleted: false,
+        create_datetime: createTime,
+        update_datetime: createTime,
+        id: 1,
       },
-      "validation_dataset": null,
-      "mining_dataset": null,
-      "testing_datasets": [],
-      "dataset_count": 6,
-      "model_count": 0,
-      "training_keywords": [
-        "cat",
-        "person"
-      ],
-      "current_iteration_id": null,
-      "enable_iteration": true,
-      "total_asset_count": 0,
-      "running_task_count": 0,
-      "total_task_count": 0,
+      validation_dataset: null,
+      mining_dataset: null,
+      testing_datasets: [],
+      dataset_count: 6,
+      model_count: 0,
+      training_keywords: ["cat", "person"],
+      current_iteration_id: null,
+      enable_iteration: true,
+      total_asset_count: 0,
+      running_task_count: 0,
+      total_task_count: 0,
     }
 
     const expected = {
       id: 1,
-      name: 'project002',
-      keywords: ['cat', 'person'],
+      name: "project002",
+      keywords: ["cat", "person"],
       trainSet: {
         id: 1,
         projectId: 1,
-        name: 'project002_training_dataset',
+        name: "project002_training_dataset",
         createTime: format(createTime),
         versions: [],
       },
@@ -80,12 +77,11 @@ describe("constants: project", () => {
       miningStrategy: 0,
       chunkSize: 0,
       currentIteration: undefined,
-      currentStage: 0,
       round: 0,
       hiddenDatasets: [],
       hiddenModels: [],
       createTime: format(createTime),
-      description: 'project002 desc',
+      description: "project002 desc",
       type: 1,
       isExample: false,
       updateTime: format(createTime),
@@ -96,6 +92,5 @@ describe("constants: project", () => {
       candidateTrainSet: 0,
     }
     expect(transferProject(origin)).toEqual(expected)
-
   })
 })

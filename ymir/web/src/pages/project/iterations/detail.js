@@ -8,7 +8,7 @@ import { STEP, getSteps } from "@/constants/iteration"
 
 import s from "./index.less"
 
-const filterExsit = (list) => list.filter((notEmpty) => notEmpty)
+const filterExsit = (list) => list.filter(({ id: notEmpty }) => notEmpty)
 
 function Detail({ project = {} }) {
   const [settings, setSettings] = useState([])
@@ -30,11 +30,11 @@ function Detail({ project = {} }) {
     const steps = getSteps()
     const slist = [
       {
-        label: "iteration.list.label.mining",
+        label: "project.mining_set",
         id: wholeMiningSet || project.miningSet?.id,
       },
       {
-        label: "iteration.list.label.test",
+        label: "project.test_set",
         id: testSet || project.testSet?.id,
       },
     ]
@@ -44,12 +44,11 @@ function Detail({ project = {} }) {
         return { label: step.act, id: istep.resultId }
       })
     )
-    const mlist = filterExsit([
-      { label: "iteration.list.label.model", id: iteration.steps[4].resultId },
-    ])
+    const mlist = filterExsit([{ label: "", id: iteration.steps[4].resultId }])
     setSettings(filterExsit(slist))
     setIntermediations(filterExsit(ilist))
     setModels(mlist)
+    console.log("mlist:", mlist)
   }, [iteration])
 
   return (

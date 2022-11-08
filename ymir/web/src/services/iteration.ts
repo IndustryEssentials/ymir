@@ -67,6 +67,7 @@ export function createIteration({
 }
 
 /**
+ * @deprecated
  * @description update iteration stage
  * @export
  * @param {number} id

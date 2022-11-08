@@ -28,14 +28,7 @@ import SubmitButtons from "./submitButtons"
 import Dataset from "@/components/form/option/Dataset"
 
 function Fusion({ query = {}, hidden, ok = () => {}, bottom }) {
-  const {
-    did,
-    iterationId,
-    currentStage,
-    chunk,
-    strategy = "",
-    merging,
-  } = query
+  const { did, iterationId, chunk, strategy = "", merging } = query
 
   const pageParams = useParams()
   const pid = Number(pageParams.id)

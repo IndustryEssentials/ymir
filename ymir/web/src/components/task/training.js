@@ -60,7 +60,7 @@ function Train({
   const pid = Number(pageParams.id)
   const history = useHistory()
   const location = useLocation()
-  const { mid, image, iterationId, outputKey, currentStage, test, from } = query
+  const { mid, image, test, from } = query
   const stage = mid
     ? Array.isArray(mid)
       ? mid

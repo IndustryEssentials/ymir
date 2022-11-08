@@ -24,7 +24,7 @@ function Merge({ query = {}, hidden, ok = () => {}, bottom }) {
   const [mergeResult, merge] = useFetch("task/merge")
   const pageParams = useParams()
   const pid = Number(pageParams.id)
-  const { did, mid, iterationId, currentStage, outputKey } = query
+  const { did, mid, iterationId } = query
   const history = useHistory()
   const [form] = useForm()
   const [group, setGroup] = useState()

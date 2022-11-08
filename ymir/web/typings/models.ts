@@ -208,16 +208,9 @@ declare namespace YModels {
     round: number
     currentStep?: Step
     steps: Step[]
-    currentStage: number
-    testSet?: DatasetId
-    trainSet?: DatasetId
-    trainUpdateSet: DatasetId
+    testSet: DatasetId
     wholeMiningSet: DatasetId
-    miningSet?: DatasetId
-    miningResult?: DatasetId
-    labelSet?: DatasetId
-    model?: number
-    prevIteration: number
+    prevIteration?: number
     end: boolean
   }
 

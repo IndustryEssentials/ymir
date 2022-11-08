@@ -36,7 +36,6 @@ const NormalReducer =
 const reducers = {
   UPDATE_ITERATIONS: NormalReducer("iterations"),
   UPDATE_ITERATION: NormalReducer("iteration"),
-  UPDATE_CURRENT_STAGE_RESULT: NormalReducer("currentStageResult"),
   UPDATE_PREPARE_STAGES_RESULT: NormalReducer("prepareStageResult"),
   UPDATE_ACTIONPANELEXPAND: NormalReducer("actionPanelExpand"),
 }
@@ -47,7 +46,6 @@ export default {
     query: initQuery,
     iterations: {},
     iteration: {},
-    currentStageResult: {},
     prepareStagesResult: {},
     actionPanelExpand: true,
   },
@@ -175,13 +173,6 @@ export default {
         })
       }
       return true
-    },
-    *setCurrentStageResult({ payload }, { call, put }) {
-      const result = payload
-      if (result) {
-        yield put({ type: "UPDATE_CURRENT_STAGE_RESULT", payload: result })
-        return result
-      }
     },
     *createIteration({ payload }, { call, put, select }) {
       const { projectId } = payload

@@ -33,7 +33,7 @@ function Label({
 }) {
   const pageParams = useParams()
   const pid = Number(pageParams.id)
-  const { iterationId, outputKey, currentStage } = query
+  const { iterationId } = query
   const did = Number(query.did)
   const history = useHistory()
   const [doc, setDoc] = useState(undefined)
