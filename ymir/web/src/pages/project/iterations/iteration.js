@@ -54,7 +54,7 @@ function Iteration({ project, fresh = () => {} }) {
 
   const getParams = (data = {}) => ({
     id: iteration.id,
-    sid: iteration.currentStep.id,
+    sid: iteration?.currentStep?.id,
     ...data,
   })
 

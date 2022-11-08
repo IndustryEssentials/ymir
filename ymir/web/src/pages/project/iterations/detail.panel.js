@@ -12,7 +12,6 @@ function Panel({ list = [], customColumns, title = "", type = "dataset" }) {
   const rows = useSelector(({ dataset, model }) => {
     const isModel = type !== "dataset"
     const res = isModel ? model.model : dataset.dataset
-    console.log("list:", list)
     return list.length
       ? [
           ...list

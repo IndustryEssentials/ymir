@@ -91,7 +91,6 @@ const StepAction = ({ steps, iteration, callback = () => {} }) => {
         query: { ...fixedQuery, ...(currentContent.query || {}) },
         ok,
       }
-      console.log("currentContent:", currentContent, props)
       setCurrentAction(Action(currentContent.comp, props))
     }
   }, [currentContent, state])
@@ -99,7 +98,6 @@ const StepAction = ({ steps, iteration, callback = () => {} }) => {
   useEffect(() => {
     if (currentContent) {
       const state = result?.id ? result.state : currentContent.state
-      console.log("state:", state)
       setState(Number.isInteger(state) ? state : -1)
     }
   }, [result?.state, currentContent?.state])
@@ -111,7 +109,6 @@ const StepAction = ({ steps, iteration, callback = () => {} }) => {
     const targetStep = steps.find(
       ({ value }) => value === (iteration?.currentStep?.name || STEP.next)
     )
-    console.log("iteration:", iteration, targetStep)
     if (!iteration.end) {
       const targetComps = comps[iteration.currentStep.name]
       const query = targetComps.query(targetStep.preSetting)
@@ -144,7 +141,7 @@ const StepAction = ({ steps, iteration, callback = () => {} }) => {
     })
 
   const ok = (result) => {
-    if (!currentContent.next) {
+    if (currentContent.end) {
       // next iteration
       callback({
         type: "create",

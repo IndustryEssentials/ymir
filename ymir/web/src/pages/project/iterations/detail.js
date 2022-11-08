@@ -26,27 +26,31 @@ function Detail({ project = {} }) {
     if (!project.id) {
       return
     }
-    setSettings(filterExsit([project.miningSet?.id, project.testSet?.id]))
     const { wholeMiningSet, testSet } = iteration || {}
     const steps = getSteps()
     const slist = [
-      { label: "dataset mining", id: wholeMiningSet || project.miningSet?.id },
-      { label: "dataset validation", id: testSet || project.testSet?.id },
+      {
+        label: "iteration.list.label.mining",
+        id: wholeMiningSet || project.miningSet?.id,
+      },
+      {
+        label: "iteration.list.label.test",
+        id: testSet || project.testSet?.id,
+      },
     ]
     const ilist = filterExsit(
       steps.slice(0, 4).map((step) => {
         const istep = iteration.steps.find((st) => st.name === step.value)
-        return { label: `dataset ${step.act}`, id: istep.resultId }
+        return { label: step.act, id: istep.resultId }
       })
     )
     const mlist = filterExsit([
-      { label: `model`, id: iteration.steps[4].resultId },
+      { label: "iteration.list.label.model", id: iteration.steps[4].resultId },
     ])
-    console.log("slist:", slist)
     setSettings(filterExsit(slist))
     setIntermediations(filterExsit(ilist))
     setModels(mlist)
-  }, [iteration, project])
+  }, [iteration])
 
   return (
     <div className={s.detail}>

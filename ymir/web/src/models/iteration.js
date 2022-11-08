@@ -115,13 +115,14 @@ export default {
         [
           ...new Set(
             iterations
-              .map(({ wholeMiningSet, testSet, steps }) => [
-                wholeMiningSet,
-                testSet,
-                ...steps.map((step) =>
+              .map(({ wholeMiningSet, testSet, steps }) => {
+                const stepResults = steps.map((step) =>
                   !isModel || step.resultType === "model" ? step.resultId : null
-                ),
-              ])
+                )
+                return !isModel
+                  ? [wholeMiningSet, testSet, ...stepResults]
+                  : stepResults
+              })
               .flat()
           ),
         ].filter((id) => id)
