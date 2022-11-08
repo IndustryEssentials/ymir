@@ -31,8 +31,8 @@
   <img src="https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/for_training.png" width="200"/>
   <div>&nbsp;</div>
 
-[📘Usage Instruction](https://github.com/IndustryEssentials/ymir/blob/master/README_zh-CN.md#3-gui%E4%BD%BF%E7%94%A8-%E5%85%B8%E5%9E%8B%E6%A8%A1%E5%9E%8B%E7%94%9F%E4%BA%A7%E6%B5%81%E7%A8%8B) |
-[🛠️Installation](https://github.com/IndustryEssentials/ymir/blob/master/README_zh-CN.md#2-%E5%AE%89%E8%A3%85) |
+[📘Usage Instruction](https://github.com/IndustryEssentials/ymir/wiki/Operating-Instructions) |
+[🛠️Installation](README.md#2-installation) |
 [🚀Projects](https://github.com/IndustryEssentials/ymir/projects) | 
 [🤔Issues Report](https://github.com/IndustryEssentials/ymir/issues/new/choose) | 
 [📰Lisence](https://github.com/IndustryEssentials/ymir/blob/master/LICENSE)
@@ -42,7 +42,7 @@
 <div align="center">
   <img src="https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/wechat_code.jpg" width="180"/>
   <img src="https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/contact.jpg" width="400"/>
-
+  
   📫 Feedback on usage issues: contact.viesc@gmail.com / Professional consulting for server equipment: tensor.station@gmail.com
 <div>&nbsp;</div>&nbsp;</div>
 
@@ -62,14 +62,15 @@ If you wish to refer to YMIR in your work, please use the following BibTeX entry
 
 # What's new
 
-Version 2.0.0 updated on 10/21/2022
+Version 2.0.0 updated on 11/08/2022
 
 YMIR platform
-- New dataset/model hiding and restoring functions.
-- support for modifying project training categories before the start of an iteration.
-- addition of model testing module and model inference result comparison function.
-- optimization of code structure.
-- the addition of a model deployment module.
+- A new model performance diagnosis module.
+- A new function for visual evaluation of model inference results.
+- Adding a public algorithm library with a variety of built-in high-precision algorithms.
+- One-click deployment function, supporting the deployment of algorithms to prerequisite certified devices.
+- New operating instruction.
+- Refactory code structure.
 
 Docker
 - Support [yolov5](https://github.com/ultralytics/yolov5)
@@ -81,7 +82,7 @@ Docker
 - Support [demo sample image creation documentation](https://github.com/modelai/ymir-executor-fork/tree/ymir-dev/det-demo-tmi)
 - Support [ymir mirror development extension library](https://github.com/modelai/ymir-executor-sdk)
 
-View more [ymir-executor-fork](https://github.com/modelai/ymir-executor-fork) 
+View more [ymir-executor-fork](https://github.com/modelai/ymir-executor-fork) .
 
 Within the public dockerimage
 - Update yolov5 training image: youdaoyzbx/ymir-executor:ymir1.3.0-yolov5-cu111-tmi
@@ -89,16 +90,26 @@ Within the public dockerimage
 - Update the yolov5 training image to support rv1126 chip deployment: youdaoyzbx/ymir-executor:ymir1.3.0-yolov5-cu111-modelstore
 - Update the training image to support yolov5-v6.2: youdaoyzbx/ymir-executor:ymir1.3.0-yolov5-v6.2-cu111-tmi
 
-More code updates [ymir-dev](https://github.com/modelai/ymir-executor-fork/tree/ymir-dev)
+More code updates [ymir-dev](https://github.com/modelai/ymir-executor-fork/tree/ymir-dev).
+
+# Deployment Prerequisite (optional)
+
+YMIR supports deploying the trained model and public algorithm model directly to the certified device, for more hardware specs, please check [the details](https://i-item.jd.com/10065116628109.html).
+
+<div align="center">
+  <img src="https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/certified_device.PNG" width="500"/>
+  <div>&nbsp;</div>&nbsp;</div>
 
 ## Introduction
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+
 **Catalog**
 
 - [Citations](#citations)
 - [What's New](#whats-new)
+- [Depolyment Prerequisite (optional)](#deployment-prerequisite-optional)
 - [1. Introduction to AI SUITE-YMIR](#1-introduction-to-ai-suite-ymir)
   - [1.1. Main functions](#11-main-functions)
   - [1.2. Apply for trial](#12-apply-for-trial)
@@ -106,7 +117,6 @@ More code updates [ymir-dev](https://github.com/modelai/ymir-executor-fork/tree/
   - [2.1. Environment dependencies](#21-environment-dependencies)
   - [2.2. Installation of YMIR-GUI](#22-installation-of-ymir-gui)
   - [2.3. Installation of label studio (optional)](#23-installation-of-label-studio-optional)
-  - [2.4. Installation of Model Deployment (optional)](#24-installation-of-model-deployment-optional)
 - [3. Use YMIR-GUI: typical model production process](#3-use-ymir-gui-typical-model-production-process)
 - [4. For advanced users: YMIR-CMD (command line) user's guide](#4-for-advanced-users-ymir-cmd-command-line-users-guide)
   - [4.1 Installation](#41-installation)
@@ -125,9 +135,9 @@ More code updates [ymir-dev](https://github.com/modelai/ymir-executor-fork/tree/
 As a streamlined model development product, YMIR(You Mine In Recursion) focuses on the dataset versioning and model iteration in the AI SUITE open-source series.
 
 <div align="center">
-  <img src="https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/processing.png" width="800"/>
+  <img src="https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/processing.png" width="1500"/>
   <div>&nbsp;</div>&nbsp;</div>
-
+  
 AI commercialization is currently reaching a stage of maturity in terms of computing hardwares,  algorithms, etc. The adoption of AI often encounter challenges such as a lack of skilled developers, high development costs and long iteration cycles.
 
 As a platform, YMIR provides an end-to-end AI development system. This platform reduces costs for companies using artificial intelligence and accelerates the adoption of artificial intelligence. YMIR provides ML developers with one-stop services for data processing, model training, and other steps required in the AI development cycle.
@@ -168,7 +178,8 @@ YMIR platform mainly meets the needs of users to produce models at scale, provid
 |Project Management|Model Management|Training Models|Support to select datasets, labels, and adjust training parameters to train models according to requirements, and view the corresponding model results after completion|
 |Project Management|Model Management|Model Validation|Support uploading a single image to check the performance of the model in real images through visualization to verify the accuracy of the model|
 |Tag management|Tag management|Add tags|Support adding primary names and aliases of training tags|
-|Model Deployment|Algorithm Management|Public Algorithms|Support algorithm customization, view public algorithms uploaded by others and add them to my algorithms|
+|Model Deployment|Algorithm Management|Public Algorithm|Support algorithm customization, view public algorithms and try them out, support adding to my algorithms|
+|Model Deployment|Algorithm Management|Public Algorithm|Support publishing my algorithms to public algorithms|
 |Model Deployment|Algorithm Management|My Algorithms|Support for viewing and editing my published algorithms and added algorithms|
 |Model Deployment|Algorithm Management|Deploy Algorithms|Support deploying my algorithms to devices and viewing deployment history|
 |Model Deployment|Device Management|View Devices|Support viewing device information and deployment history|
@@ -268,6 +279,14 @@ LABEL_TOOL_HOST_PORT=set_your_label_tool_HOST_PORT
 
 ```
 
+* The default port number for YMIR's Model Deployment module is 18801. If there is a conflict that needs to be modified, you need to go to the YMIR directory and modify the .env file to configure the ModelDeployment port and MySQL access password:
+
+```
+DEPLOY_MODULE_HOST_PORT=18801
+DEPLOY_MODULE_URL=${DEPLOY_MODULE_HOST_PORT}
+DEPLOY_MODULE_MYSQL_ROOT_PASSWORD=deploy_db_passwd
+```
+
 Execute the start command after the modification: `bash ymir.sh start`.
 
 4. After the service successfully started, YMIR will be available at [http://localhost:12001/](http://localhost:12001/). If you need to **stop the service**, run the command: `bash ymir.sh stop`
@@ -329,30 +348,12 @@ The user can access label studio through the default URL [http://localhost:12007
   ```sh
 docker-compose -f docker-compose.label_studio.yml down
   ```
-  
- ## 2.4. Installation of Model Deployment (optional)
- 
-ModelDeployment is a model deployment system supported by YMIR and can be installed as an optional model deployment tool.
-
-1. In the YMIR directory in the previous section, modify the .env file to configure the ModelDeployment port and MySQL access password as follows.
-```
-DEPLOY_MODULE_HOST_PORT=18801
-DEPLOY_MODULE_URL=${DEPLOY_MODULE_HOST_PORT}
-DEPLOY_MODULE_MYSQL_ROOT_PASSWORD=deploy_db_passwd
-```
-
-2. start the installation ModelDeployment command as follows.
-`docker-compose -f docker-compose.modeldeploy.yml up -d`
-
-3.The command to check the status of ModelDeployment after completion is as follows.
-`docker-compose -f docker-compose.modeldeploy.yml ps`
-
-4. Stop the ModelDeployment service with the following command.
-`docker-compose -f docker-compose.modeldeploy.yml down`
 
 # 3. Use YMIR-GUI: typical model production process
 
-![YMIR-GUI process](https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/YMIR-GUI-process.jpeg)
+<div align="center">
+  <img src="https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/YMIR-GUI-process.jpeg" width="800"/>
+  <div>&nbsp;</div>&nbsp;</div>
 
 As shown in the figure, YMIR divides the model development process into multiple steps. Details about how to run each step are listed in the subsequent sections.
 
@@ -362,7 +363,7 @@ Therefore, YMIR platform, through active learning, first attains an initial mode
 
 The updated dataset is used to train the model again to improve the model capability. The YMIR platform provides a more efficient approach than labeling the entire data and then training it, reducing the cost of labeling low-quality data. Through the cycle of mining, labeling, and training, high quality data is expanded and the model capability is improved.
 
-This section uses a complete model iteration process as an example to illustrate how to use the YMIR platform. Please check [Operating Instructions](https://github.com/IndustryEssentials/ymir/wiki/Operating-Instructions)
+This section uses a complete model iteration process as an example to illustrate how to use the YMIR platform. Please check [Operating Instructions](https://github.com/IndustryEssentials/ymir/wiki/Operating-Instructions).
 
 # 4. For advanced users: YMIR-CMD (command line) user's guide
 
@@ -409,7 +410,7 @@ Also check out [MSFT Encoding Style](https://github.com/Microsoft/Recommenders/w
 
 ## 5.2. About training, inference and mining docker images
 
-[Check this document](docs/ymir-cmd-container.md) for details
+[Check this document](https://github.com/IndustryEssentials/ymir/blob/dev/dev_docs/ymir-cmd-container.md) for details.
 
 # 6. Design concept
  
@@ -429,7 +430,7 @@ The default profile template needs to be extracted in the mirror.
 
 The training image `industryessentials/executor-det-yolov4-training:release-0.1.2` has a configuration file template located at: `/img-man/training-template.yaml`
 
-Mining and inference mirrors The configuration file templates for `industryessentials/executor-det-yolov4-mining:release-0.1.2` are located at: `/img-man/mining-template.yaml` (mining) and `/img-man/infer-template. yaml` (infer)
+Mining and inference mirrors The configuration file templates for `industryessentials/executor-det-yolov4-mining:release-0.1.2` are located at: `/img-man/mining-template.yaml` (mining) and `/img-man/infer-template. yaml` (infer).
 
 **How can the trained model be used outside the system?**
 
@@ -441,7 +442,7 @@ It has not been fully tested on Windows server, so we cannot provide service sup
 
 **How to import models I've already trained?**
 
-See [this document](docs/import-extra-models.md)
+See [this document](https://github.com/IndustryEssentials/ymir/blob/dev/dev_docs/import-extra-models.md).
 
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
 [![All Contributors](https://img.shields.io/badge/All%20Contributors-9-brightgreen)](#contributors-)
