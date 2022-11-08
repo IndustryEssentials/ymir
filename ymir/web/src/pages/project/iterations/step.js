@@ -10,7 +10,7 @@ import RenderProgress from "../../../components/common/Progress"
 import { YesIcon } from "@/components/common/Icons"
 import VersionName from "@/components/result/VersionName"
 
-function Step({ step }) {
+function Step({ step, goStep = () => {} }) {
   const result = useSelector((state) => {
     const res = step.resultType ? state[step.resultType][step.resultType] : {}
     return res[step.resultId] || {}
@@ -25,13 +25,16 @@ function Step({ step }) {
   const currentStep = () => step.value === step.current
   const finishStep = () => step.finished
   const pendingStep = () => !step.finished && !currentStep()
+  const selectedStep = () => step.selected === step.value
 
   const isPending = () => state < 0
   const isReady = () => state === states.READY
   const isValid = () => state === states.VALID
   const isInvalid = () => state === states.INVALID
 
-  const stateClass = `${s.step} ${
+  const goStepView = () => !pendingStep() && goStep(step)
+
+  const stateClass = `${s.step} ${selectedStep() ? s.selected : ""} ${
     currentStep() ? s.current : finishStep() ? s.finish : s.pending
   }`
 
@@ -68,7 +71,12 @@ function Step({ step }) {
 
   return (
     <div className={stateClass}>
-      <Row className={s.row} align="middle" wrap={false}>
+      <Row
+        className={s.row}
+        align="middle"
+        wrap={false}
+        onClick={() => goStepView}
+      >
         <Col flex={"30px"}>{renderCount()}</Col>
         <Col>{t(step.act)}</Col>
         {!step.end ? (

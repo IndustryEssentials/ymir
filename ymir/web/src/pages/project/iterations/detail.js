@@ -23,7 +23,7 @@ function Detail({ project = {} }) {
   }, [project.id, iid])
 
   useEffect(() => {
-    if (!project.id) {
+    if (!iteration) {
       return
     }
     const { wholeMiningSet, testSet } = iteration || {}

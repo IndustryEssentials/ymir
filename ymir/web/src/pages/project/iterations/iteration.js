@@ -12,6 +12,7 @@ function Iteration({ project, fresh = () => {} }) {
   const [iteration, setIteration] = useState({})
   const [_, getIteration] = useFetch("iteration/getIteration", {})
   const [steps, setSteps] = useState([])
+  const [selectedStep, setSelectedStep] = useState(null)
   const [createResult, create] = useFetch("iteration/createIteration")
   const [_b, bind] = useFetch("iteration/bindStep")
   const [_n, next] = useFetch("iteration/nextStep")
@@ -47,6 +48,7 @@ function Iteration({ project, fresh = () => {} }) {
         ...remoteStep,
         index,
         current,
+        selected: selectedStep,
       }
     })
     setSteps(steps)
@@ -89,12 +91,16 @@ function Iteration({ project, fresh = () => {} }) {
     create(params)
   }
 
+  function goStep(step) {
+    setSelectedStep(step.value)
+  }
+
   return (
     <div className={s.iteration}>
       <Row style={{ justifyContent: "flex-end" }}>
         {steps.map((step) => (
           <Col key={step.value} flex={!step.end ? 1 : null}>
-            <Step step={step} />
+            <Step step={step} goStep={goStep} />
           </Col>
         ))}
       </Row>

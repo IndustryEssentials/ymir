@@ -101,7 +101,6 @@ export function updateTask(id, name) {
  * {
  * {number} project_id
  * {number} dataset_group_id
- * {number} main_dataset_id
  * {array<number>} [include_datasets]
  * {number} [include_strategy]
  * {array<number>} [exclude_datasets]
