@@ -53,47 +53,57 @@ def generate_label_index_file(input_file: Path, annotation_dir: Path) -> Path:
     return output_file
 
 
-def lable_task_monitor() -> None:
-    label_instance = utils.create_label_instance()
-    project_mapping = rds.hgetall(label_task_config.MONITOR_MAPPING_KEY)
-    for task_id, content in project_mapping.items():
-        project_info = json.loads(content)
-        percent = label_instance.get_task_completion_percent(project_info["project_id"])
+def update_label_task(label_instance: utils.LabelBase, task_id: str, project_info: Dict):
+    percent = label_instance.get_task_completion_percent(project_info["project_id"])
 
-        logging.info(f"label task:{task_id} percent: {percent}")
-        state = LogState.DONE if percent == 1 else LogState.RUNNING
-        if state == LogState.DONE:
-            # For remove some special tasks.Delete the task after labeling will save file
-            remove_json_file(project_info["des_annotation_path"])
-            try:
-                label_instance.sync_export_storage(project_info["storage_id"])
-                label_instance.convert_annotation_to_voc(project_info["project_id"],
-                                                         project_info["des_annotation_path"])
-            except NotReadyError:
-                logging.info("label result not ready, try agiain later")
-                continue
-            except (ConnectionError, HTTPError, Timeout) as e:
-                sentry_sdk.capture_exception(e)
-                logging.error(f"get label task {task_id} error: {e}, set task_id:{task_id} error")
-                state = LogState.ERROR
-            export_index_file = Path(project_info["input_asset_dir"]) / "index.tsv"
-            label_index_file = generate_label_index_file(export_index_file, Path(project_info["des_annotation_path"]))
-            trigger_mir_import(
-                repo_root=project_info["repo_root"],
-                task_id=task_id,
-                index_file=str(label_index_file),
-                des_annotation_path=project_info["des_annotation_path"],
-                media_location=project_info["media_location"],
-                import_work_dir=project_info["import_work_dir"],
-            )
+    logging.info(f"label task:{task_id} percent: {percent}")
+    state = LogState.DONE if percent == 1 else LogState.RUNNING
+    if state == LogState.DONE:
+        # For remove some special tasks. Delete the task after labeling will save file
+        remove_json_file(project_info["des_annotation_path"])
+        try:
+            label_instance.sync_export_storage(project_info["storage_id"])
+            label_instance.convert_annotation_to_voc(project_info["project_id"],
+                                                     project_info["des_annotation_path"])
+        except NotReadyError:
+            logging.info("label result not ready, try agiain later")
+            continue
+        except (ConnectionError, HTTPError, Timeout) as e:
+            sentry_sdk.capture_exception(e)
+            logging.error(f"get label task {task_id} error: {e}, set task_id:{task_id} error")
+            state = LogState.ERROR
+        export_index_file = Path(project_info["input_asset_dir"]) / "index.tsv"
+        label_index_file = generate_label_index_file(export_index_file, Path(project_info["des_annotation_path"]))
+        trigger_mir_import(
+            repo_root=project_info["repo_root"],
+            task_id=task_id,
+            index_file=str(label_index_file),
+            des_annotation_path=project_info["des_annotation_path"],
+            media_location=project_info["media_location"],
+            import_work_dir=project_info["import_work_dir"],
+        )
 
-            rds.hdel(label_task_config.MONITOR_MAPPING_KEY, task_id)
-            logging.info(f"task {task_id} finished!!!")
+        rds.hdel(label_task_config.MONITOR_MAPPING_KEY, task_id)
+        logging.info(f"task {task_id} finished!!!")
 
         PercentLogHandler.write_percent_log(log_file=project_info["monitor_file_path"],
                                             tid=project_info["task_id"],
                                             percent=percent,
                                             state=state)
+
+
+def lable_task_monitor() -> None:
+    label_instance = utils.create_label_instance()
+    project_mapping = rds.hgetall(label_task_config.MONITOR_MAPPING_KEY)
+    for task_id, content in project_mapping.items():
+        try:
+            project_info = json.loads(content)
+            update_label_task(label_instance, task_id, project_info)
+        except FileNotFoundError:
+            logging.exception("Monitor file not exists. Skip updating task %s with payload %s", task_id, content)
+            rds.hdel(label_task_config.MONITOR_MAPPING_KEY, task_id)
+        except Exception:
+            logging.exception("Unknown error. Skip updating task %s with payload %s", task_id, content)
 
 
 if __name__ == "__main__":
