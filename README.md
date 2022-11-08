@@ -94,7 +94,7 @@ More code updates [ymir-dev](https://github.com/modelai/ymir-executor-fork/tree/
 
 # Deployment Prerequisite (optional)
 
-YMIR supports deploying the trained model and public algorithm model directly to the certified device, for more hardware specs, please check [the details](https://i-item.jd.com/10065188207137.html).
+YMIR supports deploying the trained model and public algorithm model directly to the certified device, for more hardware specs, please check [the details](https://i-item.jd.com/10065116628109.html).
 
 <div align="center">
   <img src="https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/certified_device.PNG" width="500"/>
