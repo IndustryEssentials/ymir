@@ -28,7 +28,7 @@ function Detail({ project = {} }) {
     }
     const { wholeMiningSet, testSet } = iteration || {}
     const steps = getSteps()
-    const slist = [
+    const slist = filterExsit([
       {
         label: "project.mining_set",
         id: wholeMiningSet || project.miningSet?.id,
@@ -37,7 +37,7 @@ function Detail({ project = {} }) {
         label: "project.test_set",
         id: testSet || project.testSet?.id,
       },
-    ]
+    ])
     const ilist = filterExsit(
       steps.slice(0, 4).map((step) => {
         const istep = iteration.steps.find((st) => st.name === step.value)
@@ -45,10 +45,9 @@ function Detail({ project = {} }) {
       })
     )
     const mlist = filterExsit([{ label: "", id: iteration.steps[4].resultId }])
-    setSettings(filterExsit(slist))
-    setIntermediations(filterExsit(ilist))
+    setSettings(slist)
+    setIntermediations(ilist)
     setModels(mlist)
-    console.log("mlist:", mlist)
   }, [iteration])
 
   return (

@@ -13,7 +13,7 @@ function post(id: number, data: any, url = "") {
 }
 
 function get(id: number, params: any, url = "") {
-  return request.get(`/iterations/${id}/${url}`, { params })
+  return request.get(`/iterations/${id}${url}`, { params })
 }
 
 /** iteration service */
