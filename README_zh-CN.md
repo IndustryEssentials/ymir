@@ -96,7 +96,7 @@ Docker
 
 # 硬件支持 （可选）
 
-YYMIR支持将训练好的模型直接部署到认证设备，需要查看更多硬件参数，请查看[详情](https://i-item.jd.com/10065188207137.html)。
+YYMIR支持将训练好的模型直接部署到认证设备，需要查看更多硬件参数，请查看[详情](https://i-item.jd.com/10065116628109.html)。
 
 <div align="center">
   <img src="https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/certified_device.PNG" width="500"/>
