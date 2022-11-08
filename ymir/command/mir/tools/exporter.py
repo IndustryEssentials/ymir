@@ -508,6 +508,8 @@ def _single_image_annotations_to_seg_mask(attributes: mirpb.MetadataAttributes,
                                           class_ids_mapping: Optional[Dict[int, int]],
                                           cls_id_mgr: Optional[UserLabels],
                                           asset_filename: str, anno_dst_file: str) -> None:
+    if not image_annotations.masks:
+        return
     if len(image_annotations.masks) > 1:
         raise NotImplementedError('Multiple mask layers not supported')
     with open(anno_dst_file, 'wb') as af:
