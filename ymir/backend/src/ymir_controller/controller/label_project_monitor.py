@@ -3,6 +3,7 @@ import logging
 import os
 from pathlib import Path
 import sys
+from typing import Dict
 
 from requests.exceptions import ConnectionError, HTTPError, Timeout
 import sentry_sdk
@@ -53,7 +54,7 @@ def generate_label_index_file(input_file: Path, annotation_dir: Path) -> Path:
     return output_file
 
 
-def update_label_task(label_instance: utils.LabelBase, task_id: str, project_info: Dict):
+def update_label_task(label_instance: utils.LabelBase, task_id: str, project_info: Dict) -> None:
     percent = label_instance.get_task_completion_percent(project_info["project_id"])
 
     logging.info(f"label task:{task_id} percent: {percent}")
