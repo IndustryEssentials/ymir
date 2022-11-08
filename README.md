@@ -62,7 +62,7 @@ If you wish to refer to YMIR in your work, please use the following BibTeX entry
 
 # What's new
 
-Version 2.0.0 updated on 11/15/2022
+Version 2.0.0 updated on 11/08/2022
 
 YMIR platform
 - A new model performance diagnosis module.
