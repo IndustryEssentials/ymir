@@ -10,6 +10,7 @@ import tests.utils as test_utils
 from controller.utils import utils
 from controller.utils.invoker_call import make_invoker_cmd_call
 from controller.utils.invoker_mapping import RequestTypeToInvoker
+from mir.protos import mir_command_pb2 as mir_cmd_pb
 from proto import backend_pb2
 
 RET_ID = 'commit t000aaaabbbbbbzzzzzzzzzzzzzzz3\nabc'
@@ -82,15 +83,15 @@ class TestInvokerTaskCopy(unittest.TestCase):
         copy_request = backend_pb2.TaskReqCopyData()
         copy_request.src_user_id = "usre"
         copy_request.src_repo_id = "repodi"
-        copy_request.src_dataset_id = "t000aaaabbbbbbzzzzzzzzzzzzzzb6"
+        in_dataset_ids = ["t000aaaabbbbbbzzzzzzzzzzzzzzb6"]
         mir_src_root = os.path.join(self._sandbox_root, copy_request.src_user_id, copy_request.src_repo_id)
         os.makedirs(mir_src_root)
         working_dir = os.path.join(self._sandbox_root, "work_dir",
-                                   backend_pb2.TaskType.Name(backend_pb2.TaskTypeCopyData), self._task_id, 'sub_task',
-                                   self._task_id)
+                                   mir_cmd_pb.TaskType.Name(mir_cmd_pb.TaskType.TaskTypeCopyData), self._task_id,
+                                   'sub_task', self._task_id)
 
         req_create_task = backend_pb2.ReqCreateTask()
-        req_create_task.task_type = backend_pb2.TaskTypeCopyData
+        req_create_task.task_type = mir_cmd_pb.TaskType.TaskTypeCopyData
         req_create_task.no_task_monitor = True
         req_create_task.copy.CopyFrom(copy_request)
         response = make_invoker_cmd_call(invoker=RequestTypeToInvoker[backend_pb2.TASK_CREATE],
@@ -99,10 +100,11 @@ class TestInvokerTaskCopy(unittest.TestCase):
                                          user_id=self._user_name,
                                          repo_id=self._mir_repo_name,
                                          task_id=self._task_id,
+                                         in_dataset_ids=in_dataset_ids,
                                          req_create_task=req_create_task)
 
         expected_cmd_copy = ("mir copy --root {0} --src-root {1} --dst-rev {2}@{2} --src-revs {3}@{3} -w {4}".format(
-            self._mir_repo_root, mir_src_root, self._task_id, copy_request.src_dataset_id, working_dir))
+            self._mir_repo_root, mir_src_root, self._task_id, in_dataset_ids[0], working_dir))
         mock_run.assert_has_calls(calls=[
             mock.call(expected_cmd_copy.split(' '), capture_output=True, text=True),
         ])

@@ -12,6 +12,12 @@
 		<depth>3</depth>
 	</size>
 	<segmented>1</segmented>
+	<image_quality>0.95</image_quality>
+	<cks>
+		<weather>sunny</weather>
+		<camera> camera 0 </camera>
+		<theme>blue sky</theme>
+	</cks>
 	<object>
 		<name>aeroplane</name>
 		<pose>Frontal</pose>
@@ -22,8 +28,15 @@
 			<ymin>78</ymin>
 			<xmax>375</xmax>
 			<ymax>183</ymax>
+			<rotate_angle>0.22</rotate_angle>
 		</bndbox>
-		<score>0.5</score>
+		<confidence>0.5</confidence>
+		<box_quality>0.62</box_quality>
+		<tags>
+			<difficult>0</difficult>
+			<color>white</color>
+			<pose>Frontal</pose>
+		</tags>
 	</object>
 	<object>
 		<name>aeroplane</name>
@@ -35,7 +48,14 @@
 			<ymin>88</ymin>
 			<xmax>197</xmax>
 			<ymax>123</ymax>
+			<rotate_angle>0.02</rotate_angle>
 		</bndbox>
+		<box_quality>0.75</box_quality>
+		<tags>
+			<difficult>0</difficult>
+			<color>blue</color>
+			<pose>Left</pose>
+		</tags>
 	</object>
 	<object>
 		<name>person</name>
@@ -47,7 +67,13 @@
 			<ymin>180</ymin>
 			<xmax>213</xmax>
 			<ymax>229</ymax>
+			<rotate_angle>0.0</rotate_angle>
 		</bndbox>
+		<box_quality>0.23</box_quality>
+		<tags>
+			<difficult>1</difficult>
+			<pose>Rear</pose>
+		</tags>
 	</object>
 	<object>
 		<name>PERSON</name>
@@ -59,6 +85,12 @@
 			<ymin>189</ymin>
 			<xmax>44</xmax>
 			<ymax>238</ymax>
+			<rotate_angle>0.12</rotate_angle>
 		</bndbox>
+		<box_quality>0.35</box_quality>
+		<tags>
+			<difficult>1</difficult>
+			<pose>Rear</pose>
+		</tags>
 	</object>
 </annotation>

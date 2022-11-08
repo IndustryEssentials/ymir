@@ -1,7 +1,7 @@
 version: "3.3"
 services:
   backend:
-    image: industryessentials/ymir-backend
+    image: industryessentials/ymir-backend:release-2.0.0
     env_file:
       - .env
     runtime: ${SERVER_RUNTIME}
@@ -12,12 +12,9 @@ services:
       - MODELS_PATH=${YMIR_PATH}/ymir-models
       - ASSETS_PATH=${YMIR_PATH}/ymir-assets
       - CONTROLLER_LOG_PATH=${YMIR_PATH}/ymir-data/logs
-      # viz
-      - VIZ_REDIS_URI=redis://:@viz-redis
       # app
       - DATABASE_URI=mysql+pymysql://${MYSQL_INITIAL_USER}:${MYSQL_INITIAL_PASSWORD}@db/ymir
       - GRPC_CHANNEL=127.0.0.1:50066
-      - VIZ_HOST=127.0.0.1:9099
       - SHARED_DATA_DIR=/ymir-sharing
       - NGINX_DATA_PATH=/ymir-storage
       # arq
@@ -25,6 +22,14 @@ services:
       # monitor
       - MONITOR_URL=http://127.0.0.1:9098
       - APP_API_HOST=127.0.0.1:80
+      # OpenPai
+      - OPENPAI_HOST=${OPENPAI_HOST}
+      - OPENPAI_TOKEN=${OPENPAI_TOKEN}
+      - OPENPAI_STORAGE=${OPENPAI_STORAGE}
+      - OPENPAI_USER=${OPENPAI_USER}
+      # viewer
+      - VIEWER_HOST_PORT=9527
+      - MONGODB_URI=mongodb://${MYSQL_INITIAL_USER}:${MYSQL_INITIAL_PASSWORD}@mongodb:${MONGODB_HOST_PORT}
     volumes:
       - "${BACKEND_SANDBOX_ROOT}:${BACKEND_SANDBOX_ROOT}"
       - "${YMIR_PATH}/ymir-data/logs:/app_logs"
@@ -44,11 +49,16 @@ services:
     depends_on:
       - db
       - redis
-      - viz-redis
       - tensorboard
-      - clickhouse
+      - mongodb
     command: bash -c 'cd /app && supervisord -nc supervisor/supervisord.conf'
     restart: on-failure:10
+    healthcheck:
+      test: bash health_check.sh || exit 1
+      interval: 60s
+      timeout: 6s
+      retries: 3
+      start_period: 30s
     networks:
       - ymirnetwork
 
@@ -59,28 +69,35 @@ services:
       - ${YMIR_PATH}/redis:/var/log/redis
       - ${YMIR_PATH}/redis:/data
     restart: on-failure:10
-    networks:
-      - ymirnetwork
-
-  viz-redis:
-    image: industryessentials/ymir-viz-redis
-    restart: on-failure:10
+    healthcheck:
+      test: ["CMD", "redis-cli","ping"]
+      interval: 60s
+      timeout: 6s
+      retries: 3
+      start_period: 30s
     networks:
       - ymirnetwork
 
   web:
-    image: industryessentials/ymir-web
+    image: industryessentials/ymir-web:release-2.0.0
     volumes:
       - "${YMIR_PATH}/ymir-models:/data/ymir/ymir-models"
       - "${YMIR_PATH}/ymir-assets:/data/ymir/ymir-assets"
       - "${YMIR_PATH}/ymir-storage:/data/ymir/ymir-storage"
     environment:
       - LABEL_TOOL_HOST_URL=${LABEL_TOOL_HOST_URL}
+      - DEPLOY_MODULE_URL=${DEPLOY_MODULE_URL}
     ports:
       - ${NGINX_PORT}:80
     restart: on-failure:10
     depends_on:
       - backend
+    healthcheck:
+      test: curl --fail -s http://localhost:80/health || exit 1
+      interval: 60s
+      timeout: 6s
+      retries: 3
+      start_period: 30s
     networks:
       - ymirnetwork
 
@@ -94,29 +111,47 @@ services:
     volumes:
       - ${YMIR_PATH}/mysql:/var/lib/mysql
     restart: on-failure:10
+    healthcheck:
+        test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost"]
+        interval: 60s
+        timeout: 6s
+        retries: 3
+        start_period: 30s
     networks:
       - ymirnetwork
 
   tensorboard:
-    image: tensorflow/tensorflow:latest
+    image: tensorflow/tensorflow:2.9.1
     env_file:
       - .env
     volumes:
       - "${TENSORBOARD_ROOT}:${TENSORBOARD_ROOT}"
     command: tensorboard --logdir ${TENSORBOARD_ROOT} --port 6006 --bind_all
     restart: on-failure:10
+    healthcheck:
+      test: curl --fail -s http://localhost:6006 || exit 1
+      interval: 60s
+      timeout: 6s
+      retries: 3
+      start_period: 30s
     networks:
       - ymirnetwork
 
-  clickhouse:
-    image: clickhouse/clickhouse-server
-    ulimits:
-      nofile:
-        soft: 262144
-        hard: 262144
-    volumes:
-      - ${YMIR_PATH}/clickhouseDB:/var/lib/clickhouse
+  mongodb:
+    image: mongo:4.4
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=${MYSQL_INITIAL_USER}
+      - MONGO_INITDB_ROOT_PASSWORD=${MYSQL_INITIAL_PASSWORD}
     restart: on-failure:10
+    command: mongod --port ${MONGODB_HOST_PORT} --auth --nojournal
+    volumes:
+      - ${YMIR_PATH}/ymir-viewer/mongo_data:/data/db
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongo mongodb:${MONGODB_HOST_PORT}/test --quiet
+      interval: 60s
+      timeout: 6s
+      retries: 3
+      start_period: 30s
     networks:
       - ymirnetwork
 

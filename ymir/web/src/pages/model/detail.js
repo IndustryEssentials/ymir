@@ -13,6 +13,10 @@ import TaskProgress from "@/components/task/progress"
 import Error from "@/components/task/error"
 import Hide from "@/components/common/hide"
 import useRestore from "@/hooks/useRestore"
+import keywordsItem from "@/components/task/items/keywords"
+import { DescPop } from "../../components/common/descPop"
+import useRerunAction from "../../hooks/useRerunAction"
+import useCardTitle from '@/hooks/useCardTitle'
 
 const { Item } = Descriptions
 
@@ -22,6 +26,8 @@ function ModelDetail({ modelCache, getModel }) {
   const [model, setModel] = useState({ id })
   const hideRef = useRef(null)
   const restoreAction = useRestore(pid)
+  const generateRerunBtn = useRerunAction('btn')
+  const cardTitle = useCardTitle(model.name)
 
   useEffect(async () => {
     id && fetchModel(true)
@@ -38,16 +44,6 @@ function ModelDetail({ modelCache, getModel }) {
   async function fetchModel(force) {
     await getModel(id, force)
   }
-
-  function renderTitle() {
-    return (
-      <Row>
-        <Col flex={1}>{model.name} &gt; {t(getTaskTypeLabel(model.taskType))}</Col>
-        <Col><Button type='link' onClick={() => history.goBack()}>{t('common.back')}&gt;</Button></Col>
-      </Row>
-    )
-  }
-
 
   const hide = (version) => {
     if (model?.project?.hiddenDatasets?.includes(version.id)) {
@@ -67,31 +63,41 @@ function ModelDetail({ modelCache, getModel }) {
     }
   }
 
+  function getModelStage() {
+    const stage = model.recommendStage
+    return stage ? [id, stage].toString() : ''
+  }
+
   return (
     <div className={styles.modelDetail}>
       <Breadcrumbs suffix={model.name} />
-      <Card title={renderTitle()}>
+      <Card title={cardTitle}>
         <div className={styles.content}>
           <Descriptions bordered column={2} labelStyle={{ width: '200px' }} title={t('model.detail.title')} className='infoTable'>
             <Item label={t('model.detail.label.name')}>{model.name} {model.versionName}</Item>
             {model.hidden ? <Item label={t("common.hidden.label")}>{t('common.state.hidden')}</Item> : null}
-            <Item label={t('model.detail.label.map')}><span title={model.map}>{percent(model.map)}</span></Item>
+            {keywordsItem(model.keywords)}
+            <Item label={t('model.detail.label.stage')} span={2}>
+              {model.stages?.map(stage => <Tag key={stage.id} title={stage.map}>{stage.name} mAP: {percent(stage.map)}</Tag>)}
+            </Item>
+            <Item label={t("common.desc")} span={2}><DescPop description={model.description} /></Item>
           </Descriptions>
           <TaskProgress state={model.state} result={model} task={model.task} duration={model.durationLabel} progress={model.progress} fresh={() => fetchModel(true)} />
-          {model?.task?.error_code ? <Error code={model.task?.error_code} msg={model.task?.error_message} /> : null}
+          <Error code={model.task?.error_code} msg={model.task?.error_message} terminated={model?.task?.is_terminated} />
           <TaskDetail task={model.task}></TaskDetail>
           <Space style={{ width: "100%", justifyContent: "flex-end" }}>{!model.hidden ? <>
             {model.url ? <Button><Link target="_blank" to={model.url}>{t('model.action.download')}</Link></Button> : null}
             <Button onClick={() => history.push(`/home/project/${model.projectId}/model/${model.id}/verify`)}>{t('model.action.verify')}</Button>
-            <Button type='primary' onClick={() => history.push(`/home/task/mining/${model.projectId}?mid=${id}`)}>{t('dataset.action.mining')}</Button>
-            <Button type='primary' onClick={() => history.push(`/home/task/inference/${model.projectId}?mid=${id}`)}>{t('dataset.action.inference')}</Button>
-            <Button type='primary' onClick={() => history.push(`/home/task/train/${model.projectId}?mid=${id}`)}>{t('dataset.action.train')}</Button>
+            <Button type='primary' onClick={() => history.push(`/home/project/${model.projectId}/mining?mid=${getModelStage()}`)}>{t('dataset.action.mining')}</Button>
+            <Button type='primary' onClick={() => history.push(`/home/project/${model.projectId}/inference?mid=${getModelStage()}`)}>{t('dataset.action.inference')}</Button>
+            <Button type='primary' onClick={() => history.push(`/home/project/${model.projectId}/train?mid=${getModelStage()}`)}>{t('dataset.action.train')}</Button>
             <Button type='primary' onClick={() => hide(model)}>{t('common.action.hide')}</Button>
           </> :
             <Button type="primary" onClick={restore}>
               {t("common.action.restore")}
             </Button>
           }
+          {generateRerunBtn(model)}
           </Space>
         </div>
       </Card>

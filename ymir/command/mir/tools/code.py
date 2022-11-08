@@ -1,4 +1,8 @@
 from enum import IntEnum
+from functools import wraps
+import logging
+import time
+from typing import Dict, Callable
 
 
 class MirCode(IntEnum):
@@ -14,4 +18,21 @@ class MirCode(IntEnum):
     RC_CMD_INVALID_MIR_REPO = 160009
     RC_CMD_INVALID_FILE = 160010
     RC_CMD_NO_RESULT = 160011  # no result for training, mining and infer
+    RC_CMD_OPENPAI_ERROR = 160012
+    RC_CMD_NO_ANNOTATIONS = 160013
+    RC_CMD_CAN_NOT_CALC_CONFUSION_MATRIX = 160014
+    RC_CMD_INVALID_MODEL_PACKAGE_VERSION = 160015
+    RC_CMD_INVALID_META_YAML_FILE = 160016
     RC_CMD_ERROR_UNKNOWN = 169999
+
+
+def time_it(f: Callable) -> Callable:
+    @wraps(f)
+    def wrapper(*args: tuple, **kwargs: Dict) -> Callable:
+        _start = time.time()
+        _ret = f(*args, **kwargs)
+        _cost = time.time() - _start
+        logging.info(f"|-{f.__name__} costs {_cost:.2f}s({_cost / 60:.2f}m).")
+        return _ret
+
+    return wrapper

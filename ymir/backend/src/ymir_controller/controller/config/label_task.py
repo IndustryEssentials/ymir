@@ -13,6 +13,7 @@ LABEL_TOOL_TOKEN = env("LABEL_TOOL_TOKEN")
 # task_monitor_file
 MONITOR_MAPPING_KEY = "monitor_mapping"
 LABEL_TASK_LOOP_SECONDS = int(env("LABEL_TASK_LOOP_SECONDS", 5 * 60))
+LABEL_TOOL_TIMEOUT = int(env("LABEL_TOOL_TIMEOUT", 600))
 # end labelling model env
 
 # get label studio tasks's slice number

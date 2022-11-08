@@ -1,9 +1,19 @@
-import t from "@/utils/t"
-import confirm from '@/components/common/dangerConfirm'
-import { connect } from "dva"
-import { forwardRef, useImperativeHandle } from "react"
+import { forwardRef, useEffect, useImperativeHandle } from "react"
 
-const Del = forwardRef(({ delImage, ok = () => {} }, ref) => {
+import t from "@/utils/t"
+import useFetch from '@/hooks/useFetch'
+
+import confirm from '@/components/common/dangerConfirm'
+
+const Del = forwardRef(({ ok = () => {} }, ref) => {
+  const [delResult, delImage] = useFetch('image/delImage')
+
+  useEffect(() => {
+    if (delResult) {
+      ok(delResult.id)
+    }
+  }, [delResult])
+
   useImperativeHandle(ref, () => {
     return {
       del,
@@ -13,12 +23,7 @@ const Del = forwardRef(({ delImage, ok = () => {} }, ref) => {
   function del(id, name) {
     confirm({
       content: t("image.del.confirm.content", { name }),
-      onOk: async () => {
-        const result = await delImage(id)
-        if (result) {
-          ok(id)
-        }
-      },
+      onOk: () => delImage(id),
       okText: t('common.del'),
     })
   }
@@ -26,15 +31,4 @@ const Del = forwardRef(({ delImage, ok = () => {} }, ref) => {
   return null
 })
 
-const actions = (dispatch) => {
-  return {
-    delImage(id) {
-      return dispatch({
-        type: 'image/delImage',
-        payload: id,
-      })
-    }
-  }
-}
-
-export default connect(null, actions, null, { forwardRef: true })(Del)
+export default Del

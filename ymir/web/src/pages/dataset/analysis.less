@@ -1,0 +1,36 @@
+.dataContainer {
+  padding: 10px 0;
+}
+
+.filters {
+  line-height: 40px;
+}
+
+.rowData {
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  height: calc(100vh - 270px);
+  overflow-y: auto;
+  .tableClass {
+    max-width: calc(100% + 20px);
+    margin: 0 -10px;
+  }
+  .rowClass {
+    height: 40px;
+  }
+  tr.rowClass:hover > td {
+    background-color: rgba(232, 185, 0, 0.1); 
+  }
+  th.colunmClass {
+    background: rgba(232, 185, 0, 0.2);
+  }
+  td.colunmClass {
+    background: rgba(232, 185, 0, 0.1);
+  }
+}
+
+.echartTitle {
+  background: rgba(0, 0, 0, 0.06);
+  text-align: center;
+  padding: 10px;
+  margin: 10px 0;
+}

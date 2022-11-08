@@ -12,6 +12,7 @@ import { deepClone } from '@/utils/object'
 
 const initQuery = {
   name: "",
+  current: 1,
   offset: 0,
   limit: 20,
 }
@@ -22,6 +23,7 @@ const initState = {
     total: 0,
   },
   projects: {},
+  current: null,
 }
 
 export default {
@@ -45,6 +47,10 @@ export default {
         const cache = yield select(state => state.project.projects)
         const cacheProject = cache[id]
         if (cacheProject) {
+          yield put({ 
+            type: 'UPDATE_CURRENT',
+            payload: cacheProject,
+          })
           return cacheProject
         }
       }
@@ -53,6 +59,10 @@ export default {
         const project = transferProject(result)
         yield put({
           type: "UPDATE_PROJECTS",
+          payload: project,
+        })
+        yield put({
+          type: 'UPDATE_CURRENT',
           payload: project,
         })
         return project
@@ -80,10 +90,12 @@ export default {
       const { id, ...params } = payload
       const { code, result } = yield call(updateProject, id, params)
       if (code === 0) {
+        const project = transferProject(result)
         yield put({
-          type: 'clearCache'
+          type: "UPDATE_PROJECTS",
+          payload: project,
         })
-        return result
+        return project
       }
     },
     *updateQuery({ payload = {} }, { put, select }) {
@@ -128,6 +140,18 @@ export default {
       return {
         ...state,
         projects,
+      }
+    },
+    UPDATE_CURRENT(state, { payload }) {
+      return {
+        ...state,
+        current: payload,
+      }
+    },
+    UPDATE_PREPARETRAINSET(state, { payload }) {
+      return {
+        ...state,
+        prepareTrainSet: payload,
       }
     },
     UPDATE_QUERY(state, { payload }) {

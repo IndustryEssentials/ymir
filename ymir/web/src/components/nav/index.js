@@ -8,12 +8,13 @@ import { Link, useHistory, useLocation } from "umi"
 
 import t from '@/utils/t'
 import { ROLES } from '@/constants/user'
+import { getDeployUrl } from '@/constants/common'
 import LangBtn from "../common/langBtn"
 import styles from "./index.less"
 import './menu.less'
 import logo from '@/assets/logo_a.png'
 import { NavHomeIcon, NavModelmanageIcon, NavDatasetIcon, ArrowDownIcon } from '@/components/common/icons'
-import { GithubIcon, UserIcon, NavTaskIcon, FlagIcon, EqualizerIcon } from "../common/icons"
+import { GithubIcon, UserIcon, NavTaskIcon, FlagIcon, EqualizerIcon, StoreIcon } from "../common/icons"
 
 const menus = () => [
   {
@@ -32,20 +33,21 @@ const menus = () => [
     icon: <FlagIcon className={styles.navIcon} />,
   },
   {
-    label: 'common.top.menu.configure',
-    key: "/home/configures",
+    label: 'algo.label',
+    key: "/home/algo",
+    icon: <StoreIcon className={styles.navIcon} />,
+    hidden: !getDeployUrl(),
+  },
+  {
+    label: 'common.top.menu.image',
+    key: "/home/image",
     icon: <EqualizerIcon className={styles.navIcon} />,
-    children: [
-      {
-        label: 'common.top.menu.image',
-        key: "/home/image",
-      },
-      {
-        label: 'common.top.menu.permission',
-        key: "/home/permission",
-        permission: ROLES.SUPER,
-      },
-    ]
+  },
+  {
+    label: 'common.top.menu.permission',
+    key: "/home/permission",
+    permission: ROLES.SUPER,
+    icon: <UserIcon className={styles.navIcon} />
   },
 ]
 
@@ -104,7 +106,7 @@ function HeaderNav({ simple = false, username, loginout, avatar, role }) {
         menu.children = handleMenus(menu.children)
       }
       menu.label = t(menu.label)
-      validPermission(role, menu.permission) && result.push(menu)
+      !menu.hidden && validPermission(role, menu.permission) && result.push(menu)
     })
     return result
   }

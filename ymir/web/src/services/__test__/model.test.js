@@ -7,6 +7,7 @@ import {
   importModel,
   updateModel,
   verify,
+  setRecommendStage,
 } from "../model"
 import { product, products, requestExample } from './func'
 
@@ -49,6 +50,12 @@ describe("service: models", () => {
     const expected = { id, name }
     requestExample(updateModel, [id, name], expected)
   })
+  it("setRecommendStage -> success", () => {
+    const model = 63437
+    const stage = 24234
+    const expected = { id: model, recommended_stage: stage }
+    requestExample(setRecommendStage, [model, stage], expected)
+  })
   it("importModel -> success", () => {
     const params = {
       name: 'newmodel',
@@ -57,7 +64,7 @@ describe("service: models", () => {
     requestExample(importModel, params, expected, 'post')
   })
   it("veirfy -> success", () => {
-    const params = { model_id: 754, image_urls: ['/path/to/image'], image: 'dockerimage:latest' }
+    const params = { modelStage: [524, 754], urls: ['/path/to/image'], image: 'dockerimage:latest' }
     const expected = "ok"
     requestExample(verify, params, expected, 'post')
   })

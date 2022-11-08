@@ -1,11 +1,14 @@
 from datetime import datetime
-from typing import List
+from typing import List, Optional
 
 from sqlalchemy import Boolean, Column, DateTime, Integer, SmallInteger, String
+from sqlalchemy.orm import relationship
 
 from app.config import settings
 from app.db.base_class import Base
 from app.models.task import Task  # noqa
+from app.models.dataset import Dataset  # noqa
+from app.models.iteration_step import IterationStep
 
 
 class Iteration(Base):
@@ -16,12 +19,14 @@ class Iteration(Base):
     current_stage = Column(SmallInteger, index=True, default=0, nullable=False)
     previous_iteration = Column(Integer, index=True, default=0, nullable=False)
 
+    mining_dataset_id = Column(Integer)
     mining_input_dataset_id = Column(Integer)
     mining_output_dataset_id = Column(Integer)
     label_output_dataset_id = Column(Integer)
     training_input_dataset_id = Column(Integer)
     training_output_model_id = Column(Integer)
-    testing_dataset_id = Column(Integer)
+    training_output_model_stage_id = Column(Integer)
+    validation_dataset_id = Column(Integer)
 
     user_id = Column(Integer, index=True, nullable=False)
     project_id = Column(Integer, index=True, nullable=False)
@@ -35,6 +40,20 @@ class Iteration(Base):
         nullable=False,
     )
 
+    mining_dataset = relationship(
+        "Dataset",
+        primaryjoin="foreign(Dataset.id)==Iteration.mining_dataset_id",
+        uselist=False,
+        viewonly=True,
+    )
+
+    iteration_steps = relationship(
+        "IterationStep",
+        primaryjoin="foreign(IterationStep.iteration_id)==Iteration.id",
+        uselist=True,
+        viewonly=True,
+    )
+
     @property
     def referenced_dataset_ids(self) -> List[int]:
         datasets = [
@@ -42,10 +61,19 @@ class Iteration(Base):
             self.mining_output_dataset_id,
             self.label_output_dataset_id,
             self.training_input_dataset_id,
-            self.testing_dataset_id,
+            self.validation_dataset_id,
         ]
         return [dataset for dataset in datasets if dataset is not None]
 
     @property
     def referenced_model_ids(self) -> List[int]:
         return [self.training_output_model_id] if self.training_output_model_id else []
+
+    @property
+    def current_step(self) -> Optional[IterationStep]:
+        """
+        list all the remaining steps in current iteration and return the first one when possible
+        if no remaining steps exist, current iteration should have finished
+        """
+        remaining_steps = sorted(filter(lambda i: not i.is_finished, self.iteration_steps), key=lambda i: i.id)
+        return remaining_steps[0] if remaining_steps else None

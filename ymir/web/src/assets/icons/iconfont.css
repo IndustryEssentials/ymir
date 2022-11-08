@@ -1,6 +1,6 @@
 @font-face {
   font-family: "iconfont"; /* Project id  */
-  src: url('iconfont.ttf?t=1651198552473') format('truetype');
+  src: url('iconfont.ttf?t=1656927622762') format('truetype');
 }
 
 .iconfont {
@@ -421,5 +421,41 @@
 
 .icon-pretreatment:before {
   content: "\e6fb";
+}
+
+.icon-start:before {
+  content: "\e6fc";
+}
+
+.icon-stop1:before {
+  content: "\e6fd";
+}
+
+.icon-bell:before {
+  content: "\e6fe";
+}
+
+.icon-wait:before {
+  content: "\e6ff";
+}
+
+.icon-tipts:before {
+  content: "\e700";
+}
+
+.icon-diagnosis2:before {
+  content: "\e701";
+}
+
+.icon-government-line:before {
+  content: "\e702";
+}
+
+.icon-diagnosis:before {
+  content: "\e703";
+}
+
+.icon-scene:before {
+  content: "\e704";
 }
 

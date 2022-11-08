@@ -4,12 +4,12 @@ import os
 import shutil
 import unittest
 from unittest import mock
+import yaml
 
-import tests.utils as test_utils
-from controller.invoker.invoker_cmd_inference import InferenceCMDInvoker
 from controller.utils.invoker_call import make_invoker_cmd_call
 from controller.utils.invoker_mapping import RequestTypeToInvoker
 from proto import backend_pb2
+import tests.utils as test_utils
 
 
 class TestInvokerCMDInference(unittest.TestCase):
@@ -74,14 +74,13 @@ class TestInvokerCMDInference(unittest.TestCase):
         }
         inference_image = "test_infer_image"
         model_hash = "model_hash_id"
-        assets_config = {
-            "modelskvlocation": self._storage_root,
-        }
+        model_stage = "model_stage_name"
+        assets_config = {"modelskvlocation": self._storage_root, 'server_runtime': 'nvidia'}
 
         mock_json = {
             "detection": {
                 "pic_hash": {
-                    "annotations": [{
+                    "boxes": [{
                         "box": {
                             "x": 300,
                             "y": 35,
@@ -90,35 +89,45 @@ class TestInvokerCMDInference(unittest.TestCase):
                         },
                         "class_name": "no_helmet_head",
                         "score": 0.991247296333313,
-                        "class_id": 3,
+                        "class_id": 0,
                     }],
                 }
             }
         }
 
-        with mock.patch.object(InferenceCMDInvoker, "get_inference_result", return_value=mock_json):
-            make_invoker_cmd_call(
-                invoker=RequestTypeToInvoker[backend_pb2.CMD_INFERENCE],
-                sandbox_root=self._sandbox_root,
-                assets_config=assets_config,
-                req_type=backend_pb2.CMD_INFERENCE,
-                user_id=self._user_name,
-                repo_id=self._mir_repo_name,
-                task_id=self._task_id,
-                singleton_op=inference_image,
-                docker_image_config=json.dumps(training_config),
-                model_hash=model_hash,
-            )
-
+        # Store inference data.
         working_dir = os.path.join(self._sandbox_root, "work_dir",
                                    backend_pb2.RequestType.Name(backend_pb2.CMD_INFERENCE), self._task_id)
+        output_filename = os.path.join(working_dir, "out", "infer-result.json")
+        os.makedirs(os.path.join(working_dir, "out"), exist_ok=True)
+        with open(output_filename, 'w') as f:
+            f.write(json.dumps(mock_json))
+        # store user labels.
+        with open(os.path.join(self._user_root, 'labels.yaml'), 'w') as f:
+            yaml.safe_dump({"labels": [{"id": 0, "name": "no_helmet_head"}]}, f)
+
+        make_invoker_cmd_call(
+            invoker=RequestTypeToInvoker[backend_pb2.CMD_INFERENCE],
+            sandbox_root=self._sandbox_root,
+            assets_config=assets_config,
+            req_type=backend_pb2.CMD_INFERENCE,
+            user_id=self._user_name,
+            repo_id=self._mir_repo_name,
+            task_id=self._task_id,
+            singleton_op=inference_image,
+            docker_image_config=json.dumps(training_config),
+            model_hash=model_hash,
+            model_stage=model_stage,
+            work_dir=working_dir,
+        )
+
         os.makedirs(working_dir, exist_ok=True)
         config_file = os.path.join(working_dir, "inference_config.yaml")
 
-        index_file = os.path.join(working_dir, "inference_pic_index.txt")
+        index_file = os.path.join(working_dir, "index.txt")
 
         cmd = (f"mir infer --root {self._mir_repo_root} -w {working_dir} --model-location {self._storage_root} "
-               f"--index-file {index_file} --model-hash {model_hash} "
+               f"--index-file {index_file} --model-hash {model_hash}@{model_stage} "
                f"--task-config-file {config_file} --executor {inference_image}")
 
         mock_run.assert_has_calls(calls=[

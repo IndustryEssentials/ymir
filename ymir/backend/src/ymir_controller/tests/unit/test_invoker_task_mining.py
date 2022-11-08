@@ -12,6 +12,7 @@ import tests.utils as test_utils
 from controller.utils import utils
 from controller.utils.invoker_call import make_invoker_cmd_call
 from controller.utils.invoker_mapping import RequestTypeToInvoker
+from mir.protos import mir_command_pb2 as mir_cmd_pb
 from proto import backend_pb2
 
 RET_ID = 'commit t000aaaabbbbbbzzzzzzzzzzzzzzz3\nabc'
@@ -86,24 +87,29 @@ class TestInvokerTaskMining(unittest.TestCase):
             'batch_size': 16,
             'gpu_count': 0
         }
-        top_k, model_hash = 300, 'abc'
+        top_k, model_hash, model_stage = 300, 'abc', 'first_stage'
         mine_task_req = backend_pb2.TaskReqMining()
         mine_task_req.top_k = top_k
-        mine_task_req.in_dataset_ids[:] = [self._guest_id1, self._guest_id2]
-        mine_task_req.ex_dataset_ids[:] = [self._guest_id3]
+        in_dataset_ids = [self._guest_id1, self._guest_id2]
+        ex_dataset_ids = [self._guest_id3]
         mine_task_req.generate_annotations = False
 
         req_create_task = backend_pb2.ReqCreateTask()
-        req_create_task.task_type = backend_pb2.TaskTypeMining
+        req_create_task.task_type = mir_cmd_pb.TaskType.TaskTypeMining
         req_create_task.no_task_monitor = True
         req_create_task.mining.CopyFrom(mine_task_req)
         assets_config = {
             'modelskvlocation': self._storage_root,
             'assetskvlocation': self._storage_root,
+            'openpai_host': '',
+            'openpai_token': '',
+            'openpai_storage': '',
+            'openpai_user': '',
+            'server_runtime': 'runc',
         }
 
         working_dir_root = os.path.join(self._sandbox_root, "work_dir",
-                                        backend_pb2.TaskType.Name(backend_pb2.TaskTypeMining), self._task_id)
+                                        mir_cmd_pb.TaskType.Name(mir_cmd_pb.TaskType.TaskTypeMining), self._task_id)
         os.makedirs(working_dir_root, exist_ok=True)
         working_dir_0 = os.path.join(working_dir_root, 'sub_task', self._sub_task_id_0)
         os.makedirs(working_dir_0, exist_ok=True)
@@ -128,6 +134,9 @@ class TestInvokerTaskMining(unittest.TestCase):
             merge_strategy=backend_pb2.MergeStrategy.Value('HOST'),
             singleton_op='mining_image',
             model_hash=model_hash,
+            model_stage=model_stage,
+            in_dataset_ids=in_dataset_ids,
+            ex_dataset_ids=ex_dataset_ids,
             docker_image_config=json.dumps(mining_config),
         )
         print(MessageToDict(response))
@@ -136,16 +145,23 @@ class TestInvokerTaskMining(unittest.TestCase):
         with open(output_config, "r") as f:
             config = yaml.safe_load(f)
         mining_config['gpu_id'] = ''
-        expected_config = {'executor_config': mining_config, 'task_context': {'available_gpu_id': ''}}
+        expected_config = {
+            'executor_config': mining_config,
+            'task_context': {
+                'available_gpu_id': '',
+                'server_runtime': 'runc',
+            },
+        }
         self.assertDictEqual(expected_config, config)
 
-        asset_cache_dir = os.path.join(self._user_root, 'mining_assset_cache')
+        asset_cache_dir = os.path.join(self._user_root, 'asset_cache')
         mining_cmd = ("mir mining --root {0} --dst-rev {1}@{1} -w {2} --model-location {3} --media-location {3} "
                       "--model-hash {5} --src-revs {1}@{6} --asset-cache-dir {9} --task-config-file {7} --executor {8} "
                       "--executant-name {10} --topk {4}".format(self._mir_repo_root, self._task_id, working_dir_0,
-                                                                self._storage_root, top_k, model_hash,
-                                                                self._sub_task_id_1, output_config, 'mining_image',
-                                                                asset_cache_dir, self._task_id))
+                                                                self._storage_root, top_k,
+                                                                f"{model_hash}@{model_stage}", self._sub_task_id_1,
+                                                                output_config, 'mining_image', asset_cache_dir,
+                                                                self._task_id))
         mock_run.assert_has_calls(calls=[
             mock.call(expected_cmd_merge.split(' '), capture_output=True, text=True),
             mock.call(mining_cmd.split(' '), capture_output=True, text=True),

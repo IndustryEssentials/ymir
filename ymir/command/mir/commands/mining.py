@@ -6,11 +6,11 @@ from subprocess import CalledProcessError
 from typing import Dict, Optional, Set
 
 from google.protobuf import json_format
-import yaml
 
 from mir.commands import base, infer
 from mir.protos import mir_command_pb2 as mirpb
-from mir.tools import checker, class_ids, data_exporter, mir_storage_ops, revs_parser, utils as mir_utils
+from mir.tools import annotations, checker, class_ids, env_config, exporter
+from mir.tools import mir_storage_ops, models, revs_parser
 from mir.tools.code import MirCode
 from mir.tools.command_run_in_out import command_run_in_out
 from mir.tools.errors import MirContainerError, MirRuntimeError
@@ -35,14 +35,15 @@ class CmdMining(base.BaseCommand):
                                        src_revs=self.args.src_revs,
                                        dst_rev=self.args.dst_rev,
                                        mir_root=self.args.mir_root,
-                                       model_hash=self.args.model_hash,
+                                       model_hash_stage=self.args.model_hash_stage,
                                        model_location=self.args.model_location,
                                        media_location=self.args.media_location,
                                        config_file=self.args.config_file,
                                        topk=self.args.topk,
-                                       add_annotations=self.args.add_annotations,
+                                       add_prediction=self.args.add_prediction,
                                        executor=self.args.executor,
-                                       executant_name=self.args.executant_name)
+                                       executant_name=self.args.executant_name,
+                                       run_as_root=self.args.run_as_root)
 
     @staticmethod
     @command_run_in_out
@@ -51,14 +52,15 @@ class CmdMining(base.BaseCommand):
                       src_revs: str,
                       dst_rev: str,
                       mir_root: str,
-                      model_hash: str,
+                      model_hash_stage: str,
                       media_location: str,
                       model_location: str,
                       config_file: str,
                       executor: str,
                       executant_name: str,
+                      run_as_root: bool,
                       topk: int = None,
-                      add_annotations: bool = False) -> int:
+                      add_prediction: bool = False) -> int:
         """
         runs a mining task \n
         Args:
@@ -67,13 +69,13 @@ class CmdMining(base.BaseCommand):
             src_revs: data branch name and base task id
             dst_rev: destination branch name and task id
             mir_root: mir repo path, in order to run in non-mir folder.
-            model_hash: used to target model, use prep_tid if non-set
+            model_hash_stage: model_hash@stage_name
             media_location, model_location: location of assets.
             config_file: path to the config file
             executor: executor name, currently, the docker image name
             executant_name: docker container name
             topk: top k assets you want to select in the result workspace, positive integer or None (no mining)
-            add_annotations: if true, write new annotations into annotations.mir
+            add_prediction: if true, write new prediction into annotations.mir
         Returns:
             error code
         """
@@ -85,8 +87,8 @@ class CmdMining(base.BaseCommand):
         if not media_location or not model_location:
             logging.error('media or model location cannot be none!')
             return MirCode.RC_CMD_INVALID_ARGS
-        if not model_hash:
-            logging.error('model_hash is required.')
+        if not model_hash_stage:
+            logging.error('model_hash_stage is required.')
             return MirCode.RC_CMD_INVALID_ARGS
 
         src_typ_rev_tid = revs_parser.parse_single_arg_rev(src_revs, need_tid=False)
@@ -141,38 +143,50 @@ class CmdMining(base.BaseCommand):
             logging.error('mining enviroment prepare error!')
             return ret
 
-        _prepare_assets(mir_metadatas=mir_metadatas,
-                        mir_root=mir_root,
-                        src_rev_tid=src_typ_rev_tid,
-                        media_location=media_location,
-                        work_asset_path=work_asset_path,
-                        work_index_file=work_index_file)
+        # export assets.
+        # mining export abs assets path, which will be converted in-docker path in infer.py.
+        ec = mirpb.ExportConfig(asset_format=mirpb.AssetFormat.AF_RAW,
+                                asset_dir=work_asset_path,
+                                asset_index_file=work_index_file,
+                                media_location=media_location,
+                                need_sub_folder=True,
+                                anno_format=mirpb.AnnoFormat.AF_NO_ANNOTATION,)
+        export_code = exporter.export_mirdatas_to_dir(
+            mir_metadatas=mir_metadatas,
+            ec=ec,
+        )
+        if export_code != MirCode.RC_OK:
+            return export_code
+
+        model_hash, stage_name = models.parse_model_hash_stage(model_hash_stage)
+        model_storage = models.prepare_model(model_location=model_location,
+                                             model_hash=model_hash,
+                                             stage_name=stage_name,
+                                             dst_model_path=work_model_path)
 
         return_code = MirCode.RC_OK
         return_msg = ''
         try:
-            infer.CmdInfer.run_with_args(work_dir=work_dir,
-                                         mir_root=mir_root,
-                                         media_path=work_asset_path,
-                                         model_location=model_location,
-                                         model_hash=model_hash,
-                                         index_file=work_index_file,
-                                         config_file=config_file,
-                                         task_id=dst_typ_rev_tid.tid,
-                                         shm_size=_get_shm_size(config_file),
-                                         executor=executor,
-                                         executant_name=executant_name,
-                                         run_infer=add_annotations,
-                                         run_mining=(topk is not None))
+            return_code = infer.CmdInfer.run_with_args(work_dir=work_dir,
+                                                       mir_root=mir_root,
+                                                       media_path=work_asset_path,
+                                                       model_storage=model_storage,
+                                                       index_file=work_index_file,
+                                                       config_file=config_file,
+                                                       task_id=dst_typ_rev_tid.tid,
+                                                       executor=executor,
+                                                       executant_name=executant_name,
+                                                       run_as_root=run_as_root,
+                                                       run_infer=add_prediction,
+                                                       run_mining=(topk is not None))
         except CalledProcessError:
             return_code = MirCode.RC_CMD_CONTAINER_ERROR
-            return_msg = mir_utils.collect_executor_outlog_tail(work_dir=work_dir)
+            return_msg = env_config.collect_executor_outlog_tail(work_dir=work_dir)
         # catch other exceptions in command_run_in_out
 
         task = mir_storage_ops.create_task(task_type=mirpb.TaskTypeMining,
                                            task_id=dst_typ_rev_tid.tid,
-                                           message='mining',
-                                           model_hash=model_hash,
+                                           message=f"mining with model: {model_hash_stage}",
                                            src_revs=src_typ_rev_tid.rev_tid,
                                            dst_rev=dst_typ_rev_tid.rev_tid,
                                            return_code=return_code,
@@ -186,7 +200,8 @@ class CmdMining(base.BaseCommand):
                          dst_typ_rev_tid=dst_typ_rev_tid,
                          src_typ_rev_tid=src_typ_rev_tid,
                          topk=topk,
-                         add_annotations=add_annotations,
+                         add_prediction=add_prediction,
+                         model_storage=model_storage,
                          task=task)
         logging.info(f"mining done, results at: {work_out_path}")
 
@@ -195,10 +210,13 @@ class CmdMining(base.BaseCommand):
 
 # protected: post process
 def _process_results(mir_root: str, export_out: str, dst_typ_rev_tid: revs_parser.TypRevTid,
-                     src_typ_rev_tid: revs_parser.TypRevTid, topk: Optional[int], add_annotations: bool,
-                     task: mirpb.Task) -> int:
+                     src_typ_rev_tid: revs_parser.TypRevTid, topk: Optional[int], add_prediction: bool,
+                     model_storage: models.ModelStorage, task: mirpb.Task) -> int:
     # step 1: build topk results:
     #   read old
+    mir_metadatas: mirpb.MirMetadatas
+    mir_annotations: mirpb.MirAnnotations
+
     [mir_metadatas, mir_annotations] = mir_storage_ops.MirStorageOps.load_multiple_storages(
         mir_root=mir_root,
         mir_branch=src_typ_rev_tid.rev,
@@ -213,10 +231,9 @@ def _process_results(mir_root: str, export_out: str, dst_typ_rev_tid: revs_parse
                      if topk is not None else set(mir_metadatas.attributes.keys()))
 
     infer_result_file_path = os.path.join(export_out, 'infer-result.json')
-    cls_id_mgr = class_ids.ClassIdManager(mir_root=mir_root)
-    asset_id_to_annotations = (_get_infer_annotations(file_path=infer_result_file_path,
-                                                      asset_ids_set=asset_ids_set,
-                                                      cls_id_mgr=cls_id_mgr) if add_annotations else {})
+    cls_id_mgr = class_ids.load_or_create_userlabels(mir_root=mir_root)
+    asset_id_to_annotations = (_get_infer_annotations(
+        file_path=infer_result_file_path, asset_ids_set=asset_ids_set, cls_id_mgr=cls_id_mgr) if add_prediction else {})
 
     # step 2: update mir data files
     #   update mir metadatas
@@ -225,21 +242,35 @@ def _process_results(mir_root: str, export_out: str, dst_typ_rev_tid: revs_parse
         matched_mir_metadatas.attributes[asset_id].CopyFrom(mir_metadatas.attributes[asset_id])
     logging.info(f"matched: {len(matched_mir_metadatas.attributes)}, overriding metadatas.mir")
 
-    #   update mir annotations
+    #   update mir annotations: predictions
     matched_mir_annotations = mirpb.MirAnnotations()
-    matched_task_annotation = matched_mir_annotations.task_annotations[dst_typ_rev_tid.tid]
-    if add_annotations:
+    prediction = matched_mir_annotations.prediction
+    prediction.type = mirpb.AnnoType.AT_DET_BOX
+    if add_prediction:
         # add new
         for asset_id, single_image_annotations in asset_id_to_annotations.items():
-            matched_task_annotation.image_annotations[asset_id].CopyFrom(single_image_annotations)
+            prediction.image_annotations[asset_id].CopyFrom(single_image_annotations)
+        prediction.eval_class_ids[:] = set(
+            cls_id_mgr.id_for_names(model_storage.class_names, drop_unknown_names=True)[0])
+        prediction.executor_config = json.dumps(model_storage.executor_config)
+        prediction.model.CopyFrom(model_storage.get_model_meta())
     else:
         # use old
-        task_annotation = mir_annotations.task_annotations[mir_annotations.head_task_id]
-        joint_asset_ids_set = set(task_annotation.image_annotations.keys()) & asset_ids_set
-        for asset_id in joint_asset_ids_set:
-            matched_task_annotation.image_annotations[asset_id].CopyFrom(task_annotation.image_annotations[asset_id])
+        pred_asset_ids = set(mir_annotations.prediction.image_annotations.keys()) & asset_ids_set
+        for asset_id in pred_asset_ids:
+            prediction.image_annotations[asset_id].CopyFrom(mir_annotations.prediction.image_annotations[asset_id])
+        annotations.copy_annotations_pred_meta(src_task_annotations=mir_annotations.prediction,
+                                               dst_task_annotations=prediction)
 
-    #   mir_keywords: auto generated from mir_annotations, so do nothing
+    #   update mir annotations: ground truth
+    ground_truth = matched_mir_annotations.ground_truth
+    gt_asset_ids = set(mir_annotations.ground_truth.image_annotations.keys()) & asset_ids_set
+    for asset_id in gt_asset_ids:
+        ground_truth.image_annotations[asset_id].CopyFrom(mir_annotations.ground_truth.image_annotations[asset_id])
+
+    image_ck_asset_ids = set(mir_annotations.image_cks.keys() & asset_ids_set)
+    for asset_id in image_ck_asset_ids:
+        matched_mir_annotations.image_cks[asset_id].CopyFrom(mir_annotations.image_cks[asset_id])
 
     # step 3: store results and commit.
     mir_datas = {
@@ -275,37 +306,40 @@ def _get_topk_asset_ids(file_path: str, topk: int) -> Set[str]:
 
 
 def _get_infer_annotations(file_path: str, asset_ids_set: Set[str],
-                           cls_id_mgr: class_ids.ClassIdManager) -> Dict[str, mirpb.SingleImageAnnotations]:
+                           cls_id_mgr: class_ids.UserLabels) -> Dict[str, mirpb.SingleImageAnnotations]:
     asset_id_to_annotations: dict = {}
     with open(file_path, 'r') as f:
         results = json.loads(f.read())
 
-    if 'detection' not in results or not isinstance(results['detection'], dict):
+    detections = results.get('detection')
+    if not isinstance(detections, dict):
         logging.error('invalid infer-result.json')
         return asset_id_to_annotations
 
-    names_annotations_dict = results['detection']
-    for asset_name, annotations_dict in names_annotations_dict.items():
-        if 'annotations' not in annotations_dict or not isinstance(annotations_dict['annotations'], list):
+    for asset_name, annotations_dict in detections.items():
+        annotations = annotations_dict.get('boxes')
+        if not isinstance(annotations, list):
+            logging.error(f"invalid annotations: {annotations}")
             continue
+
         asset_id = os.path.splitext(os.path.basename(asset_name))[0]
         if asset_id not in asset_ids_set:
-            logging.info(f"unknown asset name: {asset_name}, ignore")
             continue
+
         single_image_annotations = mirpb.SingleImageAnnotations()
         idx = 0
-        for annotation_dict in annotations_dict['annotations']:
+        for annotation_dict in annotations:
             class_id = cls_id_mgr.id_and_main_name_for_name(name=annotation_dict['class_name'])[0]
             # ignore unknown class ids
             if class_id < 0:
                 continue
 
-            annotation = mirpb.Annotation()
+            annotation = mirpb.ObjectAnnotation()
             annotation.index = idx
             json_format.ParseDict(annotation_dict['box'], annotation.box)
             annotation.class_id = class_id
             annotation.score = float(annotation_dict.get('score', 0))
-            single_image_annotations.annotations.append(annotation)
+            single_image_annotations.boxes.append(annotation)
             idx += 1
         asset_id_to_annotations[asset_id] = single_image_annotations
     return asset_id_to_annotations
@@ -321,32 +355,6 @@ def _prepare_env(export_root: str, work_in_path: str, work_out_path: str, work_a
     os.makedirs(work_model_path, exist_ok=True)
 
     return MirCode.RC_OK
-
-
-def _prepare_assets(mir_metadatas: mirpb.MirMetadatas, mir_root: str, src_rev_tid: revs_parser.TypRevTid,
-                    media_location: str, work_asset_path: str, work_index_file: str) -> None:
-    img_list = set(mir_metadatas.attributes.keys())
-    data_exporter.export(mir_root=mir_root,
-                         assets_location=media_location,
-                         class_type_ids={},
-                         asset_ids=img_list,
-                         asset_dir=work_asset_path,
-                         annotation_dir='',
-                         need_ext=True,
-                         need_id_sub_folder=True,
-                         base_branch=src_rev_tid.rev,
-                         base_task_id=src_rev_tid.tid,
-                         format_type=data_exporter.ExportFormat.EXPORT_FORMAT_NO_ANNOTATION,
-                         index_file_path=work_index_file,
-                         index_assets_prefix=work_asset_path)
-
-
-def _get_shm_size(mining_config_file_path: str) -> str:
-    with open(mining_config_file_path, 'r') as f:
-        mining_config = yaml.safe_load(f.read())
-    if 'shm_size' not in mining_config:
-        return '16G'
-    return mining_config['shm_size']
 
 
 # public: arg parser
@@ -380,16 +388,16 @@ def bind_to_subparsers(subparsers: argparse._SubParsersAction, parent_parser: ar
                                    type=int,
                                    required=False,
                                    help='if set, discard samples out of topk, sorting by scores.')
-    mining_arg_parser.add_argument('--add-annotations',
-                                   dest='add_annotations',
+    mining_arg_parser.add_argument('--add-prediction',
+                                   dest='add_prediction',
                                    action='store_true',
                                    required=False,
-                                   help='if set, also add inference result to annotations')
+                                   help='if set, also add inference result')
     mining_arg_parser.add_argument('--model-hash',
-                                   dest='model_hash',
+                                   dest='model_hash_stage',
                                    type=str,
                                    required=True,
-                                   help='model hash to be used')
+                                   help='model hash@stage to be used')
     mining_arg_parser.add_argument('--src-revs',
                                    dest='src_revs',
                                    type=str,
@@ -415,4 +423,8 @@ def bind_to_subparsers(subparsers: argparse._SubParsersAction, parent_parser: ar
                                    dest='executant_name',
                                    type=str,
                                    help='docker container name for mining')
+    mining_arg_parser.add_argument("--run-as-root",
+                                   dest="run_as_root",
+                                   action='store_true',
+                                   help="run executor as root user")
     mining_arg_parser.set_defaults(func=CmdMining)

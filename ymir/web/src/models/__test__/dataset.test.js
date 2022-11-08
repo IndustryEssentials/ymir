@@ -2,7 +2,7 @@ import dataset from "../dataset"
 import { put, putResolve, call, select } from "redux-saga/effects"
 import { errorCode, normalReducer, product, products } from './func'
 import { toFixed } from '@/utils/number'
-import { transferDatasetGroup, transferDataset, states } from '@/constants/dataset'
+import { transferDatasetGroup, transferDataset, transferAsset, states } from '@/constants/dataset'
 
 jest.mock('umi', () => {
   return {
@@ -71,7 +71,6 @@ describe("models: dataset", () => {
   errorCode(dataset, 'createDataset')
   errorCode(dataset, 'updateDataset')
   errorCode(dataset, 'getInternalDataset')
-  errorCode(dataset, 'getHotDatasets', 10034, [])
   const gid = 534234
   const items = products(4)
   const datasets = { items, total: items.length }
@@ -92,7 +91,7 @@ describe("models: dataset", () => {
     const state = {
       datasets: {},
     }
-    const initQuery = { name: "", type: "", time: 0, offset: 0, limit: 20 }
+    const initQuery = { name: "", type: "", current: 1, time: 0, offset: 0, limit: 20 }
 
     const expected = {
       query: { ...initQuery },
@@ -165,17 +164,18 @@ describe("models: dataset", () => {
     const saga = dataset.effects.batchDatasets
     const creator = {
       type: "batchDatasets",
-      payload: { ids: '1,2' },
+      payload: { pid: 23434, ids: [1, 2] },
     }
     const recieved = [1, 3, 4].map(id => ds(id))
     const expected = recieved.map(item => transferDataset(item))
 
     const generator = saga(creator, { put, call })
     generator.next()
-    const end = generator.next({
+    generator.next({
       code: 0,
       result: recieved,
     })
+    const end = generator.next()
 
     expect(expected).toEqual(end.value)
     expect(end.done).toBe(true)
@@ -186,18 +186,19 @@ describe("models: dataset", () => {
       type: "getAssetsOfDataset",
       payload: {},
     }
-    const expected = { items: [1, 2, , 3, 4], total: 4 }
+    const result = { items: products(4), total: 4 }
+    const expected = { items: result.items.map(item => transferAsset(item)), total: 4 }
 
     const generator = saga(creator, { put, call })
     generator.next()
     generator.next({
       code: 0,
-      result: expected,
+      result,
     })
     const end = generator.next()
 
-    equalObject(expected, end.value)
     expect(end.done).toBe(true)
+    expect(end.value).toEqual(expected)
   })
   it("effects: queryAllDatasets -> from remote", () => {
     const saga = dataset.effects.queryAllDatasets
@@ -207,8 +208,9 @@ describe("models: dataset", () => {
     }
     const expected = { items: [1, 2, 3, 4], total: 4 }
 
-    const generator = saga(creator, { put, call })
+    const generator = saga(creator, { put, call, select })
     generator.next()
+    generator.next(false)
     generator.next(expected)
     const end = generator.next()
 
@@ -225,6 +227,7 @@ describe("models: dataset", () => {
 
     const generator = saga(creator, { put, call, select })
     generator.next()
+    generator.next(false)
     const end = generator.next(expected)
 
     expect(end.value).toEqual(expected)
@@ -240,6 +243,7 @@ describe("models: dataset", () => {
 
     const generator = saga(creator, { put, call, select })
     generator.next()
+    generator.next(false)
     generator.next([])
     generator.next({ items: expected, total: expected.length })
     const end = generator.next()
@@ -326,15 +330,12 @@ describe("models: dataset", () => {
       type: "getAsset",
       payload: { hash: 'identify_hash_string' },
     }
-    const expected = {
+    const result = {
       hash: 'identify_hash_string', width: 800, height: 600,
       "size": 0,
       "channel": 3,
       "timestamp": "2021-09-28T08:26:53.088Z",
       "url": "string",
-      "annotations": [
-        {}
-      ],
       "metadata": {},
       "keywords": [
         "string"
@@ -345,11 +346,11 @@ describe("models: dataset", () => {
     generator.next()
     generator.next({
       code: 0,
-      result: expected,
+      result,
     })
     const end = generator.next()
 
-    equalObject(expected, end.value)
+    expect(end.value).toEqual(transferAsset(result))
     expect(end.done).toBe(true)
   })
   it("effects: delDataset", () => {
@@ -386,7 +387,7 @@ describe("models: dataset", () => {
       result: expected,
     })
 
-    equalObject(expected, end.value)
+    expect(end.value).toEqual(expected)
     expect(end.done).toBe(true)
   })
   it("effects: updateDataset", () => {
@@ -430,7 +431,6 @@ describe("models: dataset", () => {
     generator.next()
     const d = generator.next(versions)
     const end = generator.next()
-    const updated = d.value.payload.action.payload
 
     expect(end.value).toEqual(expected)
     expect(end.done).toBe(true)
@@ -451,9 +451,8 @@ describe("models: dataset", () => {
     generator.next()
     const d = generator.next(versions)
     const end = generator.next()
-    const updated = d.value.payload.action.payload
 
-    expect(updated).toEqual(versions)
+    expect(end.value).toEqual(versions)
     expect(end.done).toBe(true)
   })
   it("effects: updateDatasetState -> normal success", () => {
@@ -465,7 +464,10 @@ describe("models: dataset", () => {
     }
     const creator = {
       type: "updateDatasets",
-      payload: { hash1: { id: 1, state: 2, result_state: 0, percent: 0.45 }, hash7: { id: 7, state: 3, result_state: 1, percent: 1 } },
+      payload: { 
+        hash1: { id: 1, state: 2, result_dataset: {id: 1}, result_state: 0, percent: 0.45 }, 
+        hash7: { id: 7, state: 3, result_state: 1, percent: 1 } 
+      },
     }
     const expected = {
       '1': ds(1, 2, 0, 0.45),
@@ -475,70 +477,6 @@ describe("models: dataset", () => {
     generator.next()
     const d = generator.next(datasets)
     const end = generator.next()
-    const updated = d.value.payload.action.payload
-
-    expect(updated).toEqual(expected)
-    expect(end.done).toBe(true)
-  })
-  it("effects: getHotDatasets -> get stats result success-> batch datasets success", () => {
-    const saga = dataset.effects.getHotDatasets
-    const creator = {
-      type: "getHotDatasets",
-      payload: { limit: 3 },
-    }
-    const result = [[1, 34], [1001, 31], [23, 2]]
-    const datasets = [{ id: 1 }, { id: 1001 }, { id: 23 }]
-    const expected = [{ id: 1, count: 34 }, { id: 1001, count: 31 }, { id: 23, count: 2 }]
-
-    const generator = saga(creator, { put, call, select })
-    generator.next()
-    generator.next({
-      code: 0,
-      result,
-    })
-    const end = generator.next(datasets)
-
-    expect(end.value).toEqual(expected)
-    expect(end.done).toBe(true)
-  })
-  it("effects: getHotDatasets -> get stats result success-> batch datasets failed", () => {
-    const saga = dataset.effects.getHotDatasets
-    const creator = {
-      type: "getHotDatasets",
-      payload: { limit: 3 },
-    }
-    const result = [[1, 34], [1001, 31], [23, 2]]
-    const datasets = undefined
-    const expected = []
-
-    const generator = saga(creator, { put, call, select })
-    generator.next()
-    generator.next({
-      code: 0,
-      result,
-    })
-    const end = generator.next(datasets)
-
-    expect(end.value).toEqual(expected)
-    expect(end.done).toBe(true)
-  })
-  it("effects: getHotDatasets -> stats result = []", () => {
-    const saga = dataset.effects.getHotDatasets
-    const creator = {
-      type: "getHotDatasets",
-      payload: { limit: 4 },
-    }
-    const result = []
-    const expected = []
-
-    const generator = saga(creator, { put, call, select })
-    generator.next()
-    const end = generator.next({
-      code: 0,
-      result,
-    })
-
-    expect(end.value).toEqual(expected)
     expect(end.done).toBe(true)
   })
   it("effects: getInternalDataset", () => {
@@ -562,22 +500,22 @@ describe("models: dataset", () => {
     expect(end.done).toBe(true)
   })
 
-  it("effects: compare", () => {
-    const saga = dataset.effects.compare
-    const item = () => ({ ap: Math.random()})
-    const list = (list, it) => list.reduce((p, c) => ({ ...p, [c]: it ? it : item()}), {})
+  it("effects: evaluate", () => {
+    const saga = dataset.effects.evaluate
+    const item = () => ({ ap: Math.random() })
+    const list = (list, it) => list.reduce((p, c) => ({ ...p, [c]: it ? it : item() }), {})
     const keywords = ['dog', 'cat', 'person']
     const ious = [0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95].map(n => toFixed(n, 2))
     const iitems = () => ({
-        ci_evaluations: list(keywords),
-        ci_everage_evaluations: item(),
-      })
+      ci_evaluations: list(keywords),
+      ci_everage_evaluations: item(),
+    })
     const expected = {
       iou_evaluations: list(ious, iitems()),
       iou_everage_evaluations: iitems(),
     }
     const creator = {
-      type: "compare",
+      type: "evaluate",
       payload: { projectId: 51234, gt: 1324536, datasets: [534243234, 64311234], confidence: 0.6 },
     }
 

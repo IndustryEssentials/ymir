@@ -5,6 +5,7 @@ from typing import List
 import unittest
 
 from common_utils import labels
+from mir.tools.class_ids import UserLabels, SingleLabel
 
 import tests.utils as test_utils
 
@@ -34,7 +35,7 @@ class TestLabelFileHandler(unittest.TestCase):
     def setUp(self):
         test_utils.check_commands()
         self._prepare_dirs()
-        labels.create_empty(label_storage_file=self._label_storage_file)
+        labels.load_or_create_userlabels(label_storage_file=self._label_storage_file, create_ok=True)
         logging.info("preparing done.")
 
     def tearDown(self):
@@ -52,12 +53,12 @@ class TestLabelFileHandler(unittest.TestCase):
         os.mkdir(self._storage_root)
 
     # protected: check result
-    def _check_result(self, expected: List[dict], actual: List[labels.SingleLabel]) -> None:
+    def _check_result(self, expected: List[dict], actual: List[SingleLabel]) -> None:
         try:
             expected_length = len(expected)
             self.assertEqual(expected_length, len(actual))
             for idx in range(expected_length):
-                expected_label: labels.SingleLabel = expected[idx]['_label']
+                expected_label: SingleLabel = expected[idx]['_label']
                 is_modified: bool = expected[idx]['_is_modified']
                 actual_label = actual[idx]
 
@@ -80,7 +81,7 @@ class TestLabelFileHandler(unittest.TestCase):
     # public: test cases
     def test_merge(self):
         # case 0: add 3 new labels
-        candidate_labels_1 = labels.UserLabels.parse_obj({
+        candidate_labels_1 = UserLabels.parse_obj({
             'labels': [{
                 'name': 'a',
                 'aliases': ['aa', 'aaa']
@@ -92,26 +93,26 @@ class TestLabelFileHandler(unittest.TestCase):
                 'aliases': []
             }]
         })
-        conflict_labels = labels.merge_labels(label_storage_file=self._label_storage_file,
-                                              new_labels=candidate_labels_1,
-                                              check_only=False)
+        user_labels = UserLabels(storage_file=self._label_storage_file)
+        conflict_labels = user_labels.upsert_labels(new_labels=candidate_labels_1, check_only=False)
+
         expected = [{
-            '_label': labels.SingleLabel(id=0, name='a', aliases=['aa', 'aaa']),
+            '_label': SingleLabel(id=0, name='a', aliases=['aa', 'aaa']),
             '_is_modified': False,
         }, {
-            '_label': labels.SingleLabel(id=1, name='h', aliases=['hh', 'hhh']),
+            '_label': SingleLabel(id=1, name='h', aliases=['hh', 'hhh']),
             '_is_modified': False,
         }, {
-            '_label': labels.SingleLabel(id=2, name='z'),
+            '_label': SingleLabel(id=2, name='z'),
             '_is_modified': False,
         }]
         self.assertFalse(conflict_labels.labels)
         self._check_result(expected=expected,
-                           actual=labels.get_user_labels_from_storage(self._label_storage_file).labels)
+                           actual=UserLabels(storage_file=self._label_storage_file).labels)
 
         # a unchanged, m with a conflicted alias hh, so all merge is ignored
         # no change will made to storage file
-        candidate_labels_2 = labels.UserLabels.parse_obj({
+        candidate_labels_2 = UserLabels.parse_obj({
             'labels': [{
                 'name': 'a',
                 'aliases': ['aa', 'aaa']
@@ -124,16 +125,14 @@ class TestLabelFileHandler(unittest.TestCase):
             }]
         })
         # candidate_labels = ['a,aa,aaa', 'm,hh', 'zz']
-        conflict_labels = labels.merge_labels(label_storage_file=self._label_storage_file,
-                                              new_labels=candidate_labels_2,
-                                              check_only=False)
-        conflict_labels_expected = labels.UserLabels.parse_obj({'labels': [{'name': 'm', 'aliases': ['hh']}]})
+        user_labels = UserLabels(storage_file=self._label_storage_file)
+        conflict_labels = user_labels.upsert_labels(new_labels=candidate_labels_2, check_only=False)
+        conflict_labels_expected = UserLabels.parse_obj({'labels': [{'name': 'm', 'aliases': ['hh']}]})
         self.assertDictEqual(conflict_labels_expected.dict(), conflict_labels.dict())
-        self._check_result(expected=expected,
-                           actual=labels.get_user_labels_from_storage(self._label_storage_file).labels)
+        self._check_result(expected=expected, actual=UserLabels(storage_file=self._label_storage_file).labels)
 
         # a: reset aliases, h: reset aliases, x: add new, z: unchanged
-        candidate_labels_3 = labels.UserLabels.parse_obj({
+        candidate_labels_3 = UserLabels.parse_obj({
             'labels': [{
                 'name': 'A',
                 'aliases': ['aa']
@@ -146,102 +145,95 @@ class TestLabelFileHandler(unittest.TestCase):
             }]
         })
         # candidate_labels = ["A,aa", "h", "x,xx,xxx"]
-        conflict_labels = labels.merge_labels(label_storage_file=self._label_storage_file,
-                                              new_labels=candidate_labels_3,
-                                              check_only=False)
+        user_labels = UserLabels(storage_file=self._label_storage_file)
+        conflict_labels = user_labels.upsert_labels(new_labels=candidate_labels_3, check_only=False)
         expected = [{
-            '_label': labels.SingleLabel(id=0, name='a', aliases=['aa']),
+            '_label': SingleLabel(id=0, name='a', aliases=['aa']),
             '_is_modified': True,
         }, {
-            '_label': labels.SingleLabel(id=1, name='h'),
+            '_label': SingleLabel(id=1, name='h'),
             '_is_modified': True,
         }, {
-            '_label': labels.SingleLabel(id=2, name='z'),
+            '_label': SingleLabel(id=2, name='z'),
             '_is_modified': False,
         }, {
-            '_label': labels.SingleLabel(id=3, name='x', aliases=['xx', 'xxx']),
+            '_label': SingleLabel(id=3, name='x', aliases=['xx', 'xxx']),
             '_is_modified': False,
         }]
         self.assertFalse(conflict_labels.labels)
-        self._check_result(expected=expected,
-                           actual=labels.get_user_labels_from_storage(self._label_storage_file).labels)
+        self._check_result(expected=expected, actual=UserLabels(storage_file=self._label_storage_file).labels)
 
         # h: reset aliases with conflict, so all merge is ignored, storage file unchanged
         # candidate_labels = ["h,a"]
-        candidate_labels_4 = labels.UserLabels.parse_obj({'labels': [{'name': 'h', 'aliases': ['a']}]})
-        conflict_labels = labels.merge_labels(label_storage_file=self._label_storage_file,
-                                              new_labels=candidate_labels_4,
-                                              check_only=False)
-        conflict_labels_expected = labels.UserLabels.parse_obj({'labels': [{'name': 'h', 'aliases': ['a']}]})
+        candidate_labels_4 = UserLabels.parse_obj({'labels': [{'name': 'h', 'aliases': ['a']}]})
+        user_labels = UserLabels(storage_file=self._label_storage_file)
+        conflict_labels = user_labels.upsert_labels(new_labels=candidate_labels_4, check_only=False)
+
+        conflict_labels_expected = UserLabels.parse_obj({'labels': [{'name': 'h', 'aliases': ['a']}]})
         self.assertDictEqual(conflict_labels_expected.dict(), conflict_labels.dict())
-        self._check_result(expected=expected,
-                           actual=labels.get_user_labels_from_storage(self._label_storage_file).labels)
+        self._check_result(expected=expected, actual=UserLabels(storage_file=self._label_storage_file).labels)
 
         # checkonly, wants to add c
         # candidate_labels = ['c,cc,ccc']
-        candidate_labels_5 = labels.UserLabels.parse_obj({'labels': [{'name': 'c', 'aliases': ['cc', 'ccc']}]})
-        conflict_labels = labels.merge_labels(label_storage_file=self._label_storage_file,
-                                              new_labels=candidate_labels_5,
-                                              check_only=True)
+        candidate_labels_5 = UserLabels.parse_obj({'labels': [{'name': 'c', 'aliases': ['cc', 'ccc']}]})
+        user_labels = UserLabels(storage_file=self._label_storage_file)
+        conflict_labels = user_labels.upsert_labels(new_labels=candidate_labels_5, check_only=True)
+
         self.assertFalse(conflict_labels.labels)
-        self._check_result(expected=expected,
-                           actual=labels.get_user_labels_from_storage(self._label_storage_file).labels)
+        self._check_result(expected=expected, actual=UserLabels(storage_file=self._label_storage_file).labels)
 
         # add again
         # candidate_labels = ['c,cc,ccc']
-        candidate_labels_6 = labels.UserLabels.parse_obj({'labels': [{'name': 'c', 'aliases': ['cc', 'ccc']}]})
-        conflict_labels = labels.merge_labels(label_storage_file=self._label_storage_file,
-                                              new_labels=candidate_labels_6,
-                                              check_only=False)
+        candidate_labels_6 = UserLabels.parse_obj({'labels': [{'name': 'c', 'aliases': ['cc', 'ccc']}]})
+        user_labels = UserLabels(storage_file=self._label_storage_file)
+        conflict_labels = user_labels.upsert_labels(new_labels=candidate_labels_6, check_only=False)
         expected = [{
-            '_label': labels.SingleLabel(id=0, name='a', aliases=['aa']),
+            '_label': SingleLabel(id=0, name='a', aliases=['aa']),
             '_is_modified': True,
         }, {
-            '_label': labels.SingleLabel(id=1, name='h'),
+            '_label': SingleLabel(id=1, name='h'),
             '_is_modified': True,
         }, {
-            '_label': labels.SingleLabel(id=2, name='z'),
+            '_label': SingleLabel(id=2, name='z'),
             '_is_modified': False,
         }, {
-            '_label': labels.SingleLabel(id=3, name='x', aliases=['xx', 'xxx']),
+            '_label': SingleLabel(id=3, name='x', aliases=['xx', 'xxx']),
             '_is_modified': False,
         }, {
-            '_label': labels.SingleLabel(id=4, name='c', aliases=['cc', 'ccc']),
+            '_label': SingleLabel(id=4, name='c', aliases=['cc', 'ccc']),
             '_is_modified': False,
         }]
         self.assertFalse(conflict_labels.labels)
-        self._check_result(expected=expected,
-                           actual=labels.get_user_labels_from_storage(self._label_storage_file).labels)
+        self._check_result(expected=expected, actual=UserLabels(storage_file=self._label_storage_file).labels)
 
         # add label with head and tail spaces
-        candidate_labels_7 = labels.UserLabels.parse_obj(
+        candidate_labels_7 = UserLabels.parse_obj(
             {'labels': [{
                 'name': ' d ',
                 'aliases': ['dd ', ' ddd', ' d d d']
             }]})
         # candidate_labels = [' d ,dd , ddd, d d d']
-        conflict_labels = labels.merge_labels(label_storage_file=self._label_storage_file,
-                                              new_labels=candidate_labels_7,
-                                              check_only=False)
+        user_labels = UserLabels(storage_file=self._label_storage_file)
+        conflict_labels = user_labels.upsert_labels(new_labels=candidate_labels_7, check_only=False)
+
         expected = [{
-            '_label': labels.SingleLabel(id=0, name='a', aliases=['aa']),
+            '_label': SingleLabel(id=0, name='a', aliases=['aa']),
             '_is_modified': True,
         }, {
-            '_label': labels.SingleLabel(id=1, name='h'),
+            '_label': SingleLabel(id=1, name='h'),
             '_is_modified': True,
         }, {
-            '_label': labels.SingleLabel(id=2, name='z'),
+            '_label': SingleLabel(id=2, name='z'),
             '_is_modified': False,
         }, {
-            '_label': labels.SingleLabel(id=3, name='x', aliases=['xx', 'xxx']),
+            '_label': SingleLabel(id=3, name='x', aliases=['xx', 'xxx']),
             '_is_modified': False,
         }, {
-            '_label': labels.SingleLabel(id=4, name='c', aliases=['cc', 'ccc']),
+            '_label': SingleLabel(id=4, name='c', aliases=['cc', 'ccc']),
             '_is_modified': False,
         }, {
-            '_label': labels.SingleLabel(id=5, name='d', aliases=['dd', 'ddd', 'd d d']),
+            '_label': SingleLabel(id=5, name='d', aliases=['dd', 'ddd', 'd d d']),
             '_is_modified': False,
         }]
         self.assertFalse(conflict_labels.labels)
-        self._check_result(expected=expected,
-                           actual=labels.get_user_labels_from_storage(self._label_storage_file).labels)
+        self._check_result(expected=expected, actual=UserLabels(storage_file=self._label_storage_file).labels)

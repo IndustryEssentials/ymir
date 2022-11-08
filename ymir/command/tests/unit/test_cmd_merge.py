@@ -1,7 +1,7 @@
 import logging
 import os
 import shutil
-from typing import Dict, List, Tuple
+from typing import Any, Dict, List, Tuple
 import unittest
 
 from google.protobuf.json_format import MessageToDict, ParseDict
@@ -54,12 +54,8 @@ class TestMergeCmd(unittest.TestCase):
         self._prepare_mir_branch_a()
         test_utils.mir_repo_create_branch(self._mir_root, "b")
         self._prepare_mir_branch_b()
-        # test_utils.mir_repo_create_branch(self._mir_root, "c")
-        # self._prepare_mir_branch_c()
         test_utils.mir_repo_create_branch(self._mir_root, "d")
         self._prepare_mir_branch_d()
-        # test_utils.mir_repo_create_branch(self._mir_root, "e")
-        # self._prepare_mir_branch_e()
         test_utils.mir_repo_checkout(self._mir_root, "master")
 
     @staticmethod
@@ -76,11 +72,16 @@ class TestMergeCmd(unittest.TestCase):
             }
 
     @staticmethod
-    def _generate_annotations_for_asset(type_ids: List[int], x: int, y: int):
+    def _generate_annotations_for_asset(type_ids: List[int],
+                                        x: int,
+                                        y: int,
+                                        cm: int = mirpb.ConfusionMatrixType.NotSet):
         annotations_list = []
         for idx, type_id in enumerate(type_ids):
             annotations_list.append({
                 'class_id': type_id,
+                'cm': cm,
+                'det_link_id': -1,
                 'box': {
                     'x': idx * 100 + x,
                     'y': y,
@@ -88,11 +89,11 @@ class TestMergeCmd(unittest.TestCase):
                     'h': 50
                 },
             })
-        return {'annotations': annotations_list}
+        return {'boxes': annotations_list, 'img_class_ids': type_ids}
 
     @staticmethod
     def _generate_keywords_for_asset(predefined: List[int], customized: List[str]):
-        return {'predifined_keyids': predefined, 'customized_keywords': customized}
+        return {'predefined_keyids': predefined}
 
     @staticmethod
     def _generate_task(task_id: str, name: str, type: int, timestamp: int):
@@ -109,34 +110,39 @@ class TestMergeCmd(unittest.TestCase):
     def _prepare_mir_branch(self, assets_and_keywords: Dict[str, Tuple[List[int], List[str]]], size: int,
                             branch_name_and_task_id: str, commit_msg: str):
         mir_annotations = mirpb.MirAnnotations()
-        mir_keywords = mirpb.MirKeywords()
         mir_metadatas = mirpb.MirMetadatas()
 
-        dict_metadatas = {'attributes': {}}
+        dict_metadatas: Dict[str, Any] = {'attributes': {}}
         for asset_id in assets_and_keywords:
             dict_metadatas["attributes"][asset_id] = TestMergeCmd._generate_attribute_for_asset(size, size)
         ParseDict(dict_metadatas, mir_metadatas)
 
         image_annotations = {}
+        image_cks = {}
+        class_ids_set = set()
         for asset_idx, (asset_id, keywords_pair) in enumerate(assets_and_keywords.items()):
             image_annotations[asset_id] = TestMergeCmd._generate_annotations_for_asset(type_ids=keywords_pair[0],
                                                                                        x=100,
                                                                                        y=(asset_idx + 1) * 100)
+            image_cks[asset_id] = {'cks': keywords_pair[1]}
+            class_ids_set.update(keywords_pair[0])
+        pred = {
+            'task_id': branch_name_and_task_id,
+            "image_annotations": image_annotations,
+            "eval_class_ids": list(class_ids_set),
+            'task_class_ids': list(class_ids_set),
+        }
+        gt = {
+            'task_id': branch_name_and_task_id,
+            "image_annotations": image_annotations,
+            'task_class_ids': list(class_ids_set),
+        }
         dict_annotations = {
-            "task_annotations": {
-                branch_name_and_task_id: {
-                    "image_annotations": image_annotations
-                }
-            },
-            'head_task_id': branch_name_and_task_id
+            "prediction": pred,
+            'ground_truth': gt,
+            'image_cks': image_cks,
         }
         ParseDict(dict_annotations, mir_annotations)
-
-        dict_keywords = {"keywords": {}}
-        for asset_id, keywords_pair in assets_and_keywords.items():
-            dict_keywords["keywords"][asset_id] = TestMergeCmd._generate_keywords_for_asset(
-                keywords_pair[0], keywords_pair[1])
-        ParseDict(dict_keywords, mir_keywords)
 
         task = mir_storage_ops.create_task(task_type=mirpb.TaskTypeMining,
                                            task_id=branch_name_and_task_id,
@@ -157,10 +163,18 @@ class TestMergeCmd(unittest.TestCase):
         all asset size set to (1000, 1000)
         """
         assets_and_keywords = {
-            "a0": ([1], ["c0", "c1"]),
-            "a1": ([1], ["c0", "c1"]),
-            "a2": ([1], ["c0", "c1"]),
-            "a3": ([1], ["c0", "c1"]),
+            "a0": ([1], {
+                "c0": "c1"
+            }),
+            "a1": ([1], {
+                "c0": "c1"
+            }),
+            "a2": ([1], {
+                "c0": "c1"
+            }),
+            "a3": ([1], {
+                "c0": "c1"
+            }),
         }
         self._prepare_mir_branch(assets_and_keywords=assets_and_keywords,
                                  size=1000,
@@ -174,9 +188,15 @@ class TestMergeCmd(unittest.TestCase):
         all asset size set to (1100, 1100)
         """
         assets_and_keywords = {
-            "b0": ([2], ["c0", "c2"]),
-            "b1": ([2], ["c0", "c2"]),
-            "b2": ([2], ["c0", "c2"]),
+            "b0": ([2], {
+                "c0": "c2"
+            }),
+            "b1": ([2], {
+                "c0": "c2"
+            }),
+            "b2": ([2], {
+                "c0": "c2"
+            }),
         }
         self._prepare_mir_branch(assets_and_keywords=assets_and_keywords,
                                  size=1100,
@@ -190,9 +210,15 @@ class TestMergeCmd(unittest.TestCase):
         all asset size set to (1300, 1300)
         """
         assets_and_keywords = {
-            "a0": ([1, 2], ["c0", "c1", "c2"]),
-            "d0": ([1, 4], ["c0", "c1", "c4"]),
-            "d1": ([1, 4], ["c0", "c1", "c4"]),
+            "a0": ([1, 2], {
+                "c0": "c4"
+            }),
+            "d0": ([1, 4], {
+                "c0": "c4"
+            }),
+            "d1": ([1, 4], {
+                "c0": "c4"
+            }),
         }
         self._prepare_mir_branch(assets_and_keywords=assets_and_keywords,
                                  size=1300,
@@ -200,10 +226,7 @@ class TestMergeCmd(unittest.TestCase):
                                  commit_msg="prepare_branch_merge_d")
 
     # protected: check
-    def _check_result(self,
-                      expected_dict_metadatas=None,
-                      expected_dict_annotations=None,
-                      expected_dict_keywords=None):
+    def _check_result(self, expected_dict_metadatas=None, expected_dict_annotations=None):
         if expected_dict_metadatas:
             try:
                 mir_metadatas = test_utils.read_mir_pb(os.path.join(self._mir_root, "metadatas.mir"),
@@ -219,25 +242,14 @@ class TestMergeCmd(unittest.TestCase):
             try:
                 mir_annotations = test_utils.read_mir_pb(os.path.join(self._mir_root, "annotations.mir"),
                                                          mirpb.MirAnnotations)
-                actual_dict_annotations = MessageToDict(mir_annotations, preserving_proto_field_name=True)
+                actual_dict_annotations = MessageToDict(mir_annotations,
+                                                        preserving_proto_field_name=True,
+                                                        use_integers_for_enums=True)
                 self.assertEqual(expected_dict_annotations, actual_dict_annotations)
             except AssertionError as e:
                 logging.info(f"e: {expected_dict_annotations}")
                 logging.info(f"a: {actual_dict_annotations}")
                 raise e
-
-        if expected_dict_keywords:
-            mir_keywords = test_utils.read_mir_pb(os.path.join(self._mir_root, "keywords.mir"), mirpb.MirKeywords)
-            actual_dict_keywords = MessageToDict(mir_keywords, preserving_proto_field_name=True)
-            for asset_id, expected_keywords in expected_dict_keywords["keywords"].items():
-                actual_keywords = actual_dict_keywords["keywords"][asset_id]
-                try:
-                    self.assertEqual(set(expected_keywords["predifined_keyids"]),
-                                     set(actual_keywords["predifined_keyids"]))
-                except AssertionError as e:
-                    logging.info(f"e: {expected_keywords}")
-                    logging.info(f"a: {actual_keywords}")
-                    raise e
 
     # public: test cases
     def test_all(self):
@@ -255,7 +267,7 @@ class TestMergeCmd(unittest.TestCase):
         fake_args.mir_root = mir_root
         fake_args.src_revs = 'b;a'
         fake_args.ex_src_revs = ''
-        fake_args.dst_rev = '_test_no_tvt_stop_00@merge-task-id'
+        fake_args.dst_rev = '_test_no_tvt_stop_00@merge-task-id-s0'
         fake_args.strategy = 'stop'
         fake_args.work_dir = ''
         merge_instance = CmdMerge(fake_args)
@@ -276,35 +288,76 @@ class TestMergeCmd(unittest.TestCase):
             }
         }
 
+        expected_pred = {
+            'task_id': 'merge-task-id-s0',
+            "image_annotations": {
+                "a0": TestMergeCmd._generate_annotations_for_asset([1], 100, 100, cm=mirpb.ConfusionMatrixType.IGNORED),
+                "a1": TestMergeCmd._generate_annotations_for_asset([1], 100, 200, cm=mirpb.ConfusionMatrixType.IGNORED),
+                "a2": TestMergeCmd._generate_annotations_for_asset([1], 100, 300, cm=mirpb.ConfusionMatrixType.IGNORED),
+                "a3": TestMergeCmd._generate_annotations_for_asset([1], 100, 400, cm=mirpb.ConfusionMatrixType.IGNORED),
+                "b0": TestMergeCmd._generate_annotations_for_asset([2], 100, 100, cm=mirpb.ConfusionMatrixType.IGNORED),
+                "b1": TestMergeCmd._generate_annotations_for_asset([2], 100, 200, cm=mirpb.ConfusionMatrixType.IGNORED),
+                "b2": TestMergeCmd._generate_annotations_for_asset([2], 100, 300, cm=mirpb.ConfusionMatrixType.IGNORED),
+            },
+            'task_class_ids': [1, 2],
+            'model': {},
+            'eval_class_ids': [1, 2],
+        }
+        expected_gt = {
+            'task_id': 'merge-task-id-s0',
+            "image_annotations": {
+                "a0": TestMergeCmd._generate_annotations_for_asset([1], 100, 100, cm=mirpb.ConfusionMatrixType.FN),
+                "a1": TestMergeCmd._generate_annotations_for_asset([1], 100, 200, cm=mirpb.ConfusionMatrixType.FN),
+                "a2": TestMergeCmd._generate_annotations_for_asset([1], 100, 300, cm=mirpb.ConfusionMatrixType.FN),
+                "a3": TestMergeCmd._generate_annotations_for_asset([1], 100, 400, cm=mirpb.ConfusionMatrixType.FN),
+                "b0": TestMergeCmd._generate_annotations_for_asset([2], 100, 100, cm=mirpb.ConfusionMatrixType.FN),
+                "b1": TestMergeCmd._generate_annotations_for_asset([2], 100, 200, cm=mirpb.ConfusionMatrixType.FN),
+                "b2": TestMergeCmd._generate_annotations_for_asset([2], 100, 300, cm=mirpb.ConfusionMatrixType.FN),
+            },
+            'task_class_ids': [1, 2],
+        }
         expected_dict_annotations = {
-            "task_annotations": {
-                "merge-task-id": {
-                    "image_annotations": {
-                        "a0": TestMergeCmd._generate_annotations_for_asset([1], 100, 100),
-                        "a1": TestMergeCmd._generate_annotations_for_asset([1], 100, 200),
-                        "a2": TestMergeCmd._generate_annotations_for_asset([1], 100, 300),
-                        "a3": TestMergeCmd._generate_annotations_for_asset([1], 100, 400),
-                        "b0": TestMergeCmd._generate_annotations_for_asset([2], 100, 100),
-                        "b1": TestMergeCmd._generate_annotations_for_asset([2], 100, 200),
-                        "b2": TestMergeCmd._generate_annotations_for_asset([2], 100, 300),
+            "prediction": expected_pred,
+            'ground_truth': expected_gt,
+            'image_cks': {
+                'a0': {
+                    'cks': {
+                        'c0': 'c1',
+                    }
+                },
+                'a1': {
+                    'cks': {
+                        'c0': 'c1',
+                    }
+                },
+                'a2': {
+                    'cks': {
+                        'c0': 'c1',
+                    }
+                },
+                'a3': {
+                    'cks': {
+                        'c0': 'c1',
+                    }
+                },
+                'b0': {
+                    'cks': {
+                        'c0': 'c2',
+                    }
+                },
+                'b1': {
+                    'cks': {
+                        'c0': 'c2',
+                    }
+                },
+                'b2': {
+                    'cks': {
+                        'c0': 'c2',
                     }
                 }
-            },
-            'head_task_id': 'merge-task-id',
-        }
-
-        expected_dict_keywords = {
-            "keywords": {
-                "a0": TestMergeCmd._generate_keywords_for_asset([1], ["c0", "c1"]),
-                "a1": TestMergeCmd._generate_keywords_for_asset([1], ["c0", "c1"]),
-                "a2": TestMergeCmd._generate_keywords_for_asset([1], ["c0", "c1"]),
-                "a3": TestMergeCmd._generate_keywords_for_asset([1], ["c0", "c1"]),
-                "b0": TestMergeCmd._generate_keywords_for_asset([2], ["c0", "c2"]),
-                "b1": TestMergeCmd._generate_keywords_for_asset([2], ["c0", "c2"]),
-                "b2": TestMergeCmd._generate_keywords_for_asset([2], ["c0", "c2"]),
             }
         }
-        self._check_result(expected_dict_metadatas, expected_dict_annotations, expected_dict_keywords)
+        self._check_result(expected_dict_metadatas, expected_dict_annotations)
 
     def _test_tvt_stop_01(self):
         """ abnormal case: with tvt flag assigned, strategy stop, a + d, have joint assets """
@@ -313,7 +366,7 @@ class TestMergeCmd(unittest.TestCase):
         fake_args.mir_root = mir_root
         fake_args.src_revs = 'tr:a;va:d'
         fake_args.ex_src_revs = ''
-        fake_args.dst_rev = "_test_tvt_stop_01@merge-task-id"
+        fake_args.dst_rev = "_test_tvt_stop_01@merge-task-id-s1"
         fake_args.strategy = 'stop'
         fake_args.work_dir = ''
         merge_instance = CmdMerge(fake_args)
@@ -329,7 +382,7 @@ class TestMergeCmd(unittest.TestCase):
         fake_args.mir_root = mir_root
         fake_args.src_revs = 'tr:a;va:d'
         fake_args.ex_src_revs = ''
-        fake_args.dst_rev = '_test_tvt_host_00@merge-task-id'
+        fake_args.dst_rev = '_test_tvt_host_00@merge-task-id-h0'
         fake_args.strategy = 'host'
         fake_args.work_dir = ''
         merge_instance = CmdMerge(fake_args)
@@ -349,33 +402,70 @@ class TestMergeCmd(unittest.TestCase):
             }
         }
 
-        expected_dict_annotations = {
-            "task_annotations": {
-                "merge-task-id": {
-                    "image_annotations": {
-                        "a0": TestMergeCmd._generate_annotations_for_asset([1], 100, 100),
-                        "a1": TestMergeCmd._generate_annotations_for_asset([1], 100, 200),
-                        "a2": TestMergeCmd._generate_annotations_for_asset([1], 100, 300),
-                        "a3": TestMergeCmd._generate_annotations_for_asset([1], 100, 400),
-                        "d0": TestMergeCmd._generate_annotations_for_asset([1, 4], 100, 200),
-                        "d1": TestMergeCmd._generate_annotations_for_asset([1, 4], 100, 300),
-                    }
-                }
+        expected_pred = {
+            'task_id': 'merge-task-id-h0',
+            "image_annotations": {
+                "a0": TestMergeCmd._generate_annotations_for_asset([1], 100, 100, cm=mirpb.ConfusionMatrixType.IGNORED),
+                "a1": TestMergeCmd._generate_annotations_for_asset([1], 100, 200, cm=mirpb.ConfusionMatrixType.IGNORED),
+                "a2": TestMergeCmd._generate_annotations_for_asset([1], 100, 300, cm=mirpb.ConfusionMatrixType.IGNORED),
+                "a3": TestMergeCmd._generate_annotations_for_asset([1], 100, 400, cm=mirpb.ConfusionMatrixType.IGNORED),
+                "d0": TestMergeCmd._generate_annotations_for_asset([1, 4], 100, 200, cm=mirpb.ConfusionMatrixType.IGNORED),
+                "d1": TestMergeCmd._generate_annotations_for_asset([1, 4], 100, 300, cm=mirpb.ConfusionMatrixType.IGNORED),
             },
-            'head_task_id': 'merge-task-id',
+            'task_class_ids': [1, 4],
+            'model': {},
+            'eval_class_ids': [1, 2, 4],
+        }
+        expected_gt = {
+            'task_id': 'merge-task-id-h0',
+            "image_annotations": {
+                "a0": TestMergeCmd._generate_annotations_for_asset([1], 100, 100, cm=mirpb.ConfusionMatrixType.FN),
+                "a1": TestMergeCmd._generate_annotations_for_asset([1], 100, 200, cm=mirpb.ConfusionMatrixType.FN),
+                "a2": TestMergeCmd._generate_annotations_for_asset([1], 100, 300, cm=mirpb.ConfusionMatrixType.FN),
+                "a3": TestMergeCmd._generate_annotations_for_asset([1], 100, 400, cm=mirpb.ConfusionMatrixType.FN),
+                "d0": TestMergeCmd._generate_annotations_for_asset([1, 4], 100, 200, cm=mirpb.ConfusionMatrixType.FN),
+                "d1": TestMergeCmd._generate_annotations_for_asset([1, 4], 100, 300, cm=mirpb.ConfusionMatrixType.FN),
+            },
+            'task_class_ids': [1, 4],
+        }
+        expected_dict_annotations = {
+            "prediction": expected_pred,
+            'ground_truth': expected_gt,
+            'image_cks': {
+                'a0': {
+                    'cks': {
+                        'c0': 'c1'
+                    }
+                },
+                'a1': {
+                    'cks': {
+                        'c0': 'c1'
+                    }
+                },
+                'a2': {
+                    'cks': {
+                        'c0': 'c1'
+                    }
+                },
+                'a3': {
+                    'cks': {
+                        'c0': 'c1'
+                    }
+                },
+                'd0': {
+                    'cks': {
+                        'c0': 'c4'
+                    }
+                },
+                'd1': {
+                    'cks': {
+                        'c0': 'c4'
+                    }
+                },
+            },
         }
 
-        expected_dict_keywords = {
-            "keywords": {
-                "a0": TestMergeCmd._generate_keywords_for_asset([1], ["c0", "c1"]),
-                "a1": TestMergeCmd._generate_keywords_for_asset([1], ["c0", "c1"]),
-                "a2": TestMergeCmd._generate_keywords_for_asset([1], ["c0", "c1"]),
-                "a3": TestMergeCmd._generate_keywords_for_asset([1], ["c0", "c1"]),
-                "d0": TestMergeCmd._generate_keywords_for_asset([1, 4], ["c0", "c1", "c4"]),
-                "d1": TestMergeCmd._generate_keywords_for_asset([1, 4], ["c0", "c1", "c4"]),
-            }
-        }
-        self._check_result(expected_dict_metadatas, expected_dict_annotations, expected_dict_keywords)
+        self._check_result(expected_dict_metadatas, expected_dict_annotations)
 
     def _test_tvt_guest_00(self):
         """ normal case: with tvt flag assigned, strategy guest, a + d, have joint assets """
@@ -384,7 +474,7 @@ class TestMergeCmd(unittest.TestCase):
         fake_args.mir_root = mir_root
         fake_args.src_revs = 'tr:a;va:d'
         fake_args.ex_src_revs = ''
-        fake_args.dst_rev = '_test_tvt_guest_00@merge-task-id'
+        fake_args.dst_rev = '_test_tvt_guest_00@merge-task-id-g0'
         fake_args.strategy = 'guest'
         fake_args.work_dir = ''
         merge_instance = CmdMerge(fake_args)
@@ -404,34 +494,70 @@ class TestMergeCmd(unittest.TestCase):
             }
         }
 
-        expected_dict_annotations = {
-            "task_annotations": {
-                "merge-task-id": {
-                    "image_annotations": {
-                        "a1": TestMergeCmd._generate_annotations_for_asset([1], 100, 200),
-                        "a2": TestMergeCmd._generate_annotations_for_asset([1], 100, 300),
-                        "a3": TestMergeCmd._generate_annotations_for_asset([1], 100, 400),
-                        "a0": TestMergeCmd._generate_annotations_for_asset([1, 2], 100, 100),
-                        "d0": TestMergeCmd._generate_annotations_for_asset([1, 4], 100, 200),
-                        "d1": TestMergeCmd._generate_annotations_for_asset([1, 4], 100, 300),
-                    }
-                }
+        expected_pred = {
+            'task_id': 'merge-task-id-g0',
+            "image_annotations": {
+                "a1": TestMergeCmd._generate_annotations_for_asset([1], 100, 200, cm=mirpb.ConfusionMatrixType.IGNORED),
+                "a2": TestMergeCmd._generate_annotations_for_asset([1], 100, 300, cm=mirpb.ConfusionMatrixType.IGNORED),
+                "a3": TestMergeCmd._generate_annotations_for_asset([1], 100, 400, cm=mirpb.ConfusionMatrixType.IGNORED),
+                "a0": TestMergeCmd._generate_annotations_for_asset([1, 2], 100, 100, cm=mirpb.ConfusionMatrixType.IGNORED),
+                "d0": TestMergeCmd._generate_annotations_for_asset([1, 4], 100, 200, cm=mirpb.ConfusionMatrixType.IGNORED),
+                "d1": TestMergeCmd._generate_annotations_for_asset([1, 4], 100, 300, cm=mirpb.ConfusionMatrixType.IGNORED),
             },
-            'head_task_id': 'merge-task-id',
+            'task_class_ids': [1, 2, 4],
+            'model': {},
+            'eval_class_ids': [1, 2, 4],
+        }
+        expected_gt = {
+            'task_id': 'merge-task-id-g0',
+            "image_annotations": {
+                "a1": TestMergeCmd._generate_annotations_for_asset([1], 100, 200, cm=mirpb.ConfusionMatrixType.FN),
+                "a2": TestMergeCmd._generate_annotations_for_asset([1], 100, 300, cm=mirpb.ConfusionMatrixType.FN),
+                "a3": TestMergeCmd._generate_annotations_for_asset([1], 100, 400, cm=mirpb.ConfusionMatrixType.FN),
+                "a0": TestMergeCmd._generate_annotations_for_asset([1, 2], 100, 100, cm=mirpb.ConfusionMatrixType.FN),
+                "d0": TestMergeCmd._generate_annotations_for_asset([1, 4], 100, 200, cm=mirpb.ConfusionMatrixType.FN),
+                "d1": TestMergeCmd._generate_annotations_for_asset([1, 4], 100, 300, cm=mirpb.ConfusionMatrixType.FN),
+            },
+            'task_class_ids': [1, 2, 4],
+        }
+        expected_dict_annotations = {
+            "prediction": expected_pred,
+            'ground_truth': expected_gt,
+            'image_cks': {
+                'a0': {
+                    'cks': {
+                        'c0': 'c4'
+                    }
+                },
+                'a1': {
+                    'cks': {
+                        'c0': 'c1'
+                    }
+                },
+                'a2': {
+                    'cks': {
+                        'c0': 'c1'
+                    }
+                },
+                'a3': {
+                    'cks': {
+                        'c0': 'c1'
+                    }
+                },
+                'd0': {
+                    'cks': {
+                        'c0': 'c4'
+                    }
+                },
+                'd1': {
+                    'cks': {
+                        'c0': 'c4'
+                    }
+                },
+            },
         }
 
-        expected_dict_keywords = {
-            "keywords": {
-                "a0": TestMergeCmd._generate_keywords_for_asset([1, 2], ["c0", "c1", "c2"]),
-                "a1": TestMergeCmd._generate_keywords_for_asset([1], ["c0", "c1"]),
-                "a2": TestMergeCmd._generate_keywords_for_asset([1], ["c0", "c1"]),
-                "a3": TestMergeCmd._generate_keywords_for_asset([1], ["c0", "c1"]),
-                "d0": TestMergeCmd._generate_keywords_for_asset([1, 4], ["c0", "c1", "c4"]),
-                "d1": TestMergeCmd._generate_keywords_for_asset([1, 4], ["c0", "c1", "c4"]),
-            }
-        }
-
-        self._check_result(expected_dict_metadatas, expected_dict_annotations, expected_dict_keywords)
+        self._check_result(expected_dict_metadatas, expected_dict_annotations)
 
     def _test_exclude_no_tvt_host_00(self):
         """ a - d with host strategy """
@@ -440,7 +566,7 @@ class TestMergeCmd(unittest.TestCase):
         fake_args.mir_root = mir_root
         fake_args.src_revs = 'tr:a'
         fake_args.ex_src_revs = 'd'
-        fake_args.dst_rev = '_test_exclude_no_tvt_host_00@merge-task-id'
+        fake_args.dst_rev = '_test_exclude_no_tvt_host_00@merge-task-id-nth0'
         fake_args.strategy = 'host'
         fake_args.work_dir = ''
         merge_instance = CmdMerge(fake_args)
@@ -457,25 +583,46 @@ class TestMergeCmd(unittest.TestCase):
             }
         }
 
-        expected_dict_annotations = {
-            "task_annotations": {
-                "merge-task-id": {
-                    "image_annotations": {
-                        "a1": TestMergeCmd._generate_annotations_for_asset([1], 100, 200),
-                        "a2": TestMergeCmd._generate_annotations_for_asset([1], 100, 300),
-                        "a3": TestMergeCmd._generate_annotations_for_asset([1], 100, 400),
-                    }
-                }
+        expected_pred = {
+            'task_id': 'merge-task-id-nth0',
+            "image_annotations": {
+                "a1": TestMergeCmd._generate_annotations_for_asset([1], 100, 200, cm=mirpb.ConfusionMatrixType.IGNORED),
+                "a2": TestMergeCmd._generate_annotations_for_asset([1], 100, 300, cm=mirpb.ConfusionMatrixType.IGNORED),
+                "a3": TestMergeCmd._generate_annotations_for_asset([1], 100, 400, cm=mirpb.ConfusionMatrixType.IGNORED),
             },
-            'head_task_id': 'merge-task-id',
+            'task_class_ids': [1],
+            'model': {},
+            'eval_class_ids': [1],
         }
-
-        expected_dict_keywords = {
-            "keywords": {
-                "a1": TestMergeCmd._generate_keywords_for_asset([1], ["c0", "c1"]),
-                "a2": TestMergeCmd._generate_keywords_for_asset([1], ["c0", "c1"]),
-                "a3": TestMergeCmd._generate_keywords_for_asset([1], ["c0", "c1"]),
+        expected_gt = {
+            'task_id': 'merge-task-id-nth0',
+            "image_annotations": {
+                "a1": TestMergeCmd._generate_annotations_for_asset([1], 100, 200, cm=mirpb.ConfusionMatrixType.FN),
+                "a2": TestMergeCmd._generate_annotations_for_asset([1], 100, 300, cm=mirpb.ConfusionMatrixType.FN),
+                "a3": TestMergeCmd._generate_annotations_for_asset([1], 100, 400, cm=mirpb.ConfusionMatrixType.FN),
+            },
+            'task_class_ids': [1],
+        }
+        expected_dict_annotations = {
+            "prediction": expected_pred,
+            'ground_truth': expected_gt,
+            'image_cks': {
+                'a1': {
+                    'cks': {
+                        'c0': 'c1'
+                    }
+                },
+                'a2': {
+                    'cks': {
+                        'c0': 'c1'
+                    }
+                },
+                'a3': {
+                    'cks': {
+                        'c0': 'c1'
+                    }
+                },
             }
         }
 
-        self._check_result(expected_dict_metadatas, expected_dict_annotations, expected_dict_keywords)
+        self._check_result(expected_dict_metadatas, expected_dict_annotations)

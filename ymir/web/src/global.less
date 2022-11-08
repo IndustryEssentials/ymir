@@ -1,4 +1,4 @@
-//颜色
+//color
 @white:           #FFFFFF;
 @black:           #000000;
 @color85:         rgba(0, 0, 0, 0.85);
@@ -9,14 +9,14 @@
 @font-bule:       #2CBDE9;
 @font-red:        #F2637B;
 
-//字体
+// font size
 @font-size12:     12px;
 @font-size14:     14px;
 @font-size16:     16px;
 @font-size18:     18px;
 @font-size20:     20px;
 
-//间距
+//gap
 @gap5:            5px;
 @gap8:            8px;
 @gap10:           10px;
@@ -24,28 +24,52 @@
 @gap20:           20px;
 @gap24:           24px;
 
-//投影变量
+//shadow class
 @shadow:   0px 0px 3px;
 @shadow-color: rgba(0, 0, 0, 5%);
 .box-shadow(@style: @shadow, @color: @shadow-color) {
   box-shadow: @style @color;
 }
 
-//圆角变量
+//radius class
 @radius:   5px;
 .box-radius(@style: @radius) {
   border-radius: @style;
 }
 
-//高度变量
+//hight class
 @minus: 180px;
 .calc-height(@minus: @minus) {
   min-height: calc(100vh - @minus);
+}
+.error {
+  color: @error-color;
 }
 
 
 html, body, #root {
   height: 100%;
+}
+ol, ul {
+  margin: 0;
+  padding: 0;
+}
+
+// public class
+.scrollbar {
+  overflow-y: auto;
+  &::-webkit-scrollbar {
+    width: 1px;
+    background-color: #f4f4f4;
+  }
+  &::-webkit-scrollbar-thumb {
+    width: 10px;
+    background-color: #ddd;
+    border-radius: 10px;
+  }
+}
+.orange {
+  color: orange;
 }
 
 body {
@@ -64,6 +88,9 @@ body {
     .anticon {
       vertical-align: middle;
     }
+  }
+  .ant-btn-lg {
+    min-width: 80px;
   }
   .ant-table-thead,.ant-table-tbody {
     tr > th, tr >td {
@@ -137,8 +164,15 @@ body {
     color: @color85;
   }
 
+  /** sidebar **/
+  .sidebar {
+    background: #fff;
+    overflow: auto;
+    height: calc(100vh - 60px);
+  }
+
   /** form **/
-  .ant-form-item-label {
+  .ant-form-horizontal .ant-form-item-label {
     font-weight: bold;
     color: @color85;
     > label:not(.ant-form-item-required):before {
@@ -153,6 +187,9 @@ body {
   }
   .ant-radio-button-wrapper,.ant-form-item-control-input-content {
       color:rgba(0, 0, 0, 0.45); 
+    }
+    .ant-form-item-label > label .ant-form-item-tooltip {
+      color: rgba(0, 0, 0, 0.25);
     }
  
   //radio color styles
@@ -184,10 +221,10 @@ body {
 .breadcrumb {
   height: 50px;
   line-height: 50px;
-  background: @white;
-  margin: 0 -5vw 20px;
-  padding: 0 5vw;
-  .box-shadow();
+  // background: @white;
+  margin: 0 -20px 0;
+  padding: 0 20px;
+  // .box-shadow();
   .breadcrumbContent {
     line-height: 50px;
   }
@@ -239,6 +276,14 @@ body {
     font-size: @font-size18;
   }
   .title {
+    .nameExtra {
+      background-color: @primary-color;
+      color: @white;
+      border-radius: 20px;
+      font-size: 12px;
+      display: inline-block;
+      padding: 2px 10px;
+    }
     .titleItem {
       font-size: @font-size14;
       font-weight: normal;
@@ -367,6 +412,9 @@ body {
     background-color: #fafafa;
     color: rgba(0, 0, 0, 0.85);
     cursor: pointer;
+    &.nobg {
+      background: none;
+    }
     &:before {
       content: ' ';
       display: inline-block;
@@ -412,3 +460,39 @@ body {
     margin-left: 5px;
   } 
 } 
+
+// right side form
+.rightForm {
+  position: relative;
+  .mask {
+    position: absolute;
+    width: calc(100% + 20px);
+    height: calc(100% + 10px);
+    display: flex;
+    align-items: end;
+    justify-content: center;
+    background-color: rgba(0, 0, 0, 0.1);
+    z-index: 5;
+    margin: 0 -10px -10px;
+  } 
+}
+
+.fullTab {
+  .ant-card-body {
+    padding: 20px;
+  }
+  .ant-card-head {
+    padding: 0;
+  }
+  .ant-tabs-nav-list {
+    flex: 1;
+  }
+  .ant-tabs-large > .ant-tabs-nav .ant-tabs-tab {
+    padding: 16px 20px;
+    flex: 1;
+    justify-content: center;
+  }
+  .ant-tabs > .ant-tabs-nav .ant-tabs-nav-operations {
+    display: none;
+  }
+}

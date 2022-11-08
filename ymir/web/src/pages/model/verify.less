@@ -21,21 +21,10 @@
   overflow-y: auto;
   height: 100%;
   margin-right: 20px;
-  padding: 20px;
   border: 1px solid rgba(0, 0, 0, 0.06);
   text-align: center;
   background: rgba(0, 0, 0, 0.02);
   position: relative;
-  &::-webkit-scrollbar {
-    width: 1px;
-    background-color: #ddd;
-  }
-  &::-webkit-scrollbar-thumb {
-    width: 10px;
-    border: 1px solid #0000ff10;
-    background-color: #00000005;
-    border-radius: 10px;
-  }
   .confidence {
     height: 54px;
     background: rgba(0, 0, 0, 0.4);
@@ -64,18 +53,7 @@
   height: 100%;
   display: flex;
   flex-direction: column;
-  overflow-y: auto;
   overflow-x: hidden;
-  &::-webkit-scrollbar {
-    width: 1px;
-    background-color: #ddd;
-  }
-  &::-webkit-scrollbar-thumb {
-    width: 10px;
-    border: 1px solid #0000ff10;
-    background-color: #00000005;
-    border-radius: 10px;
-  }
   .asset_form {
     flex: 1;
     :global(.ant-card-extra) {

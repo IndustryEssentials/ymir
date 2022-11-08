@@ -14,6 +14,7 @@ from controller.utils import gpu_utils, utils
 from controller.utils.invoker_call import make_invoker_cmd_call
 from controller.utils.invoker_mapping import RequestTypeToInvoker
 from controller.utils.redis import rds
+from mir.protos import mir_command_pb2 as mir_cmd_pb
 from proto import backend_pb2
 
 RET_ID = 'commit t000aaaabbbbbbzzzzzzzzzzzzzzz3\nabc'
@@ -82,7 +83,7 @@ class TestInvokerTaskTraining(unittest.TestCase):
         rds.zremrangebyscore = mock.Mock()
         gpu_utils.GPUInfo.get_gpus_info = mock.Mock(return_value={'0': 0.99, '1': 0.9, '2': 0.89})
 
-        labels.UserLabels.get_main_names = mock.Mock(return_value=["frisbee", "car"])
+        labels.UserLabels.main_name_for_ids = mock.Mock(return_value=["frisbee", "car"])
 
         training_config = {
             'anchors': '12, 16, 19, 36, 40, 28, 36, 75, 76, 55, 72, 146, 142, 110, 192, 243, 459, 401',
@@ -100,18 +101,18 @@ class TestInvokerTaskTraining(unittest.TestCase):
 
         training_data_type_1 = backend_pb2.TaskReqTraining.TrainingDatasetType()
         training_data_type_1.dataset_id = self._guest_id1
-        training_data_type_1.dataset_type = backend_pb2.TvtType.TvtTypeTraining
+        training_data_type_1.dataset_type = mir_cmd_pb.TvtType.TvtTypeTraining
         training_data_type_2 = backend_pb2.TaskReqTraining.TrainingDatasetType()
         training_data_type_2.dataset_id = self._guest_id2
-        training_data_type_2.dataset_type = backend_pb2.TvtType.TvtTypeValidation
+        training_data_type_2.dataset_type = mir_cmd_pb.TvtType.TvtTypeValidation
 
         train_task_req = backend_pb2.TaskReqTraining()
-        train_task_req.in_dataset_types.append(training_data_type_1)
         train_task_req.in_dataset_types.append(training_data_type_2)
-        train_task_req.in_class_ids[:] = [0, 1]
+        train_task_req.in_dataset_types.append(training_data_type_1)
+        in_class_ids = [0, 1]
 
         req_create_task = backend_pb2.ReqCreateTask()
-        req_create_task.task_type = backend_pb2.TaskTypeTraining
+        req_create_task.task_type = mir_cmd_pb.TaskType.TaskTypeTraining
         req_create_task.no_task_monitor = True
         req_create_task.training.CopyFrom(train_task_req)
         training_image = 'test_training_image'
@@ -119,10 +120,15 @@ class TestInvokerTaskTraining(unittest.TestCase):
             'modelsuploadlocation': self._storage_root,
             'assetskvlocation': self._storage_root,
             'tensorboard_root': self._tensorboard_root,
+            'openpai_host': '',
+            'openpai_token': '',
+            'openpai_storage': '',
+            'openpai_user': '',
+            'server_runtime': 'runc',
         }
 
         working_dir_root = os.path.join(self._sandbox_root, "work_dir",
-                                        backend_pb2.TaskType.Name(backend_pb2.TaskTypeTraining), self._task_id)
+                                        mir_cmd_pb.TaskType.Name(mir_cmd_pb.TaskType.TaskTypeTraining), self._task_id)
         os.makedirs(working_dir_root, exist_ok=True)
         working_dir_0 = os.path.join(working_dir_root, 'sub_task', self._sub_task_id_0)
         os.makedirs(working_dir_0, exist_ok=True)
@@ -139,6 +145,7 @@ class TestInvokerTaskTraining(unittest.TestCase):
                                          req_create_task=req_create_task,
                                          merge_strategy=backend_pb2.MergeStrategy.Value('HOST'),
                                          singleton_op=training_image,
+                                         in_class_ids=in_class_ids,
                                          docker_image_config=json.dumps(training_config))
         print(MessageToDict(response))
 
@@ -153,12 +160,18 @@ class TestInvokerTaskTraining(unittest.TestCase):
 
         training_config["class_names"] = ["frisbee", "car"]
         training_config['gpu_id'] = '0'
-        expected_config = {'executor_config': training_config, 'task_context': {'available_gpu_id': '1'}}
+        expected_config = {
+            'executor_config': training_config,
+            'task_context': {
+                'available_gpu_id': '1',
+                'server_runtime': 'runc',
+            },
+        }
         logging.info(f"xxx config: {config}")  # for test
         self.assertDictEqual(expected_config, config)
 
         tensorboard_dir = os.path.join(self._tensorboard_root, self._user_name, self._task_id)
-        asset_cache_dir = os.path.join(self._sandbox_root, self._user_name, "training_assset_cache")
+        asset_cache_dir = os.path.join(self._sandbox_root, self._user_name, "asset_cache")
 
         training_cmd = ("mir train --root {0} --dst-rev {1}@{1} --model-location {2} "
                         "--media-location {2} -w {3} --src-revs {1}@{4} --task-config-file {5} --executor {6} "

@@ -1,7 +1,6 @@
 import enum
-import json
-import time
 from typing import Any
+import uuid
 
 from fastapi import APIRouter, Depends, Path, Query, BackgroundTasks
 from fastapi.logger import logger
@@ -13,17 +12,15 @@ from app.api.errors.errors import (
     ProjectNotFound,
     DuplicateProjectError,
     FailedToCreateProject,
-    FailedToConnectClickHouse,
     NoDatasetPermission,
     DatasetNotFound,
 )
 from app.config import settings
 from app.constants.state import ResultState, RunningStates, TaskType, TrainingType
 from app.utils.cache import CacheClient
-from app.utils.clickhouse import YmirClickHouse
 from app.utils.ymir_controller import ControllerClient, gen_task_hash
-from app.libs.projects import setup_sample_project_in_background
-from app.libs.keywords import add_keywords
+from app.libs.projects import setup_sample_project_in_background, send_project_metrics
+from app.libs.labels import ensure_labels_exist
 from common_utils.labels import UserLabels
 
 router = APIRouter()
@@ -67,6 +64,7 @@ def list_projects(
         start_time=start_time,
         end_time=end_time,
     )
+
     return {"result": {"total": total, "items": projects}}
 
 
@@ -83,32 +81,41 @@ def create_sample_project(
     """
     Create sample project
     """
-    project_name = f"sample_project_{current_user.username}_{time.time()}"
+    project_name = f"sample_project_{uuid.uuid4().hex[:8]}"
     project_in = schemas.ProjectCreate(
         name=project_name,
         training_keywords=settings.SAMPLE_PROJECT_KEYWORDS,
-        chunk_size=1,
+        chunk_size=2,
         is_example=True,
     )
     project = crud.project.create_project(db, user_id=current_user.id, obj_in=project_in)
     project_task_hash = gen_task_hash(current_user.id, project.id)
+    training_class_ids = ensure_labels_exist(
+        user_id=current_user.id,
+        user_labels=user_labels,
+        controller_client=controller_client,
+        keywords=settings.SAMPLE_PROJECT_KEYWORDS,
+        cache=cache,
+    )
 
     try:
-        user_labels.get_class_ids(names_or_aliases=settings.SAMPLE_PROJECT_KEYWORDS)
-    except KeyError:
-        # todo refactor keywords dependencies to handle ensure given keywords exist
-        add_keywords(controller_client, cache, current_user.id, settings.SAMPLE_PROJECT_KEYWORDS)
-
-    try:
-        resp = controller_client.create_project(
+        controller_client.create_project(
             user_id=current_user.id,
             project_id=project.id,
             task_id=project_task_hash,
         )
-        logger.info("[create task] controller response: %s", resp)
     except ValueError:
         crud.project.soft_remove(db, id=project.id)
         raise FailedToCreateProject()
+
+    send_project_metrics(
+        current_user.id,
+        project.id,
+        project.name,
+        training_class_ids,
+        TrainingType(project.training_type).name,
+        int(project.create_datetime.timestamp()),
+    )
 
     background_tasks.add_task(
         setup_sample_project_in_background,
@@ -129,7 +136,7 @@ def create_project(
     current_user: models.User = Depends(deps.get_current_active_user),
     project_in: schemas.ProjectCreate,
     controller_client: ControllerClient = Depends(deps.get_controller_client),
-    clickhouse: YmirClickHouse = Depends(deps.get_clickhouse_client),
+    user_labels: UserLabels = Depends(deps.get_user_labels),
 ) -> Any:
     """
     Create project
@@ -154,53 +161,47 @@ def create_project(
         crud.project.soft_remove(db, id=project.id)
         raise FailedToCreateProject()
 
-    # 3.create task info
-    task = crud.task.create_placeholder(
-        db, type_=TaskType.create_project, user_id=current_user.id, project_id=project.id
-    )
-
-    # 3.create dataset group to build dataset info
-    dataset_name = f"{project_in.name}_training_dataset"
-    dataset_paras = schemas.DatasetGroupCreate(name=dataset_name, project_id=project.id, user_id=current_user.id)
-    dataset_group = crud.dataset_group.create_with_user_id(db, user_id=current_user.id, obj_in=dataset_paras)
-
-    # 4.create init dataset
-    dataset_in = schemas.DatasetCreate(
-        name=dataset_name,
-        hash=task_id,
-        dataset_group_id=dataset_group.id,
-        project_id=project.id,
-        user_id=current_user.id,
-        source=task.type,
-        result_state=ResultState.ready,
-        task_id=task.id,
-    )
-    initial_dataset = crud.dataset.create_with_version(db, obj_in=dataset_in)
-
-    # 5.update project info
-    project = crud.project.update_resources(
-        db,
-        project_id=project.id,
-        project_update=schemas.ProjectUpdate(
-            training_dataset_group_id=dataset_group.id, initial_training_dataset_id=initial_dataset.id
-        ),
-    )
-
-    try:
-        clickhouse.save_project_parameter(
-            dt=project.create_datetime,
-            user_id=project.user_id,
-            id_=project.id,
-            name=project.name,
-            training_type=TrainingType(project.training_type).name,
-            training_keywords=json.loads(project.training_keywords),
+    if project_in.enable_iteration:
+        # 3.create task info
+        task = crud.task.create_placeholder(
+            db, type_=TaskType.create_project, user_id=current_user.id, project_id=project.id
         )
-    except FailedToConnectClickHouse:
-        # clickhouse metric shouldn't block create task process
-        logger.exception(
-            "[create project metrics] failed to write project(%s) stats to clickhouse, continue anyway",
-            project.name,
+
+        # 3.create dataset group to build dataset info
+        dataset_name = f"{project_in.name}_training_dataset"
+        dataset_paras = schemas.DatasetGroupCreate(name=dataset_name, project_id=project.id, user_id=current_user.id)
+        dataset_group = crud.dataset_group.create_with_user_id(db, user_id=current_user.id, obj_in=dataset_paras)
+
+        # 4.create init dataset
+        dataset_in = schemas.DatasetCreate(
+            name=dataset_name,
+            hash=task_id,
+            dataset_group_id=dataset_group.id,
+            project_id=project.id,
+            user_id=current_user.id,
+            source=task.type,
+            result_state=ResultState.ready,
+            task_id=task.id,
         )
+        initial_dataset = crud.dataset.create_with_version(db, obj_in=dataset_in)
+
+        # 5.update project info
+        project = crud.project.update_resources(
+            db,
+            project_id=project.id,
+            project_update=schemas.ProjectUpdate(
+                training_dataset_group_id=dataset_group.id, initial_training_dataset_id=initial_dataset.id
+            ),
+        )
+
+    send_project_metrics(
+        current_user.id,
+        project.id,
+        project.name,
+        user_labels.id_for_names(names=project_in.training_keywords, raise_if_unknown=True)[0],
+        TrainingType(project.training_type).name,
+        int(project.create_datetime.timestamp()),
+    )
 
     logger.info("[create project] project record created: %s", project)
     return {"result": project}
@@ -248,8 +249,10 @@ def update_project(
             raise DatasetNotFound()
         if project.training_dataset_group_id != dataset.dataset_group_id:
             raise NoDatasetPermission()
-
+    if project_update.name and crud.project.is_duplicated_name(db, user_id=current_user.id, name=project_update.name):
+        raise DuplicateProjectError()
     project = crud.project.update_resources(db, project_id=project.id, project_update=project_update)
+
     return {"result": project}
 
 

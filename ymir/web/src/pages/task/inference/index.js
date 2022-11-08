@@ -1,32 +1,39 @@
 import React, { useCallback, useEffect, useState } from "react"
 import { connect } from "dva"
-import { Select, Card, Input, Radio, Button, Form, Row, Col, ConfigProvider, Space, InputNumber, message, Tag, Alert } from "antd"
-import {
-  PlusOutlined,
-  MinusCircleOutlined,
-  UpSquareOutlined,
-  DownSquareOutlined,
-} from '@ant-design/icons'
-import styles from "./index.less"
-import commonStyles from "../common.less"
-import { formLayout } from "@/config/antd"
-
-import t from "@/utils/t"
-import { string2Array } from "@/utils/string"
-import { TYPES } from '@/constants/image'
+import { Select, Card, Button, Form, Row, Col, Space, InputNumber, message, Tag, Alert } from "antd"
 import { useHistory, useParams, useLocation } from "umi"
+
+import { formLayout } from "@/config/antd"
+import t from "@/utils/t"
+import { HIDDENMODULES } from '@/constants/common'
+import { string2Array } from "@/utils/string"
+import { OPENPAI_MAX_GPU_COUNT } from '@/constants/common'
+import { TYPES } from '@/constants/image'
+import useFetch from '@/hooks/useFetch'
+
 import Breadcrumbs from "@/components/common/breadcrumb"
-import EmptyStateDataset from '@/components/empty/dataset'
-import EmptyStateModel from '@/components/empty/model'
 import { randomNumber } from "@/utils/number"
-import Tip from "@/components/form/tip"
 import ModelSelect from "@/components/form/modelSelect"
 import ImageSelect from "@/components/form/imageSelect"
 import DatasetSelect from "@/components/form/datasetSelect"
 import useAddKeywords from "@/hooks/useAddKeywords"
 import AddKeywordsBtn from "@/components/keyword/addKeywordsBtn"
+import LiveCodeForm from "@/components/form/items/liveCode"
+import { removeLiveCodeConfig } from "@/components/form/items/liveCodeConfig"
+import DockerConfigForm from "@/components/form/items/dockerConfig"
+import Desc from "@/components/form/desc"
+
+import commonStyles from "../common.less"
+import styles from "./index.less"
+import OpenpaiForm from "@/components/form/items/openpai"
+import Tip from "@/components/form/tip"
 
 const { Option } = Select
+
+const getArray = (str = '') => str.split('|')
+const parseModelStage = (str = '') => {
+  return str ? getArray(str).map(stage => string2Array(stage)) : []
+}
 
 const Algorithm = () => [{ id: "aldd", label: 'ALDD', checked: true }]
 
@@ -35,49 +42,66 @@ function Inference({ datasetCache, datasets, ...func }) {
   const pid = Number(pageParams.id)
   const history = useHistory()
   const location = useLocation()
-  const { did, image } = location.query
-  const mid = string2Array(location.query.mid) || []
-  const [dataset, setDataset] = useState({})
+  const { image } = location.query
+  const stage = parseModelStage(location.query.mid)
   const [selectedModels, setSelectedModels] = useState([])
-  const [gpuStep, setGpuStep] = useState(1)
   const [form] = Form.useForm()
-  const [seniorConfig, setSeniorConfig] = useState([])
-  const [hpVisible, setHpVisible] = useState(false)
+  const [seniorConfig, setSeniorConfig] = useState({})
   const [gpu_count, setGPU] = useState(0)
+  const [taskCount, setTaskCount] = useState(1)
   const [selectedGpu, setSelectedGpu] = useState(0)
   const [keywordRepeatTip, setKRTip] = useState('')
-  const [{ newer }, checkKeywords] = useAddKeywords(true)
+  const [{ newer }, checkKeywords] = useFetch('keyword/checkDuplication', { newer: [] })
+  const [live, setLiveCode] = useState(false)
+  const [project, getProject] = useFetch('project/getProject', {})
+  const watchStages = Form.useWatch('stages', form)
+  const watchTestingSets = Form.useWatch('datasets', form)
+  const [openpai, setOpenpai] = useState(false)
+  const [sys, getSysInfo] = useFetch('common/getSysInfo', {})
+  const selectOpenpai = Form.useWatch('openpai', form)
+  const [showConfig, setShowConfig] = useState(false)
 
   useEffect(() => {
-    fetchSysInfo()
+    getSysInfo()
   }, [])
 
   useEffect(() => {
-    form.setFieldsValue({ hyperparam: seniorConfig })
-  }, [seniorConfig])
+    setGPU(sys.gpu_count || 0)
+    if (!HIDDENMODULES.OPENPAI) {
+      setOpenpai(!!sys.openpai_enabled)
+    }
+  }, [sys])
 
   useEffect(() => {
-    did && func.getDataset(did)
-    did && form.setFieldsValue({ datasetId: Number(did) })
-  }, [did])
+    setGPU(selectOpenpai ? OPENPAI_MAX_GPU_COUNT : sys.gpu_count || 0)
+  }, [selectOpenpai])
 
   useEffect(() => {
-    mid?.length && form.setFieldsValue({ model: mid })
-  }, [location.query.mid])
+    pid && getProject({ id: pid, force: true })
+  }, [pid])
 
   useEffect(() => {
-    datasetCache[did] && setDataset(datasetCache[did])
-  }, [datasetCache])
+    const did = location.query?.did ? getArray(location.query.did).map(Number) : undefined
+
+    did && form.setFieldsValue({ datasets: did })
+  }, [location.query.did])
+
+  useEffect(() => {
+
+  }, [stage])
 
   useEffect(() => {
     pid && func.getDatasets(pid)
   }, [pid])
 
   useEffect(() => {
-    setGpuStep(selectedModels.length || 1)
-
     checkModelKeywords()
   }, [selectedModels])
+
+  useEffect(() => {
+    const taskCount = watchStages?.length * watchTestingSets?.length || 1
+    setTaskCount(taskCount)
+  }, [watchStages, watchTestingSets])
 
   useEffect(() => {
     if (newer.length) {
@@ -91,16 +115,32 @@ function Inference({ datasetCache, datasets, ...func }) {
     }
   }, [newer])
 
-  function validHyperparam(rule, value) {
+  useEffect(() => {
+    const state = location.state
 
-    const params = form.getFieldValue('hyperparam').map(({ key }) => key)
-      .filter(item => item && item.trim() && item === value)
-    if (params.length > 1) {
-      return Promise.reject(t('task.validator.same.param'))
-    } else {
-      return Promise.resolve()
+    if (state?.record) {
+      const { task: { parameters, config }, description, } = state.record
+      const {
+        dataset_id,
+        docker_image,
+        docker_image_id,
+        model_id,
+        model_stage_id,
+      } = parameters
+      form.setFieldsValue({
+        datasets: [dataset_id],
+        gpu_count: config.gpu_count,
+        stages: [[model_id, model_stage_id]],
+        image: docker_image_id + ',' + docker_image,
+        description,
+      })
+      setSelectedGpu(config.gpu_count)
+      setTimeout(() => setConfig(config), 500)
+      setShowConfig(true)
+
+      history.replace({ state: {} })
     }
-  }
+  }, [location.state])
 
   function checkModelKeywords() {
     const keywords = (selectedModels.map(model => model?.keywords) || []).flat().filter(item => item)
@@ -117,17 +157,23 @@ function Inference({ datasetCache, datasets, ...func }) {
   function imageChange(_, image = {}) {
     const { url, configs = [] } = image
     const configObj = configs.find(conf => conf.type === TYPES.INFERENCE) || {}
-    setConfig(configObj.config)
+    if (!HIDDENMODULES.LIVECODE) {
+      setLiveCode(image.liveCode || false)
+    }
+    setConfig(removeLiveCodeConfig(configObj.config))
   }
 
-  function setConfig(config) {
-    const params = Object.keys(config).filter(key => key !== 'gpu_count').map(key => ({ key, value: config[key] }))
-    setSeniorConfig(params)
+  function setConfig(config = {}) {
+    setSeniorConfig(config)
   }
 
   const onFinish = async (values) => {
-    const config = {}
-    form.getFieldValue('hyperparam').forEach(({ key, value }) => key && value ? config[key] = value : null)
+    const config = {
+      ...values.hyperparam?.reduce(
+        (prev, { key, value }) => key && value ? { ...prev, [key]: value } : prev,
+        {}),
+      ...(values.live || {}),
+    }
 
     config['gpu_count'] = form.getFieldValue('gpu_count') || 0
 
@@ -143,13 +189,17 @@ function Inference({ datasetCache, datasets, ...func }) {
       image,
       config,
     }
-    const result = await func.createInferenceTask(params)
+    const result = await func.infer(params)
     if (result) {
-      if (result.filter(item => item).length !== values.model.length) {
+      const tasksCount = values.stages.length * values.datasets.length
+      const resultCount = result.filter(item => item).length
+      if (resultCount < tasksCount) {
         message.warn(t('task.inference.failure.some'))
       }
       await func.clearCache()
-      history.replace(`/home/project/detail/${pid}`)
+      const groups = result.map(item => item.result_dataset?.dataset_group_id || '')
+      console.log('groups:', groups, resultCount, taskCount, result)
+      history.replace(`/home/project/${pid}/dataset#${groups.join(',')}`)
     }
   }
 
@@ -157,12 +207,9 @@ function Inference({ datasetCache, datasets, ...func }) {
     console.log("Failed:", errorInfo)
   }
 
-  function setsChange(id) {
-    id && setDataset(datasets.find(ds => ds.id === id))
-  }
-
   function modelChange(id, options = []) {
-    setSelectedModels(options.map(({ model }) => model) || [])
+    const models = options.map(([{ model }]) => model) || []
+    setSelectedModels(models)
   }
 
   async function selectModelFromIteration() {
@@ -173,9 +220,21 @@ function Inference({ datasetCache, datasets, ...func }) {
     }
   }
 
+  const testSetFilters = useCallback(datasets => {
+    const testings = datasets.filter(ds => project.testingSets?.includes(ds.id)).map(ds => ({ ...ds, isProjectTesting: true }))
+    const others = datasets.filter(ds => !project.testingSets?.includes(ds.id))
+    return [...testings, ...others]
+  }, [project.testingSets])
+
+  const renderLabel = item => <Row>
+    <Col flex={1}>{item.name} {item.versionName}(assets: {item.assetCount})</Col>
+    <Col>{item.isProjectTesting ? t('project.testing.dataset.label') : null}</Col>
+  </Row>
+
   const getCheckedValue = (list) => list.find((item) => item.checked)["id"]
   const initialValues = {
     description: '',
+    stages: stage.length ? stage : undefined,
     image: image ? parseInt(image) : undefined,
     algorithm: getCheckedValue(Algorithm()),
     gpu_count: 0,
@@ -194,162 +253,96 @@ function Inference({ datasetCache, datasets, ...func }) {
             initialValues={initialValues}
             onFinish={onFinish}
             onFinishFailed={onFinishFailed}
-            labelAlign={'left'}
-            colon={false}
-            scrollToFirstError
           >
-            <ConfigProvider renderEmpty={() => <EmptyStateDataset add={() => history.push(`/home/dataset/add/${pid}`)} />}>
-
-              <Tip hidden={true}>
-                <Form.Item
-                  label={t('task.inference.form.dataset.label')}
-                  required
-                  name="datasetId"
-                  rules={[
-                    { required: true, message: t('task.inference.form.dataset.required') },
-                  ]}
-                >
-                  <DatasetSelect pid={pid} placeholder={t('task.inference.form.dataset.placeholder')} onChange={setsChange} showArrow />
-                </Form.Item>
-              </Tip>
-            </ConfigProvider>
-
-
-            <ConfigProvider renderEmpty={() => <EmptyStateModel id={pid} />}>
-              <Tip content={t('tip.task.filter.imodel')}>
-                <Form.Item required
-                  label={t('task.mining.form.model.label')}>
-                  <Form.Item
-                    noStyle
-                    name="model"
-                    rules={[
-                      { required: true, message: t('task.mining.form.model.required') },
-                    ]}
-                  >
-                    <ModelSelect mode='multiple' placeholder={t('task.inference.form.model.required')} onChange={modelChange} pid={pid} />
-                  </Form.Item>
-                  <div style={{ marginTop: 10 }}><Button size='small' type="primary" onClick={() => selectModelFromIteration()}>{t('task.inference.model.iters')}</Button></div>
-                </Form.Item>
-              </Tip>
-            </ConfigProvider>
-
-            <Tip content={t('tip.task.inference.image')}>
-              <Form.Item name='image' label={t('task.train.form.image.label')} rules={[
-                { required: true, message: t('task.inference.form.image.required') }
-              ]}>
-                <ImageSelect placeholder={t('task.inference.form.image.placeholder')} relatedId={selectedModels[0]?.task?.parameters?.docker_image_id} type={TYPES.INFERENCE} onChange={imageChange} />
-              </Form.Item>
-            </Tip>
-
-            <Tip content={t('tip.task.filter.igpucount')}>
+            <Form.Item wrapperCol={{ span: 20 }}><Tip content={t('task.inference.header.tip')} /></Form.Item>
+            <Form.Item
+              label={t('task.inference.form.dataset.label')}
+              required
+              name="datasets"
+              rules={[
+                { required: true, message: t('task.inference.form.dataset.required') },
+              ]}
+            >
+              <DatasetSelect
+                mode='multiple'
+                pid={pid}
+                filters={testSetFilters}
+                renderLabel={renderLabel}
+                placeholder={t('task.inference.form.dataset.placeholder')}
+              />
+            </Form.Item>
+            <Form.Item required
+              tooltip={t('tip.task.filter.imodel')}
+              label={t('task.mining.form.model.label')}>
               <Form.Item
-                label={t('task.gpu.count')}
-              >
-                <Form.Item
-                  noStyle
-                  name="gpu_count"
-                >
-                  <InputNumber min={0} max={Math.floor(gpu_count / gpuStep)} precision={0} onChange={setSelectedGpu} /></Form.Item>
-                <span style={{ marginLeft: 20 }}>
-                  {t('task.infer.gpu.tip', { total: gpu_count, selected: gpuStep * selectedGpu })}
-                </span>
-              </Form.Item>
-            </Tip>
-
-            {seniorConfig.length ? <Tip content={t('tip.task.filter.ihyperparams')}>
-              <Form.Item
-                label={t('task.train.form.hyperparam.label')}
-                rules={[{ validator: validHyperparam }]}
-              >
-                <div>
-                  <Button type='link'
-                    onClick={() => setHpVisible(!hpVisible)}
-                    icon={hpVisible ? <UpSquareOutlined /> : <DownSquareOutlined />}
-                    style={{ paddingLeft: 0 }}
-                  >{hpVisible ? t('task.train.fold') : t('task.train.unfold')}
-                  </Button>
-                </div>
-
-                <Form.List name='hyperparam'>
-                  {(fields, { add, remove }) => (
-                    <div className={styles.paramContainer} hidden={!hpVisible}>
-                      <Row style={{ backgroundColor: '#fafafa', lineHeight: '40px', marginBottom: 10 }} gutter={20}>
-                        <Col flex={'240px'}>{t('common.key')}</Col>
-                        <Col flex={1}>{t('common.value')}</Col>
-                        <Col span={2}>{t('common.action')}</Col>
-                      </Row>
-                      {fields.map(field => (
-                        <Row key={field.key} gutter={20}>
-                          <Col flex={'240px'}>
-                            <Form.Item
-                              {...field}
-                              // label="Key"
-                              name={[field.name, 'key']}
-                              fieldKey={[field.fieldKey, 'key']}
-                              rules={[
-                                // {required: true, message: 'Missing Key'},
-                                { validator: validHyperparam }
-                              ]}
-                            >
-                              <Input disabled={field.key < seniorConfig.length} allowClear maxLength={50} />
-                            </Form.Item>
-                          </Col>
-                          <Col flex={1}>
-                            <Form.Item
-                              {...field}
-                              // label="Value"
-                              name={[field.name, 'value']}
-                              fieldKey={[field.fieldKey, 'value']}
-                              rules={[
-                                // {required: true, message: 'Missing Value'},
-                              ]}
-                            >
-                              {seniorConfig[field.name] && typeof seniorConfig[field.name].value === 'number' ?
-                                <InputNumber style={{ minWidth: '100%' }} maxLength={20} /> : <Input allowClear maxLength={100} />}
-                            </Form.Item>
-                          </Col>
-                          <Col span={2}>
-                            <Space>
-                              {field.name < seniorConfig.length ? null : <MinusCircleOutlined onClick={() => remove(field.name)} />}
-                              {field.name === fields.length - 1 ? <PlusOutlined onClick={() => add()} title={t('task.train.parameter.add.label')} /> : null}
-                            </Space>
-                          </Col>
-                        </Row>
-                      ))}
-
-                    </div>
-                  )}
-                </Form.List>
-
-              </Form.Item>
-            </Tip> : null}
-
-            <Tip hidden={true}>
-              <Form.Item label={t('task.inference.form.desc')} name='description'
+                noStyle
+                name="stages"
                 rules={[
-                  { max: 500 },
+                  { required: true, message: t('task.mining.form.model.required') },
                 ]}
               >
-                <Input.TextArea autoSize={{ minRows: 4, maxRows: 20 }} />
+                <ModelSelect multiple placeholder={t('task.inference.form.model.required')} onChange={modelChange} pid={pid} />
               </Form.Item>
-            </Tip>
+              <div style={{ marginTop: 10 }}>
+                <Button size='small' type="primary" onClick={() => selectModelFromIteration()}>
+                  {t('task.inference.model.iters')}
+                </Button>
+              </div>
+            </Form.Item>
 
-            <Tip hidden={true}>
-              <Form.Item wrapperCol={{ offset: 8 }}>
-                <Space size={20}>
-                  <Form.Item name='submitBtn' noStyle>
-                    <Button type="primary" size="large" htmlType="submit" >
-                      {t('common.action.infer')}
-                    </Button>
-                  </Form.Item>
-                  <Form.Item name='backBtn' noStyle>
-                    <Button size="large" onClick={() => history.goBack()}>
-                      {t('task.btn.back')}
-                    </Button>
-                  </Form.Item>
-                </Space>
+            <Form.Item name='image' tooltip={t('tip.task.inference.image')} label={t('task.inference.form.image.label')} rules={[
+              { required: true, message: t('task.inference.form.image.required') }
+            ]}>
+              <ImageSelect
+                placeholder={t('task.inference.form.image.placeholder')}
+                relatedId={selectedModels[0]?.task?.parameters?.docker_image_id}
+                type={TYPES.INFERENCE}
+                onChange={imageChange}
+              />
+            </Form.Item>
+            <OpenpaiForm form={form} openpai={openpai} />
+            <Form.Item
+              tooltip={t('tip.task.filter.igpucount')}
+              label={t('task.gpu.count')}
+            >
+              <Form.Item
+                noStyle
+                name="gpu_count"
+                rules={[
+                  {
+                    validator: (rules, value) => value <= Math.floor(gpu_count / taskCount) ?
+                      Promise.resolve() :
+                      Promise.reject(),
+                    message: t('task.infer.gpu.tip', { total: gpu_count, selected: taskCount * selectedGpu })
+                  }
+                ]}
+              >
+                <InputNumber min={0} max={Math.floor(gpu_count / taskCount)} precision={0} onChange={setSelectedGpu} />
               </Form.Item>
-            </Tip>
+              <span style={{ marginLeft: 20 }}>
+                {t('task.infer.gpu.tip', { total: gpu_count, selected: taskCount * selectedGpu })}
+              </span>
+            </Form.Item>
+
+            <LiveCodeForm form={form} live={live} />
+            <DockerConfigForm form={form} show={showConfig} seniorConfig={seniorConfig} />
+
+            <Desc form={form} />
+
+            <Form.Item wrapperCol={{ offset: 8 }}>
+              <Space size={20}>
+                <Form.Item name='submitBtn' noStyle>
+                  <Button type="primary" size="large" htmlType="submit" >
+                    {t('common.action.inference')}
+                  </Button>
+                </Form.Item>
+                <Form.Item name='backBtn' noStyle>
+                  <Button size="large" onClick={() => history.goBack()}>
+                    {t('task.btn.back')}
+                  </Button>
+                </Form.Item>
+              </Space>
+            </Form.Item>
           </Form>
         </div>
       </Card>
@@ -386,9 +379,9 @@ const dis = (dispatch) => {
     clearCache() {
       return dispatch({ type: "dataset/clearCache", })
     },
-    createInferenceTask(payload) {
+    infer(payload) {
       return dispatch({
-        type: "task/createInferenceTask",
+        type: "task/infer",
         payload,
       })
     },

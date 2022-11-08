@@ -83,33 +83,27 @@ def fake_viz_client() -> Generator:
             "keywords": [],
             "metadata": {},
         }
-        assets = Mock(total=1, items=[asset], keywords={}, negative_info={})
+        assets = dict(total=1, items=[asset], keywords={})
+        dataset_analysis = dict(
+            keywords={"gt": ["a"], "pred": ["x"]},
+            cks_count={},
+            cks_count_total={},
+            total_assets_mbytes=20,
+            total_assets_count=400,
+            gt=None,
+            pred=None,
+            hist={
+                "asset_bytes": [],
+                "asset_area": [],
+                "asset_quality": [],
+                "asset_hw_ratio": [],
+            },
+        )
+        metric_records = [{"legend": "0", "user_id": "1", "count": 95}, {"legend": "1", "user_id": "1", "count": 20}]
         client.get_assets.return_value = assets
         client.get_asset.return_value = asset
-        yield client
-    finally:
-        client.close()
-
-
-def fake_graph_client() -> Generator:
-    try:
-        client = Mock()
-        nodes = [
-            {
-                "id": 1,
-                "name": "n1",
-                "hash": "h1",
-                "type": 1
-            },
-            {
-                "id": 2,
-                "name": "n2",
-                "hash": "h2",
-                "type": 2
-            },
-        ]
-        edges = [{"target": "h1", "source": "h2", "task": {"id": 1}}]
-        client.query_history.return_value = {"nodes": nodes, "edges": edges}
+        client.get_dataset_analysis.return_value = dataset_analysis
+        client.query_metrics.return_value = metric_records
         yield client
     finally:
         client.close()
@@ -142,20 +136,9 @@ def fake_cache_client() -> Generator:
         client.close()
 
 
-def fake_clickhouse_client() -> Generator:
-    try:
-        client = Mock()
-        client.get_popular_items.return_value = [(1, 1), (2, 2)]
-        yield client
-    finally:
-        client.close()
-
-
 app.dependency_overrides[deps.get_controller_client] = fake_controller_client
 app.dependency_overrides[deps.get_viz_client] = fake_viz_client
-app.dependency_overrides[deps.get_graph_client_of_user] = fake_graph_client
 app.dependency_overrides[deps.get_cache] = fake_cache_client
-app.dependency_overrides[deps.get_clickhouse_client] = fake_clickhouse_client
 
 
 @pytest.fixture(scope="module")

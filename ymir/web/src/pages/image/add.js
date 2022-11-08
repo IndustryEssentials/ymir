@@ -5,8 +5,8 @@ import { useParams, useHistory, useLocation } from "umi"
 
 import s from './add.less'
 import t from '@/utils/t'
+import { formLayout } from "@/config/antd"
 import Breadcrumbs from '@/components/common/breadcrumb'
-import Tip from '@/components/form/tip'
 
 const { useForm } = Form
 
@@ -60,7 +60,7 @@ const Add = ({ getImage, createImage, updateImage }) => {
   }
 
   const checkImageUrl = (_, value) => {
-    const reg = /^([a-zA-Z0-9]{4,30}\/)?[a-z0-9]+(?:[._-][a-z0-9]+)*(:[a-zA-Z0-9._-]+)?$/
+    const reg = /^[^\s]+$/
     if (!value || reg.test(value.trim())) {
       return Promise.resolve()
     }
@@ -110,57 +110,52 @@ const Add = ({ getImage, createImage, updateImage }) => {
       <Breadcrumbs />
       <Card className={s.container} title={t('breadcrumbs.image.add')}>
         <div className={s.formContainer}>
-          <Form form={form} labelCol={{ span: 6, offset: 2 }} labelAlign='left' onFinish={submit}>
-            <Tip content={t('tip.image.add.name')}>
-              <Form.Item
-                label={t('image.add.form.url')}
-                name='url'
-                rules={[
-                  { required: true, message: t('image.add.form.url.required') },
-                  { validator: checkImageUrl },
-                ]}
-              >
-                <Input placeholder={t('image.add.form.url.placeholder')} disabled={image.url} autoComplete='off' allowClear onChange={urlChange} />
-              </Form.Item>
-            </Tip>
-            <Tip content={t('tip.image.add.url')}>
-              <Form.Item
-                label={t('image.add.form.name')}
-                name='name'
-                rules={[
-                  { required: true, whitespace: true, message: t('image.add.form.name.placeholder') },
-                  { max: 50 },
-                ]}
-              >
-                <Input placeholder={t('image.add.form.name.placeholder')} maxLength={50}
-                  autoComplete='off' allowClear onKeyUp={() => setUserInput(true)} />
-              </Form.Item>
-            </Tip>
-            <Tip content={t('tip.image.add.desc')}>
-              <Form.Item label={t('image.add.form.desc')} name='description'
-                rules={[
-                  { max: 500 },
-                ]}
-              >
-                <Input.TextArea autoSize={{ minRows: 4, maxRows: 20 }} />
-              </Form.Item>
-            </Tip>
-            <Tip hidden={true}>
-              <Form.Item wrapperCol={{ offset: 8 }}>
-                <Space size={20}>
-                  <Form.Item name='submitBtn' noStyle>
-                    <Button type="primary" size="large" htmlType="submit">
-                      {isEdit ? t('image.update.submit') : t('image.add.submit')}
-                    </Button>
-                  </Form.Item>
-                  <Form.Item name='backBtn' noStyle>
-                    <Button size="large" onClick={() => history.goBack()}>
-                      {t('common.back')}
-                    </Button>
-                  </Form.Item>
-                </Space>
-              </Form.Item>
-            </Tip>
+          <Form form={form} {...formLayout} labelAlign='left' onFinish={submit}>
+            <Form.Item
+              label={t('image.add.form.url')}
+              tooltip={t('tip.image.add.name')}
+              name='url'
+              rules={[
+                { required: true, message: t('image.add.form.url.required') },
+                { validator: checkImageUrl },
+              ]}
+            >
+              <Input placeholder={t('image.add.form.url.placeholder')} disabled={image.url} autoComplete='off' allowClear onChange={urlChange} />
+            </Form.Item>
+            <Form.Item
+              label={t('image.add.form.name')}
+              tooltip={t('tip.image.add.url')}
+              name='name'
+              rules={[
+                { required: true, whitespace: true, message: t('image.add.form.name.placeholder') },
+                { max: 50 },
+              ]}
+            >
+              <Input placeholder={t('image.add.form.name.placeholder')} maxLength={50}
+                autoComplete='off' allowClear onKeyUp={() => setUserInput(true)} />
+            </Form.Item>
+            <Form.Item label={t('image.add.form.desc')} name='description'
+              tooltip={t('tip.image.add.desc')}
+              rules={[
+                { max: 500 },
+              ]}
+            >
+              <Input.TextArea autoSize={{ minRows: 4, maxRows: 20 }} />
+            </Form.Item>
+            <Form.Item wrapperCol={{ offset: 8 }}>
+              <Space size={20}>
+                <Form.Item name='submitBtn' noStyle>
+                  <Button type="primary" size="large" htmlType="submit">
+                    {isEdit ? t('image.update.submit') : t('image.add.submit')}
+                  </Button>
+                </Form.Item>
+                <Form.Item name='backBtn' noStyle>
+                  <Button size="large" onClick={() => history.goBack()}>
+                    {t('common.back')}
+                  </Button>
+                </Form.Item>
+              </Space>
+            </Form.Item>
           </Form>
         </div>
       </Card>

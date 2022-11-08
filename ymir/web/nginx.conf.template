@@ -19,11 +19,21 @@ server {
     # use 'listen 80 deferred;' for Linux
     # use 'listen 80 accept_filter=httpready;' for FreeBSD
     client_max_body_size 4G;
+    
+    gzip  on;
+    gzip_min_length 1k; 
+    gzip_comp_level 5;
+    gzip_types text/plain application/javascript application/x-javascript text/javascript text/xml text/css;
 
     # set the correct host(s) for your site
     server_name localhost;
 
     keepalive_timeout 5;
+
+    # Ymir docs
+    location /docs/ {
+        root /data/ymir/;
+    }
 
     location /api/ {
         proxy_pass http://backend_api/api/;
@@ -35,7 +45,7 @@ server {
     }
 
     # backend's Swagger UI
-    location /docs {
+    location /api_docs {
         proxy_pass http://backend_api/docs;
         add_header 'Access-Control-Allow-Origin' '*';
         proxy_set_header   Host $host;
@@ -88,10 +98,10 @@ server {
     }
 
     # static files
-    location /ymir-assets/ {
-        rewrite ^(.*)a000000000(.*)$ $1$2 break;
+    location ~ /ymir-assets/(?<prefix>.+)/(?<filename>.+)$ {
         types { } default_type  "image/jpeg;";
-        root /data/ymir/;
+        root /data/ymir/ymir-assets;
+        try_files /$prefix/$filename /$filename =404;
     }
 
     location /ymir-models/ {

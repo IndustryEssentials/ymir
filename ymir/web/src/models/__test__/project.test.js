@@ -49,7 +49,7 @@ describe("models: project", () => {
       type: "getProjects",
       payload: {},
     }
-    const projects = products(9)
+    const projects = products(6)
     const expected = projects.map(item => transferProject(item))
     const result = { items: projects, total: projects.length }
 
@@ -84,6 +84,7 @@ describe("models: project", () => {
       code: 0,
       result: expected,
     })
+    generator.next()
     const end = generator.next()
 
     expect(end.value).toEqual(transferProject(expected))
@@ -162,8 +163,8 @@ describe("models: project", () => {
     })
     const end = generator.next()
 
-    equalObject(expected, end.value)
     expect(end.done).toBe(true)
+    expect(end.value).toEqual(transferProject(expected))
   })
   it("effects: checkStatus", () => {
     const saga = project.effects.checkStatus

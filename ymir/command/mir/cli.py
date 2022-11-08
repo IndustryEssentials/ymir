@@ -6,12 +6,12 @@ import sys
 from typing import Any, cast, Protocol
 
 from mir import version
-from mir.commands import (init, branch, checkout, commit, copy, evaluate, exporting, filter, log, merge, reset,
-                          sampling, show, status, training, mining, importing, infer, model_importing)
+from mir.commands import (init, checkout, commit, copy, export, filter, merge,
+                          sampling, show, status, training, mining, import_dataset, import_model, infer)
 
 _COMMANDS_ = [
-    init, branch, checkout, commit, copy, evaluate, exporting, filter, log, merge, reset, sampling, show, status,
-    training, mining, importing, infer, model_importing
+    init, checkout, commit, copy, export, filter, merge, sampling, show, status, training, mining, import_dataset,
+    import_model, infer
 ]
 
 
@@ -41,7 +41,7 @@ class MirParser(argparse.ArgumentParser):
 class VersionAction(argparse.Action):
     """Show mir version and exits"""
     def __call__(self, parser: Any, namespace: Any, values: Any, option_string: Any = None) -> None:
-        logging.info("mir version: {0}".format(version.__version__))
+        logging.info(f"mir version: {version.YMIR_VERSION}")
         sys.exit(0)
 
 
@@ -52,7 +52,7 @@ class DebugModeAction(argparse.Action):
             logging.root.removeHandler(handler)
 
         logging.basicConfig(stream=sys.stdout,
-                            format='%(levelname)-8s: [%(asctime)s] %(filename)s:%(lineno)s:%(funcName)s(): %(message)s',
+                            format='%(levelname)-8s: [%(asctime)s] %(filename)s:%(lineno)-03s: %(message)s',
                             datefmt='%Y%m%d-%H:%M:%S',
                             level=logging.DEBUG)
         logging.debug("in debug mode")

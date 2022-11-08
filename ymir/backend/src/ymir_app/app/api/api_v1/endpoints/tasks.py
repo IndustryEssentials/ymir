@@ -14,7 +14,7 @@ from app import crud, models, schemas
 from app.api import deps
 from app.api.errors.errors import (
     DuplicateTaskError,
-    FailedToUpdateTaskStatus,
+    FailedToUpdateTaskStatusTemporally,
     ModelNotReady,
     NoTaskPermission,
     ObsoleteTaskStatus,
@@ -26,11 +26,8 @@ from app.constants.state import (
     TaskType,
 )
 from app.config import settings
-from app.utils.clickhouse import YmirClickHouse
-from app.utils.graph import GraphClient
 from app.utils.timeutil import convert_datetime_to_timestamp
 from app.utils.ymir_controller import ControllerClient, gen_user_hash
-from app.utils.ymir_viz import VizClient
 from app.libs.redis_stream import RedisStream
 from app.libs.tasks import TaskResult, create_single_task
 from common_utils.labels import UserLabels
@@ -78,6 +75,8 @@ def list_tasks(
     name: str = Query(None, description="search by task name"),
     type_: TaskType = Query(None, alias="type"),
     state: TaskState = Query(None),
+    dataset_ids: str = Query(None, example="1,2,3"),
+    model_stage_ids: str = Query(None, example="4,5,6"),
     offset: int = Query(None),
     limit: int = Query(None),
     order_by: SortField = Query(SortField.id),
@@ -96,6 +95,8 @@ def list_tasks(
         name=name,
         type_=type_,
         state=state,
+        dataset_ids=[int(i) for i in dataset_ids.split(",")] if dataset_ids else [],
+        model_stage_ids=[int(i) for i in model_stage_ids.split(",")] if model_stage_ids else [],
         offset=offset,
         limit=limit,
         order_by=order_by.name,
@@ -248,10 +249,7 @@ def update_task_status(
     db: Session = Depends(deps.get_db),
     request: Request,
     task_update: schemas.TaskUpdateStatus,
-    graph_db: GraphClient = Depends(deps.get_graph_client),
     controller_client: ControllerClient = Depends(deps.get_controller_client),
-    viz_client: VizClient = Depends(deps.get_viz_client),
-    clickhouse: YmirClickHouse = Depends(deps.get_clickhouse_client),
 ) -> Any:
     """
     Update status of a task
@@ -284,8 +282,8 @@ def update_task_status(
     try:
         updated_task = task_result.update(task_result=task_update)
     except (ConnectionError, HTTPError, Timeout):
-        logger.error("Failed to update update task status")
-        raise FailedToUpdateTaskStatus()
+        logger.exception("Failed to update update task status. Try again later")
+        raise FailedToUpdateTaskStatusTemporally()
     except ModelNotReady:
         logger.warning("Model Not Ready")
     else:
@@ -302,6 +300,7 @@ def update_task_status(
         #  reformatting is needed
         payload = {updated_task.hash: task_update_msg.dict()}
         asyncio.run(request.app.sio.emit(event="update_taskstate", data=payload, namespace=namespace))
+        logger.info("notify task update (%s) to frontend (%s)", payload, namespace)
 
     return {"result": task_in_db}
 
@@ -324,3 +323,25 @@ async def save_task_update_to_redis_stream(*, task_events: schemas.TaskMonitorEv
         await redis_stream.publish(event.json())
         logger.info("save task update to redis stream: %s", event.json())
     return Response(status_code=204)
+
+
+@router.get(
+    "/pai/{task_id}",
+    response_model=schemas.task.PaiTaskOut,
+    response_model_exclude_none=True,
+    responses={404: {"description": "Task Not Found"}},
+)
+def get_openpai_task(
+    db: Session = Depends(deps.get_db),
+    task_id: int = Path(..., example=12),
+    current_user: models.User = Depends(deps.get_current_active_user),
+    controller_client: ControllerClient = Depends(deps.get_controller_client),
+) -> Any:
+    """
+    Get verbose information of OpenPAI task
+    """
+    task = crud.task.get_by_user_and_id(db, user_id=current_user.id, id=task_id)
+    if not task:
+        raise TaskNotFound()
+    # mixin openpai status
+    return {"result": task}

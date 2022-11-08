@@ -1,4 +1,5 @@
 from datetime import datetime
+import json
 from typing import List
 
 from sqlalchemy import (
@@ -14,12 +15,14 @@ from sqlalchemy import (
 from sqlalchemy.orm import relationship
 
 from app.config import settings
+from app.constants.state import ResultState, TaskState, TaskType
 from app.db.base_class import Base
 from app.models.dataset import Dataset  # noqa
 from app.models.dataset_group import DatasetGroup  # noqa
 from app.models.iteration import Iteration  # noqa
 from app.models.model import Model  # noqa
 from app.models.model_group import ModelGroup  # noqa
+from app.models.task import Task  # noqa
 
 
 class Project(Base):
@@ -39,10 +42,14 @@ class Project(Base):
     training_keywords = Column(Text(settings.TEXT_LEN_LIMIT), nullable=False)
     training_dataset_group_id = Column(Integer, index=True)
     mining_dataset_id = Column(Integer, index=True)
-    testing_dataset_id = Column(Integer, index=True)
+    validation_dataset_id = Column(Integer, index=True)
+    testing_dataset_ids = Column(String(settings.LONG_STRING_LEN_LIMIT))
     initial_model_id = Column(Integer, index=True)
+    initial_model_stage_id = Column(Integer, index=True)
     initial_training_dataset_id = Column(Integer, index=True)
+    candidate_training_dataset_id = Column(Integer)
 
+    enable_iteration = Column(Boolean, default=True, nullable=False)
     # for project haven't finish initialization, current_iteration_id is None
     current_iteration_id = Column(Integer)
     user_id = Column(Integer, index=True, nullable=False)
@@ -59,9 +66,9 @@ class Project(Base):
         uselist=True,
         viewonly=True,
     )
-    testing_dataset = relationship(
+    validation_dataset = relationship(
         "Dataset",
-        primaryjoin="foreign(Dataset.id)==Project.testing_dataset_id",
+        primaryjoin="foreign(Dataset.id)==Project.validation_dataset_id",
         uselist=False,
         viewonly=True,
     )
@@ -80,6 +87,12 @@ class Project(Base):
     models = relationship(
         "Model",
         primaryjoin="foreign(Model.project_id)==Project.id",
+        uselist=True,
+        viewonly=True,
+    )
+    tasks = relationship(
+        "Task",
+        primaryjoin="foreign(Task.project_id)==Project.id",
         uselist=True,
         viewonly=True,
     )
@@ -108,11 +121,33 @@ class Project(Base):
 
     @property
     def dataset_count(self) -> int:
-        return len(self.datasets)
+        # Only ready and visible datasets count.
+        # stick to `dataset_count` for compatibility
+        ready_datasets = [d for d in self.datasets if d.result_state == ResultState.ready and d.is_visible]
+        return len(ready_datasets)
 
     @property
     def model_count(self) -> int:
-        return len(self.models)
+        # Only ready models count.
+        # stick to `model_count` for compatibility
+        ready_models = [model for model in self.models if model.result_state == ResultState.ready and model.is_visible]
+        return len(ready_models)
+
+    @property
+    def total_asset_count(self) -> int:
+        return sum([dataset.asset_count for dataset in self.datasets if dataset.asset_count])
+
+    @property
+    def training_tasks(self) -> List[Task]:
+        return [task for task in self.tasks if task.type == TaskType.training]
+
+    @property
+    def running_task_count(self) -> int:
+        return sum([task.state == TaskState.running for task in self.training_tasks])
+
+    @property
+    def total_task_count(self) -> int:
+        return len(self.training_tasks)
 
     @property
     def referenced_dataset_ids(self) -> List[int]:
@@ -122,7 +157,14 @@ class Project(Base):
         - datasets and models of current iteration
         - all the training dataset of all the iterations
         """
-        project_dataset_ids = [self.testing_dataset_id, self.mining_dataset_id, self.initial_training_dataset_id]
+        testing_dataset_ids = [int(i) for i in self.testing_dataset_ids.split(",")] if self.testing_dataset_ids else []
+        project_dataset_ids = [
+            self.validation_dataset_id,
+            self.mining_dataset_id,
+            self.initial_training_dataset_id,
+            self.candidate_training_dataset_id,
+            *testing_dataset_ids,
+        ]
         current_iteration_dataset_ids = self.current_iteration.referenced_dataset_ids if self.current_iteration else []
         all_iterations_training_dataset_ids = [i.training_input_dataset_id for i in self.iterations]
         dataset_ids = filter(
@@ -140,3 +182,7 @@ class Project(Base):
             current_iteration_model_ids + [self.initial_model_id] + all_iterations_training_model_ids,  # type: ignore
         )
         return list(set(model_ids))
+
+    @property
+    def training_targets(self) -> List[str]:
+        return json.loads(self.training_keywords) if self.training_keywords else []

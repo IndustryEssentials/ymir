@@ -1,15 +1,15 @@
 import os
 import shutil
-from typing import Dict, List, Tuple
+from typing import List, Tuple
 import unittest
-from unittest import mock
 
 from google.protobuf import json_format
 
-from mir.commands import exporting
+from mir.commands import export
 from mir.protos import mir_command_pb2 as mirpb
-from mir.tools import data_exporter, hash_utils, mir_storage_ops
+from mir.tools import mir_storage_ops, mir_storage
 from mir.tools.code import MirCode
+from mir.tools.mir_storage import sha1sum_for_file
 from tests import utils as test_utils
 
 
@@ -20,6 +20,7 @@ class TestCmdExport(unittest.TestCase):
         self._test_root = test_utils.dir_test_root(self.id().split('.')[-3:])
         self._assets_location = os.path.join(self._test_root, 'assets_location')
         self._dest_root = os.path.join(self._test_root, 'export_dest')
+        self._gt_root = os.path.join(self._dest_root, 'gt_dir')
         self._mir_root = os.path.join(self._test_root, 'mir-repo')
 
     def setUp(self) -> None:
@@ -49,10 +50,11 @@ class TestCmdExport(unittest.TestCase):
         copy all assets from project to assets_location, assumes that `self._assets_location` already created
         '''
         image_paths = ['tests/assets/2007_000032.jpg', 'tests/assets/2007_000243.jpg']
-        sha1sum_path_pairs = [(hash_utils.sha1sum_for_file(image_path), image_path)
+        sha1sum_path_pairs = [(sha1sum_for_file(image_path), image_path)
                               for image_path in image_paths]  # type: List[Tuple[str, str]]
         for sha1sum, image_path in sha1sum_path_pairs:
-            shutil.copyfile(image_path, os.path.join(self._assets_location, sha1sum))
+            shutil.copyfile(image_path,
+                            mir_storage.get_asset_storage_path(self._assets_location, sha1sum))
 
     def __prepare_mir_repo(self):
         '''
@@ -83,87 +85,104 @@ class TestCmdExport(unittest.TestCase):
 
         # annotations
         annotations_dict = {
-            'task_annotations': {
-                'a': {
-                    'image_annotations': {
-                        '430df22960b0f369318705800139fcc8ec38a3e4': {
-                            'annotations': [{
-                                'index': 0,
-                                'box': {
-                                    'x': 104,
-                                    'y': 78,
-                                    'w': 272,
-                                    'h': 105
-                                },
-                                'class_id': 3,
-                                'score': 1,
-                            }, {
-                                'index': 1,
-                                'box': {
-                                    'x': 133,
-                                    'y': 88,
-                                    'w': 65,
-                                    'h': 36
-                                },
-                                'class_id': 3,
-                                'score': 1,
-                            }, {
-                                'index': 2,
-                                'box': {
-                                    'x': 195,
-                                    'y': 180,
-                                    'w': 19,
-                                    'h': 50
-                                },
-                                'class_id': 2,
-                                'score': 1,
-                            }, {
-                                'index': 3,
-                                'box': {
-                                    'x': 26,
-                                    'y': 189,
-                                    'w': 19,
-                                    'h': 95
-                                },
-                                'class_id': 2,
-                                'score': 1,
-                            }]
-                        },
-                        'a3008c032eb11c8d9ffcb58208a36682ee40900f': {
-                            'annotations': [{
-                                'index': 0,
-                                'box': {
-                                    'x': 181,
-                                    'y': 127,
-                                    'w': 94,
-                                    'h': 67
-                                },
-                                'class_id': 3,
-                                'score': 1,
-                            }]
-                        },
-                    }
+            'prediction': {
+                'task_id': 'a',
+                'image_annotations': {
+                    '430df22960b0f369318705800139fcc8ec38a3e4': {
+                        'boxes': [{
+                            'index': 0,
+                            'box': {
+                                'x': 104,
+                                'y': 78,
+                                'w': 272,
+                                'h': 105
+                            },
+                            'class_id': 3,
+                            'score': 1,
+                            'anno_quality': 0.95,
+                            'tags': {
+                                'fake tag name': 'fake tag data'
+                            },
+                        }, {
+                            'index': 1,
+                            'box': {
+                                'x': 133,
+                                'y': 88,
+                                'w': 65,
+                                'h': 36
+                            },
+                            'class_id': 3,
+                            'score': 1,
+                            'anno_quality': 0.95,
+                            'tags': {
+                                'fake tag name': 'fake tag data'
+                            },
+                        }, {
+                            'index': 2,
+                            'box': {
+                                'x': 195,
+                                'y': 180,
+                                'w': 19,
+                                'h': 50
+                            },
+                            'class_id': 2,
+                            'score': 1,
+                            'anno_quality': 0.95,
+                            'tags': {
+                                'fake tag name': 'fake tag data'
+                            },
+                        }, {
+                            'index': 3,
+                            'box': {
+                                'x': 26,
+                                'y': 189,
+                                'w': 19,
+                                'h': 95
+                            },
+                            'class_id': 2,
+                            'score': 1,
+                            'anno_quality': 0.95,
+                            'tags': {
+                                'fake tag name': 'fake tag data'
+                            },
+                        }],
+                    },
+                    'a3008c032eb11c8d9ffcb58208a36682ee40900f': {
+                        'boxes': [{
+                            'index': 0,
+                            'box': {
+                                'x': 181,
+                                'y': 127,
+                                'w': 94,
+                                'h': 67
+                            },
+                            'class_id': 3,
+                            'score': 1,
+                            'anno_quality': 0.95,
+                            'tags': {
+                                'fake tag name': 'fake tag data'
+                            },
+                        }],
+                    },
+                }
+            },
+            'image_cks': {
+                'a3008c032eb11c8d9ffcb58208a36682ee40900f': {
+                    'cks': {
+                        'weather': 'sunny',
+                    },
+                    'image_quality': 0.5
+                },
+                '430df22960b0f369318705800139fcc8ec38a3e4': {
+                    'cks': {
+                        'weather': 'sunny',
+                    },
+                    'image_quality': 0.3
                 }
             }
         }
         mir_annotations = mirpb.MirAnnotations()
         json_format.ParseDict(annotations_dict, mir_annotations)
-
-        # keywords
-        keywords_dict = {
-            'keywords': {
-                '430df22960b0f369318705800139fcc8ec38a3e4': {
-                    'predifined_keyids': [2, 3],
-                    'customized_keywords': ['pascal']
-                },
-                'a3008c032eb11c8d9ffcb58208a36682ee40900f': {
-                    'predifined_keyids': [3],
-                    'customized_keywords': ['pascal']
-                },
-            }
-        }
-        mir_keywords = mirpb.MirKeywords()
-        json_format.ParseDict(keywords_dict, mir_keywords)
 
         # tasks
         task = mir_storage_ops.create_task(task_type=mirpb.TaskType.TaskTypeImportData,
@@ -181,52 +200,35 @@ class TestCmdExport(unittest.TestCase):
                                                       mir_datas=mir_datas,
                                                       task=task)
 
-    # private: mocked
-    def __mock_export(*args, **kwargs) -> Dict[str, Tuple[str, str]]:
-        return {}
-
-    # private: test cases
-    @mock.patch('mir.tools.data_exporter.export', side_effect='__mock_export')
-    def test_normal_00(self, mock_export):
-        # normal case
+    def test_normal_00(self):
+        # normal case: voc:raw
         fake_args = type('', (), {})()
         fake_args.mir_root = self._mir_root
         fake_args.asset_dir = self._dest_root
-        fake_args.annotation_dir = self._dest_root
+        fake_args.pred_dir = self._dest_root
+        fake_args.gt_dir = self._gt_root
         fake_args.media_location = self._assets_location
         fake_args.src_revs = 'a@a'
-        fake_args.dst_rev = ''
-        fake_args.format = 'voc'
-        fake_args.in_cis = 'person'
+        fake_args.anno_format = 'voc'
+        fake_args.asset_format = 'raw'
+        fake_args.class_names = 'person'
         fake_args.work_dir = ''
-        runner = exporting.CmdExport(fake_args)
+        runner = export.CmdExport(fake_args)
         result = runner.run()
         self.assertEqual(MirCode.RC_OK, result)
 
-        mock_export.assert_called_once_with(mir_root=self._mir_root,
-                                            assets_location=self._assets_location,
-                                            class_type_ids={2: 2},
-                                            asset_ids={'430df22960b0f369318705800139fcc8ec38a3e4',
-                                                       'a3008c032eb11c8d9ffcb58208a36682ee40900f'},
-                                            asset_dir=self._dest_root,
-                                            annotation_dir=self._dest_root,
-                                            need_ext=True,
-                                            need_id_sub_folder=False,
-                                            base_branch='a',
-                                            base_task_id='a',  # see: fake_args.src_revs = 'a@a'
-                                            format_type=data_exporter.ExportFormat.EXPORT_FORMAT_VOC)
-
-        # abnormal case
+        # abnormal case: no asset_dir, pred_dir, media_location
         fake_args = type('', (), {})()
         fake_args.mir_root = self._mir_root
         fake_args.asset_dir = ''
-        fake_args.annotation_dir = ''
+        fake_args.pred_dir = ''
+        fake_args.gt_dir = ''
         fake_args.media_location = ''
         fake_args.src_revs = 'a@a'
-        fake_args.dst_rev = ''  # too fast, default task_id will be the same as previous one
-        fake_args.format = 'voc'
-        fake_args.in_cis = 'person'
+        fake_args.anno_format = 'voc'
+        fake_args.asset_format = 'raw'
+        fake_args.class_names = 'person'
         fake_args.work_dir = ''
-        runner = exporting.CmdExport(fake_args)
+        runner = export.CmdExport(fake_args)
         result = runner.run()
         self.assertNotEqual(MirCode.RC_OK, result)

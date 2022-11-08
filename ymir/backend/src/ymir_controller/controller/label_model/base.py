@@ -12,6 +12,10 @@ from controller.utils.redis import rds
 from id_definition.error_codes import CTLResponseCode
 
 
+class NotReadyError(Exception):
+    pass
+
+
 def catch_label_task_error(f: Callable) -> Callable:
     @wraps(f)
     def wrapper(*args: tuple, **kwargs: Any) -> object:
@@ -103,8 +107,17 @@ class LabelBase(ABC):
     # now we have to loop label task for get status
     # maybe add API for labeling tool to report self status later https://labelstud.io/guide/webhooks.html
     @staticmethod
-    def store_label_task_mapping(project_id: int, task_id: str, monitor_file_path: str, des_annotation_path: str,
-                                 repo_root: str, media_location: str, import_work_dir: str, storage_id: int) -> None:
+    def store_label_task_mapping(
+        project_id: int,
+        task_id: str,
+        monitor_file_path: str,
+        des_annotation_path: str,
+        repo_root: str,
+        media_location: str,
+        import_work_dir: str,
+        storage_id: int,
+        input_asset_dir: str
+    ) -> None:
         # store into redis for loop get status
         label_task_content = dict(project_id=project_id,
                                   task_id=task_id,
@@ -113,6 +126,7 @@ class LabelBase(ABC):
                                   repo_root=repo_root,
                                   media_location=media_location,
                                   import_work_dir=import_work_dir,
-                                  storage_id=storage_id)
+                                  storage_id=storage_id,
+                                  input_asset_dir=input_asset_dir)
 
         rds.hset(name=label_task_config.MONITOR_MAPPING_KEY, mapping={task_id: json.dumps(label_task_content)})

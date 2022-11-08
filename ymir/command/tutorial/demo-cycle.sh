@@ -169,7 +169,7 @@ import() {
     $MIR_EXE checkout master --root "$MIR_ROOT"
     $MIR_EXE import --root "$MIR_ROOT" \
                     --index-file "$RAW_TRAINING_SET_INDEX_PATH" \
-                    --annotation-dir "$RAW_TRAINING_SET_ANNO_ROOT" \
+                    --pred-dir "$RAW_TRAINING_SET_ANNO_ROOT" \
                     --gen-dir "$YMIR_ASSET_LOCATION" \
                     --dataset-name "$TRAINING_SET_PREFIX" \
                     --dst-rev "$TRAINING_SET_PREFIX@$TRAINING_SET_PREFIX"
@@ -179,7 +179,7 @@ import() {
     $MIR_EXE checkout master --root "$MIR_ROOT"
     $MIR_EXE import --root "$MIR_ROOT" \
                     --index-file "$RAW_VAL_SET_INDEX_PATH" \
-                    --annotation-dir "$RAW_VAL_SET_ANNO_ROOT" \
+                    --pred-dir "$RAW_VAL_SET_ANNO_ROOT" \
                     --gen-dir "$YMIR_ASSET_LOCATION" \
                     --dataset-name "$VAL_SET_PREFIX" \
                     --dst-rev "$VAL_SET_PREFIX@$VAL_SET_PREFIX"
@@ -189,7 +189,7 @@ import() {
     $MIR_EXE checkout master --root "$MIR_ROOT"
     $MIR_EXE import --root "$MIR_ROOT" \
                     --index-file "$RAW_MINING_SET_INDEX_PATH" \
-                    --annotation-dir "$RAW_MINING_SET_ANNO_ROOT" \
+                    --pred-dir "$RAW_MINING_SET_ANNO_ROOT" \
                     --gen-dir "$YMIR_ASSET_LOCATION" \
                     --dataset-name "$MINING_SET_PREFIX" \
                     --dst-rev "$MINING_SET_PREFIX@$MINING_SET_PREFIX"
@@ -336,7 +336,7 @@ outlabel() {
         _echo_in_color $C_YELLOW "export from $_MINED_SET_PREFIX-$2 to path $TMP_OUTLABEL_ASSET_ROOT/$_MINED_SET_PREFIX-$2"
         $MIR_EXE export --root $MIR_ROOT \
                         --asset-dir "$TMP_OUTLABEL_ASSET_ROOT/$_MINED_SET_PREFIX-$2" \
-                        --annotation-dir "$TMP_OUTLABEL_ASSET_ROOT/$_MINED_SET_PREFIX-$2" \
+                        --pred-dir "$TMP_OUTLABEL_ASSET_ROOT/$_MINED_SET_PREFIX-$2" \
                         --media-location "$YMIR_ASSET_LOCATION" \
                         --src-revs "$_MINED_SET_PREFIX-$2@$_MINED_SET_PREFIX-$2" \
                         --format "none"
@@ -374,7 +374,7 @@ inlabel() {
         _echo_in_color $C_YELLOW "import"
         $MIR_EXE import --root "$MIR_ROOT" \
                     --index-file "$TMP_OUTLABEL_ASSET_ROOT/$_MINED_SET_PREFIX-$2.index.tsv" \
-                    --annotation-dir "$3" \
+                    --pred-dir "$3" \
                     --gen-dir "$YMIR_ASSET_LOCATION" \
                     --dataset-name "$MINING_SET_PREFIX" \
                     --src-revs "$_MINED_SET_PREFIX-$2" \

@@ -1,6 +1,6 @@
-import { ModelGroup, ModelVersion } from "@/interface/model"
+import { ModelGroup, ModelVersion, Stage } from "@/interface/model"
 import { calDuration, format } from '@/utils/date'
-import { getIterationVersion } from "./project"
+import { getVersionLabel } from "./common"
 import { BackendData } from "@/interface/common"
 import { getLocale } from "umi"
 
@@ -10,7 +10,7 @@ export enum states {
   INVALID = 2,
 }
 
-export function transferModelGroup (data: BackendData) {
+export function transferModelGroup(data: BackendData) {
   const group: ModelGroup = {
     id: data.id,
     name: data.name,
@@ -20,7 +20,8 @@ export function transferModelGroup (data: BackendData) {
   return group
 }
 
-export function transferModel (data: BackendData): ModelVersion {
+export function transferModel(data: BackendData): ModelVersion {
+  const durationLabel = calDuration(data.related_task.duration, getLocale())
   return {
     id: data.id,
     name: data.group_name,
@@ -28,9 +29,9 @@ export function transferModel (data: BackendData): ModelVersion {
     projectId: data.project_id,
     hash: data.hash,
     version: data.version_num || 0,
-    versionName: getIterationVersion(data.version_num),
+    versionName: getVersionLabel(data.version_num),
     state: data.result_state,
-    keywords: data?.related_task?.parameters?.keywords || [],
+    keywords: data?.keywords || [],
     map: data.map || 0,
     url: data.url || '',
     createTime: format(data.create_datetime),
@@ -42,7 +43,65 @@ export function transferModel (data: BackendData): ModelVersion {
     taskName: data.related_task.name,
     duration: data.related_task.duration,
     durationLabel: calDuration(data.related_task.duration, getLocale()),
-    task: data.related_task,
+    task: { ...data.related_task, durationLabel, },
     hidden: !data.is_visible,
+    stages: data.related_stages || [],
+    recommendStage: data.recommended_stage || 0,
+    description: data.description || '',
   }
+}
+
+/**
+ * is valid model
+ * @param {ModelVersion} model 
+ * @returns {Boolean}
+ */
+export function validModel(model: ModelVersion): Boolean {
+  return model.state === states.VALID
+}
+
+/**
+ * is invalid model
+ * @param {ModelVersion} model 
+ * @returns {Boolean}
+ */
+export function invalidModel(model: ModelVersion): Boolean {
+  return model.state === states.INVALID
+}
+
+/**
+ * is running model
+ * @param {ModelVersion} model 
+ * @returns {Boolean}
+ */
+export function runningModel(model: ModelVersion): Boolean {
+  return model.state === states.READY
+}
+
+export function getModelName(data: BackendData) {
+  return `${data.model?.group_name} ${getVersionLabel(data.model?.version_num)}`
+}
+
+/**
+ * transfer backend data into stage object
+ * @param {BackendData} data 
+ * @returns {Stage}
+ */
+export function transferStage(data: BackendData): Stage {
+  return {
+    id: data.id,
+    name: data.name,
+    map: data.map,
+    modelId: data.model?.id,
+    modelName: getModelName(data),
+  }
+}
+
+/**
+ * get recommend stage from model
+ * @param {ModelVersion} model 
+ * @returns {Stage|undefined}
+ */
+export function getRecommendStage(model: ModelVersion): Stage| undefined {
+  return model.stages?.find(stage => stage.id === model.recommendStage)
 }

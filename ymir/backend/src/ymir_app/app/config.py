@@ -1,7 +1,7 @@
 import secrets
-from typing import List, Optional
+from typing import Any, Dict, List, Optional
 
-from pydantic import AnyHttpUrl, BaseSettings, EmailStr
+from pydantic import AnyHttpUrl, BaseSettings, EmailStr, root_validator
 
 
 class Settings(BaseSettings):
@@ -10,7 +10,6 @@ class Settings(BaseSettings):
     NGINX_PREFIX: str = ""
     API_V1_STR: str = "/api/v1"
     DATABASE_URI: str = "sqlite:///app.db"
-    CLICKHOUSE_URI: str = "clickhouse"
     TOKEN_URL: str = "/auth/token"
     GRPC_CHANNEL: str = "controller:50066"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 40  # 40 hours
@@ -23,7 +22,6 @@ class Settings(BaseSettings):
     REGISTRATION_NEEDS_APPROVAL: bool = False
 
     # assets viz
-    VIZ_HOST: str = "viz:9099"
     VIZ_TIMEOUT: int = 30
 
     FIRST_ADMIN: EmailStr = "admin@example.com"  # type: ignore
@@ -42,9 +40,6 @@ class Settings(BaseSettings):
 
     # redis
     BACKEND_REDIS_URL: str = "redis://redis:6379/0"
-
-    # graph
-    MAX_HOPS: int = 5
 
     # all the emails things
     EMAILS_ENABLED: bool = False
@@ -87,9 +82,38 @@ class Settings(BaseSettings):
 
     # Sample Project configs
     SAMPLE_PROJECT_KEYWORDS: List[str] = ["person", "cat"]
-    SAMPLE_PROJECT_TESTING_DATASET_URL: str = "http://web/val.zip"
+    SAMPLE_PROJECT_VALIDATION_DATASET_URL: str = "http://web/val.zip"
     SAMPLE_PROJECT_MINING_DATASET_URL: str = "http://web/mining.zip"
     SAMPLE_PROJECT_MODEL_URL: str = "http://web/683f4fa14d1baa733a87d9644bb0457cbed5aba8"
+
+    # OpenPAI
+    OPENPAI_ENABLED: bool = False
+    OPENPAI_HOST: Optional[str] = None
+    OPENPAI_TOKEN: Optional[str] = None
+    OPENPAI_STORAGE: Optional[str] = None
+    OPENPAI_USER: Optional[str] = None
+    OPENPAI_CLUSTER: Optional[str] = None
+    OPENPAI_GPUTYPE: Optional[str] = None
+
+    @root_validator(pre=True)
+    def get_openpai_enabled(cls, values: Dict[str, Any]) -> Dict:
+        values["OPENPAI_ENABLED"] = bool(
+            values.get("OPENPAI_HOST")
+            and values.get("OPENPAI_TOKEN")
+            and values.get("OPENPAI_STORAGE")
+            and values.get("OPENPAI_USER")
+        )
+        return values
+
+    # ymir_viewer
+    VIEWER_HOST_PORT: Optional[int] = None
+
+    # migration
+    MIGRATION_CHECKPOINT: str = "9bb7bb8b71c3"
+
+    # cron job
+    CRON_MIN_IDLE_TIME: int = 2 * 60 * 1000  # 2 minutes
+    CRON_CHECK_INTERVAL: int = 10000  # 10 seconds
 
 
 settings = Settings(_env_file=".env")  # type: ignore

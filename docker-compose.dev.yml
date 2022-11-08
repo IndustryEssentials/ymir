@@ -1,0 +1,139 @@
+version: "3.3"
+
+services:
+  prometheus:
+    image: prom/prometheus:v2.17.1
+    user: "0:0"
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--web.enable-lifecycle'
+    volumes:
+      - ./metrics/config/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ${YMIR_PATH}/metrics/prometheus:/prometheus
+    depends_on:
+      - cadvisor
+    healthcheck:
+      test: wget -q --tries=1 -O- http://localhost:9090/-/healthy | grep -q "Healthy"
+      interval: 60s
+      timeout: 6s
+      retries: 3
+      start_period: 30s
+    networks:
+      - ymirnetwork
+
+
+  blackbox:
+    image: prom/blackbox-exporter:v0.22.0
+    volumes:
+      - ./metrics/config/blackbox.yml:/etc/blackbox_exporter/config.yml:ro
+    healthcheck:
+      test: wget -q --tries=1 -O- http://localhost:9115/-/healthy | grep -q "Healthy"
+      interval: 60s
+      timeout: 6s
+      retries: 3
+      start_period: 30s
+    networks:
+      - ymirnetwork
+
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:v0.44.1-test
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:rw
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /dev/disk/:/dev/disk:ro
+    healthcheck:
+      test: wget -q --tries=1 -O- http://localhost:8080/healthz | grep -q "ok"
+      interval: 60s
+      timeout: 6s
+      retries: 3
+      start_period: 30s
+    command:
+      - '-housekeeping_interval=10s'
+      - '-docker_only=true'
+    networks:
+      - ymirnetwork
+
+  nodeexporter:
+    image: prom/node-exporter:v1.3.1
+    restart: unless-stopped
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+    command:
+      - '--path.procfs=/host/proc'
+      - '--path.rootfs=/rootfs'
+      - '--path.sysfs=/host/sys'
+      - '--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)'
+    healthcheck:
+      test: wget -q --tries=1 -O- http://localhost:9100/health | grep -q "Node Exporter"
+      interval: 60s
+      timeout: 6s
+      retries: 3
+      start_period: 30s
+    networks:
+      - ymirnetwork
+
+  loki:
+    image: grafana/loki:main-87e20d9
+    user: "0:0"
+    volumes:
+      - ${YMIR_PATH}/metrics/loki/:/etc/loki/
+      - ./metrics/config/loki.yml:/etc/loki/loki.yml:ro
+    command: -config.file=/etc/loki/loki.yml
+    restart: on-failure:10
+    healthcheck:
+      test: wget -q --tries=1 -O- http://localhost:3100/ready | grep -q "ready"
+      interval: 60s
+      timeout: 6s
+      retries: 3
+      start_period: 30s
+    networks:
+      - ymirnetwork
+
+  promtail:
+    image: grafana/promtail:main-87e20d9
+    volumes:
+      - ${YMIR_PATH}/metrics/promtail:/etc/promtail/
+      - ${YMIR_PATH}/ymir-data/logs:/var/log/:ro
+      - ${TENSORBOARD_ROOT}:/var/dockerlog:ro
+      - "${BACKEND_SANDBOX_ROOT}:${BACKEND_SANDBOX_ROOT}"
+      - ./metrics/config/promtail.yml:/etc/promtail/promtail.yml:ro
+    command: -config.file=/etc/promtail/promtail.yml
+    restart: on-failure:10
+    healthcheck:
+      test: promtails --version
+      interval: 60s
+      timeout: 6s
+      retries: 3
+      start_period: 30s
+    networks:
+      - ymirnetwork
+
+  grafana:
+    image: grafana/grafana:9.1.0
+    environment:
+      - "GF_DASHBOARDS_DEFAULT_HOME_DASHBOARD_PATH=/etc/grafana/provisioning/dashboards/docker_containers.json"
+    restart: unless-stopped
+    user: "0:0"
+    ports:
+      - 13000:3000
+    depends_on:
+      - prometheus
+    volumes:
+      - ${YMIR_PATH}/metrics/grafana:/var/lib/grafana
+      - ./metrics/grafana/provisioning:/etc/grafana/provisioning
+    healthcheck:
+      test: wget -q --tries=1 -O- http://localhost:3000/api/health | grep -q "ok"
+      interval: 60s
+      timeout: 6s
+      retries: 3
+      start_period: 30s
+    networks:
+      - ymirnetwork

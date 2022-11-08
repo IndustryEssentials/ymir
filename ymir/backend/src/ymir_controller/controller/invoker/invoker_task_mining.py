@@ -1,27 +1,26 @@
-import logging
 import os
-from typing import Dict, List
+from typing import Dict, List, Optional, Tuple
 from common_utils.labels import UserLabels
 
 from controller.invoker.invoker_cmd_merge import MergeInvoker
-from controller.invoker.invoker_task_base import TaskBaseInvoker
+from controller.invoker.invoker_task_base import SubTaskType, TaskBaseInvoker
 from controller.utils import utils, invoker_call
+from controller.utils.errors import MirCtrError
 from id_definition.error_codes import CTLResponseCode
 from proto import backend_pb2
 
 
 class TaskMiningInvoker(TaskBaseInvoker):
-    def task_pre_invoke(self, sandbox_root: str, request: backend_pb2.GeneralReq) -> backend_pb2.GeneralResp:
+    def task_pre_invoke(self, request: backend_pb2.GeneralReq) -> backend_pb2.GeneralResp:
+        if not request.in_dataset_ids:
+            return utils.make_general_response(CTLResponseCode.ARG_VALIDATION_FAILED, "invalid_data_ids")
+
         mining_request = request.req_create_task.mining
-        logging.info(f"mining_request: {mining_request}")
         if mining_request.top_k < 0:
             return utils.make_general_response(CTLResponseCode.ARG_VALIDATION_FAILED,
-                                               "invalid topk: {}".format(mining_request.top_k))
-        if not request.model_hash:
+                                               f"invalid topk: {mining_request.top_k}")
+        if not request.model_hash or not request.model_stage:
             return utils.make_general_response(CTLResponseCode.ARG_VALIDATION_FAILED, "invalid model_hash")
-
-        if not mining_request.in_dataset_ids:
-            return utils.make_general_response(CTLResponseCode.ARG_VALIDATION_FAILED, "invalid_data_ids")
 
         # store executor config in task_0 work_dir
         subtask_work_dir_0 = self.subtask_work_dir(self._work_dir, utils.sub_task_id(self._task_id, 0))
@@ -31,6 +30,7 @@ class TaskMiningInvoker(TaskBaseInvoker):
             task_parameters=request.task_parameters,
             class_names=[],
             output_config_file=output_config_file,
+            assets_config=self._assets_config,
         )
         if not gpu_lock_ret:
             return utils.make_general_response(CTLResponseCode.LOCK_GPU_ERROR, "Not enough GPU available")
@@ -38,14 +38,19 @@ class TaskMiningInvoker(TaskBaseInvoker):
         return utils.make_general_response(CTLResponseCode.CTR_OK, "")
 
     @classmethod
-    def subtask_weights(cls) -> List[float]:
-        return [1.0, 0.0]
+    def register_subtasks(cls, request: backend_pb2.GeneralReq) -> List[Tuple[SubTaskType, float]]:
+        subtasks_queue: List[Tuple[SubTaskType, float]] = []
+        if len(request.in_dataset_ids) > 1 or request.ex_dataset_ids:
+            subtasks_queue.append((cls.subtask_invoke_merge, 0))
+        subtasks_queue.append((cls.subtask_invoke_mining, 1.0))
+
+        return subtasks_queue
 
     @classmethod
-    def subtask_invoke_1(cls, sandbox_root: str, repo_root: str, assets_config: Dict[str, str],
-                         request: backend_pb2.GeneralReq, subtask_id: str, subtask_workdir: str,
-                         previous_subtask_id: str, user_labels: UserLabels) -> backend_pb2.GeneralResp:
-        mining_request = request.req_create_task.mining
+    def subtask_invoke_merge(ccls, request: backend_pb2.GeneralReq, user_labels: UserLabels, sandbox_root: str,
+                             assets_config: Dict[str, str], repo_root: str, master_task_id: str, subtask_id: str,
+                             subtask_workdir: str, his_task_id: Optional[str],
+                             in_dataset_ids: List[str]) -> backend_pb2.GeneralResp:
         merge_response = invoker_call.make_invoker_cmd_call(
             invoker=MergeInvoker,
             sandbox_root=sandbox_root,
@@ -53,19 +58,27 @@ class TaskMiningInvoker(TaskBaseInvoker):
             user_id=request.user_id,
             repo_id=request.repo_id,
             task_id=subtask_id,
-            his_task_id=mining_request.in_dataset_ids[0],
-            dst_dataset_id=request.task_id,
-            in_dataset_ids=mining_request.in_dataset_ids,
-            ex_dataset_ids=mining_request.ex_dataset_ids,
+            his_task_id=his_task_id,
+            dst_dataset_id=master_task_id,
+            in_dataset_ids=in_dataset_ids,
+            ex_dataset_ids=request.ex_dataset_ids,
             merge_strategy=request.merge_strategy,
             work_dir=subtask_workdir,
         )
         return merge_response
 
     @classmethod
-    def subtask_invoke_0(cls, sandbox_root: str, repo_root: str, assets_config: Dict[str, str],
-                         request: backend_pb2.GeneralReq, subtask_id: str, subtask_workdir: str,
-                         previous_subtask_id: str, user_labels: UserLabels) -> backend_pb2.GeneralResp:
+    def subtask_invoke_mining(cls, request: backend_pb2.GeneralReq, user_labels: UserLabels, sandbox_root: str,
+                              assets_config: Dict[str, str], repo_root: str, master_task_id: str, subtask_id: str,
+                              subtask_workdir: str, his_task_id: Optional[str],
+                              in_dataset_ids: List[str]) -> backend_pb2.GeneralResp:
+        if not his_task_id:
+            raise MirCtrError(CTLResponseCode.INVOKER_GENERAL_ERROR, "empty previous_subtask_id in subtask_mining")
+
+        if len(in_dataset_ids) != 1:
+            return utils.make_general_response(code=CTLResponseCode.ARG_VALIDATION_FAILED,
+                                               message=f"Invalid single in_dataset_ids {in_dataset_ids}")
+
         mining_request = request.req_create_task.mining
         executant_name = request.task_id
         models_location = assets_config["modelskvlocation"]
@@ -73,7 +86,7 @@ class TaskMiningInvoker(TaskBaseInvoker):
         mining_image = request.singleton_op
 
         config_file = cls.gen_executor_config_path(subtask_workdir)
-        asset_cache_dir = os.path.join(sandbox_root, request.user_id, "mining_assset_cache")
+        asset_cache_dir = os.path.join(sandbox_root, request.user_id, "asset_cache")
         mining_response = cls.mining_cmd(repo_root=repo_root,
                                          config_file=config_file,
                                          task_id=subtask_id,
@@ -83,8 +96,9 @@ class TaskMiningInvoker(TaskBaseInvoker):
                                          media_location=media_location,
                                          top_k=mining_request.top_k,
                                          model_hash=request.model_hash,
-                                         in_dataset_id=request.task_id,
-                                         his_task_id=previous_subtask_id,
+                                         model_stage=request.model_stage,
+                                         in_dataset_id=in_dataset_ids[0],
+                                         his_task_id=his_task_id,
                                          executor=mining_image,
                                          executant_name=executant_name,
                                          generate_annotations=mining_request.generate_annotations)
@@ -102,6 +116,7 @@ class TaskMiningInvoker(TaskBaseInvoker):
         media_location: str,
         top_k: int,
         model_hash: str,
+        model_stage: str,
         in_dataset_id: str,
         his_task_id: str,
         asset_cache_dir: str,
@@ -111,14 +126,15 @@ class TaskMiningInvoker(TaskBaseInvoker):
     ) -> backend_pb2.GeneralResp:
         mining_cmd = [
             utils.mir_executable(), 'mining', '--root', repo_root, '--dst-rev', f"{task_id}@{task_id}", '-w', work_dir,
-            '--model-location', model_location, '--media-location', media_location, '--model-hash', model_hash,
-            '--src-revs', f"{in_dataset_id}@{his_task_id}", '--asset-cache-dir', asset_cache_dir, '--task-config-file',
-            config_file, '--executor', executor, '--executant-name', executant_name
+            '--model-location', model_location, '--media-location', media_location, '--model-hash',
+            f"{model_hash}@{model_stage}", '--src-revs', f"{in_dataset_id}@{his_task_id}", '--asset-cache-dir',
+            asset_cache_dir, '--task-config-file', config_file, '--executor', executor, '--executant-name',
+            executant_name
         ]
         if top_k > 0:
             mining_cmd.append('--topk')
             mining_cmd.append(str(top_k))
         if generate_annotations:
-            mining_cmd.append('--add-annotations')
+            mining_cmd.append('--add-prediction')
 
         return utils.run_command(mining_cmd)

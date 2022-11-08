@@ -6,13 +6,15 @@ function sha1(value) {
   return CryptoJS.SHA1(value).toString()
 }
 
-export function signup({ email, username, password, phone = null }) {
+export function signup({ email, username, password, phone = null, organization, scene }) {
   password = sha1(password)
   return request.post("/users/", {
     email,
     username,
     password,
     phone,
+    organization,
+    scene,
   })
 }
 
@@ -82,7 +84,7 @@ export function getUsers(params) {
  */
 export function setUserState({ id, state, role }) {
   return request({
-    url: `/users/${id}`, 
+    url: `/users/${id}`,
     method: 'PATCH',
     data: { state, role },
   })
