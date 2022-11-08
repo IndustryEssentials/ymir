@@ -111,23 +111,22 @@ export default {
       if (!iterations.length) {
         return
       }
-      const datasetIds = [
-        ...new Set(
-          iterations
-            .map((i) => [
-              i.wholeMiningSet,
-              i.miningSet,
-              i.miningResult,
-              i.labelSet,
-              i.trainUpdateSet,
-              i.testSet,
-            ])
-            .flat()
-        ),
-      ].filter((id) => id)
-      const modelIds = [...new Set(iterations.map((i) => i.model))].filter(
-        (id) => id
-      )
+      const getIds = (iterations, isModel) =>
+        [
+          ...new Set(
+            iterations
+              .map(({ wholeMiningSet, testSet, steps }) => [
+                wholeMiningSet,
+                testSet,
+                ...steps.map((step) =>
+                  !isModel || step.resultType === "model" ? step.resultId : null
+                ),
+              ])
+              .flat()
+          ),
+        ].filter((id) => id)
+      const datasetIds = getIds(iterations)
+      const modelIds = getIds(iterations, true)
       let datasets = []
       let models = []
       if (datasetIds?.length) {

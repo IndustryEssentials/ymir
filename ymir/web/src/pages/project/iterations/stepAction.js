@@ -99,6 +99,7 @@ const StepAction = ({ steps, iteration, callback = () => {} }) => {
   useEffect(() => {
     if (currentContent) {
       const state = result?.id ? result.state : currentContent.state
+      console.log("state:", state)
       setState(Number.isInteger(state) ? state : -1)
     }
   }, [result?.state, currentContent?.state])

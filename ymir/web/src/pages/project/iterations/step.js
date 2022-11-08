@@ -10,10 +10,9 @@ import RenderProgress from "../../../components/common/Progress"
 import { YesIcon } from "@/components/common/Icons"
 import VersionName from "@/components/result/VersionName"
 
-function Step({ step, end = false }) {
+function Step({ step }) {
   const result = useSelector((state) => {
     const res = step.resultType ? state[step.resultType][step.resultType] : {}
-    console.log("res[step.resultId]:", res[step.resultId])
     return res[step.resultId] || {}
   })
   const [state, setState] = useState(-1)
@@ -51,7 +50,7 @@ function Step({ step, end = false }) {
     const pendingLabel = "project.stage.state.pending"
     const valid = result.name ? (
       <VersionName result={result} />
-    ) : end ? null : (
+    ) : step.end ? null : (
       t("common.done")
     )
     const currentPending = t("project.stage.state.pending.current")
@@ -72,8 +71,8 @@ function Step({ step, end = false }) {
       <Row className={s.row} align="middle" wrap={false}>
         <Col flex={"30px"}>{renderCount()}</Col>
         <Col>{t(step.act)}</Col>
-        {!end ? (
-          <Col className={s.lineContainer} hidden={end} flex={1}>
+        {!step.end ? (
+          <Col className={s.lineContainer} flex={1}>
             <span className={s.line}></span>
           </Col>
         ) : null}

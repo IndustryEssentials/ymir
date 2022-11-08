@@ -1,9 +1,7 @@
 import { useCallback, useEffect, useState } from "react"
 import { Row, Col } from "antd"
-import { useSelector } from "umi"
 
 import { getSteps, STEP } from "@/constants/iteration"
-import { templateString } from "@/utils/string"
 import useFetch from "@/hooks/useFetch"
 
 import Step from "./step"
@@ -35,17 +33,9 @@ function Iteration({ project, fresh = () => {} }) {
 
   useEffect(() => {
     ;(createResult || _b || _n || _k) && fresh()
-    console.log("createResult, _b, _n, _k:", createResult, _b, _n, _k)
   }, [createResult, _b, _n, _k])
 
   const callback = useCallback(iterationHandle, [iteration])
-
-  const fetchIteration = () =>
-    getIteration({
-      pid: project.id,
-      id: project.currentIteration?.id,
-      more: true,
-    })
 
   function generateSteps() {
     const list = getSteps()
@@ -103,8 +93,8 @@ function Iteration({ project, fresh = () => {} }) {
     <div className={s.iteration}>
       <Row style={{ justifyContent: "flex-end" }}>
         {steps.map((step) => (
-          <Col key={step.value} flex={step.next ? 1 : null}>
-            <Step step={step} end={step.end} />
+          <Col key={step.value} flex={!step.end ? 1 : null}>
+            <Step step={step} />
           </Col>
         ))}
       </Row>

@@ -58,6 +58,7 @@ export const getSteps = (): StepObj[] => {
       state: -1,
       index: ind,
       next: list[ind]?.value,
+      end: index + 1 === list.length,
     }
   })
 }
