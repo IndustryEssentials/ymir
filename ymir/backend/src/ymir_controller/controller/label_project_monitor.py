@@ -102,7 +102,6 @@ def lable_task_monitor() -> None:
             update_label_task(label_instance, task_id, project_info)
         except FileNotFoundError:
             logging.exception("Monitor file not exists. Skip updating task %s with payload %s", task_id, content)
-            rds.hdel(label_task_config.MONITOR_MAPPING_KEY, task_id)
         except Exception:
             logging.exception("Unknown error. Skip updating task %s with payload %s", task_id, content)
 
