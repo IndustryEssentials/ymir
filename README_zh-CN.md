@@ -33,8 +33,8 @@
 
 [📘使用说明](https://github.com/IndustryEssentials/ymir/blob/master/README_zh-CN.md#3-gui%E4%BD%BF%E7%94%A8-%E5%85%B8%E5%9E%8B%E6%A8%A1%E5%9E%8B%E7%94%9F%E4%BA%A7%E6%B5%81%E7%A8%8B) |
 [🛠️安装教程](https://github.com/IndustryEssentials/ymir/blob/master/README_zh-CN.md#2-%E5%AE%89%E8%A3%85) |
-[🚀进行中的项目](https://github.com/IndustryEssentials/ymir/projects) | 
-[🤔报告问题](https://github.com/IndustryEssentials/ymir/issues/new/choose) | 
+[🚀进行中的项目](https://github.com/IndustryEssentials/ymir/projects) |
+[🤔报告问题](https://github.com/IndustryEssentials/ymir/issues/new/choose) |
 [📰开源协议](https://github.com/IndustryEssentials/ymir/blob/master/LICENSE)
 
 </div>&nbsp;</div>
@@ -78,18 +78,18 @@ Docker
 - 支持 [mmdetection](https://github.com/open-mmlab/mmdetection)
 - 支持 [yolov7](https://github.com/wongkinyiu/yolov7)
 - 支持 [detectron2](https://github.com/facebookresearch/detectron2)
-- 支持 [An Extendable, Efficient and Effective Transformer-based Object Detector](https://github.com/naver-ai/vidt)
+- 支持 [nanodet](https://github.com/RangiLyu/nanodet)
+- 支持 [vidt: An Extendable, Efficient and Effective Transformer-based Object Detector](https://github.com/naver-ai/vidt)
 - 支持 [ymir镜像测试工具库](https://github.com/modelai/ymir-executor-verifier)
 - 支持 [demo 示例镜像制作文档](https://github.com/modelai/ymir-executor-fork/tree/ymir-dev/det-demo-tmi)
 - 支持 [ymir镜像开发扩展库](https://github.com/modelai/ymir-executor-sdk)
 
-查看更多内容 [ymir-executor-fork](https://github.com/modelai/ymir-executor-fork) 
+查看更多内容 [ymir-executor-fork](https://github.com/modelai/ymir-executor-fork)
 
 在公共镜像内
-- 更新yolov5训练镜像：youdaoyzbx/ymir-executor:ymir1.3.0-yolov5-cu111-tmi
-- 更新mmdetection训练镜像：youdaoyzbx/ymir-executor:ymir1.3.0-mmdet-cu111-tmi
-- 更新支持rv1126芯片部署的yolov5训练镜像：youdaoyzbx/ymir-executor:ymir1.3.0-yolov5-cu111-modelstore
-- 更新支持yolov5-v6.2的训练镜像：youdaoyzbx/ymir-executor:ymir1.3.0-yolov5-v6.2-cu111-tmi
+- 更新yolov5训练镜像：youdaoyzbx/ymir-executor:ymir2.0.0-yolov5-cu111-tmi
+- 更新mmdetection训练镜像：youdaoyzbx/ymir-executor:ymir2.0.0-mmdet-cu111-tmi
+- 更新支持rv1126芯片部署的yolov5训练镜像：youdaoyzbx/ymir-executor:ymir2.0.0-yolov5-cu111-tmid
 
 更多代码更新请查看 [ymir-dev](https://github.com/modelai/ymir-executor-fork/tree/ymir-dev)
 
@@ -312,24 +312,24 @@ LABEL_TOOL_TOKEN="Token token_value"
 5. 停止label studio服务命令如下：
 
 `docker-compose -f docker-compose.label_studio.yml down`
-  
+
 ## 2.4. 安装配置 ModelDeployment （可选）
-  
+
 ModelDeployment 是YMIR所支持的模型部署系统，可以作为备选模型部署工具安装。
-  
+
 1. 在上一节的YMIR目录下，修改.env文件，配置 ModelDeployment 端口和 MySQL 访问密码：
 ```
 DEPLOY_MODULE_HOST_PORT=18801
 DEPLOY_MODULE_URL=${DEPLOY_MODULE_HOST_PORT}
 DEPLOY_MODULE_MYSQL_ROOT_PASSWORD=deploy_db_passwd
 ```
-  
+
 2. 启动安装 ModelDeployment 命令如下：
 `docker-compose -f docker-compose.modeldeploy.yml up -d`
-  
+
 3. 完成后查看 ModelDeployment 状态命令如下：
 `docker-compose -f docker-compose.modeldeploy.yml ps`
-  
+
 4. 停止 ModelDeployment 服务命令如下：
 `docker-compose -f docker-compose.modeldeploy.yml down`
 
@@ -342,13 +342,13 @@ DEPLOY_MODULE_MYSQL_ROOT_PASSWORD=deploy_db_passwd
 因此，YMIR平台通过主动学习的方法，首先通过本地导入或者少量数据来训练出一个初始模型，使用该初始模型，从海量数据中挖掘出对模型能力提高最有利的数据。挖掘完成后，仅针对这部分数据进行标注，对原本的训练数据集进行高效扩充。
 
 使用更新后的数据集再次训练模型，以此来提高模型能力。相比于对全部数据标注后再训练，YMIR平台提供的方法更高效，减少了对低质量数据的标注成本。通过挖掘，标注，训练的循环，扩充高质量数据，提升模型能力。
-  
+
 本次使用一次模型迭代的完整流程来说明YMIR平台的操作过程。具体的操作流程请查看[操作说明](https://github.com/IndustryEssentials/ymir/wiki/%E6%93%8D%E4%BD%9C%E8%AF%B4%E6%98%8E)。
 
 # 4. 进阶版：Ymir-CMD line使用指南
 
 本章节为YMIR-CMD line的使用说明，如需安装和使用GUI，请参考[GUI安装说明](#2-安装)。
-  
+
 ## 4.1 安装
 
 ### 方式一：通过pip安装
@@ -393,7 +393,7 @@ YMIR repo中的任何代码都应遵循编码标准，并将在CI测试中进行
 [查看这篇文档](docs/ymir-cmd-container.md)获取更多细节。
 
 # 6. 设计理念
-  
+
 我们使用Git中代码版本控制的概念来管理我们的数据和模型。我们使用分支的概念创建新项目，以便同一组映像上的不同任务可以并行运行。数据集的增加、检索、更新和删除以及基本操作都创建提交到分支。从逻辑上讲，每次提交都存储数据集或新模型的更新版本，以及导致此更改的操作的元数据。最后，只有数据更改被合并到主分支，这在概念上，聚合了该平台上许多项目注释的所有数据。具体设计理念请查看
 [Life of a dataset](https://github.com/IndustryEssentials/ymir/wiki/%E6%95%B0%E6%8D%AE%E9%9B%86%E6%B5%81%E8%BD%AC%E8%BF%87%E7%A8%8B)。
 

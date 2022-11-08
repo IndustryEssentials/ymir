@@ -9,4 +9,4 @@
 |youdaoyzbx/ymir-executor:ymir2.0.0-detectron2-cu111-tmi|training mining inference|modelai|-|detectron2|
 |youdaoyzbx/ymir-executor:ymir2.0.0-nanodet-cu111-tmi|training mining inference|modelai|-|nanodet|
 |youdaoyzbx/ymir-executor:ymir2.0.0-vidt-cu111-tmi|training mining inference|modelai|-|vidt|
-|youdaoyzbx/ymir-executor:ymir2.0.0-yolov5-cu111-tmid|training mining inference deploy|modelai|-|yolov5 with deploy support|
+|youdaoyzbx/ymir-executor:ymir2.0.0-yolov5-cu111-tmid|training mining inference deploy|modelai|-|支持部署: support deploy|
