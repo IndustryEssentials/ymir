@@ -31,8 +31,8 @@
   <img src="https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/for_training.png" width="200"/>
   <div>&nbsp;</div>
 
-[📘使用说明](https://github.com/IndustryEssentials/ymir/blob/master/README_zh-CN.md#3-gui%E4%BD%BF%E7%94%A8-%E5%85%B8%E5%9E%8B%E6%A8%A1%E5%9E%8B%E7%94%9F%E4%BA%A7%E6%B5%81%E7%A8%8B) |
-[🛠️安装教程](https://github.com/IndustryEssentials/ymir/blob/master/README_zh-CN.md#2-%E5%AE%89%E8%A3%85) |
+[📘使用说明](https://github.com/IndustryEssentials/ymir/wiki/%E6%93%8D%E4%BD%9C%E8%AF%B4%E6%98%8E) |
+[🛠️安装教程](README_zh-CN.md#2-%E5%AE%89%E8%A3%85) |
 [🚀进行中的项目](https://github.com/IndustryEssentials/ymir/projects) | 
 [🤔报告问题](https://github.com/IndustryEssentials/ymir/issues/new/choose) | 
 [📰开源协议](https://github.com/IndustryEssentials/ymir/blob/master/LICENSE)
@@ -64,14 +64,15 @@
 
 # 更新内容
 
-2.0.0版本更新时间为10/21/2022
+2.0.0版本更新时间为11/15/2022
 
 YMIR平台
-- 新增数据集/模型隐藏和还原功能；
-- 支持在迭代开始前修改项目训练类别；
-- 新增模型测试模块和模型推理结果比对功能；
-- 优化代码结构；
-- 新增模型部署模块；
+- 新增模型性能诊断模块；
+- 新增对模型推理结果进行可视化评估的功能；
+- 新增公共算法库，内置多种高精度算法；
+- 新增一键部署功能，支持将算法部署到认证设备上；
+- 新增操作说明文档；
+- 优化代码结构。
 
 Docker
 - 支持 [yolov5](https://github.com/ultralytics/yolov5)
@@ -83,7 +84,7 @@ Docker
 - 支持 [demo 示例镜像制作文档](https://github.com/modelai/ymir-executor-fork/tree/ymir-dev/det-demo-tmi)
 - 支持 [ymir镜像开发扩展库](https://github.com/modelai/ymir-executor-sdk)
 
-查看更多内容 [ymir-executor-fork](https://github.com/modelai/ymir-executor-fork) 
+查看更多内容 [ymir-executor-fork](https://github.com/modelai/ymir-executor-fork) 。
 
 在公共镜像内
 - 更新yolov5训练镜像：youdaoyzbx/ymir-executor:ymir1.3.0-yolov5-cu111-tmi
@@ -91,7 +92,15 @@ Docker
 - 更新支持rv1126芯片部署的yolov5训练镜像：youdaoyzbx/ymir-executor:ymir1.3.0-yolov5-cu111-modelstore
 - 更新支持yolov5-v6.2的训练镜像：youdaoyzbx/ymir-executor:ymir1.3.0-yolov5-v6.2-cu111-tmi
 
-更多代码更新请查看 [ymir-dev](https://github.com/modelai/ymir-executor-fork/tree/ymir-dev)
+更多代码更新请查看 [ymir-dev](https://github.com/modelai/ymir-executor-fork/tree/ymir-dev)。
+
+# 硬件支持 （可选）
+
+YYMIR支持将训练好的模型直接部署到认证设备，需要查看更多硬件参数，请查看[详情](https://i-item.jd.com/10065116628109.html)。
+
+<div align="center">
+  <img src="https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/certified_device.PNG" width="500"/>
+  <div>&nbsp;</div>&nbsp;</div>
 
 ## 简介
 
@@ -102,6 +111,7 @@ Docker
 
 - [文章引用](#文章引用)
 - [更新内容](#更新内容)
+- [硬件支持 （可选）](#%E7%A1%AC%E4%BB%B6%E6%94%AF%E6%8C%81-%E5%8F%AF%E9%80%89)
 - [1. AI SUITE-YMIR介绍](#1--ai-suite-ymir%E4%BB%8B%E7%BB%8D)
   - [1.1.	主要功能](#11-主要功能)
   - [1.2.	申请试用](#12-申请试用)
@@ -109,7 +119,6 @@ Docker
   - [2.1. 环境依赖](#21-%E7%8E%AF%E5%A2%83%E4%BE%9D%E8%B5%96)
   - [2.2. 安装 YMIR-GUI](#22-%E5%AE%89%E8%A3%85-ymir-gui)
   - [2.3. 安装配置LabelStudio （可选）](#23-%E5%AE%89%E8%A3%85%E9%85%8D%E7%BD%AElabelstudio-%E5%8F%AF%E9%80%89)
-  - [2.4. 安装配置Model Deployment （可选）](#24-%E5%AE%89%E8%A3%85%E9%85%8D%E7%BD%AE-modeldeployment-%E5%8F%AF%E9%80%89)
 - [3. GUI使用-典型模型生产流程](#3-gui%E4%BD%BF%E7%94%A8-%E5%85%B8%E5%9E%8B%E6%A8%A1%E5%9E%8B%E7%94%9F%E4%BA%A7%E6%B5%81%E7%A8%8B)
 - [4. 进阶版：Ymir-CMD line使用指南](#4-%E8%BF%9B%E9%98%B6%E7%89%88ymir-cmd-line%E4%BD%BF%E7%94%A8%E6%8C%87%E5%8D%97)
   - [4.1 安装](#41-%E5%AE%89%E8%A3%85)
@@ -130,7 +139,7 @@ Docker
 YMIR(You Mine In Recursion)是一个简化的模型开发产品，专注于AI SUITE开源系列中的数据集版本和模型迭代。
 
 <div align="center">
-  <img src="https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/processing.png" width="800"/>
+  <img src="https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/%E5%85%A8%E6%B5%81%E7%A8%8B.png" width="1500"/>
 <div>&nbsp;</div>&nbsp;</div>
 
 目前人工智能商业化在算力、算法和技术方面达到阶段性成熟。AI应用在产品落地过程中经常会遇到无法大规模扩展的瓶颈，例如人才紧缺、开发成本高、迭代周期长等问题。
@@ -151,7 +160,7 @@ YMIR主要以数据为中心，提供高效模型开发迭代能力，集成了�
 
 YMIR平台主要满足用户规模化生产模型的需求，为用户提供良好、易用的展示界面，便于数据和模型的管理与查看。平台包含项目管理、标签管理、系统配置等主要功能模块，支持实现以下主要功能：
 
-| 功能模块     |    一级功能    | 二级功能          | 功能说明      |
+| 功能模块     | 一级功能      | 二级功能          | 功能说明      |
 |----------|-----------|------------|-----------------------------------------|
 |项目管理|项目管理|项目编辑|支持添加、删除、编辑项目及项目信息|
 |项目管理|迭代管理|迭代准备|支持设置迭代所需要的数据集和模型信息|
@@ -169,7 +178,8 @@ YMIR平台主要满足用户规模化生产模型的需求，为用户提供良�
 |项目管理|模型管理|训练模型|支持自选数据集、标签，并根据需求调整训练参数来训练模型，完成后可查看对应的模型效果|
 |项目管理|模型管理|模型验证|支持上传单张图片，通过可视化的方式查看模型在真实图片中的表现，以校验模型的精确度|
 |标签管理|标签管理|新增标签|支持训练标签的主名和别名的添加|
-|模型部署|算法管理|公共算法|支持算法定制化、查看其他人上传的公共算法并添加到我的算法中|
+|模型部署|算法管理|公共算法|支持算法定制化、查看公共算法并试用，支持添加到我的算法中|
+|模型部署|算法管理|公共算法|支持发布我的算法到公共算法|
 |模型部署|算法管理|我的算法|支持查看和编辑我发布的算法和已添加的算法|
 |模型部署|算法管理|部署算法|支持部署我的算法到设备上、查看部署历史|
 |模型部署|设备管理|查看设备|支持设备信息和部署历史的查看|
@@ -265,6 +275,14 @@ LABEL_TOOL_HOST_PORT=set_your_label_tool_HOST_PORT
 
 ```
 
+*  YMIR的模型部署模块默认端口号为18801，如有冲突需要修改，则需要前往YMIR目录下修改.env文件，配置 ModelDeployment 端口和 MySQL 访问密码：
+
+```
+DEPLOY_MODULE_HOST_PORT=18801
+DEPLOY_MODULE_URL=${DEPLOY_MODULE_HOST_PORT}
+DEPLOY_MODULE_MYSQL_ROOT_PASSWORD=deploy_db_passwd
+```
+
 修改完成后再执行启动命令：`bash ymir.sh start`。
 
 4. 服务启动成功后，默认配置端口为12001，可以直接访问 [http://localhost:12001/](http://localhost:12001/)  显示登录界面即安装成功。如果需要**停止服务**，运行命令为：`bash ymir.sh stop`
@@ -311,26 +329,6 @@ LABEL_TOOL_TOKEN="Token token_value"
 5. 停止label studio服务命令如下：
 
 `docker-compose -f docker-compose.label_studio.yml down`
-  
-## 2.4. 安装配置 ModelDeployment （可选）
-  
-ModelDeployment 是YMIR所支持的模型部署系统，可以作为备选模型部署工具安装。
-  
-1. 在上一节的YMIR目录下，修改.env文件，配置 ModelDeployment 端口和 MySQL 访问密码：
-```
-DEPLOY_MODULE_HOST_PORT=18801
-DEPLOY_MODULE_URL=${DEPLOY_MODULE_HOST_PORT}
-DEPLOY_MODULE_MYSQL_ROOT_PASSWORD=deploy_db_passwd
-```
-  
-2. 启动安装 ModelDeployment 命令如下：
-`docker-compose -f docker-compose.modeldeploy.yml up -d`
-  
-3. 完成后查看 ModelDeployment 状态命令如下：
-`docker-compose -f docker-compose.modeldeploy.yml ps`
-  
-4. 停止 ModelDeployment 服务命令如下：
-`docker-compose -f docker-compose.modeldeploy.yml down`
 
 # 3. GUI使用-典型模型生产流程
 
@@ -389,7 +387,7 @@ YMIR repo中的任何代码都应遵循编码标准，并将在CI测试中进行
 
 ## 5.2 关于训练，推理与挖掘镜像
 
-[查看这篇文档](docs/ymir-cmd-container.md)获取更多细节。
+[查看这篇文档](https://github.com/IndustryEssentials/ymir/blob/dev/dev_docs/ymir-cmd-container.md)获取更多细节。
 
 # 6. 设计理念
   
@@ -422,7 +420,7 @@ YMIR repo中的任何代码都应遵循编码标准，并将在CI测试中进行
 
 *  如何导入外部模型
 
-参考[此文档](docs/import-extra-models.md)
+参考[此文档](https://github.com/IndustryEssentials/ymir/blob/dev/dev_docs/import-extra-models.md)。
 
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
 [![All Contributors](https://img.shields.io/badge/All%20Contributors-9-brightgreen)](#contributors-)
