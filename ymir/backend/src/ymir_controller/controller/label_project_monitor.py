@@ -67,7 +67,7 @@ def update_label_task(label_instance: utils.LabelBase, task_id: str, project_inf
                                                      project_info["des_annotation_path"])
         except NotReadyError:
             logging.info("label result not ready, try agiain later")
-            continue
+            return
         except (ConnectionError, HTTPError, Timeout) as e:
             sentry_sdk.capture_exception(e)
             logging.error(f"get label task {task_id} error: {e}, set task_id:{task_id} error")
