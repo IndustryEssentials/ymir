@@ -1,5 +1,5 @@
 const algo = {
-  'algo.title': { cn: '算法商城', en: 'Algorithm Store', },
+  'algo.title': { cn: '公共算法', en: 'Public Algorithm', },
   'algo.label': { cn: '模型部署', en: 'Model Deployment', },
   'algo.public.label': { cn: '公共算法', en: 'Public Algorithm', },
   'algo.mine.label': { cn: '我的算法', en: 'My Algorithm', },
