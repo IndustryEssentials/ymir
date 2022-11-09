@@ -331,26 +331,6 @@ LABEL_TOOL_TOKEN="Token token_value"
 
 `docker-compose -f docker-compose.label_studio.yml down`
 
-## 2.4. 安装配置 ModelDeployment （可选）
-
-ModelDeployment 是YMIR所支持的模型部署系统，可以作为备选模型部署工具安装。
-
-1. 在上一节的YMIR目录下，修改.env文件，配置 ModelDeployment 端口和 MySQL 访问密码：
-```
-DEPLOY_MODULE_HOST_PORT=18801
-DEPLOY_MODULE_URL=${DEPLOY_MODULE_HOST_PORT}
-DEPLOY_MODULE_MYSQL_ROOT_PASSWORD=deploy_db_passwd
-```
-
-2. 启动安装 ModelDeployment 命令如下：
-`docker-compose -f docker-compose.modeldeploy.yml up -d`
-
-3. 完成后查看 ModelDeployment 状态命令如下：
-`docker-compose -f docker-compose.modeldeploy.yml ps`
-
-4. 停止 ModelDeployment 服务命令如下：
-`docker-compose -f docker-compose.modeldeploy.yml down`
-
 # 3. GUI使用-典型模型生产流程
 
 ![YMIR-GUI process](https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/YMIR-GUI-process.jpeg)
