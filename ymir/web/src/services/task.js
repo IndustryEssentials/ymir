@@ -139,7 +139,7 @@ export function fusion({
       exclude_last_result: exclude_result,
       dataset_group_id: group_id,
       dataset_id: dataset,
-      merge_strategy,
+      merge_strategy: include_strategy,
       include_labels: include,
       exclude_labels: exclude,
       sampling_count: samples || 0,

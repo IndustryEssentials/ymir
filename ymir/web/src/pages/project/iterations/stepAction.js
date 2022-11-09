@@ -10,6 +10,7 @@ import Merge from "@/components/task/merge"
 import Training from "@/components/task/training"
 import Buttons from "./buttons"
 import NextIteration from "./nextIteration"
+import FinishStep from "./FinishStep"
 
 const Action = (Comp, props = {}) => <Comp {...props} />
 
@@ -17,13 +18,13 @@ const StepAction = ({ steps, iteration, callback = () => {} }) => {
   const actionPanelExpand = useSelector(
     ({ iteration }) => iteration.actionPanelExpand
   )
-  const [currentContent, setCurrentContent] = useState(null)
+  const [currentStep, setCurrentStep] = useState(null)
   const [CurrentAction, setCurrentAction] = useState(null)
   const result = useSelector((state) => {
-    const res = currentContent?.resultType
-      ? state[currentContent.resultType][currentContent.resultType]
+    const res = currentStep?.resultType
+      ? state[currentStep.resultType][currentStep.resultType]
       : {}
-    return res[currentContent?.resultId] || {}
+    return res[currentStep?.resultId] || {}
   })
   const [state, setState] = useState(-1)
 
@@ -74,10 +75,10 @@ const StepAction = ({ steps, iteration, callback = () => {} }) => {
   }
 
   useEffect(() => {
-    if (currentContent) {
+    if (currentStep) {
       const bottom = (
         <Buttons
-          step={currentContent}
+          step={currentStep}
           state={state}
           next={next}
           skip={skip}
@@ -86,21 +87,21 @@ const StepAction = ({ steps, iteration, callback = () => {} }) => {
       )
       const props = {
         bottom,
-        step: currentContent,
+        step: currentStep,
         hidden: state >= 0,
-        query: { ...fixedQuery, ...(currentContent.query || {}) },
+        query: { ...fixedQuery, ...(currentStep.query || {}) },
         ok,
       }
-      setCurrentAction(Action(currentContent.comp, props))
+      setCurrentAction(Action(currentStep.comp, props))
     }
-  }, [currentContent, state])
+  }, [currentStep, state])
 
   useEffect(() => {
-    if (currentContent) {
-      const state = result?.id ? result.state : currentContent.state
+    if (currentStep) {
+      const state = result?.id ? result.state : currentStep.state
       setState(Number.isInteger(state) ? state : -1)
     }
-  }, [result?.state, currentContent?.state])
+  }, [result?.state, currentStep?.state])
 
   useEffect(() => {
     if (!iteration || !steps.length) {
@@ -112,13 +113,13 @@ const StepAction = ({ steps, iteration, callback = () => {} }) => {
     if (!iteration.end) {
       const targetComps = comps[iteration.currentStep.name]
       const query = targetComps.query(targetStep.preSetting)
-      setCurrentContent({
+      setCurrentStep({
         ...targetStep,
         ...targetComps,
         query,
       })
     } else {
-      setCurrentContent({
+      setCurrentStep({
         ...comps[STEP.next],
         ...targetStep,
         current: STEP.next,
@@ -141,7 +142,7 @@ const StepAction = ({ steps, iteration, callback = () => {} }) => {
     })
 
   const ok = (result) => {
-    if (currentContent.end) {
+    if (currentStep.end) {
       // next iteration
       callback({
         type: "create",
@@ -157,7 +158,14 @@ const StepAction = ({ steps, iteration, callback = () => {} }) => {
     }
   }
 
-  return <div hidden={!actionPanelExpand}>{CurrentAction}</div>
+  return (
+    <div hidden={!actionPanelExpand}>
+      {currentStep?.selected !== currentStep?.value ? (
+        <FinishStep step={currentStep} />
+      ) : null}
+      {CurrentAction}
+    </div>
+  )
 }
 
 export default StepAction

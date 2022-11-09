@@ -227,6 +227,19 @@ declare namespace YModels {
     resultId?: number
   }
 
+  export interface PageStep extends Step {
+    label?: string
+    value?: string
+    current?: string
+    selected?: string
+    index?: number
+    act?: string
+    react?: string
+    next?: string
+    end?: boolean
+    unskippable?: boolean
+  }
+
   interface ShareImage {
     docker_name: string
     functions?: string

@@ -27,6 +27,7 @@ const NormalReducer =
   (state, { payload }) => {
     const current = state[field]
     const update = isPlainObject(current) ? { ...current, ...payload } : payload
+    console.log("current:", current, update, payload)
     return {
       ...state,
       [field]: update,
@@ -228,10 +229,13 @@ export default {
     },
     *updateLocalIterations({ payload: iterations = [] }, { put, select }) {
       const objIterations = iterations.reduce(
-        (prev, iteration) => ({
-          ...prev,
-          [iteration.id]: iteration,
-        }),
+        (prev, iteration) =>
+          iteration?.id
+            ? {
+                ...prev,
+                [iteration.id]: iteration,
+              }
+            : prev,
         {}
       )
       yield put({
@@ -252,10 +256,12 @@ export default {
           [key]: item,
         }
       }, {})
-      yield put({
-        type: "UPDATE_ITERATION",
-        payload: { [updateIteration.id]: updateItertion },
-      })
+      if (updateIteration.id) {
+        yield put({
+          type: "UPDATE_ITERATION",
+          payload: { [updateIteration.id]: updateItertion },
+        })
+      }
     },
     *toggleActionPanel({ payload }, { call, put, select }) {
       yield put.resolve({

@@ -40,6 +40,7 @@ function Detail({ project = {} }) {
     ])
     const ilist = filterExsit(
       steps.slice(0, 4).map((step) => {
+        console.log("iteration:", iteration)
         const istep = iteration.steps.find((st) => st.name === step.value)
         return { label: step.act, id: istep.resultId }
       })

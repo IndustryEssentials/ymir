@@ -92,6 +92,7 @@ function Iteration({ project, fresh = () => {} }) {
   }
 
   function goStep(step) {
+    console.log("step:", step)
     setSelectedStep(step.value)
   }
 
