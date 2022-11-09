@@ -126,7 +126,7 @@ enum AnnoType {
     AT_CLASS = 1; // Classification with class id, not implemented.
     AT_DET_BOX = 2; // Detection w. bounding box.
     AT_SEG_POLYGON = 3; // Semantic Segmentation w. ploygons.
-    AT_SEG_MASK = 4; // Instance Segmentation w. mask.
+    AT_SEG_MASK = 4; // Semantic Segmentation w. mask.
 };
 
 message SingleTaskAnnotations {
@@ -151,7 +151,8 @@ message SingleImageAnnotations {
 
     repeated ObjectAnnotation polygons = 3;
 
-    MaskAnnotation mask = 4;
+    repeated MaskAnnotation masks = 4;
+
     // Set of class ids shown in this image.
     repeated int32 img_class_ids = 5;
 

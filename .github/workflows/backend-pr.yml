@@ -7,7 +7,7 @@ on:
     branches:
       - master
       - dev
-      - ymir-pa
+      - prerelease
 
 env:
   PYTHONPATH: ./ymir/backend
