@@ -78,8 +78,7 @@ class MirStorageOps():
     @time_it
     def __build_mir_keywords_ci_tag(cls, task_annotations: mirpb.SingleTaskAnnotations,
                                     keyword_to_index: mirpb.CiTagToIndex) -> None:
-        # todo: remove AT_UNKNOWN
-        if task_annotations.type == mirpb.AnnoType.AT_DET_BOX or task_annotations.type == mirpb.AnnoType.AT_UNKNOWN:
+        if task_annotations.type == mirpb.AnnoType.AT_DET_BOX:
             for asset_id, single_image_annotations in task_annotations.image_annotations.items():
                 for box in single_image_annotations.boxes:
                     # ci to annos
@@ -114,8 +113,7 @@ class MirStorageOps():
         anno_stats.positive_asset_cnt = len(image_annotations)
         anno_stats.negative_asset_cnt = len(mir_metadatas.attributes) - len(image_annotations)
 
-        # todo: remove AT_UNKNOWN
-        if task_annotations.type == mirpb.AnnoType.AT_DET_BOX or task_annotations.type == mirpb.AnnoType.AT_UNKNOWN:
+        if task_annotations.type == mirpb.AnnoType.AT_DET_BOX:
             anno_stats.total_cnt = sum([len(image_annotation.boxes) for image_annotation in image_annotations.values()])
         elif task_annotations.type == mirpb.AnnoType.AT_SEG_MASK:
             anno_stats.total_cnt = sum([
