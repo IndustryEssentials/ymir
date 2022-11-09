@@ -1,7 +1,7 @@
 import os
 from typing import Dict, List, Optional, Tuple
 
-from common_utils.labels import label_storage_file_path, UserLabels
+from common_utils.labels import user_label_file, UserLabels
 from controller.invoker.invoker_task_base import SubTaskType, TaskBaseInvoker
 from controller.utils import utils
 from id_definition.error_codes import CTLResponseCode
@@ -38,10 +38,10 @@ class TaskCopyInvoker(TaskBaseInvoker):
         copy_response = cls.copying_cmd(repo_root=repo_root,
                                         task_id=subtask_id,
                                         src_root=src_root,
-                                        label_storage_file=label_storage_file_path(
-                                            sandbox_root=sandbox_root, user_id=request.user_id),
-                                        src_label_storage_file=label_storage_file_path(
-                                            sandbox_root=sandbox_root, user_id=copy_request.src_user_id),
+                                        label_storage_file=user_label_file(sandbox_root=sandbox_root,
+                                                                           user_id=request.user_id),
+                                        src_label_storage_file=user_label_file(sandbox_root=sandbox_root,
+                                                                               user_id=copy_request.src_user_id),
                                         src_dataset_id=in_dataset_ids[0],
                                         work_dir=subtask_workdir,
                                         name_strategy_ignore=copy_request.name_strategy_ignore,
@@ -56,7 +56,7 @@ class TaskCopyInvoker(TaskBaseInvoker):
         copying_cmd_str = [
             utils.mir_executable(), 'copy', '--root', repo_root, '--src-root', src_root, '--dst-rev',
             f"{task_id}@{task_id}", '--src-revs', f"{src_dataset_id}@{src_dataset_id}", '-w', work_dir,
-            '--label-storage-file', label_storage_file, '--src-label-storage-file', src_label_storage_file
+            '--user-label-file', label_storage_file, '--src-user-label-file', src_label_storage_file
         ]
 
         if name_strategy_ignore:

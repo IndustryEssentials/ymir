@@ -4,7 +4,7 @@ import shutil
 import unittest
 from unittest import mock
 
-from common_utils.labels import label_storage_file_path, UserLabels
+from common_utils.labels import user_label_file, UserLabels
 from controller.utils import utils
 from controller.utils.invoker_call import make_invoker_cmd_call
 from controller.utils.invoker_mapping import RequestTypeToInvoker
@@ -109,7 +109,7 @@ class TestInvokerTaskFusion(unittest.TestCase):
         expected_filter_cmd += f" --dst-rev {self._task_id}@{self._sub_task_id_1}"
         expected_filter_cmd += f" --src-revs {self._task_id}@{self._sub_task_id_2}"
         expected_filter_cmd += f" -w {expected_filter_work_dir} "
-        expected_filter_cmd += f"--label-storage-file {label_storage_file_path(self._sandbox_root, self._user_name)} "
+        expected_filter_cmd += f"--user-label-file {user_label_file(self._sandbox_root, self._user_name)} "
         expected_filter_cmd += "--cis person;cat;table"
 
         expected_sampling_cmd = f"mir sampling --root {self._mir_repo_root}"

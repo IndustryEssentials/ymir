@@ -83,7 +83,7 @@ def create_main_parser() -> argparse.ArgumentParser:
                               type=str,
                               default=os.getcwd(),
                               help="Root path to the mir repo, use . if not set.")
-    share_parser.add_argument("--label-storage-file",
+    share_parser.add_argument("--user-label-file",
                               dest="label_storage_file",
                               type=str,
                               default='',

@@ -1,7 +1,7 @@
 import os
 from typing import Dict, List, Optional, Tuple
 
-from common_utils.labels import label_storage_file_path, UserLabels
+from common_utils.labels import user_label_file, UserLabels
 from controller.invoker.invoker_cmd_merge import MergeInvoker
 from controller.invoker.invoker_task_base import SubTaskType, TaskBaseInvoker
 from controller.utils import utils, invoker_call
@@ -88,8 +88,8 @@ class TaskMiningInvoker(TaskBaseInvoker):
         config_file = cls.gen_executor_config_path(subtask_workdir)
         asset_cache_dir = os.path.join(sandbox_root, request.user_id, "asset_cache")
         mining_response = cls.mining_cmd(repo_root=repo_root,
-                                         label_storage_file=label_storage_file_path(sandbox_root=sandbox_root,
-                                                                                    user_id=request.user_id),
+                                         label_storage_file=user_label_file(sandbox_root=sandbox_root,
+                                                                            user_id=request.user_id),
                                          config_file=config_file,
                                          task_id=subtask_id,
                                          work_dir=subtask_workdir,
@@ -128,7 +128,7 @@ class TaskMiningInvoker(TaskBaseInvoker):
         generate_annotations: bool,
     ) -> backend_pb2.GeneralResp:
         mining_cmd = [
-            utils.mir_executable(), 'mining', '--root', repo_root, '--label-storage-file', label_storage_file,
+            utils.mir_executable(), 'mining', '--root', repo_root, '--user-label-file', label_storage_file,
             '--dst-rev', f"{task_id}@{task_id}", '-w', work_dir, '--model-location', model_location, '--media-location',
             media_location, '--model-hash', f"{model_hash}@{model_stage}", '--src-revs',
             f"{in_dataset_id}@{his_task_id}", '--asset-cache-dir', asset_cache_dir, '--task-config-file', config_file,

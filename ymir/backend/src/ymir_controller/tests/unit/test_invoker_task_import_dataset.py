@@ -7,7 +7,7 @@ from unittest import mock
 from google.protobuf.json_format import ParseDict
 
 import tests.utils as test_utils
-from common_utils.labels import label_storage_file_path
+from common_utils.labels import user_label_file
 from controller.utils import utils
 from controller.utils.invoker_call import make_invoker_cmd_call
 from controller.utils.invoker_mapping import RequestTypeToInvoker
@@ -108,7 +108,7 @@ class TestInvokerTaskImportDataset(unittest.TestCase):
         expected_cmd_import_dataset = (
             f"mir import --root {self._mir_repo_root} --dst-rev {self._task_id}@{self._task_id} --src-revs master "
             f"--index-file {os.path.join(working_dir, 'index.txt')} --gen-dir {self._storage_root} -w {working_dir} "
-            f"--label-storage-file {label_storage_file_path(sandbox_root=self._sandbox_root, user_id=self._user_name)} "
+            f"--user-label-file {user_label_file(sandbox_root=self._sandbox_root, user_id=self._user_name)} "
             f"--anno-type det-box --pred-dir {self._storage_root} --gt-dir {self._storage_root} "
             "--unknown-types-strategy add")
         mock_run.assert_has_calls(calls=[

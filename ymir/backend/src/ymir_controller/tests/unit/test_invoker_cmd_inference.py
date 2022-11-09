@@ -6,7 +6,7 @@ import unittest
 from unittest import mock
 import yaml
 
-from common_utils.labels import label_storage_file_path
+from common_utils.labels import user_label_file
 from controller.utils.invoker_call import make_invoker_cmd_call
 from controller.utils.invoker_mapping import RequestTypeToInvoker
 from proto import backend_pb2
@@ -122,14 +122,14 @@ class TestInvokerCMDInference(unittest.TestCase):
             work_dir=working_dir,
         )
 
-        label_storage_file = label_storage_file_path(sandbox_root=self._sandbox_root, user_id=self._user_name)
+        label_storage_file = user_label_file(sandbox_root=self._sandbox_root, user_id=self._user_name)
 
         os.makedirs(working_dir, exist_ok=True)
         config_file = os.path.join(working_dir, "inference_config.yaml")
 
         index_file = os.path.join(working_dir, "index.txt")
 
-        cmd = (f"mir infer --root {self._mir_repo_root} --label-storage-file {label_storage_file} "
+        cmd = (f"mir infer --root {self._mir_repo_root} --user-label-file {label_storage_file} "
                f"-w {working_dir} --model-location {self._storage_root} "
                f"--index-file {index_file} --model-hash {model_hash}@{model_stage} "
                f"--task-config-file {config_file} --executor {inference_image}")

@@ -174,7 +174,7 @@ class TestInvokerTaskTraining(unittest.TestCase):
         asset_cache_dir = os.path.join(self._sandbox_root, self._user_name, "asset_cache")
 
         training_cmd = (f"mir train --root {self._mir_repo_root} "
-                        f"--label-storage-file {labels.label_storage_file_path(self._sandbox_root, self._user_name)} "
+                        f"--user-label-file {labels.user_label_file(self._sandbox_root, self._user_name)} "
                         f"--dst-rev {self._task_id}@{self._task_id} "
                         f"--model-location {self._storage_root} "
                         f"--media-location {self._storage_root} -w {working_dir_0} "

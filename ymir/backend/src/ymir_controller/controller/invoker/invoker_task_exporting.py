@@ -2,7 +2,7 @@ import os
 from typing import Dict, List, Optional, Tuple
 from common_utils.labels import UserLabels
 
-from common_utils.labels import label_storage_file_path
+from common_utils.labels import user_label_file
 from controller.invoker.invoker_task_base import SubTaskType, TaskBaseInvoker
 from controller.utils import utils
 from id_definition.error_codes import CTLResponseCode
@@ -47,8 +47,8 @@ class TaskExportingInvoker(TaskBaseInvoker):
         exporting_request = request.req_create_task.exporting
         media_location = assets_config['assetskvlocation']
         exporting_response = cls.exporting_cmd(repo_root=repo_root,
-                                               label_storage_file=label_storage_file_path(
-                                                   sandbox_root=sandbox_root, user_id=request.user_id),
+                                               label_storage_file=user_label_file(sandbox_root=sandbox_root,
+                                                                                  user_id=request.user_id),
                                                in_dataset_id=in_dataset_ids[0],
                                                annotation_format=utils.annotation_format_str(exporting_request.format),
                                                asset_dir=exporting_request.asset_dir,
@@ -73,7 +73,7 @@ class TaskExportingInvoker(TaskBaseInvoker):
         exporting_cmd = [
             utils.mir_executable(), 'export', '--root', repo_root, '--media-location', media_location, '--asset-dir',
             asset_dir, '--src-revs', f"{in_dataset_id}@{in_dataset_id}", '--anno-format', annotation_format,
-            '--label-storage-file', label_storage_file,
+            '--user-label-file', label_storage_file,
         ]
         if keywords:
             exporting_cmd.append('--class_names')

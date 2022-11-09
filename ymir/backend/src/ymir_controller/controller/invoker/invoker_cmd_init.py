@@ -28,7 +28,7 @@ class InitInvoker(BaseMirControllerInvoker):
         os.makedirs(os.path.join(self._repo_root, '.mir'), exist_ok=True)
 
         command = [
-            utils.mir_executable(), 'init', '--root', self._repo_root, '--label-storage-file', self._label_storage_file
+            utils.mir_executable(), 'init', '--root', self._repo_root, '--user-label-file', self._label_storage_file
         ]
         command.extend(
             ['--with-empty-rev',

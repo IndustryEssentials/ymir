@@ -7,7 +7,7 @@ from unittest import mock
 from google.protobuf.json_format import MessageToDict, ParseDict
 
 import tests.utils as test_utils
-from common_utils.labels import label_storage_file_path
+from common_utils.labels import user_label_file
 from controller.utils import utils
 from controller.utils.invoker_call import make_invoker_cmd_call
 from controller.utils.invoker_mapping import RequestTypeToInvoker
@@ -110,7 +110,7 @@ class TestInvokerTaskExporting(unittest.TestCase):
             f"mir export --root {self._mir_repo_root} --media-location {self._storage_root} "
             f"--asset-dir {self._storage_root} --src-revs {in_dataset_ids[0]}@{in_dataset_ids[0]} "
             f"--anno-format det-voc "
-            f"--label-storage-file {label_storage_file_path(self._sandbox_root, self._user_name)} "
+            f"--user-label-file {user_label_file(self._sandbox_root, self._user_name)} "
             f"-w {working_dir} --pred-dir {self._storage_root} --gt-dir {self._storage_root}")
         mock_run.assert_has_calls(calls=[
             mock.call(expected_cmd_exporting.split(' '), capture_output=True, text=True),

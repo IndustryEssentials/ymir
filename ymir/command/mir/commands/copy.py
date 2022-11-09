@@ -200,7 +200,7 @@ def bind_to_subparsers(subparsers: argparse._SubParsersAction, parent_parser: ar
                                  type=str,
                                  required=True,
                                  help="type:rev@bid, branch in source mir root")
-    copy_arg_parser.add_argument("--src-label-storage-file",
+    copy_arg_parser.add_argument("--src-user-label-file",
                                  dest="data_label_storage_file",
                                  type=str,
                                  required=False,
