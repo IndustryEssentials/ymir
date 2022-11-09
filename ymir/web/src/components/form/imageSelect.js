@@ -6,9 +6,7 @@ import { TYPES } from '@/constants/image'
 import { HIDDENMODULES } from '@/constants/common'
 import t from '@/utils/t'
 
-const getValue = image => image.id + ',' + image.url
-
-const ImageSelect = ({ value, relatedId, type = TYPES.TRAINING, onChange = () => { }, getImages, getImage, ...resProps }) => {
+const ImageSelect = ({ value, relatedId, type = TYPES.TRAINING, onChange = () => {}, getImages, getImage, ...resProps }) => {
   const [options, setOptions] = useState([])
 
   useEffect(() => {
@@ -18,7 +16,7 @@ const ImageSelect = ({ value, relatedId, type = TYPES.TRAINING, onChange = () =>
   useEffect(() => {
     if (options.length === 1) {
       if (value) {
-        const opt = options.find(({ image }) => getValue(image) === value)
+        const opt = options.find(({ image }) => image.id === value)
         opt && onChange(value, opt.image)
       } else {
         value = options[0].value
@@ -39,18 +37,22 @@ const ImageSelect = ({ value, relatedId, type = TYPES.TRAINING, onChange = () =>
     }
   }
 
-  const generateOption = image => ({
-    label: <Row>
-      <Col flex={1}>{image.name}</Col>
-      {!HIDDENMODULES.LIVECODE ? <Col style={{ color: 'rgba(0, 0, 0, 0.45)' }}>{t(`image.livecode.label.${image.liveCode ? 'remote' : 'local'}`)}</Col> : null}
-    </Row>,
+  const generateOption = (image) => ({
+    label: (
+      <Row>
+        <Col flex={1}>{image.name}</Col>
+        {!HIDDENMODULES.LIVECODE ? (
+          <Col style={{ color: 'rgba(0, 0, 0, 0.45)' }}>{t(`image.livecode.label.${image.liveCode ? 'remote' : 'local'}`)}</Col>
+        ) : null}
+      </Row>
+    ),
     image,
-    value: getValue(image),
+    value: image.id,
   })
 
   async function generateOptions(images) {
     let relatedOptions = relatedId ? await getRelatedOptions() : []
-    const opts = images.filter(image => relatedOptions.every(img => img.value !== image.id)).map(generateOption)
+    const opts = images.filter((image) => relatedOptions.every((img) => img.value !== image.id)).map(generateOption)
     let result = opts
     if (relatedOptions.length) {
       result = [
@@ -61,7 +63,7 @@ const ImageSelect = ({ value, relatedId, type = TYPES.TRAINING, onChange = () =>
         {
           label: t('image.select.opt.normal'),
           options: opts,
-        }
+        },
       ]
     }
     setOptions(result)
@@ -77,9 +79,7 @@ const ImageSelect = ({ value, relatedId, type = TYPES.TRAINING, onChange = () =>
   }
 
   return (
-    <Select value={value} optionFilterProp="label" allowClear
-      {...resProps} onChange={(value, opt) => onChange(value, opt?.image)} options={options}
-    ></Select>
+    <Select value={value} optionFilterProp="label" allowClear {...resProps} onChange={(value, opt) => onChange(value, opt?.image)} options={options}></Select>
   )
 }
 

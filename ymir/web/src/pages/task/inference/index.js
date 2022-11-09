@@ -1,42 +1,42 @@
-import React, { useCallback, useEffect, useState } from "react"
-import { connect } from "dva"
-import { Select, Card, Button, Form, Row, Col, Space, InputNumber, message, Tag, Alert } from "antd"
-import { useHistory, useParams, useLocation } from "umi"
+import React, { useCallback, useEffect, useState } from 'react'
+import { connect } from 'dva'
+import { Select, Card, Button, Form, Row, Col, Space, InputNumber, message, Tag, Alert } from 'antd'
+import { useHistory, useParams, useLocation } from 'umi'
 
-import { formLayout } from "@/config/antd"
-import t from "@/utils/t"
+import { formLayout } from '@/config/antd'
+import t from '@/utils/t'
 import { HIDDENMODULES } from '@/constants/common'
-import { string2Array } from "@/utils/string"
+import { string2Array } from '@/utils/string'
 import { OPENPAI_MAX_GPU_COUNT } from '@/constants/common'
 import { TYPES } from '@/constants/image'
 import useFetch from '@/hooks/useFetch'
 
-import Breadcrumbs from "@/components/common/breadcrumb"
-import { randomNumber } from "@/utils/number"
-import ModelSelect from "@/components/form/modelSelect"
-import ImageSelect from "@/components/form/imageSelect"
-import DatasetSelect from "@/components/form/datasetSelect"
-import useAddKeywords from "@/hooks/useAddKeywords"
-import AddKeywordsBtn from "@/components/keyword/addKeywordsBtn"
-import LiveCodeForm from "@/components/form/items/liveCode"
-import { removeLiveCodeConfig } from "@/components/form/items/liveCodeConfig"
-import DockerConfigForm from "@/components/form/items/dockerConfig"
-import Desc from "@/components/form/desc"
+import Breadcrumbs from '@/components/common/breadcrumb'
+import { randomNumber } from '@/utils/number'
+import ModelSelect from '@/components/form/modelSelect'
+import ImageSelect from '@/components/form/imageSelect'
+import DatasetSelect from '@/components/form/datasetSelect'
+import useAddKeywords from '@/hooks/useAddKeywords'
+import AddKeywordsBtn from '@/components/keyword/addKeywordsBtn'
+import LiveCodeForm from '@/components/form/items/liveCode'
+import { removeLiveCodeConfig } from '@/components/form/items/liveCodeConfig'
+import DockerConfigForm from '@/components/form/items/dockerConfig'
+import Desc from '@/components/form/desc'
 import Dataset from '@/components/form/option/Dataset'
 
-import commonStyles from "../common.less"
-import styles from "./index.less"
-import OpenpaiForm from "@/components/form/items/openpai"
-import Tip from "@/components/form/tip"
+import commonStyles from '../common.less'
+import styles from './index.less'
+import OpenpaiForm from '@/components/form/items/openpai'
+import Tip from '@/components/form/tip'
 
 const { Option } = Select
 
 const getArray = (str = '') => str.split('|')
 const parseModelStage = (str = '') => {
-  return str ? getArray(str).map(stage => string2Array(stage)) : []
+  return str ? getArray(str).map((stage) => string2Array(stage)) : []
 }
 
-const Algorithm = () => [{ id: "aldd", label: 'ALDD', checked: true }]
+const Algorithm = () => [{ id: 'aldd', label: 'ALDD', checked: true }]
 
 function Inference({ datasetCache, datasets, ...func }) {
   const pageParams = useParams()
@@ -88,9 +88,7 @@ function Inference({ datasetCache, datasets, ...func }) {
     did && form.setFieldsValue({ datasets: did })
   }, [location.query.did])
 
-  useEffect(() => {
-
-  }, [stage])
+  useEffect(() => {}, [stage])
 
   useEffect(() => {
     pid && func.getDatasets(pid)
@@ -107,12 +105,14 @@ function Inference({ datasetCache, datasets, ...func }) {
 
   useEffect(() => {
     if (newer.length) {
-      const tip = <>
-        {t('task.inference.unmatch.keywrods', {
-          keywords: newer.map(key => <Tag key={key}>{key}</Tag>)
-        })}
-        <AddKeywordsBtn type="primary" size="small" style={{ marginLeft: 10 }} keywords={newer} callback={checkModelKeywords} />
-      </>
+      const tip = (
+        <>
+          {t('task.inference.unmatch.keywrods', {
+            keywords: newer.map((key) => <Tag key={key}>{key}</Tag>),
+          })}
+          <AddKeywordsBtn type="primary" size="small" style={{ marginLeft: 10 }} keywords={newer} callback={checkModelKeywords} />
+        </>
+      )
       setKRTip(tip)
     }
   }, [newer])
@@ -121,19 +121,16 @@ function Inference({ datasetCache, datasets, ...func }) {
     const state = location.state
 
     if (state?.record) {
-      const { task: { parameters, config }, description, } = state.record
       const {
-        dataset_id,
-        docker_image,
-        docker_image_id,
-        model_id,
-        model_stage_id,
-      } = parameters
+        task: { parameters, config },
+        description,
+      } = state.record
+      const { dataset_id, docker_image_id, model_id, model_stage_id } = parameters
       form.setFieldsValue({
         datasets: [dataset_id],
         gpu_count: config.gpu_count,
         stages: [[model_id, model_stage_id]],
-        image: docker_image_id + ',' + docker_image,
+        image: docker_image_id,
         description,
       })
       setSelectedGpu(config.gpu_count)
@@ -149,7 +146,7 @@ function Inference({ datasetCache, datasets, ...func }) {
   }, [location.state])
 
   function checkModelKeywords() {
-    const keywords = (selectedModels.map(model => model?.keywords) || []).flat().filter(item => item)
+    const keywords = (selectedModels.map((model) => model?.keywords) || []).flat().filter((item) => item)
     checkKeywords(keywords)
   }
 
@@ -162,7 +159,7 @@ function Inference({ datasetCache, datasets, ...func }) {
 
   function imageChange(_, image = {}) {
     const { url, configs = [] } = image
-    const configObj = configs.find(conf => conf.type === TYPES.INFERENCE) || {}
+    const configObj = configs.find((conf) => conf.type === TYPES.INFERENCE) || {}
     if (!HIDDENMODULES.LIVECODE) {
       setLiveCode(image.liveCode || false)
     }
@@ -175,41 +172,34 @@ function Inference({ datasetCache, datasets, ...func }) {
 
   const onFinish = async (values) => {
     const config = {
-      ...values.hyperparam?.reduce(
-        (prev, { key, value }) => key && value ? { ...prev, [key]: value } : prev,
-        {}),
+      ...values.hyperparam?.reduce((prev, { key, value }) => (key && value ? { ...prev, [key]: value } : prev), {}),
       ...(values.live || {}),
     }
 
     config['gpu_count'] = form.getFieldValue('gpu_count') || 0
 
-    const img = (form.getFieldValue('image') || '').split(',')
-    const imageId = Number(img[0])
-    const image = img[1]
     const params = {
       ...values,
       name: 'task_inference_' + randomNumber(),
       description: (values.description || '').trim(),
       projectId: pid,
-      imageId,
-      image,
       config,
     }
     const result = await func.infer(params)
     if (result) {
       const tasksCount = values.stages.length * values.datasets.length
-      const resultCount = result.filter(item => item).length
+      const resultCount = result.filter((item) => item).length
       if (resultCount < tasksCount) {
         message.warn(t('task.inference.failure.some'))
       }
       await func.clearCache()
-      const groups = result.map(item => item.result_dataset?.dataset_group_id || '')
+      const groups = result.map((item) => item.result_dataset?.dataset_group_id || '')
       history.replace(`/home/project/${pid}/dataset#${groups.join(',')}`)
     }
   }
 
   function onFinishFailed(errorInfo) {
-    console.log("Failed:", errorInfo)
+    console.log('Failed:', errorInfo)
   }
 
   function modelChange(id, options = []) {
@@ -220,23 +210,30 @@ function Inference({ datasetCache, datasets, ...func }) {
   async function selectModelFromIteration() {
     const iterations = await func.getIterations(pid)
     if (iterations) {
-      const models = iterations.map(iter => iter.model ? [iter.model] : null).filter(i => i) || []
+      const models = iterations.map((iter) => (iter.model ? [iter.model] : null)).filter((i) => i) || []
       form.setFieldsValue({ stages: models })
     }
   }
 
-  const testSetFilters = useCallback(datasets => {
-    const testings = datasets.filter(ds => project.testingSets?.includes(ds.id)).map(ds => ({ ...ds, isProjectTesting: true }))
-    const others = datasets.filter(ds => !project.testingSets?.includes(ds.id))
-    return [...testings, ...others]
-  }, [project.testingSets])
+  const testSetFilters = useCallback(
+    (datasets) => {
+      const testings = datasets.filter((ds) => project.testingSets?.includes(ds.id)).map((ds) => ({ ...ds, isProjectTesting: true }))
+      const others = datasets.filter((ds) => !project.testingSets?.includes(ds.id))
+      return [...testings, ...others]
+    },
+    [project.testingSets],
+  )
 
-  const renderLabel = item => <Row>
-    <Col flex={1}><Dataset dataset={item} /></Col>
-    <Col>{item.isProjectTesting ? t('project.testing.dataset.label') : null}</Col>
-  </Row>
+  const renderLabel = (item) => (
+    <Row>
+      <Col flex={1}>
+        <Dataset dataset={item} />
+      </Col>
+      <Col>{item.isProjectTesting ? t('project.testing.dataset.label') : null}</Col>
+    </Row>
+  )
 
-  const getCheckedValue = (list) => list.find((item) => item.checked)["id"]
+  const getCheckedValue = (list) => list.find((item) => item.checked)['id']
   const initialValues = {
     description: '',
     stages: stage.length ? stage : undefined,
@@ -254,50 +251,47 @@ function Inference({ datasetCache, datasets, ...func }) {
             className={styles.form}
             {...formLayout}
             form={form}
-            name='inferenceForm'
+            name="inferenceForm"
             initialValues={initialValues}
             onFinish={onFinish}
             onFinishFailed={onFinishFailed}
           >
-            <Form.Item wrapperCol={{ span: 20 }}><Tip content={t('task.inference.header.tip')} /></Form.Item>
+            <Form.Item wrapperCol={{ span: 20 }}>
+              <Tip content={t('task.inference.header.tip')} />
+            </Form.Item>
             <Form.Item
               label={t('task.inference.form.dataset.label')}
               required
               name="datasets"
-              rules={[
-                { required: true, message: t('task.inference.form.dataset.required') },
-              ]}
+              rules={[{ required: true, message: t('task.inference.form.dataset.required') }]}
             >
               <DatasetSelect
-                mode='multiple'
+                mode="multiple"
                 pid={pid}
                 filters={testSetFilters}
                 renderLabel={renderLabel}
                 placeholder={t('task.inference.form.dataset.placeholder')}
               />
             </Form.Item>
-            <Form.Item required
-              tooltip={t('tip.task.filter.imodel')}
-              label={t('task.mining.form.model.label')}>
-              <Form.Item
-                noStyle
-                name="stages"
-                rules={[
-                  { required: true, message: t('task.mining.form.model.required') },
-                ]}
-              >
+            <Form.Item required tooltip={t('tip.task.filter.imodel')} label={t('task.mining.form.model.label')}>
+              <Form.Item noStyle name="stages" rules={[{ required: true, message: t('task.mining.form.model.required') }]}>
                 <ModelSelect multiple placeholder={t('task.inference.form.model.required')} onChange={modelChange} pid={pid} />
               </Form.Item>
-              {project.enableIteration ? <div style={{ marginTop: 10 }}>
-                <Button size='small' type="primary" onClick={() => selectModelFromIteration()}>
-                  {t('task.inference.model.iters')}
-                </Button>
-              </div> : null}
+              {project.enableIteration ? (
+                <div style={{ marginTop: 10 }}>
+                  <Button size="small" type="primary" onClick={() => selectModelFromIteration()}>
+                    {t('task.inference.model.iters')}
+                  </Button>
+                </div>
+              ) : null}
             </Form.Item>
 
-            <Form.Item name='image' tooltip={t('tip.task.inference.image')} label={t('task.inference.form.image.label')} rules={[
-              { required: true, message: t('task.inference.form.image.required') }
-            ]}>
+            <Form.Item
+              name="image"
+              tooltip={t('tip.task.inference.image')}
+              label={t('task.inference.form.image.label')}
+              rules={[{ required: true, message: t('task.inference.form.image.required') }]}
+            >
               <ImageSelect
                 placeholder={t('task.inference.form.image.placeholder')}
                 relatedId={selectedModels[0]?.task?.parameters?.docker_image_id}
@@ -306,27 +300,20 @@ function Inference({ datasetCache, datasets, ...func }) {
               />
             </Form.Item>
             <OpenpaiForm form={form} openpai={openpai} />
-            <Form.Item
-              tooltip={t('tip.task.filter.igpucount')}
-              label={t('task.gpu.count')}
-            >
+            <Form.Item tooltip={t('tip.task.filter.igpucount')} label={t('task.gpu.count')}>
               <Form.Item
                 noStyle
                 name="gpu_count"
                 rules={[
                   {
-                    validator: (rules, value) => value <= Math.floor(gpu_count / taskCount) ?
-                      Promise.resolve() :
-                      Promise.reject(),
-                    message: t('task.infer.gpu.tip', { total: gpu_count, selected: taskCount * selectedGpu })
-                  }
+                    validator: (rules, value) => (value <= Math.floor(gpu_count / taskCount) ? Promise.resolve() : Promise.reject()),
+                    message: t('task.infer.gpu.tip', { total: gpu_count, selected: taskCount * selectedGpu }),
+                  },
                 ]}
               >
                 <InputNumber min={0} max={Math.floor(gpu_count / taskCount)} precision={0} onChange={setSelectedGpu} />
               </Form.Item>
-              <span style={{ marginLeft: 20 }}>
-                {t('task.infer.gpu.tip', { total: gpu_count, selected: taskCount * selectedGpu })}
-              </span>
+              <span style={{ marginLeft: 20 }}>{t('task.infer.gpu.tip', { total: gpu_count, selected: taskCount * selectedGpu })}</span>
             </Form.Item>
 
             <LiveCodeForm form={form} live={live} initialValues={liveInitialValues} />
@@ -336,12 +323,12 @@ function Inference({ datasetCache, datasets, ...func }) {
 
             <Form.Item wrapperCol={{ offset: 8 }}>
               <Space size={20}>
-                <Form.Item name='submitBtn' noStyle>
-                  <Button type="primary" size="large" htmlType="submit" >
+                <Form.Item name="submitBtn" noStyle>
+                  <Button type="primary" size="large" htmlType="submit">
                     {t('common.action.inference')}
                   </Button>
                 </Form.Item>
-                <Form.Item name='backBtn' noStyle>
+                <Form.Item name="backBtn" noStyle>
                   <Button size="large" onClick={() => history.goBack()}>
                     {t('task.btn.back')}
                   </Button>
@@ -366,27 +353,27 @@ const dis = (dispatch) => {
   return {
     getSysInfo() {
       return dispatch({
-        type: "common/getSysInfo",
+        type: 'common/getSysInfo',
       })
     },
     getDatasets(pid) {
       return dispatch({
-        type: "dataset/queryAllDatasets",
+        type: 'dataset/queryAllDatasets',
         payload: { pid, force: true },
       })
     },
     getDataset(id, force) {
       return dispatch({
-        type: "dataset/getDataset",
+        type: 'dataset/getDataset',
         payload: { id, force },
       })
     },
     clearCache() {
-      return dispatch({ type: "dataset/clearCache", })
+      return dispatch({ type: 'dataset/clearCache' })
     },
     infer(payload) {
       return dispatch({
-        type: "task/infer",
+        type: 'task/infer',
         payload,
       })
     },

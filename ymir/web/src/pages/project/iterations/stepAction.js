@@ -31,7 +31,7 @@ const StepAction = ({ steps, selected, iteration, callback = () => {} }) => {
       query: (settings = {}) => ({
         did: settings.mining_dataset_id,
         strategy: settings.mining_strategy,
-        chunk: settings.chunk_size,
+        chunk: settings.sampling_count,
       }),
     },
     [STEP.mining]: {
@@ -39,6 +39,9 @@ const StepAction = ({ steps, selected, iteration, callback = () => {} }) => {
       query: (settings = {}) => ({
         did: settings.dataset_id,
         mid: [settings.model_id, null],
+        image: settings.docker_image_id,
+        generate_annotations: settings.generate_annotations,
+        config: settings.docker_image_config ? JSON.parse(settings.docker_image_config) : undefined,
         topK: settings.top_k,
       }),
     },
@@ -46,19 +49,22 @@ const StepAction = ({ steps, selected, iteration, callback = () => {} }) => {
       comp: Label,
       query: (settings = {}) => ({
         did: settings.dataset_id,
+        type: settings.annotation_type,
       }),
     },
     [STEP.merging]: {
       comp: Merge,
       query: (settings = {}) => ({
-        did: settings.training_dataset_id,
-        mid: settings.dataset_id ? [settings.dataset_id] : undefined,
+        did: settings.dataset_id,
+        mid: settings.training_dataset_id ? [settings.training_dataset_id] : undefined,
       }),
     },
     [STEP.training]: {
       comp: Training,
       query: (settings = {}) => ({
         did: settings.dataset_id,
+        image: settings.docker_image_id,
+        config: settings.docker_image_config ? JSON.parse(settings.docker_image_config) : undefined,
         test: settings.validation_dataset_id,
       }),
     },
@@ -81,6 +87,7 @@ const StepAction = ({ steps, selected, iteration, callback = () => {} }) => {
         query: { ...fixedQuery, ...(currentStep.query || {}), ...(currentStep.preSetting || {}) },
         ok,
       }
+      console.log('props:', props)
       setCurrentAction(Action(currentStep.comp, props))
     }
   }, [currentStep, state])

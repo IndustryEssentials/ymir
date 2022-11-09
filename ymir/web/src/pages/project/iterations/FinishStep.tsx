@@ -24,7 +24,6 @@ const FinishStep: React.FC<Props> = ({ step }) => {
   const [paramsList, setParamsList] = useState<ListType>([])
 
   useEffect(() => {
-    console.log('result:', result)
     if (!result) {
       return
     }
@@ -111,19 +110,18 @@ function getMergeParams(params: YModels.MergeParams) {
     },
     {
       label: 'task.fusion.form.merge.exclude.label',
-      content: params.exclude_datasets?.map((ds) => <VersionName key={ds} id={ds} />),
+      content: params.exclude_datasets?.length ? params.exclude_datasets?.map((ds) => <VersionName key={ds} id={ds} />) : null,
     },
   ]
 }
 
 function getTrainingParams(params: YModels.TrainingParams) {
   return [
-    { label: 'task.train.form.image.label', content: params.dataset_id },
+    { label: 'task.train.form.image.label', content: params.docker_image_id },
     { label: 'task.train.form.trainsets.label', content: <VersionName id={params.dataset_id} /> },
     { label: 'task.train.form.testsets.label', content: <VersionName id={params.validation_dataset_id} /> },
     { label: 'task.detail.label.premodel', content: <ModelVersionName id={params.model_id} stageId={params.model_stage_id} /> },
     { label: 'task.gpu.count', content: params.gpuCount },
-    { label: 'task.train.export.format', content: params.dataset_id },
   ]
 }
 
