@@ -64,8 +64,7 @@ class ModelStorage(BaseModel):
                 'best_stage_name': self.best_stage_name,
                 'class_names': self.class_names,
                 'evaluate_config': {
-                    'iou_thrs_interval':
-                    f"{self.evaluate_config.get('iou_thr')}" if 'iou_thr' in self.evaluate_config else '',
+                    'iou_thrs_interval': f"{self.evaluate_config.get('iou_thr', '')}",
                     'conf_thr': self.evaluate_config.get('conf_thr', 0),
                 },
             }, model_meta)
