@@ -107,10 +107,7 @@ def list_tasks(
     return {"result": {"total": total, "items": tasks}}
 
 
-@router.post(
-    "/",
-    response_model=schemas.TaskOut,
-)
+@router.post("/", response_model=schemas.TaskOut)
 def create_task(
     *,
     db: Session = Depends(deps.get_db),
@@ -121,14 +118,12 @@ def create_task(
     """
     Create task
     """
-    # 1. validation
     logger.info("[create task] create task with payload: %s", jsonable_encoder(task_in))
     if crud.task.is_duplicated_name_in_project(db, project_id=task_in.project_id, name=task_in.name):
         raise DuplicateTaskError()
 
     task_in_db = create_single_task(db, current_user.id, user_labels, task_in)
     logger.info("[create task] created task name: %s", task_in.name)
-
     return {"result": task_in_db}
 
 

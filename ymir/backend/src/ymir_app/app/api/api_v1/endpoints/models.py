@@ -2,7 +2,6 @@ import enum
 from typing import Any
 
 from fastapi import APIRouter, BackgroundTasks, Depends, Path, Query
-from fastapi.encoders import jsonable_encoder
 from fastapi.logger import logger
 from sqlalchemy.orm import Session
 
@@ -162,7 +161,7 @@ def import_model(
         user_id=current_user.id,
         task_id=task.id,
     )
-    model = crud.model.create_with_version(db=db, obj_in=model_in, dest_group_name=model_import.group_name)
+    model = crud.model.create_with_version(db=db, obj_in=model_in)
     logger.info("[import model] model record created: %s", model)
 
     # 5. run background task
@@ -176,21 +175,6 @@ def import_model(
         model.id,
     )
     return {"result": model}
-
-
-def create_model_record(db: Session, model_import: schemas.ModelImport, task: models.Task) -> models.Model:
-    """
-    bind task info to model record
-    """
-    model_info = jsonable_encoder(model_import)
-    model_info.update(
-        {
-            "hash": task.hash,
-            "task_id": task.id,
-            "user_id": task.user_id,
-        }
-    )
-    return crud.model.create(db, obj_in=schemas.ModelCreate(**model_info))
 
 
 @router.delete("/{model_id}", response_model=schemas.ModelOut)
