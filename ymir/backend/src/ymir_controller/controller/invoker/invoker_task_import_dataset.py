@@ -4,7 +4,6 @@ import shutil
 from typing import Dict, List, Optional, Tuple
 from common_utils.labels import UserLabels
 
-from common_utils.labels import user_label_file
 from controller.invoker.invoker_task_base import SubTaskType, TaskBaseInvoker
 from controller.utils import utils
 from id_definition.error_codes import CTLResponseCode
@@ -53,7 +52,7 @@ class TaskImportDatasetInvoker(TaskBaseInvoker):
         media_location = assets_config['assetskvlocation']
         import_dataset_response = cls.importing_cmd(
             repo_root=repo_root,
-            label_storage_file=user_label_file(sandbox_root=sandbox_root, user_id=request.user_id),
+            label_storage_file=user_labels.storage_file,
             task_id=subtask_id,
             index_file=index_file,
             pred_dir=import_dataset_request.pred_dir,

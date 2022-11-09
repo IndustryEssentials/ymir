@@ -39,7 +39,7 @@ class TaskLabelingInvoker(TaskBaseInvoker):
 
         label_runner.start_label_task(
             repo_root=repo_root,
-            label_storage_file=labels.user_label_file(sandbox_root=sandbox_root, user_id=request.user_id),
+            label_storage_file=user_labels.storage_file,
             working_dir=subtask_workdir,
             media_location=media_location,
             task_id=subtask_id,

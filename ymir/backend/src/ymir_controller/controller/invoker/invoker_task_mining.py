@@ -1,7 +1,7 @@
 import os
 from typing import Dict, List, Optional, Tuple
 
-from common_utils.labels import user_label_file, UserLabels
+from common_utils.labels import UserLabels
 from controller.invoker.invoker_cmd_merge import MergeInvoker
 from controller.invoker.invoker_task_base import SubTaskType, TaskBaseInvoker
 from controller.utils import utils, invoker_call
@@ -88,8 +88,7 @@ class TaskMiningInvoker(TaskBaseInvoker):
         config_file = cls.gen_executor_config_path(subtask_workdir)
         asset_cache_dir = os.path.join(sandbox_root, request.user_id, "asset_cache")
         mining_response = cls.mining_cmd(repo_root=repo_root,
-                                         label_storage_file=user_label_file(sandbox_root=sandbox_root,
-                                                                            user_id=request.user_id),
+                                         label_storage_file=user_labels.storage_file,
                                          config_file=config_file,
                                          task_id=subtask_id,
                                          work_dir=subtask_workdir,
