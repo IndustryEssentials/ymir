@@ -231,7 +231,6 @@ export function filter({
  * {number} projectId
  * {string} name
  * {number} datasetId
- * {array<string>} labellers
  * {boolean} keepAnnotations
  * {string} doc
  * }
@@ -245,7 +244,6 @@ export function label({
   name,
   datasetId,
   keywords,
-  labellers,
   keepAnnotations,
   doc,
   description,

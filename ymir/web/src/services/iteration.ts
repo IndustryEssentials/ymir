@@ -7,12 +7,13 @@ type CreateParams = {
   testSet: number
   miningSet: number
 }
+type dataType = { [key: string]: string | number | boolean }
 
-function post(id: number, data: any, url = "") {
+function post(id: number, data: dataType, url = "") {
   return request.post(`/iterations/${id}${url}`, data)
 }
 
-function get(id: number, params: any, url = "") {
+function get(id: number, params: dataType, url = "") {
   return request.get(`/iterations/${id}${url}`, { params })
 }
 
@@ -114,7 +115,7 @@ export function updateIteration(
  * @return
  */
 export function getMiningStats(pid: number, id: number) {
-  return get(id, null, `/mining_progress?project_id=${pid}`)
+  return get(id, {}, `/mining_progress?project_id=${pid}`)
 }
 
 /**
@@ -126,7 +127,7 @@ export function getMiningStats(pid: number, id: number) {
  * @return
  */
 export function bindStep(id: number, sid: number, tid: number) {
-  return post(id, null, `/steps/${sid}/bind?task_id=${tid}`)
+  return post(id, {}, `/steps/${sid}/bind?task_id=${tid}`)
 }
 
 /**
@@ -137,7 +138,7 @@ export function bindStep(id: number, sid: number, tid: number) {
  * @return
  */
 export function unbindStep(id: number, sid: number) {
-  return post(id, null, `/steps/${sid}/unbind`)
+  return post(id, {}, `/steps/${sid}/unbind`)
 }
 
 /**
@@ -148,5 +149,5 @@ export function unbindStep(id: number, sid: number) {
  * @return
  */
 export function nextStep(id: number, sid: number) {
-  return post(id, null, `/steps/${sid}/finish`)
+  return post(id, {}, `/steps/${sid}/finish`)
 }
