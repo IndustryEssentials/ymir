@@ -1,36 +1,36 @@
-import { useCallback, useEffect, useState } from "react"
-import { Row, Col } from "antd"
+import { useCallback, useEffect, useState } from 'react'
+import { Row, Col } from 'antd'
 
-import { getSteps, STEP } from "@/constants/iteration"
-import useFetch from "@/hooks/useFetch"
+import { getSteps, STEP } from '@/constants/iteration'
+import useFetch from '@/hooks/useFetch'
 
-import Step from "./step"
-import StepAction from "./stepAction"
-import s from "./iteration.less"
+import Step from './step'
+import StepAction from './stepAction'
+import s from './iteration.less'
 
 function Iteration({ project, fresh = () => {} }) {
   const [iteration, setIteration] = useState({})
-  const [_, getIteration] = useFetch("iteration/getIteration", {})
   const [steps, setSteps] = useState([])
   const [selectedStep, setSelectedStep] = useState(null)
-  const [createResult, create] = useFetch("iteration/createIteration")
-  const [_b, bind] = useFetch("iteration/bindStep")
-  const [_n, next] = useFetch("iteration/nextStep")
-  const [_k, skip] = useFetch("iteration/skipStep")
+  const [createResult, create] = useFetch('iteration/createIteration')
+  const [_b, bind] = useFetch('iteration/bindStep')
+  const [_n, next] = useFetch('iteration/nextStep')
+  const [_k, skip] = useFetch('iteration/skipStep')
+  const [_, getIterationMore] = useFetch('iteration/moreIterationsInfo')
 
   useEffect(() => {
     if (project.id && project.currentIteration) {
       setIteration(project.currentIteration)
+      getIterationMore({
+        iterations: [project.currentIteration],
+        id: project.id,
+      })
     }
-  }, [
-    project?.currentIteration,
-    iteration?.needReload,
-    project?.currentIteration?.currentStep,
-  ])
+  }, [project?.currentIteration, iteration?.needReload, project?.currentIteration?.currentStep])
 
   useEffect(() => {
     iteration.id && generateSteps()
-  }, [iteration])
+  }, [iteration, selectedStep])
 
   useEffect(() => {
     ;(createResult || _b || _n || _k) && fresh()
@@ -60,22 +60,22 @@ function Iteration({ project, fresh = () => {} }) {
     ...data,
   })
 
-  function iterationHandle({ type = "bind", data = {} }) {
+  function iterationHandle({ type = 'bind', data = {} }) {
     switch (type) {
-      case "bind":
+      case 'bind':
         bind(
           getParams({
             tid: data.taskId,
-          })
+          }),
         )
         break
-      case "create":
+      case 'create':
         createIteration(data)
         break
-      case "skip":
+      case 'skip':
         skip(getParams())
         break
-      case "next":
+      case 'next':
         next(getParams())
     }
   }
@@ -92,13 +92,12 @@ function Iteration({ project, fresh = () => {} }) {
   }
 
   function goStep(step) {
-    console.log("step:", step)
     setSelectedStep(step.value)
   }
 
   return (
     <div className={s.iteration}>
-      <Row style={{ justifyContent: "flex-end" }}>
+      <Row style={{ justifyContent: 'flex-end' }}>
         {steps.map((step) => (
           <Col key={step.value} flex={!step.end ? 1 : null}>
             <Step step={step} goStep={goStep} />
@@ -106,12 +105,7 @@ function Iteration({ project, fresh = () => {} }) {
         ))}
       </Row>
       <div className={s.stepContent}>
-        <StepAction
-          steps={steps}
-          iteration={iteration}
-          project={project}
-          callback={callback}
-        />
+        <StepAction steps={steps} selected={selectedStep} iteration={iteration} project={project} callback={callback} />
       </div>
     </div>
   )

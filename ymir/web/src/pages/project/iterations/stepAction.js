@@ -1,29 +1,26 @@
-import { useEffect, useState } from "react"
-import { useSelector } from "umi"
+import { useEffect, useState } from 'react'
+import { useSelector } from 'umi'
 
-import { STEP } from "@/constants/iteration"
+import { STEP } from '@/constants/iteration'
 
-import Fusion from "@/components/task/fusion"
-import Mining from "@/components/task/mining"
-import Label from "@/components/task/label"
-import Merge from "@/components/task/merge"
-import Training from "@/components/task/training"
-import Buttons from "./buttons"
-import NextIteration from "./nextIteration"
-import FinishStep from "./FinishStep"
+import Fusion from '@/components/task/fusion'
+import Mining from '@/components/task/mining'
+import Label from '@/components/task/label'
+import Merge from '@/components/task/merge'
+import Training from '@/components/task/training'
+import Buttons from './buttons'
+import NextIteration from './nextIteration'
+import FinishStep from './FinishStep'
 
 const Action = (Comp, props = {}) => <Comp {...props} />
 
-const StepAction = ({ steps, iteration, callback = () => {} }) => {
-  const actionPanelExpand = useSelector(
-    ({ iteration }) => iteration.actionPanelExpand
-  )
+const StepAction = ({ steps, selected, iteration, callback = () => {} }) => {
+  const actionPanelExpand = useSelector(({ iteration }) => iteration.actionPanelExpand)
   const [currentStep, setCurrentStep] = useState(null)
+  const [selectedStep, setSelectedStep] = useState(null)
   const [CurrentAction, setCurrentAction] = useState(null)
   const result = useSelector((state) => {
-    const res = currentStep?.resultType
-      ? state[currentStep.resultType][currentStep.resultType]
-      : {}
+    const res = currentStep?.resultType ? state[currentStep.resultType][currentStep.resultType] : {}
     return res[currentStep?.resultId] || {}
   })
   const [state, setState] = useState(-1)
@@ -71,25 +68,17 @@ const StepAction = ({ steps, iteration, callback = () => {} }) => {
   }
   const fixedQuery = {
     iterationId: iteration.id,
-    from: "iteration",
+    from: 'iteration',
   }
 
   useEffect(() => {
     if (currentStep) {
-      const bottom = (
-        <Buttons
-          step={currentStep}
-          state={state}
-          next={next}
-          skip={skip}
-          react={react}
-        />
-      )
+      const bottom = <Buttons step={currentStep} state={state} next={next} skip={skip} react={react} />
       const props = {
         bottom,
         step: currentStep,
         hidden: state >= 0,
-        query: { ...fixedQuery, ...(currentStep.query || {}) },
+        query: { ...fixedQuery, ...(currentStep.query || {}), ...(currentStep.preSetting || {}) },
         ok,
       }
       setCurrentAction(Action(currentStep.comp, props))
@@ -107,25 +96,30 @@ const StepAction = ({ steps, iteration, callback = () => {} }) => {
     if (!iteration || !steps.length) {
       return
     }
-    const targetStep = steps.find(
-      ({ value }) => value === (iteration?.currentStep?.name || STEP.next)
-    )
-    if (!iteration.end) {
-      const targetComps = comps[iteration.currentStep.name]
-      const query = targetComps.query(targetStep.preSetting)
-      setCurrentStep({
-        ...targetStep,
-        ...targetComps,
-        query,
-      })
-    } else {
-      setCurrentStep({
-        ...comps[STEP.next],
-        ...targetStep,
-        current: STEP.next,
-      })
-    }
+    const name = iteration?.currentStep?.name || STEP.next
+    const targetStep = getStep(name, steps)
+    const targetComps = comps[name]
+    const query = !iteration.end ? targetComps.query(targetStep.preSetting) : {}
+    setCurrentStep({
+      ...targetStep,
+      ...targetComps,
+      query,
+    })
   }, [steps, iteration])
+
+  useEffect(() => {
+    if (!selected) {
+      return
+    }
+    setSelectedStep(getStep(selected, steps))
+  }, [steps, selected])
+
+  useEffect(() => {
+    console.log('currentStep:', currentStep)
+    if (!selected && currentStep?.resultId) {
+      setSelectedStep(currentStep)
+    }
+  }, [currentStep, selected])
 
   const react = () => {
     setState(-2)
@@ -133,24 +127,24 @@ const StepAction = ({ steps, iteration, callback = () => {} }) => {
 
   const next = () =>
     callback({
-      type: "next",
+      type: 'next',
     })
 
   const skip = () =>
     callback({
-      type: "skip",
+      type: 'skip',
     })
 
   const ok = (result) => {
     if (currentStep.end) {
       // next iteration
       callback({
-        type: "create",
+        type: 'create',
       })
     } else {
       // update current stage
       callback({
-        type: "bind",
+        type: 'bind',
         data: {
           taskId: result.id,
         },
@@ -158,12 +152,21 @@ const StepAction = ({ steps, iteration, callback = () => {} }) => {
     }
   }
 
+  function getStep(name, steps = []) {
+    const step = steps.find(({ value }) => value === (name || STEP.next))
+    return step
+  }
+
+  function showFinishStep() {
+    const isCurrent = !selected || currentStep?.value === selected
+    const hasResult = !!selectedStep?.resultId
+    return isCurrent ? state >= 0 : hasResult
+  }
+
   return (
     <div hidden={!actionPanelExpand}>
-      {currentStep?.selected !== currentStep?.value ? (
-        <FinishStep step={currentStep} />
-      ) : null}
-      {CurrentAction}
+      {showFinishStep() ? <FinishStep step={selectedStep} /> : null}
+      {selected && selected !== currentStep?.value ? null : CurrentAction}
     </div>
   )
 }

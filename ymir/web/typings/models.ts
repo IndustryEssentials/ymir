@@ -16,7 +16,7 @@ declare namespace YModels {
     createTime: string
   }
 
-  export interface Result<P> {
+  export interface Result<P = TaskParams> {
     id: number
     groupId: number
     projectId: number
@@ -200,7 +200,7 @@ declare namespace YModels {
     related?: Array<Image>
   }
 
-  type ResultType = "dataset" | "model"
+  type ResultType = 'dataset' | 'model'
   export interface Iteration {
     id: number
     projectId: number
@@ -228,8 +228,8 @@ declare namespace YModels {
   }
 
   export interface PageStep extends Step {
-    label?: string
-    value?: string
+    label: string
+    value: string
     current?: string
     selected?: string
     index?: number
@@ -277,13 +277,7 @@ declare namespace YModels {
     [func: string]: PlainObject
   }
 
-  type TaskParams =
-    | FilterParams
-    | MergeParams
-    | TrainingParams
-    | LabelParams
-    | MiningParams
-    | InferenceParams
+  type TaskParams = FusionParams | FilterParams | MergeParams | TrainingParams | LabelParams | MiningParams | InferenceParams
 
   interface Params {
     dataset_id: DatasetId
@@ -295,31 +289,39 @@ declare namespace YModels {
   interface DockerParams extends Params {
     docker_image_id: ImageId
     docker_image_config: ImageConfig
+    labels: Labels
     model_id?: ModelId
     model_stage_id?: StageId
-    labels: Labels
+    gpuCount?: number
   }
 
   interface FilterParams extends Params {
     include_labels?: Labels
     exclude_labels?: Labels
-    samplings?: number
+    sampling_count?: number
   }
-
-  interface MergeParams extends Params {
+  interface FusionParams extends Params {
     iteration_id?: number
     iteration_stage?: number
     exclude_last_result?: boolean
-    exclude_dataset_ids: DatasetId[]
+    include_datasets?: DatasetId[]
+    exclude_datasets?: DatasetId[]
     mining_strategy?: MiningStrategy
-    labels?: Labels
+    merge_strategy?: MergeStrategy
+    include_labels?: Labels
+    exclude_labels?: Labels
+    sampling_count?: number
+  }
+
+  interface MergeParams extends Params {
+    include_datasets?: DatasetId[]
+    exclude_datasets?: DatasetId[]
     merge_strategy?: MergeStrategy
   }
 
   interface LabelParams extends Params {
     labels: Labels
     extra_url?: string
-    labellers?: string[]
     annotation_type: 0 | 1 | 2
   }
 
