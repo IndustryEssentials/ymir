@@ -7,10 +7,8 @@ from .dataset import (
     DatasetPaginationOut,
     DatasetUpdate,
     DatasetsOut,
-    DatasetsFusionParameter,
     DatasetsAnalysesOut,
     DatasetInfoOut,
-    ImportStrategy,
 )
 from .dataset_group import (
     DatasetGroupOut,
@@ -103,4 +101,4 @@ from .user import (
     UserState,
     UserUpdate,
 )
-from .common import RequestParameterBase, BatchOperations
+from .common import BatchOperations
