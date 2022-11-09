@@ -97,7 +97,7 @@ class CRUDDataset(CRUDBase[Dataset, DatasetCreate, DatasetUpdate]):
         latest_version = self.get_latest_version(db, group_id)
         return latest_version + 1 if latest_version is not None else 1
 
-    def create_with_version(self, db: Session, obj_in: DatasetCreate, dest_group_name: Optional[str] = None) -> Dataset:
+    def create_with_version(self, db: Session, obj_in: DatasetCreate) -> Dataset:
         # fixme
         #  add mutex lock to protect latest_version
         version_num = self.next_available_version(db, obj_in.dataset_group_id)
@@ -123,7 +123,6 @@ class CRUDDataset(CRUDBase[Dataset, DatasetCreate, DatasetUpdate]):
         db: Session,
         task: Union[schemas.TaskInternal, models.Task],
         dest_group_id: int,
-        dest_group_name: Optional[str] = None,
         description: Optional[str] = None,
     ) -> Dataset:
         dataset_in = DatasetCreate(
@@ -135,7 +134,7 @@ class CRUDDataset(CRUDBase[Dataset, DatasetCreate, DatasetUpdate]):
             user_id=task.user_id,
             task_id=task.id,
         )
-        return self.create_with_version(db, obj_in=dataset_in, dest_group_name=dest_group_name)
+        return self.create_with_version(db, obj_in=dataset_in)
 
     def finish(
         self,

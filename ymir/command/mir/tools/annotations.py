@@ -257,7 +257,8 @@ def _import_annotations_seg_mask(map_hashed_filename: Dict[str, str], mir_annota
         new_mask_image: Image.Image = Image.fromarray(np_mask)
         with io.BytesIO() as output:
             new_mask_image.save(output, format="PNG")
-            image_annotations.image_annotations[asset_hash].mask.semantic_mask = output.getvalue()
+            image_annotations.image_annotations[asset_hash].masks.append(
+                mirpb.MaskAnnotation(semantic_mask=output.getvalue()))
         image_annotations.image_annotations[asset_hash].img_class_ids[:] = list(img_class_ids)
     if expected_color:
         logging.info(f"mapped color in labelmap.txt: {expected_color}")
@@ -326,8 +327,7 @@ def _import_annotation_meta(class_type_manager: class_ids.UserLabels, annotation
     except Exception:
         annotation_meta_dict = None
     if not isinstance(annotation_meta_dict, dict):
-        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_META_YAML_FILE,
-                              error_message='Invalid meta.yaml')
+        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_META_YAML_FILE, error_message='Invalid meta.yaml')
 
     # model
     if 'model' in annotation_meta_dict:

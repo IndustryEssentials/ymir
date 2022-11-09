@@ -19,8 +19,9 @@ from app.config import settings
 from app.constants.state import ResultState, RunningStates, TaskType, TrainingType
 from app.utils.cache import CacheClient
 from app.utils.ymir_controller import ControllerClient, gen_task_hash
-from app.libs.projects import setup_sample_project_in_background, send_project_metrics
+from app.libs.projects import setup_sample_project_in_background
 from app.libs.labels import ensure_labels_exist
+from app.libs.metrics import send_project_metrics
 from common_utils.labels import UserLabels
 
 router = APIRouter()

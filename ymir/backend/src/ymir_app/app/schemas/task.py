@@ -1,22 +1,36 @@
 import enum
 import json
 from datetime import datetime
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Callable, Dict, List, Literal, Optional, Union
+from operator import attrgetter
+
+from typing_extensions import Annotated
 
 from pydantic import BaseModel, EmailStr, Field, validator, root_validator
 
-from app.constants.state import AnnotationType, TaskState, TaskType, ResultState, ResultType, IterationStage
+from app.constants.state import AnnotationType, MiningStrategy, ResultType, TaskState, TaskType
+from app.api.errors.errors import DockerImageNotFound
 from app.schemas.common import (
     Common,
     DateTimeModelMixin,
+    DatasetResult,
+    ModelResult,
     IdModelMixin,
     IsDeletedModelMixin,
+    IterationContext,
+    TypedDataset,
+    TypedModel,
+    TypedLabel,
+    MergeStrategy,
+    dataset_normalize,
+    label_normalize,
+    model_normalize,
 )
 from id_definition.task_id import TaskId
 
 
 class TaskBase(BaseModel):
-    name: str
+    name: str = ""
     type: TaskType
     project_id: int
 
@@ -38,34 +52,25 @@ class TaskPreprocess(BaseModel):
     longside_resize: LongsideResizeParameter
 
 
-class TaskParameter(BaseModel):
+class TaskParameterBase(BaseModel):
     dataset_id: int
-    keywords: Optional[List[str]]
+    dataset_group_id: Optional[int]
+    dataset_group_name: Optional[str]
 
-    # label
-    extra_url: Optional[str]
-    labellers: Optional[List[EmailStr]]
-    annotation_type: Optional[AnnotationType] = None
-
-    # training
-    validation_dataset_id: Optional[int]
-    network: Optional[str]
-    backbone: Optional[str]
-    hyperparameter: Optional[str]
-    strategy: Optional[TrainingDatasetsStrategy] = TrainingDatasetsStrategy.stop
-    preprocess: Optional[TaskPreprocess] = Field(description="preprocess to apply to related dataset")
-
-    # mining & dataset_infer
     model_id: Optional[int]
     model_stage_id: Optional[int]
-    mining_algorithm: Optional[str]
-    top_k: Optional[int]
-    generate_annotations: Optional[bool]
 
-    # training & mining & infer
-    docker_image: Optional[str]
-    # todo replace docker_image with docker_image_id
+    keywords: Optional[List[str]]
+
     docker_image_id: Optional[int]
+    docker_image: Optional[str]
+    docker_image_config: Optional[str]
+
+    description: Optional[str]
+
+    typed_datasets: Optional[List[TypedDataset]]
+    typed_models: Optional[List[TypedModel]]
+    typed_labels: Optional[List[TypedLabel]]
 
     @validator("keywords")
     def normalize_keywords(cls, v: Optional[List[str]]) -> Optional[List[str]]:
@@ -74,37 +79,182 @@ class TaskParameter(BaseModel):
         return [keyword.strip() for keyword in v]
 
 
-class TaskCreate(TaskBase):
-    iteration_id: Optional[int]
-    iteration_stage: Optional[IterationStage]
-    parameters: TaskParameter = Field(description="task specific parameters")
-    docker_image_config: Optional[Dict] = Field(description="docker runtime configuration")
+class LabelParameter(TaskParameterBase):
+    task_type: Literal["label"]
+
+    extra_url: Optional[str]
+    labellers: Optional[List[EmailStr]]
+    annotation_type: Optional[AnnotationType] = None
+
+    normalize_datasets = root_validator(allow_reuse=True)(dataset_normalize)
+    normalize_labels = root_validator(allow_reuse=True)(label_normalize)
+
+
+class TrainingParameter(TaskParameterBase):
+    task_type: Literal["training"]
+
+    validation_dataset_id: Optional[int]
+    strategy: Optional[TrainingDatasetsStrategy] = TrainingDatasetsStrategy.stop
     preprocess: Optional[TaskPreprocess] = Field(description="preprocess to apply to related dataset")
-    result_description: Optional[str] = Field(description="description for task result, not task itself")
 
-    @validator("docker_image_config")
-    def dumps_docker_image_config(cls, v: Optional[Union[str, Dict]], values: Dict[str, Any]) -> Optional[str]:
-        # we don't care what's inside of config
-        # just dumps it as string and save to db
-        if isinstance(v, dict):
-            return json.dumps(v)
+    normalize_datasets = root_validator(allow_reuse=True)(dataset_normalize)
+    normalize_models = root_validator(allow_reuse=True)(model_normalize)
+    normalize_labels = root_validator(allow_reuse=True)(label_normalize)
+
+
+class MiningParameterBase(TaskParameterBase):
+
+    top_k: Optional[int]
+    generate_annotations: Optional[bool]
+
+    normalize_datasets = root_validator(allow_reuse=True)(dataset_normalize)
+    normalize_models = root_validator(allow_reuse=True)(model_normalize)
+    normalize_labels = root_validator(allow_reuse=True)(label_normalize)
+
+
+class MiningParameter(MiningParameterBase):
+    task_type: Literal["mining"]
+
+
+class InferParameter(MiningParameterBase):
+    task_type: Literal["infer"]
+
+
+class FusionParameterBase(TaskParameterBase, IterationContext):
+    merge_strategy: Optional[MergeStrategy] = MergeStrategy.prefer_newest
+
+    include_datasets: List[int] = []
+    exclude_datasets: List[int] = []
+
+    include_labels: List[str] = []
+    exclude_labels: List[str] = []
+
+    sampling_count: int = 0
+
+    normalize_datasets = root_validator(allow_reuse=True)(dataset_normalize)
+    normalize_labels = root_validator(allow_reuse=True)(label_normalize)
+
+    class Config:
+        # when add new exclude_datasets, update normalize_datasets as well
+        validate_assignment = True
+
+    def update_with_iteration_context(self, iterations_getter: Callable) -> None:
+        if not self.exclude_last_result:
+            return
+        iterations = iterations_getter(project_id=self.project_id)
+
+        if self.mining_strategy == MiningStrategy.chunk:
+            datasets_to_exclude = [i.mining_input_dataset_id for i in iterations if i.mining_input_dataset_id]
+        elif self.mining_strategy == MiningStrategy.dedup:
+            datasets_to_exclude = [i.mining_output_dataset_id for i in iterations if i.mining_output_dataset_id]
         else:
-            return v
+            return
+        datasets_to_exclude += self.exclude_datasets
+        self.exclude_datasets = list(set(datasets_to_exclude))
+        return
 
-    @root_validator(pre=True)
-    def tuck_preprocess_into_parameters(cls, values: Any) -> Any:
-        """
-        For frontend, preprocess is a separate task configuration,
-        however, the underlying reads preprocess stuff from task_parameter,
-        so we just tuck preprocess into task_parameter
-        """
-        preprocess = values.get("preprocess")
-        if preprocess:
-            values["parameters"]["preprocess"] = preprocess
-        return values
+
+class FusionParameter(FusionParameterBase):
+    task_type: Literal["fusion"]
+
+
+class MergeParameter(FusionParameterBase):
+    task_type: Literal["merge"]
+
+
+class FilterParameter(FusionParameterBase):
+    task_type: Literal["filter"]
+
+
+TaskParameter = Annotated[
+    Union[
+        LabelParameter,
+        TrainingParameter,
+        MiningParameter,
+        InferParameter,
+        FusionParameter,
+        MergeParameter,
+        FilterParameter,
+    ],
+    Field(description="Generic Task Parameters", discriminator="task_type"),  # noqa: F722, F821
+]
+
+
+def fillin_dataset_hashes(datasets_getter: Callable, typed_datasets: List[TypedDataset]) -> None:
+    if not typed_datasets:
+        return
+    datasets_in_db = datasets_getter(dataset_ids=[i.id for i in typed_datasets])
+    data = {d.id: (d.hash, d.create_datetime, d.name) for d in datasets_in_db}
+    for dataset in typed_datasets:
+        dataset.hash, dataset.create_datetime, dataset.name = data[dataset.id]
+
+
+def fillin_model_hashes(model_stages_getter: Callable, typed_models: List[TypedModel]) -> None:
+    if not typed_models:
+        return
+    model_stages_in_db = model_stages_getter(ids=[i.stage_id for i in typed_models if i.stage_id])
+    data = {stage.id: (stage.model.hash, stage.name) for stage in model_stages_in_db}  # type: ignore
+    for model in typed_models:
+        model.hash, model.stage_name = data[model.stage_id]
+
+
+def fillin_label_ids(labels_getter: Callable, typed_labels: List[TypedLabel]) -> None:
+    if not typed_labels:
+        return
+    class_ids = labels_getter([i.name for i in typed_labels])
+    for label, class_id in zip(typed_labels, class_ids):
+        label.class_id = class_id
+
+
+class TaskCreate(TaskBase):
+    parameters: TaskParameter
+    docker_image_config: Optional[Dict] = Field(description="docker runtime configuration")
 
     class Config:
         use_enum_values = True
+
+    @root_validator(pre=True)
+    def tuck_into_parameters(cls, values: Any) -> Any:
+        """
+        For frontend, docker image config is a separate task configuration,
+        however, the underlying controller treat docker image config as parameter
+        so we just tuck docker image config into task_parameter
+        """
+        if values.get("docker_image_config"):
+            values["parameters"]["docker_image_config"] = json.dumps(values["docker_image_config"])
+        return values
+
+    def fulfill_parameters(
+        self,
+        datasets_getter: Callable,
+        model_stages_getter: Callable,
+        iterations_getter: Callable,
+        labels_getter: Callable,
+        docker_image_getter: Callable,
+    ) -> None:
+        """
+        Update task parameters when database and user_labels are ready
+        """
+        if self.parameters.typed_datasets:
+            fillin_dataset_hashes(datasets_getter, self.parameters.typed_datasets)
+        if self.parameters.typed_labels:
+            fillin_label_ids(labels_getter, self.parameters.typed_labels)
+        if self.parameters.typed_models:
+            fillin_model_hashes(model_stages_getter, self.parameters.typed_models)
+        if self.parameters.docker_image_id:
+            docker_image = docker_image_getter(self.parameters.docker_image_id)
+            if not docker_image:
+                raise DockerImageNotFound()
+            self.parameters.docker_image = docker_image.url
+
+        # extra logic for dataset fusion:
+        #   reorder datasets based on merge_strategy
+        if isinstance(self.parameters, FusionParameter) and self.parameters.typed_datasets:
+            self.parameters.update_with_iteration_context(iterations_getter)
+            self.parameters.typed_datasets.sort(
+                key=attrgetter("create_datetime"),
+                reverse=(self.parameters.merge_strategy == MergeStrategy.prefer_newest),
+            )
 
 
 class BatchTasksCreate(BaseModel):
@@ -183,24 +333,6 @@ class TaskInternal(TaskInDBBase):
 
     class Config:
         use_enum_values = True
-
-
-class DatasetResult(BaseModel):
-    id: int
-    dataset_group_id: int
-    result_state: ResultState
-
-    class Config:
-        orm_mode = True
-
-
-class ModelResult(BaseModel):
-    id: int
-    model_group_id: int
-    result_state: ResultState
-
-    class Config:
-        orm_mode = True
 
 
 class Task(TaskInternal):

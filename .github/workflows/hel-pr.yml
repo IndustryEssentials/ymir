@@ -5,7 +5,7 @@ on:
     branches:
       - master
       - dev
-      - ymir-pa
+      - prerelease
 
 jobs:
   hel-ci:
