@@ -16,7 +16,7 @@ declare namespace YModels {
     createTime: string
   }
 
-  export interface Result {
+  export interface Result<P> {
     id: number
     groupId: number
     projectId: number
@@ -37,7 +37,7 @@ declare namespace YModels {
     durationLabel?: string
     taskName: string
     project?: Project
-    task?: Task
+    task?: Task<P>
     hidden: boolean
     description: string
   }
@@ -67,7 +67,7 @@ declare namespace YModels {
     versions?: Array<Dataset>
   }
 
-  export interface Dataset extends Result {
+  export interface Dataset<P = TaskParams> extends Result<P> {
     keywordCount: number
     isProtected: Boolean
     assetCount: number
@@ -143,7 +143,7 @@ declare namespace YModels {
     modelName?: string
   }
   export interface ModelGroup extends Group {}
-  export interface Model extends Result {
+  export interface Model<P = TaskParams> extends Result<P> {
     map: number
     url: string
     stages?: Array<Stage>
@@ -252,7 +252,7 @@ declare namespace YModels {
     [key: string]: any
   }
 
-  export interface Task {
+  export interface Task<P = TaskParams> {
     name: string
     type: number
     project_id: number
@@ -265,7 +265,7 @@ declare namespace YModels {
     error_code: number
     duration: number
     percent: number
-    parameters: TaskParams
+    parameters: P
     config: PlainObject
     result_type: number
     is_terminated: boolean
@@ -286,7 +286,7 @@ declare namespace YModels {
     | InferenceParams
 
   interface Params {
-    dataset_id: DatasetId | DatasetId[]
+    dataset_id: DatasetId
     dataset_group_id?: number
     dataset_group_name?: string
     description?: string
