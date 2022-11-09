@@ -58,6 +58,7 @@ class CmdFilter(base.BaseCommand):
     @staticmethod
     def __gen_task_annotations(src_task_annotations: mirpb.SingleTaskAnnotations,
                                dst_task_annotations: mirpb.SingleTaskAnnotations, asset_ids: Set[str]) -> None:
+        dst_task_annotations.type = src_task_annotations.type
         joint_ids = asset_ids & src_task_annotations.image_annotations.keys()
         for asset_id in joint_ids:
             dst_task_annotations.image_annotations[asset_id].CopyFrom(src_task_annotations.image_annotations[asset_id])

@@ -64,12 +64,16 @@ class CmdSampling(base.BaseCommand):
             # sampled_mir_metadatas and sampled_mir_annotations
             sampled_mir_metadatas = mirpb.MirMetadatas()
             sampled_mir_annotations = mirpb.MirAnnotations()
+            sampled_mir_annotations.prediction.type = mir_annotations.prediction.type
+            sampled_mir_annotations.ground_truth.type = mir_annotations.ground_truth.type
             for asset_id in sampled_asset_ids:
                 sampled_mir_metadatas.attributes[asset_id].CopyFrom(mir_metadatas.attributes[asset_id])
-                sampled_mir_annotations.prediction.image_annotations[asset_id].CopyFrom(
-                    mir_annotations.prediction.image_annotations[asset_id])
-                sampled_mir_annotations.ground_truth.image_annotations[asset_id].CopyFrom(
-                    mir_annotations.ground_truth.image_annotations[asset_id])
+                if asset_id in mir_annotations.prediction.image_annotations:
+                    sampled_mir_annotations.prediction.image_annotations[asset_id].CopyFrom(
+                        mir_annotations.prediction.image_annotations[asset_id])
+                if asset_id in mir_annotations.ground_truth.image_annotations:
+                    sampled_mir_annotations.ground_truth.image_annotations[asset_id].CopyFrom(
+                        mir_annotations.ground_truth.image_annotations[asset_id])
         else:
             # if equals
             sampled_mir_metadatas = mir_metadatas

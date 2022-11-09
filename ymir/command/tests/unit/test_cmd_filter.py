@@ -87,6 +87,7 @@ class TestCmdFilter(unittest.TestCase):
 
         annotations_dict = {
             "prediction": {
+                'type': mirpb.AnnoType.AT_DET_BOX,
                 "image_annotations": {
                     "a0000000000000000000000000000000000000000000000000":
                     TestCmdFilter.__annotations_for_single_image([0, 1, 2, 3, 4, 5]),
@@ -101,6 +102,7 @@ class TestCmdFilter(unittest.TestCase):
                 }
             },
             "ground_truth": {
+                'type': mirpb.AnnoType.AT_DET_BOX,
                 "image_annotations": {
                     "a0000000000000000000000000000000000000000000000000":
                     TestCmdFilter.__annotations_for_single_image([0, 1, 2, 3, 4, 5]),

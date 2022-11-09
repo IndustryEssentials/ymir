@@ -71,6 +71,7 @@ class TestToolsDetEval(unittest.TestCase):
 
         annotations_dict = {
             'prediction': {
+                'type': mirpb.AnnoType.AT_DET_BOX,
                 'image_annotations': {
                     'a0': {
                         'boxes': [{
@@ -169,6 +170,7 @@ class TestToolsDetEval(unittest.TestCase):
                 },
             },
             'ground_truth': {
+                'type': mirpb.AnnoType.AT_DET_BOX,
                 'image_annotations': {
                     'a0': {
                         'boxes': [{
@@ -366,7 +368,7 @@ class TestToolsDetEval(unittest.TestCase):
                 'map_id_color': {},
                 'eval_class_ids': [],
                 'executor_config': '',
-                'type': 'AT_UNKNOWN',
+                'type': 'AT_DET_BOX',
             },
             'prediction': {
                 'image_annotations': {
@@ -489,7 +491,7 @@ class TestToolsDetEval(unittest.TestCase):
                 'map_id_color': {},
                 'eval_class_ids': [0, 1, 2],
                 'executor_config': '',
-                'type': 'AT_UNKNOWN',
+                'type': 'AT_DET_BOX',
                 'task_class_ids': [0, 1, 2],
             },
             'image_cks': {

@@ -8,7 +8,7 @@ from typing import Any, Tuple
 
 from mir.commands import base
 from mir.protos import mir_command_pb2 as mirpb
-from mir.tools import checker, mir_storage, mir_storage_ops, revs_parser
+from mir.tools import checker, mir_storage_ops, revs_parser
 from mir.tools.command_run_in_out import command_run_in_out
 from mir.tools.code import MirCode
 from mir.tools.errors import MirRuntimeError
@@ -181,16 +181,28 @@ def _merge_to_mir(host_mir_metadatas: mirpb.MirMetadatas, host_mir_annotations: 
     Raises:
         RuntimeError: when guest branch has no metadatas, or guest branch has no tasks
     """
-    [guest_mir_metadatas, guest_mir_annotations, guest_mir_keywords, guest_mir_tasks,
-     _] = mir_storage_ops.MirStorageOps.load_multiple_storages(mir_root=mir_root,
-                                                               mir_branch=guest_typ_rev_tid.rev,
-                                                               mir_task_id=guest_typ_rev_tid.tid,
-                                                               ms_list=mir_storage.get_all_mir_storage(),
-                                                               as_dict=False)
+    guest_mir_metadatas: mirpb.MirMetadatas
+    guest_mir_annotations: mirpb.MirAnnotations
+    guest_mir_metadatas, guest_mir_annotations = mir_storage_ops.MirStorageOps.load_multiple_storages(
+        mir_root=mir_root,
+        mir_branch=guest_typ_rev_tid.rev,
+        mir_task_id=guest_typ_rev_tid.tid,
+        ms_list=[mirpb.MirStorage.MIR_METADATAS, mirpb.MirStorage.MIR_ANNOTATIONS],
+        as_dict=False)
 
-    if not guest_mir_metadatas:
+    if not guest_mir_metadatas.attributes:
         raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_MIR_REPO,
                               error_message=f"guest repo {mir_root}:{guest_typ_rev_tid.rev} has no metadata.")
+
+    # todo: can be simplified if todo in annotations.py solved
+    if host_mir_annotations.prediction.type == mirpb.AnnoType.AT_UNKNOWN:
+        host_mir_annotations.prediction.type = guest_mir_annotations.prediction.type
+    if host_mir_annotations.ground_truth.type == mirpb.AnnoType.AT_UNKNOWN:
+        host_mir_annotations.ground_truth.type = guest_mir_annotations.ground_truth.type
+    if (host_mir_annotations.prediction.type != guest_mir_annotations.prediction.type
+            or host_mir_annotations.ground_truth.type != guest_mir_annotations.ground_truth.type):
+        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ANNO_TYPE,
+                              error_message='host and guest anno type mismatch')
 
     id_host_only, id_guest_only, id_joint = _match_asset_ids(set(host_mir_metadatas.attributes.keys()),
                                                              set(guest_mir_metadatas.attributes.keys()))
