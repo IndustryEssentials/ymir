@@ -9,8 +9,9 @@ from tests.utils.utils import random_lower_string, random_url
 
 def test_gen_typed_datasets():
     dataset_type = random.randint(1, 3)
-    dataset_ids = [random_lower_string() for _ in range(10)]
-    res = m.gen_typed_datasets(dataset_type, dataset_ids)
+    dataset_hashes = [random_lower_string() for _ in range(10)]
+    typed_datasets = [{"type": dataset_type, "hash": _hash} for _hash in dataset_hashes]
+    res = m.gen_typed_datasets(typed_datasets)
     for dataset in res:
         assert dataset.dataset_type == dataset_type
 
@@ -24,13 +25,13 @@ class TestControllerRequest:
             task_type,
             user_id,
             project_id,
-            task_parameters={
-                "dataset_hash": random_lower_string(),
-                "validation_dataset_hash": random_lower_string(),
-                "class_ids": [],
+            args={
+                "typed_labels": [],
+                "typed_datasets": [],
+                "typed_models": [],
                 "strategy": MergeStrategy.prefer_newest,
                 "docker_image": "yolov4-training:test",
-                "docker_config": "{}",
+                "docker_image_config": "{}",
             },
         )
         assert ret.req.req_type == m.mirsvrpb.RequestType.TASK_CREATE
@@ -44,15 +45,15 @@ class TestControllerRequest:
             task_type,
             user_id,
             project_id,
-            task_parameters={
-                "dataset_hash": random_lower_string(),
+            args={
+                "typed_labels": [],
+                "typed_datasets": [],
+                "typed_models": [{"hash": random_lower_string(), "stage_name": random_lower_string()}],
                 "top_k": 1000,
-                "model_hash": random_lower_string(),
-                "model_stage_name": random_lower_string(),
                 "generate_annotations": True,
                 "strategy": MergeStrategy.prefer_newest,
                 "docker_image": "yolov4-training:test",
-                "docker_config": "{}",
+                "docker_image_config": "{}",
             },
         )
         assert ret.req.req_type == m.mirsvrpb.RequestType.TASK_CREATE
@@ -66,12 +67,10 @@ class TestControllerRequest:
             task_type,
             user_id,
             project_id,
-            task_parameters={
-                "name": random_lower_string(),
-                "dataset_hash": random_lower_string(),
-                "dataset_name": random_lower_string(),
+            args={
+                "typed_labels": [],
+                "typed_datasets": [{"name": random_lower_string(), "hash": random_lower_string()}],
                 "labellers": [],
-                "class_ids": [1, 2],
                 "extra_url": random_url(),
                 "annotation_type": 2,
             },
@@ -88,7 +87,7 @@ class TestControllerRequest:
             task_type,
             user_id,
             project_id,
-            task_parameters={
+            args={
                 "src_user_id": f"{random.randint(1000, 2000):0>4}",
                 "src_repo_id": random_lower_string(),
                 "src_resource_id": random_lower_string(),
@@ -107,7 +106,7 @@ class TestControllerRequest:
             task_type,
             user_id,
             project_id,
-            task_parameters={"target_container": task.hash, "task_type": task.type},
+            args={"target_container": task.hash, "task_type": task.type},
         )
         assert kill_other_task.req.req_type == m.mirsvrpb.CMD_TERMINATE
         assert kill_other_task.req.terminated_task_type == task.type

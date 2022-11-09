@@ -1,4 +1,5 @@
 import pytest
+from datetime import datetime
 from random import randint
 from typing import Any
 
@@ -6,63 +7,19 @@ from sqlalchemy.orm import Session
 
 from app.libs import tasks as m
 from tests.utils.utils import random_lower_string
-from common_utils.labels import UserLabels
 from app.constants.state import TaskType
 from tests.utils.tasks import create_task
 from tests.utils.datasets import create_dataset_record, create_dataset_group_record
 from tests.utils.models import create_model_group_record
 
 
-class TestNormalizeParameters:
-    def test_normalize_task_parameters_succeed(self, mocker: Any) -> Any:
-        mocker.patch.object(m, "crud")
-        params = {
-            "keywords": "cat,dog,boy".split(","),
-            "dataset_id": 1,
-            "model_stage_id": 233,
-            "name": random_lower_string(5),
-            "else": None,
-        }
-        user_labels = UserLabels.parse_obj(
-            dict(
-                labels=[
-                    {
-                        "name": "cat",
-                        "aliases": [],
-                        "create_time": 1647075205.0,
-                        "update_time": 1647075206.0,
-                        "id": 0,
-                    },
-                    {
-                        "id": 1,
-                        "name": "dog",
-                        "aliases": [],
-                        "create_time": 1647076207.0,
-                        "update_time": 1647076408.0,
-                    },
-                    {
-                        "id": 2,
-                        "name": "boy",
-                        "aliases": [],
-                        "create_time": 1647076209.0,
-                        "update_time": 1647076410.0,
-                    },
-                ]
-            )
-        )
-        params = m.schemas.TaskParameter(**params)
-        res = m.normalize_parameters(mocker.Mock(), params, None, user_labels)
-        assert res["class_ids"] == [0, 1, 2]
-        assert "dataset_hash" in res
-        assert "model_hash" in res
-        assert "model_stage_name" in res
-
-
 class TestCreateSingleTask:
     def test_create_single_task(self, db: Session, mocker: Any) -> None:
-        mocker.patch.object(m, "normalize_parameters")
         ctrl = mocker.Mock()
+        dataset = mocker.Mock(id=randint(100, 200), hash=random_lower_string(), create_datetime=datetime.now())
+        dataset.name = random_lower_string()
         mocker.patch.object(m, "ControllerClient", return_value=ctrl)
+        mocker.patch.object(m, "ensure_datasets_are_ready", return_value=[dataset])
         user_id = randint(100, 200)
         project_id = randint(1000, 2000)
         user_labels = mocker.Mock()
@@ -70,7 +27,7 @@ class TestCreateSingleTask:
             "name": random_lower_string(),
             "type": TaskType.training.value,
             "project_id": project_id,
-            "parameters": {"dataset_id": randint(100, 200)},
+            "parameters": {"dataset_id": dataset.id, "task_type": "training", "project_id": project_id},
         }
         task_in = m.schemas.TaskCreate(**j)
         task = m.create_single_task(db, user_id, user_labels, task_in)
@@ -117,9 +74,8 @@ class TestTaskResult:
         group = create_dataset_group_record(db, user_id, project_id)
         dataset = create_dataset_record(db, user_id, project_id, dataset_group_id=group.id)
 
-        result_group_id, result_group_name = tr.get_dest_group_id(dataset.id)
+        result_group_id = tr.get_dest_group_id(dataset.id, group.id, group.name)
         assert group.id == result_group_id
-        assert group.name == result_group_name
 
     def test_get_dest_group_info_is_model(self, db: Session, mocker: Any) -> None:
         user_id = randint(100, 200)
@@ -136,9 +92,8 @@ class TestTaskResult:
         dataset = create_dataset_record(db, user_id, project_id, dataset_group_id=dataset_group.id)
         model_group = create_model_group_record(db, user_id, project_id, dataset.id)
 
-        result_group_id, result_group_name = tr.get_dest_group_id(dataset.id)
+        result_group_id = tr.get_dest_group_id(dataset.id, model_group.id, model_group.name)
         assert model_group.id == result_group_id
-        assert model_group.name == result_group_name
 
 
 class TestShouldRetry:
