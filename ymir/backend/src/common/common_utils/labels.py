@@ -1,4 +1,3 @@
-import os
 from google.protobuf import json_format
 
 from mir.tools.class_ids import LabelStorage, SingleLabel, UserLabels  # noqa
@@ -18,7 +17,3 @@ def parse_labels_from_proto(label_collection: backend_pb2.LabelCollection) -> Us
                                            use_integers_for_enums=True)
 
     return UserLabels.parse_obj(label_dict)
-
-
-def user_label_file(sandbox_root: str, user_id: str) -> str:
-    return os.path.join(sandbox_root, user_id, ids_file_name())

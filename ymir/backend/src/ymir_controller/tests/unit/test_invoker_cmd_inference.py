@@ -6,7 +6,6 @@ import unittest
 from unittest import mock
 import yaml
 
-from common_utils.labels import user_label_file
 from controller.utils.invoker_call import make_invoker_cmd_call
 from controller.utils.invoker_mapping import RequestTypeToInvoker
 from proto import backend_pb2
@@ -122,7 +121,7 @@ class TestInvokerCMDInference(unittest.TestCase):
             work_dir=working_dir,
         )
 
-        label_storage_file = user_label_file(sandbox_root=self._sandbox_root, user_id=self._user_name)
+        label_storage_file = test_utils.user_label_file(sandbox_root=self._sandbox_root, user_id=self._user_name)
 
         os.makedirs(working_dir, exist_ok=True)
         config_file = os.path.join(working_dir, "inference_config.yaml")

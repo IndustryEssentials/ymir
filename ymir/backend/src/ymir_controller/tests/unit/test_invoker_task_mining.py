@@ -9,7 +9,6 @@ import yaml
 from google.protobuf.json_format import MessageToDict, ParseDict
 
 import tests.utils as test_utils
-from common_utils.labels import user_label_file
 from controller.utils import utils
 from controller.utils.invoker_call import make_invoker_cmd_call
 from controller.utils.invoker_mapping import RequestTypeToInvoker
@@ -156,7 +155,7 @@ class TestInvokerTaskMining(unittest.TestCase):
 
         asset_cache_dir = os.path.join(self._user_root, 'asset_cache')
         mining_cmd = (f"mir mining --root {self._mir_repo_root} "
-                      f"--user-label-file {user_label_file(self._sandbox_root, self._user_name)} "
+                      f"--user-label-file {test_utils.user_label_file(self._sandbox_root, self._user_name)} "
                       f"--dst-rev {self._task_id}@{self._task_id} "
                       f"-w {working_dir_0} --model-location {self._storage_root} --media-location {self._storage_root} "
                       f"--model-hash {model_hash}@{model_stage} --src-revs {self._task_id}@{self._sub_task_id_1} "
