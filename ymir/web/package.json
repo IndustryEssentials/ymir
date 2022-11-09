@@ -18,10 +18,6 @@
     "eslint": "eslint src/**/*",
     "prepare": "cd ../.. && husky install"
   },
-  "prettier": {
-    "semi": false,
-    "tabWidth": 2
-  },
   "jest": {
     "moduleNameMapper": {
       "^@/(.*)$": "<rootDir>/src/$1"
