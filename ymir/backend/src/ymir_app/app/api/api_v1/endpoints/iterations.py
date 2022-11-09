@@ -6,10 +6,16 @@ from sqlalchemy.orm import Session
 
 from app import crud, models, schemas
 from app.api import deps
-from app.api.errors.errors import IterationNotFound, TaskNotFound, IterationStepNotFound, IterationStepHasFinished
+from app.api.errors.errors import (
+    IterationNotFound,
+    ProjectNotFound,
+    TaskNotFound,
+    IterationStepNotFound,
+    IterationStepHasFinished,
+)
 from app.crud.crud_iteration_step import StepNotFound
 from app.libs.iterations import calculate_mining_progress
-from app.libs.iteration_steps import initialize_steps
+from app.libs.iteration_steps import initialize_steps, backfill_iteration_slots
 
 from common_utils.labels import UserLabels
 
@@ -26,10 +32,15 @@ def create_iteration(
     """
     Create iteration
     """
+    project = crud.project.get(db, obj_in.project_id)
+    if not project:
+        raise ProjectNotFound()
+    previous_iteration = project.current_iteration
+
     iteration = crud.iteration.create_with_user_id(db, user_id=current_user.id, obj_in=obj_in)
     logger.info("[create iteration] iteration record created: %s", iteration)
+    initialize_steps(db, iteration.id, project, previous_iteration)
     crud.project.update_current_iteration(db, project_id=obj_in.project_id, iteration_id=iteration.id)
-    initialize_steps(db, iteration.id)
     return {"result": iteration}
 
 
@@ -135,16 +146,15 @@ def get_iteration_step(
 
 
 @router.post(
-    "/{iteration_id}/steps/{step_id}/start",
+    "/{iteration_id}/steps/{step_id}/bind",
     response_model=schemas.IterationStepOut,
 )
-def start_iteration_step(
+def bind_iteration_step(
     *,
     db: Session = Depends(deps.get_db),
     iteration_id: int = Path(...),
     step_id: int = Path(...),
     task_id: int = Query(...),
-    user_labels: UserLabels = Depends(deps.get_user_labels),
     current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Any:
     """
@@ -152,7 +162,10 @@ def start_iteration_step(
     1. bind existing task to given step
     2. record task result and record dataset_id or model_id in step record
     """
-    step = crud.iteration_step.get(db, step_id)
+    iteration = crud.iteration.get_by_user_and_id(db, user_id=current_user.id, id=iteration_id)
+    if not iteration:
+        raise IterationNotFound()
+    step = crud.iteration_step.get(db, id=step_id)
     if not step:
         raise IterationStepNotFound()
     if step.is_finished:
@@ -161,7 +174,31 @@ def start_iteration_step(
     task_in_db = crud.task.get(db, task_id)
     if not task_in_db:
         raise TaskNotFound()
-    step = crud.iteration_step.start(db, id=step_id, task_id=task_in_db.id)
+    step = crud.iteration_step.bind_task(db, id=step_id, task_id=task_id)
+    return {"result": step}
+
+
+@router.post(
+    "/{iteration_id}/steps/{step_id}/unbind",
+    response_model=schemas.IterationStepOut,
+)
+def unbind_iteration_step(
+    *,
+    db: Session = Depends(deps.get_db),
+    iteration_id: int = Path(...),
+    step_id: int = Path(...),
+    user_labels: UserLabels = Depends(deps.get_user_labels),
+    current_user: models.User = Depends(deps.get_current_active_user),
+) -> Any:
+    iteration = crud.iteration.get_by_user_and_id(db, user_id=current_user.id, id=iteration_id)
+    if not iteration:
+        raise IterationNotFound()
+    step = crud.iteration_step.get(db, id=step_id)
+    if not step:
+        raise IterationStepNotFound()
+    if step.is_finished:
+        raise IterationStepHasFinished()
+    step = crud.iteration_step.unbind_task(db, id=step_id)
     return {"result": step}
 
 
@@ -176,7 +213,27 @@ def finish_iteration_step(
     step_id: int = Path(...),
     current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Any:
+    # make sure iteration belongs to user
+    iteration = crud.iteration.get_by_user_and_id(db, user_id=current_user.id, id=iteration_id)
+    if not iteration:
+        raise IterationNotFound()
+    step = crud.iteration_step.get(db, id=step_id)
+    if not step:
+        raise IterationStepNotFound()
+    if step.is_finished:
+        raise IterationStepHasFinished()
+
     try:
+        step_result = crud.iteration_step.get_ready_result(db, id=step_id)
+        if step_result:
+            backfill_iteration_slots(db, step.iteration_id, step.name, step.result.id)  # type: ignore
+            next_step = crud.iteration_step.get_next_step(db, id=step_id)
+            if next_step:
+                logger.info("[finish step] update next step presetting with current step result: %s", step_result)
+                crud.iteration_step.update_presetting(db, next_step.id, step_result)
+        if step.task:
+            logger.info("[finish step] update current step presetting with task parameter")
+            crud.iteration_step.update_presetting(db, step_id, step.task.task_parameters)
         step = crud.iteration_step.finish(db, id=step_id)
     except StepNotFound:
         raise IterationStepNotFound()

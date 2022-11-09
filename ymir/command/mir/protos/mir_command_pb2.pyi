@@ -223,7 +223,7 @@ class _AnnoTypeEnumTypeWrapper(google.protobuf.internal.enum_type_wrapper._EnumT
     """Semantic Segmentation w. ploygons."""
 
     AT_SEG_MASK = AnnoType.V(4)
-    """Instance Segmentation w. mask."""
+    """Semantic Segmentation w. mask."""
 
 
 AT_UNKNOWN = AnnoType.V(0)
@@ -237,7 +237,7 @@ AT_SEG_POLYGON = AnnoType.V(3)
 """Semantic Segmentation w. ploygons."""
 
 AT_SEG_MASK = AnnoType.V(4)
-"""Instance Segmentation w. mask."""
+"""Semantic Segmentation w. mask."""
 
 global___AnnoType = AnnoType
 
@@ -521,14 +521,14 @@ class SingleImageAnnotations(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor = ...
     BOXES_FIELD_NUMBER: builtins.int
     POLYGONS_FIELD_NUMBER: builtins.int
-    MASK_FIELD_NUMBER: builtins.int
+    MASKS_FIELD_NUMBER: builtins.int
     IMG_CLASS_IDS_FIELD_NUMBER: builtins.int
     @property
     def boxes(self) -> google.protobuf.internal.containers.RepeatedCompositeFieldContainer[global___ObjectAnnotation]: ...
     @property
     def polygons(self) -> google.protobuf.internal.containers.RepeatedCompositeFieldContainer[global___ObjectAnnotation]: ...
     @property
-    def mask(self) -> global___MaskAnnotation: ...
+    def masks(self) -> google.protobuf.internal.containers.RepeatedCompositeFieldContainer[global___MaskAnnotation]: ...
     @property
     def img_class_ids(self) -> google.protobuf.internal.containers.RepeatedScalarFieldContainer[builtins.int]:
         """Set of class ids shown in this image."""
@@ -537,11 +537,10 @@ class SingleImageAnnotations(google.protobuf.message.Message):
         *,
         boxes : typing.Optional[typing.Iterable[global___ObjectAnnotation]] = ...,
         polygons : typing.Optional[typing.Iterable[global___ObjectAnnotation]] = ...,
-        mask : typing.Optional[global___MaskAnnotation] = ...,
+        masks : typing.Optional[typing.Iterable[global___MaskAnnotation]] = ...,
         img_class_ids : typing.Optional[typing.Iterable[builtins.int]] = ...,
         ) -> None: ...
-    def HasField(self, field_name: typing_extensions.Literal["mask",b"mask"]) -> builtins.bool: ...
-    def ClearField(self, field_name: typing_extensions.Literal["boxes",b"boxes","img_class_ids",b"img_class_ids","mask",b"mask","polygons",b"polygons"]) -> None: ...
+    def ClearField(self, field_name: typing_extensions.Literal["boxes",b"boxes","img_class_ids",b"img_class_ids","masks",b"masks","polygons",b"polygons"]) -> None: ...
 global___SingleImageAnnotations = SingleImageAnnotations
 
 class SingleImageCks(google.protobuf.message.Message):

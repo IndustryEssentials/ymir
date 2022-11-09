@@ -21,7 +21,7 @@ def create_task(
         "name": random_lower_string(),
         "type": type_,
         "project_id": project_id,
-        "parameters": {"dataset_id": randint(100, 200)},
+        "parameters": {"dataset_id": randint(100, 200), "project_id": project_id, "task_type": type_.name},
         "state": state,
     }
     task_in = schemas.TaskCreate(**j)
