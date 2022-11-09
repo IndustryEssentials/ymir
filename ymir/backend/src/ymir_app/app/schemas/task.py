@@ -176,7 +176,7 @@ TaskParameter = Annotated[
         MergeParameter,
         FilterParameter,
     ],
-    Field(description="Generic Task Parameters", discriminator="task_type"),
+    Field(description="Generic Task Parameters", discriminator="task_type"),  # noqa: F722, F821
 ]
 
 
