@@ -87,7 +87,6 @@ const StepAction = ({ steps, selected, iteration, callback = () => {} }) => {
         query: { ...fixedQuery, ...(currentStep.query || {}), ...(currentStep.preSetting || {}) },
         ok,
       }
-      console.log('props:', props)
       setCurrentAction(Action(currentStep.comp, props))
     }
   }, [currentStep, state])
@@ -122,7 +121,6 @@ const StepAction = ({ steps, selected, iteration, callback = () => {} }) => {
   }, [steps, selected])
 
   useEffect(() => {
-    console.log('currentStep:', currentStep)
     if (!selected && currentStep?.resultId) {
       setSelectedStep(currentStep)
     }
