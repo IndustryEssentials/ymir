@@ -79,7 +79,7 @@ class CRUDModel(CRUDBase[Model, ModelCreate, ModelUpdate]):
         latest_version = self.get_latest_version(db, model_group_id)
         return latest_version + 1 if latest_version is not None else 1
 
-    def create_with_version(self, db: Session, obj_in: ModelCreate, dest_group_name: Optional[str] = None) -> Model:
+    def create_with_version(self, db: Session, obj_in: ModelCreate) -> Model:
         # fixme
         #  add mutex lock to protect latest_version
         version_num = self.next_available_version(db, obj_in.model_group_id)
@@ -105,7 +105,6 @@ class CRUDModel(CRUDBase[Model, ModelCreate, ModelUpdate]):
         db: Session,
         task: schemas.TaskInternal,
         dest_group_id: int,
-        dest_group_name: str,
         description: Optional[str] = None,
     ) -> Model:
         model_in = ModelCreate(
@@ -118,7 +117,7 @@ class CRUDModel(CRUDBase[Model, ModelCreate, ModelUpdate]):
             user_id=task.user_id,
             task_id=task.id,
         )
-        return self.create_with_version(db, obj_in=model_in, dest_group_name=dest_group_name)
+        return self.create_with_version(db, obj_in=model_in)
 
     def update_state(
         self,

@@ -1,10 +1,12 @@
-from typing import List, Optional
+from typing import List, Optional, Union, Dict
 from pydantic import BaseModel
 
 from app.constants.state import IterationStage, ResultState, TaskType
 from app.schemas.common import (
     Common,
     DateTimeModelMixin,
+    DatasetResult,
+    ModelResult,
     IdModelMixin,
     IsDeletedModelMixin,
 )
@@ -72,6 +74,8 @@ class IterationStepLite(BaseModel):
     is_finished: Optional[bool]
     state: Optional[ResultState]
     percent: Optional[float]
+    presetting: Optional[Dict]
+    result: Union[DatasetResult, ModelResult, None]
 
     class Config:
         orm_mode = True
@@ -79,6 +83,7 @@ class IterationStepLite(BaseModel):
 
 class IterationInDBBase(IdModelMixin, DateTimeModelMixin, IsDeletedModelMixin, IterationBase):
     current_step: Optional[IterationStepLite]
+    iteration_steps: List[IterationStepLite]
 
     class Config:
         orm_mode = True

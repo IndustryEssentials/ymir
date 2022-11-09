@@ -19,19 +19,12 @@ def patch_background_task(mocker):
     mocker.patch.object(fastapi, "BackgroundTasks", return_value=mocker.Mock())
 
 
-@pytest.fixture(scope="function")
-def mock_controller(mocker):
-    return mocker.Mock()
-
-
-@pytest.fixture(scope="function")
-def mock_db(mocker):
-    return mocker.Mock()
-
-
-@pytest.fixture(scope="function")
-def mock_viz(mocker):
-    return mocker.Mock()
+@pytest.fixture(scope="function", autouse=True)
+def mock_create_single_task(mocker):
+    mock_task = m.schemas.task.Task.construct(
+        project_id=233, type=m.TaskType.training, id=23, hash=random_lower_string(), state=4, user_id=42
+    )
+    mocker.patch.object(m, "create_single_task", return_value=mock_task)
 
 
 class TestListDatasets:
@@ -246,8 +239,10 @@ class TestCreateDataFusion:
 
         j = {
             "project_id": 1,
+            "task_type": "fusion",
+            "iteration_id": 233,
             "dataset_group_id": dataset_group_obj.id,
-            "main_dataset_id": dataset_obj.id,
+            "dataset_id": dataset_obj.id,
             "include_datasets": [],
             "strategy": 1,
             "exclude_datasets": [],

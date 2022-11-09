@@ -90,7 +90,10 @@ def _import_model(
 def create_model_stages(db: Session, model_id: int, model_info: Dict) -> None:
     stages_in = [
         schemas.ModelStageCreate(
-            name=stage_name, map=stage_info["mAP"], timestamp=stage_info["timestamp"], model_id=model_id
+            name=stage_name,
+            map=stage_info["ci_averaged_evaluation"]["ap"],
+            timestamp=stage_info["timestamp"],
+            model_id=model_id,
         )
         for stage_name, stage_info in model_info["model_stages"].items()
     ]
