@@ -34,6 +34,7 @@ class ModelStorage(BaseModel):
     stage_name: str = ''
     attachments: Dict[str, List[str]] = {}
     evaluate_config: Dict[str, float] = {}
+    model_type: int = int(mirpb.AnnoType.AT_UNKNOWN)
     package_version: str = Field(..., min_length=1)
 
     @property

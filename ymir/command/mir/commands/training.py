@@ -1,6 +1,7 @@
 import argparse
 import logging
 import os
+import shutil
 import time
 from subprocess import CalledProcessError
 from typing import Any, Dict, List, Optional
@@ -78,6 +79,14 @@ def _find_model_storage(model_root: str, executor_config: dict, task_context: di
                                attachments=attachments,
                                evaluate_config=yaml_obj.get('evaluate_config', {}),
                                package_version=ymir_model_salient_version(YMIR_VERSION))
+
+
+def _add_labelmap_as_attachment(model_storage: models.ModelStorage, labelmap_path: str, model_dir: str) -> None:
+    attachment_section_dir = os.path.join(model_dir, 'attachments', 'segmentation')
+    os.makedirs(attachment_section_dir, exist_ok=True)
+    shutil.copy(src=labelmap_path, dst=os.path.join(attachment_section_dir, 'labelmap.txt'))
+
+    model_storage.attachments['segmentation'] = ['labelmap.txt']
 
 
 # private: pre process
@@ -333,6 +342,11 @@ class CmdTrain(base.BaseCommand):
         model_storage = _find_model_storage(model_root=out_model_dir,
                                             executor_config=executor_config,
                                             task_context=task_context)
+        model_storage.model_type = int(mir_annotations.ground_truth.type)
+        if mir_annotations.ground_truth.type == mirpb.AnnoType.AT_SEG_MASK:
+            _add_labelmap_as_attachment(model_storage=model_storage,
+                                        labelmap_path=os.path.join(work_dir_gt, 'labelmap.txt'),
+                                        model_dir=out_model_dir)
         models.pack_and_copy_models(model_storage=model_storage,
                                     model_dir_path=out_model_dir,
                                     model_location=model_upload_location)
