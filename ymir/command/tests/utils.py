@@ -25,7 +25,9 @@ def check_commands():
 
 # mir repo operations
 def mir_repo_init(mir_root: str):
-    return_code = CmdInit.run_with_args(mir_root, empty_rev='')
+    return_code = CmdInit.run_with_args(mir_root=mir_root,
+                                        label_storage_file=class_ids.ids_file_path(mir_root),
+                                        empty_rev='')
     assert return_code == MirCode.RC_OK, "init failed"
 
 

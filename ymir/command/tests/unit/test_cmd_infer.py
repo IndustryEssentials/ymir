@@ -11,6 +11,7 @@ import yaml
 
 from mir.commands.infer import CmdInfer
 from mir.tools import models, settings as mir_settings
+from mir.tools.class_ids import ids_file_path
 from mir.tools.code import MirCode
 from tests import utils as test_utils
 
@@ -148,7 +149,7 @@ class TestCmdInfer(unittest.TestCase):
     def test_00(self, mock_run):
         fake_args = type('', (), {})()
         fake_args.work_dir = self._working_root
-        fake_args.mir_root = self._mir_repo_root
+        fake_args.label_storage_file = ids_file_path(self._mir_repo_root)
         fake_args.model_location = self._models_location
         fake_args.model_hash_stage = 'fake_model_hash@default_best_stage'
         fake_args.index_file = self._assets_index_file

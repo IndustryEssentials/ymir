@@ -1,6 +1,6 @@
 from typing import Dict, List, Optional, Tuple
-from common_utils.labels import UserLabels
 
+from common_utils.labels import UserLabels
 from controller.invoker.invoker_cmd_filter import FilterBranchInvoker
 from controller.invoker.invoker_cmd_merge import MergeInvoker
 from controller.invoker.invoker_cmd_sampling import SamplingInvoker
