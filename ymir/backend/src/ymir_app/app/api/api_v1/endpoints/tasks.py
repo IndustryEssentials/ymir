@@ -196,10 +196,7 @@ def update_task_name(
     return {"result": task}
 
 
-@router.post(
-    "/{task_id}/terminate",
-    response_model=schemas.TaskOut,
-)
+@router.post("/{task_id}/terminate", response_model=schemas.TaskOut)
 def terminate_task(
     *,
     db: Session = Depends(deps.get_db),
