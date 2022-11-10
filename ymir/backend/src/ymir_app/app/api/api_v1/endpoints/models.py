@@ -22,10 +22,7 @@ from app.libs.models import import_model_in_background
 router = APIRouter()
 
 
-@router.get(
-    "/batch",
-    response_model=schemas.ModelsOut,
-)
+@router.get("/batch", response_model=schemas.ModelsOut)
 def batch_get_models(
     db: Session = Depends(deps.get_db),
     model_ids: str = Query(None, alias="ids"),
@@ -35,10 +32,7 @@ def batch_get_models(
     return {"result": models}
 
 
-@router.post(
-    "/batch",
-    response_model=schemas.ModelsOut,
-)
+@router.post("/batch", response_model=schemas.ModelsOut)
 def batch_update_models(
     *,
     db: Session = Depends(deps.get_db),
@@ -113,10 +107,7 @@ def list_models(
     return {"result": payload}
 
 
-@router.post(
-    "/importing",
-    response_model=schemas.ModelOut,
-)
+@router.post("/importing", response_model=schemas.ModelOut)
 def import_model(
     *,
     db: Session = Depends(deps.get_db),
@@ -212,11 +203,7 @@ def update_model(
     return {"result": model}
 
 
-@router.get(
-    "/{model_id}",
-    response_model=schemas.ModelOut,
-    responses={404: {"description": "Model Not Found"}},
-)
+@router.get("/{model_id}", response_model=schemas.ModelOut)
 def get_model(
     db: Session = Depends(deps.get_db),
     model_id: int = Path(..., example="12"),

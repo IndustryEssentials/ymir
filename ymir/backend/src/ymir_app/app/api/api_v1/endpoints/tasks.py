@@ -20,11 +20,7 @@ from app.api.errors.errors import (
     ObsoleteTaskStatus,
     TaskNotFound,
 )
-from app.constants.state import (
-    FinalStates,
-    TaskState,
-    TaskType,
-)
+from app.constants.state import FinalStates, TaskState, TaskType
 from app.config import settings
 from app.utils.timeutil import convert_datetime_to_timestamp
 from app.utils.ymir_controller import ControllerClient, gen_user_hash
@@ -200,10 +196,7 @@ def update_task_name(
     return {"result": task}
 
 
-@router.post(
-    "/{task_id}/terminate",
-    response_model=schemas.TaskOut,
-)
+@router.post("/{task_id}/terminate", response_model=schemas.TaskOut)
 def terminate_task(
     *,
     db: Session = Depends(deps.get_db),
