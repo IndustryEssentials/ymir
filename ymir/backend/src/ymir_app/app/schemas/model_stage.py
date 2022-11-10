@@ -19,7 +19,11 @@ class ModelStageBase(BaseModel):
     model_id: int
 
 
-class ModelStageCreate(ModelStageBase):
+class ModelStageCreate(BaseModel):
+    name: str
+    map: Optional[float]
+    timestamp: int
+    model_id: int
     serialized_metrics: Optional[str] = None
 
     @root_validator(pre=True)
