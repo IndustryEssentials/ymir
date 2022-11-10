@@ -8,12 +8,12 @@ export enum Stages {
 }
 
 export enum STEP {
-  prepareMining = "prepare_mining",
-  mining = "mining",
-  labelling = "label",
-  merging = "prepare_training",
-  training = "training",
-  next = "next",
+  prepareMining = 'prepare_mining',
+  mining = 'mining',
+  labelling = 'label',
+  merging = 'prepare_training',
+  training = 'training',
+  next = 'next',
 }
 
 export enum MiningStrategy {
@@ -25,7 +25,7 @@ export enum MiningStrategy {
 export function getStepLabel(step: STEP | undefined, round: number = 0) {
   const list = getSteps()
   const target = list.find((item) => item.value === (step || STEP.next))
-  return `project.iteration.stage.${round ? target?.label : "prepare"}`
+  return `project.iteration.stage.${round ? target?.label : 'prepare'}`
 }
 
 type StepObj = {
@@ -41,31 +41,30 @@ type StepObj = {
 export const getSteps = (): StepObj[] => {
   const glabels = (label: string) => `project.iteration.stage.${label}`
   const list = [
-    { label: "ready", value: STEP.prepareMining },
-    { label: "mining", value: STEP.mining },
-    { label: "label", value: STEP.labelling },
-    { label: "merge", value: STEP.merging, unskippable: true },
-    { label: "training", value: STEP.training, unskippable: true },
-    { label: "next", value: STEP.next },
+    { label: 'ready', value: STEP.prepareMining },
+    { label: 'mining', value: STEP.mining },
+    { label: 'label', value: STEP.labelling },
+    { label: 'merge', value: STEP.merging, unskippable: true },
+    { label: 'training', value: STEP.training, unskippable: true },
+    { label: 'next', value: STEP.next },
   ]
   return list.map((item, index) => {
     const label = glabels(item.label)
     const ind: number = index
+    const end = index + 1 === list.length
     return {
       ...item,
       act: label,
-      react: `${label}.react`,
+      react: !end ? `${label}.react` : '',
       state: -1,
       index: ind,
       next: list[ind]?.value,
-      end: index + 1 === list.length,
+      end,
     }
   })
 }
 
-export function transferIteration(
-  data: YModels.BackendData
-): YModels.Iteration | undefined {
+export function transferIteration(data: YModels.BackendData): YModels.Iteration | undefined {
   if (!data) {
     return
   }
@@ -99,7 +98,7 @@ function transferStep(data: YModels.BackendData): YModels.Step | undefined {
     taskId: data.task_id,
     taskType: data.task_type,
     resultId: data?.result?.id,
-    resultType: data?.result?.result_type == 1 ? "dataset" : "model",
+    resultType: data?.result?.result_type == 1 ? 'dataset' : 'model',
   }
 }
 
@@ -112,14 +111,14 @@ type Ratio = {
 export function transferMiningStats(data: YModels.BackendData) {
   const { total_mining_ratio, class_wise_mining_ratio, negative_ratio } = data
   const transfer = (ratios: Array<Ratio>) => {
-    const getName = (ratio: Ratio) => ratio.class_name || ""
+    const getName = (ratio: Ratio) => ratio.class_name || ''
     const keywords = ratios.map(getName)
     const count = ratios.reduce((prev, item) => {
       const name = getName(item)
       return {
         ...prev,
         [name]: item.processed_assets_count,
-        [name + "_total"]: item.total_assets_count,
+        [name + '_total']: item.total_assets_count,
       }
     }, {})
     return {

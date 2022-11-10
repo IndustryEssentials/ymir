@@ -57,8 +57,16 @@ function Mining({ query = {}, hidden, ok = () => {}, datasetCache, bottom, ...fu
   }, [sys])
 
   useEffect(() => {
+    did &&
+      form.setFieldsValue({
+        datasetId: did,
+        inference: generate_annotations,
+      })
+  }, [did])
+
+  useEffect(() => {
     config && setConfig(config)
-    config && config.gpu_count && form.setFieldsValue({ gpu_count: config.gpuCount })
+    config && config.gpu_count && form.setFieldsValue({ gpu_count: config.gpu_count })
   }, [config])
 
   useEffect(() => {

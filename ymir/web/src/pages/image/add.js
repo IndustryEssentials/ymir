@@ -1,29 +1,38 @@
 import { useEffect, useState } from 'react'
-import { Button, Card, Form, Input, message, Modal, Select, Space, Radio } from 'antd'
-import { connect } from 'dva'
-import { useParams, useHistory, useLocation } from "umi"
+import { Button, Card, Form, Input, message, Space } from 'antd'
+import { useParams, useHistory, useLocation } from 'umi'
 
 import s from './add.less'
 import t from '@/utils/t'
-import { formLayout } from "@/config/antd"
+import { formLayout } from '@/config/antd'
 import Breadcrumbs from '@/components/common/breadcrumb'
 
 const { useForm } = Form
 
-const Add = ({ getImage, createImage, updateImage }) => {
+const Add = () => {
   const { id } = useParams()
   const history = useHistory()
   const location = useLocation()
   const [form] = useForm()
   const [isEdit, setEdit] = useState(false)
   const [userInput, setUserInput] = useState(false)
-  const [image, setImage] = useState({ id })
+  const [image, getImage, setImage] = useFetch('image/getImage')
+  const [created, createImage] = useFetch('image/createImage')
+  const [updated, updateImage] = useFetch('image/updateImage')
 
   useEffect(() => {
     setEdit(!!id)
 
-    id && fetchImage()
+    id && getImage({ id })
   }, [id])
+
+  useEffect(() => {
+    if (created || updated) {
+      const msg = created ? 'image.add.success' : 'image.update.success'
+      message.success(t(msg))
+      history.push('/home/image')
+    }
+  }, [created, updated])
 
   useEffect(() => {
     if (!location.state) {
@@ -50,7 +59,9 @@ const Add = ({ getImage, createImage, updateImage }) => {
     const { name, url, description } = image
     if (name) {
       form.setFieldsValue({
-        name, url, description,
+        name,
+        url,
+        description,
       })
     }
   }
@@ -72,37 +83,23 @@ const Add = ({ getImage, createImage, updateImage }) => {
       form.setFieldsValue({ name: target.value })
     }
   }
-  async function fetchImage() {
-    const result = await getImage(id)
-    if (result) {
-      setImage(result)
-    }
-  }
 
-  async function create({ url, name, description }) {
+  function create({ url, name, description }) {
     var params = {
       url: url.trim(),
       name: name.trim(),
       description: (description || '').trim(),
     }
-    const result = await createImage(params)
-    if (result) {
-      message.success(t('image.add.success'))
-      history.push('/home/image')
-    }
+    createImage(params)
   }
 
-  async function update({ name, description }) {
+  function update({ name, description }) {
     var params = {
       id,
       name: name.trim(),
       description: (description || '').trim(),
     }
-    const result = await updateImage(params)
-    if (result) {
-      message.success(t('image.update.success'))
-      history.push('/home/image')
-    }
+    updateImage(params)
   }
 
   return (
@@ -110,46 +107,34 @@ const Add = ({ getImage, createImage, updateImage }) => {
       <Breadcrumbs />
       <Card className={s.container} title={t('breadcrumbs.image.add')}>
         <div className={s.formContainer}>
-          <Form form={form} {...formLayout} labelAlign='left' onFinish={submit}>
+          <Form form={form} {...formLayout} labelAlign="left" onFinish={submit}>
             <Form.Item
               label={t('image.add.form.url')}
               tooltip={t('tip.image.add.name')}
-              name='url'
-              rules={[
-                { required: true, message: t('image.add.form.url.required') },
-                { validator: checkImageUrl },
-              ]}
+              name="url"
+              rules={[{ required: true, message: t('image.add.form.url.required') }, { validator: checkImageUrl }]}
             >
-              <Input placeholder={t('image.add.form.url.placeholder')} disabled={image.url} autoComplete='off' allowClear onChange={urlChange} />
+              <Input placeholder={t('image.add.form.url.placeholder')} disabled={image.url} autoComplete="off" allowClear onChange={urlChange} />
             </Form.Item>
             <Form.Item
               label={t('image.add.form.name')}
               tooltip={t('tip.image.add.url')}
-              name='name'
-              rules={[
-                { required: true, whitespace: true, message: t('image.add.form.name.placeholder') },
-                { max: 50 },
-              ]}
+              name="name"
+              rules={[{ required: true, whitespace: true, message: t('image.add.form.name.placeholder') }, { max: 50 }]}
             >
-              <Input placeholder={t('image.add.form.name.placeholder')} maxLength={50}
-                autoComplete='off' allowClear onKeyUp={() => setUserInput(true)} />
+              <Input placeholder={t('image.add.form.name.placeholder')} maxLength={50} autoComplete="off" allowClear onKeyUp={() => setUserInput(true)} />
             </Form.Item>
-            <Form.Item label={t('image.add.form.desc')} name='description'
-              tooltip={t('tip.image.add.desc')}
-              rules={[
-                { max: 500 },
-              ]}
-            >
+            <Form.Item label={t('image.add.form.desc')} name="description" tooltip={t('tip.image.add.desc')} rules={[{ max: 500 }]}>
               <Input.TextArea autoSize={{ minRows: 4, maxRows: 20 }} />
             </Form.Item>
             <Form.Item wrapperCol={{ offset: 8 }}>
               <Space size={20}>
-                <Form.Item name='submitBtn' noStyle>
+                <Form.Item name="submitBtn" noStyle>
                   <Button type="primary" size="large" htmlType="submit">
                     {isEdit ? t('image.update.submit') : t('image.add.submit')}
                   </Button>
                 </Form.Item>
-                <Form.Item name='backBtn' noStyle>
+                <Form.Item name="backBtn" noStyle>
                   <Button size="large" onClick={() => history.goBack()}>
                     {t('common.back')}
                   </Button>
@@ -163,28 +148,4 @@ const Add = ({ getImage, createImage, updateImage }) => {
   )
 }
 
-
-const actions = (dispatch) => {
-  return {
-    createImage: (payload) => {
-      return dispatch({
-        type: 'image/createImage',
-        payload,
-      })
-    },
-    updateImage: (payload) => {
-      return dispatch({
-        type: 'image/updateImage',
-        payload,
-      })
-    },
-    getImage: (id) => {
-      return dispatch({
-        type: 'image/getImage',
-        payload: id,
-      })
-    },
-  }
-}
-
-export default connect(null, actions)(Add)
+export default Add

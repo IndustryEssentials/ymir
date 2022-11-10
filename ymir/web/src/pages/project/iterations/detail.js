@@ -1,10 +1,8 @@
 import React, { useEffect, useState } from 'react'
-import { useSelector } from 'umi'
 
 import t from '@/utils/t'
-import useFetch from '@/hooks/useFetch'
 import Panel from './detail.panel'
-import { STEP, getSteps } from '@/constants/iteration'
+import { getSteps } from '@/constants/iteration'
 
 import s from './index.less'
 
@@ -14,12 +12,10 @@ function Detail({ project = {} }) {
   const [settings, setSettings] = useState([])
   const [intermediations, setIntermediations] = useState([])
   const [models, setModels] = useState([])
-  const [_, getIteration] = useFetch('iteration/getIteration')
   const iid = project.currentIteration?.id
   const [iteration, setIteration] = useState(null)
 
   useEffect(() => {
-    console.log('project:', project)
     project.id && iid && setIteration(project.currentIteration)
   }, [project, iid])
 
@@ -28,7 +24,6 @@ function Detail({ project = {} }) {
       return
     }
     const { wholeMiningSet, testSet } = iteration || {}
-    console.log('wholeMiningSet, testSet:', wholeMiningSet, testSet)
     const steps = getSteps()
     const slist = filterExsit([
       {

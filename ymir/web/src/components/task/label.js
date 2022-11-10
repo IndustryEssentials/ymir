@@ -38,6 +38,14 @@ function Label({ query = {}, hidden, datasets, keywords, ok = () => {}, bottom, 
   }, [])
 
   useEffect(() => {
+    did &&
+      form.setFieldsValue({
+        datasetId: did,
+        keepAnnotations: type,
+      })
+  }, [did])
+
+  useEffect(() => {
     // iteration context
     iterationId && pid && getProject({ id: pid })
   }, [pid])
@@ -73,7 +81,7 @@ function Label({ query = {}, hidden, datasets, keywords, ok = () => {}, bottom, 
   const initialValues = {
     datasetId: did || undefined,
     labelType: getCheckedValue(LabelTypes()),
-    // keepAnnotations: type,
+    keepAnnotations: type,
   }
   return (
     <div>

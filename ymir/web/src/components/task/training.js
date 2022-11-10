@@ -90,7 +90,7 @@ function Train({ query = {}, hidden, ok = () => {}, bottom, allDatasets, dataset
 
   useEffect(() => {
     config && setConfig(config)
-    config && config.gpu_count && form.setFieldsValue({ gpu_count: config.gpuCount })
+    config && config.gpu_count && form.setFieldsValue({ gpu_count: config.gpu_count })
   }, [config])
 
   useEffect(() => {

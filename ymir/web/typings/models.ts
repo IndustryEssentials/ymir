@@ -293,6 +293,7 @@ declare namespace YModels {
     model_id?: ModelId
     model_stage_id?: StageId
     gpuCount?: number
+    config?: PlainObject
   }
 
   interface FilterParams extends Params {

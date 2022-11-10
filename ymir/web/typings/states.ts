@@ -9,7 +9,11 @@ declare namespace YStates {
     project: ProjectState
   }
 
-  type UserState = {
+  type State = {
+    [key: string]: any
+  }
+
+  interface UserState extends State {
     username: string
     email: string
     phone: string
@@ -21,13 +25,13 @@ declare namespace YStates {
     neverShow?: string
   }
 
-  type ProjectState = {
+  interface ProjectState extends State {
     list: List<YModels.Project>
     projects: IdMap<YModels.Project>
     current: YModels.Project
   }
 
-  type DatasetState = {
+  interface DatasetState extends State {
     datasets: List<YModels.Dataset>
     versions: IdMap<YModels.Dataset[]>
     dataset: IdMap<YModels.Dataset>
@@ -37,22 +41,22 @@ declare namespace YStates {
     publicDatasets: YModels.Dataset[]
   }
 
-  type ModelState = {
+  interface ModelState extends State {
     models: List<YModels.Model>
     versions: IdMap<YModels.Model[]>
     model: IdMap<YModels.Model>
     allModels: YModels.Model
   }
 
-  type IterationState = {
+  interface IterationState extends State {
     iterations: List<YModels.Iteration>
     iteration: IdMap<YModels.Iteration>
     actionPanelExpand: boolean
   }
 
-  type ImageState = {
+  interface ImageState extends State {
     images: List<YModels.Image>
-    image: YModels.Image
+    image: IdMap<YModels.Image>
   }
 
   type LabelState = {

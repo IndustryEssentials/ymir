@@ -30,7 +30,6 @@ function Iterations() {
 
   const fresh = useCallback(
     (project) => {
-      console.log('project:', project)
       if (project) {
         setProject(project)
       } else {

@@ -1,24 +1,13 @@
 import { getIterations, getIteration, createIteration, updateIteration, getMiningStats, bindStep, unbindStep, nextStep } from '@/services/iteration'
 import { Stages, transferIteration, transferMiningStats } from '@/constants/iteration'
 import { updateResultState } from '@/constants/common'
-import { isPlainObject } from '@/utils/object'
+import { NormalReducer } from './_utils'
 
 const initQuery = {
   name: '',
   offset: 0,
   limit: 20,
 }
-
-const NormalReducer =
-  (field) =>
-  (state, { payload }) => {
-    const current = state[field]
-    const update = isPlainObject(current) ? { ...current, ...payload } : payload
-    return {
-      ...state,
-      [field]: update,
-    }
-  }
 
 const reducers = {
   UPDATE_ITERATIONS: NormalReducer('iterations'),

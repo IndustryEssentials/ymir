@@ -1,4 +1,4 @@
-import { Descriptions } from 'antd'
+import { Col, Descriptions, Row } from 'antd'
 import React, { useEffect, useState } from 'react'
 import { Link, useSelector } from 'umi'
 
@@ -6,6 +6,7 @@ import t from '@/utils/t'
 import { STEP } from '@/constants/iteration'
 import VersionName from '@/components/result/VersionName'
 import ModelVersionName from '@/components/result/ModelVersionName'
+import ImageName from '@/components/image/ImageName'
 
 type Props = {
   step: YModels.PageStep
@@ -35,11 +36,18 @@ const FinishStep: React.FC<Props> = ({ step }) => {
       [STEP.training]: getTrainingParams,
     }
     const task = result.task
-    setParamsList(maps[step.value]({ ...task.parameters, gpuCount: task?.config?.gpu_count }))
+    setParamsList([
+      ...maps[step.value]({
+        ...task.parameters,
+        gpuCount: task?.config?.gpu_count,
+        config: task.config,
+      }),
+      { label: 'common.desc', content: task.parameters.description },
+    ])
   }, [result])
 
   const renderDescriptions = (list: ListType) => (
-    <Descriptions column={2}>
+    <Descriptions column={2} contentStyle={{ flexWrap: 'wrap' }}>
       {list.map(({ label, content }, index) =>
         content ? (
           <Descriptions.Item key={index} label={t(label)}>
@@ -82,7 +90,7 @@ function getFusionParams(params: YModels.FusionParams) {
 
 function getMiningParams(params: YModels.MiningParams) {
   return [
-    { label: 'task.mining.form.image.label', content: params.docker_image_id },
+    { label: 'task.mining.form.image.label', content: <ImageName id={params.docker_image_id} /> },
     { label: 'task.mining.form.dataset.label', content: <VersionName id={params.dataset_id} /> },
     { label: 'task.mining.form.model.label', content: <ModelVersionName id={params.model_id} /> },
     { label: 'task.mining.form.topk.label', content: params.top_k },
@@ -91,6 +99,7 @@ function getMiningParams(params: YModels.MiningParams) {
       content: params.labels?.join(','),
     },
     { label: 'task.gpu.count', content: 0 },
+    imageConfig(params.config),
   ]
 }
 
@@ -117,12 +126,27 @@ function getMergeParams(params: YModels.MergeParams) {
 
 function getTrainingParams(params: YModels.TrainingParams) {
   return [
-    { label: 'task.train.form.image.label', content: params.docker_image_id },
+    { label: 'task.train.form.image.label', content: <ImageName id={params.docker_image_id} /> },
     { label: 'task.train.form.trainsets.label', content: <VersionName id={params.dataset_id} /> },
     { label: 'task.train.form.testsets.label', content: <VersionName id={params.validation_dataset_id} /> },
     { label: 'task.detail.label.premodel', content: <ModelVersionName id={params.model_id} stageId={params.model_stage_id} /> },
     { label: 'task.gpu.count', content: params.gpuCount },
+    imageConfig(params.config),
   ]
+}
+
+function imageConfig(config: { [key: string]: string | number } = {}) {
+  return {
+    label: 'task.train.form.hyperparam.label',
+    content: Object.keys(config).map((key) => (
+      <Row key={key} align="middle" style={{ flexWrap: 'wrap', flex: '0 0 100%', width: '100%' }}>
+        <Col flex={'200px'} style={{ fontWeight: 'bold' }}>
+          {key}:
+        </Col>
+        <Col flex={1}>{config[key].toString()}</Col>
+      </Row>
+    )),
+  }
 }
 
 export default FinishStep

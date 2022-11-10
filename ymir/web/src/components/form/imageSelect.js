@@ -70,7 +70,7 @@ const ImageSelect = ({ value, relatedId, type = TYPES.TRAINING, onChange = () =>
   }
 
   async function getRelatedOptions() {
-    const trainImage = await getImage(relatedId)
+    const trainImage = await getImage({ id: relatedId })
     let relatedOptions = []
     if (trainImage?.related) {
       relatedOptions = trainImage.related.map(generateOption)

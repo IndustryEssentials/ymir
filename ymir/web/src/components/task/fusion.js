@@ -40,6 +40,15 @@ function Fusion({ query = {}, hidden, ok = () => {}, bottom }) {
     strategy: 2,
   }
 
+  useEffect(
+    () =>
+      did &&
+      form.setFieldsValue({
+        dataset: did,
+      }),
+    [did],
+  )
+
   useEffect(() => fusionResult && ok(fusionResult), [fusionResult])
 
   useEffect(() => did && getDataset({ id: did }), [did])
