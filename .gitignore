@@ -90,6 +90,6 @@ ymir-workplace*
 .pre-commit-config.yaml
 ymir/backend/alembic
 ymir/backend/static
-.husky
+.husky/
 
 */updater/app/mir/protos/*.pyi
