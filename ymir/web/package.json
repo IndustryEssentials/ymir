@@ -16,7 +16,7 @@
     "test:coverage": "umi-test --coverage",
     "lint-staged": "lint-staged",
     "eslint": "eslint src/**/*",
-    "prepare": "cd ../.. && husky install"
+    "prepare": "cd ../.. && husky install && npx husky add .husky/pre-commit 'cd ymir/web && npx lint-staged'"
   },
   "jest": {
     "moduleNameMapper": {
