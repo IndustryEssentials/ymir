@@ -137,7 +137,7 @@ class ControllerRequest:
         request.singleton_op = args["docker_image"]
         request.docker_image_config = args["docker_image_config"]
         # stop if training_dataset and validation_dataset share any assets
-        request.merge_strategy = TRAINING_DATASET_STRATEGY_MAPPING[args["strategy"]]
+        request.merge_strategy = TRAINING_DATASET_STRATEGY_MAPPING[args["merge_strategy"]]
         request.req_create_task.CopyFrom(req_create_task)
         return request
 
@@ -266,7 +266,7 @@ class ControllerRequest:
     def prepare_data_fusion(self, request: mirsvrpb.GeneralReq, args: Dict) -> mirsvrpb.GeneralReq:
         request.in_dataset_ids[:] = [dataset["hash"] for dataset in args["typed_datasets"] if not dataset["exclude"]]
         request.ex_dataset_ids[:] = [dataset["hash"] for dataset in args["typed_datasets"] if dataset["exclude"]]
-        request.merge_strategy = MERGE_STRATEGY_MAPPING[args.get("strategy", MergeStrategy.stop_upon_conflict)]
+        request.merge_strategy = MERGE_STRATEGY_MAPPING[args.get("merge_strategy", MergeStrategy.stop_upon_conflict)]
         request.in_class_ids[:] = [label["class_id"] for label in args["typed_labels"] if not label["exclude"]]
         request.in_class_ids[:] = [label["class_id"] for label in args["typed_labels"] if label["exclude"]]
 
