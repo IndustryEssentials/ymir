@@ -37,7 +37,7 @@ function Matrics({ pid, project }) {
   const [selectedModels, setSelectedModels] = useState([])
   const [selectedDatasets, setSelectedDatasets] = useState([])
   const [iou, setIou] = useState(0.5)
-  const [everageIou, setEverageIou] = useState(false)
+  const [averageIou, setaverageIou] = useState(false)
   const [confidence, setConfidence] = useState(0.3)
   const [selectedMetric, setSelectedMetric] = useState(metricsTabs[0].value)
   const [prRate, setPrRate] = useState([0.8, 0.95])
@@ -124,7 +124,7 @@ function Matrics({ pid, project }) {
     const params = {
       ...values,
       pid,
-      everageIou,
+      averageIou,
       datasets: inferDataset,
     }
     fetchDiagnosis(params)
@@ -274,9 +274,9 @@ function Matrics({ pid, project }) {
                   <Select options={cks.map(ck => ({ value: ck, label: ck }))} allowClear></Select>
                 </Form.Item>
                 <Form.Item label={t('model.diagnose.form.iou')}>
-                  <Radio.Group value={everageIou} onChange={({ target: { value }}) => setEverageIou(value)} options={iouOptions}></Radio.Group>
+                  <Radio.Group value={averageIou} onChange={({ target: { value }}) => setaverageIou(value)} options={iouOptions}></Radio.Group>
                   <Form.Item noStyle name='iou'>
-                    <Slider style={{ display: !everageIou ? 'block' : 'none' }} min={0.25} max={0.95} step={0.05} marks={{ 0.25: '0.25', 0.5: '0.5', 0.95: '0.95' }} onChange={setIou} />
+                    <Slider style={{ display: !averageIou ? 'block' : 'none' }} min={0.25} max={0.95} step={0.05} marks={{ 0.25: '0.25', 0.5: '0.5', 0.95: '0.95' }} onChange={setIou} />
                   </Form.Item>
                 </Form.Item>
                 <Form.Item name='submitBtn'>

@@ -27,7 +27,7 @@ interface EvaluationParams extends QueryParams {
   datasets: number[],
   confidence: number,
   iou: number,
-  everageIou: boolean,
+  averageIou: boolean,
   ck: string,
 }
 
@@ -218,18 +218,18 @@ export function delDatasetGroup(id: number) {
  * @description evalution between gt and prediction annotations by dataset
  * @export
  * @param {EvaluationParams} {
- *   pid, datasets, iou, everageIou, confidence, ck
+ *   pid, datasets, iou, averageIou, confidence, ck
  * }
  */
 export function evaluate({
-  pid, datasets, iou, everageIou, confidence, ck
+  pid, datasets, iou, averageIou, confidence, ck
 }: EvaluationParams) {
   return request.post(`/datasets/evaluation`, {
     project_id: pid,
     dataset_ids: datasets,
     confidence_threshold: confidence,
     iou_threshold: iou,
-    require_average_iou: everageIou,
+    require_average_iou: averageIou,
     main_ck: ck,
   })
 }
