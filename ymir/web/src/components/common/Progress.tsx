@@ -1,13 +1,12 @@
-import { Col, Progress, Row } from "antd"
-import { getLocale, Link } from "umi"
+import { Col, Progress, Row } from 'antd'
+import { getLocale, Link } from 'umi'
 
-import { ResultStates } from "@/constants/common"
-import t from "@/utils/t"
-import StateTag from "../task/StateTag"
-import { calTimeLeft } from "@/utils/date"
-import { Result } from "@/interface/common"
+import { ResultStates } from '@/constants/common'
+import t from '@/utils/t'
+import StateTag from '../task/StateTag'
+import { calTimeLeft } from '@/utils/date'
 
-function RenderProgress(state: ResultStates, result: Result, simple = false) {
+function RenderProgress(state: ResultStates, result: YModels.Result, simple = false) {
   const { id, progress, createTime, taskState, task } = result
   if (ResultStates.READY === state && task?.is_terminated) {
     return t('task.state.terminating')
@@ -20,16 +19,18 @@ function RenderProgress(state: ResultStates, result: Result, simple = false) {
   const stateTag = <StateTag mode={simple ? 'icon' : 'text'} state={state} />
   return state === ResultStates.READY ? (
     <Row gutter={10} style={{ alignItems: 'center', padding: '0 7px', textAlign: 'left' }}>
-      <Col>
-        {stateTag}
-      </Col>
+      <Col>{stateTag}</Col>
       <Col flex={1}>
         <Progress size="small" percent={percent} strokeWidth={8} strokeColor={'rgb(250, 211, 55)'} trailColor={'rgba(0, 0, 0, 0.06)'} />
         <div style={{ color: 'rgba(0, 0, 0, 0.45)' }}>
-          {t('task.column.state.timeleft.label')}{calTimeLeft(percent, createTime, getLocale())}</div>
+          {t('task.column.state.timeleft.label')}
+          {calTimeLeft(percent, createTime, getLocale())}
+        </div>
       </Col>
     </Row>
-  ) : stateTag
+  ) : (
+    stateTag
+  )
 }
 
 export default RenderProgress

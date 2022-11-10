@@ -1,4 +1,3 @@
-import { TASKSTATES, TASKTYPES } from "./task"
 import { TYPES } from './image'
 
 export const getImageTypes = () => [

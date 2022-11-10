@@ -1,9 +1,8 @@
-import axios from "axios"
-import storage from "@/utils/storage"
-import t from "@/utils/t"
-import { history } from "umi"
+import axios from 'axios'
+import storage from '@/utils/storage'
+import t from '@/utils/t'
 import { getDvaApp } from 'umi'
-import { message } from "antd"
+import { message } from 'antd'
 
 const getBaseURL = () => {
   const envUrl = process.env.APIURL
@@ -21,15 +20,15 @@ const request = axios.create({
 request.interceptors.request.use(
   (config) => {
     const headers = config.headers || {}
-    headers["Content-Type"] = headers["Content-Type"] || "application/json"
-    headers["Authorization"] = `Bearer ${storage.get("access_token")}`
+    headers['Content-Type'] = headers['Content-Type'] || 'application/json'
+    headers['Authorization'] = `Bearer ${storage.get('access_token')}`
     config.headers = headers
     return config
   },
   (err) => {
     console.error(err)
     return err
-  }
+  },
 )
 
 request.interceptors.response.use(
@@ -37,7 +36,7 @@ request.interceptors.response.use(
     if (res.data.code !== 0) {
       message.error(t(`error${res.data.code}`))
       if ([110104, 110112].includes(res.data.code)) {
-        return logout()
+        logout()
       }
     }
 
@@ -63,12 +62,12 @@ request.interceptors.response.use(
     }
 
     return { code: err.request.status }
-  }
+  },
 )
 
 function logout() {
   getDvaApp()._store.dispatch({
-    type: 'user/loginout'
+    type: 'user/loginout',
   })
 }
 

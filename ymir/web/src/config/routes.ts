@@ -1,98 +1,89 @@
 type Route = {
-  path: string,
-  name?: string,
-  title?: string,
-  component?: string,
-  redirect?: string,
+  path: string
+  name?: string
+  title?: string
+  component?: string
+  redirect?: string
 }
 export const homeRoutes = [
   {
     path: "/home",
     name: "home",
     redirect: "/home/portal",
-    title: 'portal.title',
-    breadcrumbLabel: 'breadcrumbs.portal',
+    title: "portal.title",
+    breadcrumbLabel: "breadcrumbs.portal",
   },
   {
     path: "/home/portal",
     name: "portal",
     component: "@/pages/portal/index",
-    title: 'portal.title',
+    title: "portal.title",
     pid: 0,
     id: 2,
-    breadcrumbLabel: 'breadcrumbs.portal',
-  },
-  {
-    path: "/home/project/:id/fusion",
-    name: "taskFusion",
-    component: "@/pages/task/fusion/index",
-    title: 'task.fusion.title',
-    pid: 25,
-    id: 3,
-    breadcrumbLabel: 'breadcrumbs.task.fusion',
+    breadcrumbLabel: "breadcrumbs.portal",
   },
   {
     path: "/home/project/:id/merge",
     name: "taskMerge",
     component: "@/pages/task/merge/index",
-    title: 'task.merge.title',
+    title: "task.merge.title",
     pid: 25,
     id: 36,
-    breadcrumbLabel: 'breadcrumbs.task.merge',
+    breadcrumbLabel: "breadcrumbs.task.merge",
   },
   {
     path: "/home/project/:id/filter",
     name: "taskFilter",
     component: "@/pages/task/filter/index",
-    title: 'task.filter.title',
+    title: "task.filter.title",
     pid: 25,
     id: 37,
-    breadcrumbLabel: 'breadcrumbs.task.filter',
+    breadcrumbLabel: "breadcrumbs.task.filter",
   },
   {
     path: "/home/project/:id/mining",
     name: "taskMining",
     component: "@/pages/task/mining/index",
-    title: 'task.mining.title',
+    title: "task.mining.title",
     pid: 25,
     id: 4,
-    breadcrumbLabel: 'breadcrumbs.task.mining',
+    breadcrumbLabel: "breadcrumbs.task.mining",
   },
   {
     path: "/home/project/:id/train",
     name: "taskTrain",
     component: "@/pages/task/train/index",
-    title: 'task.train.title',
+    title: "task.train.title",
     pid: 25,
     id: 5,
-    breadcrumbLabel: 'breadcrumbs.task.training',
+    breadcrumbLabel: "breadcrumbs.task.training",
   },
   {
     path: "/home/project/:id/inference",
     name: "taskInference",
     component: "@/pages/task/inference/index",
-    title: 'task.inference.title',
+    title: "task.inference.title",
     pid: 25,
     id: 6,
-    breadcrumbLabel: 'breadcrumbs.task.inference',
+    breadcrumbLabel: "breadcrumbs.task.inference",
   },
   {
     path: "/home/project/:id/label",
     name: "taskLabel",
     component: "@/pages/task/label/index",
-    title: 'task.label.title',
+    title: "task.label.title",
     pid: 25,
     id: 7,
-    breadcrumbLabel: 'breadcrumbs.task.label',
+    breadcrumbLabel: "breadcrumbs.task.label",
   },
   {
     path: "/home/project/:id/copy",
     name: "taskCopy",
     component: "@/pages/task/copy/index",
-    title: 'dataset.copy.title',
+    title: "dataset.copy.title",
     pid: 25,
     id: 8,
-    breadcrumbLabel: 'breadcrumbs.datasets.copy',
+    breadcrumbLabel: "breadcrumbs.datasets.copy",
   },
   {
     path: "/home/project/:id/dataset/add",
@@ -101,7 +92,7 @@ export const homeRoutes = [
     title: "dataset.add.title",
     pid: 25,
     id: 9,
-    breadcrumbLabel: 'breadcrumbs.dataset.add',
+    breadcrumbLabel: "breadcrumbs.dataset.add",
   },
   {
     path: "/home/project/:id/dataset/analysis",
@@ -110,7 +101,7 @@ export const homeRoutes = [
     title: "dataset.analysis.title",
     pid: 25,
     id: 38,
-    breadcrumbLabel: 'breadcrumbs.dataset.analysis',
+    breadcrumbLabel: "breadcrumbs.dataset.analysis",
   },
   {
     path: "/home/project/:id/dataset/:did",
@@ -119,7 +110,7 @@ export const homeRoutes = [
     title: "dataset.title",
     pid: 32,
     id: 10,
-    breadcrumbLabel: 'breadcrumbs.dataset',
+    breadcrumbLabel: "breadcrumbs.dataset",
   },
   {
     path: "/home/project/:id/dataset/:did/assets",
@@ -128,7 +119,7 @@ export const homeRoutes = [
     title: "assets.title",
     pid: 10,
     id: 11,
-    breadcrumbLabel: 'breadcrumbs.dataset.assets',
+    breadcrumbLabel: "breadcrumbs.dataset.assets",
   },
   {
     path: "/home/project/:id/model/import",
@@ -137,7 +128,7 @@ export const homeRoutes = [
     title: "model.title",
     pid: 25,
     id: 13,
-    breadcrumbLabel: 'breadcrumbs.model.add',
+    breadcrumbLabel: "breadcrumbs.model.add",
   },
   {
     path: "/home/project/:id/model/:mid",
@@ -146,7 +137,7 @@ export const homeRoutes = [
     title: "model.title",
     pid: 33,
     id: 12,
-    breadcrumbLabel: 'breadcrumbs.model',
+    breadcrumbLabel: "breadcrumbs.model",
   },
   {
     path: "/home/project/:id/model/:mid/verify",
@@ -155,7 +146,7 @@ export const homeRoutes = [
     title: "model.verify.title",
     pid: 33,
     id: 15,
-    breadcrumbLabel: 'breadcrumbs.model.verify',
+    breadcrumbLabel: "breadcrumbs.model.verify",
   },
   {
     path: "/home/keyword",
@@ -164,7 +155,7 @@ export const homeRoutes = [
     title: "keywords.title",
     pid: 2,
     id: 17,
-    breadcrumbLabel: 'breadcrumbs.keyword',
+    breadcrumbLabel: "breadcrumbs.keyword",
   },
   {
     path: "/home/user",
@@ -173,7 +164,7 @@ export const homeRoutes = [
     title: "user.title",
     pid: 2,
     id: 18,
-    breadcrumbLabel: 'breadcrumbs.user.info',
+    breadcrumbLabel: "breadcrumbs.user.info",
   },
   {
     path: "/home/image",
@@ -182,7 +173,7 @@ export const homeRoutes = [
     title: "images.title",
     pid: 2,
     id: 19,
-    breadcrumbLabel: 'breadcrumbs.images',
+    breadcrumbLabel: "breadcrumbs.images",
   },
   {
     path: "/home/image/detail/:id",
@@ -191,7 +182,7 @@ export const homeRoutes = [
     title: "image.title",
     pid: 19,
     id: 21,
-    breadcrumbLabel: 'breadcrumbs.image',
+    breadcrumbLabel: "breadcrumbs.image",
   },
   {
     path: "/home/image/add/:id?",
@@ -200,7 +191,7 @@ export const homeRoutes = [
     title: "image.add.title",
     pid: 19,
     id: 22,
-    breadcrumbLabel: 'breadcrumbs.image.add',
+    breadcrumbLabel: "breadcrumbs.image.add",
   },
   {
     path: "/home/permission",
@@ -209,7 +200,7 @@ export const homeRoutes = [
     title: "user.permission.title",
     pid: 2,
     id: 23,
-    breadcrumbLabel: 'breadcrumbs.configure.permission',
+    breadcrumbLabel: "breadcrumbs.configure.permission",
   },
   {
     path: "/home/project",
@@ -218,7 +209,7 @@ export const homeRoutes = [
     title: "projects.title",
     pid: 2,
     id: 24,
-    breadcrumbLabel: 'breadcrumbs.projects',
+    breadcrumbLabel: "breadcrumbs.projects",
   },
   {
     path: "/home/project/:id/detail",
@@ -227,7 +218,7 @@ export const homeRoutes = [
     title: "project.summary",
     pid: 24,
     id: 25,
-    breadcrumbLabel: 'breadcrumbs.project.summary',
+    breadcrumbLabel: "breadcrumbs.project.summary",
   },
   {
     path: "/home/project/:id/dataset",
@@ -236,7 +227,7 @@ export const homeRoutes = [
     title: "datasets.title",
     pid: 25,
     id: 32,
-    breadcrumbLabel: 'breadcrumbs.datasets',
+    breadcrumbLabel: "breadcrumbs.datasets",
   },
   {
     path: "/home/project/:id/model",
@@ -245,7 +236,7 @@ export const homeRoutes = [
     title: "models.title",
     pid: 25,
     id: 33,
-    breadcrumbLabel: 'breadcrumbs.models',
+    breadcrumbLabel: "breadcrumbs.models",
   },
   {
     path: "/home/project/:id/diagnose",
@@ -254,7 +245,7 @@ export const homeRoutes = [
     title: "model.diagnose.title",
     pid: 25,
     id: 34,
-    breadcrumbLabel: 'breadcrumbs.model.diagnose',
+    breadcrumbLabel: "breadcrumbs.model.diagnose",
   },
   {
     path: "/home/project/:id/add",
@@ -263,7 +254,7 @@ export const homeRoutes = [
     title: "project.settings.title",
     pid: 25,
     id: 26,
-    breadcrumbLabel: 'breadcrumbs.project.edit',
+    breadcrumbLabel: "breadcrumbs.project.edit",
   },
   {
     path: "/home/project/:id/iterations/settings",
@@ -272,7 +263,7 @@ export const homeRoutes = [
     title: "project.iteration.add.title",
     pid: 25,
     id: 35,
-    breadcrumbLabel: 'project.iteration.settings.title',
+    breadcrumbLabel: "project.iteration.settings.title",
   },
   {
     path: "/home/project/add",
@@ -281,7 +272,7 @@ export const homeRoutes = [
     title: "project.add.title",
     pid: 24,
     id: 29,
-    breadcrumbLabel: 'breadcrumbs.project.add',
+    breadcrumbLabel: "breadcrumbs.project.add",
   },
   {
     path: "/home/project/:id/hidden",
@@ -290,7 +281,7 @@ export const homeRoutes = [
     title: "project.hidden.title",
     pid: 25,
     id: 30,
-    breadcrumbLabel: 'breadcrumbs.project.hidden',
+    breadcrumbLabel: "breadcrumbs.project.hidden",
   },
   {
     path: "/home/project/:id/iterations",
@@ -299,7 +290,7 @@ export const homeRoutes = [
     title: "project.iterations.title",
     pid: 25,
     id: 27,
-    breadcrumbLabel: 'breadcrumbs.project.iterations',
+    breadcrumbLabel: "breadcrumbs.project.iterations",
   },
   {
     path: "/home/project/:id/initmodel",
@@ -308,7 +299,7 @@ export const homeRoutes = [
     title: "project.iteration.initmodel",
     pid: 25,
     id: 28,
-    breadcrumbLabel: 'breadcrumbs.project.initmodel',
+    breadcrumbLabel: "breadcrumbs.project.initmodel",
   },
   {
     path: "/home/algo/:module?",
@@ -317,7 +308,7 @@ export const homeRoutes = [
     title: "algo.title",
     pid: 0,
     id: 39,
-    breadcrumbLabel: 'algo.title',
+    breadcrumbLabel: "algo.title",
   },
 ]
 
@@ -326,7 +317,7 @@ const Routes = [
     path: "/home",
     component: "@/layouts/index",
     routes: homeRoutes.map(({ path, name, component, title, redirect }) => {
-      const route: Route = { path, name, title, }
+      const route: Route = { path, name, title }
       if (component) {
         route.component = component
       }

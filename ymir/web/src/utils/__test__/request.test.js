@@ -1,13 +1,13 @@
-import { history, getDvaApp } from "umi"
-import { message } from "antd"
+import { history, getDvaApp } from 'umi'
+import { message } from 'antd'
 
 const token = 'itistokenstring'
 
-jest.mock("umi", () => {
+jest.mock('umi', () => {
   const dvaApp = {
     _store: {
       dispatch: jest.fn(),
-    }
+    },
   }
   return {
     history: {
@@ -15,7 +15,7 @@ jest.mock("umi", () => {
       replace: jest.fn(),
       location: {
         pathname: 'testpathname',
-      }
+      },
     },
     getDvaApp: jest.fn(() => dvaApp),
   }
@@ -29,27 +29,26 @@ jest.mock('@/utils/storage', () => {
 })
 
 jest.mock('@/utils/t', () => {
-  return jest.fn(msg => msg)
+  return jest.fn((msg) => msg)
 })
 
-const err = "it is a test error message"
+const err = 'it is a test error message'
 
-describe("utils: request", () => {
+describe('utils: request', () => {
   let consoleSpy = {}
   let msgSpy = {}
 
   beforeEach(() => {
     // process.env.APIURL = 'http://192.168.13.107:8088/api/v1/'
-    process.env.APIURL = "https://www.baidu.com/"
+    process.env.APIURL = 'https://www.baidu.com/'
     process.env.NODE_ENV = ''
-    consoleSpy = jest.spyOn(console, "error").mockImplementation(() => { })
-    msgSpy = jest.spyOn(message, "error").mockImplementation(msg => msg)
+    consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {})
+    msgSpy = jest.spyOn(message, 'error').mockImplementation((msg) => msg)
   })
 
-  it("set the right base url", () => {
+  it('set the right base url', () => {
     jest.isolateModules(() => {
-
-      const request = require("../request").default
+      const request = require('../request').default
 
       expect(request.defaults.baseURL).toBe(process.env.APIURL)
     })
@@ -73,9 +72,9 @@ describe("utils: request", () => {
       expect(devReq.defaults.baseURL).toBe(expected)
     })
   })
-  it("a request interceptor to the request", () => {
-    const request = require("../request").default
-    const config = { headers: { "Content-Type": "text/plain" } }
+  it('a request interceptor to the request', () => {
+    const request = require('../request').default
+    const config = { headers: { 'Content-Type': 'text/plain' } }
     const defaultConfig = { headers: {} }
     const reqHandler = request.interceptors.request.handlers[0]
 
@@ -84,23 +83,17 @@ describe("utils: request", () => {
     const iconfig = reqHandler.fulfilled(config)
 
     // request resolve
-    expect(defConfig.headers).toHaveProperty(
-      "Authorization",
-      expect.stringContaining(token)
-    )
-    expect(iconfig.headers).toHaveProperty(
-      "Authorization",
-      expect.stringContaining(token)
-    )
+    expect(defConfig.headers).toHaveProperty('Authorization', expect.stringContaining(token))
+    expect(iconfig.headers).toHaveProperty('Authorization', expect.stringContaining(token))
 
     // request reject
     const errRes = reqHandler.rejected(err)
     expect(errRes).toBe(err)
   })
 
-  it("a response interceptor to the request", () => {
-    const request = require("../request").default
-    const normal = (code = 0, result = null) => ({ status: 200, data: { code, result, } })
+  it('a response interceptor to the request', () => {
+    const request = require('../request').default
+    const normal = (code = 0, result = null) => ({ status: 200, data: { code, result } })
     const error = (status, data = null) => ({ request: { status }, response: { data } })
 
     const res = normal(0, { access_token: token })
@@ -126,7 +119,7 @@ describe("utils: request", () => {
     expect(msgSpy).toHaveBeenCalled()
     expect(getDvaApp).toHaveBeenCalled()
     expect(getDvaApp()._store.dispatch).toHaveBeenCalled()
-    expect(res110104Result).toBeUndefined()
+    expect(res110104Result).toEqual(res110104.data)
 
     // 200 -> 10001
     const res10001Result = reqHandler.fulfilled(res10001)

@@ -1,7 +1,6 @@
 
 
 
-import { BackendData } from "@/interface/common"
 export const HIDDENMODULES = {
   ITERATIONSWITCH: true,
   OPENPAI: true,
@@ -35,15 +34,15 @@ export const OPENPAI_MAX_GPU_COUNT = 8
 type Result = {
   [key: string]: any,
 }
-export function updateResultState(result: Result, tasks: BackendData) {
-  const task = tasks[result?.task?.hash]
+export function updateResultState(result: YModels.Result, tasks: YModels.BackendData) {
+  const task = result?.task?.hash ? tasks[result.task.hash] : null
   if (!result || !task) {
     return result
   }
   return updateResultByTask(result, task)
 }
 
-export function updateResultByTask(result: Result, task: BackendData) {
+export function updateResultByTask(result: Result, task: YModels.BackendData) {
   if (!result || !task) {
     return
   }
