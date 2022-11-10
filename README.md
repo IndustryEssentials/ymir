@@ -31,10 +31,11 @@
   <img src="https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/for_training.png" width="200"/>
   <div>&nbsp;</div>
 
+
 [📘Usage Instruction](https://github.com/IndustryEssentials/ymir/wiki/Operating-Instructions) |
 [🛠️Installation](README.md#2-installation) |
-[🚀Projects](https://github.com/IndustryEssentials/ymir/projects) | 
-[🤔Issues Report](https://github.com/IndustryEssentials/ymir/issues/new/choose) | 
+[🚀Projects](https://github.com/IndustryEssentials/ymir/projects) |
+[🤔Issues Report](https://github.com/IndustryEssentials/ymir/issues/new/choose) |
 [📰Lisence](https://github.com/IndustryEssentials/ymir/blob/master/LICENSE)
 
 </div>&nbsp;</div>
@@ -42,7 +43,7 @@
 <div align="center">
   <img src="https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/wechat_code.jpg" width="180"/>
   <img src="https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/contact.jpg" width="400"/>
-  
+
   📫 Feedback on usage issues: contact.viesc@gmail.com / Professional consulting for server equipment: tensor.station@gmail.com
 <div>&nbsp;</div>&nbsp;</div>
 
@@ -77,18 +78,18 @@ Docker
 - Support [mmdetection](https://github.com/open-mmlab/mmdetection)
 - Support [yolov7](https://github.com/wongkinyiu/yolov7)
 - Support [detectron2](https://github.com/facebookresearch/detectron2)
-- Support [An Extendable, Efficient and Effective Transformer-based Object Detector](https://github.com/naver-ai/vidt)
+- Support [nanodet](https://github.com/RangiLyu/nanodet)
+- Support [vidt: An Extendable, Efficient and Effective Transformer-based Object Detector](https://github.com/naver-ai/vidt)
 - Support [ymir image testing tool library](https://github.com/modelai/ymir-executor-verifier)
 - Support [demo sample image creation documentation](https://github.com/modelai/ymir-executor-fork/tree/ymir-dev/det-demo-tmi)
-- Support [ymir mirror development extension library](https://github.com/modelai/ymir-executor-sdk)
+- Support [ymir image development extension library](https://github.com/modelai/ymir-executor-sdk)
 
-View more [ymir-executor-fork](https://github.com/modelai/ymir-executor-fork) .
+View more [ymir-executor-fork](https://github.com/modelai/ymir-executor-fork)
 
 Within the public dockerimage
-- Update yolov5 training image: youdaoyzbx/ymir-executor:ymir1.3.0-yolov5-cu111-tmi
-- Update the mmdetection training image: youdaoyzbx/ymir-executor:ymir1.3.0-mmdet-cu111-tmi
-- Update the yolov5 training image to support rv1126 chip deployment: youdaoyzbx/ymir-executor:ymir1.3.0-yolov5-cu111-modelstore
-- Update the training image to support yolov5-v6.2: youdaoyzbx/ymir-executor:ymir1.3.0-yolov5-v6.2-cu111-tmi
+- Update yolov5 training image: youdaoyzbx/ymir-executor:ymir2.0.0-yolov5-cu111-tmi
+- Update mmdetection training image: youdaoyzbx/ymir-executor:ymir2.0.0-mmdet-cu111-tmi
+- Update yolov5 image with rv1126 chip deployment support: youdaoyzbx/ymir-executor:ymir2.0.0-yolov5-cu111-tmid
 
 More code updates [ymir-dev](https://github.com/modelai/ymir-executor-fork/tree/ymir-dev).
 
@@ -137,7 +138,7 @@ As a streamlined model development product, YMIR(You Mine In Recursion) focuses 
 <div align="center">
   <img src="https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/processing.png" width="1500"/>
   <div>&nbsp;</div>&nbsp;</div>
-  
+
 AI commercialization is currently reaching a stage of maturity in terms of computing hardwares,  algorithms, etc. The adoption of AI often encounter challenges such as a lack of skilled developers, high development costs and long iteration cycles.
 
 As a platform, YMIR provides an end-to-end AI development system. This platform reduces costs for companies using artificial intelligence and accelerates the adoption of artificial intelligence. YMIR provides ML developers with one-stop services for data processing, model training, and other steps required in the AI development cycle.
@@ -415,7 +416,7 @@ Also check out [MSFT Encoding Style](https://github.com/Microsoft/Recommenders/w
 [Check this document](https://github.com/IndustryEssentials/ymir/blob/dev/dev_docs/ymir-cmd-container.md) for details.
 
 # 6. Design concept
- 
+
 We use the concept of code version control in Git to manage our data and models, use the concept of branches to create new projects so that different tasks on the same set of images can run in parallel. The additions, retrievals, updates, and deletions of datasets and basic operations are created by commits to branches. Logically, each commit stores an updated version of the dataset or new model, as well as the metadata of the operation that led to this change. Finally, only the data changes are merged into the main branch. This branch conceptually aggregates all the data annotated by many projects on the platform. Please see [Life of a dataset](https://github.com/IndustryEssentials/ymir/wiki/Life-of-a-dataset) for specific design concepts.
 
 # 7. MISC
