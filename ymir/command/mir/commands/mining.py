@@ -35,6 +35,7 @@ class CmdMining(base.BaseCommand):
                                        src_revs=self.args.src_revs,
                                        dst_rev=self.args.dst_rev,
                                        mir_root=self.args.mir_root,
+                                       label_storage_file=self.args.label_storage_file,
                                        model_hash_stage=self.args.model_hash_stage,
                                        model_location=self.args.model_location,
                                        media_location=self.args.media_location,
@@ -52,6 +53,7 @@ class CmdMining(base.BaseCommand):
                       src_revs: str,
                       dst_rev: str,
                       mir_root: str,
+                      label_storage_file: str,
                       model_hash_stage: str,
                       media_location: str,
                       model_location: str,
@@ -168,7 +170,7 @@ class CmdMining(base.BaseCommand):
         return_msg = ''
         try:
             return_code = infer.CmdInfer.run_with_args(work_dir=work_dir,
-                                                       mir_root=mir_root,
+                                                       label_storage_file=label_storage_file,
                                                        media_path=work_asset_path,
                                                        model_storage=model_storage,
                                                        index_file=work_index_file,
@@ -196,6 +198,7 @@ class CmdMining(base.BaseCommand):
             raise MirContainerError(error_message='mining container error occured', task=task)
 
         _process_results(mir_root=mir_root,
+                         label_storage_file=label_storage_file,
                          export_out=work_out_path,
                          dst_typ_rev_tid=dst_typ_rev_tid,
                          src_typ_rev_tid=src_typ_rev_tid,
@@ -209,7 +212,7 @@ class CmdMining(base.BaseCommand):
 
 
 # protected: post process
-def _process_results(mir_root: str, export_out: str, dst_typ_rev_tid: revs_parser.TypRevTid,
+def _process_results(mir_root: str, label_storage_file: str, export_out: str, dst_typ_rev_tid: revs_parser.TypRevTid,
                      src_typ_rev_tid: revs_parser.TypRevTid, topk: Optional[int], add_prediction: bool,
                      model_storage: models.ModelStorage, task: mirpb.Task) -> int:
     # step 1: build topk results:
@@ -231,7 +234,7 @@ def _process_results(mir_root: str, export_out: str, dst_typ_rev_tid: revs_parse
                      if topk is not None else set(mir_metadatas.attributes.keys()))
 
     infer_result_file_path = os.path.join(export_out, 'infer-result.json')
-    cls_id_mgr = class_ids.load_or_create_userlabels(mir_root=mir_root)
+    cls_id_mgr = class_ids.load_or_create_userlabels(label_storage_file=label_storage_file)
     asset_id_to_annotations = (_get_infer_annotations(
         file_path=infer_result_file_path, asset_ids_set=asset_ids_set, cls_id_mgr=cls_id_mgr) if add_prediction else {})
 

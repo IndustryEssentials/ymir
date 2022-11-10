@@ -8,6 +8,7 @@ from google.protobuf import json_format
 from mir.commands import export
 from mir.protos import mir_command_pb2 as mirpb
 from mir.tools import mir_storage_ops, mir_storage
+from mir.tools.class_ids import ids_file_path
 from mir.tools.code import MirCode
 from mir.tools.mir_storage import sha1sum_for_file
 from tests import utils as test_utils
@@ -205,6 +206,7 @@ class TestCmdExport(unittest.TestCase):
         # normal case: voc:raw
         fake_args = type('', (), {})()
         fake_args.mir_root = self._mir_root
+        fake_args.label_storage_file = ids_file_path(self._mir_root)
         fake_args.asset_dir = self._dest_root
         fake_args.pred_dir = self._dest_root
         fake_args.gt_dir = self._gt_root
@@ -221,6 +223,7 @@ class TestCmdExport(unittest.TestCase):
         # abnormal case: no asset_dir, pred_dir, media_location
         fake_args = type('', (), {})()
         fake_args.mir_root = self._mir_root
+        fake_args.label_storage_file = ids_file_path(self._mir_root)
         fake_args.asset_dir = ''
         fake_args.pred_dir = ''
         fake_args.gt_dir = ''

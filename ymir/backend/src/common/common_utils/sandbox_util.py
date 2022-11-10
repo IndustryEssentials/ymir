@@ -90,17 +90,3 @@ def check_sandbox(sandbox_root: str) -> None:
         if not os.path.isfile(user_labels_path):
             raise SandboxError(error_code=UpdaterErrorCode.INVALID_USER_LABEL_FILE,
                                error_message=f"Invalid user labels: {user_labels_path} is not a file")
-
-        user_labels_inode = os.stat(user_labels_path).st_ino
-        for repo_id in repo_ids:
-            repo_labels_path = os.path.join(sandbox_root, user_id, repo_id, '.mir', 'labels.yaml')
-            if os.path.islink(repo_labels_path):
-                if os.path.realpath(repo_labels_path) != user_labels_path:
-                    raise SandboxError(
-                        error_code=UpdaterErrorCode.INVALID_USER_LABEL_FILE,
-                        error_message=f"Invalid user labels: {repo_labels_path} not symlinked to user labels")
-            else:
-                if os.stat(repo_labels_path).st_ino != user_labels_inode:
-                    raise SandboxError(
-                        error_code=UpdaterErrorCode.INVALID_USER_LABEL_FILE,
-                        error_message=f"Invalid user labels: {user_labels_path} not hardlinked to user labels")

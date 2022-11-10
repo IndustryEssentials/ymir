@@ -12,10 +12,7 @@ from app.utils.ymir_controller import ControllerClient
 router = APIRouter()
 
 
-@router.get(
-    "/",
-    response_model=schemas.SysInfoOut,
-)
+@router.get("/", response_model=schemas.SysInfoOut)
 def get_sys_info(
     *,
     current_user: models.User = Depends(deps.get_current_active_user),

@@ -9,6 +9,7 @@ from requests.exceptions import ConnectionError, HTTPError, Timeout
 import sentry_sdk
 from apscheduler.schedulers.blocking import BlockingScheduler
 
+from common_utils.labels import ids_file_name
 from common_utils.percent_log_util import LogState, PercentLogHandler
 from controller.config import label_task as label_task_config
 from controller.invoker.invoker_task_import_dataset import TaskImportDatasetInvoker
@@ -22,6 +23,7 @@ def trigger_mir_import(repo_root: str, task_id: str, index_file: str, des_annota
                        import_work_dir: str) -> None:
     # trigger mir import
     TaskImportDatasetInvoker.importing_cmd(repo_root=repo_root,
+                                           label_storage_file=os.path.join(os.path.dirname(repo_root), ids_file_name()),
                                            task_id=task_id,
                                            index_file=index_file,
                                            pred_dir='',

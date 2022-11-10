@@ -121,12 +121,15 @@ class TestInvokerCMDInference(unittest.TestCase):
             work_dir=working_dir,
         )
 
+        label_storage_file = test_utils.user_label_file(sandbox_root=self._sandbox_root, user_id=self._user_name)
+
         os.makedirs(working_dir, exist_ok=True)
         config_file = os.path.join(working_dir, "inference_config.yaml")
 
         index_file = os.path.join(working_dir, "index.txt")
 
-        cmd = (f"mir infer --root {self._mir_repo_root} -w {working_dir} --model-location {self._storage_root} "
+        cmd = (f"mir infer --root {self._mir_repo_root} --user-label-file {label_storage_file} "
+               f"-w {working_dir} --model-location {self._storage_root} "
                f"--index-file {index_file} --model-hash {model_hash}@{model_stage} "
                f"--task-config-file {config_file} --executor {inference_image}")
 

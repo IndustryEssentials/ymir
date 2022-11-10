@@ -9,6 +9,7 @@ from google.protobuf import json_format
 from mir.commands import filter as cmd_filter
 from mir.protos import mir_command_pb2 as mirpb
 from mir.tools import mir_storage_ops
+from mir.tools.class_ids import ids_file_path
 from mir.tools.code import MirCode
 from mir.tools.mir_storage_ops import MirStorageOps
 
@@ -209,6 +210,7 @@ class TestCmdFilter(unittest.TestCase):
                                        expected_asset_ids: Set[str]):
         fake_args = type('', (), {})()
         fake_args.mir_root = self._mir_root
+        fake_args.label_storage_file = ids_file_path(self._mir_root)
         fake_args.in_cis = in_cis
         fake_args.ex_cis = ex_cis
         fake_args.in_cks = in_cks
@@ -235,6 +237,7 @@ class TestCmdFilter(unittest.TestCase):
     def __test_multiprocess(self, dst_branch: str, child_conn):
         fake_args = type('', (), {})()
         fake_args.mir_root = self._mir_root
+        fake_args.label_storage_file = ids_file_path(self._mir_root)
         fake_args.in_cis = 'cat'
         fake_args.ex_cis = None
         fake_args.in_cks = None
