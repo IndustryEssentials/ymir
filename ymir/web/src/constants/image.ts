@@ -1,5 +1,3 @@
-import { BackendData } from "@/interface/common"
-import { Image, DockerImageConfig } from '@/interface/image'
 import { format } from "@/utils/date"
 
 export enum TYPES {
@@ -47,8 +45,8 @@ export const getImageStateLabel = (state: STATES | undefined) => {
   return labels[state]
 }
 
-export function transferImage(data: BackendData): Image {
-  const configs: DockerImageConfig[] = data.configs || []
+export function transferImage(data: YModels.BackendData): YModels.Image {
+  const configs: YModels.DockerImageConfig[] = data.configs || []
   return {
     id: data.id,
     name: data.name,

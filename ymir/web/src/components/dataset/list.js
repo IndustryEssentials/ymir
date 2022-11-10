@@ -11,8 +11,8 @@ import { ResultStates } from '@/constants/common'
 import { canHide, validDataset } from '@/constants/dataset'
 
 import CheckProjectDirty from "@/components/common/CheckProjectDirty"
-import StateTag from "@/components/task/StateTag"
-import EditBox from "@/components/form/editBox"
+import EditNameBox from "@/components/form/editNameBox"
+import EditDescBox from "@/components/form/editDescBox"
 import Terminate from "@/components/task/terminate"
 import Hide from "../common/hide"
 import RenderProgress from "@/components/common/Progress"

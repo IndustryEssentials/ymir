@@ -1,137 +1,147 @@
 import { useEffect, useState } from 'react'
 import { useSelector } from 'umi'
-import { Space } from 'antd'
 
-import { Stages, StageList } from '@/constants/iteration'
-import useFetch from '@/hooks/useFetch'
+import { STEP } from '@/constants/iteration'
 
-import Fusion from "@/components/task/fusion"
-import Mining from "@/components/task/mining"
-import Label from "@/components/task/label"
-import Merge from "@/components/task/merge"
-import Training from "@/components/task/training"
+import Fusion from '@/components/task/fusion'
+import Mining from '@/components/task/mining'
+import Label from '@/components/task/label'
+import Merge from '@/components/task/merge'
+import Training from '@/components/task/training'
 import Buttons from './buttons'
 import NextIteration from './nextIteration'
+import FinishStep from './FinishStep'
 
 const Action = (Comp, props = {}) => <Comp {...props} />
 
-const StepAction = ({ stages, iteration, project, prevIteration, callback = () => {} }) => {
-  const [updated, updateIteration] = useFetch('iteration/updateIteration')
-  const actionPanelExpand = useSelector(({iteration}) => iteration.actionPanelExpand)
-  const [currentContent, setCurrentContent] = useState(null)
+const StepAction = ({ steps, selected, iteration, callback = () => {} }) => {
+  const actionPanelExpand = useSelector(({ iteration }) => iteration.actionPanelExpand)
+  const [currentStep, setCurrentStep] = useState(null)
+  const [selectedStep, setSelectedStep] = useState(null)
   const [CurrentAction, setCurrentAction] = useState(null)
-  const result = useSelector(({ dataset, model }) => {
-    const isModel = currentContent?.value === Stages.training
-    const res = isModel ? model.model : dataset.dataset
-    return res[currentContent?.result] || {}
+  const result = useSelector((state) => {
+    const res = currentStep?.resultType ? state[currentStep.resultType][currentStep.resultType] : {}
+    return res[currentStep?.resultId] || {}
   })
   const [state, setState] = useState(-1)
 
   const comps = {
-    [Stages.prepareMining]: {
-      comp: Fusion, query: {
-        did: project.miningSet?.id,
-        strategy: project.miningStrategy,
-        chunk: project.chunkSize || undefined,
-      },
+    [STEP.prepareMining]: {
+      comp: Fusion,
+      query: (settings = {}) => ({
+        did: settings.mining_dataset_id,
+        strategy: settings.mining_strategy,
+        chunk: settings.sampling_count,
+      }),
     },
-    [Stages.mining]: {
-      comp: Mining, query: {
-        did: iteration.miningSet,
-        mid: prevIteration.id ? [prevIteration.model, null] : project.modelStage,
-      },
+    [STEP.mining]: {
+      comp: Mining,
+      query: (settings = {}) => ({
+        did: settings.dataset_id,
+        mid: [settings.model_id, null],
+        image: settings.docker_image_id,
+        generate_annotations: settings.generate_annotations,
+        config: settings.docker_image_config ? JSON.parse(settings.docker_image_config) : undefined,
+        topK: settings.top_k,
+      }),
     },
-    [Stages.labelling]: {
-      comp: Label, query: {
-        did: iteration.miningResult,
-      },
+    [STEP.labelling]: {
+      comp: Label,
+      query: (settings = {}) => ({
+        did: settings.dataset_id,
+        type: settings.annotation_type,
+      }),
     },
-    [Stages.merging]: {
-      comp: Merge, query: {
-        did: prevIteration.trainUpdateSet || project.trainSetVersion,
-        mid: iteration.labelSet ? [iteration.labelSet] : undefined,
-      },
+    [STEP.merging]: {
+      comp: Merge,
+      query: (settings = {}) => ({
+        did: settings.dataset_id,
+        mid: settings.training_dataset_id ? [settings.training_dataset_id] : undefined,
+      }),
     },
-    [Stages.training]: {
-      comp: Training, query: {
-        did: iteration.trainUpdateSet,
-        test: iteration.testSet,
-      },
+    [STEP.training]: {
+      comp: Training,
+      query: (settings = {}) => ({
+        did: settings.dataset_id,
+        image: settings.docker_image_id,
+        config: settings.docker_image_config ? JSON.parse(settings.docker_image_config) : undefined,
+        test: settings.validation_dataset_id,
+      }),
     },
-    [Stages.next]: {
-      comp: NextIteration, query: {}
+    [STEP.next]: {
+      comp: NextIteration,
     },
   }
   const fixedQuery = {
     iterationId: iteration.id,
-    currentStage: iteration.currentStage,
-    from: 'iteration'
+    from: 'iteration',
   }
 
   useEffect(() => {
-    if (currentContent) {
-      const bottom = <Buttons step={currentContent} state={state} next={next} skip={skip} react={react} />
+    if (currentStep) {
+      const bottom = <Buttons step={currentStep} state={state} next={next} skip={skip} react={react} />
       const props = {
         bottom,
-        step: currentContent,
+        step: currentStep,
         hidden: state >= 0,
-        query: { ...fixedQuery, ...currentContent.query },
+        query: { ...fixedQuery, ...(currentStep.query || {}), ...(currentStep.preSetting || {}) },
         ok,
       }
-      setCurrentAction(Action(currentContent.comp, props))
+      setCurrentAction(Action(currentStep.comp, props))
     }
-  }, [currentContent, state])
+  }, [currentStep, state])
 
   useEffect(() => {
-    if (currentContent) {
-      const state = result?.id ? result.state : currentContent.state
-      setState(state)
+    if (currentStep) {
+      const state = result?.id ? result.state : currentStep.state
+      setState(Number.isInteger(state) ? state : -1)
     }
-  }, [result?.state, currentContent?.state])
+  }, [result?.state, currentStep?.state])
 
   useEffect(() => {
-    if (!stages.length) {
+    if (!iteration || !steps.length) {
       return
     }
-    const targetStage = stages.find(({ value }) => value === iteration.currentStage)
-    setCurrentContent({
-      ...targetStage,
-      ...comps[iteration.currentStage],
+    const name = iteration?.currentStep?.name || STEP.next
+    const targetStep = getStep(name, steps)
+    const targetComps = comps[name]
+    const query = !iteration.end ? targetComps.query(targetStep.preSetting) : {}
+    setCurrentStep({
+      ...targetStep,
+      ...targetComps,
+      query,
     })
-  }, [iteration?.currentStage, stages])
+  }, [steps, iteration])
 
   useEffect(() => {
-    if (updated) {
-      message.info(t('task.fusion.create.success.msg'))
-      clearCache()
-      history.replace(`/home/project/${pid}/iterations`)
+    if (!selected) {
+      return
     }
-  }, [updated])
+    setSelectedStep(getStep(selected, steps))
+  }, [steps, selected])
+
+  useEffect(() => {
+    if (!selected && currentStep?.resultId) {
+      setSelectedStep(currentStep)
+    }
+  }, [currentStep, selected])
 
   const react = () => {
     setState(-2)
   }
 
-  const next = () => {
-    // next
+  const next = () =>
     callback({
-      type: 'update',
-      data: {
-        currentStage: currentContent.next.value,
-      },
+      type: 'next',
     })
-  }
 
-  const skip = () => {
-    // skip
+  const skip = () =>
     callback({
       type: 'skip',
-      data: currentContent.next,
     })
-  }
 
   const ok = (result) => {
-    if (!currentContent.next) {
+    if (currentStep.end) {
       // next iteration
       callback({
         type: 'create',
@@ -139,16 +149,31 @@ const StepAction = ({ stages, iteration, project, prevIteration, callback = () =
     } else {
       // update current stage
       callback({
-        type: 'update',
+        type: 'bind',
         data: {
-          currentStage: currentContent.value,
-          [currentContent.output]: result.id,
-        }
+          taskId: result.id,
+        },
       })
     }
   }
 
-  return <div hidden={!actionPanelExpand}>{CurrentAction}</div>
+  function getStep(name, steps = []) {
+    const step = steps.find(({ value }) => value === (name || STEP.next))
+    return step
+  }
+
+  function showFinishStep() {
+    const isCurrent = !selected || currentStep?.value === selected
+    const hasResult = !!selectedStep?.resultId
+    return isCurrent ? state >= 0 : hasResult
+  }
+
+  return (
+    <div hidden={!actionPanelExpand}>
+      {showFinishStep() ? <FinishStep step={selectedStep} /> : null}
+      {selected && selected !== currentStep?.value ? null : CurrentAction}
+    </div>
+  )
 }
 
 export default StepAction
