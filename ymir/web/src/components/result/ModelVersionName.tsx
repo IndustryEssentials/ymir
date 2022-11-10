@@ -1,13 +1,24 @@
-import React from "react"
-import { getRecommendStage, getStage } from "@/constants/model"
-import { ModelVersion } from "@/interface/model"
-import VersionName from "./VersionName"
+import React, { useEffect, useState } from 'react'
+import { getRecommendStage, getStage } from '@/constants/model'
+import VersionName from './VersionName'
+import { useSelector } from 'umi'
+import useFetch from '@/hooks/useFetch'
 
-type Props = { result: ModelVersion, stageId?: number }
-const ModelVersionName: React.FC<Props> = ({ result, stageId }) => {
-    const stage = stageId ? getStage(result, stageId) : getRecommendStage(result)
-    const extra = stage?.name
-    return <VersionName result={result} extra={extra} />
+type Props = { id?: number; result?: YModels.Model; stageId?: number }
+const ModelVersionName: React.FC<Props> = ({ id, result, stageId }) => {
+  const cache = useSelector(({ model }: YStates.Root) => {
+    return id && model.model[id]
+  })
+  const [_, getModel] = useFetch('model/getModel')
+  const [model, setModel] = useState<YModels.Model>()
+
+  useEffect(() => id && getModel({ id }), [id])
+  useEffect(() => {
+    setModel(cache || result)
+  }, [cache, result])
+
+  const extra = model ? (stageId ? getStage(model, stageId) : getRecommendStage(model))?.name : ''
+  return <VersionName result={model} extra={extra} />
 }
 
 export default ModelVersionName

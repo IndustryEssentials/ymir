@@ -13,11 +13,10 @@
     "postinstall": "umi generate tmp",
     "prettier": "prettier --write '**/*.{js,jsx,tsx,ts,less,md,json}'",
     "test": "umi-test",
-    "test:coverage": "umi-test --coverage"
-  },
-  "prettier": {
-    "semi": false,
-    "tabWidth": 2
+    "test:coverage": "umi-test --coverage",
+    "lint-staged": "lint-staged",
+    "eslint": "eslint src/**/*",
+    "prepare": "cd ../.. && husky install && npx husky add .husky/pre-commit 'cd ymir/web && npx lint-staged'"
   },
   "jest": {
     "moduleNameMapper": {
@@ -45,10 +44,10 @@
   },
   "lint-staged": {
     "*.{js,jsx,less,md,json}": [
-      "prettier --write"
+      "prettier --tab-width 2 --write"
     ],
     "*.ts?(x)": [
-      "prettier --parser=typescript --write"
+      "prettier --tab-width 2  --parser=typescript --write"
     ]
   },
   "dependencies": {
@@ -77,13 +76,18 @@
     "@types/human-number": "^1.0.0",
     "@types/react": "^17.0.38",
     "@types/react-dom": "^17.0.11",
+    "@typescript-eslint/eslint-plugin": "^5.42.0",
+    "@typescript-eslint/parser": "^5.42.0",
     "cross-env": "^7.0.3",
-    "lint-staged": "^12.3.1",
+    "eslint": "^8.26.0",
+    "eslint-plugin-react": "^7.31.10",
+    "husky": "^8.0.1",
+    "lint-staged": "^12.5.0",
     "mockjs": "^1.1.0",
     "prettier": "^2.5.1",
     "react-test-renderer": "^17.0.2",
     "redux-saga": "^1.1.3",
-    "typescript": "^4.1.2",
+    "typescript": "^4.8.4",
     "yorkie": "^2.0.0"
   }
 }

@@ -1,7 +1,3 @@
-import { Dataset } from "@/interface/dataset"
-import { ModelVersion } from "@/interface/model"
-import { ReactElement } from "react"
-
 declare module '*.css'
 declare module '*.less'
 declare module '*.png'
@@ -11,33 +7,4 @@ declare module '*.svg' {
   ): React.ReactElement;
   const url: string;
   export default url;
-}
-// components table actions
-type Action = {
-  key: string, 
-  label: string, 
-  onclick?: Function,
-  icon?: ReactElement, 
-  link?: string, 
-  target?: string,
-  disabled?: boolean,
-  hidden?: Function,
-}
-
-type ComponentsTableActionsProps = {
-  actions: Action[],
-  showCount?: number,
-}
-
-// dva models type
-type ResultCache<T> = { [key: string | number]: T }
-type DatasetState = {
-  dataset: {
-    dataset: ResultCache<Dataset>
-  }
-}
-type ModelState = {
-  model: {
-    model: ResultCache<ModelVersion>,
-  }
 }

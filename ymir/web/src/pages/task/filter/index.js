@@ -4,13 +4,13 @@ import { useHistory, useLocation, useParams } from "umi"
 
 import { formLayout } from "@/config/antd"
 import t from "@/utils/t"
-import useFetch from '@/hooks/useFetch'
+import useFetch from "@/hooks/useFetch"
 
 import Breadcrumbs from "@/components/common/breadcrumb"
 import RecommendKeywords from "@/components/common/recommendKeywords"
 import Desc from "@/components/form/desc"
 import KeywordSelect from "@/components/form/keywordSelect"
-import Dataset from '@/components/form/option/Dataset'
+import Dataset from "@/components/form/option/Dataset"
 
 import commonStyles from "../common.less"
 import s from "./index.less"
@@ -21,11 +21,11 @@ function Filter() {
   const history = useHistory()
   const [form] = Form.useForm()
   const [keywords, setKeywords] = useState([])
-  const [dataset, getDataset] = useFetch('dataset/getDataset', {})
-  const [filterResult, filter] = useFetch('task/filter')
-  const [_, clearCache] = useFetch('dataset/clearCache')
-  const includes = Form.useWatch('includes', form)
-  const excludes = Form.useWatch('excludes', form)
+  const [dataset, getDataset] = useFetch("dataset/getDataset", {})
+  const [filterResult, filter] = useFetch("task/filter")
+  const [_, clearCache] = useFetch("dataset/clearCache")
+  const includes = Form.useWatch("includes", form)
+  const excludes = Form.useWatch("excludes", form)
 
   useEffect(() => {
     did && getDataset({ id: did })
@@ -39,9 +39,9 @@ function Filter() {
 
   useEffect(() => {
     if (filterResult) {
-      message.info(t('task.fusion.create.success.msg'))
+      message.info(t("task.fusion.create.success.msg"))
       clearCache()
-      const group = filterResult.dataset_group_id || ''
+      const group = filterResult.result_dataset?.dataset_group_id || ""
       history.replace(`/home/project/${dataset.projectId}/dataset#${group}`)
     }
   }, [filterResult])
@@ -52,7 +52,7 @@ function Filter() {
 
   const onFinish = (values) => {
     if (!checkInputs(values)) {
-      return message.error(t('dataset.filter.validate.inputs'))
+      return message.error(t("dataset.filter.validate.inputs"))
     }
     const params = {
       ...values,
@@ -71,61 +71,94 @@ function Filter() {
     form.setFieldsValue({ includes: kws })
   }
 
-  const filterExcludes = useCallback(options => {
-    return options.filter(({ value }) => !includes || !(includes || []).includes(value))
-  }, [includes])
+  const filterExcludes = useCallback(
+    (options) => {
+      return options.filter(
+        ({ value }) => !includes || !(includes || []).includes(value)
+      )
+    },
+    [includes]
+  )
 
-  const filterIncludes = useCallback(options => {
-    return options.filter(({ value }) => !excludes || !(excludes || []).includes(value))
-  }, [excludes])
+  const filterIncludes = useCallback(
+    (options) => {
+      return options.filter(
+        ({ value }) => !excludes || !(excludes || []).includes(value)
+      )
+    },
+    [excludes]
+  )
 
   return (
     <div className={commonStyles.wrapper}>
       <Breadcrumbs />
-      <Card className={commonStyles.container} title={t('task.fusion.header.filter')}>
+      <Card
+        className={commonStyles.container}
+        title={t("task.fusion.header.filter")}
+      >
         <Form
           form={form}
-          name='fusionForm'
+          name="fusionForm"
           {...formLayout}
           onFinish={onFinish}
           onFinishFailed={onFinishFailed}
         >
-          <Form.Item label={t('task.fusion.form.dataset')}>
-          <Dataset dataset={dataset} />
+          <Form.Item label={t("task.fusion.form.dataset")}>
+            <Dataset dataset={dataset} />
           </Form.Item>
           <Form.Item
-            label={t('task.fusion.form.include.label')}
-            tooltip={t('tip.task.fusion.includelable')}
-            name='includes'
-            help={<RecommendKeywords sets={did} onSelect={selectRecommendKeywords} />}
+            label={t("task.fusion.form.include.label")}
+            tooltip={t("tip.task.fusion.includelable")}
+            name="includes"
+            help={
+              <RecommendKeywords
+                sets={did}
+                onSelect={selectRecommendKeywords}
+              />
+            }
           >
-            <KeywordSelect mode="multiple" keywords={keywords} filter={filterIncludes} placeholder={t('task.filter.includes.placeholder')} />
+            <KeywordSelect
+              mode="multiple"
+              keywords={keywords}
+              filter={filterIncludes}
+              placeholder={t("task.filter.includes.placeholder")}
+            />
           </Form.Item>
           <Form.Item
-            label={t('task.fusion.form.exclude.label')}
-            tooltip={t('tip.task.fusion.excludelable')}
-            name='excludes'
+            label={t("task.fusion.form.exclude.label")}
+            tooltip={t("tip.task.fusion.excludelable")}
+            name="excludes"
           >
-            <KeywordSelect mode="multiple" keywords={keywords} filter={filterExcludes} placeholder={t('task.filter.excludes.placeholder')} />
+            <KeywordSelect
+              mode="multiple"
+              keywords={keywords}
+              filter={filterExcludes}
+              placeholder={t("task.filter.excludes.placeholder")}
+            />
           </Form.Item>
           <Form.Item
-            label={t('task.fusion.form.sampling')}
-            tooltip={t('tip.task.fusion.sampling')}
-            name='samples'
+            label={t("task.fusion.form.sampling")}
+            tooltip={t("tip.task.fusion.sampling")}
+            name="samples"
           >
-            <InputNumber step={1} min={1} precision={0} style={{ width: '100%' }} />
+            <InputNumber
+              step={1}
+              min={1}
+              precision={0}
+              style={{ width: "100%" }}
+            />
           </Form.Item>
           <Desc form={form} />
           <Form.Item className={s.submit} wrapperCol={{ offset: 8 }}>
             <Space size={20}>
-              <Form.Item name='submitBtn' noStyle>
+              <Form.Item name="submitBtn" noStyle>
                 <Button type="primary" size="large" htmlType="submit">
-                  {t('common.confirm')}
+                  {t("common.confirm")}
                 </Button>
               </Form.Item>
-              <Form.Item name='backBtn' noStyle>
+              <Form.Item name="backBtn" noStyle>
                 <Button size="large" onClick={() => history.goBack()}>
-                  {t('task.btn.back')}
+                  {t("task.btn.back")}
                 </Button>
               </Form.Item>
             </Space>
