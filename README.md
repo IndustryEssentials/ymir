@@ -80,16 +80,16 @@ Docker
 - Support [detectron2](https://github.com/facebookresearch/detectron2)
 - Support [nanodet](https://github.com/RangiLyu/nanodet)
 - Support [vidt: An Extendable, Efficient and Effective Transformer-based Object Detector](https://github.com/naver-ai/vidt)
-- Support [ymir mirror testing tool library](https://github.com/modelai/ymir-executor-verifier)
+- Support [ymir image testing tool library](https://github.com/modelai/ymir-executor-verifier)
 - Support [demo sample image creation documentation](https://github.com/modelai/ymir-executor-fork/tree/ymir-dev/det-demo-tmi)
-- Support [ymir mirror development extension library](https://github.com/modelai/ymir-executor-sdk)
+- Support [ymir image development extension library](https://github.com/modelai/ymir-executor-sdk)
 
 View more [ymir-executor-fork](https://github.com/modelai/ymir-executor-fork)
 
 Within the public dockerimage
 - Update yolov5 training image: youdaoyzbx/ymir-executor:ymir2.0.0-yolov5-cu111-tmi
-- Update the mmdetection training image: youdaoyzbx/ymir-executor:ymir2.0.0-mmdet-cu111-tmi
-- Update the yolov5 training image to support rv1126 chip deployment: youdaoyzbx/ymir-executor:ymir2.0.0-yolov5-cu111-tmid
+- Update mmdetection training image: youdaoyzbx/ymir-executor:ymir2.0.0-mmdet-cu111-tmi
+- Update yolov5 image with rv1126 chip deployment support: youdaoyzbx/ymir-executor:ymir2.0.0-yolov5-cu111-tmid
 
 More code updates [ymir-dev](https://github.com/modelai/ymir-executor-fork/tree/ymir-dev).
 

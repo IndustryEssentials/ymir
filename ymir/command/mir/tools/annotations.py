@@ -327,7 +327,8 @@ def _import_annotation_meta(class_type_manager: class_ids.UserLabels, annotation
     except Exception:
         annotation_meta_dict = None
     if not isinstance(annotation_meta_dict, dict):
-        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_META_YAML_FILE, error_message='Invalid meta.yaml')
+        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_META_YAML_FILE,
+                              error_message='Invalid meta.yaml')
 
     # model
     if 'model' in annotation_meta_dict:
