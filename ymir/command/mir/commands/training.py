@@ -3,7 +3,7 @@ import logging
 import os
 import time
 from subprocess import CalledProcessError
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional
 from mir.version import ymir_model_salient_version, YMIR_VERSION
 
 from tensorboardX import SummaryWriter
@@ -21,32 +21,7 @@ from mir.tools.executant import prepare_executant_env, run_docker_executant
 
 
 # private: post process
-def _find_and_save_model(out_root: str, model_upload_location: str, executor_config: dict,
-                         task_context: dict) -> models.ModelStorage:
-    """
-    find and save models
-    Returns:
-        ModelStorage
-    """
-    out_model_dir = os.path.join(out_root, "models")
-    model_stages, best_stage_name, attachments = _find_model_stages_and_attachments(out_model_dir)
-    model_storage = models.ModelStorage(executor_config=executor_config,
-                                        task_context=dict(**task_context,
-                                                          mAP=model_stages[best_stage_name].mAP,
-                                                          type=mirpb.TaskType.TaskTypeTraining),
-                                        stages=model_stages,
-                                        best_stage_name=best_stage_name,
-                                        attachments=attachments,
-                                        package_version=ymir_model_salient_version(YMIR_VERSION))
-    models.pack_and_copy_models(model_storage=model_storage,
-                                model_dir_path=out_model_dir,
-                                model_location=model_upload_location)
-
-    return model_storage
-
-
-def _find_model_stages_and_attachments(
-        model_root: str) -> Tuple[Dict[str, models.ModelStageStorage], str, Dict[str, Any]]:
+def _find_model_storage(model_root: str, executor_config: dict, task_context: dict) -> models.ModelStorage:
     """
     find models in `model_root`, and returns all model stages and attachments
 
@@ -54,12 +29,11 @@ def _find_model_stages_and_attachments(
         model_root (str): model root
 
     Returns:
-        Tuple[Dict[str, models_util.ModelStageStorage], str, Dict[str, Any]]:
-            all model stages, best model stage name, attachments
+        models.ModelStorage
     """
     # model_names = []
     # model_mAP = 0.0
-    model_stages: Dict[str, models.ModelStageStorage] = {}
+    model_stages: Dict[str, models.ModelStageStorage]
     best_stage_name = ''
     attachments: Dict[str, Any] = {}
 
@@ -73,17 +47,16 @@ def _find_model_stages_and_attachments(
             model_mAP = float(yaml_obj["map"])
 
             best_stage_name = 'default_best_stage'
-            model_stages[best_stage_name] = models.ModelStageStorage(stage_name=best_stage_name,
-                                                                     files=model_names,
-                                                                     mAP=model_mAP,
-                                                                     timestamp=int(time.time()))
+            model_stages = {
+                best_stage_name:
+                models.ModelStageStorage(stage_name=best_stage_name,
+                                         files=model_names,
+                                         mAP=model_mAP,
+                                         timestamp=int(time.time()))
+            }
         elif 'model_stages' in yaml_obj:
             # new training result file: read from model stages
-            for k, v in yaml_obj['model_stages'].items():
-                model_stages[k] = models.ModelStageStorage(stage_name=k,
-                                                           files=v['files'],
-                                                           mAP=float(v['mAP']),
-                                                           timestamp=v['timestamp'])
+            model_stages = {k: models.ModelStageStorage.parse_obj(v) for k, v in yaml_obj['model_stages'].items()}
 
             best_stage_name = yaml_obj['best_stage_name']
         if 'attachments' in yaml_obj:
@@ -96,7 +69,15 @@ def _find_model_stages_and_attachments(
         raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
                               error_message='can not find model stages in result.yaml')
 
-    return (model_stages, best_stage_name, attachments)
+    return models.ModelStorage(executor_config=executor_config,
+                               task_context=dict(**task_context,
+                                                 mAP=model_stages[best_stage_name].mAP,
+                                                 type=mirpb.TaskType.TaskTypeTraining),
+                               stages=model_stages,
+                               best_stage_name=best_stage_name,
+                               attachments=attachments,
+                               evaluate_config=yaml_obj.get('evaluate_config', {}),
+                               package_version=ymir_model_salient_version(YMIR_VERSION))
 
 
 # private: pre process
@@ -346,10 +327,13 @@ class CmdTrain(base.BaseCommand):
 
         # save model
         logging.info(f"saving models:\n task_context: {task_context}")
-        model_storage = _find_and_save_model(out_root=work_dir_out,
-                                             model_upload_location=model_upload_location,
-                                             executor_config=executor_config,
-                                             task_context=task_context)
+        out_model_dir = os.path.join(work_dir_out, "models")
+        model_storage = _find_model_storage(model_root=out_model_dir,
+                                            executor_config=executor_config,
+                                            task_context=task_context)
+        models.pack_and_copy_models(model_storage=model_storage,
+                                    model_dir_path=out_model_dir,
+                                    model_location=model_upload_location)
 
         # commit task
         task = mir_storage_ops.create_task(task_type=mirpb.TaskType.TaskTypeTraining,

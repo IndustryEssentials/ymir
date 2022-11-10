@@ -2,12 +2,13 @@ import json
 import logging
 import os
 import time
-from typing import Dict, List, Tuple
+from typing import Dict, List, Optional, Tuple, Union
 
 from pydantic import BaseModel
 import yaml
 
 from ymir_exc import env
+
 
 _MAX_MODEL_STAGES_COUNT_ = 11  # 10 latest stages, 1 best stage
 
@@ -27,9 +28,10 @@ class Annotation(BaseModel):
 
 def write_model_stage(stage_name: str,
                       files: List[str],
-                      mAP: float,
+                      evaluation_result: Dict[str, Union[float, int]] = {},
                       timestamp: int = None,
-                      attachments: Dict[str, List[str]] = None) -> None:
+                      attachments: Dict[str, List[str]] = None,
+                      evaluate_config: Optional[dict] = None) -> None:
     """
     Write model stage and model attachments
 
@@ -37,8 +39,17 @@ def write_model_stage(stage_name: str,
         stage_name (str): name to this model stage
         files (List[str]): model file names for this stage
             All files should under directory: `/out/models`
-        mAP (float): mean average precision of this stage
+        evaluation_result (Dict[str, Union[float, int]]): example: `{'mAP': 0.65}`
+            evaluation result of this stage, it contains:
+                mAP (float, required): mean average precision
+                mAR (float, optional): mean average recall
+                tp (int, optional): true positive box count
+                fp (int, optional): false positive box count
+                fn (int, optional): false negative box count
         timestamp (int): timestamp (in seconds)
+        evaluate_config (dict): configurations used to evaluate this model, which contains:
+            iou_thr (float): iou threshold
+            conf_thr (float): confidence threshold
     """
     if not stage_name or not files:
         raise ValueError('empty stage_name or files')
@@ -57,17 +68,17 @@ def write_model_stage(stage_name: str,
 
     model_stages = training_result.get('model_stages', {})
 
-    model_stages[stage_name] = {
-        'stage_name': stage_name,
-        'files': files,
-        'timestamp': timestamp or int(time.time()),
-        'mAP': mAP
-    }
+    model_stages[stage_name] = dict(
+        stage_name=stage_name,
+        files=files,
+        timestamp=timestamp or int(time.time()),
+        **evaluation_result,
+    )
 
     # best stage
     sorted_model_stages = sorted(model_stages.values(), key=lambda x: (x.get('mAP', 0), x.get('timestamp', 0)))
     training_result['best_stage_name'] = sorted_model_stages[-1]['stage_name']
-    training_result['map'] = sorted_model_stages[-1]['mAP']
+    training_result['mAP'] = sorted_model_stages[-1]['mAP']
 
     # if too many stages, remove a earlest one
     if len(model_stages) > _MAX_MODEL_STAGES_COUNT_:
@@ -82,13 +93,17 @@ def write_model_stage(stage_name: str,
     # attachments
     training_result['attachments'] = attachments or {}
 
+    # evaluate config
+    if evaluate_config:
+        training_result['evaluate_config'] = evaluate_config
+
     # save all
     with open(env_config.output.training_result_file, 'w') as f:
         yaml.safe_dump(data=training_result, stream=f)
 
 
 def write_training_result(model_names: List[str], mAP: float, classAPs: Dict[str, float], **kwargs: dict) -> None:
-    write_model_stage(stage_name='default_best_stage', files=model_names, mAP=mAP)
+    write_model_stage(stage_name='default_best_stage', files=model_names, evaluation_result={'mAP': mAP})
 
 
 def write_mining_result(mining_result: List[Tuple[str, float]]) -> None:
