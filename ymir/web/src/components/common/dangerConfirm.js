@@ -1,5 +1,5 @@
 import { Modal } from "antd"
-import { TipsIcon } from "./Icons"
+import { TipsIcon } from "./icons"
 
 const { confirm } = Modal
 

@@ -5,7 +5,7 @@ import { useSelector } from 'umi'
 
 import t from '@/utils/t'
 import s from './common.less'
-import { FailIcon, SuccessIcon } from "./Icons"
+import { FailIcon, SuccessIcon } from "./icons"
 
 const CheckProjectDirty = ({ pid, initialCheck, callback = () => { }, ...props }) => {
   const effect = 'project/checkStatus'
