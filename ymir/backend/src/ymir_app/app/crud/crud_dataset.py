@@ -30,6 +30,7 @@ class CRUDDataset(CRUDBase[Dataset, DatasetCreate, DatasetUpdate]):
         limit: Optional[int] = None,
         order_by: str = "id",
         is_desc: bool = True,
+        allow_empty: bool = True,
     ) -> Tuple[List[Dataset], int]:
         # each dataset is associate with one task
         # we need related task info as well
@@ -58,6 +59,8 @@ class CRUDDataset(CRUDBase[Dataset, DatasetCreate, DatasetUpdate]):
             query = query.filter(self.model.project_id == project_id)
         if group_id is not None:
             query = query.filter(self.model.dataset_group_id == group_id)
+        if not allow_empty:
+            query = query.filter(self.model.asset_count > 0)
 
         order_by_column = getattr(self.model, order_by)
         if is_desc:
