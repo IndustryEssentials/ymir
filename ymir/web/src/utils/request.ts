@@ -1,13 +1,12 @@
-import axios from "axios"
-import storage from "@/utils/storage"
-import t from "@/utils/t"
-import { history } from "umi"
-import { getDvaApp } from "umi"
-import { message } from "antd"
+import axios from 'axios'
+import storage from '@/utils/storage'
+import t from '@/utils/t'
+import { getDvaApp } from 'umi'
+import { message } from 'antd'
 
 const getBaseURL = () => {
   const envUrl = process.env.APIURL
-  if (process.env.NODE_ENV === "development") {
+  if (process.env.NODE_ENV === 'development') {
     return envUrl
   }
   return window.baseConfig?.APIURL || envUrl
@@ -21,15 +20,15 @@ const request = axios.create({
 request.interceptors.request.use(
   (config) => {
     const headers = config.headers || {}
-    headers["Content-Type"] = headers["Content-Type"] || "application/json"
-    headers["Authorization"] = `Bearer ${storage.get("access_token")}`
+    headers['Content-Type'] = headers['Content-Type'] || 'application/json'
+    headers['Authorization'] = `Bearer ${storage.get('access_token')}`
     config.headers = headers
     return config
   },
   (err) => {
     console.error(err)
     return err
-  }
+  },
 )
 
 request.interceptors.response.use(
@@ -48,9 +47,9 @@ request.interceptors.response.use(
     if (authrized.includes(err.request.status)) {
       return logout()
     } else if (err.request.status === 504) {
-      message.error(t("error.timeout"))
+      message.error(t('error.timeout'))
     } else if (err.request.status === 502) {
-      message.error(t("error.502"))
+      message.error(t('error.502'))
     } else {
       const res = err.response
       if (res?.data?.code) {
@@ -63,12 +62,12 @@ request.interceptors.response.use(
     }
 
     return { code: err.request.status }
-  }
+  },
 )
 
 function logout() {
   getDvaApp()._store.dispatch({
-    type: "user/loginout",
+    type: 'user/loginout',
   })
 }
 

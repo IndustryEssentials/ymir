@@ -1,40 +1,27 @@
-import {
-  Stages,
-  getStepLabel,
-  StageList,
-  transferIteration,
-  STEP,
-  getSteps,
-} from "../iteration"
+import { getStepLabel, transferIteration, STEP, getSteps } from '../iteration'
 
-jest.mock("umi", () => {
+jest.mock('umi', () => {
   return {
     getLocale() {
-      return "zh-CN"
+      return 'zh-CN'
     },
   }
 })
 
-const createTime = "2022-03-10T03:39:09"
+const createTime = '2022-03-10T03:39:09'
 
-describe("constants: project", () => {
-  it("function -> getStepLabel.", () => {
-    expect(getStepLabel(STEP.prepareMining, 1)).toBe(
-      "project.iteration.stage.ready"
-    )
-    expect(getStepLabel(STEP.mining, 1)).toBe("project.iteration.stage.mining")
-    expect(getStepLabel(STEP.labelling, 1)).toBe(
-      "project.iteration.stage.label"
-    )
-    expect(getStepLabel(STEP.merging, 1)).toBe("project.iteration.stage.merge")
-    expect(getStepLabel(STEP.training, 1)).toBe(
-      "project.iteration.stage.training"
-    )
-    expect(getStepLabel(STEP.next, 1)).toBe("project.iteration.stage.next")
-    expect(getStepLabel(STEP.next)).toBe("project.iteration.stage.prepare")
-    expect(getStepLabel(STEP.next, 0)).toBe("project.iteration.stage.prepare")
+describe('constants: project', () => {
+  it('function -> getStepLabel.', () => {
+    expect(getStepLabel(STEP.prepareMining, 1)).toBe('project.iteration.stage.ready')
+    expect(getStepLabel(STEP.mining, 1)).toBe('project.iteration.stage.mining')
+    expect(getStepLabel(STEP.labelling, 1)).toBe('project.iteration.stage.label')
+    expect(getStepLabel(STEP.merging, 1)).toBe('project.iteration.stage.merge')
+    expect(getStepLabel(STEP.training, 1)).toBe('project.iteration.stage.training')
+    expect(getStepLabel(STEP.next, 1)).toBe('project.iteration.stage.next')
+    expect(getStepLabel(STEP.next)).toBe('project.iteration.stage.prepare')
+    expect(getStepLabel(STEP.next, 0)).toBe('project.iteration.stage.prepare')
   })
-  it("function -> getSteps.", () => {
+  it('function -> getSteps.', () => {
     const steps = getSteps()
 
     expect(steps).toBeInstanceOf(Array)
@@ -46,7 +33,7 @@ describe("constants: project", () => {
       expect(step.label).toBeDefined()
     })
   })
-  it("function -> transferIteration.", () => {
+  it('function -> transferIteration.', () => {
     const origin = {
       iteration_round: 1,
       previous_iteration: 0,
@@ -61,8 +48,8 @@ describe("constants: project", () => {
       user_id: 2,
       project_id: 8,
       is_deleted: false,
-      create_datetime: "2022-04-13T10:03:49",
-      update_datetime: "2022-04-13T10:04:02",
+      create_datetime: '2022-04-13T10:03:49',
+      update_datetime: '2022-04-13T10:04:02',
       id: 3,
     }
     const expected = {
@@ -75,15 +62,18 @@ describe("constants: project", () => {
         id: 34,
         name: undefined,
         percent: undefined,
-        presetting: undefined,
         state: undefined,
         taskId: undefined,
         taskType: undefined,
+        preSetting: undefined,
+        resultId: undefined,
+        resultType: 'model',
       },
       steps: [],
       wholeMiningSet: 20,
       testSet: 0,
       prevIteration: 0,
+      end: false,
     }
     expect(transferIteration(origin)).toEqual(expected)
   })

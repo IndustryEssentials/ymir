@@ -67,11 +67,12 @@ export default {
     *delImage({ payload: id }, { call, put }) {
       const { code, result } = yield call(delImage, id)
       if (code === 0) {
+        const image = transferImage(result)
         yield put({
           type: 'UPDATE_IMAGE',
           payload: { [id]: null },
         })
-        return result
+        return image
       }
     },
     *createImage({ payload }, { call, put }) {

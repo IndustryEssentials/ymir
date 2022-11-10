@@ -1,21 +1,21 @@
-import { format } from "@/utils/date"
-import { transferProject } from "../project"
+import { format } from '@/utils/date'
+import { transferProject } from '../project'
 
-jest.mock("umi", () => {
+jest.mock('umi', () => {
   return {
     getLocale() {
-      return "zh-CN"
+      return 'zh-CN'
     },
   }
 })
 
-const createTime = "2022-03-10T03:39:09"
+const createTime = '2022-03-10T03:39:09'
 
-describe("constants: project", () => {
-  it("function -> transferProject.", () => {
+describe('constants: project', () => {
+  it('function -> transferProject.', () => {
     const origin = {
-      name: "project002",
-      description: "project002 desc",
+      name: 'project002',
+      description: 'project002 desc',
       mining_strategy: 0,
       chunk_size: 0,
       training_type: 1,
@@ -33,7 +33,7 @@ describe("constants: project", () => {
       initial_training_dataset_id: 1,
       current_iteration: null,
       training_dataset_group: {
-        name: "project002_training_dataset",
+        name: 'project002_training_dataset',
         project_id: 1,
         user_id: 3,
         description: null,
@@ -47,7 +47,7 @@ describe("constants: project", () => {
       testing_datasets: [],
       dataset_count: 6,
       model_count: 0,
-      training_keywords: ["cat", "person"],
+      training_keywords: ['cat', 'person'],
       current_iteration_id: null,
       enable_iteration: true,
       total_asset_count: 0,
@@ -57,12 +57,12 @@ describe("constants: project", () => {
 
     const expected = {
       id: 1,
-      name: "project002",
-      keywords: ["cat", "person"],
+      name: 'project002',
+      keywords: ['cat', 'person'],
       trainSet: {
         id: 1,
         projectId: 1,
-        name: "project002_training_dataset",
+        name: 'project002_training_dataset',
         createTime: format(createTime),
         versions: [],
       },
@@ -77,11 +77,12 @@ describe("constants: project", () => {
       miningStrategy: 0,
       chunkSize: 0,
       currentIteration: undefined,
+      currentStep: '',
       round: 0,
       hiddenDatasets: [],
       hiddenModels: [],
       createTime: format(createTime),
-      description: "project002 desc",
+      description: 'project002 desc',
       type: 1,
       isExample: false,
       updateTime: format(createTime),
