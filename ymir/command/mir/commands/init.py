@@ -47,13 +47,13 @@ class CmdInit(base.BaseCommand):
 
     # public: run
     @staticmethod
-    def run_with_args(mir_root: str, empty_rev: str) -> int:
+    def run_with_args(mir_root: str, label_storage_file: str, empty_rev: str) -> int:
         return_code = checker.check(
             mir_root, [checker.Prerequisites.IS_OUTSIDE_GIT_REPO, checker.Prerequisites.IS_OUTSIDE_MIR_REPO])
         if return_code != MirCode.RC_OK:
             return return_code
 
-        class_ids.load_or_create_userlabels(mir_root=mir_root, create_ok=True)
+        class_ids.load_or_create_userlabels(label_storage_file=label_storage_file, create_ok=True)
 
         repo_git = scm.Scm(root_dir=mir_root, scm_executable='git')
         repo_git.init()
@@ -76,6 +76,7 @@ class CmdInit(base.BaseCommand):
         logging.debug("command init: %s", self.args)
 
         return self.run_with_args(mir_root=self.args.mir_root,
+                                  label_storage_file=self.args.label_storage_file,
                                   empty_rev=self.args.empty_rev)
 
 

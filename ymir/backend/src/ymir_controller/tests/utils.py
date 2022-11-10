@@ -2,6 +2,8 @@ import os
 import subprocess
 from typing import List
 
+from common_utils.labels import ids_file_name
+
 
 def dir_test_root(sub_dirs: List[str]) -> str:
     return os.path.join('/tmp/ymir-controller-sandbox-root/unit-test', '/'.join(sub_dirs))
@@ -30,3 +32,7 @@ def mir_repo_create_branch(mir_root: str, branch_name: str):
     assert (len(branch_name) > 0)
     mir_checkout_cmd = "mir checkout -b -r {} {}".format(mir_root, branch_name)
     subprocess.run(mir_checkout_cmd.split(" "), stdout=subprocess.DEVNULL)
+
+
+def user_label_file(sandbox_root: str, user_id: str) -> str:
+    return os.path.join(sandbox_root, user_id, ids_file_name())

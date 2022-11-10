@@ -21,7 +21,7 @@ class CmdShow(base.BaseCommand):
         # check args
         src_typ_rev_tid = revs_parser.parse_single_arg_rev(src_revs, need_tid=False)
         check_code = checker.check(mir_root,
-                                   [checker.Prerequisites.IS_INSIDE_MIR_REPO, checker.Prerequisites.HAVE_LABELS])
+                                   [checker.Prerequisites.IS_INSIDE_MIR_REPO])
         if check_code != MirCode.RC_OK:
             return check_code
 

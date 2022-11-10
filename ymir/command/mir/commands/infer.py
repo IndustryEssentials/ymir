@@ -8,7 +8,7 @@ from typing import Any
 import yaml
 
 from mir.commands import base
-from mir.tools import checker, class_ids, models
+from mir.tools import class_ids, models
 from mir.tools import settings as mir_settings
 from mir.tools import env_config
 from mir.tools.code import MirCode
@@ -45,7 +45,7 @@ class CmdInfer(base.BaseCommand):
                                              dst_model_path=work_dir_in_model)
 
         return CmdInfer.run_with_args(work_dir=self.args.work_dir,
-                                      mir_root=self.args.mir_root,
+                                      label_storage_file=self.args.label_storage_file,
                                       media_path=os.path.join(self.args.work_dir, 'assets'),
                                       model_storage=model_storage,
                                       index_file=self.args.index_file,
@@ -58,7 +58,7 @@ class CmdInfer(base.BaseCommand):
 
     @staticmethod
     def run_with_args(work_dir: str,
-                      mir_root: str,
+                      label_storage_file: str,
                       media_path: str,
                       model_storage: models.ModelStorage,
                       index_file: str,
@@ -92,8 +92,6 @@ class CmdInfer(base.BaseCommand):
             int: [description]
         """
         # check args
-        if not mir_root:
-            mir_root = '.'
         if not work_dir:
             raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS, error_message='empty --work-dir')
         if not index_file or not os.path.isfile(index_file):
@@ -107,10 +105,6 @@ class CmdInfer(base.BaseCommand):
                                   error_message='invalid run_infer and run_mining: both false')
         if not executor:
             raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS, error_message='empty --executor')
-
-        return_code = checker.check(mir_root, [checker.Prerequisites.IS_INSIDE_MIR_REPO])
-        if return_code != MirCode.RC_OK:
-            raise MirRuntimeError(error_code=return_code, error_message=f"check failed: {return_code}")
 
         if not executant_name:
             executant_name = task_id
@@ -163,7 +157,7 @@ class CmdInfer(base.BaseCommand):
         if run_infer:
             _process_infer_results(infer_result_file=os.path.join(work_dir_out, 'infer-result.json'),
                                    max_boxes=_get_max_boxes(config_file),
-                                   mir_root=mir_root)
+                                   label_storage_file=label_storage_file)
 
         return MirCode.RC_OK
 
@@ -215,7 +209,7 @@ def _prepare_assets(index_file: str, work_index_file: str, media_path: str) -> N
                               needs_new_commit=False)
 
 
-def _process_infer_results(infer_result_file: str, max_boxes: int, mir_root: str) -> None:
+def _process_infer_results(infer_result_file: str, max_boxes: int, label_storage_file: str) -> None:
     if not os.path.isfile(infer_result_file):
         raise MirRuntimeError(error_code=MirCode.RC_CMD_NO_RESULT,
                               error_message=f"can not find result file: {infer_result_file}")
@@ -223,7 +217,7 @@ def _process_infer_results(infer_result_file: str, max_boxes: int, mir_root: str
     with open(infer_result_file, 'r') as f:
         results = json.loads(f.read())
 
-    class_id_mgr = class_ids.load_or_create_userlabels(mir_root=mir_root)
+    class_id_mgr = class_ids.load_or_create_userlabels(label_storage_file=label_storage_file)
 
     for _, annotations_dict in results.get('detection', {}).items():
         # Compatible with previous version of format.

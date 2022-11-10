@@ -116,11 +116,10 @@ class TestInvokerTaskMining(unittest.TestCase):
         working_dir_1 = os.path.join(working_dir_root, 'sub_task', self._sub_task_id_1)
         os.makedirs(working_dir_1, exist_ok=True)
 
-        expected_cmd_merge = ("mir merge --root {0} --dst-rev {1}@{2} -s host -w {3} "
-                              "--src-revs {4}@{4};{5} --ex-src-revs {6}".format(self._mir_repo_root, self._task_id,
-                                                                                self._sub_task_id_1, working_dir_1,
-                                                                                self._guest_id1, self._guest_id2,
-                                                                                self._guest_id3))
+        expected_cmd_merge = (
+            f"mir merge --root {self._mir_repo_root} --dst-rev {self._task_id}@{self._sub_task_id_1} "
+            f"-s host -w {working_dir_1} "
+            f"--src-revs {self._guest_id1}@{self._guest_id1};{self._guest_id2} --ex-src-revs {self._guest_id3}")
 
         response = make_invoker_cmd_call(
             invoker=RequestTypeToInvoker[backend_pb2.TASK_CREATE],
@@ -155,13 +154,13 @@ class TestInvokerTaskMining(unittest.TestCase):
         self.assertDictEqual(expected_config, config)
 
         asset_cache_dir = os.path.join(self._user_root, 'asset_cache')
-        mining_cmd = ("mir mining --root {0} --dst-rev {1}@{1} -w {2} --model-location {3} --media-location {3} "
-                      "--model-hash {5} --src-revs {1}@{6} --asset-cache-dir {9} --task-config-file {7} --executor {8} "
-                      "--executant-name {10} --topk {4}".format(self._mir_repo_root, self._task_id, working_dir_0,
-                                                                self._storage_root, top_k,
-                                                                f"{model_hash}@{model_stage}", self._sub_task_id_1,
-                                                                output_config, 'mining_image', asset_cache_dir,
-                                                                self._task_id))
+        mining_cmd = (f"mir mining --root {self._mir_repo_root} "
+                      f"--user-label-file {test_utils.user_label_file(self._sandbox_root, self._user_name)} "
+                      f"--dst-rev {self._task_id}@{self._task_id} "
+                      f"-w {working_dir_0} --model-location {self._storage_root} --media-location {self._storage_root} "
+                      f"--model-hash {model_hash}@{model_stage} --src-revs {self._task_id}@{self._sub_task_id_1} "
+                      f"--asset-cache-dir {asset_cache_dir} --task-config-file {output_config} --executor mining_image "
+                      f"--executant-name {self._task_id} --topk {top_k}")
         mock_run.assert_has_calls(calls=[
             mock.call(expected_cmd_merge.split(' '), capture_output=True, text=True),
             mock.call(mining_cmd.split(' '), capture_output=True, text=True),

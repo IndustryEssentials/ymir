@@ -16,8 +16,9 @@ class TestCmdInit(unittest.TestCase):
         if os.path.isdir(test_root):
             shutil.rmtree(test_root)
         os.makedirs(test_root)
+        label_storage_file = class_ids.ids_file_path(test_root)
 
-        init.CmdInit.run_with_args(mir_root=test_root, empty_rev='a@a')
+        init.CmdInit.run_with_args(mir_root=test_root, label_storage_file=label_storage_file, empty_rev='a@a')
 
         assert (os.path.isdir(os.path.join(test_root, ".git")))
         assert (os.path.isdir(os.path.join(test_root, ".mir")))

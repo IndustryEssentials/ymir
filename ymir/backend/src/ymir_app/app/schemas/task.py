@@ -72,6 +72,8 @@ class TaskParameterBase(BaseModel):
     typed_models: Optional[List[TypedModel]]
     typed_labels: Optional[List[TypedLabel]]
 
+    merge_strategy: Optional[MergeStrategy] = MergeStrategy.prefer_newest
+
     @validator("keywords")
     def normalize_keywords(cls, v: Optional[List[str]]) -> Optional[List[str]]:
         if v is None:
@@ -103,7 +105,6 @@ class TrainingParameter(TaskParameterBase):
 
 
 class MiningParameterBase(TaskParameterBase):
-
     top_k: Optional[int]
     generate_annotations: Optional[bool]
 
@@ -121,8 +122,6 @@ class InferParameter(MiningParameterBase):
 
 
 class FusionParameterBase(TaskParameterBase, IterationContext):
-    merge_strategy: Optional[MergeStrategy] = MergeStrategy.prefer_newest
-
     include_datasets: List[int] = []
     exclude_datasets: List[int] = []
 
@@ -235,8 +234,19 @@ class TaskCreate(TaskBase):
         """
         Update task parameters when database and user_labels are ready
         """
+        # extra logic for dataset fusion:
+        #   reorder datasets based on merge_strategy
+        if isinstance(self.parameters, FusionParameter) and self.parameters.typed_datasets:
+            self.parameters.update_with_iteration_context(iterations_getter)
+
         if self.parameters.typed_datasets:
             fillin_dataset_hashes(datasets_getter, self.parameters.typed_datasets)
+            if self.parameters.merge_strategy:
+                self.parameters.typed_datasets.sort(
+                    key=attrgetter("create_datetime"),
+                    reverse=(self.parameters.merge_strategy == MergeStrategy.prefer_newest),
+                )
+
         if self.parameters.typed_labels:
             fillin_label_ids(labels_getter, self.parameters.typed_labels)
         if self.parameters.typed_models:
@@ -246,15 +256,6 @@ class TaskCreate(TaskBase):
             if not docker_image:
                 raise DockerImageNotFound()
             self.parameters.docker_image = docker_image.url
-
-        # extra logic for dataset fusion:
-        #   reorder datasets based on merge_strategy
-        if isinstance(self.parameters, FusionParameter) and self.parameters.typed_datasets:
-            self.parameters.update_with_iteration_context(iterations_getter)
-            self.parameters.typed_datasets.sort(
-                key=attrgetter("create_datetime"),
-                reverse=(self.parameters.merge_strategy == MergeStrategy.prefer_newest),
-            )
 
 
 class BatchTasksCreate(BaseModel):
