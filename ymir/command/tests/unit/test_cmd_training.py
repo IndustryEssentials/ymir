@@ -11,6 +11,7 @@ import yaml
 from mir.commands import training
 from mir.protos import mir_command_pb2 as mirpb
 from mir.tools import mir_storage_ops, models, settings as mir_settings, mir_storage
+from mir.tools.class_ids import ids_file_path
 from mir.tools.code import MirCode
 from mir.tools.mir_storage import sha1sum_for_file
 from mir.version import ymir_model_salient_version, YMIR_VERSION
@@ -252,6 +253,7 @@ class TestCmdTraining(unittest.TestCase):
         fake_args.src_revs = "a@a"
         fake_args.dst_rev = "a@test_training_cmd"
         fake_args.mir_root = self._mir_root
+        fake_args.label_storage_file = ids_file_path(self._mir_root)
         fake_args.model_path = self._models_location
         fake_args.media_location = self._assets_location
         fake_args.model_hash_stage = ''

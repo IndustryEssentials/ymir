@@ -88,8 +88,11 @@ class TestInvokerFilterBranch(unittest.TestCase):
                                    self._task_id)
         os.makedirs(working_dir, exist_ok=True)
 
-        expect_cmd = "mir filter --root {0} --dst-rev {1}@{1} --src-revs {2}@{2} -w {3} --cis {4} --ex-cis {5}".format(
-            self._mir_repo_root, self._task_id, self.in_dataset_ids[0], working_dir, 'car;person', 'car;person')
+        expect_cmd = (
+            f"mir filter --root {self._mir_repo_root} --dst-rev {self._task_id}@{self._task_id} "
+            f"--src-revs {self.in_dataset_ids[0]}@{self.in_dataset_ids[0]} -w {working_dir} "
+            f"--user-label-file {test_utils.user_label_file(self._sandbox_root, self._user_name)} "
+            "--cis car;person --ex-cis car;person")
         mock_run.assert_called_once_with(expect_cmd.split(' '), capture_output=True, text=True)
 
         expected_ret = backend_pb2.GeneralResp()

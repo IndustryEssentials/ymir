@@ -4,7 +4,7 @@ import shutil
 import unittest
 from unittest import mock
 
-from common_utils import labels
+from common_utils.labels import UserLabels
 from controller.utils import utils
 from controller.utils.invoker_call import make_invoker_cmd_call
 from controller.utils.invoker_mapping import RequestTypeToInvoker
@@ -50,7 +50,7 @@ class TestInvokerTaskFusion(unittest.TestCase):
         test_utils.check_commands()
         self._prepare_dirs()
         self._prepare_mir_repo()
-        labels.UserLabels.main_name_for_ids = mock.Mock(return_value=["person", "cat", "table"])
+        UserLabels.main_name_for_ids = mock.Mock(return_value=["person", "cat", "table"])
         return super().setUp()
 
     def tearDown(self) -> None:
@@ -108,7 +108,9 @@ class TestInvokerTaskFusion(unittest.TestCase):
         expected_filter_cmd = f"mir filter --root {self._mir_repo_root}"
         expected_filter_cmd += f" --dst-rev {self._task_id}@{self._sub_task_id_1}"
         expected_filter_cmd += f" --src-revs {self._task_id}@{self._sub_task_id_2}"
-        expected_filter_cmd += f" -w {expected_filter_work_dir} --cis person;cat;table"
+        expected_filter_cmd += f" -w {expected_filter_work_dir} "
+        expected_filter_cmd += f"--user-label-file {test_utils.user_label_file(self._sandbox_root, self._user_name)} "
+        expected_filter_cmd += "--cis person;cat;table"
 
         expected_sampling_cmd = f"mir sampling --root {self._mir_repo_root}"
         expected_sampling_cmd += f" --dst-rev {self._task_id}@{self._task_id}"

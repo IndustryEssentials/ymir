@@ -52,6 +52,7 @@ class TaskImportDatasetInvoker(TaskBaseInvoker):
         media_location = assets_config['assetskvlocation']
         import_dataset_response = cls.importing_cmd(
             repo_root=repo_root,
+            label_storage_file=user_labels.storage_file,
             task_id=subtask_id,
             index_file=index_file,
             pred_dir=import_dataset_request.pred_dir,
@@ -78,13 +79,13 @@ class TaskImportDatasetInvoker(TaskBaseInvoker):
         return import_dataset_response
 
     @staticmethod
-    def importing_cmd(repo_root: str, task_id: str, index_file: str, pred_dir: str, gt_dir: str, media_location: str,
-                      work_dir: str,
+    def importing_cmd(repo_root: str, label_storage_file: str, task_id: str, index_file: str, pred_dir: str,
+                      gt_dir: str, media_location: str, work_dir: str,
                       unknown_types_strategy: backend_pb2.UnknownTypesStrategy) -> backend_pb2.GeneralResp:
         importing_cmd = [
             utils.mir_executable(), 'import', '--root', repo_root, '--dst-rev',
             f"{task_id}@{task_id}", '--src-revs', 'master', '--index-file', index_file, '--gen-dir', media_location,
-            '-w', work_dir, "--anno-type", "det-box"
+            '-w', work_dir, "--user-label-file", label_storage_file, "--anno-type", "det-box"
         ]
         if pred_dir:
             importing_cmd.extend(['--pred-dir', pred_dir])

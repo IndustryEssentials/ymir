@@ -1,7 +1,7 @@
 import os
 from typing import Dict, List, Optional, Tuple
-from common_utils.labels import UserLabels
 
+from common_utils.labels import ids_file_name, UserLabels
 from controller.invoker.invoker_task_base import SubTaskType, TaskBaseInvoker
 from controller.utils import utils
 from id_definition.error_codes import CTLResponseCode
@@ -38,6 +38,9 @@ class TaskCopyInvoker(TaskBaseInvoker):
         copy_response = cls.copying_cmd(repo_root=repo_root,
                                         task_id=subtask_id,
                                         src_root=src_root,
+                                        label_storage_file=user_labels.storage_file,
+                                        src_label_storage_file=os.path.join(sandbox_root, copy_request.src_user_id,
+                                                                            ids_file_name()),
                                         src_dataset_id=in_dataset_ids[0],
                                         work_dir=subtask_workdir,
                                         name_strategy_ignore=copy_request.name_strategy_ignore,
@@ -47,10 +50,12 @@ class TaskCopyInvoker(TaskBaseInvoker):
 
     @staticmethod
     def copying_cmd(repo_root: str, task_id: str, src_root: str, src_dataset_id: str, work_dir: str,
+                    label_storage_file: str, src_label_storage_file: str,
                     name_strategy_ignore: bool, drop_annotations: bool) -> backend_pb2.GeneralResp:
         copying_cmd_str = [
             utils.mir_executable(), 'copy', '--root', repo_root, '--src-root', src_root, '--dst-rev',
-            f"{task_id}@{task_id}", '--src-revs', f"{src_dataset_id}@{src_dataset_id}", '-w', work_dir
+            f"{task_id}@{task_id}", '--src-revs', f"{src_dataset_id}@{src_dataset_id}", '-w', work_dir,
+            '--user-label-file', label_storage_file, '--src-user-label-file', src_label_storage_file
         ]
 
         if name_strategy_ignore:
