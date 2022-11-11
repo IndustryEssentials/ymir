@@ -52,11 +52,11 @@ ymir 通过 mir train / mir mining / mir infer 命令启动镜像，遵循以下
 
 ## 训练、挖掘与推理镜像的通用部分开发
 
-app/start.py 展示了一个简单的镜像执行部分，此文档也将基于这个样例工程来说明如何使用框架来开发镜像。
+detection-app/start.py 展示了一个简单的镜像执行部分，此文档也将基于这个样例工程来说明如何使用框架来开发镜像。
 
 关于这个文件，有以下部分值得注意：
 
-1. 在 Dockerfile 中，最后一条命令说明了：当此镜像被 ymir 系统通过 nvidia-docker run 启动时，默认执行的是 `python /app/start.py` 命令，也就是此工程中的 `app/start.py` 文件
+1. 在 Dockerfile 中，最后一条命令说明了：当此镜像被 ymir 系统通过 nvidia-docker run 启动时，默认执行的是 `python /app/start.py` 命令，也就是此工程中的 `detection-app/start.py` 文件
 
 2. 镜像框架相关的所有内容都在 `executor` 包中，包括以下部分：
 
@@ -72,11 +72,11 @@ app/start.py 展示了一个简单的镜像执行部分，此文档也将基于�
 
 4. 在 `start()` 方法中，通过 `env.get_current_env()` 中的 `run_training` / `run_mining` / `run_infer` 来判断本次需要执行的任务类型。如果任务类型是本镜像不支持的，可以直接报错
 
-5. 虽然 `app/start.py` 展示的是一个训练，挖掘和推理多合一的镜像，开发者也可以分成若干个独立的镜像，例如，训练一个，挖掘和推理合成一个
+5. 虽然 `detection-app/start.py` 展示的是一个训练，挖掘和推理多合一的镜像，开发者也可以分成若干个独立的镜像，例如，训练一个，挖掘和推理合成一个
 
 ## 训练过程
 
-`app/start.py` 中的函数 `_run_training` 展示了一个训练功能的样例，有以下部分需要注意：
+`detection-app/start.py` 中的函数 `_run_training` 展示了一个训练功能的样例，有以下部分需要注意：
 
 1. 超参的取得
 
@@ -110,7 +110,7 @@ app/start.py 展示了一个简单的镜像执行部分，此文档也将基于�
 
 所谓挖掘过程指的是：提供一个基础模型，以及一个不带标注的候选数据集，在此候选数据集上进行 active learning 算法，得到每张图片的得分，并将这个得分结果保存。
 
-`app/start.py` 中的函数 `_run_mining` 展示了一个数据挖掘过程的样例，有以下部分需要注意：
+`detection-app/start.py` 中的函数 `_run_mining` 展示了一个数据挖掘过程的样例，有以下部分需要注意：
 
 1. 参数的取得
 
@@ -138,7 +138,7 @@ app/start.py 展示了一个简单的镜像执行部分，此文档也将基于�
 
 所谓推理过程指的是：提供一个基础模型，以及一个不带标注的候选数据集，在此候选数据集上进行模型推理，得到每张图片的 detection 结果（框，类别，得分），并保存此结果。
 
-`app/start.py` 中的函数 `_run_infer` 展示了一个推理过程的样例，有以下部分需要注意：
+`detection-app/start.py` 中的函数 `_run_infer` 展示了一个推理过程的样例，有以下部分需要注意：
 
 1. 参数的取得：同数据挖掘过程
 
