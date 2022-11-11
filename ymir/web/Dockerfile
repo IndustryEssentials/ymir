@@ -2,13 +2,14 @@ FROM node:16-alpine as builder
 WORKDIR /app
 
 ARG NPM_REGISTRY=https://registry.npmjs.org
+ARG ENV=prod
 
 COPY package.json .
 COPY package-lock.json .
 RUN npm set-script prepare ""
 RUN npm install --registry ${NPM_REGISTRY}
 COPY . .
-RUN npm run build:dev
+RUN npm run build:${ENV}
 
 FROM nginx:alpine
 COPY --from=builder /app/ymir /usr/share/nginx/html
