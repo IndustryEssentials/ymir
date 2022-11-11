@@ -116,24 +116,21 @@ def get_mining_progress_of_iteration(
     return {"result": stats}
 
 
-@router.get(
-    "/{iteration_id}/steps",
-    response_model=schemas.IterationStepsOut,
-)
+@router.get("/{iteration_id}/steps", response_model=schemas.IterationStepsOut)
 def list_iteration_steps(
     *,
     db: Session = Depends(deps.get_db),
     iteration_id: int = Path(...),
     current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Any:
+    iteration = crud.iteration.get_by_user_and_id(db, user_id=current_user.id, id=iteration_id)
+    if not iteration:
+        raise IterationNotFound()
     steps = crud.iteration_step.get_multi_by_iteration(db, iteration_id=iteration_id)
     return {"result": steps}
 
 
-@router.get(
-    "/{iteration_id}/steps/{step_id}",
-    response_model=schemas.IterationStepOut,
-)
+@router.get("/{iteration_id}/steps/{step_id}", response_model=schemas.IterationStepOut)
 def get_iteration_step(
     *,
     db: Session = Depends(deps.get_db),
@@ -141,14 +138,16 @@ def get_iteration_step(
     step_id: int = Path(...),
     current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Any:
+    iteration = crud.iteration.get_by_user_and_id(db, user_id=current_user.id, id=iteration_id)
+    if not iteration:
+        raise IterationNotFound()
     step = crud.iteration_step.get(db, step_id)
+    if not step:
+        raise IterationStepNotFound()
     return {"result": step}
 
 
-@router.post(
-    "/{iteration_id}/steps/{step_id}/bind",
-    response_model=schemas.IterationStepOut,
-)
+@router.post("/{iteration_id}/steps/{step_id}/bind", response_model=schemas.IterationStepOut)
 def bind_iteration_step(
     *,
     db: Session = Depends(deps.get_db),
@@ -178,10 +177,7 @@ def bind_iteration_step(
     return {"result": step}
 
 
-@router.post(
-    "/{iteration_id}/steps/{step_id}/unbind",
-    response_model=schemas.IterationStepOut,
-)
+@router.post("/{iteration_id}/steps/{step_id}/unbind", response_model=schemas.IterationStepOut)
 def unbind_iteration_step(
     *,
     db: Session = Depends(deps.get_db),
@@ -202,10 +198,7 @@ def unbind_iteration_step(
     return {"result": step}
 
 
-@router.post(
-    "/{iteration_id}/steps/{step_id}/finish",
-    response_model=schemas.IterationStepOut,
-)
+@router.post("/{iteration_id}/steps/{step_id}/finish", response_model=schemas.IterationStepOut)
 def finish_iteration_step(
     *,
     db: Session = Depends(deps.get_db),
