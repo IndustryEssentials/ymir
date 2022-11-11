@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from "react"
 import { connect } from 'dva'
 import styles from "./list.less"
-import { Link, useHistory } from "umi"
+import { Link, useHistory, useSelector } from "umi"
 import { Form, Input, Table, Modal, Row, Col, Tooltip, Pagination, Space, Empty, Button, message, Popover, } from "antd"
 
 import { diffTime } from '@/utils/date'
@@ -32,7 +32,7 @@ import useRerunAction from "../../hooks/useRerunAction"
 
 const { useForm } = Form
 
-function Model({ pid, project = {}, iterations, groups, modelList, versions, query, ...func }) {
+function Model({ pid, project = {}, iterations, groups, versions, query, ...func }) {
   const history = useHistory()
   const { name } = history.location.query
   const [models, setModels] = useState([])
@@ -50,6 +50,7 @@ function Model({ pid, project = {}, iterations, groups, modelList, versions, que
   const generateRerun = useRerunAction()
   const [publish, publishResult] = usePublish()
   const [editingModel, setEditingModel] = useState({})
+  const modelList = useSelector(({ model }) => model.models[pid] || [])
 
   /** use effect must put on the top */
   useEffect(() => {
@@ -573,7 +574,6 @@ const props = (state) => {
   return {
     logined: state.user.logined,
     query: state.model.query,
-    modelList: state.model.models,
     versions: state.model.versions,
   }
 }
