@@ -223,7 +223,7 @@ training() {
                        --src-revs "$_MERGED_TRAINING_SET_PREFIX-$2@$_MERGED_TRAINING_SET_PREFIX-$2" \
                        --dst-rev "$_TRAINED_TRAINING_SET_PREFIX-$2@$_TRAINED_TRAINING_SET_PREFIX-$2" \
                        --task-config-file "$CUR_DIR/training-config.yaml" \
-                       --executor industryessentials/executor-det-yolov4-train:release-0.1.1
+                       --executor youdaoyzbx/ymir-executor:ymir2.0.0-yolov5-cu111-tmi
     else
         echo "invalid cycle num: $2, abort" >&2
         exit 1
@@ -288,7 +288,7 @@ mining() {
                         --model-hash $3 \
                         --cache $MEDIA_CACHE_PATH \
                         --task-config-file "$CUR_DIR/mining-config.yaml" \
-                        --executor industryessentials/executor-det-yolov4-mining:release-0.1.2
+                        --executor youdaoyzbx/ymir-executor:ymir2.0.0-yolov5-cu111-tmi
     else
         echo "invalid cycle num: $2, abort" >&2
         exit 1
