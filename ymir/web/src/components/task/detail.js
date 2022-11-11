@@ -7,26 +7,18 @@ import { format } from "@/utils/date"
 import { getTensorboardLink } from "@/services/common"
 import { TASKTYPES, getTaskTypeLabel } from "@/constants/task"
 import useFetch from "@/hooks/useFetch"
-import { getRecommendStage } from "@/constants/model"
 
 import renderLiveCodeItem from "@/components/task/items/livecode"
 import VersionName from "@/components/result/VersionName"
+import ModelVersionName from "@/components/result/ModelVersionName"
 
 const { Item } = Descriptions
 
 function TaskDetail({ task = {} }) {
-  const history = useHistory()
-  const id = task.id
   const { id: pid } = useParams()
-  const [datasetNames, setDatasetNames] = useState({})
   const [dids, setDatasetIds] = useState([])
-  const [mid, setMid] = useState(null)
-  const datasets = useSelector(({ dataset }) =>
-    dids.map((id) => dataset.dataset[id])
-  )
-  const model = useSelector(({ model }) => model.model[mid])
+  const datasets = useSelector(({ dataset }) => dataset.dataset)
   const [_, getDatasets] = useFetch("dataset/batchLocalDatasets")
-  const [_m, getModel] = useFetch("model/getModel", {})
 
   useEffect(() => {
     if (!task?.id) {
@@ -56,19 +48,6 @@ function TaskDetail({ task = {} }) {
     dids.length && getDatasets({ pid, ids: dids })
   }, [dids])
 
-  useEffect(() => {
-    mid && getModel({ id: mid })
-  }, [mid])
-
-  useEffect(() => {
-    if (!datasets.length) {
-      return
-    }
-    const names = {}
-    datasets.forEach((ds) => (names[ds.id] = ds))
-    setDatasetNames(names)
-  }, [datasets])
-
   const labelStyle = {
     width: "15%",
     paddingRight: "20px",
@@ -86,11 +65,10 @@ function TaskDetail({ task = {} }) {
   }
 
   function renderDatasetName(id) {
-    const ds = datasetNames[id]
-    const name = ds ? <VersionName result={ds} /> : id
+    const ds = datasets[id]
     return (
       <Link key={id} to={`/home/project/${task.project_id}/dataset/${id}`}>
-        {name}
+        <VersionName result={ds} />
       </Link>
     )
   }
@@ -101,17 +79,11 @@ function TaskDetail({ task = {} }) {
   function renderModel(
     id,
     pid,
-    model = {},
     label = "task.mining.form.model.label"
   ) {
-    const name = model.id ? (
-      <VersionName result={model} extra={getRecommendStage(model).name} />
-    ) : (
-      id
-    )
     return id ? (
       <Item label={t(label)}>
-        <Link to={`/home/project/${pid}/model/${id}`}>{name}</Link>
+        <Link to={`/home/project/${pid}/model/${id}`}><ModelVersionName id={id} /></Link>
       </Item>
     ) : null
   }
@@ -218,7 +190,6 @@ function TaskDetail({ task = {} }) {
       {renderModel(
         task.parameters.model_id,
         task.project_id,
-        model,
         "task.detail.label.premodel"
       )}
       {renderDuration(task.durationLabel)}
@@ -237,7 +208,7 @@ function TaskDetail({ task = {} }) {
     <>
       {renderDatasetSource(task?.parameters.dataset_id)}
       {renderCreateTime(task.create_datetime)}
-      {renderModel(task.parameters.model_id, task.project_id, model)}
+      {renderModel(task.parameters.model_id, task.project_id)}
       <Item label={t("task.mining.form.algo.label")}>
         {task.parameters.mining_algorithm}
       </Item>
@@ -300,7 +271,6 @@ function TaskDetail({ task = {} }) {
       {renderModel(
         task.parameters.model_id,
         task.project_id,
-        model,
         "task.detail.label.premodel"
       )}
       {renderLiveCodeItem(task.config)}
