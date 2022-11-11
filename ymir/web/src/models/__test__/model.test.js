@@ -1,5 +1,5 @@
-import model from "../model"
-import { put, putResolve, select, call } from "redux-saga/effects"
+import model from '../model'
+import { put, putResolve, select, call } from 'redux-saga/effects'
 import { errorCode, generatorCreator, product, products, list, response } from './func'
 import { transferModelGroup, transferModel, states } from '@/constants/model'
 import { transferAnnotation } from '@/constants/dataset'
@@ -10,59 +10,50 @@ jest.mock('umi', () => {
   return {
     getLocale() {
       return 'en-US'
-    }
+    },
   }
 })
 
-describe("models: model", () => {
+describe('models: model', () => {
   const createGenerator = generatorCreator(model)
-  const createTime = "2022-03-10T03:39:09"
+  const createTime = '2022-03-10T03:39:09'
   const task = {
-    "name": "t00000020000013277a01646883549",
-    "type": 105,
-    "project_id": 1,
-    "is_deleted": false,
-    "create_datetime": createTime,
-    "update_datetime": createTime,
-    "id": 1,
-    "hash": "t00000020000013277a01646883549",
-    "state": 3,
-    "error_code": null,
-    "duration": null,
-    "percent": 1,
-    "parameters": {},
-    "config": {},
-    "user_id": 2,
-    "last_message_datetime": "2022-03-10T03:39:09.033206",
-    "is_terminated": false,
-    "result_type": null
+    name: 't00000020000013277a01646883549',
+    type: 105,
+    project_id: 1,
+    is_deleted: false,
+    create_datetime: createTime,
+    update_datetime: createTime,
+    id: 1,
+    hash: 't00000020000013277a01646883549',
+    state: 3,
+    error_code: null,
+    duration: null,
+    percent: 1,
+    parameters: {},
+    config: {},
+    user_id: 2,
+    last_message_datetime: '2022-03-10T03:39:09.033206',
+    is_terminated: false,
+    result_type: null,
   }
-  const md = id => ({
+  const md = (id) => ({
     id,
     hash: 'testhash',
     map: 0.88,
     state: 2,
     version_num: 2,
-    "create_datetime": createTime,
-    "update_datetime": createTime,
+    create_datetime: createTime,
+    update_datetime: createTime,
     related_task: task,
   })
 
   const groupsResult = products(7).map(({ id }) => ({ id, create_datetime: createTime }))
-  const groupsExpected = groupsResult.map(item => transferModelGroup(item))
+  const groupsExpected = groupsResult.map((item) => transferModelGroup(item))
   const modelsResult = products(4).map(({ id }) => md(id))
-  const modelsExpected = modelsResult.map(item => transferModel(item))
+  const modelsExpected = modelsResult.map((item) => transferModel(item))
 
-  const generateNormal = ({
-    func,
-    result,
-    expected,
-    payload = {},
-    label = '',
-    hasForce = false,
-    force = false,
-    cache = null,
-  }) => {
+  const generateNormal = ({ func, result, expected, payload = {}, label = '', hasForce = false, force = false, cache = null }) => {
     it(`effects: ${func} -> ${label} -> success`, () => {
       const generator = createGenerator(func, payload)
       let end = generator.next()
@@ -88,24 +79,41 @@ describe("models: model", () => {
     })
   }
 
-  const generateList = (func, payload, result, expected) => generateNormal({
-    func, payload, result, expected
-  })
+  const generateList = (func, payload, result, expected) =>
+    generateNormal({
+      func,
+      payload,
+      result,
+      expected,
+    })
 
-  const generateForce = ({ func, result, expected, payload, label, force, cache }) => generateNormal({
-    func, payload: { ...payload, force }, force, result, expected, label, cache, hasForce: true,
-  })
+  const generateForce = ({ func, result, expected, payload, label, force, cache }) =>
+    generateNormal({
+      func,
+      payload: { ...payload, force },
+      force,
+      result,
+      expected,
+      label,
+      cache,
+      hasForce: true,
+    })
 
   const generateGetModelVersions = (label, result, expected, force = false, hasCache = false) => {
     const gid = 2325234
     const cache = hasCache ? { [gid]: expected } : null
     return generateForce({
-      label, force, cache, result, expected,
-      func: 'getModelVersions', payload: { gid },
+      label,
+      force,
+      cache,
+      result,
+      expected,
+      func: 'getModelVersions',
+      payload: { gid },
     })
   }
 
-  it("reducers: UPDATE_MODELS, UPDATE_MODEL", () => {
+  it('reducers: UPDATE_MODELS, UPDATE_MODEL', () => {
     const state = {
       models: {},
       model: {},
@@ -121,12 +129,9 @@ describe("models: model", () => {
 
     const expectedId = 1001
     const daction = {
-      payload: { id: expectedId, model: { id: expectedId } }
+      payload: { id: expectedId, model: { id: expectedId } },
     }
-    const result = model.reducers.UPDATE_MODEL(
-      state,
-      daction
-    )
+    const result = model.reducers.UPDATE_MODEL(state, daction)
     expect(result.model[expectedId].id).toBe(expectedId)
   })
 
@@ -135,7 +140,7 @@ describe("models: model", () => {
   errorCode(model, 'getModel', { id: 342134, force: true })
   errorCode(model, 'delModel')
   errorCode(model, 'importModel')
-  errorCode(model, 'updateModel')
+  errorCode(model, 'updateModelGroup')
   errorCode(model, 'setRecommendStage')
   errorCode(model, 'verify')
   errorCode(model, 'getModelsByMap', 10025, { keywords: [], kmodels: {} })
@@ -164,9 +169,8 @@ describe("models: model", () => {
   generateList('getHiddenList', {}, list(modelsExpected), list(modelsExpected))
   generateList('queryAllModels', 63453, list(modelsExpected), modelsExpected)
   generateList('batchModels', { ids: '1,3' }, response(modelsResult), modelsExpected)
-  generateList('hide', {pid: 324334, ids: [53, 34]}, response(list(modelsExpected)), list(modelsExpected))
-  generateList('restore', {pid: 324334, ids: [63, 23]}, response(list(modelsExpected)), list(modelsExpected))
-
+  generateList('hide', { pid: 324334, ids: [53, 34] }, response(list(modelsExpected)), list(modelsExpected))
+  generateList('restore', { pid: 324334, ids: [63, 23] }, response(list(modelsExpected)), list(modelsExpected))
 
   generateNormal({
     func: 'delModelGroup',
@@ -175,13 +179,13 @@ describe("models: model", () => {
     expected: 'ok',
   })
 
-  it("effects: getModel", () => {
+  it('effects: getModel', () => {
     const saga = model.effects.getModel
     const modelId = 615
     const datasetId = 809
     const vsId = 810
     const creator = {
-      type: "getModel",
+      type: 'getModel',
       payload: { id: modelId },
     }
 
@@ -199,10 +203,10 @@ describe("models: model", () => {
     expect(end.value).toEqual(expected)
     expect(end.done).toBe(true)
   })
-  it("effects: delModel", () => {
+  it('effects: delModel', () => {
     const saga = model.effects.delModel
     const creator = {
-      type: "delModel",
+      type: 'delModel',
       payload: { id: 616 },
     }
     const expected = { id: 617 }
@@ -218,11 +222,11 @@ describe("models: model", () => {
     expect(end.value.id).toBe(expected.id)
     expect(end.done).toBe(true)
   })
-  it("effects: importModel", () => {
+  it('effects: importModel', () => {
     const saga = model.effects.importModel
     const expected = { id: 618, name: 'anewmodel' }
     const creator = {
-      type: "importModel",
+      type: 'importModel',
       payload: { projectId: 6181, name: expected.name, url: '/testmodellocalurl' },
     }
 
@@ -236,11 +240,11 @@ describe("models: model", () => {
     expect(end.value.id).toBe(expected.id)
     expect(end.done).toBe(true)
   })
-  it("effects: updateModel", () => {
-    const saga = model.effects.updateModel
+  it('effects: updateModelGroup', () => {
+    const saga = model.effects.updateModelGroup
     const expected = { id: 619 }
     const creator = {
-      type: "updateModel",
+      type: 'updateModelGroup',
       payload: { ...expected, name: 'itisanewname' },
     }
 
@@ -254,14 +258,14 @@ describe("models: model", () => {
     expect(end.value.id).toBe(expected.id)
     expect(end.done).toBe(true)
   })
-  it("effects: setRecommendStage", () => {
+  it('effects: setRecommendStage', () => {
     const saga = model.effects.setRecommendStage
     const modelId = 13412
     const stage = 23234
-    const params = { modelId, stage, }
+    const params = { modelId, stage }
     const expected = md(modelId)
     const creator = {
-      type: "setRecommendStage",
+      type: 'setRecommendStage',
       payload: params,
     }
 
@@ -275,20 +279,18 @@ describe("models: model", () => {
     expect(end.value).toEqual(transferModel(expected))
     expect(end.done).toBe(true)
   })
-  it("effects: verify", () => {
+  it('effects: verify', () => {
     const saga = model.effects.verify
     const id = 620
     const url = '/test.jpg'
     const creator = {
-      type: "verify",
+      type: 'verify',
       payload: { id, urls: [url] },
     }
     const boxes = [{ box: { x: 20, y: 52, w: 79, h: 102 }, keyword: 'cat', score: 0.8 }]
     const expected = {
       model_id: id,
-      annotations: [
-        { img_url: url, detection: boxes }
-      ]
+      annotations: [{ img_url: url, detection: boxes }],
     }
 
     const generator = saga(creator, { put, call })
@@ -302,10 +304,10 @@ describe("models: model", () => {
     expect(end.done).toBe(true)
   })
   // getModelsByMap
-  it("effects: getModelsByMap -> get stats result success-> batch models success", () => {
+  it('effects: getModelsByMap -> get stats result success-> batch models success', () => {
     const saga = model.effects.getModelsByMap
     const creator = {
-      type: "getModelsByMap",
+      type: 'getModelsByMap',
       payload: { limit: 30 },
     }
     const keywords = ['cat', 'dog', 'person', 'tree', 'cup', 'light', 'phone']
@@ -313,7 +315,7 @@ describe("models: model", () => {
     const result = {}
     const kmodels = {}
     keywords.forEach((keyword, index) => {
-      result[keyword] = models.map(model => [model.id, model.map])
+      result[keyword] = models.map((model) => [model.id, model.map])
     })
     keywords.slice(0, 5).forEach((keyword, index) => {
       kmodels[keyword] = models
@@ -331,17 +333,17 @@ describe("models: model", () => {
     expect(end.value).toEqual(expected)
     expect(end.done).toBe(true)
   })
-  it("effects: getModelsByMap -> get stats result success-> batch models failed", () => {
+  it('effects: getModelsByMap -> get stats result success-> batch models failed', () => {
     const saga = model.effects.getModelsByMap
     const creator = {
-      type: "getModelsByMap",
+      type: 'getModelsByMap',
       payload: { limit: 30 },
     }
     const keywords = ['cat', 'dog', 'person', 'tree', 'cup', 'light', 'phone']
     const models = products(5).map(({ id }) => ({ id, name: `model${id}`, map: 0.1 * (id + 1) }))
     const result = {}
     keywords.forEach((keyword, index) => {
-      result[keyword] = models.map(model => [model.id, model.map])
+      result[keyword] = models.map((model) => [model.id, model.map])
     })
 
     const generator = saga(creator, { put, call, select })
@@ -355,10 +357,10 @@ describe("models: model", () => {
     expect(end.value).toEqual({ keywords: keywords.slice(0, 5), kmodels: {} })
     expect(end.done).toBe(true)
   })
-  it("effects: getModelsByMap -> get stats result = []", () => {
+  it('effects: getModelsByMap -> get stats result = []', () => {
     const saga = model.effects.getModelsByMap
     const creator = {
-      type: "getModelsByMap",
+      type: 'getModelsByMap',
       payload: { limit: 30 },
     }
     const result = {}

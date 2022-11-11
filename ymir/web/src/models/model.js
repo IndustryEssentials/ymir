@@ -8,7 +8,7 @@ import {
   delModelGroup,
   batchAct,
   importModel,
-  updateModel,
+  updateModelGroup,
   verify,
   setRecommendStage,
   batchModelStages,
@@ -182,7 +182,7 @@ export default {
         const model = transferModel(result)
         yield put({
           type: 'UPDATE_MODEL',
-          payload: { [model.id]: model }
+          payload: { [model.id]: model },
         })
         return model
       }
@@ -193,7 +193,7 @@ export default {
         const model = transferModel(result)
         yield put({
           type: 'UPDATE_MODEL',
-          payload: { [model.id]: model }
+          payload: { [model.id]: model },
         })
         return model
       }
@@ -204,20 +204,15 @@ export default {
         const model = transferModel(result)
         yield put({
           type: 'UPDATE_MODEL',
-          payload: { [model.id]: model }
+          payload: { [model.id]: model },
         })
         return model
       }
     },
-    *updateModel({ payload }, { call, put }) {
+    *updateModelGroup({ payload }, { call, put }) {
       const { id, name } = payload
-      const { code, result } = yield call(updateModel, id, name)
+      const { code, result } = yield call(updateModelGroup, id, name)
       if (code === 0) {
-        const model = transferModel(result)
-        yield put({
-          type: 'UPDATE_MODEL',
-          payload: { [id]: model },
-        })
         return result
       }
     },
@@ -225,7 +220,12 @@ export default {
       const { id, description } = payload
       const { code, result } = yield call(updateVersion, id, description)
       if (code === 0) {
-        return transferModel(result)
+        const model = transferModel(result)
+        yield put({
+          type: 'UPDATE_MODEL',
+          payload: { [model.id]: model },
+        })
+        return model
       }
     },
     *setRecommendStage({ payload }, { call, put }) {

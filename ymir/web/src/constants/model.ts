@@ -43,7 +43,7 @@ export function transferModel(data: YModels.BackendData): YModels.Model {
     durationLabel: calDuration(data.related_task.duration, getLocale()),
     task: { ...data.related_task, durationLabel },
     hidden: !data.is_visible,
-    stages: data.related_stages || [],
+    stages: (data.related_stages || []).map(transferStage) || [],
     recommendStage: data.recommended_stage || 0,
     description: data.description || '',
   }
@@ -97,15 +97,12 @@ export function transferStage(data: YModels.BackendData): YModels.Stage {
 }
 
 function transferMetrics(metrics: YModels.BackendData = {}) {
-  return (
-    metrics && {
-      ap: metrics.ap,
-      ar: metrics.ar,
-      fn: metrics.fn,
-      fp: metrics.fp,
-      tp: metrics.tp,
-    }
-  )
+  return {
+    ar: metrics.ar,
+    fn: metrics.fn,
+    fp: metrics.fp,
+    tp: metrics.tp,
+  }
 }
 
 /**

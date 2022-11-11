@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react'
-import { Descriptions, List, Space, Tag, Card, Button, Row, Col } from 'antd'
+import { Descriptions, List, Space, Tag, Card, Button, Row, Col, Progress } from 'antd'
 import { connect } from 'dva'
 import { useParams, Link, useHistory, useSelector } from 'umi'
 
@@ -7,6 +7,7 @@ import t from '@/utils/t'
 import TaskDetail from '@/components/task/detail'
 import { percent } from '../../utils/number'
 import useFetch from '@/hooks/useFetch'
+import { getRecommendStage } from '@/constants/model'
 
 import Breadcrumbs from '@/components/common/breadcrumb'
 import TaskProgress from '@/components/task/progress'
@@ -32,7 +33,7 @@ function ModelDetail() {
   const hideRef = useRef(null)
   const restoreAction = useRestore(pid)
   const generateRerunBtn = useRerunAction('btn')
-  const cardTitle = useCardTitle(model?.name)
+  const cardTitle = useCardTitle(null, model?.name)
   const [editing, setEditing] = useState({})
 
   useEffect(async () => {
@@ -60,6 +61,32 @@ function ModelDetail() {
     return stage ? [id, stage].toString() : ''
   }
 
+  function renderMetrics() {
+    const stage = getRecommendStage(model)
+    return stage ? (
+      <Descriptions
+        layout="vertical"
+        column={4}
+        labelStyle={{ display: 'block', fontWeight: 'bold', textAlign: 'center' }}
+        bordered
+        style={{ width: 'calc(100% + 240px)' }}
+      >
+        <Descriptions.Item label={'mAP'} style={{ width: '25%' }}>
+          <Progress type="circle" percent={stage.map * 100} />
+        </Descriptions.Item>
+        <Descriptions.Item label={'Recall'} style={{ width: '25%' }}>
+          {typeof stage.metrics.ar === 'undefined' ? <Progress type="circle" percent={stage.metrics.ar * 100} /> : null}
+        </Descriptions.Item>
+        <Descriptions.Item label={'FN'} style={{ width: '25%' }}>
+          <Progress type="circle" percent={100} format={() => stage.metrics.fn} strokeColor={'rgba(255, 0, 255, 0.1)'} />
+        </Descriptions.Item>
+        <Descriptions.Item label={'FP'} style={{ width: '25%' }}>
+          <Progress type="circle" percent={100} format={() => stage.metrics.fp} strokeColor={'rgba(255, 0, 0, 0.1)'} />
+        </Descriptions.Item>
+      </Descriptions>
+    ) : null
+  }
+
   return (
     <div className={styles.modelDetail}>
       <Breadcrumbs suffix={model.name} />
@@ -79,10 +106,9 @@ function ModelDetail() {
                   </Tag>
                 ))}
               </div>
-              <div>
-                <span>metrics:</span>
-                <div></div>
-              </div>
+            </Item>
+            <Item span={2} labelStyle={{ display: 'none' }} contentStyle={{ padding: 0, marginLeft: '-200px' }}>
+              {renderMetrics()}
             </Item>
             <Item label={t('common.desc')} span={2}>
               <DescPop description={model.description} />
@@ -134,7 +160,7 @@ function ModelDetail() {
           </Space>
         </div>
       </Card>
-      <EditDescBox record={editing} />
+      <EditDescBox type="model" record={editing} />
       <Hide ref={hideRef} type={1} msg="model.action.hide.confirm.content" />
     </div>
   )

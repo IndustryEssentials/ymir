@@ -142,7 +142,6 @@ declare namespace YModels {
     modelId?: number
     modelName?: string
     metrics?: {
-      ap?: number
       ar?: number
       fn?: number
       fp?: number
