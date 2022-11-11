@@ -35,7 +35,6 @@ function Mining({ query = {}, hidden, ok = () => {}, datasetCache, bottom, ...fu
   const [selectedModel, setSelectedModel] = useState({})
   const [form] = Form.useForm()
   const [seniorConfig, setSeniorConfig] = useState({})
-  const [topk, setTopk] = useState(true)
   const [gpu_count, setGPU] = useState(0)
   const [imageHasInference, setImageHasInference] = useState(false)
   const [live, setLiveCode] = useState(false)
@@ -43,6 +42,7 @@ function Mining({ query = {}, hidden, ok = () => {}, datasetCache, bottom, ...fu
   const [openpai, setOpenpai] = useState(false)
   const [sys, getSysInfo] = useFetch('common/getSysInfo', {})
   const selectOpenpai = Form.useWatch('openpai', form)
+  const topk = Form.useWatch('topk', form)
   const [showConfig, setShowConfig] = useState(false)
 
   useEffect(() => {
@@ -83,6 +83,11 @@ function Mining({ query = {}, hidden, ok = () => {}, datasetCache, bottom, ...fu
       setDataset(cache)
     }
   }, [datasetCache])
+
+  useEffect(() => {
+    const defaultTopK = Math.ceil((dataset?.assetCount || 0) / 10)
+    !topk && form.setFieldsValue({ topk: defaultTopK })
+  }, [dataset])
 
   useEffect(() => {
     const state = location.state
@@ -220,9 +225,9 @@ function Mining({ query = {}, hidden, ok = () => {}, datasetCache, bottom, ...fu
           <Form.Item
             tooltip={t('tip.task.filter.strategy')}
             label={t('task.mining.form.topk.label')}
-            name="topk"
-            rules={topk ? [{ type: 'number', min: 1, max: dataset.assetCount - 1 || 1 }] : null}
-          >
+            name='topk' rules={[
+              { type: 'number', min: 1, max: (dataset.assetCount - 1) || 1 }
+            ]}>
             <InputNumber style={{ width: 120 }} min={1} max={dataset.assetCount - 1} precision={0} />
           </Form.Item>
           <Form.Item tooltip={t('tip.task.filter.newlable')} label={t('task.mining.form.label.label')} name="inference" initialValue={imageHasInference}>
