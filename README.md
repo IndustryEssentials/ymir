@@ -431,9 +431,9 @@ Regardless of whether the dataset has a label file, the images folder and annota
 
 The default profile template needs to be extracted in the mirror.
 
-The training image `industryessentials/executor-det-yolov4-training:release-0.1.2` has a configuration file template located at: `/img-man/training-template.yaml`
+The training image `youdaoyzbx/ymir-executor:ymir2.0.0-yolov5-cu111-tmi` has a configuration file template located at: `/img-man/training-template.yaml`
 
-Mining and inference mirrors The configuration file templates for `industryessentials/executor-det-yolov4-mining:release-0.1.2` are located at: `/img-man/mining-template.yaml` (mining) and `/img-man/infer-template. yaml` (infer).
+Mining and inference mirrors The configuration file templates for `youdaoyzbx/ymir-executor:ymir2.0.0-yolov5-cu111-tmi` are located at: `/img-man/mining-template.yaml` (mining) and `/img-man/infer-template. yaml` (infer).
 
 **How can the trained model be used outside the system?**
 
