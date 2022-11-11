@@ -39,9 +39,6 @@ function TaskDetail({ task = {} }) {
       }
       setDatasetIds(ids)
     }
-    if (hasValidModel(task.type) && pa.model_id) {
-      setMid(task.parameters.model_id)
-    }
   }, [task.id])
 
   useEffect(() => {
@@ -299,7 +296,7 @@ function TaskDetail({ task = {} }) {
         <Link
           to={`/home/project/${task.project_id}/model/${task.parameters.model_id}`}
         >
-          {model?.name || task.parameters.model_id}
+          <ModelVersionName id={task.parameters.model_id} />
         </Link>
       </Item>
       <Item label={t("task.mining.form.algo.label")}>
