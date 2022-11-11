@@ -43,7 +43,7 @@ function Train({ query = {}, hidden, ok = () => {}, bottom, allDatasets, dataset
   const pid = Number(pageParams.id)
   const history = useHistory()
   const location = useLocation()
-  const { mid, image, test, config, from } = query
+  const { mid, image, test, config, from, iterationId } = query
   const stage = mid ? (Array.isArray(mid) ? mid : mid.split(',').map(Number)) : undefined
   const did = Number(query.did)
   const [selectedKeywords, setSelectedKeywords] = useState([])
@@ -213,6 +213,9 @@ function Train({ query = {}, hidden, ok = () => {}, bottom, allDatasets, dataset
       config,
     }
     const result = await func.train(params)
+    if (iterationContext && !iterationId) {
+      await updateProject({ id: pid, modelStage: [result.result_model?.id] })
+    }
     result && ok(result)
   }
 

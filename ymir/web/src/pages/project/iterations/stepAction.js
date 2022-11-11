@@ -55,8 +55,8 @@ const StepAction = ({ steps, selected, iteration, callback = () => {} }) => {
     [STEP.merging]: {
       comp: Merge,
       query: (settings = {}) => ({
-        did: settings.dataset_id,
-        mid: settings.training_dataset_id ? [settings.training_dataset_id] : undefined,
+        mid: settings.dataset_id,
+        did: settings.training_dataset_id ? [settings.training_dataset_id] : undefined,
       }),
     },
     [STEP.training]: {
