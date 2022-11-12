@@ -4,6 +4,7 @@ from typing import Dict
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
 
+from app.api.api_v1.endpoints import projects as m
 from app.config import settings
 from tests.utils.projects import create_project_record
 from tests.utils.utils import random_lower_string
@@ -34,6 +35,7 @@ class TestCreateProject:
         normal_user_token_headers: Dict[str, str],
         mocker,
     ):
+        mocker.patch.object(m, "send_project_metrics")
         j = {
             "name": random_lower_string(),
             "training_keywords": ["kitten"],

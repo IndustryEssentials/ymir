@@ -2,8 +2,7 @@
 
 set -e
 
-EXECUTOR_TRAINING='industryessentials/executor-det-yolov4-training'
-EXECUTOR_MINING='industryessentials/executor-det-yolov4-mining'
+EXECUTOR_TMI='youdaoyzbx/ymir-executor:ymir2.0.0-yolov5-cu111-tmi'
 
 DOCKER_BACKEND='industryessentials/ymir-backend'
 DOCKER_WEB='industryessentials/ymir-web'
@@ -28,8 +27,7 @@ docker-compose -f docker-compose.yml -f docker-compose.dev.yml -f docker-compose
 }
 
 pre_start() {
-docker pull ${EXECUTOR_TRAINING}
-docker pull ${EXECUTOR_MINING}
+docker pull ${EXECUTOR_TMI}
 stop
 }
 

@@ -91,7 +91,7 @@ def create_model_stages(db: Session, model_id: int, model_info: Dict) -> None:
     stages_in = [
         schemas.ModelStageCreate(
             name=stage_name,
-            map=stage_info["ci_averaged_evaluation"]["ap"],
+            metrics=stage_info["ci_averaged_evaluation"],
             timestamp=stage_info["timestamp"],
             model_id=model_id,
         )
