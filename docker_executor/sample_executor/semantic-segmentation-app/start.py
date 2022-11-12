@@ -178,7 +178,7 @@ def _dummy_infer_work(idle_seconds: float, trigger_crash: bool = False, gpu_memo
     if trigger_crash:
         raise RuntimeError('app crashed')
 
-    segmentation_result_dir = '/out/infer-result'
+    segmentation_result_dir = '/out/SegmentationClass'
     os.makedirs(segmentation_result_dir, exist_ok=True)
 
     #! use `dataset_reader.item_paths` to read candidate dataset items
@@ -206,8 +206,8 @@ def _dummy_infer_work(idle_seconds: float, trigger_crash: bool = False, gpu_memo
         with open(os.path.join(segmentation_result_dir, f"{main_asset_name}.png"), 'wb') as f:
             mask_image.save(f, format='PNG')
 
-    #! after all, you should copy labelmap from /in/models/attachments/segmentation/labelmap.txt to /out/infer-result
-    shutil.copy(src='/in/models/attachments/segmentation/labelmap.txt', dst='/out/infer-result/labelmap.txt')
+    #! after all, you should copy labelmap from /in/models/attachments/segmentation/labelmap.txt to /out
+    shutil.copy(src='/in/models/attachments/segmentation/labelmap.txt', dst='/out/labelmap.txt')
 
     #! use `logging.info` to write log to console
     logging.info(f"assets count: {count}")
