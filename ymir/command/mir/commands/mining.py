@@ -259,7 +259,7 @@ def _process_results(mir_root: str, label_storage_file: str, export_out: str, ds
     #   update mir annotations: predictions
     matched_mir_annotations = mirpb.MirAnnotations()
     prediction = matched_mir_annotations.prediction
-    prediction.type = model_storage.model_type
+    prediction.type = model_storage.model_type  # type: ignore
     if add_prediction:
         # add new
         for asset_id, single_image_annotations in asset_id_to_annotations.items():
