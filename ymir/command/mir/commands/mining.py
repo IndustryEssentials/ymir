@@ -1,14 +1,11 @@
 import argparse
-import io
 import json
 import logging
 import os
 from subprocess import CalledProcessError
-from typing import Dict, Optional, Set, Tuple
+from typing import Optional, Set
 
 from google.protobuf import json_format
-import numpy as np
-from PIL import Image, UnidentifiedImageError
 
 from mir.commands import base, infer
 from mir.protos import mir_command_pb2 as mirpb
