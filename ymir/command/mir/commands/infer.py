@@ -8,6 +8,7 @@ from typing import Any
 import yaml
 
 from mir.commands import base
+from mir.protos import mir_command_pb2 as mirpb
 from mir.tools import class_ids, models
 from mir.tools import settings as mir_settings
 from mir.tools import env_config
@@ -155,9 +156,10 @@ class CmdInfer(base.BaseCommand):
         )
 
         if run_infer:
-            _process_infer_results(infer_result_file=os.path.join(work_dir_out, 'infer-result.json'),
-                                   max_boxes=_get_max_boxes(config_file),
-                                   label_storage_file=label_storage_file)
+            if model_storage.model_type == mirpb.AnnoType.AT_DET_BOX:
+                _process_infer_results(infer_result_file=os.path.join(work_dir_out, 'infer-result.json'),
+                                       max_boxes=_get_max_boxes(config_file),
+                                       label_storage_file=label_storage_file)
 
         return MirCode.RC_OK
 

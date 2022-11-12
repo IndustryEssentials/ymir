@@ -4,11 +4,11 @@ import io
 import json
 import logging
 import os
-import numpy as np
-from PIL import Image, UnidentifiedImageError
 from typing import Any, Callable, Dict, List, Set, Tuple, Union
 
 from google.protobuf.json_format import ParseDict
+import numpy as np
+from PIL import Image, UnidentifiedImageError
 import xmltodict
 import yaml
 
@@ -167,45 +167,14 @@ def _import_annotations_seg_mask(map_hashed_filename: Dict[str, str], mir_annota
                                  annotations_dir_path: str, class_type_manager: class_ids.UserLabels,
                                  unknown_types_strategy: UnknownTypesStrategy, accu_new_class_names: Dict[str, int],
                                  image_annotations: mirpb.SingleTaskAnnotations) -> None:
-    # fortmat ref:
-    # https://github.com/acesso-io/techcore-cvat/tree/develop/cvat/apps/dataset_manager/formats#segmentation-mask-import
-    # single line reprs label&color map, e.g. "ego vehicle:0,181,0::" or "road:07::"; otherwise "..." for place-holder.
-    label_map_file = os.path.join(annotations_dir_path, 'labelmap.txt')
-    if not os.path.isfile(label_map_file):
-        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS, error_message="labelmap.txt is required.")
-    with open(label_map_file) as f:
-        records = f.readlines()
-
-    # parse label_map.txt into map_cname_color.
-    map_cname_color: Dict[str, Tuple[int, int, int]] = {}
-    for record in records:
-        record = record.strip()
-        if ':' not in record or not record:
-            logging.info("place-holder line, skipping.")
-            continue
-
-        record_split = record.split(':')
-        if len(record_split) != 4:
-            logging.info(f"invalid labelmap line: {record}")
-            continue
-        pos_ints: List[int] = [int(x) for x in record_split[1].split(',')]
-        if len(pos_ints) == 1:  # single channel to 3 channels.
-            pos_ints = [pos_ints[0], pos_ints[0], pos_ints[0]]
-        if len(pos_ints) != 3:
-            logging.info(f"invalid labelmap color idx: {pos_ints}")
-            continue
-        if pos_ints == (0, 0, 0):
-            logging.info("ignore background color.")
-            continue
-        _, cname = class_type_manager.id_and_main_name_for_name(name=record_split[0])
-        map_cname_color[cname] = (pos_ints[0], pos_ints[1], pos_ints[2])
+    map_cname_color = parse_labelmap(label_map_file=os.path.join(annotations_dir_path, 'labelmap.txt'),
+                                     class_type_manager=class_type_manager)
 
     # batch add all names, including unknown/known names.
     if unknown_types_strategy == UnknownTypesStrategy.ADD:
         class_type_manager.add_main_names(list(map_cname_color.keys()))
 
     # build color map, map all unknown classes to background (0, 0, 0).
-    map_color_pixel: Dict[Tuple[int, int, int], Tuple[int, int, int]] = {(0, 0, 0): (0, 0, 0)}
     map_color_cid: Dict[Tuple[int, int, int], int] = {}
     for name, color in map_cname_color.items():
         cid, cname = class_type_manager.id_and_main_name_for_name(name=name)
@@ -216,13 +185,9 @@ def _import_annotations_seg_mask(map_hashed_filename: Dict[str, str], mir_annota
             point = mirpb.IntPoint()
             point.x, point.y, point.z = color
             image_annotations.map_id_color[cid].CopyFrom(point)
-            map_color_pixel[color] = color
             map_color_cid[color] = cid
-        else:
-            map_color_pixel[color] = (0, 0, 0)
 
     semantic_mask_dir = os.path.join(annotations_dir_path, "SegmentationClass")
-    expected_color: Set[Tuple[int, int, int]] = set()
     for asset_hash, main_file_name in map_hashed_filename.items():
         # for each asset, import it's annotations
         annotation_file = os.path.join(semantic_mask_dir, main_file_name + '.png')
@@ -250,7 +215,6 @@ def _import_annotations_seg_mask(map_hashed_filename: Dict[str, str], mir_annota
 
             mask = r & g & b
             if np.any(mask):
-                expected_color.add(color)
                 np_mask[mask] = color
                 img_class_ids.add(map_color_cid[color])
 
@@ -260,8 +224,6 @@ def _import_annotations_seg_mask(map_hashed_filename: Dict[str, str], mir_annota
             image_annotations.image_annotations[asset_hash].masks.append(
                 mirpb.MaskAnnotation(semantic_mask=output.getvalue()))
         image_annotations.image_annotations[asset_hash].img_class_ids[:] = list(img_class_ids)
-    if expected_color:
-        logging.info(f"mapped color in labelmap.txt: {expected_color}")
 
 
 def _import_annotations_voc_xml(map_hashed_filename: Dict[str, str], mir_annotation: mirpb.MirAnnotations,
@@ -359,3 +321,39 @@ def copy_annotations_pred_meta(src_task_annotations: mirpb.SingleTaskAnnotations
     dst_task_annotations.eval_class_ids[:] = src_task_annotations.eval_class_ids
     dst_task_annotations.executor_config = src_task_annotations.executor_config
     dst_task_annotations.model.CopyFrom(src_task_annotations.model)
+
+
+def parse_labelmap(label_map_file: str, class_type_manager: class_ids.UserLabels) -> Dict[str, Tuple[int, int, int]]:
+    # fortmat ref:
+    # https://github.com/acesso-io/techcore-cvat/tree/develop/cvat/apps/dataset_manager/formats#segmentation-mask-import
+    # single line reprs label&color map, e.g. "ego vehicle:0,181,0::" or "road:07::"; otherwise "..." for place-holder.
+    if not os.path.isfile(label_map_file):
+        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS, error_message="labelmap.txt is required.")
+    with open(label_map_file) as f:
+        records = f.readlines()
+
+    # parse label_map.txt into map_cname_color.
+    map_cname_color: Dict[str, Tuple[int, int, int]] = {}
+    for record in records:
+        record = record.strip()
+        if ':' not in record or not record:
+            logging.info("place-holder line, skipping.")
+            continue
+
+        record_split = record.split(':')
+        if len(record_split) != 4:
+            logging.info(f"invalid labelmap line: {record}")
+            continue
+        pos_ints: List[int] = [int(x) for x in record_split[1].split(',')]
+        if len(pos_ints) == 1:  # single channel to 3 channels.
+            pos_ints = [pos_ints[0], pos_ints[0], pos_ints[0]]
+        if len(pos_ints) != 3:
+            logging.info(f"invalid labelmap color idx: {pos_ints}")
+            continue
+        if pos_ints == (0, 0, 0):
+            logging.info("ignore background color.")
+            continue
+        _, cname = class_type_manager.id_and_main_name_for_name(name=record_split[0])
+        map_cname_color[cname] = (pos_ints[0], pos_ints[1], pos_ints[2])
+
+    return map_cname_color

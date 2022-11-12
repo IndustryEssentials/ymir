@@ -1,0 +1,13 @@
+# training template for your executor app
+# after build image, it should at /img-man/training-template.yaml
+# key: gpu_id, task_id, pretrained_model_paths, class_names should be preserved
+
+gpu_id: '0'
+task_id: 'default-training-task'
+pretrained_model_params: []
+class_names: []
+export_format: 'seg-mask:raw'
+
+# just for test, remove this key in your own docker image
+expected_miou: 0.983  # expected mIoU for training task
+idle_seconds: 3  # idle seconds for each task

@@ -126,9 +126,15 @@ def prepare_model(model_location: str, model_hash: str, stage_name: str, dst_mod
         model_storage.model_hash = model_hash
         model_storage.stage_name = stage_name
 
+        # extract model stage files
         stage_and_file_names = [f"{stage_name}/{file_name}" for file_name in model_storage.stages[stage_name].files]
         os.makedirs(os.path.join(dst_model_path, stage_name), exist_ok=True)
         for name in stage_and_file_names:
+            tar_file.extract(name, dst_model_path)
+
+        # extract attachments
+        section_and_file_names = [f"attachments/{k}/{v}" for k, vs in model_storage.attachments.items() for v in vs]
+        for name in section_and_file_names:
             tar_file.extract(name, dst_model_path)
 
     return model_storage

@@ -1,11 +1,14 @@
 import argparse
+import io
 import json
 import logging
 import os
 from subprocess import CalledProcessError
-from typing import Dict, Optional, Set
+from typing import Dict, Optional, Set, Tuple
 
 from google.protobuf import json_format
+import numpy as np
+from PIL import Image, UnidentifiedImageError
 
 from mir.commands import base, infer
 from mir.protos import mir_command_pb2 as mirpb
@@ -219,8 +222,7 @@ def _process_results(mir_root: str, label_storage_file: str, export_out: str, ds
     #   read old
     mir_metadatas: mirpb.MirMetadatas
     mir_annotations: mirpb.MirAnnotations
-
-    [mir_metadatas, mir_annotations] = mir_storage_ops.MirStorageOps.load_multiple_storages(
+    mir_metadatas, mir_annotations = mir_storage_ops.MirStorageOps.load_multiple_storages(
         mir_root=mir_root,
         mir_branch=src_typ_rev_tid.rev,
         mir_task_id=src_typ_rev_tid.tid,
@@ -233,10 +235,19 @@ def _process_results(mir_root: str, label_storage_file: str, export_out: str, ds
     asset_ids_set = (_get_topk_asset_ids(file_path=topk_result_file_path, topk=topk)
                      if topk is not None else set(mir_metadatas.attributes.keys()))
 
-    infer_result_file_path = os.path.join(export_out, 'infer-result.json')
     cls_id_mgr = class_ids.load_or_create_userlabels(label_storage_file=label_storage_file)
-    asset_id_to_annotations = (_get_infer_annotations(
-        file_path=infer_result_file_path, asset_ids_set=asset_ids_set, cls_id_mgr=cls_id_mgr) if add_prediction else {})
+    asset_id_to_annotations = {}
+    if add_prediction:
+        if model_storage.model_type == mirpb.AnnoType.AT_DET_BOX:
+            asset_id_to_annotations = _get_detbox_infer_annotations(
+                file_path=os.path.join(export_out, 'infer-result.json'),
+                asset_ids_set=asset_ids_set,
+                cls_id_mgr=cls_id_mgr)
+        elif model_storage.model_type == mirpb.AnnoType.AT_SEG_MASK:
+            asset_id_to_annotations = _get_segmask_infer_annotations(
+                result_dir=os.path.join(export_out, 'infer-result'),
+                asset_ids_set=asset_ids_set,
+                cls_id_mgr=cls_id_mgr)
 
     # step 2: update mir data files
     #   update mir metadatas
@@ -248,7 +259,7 @@ def _process_results(mir_root: str, label_storage_file: str, export_out: str, ds
     #   update mir annotations: predictions
     matched_mir_annotations = mirpb.MirAnnotations()
     prediction = matched_mir_annotations.prediction
-    prediction.type = mirpb.AnnoType.AT_DET_BOX
+    prediction.type = model_storage.model_type
     if add_prediction:
         # add new
         for asset_id, single_image_annotations in asset_id_to_annotations.items():
@@ -267,6 +278,7 @@ def _process_results(mir_root: str, label_storage_file: str, export_out: str, ds
 
     #   update mir annotations: ground truth
     ground_truth = matched_mir_annotations.ground_truth
+    ground_truth.type = mir_annotations.ground_truth.type
     gt_asset_ids = set(mir_annotations.ground_truth.image_annotations.keys()) & asset_ids_set
     for asset_id in gt_asset_ids:
         ground_truth.image_annotations[asset_id].CopyFrom(mir_annotations.ground_truth.image_annotations[asset_id])
@@ -308,9 +320,9 @@ def _get_topk_asset_ids(file_path: str, topk: int) -> Set[str]:
     return asset_ids_set
 
 
-def _get_infer_annotations(file_path: str, asset_ids_set: Set[str],
-                           cls_id_mgr: class_ids.UserLabels) -> Dict[str, mirpb.SingleImageAnnotations]:
-    asset_id_to_annotations: dict = {}
+def _get_detbox_infer_annotations(file_path: str, asset_ids_set: Set[str],
+                                  cls_id_mgr: class_ids.UserLabels) -> Dict[str, mirpb.SingleImageAnnotations]:
+    asset_id_to_annotations: Dict[str, mirpb.SingleImageAnnotations] = {}
     with open(file_path, 'r') as f:
         results = json.loads(f.read())
 
@@ -345,6 +357,65 @@ def _get_infer_annotations(file_path: str, asset_ids_set: Set[str],
             single_image_annotations.boxes.append(annotation)
             idx += 1
         asset_id_to_annotations[asset_id] = single_image_annotations
+    return asset_id_to_annotations
+
+
+def _get_segmask_infer_annotations(result_dir: str, asset_ids_set: Set[str],
+                                   cls_id_mgr: class_ids.UserLabels) -> Dict[str, mirpb.SingleImageAnnotations]:
+    map_cname_color = annotations.parse_labelmap(label_map_file=os.path.join(result_dir, 'labelmap.txt'),
+                                                 class_type_manager=cls_id_mgr)
+    # build color map, map all unknown classes to background (0, 0, 0).
+    map_color_cid: Dict[Tuple[int, int, int], int] = {}
+    for name, color in map_cname_color.items():
+        cid, _ = cls_id_mgr.id_and_main_name_for_name(name=name)
+
+        if cid >= 0:
+            point = mirpb.IntPoint()
+            point.x, point.y, point.z = color
+            # image_annotations.map_id_color[cid].CopyFrom(point)
+            map_color_cid[color] = cid
+
+    asset_id_to_annotations: Dict[str, mirpb.SingleImageAnnotations] = {}
+    for asset_id in asset_ids_set:
+        single_image_annotations = mirpb.SingleImageAnnotations()
+
+        # xxx.png to single_image_annotations
+        # for each asset, import it's annotations
+        annotation_file = os.path.join(result_dir, asset_id + '.png')
+        if not os.path.isfile(annotation_file):
+            continue
+        try:
+            mask_image = Image.open(annotation_file)
+        except (UnidentifiedImageError, OSError) as e:
+            logging.info(f"{type(e).__name__}: {e}\nannotation_file: {annotation_file}\n")
+            continue
+        asset_type_str: str = mask_image.format.lower()
+        if asset_type_str != 'png':
+            logging.error(f"cannot import annotation_file: {annotation_file} as type: {asset_type_str}")
+            continue
+
+        mask_image = mask_image.convert('RGB')
+        img_class_ids: Set[int] = set()
+        width, height = mask_image.size
+        img: np.ndarray = np.array(mask_image)
+        np_mask: np.ndarray = np.zeros(shape=(height, width, 3), dtype=np.uint8)
+        for color in map_color_cid:
+            r = img[:, :, 0] == color[0]
+            g = img[:, :, 1] == color[1]
+            b = img[:, :, 2] == color[2]
+
+            mask = r & g & b
+            if np.any(mask):
+                np_mask[mask] = color
+                img_class_ids.add(map_color_cid[color])
+
+        new_mask_image: Image.Image = Image.fromarray(np_mask)
+        with io.BytesIO() as output:
+            new_mask_image.save(output, format="PNG")
+            single_image_annotations.masks.append(mirpb.MaskAnnotation(semantic_mask=output.getvalue()))
+
+        asset_id_to_annotations[asset_id] = single_image_annotations
+
     return asset_id_to_annotations
 
 

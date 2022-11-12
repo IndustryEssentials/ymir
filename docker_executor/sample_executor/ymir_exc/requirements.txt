@@ -1,3 +1,4 @@
+Pillow==8.2.0
 pydantic>=1.8.2
 pyyaml>=5.4.1
 tensorboardX>=2.4
