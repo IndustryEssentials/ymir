@@ -118,18 +118,23 @@ describe('models: model', () => {
       models: {},
       model: {},
     }
+    const pid = 5234465
     const expected = products(10)
     const action = {
-      payload: list(expected),
+      payload: { [pid]: list(expected) },
     }
-    const { models } = model.reducers.UPDATE_MODELS(state, action)
-    const { items, total } = models
+    const {
+      models: {
+        [pid]: { items, total },
+      },
+    } = model.reducers.UPDATE_MODELS(state, action)
+
     expect(items).toEqual(expected)
     expect(total).toBe(expected.length)
 
     const expectedId = 1001
     const daction = {
-      payload: { id: expectedId, model: { id: expectedId } },
+      payload: { [expectedId]: { id: expectedId } },
     }
     const result = model.reducers.UPDATE_MODEL(state, daction)
     expect(result.model[expectedId].id).toBe(expectedId)
@@ -169,8 +174,8 @@ describe('models: model', () => {
   generateList('getHiddenList', {}, list(modelsExpected), list(modelsExpected))
   generateList('queryAllModels', 63453, list(modelsExpected), modelsExpected)
   generateList('batchModels', { ids: '1,3' }, response(modelsResult), modelsExpected)
-  generateList('hide', { pid: 324334, ids: [53, 34] }, response(list(modelsExpected)), list(modelsExpected))
-  generateList('restore', { pid: 324334, ids: [63, 23] }, response(list(modelsExpected)), list(modelsExpected))
+  generateList('hide', { pid: 324334, ids: [53, 34] }, response(modelsResult), modelsExpected)
+  generateList('restore', { pid: 324334, ids: [63, 23] }, response(modelsResult), modelsExpected)
 
   generateNormal({
     func: 'delModelGroup',
@@ -224,20 +229,24 @@ describe('models: model', () => {
   })
   it('effects: importModel', () => {
     const saga = model.effects.importModel
-    const expected = { id: 618, name: 'anewmodel' }
+    const id = 618
+    const name = 'a_new_model'
+    const result = { ...md(id), group_name: name }
+    const expected = transferModel(result)
     const creator = {
       type: 'importModel',
-      payload: { projectId: 6181, name: expected.name, url: '/testmodellocalurl' },
+      payload: { projectId: 6181, name, url: '/testmodellocalurl' },
     }
 
     const generator = saga(creator, { put, call })
     const start = generator.next()
-    const end = generator.next({
+    generator.next({
       code: 0,
-      result: expected,
+      result,
     })
+    const end = generator.next()
 
-    expect(end.value.id).toBe(expected.id)
+    expect(end.value).toEqual(expected)
     expect(end.done).toBe(true)
   })
   it('effects: updateModelGroup', () => {
@@ -263,7 +272,8 @@ describe('models: model', () => {
     const modelId = 13412
     const stage = 23234
     const params = { modelId, stage }
-    const expected = md(modelId)
+    const result = md(modelId)
+    const expected = transferModel(result)
     const creator = {
       type: 'setRecommendStage',
       payload: params,
@@ -271,12 +281,13 @@ describe('models: model', () => {
 
     const generator = saga(creator, { put, call })
     const start = generator.next()
-    const end = generator.next({
+    generator.next({
       code: 0,
-      result: expected,
+      result,
     })
+    const end = generator.next()
 
-    expect(end.value).toEqual(transferModel(expected))
+    expect(end.value).toEqual(expected)
     expect(end.done).toBe(true)
   })
   it('effects: verify', () => {

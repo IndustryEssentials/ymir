@@ -179,23 +179,23 @@ export default {
     *hide({ payload: { pid, ids = [] } }, { call, put }) {
       const { code, result } = yield call(batchAct, actions.hide, pid, ids)
       if (code === 0) {
-        const model = transferModel(result)
+        const models = (result || []).reduce((prev, md) => ({ ...prev, [md.id]: transferModel(md)}), {})
         yield put({
           type: 'UPDATE_MODEL',
-          payload: { [model.id]: model },
+          payload: models,
         })
-        return model
+        return Object.values(models)
       }
     },
     *restore({ payload: { pid, ids = [] } }, { call, put }) {
       const { code, result } = yield call(batchAct, actions.restore, pid, ids)
       if (code === 0) {
-        const model = transferModel(result)
+        const models = (result || []).reduce((prev, md) => ({ ...prev, [md.id]: transferModel(md)}), {})
         yield put({
           type: 'UPDATE_MODEL',
-          payload: { [model.id]: model },
+          payload: models,
         })
-        return model
+        return Object.values(models)
       }
     },
     *importModel({ payload }, { call, put }) {
