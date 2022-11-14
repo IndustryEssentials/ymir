@@ -25,7 +25,7 @@ class CmdExport(base.BaseCommand):
             gt_dir=self.args.gt_dir,
             media_location=self.args.media_location,
             src_revs=self.args.src_revs,
-            dst_rev=f"export-{self.args.src_revs}-{time.time()}",
+            dst_rev=f"export-{self.args.src_revs}-{time.time()}@export",
             asset_format=exporter.parse_asset_format(self.args.asset_format),
             anno_format=annotations.parse_anno_format(self.args.anno_format),
             class_names=self.args.class_names.split(';') if self.args.class_names else [],
