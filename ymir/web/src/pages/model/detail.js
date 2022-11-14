@@ -115,8 +115,6 @@ function ModelDetail() {
                 ))}
               </div>
             </Item>
-            {/* <Item label={null} span={2} contentStyle={{ padding: 0, marginLeft: '-200px' }}>
-            </Item> */}
             <Item label={t('common.desc')} span={2}>
               <DescPop description={model.description} />
             </Item>
