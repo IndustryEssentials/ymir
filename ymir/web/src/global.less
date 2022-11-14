@@ -1,38 +1,38 @@
 //color
-@white:           #FFFFFF;
-@black:           #000000;
-@color85:         rgba(0, 0, 0, 0.85);
-@color65:         rgba(0, 0, 0, 0.65);
-@color45:         rgba(0, 0, 0, 0.45);
-@color25:         rgba(0, 0, 0, 0.25);
-@font-yellow:     #E8B900;
-@font-bule:       #2CBDE9;
-@font-red:        #F2637B;
+@white: #ffffff;
+@black: #000000;
+@color85: rgba(0, 0, 0, 0.85);
+@color65: rgba(0, 0, 0, 0.65);
+@color45: rgba(0, 0, 0, 0.45);
+@color25: rgba(0, 0, 0, 0.25);
+@font-yellow: #e8b900;
+@font-bule: #2cbde9;
+@font-red: #f2637b;
 
 // font size
-@font-size12:     12px;
-@font-size14:     14px;
-@font-size16:     16px;
-@font-size18:     18px;
-@font-size20:     20px;
+@font-size12: 12px;
+@font-size14: 14px;
+@font-size16: 16px;
+@font-size18: 18px;
+@font-size20: 20px;
 
 //gap
-@gap5:            5px;
-@gap8:            8px;
-@gap10:           10px;
-@gap16:           16px;
-@gap20:           20px;
-@gap24:           24px;
+@gap5: 5px;
+@gap8: 8px;
+@gap10: 10px;
+@gap16: 16px;
+@gap20: 20px;
+@gap24: 24px;
 
 //shadow class
-@shadow:   0px 0px 3px;
+@shadow: 0px 0px 3px;
 @shadow-color: rgba(0, 0, 0, 5%);
 .box-shadow(@style: @shadow, @color: @shadow-color) {
   box-shadow: @style @color;
 }
 
 //radius class
-@radius:   5px;
+@radius: 5px;
 .box-radius(@style: @radius) {
   border-radius: @style;
 }
@@ -46,11 +46,13 @@
   color: @error-color;
 }
 
-
-html, body, #root {
+html,
+body,
+#root {
   height: 100%;
 }
-ol, ul {
+ol,
+ul {
   margin: 0;
   padding: 0;
 }
@@ -74,14 +76,15 @@ ol, ul {
 
 body {
   margin: 0;
-  input, input:focus {
+  input,
+  input:focus {
     background: @white;
   }
   .ant-tag {
     padding: 1px 6px;
     background: #f4f4f4;
     border: none;
-    margin-bottom: 5px ;
+    margin-bottom: 5px;
   }
   .ant-btn {
     padding: 0 10px;
@@ -92,21 +95,23 @@ body {
   .ant-btn-lg {
     min-width: 80px;
   }
-  .ant-table-thead,.ant-table-tbody {
-    tr > th, tr >td {
-       border: none;
-       border-bottom: none;
-     }
-   } 
+  .ant-table-thead,
+  .ant-table-tbody {
+    tr > th,
+    tr > td {
+      border: none;
+      border-bottom: none;
+    }
+  }
   .ant-table-tbody {
     color: @color65;
   }
   .ant-table-row .edit {
-      visibility: hidden;
-      color: skyblue;
+    visibility: hidden;
+    color: skyblue;
   }
   .ant-table-row:hover .edit {
-        visibility: visible;
+    visibility: visible;
   }
   /* carousel arrow */
   .ant-carousel .slick-prev,
@@ -134,8 +139,7 @@ body {
     bottom: -12px;
   }
   .ant-carousel .slick-dots li {
-      background-color: @black;
-    
+    background-color: @black;
   }
   .ant-carousel .slick-dots li.slick-active button {
     background-color: #ccc;
@@ -185,16 +189,17 @@ body {
       opacity: 0;
     }
   }
-  .ant-radio-button-wrapper,.ant-form-item-control-input-content {
-      color:rgba(0, 0, 0, 0.45); 
-    }
-    .ant-form-item-label > label .ant-form-item-tooltip {
-      color: rgba(0, 0, 0, 0.25);
-    }
- 
+  .ant-radio-button-wrapper,
+  .ant-form-item-control-input-content {
+    color: rgba(0, 0, 0, 0.45);
+  }
+  .ant-form-item-label > label .ant-form-item-tooltip {
+    color: rgba(0, 0, 0, 0.25);
+  }
+
   //radio color styles
   .ant-radio-checked .ant-radio-inner {
-   border: 1px solid @link-color;
+    border: 1px solid @link-color;
   }
   .ant-radio-inner::after {
     background-color: @link-color;
@@ -216,8 +221,7 @@ body {
   }
 }
 
-
-// public component: breadcrumb 
+// public component: breadcrumb
 .breadcrumb {
   height: 50px;
   line-height: 50px;
@@ -230,7 +234,7 @@ body {
   }
 }
 
-// public box shadow radius 
+// public box shadow radius
 .ant-card,
 .actions,
 .list {
@@ -243,7 +247,7 @@ body {
   }
 }
 
-// public action bar 
+// public action bar
 .actions {
   background: @white;
   padding: @gap20;
@@ -251,10 +255,11 @@ body {
   width: 100%;
 }
 
-// public list 
+// public list
 .list {
   background-color: @white;
-  .ant-list-item,.ant-list-items .ant-list-item:last-child {
+  .ant-list-item,
+  .ant-list-items .ant-list-item:last-child {
     padding: @gap10 @gap20;
     border: 1px solid rgba(0, 0, 0, 0.05);
     margin: @gap10 0;
@@ -265,7 +270,7 @@ body {
       cursor: pointer;
     }
     &.failure {
-      border-color:@font-red;
+      border-color: @font-red;
     }
     &.sample {
       border-color: @primary-color;
@@ -290,7 +295,8 @@ body {
       margin-left: @gap20;
     }
   }
-  .titleLabel, .bottomContent {
+  .titleLabel,
+  .bottomContent {
     display: inline-block;
     margin-right: @gap8;
     color: @color45;
@@ -308,10 +314,11 @@ body {
     padding-top: @gap5;
     text-align: center;
     .contentLabel {
-      color:@color45;
+      color: @color45;
       padding-bottom: @gap5;
     }
-    .contentContent, .sets {
+    .contentContent,
+    .sets {
       color: @color85;
       font-size: @font-size20;
     }
@@ -324,13 +331,13 @@ body {
         display: inline-block;
         overflow: hidden;
       }
-      .setLabel{
+      .setLabel {
         text-overflow: ellipsis;
         white-space: nowrap;
         max-width: 120px;
         padding: 0 @gap5;
         &:first-child {
-          color:@font-bule;
+          color: @font-bule;
         }
       }
     }
@@ -340,14 +347,15 @@ body {
   }
 }
 
-// public dataset and model group 
+// public dataset and model group
 .groupList {
   .groupTitle {
     line-height: 56px;
     border-bottom: 1px solid #eee;
     padding: 0 20px;
   }
-  .foldBtn, .groupName {
+  .foldBtn,
+  .groupName {
     font-size: 14px;
     font-weight: bold;
     color: @link-color;
@@ -367,15 +375,20 @@ body {
 // public Detail card
 .ant-card-body,
 .datasetDetail,
-.taskDetail, 
+.taskDetail,
 .error {
   .infoTable {
     margin-bottom: 20px;
     .ant-descriptions-view {
       border: none;
     }
-    tr,th,td {
+    tr,
+    th,
+    td {
       border: none;
+    }
+    &.vertical th {
+      border-right: 1px solid #fff;
     }
     tr {
       margin-bottom: 1px;
@@ -384,7 +397,7 @@ body {
   }
 }
 .datasetDetail,
-.taskDetail, 
+.taskDetail,
 .error {
   .title {
     line-height: 18px;
@@ -395,7 +408,7 @@ body {
       display: inline-block;
       width: 6px;
       height: 18px;
-      background-color: #36CBCB;
+      background-color: #36cbcb;
       vertical-align: bottom;
       margin-right: 10px;
     }
@@ -458,8 +471,8 @@ body {
 .ant-space-item {
   .anticon + span {
     margin-left: 5px;
-  } 
-} 
+  }
+}
 
 // right side form
 .rightForm {
@@ -474,7 +487,7 @@ body {
     background-color: rgba(0, 0, 0, 0.1);
     z-index: 5;
     margin: 0 -10px -10px;
-  } 
+  }
 }
 
 .fullTab {

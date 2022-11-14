@@ -20,6 +20,7 @@ import useRerunAction from '../../hooks/useRerunAction'
 import useCardTitle from '@/hooks/useCardTitle'
 import VersionName from '@/components/result/VersionName'
 import EditDescBox from '@/components/form/editDescBox'
+import Empty from '@/components/empty/default'
 
 import styles from './detail.less'
 
@@ -36,9 +37,7 @@ function ModelDetail() {
   const cardTitle = useCardTitle(null, model?.name)
   const [editing, setEditing] = useState({})
 
-  useEffect(async () => {
-    ;(id || model?.needReload) && getModel({ id, force: true })
-  }, [id, model?.needReload])
+  useEffect(async () => (id || model?.needReload) && fetchModel(model.needReload), [id, model?.needReload])
 
   function editDesc() {
     setEditing({})
@@ -56,33 +55,42 @@ function ModelDetail() {
     restoreAction('model', [id])
   }
 
+  function fetchModel(force) {
+    getModel({ id, force })
+  }
+
   function getModelStage() {
     const stage = model.recommendStage
     return stage ? [id, stage].toString() : ''
+  }
+
+  function renderIntUnit(num) {
+    return <span className={styles.metricsCount}>{t('model.metrics.fpfn.unit', { num: <span className={styles.metricsNum}>{num}</span> })}</span>
+  }
+
+  function renderPercentItem(label, value, format, color = null) {
+    return (
+      <Descriptions.Item label={label}>
+        {typeof value !== 'undefined' ? <Progress type="circle" percent={value} format={format} strokeColor={color} /> : <Empty />}
+      </Descriptions.Item>
+    )
   }
 
   function renderMetrics() {
     const stage = getRecommendStage(model)
     return stage ? (
       <Descriptions
+        className="infoTable vertical"
         layout="vertical"
         column={4}
+        style={{ textAlign: 'center', marginTop: '-19px' }}
         labelStyle={{ display: 'block', fontWeight: 'bold', textAlign: 'center' }}
         bordered
-        style={{ width: 'calc(100% + 240px)' }}
       >
-        <Descriptions.Item label={'mAP'} style={{ width: '25%' }}>
-          <Progress type="circle" percent={stage.map * 100} />
-        </Descriptions.Item>
-        <Descriptions.Item label={'Recall'} style={{ width: '25%' }}>
-          {typeof stage.metrics.ar === 'undefined' ? <Progress type="circle" percent={stage.metrics.ar * 100} /> : null}
-        </Descriptions.Item>
-        <Descriptions.Item label={'FN'} style={{ width: '25%' }}>
-          <Progress type="circle" percent={100} format={() => stage.metrics.fn} strokeColor={'rgba(255, 0, 255, 0.1)'} />
-        </Descriptions.Item>
-        <Descriptions.Item label={'FP'} style={{ width: '25%' }}>
-          <Progress type="circle" percent={100} format={() => stage.metrics.fp} strokeColor={'rgba(255, 0, 0, 0.1)'} />
-        </Descriptions.Item>
+        {renderPercentItem('mAP', stage.map * 100, (cent) => percent(cent / 100), 'rgb(54, 203, 203)')}
+        {renderPercentItem('Recall', 0.65 * 100, (cent) => percent(cent / 100), 'rgb(44, 189, 233)')}
+        {renderPercentItem('FN', 100, () => renderIntUnit(stage.metrics.fn), 'rgb(255, 255, 255)')}
+        {renderPercentItem('FP', 100, () => renderIntUnit(stage.metrics.fp), 'rgb(255, 255, 255)')}
       </Descriptions>
     ) : null
   }
@@ -107,13 +115,13 @@ function ModelDetail() {
                 ))}
               </div>
             </Item>
-            <Item span={2} labelStyle={{ display: 'none' }} contentStyle={{ padding: 0, marginLeft: '-200px' }}>
-              {renderMetrics()}
-            </Item>
+            {/* <Item label={null} span={2} contentStyle={{ padding: 0, marginLeft: '-200px' }}>
+            </Item> */}
             <Item label={t('common.desc')} span={2}>
               <DescPop description={model.description} />
             </Item>
           </Descriptions>
+          {renderMetrics()}
           <TaskProgress
             state={model.state}
             result={model}
