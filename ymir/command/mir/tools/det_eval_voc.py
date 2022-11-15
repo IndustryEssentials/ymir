@@ -212,7 +212,7 @@ def _get_single_evaluate_element(prediction: mirpb.SingleTaskAnnotations, ground
                             match_result=match_result,
                             ovthresh=iou_thr,
                             npos=npos,
-                            use_07_metric=True)
+                            use_07_metric=False)
 
     # voc_eval to get result
     see = mirpb.SingleEvaluationElement(ap=eval_result['ap'],
