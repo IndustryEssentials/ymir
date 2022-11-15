@@ -310,16 +310,16 @@ function Matrics({ pid, project }) {
                 </Form.Item>
                 <Form.Item label={t('model.diagnose.form.iou')}>
                   <Radio.Group value={averageIou} onChange={({ target: { value } }) => setaverageIou(value)} options={iouOptions}></Radio.Group>
-                  <Form.Item noStyle name="iou">
-                    <Slider
-                      style={{ display: !averageIou ? 'block' : 'none' }}
-                      min={0.25}
-                      max={0.95}
-                      step={0.05}
-                      marks={{ 0.25: '0.25', 0.5: '0.5', 0.95: '0.95' }}
-                      onChange={setIou}
-                    />
-                  </Form.Item>
+                  <Row gutter={10}>
+                    <Col flex={1}>
+                      <Form.Item noStyle name="iou" style={{ display: 'inline-block', width: '90%' }}>
+                        <Slider style={{ display: !averageIou ? 'block' : 'none' }} min={0.25} max={0.95} step={0.05} onChange={setIou} />
+                      </Form.Item>
+                    </Col>
+                    <Col>
+                      <InputNumber style={{ width: 60 }} value={iou} />
+                    </Col>
+                  </Row>
                 </Form.Item>
                 <Form.Item name="submitBtn">
                   <div style={{ textAlign: 'center' }}>
