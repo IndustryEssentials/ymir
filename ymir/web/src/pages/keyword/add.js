@@ -126,7 +126,7 @@ const Add = ({ visible, keys = [], cancel = () => { }, ok = () => { }, updateKey
                     <Form.Item
                       {...field}
                       // label="Value"
-                      label={field.name === 0 ? <>{t('keyword.add.alias.label')}<Tip content={t('tip.task.filter.alias')} style={{ fontSize: 16 }} /></> : null}
+                      label={field.name === 0 ? <>{t('keyword.add.alias.label')}<Tip content={t('tip.task.filter.alias')} iconStyles={{ fontSize: 16 }} /></> : null}
                       name={[field.name, 'aliases']}
                       fieldKey={[field.fieldKey, 'aliases']}
                       rules={[
