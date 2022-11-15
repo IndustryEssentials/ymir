@@ -1,20 +1,20 @@
-
-import React, { useEffect, useRef, useState } from "react"
+import React, { useEffect, useRef, useState } from 'react'
 import { connect } from 'dva'
-import { useHistory } from "umi"
-import { List, Skeleton, Space, Button, Pagination, Col, Row, } from "antd"
+import { useHistory } from 'umi'
+import { List, Skeleton, Space, Button, Pagination, Col, Row, Alert } from 'antd'
 
-import t from "@/utils/t"
+import t from '@/utils/t'
 import { HIDDENMODULES } from '@/constants/common'
 import { ROLES } from '@/constants/user'
 import { TYPES, STATES, getImageTypeLabel, imageIsPending } from '@/constants/image'
-import ShareModal from "./share"
+import ShareModal from './share'
 import RelateModal from './relate'
 import Del from './del'
-import s from "./list.less"
-import { VectorIcon, TrainIcon, TipsIcon, EditIcon, DeleteIcon, AddIcon, MoreIcon, ShareIcon, LinkIcon } from "@/components/common/Icons"
-import ImagesLink from "./imagesLink"
-import { FailIcon, SuccessIcon } from "@/components/common/Icons"
+import s from './list.less'
+import { VectorIcon, TrainIcon, TipsIcon, EditIcon, DeleteIcon, AddIcon, MoreIcon, ShareIcon, LinkIcon } from '@/components/common/Icons'
+import ImagesLink from './imagesLink'
+import Tip from '@/components/form/tip'
+import { FailIcon, SuccessIcon } from '@/components/common/Icons'
 import { LoadingOutlined } from '@ant-design/icons'
 
 const initQuery = {
@@ -26,7 +26,6 @@ const initQuery = {
 }
 
 const ImageList = ({ role, filter, getImages }) => {
-
   const history = useHistory()
   const [images, setImages] = useState([])
   const [total, setTotal] = useState(1)
@@ -68,28 +67,28 @@ const ImageList = ({ role, filter, getImages }) => {
 
     const menus = [
       {
-        key: "link",
-        label: t("image.action.link"),
+        key: 'link',
+        label: t('image.action.link'),
         onclick: () => link(id, name, related),
-        hidden: () => (!isTrain(functions) || !isDone(state)),
+        hidden: () => !isTrain(functions) || !isDone(state),
         icon: <LinkIcon />,
       },
       {
-        key: "share",
-        label: t("image.action.share"),
+        key: 'share',
+        label: t('image.action.share'),
         onclick: () => share(id, name),
         hidden: () => !isDone(state) || isShared,
         icon: <ShareIcon />,
       },
       {
-        key: "edit",
-        label: t("image.action.edit"),
+        key: 'edit',
+        label: t('image.action.edit'),
         onclick: () => history.push(`/home/image/add/${id}`),
         icon: <EditIcon />,
       },
       {
-        key: "del",
-        label: t("image.action.del"),
+        key: 'del',
+        label: t('image.action.del'),
         hidden: () => imageIsPending(state),
         onclick: () => del(id, name),
         icon: <DeleteIcon />,
@@ -97,8 +96,8 @@ const ImageList = ({ role, filter, getImages }) => {
     ]
 
     const detail = {
-      key: "detail",
-      label: t("image.action.detail"),
+      key: 'detail',
+      label: t('image.action.detail'),
       onclick: () => history.push(`/home/image/detail/${id}`),
       icon: <MoreIcon />,
     }
@@ -110,8 +109,8 @@ const ImageList = ({ role, filter, getImages }) => {
   }
 
   const delOk = (id) => {
-    setImages(images.filter(image => image.id !== id))
-    setTotal(old => old - 1)
+    setImages(images.filter((image) => image.id !== id))
+    setTotal((old) => old - 1)
     getData()
   }
 
@@ -134,17 +133,13 @@ const ImageList = ({ role, filter, getImages }) => {
   const more = (item) => {
     return (
       <Space>
-        {moreList(item).filter(menu => !(menu.hidden && menu.hidden())).map((action) => (
-          <a
-            type='link'
-            className={action.className}
-            key={action.key}
-            onClick={action.onclick}
-            title={action.label}
-          >
-            {action.icon}
-          </a>
-        ))}
+        {moreList(item)
+          .filter((menu) => !(menu.hidden && menu.hidden()))
+          .map((action) => (
+            <a type="link" className={action.className} key={action.key} onClick={action.onclick} title={action.label}>
+              {action.icon}
+            </a>
+          ))}
       </Space>
     )
   }
@@ -163,57 +158,85 @@ const ImageList = ({ role, filter, getImages }) => {
   }
 
   const addBtn = (
-    <div className={s.addBtn} onClick={() => history.push('/home/image/add')}><AddIcon />{t('image.new.label')}</div>
+    <div className={s.addBtn} onClick={() => history.push('/home/image/add')}>
+      <AddIcon />
+      {t('image.new.label')}
+    </div>
   )
 
   const renderItem = (item) => {
-    const title = <Row wrap={false}>
-      <Col flex={1}><Space>
-        <span>{item.name}</span>
-        {imageState(item.state)}
-        {isDone(item.state) && !HIDDENMODULES.LIVECODE ? liveCodeState(item.liveCode) : null}
-        </Space></Col>
-      <Col>{more(item)}</Col>
-    </Row>
+    const title = (
+      <Row wrap={false}>
+        <Col flex={1}>
+          <Space>
+            <span>{item.name}</span>
+            {imageState(item.state)}
+            {isDone(item.state) && !HIDDENMODULES.LIVECODE ? liveCodeState(item.liveCode) : null}
+          </Space>
+        </Col>
+        <Col>{more(item)}</Col>
+      </Row>
+    )
     const type = isTrain(item.functions) ? 'train' : 'mining'
-    const desc = <Row><Col className={s.desc} flex={1}>
-      <Space className={s.info} wrap={true}>
-        <span className={s.infoItem} style={{ minWidth: 200 }}><span className={s.infoLabel}>{t('image.list.item.type')}</span>{getImageTypeLabel(item.functions).map(label => t(label)).join(', ')}</span>
-        <span className={s.infoItem} style={{ minWidth: 300 }}><span className={s.infoLabel}>{t('image.list.item.url')}</span>{item.url}</span>
-        <span className={s.infoItem}><span className={s.infoLabel}>{t('image.list.item.desc')}</span>{item.description}</span>
-      </Space>
-      {isTrain(item.functions) && item.related?.length ? <div className={s.related}><span>{t('image.list.item.related')}</span><ImagesLink images={item.related} /></div> : null}
-    </Col>
-    </Row>
+    const desc = (
+      <Row>
+        <Col className={s.desc} flex={1}>
+          <Space className={s.info} wrap={true}>
+            <span className={s.infoItem} style={{ minWidth: 200 }}>
+              <span className={s.infoLabel}>{t('image.list.item.type')}</span>
+              {getImageTypeLabel(item.functions)
+                .map((label) => t(label))
+                .join(', ')}
+            </span>
+            <span className={s.infoItem} style={{ minWidth: 300 }}>
+              <span className={s.infoLabel}>{t('image.list.item.url')}</span>
+              {item.url}
+            </span>
+            <span className={s.infoItem}>
+              <span className={s.infoLabel}>{t('image.list.item.desc')}</span>
+              {item.description}
+            </span>
+          </Space>
+          {isTrain(item.functions) && item.related?.length ? (
+            <div className={s.related}>
+              <span>{t('image.list.item.related')}</span>
+              <ImagesLink images={item.related} />
+            </div>
+          ) : null}
+        </Col>
+      </Row>
+    )
 
-    return <List.Item className={item.state ? 'success' : 'failure'}>
-      <Skeleton active loading={item.loading}>
-        <List.Item.Meta title={title} description={desc}>
-        </List.Item.Meta>
-      </Skeleton>
-    </List.Item>
+    return (
+      <List.Item className={item.state ? 'success' : 'failure'}>
+        <Skeleton active loading={item.loading}>
+          <List.Item.Meta title={title} description={desc}></List.Item.Meta>
+        </Skeleton>
+      </List.Item>
+    )
   }
 
   return (
     <div className={s.imageContent}>
-      {isAdmin() ? addBtn : null}
-      <List
-        className='list'
-        dataSource={images}
-        renderItem={renderItem}
-      />
-      <Pagination className='pager' onChange={pageChange}
+      {isAdmin() ? addBtn : <Alert message={t('image.add.image.tip.admin')} type="warning" showIcon />}
+      <List className="list" dataSource={images} renderItem={renderItem} />
+      <Pagination
+        className="pager"
+        onChange={pageChange}
         current={query.current}
-        defaultCurrent={query.current} defaultPageSize={query.limit} total={total}
+        defaultCurrent={query.current}
+        defaultPageSize={query.limit}
+        total={total}
         showTotal={() => t('image.list.total', { total })}
-        showQuickJumper showSizeChanger />
+        showQuickJumper
+        showSizeChanger
+      />
       <ShareModal ref={shareModalRef} ok={shareOk} />
       <RelateModal ref={linkModalRef} ok={relateOk} />
       <Del ref={delRef} ok={delOk} />
     </div>
   )
 }
-
 
 const props = (state) => {
   return {

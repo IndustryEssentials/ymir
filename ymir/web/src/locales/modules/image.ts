@@ -64,6 +64,7 @@ const image = {
   'image.select.opt.normal': { en: "List", cn: "列表", },
   'image.livecode.label.remote': { en: "Remote", cn: "远端", },
   'image.livecode.label.local': { en: "Local", cn: "本地", },
+  'image.add.image.tip.admin': { en: "Only Administrators be allowed to add image", cn: "只有管理员才能添加镜像", },
 }
 
 export default image
