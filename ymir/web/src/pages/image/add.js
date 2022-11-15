@@ -4,6 +4,7 @@ import { useParams, useHistory, useLocation } from 'umi'
 
 import s from './add.less'
 import t from '@/utils/t'
+import useFetch from '@/hooks/useFetch'
 import { formLayout } from '@/config/antd'
 import Breadcrumbs from '@/components/common/breadcrumb'
 
