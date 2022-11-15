@@ -52,7 +52,7 @@ const Add = () => {
   }, [location.state])
 
   useEffect(() => {
-    initForm(image)
+    image?.id && initForm(image)
   }, [image])
 
   function initForm(image = {}) {
