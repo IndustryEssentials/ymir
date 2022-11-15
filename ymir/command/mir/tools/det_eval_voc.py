@@ -93,6 +93,7 @@ def _voc_eval(class_recs: Dict[str, Dict[str, Any]], BB: np.ndarray, confidence:
     fp = np.zeros(nd)  # 0 or 1, tp[d] == 1 means BB[d] is false positive
     for d in range(nd):
         if image_ids[d] not in class_recs:
+            fp[d] = 1.
             continue
 
         R = class_recs[image_ids[d]]  # gt of that image name
@@ -170,14 +171,13 @@ def _get_single_evaluate_element(prediction: mirpb.SingleTaskAnnotations, ground
     npos = 0
     for asset_id, image_annotations in ground_truth.image_annotations.items():
         img_gts = [x for x in image_annotations.boxes if x.class_id == class_id]
-        if len(img_gts) == 0:
-            continue
 
         # bbox: shape: (len(annos), 4), type: int, x1y1x2y2
         bbox = np.array([[x.box.x, x.box.y, x.box.x + x.box.w, x.box.y + x.box.h] for x in img_gts])
         difficult = np.array([False] * len(img_gts))  # shape: (len(annos),)
         det = [False] * len(img_gts)  # 1: have matched detections, 0: not matched yet
-        npos = npos + sum(~difficult)
+        if len(difficult) > 0:
+            npos = npos + sum(~difficult)
         pb_index_ids = [x.index for x in img_gts]
 
         class_recs[asset_id] = {
@@ -212,7 +212,7 @@ def _get_single_evaluate_element(prediction: mirpb.SingleTaskAnnotations, ground
                             match_result=match_result,
                             ovthresh=iou_thr,
                             npos=npos,
-                            use_07_metric=True)
+                            use_07_metric=False)
 
     # voc_eval to get result
     see = mirpb.SingleEvaluationElement(ap=eval_result['ap'],
