@@ -141,6 +141,12 @@ declare namespace YModels {
     map: number
     modelId?: number
     modelName?: string
+    metrics?: {
+      ar?: number
+      fn?: number
+      fp?: number
+      tp?: number
+    }
   }
   export interface ModelGroup extends Group {}
   export interface Model<P = TaskParams> extends Result<P> {

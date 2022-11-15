@@ -1,4 +1,4 @@
-import request from "@/utils/request"
+import request from '@/utils/request'
 
 /** model service */
 /**
@@ -13,8 +13,8 @@ export function getModel(id) {
 
 /**
  * get model versions by model group id
- * @param {number} group_id 
- * @returns 
+ * @param {number} group_id
+ * @returns
  */
 export function getModelVersions(group_id) {
   return request.get(`models/`, { params: { group_id, limit: 10000 } })
@@ -23,48 +23,38 @@ export function getModelVersions(group_id) {
 /**
  * query models
  * @param {object} param1 {
- *   {number} project_id 
+ *   {number} project_id
  *   {number} [type] task type
  *   {number} [state] model state
  *   {string} [name] model name
  *   {boolean} [visible] hidden or not
  *   {number} [offset]  query start
- *   {number} [limit] query count 
+ *   {number} [limit] query count
  * }
- * @returns 
+ * @returns
  */
-export function queryModels({
-  project_id,
-  type,
-  state,
-  name,
-  order_by,
-  is_desc,
-  visible = true,
-  offset = 0,
-  limit = 10,
-}) {
-  return request.get("models/", { params: { project_id, type, state, name, visible, order_by, is_desc, offset, limit } })
+export function queryModels({ project_id, type, state, name, order_by, is_desc, visible = true, offset = 0, limit = 10 }) {
+  return request.get('models/', { params: { project_id, type, state, name, visible, order_by, is_desc, offset, limit } })
 }
 
 /**
  * get models
  * @param {object} param1 {
- *   {number} project_id 
+ *   {number} project_id
  *   {string} name model name
  *   {number} offset  query start
- *   {number} limit query count 
+ *   {number} limit query count
  * }
  * @returns
  */
 export function getModels(project_id, { name, offset = 0, limit = 10 }) {
-  return request.get("model_groups/", { params: { project_id, name, offset, limit } })
+  return request.get('model_groups/', { params: { project_id, name, offset, limit } })
 }
 
 /**
  * batch fetch models
- * @param {array} ids 
- * @returns 
+ * @param {array} ids
+ * @returns
  */
 export function batchModels(ids) {
   return request.get('models/batch', { params: { ids: ids.toString() } })
@@ -77,7 +67,7 @@ export function batchModels(ids) {
  */
 export function delModel(id) {
   return request({
-    method: "delete",
+    method: 'delete',
     url: `/models/${id}`,
   })
 }
@@ -89,11 +79,10 @@ export function delModel(id) {
  */
 export function delModelGroup(id) {
   return request({
-    method: "delete",
+    method: 'delete',
     url: `/model_groups/${id}`,
   })
 }
-
 
 /**
  * hide/restore/delete models
@@ -105,23 +94,23 @@ export function delModelGroup(id) {
 export function batchAct(action, projectId, ids = []) {
   return request.post(`/models/batch`, {
     project_id: projectId,
-    operations: ids.map(id => ({ id, action, }))
+    operations: ids.map((id) => ({ id, action })),
   })
 }
 
 /**
- * 
+ *
  * @param {object} param {
  * {string} projectId
  * {string} name
- * {string} [path] local file path 
+ * {string} [path] local file path
  * {string} [url]  net url
  * {number} [modelId] copy model id
  * {string} [description]
  * }
- * @returns 
+ * @returns
  */
-export function importModel({ projectId, name, description, url, path, modelId, }) {
+export function importModel({ projectId, name, description, url, path, modelId }) {
   return request.post('/models/importing', {
     project_id: projectId,
     input_model_path: path,
@@ -132,9 +121,9 @@ export function importModel({ projectId, name, description, url, path, modelId, 
   })
 }
 
-export function updateModel(id, name) {
+export function updateModelGroup(id, name) {
   return request({
-    method: "patch",
+    method: 'patch',
     url: `/model_groups/${id}`,
     data: {
       name,
@@ -144,13 +133,13 @@ export function updateModel(id, name) {
 
 /**
  * update model version description
- * @param {number} id 
- * @param {string} description 
- * @returns 
+ * @param {number} id
+ * @param {string} description
+ * @returns
  */
 export function updateVersion(id, description = '') {
   return request({
-    method: "patch",
+    method: 'patch',
     url: `/models/${id}`,
     data: {
       description,
@@ -165,7 +154,7 @@ export function updateVersion(id, description = '') {
  * @param {array} urls image urls
  * @param {number} image docker image url
  * @param {object<key: value>} config docker image configure
- * @returns 
+ * @returns
  */
 export function verify({ projectId, modelStage, urls, image, config }) {
   const [model, stage] = modelStage
@@ -175,7 +164,7 @@ export function verify({ projectId, modelStage, urls, image, config }) {
     model_stage_id: stage,
     image_urls: urls,
     docker_image: image,
-    docker_image_config: config
+    docker_image_config: config,
   })
 }
 
@@ -185,14 +174,14 @@ export function setRecommendStage(model, stage) {
     url: `/models/${model}`,
     data: {
       stage_id: stage,
-    }
+    },
   })
 }
 
 /**
  * batch fetch model stages
- * @param {array} ids 
- * @returns 
+ * @param {array} ids
+ * @returns
  */
 export function batchModelStages(ids) {
   return request.get('model_stages/batch', { params: { ids: ids.toString() } })
