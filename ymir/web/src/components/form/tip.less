@@ -1,28 +1,25 @@
+@error: rgb(242, 99, 123);
+@success: @primary-color;
+@warning: fade(yellow, 30);
+.style(@type, @color) {
+  &@{type} {
+    background: fade(@color, 10);
+    border: 1px solid @color;
+  }
+  @{type} {
+    color: @color;
+  }
+}
 .tipContainer {
-  @error: rgb(242, 99, 123);
-  @success: @primary-color;
   color: rgba(0, 0, 0, 0.65);
-
-  &.error, &.success {
-    border-radius: 2px;
-    line-height: 40px;
-    padding: 0 10px;
-  }
-  &.success {
-    background: fade(@success, 10);
-    border: 1px solid @success;
-  }
-  &.error {
-    background: fade(@error, 10);
-    border: 1px solid @error;
-  }
-  .success, .error {
+  border-radius: 2px;
+  line-height: 40px;
+  padding: 0 10px;
+  .icon {
     margin-right: 10px;
   }
-  .success {
-    color: @success;
-  }
-  .error {
-    color: @error;
-  }
+
+  .style('.success', @success);
+  .style('.error', @error);
+  .style('.warning', @warning);
 }
