@@ -28,10 +28,11 @@ const StepAction = ({ steps, selected, iteration, callback = () => {} }) => {
   const comps = {
     [STEP.prepareMining]: {
       comp: Fusion,
-      query: (settings = {}) => ({
+      query: (settings = {}, steps) => ({
         did: settings.mining_dataset_id,
         strategy: settings.mining_strategy,
         chunk: settings.sampling_count,
+        excludes: [steps[3].preSetting.training_dataset_id, steps[4].validation_dataset_id],
       }),
     },
     [STEP.mining]: {
@@ -105,7 +106,7 @@ const StepAction = ({ steps, selected, iteration, callback = () => {} }) => {
     const name = iteration?.currentStep?.name || STEP.next
     const targetStep = getStep(name, steps)
     const targetComps = comps[name]
-    const query = !iteration.end ? targetComps.query(targetStep.preSetting) : {}
+    const query = !iteration.end ? targetComps.query(targetStep.preSetting, iteration.steps) : {}
     setCurrentStep({
       ...targetStep,
       ...targetComps,
