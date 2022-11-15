@@ -115,7 +115,7 @@ const Add = () => {
               name="url"
               rules={[{ required: true, message: t('image.add.form.url.required') }, { validator: checkImageUrl }]}
             >
-              <Input placeholder={t('image.add.form.url.placeholder')} disabled={image.url} autoComplete="off" allowClear onChange={urlChange} />
+              <Input placeholder={t('image.add.form.url.placeholder')} disabled={image?.url} autoComplete="off" allowClear onChange={urlChange} />
             </Form.Item>
             <Form.Item
               label={t('image.add.form.name')}
