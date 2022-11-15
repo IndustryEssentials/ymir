@@ -54,7 +54,6 @@ const MapView = ({ tasks, datasets, models, data, xType, kw: { kwType, keywords 
   function generateDData(data) {
     const ddata = Object.keys(data).reduce((prev, rid) => {
       const fiou = (!kwType && averageIou) ? getAverageField(data[rid]) : getKwField(data[rid], kwType)
-      console.log('fiou:', fiou, averageIou)
       return {
         ...prev,
         [rid]: fiou,
@@ -67,7 +66,6 @@ const MapView = ({ tasks, datasets, models, data, xType, kw: { kwType, keywords 
     const kdata = {}
     Object.keys(data).forEach(id => {
       const fiou = (!kwType && averageIou) ? getAverageField(data[id]) : getKwField(data[id], kwType)
-      console.log('generateKData fiou:', fiou)
       Object.keys(fiou).forEach(key => {
         kdata[key] = kdata[key] || {}
         kdata[key][id] = fiou[key]
