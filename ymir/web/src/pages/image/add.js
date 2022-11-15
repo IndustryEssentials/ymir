@@ -4,6 +4,7 @@ import { useParams, useHistory, useLocation } from 'umi'
 
 import s from './add.less'
 import t from '@/utils/t'
+import useFetch from '@/hooks/useFetch'
 import { formLayout } from '@/config/antd'
 import Breadcrumbs from '@/components/common/breadcrumb'
 
@@ -52,7 +53,7 @@ const Add = () => {
   }, [location.state])
 
   useEffect(() => {
-    initForm(image)
+    image?.id && initForm(image)
   }, [image])
 
   function initForm(image = {}) {
@@ -114,7 +115,7 @@ const Add = () => {
               name="url"
               rules={[{ required: true, message: t('image.add.form.url.required') }, { validator: checkImageUrl }]}
             >
-              <Input placeholder={t('image.add.form.url.placeholder')} disabled={image.url} autoComplete="off" allowClear onChange={urlChange} />
+              <Input placeholder={t('image.add.form.url.placeholder')} disabled={image?.url} autoComplete="off" allowClear onChange={urlChange} />
             </Form.Item>
             <Form.Item
               label={t('image.add.form.name')}
