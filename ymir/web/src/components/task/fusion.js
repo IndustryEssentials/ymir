@@ -16,7 +16,7 @@ import SubmitButtons from './submitButtons'
 import Dataset from '@/components/form/option/Dataset'
 
 function Fusion({ query = {}, hidden, ok = () => {}, bottom }) {
-  const { did, iterationId, chunk, strategy = '' } = query
+  const { did, iterationId, chunk, strategy = '', excludes = [] } = query
 
   const pageParams = useParams()
   const pid = Number(pageParams.id)
@@ -103,6 +103,7 @@ function Fusion({ query = {}, hidden, ok = () => {}, bottom }) {
       mining_strategy: miningStrategy,
       exclude_result: excludeResult,
       include_strategy: Number(values.strategy) || 2,
+      exclude_datasets: [...(values.exclude_datasets || []), ...excludes],
     }
     if (iterationId) {
       params.iteration = iterationId

@@ -24,7 +24,7 @@ const DatasetSelect = ({
 
   useEffect(() => {
     pid && fetchDatasets()
-  }, [pid])
+  }, [pid, value])
 
   useEffect(() => {
     onReady(datasets)
