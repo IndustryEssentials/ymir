@@ -56,6 +56,13 @@ class IterationStepTemplate:
         presetting = {"mining_dataset_id": project.mining_dataset_id}
         if not previous_iteration:
             return presetting
+
+        last_training_step = self.get_step("training", previous_iteration)
+        presetting["exclude_datasets"] = [
+            last_training_step.presetting["dataset_id"],
+            last_training_step.presetting["validation_dataset_id"],
+        ]
+
         sticky_parameters = ["mining_strategy", "exclude_last_result", "sampling_count"]
         prior_presetting = self.get_prior_presetting(previous_iteration, sticky_parameters)
         presetting.update(prior_presetting)
