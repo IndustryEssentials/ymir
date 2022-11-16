@@ -60,8 +60,10 @@ def _cleanup_dir_sub_items(dir: str, ignored_items: Set[str]) -> None:
         item_path = os.path.join(dir, item)
         if os.path.islink(item_path):
             os.unlink(item_path)
+            logging.info(f"cleanup: unlink: {item_path}")
         elif os.path.isdir(item_path):
             shutil.rmtree(item_path)
+            logging.info(f"cleanup: remove dir: {item_path}")
         elif os.path.isfile(item_path):
             os.remove(item_path)
 
@@ -125,6 +127,7 @@ def command_run_in_out(f: Callable) -> Callable:
 
             if ret == MirCode.RC_OK:
                 mir_logger.update_percent_info(local_percent=1, task_state=phase_logger.PhaseStateEnum.DONE)
+                _cleanup(work_dir=work_dir)  # cleanup iff everything goes well
                 # no need to call _commit_error, already committed inside command run function
             else:
                 mir_logger.update_percent_info(local_percent=1,
@@ -140,8 +143,6 @@ def command_run_in_out(f: Callable) -> Callable:
                               predefined_task=None)
 
             logging.info(f"command done: {dst_rev}, return code: {ret}")
-
-            _cleanup(work_dir=work_dir)
 
             return ret
 
@@ -162,9 +163,6 @@ def command_run_in_out(f: Callable) -> Callable:
 
         logging.info(f"command failed: {dst_rev}; exc: {exc}")
         logging.info(f"trace: {trace_message}")
-
-        # should not cleanup task env if failed.
-        # _cleanup(work_dir=work_dir)
 
         raise exc
 
