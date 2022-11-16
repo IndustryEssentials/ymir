@@ -1,17 +1,10 @@
-import {
-  getProjects,
-  getProject,
-  delProject,
-  createProject,
-  updateProject,
-  addExampleProject,
-  checkStatus,
-} from "@/services/project"
+import { getProjects, getProject, delProject, createProject, updateProject, addExampleProject, checkStatus } from '@/services/project'
 import { transferProject } from '@/constants/project'
 import { deepClone } from '@/utils/object'
+import { NormalReducer } from './_utils'
 
 const initQuery = {
-  name: "",
+  name: '',
   current: 1,
   offset: 0,
   limit: 20,
@@ -26,16 +19,22 @@ const initState = {
   current: null,
 }
 
+const reducers = {
+  UPDATE_LIST: NormalReducer('list'),
+  UPDATE_PROJECTS: NormalReducer('projects'),
+  UPDATE_CURRENT: NormalReducer('current'),
+}
+
 export default {
-  namespace: "project",
+  namespace: 'project',
   state: deepClone(initState),
   effects: {
     *getProjects({ payload }, { call, put }) {
       const { code, result } = yield call(getProjects, payload)
       if (code === 0) {
-        const projects = { items: result.items.map(project => transferProject(project)), total: result.total }
+        const projects = { items: result.items.map((project) => transferProject(project)), total: result.total }
         yield put({
-          type: "UPDATE_LIST",
+          type: 'UPDATE_LIST',
           payload: projects,
         })
         return projects
@@ -44,10 +43,10 @@ export default {
     *getProject({ payload }, { select, call, put }) {
       const { id, force } = payload
       if (!force) {
-        const cache = yield select(state => state.project.projects)
+        const cache = yield select((state) => state.project.projects)
         const cacheProject = cache[id]
         if (cacheProject) {
-          yield put({ 
+          yield put({
             type: 'UPDATE_CURRENT',
             payload: cacheProject,
           })
@@ -58,8 +57,8 @@ export default {
       if (code === 0) {
         const project = transferProject(result)
         yield put({
-          type: "UPDATE_PROJECTS",
-          payload: project,
+          type: 'UPDATE_PROJECTS',
+          payload: { [project.id]: project },
         })
         yield put({
           type: 'UPDATE_CURRENT',
@@ -77,7 +76,12 @@ export default {
     *createProject({ payload }, { call, put }) {
       const { code, result } = yield call(createProject, payload)
       if (code === 0) {
-        return result
+        const project = transferProject(result)
+        yield put({
+          type: 'UPDATE_PROJECTS',
+          payload: { [project.id]: project },
+        })
+        return project
       }
     },
     *addExampleProject({ payload }, { call, put }) {
@@ -92,8 +96,8 @@ export default {
       if (code === 0) {
         const project = transferProject(result)
         yield put({
-          type: "UPDATE_PROJECTS",
-          payload: project,
+          type: 'UPDATE_PROJECTS',
+          payload: { [project.id]: project },
         })
         return project
       }
@@ -106,16 +110,16 @@ export default {
           ...query,
           ...payload,
           offset: query.offset === payload.offset ? initQuery.offset : payload.offset,
-        }
+        },
       })
     },
-    *resetQuery({ }, { put }) {
+    *resetQuery({}, { put }) {
       yield put({
         type: 'UPDATE_QUERY',
         payload: initQuery,
       })
     },
-    *clearCache({ }, { put }) {
+    *clearCache({}, { put }) {
       yield put({ type: 'CLEAR_ALL' })
     },
     *checkStatus({ payload }, { call, put }) {
@@ -127,27 +131,7 @@ export default {
     },
   },
   reducers: {
-    UPDATE_LIST(state, { payload }) {
-      return {
-        ...state,
-        list: payload
-      }
-    },
-    UPDATE_PROJECTS(state, { payload }) {
-      const projects = { ...state.projects }
-      const project = payload
-      projects[project.id] = project
-      return {
-        ...state,
-        projects,
-      }
-    },
-    UPDATE_CURRENT(state, { payload }) {
-      return {
-        ...state,
-        current: payload,
-      }
-    },
+    ...reducers,
     UPDATE_PREPARETRAINSET(state, { payload }) {
       return {
         ...state,
