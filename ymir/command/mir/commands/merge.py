@@ -194,7 +194,6 @@ def _merge_to_mir(host_mir_metadatas: mirpb.MirMetadatas, host_mir_annotations: 
         raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_MIR_REPO,
                               error_message=f"guest repo {mir_root}:{guest_typ_rev_tid.rev} has no metadata.")
 
-    # todo: can be simplified if todo in annotations.py solved
     if host_mir_annotations.prediction.type == mirpb.AnnoType.AT_UNKNOWN:
         host_mir_annotations.prediction.type = guest_mir_annotations.prediction.type
     if host_mir_annotations.ground_truth.type == mirpb.AnnoType.AT_UNKNOWN:
