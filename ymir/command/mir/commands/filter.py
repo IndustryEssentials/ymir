@@ -120,19 +120,19 @@ class CmdFilter(base.BaseCommand):
             matched_mir_metadatas.attributes[asset_id].CopyFrom(asset_attr)
 
         # generate `matched_mir_annotations`
-        CmdFilter.__gen_task_annotations(src_task_annotations=mir_annotations.ground_truth,
-                                         dst_task_annotations=matched_mir_annotations.ground_truth,
-                                         asset_ids=asset_ids_set)
-        CmdFilter.__gen_task_annotations(src_task_annotations=mir_annotations.prediction,
-                                         dst_task_annotations=matched_mir_annotations.prediction,
-                                         asset_ids=asset_ids_set)
+        # CmdFilter.__gen_task_annotations(src_task_annotations=mir_annotations.ground_truth,
+        #                                  dst_task_annotations=matched_mir_annotations.ground_truth,
+        #                                  asset_ids=asset_ids_set)
+        # CmdFilter.__gen_task_annotations(src_task_annotations=mir_annotations.prediction,
+        #                                  dst_task_annotations=matched_mir_annotations.prediction,
+        #                                  asset_ids=asset_ids_set)
 
-        image_ck_asset_ids = asset_ids_set & set(mir_annotations.image_cks.keys())
-        for asset_id in image_ck_asset_ids:
-            matched_mir_annotations.image_cks[asset_id].CopyFrom(mir_annotations.image_cks[asset_id])
+        # image_ck_asset_ids = asset_ids_set & set(mir_annotations.image_cks.keys())
+        # for asset_id in image_ck_asset_ids:
+        #     matched_mir_annotations.image_cks[asset_id].CopyFrom(mir_annotations.image_cks[asset_id])
 
-        annotations.copy_annotations_pred_meta(src_task_annotations=mir_annotations.prediction,
-                                               dst_task_annotations=matched_mir_annotations.prediction)
+        # annotations.copy_annotations_pred_meta(src_task_annotations=mir_annotations.prediction,
+        #                                        dst_task_annotations=matched_mir_annotations.prediction)
 
         logging.info("matched: %d, overriding current mir repo", len(matched_mir_metadatas.attributes))
 

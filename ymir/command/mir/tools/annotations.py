@@ -424,3 +424,9 @@ def _gen_unknown_names_and_count(src_class_id_mgr: class_ids.UserLabels, mir_con
         cnt_pred: int = mir_context.gt_stats.class_ids_cnt[src_id]
         unknown_names_and_count[name] = cnt_gt + cnt_pred
     return unknown_names_and_count
+
+
+# filter
+def filter_annotations(mir_annotations: mirpb.MirAnnotations) -> mirpb.MirAnnotations:
+    matched_mir_annotations = mirpb.MirAnnotations()
+    return matched_mir_annotations
