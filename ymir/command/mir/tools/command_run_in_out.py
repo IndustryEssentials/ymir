@@ -4,7 +4,7 @@ import logging
 import os
 import shutil
 import traceback
-from typing import Any, Callable, List, Set
+from typing import Any, Callable, Set
 
 from mir.tools import mir_repo_utils, mir_storage_ops, phase_logger, revs_parser
 from mir.tools.code import MirCode
@@ -48,7 +48,7 @@ def _commit_error(code: int, error_msg: str, mir_root: str, src_revs: str, dst_r
                                                   task=predefined_task)
 
 
-def _cleanup_dir_sub_items(dir: str, ignored_items: Set[str], accu_removed_items: List[str]) -> None:
+def _cleanup_dir_sub_items(dir: str, ignored_items: Set[str]) -> None:
     if not os.path.isdir(dir):
         return
 
@@ -60,10 +60,8 @@ def _cleanup_dir_sub_items(dir: str, ignored_items: Set[str], accu_removed_items
         item_path = os.path.join(dir, item)
         if os.path.islink(item_path):
             os.unlink(item_path)
-            accu_removed_items.append(f"link: {item_path}")
         elif os.path.isdir(item_path):
             shutil.rmtree(item_path)
-            accu_removed_items.append(f"dir: {item_path}")
         elif os.path.isfile(item_path):
             os.remove(item_path)
 
@@ -72,15 +70,13 @@ def _cleanup(work_dir: str) -> None:
     if not work_dir:
         return
 
-    accu_removed_items: List[str] = []
-    _cleanup_dir_sub_items(work_dir, ignored_items={'in', 'out'}, accu_removed_items=accu_removed_items)
+    _cleanup_dir_sub_items(work_dir, ignored_items={'in', 'out'})
 
     _cleanup_dir_sub_items(
         os.path.join(work_dir, 'in'),
         ignored_items={
             'config.yaml',  # training, mining & infer executor config file
-        },
-        accu_removed_items=accu_removed_items)
+        })
     _cleanup_dir_sub_items(
         os.path.join(work_dir, 'out'),
         ignored_items={
@@ -91,10 +87,9 @@ def _cleanup(work_dir: str) -> None:
             'ymir-executor-out.log',  # container output
             'infer-result.json',  # infer result file
             'result.yaml',  # mining result file
-        },
-        accu_removed_items=accu_removed_items)
+        })
 
-    logging.info(f"cleanup removed dirs and links: {accu_removed_items}")
+    logging.info('cleanup finish')
 
 
 def command_run_in_out(f: Callable) -> Callable:
