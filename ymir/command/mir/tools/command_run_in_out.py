@@ -72,7 +72,7 @@ def _cleanup(work_dir: str) -> None:
     if not work_dir:
         return
 
-    accu_removed_items = []
+    accu_removed_items: List[str] = []
     _cleanup_dir_sub_items(work_dir, ignored_items={'in', 'out'}, accu_removed_items=accu_removed_items)
 
     _cleanup_dir_sub_items(
