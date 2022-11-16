@@ -91,6 +91,7 @@ def _object_dict_to_annotation(object_dict: dict, cid: int) -> mirpb.ObjectAnnot
     return annotation
 
 
+# import-dataset
 def import_annotations(mir_annotation: mirpb.MirAnnotations, label_storage_file: str, prediction_dir_path: str,
                        groundtruth_dir_path: str, map_hashed_filename: Dict[str, str],
                        unknown_types_strategy: UnknownTypesStrategy, anno_type: "mirpb.AnnoType.V",
@@ -167,8 +168,8 @@ def _import_annotations_seg_mask(map_hashed_filename: Dict[str, str], mir_annota
                                  annotations_dir_path: str, class_type_manager: class_ids.UserLabels,
                                  unknown_types_strategy: UnknownTypesStrategy, accu_new_class_names: Dict[str, int],
                                  image_annotations: mirpb.SingleTaskAnnotations) -> None:
-    map_cname_color = parse_labelmap(label_map_file=os.path.join(annotations_dir_path, 'labelmap.txt'),
-                                     class_type_manager=class_type_manager)
+    map_cname_color = _parse_labelmap(label_map_file=os.path.join(annotations_dir_path, 'labelmap.txt'),
+                                      class_type_manager=class_type_manager)
 
     # batch add all names, including unknown/known names.
     if unknown_types_strategy == UnknownTypesStrategy.ADD:
@@ -323,7 +324,7 @@ def copy_annotations_pred_meta(src_task_annotations: mirpb.SingleTaskAnnotations
     dst_task_annotations.model.CopyFrom(src_task_annotations.model)
 
 
-def parse_labelmap(label_map_file: str, class_type_manager: class_ids.UserLabels) -> Dict[str, Tuple[int, int, int]]:
+def _parse_labelmap(label_map_file: str, class_type_manager: class_ids.UserLabels) -> Dict[str, Tuple[int, int, int]]:
     # fortmat ref:
     # https://github.com/acesso-io/techcore-cvat/tree/develop/cvat/apps/dataset_manager/formats#segmentation-mask-import
     # single line reprs label&color map, e.g. "ego vehicle:0,181,0::" or "road:07::"; otherwise "..." for place-holder.
@@ -357,3 +358,69 @@ def parse_labelmap(label_map_file: str, class_type_manager: class_ids.UserLabels
         map_cname_color[cname] = (pos_ints[0], pos_ints[1], pos_ints[2])
 
     return map_cname_color
+
+
+# copy
+def copy_annotations(mir_annotations: mirpb.MirAnnotations, mir_context: mirpb.MirContext, drop_annotations: bool,
+                     data_label_storage_file: str, label_storage_file: str) -> dict:
+    if drop_annotations:
+        mir_annotations.prediction.Clear()
+        mir_annotations.ground_truth.Clear()
+
+    unknown_names_and_count = {}
+    if (not drop_annotations) and (data_label_storage_file != label_storage_file):  # need to change class ids
+        src_class_id_mgr = class_ids.load_or_create_userlabels(label_storage_file=data_label_storage_file)
+        dst_class_id_mgr = class_ids.load_or_create_userlabels(label_storage_file=label_storage_file)
+
+        src_to_dst_ids = {
+            src_class_id_mgr.id_and_main_name_for_name(n)[0]: dst_class_id_mgr.id_and_main_name_for_name(n)[0]
+            for n in src_class_id_mgr.all_main_names()
+        }
+
+        _change_annotations_type_ids(single_task_annotations=mir_annotations.prediction, src_to_dst_ids=src_to_dst_ids)
+        _change_annotations_type_ids(single_task_annotations=mir_annotations.ground_truth,
+                                     src_to_dst_ids=src_to_dst_ids)
+
+        _gen_unknown_names_and_count(src_class_id_mgr=src_class_id_mgr,
+                                     mir_context=mir_context,
+                                     src_to_dst_ids=src_to_dst_ids)
+    return unknown_names_and_count
+
+
+def _change_annotations_type_ids(
+    single_task_annotations: mirpb.SingleTaskAnnotations,
+    src_to_dst_ids: Dict[int, int],
+) -> None:
+    for single_image_annotations in single_task_annotations.image_annotations.values():
+        dst_image_annotations: List[mirpb.ObjectAnnotation] = []
+        for annotation in single_image_annotations.boxes:
+            dst_class_id = src_to_dst_ids[annotation.class_id]
+            if dst_class_id >= 0:
+                annotation.class_id = dst_class_id
+                dst_image_annotations.append(annotation)
+        del single_image_annotations.boxes[:]
+        single_image_annotations.boxes.extend(dst_image_annotations)
+
+    dst_eval_class_ids: List[int] = []
+    for src_class_id in single_task_annotations.eval_class_ids:
+        dst_class_id = src_to_dst_ids[src_class_id]
+        if dst_class_id >= 0:
+            dst_eval_class_ids.append(dst_class_id)
+    single_task_annotations.eval_class_ids[:] = dst_eval_class_ids
+
+
+def _gen_unknown_names_and_count(src_class_id_mgr: class_ids.UserLabels, mir_context: mirpb.MirContext,
+                                     src_to_dst_ids: Dict[int, int]) -> Dict[str, int]:
+    all_src_class_ids = set(mir_context.pred_stats.class_ids_cnt.keys()) | set(
+        mir_context.gt_stats.class_ids_cnt.keys())
+    unknown_src_class_ids = {src_id for src_id in all_src_class_ids if src_to_dst_ids[src_id] == -1}
+    if not unknown_src_class_ids:
+        return {}
+
+    unknown_names_and_count: Dict[str, int] = {}
+    for src_id in unknown_src_class_ids:
+        name = src_class_id_mgr.main_name_for_id(src_id)
+        cnt_gt: int = mir_context.pred_stats.class_ids_cnt[src_id]
+        cnt_pred: int = mir_context.gt_stats.class_ids_cnt[src_id]
+        unknown_names_and_count[name] = cnt_gt + cnt_pred
+    return unknown_names_and_count
