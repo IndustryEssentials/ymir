@@ -34,6 +34,7 @@ from app.libs.labels import keywords_to_class_ids
 from app.libs.metrics import send_keywords_metrics
 from app.libs.models import create_model_stages
 from app.utils.cache import CacheClient
+from app.utils.err import retry
 from app.utils.ymir_controller import ControllerClient, gen_task_hash
 from app.utils.ymir_viz import VizClient
 from common_utils.labels import UserLabels
@@ -173,10 +174,9 @@ class TaskResult:
 
     @cached_property
     def dataset_info(self) -> Optional[Dict]:
+        get_dataset_info = partial(self.viz.get_dataset_info, self.task_hash, self.user_labels, check_index_status=True)
         try:
-            dataset_info = self.viz.get_dataset_info(
-                self.task_hash, user_labels=self.user_labels, check_index_status=True
-            )
+            dataset_info = retry(get_dataset_info, wait=settings.RETRY_INTERVAL_SECONDS)
         except DatasetIndexNotReady:
             raise FailedToUpdateTaskStatusTemporally()
         except Exception:
