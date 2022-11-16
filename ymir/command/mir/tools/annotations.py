@@ -427,6 +427,29 @@ def _gen_unknown_names_and_count(src_class_id_mgr: class_ids.UserLabels, mir_con
 
 
 # filter
-def filter_annotations(mir_annotations: mirpb.MirAnnotations) -> mirpb.MirAnnotations:
+def filter_annotations(mir_annotations: mirpb.MirAnnotations, asset_ids_set: Set[str]) -> mirpb.MirAnnotations:
     matched_mir_annotations = mirpb.MirAnnotations()
+
+    _gen_filter_task_annotations(src_task_annotations=mir_annotations.ground_truth,
+                                 dst_task_annotations=matched_mir_annotations.ground_truth,
+                                 asset_ids=asset_ids_set)
+    _gen_filter_task_annotations(src_task_annotations=mir_annotations.prediction,
+                                 dst_task_annotations=matched_mir_annotations.prediction,
+                                 asset_ids=asset_ids_set)
+
+    image_ck_asset_ids = asset_ids_set & set(mir_annotations.image_cks.keys())
+    for asset_id in image_ck_asset_ids:
+        matched_mir_annotations.image_cks[asset_id].CopyFrom(mir_annotations.image_cks[asset_id])
+
+    copy_annotations_pred_meta(src_task_annotations=mir_annotations.prediction,
+                               dst_task_annotations=matched_mir_annotations.prediction)
+
     return matched_mir_annotations
+
+
+def _gen_filter_task_annotations(src_task_annotations: mirpb.SingleTaskAnnotations,
+                                  dst_task_annotations: mirpb.SingleTaskAnnotations, asset_ids: Set[str]) -> None:
+    dst_task_annotations.type = src_task_annotations.type
+    joint_ids = asset_ids & src_task_annotations.image_annotations.keys()
+    for asset_id in joint_ids:
+        dst_task_annotations.image_annotations[asset_id].CopyFrom(src_task_annotations.image_annotations[asset_id])
