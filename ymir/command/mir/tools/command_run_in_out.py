@@ -89,7 +89,7 @@ def _cleanup(work_dir: str) -> None:
             'result.yaml',  # mining result file
         })
 
-    logging.info('cleanup finish')
+    logging.info(f"cleanup {work_dir} finish")
 
 
 def command_run_in_out(f: Callable) -> Callable:
