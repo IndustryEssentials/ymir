@@ -300,7 +300,6 @@ def load_or_create_userlabels(label_storage_file: str,
         raise RuntimeError(f"label file miss in path: {label_storage_file}")
 
     os.makedirs(os.path.dirname(label_storage_file), exist_ok=True)
-
     user_labels = UserLabels()
     with open(label_storage_file, 'w') as f:
         yaml.safe_dump(user_labels.dict(), f)
