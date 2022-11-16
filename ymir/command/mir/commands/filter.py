@@ -4,9 +4,8 @@ from typing import Optional, Set
 
 from mir.commands import base
 from mir.protos import mir_command_pb2 as mirpb
+from mir.tools import checker, class_ids, mir_repo_utils, mir_storage, mir_storage_ops, revs_parser
 from mir.tools.annotations import filter_annotations
-from mir.tools import checker, class_ids
-from mir.tools import mir_repo_utils, mir_storage, mir_storage_ops, revs_parser
 from mir.tools.code import MirCode
 from mir.tools.command_run_in_out import command_run_in_out
 from mir.tools.errors import MirRuntimeError
