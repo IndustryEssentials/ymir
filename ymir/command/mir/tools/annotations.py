@@ -544,3 +544,23 @@ def match_asset_ids(host_ids: set, guest_ids: set) -> Tuple[set, set, set]:
     """
     insets = host_ids & guest_ids
     return (host_ids - insets, guest_ids - insets, insets)
+
+
+# sampling
+def sampling_annotations(mir_annotations: mirpb.MirAnnotations, sampled_asset_ids: List[str]) -> mirpb.MirAnnotations:
+    sampled_mir_annotations = mirpb.MirAnnotations()
+
+    for asset_id in sampled_asset_ids:
+        if asset_id in mir_annotations.prediction.image_annotations:
+            sampled_mir_annotations.prediction.image_annotations[asset_id].CopyFrom(
+                mir_annotations.prediction.image_annotations[asset_id])
+        if asset_id in mir_annotations.ground_truth.image_annotations:
+            sampled_mir_annotations.ground_truth.image_annotations[asset_id].CopyFrom(
+                mir_annotations.ground_truth.image_annotations[asset_id])
+
+    sampled_mir_annotations.prediction.type = mir_annotations.prediction.type
+    sampled_mir_annotations.ground_truth.type = mir_annotations.ground_truth.type
+    copy_annotations_pred_meta(src_task_annotations=mir_annotations.prediction,
+                               dst_task_annotations=sampled_mir_annotations.prediction)
+
+    return sampled_mir_annotations
