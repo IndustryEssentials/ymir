@@ -20,7 +20,7 @@ def bind_to_subparsers(subparsers: argparse._SubParsersAction, parent_parser: ar
                                  dest="src_revs",
                                  type=str,
                                  required=True,
-                                 help="source tvt types, revs and base task ids, first the host, others the guests, \n"
+                                 help="source tvt types, revs and base task ids, first the host, others the guests, "
                                  "can begin with tr:/va:/te:, uses own tvt type if no prefix assigned")
     fuse_arg_parser.add_argument("--ex-src-revs",
                                  dest="ex_src_revs",
