@@ -66,15 +66,8 @@ class Iteration(Base):
 
     @property
     def referenced_dataset_ids(self) -> List[int]:
-        datasets = [
-            self.mining_input_dataset_id,
-            self.mining_output_dataset_id,
-            self.label_output_dataset_id,
-            self.training_input_dataset_id,
-            self.validation_dataset_id,
-        ]
-        return [dataset for dataset in datasets if dataset is not None]
+        return [step.result_dataset.id for step in self.iteration_steps if step.result_dataset]
 
     @property
     def referenced_model_ids(self) -> List[int]:
-        return [self.training_output_model_id] if self.training_output_model_id else []
+        return [step.result_model.id for step in self.iteration_steps if step.result_model]

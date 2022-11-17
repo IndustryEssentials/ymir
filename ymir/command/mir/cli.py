@@ -6,12 +6,12 @@ import sys
 from typing import Any, cast, Protocol
 
 from mir import version
-from mir.commands import (init, checkout, commit, copy, export, filter, merge,
+from mir.commands import (init, checkout, commit, copy, export, filter, fuse, merge,
                           sampling, show, status, training, mining, import_dataset, import_model, infer)
 
 _COMMANDS_ = [
-    init, checkout, commit, copy, export, filter, merge, sampling, show, status, training, mining, import_dataset,
-    import_model, infer
+    init, checkout, commit, copy, export, filter, fuse, merge, sampling, show, status, training, mining,
+    import_dataset, import_model, infer
 ]
 
 

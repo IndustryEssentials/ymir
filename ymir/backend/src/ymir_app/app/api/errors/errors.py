@@ -371,6 +371,11 @@ class FailedToCreateIteration(APIError):
     message = "Failed to Create Iteration"
 
 
+class DuplicateIterationError(DuplicateError):
+    code = error_codes.ITERATION_DUPLICATED
+    message = "Duplicate Iteration"
+
+
 class IterationNotFound(NotFound):
     code = error_codes.ITERATION_NOT_FOUND
     message = "Iteration Not Found"
