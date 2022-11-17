@@ -3,8 +3,28 @@ package ops
 import (
 	"log"
 
+	"github.com/IndustryEssentials/ymir-hel/common/constants"
+	"github.com/IndustryEssentials/ymir-hel/configs"
+	"github.com/IndustryEssentials/ymir-hel/protos"
 	"github.com/NVIDIA/go-nvml/pkg/nvml"
 )
+
+func OpsGpuInfo(
+	request *protos.HelOpsRequest,
+	config *configs.Config,
+) *protos.HelResponse {
+	nvResult := GetGPUInfo()
+	if nvResult != nil {
+		result := constants.HelRespMessage(constants.CodeSuccess)
+		result.GpuInfo.GpuCountTotal = int32(nvResult.GpuCountTotal)
+		result.GpuInfo.GpuCountBusy = 0
+		result.GpuInfo.GpuCountFree = int32(nvResult.GpuCountFree)
+		result.GpuInfo.GpuCountInUse = 0
+		return result
+	}
+
+	return constants.HelRespMessage(constants.CodeHelNvmlError)
+}
 
 type NVResult struct {
 	GpuCountTotal int

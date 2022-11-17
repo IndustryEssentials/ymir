@@ -5,7 +5,6 @@ import (
 	"log"
 	"net"
 
-	"github.com/IndustryEssentials/ymir-hel/common/constants"
 	"github.com/IndustryEssentials/ymir-hel/configs"
 	"github.com/IndustryEssentials/ymir-hel/hel/ops"
 	"github.com/IndustryEssentials/ymir-hel/protos"
@@ -21,18 +20,7 @@ func (s HelGrpcServer) HelOpsProcess(
 	request *protos.HelOpsRequest,
 ) (*protos.HelResponse, error) {
 	log.Printf("Hel-gRPC server is called with request:\n%+v", request)
-
-	nvResult := ops.GetGPUInfo()
-	if nvResult != nil {
-		result := &protos.HelResponse{Code: int32(constants.CodeSuccess)}
-		result.GpuInfo.GpuCountTotal = int32(nvResult.GpuCountTotal)
-		result.GpuInfo.GpuCountBusy = 0
-		result.GpuInfo.GpuCountFree = int32(nvResult.GpuCountFree)
-		result.GpuInfo.GpuCountInUse = 0
-		return result, nil
-	}
-
-	return &protos.HelResponse{Code: 1, Message: "failed"}, nil
+	return ops.GetOpsFunc(request.OpsType)(request, s.ServerConfig), nil
 }
 
 func StartHelGrpc(grpcURL string, config *configs.Config) error {
