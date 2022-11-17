@@ -4,6 +4,7 @@
 
 gpu_id: '0'
 task_id: 'default-infer-task'
+task_type: 'seg-mask'
 model_params_path: []
 class_names: []
 
