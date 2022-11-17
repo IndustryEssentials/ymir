@@ -16,10 +16,12 @@ func OpsGpuInfo(
 	nvResult := GetGPUInfo()
 	if nvResult != nil {
 		result := constants.HelRespMessage(constants.CodeSuccess)
-		result.GpuInfo.GpuCountTotal = int32(nvResult.GpuCountTotal)
-		result.GpuInfo.GpuCountBusy = 0
-		result.GpuInfo.GpuCountFree = int32(nvResult.GpuCountFree)
-		result.GpuInfo.GpuCountInUse = 0
+		result.GpuInfo = &protos.HelGpuInfo{
+			GpuCountTotal: int32(nvResult.GpuCountTotal),
+			GpuCountBusy:  0,
+			GpuCountFree:  int32(nvResult.GpuCountFree),
+			GpuCountInUse: 0,
+		}
 		return result
 	}
 

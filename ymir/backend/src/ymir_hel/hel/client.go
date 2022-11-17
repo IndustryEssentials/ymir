@@ -23,7 +23,7 @@ func GrpcClientCall(addr string) error {
 	// Contact the server and print out its response.
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*60)
 	defer cancel()
-	r, err := c.HelOpsProcess(ctx, &protos.HelOpsRequest{UserId: "0001"})
+	r, err := c.HelOpsProcess(ctx, &protos.HelOpsRequest{UserId: "0001", OpsType: protos.HelOpsType_HEL_OPS_GET_GPU})
 	if err != nil {
 		log.Fatalf("serverice fail: %v", err)
 		return err
