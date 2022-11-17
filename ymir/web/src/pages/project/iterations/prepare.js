@@ -43,7 +43,7 @@ function Prepare({ project, fresh = () => { } }) {
     if (project?.id) {
       setStages(generateStages(project))
     }
-  }, [project?.id])
+  }, [project])
 
   useEffect(() => updatePrepareStatus(), [stages, results])
 

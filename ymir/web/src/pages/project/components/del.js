@@ -1,7 +1,8 @@
 import t from "@/utils/t"
-import confirm from '@/components/common/dangerConfirm'
+import confirmConfig from '@/components/common/dangerConfirm'
 import { connect } from "dva"
 import { forwardRef, useImperativeHandle } from "react"
+import { Modal } from "antd"
 
 const Del = forwardRef(({ delProject, ok = () => {} }, ref) => {
   useImperativeHandle(ref, () => {
@@ -11,7 +12,7 @@ const Del = forwardRef(({ delProject, ok = () => {} }, ref) => {
   })
 
   function del(id, name) {
-    confirm({
+    Modal.confirm(confirmConfig({
       content: t("project.del.confirm.content", { name }),
       onOk: async () => {
         const result = await delProject(id)
@@ -20,7 +21,7 @@ const Del = forwardRef(({ delProject, ok = () => {} }, ref) => {
         }
       },
       okText: t('common.del'),
-    })
+    }))
   }
 
   return null

@@ -4,7 +4,7 @@ import { connect } from 'dva'
 
 import t from '@/utils/t'
 import { TASKTYPES } from "@/constants/task"
-import Confirm from "@/components/common/dangerConfirm"
+import confirmConfig from "@/components/common/dangerConfirm"
 
 const Terminate = forwardRef(({ stopTask, ok = () => { } }, ref) => {
   const [visible, setVisible] = useState(false)
@@ -33,12 +33,12 @@ const Terminate = forwardRef(({ stopTask, ok = () => { } }, ref) => {
   }
 
   function terminateNoData() {
-    Confirm({
+    Modal.confirm(confirmConfig({
       content: t("task.action.terminate.confirm.content", { name }),
       onOk: terminateTask,
       onCancel: cancel,
       okText: t('task.action.terminate'),
-    })
+    }))
   }
 
   function terminateWithData() {
