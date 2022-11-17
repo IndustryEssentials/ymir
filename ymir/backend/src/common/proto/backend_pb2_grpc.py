@@ -64,3 +64,64 @@ class mir_controller_service(object):
             backend__pb2.GeneralResp.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+
+class hel_serviceStub(object):
+    """Missing associated documentation comment in .proto file."""
+
+    def __init__(self, channel):
+        """Constructor.
+
+        Args:
+            channel: A grpc.Channel.
+        """
+        self.hel_ops_process = channel.unary_unary(
+                '/ymir.backend.hel_service/hel_ops_process',
+                request_serializer=backend__pb2.HelOpsRequest.SerializeToString,
+                response_deserializer=backend__pb2.HelResponse.FromString,
+                )
+
+
+class hel_serviceServicer(object):
+    """Missing associated documentation comment in .proto file."""
+
+    def hel_ops_process(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+
+def add_hel_serviceServicer_to_server(servicer, server):
+    rpc_method_handlers = {
+            'hel_ops_process': grpc.unary_unary_rpc_method_handler(
+                    servicer.hel_ops_process,
+                    request_deserializer=backend__pb2.HelOpsRequest.FromString,
+                    response_serializer=backend__pb2.HelResponse.SerializeToString,
+            ),
+    }
+    generic_handler = grpc.method_handlers_generic_handler(
+            'ymir.backend.hel_service', rpc_method_handlers)
+    server.add_generic_rpc_handlers((generic_handler,))
+
+
+ # This class is part of an EXPERIMENTAL API.
+class hel_service(object):
+    """Missing associated documentation comment in .proto file."""
+
+    @staticmethod
+    def hel_ops_process(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/ymir.backend.hel_service/hel_ops_process',
+            backend__pb2.HelOpsRequest.SerializeToString,
+            backend__pb2.HelResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)

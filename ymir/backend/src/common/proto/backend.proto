@@ -211,3 +211,31 @@ service mir_controller_service {
     rpc data_manage_request(GeneralReq) returns (GeneralResp) {}
     // rpc view_request(GeneralReq) returns (GeneralResp) {}
 } // mcs_dm
+
+enum HelOpsType {
+    HEL_OPS_UNKNOWN = 0;
+    HEL_OPS_INFER = 1;
+    HEL_OPS_TERMINATE = 2;
+    HEL_OPS_GET_GPU = 3;
+}
+
+message HelOpsRequest {
+    string user_id = 1;
+    string repo_id = 2;
+    string task_id = 3;
+    HelOpsType ops_type = 4;
+    // singleton ops arg, such as target task id, etc.
+    string singleton_op = 10;
+}
+
+message HelResponse {
+    int32 code = 1;
+    string req_task_id = 2;
+    string message = 3;
+    int32 gpu_count_total = 10;
+    int32 gpu_count_free = 11;
+}
+
+service hel_service {
+    rpc hel_ops_process(HelOpsRequest) returns (HelResponse) {}
+} // mcs_dm

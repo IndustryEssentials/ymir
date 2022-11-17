@@ -18,12 +18,12 @@ func GrpcClientCall(addr string) error {
 		return err
 	}
 	defer conn.Close()
-	c := protos.NewMirControllerServiceClient(conn)
+	c := protos.NewHelServiceClient(conn)
 
 	// Contact the server and print out its response.
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*60)
 	defer cancel()
-	r, err := c.DataManageRequest(ctx, &protos.GeneralReq{UserId: "0001"})
+	r, err := c.HelOpsProcess(ctx, &protos.HelOpsRequest{UserId: "0001"})
 	if err != nil {
 		log.Fatalf("serverice fail: %v", err)
 		return err

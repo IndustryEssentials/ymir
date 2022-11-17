@@ -2,13 +2,12 @@ package dispatcher
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"net"
+	"time"
 
 	"github.com/IndustryEssentials/ymir-hel/protos"
 	"github.com/RichardKnop/machinery/v1"
-	"github.com/RichardKnop/machinery/v1/tasks"
 	"google.golang.org/grpc"
 )
 
@@ -24,7 +23,7 @@ func StartHelGrpc(grpcURL string, taskServer *machinery.Server) error {
 	}
 
 	s := grpc.NewServer()
-	protos.RegisterMirControllerServiceServer(s, HelGrpcServer{TaskServer: taskServer})
+	protos.RegisterHelServiceServer(s, HelGrpcServer{TaskServer: taskServer})
 
 	log.Printf("Hel-gRPC server is starting at %s.", grpcURL)
 	err = s.Serve(lis)
@@ -36,27 +35,19 @@ func StartHelGrpc(grpcURL string, taskServer *machinery.Server) error {
 	return nil
 }
 
-func (s HelGrpcServer) DataManageRequest(ctx context.Context, request *protos.GeneralReq) (*protos.GeneralResp, error) {
+func (s HelGrpcServer) HelOpsProcess(context context.Context, request *protos.HelOpsRequest) (*protos.HelResponse, error) {
 	log.Printf("Hel-gRPC server is called with request:\n%+v", request)
 
-	signature := &tasks.Signature{
-		Name: "add",
-		Args: []tasks.Arg{
-			{
-				Type:  "int64",
-				Value: 1,
-			},
-			{
-				Type:  "int64",
-				Value: 1,
-			},
-		},
-	}
+	ch := PollGPUMemory()
 
-	asyncResult, err := s.TaskServer.SendTask(signature)
-	if err != nil {
-		log.Fatalf("failed to SendTask: %v\nerr: %v", signature, err)
-		return &protos.GeneralResp{Code: 1, Message: "failed"}, err
-	}
-	return &protos.GeneralResp{Code: 0, Message: fmt.Sprint(asyncResult)}, nil
+	go func() {
+		for x := range ch {
+			log.Printf("GPU status: %v", x)
+		}
+	}()
+
+	time.Sleep(2 * time.Second)
+	close(ch)
+
+	return &protos.HelResponse{Code: 0, Message: "succeed"}, nil
 }
