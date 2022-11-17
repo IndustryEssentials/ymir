@@ -59,6 +59,11 @@ class IncorrectEmailOrPassword(APIError):
     message = "Incorrect email or password"
 
 
+class FailedToSendEmail(APIError):
+    code = error_codes.FAILED_TO_SEND_EMAIL
+    message = "Failed to send email"
+
+
 class NotFound(APIError):
     status_code = 404
 
