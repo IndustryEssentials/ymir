@@ -232,10 +232,16 @@ message HelResponse {
     int32 code = 1;
     string req_task_id = 2;
     string message = 3;
-    int32 gpu_count_total = 10;
-    int32 gpu_count_free = 11;
+    HelGpuInfo gpu_info = 10;
+    HelOpsRequest request = 100;
 }
 
+message HelGpuInfo {
+    int32 gpu_count_total = 1;
+    int32 gpu_count_busy = 2;
+    int32 gpu_count_free = 3;
+    int32 gpu_count_in_use = 4;
+}
 service hel_service {
     rpc hel_ops_process(HelOpsRequest) returns (HelResponse) {}
 } // mcs_dm

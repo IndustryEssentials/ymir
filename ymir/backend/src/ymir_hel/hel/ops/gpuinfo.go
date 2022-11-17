@@ -1,0 +1,54 @@
+package ops
+
+import (
+	"log"
+
+	"github.com/NVIDIA/go-nvml/pkg/nvml"
+)
+
+type NVResult struct {
+	GpuCountTotal int
+	GpuCountFree  int
+	GpuCountUsed  int
+}
+
+func GetGPUInfo() *NVResult {
+	ret := nvml.Init()
+	if ret != nvml.SUCCESS {
+		log.Fatalf("Unable to initialize NVML: %v", nvml.ErrorString(ret))
+		return nil
+	}
+	defer func() {
+		ret := nvml.Shutdown()
+		if ret != nvml.SUCCESS {
+			log.Fatalf("Unable to shutdown NVML: %v", nvml.ErrorString(ret))
+		}
+	}()
+
+	count, ret := nvml.DeviceGetCount()
+	if ret != nvml.SUCCESS {
+		log.Fatalf("Unable to get device count: %v", nvml.ErrorString(ret))
+		return nil
+	}
+
+	gpuFreeThr := 0.8
+	infoResult := &NVResult{GpuCountTotal: count}
+	for i := 0; i < count; i++ {
+		device, ret := nvml.DeviceGetHandleByIndex(i)
+		if ret != nvml.SUCCESS {
+			log.Fatalf("Unable to get device at index %d: %v", i, nvml.ErrorString(ret))
+			return nil
+		}
+
+		memoryInfo, ret := device.GetMemoryInfo()
+		if ret != nvml.SUCCESS {
+			log.Fatalf("Unable to get uuid of device at index %d: %v", i, nvml.ErrorString(ret))
+			return nil
+		}
+
+		if float64(memoryInfo.Free)/float64(memoryInfo.Total) > gpuFreeThr {
+			infoResult.GpuCountFree += 1
+		}
+	}
+	return infoResult
+}

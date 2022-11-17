@@ -28,6 +28,6 @@ func GrpcClientCall(addr string) error {
 		log.Fatalf("serverice fail: %v", err)
 		return err
 	}
-	log.Printf("Message: %s", r.GetMessage())
+	log.Printf("Response: %+v", r)
 	return nil
 }

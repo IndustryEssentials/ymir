@@ -6,26 +6,15 @@ import (
 
 	"github.com/RichardKnop/machinery/v1"
 	"github.com/RichardKnop/machinery/v1/config"
-	// exampletasks "github.com/RichardKnop/machinery/example/tasks"
 )
 
 // Note: pubsub>=v1.25.0
 
 func StartHelServer(config *configs.Config) error {
-	taskServer, err := CreateTaskServer(config.RedisURLHelTask, config.HelWorkerTag)
+	err := dispatcher.StartHelGrpc(config.HelGrpcURL, config)
 	if err != nil {
 		return err
 	}
-	err = dispatcher.StartHelGrpc(config.HelGrpcURL, taskServer)
-	if err != nil {
-		return err
-	}
-
-	// err = worker.StartHelWorker(taskServer, config.HelWorkerTag, config.HelWorkerNum)
-	// if err != nil {
-	// 	log.Fatalf("failed to start worker: %v", err)
-	// 	return err
-	// }
 
 	return nil
 }
@@ -53,16 +42,7 @@ func CreateTaskServer(RedisURLHelTask string, consumerTag string) (*machinery.Se
 	}
 
 	// Register tasks
-	tasks := map[string]interface{}{
-		// "add":               exampletasks.Add,
-		// "multiply":          exampletasks.Multiply,
-		// "sum_ints":          exampletasks.SumInts,
-		// "sum_floats":        exampletasks.SumFloats,
-		// "concat":            exampletasks.Concat,
-		// "split":             exampletasks.Split,
-		// "panic_task":        exampletasks.PanicTask,
-		// "long_running_task": exampletasks.LongRunningTask,
-	}
+	tasks := map[string]interface{}{}
 
 	return server, server.RegisterTasks(tasks)
 }
