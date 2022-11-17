@@ -25,6 +25,10 @@ type Config struct {
 	HelGrpcPort int
 	HelGrpcURL  string
 
+	// Hel-machineary config
+	HelWorkerNum int
+	HelWorkerTag string
+
 	// Redis
 	RedisURLHel     string
 	RedisNumHelGrpc int
@@ -80,9 +84,9 @@ func InitViperConfig(configFile string) *Config {
 		config.HelGrpcURL = fmt.Sprintf("%s:%d", config.HelGrpcHost, config.HelGrpcPort)
 	}
 
-	config.RedisURLHelGrpc = fmt.Sprintf("%s:%d", config.RedisURLHel, config.RedisNumHelGrpc)
-	config.RedisURLHelTask = fmt.Sprintf("%s:%d", config.RedisURLHel, config.RedisNumHelTask)
+	config.RedisURLHelGrpc = fmt.Sprintf("%s/%d", config.RedisURLHel, config.RedisNumHelGrpc)
+	config.RedisURLHelTask = fmt.Sprintf("%s/%d", config.RedisURLHel, config.RedisNumHelTask)
 
-	log.Printf("ymir-hel config: %+v\n", config)
+	log.Printf("ymir-hel config: %+v\n\n", config)
 	return &config
 }
