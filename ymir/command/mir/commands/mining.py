@@ -1,5 +1,4 @@
 import argparse
-import json
 import logging
 import os
 from subprocess import CalledProcessError
@@ -230,49 +229,19 @@ def _process_results(mir_root: str, label_storage_file: str, export_out: str, ds
     asset_ids_set = (_get_topk_asset_ids(file_path=topk_result_file_path, topk=topk)
                      if topk is not None else set(mir_metadatas.attributes.keys()))
 
-    # step 2: update mir data files
-    #   update mir metadatas
+    # step 2: update mir data files: mir_metadatas and mir_annotations
     matched_mir_metadatas = mirpb.MirMetadatas()
     for asset_id in asset_ids_set:
         matched_mir_metadatas.attributes[asset_id].CopyFrom(mir_metadatas.attributes[asset_id])
     logging.info(f"matched: {len(matched_mir_metadatas.attributes)}, overriding metadatas.mir")
 
-    cls_id_mgr = class_ids.load_or_create_userlabels(label_storage_file=label_storage_file)
-    matched_mir_annotations = mirpb.MirAnnotations()
-    if add_prediction:
-        mining_annotations(work_out_dir=export_out,
-                           asset_ids_set=asset_ids_set,
-                           cls_id_mgr=cls_id_mgr,
-                           model_type=model_storage.model_type,
-                           mir_annotations=matched_mir_annotations)
-
-    #   update mir annotations: predictions
-    prediction = matched_mir_annotations.prediction
-    prediction.type = model_storage.model_type  # type: ignore
-    if add_prediction:
-        # add new
-        prediction.eval_class_ids[:] = set(
-            cls_id_mgr.id_for_names(model_storage.class_names, drop_unknown_names=True)[0])
-        prediction.executor_config = json.dumps(model_storage.executor_config)
-        prediction.model.CopyFrom(model_storage.get_model_meta())
-    else:
-        # use old
-        pred_asset_ids = set(mir_annotations.prediction.image_annotations.keys()) & asset_ids_set
-        for asset_id in pred_asset_ids:
-            prediction.image_annotations[asset_id].CopyFrom(mir_annotations.prediction.image_annotations[asset_id])
-        annotations.copy_annotations_pred_meta(src_task_annotations=mir_annotations.prediction,
-                                               dst_task_annotations=prediction)
-
-    #   update mir annotations: ground truth
-    ground_truth = matched_mir_annotations.ground_truth
-    ground_truth.type = mir_annotations.ground_truth.type
-    gt_asset_ids = set(mir_annotations.ground_truth.image_annotations.keys()) & asset_ids_set
-    for asset_id in gt_asset_ids:
-        ground_truth.image_annotations[asset_id].CopyFrom(mir_annotations.ground_truth.image_annotations[asset_id])
-
-    image_ck_asset_ids = set(mir_annotations.image_cks.keys() & asset_ids_set)
-    for asset_id in image_ck_asset_ids:
-        matched_mir_annotations.image_cks[asset_id].CopyFrom(mir_annotations.image_cks[asset_id])
+    matched_mir_annotations = mining_annotations(
+        work_out_dir=export_out,
+        asset_ids_set=asset_ids_set,
+        cls_id_mgr=class_ids.load_or_create_userlabels(label_storage_file=label_storage_file),
+        model_storage=model_storage,
+        add_prediction=add_prediction,
+        mir_annotations=mir_annotations)
 
     # step 3: store results and commit.
     mir_datas = {
