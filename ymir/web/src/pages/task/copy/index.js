@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from "react"
 import { connect } from "dva"
 import { Input, Button, Form, message, Radio, Card, Space } from "antd"
-import { useHistory, useLocation, useParams } from "umi"
+import { useHistory, useLocation, useParams, useSelector } from "umi"
 
 import { formLayout } from "@/config/antd"
 import t from "@/utils/t"
+import useFetch from '@/hooks/useFetch'
 import { randomNumber } from "@/utils/number"
 import Breadcrumbs from "@/components/common/breadcrumb"
 import commonStyles from "../common.less"

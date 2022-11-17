@@ -38,7 +38,6 @@ function Merge({ query = {}, hidden, ok = () => {}, bottom }) {
   }
 
   useEffect(() => {
-    console.log('did:', did)
     did && getDataset({ id: did })
   }, [did])
 
