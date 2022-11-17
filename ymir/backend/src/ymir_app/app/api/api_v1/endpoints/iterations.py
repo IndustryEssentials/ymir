@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session
 from app import crud, models, schemas
 from app.api import deps
 from app.api.errors.errors import (
+    DuplicateIterationError,
     IterationNotFound,
     ProjectNotFound,
     TaskNotFound,
@@ -36,6 +37,9 @@ def create_iteration(
     if not project:
         raise ProjectNotFound()
     previous_iteration = project.current_iteration
+
+    if previous_iteration.previous_iteration == obj_in.previous_iteration:
+        raise DuplicateIterationError()
 
     iteration = crud.iteration.create_with_user_id(db, user_id=current_user.id, obj_in=obj_in)
     logger.info("[create iteration] iteration record created: %s", iteration)
