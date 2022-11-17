@@ -50,7 +50,7 @@ class Project(Base):
     candidate_training_dataset_id = Column(Integer)
 
     enable_iteration = Column(Boolean, default=True, nullable=False)
-    # for project haven't finish initialization, current_iteration_id is None
+    # for project hasn't finished initialization, current_iteration_id is None
     current_iteration_id = Column(Integer)
     user_id = Column(Integer, index=True, nullable=False)
 
@@ -112,12 +112,7 @@ class Project(Base):
     is_example = Column(Boolean, default=False)
     is_deleted = Column(Boolean, default=False, nullable=False)
     create_datetime = Column(DateTime, default=datetime.utcnow, nullable=False)
-    update_datetime = Column(
-        DateTime,
-        default=datetime.utcnow,
-        onupdate=datetime.utcnow,
-        nullable=False,
-    )
+    update_datetime = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
 
     @property
     def dataset_count(self) -> int:
@@ -128,7 +123,7 @@ class Project(Base):
 
     @property
     def model_count(self) -> int:
-        # Only ready models count.
+        # Only ready and visible models count.
         # stick to `model_count` for compatibility
         ready_models = [model for model in self.models if model.result_state == ResultState.ready and model.is_visible]
         return len(ready_models)

@@ -97,36 +97,6 @@ class DatasetInfo:
         )
 
 
-class EvaluationScore(BaseModel):
-    ap: float
-    ar: float
-    fn: int
-    fp: int
-    tp: int
-    pr_curve: List[Dict]
-
-
-class CKEvaluation(BaseModel):
-    total: EvaluationScore
-    sub: Dict[str, EvaluationScore]
-
-
-class VizDatasetEvaluation(BaseModel):
-    ci_evaluations: Dict[int, EvaluationScore]  # class_id -> scores
-    ci_averaged_evaluation: EvaluationScore
-    ck_evaluations: Dict[str, CKEvaluation]
-
-
-class VizDatasetEvaluationResult(BaseModel):
-    """
-    Interface dataclass of VIZ output, defined as DatasetEvaluationResult in doc:
-    https://github.com/IndustryEssentials/ymir/blob/master/ymir/backend/src/ymir_viz/doc/ymir_viz_API.yaml
-    """
-
-    iou_evaluations: Dict[float, VizDatasetEvaluation]  # iou -> evaluation
-    iou_averaged_evaluation: VizDatasetEvaluation
-
-
 class ViewerAssetRequest(BaseModel):
     """
     Payload for viewer GET /assets
