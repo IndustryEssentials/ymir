@@ -276,43 +276,6 @@ def _get_topk_asset_ids(file_path: str, topk: int) -> Set[str]:
     return asset_ids_set
 
 
-# def _get_detbox_infer_annotations(mir_annotations: mirpb.MirAnnotations, file_path: str, asset_ids_set: Set[str],
-#                                   cls_id_mgr: class_ids.UserLabels) -> None:
-#     with open(file_path, 'r') as f:
-#         results = json.loads(f.read())
-
-#     detections = results.get('detection')
-#     if not isinstance(detections, dict):
-#         logging.error('invalid infer-result.json')
-
-#     for asset_name, annotations_dict in detections.items():
-#         annotations = annotations_dict.get('boxes')
-#         if not isinstance(annotations, list):
-#             logging.error(f"invalid annotations: {annotations}")
-#             continue
-
-#         asset_id = os.path.splitext(os.path.basename(asset_name))[0]
-#         if asset_id not in asset_ids_set:
-#             continue
-
-#         single_image_annotations = mirpb.SingleImageAnnotations()
-#         idx = 0
-#         for annotation_dict in annotations:
-#             class_id = cls_id_mgr.id_and_main_name_for_name(name=annotation_dict['class_name'])[0]
-#             # ignore unknown class ids
-#             if class_id < 0:
-#                 continue
-
-#             annotation = mirpb.ObjectAnnotation()
-#             annotation.index = idx
-#             json_format.ParseDict(annotation_dict['box'], annotation.box)
-#             annotation.class_id = class_id
-#             annotation.score = float(annotation_dict.get('score', 0))
-#             single_image_annotations.boxes.append(annotation)
-#             idx += 1
-#         mir_annotations.prediction.image_annotations[asset_id].CopyFrom(single_image_annotations)
-
-
 # protected: pre process
 def _prepare_env(export_root: str, work_in_path: str, work_out_path: str, work_asset_path: str,
                  work_model_path: str) -> int:
