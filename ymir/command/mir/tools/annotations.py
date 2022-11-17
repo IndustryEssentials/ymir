@@ -578,7 +578,7 @@ def mining_annotations(work_out_dir: str, asset_ids_set: Set[str], cls_id_mgr: c
     prediction.type = model_storage.model_type  # type: ignore
     if add_prediction:
         if model_storage.model_type == mirpb.AnnoType.AT_DET_BOX:
-            _get_detbox_infer_annotations(mir_annotations=matched_mir_annotations,
+            _get_detbox_infer_annotations(task_annotations=matched_mir_annotations.prediction,
                                           file_path=os.path.join(work_out_dir, 'infer-result.json'),
                                           asset_ids_set=asset_ids_set,
                                           cls_id_mgr=cls_id_mgr)
@@ -619,8 +619,8 @@ def mining_annotations(work_out_dir: str, asset_ids_set: Set[str], cls_id_mgr: c
     return matched_mir_annotations
 
 
-def _get_detbox_infer_annotations(mir_annotations: mirpb.MirAnnotations, file_path: str, asset_ids_set: Set[str],
-                                  cls_id_mgr: class_ids.UserLabels) -> None:
+def _get_detbox_infer_annotations(task_annotations: mirpb.SingleTaskAnnotations, file_path: str,
+                                  asset_ids_set: Set[str], cls_id_mgr: class_ids.UserLabels) -> None:
     with open(file_path, 'r') as f:
         results = json.loads(f.read())
 
@@ -653,4 +653,4 @@ def _get_detbox_infer_annotations(mir_annotations: mirpb.MirAnnotations, file_pa
             annotation.score = float(annotation_dict.get('score', 0))
             single_image_annotations.boxes.append(annotation)
             idx += 1
-        mir_annotations.prediction.image_annotations[asset_id].CopyFrom(single_image_annotations)
+        task_annotations.image_annotations[asset_id].CopyFrom(single_image_annotations)
