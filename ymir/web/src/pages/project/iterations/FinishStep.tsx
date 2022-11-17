@@ -129,7 +129,7 @@ function getTrainingParams(params: YModels.TrainingParams) {
     { label: 'task.train.form.image.label', content: <ImageName id={params.docker_image_id} /> },
     { label: 'task.train.form.trainsets.label', content: <VersionName id={params.dataset_id} /> },
     { label: 'task.train.form.testsets.label', content: <VersionName id={params.validation_dataset_id} /> },
-    { label: 'task.detail.label.premodel', content: <ModelVersionName id={params.model_id} stageId={params.model_stage_id} /> },
+    { label: 'task.detail.label.premodel', content: params.model_id ? <ModelVersionName id={params.model_id} stageId={params.model_stage_id} /> : null },
     { label: 'task.gpu.count', content: params.gpuCount },
     imageConfig(params.config),
   ]
