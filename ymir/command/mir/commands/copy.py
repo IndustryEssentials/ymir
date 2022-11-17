@@ -1,10 +1,9 @@
 import argparse
 import logging
-from typing import Dict, List
 
 from mir.commands import base
 from mir.protos import mir_command_pb2 as mirpb
-from mir.tools import checker, class_ids, revs_parser, mir_repo_utils, mir_storage_ops
+from mir.tools import checker, revs_parser, mir_repo_utils, mir_storage_ops
 from mir.tools.annotations import copy_annotations
 from mir.tools.code import MirCode
 from mir.tools.command_run_in_out import command_run_in_out

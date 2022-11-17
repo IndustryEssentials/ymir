@@ -4,29 +4,14 @@ mir merge: merge contents from another guest branch to current branch
 
 import argparse
 import logging
-from typing import Any, Tuple
 
 from mir.commands import base
 from mir.protos import mir_command_pb2 as mirpb
 from mir.tools import checker, mir_storage_ops, revs_parser
+from mir.tools.annotations import match_asset_ids, merge_annotations
 from mir.tools.command_run_in_out import command_run_in_out
 from mir.tools.code import MirCode
 from mir.tools.errors import MirRuntimeError
-
-
-def _match_asset_ids(host_ids: set, guest_ids: set) -> Tuple[set, set, set]:
-    """
-    match asset ids
-
-    Args:
-        host_ids (set): host ids
-        guest_ids (set): guest ids
-
-    Returns:
-        Tuple[set, set, set]: host_only_ids, guest_only_ids, joint_ids
-    """
-    insets = host_ids & guest_ids
-    return (host_ids - insets, guest_ids - insets, insets)
 
 
 def _merge_metadatas(host_mir_metadatas: mirpb.MirMetadatas, guest_mir_metadatas: mirpb.MirMetadatas,
@@ -54,103 +39,6 @@ def _merge_metadatas(host_mir_metadatas: mirpb.MirMetadatas, guest_mir_metadatas
                                   error_message='found conflicts in strategy stop')
     else:
         raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS, error_message=f"invalid strategy: {strategy}")
-
-
-# WARNING: annotations are filtered in task level, NOT in image level.
-def _merge_annotations(host_mir_annotations: mirpb.MirAnnotations, guest_mir_annotations: mirpb.MirAnnotations,
-                       strategy: str) -> None:
-    """
-    add all annotations in guest_mir_annotations into host_mir_annotations
-
-    Args:
-        host_mir_annotations (mirpb.MirAnnotations): host annotations
-        guest_mir_annotations (mirpb.MirAnnotations): guest annotations
-        strategy (str): host, guest, stop
-
-    Raises:
-        ValueError: if host or guest annotations empty
-        ValueError: if conflicts occured in strategy stop
-    """
-    if not host_mir_annotations or not guest_mir_annotations:
-        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
-                              error_message="input host/guest mir_annotations is invalid")
-
-    _merge_pair_annotations(host_annotation=host_mir_annotations.prediction,
-                            guest_annotation=guest_mir_annotations.prediction,
-                            target_annotation=host_mir_annotations.prediction,
-                            strategy=strategy)
-    host_mir_annotations.prediction.eval_class_ids.extend(guest_mir_annotations.prediction.eval_class_ids)
-
-    _merge_pair_annotations(host_annotation=host_mir_annotations.ground_truth,
-                            guest_annotation=guest_mir_annotations.ground_truth,
-                            target_annotation=host_mir_annotations.ground_truth,
-                            strategy=strategy)
-
-    _merge_annotation_image_cks(host_mir_annotations=host_mir_annotations,
-                                guest_mir_annotations=guest_mir_annotations,
-                                target_mir_annotations=host_mir_annotations,
-                                strategy=strategy)
-
-
-def _merge_pair_annotations(host_annotation: mirpb.SingleTaskAnnotations, guest_annotation: mirpb.SingleTaskAnnotations,
-                            target_annotation: mirpb.SingleTaskAnnotations, strategy: str) -> None:
-    host_only_ids, guest_only_ids, joint_ids = _match_asset_ids(set(host_annotation.image_annotations.keys()),
-                                                                set(guest_annotation.image_annotations.keys()))
-
-    if strategy == "stop" and joint_ids:
-        raise MirRuntimeError(error_code=MirCode.RC_CMD_MERGE_ERROR,
-                              error_message='found conflict annotations in strategy stop')
-
-    for asset_id in host_only_ids:
-        target_annotation.image_annotations[asset_id].CopyFrom(host_annotation.image_annotations[asset_id])
-    for asset_id in guest_only_ids:
-        target_annotation.image_annotations[asset_id].CopyFrom(guest_annotation.image_annotations[asset_id])
-    for asset_id in joint_ids:
-        if strategy.lower() == "host":
-            if asset_id not in target_annotation.image_annotations:
-                target_annotation.image_annotations[asset_id].CopyFrom(host_annotation.image_annotations[asset_id])
-        elif strategy.lower() == "guest":
-            target_annotation.image_annotations[asset_id].CopyFrom(guest_annotation.image_annotations[asset_id])
-
-
-def _merge_annotation_image_cks(host_mir_annotations: mirpb.MirAnnotations, guest_mir_annotations: mirpb.MirAnnotations,
-                                target_mir_annotations: mirpb.MirAnnotations, strategy: str) -> None:
-    host_only_ids, guest_only_ids, joint_ids = _match_asset_ids(set(host_mir_annotations.image_cks.keys()),
-                                                                set(guest_mir_annotations.image_cks.keys()))
-    if strategy == "stop" and joint_ids:
-        raise MirRuntimeError(error_code=MirCode.RC_CMD_MERGE_ERROR,
-                              error_message='found conflict image cks in strategy stop')
-
-    for asset_id in host_only_ids:
-        target_mir_annotations.image_cks[asset_id].CopyFrom(host_mir_annotations.image_cks[asset_id])
-    for asset_id in guest_only_ids:
-        target_mir_annotations.image_cks[asset_id].CopyFrom(guest_mir_annotations.image_cks[asset_id])
-    for asset_id in joint_ids:
-        if strategy.lower() == "host":
-            if asset_id not in target_mir_annotations.image_cks:
-                target_mir_annotations.image_cks[asset_id].CopyFrom(host_mir_annotations.image_cks[asset_id])
-        elif strategy.lower() == "guest":
-            target_mir_annotations.image_cks[asset_id].CopyFrom(guest_mir_annotations.image_cks[asset_id])
-
-
-def _get_union_keywords(host_keywords: Any, guest_keywords: Any, strategy: str) -> set:
-    if host_keywords:
-        host_keywords_set = set(host_keywords)
-    else:
-        host_keywords_set = set()
-    if guest_keywords:
-        guest_keywords_set = set(guest_keywords)
-    else:
-        guest_keywords_set = set()
-
-    if strategy == "host":
-        merged_keywords_set = host_keywords_set
-    elif strategy == "guest":
-        merged_keywords_set = guest_keywords_set
-    else:
-        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
-                              error_message=f"unknown strategy type: {strategy}")
-    return merged_keywords_set
 
 
 def _tvt_type_from_str(typ: str) -> 'mirpb.TvtType.V':
@@ -204,8 +92,8 @@ def _merge_to_mir(host_mir_metadatas: mirpb.MirMetadatas, host_mir_annotations: 
     #     raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ANNO_TYPE,
     #                           error_message='host and guest anno type mismatch')
 
-    id_host_only, id_guest_only, id_joint = _match_asset_ids(set(host_mir_metadatas.attributes.keys()),
-                                                             set(guest_mir_metadatas.attributes.keys()))
+    id_host_only, id_guest_only, id_joint = match_asset_ids(set(host_mir_metadatas.attributes.keys()),
+                                                            set(guest_mir_metadatas.attributes.keys()))
 
     logging.info(f"{guest_typ_rev_tid} host assets: {len(id_host_only)}, guest assets: {len(id_guest_only)}, "
                  f"joint assets: {len(id_joint)}")
@@ -226,9 +114,9 @@ def _merge_to_mir(host_mir_metadatas: mirpb.MirMetadatas, host_mir_annotations: 
 
     if not guest_mir_annotations:
         logging.warning("guest repo {}:{} has no annotations.".format(mir_root, guest_typ_rev_tid.rev))
-    _merge_annotations(host_mir_annotations=host_mir_annotations,
-                       guest_mir_annotations=guest_mir_annotations,
-                       strategy=strategy)
+    merge_annotations(host_mir_annotations=host_mir_annotations,
+                      guest_mir_annotations=guest_mir_annotations,
+                      strategy=strategy)
 
     return MirCode.RC_OK
 
@@ -246,8 +134,8 @@ def _exclude_from_mir(host_mir_metadatas: mirpb.MirMetadatas, host_mir_annotatio
         raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_MIR_REPO,
                               error_message=f"guest repo {mir_root}:{branch_id} has no metadata.")
 
-    _, _, id_joint = _match_asset_ids(set(host_mir_metadatas.attributes.keys()),
-                                      set(guest_mir_metadatas.attributes.keys()))
+    _, _, id_joint = match_asset_ids(set(host_mir_metadatas.attributes.keys()),
+                                     set(guest_mir_metadatas.attributes.keys()))
     for asset_id in id_joint:
         del host_mir_metadatas.attributes[asset_id]
 
