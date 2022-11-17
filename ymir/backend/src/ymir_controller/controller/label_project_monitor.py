@@ -47,19 +47,25 @@ def generate_label_index_file(input_file: Path, annotation_dir: Path) -> Path:
     """
     filter assets paths against related annotation files
     """
-    labeled_assets_hashes = [i.stem for i in annotation_dir.iterdir() if i.suffix == ".xml"]
+    labelled_assets_hashes = [i.stem for i in annotation_dir.iterdir() if i.suffix == ".xml"]
     output_file = input_file.with_name("label_index.tsv")
+    total_assets_count, labelled_assets_count = 0, 0
     with open(input_file) as in_, open(output_file, "w") as out_:
         for asset_path in in_:
-            if Path(asset_path.strip()).stem in labeled_assets_hashes:
+            total_assets_count += 1
+            if Path(asset_path.strip()).stem in labelled_assets_hashes:
+                labelled_assets_count += 1
                 out_.write(asset_path)
+    logging.info(
+        f"prepare annotation import: total assets {total_assets_count}, labelled assets {labelled_assets_count}"
+    )
     return output_file
 
 
 def update_label_task(label_instance: utils.LabelBase, task_id: str, project_info: Dict) -> None:
     percent = label_instance.get_task_completion_percent(project_info["project_id"])
 
-    logging.info(f"label task:{task_id} percent: {percent}")
+    logging.info(f"label task <{task_id}> percent: {percent}")
     state = LogState.DONE if percent == 1 else LogState.RUNNING
     if state == LogState.DONE:
         # For remove some special tasks. Delete the task after labeling will save file
