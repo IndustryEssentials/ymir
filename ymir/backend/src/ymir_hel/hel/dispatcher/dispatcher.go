@@ -4,7 +4,6 @@ import (
 	"context"
 	"log"
 	"net"
-	"time"
 
 	"github.com/IndustryEssentials/ymir-hel/protos"
 	"github.com/RichardKnop/machinery/v1"
@@ -35,19 +34,19 @@ func StartHelGrpc(grpcURL string, taskServer *machinery.Server) error {
 	return nil
 }
 
-func (s HelGrpcServer) HelOpsProcess(context context.Context, request *protos.HelOpsRequest) (*protos.HelResponse, error) {
+func (s HelGrpcServer) HelOpsProcess(
+	context context.Context,
+	request *protos.HelOpsRequest,
+) (*protos.HelResponse, error) {
 	log.Printf("Hel-gRPC server is called with request:\n%+v", request)
 
-	ch := PollGPUMemory()
+	nvResult := GetGPUInfo()
+	if nvResult != nil {
+		result := &protos.HelResponse{Code: 0, Message: "succeed"}
+		result.GpuCountTotal = int32(nvResult.GpuCountTotal)
+		result.GpuCountFree = int32(nvResult.GpuCountFree)
+		return result, nil
+	}
 
-	go func() {
-		for x := range ch {
-			log.Printf("GPU status: %v", x)
-		}
-	}()
-
-	time.Sleep(2 * time.Second)
-	close(ch)
-
-	return &protos.HelResponse{Code: 0, Message: "succeed"}, nil
+	return &protos.HelResponse{Code: 1, Message: "failed"}, nil
 }
