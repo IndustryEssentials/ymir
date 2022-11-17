@@ -66,8 +66,8 @@ class Iteration(Base):
 
     @property
     def referenced_dataset_ids(self) -> List[int]:
-        return [step.result_dataset for step in self.iteration_steps if step.result_dataset]
+        return [step.result_dataset.id for step in self.iteration_steps if step.result_dataset]
 
     @property
     def referenced_model_ids(self) -> List[int]:
-        return [step.result_model for step in self.iteration_steps if step.result_model]
+        return [step.result_model.id for step in self.iteration_steps if step.result_model]
