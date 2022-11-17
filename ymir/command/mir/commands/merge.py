@@ -82,16 +82,6 @@ def _merge_to_mir(host_mir_metadatas: mirpb.MirMetadatas, host_mir_annotations: 
         raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_MIR_REPO,
                               error_message=f"guest repo {mir_root}:{guest_typ_rev_tid.rev} has no metadata.")
 
-    # todo: bugfix
-    # if host_mir_annotations.prediction.type == mirpb.AnnoType.AT_UNKNOWN:
-    #     host_mir_annotations.prediction.type = guest_mir_annotations.prediction.type
-    # if host_mir_annotations.ground_truth.type == mirpb.AnnoType.AT_UNKNOWN:
-    #     host_mir_annotations.ground_truth.type = guest_mir_annotations.ground_truth.type
-    # if (host_mir_annotations.prediction.type != guest_mir_annotations.prediction.type
-    #         or host_mir_annotations.ground_truth.type != guest_mir_annotations.ground_truth.type):
-    #     raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ANNO_TYPE,
-    #                           error_message='host and guest anno type mismatch')
-
     id_host_only, id_guest_only, id_joint = match_asset_ids(set(host_mir_metadatas.attributes.keys()),
                                                             set(guest_mir_metadatas.attributes.keys()))
 

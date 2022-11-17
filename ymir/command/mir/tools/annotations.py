@@ -493,6 +493,13 @@ def merge_annotations(host_mir_annotations: mirpb.MirAnnotations, guest_mir_anno
 
 def _merge_pair_annotations(host_annotation: mirpb.SingleTaskAnnotations, guest_annotation: mirpb.SingleTaskAnnotations,
                             target_annotation: mirpb.SingleTaskAnnotations, strategy: str) -> None:
+    if (host_annotation.type != mirpb.AnnoType.AT_UNKNOWN and guest_annotation.type != mirpb.AnnoType.AT_UNKNOWN
+            and host_annotation.type != guest_annotation.type):
+        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ANNO_TYPE,
+                              error_message='host and guest anno type mismatch')
+
+    target_annotation.type = host_annotation.type or guest_annotation.type
+
     host_only_ids, guest_only_ids, joint_ids = match_asset_ids(set(host_annotation.image_annotations.keys()),
                                                                set(guest_annotation.image_annotations.keys()))
 
