@@ -38,7 +38,7 @@ def create_iteration(
         raise ProjectNotFound()
     previous_iteration = project.current_iteration
 
-    if previous_iteration.previous_iteration == obj_in.previous_iteration:
+    if previous_iteration and previous_iteration.previous_iteration == obj_in.previous_iteration:
         raise DuplicateIterationError()
 
     iteration = crud.iteration.create_with_user_id(db, user_id=current_user.id, obj_in=obj_in)
