@@ -155,11 +155,10 @@ class CmdInfer(base.BaseCommand):
             task_config=task_config,
         )
 
-        if run_infer:
-            if model_storage.model_type == mirpb.AnnoType.AT_DET_BOX:
-                _process_infer_results(infer_result_file=os.path.join(work_dir_out, 'infer-result.json'),
-                                       max_boxes=_get_max_boxes(config_file),
-                                       label_storage_file=label_storage_file)
+        if run_infer and model_storage.model_type == mirpb.AnnoType.AT_DET_BOX:
+            _process_infer_results(infer_result_file=os.path.join(work_dir_out, 'infer-result.json'),
+                                   max_boxes=_get_max_boxes(config_file),
+                                   label_storage_file=label_storage_file)
 
         return MirCode.RC_OK
 
