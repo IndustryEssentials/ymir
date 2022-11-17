@@ -108,6 +108,7 @@ const errors = {
   'error169999': { cn: 'CMD: 未知错误', en: 'RC_CMD_ERROR_UNKNOWN: unkown error', },
   'error111705': {cn: '找不到迭代步骤', en: 'Iteration step is not found.', },
   'error111706': {cn: '迭代步骤已经完成', en: 'Iteration step is already finished.', },
+  'error111707': {cn: '迭代已重复创建', en: 'Duplicated Iteration.', },
 }
 
 export default errors
