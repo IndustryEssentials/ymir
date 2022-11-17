@@ -1,14 +1,14 @@
-import { connect } from "dva"
-import { message, Table } from 'antd'
-import { useState, useEffect } from "react"
+import { connect } from 'dva'
+import { message, Modal, Table } from 'antd'
+import { useState, useEffect } from 'react'
 
-import t from "@/utils/t"
+import t from '@/utils/t'
 import { format } from '@/utils/date'
 import { ROLES, getRolesLabel } from '@/constants/user'
-import { AddDelTwoIcon, AddTwoIcon, ShutIcon } from "@/components/common/Icons"
+import { AddDelTwoIcon, AddTwoIcon, ShutIcon } from '@/components/common/Icons'
 import s from '../permission.less'
-import Actions from "@/components/table/Actions"
-import confirm from '@/components/common/dangerConfirm'
+import Actions from '@/components/table/Actions'
+import confirmConfig from '@/components/common/dangerConfirm'
 
 const initQuery = {
   limit: 20,
@@ -16,7 +16,6 @@ const initQuery = {
 }
 
 function UserList({ getUsers, setUserRole, off }) {
-
   const [users, setUsers] = useState([])
   const [total, setTotal] = useState(0)
   const [query, setQuery] = useState(initQuery)
@@ -27,35 +26,35 @@ function UserList({ getUsers, setUserRole, off }) {
 
   const columns = [
     {
-      title: showTitle("user.column.name"),
-      dataIndex: "username",
+      title: showTitle('user.column.name'),
+      dataIndex: 'username',
       ellipsis: true,
     },
     {
-      title: showTitle("user.column.role"),
-      dataIndex: "role",
+      title: showTitle('user.column.role'),
+      dataIndex: 'role',
       render: (role) => t(getRolesLabel(role)),
     },
     {
-      title: showTitle("user.column.email"),
-      dataIndex: "email",
+      title: showTitle('user.column.email'),
+      dataIndex: 'email',
     },
     {
-      title: showTitle("user.column.last"),
-      key: "last_login_datetime",
-      dataIndex: "last_login_datetime",
-      render: (datetime) => datetime ? format(datetime) : null,
+      title: showTitle('user.column.last'),
+      key: 'last_login_datetime',
+      dataIndex: 'last_login_datetime',
+      render: (datetime) => (datetime ? format(datetime) : null),
       width: 200,
       align: 'center',
     },
     {
-      title: showTitle("common.action"),
-      key: "action",
-      dataIndex: "action",
+      title: showTitle('common.action'),
+      key: 'action',
+      dataIndex: 'action',
       render: (text, record) => <Actions actions={actionMenus(record)} />,
       className: s.tab_actions,
-      align: "center",
-      width: "280px",
+      align: 'center',
+      width: '280px',
     },
   ]
 
@@ -63,22 +62,22 @@ function UserList({ getUsers, setUserRole, off }) {
     const { id, username, role } = record
     return [
       {
-        key: "add",
-        label: t("user.action.admin"),
+        key: 'add',
+        label: t('user.action.admin'),
         onclick: () => setAdmin(id),
         hidden: () => role !== ROLES.USER,
         icon: <AddTwoIcon />,
       },
       {
-        key: "remove",
-        label: t("user.action.user"),
+        key: 'remove',
+        label: t('user.action.user'),
         onclick: () => setUser(id),
         hidden: () => role !== ROLES.ADMIN,
         icon: <AddDelTwoIcon />,
       },
       {
-        key: "off",
-        label: t("user.action.off"),
+        key: 'off',
+        label: t('user.action.off'),
         onclick: () => setOff(id, username),
         hidden: () => role === ROLES.SUPER,
         icon: <ShutIcon />,
@@ -117,20 +116,20 @@ function UserList({ getUsers, setUserRole, off }) {
   }
 
   function setOff(id, name) {
-    confirm({
-      content: t("permission.off.confirm", { name }),
-      onOk: async () => {
-        const result = await off(id)
-        if (result) {
-          message.success(t('permission.off.succcess'))
-          getUserList()
-        }
-      },
-      okText: t('user.action.off'),
-    })
-
+    Modal.confirm(
+      confirmConfig({
+        content: t('permission.off.confirm', { name }),
+        onOk: async () => {
+          const result = await off(id)
+          if (result) {
+            message.success(t('permission.off.succcess'))
+            getUserList()
+          }
+        },
+        okText: t('user.action.off'),
+      }),
+    )
   }
-
 
   function showTitle(str) {
     return <strong>{t(str)}</strong>
