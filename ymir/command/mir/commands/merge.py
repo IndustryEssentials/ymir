@@ -164,12 +164,12 @@ class CmdMerge(base.BaseCommand):
 
         # Read host id mir data.
         host_typ_rev_tid = src_typ_rev_tids[0]
-        [host_mir_metadatas, host_mir_annotations
-         ] = mir_storage_ops.MirStorageOps.load_multiple_storages(mir_root=mir_root,
-                                                                  mir_branch=host_typ_rev_tid.rev,
-                                                                  mir_task_id=host_typ_rev_tid.tid,
-                                                                  ms_list=[mirpb.MIR_METADATAS, mirpb.MIR_ANNOTATIONS],
-                                                                  as_dict=False)
+        host_mir_metadatas, host_mir_annotations = mir_storage_ops.MirStorageOps.load_multiple_storages(
+            mir_root=mir_root,
+            mir_branch=host_typ_rev_tid.rev,
+            mir_task_id=host_typ_rev_tid.tid,
+            ms_list=[mirpb.MIR_METADATAS, mirpb.MIR_ANNOTATIONS],
+            as_dict=False)
         host_tvt_type = _tvt_type_from_str(host_typ_rev_tid.typ)
         for asset_id in host_mir_metadatas.attributes:
             host_mir_metadatas.attributes[asset_id].tvt_type = host_tvt_type

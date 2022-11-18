@@ -470,10 +470,6 @@ def merge_annotations(host_mir_annotations: mirpb.MirAnnotations, guest_mir_anno
         ValueError: if host or guest annotations empty
         ValueError: if conflicts occured in strategy stop
     """
-    if not host_mir_annotations or not guest_mir_annotations:
-        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
-                              error_message="input host/guest mir_annotations is invalid")
-
     _merge_pair_annotations(host_annotation=host_mir_annotations.prediction,
                             guest_annotation=guest_mir_annotations.prediction,
                             target_annotation=host_mir_annotations.prediction,
