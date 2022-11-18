@@ -13,7 +13,7 @@ const types = [
 ]
 
 const EvaluationSelector: React.FC<Props> = (props) => (
-  <CheckboxSelector options={types} label={t('dataset.assets.selector.evaluation.label')} checkedDefault={true} {...props} />
+    <CheckboxSelector options={types} label={t('dataset.assets.selector.evaluation.label')} {...props} />
 )
 
 export default EvaluationSelector
