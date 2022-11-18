@@ -9,11 +9,11 @@ import { randomBetween, percent } from '@/utils/number'
 import Breadcrumbs from "@/components/common/breadcrumb"
 import Asset from "./components/asset"
 import styles from "./assets.less"
-import GtSelector from "@/components/form/gtSelector"
+import GtSelector from "@/components/form/GtSelector"
 import ImageAnnotation from "@/components/dataset/imageAnnotation"
 import useWindowResize from "@/hooks/useWindowResize"
 import KeywordSelector from "./components/keywordSelector"
-import EvaluationSelector from "@/components/form/evaluationSelector"
+import EvaluationSelector from "@/components/form/EvaluationSelector"
 import VersionName from '@/components/result/VersionName'
 
 const { Option } = Select
