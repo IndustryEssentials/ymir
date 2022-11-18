@@ -363,7 +363,19 @@ def _parse_labelmap(label_map_file: str, class_type_manager: class_ids.UserLabel
 
 # copy
 def copy_annotations(mir_annotations: mirpb.MirAnnotations, mir_context: mirpb.MirContext,
-                     data_label_storage_file: str, label_storage_file: str) -> dict:
+                     data_label_storage_file: str, label_storage_file: str) -> Dict[str, int]:
+    """
+    change mir_annotations in-place
+
+    Args:
+        mir_annotations (mirpb.MirAnnotations): in/out, pred and gt to be updated
+        mir_context (mirpb.MirContext): in, mir_context from data_mir_root, contains class names and count
+        data_label_storage_file (str): in, source label storage file
+        label_storage_file (str): in, dest label storage file
+
+    Returns:
+        Dict[str, int]: unknown class names and count
+    """
     if (data_label_storage_file == label_storage_file
             or (len(mir_annotations.prediction.image_annotations) == 0
                 and len(mir_annotations.ground_truth.image_annotations) == 0)):
@@ -428,6 +440,16 @@ def _gen_unknown_names_and_count(src_class_id_mgr: class_ids.UserLabels, mir_con
 
 # filter
 def filter_annotations(mir_annotations: mirpb.MirAnnotations, asset_ids_set: Set[str]) -> mirpb.MirAnnotations:
+    """
+    filter mir_annotations by asset_ids_set
+
+    Args:
+        mir_annotations (mirpb.MirAnnotations), in: pred and gt to be filtered
+        asset_ids_set (Set[str]), in: asset ids
+
+    Returns:
+        mirpb.MirAnnotations: matched gt and pred
+    """
     matched_mir_annotations = mirpb.MirAnnotations()
 
     _gen_filter_task_annotations(src_task_annotations=mir_annotations.ground_truth,
@@ -462,13 +484,12 @@ def merge_annotations(host_mir_annotations: mirpb.MirAnnotations, guest_mir_anno
     add all annotations in guest_mir_annotations into host_mir_annotations
 
     Args:
-        host_mir_annotations (mirpb.MirAnnotations): host annotations
-        guest_mir_annotations (mirpb.MirAnnotations): guest annotations
-        strategy (str): host, guest, stop
+        host_mir_annotations (mirpb.MirAnnotations), in/out: host annotations
+        guest_mir_annotations (mirpb.MirAnnotations), in: guest annotations
+        strategy (str), in: host, guest, stop
 
     Raises:
-        ValueError: if host or guest annotations empty
-        ValueError: if conflicts occured in strategy stop
+        MirRuntimeError: if host or guest annotations empty, or conflicts occured in strategy stop
     """
     _merge_pair_annotations(host_annotation=host_mir_annotations.prediction,
                             guest_annotation=guest_mir_annotations.prediction,
@@ -574,6 +595,23 @@ def sampling_annotations(mir_annotations: mirpb.MirAnnotations, sampled_asset_id
 def mining_annotations(work_out_dir: str, asset_ids_set: Set[str], cls_id_mgr: class_ids.UserLabels,
                        model_storage: ModelStorage, add_prediction: bool,
                        mir_annotations: mirpb.MirAnnotations) -> mirpb.MirAnnotations:
+    """
+    in cmd mining, generate new pred and gt from output dir and source mir_annotations
+
+    Args:
+        work_out_dir (str), in: path to <work_dir>/out
+        asset_ids_set (Set[str]), in: topk asset ids
+        cls_id_mgr (UserLabels), in: user labels
+        model_storage (ModelStorage), in: model used in mining command
+        add_prediction (bool), in: if true, add prediction from source mir_annotations
+        mir_annotations (mirpb.MirAnnotations), in: source mir_annotations
+    
+    Returns:
+        mirpb.MirAnnotations: generated mir_annotations with:
+            1. gt from source gt, filtered by topk
+            2. pred from source pred (if add_prediction is True)
+            3. pred meta from source pred
+    """
     matched_mir_annotations = mirpb.MirAnnotations()
 
     # predictions
