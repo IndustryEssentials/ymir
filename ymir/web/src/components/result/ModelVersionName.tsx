@@ -16,8 +16,8 @@ const ModelVersionName: React.FC<Props> = ({ id, result, stageId }) => {
   useEffect(() => {
     setModel(cache || result)
   }, [cache, result])
-
-  const extra = model ? (stageId ? getStage(model, stageId) : getRecommendStage(model))?.name : ''
+  const stage: YModels.Stage | undefined = model ? (stageId ? getStage(model, stageId) : getRecommendStage(model)) : undefined
+  const extra = stage?.name || ''
   return <VersionName result={model} extra={extra} />
 }
 

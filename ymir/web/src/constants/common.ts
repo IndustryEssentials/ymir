@@ -1,6 +1,3 @@
-
-
-
 export const HIDDENMODULES = {
   ITERATIONSWITCH: true,
   OPENPAI: true,
@@ -13,7 +10,7 @@ export const INFER_CLASSES_MAX_COUNT = 20
 declare global {
   interface Window {
     baseConfig: {
-      [name: string]: string,
+      [name: string]: string
     }
   }
 }
@@ -32,7 +29,7 @@ export enum actions {
 export const OPENPAI_MAX_GPU_COUNT = 8
 
 type Result = {
-  [key: string]: any,
+  [key: string]: any
 }
 export function updateResultState(result: YModels.Result, tasks: YModels.BackendData) {
   const task = result?.task?.hash ? tasks[result.task.hash] : null
@@ -83,4 +80,43 @@ export const getDeployUrl = () => {
   let url = window?.baseConfig?.DEPLOY_MODULE_URL
   const onlyPort = /^\d+$/.test(url)
   return onlyPort ? `${location.protocol}//${location.hostname}:${url}` : url
+}
+
+enum MergeStrategy {
+  latest = 2,
+  older = 3,
+  stop = 1,
+}
+
+enum LabelAnnotationTypes {
+  gt = 1,
+  pred = 2,
+}
+
+export const getLabelAnnotationTypes = () => {
+  const prefix = 'task.label.form.keep_anno.'
+  return [
+    {value: LabelAnnotationTypes.gt, label: `${prefix}gt`},
+    {value: LabelAnnotationTypes.pred, label: `${prefix}pred`},
+    {value: undefined, label: `${prefix}none`},
+  ]
+}
+
+export const getLabelAnnotationType = (type: LabelAnnotationTypes | undefined) => {
+  const types = getLabelAnnotationTypes()
+  const target = types.find(({ value }) => !value || value === type)
+  return target?.label
+}
+
+export const getMergeStrategies = () => {
+  const prefix = 'task.train.form.repeatdata'
+  return [
+    { value: MergeStrategy.latest, label: `${prefix}.latest` },
+    { value: MergeStrategy.older, label: `${prefix}.original` },
+    { value: MergeStrategy.stop, label: `${prefix}.terminate` },
+  ]
+}
+
+export const getMergeStrategyLabel = (strategy: MergeStrategy | undefined) => {
+  return strategy ? getMergeStrategies().find(({ value }) => value === strategy)?.label : undefined
 }
