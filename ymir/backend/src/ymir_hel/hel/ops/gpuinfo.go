@@ -1,6 +1,7 @@
 package ops
 
 import (
+	"errors"
 	"log"
 
 	"github.com/IndustryEssentials/ymir-hel/common/constants"
@@ -29,7 +30,7 @@ func GetGPUInfo(gpuIdleThr float64, gpuInfo *protos.HelGpuInfo) error {
 	ret := nvml.Init()
 	if ret != nvml.SUCCESS {
 		log.Fatalf("Unable to initialize NVML: %v", nvml.ErrorString(ret))
-		return nil
+		return errors.New(nvml.ErrorString(ret))
 	}
 	defer func() {
 		ret := nvml.Shutdown()
@@ -41,7 +42,7 @@ func GetGPUInfo(gpuIdleThr float64, gpuInfo *protos.HelGpuInfo) error {
 	count, ret := nvml.DeviceGetCount()
 	if ret != nvml.SUCCESS {
 		log.Fatalf("Unable to get device count: %v", nvml.ErrorString(ret))
-		return nil
+		return errors.New(nvml.ErrorString(ret))
 	}
 
 	gpuInfo.GpuCountTotal = int32(count)
@@ -49,13 +50,13 @@ func GetGPUInfo(gpuIdleThr float64, gpuInfo *protos.HelGpuInfo) error {
 		device, ret := nvml.DeviceGetHandleByIndex(i)
 		if ret != nvml.SUCCESS {
 			log.Fatalf("Unable to get device at index %d: %v", i, nvml.ErrorString(ret))
-			return nil
+			return errors.New(nvml.ErrorString(ret))
 		}
 
 		memoryInfo, ret := device.GetMemoryInfo()
 		if ret != nvml.SUCCESS {
 			log.Fatalf("Unable to get uuid of device at index %d: %v", i, nvml.ErrorString(ret))
-			return nil
+			return errors.New(nvml.ErrorString(ret))
 		}
 
 		if float64(memoryInfo.Free)/float64(memoryInfo.Total) > gpuIdleThr {
