@@ -605,7 +605,7 @@ def mining_annotations(work_out_dir: str, asset_ids_set: Set[str], cls_id_mgr: c
         model_storage (ModelStorage), in: model used in mining command
         add_prediction (bool), in: if true, add prediction from source mir_annotations
         mir_annotations (mirpb.MirAnnotations), in: source mir_annotations
-    
+
     Returns:
         mirpb.MirAnnotations: generated mir_annotations with:
             1. gt from source gt, filtered by topk
