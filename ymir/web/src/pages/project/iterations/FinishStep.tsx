@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react'
 import { Link, useSelector } from 'umi'
 
 import t from '@/utils/t'
+import { getMergeStrategyLabel, getLabelAnnotationType } from '@/constants/common'
 import { STEP } from '@/constants/iteration'
 import VersionName from '@/components/result/VersionName'
 import ModelVersionName from '@/components/result/ModelVersionName'
@@ -71,7 +72,7 @@ function getFusionParams(params: YModels.FusionParams) {
     },
     {
       label: 'task.train.form.repeatdata.label',
-      content: params.merge_strategy,
+      content: params.merge_strategy ? t(getMergeStrategyLabel(params.merge_strategy)) : null,
     },
     {
       label: 'task.fusion.form.excludes.label',
@@ -106,6 +107,7 @@ function getMiningParams(params: YModels.MiningParams) {
 function getLabelParams(params: YModels.LabelParams) {
   return [
     { label: 'task.fusion.form.dataset', content: <VersionName id={params.dataset_id} /> },
+    { label: 'task.label.form.keep_anno.label', content: t(getLabelAnnotationType(params.annotation_type)) },
     { label: 'task.label.form.desc.label', content: params.extra_url ? <a href={params.extra_url}>{params.extra_url}</a> : null },
   ]
 }
@@ -129,7 +131,7 @@ function getTrainingParams(params: YModels.TrainingParams) {
     { label: 'task.train.form.image.label', content: <ImageName id={params.docker_image_id} /> },
     { label: 'task.train.form.trainsets.label', content: <VersionName id={params.dataset_id} /> },
     { label: 'task.train.form.testsets.label', content: <VersionName id={params.validation_dataset_id} /> },
-    { label: 'task.detail.label.premodel', content: <ModelVersionName id={params.model_id} stageId={params.model_stage_id} /> },
+    { label: 'task.detail.label.premodel', content: params.model_id ? <ModelVersionName id={params.model_id} stageId={params.model_stage_id} /> : null },
     { label: 'task.gpu.count', content: params.gpuCount },
     imageConfig(params.config),
   ]

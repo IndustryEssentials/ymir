@@ -56,7 +56,7 @@ function Prepare({ project, fresh = () => { } }) {
 
   useEffect(() => {
     if (mergeResult) {
-      updateAndCreateIteration(mergeResult.id)
+      updateAndCreateIteration(mergeResult?.result_dataset?.id)
     }
   }, [mergeResult])
 
