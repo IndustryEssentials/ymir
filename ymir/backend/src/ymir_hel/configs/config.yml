@@ -20,8 +20,26 @@ HelGrpcPort: 9542
 # HelURI has higher priority than above fields, if set.
 HelGrpcURL: ""
 
+# Hel-machineary
+HelWorkerNum: 1
+HelWorkerTag: "YMIR-Hel-Tasks"
+
+# Hel-config
+AssetsLocation: ""
+ModelsLocation: ""
+TensorboardRoot: ""
+
+# Openpai-config
+OpenpaiHost: ""
+OpenpaiToken: ""
+OpenpaiStorage: ""
+OpenpaiUser: ""
+OpenpaiCluster: ""
+OpenpaiGpuType: ""
+ServerRuntime: ""
+
 # Redis
-RedisURLHel: "redis://redis:6379"
+RedisURLHel: "redis://127.0.0.1:6379"
 RedisNumHelGrpc: 12
 RedisURLHelGrpc: ""
 RedisNumHelTask: 14
