@@ -1,7 +1,7 @@
 import { evaluationTags as tags } from '@/constants/dataset'
-import t from "@/utils/t"
+import t from '@/utils/t'
 import React from 'react'
-import CheckboxSelector from "./checkboxSelector"
+import CheckboxSelector from './CheckboxSelector'
 
 type Props = YModels.PlainObject
 
@@ -12,10 +12,8 @@ const types = [
   { label: 'TP', value: tags.tp },
 ]
 
-const EvaluationSelector: React.FC<Props> = props => <CheckboxSelector
-  options={types}
-  label={t('dataset.assets.selector.evaluation.label')}
-  {...props}
-/>
+const EvaluationSelector: React.FC<Props> = (props) => (
+  <CheckboxSelector options={types} label={t('dataset.assets.selector.evaluation.label')} checkedDefault={true} {...props} />
+)
 
 export default EvaluationSelector
