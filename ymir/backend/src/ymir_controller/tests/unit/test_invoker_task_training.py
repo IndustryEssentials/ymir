@@ -99,10 +99,10 @@ class TestInvokerTaskTraining(unittest.TestCase):
             'gpu_count': 1
         }
 
-        training_data_type_1 = backend_pb2.TaskReqTraining.TrainingDatasetType()
+        training_data_type_1 = backend_pb2.TrainingDatasetType()
         training_data_type_1.dataset_id = self._guest_id1
         training_data_type_1.dataset_type = mir_cmd_pb.TvtType.TvtTypeTraining
-        training_data_type_2 = backend_pb2.TaskReqTraining.TrainingDatasetType()
+        training_data_type_2 = backend_pb2.TrainingDatasetType()
         training_data_type_2.dataset_id = self._guest_id2
         training_data_type_2.dataset_type = mir_cmd_pb.TvtType.TvtTypeValidation
 
