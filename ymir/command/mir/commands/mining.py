@@ -2,7 +2,7 @@ import argparse
 import logging
 import os
 from subprocess import CalledProcessError
-from typing import Optional, Set
+from typing import Optional, Set, Tuple
 
 from mir.commands import base, infer
 from mir.protos import mir_command_pb2 as mirpb
@@ -194,24 +194,33 @@ class CmdMining(base.BaseCommand):
         if return_code != MirCode.RC_OK:
             raise MirContainerError(error_message='mining container error occured', task=task)
 
-        _process_results(mir_root=mir_root,
-                         label_storage_file=label_storage_file,
-                         export_out=work_out_path,
-                         dst_typ_rev_tid=dst_typ_rev_tid,
-                         src_typ_rev_tid=src_typ_rev_tid,
-                         topk=topk,
-                         add_prediction=add_prediction,
-                         model_storage=model_storage,
-                         task=task)
+        matched_mir_metadatas, matched_mir_annotations = _process_results(mir_root=mir_root,
+                                                                          label_storage_file=label_storage_file,
+                                                                          export_out=work_out_path,
+                                                                          src_typ_rev_tid=src_typ_rev_tid,
+                                                                          topk=topk,
+                                                                          add_prediction=add_prediction,
+                                                                          model_storage=model_storage)
+
+        mir_datas = {
+            mirpb.MirStorage.MIR_METADATAS: matched_mir_metadatas,
+            mirpb.MirStorage.MIR_ANNOTATIONS: matched_mir_annotations,
+        }
+        mir_storage_ops.MirStorageOps.save_and_commit(mir_root=mir_root,
+                                                      his_branch=src_typ_rev_tid.rev,
+                                                      mir_branch=dst_typ_rev_tid.rev,
+                                                      mir_datas=mir_datas,
+                                                      task=task)
+
         logging.info(f"mining done, results at: {work_out_path}")
 
         return MirCode.RC_OK
 
 
 # protected: post process
-def _process_results(mir_root: str, label_storage_file: str, export_out: str, dst_typ_rev_tid: revs_parser.TypRevTid,
-                     src_typ_rev_tid: revs_parser.TypRevTid, topk: Optional[int], add_prediction: bool,
-                     model_storage: models.ModelStorage, task: mirpb.Task) -> int:
+def _process_results(mir_root: str, label_storage_file: str, export_out: str, src_typ_rev_tid: revs_parser.TypRevTid,
+                     topk: Optional[int], add_prediction: bool,
+                     model_storage: models.ModelStorage) -> Tuple[mirpb.MirMetadatas, mirpb.MirAnnotations]:
     # step 1: build topk results:
     #   read old
     mir_metadatas: mirpb.MirMetadatas
@@ -243,18 +252,7 @@ def _process_results(mir_root: str, label_storage_file: str, export_out: str, ds
         add_prediction=add_prediction,
         mir_annotations=mir_annotations)
 
-    # step 3: store results and commit.
-    mir_datas = {
-        mirpb.MirStorage.MIR_METADATAS: matched_mir_metadatas,
-        mirpb.MirStorage.MIR_ANNOTATIONS: matched_mir_annotations,
-    }
-    mir_storage_ops.MirStorageOps.save_and_commit(mir_root=mir_root,
-                                                  his_branch=src_typ_rev_tid.rev,
-                                                  mir_branch=dst_typ_rev_tid.rev,
-                                                  mir_datas=mir_datas,
-                                                  task=task)
-
-    return MirCode.RC_OK
+    return (matched_mir_metadatas, matched_mir_annotations)
 
 
 def _get_topk_asset_ids(file_path: str, topk: int) -> Set[str]:
