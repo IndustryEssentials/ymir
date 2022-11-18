@@ -60,10 +60,6 @@ class CmdFilter(base.BaseCommand):
     @command_run_in_out
     def run_with_args(mir_root: str, label_storage_file: str, in_cis: Optional[str], ex_cis: Optional[str],
                       src_revs: str, dst_rev: str, work_dir: str) -> int:  # type: ignore
-        # check args
-        in_cis = in_cis.strip().lower() if in_cis else ''
-        ex_cis = ex_cis.strip().lower() if ex_cis else ''
-
         src_typ_rev_tid = revs_parser.parse_single_arg_rev(src_revs, need_tid=False)
         dst_typ_rev_tid = revs_parser.parse_single_arg_rev(dst_rev, need_tid=True)
 
@@ -87,6 +83,8 @@ class CmdFilter(base.BaseCommand):
 
         PhaseLoggerCenter.update_phase(phase='filter.read')
 
+        in_cis = in_cis.strip().lower() if in_cis else ''
+        ex_cis = ex_cis.strip().lower() if ex_cis else ''
         class_manager = class_ids.load_or_create_userlabels(label_storage_file=label_storage_file)
         in_cis_set: Set[int] = CmdFilter.__class_ids_set_from_str(in_cis, class_manager)
         ex_cis_set: Set[int] = CmdFilter.__class_ids_set_from_str(ex_cis, class_manager)
@@ -102,7 +100,6 @@ class CmdFilter(base.BaseCommand):
         logging.info(f"assets count after exclude match: {len(asset_ids_set)}")
 
         matched_mir_metadatas = mirpb.MirMetadatas()
-
         for asset_id in asset_ids_set:
             asset_attr = mir_metadatas.attributes[asset_id]
             matched_mir_metadatas.attributes[asset_id].CopyFrom(asset_attr)
