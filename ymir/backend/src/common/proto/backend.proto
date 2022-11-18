@@ -214,24 +214,21 @@ service mir_controller_service {
 
 enum HelOpsType {
     HEL_OPS_UNKNOWN = 0;
-    HEL_OPS_INFER = 1;
-    HEL_OPS_TERMINATE = 2;
-    HEL_OPS_GET_GPU = 3;
+    // Require: singleton_op.
+    HEL_OPS_TERMINATE = 1;
+    // Require: No.
+    HEL_OPS_GET_GPU = 2;
 }
 
 message HelOpsRequest {
-    string user_id = 1;
-    string repo_id = 2;
-    string task_id = 3;
-    HelOpsType ops_type = 4;
+    HelOpsType ops_type = 1;
     // singleton ops arg, such as target task id, etc.
     string singleton_op = 10;
 }
 
-message HelResponse {
+message HelOpsResponse {
     int32 code = 1;
-    string req_task_id = 2;
-    string message = 3;
+    string message = 2;
     HelGpuInfo gpu_info = 10;
     HelOpsRequest request = 100;
 }
@@ -239,9 +236,9 @@ message HelResponse {
 message HelGpuInfo {
     int32 gpu_count_total = 1;
     int32 gpu_count_busy = 2;
-    int32 gpu_count_free = 3;
-    int32 gpu_count_in_use = 4;
+    int32 gpu_count_idle = 3;
+    int32 gpu_count_reserved = 4;
 }
 service hel_service {
-    rpc hel_ops_process(HelOpsRequest) returns (HelResponse) {}
+    rpc hel_ops_process(HelOpsRequest) returns (HelOpsResponse) {}
 } // mcs_dm

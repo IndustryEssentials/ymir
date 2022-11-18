@@ -14,10 +14,11 @@ const (
 	CodeViewerRepoNotExist ResponseCode = 180103
 
 	// Hel Error Code
-	CodeHelGeneral   ResponseCode = 180200
-	CodeHelNvmlError ResponseCode = 180201
+	CodeHelGeneral      ResponseCode = 180200
+	CodeHelInvalidParms ResponseCode = 180201
+	CodeHelNvmlError    ResponseCode = 180210
 )
 
-func HelRespMessage(code ResponseCode) *protos.HelResponse {
-	return &protos.HelResponse{Code: int32(code)}
+func HelRespMessage(code ResponseCode, request *protos.HelOpsRequest) *protos.HelOpsResponse {
+	return &protos.HelOpsResponse{Code: int32(code), ReqTaskId: request.TaskId, Request: request}
 }

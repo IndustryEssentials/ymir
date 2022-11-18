@@ -12,29 +12,20 @@ import (
 func OpsGpuInfo(
 	request *protos.HelOpsRequest,
 	config *configs.Config,
-) *protos.HelResponse {
-	nvResult := GetGPUInfo()
-	if nvResult != nil {
-		result := constants.HelRespMessage(constants.CodeSuccess)
-		result.GpuInfo = &protos.HelGpuInfo{
-			GpuCountTotal: int32(nvResult.GpuCountTotal),
-			GpuCountBusy:  0,
-			GpuCountFree:  int32(nvResult.GpuCountFree),
-			GpuCountInUse: 0,
-		}
-		return result
+) *protos.HelOpsResponse {
+	result := constants.HelRespMessage(constants.CodeSuccess, request)
+	result.GpuInfo = &protos.HelGpuInfo{}
+
+	gpuIdleThr := 0.8
+	err := GetGPUInfo(gpuIdleThr, result.GpuInfo)
+	if err != nil {
+		return constants.HelRespMessage(constants.CodeHelNvmlError, request)
 	}
 
-	return constants.HelRespMessage(constants.CodeHelNvmlError)
+	return result
 }
 
-type NVResult struct {
-	GpuCountTotal int
-	GpuCountFree  int
-	GpuCountUsed  int
-}
-
-func GetGPUInfo() *NVResult {
+func GetGPUInfo(gpuIdleThr float64, gpuInfo *protos.HelGpuInfo) error {
 	ret := nvml.Init()
 	if ret != nvml.SUCCESS {
 		log.Fatalf("Unable to initialize NVML: %v", nvml.ErrorString(ret))
@@ -53,8 +44,7 @@ func GetGPUInfo() *NVResult {
 		return nil
 	}
 
-	gpuFreeThr := 0.8
-	infoResult := &NVResult{GpuCountTotal: count}
+	gpuInfo.GpuCountTotal = int32(count)
 	for i := 0; i < count; i++ {
 		device, ret := nvml.DeviceGetHandleByIndex(i)
 		if ret != nvml.SUCCESS {
@@ -68,9 +58,11 @@ func GetGPUInfo() *NVResult {
 			return nil
 		}
 
-		if float64(memoryInfo.Free)/float64(memoryInfo.Total) > gpuFreeThr {
-			infoResult.GpuCountFree += 1
+		if float64(memoryInfo.Free)/float64(memoryInfo.Total) > gpuIdleThr {
+			gpuInfo.GpuCountIdle += 1
+		} else {
+			gpuInfo.GpuCountBusy += 1
 		}
 	}
-	return infoResult
+	return nil
 }

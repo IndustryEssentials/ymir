@@ -78,7 +78,7 @@ class hel_serviceStub(object):
         self.hel_ops_process = channel.unary_unary(
                 '/ymir.backend.hel_service/hel_ops_process',
                 request_serializer=backend__pb2.HelOpsRequest.SerializeToString,
-                response_deserializer=backend__pb2.HelResponse.FromString,
+                response_deserializer=backend__pb2.HelOpsResponse.FromString,
                 )
 
 
@@ -97,7 +97,7 @@ def add_hel_serviceServicer_to_server(servicer, server):
             'hel_ops_process': grpc.unary_unary_rpc_method_handler(
                     servicer.hel_ops_process,
                     request_deserializer=backend__pb2.HelOpsRequest.FromString,
-                    response_serializer=backend__pb2.HelResponse.SerializeToString,
+                    response_serializer=backend__pb2.HelOpsResponse.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -122,6 +122,6 @@ class hel_service(object):
             metadata=None):
         return grpc.experimental.unary_unary(request, target, '/ymir.backend.hel_service/hel_ops_process',
             backend__pb2.HelOpsRequest.SerializeToString,
-            backend__pb2.HelResponse.FromString,
+            backend__pb2.HelOpsResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)

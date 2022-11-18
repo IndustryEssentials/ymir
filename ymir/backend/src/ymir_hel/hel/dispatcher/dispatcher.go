@@ -5,6 +5,7 @@ import (
 	"log"
 	"net"
 
+	"github.com/IndustryEssentials/ymir-hel/common/constants"
 	"github.com/IndustryEssentials/ymir-hel/configs"
 	"github.com/IndustryEssentials/ymir-hel/hel/ops"
 	"github.com/IndustryEssentials/ymir-hel/protos"
@@ -18,9 +19,23 @@ type HelGrpcServer struct {
 func (s HelGrpcServer) HelOpsProcess(
 	context context.Context,
 	request *protos.HelOpsRequest,
-) (*protos.HelResponse, error) {
-	log.Printf("Hel-gRPC server is called with request:\n%+v", request)
-	return ops.GetOpsFunc(request.OpsType)(request, s.ServerConfig), nil
+) (ret *protos.HelOpsResponse, err error) {
+	log.Printf("Hel-Ops request:\n%+v", request)
+	defer func() {
+		log.Printf("Hel-Ops result:\n%+v", ret)
+	}()
+
+	m := map[protos.HelOpsType]func(request *protos.HelOpsRequest, config *configs.Config) *protos.HelOpsResponse{
+		protos.HelOpsType_HEL_OPS_GET_GPU: ops.OpsGpuInfo,
+	}
+
+	if opsFunc, ok := m[request.OpsType]; ok {
+		ret = opsFunc(request, s.ServerConfig)
+	} else {
+		ret = constants.HelRespMessage(constants.CodeHelInvalidParms, request)
+	}
+
+	return ret, nil
 }
 
 func StartHelGrpc(grpcURL string, config *configs.Config) error {

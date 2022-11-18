@@ -102,7 +102,7 @@ var MirControllerService_ServiceDesc = grpc.ServiceDesc{
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type HelServiceClient interface {
-	HelOpsProcess(ctx context.Context, in *HelOpsRequest, opts ...grpc.CallOption) (*HelResponse, error)
+	HelOpsProcess(ctx context.Context, in *HelOpsRequest, opts ...grpc.CallOption) (*HelOpsResponse, error)
 }
 
 type helServiceClient struct {
@@ -113,8 +113,8 @@ func NewHelServiceClient(cc grpc.ClientConnInterface) HelServiceClient {
 	return &helServiceClient{cc}
 }
 
-func (c *helServiceClient) HelOpsProcess(ctx context.Context, in *HelOpsRequest, opts ...grpc.CallOption) (*HelResponse, error) {
-	out := new(HelResponse)
+func (c *helServiceClient) HelOpsProcess(ctx context.Context, in *HelOpsRequest, opts ...grpc.CallOption) (*HelOpsResponse, error) {
+	out := new(HelOpsResponse)
 	err := c.cc.Invoke(ctx, "/ymir.backend.hel_service/hel_ops_process", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -126,14 +126,14 @@ func (c *helServiceClient) HelOpsProcess(ctx context.Context, in *HelOpsRequest,
 // All implementations should embed UnimplementedHelServiceServer
 // for forward compatibility
 type HelServiceServer interface {
-	HelOpsProcess(context.Context, *HelOpsRequest) (*HelResponse, error)
+	HelOpsProcess(context.Context, *HelOpsRequest) (*HelOpsResponse, error)
 }
 
 // UnimplementedHelServiceServer should be embedded to have forward compatible implementations.
 type UnimplementedHelServiceServer struct {
 }
 
-func (UnimplementedHelServiceServer) HelOpsProcess(context.Context, *HelOpsRequest) (*HelResponse, error) {
+func (UnimplementedHelServiceServer) HelOpsProcess(context.Context, *HelOpsRequest) (*HelOpsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method HelOpsProcess not implemented")
 }
 
