@@ -20,5 +20,5 @@ const (
 )
 
 func HelRespMessage(code ResponseCode, request *protos.HelOpsRequest) *protos.HelOpsResponse {
-	return &protos.HelOpsResponse{Code: int32(code), ReqTaskId: request.TaskId, Request: request}
+	return &protos.HelOpsResponse{Code: int32(code), Request: request}
 }
