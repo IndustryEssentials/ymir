@@ -4,7 +4,7 @@ from typing import Optional, Set
 
 from mir.commands import base
 from mir.protos import mir_command_pb2 as mirpb
-from mir.tools import checker, class_ids, mir_repo_utils, mir_storage, mir_storage_ops, revs_parser
+from mir.tools import checker, class_ids, mir_repo_utils, mir_storage_ops, revs_parser
 from mir.tools.annotations import filter_annotations
 from mir.tools.code import MirCode
 from mir.tools.command_run_in_out import command_run_in_out
@@ -78,13 +78,12 @@ class CmdFilter(base.BaseCommand):
 
         PhaseLoggerCenter.update_phase(phase="filter.init")
 
-        [mir_metadatas, mir_annotations, mir_keywords, mir_tasks,
-         _] = mir_storage_ops.MirStorageOps.load_multiple_storages(mir_root=mir_root,
-                                                                   mir_branch=src_typ_rev_tid.rev,
-                                                                   mir_task_id=src_typ_rev_tid.tid,
-                                                                   ms_list=mir_storage.get_all_mir_storage(),
-                                                                   as_dict=False)
-        task_id = dst_typ_rev_tid.tid
+        mir_metadatas, mir_annotations, mir_keywords = mir_storage_ops.MirStorageOps.load_multiple_storages(
+            mir_root=mir_root,
+            mir_branch=src_typ_rev_tid.rev,
+            mir_task_id=src_typ_rev_tid.tid,
+            ms_list=[mirpb.MirStorage.MIR_METADATAS, mirpb.MirStorage.MIR_ANNOTATIONS, mirpb.MirStorage.MIR_KEYWORDS],
+            as_dict=False)
 
         PhaseLoggerCenter.update_phase(phase='filter.read')
 
@@ -116,7 +115,7 @@ class CmdFilter(base.BaseCommand):
 
         commit_message = f"filter select: {in_cis} exclude: {ex_cis}"
         task = mir_storage_ops.create_task(task_type=mirpb.TaskType.TaskTypeFilter,
-                                           task_id=task_id,
+                                           task_id=dst_typ_rev_tid.tid,
                                            message=commit_message,
                                            src_revs=src_revs,
                                            dst_rev=dst_rev)

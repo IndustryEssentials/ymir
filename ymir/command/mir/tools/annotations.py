@@ -362,29 +362,29 @@ def _parse_labelmap(label_map_file: str, class_type_manager: class_ids.UserLabel
 
 
 # copy
-def copy_annotations(mir_annotations: mirpb.MirAnnotations, mir_context: mirpb.MirContext, drop_annotations: bool,
+def copy_annotations(mir_annotations: mirpb.MirAnnotations, mir_context: mirpb.MirContext,
                      data_label_storage_file: str, label_storage_file: str) -> dict:
-    if drop_annotations:
-        mir_annotations.prediction.Clear()
-        mir_annotations.ground_truth.Clear()
+    if (data_label_storage_file == label_storage_file
+            or (len(mir_annotations.prediction.image_annotations) == 0
+                and len(mir_annotations.ground_truth.image_annotations) == 0)):
+        # no need to make any changes to annotations
+        return {}
 
-    if (not drop_annotations) and (data_label_storage_file != label_storage_file):  # need to change class ids
-        src_class_id_mgr = class_ids.load_or_create_userlabels(label_storage_file=data_label_storage_file)
-        dst_class_id_mgr = class_ids.load_or_create_userlabels(label_storage_file=label_storage_file)
+    # need to change class ids
+    src_class_id_mgr = class_ids.load_or_create_userlabels(label_storage_file=data_label_storage_file)
+    dst_class_id_mgr = class_ids.load_or_create_userlabels(label_storage_file=label_storage_file)
 
-        src_to_dst_ids = {
-            src_class_id_mgr.id_and_main_name_for_name(n)[0]: dst_class_id_mgr.id_and_main_name_for_name(n)[0]
-            for n in src_class_id_mgr.all_main_names()
-        }
+    src_to_dst_ids = {
+        src_class_id_mgr.id_and_main_name_for_name(n)[0]: dst_class_id_mgr.id_and_main_name_for_name(n)[0]
+        for n in src_class_id_mgr.all_main_names()
+    }
 
-        _change_annotations_type_ids(single_task_annotations=mir_annotations.prediction, src_to_dst_ids=src_to_dst_ids)
-        _change_annotations_type_ids(single_task_annotations=mir_annotations.ground_truth,
-                                     src_to_dst_ids=src_to_dst_ids)
+    _change_annotations_type_ids(single_task_annotations=mir_annotations.prediction, src_to_dst_ids=src_to_dst_ids)
+    _change_annotations_type_ids(single_task_annotations=mir_annotations.ground_truth, src_to_dst_ids=src_to_dst_ids)
 
-        return _gen_unknown_names_and_count(src_class_id_mgr=src_class_id_mgr,
-                                            mir_context=mir_context,
-                                            src_to_dst_ids=src_to_dst_ids)
-    return {}
+    return _gen_unknown_names_and_count(src_class_id_mgr=src_class_id_mgr,
+                                        mir_context=mir_context,
+                                        src_to_dst_ids=src_to_dst_ids)
 
 
 def _change_annotations_type_ids(

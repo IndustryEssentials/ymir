@@ -80,9 +80,11 @@ class CmdCopy(base.BaseCommand):
 
         PhaseLoggerCenter.update_phase(phase='copy.read')
 
+        if drop_annotations:
+            mir_annotations.prediction.Clear()
+            mir_annotations.ground_truth.Clear()
         unknown_names_and_count = copy_annotations(mir_annotations=mir_annotations,
                                                    mir_context=mir_context,
-                                                   drop_annotations=drop_annotations,
                                                    data_label_storage_file=data_label_storage_file,
                                                    label_storage_file=label_storage_file)
 
@@ -93,19 +95,10 @@ class CmdCopy(base.BaseCommand):
                 raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_MIR_REPO,
                                       error_message=f"copy annotations error, unknown types: {unknown_names_and_count}")
 
-        # tasks.mir: get necessary head task infos, remove others and change head task id
-        orig_head_task_id = mir_tasks.head_task_id
-        if not orig_head_task_id:
-            logging.error('bad tasks.mir: empty head task id')
-            return MirCode.RC_CMD_INVALID_MIR_REPO
-        if orig_head_task_id not in mir_tasks.tasks:
-            logging.error(f"bad tasks.mir: can not find head task id: {orig_head_task_id}")
-            return MirCode.RC_CMD_INVALID_MIR_REPO
-
         PhaseLoggerCenter.update_phase(phase='copy.change')
 
         # save and commit
-        orig_task: mirpb.Task = mir_tasks.tasks[orig_head_task_id]
+        orig_task: mirpb.Task = mir_tasks.tasks[mir_tasks.head_task_id]
         task = mir_storage_ops.create_task(task_type=mirpb.TaskType.TaskTypeCopyData,
                                            task_id=dst_typ_rev_tid.tid,
                                            message=f"copy from {data_mir_root}, src: {data_src_revs}, dst: {dst_rev}",
