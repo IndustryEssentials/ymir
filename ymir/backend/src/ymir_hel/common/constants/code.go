@@ -19,6 +19,10 @@ const (
 	CodeHelNvmlError    ResponseCode = 180210
 )
 
-func HelRespMessage(code ResponseCode, request *protos.HelOpsRequest) *protos.HelOpsResponse {
+func HelOpsRespMessage(code ResponseCode, request *protos.HelOpsRequest) *protos.HelOpsResponse {
 	return &protos.HelOpsResponse{Code: int32(code), Request: request}
+}
+
+func HelTaskRespMessage(code ResponseCode, request *protos.HelTaskRequest) *protos.HelTaskResponse {
+	return &protos.HelTaskResponse{Code: int32(code), Request: request}
 }

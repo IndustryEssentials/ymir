@@ -14,13 +14,13 @@ func OpsGpuInfo(
 	request *protos.HelOpsRequest,
 	config *configs.Config,
 ) *protos.HelOpsResponse {
-	result := constants.HelRespMessage(constants.CodeSuccess, request)
+	result := constants.HelOpsRespMessage(constants.CodeSuccess, request)
 	result.GpuInfo = &protos.HelGpuInfo{}
 
 	gpuIdleThr := 0.8
 	err := GetGPUInfo(gpuIdleThr, result.GpuInfo)
 	if err != nil {
-		return constants.HelRespMessage(constants.CodeHelNvmlError, request)
+		return constants.HelOpsRespMessage(constants.CodeHelNvmlError, request)
 	}
 
 	return result

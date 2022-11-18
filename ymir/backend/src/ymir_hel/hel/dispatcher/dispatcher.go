@@ -17,7 +17,7 @@ type HelGrpcServer struct {
 }
 
 func (s HelGrpcServer) HelOpsProcess(
-	context context.Context,
+	ctx context.Context,
 	request *protos.HelOpsRequest,
 ) (ret *protos.HelOpsResponse, err error) {
 	log.Printf("Hel-Ops request:\n%+v", request)
@@ -32,9 +32,28 @@ func (s HelGrpcServer) HelOpsProcess(
 	if opsFunc, ok := m[request.OpsType]; ok {
 		ret = opsFunc(request, s.ServerConfig)
 	} else {
-		ret = constants.HelRespMessage(constants.CodeHelInvalidParms, request)
+		ret = constants.HelOpsRespMessage(constants.CodeHelInvalidParms, request)
 	}
 
+	return ret, nil
+}
+
+func (s HelGrpcServer) HelTaskProcess(
+	ctx context.Context,
+	request *protos.HelTaskRequest,
+) (ret *protos.HelTaskResponse, err error) {
+	log.Printf("Hel-Task request:\n%+v", request)
+	defer func() {
+		log.Printf("Hel-Task result:\n%+v", ret)
+	}()
+
+	m := map[protos.TaskType]func(request *protos.HelTaskRequest, config *configs.Config) *protos.HelTaskResponse{}
+
+	if opsFunc, ok := m[request.TaskType]; ok {
+		ret = opsFunc(request, s.ServerConfig)
+	} else {
+		ret = constants.HelTaskRespMessage(constants.CodeHelInvalidParms, request)
+	}
 	return ret, nil
 }
 
