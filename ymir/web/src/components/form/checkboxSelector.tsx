@@ -1,21 +1,31 @@
-import { Checkbox, Col, Form, Row } from "antd"
-import { useEffect, useState } from "react"
+import { Checkbox, CheckboxOptionType, Col, Form, Row } from "antd"
+import { CheckboxValueType } from "antd/lib/checkbox/Group"
+import React, {useEffect, useState } from "react"
+import type CSS from "csstype"
 
+type Props = {
+  options: CheckboxOptionType[],
+  label?: string,
+  value?: string[],
+  onChange?: Function,
+  vertical?: boolean,
+  labelAlign?: CSS.Property.TextAlign,
+}
 
-const CheckboxSelector = ({ options = [], label = '', value, onChange = () => { }, vertical, labelAlign, ...rest }) => {
-  const [checkeds, setCheckeds] = useState([])
+const CheckboxSelector: React.FC<Props> = ({ options = [], label = '', value, onChange, vertical, labelAlign = 'left', ...rest }) => {
+  const [checkeds, setCheckeds] = useState<CheckboxValueType[]>([])
 
-  useEffect(() => setCheckeds(value), [value])
+  useEffect(() => value && setCheckeds(value), [value])
 
-  useEffect(() => onChange(checkeds), [checkeds])
+  useEffect(() => onChange && onChange(checkeds), [checkeds])
 
   return <Row gutter={20} {...rest}>
-    <Col span={vertical ? 24 : null} style={{ fontWeight: 'bold', textAlign: labelAlign || 'left' }}>{label}</Col>
+    <Col span={vertical ? 24 : undefined} style={{ fontWeight: 'bold', textAlign: labelAlign }}>{label}</Col>
     <Col flex={1}>
       <Checkbox.Group
         value={checkeds}
         options={options}
-        onChange={setCheckeds}
+        onChange={(value) =>setCheckeds(value)}
       />
     </Col>
   </Row>
