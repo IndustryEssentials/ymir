@@ -6,6 +6,7 @@ import { formLayout } from '@/config/antd'
 import t from '@/utils/t'
 import { randomNumber } from '@/utils/number'
 import useFetch from '@/hooks/useFetch'
+import { getMergeStrategies } from '@/constants/common'
 import { MiningStrategy } from '@/constants/iteration'
 
 import RecommendKeywords from '@/components/common/recommendKeywords'
@@ -14,6 +15,8 @@ import DatasetSelect from '@/components/form/datasetSelect'
 import Desc from '@/components/form/desc'
 import SubmitButtons from './submitButtons'
 import Dataset from '@/components/form/option/Dataset'
+
+const mergeStrategiesOptions = getMergeStrategies()
 
 function Fusion({ query = {}, hidden, ok = () => {}, bottom }) {
   const { did, iterationId, chunk, strategy = '', excludes = [] } = query
@@ -170,13 +173,7 @@ function Fusion({ query = {}, hidden, ok = () => {}, bottom }) {
             />
           </Form.Item>
           <Form.Item name="strategy" hidden={includeDatasets.length < 1} label={t('task.train.form.repeatdata.label')}>
-            <Radio.Group
-              options={[
-                { value: 2, label: t('task.train.form.repeatdata.latest') },
-                { value: 3, label: t('task.train.form.repeatdata.original') },
-                { value: 1, label: t('task.train.form.repeatdata.terminate') },
-              ]}
-            />
+            <Radio.Group options={mergeStrategiesOptions.map(({ value, label }) => ({ value, label: t(label) }))} />
           </Form.Item>
           <Form.Item noStyle>
             <Row>

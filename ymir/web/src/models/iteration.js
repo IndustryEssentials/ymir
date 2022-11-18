@@ -153,7 +153,7 @@ export default {
           type: 'updateLocalIterations',
           payload: [iteration],
         })
-        const iterations = yield select(({ iteration }) => iteration.iterations[projectId])
+        const iterations = yield select(({ iteration }) => iteration.iterations[projectId] || [])
         yield put({
           type: 'UPDATE_ITERATIONS',
           payload: { [projectId]: [...iterations, iteration] },

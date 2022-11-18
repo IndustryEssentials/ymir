@@ -215,6 +215,7 @@ function Train({ query = {}, hidden, ok = () => {}, bottom, allDatasets, dataset
     const result = await func.train(params)
     if (iterationContext && !iterationId) {
       await updateProject({ id: pid, modelStage: [result.result_model?.id] })
+      return history.goBack()
     }
     result && ok(result)
   }

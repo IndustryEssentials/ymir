@@ -233,14 +233,7 @@ def import_dataset(
     return {"result": dataset}
 
 
-@router.delete(
-    "/{dataset_id}",
-    response_model=schemas.DatasetOut,
-    responses={
-        400: {"description": "No permission"},
-        404: {"description": "Dataset Not Found"},
-    },
-)
+@router.delete("/{dataset_id}", response_model=schemas.DatasetOut)
 def delete_dataset(
     *,
     db: Session = Depends(deps.get_db),
