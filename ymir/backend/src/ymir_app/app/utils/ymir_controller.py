@@ -65,7 +65,7 @@ ANNOTATION_TYPE_MAPPING = {
 
 def gen_typed_datasets(typed_datasets: List[Dict]) -> Generator:
     for typed_dataset in typed_datasets:
-        dataset_with_type = mirsvrpb.TaskReqTraining.TrainingDatasetType()
+        dataset_with_type = mirsvrpb.TrainingDatasetType()
         dataset_with_type.dataset_type = typed_dataset.get("type") or int(DatasetType.training)
         dataset_with_type.dataset_id = typed_dataset["hash"]
         yield dataset_with_type

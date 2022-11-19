@@ -131,11 +131,12 @@ message ReqCreateTask {
     TaskReqImportModel import_model = 107;
 }
 
+message TrainingDatasetType {
+    string dataset_id = 1;
+    mir.command.TvtType dataset_type = 2;
+}
+
 message TaskReqTraining {
-    message TrainingDatasetType {
-        string dataset_id = 1;
-        mir.command.TvtType dataset_type = 2;
-    }
     repeated TrainingDatasetType in_dataset_types = 1;
     string preprocess_config = 2;
 }
@@ -212,6 +213,7 @@ service mir_controller_service {
     // rpc view_request(GeneralReq) returns (GeneralResp) {}
 } // mcs_dm
 
+// Hel Ops Process
 enum HelOpsType {
     HEL_OPS_UNKNOWN = 0;
     // Require: singleton_op.
@@ -224,6 +226,7 @@ message HelOpsRequest {
     HelOpsType ops_type = 1;
     // singleton ops arg, such as target task id, etc.
     string singleton_op = 10;
+    mir.command.TaskType term_task_type = 11;
 }
 
 message HelOpsResponse {
@@ -239,6 +242,127 @@ message HelGpuInfo {
     int32 gpu_count_idle = 3;
     int32 gpu_count_reserved = 4;
 }
+
+// Hel Task Process
+message HelTaskRequestCopyDataset {
+    string src_user_id = 1;
+    string src_repo_id = 2;
+
+    // Input: single dataset id
+    string in_dataset_id = 10;
+    bool name_strategy_ignore = 11;
+    bool drop_annotations = 12;
+}
+
+message HelTaskRequestImportDataset {
+    string asset_dir = 10;
+
+    string pred_dir = 20;
+    string gt_dir = 21;
+    mir.command.AnnoFormat anno_format = 22;
+    UnknownTypesStrategy unknown_types_strategy = 23;
+
+    bool clean_dirs = 30;
+}
+
+message HelTaskRequestExportDataset {
+    string asset_dir = 10;
+
+    string pred_dir = 20;
+    string gt_dir = 21;
+    mir.command.AnnoFormat anno_format = 22;
+}
+
+message HelTaskRequestImportModel {
+    string model_package_file = 10;
+
+}
+
+message HelTaskRequestTrain {
+    // Input, support multiple inputs
+    repeated TrainingDatasetType in_dataset_types = 10;
+    MergeStrategy merge_strategy = 11;
+
+    // Task configure
+    repeated int32 in_class_ids = 20;
+    string preprocess_config = 21;
+    string docker_image_name = 22;
+    string docker_image_config = 23;
+    string task_parameters = 24;
+
+    // Optional, for fine-tuning (use pretrained model)
+    string model_hash = 30;
+    string model_stage = 31;
+}
+
+message HelTaskRequestMine {
+    // Input: single dataset id
+    string in_dataset_id = 10;
+
+    // Task configure
+    string docker_image_name = 20;
+    string docker_image_config = 21;
+    string task_parameters = 22;
+
+    // Model
+    string model_hash = 30;
+    string model_stage = 31;
+
+    // Task params
+    int32 top_k = 40;  // > 0, will keep all if set to 0.
+    bool add_annotations = 41;
+}
+
+message HelTaskRequestFuse {
+    // Input, support multiple inputs
+    repeated string in_dataset_ids = 10;
+    repeated string ex_dataset_ids = 11;
+    MergeStrategy merge_strategy = 12;
+
+    // Filter classids
+    repeated int32 in_class_ids = 20;
+    repeated int32 ex_class_ids = 21;
+
+    // Sample task
+    oneof sampling {
+        int32 sampling_count = 22;
+        float sampling_rate = 23;
+    }
+}
+
+message HelTaskRequestPullImage {
+    string docker_image_name = 10;
+}
+
+message HelTaskRequest {
+    string user_id = 1;
+    string repo_id = 2;
+    mir.command.TaskType task_type = 3;
+
+    // #Task id related
+    string task_id = 10;
+
+    // Dataset task
+    HelTaskRequestFuse fuse = 100;
+    HelTaskRequestCopyDataset copy_dataset = 101;
+    HelTaskRequestImportDataset import_dataset = 102;
+    HelTaskRequestExportDataset export_dataset = 103;
+    HelTaskRequestImportModel import_model = 104;
+
+    // TMI task
+    HelTaskRequestPullImage pull_image = 200;
+    HelTaskRequestTrain train = 201;
+    HelTaskRequestMine mine = 202;
+}
+
+message HelTaskResponse {
+    int32 code = 1;
+    string message = 2;
+
+    HelTaskRequest request = 100;
+}
+
 service hel_service {
     rpc hel_ops_process(HelOpsRequest) returns (HelOpsResponse) {}
-} // mcs_dm
+    rpc hel_task_process(HelTaskRequest) returns (HelTaskResponse) {}
+}
