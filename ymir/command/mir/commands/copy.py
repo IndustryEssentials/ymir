@@ -83,10 +83,12 @@ class CmdCopy(base.BaseCommand):
         if drop_annotations:
             mir_annotations.prediction.Clear()
             mir_annotations.ground_truth.Clear()
-        unknown_names_and_count = copy_annotations(mir_annotations=mir_annotations,
-                                                   mir_context=mir_context,
-                                                   data_label_storage_file=data_label_storage_file,
-                                                   label_storage_file=label_storage_file)
+            unknown_names_and_count = {}
+        else:
+            unknown_names_and_count = copy_annotations(mir_annotations=mir_annotations,
+                                                       mir_context=mir_context,
+                                                       data_label_storage_file=data_label_storage_file,
+                                                       label_storage_file=label_storage_file)
 
         if unknown_names_and_count:
             if ignore_unknown_types:

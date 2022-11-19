@@ -438,8 +438,9 @@ def _gen_unknown_names_and_count(src_class_id_mgr: class_ids.UserLabels, mir_con
     return unknown_names_and_count
 
 
-# filter
-def filter_annotations(mir_annotations: mirpb.MirAnnotations, asset_ids_set: Set[str]) -> mirpb.MirAnnotations:
+# filter and sampling
+def filter_annotations_by_asset_ids(mir_annotations: mirpb.MirAnnotations,
+                                    asset_ids_set: Set[str]) -> mirpb.MirAnnotations:
     """
     filter mir_annotations by asset_ids_set
 
@@ -452,29 +453,34 @@ def filter_annotations(mir_annotations: mirpb.MirAnnotations, asset_ids_set: Set
     """
     matched_mir_annotations = mirpb.MirAnnotations()
 
-    _gen_filter_task_annotations(src_task_annotations=mir_annotations.ground_truth,
-                                 dst_task_annotations=matched_mir_annotations.ground_truth,
+    _filter_task_annotations(src_task_annotations=mir_annotations.ground_truth,
+                             dst_task_annotations=matched_mir_annotations.ground_truth,
+                             asset_ids=asset_ids_set)
+    _filter_task_annotations(src_task_annotations=mir_annotations.prediction,
+                             dst_task_annotations=matched_mir_annotations.prediction,
+                             asset_ids=asset_ids_set)
+    _filter_annotation_image_cks(src_mir_annotations=mir_annotations,
+                                 dst_mir_annotations=matched_mir_annotations,
                                  asset_ids=asset_ids_set)
-    _gen_filter_task_annotations(src_task_annotations=mir_annotations.prediction,
-                                 dst_task_annotations=matched_mir_annotations.prediction,
-                                 asset_ids=asset_ids_set)
-
-    image_ck_asset_ids = asset_ids_set & set(mir_annotations.image_cks.keys())
-    for asset_id in image_ck_asset_ids:
-        matched_mir_annotations.image_cks[asset_id].CopyFrom(mir_annotations.image_cks[asset_id])
-
     copy_annotations_pred_meta(src_task_annotations=mir_annotations.prediction,
                                dst_task_annotations=matched_mir_annotations.prediction)
 
     return matched_mir_annotations
 
 
-def _gen_filter_task_annotations(src_task_annotations: mirpb.SingleTaskAnnotations,
-                                 dst_task_annotations: mirpb.SingleTaskAnnotations, asset_ids: Set[str]) -> None:
+def _filter_task_annotations(src_task_annotations: mirpb.SingleTaskAnnotations,
+                             dst_task_annotations: mirpb.SingleTaskAnnotations, asset_ids: Set[str]) -> None:
     dst_task_annotations.type = src_task_annotations.type
     joint_ids = asset_ids & src_task_annotations.image_annotations.keys()
     for asset_id in joint_ids:
         dst_task_annotations.image_annotations[asset_id].CopyFrom(src_task_annotations.image_annotations[asset_id])
+
+
+def _filter_annotation_image_cks(src_mir_annotations: mirpb.MirAnnotations, dst_mir_annotations: mirpb.MirAnnotations,
+                                 asset_ids: Set[str]) -> None:
+    image_ck_asset_ids = asset_ids & set(src_mir_annotations.image_cks.keys())
+    for asset_id in image_ck_asset_ids:
+        dst_mir_annotations.image_cks[asset_id].CopyFrom(src_mir_annotations.image_cks[asset_id])
 
 
 # merge
@@ -571,26 +577,6 @@ def match_asset_ids(host_ids: set, guest_ids: set) -> Tuple[set, set, set]:
     return (host_ids - insets, guest_ids - insets, insets)
 
 
-# sampling
-def sampling_annotations(mir_annotations: mirpb.MirAnnotations, sampled_asset_ids: List[str]) -> mirpb.MirAnnotations:
-    sampled_mir_annotations = mirpb.MirAnnotations()
-
-    for asset_id in sampled_asset_ids:
-        if asset_id in mir_annotations.prediction.image_annotations:
-            sampled_mir_annotations.prediction.image_annotations[asset_id].CopyFrom(
-                mir_annotations.prediction.image_annotations[asset_id])
-        if asset_id in mir_annotations.ground_truth.image_annotations:
-            sampled_mir_annotations.ground_truth.image_annotations[asset_id].CopyFrom(
-                mir_annotations.ground_truth.image_annotations[asset_id])
-
-    sampled_mir_annotations.prediction.type = mir_annotations.prediction.type
-    sampled_mir_annotations.ground_truth.type = mir_annotations.ground_truth.type
-    copy_annotations_pred_meta(src_task_annotations=mir_annotations.prediction,
-                               dst_task_annotations=sampled_mir_annotations.prediction)
-
-    return sampled_mir_annotations
-
-
 # mining
 def mining_annotations(work_out_dir: str, asset_ids_set: Set[str], cls_id_mgr: class_ids.UserLabels,
                        model_storage: ModelStorage, add_prediction: bool,
@@ -619,7 +605,7 @@ def mining_annotations(work_out_dir: str, asset_ids_set: Set[str], cls_id_mgr: c
     prediction.type = model_storage.model_type  # type: ignore
     if add_prediction:
         if model_storage.model_type == mirpb.AnnoType.AT_DET_BOX:
-            _get_detbox_infer_annotations(task_annotations=matched_mir_annotations.prediction,
+            _get_detbox_infer_annotations(task_annotations=prediction,
                                           file_path=os.path.join(work_out_dir, 'infer-result.json'),
                                           asset_ids_set=asset_ids_set,
                                           cls_id_mgr=cls_id_mgr)
@@ -640,22 +626,20 @@ def mining_annotations(work_out_dir: str, asset_ids_set: Set[str], cls_id_mgr: c
         prediction.model.CopyFrom(model_storage.get_model_meta())
     else:
         # use old
-        pred_asset_ids = set(mir_annotations.prediction.image_annotations.keys()) & asset_ids_set
-        for asset_id in pred_asset_ids:
-            prediction.image_annotations[asset_id].CopyFrom(mir_annotations.prediction.image_annotations[asset_id])
+        _filter_task_annotations(src_task_annotations=mir_annotations.prediction,
+                                 dst_task_annotations=matched_mir_annotations.prediction,
+                                 asset_ids=asset_ids_set)
         copy_annotations_pred_meta(src_task_annotations=mir_annotations.prediction, dst_task_annotations=prediction)\
 
     # ground truth
-    ground_truth = matched_mir_annotations.ground_truth
-    ground_truth.type = mir_annotations.ground_truth.type
-    gt_asset_ids = set(mir_annotations.ground_truth.image_annotations.keys()) & asset_ids_set
-    for asset_id in gt_asset_ids:
-        ground_truth.image_annotations[asset_id].CopyFrom(mir_annotations.ground_truth.image_annotations[asset_id])
+    _filter_task_annotations(src_task_annotations=mir_annotations.ground_truth,
+                             dst_task_annotations=matched_mir_annotations.ground_truth,
+                             asset_ids=asset_ids_set)
 
     # image cks
-    image_ck_asset_ids = set(mir_annotations.image_cks.keys() & asset_ids_set)
-    for asset_id in image_ck_asset_ids:
-        matched_mir_annotations.image_cks[asset_id].CopyFrom(mir_annotations.image_cks[asset_id])
+    _filter_annotation_image_cks(src_mir_annotations=mir_annotations,
+                                 dst_mir_annotations=matched_mir_annotations,
+                                 asset_ids=asset_ids_set)
 
     return matched_mir_annotations
 

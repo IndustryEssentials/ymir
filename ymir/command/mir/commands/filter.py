@@ -5,7 +5,7 @@ from typing import Optional, Set
 from mir.commands import base
 from mir.protos import mir_command_pb2 as mirpb
 from mir.tools import checker, class_ids, mir_repo_utils, mir_storage_ops, revs_parser
-from mir.tools.annotations import filter_annotations
+from mir.tools.annotations import filter_annotations_by_asset_ids
 from mir.tools.code import MirCode
 from mir.tools.command_run_in_out import command_run_in_out
 from mir.tools.errors import MirRuntimeError
@@ -105,8 +105,8 @@ class CmdFilter(base.BaseCommand):
             matched_mir_metadatas.attributes[asset_id].CopyFrom(asset_attr)
         logging.info("matched: %d, overriding current mir repo", len(matched_mir_metadatas.attributes))
 
-        matched_mir_annotations = filter_annotations(mir_annotations=mir_annotations,
-                                                     asset_ids_set=asset_ids_set)
+        matched_mir_annotations = filter_annotations_by_asset_ids(mir_annotations=mir_annotations,
+                                                                  asset_ids_set=asset_ids_set)
 
         PhaseLoggerCenter.update_phase(phase='filter.change')
 
