@@ -1,5 +1,4 @@
 import argparse
-import json
 import logging
 import os
 import time
@@ -8,10 +7,8 @@ from typing import Any
 import yaml
 
 from mir.commands import base
-from mir.protos import mir_command_pb2 as mirpb
-from mir.tools import class_ids, models
-from mir.tools import settings as mir_settings
-from mir.tools import env_config
+from mir.tools import env_config, models, settings as mir_settings
+from mir.tools.annotations import process_infer_results
 from mir.tools.code import MirCode
 from mir.tools.errors import MirRuntimeError
 from mir.tools.executant import prepare_executant_env, run_docker_executant
@@ -155,10 +152,11 @@ class CmdInfer(base.BaseCommand):
             task_config=task_config,
         )
 
-        if run_infer and model_storage.model_type == mirpb.AnnoType.AT_DET_BOX:
-            _process_infer_results(infer_result_file=os.path.join(work_dir_out, 'infer-result.json'),
-                                   max_boxes=_get_max_boxes(config_file),
-                                   label_storage_file=label_storage_file)
+        if run_infer:
+            process_infer_results(model_type=model_storage.model_type,
+                                  infer_result_file=os.path.join(work_dir_out, 'infer-result.json'),
+                                  max_boxes=_get_max_boxes(config_file),
+                                  label_storage_file=label_storage_file)
 
         return MirCode.RC_OK
 
@@ -208,30 +206,6 @@ def _prepare_assets(index_file: str, work_index_file: str, media_path: str) -> N
         raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
                               error_message='no assets to infer, abort',
                               needs_new_commit=False)
-
-
-def _process_infer_results(infer_result_file: str, max_boxes: int, label_storage_file: str) -> None:
-    if not os.path.isfile(infer_result_file):
-        raise MirRuntimeError(error_code=MirCode.RC_CMD_NO_RESULT,
-                              error_message=f"can not find result file: {infer_result_file}")
-
-    with open(infer_result_file, 'r') as f:
-        results = json.loads(f.read())
-
-    class_id_mgr = class_ids.load_or_create_userlabels(label_storage_file=label_storage_file)
-
-    for _, annotations_dict in results.get('detection', {}).items():
-        # Compatible with previous version of format.
-        annotations = annotations_dict.get('boxes') or annotations_dict.get('annotations')
-        if not isinstance(annotations, list):
-            continue
-
-        annotations.sort(key=(lambda x: x['score']), reverse=True)
-        annotations = [a for a in annotations if class_id_mgr.has_name(a['class_name'])]
-        annotations_dict['boxes'] = annotations[:max_boxes]
-
-    with open(infer_result_file, 'w') as f:
-        f.write(json.dumps(results, indent=4))
 
 
 def _get_max_boxes(config_file: str) -> int:

@@ -68,20 +68,16 @@ def _run_training(env_config: env.EnvConfig) -> None:
         f.write('fake model-0000.params')
     with open(os.path.join(stage_dir, 'model-symbols.json'), 'w') as f:
         f.write('fake model-symbols.json')
+    #! you should add labelmap from /in/annotations/labelmap.txt as attachment
+    os.makedirs('/out/models/attachments/segmentation', exist_ok=True)
+    shutil.copy(src='/in/annotations/labelmap.txt', dst='/out/models/attachments/segmentation/labelmap.txt')
     #! use `rw.write_model_stage` to save training result
     rw.write_model_stage(stage_name='stage_00',
                          files=['model-0000.params', 'model-symbols.json'],
                          evaluation_result={
                              'mAP': expected_mAP / 2,
-                             'mAR': 0.35,
-                             'tp': 50,
-                             'fp': 30,
-                             'fn': 20
                          },
-                         evaluate_config={
-                             'iou_thr': 0.5,
-                             'conf_thr': 0.005
-                         })
+                         attachments={'segmentation': ['labelmap.txt']})
 
     _dummy_work(idle_seconds=idle_seconds, trigger_crash=trigger_crash)
 
@@ -97,11 +93,8 @@ def _run_training(env_config: env.EnvConfig) -> None:
                          files=['model-0010.params', 'model-symbols.json'],
                          evaluation_result={
                              'mAP': expected_mAP,
-                             'mAR': 0.35,
-                             'tp': 50,
-                             'fp': 30,
-                             'fn': 20
-                         })
+                         },
+                         attachments={'segmentation': ['labelmap.txt']})
 
     #! if task done, write 100% percent log
     logging.info('training done')
