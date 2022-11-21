@@ -40,7 +40,6 @@ const Add = () => {
       return
     }
     const record = location.state.record
-    console.log('record:', record)
     if (!record?.docker_name) {
       return
     }
