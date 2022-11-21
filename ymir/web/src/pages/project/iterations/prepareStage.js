@@ -37,7 +37,7 @@ export default function Stage({ pid, stage, form, project = {}, result, trainVal
   }, [stage, project])
 
   useEffect(() => {
-    const candidateList = stage.filter(selectionList, project).filter(({ assetCount }) => assetCount)
+    const candidateList = stage.filter(selectionList, project)
     const candidated = candidateList.length > 0
     setHaveCandidateList(candidated)
   }, [project, selectionList])
@@ -55,6 +55,7 @@ export default function Stage({ pid, stage, form, project = {}, result, trainVal
   const filters = stage.filter ? useCallback((datasets) => stage.filter(datasets, project), [stage.field, project]) : null
 
   const onSelectionReady = (list = []) => {
+    console.log('list:', list)
     setSelectionList(list)
   }
 
