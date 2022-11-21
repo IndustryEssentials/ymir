@@ -1,17 +1,22 @@
 package hel
 
 import (
-	"github.com/IndustryEssentials/ymir-hel/configs"
-	"github.com/IndustryEssentials/ymir-hel/hel/dispatcher"
+	"context"
+	"log"
+	"net"
 
-	"github.com/RichardKnop/machinery/v1"
-	"github.com/RichardKnop/machinery/v1/config"
+	"github.com/IndustryEssentials/ymir-hel/configs"
+	"github.com/IndustryEssentials/ymir-hel/hel/ops"
+	"github.com/IndustryEssentials/ymir-hel/hel/tasks"
+	"github.com/IndustryEssentials/ymir-hel/protos"
+	"google.golang.org/grpc"
 )
 
 // Note: pubsub>=v1.25.0
 
 func StartHelServer(config *configs.Config) error {
-	err := dispatcher.StartHelGrpc(config.HelGrpcURL, config)
+	// This version only adds grpc server.
+	err := StartHelGrpc(config.HelGrpcURL, config)
 	if err != nil {
 		return err
 	}
@@ -19,30 +24,51 @@ func StartHelServer(config *configs.Config) error {
 	return nil
 }
 
-func CreateTaskServer(RedisURLHelTask string, consumerTag string) (*machinery.Server, error) {
-	cnf := &config.Config{
-		DefaultQueue:    consumerTag,
-		ResultsExpireIn: 3600,
-		Broker:          RedisURLHelTask,
-		ResultBackend:   RedisURLHelTask,
-		Redis: &config.RedisConfig{
-			MaxIdle:                3,
-			IdleTimeout:            240,
-			ReadTimeout:            15,
-			WriteTimeout:           15,
-			ConnectTimeout:         15,
-			NormalTasksPollPeriod:  1000,
-			DelayedTasksPollPeriod: 500,
-		},
-	}
+// GRPC server
+type HelGrpcServer struct {
+	ServerConfig *configs.Config
+}
 
-	server, err := machinery.NewServer(cnf)
+func (s *HelGrpcServer) HelOpsProcess(
+	ctx context.Context,
+	request *protos.HelOpsRequest,
+) (ret *protos.HelOpsResponse, err error) {
+	log.Printf("Hel-Ops request:\n%+v", request)
+	defer func() {
+		log.Printf("Hel-Ops result:\n%+v", ret)
+	}()
+
+	return ops.HandleOps(request, s.ServerConfig), nil
+}
+
+func (s *HelGrpcServer) HelTaskProcess(
+	ctx context.Context,
+	request *protos.HelTaskRequest,
+) (ret *protos.HelTaskResponse, err error) {
+	log.Printf("Hel-Task request:\n%+v", request)
+	defer func() {
+		log.Printf("Hel-Task result:\n%+v", ret)
+	}()
+
+	return tasks.HandleTask(request, s.ServerConfig), nil
+}
+
+func StartHelGrpc(grpcURL string, config *configs.Config) error {
+	lis, err := net.Listen("tcp", grpcURL)
 	if err != nil {
-		return nil, err
+		log.Fatalf("failed to listen: %v", err)
+		return err
 	}
 
-	// Register tasks
-	tasks := map[string]interface{}{}
+	s := grpc.NewServer()
+	protos.RegisterHelServiceServer(s, &HelGrpcServer{ServerConfig: config})
 
-	return server, server.RegisterTasks(tasks)
+	log.Printf("Hel-gRPC server is starting at %s.", grpcURL)
+	err = s.Serve(lis)
+	if err != nil {
+		log.Fatalf("failed to serve: %v", err)
+		return err
+	}
+
+	return nil
 }
