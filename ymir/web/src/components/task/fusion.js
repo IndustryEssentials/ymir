@@ -198,7 +198,7 @@ function Fusion({ query = {}, hidden, ok = () => {}, bottom }) {
             label={t('task.fusion.form.class.include.label')}
             tooltip={t('tip.task.fusion.includelable')}
             name="inc"
-            help={<RecommendKeywords sets={form.getFieldValue('datasets')} onSelect={selectRecommendKeywords} />}
+            help={<RecommendKeywords sets={form.getFieldValue('include_datasets')} onSelect={selectRecommendKeywords} />}
           >
             <Select mode="multiple" onChange={(value) => setSelectedKeywords(value)} showArrow>
               {keywords.map((keyword) =>
