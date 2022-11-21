@@ -117,8 +117,8 @@ class TestGetRelationship:
 
 def test_parse(mocker: Any) -> None:
     config = {
-        DockerImageType.mining: {"A": 1},
-        DockerImageType.infer: {"B": 2},
+        DockerImageType.mining: {"A": 1, "export_format": "what"},
+        DockerImageType.infer: {"B": 2, "export_format": "is"},
     }
     res = list(m.parse_docker_image_config(config))
     assert len(res) == 2
