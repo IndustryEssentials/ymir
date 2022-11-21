@@ -9,12 +9,12 @@ import useFetch from '@/hooks/useFetch'
 
 import Hash from "@/components/common/hash"
 import AssetAnnotation from "@/components/dataset/assetAnnotation"
-import GtSelector from "@/components/form/gtSelector"
+import GtSelector from "@/components/form/GtSelector"
+import EvaluationSelector from "@/components/form/EvaluationSelector"
 
 import styles from "./asset.less"
 import { NavDatasetIcon, EyeOffIcon, EyeOnIcon } from '@/components/common/Icons'
 import { LeftOutlined, RightOutlined } from '@ant-design/icons'
-import EvaluationSelector from "@/components/form/evaluationSelector"
 
 const { CheckableTag } = Tag
 const { Item } = Descriptions
