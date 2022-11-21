@@ -40,6 +40,7 @@ const Add = () => {
       return
     }
     const record = location.state.record
+    console.log('record:', record)
     if (!record?.docker_name) {
       return
     }
@@ -53,7 +54,7 @@ const Add = () => {
   }, [location.state])
 
   useEffect(() => {
-    image?.id && initForm(image)
+    image?.name && initForm(image)
   }, [image])
 
   function initForm(image = {}) {
