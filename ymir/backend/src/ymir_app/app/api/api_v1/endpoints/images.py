@@ -92,19 +92,16 @@ def import_docker_image(
 
     try:
         resp = controller_client.pull_docker_image(docker_image.url, user_id)
+        hash_ = resp["hash_id"]
+        image_configs = list(parse_docker_image_config(resp["docker_image_config"]))
     except ValueError:
         logger.exception("[create image] failed to import docker image via controller")
         crud.docker_image.update_state(db, docker_image=docker_image, state=DockerImageState.error)
         return
 
-    # add new config in docker_image_config tbl
-    hash_ = resp["hash_id"]
-    image_configs = list(parse_docker_image_config(resp["docker_image_config"]))
+    # add new configs in docker_image_config table
     for image_config in image_configs:
-        image_config_in = schemas.ImageConfigCreate(
-            image_id=docker_image.id,
-            **image_config,
-        )
+        image_config_in = schemas.ImageConfigCreate(image_id=docker_image.id, **image_config)
         crud.image_config.create(db, obj_in=image_config_in)
 
     enable_livecode = bool(resp.get("enable_livecode", False))
@@ -123,6 +120,8 @@ def import_docker_image(
 def parse_docker_image_config(configs: Dict) -> Iterator[Dict]:
     for image_type, config in configs.items():
         if config:
+            if "export_format" not in config:
+                raise ValueError("Invalid docker image config")
             yield {
                 "type": int(DockerImageType(int(image_type))),
                 "config": config,
