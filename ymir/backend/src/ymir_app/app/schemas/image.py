@@ -34,11 +34,13 @@ class DockerImageUpdate(BaseModel):
     description: Optional[str]
     is_shared: Optional[bool]
     enable_livecode: Optional[bool]
+    error_code: Optional[str]
 
 
 class DockerImageInDBBase(IdModelMixin, DateTimeModelMixin, IsDeletedModelMixin, DockerImageBase):
     hash: Optional[str]
     state: DockerImageState = DockerImageState.pending
+    error_code: Optional[str]
     is_shared: Optional[bool]
 
     class Config:

@@ -60,8 +60,12 @@ class CRUDDockerImage(CRUDBase[DockerImage, DockerImageCreate, DockerImageUpdate
             update_data = obj_in.dict(exclude_unset=True)
         return super().update(db, db_obj=db_obj, obj_in=update_data)
 
-    def update_state(self, db: Session, *, docker_image: DockerImage, state: DockerImageState) -> DockerImage:
+    def update_state(
+        self, db: Session, *, docker_image: DockerImage, state: DockerImageState, error_code: Optional[str] = None
+    ) -> DockerImage:
         update_data = {"state": int(state)}
+        if error_code:
+            update_data["error_code"] = error_code
         return self.update(db, db_obj=docker_image, obj_in=update_data)
 
     def update_sharing_status(self, db: Session, *, docker_image: DockerImage, is_shared: bool = True) -> DockerImage:

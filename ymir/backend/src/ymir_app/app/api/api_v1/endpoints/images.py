@@ -15,6 +15,7 @@ from app.api.errors.errors import (
     FailedtoGetSharedDockerImages,
     FailedtoShareDockerImage,
     InvalidSharedImageConfig,
+    InvalidDockerImageConfig,
 )
 from app.config import settings
 from app.constants.state import DockerImageState, DockerImageType
@@ -92,19 +93,27 @@ def import_docker_image(
 
     try:
         resp = controller_client.pull_docker_image(docker_image.url, user_id)
-        hash_ = resp["hash_id"]
-        image_configs = list(parse_docker_image_config(resp["docker_image_config"]))
     except ValueError:
         logger.exception("[create image] failed to import docker image via controller")
         crud.docker_image.update_state(db, docker_image=docker_image, state=DockerImageState.error)
         return
+
+    try:
+        image_configs = list(parse_docker_image_config(resp["docker_image_config"]))
+    except ValueError:
+        crud.docker_image.update_state(
+            db, docker_image=docker_image, state=DockerImageState.error, error_code=str(InvalidDockerImageConfig.code)
+        )
+        return
+
+    hash_ = resp["hash_id"]
+    enable_livecode = bool(resp.get("enable_livecode", False))
 
     # add new configs in docker_image_config table
     for image_config in image_configs:
         image_config_in = schemas.ImageConfigCreate(image_id=docker_image.id, **image_config)
         crud.image_config.create(db, obj_in=image_config_in)
 
-    enable_livecode = bool(resp.get("enable_livecode", False))
     crud.docker_image.update_from_dict(
         db,
         docker_image_id=docker_image.id,

@@ -296,6 +296,11 @@ class DockerImageHavingRelationships(APIError):
     message = "Docker Image Has Reminding Relationships"
 
 
+class InvalidDockerImageConfig(APIError):
+    code = error_codes.INVALID_DOCKER_IMAGE_CONFIG
+    message = "Invalid Docker Image Config"
+
+
 class FailedtoGetSysInfo(ControllerError):
     code = error_codes.FAILED_TO_GET_SYS_INFO
     message = "Failed to Get Sys Info"

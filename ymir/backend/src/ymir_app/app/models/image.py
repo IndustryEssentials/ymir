@@ -30,6 +30,7 @@ class DockerImage(Base):
         uselist=True,
     )
     enable_livecode = Column(Boolean, default=False, nullable=False)
+    error_code = Column(String(settings.DEFAULT_LIMIT))
     is_shared = Column(Boolean, default=False, nullable=False)
     is_deleted = Column(Boolean, default=False, nullable=False)
     create_datetime = Column(DateTime, default=datetime.utcnow, nullable=False)
