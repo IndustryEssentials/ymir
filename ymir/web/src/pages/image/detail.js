@@ -26,7 +26,7 @@ function ImageDetail() {
   const shareModalRef = useRef(null)
   const linkModalRef = useRef(null)
   const delRef = useRef(null)
-  const image = useSelector(({ image }) => image.image[id])
+  const image = useSelector(({ image }) => image.image[id] || {})
   const [_, getImage] = useFetch('image/getImage', { id })
   const role = useSelector(({ user }) => user.role)
 
@@ -83,22 +83,11 @@ function ImageDetail() {
     ))
   }
 
-  function renderTaskBtn() {
-    return image.functions.map((func) => {
-      const type = isTrain(func) ? 'train' : 'mining'
-      return (
-        <Button onClick={() => history.push(`/home/task/${type}?image=${id}`)}>
-          {isTrain(func) ? <TrainIcon /> : <VectorIcon />} {t(`image.list.${type}.btn`)}
-        </Button>
-      )
-    })
-  }
-
   function renderTitle() {
     return (
       <Row>
         <Col flex={1}>
-          {image.name}{' '}
+          {image.name}
           {isAdmin() ? (
             <Link to={`/home/image/add/${id}`}>
               <EditIcon />
@@ -146,9 +135,9 @@ function ImageDetail() {
               {renderConfigs(image.configs)}
             </Item>
             <Item label={t('image.detail.label.state')} span={2}>
-              {' '}
-              <StateTag state={image.state} />{' '}
+              <StateTag state={image.state} />
             </Item>
+            {image.errorCode ? <Item label={t('task.detail.error.code')} span={2}>{t(`error${image.errorCode}`)}</Item> : null}
 
             <Item label={''} span={2}>
               <Space>

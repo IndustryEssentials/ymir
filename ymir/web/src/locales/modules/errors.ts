@@ -60,6 +60,7 @@ const errors = {
   'error111104': { cn: '此镜像关联其他镜像，请清除关联后再处理', en: 'Clean relationships of docker images before deleting it', },
   'error111105': { cn: '分享镜像失败', en: 'FAILED_TO_GET_SHARED_DOCKER_IMAGES', },
   'error111106': { cn: '分享镜像配置获取失败', en: 'SHARED_IMAGE_CONFIG_ERROR', },
+  'error111107': { cn: '镜像配置错误', en: 'image configure unmatched.', },
   'error111201': { cn: '无法获取GPU个数信息', en: 'Can not get server\'s GPU count', },
   'error111301': { cn: 'ClickHouse连接失败，无法获取统计数据', en: 'ClickHouse connect error, then get statstics data failed', },
   'error111401': { cn: '找不到项目', en: 'Project Not Found', },

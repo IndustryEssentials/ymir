@@ -200,6 +200,7 @@ declare namespace YModels {
     functions: Array<number>
     configs: Array<DockerImageConfig>
     url: string
+    errorCode?: number,
     liveCode?: boolean
     description: string
     createTime: string

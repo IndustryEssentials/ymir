@@ -170,7 +170,7 @@ const ImageList = ({ role, filter, getImages }) => {
         <Col flex={1}>
           <Space>
             <span>{item.name}</span>
-            {imageState(item.state)}
+            <span title={t(`error${item.errorCode}`)}>{imageState(item.state)}</span>
             {isDone(item.state) && !HIDDENMODULES.LIVECODE ? liveCodeState(item.liveCode) : null}
           </Space>
         </Col>
