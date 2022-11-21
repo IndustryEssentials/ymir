@@ -6,6 +6,7 @@ import t from '@/utils/t'
 import useFetch from '@/hooks/useFetch'
 import EmptyState from '@/components/empty/dataset'
 import Dataset from '@/components/form/option/Dataset'
+import useRequest from '@/hooks/useRequest'
 
 const defaultLabelRender = (dataset) => <Dataset dataset={dataset} />
 
@@ -17,14 +18,16 @@ const DatasetSelect = ({
 }) => {
   const [options, setOptions] = useState([])
   const datasets = useSelector(({ dataset }) => dataset.allDatasets)
-  const [_, getDatasets] = useFetch('dataset/queryAllDatasets', [], true)
+  const { run: getDatasets } = useRequest('dataset/queryAllDatasets', {
+    debounceWait: 300,
+  })
   const [val, setVal] = useState(value)
 
   useEffect(() => setVal(value), [value])
 
   useEffect(() => {
     pid && fetchDatasets()
-  }, [pid, value])
+  }, [pid])
 
   useEffect(() => {
     onReady(datasets)
@@ -68,8 +71,8 @@ const DatasetSelect = ({
     setOptions(opts)
   }, [filters, datasets])
 
-  async function fetchDatasets() {
-    await getDatasets({ pid, force: true })
+  function fetchDatasets() {
+    getDatasets({ pid, force: true })
   }
 
   function filterEmptyAsset(datasets) {
