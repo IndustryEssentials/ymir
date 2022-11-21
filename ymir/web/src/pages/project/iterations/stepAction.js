@@ -51,6 +51,7 @@ const StepAction = ({ steps, selected, iteration, callback = () => {} }) => {
       query: (settings = {}) => ({
         did: settings.dataset_id,
         type: settings.annotation_type,
+        url: settings.extra_url,
       }),
     },
     [STEP.merging]: {
@@ -67,6 +68,7 @@ const StepAction = ({ steps, selected, iteration, callback = () => {} }) => {
         image: settings.docker_image_id,
         config: settings.docker_image_config ? JSON.parse(settings.docker_image_config) : undefined,
         test: settings.validation_dataset_id,
+        mid: settings.model_id ? [settings.model_id, settings.model_stage_id] : undefined,
       }),
     },
     [STEP.next]: {
