@@ -1,13 +1,17 @@
 import argparse
+import json
 import logging
 import os
 from subprocess import CalledProcessError
 from typing import Optional, Set, Tuple
 
+from google.protobuf.json_format import ParseDict
+
 from mir.commands import base, infer
 from mir.protos import mir_command_pb2 as mirpb
 from mir.tools import checker, class_ids, env_config, exporter, mir_storage_ops, models, revs_parser
-from mir.tools.annotations import mining_annotations
+from mir.tools.annotations import (_import_annotations_seg_mask, _filter_task_annotations, _filter_annotation_image_cks,
+                                   copy_annotations_pred_meta, UnknownTypesStrategy)
 from mir.tools.code import MirCode
 from mir.tools.command_run_in_out import command_run_in_out
 from mir.tools.errors import MirContainerError, MirRuntimeError
@@ -244,13 +248,32 @@ def _process_results(mir_root: str, label_storage_file: str, export_out: str, sr
         matched_mir_metadatas.attributes[asset_id].CopyFrom(mir_metadatas.attributes[asset_id])
     logging.info(f"matched: {len(matched_mir_metadatas.attributes)}, overriding metadatas.mir")
 
-    matched_mir_annotations = mining_annotations(
-        work_out_dir=export_out,
-        asset_ids_set=asset_ids_set,
-        cls_id_mgr=class_ids.load_or_create_userlabels(label_storage_file=label_storage_file),
-        model_storage=model_storage,
-        add_prediction=add_prediction,
-        mir_annotations=mir_annotations)
+    matched_mir_annotations = mirpb.MirAnnotations()
+    if add_prediction:
+        # from infer result
+        _prediction_from_infer_result(
+            work_out_dir=export_out,
+            asset_ids_set=asset_ids_set,
+            cls_id_mgr=class_ids.load_or_create_userlabels(label_storage_file=label_storage_file),
+            model_storage=model_storage,
+            matched_mir_annotations=matched_mir_annotations)
+    else:
+        # use predictions from old mir_annotations
+        _filter_task_annotations(src_task_annotations=mir_annotations.prediction,
+                                 dst_task_annotations=matched_mir_annotations.prediction,
+                                 asset_ids=asset_ids_set)
+        copy_annotations_pred_meta(src_task_annotations=mir_annotations.prediction,
+                                   dst_task_annotations=matched_mir_annotations.prediction)
+
+    # ground truth
+    _filter_task_annotations(src_task_annotations=mir_annotations.ground_truth,
+                             dst_task_annotations=matched_mir_annotations.ground_truth,
+                             asset_ids=asset_ids_set)
+
+    # image cks
+    _filter_annotation_image_cks(src_mir_annotations=mir_annotations,
+                                 dst_mir_annotations=matched_mir_annotations,
+                                 asset_ids=asset_ids_set)
 
     return (matched_mir_metadatas, matched_mir_annotations)
 
@@ -272,6 +295,71 @@ def _get_topk_asset_ids(file_path: str, topk: int) -> Set[str]:
             idx_cnt += 1
     logging.info(f"top {len(asset_ids_set)} samples found")
     return asset_ids_set
+
+
+def _prediction_from_infer_result(work_out_dir: str, asset_ids_set: Set[str], cls_id_mgr: class_ids.UserLabels,
+                                  model_storage: models.ModelStorage,
+                                  matched_mir_annotations: mirpb.MirAnnotations) -> None:
+    prediction = matched_mir_annotations.prediction
+    prediction.type = model_storage.model_type  # type: ignore
+
+    if model_storage.model_type == mirpb.AnnoType.AT_DET_BOX:
+        _get_detbox_infer_annotations(task_annotations=prediction,
+                                      file_path=os.path.join(work_out_dir, 'infer-result.json'),
+                                      asset_ids_set=asset_ids_set,
+                                      cls_id_mgr=cls_id_mgr)
+    elif model_storage.model_type == mirpb.AnnoType.AT_SEG_MASK:
+        _import_annotations_seg_mask(map_hashed_filename={asset_id: asset_id
+                                                          for asset_id in asset_ids_set},
+                                     mir_annotation=matched_mir_annotations,
+                                     annotations_dir_path=work_out_dir,
+                                     class_type_manager=cls_id_mgr,
+                                     unknown_types_strategy=UnknownTypesStrategy.IGNORE,
+                                     accu_new_class_names={},
+                                     image_annotations=prediction)
+
+    # pred meta
+    prediction.eval_class_ids[:] = set(
+        cls_id_mgr.id_for_names(model_storage.class_names, drop_unknown_names=True)[0])
+    prediction.executor_config = json.dumps(model_storage.executor_config)
+    prediction.model.CopyFrom(model_storage.get_model_meta())
+
+
+def _get_detbox_infer_annotations(task_annotations: mirpb.SingleTaskAnnotations, file_path: str,
+                                  asset_ids_set: Set[str], cls_id_mgr: class_ids.UserLabels) -> None:
+    with open(file_path, 'r') as f:
+        results = json.loads(f.read())
+
+    detections = results.get('detection')
+    if not isinstance(detections, dict):
+        logging.error('invalid infer-result.json')
+
+    for asset_name, annotations_dict in detections.items():
+        annotations = annotations_dict.get('boxes')
+        if not isinstance(annotations, list):
+            logging.error(f"invalid annotations: {annotations}")
+            continue
+
+        asset_id = os.path.splitext(os.path.basename(asset_name))[0]
+        if asset_id not in asset_ids_set:
+            continue
+
+        single_image_annotations = mirpb.SingleImageAnnotations()
+        idx = 0
+        for annotation_dict in annotations:
+            class_id = cls_id_mgr.id_and_main_name_for_name(name=annotation_dict['class_name'])[0]
+            # ignore unknown class ids
+            if class_id < 0:
+                continue
+
+            annotation = mirpb.ObjectAnnotation()
+            annotation.index = idx
+            ParseDict(annotation_dict['box'], annotation.box)
+            annotation.class_id = class_id
+            annotation.score = float(annotation_dict.get('score', 0))
+            single_image_annotations.boxes.append(annotation)
+            idx += 1
+        task_annotations.image_annotations[asset_id].CopyFrom(single_image_annotations)
 
 
 # protected: pre process
