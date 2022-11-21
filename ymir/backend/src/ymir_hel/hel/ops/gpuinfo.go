@@ -10,7 +10,9 @@ import (
 	"github.com/NVIDIA/go-nvml/pkg/nvml"
 )
 
-func OpsGpuInfo(
+type HandlerGpuInfo struct{}
+
+func (h *HandlerGpuInfo) Process(
 	request *protos.HelOpsRequest,
 	config *configs.Config,
 ) *protos.HelOpsResponse {
