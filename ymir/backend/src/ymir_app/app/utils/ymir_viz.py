@@ -388,7 +388,7 @@ class VizClient:
         bucket: str,
         unit: str = "",
         limit: int = 10,
-        keyword_ids: Optional[List[int]] = None,
+        class_ids: Optional[List[int]] = None,
     ) -> Dict:
         url = f"{self._host}/api/v1/user_metrics/{metrics_group}"
         params = {
@@ -398,8 +398,8 @@ class VizClient:
             "unit": unit,
             "limit": limit,
         }
-        if keyword_ids:
-            params["class_ids"] = ",".join(map(str, keyword_ids))
+        if class_ids:
+            params["class_ids"] = ",".join(map(str, class_ids))
         resp = self.get_resp(url, params=params)
         return self.parse_resp(resp)
 
