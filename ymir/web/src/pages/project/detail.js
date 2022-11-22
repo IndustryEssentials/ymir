@@ -7,6 +7,7 @@ import useFetch from "@/hooks/useFetch"
 import Breadcrumbs from "@/components/common/breadcrumb"
 import Empty from "@/components/empty/default"
 import { getStepLabel } from "@/constants/iteration"
+import NoIterationDetail from './components/noIterationDetail'
 
 import s from "./detail.less"
 import {
@@ -43,6 +44,9 @@ function ProjectDetail(func) {
   return (
     <div>
       <Breadcrumbs />
+      <div className={s.header}>
+        <NoIterationDetail project={project} />
+      </div>
       {project.enableIteration ? (
         <div className={s.header}>
           {project.round > 0 ? (

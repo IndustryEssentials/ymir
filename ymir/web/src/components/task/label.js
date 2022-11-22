@@ -25,7 +25,7 @@ const LabelTypes = () => [
 function Label({ query = {}, hidden, datasets, keywords, ok = () => {}, bottom, ...func }) {
   const pageParams = useParams()
   const pid = Number(pageParams.id)
-  const { iterationId, type } = query
+  const { iterationId, type, url } = query
   const did = Number(query.did)
   const history = useHistory()
   const [doc, setDoc] = useState(undefined)
@@ -42,6 +42,7 @@ function Label({ query = {}, hidden, datasets, keywords, ok = () => {}, bottom, 
       form.setFieldsValue({
         datasetId: did,
         keepAnnotations: type,
+        doc: url,
       })
   }, [did])
 
