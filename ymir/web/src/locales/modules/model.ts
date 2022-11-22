@@ -107,7 +107,7 @@ const model = {
   'model.list.batch.invalid': { en: "Please select valid model to batch", cn: "请选择有效的模型进行批量操作", },
   'model.diagnose.metrics.tip.exceed.assets': { en: "Datasets exceeding {max} are not supported for diagnosis", cn: "暂不支持超过{max}的数据集可视化评估诊断", },
   'model.diagnose.metrics.tip.exceed.classes': { en: "Model classes exceeding {max} are not supported for diagnosis", cn: "暂不支持拥有超过{max}个类别的模型进行诊断", },
-  'model.metrics.fpfn.unit': { en: "{num} Assets", cn: "{num} 张", },
+  'model.metrics.fpfn.unit': { en: "{num} Boxes", cn: "{num} 个", },
 }
 
 export default model

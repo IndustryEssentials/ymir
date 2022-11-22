@@ -55,7 +55,6 @@ export default function Stage({ pid, stage, form, project = {}, result, trainVal
   const filters = stage.filter ? useCallback((datasets) => stage.filter(datasets, project), [stage.field, project]) : null
 
   const onSelectionReady = (list = []) => {
-    console.log('list:', list)
     setSelectionList(list)
   }
 
@@ -89,7 +88,7 @@ export default function Stage({ pid, stage, form, project = {}, result, trainVal
         <>
           <div>{!haveCandidateList && !project[stage.field] ? renderEmptyState(stage.type) : null}</div>
           <Form.Item hidden={!haveCandidateList && !project[stage.field]} name={stage.field} noStyle rules={[{ required: !stage.option }]} preserve={null}>
-            <Selection pid={pid} changeByUser filters={filters} onReady={onSelectionReady} allowClear={!!stage.option} />
+            <Selection pid={pid} changeByUser filters={filters} onReady={onSelectionReady} allowClear />
           </Form.Item>
         </>
       )}

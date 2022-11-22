@@ -3,10 +3,9 @@ import { useSelector } from 'umi'
 import { useEffect, useState } from 'react'
 
 import t from '@/utils/t'
-import useFetch from '@/hooks/useFetch'
+import useRequest from '@/hooks/useRequest'
 import EmptyState from '@/components/empty/dataset'
 import Dataset from '@/components/form/option/Dataset'
-import useRequest from '@/hooks/useRequest'
 
 const defaultLabelRender = (dataset) => <Dataset dataset={dataset} />
 
@@ -17,9 +16,12 @@ const DatasetSelect = ({
   extra, changeByUser, ...resProps
 }) => {
   const [options, setOptions] = useState([])
-  const datasets = useSelector(({ dataset }) => dataset.allDatasets)
-  const { run: getDatasets } = useRequest('dataset/queryAllDatasets', {
+  const { data: datasets = [], run: getDatasets } = useRequest('dataset/queryAllDatasets', {
     debounceWait: 300,
+    loading: false,
+    cacheKey: 'datasetSelect',
+    refreshDeps: [pid],
+    ready: !!pid,
   })
   const [val, setVal] = useState(value)
 

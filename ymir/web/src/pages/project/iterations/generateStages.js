@@ -1,8 +1,5 @@
 
-export default (project = {}) => {
-  if (!project.id) {
-    return []
-  }
+export default () => {
   const datasetStages = [
     { field: 'candidateTrainSet', option: true, label: 'project.prepare.trainset', tip: 'project.add.trainset.tip', },
     { field: 'testSet', label: 'project.prepare.validationset', tip: 'project.add.testset.tip', },
@@ -17,14 +14,14 @@ export default (project = {}) => {
     filter: x => x,
   }
 
-  const generateFilters = (field, project) => {
+  const generateFilters = (field) => {
+    return (datasets, project) => {
     const notTestingSet = (did) => !(project.testingSets || []).includes(did)
     const excludeSelected = (currentField, dataset, project) => {
       const excludeCurrent = datasetStages.filter(({ type, field }) => !type && field !== currentField)
       const ids = excludeCurrent.map(({ field }) => project[field]?.id || project[field])
       return !ids.includes(dataset.id)
     }
-    return (datasets, project) => {
       return datasets.filter(dataset =>
         notTestingSet(dataset.id) &&
         excludeSelected(field, dataset, project)
@@ -33,7 +30,7 @@ export default (project = {}) => {
     }
   }
   return [
-    ...datasetStages.map((item) => ({ ...item, filter: generateFilters(item.field, project) })),
+    ...datasetStages.map((item) => ({ ...item, filter: generateFilters(item.field) })),
     modelStage,
   ]
 }
