@@ -62,8 +62,10 @@ function Merge({ query = {}, hidden, ok = () => {}, bottom }) {
       ...values,
       group: type ? group : undefined,
       projectId: pid,
-      dataset: did,
       datasets: values.includes,
+    }
+    if (did) {
+      params.dataset = did
     }
     await merge(params)
   }
@@ -98,7 +100,7 @@ function Merge({ query = {}, hidden, ok = () => {}, bottom }) {
           </Form.Item>
         ) : null}
         {!did && (type || dataset.id) ? (
-          <Form.Item name="dataset" label={t('task.fusion.form.dataset')}>
+          <Form.Item name="dataset" label={t('task.fusion.form.dataset')} rules={[{ required: true }]}>
             <DatasetSelect pid={pid} onChange={originDatasetChange} filters={originFilter} />
           </Form.Item>
         ) : null}
