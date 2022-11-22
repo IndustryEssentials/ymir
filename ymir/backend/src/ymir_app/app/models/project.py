@@ -63,6 +63,7 @@ class Project(Base):
     datasets = relationship(
         "Dataset",
         primaryjoin="foreign(Dataset.project_id)==Project.id",
+        backref="project",
         uselist=True,
         viewonly=True,
     )
