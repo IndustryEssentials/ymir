@@ -85,9 +85,9 @@ function Mining({ query = {}, hidden, ok = () => {}, datasetCache, bottom, ...fu
   }, [datasetCache])
 
   useEffect(() => {
-    const defaultTopK = Math.ceil((dataset?.assetCount || 0) / 10)
+    const defaultTopK = !topk && topK ? topK : Math.ceil((dataset?.assetCount || 0) / 10)
     !topk && form.setFieldsValue({ topk: defaultTopK })
-  }, [dataset])
+  }, [dataset, topK])
 
   useEffect(() => {
     const state = location.state

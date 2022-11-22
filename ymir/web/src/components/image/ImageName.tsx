@@ -1,6 +1,6 @@
 import useFetch from '@/hooks/useFetch'
 import React, { useEffect } from 'react'
-import { useSelector } from 'umi'
+import { Link, useSelector } from 'umi'
 
 type Props = {
   id: number
@@ -15,9 +15,9 @@ const ImageName: React.FC<Props> = ({ id }) => {
 
   const label = image?.name ? `${image?.name}` : `${id}`
   return (
-    <span className={'imageName'} title={image?.url}>
+    <Link to={`/home/image/${id}`} className={'imageName'} title={image?.url}>
       {label}
-    </span>
+    </Link>
   )
 }
 

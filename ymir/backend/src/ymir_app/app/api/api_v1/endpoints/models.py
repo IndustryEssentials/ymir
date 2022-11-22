@@ -125,7 +125,7 @@ def import_model(
 
     # 2. create placeholder task
     if model_import.import_type is None:
-        raise FailedtoImportModel
+        raise FailedtoImportModel()
     task = crud.task.create_placeholder(
         db=db,
         type_=model_import.import_type,

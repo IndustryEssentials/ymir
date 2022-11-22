@@ -28,6 +28,7 @@ export default (project = {}) => {
       return datasets.filter(dataset =>
         notTestingSet(dataset.id) &&
         excludeSelected(field, dataset, project)
+        && dataset.assetCount
       )
     }
   }
