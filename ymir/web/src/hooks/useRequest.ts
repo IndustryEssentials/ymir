@@ -1,8 +1,19 @@
 import { useDispatch } from 'umi'
 import { useRequest as useAhRequest } from 'ahooks'
+import { useEffect } from 'react'
 
-const useRequest = (effect: string, options = {}) => {
+type OptionsType = {
+  loading?: boolean
+}
+
+const useRequest = (effect: string, options: OptionsType = {}) => {
   const dispatch = useDispatch()
+  const { loading = true } = options
+  const setLoading = (loading: Boolean) =>
+    dispatch({
+      type: 'common/setLoading',
+      payload: loading,
+    })
 
   const fetch = (payload: any) =>
     dispatch({
@@ -13,7 +24,13 @@ const useRequest = (effect: string, options = {}) => {
     manual: true,
   }
   // { loading, data, error, params, cancel, refresh, refreshAsync, run, runAsync, mutate }
-  return useAhRequest(fetch, { ...defaultOpts, ...options })
+  const request = useAhRequest(fetch, { ...defaultOpts, ...options })
+
+  useEffect(() => {
+    setLoading(loading ? true : !request.loading)
+  }, [request.loading])
+
+  return request
 }
 
 export default useRequest
