@@ -53,7 +53,7 @@ const Add = () => {
   }, [location.state])
 
   useEffect(() => {
-    image?.id && initForm(image)
+    image?.name && initForm(image)
   }, [image])
 
   function initForm(image = {}) {

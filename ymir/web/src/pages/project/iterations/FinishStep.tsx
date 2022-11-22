@@ -37,11 +37,12 @@ const FinishStep: React.FC<Props> = ({ step }) => {
       [STEP.training]: getTrainingParams,
     }
     const task = result.task
+    const config = task.parameters.docker_image_config ? JSON.parse(task.parameters.docker_image_config) : undefined
     setParamsList([
       ...maps[step.value]({
         ...task.parameters,
         gpuCount: task?.config?.gpu_count,
-        config: task.config,
+        config,
       }),
       { label: 'common.desc', content: task.parameters.description },
     ])
