@@ -88,7 +88,7 @@ function ModelDetail() {
         bordered
       >
         {renderPercentItem('mAP', stage.map * 100, (cent) => percent(cent / 100), 'rgb(54, 203, 203)')}
-        {renderPercentItem('Recall', 0.65 * 100, (cent) => percent(cent / 100), 'rgb(44, 189, 233)')}
+        {renderPercentItem('Recall', stage.metrics.ar * 100, (cent) => percent(cent / 100), 'rgb(44, 189, 233)')}
         {renderPercentItem('FN', 100, () => renderIntUnit(stage.metrics.fn), 'rgb(255, 255, 255)')}
         {renderPercentItem('FP', 100, () => renderIntUnit(stage.metrics.fp), 'rgb(255, 255, 255)')}
       </Descriptions>
