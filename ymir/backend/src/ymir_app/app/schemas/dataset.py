@@ -3,7 +3,7 @@ from typing import Any, Dict, List, Optional, Union
 
 from pydantic import BaseModel, Field, validator
 
-from app.constants.state import LabelFormat, ResultState, TaskType
+from app.constants.state import LabelFormat, ResultState, TaskType, TrainingType
 from app.schemas.common import (
     Common,
     DateTimeModelMixin,
@@ -84,6 +84,7 @@ class DatasetInDBBase(IdModelMixin, DateTimeModelMixin, IsDeletedModelMixin, Dat
     task_id: int
     user_id: int
     related_task: Optional[TaskInternal]
+    training_type: Optional[TrainingType] = TrainingType.object_detect
     is_visible: bool
 
     class Config:
