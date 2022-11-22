@@ -7,7 +7,7 @@ from sqlalchemy import and_, desc, not_
 from sqlalchemy.orm import Session
 
 from app import schemas, models
-from app.constants.state import ResultState, TaskType
+from app.constants.state import LabelFormat, ResultState, TaskType
 from app.crud.base import CRUDBase
 from app.models import Dataset
 from app.schemas.dataset import DatasetCreate, DatasetUpdate
@@ -22,6 +22,7 @@ class CRUDDataset(CRUDBase[Dataset, DatasetCreate, DatasetUpdate]):
         project_id: Optional[int] = None,
         group_id: Optional[int] = None,
         source: Optional[TaskType] = None,
+        label_format: Optional[LabelFormat] = None,
         state: Optional[IntEnum] = None,
         visible: bool = True,
         start_time: Optional[int] = None,
@@ -55,6 +56,8 @@ class CRUDDataset(CRUDBase[Dataset, DatasetCreate, DatasetUpdate]):
             query = query.filter(self.model.result_state == int(state))
         if source:
             query = query.filter(self.model.source == int(source))
+        if label_format:
+            query = query.filter(self.model.label_format == int(label_format))
         if project_id is not None:
             query = query.filter(self.model.project_id == project_id)
         if group_id is not None:
