@@ -2,6 +2,7 @@ import tempfile
 import os
 from typing import Dict, Any
 
+import grpc
 from fastapi.logger import logger
 from sqlalchemy.orm import Session
 
@@ -29,6 +30,7 @@ def import_model_in_background(
     try:
         _import_model(db, controller_client, model_import, user_id, task_hash)
     except (
+        grpc.RpcError,
         ValueError,
         OSError,
         FieldValidationFailed,
