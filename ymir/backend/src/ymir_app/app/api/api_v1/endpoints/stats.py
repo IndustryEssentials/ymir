@@ -8,6 +8,7 @@ from sqlalchemy.orm import Session
 
 from app import crud, models, schemas
 from app.api import deps
+from app.libs.labels import keywords_to_class_ids
 from app.utils.ymir_viz import VizClient
 from common_utils.labels import UserLabels
 
@@ -22,7 +23,7 @@ class StatsPrecision(str, Enum):
 
 @router.get("/keywords/recommend", response_model=schemas.StatsMetricsQueryOut)
 def recommend_keywords(
-    dataset_ids: str = Query(None, description="recommend keywords based on given datasets", example="1,2,3"),
+    dataset_ids: str = Query(None, description="recommend keywords based on given datasets"),
     limit: int = Query(10, description="limit the data point size"),
     db: Session = Depends(deps.get_db),
     current_user: models.User = Depends(deps.get_current_active_user),
@@ -30,13 +31,13 @@ def recommend_keywords(
     user_labels: UserLabels = Depends(deps.get_user_labels),
 ) -> Any:
     """
-    Recommend top keywords based on history tasks.
+    Recommend top keywords based on given dataset_ids
     """
-    keyword_ids: Optional[List[int]] = None
+    class_ids: Optional[List[int]] = None
     if dataset_ids:
         datasets = crud.dataset.get_multi_by_ids(db, ids=[int(i) for i in dataset_ids.split(",")])
         keywords = extract_keywords(datasets)
-        keyword_ids = user_labels.id_for_names(names=keywords, raise_if_unknown=True)[0]
+        class_ids = keywords_to_class_ids(user_labels, keywords)
 
     stats = viz_client.query_metrics(
         metrics_group="task",
@@ -44,7 +45,7 @@ def recommend_keywords(
         query_field="class_ids",
         bucket="count",
         limit=limit,
-        keyword_ids=keyword_ids,
+        class_ids=class_ids,
     )
     for element in stats:
         element["legend"] = user_labels.main_name_for_id(int(element["legend"]))
