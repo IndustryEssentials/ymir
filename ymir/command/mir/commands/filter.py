@@ -9,6 +9,7 @@ from mir.tools.annotations import filter_annotations_by_asset_ids
 from mir.tools.code import MirCode
 from mir.tools.command_run_in_out import command_run_in_out
 from mir.tools.errors import MirRuntimeError
+from mir.tools.metadatas import filter_metadatas_by_asset_ids
 from mir.tools.phase_logger import PhaseLoggerCenter
 
 
@@ -99,14 +100,8 @@ class CmdFilter(base.BaseCommand):
                                                   ex_cis_set=ex_cis_set)
         logging.info(f"assets count after exclude match: {len(asset_ids_set)}")
 
-        matched_mir_metadatas = mirpb.MirMetadatas()
-        for asset_id in asset_ids_set:
-            asset_attr = mir_metadatas.attributes[asset_id]
-            matched_mir_metadatas.attributes[asset_id].CopyFrom(asset_attr)
-        logging.info("matched: %d, overriding current mir repo", len(matched_mir_metadatas.attributes))
-
-        matched_mir_annotations = filter_annotations_by_asset_ids(mir_annotations=mir_annotations,
-                                                                  asset_ids_set=asset_ids_set)
+        filter_metadatas_by_asset_ids(mir_metadatas=mir_metadatas, asset_ids_set=asset_ids_set)
+        filter_annotations_by_asset_ids(mir_annotations=mir_annotations, asset_ids_set=asset_ids_set)
 
         PhaseLoggerCenter.update_phase(phase='filter.change')
 
@@ -117,8 +112,8 @@ class CmdFilter(base.BaseCommand):
                                            src_revs=src_revs,
                                            dst_rev=dst_rev)
         matched_mir_contents = {
-            mirpb.MirStorage.MIR_METADATAS: matched_mir_metadatas,
-            mirpb.MirStorage.MIR_ANNOTATIONS: matched_mir_annotations,
+            mirpb.MirStorage.MIR_METADATAS: mir_metadatas,
+            mirpb.MirStorage.MIR_ANNOTATIONS: mir_annotations,
         }
 
         mir_storage_ops.MirStorageOps.save_and_commit(mir_root=mir_root,

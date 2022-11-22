@@ -1,10 +1,11 @@
 import logging
 import os
 import time
-from PIL import Image, ImageFile, UnidentifiedImageError
-from typing import Dict
-from mir.tools import mir_storage
+from typing import Dict, Set
 
+from PIL import Image, ImageFile, UnidentifiedImageError
+
+from mir.tools import mir_storage
 from mir.tools.code import MirCode
 from mir.tools.errors import MirRuntimeError
 from mir.tools.phase_logger import PhaseLoggerCenter
@@ -91,3 +92,10 @@ def import_metadatas(mir_metadatas: mirpb.MirMetadatas,
         logging.warning(f"unknown format asset count: {unknown_format_count}")
 
     return MirCode.RC_OK
+
+
+# filter
+def filter_metadatas_by_asset_ids(mir_metadatas: mirpb.MirMetadatas, asset_ids_set: Set[str]) -> None:
+    exclude_asset_ids = mir_metadatas.attributes.keys() - asset_ids_set
+    for asset_id in exclude_asset_ids:
+        del mir_metadatas.attributes[asset_id]

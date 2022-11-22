@@ -10,11 +10,11 @@ from google.protobuf.json_format import ParseDict
 from mir.commands import base, infer
 from mir.protos import mir_command_pb2 as mirpb
 from mir.tools import checker, class_ids, env_config, exporter, mir_storage_ops, models, revs_parser
-from mir.tools.annotations import (_import_annotations_seg_mask, _filter_task_annotations, _filter_annotation_image_cks,
-                                   copy_annotations_pred_meta, UnknownTypesStrategy)
+from mir.tools.annotations import (import_annotations_seg_mask, UnknownTypesStrategy, filter_annotations_by_asset_ids)
 from mir.tools.code import MirCode
 from mir.tools.command_run_in_out import command_run_in_out
 from mir.tools.errors import MirContainerError, MirRuntimeError
+from mir.tools.metadatas import filter_metadatas_by_asset_ids
 
 
 class CmdMining(base.BaseCommand):
@@ -243,39 +243,19 @@ def _process_results(mir_root: str, label_storage_file: str, export_out: str, sr
                      if topk is not None else set(mir_metadatas.attributes.keys()))
 
     # step 2: update mir data files: mir_metadatas and mir_annotations
-    matched_mir_metadatas = mirpb.MirMetadatas()
-    for asset_id in asset_ids_set:
-        matched_mir_metadatas.attributes[asset_id].CopyFrom(mir_metadatas.attributes[asset_id])
-    logging.info(f"matched: {len(matched_mir_metadatas.attributes)}, overriding metadatas.mir")
-
-    matched_mir_annotations = mirpb.MirAnnotations()
+    filter_metadatas_by_asset_ids(mir_metadatas=mir_metadatas, asset_ids_set=asset_ids_set)
+    logging.info(f"matched: {len(mir_metadatas.attributes)}, overriding metadatas.mir")
+    filter_annotations_by_asset_ids(mir_annotations=mir_annotations, asset_ids_set=asset_ids_set)
     if add_prediction:
-        # from infer result
+        mir_annotations.prediction.Clear()
         _prediction_from_infer_result(
             work_out_dir=export_out,
             asset_ids_set=asset_ids_set,
             cls_id_mgr=class_ids.load_or_create_userlabels(label_storage_file=label_storage_file),
             model_storage=model_storage,
-            matched_mir_annotations=matched_mir_annotations)
-    else:
-        # use predictions from old mir_annotations
-        _filter_task_annotations(src_task_annotations=mir_annotations.prediction,
-                                 dst_task_annotations=matched_mir_annotations.prediction,
-                                 asset_ids=asset_ids_set)
-        copy_annotations_pred_meta(src_task_annotations=mir_annotations.prediction,
-                                   dst_task_annotations=matched_mir_annotations.prediction)
+            matched_mir_annotations=mir_annotations)
 
-    # ground truth
-    _filter_task_annotations(src_task_annotations=mir_annotations.ground_truth,
-                             dst_task_annotations=matched_mir_annotations.ground_truth,
-                             asset_ids=asset_ids_set)
-
-    # image cks
-    _filter_annotation_image_cks(src_mir_annotations=mir_annotations,
-                                 dst_mir_annotations=matched_mir_annotations,
-                                 asset_ids=asset_ids_set)
-
-    return (matched_mir_metadatas, matched_mir_annotations)
+    return (mir_metadatas, mir_annotations)
 
 
 def _get_topk_asset_ids(file_path: str, topk: int) -> Set[str]:
@@ -309,14 +289,14 @@ def _prediction_from_infer_result(work_out_dir: str, asset_ids_set: Set[str], cl
                                       asset_ids_set=asset_ids_set,
                                       cls_id_mgr=cls_id_mgr)
     elif model_storage.model_type == mirpb.AnnoType.AT_SEG_MASK:
-        _import_annotations_seg_mask(map_hashed_filename={asset_id: asset_id
-                                                          for asset_id in asset_ids_set},
-                                     mir_annotation=matched_mir_annotations,
-                                     annotations_dir_path=work_out_dir,
-                                     class_type_manager=cls_id_mgr,
-                                     unknown_types_strategy=UnknownTypesStrategy.IGNORE,
-                                     accu_new_class_names={},
-                                     image_annotations=prediction)
+        import_annotations_seg_mask(map_hashed_filename={asset_id: asset_id
+                                                         for asset_id in asset_ids_set},
+                                    mir_annotation=matched_mir_annotations,
+                                    annotations_dir_path=work_out_dir,
+                                    class_type_manager=cls_id_mgr,
+                                    unknown_types_strategy=UnknownTypesStrategy.IGNORE,
+                                    accu_new_class_names={},
+                                    image_annotations=prediction)
 
     # pred meta
     prediction.eval_class_ids[:] = set(
