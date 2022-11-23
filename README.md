@@ -43,7 +43,7 @@
 <div align="center">
   <img src="https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/wechat_code.jpg" width="180"/>
   <img src="https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/contact.jpg" width="400"/>
-
+  
   📫 Feedback on usage issues: contact.viesc@gmail.com / Professional consulting for server equipment: tensor.station@gmail.com
 <div>&nbsp;</div>&nbsp;</div>
 
@@ -138,7 +138,7 @@ As a streamlined model development product, YMIR(You Mine In Recursion) focuses 
 <div align="center">
   <img src="https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/processing.png" width="1500"/>
   <div>&nbsp;</div>&nbsp;</div>
-
+  
 AI commercialization is currently reaching a stage of maturity in terms of computing hardwares,  algorithms, etc. The adoption of AI often encounter challenges such as a lack of skilled developers, high development costs and long iteration cycles.
 
 As a platform, YMIR provides an end-to-end AI development system. This platform reduces costs for companies using artificial intelligence and accelerates the adoption of artificial intelligence. YMIR provides ML developers with one-stop services for data processing, model training, and other steps required in the AI development cycle.
