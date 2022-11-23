@@ -196,7 +196,7 @@ class DatasetEvaluationCreate(BaseModel):
 
 class DatasetEvaluationOut(Common):
     # dict of dataset_id to evaluation result
-    result: Dict[int, Dict]
+    result: Dict[int, Optional[Dict]]
 
 
 class MultiDatasetsWithProjectID(BaseModel):

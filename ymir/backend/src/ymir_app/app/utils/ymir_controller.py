@@ -530,9 +530,13 @@ class ControllerClient:
                 "main_ck": main_ck,
             },
         )
-        resp = self.send(req)
-        evaluation_result = resp["evaluation"]
-        convert_class_id_to_keyword(evaluation_result, user_labels)
+        try:
+            resp = self.send(req)
+        except ValueError:
+            evaluation_result = None
+        else:
+            evaluation_result = resp["evaluation"]
+            convert_class_id_to_keyword(evaluation_result, user_labels)
         return {dataset_hash: evaluation_result}
 
     def check_repo_status(self, user_id: int, project_id: int) -> bool:
