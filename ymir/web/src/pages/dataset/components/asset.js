@@ -1,18 +1,17 @@
+import React, { useEffect, useState } from 'react'
+import { Button, Card, Col, Descriptions, Row, Tag, Space } from 'antd'
 
-import React, { useEffect, useState } from "react"
-import { Button, Card, Col, Descriptions, Row, Tag, Space } from "antd"
-
-import { getDateFromTimestamp } from "@/utils/date"
-import t from "@/utils/t"
-import { randomBetween } from "@/utils/number"
+import { getDateFromTimestamp } from '@/utils/date'
+import t from '@/utils/t'
+import { randomBetween } from '@/utils/number'
 import useFetch from '@/hooks/useFetch'
 
-import Hash from "@/components/common/hash"
-import AssetAnnotation from "@/components/dataset/assetAnnotation"
-import GtSelector from "@/components/form/GtSelector"
-import EvaluationSelector from "@/components/form/EvaluationSelector"
+import Hash from '@/components/common/hash'
+import AssetAnnotation from '@/components/dataset/assetAnnotation'
+import GtSelector from '@/components/form/GtSelector'
+import EvaluationSelector from '@/components/form/EvaluationSelector'
 
-import styles from "./asset.less"
+import styles from './asset.less'
 import { NavDatasetIcon, EyeOffIcon, EyeOnIcon } from '@/components/common/Icons'
 import { LeftOutlined, RightOutlined } from '@ant-design/icons'
 
@@ -26,8 +25,8 @@ function Asset({ id, asset: cache, datasetKeywords, filterKeyword, filters, inde
   const [selectedKeywords, setSelectedKeywords] = useState([])
   const [currentIndex, setCurrentIndex] = useState(null)
   const [assetHistory, setAssetHistory] = useState([])
-  const [evaluation, setEvaluation] = useState([])
-  const [gtSelected, setGtSelected] = useState([])
+  const [evaluation, setEvaluation] = useState({ selected: [], all: false })
+  const [gtSelected, setGtSelected] = useState({ selected: [], all: false })
   const [colors, setColors] = useState({})
   const [{ items: assets }, getAssets] = useFetch('dataset/getAssetsOfDataset', { items: [] })
 
@@ -39,7 +38,7 @@ function Asset({ id, asset: cache, datasetKeywords, filterKeyword, filters, inde
   useEffect(() => {
     if (currentIndex !== null) {
       fetchAssetHash()
-      setAssetHistory(history => [...history, currentIndex])
+      setAssetHistory((history) => [...history, currentIndex])
     }
   }, [currentIndex])
 
@@ -65,10 +64,12 @@ function Asset({ id, asset: cache, datasetKeywords, filterKeyword, filters, inde
   }, [assets])
 
   useEffect(() => {
-    const keywordFilter = annotation => selectedKeywords.indexOf(annotation.keyword) >= 0
-    const gtFilter = annotation => !gtSelected?.length || gtSelected.some(selected => selected === 'gt' ? annotation.gt : !annotation.gt)
-    const evaluationFilter = annotation => !evaluation?.length || evaluation.includes(annotation.cm)
-    const filters = annotation => keywordFilter(annotation) && evaluationFilter(annotation) && gtFilter(annotation)
+    const keywordFilter = (annotation) => selectedKeywords.indexOf(annotation.keyword) >= 0
+    const typeAll = !gtSelected.selected.length || gtSelected.all
+    const cmAll = !evaluation.selected.length || evaluation.all
+    const gtFilter = (annotation) => typeAll || gtSelected.selected.some((selected) => (selected === 'gt' ? annotation.gt : !annotation.gt))
+    const evaluationFilter = (annotation) => cmAll || evaluation.selected.includes(annotation.cm)
+    const filters = (annotation) => keywordFilter(annotation) && evaluationFilter(annotation) && gtFilter(annotation)
     const visibleAnnotations = (asset.annotations || []).filter(filters)
     setShowAnnotations(visibleAnnotations)
   }, [selectedKeywords, evaluation, asset, gtSelected])
@@ -78,15 +79,15 @@ function Asset({ id, asset: cache, datasetKeywords, filterKeyword, filters, inde
   }
 
   function next() {
-    setCurrentIndex(cu => ({ ...cu, index: cu.index + 1 }))
+    setCurrentIndex((cu) => ({ ...cu, index: cu.index + 1 }))
   }
 
   function prev() {
-    setCurrentIndex(cu => ({ ...cu, index: cu.index - 1 }))
+    setCurrentIndex((cu) => ({ ...cu, index: cu.index - 1 }))
   }
 
   function random() {
-    setCurrentIndex(cu => ({ ...cu, index: randomBetween(0, total - 1, cu.index) }))
+    setCurrentIndex((cu) => ({ ...cu, index: randomBetween(0, total - 1, cu.index) }))
   }
 
   function back() {
@@ -99,14 +100,20 @@ function Asset({ id, asset: cache, datasetKeywords, filterKeyword, filters, inde
   }
 
   function changeKeywords(tag, checked) {
-    const selected = checked
-      ? [...selectedKeywords, tag]
-      : selectedKeywords.filter((k) => k !== tag)
+    const selected = checked ? [...selectedKeywords, tag] : selectedKeywords.filter((k) => k !== tag)
     setSelectedKeywords(selected)
   }
 
   function toggleAnnotation() {
     setSelectedKeywords(selectedKeywords.length ? [] : asset.keywords)
+  }
+
+  function gtChange(checked, all) {
+    setGtSelected({ selected: checked, all })
+  }
+
+  function evaluationChange(checked, all) {
+    setEvaluation({ selected: checked, all })
   }
 
   return asset.hash ? (
@@ -122,18 +129,22 @@ function Asset({ id, asset: cache, datasetKeywords, filterKeyword, filters, inde
                 url={asset.url}
                 keywords={asset.keywords}
                 data={showAnnotations}
-              // toggleHandle={toggleAnnotation}
+                // toggleHandle={toggleAnnotation}
               />
             ) : null}
           </Col>
           <Col span={6} className={styles.asset_info}>
             <Card
-              title={<><NavDatasetIcon /> {t("dataset.asset.info")}</>}
+              title={
+                <>
+                  <NavDatasetIcon /> {t('dataset.asset.info')}
+                </>
+              }
               bordered={false}
-              className='noShadow'
+              className="noShadow"
               style={{ marginRight: 20 }}
               headStyle={{ paddingLeft: 0 }}
-              bodyStyle={{ padding: "20px 0" }}
+              bodyStyle={{ padding: '20px 0' }}
             >
               <Descriptions
                 bordered
@@ -141,27 +152,19 @@ function Asset({ id, asset: cache, datasetKeywords, filterKeyword, filters, inde
                 contentStyle={{ flexWrap: 'wrap', padding: '10px' }}
                 labelStyle={{ justifyContent: 'flex-end', padding: '10px' }}
               >
-                <Item label={t("dataset.asset.info.id")} span={2}>
+                <Item label={t('dataset.asset.info.id')} span={2}>
                   <Hash value={current} />
                 </Item>
-                <Item label={t("dataset.asset.info.width")}>
-                  {asset.metadata?.width}
-                </Item>
-                <Item label={t("dataset.asset.info.height")}>
-                  {asset.metadata?.height}
-                </Item>
-                {asset.size ? (
-                  <Item label={t("dataset.asset.info.size")}>
-                    {asset.size}
-                  </Item>
-                ) : null}
-                <Item label={t("dataset.asset.info.channel")} span={asset.size ? 1 : 2}>
+                <Item label={t('dataset.asset.info.width')}>{asset.metadata?.width}</Item>
+                <Item label={t('dataset.asset.info.height')}>{asset.metadata?.height}</Item>
+                {asset.size ? <Item label={t('dataset.asset.info.size')}>{asset.size}</Item> : null}
+                <Item label={t('dataset.asset.info.channel')} span={asset.size ? 1 : 2}>
                   {asset.metadata?.image_channels}
                 </Item>
-                <Item label={t("dataset.asset.info.timestamp")} span={2}>
+                <Item label={t('dataset.asset.info.timestamp')} span={2}>
                   {getDateFromTimestamp(asset.metadata?.timestamp?.start)}
                 </Item>
-                <Item label={t("dataset.asset.info.keyword")} span={2}>
+                <Item label={t('dataset.asset.info.keyword')} span={2}>
                   <Row>
                     <Col flex={1}>
                       {asset.keywords?.map((keyword, i) => (
@@ -177,40 +180,36 @@ function Asset({ id, asset: cache, datasetKeywords, filterKeyword, filters, inde
                       ))}
                     </Col>
                     <Col>
-                      {selectedKeywords.length ?
-                        <EyeOnIcon onClick={toggleAnnotation} title={t("dataset.asset.annotation.hide")} /> :
-                        <EyeOffIcon onClick={toggleAnnotation} title={t("dataset.asset.annotation.show")} />}
+                      {selectedKeywords.length ? (
+                        <EyeOnIcon onClick={toggleAnnotation} title={t('dataset.asset.annotation.hide')} />
+                      ) : (
+                        <EyeOffIcon onClick={toggleAnnotation} title={t('dataset.asset.annotation.show')} />
+                      )}
                     </Col>
                   </Row>
                 </Item>
                 <Item label={t('dataset.assets.keyword.selector.types.cks')}>
-                  {Object.keys(asset.cks).map(ck => <Space key={ck}>
-                    <span style={{ fontWeight: 'bold' }}>{ck}: </span> <span>{asset.cks[ck]}</span>
-                  </Space>)}
+                  {Object.keys(asset.cks).map((ck) => (
+                    <Space key={ck}>
+                      <span style={{ fontWeight: 'bold' }}>{ck}: </span> <span>{asset.cks[ck]}</span>
+                    </Space>
+                  ))}
                 </Item>
               </Descriptions>
 
               <Space className={styles.filter} size={10} wrap>
-                <GtSelector vertical onChange={setGtSelected} />
-                <EvaluationSelector hidden={!asset.evaluated} vertical onChange={setEvaluation} />
+                <GtSelector vertical onChange={gtChange} />
+                <EvaluationSelector hidden={!asset.evaluated} vertical onChange={evaluationChange} />
               </Space>
             </Card>
             <Space className={styles.random}>
-              <Button
-                type="primary"
-                style={{ marginTop: 20 }}
-                onClick={random}
-              >
-                {t("dataset.asset.random")}
+              <Button type="primary" style={{ marginTop: 20 }} onClick={random}>
+                {t('dataset.asset.random')}
               </Button>
-              <Button
-                className={styles.back}
-                type="primary"
-                style={{ marginTop: 20 }}
-                onClick={back}
-              >
-                {t("dataset.asset.back")}
-              </Button></Space>
+              <Button className={styles.back} type="primary" style={{ marginTop: 20 }} onClick={back}>
+                {t('dataset.asset.back')}
+              </Button>
+            </Space>
           </Col>
           <Col style={{ alignSelf: 'center' }} flex={'20px'}>
             <RightOutlined hidden={currentIndex.index >= total - 1} className={styles.next} onClick={next} />
@@ -219,7 +218,7 @@ function Asset({ id, asset: cache, datasetKeywords, filterKeyword, filters, inde
       </div>
     </div>
   ) : (
-    <div>{t("dataset.asset.empty")}</div>
+    <div>{t('dataset.asset.empty')}</div>
   )
 }
 

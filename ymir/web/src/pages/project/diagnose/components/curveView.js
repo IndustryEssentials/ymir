@@ -123,7 +123,7 @@ const CurveView = ({ tasks, datasets, models, data, xType, kw: { keywords } }) =
   return list.map(({ id, label, rows }) => <div key={id}>
     <Panel label={label} visible={!hiddens[id]} setVisible={value => setHiddens(old => ({ ...old, [id]: !value }))} bg={false}>
       <Row gutter={20}>
-        {rows.map(({ id, title, lines }, index) => <Col key={id} span={12} style={{ minWidth: 300 }}>
+        {rows.map(({ id, title, lines }, index) => <Col key={id} span={24} style={{ minWidth: 300 }}>
           <PrCurve title={title} lines={lines} />
         </Col>
         )}
