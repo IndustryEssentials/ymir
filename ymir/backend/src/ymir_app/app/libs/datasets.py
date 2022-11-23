@@ -168,6 +168,7 @@ def evaluate_datasets(
 
 
 def ensure_datasets_are_ready(db: Session, dataset_ids: List[int]) -> List[models.Dataset]:
+    dataset_ids = list(set(dataset_ids))
     datasets = crud.dataset.get_multi_by_ids(db, ids=dataset_ids)
     if len(dataset_ids) != len(datasets):
         raise DatasetNotFound()
