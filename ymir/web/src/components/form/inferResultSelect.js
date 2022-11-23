@@ -218,6 +218,7 @@ const InferResultSelect = ({ pid, form, value, onChange = () => {} }) => {
       >
         <ModelSelect pid={pid} multiple filters={filterModels} onChange={modelChange} />
       </Form.Item>
+      {datasets.length ?
       <Form.Item
         name="dataset"
         help={
@@ -227,12 +228,12 @@ const InferResultSelect = ({ pid, form, value, onChange = () => {} }) => {
             type="warning"
           />
         }
-        hidden={!datasets.length}
+        // hidden={!datasets.length}
         label={t('model.diagnose.label.testing_dataset')}
         rules={[{ required: true }, { type: 'array', max: 5 }]}
       >
         <DatasetSelect pid={pid} mode="multiple" filters={filterDatasets} onChange={datasetChange} />
-      </Form.Item>
+      </Form.Item> : null }
       <Form.Item name="config" hidden={!configs.length} label={t('model.diagnose.label.config')} rules={[{ required: true }, { type: 'array', max: 5 }]}>
         <ConfigSelect configs={configs} onChange={configChange} />
       </Form.Item>

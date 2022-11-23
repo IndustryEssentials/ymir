@@ -15,7 +15,7 @@ const DatasetSelect = ({
   onReady = () => { },
   extra, changeByUser, ...resProps
 }) => {
-  const datasets = useSelector(({ dataset }) => dataset.allDatasets[pid] || [])
+  const {[pid]: datasets} = useSelector(({ dataset }) => dataset.allDatasets)
   const [options, setOptions] = useState([])
   const {run: getDatasets } = useRequest('dataset/queryAllDatasets', {
     debounceWait: 300,
@@ -33,6 +33,7 @@ const DatasetSelect = ({
   useEffect(() => setVal(value), [value])
 
   useEffect(() => {
+    console.log('pid:', pid)
     pid && fetchDatasets()
   }, [pid])
 
