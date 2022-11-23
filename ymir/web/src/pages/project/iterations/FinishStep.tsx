@@ -1,4 +1,4 @@
-import { Col, Descriptions, Row } from 'antd'
+import { Col, Descriptions, Row, Tag } from 'antd'
 import React, { useEffect, useState } from 'react'
 import { Link, useSelector } from 'umi'
 
@@ -69,7 +69,7 @@ function getFusionParams(params: YModels.FusionParams) {
     { label: 'task.fusion.form.sampling', content: params.sampling_count },
     {
       label: 'task.fusion.form.includes.label',
-      content: params.include_datasets?.length ? params.include_datasets?.map((ds) => <VersionName key={ds} id={ds} />) : null,
+      content: params.include_datasets?.length ? params.include_datasets?.map((ds) => <Tag key={ds}><VersionName id={ds} /></Tag>) : null,
     },
     {
       label: 'task.train.form.repeatdata.label',
@@ -77,7 +77,7 @@ function getFusionParams(params: YModels.FusionParams) {
     },
     {
       label: 'task.fusion.form.excludes.label',
-      content: params.exclude_datasets?.map((ds) => <VersionName key={ds} id={ds} />),
+      content: params.exclude_datasets?.map((ds) => <Tag key={ds}><VersionName id={ds} /></Tag>),
     },
     {
       label: 'task.fusion.form.class.include.label',
@@ -118,11 +118,11 @@ function getMergeParams(params: YModels.MergeParams) {
     { label: 'task.fusion.form.dataset', content: <VersionName id={params.dataset_id} /> },
     {
       label: 'task.fusion.form.merge.include.label',
-      content: params.include_datasets?.length ? params.include_datasets?.map((ds) => <VersionName key={ds} id={ds} />) : null,
+      content: params.include_datasets?.length ? params.include_datasets?.map((ds) => <Tag key={ds}><VersionName id={ds} /></Tag>) : null,
     },
     {
       label: 'task.fusion.form.merge.exclude.label',
-      content: params.exclude_datasets?.length ? params.exclude_datasets?.map((ds) => <VersionName key={ds} id={ds} />) : null,
+      content: params.exclude_datasets?.length ? params.exclude_datasets?.map((ds) => <Tag key={ds}><VersionName id={ds} /></Tag>) : null,
     },
   ]
 }
