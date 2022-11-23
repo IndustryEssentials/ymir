@@ -77,7 +77,7 @@ describe("models: dataset", () => {
   const allVersions = { 1: items, 2: [...items, product(8)] }
   const allDatasets = { 1: items, 2: [...items, product(7)] }
   normalReducer(dataset, 'UPDATE_DATASETS', datasets, datasets, 'datasets', { items: [], total: 0, })
-  normalReducer(dataset, 'UPDATE_ALL_DATASETS', allDatasets, allDatasets, 'allDatasets', [])
+  normalReducer(dataset, 'UPDATE_ALL_DATASETS', {[gid]: allDatasets}, {[gid]: allDatasets}, 'allDatasets', {})
   normalReducer(dataset, 'UPDATE_VERSIONS', { id: gid, versions: items }, { [gid]: items }, 'versions', {})
   normalReducer(dataset, 'UPDATE_ALL_VERSIONS', allVersions, allVersions, 'versions', {})
   normalReducer(dataset, 'UPDATE_DATASET', { id: gid, dataset: product(534) }, { [gid]: product(534) }, 'dataset', {})
@@ -100,7 +100,7 @@ describe("models: dataset", () => {
       dataset: {},
       assets: { items: [], total: 0, },
       asset: { annotations: [], },
-      allDatasets: [],
+      allDatasets: {},
       publicDatasets: [],
     }
     const action = {

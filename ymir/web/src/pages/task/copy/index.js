@@ -13,7 +13,7 @@ import Desc from "@/components/form/desc"
 import DatasetName from "@/components/form/items/datasetName"
 import Dataset from '@/components/form/option/Dataset'
 
-function Copy({ allDatasets, datasetCache, ...props }) {
+function Copy() {
   const [_, getDataset] = useFetch('dataset/getDataset')
   const [createResult, createDataset] = useFetch('dataset/createDataset')
   const [__, clearCache] = useFetch('dataset/clearCache')

@@ -15,14 +15,19 @@ const DatasetSelect = ({
   onReady = () => { },
   extra, changeByUser, ...resProps
 }) => {
+  const datasets = useSelector(({ dataset }) => dataset.allDatasets[pid] || [])
   const [options, setOptions] = useState([])
-  const { data: datasets = [], run: getDatasets } = useRequest('dataset/queryAllDatasets', {
+  const {run: getDatasets } = useRequest('dataset/queryAllDatasets', {
     debounceWait: 300,
     loading: false,
     cacheKey: 'datasetSelect',
     refreshDeps: [pid],
     ready: !!pid,
+    onSuccess: () => {
+      setVal(value)
+    }
   })
+  console.log('value:', pid, value)
   const [val, setVal] = useState(value)
 
   useEffect(() => setVal(value), [value])
@@ -32,7 +37,8 @@ const DatasetSelect = ({
   }, [pid])
 
   useEffect(() => {
-    onReady(datasets)
+    console.log('datasets:', datasets)
+    onReady(datasets || [])
   }, [datasets])
 
   useEffect(() => {
@@ -53,14 +59,15 @@ const DatasetSelect = ({
   }, [options])
 
   useEffect(() => {
-    const needReload = datasets.some(ds => ds.needReload)
+    const needReload = datasets?.some(ds => ds.needReload)
     if (needReload) {
       fetchDatasets()
     }
   }, [datasets])
 
   useEffect(() => {
-    let dss = filters ? filters(datasets) : datasets
+    const list = datasets || []
+    let dss = filters ? filters(list) : list
     dss = allowEmpty ? dss : filterEmptyAsset(dss)
     const opts = dss.filter(ds => !filter.includes(ds.id) && !filterGroup.includes(ds.groupId)).map(item => {
       return {
