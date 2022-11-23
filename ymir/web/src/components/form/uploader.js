@@ -27,7 +27,7 @@ function Uploader({
   const [files, setFiles] = useState(null)
 
   useEffect(() => {
-    value && value.length && setFiles(value)
+    value && value.length && setFiles(value.map(item => ({ name: item.replace(/^.*\/([^\/]+)$/, '$1') })))
   }, [value])
 
   function onFileChange({ file, fileList }) {

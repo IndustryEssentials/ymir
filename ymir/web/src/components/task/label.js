@@ -38,12 +38,12 @@ function Label({ query = {}, hidden, datasets, keywords, ok = () => {}, bottom, 
   }, [])
 
   useEffect(() => {
-    did &&
       form.setFieldsValue({
-        datasetId: did,
+        datasetId: did || undefined,
         keepAnnotations: type,
-        doc: url,
+        desc: url ? [url]: undefined,
       })
+      url && setDoc(url)
   }, [did])
 
   useEffect(() => {
