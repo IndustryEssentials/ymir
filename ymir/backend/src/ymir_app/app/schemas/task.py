@@ -15,9 +15,7 @@ from app.constants.state import (
     MiningStrategy,
     TaskState,
     TaskType,
-    ResultState,
     ResultType,
-    IterationStage,
 )
 from app.schemas.common import (
     Common,
