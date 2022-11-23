@@ -10,6 +10,7 @@ import Actions from '@/components/table/Actions'
 // test lint-staged
 import s from './index.less'
 import { EyeOnIcon, DiagnosisIcon } from '@/components/common/Icons'
+import { INFER_CLASSES_MAX_COUNT, INFER_DATASET_MAX_COUNT } from '@/constants/common'
 
 const initQuery = { current: 1, offset: 0, limit: 20 }
 
@@ -30,11 +31,12 @@ const InferDataset: React.FC = () => {
         history.push(`/home/project/${pid}/diagnose#metrics`, {
           mid: record.inferModelId,
         }),
+      disabled: (record.assetCount > INFER_DATASET_MAX_COUNT) || (record.inferClass?.length || 0) > INFER_CLASSES_MAX_COUNT,
       icon: <DiagnosisIcon />,
     },
     {
       key: 'detail',
-      label: t('breadcrumbs.dataset'),
+      label: t('dataset.action.detail'),
       onclick: () => history.push(`/home/project/${pid}/dataset/${record.id}`),
     },
     {
