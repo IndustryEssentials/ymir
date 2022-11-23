@@ -3,11 +3,16 @@ import s from './table.less'
 import { More1Icon } from "../common/Icons"
 import React from "react"
 
-const renderActions = (menus: Action[]) => menus.map((menu, i) => renderAction(menu, i === menus.length - 1))
+type Props = {
+  actions: YComponents.Action[],
+  showCount?: number,
+}
+
+const renderActions = (menus: YComponents.Action[]) => menus.map((menu, i) => renderAction(menu, i === menus.length - 1))
 
 const isOuterLink = (link: string) => /^http(s)?:/i.test(link)
 
-const moreActions = (ations: Action[]) => <Menu
+const moreActions = (ations: YComponents.Action[]) => <Menu
   className={s.more}
   style={{ color: 'rgba(0, 0, 0, 0.65)' }}
   items={ations.map(action => ({
@@ -15,7 +20,7 @@ const moreActions = (ations: Action[]) => <Menu
     label: renderAction(action)
   }))} />
 
-function renderAction(action: Action, last: boolean = false) {
+function renderAction(action: YComponents.Action, last: boolean = false) {
   const { key, onclick = () => { }, icon, label, link, target, disabled } = action
   const cls = `${s.action} ${last ? s.last : ''}`
   const btn = (
@@ -33,7 +38,7 @@ function renderAction(action: Action, last: boolean = false) {
   </a> : btn
 }
 
-const Actions: React.FC<ComponentsTableActionsProps> = ({ actions = [], showCount = 3 }) => {
+const Actions: React.FC<Props> = ({ actions = [], showCount = 3 }) => {
   const showActions = actions.filter(action => !(action.hidden && action.hidden()))
   const isMore = () => showActions.length > showCount
   return (
