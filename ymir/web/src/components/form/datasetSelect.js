@@ -27,18 +27,15 @@ const DatasetSelect = ({
       setVal(value)
     }
   })
-  console.log('value:', pid, value)
   const [val, setVal] = useState(value)
 
   useEffect(() => setVal(value), [value])
 
   useEffect(() => {
-    console.log('pid:', pid)
     pid && fetchDatasets()
   }, [pid])
 
   useEffect(() => {
-    console.log('datasets:', datasets)
     onReady(datasets || [])
   }, [datasets])
 
