@@ -102,6 +102,7 @@ const StepAction = ({ steps, selected, iteration, callback = () => {} }) => {
   }, [result?.state, currentStep?.state])
 
   useEffect(() => {
+  console.log('steps, iteration:', steps, iteration)
     if (!iteration || !steps.length) {
       return
     }

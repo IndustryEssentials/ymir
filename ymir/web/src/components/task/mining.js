@@ -28,7 +28,7 @@ function Mining({ query = {}, hidden, ok = () => {}, datasetCache, bottom, ...fu
   const pid = Number(pageParams.id)
   const history = useHistory()
   const location = useLocation()
-  const { mid, image, topK, config, generate_annotations } = query
+  const { mid, image, topK, config, generate_annotations = true } = query
   const stage = mid ? (Array.isArray(mid) ? mid : mid.split(',').map(Number)) : undefined
   const did = Number(query.did)
   const [dataset, setDataset] = useState({})
@@ -60,7 +60,6 @@ function Mining({ query = {}, hidden, ok = () => {}, datasetCache, bottom, ...fu
     did &&
       form.setFieldsValue({
         datasetId: did,
-        inference: generate_annotations,
       })
   }, [did])
 
@@ -122,8 +121,9 @@ function Mining({ query = {}, hidden, ok = () => {}, datasetCache, bottom, ...fu
     const { url, configs = [] } = image
     const configObj = configs.find((conf) => conf.type === TYPES.MINING) || {}
     const hasInference = configs.some((conf) => conf.type === TYPES.INFERENCE)
+    console.log('hasInference:', hasInference)
     setImageHasInference(hasInference)
-    form.setFieldsValue({ inference: typeof generate_annotations !== 'undefined' ? generate_annotations : hasInference })
+    form.setFieldsValue({ inference: hasInference && generate_annotations })
     if (!HIDDENMODULES.LIVECODE) {
       setLiveCode(image.liveCode || false)
     }
