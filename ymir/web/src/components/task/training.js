@@ -11,6 +11,7 @@ import { OPENPAI_MAX_GPU_COUNT } from '@/constants/common'
 import { TYPES } from '@/constants/image'
 import { randomNumber } from '@/utils/number'
 import useFetch from '@/hooks/useFetch'
+import useRequest from '@/hooks/useRequest'
 
 import ImageSelect from '@/components/form/imageSelect'
 import ModelSelect from '@/components/form/modelSelect'
@@ -38,7 +39,7 @@ const TrainType = [
 
 const KeywordsMaxCount = 5
 
-function Train({ query = {}, hidden, ok = () => {}, bottom, allDatasets, datasetCache, ...func }) {
+function Train({ query = {}, hidden, ok = () => {}, bottom, ...func }) {
   const pageParams = useParams()
   const pid = Number(pageParams.id)
   const history = useHistory()
@@ -47,7 +48,6 @@ function Train({ query = {}, hidden, ok = () => {}, bottom, allDatasets, dataset
   const stage = mid ? (Array.isArray(mid) ? mid : mid.split(',').map(Number)) : undefined
   const did = Number(query.did)
   const [selectedKeywords, setSelectedKeywords] = useState([])
-  const [dataset, setDataset] = useState({})
   const [trainSet, setTrainSet] = useState(null)
   const [testSet, setTestSet] = useState(null)
   const [validationDataset, setValidationDataset] = useState(null)
@@ -64,6 +64,9 @@ function Train({ query = {}, hidden, ok = () => {}, bottom, allDatasets, dataset
   const [sys, getSysInfo] = useFetch('common/getSysInfo', {})
   const [project, getProject] = useFetch('project/getProject', {})
   const [updated, updateProject] = useFetch('project/updateProject')
+  const { runAsync: train } = useRequest('task/train', {
+    debounceWait: 300,
+  })
   const [fromCopy, setFromCopy] = useState(false)
 
   const selectOpenpai = Form.useWatch('openpai', form)
@@ -99,26 +102,13 @@ function Train({ query = {}, hidden, ok = () => {}, bottom, allDatasets, dataset
   }, [project])
 
   useEffect(() => {
-    if (did && allDatasets?.length) {
-      const isValid = allDatasets.some((ds) => ds.id === did)
-      const visibleValue = isValid ? did : null
-      setTrainSet(visibleValue)
-      form.setFieldsValue({ datasetId: visibleValue })
-    }
-  }, [did, allDatasets])
+    setTrainSet(did)
+    form.setFieldsValue({ datasetId: did })
+  }, [did])
 
   useEffect(() => {
     did && func.getDataset(did)
   }, [did])
-
-  useEffect(() => {
-    const dst = datasetCache[did]
-    dst && setDataset(dst)
-  }, [datasetCache])
-
-  useEffect(() => {
-    pid && func.getDatasets(pid)
-  }, [pid])
 
   useEffect(() => {
     trainDataset && !iterationContext && !fromCopy && setAllKeywords()
@@ -212,7 +202,7 @@ function Train({ query = {}, hidden, ok = () => {}, bottom, allDatasets, dataset
       keywords: iterationContext ? project.keywords : values.keywords,
       config,
     }
-    const result = await func.train(params)
+    const result = await train(params)
     if (iterationContext && !iterationId) {
       await updateProject({ id: pid, modelStage: [result.result_model?.id] })
       return history.goBack()
@@ -399,13 +389,6 @@ function Train({ query = {}, hidden, ok = () => {}, bottom, allDatasets, dataset
   )
 }
 
-const props = (state) => {
-  return {
-    allDatasets: state.dataset.allDatasets,
-    datasetCache: state.dataset.dataset,
-  }
-}
-
 const dis = (dispatch) => {
   return {
     getDatasets(pid, force = true) {
@@ -432,4 +415,4 @@ const dis = (dispatch) => {
   }
 }
 
-export default connect(props, dis)(Train)
+export default connect(null, dis)(Train)

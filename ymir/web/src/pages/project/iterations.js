@@ -3,6 +3,7 @@ import { useParams, useSelector } from 'umi'
 
 import t from '@/utils/t'
 import useFetch from '@/hooks/useFetch'
+import useRequest from '@/hooks/useRequest'
 import Breadcrumbs from '@/components/common/breadcrumb'
 import Iteration from './iterations/iteration'
 import Prepare from './iterations/prepare'
@@ -16,7 +17,9 @@ import ProjectDetail from './components/detail'
 function Iterations() {
   const { id } = useParams()
   const project = useSelector(({ project }) => project.projects[id] || {})
-  const [_, getProject, setProject] = useFetch('project/getProject', {})
+  const { run: getProject } = useRequest('project/getProject', {
+    loading: false,
+  })
 
   const tabs = [
     { tab: t('project.iteration.tabs.current'), key: 'current', content: <Current project={project} /> },
@@ -27,16 +30,9 @@ function Iterations() {
     id && getProject({ id })
   }, [id])
 
-  const fresh = useCallback(
-    (project) => {
-      if (project) {
-        setProject(project)
-      } else {
-        getProject({ id, force: true })
-      }
-    },
-    [id],
-  )
+  const fresh = useCallback(() => {
+    getProject({ id, force: true })
+  }, [id])
 
   return (
     <div className={s.iterations}>

@@ -12,11 +12,16 @@ import {
   transferInferDataset,
 } from '@/constants/dataset'
 import { actions, updateResultState, updateResultByTask, ResultStates } from '@/constants/common'
+import { NormalReducer } from './_utils'
 import { deepClone } from '@/utils/object'
 import { checkDuplication } from "../services/dataset"
 import { TASKTYPES } from '@/constants/task'
 
 const initQuery = { name: "", type: "", time: 0, current: 1, offset: 0, limit: 20 }
+
+const reducers = {
+  UPDATE_ALL_DATASETS: NormalReducer('allDatasets')
+}
 
 const initState = {
   query: { ...initQuery },
@@ -25,7 +30,7 @@ const initState = {
   dataset: {},
   assets: { items: [], total: 0, },
   asset: { annotations: [], },
-  allDatasets: [],
+  allDatasets: {},
   publicDatasets: [],
 }
 
@@ -174,7 +179,7 @@ export default {
       })
       const { pid, force } = payload
       if (!force) {
-        const dssCache = yield select(state => state.dataset.allDatasets)
+        const dssCache = yield select(state => state.dataset.allDatasets[pid])
         if (dssCache.length) {
           return dssCache
         }
@@ -186,7 +191,7 @@ export default {
       if (dss) {
         yield put({
           type: "UPDATE_ALL_DATASETS",
-          payload: dss.items,
+          payload: { [pid]: dss.items },
         })
         return dss.items
       }
@@ -297,7 +302,6 @@ export default {
       return { ...versions }
     },
     *updateAllDatasets({ payload: tasks = {} }, { put, select }) {
-      const all = yield select(state => state.dataset.allDatasets)
       const newDatasets = Object.values(tasks)
         .filter(task => task.result_state === ResultStates.VALID)
         .map(task => ({ id: task?.result_dataset?.id, needReload: true }))
@@ -430,16 +434,11 @@ export default {
     },
   },
   reducers: {
+    ...reducers,
     UPDATE_DATASETS(state, { payload }) {
       return {
         ...state,
         datasets: payload
-      }
-    },
-    UPDATE_ALL_DATASETS(state, { payload }) {
-      return {
-        ...state,
-        allDatasets: payload
       }
     },
     UPDATE_VERSIONS(state, { payload }) {

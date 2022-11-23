@@ -38,7 +38,7 @@ const parseModelStage = (str = '') => {
 
 const Algorithm = () => [{ id: 'aldd', label: 'ALDD', checked: true }]
 
-function Inference({ datasetCache, datasets, ...func }) {
+function Inference({...func }) {
   const pageParams = useParams()
   const pid = Number(pageParams.id)
   const history = useHistory()
@@ -342,13 +342,6 @@ function Inference({ datasetCache, datasets, ...func }) {
   )
 }
 
-const props = (state) => {
-  return {
-    datasets: state.dataset.allDatasets,
-    datasetCache: state.dataset.dataset,
-  }
-}
-
 const dis = (dispatch) => {
   return {
     getSysInfo() {
@@ -386,4 +379,4 @@ const dis = (dispatch) => {
   }
 }
 
-export default connect(props, dis)(Inference)
+export default connect(null, dis)(Inference)

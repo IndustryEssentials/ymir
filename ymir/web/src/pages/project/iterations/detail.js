@@ -20,9 +20,6 @@ function Detail({ project = {} }) {
   }, [project, iid])
 
   useEffect(() => {
-    if (!iteration) {
-      return
-    }
     const { wholeMiningSet, testSet } = iteration || {}
     const steps = getSteps()
     const slist = filterExsit([
@@ -35,6 +32,12 @@ function Detail({ project = {} }) {
         id: testSet || project.testSet?.id,
       },
     ])
+    if (!iteration) {
+      setSettings(slist)
+      setIntermediations([])
+      setModels([])
+      return
+    }
     const ilist = filterExsit(
       steps.slice(0, 4).map((step) => {
         const istep = iteration.steps.find((st) => st.name === step.value)
@@ -45,7 +48,7 @@ function Detail({ project = {} }) {
     setSettings(slist)
     setIntermediations(ilist)
     setModels(mlist)
-  }, [iteration])
+  }, [iteration, project])
 
   return (
     <div className={s.detail}>
