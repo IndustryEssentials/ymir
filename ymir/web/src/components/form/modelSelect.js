@@ -1,5 +1,6 @@
 import { Cascader, ConfigProvider } from 'antd'
 import { useEffect, useState } from 'react'
+import { useSelector } from 'umi'
 
 import { percent } from '@/utils/number'
 import t from '@/utils/t'
@@ -7,9 +8,10 @@ import useRequest from '@/hooks/useRequest'
 import EmptyStateModel from '@/components/empty/model'
 
 const ModelSelect = ({ pid, value, onlyModel, changeByUser, onChange = () => {}, onReady = () => {}, filters, ...resProps }) => {
+  const models = useSelector(({ model }) => model.allModels)
   const [ms, setMS] = useState(null)
   const [options, setOptions] = useState([])
-  const { data: models = [], run: getModels } = useRequest('model/queryAllModels', {
+  const { run: getModels } = useRequest('model/queryAllModels', {
     debounceWait: 300,
     loading: false,
     cacheKey: 'modelSelect',
@@ -21,7 +23,7 @@ const ModelSelect = ({ pid, value, onlyModel, changeByUser, onChange = () => {},
 
   useEffect(() => setMS(value), [value])
 
-  useEffect(() => onReady(models), [models])
+  useEffect(() => onReady(models || []), [models])
 
   useEffect(() => {
     if (options.length && value && !changeByUser) {
@@ -44,7 +46,8 @@ const ModelSelect = ({ pid, value, onlyModel, changeByUser, onChange = () => {},
   useEffect(() => generateOptions(), [models])
 
   function generateOptions() {
-    const mds = filters ? filters(models) : models
+    const list = models || []
+    const mds = filters ? filters(list) : list
     const opts = mds.map((model) => {
       const name = `${model.name} ${model.versionName}`
       const childrenNode = onlyModel

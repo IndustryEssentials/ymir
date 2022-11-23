@@ -24,6 +24,13 @@ const ImageSelect = ({ value, relatedId, type = TYPES.TRAINING, onChange = () =>
     }
   }, [options])
 
+  useEffect(() => {
+    if (value) {
+      const opt = options.find(({ image }) => image.id === value)
+      opt && onChange(value, opt.image)
+    }
+  }, [options])
+
   async function fetchImages() {
     const params = {
       type,

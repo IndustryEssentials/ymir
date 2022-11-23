@@ -13,7 +13,7 @@ type Props = {
   checkedDefault?: boolean
 }
 
-const CheckboxSelector: React.FC<Props> = ({ options = [], label = '', value, onChange, checkedDefault = true, vertical, labelAlign = 'left', ...rest }) => {
+const CheckboxSelector: React.FC<Props> = ({ options, label = '', value, onChange, checkedDefault = true, vertical, labelAlign = 'left', ...rest }) => {
   const all = options.map((opt) => opt.value) || []
   const [checkeds, setCheckeds] = useState<CheckboxValueType[]>(checkedDefault ? all : [])
 
