@@ -31,7 +31,7 @@ const InferDataset: React.FC = () => {
         history.push(`/home/project/${pid}/diagnose#metrics`, {
           mid: record.inferModelId,
         }),
-      disabled: (record.assetCount > INFER_DATASET_MAX_COUNT) || (record.inferClass?.length || 0) > INFER_CLASSES_MAX_COUNT,
+      disabled: record.assetCount > INFER_DATASET_MAX_COUNT || (record.inferModel?.keywords?.length || 0) > INFER_CLASSES_MAX_COUNT,
       icon: <DiagnosisIcon />,
     },
     {
