@@ -160,6 +160,11 @@ class FusionParameter(FusionParameterBase):
 class MergeParameter(FusionParameterBase):
     task_type: Literal["merge"]
 
+    @root_validator(pre=True)
+    def fill_in_dataset_id(cls, values: Any) -> Any:
+        values["dataset_id"] = values["include_datasets"][0]
+        return values
+
 
 class FilterParameter(FusionParameterBase):
     task_type: Literal["filter"]
