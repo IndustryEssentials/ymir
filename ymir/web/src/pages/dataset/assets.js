@@ -18,6 +18,15 @@ import VersionName from '@/components/result/VersionName'
 
 const { Option } = Select
 
+const paramsHandle = (params) =>
+  Object.keys(params).reduce(
+    (prev, key) => ({
+      ...prev,
+      [key]: params[key + 'all'] ? [] : params[key],
+    }),
+    {},
+  )
+
 const Dataset = () => {
   const { id: pid, did: id } = useParams()
   const initQuery = {
@@ -44,7 +53,7 @@ const Dataset = () => {
 
   useEffect(() => {
     setCurrentPage(filterParams.offset / filterParams.limit + 1)
-    dataset.id && filter(filterParams)
+    dataset.id && filter(paramsHandle(filterParams))
   }, [dataset, filterParams])
 
   const filterKw = ({ type, selected }) => {
@@ -84,18 +93,21 @@ const Dataset = () => {
     (annotations) => {
       const cm = filterParams.cm || []
       const annoType = filterParams.annoType || []
-      const gtFilter = (annotation) => !annoType.length || annoType.some((selected) => (selected === 'gt' ? annotation.gt : !annotation.gt))
-      const evaluationFilter = (annotation) => !cm.length || cm.includes(annotation.cm)
+      const cmAll = !cm.length || filterParams['cmall']
+      const annoTypeAll = !annoType.length || filterParams['annoTypeall']
+      const gtFilter = (annotation) => annoTypeAll || annoType.some((selected) => (selected === 'gt' ? annotation.gt : !annotation.gt))
+      const evaluationFilter = (annotation) => cmAll || cm.includes(annotation.cm)
       return annotations.filter((annotation) => gtFilter(annotation) && evaluationFilter(annotation))
     },
     [filterParams.cm, filterParams.annoType],
   )
 
-  const updateFilterParams = (value, field) => {
+  const updateFilterParams = (value, all, field) => {
     if (value?.length || (filterParams[field]?.length && !value?.length)) {
       setFilterParams((query) => ({
         ...query,
         [field]: value,
+        [field + 'all']: all,
         offset: initQuery.offset,
       }))
     }
@@ -180,8 +192,10 @@ const Dataset = () => {
       </Col>
       <Col span={12} style={{ fontSize: 14 }}>
         <Space size={10} wrap={true}>
-          <GtSelector layout="inline" value={filterParams.annoType} onChange={(checked) => updateFilterParams(checked, 'annoType')} />
-          <EvaluationSelector value={filterParams.cm} onChange={(checked) => updateFilterParams(checked, 'cm')} labelAlign={'right'} />
+          <GtSelector layout="inline" value={filterParams.annoType} onChange={(checked, all) => updateFilterParams(checked, all, 'annoType')} />
+          {assets.every((asset) => asset.evaluated) ? (
+            <EvaluationSelector value={filterParams.cm} onChange={(checked, all) => updateFilterParams(checked, all, 'cm')} labelAlign={'right'} />
+          ) : null}
           <KeywordSelector value={filterParams.keywords} onChange={filterKw} dataset={dataset} labelAlign={'right'} />
           <Button onClick={reset}>{t('common.reset')}</Button>
         </Space>
@@ -203,7 +217,7 @@ const Dataset = () => {
         id={id}
         asset={currentAsset.asset}
         datasetKeywords={dataset.keywords}
-        filters={filterParams}
+        filters={paramsHandle(filterParams)}
         filterKeyword={assetVisible ? filterParams.keywords : null}
         index={currentAsset.index}
         total={total}
