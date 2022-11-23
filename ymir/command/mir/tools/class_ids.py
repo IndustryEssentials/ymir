@@ -101,9 +101,8 @@ class UserLabels(LabelStorage):
         if not self.storage_file:
             raise RuntimeError("empty storage_file.")
 
-        with fasteners.InterProcessLock(path=os.path.realpath(self.storage_file) + '.lock'):
-            with open(self.storage_file, 'w') as f:
-                yaml.safe_dump(self.dict(), f)
+        with open(self.storage_file, 'w') as f:
+            yaml.safe_dump(self.dict(), f)
 
     def _add_new_cname(self, name: str, exist_ok: bool = True) -> Tuple[int, str]:
         name = _normalize_and_check_name(name)
@@ -206,10 +205,11 @@ class UserLabels(LabelStorage):
             raise RuntimeError("empty storage_file.")
 
         ret_val.clear()
-        for main_name in main_names:
-            added_class_id, main_name = self._add_new_cname(name=main_name)
-            ret_val.append((added_class_id, main_name))
-        self.__save()
+        with fasteners.InterProcessLock(path=os.path.realpath(self.storage_file) + '.lock'):
+            for main_name in main_names:
+                added_class_id, main_name = self._add_new_cname(name=main_name)
+                ret_val.append((added_class_id, main_name))
+            self.__save()
         return ret_val
 
     def upsert_labels(self, new_labels: "UserLabels", check_only: bool = False) -> "UserLabels":
@@ -220,39 +220,39 @@ class UserLabels(LabelStorage):
             raise RuntimeError("empty storage_file.")
 
         self.__reload()
+        with fasteners.InterProcessLock(path=os.path.realpath(self.storage_file) + '.lock'):
+            current_time = datetime.now()
 
-        current_time = datetime.now()
+            conflict_labels = []
+            for label in new_labels.labels:
+                new_label = SingleLabel.parse_obj(label.dict())
+                idx = self.id_and_main_name_for_name(label.name)[0]
 
-        conflict_labels = []
-        for label in new_labels.labels:
-            new_label = SingleLabel.parse_obj(label.dict())
-            idx = self.id_and_main_name_for_name(label.name)[0]
+                # in case any alias is in other labels.
+                conflict_alias = []
+                for alias in label.aliases:
+                    alias_idx = self.id_and_main_name_for_name(alias)[0]
+                    if alias_idx >= 0 and alias_idx != idx:
+                        conflict_alias.append(alias)
+                if conflict_alias:
+                    new_label.id = -1
+                    conflict_labels.append(new_label)
+                    continue
 
-            # in case any alias is in other labels.
-            conflict_alias = []
-            for alias in label.aliases:
-                alias_idx = self.id_and_main_name_for_name(alias)[0]
-                if alias_idx >= 0 and alias_idx != idx:
-                    conflict_alias.append(alias)
-            if conflict_alias:
-                new_label.id = -1
-                conflict_labels.append(new_label)
-                continue
+                new_label.update_time = current_time
+                if idx >= 0:  # update alias.
+                    new_label.id = idx
+                    new_label.create_time = self.labels[idx].create_time
+                    self.labels[idx] = new_label
+                else:  # insert new record.
+                    new_label.id = len(self.labels)
+                    new_label.create_time = current_time
+                    self.labels.append(new_label)
 
-            new_label.update_time = current_time
-            if idx >= 0:  # update alias.
-                new_label.id = idx
-                new_label.create_time = self.labels[idx].create_time
-                self.labels[idx] = new_label
-            else:  # insert new record.
-                new_label.id = len(self.labels)
-                new_label.create_time = current_time
-                self.labels.append(new_label)
+            if not (check_only or conflict_labels):
+                self.__save()
 
-        if not (check_only or conflict_labels):
-            self.__save()
-
-        return UserLabels(labels=conflict_labels)
+            return UserLabels(labels=conflict_labels)
 
     def find_dups(self, new_labels: Union[str, List, "UserLabels"]) -> List[str]:
         if isinstance(new_labels, str):
