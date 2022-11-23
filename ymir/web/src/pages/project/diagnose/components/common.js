@@ -32,8 +32,9 @@ export const opt = (d) => ({ value: d.id, label: `${d.name} ${d.versionName}` })
 
 export const average = (nums = []) => nums.reduce((prev, num) => (!Number.isNaN(num) ? prev + num : prev), 0) / nums.length
 
-export const getKwField = (evaluation, type) => {
-  const ev = evaluation[!type ? 'dataset_evaluation' : 'sub_cks']
+export const getKwField = (evaluation = {}, type) => {
+  const data = evaluation || {}
+  const ev = data[!type ? 'dataset_evaluation' : 'sub_cks'] || {}
   if (type) {
     // ck
     return Object.keys(ev).reduce((prev, curr) => {
@@ -44,12 +45,14 @@ export const getKwField = (evaluation, type) => {
       }
     }, {})
   } else {
-    return Object.values(ev.iou_evaluations)[0]['ci_evaluations']
+    const result = Object.values(ev.iou_evaluations || {})[0] || {}
+    return result?.ci_evaluations || {}
   }
 }
 
 export const getAverageField = (evaluation) => {
-  return evaluation.dataset_evaluation.iou_averaged_evaluation.ci_evaluations
+  const data = evaluation || {}
+  return data?.dataset_evaluation?.iou_averaged_evaluation?.ci_evaluations || {}
 }
 
 export const percentRender = (value) => (typeof value === 'number' && !Number.isNaN(value) ? percent(value) : '-')

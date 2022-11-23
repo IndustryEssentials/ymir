@@ -61,9 +61,7 @@ function Matrics({ pid, project }) {
   const [cks, setCKs] = useState([])
   const selectedCK = Form.useWatch('ck', form)
 
-  useEffect(() => {
-    setDiagnosis(remoteData)
-  }, [remoteData])
+  useEffect(() => remoteData && setDiagnosis(remoteData), [remoteData])
 
   useEffect(() => {
     if (state?.mid) {
@@ -85,8 +83,8 @@ function Matrics({ pid, project }) {
   useEffect(() => {
     // calculate ck
     const cks = diagnosis
-      ? Object.values(diagnosis)
-          .map(({ sub_cks }) => Object.keys(sub_cks))
+      ? Object.values(diagnosis).filter(tru => tru)
+          .map(item => Object.keys(item?.sub_cks) || [])
           .flat()
       : []
 
