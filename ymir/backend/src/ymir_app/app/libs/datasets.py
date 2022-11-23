@@ -16,9 +16,10 @@ from app.api.errors.errors import (
     PrematureDatasets,
 )
 from app.config import settings
-from app.constants.state import ResultState, TaskState
+from app.constants.state import ResultState, TaskState, TrainingType
 from app.utils.files import FailedToDownload, locate_import_paths, prepare_downloaded_paths, InvalidFileStructure
 from app.utils.ymir_controller import ControllerClient, gen_user_hash, gen_repo_hash
+from app.schemas.common import ImportStrategy
 from common_utils.labels import UserLabels
 from id_definition.error_codes import APIErrorCode as error_codes
 
@@ -29,10 +30,11 @@ def import_dataset_in_background(
     dataset_import: schemas.DatasetImport,
     user_id: int,
     task_hash: str,
+    training_type: int,
     dataset_id: int,
 ) -> None:
     try:
-        return _import_dataset(db, controller_client, dataset_import, user_id, task_hash)
+        return _import_dataset(db, controller_client, dataset_import, user_id, task_hash, training_type)
     except FailedToDownload:
         logger.exception("[import dataset] failed to download dataset file")
         state_code = error_codes.FAILED_TO_DOWNLOAD
@@ -64,28 +66,37 @@ def _import_dataset(
     dataset_import: schemas.DatasetImport,
     user_id: int,
     task_hash: str,
+    training_type: int,
 ) -> None:
     parameters = {}  # type: Dict[str, Any]
     if dataset_import.input_dataset_id is not None:
         dataset = crud.dataset.get(db, id=dataset_import.input_dataset_id)
         if not dataset:
             raise DatasetNotFound()
+        if training_type == dataset.training_type:
+            annotation_strategy = dataset_import.strategy
+        else:
+            annotation_strategy = ImportStrategy.no_annotations
         parameters = {
             "src_user_id": gen_user_hash(dataset.user_id),
             "src_repo_id": gen_repo_hash(dataset.project_id),
             "src_resource_id": dataset.hash,
-            "strategy": dataset_import.strategy,
+            "strategy": annotation_strategy,
             "clean_dirs": True,
         }
     else:
         paths = ImportDatasetPaths(
             cache_dir=settings.SHARED_DATA_DIR, input_path=dataset_import.input_path, input_url=dataset_import.input_url
         )
+        if training_type == paths.training_type:
+            annotation_strategy = dataset_import.strategy
+        else:
+            annotation_strategy = ImportStrategy.no_annotations
         parameters = {
             "asset_dir": paths.asset_dir,
             "gt_dir": paths.gt_dir,
             "pred_dir": paths.pred_dir,
-            "strategy": dataset_import.strategy,
+            "strategy": annotation_strategy,
             "clean_dirs": dataset_import.input_path is None,  # for path importing, DO NOT clean_dirs
         }
 
@@ -129,6 +140,15 @@ class ImportDatasetPaths:
     @property
     def pred_dir(self) -> Optional[str]:
         return str(self._pred_path) if self._pred_path else None
+
+    @property
+    def training_type(self) -> TrainingType:
+        any_annotation_dir = self.gt_dir or self.pred_dir
+        if not any_annotation_dir:
+            return TrainingType.object_detect
+        return TrainingType.object_detect
+        # todo
+        # how to get training_type from annotation dir structure?
 
 
 def evaluate_datasets(
