@@ -46,7 +46,7 @@ def batch_get_datasets(
     current_user: models.User = Depends(deps.get_current_active_user),
     user_labels: UserLabels = Depends(deps.get_user_labels),
 ) -> Any:
-    ids = [int(i) for i in dataset_ids.split(",")]
+    ids = list({int(i) for i in dataset_ids.split(",")})
     datasets = crud.dataset.get_multi_by_ids(db, ids=ids)
     if len(ids) != len(datasets):
         raise DatasetNotFound()
