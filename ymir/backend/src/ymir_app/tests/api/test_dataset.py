@@ -9,6 +9,7 @@ from sqlalchemy.orm import Session
 from app.api.api_v1.api import datasets as m
 from app.api.errors.errors import DatasetNotFound
 from app.config import settings
+from tests.utils.projects import create_project_record
 from tests.utils.dataset_groups import create_dataset_group_record
 from tests.utils.datasets import create_dataset_record
 from tests.utils.utils import random_lower_string, random_url
@@ -77,14 +78,15 @@ class TestBatchGetDatasets:
 
 
 class TestCreateDataset:
-    def test_create_dataset_succeed(self, client: TestClient, normal_user_token_headers, mocker):
+    def test_create_dataset_succeed(self, client: TestClient, db: Session, normal_user_token_headers, mocker, user_id):
+        project = create_project_record(db, user_id)
         mocker.patch.object(m, "import_dataset_in_background")
         j = {
             "group_name": random_lower_string(),
             "version_num": random.randint(100, 200),
             "input_url": random_url(),
             "dataset_group_id": 1,
-            "project_id": 1,
+            "project_id": project.id,
             "strategy": 1,
         }
         r = client.post(
