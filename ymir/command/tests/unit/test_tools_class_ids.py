@@ -1,3 +1,4 @@
+import multiprocessing as mp
 import os
 import shutil
 import unittest
@@ -51,3 +52,26 @@ class TestToolsClassIds(unittest.TestCase):
         cim.add_main_name('a')
         self.assertEqual([0, 1, 2], cim.all_ids())
         self.assertEqual([0, 1, 2], cim.id_for_names(['a', 'b', 'c'])[0])
+
+    def test_rw_multiprocess(self) -> None:
+        new_labelss = []
+        for i in range(20):
+            new_labelss.append([f"{i}-{j}" for j in range(10)])
+        args = list(zip([self._label_storage_file] * len(new_labelss), new_labelss))
+        with mp.Pool(7) as p:
+            p.map(_test_rw, args)
+        cim = load_or_create_userlabels(label_storage_file=self._label_storage_file)
+        for nls in new_labelss:
+            for nl in nls:
+                try:
+                    self.assertTrue(cim.has_name(nl))
+                except AssertionError as e:
+                    breakpoint()
+                    raise e
+
+
+def _test_rw(args: list) -> None:
+    label_storage_file: str = args[0]
+    new_labels: list = args[1]
+    cim = load_or_create_userlabels(label_storage_file=label_storage_file)
+    cim.add_main_names(new_labels)
