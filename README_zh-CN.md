@@ -34,7 +34,6 @@
 [📘使用说明](https://github.com/IndustryEssentials/ymir/wiki/%E6%93%8D%E4%BD%9C%E8%AF%B4%E6%98%8E) |
 [🛠️安装教程](README_zh-CN.md#2-%E5%AE%89%E8%A3%85) |
 [🚀进行中的项目](https://github.com/IndustryEssentials/ymir/projects) |
-[🤔报告问题](https://github.com/IndustryEssentials/ymir/issues/new/choose) |
 [📰开源协议](https://github.com/IndustryEssentials/ymir/blob/master/LICENSE)
 
 </div>&nbsp;</div>
