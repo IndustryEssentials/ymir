@@ -162,7 +162,8 @@ class MergeParameter(FusionParameterBase):
 
     @root_validator(pre=True)
     def fill_in_dataset_id(cls, values: Any) -> Any:
-        values["dataset_id"] = values["include_datasets"][0]
+        if not values.get("dataset_id"):
+            values["dataset_id"] = values["include_datasets"][0]
         return values
 
 
