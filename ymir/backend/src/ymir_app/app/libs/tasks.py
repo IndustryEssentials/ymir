@@ -176,7 +176,7 @@ class TaskResult:
     def dataset_info(self) -> Optional[Dict]:
         get_dataset_info = partial(self.viz.get_dataset_info, self.task_hash, self.user_labels, check_index_status=True)
         try:
-            dataset_info = retry(get_dataset_info, wait=settings.RETRY_INTERVAL_SECONDS)
+            dataset_info = retry(get_dataset_info, n_times=2, wait=settings.RETRY_INTERVAL_SECONDS)
         except DatasetIndexNotReady:
             raise FailedToUpdateTaskStatusTemporally()
         except Exception:
