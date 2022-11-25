@@ -38,10 +38,11 @@ function Label({ query = {}, hidden, datasets, keywords, ok = () => {}, bottom, 
   }, [])
 
   useEffect(() => {
+    const desc = url ? [{ name: url.replace(/^.*\/([^\/]+)$/, '$1') }] : undefined
       form.setFieldsValue({
         datasetId: did || undefined,
         keepAnnotations: type,
-        desc: url ? [url]: undefined,
+        desc,
       })
       url && setDoc(url)
   }, [did])

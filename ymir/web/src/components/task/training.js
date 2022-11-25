@@ -46,7 +46,7 @@ function Train({ query = {}, hidden, ok = () => {}, bottom, ...func }) {
   const location = useLocation()
   const { mid, image, test, config, from, iterationId } = query
   const stage = mid ? (Array.isArray(mid) ? mid : mid.split(',').map(Number)) : undefined
-  const did = Number(query.did)
+  const did = Number(query.did) || undefined
   const [selectedKeywords, setSelectedKeywords] = useState([])
   const [trainSet, setTrainSet] = useState(null)
   const [testSet, setTestSet] = useState(null)
