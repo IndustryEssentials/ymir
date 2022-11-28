@@ -15,12 +15,12 @@ from sqlalchemy import (
 from sqlalchemy.orm import relationship
 
 from app.config import settings
-from app.constants.state import ResultState, TaskState, TaskType
+from app.constants.state import ResultState
 from app.db.base_class import Base
-from app.models.dataset import Dataset  # noqa
+from app.models.dataset import Dataset
 from app.models.dataset_group import DatasetGroup  # noqa
 from app.models.iteration import Iteration  # noqa
-from app.models.model import Model  # noqa
+from app.models.model import Model
 from app.models.model_group import ModelGroup  # noqa
 from app.models.task import Task  # noqa
 
@@ -115,48 +115,44 @@ class Project(Base):
     update_datetime = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
 
     @property
+    def visible_datasets(self) -> List[Dataset]:
+        return [dataset.is_visible for dataset in self.datasets]
+
+    @property
+    def visible_models(self) -> List[Model]:
+        return [model.is_visible for model in self.models]
+
+    @property
     def dataset_count(self) -> int:
         # Only ready and visible datasets count.
         # stick to `dataset_count` for compatibility
-        return sum(d.result_state == ResultState.ready and d.is_visible for d in self.datasets)
+        return sum(d.result_state == ResultState.ready for d in self.visible_datasets)
+
+    @property
+    def processing_dataset_count(self) -> int:
+        return sum(d.result_state == ResultState.processing for d in self.visible_datasets)
+
+    @property
+    def error_dataset_count(self) -> int:
+        return sum(d.result_state == ResultState.error for d in self.visible_datasets)
+
+    @property
+    def total_asset_count(self) -> int:
+        return sum([dataset.asset_count for dataset in self.visible_datasets if dataset.asset_count])
 
     @property
     def model_count(self) -> int:
         # Only ready and visible models count.
         # stick to `model_count` for compatibility
-        return sum(m.result_state == ResultState.ready and m.is_visible for m in self.models)
-
-    @property
-    def processing_dataset_count(self) -> int:
-        return sum(d.result_state == ResultState.processing and d.is_visible for d in self.datasets)
-
-    @property
-    def error_dataset_count(self) -> int:
-        return sum(d.result_state == ResultState.error and d.is_visible for d in self.datasets)
+        return sum(m.result_state == ResultState.ready for m in self.visible_models)
 
     @property
     def processing_model_count(self) -> int:
-        return sum(m.result_state == ResultState.processing and m.is_visible for m in self.models)
+        return sum(m.result_state == ResultState.processing for m in self.visible_models)
 
     @property
     def error_model_count(self) -> int:
-        return sum(m.result_state == ResultState.error and m.is_visible for m in self.models)
-
-    @property
-    def total_asset_count(self) -> int:
-        return sum([dataset.asset_count for dataset in self.datasets if dataset.asset_count])
-
-    @property
-    def training_tasks(self) -> List[Task]:
-        return [task for task in self.tasks if task.type == TaskType.training]
-
-    @property
-    def running_task_count(self) -> int:
-        return sum([task.state == TaskState.running for task in self.training_tasks])
-
-    @property
-    def total_task_count(self) -> int:
-        return len(self.training_tasks)
+        return sum(m.result_state == ResultState.error for m in self.visible_models)
 
     @property
     def referenced_dataset_ids(self) -> List[int]:

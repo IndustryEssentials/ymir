@@ -110,8 +110,6 @@ class Project(ProjectInDBBase):
     training_keywords: List[str]
     current_iteration_id: Optional[int]
     total_asset_count: int = 0
-    running_task_count: int = 0
-    total_task_count: int = 0
 
     @validator("training_keywords", pre=True)
     def unpack_keywords(cls, v: str) -> List[str]:
