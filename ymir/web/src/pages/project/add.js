@@ -10,6 +10,7 @@ import Breadcrumbs from '@/components/common/breadcrumb'
 import DatasetSelect from '@/components/form/datasetSelect'
 import Panel from '@/components/form/panel'
 import useFetch from '@/hooks/useFetch'
+import ProjectTypes from '@/components/project/ProjectTypes'
 
 const { useForm } = Form
 const { confirm } = Modal
@@ -137,15 +138,7 @@ const Add = ({ keywords, datasets, getKeywords, ...func }) => {
               >
                 <Input placeholder={t('project.add.form.name.placeholder')} autoComplete='off' allowClear />
               </Form.Item>
-              <Form.Item
-                label={t('project.add.form.type')}
-                name='type'
-                initialValue={0}
-              >
-                <Radio.Group>
-                  <Radio value={0}>{t('task.train.form.traintypes.detect')}</Radio>
-                </Radio.Group>
-              </Form.Item>
+              <ProjectTypes />
               <Form.Item
                 label={t('project.train_classes')}
                 name="keywords"

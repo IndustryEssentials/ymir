@@ -2,6 +2,11 @@ import { transferDatasetGroup, transferDataset } from "@/constants/dataset"
 import { format } from "@/utils/date"
 import { transferIteration } from "./iteration"
 
+export enum PROJECTTYPES {
+  ObjectDetection = 1,
+  SemanticSegmentation = 2,
+}
+
 export const tabs = [
   { tab: "project.tab.set.title", key: "dataset" },
   { tab: "project.tab.model.title", key: "model" },
