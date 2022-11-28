@@ -159,6 +159,7 @@ declare namespace YModels {
     id: number
     name: string
     type: number
+    typeLabel: string,
     keywords: Labels
     candidateTrainSet: number
     trainSet?: DatasetGroup
