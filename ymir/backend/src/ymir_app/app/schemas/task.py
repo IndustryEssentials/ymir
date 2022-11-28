@@ -11,7 +11,6 @@ from pydantic import BaseModel, EmailStr, Field, validator, root_validator
 from app.api.errors.errors import DockerImageNotFound
 from app.constants.state import (
     AnnotationType,
-    LabelFormat,
     MiningStrategy,
     TaskState,
     TaskType,
@@ -94,7 +93,6 @@ class LabelParameter(TaskParameterBase):
     extra_url: Optional[str]
     labellers: Optional[List[EmailStr]]
     annotation_type: Optional[AnnotationType] = None
-    label_format: Optional[LabelFormat] = None
 
     normalize_datasets = root_validator(allow_reuse=True)(dataset_normalize)
     normalize_labels = root_validator(allow_reuse=True)(label_normalize)

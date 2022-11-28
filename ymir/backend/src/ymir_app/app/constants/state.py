@@ -91,11 +91,6 @@ class DatasetType(IntEnum):
     training = mir_cmd_pb.TvtTypeTraining
 
 
-class LabelFormat(IntEnum):
-    mask = 1
-    polygon = 2
-
-
 @dataclass(frozen=True)
 class IterationStepTemplate:
     name: str

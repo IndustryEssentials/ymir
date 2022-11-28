@@ -3,7 +3,7 @@ from typing import Any, Dict, List, Optional, Union
 
 from pydantic import BaseModel, Field, validator
 
-from app.constants.state import LabelFormat, ResultState, TaskType, TrainingType
+from app.constants.state import ResultState, TaskType, TrainingType
 from app.schemas.common import (
     Common,
     DateTimeModelMixin,
@@ -17,7 +17,6 @@ from app.schemas.task import TaskInternal
 class DatasetBase(BaseModel):
     source: TaskType
     description: Optional[str]
-    label_format: Optional[LabelFormat] = LabelFormat.mask
     result_state: ResultState = ResultState.processing
     dataset_group_id: int
     project_id: int
@@ -35,7 +34,6 @@ class DatasetBase(BaseModel):
 # Properties required for a client to create a dataset
 class DatasetImport(BaseModel):
     group_name: str = Field(description="Dataset Group Name")
-    label_format: LabelFormat = LabelFormat.mask
     description: Optional[str]
     project_id: int
     input_url: Optional[str] = Field(description="from url")
