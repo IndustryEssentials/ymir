@@ -116,11 +116,11 @@ class Project(Base):
 
     @property
     def visible_datasets(self) -> List[Dataset]:
-        return [dataset.is_visible for dataset in self.datasets]
+        return [dataset for dataset in self.datasets if dataset.is_visible]
 
     @property
     def visible_models(self) -> List[Model]:
-        return [model.is_visible for model in self.models]
+        return [model for model in self.models if model.is_visible]
 
     @property
     def dataset_count(self) -> int:
