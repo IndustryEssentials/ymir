@@ -21,7 +21,7 @@ from app.api.errors.errors import (
     RefuseToProcessMixedOperations,
 )
 from app.config import settings
-from app.constants.state import LabelFormat, TaskState, TaskType, ResultState
+from app.constants.state import TaskState, TaskType, ResultState
 from app.utils.ymir_controller import ControllerClient
 from app.utils.ymir_viz import VizClient
 from app.libs.datasets import (
@@ -102,7 +102,6 @@ class SortField(enum.Enum):
 def list_datasets(
     db: Session = Depends(deps.get_db),
     source: TaskType = Query(None, description="type of related task"),
-    label_format: LabelFormat = Query(None),
     project_id: int = Query(None),
     group_id: int = Query(None),
     visible: bool = Query(True),
@@ -125,7 +124,6 @@ def list_datasets(
         project_id=project_id,
         group_id=group_id,
         source=source,
-        label_format=label_format,
         state=state,
         visible=visible,
         offset=offset,
