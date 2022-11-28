@@ -150,7 +150,7 @@ export function fusion({
  * }
  * @returns
  */
-export function merge({ projectId, group, name, dataset, datasets = [], strategy = 2, excludes = [], description }) {
+export function merge({ projectId, group, name, datasets = [], strategy = 2, excludes = [], description }) {
   return createTask({
     name: 'merge' + randomNumber(10),
     type: TASKTYPES.MERGE,
@@ -158,7 +158,6 @@ export function merge({ projectId, group, name, dataset, datasets = [], strategy
     parameters: {
       task_type: 'merge',
       project_id: projectId,
-      dataset_id: dataset,
       include_datasets: datasets,
       exclude_datasets: excludes,
       dataset_group_name: name,

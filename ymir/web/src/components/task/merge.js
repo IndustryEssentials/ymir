@@ -24,7 +24,8 @@ function Merge({ query = {}, hidden, ok = () => {}, bottom }) {
   const [mergeResult, merge] = useFetch('task/merge')
   const pageParams = useParams()
   const pid = Number(pageParams.id)
-  const { did, mid, iterationId } = query
+  const { mid, iterationId } = query
+  const did = query.did && Number(query.did)
   const history = useHistory()
   const [form] = useForm()
   const [group, setGroup] = useState()
@@ -54,20 +55,20 @@ function Merge({ query = {}, hidden, ok = () => {}, bottom }) {
     return i?.excludes?.length || i?.includes?.length
   }
 
-  const onFinish = async (values) => {
+  const onFinish = (values) => {
     if (!checkInputs(values)) {
       return message.error(t('dataset.merge.validate.inputs'))
     }
+    const originDataset = did ? did : values.dataset
+    let datasets = [ originDataset, ...(values.includes || [])]
+
     const params = {
       ...values,
       group: type ? group : undefined,
       projectId: pid,
-      datasets: values.includes,
+      datasets,
     }
-    if (did) {
-      params.dataset = did
-    }
-    await merge(params)
+    merge(params)
   }
 
   const onFinishFailed = (err) => {
