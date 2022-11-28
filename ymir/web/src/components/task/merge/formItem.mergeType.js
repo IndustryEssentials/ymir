@@ -1,5 +1,5 @@
 import { Form } from "antd"
-import RadioGroup from "@/components/form/radioGroup"
+import RadioGroup from "@/components/form/RadioGroup"
 import t from '@/utils/t'
 
 const options = [
@@ -13,7 +13,7 @@ const MergeType = ({ initialValue = 0, disabled = [] }) => (
         ...option,
         disabled: disabled.includes(option.value)
       }))}
-      labelPrefix='task.merge.type.'
+      prefix='task.merge.type.'
     />
   </Form.Item>
 )
