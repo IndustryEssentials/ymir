@@ -93,6 +93,7 @@ function Merge({ query = {}, hidden, ok = () => {}, bottom }) {
   return (
     <Form form={form} name="mergeForm" {...formLayout} initialValues={initialValues} onFinish={onFinish} onFinishFailed={onFinishFailed}>
       <div hidden={hidden}>
+        {/* // todo update new group switch */}
         <MergeType disabled={[iterationId ? 0 : null]} initialValue={!iterationId && mid ? 0 : 1} />
         {!type ? <DatasetName /> : null}
         {did ? (

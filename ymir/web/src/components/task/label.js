@@ -96,6 +96,7 @@ function Label({ query = {}, hidden, datasets, keywords, ok = () => {}, bottom, 
         onFinish={onFinish}
         onFinishFailed={onFinishFailed}
       >
+        {/* // todo add new group switch */}
         <div hidden={hidden}>
           <Form.Item wrapperCol={{ span: 20 }}>
             <Tip content={t('task.label.header.tip')} />
