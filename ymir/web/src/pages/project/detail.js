@@ -122,6 +122,7 @@ function ProjectDetail(func) {
             </Card>
           </Col>
           <Col span={12}>
+            {/* // todo update stats */}
             <Card
               title={title(TrainIcon, "project.tab.model.title")}
               className={s.cardContainer}
