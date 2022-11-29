@@ -36,7 +36,7 @@ const Item: FC<Props> = ({ project, more }) => {
           {project.enableIteration ? (
             <span className="titleItem">
               <span className="titleLabel">{t('project.iteration.current')}:</span>
-              <span className="titleContent emphasis">{t(getStepLabel(project.currentStep, project.round))}</span>
+              <span className="titleContent emphasis">{t(getStepLabel(project.currentStep as STEP, project.round))}</span>
             </span>
           ) : null}
         </Space>
