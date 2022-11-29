@@ -53,6 +53,7 @@ function LeftMenu() {
           getItem(t('dataset.list'), `/home/project/${id}/dataset`, NavDatasetIcon,),
           getItem(t('breadcrumbs.dataset.analysis'), `/home/project/${id}/dataset/analysis`, BarChart2LineIcon),
           getItem(t('model.management'), `/home/project/${id}/model`, MymodelIcon,),
+          // todo hide segmentation project
           getItem(t('model.diagnose'), `/home/project/${id}/diagnose`, DiagnosisIcon),
           getItem(t('breadcrumbs.task.training'), `/home/project/${id}/train`, TrainIcon),
           getItem(t('common.hidden.list'), `/home/project/${id}/hidden`, EyeOffIcon,),
