@@ -15,9 +15,9 @@ const projectTypes = [
 
 export const getProjectTypes = () => projectTypes.map(({ label, value }) => ({ label: typesPrefix + label, value }))
 
-export const getProjectTypeLabel = (type: PROJECTTYPES) => {
+export const getProjectTypeLabel = (type: PROJECTTYPES, prefix: boolean = false) => {
   const target = projectTypes.find(({ value }) => value === type)
-  return typesPrefix + target?.label
+  return (prefix ? typesPrefix : '') + target?.label
 }
 
 export const tabs = [
@@ -50,7 +50,7 @@ export function transferProject(data: YModels.BackendData) {
     createTime: format(data.create_datetime),
     description: data.description,
     type: data.training_type,
-    typeLabel: getProjectTypeLabel(data.training_type),
+    typeLabel: getProjectTypeLabel(data.training_type, true),
     hiddenDatasets: data.referenced_dataset_ids || [],
     hiddenModels: data.referenced_model_ids || [],
     updateTime: format(data.update_datetime),
