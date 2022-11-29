@@ -121,6 +121,7 @@ function HeaderNav({ simple = false }) {
         <Col flex={1}>
           <Menu className='nav-menu' selectedKeys={defaultKeys} onClick={handleClick} mode="horizontal" items={mainMenu} />
         </Col>
+        {/* // todo add search entrance */}
         <Col style={{ textAlign: "right" }}>
           <Space size={20}>
             <Dropdown overlay={menu} placement="bottomRight">
