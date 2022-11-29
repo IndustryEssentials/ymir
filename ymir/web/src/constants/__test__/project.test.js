@@ -84,6 +84,7 @@ describe('constants: project', () => {
       createTime: format(createTime),
       description: 'project002 desc',
       type: 1,
+      typeLabel: "project.types.det",
       isExample: false,
       updateTime: format(createTime),
       enableIteration: true,
