@@ -13,7 +13,7 @@ type Props = {
 const options = getProjectTypes()
 const ProjectTypes: React.FC<Props> = ({ label, name = 'type', ...rest }) => {
   return (
-    <Form.Item name={name} label={t(label ? label : 'project.types.label')} initialValue={PROJECTTYPES.ObjectDetection}>
+    <Form.Item required name={name} label={t(label ? label : 'project.types.label')} initialValue={PROJECTTYPES.ObjectDetection}>
       <RadioGroup options={options} {...rest} />
     </Form.Item>
   )
