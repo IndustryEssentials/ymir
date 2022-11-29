@@ -1,7 +1,7 @@
 version: "3.3"
 services:
   labelstudio:
-    image: heartexlabs/label-studio:latest
+    image: heartexlabs/label-studio:v1.5.0
     env_file:
       - .env
     ports:
