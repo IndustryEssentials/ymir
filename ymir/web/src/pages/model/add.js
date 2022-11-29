@@ -25,6 +25,7 @@ const TYPES = Object.freeze({
   NET: 3,
 })
 
+// todo update tips for segmentation
 const Add = () => {
   const types = [
     { id: TYPES.COPY, label: t('model.add.types.copy') },
