@@ -124,6 +124,7 @@ function Asset({ id, asset: cache, datasetKeywords, filterKeyword, filters, inde
             <LeftOutlined hidden={currentIndex.index <= 0} className={styles.prev} onClick={prev} />
           </Col>
           <Col flex={1} className={`${styles.asset_img} scrollbar`}>
+            {/* // todo render semantic segmentation */}
             {asset.annotations ? (
               <AssetAnnotation
                 url={asset.url}
