@@ -53,6 +53,7 @@ const strategies = [
   { value: IMPORTSTRATEGY.ALL_KEYWORDS_IGNORE, label: "exclude" },
 ]
 
+// todo update tips
 const Add = (props) => {
   const history = useHistory()
   const { query } = useLocation()
