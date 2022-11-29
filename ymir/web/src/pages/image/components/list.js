@@ -24,6 +24,7 @@ const initQuery = {
   limit: 20,
 }
 
+// todo identify annotation types supported
 const ImageList = ({ role, filter, getImages }) => {
   const history = useHistory()
   const [images, setImages] = useState([])
