@@ -1,12 +1,44 @@
-import request from "@/utils/request"
+import { PROJECTTYPES } from '@/constants/project'
+import request from '@/utils/request'
+
+type QueryType = {
+  name?: string
+  offset?: number
+  limit?: number
+}
+
+type CreateParams = {
+  name: string
+  keywords: string[]
+  strategy: number
+  type: PROJECTTYPES
+  enableIteration?: number
+  description?: string
+}
+
+type UpdateParams = {
+  name?: string
+  keywords?: string[]
+  strategy?: number
+  chunkSize?: number
+  description?: string
+  candidateTrainSet?: number
+  trainSetVersion?: number
+  miningSet?: number
+  testSet?: number
+  modelStage?: number[]
+  enableIteration?: number
+  testingSets?: number[]
+}
 
 /** project service */
 /**
- *
- * @param {array[number]} id
- * @returns
+ * @description get project detail
+ * @export
+ * @param {number} id
+ * @return
  */
-export function getProject(id) {
+export function getProject(id: number) {
   return request.get(`projects/${id}`)
 }
 
@@ -15,8 +47,8 @@ export function getProject(id) {
  * { name, offset = 0, limit = 10 }
  * @returns
  */
-export function getProjects({ name, offset = 0, limit = 0 }) {
-  return request.get("projects/", { params: { name, offset, limit } })
+export function getProjects({ name, offset = 0, limit = 0 }: QueryType) {
+  return request.get('projects/', { params: { name, offset, limit } })
 }
 
 /**
@@ -24,9 +56,9 @@ export function getProjects({ name, offset = 0, limit = 0 }) {
  * @param {number} id
  * @returns
  */
-export function delProject(id) {
+export function delProject(id: number) {
   return request({
-    method: "delete",
+    method: 'delete',
     url: `/projects/${id}`,
   })
 }
@@ -45,20 +77,14 @@ export function delProject(id) {
  * }
  * @returns
  */
-export function createProject({
-  name,
-  description,
-  keywords,
-  strategy = 1,
-  enableIteration,
-}) {
-  return request.post("/projects/", {
+export function createProject({ name, description, type, keywords, strategy = 1, enableIteration }: CreateParams) {
+  return request.post('/projects/', {
     name,
     description,
-    training_type: 1,
+    training_type: type,
     training_keywords: keywords,
     mining_strategy: strategy,
-    enable_iteration: enableIteration
+    enable_iteration: enableIteration,
   })
 }
 
@@ -67,13 +93,13 @@ export function createProject({
  * @returns
  */
 export function addExampleProject() {
-  return request.post("/projects/samples")
+  return request.post('/projects/samples')
 }
 
 /**
  * update project
- * @param {number} id 
- * @param {object} params 
+ * @param {number} id
+ * @param {object} params
  * {
  * {string} name
  * {number} strategy
@@ -86,25 +112,26 @@ export function addExampleProject() {
  * {boolean} enableIteration
  * {array<number>} [testingSets]
  * }
- * @returns 
+ * @returns
  */
-export function updateProject(id, {
-  name,
-  keywords,
-  strategy,
-  chunkSize,
-  description,
-  candidateTrainSet,
-  trainSetVersion,
-  miningSet,
-  testSet,
-  modelStage = [],
-  enableIteration,
-  testingSets,
-}) {
+export function updateProject(id: number, project: UpdateParams) {
+  const {
+    name,
+    keywords,
+    strategy,
+    chunkSize,
+    description,
+    candidateTrainSet,
+    trainSetVersion,
+    miningSet,
+    testSet,
+    modelStage = [],
+    enableIteration,
+    testingSets,
+  } = project
   const [model, stage] = modelStage
   return request({
-    method: "patch",
+    method: 'patch',
     url: `/projects/${id}`,
     data: {
       name,
@@ -126,9 +153,9 @@ export function updateProject(id, {
 
 /**
  * get project status, dirty/clean
- * @param {number} pid 
- * @returns 
+ * @param {number} id
+ * @returns
  */
-export function checkStatus(pid) {
-  return request.get(`/projects/${pid}/status`)
+export function checkStatus(id: number) {
+  return request.get(`/projects/${id}/status`)
 }
