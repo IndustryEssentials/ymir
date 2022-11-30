@@ -42,7 +42,8 @@ class TestCmdImport(unittest.TestCase):
             shutil.rmtree(self._sandbox_root)
         os.chdir(self._cur_path)
 
-    def test_import_cmd_00(self):
+    def test_import_cmd_detbox_00(self):
+        # test cases for det-box-voc import
         # normal
         mir_root = self._mir_repo_root
         gen_folder = os.path.join(self._storage_root, 'gen')
@@ -118,9 +119,10 @@ class TestCmdImport(unittest.TestCase):
         self.assertNotEqual(CmdImport(args).run(), MirCode.RC_OK)
         args.pred_abs = self._data_xml_path
 
-    def test_import_cmd_01(self):
-        shutil.move(os.path.join(self._data_xml_path, 'pred_meta.yaml'), os.path.join(self._data_xml_path, 'meta.yaml'))
+    def test_import_cmd_detbox_01(self):
         # test cases for import prediction meta
+        shutil.move(os.path.join(self._data_xml_path, 'pred_meta.yaml'), os.path.join(self._data_xml_path, 'meta.yaml'))
+
         mir_root = self._mir_repo_root
         gen_folder = os.path.join(self._storage_root, 'gen')
         args = type('', (), {})()
@@ -144,6 +146,9 @@ class TestCmdImport(unittest.TestCase):
                          with_annotations=True,
                          eval_class_ids_set={0, 1, 2})
         shutil.move(os.path.join(self._data_xml_path, 'meta.yaml'), os.path.join(self._data_xml_path, 'pred_meta.yaml'))
+        
+    def test_cmd_semantic_seg_01(self) -> None:
+        pass
 
     def _check_repo(self,
                     repo_root: str,

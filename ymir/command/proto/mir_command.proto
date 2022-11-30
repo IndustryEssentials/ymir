@@ -125,13 +125,13 @@ enum AnnoType {
     AT_UNKNOWN = 0;
     AT_CLASS = 1; // Classification with class id, not implemented.
     AT_DET_BOX = 2; // Detection w. bounding box.
-    AT_SEM_SEG = 3;  // semantic segmentation w. polygon or mask
+    AT_SEMANTIC_SEG = 3;  // semantic segmentation w. polygon or mask
 };
 
 enum ObjAnnoType {
-    OAT_DET_BOX = 0;
-    OAT_SEG_POLYGON = 1; // Semantic Segmentation w. ploygons.
-    OAT_SEG_MASK = 2; // Semantic Segmentation w. mask.
+    OAT_BOX = 0;
+    OAT_POLYGON = 1;
+    OAT_MASK = 2;
 }
 
 message SingleTaskAnnotations {
@@ -153,8 +153,6 @@ message SingleTaskAnnotations {
 
 message SingleImageAnnotations {
     repeated ObjectAnnotation boxes = 2;
-
-    repeated ObjectAnnotation areas = 3;  // polygons and masks
 
     // Set of class ids shown in this image.
     repeated int32 img_class_ids = 5;
@@ -180,7 +178,8 @@ message ObjectAnnotation {
     string class_name = 9;  // for data parsed from outside, e.g. inference.
     repeated IntPoint polygon = 10;
     string mask = 11;  // RLE encoded mask
-    ObjAnnoType type = 12;
+    int32 iscrowd = 12;  // 0 or 1
+    ObjAnnoType type = 13;
 };
 
 enum ConfusionMatrixType {

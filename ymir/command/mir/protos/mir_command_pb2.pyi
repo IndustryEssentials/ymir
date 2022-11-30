@@ -219,11 +219,8 @@ class _AnnoTypeEnumTypeWrapper(google.protobuf.internal.enum_type_wrapper._EnumT
     AT_DET_BOX = AnnoType.V(2)
     """Detection w. bounding box."""
 
-    AT_SEG_POLYGON = AnnoType.V(3)
-    """Semantic Segmentation w. ploygons."""
-
-    AT_SEG_MASK = AnnoType.V(4)
-    """Semantic Segmentation w. mask."""
+    AT_SEMANTIC_SEG = AnnoType.V(3)
+    """semantic segmentation w. polygon or mask"""
 
 
 AT_UNKNOWN = AnnoType.V(0)
@@ -233,13 +230,26 @@ AT_CLASS = AnnoType.V(1)
 AT_DET_BOX = AnnoType.V(2)
 """Detection w. bounding box."""
 
-AT_SEG_POLYGON = AnnoType.V(3)
-"""Semantic Segmentation w. ploygons."""
-
-AT_SEG_MASK = AnnoType.V(4)
-"""Semantic Segmentation w. mask."""
+AT_SEMANTIC_SEG = AnnoType.V(3)
+"""semantic segmentation w. polygon or mask"""
 
 global___AnnoType = AnnoType
+
+
+class ObjAnnoType(_ObjAnnoType, metaclass=_ObjAnnoTypeEnumTypeWrapper):
+    pass
+class _ObjAnnoType:
+    V = typing.NewType('V', builtins.int)
+class _ObjAnnoTypeEnumTypeWrapper(google.protobuf.internal.enum_type_wrapper._EnumTypeWrapper[_ObjAnnoType.V], builtins.type):
+    DESCRIPTOR: google.protobuf.descriptor.EnumDescriptor = ...
+    OAT_BOX = ObjAnnoType.V(0)
+    OAT_POLYGON = ObjAnnoType.V(1)
+    OAT_MASK = ObjAnnoType.V(2)
+
+OAT_BOX = ObjAnnoType.V(0)
+OAT_POLYGON = ObjAnnoType.V(1)
+OAT_MASK = ObjAnnoType.V(2)
+global___ObjAnnoType = ObjAnnoType
 
 
 class ConfusionMatrixType(_ConfusionMatrixType, metaclass=_ConfusionMatrixTypeEnumTypeWrapper):
@@ -520,15 +530,9 @@ global___SingleTaskAnnotations = SingleTaskAnnotations
 class SingleImageAnnotations(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor = ...
     BOXES_FIELD_NUMBER: builtins.int
-    POLYGONS_FIELD_NUMBER: builtins.int
-    MASKS_FIELD_NUMBER: builtins.int
     IMG_CLASS_IDS_FIELD_NUMBER: builtins.int
     @property
     def boxes(self) -> google.protobuf.internal.containers.RepeatedCompositeFieldContainer[global___ObjectAnnotation]: ...
-    @property
-    def polygons(self) -> google.protobuf.internal.containers.RepeatedCompositeFieldContainer[global___ObjectAnnotation]: ...
-    @property
-    def masks(self) -> google.protobuf.internal.containers.RepeatedCompositeFieldContainer[global___MaskAnnotation]: ...
     @property
     def img_class_ids(self) -> google.protobuf.internal.containers.RepeatedScalarFieldContainer[builtins.int]:
         """Set of class ids shown in this image."""
@@ -536,11 +540,9 @@ class SingleImageAnnotations(google.protobuf.message.Message):
     def __init__(self,
         *,
         boxes : typing.Optional[typing.Iterable[global___ObjectAnnotation]] = ...,
-        polygons : typing.Optional[typing.Iterable[global___ObjectAnnotation]] = ...,
-        masks : typing.Optional[typing.Iterable[global___MaskAnnotation]] = ...,
         img_class_ids : typing.Optional[typing.Iterable[builtins.int]] = ...,
         ) -> None: ...
-    def ClearField(self, field_name: typing_extensions.Literal["boxes",b"boxes","img_class_ids",b"img_class_ids","masks",b"masks","polygons",b"polygons"]) -> None: ...
+    def ClearField(self, field_name: typing_extensions.Literal["boxes",b"boxes","img_class_ids",b"img_class_ids"]) -> None: ...
 global___SingleImageAnnotations = SingleImageAnnotations
 
 class SingleImageCks(google.protobuf.message.Message):
@@ -571,28 +573,6 @@ class SingleImageCks(google.protobuf.message.Message):
     def ClearField(self, field_name: typing_extensions.Literal["cks",b"cks","image_quality",b"image_quality"]) -> None: ...
 global___SingleImageCks = SingleImageCks
 
-class MaskAnnotation(google.protobuf.message.Message):
-    DESCRIPTOR: google.protobuf.descriptor.Descriptor = ...
-    SEMANTIC_MASK_FIELD_NUMBER: builtins.int
-    INSTANCE_MASK_FIELD_NUMBER: builtins.int
-    OBJECT_IDS_FIELD_NUMBER: builtins.int
-    semantic_mask: builtins.bytes = ...
-    """PNG image with 3 channels where each pixel corresponds to a class_id."""
-
-    instance_mask: builtins.bytes = ...
-    """PNG image with 3 channels where each pixel corresponds to an object_id."""
-
-    @property
-    def object_ids(self) -> google.protobuf.internal.containers.RepeatedScalarFieldContainer[builtins.int]: ...
-    def __init__(self,
-        *,
-        semantic_mask : builtins.bytes = ...,
-        instance_mask : builtins.bytes = ...,
-        object_ids : typing.Optional[typing.Iterable[builtins.int]] = ...,
-        ) -> None: ...
-    def ClearField(self, field_name: typing_extensions.Literal["instance_mask",b"instance_mask","object_ids",b"object_ids","semantic_mask",b"semantic_mask"]) -> None: ...
-global___MaskAnnotation = MaskAnnotation
-
 class ObjectAnnotation(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor = ...
     class TagsEntry(google.protobuf.message.Message):
@@ -618,6 +598,9 @@ class ObjectAnnotation(google.protobuf.message.Message):
     DET_LINK_ID_FIELD_NUMBER: builtins.int
     CLASS_NAME_FIELD_NUMBER: builtins.int
     POLYGON_FIELD_NUMBER: builtins.int
+    MASK_FIELD_NUMBER: builtins.int
+    ISCROWD_FIELD_NUMBER: builtins.int
+    TYPE_FIELD_NUMBER: builtins.int
     index: builtins.int = ...
     """Index of this annotation in current single image, may be different from the index in repeated field."""
 
@@ -635,6 +618,13 @@ class ObjectAnnotation(google.protobuf.message.Message):
 
     @property
     def polygon(self) -> google.protobuf.internal.containers.RepeatedCompositeFieldContainer[global___IntPoint]: ...
+    mask: typing.Text = ...
+    """RLE encoded mask"""
+
+    iscrowd: builtins.int = ...
+    """0 or 1"""
+
+    type: global___ObjAnnoType.V = ...
     def __init__(self,
         *,
         index : builtins.int = ...,
@@ -647,9 +637,12 @@ class ObjectAnnotation(google.protobuf.message.Message):
         det_link_id : builtins.int = ...,
         class_name : typing.Text = ...,
         polygon : typing.Optional[typing.Iterable[global___IntPoint]] = ...,
+        mask : typing.Text = ...,
+        iscrowd : builtins.int = ...,
+        type : global___ObjAnnoType.V = ...,
         ) -> None: ...
     def HasField(self, field_name: typing_extensions.Literal["box",b"box"]) -> builtins.bool: ...
-    def ClearField(self, field_name: typing_extensions.Literal["anno_quality",b"anno_quality","box",b"box","class_id",b"class_id","class_name",b"class_name","cm",b"cm","det_link_id",b"det_link_id","index",b"index","polygon",b"polygon","score",b"score","tags",b"tags"]) -> None: ...
+    def ClearField(self, field_name: typing_extensions.Literal["anno_quality",b"anno_quality","box",b"box","class_id",b"class_id","class_name",b"class_name","cm",b"cm","det_link_id",b"det_link_id","index",b"index","iscrowd",b"iscrowd","mask",b"mask","polygon",b"polygon","score",b"score","tags",b"tags","type",b"type"]) -> None: ...
 global___ObjectAnnotation = ObjectAnnotation
 
 class Rect(google.protobuf.message.Message):
