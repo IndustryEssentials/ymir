@@ -30,7 +30,7 @@ class ProjectBase(BaseModel):
 
     is_example: Optional[bool] = False
 
-    training_type: TrainingType = TrainingType.object_detect
+    object_type: TrainingType = TrainingType.object_detect
     candidate_training_dataset_id: Optional[int]
 
 

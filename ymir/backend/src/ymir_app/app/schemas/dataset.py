@@ -82,7 +82,7 @@ class DatasetInDBBase(IdModelMixin, DateTimeModelMixin, IsDeletedModelMixin, Dat
     task_id: int
     user_id: int
     related_task: Optional[TaskInternal]
-    training_type: Optional[TrainingType] = TrainingType.object_detect
+    object_type: Optional[TrainingType] = TrainingType.object_detect
     is_visible: bool
 
     class Config:

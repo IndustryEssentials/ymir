@@ -114,7 +114,7 @@ def create_sample_project(
         project.id,
         project.name,
         training_class_ids,
-        TrainingType(project.training_type).name,
+        TrainingType(project.object_type).name,
         int(project.create_datetime.timestamp()),
     )
 
@@ -200,7 +200,7 @@ def create_project(
         project.id,
         project.name,
         user_labels.id_for_names(names=project_in.training_keywords, raise_if_unknown=True)[0],
-        TrainingType(project.training_type).name,
+        TrainingType(project.object_type).name,
         int(project.create_datetime.timestamp()),
     )
 
