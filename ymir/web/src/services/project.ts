@@ -81,7 +81,7 @@ export function createProject({ name, description, type, keywords, strategy = 1,
   return request.post('/projects/', {
     name,
     description,
-    training_type: type,
+    object_type: type,
     training_keywords: keywords,
     mining_strategy: strategy,
     enable_iteration: enableIteration,
