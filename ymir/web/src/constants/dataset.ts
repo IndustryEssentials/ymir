@@ -82,6 +82,7 @@ export function transferDataset(data: YModels.BackendData): YModels.Dataset {
     id: data.id,
     groupId: data.dataset_group_id,
     projectId: data.project_id,
+    type: data.training_type || 1,
     name: data.group_name,
     version: data.version_num || 0,
     versionName: getVersionLabel(data.version_num),
