@@ -176,7 +176,7 @@ def import_dataset(
     project = crud.project.get(db, dataset_import.project_id)
     if not project:
         raise ProjectNotFound()
-    training_type = project.training_type
+    object_type = project.object_type
 
     logger.info("[import dataset] import dataset with payload: %s", dataset_import.json())
     if crud.dataset_group.is_duplicated_name_in_project(
@@ -233,7 +233,7 @@ def import_dataset(
         dataset_import,
         current_user.id,
         task.hash,
-        training_type,
+        object_type,
         dataset.id,
     )
     return {"result": dataset}

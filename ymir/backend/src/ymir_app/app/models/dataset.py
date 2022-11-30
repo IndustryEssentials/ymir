@@ -56,7 +56,7 @@ class Dataset(Base):
         return "_".join([self.group_name, str(self.version_num)])
 
     @property
-    def training_type(self) -> Optional[int]:
+    def object_type(self) -> Optional[int]:
         if self.project:  # type: ignore
-            return self.project.training_type  # type: ignore
+            return self.project.object_type  # type: ignore
         return None

@@ -38,7 +38,7 @@ class Project(Base):
     mining_strategy = Column(SmallInteger, index=True)
     chunk_size = Column(Integer)
 
-    training_type = Column(SmallInteger, index=True, default=0, nullable=False)
+    object_type = Column(SmallInteger, index=True, default=0, nullable=False)
     training_keywords = Column(Text(settings.TEXT_LEN_LIMIT), nullable=False)
     training_dataset_group_id = Column(Integer, index=True)
     mining_dataset_id = Column(Integer, index=True)

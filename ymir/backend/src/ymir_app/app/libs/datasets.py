@@ -30,11 +30,11 @@ def import_dataset_in_background(
     dataset_import: schemas.DatasetImport,
     user_id: int,
     task_hash: str,
-    training_type: int,
+    object_type: int,
     dataset_id: int,
 ) -> None:
     try:
-        return _import_dataset(db, controller_client, dataset_import, user_id, task_hash, training_type)
+        return _import_dataset(db, controller_client, dataset_import, user_id, task_hash, object_type)
     except FailedToDownload:
         logger.exception("[import dataset] failed to download dataset file")
         state_code = error_codes.FAILED_TO_DOWNLOAD
@@ -66,14 +66,14 @@ def _import_dataset(
     dataset_import: schemas.DatasetImport,
     user_id: int,
     task_hash: str,
-    training_type: int,
+    object_type: int,
 ) -> None:
     parameters = {}  # type: Dict[str, Any]
     if dataset_import.input_dataset_id is not None:
         dataset = crud.dataset.get(db, id=dataset_import.input_dataset_id)
         if not dataset:
             raise DatasetNotFound()
-        if training_type == dataset.training_type:
+        if object_type == dataset.object_type:
             annotation_strategy = dataset_import.strategy
         else:
             annotation_strategy = ImportStrategy.no_annotations
