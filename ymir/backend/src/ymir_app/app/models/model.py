@@ -74,3 +74,9 @@ class Model(Base):
     @property
     def default_stage_name(self) -> Optional[str]:
         return self.default_stage.name if self.default_stage else None
+
+    @property
+    def training_type(self) -> Optional[int]:
+        if self.project:  # type: ignore
+            return self.project.training_type  # type: ignore
+        return None

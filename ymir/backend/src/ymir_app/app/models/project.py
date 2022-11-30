@@ -88,6 +88,7 @@ class Project(Base):
     models = relationship(
         "Model",
         primaryjoin="foreign(Model.project_id)==Project.id",
+        backref="model",
         uselist=True,
         viewonly=True,
     )
