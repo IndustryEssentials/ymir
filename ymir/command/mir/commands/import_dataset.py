@@ -21,8 +21,8 @@ class CmdImport(base.BaseCommand):
         return CmdImport.run_with_args(mir_root=self.args.mir_root,
                                        label_storage_file=self.args.label_storage_file,
                                        index_file=self.args.index_file,
-                                       pred_abs=self.args.pred_dir,
-                                       gt_abs=self.args.gt_dir,
+                                       pred_abs=self.args.pred_abs,
+                                       gt_abs=self.args.gt_abs,
                                        gen_abs=self.args.gen_abs,
                                        dst_rev=self.args.dst_rev,
                                        src_revs=self.args.src_revs or 'master',
@@ -170,16 +170,16 @@ def bind_to_subparsers(subparsers: argparse._SubParsersAction, parent_parser: ar
                                            required=True,
                                            type=str,
                                            help="index of input media, one file per line")
-    import_dataset_arg_parser.add_argument("--pred-dir",
-                                           dest="pred_dir",
+    import_dataset_arg_parser.add_argument("--pred-path",
+                                           dest="pred_abs",
                                            type=str,
                                            required=False,
-                                           help="corresponding prediction folder")
-    import_dataset_arg_parser.add_argument("--gt-dir",
-                                           dest="gt_dir",
+                                           help="corresponding prediction folder or file path")
+    import_dataset_arg_parser.add_argument("--gt-path",
+                                           dest="gt_abs",
                                            type=str,
                                            required=False,
-                                           help="corresponding ground-truth folder")
+                                           help="corresponding ground-truth folder or file path")
     import_dataset_arg_parser.add_argument("--gen-dir",
                                            dest="gen_abs",
                                            required=True,
@@ -204,6 +204,6 @@ def bind_to_subparsers(subparsers: argparse._SubParsersAction, parent_parser: ar
     import_dataset_arg_parser.add_argument('--anno-type',
                                            dest='anno_type',
                                            required=True,
-                                           choices=['det-box', 'seg-poly', 'seg-mask'],
+                                           choices=['det-box', 'semantic-seg'],
                                            help='annotations type\n')
     import_dataset_arg_parser.set_defaults(func=CmdImport)

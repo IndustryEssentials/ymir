@@ -43,8 +43,7 @@ def parse_anno_format(anno_format_str: str) -> "mirpb.AnnoFormat.V":
 def parse_anno_type(anno_type_str: str) -> "mirpb.AnnoType.V":
     _anno_dict: Dict[str, mirpb.AnnoType.V] = {
         "det-box": mirpb.AnnoType.AT_DET_BOX,
-        "seg-poly": mirpb.AnnoType.AT_SEG_POLYGON,
-        "seg-mask": mirpb.AnnoType.AT_SEG_MASK,
+        "semantic-seg": mirpb.AnnoType.AT_SEG_POLYGON,
     }
     return _anno_dict.get(anno_type_str.lower(), mirpb.AnnoType.AT_UNKNOWN)
 

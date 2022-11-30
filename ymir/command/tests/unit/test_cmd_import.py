@@ -53,8 +53,8 @@ class TestCmdImport(unittest.TestCase):
         args.dst_rev = 'a@import-task-0'
         args.index_file = self._idx_file
         args.ck_file = self._ck_file
-        args.pred_dir = self._data_xml_path
-        args.gt_dir = self._data_xml_path
+        args.pred_abs = self._data_xml_path
+        args.gt_abs = self._data_xml_path
         args.gen_abs = gen_folder
         args.work_dir = self._work_dir
         args.unknown_types_strategy = 'stop'
@@ -92,8 +92,8 @@ class TestCmdImport(unittest.TestCase):
                          task_new_types_added=True)
 
         # have no annotations
-        args.pred_dir = None
-        args.gt_dir = None
+        args.pred_abs = None
+        args.gt_abs = None
         args.unknown_types_strategy = 'stop'
         args.dst_rev = 'a@import-task-3'
         importing_instance = CmdImport(args)
@@ -112,11 +112,11 @@ class TestCmdImport(unittest.TestCase):
         self.assertNotEqual(CmdImport(args).run(), MirCode.RC_OK)
         args.index_file = self._idx_file
 
-        args.pred_dir = ''
+        args.pred_abs = ''
         self.assertEqual(CmdImport(args).run(), MirCode.RC_OK)
-        args.pred_dir = self._data_xml_path + '/fake-one'
+        args.pred_abs = self._data_xml_path + '/fake-one'
         self.assertNotEqual(CmdImport(args).run(), MirCode.RC_OK)
-        args.pred_dir = self._data_xml_path
+        args.pred_abs = self._data_xml_path
 
     def test_import_cmd_01(self):
         shutil.move(os.path.join(self._data_xml_path, 'pred_meta.yaml'), os.path.join(self._data_xml_path, 'meta.yaml'))
@@ -130,8 +130,8 @@ class TestCmdImport(unittest.TestCase):
         args.dst_rev = 'a@import-task-0'
         args.index_file = self._idx_file
         args.ck_file = self._ck_file
-        args.pred_dir = self._data_xml_path
-        args.gt_dir = self._data_xml_path
+        args.pred_abs = self._data_xml_path
+        args.gt_abs = self._data_xml_path
         args.gen_abs = gen_folder
         args.work_dir = self._work_dir
         args.unknown_types_strategy = 'stop'
