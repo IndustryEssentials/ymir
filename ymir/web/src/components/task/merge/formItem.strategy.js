@@ -1,5 +1,5 @@
 import { Form } from "antd"
-import RadioGroup from "@/components/form/radioGroup"
+import RadioGroup from "@/components/form/RadioGroup"
 import t from '@/utils/t'
 
 const options = [
@@ -16,7 +16,7 @@ const Strategy = ({ initialValue = 2, hidden = true, ...rest }) => {
     label={t(`${prefix}label`)}
     {...rest}
   >
-    <RadioGroup options={options} labelPrefix={prefix} />
+    <RadioGroup options={options} prefix={prefix} />
   </Form.Item>
 }
 
