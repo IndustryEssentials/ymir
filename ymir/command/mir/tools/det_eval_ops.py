@@ -1,5 +1,7 @@
 import logging
 import time
+from types import ModuleType
+from typing import Any, Optional
 
 from mir.tools import det_eval_coco, det_eval_voc, settings as mir_settings
 from mir.tools.code import MirCode
@@ -38,8 +40,13 @@ def det_evaluate_with_pb(
         evaluation.state = mirpb.EvaluationState.ES_EXCEEDS_LIMIT
         return evaluation
 
-    start_time = time.time()
+    eval_model_name = _get_eval_model_name(prediction.type, mode)
+    if not eval_model_name:
+        logging.warning(f"skip evaluation: anno type: {prediction.type} and mode: {mode} not supported")
+        evaluation.state = mirpb.EvaluationState.ES_NOT_SET
+        return evaluation
 
+    start_time = time.time()
     for image_annotations in prediction.image_annotations.values():
         for annotation in image_annotations.boxes:
             annotation.cm = mirpb.ConfusionMatrixType.IGNORED
@@ -48,7 +55,6 @@ def det_evaluate_with_pb(
         for annotation in image_annotations.boxes:
             annotation.cm = mirpb.ConfusionMatrixType.IGNORED
             annotation.det_link_id = -1
-    eval_model_name = det_eval_voc if mode == 'voc' else det_eval_coco
     evaluation = eval_model_name.det_evaluate(  # type: ignore
         prediction=prediction, ground_truth=ground_truth, config=config)
 
@@ -57,6 +63,16 @@ def det_evaluate_with_pb(
     _show_evaluation(evaluation=evaluation)
 
     return evaluation
+
+
+def _get_eval_model_name(anno_type: Any, mode: str) -> Optional[ModuleType]:
+    mapping = {
+        mirpb.AnnoType.AT_DET_BOX: {
+            'voc': det_eval_voc,
+            'coco': det_eval_coco,
+        },
+    }
+    return mapping.get(anno_type, {}).get(mode, None)
 
 
 def _show_evaluation(evaluation: mirpb.Evaluation) -> None:

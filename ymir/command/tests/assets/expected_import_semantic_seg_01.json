@@ -186,7 +186,6 @@
                 6,
                 7
             ],
-            "map_id_color": {},
             "eval_class_ids": [],
             "executor_config": ""
         },
@@ -195,7 +194,6 @@
             "image_annotations": {},
             "type": 0,
             "task_class_ids": [],
-            "map_id_color": {},
             "eval_class_ids": [],
             "executor_config": ""
         },
