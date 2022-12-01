@@ -1,3 +1,4 @@
+import json
 import logging
 import os
 import shutil
@@ -10,6 +11,7 @@ from mir.commands.import_dataset import CmdImport
 from mir.protos import mir_command_pb2 as mirpb
 from mir.tools.class_ids import ids_file_path
 from mir.tools.code import MirCode
+from mir.tools.mir_storage_ops import MirStorageOps
 from tests import utils as test_utils
 
 
@@ -34,13 +36,12 @@ class TestCmdImport(unittest.TestCase):
         test_utils.prepare_labels(mir_root=self._mir_repo_root, names=['cat', 'airplane,aeroplane', 'person'])
         self._prepare_mir_repo()
 
-        self._cur_path = os.getcwd()
-        os.chdir(self._mir_repo_root)
+        # self._cur_path = os.getcwd()
+        # os.chdir(self._mir_repo_root)
 
     def tearDown(self) -> None:
         if os.path.isdir(self._sandbox_root):
             shutil.rmtree(self._sandbox_root)
-        os.chdir(self._cur_path)
 
     def test_import_cmd_detbox_00(self):
         # test cases for det-box-voc import
@@ -53,7 +54,6 @@ class TestCmdImport(unittest.TestCase):
         args.src_revs = ''
         args.dst_rev = 'a@import-task-0'
         args.index_file = self._idx_file
-        args.ck_file = self._ck_file
         args.pred_abs = self._data_xml_path
         args.gt_abs = self._data_xml_path
         args.gen_abs = gen_folder
@@ -102,23 +102,6 @@ class TestCmdImport(unittest.TestCase):
         self.assertEqual(ret, MirCode.RC_OK)
         self._check_repo(self._mir_repo_root, with_person_ignored=False, with_annotations=False)
 
-        # check for relative path, currently should return an error code
-        args.mir_root = 'abc'
-        importing_instance = CmdImport(args)
-        ret = importing_instance.run()
-        self.assertNotEqual(ret, MirCode.RC_OK)
-        args.mir_root = self._mir_repo_root
-
-        args.index_file = ''
-        self.assertNotEqual(CmdImport(args).run(), MirCode.RC_OK)
-        args.index_file = self._idx_file
-
-        args.pred_abs = ''
-        self.assertEqual(CmdImport(args).run(), MirCode.RC_OK)
-        args.pred_abs = self._data_xml_path + '/fake-one'
-        self.assertNotEqual(CmdImport(args).run(), MirCode.RC_OK)
-        args.pred_abs = self._data_xml_path
-
     def test_import_cmd_detbox_01(self):
         # test cases for import prediction meta
         shutil.move(os.path.join(self._data_xml_path, 'pred_meta.yaml'), os.path.join(self._data_xml_path, 'meta.yaml'))
@@ -131,7 +114,6 @@ class TestCmdImport(unittest.TestCase):
         args.src_revs = ''
         args.dst_rev = 'a@import-task-0'
         args.index_file = self._idx_file
-        args.ck_file = self._ck_file
         args.pred_abs = self._data_xml_path
         args.gt_abs = self._data_xml_path
         args.gen_abs = gen_folder
@@ -146,9 +128,27 @@ class TestCmdImport(unittest.TestCase):
                          with_annotations=True,
                          eval_class_ids_set={0, 1, 2})
         shutil.move(os.path.join(self._data_xml_path, 'meta.yaml'), os.path.join(self._data_xml_path, 'pred_meta.yaml'))
-        
-    def test_cmd_semantic_seg_01(self) -> None:
-        pass
+
+    def test_import_cmd_semantic_seg_01(self) -> None:
+        args = type('', (), {})()
+        args.mir_root = self._mir_repo_root
+        args.label_storage_file = ids_file_path(self._mir_repo_root)
+        args.src_revs = ''
+        args.dst_rev = 'a@import_semantic_seg_01'
+        args.index_file = self._coco_idx_file
+        args.pred_abs = ''
+        args.gt_abs = os.path.join(self._data_xml_path, 'coco.json')
+        args.gen_abs = os.path.join(self._storage_root, 'gen')
+        args.work_dir = self._work_dir
+        args.unknown_types_strategy = 'add'
+        args.anno_type = 'semantic-seg'
+        importing_instance = CmdImport(args)
+        ret = importing_instance.run()
+        self.assertEqual(ret, MirCode.RC_OK)
+        self._check_repo_by_file(mir_root=self._mir_repo_root,
+                                 mir_branch='a',
+                                 mir_task_id='import_semantic_seg_01',
+                                 expected_file_name='expected_import_semantic_seg_01.json')
 
     def _check_repo(self,
                     repo_root: str,
@@ -899,6 +899,22 @@ class TestCmdImport(unittest.TestCase):
         self.assertEqual(task_dict.get('new_types', {}), task_new_types)
         self.assertEqual(task_dict.get('new_types_added', False), task_new_types_added)
 
+    def _check_repo_by_file(self, mir_root: str, mir_branch: str, mir_task_id: str, expected_file_name: str) -> None:
+        with open(os.path.join('tests', 'assets', expected_file_name), 'r') as f:
+            expected_dict = json.loads(f.read())
+            test_utils.convert_dict_str_keys_to_int(expected_dict)
+
+        mm, ma, mk, mc = MirStorageOps.load_multiple_storages(
+            mir_root=mir_root,
+            mir_branch=mir_branch,
+            mir_task_id=mir_task_id,
+            ms_list=[mirpb.MIR_METADATAS, mirpb.MIR_ANNOTATIONS, mirpb.MIR_KEYWORDS, mirpb.MIR_CONTEXT],
+            as_dict=True)
+        self.assertEqual(mm['attributes'].keys(), expected_dict['mir_metadatas']['attributes'].keys())
+        self.assertEqual(ma, expected_dict['mir_annotations'])
+        self.assertEqual(mk, expected_dict['mir_keywords'])
+        self.assertEqual(mc, expected_dict['mir_context'])
+
     # custom: env prepare
     def _prepare_dirs(self):
         if os.path.isdir(self._sandbox_root):
@@ -913,44 +929,42 @@ class TestCmdImport(unittest.TestCase):
         os.makedirs(self._data_root)
 
         self._idx_file = os.path.join(self._data_root, 'idx.txt')
-        self._gt_idx_file = os.path.join(self._data_root, 'gt_idx.txt')
-        self._ck_file = os.path.join(self._data_root, 'ck.tsv')
+        self._coco_idx_file = os.path.join(self._data_root, 'coco-idx.txt')
         self._data_img_path = os.path.join(self._data_root, 'img')
         os.makedirs(self._data_img_path)
         self._data_xml_path = os.path.join(self._data_root, 'xml')
         os.makedirs(self._data_xml_path)
 
-        self._prepare_data(data_root=self._data_root,
-                           idx_file=self._idx_file,
-                           gt_idx_file=self._gt_idx_file,
-                           ck_file=self._ck_file,
-                           data_img_path=self._data_img_path,
-                           data_xml_path=self._data_xml_path)
+        self._prepare_data()
 
-    def _prepare_data(self, data_root, idx_file, gt_idx_file, ck_file, data_img_path, data_xml_path):
+    def _prepare_data(self):
         local_data_root = 'tests/assets'
 
         # Copy img files.
         img_files = ['2007_000032.jpg', '2007_000243.jpg']
-        with open(idx_file, 'w') as idx_f, open(gt_idx_file, 'w') as gt_idx_f, open(ck_file, 'w') as ck_f:
+        with open(self._idx_file, 'w') as idx_f:
             for file in img_files:
                 src = os.path.join(local_data_root, file)
-                dst = os.path.join(data_img_path, file)
+                dst = os.path.join(self._data_img_path, file)
                 shutil.copyfile(src, dst)
 
                 idx_f.writelines(dst + '\n')
-                gt_idx_f.writelines(dst + '\n')
-                ck_f.write(f"{dst}\tck0\n")
+
+        img_files = ['000000000285.jpg', '000000000632.jpg']
+        with open(self._coco_idx_file, 'w') as idx_f:
+            for file in img_files:
+                src = os.path.join(local_data_root, file)
+                dst = os.path.join(self._data_img_path, file)
+                shutil.copyfile(src, dst)
+
+                idx_f.writelines(dst + '\n')
 
         # Copy xml files.
-        xml_files = ['2007_000032.xml', '2007_000243.xml']
-        for file in xml_files:
+        filenames = ['2007_000032.xml', '2007_000243.xml', 'pred_meta.yaml', 'coco.json']
+        for file in filenames:
             src = os.path.join(local_data_root, file)
-            dst = os.path.join(data_xml_path, file)
+            dst = os.path.join(self._data_xml_path, file)
             shutil.copyfile(src, dst)
-
-        # Copy meta file
-        shutil.copyfile(os.path.join(local_data_root, 'pred_meta.yaml'), os.path.join(data_xml_path, 'pred_meta.yaml'))
 
     def _prepare_mir_repo(self):
         # init repo
