@@ -121,20 +121,59 @@ declare namespace YModels {
     cks?: CK
   }
 
-  export interface Annotation {
+  export interface AnnotationBase {
+    type: AnnotationType.BoundingBox | AnnotationType.Polygon | AnnotationType.Mask
     keyword: string
-    box: {
-      x: number
-      y: number
-      w: number
-      h: number
-      rotate_angle: number
-    }
     color?: string
     score?: number
     gt?: boolean
     cm: number
     tags?: CK
+  }
+
+  enum AnnotationType {
+    BoundingBox = 0,
+    Polygon = 1,
+    Mask = 2,
+  }
+
+  type Matable<U> = {
+    [Type in keyof U]: {
+      type: Type
+    } & U[Type]
+  }[keyof U]
+
+  type AnnotationMaps = {
+    [AnnotationType.BoundingBox]: BoundingBox
+    [AnnotationType.Polygon]: Polygon
+    [AnnotationType.Mask]: Mask
+  }
+
+  export type Annotation = Matable<AnnotationMaps>
+
+  export type SegAnnotation = Matable<Omit<AnnotationMaps, AnnotationType.BoundingBox>>
+
+  export interface BoundingBox extends AnnotationBase {
+    box: {
+      x: number
+      y: number
+      w: number
+      h: number
+      rotate_angle?: number
+    }
+  }
+
+  export interface Polygon extends AnnotationBase {
+    points: number[]
+  }
+
+  export interface Mask extends AnnotationBase {
+    mask: string
+    rect?: [x: number, y: number, width: number, height: number]
+    imageInfo?: {
+      width: number
+      height: number
+    }
   }
 
   export interface Stage {
@@ -161,7 +200,7 @@ declare namespace YModels {
     id: number
     name: string
     type: number
-    typeLabel: string,
+    typeLabel: string
     keywords: Labels
     candidateTrainSet: number
     trainSet?: DatasetGroup

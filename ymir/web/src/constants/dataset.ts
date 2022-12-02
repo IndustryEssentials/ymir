@@ -184,7 +184,7 @@ export function transferAsset(
   const colors = generateDatasetColors(keywords || data.keywords)
   const transferAnnotations = (annotations = [], gt = false) =>
     annotations.map((an: YModels.BackendData) =>
-      transferAnnotation(an, gt, colors[an.keyword])
+    toAnnotation(an, gt, colors[an.keyword])
     )
 
   const annotations = [
@@ -207,19 +207,44 @@ export function transferAsset(
   }
 }
 
-export function transferAnnotation(
-  data: YModels.BackendData,
-  gt: boolean = false,
-  color = ""
-): YModels.Annotation {
+export function toAnnotation(annotation: YModels.BackendData, gt = false, color = ''): YModels.Annotation {
   return {
-    ...data,
-    keyword: data.keyword,
-    box: data.box,
-    cm: data.cm,
+    keyword: annotation.keyword || '',
+    cm: annotation.cm,
     gt,
-    tags: data.tags || {},
+    tags: annotation.tags || {},
     color,
+    ...annotationTransfer(annotation),
+  }
+}
+
+function annotationTransfer(annotation: YModels.BackendData) {
+  const type = annotation.type as YModels.AnnotationType
+  return {
+    [YModels.AnnotationType.BoundingBox]: toBoundingBoxAnnoatation,
+    [YModels.AnnotationType.Polygon]: toPolygonAnnotation,
+    [YModels.AnnotationType.Mask]: toMaskAnnotation,
+  }[type](annotation)
+}
+
+export function toBoundingBoxAnnoatation(annotation: YModels.BackendData) {
+  return {
+    type: annotation.type as YModels.AnnotationType.BoundingBox,
+    box: annotation.box,
+  }
+}
+
+export function toMaskAnnotation(annotation: YModels.BackendData) {
+  return {
+    type: annotation.type as YModels.AnnotationType.Mask,
+    mask: annotation.mask,
+  }
+}
+
+export function toPolygonAnnotation (annotation: YModels.BackendData) {
+  return {
+    type: annotation.type as YModels.AnnotationType.Polygon,
+    points: annotation.points,
   }
 }
 

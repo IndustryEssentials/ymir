@@ -49,8 +49,8 @@ function unleb(s: string): number[] {
   let m = 0
   let p = 0
 
-  let k: number
-  let x: number
+  let k
+  let x
   let more = false
   const memo = []
 
@@ -79,6 +79,28 @@ function unleb(s: string): number[] {
   return memo
 }
 
+function freeunleb(e: string) {
+  let t, s, a = 0, i = 0, n = !1;
+  const r = [];
+  a = 0;
+  while (e[i]) {
+      s = 0,
+      t = 0,
+      n = !0;
+      while (n) {
+          const a = e[i].charCodeAt(0) - 48;
+          s |= (31 & a) << 5 * t,
+          n = !!(32 & a),
+          i++,
+          t++,
+          !n && 16 & a && (s |= -1 << 5 * t)
+      }
+      a > 2 && (s += r[a - 2]),
+      r[a++] = s
+  }
+  return r
+}
+
 function pipe(initialValue: unknown, ...fns: Function[]) {
-  return fns.reduce((memo, fn) => fn(memo), initialValue)
+  return fns.reduce((memo, fn) => { console.log('code: ', memo); return fn(memo) }, initialValue)
 }
