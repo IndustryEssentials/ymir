@@ -31,8 +31,7 @@ def parse_anno_format(anno_format_str: str) -> "mirpb.AnnoFormat.V":
         "det-voc": mirpb.AnnoFormat.AF_DET_PASCAL_VOC,
         "det-ark": mirpb.AnnoFormat.AF_DET_ARK_JSON,
         "det-ls-json": mirpb.AnnoFormat.AF_DET_LS_JSON,
-        # "seg-poly": mirpb.AnnoFormat.AF_SEG_POLYGON,
-        # "seg-mask": mirpb.AnnoFormat.AF_SEG_MASK,
+        "semseg-coco": mirpb.AnnoFormat.AF_SEMANTIC_SEG_COCO_JSON,
     }
     return _anno_dict.get(anno_format_str.lower(), mirpb.AnnoFormat.AF_NO_ANNOTATION)
 
@@ -174,12 +173,6 @@ def _import_annotations_from_dir(map_hashed_filename: Dict[str, str], mir_annota
                                  annotations_path: str, class_type_manager: class_ids.UserLabels,
                                  unknown_types_strategy: UnknownTypesStrategy, accu_new_class_names: Dict[str, int],
                                  image_annotations: mirpb.SingleTaskAnnotations, anno_type: "mirpb.AnnoType.V") -> None:
-    # temp solution: set to seg type if SegmentationClass and labelmap.txt exist.
-    # will be removed once seg type can be passed via web.
-    # if (os.path.isdir(os.path.join(annotations_dir_path, "SegmentationClass"))
-    #         and os.path.isfile(os.path.join(annotations_dir_path, "labelmap.txt"))):
-    #     anno_type = mirpb.AnnoType.AT_SEG_MASK
-
     image_annotations.type = anno_type
     _annotation_parse_func(anno_type)(
         map_hashed_filename=map_hashed_filename,
@@ -192,107 +185,6 @@ def _import_annotations_from_dir(map_hashed_filename: Dict[str, str], mir_annota
     )
 
     logging.warning(f"imported {len(image_annotations.image_annotations)} / {len(map_hashed_filename)} annotations")
-
-
-# def _import_annotations_seg_mask(map_hashed_filename: Dict[str, str], mir_annotation: mirpb.MirAnnotations,
-#                                  annotations_dir_path: str, class_type_manager: class_ids.UserLabels,
-#                                  unknown_types_strategy: UnknownTypesStrategy, accu_new_class_names: Dict[str, int],
-#                                  image_annotations: mirpb.SingleTaskAnnotations) -> None:
-#     # fortmat ref:
-#     # https://github.com/acesso-io/techcore-cvat/tree/develop/cvat/apps/dataset_manager/formats#segmentation-mask-import
-#     # single line reprs label&color map, e.g. "ego vehicle:0,181,0::" or "road:07::"; otherwise "..." for place-holder.
-#     label_map_file = os.path.join(annotations_dir_path, 'labelmap.txt')
-#     if not os.path.isfile(label_map_file):
-#         raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS, error_message="labelmap.txt is required.")
-#     with open(label_map_file) as f:
-#         records = f.readlines()
-
-#     # parse label_map.txt into map_cname_color.
-#     map_cname_color: Dict[str, Tuple[int, int, int]] = {}
-#     for record in records:
-#         record = record.strip()
-#         if ':' not in record or not record:
-#             logging.info("place-holder line, skipping.")
-#             continue
-
-#         record_split = record.split(':')
-#         if len(record_split) != 4:
-#             logging.info(f"invalid labelmap line: {record}")
-#             continue
-#         pos_ints: List[int] = [int(x) for x in record_split[1].split(',')]
-#         if len(pos_ints) == 1:  # single channel to 3 channels.
-#             pos_ints = [pos_ints[0], pos_ints[0], pos_ints[0]]
-#         if len(pos_ints) != 3:
-#             logging.info(f"invalid labelmap color idx: {pos_ints}")
-#             continue
-#         if pos_ints == (0, 0, 0):
-#             logging.info("ignore background color.")
-#             continue
-#         _, cname = class_type_manager.id_and_main_name_for_name(name=record_split[0])
-#         map_cname_color[cname] = (pos_ints[0], pos_ints[1], pos_ints[2])
-
-#     # batch add all names, including unknown/known names.
-#     if unknown_types_strategy == UnknownTypesStrategy.ADD:
-#         class_type_manager.add_main_names(list(map_cname_color.keys()))
-
-#     # build color map, map all unknown classes to background (0, 0, 0).
-#     map_color_pixel: Dict[Tuple[int, int, int], Tuple[int, int, int]] = {(0, 0, 0): (0, 0, 0)}
-#     map_color_cid: Dict[Tuple[int, int, int], int] = {}
-#     for name, color in map_cname_color.items():
-#         cid, cname = class_type_manager.id_and_main_name_for_name(name=name)
-#         if cname not in accu_new_class_names:
-#             accu_new_class_names[cname] = 0
-
-#         if cid >= 0:
-#             point = mirpb.IntPoint()
-#             point.x, point.y, point.z = color
-#             image_annotations.map_id_color[cid].CopyFrom(point)
-#             map_color_pixel[color] = color
-#             map_color_cid[color] = cid
-#         else:
-#             map_color_pixel[color] = (0, 0, 0)
-
-#     semantic_mask_dir = os.path.join(annotations_dir_path, "SegmentationClass")
-#     expected_color: Set[Tuple[int, int, int]] = set()
-#     for asset_hash, main_file_name in map_hashed_filename.items():
-#         # for each asset, import it's annotations
-#         annotation_file = os.path.join(semantic_mask_dir, main_file_name + '.png')
-#         if not os.path.isfile(annotation_file):
-#             continue
-#         try:
-#             mask_image = Image.open(annotation_file)
-#         except (UnidentifiedImageError, OSError) as e:
-#             logging.info(f"{type(e).__name__}: {e}\nannotation_file: {annotation_file}\n")
-#             continue
-#         asset_type_str: str = mask_image.format.lower()
-#         if asset_type_str != 'png':
-#             logging.error(f"cannot import annotation_file: {annotation_file} as type: {asset_type_str}")
-#             continue
-
-#         mask_image = mask_image.convert('RGB')
-#         img_class_ids: Set[int] = set()
-#         width, height = mask_image.size
-#         img: np.ndarray = np.array(mask_image)
-#         np_mask: np.ndarray = np.zeros(shape=(height, width, 3), dtype=np.uint8)
-#         for color in map_color_cid:
-#             r = img[:, :, 0] == color[0]
-#             g = img[:, :, 1] == color[1]
-#             b = img[:, :, 2] == color[2]
-
-#             mask = r & g & b
-#             if np.any(mask):
-#                 expected_color.add(color)
-#                 np_mask[mask] = color
-#                 img_class_ids.add(map_color_cid[color])
-
-#         new_mask_image: Image.Image = Image.fromarray(np_mask)
-#         with io.BytesIO() as output:
-#             new_mask_image.save(output, format="PNG")
-#             image_annotations.image_annotations[asset_hash].masks.append(
-#                 mirpb.MaskAnnotation(semantic_mask=output.getvalue()))
-#         image_annotations.image_annotations[asset_hash].img_class_ids[:] = list(img_class_ids)
-#     if expected_color:
-#         logging.info(f"mapped color in labelmap.txt: {expected_color}")
 
 
 def _import_annotations_voc_xml(map_hashed_filename: Dict[str, str], mir_annotation: mirpb.MirAnnotations,
