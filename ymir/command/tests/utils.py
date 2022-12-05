@@ -1,4 +1,3 @@
-import json
 import os
 import shutil
 import subprocess
@@ -10,8 +9,6 @@ from mir.commands.init import CmdInit
 from mir.commands.checkout import CmdCheckout
 from mir.tools import class_ids
 from mir.tools.code import MirCode
-from mir.tools.mir_storage import get_all_mir_storage
-from mir.tools.mir_storage_ops import MirStorageOps as MSO  # todo: remove this
 
 
 def dir_test_root(sub_dirs: List[str]) -> str:
@@ -108,23 +105,3 @@ def convert_dict_str_keys_to_int(d: dict) -> None:
         elif isinstance(v, list):
             for vv in v:
                 convert_dict_str_keys_to_int(vv)
-
-
-# todo: remove this
-def gen_expected_result_file(mir_root: str, mir_branch: str, mir_task_id: str, file_path: str) -> None:
-    mm, ma, mk, mt, mc = MSO.load_multiple_storages(mir_root=mir_root,
-                                                    mir_branch=mir_branch,
-                                                    mir_task_id=mir_task_id,
-                                                    ms_list=get_all_mir_storage(),
-                                                    as_dict=True)
-    with open(file_path, 'w') as f:
-        f.write(
-            json.dumps(
-                {
-                    'mir_metadatas': mm,
-                    'mir_annotations': ma,
-                    'mir_keywords': mk,
-                    'mir_context': mc,
-                    'mir_tasks': mt
-                },
-                indent=4))
