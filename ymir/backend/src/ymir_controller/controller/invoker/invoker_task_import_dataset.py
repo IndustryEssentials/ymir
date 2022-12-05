@@ -65,18 +65,12 @@ class TaskImportDatasetInvoker(TaskBaseInvoker):
 
         if import_dataset_request.clean_dirs:
             logging.info("trying to clean all data dirs.")
-            try:
-                shutil.rmtree(media_dir)
-            except Exception:
-                pass
-            try:
-                shutil.rmtree(import_dataset_request.pred_path)
-            except Exception:
-                pass
-            try:
-                shutil.rmtree(import_dataset_request.gt_path)
-            except Exception:
-                pass
+            for d in [media_dir, import_dataset_request.pred_path, import_dataset_request.gt_path]:
+                try:
+                    if os.path.isdir(d):
+                        shutil.rmtree(d)
+                except Exception:
+                    pass
 
         return import_dataset_response
 
