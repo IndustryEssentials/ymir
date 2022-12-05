@@ -3,7 +3,7 @@ import enum
 import json
 import logging
 import os
-from typing import Any, Callable, Dict, List, Optional, Union
+from typing import Any, Callable, Dict, List, Union
 
 from google.protobuf.json_format import ParseDict
 import xmltodict
@@ -84,7 +84,7 @@ def _voc_object_dict_to_annotation(object_dict: dict, cid: int) -> mirpb.ObjectA
 
 
 def _coco_object_dict_to_annotation(anno_dict: dict, category_id_to_cids: Dict[int, int],
-                                    class_type_manager: class_ids.UserLabels) -> Optional[mirpb.ObjectAnnotation]:
+                                    class_type_manager: class_ids.UserLabels) -> mirpb.ObjectAnnotation:
     obj_anno = mirpb.ObjectAnnotation()
 
     # box, polygon and mask

@@ -2,7 +2,7 @@ from datetime import datetime
 import json
 import os
 import shutil
-from typing import Any, Callable, Dict, Optional, TextIO, Tuple
+from typing import Callable, Dict, Optional, TextIO, Tuple, Union
 import uuid
 import xml.etree.ElementTree as ElementTree
 
@@ -34,7 +34,8 @@ def _anno_file_ext(anno_format: "mirpb.AnnoFormat.V") -> str:
 
 def _annotations_output_func(
     anno_format: "mirpb.AnnoFormat.V"
-) -> Callable[[mirpb.MirMetadatas, mirpb.MirAnnotations, mirpb.ExportConfig, Dict[int, int], UserLabels], None]:
+) -> Callable[[mirpb.MirMetadatas, mirpb.MirAnnotations, mirpb.ExportConfig, Optional[Dict[int, int]],
+               Optional[UserLabels]], None]:
     _format_func_map = {
         mirpb.AnnoFormat.AF_DET_ARK_JSON: _export_annos_to_separate_files,
         mirpb.AnnoFormat.AF_DET_PASCAL_VOC: _export_annos_to_separate_files,
@@ -199,13 +200,10 @@ def _export_mirdatas_to_raw(
             shutil.copyfile(asset_src_file, asset_abs_file)
         index_asset_f.write(f"{asset_idx_file}\n")
 
-    if ec.anno_format != mirpb.AnnoFormat.AF_NO_ANNOTATION:
+    if ec.anno_format != mirpb.AnnoFormat.AF_NO_ANNOTATION and mir_annotations:
         # export annotations
-        _annotations_output_func(ec.anno_format)(mir_metadatas=mir_metadatas,
-                                                 mir_annotations=mir_annotations,
-                                                 ec=ec,
-                                                 class_ids_mapping=class_ids_mapping,
-                                                 cls_id_mgr=cls_id_mgr)
+        _annotations_output_func(ec.anno_format)(mir_metadatas, mir_annotations, ec, class_ids_mapping, cls_id_mgr)
+
         # write index tsv files
         for asset_id, attributes in mir_metadatas.attributes.items():
             _, asset_idx_file = _gen_abs_idx_file_path(abs_dir=ec.asset_dir,
@@ -213,7 +211,7 @@ def _export_mirdatas_to_raw(
                                                        file_name=asset_id,
                                                        file_ext=_asset_file_ext(attributes.asset_type),
                                                        need_sub_folder=ec.need_sub_folder)
-            if ec.gt_dir:
+            if index_gt_f:
                 if ec.anno_format == mirpb.AnnoFormat.AF_SEMANTIC_SEG_COCO_JSON:
                     _, gt_idx_file = _gen_abs_idx_file_path(abs_dir=ec.gt_dir,
                                                             idx_prefix=ec.gt_index_prefix,
@@ -231,7 +229,7 @@ def _export_mirdatas_to_raw(
                 index_gt_f.write(asset_anno_pair_line)
                 if ec.tvt_index_dir:
                     index_tvt_f[(False, attributes.tvt_type)].write(asset_anno_pair_line)
-            if ec.pred_dir:
+            if index_pred_f:
                 if ec.anno_format == mirpb.AnnoFormat.AF_SEMANTIC_SEG_COCO_JSON:
                     _, pred_idx_file = _gen_abs_idx_file_path(abs_dir=ec.pred_dir,
                                                               idx_prefix=ec.pred_index_prefix,
@@ -247,14 +245,14 @@ def _export_mirdatas_to_raw(
                 asset_anno_pair_line = f"{asset_idx_file}\t{pred_idx_file}\n"
 
                 index_pred_f.write(asset_anno_pair_line)
-                if ec.tvt_index_dir:
+                if index_tvt_f:
                     index_tvt_f[(True, attributes.tvt_type)].write(asset_anno_pair_line)
 
     index_asset_f.close()
     # Clean up.
-    if ec.gt_dir:
+    if index_gt_f:
         index_gt_f.close()
-    if ec.pred_dir:
+    if index_pred_f:
         index_pred_f.close()
     for single_idx_f in index_tvt_f.values():
         single_idx_f.close()
@@ -575,6 +573,9 @@ def _single_task_annotations_to_coco(
     cls_id_mgr: Optional[UserLabels],
     dst_file_path: str,
 ) -> None:
+    if not cls_id_mgr:
+        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS, error_message='invalid cls_id_mgr')
+
     # images list
     images_list = []
     asset_id_to_coco_image_ids: Dict[str, int] = {}
@@ -592,7 +593,7 @@ def _single_task_annotations_to_coco(
         })
         asset_id_to_coco_image_ids[asset_id] = idx + 1
 
-    # licenses list
+    # licenses list: add placeholder here
     licenses_list = [{
         'id': 1,
         'name': '',
@@ -617,7 +618,7 @@ def _single_task_annotations_to_coco(
         coco_image_id = asset_id_to_coco_image_ids[asset_id]
         attrs = mir_metadatas.attributes[asset_id]
         for oa in sia.boxes:
-            segmentation = {}
+            segmentation: Union[list, dict] = {}
             if oa.type == mirpb.ObjAnnoType.OAT_MASK:
                 segmentation = {
                     'counts': oa.mask,
