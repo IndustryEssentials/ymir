@@ -5,6 +5,13 @@ declare namespace YModels {
   type StageId = number
   type ImageId = number
 
+  
+  type Matable<U> = {
+    [Type in keyof U]: {
+      type: Type
+    } & U[Type]
+  }[keyof U]
+
   export type BackendData = {
     [key: string]: any
   }
@@ -42,6 +49,11 @@ declare namespace YModels {
     hidden: boolean
     description: string
     needReload?: boolean
+  }
+
+  enum ObjectType {
+    Detection = 1,
+    Segmentation = 2,
   }
 
   type Keywords = {
@@ -110,20 +122,24 @@ declare namespace YModels {
     hash: string
     keywords: Labels
     url: string
+    type: ObjectType,
+    width: number
+    height: number
     metadata?: {
       width: number
       height: number
       channel: number
     }
     size?: number
-    annotations: Array<Annotation>
+    annotations: Annotation[],
     evaluated?: boolean
     cks?: CK
   }
 
   export interface AnnotationBase {
-    type: AnnotationType.BoundingBox | AnnotationType.Polygon | AnnotationType.Mask
     keyword: string
+    width: number
+    height: number
     color?: string
     score?: number
     gt?: boolean
@@ -137,23 +153,24 @@ declare namespace YModels {
     Mask = 2,
   }
 
-  type Matable<U> = {
-    [Type in keyof U]: {
-      type: Type
-    } & U[Type]
-  }[keyof U]
-
   type AnnotationMaps = {
     [AnnotationType.BoundingBox]: BoundingBox
     [AnnotationType.Polygon]: Polygon
     [AnnotationType.Mask]: Mask
   }
 
+  type Point = {
+    x: number,
+    y: number,
+  }
+
   export type Annotation = Matable<AnnotationMaps>
 
   export type SegAnnotation = Matable<Omit<AnnotationMaps, AnnotationType.BoundingBox>>
+  export type DetAnnotation = Matable<Pick<AnnotationMaps, AnnotationType.BoundingBox>>
 
   export interface BoundingBox extends AnnotationBase {
+    type: AnnotationType.BoundingBox
     box: {
       x: number
       y: number
@@ -164,16 +181,15 @@ declare namespace YModels {
   }
 
   export interface Polygon extends AnnotationBase {
-    points: number[]
+    type: AnnotationType.Polygon
+    points: Point[]
   }
 
   export interface Mask extends AnnotationBase {
+    type: AnnotationType.Mask
     mask: string
+    decodeMask?: number[][]
     rect?: [x: number, y: number, width: number, height: number]
-    imageInfo?: {
-      width: number
-      height: number
-    }
   }
 
   export interface Stage {
