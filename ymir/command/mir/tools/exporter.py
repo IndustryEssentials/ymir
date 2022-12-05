@@ -204,13 +204,9 @@ def _export_mirdatas_to_raw(
         _annotations_output_func(ec.anno_format)(mir_metadatas=mir_metadatas,
                                                  mir_annotations=mir_annotations,
                                                  ec=ec,
-                                                 index_tvt_f=index_tvt_f,
-                                                 index_gt_f=index_gt_f,
-                                                 index_pred_f=index_pred_f,
                                                  class_ids_mapping=class_ids_mapping,
                                                  cls_id_mgr=cls_id_mgr)
         # write index tsv files
-        # todo: coco has only /in/assets/xxx for each line in index file
         for asset_id, attributes in mir_metadatas.attributes.items():
             _, asset_idx_file = _gen_abs_idx_file_path(abs_dir=ec.asset_dir,
                                                        idx_prefix=ec.asset_index_prefix,
@@ -218,22 +214,38 @@ def _export_mirdatas_to_raw(
                                                        file_ext=_asset_file_ext(attributes.asset_type),
                                                        need_sub_folder=ec.need_sub_folder)
             if ec.gt_dir:
-                _, gt_idx_file = _gen_abs_idx_file_path(abs_dir=ec.gt_dir,
-                                                        idx_prefix=ec.gt_index_prefix,
-                                                        file_name=asset_id,
-                                                        file_ext=_anno_file_ext(anno_format=ec.anno_format),
-                                                        need_sub_folder=ec.need_sub_folder)
+                if ec.anno_format == mirpb.AnnoFormat.AF_SEMANTIC_SEG_COCO_JSON:
+                    _, gt_idx_file = _gen_abs_idx_file_path(abs_dir=ec.gt_dir,
+                                                            idx_prefix=ec.gt_index_prefix,
+                                                            file_name='coco',
+                                                            file_ext='json',
+                                                            need_sub_folder=False)
+                else:
+                    _, gt_idx_file = _gen_abs_idx_file_path(abs_dir=ec.gt_dir,
+                                                            idx_prefix=ec.gt_index_prefix,
+                                                            file_name=asset_id,
+                                                            file_ext=_anno_file_ext(anno_format=ec.anno_format),
+                                                            need_sub_folder=ec.need_sub_folder)
                 asset_anno_pair_line = f"{asset_idx_file}\t{gt_idx_file}\n"
+
                 index_gt_f.write(asset_anno_pair_line)
                 if ec.tvt_index_dir:
                     index_tvt_f[(False, attributes.tvt_type)].write(asset_anno_pair_line)
             if ec.pred_dir:
-                _, pred_idx_file = _gen_abs_idx_file_path(abs_dir=ec.pred_dir,
-                                                          idx_prefix=ec.pred_index_prefix,
-                                                          file_name=asset_id,
-                                                          file_ext=_anno_file_ext(anno_format=ec.anno_format),
-                                                          need_sub_folder=ec.need_sub_folder)
+                if ec.anno_format == mirpb.AnnoFormat.AF_SEMANTIC_SEG_COCO_JSON:
+                    _, pred_idx_file = _gen_abs_idx_file_path(abs_dir=ec.pred_dir,
+                                                              idx_prefix=ec.pred_index_prefix,
+                                                              file_name='coco',
+                                                              file_ext='json',
+                                                              need_sub_folder=False)
+                else:
+                    _, pred_idx_file = _gen_abs_idx_file_path(abs_dir=ec.pred_dir,
+                                                              idx_prefix=ec.pred_index_prefix,
+                                                              file_name=asset_id,
+                                                              file_ext=_anno_file_ext(anno_format=ec.anno_format),
+                                                              need_sub_folder=ec.need_sub_folder)
                 asset_anno_pair_line = f"{asset_idx_file}\t{pred_idx_file}\n"
+
                 index_pred_f.write(asset_anno_pair_line)
                 if ec.tvt_index_dir:
                     index_tvt_f[(True, attributes.tvt_type)].write(asset_anno_pair_line)
