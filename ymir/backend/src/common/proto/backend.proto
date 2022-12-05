@@ -149,9 +149,9 @@ message TaskReqMining {
 message TaskReqImportDataset {
     // store media files
     string asset_dir = 1;
-    // single pascal xml per asset, same base_filename as in asset-folder
-    string pred_dir = 2;
-    string gt_dir = 3;
+    // pred and gt file dir (voc) / file path (coco)
+    string pred_path = 2;
+    string gt_path = 3;
     // strategy for unknown class types: stop, ignore or add
     UnknownTypesStrategy unknown_types_strategy = 4;
     bool clean_dirs = 5;

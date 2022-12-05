@@ -14,16 +14,16 @@ from proto import backend_pb2, backend_pb2_utils
 class TaskImportDatasetInvoker(TaskBaseInvoker):
     def task_pre_invoke(self, request: backend_pb2.GeneralReq) -> backend_pb2.GeneralResp:
         import_dataset_request = request.req_create_task.import_dataset
-        (media_dir, pred_dir, gt_dir) = (import_dataset_request.asset_dir, import_dataset_request.pred_dir,
-                                         import_dataset_request.gt_dir)
-        if pred_dir:
-            if not os.access(pred_dir, os.R_OK):
+        (media_dir, pred_path, gt_path) = (import_dataset_request.asset_dir, import_dataset_request.pred_path,
+                                           import_dataset_request.gt_path)
+        if pred_path:
+            if not os.access(pred_path, os.R_OK):
                 return utils.make_general_response(code=CTLResponseCode.ARG_VALIDATION_FAILED,
-                                                   message=f"invalid permissions of pred_dir: {pred_dir}")
-        if gt_dir:
-            if not os.access(gt_dir, os.R_OK):
+                                                   message=f"invalid permissions of pred_path: {pred_path}")
+        if gt_path:
+            if not os.access(gt_path, os.R_OK):
                 return utils.make_general_response(code=CTLResponseCode.ARG_VALIDATION_FAILED,
-                                                   message=f"invalid permissions of groundtruth_dir: {gt_dir}")
+                                                   message=f"invalid permissions of gt_path: {gt_path}")
 
         if not os.access(media_dir, os.R_OK):
             return utils.make_general_response(CTLResponseCode.ARG_VALIDATION_FAILED,
@@ -56,8 +56,8 @@ class TaskImportDatasetInvoker(TaskBaseInvoker):
             label_storage_file=user_labels.storage_file,
             task_id=subtask_id,
             index_file=index_file,
-            pred_path=import_dataset_request.pred_dir,
-            gt_path=import_dataset_request.gt_dir,
+            pred_path=import_dataset_request.pred_path,
+            gt_path=import_dataset_request.gt_path,
             media_location=media_location,
             work_dir=subtask_workdir,
             unknown_types_strategy=import_dataset_request.unknown_types_strategy,
@@ -70,11 +70,11 @@ class TaskImportDatasetInvoker(TaskBaseInvoker):
             except Exception:
                 pass
             try:
-                shutil.rmtree(import_dataset_request.pred_dir)
+                shutil.rmtree(import_dataset_request.pred_path)
             except Exception:
                 pass
             try:
-                shutil.rmtree(import_dataset_request.gt_dir)
+                shutil.rmtree(import_dataset_request.gt_path)
             except Exception:
                 pass
 
