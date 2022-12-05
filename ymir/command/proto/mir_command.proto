@@ -75,8 +75,7 @@ enum AnnoFormat {
     AF_DET_PASCAL_VOC = 1;
     AF_DET_ARK_JSON = 2;
     AF_DET_LS_JSON = 3;
-    AF_SEG_POLYGON = 4;
-    AF_SEG_MASK = 5;
+    AF_SEMANTIC_SEG_COCO_JSON = 4;
 };
 
 enum AssetFormat {

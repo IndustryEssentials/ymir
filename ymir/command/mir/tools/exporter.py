@@ -1,7 +1,8 @@
+from datetime import datetime
 import json
 import os
 import shutil
-from typing import Callable, Dict, Optional, TextIO, Tuple
+from typing import Any, Callable, Dict, Optional, TextIO, Tuple
 import uuid
 import xml.etree.ElementTree as ElementTree
 
@@ -26,13 +27,26 @@ def _anno_file_ext(anno_format: "mirpb.AnnoFormat.V") -> str:
         mirpb.AnnoFormat.AF_DET_ARK_JSON: 'txt',
         mirpb.AnnoFormat.AF_DET_PASCAL_VOC: 'xml',
         mirpb.AnnoFormat.AF_DET_LS_JSON: 'json',
-        mirpb.AnnoFormat.AF_SEG_POLYGON: 'xml',
-        mirpb.AnnoFormat.AF_SEG_MASK: 'png',
+        mirpb.AnnoFormat.AF_SEMANTIC_SEG_COCO_JSON: 'json',
     }
     return _anno_ext_map.get(anno_format, "unknown")
 
 
-def _format_file_output_func(
+def _annotations_output_func(
+    anno_format: "mirpb.AnnoFormat.V"
+) -> Callable[[mirpb.MirMetadatas, mirpb.MirAnnotations, mirpb.ExportConfig, Dict[int, int], UserLabels], None]:
+    _format_func_map = {
+        mirpb.AnnoFormat.AF_DET_ARK_JSON: _export_annos_to_separate_files,
+        mirpb.AnnoFormat.AF_DET_PASCAL_VOC: _export_annos_to_separate_files,
+        mirpb.AnnoFormat.AF_DET_LS_JSON: _export_annos_to_separate_files,
+        mirpb.AnnoFormat.AF_SEMANTIC_SEG_COCO_JSON: _annotations_to_coco,
+    }
+    if anno_format not in _format_func_map:
+        raise NotImplementedError(f"unknown anno_format: {anno_format}")
+    return _format_func_map[anno_format]
+
+
+def _image_annotations_output_func(
     anno_format: "mirpb.AnnoFormat.V"
 ) -> Callable[[
         mirpb.MetadataAttributes, mirpb.SingleImageAnnotations, Optional[mirpb.SingleImageCks], Optional[Dict[
@@ -42,8 +56,6 @@ def _format_file_output_func(
         mirpb.AnnoFormat.AF_DET_ARK_JSON: _single_image_annotations_to_det_ark,
         mirpb.AnnoFormat.AF_DET_PASCAL_VOC: _single_image_annotations_to_voc,
         mirpb.AnnoFormat.AF_DET_LS_JSON: _single_image_annotations_to_det_ls_json,
-        mirpb.AnnoFormat.AF_SEG_POLYGON: _single_image_annotations_to_voc,
-        mirpb.AnnoFormat.AF_SEG_MASK: _single_image_annotations_to_seg_mask,
     }
     if anno_format not in _format_func_map:
         raise NotImplementedError(f"unknown anno_format: {anno_format}")
@@ -151,6 +163,7 @@ def _export_mirdatas_to_raw(
     ec.asset_index_prefix = ec.asset_index_prefix or ec.asset_dir
     index_asset_f = open(ec.asset_index_file, 'w')
 
+    index_gt_f = None
     if ec.gt_dir:
         if not ec.gt_index_file:
             ec.gt_index_file = os.path.join(ec.gt_dir, get_index_filename())
@@ -158,6 +171,7 @@ def _export_mirdatas_to_raw(
         index_gt_f = open(ec.gt_index_file, 'w')
         ec.gt_index_prefix = ec.gt_index_prefix or ec.gt_dir
 
+    index_pred_f = None
     if ec.pred_dir:
         if not ec.pred_index_file:
             ec.pred_index_file = os.path.join(ec.pred_dir, get_index_filename())
@@ -185,86 +199,44 @@ def _export_mirdatas_to_raw(
             shutil.copyfile(asset_src_file, asset_abs_file)
         index_asset_f.write(f"{asset_idx_file}\n")
 
-        if ec.anno_format == mirpb.AnnoFormat.AF_NO_ANNOTATION:
-            continue
-
-        if ec.gt_dir and mir_annotations:
-            # export annotation file even annotation not exists.
-            if asset_id in mir_annotations.ground_truth.image_annotations:
-                image_annotations = mir_annotations.ground_truth.image_annotations[asset_id]
-            else:
-                image_annotations = mirpb.SingleImageAnnotations()
-
-            gt_abs_file, gt_idx_file = _gen_abs_idx_file_path(abs_dir=ec.gt_dir,
-                                                              idx_prefix=ec.gt_index_prefix,
-                                                              file_name=asset_id,
-                                                              file_ext=_anno_file_ext(anno_format=ec.anno_format),
-                                                              need_sub_folder=ec.need_sub_folder)
-            _export_anno_to_file(
-                anno_dst_file=gt_abs_file,
-                anno_format=ec.anno_format,
-                attributes=attributes,
-                image_annotations=image_annotations,
-                image_cks=mir_annotations.image_cks[asset_id],
-                class_ids_mapping=class_ids_mapping,
-                cls_id_mgr=cls_id_mgr,
-                asset_filename=asset_idx_file,
-            )
-            asset_anno_pair_line = f"{asset_idx_file}\t{gt_idx_file}\n"
-            index_gt_f.write(asset_anno_pair_line)
-            if ec.tvt_index_dir:
-                index_tvt_f[(False, attributes.tvt_type)].write(asset_anno_pair_line)
-
-        if ec.pred_dir and mir_annotations:
-            # export annotation file even annotation not exists.
-            if asset_id in mir_annotations.prediction.image_annotations:
-                image_annotations = mir_annotations.prediction.image_annotations[asset_id]
-            else:
-                image_annotations = mirpb.SingleImageAnnotations()
-
-            pred_abs_file, pred_idx_file = _gen_abs_idx_file_path(abs_dir=ec.pred_dir,
-                                                                  idx_prefix=ec.pred_index_prefix,
-                                                                  file_name=asset_id,
-                                                                  file_ext=_anno_file_ext(anno_format=ec.anno_format),
-                                                                  need_sub_folder=ec.need_sub_folder)
-            _export_anno_to_file(
-                anno_dst_file=pred_abs_file,
-                anno_format=ec.anno_format,
-                attributes=attributes,
-                image_annotations=image_annotations,
-                image_cks=None,
-                class_ids_mapping=class_ids_mapping,
-                cls_id_mgr=cls_id_mgr,
-                asset_filename=asset_idx_file,
-            )
-            asset_anno_pair_line = f"{asset_idx_file}\t{pred_idx_file}\n"
-            index_pred_f.write(asset_anno_pair_line)
-            if ec.tvt_index_dir:
-                index_tvt_f[(True, attributes.tvt_type)].write(asset_anno_pair_line)
-
-    # write labelmap.txt.
-    if ec.gt_dir and mir_annotations and mir_annotations.ground_truth.map_id_color:
-        if not cls_id_mgr:
-            raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
-                                  error_message="cls_id_mgr is not set in exporter.")
-        labelmap_file = os.path.join(ec.gt_dir, 'labelmap.txt')
-        with open(labelmap_file, 'w') as f:
-            cids = sorted(mir_annotations.ground_truth.map_id_color.keys())
-            for cid in cids:
-                point = mir_annotations.ground_truth.map_id_color[cid]
-                color = f"{point.x},{point.y},{point.z}"
-                f.write(f"{cls_id_mgr.main_name_for_id(cid)}:{color}::\n")
-    if ec.pred_dir and mir_annotations and mir_annotations.prediction.map_id_color:
-        if not cls_id_mgr:
-            raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
-                                  error_message="cls_id_mgr is not set in exporter.")
-        labelmap_file = os.path.join(ec.pred_dir, 'labelmap.txt')
-        with open(labelmap_file, 'w') as f:
-            cids = sorted(mir_annotations.prediction.map_id_color.keys())
-            for cid in cids:
-                point = mir_annotations.prediction.map_id_color[cid]
-                color = f"{point.x},{point.y},{point.z}"
-                f.write(f"{cls_id_mgr.main_name_for_id(cid)}:{color}::\n")
+    if ec.anno_format != mirpb.AnnoFormat.AF_NO_ANNOTATION:
+        # export annotations
+        _annotations_output_func(ec.anno_format)(mir_metadatas=mir_metadatas,
+                                                 mir_annotations=mir_annotations,
+                                                 ec=ec,
+                                                 index_tvt_f=index_tvt_f,
+                                                 index_gt_f=index_gt_f,
+                                                 index_pred_f=index_pred_f,
+                                                 class_ids_mapping=class_ids_mapping,
+                                                 cls_id_mgr=cls_id_mgr)
+        # write index tsv files
+        # todo: coco has only /in/assets/xxx for each line in index file
+        for asset_id, attributes in mir_metadatas.attributes.items():
+            _, asset_idx_file = _gen_abs_idx_file_path(abs_dir=ec.asset_dir,
+                                                       idx_prefix=ec.asset_index_prefix,
+                                                       file_name=asset_id,
+                                                       file_ext=_asset_file_ext(attributes.asset_type),
+                                                       need_sub_folder=ec.need_sub_folder)
+            if ec.gt_dir:
+                _, gt_idx_file = _gen_abs_idx_file_path(abs_dir=ec.gt_dir,
+                                                        idx_prefix=ec.gt_index_prefix,
+                                                        file_name=asset_id,
+                                                        file_ext=_anno_file_ext(anno_format=ec.anno_format),
+                                                        need_sub_folder=ec.need_sub_folder)
+                asset_anno_pair_line = f"{asset_idx_file}\t{gt_idx_file}\n"
+                index_gt_f.write(asset_anno_pair_line)
+                if ec.tvt_index_dir:
+                    index_tvt_f[(False, attributes.tvt_type)].write(asset_anno_pair_line)
+            if ec.pred_dir:
+                _, pred_idx_file = _gen_abs_idx_file_path(abs_dir=ec.pred_dir,
+                                                          idx_prefix=ec.pred_index_prefix,
+                                                          file_name=asset_id,
+                                                          file_ext=_anno_file_ext(anno_format=ec.anno_format),
+                                                          need_sub_folder=ec.need_sub_folder)
+                asset_anno_pair_line = f"{asset_idx_file}\t{pred_idx_file}\n"
+                index_pred_f.write(asset_anno_pair_line)
+                if ec.tvt_index_dir:
+                    index_tvt_f[(True, attributes.tvt_type)].write(asset_anno_pair_line)
 
     index_asset_f.close()
     # Clean up.
@@ -288,11 +260,93 @@ def _export_mirdatas_to_lmdb(
     raise NotImplementedError("LMDB format is not supported yet.")
 
 
+def _export_annos_to_separate_files(
+    mir_metadatas: mirpb.MirMetadatas,
+    mir_annotations: mirpb.MirAnnotations,
+    ec: mirpb.ExportConfig,
+    class_ids_mapping: Optional[Dict[int, int]] = None,
+    cls_id_mgr: Optional[UserLabels] = None,
+) -> None:
+    for asset_id, attributes in mir_metadatas.attributes.items():
+        _, asset_idx_file = _gen_abs_idx_file_path(abs_dir=ec.asset_dir,
+                                                   idx_prefix=ec.asset_index_prefix,
+                                                   file_name=asset_id,
+                                                   file_ext=_asset_file_ext(attributes.asset_type),
+                                                   need_sub_folder=ec.need_sub_folder)
+
+        if ec.gt_dir and mir_annotations:
+            # export annotation file even annotation not exists.
+            if asset_id in mir_annotations.ground_truth.image_annotations:
+                image_annotations = mir_annotations.ground_truth.image_annotations[asset_id]
+            else:
+                image_annotations = mirpb.SingleImageAnnotations()
+
+            gt_abs_file, _ = _gen_abs_idx_file_path(abs_dir=ec.gt_dir,
+                                                    idx_prefix=ec.gt_index_prefix,
+                                                    file_name=asset_id,
+                                                    file_ext=_anno_file_ext(anno_format=ec.anno_format),
+                                                    need_sub_folder=ec.need_sub_folder)
+            _export_anno_to_file(
+                anno_dst_file=gt_abs_file,
+                anno_format=ec.anno_format,
+                attributes=attributes,
+                image_annotations=image_annotations,
+                image_cks=mir_annotations.image_cks[asset_id],
+                class_ids_mapping=class_ids_mapping,
+                cls_id_mgr=cls_id_mgr,
+                asset_filename=asset_idx_file,
+            )
+
+        if ec.pred_dir and mir_annotations:
+            # export annotation file even annotation not exists.
+            if asset_id in mir_annotations.prediction.image_annotations:
+                image_annotations = mir_annotations.prediction.image_annotations[asset_id]
+            else:
+                image_annotations = mirpb.SingleImageAnnotations()
+
+            pred_abs_file, _ = _gen_abs_idx_file_path(abs_dir=ec.pred_dir,
+                                                      idx_prefix=ec.pred_index_prefix,
+                                                      file_name=asset_id,
+                                                      file_ext=_anno_file_ext(anno_format=ec.anno_format),
+                                                      need_sub_folder=ec.need_sub_folder)
+            _export_anno_to_file(
+                anno_dst_file=pred_abs_file,
+                anno_format=ec.anno_format,
+                attributes=attributes,
+                image_annotations=image_annotations,
+                image_cks=None,
+                class_ids_mapping=class_ids_mapping,
+                cls_id_mgr=cls_id_mgr,
+                asset_filename=asset_idx_file,
+            )
+
+
+def _annotations_to_coco(
+    mir_metadatas: mirpb.MirMetadatas,
+    mir_annotations: mirpb.MirAnnotations,
+    ec: mirpb.ExportConfig,
+    class_ids_mapping: Optional[Dict[int, int]] = None,
+    cls_id_mgr: Optional[UserLabels] = None,
+) -> None:
+    if ec.pred_dir:
+        _single_task_annotations_to_coco(mir_metadatas=mir_metadatas,
+                                         task_annotations=mir_annotations.prediction,
+                                         class_ids_mapping=class_ids_mapping,
+                                         cls_id_mgr=cls_id_mgr,
+                                         dst_file_path=os.path.join(ec.pred_dir, 'coco.json'))
+    if ec.gt_dir:
+        _single_task_annotations_to_coco(mir_metadatas=mir_metadatas,
+                                         task_annotations=mir_annotations.ground_truth,
+                                         class_ids_mapping=class_ids_mapping,
+                                         cls_id_mgr=cls_id_mgr,
+                                         dst_file_path=os.path.join(ec.gt_dir, 'coco.json'))
+
+
 def _export_anno_to_file(anno_dst_file: str, anno_format: "mirpb.AnnoFormat.V",
                          attributes: mirpb.MetadataAttributes, image_annotations: mirpb.SingleImageAnnotations,
                          image_cks: Optional[mirpb.SingleImageCks], class_ids_mapping: Optional[Dict[int, int]],
                          cls_id_mgr: Optional[UserLabels], asset_filename: str) -> None:
-    format_func = _format_file_output_func(anno_format=anno_format)
+    format_func = _image_annotations_output_func(anno_format=anno_format)
     format_func(attributes,
                 image_annotations,
                 image_cks,
@@ -502,15 +556,81 @@ def _single_image_annotations_to_det_ls_json(attributes: mirpb.MetadataAttribute
         af.write(json.dumps(task))
 
 
-def _single_image_annotations_to_seg_mask(attributes: mirpb.MetadataAttributes,
-                                          image_annotations: mirpb.SingleImageAnnotations,
-                                          image_cks: Optional[mirpb.SingleImageCks],
-                                          class_ids_mapping: Optional[Dict[int, int]],
-                                          cls_id_mgr: Optional[UserLabels],
-                                          asset_filename: str, anno_dst_file: str) -> None:
-    if not image_annotations.masks:
-        return
-    if len(image_annotations.masks) > 1:
-        raise NotImplementedError('Multiple mask layers not supported')
-    with open(anno_dst_file, 'wb') as af:
-        af.write(image_annotations.masks[0].semantic_mask)
+def _single_task_annotations_to_coco(
+    mir_metadatas: mirpb.MirMetadatas,
+    task_annotations: mirpb.SingleTaskAnnotations,
+    class_ids_mapping: Optional[Dict[int, int]],
+    cls_id_mgr: Optional[UserLabels],
+    dst_file_path: str,
+) -> None:
+    # images list
+    images_list = []
+    asset_id_to_coco_image_ids: Dict[str, int] = {}
+    for idx, asset_id in enumerate(sorted(mir_metadatas.attributes.keys())):
+        attrs = mir_metadatas.attributes[asset_id]
+        images_list.append({
+            'id': idx + 1,
+            'file_name': f"{asset_id}.{_asset_file_ext(attrs.asset_type)}",
+            'width': attrs.width,
+            'height': attrs.height,
+            'date_captured': str(datetime.fromtimestamp(attrs.timestamp.start)),
+            'license': 1,
+            'coco_url': '',
+            'flickr_url': '',
+        })
+        asset_id_to_coco_image_ids[asset_id] = idx + 1
+
+    # licenses list
+    licenses_list = [{
+        'id': 1,
+        'name': '',
+        'url': '',
+    }]
+
+    # categories list
+    categories_list = []
+    for cid in task_annotations.task_class_ids:
+        if class_ids_mapping and cid not in class_ids_mapping:
+            continue
+        categories_list.append({
+            'id': class_ids_mapping[cid] if class_ids_mapping else cid,
+            'name': cls_id_mgr.main_name_for_id(cid),
+            'supercategory': 'none',
+        })
+
+    # annotations list
+    annotations_list = []
+    coco_anno_id = 1
+    for asset_id, sia in task_annotations.image_annotations.items():
+        coco_image_id = asset_id_to_coco_image_ids[asset_id]
+        attrs = mir_metadatas.attributes[asset_id]
+        for oa in sia.boxes:
+            segmentation = {}
+            if oa.type == mirpb.ObjAnnoType.OAT_MASK:
+                segmentation = {
+                    'counts': oa.mask,
+                    'size': [attrs.height, attrs.width],
+                }
+            elif oa.type == mirpb.ObjAnnoType.OAT_POLYGON:
+                segmentation = [[]]
+                for p in oa.polygon:
+                    segmentation[0].extend([p.x, p.y])
+
+            annotations_list.append({
+                'id': coco_anno_id,
+                'image_id': coco_image_id,
+                'category_id': class_ids_mapping[oa.class_id] if class_ids_mapping else oa.class_id,
+                'iscrowd': oa.iscrowd,
+                'bbox': [oa.box.x, oa.box.y, oa.box.w, oa.box.h],
+                'segmentation': segmentation,
+            })
+            coco_anno_id += 1
+
+    with open(dst_file_path, 'w') as f:
+        coco_dict = {
+            'images': images_list,
+            'licenses': licenses_list,
+            'categories': categories_list,
+            'annotations': annotations_list,
+        }
+        f.write(json.dumps(coco_dict))

@@ -179,20 +179,12 @@ class _AnnoFormatEnumTypeWrapper(google.protobuf.internal.enum_type_wrapper._Enu
     AF_DET_ARK_JSON = AnnoFormat.V(2)
     AF_DET_LS_JSON = AnnoFormat.V(3)
     AF_SEMANTIC_SEG_COCO_JSON = AnnoFormat.V(4)
-    """AF_SEG_POLYGON = 4;
-    AF_SEG_MASK = 5;
-    """
-
 
 AF_NO_ANNOTATION = AnnoFormat.V(0)
 AF_DET_PASCAL_VOC = AnnoFormat.V(1)
 AF_DET_ARK_JSON = AnnoFormat.V(2)
 AF_DET_LS_JSON = AnnoFormat.V(3)
 AF_SEMANTIC_SEG_COCO_JSON = AnnoFormat.V(4)
-"""AF_SEG_POLYGON = 4;
-AF_SEG_MASK = 5;
-"""
-
 global___AnnoFormat = AnnoFormat
 
 
@@ -1391,10 +1383,10 @@ class ExportConfig(google.protobuf.message.Message):
     MEDIA_LOCATION_FIELD_NUMBER: builtins.int
     NEED_SUB_FOLDER_FIELD_NUMBER: builtins.int
     ANNO_FORMAT_FIELD_NUMBER: builtins.int
-    GT_PATH_FIELD_NUMBER: builtins.int
+    GT_DIR_FIELD_NUMBER: builtins.int
     GT_INDEX_FILE_FIELD_NUMBER: builtins.int
     GT_INDEX_PREFIX_FIELD_NUMBER: builtins.int
-    PRED_PATH_FIELD_NUMBER: builtins.int
+    PRED_DIR_FIELD_NUMBER: builtins.int
     PRED_INDEX_FILE_FIELD_NUMBER: builtins.int
     PRED_INDEX_PREFIX_FIELD_NUMBER: builtins.int
     TVT_INDEX_DIR_FIELD_NUMBER: builtins.int
@@ -1411,10 +1403,10 @@ class ExportConfig(google.protobuf.message.Message):
     anno_format: global___AnnoFormat.V = ...
     """Annotation config."""
 
-    gt_path: typing.Text = ...
+    gt_dir: typing.Text = ...
     gt_index_file: typing.Text = ...
     gt_index_prefix: typing.Text = ...
-    pred_path: typing.Text = ...
+    pred_dir: typing.Text = ...
     pred_index_file: typing.Text = ...
     pred_index_prefix: typing.Text = ...
     tvt_index_dir: typing.Text = ...
@@ -1427,13 +1419,13 @@ class ExportConfig(google.protobuf.message.Message):
         media_location : typing.Text = ...,
         need_sub_folder : builtins.bool = ...,
         anno_format : global___AnnoFormat.V = ...,
-        gt_path : typing.Text = ...,
+        gt_dir : typing.Text = ...,
         gt_index_file : typing.Text = ...,
         gt_index_prefix : typing.Text = ...,
-        pred_path : typing.Text = ...,
+        pred_dir : typing.Text = ...,
         pred_index_file : typing.Text = ...,
         pred_index_prefix : typing.Text = ...,
         tvt_index_dir : typing.Text = ...,
         ) -> None: ...
-    def ClearField(self, field_name: typing_extensions.Literal["anno_format",b"anno_format","asset_dir",b"asset_dir","asset_format",b"asset_format","asset_index_file",b"asset_index_file","asset_index_prefix",b"asset_index_prefix","gt_index_file",b"gt_index_file","gt_index_prefix",b"gt_index_prefix","gt_path",b"gt_path","media_location",b"media_location","need_sub_folder",b"need_sub_folder","pred_index_file",b"pred_index_file","pred_index_prefix",b"pred_index_prefix","pred_path",b"pred_path","tvt_index_dir",b"tvt_index_dir"]) -> None: ...
+    def ClearField(self, field_name: typing_extensions.Literal["anno_format",b"anno_format","asset_dir",b"asset_dir","asset_format",b"asset_format","asset_index_file",b"asset_index_file","asset_index_prefix",b"asset_index_prefix","gt_dir",b"gt_dir","gt_index_file",b"gt_index_file","gt_index_prefix",b"gt_index_prefix","media_location",b"media_location","need_sub_folder",b"need_sub_folder","pred_dir",b"pred_dir","pred_index_file",b"pred_index_file","pred_index_prefix",b"pred_index_prefix","tvt_index_dir",b"tvt_index_dir"]) -> None: ...
 global___ExportConfig = ExportConfig

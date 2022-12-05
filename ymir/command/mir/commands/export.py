@@ -147,7 +147,7 @@ def bind_to_subparsers(subparsers: argparse._SubParsersAction, parent_parser: ar
                                       type=str,
                                       default="none",
                                       choices=["none", "det-ark", "det-voc", "det-ls-json", "semseg-coco"],
-                                      help='annotation format: ark / voc / none')
+                                      help='annotation format')
     exporting_arg_parser.add_argument('--asset-format',
                                       dest='asset_format',
                                       type=str,
