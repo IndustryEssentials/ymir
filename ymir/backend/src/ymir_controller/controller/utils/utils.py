@@ -78,6 +78,14 @@ def annotation_format_str(format: mir_cmd_pb.AnnoFormat) -> str:
     return format_enum_dict[format]
 
 
+def anno_type_str(anno_type: mir_cmd_pb.AnnoType) -> str:
+    format_enum_dict = {
+        mir_cmd_pb.AnnoType.AT_DET_BOX: 'det-box',
+        mir_cmd_pb.AnnoType.AT_SEMANTIC_SEG: 'semantic-seg',
+    }
+    return format_enum_dict[anno_type]
+
+
 def time_it(f: Callable) -> Callable:
     @wraps(f)
     def wrapper(*args: tuple, **kwargs: Dict) -> Callable:

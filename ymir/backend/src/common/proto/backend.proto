@@ -155,6 +155,7 @@ message TaskReqImportDataset {
     // strategy for unknown class types: stop, ignore or add
     UnknownTypesStrategy unknown_types_strategy = 4;
     bool clean_dirs = 5;
+    mir.command.AnnoType anno_type = 6;
 }
 
 message TaskReqExporting {
