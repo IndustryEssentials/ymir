@@ -16,12 +16,14 @@ from controller.invoker.invoker_task_import_dataset import TaskImportDatasetInvo
 from controller.utils import utils
 from controller.utils.redis import rds
 from controller.label_model.base import NotReadyError
+from mir.protos import mir_command_pb2 as mir_cmd_pb
 from proto import backend_pb2
 
 
 def trigger_mir_import(repo_root: str, task_id: str, index_file: str, des_annotation_path: str, media_location: str,
                        import_work_dir: str) -> None:
     # trigger mir import
+    # todo: handle semantic segmentation label task
     TaskImportDatasetInvoker.importing_cmd(repo_root=repo_root,
                                            label_storage_file=os.path.join(os.path.dirname(repo_root), ids_file_name()),
                                            task_id=task_id,
@@ -30,7 +32,8 @@ def trigger_mir_import(repo_root: str, task_id: str, index_file: str, des_annota
                                            gt_path=des_annotation_path,
                                            media_location=media_location,
                                            work_dir=import_work_dir,
-                                           unknown_types_strategy=backend_pb2.UnknownTypesStrategy.UTS_STOP)
+                                           unknown_types_strategy=backend_pb2.UnknownTypesStrategy.UTS_STOP,
+                                           anno_type=mir_cmd_pb.AnnoType.AT_DET_BOX)
 
 
 def remove_json_file(des_annotation_path: str) -> None:
