@@ -57,7 +57,7 @@ const Segmentation: FC<Props> = ({ asset }) => {
   function calClientWidth() {
     const { current } = imgContainer
     const cw = current?.clientWidth || 0
-    const iw = asset.width || 0
+    const iw = asset?.width || 0
     const clientWidth = iw > cw ? cw : iw
     setImgWidth(clientWidth)
     setWidth(cw)
@@ -77,7 +77,7 @@ const Segmentation: FC<Props> = ({ asset }) => {
   return (
     <div className={styles.anno_panel} ref={imgContainer}>
       <div className={styles.img_container}>
-        <img ref={img} src={TestImage} style={{ width: imgWidth }} className={styles.assetImg} onLoad={calClientWidth} />
+        <img ref={img} src={asset?.url} style={{ width: imgWidth }} className={styles.assetImg} onLoad={calClientWidth} />
       </div>
       <div className={styles.annotations} style={{ width: imgWidth, left: -imgWidth / 2 }}>
         {annotations.map(renderAnnotation)}
