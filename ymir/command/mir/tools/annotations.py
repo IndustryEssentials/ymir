@@ -12,6 +12,7 @@ import yaml
 from mir.tools import class_ids
 from mir.tools.code import MirCode
 from mir.tools.errors import MirRuntimeError
+from mir.tools.settings import COCO_JSON_NAME
 from mir.tools.phase_logger import PhaseLoggerCenter
 from mir.protos import mir_command_pb2 as mirpb
 
@@ -244,7 +245,7 @@ def _import_annotations_coco_json(map_hashed_filename: Dict[str, str], mir_annot
                                   image_annotations: mirpb.SingleTaskAnnotations) -> None:
     add_if_not_found = (unknown_types_strategy == UnknownTypesStrategy.ADD)
 
-    coco_file_path = os.path.join(annotations_dir_path, 'coco.json')
+    coco_file_path = os.path.join(annotations_dir_path, COCO_JSON_NAME)
     with open(coco_file_path, 'r') as f:
         coco_obj = json.loads(f.read())
         images_list = coco_obj['images']

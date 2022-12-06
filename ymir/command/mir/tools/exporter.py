@@ -6,11 +6,12 @@ from typing import Callable, Dict, Optional, TextIO, Tuple, Union
 import uuid
 import xml.etree.ElementTree as ElementTree
 
+from mir.protos import mir_command_pb2 as mirpb
+from mir.tools import annotations, mir_storage
 from mir.tools.class_ids import UserLabels
 from mir.tools.code import MirCode, time_it
-from mir.tools import annotations, mir_storage
-from mir.protos import mir_command_pb2 as mirpb
 from mir.tools.errors import MirRuntimeError
+from mir.tools.settings import COCO_JSON_NAME
 
 
 def _asset_file_ext(asset_format: "mirpb.AssetType.V") -> str:
@@ -343,13 +344,13 @@ def _annotations_to_coco(
                                          task_annotations=mir_annotations.prediction,
                                          class_ids_mapping=class_ids_mapping,
                                          cls_id_mgr=cls_id_mgr,
-                                         dst_file_path=os.path.join(ec.pred_dir, 'coco.json'))
+                                         dst_file_path=os.path.join(ec.pred_dir, COCO_JSON_NAME))
     if ec.gt_dir:
         _single_task_annotations_to_coco(mir_metadatas=mir_metadatas,
                                          task_annotations=mir_annotations.ground_truth,
                                          class_ids_mapping=class_ids_mapping,
                                          cls_id_mgr=cls_id_mgr,
-                                         dst_file_path=os.path.join(ec.gt_dir, 'coco.json'))
+                                         dst_file_path=os.path.join(ec.gt_dir, COCO_JSON_NAME))
 
 
 def _export_anno_to_file(anno_dst_file: str, anno_format: "mirpb.AnnoFormat.V",
