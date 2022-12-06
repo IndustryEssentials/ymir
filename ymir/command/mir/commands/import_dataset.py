@@ -44,7 +44,7 @@ class CmdImport(base.BaseCommand):
             logging.error(f"prediction dir invalid: {pred_abs}")
             return MirCode.RC_CMD_INVALID_ARGS
         if gt_abs and not os.path.isdir(gt_abs):
-            logging.error(f"invalid groundtruth path: {gt_abs}")
+            logging.error(f"groundtruth dir invalid: {gt_abs}")
             return MirCode.RC_CMD_INVALID_ARGS
         dst_typ_rev_tid = revs_parser.parse_single_arg_rev(dst_rev, need_tid=True)
         src_typ_rev_tid = revs_parser.parse_single_arg_rev(src_revs, need_tid=False)
