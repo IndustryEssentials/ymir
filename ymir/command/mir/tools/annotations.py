@@ -121,8 +121,8 @@ def _coco_object_dict_to_annotation(anno_dict: dict, category_id_to_cids: Dict[i
     return obj_anno
 
 
-def import_annotations(mir_annotation: mirpb.MirAnnotations, label_storage_file: str, prediction_path: str,
-                       groundtruth_path: str, map_hashed_filename: Dict[str, str],
+def import_annotations(mir_annotation: mirpb.MirAnnotations, label_storage_file: str, prediction_dir_path: str,
+                       groundtruth_dir_path: str, map_hashed_filename: Dict[str, str],
                        unknown_types_strategy: UnknownTypesStrategy, anno_type: "mirpb.AnnoType.V",
                        phase: str) -> Dict[str, int]:
     anno_import_result: Dict[str, int] = defaultdict(int)
@@ -131,12 +131,12 @@ def import_annotations(mir_annotation: mirpb.MirAnnotations, label_storage_file:
     class_type_manager = class_ids.load_or_create_userlabels(label_storage_file=label_storage_file)
     logging.info("loaded type id and names: %d", len(class_type_manager.all_ids()))
 
-    if prediction_path:
-        logging.info(f"wrting prediction in {prediction_path}")
+    if prediction_dir_path:
+        logging.info(f"wrting prediction in {prediction_dir_path}")
         _import_annotations_from_dir(
             map_hashed_filename=map_hashed_filename,
             mir_annotation=mir_annotation,
-            annotations_path=prediction_path,
+            annotations_dir_path=prediction_dir_path,
             class_type_manager=class_type_manager,
             unknown_types_strategy=unknown_types_strategy,
             accu_new_class_names=anno_import_result,
@@ -144,16 +144,16 @@ def import_annotations(mir_annotation: mirpb.MirAnnotations, label_storage_file:
             anno_type=anno_type,
         )
         _import_annotation_meta(class_type_manager=class_type_manager,
-                                annotations_dir_path=prediction_path,
+                                annotations_dir_path=prediction_dir_path,
                                 task_annotations=mir_annotation.prediction)
     PhaseLoggerCenter.update_phase(phase=phase, local_percent=0.5)
 
-    if groundtruth_path:
-        logging.info(f"wrting ground-truth in {groundtruth_path}")
+    if groundtruth_dir_path:
+        logging.info(f"wrting ground-truth in {groundtruth_dir_path}")
         _import_annotations_from_dir(
             map_hashed_filename=map_hashed_filename,
             mir_annotation=mir_annotation,
-            annotations_path=groundtruth_path,
+            annotations_dir_path=groundtruth_dir_path,
             class_type_manager=class_type_manager,
             unknown_types_strategy=unknown_types_strategy,
             accu_new_class_names=anno_import_result,
@@ -170,14 +170,14 @@ def import_annotations(mir_annotation: mirpb.MirAnnotations, label_storage_file:
 
 
 def _import_annotations_from_dir(map_hashed_filename: Dict[str, str], mir_annotation: mirpb.MirAnnotations,
-                                 annotations_path: str, class_type_manager: class_ids.UserLabels,
+                                 annotations_dir_path: str, class_type_manager: class_ids.UserLabels,
                                  unknown_types_strategy: UnknownTypesStrategy, accu_new_class_names: Dict[str, int],
                                  image_annotations: mirpb.SingleTaskAnnotations, anno_type: "mirpb.AnnoType.V") -> None:
     image_annotations.type = anno_type
     _annotation_parse_func(anno_type)(
         map_hashed_filename=map_hashed_filename,
         mir_annotation=mir_annotation,
-        annotations_path=annotations_path,
+        annotations_dir_path=annotations_dir_path,
         class_type_manager=class_type_manager,
         unknown_types_strategy=unknown_types_strategy,
         accu_new_class_names=accu_new_class_names,
@@ -188,13 +188,13 @@ def _import_annotations_from_dir(map_hashed_filename: Dict[str, str], mir_annota
 
 
 def _import_annotations_voc_xml(map_hashed_filename: Dict[str, str], mir_annotation: mirpb.MirAnnotations,
-                                annotations_path: str, class_type_manager: class_ids.UserLabels,
+                                annotations_dir_path: str, class_type_manager: class_ids.UserLabels,
                                 unknown_types_strategy: UnknownTypesStrategy, accu_new_class_names: Dict[str, int],
                                 image_annotations: mirpb.SingleTaskAnnotations) -> None:
     add_if_not_found = (unknown_types_strategy == UnknownTypesStrategy.ADD)
     for asset_hash, main_file_name in map_hashed_filename.items():
         # for each asset, import it's annotations
-        annotation_file = os.path.join(annotations_path, main_file_name + '.xml')
+        annotation_file = os.path.join(annotations_dir_path, main_file_name + '.xml')
         if not os.path.isfile(annotation_file):
             continue
 
@@ -239,12 +239,13 @@ def _import_annotations_voc_xml(map_hashed_filename: Dict[str, str], mir_annotat
 
 
 def _import_annotations_coco_json(map_hashed_filename: Dict[str, str], mir_annotation: mirpb.MirAnnotations,
-                                  annotations_path: str, class_type_manager: class_ids.UserLabels,
+                                  annotations_dir_path: str, class_type_manager: class_ids.UserLabels,
                                   unknown_types_strategy: UnknownTypesStrategy, accu_new_class_names: Dict[str, int],
                                   image_annotations: mirpb.SingleTaskAnnotations) -> None:
     add_if_not_found = (unknown_types_strategy == UnknownTypesStrategy.ADD)
 
-    with open(annotations_path, 'r') as f:
+    coco_file_path = os.path.join(annotations_dir_path, 'coco.json')
+    with open(coco_file_path, 'r') as f:
         coco_obj = json.loads(f.read())
         images_list = coco_obj['images']
         categories_list = coco_obj['categories']
@@ -252,13 +253,13 @@ def _import_annotations_coco_json(map_hashed_filename: Dict[str, str], mir_annot
 
     if not images_list or not isinstance(images_list, list):
         raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_FILE,
-                              error_message=f"Can not find images list in coco json: {annotations_path}")
+                              error_message=f"Can not find images list in coco json: {coco_file_path}")
     if not categories_list or not isinstance(categories_list, list):
         raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_FILE,
-                              error_message=f"Can not find categories list in coco json: {annotations_path}")
+                              error_message=f"Can not find categories list in coco json: {coco_file_path}")
     if annotations_list and not isinstance(annotations_list, list):
         raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_FILE,
-                              error_message=f"Can not find annotations list in coco json: {annotations_path}")
+                              error_message=f"Can not find annotations list in coco json: {coco_file_path}")
 
     # images_list -> image_id_to_hashes (key: coco image id, value: ymir asset hash)
     filename_to_hashes = {v: k for k, v in map_hashed_filename.items()}

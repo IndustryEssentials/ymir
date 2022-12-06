@@ -167,9 +167,9 @@ class ControllerRequest:
         strategy = args.get("strategy") or ImportStrategy.ignore_unknown_annotations
         if strategy != ImportStrategy.no_annotations:
             if args.get("gt_dir"):
-                import_dataset_request.gt_path = args["gt_dir"]
+                import_dataset_request.gt_dir = args["gt_dir"]
             if args.get("pred_dir"):
-                import_dataset_request.pred_path = args["pred_dir"]
+                import_dataset_request.pred_dir = args["pred_dir"]
         import_dataset_request.clean_dirs = args["clean_dirs"]
 
         import_dataset_request.unknown_types_strategy = IMPORTING_STRATEGY_MAPPING[strategy]

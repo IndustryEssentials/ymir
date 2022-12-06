@@ -40,10 +40,10 @@ class CmdImport(base.BaseCommand):
         if not index_file or not gen_abs or not os.path.isfile(index_file):
             logging.error(f"invalid index_file: {index_file} or gen_abs: {gen_abs}")
             return MirCode.RC_CMD_INVALID_ARGS
-        if pred_abs and not os.path.exists(pred_abs):
-            logging.error(f"invalid prediction path: {pred_abs}")
+        if pred_abs and not os.path.isdir(pred_abs):
+            logging.error(f"prediction dir invalid: {pred_abs}")
             return MirCode.RC_CMD_INVALID_ARGS
-        if gt_abs and not os.path.exists(gt_abs):
+        if gt_abs and not os.path.isdir(gt_abs):
             logging.error(f"invalid groundtruth path: {gt_abs}")
             return MirCode.RC_CMD_INVALID_ARGS
         dst_typ_rev_tid = revs_parser.parse_single_arg_rev(dst_rev, need_tid=True)
@@ -81,8 +81,8 @@ class CmdImport(base.BaseCommand):
         mir_annotation = mirpb.MirAnnotations()
         unknown_class_names = annotations.import_annotations(mir_annotation=mir_annotation,
                                                              label_storage_file=label_storage_file,
-                                                             prediction_path=pred_abs,
-                                                             groundtruth_path=gt_abs,
+                                                             prediction_dir_path=pred_abs,
+                                                             groundtruth_dir_path=gt_abs,
                                                              map_hashed_filename=map_hashed_filename,
                                                              unknown_types_strategy=unknown_types_strategy,
                                                              anno_type=anno_type,
@@ -170,16 +170,16 @@ def bind_to_subparsers(subparsers: argparse._SubParsersAction, parent_parser: ar
                                            required=True,
                                            type=str,
                                            help="index of input media, one file per line")
-    import_dataset_arg_parser.add_argument("--pred-path",
+    import_dataset_arg_parser.add_argument("--pred-dir",
                                            dest="pred_abs",
                                            type=str,
                                            required=False,
-                                           help="corresponding prediction folder or file path")
-    import_dataset_arg_parser.add_argument("--gt-path",
+                                           help="corresponding prediction folder")
+    import_dataset_arg_parser.add_argument("--gt-dir",
                                            dest="gt_abs",
                                            type=str,
                                            required=False,
-                                           help="corresponding ground-truth folder or file path")
+                                           help="corresponding ground-truth folder")
     import_dataset_arg_parser.add_argument("--gen-dir",
                                            dest="gen_abs",
                                            required=True,

@@ -138,7 +138,7 @@ class TestCmdImport(unittest.TestCase):
         args.dst_rev = 'a@import_semantic_seg_01'
         args.index_file = self._coco_idx_file
         args.pred_abs = ''
-        args.gt_abs = os.path.join(self._data_xml_path, 'coco.json')
+        args.gt_abs = self._data_xml_path
         args.gen_abs = os.path.join(self._storage_root, 'gen')
         args.work_dir = self._work_dir
         args.unknown_types_strategy = 'add'

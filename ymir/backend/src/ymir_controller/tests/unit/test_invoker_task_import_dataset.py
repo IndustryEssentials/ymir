@@ -82,8 +82,8 @@ class TestInvokerTaskImportDataset(unittest.TestCase):
     def test_invoker_00(self, mock_run):
         import_dataset_request = backend_pb2.TaskReqImportDataset()
         import_dataset_request.asset_dir = self._storage_root
-        import_dataset_request.pred_path = self._storage_root
-        import_dataset_request.gt_path = self._storage_root
+        import_dataset_request.pred_dir = self._storage_root
+        import_dataset_request.gt_dir = self._storage_root
         import_dataset_request.unknown_types_strategy = backend_pb2.UnknownTypesStrategy.UTS_ADD
         import_dataset_request.anno_type = mir_cmd_pb.AnnoType.AT_DET_BOX
         req_create_task = backend_pb2.ReqCreateTask()
@@ -109,7 +109,7 @@ class TestInvokerTaskImportDataset(unittest.TestCase):
             f"mir import --root {self._mir_repo_root} --dst-rev {self._task_id}@{self._task_id} --src-revs master "
             f"--index-file {os.path.join(working_dir, 'index.txt')} --gen-dir {self._storage_root} -w {working_dir} "
             f"--user-label-file {test_utils.user_label_file(sandbox_root=self._sandbox_root, user_id=self._user_name)} "
-            f"--anno-type det-box --pred-path {self._storage_root} --gt-path {self._storage_root} "
+            f"--anno-type det-box --pred-dir {self._storage_root} --gt-dir {self._storage_root} "
             "--unknown-types-strategy add")
         mock_run.assert_has_calls(calls=[
             mock.call(expected_cmd_import_dataset.split(' '), capture_output=True, text=True),
