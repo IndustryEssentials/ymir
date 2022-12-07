@@ -7,7 +7,7 @@ import { randomBetween } from '@/utils/number'
 import useFetch from '@/hooks/useFetch'
 
 import Hash from '@/components/common/hash'
-import AssetAnnotation from '@/components/dataset/assetAnnotation'
+import AssetAnnotation from '@/components/dataset/asset/AssetAnnotation'
 import GtSelector from '@/components/form/GtSelector'
 import EvaluationSelector from '@/components/form/EvaluationSelector'
 
