@@ -3,7 +3,7 @@ from typing import List, Optional
 
 from pydantic import BaseModel, validator
 
-from app.constants.state import MiningStrategy, TrainingType
+from app.constants.state import MiningStrategy, ObjectType
 from app.schemas.common import (
     Common,
     DateTimeModelMixin,
@@ -30,7 +30,7 @@ class ProjectBase(BaseModel):
 
     is_example: Optional[bool] = False
 
-    object_type: TrainingType = TrainingType.object_detect
+    object_type: ObjectType = ObjectType.object_detect
     candidate_training_dataset_id: Optional[int]
 
 
