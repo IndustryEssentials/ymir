@@ -1,4 +1,5 @@
 from datetime import datetime
+from functools import partial
 import json
 import os
 import shutil
@@ -33,31 +34,17 @@ def _anno_file_ext(anno_format: "mirpb.AnnoFormat.V") -> str:
     return _anno_ext_map.get(anno_format, "unknown")
 
 
-def _annotations_output_func(
-    anno_format: "mirpb.AnnoFormat.V"
-) -> Callable[[mirpb.MirMetadatas, mirpb.MirAnnotations, mirpb.ExportConfig, Optional[Dict[int, int]],
-               Optional[UserLabels]], None]:
-    _format_func_map = {
-        mirpb.AnnoFormat.AF_DET_ARK_JSON: _export_annos_to_separate_files,
-        mirpb.AnnoFormat.AF_DET_PASCAL_VOC: _export_annos_to_separate_files,
-        mirpb.AnnoFormat.AF_DET_LS_JSON: _export_annos_to_separate_files,
-        mirpb.AnnoFormat.AF_SEG_COCO_JSON: _annotations_to_coco,
-    }
-    if anno_format not in _format_func_map:
-        raise NotImplementedError(f"unknown anno_format: {anno_format}")
-    return _format_func_map[anno_format]
-
-
-def _image_annotations_output_func(
+def _task_annotations_output_func(
     anno_format: "mirpb.AnnoFormat.V"
 ) -> Callable[[
-        mirpb.MetadataAttributes, mirpb.SingleImageAnnotations, Optional[mirpb.SingleImageCks], Optional[Dict[
-            int, int]], Optional[UserLabels], str, str
+        mirpb.MirMetadatas, mirpb.SingleTaskAnnotations, mirpb.ExportConfig, Optional[Dict[
+            int, int]], Optional[UserLabels], str, Dict[str, mirpb.SingleImageCks]
 ], None]:
     _format_func_map = {
-        mirpb.AnnoFormat.AF_DET_ARK_JSON: _single_image_annotations_to_det_ark,
-        mirpb.AnnoFormat.AF_DET_PASCAL_VOC: _single_image_annotations_to_voc,
-        mirpb.AnnoFormat.AF_DET_LS_JSON: _single_image_annotations_to_det_ls_json,
+        mirpb.AnnoFormat.AF_DET_ARK_JSON: _single_task_annotations_to_ark,
+        mirpb.AnnoFormat.AF_DET_PASCAL_VOC: _single_task_annotations_to_voc,
+        mirpb.AnnoFormat.AF_DET_LS_JSON: _single_task_annotations_to_ls,
+        mirpb.AnnoFormat.AF_SEG_COCO_JSON: _single_task_annotations_to_coco,
     }
     if anno_format not in _format_func_map:
         raise NotImplementedError(f"unknown anno_format: {anno_format}")
@@ -203,7 +190,27 @@ def _export_mirdatas_to_raw(
 
     if ec.anno_format != mirpb.AnnoFormat.AF_NO_ANNOTATION and mir_annotations:
         # export annotations
-        _annotations_output_func(ec.anno_format)(mir_metadatas, mir_annotations, ec, class_ids_mapping, cls_id_mgr)
+        _output_func = _task_annotations_output_func(ec.anno_format)
+        if ec.pred_dir:
+            _output_func(
+                mir_metadatas,
+                mir_annotations.prediction,
+                ec,
+                class_ids_mapping,
+                cls_id_mgr,
+                ec.pred_dir,
+                mir_annotations.image_cks,
+            )
+        if ec.gt_dir:
+            _output_func(
+                mir_metadatas,
+                mir_annotations.ground_truth,
+                ec,
+                class_ids_mapping,
+                cls_id_mgr,
+                ec.gt_dir,
+                {},
+            )
 
         # write index tsv files
         for asset_id, attributes in mir_metadatas.attributes.items():
@@ -271,102 +278,7 @@ def _export_mirdatas_to_lmdb(
     raise NotImplementedError("LMDB format is not supported yet.")
 
 
-def _export_annos_to_separate_files(
-    mir_metadatas: mirpb.MirMetadatas,
-    mir_annotations: mirpb.MirAnnotations,
-    ec: mirpb.ExportConfig,
-    class_ids_mapping: Optional[Dict[int, int]] = None,
-    cls_id_mgr: Optional[UserLabels] = None,
-) -> None:
-    for asset_id, attributes in mir_metadatas.attributes.items():
-        _, asset_idx_file = _gen_abs_idx_file_path(abs_dir=ec.asset_dir,
-                                                   idx_prefix=ec.asset_index_prefix,
-                                                   file_name=asset_id,
-                                                   file_ext=_asset_file_ext(attributes.asset_type),
-                                                   need_sub_folder=ec.need_sub_folder)
-
-        if ec.gt_dir and mir_annotations:
-            # export annotation file even annotation not exists.
-            if asset_id in mir_annotations.ground_truth.image_annotations:
-                image_annotations = mir_annotations.ground_truth.image_annotations[asset_id]
-            else:
-                image_annotations = mirpb.SingleImageAnnotations()
-
-            gt_abs_file, _ = _gen_abs_idx_file_path(abs_dir=ec.gt_dir,
-                                                    idx_prefix=ec.gt_index_prefix,
-                                                    file_name=asset_id,
-                                                    file_ext=_anno_file_ext(anno_format=ec.anno_format),
-                                                    need_sub_folder=ec.need_sub_folder)
-            _export_anno_to_file(
-                anno_dst_file=gt_abs_file,
-                anno_format=ec.anno_format,
-                attributes=attributes,
-                image_annotations=image_annotations,
-                image_cks=mir_annotations.image_cks[asset_id],
-                class_ids_mapping=class_ids_mapping,
-                cls_id_mgr=cls_id_mgr,
-                asset_filename=asset_idx_file,
-            )
-
-        if ec.pred_dir and mir_annotations:
-            # export annotation file even annotation not exists.
-            if asset_id in mir_annotations.prediction.image_annotations:
-                image_annotations = mir_annotations.prediction.image_annotations[asset_id]
-            else:
-                image_annotations = mirpb.SingleImageAnnotations()
-
-            pred_abs_file, _ = _gen_abs_idx_file_path(abs_dir=ec.pred_dir,
-                                                      idx_prefix=ec.pred_index_prefix,
-                                                      file_name=asset_id,
-                                                      file_ext=_anno_file_ext(anno_format=ec.anno_format),
-                                                      need_sub_folder=ec.need_sub_folder)
-            _export_anno_to_file(
-                anno_dst_file=pred_abs_file,
-                anno_format=ec.anno_format,
-                attributes=attributes,
-                image_annotations=image_annotations,
-                image_cks=None,
-                class_ids_mapping=class_ids_mapping,
-                cls_id_mgr=cls_id_mgr,
-                asset_filename=asset_idx_file,
-            )
-
-
-def _annotations_to_coco(
-    mir_metadatas: mirpb.MirMetadatas,
-    mir_annotations: mirpb.MirAnnotations,
-    ec: mirpb.ExportConfig,
-    class_ids_mapping: Optional[Dict[int, int]] = None,
-    cls_id_mgr: Optional[UserLabels] = None,
-) -> None:
-    if ec.pred_dir:
-        _single_task_annotations_to_coco(mir_metadatas=mir_metadatas,
-                                         task_annotations=mir_annotations.prediction,
-                                         class_ids_mapping=class_ids_mapping,
-                                         cls_id_mgr=cls_id_mgr,
-                                         dst_file_path=os.path.join(ec.pred_dir, COCO_JSON_NAME))
-    if ec.gt_dir:
-        _single_task_annotations_to_coco(mir_metadatas=mir_metadatas,
-                                         task_annotations=mir_annotations.ground_truth,
-                                         class_ids_mapping=class_ids_mapping,
-                                         cls_id_mgr=cls_id_mgr,
-                                         dst_file_path=os.path.join(ec.gt_dir, COCO_JSON_NAME))
-
-
-def _export_anno_to_file(anno_dst_file: str, anno_format: "mirpb.AnnoFormat.V",
-                         attributes: mirpb.MetadataAttributes, image_annotations: mirpb.SingleImageAnnotations,
-                         image_cks: Optional[mirpb.SingleImageCks], class_ids_mapping: Optional[Dict[int, int]],
-                         cls_id_mgr: Optional[UserLabels], asset_filename: str) -> None:
-    format_func = _image_annotations_output_func(anno_format=anno_format)
-    format_func(attributes,
-                image_annotations,
-                image_cks,
-                class_ids_mapping,
-                cls_id_mgr,
-                asset_filename,
-                anno_dst_file)
-
-
+# single image annotations export functions
 def _single_image_annotations_to_det_ark(attributes: mirpb.MetadataAttributes,
                                          image_annotations: mirpb.SingleImageAnnotations,
                                          image_cks: Optional[mirpb.SingleImageCks],
@@ -567,12 +479,56 @@ def _single_image_annotations_to_det_ls_json(attributes: mirpb.MetadataAttribute
         af.write(json.dumps(task))
 
 
+# single task annotations export functions
+def _single_task_annotations_to_separated_any(
+    mir_metadatas: mirpb.MirMetadatas,
+    task_annotations: mirpb.SingleTaskAnnotations,
+    ec: mirpb.ExportConfig,
+    class_ids_mapping: Optional[Dict[int, int]],
+    cls_id_mgr: Optional[UserLabels],
+    dst_dir: str,
+    image_cks: Dict[str, mirpb.SingleImageCks],
+    single_image_func: callable,
+) -> None:
+    for asset_id, attributes in mir_metadatas.attributes.items():
+        _, asset_idx_file = _gen_abs_idx_file_path(abs_dir=ec.asset_dir,
+                                                   idx_prefix=ec.asset_index_prefix,
+                                                   file_name=asset_id,
+                                                   file_ext=_asset_file_ext(attributes.asset_type),
+                                                   need_sub_folder=ec.need_sub_folder)
+
+        anno_abs_file, _ = _gen_abs_idx_file_path(abs_dir=dst_dir,
+                                                  idx_prefix='',
+                                                  file_name=asset_id,
+                                                  file_ext=_anno_file_ext(anno_format=ec.anno_format),
+                                                  need_sub_folder=ec.need_sub_folder)
+        single_image_func(
+            attributes,
+            task_annotations.image_annotations.get(asset_id, mirpb.SingleImageAnnotations()),
+            image_cks.get(asset_id, mirpb.SingleImageCks()),
+            class_ids_mapping,
+            cls_id_mgr,
+            asset_idx_file,
+            anno_abs_file,
+        )
+
+
+_single_task_annotations_to_voc = partial(_single_task_annotations_to_separated_any,
+                                          single_image_func=_single_image_annotations_to_voc)
+_single_task_annotations_to_ls = partial(_single_task_annotations_to_separated_any,
+                                         single_image_func=_single_image_annotations_to_det_ls_json)
+_single_task_annotations_to_ark = partial(_single_task_annotations_to_separated_any,
+                                          single_image_func=_single_image_annotations_to_det_ark)
+
+
 def _single_task_annotations_to_coco(
     mir_metadatas: mirpb.MirMetadatas,
     task_annotations: mirpb.SingleTaskAnnotations,
+    ec: mirpb.ExportConfig,  # noqa
     class_ids_mapping: Optional[Dict[int, int]],
     cls_id_mgr: Optional[UserLabels],
-    dst_file_path: str,
+    dst_dir: str,
+    image_cks: Dict[str, mirpb.SingleImageCks],  # noqa
 ) -> None:
     if not cls_id_mgr:
         raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS, error_message='invalid cls_id_mgr')
@@ -640,7 +596,7 @@ def _single_task_annotations_to_coco(
             })
             coco_anno_id += 1
 
-    with open(dst_file_path, 'w') as f:
+    with open(os.path.join(dst_dir, COCO_JSON_NAME), 'w') as f:
         coco_dict = {
             'images': images_list,
             'licenses': licenses_list,
