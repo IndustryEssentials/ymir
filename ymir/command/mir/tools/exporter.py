@@ -234,7 +234,7 @@ def _export_mirdatas_to_raw(
                 if ec.anno_format == mirpb.AnnoFormat.AF_SEG_COCO_JSON:
                     _, gt_idx_file = _gen_abs_idx_file_path(abs_dir=ec.gt_dir,
                                                             idx_prefix=ec.gt_index_prefix,
-                                                            file_name='coco',
+                                                            file_name='coco-annotations',
                                                             file_ext='json',
                                                             need_sub_folder=False)
                 else:
@@ -252,7 +252,7 @@ def _export_mirdatas_to_raw(
                 if ec.anno_format == mirpb.AnnoFormat.AF_SEG_COCO_JSON:
                     _, pred_idx_file = _gen_abs_idx_file_path(abs_dir=ec.pred_dir,
                                                               idx_prefix=ec.pred_index_prefix,
-                                                              file_name='coco',
+                                                              file_name='coco-annotations',
                                                               file_ext='json',
                                                               need_sub_folder=False)
                 else:
@@ -524,12 +524,12 @@ def _single_task_annotations_to_separated_any(
         )
 
 
-_single_task_annotations_to_voc = partial(_single_task_annotations_to_separated_any,
-                                          single_image_func=_single_image_annotations_to_voc)
-_single_task_annotations_to_ls = partial(_single_task_annotations_to_separated_any,
-                                         single_image_func=_single_image_annotations_to_det_ls_json)
-_single_task_annotations_to_ark = partial(_single_task_annotations_to_separated_any,
-                                          single_image_func=_single_image_annotations_to_det_ark)
+_single_task_annotations_to_voc: _SingleTaskAnnotationCallable = partial(
+    _single_task_annotations_to_separated_any, single_image_func=_single_image_annotations_to_voc)
+_single_task_annotations_to_ls: _SingleTaskAnnotationCallable = partial(
+    _single_task_annotations_to_separated_any, single_image_func=_single_image_annotations_to_det_ls_json)
+_single_task_annotations_to_ark: _SingleTaskAnnotationCallable = partial(
+    _single_task_annotations_to_separated_any, single_image_func=_single_image_annotations_to_det_ark)
 
 
 def _single_task_annotations_to_coco(

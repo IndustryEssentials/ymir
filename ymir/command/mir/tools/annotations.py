@@ -32,7 +32,7 @@ def parse_anno_format(anno_format_str: str) -> "mirpb.AnnoFormat.V":
         "det-voc": mirpb.AnnoFormat.AF_DET_PASCAL_VOC,
         "det-ark": mirpb.AnnoFormat.AF_DET_ARK_JSON,
         "det-ls-json": mirpb.AnnoFormat.AF_DET_LS_JSON,
-        "semseg-coco": mirpb.AnnoFormat.AF_SEG_COCO_JSON,
+        "seg-coco": mirpb.AnnoFormat.AF_SEG_COCO_JSON,
     }
     return _anno_dict.get(anno_format_str.lower(), mirpb.AnnoFormat.AF_NO_ANNOTATION)
 
