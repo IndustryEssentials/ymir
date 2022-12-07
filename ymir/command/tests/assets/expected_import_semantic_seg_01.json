@@ -1,30 +1,30 @@
 {
     "mir_metadatas": {
         "attributes": {
-            "1403bda53ea1d49afda2a9e5daff1978b8c1453b": {
+            "430df22960b0f369318705800139fcc8ec38a3e4": {
                 "timestamp": {
-                    "start": 1669880867,
+                    "start": 1669895747,
                     "duration": 0.0
                 },
                 "asset_type": 1,
-                "width": 586,
-                "height": 640,
+                "width": 500,
+                "height": 281,
                 "image_channels": 3,
-                "byte_size": 335861,
-                "origin_filename": "000000000285",
+                "byte_size": 54757,
+                "origin_filename": "2007_000032",
                 "tvt_type": 0
             },
-            "4a7a0c5504d76ef6060f28496fde4cc19109ef6c": {
+            "a3008c032eb11c8d9ffcb58208a36682ee40900f": {
                 "timestamp": {
-                    "start": 1669880867,
+                    "start": 1669895747,
                     "duration": 0.0
                 },
                 "asset_type": 1,
-                "width": 640,
-                "height": 483,
+                "width": 500,
+                "height": 333,
                 "image_channels": 3,
-                "byte_size": 155667,
-                "origin_filename": "000000000632",
+                "byte_size": 23509,
+                "origin_filename": "2007_000243",
                 "tvt_type": 0
             }
         }
@@ -32,7 +32,7 @@
     "mir_annotations": {
         "ground_truth": {
             "image_annotations": {
-                "1403bda53ea1d49afda2a9e5daff1978b8c1453b": {
+                "430df22960b0f369318705800139fcc8ec38a3e4": {
                     "boxes": [
                         {
                             "box": {
@@ -82,7 +82,7 @@
                         7
                     ]
                 },
-                "4a7a0c5504d76ef6060f28496fde4cc19109ef6c": {
+                "a3008c032eb11c8d9ffcb58208a36682ee40900f": {
                     "boxes": [
                         {
                             "box": {
@@ -204,7 +204,7 @@
             "cis": {
                 "5": {
                     "key_ids": {
-                        "4a7a0c5504d76ef6060f28496fde4cc19109ef6c": {
+                        "a3008c032eb11c8d9ffcb58208a36682ee40900f": {
                             "ids": [
                                 1
                             ]
@@ -213,7 +213,7 @@
                 },
                 "3": {
                     "key_ids": {
-                        "4a7a0c5504d76ef6060f28496fde4cc19109ef6c": {
+                        "a3008c032eb11c8d9ffcb58208a36682ee40900f": {
                             "ids": [
                                 0
                             ]
@@ -222,7 +222,7 @@
                 },
                 "6": {
                     "key_ids": {
-                        "4a7a0c5504d76ef6060f28496fde4cc19109ef6c": {
+                        "a3008c032eb11c8d9ffcb58208a36682ee40900f": {
                             "ids": [
                                 2
                             ]
@@ -231,12 +231,12 @@
                 },
                 "7": {
                     "key_ids": {
-                        "1403bda53ea1d49afda2a9e5daff1978b8c1453b": {
+                        "430df22960b0f369318705800139fcc8ec38a3e4": {
                             "ids": [
                                 1
                             ]
                         },
-                        "4a7a0c5504d76ef6060f28496fde4cc19109ef6c": {
+                        "a3008c032eb11c8d9ffcb58208a36682ee40900f": {
                             "ids": [
                                 3
                             ]
@@ -245,7 +245,7 @@
                 },
                 "4": {
                     "key_ids": {
-                        "1403bda53ea1d49afda2a9e5daff1978b8c1453b": {
+                        "430df22960b0f369318705800139fcc8ec38a3e4": {
                             "ids": [
                                 0
                             ]

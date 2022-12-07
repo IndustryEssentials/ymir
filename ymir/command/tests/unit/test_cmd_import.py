@@ -136,7 +136,7 @@ class TestCmdImport(unittest.TestCase):
         args.label_storage_file = ids_file_path(self._mir_repo_root)
         args.src_revs = ''
         args.dst_rev = 'a@import_semantic_seg_01'
-        args.index_file = self._coco_idx_file
+        args.index_file = self._idx_file
         args.pred_abs = ''
         args.gt_abs = self._data_xml_path
         args.gen_abs = os.path.join(self._storage_root, 'gen')
@@ -185,7 +185,6 @@ class TestCmdImport(unittest.TestCase):
         os.makedirs(self._data_root)
 
         self._idx_file = os.path.join(self._data_root, 'idx.txt')
-        self._coco_idx_file = os.path.join(self._data_root, 'coco-idx.txt')
         self._data_img_path = os.path.join(self._data_root, 'img')
         os.makedirs(self._data_img_path)
         self._data_xml_path = os.path.join(self._data_root, 'xml')
@@ -199,15 +198,6 @@ class TestCmdImport(unittest.TestCase):
         # Copy img files.
         img_files = ['2007_000032.jpg', '2007_000243.jpg']
         with open(self._idx_file, 'w') as idx_f:
-            for file in img_files:
-                src = os.path.join(local_data_root, file)
-                dst = os.path.join(self._data_img_path, file)
-                shutil.copyfile(src, dst)
-
-                idx_f.writelines(dst + '\n')
-
-        img_files = ['000000000285.jpg', '000000000632.jpg']
-        with open(self._coco_idx_file, 'w') as idx_f:
             for file in img_files:
                 src = os.path.join(local_data_root, file)
                 dst = os.path.join(self._data_img_path, file)
