@@ -7,12 +7,12 @@ import { evaluationLabel } from '@/constants/dataset'
 import styles from '../common.less'
 
 type Props = {
-  annotations: YModels.DetAnnotation[],
+  annotation: YModels.BoundingBox
   ratio?: number
 }
 
-const BoundingBox: FC<Props> = ({ annotations, ratio = 1 }) => {
-  const popContent = (annotation: YModels.DetAnnotation) => {
+const BoundingBox: FC<Props> = ({ annotation, ratio = 1 }) => {
+  const popContent = (annotation: YModels.BoundingBox) => {
     const evaluatedLabel = evaluationLabel(annotation.cm)
     const tags = annotation.tags || {}
     const tagsArr = Object.keys(tags)
@@ -49,35 +49,28 @@ const BoundingBox: FC<Props> = ({ annotations, ratio = 1 }) => {
       </>
     )
   }
+  const { x, y, w, h } = annotation.box
   return (
-    <>
-      {annotations.map((annotation, index) => {
-        const { x, y, w, h } = annotation.box
-        return (
-          <Popover key={index} content={popContent} placement="right">
-            <div
-              title={`${annotation.keyword}` + (annotation.score ? `\nConference:${annotation.score}` : '')}
-              className={`${styles.annotation} ${annotation.gt ? styles.gt : ''}`}
-              key={index}
-              style={{
-                color: annotation.color,
-                borderColor: annotation.color,
-                boxShadow: `${annotation.color} 0 0 2px 1px`,
-                top: y * ratio,
-                left: x * ratio,
-                width: w * ratio - 2,
-                height: h * ratio - 2,
-              }}
-            >
-              <span className={styles.annotationTitle} style={{ backgroundColor: annotation.color }}>
-                {annotation.keyword}
-                {annotation.score ? <> {annotation.score}</> : null}
-              </span>
-            </div>
-          </Popover>
-        )
-      })}
-    </>
+    <Popover content={popContent} placement="right">
+      <div
+        title={`${annotation.keyword}` + (annotation.score ? `\nConference:${annotation.score}` : '')}
+        className={`${styles.annotation} ${annotation.gt ? styles.gt : ''}`}
+        style={{
+          color: annotation.color,
+          borderColor: annotation.color,
+          boxShadow: `${annotation.color} 0 0 2px 1px`,
+          top: y * ratio,
+          left: x * ratio,
+          width: w * ratio - 2,
+          height: h * ratio - 2,
+        }}
+      >
+        <span className={styles.annotationTitle} style={{ backgroundColor: annotation.color }}>
+          {annotation.keyword}
+          {annotation.score ? <> {annotation.score}</> : null}
+        </span>
+      </div>
+    </Popover>
   )
 }
 

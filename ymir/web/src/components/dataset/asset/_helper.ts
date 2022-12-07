@@ -1,3 +1,7 @@
+import { AnnotationType } from "@/constants/dataset"
+import { percent } from "@/utils/number"
+import { decode } from "@/utils/rle"
+
 export function mask2Image (mask: number[][], width: number, height: number, color = '') {
   if (!mask) {
     return
@@ -13,8 +17,6 @@ export function renderPolygon(canvas: HTMLCanvasElement, points: YModels.Point[]
   if (!ctx) {
     return
   }
-  canvas.width = width
-  canvas.height = height
   ctx.beginPath()
   ctx.moveTo(points[0].x, points[0].y)
   points.forEach((point, index) => index > 0 && ctx.lineTo(point.x, point.y))
@@ -26,9 +28,39 @@ export function renderMask (canvas: HTMLCanvasElement, mask: number[][], width: 
   if (!ctx) {
     return
   }
-  canvas.width = width
-  canvas.height = height
   const image = mask2Image(mask,width, height)
 
   image && ctx.putImageData(image, 0, 0)
+}
+
+export function transferAnnotations(annotations: YModels.Annotation[], asset?: YModels.Asset) {
+  const handles = (annotation: YModels.Annotation) => ({
+    [AnnotationType.BoundingBox]: toBoundingBox(annotation as YModels.BoundingBox),
+    [AnnotationType.Polygon]: toPolygon(annotation as YModels.Polygon),
+    [AnnotationType.Mask]: toMask(annotation as YModels.Mask, asset),
+  }[annotation.type])
+
+
+  return annotations.map(handles)
+}
+
+function toBoundingBox(annotation: YModels.BoundingBox): YModels.BoundingBox {
+  return annotation
+}
+
+function toMask(annotation: YModels.Mask, asset?: YModels.Asset): YModels.Mask {
+  return {
+      ...annotation,
+      decodeMask: decode(annotation.mask, asset?.height || 0),
+  }
+}
+
+function toPolygon(annotation: YModels.Polygon):YModels.Polygon {
+  return annotation
+}
+
+function zoomCanvas(canvas: HTMLCanvasElement, ratio: number) {
+  const ctx = canvas.getContext('2d')
+  const cache = ctx?.save()
+
 }

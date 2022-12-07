@@ -5,7 +5,6 @@ declare namespace YModels {
   type StageId = number
   type ImageId = number
 
-  
   type Matable<U> = {
     [Type in keyof U]: {
       type: Type
@@ -122,7 +121,7 @@ declare namespace YModels {
     hash: string
     keywords: Labels
     url: string
-    type: ObjectType,
+    type: ObjectType
     width: number
     height: number
     metadata?: {
@@ -131,7 +130,7 @@ declare namespace YModels {
       channel: number
     }
     size?: number
-    annotations: Annotation[],
+    annotations: Annotation[]
     evaluated?: boolean
     cks?: CK
   }
@@ -141,7 +140,7 @@ declare namespace YModels {
     width: number
     height: number
     color?: string
-    score?: number
+    score?: number | string
     gt?: boolean
     cm: number
     tags?: CK
@@ -160,8 +159,8 @@ declare namespace YModels {
   }
 
   type Point = {
-    x: number,
-    y: number,
+    x: number
+    y: number
   }
 
   export type Annotation = Matable<AnnotationMaps>
