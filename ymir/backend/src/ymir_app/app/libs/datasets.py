@@ -82,7 +82,7 @@ def _import_dataset(
             "src_repo_id": gen_repo_hash(dataset.project_id),
             "src_resource_id": dataset.hash,
             "strategy": annotation_strategy,
-            "annotation_type": dataset.object_type,
+            "annotation_type": object_type,
             "clean_dirs": True,
         }
     else:
@@ -94,7 +94,7 @@ def _import_dataset(
             "gt_dir": paths.gt_dir,
             "pred_dir": paths.pred_dir,
             "strategy": dataset_import.strategy,
-            "annotation_type": dataset.object_type,
+            "annotation_type": object_type,
             "clean_dirs": dataset_import.input_path is None,  # for path importing, DO NOT clean_dirs
         }
 
