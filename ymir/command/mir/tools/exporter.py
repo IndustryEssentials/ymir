@@ -3,7 +3,7 @@ from functools import partial
 import json
 import os
 import shutil
-from typing import Callable, Dict, Optional, TextIO, Tuple, Union
+from typing import Dict, Optional, Protocol, TextIO, Tuple, Union
 import uuid
 import xml.etree.ElementTree as ElementTree
 
@@ -34,20 +34,24 @@ def _anno_file_ext(anno_format: "mirpb.AnnoFormat.V") -> str:
     return _anno_ext_map.get(anno_format, "unknown")
 
 
-_SingleTaskAnnotationFuncType = Callable[[
-    mirpb.MirMetadatas, mirpb.SingleTaskAnnotations, mirpb.ExportConfig, Optional[Dict[
-        int, int]], Optional[UserLabels], str, Dict[str, mirpb.SingleImageCks]
-], None]
-_SingleImageAnnotationFuncType = Callable[[
-    mirpb.MetadataAttributes, mirpb.SingleImageAnnotations, Optional[mirpb.SingleImageCks], Optional[Dict[
-        int, int]], Optional[UserLabels], str, str
-], None]
+class _SingleTaskAnnotationCallable(Protocol):
+    def __call__(self, mir_metadatas: mirpb.MirMetadatas, task_annotations: mirpb.SingleTaskAnnotations,
+                 ec: mirpb.ExportConfig, class_ids_mapping: Optional[Dict[int, int]], cls_id_mgr: Optional[UserLabels],
+                 dst_dir: str, image_cks: Dict[str, mirpb.SingleImageCks]) -> None:
+        ...
+
+
+class _SingleImageAnnotationCallable(Protocol):
+    def __call__(self, attributes: mirpb.MetadataAttributes, image_annotations: mirpb.SingleImageAnnotations,
+                 image_cks: Optional[mirpb.SingleImageCks], class_ids_mapping: Optional[Dict[int, int]],
+                 cls_id_mgr: Optional[UserLabels], asset_filename: str, anno_dst_file: str) -> None:
+        ...
 
 
 def _task_annotations_output_func(
     anno_format: "mirpb.AnnoFormat.V"
-) -> _SingleTaskAnnotationFuncType:
-    _format_func_map: Dict["mirpb.AnnoFormat.V", _SingleTaskAnnotationFuncType] = {
+) -> _SingleTaskAnnotationCallable:
+    _format_func_map: Dict["mirpb.AnnoFormat.V", _SingleTaskAnnotationCallable] = {
         mirpb.AnnoFormat.AF_DET_ARK_JSON: _single_task_annotations_to_ark,
         mirpb.AnnoFormat.AF_DET_PASCAL_VOC: _single_task_annotations_to_voc,
         mirpb.AnnoFormat.AF_DET_LS_JSON: _single_task_annotations_to_ls,
@@ -200,23 +204,23 @@ def _export_mirdatas_to_raw(
         _output_func = _task_annotations_output_func(ec.anno_format)
         if ec.pred_dir:
             _output_func(
-                mir_metadatas,
-                mir_annotations.prediction,
-                ec,
-                class_ids_mapping,
-                cls_id_mgr,
-                ec.pred_dir,
-                dict(mir_annotations.image_cks),
+                mir_metadatas=mir_metadatas,
+                task_annotations=mir_annotations.prediction,
+                ec=ec,
+                class_ids_mapping=class_ids_mapping,
+                cls_id_mgr=cls_id_mgr,
+                dst_dir=ec.pred_dir,
+                image_cks=dict(mir_annotations.image_cks),
             )
         if ec.gt_dir:
             _output_func(
-                mir_metadatas,
-                mir_annotations.ground_truth,
-                ec,
-                class_ids_mapping,
-                cls_id_mgr,
-                ec.gt_dir,
-                {},
+                mir_metadatas=mir_metadatas,
+                task_annotations=mir_annotations.ground_truth,
+                ec=ec,
+                class_ids_mapping=class_ids_mapping,
+                cls_id_mgr=cls_id_mgr,
+                dst_dir=ec.gt_dir,
+                image_cks={},
             )
 
         # write index tsv files
@@ -495,7 +499,7 @@ def _single_task_annotations_to_separated_any(
     cls_id_mgr: Optional[UserLabels],
     dst_dir: str,
     image_cks: Dict[str, mirpb.SingleImageCks],
-    single_image_func: _SingleImageAnnotationFuncType,
+    single_image_func: _SingleImageAnnotationCallable,
 ) -> None:
     for asset_id, attributes in mir_metadatas.attributes.items():
         _, asset_idx_file = _gen_abs_idx_file_path(abs_dir=ec.asset_dir,
@@ -510,13 +514,13 @@ def _single_task_annotations_to_separated_any(
                                                   file_ext=_anno_file_ext(anno_format=ec.anno_format),
                                                   need_sub_folder=ec.need_sub_folder)
         single_image_func(
-            attributes,
-            task_annotations.image_annotations.get(asset_id, mirpb.SingleImageAnnotations()),
-            image_cks.get(asset_id, mirpb.SingleImageCks()),
-            class_ids_mapping,
-            cls_id_mgr,
-            asset_idx_file,
-            anno_abs_file,
+            attributes=attributes,
+            image_annotations=task_annotations.image_annotations.get(asset_id, mirpb.SingleImageAnnotations()),
+            image_cks=image_cks.get(asset_id, mirpb.SingleImageCks()),
+            class_ids_mapping=class_ids_mapping,
+            cls_id_mgr=cls_id_mgr,
+            asset_filename=asset_idx_file,
+            anno_dst_file=anno_abs_file,
         )
 
 
