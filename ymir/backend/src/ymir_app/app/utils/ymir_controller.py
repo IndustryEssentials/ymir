@@ -44,8 +44,8 @@ MERGE_STRATEGY_MAPPING = {
 
 
 ANNOTATION_TYPE_MAPPING = {
-    ObjectType.object_detect: mirsvrpb.AnnoType.AT_DET_BOX,
-    ObjectType.segmentation: mirsvrpb.AnnoType.AT_SEG,
+    ObjectType.object_detect: mir_cmd_pb.AnnoType.AT_DET_BOX,
+    ObjectType.segmentation: mir_cmd_pb.AnnoType.AT_SEG,
 }
 
 
