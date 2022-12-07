@@ -217,7 +217,7 @@ class _AnnoTypeEnumTypeWrapper(google.protobuf.internal.enum_type_wrapper._EnumT
     AT_DET_BOX = AnnoType.V(2)
     """Detection w. bounding box."""
 
-    AT_SEMANTIC_SEG = AnnoType.V(3)
+    AT_SEG = AnnoType.V(3)
     """semantic segmentation w. polygon or mask"""
 
 
@@ -228,7 +228,7 @@ AT_CLASS = AnnoType.V(1)
 AT_DET_BOX = AnnoType.V(2)
 """Detection w. bounding box."""
 
-AT_SEMANTIC_SEG = AnnoType.V(3)
+AT_SEG = AnnoType.V(3)
 """semantic segmentation w. polygon or mask"""
 
 global___AnnoType = AnnoType

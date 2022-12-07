@@ -40,7 +40,7 @@ def parse_anno_format(anno_format_str: str) -> "mirpb.AnnoFormat.V":
 def parse_anno_type(anno_type_str: str) -> "mirpb.AnnoType.V":
     _anno_dict: Dict[str, mirpb.AnnoType.V] = {
         "det-box": mirpb.AnnoType.AT_DET_BOX,
-        "semantic-seg": mirpb.AnnoType.AT_SEMANTIC_SEG,
+        "seg": mirpb.AnnoType.AT_SEG,
     }
     return _anno_dict.get(anno_type_str.lower(), mirpb.AnnoType.AT_UNKNOWN)
 
@@ -48,7 +48,7 @@ def parse_anno_type(anno_type_str: str) -> "mirpb.AnnoType.V":
 def _annotation_parse_func(anno_type: "mirpb.AnnoType.V") -> Callable:
     _func_dict: Dict["mirpb.AnnoType.V", Callable] = {
         mirpb.AnnoType.AT_DET_BOX: _import_annotations_voc_xml,
-        mirpb.AnnoType.AT_SEMANTIC_SEG: _import_annotations_coco_json,
+        mirpb.AnnoType.AT_SEG: _import_annotations_coco_json,
     }
     if anno_type not in _func_dict:
         raise NotImplementedError

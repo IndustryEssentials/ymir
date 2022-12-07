@@ -124,7 +124,7 @@ enum AnnoType {
     AT_UNKNOWN = 0;
     AT_CLASS = 1; // Classification with class id, not implemented.
     AT_DET_BOX = 2; // Detection w. bounding box.
-    AT_SEMANTIC_SEG = 3;  // semantic segmentation w. polygon or mask
+    AT_SEG = 3;  // semantic segmentation w. polygon or mask
 };
 
 enum SegObjType {

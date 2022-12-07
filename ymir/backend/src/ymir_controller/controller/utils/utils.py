@@ -81,7 +81,7 @@ def annotation_format_str(format: mir_cmd_pb.AnnoFormat) -> str:
 def anno_type_str(anno_type: mir_cmd_pb.AnnoType) -> str:
     format_enum_dict = {
         mir_cmd_pb.AnnoType.AT_DET_BOX: 'det-box',
-        mir_cmd_pb.AnnoType.AT_SEMANTIC_SEG: 'semantic-seg',
+        mir_cmd_pb.AnnoType.AT_SEG: 'seg',
     }
     return format_enum_dict[anno_type]
 
