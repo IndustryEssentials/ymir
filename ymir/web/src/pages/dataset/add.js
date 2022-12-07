@@ -17,6 +17,7 @@ import t from "@/utils/t"
 import useFetch from "@/hooks/useFetch"
 import useAddKeywords from "@/hooks/useAddKeywords"
 import { IMPORTSTRATEGY } from "@/constants/dataset"
+import { ObjectType } from '@/constants/project'
 
 import { urlValidator } from "@/components/form/validators"
 import Breadcrumbs from "@/components/common/breadcrumb"
@@ -83,7 +84,22 @@ const Add = (props) => {
   const netUrl = Form.useWatch("url", form)
   const path = Form.useWatch("path", form)
   const [formatDetailModal, setFormatDetailModal] = useState(false)
+  const project = useSelector(({ project }) => project[pid])
+  const { run: getProject} = useRequest('project/getProject', {
+    loading: false,
+    refreshDeps: [pid],
+    ready: !!pid,
+  })
   const [updateResult, updateProject] = useFetch("project/updateProject")
+  const [objectType, setObjectType] = useState('')
+
+  useEffect(() => {
+    getProject({ id: pid })
+  }, [pid])
+
+  useEffect(() => {
+    setObjectType(project.type === ObjectType.Segmentation ? '.seg' : '')
+  }, [project])
 
   useEffect(() => {
     form.setFieldsValue({ did: null })
@@ -274,8 +290,8 @@ const Add = (props) => {
     ),
   })
 
-  const renderTip = (type, params = {}) =>
-    t(`dataset.add.form.${type}.tip`, {
+  const renderTip = (type, params = {}, objectType = '') =>
+    t(`dataset.add.form.${type}.tip${objectType}`, {
       ...params,
       br: <br />,
       structure: structureTip,
@@ -431,7 +447,7 @@ const Add = (props) => {
                     allowClear
                   />
                 </Form.Item>
-                <p>{renderTip("net")}</p>
+                <p>{renderTip("net", {}, objectType)}</p>
               </Form.Item>
             ) : null}
 
@@ -440,8 +456,8 @@ const Add = (props) => {
                 label={t("dataset.add.form.path.label")}
                 required
                 name="path"
-                help={renderTip("path")}
-                rules={[{ required: true, message: renderTip("path") }]}
+                help={renderTip("path", {}, objectType)}
+                rules={[{ required: true, message: renderTip("path", {}, objectType) }]}
               >
                 <Input
                   placeholder={t("dataset.add.form.path.placeholder")}
@@ -465,7 +481,7 @@ const Add = (props) => {
                         Sample.zip
                       </a>
                     ),
-                  })}
+                  }, objectType)}
                 ></Uploader>
               </Form.Item>
             ) : null}
