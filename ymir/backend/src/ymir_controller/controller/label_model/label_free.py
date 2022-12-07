@@ -10,7 +10,7 @@ from xml.etree import ElementTree
 
 import requests
 
-from controller.label_model.base import LabelBase, catch_label_task_error, NotReadyError
+from controller.label_model.base import LabelBase, LabelType, catch_label_task_error, NotReadyError
 from controller.label_model.request_handler import RequestHandler
 
 
@@ -43,17 +43,24 @@ class LabelFree(LabelBase):
         return label_config
 
     def create_label_project(
-        self, project_name: str, keywords: List, collaborators: List, expert_instruction: str, **kwargs: Dict
+        self,
+        project_name: str,
+        keywords: List,
+        collaborators: List,
+        expert_instruction: str,
+        label_type: LabelType,
+        **kwargs: Dict
     ) -> int:
         # Create a project and set up the labeling interface
         url_path = "/api/projects"
         label_config = self.gen_detection_label_config(keywords)
-        data = dict(
-            title=project_name,
-            collaborators=collaborators,
-            label_config=label_config,
-            expert_instruction=f"<a target='_blank' href='{expert_instruction}'>Labeling Guide</a>",
-        )
+        data = {
+            "title": project_name,
+            "collaborators": collaborators,
+            "label_config": label_config,
+            "expert_instruction": f"<a target='_blank' href='{expert_instruction}'>Labeling Guide</a>",
+            "project_type": 1 if label_type == LabelType.detection else 2,
+        }
         resp = self._requests.post(url_path=url_path, json_data=data)
         project_id = json.loads(resp).get("id")
         if not isinstance(project_id, int):
@@ -199,9 +206,10 @@ class LabelFree(LabelBase):
         media_location: str,
         import_work_dir: str,
         use_pre_annotation: bool,
+        label_type: int,
     ) -> None:
         logging.info("start LABELFREE run()")
-        project_id = self.create_label_project(project_name, keywords, collaborators, expert_instruction)
+        project_id = self.create_label_project(project_name, keywords, collaborators, expert_instruction, LabelType(label_type))
         storage_id = self.set_import_storage(project_id, input_asset_dir, use_pre_annotation)
         exported_storage_id = self.set_export_storage(project_id, export_path)
         self.sync_import_storage(storage_id)

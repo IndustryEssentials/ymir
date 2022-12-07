@@ -1,3 +1,4 @@
+import enum
 import glob
 import json
 import logging
@@ -10,8 +11,15 @@ from typing import Dict, List
 from xml.etree import ElementTree
 
 from controller.config import label_task as label_task_config
-from controller.label_model.base import LabelBase, catch_label_task_error
+from controller.label_model.base import LabelBase, LabelType, catch_label_task_error
 from controller.label_model.request_handler import RequestHandler
+
+
+LABEL_TEMPLATE_TYPES = {
+    LabelType.detection: "RectangleLabels",
+    LabelType.polygon: "PolygonLabels",
+    LabelType.mask: "BrushLabels",
+}
 
 
 class LabelStudio(LabelBase):
@@ -20,9 +28,9 @@ class LabelStudio(LabelBase):
         self.requests = request_handler
 
     @staticmethod
-    def gen_detection_label_config(keywords: List) -> str:
+    def gen_label_template(label_type: LabelType, keywords: List) -> str:
         """
-        gen detection label config according to label studio https://labelstud.io/playground/
+        gen label template according to label studio https://labelstud.io/playground/
         <View>
           <Image name="image" value="$image"/>
           <RectangleLabels name="label" toName="image">
@@ -33,7 +41,7 @@ class LabelStudio(LabelBase):
         """
         top = ElementTree.Element("View")
         image_leyer = ElementTree.Element("Image", name="image", value="$image", crosshair="true", maxwidth="100%")
-        rectangle_labels_layer = ElementTree.Element("RectangleLabels", name="label", toName="image")
+        rectangle_labels_layer = ElementTree.Element(LABEL_TEMPLATE_TYPES[label_type], name="label", toName="image")
         children_label_content = [
             ElementTree.Element("Label", value=keyword, background="green") for keyword in keywords
         ]
@@ -45,17 +53,22 @@ class LabelStudio(LabelBase):
         return label_config
 
     def create_label_project(
-        self, project_name: str, keywords: List, collaborators: List, expert_instruction: str, **kwargs: Dict
+        self, project_name: str,
+        keywords: List,
+        collaborators: List,
+        expert_instruction: str,
+        label_type: LabelType,
+        **kwargs: Dict
     ) -> int:
         # Create a project and set up the labeling interface in Label Studio
         url_path = "/api/projects"
-        label_config = self.gen_detection_label_config(keywords)
-        data = dict(
-            title=project_name,
-            collaborators=collaborators,
-            label_config=label_config,
-            expert_instruction=f"<a target='_blank' href='{expert_instruction}'>Labeling Guide</a>",
-        )
+        label_config = self.gen_label_template(label_type, keywords)
+        data = {
+            "title": project_name,
+            "collaborators": collaborators,
+            "label_config": label_config,
+            "expert_instruction": f"<a target='_blank' href='{expert_instruction}'>Labeling Guide</a>",
+        }
         resp = self.requests.post(url_path=url_path, json_data=data)
         project_id = json.loads(resp)["id"]
 
@@ -236,9 +249,10 @@ class LabelStudio(LabelBase):
         media_location: str,
         import_work_dir: str,
         use_pre_annotation: bool,
+        label_type: LabelType = LabelType.detection,
     ) -> None:
         logging.info("start LabelStudio run()")
-        project_id = self.create_label_project(project_name, keywords, collaborators, expert_instruction)
+        project_id = self.create_label_project(project_name, keywords, collaborators, expert_instruction, LabelType(label_type))
         storage_id = self.set_import_storage(project_id, input_asset_dir)
         exported_storage_id = self.set_export_storage(project_id, export_path)
         self.sync_import_storage(storage_id)

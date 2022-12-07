@@ -1,3 +1,4 @@
+from enum import IntEnum
 import json
 import traceback
 from abc import ABC, abstractmethod
@@ -10,6 +11,12 @@ from common_utils.percent_log_util import LogState, PercentLogHandler
 from controller.config import label_task as label_task_config
 from controller.utils.redis import rds
 from id_definition.error_codes import CTLResponseCode
+
+
+class LabelType(IntEnum):
+    detection = "RectangleLabels"
+    polygon = "PolygonLabels"
+    mask = "BrushLabels"
 
 
 class NotReadyError(Exception):
@@ -100,6 +107,7 @@ class LabelBase(ABC):
         media_location: str,
         import_work_dir: str,
         use_pre_annotation: bool,
+        label_type: int,
     ) -> None:
         # start a label task
         pass

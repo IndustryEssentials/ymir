@@ -64,6 +64,7 @@ def start_label_task(
     collaborators: List,
     expert_instruction: str,
     annotation_type: Optional[int],
+    label_type: Optional[int],
 ) -> None:
     logging.info("start label task!!!")
     label_instance = utils.create_label_instance()
@@ -88,5 +89,6 @@ def start_label_task(
                        repo_root=repo_root,
                        media_location=media_location,
                        import_work_dir=import_work_dir,
-                       use_pre_annotation=bool(annotation_type))
+                       use_pre_annotation=bool(annotation_type),
+                       label_type=label_type)
     logging.info("finish label task!!!")

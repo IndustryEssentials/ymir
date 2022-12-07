@@ -49,6 +49,7 @@ class TaskLabelingInvoker(TaskBaseInvoker):
             collaborators=labeler_accounts,
             expert_instruction=labeling_request.expert_instruction_url,
             annotation_type=labeling_request.annotation_type,
+            label_type=labeling_request.label_type,
         )
 
         return utils.make_general_response(CTLResponseCode.CTR_OK, "")
