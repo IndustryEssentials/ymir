@@ -151,7 +151,7 @@ message TaskReqImportDataset {
     string asset_dir = 1;
     // pred and gt file dir
     //  for voc: single pascal xml per asset, same base_filename as in asset-folder
-    //  for coco: coco.json in that dir
+    //  for coco: coco-annotations.json in that dir
     string pred_dir = 2;
     string gt_dir = 3;
     // strategy for unknown class types: stop, ignore or add

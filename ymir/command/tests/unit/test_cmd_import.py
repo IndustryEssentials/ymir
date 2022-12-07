@@ -216,7 +216,7 @@ class TestCmdImport(unittest.TestCase):
                 idx_f.writelines(dst + '\n')
 
         # Copy xml files.
-        filenames = ['2007_000032.xml', '2007_000243.xml', 'pred_meta.yaml', 'coco.json']
+        filenames = ['2007_000032.xml', '2007_000243.xml', 'pred_meta.yaml', 'coco-annotations.json']
         for file in filenames:
             src = os.path.join(local_data_root, file)
             dst = os.path.join(self._data_xml_path, file)

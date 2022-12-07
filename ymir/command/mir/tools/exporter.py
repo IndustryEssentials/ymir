@@ -28,7 +28,7 @@ def _anno_file_ext(anno_format: "mirpb.AnnoFormat.V") -> str:
         mirpb.AnnoFormat.AF_DET_ARK_JSON: 'txt',
         mirpb.AnnoFormat.AF_DET_PASCAL_VOC: 'xml',
         mirpb.AnnoFormat.AF_DET_LS_JSON: 'json',
-        mirpb.AnnoFormat.AF_SEMANTIC_SEG_COCO_JSON: 'json',
+        mirpb.AnnoFormat.AF_SEG_COCO_JSON: 'json',
     }
     return _anno_ext_map.get(anno_format, "unknown")
 
@@ -41,7 +41,7 @@ def _annotations_output_func(
         mirpb.AnnoFormat.AF_DET_ARK_JSON: _export_annos_to_separate_files,
         mirpb.AnnoFormat.AF_DET_PASCAL_VOC: _export_annos_to_separate_files,
         mirpb.AnnoFormat.AF_DET_LS_JSON: _export_annos_to_separate_files,
-        mirpb.AnnoFormat.AF_SEMANTIC_SEG_COCO_JSON: _annotations_to_coco,
+        mirpb.AnnoFormat.AF_SEG_COCO_JSON: _annotations_to_coco,
     }
     if anno_format not in _format_func_map:
         raise NotImplementedError(f"unknown anno_format: {anno_format}")
@@ -213,7 +213,7 @@ def _export_mirdatas_to_raw(
                                                        file_ext=_asset_file_ext(attributes.asset_type),
                                                        need_sub_folder=ec.need_sub_folder)
             if index_gt_f:
-                if ec.anno_format == mirpb.AnnoFormat.AF_SEMANTIC_SEG_COCO_JSON:
+                if ec.anno_format == mirpb.AnnoFormat.AF_SEG_COCO_JSON:
                     _, gt_idx_file = _gen_abs_idx_file_path(abs_dir=ec.gt_dir,
                                                             idx_prefix=ec.gt_index_prefix,
                                                             file_name='coco',
@@ -231,7 +231,7 @@ def _export_mirdatas_to_raw(
                 if ec.tvt_index_dir:
                     index_tvt_f[(False, attributes.tvt_type)].write(asset_anno_pair_line)
             if index_pred_f:
-                if ec.anno_format == mirpb.AnnoFormat.AF_SEMANTIC_SEG_COCO_JSON:
+                if ec.anno_format == mirpb.AnnoFormat.AF_SEG_COCO_JSON:
                     _, pred_idx_file = _gen_abs_idx_file_path(abs_dir=ec.pred_dir,
                                                               idx_prefix=ec.pred_index_prefix,
                                                               file_name='coco',
@@ -620,12 +620,12 @@ def _single_task_annotations_to_coco(
         attrs = mir_metadatas.attributes[asset_id]
         for oa in sia.boxes:
             segmentation: Union[list, dict] = {}
-            if oa.type == mirpb.ObjAnnoType.OAT_MASK:
+            if oa.type == mirpb.SegObjType.SOT_MASK:
                 segmentation = {
                     'counts': oa.mask,
                     'size': [attrs.height, attrs.width],
                 }
-            elif oa.type == mirpb.ObjAnnoType.OAT_POLYGON:
+            elif oa.type == mirpb.SegObjType.SOT_POLYGON:
                 segmentation = [[]]
                 for p in oa.polygon:
                     segmentation[0].extend([p.x, p.y])

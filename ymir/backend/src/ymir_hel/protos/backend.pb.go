@@ -1066,7 +1066,7 @@ type TaskReqImportDataset struct {
 	AssetDir string `protobuf:"bytes,1,opt,name=asset_dir,json=assetDir,proto3" json:"asset_dir,omitempty"`
 	// pred and gt file dir
 	//  for voc: single pascal xml per asset, same base_filename as in asset-folder
-	//  for coco: coco.json in that dir
+	//  for coco: coco-annotations.json in that dir
 	PredDir string `protobuf:"bytes,2,opt,name=pred_dir,json=predDir,proto3" json:"pred_dir,omitempty"`
 	GtDir   string `protobuf:"bytes,3,opt,name=gt_dir,json=gtDir,proto3" json:"gt_dir,omitempty"`
 	// strategy for unknown class types: stop, ignore or add

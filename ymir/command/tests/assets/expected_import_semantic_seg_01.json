@@ -288,7 +288,7 @@
         "tasks": {
             "import_semantic_seg_01": {
                 "type": 5,
-                "name": "importing /tmp/mir_cmd_test/test_cmd_import/TestCmdImport/test_import_cmd_semantic_seg_01/monitor_storage_root/data/coco-idx.txt--/tmp/mir_cmd_test/test_cmd_import/TestCmdImport/test_import_cmd_semantic_seg_01/monitor_storage_root/data/xml/coco.json to a@import_semantic_seg_01, uts: add",
+                "name": "importing /tmp/mir_cmd_test/test_cmd_import/TestCmdImport/test_import_cmd_semantic_seg_01/monitor_storage_root/data/coco-idx.txt--/tmp/mir_cmd_test/test_cmd_import/TestCmdImport/test_import_cmd_semantic_seg_01/monitor_storage_root/data/xml/coco-annotations.json to a@import_semantic_seg_01, uts: add",
                 "task_id": "import_semantic_seg_01",
                 "timestamp": 1669880867,
                 "evaluation": {

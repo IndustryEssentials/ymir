@@ -178,13 +178,13 @@ class _AnnoFormatEnumTypeWrapper(google.protobuf.internal.enum_type_wrapper._Enu
     AF_DET_PASCAL_VOC = AnnoFormat.V(1)
     AF_DET_ARK_JSON = AnnoFormat.V(2)
     AF_DET_LS_JSON = AnnoFormat.V(3)
-    AF_SEMANTIC_SEG_COCO_JSON = AnnoFormat.V(4)
+    AF_SEG_COCO_JSON = AnnoFormat.V(4)
 
 AF_NO_ANNOTATION = AnnoFormat.V(0)
 AF_DET_PASCAL_VOC = AnnoFormat.V(1)
 AF_DET_ARK_JSON = AnnoFormat.V(2)
 AF_DET_LS_JSON = AnnoFormat.V(3)
-AF_SEMANTIC_SEG_COCO_JSON = AnnoFormat.V(4)
+AF_SEG_COCO_JSON = AnnoFormat.V(4)
 global___AnnoFormat = AnnoFormat
 
 
@@ -234,20 +234,20 @@ AT_SEMANTIC_SEG = AnnoType.V(3)
 global___AnnoType = AnnoType
 
 
-class ObjAnnoType(_ObjAnnoType, metaclass=_ObjAnnoTypeEnumTypeWrapper):
+class SegObjType(_SegObjType, metaclass=_SegObjTypeEnumTypeWrapper):
     pass
-class _ObjAnnoType:
+class _SegObjType:
     V = typing.NewType('V', builtins.int)
-class _ObjAnnoTypeEnumTypeWrapper(google.protobuf.internal.enum_type_wrapper._EnumTypeWrapper[_ObjAnnoType.V], builtins.type):
+class _SegObjTypeEnumTypeWrapper(google.protobuf.internal.enum_type_wrapper._EnumTypeWrapper[_SegObjType.V], builtins.type):
     DESCRIPTOR: google.protobuf.descriptor.EnumDescriptor = ...
-    OAT_BOX = ObjAnnoType.V(0)
-    OAT_POLYGON = ObjAnnoType.V(1)
-    OAT_MASK = ObjAnnoType.V(2)
+    SOT_NOT_SET = SegObjType.V(0)
+    SOT_POLYGON = SegObjType.V(1)
+    SOT_MASK = SegObjType.V(2)
 
-OAT_BOX = ObjAnnoType.V(0)
-OAT_POLYGON = ObjAnnoType.V(1)
-OAT_MASK = ObjAnnoType.V(2)
-global___ObjAnnoType = ObjAnnoType
+SOT_NOT_SET = SegObjType.V(0)
+SOT_POLYGON = SegObjType.V(1)
+SOT_MASK = SegObjType.V(2)
+global___SegObjType = SegObjType
 
 
 class ConfusionMatrixType(_ConfusionMatrixType, metaclass=_ConfusionMatrixTypeEnumTypeWrapper):
@@ -603,7 +603,7 @@ class ObjectAnnotation(google.protobuf.message.Message):
     iscrowd: builtins.int = ...
     """0 or 1"""
 
-    type: global___ObjAnnoType.V = ...
+    type: global___SegObjType.V = ...
     def __init__(self,
         *,
         index : builtins.int = ...,
@@ -618,7 +618,7 @@ class ObjectAnnotation(google.protobuf.message.Message):
         polygon : typing.Optional[typing.Iterable[global___IntPoint]] = ...,
         mask : typing.Text = ...,
         iscrowd : builtins.int = ...,
-        type : global___ObjAnnoType.V = ...,
+        type : global___SegObjType.V = ...,
         ) -> None: ...
     def HasField(self, field_name: typing_extensions.Literal["box",b"box"]) -> builtins.bool: ...
     def ClearField(self, field_name: typing_extensions.Literal["anno_quality",b"anno_quality","box",b"box","class_id",b"class_id","class_name",b"class_name","cm",b"cm","det_link_id",b"det_link_id","index",b"index","iscrowd",b"iscrowd","mask",b"mask","polygon",b"polygon","score",b"score","tags",b"tags","type",b"type"]) -> None: ...

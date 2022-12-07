@@ -75,7 +75,7 @@ enum AnnoFormat {
     AF_DET_PASCAL_VOC = 1;
     AF_DET_ARK_JSON = 2;
     AF_DET_LS_JSON = 3;
-    AF_SEMANTIC_SEG_COCO_JSON = 4;
+    AF_SEG_COCO_JSON = 4;
 };
 
 enum AssetFormat {
@@ -127,10 +127,10 @@ enum AnnoType {
     AT_SEMANTIC_SEG = 3;  // semantic segmentation w. polygon or mask
 };
 
-enum ObjAnnoType {
-    OAT_BOX = 0;
-    OAT_POLYGON = 1;
-    OAT_MASK = 2;
+enum SegObjType {
+    SOT_NOT_SET = 0;
+    SOT_POLYGON = 1;
+    SOT_MASK = 2;
 }
 
 message SingleTaskAnnotations {
@@ -177,7 +177,7 @@ message ObjectAnnotation {
     repeated IntPoint polygon = 10;
     string mask = 11;  // RLE encoded mask
     int32 iscrowd = 12;  // 0 or 1
-    ObjAnnoType type = 13;
+    SegObjType type = 13;
 };
 
 enum ConfusionMatrixType {
