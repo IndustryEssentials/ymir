@@ -34,13 +34,20 @@ def _anno_file_ext(anno_format: "mirpb.AnnoFormat.V") -> str:
     return _anno_ext_map.get(anno_format, "unknown")
 
 
+_SingleTaskAnnotationFuncType = Callable[[
+    mirpb.MirMetadatas, mirpb.SingleTaskAnnotations, mirpb.ExportConfig, Optional[Dict[
+        int, int]], Optional[UserLabels], str, Dict[str, mirpb.SingleImageCks]
+], None]
+_SingleImageAnnotationFuncType = Callable[[
+    mirpb.MetadataAttributes, mirpb.SingleImageAnnotations, Optional[mirpb.SingleImageCks], Optional[Dict[
+        int, int]], Optional[UserLabels], str, str
+], None]
+
+
 def _task_annotations_output_func(
     anno_format: "mirpb.AnnoFormat.V"
-) -> Callable[[
-        mirpb.MirMetadatas, mirpb.SingleTaskAnnotations, mirpb.ExportConfig, Optional[Dict[
-            int, int]], Optional[UserLabels], str, Dict[str, mirpb.SingleImageCks]
-], None]:
-    _format_func_map = {
+) -> _SingleTaskAnnotationFuncType:
+    _format_func_map: Dict["mirpb.AnnoFormat.V", _SingleTaskAnnotationFuncType] = {
         mirpb.AnnoFormat.AF_DET_ARK_JSON: _single_task_annotations_to_ark,
         mirpb.AnnoFormat.AF_DET_PASCAL_VOC: _single_task_annotations_to_voc,
         mirpb.AnnoFormat.AF_DET_LS_JSON: _single_task_annotations_to_ls,
@@ -199,7 +206,7 @@ def _export_mirdatas_to_raw(
                 class_ids_mapping,
                 cls_id_mgr,
                 ec.pred_dir,
-                mir_annotations.image_cks,
+                dict(mir_annotations.image_cks),
             )
         if ec.gt_dir:
             _output_func(
@@ -488,7 +495,7 @@ def _single_task_annotations_to_separated_any(
     cls_id_mgr: Optional[UserLabels],
     dst_dir: str,
     image_cks: Dict[str, mirpb.SingleImageCks],
-    single_image_func: callable,
+    single_image_func: _SingleImageAnnotationFuncType,
 ) -> None:
     for asset_id, attributes in mir_metadatas.attributes.items():
         _, asset_idx_file = _gen_abs_idx_file_path(abs_dir=ec.asset_dir,
