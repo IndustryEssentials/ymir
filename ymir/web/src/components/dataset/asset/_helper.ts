@@ -1,15 +1,18 @@
-import { AnnotationType } from "@/constants/dataset"
-import { percent } from "@/utils/number"
-import { decode } from "@/utils/rle"
+import { AnnotationType } from '@/constants/dataset'
+import { percent } from '@/utils/number'
+import { decode } from '@/utils/rle'
 
-export function mask2Image (mask: number[][], width: number, height: number, color = '') {
+export function mask2Image(mask: number[][], width: number, height: number, color = '') {
   if (!mask) {
     return
   }
-  const dataWithColor = mask.map(row => row.map(col => col ? [255, 0, 0, 160] : [0, 0, 0, 0])).flat().flat()
-    const imageData = Uint8ClampedArray.from(dataWithColor)
-    const image = new ImageData(imageData, width, height)
-    return image
+  const dataWithColor = mask
+    .map((row) => row.map((col) => (col ? [255, 0, 0, 160] : [0, 0, 0, 0])))
+    .flat()
+    .flat()
+  const imageData = Uint8ClampedArray.from(dataWithColor)
+  const image = new ImageData(imageData, width, height)
+  return image
 }
 
 export function renderPolygon(canvas: HTMLCanvasElement, points: YModels.Point[], width: number, height: number) {
@@ -23,23 +26,28 @@ export function renderPolygon(canvas: HTMLCanvasElement, points: YModels.Point[]
   ctx.fill()
 }
 
-export function renderMask (canvas: HTMLCanvasElement, mask: number[][], width: number, height: number) {  
+export function renderMask(canvas: HTMLCanvasElement, mask: number[][], width: number, height: number) {
   const ctx = canvas.getContext('2d')
   if (!ctx) {
     return
   }
-  const image = mask2Image(mask,width, height)
+  const image = mask2Image(mask, width, height)
 
   image && ctx.putImageData(image, 0, 0)
 }
 
-export function transferAnnotations(annotations: YModels.Annotation[], asset?: YModels.Asset) {
-  const handles = (annotation: YModels.Annotation) => ({
-    [AnnotationType.BoundingBox]: toBoundingBox(annotation as YModels.BoundingBox),
-    [AnnotationType.Polygon]: toPolygon(annotation as YModels.Polygon),
-    [AnnotationType.Mask]: toMask(annotation as YModels.Mask, asset),
-  }[annotation.type])
-
+export function transferAnnotations(annotations: YModels.Annotation[] = [], asset?: YModels.Asset) {
+  const handles = (annotation: YModels.Annotation) => {
+    switch (annotation.type) {
+      case AnnotationType.Polygon:
+        return toPolygon(annotation)
+      case AnnotationType.Mask:
+        return toMask(annotation, asset)
+      case AnnotationType.BoundingBox:
+      default:
+        return toBoundingBox(annotation as YModels.BoundingBox)
+    }
+  }
 
   return annotations.map(handles)
 }
@@ -50,17 +58,11 @@ function toBoundingBox(annotation: YModels.BoundingBox): YModels.BoundingBox {
 
 function toMask(annotation: YModels.Mask, asset?: YModels.Asset): YModels.Mask {
   return {
-      ...annotation,
-      decodeMask: decode(annotation.mask, asset?.height || 0),
+    ...annotation,
+    decodeMask: decode(annotation.mask, asset?.height || 0),
   }
 }
 
-function toPolygon(annotation: YModels.Polygon):YModels.Polygon {
+function toPolygon(annotation: YModels.Polygon): YModels.Polygon {
   return annotation
-}
-
-function zoomCanvas(canvas: HTMLCanvasElement, ratio: number) {
-  const ctx = canvas.getContext('2d')
-  const cache = ctx?.save()
-
 }

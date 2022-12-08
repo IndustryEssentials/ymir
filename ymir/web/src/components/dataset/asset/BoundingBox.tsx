@@ -13,25 +13,25 @@ type Props = {
 
 const BoundingBox: FC<Props> = ({ annotation, ratio = 1 }) => {
   const popContent = (annotation: YModels.BoundingBox) => {
-    const evaluatedLabel = evaluationLabel(annotation.cm)
-    const tags = annotation.tags || {}
+    const evaluatedLabel = evaluationLabel(annotation?.cm)
+    const tags = annotation?.tags || {}
     const tagsArr = Object.keys(tags)
     return (
       <>
         <Row>
           <Col flex={'100px'}>{t('keyword.column.name')}</Col>
-          <Col flex={1}>{annotation.keyword}</Col>
+          <Col flex={1}>{annotation?.keyword}</Col>
         </Row>
         {evaluatedLabel ? (
           <Row>
             <Col flex={'100px'}>Evaluation</Col>
-            <Col flex={1}>{evaluationLabel(annotation.cm)}</Col>
+            <Col flex={1}>{evaluationLabel(annotation?.cm)}</Col>
           </Row>
         ) : null}
-        {annotation.score ? (
+        {annotation?.score ? (
           <Row>
             <Col flex={'100px'}>{t('model.verify.confidence')}</Col>
-            <Col flex={1}>{annotation.score}</Col>
+            <Col flex={1}>{annotation?.score}</Col>
           </Row>
         ) : null}
         {tagsArr.length ? (

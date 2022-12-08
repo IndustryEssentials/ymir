@@ -204,7 +204,7 @@ export function toAnnotation(annotation: YModels.BackendData, width: number = 0,
 }
 
 function annotationTransfer(annotation: YModels.BackendData) {
-  const type = annotation.type as YModels.AnnotationType
+  const type = (annotation.type || AnnotationType.BoundingBox) as YModels.AnnotationType
   return {
     [AnnotationType.BoundingBox]: toBoundingBoxAnnoatation,
     [AnnotationType.Polygon]: toPolygonAnnotation,
@@ -213,23 +213,29 @@ function annotationTransfer(annotation: YModels.BackendData) {
 }
 
 export function toBoundingBoxAnnoatation(annotation: YModels.BackendData) {
+  const type: YModels.AnnotationType.BoundingBox = annotation.type || AnnotationType.BoundingBox
   return {
-    type: annotation.type as YModels.AnnotationType.BoundingBox,
+    ...annotation,
     box: annotation.box,
+    type,
   }
 }
 
 export function toMaskAnnotation(annotation: YModels.BackendData) {
+  const type: YModels.AnnotationType.Mask = annotation.type || AnnotationType.Mask
   return {
-    type: annotation.type as YModels.AnnotationType.Mask,
+    ...annotation,
     mask: annotation.mask,
+    type,
   }
 }
 
 export function toPolygonAnnotation(annotation: YModels.BackendData) {
+  const type: YModels.AnnotationType.Polygon = annotation.type || AnnotationType.Polygon
   return {
-    type: annotation.type as YModels.AnnotationType.Polygon,
+    ...annotation,
     points: annotation.points,
+    type,
   }
 }
 
