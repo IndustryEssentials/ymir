@@ -40,5 +40,5 @@ export const getTaskTypeLabel = (type: TASKTYPES) => {
     [TASKTYPES.MODELCOPY]: 'task.type.modelcopy',
     [TASKTYPES.SYS]: 'task.type.sys',
   }
-  return maps[type] ? maps[type] : type
+  return maps[type] ? maps[type] : String(type)
 }

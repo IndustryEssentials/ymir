@@ -1,13 +1,15 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { Button, Card, Form, message, Modal, Select, Space, Row, Col, InputNumber } from 'antd'
 import { useParams, useHistory } from "umi"
 
 import s from './add.less'
 import t from '@/utils/t'
 import { MiningStrategy } from '@/constants/iteration'
+import useFetch from '../../hooks/useFetch'
+
 import Breadcrumbs from '@/components/common/breadcrumb'
 import DatasetSelect from '../../components/form/datasetSelect'
-import useFetch from '../../hooks/useFetch'
+import AssetCount from '@/components/dataset/AssetCount'
 
 const { useForm } = Form
 const { confirm } = Modal
@@ -69,6 +71,8 @@ const Add = ({ }) => {
     updateIteration(params)
   }
 
+  const miningFilter = useCallback(datasets => datasets.filter(ds => ds.keywords.some(kw => project?.keywords?.includes(kw))), [project?.keywords])
+
   return (
     <div className={s.projectAdd}>
       <Breadcrumbs />
@@ -82,8 +86,8 @@ const Add = ({ }) => {
                 <Col>
                   <Form.Item name='trainSetVersion' label={t('project.add.form.training.set.version')} className="normalFont">
                     <Select style={{ marginLeft: 20, width: 150 }} disabled={project.currentIteration}>
-                      {project?.trainSet?.versions?.map(({ id, versionName, assetCount }) =>
-                        <Select.Option key={id} value={id}>{versionName} (assets: {assetCount})</Select.Option>
+                      {project?.trainSet?.versions?.map(dataset =>
+                        <Select.Option key={dataset.id} value={dataset.id}>{dataset.versionName} (assets: <AssetCount dataset={dataset} />)</Select.Option>
                       )}
                     </Select>
                   </Form.Item>
@@ -97,7 +101,7 @@ const Add = ({ }) => {
                 pid={id}
                 filter={[miningSet]}
                 filterGroup={[project?.trainSet?.id, project?.miningSet?.groupId]}
-                filters={datasets => datasets.filter(ds => ds.keywords.some(kw => project?.keywords?.includes(kw)))}
+                filters={miningFilter}
                 onChange={(value) => setTestSet(value)}
                 allowClear
               />

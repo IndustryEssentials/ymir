@@ -6,6 +6,7 @@ from sqlalchemy import Boolean, Column, DateTime, Integer, String, Text
 from sqlalchemy.orm import relationship
 
 from app.db.base_class import Base
+from app.constants.state import ResultType
 from app.models.task import Task  # noqa
 from app.models.dataset import Dataset  # noqa
 from app.models.model import Model  # noqa
@@ -56,6 +57,14 @@ class IterationStep(Base):
         return self.task.result_model  # type: ignore
 
     @property
+    def result_type(self) -> Optional[ResultType]:
+        if self.result_dataset:
+            return ResultType.dataset
+        if self.result_model:
+            return ResultType.model
+        return None
+
+    @property
     def result(self) -> Optional[Union[Dataset, Model]]:
         return self.result_dataset or self.result_model
 
@@ -71,3 +80,12 @@ class IterationStep(Base):
     @property
     def presetting(self) -> Dict:
         return json.loads(self.serialized_presetting) if self.serialized_presetting else {}
+
+    @property
+    def input_dataset_id(self) -> Optional[int]:
+        return self.presetting.get("dataset_id")  # type: ignore
+
+    @property
+    def step_from_previous_iteration(self) -> "IterationStep":
+        steps = self.iteration.previous_steps  # type: ignore
+        return next(step for step in steps if step.name == self.name)

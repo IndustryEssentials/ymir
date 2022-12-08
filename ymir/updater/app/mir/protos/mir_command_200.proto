@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package mir.command130;
+package mir.command200;
 
 option go_package = "/protos";
 
@@ -45,8 +45,6 @@ enum TaskType {
     TaskTypeCopyModel = 14;
     TaskTypeDatasetInfer = 15;
     TaskTypeEvaluate = 16;
-    TaskTypeVisualization = 17;
-
 };
 
 enum TaskState {
@@ -107,8 +105,8 @@ message MetadataAttributes {
 };
 
 message Timestamp {
-    /// start time stamp
-    int64 start = 1;
+    /// start time stamp, use int32 as int64 is not correctly parsed.
+    int32 start = 1;
     /// duration (in seconds), for images, it's always 0
     float duration = 2;
 };
@@ -255,7 +253,7 @@ message Task {
     /// auto generated unique id
     string task_id = 3;
     /// execution time of this task
-    int64 timestamp = 5;  // RFC 3339 date strings
+    int32 timestamp = 5;  // RFC 3339 date strings
     /// (for training task): result model for cmd train
     ModelMeta model = 6;
     int32 return_code = 8;
@@ -290,7 +288,7 @@ message ModelMeta {
 message ModelStage {
     string stage_name = 1;
     repeated string files = 2;
-    int64 timestamp = 3;
+    int32 timestamp = 3;
     float mAP = 4;
 };
 
@@ -299,6 +297,7 @@ message Evaluation {
     SingleDatasetEvaluation dataset_evaluation = 3;
     SingleDatasetEvaluation main_ck = 4;
     map<string, SingleDatasetEvaluation> sub_cks = 5;
+    EvaluationState state = 6;
 
     reserved 2;
 }
@@ -349,6 +348,19 @@ message FloatPoint {
     float z = 3;
 }
 
+enum EvaluationState {
+    // evaluate not started
+    ES_NOT_SET = 0;
+    // evaluation result ready to use
+    ES_READY = 1;
+    // evaluation not finished because there's no gt or pred
+    ES_NO_GT_OR_PRED = 2;
+    // evaluation not finished because there're too many images or too many class ids
+    ES_EXCEEDS_LIMIT = 3;
+    // evaluation not finished because there's no evaluate class ids
+    ES_NO_CLASS_IDS = 4;
+}
+
 /// ========== context.mir ==========
 message MirContext {
     /// total images count
@@ -382,3 +394,24 @@ message AnnoStats {
 
     reserved 4, 5, 6;
 };
+
+message ExportConfig {
+    // Asset config.
+    AssetFormat asset_format = 1;
+    string asset_dir = 2;
+    string asset_index_file = 3;
+    // Index file writes abs path. In TMI case, path should be converted, e.g. /in/assets.
+    string asset_index_prefix = 4;
+    string media_location = 5;
+    bool need_sub_folder = 6;
+
+    // Annotation config.
+    AnnoFormat anno_format = 50;
+    string gt_dir = 51;
+    string gt_index_file = 52;
+    string gt_index_prefix = 53;
+    string pred_dir = 54;
+    string pred_index_file = 55;
+    string pred_index_prefix = 56;
+    string tvt_index_dir = 57;
+}

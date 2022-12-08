@@ -1,5 +1,6 @@
 import json
-from typing import Optional
+from typing import Dict, Optional
+
 from sqlalchemy.orm import Session
 
 from app.crud.base import CRUDBase
@@ -19,9 +20,24 @@ class CRUDIterationStep(CRUDBase[IterationStep, IterationStepCreate, IterationSt
             raise StepNotFound()
         steps_in_same_iteration = self.get_multi_by_iteration(db, iteration_id=step.iteration_id)
         current_idx = [i.id for i in steps_in_same_iteration].index(step.id)
-        return steps_in_same_iteration[current_idx - 1]
+        if current_idx >= len(steps_in_same_iteration) - 1:
+            return None
+        return steps_in_same_iteration[current_idx + 1]
 
-    def start(self, db: Session, id: int, task_id: int) -> IterationStep:
+    def get_ready_result(self, db: Session, id: int) -> Dict:
+        step = self.get(db, id)
+        if not step:
+            raise StepNotFound()
+        if step.state != ResultState.ready:
+            return {}
+        if step.result_dataset:
+            return {"dataset_id": step.result_dataset.id}
+        if step.result_model:
+            return {"model_id": step.result_model.id}
+        else:
+            return {}
+
+    def bind_task(self, db: Session, id: int, task_id: int) -> IterationStep:
         """
         start given iteration_step:
         1. create task
@@ -33,24 +49,31 @@ class CRUDIterationStep(CRUDBase[IterationStep, IterationStepCreate, IterationSt
         updates = {"task_id": task_id}
         return self.update(db, db_obj=step, obj_in=updates)
 
+    def unbind_task(self, db: Session, id: int) -> IterationStep:
+        step = self.get(db, id)
+        if not step:
+            raise StepNotFound()
+        step.task_id = None
+        db.add(step)
+        db.commit()
+        db.refresh(step)
+        return step
+
     def finish(self, db: Session, id: int) -> IterationStep:
         step = self.get(db, id)
         if not step:
             raise StepNotFound()
-
-        if step.state == ResultState.ready:
-            # save result as task presetting for next_step
-            next_step = self.get_next_step(db, step.id)
-            if next_step and step.result:
-                task_presetting = dict(next_step.presetting)
-                if step.result_dataset:
-                    task_presetting["dataset_id"] = step.result_dataset.id
-                if step.result_model:
-                    task_presetting["model_id"] = step.result_model.id
-                self.update(db, db_obj=next_step, obj_in={"serialized_presetting": json.dumps(task_presetting)})
-
-        # set current step as finished no matter what
         return self.update(db, db_obj=step, obj_in={"is_finished": True})
+
+    def update_presetting(self, db: Session, id: int, presetting: Dict) -> IterationStep:
+        step = self.get(db, id)
+        if not step:
+            raise StepNotFound()
+        step.serialized_presetting = json.dumps({**step.presetting, **presetting})
+        db.add(step)
+        db.commit()
+        db.refresh(step)
+        return step
 
 
 iteration_step = CRUDIterationStep(IterationStep)

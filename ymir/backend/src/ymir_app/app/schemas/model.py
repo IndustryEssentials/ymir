@@ -58,9 +58,8 @@ class ModelCreate(ModelBase):
 
 
 class ModelUpdate(BaseModel):
-    name: str
     description: Optional[str]
-    keywords: Optional[str]
+    recommended_stage: Optional[int] = Field(alias="stage_id")
 
 
 class ModelInDBBase(IdModelMixin, DateTimeModelMixin, IsDeletedModelMixin, ModelBase):

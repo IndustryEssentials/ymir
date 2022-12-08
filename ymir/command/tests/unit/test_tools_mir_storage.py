@@ -160,7 +160,7 @@ class TestMirStorage(unittest.TestCase):
                     'timestamp': '1624376173',
                     'model': {
                         'model_hash': 'abc123',
-                        'mean_average_precision': 0.5,
+                        'mAP': 0.5,
                         'context': 'fake_context',
                         'stages': {},
                         'best_stage_name': '',

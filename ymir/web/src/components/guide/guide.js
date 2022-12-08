@@ -5,7 +5,7 @@ import { useHistory } from 'umi'
 
 import t from '@/utils/t'
 import s from './guide.less'
-import { NoSjjIcon, TrainIcon, ExcavateIcon, TaggingIcon, BookIcon } from '@/components/common/icons'
+import { NoSjjIcon, TrainIcon, ExcavateIcon, TaggingIcon, BookIcon } from '@/components/common/Icons'
 
 const Guide = ({ visible, neverShow, setGuideVisible, setNeverShow }) => {
   // const [neverAutoShow, setNeverAutoShow] = useState(false)

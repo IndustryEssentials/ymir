@@ -89,6 +89,8 @@ def _cleanup(work_dir: str) -> None:
             'result.yaml',  # mining result file
         })
 
+    logging.info(f"cleanup {work_dir} finish")
+
 
 def command_run_in_out(f: Callable) -> Callable:
     """
@@ -125,6 +127,7 @@ def command_run_in_out(f: Callable) -> Callable:
 
             if ret == MirCode.RC_OK:
                 mir_logger.update_percent_info(local_percent=1, task_state=phase_logger.PhaseStateEnum.DONE)
+                _cleanup(work_dir=work_dir)  # cleanup iff everything goes well
                 # no need to call _commit_error, already committed inside command run function
             else:
                 mir_logger.update_percent_info(local_percent=1,
@@ -140,8 +143,6 @@ def command_run_in_out(f: Callable) -> Callable:
                               predefined_task=None)
 
             logging.info(f"command done: {dst_rev}, return code: {ret}")
-
-            _cleanup(work_dir=work_dir)
 
             return ret
 
@@ -162,9 +163,6 @@ def command_run_in_out(f: Callable) -> Callable:
 
         logging.info(f"command failed: {dst_rev}; exc: {exc}")
         logging.info(f"trace: {trace_message}")
-
-        # should not cleanup task env if failed.
-        # _cleanup(work_dir=work_dir)
 
         raise exc
 

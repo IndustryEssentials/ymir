@@ -7,9 +7,9 @@ import { connect } from 'dva'
 import styles from './index.less'
 import t from '@/utils/t'
 import Empty from "@/components/empty/default"
-import { humanize } from '@/utils/number'
+import AssetCount from '@/components/dataset/AssetCount'
 import { cardBody, cardHead } from "./components/styles"
-import { FlagIcon, CopyIcon, MetadatasetIcon } from '@/components/common/icons'
+import { FlagIcon, CopyIcon, MetadatasetIcon } from '@/components/common/Icons'
 
 function Sets({ title, count = 2, getPublicDataset }) {
   const history = useHistory()
@@ -34,7 +34,7 @@ function Sets({ title, count = 2, getPublicDataset }) {
         <Col flex={1} title={set.name} style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{set.name}</Col>
       </Row>
       <Descriptions className={styles.setInfo} column={2}>
-        <Descriptions.Item label={t('portal.dataset.asset.count')}>{humanize(set.assetCount)}</Descriptions.Item>
+        <Descriptions.Item label={t('portal.dataset.asset.count')}><AssetCount dataset={set} /></Descriptions.Item>
         <Descriptions.Item label={t('portal.dataset.keyword.count')}>
           {set?.keywords.length}
         </Descriptions.Item>

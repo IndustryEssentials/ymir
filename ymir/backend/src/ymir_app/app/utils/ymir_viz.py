@@ -97,36 +97,6 @@ class DatasetInfo:
         )
 
 
-class EvaluationScore(BaseModel):
-    ap: float
-    ar: float
-    fn: int
-    fp: int
-    tp: int
-    pr_curve: List[Dict]
-
-
-class CKEvaluation(BaseModel):
-    total: EvaluationScore
-    sub: Dict[str, EvaluationScore]
-
-
-class VizDatasetEvaluation(BaseModel):
-    ci_evaluations: Dict[int, EvaluationScore]  # class_id -> scores
-    ci_averaged_evaluation: EvaluationScore
-    ck_evaluations: Dict[str, CKEvaluation]
-
-
-class VizDatasetEvaluationResult(BaseModel):
-    """
-    Interface dataclass of VIZ output, defined as DatasetEvaluationResult in doc:
-    https://github.com/IndustryEssentials/ymir/blob/master/ymir/backend/src/ymir_viz/doc/ymir_viz_API.yaml
-    """
-
-    iou_evaluations: Dict[float, VizDatasetEvaluation]  # iou -> evaluation
-    iou_averaged_evaluation: VizDatasetEvaluation
-
-
 class ViewerAssetRequest(BaseModel):
     """
     Payload for viewer GET /assets
@@ -244,7 +214,7 @@ class ViewerModelInfoResponse(BaseModel):
         keywords = values["executor_config"].get("class_names")
         values.update(
             hash=values["model_hash"],
-            map=values["mean_average_precision"],
+            map=values["mAP"],
             model_stages=values["stages"],
             keywords=json.dumps(keywords) if keywords else None,
         )
@@ -418,7 +388,7 @@ class VizClient:
         bucket: str,
         unit: str = "",
         limit: int = 10,
-        keyword_ids: Optional[List[int]] = None,
+        class_ids: Optional[List[int]] = None,
     ) -> Dict:
         url = f"{self._host}/api/v1/user_metrics/{metrics_group}"
         params = {
@@ -428,8 +398,8 @@ class VizClient:
             "unit": unit,
             "limit": limit,
         }
-        if keyword_ids:
-            params["class_ids"] = ",".join(map(str, keyword_ids))
+        if class_ids:
+            params["class_ids"] = ",".join(map(str, class_ids))
         resp = self.get_resp(url, params=params)
         return self.parse_resp(resp)
 

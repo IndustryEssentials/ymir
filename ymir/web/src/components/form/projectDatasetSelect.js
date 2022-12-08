@@ -1,9 +1,18 @@
-import { Cascader, Col, Row, Select } from 'antd'
-import { connect } from 'dva'
-import { useEffect, useState } from 'react'
+import { Cascader, Col, Row, Select } from "antd"
+import { connect } from "dva"
+import { useEffect, useState } from "react"
 
+import Dataset from "@/components/form/option/Dataset"
 
-const ProjectDatasetSelect = ({ pid, value, projects = [], onChange = () => { }, getProjects, getDatasets, ...resProps }) => {
+const ProjectDatasetSelect = ({
+  pid,
+  value,
+  projects = [],
+  onChange = () => {},
+  getProjects,
+  getDatasets,
+  ...resProps
+}) => {
   const [options, setOptions] = useState([])
 
   useEffect(() => {
@@ -11,7 +20,7 @@ const ProjectDatasetSelect = ({ pid, value, projects = [], onChange = () => { },
   }, [])
 
   useEffect(() => {
-    const opts = projects.map(project => {
+    const opts = projects.map((project) => {
       return {
         label: project.name,
         value: project.id,
@@ -35,22 +44,31 @@ const ProjectDatasetSelect = ({ pid, value, projects = [], onChange = () => { },
     const target = selected[selected.length - 1]
     target.loading = true
     const result = await getDatasets(target.value, true)
-    
+
     target.loading = false
     if (result) {
-      target.children = result.map(dataset => {
-        return {
-          label: `${dataset.name} ${dataset.versionName} (assets: ${dataset.assetCount})`,
-          value: dataset.id,
-          isLeaf: true,
-        }
-      }) || []
+      target.children =
+        result.map((dataset) => {
+          return {
+            label: <Dataset dataset={dataset} />,
+            value: dataset.id,
+            dataset: dataset,
+            isLeaf: true,
+          }
+        }) || []
       setOptions([...options])
     }
   }
 
   return (
-    <Cascader value={value} options={options} {...resProps} loadData={loadData} onChange={onChange} allowClear></Cascader>
+    <Cascader
+      value={value}
+      options={options}
+      {...resProps}
+      loadData={loadData}
+      onChange={onChange}
+      allowClear
+    ></Cascader>
   )
 }
 
@@ -63,16 +81,16 @@ const actions = (dispatch) => {
   return {
     getProjects() {
       return dispatch({
-        type: 'project/getProjects',
+        type: "project/getProjects",
         payload: { limit: 10000 },
       })
     },
     getDatasets(pid, force) {
       return dispatch({
-        type: 'dataset/queryAllDatasets',
+        type: "dataset/queryAllDatasets",
         payload: { pid, force },
       })
-    }
+    },
   }
 }
 export default connect(props, actions)(ProjectDatasetSelect)

@@ -4,12 +4,13 @@ import { Table, Space, Button, message, Card, } from "antd"
 import { useHistory } from "umi"
 
 import t from "@/utils/t"
-import { humanize } from "@/utils/number"
 import { tabs } from '@/constants/project'
-import Actions from "@/components/table/actions"
+import Actions from "@/components/table/Actions"
+import AssetCount from '@/components/dataset/AssetCount'
 import s from "../index.less"
-import { EyeOnIcon } from "@/components/common/icons"
+import { EyeOnIcon } from "@/components/common/Icons"
 import useRestore from "@/hooks/useRestore"
+import VersionName from '@/components/result/VersionName'
 
 const HiddenList = ({ module, pid, ...func }) => {
   const history = useHistory()
@@ -37,13 +38,13 @@ const HiddenList = ({ module, pid, ...func }) => {
     {
       title: showTitle("dataset.column.name"),
       dataIndex: "name",
-      render: (name, { versionName }) => `${name} ${versionName}`,
+      render: (name, dataset) => <VersionName result={dataset} />,
       ellipsis: { showTitle: true },
     },
     module === 'dataset' ? {
       title: showTitle("dataset.column.asset_count"),
       dataIndex: "assetCount",
-      render: (num) => humanize(num),
+      render: (num, dataset) => <AssetCount dataset={dataset} />,
     } : {
       title: showTitle("model.column.map"),
       dataIndex: "map",
@@ -58,7 +59,7 @@ const HiddenList = ({ module, pid, ...func }) => {
     {
       title: showTitle("dataset.column.action"),
       dataIndex: "id",
-      render: (id, record) => <Actions menus={actionMenus(record)} />,
+      render: (id, record) => <Actions actions={actionMenus(record)} />,
       align: "center",
     },
   ]

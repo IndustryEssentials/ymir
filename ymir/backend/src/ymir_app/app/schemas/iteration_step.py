@@ -1,10 +1,12 @@
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Union
 from pydantic import BaseModel
 
 from app.constants.state import TaskType, ResultState
 from app.schemas.common import (
     Common,
     DateTimeModelMixin,
+    DatasetResult,
+    ModelResult,
     IdModelMixin,
     IsDeletedModelMixin,
 )
@@ -24,6 +26,10 @@ class IterationStepCreate(BaseModel):
     name: str
     task_type: TaskType
     iteration_id: int
+    serialized_presetting: Optional[str]
+
+    class Config:
+        use_enum_values = True
 
 
 class IterationStepUpdate(BaseModel):
@@ -42,7 +48,7 @@ class IterationStepInDBBase(IdModelMixin, DateTimeModelMixin, IsDeletedModelMixi
 
 
 class IterationStep(IterationStepInDBBase):
-    pass
+    result: Union[ModelResult, DatasetResult, None]
 
 
 class IterationStepOut(Common):

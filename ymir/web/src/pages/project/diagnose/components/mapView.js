@@ -3,9 +3,9 @@ import { Col, Row, Table } from "antd"
 import { percent } from '@/utils/number'
 import { isSame } from '@/utils/object'
 import Panel from "@/components/form/panel"
-import { average, getCK, getKwField, getModelCell, opt, percentRender } from "./common"
+import { average, getAverageField, getCK, getKwField, getModelCell, opt, percentRender } from "./common"
 
-const MapView = ({ tasks, datasets, models, data, xType, kw: { kwType, keywords } }) => {
+const MapView = ({ tasks, datasets, models, data, xType, kw: { kwType, keywords }, averageIou }) => {
   const [list, setList] = useState([])
   const [dd, setDD] = useState([])
   const [kd, setKD] = useState([])
@@ -23,7 +23,7 @@ const MapView = ({ tasks, datasets, models, data, xType, kw: { kwType, keywords 
       setDData(null)
       setKData(null)
     }
-  }, [kwType, data, keywords])
+  }, [kwType, data, keywords, averageIou])
 
   useEffect(() => {
     setDD(datasets.map(opt))
@@ -53,7 +53,7 @@ const MapView = ({ tasks, datasets, models, data, xType, kw: { kwType, keywords 
 
   function generateDData(data) {
     const ddata = Object.keys(data).reduce((prev, rid) => {
-      const fiou = getKwField(data[rid], kwType)
+      const fiou = (!kwType && averageIou) ? getAverageField(data[rid]) : getKwField(data[rid], kwType)
       return {
         ...prev,
         [rid]: fiou,
@@ -65,7 +65,7 @@ const MapView = ({ tasks, datasets, models, data, xType, kw: { kwType, keywords 
   function generateKData(data) {
     const kdata = {}
     Object.keys(data).forEach(id => {
-      const fiou = getKwField(data[id], kwType)
+      const fiou = (!kwType && averageIou) ? getAverageField(data[id]) : getKwField(data[id], kwType)
       Object.keys(fiou).forEach(key => {
         kdata[key] = kdata[key] || {}
         kdata[key][id] = fiou[key]

@@ -168,8 +168,9 @@ const dataset = {
   'dataset.assets.keyword.selector.types.tags': { en: 'Box Tag', cn: '标注框标签' },
   'dataset.assets.keyword.selector.types.placeholder': { en: 'Please select filter classes', cn: '请选择筛选类别，可多选' },
   'dataset.assets.selector.gt.label': { en: 'Annotation Type:', cn: '标注类型：' },
-  'dataset.assets.selector.evaluation.label': { en: 'Evaluation:', cn: '预测：' },
-  'dataset.detail.infer.class': { en: 'Prediction Classes:', cn: '模型预测类别：' },
+  'dataset.assets.selector.evaluation.label': { en: 'Evaluation:', cn: '评估指标：' },
+  'dataset.detail.infer.class': { en: 'Prediction Classes:', cn: '预测类别：' },
+  "dataset.type.testing": { cn: "测试集", en: "Testing Datasets", },
 
 }
 

@@ -9,7 +9,7 @@ import {
   NavDatasetIcon, UserIcon, UserSettingsIcon, DiagnosisIcon, EditIcon, EyeOffIcon, TrainIcon,
   DeviceListIcon, DeviceSupportedIcon, MyAlgoIcon, StoreIcon,
   BarChart2LineIcon, ProjectIcon, VectorIcon, BookIcon,
-} from '@/components/common/icons'
+} from '@/components/common/Icons'
 import IterationIcon from '@/components/icon/Xiangmudiedai'
 
 const { Sider } = Layout
@@ -49,7 +49,7 @@ function LeftMenu() {
         getItem(t('projects.title'), `/home/project`, ProjectIcon,),
         showLeftMenu ? getItem(project.name, `project.summary`, VectorIcon, [
           getItem(t('project.summary'), `/home/project/${id}/detail`, BarchartIcon,),
-          getItem(t('project.iterations.title'), `/home/project/${id}/iterations`, IterationIcon,),
+          project.enableIteration ? getItem(t('project.iterations.title'), `/home/project/${id}/iterations`, IterationIcon,) : null,
           getItem(t('dataset.list'), `/home/project/${id}/dataset`, NavDatasetIcon,),
           getItem(t('breadcrumbs.dataset.analysis'), `/home/project/${id}/dataset/analysis`, BarChart2LineIcon),
           getItem(t('model.management'), `/home/project/${id}/model`, MymodelIcon,),
@@ -73,7 +73,7 @@ function LeftMenu() {
         isSuperAdmin(role) ? getItem(t('common.top.menu.permission'), '/home/permission', UserSettingsIcon,) : null,
       ]),
       { type: 'divider' },
-      getItem(<a target="_blank" href='/docs/'>
+      getItem(<a target="_blank" href='/docs/#/README.md'>
         <BookIcon />
         <span style={{ display: 'inline-block', marginLeft: 10 }}>{t('common.menu.docs')}</span>
       </a>, 'outer/docs'),

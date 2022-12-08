@@ -1,11 +1,10 @@
-FROM golang:1.18.5-buster AS build
+FROM golang:1.18.5 AS build
 
 # --build-arg GO_SOURCE='https://mirrors.aliyun.com/goproxy/,direct'
-ARG GO_SOURCE=https://goproxy.io,direct
+ARG GO_SOURCE=https://proxy.golang.org,direct
 
 RUN go env -w GO111MODULE=on
 RUN go env -w GOPROXY=${GO_SOURCE}
-RUN go install github.com/grpc-ecosystem/grpc-health-probe@v0.4.12
 
 WORKDIR /app
 COPY ./backend/src/ymir_hel/go.mod .
@@ -45,7 +44,6 @@ RUN pip3 install -U /command -i ${PIP_SOURCE}
 
 COPY ./backend/src /app
 
-COPY --from=build /go/bin/grpc-health-probe /app/grpc_health_probe
 COPY --from=build /ymir_hel/hel_server /app/ymir_hel/hel_server
 
 WORKDIR /app

@@ -1,21 +1,23 @@
-import { Button, Checkbox, Col, Form, Row, Select, Tooltip } from 'antd'
+import { Alert, Button, Checkbox, Col, Form, Row, Select, Tooltip } from 'antd'
 import { connect } from 'dva'
 import { useCallback, useEffect, useState } from 'react'
 
 import t from '@/utils/t'
+import { INFER_DATASET_MAX_COUNT, INFER_CLASSES_MAX_COUNT } from '@/constants/common'
 import useFetch from '@/hooks/useFetch'
 import ModelSelect from './modelSelect'
 import DatasetSelect from './datasetSelect'
 import { useHistory } from 'umi'
+import { humanize } from '@/utils/number'
 
 const sameConfig = (config, config2) => {
   return JSON.stringify(config2) === JSON.stringify(config)
 }
 const sameConfigs = (config, configs) => {
-  return configs.some(item => sameConfig(item, config))
+  return configs.some((item) => sameConfig(item, config))
 }
 
-const ConfigSelect = ({ value, configs = [], onChange = () => { } }) => {
+const ConfigSelect = ({ value, configs = [], onChange = () => {} }) => {
   const [options, setOptions] = useState([])
 
   useEffect(() => {
@@ -23,7 +25,11 @@ const ConfigSelect = ({ value, configs = [], onChange = () => { } }) => {
       const title = [...item.model, JSON.stringify(item.config)].join('\n')
       return {
         value: index,
-        label: <Tooltip color={'blue'} title={title}>{item.name}</Tooltip>,
+        label: (
+          <Tooltip color={'blue'} title={title}>
+            {item.name}
+          </Tooltip>
+        ),
         config: item,
       }
     })
@@ -32,18 +38,24 @@ const ConfigSelect = ({ value, configs = [], onChange = () => { } }) => {
 
   useEffect(() => {
     if (value) {
-      change(value, options.filter(opt => value.includes(opt.value)))
+      change(
+        value,
+        options.filter((opt) => value.includes(opt.value)),
+      )
     }
   }, [options])
 
   const change = (values) => {
-    onChange(values, values.map(index => options[index]))
+    onChange(
+      values,
+      values.map((index) => options[index]),
+    )
   }
 
   return <Checkbox.Group value={value} options={options} onChange={change}></Checkbox.Group>
 }
 
-const InferResultSelect = ({ pid, form, value, onChange = () => { } }) => {
+const InferResultSelect = ({ pid, form, value, onChange = () => {} }) => {
   const history = useHistory()
   const [models, setModels] = useState([])
   const [datasets, setDatasets] = useState([])
@@ -75,7 +87,7 @@ const InferResultSelect = ({ pid, form, value, onChange = () => { } }) => {
   }, [selectedStages])
 
   useEffect(() => {
-    if (datasets.length === 1) {
+    if (datasets.length === 1 && datasets[0].assetCount <= INFER_DATASET_MAX_COUNT) {
       form.setFieldsValue({ dataset: datasets })
     }
     setConfigs([])
@@ -88,7 +100,7 @@ const InferResultSelect = ({ pid, form, value, onChange = () => { } }) => {
 
   useEffect(() => {
     const testingDatasets = tasks.map(({ parameters: { dataset_id } }) => dataset_id)
-    const crossDatasets = testingDatasets.filter(dataset => {
+    const crossDatasets = testingDatasets.filter((dataset) => {
       const targetTasks = tasks.filter(({ parameters: { dataset_id } }) => dataset_id === dataset)
       return selectedStages.every(([model, stage]) => targetTasks.map(({ parameters: { model_stage_id } }) => model_stage_id).includes(stage))
     })
@@ -100,12 +112,15 @@ const InferResultSelect = ({ pid, form, value, onChange = () => { } }) => {
       .filter(({ parameters: { dataset_id } }) => (selectedDatasets ? selectedDatasets.includes(dataset_id) : true))
       .reduce((prev, { config, parameters: { model_id, model_stage_id } }) => {
         const stageName = getStageName([model_id, model_stage_id])
-        return sameConfigs(config, prev.map(({ config }) => config)) ?
-          prev.map(item => {
-            sameConfig(item.config, config) && item.model.push(stageName)
-            return item
-          }) :
-          [...prev, { config, model: [stageName] }]
+        return sameConfigs(
+          config,
+          prev.map(({ config }) => config),
+        )
+          ? prev.map((item) => {
+              sameConfig(item.config, config) && item.model.push(stageName)
+              return item
+            })
+          : [...prev, { config, model: [stageName] }]
       }, [])
     setConfigs(configs.map((config, index) => ({ ...config, name: `config${index + 1}` })))
   }, [tasks, selectedDatasets])
@@ -117,10 +132,8 @@ const InferResultSelect = ({ pid, form, value, onChange = () => { } }) => {
   useEffect(() => {
     const selected = []
     selectedStages?.forEach(([model, selectedStage]) => {
-      selectedDatasets.forEach(did => {
-        const dtask = tasks.filter(({
-          parameters: { dataset_id, model_stage_id: stage }
-        }) => dataset_id === did && stage === selectedStage)
+      selectedDatasets.forEach((did) => {
+        const dtask = tasks.filter(({ parameters: { dataset_id, model_stage_id: stage } }) => dataset_id === did && stage === selectedStage)
         selectedConfigs.forEach(({ config: sconfig, name }) => {
           const ctask = dtask.find(({ config }) => sameConfig(config, sconfig))
           ctask && selected.push({ ...ctask, configName: name })
@@ -139,10 +152,10 @@ const InferResultSelect = ({ pid, form, value, onChange = () => { } }) => {
   }, [selectedTasks])
 
   function getStageName([model, stage]) {
-    const m = models.find(md => md.id === model)
+    const m = models.find((md) => md.id === model)
     let s = {}
     if (m) {
-      s = m.stages.find(sg => sg.id === stage)
+      s = m.stages.find((sg) => sg.id === stage)
     }
     return m && s ? `${m.name} ${m.versionName} ${s.name}` : ''
   }
@@ -158,12 +171,26 @@ const InferResultSelect = ({ pid, form, value, onChange = () => { } }) => {
   }
 
   function configChange(values, options = []) {
-    setSelectedConfigs(options.map((opt) => opt ? opt.config : null))
+    setSelectedConfigs(options.map((opt) => (opt ? opt.config : null)))
   }
 
-  const filterDatasets = useCallback((all) => {
-    return all.filter(({ id }) => datasets.includes(id))
-  }, [datasets])
+  const filterDatasets = useCallback(
+    (all) => {
+      return all
+        .filter(({ id }) => datasets.includes(id))
+        .map((ds) => ({
+          ...ds,
+          disabled: ds.assetCount > INFER_DATASET_MAX_COUNT,
+        }))
+    },
+    [datasets],
+  )
+
+  const filterModels = (models) =>
+    models.map((model) => ({
+      ...model,
+      disabled: model.keywords.length > INFER_CLASSES_MAX_COUNT,
+    }))
 
   const goInfer = useCallback(() => {
     const mids = selectedStages?.map(String)?.join('|')
@@ -171,20 +198,43 @@ const InferResultSelect = ({ pid, form, value, onChange = () => { } }) => {
     history.push(`/home/project/${pid}/inference${query}`)
   }, [selectedStages])
 
-  const renderInferBtn = <div className={fetched && !datasets.length ? 'error' : ''} style={{ lineHeight: '32px' }}>
-    {t('task.infer.diagnose.tip')}
-    <Button size='small' onClick={goInfer}>{t('common.action.inference')}</Button>
-  </div>
+  const renderInferBtn = (
+    <div className={fetched && !datasets.length ? 'error' : ''} style={{ lineHeight: '32px' }}>
+      {t('task.infer.diagnose.tip')}
+      <Button size="small" onClick={goInfer}>
+        {t('common.action.inference')}
+      </Button>
+    </div>
+  )
 
   return (
     <>
-      <Form.Item name='stage' label={t('model.diagnose.label.model')} rules={[{ required: true }, { type: 'array', max: 5 }]} extra={renderInferBtn}>
-        <ModelSelect pid={pid} multiple onChange={modelChange} />
+      <Form.Item
+        name="stage"
+        label={t('model.diagnose.label.model')}
+        help={<Alert style={{ marginBottom: 20 }} message={t('model.diagnose.metrics.tip.exceed.classes', { max: INFER_CLASSES_MAX_COUNT })} type="warning" />}
+        rules={[{ required: true }, { type: 'array', max: 5 }]}
+        extra={renderInferBtn}
+      >
+        <ModelSelect pid={pid} multiple filters={filterModels} onChange={modelChange} />
       </Form.Item>
-      <Form.Item name='dataset' hidden={!datasets.length} label={t('model.diagnose.label.testing_dataset')} rules={[{ required: true }, { type: 'array', max: 5 }]}>
-        <DatasetSelect pid={pid} mode='multiple' filters={filterDatasets} onChange={datasetChange} />
-      </Form.Item>
-      <Form.Item name='config' hidden={!configs.length} label={t('model.diagnose.label.config')} rules={[{ required: true }, { type: 'array', max: 5 }]}>
+      {datasets.length ?
+      <Form.Item
+        name="dataset"
+        help={
+          <Alert
+            style={{ marginBottom: 20 }}
+            message={t('model.diagnose.metrics.tip.exceed.assets', { max: humanize(INFER_DATASET_MAX_COUNT, 0) })}
+            type="warning"
+          />
+        }
+        // hidden={!datasets.length}
+        label={t('model.diagnose.label.testing_dataset')}
+        rules={[{ required: true }, { type: 'array', max: 5 }]}
+      >
+        <DatasetSelect pid={pid} mode="multiple" filters={filterDatasets} onChange={datasetChange} />
+      </Form.Item> : null }
+      <Form.Item name="config" hidden={!configs.length} label={t('model.diagnose.label.config')} rules={[{ required: true }, { type: 'array', max: 5 }]}>
         <ConfigSelect configs={configs} onChange={configChange} />
       </Form.Item>
     </>

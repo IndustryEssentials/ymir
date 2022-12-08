@@ -6,6 +6,7 @@ import unittest
 from mir.commands import copy
 from mir.protos import mir_command_pb2 as mirpb
 from mir.tools import mir_storage, mir_storage_ops
+from mir.tools.class_ids import ids_file_path
 from mir.tools.code import MirCode
 
 from tests import utils as test_utils
@@ -69,7 +70,7 @@ class TestCmdCopy(unittest.TestCase):
             self.__create_image_annotations(type_ids=[3]))
         mir_annotations.prediction.eval_class_ids[:] = eval_class_ids
 
-        model_meta = mirpb.ModelMeta(mean_average_precision=0.3)
+        model_meta = mirpb.ModelMeta(mAP=0.3)
         task = mir_storage_ops.create_task(task_type=mirpb.TaskType.TaskTypeTraining,
                                            task_id=task_id,
                                            message='training',
@@ -122,7 +123,7 @@ class TestCmdCopy(unittest.TestCase):
             self.assertEqual({}, asset1_idx_ids)
         self.assertEqual(eval_class_ids_set, set(mir_annotations.prediction.eval_class_ids))
 
-        mAP = mir_tasks.tasks[dst_tid].model.mean_average_precision
+        mAP = mir_tasks.tasks[dst_tid].model.mAP
         self.assertTrue(mAP > 0.29999 and mAP < 0.30001)  # it's actually 0.3
 
     # public: test cases
@@ -130,7 +131,9 @@ class TestCmdCopy(unittest.TestCase):
         # case 0
         fake_args = type('', (), {})()
         fake_args.mir_root = self._mir_root
+        fake_args.label_storage_file = ids_file_path(self._mir_root)
         fake_args.data_mir_root = self._src_mir_root
+        fake_args.data_label_storage_file = ids_file_path(self._src_mir_root)
         fake_args.data_src_revs = 'a@t0'
         fake_args.dst_rev = 'b@t1'
         fake_args.work_dir = self._work_dir
@@ -146,7 +149,9 @@ class TestCmdCopy(unittest.TestCase):
         # case 1
         fake_args = type('', (), {})()
         fake_args.mir_root = self._mir_root
+        fake_args.label_storage_file = ids_file_path(self._mir_root)
         fake_args.data_mir_root = self._src_mir_root
+        fake_args.data_label_storage_file = ids_file_path(self._src_mir_root)
         fake_args.data_src_revs = 'a@t0'
         fake_args.dst_rev = 'b@t2'
         fake_args.work_dir = self._work_dir
@@ -162,7 +167,9 @@ class TestCmdCopy(unittest.TestCase):
         # run cmd: abnormal cases
         fake_args = type('', (), {})()
         fake_args.mir_root = ''
+        fake_args.label_storage_file = ''
         fake_args.data_mir_root = ''
+        fake_args.data_label_storage_file = ''
         fake_args.data_src_revs = 'a@t0'
         fake_args.dst_rev = 'b@t1'
         fake_args.work_dir = self._work_dir
@@ -174,7 +181,9 @@ class TestCmdCopy(unittest.TestCase):
 
         fake_args = type('', (), {})()
         fake_args.mir_root = self._mir_root + 'fake'
+        fake_args.label_storage_file = 'fake'
         fake_args.data_mir_root = self._src_mir_root + 'fake'
+        fake_args.data_label_storage_file = 'fake'
         fake_args.data_src_revs = 'a@t0'
         fake_args.dst_rev = 'b@t1'
         fake_args.work_dir = self._work_dir
@@ -183,12 +192,14 @@ class TestCmdCopy(unittest.TestCase):
         cmd_copy = copy.CmdCopy(fake_args)
         return_code = cmd_copy.run()
         self.assertNotEqual(MirCode.RC_OK, return_code)
-        
+
     def test_normal_01(self) -> None:
         # test cases for pred meta
         fake_args = type('', (), {})()
         fake_args.mir_root = self._mir_root
+        fake_args.label_storage_file = ids_file_path(self._mir_root)
         fake_args.data_mir_root = self._src_mir_root
+        fake_args.data_label_storage_file = ids_file_path(self._src_mir_root)
         fake_args.data_src_revs = 'a@t1'
         fake_args.dst_rev = 'b@t1'
         fake_args.work_dir = self._work_dir

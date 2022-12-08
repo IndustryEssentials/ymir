@@ -8,6 +8,7 @@ from google.protobuf.json_format import MessageToDict, ParseDict
 
 from mir.commands.import_dataset import CmdImport
 from mir.protos import mir_command_pb2 as mirpb
+from mir.tools.class_ids import ids_file_path
 from mir.tools.code import MirCode
 from tests import utils as test_utils
 
@@ -47,6 +48,7 @@ class TestCmdImport(unittest.TestCase):
         gen_folder = os.path.join(self._storage_root, 'gen')
         args = type('', (), {})()
         args.mir_root = mir_root
+        args.label_storage_file = ids_file_path(mir_root)
         args.src_revs = ''
         args.dst_rev = 'a@import-task-0'
         args.index_file = self._idx_file
@@ -123,6 +125,7 @@ class TestCmdImport(unittest.TestCase):
         gen_folder = os.path.join(self._storage_root, 'gen')
         args = type('', (), {})()
         args.mir_root = mir_root
+        args.label_storage_file = ids_file_path(mir_root)
         args.src_revs = ''
         args.dst_rev = 'a@import-task-0'
         args.index_file = self._idx_file

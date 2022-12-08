@@ -6,12 +6,12 @@ import sys
 from typing import Any, cast, Protocol
 
 from mir import version
-from mir.commands import (init, checkout, commit, copy, export, filter, merge,
+from mir.commands import (init, checkout, commit, copy, export, filter, fuse, merge,
                           sampling, show, status, training, mining, import_dataset, import_model, infer)
 
 _COMMANDS_ = [
-    init, checkout, commit, copy, export, filter, merge, sampling, show, status, training, mining, import_dataset,
-    import_model, infer
+    init, checkout, commit, copy, export, filter, fuse, merge, sampling, show, status, training, mining,
+    import_dataset, import_model, infer
 ]
 
 
@@ -35,6 +35,9 @@ class MirParser(argparse.ArgumentParser):
         if argv:
             msg = "unrecognized arguments: %s"
             self.error(msg % " ".join(argv), getattr(args, "func", None))
+        # add default user labels if necessary
+        if not args.label_storage_file:
+            args.label_storage_file = os.path.join(args.mir_root, '.mir', 'labels.yaml')
         return args
 
 
@@ -78,7 +81,13 @@ def create_main_parser() -> argparse.ArgumentParser:
                               dest="mir_root",
                               type=str,
                               default=os.getcwd(),
-                              help="root path to the mir repo, use . if not set.")
+                              help="Root path to the mir repo, use . if not set.")
+    share_parser.add_argument("--user-label-file",
+                              dest="label_storage_file",
+                              type=str,
+                              default='',
+                              required=False,
+                              help="Path to user label file, use .mir/labels.yaml if not set")
 
     # sub parsers
     subparsers = main_parser.add_subparsers(title="sub commands",

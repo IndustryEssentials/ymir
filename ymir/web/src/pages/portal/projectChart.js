@@ -8,7 +8,7 @@ import t from '@/utils/t'
 import styles from './index.less'
 import Empty from '@/components/empty/default'
 import { cardBody, cardHead } from "./components/styles"
-import { BarchartIcon } from '@/components/common/icons'
+import { BarchartIcon } from '@/components/common/Icons'
 
 const getTimes = () => [
   { value: 'day', label: 'Day', },

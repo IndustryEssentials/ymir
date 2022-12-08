@@ -102,7 +102,11 @@ class ProjectInDBBase(IdModelMixin, DateTimeModelMixin, IsDeletedModelMixin, Pro
 # Properties to return to caller
 class Project(ProjectInDBBase):
     dataset_count: int = 0
+    processing_dataset_count: int = 0
+    error_dataset_count: int = 0
     model_count: int = 0
+    processing_model_count: int = 0
+    error_model_count: int = 0
     training_keywords: List[str]
     current_iteration_id: Optional[int]
     total_asset_count: int = 0

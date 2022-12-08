@@ -3,7 +3,7 @@ import { Button, Space } from 'antd'
 
 import t from '@/utils/t'
 import s from './empty.less'
-import { NoSjjIcon, ImportIcon, AddIcon } from '@/components/common/icons'
+import { NoSjjIcon, ImportIcon, AddIcon } from '@/components/common/Icons'
 import { useHistory } from 'umi'
 
 const ProjectEmpty = ({ style = {}, addExample = () => {} }) => {

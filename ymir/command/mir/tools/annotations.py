@@ -4,6 +4,7 @@ import io
 import json
 import logging
 import os
+import numpy as np
 from PIL import Image, UnidentifiedImageError
 from typing import Any, Callable, Dict, List, Set, Tuple, Union
 
@@ -90,14 +91,14 @@ def _object_dict_to_annotation(object_dict: dict, cid: int) -> mirpb.ObjectAnnot
     return annotation
 
 
-def import_annotations(mir_annotation: mirpb.MirAnnotations, mir_root: str, prediction_dir_path: str,
+def import_annotations(mir_annotation: mirpb.MirAnnotations, label_storage_file: str, prediction_dir_path: str,
                        groundtruth_dir_path: str, map_hashed_filename: Dict[str, str],
                        unknown_types_strategy: UnknownTypesStrategy, anno_type: "mirpb.AnnoType.V",
                        phase: str) -> Dict[str, int]:
     anno_import_result: Dict[str, int] = defaultdict(int)
 
     # read type_id_name_dict and type_name_id_dict
-    class_type_manager = class_ids.load_or_create_userlabels(mir_root=mir_root)
+    class_type_manager = class_ids.load_or_create_userlabels(label_storage_file=label_storage_file)
     logging.info("loaded type id and names: %d", len(class_type_manager.all_ids()))
 
     if prediction_dir_path:
@@ -221,7 +222,7 @@ def _import_annotations_seg_mask(map_hashed_filename: Dict[str, str], mir_annota
             map_color_pixel[color] = (0, 0, 0)
 
     semantic_mask_dir = os.path.join(annotations_dir_path, "SegmentationClass")
-    unexpected_color: Set[Tuple[int, int, int]] = set()
+    expected_color: Set[Tuple[int, int, int]] = set()
     for asset_hash, main_file_name in map_hashed_filename.items():
         # for each asset, import it's annotations
         annotation_file = os.path.join(semantic_mask_dir, main_file_name + '.png')
@@ -240,23 +241,27 @@ def _import_annotations_seg_mask(map_hashed_filename: Dict[str, str], mir_annota
         mask_image = mask_image.convert('RGB')
         img_class_ids: Set[int] = set()
         width, height = mask_image.size
-        for x in range(width):
-            for y in range(height):
-                color = mask_image.getpixel((x, y))
-                if color in map_color_pixel:
-                    unexpected_color.add(color)
+        img: np.ndarray = np.array(mask_image)
+        np_mask: np.ndarray = np.zeros(shape=(height, width, 3), dtype=np.uint8)
+        for color in map_color_cid:
+            r = img[:, :, 0] == color[0]
+            g = img[:, :, 1] == color[1]
+            b = img[:, :, 2] == color[2]
 
-                # map_color_cid (known class names) is subset of map_color_pixel (including known/unknown).
-                if color in map_color_cid:
-                    img_class_ids.add(map_color_cid[color])
-                elif color != (0, 0, 0):  # map unknown color to (0,0,0).
-                    mask_image.putpixel((x, y), (0, 0, 0))
+            mask = r & g & b
+            if np.any(mask):
+                expected_color.add(color)
+                np_mask[mask] = color
+                img_class_ids.add(map_color_cid[color])
+
+        new_mask_image: Image.Image = Image.fromarray(np_mask)
         with io.BytesIO() as output:
-            mask_image.save(output, format="PNG")
-            image_annotations.image_annotations[asset_hash].mask.semantic_mask = output.getvalue()
+            new_mask_image.save(output, format="PNG")
+            image_annotations.image_annotations[asset_hash].masks.append(
+                mirpb.MaskAnnotation(semantic_mask=output.getvalue()))
         image_annotations.image_annotations[asset_hash].img_class_ids[:] = list(img_class_ids)
-    if unexpected_color:
-        logging.info(f"find color not in labelmap.txt: {unexpected_color}")
+    if expected_color:
+        logging.info(f"mapped color in labelmap.txt: {expected_color}")
 
 
 def _import_annotations_voc_xml(map_hashed_filename: Dict[str, str], mir_annotation: mirpb.MirAnnotations,

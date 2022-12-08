@@ -1,5 +1,4 @@
 import enum
-import itertools
 import secrets
 import time
 from dataclasses import dataclass
@@ -11,8 +10,8 @@ from google.protobuf.json_format import MessageToDict
 from google.protobuf.text_format import MessageToString
 
 from app.config import settings
-from app.constants.state import TaskType, AnnotationType
-from app.schemas.dataset import ImportStrategy, MergeStrategy
+from app.constants.state import TaskType, AnnotationType, DatasetType
+from app.schemas.common import ImportStrategy, MergeStrategy
 from app.schemas.task import TrainingDatasetsStrategy
 from common_utils.labels import UserLabels, userlabels_to_proto
 from id_definition.task_id import TaskId
@@ -64,11 +63,11 @@ ANNOTATION_TYPE_MAPPING = {
 }
 
 
-def gen_typed_datasets(dataset_type: int, datasets: List[str]) -> Generator:
-    for dataset_id in datasets:
-        dataset_with_type = mirsvrpb.TaskReqTraining.TrainingDatasetType()
-        dataset_with_type.dataset_type = dataset_type
-        dataset_with_type.dataset_id = dataset_id
+def gen_typed_datasets(typed_datasets: List[Dict]) -> Generator:
+    for typed_dataset in typed_datasets:
+        dataset_with_type = mirsvrpb.TrainingDatasetType()
+        dataset_with_type.dataset_type = typed_dataset.get("type") or int(DatasetType.training)
+        dataset_with_type.dataset_id = typed_dataset["hash"]
         yield dataset_with_type
 
 
@@ -118,14 +117,11 @@ class ControllerRequest:
         return request
 
     def prepare_training(self, request: mirsvrpb.GeneralReq, args: Dict) -> mirsvrpb.GeneralReq:
-        request.in_class_ids[:] = args["class_ids"]
+        request.in_class_ids[:] = [label["class_id"] for label in args["typed_labels"]]
         train_task_req = mirsvrpb.TaskReqTraining()
-        datasets = itertools.chain(
-            gen_typed_datasets(mir_cmd_pb.TvtTypeTraining, [args["dataset_hash"]]),
-            gen_typed_datasets(mir_cmd_pb.TvtTypeValidation, [args["validation_dataset_hash"]]),
-        )
-        for dataset in datasets:
+        for dataset in gen_typed_datasets(args["typed_datasets"]):
             train_task_req.in_dataset_types.append(dataset)
+
         if args.get("preprocess"):
             train_task_req.preprocess_config = args["preprocess"]
 
@@ -133,19 +129,20 @@ class ControllerRequest:
         req_create_task.task_type = mir_cmd_pb.TaskType.TaskTypeTraining
         req_create_task.training.CopyFrom(train_task_req)
 
-        if args.get("model_hash"):
-            request.model_hash = args["model_hash"]
-            request.model_stage = args["model_stage_name"]
+        for typed_model in args.get("typed_models", []):
+            request.model_hash = typed_model["hash"]
+            request.model_stage = typed_model["stage_name"]
+
         request.req_type = mirsvrpb.RequestType.TASK_CREATE
         request.singleton_op = args["docker_image"]
-        request.docker_image_config = args["docker_config"]
+        request.docker_image_config = args["docker_image_config"]
         # stop if training_dataset and validation_dataset share any assets
-        request.merge_strategy = TRAINING_DATASET_STRATEGY_MAPPING[args["strategy"]]
+        request.merge_strategy = TRAINING_DATASET_STRATEGY_MAPPING[args["merge_strategy"]]
         request.req_create_task.CopyFrom(req_create_task)
         return request
 
     def prepare_mining(self, request: mirsvrpb.GeneralReq, args: Dict) -> mirsvrpb.GeneralReq:
-        request.in_dataset_ids[:] = [args["dataset_hash"]]
+        request.in_dataset_ids[:] = [dataset["hash"] for dataset in args["typed_datasets"]]
         mine_task_req = mirsvrpb.TaskReqMining()
         if args.get("top_k"):
             mine_task_req.top_k = args["top_k"]
@@ -157,9 +154,9 @@ class ControllerRequest:
 
         request.req_type = mirsvrpb.RequestType.TASK_CREATE
         request.singleton_op = args["docker_image"]
-        request.docker_image_config = args["docker_config"]
-        request.model_hash = args["model_hash"]
-        request.model_stage = args["model_stage_name"]
+        request.docker_image_config = args["docker_image_config"]
+        request.model_hash = args["typed_models"][0]["hash"]
+        request.model_stage = args["typed_models"][0]["stage_name"]
         request.req_create_task.CopyFrom(req_create_task)
         return request
 
@@ -186,10 +183,11 @@ class ControllerRequest:
         return request
 
     def prepare_label(self, request: mirsvrpb.GeneralReq, args: Dict) -> mirsvrpb.GeneralReq:
-        request.in_dataset_ids[:] = [args["dataset_hash"]]
-        request.in_class_ids[:] = args["class_ids"]
+        dataset = args["typed_datasets"][0]  # label need only one dataset
+        request.in_dataset_ids[:] = [dataset["hash"]]
+        request.in_class_ids[:] = [label["class_id"] for label in args["typed_labels"]]
         label_request = mirsvrpb.TaskReqLabeling()
-        label_request.project_name = f"label_${args['dataset_name']}"
+        label_request.project_name = f"label_{dataset['name']}"
         label_request.labeler_accounts[:] = args["labellers"]
 
         # pre annotation
@@ -237,7 +235,7 @@ class ControllerRequest:
         request.model_stage = args["model_stage_name"]
         request.asset_dir = args["asset_dir"]
         request.singleton_op = args["docker_image"]
-        request.docker_image_config = args["docker_config"]
+        request.docker_image_config = args["docker_image_config"]
         return request
 
     def prepare_add_label(self, request: mirsvrpb.GeneralReq, args: Dict) -> mirsvrpb.GeneralReq:
@@ -266,15 +264,11 @@ class ControllerRequest:
         return request
 
     def prepare_data_fusion(self, request: mirsvrpb.GeneralReq, args: Dict) -> mirsvrpb.GeneralReq:
-        request.in_dataset_ids[:] = args["include_datasets"]
-        request.merge_strategy = MERGE_STRATEGY_MAPPING[args.get("strategy", MergeStrategy.stop_upon_conflict)]
-        if args.get("exclude_datasets"):
-            request.ex_dataset_ids[:] = args["exclude_datasets"]
-
-        if args.get("include_class_ids"):
-            request.in_class_ids[:] = args["include_class_ids"]
-        if args.get("exclude_class_ids"):
-            request.ex_class_ids[:] = args["exclude_class_ids"]
+        request.in_dataset_ids[:] = [dataset["hash"] for dataset in args["typed_datasets"] if not dataset["exclude"]]
+        request.ex_dataset_ids[:] = [dataset["hash"] for dataset in args["typed_datasets"] if dataset["exclude"]]
+        request.merge_strategy = MERGE_STRATEGY_MAPPING[args.get("merge_strategy", MergeStrategy.stop_upon_conflict)]
+        request.in_class_ids[:] = [label["class_id"] for label in args["typed_labels"] if not label["exclude"]]
+        request.in_class_ids[:] = [label["class_id"] for label in args["typed_labels"] if label["exclude"]]
 
         if args.get("sampling_count"):
             request.sampling_count = args["sampling_count"]
@@ -289,6 +283,14 @@ class ControllerRequest:
         request.req_type = mirsvrpb.RequestType.TASK_CREATE
         request.req_create_task.CopyFrom(req_create_task)
         return request
+
+    def prepare_merge(self, request: mirsvrpb.GeneralReq, args: Dict) -> mirsvrpb.GeneralReq:
+        # need different app type for web, controller use same endpoint
+        return self.prepare_data_fusion(request, args)
+
+    def prepare_filter(self, request: mirsvrpb.GeneralReq, args: Dict) -> mirsvrpb.GeneralReq:
+        # need different app type for web, controller use same endpoint
+        return self.prepare_data_fusion(request, args)
 
     def prepare_import_model(self, request: mirsvrpb.GeneralReq, args: Dict) -> mirsvrpb.GeneralReq:
         import_model_request = mirsvrpb.TaskReqImportModel()
@@ -401,7 +403,7 @@ class ControllerClient:
         project_id: int,
         task_id: str,
         task_type: TaskType,
-        args: Optional[Dict],
+        task_parameters: Optional[Dict],
         archived_task_parameters: Optional[str],
     ) -> Dict:
         req = ControllerRequest(
@@ -409,7 +411,7 @@ class ControllerClient:
             user_id=user_id,
             project_id=project_id,
             task_id=task_id,
-            args=args,
+            args=task_parameters,
             archived_task_parameters=archived_task_parameters,
         )
         return self.send(req)
@@ -477,9 +479,9 @@ class ControllerClient:
         model_stage_name: Optional[str],
         asset_dir: str,
         docker_image: Optional[str],
-        docker_config: Optional[str],
+        docker_image_config: Optional[str],
     ) -> Dict:
-        if None in (model_hash, docker_image, docker_config):
+        if None in (model_hash, docker_image, docker_image_config):
             raise ValueError("Missing model or docker image")
         req = ControllerRequest(
             type=ExtraRequestType.inference,
@@ -490,22 +492,9 @@ class ControllerClient:
                 "model_stage_name": model_stage_name,
                 "asset_dir": asset_dir,
                 "docker_image": docker_image,
-                "docker_config": docker_config,
+                "docker_image_config": docker_image_config,
             },
         )
-        return self.send(req)
-
-    def create_data_fusion(
-        self,
-        user_id: int,
-        project_id: int,
-        task_id: str,
-        args: Optional[Dict],
-    ) -> Dict:
-        req = ControllerRequest(
-            type=TaskType.data_fusion, user_id=user_id, project_id=project_id, task_id=task_id, args=args
-        )
-
         return self.send(req)
 
     def import_model(self, user_id: int, project_id: int, task_id: str, task_type: Any, args: Dict) -> Dict:
@@ -541,9 +530,13 @@ class ControllerClient:
                 "main_ck": main_ck,
             },
         )
-        resp = self.send(req)
-        evaluation_result = resp["evaluation"]
-        convert_class_id_to_keyword(evaluation_result, user_labels)
+        try:
+            resp = self.send(req)
+        except ValueError:
+            evaluation_result = None
+        else:
+            evaluation_result = resp["evaluation"]
+            convert_class_id_to_keyword(evaluation_result, user_labels)
         return {dataset_hash: evaluation_result}
 
     def check_repo_status(self, user_id: int, project_id: int) -> bool:
@@ -560,28 +553,6 @@ class ControllerClient:
             type=ExtraRequestType.fix_repo,
             user_id=user_id,
             project_id=project_id,
-        )
-        return self.send(req)
-
-    def merge_datasets(
-        self,
-        user_id: int,
-        project_id: int,
-        task_id: str,
-        dataset_hashes: Optional[List[str]],
-        ex_dataset_hashes: Optional[List[str]],
-        merge_strategy: Optional[MergeStrategy] = None,
-    ) -> Dict:
-        req = ControllerRequest(
-            type=TaskType.data_fusion,
-            user_id=user_id,
-            project_id=project_id,
-            task_id=task_id,
-            args={
-                "include_datasets": dataset_hashes,
-                "exclude_datasets": ex_dataset_hashes,
-                "strategy": merge_strategy,
-            },
         )
         return self.send(req)
 

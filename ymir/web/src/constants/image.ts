@@ -1,25 +1,23 @@
-import { BackendData } from "@/interface/common"
-import { Image, InferConfig } from '@/interface/image'
 import { format } from "@/utils/date"
 
-export const TYPES = Object.freeze({
-  UNKOWN: 0,
-  TRAINING: 1,
-  MINING: 2,
-  INFERENCE: 9,
-})
+export enum TYPES {
+  UNKOWN = 0,
+  TRAINING = 1,
+  MINING = 2,
+  INFERENCE = 9,
+}
 
-export const STATES = Object.freeze({
-  PENDING: 1,
-  DONE: 3,
-  ERROR: 4,
-})
+export enum STATES {
+  PENDING = 1,
+  DONE =3,
+  ERROR = 4,
+}
 
 export function imageIsPending(state: number) {
   return state === STATES.PENDING
 }
 
-export const getImageTypeLabel = (functions: number[] = []) => {
+export const getImageTypeLabel = (functions: TYPES[] = []) => {
   const labels = {
     [TYPES.UNKOWN]: 'image.type.unkown',
     [TYPES.TRAINING]: 'image.type.train',
@@ -35,7 +33,7 @@ export const getImageTypeLabel = (functions: number[] = []) => {
  * @param {number} state image state
  * @returns 
  */
-export const getImageStateLabel = (state: number | undefined) => {
+export const getImageStateLabel = (state: STATES | undefined) => {
   if (!state) {
     return ''
   }
@@ -47,13 +45,14 @@ export const getImageStateLabel = (state: number | undefined) => {
   return labels[state]
 }
 
-export function transferImage(data: BackendData): Image {
+export function transferImage(data: YModels.BackendData): YModels.Image {
+  const configs: YModels.DockerImageConfig[] = data.configs || []
   return {
     id: data.id,
     name: data.name,
     state: data.state,
-    functions: (data.configs || []).map((config: InferConfig) => config.type),
-    configs: data.configs || [],
+    functions: configs.map(config => config.type),
+    configs,
     url: data.url,
     liveCode: data.enable_livecode,
     isShared: data.is_shared,

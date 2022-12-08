@@ -21,7 +21,7 @@ class CmdShow(base.BaseCommand):
         # check args
         src_typ_rev_tid = revs_parser.parse_single_arg_rev(src_revs, need_tid=False)
         check_code = checker.check(mir_root,
-                                   [checker.Prerequisites.IS_INSIDE_MIR_REPO, checker.Prerequisites.HAVE_LABELS])
+                                   [checker.Prerequisites.IS_INSIDE_MIR_REPO])
         if check_code != MirCode.RC_OK:
             return check_code
 
@@ -69,7 +69,7 @@ class CmdShow(base.BaseCommand):
         if not verbose:
             print(f"tasks.mir: hid: {hid}, code: {task.return_code}, error msg: {task.return_msg}\n"
                   f"    model hash: {task.model.model_hash}\n"
-                  f"    map: {task.model.mean_average_precision}\n"
+                  f"    map: {task.model.mAP}\n"
                   f"    executor: {task.executor}\n"
                   f"    stages: {list(task.model.stages.keys())}\n"
                   f"    best stage name: {task.model.best_stage_name}")

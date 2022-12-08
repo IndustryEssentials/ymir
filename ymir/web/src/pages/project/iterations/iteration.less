@@ -1,3 +1,22 @@
+.step {
+  cursor: pointer;
+  &.pending .num {
+    color: rgba(0, 0, 0, 0.45);
+    border: 1px solid rgba(0, 0, 0, 0.45);
+  }
+  &.selected .num {
+    border: 1px solid @primary-color;
+    background-color: fade(@primary-color, 10);
+  }
+  &.finish .num {
+    border: 1px solid @primary-color;
+  }
+  &.current .num {
+    color: white;
+    border: 1px solid @primary-color;
+    background-color: @primary-color;
+  }
+}
 .num {
   display: inline-block;
   width: 24px;
@@ -5,18 +24,18 @@
   border-radius: 50px;
   color: @primary-color;
   text-align: center;
-  &.pending {
-    color: rgba(0, 0, 0, 0.45);
-    border: 1px solid rgba(0, 0, 0, 0.45);
-  }
-  &.finish {
-    border: 1px solid @primary-color;
-  }
-  &.current {
-    color: white;
-    border: 1px solid @primary-color;
-    background-color: @primary-color;
-  }
+  // &.pending {
+  //   color: rgba(0, 0, 0, 0.45);
+  //   border: 1px solid rgba(0, 0, 0, 0.45);
+  // }
+  // &.finish {
+  //   border: 1px solid @primary-color;
+  // }
+  // &.current {
+  //   color: white;
+  //   border: 1px solid @primary-color;
+  //   background-color: @primary-color;
+  // }
 }
 .lineContainer {
   padding: 0 4px;

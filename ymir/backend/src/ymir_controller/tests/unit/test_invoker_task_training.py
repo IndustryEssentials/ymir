@@ -99,10 +99,10 @@ class TestInvokerTaskTraining(unittest.TestCase):
             'gpu_count': 1
         }
 
-        training_data_type_1 = backend_pb2.TaskReqTraining.TrainingDatasetType()
+        training_data_type_1 = backend_pb2.TrainingDatasetType()
         training_data_type_1.dataset_id = self._guest_id1
         training_data_type_1.dataset_type = mir_cmd_pb.TvtType.TvtTypeTraining
-        training_data_type_2 = backend_pb2.TaskReqTraining.TrainingDatasetType()
+        training_data_type_2 = backend_pb2.TrainingDatasetType()
         training_data_type_2.dataset_id = self._guest_id2
         training_data_type_2.dataset_type = mir_cmd_pb.TvtType.TvtTypeValidation
 
@@ -173,11 +173,15 @@ class TestInvokerTaskTraining(unittest.TestCase):
         tensorboard_dir = os.path.join(self._tensorboard_root, self._user_name, self._task_id)
         asset_cache_dir = os.path.join(self._sandbox_root, self._user_name, "asset_cache")
 
-        training_cmd = ("mir train --root {0} --dst-rev {1}@{1} --model-location {2} "
-                        "--media-location {2} -w {3} --src-revs {1}@{4} --task-config-file {5} --executor {6} "
-                        "--executant-name {7} --tensorboard-dir {8} --asset-cache-dir {9}".format(
-                            self._mir_repo_root, self._task_id, self._storage_root, working_dir_0, self._sub_task_id_1,
-                            output_config, training_image, self._task_id, tensorboard_dir, asset_cache_dir))
+        training_cmd = (f"mir train --root {self._mir_repo_root} "
+                        f"--user-label-file {test_utils.user_label_file(self._sandbox_root, self._user_name)} "
+                        f"--dst-rev {self._task_id}@{self._task_id} "
+                        f"--model-location {self._storage_root} "
+                        f"--media-location {self._storage_root} -w {working_dir_0} "
+                        f"--src-revs {self._task_id}@{self._sub_task_id_1} "
+                        f"--task-config-file {output_config} --executor {training_image} "
+                        f"--executant-name {self._task_id} --tensorboard-dir {tensorboard_dir} "
+                        f"--asset-cache-dir {asset_cache_dir}")
         mock_run.assert_has_calls(calls=[
             mock.call(expected_cmd_merge.split(' '), capture_output=True, text=True),
             mock.call(training_cmd.split(' '), capture_output=True, text=True),

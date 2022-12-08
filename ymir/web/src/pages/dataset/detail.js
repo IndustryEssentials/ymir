@@ -14,6 +14,8 @@ import Detail from "@/components/dataset/detail"
 import TaskProgress from "@/components/task/progress"
 import Error from "@/components/task/error"
 import Hide from "@/components/common/hide"
+import useCardTitle from '@/hooks/useCardTitle'
+import EditDescBox from "@/components/form/editDescBox"
 
 import s from "./detail.less"
 import useRerunAction from "../../hooks/useRerunAction"
@@ -28,6 +30,8 @@ function DatasetDetail() {
   const hideRef = useRef(null)
   const restoreAction = useRestore(pid)
   const generateRerunBtn = useRerunAction('btn')
+  const cardTitle = useCardTitle('dataset.detail.title')
+  const [editing, setEditing] = useState({})
 
   useEffect(() => {
     fetchDataset(true)
@@ -43,6 +47,15 @@ function DatasetDetail() {
 
   function fetchDataset(force) {
     getDataset({ id, verbose: true, force })
+  }
+
+  function editDesc() {
+    setEditing({})
+    setTimeout(() => setEditing(dataset), 0)
+  }
+
+  function saveDescHandle(result) {
+    result && setDataset(dataset => ({ ...dataset, description: result.description }))
   }
 
   const hide = (version) => {
@@ -67,7 +80,7 @@ function DatasetDetail() {
     <div>
       <Breadcrumbs />
       <Card
-        title={t("dataset.detail.title")}
+        title={cardTitle}
       >
         <div className={s.content}>
           <Detail dataset={dataset} />
@@ -104,6 +117,9 @@ function DatasetDetail() {
               {canHide(dataset) ? <Button type="primary" onClick={() => hide(dataset)}>
                 {t(`common.action.hide`)}
               </Button> : null}
+              <Button type="primary" onClick={() => editDesc()}>
+                {t(`common.action.edit.desc`)}
+              </Button>
             </> :
               <Button type="primary" onClick={restore}>
                 {t("common.action.restore")}
@@ -113,6 +129,7 @@ function DatasetDetail() {
           </Space>
         </div>
       </Card>
+      <EditDescBox record={editing} handle={saveDescHandle} />
       <Hide ref={hideRef} ok={hideOk} />
     </div>
   )

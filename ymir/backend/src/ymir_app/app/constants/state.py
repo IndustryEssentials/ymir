@@ -85,6 +85,11 @@ class AnnotationType(IntEnum):
     pred = 2
 
 
+class DatasetType(IntEnum):
+    validation = mir_cmd_pb.TvtTypeValidation
+    training = mir_cmd_pb.TvtTypeTraining
+
+
 @dataclass(frozen=True)
 class IterationStepTemplate:
     name: str

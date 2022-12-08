@@ -50,24 +50,10 @@ class Iteration(Base):
     iteration_steps = relationship(
         "IterationStep",
         primaryjoin="foreign(IterationStep.iteration_id)==Iteration.id",
+        backref="iteration",
         uselist=True,
         viewonly=True,
     )
-
-    @property
-    def referenced_dataset_ids(self) -> List[int]:
-        datasets = [
-            self.mining_input_dataset_id,
-            self.mining_output_dataset_id,
-            self.label_output_dataset_id,
-            self.training_input_dataset_id,
-            self.validation_dataset_id,
-        ]
-        return [dataset for dataset in datasets if dataset is not None]
-
-    @property
-    def referenced_model_ids(self) -> List[int]:
-        return [self.training_output_model_id] if self.training_output_model_id else []
 
     @property
     def current_step(self) -> Optional[IterationStep]:
@@ -77,3 +63,11 @@ class Iteration(Base):
         """
         remaining_steps = sorted(filter(lambda i: not i.is_finished, self.iteration_steps), key=lambda i: i.id)
         return remaining_steps[0] if remaining_steps else None
+
+    @property
+    def referenced_dataset_ids(self) -> List[int]:
+        return [step.result_dataset.id for step in self.iteration_steps if step.result_dataset]
+
+    @property
+    def referenced_model_ids(self) -> List[int]:
+        return [step.result_model.id for step in self.iteration_steps if step.result_model]

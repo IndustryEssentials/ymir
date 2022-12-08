@@ -1,8 +1,6 @@
-import { ModelGroup, ModelVersion, Stage } from "@/interface/model"
 import { calDuration, format } from '@/utils/date'
-import { getVersionLabel } from "./common"
-import { BackendData } from "@/interface/common"
-import { getLocale } from "umi"
+import { getVersionLabel } from './common'
+import { getLocale } from 'umi'
 
 export enum states {
   READY = 0,
@@ -10,8 +8,8 @@ export enum states {
   INVALID = 2,
 }
 
-export function transferModelGroup(data: BackendData) {
-  const group: ModelGroup = {
+export function transferModelGroup(data: YModels.BackendData) {
+  const group: YModels.ModelGroup = {
     id: data.id,
     name: data.name,
     projectId: data.project_id,
@@ -20,7 +18,7 @@ export function transferModelGroup(data: BackendData) {
   return group
 }
 
-export function transferModel(data: BackendData): ModelVersion {
+export function transferModel(data: YModels.BackendData): YModels.Model {
   const durationLabel = calDuration(data.related_task.duration, getLocale())
   return {
     id: data.id,
@@ -43,9 +41,9 @@ export function transferModel(data: BackendData): ModelVersion {
     taskName: data.related_task.name,
     duration: data.related_task.duration,
     durationLabel: calDuration(data.related_task.duration, getLocale()),
-    task: { ...data.related_task, durationLabel, },
+    task: { ...data.related_task, durationLabel },
     hidden: !data.is_visible,
-    stages: data.related_stages || [],
+    stages: (data.related_stages || []).map(transferStage) || [],
     recommendStage: data.recommended_stage || 0,
     description: data.description || '',
   }
@@ -53,55 +51,76 @@ export function transferModel(data: BackendData): ModelVersion {
 
 /**
  * is valid model
- * @param {ModelVersion} model 
+ * @param {YModels.Model} model
  * @returns {Boolean}
  */
-export function validModel(model: ModelVersion): Boolean {
+export function validModel(model: YModels.Model): Boolean {
   return model.state === states.VALID
 }
 
 /**
  * is invalid model
- * @param {ModelVersion} model 
+ * @param {YModels.Model} model
  * @returns {Boolean}
  */
-export function invalidModel(model: ModelVersion): Boolean {
+export function invalidModel(model: YModels.Model): Boolean {
   return model.state === states.INVALID
 }
 
 /**
  * is running model
- * @param {ModelVersion} model 
+ * @param {YModels.Model} model
  * @returns {Boolean}
  */
-export function runningModel(model: ModelVersion): Boolean {
+export function runningModel(model: YModels.Model): Boolean {
   return model.state === states.READY
 }
 
-export function getModelName(data: BackendData) {
+export function getModelName(data: YModels.BackendData) {
   return `${data.model?.group_name} ${getVersionLabel(data.model?.version_num)}`
 }
 
 /**
  * transfer backend data into stage object
- * @param {BackendData} data 
- * @returns {Stage}
+ * @param {YModels.BackendData} data
+ * @returns {YModels.Stage}
  */
-export function transferStage(data: BackendData): Stage {
+export function transferStage(data: YModels.BackendData): YModels.Stage {
   return {
     id: data.id,
     name: data.name,
     map: data.map,
     modelId: data.model?.id,
     modelName: getModelName(data),
+    metrics: transferMetrics(data.metrics),
+  }
+}
+
+function transferMetrics(metrics: YModels.BackendData = {}) {
+  return {
+    ar: metrics.ar,
+    fn: metrics.fn,
+    fp: metrics.fp,
+    tp: metrics.tp,
   }
 }
 
 /**
  * get recommend stage from model
- * @param {ModelVersion} model 
- * @returns {Stage|undefined}
+ * @param {YModels.Model} model
+ * @returns {YModels.Stage|undefined}
  */
-export function getRecommendStage(model: ModelVersion): Stage| undefined {
-  return model.stages?.find(stage => stage.id === model.recommendStage)
+export function getRecommendStage(model: YModels.Model): YModels.Stage | undefined {
+  return getStage(model, model.recommendStage)
+}
+
+/**
+ * @description get Model stage
+ * @export
+ * @param {YModels.Model} model
+ * @param {number} stageId
+ * @return {YModels.Stage | undefined}
+ */
+export function getStage(model: YModels.Model, stageId: number): YModels.Stage | undefined {
+  return model.stages?.find((stage) => stage.id === stageId)
 }

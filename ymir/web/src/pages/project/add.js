@@ -1,10 +1,11 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useCallback, useState } from 'react'
 import { Button, Card, Form, Input, message, Modal, Select, Space, Radio, Row, Col } from 'antd'
 import { connect } from 'dva'
 import { useParams, useHistory, useLocation } from "umi"
 
 import s from './add.less'
 import t from '@/utils/t'
+import { HIDDENMODULES } from '@/constants/common'
 import Breadcrumbs from '@/components/common/breadcrumb'
 import DatasetSelect from '@/components/form/datasetSelect'
 import Panel from '@/components/form/panel'
@@ -20,6 +21,7 @@ const Add = ({ keywords, datasets, getKeywords, ...func }) => {
   const [form] = useForm()
   const [isEdit, setEdit] = useState(false)
   const [project, getProject] = useFetch('project/getProject', {})
+  const [_, checkDuplication] = useFetch('keyword/checkDuplication')
 
   useEffect(() => {
     setEdit(!!id)
@@ -77,16 +79,15 @@ const Add = ({ keywords, datasets, getKeywords, ...func }) => {
     }
     // create project
     const kws = params.keywords.map(kw => (kw || '').trim()).filter(kw => kw)
-    const { failed } = await func.checkKeywords(kws)
-    const newKws = kws.filter(keyword => !failed.includes(keyword))
+    const { newer } = await checkDuplication(kws)
 
-    if (newKws?.length) {
+    if (newer?.length) {
       // confirm
       confirm({
         title: t('project.add.confirm.title'),
-        content: <ol>{newKws.map(keyword => <li key={keyword}>{keyword}</li>)}</ol>,
+        content: <ol>{newer.map(keyword => <li key={keyword}>{keyword}</li>)}</ol>,
         onOk: () => {
-          addNewKeywords(newKws, send)
+          addNewKeywords(newer, send)
         },
         okText: t('project.add.confirm.ok'),
         cancelText: t('project.add.confirm.cancel'),
@@ -103,6 +104,8 @@ const Add = ({ keywords, datasets, getKeywords, ...func }) => {
       setTimeout(() => callback(), 500)
     }
   }
+
+  const testingFilter = useCallback(datasets => datasets.filter(ds => ds.keywordCount > 0 && ds.groupId !== project?.trainSet?.id), [project?.trainSet?.id])
 
   function validateKeywords(_, kws) {
     if (kws?.length) {
@@ -168,8 +171,8 @@ const Add = ({ keywords, datasets, getKeywords, ...func }) => {
               <Form.Item
                 label={t('project.add.form.enableIteration')}
                 name='enableIteration'
-                hidden={true}
-                initialValue={true}
+                hidden={HIDDENMODULES.ITERATIONSWITCH}
+                initialValue={HIDDENMODULES.ITERATIONSWITCH}
                 required
                 tooltip={t('project.add.form.enableIteration.tip')}
               >
@@ -183,7 +186,7 @@ const Add = ({ keywords, datasets, getKeywords, ...func }) => {
                   <DatasetSelect
                     pid={id}
                     mode='multiple'
-                    filters={datasets => datasets.filter(ds => ds.keywordCount > 0 && ds.groupId !== project?.trainSet?.id)}
+                    filters={testingFilter}
                     allowClear
                   />
                 </Form.Item> : null}

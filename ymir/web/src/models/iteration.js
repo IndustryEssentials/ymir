@@ -1,27 +1,29 @@
-import {
-  getIterations,
-  getIteration,
-  createIteration,
-  updateIteration,
-  getMiningStats,
-} from "@/services/iteration"
-import { Stages, transferIteration, transferMiningStats } from "@/constants/iteration"
+import { getIterations, getIteration, createIteration, updateIteration, getMiningStats, bindStep, unbindStep, nextStep } from '@/services/iteration'
+import { Stages, transferIteration, transferMiningStats } from '@/constants/iteration'
 import { updateResultState } from '@/constants/common'
+import { NormalReducer } from './_utils'
 
 const initQuery = {
-  name: "",
+  name: '',
   offset: 0,
   limit: 20,
 }
 
+const reducers = {
+  UPDATE_ITERATIONS: NormalReducer('iterations'),
+  UPDATE_ITERATION: NormalReducer('iteration'),
+  UPDATE_PREPARE_STAGES_RESULT: NormalReducer('prepareStageResult'),
+  UPDATE_ACTIONPANELEXPAND: NormalReducer('actionPanelExpand'),
+}
+
 export default {
-  namespace: "iteration",
+  namespace: 'iteration',
   state: {
     query: initQuery,
     iterations: {},
     iteration: {},
-    currentStageResult: {},
     prepareStagesResult: {},
+    actionPanelExpand: true,
   },
   effects: {
     *getIterations({ payload }, { call, put }) {
@@ -36,8 +38,8 @@ export default {
           })
         }
         yield put({
-          type: "UPDATE_ITERATIONS",
-          payload: { id, iterations },
+          type: 'UPDATE_ITERATIONS',
+          payload: { [id]: iterations },
         })
         // cache single iteration
         yield put({
@@ -57,7 +59,7 @@ export default {
       } else {
         iteration = yield put.resolve({
           type: 'getRemoteIteration',
-          payload: { pid, id }
+          payload: { pid, id },
         })
       }
       if (iteration && more) {
@@ -67,8 +69,8 @@ export default {
         })
       }
       yield put({
-        type: "UPDATE_ITERATION",
-        payload: iteration,
+        type: 'UPDATE_ITERATION',
+        payload: { [iteration.id]: iteration },
       })
       return iteration
     },
@@ -83,25 +85,27 @@ export default {
       if (!iterations.length) {
         return
       }
-      const datasetIds = [...new Set(iterations.map(i => [
-        i.wholeMiningSet,
-        i.miningSet,
-        i.miningResult,
-        i.labelSet,
-        i.trainUpdateSet,
-        i.testSet,
-      ]).flat())].filter(id => id)
-      const modelIds = [...new Set(iterations.map(i => i.model))].filter(id => id)
-      let datasets = []
-      let models = []
+      const getIds = (iterations, isModel) =>
+        [
+          ...new Set(
+            iterations
+              .map(({ wholeMiningSet, testSet, steps }) => {
+                const stepResults = steps.map((step) => (!isModel || step.resultType === 'model' ? step.resultId : null))
+                return !isModel ? [wholeMiningSet, testSet, ...stepResults] : stepResults
+              })
+              .flat(),
+          ),
+        ].filter((id) => id)
+      const datasetIds = getIds(iterations)
+      const modelIds = getIds(iterations, true)
       if (datasetIds?.length) {
-        datasets = yield put.resolve({
+        yield put({
           type: 'dataset/batchLocalDatasets',
           payload: { pid: id, ids: datasetIds },
         })
       }
       if (modelIds?.length) {
-        models = yield put.resolve({
+        yield put({
           type: 'model/batchLocalModels',
           payload: modelIds,
         })
@@ -115,7 +119,6 @@ export default {
       }
     },
     *getPrepareStagesResult({ payload }, { put }) {
-
       const project = yield put.resolve({
         type: 'project/getProject',
         payload,
@@ -124,7 +127,7 @@ export default {
       if (project.candidateTrainSet) {
         yield put.resolve({
           type: 'dataset/getDataset',
-          payload: { id: project.candidateTrainSet, }
+          payload: { id: project.candidateTrainSet },
         })
       }
 
@@ -136,17 +139,10 @@ export default {
       if (project.model) {
         yield put.resolve({
           type: 'model/getModel',
-          payload: { id: project.model, }
+          payload: { id: project.model },
         })
       }
       return true
-    },
-    *setCurrentStageResult({ payload }, { call, put }) {
-      const result = payload
-      if (result) {
-        yield put({ type: 'UPDATE_CURRENT_STAGE_RESULT', payload: result })
-        return result
-      }
     },
     *createIteration({ payload }, { call, put, select }) {
       const { projectId } = payload
@@ -157,10 +153,10 @@ export default {
           type: 'updateLocalIterations',
           payload: [iteration],
         })
-        const iterations = yield select(({ iteration }) => iteration.iterations[projectId])
+        const iterations = yield select(({ iteration }) => iteration.iterations[projectId] || [])
         yield put({
           type: 'UPDATE_ITERATIONS',
-          payload: { id: projectId, iterations: [...iterations, iteration] },
+          payload: { [projectId]: [...iterations, iteration] },
         })
         return iteration
       }
@@ -177,7 +173,9 @@ export default {
         const iterations = yield select(({ iteration: it }) => it.iterations[iteration.projectId])
         yield put({
           type: 'UPDATE_ITERATIONS',
-          payload: { id: iteration.projectId, iterations: iterations.map(it => it.id === iteration.id ? iteration : it) },
+          payload: {
+            [iteration.projectId]: iterations.map((it) => (it.id === iteration.id ? iteration : it)),
+          },
         })
         return iteration
       }
@@ -193,17 +191,24 @@ export default {
       return result
     },
     *updateLocalIterations({ payload: iterations = [] }, { put, select }) {
-      for (let i = 0; i < iterations.length; i++) {
-        const iteration = iterations[i];
-        yield put({
-          type: 'UPDATE_ITERATION',
-          payload: iteration,
-        })
-      }
+      const objIterations = iterations.reduce(
+        (prev, iteration) =>
+          iteration?.id
+            ? {
+                ...prev,
+                [iteration.id]: iteration,
+              }
+            : prev,
+        {},
+      )
+      yield put({
+        type: 'UPDATE_ITERATION',
+        payload: objIterations,
+      })
     },
     *updateIterationCache({ payload: tasks = {} }, { put, select }) {
       // const tasks = payload || {}
-      const iteration = yield select(state => state.iteration.iteration)
+      const iteration = yield select((state) => state.iteration.iteration)
       const updateItertion = Object.keys(iteration).reduce((prev, key) => {
         let item = iteration[key]
         if (item.id) {
@@ -214,48 +219,43 @@ export default {
           [key]: item,
         }
       }, {})
-      yield put({
-        type: 'UPDATE_ITERATION',
-        payload: updateItertion,
+      if (updateIteration.id) {
+        yield put({
+          type: 'UPDATE_ITERATION',
+          payload: { [updateIteration.id]: updateItertion },
+        })
+      }
+    },
+    *toggleActionPanel({ payload }, { call, put, select }) {
+      yield put.resolve({
+        type: 'UPDATE_ACTIONPANELEXPAND',
+        payload,
       })
     },
-  },
-  reducers: {
-    UPDATE_ITERATIONS(state, { payload }) {
-      const projectIterations = { ...state.iterations }
-      const { id, iterations } = payload
-      projectIterations[id] = iterations
-      return {
-        ...state,
-        iterations: projectIterations,
+    *bindStep({ payload }, { call, put, select }) {
+      const { id, sid, tid } = payload
+      const { code, result } = yield call(bindStep, id, sid, tid)
+      if (code === 0) {
+        return result
       }
     },
-    UPDATE_ITERATION(state, { payload }) {
-      const iteration = payload
-      const cache = state.iteration
-      return {
-        ...state,
-        iteration: {
-          ...cache,
-          [iteration.id]: iteration,
-        },
+    *skipStep({ payload }, { call, put, select }) {
+      const { id, sid } = payload
+      const { code } = yield call(unbindStep, id, sid)
+      if (code === 0) {
+        const { code: skipCode, result } = yield call(nextStep, id, sid)
+        if (skipCode === 0) {
+          return result
+        }
       }
     },
-    UPDATE_CURRENT_STAGE_RESULT(state, { payload }) {
-      return {
-        ...state,
-        currentStageResult: payload,
-      }
-    },
-    UPDATE_PREPARE_STAGES_RESULT(state, { payload }) {
-      const { pid, results } = payload
-      return {
-        ...state,
-        prepareStagesResult: {
-          ...state.prepareStagesResult,
-          [pid]: results,
-        },
+    *nextStep({ payload }, { call, put, select }) {
+      const { id, sid } = payload
+      const { code, result } = yield call(nextStep, id, sid)
+      if (code === 0) {
+        return result
       }
     },
   },
+  reducers,
 }

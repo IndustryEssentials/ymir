@@ -19,6 +19,7 @@ class CmdImport(base.BaseCommand):
         logging.debug("command import: %s", self.args)
 
         return CmdImport.run_with_args(mir_root=self.args.mir_root,
+                                       label_storage_file=self.args.label_storage_file,
                                        index_file=self.args.index_file,
                                        pred_abs=self.args.pred_dir,
                                        gt_abs=self.args.gt_dir,
@@ -33,7 +34,7 @@ class CmdImport(base.BaseCommand):
     @staticmethod
     @command_run_in_out
     def run_with_args(mir_root: str, index_file: str, pred_abs: str, gt_abs: str, gen_abs: str,
-                      dst_rev: str, src_revs: str, work_dir: str,
+                      dst_rev: str, src_revs: str, work_dir: str, label_storage_file: str,
                       unknown_types_strategy: annotations.UnknownTypesStrategy, anno_type: "mirpb.AnnoType.V") -> int:
         # Step 1: check args and prepare environment.
         if not index_file or not gen_abs or not os.path.isfile(index_file):
@@ -53,7 +54,7 @@ class CmdImport(base.BaseCommand):
                                                task_name=dst_typ_rev_tid.tid)
 
         check_code = checker.check(mir_root,
-                                   [checker.Prerequisites.IS_INSIDE_MIR_REPO, checker.Prerequisites.HAVE_LABELS])
+                                   [checker.Prerequisites.IS_INSIDE_MIR_REPO])
         if check_code != MirCode.RC_OK:
             return check_code
 
@@ -79,7 +80,7 @@ class CmdImport(base.BaseCommand):
 
         mir_annotation = mirpb.MirAnnotations()
         unknown_class_names = annotations.import_annotations(mir_annotation=mir_annotation,
-                                                             mir_root=mir_root,
+                                                             label_storage_file=label_storage_file,
                                                              prediction_dir_path=pred_abs,
                                                              groundtruth_dir_path=gt_abs,
                                                              map_hashed_filename=map_hashed_filename,
@@ -127,8 +128,11 @@ def _generate_sha_and_copy(index_file: str, map_hashed_filename: Dict[str, str],
     idx = 0
     copied_assets = 0
     for line in lines:
-        media_src = line.strip()
-        if not media_src or not os.path.isfile(media_src):
+        components = line.strip().split('\t')
+        if not components:
+            continue
+        media_src = components[0]
+        if not os.path.isfile(media_src):
             continue
 
         try:

@@ -1,6 +1,7 @@
 package configs
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 
@@ -25,6 +26,24 @@ type Config struct {
 	HelGrpcPort int
 	HelGrpcURL  string
 
+	// Hel-machineary config
+	HelWorkerNum int
+	HelWorkerTag string
+
+	// Hel-config
+	AssetsLocation  string
+	ModelsLocation  string
+	TensorboardRoot string
+
+	// Openpai-config
+	OpenpaiHost    string
+	OpenpaiToken   string
+	OpenpaiStorage string
+	OpenpaiUser    string
+	OpenpaiCluster string
+	OpenpaiGpuType string
+	ServerRuntime  string
+
 	// Redis
 	RedisURLHel     string
 	RedisNumHelGrpc int
@@ -34,35 +53,33 @@ type Config struct {
 }
 
 func InitViperConfig(configFile string) *Config {
-	err := viper.BindEnv("YmirSandbox", "BACKEND_SANDBOX_ROOT")
-	if err != nil {
-		panic(err)
+	bindEnvMap := map[string]string{
+		"YmirSandbox":      "BACKEND_SANDBOX_ROOT",
+		"ViewerPort":       "VIEWER_HOST_PORT",
+		"MongoDBURI":       "MONGODB_URI",
+		"MongoDataDBCache": "MONGODB_USE_CACHE",
+		"HelGrpcPort":      "HEL_GRPC_PORT",
+		"RedisURLHel":      "REDIS_URL_HEL",
+		"AssetsLocation":   "ASSETS_PATH",
+		"ModelsLocation":   "MODELS_PATH",
+		"TensorboardRoot":  "TENSORBOARD_ROOT",
+		"OpenpaiHost":      "OPENPAI_HOST",
+		"OpenpaiToken":     "OPENPAI_TOKEN",
+		"OpenpaiStorage":   "OPENPAI_STORAGE",
+		"OpenpaiUser":      "OPENPAI_USER",
+		"OpenpaiCluster":   "OPENPAI_CLUSTER",
+		"OpenpaiGpuType":   "OPENPAI_GPUTYPE",
+		"ServerRuntime":    "SERVER_RUNTIME",
 	}
-
-	err = viper.BindEnv("ViewerPort", "VIEWER_HOST_PORT")
-	if err != nil {
-		panic(err)
-	}
-	err = viper.BindEnv("MongoDBURI", "MONGODB_URI")
-	if err != nil {
-		panic(err)
-	}
-	err = viper.BindEnv("MongoDataDBCache", "MONGODB_USE_CACHE")
-	if err != nil {
-		panic(err)
-	}
-
-	err = viper.BindEnv("HelGrpcPort", "HEL_GRPC_PORT")
-	if err != nil {
-		panic(err)
-	}
-	err = viper.BindEnv("RedisURLHel", "REDIS_URL_HEL")
-	if err != nil {
-		panic(err)
+	for k, v := range bindEnvMap {
+		err := viper.BindEnv(k, v)
+		if err != nil {
+			panic(err)
+		}
 	}
 
 	viper.SetConfigFile(configFile)
-	err = viper.ReadInConfig()
+	err := viper.ReadInConfig()
 	if err != nil {
 		panic(err)
 	}
@@ -80,9 +97,10 @@ func InitViperConfig(configFile string) *Config {
 		config.HelGrpcURL = fmt.Sprintf("%s:%d", config.HelGrpcHost, config.HelGrpcPort)
 	}
 
-	config.RedisURLHelGrpc = fmt.Sprintf("%s:%d", config.RedisURLHel, config.RedisNumHelGrpc)
-	config.RedisURLHelTask = fmt.Sprintf("%s:%d", config.RedisURLHel, config.RedisNumHelTask)
+	config.RedisURLHelGrpc = fmt.Sprintf("%s/%d", config.RedisURLHel, config.RedisNumHelGrpc)
+	config.RedisURLHelTask = fmt.Sprintf("%s/%d", config.RedisURLHel, config.RedisNumHelTask)
 
-	log.Printf("ymir-hel config: %+v\n", config)
+	s, _ := json.MarshalIndent(config, "", "\t")
+	log.Printf("ymir-hel config:\n%s\n\n", string(s))
 	return &config
 }

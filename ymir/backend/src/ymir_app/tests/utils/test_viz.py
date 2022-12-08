@@ -112,7 +112,7 @@ class TestModel:
     def test_model(self):
         res = {
             "model_hash": random_lower_string(),
-            "mean_average_precision": random.randint(1, 100) / 100,
+            "mAP": random.randint(1, 100) / 100,
             "task_parameters": "mock_task_parameters",
             "executor_config": {"class_names": "a,b,c".split(",")},
             "stages": {
@@ -133,7 +133,7 @@ class TestModel:
         }
         M = m.ViewerModelInfoResponse.parse_obj(res)
         assert M.hash == res["model_hash"]
-        assert M.map == res["mean_average_precision"]
+        assert M.map == res["mAP"]
         assert M.task_parameters == res["task_parameters"]
         assert M.executor_config == res["executor_config"]
         assert M.model_stages == res["stages"]
@@ -242,7 +242,7 @@ class TestVizClient:
         resp = mocker.Mock()
         res = {
             "model_hash": random_lower_string(),
-            "mean_average_precision": random.randint(1, 100) / 100,
+            "mAP": random.randint(1, 100) / 100,
             "task_parameters": "mock_task_parameters",
             "executor_config": {"class_names": "a,b,c".split(",")},
             "stages": {
@@ -272,7 +272,7 @@ class TestVizClient:
         ret = viz.get_model_info(task_id)
         assert isinstance(ret, Dict)
         assert ret["hash"] == res["model_hash"]
-        assert ret["map"] == res["mean_average_precision"]
+        assert ret["map"] == res["mAP"]
         assert ret["task_parameters"] == res["task_parameters"]
         assert ret["executor_config"] == res["executor_config"]
 
