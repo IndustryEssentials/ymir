@@ -18,7 +18,7 @@ describe('constants: project', () => {
       description: 'project002 desc',
       mining_strategy: 0,
       chunk_size: 0,
-      training_type: 1,
+      object_type: 1,
       iteration_target: null,
       map_target: 88,
       training_dataset_count_target: null,

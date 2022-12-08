@@ -1,19 +1,34 @@
-import { Col, ConfigProvider, Row, Select } from 'antd'
-import { useSelector } from 'umi'
+import type { DefaultOptionType } from 'antd/lib/select'
+import type { FC, ReactNode } from 'react'
+
 import { useEffect, useState } from 'react'
+import { Col, ConfigProvider, Row, Select, SelectProps } from 'antd'
+import { useSelector } from 'react-redux'
 
 import t from '@/utils/t'
 import useRequest from '@/hooks/useRequest'
 import EmptyState from '@/components/empty/dataset'
 import Dataset from '@/components/form/option/Dataset'
 
-const defaultLabelRender = (dataset) => <Dataset dataset={dataset} />
+interface Props extends SelectProps {
+  pid: number
+filter?: number[]
+allowEmpty?: boolean
+filters?: (ds: YModels.Dataset[]) => YModels.Dataset[]
+renderLabel?: (d: YModels.Dataset) => ReactNode
+onReady?: Function
+extra?: ReactNode
+changeByUser?: boolean
+}
+interface DatasetOption extends YModels.Dataset {
+  disabled?: boolean
+}
+const defaultLabelRender = (dataset: YModels.Dataset) => <Dataset dataset={dataset} />
 
-const DatasetSelect = ({
+const DatasetSelect: FC<Props> = ({
   pid,
   filter = [],
   allowEmpty,
-  filterGroup = [],
   filters,
   value,
   onChange = () => {},
@@ -23,8 +38,8 @@ const DatasetSelect = ({
   changeByUser,
   ...resProps
 }) => {
-  const { [pid]: datasets } = useSelector(({ dataset }) => dataset.allDatasets)
-  const [options, setOptions] = useState([])
+  const datasets = useSelector<YStates.Root, YModels.Dataset[]>(({ dataset }) => dataset.allDatasets[pid])
+  const [options, setOptions] = useState<DefaultOptionType[]>([])
   const { run: getDatasets } = useRequest('dataset/queryAllDatasets', {
     debounceWait: 300,
     loading: false,
@@ -58,7 +73,7 @@ const DatasetSelect = ({
       if (selected) {
         onChange(value, selected)
       } else {
-        onChange(undefined, null)
+        onChange(undefined, [])
         setVal(undefined)
       }
     }
@@ -73,11 +88,10 @@ const DatasetSelect = ({
 
   useEffect(() => {
     const list = datasets || []
-    let dss = filters ? filters(list) : list
-    dss = allowEmpty ? dss : filterEmptyAsset(dss)
-    const opts = dss
-      .filter((ds) => !filter.includes(ds.id) && !filterGroup.includes(ds.groupId))
-      .map((item) => {
+    let dss: DatasetOption[]  = filters ? filters(list) : list
+
+    dss= allowEmpty ? dss : filterEmptyAsset(dss)
+    const opts = dss.map((item) => {
         return {
           label: renderLabel(item),
           dataset: item,
@@ -92,7 +106,7 @@ const DatasetSelect = ({
     getDatasets({ pid, force: true })
   }
 
-  function filterEmptyAsset(datasets) {
+  function filterEmptyAsset(datasets: YModels.Dataset[]) {
     return datasets.filter((ds) => ds.assetCount)
   }
 
@@ -106,7 +120,7 @@ const DatasetSelect = ({
         allowClear
         showSearch
         options={options}
-        filterOption={(input, option) => option.dataset.name.toLowerCase().indexOf(input.toLowerCase()) >= 0}
+        filterOption={(input, option) => option?.dataset?.name?.toLowerCase()?.indexOf(input.toLowerCase()) >= 0}
         {...resProps}
       ></Select>
     </ConfigProvider>

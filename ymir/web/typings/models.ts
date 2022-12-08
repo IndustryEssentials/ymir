@@ -20,6 +20,7 @@ declare namespace YModels {
     id: number
     groupId: number
     projectId: number
+    type: number,
     name: string
     versionName: string
     version: number
@@ -40,6 +41,7 @@ declare namespace YModels {
     task?: Task<P>
     hidden: boolean
     description: string
+    needReload?: boolean
   }
 
   type Keywords = {
