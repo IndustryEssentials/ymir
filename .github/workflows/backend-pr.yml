@@ -31,7 +31,7 @@ jobs:
       uses: actions/cache@v3
       with:
         path: |
-          ymir/backend/.tox1
+          ymir/backend/.tox
           ymir/backend/.mypy_cache
         # requirements.txt and requirements-dev.txt have versioning info that would
         # impact the tox environment.
