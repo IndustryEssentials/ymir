@@ -210,7 +210,7 @@ def _export_mirdatas_to_raw(
                 class_ids_mapping=class_ids_mapping,
                 cls_id_mgr=cls_id_mgr,
                 dst_dir=ec.pred_dir,
-                image_cks=dict(mir_annotations.image_cks),
+                image_cks={},
             )
         if ec.gt_dir:
             _output_func(
@@ -220,7 +220,7 @@ def _export_mirdatas_to_raw(
                 class_ids_mapping=class_ids_mapping,
                 cls_id_mgr=cls_id_mgr,
                 dst_dir=ec.gt_dir,
-                image_cks={},
+                image_cks=dict(mir_annotations.image_cks),
             )
 
         # write index tsv files
