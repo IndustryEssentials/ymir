@@ -298,7 +298,7 @@ describe('models: model', () => {
       type: 'verify',
       payload: { id, urls: [url] },
     }
-    const boxes = [{ box: { x: 20, y: 52, w: 79, h: 102 }, keyword: 'cat', score: 0.8 }]
+    const boxes = [{ type: 0, box: { x: 20, y: 52, w: 79, h: 102 }, keyword: 'cat', score: 0.8 }]
     const expected = {
       model_id: id,
       annotations: [{ img_url: url, detection: boxes }],
