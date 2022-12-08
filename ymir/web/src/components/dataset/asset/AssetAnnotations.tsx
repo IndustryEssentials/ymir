@@ -7,7 +7,7 @@ import Mask from './Mask'
 import Polygon from './Polygon'
 import BoundingBox from './BoundingBox'
 
-import styles from './common.less'
+import styles from '../common.less'
 
 type Props = {
   asset: YModels.Asset
