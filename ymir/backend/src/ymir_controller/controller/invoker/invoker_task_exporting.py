@@ -73,7 +73,6 @@ class TaskExportingInvoker(TaskBaseInvoker):
             asset_dir, '--src-revs', f"{in_dataset_id}@{in_dataset_id}", '--anno-format', annotation_format,
             '--user-label-file', label_storage_file,
         ]
-
         if keywords:
             exporting_cmd.append('--class_names')
             exporting_cmd.append(';'.join(keywords))
