@@ -11,9 +11,10 @@ COPY ./ymir_exc/requirements.txt ./
 RUN pip3 install -r requirements.txt
 
 # tmi framework and your app
-COPY app /app
+COPY detection-app /app
 RUN mkdir /img-man
-COPY app/*-template.yaml /img-man/
+COPY detection-app/*-template.yaml /img-man/
+COPY detection-app/manifest.yaml /img-man/
 COPY ymir_exc/ymir_exc /app/ymir_exc
 
 # dependencies: write other dependencies here (pytorch, mxnet, tensorboard-x, etc.)
