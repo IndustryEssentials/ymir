@@ -203,7 +203,7 @@ class TestArkDataExporter(unittest.TestCase):
                                 asset_dir=train_path,
                                 media_location=self._assets_location,
                                 need_sub_folder=False,
-                                anno_format=mirpb.AnnoFormat.AF_DET_ARK_JSON,
+                                anno_format=mirpb.ObjectType.OT_DET_BOX_ARK_TXT,
                                 gt_dir=train_path,)
         exporter.export_mirdatas_to_dir(
             mir_metadatas=mir_metadatas,

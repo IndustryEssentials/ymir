@@ -67,7 +67,7 @@ def det_evaluate_with_pb(
 
 def _get_eval_model_name(anno_type: Any, mode: str) -> Optional[ModuleType]:
     mapping = {
-        mirpb.AnnoType.AT_DET_BOX: {
+        mirpb.ObjectType.OT_DET_BOX: {
             'voc': det_eval_voc,
             'coco': det_eval_coco,
         },

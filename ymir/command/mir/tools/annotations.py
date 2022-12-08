@@ -23,32 +23,32 @@ class UnknownTypesStrategy(str, enum.Enum):
     ADD = 'add'
 
 
-def parse_anno_format(anno_format_str: str) -> "mirpb.AnnoFormat.V":
-    _anno_dict: Dict[str, mirpb.AnnoFormat.V] = {
+def parse_anno_format(anno_format_str: str) -> "mirpb.ObjectType.V":
+    _anno_dict: Dict[str, mirpb.ObjectType.V] = {
         # compatible with legacy format.
-        "voc": mirpb.AnnoFormat.AF_DET_PASCAL_VOC,
-        "ark": mirpb.AnnoFormat.AF_DET_ARK_JSON,
-        "ls_json": mirpb.AnnoFormat.AF_DET_LS_JSON,
-        "det-voc": mirpb.AnnoFormat.AF_DET_PASCAL_VOC,
-        "det-ark": mirpb.AnnoFormat.AF_DET_ARK_JSON,
-        "det-ls-json": mirpb.AnnoFormat.AF_DET_LS_JSON,
-        "seg-coco": mirpb.AnnoFormat.AF_SEG_COCO_JSON,
+        "voc": mirpb.ObjectType.OT_DET_BOX_VOC_XML,
+        "ark": mirpb.ObjectType.OT_DET_BOX_ARK_TXT,
+        "ls_json": mirpb.ObjectType.OT_DET_BOX_LS_JSON,
+        "det-voc": mirpb.ObjectType.OT_DET_BOX_VOC_XML,
+        "det-ark": mirpb.ObjectType.OT_DET_BOX_ARK_TXT,
+        "det-ls-json": mirpb.ObjectType.OT_DET_BOX_LS_JSON,
+        "seg-coco": mirpb.ObjectType.OT_SEG,
     }
-    return _anno_dict.get(anno_format_str.lower(), mirpb.AnnoFormat.AF_NO_ANNOTATION)
+    return _anno_dict.get(anno_format_str.lower(), mirpb.ObjectType.OT_UNKNOWN)
 
 
-def parse_anno_type(anno_type_str: str) -> "mirpb.AnnoType.V":
-    _anno_dict: Dict[str, mirpb.AnnoType.V] = {
-        "det-box": mirpb.AnnoType.AT_DET_BOX,
-        "seg": mirpb.AnnoType.AT_SEG,
+def parse_anno_type(anno_type_str: str) -> "mirpb.ObjectType.V":
+    _anno_dict: Dict[str, mirpb.ObjectType.V] = {
+        "det-box": mirpb.ObjectType.OT_DET_BOX,
+        "seg": mirpb.ObjectType.OT_SEG,
     }
-    return _anno_dict.get(anno_type_str.lower(), mirpb.AnnoType.AT_UNKNOWN)
+    return _anno_dict.get(anno_type_str.lower(), mirpb.ObjectType.OT_UNKNOWN)
 
 
-def _annotation_parse_func(anno_type: "mirpb.AnnoType.V") -> Callable:
-    _func_dict: Dict["mirpb.AnnoType.V", Callable] = {
-        mirpb.AnnoType.AT_DET_BOX: _import_annotations_voc_xml,
-        mirpb.AnnoType.AT_SEG: _import_annotations_coco_json,
+def _annotation_parse_func(anno_type: "mirpb.ObjectType.V") -> Callable:
+    _func_dict: Dict["mirpb.ObjectType.V", Callable] = {
+        mirpb.ObjectType.OT_DET_BOX: _import_annotations_voc_xml,
+        mirpb.ObjectType.OT_SEG: _import_annotations_coco_json,
     }
     if anno_type not in _func_dict:
         raise NotImplementedError
@@ -91,13 +91,13 @@ def _coco_object_dict_to_annotation(anno_dict: dict, category_id_to_cids: Dict[i
     # box, polygon and mask
     seg_obj = anno_dict.get('segmentation')
     if isinstance(seg_obj, dict):  # mask
-        obj_anno.type = mirpb.SegObjType.SOT_MASK
+        obj_anno.type = mirpb.ObjectType.OT_SEG_MASK
         obj_anno.mask = seg_obj['counts']
     elif isinstance(seg_obj, list):  # polygon
         if len(seg_obj) > 1:
             raise NotImplementedError('Multi polygons not supported')
 
-        obj_anno.type = mirpb.SegObjType.SOT_POLYGON
+        obj_anno.type = mirpb.ObjectType.OT_SEG_POLYGON
         points_list = seg_obj[0]
         for i in range(0, len(points_list), 2):
             obj_anno.polygon.append(mirpb.IntPoint(x=int(points_list[i]), y=int(points_list[i + 1]), z=0))
@@ -124,7 +124,7 @@ def _coco_object_dict_to_annotation(anno_dict: dict, category_id_to_cids: Dict[i
 
 def import_annotations(mir_annotation: mirpb.MirAnnotations, label_storage_file: str, prediction_dir_path: str,
                        groundtruth_dir_path: str, map_hashed_filename: Dict[str, str],
-                       unknown_types_strategy: UnknownTypesStrategy, anno_type: "mirpb.AnnoType.V",
+                       unknown_types_strategy: UnknownTypesStrategy, anno_type: "mirpb.ObjectType.V",
                        phase: str) -> Dict[str, int]:
     anno_import_result: Dict[str, int] = defaultdict(int)
 
@@ -173,7 +173,8 @@ def import_annotations(mir_annotation: mirpb.MirAnnotations, label_storage_file:
 def _import_annotations_from_dir(map_hashed_filename: Dict[str, str], mir_annotation: mirpb.MirAnnotations,
                                  annotations_dir_path: str, class_type_manager: class_ids.UserLabels,
                                  unknown_types_strategy: UnknownTypesStrategy, accu_new_class_names: Dict[str, int],
-                                 image_annotations: mirpb.SingleTaskAnnotations, anno_type: "mirpb.AnnoType.V") -> None:
+                                 image_annotations: mirpb.SingleTaskAnnotations,
+                                 anno_type: "mirpb.ObjectType.V") -> None:
     image_annotations.type = anno_type
     _annotation_parse_func(anno_type)(
         map_hashed_filename=map_hashed_filename,

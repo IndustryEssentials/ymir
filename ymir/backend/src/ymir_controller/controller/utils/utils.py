@@ -68,20 +68,20 @@ def sub_task_id(task_id: str, offset: int) -> str:
     return task_id[0] + str(offset) + task_id[2:]
 
 
-def annotation_format_str(format: mir_cmd_pb.AnnoFormat) -> str:
+def annotation_format_str(format: mir_cmd_pb.ObjectType) -> str:
     format_enum_dict = {
-        mir_cmd_pb.AnnoFormat.AF_NO_ANNOTATION: 'none',
-        mir_cmd_pb.AnnoFormat.AF_DET_PASCAL_VOC: 'det-voc',
-        mir_cmd_pb.AnnoFormat.AF_DET_ARK_JSON: 'det-ark',
-        mir_cmd_pb.AnnoFormat.AF_DET_LS_JSON: 'det-ls-json',
+        mir_cmd_pb.ObjectType.OT_UNKNOWN: 'none',
+        mir_cmd_pb.ObjectType.OT_DET_BOX_VOC_XML: 'det-voc',
+        mir_cmd_pb.ObjectType.OT_DET_BOX_ARK_TXT: 'det-ark',
+        mir_cmd_pb.ObjectType.OT_DET_BOX_LS_JSON: 'det-ls-json',
     }
     return format_enum_dict[format]
 
 
-def anno_type_str(anno_type: mir_cmd_pb.AnnoType) -> str:
+def anno_type_str(anno_type: mir_cmd_pb.ObjectType) -> str:
     format_enum_dict = {
-        mir_cmd_pb.AnnoType.AT_DET_BOX: 'det-box',
-        mir_cmd_pb.AnnoType.AT_SEG: 'seg',
+        mir_cmd_pb.ObjectType.OT_DET_BOX: 'det-box',
+        mir_cmd_pb.ObjectType.OT_SEG: 'seg',
     }
     return format_enum_dict[anno_type]
 

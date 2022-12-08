@@ -35,7 +35,7 @@ class CmdImport(base.BaseCommand):
     @command_run_in_out
     def run_with_args(mir_root: str, index_file: str, pred_abs: str, gt_abs: str, gen_abs: str,
                       dst_rev: str, src_revs: str, work_dir: str, label_storage_file: str,
-                      unknown_types_strategy: annotations.UnknownTypesStrategy, anno_type: "mirpb.AnnoType.V") -> int:
+                      unknown_types_strategy: annotations.UnknownTypesStrategy, anno_type: "mirpb.ObjectType.V") -> int:
         # Step 1: check args and prepare environment.
         if not index_file or not gen_abs or not os.path.isfile(index_file):
             logging.error(f"invalid index_file: {index_file} or gen_abs: {gen_abs}")

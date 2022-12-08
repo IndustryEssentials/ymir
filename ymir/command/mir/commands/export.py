@@ -44,7 +44,7 @@ class CmdExport(base.BaseCommand):
         src_revs: str,
         dst_rev: str,
         asset_format: "mirpb.AssetFormat.V",
-        anno_format: "mirpb.AnnoFormat.V",
+        anno_format: "mirpb.ObjectType.V",
         class_names: List[str],
         work_dir: str,
     ) -> int:

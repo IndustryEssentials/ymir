@@ -71,7 +71,7 @@ class TestToolsDetEval(unittest.TestCase):
 
         annotations_dict = {
             'prediction': {
-                'type': mirpb.AnnoType.AT_DET_BOX,
+                'type': mirpb.ObjectType.OT_DET_BOX,
                 'image_annotations': {
                     'a0': {
                         'boxes': [{
@@ -166,7 +166,7 @@ class TestToolsDetEval(unittest.TestCase):
                 },
             },
             'ground_truth': {
-                'type': mirpb.AnnoType.AT_DET_BOX,
+                'type': mirpb.ObjectType.OT_DET_BOX,
                 'image_annotations': {
                     'a0': {
                         'boxes': [{
@@ -275,7 +275,7 @@ class TestToolsDetEval(unittest.TestCase):
                             'polygon': [],
                             'det_link_id': 0,
                             'class_name': '',
-                            'type': 'SOT_NOT_SET',
+                            'type': 'OT_UNKNOWN',
                             'iscrowd': 0,
                             'mask': '',
                         }, {
@@ -295,7 +295,7 @@ class TestToolsDetEval(unittest.TestCase):
                             'anno_quality': 0.0,
                             'tags': {},
                             'class_name': '',
-                            'type': 'SOT_NOT_SET',
+                            'type': 'OT_UNKNOWN',
                             'iscrowd': 0,
                             'mask': '',
                         }, {
@@ -315,7 +315,7 @@ class TestToolsDetEval(unittest.TestCase):
                             'anno_quality': 0.0,
                             'tags': {},
                             'class_name': '',
-                            'type': 'SOT_NOT_SET',
+                            'type': 'OT_UNKNOWN',
                             'iscrowd': 0,
                             'mask': '',
                         }, {
@@ -335,7 +335,7 @@ class TestToolsDetEval(unittest.TestCase):
                             'anno_quality': 0.0,
                             'tags': {},
                             'class_name': '',
-                            'type': 'SOT_NOT_SET',
+                            'type': 'OT_UNKNOWN',
                             'iscrowd': 0,
                             'mask': '',
                         }],
@@ -359,7 +359,7 @@ class TestToolsDetEval(unittest.TestCase):
                             'anno_quality': 0.0,
                             'tags': {},
                             'class_name': '',
-                            'type': 'SOT_NOT_SET',
+                            'type': 'OT_UNKNOWN',
                             'iscrowd': 0,
                             'mask': '',
                         }],
@@ -370,7 +370,7 @@ class TestToolsDetEval(unittest.TestCase):
                 'task_id': 'a',
                 'eval_class_ids': [],
                 'executor_config': '',
-                'type': 'AT_DET_BOX',
+                'type': 'OT_DET_BOX',
             },
             'prediction': {
                 'image_annotations': {
@@ -392,7 +392,7 @@ class TestToolsDetEval(unittest.TestCase):
                             'anno_quality': 0.0,
                             'tags': {},
                             'class_name': '',
-                            'type': 'SOT_NOT_SET',
+                            'type': 'OT_UNKNOWN',
                             'iscrowd': 0,
                             'mask': '',
                         }],
@@ -416,7 +416,7 @@ class TestToolsDetEval(unittest.TestCase):
                             'tags': {},
                             'det_link_id': 0,
                             'class_name': '',
-                            'type': 'SOT_NOT_SET',
+                            'type': 'OT_UNKNOWN',
                             'iscrowd': 0,
                             'mask': '',
                         }, {
@@ -436,7 +436,7 @@ class TestToolsDetEval(unittest.TestCase):
                             'anno_quality': 0.0,
                             'tags': {},
                             'class_name': '',
-                            'type': 'SOT_NOT_SET',
+                            'type': 'OT_UNKNOWN',
                             'iscrowd': 0,
                             'mask': '',
                         }, {
@@ -456,7 +456,7 @@ class TestToolsDetEval(unittest.TestCase):
                             'anno_quality': 0.0,
                             'tags': {},
                             'class_name': '',
-                            'type': 'SOT_NOT_SET',
+                            'type': 'OT_UNKNOWN',
                             'iscrowd': 0,
                             'mask': '',
                         }, {
@@ -476,7 +476,7 @@ class TestToolsDetEval(unittest.TestCase):
                             'anno_quality': 0.0,
                             'tags': {},
                             'class_name': '',
-                            'type': 'SOT_NOT_SET',
+                            'type': 'OT_UNKNOWN',
                             'iscrowd': 0,
                             'mask': '',
                         }, {
@@ -496,7 +496,7 @@ class TestToolsDetEval(unittest.TestCase):
                             'anno_quality': 0.0,
                             'tags': {},
                             'class_name': '',
-                            'type': 'SOT_NOT_SET',
+                            'type': 'OT_UNKNOWN',
                             'iscrowd': 0,
                             'mask': '',
                         }],
@@ -506,7 +506,7 @@ class TestToolsDetEval(unittest.TestCase):
                 'task_id': 'a',
                 'eval_class_ids': [0, 1, 2],
                 'executor_config': '',
-                'type': 'AT_DET_BOX',
+                'type': 'OT_DET_BOX',
                 'task_class_ids': [0, 1, 2],
             },
             'image_cks': {

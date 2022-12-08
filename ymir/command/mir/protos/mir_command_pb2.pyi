@@ -168,26 +168,6 @@ MIR_CONTEXT = MirStorage.V(4)
 global___MirStorage = MirStorage
 
 
-class AnnoFormat(_AnnoFormat, metaclass=_AnnoFormatEnumTypeWrapper):
-    pass
-class _AnnoFormat:
-    V = typing.NewType('V', builtins.int)
-class _AnnoFormatEnumTypeWrapper(google.protobuf.internal.enum_type_wrapper._EnumTypeWrapper[_AnnoFormat.V], builtins.type):
-    DESCRIPTOR: google.protobuf.descriptor.EnumDescriptor = ...
-    AF_NO_ANNOTATION = AnnoFormat.V(0)
-    AF_DET_PASCAL_VOC = AnnoFormat.V(1)
-    AF_DET_ARK_JSON = AnnoFormat.V(2)
-    AF_DET_LS_JSON = AnnoFormat.V(3)
-    AF_SEG_COCO_JSON = AnnoFormat.V(4)
-
-AF_NO_ANNOTATION = AnnoFormat.V(0)
-AF_DET_PASCAL_VOC = AnnoFormat.V(1)
-AF_DET_ARK_JSON = AnnoFormat.V(2)
-AF_DET_LS_JSON = AnnoFormat.V(3)
-AF_SEG_COCO_JSON = AnnoFormat.V(4)
-global___AnnoFormat = AnnoFormat
-
-
 class AssetFormat(_AssetFormat, metaclass=_AssetFormatEnumTypeWrapper):
     pass
 class _AssetFormat:
@@ -204,50 +184,52 @@ AF_LMDB = AssetFormat.V(2)
 global___AssetFormat = AssetFormat
 
 
-class AnnoType(_AnnoType, metaclass=_AnnoTypeEnumTypeWrapper):
+class ObjectType(_ObjectType, metaclass=_ObjectTypeEnumTypeWrapper):
     pass
-class _AnnoType:
+class _ObjectType:
     V = typing.NewType('V', builtins.int)
-class _AnnoTypeEnumTypeWrapper(google.protobuf.internal.enum_type_wrapper._EnumTypeWrapper[_AnnoType.V], builtins.type):
+class _ObjectTypeEnumTypeWrapper(google.protobuf.internal.enum_type_wrapper._EnumTypeWrapper[_ObjectType.V], builtins.type):
     DESCRIPTOR: google.protobuf.descriptor.EnumDescriptor = ...
-    AT_UNKNOWN = AnnoType.V(0)
-    AT_CLASS = AnnoType.V(1)
+    OT_UNKNOWN = ObjectType.V(0)
+    OT_CLASS = ObjectType.V(1)
     """Classification with class id, not implemented."""
 
-    AT_DET_BOX = AnnoType.V(2)
+    OT_DET_BOX = ObjectType.V(2)
     """Detection w. bounding box."""
 
-    AT_SEG = AnnoType.V(3)
+    OT_SEG = ObjectType.V(3)
     """semantic segmentation w. polygon or mask"""
 
+    OT_DET_BOX_VOC_XML = ObjectType.V(20)
+    """OT_DET_BOX sub types"""
 
-AT_UNKNOWN = AnnoType.V(0)
-AT_CLASS = AnnoType.V(1)
+    OT_DET_BOX_ARK_TXT = ObjectType.V(21)
+    OT_DET_BOX_LS_JSON = ObjectType.V(22)
+    OT_SEG_MASK = ObjectType.V(30)
+    """OT_SEG sub types"""
+
+    OT_SEG_POLYGON = ObjectType.V(31)
+
+OT_UNKNOWN = ObjectType.V(0)
+OT_CLASS = ObjectType.V(1)
 """Classification with class id, not implemented."""
 
-AT_DET_BOX = AnnoType.V(2)
+OT_DET_BOX = ObjectType.V(2)
 """Detection w. bounding box."""
 
-AT_SEG = AnnoType.V(3)
+OT_SEG = ObjectType.V(3)
 """semantic segmentation w. polygon or mask"""
 
-global___AnnoType = AnnoType
+OT_DET_BOX_VOC_XML = ObjectType.V(20)
+"""OT_DET_BOX sub types"""
 
+OT_DET_BOX_ARK_TXT = ObjectType.V(21)
+OT_DET_BOX_LS_JSON = ObjectType.V(22)
+OT_SEG_MASK = ObjectType.V(30)
+"""OT_SEG sub types"""
 
-class SegObjType(_SegObjType, metaclass=_SegObjTypeEnumTypeWrapper):
-    pass
-class _SegObjType:
-    V = typing.NewType('V', builtins.int)
-class _SegObjTypeEnumTypeWrapper(google.protobuf.internal.enum_type_wrapper._EnumTypeWrapper[_SegObjType.V], builtins.type):
-    DESCRIPTOR: google.protobuf.descriptor.EnumDescriptor = ...
-    SOT_NOT_SET = SegObjType.V(0)
-    SOT_POLYGON = SegObjType.V(1)
-    SOT_MASK = SegObjType.V(2)
-
-SOT_NOT_SET = SegObjType.V(0)
-SOT_POLYGON = SegObjType.V(1)
-SOT_MASK = SegObjType.V(2)
-global___SegObjType = SegObjType
+OT_SEG_POLYGON = ObjectType.V(31)
+global___ObjectType = ObjectType
 
 
 class ConfusionMatrixType(_ConfusionMatrixType, metaclass=_ConfusionMatrixTypeEnumTypeWrapper):
@@ -476,7 +458,7 @@ class SingleTaskAnnotations(google.protobuf.message.Message):
         """/ key: image id, value: annotations of that single image"""
         pass
     task_id: typing.Text = ...
-    type: global___AnnoType.V = ...
+    type: global___ObjectType.V = ...
     @property
     def task_class_ids(self) -> google.protobuf.internal.containers.RepeatedScalarFieldContainer[builtins.int]:
         """Set of all shown class ids."""
@@ -496,7 +478,7 @@ class SingleTaskAnnotations(google.protobuf.message.Message):
         *,
         image_annotations : typing.Optional[typing.Mapping[typing.Text, global___SingleImageAnnotations]] = ...,
         task_id : typing.Text = ...,
-        type : global___AnnoType.V = ...,
+        type : global___ObjectType.V = ...,
         task_class_ids : typing.Optional[typing.Iterable[builtins.int]] = ...,
         eval_class_ids : typing.Optional[typing.Iterable[builtins.int]] = ...,
         model : typing.Optional[global___ModelMeta] = ...,
@@ -603,7 +585,7 @@ class ObjectAnnotation(google.protobuf.message.Message):
     iscrowd: builtins.int = ...
     """0 or 1"""
 
-    type: global___SegObjType.V = ...
+    type: global___ObjectType.V = ...
     def __init__(self,
         *,
         index : builtins.int = ...,
@@ -618,7 +600,7 @@ class ObjectAnnotation(google.protobuf.message.Message):
         polygon : typing.Optional[typing.Iterable[global___IntPoint]] = ...,
         mask : typing.Text = ...,
         iscrowd : builtins.int = ...,
-        type : global___SegObjType.V = ...,
+        type : global___ObjectType.V = ...,
         ) -> None: ...
     def HasField(self, field_name: typing_extensions.Literal["box",b"box"]) -> builtins.bool: ...
     def ClearField(self, field_name: typing_extensions.Literal["anno_quality",b"anno_quality","box",b"box","class_id",b"class_id","class_name",b"class_name","cm",b"cm","det_link_id",b"det_link_id","index",b"index","iscrowd",b"iscrowd","mask",b"mask","polygon",b"polygon","score",b"score","tags",b"tags","type",b"type"]) -> None: ...
@@ -1400,7 +1382,7 @@ class ExportConfig(google.protobuf.message.Message):
 
     media_location: typing.Text = ...
     need_sub_folder: builtins.bool = ...
-    anno_format: global___AnnoFormat.V = ...
+    anno_format: global___ObjectType.V = ...
     """Annotation config."""
 
     gt_dir: typing.Text = ...
@@ -1418,7 +1400,7 @@ class ExportConfig(google.protobuf.message.Message):
         asset_index_prefix : typing.Text = ...,
         media_location : typing.Text = ...,
         need_sub_folder : builtins.bool = ...,
-        anno_format : global___AnnoFormat.V = ...,
+        anno_format : global___ObjectType.V = ...,
         gt_dir : typing.Text = ...,
         gt_index_file : typing.Text = ...,
         gt_index_prefix : typing.Text = ...,

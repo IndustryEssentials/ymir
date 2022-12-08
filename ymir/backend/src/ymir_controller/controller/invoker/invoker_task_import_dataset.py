@@ -77,7 +77,7 @@ class TaskImportDatasetInvoker(TaskBaseInvoker):
     def importing_cmd(repo_root: str, label_storage_file: str, task_id: str, index_file: str, pred_dir: str,
                       gt_dir: str, media_location: str, work_dir: str,
                       unknown_types_strategy: backend_pb2.UnknownTypesStrategy,
-                      anno_type: mir_cmd_pb.AnnoType) -> backend_pb2.GeneralResp:
+                      anno_type: mir_cmd_pb.ObjectType) -> backend_pb2.GeneralResp:
         importing_cmd = [
             utils.mir_executable(), 'import', '--root', repo_root, '--dst-rev',
             f"{task_id}@{task_id}", '--src-revs', 'master', '--index-file', index_file, '--gen-dir', media_location,

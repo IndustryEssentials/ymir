@@ -70,14 +70,6 @@ enum MirStorage {
     MIR_CONTEXT = 4;
 }
 
-enum AnnoFormat {
-    AF_NO_ANNOTATION = 0;
-    AF_DET_PASCAL_VOC = 1;
-    AF_DET_ARK_JSON = 2;
-    AF_DET_LS_JSON = 3;
-    AF_SEG_COCO_JSON = 4;
-};
-
 enum AssetFormat {
     AF_UNKNOWN = 0;
     AF_RAW = 1;
@@ -120,24 +112,28 @@ message MirAnnotations {
     reserved 1, 2;
 };
 
-enum AnnoType {
-    AT_UNKNOWN = 0;
-    AT_CLASS = 1; // Classification with class id, not implemented.
-    AT_DET_BOX = 2; // Detection w. bounding box.
-    AT_SEG = 3;  // semantic segmentation w. polygon or mask
-};
+enum ObjectType {
+    OT_UNKNOWN = 0;
 
-enum SegObjType {
-    SOT_NOT_SET = 0;
-    SOT_POLYGON = 1;
-    SOT_MASK = 2;
-}
+    OT_CLASS = 1; // Classification with class id, not implemented.
+    OT_DET_BOX = 2; // Detection w. bounding box.
+    OT_SEG = 3;  // semantic segmentation w. polygon or mask
+
+    // OT_DET_BOX sub types
+    OT_DET_BOX_VOC_XML = 20;
+    OT_DET_BOX_ARK_TXT = 21;
+    OT_DET_BOX_LS_JSON = 22;
+
+    //OT_SEG sub types
+    OT_SEG_MASK = 30;
+    OT_SEG_POLYGON = 31;
+};
 
 message SingleTaskAnnotations {
     /// key: image id, value: annotations of that single image
     map<string, SingleImageAnnotations> image_annotations = 1;
     string task_id = 2;
-    AnnoType type = 3;
+    ObjectType type = 3;
     // Set of all shown class ids.
     repeated int32 task_class_ids = 4;
 
@@ -177,7 +173,7 @@ message ObjectAnnotation {
     repeated IntPoint polygon = 10;
     string mask = 11;  // RLE encoded mask
     int32 iscrowd = 12;  // 0 or 1
-    SegObjType type = 13;
+    ObjectType type = 13;
 };
 
 enum ConfusionMatrixType {
@@ -403,7 +399,7 @@ message ExportConfig {
     bool need_sub_folder = 6;
 
     // Annotation config.
-    AnnoFormat anno_format = 50;
+    ObjectType anno_format = 50;
     string gt_dir = 51;
     string gt_index_file = 52;
     string gt_index_prefix = 53;
