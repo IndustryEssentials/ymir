@@ -1,49 +1,51 @@
-import request from "@/utils/request"
-import { AxiosResponse } from "axios"
+import { PROJECTTYPES } from '@/constants/project'
+import request from '@/utils/request'
+import { AxiosResponse } from 'axios'
 
 type QueryParams = {
-  pid?: number,
-  gid?: number,
-  did?: number,
-  type?: number | string,
-  state?: number,
-  name?: string,
-  visible?: boolean,
-  limit?: number,
-  offset?: number,
-  desc?: boolean,
-  orderBy?: 'id' | 'create_datetime' | 'asset_count' | 'source',
-  keywords?: string[],
+  pid?: number
+  gid?: number
+  did?: number
+  type?: number | string
+  objectType?: PROJECTTYPES
+  state?: number
+  name?: string
+  visible?: boolean
+  limit?: number
+  offset?: number
+  desc?: boolean
+  orderBy?: 'id' | 'create_datetime' | 'asset_count' | 'source'
+  keywords?: string[]
 }
 
 interface AssetQueryParams extends QueryParams {
-  id: number,
-  cm?: number[],
-  annoType?: number[],
-  type?: string,
+  id: number
+  cm?: number[]
+  annoType?: number[]
+  type?: string
 }
 
 interface EvaluationParams extends QueryParams {
-  datasets: number[],
-  confidence: number,
-  iou: number,
-  averageIou: boolean,
-  ck: string,
+  datasets: number[]
+  confidence: number
+  iou: number
+  averageIou: boolean
+  ck: string
 }
 
 interface CreateParams {
-  name: string,
-  pid: number,
-  url?: string,
-  did?: number,
-  path?: string,
-  strategy?: number,
-  description?: string,
+  name: string
+  pid: number
+  url?: string
+  did?: number
+  path?: string
+  strategy?: number
+  description?: string
 }
 
 /** dataset service */
 /**
- * get dataset 
+ * get dataset
  * @export
  * @param {number} id dataset id
  * @param {boolean} verbose for more infomation
@@ -78,31 +80,21 @@ export function getDatasetByGroup(gid: number) {
  *   orderBy
  * }
  */
-export function queryDatasets({
-  pid,
-  gid,
-  type,
-  state,
-  name,
-  visible = true,
-  offset = 0,
-  limit = 10,
-  desc = true,
-  orderBy
-}: QueryParams) {
-  return request.get("datasets/", {
+export function queryDatasets({ pid, gid, type, objectType, state, name, visible = true, offset = 0, limit = 10, desc = true, orderBy }: QueryParams) {
+  return request.get('datasets/', {
     params: {
       project_id: pid,
       group_id: gid,
       source: type,
+      object_type: objectType,
       state,
       name,
       offset,
       limit,
       is_desc: desc,
       order_by: orderBy,
-      visible
-    }
+      visible,
+    },
   })
 }
 /**
@@ -111,21 +103,20 @@ export function queryDatasets({
  * @export
  * @param {number} pid
  * @param {QueryParams} {
- *   name, 
- *   offset = 0, 
- *   limit = 10 
+ *   name,
+ *   offset = 0,
+ *   limit = 10
  * }
- * @return {*} 
+ * @return {*}
  */
-export function getDatasetGroups(pid: number, {
-  name,
-  offset = 0,
-  limit = 10
-}: QueryParams) {
-  return request.get("dataset_groups/", {
+export function getDatasetGroups(pid: number, { name, offset = 0, limit = 10 }: QueryParams) {
+  return request.get('dataset_groups/', {
     params: {
-      project_id: pid, name, offset, limit
-    }
+      project_id: pid,
+      name,
+      offset,
+      limit,
+    },
   })
 }
 
@@ -143,7 +134,7 @@ export function batchDatasets(pid: number, ids: number[] = [], ck: boolean) {
       project_id: pid,
       ids: ids.toString(),
       ck,
-    }
+    },
   })
 }
 
@@ -160,15 +151,7 @@ export function batchDatasets(pid: number, ids: number[] = [], ck: boolean) {
  *   limit = 20,
  * }
  */
-export function getAssetsOfDataset({
-  id,
-  type = 'keywords',
-  keywords = [],
-  cm = [],
-  annoType = [],
-  offset = 0,
-  limit = 20,
-}: AssetQueryParams) {
+export function getAssetsOfDataset({ id, type = 'keywords', keywords = [], cm = [], annoType = [], offset = 0, limit = 20 }: AssetQueryParams) {
   return request.get(`datasets/${id}/assets`, {
     params: {
       [type]: keywords.toString() || undefined,
@@ -197,7 +180,7 @@ export function getAsset(id: number, hash: string): Promise<AxiosResponse> {
  */
 export function delDataset(id: number) {
   return request({
-    method: "delete",
+    method: 'delete',
     url: `/datasets/${id}`,
   })
 }
@@ -209,7 +192,7 @@ export function delDataset(id: number) {
  */
 export function delDatasetGroup(id: number) {
   return request({
-    method: "delete",
+    method: 'delete',
     url: `/dataset_groups/${id}`,
   })
 }
@@ -221,9 +204,7 @@ export function delDatasetGroup(id: number) {
  *   pid, datasets, iou, averageIou, confidence, ck
  * }
  */
-export function evaluate({
-  pid, datasets, iou, averageIou, confidence, ck
-}: EvaluationParams) {
+export function evaluate({ pid, datasets, iou, averageIou, confidence, ck }: EvaluationParams) {
   return request.post(`/datasets/evaluation`, {
     project_id: pid,
     dataset_ids: datasets,
@@ -246,7 +227,7 @@ export function analysis(pid: number, datasets: number[]) {
       project_id: pid,
       ids: datasets.toString(),
       hist: true,
-    }
+    },
   })
 }
 
@@ -260,7 +241,7 @@ export function analysis(pid: number, datasets: number[]) {
 export function batchAct(action: string, pid: number, ids: number[] = []) {
   return request.post(`/datasets/batch`, {
     project_id: pid,
-    operations: ids.map(id => ({ id, action, }))
+    operations: ids.map((id) => ({ id, action })),
   })
 }
 
@@ -288,15 +269,13 @@ export function batchAct(action: string, pid: number, ids: number[] = []) {
  *  [url],    remote dataset url
  *  [did],    copied dataset id
  *  [path],   server relative path
- *  [strategy]    annotation strategy 
+ *  [strategy]    annotation strategy
  *  [description]
  * }
  */
-export function createDataset({
-  name, pid, url, did, path, strategy = 2, description
-}: CreateParams) {
-  return request.post("/datasets/importing", {
-    group_name: name, 
+export function createDataset({ name, pid, url, did, path, strategy = 2, description }: CreateParams) {
+  return request.post('/datasets/importing', {
+    group_name: name,
     strategy,
     project_id: pid,
     input_url: url,
@@ -314,7 +293,7 @@ export function createDataset({
  */
 export function updateDataset(id: number, name: string) {
   return request({
-    method: "patch",
+    method: 'patch',
     url: `/dataset_groups/${id}`,
     data: {
       name,
@@ -325,12 +304,12 @@ export function updateDataset(id: number, name: string) {
 /**
  * update dataset version description
  * @param {number} id   dataset version id
- * @param {string} description 
- * @returns 
+ * @param {string} description
+ * @returns
  */
 export function updateVersion(id: number, description = '') {
   return request({
-    method: "patch",
+    method: 'patch',
     url: `/datasets/${id}`,
     data: {
       description,
@@ -356,7 +335,6 @@ export function checkDuplication(pid: number, trainSet: number, validationSet: n
   })
 }
 
-
 /**
  * @description get negative samples info from dataset limit by keywords
  * @export
@@ -366,15 +344,11 @@ export function checkDuplication(pid: number, trainSet: number, validationSet: n
  *   keywords = [],
  * }
  */
-export function getNegativeKeywords({
-  pid,
-  did,
-  keywords = [],
-}: QueryParams) {
+export function getNegativeKeywords({ pid, did, keywords = [] }: QueryParams) {
   return request.get(`/datasets/${did}`, {
     params: {
       project_id: pid,
       keywords: keywords.toString(),
-    }
+    },
   })
 }

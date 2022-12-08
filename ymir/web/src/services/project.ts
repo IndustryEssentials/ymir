@@ -1,8 +1,9 @@
 import { PROJECTTYPES } from '@/constants/project'
 import request from '@/utils/request'
 
-type QueryType = {
+type QueryParams = {
   name?: string
+  type?: PROJECTTYPES,
   offset?: number
   limit?: number
 }
@@ -47,8 +48,8 @@ export function getProject(id: number) {
  * { name, offset = 0, limit = 10 }
  * @returns
  */
-export function getProjects({ name, offset = 0, limit = 0 }: QueryType) {
-  return request.get('projects/', { params: { name, offset, limit } })
+export function getProjects({ name, type, offset = 0, limit = 0 }: QueryParams) {
+  return request.get('projects/', { params: { name, object_type: type, offset, limit } })
 }
 
 /**
@@ -81,7 +82,7 @@ export function createProject({ name, description, type, keywords, strategy = 1,
   return request.post('/projects/', {
     name,
     description,
-    training_type: type,
+    object_type: type,
     training_keywords: keywords,
     mining_strategy: strategy,
     enable_iteration: enableIteration,

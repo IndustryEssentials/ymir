@@ -5,7 +5,7 @@ import baseApi from './api.js'
 const item = {
   'id|+1': 2001,
   'chunk_size': '@integer(1,100)',
-  training_type: 1,
+  object_type: 1,
   iteration_target: '@integer(1,20)',
   map_target: '@integer(40,99)',
   training_dataset_count_target: '@integer(0, 1000000000)',
