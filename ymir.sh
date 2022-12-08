@@ -16,8 +16,38 @@ FIELD_LABEL_TOOL_TOKEN='LABEL_TOOL_TOKEN'
 FIELD_LABEL_TOOL_LS='label_studio'
 FIELD_LABEL_TOOL_LF='label_free'
 ENV_FILE='.env'
-
+FIELD_SERVER_RUNTIME='SERVER_RUNTIME'
 FIELD_DEPLOY_MODULE_HOST_PORT='DEPLOY_MODULE_HOST_PORT'
+
+check_docker_compose_version() {
+    MIN_DC_VER="1.29.2"
+    if ! command -v docker-compose &> /dev/null; then
+        echo "please install docker-compose ${MIN_DC_VER} or newer version."
+        exit
+    fi
+    if ! echo "$(docker-compose version --short) ${MIN_DC_VER}" | tr " " "\n" | sort -V | head -n 1 | grep -Eq "^${MIN_DC_VER}$"; then
+        echo "please upgrade docker-compose to ${MIN_DC_VER} or newer version."
+        exit
+    fi
+}
+
+has_nvidia_gpu(){
+    if ! command -v nvidia-smi &> /dev/null; then
+        return 1
+    fi
+    if [ $(nvidia-smi -L | grep UUID:| wc -l) -eq 0 ]; then
+        return 1
+    fi
+    return 0
+}
+
+auto_choose_runtime(){
+    if has_nvidia_gpu; then
+        sed -i.bk "s/^${FIELD_SERVER_RUNTIME}=.*$/${FIELD_SERVER_RUNTIME}=nvidia/" ${ENV_FILE} && rm -f *.bk
+    else
+        sed -i.bk "s/^${FIELD_SERVER_RUNTIME}=.*$/${FIELD_SERVER_RUNTIME}=runc/" ${ENV_FILE} && rm -f *.bk
+    fi
+}
 
 stop() {
 docker-compose -f docker-compose.yml -f docker-compose.dev.yml -f docker-compose.label_studio.yml \
@@ -137,7 +167,9 @@ start_deploy_module() {
 }
 
 start() {
+check_docker_compose_version
 check_permission
+auto_choose_runtime
 pre_start
 
 start_label_tool
