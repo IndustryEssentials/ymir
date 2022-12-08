@@ -27,15 +27,15 @@ jobs:
       run: |
         time pip install tox
       working-directory: ymir/backend
-    - name: Cache Tox Environment
-      uses: actions/cache@v3
-      with:
-        path: |
-          ymir/backend/.tox
-          ymir/backend/.mypy_cache
-        # requirements.txt and requirements-dev.txt have versioning info that would
-        # impact the tox environment.
-        key: tox-${{ hashFiles('ymir/backend/requirements.txt', 'ymir/backend/requirements-dev.txt') }}
+    # - name: Cache Tox Environment
+    #   uses: actions/cache@v3
+    #   with:
+    #     path: |
+    #       ymir/backend/.tox
+    #       ymir/backend/.mypy_cache
+    #     # requirements.txt and requirements-dev.txt have versioning info that would
+    #     # impact the tox environment.
+    #     key: tox-${{ hashFiles('ymir/backend/requirements.txt', 'ymir/backend/requirements-dev.txt') }}
     - name: Test with tox
       run: |
         git config --global user.name 'CI-test'
