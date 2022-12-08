@@ -116,8 +116,8 @@ def _coco_object_dict_to_annotation(anno_dict: dict, category_id_to_cids: Dict[i
     # ymir defined
     obj_anno.cm = mirpb.ConfusionMatrixType.NotSet
     obj_anno.det_link_id = -1
-    obj_anno.score = anno_dict.get('score', -1)
-    obj_anno.anno_quality = anno_dict.get('anno_quality', -1)
+    obj_anno.score = anno_dict.get('confidence', -1)
+    obj_anno.anno_quality = anno_dict.get('box_quality', -1)
 
     return obj_anno
 
