@@ -23,18 +23,18 @@ class UnknownTypesStrategy(str, enum.Enum):
     ADD = 'add'
 
 
-def parse_anno_format(anno_format_str: str) -> "mirpb.ObjectType.V":
-    _anno_dict: Dict[str, mirpb.ObjectType.V] = {
+def parse_anno_format(anno_format_str: str) -> "mirpb.ExportFormat.V":
+    _anno_dict: Dict[str, mirpb.ExportFormat.V] = {
         # compatible with legacy format.
-        "voc": mirpb.ObjectType.OT_DET_BOX_VOC_XML,
-        "ark": mirpb.ObjectType.OT_DET_BOX_ARK_TXT,
-        "ls_json": mirpb.ObjectType.OT_DET_BOX_LS_JSON,
-        "det-voc": mirpb.ObjectType.OT_DET_BOX_VOC_XML,
-        "det-ark": mirpb.ObjectType.OT_DET_BOX_ARK_TXT,
-        "det-ls-json": mirpb.ObjectType.OT_DET_BOX_LS_JSON,
-        "seg-coco": mirpb.ObjectType.OT_SEG,
+        "voc": mirpb.ExportFormat.EF_VOC_XML,
+        "ark": mirpb.ExportFormat.EF_ARK_TXT,
+        "ls_json": mirpb.ExportFormat.EF_LS_JSON,
+        "det-voc": mirpb.ExportFormat.EF_VOC_XML,
+        "det-ark": mirpb.ExportFormat.EF_ARK_TXT,
+        "det-ls-json": mirpb.ExportFormat.EF_LS_JSON,
+        "seg-coco": mirpb.ExportFormat.EF_COCO_JSON,
     }
-    return _anno_dict.get(anno_format_str.lower(), mirpb.ObjectType.OT_UNKNOWN)
+    return _anno_dict.get(anno_format_str.lower(), mirpb.ExportFormat.EF_NO_ANNOTATIONS)
 
 
 def parse_anno_type(anno_type_str: str) -> "mirpb.ObjectType.V":
@@ -51,7 +51,7 @@ def _annotation_parse_func(anno_type: "mirpb.ObjectType.V") -> Callable:
         mirpb.ObjectType.OT_SEG: _import_annotations_coco_json,
     }
     if anno_type not in _func_dict:
-        raise NotImplementedError
+        raise NotImplementedError()
     return _func_dict[anno_type]
 
 

@@ -21,7 +21,7 @@ class TaskExportingInvoker(TaskBaseInvoker):
             return utils.make_general_response(code=CTLResponseCode.ARG_VALIDATION_FAILED, message="empty asset_dir")
         os.makedirs(asset_dir, exist_ok=True)
 
-        if exporting_request.format != mir_cmd_pb.ObjectType.OT_UNKNOWN:
+        if exporting_request.format != mir_cmd_pb.ExportFormat.EF_NO_ANNOTATIONS:
             pred_dir = exporting_request.pred_dir
             if not pred_dir:
                 return utils.make_general_response(code=CTLResponseCode.ARG_VALIDATION_FAILED, message="empty pred_dir")

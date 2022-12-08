@@ -200,11 +200,6 @@ class _ObjectTypeEnumTypeWrapper(google.protobuf.internal.enum_type_wrapper._Enu
     OT_SEG = ObjectType.V(3)
     """semantic segmentation w. polygon or mask"""
 
-    OT_DET_BOX_VOC_XML = ObjectType.V(20)
-    """OT_DET_BOX sub types"""
-
-    OT_DET_BOX_ARK_TXT = ObjectType.V(21)
-    OT_DET_BOX_LS_JSON = ObjectType.V(22)
     OT_SEG_MASK = ObjectType.V(30)
     """OT_SEG sub types"""
 
@@ -220,16 +215,31 @@ OT_DET_BOX = ObjectType.V(2)
 OT_SEG = ObjectType.V(3)
 """semantic segmentation w. polygon or mask"""
 
-OT_DET_BOX_VOC_XML = ObjectType.V(20)
-"""OT_DET_BOX sub types"""
-
-OT_DET_BOX_ARK_TXT = ObjectType.V(21)
-OT_DET_BOX_LS_JSON = ObjectType.V(22)
 OT_SEG_MASK = ObjectType.V(30)
 """OT_SEG sub types"""
 
 OT_SEG_POLYGON = ObjectType.V(31)
 global___ObjectType = ObjectType
+
+
+class ExportFormat(_ExportFormat, metaclass=_ExportFormatEnumTypeWrapper):
+    pass
+class _ExportFormat:
+    V = typing.NewType('V', builtins.int)
+class _ExportFormatEnumTypeWrapper(google.protobuf.internal.enum_type_wrapper._EnumTypeWrapper[_ExportFormat.V], builtins.type):
+    DESCRIPTOR: google.protobuf.descriptor.EnumDescriptor = ...
+    EF_NO_ANNOTATIONS = ExportFormat.V(0)
+    EF_VOC_XML = ExportFormat.V(1)
+    EF_ARK_TXT = ExportFormat.V(2)
+    EF_LS_JSON = ExportFormat.V(3)
+    EF_COCO_JSON = ExportFormat.V(4)
+
+EF_NO_ANNOTATIONS = ExportFormat.V(0)
+EF_VOC_XML = ExportFormat.V(1)
+EF_ARK_TXT = ExportFormat.V(2)
+EF_LS_JSON = ExportFormat.V(3)
+EF_COCO_JSON = ExportFormat.V(4)
+global___ExportFormat = ExportFormat
 
 
 class ConfusionMatrixType(_ConfusionMatrixType, metaclass=_ConfusionMatrixTypeEnumTypeWrapper):
@@ -1382,7 +1392,7 @@ class ExportConfig(google.protobuf.message.Message):
 
     media_location: typing.Text = ...
     need_sub_folder: builtins.bool = ...
-    anno_format: global___ObjectType.V = ...
+    anno_format: global___ExportFormat.V = ...
     """Annotation config."""
 
     gt_dir: typing.Text = ...
@@ -1400,7 +1410,7 @@ class ExportConfig(google.protobuf.message.Message):
         asset_index_prefix : typing.Text = ...,
         media_location : typing.Text = ...,
         need_sub_folder : builtins.bool = ...,
-        anno_format : global___ObjectType.V = ...,
+        anno_format : global___ExportFormat.V = ...,
         gt_dir : typing.Text = ...,
         gt_index_file : typing.Text = ...,
         gt_index_prefix : typing.Text = ...,

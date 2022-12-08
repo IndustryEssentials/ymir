@@ -31,7 +31,7 @@ def trigger_ymir_export(repo_root: str, label_storage_file: str, dataset_id: str
                         media_location: str, export_work_dir: str, keywords: List[str],
                         annotation_type: Optional[int]) -> None:
     # trigger ymir export, so that we can get pictures from ymir
-    format_str = utils.annotation_format_str(mir_cmd_pb.ObjectType.OT_DET_BOX_LS_JSON)
+    format_str = utils.annotation_format_str(mir_cmd_pb.ExportFormat.EF_LS_JSON)
 
     gt_dir: Optional[str] = None
     pred_dir: Optional[str] = None
