@@ -1,4 +1,4 @@
-version: "3.1"
+version: "3.3"
 services:
   label_nginx:
     image: labelfree/open_frontend:2.0.0
