@@ -1,12 +1,9 @@
 from collections import defaultdict
 import enum
-import io
 import json
 import logging
 import os
-import numpy as np
-from PIL import Image, UnidentifiedImageError
-from typing import Any, Callable, Dict, List, Set, Tuple, Union
+from typing import Any, Callable, Dict, List, Union
 
 from google.protobuf.json_format import ParseDict
 import xmltodict
@@ -15,6 +12,7 @@ import yaml
 from mir.tools import class_ids
 from mir.tools.code import MirCode
 from mir.tools.errors import MirRuntimeError
+from mir.tools.settings import COCO_JSON_NAME
 from mir.tools.phase_logger import PhaseLoggerCenter
 from mir.protos import mir_command_pb2 as mirpb
 
@@ -25,42 +23,39 @@ class UnknownTypesStrategy(str, enum.Enum):
     ADD = 'add'
 
 
-def parse_anno_format(anno_format_str: str) -> "mirpb.AnnoFormat.V":
-    _anno_dict: Dict[str, mirpb.AnnoFormat.V] = {
+def parse_anno_format(anno_format_str: str) -> "mirpb.ExportFormat.V":
+    _anno_dict: Dict[str, mirpb.ExportFormat.V] = {
         # compatible with legacy format.
-        "voc": mirpb.AnnoFormat.AF_DET_PASCAL_VOC,
-        "ark": mirpb.AnnoFormat.AF_DET_ARK_JSON,
-        "ls_json": mirpb.AnnoFormat.AF_DET_LS_JSON,
-        "det-voc": mirpb.AnnoFormat.AF_DET_PASCAL_VOC,
-        "det-ark": mirpb.AnnoFormat.AF_DET_ARK_JSON,
-        "det-ls-json": mirpb.AnnoFormat.AF_DET_LS_JSON,
-        "seg-poly": mirpb.AnnoFormat.AF_SEG_POLYGON,
-        "seg-mask": mirpb.AnnoFormat.AF_SEG_MASK,
+        "voc": mirpb.ExportFormat.EF_VOC_XML,
+        "ark": mirpb.ExportFormat.EF_ARK_TXT,
+        "ls_json": mirpb.ExportFormat.EF_LS_JSON,
+        "det-voc": mirpb.ExportFormat.EF_VOC_XML,
+        "det-ark": mirpb.ExportFormat.EF_ARK_TXT,
+        "det-ls-json": mirpb.ExportFormat.EF_LS_JSON,
+        "seg-coco": mirpb.ExportFormat.EF_COCO_JSON,
     }
-    return _anno_dict.get(anno_format_str.lower(), mirpb.AnnoFormat.AF_NO_ANNOTATION)
+    return _anno_dict.get(anno_format_str.lower(), mirpb.ExportFormat.EF_NO_ANNOTATIONS)
 
 
-def parse_anno_type(anno_type_str: str) -> "mirpb.AnnoType.V":
-    _anno_dict: Dict[str, mirpb.AnnoType.V] = {
-        "det-box": mirpb.AnnoType.AT_DET_BOX,
-        "seg-poly": mirpb.AnnoType.AT_SEG_POLYGON,
-        "seg-mask": mirpb.AnnoType.AT_SEG_MASK,
+def parse_anno_type(anno_type_str: str) -> "mirpb.ObjectType.V":
+    _anno_dict: Dict[str, mirpb.ObjectType.V] = {
+        "det-box": mirpb.ObjectType.OT_DET_BOX,
+        "seg": mirpb.ObjectType.OT_SEG,
     }
-    return _anno_dict.get(anno_type_str.lower(), mirpb.AnnoType.AT_UNKNOWN)
+    return _anno_dict.get(anno_type_str.lower(), mirpb.ObjectType.OT_UNKNOWN)
 
 
-def _annotation_parse_func(anno_type: "mirpb.AnnoType.V") -> Callable:
-    _func_dict: Dict["mirpb.AnnoType.V", Callable] = {
-        mirpb.AnnoType.AT_DET_BOX: _import_annotations_voc_xml,
-        mirpb.AnnoType.AT_SEG_POLYGON: _import_annotations_voc_xml,
-        mirpb.AnnoType.AT_SEG_MASK: _import_annotations_seg_mask,
+def _annotation_parse_func(anno_type: "mirpb.ObjectType.V") -> Callable:
+    _func_dict: Dict["mirpb.ObjectType.V", Callable] = {
+        mirpb.ObjectType.OT_DET_BOX: _import_annotations_voc_xml,
+        mirpb.ObjectType.OT_SEG: _import_annotations_coco_json,
     }
     if anno_type not in _func_dict:
-        raise NotImplementedError
+        raise NotImplementedError()
     return _func_dict[anno_type]
 
 
-def _object_dict_to_annotation(object_dict: dict, cid: int) -> mirpb.ObjectAnnotation:
+def _voc_object_dict_to_annotation(object_dict: dict, cid: int) -> mirpb.ObjectAnnotation:
     # Fill shared fields.
     annotation = mirpb.ObjectAnnotation()
     annotation.class_id = cid
@@ -84,16 +79,52 @@ def _object_dict_to_annotation(object_dict: dict, cid: int) -> mirpb.ObjectAnnot
         annotation.box.w = width
         annotation.box.h = height
         annotation.box.rotate_angle = float(bndbox_dict.get('rotate_angle', '0.0'))
-    elif object_dict.get('polygon'):
-        raise NotImplementedError
     else:
-        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS, error_message='no value for bndbox or polygon')
+        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS, error_message='no value for bndbox')
     return annotation
+
+
+def _coco_object_dict_to_annotation(anno_dict: dict, category_id_to_cids: Dict[int, int],
+                                    class_type_manager: class_ids.UserLabels) -> mirpb.ObjectAnnotation:
+    obj_anno = mirpb.ObjectAnnotation()
+
+    # box, polygon and mask
+    seg_obj = anno_dict.get('segmentation')
+    if isinstance(seg_obj, dict):  # mask
+        obj_anno.type = mirpb.ObjectType.OT_SEG_MASK
+        obj_anno.mask = seg_obj['counts']
+    elif isinstance(seg_obj, list):  # polygon
+        if len(seg_obj) > 1:
+            raise NotImplementedError('Multi polygons not supported')
+
+        obj_anno.type = mirpb.ObjectType.OT_SEG_POLYGON
+        points_list = seg_obj[0]
+        for i in range(0, len(points_list), 2):
+            obj_anno.polygon.append(mirpb.IntPoint(x=int(points_list[i]), y=int(points_list[i + 1]), z=0))
+
+    if 'bbox' in anno_dict:
+        bbox_list = anno_dict['bbox']
+        obj_anno.box.x = int(bbox_list[0])
+        obj_anno.box.y = int(bbox_list[1])
+        obj_anno.box.w = int(bbox_list[2])
+        obj_anno.box.h = int(bbox_list[3])
+
+    obj_anno.iscrowd = anno_dict.get('iscrowd', 0)
+    obj_anno.class_id = category_id_to_cids[anno_dict['category_id']]
+    obj_anno.class_name = class_type_manager.main_name_for_id(obj_anno.class_id)
+
+    # ymir defined
+    obj_anno.cm = mirpb.ConfusionMatrixType.NotSet
+    obj_anno.det_link_id = -1
+    obj_anno.score = float(anno_dict.get('confidence', '-1.0'))
+    obj_anno.anno_quality = float(anno_dict.get('box_quality', '-1.0'))
+
+    return obj_anno
 
 
 def import_annotations(mir_annotation: mirpb.MirAnnotations, label_storage_file: str, prediction_dir_path: str,
                        groundtruth_dir_path: str, map_hashed_filename: Dict[str, str],
-                       unknown_types_strategy: UnknownTypesStrategy, anno_type: "mirpb.AnnoType.V",
+                       unknown_types_strategy: UnknownTypesStrategy, anno_type: "mirpb.ObjectType.V",
                        phase: str) -> Dict[str, int]:
     anno_import_result: Dict[str, int] = defaultdict(int)
 
@@ -142,13 +173,8 @@ def import_annotations(mir_annotation: mirpb.MirAnnotations, label_storage_file:
 def _import_annotations_from_dir(map_hashed_filename: Dict[str, str], mir_annotation: mirpb.MirAnnotations,
                                  annotations_dir_path: str, class_type_manager: class_ids.UserLabels,
                                  unknown_types_strategy: UnknownTypesStrategy, accu_new_class_names: Dict[str, int],
-                                 image_annotations: mirpb.SingleTaskAnnotations, anno_type: "mirpb.AnnoType.V") -> None:
-    # temp solution: set to seg type if SegmentationClass and labelmap.txt exist.
-    # will be removed once seg type can be passed via web.
-    if (os.path.isdir(os.path.join(annotations_dir_path, "SegmentationClass"))
-            and os.path.isfile(os.path.join(annotations_dir_path, "labelmap.txt"))):
-        anno_type = mirpb.AnnoType.AT_SEG_MASK
-
+                                 image_annotations: mirpb.SingleTaskAnnotations,
+                                 anno_type: "mirpb.ObjectType.V") -> None:
     image_annotations.type = anno_type
     _annotation_parse_func(anno_type)(
         map_hashed_filename=map_hashed_filename,
@@ -161,107 +187,6 @@ def _import_annotations_from_dir(map_hashed_filename: Dict[str, str], mir_annota
     )
 
     logging.warning(f"imported {len(image_annotations.image_annotations)} / {len(map_hashed_filename)} annotations")
-
-
-def _import_annotations_seg_mask(map_hashed_filename: Dict[str, str], mir_annotation: mirpb.MirAnnotations,
-                                 annotations_dir_path: str, class_type_manager: class_ids.UserLabels,
-                                 unknown_types_strategy: UnknownTypesStrategy, accu_new_class_names: Dict[str, int],
-                                 image_annotations: mirpb.SingleTaskAnnotations) -> None:
-    # fortmat ref:
-    # https://github.com/acesso-io/techcore-cvat/tree/develop/cvat/apps/dataset_manager/formats#segmentation-mask-import
-    # single line reprs label&color map, e.g. "ego vehicle:0,181,0::" or "road:07::"; otherwise "..." for place-holder.
-    label_map_file = os.path.join(annotations_dir_path, 'labelmap.txt')
-    if not os.path.isfile(label_map_file):
-        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS, error_message="labelmap.txt is required.")
-    with open(label_map_file) as f:
-        records = f.readlines()
-
-    # parse label_map.txt into map_cname_color.
-    map_cname_color: Dict[str, Tuple[int, int, int]] = {}
-    for record in records:
-        record = record.strip()
-        if ':' not in record or not record:
-            logging.info("place-holder line, skipping.")
-            continue
-
-        record_split = record.split(':')
-        if len(record_split) != 4:
-            logging.info(f"invalid labelmap line: {record}")
-            continue
-        pos_ints: List[int] = [int(x) for x in record_split[1].split(',')]
-        if len(pos_ints) == 1:  # single channel to 3 channels.
-            pos_ints = [pos_ints[0], pos_ints[0], pos_ints[0]]
-        if len(pos_ints) != 3:
-            logging.info(f"invalid labelmap color idx: {pos_ints}")
-            continue
-        if pos_ints == (0, 0, 0):
-            logging.info("ignore background color.")
-            continue
-        _, cname = class_type_manager.id_and_main_name_for_name(name=record_split[0])
-        map_cname_color[cname] = (pos_ints[0], pos_ints[1], pos_ints[2])
-
-    # batch add all names, including unknown/known names.
-    if unknown_types_strategy == UnknownTypesStrategy.ADD:
-        class_type_manager.add_main_names(list(map_cname_color.keys()))
-
-    # build color map, map all unknown classes to background (0, 0, 0).
-    map_color_pixel: Dict[Tuple[int, int, int], Tuple[int, int, int]] = {(0, 0, 0): (0, 0, 0)}
-    map_color_cid: Dict[Tuple[int, int, int], int] = {}
-    for name, color in map_cname_color.items():
-        cid, cname = class_type_manager.id_and_main_name_for_name(name=name)
-        if cname not in accu_new_class_names:
-            accu_new_class_names[cname] = 0
-
-        if cid >= 0:
-            point = mirpb.IntPoint()
-            point.x, point.y, point.z = color
-            image_annotations.map_id_color[cid].CopyFrom(point)
-            map_color_pixel[color] = color
-            map_color_cid[color] = cid
-        else:
-            map_color_pixel[color] = (0, 0, 0)
-
-    semantic_mask_dir = os.path.join(annotations_dir_path, "SegmentationClass")
-    expected_color: Set[Tuple[int, int, int]] = set()
-    for asset_hash, main_file_name in map_hashed_filename.items():
-        # for each asset, import it's annotations
-        annotation_file = os.path.join(semantic_mask_dir, main_file_name + '.png')
-        if not os.path.isfile(annotation_file):
-            continue
-        try:
-            mask_image = Image.open(annotation_file)
-        except (UnidentifiedImageError, OSError) as e:
-            logging.info(f"{type(e).__name__}: {e}\nannotation_file: {annotation_file}\n")
-            continue
-        asset_type_str: str = mask_image.format.lower()
-        if asset_type_str != 'png':
-            logging.error(f"cannot import annotation_file: {annotation_file} as type: {asset_type_str}")
-            continue
-
-        mask_image = mask_image.convert('RGB')
-        img_class_ids: Set[int] = set()
-        width, height = mask_image.size
-        img: np.ndarray = np.array(mask_image)
-        np_mask: np.ndarray = np.zeros(shape=(height, width, 3), dtype=np.uint8)
-        for color in map_color_cid:
-            r = img[:, :, 0] == color[0]
-            g = img[:, :, 1] == color[1]
-            b = img[:, :, 2] == color[2]
-
-            mask = r & g & b
-            if np.any(mask):
-                expected_color.add(color)
-                np_mask[mask] = color
-                img_class_ids.add(map_color_cid[color])
-
-        new_mask_image: Image.Image = Image.fromarray(np_mask)
-        with io.BytesIO() as output:
-            new_mask_image.save(output, format="PNG")
-            image_annotations.image_annotations[asset_hash].masks.append(
-                mirpb.MaskAnnotation(semantic_mask=output.getvalue()))
-        image_annotations.image_annotations[asset_hash].img_class_ids[:] = list(img_class_ids)
-    if expected_color:
-        logging.info(f"mapped color in labelmap.txt: {expected_color}")
 
 
 def _import_annotations_voc_xml(map_hashed_filename: Dict[str, str], mir_annotation: mirpb.MirAnnotations,
@@ -309,10 +234,81 @@ def _import_annotations_voc_xml(map_hashed_filename: Dict[str, str], mir_annotat
                     accu_new_class_names[new_type_name] = 0
 
             if cid >= 0:
-                annotation = _object_dict_to_annotation(object_dict, cid)
+                annotation = _voc_object_dict_to_annotation(object_dict, cid)
                 annotation.index = anno_idx
                 image_annotations.image_annotations[asset_hash].boxes.append(annotation)
                 anno_idx += 1
+
+
+def _import_annotations_coco_json(map_hashed_filename: Dict[str, str], mir_annotation: mirpb.MirAnnotations,
+                                  annotations_dir_path: str, class_type_manager: class_ids.UserLabels,
+                                  unknown_types_strategy: UnknownTypesStrategy, accu_new_class_names: Dict[str, int],
+                                  image_annotations: mirpb.SingleTaskAnnotations) -> None:
+    add_if_not_found = (unknown_types_strategy == UnknownTypesStrategy.ADD)
+
+    coco_file_path = os.path.join(annotations_dir_path, COCO_JSON_NAME)
+    with open(coco_file_path, 'r') as f:
+        coco_obj = json.loads(f.read())
+        images_list = coco_obj['images']
+        categories_list = coco_obj['categories']
+        annotations_list = coco_obj['annotations']
+
+    if not images_list or not isinstance(images_list, list):
+        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_FILE,
+                              error_message=f"Can not find images list in coco json: {coco_file_path}")
+    if not categories_list or not isinstance(categories_list, list):
+        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_FILE,
+                              error_message=f"Can not find categories list in coco json: {coco_file_path}")
+    if annotations_list and not isinstance(annotations_list, list):
+        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_FILE,
+                              error_message=f"Can not find annotations list in coco json: {coco_file_path}")
+
+    unhashed_filenames_cnt = 0
+    unknown_category_ids_cnt = 0
+    unknown_image_objects_cnt = 0
+
+    # images_list -> image_id_to_hashes (key: coco image id, value: ymir asset hash)
+    filename_to_hashes = {v: k for k, v in map_hashed_filename.items()}
+    image_id_to_hashes: Dict[int, str] = {}
+    for v in images_list:
+        filename = os.path.splitext(v['file_name'])[0]
+        if filename not in filename_to_hashes:
+            unhashed_filenames_cnt += 1
+            continue
+        image_id_to_hashes[v['id']] = filename_to_hashes[filename]
+
+    # categories_list -> category_id_to_cids (key: coco category id, value: ymir class id)
+    category_id_to_cids: Dict[int, int] = {}
+    for v in categories_list:
+        name = v['name']
+        cid, _ = class_type_manager.id_and_main_name_for_name(name)
+        if cid >= 0:
+            category_id_to_cids[v['id']] = cid
+        else:
+            accu_new_class_names[name] = 0
+            if add_if_not_found:
+                cid, _ = class_type_manager.add_main_name(name)
+                category_id_to_cids[v['id']] = cid
+
+    for anno_dict in annotations_list:
+        if anno_dict['category_id'] not in category_id_to_cids:
+            unknown_category_ids_cnt += 1
+            continue
+        if anno_dict['image_id'] not in image_id_to_hashes:
+            unknown_image_objects_cnt += 1
+            continue
+
+        obj_anno = _coco_object_dict_to_annotation(anno_dict=anno_dict,
+                                                   category_id_to_cids=category_id_to_cids,
+                                                   class_type_manager=class_type_manager)
+        asset_hash = image_id_to_hashes[anno_dict['image_id']]
+        obj_anno.index = len(image_annotations.image_annotations[asset_hash].boxes)
+        image_annotations.image_annotations[asset_hash].boxes.append(obj_anno)
+
+    if unhashed_filenames_cnt or unknown_category_ids_cnt or unknown_image_objects_cnt:
+        logging.warning(f"count of unhashed file names in images list: {unhashed_filenames_cnt}")
+        logging.warning(f"count of unknown category ids in categories list: {unknown_category_ids_cnt}")
+        logging.warning(f"count of objects with unknown image ids in annotations list: {unknown_image_objects_cnt}")
 
 
 def _import_annotation_meta(class_type_manager: class_ids.UserLabels, annotations_dir_path: str,
