@@ -63,6 +63,7 @@ class Project(Base):
     datasets = relationship(
         "Dataset",
         primaryjoin="foreign(Dataset.project_id)==Project.id",
+        backref="project",
         uselist=True,
         viewonly=True,
     )
@@ -87,6 +88,7 @@ class Project(Base):
     models = relationship(
         "Model",
         primaryjoin="foreign(Model.project_id)==Project.id",
+        backref="model",
         uselist=True,
         viewonly=True,
     )
@@ -113,6 +115,10 @@ class Project(Base):
     is_deleted = Column(Boolean, default=False, nullable=False)
     create_datetime = Column(DateTime, default=datetime.utcnow, nullable=False)
     update_datetime = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
+
+    @property
+    def object_type(self) -> int:
+        return self.training_type
 
     @property
     def visible_datasets(self) -> List[Dataset]:
