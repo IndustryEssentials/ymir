@@ -1,10 +1,21 @@
-import { Cascader, Col, Row, Select } from 'antd'
-import { connect } from 'dva'
-import { useEffect, useState } from 'react'
+import useRequest from '@/hooks/useRequest'
+import { Cascader, CascaderProps, CheckboxOptionType, Col, Row, Select } from 'antd'
+import { FC, useEffect, useState } from 'react'
 
+type Props = CascaderProps<CheckboxOptionType> & {
+  pid: number,
+  type: number,
+}
 
-const ProjectSelect = ({ pid, value, projects = [], onChange = () => { }, getProjects, getModels, ...resProps }) => {
-  const [options, setOptions] = useState([])
+const ProjectModelSelect: FC<Props> = ({ pid, type, value, onChange, ...resProps }) => {
+  const [options, setOptions] = useState<CheckboxOptionType[]>([])
+  const { data: projects = [], run: getProjects } = useRequest<YModels.Project[], []>('project/getProject', {
+    debounceWait: 300,
+    loading: false,
+  })
+  const { data: models, run: getModels} = useRequest('model/getModels', {
+    loading: false,
+  })
 
   useEffect(() => {
     fetchProjects()
@@ -50,29 +61,8 @@ const ProjectSelect = ({ pid, value, projects = [], onChange = () => { }, getPro
   }
 
   return (
-    <Cascader value={value} options={options} {...resProps} loadData={loadData} onChange={onChange} allowClear></Cascader>
+    <Cascader {...resProps}  value={value} options={options}loadData={loadData} onChange={onChange} allowClear></Cascader>
   )
 }
 
-const props = (state) => {
-  return {
-    projects: state.project.list.items,
-  }
-}
-const actions = (dispatch) => {
-  return {
-    getProjects() {
-      return dispatch({
-        type: 'project/getProjects',
-        payload: { limit: 10000 },
-      })
-    },
-    getModels(pid) {
-      return dispatch({
-        type: 'model/queryAllModels',
-        payload: pid,
-      })
-    }
-  }
-}
-export default connect(props, actions)(ProjectSelect)
+export default ProjectModelSelect

@@ -9,7 +9,7 @@ import useFetch from '@/hooks/useFetch'
 
 import { urlValidator } from '@/components/form/validators'
 import Breadcrumbs from '@/components/common/breadcrumb'
-import ProjectSelect from "@/components/form/projectModelSelect"
+import ProjectSelect from "@/components/form/ProjectModelSelect"
 import Desc from "@/components/form/desc"
 import Uploader from '@/components/form/uploader'
 
