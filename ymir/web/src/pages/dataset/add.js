@@ -16,7 +16,7 @@ import Uploader from '@/components/form/uploader'
 import ProjectDatasetSelect from '@/components/form/projectDatasetSelect'
 import Desc from '@/components/form/desc'
 import DatasetName from '../../components/form/items/datasetName'
-import { FormatDetailModal } from './components/formatDetailModal'
+import { FormatDetailModal } from './components/FormatDetailModal'
 import Dataset from '@/components/form/option/Dataset'
 
 import s from './add.less'
@@ -73,7 +73,7 @@ const Add = (props) => {
   const netUrl = Form.useWatch('url', form)
   const path = Form.useWatch('path', form)
   const [formatDetailModal, setFormatDetailModal] = useState(false)
-  const project = useSelector(({ project }) => project[pid] || {})
+  const project = useSelector(({ project }) => project.projects[pid] || {})
   const { run: getProject } = useRequest('project/getProject', {
     loading: false,
     refreshDeps: [pid],
@@ -87,7 +87,10 @@ const Add = (props) => {
     getProject({ id: pid })
   }, [pid])
 
-  useEffect(() => project.type === PROJECTTYPES.SemanticSegmentation && (setSampleZip('/sample_dataset_seg.zip'), setSamplePic(SegSamplePic)), [project])
+  useEffect(() => {
+    console.log('project.type === PROJECTTYPES.SemanticSegmentation:', project, project.type, PROJECTTYPES.SemanticSegmentation)
+    project.type === PROJECTTYPES.SemanticSegmentation && (setSampleZip('/sample_dataset_seg.zip'), setSamplePic(SegSamplePic))
+  }, [project])
 
   useEffect(() => {
     form.setFieldsValue({ did: null })
