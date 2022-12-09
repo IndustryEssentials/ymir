@@ -17,7 +17,7 @@ from app.api.errors.errors import (
     InvalidSharedImageConfig,
 )
 from app.config import settings
-from app.constants.state import DockerImageState, DockerImageType
+from app.constants.state import DockerImageState, DockerImageType, ObjectType
 from app.models.image import DockerImage
 from app.schemas.image import (
     DockerImageCreate,
@@ -108,7 +108,7 @@ def import_docker_image(
         crud.image_config.create(db, obj_in=image_config_in)
 
     enable_livecode = bool(resp.get("enable_livecode", False))
-    object_type = resp.get("object_type")
+    object_type = int(resp.get("object_type", ObjectType.object_type))
     crud.docker_image.update_from_dict(
         db,
         docker_image_id=docker_image.id,
