@@ -43,9 +43,9 @@ MERGE_STRATEGY_MAPPING = {
 }
 
 
-ANNO_TYPE_MAPPING = {
-    ObjectType.object_detect: mir_cmd_pb.AnnoType.AT_DET_BOX,
-    ObjectType.segmentation: mir_cmd_pb.AnnoType.AT_SEG,
+OBJECT_TYPE_MAPPING = {
+    ObjectType.object_detect: mir_cmd_pb.ObjectType.OT_DET_BOX,
+    ObjectType.segmentation: mir_cmd_pb.ObjectType.OT_SEG,
 }
 
 
@@ -177,7 +177,7 @@ class ControllerRequest:
             if args.get("pred_dir"):
                 import_dataset_request.pred_dir = args["pred_dir"]
         import_dataset_request.clean_dirs = args["clean_dirs"]
-        import_dataset_request.anno_type = ANNO_TYPE_MAPPING[args["annotation_type"]]
+        import_dataset_request.anno_type = OBJECT_TYPE_MAPPING[args["object_type"]]
 
         import_dataset_request.unknown_types_strategy = IMPORTING_STRATEGY_MAPPING[strategy]
 
