@@ -1,0 +1,3 @@
+# object_type: 1 if this docker image is training, mining or infer for detection, 2 for segmentation, default: 1
+"object_type": 2
+

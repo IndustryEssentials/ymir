@@ -5,8 +5,6 @@ import sys
 import time
 from typing import List
 
-from PIL import Image, UnidentifiedImageError
-
 # view https://github.com/protocolbuffers/protobuf/issues/10051 for detail
 os.environ.setdefault('PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION', 'python')
 from tensorboardX import SummaryWriter
@@ -48,7 +46,6 @@ def _run_training(env_config: env.EnvConfig) -> None:
 
     #! use `dataset_reader.item_paths` to read training or validation dataset items
     #!  note that `dataset_reader.item_paths` is a generator
-    absent_count = 0
     for asset_path, annotation_path in dr.item_paths(dataset_type=env.DatasetType.TRAINING):
         isfile = os.path.isfile(asset_path)
         if not isfile:
@@ -68,16 +65,13 @@ def _run_training(env_config: env.EnvConfig) -> None:
         f.write('fake model-0000.params')
     with open(os.path.join(stage_dir, 'model-symbols.json'), 'w') as f:
         f.write('fake model-symbols.json')
-    #! you should add labelmap from /in/annotations/labelmap.txt as attachment
-    os.makedirs('/out/models/attachments/segmentation', exist_ok=True)
-    shutil.copy(src='/in/annotations/labelmap.txt', dst='/out/models/attachments/segmentation/labelmap.txt')
+
     #! use `rw.write_model_stage` to save training result
     rw.write_model_stage(stage_name='stage_00',
                          files=['model-0000.params', 'model-symbols.json'],
                          evaluation_result={
                              'mAP': expected_mAP / 2,
-                         },
-                         attachments={'segmentation': ['labelmap.txt']})
+                         })
 
     _dummy_work(idle_seconds=idle_seconds, trigger_crash=trigger_crash)
 
@@ -93,8 +87,7 @@ def _run_training(env_config: env.EnvConfig) -> None:
                          files=['model-0010.params', 'model-symbols.json'],
                          evaluation_result={
                              'mAP': expected_mAP,
-                         },
-                         attachments={'segmentation': ['labelmap.txt']})
+                         })
 
     #! if task done, write 100% percent log
     logging.info('training done')
@@ -151,7 +144,7 @@ def _run_infer(env_config: env.EnvConfig) -> None:
     #! use `logging` or `print` to write log to console
     logging.info(f"infer config: {executor_config}")
 
-    _dummy_infer_work(idle_seconds=idle_seconds, trigger_crash=trigger_crash)
+    # _dummy_infer_work(idle_seconds=idle_seconds, trigger_crash=trigger_crash)
 
     #! if task done, write 100% percent log
     logging.info('infer done')
@@ -165,45 +158,45 @@ def _dummy_work(idle_seconds: float, trigger_crash: bool = False, gpu_memory_siz
         raise RuntimeError('app crashed')
 
 
-def _dummy_infer_work(idle_seconds: float, trigger_crash: bool = False, gpu_memory_size: int = 0) -> None:
-    if idle_seconds > 0:
-        time.sleep(idle_seconds)
-    if trigger_crash:
-        raise RuntimeError('app crashed')
+# def _dummy_infer_work(idle_seconds: float, trigger_crash: bool = False, gpu_memory_size: int = 0) -> None:
+#     if idle_seconds > 0:
+#         time.sleep(idle_seconds)
+#     if trigger_crash:
+#         raise RuntimeError('app crashed')
 
-    segmentation_result_dir = '/out/SegmentationClass'
-    os.makedirs(segmentation_result_dir, exist_ok=True)
+#     segmentation_result_dir = '/out/SegmentationClass'
+#     os.makedirs(segmentation_result_dir, exist_ok=True)
 
-    #! use `dataset_reader.item_paths` to read candidate dataset items
-    #   note that annotations path will be empty str if there's no annotations in that dataset
-    count = 0
-    absent_count = 0
-    for asset_path, _ in dr.item_paths(dataset_type=env.DatasetType.CANDIDATE):
-        isfile = os.path.isfile(asset_path)
-        if not isfile:
-            absent_count += 1
-            logging.info(f"asset: {asset_path}, is file: False")
-            continue
+#     #! use `dataset_reader.item_paths` to read candidate dataset items
+#     #   note that annotations path will be empty str if there's no annotations in that dataset
+#     count = 0
+#     absent_count = 0
+#     for asset_path, _ in dr.item_paths(dataset_type=env.DatasetType.CANDIDATE):
+#         isfile = os.path.isfile(asset_path)
+#         if not isfile:
+#             absent_count += 1
+#             logging.info(f"asset: {asset_path}, is file: False")
+#             continue
 
-        count += 1
+#         count += 1
 
-        #! in semantic segmentation task, for each asset, generate a mask png file as inference result
-        try:
-            asset_image = Image.open(asset_path)
-        except (UnidentifiedImageError, OSError) as e:
-            logging.info(f"{type(e).__name__}: {e}\nannotation_file: {asset_path}\n")
-            continue
+#         #! in semantic segmentation task, for each asset, generate a mask png file as inference result
+#         try:
+#             asset_image = Image.open(asset_path)
+#         except (UnidentifiedImageError, OSError) as e:
+#             logging.info(f"{type(e).__name__}: {e}\nannotation_file: {asset_path}\n")
+#             continue
 
-        mask_image = Image.new(mode='RGB', size=asset_image.size, color=(0, 0, 0))
-        main_asset_name = os.path.splitext(os.path.basename(asset_path))[0]
-        with open(os.path.join(segmentation_result_dir, f"{main_asset_name}.png"), 'wb') as f:
-            mask_image.save(f, format='PNG')
+#         mask_image = Image.new(mode='RGB', size=asset_image.size, color=(0, 0, 0))
+#         main_asset_name = os.path.splitext(os.path.basename(asset_path))[0]
+#         with open(os.path.join(segmentation_result_dir, f"{main_asset_name}.png"), 'wb') as f:
+#             mask_image.save(f, format='PNG')
 
-    #! after all, you should copy labelmap from /in/models/attachments/segmentation/labelmap.txt to /out
-    shutil.copy(src='/in/models/attachments/segmentation/labelmap.txt', dst='/out/labelmap.txt')
+#     #! after all, you should copy labelmap from /in/models/attachments/segmentation/labelmap.txt to /out
+#     shutil.copy(src='/in/models/attachments/segmentation/labelmap.txt', dst='/out/labelmap.txt')
 
-    #! use `logging.info` to write log to console
-    logging.info(f"assets count: {count}")
+#     #! use `logging.info` to write log to console
+#     logging.info(f"assets count: {count}")
 
 
 def write_tensorboard_log(tensorboard_dir: str) -> None:
