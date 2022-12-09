@@ -66,6 +66,7 @@ def fake_controller_client() -> Generator:
         client.get_gpu_info.return_value = {"gpu_count": 233}
         client.pull_docker_image.return_value = {
             "hash_id": "hash_abcd",
+            "object_type": 1,
             "docker_image_config": {},
         }
         yield client
