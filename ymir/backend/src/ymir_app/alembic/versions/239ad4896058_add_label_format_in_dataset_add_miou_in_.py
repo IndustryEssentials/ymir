@@ -21,9 +21,13 @@ def upgrade() -> None:
     with op.batch_alter_table("model", schema=None) as batch_op:
         batch_op.add_column(sa.Column("miou", sa.Float(), nullable=True))
     with op.batch_alter_table("docker_image", schema=None) as batch_op:
-        batch_op.add_column(sa.Column("object_type", sa.SmallInteger(), nullable=False))
+        batch_op.add_column(sa.Column("object_type", sa.SmallInteger(), nullable=False, server_default="1"))
         batch_op.create_index(batch_op.f("ix_docker_image_object_type"), ["object_type"], unique=False)
-    # ### end Alembic commands ###
+
+
+#    conn = op.get_bind()
+#    iterations = conn.execute("UPDATE docker_image SET object_type = 1")
+# ### end Alembic commands ###
 
 
 def downgrade() -> None:

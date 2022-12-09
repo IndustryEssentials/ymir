@@ -170,6 +170,8 @@ class ViewerAsset:
                 class_id=i["class_id"],
                 cm=i["cm"],
                 tags=i["tags"],
+                mask=i["mask"],
+                polygon=i["polygon"],
                 user_labels=user_labels,
             )
             for i in self.pred

@@ -38,6 +38,8 @@ class TestAsset:
                     "class_id": random.randint(1, 20),
                     "cm": 1,
                     "tags": {},
+                    "mask": random_lower_string(),
+                    "polygon": [random.randint(100, 200)],
                 }
             ],
             "cks": [],
@@ -47,6 +49,8 @@ class TestAsset:
                     "class_id": random.randint(1, 20),
                     "cm": 1,
                     "tags": {},
+                    "mask": random_lower_string(),
+                    "polygon": [random.randint(100, 200)],
                 }
             ],
             "class_ids": list(range(1, 20)),
@@ -83,6 +87,8 @@ class TestAssets:
                             "class_id": random.randint(1, 20),
                             "cm": 1,
                             "tags": {},
+                            "mask": random_lower_string(),
+                            "polygon": [random.randint(100, 200)],
                         }
                     ],
                     "gt": [
@@ -91,6 +97,8 @@ class TestAssets:
                             "class_id": random.randint(1, 20),
                             "cm": 1,
                             "tags": {},
+                            "mask": random_lower_string(),
+                            "polygon": [random.randint(100, 200)],
                         }
                     ],
                     "metadata": {
@@ -198,6 +206,8 @@ class TestVizClient:
                             "class_id": random.randint(1, 20),
                             "cm": 1,
                             "tags": {},
+                            "mask": random_lower_string(),
+                            "polygon": [random.randint(100, 200)],
                         }
                     ],
                     "gt": [
@@ -206,6 +216,8 @@ class TestVizClient:
                             "class_id": random.randint(1, 20),
                             "cm": 1,
                             "tags": {},
+                            "mask": random_lower_string(),
+                            "polygon": [random.randint(100, 200)],
                         }
                     ],
                     "metadata": {
