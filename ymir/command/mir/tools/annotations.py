@@ -263,12 +263,17 @@ def _import_annotations_coco_json(map_hashed_filename: Dict[str, str], mir_annot
         raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_FILE,
                               error_message=f"Can not find annotations list in coco json: {coco_file_path}")
 
+    unhashed_filenames_cnt = 0
+    unknown_category_ids_cnt = 0
+    unknown_image_objects_cnt = 0
+
     # images_list -> image_id_to_hashes (key: coco image id, value: ymir asset hash)
     filename_to_hashes = {v: k for k, v in map_hashed_filename.items()}
     image_id_to_hashes: Dict[int, str] = {}
     for v in images_list:
         filename = os.path.splitext(v['file_name'])[0]
         if filename not in filename_to_hashes:
+            unhashed_filenames_cnt += 1
             continue
         image_id_to_hashes[v['id']] = filename_to_hashes[filename]
 
@@ -281,11 +286,14 @@ def _import_annotations_coco_json(map_hashed_filename: Dict[str, str], mir_annot
             accu_new_class_names[name] = 0
             if add_if_not_found:
                 cid, _ = class_type_manager.add_main_name(name)
-        if cid >= 0:
-            category_id_to_cids[v['id']] = cid
+        category_id_to_cids[v['id']] = cid
 
     for anno_dict in annotations_list:
-        if anno_dict['category_id'] not in category_id_to_cids or anno_dict['image_id'] not in image_id_to_hashes:
+        if category_id_to_cids.get(anno_dict['category_id'], -1) < 0:
+            unknown_category_ids_cnt += 1
+            continue
+        if anno_dict['image_id'] not in image_id_to_hashes:
+            unknown_image_objects_cnt += 1
             continue
 
         obj_anno = _coco_object_dict_to_annotation(anno_dict=anno_dict,
@@ -294,6 +302,11 @@ def _import_annotations_coco_json(map_hashed_filename: Dict[str, str], mir_annot
         asset_hash = image_id_to_hashes[anno_dict['image_id']]
         obj_anno.index = len(image_annotations.image_annotations[asset_hash].boxes)
         image_annotations.image_annotations[asset_hash].boxes.append(obj_anno)
+
+    if unhashed_filenames_cnt or unknown_category_ids_cnt or unknown_image_objects_cnt:
+        logging.warning(f"count of unhashed file names in images list: {unhashed_filenames_cnt}")
+        logging.warning(f"count of unknown category ids in categories list: {unknown_category_ids_cnt}")
+        logging.warning(f"count of objects with unknown image ids in annotations list: {unknown_image_objects_cnt}")
 
 
 def _import_annotation_meta(class_type_manager: class_ids.UserLabels, annotations_dir_path: str,
