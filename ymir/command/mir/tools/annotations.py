@@ -282,14 +282,16 @@ def _import_annotations_coco_json(map_hashed_filename: Dict[str, str], mir_annot
     for v in categories_list:
         name = v['name']
         cid, _ = class_type_manager.id_and_main_name_for_name(name)
-        if cid < 0:
+        if cid >= 0:
+            category_id_to_cids[v['id']] = cid
+        else:
             accu_new_class_names[name] = 0
             if add_if_not_found:
                 cid, _ = class_type_manager.add_main_name(name)
-        category_id_to_cids[v['id']] = cid
+                category_id_to_cids[v['id']] = cid
 
     for anno_dict in annotations_list:
-        if anno_dict['category_id'] not in category_id_to_cids or category_id_to_cids[anno_dict['category_id']] < 0:
+        if anno_dict['category_id'] not in category_id_to_cids:
             unknown_category_ids_cnt += 1
             continue
         if anno_dict['image_id'] not in image_id_to_hashes:
