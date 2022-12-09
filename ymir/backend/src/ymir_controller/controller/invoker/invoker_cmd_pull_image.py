@@ -62,10 +62,9 @@ class ImageHandler(BaseMirControllerInvoker):
             'cat', common_task_config.IMAGE_MANIFEST_PATH
         ]
         config_response = utils.run_command(config_command)
-        manifest_config = self.convert_image_config(config_response.message)
-
-        response.enable_livecode = manifest_config["support_livecode"]
-        response.object_type = manifest_config["object_type"]
+        manifest_config = self.convert_image_config(config_response.message) or {}
+        response.enable_livecode = manifest_config.get("support_livecode", False)
+        response.object_type = manifest_config.get("object_type", 1)
 
         if len(response.docker_image_config) == 0:
             return utils.make_general_response(
