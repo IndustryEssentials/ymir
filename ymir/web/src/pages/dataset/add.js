@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react'
 import { Button, Card, Form, Input, message, Radio, Select, Space, Tag } from 'antd'
-import { useParams, useHistory, useLocation } from 'umi'
+import { useParams, useHistory, useLocation, useSelector } from 'umi'
 
 import { formLayout } from '@/config/antd'
 import t from '@/utils/t'
 import useFetch from '@/hooks/useFetch'
+import useRequest from '@/hooks/useRequest'
 import useAddKeywords from '@/hooks/useAddKeywords'
 import { IMPORTSTRATEGY } from '@/constants/dataset'
 import { PROJECTTYPES } from '@/constants/project'
@@ -72,7 +73,7 @@ const Add = (props) => {
   const netUrl = Form.useWatch('url', form)
   const path = Form.useWatch('path', form)
   const [formatDetailModal, setFormatDetailModal] = useState(false)
-  const project = useSelector(({ project }) => project[pid])
+  const project = useSelector(({ project }) => project[pid] || {})
   const { run: getProject } = useRequest('project/getProject', {
     loading: false,
     refreshDeps: [pid],
@@ -272,6 +273,7 @@ const Add = (props) => {
       ...params,
       br: <br />,
       structure: structureTip,
+      format: project.type === PROJECTTYPES.ObjectDetection ? 'Pascal VOC' : 'Coco',
     })
 
   return (
