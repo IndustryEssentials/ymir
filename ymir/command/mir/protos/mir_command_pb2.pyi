@@ -974,6 +974,7 @@ class ModelMeta(google.protobuf.message.Message):
     BEST_STAGE_NAME_FIELD_NUMBER: builtins.int
     CLASS_NAMES_FIELD_NUMBER: builtins.int
     EVALUATE_CONFIG_FIELD_NUMBER: builtins.int
+    OBJECT_TYPE_FIELD_NUMBER: builtins.int
     model_hash: typing.Text = ...
     """/ hash for models.tar.gz"""
 
@@ -988,6 +989,7 @@ class ModelMeta(google.protobuf.message.Message):
     def class_names(self) -> google.protobuf.internal.containers.RepeatedScalarFieldContainer[typing.Text]: ...
     @property
     def evaluate_config(self) -> global___EvaluateConfig: ...
+    object_type: global___ObjectType.V = ...
     def __init__(self,
         *,
         model_hash : typing.Text = ...,
@@ -997,9 +999,10 @@ class ModelMeta(google.protobuf.message.Message):
         best_stage_name : typing.Text = ...,
         class_names : typing.Optional[typing.Iterable[typing.Text]] = ...,
         evaluate_config : typing.Optional[global___EvaluateConfig] = ...,
+        object_type : global___ObjectType.V = ...,
         ) -> None: ...
     def HasField(self, field_name: typing_extensions.Literal["evaluate_config",b"evaluate_config"]) -> builtins.bool: ...
-    def ClearField(self, field_name: typing_extensions.Literal["best_stage_name",b"best_stage_name","class_names",b"class_names","context",b"context","evaluate_config",b"evaluate_config","mAP",b"mAP","model_hash",b"model_hash","stages",b"stages"]) -> None: ...
+    def ClearField(self, field_name: typing_extensions.Literal["best_stage_name",b"best_stage_name","class_names",b"class_names","context",b"context","evaluate_config",b"evaluate_config","mAP",b"mAP","model_hash",b"model_hash","object_type",b"object_type","stages",b"stages"]) -> None: ...
 global___ModelMeta = ModelMeta
 
 class ModelStage(google.protobuf.message.Message):

@@ -4,10 +4,13 @@
 
 gpu_id: '0'
 task_id: 'default-training-task'
-anno_type: 'semantic-seg'  # det-box / semantic-seg
 pretrained_model_params: []
 class_names: []
-export_format: 'seg-mask:raw'
+
+# format of annotations and images that ymir should provide to this docker container
+#   annotation format: must be seg-coco
+#   image format: must be raw
+export_format: 'seg-coco:raw'
 
 # just for test, remove this key in your own docker image
 expected_miou: 0.983  # expected mIoU for training task

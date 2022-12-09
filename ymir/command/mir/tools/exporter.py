@@ -586,6 +586,8 @@ def _single_task_annotations_to_coco(
         coco_image_id = asset_id_to_coco_image_ids[asset_id]
         attrs = mir_metadatas.attributes[asset_id]
         for oa in sia.boxes:
+            if class_ids_mapping and oa.class_id not in class_ids_mapping:
+                continue
             segmentation: Union[list, dict] = {}
             if oa.type == mirpb.ObjectType.OT_SEG_MASK:
                 segmentation = {

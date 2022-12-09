@@ -342,6 +342,7 @@
                 ],
                 "model_hash": "",
                 "context": "",
+                "object_type": 0,
                 "stages": {},
                 "best_stage_name": ""
             },
