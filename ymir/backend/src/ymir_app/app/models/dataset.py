@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import Optional
 
 from sqlalchemy import Boolean, Column, DateTime, Integer, String, SmallInteger, Text
 from sqlalchemy.orm import relationship
@@ -53,3 +54,9 @@ class Dataset(Base):
     @property
     def name(self) -> str:
         return "_".join([self.group_name, str(self.version_num)])
+
+    @property
+    def object_type(self) -> Optional[int]:
+        if self.project:  # type: ignore
+            return self.project.object_type  # type: ignore
+        return None

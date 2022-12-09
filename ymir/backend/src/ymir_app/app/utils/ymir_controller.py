@@ -10,7 +10,7 @@ from google.protobuf.json_format import MessageToDict
 from google.protobuf.text_format import MessageToString
 
 from app.config import settings
-from app.constants.state import TaskType, AnnotationType, DatasetType
+from app.constants.state import TaskType, AnnotationType, DatasetType, ObjectType
 from app.schemas.common import ImportStrategy, MergeStrategy
 from app.schemas.task import TrainingDatasetsStrategy
 from common_utils.labels import UserLabels, userlabels_to_proto
@@ -40,6 +40,12 @@ MERGE_STRATEGY_MAPPING = {
     MergeStrategy.stop_upon_conflict: mirsvrpb.MergeStrategy.STOP,
     MergeStrategy.prefer_newest: mirsvrpb.MergeStrategy.HOST,
     MergeStrategy.prefer_oldest: mirsvrpb.MergeStrategy.HOST,
+}
+
+
+OBJECT_TYPE_MAPPING = {
+    ObjectType.object_detect: mir_cmd_pb.ObjectType.OT_DET_BOX,
+    ObjectType.segmentation: mir_cmd_pb.ObjectType.OT_SEG,
 }
 
 
@@ -171,6 +177,7 @@ class ControllerRequest:
             if args.get("pred_dir"):
                 import_dataset_request.pred_dir = args["pred_dir"]
         import_dataset_request.clean_dirs = args["clean_dirs"]
+        import_dataset_request.anno_type = OBJECT_TYPE_MAPPING[args["object_type"]]
 
         import_dataset_request.unknown_types_strategy = IMPORTING_STRATEGY_MAPPING[strategy]
 

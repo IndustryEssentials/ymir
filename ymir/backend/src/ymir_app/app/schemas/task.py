@@ -8,8 +8,14 @@ from typing_extensions import Annotated
 
 from pydantic import BaseModel, EmailStr, Field, validator, root_validator
 
-from app.constants.state import AnnotationType, MiningStrategy, ResultType, TaskState, TaskType
 from app.api.errors.errors import DockerImageNotFound
+from app.constants.state import (
+    AnnotationType,
+    MiningStrategy,
+    TaskState,
+    TaskType,
+    ResultType,
+)
 from app.schemas.common import (
     Common,
     DateTimeModelMixin,
