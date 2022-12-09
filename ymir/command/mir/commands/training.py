@@ -332,6 +332,8 @@ class CmdTrain(base.BaseCommand):
         model_storage = _find_model_storage(model_root=out_model_dir,
                                             executor_config=executor_config,
                                             task_context=task_context)
+        model_storage.object_type = mir_annotations.ground_truth.type
+        breakpoint()
         models.pack_and_copy_models(model_storage=model_storage,
                                     model_dir_path=out_model_dir,
                                     model_location=model_upload_location)
