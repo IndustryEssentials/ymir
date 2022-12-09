@@ -33,6 +33,11 @@ class ImageHandler(BaseMirControllerInvoker):
 
         return json.dumps(image_config)
 
+    def inspect_file_in_docker_image(self, filepath: str) -> Optional[str]:
+        command = ['docker', 'run', '--rm', self._request.singleton_op, 'cat', filepath]
+        config_response = utils.run_command(command)
+        return self.convert_image_config(config_response.message)
+
     def invoke(self) -> backend_pb2.GeneralResp:
         check_image_command = ['docker', 'image', 'inspect', self._request.singleton_op, '--format', 'ignore_me']
         check_response = utils.run_command(check_image_command)
@@ -50,19 +55,13 @@ class ImageHandler(BaseMirControllerInvoker):
         response.hash_id = response.message.strip()
 
         for image_type, image_config_path in common_task_config.IMAGE_CONFIG_PATH.items():
-            config_command = ['docker', 'run', '--rm', self._request.singleton_op, 'cat', image_config_path]
-            config_response = utils.run_command(config_command)
-            image_config = self.convert_image_config(config_response.message)
+            image_config = self.inspect_file_in_docker_image(image_config_path)
             if image_config:
                 response.docker_image_config[image_type] = image_config
 
         # manifest
-        config_command = [
-            'docker', 'run', '--rm', self._request.singleton_op,
-            'cat', common_task_config.IMAGE_MANIFEST_PATH
-        ]
-        config_response = utils.run_command(config_command)
-        manifest_config = self.convert_image_config(config_response.message) or {}
+        serialized_manifest_config = self.inspect_file_in_docker_image(common_task_config.IMAGE_MANIFEST_PATH)
+        manifest_config = json.loads(serialized_manifest_config) if serialized_manifest_config else {}
         response.enable_livecode = manifest_config.get("support_livecode", False)
         response.object_type = manifest_config.get("object_type", 1)
 
