@@ -1,8 +1,20 @@
-import { Card, Modal } from "antd"
-import { useState } from "react"
+import { Card, Modal, ModalProps } from 'antd'
+import { FC, useState } from 'react'
 import XMLViewer from 'react-xml-viewer'
+import JsonViewer from 'react-json-view'
+import { PROJECTTYPES } from '@/constants/project'
 
-const annotationsFormat = `<annotation>
+interface Props extends ModalProps {
+  objectType: number
+}
+
+enum ObjectTypes {
+  voc = 'xml',
+  coco = 'json',
+  yaml = 'yaml',
+}
+
+const vocXml = `<annotation>
 <folder>VOC_ROOT</folder>                           
 <filename>aaaa.jpg</filename>  # filename(required)
 <size>                         # image szie（width, height and channel count）                      
@@ -43,35 +55,36 @@ const annotationsFormat = `<annotation>
 </object>
 </annotation>`
 
-const tabs = [
-  { tab: '*.xml', key: 'xml', },
-  { tab: 'meta.yaml', key: 'yaml', },
-]
+const cocoJson = {}
 
 const contents = {
-  'xml': <XMLViewer xml={annotationsFormat} />,
-  'yaml': <div>
-    <pre><code>{
-      `
-eval_class_names:
+  [ObjectTypes.voc]: <XMLViewer xml={vocXml} />,
+  [ObjectTypes.coco]: <JsonViewer src={cocoJson} name={false} />,
+  [ObjectTypes.yaml]: (
+    <div>
+      <pre>
+        <code>
+          {`eval_class_names:
       - person
       - cat
-      `
-    }
-    </code></pre>
-  </div>,
+      `}
+        </code>
+      </pre>
+    </div>
+  ),
 }
 
-export const FormatDetailModal = props => {
-  const [active, setActive] = useState('xml')
+export const FormatDetailModal: FC<Props> = ({ objectType, ...props }) => {
+  const [active, setActive] = useState<ObjectTypes>(objectType ? ObjectTypes.voc : ObjectTypes.coco)
+  const vocTab = { tab: '*.xml', key: ObjectTypes.voc }
+  const cocoTab = { tab: '*.json', key: ObjectTypes.coco }
+const tabs = [
+  objectType === PROJECTTYPES.SemanticSegmentation ? cocoTab: vocTab,
+  { tab: 'meta.yaml', key: ObjectTypes.yaml },
+]
   return (
-    <Modal
-      width={'80%'}
-      style={{ top: 40 }}
-      {...props}
-      footer={null}
-    >
-      <Card tabList={tabs} activeTabKey={active} onTabChange={setActive}>
+    <Modal width={'80%'} style={{ top: 40 }} {...props} footer={null}>
+      <Card tabList={tabs} activeTabKey={active} onTabChange={(value) => setActive(value as ObjectTypes)}>
         {contents[active]}
       </Card>
     </Modal>

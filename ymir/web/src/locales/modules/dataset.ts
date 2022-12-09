@@ -93,9 +93,9 @@ const dataset = {
     en: "image -> images; gt -> GT annotations; pred -> predictions. gt and pred is optional. structure: {br}{pic}"
   },
   "dataset.add.form.path.tip": {
-    cn: `1. 将数据文件夹存放到ymir工作空间目录下的ymir-sharing目录，如 /home/ymir/ymir-workspace/ymir-sharing/VOC2012, 输入基于ymir-sharing相对路径：VOC2012{br}
+    cn: `1. 将数据文件夹存放到ymir工作空间目录下的ymir-sharing目录，如 /home/ymir/ymir-workspace/ymir-sharing/Dataset2012, 输入基于ymir-sharing相对路径：Dataset2012{br}
     2. {structure}`,
-    en: `1. Save the data in 'ymir-sharing' under ymir workspace directory, such as /home/ymir/ymir-workspace/ymir-sharing/VOC2012, and input relative path base on ymir-sharing: VOC2012{br}
+    en: `1. Save the data in 'ymir-sharing' under ymir workspace directory, such as /home/ymir/ymir-workspace/ymir-sharing/Dataset2012, and input relative path base on ymir-sharing: Dataset2012{br}
     2. {structure}`,
   },
   "dataset.add.form.path.placeholder": { cn: "请输入路径", en: "Please input path on server", },
@@ -103,19 +103,19 @@ const dataset = {
   "dataset.add.form.upload.tip": {
     cn: `1. 仅支持zip格式压缩包文件上传；{br}
       2. 局域网内压缩包大小 < 1G, 互联网建议 < 200MB；{br}
-      3. 压缩包内图片格式要求为：图片格式为*.jpg、*.jpeg、*.png、*.bmp，格式不符的图片将不会导入，标注文件格式为Pascal VOC。{br}
+      3. 压缩包内图片格式要求为：图片格式为*.jpg、*.jpeg、*.png、*.bmp，格式不符的图片将不会导入，标注文件格式为{format}。{br}
       4. 示例：{sample}{br}
       5. {structure}`,
     en: `1. Only zip file allowed;{br} 
       2. Size < 1G;{br}
-      3. Images format allowed *.jpg, *.jpeg, *.png, *.bmp, images with unmatched format can not be imported, annotations format supported pascal(*.xml){br}
+      3. Images format allowed *.jpg, *.jpeg, *.png, *.bmp, images with unmatched format can not be imported, annotations format supported {format}{br}
       4. Sample: {sample}{br}
       5. {structure}`
   },
   "dataset.add.form.net.tip": {
-    cn: `1. 示例: https://www.examples.com/pascal.zip{br}
+    cn: `1. 示例: https://www.examples.com/dataset.zip{br}
       2. {structure}`,
-    en: `1. Sample: https://www.examples.com/pascal.zip{br} 
+    en: `1. Sample: https://www.examples.com/dataset.zip{br} 
       2. {structure}`
   },
   "dataset.copy.form.dataset": { cn: "原数据集", en: "Original Dataset", },
