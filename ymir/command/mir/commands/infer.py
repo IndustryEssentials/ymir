@@ -156,7 +156,6 @@ class CmdInfer(base.BaseCommand):
 
         if run_infer:
             _process_infer_results(infer_result_file=os.path.join(work_dir_out, 'infer-result.json'),
-                                   max_boxes=_get_max_boxes(config_file),
                                    label_storage_file=label_storage_file)
 
         return MirCode.RC_OK
@@ -209,7 +208,7 @@ def _prepare_assets(index_file: str, work_index_file: str, media_path: str) -> N
                               needs_new_commit=False)
 
 
-def _process_infer_results(infer_result_file: str, max_boxes: int, label_storage_file: str) -> None:
+def _process_infer_results(infer_result_file: str, label_storage_file: str) -> None:
     if not os.path.isfile(infer_result_file):
         raise MirRuntimeError(error_code=MirCode.RC_CMD_NO_RESULT,
                               error_message=f"can not find result file: {infer_result_file}")
@@ -227,21 +226,10 @@ def _process_infer_results(infer_result_file: str, max_boxes: int, label_storage
 
         annotations.sort(key=(lambda x: x['score']), reverse=True)
         annotations = [a for a in annotations if class_id_mgr.has_name(a['class_name'])]
-        annotations_dict['boxes'] = annotations[:max_boxes]
+        annotations_dict['boxes'] = annotations
 
     with open(infer_result_file, 'w') as f:
         f.write(json.dumps(results, indent=4))
-
-
-def _get_max_boxes(config_file: str) -> int:
-    with open(config_file, 'r') as f:
-        config = yaml.safe_load(f.read())
-
-    max_boxes = config.get('max_boxes', 50)
-    if not isinstance(max_boxes, int) or max_boxes <= 0:
-        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS, error_message=f"invalid max_boxes: {max_boxes}")
-
-    return max_boxes
 
 
 # might used both by mining and infer
