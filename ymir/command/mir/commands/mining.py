@@ -3,14 +3,15 @@ import json
 import logging
 import os
 from subprocess import CalledProcessError
-from typing import Dict, Optional, Set
+from typing import Optional, Set, Tuple
 
 from google.protobuf import json_format
 
 from mir.commands import base, infer
 from mir.protos import mir_command_pb2 as mirpb
-from mir.tools import annotations, checker, class_ids, env_config, exporter
+from mir.tools import checker, class_ids, env_config, exporter
 from mir.tools import mir_storage_ops, models, revs_parser
+from mir.tools.annotations import filter_mirdatas_by_asset_ids, _import_annotations_coco_json, UnknownTypesStrategy
 from mir.tools.code import MirCode
 from mir.tools.command_run_in_out import command_run_in_out
 from mir.tools.errors import MirContainerError, MirRuntimeError
@@ -197,30 +198,37 @@ class CmdMining(base.BaseCommand):
         if return_code != MirCode.RC_OK:
             raise MirContainerError(error_message='mining container error occured', task=task)
 
-        _process_results(mir_root=mir_root,
-                         label_storage_file=label_storage_file,
-                         export_out=work_out_path,
-                         dst_typ_rev_tid=dst_typ_rev_tid,
-                         src_typ_rev_tid=src_typ_rev_tid,
-                         topk=topk,
-                         add_prediction=add_prediction,
-                         model_storage=model_storage,
-                         task=task)
+        matched_mir_metadatas, matched_mir_annotations = _process_results(mir_root=mir_root,
+                                                                          label_storage_file=label_storage_file,
+                                                                          export_out=work_out_path,
+                                                                          src_typ_rev_tid=src_typ_rev_tid,
+                                                                          topk=topk,
+                                                                          add_prediction=add_prediction,
+                                                                          model_storage=model_storage)
+
+        mir_datas = {
+            mirpb.MirStorage.MIR_METADATAS: matched_mir_metadatas,
+            mirpb.MirStorage.MIR_ANNOTATIONS: matched_mir_annotations,
+        }
+        mir_storage_ops.MirStorageOps.save_and_commit(mir_root=mir_root,
+                                                      his_branch=src_typ_rev_tid.rev,
+                                                      mir_branch=dst_typ_rev_tid.rev,
+                                                      mir_datas=mir_datas,
+                                                      task=task)
         logging.info(f"mining done, results at: {work_out_path}")
 
         return MirCode.RC_OK
 
 
 # protected: post process
-def _process_results(mir_root: str, label_storage_file: str, export_out: str, dst_typ_rev_tid: revs_parser.TypRevTid,
-                     src_typ_rev_tid: revs_parser.TypRevTid, topk: Optional[int], add_prediction: bool,
-                     model_storage: models.ModelStorage, task: mirpb.Task) -> int:
+def _process_results(mir_root: str, label_storage_file: str, export_out: str, src_typ_rev_tid: revs_parser.TypRevTid,
+                     topk: Optional[int], add_prediction: bool,
+                     model_storage: models.ModelStorage) -> Tuple[mirpb.MirMetadatas, mirpb.MirAnnotations]:
     # step 1: build topk results:
     #   read old
     mir_metadatas: mirpb.MirMetadatas
     mir_annotations: mirpb.MirAnnotations
-
-    [mir_metadatas, mir_annotations] = mir_storage_ops.MirStorageOps.load_multiple_storages(
+    mir_metadatas, mir_annotations = mir_storage_ops.MirStorageOps.load_multiple_storages(
         mir_root=mir_root,
         mir_branch=src_typ_rev_tid.rev,
         mir_task_id=src_typ_rev_tid.tid,
@@ -233,60 +241,22 @@ def _process_results(mir_root: str, label_storage_file: str, export_out: str, ds
     asset_ids_set = (_get_topk_asset_ids(file_path=topk_result_file_path, topk=topk)
                      if topk is not None else set(mir_metadatas.attributes.keys()))
 
-    infer_result_file_path = os.path.join(export_out, 'infer-result.json')
-    cls_id_mgr = class_ids.load_or_create_userlabels(label_storage_file=label_storage_file)
-    asset_id_to_annotations = (_get_infer_annotations(
-        file_path=infer_result_file_path, asset_ids_set=asset_ids_set, cls_id_mgr=cls_id_mgr) if add_prediction else {})
+    # step 2: update mir data files: mir_metadatas and mir_annotations
+    filter_mirdatas_by_asset_ids(mir_metadatas=mir_metadatas,
+                                 mir_annotations=mir_annotations,
+                                 asset_ids_set=asset_ids_set)
 
-    # step 2: update mir data files
-    #   update mir metadatas
-    matched_mir_metadatas = mirpb.MirMetadatas()
-    for asset_id in asset_ids_set:
-        matched_mir_metadatas.attributes[asset_id].CopyFrom(mir_metadatas.attributes[asset_id])
-    logging.info(f"matched: {len(matched_mir_metadatas.attributes)}, overriding metadatas.mir")
-
-    #   update mir annotations: predictions
-    matched_mir_annotations = mirpb.MirAnnotations()
-    prediction = matched_mir_annotations.prediction
-    prediction.type = mirpb.ObjectType.OT_DET_BOX
+    # step 3: if necessary, add predictions from infer result file
     if add_prediction:
-        # add new
-        for asset_id, single_image_annotations in asset_id_to_annotations.items():
-            prediction.image_annotations[asset_id].CopyFrom(single_image_annotations)
-        prediction.eval_class_ids[:] = set(
-            cls_id_mgr.id_for_names(model_storage.class_names, drop_unknown_names=True)[0])
-        prediction.executor_config = json.dumps(model_storage.executor_config)
-        prediction.model.CopyFrom(model_storage.get_model_meta())
-    else:
-        # use old
-        pred_asset_ids = set(mir_annotations.prediction.image_annotations.keys()) & asset_ids_set
-        for asset_id in pred_asset_ids:
-            prediction.image_annotations[asset_id].CopyFrom(mir_annotations.prediction.image_annotations[asset_id])
-        annotations.copy_annotations_pred_meta(src_task_annotations=mir_annotations.prediction,
-                                               dst_task_annotations=prediction)
+        mir_annotations.prediction.Clear()
+        _prediction_from_infer_result(
+            work_out_dir=export_out,
+            asset_ids_set=asset_ids_set,
+            cls_id_mgr=class_ids.load_or_create_userlabels(label_storage_file=label_storage_file),
+            model_storage=model_storage,
+            mir_annotations=mir_annotations)
 
-    #   update mir annotations: ground truth
-    ground_truth = matched_mir_annotations.ground_truth
-    gt_asset_ids = set(mir_annotations.ground_truth.image_annotations.keys()) & asset_ids_set
-    for asset_id in gt_asset_ids:
-        ground_truth.image_annotations[asset_id].CopyFrom(mir_annotations.ground_truth.image_annotations[asset_id])
-
-    image_ck_asset_ids = set(mir_annotations.image_cks.keys() & asset_ids_set)
-    for asset_id in image_ck_asset_ids:
-        matched_mir_annotations.image_cks[asset_id].CopyFrom(mir_annotations.image_cks[asset_id])
-
-    # step 3: store results and commit.
-    mir_datas = {
-        mirpb.MirStorage.MIR_METADATAS: matched_mir_metadatas,
-        mirpb.MirStorage.MIR_ANNOTATIONS: matched_mir_annotations,
-    }
-    mir_storage_ops.MirStorageOps.save_and_commit(mir_root=mir_root,
-                                                  his_branch=src_typ_rev_tid.rev,
-                                                  mir_branch=dst_typ_rev_tid.rev,
-                                                  mir_datas=mir_datas,
-                                                  task=task)
-
-    return MirCode.RC_OK
+    return mir_metadatas, mir_annotations
 
 
 def _get_topk_asset_ids(file_path: str, topk: int) -> Set[str]:
@@ -308,16 +278,40 @@ def _get_topk_asset_ids(file_path: str, topk: int) -> Set[str]:
     return asset_ids_set
 
 
-def _get_infer_annotations(file_path: str, asset_ids_set: Set[str],
-                           cls_id_mgr: class_ids.UserLabels) -> Dict[str, mirpb.SingleImageAnnotations]:
-    asset_id_to_annotations: dict = {}
+def _prediction_from_infer_result(work_out_dir: str, asset_ids_set: Set[str], cls_id_mgr: class_ids.UserLabels,
+                                  model_storage: models.ModelStorage, mir_annotations: mirpb.MirAnnotations) -> None:
+    prediction = mir_annotations.prediction
+    if model_storage.object_type == mirpb.ObjectType.OT_DET_BOX:
+        _get_detbox_infer_annotations(task_annotations=prediction,
+                                      file_path=os.path.join(work_out_dir, 'infer-result.json'),
+                                      asset_ids_set=asset_ids_set,
+                                      cls_id_mgr=cls_id_mgr)
+    elif model_storage.object_type == mirpb.ObjectType.OT_SEG:
+        _import_annotations_coco_json(map_hashed_filename={v: v for v in asset_ids_set},
+                                      mir_annotation=mir_annotations,
+                                      annotations_dir_path=work_out_dir,
+                                      class_type_manager=cls_id_mgr,
+                                      unknown_types_strategy=UnknownTypesStrategy.IGNORE,
+                                      accu_new_class_names={},
+                                      image_annotations=prediction,
+                                      coco_json_filename='coco-infer-result.json')
+
+    # pred type and meta
+    prediction.type = model_storage.object_type  # type: ignore
+    prediction.eval_class_ids[:] = set(cls_id_mgr.id_for_names(model_storage.class_names, drop_unknown_names=True)[0])
+    prediction.executor_config = json.dumps(model_storage.executor_config)
+    prediction.model.CopyFrom(model_storage.get_model_meta())
+
+
+def _get_detbox_infer_annotations(task_annotations: mirpb.SingleTaskAnnotations, file_path: str,
+                                  asset_ids_set: Set[str], cls_id_mgr: class_ids.UserLabels) -> None:
     with open(file_path, 'r') as f:
         results = json.loads(f.read())
 
     detections = results.get('detection')
     if not isinstance(detections, dict):
-        logging.error('invalid infer-result.json')
-        return asset_id_to_annotations
+        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_FILE,
+                              error_message=f"Invalid infer result file: {file_path}, have no detection dict")
 
     for asset_name, annotations_dict in detections.items():
         annotations = annotations_dict.get('boxes')
@@ -344,8 +338,7 @@ def _get_infer_annotations(file_path: str, asset_ids_set: Set[str],
             annotation.score = float(annotation_dict.get('score', 0))
             single_image_annotations.boxes.append(annotation)
             idx += 1
-        asset_id_to_annotations[asset_id] = single_image_annotations
-    return asset_id_to_annotations
+        task_annotations.image_annotations[asset_id].CopyFrom(single_image_annotations)
 
 
 # protected: pre process
