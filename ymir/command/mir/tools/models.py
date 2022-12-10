@@ -140,6 +140,10 @@ def pack_and_copy_models(model_storage: ModelStorage, model_dir_path: str, model
     """
     logging.info(f"packing models: {model_dir_path} -> {model_location}, stages: {model_storage.stages.keys()}")
 
+    if model_storage.object_type == mirpb.ObjectType.OT_UNKNOWN:
+        raise MirRuntimeError(error_code=MirCode.RC_CMD_UNKNOWN_MODEL_OBJECT_TYPE,
+                              error_message='Can not pack model with unknown object type')
+
     ymir_info_file_name = 'ymir-info.yaml'
     ymir_info_file_path = os.path.join(model_dir_path, ymir_info_file_name)
     with open(ymir_info_file_path, 'w') as f:

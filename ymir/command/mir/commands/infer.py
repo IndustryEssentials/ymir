@@ -3,11 +3,12 @@ import json
 import logging
 import os
 import time
-from typing import Any
+from typing import Any, Callable, Dict, Set
 
 import yaml
 
 from mir.commands import base
+from mir.protos import mir_command_pb2 as mirpb
 from mir.tools import class_ids, models
 from mir.tools import settings as mir_settings
 from mir.tools import env_config
@@ -155,8 +156,8 @@ class CmdInfer(base.BaseCommand):
         )
 
         if run_infer:
-            _process_infer_results(infer_result_file=os.path.join(work_dir_out, 'infer-result.json'),
-                                   label_storage_file=label_storage_file)
+            class_id_mgr = class_ids.load_or_create_userlabels(label_storage_file=label_storage_file)
+            _process_infer_result(model_storage.object_type)(work_dir_out, class_id_mgr)
 
         return MirCode.RC_OK
 
@@ -208,15 +209,22 @@ def _prepare_assets(index_file: str, work_index_file: str, media_path: str) -> N
                               needs_new_commit=False)
 
 
-def _process_infer_results(infer_result_file: str, label_storage_file: str) -> None:
+def _process_infer_result(model_object_type: Any) -> Callable[[str, class_ids.UserLabels], None]:
+    _func_map: Dict[Any, Callable[[str, class_ids.UserLabels], None]] = {
+        mirpb.ObjectType.OT_DET_BOX: _process_infer_detbox_result,
+        mirpb.ObjectType.OT_SEG: _process_infer_seg_coco_result,
+    }
+    return _func_map[model_object_type]
+
+
+def _process_infer_detbox_result(work_dir_out: str, class_id_mgr: class_ids.UserLabels) -> None:
+    infer_result_file = os.path.join(work_dir_out, 'infer-result.json')
     if not os.path.isfile(infer_result_file):
         raise MirRuntimeError(error_code=MirCode.RC_CMD_NO_RESULT,
-                              error_message=f"can not find result file: {infer_result_file}")
+                              error_message=f"Can not find result file: {infer_result_file}")
 
     with open(infer_result_file, 'r') as f:
         results = json.loads(f.read())
-
-    class_id_mgr = class_ids.load_or_create_userlabels(label_storage_file=label_storage_file)
 
     for _, annotations_dict in results.get('detection', {}).items():
         # Compatible with previous version of format.
@@ -227,6 +235,28 @@ def _process_infer_results(infer_result_file: str, label_storage_file: str) -> N
         annotations.sort(key=(lambda x: x['score']), reverse=True)
         annotations = [a for a in annotations if class_id_mgr.has_name(a['class_name'])]
         annotations_dict['boxes'] = annotations
+
+    with open(infer_result_file, 'w') as f:
+        f.write(json.dumps(results, indent=4))
+
+
+def _process_infer_seg_coco_result(work_dir_out: str, class_id_mgr: class_ids.UserLabels) -> None:
+    infer_result_file = os.path.join(work_dir_out, 'coco-infer-result.json')
+    if not os.path.isfile(infer_result_file):
+        raise MirRuntimeError(error_code=MirCode.RC_CMD_NO_RESULT,
+                              error_message=f"Can not find result file: {infer_result_file}")
+
+    with open(infer_result_file, 'r') as f:
+        results = json.loads(f.read())
+
+    categories_list = results['categories']
+    annotations_list = results['annotations']
+
+    known_categories_list = [v for v in categories_list if class_id_mgr.id_and_main_name_for_name(v['name'])[0] >= 0]
+    known_category_ids: Set[int] = {v['id'] for v in known_categories_list}
+    filtered_annotations_list = [v for v in annotations_list if v['category_id'] in known_category_ids]
+    results['categories'] = known_categories_list
+    results['annotations'] = filtered_annotations_list
 
     with open(infer_result_file, 'w') as f:
         f.write(json.dumps(results, indent=4))

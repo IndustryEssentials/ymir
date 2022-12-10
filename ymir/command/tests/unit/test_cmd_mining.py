@@ -92,6 +92,7 @@ class TestMiningCmd(unittest.TestCase):
                                  best_stage_name=mss.stage_name,
                                  model_hash='xyz',
                                  stage_name=mss.stage_name,
+                                 object_type=mirpb.ObjectType.OT_DET_BOX,
                                  package_version=ymir_model_salient_version(YMIR_VERSION))
         return ms
 
