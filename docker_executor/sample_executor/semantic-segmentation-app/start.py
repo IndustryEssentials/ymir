@@ -1,6 +1,6 @@
+import json
 import logging
 import os
-import shutil
 import sys
 import time
 from typing import List
@@ -140,11 +140,46 @@ def _run_infer(env_config: env.EnvConfig) -> None:
     executor_config = env.get_executor_config()
     idle_seconds: float = executor_config.get('idle_seconds', 60)
     trigger_crash: bool = executor_config.get('trigger_crash', False)
+    class_names = executor_config['class_names']
 
     #! use `logging` or `print` to write log to console
     logging.info(f"infer config: {executor_config}")
 
-    # _dummy_infer_work(idle_seconds=idle_seconds, trigger_crash=trigger_crash)
+    # use data_reader.item_paths to read asset path
+    # send them to your model (get model files from /in/config.yaml - model-params-path key)
+    # write infer result to /out/coco-infer-result.json (in coco format)
+    images_list = []
+    categories_list = [{
+        'id': i + 1,
+        'name': v,
+        'supercategory': 'object',
+    } for i, v in enumerate(class_names)]
+    annotations_list = []
+    for image_index, (asset_path, _) in enumerate(dr.item_paths(dataset_type=env.DatasetType.CANDIDATE)):
+        images_list.append({
+            'id': image_index + 1,
+            'file_name': os.path.basename(asset_path),
+            'width': 500,
+            'height': 300,  # width and height should get from real image
+        })
+        for category_index, cname in enumerate(class_names):
+            annotations_list.append({
+                'id': len(annotations_list) + 1,
+                'category_id': category_index + 1,
+                'image_id': image_index + 1,
+                'bbox': [50, 50, 100, 100],  # xywh
+                'segmentation': {
+                    'counts': '',  # rle encoded mask, or polygon, in coco format
+                    'size': [300, 500]  # hw
+                },
+                'confidence': 0.6  # confidence of this segmentation
+            })
+    with open('/out/coco-infer-result.json', 'w') as f:
+        f.write(json.dumps({
+            'images': images_list,
+            'categories': categories_list,
+            'annotations': annotations_list,
+        }, indent=4))
 
     #! if task done, write 100% percent log
     logging.info('infer done')
