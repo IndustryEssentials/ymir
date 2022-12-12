@@ -64,7 +64,7 @@ class ImageHandler(BaseMirControllerInvoker):
         # manifest
         serialized_manifest_config = self.inspect_file_in_docker_image(common_task_config.IMAGE_MANIFEST_PATH)
         manifest_config = json.loads(serialized_manifest_config) if serialized_manifest_config else {}
-        response.enable_livecode = bool(manifest_config.get("support_livecode", False))
+        response.enable_livecode = bool(manifest_config.get("enable_livecode", False))
         response.object_type = int(manifest_config.get("object_type", mir_cmd_pb.ObjectType.OT_DET_BOX))
 
         if len(response.docker_image_config) == 0:
