@@ -39,6 +39,7 @@ jobs:
       with:
         version: v1.48
         working-directory: ymir/backend/src/ymir_hel
+        args: --timeout=3m0s
 
     - name: Lint and test code
       working-directory: ymir/backend/src/ymir_hel
