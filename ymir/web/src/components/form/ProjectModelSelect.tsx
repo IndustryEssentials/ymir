@@ -47,7 +47,6 @@ const ProjectModelSelect: FC<Props> = ({ pid, type, value, onChange, ...resProps
   }, [projects])
 
   function fetchProjects() {
-    console.log('fetchProjects:', 'test')
     getProjects({ limit: 10000 })
   }
 
