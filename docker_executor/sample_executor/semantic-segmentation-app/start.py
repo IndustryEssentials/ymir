@@ -139,8 +139,6 @@ def _run_infer(env_config: env.EnvConfig) -> None:
     #! use `env.get_executor_config` to get config file for training
     #   models are transfered in executor_config's model_params_path
     executor_config = env.get_executor_config()
-    idle_seconds: float = executor_config.get('idle_seconds', 60)
-    trigger_crash: bool = executor_config.get('trigger_crash', False)
     class_names = executor_config['class_names']
 
     #! use `logging` or `print` to write log to console
@@ -175,12 +173,14 @@ def _run_infer(env_config: env.EnvConfig) -> None:
                 },
                 'confidence': 0.6  # confidence of this segmentation
             })
+
+    coco_dict = {
+        'images': images_list,
+        'categories': categories_list,
+        'annotations': annotations_list,
+    }
     with open('/out/coco-infer-result.json', 'w') as f:
-        f.write(json.dumps({
-            'images': images_list,
-            'categories': categories_list,
-            'annotations': annotations_list,
-        }, indent=4))
+        f.write(json.dumps(coco_dict, indent=4))
 
     #! if task done, write 100% percent log
     logging.info('infer done')
@@ -192,47 +192,6 @@ def _dummy_work(idle_seconds: float, trigger_crash: bool = False, gpu_memory_siz
         time.sleep(idle_seconds)
     if trigger_crash:
         raise RuntimeError('app crashed')
-
-
-# def _dummy_infer_work(idle_seconds: float, trigger_crash: bool = False, gpu_memory_size: int = 0) -> None:
-#     if idle_seconds > 0:
-#         time.sleep(idle_seconds)
-#     if trigger_crash:
-#         raise RuntimeError('app crashed')
-
-#     segmentation_result_dir = '/out/SegmentationClass'
-#     os.makedirs(segmentation_result_dir, exist_ok=True)
-
-#     #! use `dataset_reader.item_paths` to read candidate dataset items
-#     #   note that annotations path will be empty str if there's no annotations in that dataset
-#     count = 0
-#     absent_count = 0
-#     for asset_path, _ in dr.item_paths(dataset_type=env.DatasetType.CANDIDATE):
-#         isfile = os.path.isfile(asset_path)
-#         if not isfile:
-#             absent_count += 1
-#             logging.info(f"asset: {asset_path}, is file: False")
-#             continue
-
-#         count += 1
-
-#         #! in semantic segmentation task, for each asset, generate a mask png file as inference result
-#         try:
-#             asset_image = Image.open(asset_path)
-#         except (UnidentifiedImageError, OSError) as e:
-#             logging.info(f"{type(e).__name__}: {e}\nannotation_file: {asset_path}\n")
-#             continue
-
-#         mask_image = Image.new(mode='RGB', size=asset_image.size, color=(0, 0, 0))
-#         main_asset_name = os.path.splitext(os.path.basename(asset_path))[0]
-#         with open(os.path.join(segmentation_result_dir, f"{main_asset_name}.png"), 'wb') as f:
-#             mask_image.save(f, format='PNG')
-
-#     #! after all, you should copy labelmap from /in/models/attachments/segmentation/labelmap.txt to /out
-#     shutil.copy(src='/in/models/attachments/segmentation/labelmap.txt', dst='/out/labelmap.txt')
-
-#     #! use `logging.info` to write log to console
-#     logging.info(f"assets count: {count}")
 
 
 def write_tensorboard_log(tensorboard_dir: str) -> None:
