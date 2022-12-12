@@ -1,3 +1,4 @@
+from enum import IntEnum
 import json
 import logging
 from typing import Optional
@@ -10,6 +11,11 @@ from controller.invoker.invoker_cmd_base import BaseMirControllerInvoker
 from controller.utils import checker, utils
 from id_definition.error_codes import CTLResponseCode
 from proto import backend_pb2
+
+
+class ObjectType(IntEnum):
+    object_detect = 1
+    segmentation = 2
 
 
 class ImageHandler(BaseMirControllerInvoker):
@@ -63,7 +69,7 @@ class ImageHandler(BaseMirControllerInvoker):
         serialized_manifest_config = self.inspect_file_in_docker_image(common_task_config.IMAGE_MANIFEST_PATH)
         manifest_config = json.loads(serialized_manifest_config) if serialized_manifest_config else {}
         response.enable_livecode = manifest_config.get("support_livecode", False)
-        response.object_type = manifest_config.get("object_type", 1)
+        response.object_type = manifest_config.get("object_type", ObjectType.object_detect.value)
 
         if len(response.docker_image_config) == 0:
             return utils.make_general_response(
