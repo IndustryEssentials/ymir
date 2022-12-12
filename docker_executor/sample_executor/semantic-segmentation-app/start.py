@@ -46,6 +46,7 @@ def _run_training(env_config: env.EnvConfig) -> None:
 
     #! use `dataset_reader.item_paths` to read training or validation dataset items
     #!  note that `dataset_reader.item_paths` is a generator
+    absent_count = 0
     for asset_path, annotation_path in dr.item_paths(dataset_type=env.DatasetType.TRAINING):
         isfile = os.path.isfile(asset_path)
         if not isfile:
