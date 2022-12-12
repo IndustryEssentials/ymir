@@ -44,7 +44,7 @@ class CmdExport(base.BaseCommand):
         src_revs: str,
         dst_rev: str,
         asset_format: "mirpb.AssetFormat.V",
-        anno_format: "mirpb.AnnoFormat.V",
+        anno_format: "mirpb.ExportFormat.V",
         class_names: List[str],
         work_dir: str,
     ) -> int:
@@ -146,8 +146,8 @@ def bind_to_subparsers(subparsers: argparse._SubParsersAction, parent_parser: ar
                                       dest='anno_format',
                                       type=str,
                                       default="none",
-                                      choices=["none", "det-ark", "det-voc", "det-ls-json", "seg-poly", "seg-mask"],
-                                      help='annotation format: ark / voc / none')
+                                      choices=["none", "det-ark", "det-voc", "det-ls-json", "seg-coco"],
+                                      help='annotation format')
     exporting_arg_parser.add_argument('--asset-format',
                                       dest='asset_format',
                                       type=str,

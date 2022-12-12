@@ -81,7 +81,7 @@ class TestInvokerTaskExporting(unittest.TestCase):
     def test_invoker_00(self, mock_run):
         exporting_request = backend_pb2.TaskReqExporting()
         in_dataset_ids = [self._base_task_id]
-        exporting_request.format = mir_cmd_pb.AnnoFormat.AF_DET_PASCAL_VOC
+        exporting_request.format = mir_cmd_pb.ExportFormat.EF_VOC_XML
         exporting_request.asset_dir = self._storage_root
         exporting_request.pred_dir = self._storage_root
         exporting_request.gt_dir = self._storage_root

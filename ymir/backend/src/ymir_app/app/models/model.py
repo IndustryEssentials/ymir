@@ -28,6 +28,7 @@ class Model(Base):
 
     # imported/copied model has no mAP
     map = Column(Float, nullable=True)
+    miou = Column(Float, nullable=True)
 
     related_task = relationship(
         "Task",
@@ -73,3 +74,9 @@ class Model(Base):
     @property
     def default_stage_name(self) -> Optional[str]:
         return self.default_stage.name if self.default_stage else None
+
+    @property
+    def object_type(self) -> Optional[int]:
+        if self.project:  # type: ignore
+            return self.project.object_type  # type: ignore
+        return None

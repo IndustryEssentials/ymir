@@ -149,17 +149,20 @@ message TaskReqMining {
 message TaskReqImportDataset {
     // store media files
     string asset_dir = 1;
-    // single pascal xml per asset, same base_filename as in asset-folder
+    // pred and gt file dir
+    //  for voc: single pascal xml per asset, same base_filename as in asset-folder
+    //  for coco: coco-annotations.json in that dir
     string pred_dir = 2;
     string gt_dir = 3;
     // strategy for unknown class types: stop, ignore or add
     UnknownTypesStrategy unknown_types_strategy = 4;
     bool clean_dirs = 5;
+    mir.command.ObjectType anno_type = 6;
 }
 
 message TaskReqExporting {
     string dataset_id = 1;
-    mir.command.AnnoFormat format = 2;
+    mir.command.ExportFormat format = 2;
     string asset_dir = 3;
     string pred_dir = 4;
     string gt_dir = 5;
@@ -259,7 +262,7 @@ message HelTaskRequestImportDataset {
 
     string pred_dir = 20;
     string gt_dir = 21;
-    mir.command.AnnoFormat anno_format = 22;
+    mir.command.ExportFormat anno_format = 22;
     UnknownTypesStrategy unknown_types_strategy = 23;
 
     bool clean_dirs = 30;
@@ -270,7 +273,7 @@ message HelTaskRequestExportDataset {
 
     string pred_dir = 20;
     string gt_dir = 21;
-    mir.command.AnnoFormat anno_format = 22;
+    mir.command.ExportFormat anno_format = 22;
 }
 
 message HelTaskRequestImportModel {

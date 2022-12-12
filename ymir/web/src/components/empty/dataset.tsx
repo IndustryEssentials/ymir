@@ -7,7 +7,7 @@ import { NoSjjIcon, ImportIcon, } from '@/components/common/Icons'
 import { useHistory, useParams } from 'umi'
 
 export default ({ style = {} }) => {
-  const { id } = useParams()
+  const { id } = useParams<{ id?: string }>()
   const history = useHistory()
   return (
     <Space className={styles.empty} style={style} direction="vertical">

@@ -5,6 +5,7 @@ TASK_CONTEXT_KEY = 'task_context'
 TASK_CONTEXT_PARAMETERS_KEY = 'task_parameters'
 TASK_CONTEXT_PREPROCESS_KEY = 'preprocess'
 EXECUTOR_OUTLOG_NAME = 'ymir-executor-out.log'
+COCO_JSON_NAME = 'coco-annotations.json'
 
 BYTES_PER_MB = 1048576
 ASSET_LIMIT_PER_DATASET = 1000000

@@ -60,7 +60,7 @@ function Merge({ query = {}, hidden, ok = () => {}, bottom }) {
       return message.error(t('dataset.merge.validate.inputs'))
     }
     const originDataset = did ? did : values.dataset
-    let datasets = [ originDataset, ...(values.includes || [])]
+    let datasets = [ originDataset, ...(values.includes || [])].filter(True => True)
 
     const params = {
       ...values,

@@ -152,7 +152,7 @@ class CmdMining(base.BaseCommand):
                                 asset_index_file=work_index_file,
                                 media_location=media_location,
                                 need_sub_folder=True,
-                                anno_format=mirpb.AnnoFormat.AF_NO_ANNOTATION,)
+                                anno_format=mirpb.ExportFormat.EF_NO_ANNOTATIONS,)
         export_code = exporter.export_mirdatas_to_dir(
             mir_metadatas=mir_metadatas,
             ec=ec,
@@ -248,7 +248,7 @@ def _process_results(mir_root: str, label_storage_file: str, export_out: str, ds
     #   update mir annotations: predictions
     matched_mir_annotations = mirpb.MirAnnotations()
     prediction = matched_mir_annotations.prediction
-    prediction.type = mirpb.AnnoType.AT_DET_BOX
+    prediction.type = mirpb.ObjectType.OT_DET_BOX
     if add_prediction:
         # add new
         for asset_id, single_image_annotations in asset_id_to_annotations.items():

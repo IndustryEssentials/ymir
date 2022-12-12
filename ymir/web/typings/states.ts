@@ -37,7 +37,7 @@ declare namespace YStates {
     dataset: IdMap<YModels.Dataset>
     assets: List<YModels.Asset>
     asset: YModels.Asset
-    allDatasets: YModels.Dataset[]
+    allDatasets: { [pid: number]: YModels.Dataset[] }
     publicDatasets: YModels.Dataset[]
   }
 
