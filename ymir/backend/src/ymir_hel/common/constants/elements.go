@@ -104,6 +104,7 @@ type MirObjectAnnotation struct {
 	DetLinkId   int32             `json:"det_link_id"  bson:"det_link_id"`
 	ClassName   string            `json:"class_name"   bson:"class_name"`
 	Polygon     []*MirIntPoint    `json:"polygon"      bson:"polygon"`
+	Mask        string            `json:"mask"         bson:"mask"`
 }
 
 func NewMirObjectAnnotation() MirObjectAnnotation {

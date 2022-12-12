@@ -77,8 +77,9 @@ class MiningStrategy(IntEnum):
 
 
 class ObjectType(IntEnum):
-    object_detect = 1
-    segmentation = 2
+    classification = mir_cmd_pb.ObjectType.OT_CLASS  # 1
+    object_detect = mir_cmd_pb.ObjectType.OT_DET_BOX  # 2
+    segmentation = mir_cmd_pb.ObjectType.OT_SEG  # 3
 
 
 class AnnotationType(IntEnum):

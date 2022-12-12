@@ -38,7 +38,7 @@ class Project(Base):
     mining_strategy = Column(SmallInteger, index=True)
     chunk_size = Column(Integer)
 
-    training_type = Column(SmallInteger, index=True, default=0, nullable=False)
+    object_type = Column(SmallInteger, index=True, default=2, nullable=False)
     training_keywords = Column(Text(settings.TEXT_LEN_LIMIT), nullable=False)
     training_dataset_group_id = Column(Integer, index=True)
     mining_dataset_id = Column(Integer, index=True)
@@ -115,10 +115,6 @@ class Project(Base):
     is_deleted = Column(Boolean, default=False, nullable=False)
     create_datetime = Column(DateTime, default=datetime.utcnow, nullable=False)
     update_datetime = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
-
-    @property
-    def object_type(self) -> int:
-        return self.training_type
 
     @property
     def visible_datasets(self) -> List[Dataset]:

@@ -13,11 +13,13 @@ from fastapi.staticfiles import StaticFiles
 from fastapi_cache import FastAPICache
 from fastapi_cache.backends.redis import RedisBackend
 from fastapi_socketio import SocketManager
+
 from fastapi_health import health
 from sentry_sdk.integrations.asgi import SentryAsgiMiddleware
 from starlette.exceptions import HTTPException
 from starlette.middleware.cors import CORSMiddleware
 from starlette.responses import HTMLResponse
+
 from starlette_exporter import PrometheusMiddleware, handle_metrics
 
 from app.api.api_v1.api import api_router
