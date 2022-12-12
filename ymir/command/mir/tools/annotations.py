@@ -251,16 +251,16 @@ def _import_annotations_coco_json(map_hashed_filename: Dict[str, str], mir_annot
     with open(coco_file_path, 'r') as f:
         coco_obj = json.loads(f.read())
         images_list = coco_obj['images']
-        categories_list = coco_obj['categories']
-        annotations_list = coco_obj['annotations']
+        categories_list = coco_obj.get('categories', [])
+        annotations_list = coco_obj.get('annotations', [])
 
     if not images_list or not isinstance(images_list, list):
         raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_FILE,
                               error_message=f"Can not find images list in coco json: {coco_file_path}")
-    if not categories_list or not isinstance(categories_list, list):
+    if not isinstance(categories_list, list):
         raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_FILE,
                               error_message=f"Can not find categories list in coco json: {coco_file_path}")
-    if annotations_list and not isinstance(annotations_list, list):
+    if not isinstance(annotations_list, list):
         raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_FILE,
                               error_message=f"Can not find annotations list in coco json: {coco_file_path}")
 
