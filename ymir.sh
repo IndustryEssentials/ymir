@@ -8,8 +8,6 @@ DOCKER_WEB='industryessentials/ymir-web'
 DEV_SOURCE_BACKEND_PIP='https://pypi.mirrors.ustc.edu.cn/simple'
 DEV_SOURCE_WEB_NPM='https://registry.npmmirror.com'
 
-FIELD_ALLOW_FEEDBACK='ALLOW_ANONYMOUS_FEEDBACK'
-FIELD_UUID='ANONYMOUS_UUID'
 FIELD_LABEL_TOOL='LABEL_TOOL'
 FIELD_LABEL_TOOL_HOST_IP='LABEL_TOOL_HOST_IP'
 FIELD_LABEL_TOOL_TOKEN='LABEL_TOOL_TOKEN'
@@ -26,38 +24,6 @@ docker-compose -f docker-compose.yml -f docker-compose.dev.yml -f docker-compose
 
 pre_start() {
 stop
-}
-
-choose_yes () {
-sed -i.bk "s/^${FIELD_ALLOW_FEEDBACK}=.*/${FIELD_ALLOW_FEEDBACK}=True/" ${ENV_FILE} && rm -f ${ENV_FILE}.bk
-
-uuid=$(uuidgen)
-sed -i.bk "s/^${FIELD_UUID}=$/${FIELD_UUID}=${uuid}/" ${ENV_FILE} && rm -f *.bk
-}
-
-choose_no () {
-sed -i.bk "s/^${FIELD_ALLOW_FEEDBACK}=.*/${FIELD_ALLOW_FEEDBACK}=False/" ${ENV_FILE} && rm -f ${ENV_FILE}.bk
-}
-
-check_permission() {
-if ! cat ${ENV_FILE} | grep "${FIELD_ALLOW_FEEDBACK}=$"; then
-    echo "permission already set"
-    return
-fi
-
-cat <<- EOF
-Would you allow YMIR to send us automatic reports helps us prioritize what to fix and improve in YMIR?
-These reports can include things like task type, how much resources you’re using. NO personal information collected.
-EOF
-
-while true; do
-    read -p "You choose (Y/n)?" yn
-    case $yn in
-        [Yy]*|'' ) choose_yes; break;;
-        [Nn]* ) choose_no; break;;
-        * ) echo "Please answer (y)es or (n)o.";;
-    esac
-done
 }
 
 set_label_tool() {
@@ -137,7 +103,6 @@ start_deploy_module() {
 }
 
 start() {
-check_permission
 pre_start
 
 start_label_tool
