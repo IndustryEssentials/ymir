@@ -12,9 +12,10 @@ from app.api.errors.errors import DockerImageNotFound
 from app.constants.state import (
     AnnotationType,
     MiningStrategy,
+    ObjectType,
+    ResultType,
     TaskState,
     TaskType,
-    ResultType,
 )
 from app.schemas.common import (
     Common,
@@ -93,6 +94,7 @@ class LabelParameter(TaskParameterBase):
     extra_url: Optional[str]
     labellers: Optional[List[EmailStr]]
     annotation_type: Optional[AnnotationType] = None
+    object_type: Optional[ObjectType] = ObjectType.object_detect
 
     normalize_datasets = root_validator(allow_reuse=True)(dataset_normalize)
     normalize_labels = root_validator(allow_reuse=True)(label_normalize)
