@@ -48,7 +48,7 @@ def parse_anno_type(anno_type_str: str) -> "mirpb.ObjectType.V":
 def _annotation_parse_func(anno_type: "mirpb.ObjectType.V") -> Callable:
     _func_dict: Dict["mirpb.ObjectType.V", Callable] = {
         mirpb.ObjectType.OT_DET_BOX: _import_annotations_voc_xml,
-        mirpb.ObjectType.OT_SEG: _import_annotations_coco_json,
+        mirpb.ObjectType.OT_SEG: import_annotations_coco_json,
     }
     if anno_type not in _func_dict:
         raise NotImplementedError()
@@ -240,11 +240,11 @@ def _import_annotations_voc_xml(map_hashed_filename: Dict[str, str], mir_annotat
                 anno_idx += 1
 
 
-def _import_annotations_coco_json(map_hashed_filename: Dict[str, str], mir_annotation: mirpb.MirAnnotations,
-                                  annotations_dir_path: str, class_type_manager: class_ids.UserLabels,
-                                  unknown_types_strategy: UnknownTypesStrategy, accu_new_class_names: Dict[str, int],
-                                  image_annotations: mirpb.SingleTaskAnnotations,
-                                  coco_json_filename: str = COCO_JSON_NAME) -> None:
+def import_annotations_coco_json(map_hashed_filename: Dict[str, str], mir_annotation: mirpb.MirAnnotations,
+                                 annotations_dir_path: str, class_type_manager: class_ids.UserLabels,
+                                 unknown_types_strategy: UnknownTypesStrategy, accu_new_class_names: Dict[str, int],
+                                 image_annotations: mirpb.SingleTaskAnnotations,
+                                 coco_json_filename: str = COCO_JSON_NAME) -> None:
     add_if_not_found = (unknown_types_strategy == UnknownTypesStrategy.ADD)
 
     coco_file_path = os.path.join(annotations_dir_path, coco_json_filename)

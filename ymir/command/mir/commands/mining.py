@@ -11,7 +11,7 @@ from mir.commands import base, infer
 from mir.protos import mir_command_pb2 as mirpb
 from mir.tools import checker, class_ids, env_config, exporter
 from mir.tools import mir_storage_ops, models, revs_parser
-from mir.tools.annotations import filter_mirdatas_by_asset_ids, _import_annotations_coco_json, UnknownTypesStrategy
+from mir.tools.annotations import filter_mirdatas_by_asset_ids, import_annotations_coco_json, UnknownTypesStrategy
 from mir.tools.code import MirCode
 from mir.tools.command_run_in_out import command_run_in_out
 from mir.tools.errors import MirContainerError, MirRuntimeError
@@ -287,14 +287,14 @@ def _prediction_from_infer_result(work_out_dir: str, asset_ids_set: Set[str], cl
                                       asset_ids_set=asset_ids_set,
                                       cls_id_mgr=cls_id_mgr)
     elif model_storage.object_type == mirpb.ObjectType.OT_SEG:
-        _import_annotations_coco_json(map_hashed_filename={v: v for v in asset_ids_set},
-                                      mir_annotation=mir_annotations,
-                                      annotations_dir_path=work_out_dir,
-                                      class_type_manager=cls_id_mgr,
-                                      unknown_types_strategy=UnknownTypesStrategy.IGNORE,
-                                      accu_new_class_names={},
-                                      image_annotations=prediction,
-                                      coco_json_filename='coco-infer-result.json')
+        import_annotations_coco_json(map_hashed_filename={v: v for v in asset_ids_set},
+                                     mir_annotation=mir_annotations,
+                                     annotations_dir_path=work_out_dir,
+                                     class_type_manager=cls_id_mgr,
+                                     unknown_types_strategy=UnknownTypesStrategy.IGNORE,
+                                     accu_new_class_names={},
+                                     image_annotations=prediction,
+                                     coco_json_filename='coco-infer-result.json')
 
     # pred type and meta
     prediction.type = model_storage.object_type  # type: ignore
