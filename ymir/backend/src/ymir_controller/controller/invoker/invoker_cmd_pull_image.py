@@ -1,4 +1,3 @@
-from enum import IntEnum
 import json
 import logging
 from typing import Optional
