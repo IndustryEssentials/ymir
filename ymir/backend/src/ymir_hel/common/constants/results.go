@@ -30,8 +30,9 @@ type QueryDatasetStatsResult struct {
 	CksCount      map[string]map[string]int64 `json:"cks_count"`
 
 	// Task and query context.
-	NewTypesAdded bool                     `json:"new_types_added"`
-	QueryContext  QueryDatasetStatsContext `json:"query_context"`
+	NewTypesAdded   bool                     `json:"new_types_added"`
+	EvaluationState int                      `json:"evaluation_state"`
+	QueryContext    QueryDatasetStatsContext `json:"query_context"`
 }
 
 func NewQueryDatasetStatsResult() *QueryDatasetStatsResult {
