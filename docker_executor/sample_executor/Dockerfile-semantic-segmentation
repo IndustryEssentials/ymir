@@ -6,9 +6,6 @@ FROM python:3.8.13-alpine
 RUN apk add bash
 # Required to build numpy wheel
 RUN apk add g++
-# Required to build Pillow
-RUN apk add --no-cache jpeg-dev zlib-dev
-RUN apk add --no-cache --virtual .build-deps build-base linux-headers
 
 COPY ./ymir_exc/requirements.txt ./
 RUN pip3 install -r requirements.txt
