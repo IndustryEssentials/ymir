@@ -9,6 +9,8 @@ from io import BytesIO
 from typing import Dict, List
 from xml.etree import ElementTree
 
+from mir.protos import mir_command_pb2 as mir_cmd_pb
+
 from controller.config import label_task as label_task_config
 from controller.label_model.base import LabelBase, catch_label_task_error
 from controller.label_model.request_handler import RequestHandler
@@ -20,9 +22,10 @@ class LabelStudio(LabelBase):
         self.requests = request_handler
 
     @staticmethod
-    def gen_detection_label_config(keywords: List) -> str:
+    def gen_label_template(object_type: int, keywords: List) -> str:
         """
-        gen detection label config according to label studio https://labelstud.io/playground/
+        generate label_studio template according to https://labelstud.io/playground/
+        for example:
         <View>
           <Image name="image" value="$image"/>
           <RectangleLabels name="label" toName="image">
@@ -33,11 +36,23 @@ class LabelStudio(LabelBase):
         """
         top = ElementTree.Element("View")
         image_leyer = ElementTree.Element("Image", name="image", value="$image", crosshair="true", maxwidth="100%")
-        rectangle_labels_layer = ElementTree.Element("RectangleLabels", name="label", toName="image")
+        if object_type == mir_cmd_pb.ObjectType.OT_DET_BOX:
+            LabelName = "RectangleLabels"
+            postpone_template = False
+        else:
+            LabelName = "PolygonLabels"
+            postpone_template = True
+
+        rectangle_labels_layer = ElementTree.Element(LabelName, name="label", toName="image")
         children_label_content = [
             ElementTree.Element("Label", value=keyword, background="green") for keyword in keywords
         ]
         rectangle_labels_layer.extend(children_label_content)
+        if postpone_template:
+            rectangle_labels_layer = ElementTree.Comment(
+                ElementTree.tostring(rectangle_labels_layer, encoding="unicode")
+            )
+
         top.extend([image_leyer, rectangle_labels_layer])
 
         label_config = ElementTree.tostring(top, encoding="unicode")
@@ -45,11 +60,17 @@ class LabelStudio(LabelBase):
         return label_config
 
     def create_label_project(
-        self, project_name: str, keywords: List, collaborators: List, expert_instruction: str, **kwargs: Dict
+        self,
+        project_name: str,
+        keywords: List,
+        collaborators: List,
+        expert_instruction: str,
+        object_type: int,
+        **kwargs: Dict
     ) -> int:
         # Create a project and set up the labeling interface in Label Studio
         url_path = "/api/projects"
-        label_config = self.gen_detection_label_config(keywords)
+        label_config = self.gen_label_template(object_type, keywords)
         data = dict(
             title=project_name,
             collaborators=collaborators,
@@ -233,9 +254,10 @@ class LabelStudio(LabelBase):
         media_location: str,
         import_work_dir: str,
         use_pre_annotation: bool,
+        object_type: int,
     ) -> None:
         logging.info("start LabelStudio run()")
-        project_id = self.create_label_project(project_name, keywords, collaborators, expert_instruction)
+        project_id = self.create_label_project(project_name, keywords, collaborators, expert_instruction, object_type)
         storage_id = self.set_import_storage(project_id, input_asset_dir)
         exported_storage_id = self.set_export_storage(project_id, export_path)
         self.sync_import_storage(storage_id)

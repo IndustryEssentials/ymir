@@ -48,7 +48,7 @@ def catch_label_task_error(f: Callable) -> Callable:
 class LabelBase(ABC):
     @abstractmethod
     def create_label_project(self, project_name: str, keywords: List, collaborators: List, expert_instruction: str,
-                             **kwargs: Dict) -> int:
+                             object_type: int, **kwargs: Dict) -> int:
         # Create a label project, add extra args in kwargs if you need
         pass
 
@@ -100,6 +100,7 @@ class LabelBase(ABC):
         media_location: str,
         import_work_dir: str,
         use_pre_annotation: bool,
+        object_type: int,
     ) -> None:
         # start a label task
         pass

@@ -33,7 +33,7 @@ def trigger_mir_import(repo_root: str, task_id: str, index_file: str, des_annota
                                            media_location=media_location,
                                            work_dir=import_work_dir,
                                            unknown_types_strategy=backend_pb2.UnknownTypesStrategy.UTS_STOP,
-                                           anno_type=mir_cmd_pb.ObjectType.OT_DET_BOX)
+                                           object_type=mir_cmd_pb.ObjectType.OT_DET_BOX)
 
 
 def remove_json_file(des_annotation_path: str) -> None:
