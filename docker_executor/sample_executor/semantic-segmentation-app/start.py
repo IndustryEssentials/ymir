@@ -46,13 +46,15 @@ def _run_training(env_config: env.EnvConfig) -> None:
 
     #! use `dataset_reader.item_paths` to read training or validation dataset items
     #!  note that `dataset_reader.item_paths` is a generator
+    #! in segmentation training task, if annotations are provided in coco format
+    #!      you can read file: /in/annotations/coco-annotations.json
+    #!      which contains all ground truth in training and validation set
     absent_count = 0
-    for asset_path, annotation_path in dr.item_paths(dataset_type=env.DatasetType.TRAINING):
+    for asset_path, _ in dr.item_paths(dataset_type=env.DatasetType.TRAINING):
         isfile = os.path.isfile(asset_path)
         if not isfile:
             absent_count += 1
-        logging.info(f"asset: {asset_path}, is file: {isfile}; "
-                     f"annotation: {annotation_path}, is file: {os.path.isfile(annotation_path)}")
+        logging.info(f"asset: {asset_path}, is file: {isfile}")
     logging.info(f"absent: {absent_count}")
 
     #! use `monitor.write_monitor_logger` to write write task process percent to monitor.txt
