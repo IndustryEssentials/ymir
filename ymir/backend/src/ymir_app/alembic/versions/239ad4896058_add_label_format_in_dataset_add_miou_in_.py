@@ -1,4 +1,4 @@
-"""add miou in model, add object_type in docker_image
+"""add object_type in docker_image and project, and miou in model
 
 Revision ID: 239ad4896058
 Revises: c91513775753
@@ -21,12 +21,15 @@ def upgrade() -> None:
     with op.batch_alter_table("model", schema=None) as batch_op:
         batch_op.add_column(sa.Column("miou", sa.Float(), nullable=True))
     with op.batch_alter_table("docker_image", schema=None) as batch_op:
-        batch_op.add_column(sa.Column("object_type", sa.SmallInteger(), nullable=False, server_default="1"))
+        batch_op.add_column(sa.Column("object_type", sa.SmallInteger(), nullable=False, server_default="2"))
         batch_op.create_index(batch_op.f("ix_docker_image_object_type"), ["object_type"], unique=False)
+    with op.batch_alter_table("project", schema=None) as batch_op:
+        batch_op.add_column(sa.Column("object_type", sa.SmallInteger(), nullable=False, server_default="2"))
+        batch_op.drop_index("ix_project_training_type")
+        batch_op.create_index(batch_op.f("ix_project_object_type"), ["object_type"], unique=False)
+        batch_op.drop_column("training_type")
 
 
-#    conn = op.get_bind()
-#    iterations = conn.execute("UPDATE docker_image SET object_type = 1")
 # ### end Alembic commands ###
 
 
@@ -37,4 +40,9 @@ def downgrade() -> None:
         batch_op.drop_column("object_type")
     with op.batch_alter_table("model", schema=None) as batch_op:
         batch_op.drop_column("miou")
+    with op.batch_alter_table("project", schema=None) as batch_op:
+        batch_op.add_column(sa.Column("training_type", sa.SmallInteger(), nullable=False, server_default="2"))
+        batch_op.drop_index(batch_op.f("ix_project_object_type"))
+        batch_op.create_index("ix_project_training_type", ["training_type"], unique=False)
+        batch_op.drop_column("object_type")
     # ### end Alembic commands ###

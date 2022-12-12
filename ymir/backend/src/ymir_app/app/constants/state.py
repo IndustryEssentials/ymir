@@ -77,8 +77,9 @@ class MiningStrategy(IntEnum):
 
 
 class ObjectType(IntEnum):
-    object_detect = 1
-    segmentation = 2
+    classification = 1
+    object_detect = 2
+    segmentation = 3
 
 
 class AnnotationType(IntEnum):
