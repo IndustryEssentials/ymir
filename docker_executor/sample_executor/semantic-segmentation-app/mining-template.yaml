@@ -4,7 +4,6 @@
 
 gpu_id: '0'
 task_id: 'default-mining-task'
-anno_type: 'semantic-seg'  # det-box / semantic-seg
 model_params_path: []
 class_names: []
 
