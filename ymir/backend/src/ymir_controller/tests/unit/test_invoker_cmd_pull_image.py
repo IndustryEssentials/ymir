@@ -94,7 +94,7 @@ class TestInvokerPullImage(unittest.TestCase):
                 text=True,
             ),
             mock.call(
-                "docker run --rm docker_image_name cat /img-man/code-access.yaml".split(" "),
+                "docker run --rm docker_image_name cat /img-man/manifest.yaml".split(" "),
                 capture_output=True,
                 text=True
             )

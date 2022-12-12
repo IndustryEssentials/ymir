@@ -112,6 +112,7 @@ message GeneralResp {
     RespCMDInference detection = 1000;
     bool enable_livecode = 1001;
     mir.command.Evaluation evaluation = 1002;
+    mir.command.ObjectType object_type = 1003;
 
     reserved 5;
 }

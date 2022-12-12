@@ -126,6 +126,8 @@ class ViewerAssetAnnotation:
     class_id: int
     cm: int
     tags: Dict
+    polygon: List
+    mask: Optional[str]
     keyword: Optional[str] = None
     user_labels: InitVar[UserLabels] = None
 
@@ -156,6 +158,8 @@ class ViewerAsset:
                 class_id=i["class_id"],
                 cm=i["cm"],
                 tags=i["tags"],
+                mask=i["mask"],
+                polygon=i["polygon"],
                 user_labels=user_labels,
             )
             for i in self.gt
@@ -166,6 +170,8 @@ class ViewerAsset:
                 class_id=i["class_id"],
                 cm=i["cm"],
                 tags=i["tags"],
+                mask=i["mask"],
+                polygon=i["polygon"],
                 user_labels=user_labels,
             )
             for i in self.pred

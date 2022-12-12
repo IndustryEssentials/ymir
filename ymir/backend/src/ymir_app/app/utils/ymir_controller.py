@@ -44,6 +44,7 @@ MERGE_STRATEGY_MAPPING = {
 
 
 OBJECT_TYPE_MAPPING = {
+    ObjectType.classification: mir_cmd_pb.ObjectType.OT_CLASS,
     ObjectType.object_detect: mir_cmd_pb.ObjectType.OT_DET_BOX,
     ObjectType.segmentation: mir_cmd_pb.ObjectType.OT_SEG,
 }
