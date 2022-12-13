@@ -1,23 +1,24 @@
 import { useEffect, useState } from 'react'
 import { Button, Card, Form, Input, message, Modal, Select, Space, Upload } from 'antd'
 import { useParams, connect, useHistory, useLocation } from 'umi'
+import { useSelector } from 'react-redux'
 
-import { formLayout } from "@/config/antd"
+import { formLayout } from '@/config/antd'
 import t from '@/utils/t'
 import { generateName } from '@/utils/string'
 import useFetch from '@/hooks/useFetch'
+import useRequest from '@/hooks/useRequest'
 
 import { urlValidator } from '@/components/form/validators'
 import Breadcrumbs from '@/components/common/breadcrumb'
-import ProjectSelect from "@/components/form/ProjectModelSelect"
-import Desc from "@/components/form/desc"
+import ProjectSelect from '@/components/form/ProjectModelSelect'
+import Desc from '@/components/form/desc'
 import Uploader from '@/components/form/uploader'
 
 import s from './add.less'
 
 const { Option } = Select
 const { useForm } = Form
-
 
 const TYPES = Object.freeze({
   COPY: 1,
@@ -47,6 +48,13 @@ const Add = () => {
   }
   const [importResult, importModel] = useFetch('model/importModel')
   const [updateResult, updateProject] = useFetch('project/updateProject')
+  const project = useSelector(({ project }) => project.projects[pid] || {})
+  const { run: getProject } = useRequest('project/getProject', {
+    loading: false,
+    debounceWait: 300,
+  })
+
+  useEffect(() => getProject({ id: pid }), [])
 
   useEffect(() => {
     if (updateResult) {
@@ -96,68 +104,64 @@ const Add = () => {
       <Breadcrumbs />
       <Card className={s.container} title={t('breadcrumbs.model.add')}>
         <div className={s.formContainer}>
-          <Form form={form}
-            {...formLayout}
-            onFinish={submit} initialValues={initialValues}
-          >
+          <Form form={form} {...formLayout} onFinish={submit} initialValues={initialValues}>
             <Form.Item
               label={t('model.add.form.name')}
-              name='name'
+              name="name"
               rules={[
                 { required: true, whitespace: true, message: t('model.add.form.name.placeholder') },
                 { type: 'string', min: 2, max: 80 },
               ]}
             >
-              <Input placeholder={t('model.add.form.name.placeholder')} autoComplete='off' allowClear />
+              <Input placeholder={t('model.add.form.name.placeholder')} autoComplete="off" allowClear />
             </Form.Item>
             <Form.Item label={t('model.add.form.type')}>
               <Select onChange={(value) => typeChange(value)} defaultValue={TYPES.LOCAL}>
-                {types.map(type => (
-                  <Option value={type.id} key={type.id}>{type.label}</Option>
+                {types.map((type) => (
+                  <Option value={type.id} key={type.id}>
+                    {type.label}
+                  </Option>
                 ))}
               </Select>
             </Form.Item>
-            {isType(TYPES.COPY) ?
-              <Form.Item label={t('model.add.form.project')} name='modelId' rules={[
-                { required: true, }
-              ]}>
-                <ProjectSelect pid={pid} />
+            {isType(TYPES.COPY) ? (
+              <Form.Item label={t('model.add.form.project')} name="modelId" rules={[{ required: true }]}>
+                <ProjectSelect pid={pid} type={project.type} />
               </Form.Item>
-              : null}
-            {isType(TYPES.LOCAL) ?
-              <Form.Item label={t('model.add.form.upload.btn')} name='path' required>
+            ) : null}
+            {isType(TYPES.LOCAL) ? (
+              <Form.Item label={t('model.add.form.upload.btn')} name="path" required>
                 <Uploader
-                  onChange={(files, result) => { setPath(result) }}
+                  onChange={(files, result) => {
+                    setPath(result)
+                  }}
                   max={1024}
-                  format='all'
+                  format="all"
                   onRemove={() => setPath('')}
-                  info={t('model.add.form.upload.info', { br: <br />, max: 1024 })}
+                  info={t('model.add.form.upload.info', { br: <br />, max: 1024, objectType: t(project?.typeLabel) })}
                 ></Uploader>
               </Form.Item>
-              : null}
+            ) : null}
 
-            {isType(TYPES.NET) ?
+            {isType(TYPES.NET) ? (
               <Form.Item
                 label={t('model.add.form.url')}
-                name='url'
-                rules={[
-                  { required: true, message: t('model.add.form.url.tip') },
-                  { validator: urlValidator, }
-                ]}
+                name="url"
+                rules={[{ required: true, message: t('model.add.form.url.tip') }, { validator: urlValidator }]}
                 extra={t('model.add.form.url.help')}
               >
                 <Input placeholder={t('model.add.form.url.placeholder')} max={512} allowClear />
               </Form.Item>
-              : null}
+            ) : null}
             <Desc form={form} />
             <Form.Item wrapperCol={{ offset: 8 }}>
               <Space size={20}>
-                <Form.Item name='submitBtn' noStyle>
+                <Form.Item name="submitBtn" noStyle>
                   <Button type="primary" size="large" htmlType="submit">
                     {t('common.action.import')}
                   </Button>
                 </Form.Item>
-                <Form.Item name='backBtn' noStyle>
+                <Form.Item name="backBtn" noStyle>
                   <Button size="large" onClick={() => history.goBack()}>
                     {t('task.btn.back')}
                   </Button>

@@ -26,8 +26,8 @@ const ProjectModelSelect: FC<Props> = ({ pid, type, value, onChange, ...resProps
   })
 
   useEffect(() => {
-    fetchProjects()
-  }, [])
+    type && fetchProjects()
+  }, [type])
 
   useEffect(() => {
     const opts = projects.filter(project => project.id !== Number(pid)).map(project => {
@@ -47,7 +47,7 @@ const ProjectModelSelect: FC<Props> = ({ pid, type, value, onChange, ...resProps
   }, [projects])
 
   function fetchProjects() {
-    getProjects({ limit: 10000 })
+    getProjects({ limit: 10000, type })
   }
 
   async function loadData(selected: OptionType[]) {
