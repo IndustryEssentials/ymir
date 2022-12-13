@@ -21,7 +21,10 @@ export function renderPolygon(canvas: HTMLCanvasElement, points: YModels.Point[]
     return
   }
   ctx.beginPath()
+  ctx.fillStyle = 'rgba(255, 255, 255, 0.3)'
+  ctx.strokeStyle = 'rgba(0, 0, 0, 0.3)'
   ctx.moveTo(points[0].x, points[0].y)
+  ctx.lineWidth = 1
   points.forEach((point, index) => index > 0 && ctx.lineTo(point.x, point.y))
   ctx.fill()
 }

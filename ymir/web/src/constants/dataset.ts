@@ -199,12 +199,12 @@ export function toAnnotation(annotation: YModels.BackendData, width: number = 0,
     gt,
     tags: annotation.tags || {},
     color,
-    ...annotationTransfer(annotation),
+    ...annotationTransfer({ ...annotation, type: getType(annotation)}),
   }
 }
 
 function annotationTransfer(annotation: YModels.BackendData) {
-  const type = (annotation.type || AnnotationType.BoundingBox) as YModels.AnnotationType
+  const type = annotation.type as YModels.AnnotationType
   return {
     [AnnotationType.BoundingBox]: toBoundingBoxAnnoatation,
     [AnnotationType.Polygon]: toPolygonAnnotation,
@@ -234,7 +234,7 @@ export function toPolygonAnnotation(annotation: YModels.BackendData) {
   const type: YModels.AnnotationType.Polygon = annotation.type || AnnotationType.Polygon
   return {
     ...annotation,
-    points: annotation.points,
+    polygon: annotation.polygon,
     type,
   }
 }
@@ -246,6 +246,10 @@ export function transferAnnotationsCount(count = {}, negative = 0, total = 1) {
     negative,
     total,
   }
+}
+
+function getType(annotation: YModels.BackendData) {
+  return annotation.mask ? AnnotationType.Mask : (annotation.polygon ? AnnotationType.Polygon : AnnotationType.BoundingBox)
 }
 
 const transferCK = (counts: YModels.BackendData = {}, total: YModels.BackendData = {}) => {

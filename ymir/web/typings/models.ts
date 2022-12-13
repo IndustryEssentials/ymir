@@ -181,7 +181,7 @@ declare namespace YModels {
 
   export interface Polygon extends AnnotationBase {
     type: AnnotationType.Polygon
-    points: Point[]
+    polygon: Point[]
   }
 
   export interface Mask extends AnnotationBase {

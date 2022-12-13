@@ -19,25 +19,28 @@ const Polygon: FC<Props> = ({ annotation, ratio = 1 }) => {
   }, [canvasRef.current])
 
   useEffect(() => {
-    if (annotation.points?.length && canvas) {
-      renderPolygon(canvas, annotation.points, width, height)
+    if (annotation.polygon?.length && canvas) {
+      renderPolygon(canvas, annotation.polygon, width, height)
     }
-  }, [annotation.points, canvas, width, height])
+  }, [annotation.polygon, canvas, width, height])
 
   useEffect(() => {
     if (!annotation) {
       return
     }
     setRect({
-      width: annotation.width * ratio,
-      height: annotation.height * ratio,
+      width: annotation.width,
+      height: annotation.height,
     })
   }, [annotation, ratio])
 
   return <canvas
     ref={canvasRef}
     style={{
-      transform: `translate(50%, 50%) scale(${ratio})`,
+      position: 'absolute',
+      left: 0,
+      transformOrigin: 'left top 0',
+      transform: `scale(${ratio})`,
     }}
     width={width}
     height={height}
