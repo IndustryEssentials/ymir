@@ -62,8 +62,8 @@ class CmdImport(base.BaseCommand):
 
         # Step 2: generate sha1 file and rename images.
         # sha1 file to be written.
-        map_hashed_filename: Dict[str, str] = {}
-        ret = _generate_sha_and_copy(index_file, map_hashed_filename, gen_abs)
+        asset_id_to_names: Dict[str, str] = {}
+        ret = _generate_sha_and_copy(index_file, asset_id_to_names, gen_abs)
         if ret != MirCode.RC_OK:
             logging.error(f"generate hash error: {ret}")
             return ret
@@ -71,7 +71,7 @@ class CmdImport(base.BaseCommand):
         # Step 3 import metadat and annotations:
         mir_metadatas = mirpb.MirMetadatas()
         ret = metadatas.import_metadatas(mir_metadatas=mir_metadatas,
-                                         map_hashed_filename=map_hashed_filename,
+                                         asset_id_to_names=asset_id_to_names,
                                          hashed_asset_root=gen_abs,
                                          phase='import.metadatas')
         if ret != MirCode.RC_OK:
@@ -83,7 +83,7 @@ class CmdImport(base.BaseCommand):
                                                              label_storage_file=label_storage_file,
                                                              prediction_dir_path=pred_abs,
                                                              groundtruth_dir_path=gt_abs,
-                                                             map_hashed_filename=map_hashed_filename,
+                                                             asset_id_to_names=asset_id_to_names,
                                                              unknown_types_strategy=unknown_types_strategy,
                                                              anno_type=anno_type,
                                                              phase='import.others')
@@ -114,7 +114,7 @@ class CmdImport(base.BaseCommand):
         return MirCode.RC_OK
 
 
-def _generate_sha_and_copy(index_file: str, map_hashed_filename: Dict[str, str], sha_folder: str) -> int:
+def _generate_sha_and_copy(index_file: str, asset_id_to_names: Dict[str, str], sha_folder: str) -> int:
     hash_phase_name = 'import.hash'
     os.makedirs(sha_folder, exist_ok=True)
 
@@ -141,8 +141,8 @@ def _generate_sha_and_copy(index_file: str, map_hashed_filename: Dict[str, str],
             logging.info(f"{media_src} is not accessable.")
             continue
 
-        if sha1 not in map_hashed_filename:
-            map_hashed_filename[sha1] = os.path.splitext(os.path.basename(media_src))[0]
+        if sha1 not in asset_id_to_names:
+            asset_id_to_names[sha1] = os.path.splitext(os.path.basename(media_src))[0]
             media_dst = get_asset_storage_path(location=sha_folder, hash=sha1)
             if not os.path.isfile(media_dst):
                 copied_assets += 1
@@ -153,7 +153,7 @@ def _generate_sha_and_copy(index_file: str, map_hashed_filename: Dict[str, str],
             PhaseLoggerCenter.update_phase(phase=hash_phase_name, local_percent=(idx / total_count))
             logging.info(f"finished {idx} / {total_count} hashes")
 
-    logging.info(f"skipped assets: {len(lines) - len(map_hashed_filename)}\ncopied assets: {copied_assets}")
+    logging.info(f"skipped assets: {len(lines) - len(asset_id_to_names)}\ncopied assets: {copied_assets}")
     PhaseLoggerCenter.update_phase(phase=hash_phase_name)
     return MirCode.RC_OK
 
