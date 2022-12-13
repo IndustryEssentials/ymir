@@ -3,8 +3,9 @@ import json
 import logging
 import os
 import time
-from typing import Any, Callable, Dict, Set
+from typing import Any, Callable, Dict
 
+from google.protobuf import json_format
 import yaml
 
 from mir.commands import base
@@ -12,6 +13,7 @@ from mir.protos import mir_command_pb2 as mirpb
 from mir.tools import class_ids, models
 from mir.tools import settings as mir_settings
 from mir.tools import env_config
+from mir.tools.annotations import import_annotations_coco_json, UnknownTypesStrategy
 from mir.tools.code import MirCode
 from mir.tools.errors import MirRuntimeError
 from mir.tools.executant import prepare_executant_env, run_docker_executant
@@ -156,8 +158,13 @@ class CmdInfer(base.BaseCommand):
         )
 
         if run_infer:
+            # result files -> task_annotations and save
             class_id_mgr = class_ids.load_or_create_userlabels(label_storage_file=label_storage_file)
-            _process_infer_result(model_storage.object_type)(work_dir_out, class_id_mgr)
+            task_annotations = mirpb.SingleTaskAnnotations()
+            _process_infer_result(model_storage.object_type)(task_annotations, work_dir_out, class_id_mgr)
+
+            with open(os.path.join(work_dir_out, 'prediction.mir'), 'wb') as m_f:
+                m_f.write(task_annotations.SerializeToString())
 
         return MirCode.RC_OK
 
@@ -209,7 +216,8 @@ def _prepare_assets(index_file: str, work_index_file: str, media_path: str) -> N
                               needs_new_commit=False)
 
 
-def _process_infer_result(model_object_type: Any) -> Callable[[str, class_ids.UserLabels], None]:
+def _process_infer_result(
+        model_object_type: Any) -> Callable[[mirpb.SingleTaskAnnotations, str, class_ids.UserLabels], None]:
     _func_map: Dict[Any, Callable[[str, class_ids.UserLabels], None]] = {
         mirpb.ObjectType.OT_DET_BOX: _process_infer_detbox_result,
         mirpb.ObjectType.OT_SEG: _process_infer_seg_coco_result,
@@ -217,49 +225,61 @@ def _process_infer_result(model_object_type: Any) -> Callable[[str, class_ids.Us
     return _func_map[model_object_type]
 
 
-def _process_infer_detbox_result(work_dir_out: str, class_id_mgr: class_ids.UserLabels) -> None:
+def _process_infer_detbox_result(task_annotations: mirpb.SingleTaskAnnotations, work_dir_out: str,
+                                 class_id_mgr: class_ids.UserLabels) -> None:
     infer_result_file = os.path.join(work_dir_out, 'infer-result.json')
-    if not os.path.isfile(infer_result_file):
-        raise MirRuntimeError(error_code=MirCode.RC_CMD_NO_RESULT,
-                              error_message=f"Can not find result file: {infer_result_file}")
-
     with open(infer_result_file, 'r') as f:
         results = json.loads(f.read())
 
-    for _, annotations_dict in results.get('detection', {}).items():
-        # Compatible with previous version of format.
-        annotations = annotations_dict.get('boxes') or annotations_dict.get('annotations')
+    detections = results.get('detection')
+    if not isinstance(detections, dict):
+        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_FILE,
+                              error_message=f"Invalid infer result file: {infer_result_file}, have no detection dict")
+
+    for asset_name, annotations_dict in detections.items():
+        annotations = annotations_dict.get('boxes')
         if not isinstance(annotations, list):
+            logging.error(f"invalid annotations: {annotations}")
             continue
 
-        annotations.sort(key=(lambda x: x['score']), reverse=True)
-        annotations = [a for a in annotations if class_id_mgr.has_name(a['class_name'])]
-        annotations_dict['boxes'] = annotations
+        single_image_annotations = mirpb.SingleImageAnnotations()
+        idx = 0
+        for annotation_dict in annotations:
+            class_id = class_id_mgr.id_and_main_name_for_name(name=annotation_dict['class_name'])[0]
+            # ignore unknown class ids
+            if class_id < 0:
+                continue
 
-    with open(infer_result_file, 'w') as f:
-        f.write(json.dumps(results, indent=4))
+            annotation = mirpb.ObjectAnnotation()
+            annotation.index = idx
+            json_format.ParseDict(annotation_dict['box'], annotation.box)
+            annotation.class_id = class_id
+            annotation.score = float(annotation_dict.get('score', 0))
+            single_image_annotations.boxes.append(annotation)
+            idx += 1
+
+        asset_id = os.path.splitext(os.path.basename(asset_name))[0]
+        task_annotations.image_annotations[asset_id].CopyFrom(single_image_annotations)
 
 
-def _process_infer_seg_coco_result(work_dir_out: str, class_id_mgr: class_ids.UserLabels) -> None:
-    infer_result_file = os.path.join(work_dir_out, 'coco-infer-result.json')
-    if not os.path.isfile(infer_result_file):
-        raise MirRuntimeError(error_code=MirCode.RC_CMD_NO_RESULT,
-                              error_message=f"Can not find result file: {infer_result_file}")
+def _process_infer_seg_coco_result(task_annotations: mirpb.SingleTaskAnnotations, work_dir_out: str,
+                                   class_id_mgr: class_ids.UserLabels) -> None:
+    coco_json_filename = 'coco-infer-result.json'
 
-    with open(infer_result_file, 'r') as f:
-        results = json.loads(f.read())
+    # map_hashed_filename: asset id to main file name
+    with open(os.path.join(work_dir_out, coco_json_filename), 'r') as f:
+        result = json.loads(f.read())
+    images_list = result['images']
+    map_hashed_filename = {v['file_name']: os.path.splitext(v['file_name'])[0] for v in images_list}
 
-    categories_list = results['categories']
-    annotations_list = results['annotations']
-
-    known_categories_list = [v for v in categories_list if class_id_mgr.id_and_main_name_for_name(v['name'])[0] >= 0]
-    known_category_ids: Set[int] = {v['id'] for v in known_categories_list}
-    filtered_annotations_list = [v for v in annotations_list if v['category_id'] in known_category_ids]
-    results['categories'] = known_categories_list
-    results['annotations'] = filtered_annotations_list
-
-    with open(infer_result_file, 'w') as f:
-        f.write(json.dumps(results, indent=4))
+    import_annotations_coco_json(map_hashed_filename=map_hashed_filename,
+                                 mir_annotation=mirpb.MirAnnotations(),
+                                 annotations_dir_path=work_dir_out,
+                                 class_type_manager=class_id_mgr,
+                                 unknown_types_strategy=UnknownTypesStrategy.IGNORE,
+                                 accu_new_class_names={},
+                                 image_annotations=task_annotations,
+                                 coco_json_filename=coco_json_filename)
 
 
 # might used both by mining and infer

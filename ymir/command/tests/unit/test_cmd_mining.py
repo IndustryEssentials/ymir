@@ -51,37 +51,11 @@ class TestMiningCmd(unittest.TestCase):
         with open(output_file, 'w') as f:
             f.writelines("d4e4a60147f1e35bc7f5bc89284aa16073b043c9\t0.1")
 
-        fake_infer_output_dict = {
-            'detection': {
-                'd4e4a60147f1e35bc7f5bc89284aa16073b043c9': {
-                    'boxes': [
-                        {
-                            'box': {
-                                'x': 0,
-                                'y': 0,
-                                'w': 30,
-                                'h': 30
-                            },
-                            'score': 0.5,
-                            'class_name': 'cat',
-                        },
-                        {
-                            'box': {
-                                'x': 50,
-                                'y': 0,
-                                'w': 30,
-                                'h': 30
-                            },
-                            'score': 0.5,
-                            'class_name': 'unknown-car',  # unknown class name, should be ignored
-                        },
-                    ],
-                },
-            },
-        }
-        infer_output_file = os.path.join(kwargs['work_dir'], 'out', 'infer-result.json')
-        with open(infer_output_file, 'w') as f:
-            f.write(json.dumps(fake_infer_output_dict))
+        # a fake prediction result file
+        prediction = mirpb.SingleTaskAnnotations()
+        with open(os.path.join(kwargs['work_dir'], 'out', 'prediction.mir'), 'wb') as f:
+            f.write(prediction.SerializeToString())
+
         return 0
 
     def _mock_prepare_model(*args, **kwargs):

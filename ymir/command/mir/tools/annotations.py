@@ -101,6 +101,8 @@ def _coco_object_dict_to_annotation(anno_dict: dict, category_id_to_cids: Dict[i
         points_list = seg_obj[0]
         for i in range(0, len(points_list), 2):
             obj_anno.polygon.append(mirpb.IntPoint(x=int(points_list[i]), y=int(points_list[i + 1]), z=0))
+    else:
+        obj_anno.type = mirpb.ObjectType.OT_DET_BOX if 'bbox' in anno_dict else mirpb.OT_UNKNOWN
 
     if 'bbox' in anno_dict:
         bbox_list = anno_dict['bbox']
