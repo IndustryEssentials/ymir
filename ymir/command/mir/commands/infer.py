@@ -258,8 +258,8 @@ def _process_infer_detbox_result(task_annotations: mirpb.SingleTaskAnnotations, 
             single_image_annotations.boxes.append(annotation)
             idx += 1
 
-        asset_id = os.path.splitext(os.path.basename(asset_name))[0]
-        task_annotations.image_annotations[asset_id].CopyFrom(single_image_annotations)
+        # task_annotations.image_annotations key: image file base name
+        task_annotations.image_annotations[os.path.basename(asset_name)].CopyFrom(single_image_annotations)
 
 
 def _process_infer_seg_coco_result(task_annotations: mirpb.SingleTaskAnnotations, work_dir_out: str,
@@ -272,8 +272,9 @@ def _process_infer_seg_coco_result(task_annotations: mirpb.SingleTaskAnnotations
     images_list = result['images']
     asset_id_to_file_names = {}
     for v in images_list:
-        asset_id_to_file_names[os.path.splitext(v['file_name'])[0]] = v['file_name']
+        asset_id_to_file_names[v['file_name']] = v['file_name']
 
+    # task_annotations.image_annotations key: image file base name
     import_annotations_coco_json(asset_id_to_file_names=asset_id_to_file_names,
                                  mir_annotation=mirpb.MirAnnotations(),
                                  annotations_dir_path=work_dir_out,
