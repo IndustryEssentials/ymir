@@ -151,7 +151,7 @@ class LabelFree(LabelBase):
 
         cls._move_voc_files(des_path)
 
-    def convert_annotation_to_voc(self, project_id: int, des_path: str) -> None:
+    def fetch_label_result(self, project_id: int, object_type: int, des_path: str) -> None:
         export_task_id = self.get_export_task(project_id)
         export_url = self.get_export_url(project_id, export_task_id)
         logging.info("labelfree export_url is %s", export_url)
@@ -159,7 +159,7 @@ class LabelFree(LabelBase):
         self.unzip_annotation_files(BytesIO(content), des_path)
         logging.info(f"success convert_annotation_to_ymir: {des_path}")
 
-    def get_export_task(self, project_id: int) -> str:
+    def get_export_task(self, project_id: int, object_type: int) -> str:
         url_path = "/api/v1/export"
         params = {"project_id": project_id, "page_size": 1}
         resp = self._requests.get(url_path=url_path, params=params)
@@ -167,12 +167,13 @@ class LabelFree(LabelBase):
         if export_tasks:
             return export_tasks[0]["task_id"]
         else:
-            self.create_export_task(project_id)
+            self.create_export_task(project_id, object_type)
             raise NotReadyError()
 
-    def create_export_task(self, project_id: int) -> None:
+    def create_export_task(self, project_id: int, object_type: int) -> None:
         url_path = "/api/v1/export"
-        payload = {"project_id": project_id, "export_type": 1, "export_image": False}
+        export_type = 1 if object_type == mir_cmd_pb.ObjectType.OT_DET_BOX else 4
+        payload = {"project_id": project_id, "export_type": export_type, "export_image": False}
         resp = self._requests.post(url_path=url_path, json_data=payload)
         try:
             export_task_id = json.loads(resp)["data"]["task_id"]
@@ -224,4 +225,5 @@ class LabelFree(LabelBase):
             import_work_dir,
             exported_storage_id,
             input_asset_dir,
+            object_type,
         )

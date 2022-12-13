@@ -3,6 +3,7 @@ import json
 import logging
 import math
 import os
+from pathlib import Path
 import shutil
 import zipfile
 from io import BytesIO
@@ -10,10 +11,86 @@ from typing import Dict, List
 from xml.etree import ElementTree
 
 from mir.protos import mir_command_pb2 as mir_cmd_pb
+import numpy as np
+import pycocotools
+from label_studio_converter import brush
 
 from controller.config import label_task as label_task_config
 from controller.label_model.base import LabelBase, catch_label_task_error
 from controller.label_model.request_handler import RequestHandler
+
+
+LS_EXPORT_TYPE_MAPPING = {
+    "RectangleLabels": "VOC",
+    "PolygonLabels": "COCO",
+    "BrushLabels": "JSON",
+}
+
+# TODO move to label_studio
+def binary_mask_to_rle(binary_mask: np.ndarray):
+    rle = {'counts': [], 'size': list(binary_mask.shape)}
+    counts = rle.get('counts')
+    for i, (value, elements) in enumerate(itertools.groupby(binary_mask.ravel(order='F'))):
+        if i == 0 and value == 1:
+            counts.append(0)
+        counts.append(len(list(elements)))
+    return rle
+
+
+def ls_rle_to_coco_rle(ls_rle: List[int], height: int, width: int) -> str:
+    ls_mask = brush.decode_rle(ls_rle)
+    ls_mask = np.reshape(ls_mask, [height, width, 4])[:, :, 3]
+    ls_mask = np.where(ls_mask > 0, 1, 0)
+    binary_mask = np.asfortranarray(ls_mask)
+    coco_rle = binary_mask_to_rle(binary_mask)
+    return pycocotools.mask.frPyObjects(coco_rle, *coco_rle.get('size'))
+
+
+def convert_ls_json_to_coco(ls_json: Dict) -> Dict:
+    """
+    COCO annotation format consists of three parts:
+    - annotations
+    - images
+    - categories
+
+    each annotation have references to images and categories by ids
+    """
+    images = []
+    annotations = []
+    _categories = {}
+
+    seq = itertools.count()
+    def _add_category(name):
+        if name not in _categories:
+            _categories[name] = {"name": name, "id": next(seq)}
+        return _categories[name]
+
+    for image_id, image_annotations_unit in enumerate(ls_json):
+        height, width = None, None  # type: ignore
+        for annotation in image_annotations_unit["annotations"]:
+            for _annotation in annotation["result"]:
+                height, width = _annotation["original_height"], _annotation["original_width"]
+                rle = _annotation["value"]["rle"]
+                category = _add_category(_annotation["value"]["brushlabels"][0])
+                annotations.append({
+                    "image_id": image_id,
+                    "segmentation": self._ls_rle_to_coco_rle(rle, height, width),
+                    "iscrowd": 1,
+                    "category_id": category["id"],
+                })
+        if None in (height, width):
+            continue
+        images.append({
+            "file_name": Path(image_annotations_unit["data"]["images"]).name,
+            "id": image_id,
+            "width": width,
+            "height": height,
+        })
+    return {
+        "images": images,
+        "annotations": annotations,
+        "categories": list(_categories.values()),
+    }
 
 
 class LabelStudio(LabelBase):
@@ -192,27 +269,58 @@ class LabelStudio(LabelBase):
 
         self.requests.post(url_path=url_path, params=params, json_data=json_data)
 
-    @classmethod
-    def _move_label_studio_voc_files(cls, des_path: str) -> None:
+    @staticmethod
+    def _unzip_annotation_files(content: BytesIO, des_path: str) -> None:
+        with zipfile.ZipFile(content, mode="r") as zf:
+            for names in zf.namelist():
+                zf.extract(names, des_path)
+
+    def _export_from_label_studio(self, project_id: int, des_path: str, export_type: str, unzip: bool = True) -> str:
+        url_path = f"/api/projects/{project_id}/export?exportType={export_type}"
+        resp = self.requests.get(url_path=url_path)
+        if unzip:
+            self._unzip_annotation_files(BytesIO(resp), des_path)
+            return des_path
+        result_json = str(Path(des_path) / "result.json")
+        with open(result_json, "wb") as f:
+            f.write(BytesIO(resp).getbuffer())
+        return result_json
+
+    @staticmethod
+    def _move_voc_annotations_to(des_path: str) -> None:
         voc_files = glob.glob(f"{des_path}/**/*.xml")
         for voc_file in voc_files:
             base_name = os.path.basename(voc_file)
             shutil.move(voc_file, os.path.join(des_path, base_name))
 
-    @classmethod
-    def unzip_annotation_files(cls, content: BytesIO, des_path: str) -> None:
-        with zipfile.ZipFile(content, mode="r") as zf:
-            for names in zf.namelist():
-                zf.extract(names, des_path)
+    @staticmethod
+    def _move_coco_annotations_to(des_path: str) -> None:
+        """
+        Convert result.json (Label Studio default filename) to coco-annotations.json (YMIR required filename)
+        """
+        coco_json_file = Path(des_path) / "result.json"
+        coco_json_file.rename(coco_json_file.with_name("coco-annotations.json"))
 
-        cls._move_label_studio_voc_files(des_path)
-
-    def convert_annotation_to_voc(self, project_id: int, des_path: str) -> None:
-        url_path = f"/api/projects/{project_id}/export?exportType=VOC"
-        resp = self.requests.get(url_path=url_path)
-        self.unzip_annotation_files(BytesIO(resp), des_path)
-
-        logging.info(f"success convert_annotation_to_ymir: {des_path}")
+    def fetch_label_result(self, project_id: int, object_type: int, des_path: str) -> None:
+        project_info = self.get_project_info(project_id)
+        export_type = LS_EXPORT_TYPE_MAPPING[project_info["parsed_label_config"]["label"]["type"]]
+        if export_type == "VOC":
+            self._export_from_label_studio(project_id, des_path, export_type)
+            self._move_voc_annotations_to(des_path)
+        elif export_type == "COCO":
+            # TODO match image_id
+            self._export_from_label_studio(project_id, des_path, export_type)
+            self._move_coco_annotations_to(des_path)
+        elif export_type == "JSON":
+            ls_json_file = self._export_from_label_studio(project_id, des_path, export_type, unzip=False)
+            coco_json_file = Path(ls_json_file).with_name("coco-annotations.json")
+            with open(ls_json_file) as ls_json_f, open(coco_json_file) as coco_json_f:
+                ls_json = json.load(ls_json_f)
+                coco_json = convert_ls_json_to_coco(ls_json)
+                json.dump(coco_json, coco_json_f)
+        else:
+            raise ValueError(f"invalid label studio format {export_type}, abort")
+        logging.info(f"successfuly fetch label result in {export_type} format")
 
     def update_project_prediction(self, input_asset_dir: str, project_id: int) -> None:
         map_filename_prediction = {}
@@ -273,4 +381,5 @@ class LabelStudio(LabelBase):
             import_work_dir,
             exported_storage_id,
             input_asset_dir,
+            object_type,
         )

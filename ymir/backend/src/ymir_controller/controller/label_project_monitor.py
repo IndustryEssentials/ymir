@@ -75,7 +75,7 @@ def update_label_task(label_instance: utils.LabelBase, task_id: str, project_inf
         remove_json_file(project_info["des_annotation_path"])
         try:
             label_instance.sync_export_storage(project_info["storage_id"])
-            label_instance.convert_annotation_to_voc(project_info["project_id"],
+            label_instance.convert_annotation_for_ymir_import(project_info["project_id"],
                                                      project_info["des_annotation_path"])
         except NotReadyError:
             logging.info("label result not ready, try agiain later")
