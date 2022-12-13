@@ -218,7 +218,7 @@ def _prepare_assets(index_file: str, work_index_file: str, media_path: str) -> N
 
 def _process_infer_result(
         model_object_type: Any) -> Callable[[mirpb.SingleTaskAnnotations, str, class_ids.UserLabels], None]:
-    _func_map: Dict[Any, Callable[[str, class_ids.UserLabels], None]] = {
+    _func_map: Dict[Any, Callable[[mirpb.SingleTaskAnnotations, str, class_ids.UserLabels], None]] = {
         mirpb.ObjectType.OT_DET_BOX: _process_infer_detbox_result,
         mirpb.ObjectType.OT_SEG: _process_infer_seg_coco_result,
     }
