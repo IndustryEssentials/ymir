@@ -1,5 +1,6 @@
 import { FC, useEffect, useRef, useState } from 'react'
 import { renderMask } from './_helper'
+
 type Props = {
   annotation: YModels.Mask
   ratio?: number
@@ -20,8 +21,9 @@ const Mask: FC<Props> = ({ annotation, ratio = 1 }) => {
 
   useEffect(() => {
     if (annotation.decodeMask && canvas) {
-      const { decodeMask: mask } = annotation
-      renderMask(canvas, mask, width, height)
+      const { decodeMask: mask, color } = annotation
+      console.log('mask:', mask)
+      renderMask(canvas, mask, width, height, color)
     }
   }, [annotation.decodeMask, canvas, width, height])
 
@@ -30,16 +32,19 @@ const Mask: FC<Props> = ({ annotation, ratio = 1 }) => {
       return
     }
     setRect({
-      width: annotation.width * ratio,
-      height: annotation.height * ratio,
+      width: annotation.width,
+      height: annotation.height,
     })
-  }, [ratio, annotation])
+  }, [annotation])
 
   return (
     <canvas
       ref={canvasRef}
       style={{
-        transform: `translate(50%, 50%) scale(${ratio})`,
+        position: 'absolute',
+        left: 0,
+        transformOrigin: 'left top 0',
+        transform: `scale(${ratio})`,
       }}
       width={width}
       height={height}

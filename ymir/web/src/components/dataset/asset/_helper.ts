@@ -1,18 +1,30 @@
 import { AnnotationType } from '@/constants/dataset'
-import { percent } from '@/utils/number'
 import { decode } from '@/utils/rle'
+import Color from 'color'
 
 export function mask2Image(mask: number[][], width: number, height: number, color = '') {
   if (!mask) {
     return
   }
-  const dataWithColor = mask
-    .map((row) => row.map((col) => (col ? [255, 0, 0, 160] : [0, 0, 0, 0])))
-    .flat()
-    .flat()
-  const imageData = Uint8ClampedArray.from(dataWithColor)
-  const image = new ImageData(imageData, width, height)
-  return image
+
+  const bg = Color(color || 'white')
+
+  const imageData = mask2Uint8Array(mask, width * height * 4, bg)
+
+  return new ImageData(imageData, width, height)
+}
+
+function mask2Uint8Array(mask: number[][], len: number, fill: Color) {
+  const dataWithColor = new Uint8ClampedArray(len)
+  mask.forEach((row, i) => {
+    const rowLen = row.length
+    row.forEach((item, j) => {
+      const rgba = item ? [fill.red(), fill.green(), fill.blue(), 100] : [0, 0, 0, 0]
+      dataWithColor.set(rgba, (i * rowLen + j) * 4)
+    })
+  })
+
+  return dataWithColor
 }
 
 export function renderPolygon(canvas: HTMLCanvasElement, points: YModels.Point[], width: number, height: number) {
@@ -29,12 +41,12 @@ export function renderPolygon(canvas: HTMLCanvasElement, points: YModels.Point[]
   ctx.fill()
 }
 
-export function renderMask(canvas: HTMLCanvasElement, mask: number[][], width: number, height: number) {
+export function renderMask(canvas: HTMLCanvasElement, mask: number[][], width: number, height: number, color?: string) {
   const ctx = canvas.getContext('2d')
   if (!ctx) {
     return
   }
-  const image = mask2Image(mask, width, height)
+  const image = mask2Image(mask, width, height, color)
 
   image && ctx.putImageData(image, 0, 0)
 }
@@ -60,9 +72,10 @@ function toBoundingBox(annotation: YModels.BoundingBox): YModels.BoundingBox {
 }
 
 function toMask(annotation: YModels.Mask, asset?: YModels.Asset): YModels.Mask {
+  const mask = decode(annotation.mask, asset?.height || 0)
   return {
     ...annotation,
-    decodeMask: decode(annotation.mask, asset?.height || 0),
+    decodeMask: mask,
   }
 }
 

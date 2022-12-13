@@ -79,5 +79,5 @@ function unleb(s: string): number[] {
 }
 
 function pipe(initialValue: any, ...fns: Function[]) {
-  return fns.reduce((memo, fn) => { console.log('code: ', memo); return fn(memo) }, initialValue)
+  return fns.reduce((memo, fn) => fn(memo), initialValue)
 }

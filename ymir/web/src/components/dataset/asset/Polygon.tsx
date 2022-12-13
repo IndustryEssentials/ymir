@@ -32,7 +32,7 @@ const Polygon: FC<Props> = ({ annotation, ratio = 1 }) => {
       width: annotation.width,
       height: annotation.height,
     })
-  }, [annotation, ratio])
+  }, [annotation])
 
   return <canvas
     ref={canvasRef}
