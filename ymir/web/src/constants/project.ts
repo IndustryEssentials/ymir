@@ -3,8 +3,9 @@ import { format } from '@/utils/date'
 import { transferIteration } from './iteration'
 
 export enum PROJECTTYPES {
-  ObjectDetection = 1,
-  SemanticSegmentation = 2,
+  Classification = 1,
+  ObjectDetection = 2,
+  SemanticSegmentation = 3,
 }
 
 const typesPrefix = 'project.types.'
