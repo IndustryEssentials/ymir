@@ -266,16 +266,15 @@ def _process_infer_seg_coco_result(task_annotations: mirpb.SingleTaskAnnotations
                                    class_id_mgr: class_ids.UserLabels) -> None:
     coco_json_filename = 'coco-infer-result.json'
 
-    # asset_id_to_file_names: asset id to main file name
     with open(os.path.join(work_dir_out, coco_json_filename), 'r') as f:
         result = json.loads(f.read())
     images_list = result['images']
-    asset_id_to_file_names = {}
+    file_name_to_asset_ids = {}
     for v in images_list:
-        asset_id_to_file_names[v['file_name']] = v['file_name']
+        file_name_to_asset_ids[v['file_name']] = v['file_name']
 
     # task_annotations.image_annotations key: image file base name
-    import_annotations_coco_json(asset_id_to_file_names=asset_id_to_file_names,
+    import_annotations_coco_json(file_name_to_asset_ids=file_name_to_asset_ids,
                                  mir_annotation=mirpb.MirAnnotations(),
                                  annotations_dir_path=work_dir_out,
                                  class_type_manager=class_id_mgr,

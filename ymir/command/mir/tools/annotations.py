@@ -125,7 +125,7 @@ def _coco_object_dict_to_annotation(anno_dict: dict, category_id_to_cids: Dict[i
 
 
 def import_annotations(mir_annotation: mirpb.MirAnnotations, label_storage_file: str, prediction_dir_path: str,
-                       groundtruth_dir_path: str, asset_id_to_file_names: Dict[str, str],
+                       groundtruth_dir_path: str, file_name_to_asset_ids: Dict[str, str],
                        unknown_types_strategy: UnknownTypesStrategy, anno_type: "mirpb.ObjectType.V",
                        phase: str) -> Dict[str, int]:
     anno_import_result: Dict[str, int] = defaultdict(int)
@@ -137,7 +137,7 @@ def import_annotations(mir_annotation: mirpb.MirAnnotations, label_storage_file:
     if prediction_dir_path:
         logging.info(f"wrting prediction in {prediction_dir_path}")
         _import_annotations_from_dir(
-            asset_id_to_file_names=asset_id_to_file_names,
+            file_name_to_asset_ids=file_name_to_asset_ids,
             mir_annotation=mir_annotation,
             annotations_dir_path=prediction_dir_path,
             class_type_manager=class_type_manager,
@@ -154,7 +154,7 @@ def import_annotations(mir_annotation: mirpb.MirAnnotations, label_storage_file:
     if groundtruth_dir_path:
         logging.info(f"wrting ground-truth in {groundtruth_dir_path}")
         _import_annotations_from_dir(
-            asset_id_to_file_names=asset_id_to_file_names,
+            file_name_to_asset_ids=file_name_to_asset_ids,
             mir_annotation=mir_annotation,
             annotations_dir_path=groundtruth_dir_path,
             class_type_manager=class_type_manager,
@@ -172,14 +172,14 @@ def import_annotations(mir_annotation: mirpb.MirAnnotations, label_storage_file:
     return anno_import_result
 
 
-def _import_annotations_from_dir(asset_id_to_file_names: Dict[str, str], mir_annotation: mirpb.MirAnnotations,
+def _import_annotations_from_dir(file_name_to_asset_ids: Dict[str, str], mir_annotation: mirpb.MirAnnotations,
                                  annotations_dir_path: str, class_type_manager: class_ids.UserLabels,
                                  unknown_types_strategy: UnknownTypesStrategy, accu_new_class_names: Dict[str, int],
                                  image_annotations: mirpb.SingleTaskAnnotations,
                                  anno_type: "mirpb.ObjectType.V") -> None:
     image_annotations.type = anno_type
     _annotation_parse_func(anno_type)(
-        asset_id_to_file_names=asset_id_to_file_names,
+        file_name_to_asset_ids=file_name_to_asset_ids,
         mir_annotation=mir_annotation,
         annotations_dir_path=annotations_dir_path,
         class_type_manager=class_type_manager,
@@ -188,15 +188,15 @@ def _import_annotations_from_dir(asset_id_to_file_names: Dict[str, str], mir_ann
         image_annotations=image_annotations,
     )
 
-    logging.warning(f"imported {len(image_annotations.image_annotations)} / {len(asset_id_to_file_names)} annotations")
+    logging.warning(f"imported {len(image_annotations.image_annotations)} / {len(file_name_to_asset_ids)} annotations")
 
 
-def _import_annotations_voc_xml(asset_id_to_file_names: Dict[str, str], mir_annotation: mirpb.MirAnnotations,
+def _import_annotations_voc_xml(file_name_to_asset_ids: Dict[str, str], mir_annotation: mirpb.MirAnnotations,
                                 annotations_dir_path: str, class_type_manager: class_ids.UserLabels,
                                 unknown_types_strategy: UnknownTypesStrategy, accu_new_class_names: Dict[str, int],
                                 image_annotations: mirpb.SingleTaskAnnotations) -> None:
     add_if_not_found = (unknown_types_strategy == UnknownTypesStrategy.ADD)
-    for asset_hash, filename in asset_id_to_file_names.items():
+    for filename, asset_hash in file_name_to_asset_ids.items():
         # for each asset, import it's annotations
         annotation_file = os.path.join(annotations_dir_path, os.path.splitext(filename)[0] + '.xml')
         if not os.path.isfile(annotation_file):
@@ -242,7 +242,7 @@ def _import_annotations_voc_xml(asset_id_to_file_names: Dict[str, str], mir_anno
                 anno_idx += 1
 
 
-def import_annotations_coco_json(asset_id_to_file_names: Dict[str, str], mir_annotation: mirpb.MirAnnotations,
+def import_annotations_coco_json(file_name_to_asset_ids: Dict[str, str], mir_annotation: mirpb.MirAnnotations,
                                  annotations_dir_path: str, class_type_manager: class_ids.UserLabels,
                                  unknown_types_strategy: UnknownTypesStrategy, accu_new_class_names: Dict[str, int],
                                  image_annotations: mirpb.SingleTaskAnnotations,
@@ -271,14 +271,13 @@ def import_annotations_coco_json(asset_id_to_file_names: Dict[str, str], mir_ann
     unknown_image_objects_cnt = 0
 
     # images_list -> image_id_to_hashes (key: coco image id, value: ymir asset hash)
-    filename_to_hashes = {v: k for k, v in asset_id_to_file_names.items()}
     image_id_to_hashes: Dict[int, str] = {}
     for v in images_list:
         filename = v['file_name']
-        if filename not in filename_to_hashes:
+        if filename not in file_name_to_asset_ids:
             unhashed_filenames_cnt += 1
             continue
-        image_id_to_hashes[v['id']] = filename_to_hashes[filename]
+        image_id_to_hashes[v['id']] = file_name_to_asset_ids[filename]
 
     # categories_list -> category_id_to_cids (key: coco category id, value: ymir class id)
     category_id_to_cids: Dict[int, int] = {}
