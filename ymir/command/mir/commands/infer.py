@@ -260,6 +260,7 @@ def _process_infer_detbox_result(task_annotations: mirpb.SingleTaskAnnotations, 
 
         # task_annotations.image_annotations key: image file base name
         task_annotations.image_annotations[os.path.basename(asset_name)].CopyFrom(single_image_annotations)
+    task_annotations.type = mirpb.ObjectType.OT_DET_BOX
 
 
 def _process_infer_seg_coco_result(task_annotations: mirpb.SingleTaskAnnotations, work_dir_out: str,
@@ -282,6 +283,7 @@ def _process_infer_seg_coco_result(task_annotations: mirpb.SingleTaskAnnotations
                                  accu_new_class_names={},
                                  image_annotations=task_annotations,
                                  coco_json_filename=coco_json_filename)
+    task_annotations.type = mirpb.ObjectType.OT_SEG
 
 
 # might used both by mining and infer

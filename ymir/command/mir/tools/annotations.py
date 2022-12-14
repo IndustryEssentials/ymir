@@ -3,7 +3,7 @@ import enum
 import json
 import logging
 import os
-from typing import Any, Callable, Dict, List, Optional, Set, Union
+from typing import Any, Callable, Dict, List, Union
 
 from google.protobuf.json_format import ParseDict
 import xmltodict
@@ -347,26 +347,3 @@ def copy_annotations_pred_meta(src_task_annotations: mirpb.SingleTaskAnnotations
     dst_task_annotations.eval_class_ids[:] = src_task_annotations.eval_class_ids
     dst_task_annotations.executor_config = src_task_annotations.executor_config
     dst_task_annotations.model.CopyFrom(src_task_annotations.model)
-
-
-def filter_mirdatas_by_asset_ids(
-    mir_metadatas: Optional[mirpb.MirMetadatas],
-    mir_annotations: Optional[mirpb.MirAnnotations],
-    asset_ids_set: Set[str],
-) -> None:
-    """
-    filter mir_metadatas, mir_annotations by asset_ids_set in place
-    """
-    dictlike_items: List[Any] = []
-    if mir_metadatas:
-        dictlike_items.append(mir_metadatas.attributes)
-    if mir_annotations:
-        dictlike_items.extend([
-            mir_annotations.ground_truth.image_annotations,
-            mir_annotations.prediction.image_annotations,
-            mir_annotations.image_cks,
-        ])
-    for asset_ids_dict in dictlike_items:
-        exclude_asset_ids = set(asset_ids_dict.keys()) - asset_ids_set  # type: ignore
-        for asset_id in exclude_asset_ids:
-            del asset_ids_dict[asset_id]  # type: ignore
