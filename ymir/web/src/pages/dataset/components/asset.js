@@ -7,7 +7,7 @@ import { randomBetween } from '@/utils/number'
 import useFetch from '@/hooks/useFetch'
 
 import Hash from '@/components/common/hash'
-import AssetAnnotation from '@/components/dataset/assetAnnotation'
+import AssetAnnotation from '@/components/dataset/asset/AssetAnnotations'
 import GtSelector from '@/components/form/GtSelector'
 import EvaluationSelector from '@/components/form/EvaluationSelector'
 
@@ -124,13 +124,9 @@ function Asset({ id, asset: cache, datasetKeywords, filterKeyword, filters, inde
             <LeftOutlined hidden={currentIndex.index <= 0} className={styles.prev} onClick={prev} />
           </Col>
           <Col flex={1} className={`${styles.asset_img} scrollbar`}>
+            {/* // todo render semantic segmentation */}
             {asset.annotations ? (
-              <AssetAnnotation
-                url={asset.url}
-                keywords={asset.keywords}
-                data={showAnnotations}
-                // toggleHandle={toggleAnnotation}
-              />
+              <AssetAnnotation asset={{ ...asset, annotations: showAnnotations}} />
             ) : null}
           </Col>
           <Col span={6} className={styles.asset_info}>

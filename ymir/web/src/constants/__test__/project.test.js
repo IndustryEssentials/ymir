@@ -1,5 +1,5 @@
 import { format } from '@/utils/date'
-import { transferProject } from '../project'
+import { PROJECTTYPES, transferProject } from '../project'
 
 jest.mock('umi', () => {
   return {
@@ -18,7 +18,7 @@ describe('constants: project', () => {
       description: 'project002 desc',
       mining_strategy: 0,
       chunk_size: 0,
-      object_type: 1,
+      object_type: PROJECTTYPES.ObjectDetection,
       iteration_target: null,
       map_target: 88,
       training_dataset_count_target: null,
@@ -83,7 +83,7 @@ describe('constants: project', () => {
       hiddenModels: [],
       createTime: format(createTime),
       description: 'project002 desc',
-      type: 1,
+      type: PROJECTTYPES.ObjectDetection,
       typeLabel: "project.types.det",
       isExample: false,
       updateTime: format(createTime),
