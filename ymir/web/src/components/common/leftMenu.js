@@ -59,6 +59,10 @@ function LeftMenu() {
           getItem(t('project.settings.title'), `/home/project/${id}/add`, EditIcon,),
         ]) : null,
       ]),
+      getGroupItem(t('image.leftmenu.label'), 'public_image', [
+        getItem(t('common.top.menu.image'), '/home/image', FileHistoryIcon,),
+        getItem(t('common.top.menu.public_image'), '/home/public_image', FileHistoryIcon,),
+      ]),
       getGroupItem(t('breadcrumbs.keyword'), 'keyword', [
         getItem(t('breadcrumbs.keyword'), '/home/keyword', FlagIcon,),
       ]),
@@ -68,10 +72,7 @@ function LeftMenu() {
         getItem(t('algo.device.label'), '/home/algo/device', DeviceListIcon,),
         getItem(t('algo.support.label'), '/home/algo/support', DeviceSupportedIcon,),
       ]) : null,
-      getGroupItem(t('common.top.menu.configure'), 'settings', [
-        getItem(t('common.top.menu.image'), '/home/image', FileHistoryIcon,),
-        isSuperAdmin(role) ? getItem(t('common.top.menu.permission'), '/home/permission', UserSettingsIcon,) : null,
-      ]),
+      isSuperAdmin(role) ? getItem(t('common.top.menu.permission'), '/home/permission', UserSettingsIcon,) : null,
       { type: 'divider' },
       getItem(<a target="_blank" href='/docs/#/README.md'>
         <BookIcon />
