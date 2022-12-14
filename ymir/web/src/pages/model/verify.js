@@ -11,7 +11,7 @@ import t from "@/utils/t"
 import { format } from '@/utils/date'
 import Breadcrumb from '@/components/common/breadcrumb'
 import Uploader from "@/components/form/uploader"
-import AssetAnnotation from "@/components/dataset/assetAnnotation"
+import AssetAnnotation from '@/components/dataset/asset/AssetAnnotations'
 import { TYPES } from '@/constants/image'
 import styles from './verify.less'
 import { NavDatasetIcon, SearchEyeIcon, NoXlmxIcon } from '@/components/common/Icons'
