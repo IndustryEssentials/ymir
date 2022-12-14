@@ -22,7 +22,6 @@ const Mask: FC<Props> = ({ annotation, ratio = 1 }) => {
   useEffect(() => {
     if (annotation.decodeMask && canvas) {
       const { decodeMask: mask, color } = annotation
-      console.log('mask:', mask)
       renderMask(canvas, mask, width, height, color)
     }
   }, [annotation.decodeMask, canvas, width, height])
