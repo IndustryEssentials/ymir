@@ -253,8 +253,8 @@ def import_annotations_coco_json(file_name_to_asset_ids: Dict[str, str], mir_ann
     with open(coco_file_path, 'r') as f:
         coco_obj = json.loads(f.read())
         images_list = coco_obj['images']
-        categories_list = coco_obj.get('categories', [])
-        annotations_list = coco_obj.get('annotations', [])
+        categories_list = coco_obj['categories']
+        annotations_list = coco_obj['annotations']
 
     if not images_list or not isinstance(images_list, list):
         raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_FILE,
