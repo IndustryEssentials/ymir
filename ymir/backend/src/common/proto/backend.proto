@@ -109,7 +109,7 @@ message GeneralResp {
     LabelCollection label_collection = 9;
     bool ops_ret = 10;
     repeated string sandbox_versions = 11;
-    RespCMDInference detection = 1000;
+    RespCMDInference objects = 1000;
     bool enable_livecode = 1001;
     mir.command.Evaluation evaluation = 1002;
     mir.command.ObjectType object_type = 1003;
