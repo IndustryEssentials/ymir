@@ -5,6 +5,7 @@ import os
 import shutil
 import zipfile
 from io import BytesIO
+from pathlib import Path
 from typing import Dict, List
 from xml.etree import ElementTree
 
@@ -136,12 +137,20 @@ class LabelFree(LabelBase):
         url_path = f"/api/projects/{project_id}"
         self._requests.put(url_path=url_path, params={"delete_unlabeled_task": True})
 
-    @classmethod
-    def _move_voc_files(cls, des_path: str) -> None:
+    @staticmethod
+    def _move_voc_annotations_to(des_path: str) -> None:
         voc_files = glob.glob(f"{des_path}/**/*.xml")
         for voc_file in voc_files:
             base_name = os.path.basename(voc_file)
             shutil.move(voc_file, os.path.join(des_path, base_name))
+
+    @staticmethod
+    def _move_coco_annotations_to(des_path: str) -> None:
+        """
+        Convert result.json (Label Studio default filename) to coco-annotations.json (YMIR required filename)
+        """
+        coco_json_file = Path(des_path) / "annotations/stuff_images.json"
+        coco_json_file.rename(Path(des_path) / "coco-annotations.json")
 
     @classmethod
     def unzip_annotation_files(cls, content: BytesIO, des_path: str) -> None:
@@ -149,15 +158,16 @@ class LabelFree(LabelBase):
             for names in zf.namelist():
                 zf.extract(names, des_path)
 
-        cls._move_voc_files(des_path)
-
     def fetch_label_result(self, project_id: int, object_type: int, des_path: str) -> None:
-        export_task_id = self.get_export_task(project_id)
+        export_task_id = self.get_export_task(project_id, object_type)
         export_url = self.get_export_url(project_id, export_task_id)
-        logging.info("labelfree export_url is %s", export_url)
-        content = self._requests.get(url_path=export_url)
-        self.unzip_annotation_files(BytesIO(content), des_path)
-        logging.info(f"success convert_annotation_to_ymir: {des_path}")
+        resp = requests.get(export_url)
+        self.unzip_annotation_files(BytesIO(resp.content), des_path)
+        if object_type == mir_cmd_pb.ObjectType.OT_DET_BOX:
+            self._move_voc_annotations_to(des_path)
+        else:
+            self._move_coco_annotations_to(des_path)
+        logging.info(f"success save label result from labelfree to {des_path}")
 
     def get_export_task(self, project_id: int, object_type: int) -> str:
         url_path = "/api/v1/export"

@@ -21,7 +21,7 @@ from proto import backend_pb2
 
 
 def trigger_mir_import(repo_root: str, task_id: str, index_file: str, des_annotation_path: str, media_location: str,
-                       import_work_dir: str) -> None:
+                       import_work_dir: str, object_type: int) -> None:
     # trigger mir import
     # todo: handle semantic segmentation label task
     TaskImportDatasetInvoker.importing_cmd(repo_root=repo_root,
@@ -33,7 +33,7 @@ def trigger_mir_import(repo_root: str, task_id: str, index_file: str, des_annota
                                            media_location=media_location,
                                            work_dir=import_work_dir,
                                            unknown_types_strategy=backend_pb2.UnknownTypesStrategy.UTS_STOP,
-                                           object_type=mir_cmd_pb.ObjectType.OT_DET_BOX)
+                                           object_type=object_type)
 
 
 def remove_json_file(des_annotation_path: str) -> None:
@@ -46,11 +46,17 @@ def remove_json_file(des_annotation_path: str) -> None:
             os.remove(os.path.join(des_annotation_path, annotation_file))
 
 
-def generate_label_index_file(input_file: Path, annotation_dir: Path) -> Path:
+def generate_label_index_file(input_file: Path, annotation_dir: Path, object_type: int) -> Path:
     """
     filter assets paths against related annotation files
     """
-    labelled_assets_hashes = [i.stem for i in annotation_dir.iterdir() if i.suffix == ".xml"]
+    if object_type == mir_cmd_pb.ObjectType.OT_DET_BOX:
+        labelled_assets_hashes = [i.stem for i in annotation_dir.iterdir() if i.suffix == ".xml"]
+    else:
+        with open(annotation_dir / "coco-annotations.json") as f:
+            coco = json.load(f)
+        labelled_assets_hashes = [Path(i["file_name"]).stem for i in coco["images"]]
+
     output_file = input_file.with_name("label_index.tsv")
     total_assets_count, labelled_assets_count = 0, 0
     with open(input_file) as in_, open(output_file, "w") as out_:
@@ -72,11 +78,13 @@ def update_label_task(label_instance: utils.LabelBase, task_id: str, project_inf
     state = LogState.DONE if percent == 1 else LogState.RUNNING
     if state == LogState.DONE:
         # For remove some special tasks. Delete the task after labeling will save file
+        object_type = int(project_info.get("object_type", mir_cmd_pb.ObjectType.OT_DET_BOX))
         remove_json_file(project_info["des_annotation_path"])
         try:
             label_instance.sync_export_storage(project_info["storage_id"])
-            label_instance.convert_annotation_for_ymir_import(project_info["project_id"],
-                                                     project_info["des_annotation_path"])
+            label_instance.fetch_label_result(project_info["project_id"],
+                                              object_type,
+                                              project_info["des_annotation_path"])
         except NotReadyError:
             logging.info("label result not ready, try agiain later")
             return
@@ -85,7 +93,7 @@ def update_label_task(label_instance: utils.LabelBase, task_id: str, project_inf
             logging.error(f"get label task {task_id} error: {e}, set task_id:{task_id} error")
             state = LogState.ERROR
         export_index_file = Path(project_info["input_asset_dir"]) / "index.tsv"
-        label_index_file = generate_label_index_file(export_index_file, Path(project_info["des_annotation_path"]))
+        label_index_file = generate_label_index_file(export_index_file, Path(project_info["des_annotation_path"]), object_type)
         trigger_mir_import(
             repo_root=project_info["repo_root"],
             task_id=task_id,
@@ -93,6 +101,7 @@ def update_label_task(label_instance: utils.LabelBase, task_id: str, project_inf
             des_annotation_path=project_info["des_annotation_path"],
             media_location=project_info["media_location"],
             import_work_dir=project_info["import_work_dir"],
+            object_type=object_type,
         )
 
         rds.hdel(label_task_config.MONITOR_MAPPING_KEY, task_id)

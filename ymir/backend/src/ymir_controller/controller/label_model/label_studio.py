@@ -7,12 +7,13 @@ from pathlib import Path
 import shutil
 import zipfile
 from io import BytesIO
+import itertools
 from typing import Dict, List
 from xml.etree import ElementTree
 
 from mir.protos import mir_command_pb2 as mir_cmd_pb
 import numpy as np
-import pycocotools
+import pycocotools.mask
 from label_studio_converter import brush
 
 from controller.config import label_task as label_task_config
@@ -28,13 +29,12 @@ LS_EXPORT_TYPE_MAPPING = {
 
 # TODO move to label_studio
 def binary_mask_to_rle(binary_mask: np.ndarray):
-    rle = {'counts': [], 'size': list(binary_mask.shape)}
-    counts = rle.get('counts')
+    counts = []
     for i, (value, elements) in enumerate(itertools.groupby(binary_mask.ravel(order='F'))):
         if i == 0 and value == 1:
             counts.append(0)
         counts.append(len(list(elements)))
-    return rle
+    return {'counts': counts, 'size': list(binary_mask.shape)}
 
 
 def ls_rle_to_coco_rle(ls_rle: List[int], height: int, width: int) -> str:
@@ -72,16 +72,18 @@ def convert_ls_json_to_coco(ls_json: Dict) -> Dict:
                 height, width = _annotation["original_height"], _annotation["original_width"]
                 rle = _annotation["value"]["rle"]
                 category = _add_category(_annotation["value"]["brushlabels"][0])
+                segmentation = ls_rle_to_coco_rle(rle, height, width)
+                segmentation["counts"] = segmentation["counts"].decode()
                 annotations.append({
                     "image_id": image_id,
-                    "segmentation": self._ls_rle_to_coco_rle(rle, height, width),
+                    "segmentation": segmentation,
                     "iscrowd": 1,
                     "category_id": category["id"],
                 })
         if None in (height, width):
             continue
         images.append({
-            "file_name": Path(image_annotations_unit["data"]["images"]).name,
+            "file_name": Path(image_annotations_unit["data"]["image"]).name,
             "id": image_id,
             "width": width,
             "height": height,
@@ -298,7 +300,7 @@ class LabelStudio(LabelBase):
         """
         Convert result.json (Label Studio default filename) to coco-annotations.json (YMIR required filename)
         """
-        coco_json_file = Path(des_path) / "result.json"
+        coco_json_file = Path(des_path) / "annotations" /" result.json"
         coco_json_file.rename(coco_json_file.with_name("coco-annotations.json"))
 
     def fetch_label_result(self, project_id: int, object_type: int, des_path: str) -> None:
@@ -314,7 +316,7 @@ class LabelStudio(LabelBase):
         elif export_type == "JSON":
             ls_json_file = self._export_from_label_studio(project_id, des_path, export_type, unzip=False)
             coco_json_file = Path(ls_json_file).with_name("coco-annotations.json")
-            with open(ls_json_file) as ls_json_f, open(coco_json_file) as coco_json_f:
+            with open(ls_json_file) as ls_json_f, open(coco_json_file, "w") as coco_json_f:
                 ls_json = json.load(ls_json_f)
                 coco_json = convert_ls_json_to_coco(ls_json)
                 json.dump(coco_json, coco_json_f)
