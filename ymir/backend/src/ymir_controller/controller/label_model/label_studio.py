@@ -77,6 +77,8 @@ def convert_ls_json_to_coco(ls_json: Dict) -> Dict:
                 annotations.append({
                     "image_id": image_id,
                     "segmentation": segmentation,
+                    "area": int(pycocotools.mask.area(segmentation)),
+                    "bbox": pycocotools.mask.toBbox(segmentation).tolist(),
                     "iscrowd": 1,
                     "category_id": category["id"],
                 })
