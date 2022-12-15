@@ -1,11 +1,15 @@
 import { getPublicImageUrl } from '@/constants/common'
 import usePostMessage from '@/hooks/usePostMessage'
+import useRequest from '@/hooks/useRequest'
 import { useEffect, useRef, useState } from 'react'
-import { getLocale, useHistory, useLocation, useParams, useRouteMatch, useSelector } from 'umi'
+import { getLocale, useHistory, useLocation, useParams, useRouteMatch } from 'umi'
+import { useSelector } from 'react-redux'
+
 type Params = { [key: string]: any }
 type DataType = {
   path?: string
   params?: Params
+  url?: string
 }
 type HandlesType = {
   [key: string]: () => void
@@ -32,13 +36,14 @@ const PublicImage = () => {
   if (!base) {
     return <div>Image Community is not READY</div>
   }
-  const { username: userName, id: userId } = useSelector((state: Params) => state.user)
+  const { username: userName, id: userId } = useSelector(({ user }: { user: { username: string; id: number } }) => user)
   const { module = defaultPage } = useParams<Params>()
   const location = useLocation<Params>()
   const iframe: { current: HTMLIFrameElement | null } = useRef(null)
   const [url, setUrl] = useState(base)
   const [post, recieved] = usePostMessage<RecievedType>(base)
   const [key, setKey] = useState(Math.random())
+  const { runAsync: checkImageExist } = useRequest<{ total: number }>('image/getImages')
 
   useEffect(() => {
     if (!location.state?.reload) {
@@ -77,6 +82,16 @@ const PublicImage = () => {
           return
         }
         history.push(page, params)
+      },
+      async checkImage() {
+        const url = recieved.data?.url
+        if (url) {
+          const result = await checkImageExist({ url })
+          post('imageChecked', {
+            url,
+            result: result?.total > 0,
+          })
+        }
       },
     }
     const func = handles[recieved.type]
