@@ -3,11 +3,12 @@ import { connect } from "dva"
 import { Card, Input, Button, Form, Row, Col, List, Modal, message } from "antd"
 
 import t from "@/utils/t"
+import { ROLES, getRolesLabel } from "@/constants/user"
 import Breadcrumbs from "@/components/common/breadcrumb"
 import Uploader from '@/components/form/uploader'
 import { phoneValidate } from "@/components/form/validators"
 import s from "./common.less"
-import { EmailIcon, KeyIcon, LockIcon, SmartphoneIcon, UserIcon } from "@/components/common/icons"
+import { EmailIcon, KeyIcon, LockIcon, SmartphoneIcon, UserIcon } from "@/components/common/Icons"
 
 const { useForm } = Form
 
@@ -41,7 +42,6 @@ function Info({ user, updateUserInfo, validatePwd, modifyPwd, getToken, }) {
         key: 'password', title: t('user.info.list.password'), value: '********', icon: <LockIcon />,
         action: () => { setPasswordModify(true) }
       },
-      // { key: 'permission', title: t('user.info.list.permission'), value: 'role', icon: <UserSettingsIcon />, action: () => { } },
     ])
   }
 
@@ -121,7 +121,7 @@ function Info({ user, updateUserInfo, validatePwd, modifyPwd, getToken, }) {
           title={title}
           description={value}
         />
-        {key !== 'email' ? <Button type='link' onClick={action}>{t('common.modify')}</Button> : null}
+        {action ? <Button type='link' onClick={action}>{t('common.modify')}</Button> : null}
       </List.Item>
     )
   }
@@ -134,7 +134,14 @@ function Info({ user, updateUserInfo, validatePwd, modifyPwd, getToken, }) {
           <Col flex={1} md={{ span: 20, justify: 'center' }} lg={{ offset: 6, span: 12 }} xl={{ offset: 4, span: 12, }}>
             <Row className={s.avatarContent} justify='center'>
               <Col flex={1}>
-                <div className={s.avatar}>{user.avatar ? <img src={user.avatar} /> : <UserIcon style={{ color: '#fff', fontSize: 70 }} />}</div>
+                <div className={s.avatar}>
+                  <div className={s.avatarBox}>
+                  {user.avatar ? <img src={user.avatar} /> : <UserIcon style={{ color: '#fff', fontSize: 80 }} />}
+                  </div>
+                  {user.role > ROLES.USER ? <span className={s.admin}>
+                    {t(getRolesLabel(user.role))}
+                  </span> : null}
+                </div>
                 <Uploader
                   onChange={onAvatarOk}
                   format='avatar'

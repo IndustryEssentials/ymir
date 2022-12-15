@@ -2,6 +2,7 @@ import tempfile
 import os
 from typing import Dict, Any
 
+import grpc
 from fastapi.logger import logger
 from sqlalchemy.orm import Session
 
@@ -29,6 +30,7 @@ def import_model_in_background(
     try:
         _import_model(db, controller_client, model_import, user_id, task_hash)
     except (
+        grpc.RpcError,
         ValueError,
         OSError,
         FieldValidationFailed,
@@ -90,7 +92,10 @@ def _import_model(
 def create_model_stages(db: Session, model_id: int, model_info: Dict) -> None:
     stages_in = [
         schemas.ModelStageCreate(
-            name=stage_name, map=stage_info["mAP"], timestamp=stage_info["timestamp"], model_id=model_id
+            name=stage_name,
+            metrics=stage_info["ci_averaged_evaluation"],
+            timestamp=stage_info["timestamp"],
+            model_id=model_id,
         )
         for stage_name, stage_info in model_info["model_stages"].items()
     ]

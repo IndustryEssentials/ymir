@@ -22,7 +22,6 @@ const Chart = ({ option = {}, height = 300 }) => {
   
   useEffect(() => {
     let barChart = null
-    // console.log('option: ', option, chartRef)
     if (chartRef.current) {
       const chart = chartRef.current
       barChart = echarts.init(chart)

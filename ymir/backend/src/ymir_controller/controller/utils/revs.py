@@ -15,13 +15,13 @@ def join_tvt_branch_tid(branch_id: str, tvt_type: str = None, tid: str = None) -
     return ret
 
 
-def build_tvt_dataset_id(tvt_dataset_id: str) -> backend_pb2.TaskReqTraining.TrainingDatasetType:
+def build_tvt_dataset_id(tvt_dataset_id: str) -> backend_pb2.TrainingDatasetType:
     _prefix_to_tvt = {
         'tr': mir_cmd_pb.TvtTypeTraining,
         'va': mir_cmd_pb.TvtTypeValidation,
         'te': mir_cmd_pb.TvtTypeTest,
     }
-    dataset_type = backend_pb2.TaskReqTraining.TrainingDatasetType()
+    dataset_type = backend_pb2.TrainingDatasetType()
     split_data = tvt_dataset_id.split(':')
     if len(split_data) == 2:
         dataset_type.dataset_type = _prefix_to_tvt[split_data[0].lower()]

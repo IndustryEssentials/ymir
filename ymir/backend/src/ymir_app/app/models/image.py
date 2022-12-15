@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from sqlalchemy import Boolean, Column, DateTime, Integer, String
+from sqlalchemy import Boolean, Column, DateTime, Integer, String, SmallInteger
 from sqlalchemy.orm import relationship
 
 from app.config import settings
@@ -30,6 +30,7 @@ class DockerImage(Base):
         uselist=True,
     )
     enable_livecode = Column(Boolean, default=False, nullable=False)
+    object_type = Column(SmallInteger, index=True, default=1, nullable=False)
     is_shared = Column(Boolean, default=False, nullable=False)
     is_deleted = Column(Boolean, default=False, nullable=False)
     create_datetime = Column(DateTime, default=datetime.utcnow, nullable=False)

@@ -1,4 +1,6 @@
 from datetime import datetime
+import json
+from typing import Dict
 
 from sqlalchemy import (
     Boolean,
@@ -45,3 +47,7 @@ class Task(Base):
         onupdate=datetime.utcnow,
         nullable=False,
     )
+
+    @property
+    def task_parameters(self) -> Dict:
+        return json.loads(self.parameters) if self.parameters else {}

@@ -6,7 +6,7 @@ import (
 	"github.com/urfave/cli"
 
 	"github.com/IndustryEssentials/ymir-hel/configs"
-	server_grpc "github.com/IndustryEssentials/ymir-hel/grpc/server"
+	server_hel "github.com/IndustryEssentials/ymir-hel/hel"
 	server_viewer "github.com/IndustryEssentials/ymir-hel/viewer/server"
 )
 
@@ -24,20 +24,20 @@ func BuildCliApp(config *configs.Config) (*cli.App, error) {
 			},
 		},
 		{
-			Name:  "grpc_service",
-			Usage: "launch YMIR-Hel Grpc Service.",
+			Name:  "hel",
+			Usage: "launch YMIR-Hel Service.",
 			Action: func(c *cli.Context) error {
-				if err := server_grpc.StartGrpcService(config); err != nil {
+				if err := server_hel.StartHelServer(config); err != nil {
 					return cli.NewExitError(err.Error(), 1)
 				}
 				return nil
 			},
 		},
 		{
-			Name:  "grpc_client",
-			Usage: "call YMIR-Hel Grpc Service.",
+			Name:  "hel_client",
+			Usage: "call YMIR-Hel Service.",
 			Action: func(c *cli.Context) error {
-				if err := server_grpc.GrpcClientCall(config.HelGrpcURL); err != nil {
+				if err := server_hel.GrpcClientCall(config.HelGrpcURL); err != nil {
 					return cli.NewExitError(err.Error(), 1)
 				}
 				return nil

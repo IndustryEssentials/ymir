@@ -7,7 +7,7 @@ import t from "@/utils/t"
 import { getImageTypes } from '@/constants/query'
 import Breadcrumbs from "@/components/common/breadcrumb"
 import ImageList from './components/list'
-import { SearchIcon } from "@/components/common/icons"
+import { SearchIcon } from "@/components/common/Icons"
 import ShareImageList from "./components/shareImageList"
 
 const { useForm } = Form

@@ -8,11 +8,11 @@ import (
 )
 
 type MirdataModel struct {
-	ModelHash            string                 `json:"model_hash"`
-	MeanAveragePrecision float32                `json:"mean_average_precision"`
-	Context              string                 `json:"context"`
-	Stages               map[string]interface{} `json:"stages"`
-	BestStageName        string                 `json:"best_stage_name"`
+	ModelHash     string                 `json:"model_hash"`
+	MAP           float32                `json:"mAP"`
+	Context       string                 `json:"context"`
+	Stages        map[string]interface{} `json:"stages"`
+	BestStageName string                 `json:"best_stage_name"`
 
 	TaskParameters string                 `json:"task_parameters"`
 	ExecutorConfig map[string]interface{} `json:"executor_config"`

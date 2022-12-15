@@ -4,17 +4,19 @@ import {
   TooltipComponent,
   GridComponent,
   LegendComponent,
-  MarkLineComponent
+  MarkLineComponent,
+  DataZoomComponent,
 } from 'echarts/components'
 import {
   LineChart,
+  ScatterChart,
 } from 'echarts/charts'
 import {
   CanvasRenderer
 } from 'echarts/renderers'
 
 echarts.use(
-  [TooltipComponent, GridComponent, LegendComponent, MarkLineComponent, LineChart, CanvasRenderer]
+  [TooltipComponent, GridComponent, LegendComponent, MarkLineComponent, LineChart, ScatterChart, CanvasRenderer, DataZoomComponent]
 );
 
 const Chart = ({ option = {}, height = 300, style = {}, ...rest }) => {
@@ -22,7 +24,6 @@ const Chart = ({ option = {}, height = 300, style = {}, ...rest }) => {
 
   useEffect(() => {
     let lineChart = null
-    // console.log('option: ', option, chartRef)
     if (chartRef.current) {
       setTimeout(() => {
         lineChart = echarts.init(chartRef.current)

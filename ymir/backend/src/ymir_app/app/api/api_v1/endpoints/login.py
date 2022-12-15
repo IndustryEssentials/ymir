@@ -2,12 +2,14 @@ from datetime import timedelta
 from typing import Any
 
 from fastapi import APIRouter, Body, Depends
+from fastapi.logger import logger
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 
 from app import crud, schemas
 from app.api import deps
 from app.api.errors.errors import (
+    FailedToSendEmail,
     InactiveUser,
     IncorrectEmailOrPassword,
     InvalidToken,
@@ -85,7 +87,12 @@ def recover_password(email: str, db: Session = Depends(deps.get_db)) -> Any:
     if not user:
         raise UserNotFound()
     password_reset_token = security.generate_password_reset_token(email=email)
-    send_reset_password_email(email_to=user.email, email=email, token=password_reset_token)
+    try:
+        send_reset_password_email(email_to=user.email, email=email, token=password_reset_token)
+    except Exception:
+        logger.exception("[reset password] Failed to send email. Please check configuration")
+        raise FailedToSendEmail()
+
     return {"message": "Password recovery email sent"}
 
 

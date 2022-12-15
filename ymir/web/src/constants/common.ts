@@ -1,17 +1,16 @@
-
-
-
-import { BackendData } from "@/interface/common"
 export const HIDDENMODULES = {
+  ITERATIONSWITCH: true,
   OPENPAI: true,
   LIVECODE: true,
 }
 
+export const INFER_DATASET_MAX_COUNT = 50000
+export const INFER_CLASSES_MAX_COUNT = 20
 
 declare global {
   interface Window {
     baseConfig: {
-      [name: string]: string,
+      [name: string]: string
     }
   }
 }
@@ -27,20 +26,20 @@ export enum actions {
   del = 'delete',
 }
 
-export const OPENPAI_MAX_GPU_COUNT  = 8
+export const OPENPAI_MAX_GPU_COUNT = 8
 
 type Result = {
-  [key: string]: any,
+  [key: string]: any
 }
-export function updateResultState(result: Result, tasks: BackendData) {
-  const task = tasks[result?.task?.hash]
+export function updateResultState(result: YModels.Result, tasks: YModels.BackendData) {
+  const task = result?.task?.hash ? tasks[result.task.hash] : null
   if (!result || !task) {
     return result
   }
   return updateResultByTask(result, task)
 }
 
-export function updateResultByTask(result: Result, task: BackendData) {
+export function updateResultByTask(result: Result, task: YModels.BackendData) {
   if (!result || !task) {
     return
   }
@@ -58,6 +57,12 @@ export function updateResultByTask(result: Result, task: BackendData) {
 export function validState(state: number) {
   return ResultStates.VALID === state
 }
+export function invalidState(state: number) {
+  return ResultStates.INVALID === state
+}
+export function readyState(state: number) {
+  return ResultStates.READY === state
+}
 export const statesLabel = (state: ResultStates) => {
   const maps = {
     [ResultStates.READY]: 'dataset.state.ready',
@@ -71,4 +76,47 @@ export function getVersionLabel(version: number) {
   return `V${version}`
 }
 
-export const DEPLOY_MODULE_URL = window?.baseConfig?.DEPLOY_MODULE_URL
+export const getDeployUrl = () => {
+  let url = window?.baseConfig?.DEPLOY_MODULE_URL
+  const onlyPort = /^\d+$/.test(url)
+  return onlyPort ? `${location.protocol}//${location.hostname}:${url}` : url
+}
+
+enum MergeStrategy {
+  latest = 2,
+  older = 3,
+  stop = 1,
+}
+
+enum LabelAnnotationTypes {
+  gt = 1,
+  pred = 2,
+}
+
+export const getLabelAnnotationTypes = () => {
+  const prefix = 'task.label.form.keep_anno.'
+  return [
+    {value: LabelAnnotationTypes.gt, label: `${prefix}gt`},
+    {value: LabelAnnotationTypes.pred, label: `${prefix}pred`},
+    {value: undefined, label: `${prefix}none`},
+  ]
+}
+
+export const getLabelAnnotationType = (type: LabelAnnotationTypes | undefined) => {
+  const types = getLabelAnnotationTypes()
+  const target = types.find(({ value }) => !value || value === type)
+  return target?.label
+}
+
+export const getMergeStrategies = () => {
+  const prefix = 'task.train.form.repeatdata'
+  return [
+    { value: MergeStrategy.latest, label: `${prefix}.latest` },
+    { value: MergeStrategy.older, label: `${prefix}.original` },
+    { value: MergeStrategy.stop, label: `${prefix}.terminate` },
+  ]
+}
+
+export const getMergeStrategyLabel = (strategy: MergeStrategy | undefined) => {
+  return strategy ? getMergeStrategies().find(({ value }) => value === strategy)?.label : undefined
+}

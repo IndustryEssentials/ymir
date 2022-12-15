@@ -3,7 +3,7 @@ import t from '@/utils/t'
 import { Descriptions } from 'antd'
 import {
   ArrowDownIcon, ArrowUpIcon,
-} from "@/components/common/icons"
+} from "@/components/common/Icons"
 import s from './detail.less'
 
 const { Item } = Descriptions

@@ -13,6 +13,7 @@ import yaml
 
 from mir.commands.mining import CmdMining
 from mir.tools import mir_storage_ops, models, settings as mir_settings, mir_storage
+from mir.tools.class_ids import ids_file_path
 import mir.protos.mir_command_pb2 as mirpb
 import tests.utils as test_utils
 
@@ -50,37 +51,11 @@ class TestMiningCmd(unittest.TestCase):
         with open(output_file, 'w') as f:
             f.writelines("d4e4a60147f1e35bc7f5bc89284aa16073b043c9\t0.1")
 
-        fake_infer_output_dict = {
-            'detection': {
-                'd4e4a60147f1e35bc7f5bc89284aa16073b043c9': {
-                    'boxes': [
-                        {
-                            'box': {
-                                'x': 0,
-                                'y': 0,
-                                'w': 30,
-                                'h': 30
-                            },
-                            'score': 0.5,
-                            'class_name': 'cat',
-                        },
-                        {
-                            'box': {
-                                'x': 50,
-                                'y': 0,
-                                'w': 30,
-                                'h': 30
-                            },
-                            'score': 0.5,
-                            'class_name': 'unknown-car',  # unknown class name, should be ignored
-                        },
-                    ],
-                },
-            },
-        }
-        infer_output_file = os.path.join(kwargs['work_dir'], 'out', 'infer-result.json')
-        with open(infer_output_file, 'w') as f:
-            f.write(json.dumps(fake_infer_output_dict))
+        # a fake prediction result file
+        prediction = mirpb.SingleTaskAnnotations()
+        with open(os.path.join(kwargs['work_dir'], 'out', 'prediction.mir'), 'wb') as f:
+            f.write(prediction.SerializeToString())
+
         return 0
 
     def _mock_prepare_model(*args, **kwargs):
@@ -91,6 +66,7 @@ class TestMiningCmd(unittest.TestCase):
                                  best_stage_name=mss.stage_name,
                                  model_hash='xyz',
                                  stage_name=mss.stage_name,
+                                 object_type=mirpb.ObjectType.OT_DET_BOX,
                                  package_version=ymir_model_salient_version(YMIR_VERSION))
         return ms
 
@@ -198,6 +174,7 @@ class TestMiningCmd(unittest.TestCase):
         args.topk = 1
         args.add_prediction = True
         args.mir_root = self._mir_repo_root
+        args.label_storage_file = ids_file_path(self._mir_repo_root)
         args.config_file = self._config_file
         args.executor = 'al:0.0.1'
         args.executant_name = 'executor-instance'
@@ -218,7 +195,7 @@ class TestMiningCmd(unittest.TestCase):
             'default'].timestamp
         self.assertEqual(expected_model_storage.get_model_meta(), mir_annotations.prediction.model)
         mock_run.assert_called_once_with(work_dir=args.work_dir,
-                                         mir_root=args.mir_root,
+                                         label_storage_file=args.label_storage_file,
                                          media_path=os.path.join(args.work_dir, 'in', 'assets'),
                                          model_storage=expected_model_storage,
                                          index_file=os.path.join(args.work_dir, 'in', 'candidate-src-index.tsv'),

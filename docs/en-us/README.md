@@ -1,3 +1,0 @@
-# YMIR Documents
-
-*under construction*

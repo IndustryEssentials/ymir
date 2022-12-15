@@ -27,10 +27,11 @@ def prepare_label_dir(working_dir: str, task_id: str) -> Tuple[str, str, str, st
     return input_asset_dir, export_path, monitor_file_path, export_work_dir, import_work_dir
 
 
-def trigger_ymir_export(repo_root: str, dataset_id: str, input_asset_dir: str, media_location: str,
-                        export_work_dir: str, keywords: List[str], annotation_type: Optional[int]) -> None:
+def trigger_ymir_export(repo_root: str, label_storage_file: str, dataset_id: str, input_asset_dir: str,
+                        media_location: str, export_work_dir: str, keywords: List[str],
+                        annotation_type: Optional[int]) -> None:
     # trigger ymir export, so that we can get pictures from ymir
-    format_str = utils.annotation_format_str(mir_cmd_pb.AnnoFormat.AF_DET_LS_JSON)
+    format_str = utils.annotation_format_str(mir_cmd_pb.ExportFormat.EF_LS_JSON)
 
     gt_dir: Optional[str] = None
     pred_dir: Optional[str] = None
@@ -40,6 +41,7 @@ def trigger_ymir_export(repo_root: str, dataset_id: str, input_asset_dir: str, m
         pred_dir = input_asset_dir
 
     TaskExportingInvoker.exporting_cmd(repo_root=repo_root,
+                                       label_storage_file=label_storage_file,
                                        in_dataset_id=dataset_id,
                                        annotation_format=format_str,
                                        asset_dir=input_asset_dir,
@@ -52,6 +54,7 @@ def trigger_ymir_export(repo_root: str, dataset_id: str, input_asset_dir: str, m
 
 def start_label_task(
     repo_root: str,
+    label_storage_file: str,
     working_dir: str,
     media_location: str,
     task_id: str,
@@ -67,6 +70,7 @@ def start_label_task(
     input_asset_dir, export_path, monitor_file_path, export_work_dir, import_work_dir = prepare_label_dir(
         working_dir, task_id)
     trigger_ymir_export(repo_root=repo_root,
+                        label_storage_file=label_storage_file,
                         dataset_id=dataset_id,
                         input_asset_dir=input_asset_dir,
                         media_location=media_location,

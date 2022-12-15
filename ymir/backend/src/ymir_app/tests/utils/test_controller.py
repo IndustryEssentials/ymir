@@ -2,15 +2,16 @@ import random
 
 import pytest
 
-from app.schemas.dataset import MergeStrategy
+from app.schemas.common import MergeStrategy
 from app.utils import ymir_controller as m
 from tests.utils.utils import random_lower_string, random_url
 
 
 def test_gen_typed_datasets():
     dataset_type = random.randint(1, 3)
-    dataset_ids = [random_lower_string() for _ in range(10)]
-    res = m.gen_typed_datasets(dataset_type, dataset_ids)
+    dataset_hashes = [random_lower_string() for _ in range(10)]
+    typed_datasets = [{"type": dataset_type, "hash": _hash} for _hash in dataset_hashes]
+    res = m.gen_typed_datasets(typed_datasets)
     for dataset in res:
         assert dataset.dataset_type == dataset_type
 
@@ -25,12 +26,12 @@ class TestControllerRequest:
             user_id,
             project_id,
             args={
-                "dataset_hash": random_lower_string(),
-                "validation_dataset_hash": random_lower_string(),
-                "class_ids": [],
-                "strategy": MergeStrategy.prefer_newest,
+                "typed_labels": [],
+                "typed_datasets": [],
+                "typed_models": [],
+                "merge_strategy": MergeStrategy.prefer_newest,
                 "docker_image": "yolov4-training:test",
-                "docker_config": "{}",
+                "docker_image_config": "{}",
             },
         )
         assert ret.req.req_type == m.mirsvrpb.RequestType.TASK_CREATE
@@ -45,14 +46,14 @@ class TestControllerRequest:
             user_id,
             project_id,
             args={
-                "dataset_hash": random_lower_string(),
+                "typed_labels": [],
+                "typed_datasets": [],
+                "typed_models": [{"hash": random_lower_string(), "stage_name": random_lower_string()}],
                 "top_k": 1000,
-                "model_hash": random_lower_string(),
-                "model_stage_name": random_lower_string(),
                 "generate_annotations": True,
-                "strategy": MergeStrategy.prefer_newest,
+                "merge_strategy": MergeStrategy.prefer_newest,
                 "docker_image": "yolov4-training:test",
-                "docker_config": "{}",
+                "docker_image_config": "{}",
             },
         )
         assert ret.req.req_type == m.mirsvrpb.RequestType.TASK_CREATE
@@ -67,11 +68,9 @@ class TestControllerRequest:
             user_id,
             project_id,
             args={
-                "name": random_lower_string(),
-                "dataset_hash": random_lower_string(),
-                "dataset_name": random_lower_string(),
+                "typed_labels": [],
+                "typed_datasets": [{"name": random_lower_string(), "hash": random_lower_string()}],
                 "labellers": [],
-                "class_ids": [1, 2],
                 "extra_url": random_url(),
                 "annotation_type": 2,
             },

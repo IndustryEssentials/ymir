@@ -25,7 +25,9 @@ def check_commands():
 
 # mir repo operations
 def mir_repo_init(mir_root: str):
-    return_code = CmdInit.run_with_args(mir_root, empty_rev='')
+    return_code = CmdInit.run_with_args(mir_root=mir_root,
+                                        label_storage_file=class_ids.ids_file_path(mir_root),
+                                        empty_rev='')
     assert return_code == MirCode.RC_OK, "init failed"
 
 
@@ -86,3 +88,20 @@ def diff_types(a: Any, b: Any, stack: list) -> None:
 def diff_others(a: Any, b: Any, stack: list) -> None:
     if a != b:
         raise ValueError(f"stack: {stack}, other kind of values mismatched:\na: {a}\nb: {b}")
+
+
+def convert_dict_str_keys_to_int(d: dict) -> None:
+    if not isinstance(d, dict):
+        return
+
+    allkeys = list(d.keys())
+    for k in allkeys:
+        v = d[k]
+        if isinstance(k, str) and k.isdigit():
+            d[int(k)] = v
+            del d[k]
+        if isinstance(v, dict):
+            convert_dict_str_keys_to_int(v)
+        elif isinstance(v, list):
+            for vv in v:
+                convert_dict_str_keys_to_int(vv)

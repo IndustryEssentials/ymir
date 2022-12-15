@@ -8,7 +8,7 @@ import t from "@/utils/t"
 import Foot from "@/components/common/footer"
 import styles from "../common.less"
 import loginBig from "@/assets/logo-big.png"
-import { EmailIcon, LockIcon } from "@/components/common/icons"
+import { EmailIcon, LockIcon } from "@/components/common/Icons"
 import LangBtn from "@/components/common/langBtn"
 
 const Login = ({ loginApi }) => {

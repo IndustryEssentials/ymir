@@ -1,4 +1,4 @@
-from typing import Optional, List
+from typing import Optional
 from fastapi.logger import logger
 from sqlalchemy.orm import Session
 
@@ -6,7 +6,6 @@ from app import crud, models, schemas
 from app.config import settings
 from app.constants.state import ResultState, TaskType, TaskState
 from app.utils.ymir_controller import ControllerClient
-from app.utils.ymir_viz import VizClient
 from app.libs.datasets import import_dataset_in_background
 from app.libs.models import import_model_in_background
 
@@ -148,28 +147,3 @@ def setup_sample_project_in_background(
             initial_model_id=model.id,
         ),
     )
-
-
-def send_project_metrics(
-    user_id: int,
-    project_id: int,
-    project_name: str,
-    keyword_ids: List[int],
-    project_type: str,
-    create_time: int,
-) -> None:
-    try:
-        viz_client = VizClient()
-        viz_client.initialize(user_id=user_id, project_id=project_id)
-        viz_client.send_metrics(
-            metrics_group="project",
-            id=f"{project_id:0>6}",
-            create_time=create_time,
-            keyword_ids=keyword_ids,
-            extra_data={"project_type": project_type},
-        )
-    except Exception:
-        logger.exception(
-            "[metrics] failed to send project(%s) stats to viewer, continue anyway",
-            project_name,
-        )

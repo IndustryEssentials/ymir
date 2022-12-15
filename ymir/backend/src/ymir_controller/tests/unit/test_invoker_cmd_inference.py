@@ -4,10 +4,13 @@ import os
 import shutil
 import unittest
 from unittest import mock
+
+from google.protobuf import json_format
 import yaml
 
 from controller.utils.invoker_call import make_invoker_cmd_call
 from controller.utils.invoker_mapping import RequestTypeToInvoker
+from mir.protos import mir_command_pb2 as mir_cmd_pb
 from proto import backend_pb2
 import tests.utils as test_utils
 
@@ -77,8 +80,8 @@ class TestInvokerCMDInference(unittest.TestCase):
         model_stage = "model_stage_name"
         assets_config = {"modelskvlocation": self._storage_root, 'server_runtime': 'nvidia'}
 
-        mock_json = {
-            "detection": {
+        prediction_dict = {
+            "image_annotations": {
                 "pic_hash": {
                     "boxes": [{
                         "box": {
@@ -94,14 +97,17 @@ class TestInvokerCMDInference(unittest.TestCase):
                 }
             }
         }
+        prediction = mir_cmd_pb.SingleTaskAnnotations()
+        json_format.ParseDict(prediction_dict, prediction)
 
         # Store inference data.
         working_dir = os.path.join(self._sandbox_root, "work_dir",
                                    backend_pb2.RequestType.Name(backend_pb2.CMD_INFERENCE), self._task_id)
-        output_filename = os.path.join(working_dir, "out", "infer-result.json")
+        output_filename = os.path.join(working_dir, "out", "prediction.mir")
         os.makedirs(os.path.join(working_dir, "out"), exist_ok=True)
-        with open(output_filename, 'w') as f:
-            f.write(json.dumps(mock_json))
+        with open(output_filename, 'wb') as f:
+            f.write(prediction.SerializeToString())
+
         # store user labels.
         with open(os.path.join(self._user_root, 'labels.yaml'), 'w') as f:
             yaml.safe_dump({"labels": [{"id": 0, "name": "no_helmet_head"}]}, f)
@@ -121,12 +127,15 @@ class TestInvokerCMDInference(unittest.TestCase):
             work_dir=working_dir,
         )
 
+        label_storage_file = test_utils.user_label_file(sandbox_root=self._sandbox_root, user_id=self._user_name)
+
         os.makedirs(working_dir, exist_ok=True)
         config_file = os.path.join(working_dir, "inference_config.yaml")
 
         index_file = os.path.join(working_dir, "index.txt")
 
-        cmd = (f"mir infer --root {self._mir_repo_root} -w {working_dir} --model-location {self._storage_root} "
+        cmd = (f"mir infer --root {self._mir_repo_root} --user-label-file {label_storage_file} "
+               f"-w {working_dir} --model-location {self._storage_root} "
                f"--index-file {index_file} --model-hash {model_hash}@{model_stage} "
                f"--task-config-file {config_file} --executor {inference_image}")
 

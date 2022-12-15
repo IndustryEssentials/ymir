@@ -1,22 +1,25 @@
-import React, { useCallback, useEffect, useState } from "react"
-import { useParams } from "umi"
+import React, { useCallback, useEffect, useState } from 'react'
+import { useParams, useSelector } from 'umi'
 
-import t from "@/utils/t"
+import t from '@/utils/t'
 import useFetch from '@/hooks/useFetch'
-import Breadcrumbs from "@/components/common/breadcrumb"
+import useRequest from '@/hooks/useRequest'
+import Breadcrumbs from '@/components/common/breadcrumb'
 import Iteration from './iterations/iteration'
-import Prepare from "./iterations/prepare"
+import Prepare from './iterations/prepare'
 import Current from './iterations/detail'
-import List from "./iterations/list"
+import List from './iterations/list'
 
-import s from "./iterations/index.less"
-import { CardTabs } from "@/components/tabs/cardTabs"
-import ProjectDetail from "./components/detail"
+import s from './iterations/index.less'
+import { CardTabs } from '@/components/tabs/cardTabs'
+import ProjectDetail from './components/detail'
 
 function Iterations() {
   const { id } = useParams()
-  const [iterations, getIterations] = useFetch('iteration/getIterations', [])
-  const [project, getProject, setProject] = useFetch('project/getProject', {})
+  const project = useSelector(({ project }) => project.projects[id] || {})
+  const { run: getProject } = useRequest('project/getProject', {
+    loading: false,
+  })
 
   const tabs = [
     { tab: t('project.iteration.tabs.current'), key: 'current', content: <Current project={project} /> },
@@ -24,16 +27,11 @@ function Iterations() {
   ]
 
   useEffect(() => {
-    id && getProject({ id, force: true })
-    id && getIterations({ id })
+    id && getProject({ id })
   }, [id])
 
-  const fresh = useCallback(project => {
-    if (project) {
-      setProject(project)
-    } else {
-      getProject({ id, force: true })
-    }
+  const fresh = useCallback(() => {
+    getProject({ id, force: true })
   }, [id])
 
   return (
@@ -41,13 +39,11 @@ function Iterations() {
       <Breadcrumbs />
       <div className={s.header}>
         <ProjectDetail project={project} />
-        {project.round > 0 ?
-          <Iteration project={project} iterations={iterations} fresh={fresh} /> : <Prepare project={project} iterations={iterations} fresh={fresh} />}
+        {project.round > 0 ? <Iteration project={project} fresh={fresh} /> : <Prepare project={project} fresh={fresh} />}
       </div>
       <CardTabs data={tabs} />
     </div>
   )
 }
-
 
 export default Iterations

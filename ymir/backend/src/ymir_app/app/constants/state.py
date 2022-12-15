@@ -76,13 +76,20 @@ class MiningStrategy(IntEnum):
     customize = 2
 
 
-class TrainingType(IntEnum):
-    object_detect = 1
+class ObjectType(IntEnum):
+    classification = mir_cmd_pb.ObjectType.OT_CLASS  # 1
+    object_detect = mir_cmd_pb.ObjectType.OT_DET_BOX  # 2
+    segmentation = mir_cmd_pb.ObjectType.OT_SEG  # 3
 
 
 class AnnotationType(IntEnum):
     gt = 1
     pred = 2
+
+
+class DatasetType(IntEnum):
+    validation = mir_cmd_pb.TvtTypeValidation
+    training = mir_cmd_pb.TvtTypeTraining
 
 
 @dataclass(frozen=True)

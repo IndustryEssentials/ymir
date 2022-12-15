@@ -15,7 +15,7 @@ import '@antv/graphin-components/dist/index.css'
 import '@antv/graphin-icons/dist/index.css'
 import Breadcrumbs from '@/components/common/breadcrumb'
 import { Legend } from '@antv/graphin-components'
-import { JiedianIcon } from '@/components/common/icons'
+import { JiedianIcon } from '@/components/common/Icons'
 
 import fonts from '@/assets/icons/iconfont.json'
 

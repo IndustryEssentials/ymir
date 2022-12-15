@@ -19,6 +19,7 @@ class DockerImageBase(BaseModel):
     url: Optional[str]
     description: Optional[str]
     enable_livecode: Optional[bool] = False
+    object_type: Optional[int]
 
 
 class DockerImageCreate(DockerImageBase):
@@ -34,6 +35,7 @@ class DockerImageUpdate(BaseModel):
     description: Optional[str]
     is_shared: Optional[bool]
     enable_livecode: Optional[bool]
+    object_type: Optional[int]
 
 
 class DockerImageInDBBase(IdModelMixin, DateTimeModelMixin, IsDeletedModelMixin, DockerImageBase):

@@ -134,9 +134,11 @@ func (s *MongoServer) IndexDatasetData(
 	for idx, assetID := range assetIDs {
 		mirAssetDetails[idx] = s.buildMirAssetDetail(assetID, mirMetadatas, mirCks, gtAnnotations, predAnnotations)
 	}
-	_, err = collection.InsertMany(s.Ctx, mirAssetDetails)
-	if err != nil {
-		panic(err)
+	if len(mirAssetDetails) > 0 {
+		_, err = collection.InsertMany(s.Ctx, mirAssetDetails)
+		if err != nil {
+			panic(err)
+		}
 	}
 	s.buildCollectionIndex(collection)
 	s.postIndexDatasetData(collection, collectionName)

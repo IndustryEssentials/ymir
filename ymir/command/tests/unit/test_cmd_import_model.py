@@ -66,6 +66,7 @@ class TestCmdImportModel(unittest.TestCase):
                                             },
                                             stages={mss.stage_name: mss},
                                             best_stage_name=mss.stage_name,
+                                            object_type=mirpb.ObjectType.OT_DET_BOX,
                                             package_version=YMIR_VERSION)
         with open(os.path.join(self._src_model_root, 'ymir-info.yaml'), 'w') as f:
             yaml.safe_dump(model_storage.dict(), f)

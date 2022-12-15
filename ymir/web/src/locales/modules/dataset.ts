@@ -121,7 +121,7 @@ const dataset = {
   "dataset.copy.form.dataset": { cn: "原数据集", en: "Original Dataset", },
   "dataset.copy.form.desc.label": { cn: '备注', en: 'Description', },
   "dataset.copy.success.msg": { cn: "数据集正在复制，请稍等", en: "Dataset copying", },
-  'dataset.detail.action.fusion': { cn: '数据预处理', en: 'Data Pretreatment', },
+  'dataset.detail.action.fusion': { cn: '挖掘数据准备', en: 'Data Pretreatment', },
   'dataset.detail.action.train': { cn: '训练模型', en: 'Train Model', },
   'dataset.detail.action.mining': { cn: '挖掘数据', en: 'Mining', },
   'dataset.detail.action.label': { cn: '数据标注', en: 'Label', },
@@ -168,8 +168,9 @@ const dataset = {
   'dataset.assets.keyword.selector.types.tags': { en: 'Box Tag', cn: '标注框标签' },
   'dataset.assets.keyword.selector.types.placeholder': { en: 'Please select filter classes', cn: '请选择筛选类别，可多选' },
   'dataset.assets.selector.gt.label': { en: 'Annotation Type:', cn: '标注类型：' },
-  'dataset.assets.selector.evaluation.label': { en: 'Evaluation:', cn: '预测：' },
-  'dataset.detail.infer.class': { en: 'Prediction Classes:', cn: '模型预测类别：' },
+  'dataset.assets.selector.evaluation.label': { en: 'Evaluation:', cn: '评估指标：' },
+  'dataset.detail.infer.class': { en: 'Prediction Classes:', cn: '预测类别：' },
+  "dataset.type.testing": { cn: "测试集", en: "Testing Datasets", },
 
 }
 

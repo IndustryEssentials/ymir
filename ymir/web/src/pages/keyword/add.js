@@ -4,7 +4,7 @@ import { connect } from 'dva'
 
 import s from './add.less'
 import t from '@/utils/t'
-import { AddDelTwoIcon, AddIcon, AddTwoIcon } from '@/components/common/icons'
+import { AddDelTwoIcon, AddIcon, AddTwoIcon } from '@/components/common/Icons'
 import Tip from "@/components/form/singleTip"
 
 const { Option } = Select
@@ -126,7 +126,7 @@ const Add = ({ visible, keys = [], cancel = () => { }, ok = () => { }, updateKey
                     <Form.Item
                       {...field}
                       // label="Value"
-                      label={field.name === 0 ? <>{t('keyword.add.alias.label')}<Tip content={t('tip.task.filter.alias')} style={{ fontSize: 16 }} /></> : null}
+                      label={field.name === 0 ? <>{t('keyword.add.alias.label')}<Tip content={t('tip.task.filter.alias')} iconStyles={{ fontSize: 16 }} /></> : null}
                       name={[field.name, 'aliases']}
                       fieldKey={[field.fieldKey, 'aliases']}
                       rules={[

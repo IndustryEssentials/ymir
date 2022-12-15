@@ -1,31 +1,17 @@
-import enum
 import json
 from typing import Any, Dict, List, Optional, Union
 
-from pydantic import BaseModel, Field, validator, root_validator
+from pydantic import BaseModel, Field, validator
 
-from app.constants.state import ResultState, TaskType
+from app.constants.state import ResultState, TaskType, ObjectType
 from app.schemas.common import (
     Common,
     DateTimeModelMixin,
     IdModelMixin,
     IsDeletedModelMixin,
-    RequestParameterBase,
+    ImportStrategy,
 )
 from app.schemas.task import TaskInternal
-
-
-class ImportStrategy(enum.IntEnum):
-    no_annotations = 1
-    ignore_unknown_annotations = 2
-    stop_upon_unknown_annotations = 3
-    add_unknown_annotations = 4
-
-
-class MergeStrategy(enum.IntEnum):
-    stop_upon_conflict = 1
-    prefer_newest = 2
-    prefer_oldest = 3
 
 
 class DatasetBase(BaseModel):
@@ -96,6 +82,7 @@ class DatasetInDBBase(IdModelMixin, DateTimeModelMixin, IsDeletedModelMixin, Dat
     task_id: int
     user_id: int
     related_task: Optional[TaskInternal]
+    object_type: Optional[ObjectType] = ObjectType.object_detect
     is_visible: bool
 
     class Config:
@@ -198,24 +185,6 @@ class DatasetPaginationOut(Common):
     result: DatasetPagination
 
 
-class DatasetsFusionParameter(RequestParameterBase):
-    dataset_group_id: int
-    main_dataset_id: int
-
-    include_datasets: List[int]
-    include_strategy: Optional[MergeStrategy] = Field(
-        MergeStrategy.prefer_newest, description="strategy to merge multiple datasets"
-    )
-    exclude_datasets: List[int]
-
-    include_labels: List[str]
-    exclude_labels: List[str]
-
-    sampling_count: int = 0
-
-    description: Optional[str] = Field(description="description for fusion result")
-
-
 class DatasetEvaluationCreate(BaseModel):
     project_id: int
     dataset_ids: List[int]
@@ -228,7 +197,7 @@ class DatasetEvaluationCreate(BaseModel):
 
 class DatasetEvaluationOut(Common):
     # dict of dataset_id to evaluation result
-    result: Dict[int, Dict]
+    result: Dict[int, Optional[Dict]]
 
 
 class MultiDatasetsWithProjectID(BaseModel):
@@ -238,40 +207,3 @@ class MultiDatasetsWithProjectID(BaseModel):
 
 class DatasetCheckDuplicationOut(Common):
     result: int
-
-
-class DatasetMergeCreate(BaseModel):
-    project_id: int
-    dest_group_id: Optional[int]
-    dest_group_name: Optional[str]
-    include_datasets: List[int]
-    exclude_datasets: Optional[List[int]]
-    merge_strategy: MergeStrategy = Field(
-        MergeStrategy.prefer_newest, description="strategy to merge multiple datasets"
-    )
-    description: Optional[str] = Field(description="description for merge result")
-
-    @root_validator
-    def confine_parameters(cls, values: Any) -> Any:
-        if values.get("dest_group_id") is None and values.get("dest_group_name") is None:
-            raise ValueError("dest_group_id and dest_group_name cannot both be None")
-        return values
-
-
-class DatasetFilterCreate(BaseModel):
-    project_id: int
-    dataset_id: int
-    include_keywords: Optional[List[str]]
-    exclude_keywords: Optional[List[str]]
-    sampling_count: Optional[int]
-    description: Optional[str] = Field(description="description for filter result")
-
-    @root_validator
-    def confine_parameters(cls, values: Any) -> Any:
-        if (
-            values.get("include_keywords") is None
-            and values.get("exclude_keywords") is None
-            and values.get("sampling_count") is None
-        ):
-            raise ValueError("include_keywords, exclude_keywords and sampling_count cannot all be None")
-        return values

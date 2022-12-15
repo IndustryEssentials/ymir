@@ -2,11 +2,10 @@ import { message } from 'antd'
 import { useEffect, useState } from 'react'
 import { getLocale, useSelector } from 'umi'
 
-import { DEPLOY_MODULE_URL } from '@/constants/common'
-import { ModelVersion } from '@/interface/model'
+import { getDeployUrl } from '@/constants/common'
 import t from '@/utils/t'
 
-const base = DEPLOY_MODULE_URL || ''
+const base = getDeployUrl()
 const id = 'publishIframe'
 
 const createIframe = (params = {}) => {
@@ -26,7 +25,7 @@ const usePublish = () => {
   const [loading, setLoading] = useState(false)
   const { id: userId, username: userName } = useSelector((state: { user: any }) => state.user)
 
-  const publish = (data: ModelVersion) => {
+  const publish = (data: YModels.Model) => {
     const key = 'publish'
     if (loading) {
       return
@@ -36,9 +35,11 @@ const usePublish = () => {
 
     const lang = getLocale()
     const url = window.location.origin + data.url
-    const stage = data.stages?.find(stg => stg.id === data.recommendStage)?.name
+    const stage = data.stages?.find((stg) => stg.id === data.recommendStage)?.name
     const params = {
-      lang, userId, userName,
+      lang,
+      userId,
+      userName,
       modelId: data.id,
       modelName: `${data.name} ${data.versionName}`,
       stage,

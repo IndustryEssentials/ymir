@@ -1,6 +1,6 @@
 import { Descriptions, Tag } from "antd"
 import t from '@/utils/t'
-import { FIELDS, getConfigUrl, isLiveCode } from "@/pages/task/components/liveCodeConfig"
+import { FIELDS, getConfigUrl, isLiveCode } from "@/components/form/items/liveCodeConfig"
 
 export default (config = {}) => {
   const configUrl = getConfigUrl(config)

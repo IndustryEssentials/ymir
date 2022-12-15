@@ -1,9 +1,17 @@
-import { getLocale } from "umi"
-import { DatasetGroup, Dataset, DatasetAnalysis, Annotation, Asset } from "@/interface/dataset"
+import { getLocale } from 'umi'
 import { calDuration, format } from '@/utils/date'
-import { getVersionLabel } from "./common"
-import { BackendData } from "@/interface/common"
-import { Project } from "@/interface/project"
+import { getVersionLabel } from './common'
+
+export enum AnnotationType {
+  BoundingBox = 0,
+  Polygon = 1,
+  Mask = 2,
+}
+
+export enum ObjectType {
+  Detection = 1,
+  Segmentation = 2,
+}
 
 export enum states {
   READY = 0,
@@ -50,26 +58,26 @@ export enum MERGESTRATEGY {
   GUEST = 2,
 }
 
-export function transferDatasetGroup(data: BackendData) {
-  const group: DatasetGroup = {
+export function transferDatasetGroup(data: YModels.BackendData) {
+  const group: YModels.DatasetGroup = {
     id: data.id,
     projectId: data.project_id,
     name: data.name,
     createTime: format(data.create_datetime),
-    versions: data.datasets ? data.datasets.map((ds: BackendData) => transferDataset(ds)) : [],
+    versions: data.datasets ? data.datasets.map((ds: YModels.BackendData) => transferDataset(ds)) : [],
   }
   return group
 }
 
+const tagsCounts = (gt: YModels.BackendData = {}, pred: YModels.BackendData = {}) =>
+  Object.keys(gt).reduce((prev, tag) => {
+    const gtCount = gt[tag] || {}
+    const predCount = pred[tag] || {}
+    return { ...prev, [tag]: { ...gtCount, ...predCount } }
+  }, {})
+const tagsTotal = (gt: YModels.BackendData = {}, pred: YModels.BackendData = {}) => ({ ...gt, ...pred })
 
-const tagsCounts = (gt: BackendData = {}, pred: BackendData = {}) => Object.keys(gt).reduce((prev, tag) => {
-  const gtCount = gt[tag] || {}
-  const predCount = pred[tag] || {}
-  return { ...prev, [tag]: { ...gtCount, ...predCount } }
-}, {})
-const tagsTotal = (gt: BackendData = {}, pred: BackendData = {}) => ({ ...gt, ...pred })
-
-export function transferDataset(data: BackendData): Dataset {
+export function transferDataset(data: YModels.BackendData): YModels.Dataset {
   const { gt = {}, pred = {} } = data.keywords
   const assetCount = data.asset_count || 0
   const keywords = [...new Set([...Object.keys(gt), ...Object.keys(pred)])]
@@ -77,6 +85,7 @@ export function transferDataset(data: BackendData): Dataset {
     id: data.id,
     groupId: data.dataset_group_id,
     projectId: data.project_id,
+    type: data.object_type || 1,
     name: data.group_name,
     version: data.version_num || 0,
     versionName: getVersionLabel(data.version_num),
@@ -102,25 +111,38 @@ export function transferDataset(data: BackendData): Dataset {
     description: data.description || '',
     inferClass: data?.pred?.eval_class_ids,
     cks: data.cks_count ? transferCK(data.cks_count, data.cks_count_total) : undefined,
-    tags: data.gt ? transferCK(tagsCounts(data?.gt?.tags_count, data?.pred?.tags_count), tagsTotal(data?.gt?.tags_count_total, data?.pred?.tags_count_total)) : undefined,
+    tags: data.gt
+      ? transferCK(tagsCounts(data?.gt?.tags_count, data?.pred?.tags_count), tagsTotal(data?.gt?.tags_count_total, data?.pred?.tags_count_total))
+      : undefined,
   }
 }
 
-export function validDataset(dataset: Dataset | undefined) {
+export function validDataset(dataset: YModels.Dataset | undefined) {
   return dataset && dataset.state === states.VALID
 }
 
-export function runningDataset(dataset: Dataset | undefined) {
+export function runningDataset(dataset: YModels.Dataset | undefined) {
   return dataset && dataset.state === states.READY
 }
 
-export function canHide(dataset: Dataset, project: Project | undefined) {
+export function canHide(dataset: YModels.Dataset, project: YModels.Project | undefined) {
   const p = project || dataset.project
   return !runningDataset(dataset) && !p?.hiddenDatasets?.includes(dataset.id)
 }
 
-export function transferDatasetAnalysis(data: BackendData): DatasetAnalysis {
-  const { bytes, area, quality, hw_ratio, } = data.hist
+export function transferInferDataset(dataset: YModels.Dataset<YModels.InferenceParams>): YModels.InferDataset {
+  const params = dataset.task?.parameters
+  const config = dataset.task?.config || {}
+  return {
+    ...dataset,
+    inferModelId: [params?.model_id || 0, params?.model_stage_id || 0],
+    inferDatasetId: params?.dataset_id || 0,
+    inferConfig: config,
+  }
+}
+
+export function transferDatasetAnalysis(data: YModels.BackendData): YModels.DatasetAnalysis {
+  const { bytes, area, quality, hw_ratio } = data.hist
 
   const assetTotal = data.total_assets_count || 0
   const gt = generateAnno(data.gt)
@@ -143,38 +165,77 @@ export function transferDatasetAnalysis(data: BackendData): DatasetAnalysis {
   }
 }
 
-export function transferAsset(data: BackendData, keywords: Array<string>): Asset {
+export function transferAsset(data: YModels.BackendData, keywords: Array<string>): YModels.Asset {
+  const { width, height } = data?.metadata || {}
   const colors = generateDatasetColors(keywords || data.keywords)
-  const transferAnnotations = (annotations = [], gt = false) => 
-    annotations.map((an: BackendData) => transferAnnotation(an, gt, colors[an.keyword]))
+  const transferAnnotations = (annotations = [], gt = false) =>
+    annotations.map((an: YModels.BackendData) => toAnnotation(an, width, height, gt, colors[an.keyword]))
 
-  const annotations = [
-    ...transferAnnotations(data.gt, true),
-    ...transferAnnotations(data.pred),
-  ]
-  const evaluated = annotations.some(annotation => evaluationTags[annotation.cm])
+  const annotations = [...transferAnnotations(data.gt, true), ...transferAnnotations(data.pred)]
+  const evaluated = annotations.some((annotation) => evaluationTags[annotation.cm])
+
   return {
     id: data.id,
     hash: data.hash,
     keywords: data.keywords || [],
     url: data.url,
+    type: data.type,
+    width,
+    height,
     metadata: data.metadata,
     size: data.size,
     annotations,
-    evaluated: evaluated,
+    evaluated,
     cks: data.cks || {},
   }
 }
 
-export function transferAnnotation(data: BackendData, gt: boolean = false, color = ''): Annotation {
+export function toAnnotation(annotation: YModels.BackendData, width: number = 0, height: number = 0, gt = false, color = ''): YModels.Annotation {
   return {
-    ...data,
-    keyword: data.keyword,
-    box: data.box,
-    cm: data.cm,
+    keyword: annotation.keyword || '',
+    width,
+    height,
+    cm: annotation.cm,
     gt,
-    tags: data.tags || {},
+    tags: annotation.tags || {},
     color,
+    ...annotationTransfer({ ...annotation, type: getType(annotation)}),
+  }
+}
+
+function annotationTransfer(annotation: YModels.BackendData) {
+  const type = annotation.type as YModels.AnnotationType
+  return {
+    [AnnotationType.BoundingBox]: toBoundingBoxAnnoatation,
+    [AnnotationType.Polygon]: toPolygonAnnotation,
+    [AnnotationType.Mask]: toMaskAnnotation,
+  }[type](annotation)
+}
+
+export function toBoundingBoxAnnoatation(annotation: YModels.BackendData) {
+  const type: YModels.AnnotationType.BoundingBox = annotation.type || AnnotationType.BoundingBox
+  return {
+    ...annotation,
+    box: annotation.box,
+    type,
+  }
+}
+
+export function toMaskAnnotation(annotation: YModels.BackendData) {
+  const type: YModels.AnnotationType.Mask = annotation.type || AnnotationType.Mask
+  return {
+    ...annotation,
+    mask: annotation.mask,
+    type,
+  }
+}
+
+export function toPolygonAnnotation(annotation: YModels.BackendData) {
+  const type: YModels.AnnotationType.Polygon = annotation.type || AnnotationType.Polygon
+  return {
+    ...annotation,
+    polygon: annotation.polygon,
+    type,
   }
 }
 
@@ -187,12 +248,16 @@ export function transferAnnotationsCount(count = {}, negative = 0, total = 1) {
   }
 }
 
-const transferCK = (counts: BackendData = {}, total: BackendData = {}) => {
-  const keywords = Object.keys(counts).map(keyword => {
+function getType(annotation: YModels.BackendData) {
+  return annotation.mask ? AnnotationType.Mask : (annotation.polygon ? AnnotationType.Polygon : AnnotationType.BoundingBox)
+}
+
+const transferCK = (counts: YModels.BackendData = {}, total: YModels.BackendData = {}) => {
+  const keywords = Object.keys(counts).map((keyword) => {
     const children = counts[keyword]
     return {
       keyword,
-      children: Object.keys(children).map(child => ({
+      children: Object.keys(children).map((child) => ({
         keyword: child,
         count: children[child],
       })),
@@ -206,7 +271,7 @@ const transferCK = (counts: BackendData = {}, total: BackendData = {}) => {
   }
 }
 
-const generateAnno = (data: BackendData) => {
+const generateAnno = (data: YModels.BackendData) => {
   const { quality, area, area_ratio } = data.hist
   return {
     keywords: data.keywords,
@@ -219,8 +284,15 @@ const generateAnno = (data: BackendData) => {
   }
 }
 
-function generateDatasetColors(keywords: Array<string> = []): {[name: string]: string} {
-  const KeywordColor = ["green", "red", "cyan", "blue", "yellow", "purple", "magenta", "orange", "gold"]
-  return keywords.reduce((prev, curr, i) =>
-    ({ ...prev, [curr]: KeywordColor[i % KeywordColor.length] }), {})
+function generateDatasetColors(keywords: Array<string> = []): {
+  [name: string]: string
+} {
+  const KeywordColor = ['green', 'red', 'cyan', 'blue', 'yellow', 'purple', 'magenta', 'orange', 'gold']
+  return keywords.reduce(
+    (prev, curr, i) => ({
+      ...prev,
+      [curr]: KeywordColor[i % KeywordColor.length],
+    }),
+    {},
+  )
 }

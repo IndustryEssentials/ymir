@@ -2,17 +2,12 @@
 
 set -e
 
-EXECUTOR_TRAINING='industryessentials/executor-det-yolov4-training'
-EXECUTOR_MINING='industryessentials/executor-det-yolov4-mining'
-
 DOCKER_BACKEND='industryessentials/ymir-backend'
 DOCKER_WEB='industryessentials/ymir-web'
 
 DEV_SOURCE_BACKEND_PIP='https://pypi.mirrors.ustc.edu.cn/simple'
 DEV_SOURCE_WEB_NPM='https://registry.npmmirror.com'
 
-FIELD_ALLOW_FEEDBACK='ALLOW_ANONYMOUS_FEEDBACK'
-FIELD_UUID='ANONYMOUS_UUID'
 FIELD_LABEL_TOOL='LABEL_TOOL'
 FIELD_LABEL_TOOL_HOST_IP='LABEL_TOOL_HOST_IP'
 FIELD_LABEL_TOOL_TOKEN='LABEL_TOOL_TOKEN'
@@ -20,47 +15,15 @@ FIELD_LABEL_TOOL_LS='label_studio'
 FIELD_LABEL_TOOL_LF='label_free'
 ENV_FILE='.env'
 
+FIELD_DEPLOY_MODULE_HOST_PORT='DEPLOY_MODULE_HOST_PORT'
+
 stop() {
 docker-compose -f docker-compose.yml -f docker-compose.dev.yml -f docker-compose.label_studio.yml \
--f docker-compose.labelfree.yml down
+-f docker-compose.labelfree.yml -f docker-compose.modeldeploy.yml down
 }
 
 pre_start() {
-docker pull ${EXECUTOR_TRAINING}
-docker pull ${EXECUTOR_MINING}
 stop
-}
-
-choose_yes () {
-sed -i.bk "s/^${FIELD_ALLOW_FEEDBACK}=.*/${FIELD_ALLOW_FEEDBACK}=True/" ${ENV_FILE} && rm -f ${ENV_FILE}.bk
-
-uuid=$(uuidgen)
-sed -i.bk "s/^${FIELD_UUID}=$/${FIELD_UUID}=${uuid}/" ${ENV_FILE} && rm -f *.bk
-}
-
-choose_no () {
-sed -i.bk "s/^${FIELD_ALLOW_FEEDBACK}=.*/${FIELD_ALLOW_FEEDBACK}=False/" ${ENV_FILE} && rm -f ${ENV_FILE}.bk
-}
-
-check_permission() {
-if ! cat ${ENV_FILE} | grep "${FIELD_ALLOW_FEEDBACK}=$"; then
-    echo "permission already set"
-    return
-fi
-
-cat <<- EOF
-Would you allow YMIR to send us automatic reports helps us prioritize what to fix and improve in YMIR?
-These reports can include things like task type, how much resources you’re using. NO personal information collected.
-EOF
-
-while true; do
-    read -p "You choose (Y/n)?" yn
-    case $yn in
-        [Yy]*|'' ) choose_yes; break;;
-        [Nn]* ) choose_no; break;;
-        * ) echo "Please answer (y)es or (n)o.";;
-    esac
-done
 }
 
 set_label_tool() {
@@ -124,11 +87,27 @@ else
 fi
 }
 
+start_deploy_module() {
+    if cat ${ENV_FILE} | grep -oE "^${FIELD_DEPLOY_MODULE_HOST_PORT}=$"; then
+        echo "DEPLOY_MODULE_HOST_PORT not set, skip deploy module startup"
+        return
+    fi
+
+    if ! cat ${ENV_FILE} | grep -oE "^${FIELD_DEPLOY_MODULE_HOST_PORT}=[0-9]{1,5}$"; then
+        echo "DEPLOY_MODULE_HOST_PORT is invalid"
+        exit
+    fi
+
+    echo "deploy module, starting..."
+    docker-compose -f docker-compose.modeldeploy.yml up -d
+}
+
 start() {
-check_permission
 pre_start
 
 start_label_tool
+
+start_deploy_module
 
 if [[ $1 == 'dev' ]]; then
     printf '\nin dev mode, building images.\n'

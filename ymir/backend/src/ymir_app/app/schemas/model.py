@@ -23,6 +23,7 @@ class ModelBase(BaseModel):
     source: TaskType
     description: Optional[str]
     map: Optional[float] = Field(description="Mean Average Precision")
+    miou: Optional[float] = Field(description="Mean IoU")
     keywords: Optional[str]
     result_state: ResultState = ResultState.processing
     model_group_id: int
@@ -58,9 +59,8 @@ class ModelCreate(ModelBase):
 
 
 class ModelUpdate(BaseModel):
-    name: str
     description: Optional[str]
-    keywords: Optional[str]
+    recommended_stage: Optional[int] = Field(alias="stage_id")
 
 
 class ModelInDBBase(IdModelMixin, DateTimeModelMixin, IsDeletedModelMixin, ModelBase):

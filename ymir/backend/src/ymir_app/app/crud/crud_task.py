@@ -33,7 +33,7 @@ class CRUDTask(CRUDBase[Task, TaskCreate, TaskUpdate]):
         db_obj = Task(
             name=obj_in.name,
             type=obj_in.type,
-            config=obj_in.docker_image_config if obj_in.docker_image_config else None,
+            config=obj_in.parameters.docker_image_config,
             parameters=parameters,
             dataset_id=dataset_id,
             model_stage_id=model_stage_id,

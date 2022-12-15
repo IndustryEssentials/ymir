@@ -72,28 +72,9 @@ class TestInvokerInit(unittest.TestCase):
                                          repo_id=self._mir_repo_name)
         print(MessageToDict(response))
 
-        expected_cmd = f"mir init --root {os.path.join(self._user_root, self._mir_repo_name)}"
-        expected_cmd += f" --with-empty-rev {self._task_id}@{self._task_id}"
-        mock_run.assert_called_once_with(expected_cmd.split(' '), capture_output=True, text=True)
-
-        expected_ret = backend_pb2.GeneralResp()
-        expected_dict = {'message': RET_ID}
-        ParseDict(expected_dict, expected_ret)
-        self.assertEqual(response, expected_ret)
-
-    @mock.patch("subprocess.run", side_effect=_mock_run_func)
-    def test_invoker_init_01(self, mock_run):
-        response = make_invoker_cmd_call(sandbox_root=self._sandbox_root,
-                                         req_type=backend_pb2.CMD_INIT,
-                                         invoker=RequestTypeToInvoker[backend_pb2.CMD_INIT],
-                                         user_id=self._user_name,
-                                         task_id=self._task_id,
-                                         repo_id=self._mir_repo_name,
-                                         in_class_ids=[1, 3])
-        print(MessageToDict(response))
-
-        expected_cmd = f"mir init --root {os.path.join(self._user_root, self._mir_repo_name)}"
-        expected_cmd += f" --with-empty-rev {self._task_id}@{self._task_id}"
+        expected_cmd = (f"mir init --root {os.path.join(self._user_root, self._mir_repo_name)} "
+                        f"--user-label-file {test_utils.user_label_file(self._sandbox_root, self._user_name)} "
+                        f"--with-empty-rev {self._task_id}@{self._task_id}")
         mock_run.assert_called_once_with(expected_cmd.split(' '), capture_output=True, text=True)
 
         expected_ret = backend_pb2.GeneralResp()

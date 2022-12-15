@@ -21,7 +21,7 @@ class TaskExportingInvoker(TaskBaseInvoker):
             return utils.make_general_response(code=CTLResponseCode.ARG_VALIDATION_FAILED, message="empty asset_dir")
         os.makedirs(asset_dir, exist_ok=True)
 
-        if exporting_request.format != mir_cmd_pb.AnnoFormat.AF_NO_ANNOTATION:
+        if exporting_request.format != mir_cmd_pb.ExportFormat.EF_NO_ANNOTATIONS:
             pred_dir = exporting_request.pred_dir
             if not pred_dir:
                 return utils.make_general_response(code=CTLResponseCode.ARG_VALIDATION_FAILED, message="empty pred_dir")
@@ -46,6 +46,7 @@ class TaskExportingInvoker(TaskBaseInvoker):
         exporting_request = request.req_create_task.exporting
         media_location = assets_config['assetskvlocation']
         exporting_response = cls.exporting_cmd(repo_root=repo_root,
+                                               label_storage_file=user_labels.storage_file,
                                                in_dataset_id=in_dataset_ids[0],
                                                annotation_format=utils.annotation_format_str(exporting_request.format),
                                                asset_dir=exporting_request.asset_dir,
@@ -58,6 +59,7 @@ class TaskExportingInvoker(TaskBaseInvoker):
 
     @staticmethod
     def exporting_cmd(repo_root: str,
+                      label_storage_file: str,
                       in_dataset_id: str,
                       annotation_format: str,
                       asset_dir: str,
@@ -68,7 +70,8 @@ class TaskExportingInvoker(TaskBaseInvoker):
                       gt_dir: Optional[str] = None) -> backend_pb2.GeneralResp:
         exporting_cmd = [
             utils.mir_executable(), 'export', '--root', repo_root, '--media-location', media_location, '--asset-dir',
-            asset_dir, '--src-revs', f"{in_dataset_id}@{in_dataset_id}", '--anno-format', annotation_format
+            asset_dir, '--src-revs', f"{in_dataset_id}@{in_dataset_id}", '--anno-format', annotation_format,
+            '--user-label-file', label_storage_file,
         ]
         if keywords:
             exporting_cmd.append('--class_names')

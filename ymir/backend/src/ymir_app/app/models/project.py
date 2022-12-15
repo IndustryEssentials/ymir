@@ -15,12 +15,12 @@ from sqlalchemy import (
 from sqlalchemy.orm import relationship
 
 from app.config import settings
-from app.constants.state import ResultState, TaskState, TaskType
+from app.constants.state import ResultState
 from app.db.base_class import Base
-from app.models.dataset import Dataset  # noqa
+from app.models.dataset import Dataset
 from app.models.dataset_group import DatasetGroup  # noqa
 from app.models.iteration import Iteration  # noqa
-from app.models.model import Model  # noqa
+from app.models.model import Model
 from app.models.model_group import ModelGroup  # noqa
 from app.models.task import Task  # noqa
 
@@ -38,7 +38,7 @@ class Project(Base):
     mining_strategy = Column(SmallInteger, index=True)
     chunk_size = Column(Integer)
 
-    training_type = Column(SmallInteger, index=True, default=0, nullable=False)
+    object_type = Column(SmallInteger, index=True, default=2, nullable=False)
     training_keywords = Column(Text(settings.TEXT_LEN_LIMIT), nullable=False)
     training_dataset_group_id = Column(Integer, index=True)
     mining_dataset_id = Column(Integer, index=True)
@@ -50,7 +50,7 @@ class Project(Base):
     candidate_training_dataset_id = Column(Integer)
 
     enable_iteration = Column(Boolean, default=True, nullable=False)
-    # for project haven't finish initialization, current_iteration_id is None
+    # for project hasn't finished initialization, current_iteration_id is None
     current_iteration_id = Column(Integer)
     user_id = Column(Integer, index=True, nullable=False)
 
@@ -63,6 +63,7 @@ class Project(Base):
     datasets = relationship(
         "Dataset",
         primaryjoin="foreign(Dataset.project_id)==Project.id",
+        backref="project",
         uselist=True,
         viewonly=True,
     )
@@ -87,6 +88,7 @@ class Project(Base):
     models = relationship(
         "Model",
         primaryjoin="foreign(Model.project_id)==Project.id",
+        backref="model",
         uselist=True,
         viewonly=True,
     )
@@ -112,42 +114,47 @@ class Project(Base):
     is_example = Column(Boolean, default=False)
     is_deleted = Column(Boolean, default=False, nullable=False)
     create_datetime = Column(DateTime, default=datetime.utcnow, nullable=False)
-    update_datetime = Column(
-        DateTime,
-        default=datetime.utcnow,
-        onupdate=datetime.utcnow,
-        nullable=False,
-    )
+    update_datetime = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
+
+    @property
+    def visible_datasets(self) -> List[Dataset]:
+        return [dataset for dataset in self.datasets if dataset.is_visible]
+
+    @property
+    def visible_models(self) -> List[Model]:
+        return [model for model in self.models if model.is_visible]
 
     @property
     def dataset_count(self) -> int:
         # Only ready and visible datasets count.
         # stick to `dataset_count` for compatibility
-        ready_datasets = [d for d in self.datasets if d.result_state == ResultState.ready and d.is_visible]
-        return len(ready_datasets)
+        return sum(d.result_state == ResultState.ready for d in self.visible_datasets)
 
     @property
-    def model_count(self) -> int:
-        # Only ready models count.
-        # stick to `model_count` for compatibility
-        ready_models = [model for model in self.models if model.result_state == ResultState.ready and model.is_visible]
-        return len(ready_models)
+    def processing_dataset_count(self) -> int:
+        return sum(d.result_state == ResultState.processing for d in self.visible_datasets)
+
+    @property
+    def error_dataset_count(self) -> int:
+        return sum(d.result_state == ResultState.error for d in self.visible_datasets)
 
     @property
     def total_asset_count(self) -> int:
-        return sum([dataset.asset_count for dataset in self.datasets if dataset.asset_count])
+        return sum([dataset.asset_count for dataset in self.visible_datasets if dataset.asset_count])
 
     @property
-    def training_tasks(self) -> List[Task]:
-        return [task for task in self.tasks if task.type == TaskType.training]
+    def model_count(self) -> int:
+        # Only ready and visible models count.
+        # stick to `model_count` for compatibility
+        return sum(m.result_state == ResultState.ready for m in self.visible_models)
 
     @property
-    def running_task_count(self) -> int:
-        return sum([task.state == TaskState.running for task in self.training_tasks])
+    def processing_model_count(self) -> int:
+        return sum(m.result_state == ResultState.processing for m in self.visible_models)
 
     @property
-    def total_task_count(self) -> int:
-        return len(self.training_tasks)
+    def error_model_count(self) -> int:
+        return sum(m.result_state == ResultState.error for m in self.visible_models)
 
     @property
     def referenced_dataset_ids(self) -> List[int]:

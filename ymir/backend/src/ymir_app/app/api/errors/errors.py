@@ -59,6 +59,11 @@ class IncorrectEmailOrPassword(APIError):
     message = "Incorrect email or password"
 
 
+class FailedToSendEmail(APIError):
+    code = error_codes.FAILED_TO_SEND_EMAIL
+    message = "Failed to send email"
+
+
 class NotFound(APIError):
     status_code = 404
 
@@ -364,6 +369,11 @@ class FailedtoImportModel(APIError):
 class FailedToCreateIteration(APIError):
     code = error_codes.ITERATION_FAILED_TO_CREATE
     message = "Failed to Create Iteration"
+
+
+class DuplicateIterationError(DuplicateError):
+    code = error_codes.ITERATION_DUPLICATED
+    message = "Duplicate Iteration"
 
 
 class IterationNotFound(NotFound):

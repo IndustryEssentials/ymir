@@ -1,11 +1,12 @@
+type Type = {[key: string]: number }
 
-export const ROLES = Object.freeze({
+export const ROLES: Type = Object.freeze({
   SUPER: 3,
   ADMIN: 2,
   USER: 1,
 })
 
-export const STATES = Object.freeze({
+export const STATES: Type = Object.freeze({
   REGISTERED: 1,
   ACTIVE: 2,
   DECLINED: 3,
@@ -13,11 +14,11 @@ export const STATES = Object.freeze({
 })
 
 export const getRolesLabel = (role: number | undefined) => {
-  const labels = Object.freeze({
+  const labels = {
     [ROLES.SUPER]: 'super',
     [ROLES.ADMIN]: 'admin',
     [ROLES.USER]: 'user',
-  })
+  }
   return typeof role !== 'undefined' ? `user.role.${labels[role]}` : labels
 }
 

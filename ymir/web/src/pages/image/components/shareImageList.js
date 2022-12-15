@@ -7,7 +7,7 @@ import { List, Skeleton, Space, Col, Row, } from "antd"
 import t from "@/utils/t"
 import { ROLES } from '@/constants/user'
 import s from "./list.less"
-import { CopyIcon, NavHomeIcon, SuccessIcon, UserSharedIcon } from "@/components/common/icons"
+import { CopyIcon, NavHomeIcon, SuccessIcon, UserSharedIcon } from "@/components/common/Icons"
 
 
 const ImageList = ({ role, getShareImages }) => {

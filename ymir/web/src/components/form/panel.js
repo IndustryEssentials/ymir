@@ -1,5 +1,5 @@
 import { Col, Row } from "antd"
-import { ArrowDownIcon, ArrowRightIcon } from '@/components/common/icons'
+import { ArrowDownIcon, ArrowRightIcon } from '@/components/common/Icons'
 import s from './panel.less'
 import { useEffect, useState } from "react"
 

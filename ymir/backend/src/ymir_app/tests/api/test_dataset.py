@@ -9,6 +9,7 @@ from sqlalchemy.orm import Session
 from app.api.api_v1.api import datasets as m
 from app.api.errors.errors import DatasetNotFound
 from app.config import settings
+from tests.utils.projects import create_project_record
 from tests.utils.dataset_groups import create_dataset_group_record
 from tests.utils.datasets import create_dataset_record
 from tests.utils.utils import random_lower_string, random_url
@@ -19,19 +20,12 @@ def patch_background_task(mocker):
     mocker.patch.object(fastapi, "BackgroundTasks", return_value=mocker.Mock())
 
 
-@pytest.fixture(scope="function")
-def mock_controller(mocker):
-    return mocker.Mock()
-
-
-@pytest.fixture(scope="function")
-def mock_db(mocker):
-    return mocker.Mock()
-
-
-@pytest.fixture(scope="function")
-def mock_viz(mocker):
-    return mocker.Mock()
+@pytest.fixture(scope="function", autouse=True)
+def mock_create_single_task(mocker):
+    mock_task = m.schemas.task.Task.construct(
+        project_id=233, type=m.TaskType.training, id=23, hash=random_lower_string(), state=4, user_id=42
+    )
+    mocker.patch.object(m, "create_single_task", return_value=mock_task)
 
 
 class TestListDatasets:
@@ -84,14 +78,15 @@ class TestBatchGetDatasets:
 
 
 class TestCreateDataset:
-    def test_create_dataset_succeed(self, client: TestClient, normal_user_token_headers, mocker):
+    def test_create_dataset_succeed(self, client: TestClient, db: Session, normal_user_token_headers, mocker, user_id):
+        project = create_project_record(db, user_id)
         mocker.patch.object(m, "import_dataset_in_background")
         j = {
             "group_name": random_lower_string(),
             "version_num": random.randint(100, 200),
             "input_url": random_url(),
             "dataset_group_id": 1,
-            "project_id": 1,
+            "project_id": project.id,
             "strategy": 1,
         }
         r = client.post(
@@ -246,8 +241,10 @@ class TestCreateDataFusion:
 
         j = {
             "project_id": 1,
+            "task_type": "fusion",
+            "iteration_id": 233,
             "dataset_group_id": dataset_group_obj.id,
-            "main_dataset_id": dataset_obj.id,
+            "dataset_id": dataset_obj.id,
             "include_datasets": [],
             "strategy": 1,
             "exclude_datasets": [],

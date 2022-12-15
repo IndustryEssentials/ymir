@@ -15,14 +15,18 @@ executor_config:
   class_names:  # 训练目标，必要
   - person
   - cat
-stages:  # 训练过程中产生的 model stages，必要
-  stage_1000:  # 在 epoch 1000 时产生的 model stage name，必要
-    files:  # 此 model stage 对应的文件，必要
+stages:  # 训练过程中产生的中间模型，必要
+  stage_1000:  # 在 epoch 1000 时产生的中间模型的名称，必要
+    files:  # 此中间模型对应的文件列表，必要
     - model-1000.params
     - model-symbol.json
-    mAP: 0.3  # 此 model stage 的 mAP，必要
-    stage_name: stage_1000  # model stage name，必要
-    timestamp: 1655975204  # model stage 的创建时间，用 `ls --time-style=+%s -l` 取得文件创建时间，必要
+    mAP: 0.3  # 此中间模型的 mean average precision，必要
+    mAR: 0.6  # 此中间模型的 mean average recall，非必要
+    TP: 60  # 此中间模型的 true positive 框数，非必要
+    FP: 30  # 此中间模型的 false positive 框数，非必要
+    FN: 30  # 此中间模型的 false negative 框数，非必要
+    stage_name: stage_1000  # 中间模型名称，必要
+    timestamp: 1655975204  # 中间模型的创建时间，用 `ls --time-style=+%s -l` 取得文件创建时间，必要
   stage_2000:
     files:
     - model-2000.params
@@ -30,10 +34,10 @@ stages:  # 训练过程中产生的 model stages，必要
     mAP: 0.6
     stage_name: stage_2000
     timestamp: 1655975205
-best_stage_name: stage_2000  # 最好的 model stage name，必要
+best_stage_name: stage_2000  # 最好的中间模型名称，必要
 task_context:
   executor: sample-executor  # 训练模型时所用的镜像，非必要
-  mAP: 0.6  # 最好的 model stage 对应的 mAP
+  mAP: 0.6  # 最好的中间模型对应的 mAP
   producer: fenrir-z  # 模型作者
   task_parameters: '{"keywords": ["person", "cat"]}' # keywords 与 class_names 一致, 注意引号
 ```
@@ -62,7 +66,7 @@ mir models --package-path /path/to/model.tar.gz
 pack success, model hash: xxxxxxxxxxxxxxxx, best_stage_name: stage_2000, mAP: 0.6
 ```
 
-这里产生的 model hash 就是此模型在 ymir 中的 id，当使用命令行进行挖掘，推理时，可以提供此 model hash 和 model stage 给相应的命令。
+这里产生的 model hash 就是此模型在 ymir 中的 id，当使用命令行进行挖掘，推理时，可以提供此 model hash 和 中间模型名称给相应的命令。
 
 ## 限制与注意事项
 

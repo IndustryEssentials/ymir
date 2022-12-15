@@ -19,6 +19,7 @@ class CmdExport(base.BaseCommand):
 
         return CmdExport.run_with_args(
             mir_root=self.args.mir_root,
+            label_storage_file=self.args.label_storage_file,
             asset_dir=self.args.asset_dir,
             pred_dir=self.args.pred_dir,
             gt_dir=self.args.gt_dir,
@@ -36,6 +37,7 @@ class CmdExport(base.BaseCommand):
     @command_run_in_out
     def run_with_args(
         mir_root: str,
+        label_storage_file: str,
         asset_dir: str,
         pred_dir: str,
         gt_dir: str,
@@ -43,7 +45,7 @@ class CmdExport(base.BaseCommand):
         src_revs: str,
         dst_rev: str,
         asset_format: "mirpb.AssetFormat.V",
-        anno_format: "mirpb.AnnoFormat.V",
+        anno_format: "mirpb.ExportFormat.V",
         class_names: List[str],
         work_dir: str,
     ) -> int:
@@ -63,7 +65,7 @@ class CmdExport(base.BaseCommand):
             return check_code
 
         # prepare
-        cls_mgr = load_or_create_userlabels(mir_root=mir_root)
+        cls_mgr = load_or_create_userlabels(label_storage_file=label_storage_file)
         class_ids_list, unknown_names = cls_mgr.id_for_names(class_names)
         if unknown_names:
             raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
@@ -145,8 +147,8 @@ def bind_to_subparsers(subparsers: argparse._SubParsersAction, parent_parser: ar
                                       dest='anno_format',
                                       type=str,
                                       default="none",
-                                      choices=["none", "det-ark", "det-voc", "det-ls-json", "seg-poly", "seg-mask"],
-                                      help='annotation format: ark / voc / none')
+                                      choices=["none", "det-ark", "det-voc", "det-ls-json", "seg-coco"],
+                                      help='annotation format')
     exporting_arg_parser.add_argument('--asset-format',
                                       dest='asset_format',
                                       type=str,

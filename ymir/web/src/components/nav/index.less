@@ -1,53 +1,61 @@
 .nav {
   .avatar {
-  display: inline-block;
-  width: 30px;
-  height: 30px;
-  font-size: 18px;
-  font-weight: bold;
-  line-height: 30px;
-  border-radius: 50%;
-  margin-right: 5px;
-  background: #99E7FF;
-  text-align: center;
-  font-family: arial;
-  color: #0096C3;
-  vertical-align: middle;
-  overflow: hidden;
-  img {
-    display: block;
+    display: inline-block;
     width: 30px;
-  }
-}
-.user {
-  color: #fff;
-  font-size: 16px;
-  line-height: 32px;
-  display: inline-block;
-}
-.logo {
-  margin-right: 20px;
-  width: 39px;
-}
-.link {
-  display: block;
-  height: 100%;
-  width: 100%;
-}
-.navIcon {
-  margin-right: 7px;
-  font-size: 20px;
-}
-.search {
-  width: 300px;
-  background: rgba(255, 255, 255, 0.2);
-  border: none;
-  input {
-    background: none;
-    color: #fff;
-    &::placeholder {
-      color: #fff;
+    height: 30px;
+    font-size: 18px;
+    font-weight: bold;
+    line-height: 30px;
+    border-radius: 50%;
+    margin-right: 5px;
+    background: #99e7ff;
+    text-align: center;
+    font-family: arial;
+    color: #0096c3;
+    vertical-align: middle;
+    overflow: hidden;
+    img {
+      display: block;
+      width: 30px;
     }
   }
-}
+  .user {
+    color: #fff;
+    font-size: 16px;
+    line-height: 32px;
+    display: inline-block;
+  }
+  .username {
+    max-width: 200px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: inline-block;
+    vertical-align: middle;
+    white-space: nowrap;
+  }
+  .logo {
+    margin-right: 20px;
+    width: 39px;
+  }
+  .link {
+    display: block;
+    height: 100%;
+    width: 100%;
+  }
+  .navIcon {
+    margin-right: 7px;
+    font-size: 20px;
+  }
+  .search {
+    width: 300px;
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    input {
+      background: none;
+      color: #fff;
+      &::placeholder {
+        color: #fff;
+      }
+    }
+  }
 }

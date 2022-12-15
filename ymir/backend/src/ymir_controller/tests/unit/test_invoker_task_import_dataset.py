@@ -85,6 +85,7 @@ class TestInvokerTaskImportDataset(unittest.TestCase):
         import_dataset_request.pred_dir = self._storage_root
         import_dataset_request.gt_dir = self._storage_root
         import_dataset_request.unknown_types_strategy = backend_pb2.UnknownTypesStrategy.UTS_ADD
+        import_dataset_request.anno_type = mir_cmd_pb.ObjectType.OT_DET_BOX
         req_create_task = backend_pb2.ReqCreateTask()
         req_create_task.task_type = mir_cmd_pb.TaskType.TaskTypeImportData
         req_create_task.no_task_monitor = True
@@ -105,11 +106,11 @@ class TestInvokerTaskImportDataset(unittest.TestCase):
         os.makedirs(working_dir, exist_ok=True)
 
         expected_cmd_import_dataset = (
-            "mir import --root {0} --dst-rev {1}@{1} --src-revs {2} "
-            "--index-file {3} --gen-dir {4} -w {5} --anno-type {6} --pred-dir {4} --gt-dir {4} "
-            "--unknown-types-strategy add".format(self._mir_repo_root, self._task_id, 'master',
-                                                  os.path.join(working_dir, 'index.txt'), self._storage_root,
-                                                  working_dir, "det-box"))
+            f"mir import --root {self._mir_repo_root} --dst-rev {self._task_id}@{self._task_id} --src-revs master "
+            f"--index-file {os.path.join(working_dir, 'index.txt')} --gen-dir {self._storage_root} -w {working_dir} "
+            f"--user-label-file {test_utils.user_label_file(sandbox_root=self._sandbox_root, user_id=self._user_name)} "
+            f"--anno-type det-box --pred-dir {self._storage_root} --gt-dir {self._storage_root} "
+            "--unknown-types-strategy add")
         mock_run.assert_has_calls(calls=[
             mock.call(expected_cmd_import_dataset.split(' '), capture_output=True, text=True),
         ])

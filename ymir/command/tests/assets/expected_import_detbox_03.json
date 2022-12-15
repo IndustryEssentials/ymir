@@ -1,0 +1,106 @@
+{
+    "mir_metadatas": {
+        "attributes": {
+            "a3008c032eb11c8d9ffcb58208a36682ee40900f": {
+                "timestamp": {
+                    "start": 1669895937,
+                    "duration": 0.0
+                },
+                "asset_type": 1,
+                "width": 500,
+                "height": 333,
+                "image_channels": 3,
+                "byte_size": 23509,
+                "origin_filename": "2007_000243",
+                "tvt_type": 0
+            },
+            "430df22960b0f369318705800139fcc8ec38a3e4": {
+                "timestamp": {
+                    "start": 1669895937,
+                    "duration": 0.0
+                },
+                "asset_type": 1,
+                "width": 500,
+                "height": 281,
+                "image_channels": 3,
+                "byte_size": 54757,
+                "origin_filename": "2007_000032",
+                "tvt_type": 0
+            }
+        }
+    },
+    "mir_annotations": {
+        "ground_truth": {
+            "task_id": "import_detbox_03",
+            "image_annotations": {},
+            "type": 0,
+            "task_class_ids": [],
+            "eval_class_ids": [],
+            "executor_config": ""
+        },
+        "prediction": {
+            "task_id": "import_detbox_03",
+            "image_annotations": {},
+            "type": 0,
+            "task_class_ids": [],
+            "eval_class_ids": [],
+            "executor_config": ""
+        },
+        "image_cks": {}
+    },
+    "mir_keywords": {
+        "ck_idx": {}
+    },
+    "mir_context": {
+        "images_cnt": 2,
+        "total_asset_mbytes": 1,
+        "pred_stats": {
+            "negative_asset_cnt": 2,
+            "total_cnt": 0,
+            "positive_asset_cnt": 0,
+            "tags_cnt": {},
+            "class_ids_cnt": {},
+            "eval_class_ids": []
+        },
+        "gt_stats": {
+            "negative_asset_cnt": 2,
+            "total_cnt": 0,
+            "positive_asset_cnt": 0,
+            "tags_cnt": {},
+            "class_ids_cnt": {},
+            "eval_class_ids": []
+        },
+        "cks_cnt": {}
+    },
+    "mir_tasks": {
+        "tasks": {
+            "import_detbox_03": {
+                "type": 5,
+                "name": "importing /tmp/mir_cmd_test/test_cmd_import/TestCmdImport/test_import_detbox_00/monitor_storage_root/data/idx.txt-None-None to a@import_detbox_03, uts: stop",
+                "task_id": "import_detbox_03",
+                "timestamp": 1669895937,
+                "evaluation": {
+                    "config": {
+                        "conf_thr": 0.005,
+                        "iou_thrs_interval": "0.5",
+                        "need_pr_curve": false,
+                        "class_ids": [],
+                        "main_ck": ""
+                    },
+                    "state": 4,
+                    "sub_cks": {}
+                },
+                "src_revs": "master",
+                "dst_rev": "a@import_detbox_03",
+                "return_code": 0,
+                "return_msg": "",
+                "new_types": {},
+                "new_types_added": false,
+                "serialized_task_parameters": "",
+                "serialized_executor_config": "",
+                "executor": ""
+            }
+        },
+        "head_task_id": "import_detbox_03"
+    }
+}

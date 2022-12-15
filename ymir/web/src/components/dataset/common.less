@@ -22,9 +22,17 @@
   left: 0;
   width: 100px;
   height: 100px;
-  border: 1px solid rgba(255, 24, 24, 0.6);
-  background-color: rgba(255, 255, 255, 0.3);
+  border: 1px solid rgba(255, 24, 24, 0.3);
+  background-color: rgb(255, 255, 255);
+  opacity: 0.3;
   border-radius: 4px;
+  &:hover {
+    opacity: 1;
+    background-color: rgba(255, 255, 255, 0.1);
+    .annotationTitle {
+      opacity: 0.6;
+    }
+  }
   &.gt {
     border-style: dashed;
   }
@@ -38,8 +46,7 @@
     text-align: center;
     text-overflow: ellipsis;
     overflow: hidden;
-    background-color: rgba(0, 0, 0, 0.4);
-    opacity: 0.6;
+    background-color: rgba(0, 0, 0, 1);
     color: #fff;
     text-shadow: #333 0px 1px;
     font-size: 14px;

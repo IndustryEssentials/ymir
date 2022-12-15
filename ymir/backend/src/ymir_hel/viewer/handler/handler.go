@@ -177,6 +177,9 @@ func (v *ViewerHandler) GetDatasetMetaCountsHandler(
 	mirTasks := v.mirLoader.LoadSingleMirData(mirRepo, constants.MirfileTasks).(*protos.MirTasks)
 	task := mirTasks.Tasks[mirTasks.HeadTaskId]
 	result.NewTypesAdded = task.NewTypesAdded
+	if task.Evaluation != nil {
+		result.EvaluationState = int(task.Evaluation.State)
+	}
 
 	result.TotalAssetsFileSize = int64(mirContext.TotalAssetMbytes)
 	for k, v := range mirContext.CksCnt {
