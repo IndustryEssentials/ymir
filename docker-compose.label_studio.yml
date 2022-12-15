@@ -1,7 +1,7 @@
 version: "3.3"
 services:
   labelstudio:
-    image: heartexlabs/label-studio:latest
+    image: heartexlabs/label-studio:1.6.0
     env_file:
       - .env
     ports:
@@ -10,6 +10,10 @@ services:
       - LOCAL_FILES_SERVING_ENABLED=true
       - SENTRY_DSN=
       - FRONTEND_SENTRY_DSN=
+    # temporary walkaround for start up issue:
+    # https://github.com/heartexlabs/label-studio/issues/3070
+    security_opt:
+      - seccomp:unconfined
     volumes:
       - "${YMIR_PATH}/label-studio_data:/label-studio/data"
       - "${BACKEND_SANDBOX_ROOT}:${BACKEND_SANDBOX_ROOT}"
