@@ -29,7 +29,7 @@ LS_EXPORT_TYPE_MAPPING = {
 
 
 # TODO move to label_studio
-def binary_mask_to_rle(binary_mask: np.ndarray):
+def binary_mask_to_rle(binary_mask: np.ndarray) -> Dict:
     counts = []
     for i, (value, elements) in enumerate(itertools.groupby(binary_mask.ravel(order='F'))):
         if i == 0 and value == 1:
@@ -62,7 +62,7 @@ def convert_ls_json_to_coco(ls_json: Dict) -> Dict:
 
     seq = itertools.count()
 
-    def _add_category(name):
+    def _add_category(name: str) -> Dict:
         if name not in _categories:
             _categories[name] = {"name": name, "id": next(seq)}
         return _categories[name]
@@ -75,7 +75,7 @@ def convert_ls_json_to_coco(ls_json: Dict) -> Dict:
                 rle = _annotation["value"]["rle"]
                 category = _add_category(_annotation["value"]["brushlabels"][0])
                 segmentation = ls_rle_to_coco_rle(rle, height, width)
-                segmentation["counts"] = segmentation["counts"].decode()
+                segmentation["counts"] = segmentation["counts"].decode()  # type: ignore
                 annotations.append({
                     "image_id": image_id,
                     "segmentation": segmentation,
