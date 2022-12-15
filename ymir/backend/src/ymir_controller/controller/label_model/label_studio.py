@@ -301,9 +301,15 @@ class LabelStudio(LabelBase):
     def _move_coco_annotations_to(des_path: str) -> None:
         """
         Convert result.json (Label Studio default filename) to coco-annotations.json (YMIR required filename)
+        with a little modification: remove absolute path for image file_name
         """
-        coco_json_file = Path(des_path) / "annotations" /" result.json"
-        coco_json_file.rename(coco_json_file.with_name("coco-annotations.json"))
+        ls_coco_file = Path(des_path) / "result.json"
+        ymir_coco_file = Path(des_path) / "coco-annotations.json"
+        with open(ls_coco_file) as ls_coco_f, open(ymir_coco_file, "w") as ymir_coco_f:
+            ls_coco = json.load(ls_coco_f)
+            for image in ymir_coco["images"]:
+                image["file_name"] = Path(image["file_name"]).name
+            json.dump(ymir_coco, ymir_coco_f)
 
     def fetch_label_result(self, project_id: int, object_type: int, des_path: str) -> None:
         project_info = self.get_project_info(project_id)
