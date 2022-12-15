@@ -27,6 +27,7 @@ LS_EXPORT_TYPE_MAPPING = {
     "BrushLabels": "JSON",
 }
 
+
 # TODO move to label_studio
 def binary_mask_to_rle(binary_mask: np.ndarray):
     counts = []
@@ -60,6 +61,7 @@ def convert_ls_json_to_coco(ls_json: Dict) -> Dict:
     _categories = {}
 
     seq = itertools.count()
+
     def _add_category(name):
         if name not in _categories:
             _categories[name] = {"name": name, "id": next(seq)}

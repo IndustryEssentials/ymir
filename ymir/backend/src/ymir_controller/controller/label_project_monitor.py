@@ -79,12 +79,13 @@ def update_label_task(label_instance: utils.LabelBase, task_id: str, project_inf
     if state == LogState.DONE:
         # For remove some special tasks. Delete the task after labeling will save file
         object_type = int(project_info.get("object_type", mir_cmd_pb.ObjectType.OT_DET_BOX))
-        remove_json_file(project_info["des_annotation_path"])
+        des_annotation_path = project_info["des_annotation_path"]
+        remove_json_file(des_annotation_path)
         try:
             label_instance.sync_export_storage(project_info["storage_id"])
             label_instance.fetch_label_result(project_info["project_id"],
                                               object_type,
-                                              project_info["des_annotation_path"])
+                                              des_annotation_path)
         except NotReadyError:
             logging.info("label result not ready, try agiain later")
             return
@@ -93,12 +94,12 @@ def update_label_task(label_instance: utils.LabelBase, task_id: str, project_inf
             logging.error(f"get label task {task_id} error: {e}, set task_id:{task_id} error")
             state = LogState.ERROR
         export_index_file = Path(project_info["input_asset_dir"]) / "index.tsv"
-        label_index_file = generate_label_index_file(export_index_file, Path(project_info["des_annotation_path"]), object_type)
+        label_index_file = generate_label_index_file(export_index_file, Path(des_annotation_path), object_type)
         trigger_mir_import(
             repo_root=project_info["repo_root"],
             task_id=task_id,
             index_file=str(label_index_file),
-            des_annotation_path=project_info["des_annotation_path"],
+            des_annotation_path=des_annotation_path,
             media_location=project_info["media_location"],
             import_work_dir=project_info["import_work_dir"],
             object_type=object_type,
