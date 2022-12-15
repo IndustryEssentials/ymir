@@ -426,10 +426,7 @@ class ControllerClient:
             type=ExtraRequestType.kill,
             user_id=user_id,
             project_id=project_id,
-            args={
-                "target_container": task_hash,
-                "task_type": task_type,
-            },
+            args={"target_container": task_hash, "task_type": task_type},
         )
         resp = self.send(req)
         return resp
