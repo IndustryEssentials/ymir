@@ -21,7 +21,8 @@ from mir.tools.executant import prepare_executant_env, run_docker_executant
 
 
 # private: post process
-def _find_model_storage(model_root: str, executor_config: dict, task_context: dict) -> models.ModelStorage:
+def _get_model_storage(model_root: str, executor_config: dict, task_context: dict,
+                       model_object_type: 'mirpb.ObjectType.V') -> models.ModelStorage:
     """
     find models in `model_root`, and returns all model stages and attachments
 
@@ -75,6 +76,7 @@ def _find_model_storage(model_root: str, executor_config: dict, task_context: di
                                                  type=mirpb.TaskType.TaskTypeTraining),
                                stages=model_stages,
                                best_stage_name=best_stage_name,
+                               object_type=model_object_type,
                                attachments=attachments,
                                evaluate_config=yaml_obj.get('evaluate_config', {}),
                                package_version=ymir_model_salient_version(YMIR_VERSION))
@@ -329,10 +331,10 @@ class CmdTrain(base.BaseCommand):
         # save model
         logging.info(f"saving models:\n task_context: {task_context}")
         out_model_dir = os.path.join(work_dir_out, "models")
-        model_storage = _find_model_storage(model_root=out_model_dir,
-                                            executor_config=executor_config,
-                                            task_context=task_context)
-        model_storage.object_type = mir_annotations.ground_truth.type
+        model_storage = _get_model_storage(model_root=out_model_dir,
+                                           executor_config=executor_config,
+                                           task_context=task_context,
+                                           model_object_type=mir_annotations.ground_truth.type)
         models.pack_and_copy_models(model_storage=model_storage,
                                     model_dir_path=out_model_dir,
                                     model_location=model_upload_location)

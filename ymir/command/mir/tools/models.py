@@ -1,6 +1,6 @@
 import logging
 import os
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, root_validator
 import shutil
 import tarfile
 from typing import Any, Dict, List, Tuple
@@ -12,6 +12,7 @@ from mir.tools.code import MirCode
 from mir.tools.errors import MirRuntimeError
 from mir.tools.mir_storage import sha1sum_for_file
 from mir.protos import mir_command_pb2 as mirpb
+from mir.version import ymir_model_salient_version, YMIR_VERSION
 
 
 class ModelStageStorage(BaseModel):
@@ -36,6 +37,17 @@ class ModelStorage(BaseModel):
     evaluate_config: Dict[str, float] = {}
     object_type: int = mirpb.ObjectType.OT_UNKNOWN
     package_version: str = Field(..., min_length=1)
+
+    @root_validator
+    def validate_model_storage(cls, values: dict) -> dict:
+        if ymir_model_salient_version(values['package_version']) != ymir_model_salient_version(YMIR_VERSION):
+            raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_MODEL_PACKAGE_VERSION,
+                                  error_message=f"Invalid model package version: {values['package_version']}")
+        if values['object_type'] == mirpb.ObjectType.OT_UNKNOWN:
+            raise MirRuntimeError(error_code=MirCode.RC_CMD_UNKNOWN_MODEL_OBJECT_TYPE,
+                                  error_message=f"Invalid model object type: {values['object_type']}")
+
+        return values
 
     @property
     def class_names(self) -> List[str]:
@@ -139,10 +151,6 @@ def pack_and_copy_models(model_storage: ModelStorage, model_dir_path: str, model
     pack model, returns model hash of the new model package
     """
     logging.info(f"packing models: {model_dir_path} -> {model_location}, stages: {model_storage.stages.keys()}")
-
-    if model_storage.object_type == mirpb.ObjectType.OT_UNKNOWN:
-        raise MirRuntimeError(error_code=MirCode.RC_CMD_UNKNOWN_MODEL_OBJECT_TYPE,
-                              error_message='Can not pack model with unknown object type')
 
     ymir_info_file_name = 'ymir-info.yaml'
     ymir_info_file_path = os.path.join(model_dir_path, ymir_info_file_name)
