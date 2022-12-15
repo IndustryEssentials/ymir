@@ -162,6 +162,7 @@ class CmdInfer(base.BaseCommand):
             class_id_mgr = class_ids.load_or_create_userlabels(label_storage_file=label_storage_file)
             task_annotations = mirpb.SingleTaskAnnotations()
             _process_infer_result(model_storage.object_type)(task_annotations, work_dir_out, class_id_mgr)
+            task_annotations.type = model_storage.object_type  # type: ignore
 
             with open(os.path.join(work_dir_out, 'prediction.mir'), 'wb') as m_f:
                 m_f.write(task_annotations.SerializeToString())
@@ -236,6 +237,8 @@ def _process_infer_detbox_result(task_annotations: mirpb.SingleTaskAnnotations, 
         raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_FILE,
                               error_message=f"Invalid infer result file: {infer_result_file}, have no detection dict")
 
+    unknown_class_id_annos_cnt = 0
+    no_score_annos_cnt = 0
     for asset_name, annotations_dict in detections.items():
         annotations = annotations_dict.get('boxes')
         if not isinstance(annotations, list):
@@ -248,19 +251,26 @@ def _process_infer_detbox_result(task_annotations: mirpb.SingleTaskAnnotations, 
             class_id = class_id_mgr.id_and_main_name_for_name(name=annotation_dict['class_name'])[0]
             # ignore unknown class ids
             if class_id < 0:
+                unknown_class_id_annos_cnt += 1
+                continue
+            if 'score' not in annotation_dict:
+                no_score_annos_cnt += 1
                 continue
 
             annotation = mirpb.ObjectAnnotation()
             annotation.index = idx
             json_format.ParseDict(annotation_dict['box'], annotation.box)
             annotation.class_id = class_id
-            annotation.score = float(annotation_dict.get('score', 0))
+            annotation.score = float(annotation_dict['score'])
             single_image_annotations.boxes.append(annotation)
             idx += 1
 
         # task_annotations.image_annotations key: image file base name
         task_annotations.image_annotations[os.path.basename(asset_name)].CopyFrom(single_image_annotations)
-    task_annotations.type = mirpb.ObjectType.OT_DET_BOX
+
+    if unknown_class_id_annos_cnt or no_score_annos_cnt:
+        logging.warning(f"annotations count with unknown class ids: {unknown_class_id_annos_cnt}")
+        logging.warning(f"annotations count without score: {no_score_annos_cnt}")
 
 
 def _process_infer_seg_coco_result(task_annotations: mirpb.SingleTaskAnnotations, work_dir_out: str,
@@ -283,7 +293,6 @@ def _process_infer_seg_coco_result(task_annotations: mirpb.SingleTaskAnnotations
                                  accu_new_class_names={},
                                  image_annotations=task_annotations,
                                  coco_json_filename=coco_json_filename)
-    task_annotations.type = mirpb.ObjectType.OT_SEG
 
 
 # might used both by mining and infer
