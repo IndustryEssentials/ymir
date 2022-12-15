@@ -2,11 +2,12 @@ import request from '@/utils/request'
 import { TYPES } from '@/constants/image'
 
 type QueryParams = {
-  name: string
-  type: number
-  state: TYPES
-  limit: number
-  offset: number
+  name?: string
+  type?: number
+  state?: TYPES
+  url?: string
+  limit?: number
+  offset?: number
 }
 type Image = {
   name: string
