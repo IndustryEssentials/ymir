@@ -8,6 +8,7 @@ import { useSelector } from 'react-redux'
 type Params = { [key: string]: any }
 type DataType = {
   path?: string
+  name?: string
   params?: Params
   url?: string
 }
@@ -75,7 +76,7 @@ const PublicImage = () => {
         }
       },
       toPage() {
-        const name = recieved.data?.path || ''
+        const name = recieved.data?.name || ''
         const params = recieved.data?.params || {}
         const page = internalPages[name] || ''
         if (!page) {
