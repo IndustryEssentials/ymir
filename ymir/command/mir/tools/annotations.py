@@ -307,10 +307,9 @@ def import_annotations_coco_json(file_name_to_asset_ids: Dict[str, str], mir_ann
         obj_anno.index = len(image_annotations.image_annotations[asset_hash].boxes)
         image_annotations.image_annotations[asset_hash].boxes.append(obj_anno)
 
-    if unhashed_filenames_cnt or unknown_category_ids_cnt or unknown_image_objects_cnt:
-        logging.warning(f"count of unhashed file names in images list: {unhashed_filenames_cnt}")
-        logging.warning(f"count of unknown category ids in categories list: {unknown_category_ids_cnt}")
-        logging.warning(f"count of objects with unknown image ids in annotations list: {unknown_image_objects_cnt}")
+    logging.info(f"count of unhashed file names in images list: {unhashed_filenames_cnt}")
+    logging.info(f"count of unknown category ids in categories list: {unknown_category_ids_cnt}")
+    logging.info(f"count of objects with unknown image ids in annotations list: {unknown_image_objects_cnt}")
 
 
 def _import_annotation_meta(class_type_manager: class_ids.UserLabels, annotations_dir_path: str,
