@@ -44,7 +44,7 @@ class ModelStorage(BaseModel):
             raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_MODEL_PACKAGE_VERSION,
                                   error_message=f"Invalid model package version: {values['package_version']}")
         if values['object_type'] == mirpb.ObjectType.OT_UNKNOWN:
-            raise MirRuntimeError(error_code=MirCode.RC_CMD_UNKNOWN_MODEL_OBJECT_TYPE,
+            raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_OBJECT_TYPE,
                                   error_message=f"Invalid model object type: {values['object_type']}")
 
         return values

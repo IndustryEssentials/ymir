@@ -3,7 +3,7 @@ import enum
 import json
 import logging
 import os
-from typing import Any, Callable, Dict, List, Union
+from typing import Any, Callable, Dict, List, Set, Tuple, Union
 
 from google.protobuf.json_format import ParseDict
 import xmltodict
@@ -347,3 +347,145 @@ def copy_annotations_pred_meta(src_task_annotations: mirpb.SingleTaskAnnotations
     dst_task_annotations.eval_class_ids[:] = src_task_annotations.eval_class_ids
     dst_task_annotations.executor_config = src_task_annotations.executor_config
     dst_task_annotations.model.CopyFrom(src_task_annotations.model)
+
+
+# copy
+def map_and_filter_annotations(mir_annotations: mirpb.MirAnnotations, data_label_storage_file: str,
+                               label_storage_file: str) -> List[str]:
+    """
+    re-map and filter class ids for ground truth and prediction
+
+    Args:
+        mir_annotations (mirpb.MirAnnotations): in/out, pred and gt to be updated
+        data_label_storage_file (str): in, source label storage file
+        label_storage_file (str): in, dest label storage file
+
+    Returns:
+        List[str]: unknown class names
+    """
+    if (data_label_storage_file == label_storage_file
+            or (len(mir_annotations.prediction.image_annotations) == 0
+                and len(mir_annotations.ground_truth.image_annotations) == 0)):
+        # no need to make any changes to annotations
+        return []
+
+    src_class_id_mgr = class_ids.load_or_create_userlabels(label_storage_file=data_label_storage_file)
+    dst_class_id_mgr = class_ids.load_or_create_userlabels(label_storage_file=label_storage_file)
+
+    src_cids: List[int] = list(
+        set(mir_annotations.prediction.task_class_ids) | set(mir_annotations.ground_truth.task_class_ids)
+        | set(mir_annotations.prediction.eval_class_ids))
+    dst_cids, unknown_names = dst_class_id_mgr.id_for_names(src_class_id_mgr.main_name_for_ids(src_cids))
+    known_cids_mapping = {src_cids[i]: dst_cids[i] for i in range(len(src_cids)) if dst_cids[i] >= 0}
+
+    for sia in mir_annotations.prediction.image_annotations.values():
+        for oa in sia.boxes:
+            if oa.class_id in known_cids_mapping:
+                oa.class_id = known_cids_mapping[oa.class_id]
+            else:
+                sia.boxes.remove(oa)
+    for sia in mir_annotations.ground_truth.image_annotations.values():
+        for oa in sia.boxes:
+            if oa.class_id in known_cids_mapping:
+                oa.class_id = known_cids_mapping[oa.class_id]
+            else:
+                sia.boxes.remove(oa)
+
+    mir_annotations.prediction.eval_class_ids[:] = [
+        known_cids_mapping[cid] for cid in mir_annotations.prediction.eval_class_ids if cid in known_cids_mapping
+    ]
+
+    return unknown_names
+
+
+# filter and sampling
+def filter_annotations_by_asset_ids(mir_annotations: mirpb.MirAnnotations,
+                                    asset_ids_set: Set[str]) -> None:
+    """
+    filter mir_annotations by asset_ids_set in place
+
+    Args:
+        mir_annotations (mirpb.MirAnnotations), in/out: pred and gt to be filtered
+        asset_ids_set (Set[str]), in: asset ids
+
+    Returns:
+        mirpb.MirAnnotations: matched gt and pred
+    """
+    for asset_ids_dict in [
+            mir_annotations.ground_truth.image_annotations,
+            mir_annotations.prediction.image_annotations,
+            mir_annotations.image_cks,
+    ]:
+        exclude_asset_ids = set(asset_ids_dict.keys()) - asset_ids_set  # type: ignore
+        for asset_id in exclude_asset_ids:
+            del asset_ids_dict[asset_id]  # type: ignore
+
+
+# merge
+def merge_annotations(host_mir_annotations: mirpb.MirAnnotations, guest_mir_annotations: mirpb.MirAnnotations,
+                      strategy: str) -> None:
+    """
+    add all annotations in guest_mir_annotations into host_mir_annotations
+
+    Args:
+        host_mir_annotations (mirpb.MirAnnotations), in/out: host annotations
+        guest_mir_annotations (mirpb.MirAnnotations), in: guest annotations
+        strategy (str), in: host, guest, stop
+
+    Raises:
+        MirRuntimeError: if host or guest annotations empty, or conflicts occured in strategy stop
+    """
+    _merge_pair_annotations(host_annotation=host_mir_annotations.prediction,
+                            guest_annotation=guest_mir_annotations.prediction,
+                            strategy=strategy)
+    _merge_pair_annotations(host_annotation=host_mir_annotations.ground_truth,
+                            guest_annotation=guest_mir_annotations.ground_truth,
+                            strategy=strategy)
+
+    _merge_annotation_asset_ids_dict(host_asset_ids_dict=host_mir_annotations.image_cks,
+                                     guest_asset_ids_dict=guest_mir_annotations.image_cks,
+                                     strategy=strategy)
+
+    host_mir_annotations.prediction.eval_class_ids.extend(guest_mir_annotations.prediction.eval_class_ids)
+
+
+def _merge_pair_annotations(host_annotation: mirpb.SingleTaskAnnotations, guest_annotation: mirpb.SingleTaskAnnotations,
+                            strategy: str) -> None:
+    if (host_annotation.type != mirpb.ObjectType.OT_UNKNOWN and guest_annotation.type != mirpb.ObjectType.OT_UNKNOWN
+            and host_annotation.type != guest_annotation.type):
+        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_OBJECT_TYPE,
+                              error_message='host and guest object type mismatch')
+
+    host_annotation.type = host_annotation.type or guest_annotation.type
+
+    _merge_annotation_asset_ids_dict(host_asset_ids_dict=host_annotation.image_annotations,
+                                     guest_asset_ids_dict=guest_annotation.image_annotations,
+                                     strategy=strategy)
+
+
+def _merge_annotation_asset_ids_dict(host_asset_ids_dict: Any,
+                                     guest_asset_ids_dict: Any, strategy: str) -> None:
+    _, guest_only_ids, joint_ids = match_asset_ids(set(host_asset_ids_dict.keys()),
+                                                   set(guest_asset_ids_dict.keys()))
+    if strategy == "stop" and joint_ids:
+        raise MirRuntimeError(error_code=MirCode.RC_CMD_MERGE_ERROR,
+                              error_message='found conflict image cks in strategy stop')
+
+    asset_ids = (joint_ids | guest_only_ids) if strategy.lower() == "guest" else guest_only_ids
+    for asset_id in asset_ids:
+        host_asset_ids_dict[asset_id].CopyFrom(guest_asset_ids_dict[asset_id])
+
+
+def match_asset_ids(host_ids: set, guest_ids: set) -> Tuple[set, set, set]:
+    """
+    match asset ids
+
+    Args:
+        host_ids (set): host ids
+        guest_ids (set): guest ids
+
+    Returns:
+        Tuple[set, set, set]: host_only_ids, guest_only_ids, joint_ids
+    """
+    insets = host_ids & guest_ids
+    return (host_ids - insets, guest_ids - insets, insets)
