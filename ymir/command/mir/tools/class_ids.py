@@ -3,7 +3,7 @@ import os
 from typing import Dict, Iterator, List, Optional, Set, Tuple, Union
 
 import fasteners  # type: ignore
-from mir.version import check_version_valid, YMIR_VERSION
+from mir.version import check_ymir_version_or_crash, YMIR_VERSION
 from pydantic import BaseModel, root_validator, validator, validate_model
 import yaml
 
@@ -31,7 +31,7 @@ class LabelStorage(BaseModel):
     # protected: validators
     @validator('ymir_version')
     def _check_version(cls, v: str) -> str:
-        check_version_valid(ver=v)
+        check_ymir_version_or_crash(v)
         return v
 
     @validator('labels')
