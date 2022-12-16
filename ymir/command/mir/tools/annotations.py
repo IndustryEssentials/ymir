@@ -86,6 +86,10 @@ def _voc_object_dict_to_annotation(object_dict: dict, cid: int) -> mirpb.ObjectA
 
 def _coco_object_dict_to_annotation(anno_dict: dict, category_id_to_cids: Dict[int, int],
                                     class_type_manager: class_ids.UserLabels) -> mirpb.ObjectAnnotation:
+    if 'bbox' not in anno_dict or len(anno_dict['bbox']) != 4:
+        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_FILE,
+                              error_message=f"Can not find bbox in coco object: {anno_dict}")
+
     obj_anno = mirpb.ObjectAnnotation()
 
     # box, polygon and mask
