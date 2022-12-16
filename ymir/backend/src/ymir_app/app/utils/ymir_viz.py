@@ -73,6 +73,7 @@ class DatasetInfo:
     total_assets_mbytes: Optional[int] = None
 
     repo_index_ready: Optional[bool] = None
+    evaluation_state: Optional[int] = None
 
     @classmethod
     def from_dict(cls, res: Dict, user_labels: UserLabels) -> "DatasetInfo":
@@ -94,6 +95,7 @@ class DatasetInfo:
             hist=res.get("assets_hist") or None,
             total_assets_mbytes=res.get("total_assets_mbytes"),
             repo_index_ready=res.get("query_context", {}).get("repo_index_ready"),
+            evaluation_state=res["evaluation_state"],
         )
 
 
