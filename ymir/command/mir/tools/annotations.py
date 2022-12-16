@@ -3,7 +3,7 @@ import enum
 import json
 import logging
 import os
-from typing import Any, Callable, Dict, List, Union
+from typing import Any, Callable, Dict, List, Optional, Union
 
 from google.protobuf.json_format import ParseDict
 import xmltodict
@@ -85,10 +85,9 @@ def _voc_object_dict_to_annotation(object_dict: dict, cid: int) -> mirpb.ObjectA
 
 
 def _coco_object_dict_to_annotation(anno_dict: dict, category_id_to_cids: Dict[int, int],
-                                    class_type_manager: class_ids.UserLabels) -> mirpb.ObjectAnnotation:
+                                    class_type_manager: class_ids.UserLabels) -> Optional[mirpb.ObjectAnnotation]:
     if 'bbox' not in anno_dict or len(anno_dict['bbox']) != 4:
-        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_FILE,
-                              error_message=f"Can not find bbox in coco object: {anno_dict}")
+        return None
 
     obj_anno = mirpb.ObjectAnnotation()
 
@@ -272,6 +271,7 @@ def import_annotations_coco_json(file_name_to_asset_ids: Dict[str, str], mir_ann
     unhashed_filenames_cnt = 0
     unknown_category_ids_cnt = 0
     unknown_image_objects_cnt = 0
+    irregular_objects_cnt = 0
 
     # images_list -> image_id_to_hashes (key: coco image id, value: ymir asset hash)
     image_id_to_hashes: Dict[int, str] = {}
@@ -306,6 +306,9 @@ def import_annotations_coco_json(file_name_to_asset_ids: Dict[str, str], mir_ann
         obj_anno = _coco_object_dict_to_annotation(anno_dict=anno_dict,
                                                    category_id_to_cids=category_id_to_cids,
                                                    class_type_manager=class_type_manager)
+        if not obj_anno:
+            irregular_objects_cnt += 1
+            continue
         asset_hash = image_id_to_hashes[anno_dict['image_id']]
         obj_anno.index = len(image_annotations.image_annotations[asset_hash].boxes)
         image_annotations.image_annotations[asset_hash].boxes.append(obj_anno)
@@ -313,6 +316,7 @@ def import_annotations_coco_json(file_name_to_asset_ids: Dict[str, str], mir_ann
     logging.info(f"count of unhashed file names in images list: {unhashed_filenames_cnt}")
     logging.info(f"count of unknown category ids in categories list: {unknown_category_ids_cnt}")
     logging.info(f"count of objects with unknown image ids in annotations list: {unknown_image_objects_cnt}")
+    logging.info(f"count of irregular objects: {irregular_objects_cnt}")
 
 
 def _import_annotation_meta(class_type_manager: class_ids.UserLabels, annotations_dir_path: str,
