@@ -372,11 +372,11 @@ def map_and_filter_annotations(mir_annotations: mirpb.MirAnnotations, data_label
     src_class_id_mgr = class_ids.load_or_create_userlabels(label_storage_file=data_label_storage_file)
     dst_class_id_mgr = class_ids.load_or_create_userlabels(label_storage_file=label_storage_file)
 
-    src_cids: List[int] = list(
-        set(mir_annotations.prediction.task_class_ids) | set(mir_annotations.ground_truth.task_class_ids)
-        | set(mir_annotations.prediction.eval_class_ids))
-    dst_cids, unknown_names = dst_class_id_mgr.id_for_names(src_class_id_mgr.main_name_for_ids(src_cids))
-    known_cids_mapping = {src_cids[i]: dst_cids[i] for i in range(len(src_cids)) if dst_cids[i] >= 0}
+    cids_mapping = {
+        src_class_id_mgr.id_and_main_name_for_name(n)[0]: dst_class_id_mgr.id_and_main_name_for_name(n)[0]
+        for n in src_class_id_mgr.all_main_names()
+    }
+    known_cids_mapping = {k: v for k, v in cids_mapping.items() if v >= 0}
 
     for sia in mir_annotations.prediction.image_annotations.values():
         for oa in sia.boxes:
@@ -395,7 +395,7 @@ def map_and_filter_annotations(mir_annotations: mirpb.MirAnnotations, data_label
         known_cids_mapping[cid] for cid in mir_annotations.prediction.eval_class_ids if cid in known_cids_mapping
     ]
 
-    return unknown_names
+    return src_class_id_mgr.main_name_for_ids(list(cids_mapping.keys() - known_cids_mapping.keys()))
 
 
 # filter and sampling
