@@ -48,11 +48,11 @@ def _fill_type_shape_size_for_asset(asset_path: str, metadata_attributes: mirpb.
 
 
 def import_metadatas(mir_metadatas: mirpb.MirMetadatas,
-                     map_hashed_filename: Dict[str, str],
+                     file_name_to_asset_ids: Dict[str, str],
                      hashed_asset_root: str,
                      phase: str = '') -> int:
     # if not enough args, abort
-    if (not map_hashed_filename or not hashed_asset_root):
+    if (not file_name_to_asset_ids or not hashed_asset_root):
         logging.error('invalid map_hashed_path or hashed_asset_root')
         return MirCode.RC_CMD_INVALID_ARGS
 
@@ -68,8 +68,8 @@ def import_metadatas(mir_metadatas: mirpb.MirMetadatas,
 
     unknown_format_count = 0
 
-    sha1s_count = len(map_hashed_filename)
-    for idx, asset_id in enumerate(map_hashed_filename.keys()):
+    sha1s_count = len(file_name_to_asset_ids)
+    for idx, (file_name, asset_id) in enumerate(file_name_to_asset_ids.items()):
         metadata_attributes = mirpb.MetadataAttributes()
         metadata_attributes.timestamp.CopyFrom(timestamp)
 
@@ -81,7 +81,7 @@ def import_metadatas(mir_metadatas: mirpb.MirMetadatas,
             logging.warning(f"ignore asset with unknown format, id: {asset_id}")
             unknown_format_count += 1
             continue
-        metadata_attributes.origin_filename = map_hashed_filename[asset_id]
+        metadata_attributes.origin_filename = file_name
         mir_metadatas.attributes[asset_id].CopyFrom(metadata_attributes)
 
         if idx > 0 and idx % 5000 == 0:

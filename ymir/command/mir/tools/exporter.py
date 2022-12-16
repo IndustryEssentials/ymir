@@ -1,9 +1,10 @@
+from collections import defaultdict
 from datetime import datetime
 from functools import partial
 import json
 import os
 import shutil
-from typing import Dict, Optional, Protocol, TextIO, Tuple, Union
+from typing import Dict, List, Optional, Protocol, TextIO, Tuple, Union
 import uuid
 import xml.etree.ElementTree as ElementTree
 
@@ -544,6 +545,21 @@ def _single_task_annotations_to_coco(
     if not cls_id_mgr:
         raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS, error_message='invalid cls_id_mgr')
 
+    if not class_ids_mapping:
+        class_ids_mapping = {v: v for v in task_annotations.task_class_ids}
+    # filter / remapping class ids and task_annotations.image_annotations
+    categories_list = [{
+        'id': class_ids_mapping[cid],
+        'name': cls_id_mgr.main_name_for_id(cid),
+        'supercategory': 'object',
+    } for cid in task_annotations.task_class_ids if cid in class_ids_mapping]
+    asset_id_to_image_annotations: Dict[str, List[mirpb.ObjectAnnotation]] = defaultdict(list)
+    for asset_id, sia in task_annotations.image_annotations.items():
+        for oa in sia.boxes:
+            if oa.class_id in class_ids_mapping:
+                oa.class_id = class_ids_mapping[oa.class_id]
+                asset_id_to_image_annotations[asset_id].append(oa)
+
     # images list
     images_list = []
     asset_id_to_coco_image_ids: Dict[str, int] = {}
@@ -568,24 +584,13 @@ def _single_task_annotations_to_coco(
         'url': '',
     }]
 
-    # categories list
-    categories_list = []
-    for cid in task_annotations.task_class_ids:
-        if class_ids_mapping and cid not in class_ids_mapping:
-            continue
-        categories_list.append({
-            'id': class_ids_mapping[cid] if class_ids_mapping else cid,
-            'name': cls_id_mgr.main_name_for_id(cid),
-            'supercategory': 'none',
-        })
-
     # annotations list
     annotations_list = []
     coco_anno_id = 1
-    for asset_id, sia in task_annotations.image_annotations.items():
+    for asset_id, oas_list in asset_id_to_image_annotations.items():
         coco_image_id = asset_id_to_coco_image_ids[asset_id]
         attrs = mir_metadatas.attributes[asset_id]
-        for oa in sia.boxes:
+        for oa in oas_list:
             segmentation: Union[list, dict] = {}
             if oa.type == mirpb.ObjectType.OT_SEG_MASK:
                 segmentation = {
@@ -600,7 +605,7 @@ def _single_task_annotations_to_coco(
             annotations_list.append({
                 'id': coco_anno_id,
                 'image_id': coco_image_id,
-                'category_id': class_ids_mapping[oa.class_id] if class_ids_mapping else oa.class_id,
+                'category_id': oa.class_id,
                 'iscrowd': oa.iscrowd,
                 'bbox': [oa.box.x, oa.box.y, oa.box.w, oa.box.h],
                 'segmentation': segmentation,

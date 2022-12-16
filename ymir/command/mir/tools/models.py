@@ -1,6 +1,6 @@
 import logging
 import os
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, root_validator
 import shutil
 import tarfile
 from typing import Any, Dict, List, Tuple
@@ -12,6 +12,7 @@ from mir.tools.code import MirCode
 from mir.tools.errors import MirRuntimeError
 from mir.tools.mir_storage import sha1sum_for_file
 from mir.protos import mir_command_pb2 as mirpb
+from mir.version import check_model_version_or_crash
 
 
 class ModelStageStorage(BaseModel):
@@ -34,7 +35,17 @@ class ModelStorage(BaseModel):
     stage_name: str = ''
     attachments: Dict[str, List[str]] = {}
     evaluate_config: Dict[str, float] = {}
+    object_type: int = mirpb.ObjectType.OT_UNKNOWN
     package_version: str = Field(..., min_length=1)
+
+    @root_validator
+    def validate_model_storage(cls, values: dict) -> dict:
+        check_model_version_or_crash(values['package_version'])
+        if values['object_type'] == mirpb.ObjectType.OT_UNKNOWN:
+            raise MirRuntimeError(error_code=MirCode.RC_CMD_UNKNOWN_MODEL_OBJECT_TYPE,
+                                  error_message=f"Invalid model object type: {values['object_type']}")
+
+        return values
 
     @property
     def class_names(self) -> List[str]:

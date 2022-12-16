@@ -237,6 +237,7 @@ class TestCmdTraining(unittest.TestCase):
                                  stages={mss.stage_name: mss},
                                  best_stage_name=mss.stage_name,
                                  model_hash='xyz',
+                                 object_type=mirpb.ObjectType.OT_DET_BOX,
                                  package_version=ymir_model_salient_version(YMIR_VERSION))
         return ms
 
@@ -245,7 +246,7 @@ class TestCmdTraining(unittest.TestCase):
 
     # public: test cases
     @mock.patch('subprocess.run', side_effect=_mock_run_docker_cmd)
-    @mock.patch("mir.commands.training._find_model_storage", side_effect=__mock_process_model_storage)
+    @mock.patch("mir.commands.training._get_model_storage", side_effect=__mock_process_model_storage)
     @mock.patch("mir.tools.models.pack_and_copy_models", side_effect=_mock_pack_and_copy_model)
     def test_normal_00(self, *mock_run):
         """ normal case """
