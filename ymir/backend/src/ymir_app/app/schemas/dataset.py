@@ -150,6 +150,7 @@ class DatasetInfo(DatasetInDBBase):
     cks_count_total: Optional[Dict]
 
     total_assets_count: Optional[int]
+    evaluation_state: Optional[int]
 
     # make sure all the json dumped value is unpacked before returning to caller
     @validator("keywords")

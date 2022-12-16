@@ -10,6 +10,7 @@ import Hash from '@/components/common/hash'
 import AssetAnnotation from '@/components/dataset/asset/AssetAnnotations'
 import GtSelector from '@/components/form/GtSelector'
 import EvaluationSelector from '@/components/form/EvaluationSelector'
+import CustomLabels from '@/components/dataset/asset/CustomLabels'
 
 import styles from './asset.less'
 import { NavDatasetIcon, EyeOffIcon, EyeOnIcon } from '@/components/common/Icons'
@@ -185,11 +186,7 @@ function Asset({ id, asset: cache, datasetKeywords, filterKeyword, filters, inde
                   </Row>
                 </Item>
                 <Item label={t('dataset.assets.keyword.selector.types.cks')}>
-                  {Object.keys(asset.cks).map((ck) => (
-                    <Space key={ck}>
-                      <span style={{ fontWeight: 'bold' }}>{ck}: </span> <span>{asset.cks[ck]}</span>
-                    </Space>
-                  ))}
+                  <CustomLabels asset={asset} />
                 </Item>
               </Descriptions>
 
