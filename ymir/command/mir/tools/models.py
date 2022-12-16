@@ -12,7 +12,7 @@ from mir.tools.code import MirCode
 from mir.tools.errors import MirRuntimeError
 from mir.tools.mir_storage import sha1sum_for_file
 from mir.protos import mir_command_pb2 as mirpb
-from mir.version import ymir_model_salient_version, YMIR_VERSION
+from mir.version import check_version_valid, CheckVersionType
 
 
 class ModelStageStorage(BaseModel):
@@ -40,9 +40,7 @@ class ModelStorage(BaseModel):
 
     @root_validator
     def validate_model_storage(cls, values: dict) -> dict:
-        if ymir_model_salient_version(values['package_version']) != ymir_model_salient_version(YMIR_VERSION):
-            raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_MODEL_PACKAGE_VERSION,
-                                  error_message=f"Invalid model package version: {values['package_version']}")
+        check_version_valid(ver=values['package_version'], type=CheckVersionType.CVT_MODEL_VERSION)
         if values['object_type'] == mirpb.ObjectType.OT_UNKNOWN:
             raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_OBJECT_TYPE,
                                   error_message=f"Invalid model object type: {values['object_type']}")
