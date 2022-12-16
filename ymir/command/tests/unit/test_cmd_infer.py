@@ -175,17 +175,8 @@ class TestCmdInfer(unittest.TestCase):
         expected_cmd.append(fake_args.executor)
         mock_run.assert_called_once_with(expected_cmd, check=True, stdout=mock.ANY, stderr=mock.ANY, text=True)
 
-        # check assets and index.tsv
-        with open(os.path.join(fake_args.work_dir, 'in', 'candidate-index.tsv'), 'r') as f:
-            contents = f.read().splitlines()
-            self.assertEqual(1, len(contents))
-            self.assertEqual('/in/assets/2007_000032.jpg', contents[0])
-
         # check config
         with open(os.path.join(fake_args.work_dir, 'in', 'config.yaml'), 'r') as f:
             infer_config = yaml.safe_load(f.read())
             self.assertTrue('class_names' in infer_config)
             self.assertTrue('model_params_path' in infer_config)
-
-        # check model params
-        self.assertTrue(os.path.isfile(os.path.join(fake_args.work_dir, 'in', 'models', 'default_best_stage', 'model.params')))
