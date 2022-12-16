@@ -56,7 +56,7 @@ def check_ymir_version_or_crash(ver: str) -> None:
                               error_message=f"Version mismatch between: {ver} and {YMIR_VERSION}")
 
 
-def check_ymir_model_version_or_crash(ver: str) -> None:
+def check_model_version_or_crash(ver: str) -> None:
     if ymir_model_salient_version(ver) != ymir_model_salient_version(YMIR_VERSION):
         raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_MODEL_PACKAGE_VERSION,
                               error_message=f"Model package version mismatch between: {ver} and {YMIR_VERSION}")
