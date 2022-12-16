@@ -1,3 +1,5 @@
+from enum import IntEnum
+
 import yaml
 
 from mir.tools.code import MirCode
@@ -50,13 +52,22 @@ def ymir_model_salient_version(ver: str) -> str:
     return _PACKAGE_VERSIONS[ver]
 
 
-def check_version(ver: str) -> None:
-    if ymir_salient_version(ver) != ymir_salient_version(YMIR_VERSION):
-        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
-                              error_message=f"Version mismatch: {ver} vs {YMIR_VERSION}")
+class CheckVersionType(IntEnum):
+    CVT_LABEL_VERSION = 1
+    CVT_MODEL_VERSION = 2
 
 
-def check_model_version(ver: str) -> None:
-    if ymir_model_salient_version(ver) != ymir_model_salient_version(YMIR_VERSION):
-        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_MODEL_PACKAGE_VERSION,
-                              error_message=f"Model version mismatch: {ver} vs {YMIR_VERSION}")
+def check_version_valid(ver: str,
+                        type: CheckVersionType = CheckVersionType.CVT_LABEL_VERSION,
+                        raise_if_mismatch: bool = True) -> bool:
+    funcs_map = {
+        CheckVersionType.CVT_LABEL_VERSION: ymir_salient_version,
+        CheckVersionType.CVT_MODEL_VERSION: ymir_model_salient_version,
+    }
+    salient_ver_func = funcs_map[type]
+    if salient_ver_func(ver) != salient_ver_func(YMIR_VERSION):
+        if raise_if_mismatch:
+            raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
+                                  error_message=f"Version mismatch between {ver} and {YMIR_VERSION}")
+        return False
+    return True
