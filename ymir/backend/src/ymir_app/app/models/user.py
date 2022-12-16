@@ -8,7 +8,7 @@ from app.config import settings
 
 
 def generate_uuid() -> str:
-    return uuid.uuid4()
+    return str(uuid.uuid4())
 
 
 class User(Base):

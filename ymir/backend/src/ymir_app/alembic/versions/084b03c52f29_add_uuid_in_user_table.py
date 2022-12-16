@@ -22,11 +22,12 @@ def upgrade() -> None:
         batch_op.add_column(sa.Column("uuid", sa.String(length=36), nullable=False))
 
     conn = op.get_bind()
+    if conn.engine.name == "sqlite":
+        return
     try:
         conn.execute("UPDATE user SET uuid = uuid()")
     except Exception as e:
         print("Could not add uuid for user: %s" % e)
-
     # ### end Alembic commands ###
 
 
