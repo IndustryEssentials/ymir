@@ -1,9 +1,14 @@
 from datetime import datetime
+import uuid
 
 from sqlalchemy import Boolean, Column, DateTime, Integer, String
 
 from app.db.base_class import Base
 from app.config import settings
+
+
+def generate_uuid() -> str:
+    return uuid.uuid4()
 
 
 class User(Base):
@@ -18,6 +23,7 @@ class User(Base):
     role = Column(Integer, index=True, default=1)
     organization = Column(String(settings.STRING_LEN_LIMIT))
     scene = Column(String(settings.LONG_STRING_LEN_LIMIT))
+    uuid = Column(String(36), default=generate_uuid, nullable=False)
 
     is_deleted = Column(Boolean(), default=False)
     last_login_datetime = Column(DateTime, nullable=True)
