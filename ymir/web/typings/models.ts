@@ -1,3 +1,5 @@
+declare module 'react-xml-viewer'
+
 declare namespace YModels {
   type Labels = string[]
   type DatasetId = number
