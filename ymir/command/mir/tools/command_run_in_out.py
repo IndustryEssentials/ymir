@@ -172,11 +172,11 @@ def command_run_in_out(f: Callable) -> Callable:
 
 def command_cleanup(f: Callable) -> Callable:
     """
-    Clean up iff commands returns without any error codes or any exceptions
+    Clean up iff commands returns without any error code or exception
     """
     @wraps(f)
     def wrapper(work_dir: str, *args: tuple, **kwargs: dict) -> Any:
-        ret = f(work_dir=work_dir, *args, **kwargs)  # raise exceptions if you wish
+        ret = f(work_dir=work_dir, *args, **kwargs)
         if ret == MirCode.RC_OK:
             _cleanup(work_dir)
         return ret
