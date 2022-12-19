@@ -1,7 +1,7 @@
-version: "3.1"
+version: "3.3"
 services:
   label_nginx:
-    image: labelfree/open_frontend:2.0.0
+    image: labelfree/open_frontend:3.2.0
     env_file:
       - .env
     ports:
@@ -11,7 +11,7 @@ services:
     restart: always
 
   label_api:
-    image: labelfree/open:2.0.0
+    image: labelfree/open:3.2.0
     command: gunicorn --conf /code/config/gunicorn.py  --log-config /code/config/logging.conf --chdir /code/labelfree app:app
     env_file:
       - .env
@@ -23,7 +23,7 @@ services:
       REDIS_HOST: label_redis
       REDIS_PORT: 6379
       REDIS_PASSWORD: ${MYSQL_ROOT_PASSWORD}
-      S3_ENDPOINT_URL: ${LABEL_TOOL_HOST_IP}:${LABEL_TOOL_S3_PORT}
+      S3_ENDPOINT_URL: http://label-minio:9000
       S3_SECRET_ACCESS_KEY: ${MYSQL_ROOT_PASSWORD}
       FLASK_APP: labelfree.app
       LABEL_ENV: dev
@@ -32,9 +32,26 @@ services:
       - labelfreenetwork
     restart: always
 
+  label_seg:
+    image: labelfree/open_seg:3.2.0
+    command: gunicorn --conf /code/config/gunicorn.py  --log-config /code/config/logging.conf --chdir /code/segmentation app:app
+    runtime: ${SERVER_RUNTIME}
+    volumes:
+      - ./seg_log:/var/log/gunicorn
+    environment:
+      FLASK_APP: labelfree.app
+      SEG_DEBUG: "false"
+      NVIDIA_VISIBLE_DEVICES: all
+      FLAGS_fast_eager_deletion_mode: "true"
+      FLAGS_eager_delete_tensor_gb: 0.0
+      FLAGS_memory_fraction_of_eager_deletion: 1
+      G_MAX_REQUESTS: 100
+      G_MAX_REQUESTS_JITTER: 10
+    restart: always
+
   label_celery_worker:
-    image: labelfree/open:2.0.0
-    command: celery -A labelfree.app.celery worker -l info -B
+    image: labelfree/open:3.2.0
+    command: celery -A labelfree.app.celery worker -l info -c 4 -B
     env_file:
       - .env
     volumes:
@@ -43,7 +60,7 @@ services:
       SQLALCHEMY_DATABASE_URI: mysql+pymysql://root:${MYSQL_ROOT_PASSWORD}@label_mysql:3306/labelfree
       REDIS_HOST: label_redis
       REDIS_PASSWORD: ${MYSQL_ROOT_PASSWORD}
-      S3_ENDPOINT_URL: ${LABEL_TOOL_HOST_IP}:${LABEL_TOOL_S3_PORT}
+      S3_ENDPOINT_URL: http://label-minio:9000
       S3_SECRET_ACCESS_KEY: ${MYSQL_ROOT_PASSWORD}
       FLASK_APP: labelfree.app
       LABEL_ENV: dev
@@ -64,6 +81,7 @@ services:
       --explicit_defaults_for_timestamp=true
       --lower_case_table_names=1
       --max_allowed_packet=128M
+      --max_connections=1000
       --sql-mode="STRICT_TRANS_TABLES,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION,NO_ZERO_DATE,NO_ZERO_IN_DATE,ERROR_FOR_DIVISION_BY_ZERO"
     volumes:
       - ${YMIR_PATH}/labelfree/mysql_data:/var/lib/mysql
@@ -80,7 +98,7 @@ services:
       - labelfreenetwork
     restart: always
 
-  label_minio:
+  label-minio:
     image: quay.io/minio/minio
     env_file:
       - .env
@@ -88,8 +106,6 @@ services:
       MINIO_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
       MINIO_ROOT_USER: labelfree
     command: server /data --console-address ":9001"
-    ports:
-      - ${LABEL_TOOL_S3_PORT}:9000
     volumes:
       - ${YMIR_PATH}/labelfree/minio_data:/data
     networks:
