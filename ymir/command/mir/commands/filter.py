@@ -4,8 +4,9 @@ from typing import Optional, Set
 
 from mir.commands import base
 from mir.protos import mir_command_pb2 as mirpb
-from mir.tools import annotations, checker, class_ids
+from mir.tools import checker, class_ids
 from mir.tools import mir_repo_utils, mir_storage, mir_storage_ops, revs_parser
+from mir.tools.annotations import filter_annotations_by_asset_ids
 from mir.tools.code import MirCode
 from mir.tools.command_run_in_out import command_run_in_out
 from mir.tools.errors import MirRuntimeError
@@ -108,30 +109,29 @@ class CmdFilter(base.BaseCommand):
                                                   mir_keywords=mir_keywords,
                                                   ex_cis_set=ex_cis_set)
         logging.info(f"assets count after exclude match: {len(asset_ids_set)}")
+        # matched_mir_metadatas = mirpb.MirMetadatas()
+        # matched_mir_annotations = mirpb.MirAnnotations()
 
-        matched_mir_metadatas = mirpb.MirMetadatas()
-        matched_mir_annotations = mirpb.MirAnnotations()
+        # # generate matched metadatas, annotations and keywords
+        # for asset_id in asset_ids_set:
+        #     # generate `matched_mir_metadatas`
+        #     asset_attr = mir_metadatas.attributes[asset_id]
+        #     matched_mir_metadatas.attributes[asset_id].CopyFrom(asset_attr)
 
-        # generate matched metadatas, annotations and keywords
-        for asset_id in asset_ids_set:
-            # generate `matched_mir_metadatas`
-            asset_attr = mir_metadatas.attributes[asset_id]
-            matched_mir_metadatas.attributes[asset_id].CopyFrom(asset_attr)
+        # # generate `matched_mir_annotations`
+        # CmdFilter.__gen_task_annotations(src_task_annotations=mir_annotations.ground_truth,
+        #                                  dst_task_annotations=matched_mir_annotations.ground_truth,
+        #                                  asset_ids=asset_ids_set)
+        # CmdFilter.__gen_task_annotations(src_task_annotations=mir_annotations.prediction,
+        #                                  dst_task_annotations=matched_mir_annotations.prediction,
+        #                                  asset_ids=asset_ids_set)
 
-        # generate `matched_mir_annotations`
-        CmdFilter.__gen_task_annotations(src_task_annotations=mir_annotations.ground_truth,
-                                         dst_task_annotations=matched_mir_annotations.ground_truth,
-                                         asset_ids=asset_ids_set)
-        CmdFilter.__gen_task_annotations(src_task_annotations=mir_annotations.prediction,
-                                         dst_task_annotations=matched_mir_annotations.prediction,
-                                         asset_ids=asset_ids_set)
+        # image_ck_asset_ids = asset_ids_set & set(mir_annotations.image_cks.keys())
+        # for asset_id in image_ck_asset_ids:
+        #     matched_mir_annotations.image_cks[asset_id].CopyFrom(mir_annotations.image_cks[asset_id])
 
-        image_ck_asset_ids = asset_ids_set & set(mir_annotations.image_cks.keys())
-        for asset_id in image_ck_asset_ids:
-            matched_mir_annotations.image_cks[asset_id].CopyFrom(mir_annotations.image_cks[asset_id])
-
-        annotations.copy_annotations_pred_meta(src_task_annotations=mir_annotations.prediction,
-                                               dst_task_annotations=matched_mir_annotations.prediction)
+        # annotations.copy_annotations_pred_meta(src_task_annotations=mir_annotations.prediction,
+        #                                        dst_task_annotations=matched_mir_annotations.prediction)
 
         logging.info("matched: %d, overriding current mir repo", len(matched_mir_metadatas.attributes))
 
