@@ -2,6 +2,7 @@ import argparse
 import json
 import logging
 import os
+import shutil
 import time
 from typing import Any, Callable, Dict
 
@@ -166,6 +167,9 @@ class CmdInfer(base.BaseCommand):
 
             with open(os.path.join(work_dir_out, 'prediction.mir'), 'wb') as m_f:
                 m_f.write(task_annotations.SerializeToString())
+
+        # remove models
+        shutil.rmtree(os.path.join(work_dir_in, 'models'))
 
         return MirCode.RC_OK
 
