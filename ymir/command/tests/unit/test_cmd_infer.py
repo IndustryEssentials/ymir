@@ -186,6 +186,3 @@ class TestCmdInfer(unittest.TestCase):
             infer_config = yaml.safe_load(f.read())
             self.assertTrue('class_names' in infer_config)
             self.assertTrue('model_params_path' in infer_config)
-
-        # check model params
-        self.assertTrue(os.path.isfile(os.path.join(fake_args.work_dir, 'in', 'models', 'default_best_stage', 'model.params')))

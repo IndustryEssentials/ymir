@@ -86,7 +86,8 @@ def _cleanup(work_dir: str) -> None:
             'tensorboard',  # default root directory for tensorboard event files
             'ymir-executor-out.log',  # container output
             'infer-result.json',  # infer result file
-            'result.yaml',  # mining result file
+            'coco-infer-result.json',  # infer result file
+            'result.tsv',  # mining result file
         })
 
     logging.info(f"cleanup {work_dir} finish")
