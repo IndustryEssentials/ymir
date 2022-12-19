@@ -47,6 +47,8 @@ services:
       FLAGS_memory_fraction_of_eager_deletion: 1
       G_MAX_REQUESTS: 100
       G_MAX_REQUESTS_JITTER: 10
+    networks:
+      - labelfreenetwork
     restart: always
 
   label_celery_worker:
