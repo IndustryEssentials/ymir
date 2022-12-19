@@ -96,7 +96,7 @@ def _cleanup(work_dir: str) -> None:
 
 def command_run_in_out(f: Callable) -> Callable:
     """
-    Decorator to record monitor.txt and commit on errors
+    Record monitor.txt and commit on errors
     """
     @wraps(f)
     def wrapper(mir_root: str, src_revs: str, dst_rev: str, work_dir: str, *args: tuple, **kwargs: dict) -> Any:
