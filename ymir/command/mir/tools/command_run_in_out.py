@@ -82,12 +82,12 @@ def _cleanup(work_dir: str) -> None:
         ignored_items={
             'log.txt',  # see also: ymir-cmd-container.md
             'monitor.txt',  # monitor file
-            'monitor-log.txt',  # monitor detail file
             'tensorboard',  # default root directory for tensorboard event files
             'ymir-executor-out.log',  # container output
+            'result.yaml',  # training result file
+            'result.tsv',  # mining result file (file list)
             'infer-result.json',  # infer result file (detection)
             'coco-infer-result.json',  # infer result file (segmentation)
-            'result.yaml',  # mining result file
             'prediction.mir',  # infer result file (protobuf)
         })
 

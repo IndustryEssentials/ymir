@@ -45,7 +45,6 @@ class CmdMining(base.BaseCommand):
                                        run_as_root=self.args.run_as_root)
 
     @staticmethod
-    @command_cleanup
     @command_run_in_out
     def run_with_args(work_dir: str,
                       asset_cache_dir: Optional[str],
