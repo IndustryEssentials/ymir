@@ -37,7 +37,7 @@ services:
     command: gunicorn --conf /code/config/gunicorn.py  --log-config /code/config/logging.conf --chdir /code/segmentation app:app
     runtime: ${SERVER_RUNTIME}
     volumes:
-      - ./seg_log:/var/log/gunicorn
+      - ${YMIR_PATH}/labelfree/seg_log:/var/log/gunicorn
     environment:
       FLASK_APP: labelfree.app
       SEG_DEBUG: "false"
