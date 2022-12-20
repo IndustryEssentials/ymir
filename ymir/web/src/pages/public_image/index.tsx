@@ -32,6 +32,7 @@ const internalPages: Params = {
 }
 const pages: Params = {
   portal: { path: '/image', action: 'pageInit' },
+  publish: { path: '/image/publish', action: 'pageInit' },
 }
 
 const defaultPage = 'portal'
@@ -57,13 +58,16 @@ const PublicImage = () => {
       setKey(r)
       const self = window.location.origin
       const lang = getLocale()
-      const url = `${base}${pages[module].path}?from=${self}&userId=${userId}&uuid=${uuid}&userName=${userName || ''}&lang=${lang}&r=${r}`
+      const query = location.search || '?'
+
+      const url = `${base}${pages[module].path}${query}from=${self}&userId=${userId}&uuid=${uuid}&userName=${userName || ''}&lang=${lang}&r=${r}`
       setUrl(url)
     }
     history.replace({ state: {} })
   }, [module])
 
   useEffect(() => {
+    console.log('recieved:', recieved)
     if (!recieved?.type) {
       return
     }
@@ -87,7 +91,8 @@ const PublicImage = () => {
         if (!page) {
           return
         }
-        history.push(page, params)
+        history.push(page, { record: params })
+        post('toPageSuccess', { name })
       },
       async checkImage() {
         const url = recieved.data?.url
