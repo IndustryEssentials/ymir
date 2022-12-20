@@ -35,7 +35,7 @@ services:
   label_seg:
     image: labelfree/open_seg:3.2.0
     command: gunicorn --conf /code/config/gunicorn.py  --log-config /code/config/logging.conf --chdir /code/segmentation app:app
-    runtime: ${SERVER_RUNTIME}
+    runtime: runc
     volumes:
       - ${YMIR_PATH}/labelfree/seg_log:/var/log/gunicorn
     environment:
@@ -47,6 +47,7 @@ services:
       FLAGS_memory_fraction_of_eager_deletion: 1
       G_MAX_REQUESTS: 100
       G_MAX_REQUESTS_JITTER: 10
+      SERVER_RUNTIME: "runc"
     networks:
       - labelfreenetwork
     restart: always
