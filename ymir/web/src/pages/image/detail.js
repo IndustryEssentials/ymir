@@ -14,7 +14,7 @@ import ImagesLink from './components/imagesLink'
 import StateTag from '@/components/task/StateTag'
 
 import styles from './detail.less'
-import { EditIcon, VectorIcon, TrainIcon } from '@/components/common/Icons'
+import { EditIcon, PublishIcon, DeleteIcon, LinkIcon } from '@/components/common/Icons'
 
 const { Item } = Descriptions
 
@@ -32,7 +32,8 @@ function ImageDetail() {
     const { name, related } = image
     linkModalRef.current.show({ id, name, related })
   }
-  const share = ({ name = '', url = '', description = ''}) => history.push(`/home/public_image/publish?name=${name}&image_addr=${url}&description=${description}`)
+  const share = ({ name = '', url = '', description = '' }) =>
+    history.push(`/home/public_image/publish?name=${name}&image_addr=${url}&description=${description}`)
 
   const del = () => {
     delRef.current.del(id, image.name)
@@ -111,7 +112,6 @@ function ImageDetail() {
                 .join(',')}
             </Item>
             <Item label={t('image.detail.label.url')}>{image.url}</Item>
-            <Item label={t('image.detail.label.publish')}>{image.isShared ? t('common.yes') : t('common.no')}</Item>
             <Item label={t('image.detail.label.related')} span={2}>
               <Row>
                 <Col flex={1}>
@@ -119,7 +119,7 @@ function ImageDetail() {
                 </Col>
                 {isAdmin() && isDone() ? (
                   <Col>
-                    <Button type="primary" onClick={() => relateImage()}>
+                    <Button type="primary" onClick={() => relateImage()} icon={<LinkIcon />}>
                       {t('image.detail.relate')}
                     </Button>
                   </Col>
@@ -130,16 +130,15 @@ function ImageDetail() {
               {renderConfigs(image.configs)}
             </Item>
             <Item label={t('image.detail.label.state')} span={2}>
-              {' '}
-              <StateTag state={image.state} />{' '}
+              <StateTag state={image.state} />
             </Item>
 
             <Item label={''} span={2}>
               <Space>
-                <Button hidden={!isAdmin() || !isDone()} onClick={() => share(image)}>
+                <Button hidden={!isAdmin() || !isDone()} onClick={() => share(image)} icon={<PublishIcon />}>
                   {t('image.action.publish')}
                 </Button>
-                <Button hidden={!isAdmin() || (!isDone() && !isError())} onClick={del}>
+                <Button hidden={!isAdmin() || (!isDone() && !isError())} onClick={del} icon={<DeleteIcon />}>
                   {t('common.del')}
                 </Button>
               </Space>
