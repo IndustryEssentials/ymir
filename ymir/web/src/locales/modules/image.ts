@@ -1,6 +1,7 @@
 const image = {
   "images.title": { en: "My Images", cn: "我的镜像", },
   "image.title": { en: "Image Detail", cn: "镜像详情", },
+  "public_image.title": { en: "Image Community", cn: "镜像社区", },
   "image.add.title": { en: "Create Image", cn: "添加镜像", },
   "image.type.unkown": { en: "Pending", cn: "加载中", },
   "image.type.mining": { en: "Mining", cn: "挖掘", },
@@ -65,6 +66,7 @@ const image = {
   'image.livecode.label.remote': { en: "Remote", cn: "远端", },
   'image.livecode.label.local': { en: "Local", cn: "本地", },
   'image.add.image.tip.admin': { en: "Only Administrators be allowed to add image", cn: "只有管理员才能添加镜像", },
+  'image.leftmenu.label': { en: "Image", cn: "镜像管理", },
 }
 
 export default image
