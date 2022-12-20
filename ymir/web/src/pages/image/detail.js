@@ -9,7 +9,6 @@ import useFetch from '@/hooks/useFetch'
 
 import Breadcrumbs from '@/components/common/breadcrumb'
 import LinkModal from './components/relate'
-import ShareModal from './components/share'
 import Del from './components/del'
 import ImagesLink from './components/imagesLink'
 import StateTag from '@/components/task/StateTag'
@@ -22,11 +21,9 @@ const { Item } = Descriptions
 function ImageDetail() {
   const { id } = useParams()
   const history = useHistory()
-  // const [image, setImage] = useState({ id })
-  const shareModalRef = useRef(null)
   const linkModalRef = useRef(null)
   const delRef = useRef(null)
-  const image = useSelector(({ image }) => image.image[id])
+  const image = useSelector(({ image }) => image.image[id] || {})
   const [_, getImage] = useFetch('image/getImage', { id })
   const role = useSelector(({ user }) => user.role)
 
@@ -35,9 +32,7 @@ function ImageDetail() {
     const { name, related } = image
     linkModalRef.current.show({ id, name, related })
   }
-  const share = () => {
-    shareModalRef.current.show(id, image.name)
-  }
+  const share = ({ name = '', url = '', description = ''}) => history.push(`/home/public_image/publish?name=${name}&image_addr=${url}&description=${description}`)
 
   const del = () => {
     delRef.current.del(id, image.name)
@@ -83,17 +78,6 @@ function ImageDetail() {
     ))
   }
 
-  function renderTaskBtn() {
-    return image.functions.map((func) => {
-      const type = isTrain(func) ? 'train' : 'mining'
-      return (
-        <Button onClick={() => history.push(`/home/task/${type}?image=${id}`)}>
-          {isTrain(func) ? <TrainIcon /> : <VectorIcon />} {t(`image.list.${type}.btn`)}
-        </Button>
-      )
-    })
-  }
-
   function renderTitle() {
     return (
       <Row>
@@ -127,7 +111,7 @@ function ImageDetail() {
                 .join(',')}
             </Item>
             <Item label={t('image.detail.label.url')}>{image.url}</Item>
-            <Item label={t('image.detail.label.share')}>{image.isShared ? t('common.yes') : t('common.no')}</Item>
+            <Item label={t('image.detail.label.publish')}>{image.isShared ? t('common.yes') : t('common.no')}</Item>
             <Item label={t('image.detail.label.related')} span={2}>
               <Row>
                 <Col flex={1}>
@@ -152,8 +136,8 @@ function ImageDetail() {
 
             <Item label={''} span={2}>
               <Space>
-                <Button hidden={!isAdmin() || !isDone()} onClick={share}>
-                  {t('image.action.share')}
+                <Button hidden={!isAdmin() || !isDone()} onClick={() => share(image)}>
+                  {t('image.action.publish')}
                 </Button>
                 <Button hidden={!isAdmin() || (!isDone() && !isError())} onClick={del}>
                   {t('common.del')}
@@ -164,7 +148,6 @@ function ImageDetail() {
         </div>
       </Card>
       <LinkModal ref={linkModalRef} />
-      <ShareModal ref={shareModalRef} />
       <Del ref={delRef} ok={delOk} />
     </div>
   )
