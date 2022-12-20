@@ -5,6 +5,11 @@ import { useEffect, useRef, useState } from 'react'
 import { getLocale, useHistory, useLocation, useParams, useRouteMatch } from 'umi'
 import { useSelector } from 'react-redux'
 
+type UserType = {
+  username: string
+  id: number
+  uuid: string
+}
 type Params = { [key: string]: any }
 type DataType = {
   path?: string
@@ -37,7 +42,7 @@ const PublicImage = () => {
   if (!base) {
     return <div>Image Community is not READY</div>
   }
-  const { username: userName, id: userId } = useSelector(({ user }: { user: { username: string; id: number } }) => user)
+  const { username: userName, id: userId, uuid } = useSelector<{ user: UserType }, UserType>(({ user }) => user)
   const { module = defaultPage } = useParams<Params>()
   const location = useLocation<Params>()
   const iframe: { current: HTMLIFrameElement | null } = useRef(null)
@@ -52,7 +57,7 @@ const PublicImage = () => {
       setKey(r)
       const self = window.location.origin
       const lang = getLocale()
-      const url = `${base}${pages[module].path}?from=${self}&userId=${userId}&userName=${userName || ''}&lang=${lang}&r=${r}`
+      const url = `${base}${pages[module].path}?from=${self}&userId=${userId}&uuid=${uuid}&userName=${userName || ''}&lang=${lang}&r=${r}`
       setUrl(url)
     }
     history.replace({ state: {} })
