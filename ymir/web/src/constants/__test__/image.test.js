@@ -83,7 +83,6 @@ describe("constants: image", () => {
       functions, 
       liveCode: undefined,
       id: 1,
-      isShared: false,
       name: "sample_image",
       related: [],
       state: 3,
