@@ -15,13 +15,8 @@ services:
       - "${BACKEND_SANDBOX_ROOT}:${BACKEND_SANDBOX_ROOT}"
     restart: on-failure:10
     networks:
-      - extnetwork
+      - ymir_ymirnetwork
 
 networks:
-    extnetwork:
-      driver: bridge
-      ipam:
-        driver: default
-        config:
-        - subnet: 172.168.255.0/24
-          gateway: 172.168.255.1
+    ymir_ymirnetwork:
+      external: true
