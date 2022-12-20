@@ -1,4 +1,5 @@
 window.baseConfig = {
   "DEPLOY_MODULE_URL": "${DEPLOY_MODULE_URL}",
+  "PUBLIC_IMAGE_URL": "${PUBLIC_IMAGE_URL}",
   "APIURL": "/api/v1/"
 }
