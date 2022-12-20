@@ -405,26 +405,27 @@ def map_and_filter_annotations(mir_annotations: mirpb.MirAnnotations, data_label
 
 
 # filter and sampling
-def filter_annotations_by_asset_ids(mir_annotations: mirpb.MirAnnotations,
-                                    asset_ids_set: Set[str]) -> None:
+def filter_mirdatas_by_asset_ids(
+        asset_ids_set: Set[str],
+        mir_metadatas: mirpb.MirMetadatas = mirpb.MirMetadatas(),
+        mir_annotations: mirpb.MirAnnotations = mirpb.MirAnnotations(),
+) -> None:
     """
     filter mir_annotations by asset_ids_set in place
 
     Args:
+        mir_metadatas (mirpb.MirMetadatas), in/out: assets to be filtered
         mir_annotations (mirpb.MirAnnotations), in/out: pred and gt to be filtered
         asset_ids_set (Set[str]), in: asset ids
-
-    Returns:
-        mirpb.MirAnnotations: matched gt and pred
     """
-    for asset_ids_dict in [
-            mir_annotations.ground_truth.image_annotations,
-            mir_annotations.prediction.image_annotations,
-            mir_annotations.image_cks,
-    ]:
-        exclude_asset_ids = set(asset_ids_dict.keys()) - asset_ids_set  # type: ignore
-        for asset_id in exclude_asset_ids:
-            del asset_ids_dict[asset_id]  # type: ignore
+    for asset_id in mir_metadatas.attributes.keys() - asset_ids_set:
+        del mir_metadatas.attributes[asset_id]
+    for asset_id in mir_annotations.ground_truth.image_annotations.keys() - asset_ids_set:
+        del mir_annotations.ground_truth.image_annotations[asset_id]
+    for asset_id in mir_annotations.prediction.image_annotations.keys() - asset_ids_set:
+        del mir_annotations.prediction.image_annotations[asset_id]
+    for asset_id in mir_annotations.image_cks.keys() - asset_ids_set:
+        del mir_annotations.image_cks[asset_id]
 
 
 # merge
