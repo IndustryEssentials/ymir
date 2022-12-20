@@ -140,8 +140,6 @@ start() {
 check_permission
 pre_start
 
-start_label_tool
-
 start_deploy_module
 
 if [[ $1 == 'dev' ]]; then
@@ -160,6 +158,7 @@ else
 fi
 
 docker-compose up -d
+start_label_tool
 }
 
 update() {
