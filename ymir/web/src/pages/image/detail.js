@@ -126,6 +126,9 @@ function ImageDetail() {
                 ) : null}
               </Row>
             </Item>
+            <Item label={t('image.list.item.desc')} span={2}>
+              {image.description}
+            </Item>
             <Item label={t('image.detail.label.config')} span={2}>
               {renderConfigs(image.configs)}
             </Item>
