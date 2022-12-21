@@ -11,7 +11,6 @@ DEV_SOURCE_WEB_NPM='https://registry.npmmirror.com'
 FIELD_ALLOW_FEEDBACK='ALLOW_ANONYMOUS_FEEDBACK'
 FIELD_UUID='ANONYMOUS_UUID'
 FIELD_LABEL_TOOL='LABEL_TOOL'
-FIELD_LABEL_TOOL_HOST_IP='LABEL_TOOL_HOST_IP'
 FIELD_LABEL_TOOL_TOKEN='LABEL_TOOL_TOKEN'
 FIELD_LABEL_TOOL_LS='label_studio'
 FIELD_LABEL_TOOL_LF='label_free'
@@ -91,12 +90,6 @@ set_label_tool
 if cat ${ENV_FILE} | grep "${FIELD_LABEL_TOOL}=$"; then
     echo "no label_tool set, skip."
     return
-fi
-
-# check label tool ip address.
-if ! cat ${ENV_FILE} | grep -oE "${FIELD_LABEL_TOOL_HOST_IP}=http://\b([0-9]{1,3}\.){3}[0-9]{1,3}\b"; then
-    echo "Label tool's IP is not set, expected format: http://xxx.xxx.xxx.xxx"
-    exit
 fi
 
 if cat ${ENV_FILE} | grep "${FIELD_LABEL_TOOL}=${FIELD_LABEL_TOOL_LS}"; then
