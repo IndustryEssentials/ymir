@@ -31,8 +31,8 @@ const internalPages: Params = {
   imageAdd: '/home/image/add',
 }
 const pages: Params = {
-  portal: { path: '/image', action: 'pageInit' },
-  publish: { path: '/image/publish', action: 'pageInit' },
+  portal: { path: '/img', action: 'pageInit' },
+  publish: { path: '/img/publish', action: 'pageInit' },
 }
 
 const defaultPage = 'portal'
