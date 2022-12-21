@@ -7,8 +7,13 @@ LABEL_STUDIO = "label_studio"
 LABEL_FREE = "label_free"
 # set your label tool
 LABEL_TOOL = env("LABEL_TOOL", LABEL_STUDIO)
-LABEL_TOOL_HOST_URL = env("LABEL_TOOL_HOST_URL")
-LABEL_TOOL_TOKEN = env("LABEL_TOOL_TOKEN")
+if LABEL_TOOL == LABEL_STUDIO:
+    LABEL_TOOL_HOST_URL = "http://labelstudio:8080"
+    LABEL_TOOL_TOKEN = f"Token {env('LABEL_TOOL_TOKEN')}"
+else:
+    # LABEL_FREE
+    LABEL_TOOL_HOST_URL = "http://label-nginx"
+    LABEL_TOOL_TOKEN = f"Bearer {env('LABEL_TOOL_TOKEN')}"
 
 # task_monitor_file
 MONITOR_MAPPING_KEY = "monitor_mapping"
