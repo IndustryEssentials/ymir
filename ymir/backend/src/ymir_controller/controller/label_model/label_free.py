@@ -181,7 +181,7 @@ class LabelFree(LabelBase):
         except Exception:
             logging.info("label task %s not finished", export_task_id)
             raise NotReadyError()
-        # FIXME ad hoc workaround
+        # FIXME ad hoc walkaround
         return export_url.replace("None", "")
 
     @catch_label_task_error
