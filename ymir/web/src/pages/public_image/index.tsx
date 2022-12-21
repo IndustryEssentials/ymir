@@ -1,14 +1,19 @@
+import { useEffect, useRef, useState } from 'react'
+import { getLocale, useHistory, useLocation, useParams, useRouteMatch } from 'umi'
+import { message } from 'antd'
+import { useSelector } from 'react-redux'
+
 import { getPublicImageUrl } from '@/constants/common'
 import usePostMessage from '@/hooks/usePostMessage'
 import useRequest from '@/hooks/useRequest'
-import { useEffect, useRef, useState } from 'react'
-import { getLocale, useHistory, useLocation, useParams, useRouteMatch } from 'umi'
-import { useSelector } from 'react-redux'
+import { ROLES } from '@/constants/user'
+import t from '@/utils/t'
 
 type UserType = {
   username: string
   id: number
   uuid: string
+  role: number
 }
 type Params = { [key: string]: any }
 type DataType = {
@@ -28,7 +33,7 @@ type RecievedType = {
 const base = getPublicImageUrl()
 
 const internalPages: Params = {
-  imageAdd: '/home/image/add',
+  imageAdd: { url: '/home/image/add', privilege: [ROLES.SUPER, ROLES.ADMIN] },
 }
 const pages: Params = {
   portal: { path: '/img', action: 'pageInit' },
@@ -43,7 +48,7 @@ const PublicImage = () => {
   if (!base) {
     return <div>Image Community is not READY</div>
   }
-  const { username: userName, id: userId, uuid } = useSelector<{ user: UserType }, UserType>(({ user }) => user)
+  const { username: userName, id: userId, uuid, role } = useSelector<{ user: UserType }, UserType>(({ user }) => user)
   const { module = defaultPage } = useParams<Params>()
   const location = useLocation<Params>()
   const iframe: { current: HTMLIFrameElement | null } = useRef(null)
@@ -87,15 +92,20 @@ const PublicImage = () => {
       toPage() {
         const name = recieved.data?.name || ''
         const params = recieved.data?.params || {}
-        const page = internalPages[name] || ''
-        if (!page) {
+        const page = internalPages[name] || {}
+        if (!page.url) {
           return
         }
-        history.push(page, { record: {
-          name: params.name,
-          docker_name: params.image_addr,
-          description: params.description,
-        } })
+        if (!page.privilege?.includes(role)) {
+          return message.error(t('error110205'))
+        }
+        history.push(page.url, {
+          record: {
+            name: params.name,
+            docker_name: params.image_addr,
+            description: params.description,
+          },
+        })
         send('toPageSuccess', { name })
       },
       async checkImage() {
