@@ -78,7 +78,7 @@ export function getVersionLabel(version: number) {
 
 export const getDeployUrl = () => getThirdUrl('DEPLOY_MODULE_URL')
 
-export const getPublicImageUrl = () => getThirdUrl('PUBLIC_IMAGE_URL') || 'http://192.168.28.58:8000'
+export const getPublicImageUrl = () => getThirdUrl('PUBLIC_IMAGE_URL')
 
 const getThirdUrl = (field: string) => {
   const config = window?.baseConfig || {}
