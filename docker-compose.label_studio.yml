@@ -18,10 +18,11 @@ services:
       - "${BACKEND_SANDBOX_ROOT}:${BACKEND_SANDBOX_ROOT}"
     restart: on-failure:10
     networks:
-      - ymir_ymirnetwork
+      - ymirnetwork
     security_opt:
       - seccomp:unconfined
 
 networks:
-    ymir_ymirnetwork:
+    ymirnetwork:
+      name: ${COMPOSE_PROJECT_NAME}_ymirnetwork
       external: true
