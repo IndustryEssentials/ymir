@@ -11,7 +11,6 @@ DEV_SOURCE_WEB_NPM='https://registry.npmmirror.com'
 FIELD_ALLOW_FEEDBACK='ALLOW_ANONYMOUS_FEEDBACK'
 FIELD_UUID='ANONYMOUS_UUID'
 FIELD_LABEL_TOOL='LABEL_TOOL'
-FIELD_LABEL_TOOL_TOKEN='LABEL_TOOL_TOKEN'
 FIELD_LABEL_TOOL_LS='label_studio'
 FIELD_LABEL_TOOL_LF='label_free'
 ENV_FILE='.env'
@@ -94,17 +93,9 @@ fi
 
 if cat ${ENV_FILE} | grep "${FIELD_LABEL_TOOL}=${FIELD_LABEL_TOOL_LS}"; then
     echo "label-studio set, starting..."
-    if ! cat ${ENV_FILE} | grep -oE "${FIELD_LABEL_TOOL_TOKEN}=\"Token \b[0-9a-z]{40}\b\""; then
-        echo "Label studio's token is not set, expected format: Token xxxxx..."
-        exit
-    fi
     docker-compose -f docker-compose.label_studio.yml up -d
     return
 elif cat ${ENV_FILE} | grep "${FIELD_LABEL_TOOL}=${FIELD_LABEL_TOOL_LF}"; then
-    if ! cat ${ENV_FILE} | grep -oE "${FIELD_LABEL_TOOL_TOKEN}=\"Bearer "; then
-        echo "Label free's token is not set, expected format: Bearer xxxxx..."
-        exit
-    fi
     echo "label-free set, starting..."
     docker-compose -f docker-compose.labelfree.yml up -d
     return
