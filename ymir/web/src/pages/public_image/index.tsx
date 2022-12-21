@@ -67,7 +67,7 @@ const PublicImage = () => {
   }, [module])
 
   useEffect(() => {
-    console.log('recieved:', recieved)
+    console.log('recieved changed:', recieved)
     if (!recieved?.type) {
       return
     }
@@ -91,14 +91,18 @@ const PublicImage = () => {
         if (!page) {
           return
         }
-        history.push(page, { record: params })
-        post('toPageSuccess', { name })
+        history.push(page, { record: {
+          name: params.name,
+          docker_name: params.image_addr,
+          description: params.description,
+        } })
+        send('toPageSuccess', { name })
       },
       async checkImage() {
         const url = recieved.data?.url
         if (url) {
           const result = await checkImageExist({ url })
-          post('imageChecked', {
+          send('imageChecked', {
             url,
             result: result?.total > 0,
           })
@@ -113,6 +117,11 @@ const PublicImage = () => {
     border: 'none',
     width: '100%',
     height: 'calc(100vh - 120px)',
+  }
+  function send(type: string, params: Params) {
+    if (iframe.current?.contentWindow) {
+      post(type, params, iframe.current.contentWindow)
+    }
   }
   return (
     <div style={{ margin: '0 -20px' }}>

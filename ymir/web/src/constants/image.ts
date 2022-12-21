@@ -55,7 +55,6 @@ export function transferImage(data: YModels.BackendData): YModels.Image {
     configs,
     url: data.url,
     liveCode: data.enable_livecode,
-    isShared: data.is_shared,
     related: data.related,
     description: data.description,
     createTime: format(data.create_datetime),

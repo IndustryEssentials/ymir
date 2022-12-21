@@ -39,14 +39,15 @@ const Add = () => {
     if (!location.state) {
       return
     }
-    const record = location.state.record
-    if (!record?.docker_name) {
+    const record = location.state.record || {}
+    const { docker_name = '', description = '', organization = '' } = record
+    if (!docker_name) {
       return
     }
-    const { name = '', image_addr = '', description = '', organization = '' } = record
+    const name = record.name || docker_name
     const image = {
       name,
-      url: image_addr,
+      url: docker_name,
       description: `${description}\n---------\nOrg.: ${organization}`,
     }
     setImage(image)
