@@ -65,7 +65,6 @@ if ! cat ${ENV_FILE} | grep "${FIELD_LABEL_TOOL}=$"; then
 fi
 
 cat <<- EOF
-Before proceed, make sure to set LABEL_TOOL_HOST_IP, LABEL_TOOL_HOST_PORT, LABEL_TOOL_TOKEN fields as needed.
 Which label-tool would you like to start (1/2/3)?
 1.Label Studio
 2.Label Free
@@ -85,7 +84,6 @@ done
 }
 
 start_label_tool() {
-set_label_tool
 if cat ${ENV_FILE} | grep "${FIELD_LABEL_TOOL}=$"; then
     echo "no label_tool set, skip."
     return
@@ -141,6 +139,7 @@ else
     printf '\nin prod mode, starting service.\n'
 fi
 
+set_label_tool
 docker-compose up -d
 start_label_tool
 }
