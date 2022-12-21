@@ -1,13 +1,16 @@
 version: "3.3"
 services:
   labelstudio:
-    image: heartexlabs/label-studio:v1.5.0
+    image: heartexlabs/label-studio:1.6.0
     env_file:
       - .env
     ports:
       - ${LABEL_TOOL_HOST_PORT}:8080
     environment:
       - LOCAL_FILES_SERVING_ENABLED=true
+      - LABEL_STUDIO_USERNAME=${FIRST_ADMIN}
+      - LABEL_STUDIO_PASSWORD=${FIRST_ADMIN_PASSWORD}
+      - LABEL_STUDIO_USER_TOKEN=${LABEL_TOOL_TOKEN}
       - SENTRY_DSN=
       - FRONTEND_SENTRY_DSN=
     volumes:
@@ -16,6 +19,8 @@ services:
     restart: on-failure:10
     networks:
       - ymir_ymirnetwork
+    security_opt:
+      - seccomp:unconfined
 
 networks:
     ymir_ymirnetwork:
