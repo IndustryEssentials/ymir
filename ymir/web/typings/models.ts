@@ -196,7 +196,6 @@ declare namespace YModels {
     id: number
     name: string
     state: number
-    isShared: boolean
     functions: Array<number>
     configs: Array<DockerImageConfig>
     url: string
