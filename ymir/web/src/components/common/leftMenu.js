@@ -2,7 +2,7 @@ import { useEffect, useState } from "react"
 import { Menu, Layout } from "antd"
 import { useHistory, useLocation, withRouter, useSelector } from "umi"
 import t from '@/utils/t'
-import { getDeployUrl } from '@/constants/common'
+import { getDeployUrl, getPublicImageUrl } from '@/constants/common'
 import { isSuperAdmin } from '@/constants/user'
 import {
   BarchartIcon, FlagIcon, GithubIcon, FileHistoryIcon, MymodelIcon,
@@ -61,7 +61,7 @@ function LeftMenu() {
       ]),
       getGroupItem(t('image.leftmenu.label'), 'public_image', [
         getItem(t('common.top.menu.image'), '/home/image', FileHistoryIcon,),
-        getItem(t('common.top.menu.public_image'), '/home/public_image', FileHistoryIcon,),
+        getPublicImageUrl() ? getItem(t('common.top.menu.public_image'), '/home/public_image', FileHistoryIcon,) : null,
       ]),
       getGroupItem(t('breadcrumbs.keyword'), 'keyword', [
         getItem(t('breadcrumbs.keyword'), '/home/keyword', FlagIcon,),
