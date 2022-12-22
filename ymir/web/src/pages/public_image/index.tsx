@@ -63,7 +63,7 @@ const PublicImage = () => {
       setKey(r)
       const self = window.location.origin
       const lang = getLocale()
-      const query = location.search || '?'
+      const query = location.search ? (location.search + '&') : '?'
 
       const url = `${base}${pages[module].path}${query}from=${self}&userId=${userId}&uuid=${uuid}&userName=${userName || ''}&lang=${lang}&r=${r}`
       setUrl(url)
