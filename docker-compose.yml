@@ -158,9 +158,3 @@ services:
 
 networks:
   ymirnetwork:
-    driver: bridge
-    ipam:
-      driver: default
-      config:
-      - subnet: 172.168.254.0/24
-        gateway: 172.168.254.1
