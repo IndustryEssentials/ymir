@@ -8,8 +8,6 @@ from io import BytesIO
 from typing import Dict, List
 from xml.etree import ElementTree
 
-import requests
-
 from controller.label_model.base import LabelBase, catch_label_task_error, NotReadyError
 from controller.label_model.request_handler import RequestHandler
 
@@ -148,8 +146,9 @@ class LabelFree(LabelBase):
     def convert_annotation_to_voc(self, project_id: int, des_path: str) -> None:
         export_task_id = self.get_export_task(project_id)
         export_url = self.get_export_url(project_id, export_task_id)
-        resp = requests.get(export_url)
-        self.unzip_annotation_files(BytesIO(resp.content), des_path)
+        logging.info("labelfree export_url is %s", export_url)
+        content = self._requests.get(url_path=export_url)
+        self.unzip_annotation_files(BytesIO(content), des_path)
         logging.info(f"success convert_annotation_to_ymir: {des_path}")
 
     def get_export_task(self, project_id: int) -> str:
@@ -182,7 +181,8 @@ class LabelFree(LabelBase):
         except Exception:
             logging.info("label task %s not finished", export_task_id)
             raise NotReadyError()
-        return export_url
+        # FIXME ad hoc walkaround
+        return export_url.replace("None", "")
 
     @catch_label_task_error
     def run(

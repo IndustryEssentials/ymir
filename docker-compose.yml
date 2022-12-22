@@ -85,8 +85,9 @@ services:
       - "${YMIR_PATH}/ymir-assets:/data/ymir/ymir-assets"
       - "${YMIR_PATH}/ymir-storage:/data/ymir/ymir-storage"
     environment:
-      - LABEL_TOOL_HOST_URL=${LABEL_TOOL_HOST_URL}
+      - LABEL_TOOL_HOST_PORT=${LABEL_TOOL_HOST_PORT}
       - DEPLOY_MODULE_URL=${DEPLOY_MODULE_URL}
+      - PUBLIC_IMAGE_URL=${PUBLIC_IMAGE_URL}
     ports:
       - ${NGINX_PORT}:80
     restart: on-failure:10
@@ -157,9 +158,3 @@ services:
 
 networks:
   ymirnetwork:
-    driver: bridge
-    ipam:
-      driver: default
-      config:
-      - subnet: 172.168.254.0/24
-        gateway: 172.168.254.1

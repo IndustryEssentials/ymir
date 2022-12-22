@@ -1,13 +1,13 @@
 version: "3.3"
 services:
-  label_nginx:
+  label-nginx:
     image: labelfree/open_frontend:3.2.0
     env_file:
       - .env
     ports:
       - ${LABEL_TOOL_HOST_PORT}:80
     networks:
-      - labelfreenetwork
+      - ymirnetwork
     restart: always
 
   label_api:
@@ -29,7 +29,7 @@ services:
       LABEL_ENV: dev
       LABEL_BUILD: pro
     networks:
-      - labelfreenetwork
+      - ymirnetwork
     restart: always
 
   label_seg:
@@ -49,7 +49,7 @@ services:
       G_MAX_REQUESTS_JITTER: 10
       SERVER_RUNTIME: "runc"
     networks:
-      - labelfreenetwork
+      - ymirnetwork
     restart: always
 
   label_celery_worker:
@@ -68,7 +68,7 @@ services:
       FLASK_APP: labelfree.app
       LABEL_ENV: dev
     networks:
-      - labelfreenetwork
+      - ymirnetwork
     restart: always
 
   label_mysql:
@@ -89,7 +89,7 @@ services:
     volumes:
       - ${YMIR_PATH}/labelfree/mysql_data:/var/lib/mysql
     networks:
-      - labelfreenetwork
+      - ymirnetwork
     restart: always
 
   label_redis:
@@ -98,7 +98,7 @@ services:
     volumes:
       - ${YMIR_PATH}/labelfree/redis-data:/data
     networks:
-      - labelfreenetwork
+      - ymirnetwork
     restart: always
 
   label-minio:
@@ -112,15 +112,11 @@ services:
     volumes:
       - ${YMIR_PATH}/labelfree/minio_data:/data
     networks:
-      - labelfreenetwork
+      - ymirnetwork
 
     restart: always
 
 networks:
-  labelfreenetwork:
-    driver: bridge
-    ipam:
-      driver: default
-      config:
-        - subnet: 172.68.254.0/24
-          gateway: 172.68.254.1
+  ymirnetwork:
+    name: ${COMPOSE_PROJECT_NAME}_ymirnetwork
+    external: true
