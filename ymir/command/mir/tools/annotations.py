@@ -9,9 +9,10 @@ from google.protobuf.json_format import ParseDict
 import xmltodict
 import yaml
 
-from mir.tools import class_ids
+from mir.tools import class_ids, mir_storage_ops
 from mir.tools.code import MirCode
 from mir.tools.errors import MirRuntimeError
+from mir.tools.revs_parser import TypRevTid
 from mir.tools.settings import COCO_JSON_NAME
 from mir.tools.phase_logger import PhaseLoggerCenter
 from mir.protos import mir_command_pb2 as mirpb
@@ -21,6 +22,12 @@ class UnknownTypesStrategy(str, enum.Enum):
     STOP = 'stop'
     IGNORE = 'ignore'
     ADD = 'add'
+
+
+class MergeStrategy(str, enum.Enum):
+    STOP = 'stop'
+    HOST = 'host'
+    GUEST = 'guest'
 
 
 def parse_anno_format(anno_format_str: str) -> "mirpb.ExportFormat.V":
@@ -429,15 +436,132 @@ def filter_mirdatas_by_asset_ids(
 
 
 # merge
-def merge_annotations(host_mir_annotations: mirpb.MirAnnotations, guest_mir_annotations: mirpb.MirAnnotations,
-                      strategy: str) -> None:
+def tvt_type_from_str(typ: str) -> 'mirpb.TvtType.V':
+    mapping = {
+        'tr': mirpb.TvtType.TvtTypeTraining,
+        'va': mirpb.TvtType.TvtTypeValidation,
+        'te': mirpb.TvtType.TvtTypeTest,
+    }
+    return mapping.get(typ.lower(), mirpb.TvtType.TvtTypeUnknown)
+
+
+def merge_to_mirdatas(host_mir_metadatas: mirpb.MirMetadatas, host_mir_annotations: mirpb.MirAnnotations, mir_root: str,
+                      guest_typ_rev_tid: TypRevTid, strategy: MergeStrategy) -> None:
+    """
+    merge contents in `guest_typ_rev_tid` to host mir datas
+
+    Args:
+        host_mir_metadatas (mirpb.MirMetadatas): host metadatas
+        host_mir_annotations (mirpb.MirAnnotations): host annotations
+        mir_root (str): path to mir repo
+        guest_typ_rev_tid (revs_parser.TypRevTid): guest typ:rev@tid
+        strategy (str): host / guest / stop
+
+    Raises:
+        RuntimeError: when guest branch has no metadatas
+    """
+    guest_mir_metadatas: mirpb.MirMetadatas
+    guest_mir_annotations: mirpb.MirAnnotations
+    guest_mir_metadatas, guest_mir_annotations = mir_storage_ops.MirStorageOps.load_multiple_storages(
+        mir_root=mir_root,
+        mir_branch=guest_typ_rev_tid.rev,
+        mir_task_id=guest_typ_rev_tid.tid,
+        ms_list=[mirpb.MirStorage.MIR_METADATAS, mirpb.MirStorage.MIR_ANNOTATIONS],
+        as_dict=False)
+
+    if not guest_mir_metadatas.attributes:
+        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_MIR_REPO,
+                              error_message=f"guest repo {mir_root}:{guest_typ_rev_tid.rev} has no metadata.")
+
+    id_host_only, id_guest_only, id_joint = match_asset_ids(set(host_mir_metadatas.attributes.keys()),
+                                                            set(guest_mir_metadatas.attributes.keys()))
+
+    logging.info(f"{guest_typ_rev_tid} host assets: {len(id_host_only)}, guest assets: {len(id_guest_only)}, "
+                 f"joint assets: {len(id_joint)}")
+
+    if strategy == MergeStrategy.STOP and id_joint:
+        raise MirRuntimeError(error_code=MirCode.RC_CMD_MERGE_ERROR,
+                              error_message='Found conflict on merge strategy STOP: abort')
+
+    _merge_metadatas(host_mir_metadatas=host_mir_metadatas,
+                     guest_mir_metadatas=guest_mir_metadatas,
+                     id_guest_only=id_guest_only,
+                     id_joint=id_joint,
+                     suggested_tvt_type=tvt_type_from_str(guest_typ_rev_tid.typ),
+                     strategy=strategy)
+
+    if not guest_mir_annotations:
+        logging.warning("guest repo {}:{} has no annotations.".format(mir_root, guest_typ_rev_tid.rev))
+    _merge_annotations(host_mir_annotations=host_mir_annotations,
+                       guest_mir_annotations=guest_mir_annotations,
+                       strategy=strategy)
+
+
+def exclude_from_mirdatas(host_mir_metadatas: mirpb.MirMetadatas, host_mir_annotations: mirpb.MirAnnotations,
+                          mir_root: str, branch_id: str, task_id: str) -> None:
+    if not branch_id:
+        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS, error_message='empty branch id')
+    if not host_mir_metadatas:
+        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS, error_message='invalid host_mir_metadatas')
+
+    guest_mir_metadatas: mirpb.MirMetadatas = mir_storage_ops.MirStorageOps.load_single_storage(
+        mir_root=mir_root, mir_branch=branch_id, mir_task_id=task_id, ms=mirpb.MirStorage.MIR_METADATAS)
+    if not guest_mir_metadatas:
+        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_MIR_REPO,
+                              error_message=f"guest repo {mir_root}:{branch_id} has no metadata.")
+
+    _, _, id_joint = match_asset_ids(set(host_mir_metadatas.attributes.keys()),
+                                     set(guest_mir_metadatas.attributes.keys()))
+    for asset_id in id_joint:
+        del host_mir_metadatas.attributes[asset_id]
+
+        if asset_id in host_mir_annotations.prediction.image_annotations:
+            del host_mir_annotations.prediction.image_annotations[asset_id]
+
+        if asset_id in host_mir_annotations.ground_truth.image_annotations:
+            del host_mir_annotations.ground_truth.image_annotations[asset_id]
+
+        if asset_id in host_mir_annotations.image_cks:
+            del host_mir_annotations.image_cks[asset_id]
+
+
+def _merge_metadatas(host_mir_metadatas: mirpb.MirMetadatas, guest_mir_metadatas: mirpb.MirMetadatas,
+                     id_guest_only: set, id_joint: set, suggested_tvt_type: 'mirpb.TvtType.V',
+                     strategy: MergeStrategy) -> None:
+    if not host_mir_metadatas or not guest_mir_metadatas:
+        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_MIR_REPO,
+                              error_message="input host/guest mir_metadatas is invalid")
+
+    # for all ids only in `guest_mir_metadatas`, add them to `host_mir_metadatas`
+    for asset_id in id_guest_only:
+        host_mir_metadatas.attributes[asset_id].CopyFrom(guest_mir_metadatas.attributes[asset_id])
+        if suggested_tvt_type != mirpb.TvtTypeUnknown:
+            host_mir_metadatas.attributes[asset_id].tvt_type = suggested_tvt_type
+    # for all ids in both two mir_metadatas
+    if strategy == MergeStrategy.GUEST:
+        for asset_id in id_joint:
+            host_mir_metadatas.attributes[asset_id].CopyFrom(guest_mir_metadatas.attributes[asset_id])
+            if suggested_tvt_type != mirpb.TvtTypeUnknown:
+                host_mir_metadatas.attributes[asset_id].tvt_type = suggested_tvt_type
+    elif strategy == MergeStrategy.HOST:
+        pass
+    elif strategy == MergeStrategy.STOP:
+        if len(id_joint) > 0:
+            raise MirRuntimeError(error_code=MirCode.RC_CMD_MERGE_ERROR,
+                                  error_message='found conflicts in strategy stop')
+    else:
+        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS, error_message=f"invalid strategy: {strategy}")
+
+
+def _merge_annotations(host_mir_annotations: mirpb.MirAnnotations, guest_mir_annotations: mirpb.MirAnnotations,
+                       strategy: MergeStrategy) -> None:
     """
     add all annotations in guest_mir_annotations into host_mir_annotations
 
     Args:
         host_mir_annotations (mirpb.MirAnnotations), in/out: host annotations
         guest_mir_annotations (mirpb.MirAnnotations), in: guest annotations
-        strategy (str), in: host, guest, stop
+        strategy (MergeStrategy), in: host, guest, stop
 
     Raises:
         MirRuntimeError: if host or guest annotations empty, or conflicts occured in strategy stop
@@ -457,7 +581,7 @@ def merge_annotations(host_mir_annotations: mirpb.MirAnnotations, guest_mir_anno
 
 
 def _merge_pair_annotations(host_annotation: mirpb.SingleTaskAnnotations, guest_annotation: mirpb.SingleTaskAnnotations,
-                            strategy: str) -> None:
+                            strategy: MergeStrategy) -> None:
     if (host_annotation.type != mirpb.ObjectType.OT_UNKNOWN and guest_annotation.type != mirpb.ObjectType.OT_UNKNOWN
             and host_annotation.type != guest_annotation.type):
         raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_OBJECT_TYPE,
@@ -471,14 +595,14 @@ def _merge_pair_annotations(host_annotation: mirpb.SingleTaskAnnotations, guest_
 
 
 def _merge_annotation_asset_ids_dict(host_asset_ids_dict: Any,
-                                     guest_asset_ids_dict: Any, strategy: str) -> None:
+                                     guest_asset_ids_dict: Any, strategy: MergeStrategy) -> None:
     _, guest_only_ids, joint_ids = match_asset_ids(set(host_asset_ids_dict.keys()),
                                                    set(guest_asset_ids_dict.keys()))
-    if strategy == "stop" and joint_ids:
+    if strategy == MergeStrategy.STOP and joint_ids:
         raise MirRuntimeError(error_code=MirCode.RC_CMD_MERGE_ERROR,
                               error_message='found conflict image cks in strategy stop')
 
-    asset_ids = (joint_ids | guest_only_ids) if strategy.lower() == "guest" else guest_only_ids
+    asset_ids = (joint_ids | guest_only_ids) if strategy == MergeStrategy.GUEST else guest_only_ids
     for asset_id in asset_ids:
         host_asset_ids_dict[asset_id].CopyFrom(guest_asset_ids_dict[asset_id])
 
