@@ -34,6 +34,7 @@
             "task_id": "import_detbox_03",
             "image_annotations": {},
             "type": 0,
+            "is_instance_segmentation": false,
             "task_class_ids": [],
             "eval_class_ids": [],
             "executor_config": ""
@@ -42,6 +43,7 @@
             "task_id": "import_detbox_03",
             "image_annotations": {},
             "type": 0,
+            "is_instance_segmentation": false,
             "task_class_ids": [],
             "eval_class_ids": [],
             "executor_config": ""
