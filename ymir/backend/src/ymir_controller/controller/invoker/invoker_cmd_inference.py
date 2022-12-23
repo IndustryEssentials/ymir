@@ -1,5 +1,6 @@
 import os
 import shutil
+from typing import Optional
 
 import yaml
 from PIL import Image
@@ -25,7 +26,7 @@ class InferenceCMDInvoker(BaseMirControllerInvoker):
         return inference_config_file
 
     @classmethod
-    def prepare_inference_assets(cls, asset_dir: str, dst_dir: str) -> str:
+    def prepare_inference_assets(cls, asset_dir: str, dst_dir: str) -> Optional[str]:
         dst_assets = os.path.join(dst_dir, "assets")
         os.makedirs(dst_assets, exist_ok=True)
 
@@ -37,6 +38,8 @@ class InferenceCMDInvoker(BaseMirControllerInvoker):
                 if Image.open(asset_src_file).format.lower() in ["png", "jpeg", "jpg"]:
                     shutil.copy(asset_src_file, dst_assets)
                     media_files.append(os.path.join(dst_assets, asset_fileame))
+        if not media_files:
+            return None
 
         index_file = os.path.join(dst_dir, "index.txt")
         with open(index_file, "w") as f:
@@ -55,6 +58,8 @@ class InferenceCMDInvoker(BaseMirControllerInvoker):
             return utils.make_general_response(CTLResponseCode.ARG_VALIDATION_FAILED, "invalid _user_labels")
 
         index_file = self.prepare_inference_assets(asset_dir=self._request.asset_dir, dst_dir=self._work_dir)
+        if index_file is None:
+            return utils.make_general_response(CTLResponseCode.INVOKER_INVALID_ASSETS, "invalid assets")
         config_file = self.gen_inference_config(req_inference_config=self._request.docker_image_config,
                                                 task_context={'server_runtime': self._assets_config['server_runtime']},
                                                 work_dir=self._work_dir)
