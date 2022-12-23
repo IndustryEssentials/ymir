@@ -5,6 +5,7 @@ import logging
 import os
 from typing import Any, Callable, Dict, List, Optional, Set, Tuple, Union
 
+from google.protobuf.internal.containers import MessageMap
 from google.protobuf.json_format import ParseDict
 import xmltodict
 import yaml
@@ -469,10 +470,6 @@ def merge_to_mirdatas(host_mir_metadatas: mirpb.MirMetadatas, host_mir_annotatio
         ms_list=[mirpb.MirStorage.MIR_METADATAS, mirpb.MirStorage.MIR_ANNOTATIONS],
         as_dict=False)
 
-    if not guest_mir_metadatas.attributes:
-        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_MIR_REPO,
-                              error_message=f"guest repo {mir_root}:{guest_typ_rev_tid.rev} has no metadata.")
-
     _merge_metadatas(host_mir_metadatas=host_mir_metadatas,
                      guest_mir_metadatas=guest_mir_metadatas,
                      suggested_tvt_type=tvt_type_from_str(guest_typ_rev_tid.typ),
@@ -485,17 +482,9 @@ def merge_to_mirdatas(host_mir_metadatas: mirpb.MirMetadatas, host_mir_annotatio
 
 
 def exclude_from_mirdatas(host_mir_metadatas: mirpb.MirMetadatas, host_mir_annotations: mirpb.MirAnnotations,
-                          mir_root: str, branch_id: str, task_id: str) -> None:
-    if not branch_id:
-        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS, error_message='empty branch id')
-    if not host_mir_metadatas:
-        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS, error_message='invalid host_mir_metadatas')
-
+                          mir_root: str, ex_rev_tid: TypRevTid) -> None:
     guest_mir_metadatas: mirpb.MirMetadatas = mir_storage_ops.MirStorageOps.load_single_storage(
-        mir_root=mir_root, mir_branch=branch_id, mir_task_id=task_id, ms=mirpb.MirStorage.MIR_METADATAS)
-    if not guest_mir_metadatas:
-        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_MIR_REPO,
-                              error_message=f"guest repo {mir_root}:{branch_id} has no metadata.")
+        mir_root=mir_root, mir_branch=ex_rev_tid.rev, mir_task_id=ex_rev_tid.tid, ms=mirpb.MirStorage.MIR_METADATAS)
 
     _, _, id_joint = match_asset_ids(set(host_mir_metadatas.attributes.keys()),
                                      set(guest_mir_metadatas.attributes.keys()))
@@ -529,39 +518,28 @@ def _merge_metadatas(host_mir_metadatas: mirpb.MirMetadatas, guest_mir_metadatas
 
 def _merge_annotations(host_mir_annotations: mirpb.MirAnnotations, guest_mir_annotations: mirpb.MirAnnotations,
                        strategy: MergeStrategy) -> None:
-    _merge_task_annotations(host_task_annotation=host_mir_annotations.prediction,
-                            guest_task_annotation=guest_mir_annotations.prediction,
-                            strategy=strategy)
-    _merge_task_annotations(host_task_annotation=host_mir_annotations.ground_truth,
-                            guest_task_annotation=guest_mir_annotations.ground_truth,
-                            strategy=strategy)
+    if (host_mir_annotations.prediction.type != guest_mir_annotations.prediction.type
+            or host_mir_annotations.ground_truth.type != guest_mir_annotations.ground_truth.type):
+        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_OBJECT_TYPE,
+                              error_message='host and guest object type unequal')
 
+    _merge_annotation_asset_ids_dict(host_asset_ids_dict=host_mir_annotations.prediction.image_annotations,
+                                     guest_asset_ids_dict=guest_mir_annotations.prediction.image_annotations,
+                                     strategy=strategy)
+    _merge_annotation_asset_ids_dict(host_asset_ids_dict=host_mir_annotations.ground_truth.image_annotations,
+                                     guest_asset_ids_dict=guest_mir_annotations.ground_truth.image_annotations,
+                                     strategy=strategy)
     _merge_annotation_asset_ids_dict(host_asset_ids_dict=host_mir_annotations.image_cks,
                                      guest_asset_ids_dict=guest_mir_annotations.image_cks,
                                      strategy=strategy)
 
     host_mir_annotations.prediction.eval_class_ids.extend(guest_mir_annotations.prediction.eval_class_ids)
+    host_mir_annotations.prediction.eval_class_ids[:] = set(host_mir_annotations.prediction.eval_class_ids)
 
 
-def _merge_task_annotations(host_task_annotation: mirpb.SingleTaskAnnotations,
-                            guest_task_annotation: mirpb.SingleTaskAnnotations, strategy: MergeStrategy) -> None:
-    if (host_task_annotation.type == mirpb.ObjectType.OT_UNKNOWN
-            or guest_task_annotation.type == mirpb.ObjectType.OT_UNKNOWN
-            or host_task_annotation.type != guest_task_annotation.type):
-        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_OBJECT_TYPE,
-                              error_message='host and guest object type unknown or unequal')
-
-    host_task_annotation.type = host_task_annotation.type or guest_task_annotation.type
-
-    _merge_annotation_asset_ids_dict(host_asset_ids_dict=host_task_annotation.image_annotations,
-                                     guest_asset_ids_dict=guest_task_annotation.image_annotations,
-                                     strategy=strategy)
-
-
-def _merge_annotation_asset_ids_dict(host_asset_ids_dict: Any,
-                                     guest_asset_ids_dict: Any, strategy: MergeStrategy) -> None:
-    _, guest_only_ids, joint_ids = match_asset_ids(set(host_asset_ids_dict.keys()),
-                                                   set(guest_asset_ids_dict.keys()))
+def _merge_annotation_asset_ids_dict(host_asset_ids_dict: MessageMap,
+                                     guest_asset_ids_dict: MessageMap, strategy: MergeStrategy) -> None:
+    _, guest_only_ids, joint_ids = match_asset_ids(set(host_asset_ids_dict.keys()), set(guest_asset_ids_dict.keys()))
     if strategy == MergeStrategy.STOP and joint_ids:
         raise MirRuntimeError(error_code=MirCode.RC_CMD_MERGE_ERROR,
                               error_message='found conflict image cks in strategy stop')

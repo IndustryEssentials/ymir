@@ -45,9 +45,13 @@ class CmdMerge(base.BaseCommand):
             ms_list=[mirpb.MIR_METADATAS, mirpb.MIR_ANNOTATIONS],
             as_dict=False)
 
+        # reset all host tvt type
         host_tvt_type = tvt_type_from_str(host_typ_rev_tid.typ)
         for asset_id in host_mir_metadatas.attributes:
             host_mir_metadatas.attributes[asset_id].tvt_type = host_tvt_type
+        # associated prediction infos: remove model infos
+        host_mir_annotations.prediction.model.Clear()
+        host_mir_annotations.prediction.executor_config = ''
 
         for typ_rev_tid in src_typ_rev_tids[1:]:
             merge_to_mirdatas(host_mir_metadatas=host_mir_metadatas,
@@ -56,17 +60,12 @@ class CmdMerge(base.BaseCommand):
                               guest_typ_rev_tid=typ_rev_tid,
                               strategy=strategy)
 
-        host_mir_annotations.prediction.model.Clear()
-        host_mir_annotations.prediction.executor_config = ''
-        host_mir_annotations.prediction.eval_class_ids[:] = set(host_mir_annotations.prediction.eval_class_ids)
-
         ex_typ_rev_tids = revs_parser.parse_arg_revs(ex_src_revs) if ex_src_revs else []
         for typ_rev_tid in ex_typ_rev_tids:
             exclude_from_mirdatas(host_mir_metadatas=host_mir_metadatas,
                                   host_mir_annotations=host_mir_annotations,
                                   mir_root=mir_root,
-                                  branch_id=typ_rev_tid.rev,
-                                  task_id=typ_rev_tid.tid)
+                                  ex_rev_tid=typ_rev_tid)
 
         # create and write tasks
         task = mir_storage_ops.create_task(task_type=mirpb.TaskType.TaskTypeMerge,
