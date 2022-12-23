@@ -282,6 +282,7 @@ def _process_results(mir_root: str, label_storage_file: str, export_out: str, sr
             cls_id_mgr.id_for_names(model_storage.class_names, drop_unknown_names=True)[0])
         matched_prediction.executor_config = json.dumps(model_storage.executor_config)
         matched_prediction.model.CopyFrom(model_storage.get_model_meta())
+        matched_prediction.type = model_storage.object_type
 
     return matched_mir_metadatas, matched_mir_annotations
 
