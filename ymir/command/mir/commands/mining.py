@@ -241,6 +241,8 @@ def _process_results(mir_root: str, label_storage_file: str, export_out: str, sr
     # step 2: filter by topk asset ids
     matched_mir_metadatas = mirpb.MirMetadatas()
     matched_mir_annotations = mirpb.MirAnnotations()
+    matched_mir_annotations.prediction.type = mir_annotations.prediction.type
+    matched_mir_annotations.ground_truth.type = mir_annotations.ground_truth.type
     for asset_id in set(mir_metadatas.attributes.keys()) & asset_ids_set:
         matched_mir_metadatas.attributes[asset_id].CopyFrom(mir_metadatas.attributes[asset_id])
     for asset_id in set(mir_annotations.ground_truth.image_annotations.keys()) & asset_ids_set:
