@@ -9,6 +9,7 @@ from starlette.status import HTTP_422_UNPROCESSABLE_ENTITY
 
 from app.config import settings
 from id_definition.error_codes import APIErrorCode as error_codes
+from id_definition.error_codes import CTLResponseCode as controller_codes
 
 
 async def http_error_handler(_: Request, exc: HTTPException) -> JSONResponse:
@@ -81,6 +82,11 @@ class ControllerError(APIError):
 class FailedtoCreateTask(ControllerError):
     code = error_codes.TASK_FAILED_TO_CREATE
     message = "Failed to Create Task via Controller"
+
+
+class InvalidAssets(ControllerError):
+    code = controller_codes.INVOKER_INVALID_ASSETS
+    message = "Invalid Assets for Controller"
 
 
 class FailedToCallInference(ControllerError):

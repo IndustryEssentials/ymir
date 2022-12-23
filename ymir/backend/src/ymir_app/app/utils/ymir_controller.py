@@ -9,12 +9,14 @@ from fastapi.logger import logger
 from google.protobuf.json_format import MessageToDict
 from google.protobuf.text_format import MessageToString
 
+from app.api.errors.errors import InvalidAssets
 from app.config import settings
 from app.constants.state import TaskType, AnnotationType, DatasetType, ObjectType
 from app.schemas.common import ImportStrategy, MergeStrategy
 from app.schemas.task import TrainingDatasetsStrategy
 from common_utils.labels import UserLabels, userlabels_to_proto
 from id_definition.task_id import TaskId
+from id_definition.error_codes import CTLResponseCode
 from mir.protos import mir_command_pb2 as mir_cmd_pb
 from proto import backend_pb2 as mirsvrpb
 from proto import backend_pb2_grpc as mir_grpc
@@ -371,6 +373,8 @@ class ControllerClient:
             stub = mir_grpc.mir_controller_serviceStub(channel)
             resp = stub.data_manage_request(req.req)
 
+        if resp.code == CTLResponseCode.INVOKER_INVALID_ASSETS:
+            raise InvalidAssets()
         if resp.code != 0:
             raise ValueError(f"gRPC error. response: {resp.code} {resp.message}")
         msg = "[controller] successfully get response"
