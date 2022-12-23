@@ -511,23 +511,35 @@ def _merge_metadatas(host_mir_metadatas: mirpb.MirMetadatas, guest_mir_metadatas
 
 def _merge_annotations(host_mir_annotations: mirpb.MirAnnotations, guest_mir_annotations: mirpb.MirAnnotations,
                        strategy: MergeStrategy) -> None:
-    if (host_mir_annotations.prediction.type != guest_mir_annotations.prediction.type
-            or host_mir_annotations.ground_truth.type != guest_mir_annotations.ground_truth.type):
-        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_OBJECT_TYPE,
-                              error_message='host and guest object type unequal')
+    _merge_task_annotations(host_task_annotations=host_mir_annotations.ground_truth,
+                            guest_task_annotations=guest_mir_annotations.ground_truth,
+                            strategy=strategy)
+    _merge_task_annotations(host_task_annotations=host_mir_annotations.prediction,
+                            guest_task_annotations=guest_mir_annotations.prediction,
+                            strategy=strategy)
 
-    _merge_annotation_asset_ids_dict(host_asset_ids_dict=host_mir_annotations.prediction.image_annotations,
-                                     guest_asset_ids_dict=guest_mir_annotations.prediction.image_annotations,
-                                     strategy=strategy)
-    _merge_annotation_asset_ids_dict(host_asset_ids_dict=host_mir_annotations.ground_truth.image_annotations,
-                                     guest_asset_ids_dict=guest_mir_annotations.ground_truth.image_annotations,
-                                     strategy=strategy)
     _merge_annotation_asset_ids_dict(host_asset_ids_dict=host_mir_annotations.image_cks,
                                      guest_asset_ids_dict=guest_mir_annotations.image_cks,
                                      strategy=strategy)
 
     host_mir_annotations.prediction.eval_class_ids.extend(guest_mir_annotations.prediction.eval_class_ids)
     host_mir_annotations.prediction.eval_class_ids[:] = set(host_mir_annotations.prediction.eval_class_ids)
+
+
+def _merge_task_annotations(host_task_annotations: mirpb.SingleTaskAnnotations,
+                            guest_task_annotations: mirpb.SingleTaskAnnotations, strategy: MergeStrategy) -> None:
+    if (host_task_annotations.type != mirpb.ObjectType.OT_NO_ANNOTATIONS
+            and guest_task_annotations.type != mirpb.ObjectType.OT_NO_ANNOTATIONS
+            and host_task_annotations.type != guest_task_annotations.type):
+        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_OBJECT_TYPE,
+                              error_message='host and guest object type unequal')
+
+    if host_task_annotations.type == mirpb.ObjectType.OT_NO_ANNOTATIONS:
+        host_task_annotations.type = guest_task_annotations.type
+
+    _merge_annotation_asset_ids_dict(host_asset_ids_dict=host_task_annotations.image_annotations,
+                                     guest_asset_ids_dict=guest_task_annotations.image_annotations,
+                                     strategy=strategy)
 
 
 def _merge_annotation_asset_ids_dict(host_asset_ids_dict: MessageMap,
