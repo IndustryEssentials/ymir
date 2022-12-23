@@ -7,6 +7,7 @@ from unittest import mock
 
 from google.protobuf import json_format
 import yaml
+from PIL import Image
 
 from controller.utils.invoker_call import make_invoker_cmd_call
 from controller.utils.invoker_mapping import RequestTypeToInvoker
@@ -105,6 +106,12 @@ class TestInvokerCMDInference(unittest.TestCase):
                                    backend_pb2.RequestType.Name(backend_pb2.CMD_INFERENCE), self._task_id)
         output_filename = os.path.join(working_dir, "out", "prediction.mir")
         os.makedirs(os.path.join(working_dir, "out"), exist_ok=True)
+        asset_dir = os.path.join(self._sandbox_root, "assets")
+        os.makedirs(asset_dir, exist_ok=True)
+        with open(f"{asset_dir}/image.png", "wb") as f:
+            image = Image.new('RGBA', size=(50, 50), color=(256, 0, 0))
+            image.save(f)
+
         with open(output_filename, 'wb') as f:
             f.write(prediction.SerializeToString())
 
@@ -125,6 +132,7 @@ class TestInvokerCMDInference(unittest.TestCase):
             model_hash=model_hash,
             model_stage=model_stage,
             work_dir=working_dir,
+            asset_dir=asset_dir,
         )
 
         label_storage_file = test_utils.user_label_file(sandbox_root=self._sandbox_root, user_id=self._user_name)
