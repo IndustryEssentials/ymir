@@ -49,6 +49,7 @@ def parse_anno_type(anno_type_str: str) -> "mirpb.ObjectType.V":
     _anno_dict: Dict[str, mirpb.ObjectType.V] = {
         "det-box": mirpb.ObjectType.OT_DET_BOX,
         "seg": mirpb.ObjectType.OT_SEG,
+        "no-annotations": mirpb.ObjectType.OT_NO_ANNOTATIONS,
     }
     return _anno_dict.get(anno_type_str.lower(), mirpb.ObjectType.OT_UNKNOWN)
 
@@ -144,7 +145,9 @@ def import_annotations(mir_annotation: mirpb.MirAnnotations, label_storage_file:
 
     if prediction_dir_path:
         logging.info(f"wrting prediction in {prediction_dir_path}")
-        _import_annotations_from_dir(
+
+        mir_annotation.prediction.type = anno_type
+        _annotation_parse_func(anno_type)(
             file_name_to_asset_ids=file_name_to_asset_ids,
             mir_annotation=mir_annotation,
             annotations_dir_path=prediction_dir_path,
@@ -152,16 +155,22 @@ def import_annotations(mir_annotation: mirpb.MirAnnotations, label_storage_file:
             unknown_types_strategy=unknown_types_strategy,
             accu_new_class_names=anno_import_result,
             image_annotations=mir_annotation.prediction,
-            anno_type=anno_type,
         )
         _import_annotation_meta(class_type_manager=class_type_manager,
                                 annotations_dir_path=prediction_dir_path,
                                 task_annotations=mir_annotation.prediction)
+
+        logging.warning(
+            f"imported pred: {len(mir_annotation.prediction.image_annotations)} / {len(file_name_to_asset_ids)}")
+    else:
+        mir_annotation.prediction.type = mirpb.ObjectType.OT_NO_ANNOTATIONS
     PhaseLoggerCenter.update_phase(phase=phase, local_percent=0.5)
 
     if groundtruth_dir_path:
         logging.info(f"wrting ground-truth in {groundtruth_dir_path}")
-        _import_annotations_from_dir(
+
+        mir_annotation.ground_truth.type = anno_type
+        _annotation_parse_func(anno_type)(
             file_name_to_asset_ids=file_name_to_asset_ids,
             mir_annotation=mir_annotation,
             annotations_dir_path=groundtruth_dir_path,
@@ -169,8 +178,12 @@ def import_annotations(mir_annotation: mirpb.MirAnnotations, label_storage_file:
             unknown_types_strategy=unknown_types_strategy,
             accu_new_class_names=anno_import_result,
             image_annotations=mir_annotation.ground_truth,
-            anno_type=anno_type,
         )
+
+        logging.warning(
+            f"imported gt: {len(mir_annotation.ground_truth.image_annotations)} / {len(file_name_to_asset_ids)}")
+    else:
+        mir_annotation.ground_truth.type = mirpb.ObjectType.OT_NO_ANNOTATIONS
     PhaseLoggerCenter.update_phase(phase=phase, local_percent=1.0)
 
     if unknown_types_strategy == UnknownTypesStrategy.STOP and anno_import_result:
@@ -178,25 +191,6 @@ def import_annotations(mir_annotation: mirpb.MirAnnotations, label_storage_file:
                               error_message=f"{list(anno_import_result.keys())}")
 
     return anno_import_result
-
-
-def _import_annotations_from_dir(file_name_to_asset_ids: Dict[str, str], mir_annotation: mirpb.MirAnnotations,
-                                 annotations_dir_path: str, class_type_manager: class_ids.UserLabels,
-                                 unknown_types_strategy: UnknownTypesStrategy, accu_new_class_names: Dict[str, int],
-                                 image_annotations: mirpb.SingleTaskAnnotations,
-                                 anno_type: "mirpb.ObjectType.V") -> None:
-    image_annotations.type = anno_type
-    _annotation_parse_func(anno_type)(
-        file_name_to_asset_ids=file_name_to_asset_ids,
-        mir_annotation=mir_annotation,
-        annotations_dir_path=annotations_dir_path,
-        class_type_manager=class_type_manager,
-        unknown_types_strategy=unknown_types_strategy,
-        accu_new_class_names=accu_new_class_names,
-        image_annotations=image_annotations,
-    )
-
-    logging.warning(f"imported {len(image_annotations.image_annotations)} / {len(file_name_to_asset_ids)} annotations")
 
 
 def _import_annotations_voc_xml(file_name_to_asset_ids: Dict[str, str], mir_annotation: mirpb.MirAnnotations,
