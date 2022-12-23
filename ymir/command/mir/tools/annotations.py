@@ -102,18 +102,16 @@ def _coco_object_dict_to_annotation(anno_dict: dict, category_id_to_cids: Dict[i
     # box, polygon and mask
     seg_obj = anno_dict.get('segmentation')
     if isinstance(seg_obj, dict):  # mask
-        obj_anno.type = mirpb.ObjectType.OT_SEG_MASK
+        obj_anno.type = mirpb.ObjectSubType.OST_SEG_MASK
         obj_anno.mask = seg_obj['counts']
     elif isinstance(seg_obj, list):  # polygon
         if len(seg_obj) > 1:
             raise NotImplementedError('Multi polygons not supported')
 
-        obj_anno.type = mirpb.ObjectType.OT_SEG_POLYGON
+        obj_anno.type = mirpb.ObjectSubType.OST_SEG_POLYGON
         points_list = seg_obj[0]
         for i in range(0, len(points_list), 2):
             obj_anno.polygon.append(mirpb.IntPoint(x=int(points_list[i]), y=int(points_list[i + 1]), z=0))
-    else:
-        obj_anno.type = mirpb.ObjectType.OT_DET_BOX
 
     bbox_list = anno_dict['bbox']
     obj_anno.box.x = int(bbox_list[0])
@@ -428,6 +426,7 @@ def filter_mirdatas_by_asset_ids(
     """
     for asset_id in mir_metadatas.attributes.keys() - asset_ids_set:
         del mir_metadatas.attributes[asset_id]
+
     for asset_id in mir_annotations.ground_truth.image_annotations.keys() - asset_ids_set:
         del mir_annotations.ground_truth.image_annotations[asset_id]
     for asset_id in mir_annotations.prediction.image_annotations.keys() - asset_ids_set:

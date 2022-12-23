@@ -119,10 +119,16 @@ enum ObjectType {
     OT_DET_BOX = 2; // Detection w. bounding box.
     OT_SEG = 3;  // semantic segmentation w. polygon or mask
 
-    //OT_SEG sub types
-    OT_SEG_MASK = 30;
-    OT_SEG_POLYGON = 31;
+    OT_NO_ANNOTATIONS = 255;
 };
+
+enum ObjectSubType {
+    OST_NOTSET = 0;
+
+    //OT_SEG sub types
+    OST_SEG_MASK = 30;
+    OST_SEG_POLYGON = 31;
+}
 
 enum ExportFormat {
     EF_NO_ANNOTATIONS = 0;
@@ -176,7 +182,7 @@ message ObjectAnnotation {
     repeated IntPoint polygon = 10;
     string mask = 11;  // RLE encoded mask
     int32 iscrowd = 12;  // 0 or 1
-    ObjectType type = 13;
+    ObjectSubType type = 13;
 };
 
 enum ConfusionMatrixType {

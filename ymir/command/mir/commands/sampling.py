@@ -64,6 +64,8 @@ class CmdSampling(base.BaseCommand):
                                          mir_metadatas=mir_metadatas,
                                          mir_annotations=mir_annotations)
 
+        logging.info(f"sampling done, assets count: {sampled_assets_count}")
+
         # commit
         message = f"sampling src: {src_revs}, dst: {dst_rev}, count: {count}, rate: {rate}"
         task = mir_storage_ops.create_task(task_type=mirpb.TaskType.TaskTypeSampling,
@@ -71,8 +73,6 @@ class CmdSampling(base.BaseCommand):
                                            message=message,
                                            src_revs=src_revs,
                                            dst_rev=dst_rev)
-
-        logging.info(f"sampling done, assets count: {sampled_assets_count}")
 
         # save and commit
         sampled_mir_datas = {

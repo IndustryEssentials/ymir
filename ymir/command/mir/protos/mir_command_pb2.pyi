@@ -200,10 +200,7 @@ class _ObjectTypeEnumTypeWrapper(google.protobuf.internal.enum_type_wrapper._Enu
     OT_SEG = ObjectType.V(3)
     """semantic segmentation w. polygon or mask"""
 
-    OT_SEG_MASK = ObjectType.V(30)
-    """OT_SEG sub types"""
-
-    OT_SEG_POLYGON = ObjectType.V(31)
+    OT_NO_ANNOTATIONS = ObjectType.V(255)
 
 OT_UNKNOWN = ObjectType.V(0)
 OT_CLASS = ObjectType.V(1)
@@ -215,11 +212,28 @@ OT_DET_BOX = ObjectType.V(2)
 OT_SEG = ObjectType.V(3)
 """semantic segmentation w. polygon or mask"""
 
-OT_SEG_MASK = ObjectType.V(30)
+OT_NO_ANNOTATIONS = ObjectType.V(255)
+global___ObjectType = ObjectType
+
+
+class ObjectSubType(_ObjectSubType, metaclass=_ObjectSubTypeEnumTypeWrapper):
+    pass
+class _ObjectSubType:
+    V = typing.NewType('V', builtins.int)
+class _ObjectSubTypeEnumTypeWrapper(google.protobuf.internal.enum_type_wrapper._EnumTypeWrapper[_ObjectSubType.V], builtins.type):
+    DESCRIPTOR: google.protobuf.descriptor.EnumDescriptor = ...
+    OST_NOTSET = ObjectSubType.V(0)
+    OST_SEG_MASK = ObjectSubType.V(30)
+    """OT_SEG sub types"""
+
+    OST_SEG_POLYGON = ObjectSubType.V(31)
+
+OST_NOTSET = ObjectSubType.V(0)
+OST_SEG_MASK = ObjectSubType.V(30)
 """OT_SEG sub types"""
 
-OT_SEG_POLYGON = ObjectType.V(31)
-global___ObjectType = ObjectType
+OST_SEG_POLYGON = ObjectSubType.V(31)
+global___ObjectSubType = ObjectSubType
 
 
 class ExportFormat(_ExportFormat, metaclass=_ExportFormatEnumTypeWrapper):
@@ -595,7 +609,7 @@ class ObjectAnnotation(google.protobuf.message.Message):
     iscrowd: builtins.int = ...
     """0 or 1"""
 
-    type: global___ObjectType.V = ...
+    type: global___ObjectSubType.V = ...
     def __init__(self,
         *,
         index : builtins.int = ...,
@@ -610,7 +624,7 @@ class ObjectAnnotation(google.protobuf.message.Message):
         polygon : typing.Optional[typing.Iterable[global___IntPoint]] = ...,
         mask : typing.Text = ...,
         iscrowd : builtins.int = ...,
-        type : global___ObjectType.V = ...,
+        type : global___ObjectSubType.V = ...,
         ) -> None: ...
     def HasField(self, field_name: typing_extensions.Literal["box",b"box"]) -> builtins.bool: ...
     def ClearField(self, field_name: typing_extensions.Literal["anno_quality",b"anno_quality","box",b"box","class_id",b"class_id","class_name",b"class_name","cm",b"cm","det_link_id",b"det_link_id","index",b"index","iscrowd",b"iscrowd","mask",b"mask","polygon",b"polygon","score",b"score","tags",b"tags","type",b"type"]) -> None: ...
