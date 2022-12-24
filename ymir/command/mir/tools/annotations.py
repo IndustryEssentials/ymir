@@ -405,11 +405,8 @@ def map_and_filter_annotations(mir_annotations: mirpb.MirAnnotations, data_label
 
 
 # filter and sampling
-def filter_mirdatas_by_asset_ids(
-        asset_ids_set: Set[str],
-        mir_metadatas: mirpb.MirMetadatas = mirpb.MirMetadatas(),
-        mir_annotations: mirpb.MirAnnotations = mirpb.MirAnnotations(),
-) -> None:
+def filter_mirdatas_by_asset_ids(mir_metadatas: mirpb.MirMetadatas, mir_annotations: mirpb.MirAnnotations,
+                                 asset_ids_set: Set[str]) -> None:
     """
     filter mir_annotations by asset_ids_set in place
 

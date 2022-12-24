@@ -60,9 +60,9 @@ class CmdSampling(base.BaseCommand):
 
         if sampled_assets_count < assets_count:
             sampled_asset_ids_set = set(random.sample(mir_metadatas.attributes.keys(), sampled_assets_count))
-            filter_mirdatas_by_asset_ids(asset_ids_set=sampled_asset_ids_set,
-                                         mir_metadatas=mir_metadatas,
-                                         mir_annotations=mir_annotations)
+            filter_mirdatas_by_asset_ids(mir_metadatas=mir_metadatas,
+                                         mir_annotations=mir_annotations,
+                                         asset_ids_set=sampled_asset_ids_set)
 
         logging.info(f"sampling done, assets count: {sampled_assets_count}")
 

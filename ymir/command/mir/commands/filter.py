@@ -109,9 +109,9 @@ class CmdFilter(base.BaseCommand):
                                                   ex_cis_set=ex_cis_set)
         logging.info(f"assets count after exclude match: {len(asset_ids_set)}")
 
-        filter_mirdatas_by_asset_ids(asset_ids_set=asset_ids_set,
-                                     mir_metadatas=mir_metadatas,
-                                     mir_annotations=mir_annotations)
+        filter_mirdatas_by_asset_ids(mir_metadatas=mir_metadatas,
+                                     mir_annotations=mir_annotations,
+                                     asset_ids_set=asset_ids_set)
 
         logging.info("matched: %d, overriding current mir repo", len(mir_metadatas.attributes))
 
