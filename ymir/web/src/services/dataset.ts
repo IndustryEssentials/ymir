@@ -67,7 +67,7 @@ export function getDatasetByGroup(gid: number) {
  * get datasets
  *
  * @export
- * @param {QueryParams} {
+ * @param {DatasetsQuery} {
  *   pid,
  *   gid,
  *   type,
@@ -80,7 +80,19 @@ export function getDatasetByGroup(gid: number) {
  *   orderBy
  * }
  */
-export function queryDatasets({ pid, gid, type, objectType, state, name, visible = true, offset = 0, limit = 10, desc = true, orderBy }: QueryParams) {
+export function queryDatasets({
+  pid,
+  gid,
+  type,
+  objectType,
+  state,
+  name,
+  visible = true,
+  offset = 0,
+  limit = 10,
+  desc = true,
+  orderBy,
+}: YParams.DatasetsQuery) {
   return request.get('datasets/', {
     params: {
       project_id: pid,
@@ -102,14 +114,14 @@ export function queryDatasets({ pid, gid, type, objectType, state, name, visible
  *
  * @export
  * @param {number} pid
- * @param {QueryParams} {
+ * @param {DatasetsQuery} {
  *   name,
  *   offset = 0,
  *   limit = 10
  * }
  * @return {*}
  */
-export function getDatasetGroups(pid: number, { name, offset = 0, limit = 10 }: QueryParams) {
+export function getDatasetGroups(pid: number, { name, offset = 0, limit = 10 }: YParams.DatasetsQuery) {
   return request.get('dataset_groups/', {
     params: {
       project_id: pid,
@@ -151,7 +163,7 @@ export function batchDatasets(pid: number, ids: number[] = [], ck: boolean) {
  *   limit = 20,
  * }
  */
-export function getAssetsOfDataset({ id, type = 'keywords', keywords = [], cm = [], annoType = [], offset = 0, limit = 20 }: AssetQueryParams) {
+export function getAssetsOfDataset({ id, type = 'keywords', keywords = [], cm = [], annoType = [], offset = 0, limit = 20 }: YParams.AssetQueryParams) {
   return request.get(`datasets/${id}/assets`, {
     params: {
       [type]: keywords.toString() || undefined,
@@ -204,7 +216,7 @@ export function delDatasetGroup(id: number) {
  *   pid, datasets, iou, averageIou, confidence, ck
  * }
  */
-export function evaluate({ pid, datasets, iou, averageIou, confidence, ck }: EvaluationParams) {
+export function evaluate({ pid, datasets, iou, averageIou, confidence, ck }: YParams.EvaluationParams) {
   return request.post(`/datasets/evaluation`, {
     project_id: pid,
     dataset_ids: datasets,
@@ -263,7 +275,7 @@ export function batchAct(action: string, pid: number, ids: number[] = []) {
 /**
  * @description import a dataset
  * @export
- * @param {CreateParams} {
+ * @param {YParams.DatasetCreateParams} {
  *  name,   group name
  *  pid,    project id
  *  [url],    remote dataset url
@@ -273,7 +285,7 @@ export function batchAct(action: string, pid: number, ids: number[] = []) {
  *  [description]
  * }
  */
-export function createDataset({ name, pid, url, did, path, strategy = 2, description }: CreateParams) {
+export function createDataset({ name, pid, url, did, path, strategy = 2, description }: YParams.DatasetCreateParams) {
   return request.post('/datasets/importing', {
     group_name: name,
     strategy,
@@ -344,7 +356,7 @@ export function checkDuplication(pid: number, trainSet: number, validationSet: n
  *   keywords = [],
  * }
  */
-export function getNegativeKeywords({ pid, did, keywords = [] }: QueryParams) {
+export function getNegativeKeywords({ pid, did, keywords = [] }: YParams.DatasetsQuery) {
   return request.get(`/datasets/${did}`, {
     params: {
       project_id: pid,

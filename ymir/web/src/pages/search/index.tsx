@@ -7,30 +7,35 @@ import t from '@/utils/t'
 import DatasetList from './components/DatasetList'
 import ModelList from './components/ModelList'
 
-type Props = {}
+type Props = {
+}
 
 const tabsTitle = [
   { tab: t('project.tab.set.title'), key: 'dataset' },
   { tab: t('project.tab.model.title'), key: 'model' },
 ]
 
-const SearchIndex: FC<Props> = ({}) => {
+const SearchIndex: FC<Props> = () => {
   const history = useHistory()
-  const location = useLocation<{ type: string }>()
+  const location = useLocation<{ type?: string; name?: string }>()
   const { id } = useParams<{ id: string }>()
   const pid = Number(id)
   const [active, setActive] = useState(tabsTitle[0].key)
-  const contents = {
-    [tabsTitle[0].key]: <DatasetList pid={pid} />,
-    [tabsTitle[1].key]: <ModelList pid={pid} />,
-  }
+  const [searchName, setSearchName] = useState<string | undefined>('')
 
   useEffect(() => {
-    const type = location?.state?.type
+    const type = location.state?.type
+    const name = location.state.name
     if (typeof type !== 'undefined') {
       setActive(type)
     }
+    setSearchName(name)
   }, [location.state])
+
+  const listRender = (active?: string) => {
+    const Comp = active !== tabsTitle[0].key ? DatasetList : ModelList
+    return <Comp pid={pid} name={searchName} />
+  }
 
   return (
     <div>
@@ -42,7 +47,7 @@ const SearchIndex: FC<Props> = ({}) => {
           history.replace({ state: { type: key } })
         }}
       >
-        {contents[active]}
+        {listRender(active)}
       </Card>
     </div>
   )
