@@ -8,6 +8,9 @@ services:
       - ${LABEL_TOOL_HOST_PORT}:8080
     environment:
       - LOCAL_FILES_SERVING_ENABLED=true
+      - LABEL_STUDIO_USERNAME=${FIRST_ADMIN}
+      - LABEL_STUDIO_PASSWORD=${FIRST_ADMIN_PASSWORD}
+      - LABEL_STUDIO_USER_TOKEN=${LABEL_TOOL_TOKEN}
       - SENTRY_DSN=
       - FRONTEND_SENTRY_DSN=
     # temporary walkaround for start up issue:
@@ -19,13 +22,11 @@ services:
       - "${BACKEND_SANDBOX_ROOT}:${BACKEND_SANDBOX_ROOT}"
     restart: on-failure:10
     networks:
-      - extnetwork
+      - ymirnetwork
+    security_opt:
+      - seccomp:unconfined
 
 networks:
-    extnetwork:
-      driver: bridge
-      ipam:
-        driver: default
-        config:
-        - subnet: 172.168.255.0/24
-          gateway: 172.168.255.1
+    ymirnetwork:
+      name: ${COMPOSE_PROJECT_NAME}_ymirnetwork
+      external: true

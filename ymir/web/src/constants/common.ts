@@ -76,8 +76,13 @@ export function getVersionLabel(version: number) {
   return `V${version}`
 }
 
-export const getDeployUrl = () => {
-  let url = window?.baseConfig?.DEPLOY_MODULE_URL
+export const getDeployUrl = () => getThirdUrl('DEPLOY_MODULE_URL')
+
+export const getPublicImageUrl = () => getThirdUrl('PUBLIC_IMAGE_URL')
+
+const getThirdUrl = (field: string) => {
+  const config = window?.baseConfig || {}
+  const url = config[field]
   const onlyPort = /^\d+$/.test(url)
   return onlyPort ? `${location.protocol}//${location.hostname}:${url}` : url
 }
