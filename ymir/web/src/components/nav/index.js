@@ -41,8 +41,8 @@ const menus = () => [
     hidden: !getDeployUrl(),
   },
   {
-    label: 'common.top.menu.image',
-    key: "/home/image",
+    label: 'common.top.menu.public_image',
+    key: "/home/public_image",
     icon: <EqualizerIcon className={styles.navIcon} />,
   },
   {

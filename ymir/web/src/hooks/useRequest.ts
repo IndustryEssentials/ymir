@@ -9,7 +9,7 @@ type OptionsType<TData, TParams extends any[]> = {
   onError?: (e: Error, params: TParams) => void
   onFinally?: (params: TParams, data?: TData, e?: Error) => void
   defaultParams?: TParams
-  refreshDeps?: (string|number)[]
+  refreshDeps?: (string | number)[]
   refreshDepsAction?: () => void
   loadingDelay?: number
   pollingInterval?: number
@@ -32,7 +32,7 @@ type OptionsType<TData, TParams extends any[]> = {
   ready?: boolean
 }
 
-const useRequest = <TData, TParams extends any[]>(effect: string, options: OptionsType<TData, TParams> = {}) => {
+const useRequest = <TData, TParams extends any[] = [{ [key: string]: any }]>(effect: string, options: OptionsType<TData, TParams> = {}) => {
   const dispatch = useDispatch()
   const { loading = true } = options
   const setLoading = (loading: Boolean) =>
@@ -41,16 +41,18 @@ const useRequest = <TData, TParams extends any[]>(effect: string, options: Optio
       payload: loading,
     })
 
-  const fetch = (payload?: any, ...args: any[]): Promise<TData> =>
-    dispatch({
+  const fetch = <D, P>(...args: P[]): Promise<D> => {
+    const payload = args[0]
+    return dispatch({
       type: effect,
       payload,
     })
+  }
   const defaultOpts = {
     manual: true,
   }
   // { loading, data, error, params, cancel, refresh, refreshAsync, run, runAsync, mutate }
-  const request = useAhRequest(fetch, { ...defaultOpts, ...options })
+  const request = useAhRequest<TData, TParams>(fetch, { ...defaultOpts, ...options })
 
   useEffect(() => {
     setLoading(loading ? true : !request.loading)

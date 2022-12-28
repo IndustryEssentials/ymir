@@ -1,13 +1,18 @@
-import { useEffect, useState } from "react"
+import { useEffect, useState } from 'react'
 import { useHistory } from 'umi'
 
-type Data = {
-  type: string,
-  data: any,
-  [key: string]: any,
+type DefaultDataType = {
+  type: string
+  data: {
+    path?: string
+  }
+  finish?: (data: { [key: string]: any }) => void
 }
-const usePostMessage = (domain: string = '*', fixWin: Window | null = null): Array<Function | any> => {
-  const [recieved, setRecieved] = useState<Object | null>(null)
+type Data<D> = D extends DefaultDataType ? D : DefaultDataType
+
+const usePostMessage = <RecievedType extends DefaultDataType>(domain: string = '*', fixWin: Window | null = null): [Function, RecievedType | undefined] => {
+  // type RecievedType = Data<DataType>
+  const [recieved, setRecieved] = useState<RecievedType>()
   const history = useHistory()
 
   useEffect(() => {
@@ -20,7 +25,7 @@ const usePostMessage = (domain: string = '*', fixWin: Window | null = null): Arr
       const { data, origin } = ev
       try {
         if (origin === domain) {
-          const recieveData: Data = JSON.parse(data)
+          const recieveData: RecievedType = JSON.parse(data)
 
           if (recieveData.type === 'redirect' && recieveData?.data?.path) {
             history.push(recieveData.data.path)
@@ -36,7 +41,7 @@ const usePostMessage = (domain: string = '*', fixWin: Window | null = null): Arr
     return () => window.removeEventListener('message', handle)
   }, [])
 
-  function post(type: string, data = {}, win: Window | null = null) {
+  function post(type: string, data: { [key: string]: any } = {}, win?: Window) {
     const target = win || fixWin
     if (!target) {
       return console.error('target window is required')
@@ -48,13 +53,14 @@ const usePostMessage = (domain: string = '*', fixWin: Window | null = null): Arr
     target.postMessage(message, domain)
   }
 
-  function recievedHandle(recieveData: Data) {
-    setRecieved({
+  function recievedHandle(recieveData: RecievedType) {
+    const data: RecievedType = {
       ...recieveData,
-      finish: (data: Object = {}) => {
+      finish: (data) => {
         post(`${recieveData.type}_finish`, data)
-      }
-    })
+      },
+    }
+    setRecieved(data)
   }
 
   return [post, recieved]
