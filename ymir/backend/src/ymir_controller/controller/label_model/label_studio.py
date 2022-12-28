@@ -195,13 +195,10 @@ class LabelStudio(LabelBase):
 
     def update_project_prediction(self, input_asset_dir: str, project_id: int) -> None:
         map_filename_prediction = {}
-        for json_file_relative in os.listdir(input_asset_dir):
-            if not json_file_relative.endswith(".json"):
+        for json_file in glob.glob(f"{input_asset_dir}/*/*.json"):
+            if not os.path.isfile(json_file):
                 continue
-            json_file_abs = os.path.join(input_asset_dir, json_file_relative)
-            if not os.path.isfile(json_file_abs):
-                continue
-            with open(json_file_abs) as f:
+            with open(json_file) as f:
                 json_content = json.load(f)
             predictions = json_content["predictions"][0]["result"]
             if not predictions:
