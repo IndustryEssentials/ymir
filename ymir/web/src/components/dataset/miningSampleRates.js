@@ -3,7 +3,7 @@ import { useParams } from 'umi'
 import t from "@/utils/t"
 
 import useFetch from '@/hooks/useFetch'
-import KeywordRates from "./keywordRates"
+import KeywordRates from "./KeywordRates"
 
 function MiningSampleRates({ iid, progressWidth = 0.5 }) {
   const { id: pid } = useParams()

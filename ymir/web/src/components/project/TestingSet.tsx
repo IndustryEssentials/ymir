@@ -1,7 +1,7 @@
 import React, { FC, ReactElement, useEffect } from 'react'
 import useFetch from '@/hooks/useFetch'
 import { Col, Popover, Row, Tag } from 'antd'
-import SampleRates from '@/components/dataset/sampleRates'
+import SampleRates from '@/components/dataset/SampleRates'
 import t from '@/utils/t'
 import s from './testingset.less'
 type Props = {
