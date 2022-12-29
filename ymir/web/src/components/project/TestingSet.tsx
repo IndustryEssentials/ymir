@@ -3,7 +3,7 @@ import useFetch from '@/hooks/useFetch'
 import { Col, Popover, Row, Tag } from 'antd'
 import SampleRates from '@/components/dataset/sampleRates'
 import t from '@/utils/t'
-import s from '../detail.less'
+import s from './testingset.less'
 type Props = {
   project: YModels.Project
 }
