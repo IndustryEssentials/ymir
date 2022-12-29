@@ -1,14 +1,9 @@
 import { FC } from 'react'
-import { Form, Input } from 'antd'
+import { Input } from 'antd'
+import type { SearchProps } from 'antd/lib/input'
+
 const { Search } = Input
-type Props = {
-  onSearch?: (value: string) => void
-}
-const Name: FC<Props> = ({ onSearch }) => {
-  const search = (value: string) => {
-    onSearch && onSearch(value)
-  }
-  return <Search placeholder="dataset/model name" allowClear onSearch={search} />
-}
+
+const Name: FC<SearchProps> = (props) => <Search {...props} placeholder="dataset/model name" allowClear />
 
 export default Name

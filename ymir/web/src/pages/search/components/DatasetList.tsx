@@ -11,34 +11,28 @@ import Actions from "@/components/table/Actions"
 import AssetCount from '@/components/dataset/AssetCount'
 
 import React, { useEffect, useRef, useState } from "react"
-import styles from "./list.less"
-import { Link, useHistory, useLocation } from "umi"
-import { Form, Button, Input, Table, Space, Modal, Row, Col, Tooltip, Pagination, message, Popover, } from "antd"
+import {  useHistory, useLocation } from "umi"
+import { Form, Button, Input,  Space, Modal, Row, Col,  Pagination, message,  } from "antd"
 
-import t from "@/utils/t"
 import { diffTime } from '@/utils/date'
 import { getTaskTypeLabel, TASKSTATES, TASKTYPES } from '@/constants/task'
 import { ResultStates } from '@/constants/common'
 import { canHide, validDataset } from '@/constants/dataset'
 
-import CheckProjectDirty from "@/components/common/CheckProjectDirty"
-import EditNameBox from "@/components/form/editNameBox"
-import EditDescBox from "@/components/form/editDescBox"
-import Terminate from "@/components/task/terminate"
-import Hide from "../common/hide"
-import RenderProgress from "@/components/common/Progress"
-import TypeTag from "@/components/task/TypeTag"
-import Actions from "@/components/table/Actions"
-import AssetCount from '@/components/dataset/AssetCount'
+// import CheckProjectDirty from "@/components/common/CheckProjectDirty"
+// import EditNameBox from "@/components/form/editNameBox"
+// import EditDescBox from "@/components/form/editDescBox"
+// import Terminate from "@/components/task/terminate"
+// import Hide from "../common/hide"
 
 import {
   ImportIcon, ScreenIcon, TaggingIcon, TrainIcon, VectorIcon, WajueIcon, SearchIcon,
   EditIcon, EyeOffIcon, CopyIcon, StopIcon, ArrowDownIcon, ArrowRightIcon, CompareIcon,
   CompareListIcon,
 } from "@/components/common/Icons"
-import { DescPop } from "../common/DescPop"
-import { RefreshIcon } from "../common/Icons"
-import useRerunAction from "../../hooks/useRerunAction"
+import { DescPop } from "@/components/common/DescPop"
+// import { RefreshIcon } from "../common/Icons"
+// import useRerunAction from "../../hooks/useRerunAction"
 
 type Props = {
   pid: number
