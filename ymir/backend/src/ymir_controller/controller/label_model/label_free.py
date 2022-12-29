@@ -161,8 +161,8 @@ class LabelFree(LabelBase):
     def fetch_label_result(self, project_id: int, object_type: int, des_path: str) -> None:
         export_task_id = self.get_export_task(project_id, object_type)
         export_url = self.get_export_url(project_id, export_task_id)
-        resp = requests.get(export_url)
-        self.unzip_annotation_files(BytesIO(resp.content), des_path)
+        content = self._requests.get(export_url)
+        self.unzip_annotation_files(BytesIO(content), des_path)
         if object_type == mir_cmd_pb.ObjectType.OT_DET_BOX:
             self._move_voc_annotations_to(des_path)
         else:
@@ -172,8 +172,8 @@ class LabelFree(LabelBase):
     def get_export_task(self, project_id: int, object_type: int) -> str:
         url_path = "/api/v1/export"
         params = {"project_id": project_id, "page_size": 1}
-        resp = self._requests.get(url_path=url_path, params=params)
-        export_tasks = json.loads(resp)["data"]["export_tasks"]
+        content = self._requests.get(url_path=url_path, params=params)
+        export_tasks = json.loads(content)["data"]["export_tasks"]
         if export_tasks:
             return export_tasks[0]["task_id"]
         else:
@@ -194,9 +194,9 @@ class LabelFree(LabelBase):
 
     def get_export_url(self, project_id: int, export_task_id: str) -> str:
         url_path = f"/api/v1/export/{export_task_id}"
-        resp = self._requests.get(url_path=url_path)
+        content = self._requests.get(url_path=url_path)
         try:
-            export_url = json.loads(resp)["data"]["store_path"]
+            export_url = json.loads(content)["data"]["store_path"]
         except Exception:
             logging.info("label task %s not finished", export_task_id)
             raise NotReadyError()
