@@ -8,6 +8,7 @@ import Breadcrumbs from '@/components/common/breadcrumb'
 import Empty from '@/components/empty/default'
 import { getStepLabel } from '@/constants/iteration'
 import NoIterationDetail from './components/noIterationDetail'
+import Name from '@/components/search/Name'
 
 import s from './detail.less'
 import { TrainIcon, NavDatasetIcon, ArrowRightIcon, ImportIcon } from '@/components/common/Icons'
@@ -45,6 +46,10 @@ function ProjectDetail(func) {
     </>
   )
 
+  function search() {
+    history.push(`/home/project/${id}/search`)
+  }
+
   return (
     <div>
       <Breadcrumbs />
@@ -76,14 +81,24 @@ function ProjectDetail(func) {
           )}
         </div>
       ) : null}
-      <Space className="actions">
-        <Button type="primary" onClick={add}>
-          <ImportIcon /> {t('dataset.import.label')}
-        </Button>
-        <Button type="primary" onClick={goTraining}>
-          <TrainIcon /> {t('project.iteration.stage.training')}
-        </Button>
-      </Space>
+      
+      <div className="actions">
+        <Row gutter={10}>
+          <Col flex={1}>
+              <Name onSearch={search} />
+          </Col>
+          <Col>
+            <Button type="primary" onClick={add}>
+              <ImportIcon /> {t('dataset.import.label')}
+            </Button>
+          </Col>
+          <Col>
+            <Button type="primary" onClick={goTraining}>
+              <TrainIcon /> {t('project.iteration.stage.training')}
+            </Button>
+          </Col>
+        </Row>
+      </div>
       <div className={`list ${s.projectOverview}`}>
         <Row gutter={10}>
           <Col span={12}>
