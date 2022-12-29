@@ -5,7 +5,7 @@ import { TestingSet } from "./testingSet"
 
 const NoIterationDetail = ({ project }) => {
   return (
-    <div className={s.detailContainer}>
+    <div className={s.header}>
       <Space className={s.detailPanel} wrap size={16}>
         <span className={s.name}>{project.name}</span>
         <span className={s.type}>{t('project.types.label')}: {t(project.typeLabel)}</span>
