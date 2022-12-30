@@ -461,8 +461,9 @@ def merge_to_mirdatas(host_mir_metadatas: mirpb.MirMetadatas, host_mir_annotatio
         as_dict=False)
 
     guest_tvt_type = tvt_type_from_str(guest_typ_rev_tid.typ)
-    for asset_id in guest_mir_metadatas.attributes:
-        guest_mir_metadatas.attributes[asset_id].tvt_type = guest_tvt_type
+    if guest_tvt_type != mirpb.TvtType.TvtTypeUnknown:
+        for asset_id in guest_mir_metadatas.attributes:
+            guest_mir_metadatas.attributes[asset_id].tvt_type = guest_tvt_type
 
     # merge mir_metadatas
     _merge_mirdata_asset_ids_dict(host_asset_ids_dict=host_mir_metadatas.attributes,
