@@ -43,7 +43,7 @@ check_docker_version() {
     fi
 }
 
-has_nvidia_gpu(){
+has_nvidia_driver(){
     if ! command -v nvidia-smi &> /dev/null; then
         return 1
     fi
@@ -55,8 +55,8 @@ has_nvidia_gpu(){
 
 check_server_runtime(){
     if cat ${ENV_FILE} | grep -oE "^${FIELD_SERVER_RUNTIME}=nvidia$"; then
-        if ! has_nvidia_gpu; then
-            echo "please make sure nvidia gpu is available when server runtime is nvidia."
+        if ! has_nvidia_driver; then
+            echo "please make sure Nvidia driver is installed when server runtime is set to nvidia."
             exit
         fi
     fi
