@@ -87,6 +87,8 @@ export function queryDatasets({
   objectType,
   state,
   name,
+  startTime,
+  endTime,
   visible = true,
   offset = 0,
   limit = 10,
@@ -106,6 +108,8 @@ export function queryDatasets({
       is_desc: desc,
       order_by: orderBy,
       visible,
+      start_time: startTime,
+      end_time: endTime,
     },
   })
 }
@@ -119,9 +123,8 @@ export function queryDatasets({
  *   offset = 0,
  *   limit = 10
  * }
- * @return {*}
  */
-export function getDatasetGroups(pid: number, { name, offset = 0, limit = 10 }: YParams.DatasetsQuery) {
+export function getDatasetGroups(pid: number, { name, offset = 0, limit = 10 }: YParams.GroupsQuery) {
   return request.get('dataset_groups/', {
     params: {
       project_id: pid,
@@ -356,7 +359,7 @@ export function checkDuplication(pid: number, trainSet: number, validationSet: n
  *   keywords = [],
  * }
  */
-export function getNegativeKeywords({ pid, did, keywords = [] }: YParams.DatasetsQuery) {
+export function getNegativeKeywords({ pid, did, keywords = [] }: YParams.DatasetQuery) {
   return request.get(`/datasets/${did}`, {
     params: {
       project_id: pid,
