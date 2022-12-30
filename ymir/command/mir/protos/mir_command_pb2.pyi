@@ -200,7 +200,7 @@ class _ObjectTypeEnumTypeWrapper(google.protobuf.internal.enum_type_wrapper._Enu
     OT_SEG = ObjectType.V(3)
     """semantic segmentation w. polygon or mask"""
 
-    OT_NO_ANNOTATIONS = ObjectType.V(255)
+    OT_NO_ANNOTATIONS = ObjectType.V(100)
 
 OT_UNKNOWN = ObjectType.V(0)
 OT_CLASS = ObjectType.V(1)
@@ -212,7 +212,7 @@ OT_DET_BOX = ObjectType.V(2)
 OT_SEG = ObjectType.V(3)
 """semantic segmentation w. polygon or mask"""
 
-OT_NO_ANNOTATIONS = ObjectType.V(255)
+OT_NO_ANNOTATIONS = ObjectType.V(100)
 global___ObjectType = ObjectType
 
 

@@ -119,7 +119,7 @@ enum ObjectType {
     OT_DET_BOX = 2; // Detection w. bounding box.
     OT_SEG = 3;  // semantic segmentation w. polygon or mask
 
-    OT_NO_ANNOTATIONS = 255;
+    OT_NO_ANNOTATIONS = 100;
 };
 
 enum ObjectSubType {
