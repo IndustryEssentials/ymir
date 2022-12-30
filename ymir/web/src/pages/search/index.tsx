@@ -30,6 +30,7 @@ const SearchIndex: FC<Props> = () => {
   const { run: getProject } = useRequest('project/getProject', {
     loading: false
   })
+  const [query, updateQuery] = useState<YParams.ResultListQuery>()
 
   useEffect(() => {
     !project && getProject({ id: pid })
@@ -45,15 +46,20 @@ const SearchIndex: FC<Props> = () => {
   }, [location.state])
 
   const listRender = (active?: string) => {
-    const Comp = active !== tabsTitle[0].key ? DatasetList : ModelList
-    return <Comp pid={pid} name={searchName} />
+    const Comp = active !== tabsTitle[1].key ? DatasetList : ModelList
+    return <Comp pid={pid} name={searchName} query={query} />
+  }
+
+  const queryChange = (query: YParams.ResultListQuery) => {
+    console.log('query:', query)
+    updateQuery(query)
   }
 
   return (
     <div>
       <Breadcrumbs />
       <Detail project={project} />
-      <Search />
+      <Search change={queryChange} />
       <Card
         tabList={tabsTitle}
         activeTabKey={active}

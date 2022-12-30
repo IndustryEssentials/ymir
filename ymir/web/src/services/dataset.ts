@@ -102,7 +102,7 @@ export function queryDatasets({
       source: type,
       object_type: objectType,
       state,
-      name,
+      group_name: name,
       offset,
       limit,
       is_desc: desc,

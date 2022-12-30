@@ -27,13 +27,14 @@ export function getModelVersions(group_id: number) {
  * @export
  * @param {YParams.ModelsQuery} { pid, type, state, name, orderBy, desc, visible = true, offset = 0, limit = 10 }
  */
-export function queryModels({ pid, type, state, name, orderBy, desc, visible = true, offset = 0, limit = 10 }: YParams.ModelsQuery) {
+export function queryModels({ pid, gid, type, state, name, orderBy, desc, visible = true, offset = 0, limit = 10 }: YParams.ModelsQuery) {
   return request.get('models/', {
     params: {
       project_id: pid,
       type,
       state,
-      name,
+      group_id: gid,
+      group_name: name,
       visible,
       order_by: orderBy,
       is_desc: desc,
