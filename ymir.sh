@@ -31,6 +31,18 @@ check_docker_compose_version() {
     fi
 }
 
+check_docker_version() {
+    MIN_DOCKER_VER="20.10"
+    if ! command -v docker &> /dev/null; then
+        echo "please install docker ${MIN_DOCKER_VER} or newer version."
+        exit
+    fi
+    if ! echo "$(docker version --format '{{.Client.Version}}') ${MIN_DOCKER_VER}" | tr " " "\n" | sort -V | head -n 1 | grep -Eq "^${MIN_DOCKER_VER}$"; then
+        echo "please upgrade docker to ${MIN_DOCKER_VER} or newer version."
+        exit
+    fi
+}
+
 has_nvidia_gpu(){
     if ! command -v nvidia-smi &> /dev/null; then
         return 1
@@ -41,11 +53,12 @@ has_nvidia_gpu(){
     return 0
 }
 
-auto_choose_runtime(){
-    if has_nvidia_gpu; then
-        sed -i.bk "s/^${FIELD_SERVER_RUNTIME}=.*$/${FIELD_SERVER_RUNTIME}=nvidia/" ${ENV_FILE} && rm -f *.bk
-    else
-        sed -i.bk "s/^${FIELD_SERVER_RUNTIME}=.*$/${FIELD_SERVER_RUNTIME}=runc/" ${ENV_FILE} && rm -f *.bk
+check_server_runtime(){
+    if cat ${ENV_FILE} | grep -oE "^${FIELD_SERVER_RUNTIME}=nvidia$"; then
+        if ! has_nvidia_gpu; then
+            echo "please make sure nvidia gpu is available when server runtime is nvidia."
+            exit
+        fi
     fi
 }
 
@@ -167,9 +180,10 @@ start_deploy_module() {
 }
 
 start() {
+check_docker_version
 check_docker_compose_version
+check_server_runtime
 check_permission
-auto_choose_runtime
 pre_start
 
 start_label_tool
