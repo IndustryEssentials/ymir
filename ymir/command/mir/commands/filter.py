@@ -1,6 +1,6 @@
 import argparse
 import logging
-from typing import Optional, Set
+from typing import List, Optional, Set
 
 from mir.commands import base
 from mir.protos import mir_command_pb2 as mirpb
@@ -138,6 +138,11 @@ class CmdFilter(base.BaseCommand):
                                        src_revs=self.args.src_revs,
                                        dst_rev=self.args.dst_rev,
                                        work_dir=self.args.work_dir)
+
+
+def filter_with_pb(mir_metadatas: mirpb.MirMetadatas, mir_annotations: mirpb.MirAnnotations,
+                   mir_keywords: mirpb.MirKeywords, in_cids: List[int], ex_cids: List[int]) -> None:
+    pass
 
 
 def bind_to_subparsers(subparsers: argparse._SubParsersAction, parent_parser: argparse.ArgumentParser) -> None:
