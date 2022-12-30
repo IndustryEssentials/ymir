@@ -56,7 +56,7 @@ const errors = {
   'error110902': { cn: '推理镜像配置错误', en: 'Inference docker image configuration error', },
   'error111101': { cn: '镜像名称或地址重复', en: 'Duplicated docker image name/url', },
   'error111102': { cn: '找不到镜像', en: 'Docker image is not found', },
-  'error111103': { cn: '共享镜像失败', en: 'Share docker image failed', },
+  'error111103': { cn: '发布镜像失败', en: 'Publish docker image failed', },
   'error111104': { cn: '此镜像关联其他镜像，请清除关联后再处理', en: 'Clean relationships of docker images before deleting it', },
   'error111105': { cn: '分享镜像失败', en: 'FAILED_TO_GET_SHARED_DOCKER_IMAGES', },
   'error111106': { cn: '分享镜像配置获取失败', en: 'SHARED_IMAGE_CONFIG_ERROR', },

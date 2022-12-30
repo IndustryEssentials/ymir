@@ -63,6 +63,9 @@ class TypedDataset(BaseModel):
     exclude: bool = False
     create_datetime: Optional[datetime] = None  # type: ignore
 
+    def __hash__(self) -> int:
+        return self.id
+
 
 class TypedModel(BaseModel):
     id: int
@@ -78,16 +81,16 @@ class TypedLabel(BaseModel):
 
 
 def dataset_normalize(cls: Any, values: Dict) -> Dict:
-    datasets = []
+    datasets = set()
     if values.get("dataset_id"):
-        datasets.append(TypedDataset(id=values["dataset_id"]))
+        datasets.add(TypedDataset(id=values["dataset_id"]))
     if values.get("validation_dataset_id"):
-        datasets.append(TypedDataset(id=values["validation_dataset_id"], type=int(DatasetType.validation)))
+        datasets.add(TypedDataset(id=values["validation_dataset_id"], type=int(DatasetType.validation)))
     if values.get("include_datasets"):
-        datasets.extend([TypedDataset(id=i) for i in values["include_datasets"]])
+        datasets.update([TypedDataset(id=i) for i in values["include_datasets"]])
     if values.get("exclude_datasets"):
-        datasets.extend([TypedDataset(id=i, exclude=True) for i in values["exclude_datasets"]])
-    values["typed_datasets"] = datasets
+        datasets.update([TypedDataset(id=i, exclude=True) for i in values["exclude_datasets"]])
+    values["typed_datasets"] = list(datasets)
     return values
 
 

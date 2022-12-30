@@ -7,11 +7,10 @@ import t from '@/utils/t'
 import { HIDDENMODULES } from '@/constants/common'
 import { ROLES } from '@/constants/user'
 import { TYPES, STATES, getImageTypeLabel, imageIsPending } from '@/constants/image'
-import ShareModal from './share'
 import RelateModal from './relate'
 import Del from './del'
 import s from './list.less'
-import { VectorIcon, TrainIcon, TipsIcon, EditIcon, DeleteIcon, AddIcon, MoreIcon, ShareIcon, LinkIcon } from '@/components/common/Icons'
+import { EditIcon, DeleteIcon, AddIcon, MoreIcon, PublishIcon, LinkIcon } from '@/components/common/Icons'
 import ImagesLink from './imagesLink'
 import Tip from '@/components/form/tip'
 import { FailIcon, SuccessIcon } from '@/components/common/Icons'
@@ -30,7 +29,6 @@ const ImageList = ({ role, filter, getImages }) => {
   const [images, setImages] = useState([])
   const [total, setTotal] = useState(1)
   const [query, setQuery] = useState(initQuery)
-  const shareModalRef = useRef(null)
   const linkModalRef = useRef(null)
   const delRef = useRef(null)
 
@@ -63,7 +61,7 @@ const ImageList = ({ role, filter, getImages }) => {
   }
 
   const moreList = (record) => {
-    const { id, name, state, functions, url, related, isShared } = record
+    const { id, name, state, functions, url, related, description } = record
 
     const menus = [
       {
@@ -74,11 +72,11 @@ const ImageList = ({ role, filter, getImages }) => {
         icon: <LinkIcon />,
       },
       {
-        key: 'share',
-        label: t('image.action.share'),
-        onclick: () => share(id, name),
-        hidden: () => !isDone(state) || isShared,
-        icon: <ShareIcon />,
+        key: 'publish',
+        label: t('image.action.publish'),
+        onclick: () => history.push(`/home/public_image/publish?name=${name}&image_addr=${url}&description=${description}`),
+        hidden: () => !isAdmin() || !isDone(state),
+        icon: <PublishIcon />,
       },
       {
         key: 'edit',
@@ -89,7 +87,7 @@ const ImageList = ({ role, filter, getImages }) => {
       {
         key: 'del',
         label: t('image.action.del'),
-        hidden: () => imageIsPending(state),
+        hidden: () => !isAdmin() || imageIsPending(state),
         onclick: () => del(id, name),
         icon: <DeleteIcon />,
       },
@@ -115,10 +113,6 @@ const ImageList = ({ role, filter, getImages }) => {
   }
 
   const relateOk = () => getData()
-
-  const shareOk = () => getData()
-
-  const share = (id, name) => shareModalRef.current.show(id, name)
 
   const link = (id, name, related) => {
     linkModalRef.current.show({ id, name, related })
@@ -231,7 +225,6 @@ const ImageList = ({ role, filter, getImages }) => {
         showQuickJumper
         showSizeChanger
       />
-      <ShareModal ref={shareModalRef} ok={shareOk} />
       <RelateModal ref={linkModalRef} ok={relateOk} />
       <Del ref={delRef} ok={delOk} />
     </div>
