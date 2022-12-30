@@ -531,8 +531,8 @@ def _merge_task_annotations(host_task_annotations: mirpb.SingleTaskAnnotations,
                                   strategy=strategy)
 
 
-def _merge_mirdata_asset_ids_dict(host_asset_ids_dict: MessageMap,
-                                     guest_asset_ids_dict: MessageMap, strategy: MergeStrategy) -> None:
+def _merge_mirdata_asset_ids_dict(host_asset_ids_dict: MessageMap, guest_asset_ids_dict: MessageMap,
+                                  strategy: MergeStrategy) -> None:
     _, guest_only_ids, joint_ids = match_asset_ids(set(host_asset_ids_dict.keys()), set(guest_asset_ids_dict.keys()))
     if strategy == MergeStrategy.STOP and joint_ids:
         raise MirRuntimeError(error_code=MirCode.RC_CMD_MERGE_ERROR,
