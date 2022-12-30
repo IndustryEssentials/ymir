@@ -21,9 +21,10 @@ class CRUDDataset(CRUDBase[Dataset, DatasetCreate, DatasetUpdate]):
         user_id: int,
         project_id: Optional[int] = None,
         group_id: Optional[int] = None,
+        group_name: Optional[str] = None,
         source: Optional[TaskType] = None,
         state: Optional[IntEnum] = None,
-        object_type: Optional[int] = None,
+        object_type: Optional[IntEnum] = None,
         visible: bool = True,
         start_time: Optional[int] = None,
         end_time: Optional[int] = None,
@@ -52,16 +53,19 @@ class CRUDDataset(CRUDBase[Dataset, DatasetCreate, DatasetUpdate]):
                 )
             )
 
-        if state:
+        if state is not None:
             query = query.filter(self.model.result_state == int(state))
-        if object_type:
-            query = query.filter(self.model.object_type == object_type)
-        if source:
+        if object_type is not None:
+            query = query.filter(self.model.object_type == int(object_type))
+        if source is not None:
             query = query.filter(self.model.source == int(source))
         if project_id is not None:
             query = query.filter(self.model.project_id == project_id)
         if group_id is not None:
             query = query.filter(self.model.dataset_group_id == group_id)
+        if group_name:
+            # basic fuzzy search
+            query = query.filter(self.model.group_name.like(f"%{group_name}%"))
         if not allow_empty:
             query = query.filter(self.model.asset_count > 0)
 

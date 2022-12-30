@@ -21,7 +21,7 @@ from app.api.errors.errors import (
     RefuseToProcessMixedOperations,
 )
 from app.config import settings
-from app.constants.state import TaskState, TaskType, ResultState
+from app.constants.state import TaskState, TaskType, ResultState, ObjectType
 from app.utils.ymir_controller import ControllerClient
 from app.utils.ymir_viz import VizClient
 from app.libs.datasets import (
@@ -104,9 +104,10 @@ def list_datasets(
     source: TaskType = Query(None, description="type of related task"),
     project_id: int = Query(None),
     group_id: int = Query(None),
+    group_name: str = Query(None),
     visible: bool = Query(True),
     state: ResultState = Query(None),
-    object_type: int = Query(None),
+    object_type: ObjectType = Query(None),
     offset: int = Query(None),
     limit: int = Query(None),
     order_by: SortField = Query(SortField.id),
@@ -124,6 +125,7 @@ def list_datasets(
         user_id=current_user.id,
         project_id=project_id,
         group_id=group_id,
+        group_name=group_name,
         source=source,
         state=state,
         object_type=object_type,
