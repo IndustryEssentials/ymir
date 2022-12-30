@@ -2,7 +2,9 @@ import argparse
 import logging
 
 from mir.commands import base
+from mir.tools import mir_storage_ops
 from mir.tools.code import MirCode
+from mir.tools.annotations import filter_mirdatas_by_asset_ids, map_and_filter_annotations
 
 
 class CmdFuse(base.BaseCommand):

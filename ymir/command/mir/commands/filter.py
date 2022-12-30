@@ -56,13 +56,6 @@ class CmdFilter(base.BaseCommand):
                 asset_ids_set.difference_update(mir_keywords.gt_idx.cis[ci].key_ids.keys())
         return asset_ids_set
 
-    @staticmethod
-    def __gen_task_annotations(src_task_annotations: mirpb.SingleTaskAnnotations,
-                               dst_task_annotations: mirpb.SingleTaskAnnotations, asset_ids: Set[str]) -> None:
-        joint_ids = asset_ids & src_task_annotations.image_annotations.keys()
-        for asset_id in joint_ids:
-            dst_task_annotations.image_annotations[asset_id].CopyFrom(src_task_annotations.image_annotations[asset_id])
-
     # public: run cmd
     @staticmethod
     @command_run_in_out
