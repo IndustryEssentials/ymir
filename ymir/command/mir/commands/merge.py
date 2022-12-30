@@ -46,6 +46,7 @@ class CmdMerge(base.BaseCommand):
             as_dict=False)
 
         # reset all host tvt type
+        #   if not set, keep origin tvt type
         host_tvt_type = tvt_type_from_str(host_typ_rev_tid.typ)
         if host_tvt_type != mirpb.TvtType.TvtTypeUnknown:
             for asset_id in host_mir_metadatas.attributes:

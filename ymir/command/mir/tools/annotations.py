@@ -460,6 +460,8 @@ def merge_to_mirdatas(host_mir_metadatas: mirpb.MirMetadatas, host_mir_annotatio
         ms_list=[mirpb.MirStorage.MIR_METADATAS, mirpb.MirStorage.MIR_ANNOTATIONS],
         as_dict=False)
 
+    # reset all host tvt type
+    #   if not set, keep origin tvt type
     guest_tvt_type = tvt_type_from_str(guest_typ_rev_tid.typ)
     if guest_tvt_type != mirpb.TvtType.TvtTypeUnknown:
         for asset_id in guest_mir_metadatas.attributes:
