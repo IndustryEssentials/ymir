@@ -1,36 +1,59 @@
 import Name from '@/components/search/Name'
 import { Col, Form, Row } from 'antd'
-import { FC } from 'react'
+import { FC, useEffect, useState } from 'react'
 import State from '@/components/search/State'
 import ObjectType from '@/components/search/ObjectType'
 import Time from '@/components/search/Time'
-
+import { useDebounce } from 'ahooks'
 
 type Props = {
   change?: (query: YParams.ResultListQuery) => void
+  name?: string
 }
+
+type DateType = moment.Moment | undefined
 
 const { Item } = Form
 
-const Search: FC<Props> = ({ change }) => {
+const Search: FC<Props> = ({ change, name }) => {
   const [form] = Form.useForm<YParams.ResultListQuery>()
-  const valuesChange = (_: any, values: any) => {
-    const query: YParams.ResultListQuery = valueHandle(values)
-    console.log('search comp. query:', query)
-    change && change(query)
+  const [searchName, setSearchName] = useState<string>('')
+  const debonceName = useDebounce(searchName, { wait: 500 })
+  const [query, setQuery] = useState<YParams.ResultListQuery>({})
+  const valuesChange = (changed: any, values: any) => {
+    if (typeof changed.name !== 'undefined') {
+      setSearchName(changed.name)
+      delete changed.name
+      delete values.name
+    }
+    if (changed && Object.keys(changed).length) {
+      const query: YParams.ResultListQuery = valueHandle(values)
+      setQuery(query)
+      change && change(query)
+    }
   }
 
   const valueHandle = (values: any = {}): YParams.ResultListQuery => {
-    const getTimestamp = (date?: moment.Moment) => date && date.format('X')
-    const [start, end] = values.time || []
+    const getTimestamp = (date: DateType) => date && date.format('X')
+    const [start, end]: [DateType, DateType] = values.time || []
     return {
       ...values,
-      startTime: getTimestamp(start),
-      endTime: getTimestamp(end),
+      startTime: getTimestamp(start?.startOf('day')),
+      endTime: getTimestamp(end?.endOf('day')),
     }
   }
+
+  useEffect(() => {
+    change && change({ ...query, name: debonceName })
+  }, [debonceName])
+
+  useEffect(() => {
+    name && form.setFieldsValue({ name })
+    name && setSearchName(name)
+  }, [name])
+
   return (
-    <Form form={form} onValuesChange={valuesChange} className='box' style={{ marginBottom: 0 }}>
+    <Form form={form} onValuesChange={valuesChange} className="box" style={{ marginBottom: 0 }}>
       <Row gutter={10}>
         <Col flex={1}>
           <Item name={'name'} noStyle>

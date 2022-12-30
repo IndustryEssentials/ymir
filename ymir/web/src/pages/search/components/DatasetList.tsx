@@ -61,14 +61,14 @@ function showTitle(str: string) {
 }
 const DatasetList: FC<Props> = ({ pid, name, query }) => {
   const history = useHistory()
-  const { data: datasets, run: getDatasets } = useRequest<DatasetsType, [YParams.DatasetsQuery]>('dataset/queryDatasets', {
-    debounceWait: 500
-  })
+  const { data: datasets, run: getDatasets } = useRequest<DatasetsType, [YParams.DatasetsQuery]>('dataset/queryDatasets')
   const [testingSetIds, setTestingSetIds] = useState<number[]>([])
 
   useEffect(() => {
     // todo get list with query
-    console.log('dataset list query:', query)
+    if (!query) {
+      return
+    }
     const handleQuery = query || {}
     getDatasets({ ...handleQuery, pid })
   }, [query])

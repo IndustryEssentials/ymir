@@ -46,8 +46,8 @@ function ProjectDetail(func) {
     </>
   )
 
-  function search() {
-    history.push(`/home/project/${id}/search`)
+  function search(name) {
+    name && history.push(`/home/project/${id}/search`, { name })
   }
 
   return (

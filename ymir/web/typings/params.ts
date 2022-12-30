@@ -8,8 +8,8 @@ declare namespace YParams {
     name?: string
     limit?: number
     offset?: number
-    startTime?: number
-    endTime?: number
+    startTime?: string | number
+    endTime?: string | number
     visible?: boolean
     desc?: boolean
   }

@@ -59,7 +59,7 @@ const SearchIndex: FC<Props> = () => {
     <div>
       <Breadcrumbs />
       <Detail project={project} />
-      <Search change={queryChange} />
+      <Search change={queryChange} name={searchName} />
       <Card
         tabList={tabsTitle}
         activeTabKey={active}

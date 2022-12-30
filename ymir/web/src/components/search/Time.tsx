@@ -1,16 +1,18 @@
+import { FC } from "react"
 import { DatePicker } from "antd"
 import { RangePickerProps } from "antd/lib/date-picker"
 import moment from "moment"
-import { FC } from "react"
+
+import t from '@/utils/t'
 
 const { RangePicker } = DatePicker
 
 const Time: FC<RangePickerProps> = (props) => {
 
   return <RangePicker {...props} ranges={{
-    ['Last 3 days']: [ moment().subtract(3, 'day'), moment()],
-    ['Last 7 days']: [ moment().subtract(7, 'day'), moment()],
-    ['Last 30 days']: [ moment().subtract(30, 'day'), moment()],
+    [t('date.range.today')]: [ moment(), moment()],
+    [t('date.range.last3days')]: [ moment().subtract(2, 'day'), moment()],
+    [t('date.range.last7days')]: [ moment().subtract(6, 'day'), moment()],
   }} />
 }
 
