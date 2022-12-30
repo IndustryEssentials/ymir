@@ -460,10 +460,15 @@ def merge_to_mirdatas(host_mir_metadatas: mirpb.MirMetadatas, host_mir_annotatio
         ms_list=[mirpb.MirStorage.MIR_METADATAS, mirpb.MirStorage.MIR_ANNOTATIONS],
         as_dict=False)
 
-    _merge_metadatas(host_mir_metadatas=host_mir_metadatas,
-                     guest_mir_metadatas=guest_mir_metadatas,
-                     suggested_tvt_type=tvt_type_from_str(guest_typ_rev_tid.typ),
-                     strategy=strategy)
+    guest_tvt_type = tvt_type_from_str(guest_typ_rev_tid.typ)
+    for asset_id in guest_mir_metadatas.attributes:
+        guest_mir_metadatas.attributes[asset_id].tvt_type = guest_tvt_type
+
+    # merge mir_metadatas
+    _merge_mirdata_asset_ids_dict(host_asset_ids_dict=host_mir_metadatas.attributes,
+                                  guest_asset_ids_dict=guest_mir_metadatas.attributes,
+                                  strategy=strategy)
+    # merge mir_annotations
     _merge_annotations(host_mir_annotations=host_mir_annotations,
                        guest_mir_annotations=guest_mir_annotations,
                        strategy=strategy)
@@ -491,21 +496,6 @@ def exclude_from_mirdatas(host_mir_metadatas: mirpb.MirMetadatas, host_mir_annot
             del host_mir_annotations.image_cks[asset_id]
 
 
-def _merge_metadatas(host_mir_metadatas: mirpb.MirMetadatas, guest_mir_metadatas: mirpb.MirMetadatas,
-                     suggested_tvt_type: 'mirpb.TvtType.V', strategy: MergeStrategy) -> None:
-    _, id_guest_only, id_joint = match_asset_ids(set(host_mir_metadatas.attributes.keys()),
-                                                 set(guest_mir_metadatas.attributes.keys()))
-
-    if strategy == MergeStrategy.STOP and id_joint:
-        raise MirRuntimeError(error_code=MirCode.RC_CMD_MERGE_ERROR, error_message='Found conflicts in strategy stop')
-
-    asset_ids = (id_guest_only | id_joint) if strategy == MergeStrategy.GUEST else id_guest_only
-    for asset_id in asset_ids:
-        host_mir_metadatas.attributes[asset_id].CopyFrom(guest_mir_metadatas.attributes[asset_id])
-        if suggested_tvt_type != mirpb.TvtTypeUnknown:
-            host_mir_metadatas.attributes[asset_id].tvt_type = suggested_tvt_type
-
-
 def _merge_annotations(host_mir_annotations: mirpb.MirAnnotations, guest_mir_annotations: mirpb.MirAnnotations,
                        strategy: MergeStrategy) -> None:
     _merge_task_annotations(host_task_annotations=host_mir_annotations.ground_truth,
@@ -515,9 +505,9 @@ def _merge_annotations(host_mir_annotations: mirpb.MirAnnotations, guest_mir_ann
                             guest_task_annotations=guest_mir_annotations.prediction,
                             strategy=strategy)
 
-    _merge_annotation_asset_ids_dict(host_asset_ids_dict=host_mir_annotations.image_cks,
-                                     guest_asset_ids_dict=guest_mir_annotations.image_cks,
-                                     strategy=strategy)
+    _merge_mirdata_asset_ids_dict(host_asset_ids_dict=host_mir_annotations.image_cks,
+                                  guest_asset_ids_dict=guest_mir_annotations.image_cks,
+                                  strategy=strategy)
 
     host_mir_annotations.prediction.eval_class_ids.extend(guest_mir_annotations.prediction.eval_class_ids)
     host_mir_annotations.prediction.eval_class_ids[:] = set(host_mir_annotations.prediction.eval_class_ids)
@@ -536,12 +526,12 @@ def _merge_task_annotations(host_task_annotations: mirpb.SingleTaskAnnotations,
     if host_task_annotations.type == mirpb.ObjectType.OT_NO_ANNOTATIONS:
         host_task_annotations.type = guest_task_annotations.type
 
-    _merge_annotation_asset_ids_dict(host_asset_ids_dict=host_task_annotations.image_annotations,
-                                     guest_asset_ids_dict=guest_task_annotations.image_annotations,
-                                     strategy=strategy)
+    _merge_mirdata_asset_ids_dict(host_asset_ids_dict=host_task_annotations.image_annotations,
+                                  guest_asset_ids_dict=guest_task_annotations.image_annotations,
+                                  strategy=strategy)
 
 
-def _merge_annotation_asset_ids_dict(host_asset_ids_dict: MessageMap,
+def _merge_mirdata_asset_ids_dict(host_asset_ids_dict: MessageMap,
                                      guest_asset_ids_dict: MessageMap, strategy: MergeStrategy) -> None:
     _, guest_only_ids, joint_ids = match_asset_ids(set(host_asset_ids_dict.keys()), set(guest_asset_ids_dict.keys()))
     if strategy == MergeStrategy.STOP and joint_ids:
