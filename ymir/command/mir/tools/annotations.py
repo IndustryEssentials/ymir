@@ -119,6 +119,7 @@ def _coco_object_dict_to_annotation(anno_dict: dict, category_id_to_cids: Dict[i
     obj_anno.box.y = int(bbox_list[1])
     obj_anno.box.w = int(bbox_list[2])
     obj_anno.box.h = int(bbox_list[3])
+    obj_anno.mask_area = int(anno_dict['area'])
 
     obj_anno.iscrowd = anno_dict.get('iscrowd', 0)
     obj_anno.class_id = category_id_to_cids[anno_dict['category_id']]
