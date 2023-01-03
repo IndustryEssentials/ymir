@@ -371,7 +371,6 @@ class TestToolsDetEval(unittest.TestCase):
                 'eval_class_ids': [],
                 'executor_config': '',
                 'type': 'OT_DET_BOX',
-                'is_instance_segmentation': False,
             },
             'prediction': {
                 'image_annotations': {
@@ -508,7 +507,6 @@ class TestToolsDetEval(unittest.TestCase):
                 'eval_class_ids': [0, 1, 2],
                 'executor_config': '',
                 'type': 'OT_DET_BOX',
-                'is_instance_segmentation': False,
                 'task_class_ids': [0, 1, 2],
             },
             'image_cks': {

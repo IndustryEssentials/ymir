@@ -145,7 +145,6 @@ message SingleTaskAnnotations {
     ObjectType type = 3;
     // Set of all shown class ids.
     repeated int32 task_class_ids = 4;
-    bool is_instance_segmentation = 5;
 
     // meta infos of this SingleTaskAnnotations
     repeated int32 eval_class_ids = 10;
