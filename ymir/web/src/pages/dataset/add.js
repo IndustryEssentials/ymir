@@ -15,7 +15,7 @@ import Breadcrumbs from '@/components/common/breadcrumb'
 import Uploader from '@/components/form/uploader'
 import ProjectDatasetSelect from '@/components/form/projectDatasetSelect'
 import Desc from '@/components/form/desc'
-import DatasetName from '../../components/form/items/datasetName'
+import DatasetName from '@/components/form/items/DatasetName'
 import { FormatDetailModal } from './components/FormatDetailModal'
 import Dataset from '@/components/form/option/Dataset'
 

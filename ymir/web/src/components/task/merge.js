@@ -8,8 +8,8 @@ import useFetch from '@/hooks/useFetch'
 
 import DatasetSelect from '@/components/form/datasetSelect'
 import Desc from '@/components/form/desc'
-import MergeType from './merge/formItem.mergeType'
-import DatasetName from '@/components/form/items/datasetName'
+import MergeType from '@/components/form/items/MergeType'
+import DatasetName from '@/components/form/items/DatasetName'
 import Strategy from './merge/formItem.strategy'
 import SubmitButtons from './submitButtons'
 import Dataset from '@/components/form/option/Dataset'
@@ -93,9 +93,7 @@ function Merge({ query = {}, hidden, ok = () => {}, bottom }) {
   return (
     <Form form={form} name="mergeForm" {...formLayout} initialValues={initialValues} onFinish={onFinish} onFinishFailed={onFinishFailed}>
       <div hidden={hidden}>
-        {/* // todo update new group switch */}
-        <MergeType disabled={[iterationId ? 0 : null]} initialValue={!iterationId && mid ? 0 : 1} />
-        {!type ? <DatasetName /> : null}
+        <MergeType form={form} disabled={[iterationId ? 0 : null]} initialValue={!iterationId && mid ? 0 : 1} />
         {did ? (
           <Form.Item label={t('task.fusion.form.dataset')}>
             <Dataset dataset={dataset} />
