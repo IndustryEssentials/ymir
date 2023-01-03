@@ -57,6 +57,15 @@ enum RequestType {
     reserved 15;
 }
 
+enum ImportDatasetType {
+    IDT_UNKNOWN = 0;
+
+    IDT_CLASS = 1; // Classification with class id, not implemented.
+    IDT_DET_BOX = 2; // Detection w. bounding box.
+    IDT_SEG = 3;  // semantic segmentation w. polygon or mask
+    IDT_INS_SEG = 4;
+}
+
 message GeneralReq {
     string user_id = 1;
     string repo_id = 2;
@@ -158,8 +167,7 @@ message TaskReqImportDataset {
     // strategy for unknown class types: stop, ignore or add
     UnknownTypesStrategy unknown_types_strategy = 4;
     bool clean_dirs = 5;
-    mir.command.ObjectType anno_type = 6;
-    bool is_instance_segmentation = 7;
+    ImportDatasetType anno_type = 6;
 }
 
 message TaskReqExporting {

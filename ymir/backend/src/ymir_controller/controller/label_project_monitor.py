@@ -16,7 +16,6 @@ from controller.invoker.invoker_task_import_dataset import TaskImportDatasetInvo
 from controller.utils import utils
 from controller.utils.redis import rds
 from controller.label_model.base import NotReadyError
-from mir.protos import mir_command_pb2 as mir_cmd_pb
 from proto import backend_pb2
 
 
@@ -33,8 +32,7 @@ def trigger_mir_import(repo_root: str, task_id: str, index_file: str, des_annota
                                            media_location=media_location,
                                            work_dir=import_work_dir,
                                            unknown_types_strategy=backend_pb2.UnknownTypesStrategy.UTS_STOP,
-                                           anno_type=mir_cmd_pb.ObjectType.OT_DET_BOX,
-                                           is_instance_segmentation=False)
+                                           anno_type=backend_pb2.ImportDatasetType.IDT_DET_BOX)
 
 
 def remove_json_file(des_annotation_path: str) -> None:
