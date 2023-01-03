@@ -1,44 +1,55 @@
-import { Modal, Form, Input, Select, message, Button } from "antd"
-import { forwardRef, useEffect, useState, useImperativeHandle } from "react"
-import { connect } from 'dva'
+import { Modal, Form, Input, Select, message, Button } from 'antd'
+import { forwardRef, useEffect, useState, useImperativeHandle } from 'react'
 
 import t from '@/utils/t'
-import { TASKTYPES } from "@/constants/task"
-import confirmConfig from "@/components/common/dangerConfirm"
+import { TASKTYPES } from '@/constants/task'
+import confirmConfig from '@/components/common/DangerConfirm'
+import useRequest from '@/hooks/useRequest'
+import { FC } from 'react'
 
-const Terminate = forwardRef(({ stopTask, ok = () => { } }, ref) => {
+type Props = {
+  ok: (resultTask: YModels.Task, result?: YModels.Result) => void
+}
+const Terminate: FC<Props> = forwardRef(({ ok }, ref) => {
   const [visible, setVisible] = useState(false)
-  const [id, setId] = useState(null)
+  const [id, setId] = useState<number>()
   const [name, setName] = useState('')
-  const [type, setType] = useState(null)
-  const [result, setResult] = useState({})
+  const [type, setType] = useState<number>()
+  const [result, setResult] = useState<YModels.Result>()
+  const { runAsync: stopTask } = useRequest<YModels.Task, [{ id: number; with_data?: boolean }]>('task/stopTask')
 
   useEffect(() => {
     id && terminate()
   }, [id])
 
-  useImperativeHandle(ref, () => ({
-    confirm: (result) => {
-      const name = result.name + result.versionName
-      const { id, type } = result.task
-      setResult(result)
-      setId(id)
-      setName(name)
-      setType(type)
-    }
-  }), [])
+  useImperativeHandle(
+    ref,
+    () => ({
+      confirm: (result: YModels.Result) => {
+        const name = result.name + result.versionName
+        const { id, type } = result.task
+        setResult(result)
+        setId(id)
+        setName(name)
+        setType(type)
+      },
+    }),
+    [],
+  )
 
   function terminate() {
     saveResult() ? terminateWithData() : terminateNoData()
   }
 
   function terminateNoData() {
-    Modal.confirm(confirmConfig({
-      content: t("task.action.terminate.confirm.content", { name }),
-      onOk: terminateTask,
-      onCancel: cancel,
-      okText: t('task.action.terminate'),
-    }))
+    Modal.confirm(
+      confirmConfig({
+        content: t('task.action.terminate.confirm.content', { name }),
+        onOk: terminateTask,
+        onCancel: cancel,
+        okText: t('task.action.terminate'),
+      }),
+    )
   }
 
   function terminateWithData() {
@@ -46,25 +57,28 @@ const Terminate = forwardRef(({ stopTask, ok = () => { } }, ref) => {
   }
 
   async function terminateTask(withData = false) {
-    const result = await stopTask(id, withData)
+    if (!id) {
+      return
+    }
+    const result = await stopTask({ id, with_data: withData })
     handle(result)
   }
 
   function cancel() {
-    setId(null)
+    setId(undefined)
     setVisible(false)
   }
 
-  function handle(res) {
+  function handle(res: YModels.Task) {
     if (res) {
       ok(res, result)
     }
     setVisible(false)
-    setId(null)
+    setId(undefined)
   }
 
   function saveResult() {
-    return [TASKTYPES.TRAINING, TASKTYPES.LABEL].indexOf(type) > -1
+    return type && [TASKTYPES.TRAINING, TASKTYPES.LABEL].indexOf(type) > -1
   }
 
   return (
@@ -80,24 +94,9 @@ const Terminate = forwardRef(({ stopTask, ok = () => { } }, ref) => {
         </Button>,
       ]}
     >
-      {t("task.action.terminate.confirm.content", { name })}
+      {t('task.action.terminate.confirm.content', { name })}
     </Modal>
   )
 })
 
-const props = (state) => {
-  return {
-    username: state.user.username,
-  }
-}
-const actions = (dispatch) => {
-  return {
-    stopTask(id, with_data) {
-      return dispatch({
-        type: 'task/stopTask',
-        payload: { id, with_data },
-      })
-    },
-  }
-}
-export default connect(props, actions, null, { forwardRef: true })(Terminate)
+export default Terminate

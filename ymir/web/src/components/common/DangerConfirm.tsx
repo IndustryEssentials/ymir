@@ -1,10 +1,11 @@
 import { TipsIcon } from './Icons'
 
 const color = 'rgb(242, 99, 123)'
-const confirmConfig = (props) => ({
+
+const DangerConfirm = (props: { [key: string]: any }) => ({
   icon: <TipsIcon style={{ color }} />,
   okButtonProps: { style: { backgroundColor: color, borderColor: color } },
   ...props,
 })
 
-export default confirmConfig
+export default DangerConfirm
