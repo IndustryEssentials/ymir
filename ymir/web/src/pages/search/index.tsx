@@ -1,4 +1,4 @@
-import { Card } from 'antd'
+import { Button, Card } from 'antd'
 import { FC, useEffect, useState } from 'react'
 import { useHistory, useLocation, useParams } from 'umi'
 import { useSelector } from 'react-redux'
@@ -51,14 +51,13 @@ const SearchIndex: FC<Props> = () => {
   }
 
   const queryChange = (query: YParams.ResultListQuery) => {
-    console.log('query:', query)
     updateQuery(query)
   }
 
   return (
     <div>
       <Breadcrumbs />
-      <Detail project={project} />
+      <Detail project={project} back={true} />
       <Search change={queryChange} name={searchName} />
       <Card
         tabList={tabsTitle}
