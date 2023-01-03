@@ -1,26 +1,21 @@
-import React, { useEffect } from "react"
-import { Button, Card, Col, Row, Space } from "antd"
-import { useParams, useHistory } from "umi"
+import React, { useEffect } from 'react'
+import { Button, Card, Col, Row, Space } from 'antd'
+import { useParams, useHistory } from 'umi'
 
-import t from "@/utils/t"
-import useFetch from "@/hooks/useFetch"
-import Breadcrumbs from "@/components/common/breadcrumb"
-import Empty from "@/components/empty/default"
-import { getStepLabel } from "@/constants/iteration"
+import t from '@/utils/t'
+import useFetch from '@/hooks/useFetch'
+import Breadcrumbs from '@/components/common/breadcrumb'
+import Empty from '@/components/empty/default'
+import { getStepLabel } from '@/constants/iteration'
 import NoIterationDetail from './components/noIterationDetail'
 
-import s from "./detail.less"
-import {
-  TrainIcon,
-  NavDatasetIcon,
-  ArrowRightIcon,
-  ImportIcon,
-} from "@/components/common/Icons"
+import s from './detail.less'
+import { TrainIcon, NavDatasetIcon, ArrowRightIcon, ImportIcon } from '@/components/common/Icons'
 
 function ProjectDetail(func) {
   const history = useHistory()
   const { id } = useParams()
-  const [project, getProject] = useFetch("project/getProject", {})
+  const [project, getProject] = useFetch('project/getProject', {})
 
   useEffect(() => {
     id && getProject({ id, force: true })
@@ -41,6 +36,15 @@ function ProjectDetail(func) {
     history.push(`/home/project/${id}/train`)
   }
 
+  const statBlocks = (blocks = []) => blocks.map((block) => <Col span={24 / blocks.length}>{statBlock(block)}</Col>)
+
+  const statBlock = ({ label, count }) => (
+    <>
+      <div className="contentLabel">{t(label)}</div>
+      <div className={s.num}>{count}</div>
+    </>
+  )
+
   return (
     <div>
       <Breadcrumbs />
@@ -52,33 +56,21 @@ function ProjectDetail(func) {
           {project.round > 0 ? (
             <div>
               <span style={{ marginRight: 20 }}>
-                {t("project.iteration.entrance.status", {
-                  stateLabel: (
-                    <span className="orange">
-                      {t(getStepLabel(project.currentStep, project.round))}
-                    </span>
-                  ),
+                {t('project.iteration.entrance.status', {
+                  stateLabel: <span className="orange">{t(getStepLabel(project.currentStep, project.round))}</span>,
                 })}
               </span>
-              <Button
-                type="primary"
-                onClick={() => history.push(`/home/project/${id}/iterations`)}
-              >
+              <Button type="primary" onClick={() => history.push(`/home/project/${id}/iterations`)}>
                 <TrainIcon />
-                {t("project.iteration.entrance.btn")}
+                {t('project.iteration.entrance.btn')}
               </Button>
             </div>
           ) : (
-            <div style={{ textAlign: "center" }}>
-              <Empty
-                description={t("project.iteration.entrance.empty.label")}
-              />
-              <p>{t("project.iteration.entrance.empty.info")}</p>
-              <Button
-                type="primary"
-                onClick={() => history.push(`/home/project/${id}/iterations`)}
-              >
-                <TrainIcon /> {t("project.iteration.entrance.empty.btn")}
+            <div style={{ textAlign: 'center' }}>
+              <Empty description={t('project.iteration.entrance.empty.label')} />
+              <p>{t('project.iteration.entrance.empty.info')}</p>
+              <Button type="primary" onClick={() => history.push(`/home/project/${id}/iterations`)}>
+                <TrainIcon /> {t('project.iteration.entrance.empty.btn')}
               </Button>
             </div>
           )}
@@ -86,17 +78,17 @@ function ProjectDetail(func) {
       ) : null}
       <Space className="actions">
         <Button type="primary" onClick={add}>
-          <ImportIcon /> {t("dataset.import.label")}
+          <ImportIcon /> {t('dataset.import.label')}
         </Button>
         <Button type="primary" onClick={goTraining}>
-          <TrainIcon /> {t("project.iteration.stage.training")}
+          <TrainIcon /> {t('project.iteration.stage.training')}
         </Button>
       </Space>
       <div className={`list ${s.projectOverview}`}>
         <Row gutter={10}>
           <Col span={12}>
             <Card
-              title={title(NavDatasetIcon, "project.tab.set.title")}
+              title={title(NavDatasetIcon, 'project.tab.set.title')}
               className={s.cardContainer}
               onClick={() => {
                 history.push(`/home/project/${project.id}/dataset`)
@@ -104,27 +96,18 @@ function ProjectDetail(func) {
               extra={<ArrowRightIcon className={s.rightIcon} />}
             >
               <Row className="content" justify="center">
-                <Col span={12}>
-                  <div className="contentLabel">
-                    {t("project.tab.set.title")}
-                  </div>
-                  <div className={s.num}>{project.setCount}</div>
-                </Col>
-                <Col span={12}>
-                  <div className="contentLabel">
-                    {t("project.detail.datavolume")}
-                  </div>
-                  <div className={`${s.num} ${s.blue}`}>
-                    {project.totalAssetCount}
-                  </div>
-                </Col>
+                {statBlocks([
+                  { label: 'project.stats.datasets.total', count: project.datasetCount },
+                  { label: 'project.stats.datasets.processing', count: project.datasetProcessingCount },
+                  { label: 'project.stats.datasets.invalid', count: project.datasetErrorCount },
+                  { label: 'project.stats.datasets.assets.total', count: project.totalAssetCount },
+                ])}
               </Row>
             </Card>
           </Col>
           <Col span={12}>
-            {/* // todo update stats */}
             <Card
-              title={title(TrainIcon, "project.tab.model.title")}
+              title={title(TrainIcon, 'project.tab.model.title')}
               className={s.cardContainer}
               onClick={() => {
                 history.push(`/home/project/${project.id}/model`)
@@ -132,23 +115,11 @@ function ProjectDetail(func) {
               extra={<ArrowRightIcon className={s.rightIcon} />}
             >
               <Row className="content" justify="center">
-                <Col span={12}>
-                  <div className="contentLabel">
-                    {t("project.tab.model.title")}
-                  </div>
-                  <div className={s.num}>{project.modelCount}</div>
-                </Col>
-                <Col span={12}>
-                  <div className="contentLabel">
-                    {t("project.detail.runningtasks")}/
-                    {t("project.detail.totaltasks")}
-                  </div>
-                  <div className={s.num}>
-                    <span className={s.red}></span>
-                    {project.runningTaskCount}/{project.totalTaskCount}
-                    <span></span>
-                  </div>
-                </Col>
+                {statBlocks([
+                  { label: 'project.stats.models.total', count: project.modelCount },
+                  { label: 'project.stats.models.processing', count: project.modelProcessingCount },
+                  { label: 'project.stats.models.invalid', count: project.modelErrorCount },
+                ])}
               </Row>
             </Card>
           </Col>

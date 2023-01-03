@@ -41,7 +41,6 @@ export function transferProject(data: YModels.BackendData) {
     trainSetVersion: data.initial_training_dataset_id || 0,
     model: data.initial_model_id || 0,
     modelStage: data.initial_model_id ? [data.initial_model_id, data.initial_model_stage_id] : undefined,
-    modelCount: data.model_count,
     miningStrategy: data.mining_strategy,
     chunkSize: data.chunk_size,
     currentIteration: iteration,
@@ -57,8 +56,12 @@ export function transferProject(data: YModels.BackendData) {
     updateTime: format(data.update_datetime),
     enableIteration: data.enable_iteration,
     totalAssetCount: data.total_asset_count,
-    runningTaskCount: data.running_task_count,
-    totalTaskCount: data.total_task_count,
+    datasetCount: data.dataset_count || 0,
+    datasetProcessingCount: data.processing_dataset_count || 0,
+    datasetErrorCount: data.error_dataset_count || 0,
+    modelCount: data.model_count || 0,
+    modelProcessingCount: data.processing_model_count || 0,
+    modelErrorCount: data.error_model_count || 0,
   }
   return project
 }
