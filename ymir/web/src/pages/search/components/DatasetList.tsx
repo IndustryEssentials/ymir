@@ -21,8 +21,8 @@ import { canHide, validDataset } from '@/constants/dataset'
 
 // import CheckProjectDirty from "@/components/common/CheckProjectDirty"
 // import EditNameBox from "@/components/form/editNameBox"
-// import EditDescBox from "@/components/form/editDescBox"
-// import Terminate from "@/components/task/terminate"
+import EditDescBox from "@/components/form/editDescBox"
+import Terminate, { RefProps } from "@/components/task/terminate"
 // import Hide from "../common/hide"
 
 import {
@@ -63,26 +63,25 @@ const DatasetList: FC<Props> = ({ pid, name, query }) => {
   const history = useHistory()
   const { data: datasets, run: getDatasets } = useRequest<DatasetsType, [YParams.DatasetsQuery]>('dataset/queryDatasets')
   const [testingSetIds, setTestingSetIds] = useState<number[]>([])
+  const [editingDataset, setEditingDataset] = useState<YModels.Dataset>()
+  const terminateRef = useRef<RefProps>(null)
 
-  useEffect(() => {
-    // todo get list with query
-    if (!query) {
-      return
-    }
-    const handleQuery = query || {}
-    getDatasets({ ...handleQuery, pid })
-  }, [query])
+  useEffect(() => fetch(), [query])
 
   const tableChange: TableProps<YModels.Dataset>['onChange'] = ({ current, pageSize }, filters, sorters = {}) => {}
 
   const columns: TableColumnsType<YModels.Dataset> = [
     {
-      title: showTitle('dataset.column.name'),
+      title: showTitle('project.tab.set.title'),
       key: 'name',
       dataIndex: 'versionName',
-      render: (name, { id, description }) => {
+      render: (vname, { id, name, description }) => {
         const popContent = <DescPop description={description} style={{ maxWidth: '30vw' }} />
-        const content = <Link to={`/home/project/${pid}/dataset/${id}`}>{name}</Link>
+        const content = (
+          <Link to={`/home/project/${pid}/dataset/${id}`}>
+            {name} {vname}
+          </Link>
+        )
         return description ? (
           <Popover title={t('common.desc')} content={popContent}>
             {content}
@@ -220,19 +219,19 @@ const DatasetList: FC<Props> = ({ pid, name, query }) => {
         onclick: () => history.push(`/home/project/${pid}/copy?did=${id}`),
         icon: <CopyIcon />,
       },
-      // {
-      //   key: "edit",
-      //   label: t("common.action.edit.desc"),
-      //   onclick: () => editDesc(record),
-      //   icon: <EditIcon />,
-      // },
-      // {
-      //   key: "stop",
-      //   label: t("task.action.terminate"),
-      //   onclick: () => stop(record),
-      //   hidden: () => taskState === TASKSTATES.PENDING || !isRunning(state) || task.is_terminated,
-      //   icon: <StopIcon />,
-      // },
+      {
+        key: 'edit',
+        label: t('common.action.edit.desc'),
+        onclick: () => editDesc(record),
+        icon: <EditIcon />,
+      },
+      {
+        key: "stop",
+        label: t("task.action.terminate"),
+        onclick: () => stop(record),
+        hidden: () => taskState === TASKSTATES.PENDING || state !== ResultStates.READY || task.is_terminated,
+        icon: <StopIcon />,
+      },
       // generateRerun(record),
       // {
       //   key: "hide",
@@ -249,19 +248,37 @@ const DatasetList: FC<Props> = ({ pid, name, query }) => {
     return testingSetIds?.includes(id)
   }
 
+  function fetch() {
+    if (!query) {
+      return
+    }
+    const handleQuery = query || {}
+    getDatasets({ ...handleQuery, pid })
+  }
+
+  
+  const stop = (dataset: YModels.Dataset) => {
+    terminateRef?.current?.confirm(dataset)
+  }
+
+  const editDesc = (dataset: YModels.Dataset) => {
+    setEditingDataset(undefined)
+    setTimeout(() => setEditingDataset(dataset), 0)
+  }
+
   return (
-    <Table
-      dataSource={datasets?.items}
-      onChange={tableChange}
-      rowKey={(record) => record.id}
-      // rowSelection={{
-      //   selectedRowKeys: selectedVersions.versions[group.id],
-      //   onChange: (keys) => rowSelectChange(group.id, keys),
-      // }}
-      rowClassName={(record, index) => (index % 2 === 0 ? '' : 'oddRow')}
-      columns={columns}
-      pagination={false}
-    />
+    <div>
+      <Table
+        dataSource={datasets?.items}
+        onChange={tableChange}
+        rowKey={(record) => record.id}
+        rowClassName={(record, index) => (index % 2 === 0 ? '' : 'oddRow')}
+        columns={columns}
+        pagination={false}
+      />
+      {editingDataset ? <EditDescBox record={editingDataset} handle={fetch} /> : null}
+      <Terminate ref={terminateRef} ok={fetch} />
+    </div>
   )
 }
 

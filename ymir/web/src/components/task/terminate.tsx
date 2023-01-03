@@ -10,7 +10,10 @@ import { FC } from 'react'
 type Props = {
   ok: (resultTask: YModels.Task, result?: YModels.Result) => void
 }
-const Terminate: FC<Props> = forwardRef(({ ok }, ref) => {
+export type RefProps = {
+  confirm: (result: YModels.Result) => void
+}
+const Terminate = forwardRef<RefProps, Props>(({ ok }, ref) => {
   const [visible, setVisible] = useState(false)
   const [id, setId] = useState<number>()
   const [name, setName] = useState('')
