@@ -40,11 +40,6 @@ function Asset({ id, asset: cache, datasetKeywords, filterKeyword, filters, inde
   }, [])
 
   useEffect(() => {
-
-  console.log('dataset in asset:', dataset)
-  }, [dataset])
-
-  useEffect(() => {
     setAsset({})
     index > -1 && setCurrentIndex({ index, keyword: filterKeyword })
   }, [index, filterKeyword])

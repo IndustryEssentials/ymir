@@ -251,7 +251,7 @@ export function transferAnnotationsCount(count = {}, negative = 0, total = 1) {
 }
 
 function getType(annotation: YModels.BackendData) {
-  return annotation.mask ? AnnotationType.Mask : (annotation.polygon ? AnnotationType.Polygon : AnnotationType.BoundingBox)
+  return annotation?.mask ? AnnotationType.Mask : (annotation?.polygon?.length ? AnnotationType.Polygon : AnnotationType.BoundingBox)
 }
 
 const transferCK = (counts: YModels.BackendData = {}, total: YModels.BackendData = {}) => {
