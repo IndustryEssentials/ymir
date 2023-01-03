@@ -10,6 +10,7 @@ from mir.commands.merge import CmdMerge
 from mir.protos import mir_command_pb2 as mirpb
 from mir.tools import mir_storage_ops
 from mir.tools.code import MirCode
+from mir.tools.errors import MirRuntimeError
 import tests.utils as test_utils
 
 
@@ -374,10 +375,9 @@ class TestMergeCmd(unittest.TestCase):
         fake_args.strategy = 'stop'
         fake_args.work_dir = ''
         merge_instance = CmdMerge(fake_args)
-        ret = merge_instance.run()
-
-        # check result
-        self.assertEqual(MirCode.RC_CMD_MERGE_ERROR, ret)
+        with self.assertRaises(MirRuntimeError) as ectx:
+            merge_instance.run()
+        self.assertEqual(ectx.exception.error_code, MirCode.RC_CMD_MERGE_ERROR)
 
     def _test_tvt_host_00(self):
         """ normal case: with tvt flag assigned, strategy host, a + d, have joint assets """

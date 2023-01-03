@@ -275,7 +275,7 @@ class TestToolsDetEval(unittest.TestCase):
                             'polygon': [],
                             'det_link_id': 0,
                             'class_name': '',
-                            'type': 'OT_UNKNOWN',
+                            'type': 'OST_NOTSET',
                             'iscrowd': 0,
                             'mask': '',
                         }, {
@@ -295,7 +295,7 @@ class TestToolsDetEval(unittest.TestCase):
                             'anno_quality': 0.0,
                             'tags': {},
                             'class_name': '',
-                            'type': 'OT_UNKNOWN',
+                            'type': 'OST_NOTSET',
                             'iscrowd': 0,
                             'mask': '',
                         }, {
@@ -315,7 +315,7 @@ class TestToolsDetEval(unittest.TestCase):
                             'anno_quality': 0.0,
                             'tags': {},
                             'class_name': '',
-                            'type': 'OT_UNKNOWN',
+                            'type': 'OST_NOTSET',
                             'iscrowd': 0,
                             'mask': '',
                         }, {
@@ -335,7 +335,7 @@ class TestToolsDetEval(unittest.TestCase):
                             'anno_quality': 0.0,
                             'tags': {},
                             'class_name': '',
-                            'type': 'OT_UNKNOWN',
+                            'type': 'OST_NOTSET',
                             'iscrowd': 0,
                             'mask': '',
                         }],
@@ -359,7 +359,7 @@ class TestToolsDetEval(unittest.TestCase):
                             'anno_quality': 0.0,
                             'tags': {},
                             'class_name': '',
-                            'type': 'OT_UNKNOWN',
+                            'type': 'OST_NOTSET',
                             'iscrowd': 0,
                             'mask': '',
                         }],
@@ -371,6 +371,7 @@ class TestToolsDetEval(unittest.TestCase):
                 'eval_class_ids': [],
                 'executor_config': '',
                 'type': 'OT_DET_BOX',
+                'is_instance_segmentation': False,
             },
             'prediction': {
                 'image_annotations': {
@@ -392,7 +393,7 @@ class TestToolsDetEval(unittest.TestCase):
                             'anno_quality': 0.0,
                             'tags': {},
                             'class_name': '',
-                            'type': 'OT_UNKNOWN',
+                            'type': 'OST_NOTSET',
                             'iscrowd': 0,
                             'mask': '',
                         }],
@@ -416,7 +417,7 @@ class TestToolsDetEval(unittest.TestCase):
                             'tags': {},
                             'det_link_id': 0,
                             'class_name': '',
-                            'type': 'OT_UNKNOWN',
+                            'type': 'OST_NOTSET',
                             'iscrowd': 0,
                             'mask': '',
                         }, {
@@ -436,7 +437,7 @@ class TestToolsDetEval(unittest.TestCase):
                             'anno_quality': 0.0,
                             'tags': {},
                             'class_name': '',
-                            'type': 'OT_UNKNOWN',
+                            'type': 'OST_NOTSET',
                             'iscrowd': 0,
                             'mask': '',
                         }, {
@@ -456,7 +457,7 @@ class TestToolsDetEval(unittest.TestCase):
                             'anno_quality': 0.0,
                             'tags': {},
                             'class_name': '',
-                            'type': 'OT_UNKNOWN',
+                            'type': 'OST_NOTSET',
                             'iscrowd': 0,
                             'mask': '',
                         }, {
@@ -476,7 +477,7 @@ class TestToolsDetEval(unittest.TestCase):
                             'anno_quality': 0.0,
                             'tags': {},
                             'class_name': '',
-                            'type': 'OT_UNKNOWN',
+                            'type': 'OST_NOTSET',
                             'iscrowd': 0,
                             'mask': '',
                         }, {
@@ -496,7 +497,7 @@ class TestToolsDetEval(unittest.TestCase):
                             'anno_quality': 0.0,
                             'tags': {},
                             'class_name': '',
-                            'type': 'OT_UNKNOWN',
+                            'type': 'OST_NOTSET',
                             'iscrowd': 0,
                             'mask': '',
                         }],
@@ -507,6 +508,7 @@ class TestToolsDetEval(unittest.TestCase):
                 'eval_class_ids': [0, 1, 2],
                 'executor_config': '',
                 'type': 'OT_DET_BOX',
+                'is_instance_segmentation': False,
                 'task_class_ids': [0, 1, 2],
             },
             'image_cks': {

@@ -3,15 +3,17 @@ import enum
 import json
 import logging
 import os
-from typing import Any, Callable, Dict, List, Optional, Union
+from typing import Any, Callable, Dict, List, Optional, Set, Tuple, Union
 
+from google.protobuf.internal.containers import MessageMap
 from google.protobuf.json_format import ParseDict
 import xmltodict
 import yaml
 
-from mir.tools import class_ids
+from mir.tools import class_ids, mir_storage_ops
 from mir.tools.code import MirCode
 from mir.tools.errors import MirRuntimeError
+from mir.tools.revs_parser import TypRevTid
 from mir.tools.settings import COCO_JSON_NAME
 from mir.tools.phase_logger import PhaseLoggerCenter
 from mir.protos import mir_command_pb2 as mirpb
@@ -21,6 +23,12 @@ class UnknownTypesStrategy(str, enum.Enum):
     STOP = 'stop'
     IGNORE = 'ignore'
     ADD = 'add'
+
+
+class MergeStrategy(str, enum.Enum):
+    STOP = 'stop'
+    HOST = 'host'
+    GUEST = 'guest'
 
 
 def parse_anno_format(anno_format_str: str) -> "mirpb.ExportFormat.V":
@@ -41,6 +49,7 @@ def parse_anno_type(anno_type_str: str) -> "mirpb.ObjectType.V":
     _anno_dict: Dict[str, mirpb.ObjectType.V] = {
         "det-box": mirpb.ObjectType.OT_DET_BOX,
         "seg": mirpb.ObjectType.OT_SEG,
+        "no-annotations": mirpb.ObjectType.OT_NO_ANNOTATIONS,
     }
     return _anno_dict.get(anno_type_str.lower(), mirpb.ObjectType.OT_UNKNOWN)
 
@@ -94,18 +103,16 @@ def _coco_object_dict_to_annotation(anno_dict: dict, category_id_to_cids: Dict[i
     # box, polygon and mask
     seg_obj = anno_dict.get('segmentation')
     if isinstance(seg_obj, dict):  # mask
-        obj_anno.type = mirpb.ObjectType.OT_SEG_MASK
+        obj_anno.type = mirpb.ObjectSubType.OST_SEG_MASK
         obj_anno.mask = seg_obj['counts']
     elif isinstance(seg_obj, list):  # polygon
         if len(seg_obj) > 1:
             raise NotImplementedError('Multi polygons not supported')
 
-        obj_anno.type = mirpb.ObjectType.OT_SEG_POLYGON
+        obj_anno.type = mirpb.ObjectSubType.OST_SEG_POLYGON
         points_list = seg_obj[0]
         for i in range(0, len(points_list), 2):
             obj_anno.polygon.append(mirpb.IntPoint(x=int(points_list[i]), y=int(points_list[i + 1]), z=0))
-    else:
-        obj_anno.type = mirpb.ObjectType.OT_DET_BOX
 
     bbox_list = anno_dict['bbox']
     obj_anno.box.x = int(bbox_list[0])
@@ -138,7 +145,9 @@ def import_annotations(mir_annotation: mirpb.MirAnnotations, label_storage_file:
 
     if prediction_dir_path:
         logging.info(f"wrting prediction in {prediction_dir_path}")
-        _import_annotations_from_dir(
+
+        mir_annotation.prediction.type = anno_type
+        _annotation_parse_func(anno_type)(
             file_name_to_asset_ids=file_name_to_asset_ids,
             mir_annotation=mir_annotation,
             annotations_dir_path=prediction_dir_path,
@@ -146,16 +155,22 @@ def import_annotations(mir_annotation: mirpb.MirAnnotations, label_storage_file:
             unknown_types_strategy=unknown_types_strategy,
             accu_new_class_names=anno_import_result,
             image_annotations=mir_annotation.prediction,
-            anno_type=anno_type,
         )
         _import_annotation_meta(class_type_manager=class_type_manager,
                                 annotations_dir_path=prediction_dir_path,
                                 task_annotations=mir_annotation.prediction)
+
+        logging.warning(
+            f"imported pred: {len(mir_annotation.prediction.image_annotations)} / {len(file_name_to_asset_ids)}")
+    else:
+        mir_annotation.prediction.type = mirpb.ObjectType.OT_NO_ANNOTATIONS
     PhaseLoggerCenter.update_phase(phase=phase, local_percent=0.5)
 
     if groundtruth_dir_path:
         logging.info(f"wrting ground-truth in {groundtruth_dir_path}")
-        _import_annotations_from_dir(
+
+        mir_annotation.ground_truth.type = anno_type
+        _annotation_parse_func(anno_type)(
             file_name_to_asset_ids=file_name_to_asset_ids,
             mir_annotation=mir_annotation,
             annotations_dir_path=groundtruth_dir_path,
@@ -163,8 +178,12 @@ def import_annotations(mir_annotation: mirpb.MirAnnotations, label_storage_file:
             unknown_types_strategy=unknown_types_strategy,
             accu_new_class_names=anno_import_result,
             image_annotations=mir_annotation.ground_truth,
-            anno_type=anno_type,
         )
+
+        logging.warning(
+            f"imported gt: {len(mir_annotation.ground_truth.image_annotations)} / {len(file_name_to_asset_ids)}")
+    else:
+        mir_annotation.ground_truth.type = mirpb.ObjectType.OT_NO_ANNOTATIONS
     PhaseLoggerCenter.update_phase(phase=phase, local_percent=1.0)
 
     if unknown_types_strategy == UnknownTypesStrategy.STOP and anno_import_result:
@@ -172,25 +191,6 @@ def import_annotations(mir_annotation: mirpb.MirAnnotations, label_storage_file:
                               error_message=f"{list(anno_import_result.keys())}")
 
     return anno_import_result
-
-
-def _import_annotations_from_dir(file_name_to_asset_ids: Dict[str, str], mir_annotation: mirpb.MirAnnotations,
-                                 annotations_dir_path: str, class_type_manager: class_ids.UserLabels,
-                                 unknown_types_strategy: UnknownTypesStrategy, accu_new_class_names: Dict[str, int],
-                                 image_annotations: mirpb.SingleTaskAnnotations,
-                                 anno_type: "mirpb.ObjectType.V") -> None:
-    image_annotations.type = anno_type
-    _annotation_parse_func(anno_type)(
-        file_name_to_asset_ids=file_name_to_asset_ids,
-        mir_annotation=mir_annotation,
-        annotations_dir_path=annotations_dir_path,
-        class_type_manager=class_type_manager,
-        unknown_types_strategy=unknown_types_strategy,
-        accu_new_class_names=accu_new_class_names,
-        image_annotations=image_annotations,
-    )
-
-    logging.warning(f"imported {len(image_annotations.image_annotations)} / {len(file_name_to_asset_ids)} annotations")
 
 
 def _import_annotations_voc_xml(file_name_to_asset_ids: Dict[str, str], mir_annotation: mirpb.MirAnnotations,
@@ -353,3 +353,209 @@ def copy_annotations_pred_meta(src_task_annotations: mirpb.SingleTaskAnnotations
     dst_task_annotations.eval_class_ids[:] = src_task_annotations.eval_class_ids
     dst_task_annotations.executor_config = src_task_annotations.executor_config
     dst_task_annotations.model.CopyFrom(src_task_annotations.model)
+
+
+# copy
+def map_and_filter_annotations(mir_annotations: mirpb.MirAnnotations, data_label_storage_file: str,
+                               label_storage_file: str) -> List[str]:
+    """
+    re-map and filter class ids for ground truth and prediction
+
+    Args:
+        mir_annotations (mirpb.MirAnnotations): in/out, pred and gt to be updated
+        data_label_storage_file (str): in, source label storage file
+        label_storage_file (str): in, dest label storage file
+
+    Returns:
+        List[str]: unknown class names
+    """
+    if (data_label_storage_file == label_storage_file
+            or (len(mir_annotations.prediction.image_annotations) == 0
+                and len(mir_annotations.ground_truth.image_annotations) == 0)):
+        # no need to make any changes to annotations
+        return []
+
+    src_class_id_mgr = class_ids.load_or_create_userlabels(label_storage_file=data_label_storage_file)
+    dst_class_id_mgr = class_ids.load_or_create_userlabels(label_storage_file=label_storage_file)
+
+    cids_mapping = {
+        src_class_id_mgr.id_and_main_name_for_name(n)[0]: dst_class_id_mgr.id_and_main_name_for_name(n)[0]
+        for n in src_class_id_mgr.all_main_names()
+    }
+    known_cids_mapping = {k: v for k, v in cids_mapping.items() if v >= 0}
+
+    for sia in mir_annotations.prediction.image_annotations.values():
+        for oa in sia.boxes:
+            if oa.class_id in known_cids_mapping:
+                oa.class_id = known_cids_mapping[oa.class_id]
+            else:
+                sia.boxes.remove(oa)
+    for sia in mir_annotations.ground_truth.image_annotations.values():
+        for oa in sia.boxes:
+            if oa.class_id in known_cids_mapping:
+                oa.class_id = known_cids_mapping[oa.class_id]
+            else:
+                sia.boxes.remove(oa)
+
+    mir_annotations.prediction.eval_class_ids[:] = [
+        known_cids_mapping[cid] for cid in mir_annotations.prediction.eval_class_ids if cid in known_cids_mapping
+    ]
+
+    return src_class_id_mgr.main_name_for_ids(list(cids_mapping.keys() - known_cids_mapping.keys()))
+
+
+# filter and sampling
+def filter_mirdatas_by_asset_ids(mir_metadatas: mirpb.MirMetadatas, mir_annotations: mirpb.MirAnnotations,
+                                 asset_ids_set: Set[str]) -> None:
+    """
+    filter mir_annotations by asset_ids_set in place
+
+    Args:
+        mir_metadatas (mirpb.MirMetadatas), in/out: assets to be filtered
+        mir_annotations (mirpb.MirAnnotations), in/out: pred and gt to be filtered
+        asset_ids_set (Set[str]), in: asset ids
+    """
+    for asset_id in mir_metadatas.attributes.keys() - asset_ids_set:
+        del mir_metadatas.attributes[asset_id]
+
+    for asset_id in mir_annotations.ground_truth.image_annotations.keys() - asset_ids_set:
+        del mir_annotations.ground_truth.image_annotations[asset_id]
+    for asset_id in mir_annotations.prediction.image_annotations.keys() - asset_ids_set:
+        del mir_annotations.prediction.image_annotations[asset_id]
+    for asset_id in mir_annotations.image_cks.keys() - asset_ids_set:
+        del mir_annotations.image_cks[asset_id]
+
+
+# merge
+def tvt_type_from_str(typ: str) -> 'mirpb.TvtType.V':
+    mapping = {
+        'tr': mirpb.TvtType.TvtTypeTraining,
+        'va': mirpb.TvtType.TvtTypeValidation,
+        'te': mirpb.TvtType.TvtTypeTest,
+    }
+    return mapping.get(typ.lower(), mirpb.TvtType.TvtTypeUnknown)
+
+
+def merge_to_mirdatas(host_mir_metadatas: mirpb.MirMetadatas, host_mir_annotations: mirpb.MirAnnotations, mir_root: str,
+                      guest_typ_rev_tid: TypRevTid, strategy: MergeStrategy) -> None:
+    """
+    merge contents in `guest_typ_rev_tid` to host mir datas
+
+    Args:
+        host_mir_metadatas (mirpb.MirMetadatas): host metadatas
+        host_mir_annotations (mirpb.MirAnnotations): host annotations
+        mir_root (str): path to mir repo
+        guest_typ_rev_tid (revs_parser.TypRevTid): guest typ:rev@tid
+        strategy (str): host / guest / stop
+
+    Raises:
+        RuntimeError: when guest branch has no metadatas
+    """
+    guest_mir_metadatas: mirpb.MirMetadatas
+    guest_mir_annotations: mirpb.MirAnnotations
+    guest_mir_metadatas, guest_mir_annotations = mir_storage_ops.MirStorageOps.load_multiple_storages(
+        mir_root=mir_root,
+        mir_branch=guest_typ_rev_tid.rev,
+        mir_task_id=guest_typ_rev_tid.tid,
+        ms_list=[mirpb.MirStorage.MIR_METADATAS, mirpb.MirStorage.MIR_ANNOTATIONS],
+        as_dict=False)
+
+    # reset all host tvt type
+    #   if not set, keep origin tvt type
+    guest_tvt_type = tvt_type_from_str(guest_typ_rev_tid.typ)
+    if guest_tvt_type != mirpb.TvtType.TvtTypeUnknown:
+        for asset_id in guest_mir_metadatas.attributes:
+            guest_mir_metadatas.attributes[asset_id].tvt_type = guest_tvt_type
+
+    # merge mir_metadatas
+    _merge_mirdata_asset_ids_dict(host_asset_ids_dict=host_mir_metadatas.attributes,
+                                  guest_asset_ids_dict=guest_mir_metadatas.attributes,
+                                  strategy=strategy)
+    # merge mir_annotations
+    _merge_annotations(host_mir_annotations=host_mir_annotations,
+                       guest_mir_annotations=guest_mir_annotations,
+                       strategy=strategy)
+
+    logging.info(f"Merged from {guest_typ_rev_tid.typ_rev_tid}, assets: {len(host_mir_metadatas.attributes)}")
+
+
+def exclude_from_mirdatas(host_mir_metadatas: mirpb.MirMetadatas, host_mir_annotations: mirpb.MirAnnotations,
+                          mir_root: str, ex_rev_tid: TypRevTid) -> None:
+    guest_mir_metadatas: mirpb.MirMetadatas = mir_storage_ops.MirStorageOps.load_single_storage(
+        mir_root=mir_root, mir_branch=ex_rev_tid.rev, mir_task_id=ex_rev_tid.tid, ms=mirpb.MirStorage.MIR_METADATAS)
+
+    _, _, id_joint = match_asset_ids(set(host_mir_metadatas.attributes.keys()),
+                                     set(guest_mir_metadatas.attributes.keys()))
+    for asset_id in id_joint:
+        del host_mir_metadatas.attributes[asset_id]
+
+        if asset_id in host_mir_annotations.prediction.image_annotations:
+            del host_mir_annotations.prediction.image_annotations[asset_id]
+
+        if asset_id in host_mir_annotations.ground_truth.image_annotations:
+            del host_mir_annotations.ground_truth.image_annotations[asset_id]
+
+        if asset_id in host_mir_annotations.image_cks:
+            del host_mir_annotations.image_cks[asset_id]
+
+
+def _merge_annotations(host_mir_annotations: mirpb.MirAnnotations, guest_mir_annotations: mirpb.MirAnnotations,
+                       strategy: MergeStrategy) -> None:
+    _merge_task_annotations(host_task_annotations=host_mir_annotations.ground_truth,
+                            guest_task_annotations=guest_mir_annotations.ground_truth,
+                            strategy=strategy)
+    _merge_task_annotations(host_task_annotations=host_mir_annotations.prediction,
+                            guest_task_annotations=guest_mir_annotations.prediction,
+                            strategy=strategy)
+
+    _merge_mirdata_asset_ids_dict(host_asset_ids_dict=host_mir_annotations.image_cks,
+                                  guest_asset_ids_dict=guest_mir_annotations.image_cks,
+                                  strategy=strategy)
+
+    host_mir_annotations.prediction.eval_class_ids.extend(guest_mir_annotations.prediction.eval_class_ids)
+    host_mir_annotations.prediction.eval_class_ids[:] = set(host_mir_annotations.prediction.eval_class_ids)
+
+
+def _merge_task_annotations(host_task_annotations: mirpb.SingleTaskAnnotations,
+                            guest_task_annotations: mirpb.SingleTaskAnnotations, strategy: MergeStrategy) -> None:
+    # check type and is_instance_segmentation
+    if ((host_task_annotations.type != mirpb.ObjectType.OT_NO_ANNOTATIONS
+         and guest_task_annotations.type != mirpb.ObjectType.OT_NO_ANNOTATIONS
+         and host_task_annotations.type != guest_task_annotations.type)
+            or host_task_annotations.is_instance_segmentation != guest_task_annotations.is_instance_segmentation):
+        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_OBJECT_TYPE,
+                              error_message='host and guest object type unequal')
+
+    if host_task_annotations.type == mirpb.ObjectType.OT_NO_ANNOTATIONS:
+        host_task_annotations.type = guest_task_annotations.type
+
+    _merge_mirdata_asset_ids_dict(host_asset_ids_dict=host_task_annotations.image_annotations,
+                                  guest_asset_ids_dict=guest_task_annotations.image_annotations,
+                                  strategy=strategy)
+
+
+def _merge_mirdata_asset_ids_dict(host_asset_ids_dict: MessageMap, guest_asset_ids_dict: MessageMap,
+                                  strategy: MergeStrategy) -> None:
+    _, guest_only_ids, joint_ids = match_asset_ids(set(host_asset_ids_dict.keys()), set(guest_asset_ids_dict.keys()))
+    if strategy == MergeStrategy.STOP and joint_ids:
+        raise MirRuntimeError(error_code=MirCode.RC_CMD_MERGE_ERROR,
+                              error_message='found conflict image cks in strategy stop')
+
+    asset_ids = (joint_ids | guest_only_ids) if strategy == MergeStrategy.GUEST else guest_only_ids
+    for asset_id in asset_ids:
+        host_asset_ids_dict[asset_id].CopyFrom(guest_asset_ids_dict[asset_id])
+
+
+def match_asset_ids(host_ids: set, guest_ids: set) -> Tuple[set, set, set]:
+    """
+    match asset ids
+
+    Args:
+        host_ids (set): host ids
+        guest_ids (set): guest ids
+
+    Returns:
+        Tuple[set, set, set]: host_only_ids, guest_only_ids, joint_ids
+    """
+    insets = host_ids & guest_ids
+    return (host_ids - insets, guest_ids - insets, insets)

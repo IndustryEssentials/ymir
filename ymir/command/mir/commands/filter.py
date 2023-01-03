@@ -4,8 +4,9 @@ from typing import Optional, Set
 
 from mir.commands import base
 from mir.protos import mir_command_pb2 as mirpb
-from mir.tools import annotations, checker, class_ids
-from mir.tools import mir_repo_utils, mir_storage, mir_storage_ops, revs_parser
+from mir.tools import checker, class_ids
+from mir.tools import mir_repo_utils, mir_storage_ops, revs_parser
+from mir.tools.annotations import filter_mirdatas_by_asset_ids
 from mir.tools.code import MirCode
 from mir.tools.command_run_in_out import command_run_in_out
 from mir.tools.errors import MirRuntimeError
@@ -55,13 +56,6 @@ class CmdFilter(base.BaseCommand):
                 asset_ids_set.difference_update(mir_keywords.gt_idx.cis[ci].key_ids.keys())
         return asset_ids_set
 
-    @staticmethod
-    def __gen_task_annotations(src_task_annotations: mirpb.SingleTaskAnnotations,
-                               dst_task_annotations: mirpb.SingleTaskAnnotations, asset_ids: Set[str]) -> None:
-        joint_ids = asset_ids & src_task_annotations.image_annotations.keys()
-        for asset_id in joint_ids:
-            dst_task_annotations.image_annotations[asset_id].CopyFrom(src_task_annotations.image_annotations[asset_id])
-
     # public: run cmd
     @staticmethod
     @command_run_in_out
@@ -85,13 +79,12 @@ class CmdFilter(base.BaseCommand):
 
         PhaseLoggerCenter.update_phase(phase="filter.init")
 
-        [mir_metadatas, mir_annotations, mir_keywords, mir_tasks,
-         _] = mir_storage_ops.MirStorageOps.load_multiple_storages(mir_root=mir_root,
-                                                                   mir_branch=src_typ_rev_tid.rev,
-                                                                   mir_task_id=src_typ_rev_tid.tid,
-                                                                   ms_list=mir_storage.get_all_mir_storage(),
-                                                                   as_dict=False)
-        task_id = dst_typ_rev_tid.tid
+        mir_metadatas, mir_annotations, mir_keywords = mir_storage_ops.MirStorageOps.load_multiple_storages(
+            mir_root=mir_root,
+            mir_branch=src_typ_rev_tid.rev,
+            mir_task_id=src_typ_rev_tid.tid,
+            ms_list=[mirpb.MirStorage.MIR_METADATAS, mirpb.MirStorage.MIR_ANNOTATIONS, mirpb.MirStorage.MIR_KEYWORDS],
+            as_dict=False)
 
         PhaseLoggerCenter.update_phase(phase='filter.read')
 
@@ -109,43 +102,23 @@ class CmdFilter(base.BaseCommand):
                                                   ex_cis_set=ex_cis_set)
         logging.info(f"assets count after exclude match: {len(asset_ids_set)}")
 
-        matched_mir_metadatas = mirpb.MirMetadatas()
-        matched_mir_annotations = mirpb.MirAnnotations()
+        filter_mirdatas_by_asset_ids(mir_metadatas=mir_metadatas,
+                                     mir_annotations=mir_annotations,
+                                     asset_ids_set=asset_ids_set)
 
-        # generate matched metadatas, annotations and keywords
-        for asset_id in asset_ids_set:
-            # generate `matched_mir_metadatas`
-            asset_attr = mir_metadatas.attributes[asset_id]
-            matched_mir_metadatas.attributes[asset_id].CopyFrom(asset_attr)
-
-        # generate `matched_mir_annotations`
-        CmdFilter.__gen_task_annotations(src_task_annotations=mir_annotations.ground_truth,
-                                         dst_task_annotations=matched_mir_annotations.ground_truth,
-                                         asset_ids=asset_ids_set)
-        CmdFilter.__gen_task_annotations(src_task_annotations=mir_annotations.prediction,
-                                         dst_task_annotations=matched_mir_annotations.prediction,
-                                         asset_ids=asset_ids_set)
-
-        image_ck_asset_ids = asset_ids_set & set(mir_annotations.image_cks.keys())
-        for asset_id in image_ck_asset_ids:
-            matched_mir_annotations.image_cks[asset_id].CopyFrom(mir_annotations.image_cks[asset_id])
-
-        annotations.copy_annotations_pred_meta(src_task_annotations=mir_annotations.prediction,
-                                               dst_task_annotations=matched_mir_annotations.prediction)
-
-        logging.info("matched: %d, overriding current mir repo", len(matched_mir_metadatas.attributes))
+        logging.info("matched: %d, overriding current mir repo", len(mir_metadatas.attributes))
 
         PhaseLoggerCenter.update_phase(phase='filter.change')
 
         commit_message = f"filter select: {in_cis} exclude: {ex_cis}"
         task = mir_storage_ops.create_task(task_type=mirpb.TaskType.TaskTypeFilter,
-                                           task_id=task_id,
+                                           task_id=dst_typ_rev_tid.tid,
                                            message=commit_message,
                                            src_revs=src_revs,
                                            dst_rev=dst_rev)
         matched_mir_contents = {
-            mirpb.MirStorage.MIR_METADATAS: matched_mir_metadatas,
-            mirpb.MirStorage.MIR_ANNOTATIONS: matched_mir_annotations,
+            mirpb.MirStorage.MIR_METADATAS: mir_metadatas,
+            mirpb.MirStorage.MIR_ANNOTATIONS: mir_annotations,
         }
 
         mir_storage_ops.MirStorageOps.save_and_commit(mir_root=mir_root,

@@ -4,7 +4,8 @@ import random
 
 from mir.commands import base
 from mir.protos import mir_command_pb2 as mirpb
-from mir.tools import annotations, mir_storage_ops, revs_parser
+from mir.tools import mir_storage_ops, revs_parser
+from mir.tools.annotations import filter_mirdatas_by_asset_ids
 from mir.tools.code import MirCode
 from mir.tools.command_run_in_out import command_run_in_out
 from mir.tools.errors import MirRuntimeError
@@ -37,7 +38,7 @@ class CmdSampling(base.BaseCommand):
         # read all
         mir_metadatas: mirpb.MirMetadatas
         mir_annotations: mirpb.MirAnnotations
-        [mir_metadatas, mir_annotations] = mir_storage_ops.MirStorageOps.load_multiple_storages(
+        mir_metadatas, mir_annotations = mir_storage_ops.MirStorageOps.load_multiple_storages(
             mir_root=mir_root,
             mir_branch=src_typ_rev_tid.rev,
             mir_task_id=src_typ_rev_tid.tid,
@@ -57,26 +58,13 @@ class CmdSampling(base.BaseCommand):
             logging.warning(f"sampled assets count: {sampled_assets_count} > assets count: {assets_count}, select all")
             sampled_assets_count = assets_count
 
-        # sampling
         if sampled_assets_count < assets_count:
-            sampled_asset_ids = random.sample(mir_metadatas.attributes.keys(), sampled_assets_count)
+            sampled_asset_ids_set = set(random.sample(mir_metadatas.attributes.keys(), sampled_assets_count))
+            filter_mirdatas_by_asset_ids(mir_metadatas=mir_metadatas,
+                                         mir_annotations=mir_annotations,
+                                         asset_ids_set=sampled_asset_ids_set)
 
-            # sampled_mir_metadatas and sampled_mir_annotations
-            sampled_mir_metadatas = mirpb.MirMetadatas()
-            sampled_mir_annotations = mirpb.MirAnnotations()
-            for asset_id in sampled_asset_ids:
-                sampled_mir_metadatas.attributes[asset_id].CopyFrom(mir_metadatas.attributes[asset_id])
-                sampled_mir_annotations.prediction.image_annotations[asset_id].CopyFrom(
-                    mir_annotations.prediction.image_annotations[asset_id])
-                sampled_mir_annotations.ground_truth.image_annotations[asset_id].CopyFrom(
-                    mir_annotations.ground_truth.image_annotations[asset_id])
-        else:
-            # if equals
-            sampled_mir_metadatas = mir_metadatas
-            sampled_mir_annotations = mir_annotations
-
-        annotations.copy_annotations_pred_meta(src_task_annotations=mir_annotations.prediction,
-                                               dst_task_annotations=sampled_mir_annotations.prediction)
+        logging.info(f"sampling done, assets count: {sampled_assets_count}")
 
         # commit
         message = f"sampling src: {src_revs}, dst: {dst_rev}, count: {count}, rate: {rate}"
@@ -86,12 +74,10 @@ class CmdSampling(base.BaseCommand):
                                            src_revs=src_revs,
                                            dst_rev=dst_rev)
 
-        logging.info(f"sampling done, assets count: {sampled_assets_count}")
-
         # save and commit
         sampled_mir_datas = {
-            mirpb.MirStorage.MIR_METADATAS: sampled_mir_metadatas,
-            mirpb.MirStorage.MIR_ANNOTATIONS: sampled_mir_annotations,
+            mirpb.MirStorage.MIR_METADATAS: mir_metadatas,
+            mirpb.MirStorage.MIR_ANNOTATIONS: mir_annotations,
         }
         mir_storage_ops.MirStorageOps.save_and_commit(mir_root=mir_root,
                                                       mir_branch=dst_typ_rev_tid.rev,
