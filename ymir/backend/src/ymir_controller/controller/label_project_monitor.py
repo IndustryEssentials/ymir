@@ -23,7 +23,7 @@ from proto import backend_pb2
 def trigger_mir_import(repo_root: str, task_id: str, index_file: str, des_annotation_path: str, media_location: str,
                        import_work_dir: str) -> None:
     # trigger mir import
-    # todo: handle semantic segmentation label task
+    # todo: handle semantic / instance segmentation label task
     TaskImportDatasetInvoker.importing_cmd(repo_root=repo_root,
                                            label_storage_file=os.path.join(os.path.dirname(repo_root), ids_file_name()),
                                            task_id=task_id,
@@ -33,7 +33,8 @@ def trigger_mir_import(repo_root: str, task_id: str, index_file: str, des_annota
                                            media_location=media_location,
                                            work_dir=import_work_dir,
                                            unknown_types_strategy=backend_pb2.UnknownTypesStrategy.UTS_STOP,
-                                           anno_type=mir_cmd_pb.ObjectType.OT_DET_BOX)
+                                           anno_type=mir_cmd_pb.ObjectType.OT_DET_BOX,
+                                           is_instance_segmentation=False)
 
 
 def remove_json_file(des_annotation_path: str) -> None:
