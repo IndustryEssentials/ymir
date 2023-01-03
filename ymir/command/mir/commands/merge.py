@@ -46,9 +46,11 @@ class CmdMerge(base.BaseCommand):
             as_dict=False)
 
         # reset all host tvt type
+        #   if not set, keep origin tvt type
         host_tvt_type = tvt_type_from_str(host_typ_rev_tid.typ)
-        for asset_id in host_mir_metadatas.attributes:
-            host_mir_metadatas.attributes[asset_id].tvt_type = host_tvt_type
+        if host_tvt_type != mirpb.TvtType.TvtTypeUnknown:
+            for asset_id in host_mir_metadatas.attributes:
+                host_mir_metadatas.attributes[asset_id].tvt_type = host_tvt_type
         # associated prediction infos: remove model infos
         host_mir_annotations.prediction.model.Clear()
         host_mir_annotations.prediction.executor_config = ''
