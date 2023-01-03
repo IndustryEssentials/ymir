@@ -119,6 +119,7 @@ def _coco_object_dict_to_annotation(anno_dict: dict, category_id_to_cids: Dict[i
     obj_anno.box.y = int(bbox_list[1])
     obj_anno.box.w = int(bbox_list[2])
     obj_anno.box.h = int(bbox_list[3])
+    obj_anno.mask_area = int(anno_dict['area'])
 
     obj_anno.iscrowd = anno_dict.get('iscrowd', 0)
     obj_anno.class_id = category_id_to_cids[anno_dict['category_id']]
@@ -136,7 +137,7 @@ def _coco_object_dict_to_annotation(anno_dict: dict, category_id_to_cids: Dict[i
 def import_annotations(mir_annotation: mirpb.MirAnnotations, label_storage_file: str, prediction_dir_path: str,
                        groundtruth_dir_path: str, file_name_to_asset_ids: Dict[str, str],
                        unknown_types_strategy: UnknownTypesStrategy, anno_type: "mirpb.ObjectType.V",
-                       phase: str) -> Dict[str, int]:
+                       is_instance_segmentation: bool, phase: str) -> Dict[str, int]:
     anno_import_result: Dict[str, int] = defaultdict(int)
 
     # read type_id_name_dict and type_name_id_dict
@@ -147,6 +148,7 @@ def import_annotations(mir_annotation: mirpb.MirAnnotations, label_storage_file:
         logging.info(f"wrting prediction in {prediction_dir_path}")
 
         mir_annotation.prediction.type = anno_type
+        mir_annotation.prediction.is_instance_segmentation = is_instance_segmentation
         _annotation_parse_func(anno_type)(
             file_name_to_asset_ids=file_name_to_asset_ids,
             mir_annotation=mir_annotation,
@@ -170,6 +172,7 @@ def import_annotations(mir_annotation: mirpb.MirAnnotations, label_storage_file:
         logging.info(f"wrting ground-truth in {groundtruth_dir_path}")
 
         mir_annotation.ground_truth.type = anno_type
+        mir_annotation.ground_truth.is_instance_segmentation = is_instance_segmentation
         _annotation_parse_func(anno_type)(
             file_name_to_asset_ids=file_name_to_asset_ids,
             mir_annotation=mir_annotation,

@@ -30,13 +30,15 @@ class CmdImport(base.BaseCommand):
                                        work_dir=self.args.work_dir,
                                        unknown_types_strategy=annotations.UnknownTypesStrategy(
                                            self.args.unknown_types_strategy),
-                                       anno_type=annotations.parse_anno_type(self.args.anno_type))
+                                       anno_type=annotations.parse_anno_type(self.args.anno_type),
+                                       is_instance_segmentation=self.args.is_instance_segmentation)
 
     @staticmethod
     @command_run_in_out
     def run_with_args(mir_root: str, index_file: str, pred_abs: str, gt_abs: str, gen_abs: str,
                       dst_rev: str, src_revs: str, work_dir: str, label_storage_file: str,
-                      unknown_types_strategy: annotations.UnknownTypesStrategy, anno_type: "mirpb.ObjectType.V") -> int:
+                      unknown_types_strategy: annotations.UnknownTypesStrategy, anno_type: "mirpb.ObjectType.V",
+                      is_instance_segmentation: bool) -> int:
         # Step 1: check args and prepare environment.
         if not index_file or not gen_abs or not os.path.isfile(index_file):
             logging.error(f"invalid index_file: {index_file} or gen_abs: {gen_abs}")
@@ -47,6 +49,10 @@ class CmdImport(base.BaseCommand):
         if gt_abs and not os.path.isdir(gt_abs):
             logging.error(f"groundtruth dir invalid: {gt_abs}")
             return MirCode.RC_CMD_INVALID_ARGS
+        if anno_type != mirpb.ObjectType.OT_SEG and is_instance_segmentation:
+            logging.error('invalid is_instance_segmentation and anno_type')
+            return MirCode.RC_CMD_INVALID_ARGS
+
         dst_typ_rev_tid = revs_parser.parse_single_arg_rev(dst_rev, need_tid=True)
         src_typ_rev_tid = revs_parser.parse_single_arg_rev(src_revs, need_tid=False)
 
@@ -83,6 +89,7 @@ class CmdImport(base.BaseCommand):
                                                              file_name_to_asset_ids=file_name_to_asset_ids,
                                                              unknown_types_strategy=unknown_types_strategy,
                                                              anno_type=anno_type,
+                                                             is_instance_segmentation=is_instance_segmentation,
                                                              phase='import.others')
 
         logging.info(f"pred / gt import unknown result: {unknown_class_names}")
@@ -206,4 +213,7 @@ def bind_to_subparsers(subparsers: argparse._SubParsersAction, parent_parser: ar
                                            required=True,
                                            choices=['det-box', 'seg', 'no-annotations'],
                                            help='annotations type\n')
+    import_dataset_arg_parser.add_argument('--is-instance-segmentation',
+                                           dest='is_instance_segmentation',
+                                           action='store_true')
     import_dataset_arg_parser.set_defaults(func=CmdImport)

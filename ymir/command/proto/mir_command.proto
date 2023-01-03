@@ -184,6 +184,7 @@ message ObjectAnnotation {
     string mask = 11;  // RLE encoded mask
     int32 iscrowd = 12;  // 0 or 1
     ObjectSubType type = 13;
+    int32 mask_area = 14;  // area of mask or polygon
 };
 
 enum ConfusionMatrixType {

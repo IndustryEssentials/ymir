@@ -159,6 +159,7 @@ message TaskReqImportDataset {
     UnknownTypesStrategy unknown_types_strategy = 4;
     bool clean_dirs = 5;
     mir.command.ObjectType anno_type = 6;
+    bool is_instance_segmentation = 7;
 }
 
 message TaskReqExporting {
