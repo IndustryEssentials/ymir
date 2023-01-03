@@ -89,9 +89,13 @@ describe('constants: project', () => {
       updateTime: format(createTime),
       enableIteration: true,
       totalAssetCount: 0,
-      runningTaskCount: 0,
-      totalTaskCount: 0,
       candidateTrainSet: 0,
+      datasetCount: 6,
+      datasetProcessingCount: 0,
+      datasetErrorCount: 0,
+      modelCount: 0,
+      modelProcessingCount: 0,
+      modelErrorCount: 0,
     }
     expect(transferProject(origin)).toEqual(expected)
   })
