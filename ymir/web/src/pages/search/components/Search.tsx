@@ -1,10 +1,12 @@
 import Name from '@/components/search/Name'
-import { Col, Form, Row } from 'antd'
+import { Button, Col, Form, Row } from 'antd'
 import { FC, useEffect, useState } from 'react'
 import State from '@/components/search/State'
 import ObjectType from '@/components/search/ObjectType'
 import Time from '@/components/search/Time'
 import { useDebounce } from 'ahooks'
+
+import t from '@/utils/t'
 
 type Props = {
   change?: (query: YParams.ResultListQuery) => void
@@ -29,7 +31,7 @@ const Search: FC<Props> = ({ change, name }) => {
     if (changed && Object.keys(changed).length) {
       const query: YParams.ResultListQuery = valueHandle(values)
       setQuery(query)
-      change && change(query)
+      updateQuery(query)
     }
   }
 
@@ -44,13 +46,23 @@ const Search: FC<Props> = ({ change, name }) => {
   }
 
   useEffect(() => {
-    change && change({ ...query, name: debonceName })
+    updateQuery({ ...query, name: debonceName })
   }, [debonceName])
 
   useEffect(() => {
     name && form.setFieldsValue({ name })
     name && setSearchName(name)
   }, [name])
+
+  function updateQuery(q?: YParams.ResultListQuery) {
+    change && change(q || query)
+  }
+
+  function reset() {
+    form.resetFields()
+    setQuery({})
+    updateQuery({})
+  }
 
   return (
     <Form form={form} onValuesChange={valuesChange} className="box" style={{ marginBottom: 0 }}>
@@ -74,6 +86,11 @@ const Search: FC<Props> = ({ change, name }) => {
         <Col>
           <Item name={'time'} noStyle>
             <Time />
+          </Item>
+        </Col>
+        <Col>
+          <Item name={'time'} noStyle>
+            <Button onClick={reset}>{t('common.reset')}</Button>
           </Item>
         </Col>
       </Row>
