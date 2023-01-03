@@ -2,7 +2,7 @@ import argparse
 import logging
 import os
 import shutil
-from typing import Dict
+from typing import Dict, Tuple
 
 from mir.commands import base
 from mir.protos import mir_command_pb2 as mirpb
@@ -19,6 +19,7 @@ class CmdImport(base.BaseCommand):
     def run(self) -> int:
         logging.debug("command import: %s", self.args)
 
+        obj_type, is_ins_seg = _parse_obj_type(anno_type=self.args.anno_type)
         return CmdImport.run_with_args(mir_root=self.args.mir_root,
                                        label_storage_file=self.args.label_storage_file,
                                        index_file=self.args.index_file,
@@ -30,8 +31,8 @@ class CmdImport(base.BaseCommand):
                                        work_dir=self.args.work_dir,
                                        unknown_types_strategy=annotations.UnknownTypesStrategy(
                                            self.args.unknown_types_strategy),
-                                       anno_type=annotations.parse_anno_type(self.args.anno_type),
-                                       is_instance_segmentation=self.args.is_instance_segmentation)
+                                       anno_type=obj_type,
+                                       is_instance_segmentation=is_ins_seg)
 
     @staticmethod
     @command_run_in_out
@@ -165,6 +166,20 @@ def _generate_sha_and_copy(index_file: str, sha_folder: str) -> Dict[str, str]:
     return {name: asset_id for asset_id, name in asset_id_to_file_names.items()}
 
 
+def _parse_obj_type(anno_type: str) -> Tuple['mirpb.ObjectType.V', bool]:
+    """
+    Returns:
+        `object type` and `is instance segmentation`
+    """
+    mapping = {
+        'det-box': (mirpb.ObjectType.OT_DET_BOX, False),
+        'seg': (mirpb.ObjectType.OT_SEG, False),
+        'ins-seg': (mirpb.ObjectType.OT_SEG, True),
+        'no-annotations': (mirpb.ObjectType.OT_NO_ANNOTATIONS, False),
+    }
+    return mapping[anno_type]
+
+
 def bind_to_subparsers(subparsers: argparse._SubParsersAction, parent_parser: argparse.ArgumentParser) -> None:
     import_dataset_arg_parser = subparsers.add_parser(
         "import",
@@ -211,9 +226,6 @@ def bind_to_subparsers(subparsers: argparse._SubParsersAction, parent_parser: ar
     import_dataset_arg_parser.add_argument('--anno-type',
                                            dest='anno_type',
                                            required=True,
-                                           choices=['det-box', 'seg', 'no-annotations'],
+                                           choices=['det-box', 'seg', 'ins-seg', 'no-annotations'],
                                            help='annotations type\n')
-    import_dataset_arg_parser.add_argument('--is-instance-segmentation',
-                                           dest='is_instance_segmentation',
-                                           action='store_true')
     import_dataset_arg_parser.set_defaults(func=CmdImport)

@@ -57,7 +57,6 @@ class TestCmdImport(unittest.TestCase):
         args.work_dir = self._work_dir
         args.unknown_types_strategy = 'stop'
         args.anno_type = 'det-box'
-        args.is_instance_segmentation = False
         importing_instance = CmdImport(args)
         ret = importing_instance.run()
         self.assertEqual(ret, MirCode.RC_OK)
@@ -122,7 +121,6 @@ class TestCmdImport(unittest.TestCase):
         args.work_dir = self._work_dir
         args.unknown_types_strategy = 'stop'
         args.anno_type = 'det-box'
-        args.is_instance_segmentation = False
         importing_instance = CmdImport(args)
         ret = importing_instance.run()
         self.assertEqual(ret, MirCode.RC_OK)
@@ -145,7 +143,6 @@ class TestCmdImport(unittest.TestCase):
         args.work_dir = self._work_dir
         args.unknown_types_strategy = 'add'
         args.anno_type = 'seg'
-        args.is_instance_segmentation = False
         importing_instance = CmdImport(args)
         ret = importing_instance.run()
         self.assertEqual(ret, MirCode.RC_OK)

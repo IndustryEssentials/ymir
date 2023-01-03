@@ -78,12 +78,13 @@ def annotation_format_str(format: mir_cmd_pb.ExportFormat) -> str:
     return format_enum_dict[format]
 
 
-def anno_type_str(anno_type: mir_cmd_pb.ObjectType) -> str:
+def anno_type_str(anno_type: mir_cmd_pb.ObjectType, is_instance_segmentation: bool) -> str:
     format_enum_dict = {
-        mir_cmd_pb.ObjectType.OT_DET_BOX: 'det-box',
-        mir_cmd_pb.ObjectType.OT_SEG: 'seg',
+        (mir_cmd_pb.ObjectType.OT_DET_BOX, False): 'det-box',
+        (mir_cmd_pb.ObjectType.OT_SEG, False): 'seg',
+        (mir_cmd_pb.ObjectType.OT_SEG, True): 'ins-seg',
     }
-    return format_enum_dict[anno_type]
+    return format_enum_dict[(anno_type, is_instance_segmentation)]
 
 
 def time_it(f: Callable) -> Callable:
