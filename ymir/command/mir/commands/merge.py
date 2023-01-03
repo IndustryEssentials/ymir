@@ -4,6 +4,7 @@ mir merge: merge contents from another guest branch to current branch
 
 import argparse
 import logging
+from typing import List
 
 from mir.commands import base
 from mir.protos import mir_command_pb2 as mirpb
@@ -87,6 +88,11 @@ class CmdMerge(base.BaseCommand):
                                                       task=task)
 
         return MirCode.RC_OK
+
+
+def merge_with_pb(mir_metadatas: mirpb.MirMetadatas, mir_annotations: mirpb.MirAnnotations,
+                  src_typ_rev_tids: List[revs_parser.TypRevTid], ex_typ_rev_tids: List[revs_parser.TypRevTid]) -> None:
+    pass
 
 
 def bind_to_subparsers(subparsers: argparse._SubParsersAction, parent_parser: argparse.ArgumentParser) -> None:

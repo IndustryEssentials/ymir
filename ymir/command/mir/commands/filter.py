@@ -141,7 +141,7 @@ class CmdFilter(base.BaseCommand):
 
 
 def filter_with_pb(mir_metadatas: mirpb.MirMetadatas, mir_annotations: mirpb.MirAnnotations,
-                   mir_keywords: mirpb.MirKeywords, in_cids: List[int], ex_cids: List[int]) -> None:
+                   mir_keywords: mirpb.MirKeywords, in_cis: str, ex_cis: str) -> None:
     pass
 
 

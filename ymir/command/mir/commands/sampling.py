@@ -88,6 +88,11 @@ class CmdSampling(base.BaseCommand):
         return MirCode.RC_OK
 
 
+def sample_with_pb(mir_metadatas: mirpb.MirMetadatas, mir_annotations: mirpb.MirAnnotations, count: int,
+                   rate: float) -> None:
+    pass
+
+
 def bind_to_subparsers(subparsers: argparse._SubParsersAction, parent_parser: argparse.ArgumentParser) -> None:
     sampling_arg_parser = subparsers.add_parser('sampling',
                                                 parents=[parent_parser],

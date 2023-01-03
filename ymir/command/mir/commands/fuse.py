@@ -2,9 +2,12 @@ import argparse
 import logging
 
 from mir.commands import base
+from mir.commands.merge import merge_with_pb
+from mir.commands.filter import filter_with_pb
+from mir.commands.sampling import sample_with_pb
 from mir.tools import mir_storage_ops
 from mir.tools.code import MirCode
-from mir.tools.annotations import filter_mirdatas_by_asset_ids, map_and_filter_annotations
+from mir.tools.command_run_in_out import command_run_in_out
 
 
 class CmdFuse(base.BaseCommand):
@@ -12,12 +15,17 @@ class CmdFuse(base.BaseCommand):
         logging.debug("command fuse: %s", self.args)
         return MirCode.RC_OK
 
+    @staticmethod
+    @command_run_in_out
+    def run_with_args() -> int:
+        pass
+
 
 def bind_to_subparsers(subparsers: argparse._SubParsersAction, parent_parser: argparse.ArgumentParser) -> None:
     fuse_arg_parser = subparsers.add_parser("fuse",
                                             parents=[parent_parser],
-                                            description="use this command to merge, filter and sampling assets",
-                                            help="merge, filter and sampling assets")
+                                            description="use this command to merge, filter and sample assets",
+                                            help="merge, filter and sample assets")
     fuse_arg_parser.add_argument("--src-revs",
                                  dest="src_revs",
                                  type=str,
