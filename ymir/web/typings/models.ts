@@ -28,7 +28,7 @@ declare namespace YModels {
     id: number
     groupId: number
     projectId: number
-    type: number,
+    type: number
     name: string
     versionName: string
     version: number
@@ -53,8 +53,10 @@ declare namespace YModels {
   }
 
   enum ObjectType {
-    Detection = 1,
-    Segmentation = 2,
+    Classification = 1,
+    ObjectDetection = 2,
+    SemanticSegmentation = 3,
+    InstanceSegmentation = 4,
   }
 
   type Keywords = {

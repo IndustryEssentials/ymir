@@ -2,7 +2,7 @@ import { Card, Modal, ModalProps } from 'antd'
 import { FC, useState } from 'react'
 import XMLViewer from 'react-xml-viewer'
 import JsonViewer from 'react-json-view'
-import { PROJECTTYPES } from '@/constants/project'
+import { ObjectType } from '@/constants/project'
 
 interface Props extends ModalProps {
   objectType: number
@@ -137,7 +137,7 @@ export const FormatDetailModal: FC<Props> = ({ objectType, ...props }) => {
   const [active, setActive] = useState<ObjectTypes>(objectType ? ObjectTypes.voc : ObjectTypes.coco)
   const vocTab = { tab: '*.xml', key: ObjectTypes.voc }
   const cocoTab = { tab: '*.json', key: ObjectTypes.coco }
-  const tabs = [objectType === PROJECTTYPES.SemanticSegmentation ? cocoTab : vocTab, { tab: 'meta.yaml', key: ObjectTypes.yaml }]
+  const tabs = [objectType === ObjectType.SemanticSegmentation ? cocoTab : vocTab, { tab: 'meta.yaml', key: ObjectTypes.yaml }]
   return (
     <Modal width={'80%'} style={{ top: 40 }} {...props} footer={null}>
       <Card tabList={tabs} activeTabKey={active} onTabChange={(value) => setActive(value as ObjectTypes)}>
