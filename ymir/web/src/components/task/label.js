@@ -13,6 +13,7 @@ import DatasetSelect from '@/components/form/datasetSelect'
 import Desc from '@/components/form/desc'
 import Tip from '@/components/form/tip'
 import SubmitButtons from './submitButtons'
+import MergeType from '@/components/form/items/MergeType'
 
 import styles from './label.less'
 import KeepAnnotations from './label/keepAnnotations'
@@ -65,7 +66,6 @@ function Label({ query = {}, hidden, datasets, keywords, ok = () => {}, bottom, 
       projectId: pid,
       labellers: emails,
       doc,
-      name: 'task_label_' + randomNumber(),
     }
     const result = await func.label(params)
     result && ok(result)
@@ -96,11 +96,12 @@ function Label({ query = {}, hidden, datasets, keywords, ok = () => {}, bottom, 
         onFinish={onFinish}
         onFinishFailed={onFinishFailed}
       >
-        {/* // todo add new group switch */}
+
         <div hidden={hidden}>
           <Form.Item wrapperCol={{ span: 20 }}>
             <Tip content={t('task.label.header.tip')} />
           </Form.Item>
+          <MergeType form={form} disabledNew={!!iterationId} />
           <Form.Item label={t('task.fusion.form.dataset')} name="datasetId">
             <DatasetSelect pid={pid} />
           </Form.Item>
