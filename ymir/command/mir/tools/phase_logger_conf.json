@@ -62,7 +62,7 @@
     "fuse": [
         {
             "name": "merge",
-            "delta": 0.3
+            "delta": 0.4
         },
         {
             "name": "filter",
