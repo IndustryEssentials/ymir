@@ -32,13 +32,13 @@ class CmdFuse(base.BaseCommand):
     @command_run_in_out
     def run_with_args(mir_root: str, src_revs: str, ex_src_revs: str, strategy: MergeStrategy, label_storage_file: str,
                       in_cis: str, ex_cis: str, count: int, rate: float, dst_rev: str, work_dir: str) -> int:
-        PhaseLoggerCenter.create_phase_loggers(top_phase='fuse',
-                                               monitor_file=mir_repo_utils.work_dir_to_monitor_file(work_dir),
-                                               task_name=dst_typ_rev_tid.tid)
-
         src_typ_rev_tids = revs_parser.parse_arg_revs(src_revs)
         dst_typ_rev_tid = revs_parser.parse_single_arg_rev(dst_rev, need_tid=True)
         ex_typ_rev_tids = revs_parser.parse_arg_revs(ex_src_revs) if ex_src_revs else []
+
+        PhaseLoggerCenter.create_phase_loggers(top_phase='fuse',
+                                               monitor_file=mir_repo_utils.work_dir_to_monitor_file(work_dir),
+                                               task_name=dst_typ_rev_tid.tid)
 
         return_code = checker.check(mir_root, [checker.Prerequisites.IS_INSIDE_MIR_REPO])
         if return_code != MirCode.RC_OK:
