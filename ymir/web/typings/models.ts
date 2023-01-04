@@ -229,7 +229,6 @@ declare namespace YModels {
     trainSetVersion?: number
     model?: number
     modelStage?: Array<number>
-    modelCount: number
     miningStrategy: number
     chunkSize?: number
     currentIteration?: Iteration
@@ -243,8 +242,12 @@ declare namespace YModels {
     hiddenModels: Array<number>
     enableIteration: boolean
     totalAssetCount: number
-    runningTaskCount: number
-    totalTaskCount: number
+    datasetCount: number
+    datasetProcessingCount: number
+    datasetErrorCount: number
+    modelCount: number
+    modelProcessingCount: number
+    modelErrorCount: number
   }
 
   export type ImageConfig = { [key: string]: number | string }
