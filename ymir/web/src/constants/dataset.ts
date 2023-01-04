@@ -9,8 +9,8 @@ export enum AnnotationType {
 }
 
 export enum MergeType {
-  New = 1,
-  Exist = 0,
+  New = 0,
+  Exist = 1,
 }
 
 export enum states {

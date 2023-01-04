@@ -11,23 +11,23 @@ const options = [
   { value: Type.Exist, label: 'exist' },
 ]
 type Props = {
-  initialValue: number
-  disabled: number[],
   form: FormInstance,
   existed?: ReactChild,
+  initialValue?: number,
+  disabledNew?: boolean,
 }
-const MergeType: FC<Props> = ({ form, existed, initialValue = Type.Exist, disabled = [] }) => {
+const MergeType: FC<Props> = ({ form, existed, initialValue = Type.Exist, disabledNew = false }) => {
   const type = Form.useWatch('type', form)
 
-  const isNew = (type: number) => type === Type.New
+  const isNew = (type: Type) => type === Type.New
 
   return (
     <>
-      <Form.Item name="type" initialValue={initialValue} label={t('task.merge.type.label')}>
+      <Form.Item name="type" initialValue={disabledNew ? Type.Exist : initialValue} label={t('task.merge.type.label')}>
         <RadioGroup
           options={options.map((option) => ({
             ...option,
-            disabled: disabled.includes(option.value),
+            disabled: disabledNew && isNew(option.value),
           }))}
           prefix="task.merge.type."
         />
