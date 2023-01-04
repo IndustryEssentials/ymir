@@ -320,6 +320,7 @@ const project = {
   "iteration.unfold": { en: "Unfold", cn: "展开操作项" },
   "project.types.det": { en: "Object Detection", cn: "目标检测" },
   "project.types.seg": { en: "Semantic Segmentation", cn: "语义分割" },
+  "project.types.ins": { en: "Instance Segmentation", cn: "实例分割" },
   "project.types.label": { en: "Project Type", cn: "项目类型" },
   "project.stats.datasets.total": { en: "Project Type", cn: "可用数据集" },
   "project.stats.datasets.processing": { en: "Project Type", cn: "生成中" },

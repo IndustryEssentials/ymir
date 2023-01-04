@@ -1,9 +1,11 @@
 import request from '@/utils/request'
 import { TYPES } from '@/constants/image'
+import { ObjectType } from '@/constants/project'
 
 type QueryParams = {
   name?: string
   type?: number
+  objectType?: ObjectType
   state?: TYPES
   url?: string
   limit?: number

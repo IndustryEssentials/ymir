@@ -6,7 +6,7 @@ import { TYPES } from '@/constants/image'
 import { HIDDENMODULES } from '@/constants/common'
 import t from '@/utils/t'
 
-const ImageSelect = ({ value, relatedId, type = TYPES.TRAINING, onChange = () => {}, getImages, getImage, ...resProps }) => {
+const ImageSelect = ({ value, relatedId, type = TYPES.TRAINING, objectType, onChange = () => {}, getImages, getImage, ...resProps }) => {
   const [options, setOptions] = useState([])
 
   useEffect(() => {
@@ -34,6 +34,7 @@ const ImageSelect = ({ value, relatedId, type = TYPES.TRAINING, onChange = () =>
   async function fetchImages() {
     const params = {
       type,
+      objectType,
       offset: 0,
       limit: 100000,
     }
