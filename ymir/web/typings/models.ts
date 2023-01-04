@@ -271,6 +271,11 @@ declare namespace YModels {
     liveCode?: boolean
   }
 
+  export interface ImageList {
+    items: Image[]
+    total: number
+  }
+
   type ResultType = 'dataset' | 'model'
   export interface Iteration {
     id: number

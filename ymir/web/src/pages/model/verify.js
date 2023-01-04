@@ -16,7 +16,7 @@ import { TYPES } from '@/constants/image'
 import styles from './verify.less'
 import { NavDatasetIcon, SearchEyeIcon, NoXlmxIcon } from '@/components/common/Icons'
 import ImgDef from '@/assets/img_def.png'
-import ImageSelect from "@/components/form/imageSelect"
+import ImageSelect from "@/components/form/ImageSelect"
 import { percent } from "@/utils/number"
 import useFetch from '@/hooks/useFetch'
 
@@ -55,11 +55,12 @@ function Verify({ verify }) {
     form.setFieldsValue({ hyperparam: seniorConfig })
   }, [seniorConfig])
 
-  function imageChange(value, option) {
-    if (option) {
+  function imageChange(value, option = {}) {
+    const img = option.image
+    if (img) {
       setImage(option.url)
     }
-    const { configs } = option || {}
+    const { configs } = img || {}
     const configObj = (configs || []).find(conf => conf.type === TYPES.INFERENCE) || {}
     setConfig(configObj.config)
   }
@@ -218,7 +219,7 @@ function Verify({ verify }) {
 
             <Form form={form} className={styles.asset_form}>
               <Form.Item name='image' label={t('task.inference.form.image.label')} rules={[{ required: true }]}>
-                <ImageSelect style={{ width: 200 }} type={TYPES.INFERENCE} placeholder={t('task.train.form.image.placeholder')} onChange={imageChange} />
+                <ImageSelect style={{ width: 200 }} pid={pid} type={TYPES.INFERENCE} placeholder={t('task.train.form.image.placeholder')} onChange={imageChange} />
               </Form.Item>
 
               {seniorConfig.length ?

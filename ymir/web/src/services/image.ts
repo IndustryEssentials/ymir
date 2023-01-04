@@ -2,7 +2,7 @@ import request from '@/utils/request'
 import { TYPES } from '@/constants/image'
 import { ObjectType } from '@/constants/project'
 
-type QueryParams = {
+export type QueryParams = {
   name?: string
   type?: number
   objectType?: ObjectType
@@ -41,7 +41,7 @@ export function getImage(id: number) {
  * @returns
  */
 export function getImages(params: QueryParams) {
-  return request.get('images/', { params })
+  return request.get('images/', { params: { ...params, object_type: params.objectType } })
 }
 
 /**

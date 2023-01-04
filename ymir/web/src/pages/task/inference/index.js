@@ -14,7 +14,7 @@ import useFetch from '@/hooks/useFetch'
 import Breadcrumbs from '@/components/common/breadcrumb'
 import { randomNumber } from '@/utils/number'
 import ModelSelect from '@/components/form/modelSelect'
-import ImageSelect from '@/components/form/imageSelect'
+import ImageSelect from '@/components/form/ImageSelect'
 import DatasetSelect from '@/components/form/datasetSelect'
 import useAddKeywords from '@/hooks/useAddKeywords'
 import AddKeywordsBtn from '@/components/keyword/addKeywordsBtn'
@@ -157,8 +157,8 @@ function Inference({...func }) {
     }
   }
 
-  function imageChange(_, image = {}) {
-    const { url, configs = [] } = image
+  function imageChange(_, option = {}) {
+    const { url, configs = [] } = option.image
     const configObj = configs.find((conf) => conf.type === TYPES.INFERENCE) || {}
     if (!HIDDENMODULES.LIVECODE) {
       setLiveCode(image.liveCode || false)
@@ -292,6 +292,7 @@ function Inference({...func }) {
             >
               <ImageSelect
                 placeholder={t('task.inference.form.image.placeholder')}
+                pid={pid}
                 relatedId={selectedModels[0]?.task?.parameters?.docker_image_id}
                 type={TYPES.INFERENCE}
                 onChange={imageChange}

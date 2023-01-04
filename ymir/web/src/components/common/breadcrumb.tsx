@@ -4,6 +4,7 @@ import { Link, useHistory, useParams, useRouteMatch, useSelector } from 'umi'
 import { homeRoutes } from '@/config/routes'
 import t from '@/utils/t'
 import useFetch from '@/hooks/useFetch'
+import useRequest from '@/hooks/useRequest'
 
 type CrumbType = {
   id: number
@@ -52,7 +53,10 @@ function loop(id = 1, crumbs: CrumbType[]): CrumbType[] {
 const Breadcrumbs: FC<Props> = ({ suffix = '', titles = {} }) => {
   const { path } = useRouteMatch()
   const params = useParams<{ id: string; [key: string | number]: string }>() || {}
-  const [project, getProject] = useFetch('project/getProject', {})
+  const { data: project, run: getProject} = useRequest<YModels.Project>('project/getProject', {
+    cacheKey: 'getProject',
+    loading: false
+  })
   const crumbs = getCrumbs()
   const crumbItems = getCrumbItems(path, crumbs)
 
@@ -65,7 +69,7 @@ const Breadcrumbs: FC<Props> = ({ suffix = '', titles = {} }) => {
   }, [params?.id])
 
   const getLabel = (crumb: CrumbType, customTitle: string) => {
-    return (crumb.id === 25 ? project.name : customTitle) || t(crumb.label)
+    return (crumb.id === 25 ? project?.name : customTitle) || t(crumb.label)
   }
   return (
     <div className="breadcrumb">

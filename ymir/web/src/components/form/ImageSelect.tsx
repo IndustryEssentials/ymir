@@ -1,24 +1,60 @@
-import { Col, Row, Select } from 'antd'
-import { connect } from 'dva'
-import { useEffect, useState } from 'react'
+import { Col, Row, Select, SelectProps } from 'antd'
+import { FC, UIEvent, UIEventHandler, useCallback, useEffect, useState } from 'react'
 
 import { TYPES } from '@/constants/image'
 import { HIDDENMODULES } from '@/constants/common'
 import t from '@/utils/t'
+import useRequest from '@/hooks/useRequest'
+import { QueryParams } from '@/services/image'
+import { DefaultOptionType } from 'antd/lib/select'
 
-const ImageSelect = ({ value, relatedId, type = TYPES.TRAINING, objectType, onChange = () => {}, getImages, getImage, ...resProps }) => {
-  const [options, setOptions] = useState([])
+interface Props extends SelectProps {
+  pid: number
+  relatedId?: number
+  type?: TYPES
+}
+
+type OptionType = DefaultOptionType & {
+  image?: YModels.Image
+}
+
+const ImageSelect: FC<Props> = ({ value, pid, relatedId, type = TYPES.TRAINING, onChange = () => {}, ...resProps }) => {
+  const [options, setOptions] = useState<OptionType[]>([])
+  const { data: list, run: getImages } = useRequest<YModels.ImageList, [QueryParams]>('image/getImages', {
+    loading: false,
+  })
+  const { data: trainImage, run: getRelatedImage } = useRequest<YModels.Image, [{ id: number }]>('image/getImage', {
+    loading: false,
+  })
+  const { data: project, run: getProject } = useRequest<YModels.Project, [{ id: number }]>('project/getProject', {
+    cacheKey: 'getProject',
+    loading: false,
+  })
 
   useEffect(() => {
-    fetchImages()
-  }, [])
+    pid && getProject({ id: pid })
+  }, [pid])
+
+  useEffect(() => {
+    if (list?.items?.length) {
+      const options = generateOptions(list.items)
+      setOptions((opts) => [...opts, ...options, ...[
+        1, 2,3,4,5,6,7,8, 10, 11, 'helldssfjldfk'
+      ].map(i => ({ value: i, label: i }))])
+    }
+  }, [list])
+
+  useEffect(() => {
+    relatedId && getRelatedImage({ id: relatedId })
+  }, [relatedId])
+
+  useEffect(() => {
+    project?.type && fetchImages()
+  }, [project])
 
   useEffect(() => {
     if (options.length === 1) {
-      if (value) {
-        const opt = options.find(({ image }) => image.id === value)
-        opt && onChange(value, opt.image)
-      } else {
+      if (!value) {
         value = options[0].value
       }
     }
@@ -26,26 +62,30 @@ const ImageSelect = ({ value, relatedId, type = TYPES.TRAINING, objectType, onCh
 
   useEffect(() => {
     if (value) {
-      const opt = options.find(({ image }) => image.id === value)
-      opt && onChange(value, opt.image)
+      const opt = options.find(({ image }) => image?.id === value)
+      opt && onChange(value, opt)
     }
   }, [options])
 
-  async function fetchImages() {
-    const params = {
-      type,
-      objectType,
-      offset: 0,
-      limit: 100000,
-    }
-    const result = await getImages(params)
-    if (result) {
-      const images = result.items
-      generateOptions(images)
-    }
-  }
+  const fetchImages = useCallback(
+    (page = 1) => {
+      if (!project) {
+        return
+      }
+      const limit = 10
+      const offset = (page - 1) * limit
+      const params = {
+        type,
+        objectType: project.type,
+        offset,
+        limit,
+      }
+      getImages(params)
+    },
+    [project?.type],
+  )
 
-  const generateOption = (image) => ({
+  const generateOption = (image: YModels.Image) => ({
     label: (
       <Row>
         <Col flex={1}>{image.name}</Col>
@@ -58,53 +98,51 @@ const ImageSelect = ({ value, relatedId, type = TYPES.TRAINING, objectType, onCh
     value: image.id,
   })
 
-  async function generateOptions(images) {
-    let relatedOptions = relatedId ? await getRelatedOptions() : []
-    const opts = images.filter((image) => relatedOptions.every((img) => img.value !== image.id)).map(generateOption)
-    let result = opts
-    if (relatedOptions.length) {
-      result = [
-        {
-          label: t('image.select.opt.related'),
-          options: relatedOptions,
-        },
-        {
-          label: t('image.select.opt.normal'),
-          options: opts,
-        },
-      ]
-    }
-    setOptions(result)
-  }
+  const generateOptions = useCallback(
+    (images: YModels.Image[]) => {
+      const related = trainImage?.related || []
+      const opts = images.map(generateOption)
+      if (related.length) {
+        const defOpts = opts.filter((opt) => related.every(({ id }) => id !== opt.value))
+        const relatedOpts = related.map(generateOption)
+        return [
+          {
+            label: t('image.select.opt.related'),
+            options: relatedOpts,
+          },
+          {
+            label: t('image.select.opt.normal'),
+            options: defOpts,
+          },
+        ]
+      } else {
+        return opts
+      }
+    },
+    [trainImage],
+  )
 
-  async function getRelatedOptions() {
-    const trainImage = await getImage({ id: relatedId })
-    let relatedOptions = []
-    if (trainImage?.related) {
-      relatedOptions = trainImage.related.map(generateOption)
+  const scrollChange = (e: UIEvent<HTMLDivElement>) => {
+    e.persist()
+    const target = e.currentTarget
+    console.log('target:', e, target.scrollTop)
+    // const top = target.scrollTop || 0
+
+    if (target.scrollTop + target.offsetHeight === target.scrollHeight) {
     }
-    return relatedOptions
   }
 
   return (
-    <Select value={value} optionFilterProp="label" allowClear {...resProps} onChange={(value, opt) => onChange(value, opt?.image)} options={options}></Select>
+    <Select
+      value={value}
+      optionFilterProp="label"
+      allowClear
+      {...resProps}
+      onChange={(value, opt) => onChange(value, opt)}
+      onPopupScroll={scrollChange}
+      options={options}
+    ></Select>
   )
 }
 
-const actions = (dispatch) => {
-  return {
-    getImages(payload) {
-      return dispatch({
-        type: 'image/getImages',
-        payload,
-      })
-    },
-    getImage(payload) {
-      return dispatch({
-        type: 'image/getImage',
-        payload,
-      })
-    },
-  }
-}
-export default connect(null, actions)(ImageSelect)
+export default ImageSelect
