@@ -81,6 +81,7 @@ export function transferDataset(data: YModels.BackendData): YModels.Dataset {
   const { gt = {}, pred = {} } = data.keywords
   const assetCount = data.asset_count || 0
   const keywords = [...new Set([...Object.keys(gt), ...Object.keys(pred)])]
+  const evaluated = data.evaluation_state === 1
   return {
     id: data.id,
     groupId: data.dataset_group_id,
@@ -110,6 +111,7 @@ export function transferDataset(data: YModels.BackendData): YModels.Dataset {
     hidden: !data.is_visible,
     description: data.description || '',
     inferClass: data?.pred?.eval_class_ids,
+    evaluated,
     cks: data.cks_count ? transferCK(data.cks_count, data.cks_count_total) : undefined,
     tags: data.gt
       ? transferCK(tagsCounts(data?.gt?.tags_count, data?.pred?.tags_count), tagsTotal(data?.gt?.tags_count_total, data?.pred?.tags_count_total))
@@ -249,7 +251,7 @@ export function transferAnnotationsCount(count = {}, negative = 0, total = 1) {
 }
 
 function getType(annotation: YModels.BackendData) {
-  return annotation.mask ? AnnotationType.Mask : (annotation.polygon ? AnnotationType.Polygon : AnnotationType.BoundingBox)
+  return annotation?.mask ? AnnotationType.Mask : (annotation?.polygon?.length ? AnnotationType.Polygon : AnnotationType.BoundingBox)
 }
 
 const transferCK = (counts: YModels.BackendData = {}, total: YModels.BackendData = {}) => {

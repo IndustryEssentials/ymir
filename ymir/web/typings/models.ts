@@ -86,6 +86,7 @@ declare namespace YModels {
     keywordCount: number
     isProtected: Boolean
     assetCount: number
+    evaluated: boolean
     gt?: AnnotationsCount
     pred?: AnnotationsCount
     inferClass?: Array<string>

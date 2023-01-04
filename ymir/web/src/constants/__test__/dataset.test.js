@@ -130,6 +130,7 @@ describe("constants: dataset", () => {
       duration: 18,
       durationLabel: '1 分钟',
       taskName: task.name,
+      evaluated: false,
       task,
       description: '',
     }
