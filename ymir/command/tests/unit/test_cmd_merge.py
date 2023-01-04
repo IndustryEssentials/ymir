@@ -600,7 +600,6 @@ class TestMergeCmd(unittest.TestCase):
                 "a3": TestMergeCmd._generate_annotations_for_asset([1], 100, 400, cm=mirpb.ConfusionMatrixType.IGNORED),
             },
             'task_class_ids': [1],
-            'model': {},
             'eval_class_ids': [1],
         }
         expected_gt = {

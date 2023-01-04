@@ -4,7 +4,7 @@ mir merge: merge contents from another guest branch to current branch
 
 import argparse
 import logging
-from typing import List
+from typing import List, Tuple
 
 from mir.commands import base
 from mir.protos import mir_command_pb2 as mirpb
@@ -30,45 +30,16 @@ class CmdMerge(base.BaseCommand):
                       work_dir: str) -> int:
         src_typ_rev_tids = revs_parser.parse_arg_revs(src_revs)
         dst_typ_rev_tid = revs_parser.parse_single_arg_rev(dst_rev, need_tid=True)
+        ex_typ_rev_tids = revs_parser.parse_arg_revs(ex_src_revs) if ex_src_revs else []
 
         return_code = checker.check(mir_root, [checker.Prerequisites.IS_INSIDE_MIR_REPO])
         if return_code != MirCode.RC_OK:
             return return_code
 
-        # Read host id mir data.
-        host_typ_rev_tid = src_typ_rev_tids[0]
-        host_mir_metadatas: mirpb.MirMetadatas
-        host_mir_annotations: mirpb.MirAnnotations
-        host_mir_metadatas, host_mir_annotations = mir_storage_ops.MirStorageOps.load_multiple_storages(
-            mir_root=mir_root,
-            mir_branch=host_typ_rev_tid.rev,
-            mir_task_id=host_typ_rev_tid.tid,
-            ms_list=[mirpb.MIR_METADATAS, mirpb.MIR_ANNOTATIONS],
-            as_dict=False)
-
-        # reset all host tvt type
-        #   if not set, keep origin tvt type
-        host_tvt_type = tvt_type_from_str(host_typ_rev_tid.typ)
-        if host_tvt_type != mirpb.TvtType.TvtTypeUnknown:
-            for asset_id in host_mir_metadatas.attributes:
-                host_mir_metadatas.attributes[asset_id].tvt_type = host_tvt_type
-        # associated prediction infos: remove model infos
-        host_mir_annotations.prediction.model.Clear()
-        host_mir_annotations.prediction.executor_config = ''
-
-        for typ_rev_tid in src_typ_rev_tids[1:]:
-            merge_to_mirdatas(host_mir_metadatas=host_mir_metadatas,
-                              host_mir_annotations=host_mir_annotations,
-                              mir_root=mir_root,
-                              guest_typ_rev_tid=typ_rev_tid,
-                              strategy=strategy)
-
-        ex_typ_rev_tids = revs_parser.parse_arg_revs(ex_src_revs) if ex_src_revs else []
-        for typ_rev_tid in ex_typ_rev_tids:
-            exclude_from_mirdatas(host_mir_metadatas=host_mir_metadatas,
-                                  host_mir_annotations=host_mir_annotations,
-                                  mir_root=mir_root,
-                                  ex_rev_tid=typ_rev_tid)
+        mir_metadatas, mir_annotations = merge_with_pb(mir_root=mir_root,
+                                                       src_typ_rev_tids=src_typ_rev_tids,
+                                                       ex_typ_rev_tids=ex_typ_rev_tids,
+                                                       strategy=strategy)
 
         # create and write tasks
         task = mir_storage_ops.create_task(task_type=mirpb.TaskType.TaskTypeMerge,
@@ -78,21 +49,58 @@ class CmdMerge(base.BaseCommand):
                                            dst_rev=dst_rev)
 
         mir_data = {
-            mirpb.MirStorage.MIR_METADATAS: host_mir_metadatas,
-            mirpb.MirStorage.MIR_ANNOTATIONS: host_mir_annotations,
+            mirpb.MirStorage.MIR_METADATAS: mir_metadatas,
+            mirpb.MirStorage.MIR_ANNOTATIONS: mir_annotations,
         }
         mir_storage_ops.MirStorageOps.save_and_commit(mir_root=mir_root,
                                                       mir_branch=dst_typ_rev_tid.rev,
-                                                      his_branch=host_typ_rev_tid.rev,
+                                                      his_branch=src_typ_rev_tids[0].rev,
                                                       mir_datas=mir_data,
                                                       task=task)
 
         return MirCode.RC_OK
 
 
-def merge_with_pb(mir_metadatas: mirpb.MirMetadatas, mir_annotations: mirpb.MirAnnotations,
-                  src_typ_rev_tids: List[revs_parser.TypRevTid], ex_typ_rev_tids: List[revs_parser.TypRevTid]) -> None:
-    pass
+def merge_with_pb(mir_root: str, src_typ_rev_tids: List[revs_parser.TypRevTid],
+                  ex_typ_rev_tids: List[revs_parser.TypRevTid],
+                  strategy: MergeStrategy) -> Tuple[mirpb.MirMetadatas, mirpb.MirAnnotations]:
+    # Read host id mir data.
+    host_typ_rev_tid = src_typ_rev_tids[0]
+
+    host_mir_metadatas: mirpb.MirMetadatas
+    host_mir_annotations: mirpb.MirAnnotations
+    host_mir_metadatas, host_mir_annotations = mir_storage_ops.MirStorageOps.load_multiple_storages(
+        mir_root=mir_root,
+        mir_branch=host_typ_rev_tid.rev,
+        mir_task_id=host_typ_rev_tid.tid,
+        ms_list=[mirpb.MIR_METADATAS, mirpb.MIR_ANNOTATIONS],
+        as_dict=False)
+
+    # reset all host tvt type
+    #   if not set, keep origin tvt type
+    host_tvt_type = tvt_type_from_str(host_typ_rev_tid.typ)
+    if host_tvt_type != mirpb.TvtType.TvtTypeUnknown:
+        for asset_id in host_mir_metadatas.attributes:
+            host_mir_metadatas.attributes[asset_id].tvt_type = host_tvt_type
+    # associated prediction infos: remove model infos
+    if len(src_typ_rev_tids) > 1:
+        host_mir_annotations.prediction.model.Clear()
+        host_mir_annotations.prediction.executor_config = ''
+
+    for typ_rev_tid in src_typ_rev_tids[1:]:
+        merge_to_mirdatas(host_mir_metadatas=host_mir_metadatas,
+                          host_mir_annotations=host_mir_annotations,
+                          mir_root=mir_root,
+                          guest_typ_rev_tid=typ_rev_tid,
+                          strategy=strategy)
+
+    for typ_rev_tid in ex_typ_rev_tids:
+        exclude_from_mirdatas(host_mir_metadatas=host_mir_metadatas,
+                              host_mir_annotations=host_mir_annotations,
+                              mir_root=mir_root,
+                              ex_rev_tid=typ_rev_tid)
+
+    return (host_mir_metadatas, host_mir_annotations)
 
 
 def bind_to_subparsers(subparsers: argparse._SubParsersAction, parent_parser: argparse.ArgumentParser) -> None:
