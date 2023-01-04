@@ -1,6 +1,6 @@
 import argparse
 import logging
-from typing import Optional, Set
+from typing import Set
 
 from mir.commands import base
 from mir.protos import mir_command_pb2 as mirpb
@@ -17,7 +17,7 @@ class CmdFilter(base.BaseCommand):
     # public: run cmd
     @staticmethod
     @command_run_in_out
-    def run_with_args(mir_root: str, label_storage_file: str, in_cis: Optional[str], ex_cis: Optional[str],
+    def run_with_args(mir_root: str, label_storage_file: str, in_cis: str, ex_cis: str,
                       src_revs: str, dst_rev: str, work_dir: str) -> int:  # type: ignore
         src_typ_rev_tid = revs_parser.parse_single_arg_rev(src_revs, need_tid=False)
         dst_typ_rev_tid = revs_parser.parse_single_arg_rev(dst_rev, need_tid=True)
@@ -137,8 +137,8 @@ def bind_to_subparsers(subparsers: argparse._SubParsersAction, parent_parser: ar
                                               parents=[parent_parser],
                                               description="use this command to filter assets",
                                               help="filter assets")
-    filter_arg_parser.add_argument("-p", '--cis', dest="in_cis", type=str, help="type names")
-    filter_arg_parser.add_argument("-P", '--ex-cis', dest="ex_cis", type=str, help="exclusive type names")
+    filter_arg_parser.add_argument("-p", '--cis', dest="in_cis", type=str, default='', help="type names")
+    filter_arg_parser.add_argument("-P", '--ex-cis', dest="ex_cis", type=str, default='', help="exclusive type names")
     filter_arg_parser.add_argument("--src-revs", dest="src_revs", type=str, help="type:rev@bid")
     filter_arg_parser.add_argument("--dst-rev", dest="dst_rev", type=str, help="rev@tid")
     filter_arg_parser.add_argument('-w', dest='work_dir', type=str, required=False, help='working directory')

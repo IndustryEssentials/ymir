@@ -158,8 +158,8 @@ const (
 	TaskType_TaskTypeMerge      TaskType = 8
 	TaskType_TaskTypeInfer      TaskType = 9
 	TaskType_TaskTypeSampling   TaskType = 10
+	TaskType_TaskTypeFusion     TaskType = 11
 	/// used by ymir_controller
-	TaskType_TaskTypeFusion       TaskType = 11
 	TaskType_TaskTypeInit         TaskType = 12
 	TaskType_TaskTypeImportModel  TaskType = 13
 	TaskType_TaskTypeCopyModel    TaskType = 14
