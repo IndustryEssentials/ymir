@@ -1,13 +1,14 @@
 import { Form, FormInstance } from 'antd'
 import RadioGroup from '@/components/form/RadioGroup'
 import t from '@/utils/t'
-import { FC, ReactChild } from 'react'
+import type { FC, ReactChild } from 'react'
 
+import { MergeType as Type } from '@/constants/dataset'
 import DatasetName from '@/components/form/items/DatasetName'
 
 const options = [
-  { value: 0, label: 'new' },
-  { value: 1, label: 'exist' },
+  { value: Type.New, label: 'new' },
+  { value: Type.Exist, label: 'exist' },
 ]
 type Props = {
   initialValue: number
@@ -15,8 +16,10 @@ type Props = {
   form: FormInstance,
   existed?: ReactChild,
 }
-const MergeType: FC<Props> = ({ form, existed, initialValue = 0, disabled = [] }) => {
+const MergeType: FC<Props> = ({ form, existed, initialValue = Type.Exist, disabled = [] }) => {
   const type = Form.useWatch('type', form)
+
+  const isNew = (type: number) => type === Type.New
 
   return (
     <>
@@ -29,7 +32,7 @@ const MergeType: FC<Props> = ({ form, existed, initialValue = 0, disabled = [] }
           prefix="task.merge.type."
         />
       </Form.Item>
-      {!type ? <DatasetName /> : existed}
+      {isNew(type) ? <DatasetName /> : existed}
     </>
   )
 }
