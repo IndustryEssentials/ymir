@@ -119,6 +119,7 @@ def _coco_object_dict_to_annotation(anno_dict: dict, category_id_to_cids: Dict[i
     obj_anno.box.y = int(bbox_list[1])
     obj_anno.box.w = int(bbox_list[2])
     obj_anno.box.h = int(bbox_list[3])
+    obj_anno.mask_area = int(anno_dict['area'])
 
     obj_anno.iscrowd = anno_dict.get('iscrowd', 0)
     obj_anno.class_id = category_id_to_cids[anno_dict['category_id']]
@@ -518,11 +519,10 @@ def _merge_annotations(host_mir_annotations: mirpb.MirAnnotations, guest_mir_ann
 
 def _merge_task_annotations(host_task_annotations: mirpb.SingleTaskAnnotations,
                             guest_task_annotations: mirpb.SingleTaskAnnotations, strategy: MergeStrategy) -> None:
-    # check type and is_instance_segmentation
-    if ((host_task_annotations.type != mirpb.ObjectType.OT_NO_ANNOTATIONS
-         and guest_task_annotations.type != mirpb.ObjectType.OT_NO_ANNOTATIONS
-         and host_task_annotations.type != guest_task_annotations.type)
-            or host_task_annotations.is_instance_segmentation != guest_task_annotations.is_instance_segmentation):
+    # check type
+    if (host_task_annotations.type != mirpb.ObjectType.OT_NO_ANNOTATIONS
+            and guest_task_annotations.type != mirpb.ObjectType.OT_NO_ANNOTATIONS
+            and host_task_annotations.type != guest_task_annotations.type):
         raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_OBJECT_TYPE,
                               error_message='host and guest object type unequal')
 

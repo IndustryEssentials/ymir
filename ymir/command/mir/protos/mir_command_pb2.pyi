@@ -474,7 +474,6 @@ class SingleTaskAnnotations(google.protobuf.message.Message):
     TASK_ID_FIELD_NUMBER: builtins.int
     TYPE_FIELD_NUMBER: builtins.int
     TASK_CLASS_IDS_FIELD_NUMBER: builtins.int
-    IS_INSTANCE_SEGMENTATION_FIELD_NUMBER: builtins.int
     EVAL_CLASS_IDS_FIELD_NUMBER: builtins.int
     MODEL_FIELD_NUMBER: builtins.int
     EXECUTOR_CONFIG_FIELD_NUMBER: builtins.int
@@ -488,7 +487,6 @@ class SingleTaskAnnotations(google.protobuf.message.Message):
     def task_class_ids(self) -> google.protobuf.internal.containers.RepeatedScalarFieldContainer[builtins.int]:
         """Set of all shown class ids."""
         pass
-    is_instance_segmentation: builtins.bool = ...
     @property
     def eval_class_ids(self) -> google.protobuf.internal.containers.RepeatedScalarFieldContainer[builtins.int]:
         """meta infos of this SingleTaskAnnotations"""
@@ -506,13 +504,12 @@ class SingleTaskAnnotations(google.protobuf.message.Message):
         task_id : typing.Text = ...,
         type : global___ObjectType.V = ...,
         task_class_ids : typing.Optional[typing.Iterable[builtins.int]] = ...,
-        is_instance_segmentation : builtins.bool = ...,
         eval_class_ids : typing.Optional[typing.Iterable[builtins.int]] = ...,
         model : typing.Optional[global___ModelMeta] = ...,
         executor_config : typing.Text = ...,
         ) -> None: ...
     def HasField(self, field_name: typing_extensions.Literal["model",b"model"]) -> builtins.bool: ...
-    def ClearField(self, field_name: typing_extensions.Literal["eval_class_ids",b"eval_class_ids","executor_config",b"executor_config","image_annotations",b"image_annotations","is_instance_segmentation",b"is_instance_segmentation","model",b"model","task_class_ids",b"task_class_ids","task_id",b"task_id","type",b"type"]) -> None: ...
+    def ClearField(self, field_name: typing_extensions.Literal["eval_class_ids",b"eval_class_ids","executor_config",b"executor_config","image_annotations",b"image_annotations","model",b"model","task_class_ids",b"task_class_ids","task_id",b"task_id","type",b"type"]) -> None: ...
 global___SingleTaskAnnotations = SingleTaskAnnotations
 
 class SingleImageAnnotations(google.protobuf.message.Message):
@@ -589,6 +586,7 @@ class ObjectAnnotation(google.protobuf.message.Message):
     MASK_FIELD_NUMBER: builtins.int
     ISCROWD_FIELD_NUMBER: builtins.int
     TYPE_FIELD_NUMBER: builtins.int
+    MASK_AREA_FIELD_NUMBER: builtins.int
     index: builtins.int = ...
     """Index of this annotation in current single image, may be different from the index in repeated field."""
 
@@ -613,6 +611,7 @@ class ObjectAnnotation(google.protobuf.message.Message):
     """0 or 1"""
 
     type: global___ObjectSubType.V = ...
+    mask_area: builtins.int = ...
     def __init__(self,
         *,
         index : builtins.int = ...,
@@ -628,9 +627,10 @@ class ObjectAnnotation(google.protobuf.message.Message):
         mask : typing.Text = ...,
         iscrowd : builtins.int = ...,
         type : global___ObjectSubType.V = ...,
+        mask_area : builtins.int = ...,
         ) -> None: ...
     def HasField(self, field_name: typing_extensions.Literal["box",b"box"]) -> builtins.bool: ...
-    def ClearField(self, field_name: typing_extensions.Literal["anno_quality",b"anno_quality","box",b"box","class_id",b"class_id","class_name",b"class_name","cm",b"cm","det_link_id",b"det_link_id","index",b"index","iscrowd",b"iscrowd","mask",b"mask","polygon",b"polygon","score",b"score","tags",b"tags","type",b"type"]) -> None: ...
+    def ClearField(self, field_name: typing_extensions.Literal["anno_quality",b"anno_quality","box",b"box","class_id",b"class_id","class_name",b"class_name","cm",b"cm","det_link_id",b"det_link_id","index",b"index","iscrowd",b"iscrowd","mask",b"mask","mask_area",b"mask_area","polygon",b"polygon","score",b"score","tags",b"tags","type",b"type"]) -> None: ...
 global___ObjectAnnotation = ObjectAnnotation
 
 class Rect(google.protobuf.message.Message):

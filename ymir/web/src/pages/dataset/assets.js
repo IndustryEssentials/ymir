@@ -203,7 +203,7 @@ const Dataset = () => {
       <Col span={12} style={{ fontSize: 14 }}>
         <Space size={10} wrap={true}>
           <GtSelector layout="inline" value={filterParams.annoType} onChange={(checked, all) => updateFilterParams(checked, all, 'annoType')} />
-          {dataset.inferClass?.length ? (
+          {dataset.evaluated ? (
             <EvaluationSelector value={filterParams.cm} onChange={(checked, all) => updateFilterParams(checked, all, 'cm')} labelAlign={'right'} />
           ) : null}
           <KeywordSelector value={filterParams.keywords} onChange={filterKw} dataset={dataset} labelAlign={'right'} />

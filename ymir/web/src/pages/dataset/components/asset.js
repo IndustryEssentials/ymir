@@ -5,6 +5,7 @@ import { getDateFromTimestamp } from '@/utils/date'
 import t from '@/utils/t'
 import { randomBetween } from '@/utils/number'
 import useFetch from '@/hooks/useFetch'
+import useRequest from '@/hooks/useRequest'
 
 import Hash from '@/components/common/hash'
 import AssetAnnotation from '@/components/dataset/asset/AssetAnnotations'
@@ -30,6 +31,13 @@ function Asset({ id, asset: cache, datasetKeywords, filterKeyword, filters, inde
   const [gtSelected, setGtSelected] = useState({ selected: [], all: false })
   const [colors, setColors] = useState({})
   const [{ items: assets }, getAssets] = useFetch('dataset/getAssetsOfDataset', { items: [] })
+  const {data: dataset, run: getDataset} = useRequest('dataset/getDataset', {
+    loading: false,
+  })
+
+  useEffect(() => {
+    getDataset({ id })
+  }, [])
 
   useEffect(() => {
     setAsset({})
@@ -192,7 +200,7 @@ function Asset({ id, asset: cache, datasetKeywords, filterKeyword, filters, inde
 
               <Space className={styles.filter} size={10} wrap>
                 <GtSelector vertical onChange={gtChange} />
-                <EvaluationSelector hidden={!asset.evaluated} vertical onChange={evaluationChange} />
+                <EvaluationSelector hidden={!dataset?.evaluated || !asset.evaluated} vertical onChange={evaluationChange} />
               </Space>
             </Card>
             <Space className={styles.random}>
