@@ -57,7 +57,8 @@
                             "polygon": [],
                             "mask": "",
                             "iscrowd": 0,
-                            "type": 0
+                            "type": 0,
+                            "mask_area": 0
                         }
                     ],
                     "img_class_ids": [
@@ -89,7 +90,8 @@
                             "polygon": [],
                             "mask": "",
                             "iscrowd": 0,
-                            "type": 0
+                            "type": 0,
+                            "mask_area": 0
                         },
                         {
                             "index": 1,
@@ -114,7 +116,8 @@
                             "polygon": [],
                             "mask": "",
                             "iscrowd": 0,
-                            "type": 0
+                            "type": 0,
+                            "mask_area": 0
                         },
                         {
                             "index": 2,
@@ -138,7 +141,8 @@
                             "polygon": [],
                             "mask": "",
                             "iscrowd": 0,
-                            "type": 0
+                            "type": 0,
+                            "mask_area": 0
                         },
                         {
                             "index": 3,
@@ -162,7 +166,8 @@
                             "polygon": [],
                             "mask": "",
                             "iscrowd": 0,
-                            "type": 0
+                            "type": 0,
+                            "mask_area": 0
                         }
                     ],
                     "img_class_ids": [
@@ -173,7 +178,6 @@
             },
             "task_id": "import_detbox_00",
             "type": 2,
-            "is_instance_segmentation": false,
             "task_class_ids": [
                 1,
                 2
@@ -208,7 +212,8 @@
                             "polygon": [],
                             "mask": "",
                             "iscrowd": 0,
-                            "type": 0
+                            "type": 0,
+                            "mask_area": 0
                         },
                         {
                             "index": 1,
@@ -233,7 +238,8 @@
                             "polygon": [],
                             "mask": "",
                             "iscrowd": 0,
-                            "type": 0
+                            "type": 0,
+                            "mask_area": 0
                         },
                         {
                             "index": 2,
@@ -257,7 +263,8 @@
                             "polygon": [],
                             "mask": "",
                             "iscrowd": 0,
-                            "type": 0
+                            "type": 0,
+                            "mask_area": 0
                         },
                         {
                             "index": 3,
@@ -281,7 +288,8 @@
                             "polygon": [],
                             "mask": "",
                             "iscrowd": 0,
-                            "type": 0
+                            "type": 0,
+                            "mask_area": 0
                         }
                     ],
                     "img_class_ids": [
@@ -314,7 +322,8 @@
                             "polygon": [],
                             "mask": "",
                             "iscrowd": 0,
-                            "type": 0
+                            "type": 0,
+                            "mask_area": 0
                         }
                     ],
                     "img_class_ids": [
@@ -324,7 +333,6 @@
             },
             "task_id": "import_detbox_00",
             "type": 2,
-            "is_instance_segmentation": false,
             "task_class_ids": [
                 1,
                 2

@@ -53,7 +53,8 @@
                             "tags": {},
                             "cm": 0,
                             "polygon": [],
-                            "iscrowd": 0
+                            "iscrowd": 0,
+                            "mask_area": 88715
                         },
                         {
                             "index": 1,
@@ -74,7 +75,8 @@
                             "tags": {},
                             "cm": 0,
                             "polygon": [],
-                            "iscrowd": 0
+                            "iscrowd": 0,
+                            "mask_area": 275827
                         }
                     ],
                     "img_class_ids": [
@@ -103,7 +105,8 @@
                             "tags": {},
                             "cm": 0,
                             "polygon": [],
-                            "iscrowd": 0
+                            "iscrowd": 0,
+                            "mask_area": 5104
                         },
                         {
                             "index": 1,
@@ -124,7 +127,8 @@
                             "tags": {},
                             "cm": 0,
                             "polygon": [],
-                            "iscrowd": 0
+                            "iscrowd": 0,
+                            "mask_area": 175494
                         },
                         {
                             "index": 2,
@@ -145,7 +149,8 @@
                             "tags": {},
                             "cm": 0,
                             "polygon": [],
-                            "iscrowd": 0
+                            "iscrowd": 0,
+                            "mask_area": 26543
                         },
                         {
                             "index": 3,
@@ -166,7 +171,8 @@
                             "tags": {},
                             "cm": 0,
                             "polygon": [],
-                            "iscrowd": 0
+                            "iscrowd": 0,
+                            "mask_area": 81539
                         }
                     ],
                     "img_class_ids": [
@@ -179,7 +185,6 @@
             },
             "task_id": "import_semantic_seg_01",
             "type": 3,
-            "is_instance_segmentation": false,
             "task_class_ids": [
                 3,
                 4,
@@ -194,7 +199,6 @@
             "task_id": "import_semantic_seg_01",
             "image_annotations": {},
             "type": 100,
-            "is_instance_segmentation": false,
             "task_class_ids": [],
             "eval_class_ids": [],
             "executor_config": ""
