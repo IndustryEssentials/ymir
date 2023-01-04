@@ -264,10 +264,11 @@ declare namespace YModels {
     functions: Array<number>
     configs: Array<DockerImageConfig>
     url: string
-    liveCode?: boolean
     description: string
     createTime: string
+    objectType: ObjectType
     related?: Array<Image>
+    liveCode?: boolean
   }
 
   type ResultType = 'dataset' | 'model'

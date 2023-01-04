@@ -4,6 +4,7 @@ import { useParams, Link, useHistory, useSelector } from 'umi'
 
 import t from '@/utils/t'
 import { TYPES, STATES, getImageTypeLabel } from '@/constants/image'
+import { getProjectTypeLabel } from '@/constants/project'
 import { ROLES } from '@/constants/user'
 import useFetch from '@/hooks/useFetch'
 
@@ -106,6 +107,7 @@ function ImageDetail() {
         <div className="infoTable">
           <Descriptions bordered column={2} labelStyle={{ width: '200px' }} title={t('image.detail.title')}>
             <Item label={t('image.detail.label.name')}>{image.name}</Item>
+            <Item label={t('image.detail.label.object_type')}>{t(getProjectTypeLabel(image.objectType, true))}</Item>
             <Item label={t('image.detail.label.type')}>
               {getImageTypeLabel(image.functions)
                 .map((label) => t(label))

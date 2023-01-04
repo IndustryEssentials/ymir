@@ -7,12 +7,14 @@ import t from '@/utils/t'
 import { HIDDENMODULES } from '@/constants/common'
 import { ROLES } from '@/constants/user'
 import { TYPES, STATES, getImageTypeLabel, imageIsPending } from '@/constants/image'
+import { getProjectTypeLabel } from '@/constants/project'
+
 import RelateModal from './relate'
 import Del from './del'
+import ImagesLink from './imagesLink'
+
 import s from './list.less'
 import { EditIcon, DeleteIcon, AddIcon, MoreIcon, PublishIcon, LinkIcon } from '@/components/common/Icons'
-import ImagesLink from './imagesLink'
-import Tip from '@/components/form/tip'
 import { FailIcon, SuccessIcon } from '@/components/common/Icons'
 import { LoadingOutlined } from '@ant-design/icons'
 
@@ -148,6 +150,8 @@ const ImageList = ({ role, filter, getImages }) => {
     return <span className={s.stateIcon}>{states[state]}</span>
   }
 
+  const objectTypeLabel = (type) => type ? <span className={`extraTag ${getProjectTypeLabel(type)}`}>{t(getProjectTypeLabel(type, true))}</span> : null
+
   const liveCodeState = (live) => {
     return <span className={live ? s.remote : s.local}>{t(live ? 'image.livecode.label.remote' : 'image.livecode.label.local')}</span>
   }
@@ -165,11 +169,12 @@ const ImageList = ({ role, filter, getImages }) => {
         <Col flex={1}>
           <Space>
             <span>{item.name}</span>
+            {objectTypeLabel(item.objectType)}
             {imageState(item.state)}
             {isDone(item.state) && !HIDDENMODULES.LIVECODE ? liveCodeState(item.liveCode) : null}
           </Space>
         </Col>
-        <Col>{more(item)}</Col>
+        <Col onClick={e => e.stopPropagation()}>{more(item)}</Col>
       </Row>
     )
     const type = isTrain(item.functions) ? 'train' : 'mining'
@@ -203,7 +208,7 @@ const ImageList = ({ role, filter, getImages }) => {
     )
 
     return (
-      <List.Item className={item.state ? 'success' : 'failure'}>
+      <List.Item className={item.state ? 'success' : 'failure'} onClick={() => history.push(`/home/image/detail/${item.id}`)}>
         <Skeleton active loading={item.loading}>
           <List.Item.Meta title={title} description={desc}></List.Item.Meta>
         </Skeleton>

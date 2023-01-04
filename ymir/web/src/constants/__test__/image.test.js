@@ -65,6 +65,7 @@ describe("constants: image", () => {
     const backendData = {
       name: "sample_image",
       state: 3,
+      object_type: 1,
       hash: "f3da055bacc7",
       url: "sample-tmi:stage-test-01",
       description: "test",
@@ -80,7 +81,8 @@ describe("constants: image", () => {
       configs,
       createTime: format(createTime),
       description: "test",
-      functions, 
+      functions,
+      objectType: 1,
       liveCode: undefined,
       id: 1,
       name: "sample_image",
