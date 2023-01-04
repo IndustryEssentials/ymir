@@ -241,8 +241,6 @@ declare namespace YModels {
     hiddenModels: Array<number>
     enableIteration: boolean
     totalAssetCount: number
-    // runningTaskCount: number
-    // totalTaskCount: number
     datasetCount: number
     datasetProcessingCount: number
     datasetErrorCount: number
