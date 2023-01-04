@@ -91,9 +91,16 @@ def bind_to_subparsers(subparsers: argparse._SubParsersAction, parent_parser: ar
                                  type=str,
                                  default='',
                                  help="branch(es) id, from which you want to exclude, seperated by comma.")
+    fuse_arg_parser.add_argument("-s",
+                                 dest="strategy",
+                                 type=str,
+                                 default="stop",
+                                 choices=["stop", "host", "guest"],
+                                 help="conflict resolvation strategy, stop (default): stop when conflict detects; "
+                                 "host: use host; guest: use guest")
     fuse_arg_parser.add_argument('--cis', dest="in_cis", type=str, default='', help="type names")
     fuse_arg_parser.add_argument('--ex-cis', dest="ex_cis", type=str, default='', help="exclusive type names")
-    sampling_group = fuse_arg_parser.add_mutually_exclusive_group(required=True)
+    sampling_group = fuse_arg_parser.add_mutually_exclusive_group(required=False)
     sampling_group.add_argument('--count', dest='count', type=int, default=0, help='assets count')
     sampling_group.add_argument('--rate', dest='rate', type=float, default=0.0, help='assets sampling rate')
     fuse_arg_parser.add_argument("--dst-rev", dest="dst_rev", type=str, help="rev@tid")

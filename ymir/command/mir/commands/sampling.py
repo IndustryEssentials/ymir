@@ -72,6 +72,8 @@ class CmdSampling(base.BaseCommand):
 
 def sample_with_pb(mir_metadatas: mirpb.MirMetadatas, mir_annotations: mirpb.MirAnnotations, count: int,
                    rate: float) -> None:
+    if count == 0 and (rate == 0 or rate >= 1.0 - 1e-9):
+        return
     if count < 0 or rate < 0 or rate > 1:
         raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS, error_message='invalid args: count or rate')
 

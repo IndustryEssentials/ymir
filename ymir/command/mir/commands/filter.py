@@ -98,8 +98,8 @@ def _class_ids_set_from_str(preds_str: str, cls_mgr: class_ids.UserLabels) -> Se
 def _include_exclude_match(asset_ids_set: Set[str], mir_annotations: mirpb.MirAnnotations, in_cis_set: Set[int],
                            ex_cis_set: Set[int]) -> Set[str]:
     # if don't need include match, returns all
-    if not in_cis_set:
-        return asset_ids_set
+    need_no_include = not in_cis_set
+    need_no_exclude = not ex_cis_set
 
     filtered_asset_ids_set = set()
     for asset_id in asset_ids_set:
@@ -107,7 +107,7 @@ def _include_exclude_match(asset_ids_set: Set[str], mir_annotations: mirpb.MirAn
         gt = mir_annotations.ground_truth.image_annotations.get(asset_id, mirpb.SingleImageAnnotations())
 
         cids = {v.class_id for v in pred.boxes} | {v.class_id for v in gt.boxes}
-        if cids & in_cis_set and not (cids & ex_cis_set):
+        if (need_no_include or cids & in_cis_set) and (need_no_exclude or not (cids & ex_cis_set)):
             filtered_asset_ids_set.add(asset_id)
 
     return filtered_asset_ids_set
@@ -117,6 +117,8 @@ def filter_with_pb(mir_metadatas: mirpb.MirMetadatas, mir_annotations: mirpb.Mir
                    in_cis: str, ex_cis: str) -> None:
     in_cis = in_cis.strip().lower() if in_cis else ''
     ex_cis = ex_cis.strip().lower() if ex_cis else ''
+    if not in_cis and not ex_cis:
+        return
 
     class_manager = class_ids.load_or_create_userlabels(label_storage_file=label_storage_file)
     in_cis_set: Set[int] = _class_ids_set_from_str(in_cis, class_manager)
