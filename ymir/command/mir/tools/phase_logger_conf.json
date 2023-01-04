@@ -58,5 +58,19 @@
             "name": "new",
             "delta": 0.2
         }
+    ],
+    "fuse": [
+        {
+            "name": "merge",
+            "delta": 0.3
+        },
+        {
+            "name": "filter",
+            "delta": 0.3
+        },
+        {
+            "name": "sample",
+            "delta": 0.3
+        }
     ]
 }

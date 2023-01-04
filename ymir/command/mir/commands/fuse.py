@@ -6,10 +6,11 @@ from mir.commands.merge import merge_with_pb
 from mir.commands.filter import filter_with_pb
 from mir.commands.sampling import sample_with_pb
 from mir.protos import mir_command_pb2 as mirpb
-from mir.tools import checker, mir_storage_ops, revs_parser
+from mir.tools import checker, mir_repo_utils, mir_storage_ops, revs_parser
 from mir.tools.annotations import MergeStrategy
 from mir.tools.code import MirCode
 from mir.tools.command_run_in_out import command_run_in_out
+from mir.tools.phase_logger import PhaseLoggerCenter
 
 
 class CmdFuse(base.BaseCommand):
@@ -31,6 +32,10 @@ class CmdFuse(base.BaseCommand):
     @command_run_in_out
     def run_with_args(mir_root: str, src_revs: str, ex_src_revs: str, strategy: MergeStrategy, label_storage_file: str,
                       in_cis: str, ex_cis: str, count: int, rate: float, dst_rev: str, work_dir: str) -> int:
+        PhaseLoggerCenter.create_phase_loggers(top_phase='fuse',
+                                               monitor_file=mir_repo_utils.work_dir_to_monitor_file(work_dir),
+                                               task_name=dst_typ_rev_tid.tid)
+
         src_typ_rev_tids = revs_parser.parse_arg_revs(src_revs)
         dst_typ_rev_tid = revs_parser.parse_single_arg_rev(dst_rev, need_tid=True)
         ex_typ_rev_tids = revs_parser.parse_arg_revs(ex_src_revs) if ex_src_revs else []
@@ -43,15 +48,18 @@ class CmdFuse(base.BaseCommand):
                                                        src_typ_rev_tids=src_typ_rev_tids,
                                                        ex_typ_rev_tids=ex_typ_rev_tids,
                                                        strategy=strategy)
+        PhaseLoggerCenter.update_phase(phase="fuse.merge")
         filter_with_pb(mir_metadatas=mir_metadatas,
                        mir_annotations=mir_annotations,
                        label_storage_file=label_storage_file,
                        in_cis=in_cis,
                        ex_cis=ex_cis)
+        PhaseLoggerCenter.update_phase(phase="fuse.filter")
         sample_with_pb(mir_metadatas=mir_metadatas,
                        mir_annotations=mir_annotations,
                        count=count,
                        rate=rate)
+        PhaseLoggerCenter.update_phase(phase="fuse.sample")
 
         # create and write tasks
         message = (f"merge in: {src_revs}, ex: {ex_src_revs}; sample count: {count}, rate: {rate}; "
