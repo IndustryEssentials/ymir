@@ -22,8 +22,6 @@ from proto import backend_pb2
 
 def trigger_mir_import(repo_root: str, task_id: str, index_file: str, des_annotation_path: str, media_location: str,
                        import_work_dir: str, object_type: int) -> None:
-    # trigger mir import
-    # todo: handle semantic segmentation label task
     TaskImportDatasetInvoker.importing_cmd(repo_root=repo_root,
                                            label_storage_file=os.path.join(os.path.dirname(repo_root), ids_file_name()),
                                            task_id=task_id,
