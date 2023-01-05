@@ -1,4 +1,4 @@
-import { Form, FormInstance } from 'antd'
+import { Col, Form, FormInstance, Row } from 'antd'
 import RadioGroup from '@/components/form/RadioGroup'
 import t from '@/utils/t'
 import type { FC, ReactChild } from 'react'
@@ -11,10 +11,10 @@ const options = [
   { value: Type.Exist, label: 'exist' },
 ]
 type Props = {
-  form: FormInstance,
-  existed?: ReactChild,
-  initialValue?: number,
-  disabledNew?: boolean,
+  form: FormInstance
+  existed?: ReactChild
+  initialValue?: number
+  disabledNew?: boolean
 }
 const MergeType: FC<Props> = ({ form, existed, initialValue = Type.Exist, disabledNew = false }) => {
   const type = Form.useWatch('type', form)
@@ -23,15 +23,21 @@ const MergeType: FC<Props> = ({ form, existed, initialValue = Type.Exist, disabl
 
   return (
     <>
-      <Form.Item name="type" initialValue={disabledNew ? Type.Exist : initialValue} label={t('task.merge.type.label')}>
-        <RadioGroup
-          options={options.map((option) => ({
-            ...option,
-            disabled: disabledNew && isNew(option.value),
-          }))}
-          prefix="task.merge.type."
-        />
-      </Form.Item>
+      <Row style={{ marginBottom: 20 }}>
+        <Col offset={2}>
+          <Form.Item name="type" initialValue={disabledNew ? Type.Exist : initialValue} noStyle>
+            <RadioGroup
+              optionType="button"
+              buttonStyle="solid"
+              options={options.map((option) => ({
+                ...option,
+                disabled: disabledNew && isNew(option.value),
+              }))}
+              prefix="task.merge.type."
+            />
+          </Form.Item>
+        </Col>
+      </Row>
       {isNew(type) ? <DatasetName /> : existed}
     </>
   )
