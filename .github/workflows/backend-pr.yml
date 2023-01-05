@@ -35,7 +35,7 @@ jobs:
           ymir/backend/.mypy_cache
         # requirements.txt and requirements-dev.txt have versioning info that would
         # impact the tox environment.
-        key: tox-${{ hashFiles('ymir/backend/requirements.txt', 'ymir/backend/requirements-dev.txt') }}
+        key: tox-${{ hashFiles('ymir/backend/requirements-dev.txt', 'ymir/backend/requirements.txt') }}
     - name: Test with tox
       run: |
         git config --global user.name 'CI-test'

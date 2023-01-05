@@ -5,14 +5,15 @@ import tarfile
 import time
 import unittest
 from unittest import mock
-from mir.version import YMIR_VERSION
 
 import yaml
 
 from mir.commands.infer import CmdInfer
+from mir.protos import mir_command_pb2 as mirpb
 from mir.tools import models, settings as mir_settings
 from mir.tools.class_ids import ids_file_path
 from mir.tools.code import MirCode
+from mir.version import YMIR_VERSION
 from tests import utils as test_utils
 
 
@@ -93,6 +94,7 @@ class TestCmdInfer(unittest.TestCase):
                                             },
                                             stages={model_stage.stage_name: model_stage},
                                             best_stage_name=model_stage.stage_name,
+                                            object_type=mirpb.ObjectType.OT_DET_BOX,
                                             package_version=YMIR_VERSION)
 
         with open(os.path.join(self._models_location, 'ymir-info.yaml'), 'w') as f:
@@ -184,6 +186,3 @@ class TestCmdInfer(unittest.TestCase):
             infer_config = yaml.safe_load(f.read())
             self.assertTrue('class_names' in infer_config)
             self.assertTrue('model_params_path' in infer_config)
-
-        # check model params
-        self.assertTrue(os.path.isfile(os.path.join(fake_args.work_dir, 'in', 'models', 'default_best_stage', 'model.params')))

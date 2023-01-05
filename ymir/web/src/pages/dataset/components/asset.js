@@ -5,11 +5,13 @@ import { getDateFromTimestamp } from '@/utils/date'
 import t from '@/utils/t'
 import { randomBetween } from '@/utils/number'
 import useFetch from '@/hooks/useFetch'
+import useRequest from '@/hooks/useRequest'
 
 import Hash from '@/components/common/hash'
-import AssetAnnotation from '@/components/dataset/assetAnnotation'
+import AssetAnnotation from '@/components/dataset/asset/AssetAnnotations'
 import GtSelector from '@/components/form/GtSelector'
 import EvaluationSelector from '@/components/form/EvaluationSelector'
+import CustomLabels from '@/components/dataset/asset/CustomLabels'
 
 import styles from './asset.less'
 import { NavDatasetIcon, EyeOffIcon, EyeOnIcon } from '@/components/common/Icons'
@@ -29,6 +31,13 @@ function Asset({ id, asset: cache, datasetKeywords, filterKeyword, filters, inde
   const [gtSelected, setGtSelected] = useState({ selected: [], all: false })
   const [colors, setColors] = useState({})
   const [{ items: assets }, getAssets] = useFetch('dataset/getAssetsOfDataset', { items: [] })
+  const {data: dataset, run: getDataset} = useRequest('dataset/getDataset', {
+    loading: false,
+  })
+
+  useEffect(() => {
+    getDataset({ id })
+  }, [])
 
   useEffect(() => {
     setAsset({})
@@ -124,13 +133,9 @@ function Asset({ id, asset: cache, datasetKeywords, filterKeyword, filters, inde
             <LeftOutlined hidden={currentIndex.index <= 0} className={styles.prev} onClick={prev} />
           </Col>
           <Col flex={1} className={`${styles.asset_img} scrollbar`}>
+            {/* // todo render semantic segmentation */}
             {asset.annotations ? (
-              <AssetAnnotation
-                url={asset.url}
-                keywords={asset.keywords}
-                data={showAnnotations}
-                // toggleHandle={toggleAnnotation}
-              />
+              <AssetAnnotation asset={{ ...asset, annotations: showAnnotations}} />
             ) : null}
           </Col>
           <Col span={6} className={styles.asset_info}>
@@ -189,17 +194,13 @@ function Asset({ id, asset: cache, datasetKeywords, filterKeyword, filters, inde
                   </Row>
                 </Item>
                 <Item label={t('dataset.assets.keyword.selector.types.cks')}>
-                  {Object.keys(asset.cks).map((ck) => (
-                    <Space key={ck}>
-                      <span style={{ fontWeight: 'bold' }}>{ck}: </span> <span>{asset.cks[ck]}</span>
-                    </Space>
-                  ))}
+                  <CustomLabels asset={asset} />
                 </Item>
               </Descriptions>
 
               <Space className={styles.filter} size={10} wrap>
                 <GtSelector vertical onChange={gtChange} />
-                <EvaluationSelector hidden={!asset.evaluated} vertical onChange={evaluationChange} />
+                <EvaluationSelector hidden={!dataset?.evaluated || !asset.evaluated} vertical onChange={evaluationChange} />
               </Space>
             </Card>
             <Space className={styles.random}>

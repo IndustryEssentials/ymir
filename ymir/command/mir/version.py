@@ -1,8 +1,11 @@
 import yaml
 
+from mir.tools.code import MirCode
+from mir.tools.errors import MirRuntimeError
+
 
 # Current ymir system version
-YMIR_VERSION = '2.0.1'
+YMIR_VERSION = '2.0.2'
 
 # Default sandbox version
 DEFAULT_YMIR_SRC_VERSION = '1.1.0'
@@ -17,6 +20,7 @@ def ymir_salient_version(ver: str) -> str:
         '1.3.0': '2.0.0',
         '2.0.0': '2.0.0',
         '2.0.1': '2.0.0',
+        '2.0.2': '2.0.0',
     }
     return _SALIENT_VERSIONS[ver]
 
@@ -43,5 +47,18 @@ def ymir_model_salient_version(ver: str) -> str:
         '1.3.0': '2.0.0',
         '2.0.0': '2.0.0',
         '2.0.1': '2.0.0',
+        '2.0.2': '2.0.0',
     }
     return _PACKAGE_VERSIONS[ver]
+
+
+def check_ymir_version_or_crash(ver: str) -> None:
+    if ymir_salient_version(ver) != ymir_salient_version(YMIR_VERSION):
+        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
+                              error_message=f"Version mismatch between: {ver} and {YMIR_VERSION}")
+
+
+def check_model_version_or_crash(ver: str) -> None:
+    if ymir_model_salient_version(ver) != ymir_model_salient_version(YMIR_VERSION):
+        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_MODEL_PACKAGE_VERSION,
+                              error_message=f"Model package version mismatch between: {ver} and {YMIR_VERSION}")

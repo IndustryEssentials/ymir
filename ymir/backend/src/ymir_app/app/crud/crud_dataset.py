@@ -23,6 +23,7 @@ class CRUDDataset(CRUDBase[Dataset, DatasetCreate, DatasetUpdate]):
         group_id: Optional[int] = None,
         source: Optional[TaskType] = None,
         state: Optional[IntEnum] = None,
+        object_type: Optional[int] = None,
         visible: bool = True,
         start_time: Optional[int] = None,
         end_time: Optional[int] = None,
@@ -53,6 +54,8 @@ class CRUDDataset(CRUDBase[Dataset, DatasetCreate, DatasetUpdate]):
 
         if state:
             query = query.filter(self.model.result_state == int(state))
+        if object_type:
+            query = query.filter(self.model.object_type == object_type)
         if source:
             query = query.filter(self.model.source == int(source))
         if project_id is not None:

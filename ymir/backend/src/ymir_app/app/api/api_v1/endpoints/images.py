@@ -17,7 +17,7 @@ from app.api.errors.errors import (
     InvalidSharedImageConfig,
 )
 from app.config import settings
-from app.constants.state import DockerImageState, DockerImageType
+from app.constants.state import DockerImageState, DockerImageType, ObjectType
 from app.models.image import DockerImage
 from app.schemas.image import (
     DockerImageCreate,
@@ -37,6 +37,7 @@ def list_docker_images(
     db: Session = Depends(deps.get_db),
     current_user: models.User = Depends(deps.get_current_active_user),
     name: str = Query(None),
+    url: str = Query(None),
     state: DockerImageState = Query(None),
     type_: DockerImageType = Query(None, alias="type"),
 ) -> Any:
@@ -51,6 +52,7 @@ def list_docker_images(
     docker_images, total = crud.docker_image.get_multi_with_filter(
         db,
         name=name,
+        url=url,
         state=state,
         type=type_,
     )
@@ -108,10 +110,16 @@ def import_docker_image(
         crud.image_config.create(db, obj_in=image_config_in)
 
     enable_livecode = bool(resp.get("enable_livecode", False))
+    object_type = int(resp.get("object_type", ObjectType.object_detect))
     crud.docker_image.update_from_dict(
         db,
         docker_image_id=docker_image.id,
-        updates={"hash": hash_, "state": int(DockerImageState.done), "enable_livecode": enable_livecode},
+        updates={
+            "hash": hash_,
+            "state": int(DockerImageState.done),
+            "enable_livecode": enable_livecode,
+            "object_type": object_type,
+        },
     )
     logger.info(
         "[create image] docker image imported via controller: %s, added %d configs",

@@ -10,6 +10,7 @@ from mir.commands.merge import CmdMerge
 from mir.protos import mir_command_pb2 as mirpb
 from mir.tools import mir_storage_ops
 from mir.tools.code import MirCode
+from mir.tools.errors import MirRuntimeError
 import tests.utils as test_utils
 
 
@@ -128,12 +129,14 @@ class TestMergeCmd(unittest.TestCase):
             class_ids_set.update(keywords_pair[0])
         pred = {
             'task_id': branch_name_and_task_id,
+            'type': mirpb.ObjectType.OT_DET_BOX,
             "image_annotations": image_annotations,
             "eval_class_ids": list(class_ids_set),
             'task_class_ids': list(class_ids_set),
         }
         gt = {
             'task_id': branch_name_and_task_id,
+            'type': mirpb.ObjectType.OT_DET_BOX,
             "image_annotations": image_annotations,
             'task_class_ids': list(class_ids_set),
         }
@@ -290,6 +293,7 @@ class TestMergeCmd(unittest.TestCase):
 
         expected_pred = {
             'task_id': 'merge-task-id-s0',
+            'type': mirpb.ObjectType.OT_DET_BOX,
             "image_annotations": {
                 "a0": TestMergeCmd._generate_annotations_for_asset([1], 100, 100, cm=mirpb.ConfusionMatrixType.IGNORED),
                 "a1": TestMergeCmd._generate_annotations_for_asset([1], 100, 200, cm=mirpb.ConfusionMatrixType.IGNORED),
@@ -305,6 +309,7 @@ class TestMergeCmd(unittest.TestCase):
         }
         expected_gt = {
             'task_id': 'merge-task-id-s0',
+            'type': mirpb.ObjectType.OT_DET_BOX,
             "image_annotations": {
                 "a0": TestMergeCmd._generate_annotations_for_asset([1], 100, 100, cm=mirpb.ConfusionMatrixType.FN),
                 "a1": TestMergeCmd._generate_annotations_for_asset([1], 100, 200, cm=mirpb.ConfusionMatrixType.FN),
@@ -370,10 +375,9 @@ class TestMergeCmd(unittest.TestCase):
         fake_args.strategy = 'stop'
         fake_args.work_dir = ''
         merge_instance = CmdMerge(fake_args)
-        ret = merge_instance.run()
-
-        # check result
-        self.assertEqual(MirCode.RC_CMD_MERGE_ERROR, ret)
+        with self.assertRaises(MirRuntimeError) as ectx:
+            merge_instance.run()
+        self.assertEqual(ectx.exception.error_code, MirCode.RC_CMD_MERGE_ERROR)
 
     def _test_tvt_host_00(self):
         """ normal case: with tvt flag assigned, strategy host, a + d, have joint assets """
@@ -404,6 +408,7 @@ class TestMergeCmd(unittest.TestCase):
 
         expected_pred = {
             'task_id': 'merge-task-id-h0',
+            'type': mirpb.ObjectType.OT_DET_BOX,
             "image_annotations": {
                 "a0": TestMergeCmd._generate_annotations_for_asset([1], 100, 100, cm=mirpb.ConfusionMatrixType.IGNORED),
                 "a1": TestMergeCmd._generate_annotations_for_asset([1], 100, 200, cm=mirpb.ConfusionMatrixType.IGNORED),
@@ -418,6 +423,7 @@ class TestMergeCmd(unittest.TestCase):
         }
         expected_gt = {
             'task_id': 'merge-task-id-h0',
+            'type': mirpb.ObjectType.OT_DET_BOX,
             "image_annotations": {
                 "a0": TestMergeCmd._generate_annotations_for_asset([1], 100, 100, cm=mirpb.ConfusionMatrixType.FN),
                 "a1": TestMergeCmd._generate_annotations_for_asset([1], 100, 200, cm=mirpb.ConfusionMatrixType.FN),
@@ -496,6 +502,7 @@ class TestMergeCmd(unittest.TestCase):
 
         expected_pred = {
             'task_id': 'merge-task-id-g0',
+            'type': mirpb.ObjectType.OT_DET_BOX,
             "image_annotations": {
                 "a1": TestMergeCmd._generate_annotations_for_asset([1], 100, 200, cm=mirpb.ConfusionMatrixType.IGNORED),
                 "a2": TestMergeCmd._generate_annotations_for_asset([1], 100, 300, cm=mirpb.ConfusionMatrixType.IGNORED),
@@ -510,6 +517,7 @@ class TestMergeCmd(unittest.TestCase):
         }
         expected_gt = {
             'task_id': 'merge-task-id-g0',
+            'type': mirpb.ObjectType.OT_DET_BOX,
             "image_annotations": {
                 "a1": TestMergeCmd._generate_annotations_for_asset([1], 100, 200, cm=mirpb.ConfusionMatrixType.FN),
                 "a2": TestMergeCmd._generate_annotations_for_asset([1], 100, 300, cm=mirpb.ConfusionMatrixType.FN),
@@ -585,6 +593,7 @@ class TestMergeCmd(unittest.TestCase):
 
         expected_pred = {
             'task_id': 'merge-task-id-nth0',
+            'type': mirpb.ObjectType.OT_DET_BOX,
             "image_annotations": {
                 "a1": TestMergeCmd._generate_annotations_for_asset([1], 100, 200, cm=mirpb.ConfusionMatrixType.IGNORED),
                 "a2": TestMergeCmd._generate_annotations_for_asset([1], 100, 300, cm=mirpb.ConfusionMatrixType.IGNORED),
@@ -596,6 +605,7 @@ class TestMergeCmd(unittest.TestCase):
         }
         expected_gt = {
             'task_id': 'merge-task-id-nth0',
+            'type': mirpb.ObjectType.OT_DET_BOX,
             "image_annotations": {
                 "a1": TestMergeCmd._generate_annotations_for_asset([1], 100, 200, cm=mirpb.ConfusionMatrixType.FN),
                 "a2": TestMergeCmd._generate_annotations_for_asset([1], 100, 300, cm=mirpb.ConfusionMatrixType.FN),

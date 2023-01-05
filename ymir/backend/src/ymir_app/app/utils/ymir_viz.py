@@ -73,6 +73,7 @@ class DatasetInfo:
     total_assets_mbytes: Optional[int] = None
 
     repo_index_ready: Optional[bool] = None
+    evaluation_state: Optional[int] = None
 
     @classmethod
     def from_dict(cls, res: Dict, user_labels: UserLabels) -> "DatasetInfo":
@@ -94,6 +95,7 @@ class DatasetInfo:
             hist=res.get("assets_hist") or None,
             total_assets_mbytes=res.get("total_assets_mbytes"),
             repo_index_ready=res.get("query_context", {}).get("repo_index_ready"),
+            evaluation_state=res["evaluation_state"],
         )
 
 
@@ -126,6 +128,8 @@ class ViewerAssetAnnotation:
     class_id: int
     cm: int
     tags: Dict
+    polygon: List
+    mask: Optional[str]
     keyword: Optional[str] = None
     user_labels: InitVar[UserLabels] = None
 
@@ -156,6 +160,8 @@ class ViewerAsset:
                 class_id=i["class_id"],
                 cm=i["cm"],
                 tags=i["tags"],
+                mask=i["mask"],
+                polygon=i["polygon"],
                 user_labels=user_labels,
             )
             for i in self.gt
@@ -166,6 +172,8 @@ class ViewerAsset:
                 class_id=i["class_id"],
                 cm=i["cm"],
                 tags=i["tags"],
+                mask=i["mask"],
+                polygon=i["polygon"],
                 user_labels=user_labels,
             )
             for i in self.pred

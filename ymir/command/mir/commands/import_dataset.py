@@ -10,6 +10,7 @@ from mir.tools import annotations, checker, metadatas
 from mir.tools import mir_repo_utils, mir_storage_ops, revs_parser, settings
 from mir.tools.code import MirCode
 from mir.tools.command_run_in_out import command_run_in_out
+from mir.tools.errors import MirRuntimeError
 from mir.tools.phase_logger import PhaseLoggerCenter
 from mir.tools.mir_storage import get_asset_storage_path, sha1sum_for_file
 
@@ -21,8 +22,8 @@ class CmdImport(base.BaseCommand):
         return CmdImport.run_with_args(mir_root=self.args.mir_root,
                                        label_storage_file=self.args.label_storage_file,
                                        index_file=self.args.index_file,
-                                       pred_abs=self.args.pred_dir,
-                                       gt_abs=self.args.gt_dir,
+                                       pred_abs=self.args.pred_abs,
+                                       gt_abs=self.args.gt_abs,
                                        gen_abs=self.args.gen_abs,
                                        dst_rev=self.args.dst_rev,
                                        src_revs=self.args.src_revs or 'master',
@@ -35,7 +36,7 @@ class CmdImport(base.BaseCommand):
     @command_run_in_out
     def run_with_args(mir_root: str, index_file: str, pred_abs: str, gt_abs: str, gen_abs: str,
                       dst_rev: str, src_revs: str, work_dir: str, label_storage_file: str,
-                      unknown_types_strategy: annotations.UnknownTypesStrategy, anno_type: "mirpb.AnnoType.V") -> int:
+                      unknown_types_strategy: annotations.UnknownTypesStrategy, anno_type: "mirpb.ObjectType.V") -> int:
         # Step 1: check args and prepare environment.
         if not index_file or not gen_abs or not os.path.isfile(index_file):
             logging.error(f"invalid index_file: {index_file} or gen_abs: {gen_abs}")
@@ -62,16 +63,12 @@ class CmdImport(base.BaseCommand):
 
         # Step 2: generate sha1 file and rename images.
         # sha1 file to be written.
-        map_hashed_filename: Dict[str, str] = {}
-        ret = _generate_sha_and_copy(index_file, map_hashed_filename, gen_abs)
-        if ret != MirCode.RC_OK:
-            logging.error(f"generate hash error: {ret}")
-            return ret
+        file_name_to_asset_ids = _generate_sha_and_copy(index_file, gen_abs)
 
         # Step 3 import metadat and annotations:
         mir_metadatas = mirpb.MirMetadatas()
         ret = metadatas.import_metadatas(mir_metadatas=mir_metadatas,
-                                         map_hashed_filename=map_hashed_filename,
+                                         file_name_to_asset_ids=file_name_to_asset_ids,
                                          hashed_asset_root=gen_abs,
                                          phase='import.metadatas')
         if ret != MirCode.RC_OK:
@@ -83,7 +80,7 @@ class CmdImport(base.BaseCommand):
                                                              label_storage_file=label_storage_file,
                                                              prediction_dir_path=pred_abs,
                                                              groundtruth_dir_path=gt_abs,
-                                                             map_hashed_filename=map_hashed_filename,
+                                                             file_name_to_asset_ids=file_name_to_asset_ids,
                                                              unknown_types_strategy=unknown_types_strategy,
                                                              anno_type=anno_type,
                                                              phase='import.others')
@@ -114,7 +111,7 @@ class CmdImport(base.BaseCommand):
         return MirCode.RC_OK
 
 
-def _generate_sha_and_copy(index_file: str, map_hashed_filename: Dict[str, str], sha_folder: str) -> int:
+def _generate_sha_and_copy(index_file: str, sha_folder: str) -> Dict[str, str]:
     hash_phase_name = 'import.hash'
     os.makedirs(sha_folder, exist_ok=True)
 
@@ -122,11 +119,13 @@ def _generate_sha_and_copy(index_file: str, map_hashed_filename: Dict[str, str],
         lines = idx_f.readlines()
     total_count = len(lines)
     if total_count > settings.ASSET_LIMIT_PER_DATASET:  # large number of images may trigger redis timeout error.
-        logging.error(f'# of image {total_count} exceeds upper boundary {settings.ASSET_LIMIT_PER_DATASET}.')
-        return MirCode.RC_CMD_INVALID_ARGS
+        raise MirRuntimeError(
+            error_code=MirCode.RC_CMD_INVALID_ARGS,
+            error_message=f'# of image {total_count} exceeds upper boundary {settings.ASSET_LIMIT_PER_DATASET}.')
 
     idx = 0
     copied_assets = 0
+    asset_id_to_file_names = {}
     for line in lines:
         components = line.strip().split('\t')
         if not components:
@@ -141,8 +140,8 @@ def _generate_sha_and_copy(index_file: str, map_hashed_filename: Dict[str, str],
             logging.info(f"{media_src} is not accessable.")
             continue
 
-        if sha1 not in map_hashed_filename:
-            map_hashed_filename[sha1] = os.path.splitext(os.path.basename(media_src))[0]
+        if sha1 not in asset_id_to_file_names:
+            asset_id_to_file_names[sha1] = os.path.basename(media_src)
             media_dst = get_asset_storage_path(location=sha_folder, hash=sha1)
             if not os.path.isfile(media_dst):
                 copied_assets += 1
@@ -153,9 +152,10 @@ def _generate_sha_and_copy(index_file: str, map_hashed_filename: Dict[str, str],
             PhaseLoggerCenter.update_phase(phase=hash_phase_name, local_percent=(idx / total_count))
             logging.info(f"finished {idx} / {total_count} hashes")
 
-    logging.info(f"skipped assets: {len(lines) - len(map_hashed_filename)}\ncopied assets: {copied_assets}")
+    logging.info(f"skipped assets: {len(lines) - len(asset_id_to_file_names)}, copied assets: {copied_assets}")
+
     PhaseLoggerCenter.update_phase(phase=hash_phase_name)
-    return MirCode.RC_OK
+    return {name: asset_id for asset_id, name in asset_id_to_file_names.items()}
 
 
 def bind_to_subparsers(subparsers: argparse._SubParsersAction, parent_parser: argparse.ArgumentParser) -> None:
@@ -171,12 +171,12 @@ def bind_to_subparsers(subparsers: argparse._SubParsersAction, parent_parser: ar
                                            type=str,
                                            help="index of input media, one file per line")
     import_dataset_arg_parser.add_argument("--pred-dir",
-                                           dest="pred_dir",
+                                           dest="pred_abs",
                                            type=str,
                                            required=False,
                                            help="corresponding prediction folder")
     import_dataset_arg_parser.add_argument("--gt-dir",
-                                           dest="gt_dir",
+                                           dest="gt_abs",
                                            type=str,
                                            required=False,
                                            help="corresponding ground-truth folder")
@@ -204,6 +204,6 @@ def bind_to_subparsers(subparsers: argparse._SubParsersAction, parent_parser: ar
     import_dataset_arg_parser.add_argument('--anno-type',
                                            dest='anno_type',
                                            required=True,
-                                           choices=['det-box', 'seg-poly', 'seg-mask'],
+                                           choices=['det-box', 'seg', 'no-annotations'],
                                            help='annotations type\n')
     import_dataset_arg_parser.set_defaults(func=CmdImport)

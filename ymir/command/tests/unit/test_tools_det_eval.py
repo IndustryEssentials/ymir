@@ -71,6 +71,7 @@ class TestToolsDetEval(unittest.TestCase):
 
         annotations_dict = {
             'prediction': {
+                'type': mirpb.ObjectType.OT_DET_BOX,
                 'image_annotations': {
                     'a0': {
                         'boxes': [{
@@ -130,8 +131,6 @@ class TestToolsDetEval(unittest.TestCase):
                             'score': 0.9,
                         }],
                         'img_class_ids': [0, 1, 2],
-                        'polygons': [],
-                        'masks': [],
                     },
                     'a1': {
                         'boxes': [{
@@ -147,8 +146,6 @@ class TestToolsDetEval(unittest.TestCase):
                             'score': 0.9,
                         }],
                         'img_class_ids': [2],
-                        'polygons': [],
-                        'masks': [],
                     },
                 },
                 'eval_class_ids': [0, 1, 2],
@@ -169,6 +166,7 @@ class TestToolsDetEval(unittest.TestCase):
                 },
             },
             'ground_truth': {
+                'type': mirpb.ObjectType.OT_DET_BOX,
                 'image_annotations': {
                     'a0': {
                         'boxes': [{
@@ -217,8 +215,6 @@ class TestToolsDetEval(unittest.TestCase):
                             'score': 1,
                         }],
                         'img_class_ids': [0, 1, 2],
-                        'polygons': [],
-                        'masks': [],
                     },
                     'a1': {
                         'boxes': [{
@@ -234,8 +230,6 @@ class TestToolsDetEval(unittest.TestCase):
                             'score': 1,
                         }],
                         'img_class_ids': [2],
-                        'polygons': [],
-                        'masks': [],
                     },
                 },
                 'task_class_ids': [0, 1, 2],
@@ -280,7 +274,11 @@ class TestToolsDetEval(unittest.TestCase):
                             'tags': {},
                             'polygon': [],
                             'det_link_id': 0,
-                            'class_name': ''
+                            'class_name': '',
+                            'type': 'OST_NOTSET',
+                            'iscrowd': 0,
+                            'mask': '',
+                            'mask_area': 0,
                         }, {
                             'index': 1,
                             'box': {
@@ -297,7 +295,11 @@ class TestToolsDetEval(unittest.TestCase):
                             'class_id': 0,
                             'anno_quality': 0.0,
                             'tags': {},
-                            'class_name': ''
+                            'class_name': '',
+                            'type': 'OST_NOTSET',
+                            'iscrowd': 0,
+                            'mask': '',
+                            'mask_area': 0,
                         }, {
                             'index': 2,
                             'box': {
@@ -314,7 +316,11 @@ class TestToolsDetEval(unittest.TestCase):
                             'polygon': [],
                             'anno_quality': 0.0,
                             'tags': {},
-                            'class_name': ''
+                            'class_name': '',
+                            'type': 'OST_NOTSET',
+                            'iscrowd': 0,
+                            'mask': '',
+                            'mask_area': 0,
                         }, {
                             'index': 3,
                             'box': {
@@ -331,11 +337,13 @@ class TestToolsDetEval(unittest.TestCase):
                             'polygon': [],
                             'anno_quality': 0.0,
                             'tags': {},
-                            'class_name': ''
+                            'class_name': '',
+                            'type': 'OST_NOTSET',
+                            'iscrowd': 0,
+                            'mask': '',
+                            'mask_area': 0,
                         }],
                         'img_class_ids': [0, 1, 2],
-                        'polygons': [],
-                        'masks': [],
                     },
                     'a1': {
                         'boxes': [{
@@ -354,19 +362,20 @@ class TestToolsDetEval(unittest.TestCase):
                             'index': 0,
                             'anno_quality': 0.0,
                             'tags': {},
-                            'class_name': ''
+                            'class_name': '',
+                            'type': 'OST_NOTSET',
+                            'iscrowd': 0,
+                            'mask': '',
+                            'mask_area': 0,
                         }],
                         'img_class_ids': [2],
-                        'polygons': [],
-                        'masks': [],
                     },
                 },
                 'task_class_ids': [0, 1, 2],
                 'task_id': 'a',
-                'map_id_color': {},
                 'eval_class_ids': [],
                 'executor_config': '',
-                'type': 'AT_UNKNOWN',
+                'type': 'OT_DET_BOX',
             },
             'prediction': {
                 'image_annotations': {
@@ -387,11 +396,13 @@ class TestToolsDetEval(unittest.TestCase):
                             'index': 0,
                             'anno_quality': 0.0,
                             'tags': {},
-                            'class_name': ''
+                            'class_name': '',
+                            'type': 'OST_NOTSET',
+                            'iscrowd': 0,
+                            'mask': '',
+                            'mask_area': 0,
                         }],
                         'img_class_ids': [2],
-                        'polygons': [],
-                        'masks': [],
                     },
                     'a0': {
                         'boxes': [{
@@ -410,7 +421,11 @@ class TestToolsDetEval(unittest.TestCase):
                             'anno_quality': 0.0,
                             'tags': {},
                             'det_link_id': 0,
-                            'class_name': ''
+                            'class_name': '',
+                            'type': 'OST_NOTSET',
+                            'iscrowd': 0,
+                            'mask': '',
+                            'mask_area': 0,
                         }, {
                             'index': 1,
                             'box': {
@@ -427,7 +442,11 @@ class TestToolsDetEval(unittest.TestCase):
                             'class_id': 0,
                             'anno_quality': 0.0,
                             'tags': {},
-                            'class_name': ''
+                            'class_name': '',
+                            'type': 'OST_NOTSET',
+                            'iscrowd': 0,
+                            'mask': '',
+                            'mask_area': 0,
                         }, {
                             'index': 2,
                             'box': {
@@ -444,7 +463,11 @@ class TestToolsDetEval(unittest.TestCase):
                             'class_id': 0,
                             'anno_quality': 0.0,
                             'tags': {},
-                            'class_name': ''
+                            'class_name': '',
+                            'type': 'OST_NOTSET',
+                            'iscrowd': 0,
+                            'mask': '',
+                            'mask_area': 0,
                         }, {
                             'index': 3,
                             'box': {
@@ -461,7 +484,11 @@ class TestToolsDetEval(unittest.TestCase):
                             'det_link_id': 2,
                             'anno_quality': 0.0,
                             'tags': {},
-                            'class_name': ''
+                            'class_name': '',
+                            'type': 'OST_NOTSET',
+                            'iscrowd': 0,
+                            'mask': '',
+                            'mask_area': 0,
                         }, {
                             'index': 4,
                             'box': {
@@ -478,18 +505,19 @@ class TestToolsDetEval(unittest.TestCase):
                             'det_link_id': -1,
                             'anno_quality': 0.0,
                             'tags': {},
-                            'class_name': ''
+                            'class_name': '',
+                            'type': 'OST_NOTSET',
+                            'iscrowd': 0,
+                            'mask': '',
+                            'mask_area': 0,
                         }],
                         'img_class_ids': [0, 1, 2],
-                        'polygons': [],
-                        'masks': [],
                     }
                 },
                 'task_id': 'a',
-                'map_id_color': {},
                 'eval_class_ids': [0, 1, 2],
                 'executor_config': '',
-                'type': 'AT_UNKNOWN',
+                'type': 'OT_DET_BOX',
                 'task_class_ids': [0, 1, 2],
             },
             'image_cks': {

@@ -1,0 +1,330 @@
+{
+    "mir_metadatas": {
+        "attributes": {
+            "430df22960b0f369318705800139fcc8ec38a3e4": {
+                "timestamp": {
+                    "start": 1669895747,
+                    "duration": 0.0
+                },
+                "asset_type": 1,
+                "width": 500,
+                "height": 281,
+                "image_channels": 3,
+                "byte_size": 54757,
+                "origin_filename": "2007_000032",
+                "tvt_type": 0
+            },
+            "a3008c032eb11c8d9ffcb58208a36682ee40900f": {
+                "timestamp": {
+                    "start": 1669895747,
+                    "duration": 0.0
+                },
+                "asset_type": 1,
+                "width": 500,
+                "height": 333,
+                "image_channels": 3,
+                "byte_size": 23509,
+                "origin_filename": "2007_000243",
+                "tvt_type": 0
+            }
+        }
+    },
+    "mir_annotations": {
+        "ground_truth": {
+            "image_annotations": {
+                "430df22960b0f369318705800139fcc8ec38a3e4": {
+                    "boxes": [
+                        {
+                            "box": {
+                                "w": 586,
+                                "h": 421,
+                                "x": 0,
+                                "y": 0,
+                                "rotate_angle": 0.0
+                            },
+                            "class_id": 4,
+                            "score": -1.0,
+                            "anno_quality": -1.0,
+                            "det_link_id": -1,
+                            "class_name": "grass",
+                            "mask": "0U=k6O100O10000K5N2O1O1N2O1O1N2O1O1N2O1O1N2O1O1O1N2O1O1N2O1O1N2O1O1N2O1O1N2O1N2H8H8I7H8H8H8H8I7H8H8H8H8H8I7H8H8H8H8I7H8J6J6K5J6J6J6K5J6J6K5K5K5L4K5L4K5K5L4K5L4N2N2N2N2N2O1N2N2N2N2N2N2N2N20000000000000000000000O100000000000000000000000000000000000000000000001O00001O00001O0000001O00001O0000001O00001O00001O0000001O00001O0000001O000000O100000000O100000000O10000000000O100000000O100000000O10000000000O100000000O100000000O100000000O100000000O100O10000O10000O10000O10000O10000O10000O10000O10000O10000O10000O100O10000O10000O10000O1000000000000000000000000O100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001O00001O0000001O00001O00001O00001O00001O00001O00001O00001O00001O00001O00001O00001O00001O00001O00001O00001O00001O0000001O00001O00001O00001O00001O00001O00001O00001O00001O00001O00001O00001O00001O00001O00001O00001O00001O00001O00001O00001O4L4L3M4L3M4L3M4L3M4L4L3M4L3M4L3M4L3M4L3M4L4L3M4L3M4L3M4L3M4L4L3M4L3M4L3M4L3M4L4L3M2N001O00001O001O001O00001O001O00001O1O1O001O1O1O1O001O1O1O001O1O1O1O001O1O1O001O1O1O001O1O1O1O001O1O1O001O1O1O1O1O001O1O1O1O1O1O1O1O1O1O1O1O1O1O1O1O001O1O1O1O1O1O1O1O1O1O1O1O1O1O",
+                            "type": 30,
+                            "index": 0,
+                            "tags": {},
+                            "cm": 0,
+                            "polygon": [],
+                            "iscrowd": 0,
+                            "mask_area": 88715
+                        },
+                        {
+                            "index": 1,
+                            "box": {
+                                "x": 1,
+                                "y": 69,
+                                "w": 585,
+                                "h": 564,
+                                "rotate_angle": 0.0
+                            },
+                            "class_id": 7,
+                            "score": -1.0,
+                            "anno_quality": -1.0,
+                            "det_link_id": -1,
+                            "class_name": "other",
+                            "mask": "gW12ac0=C=B>C=lJ`0ZENd:g401O1N2O1O1N2O1O1N2O1O1N2O1O1O1N2O1O1N101O1N2O1O1N2O1O1N2O1N2H8H8I7H8H8H8H7J7H8H8H8H8H8I7H8H8H8H8I7H8J6J6K5J6J6J5L5J6J6K5K5K5L4K5L4K5K5L4K5L4N2N2N2N2N101N2N2N2N2N2N2N2N20000000000000000000O10O10000000000000000000000000000000O100000000000001O00001O00001O0000001O00001O0000001O00001O00001O0000001O00001O0000001O000000O100000000O100000000O10000000000O100000000O100000000O10000000000O100000000O100000000O100000000O100000000O100O10000O10000O10000O10000O10000O10000O10000O10000O10000O10000O100O10000O10000O10000O1000000000000000000000000O100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001O00001O0000001O0O101O00001O00001O00001O00001O00001O00001O00001O00001O00001O00001O00001O00001O00001O00001O00001O0000001O00001O00001O00001O00001O00001O00001O00001O00001N10001O00001O00001O00001O00001O00001O00001O00001O00001O00001O00003M4L3M4L3M4L3M4K4M4L3M4L3M4L3M4L4L3M4L3M4L3M4L3M4L3M4L3M4L4L3M4K4M4L3M4L3M4L3M4L3M4L1O001O00001O001O001O00001O001N10001O1O1O001O1O1O1O001O1O1O001O1N2O1O001O1O1O001O1O1O001O1O1N2O001O1O1O001O1O1O1O1O001O1O1N2O1O1O1O1O1O1O1O1O1O1O1O1O0O2O1O1O1O1O1O1M3YOg0ZOf0YOg0ZOf0YOg0ZOf0YObF",
+                            "type": 30,
+                            "tags": {},
+                            "cm": 0,
+                            "polygon": [],
+                            "iscrowd": 0,
+                            "mask_area": 275827
+                        }
+                    ],
+                    "img_class_ids": [
+                        4,
+                        7
+                    ]
+                },
+                "a3008c032eb11c8d9ffcb58208a36682ee40900f": {
+                    "boxes": [
+                        {
+                            "box": {
+                                "y": 300,
+                                "w": 392,
+                                "h": 183,
+                                "x": 0,
+                                "rotate_angle": 0.0
+                            },
+                            "class_id": 3,
+                            "score": -1.0,
+                            "anno_quality": -1.0,
+                            "det_link_id": -1,
+                            "class_name": "blanket",
+                            "mask": "\\9g5]9O1O1O;EU1kNU1kNT1lNU1kN;E00000000000000000000000000000000000000001O0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001O00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000mJH[K8e4H[K8e4H[K8e4H[K8e4H[K8e4H[K8d4I\\K7e4IZK7f4IZK7f4IZK7e4J[K6e4J[K6f4IZK7f4IZK7f4IZK7f4JYK6g4JYK6g4JYK6h4IXK7h4IXK7h4IXK7h4IXK7i4HWK8i4HWK8i4IVK7j4IVK7j4IWK6i4JWK6i4JWK6i4JWK6i4JWK6i4JWK6i4KVK5j4KVK5j4KVK5j4KVK5j4KVK5j4KVK5j4KVK5j4KVK5j4KVK5j4LUK4k4LUK4k4LUK4k4LUK4k4LUK4k4LUK4k4LUK4k4LUK4k4LUK4k4MTK3l4MTK3l4MTK3l4MTK3l4MTK3l4MTK3l4MTK3l4MTK3l4MTK3m4LSK4m4LSK4m4LSK4m4LSK4m4MRK3o4LQK4o4LQK4o4LQK4o4LQK4o4LQK4o4LQK4o4LQK4o4LQK4n4MRK3n4MRK3n4MRK3n4MRK3n4MRK3n4MRK3o4LQK4o4LQK4o4MPK3P5MPK3P5MPK3P5MPK3P5MPK3P5MPK3Q5LoJ4Q5LoJ4Q5LoJ4Q5LoJ4Q5LoJ4Q5LoJ4R5IPK7n9000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001O0000WLKdH5[7NcH2]70aH0_73^HMd73ZHMh74UHLm74QHLQ84mGLT86bG1a8M^G3d8J^G5d8I[G5k8ISG4VMKQ?NY`d3",
+                            "type": 30,
+                            "index": 0,
+                            "tags": {},
+                            "cm": 0,
+                            "polygon": [],
+                            "iscrowd": 0,
+                            "mask_area": 5104
+                        },
+                        {
+                            "index": 1,
+                            "box": {
+                                "w": 640,
+                                "h": 483,
+                                "x": 0,
+                                "y": 0,
+                                "rotate_angle": 0.0
+                            },
+                            "class_id": 5,
+                            "score": -1.0,
+                            "anno_quality": -1.0,
+                            "det_link_id": -1,
+                            "class_name": "house",
+                            "mask": "0\\9g51O1OmNfJ^HY5c7S11O00001O0000001O000000001O0000001O0000001O1O001O1O1O1O1O001O1O1O1O001O1O1O1O1O001O00000000001O00000000000000001O000000000000001O00000000000000001O000000000000001O00000000000000001O00000000000000001O000000000000001O00000000000000001O000000000000001O00000000000000001O00000000000000001O000000000000001O00000000000000001O00000000000000001O000000000000001O0000WLeJjM[5V2gJhMY5W2jJgMV5X2lJgMT5X2nJgMR5X2oJhMQ5X2oJ`JBR3^5]2QK^JJo2U5c2_K\\Ma4d2`K[M`4e2`K[M`4e2`K[M`4e2aKZM_4f2aKZM_4i2^KXMa4h2_KXMa4h2_KXMa4h2_KXMa4h2[KZJYOn2\\5o1fJfKe0_2e4i1jJ[KJ1g0k2e4g1mJZKJ3g0i2b4Y1dJTL:EK7d0f2c4Z1eJRLk1c2_3[1hJoKl1d2\\3^1hJlKQ2b2W3c1iJiKT2`2S3h1iJgKV2_2Q3k1jJdKV2`2P3m1XMSNh2n1WMRNi2R2TMmMl2S2TMnMk2R2UMnMk2R2gJ_KX2_2Q3R2gJ`KW2^2R3R2gJbKU2\\2T3S2gJaKT2\\2U3S2gJcKX1J]O`2d4S2hJeKT1H@`2d4T2gJeKS1HB`2c4a2fKnJRO2d0_2d4b2eKmJSO1e0`2c4b2eKnJRO0e0a2d4b2TKmJN5:\\2d4T3RK`J8^2f4Q3SKaJ5`2h4o2RKbJ4a2j4m2RKcJGl2W5a2RKdJCo2Z5]2SKnMm4R2SKmMn4S2RKmMn4S2RKmMn4T2QKlMo4T2QKlMo4U2oJlMQ5T2nJlMS5U2lJlMS5T2jJoMV5R2hJoMX5S2eJmM\\5l4eJZH[5e7hJZHW5e7lJYHT5f7mJZHS5f7nJYHR5h7mJXHS5h7mJaG=Mf4c8fK^GY4a8hK_GX4`8iK`GW4_8kK`GU4^8mKcGR4\\8oKdGQ4[8PLeGP4Z8QLfGo3Y8RLgGn3X8SLhGm3V8VLiGj3V8WLjGi3e1jJ`NOo5]1lIj3`1gJ`N10c05\\OO1OO91`4\\1TKl3^1gJbN00l0022RO8?HAN10O70;0T2[1ZMn3]1hKcNZ20kL`1JVOY1ZOP4[1c0QOTJ<W1XOR4Z1f0POQJa0T1UOU4Z1j0gNnI04j0V6?HfNWJm0o5=6BTJ@f4m0W1BTJAe4l0X1]OYJG_4m0X1QOcJ2U4m0X1hNlJ;l3l0i2TOWMm0h2SOXMm0i2ROWMn0i2ROWMl0k2TOUMl0k2TOUMm0j2SOVMm0j2SOVMm0j2SOVMl0k2TOUMl0k2TOUMl0k2TOUMk0l2UOTMk0l2UOTMk0l2UOTMk0l2UOTMk0l2VOSMj0m2VOSMj0m2VOSMj0m2VOSMj0m2VOSMj0m2WORMi0n2WORMi0n2WORMi0n2WORMi0o2VOQMj0o2VOQMj0o2VOQMj0o2VOQMk0n2TOSMl0m2TOSMm0l2SOTMl0m2TOSMl0m2TOSMl0m2TOSMl0m2UORMk0n2UORMk0n2UORMk0n2UORMk0n2UORMk0n2UORMk0n2UORMk0n2UORMj0o2WOPMh0Q3XOoLh0Q3XOoLf0S3ZOmLd0V3[OjLe0V3[OjLe0R1oNhJ<D1\\ODR5o0W1PO[Jh00H^4b0U1nNTJQ19_O^4b0\\15VJYO^4a0X1;[JSO]4b0X1;^JdN@3i4n0Z1:gJhNo3n0Z19iJhNm3o0Z18jJiNl3o0Y18lJiNk3o0\\14jJmNj3o0Z15mJlNi3o0Z14nJmNh3o0[12nJoNg3o0\\10nJQOf3P1[1MRKROc3R1Z1LSKROc3S1\\1GRKVOb3S1a1lN_Ic0^1^Ob3S1d1_OjJ^Ob3S1d1^OjJ@b3R1d1^OoI_O06\\4n0d1RO\\I2`0i0`43d1QO]I5:k0d4Oe1oN`I68k0c40e1nNaI77l0b40e1mNcI58m0`41e1mNcI58n0_40f1mNdI48o0]4Oi1mNbI58o0]4Oi1lNdI57P1[4OV2QO`I2C?g4>W2PO`ILMb0[4b0Z2mNSJ?c3c0h3\\OWLd0P4UOPLk0Q4UOnKk0c1POoK5]2k0c1QORL2[2m0c1QOSL2Y2m0d1SOSLNY2o0d1TOTLLW2o0f1VOTLIV2R1d1WOVLHT2Q1f1VOYLIo1Q1i1TO[LLi1P1l1SO^LMd1P1n1RO`L0_1n0Q2RObL0[1n0T2QOcL1W1n0U2ROfL1R1m0X2ROgL2o0l0Z2ROiL1l0l0\\2SOjLNk0m0]2UOjLLi0o0^2TOm0l0SOUOl0l0SOUOmLJb0Q1a2UOmLL`0o0c2UOmLN>m0X1nN[L6o11=k0Y1oNZL5P24PMF]22fMP1X4nN_K6U10R26lLG\\22iMm0Y4[OcLIS28jLHX21mMn0[4YOWLCXO8X38gLFU22oMGKU1_4]OVL3e2;gNFmMa0^4]OXL0g2>aNP1`2bNXLOh2a0[NQ1d2`NYLNh2d0VNP1i2^NYLMh2h0QNo0o2\\NWLMj2j0kMQ1S3XNXLMj2m0fMo0X3XNXLJl2Q1_MQ1\\3TNZLGm2W1XMh3KhJ_OMKW1c0TOR3Z1QMe6]OQHd3]1iLT7Y3nHcLT7\\3oH_LS7b3PIXLf62aGe3d:\\LZEe3f:\\LYEd3g:]LWEc3j:2VEYLj:d3<L4K5J6K5H8O[DZMg90hFh2@ZMf90fFh2DZMd90gFf2D\\Mc90hFe2D[Mc91hFe2EZMc91TGY2YOfMc91QG\\2\\OcMb92bFHFe26aMb92aFJDb2<cMj8KQG64LCl0d0EMCe8LRG44ND9X1;PO_Ol8MmF8;HFEl1l0ZNAj81mF6=Gl12gMLO=S9ImF65@M6[2S1e6IRGPOM4OM;NU1X1a7JRGI6WOV1V1a7KRGJ5WOW1S1b7MRGJ3XOX1Q1b7MTGJ2XOX1R1a7MTGI3XOX1R1a7MTGI3XOX1R1a7MTGI3XOY1Q1`7NTGI3XOZ1P1_7NUGJ2YOY1o0`7MVGK2XOW1Q1b7KVGK2XOU1T1b7IWGK2XOU1T1b7IWGK2YOT1S1d7HVGL1ZOT1S1e7GWGKO\\OT1S1e7GYGJL]OV1R1e7GZGIK^OV1S1d7F[GIK^OV1T1c7E\\GIK^OV1T1c7E\\GIK^OV1T1c7E\\GIK_OU1S1d7D]GJJ@n0AQOa1j8D]GIKB48Ji0j8D]GHLDK>2b0j8D\\GGOEI>3a0i8E\\GHNDJ>4`0i8D]GJKDK>4`0j8C\\GLJCL>4`0k8B\\GMHCM5=h0c8CYGOIBOAn0\\1P8BYG0J@h0EZOY1k8BYG0J@<1Gl0j8BZG1I@1<2`0k8CYG1I@0=3`0j8BZG1I@0>2?k8BZG1IAO=3?k8BZG1HCO;4?P6iN\\Lh0jM2Gf04Fn5lN\\Lf0kM2Gf04Fm5nN]Lc0kM3Gf04Fl5PO]La0lM3Gf04Fl5PO]La0lM3Gf03Hl5nN^La0lM3Gf03Hl5nN^La0lM3Gf03Ik5mN_La0lM3Gf03Ij5oN`L>lM4Gf03Jh5POVJCQ2i0WN4Gf03Jg5ROUJCS2f0WN5Gf03Jf5^OXLMXN5Gf03Ke5^OXLLYN4Hg01Lf5]OXLMXN3Ig01Lf5]OXLMXN3Ig01Me5\\OZLLWN4If02Nd5\\OZLLWN4If02Nd5\\OZLKXN5Hf01Ng5[OXLMWN4If00Oi5YOWLNXN3Hg00Oj5XOVLO[N0Ek0OOj5WOXLNYN2Fk0N\\O0ZOk5?YLMWN3Hk1NYM1=j5>ZLUOkMa0:=Gg17hMc5>`LFoM=Hf16iMd5=ZLLTN8Hf16iMd5=ZLLTN8Hf17hMc5=[LMSN9Ge19fMc5?ZLMSN9Gd1;eMb5a0YLMTN8Gc1=cMa5e0WLMUN7F]1MfMm6h0[KNUN7F]1o6^NVKNUN7F]1o6\\NXK0SN7Fi0MjNQ76YK0SN7Fi0MkNP75ZK0TN6Ej0MkNP75ZK0UN5Dk0MkNP75ZK0nMYOLk00j0NlNn66ZK\\OfM=8@Kl01h00lNk69ZKNPNYOHm03f02lNh6;[KMPN;Ka02lNh6;[KMPN:Lb01lNh6;[KMQN9Lb01lNg6<[KMPN:Lb02kNf6=\\KLoM:Nb01jNf6?\\KJoM<Na01jNf6?\\KJoM=N?1kNe6`0]KIoM=N?2jNc6b0^KHoMII05S12iNd6c0]KGPN30VOMd13hNb6e0^KFPN:1c0OgNb6g0^KEPN;1a0OhNb6g0oISO70oNa0:>O>0iNb6g0nIUO6g0[O6O>0iNb6h0lI[O\\OG;j0L6N=1iNb6h0bISOD:0G;i0N4O>0iNb6h0bI1NK05N>0iNb6h0bI3LH45M>0hNb6j0eINIM45K?1eNc6l0cIOJO12N?3aNd6o0`I0J001O?Y7_OnH1J1O1O>Y7@oH0J2N00>X7APIOI3OO0>X7@QI0H3OO1=W7AQI0H3OO2<U7CRIOH3O01;V7CSINF50O19X7EQINF50O08Z7GPIMF50O06\\7InHLG6OO04^7KlHKH7NO01a7MkHVO_O59h0K01Nc7OjHTO_O4;k0H01Le71aHYOIM9m0G01Jg73^HZOKO4j0K01Hi75[H\\OML2k0L01Fj78YH]OED447l0L11Dk7;XHDGB9NL81e00Bm7>UHDGA<JL=Nd01@o7`0SH2d0YOYOe01^OQ8c0PH1e0YOYOe02SOGM[8Q1nG1e0XOZOf02QOJJY8V1lG1e0XO[Oe03nNZ8S1eG1c0XO]Oe0l82UGOd0XO]Of0k81WGoNB00c0Q1E\\Oh0k81aGA;^O_OP1f81`G@T1GRN;[9=`GTOUO2o12QN:]9=`GQOVO4m14PN9_9FaF;W1^Ol06oM9_9FbFLM9`3JdL:_9ChF9W3FfL;m9OjI1W6MjI2X6LiI2[6JgI6d:N2N3LmiP1",
+                            "type": 30,
+                            "tags": {},
+                            "cm": 0,
+                            "polygon": [],
+                            "iscrowd": 0,
+                            "mask_area": 175494
+                        },
+                        {
+                            "index": 2,
+                            "box": {
+                                "x": 264,
+                                "y": 33,
+                                "w": 138,
+                                "h": 219,
+                                "rotate_angle": 0.0
+                            },
+                            "class_id": 6,
+                            "score": -1.0,
+                            "anno_quality": -1.0,
+                            "det_link_id": -1,
+                            "class_name": "leaves",
+                            "mask": "^bl346O[>N`A10c05\\OO1OO91h<OlB00l0022RO8?HAN10O70;0Y:Q1UEZ20kL`1JW7l5eGTJZ8o5dGQJ\\8S6[GnI04a8n5^GWJb8U6O1O110OZOeGdJZ8^5f0O0000N2001O01O0O10000O10001O0000000000001O00000000000010O001OO1000000000000000001O0O1O100N2N2000O012N01N2O001O0000O13MN2001O10O1O12M5\\G_I\\8d600001O0000001O0000O2O0000N2N10100O1K5O100000O11N1001O0000001OO1000O1N201O01O00000cN\\G[Ld8e3]GZLc8[3\\G_K6U1_8\\3hGcLX8]3iGWLCXOh8]4iGVLe8g3]GXLc8h3]GXLc8g3^GYLb8g3^GYLa8h3_GWLc8h3]GXLb8h3_GXLb8g3^GZLY;0UD_OMKW1c0d=@cQ`3",
+                            "type": 30,
+                            "tags": {},
+                            "cm": 0,
+                            "polygon": [],
+                            "iscrowd": 0,
+                            "mask_area": 26543
+                        },
+                        {
+                            "index": 3,
+                            "box": {
+                                "x": 3,
+                                "y": 55,
+                                "w": 548,
+                                "h": 420,
+                                "rotate_angle": 0.0
+                            },
+                            "class_id": 7,
+                            "score": -1.0,
+                            "anno_quality": -1.0,
+                            "det_link_id": -1,
+                            "class_name": "other",
+                            "mask": "de1;i>S1mNT1kNU1kNT1mNT1kN;E0001O000000001O0000001O0000001O1O001O1O1O1O1O001O1O1O1O001O1O1O1O1O001O00000000001O00000000000000001O000000000000001O00000000000000001O000000000000001O0001O000000000001O00000000000000001O000000000000001O00000000000000001O000000000000001O00000000000000001O00000000000000001O000000000000001O00000000000000001O00000000000000001O000000000000001O0000WLoJ`MQ5`2QK^Mo4a2TK]Ml4b2VK]Mj4b2WK^Mi4a2XK_Mh4a2YKVJBR3T5g2[KTJJo2k4m2iKRMW4n2jKQMV4o2jKQMV4o2jKQMV4o2jKQMV4P3jKoLV4T3gKmLY4Q3hKoLX4Q3hKoLX4Q3gKPMY4P3cKRJYOn2T5W2oJ]Kd0`2]4Q2SKRKJ1f0l2]4o1VKQKJ4f0h2Z4b1mJkK:EK7d0f2Z4c1nJiKk1c2V3d1QKfKl1d2S3g1QKcKQ2b2n2l1RK`KT2`2j2Q2RK^KV2_2h2T2RK\\KW2_2g2V2aMjM_2X2_MhMa2[2\\MeMd2[2\\MfMc2Z2oJUK[2`2f2[2oJWKY2^2h2[2PKXKV2]2j2[2PKYKU2\\2k2\\2oJZKT2Z2m2\\2PKZKW1K^O_2[4\\2QK]KR1HB_2[4k2SLfJB`2Z4j2oKeJRO2c0`2\\4j2mKeJTO0d0a2[4j2^KeJL1FOe0a2[4k2[KfJO4:\\2\\4\\3ZKXJ7_2_4X3[KYJ4a2a4V3[KYJ2c2c4T3[KZJDo2Q5g2[KeMd4[2\\KeMd4[2\\KeMd4[2\\KeMd4[2[KfMe4[2ZKeMf4[2ZKeMf4\\2XKeMh4[2WKfMi4[2UKgMj4Y2TKiMl4X2RKiMn4V60lNQKTHo4k7TKSHl4l7WKRHi4m7XKSHh4m7XKTHg4m7XKSHh4m7YKXG<1[4h8RLWGn3h8SLXGm3g8TLYGl3f8ULZGk3d8WL\\Gi3c8XL]Gh3b8YL_Gf3`8\\L_Gd3`8]L`Gc3_8^LaGb3]8`LcG`3\\8aLdG_3]8`LcG`3_8^LaGb3a8]L_Gb3d8[L\\Ge3f8YLZGg3h8WLXGi3o8PLQGP4n8kKXGU4g8fK_GZ4`8gK`GY4Z8mKfGS4P8WLQHh3n6YKSIX1O_3o6XMQIh2o6XMQIh2o6XMQIh2o6XMQIh2o6XMQIh2o6XMQIh2o6XMQIh2P7WMQIh2o6XMQIh2o6XMQIh2o6XMQIh2o6XMQIh2o6YMPIg2P7YMPIg2Q7XMoHh2Q7XMoHh2Q7XMoHh2Q7XMoHh2Q7XMoHh2Q7XMoHh2Q7XMPIg2Q7XMoHh2Q7XMoHh2Q7XMoHh2Q7XMoHh2Q7XMoHh2Q7XMoHh2Q7XMoHh2R7WMnHi2R7WMnHi2R7WMnHi2R7WMnHj2Q7VMoHj2Q7VMoHj2Q7VMoHj2Q7WMnHi2R7WMnHi2R7WMoHh2Q7XMoHh2Q7XMoHh2Q7XMoHh2R7WMnHi2R7WMnHi2R7WMnHi2R7WMnHi2R7WMnHi2R7WMnHi2R7WMnHi2R7WMnHi2R7PLoHIOW4R7cK\\I6BW4R7]KbI<\\OW4R7WKhIc0UOV4a8kK^GU4b8nKoF@3a4n8YLRGg3m8ZLSGf3l8\\LSGd3l8]LTGc3k8^LUGb3j8_LVGa3i8`LWG`3h8aLXG_3g8bLYG^3e8dL[G\\3e8dL[G\\3d8eL\\G[3d8eL\\G[3d8eL\\G[3c8dL_G\\3a8hKcGF8a4j7XKoG>k0Z4U7YKRH0H4S1b4Q7]KSH7l0\\4P7^KTH7l0Z4P7`KRH7n0Y4P7`KRH8n0W4P7aKRH8o0V4o6cKQH8o0U4o6dKRH7P1T4l6hKSH62C?_4Z7kKTH4LMb0S4\\7PLSHe0?[3]7^MbHa2^7fM[HZ2d7hM\\HW2d7jM\\HU2d7mMZHS2g7mMYHR2h7oMVHQ2k7PNTHo1m7RNQHn1P8RNQHl1n7WNSHf1l7]NTHa1k7bNVH[1i7gNXHW1h7kNXHS1h7oNYHn0g7TOYHj0g7WO[Hf0e7\\O[Hb0e7@[H>e7D\\H9d7J[H4g7K[H2e7N]H0c70_HNa72bHK]76eH@c7`0_H\\Ob7e0aHUOb7k0`HPOb7P1bHkN`7U1bHfN`7[1bH`N`7a1cHZN_7f1cHUN_7l1dHnM^7S2dHiM^7W2dHdM]7^2fH\\M[7e2hHWMX7k2kHoLV7S3lHiLT7Y3nHbLU7^3nH\\LT7d3oHXLf63`Ge3d:\\LZEd3g:]LXEc3h:^LVE[3NdLl:d3XEWLl:f3:K5J6K5E;00OO2M30000O1<DM3N1OO2UNhDJ\\;FWE3R=I7IWS7e0gkH`0000000k\\1lNacNh0AXO\\Bo0P<YOUEGkNP1P<N`DRO@P1Q<N^DROAP1Q<N^DSO@m0U<0ZDSOA<d<a0nCROd<f0iBA`0I:7W;k0_DnNNc0c;?_DoNBm0o;4_DoNBm0o;4`DnN@l0S<6]DnN@c0\\<?TDnN@;d<f0mCPO^O1n<o0dCPOc<P1^CoNb<Q1^CoNb<Q1^CoNb<Q1^CPOa<P1_CPOa<P1`CoN`<Q1`CoN`<Q1`CPO_<P1aCPO_<P1aCPO_<P1bCoN^<Q1bCoN^<Q1bCPO]<P1cCPO]<P1cCPO]<P1dCoN\\<Q1dCoN_<2jBf0g0YOc<h0]CXOc<a0dC_O_<d0\\C[Ol<>SCB[;OcE8ROJU;3PFLkN1U;3lFMT93mFLc65jHOc0Mm5i0`IZOc0Mm5i0`IZOc0Mm5i0`IZOc0MR93oFLQ94oFKR95n200000PBMP=3PCMP=3QCMn<3RCNm<2SC6e<J\\C=\\<CdCf0S<ZOmCl0m;TOTDk0l;UOYDf0g;ZOdD;\\;EnD2Q;NR20RBMl<3TCh0Q<XOPDk0l;UO\\Dc0d;]O61bDO^;o0dCQO\\<P1i6lNUK1N2N2N2O1N2N2N0001O0000001O000O10001O00001O5KagY1",
+                            "type": 30,
+                            "tags": {},
+                            "cm": 0,
+                            "polygon": [],
+                            "iscrowd": 0,
+                            "mask_area": 81539
+                        }
+                    ],
+                    "img_class_ids": [
+                        3,
+                        5,
+                        6,
+                        7
+                    ]
+                }
+            },
+            "task_id": "import_semantic_seg_01",
+            "type": 3,
+            "task_class_ids": [
+                3,
+                4,
+                5,
+                6,
+                7
+            ],
+            "eval_class_ids": [],
+            "executor_config": ""
+        },
+        "prediction": {
+            "task_id": "import_semantic_seg_01",
+            "image_annotations": {},
+            "type": 100,
+            "task_class_ids": [],
+            "eval_class_ids": [],
+            "executor_config": ""
+        },
+        "image_cks": {}
+    },
+    "mir_keywords": {
+        "gt_idx": {
+            "cis": {
+                "5": {
+                    "key_ids": {
+                        "a3008c032eb11c8d9ffcb58208a36682ee40900f": {
+                            "ids": [
+                                1
+                            ]
+                        }
+                    }
+                },
+                "3": {
+                    "key_ids": {
+                        "a3008c032eb11c8d9ffcb58208a36682ee40900f": {
+                            "ids": [
+                                0
+                            ]
+                        }
+                    }
+                },
+                "6": {
+                    "key_ids": {
+                        "a3008c032eb11c8d9ffcb58208a36682ee40900f": {
+                            "ids": [
+                                2
+                            ]
+                        }
+                    }
+                },
+                "7": {
+                    "key_ids": {
+                        "430df22960b0f369318705800139fcc8ec38a3e4": {
+                            "ids": [
+                                1
+                            ]
+                        },
+                        "a3008c032eb11c8d9ffcb58208a36682ee40900f": {
+                            "ids": [
+                                3
+                            ]
+                        }
+                    }
+                },
+                "4": {
+                    "key_ids": {
+                        "430df22960b0f369318705800139fcc8ec38a3e4": {
+                            "ids": [
+                                0
+                            ]
+                        }
+                    }
+                }
+            },
+            "tags": {}
+        },
+        "ck_idx": {}
+    },
+    "mir_context": {
+        "images_cnt": 2,
+        "total_asset_mbytes": 1,
+        "pred_stats": {
+            "negative_asset_cnt": 2,
+            "total_cnt": 0,
+            "positive_asset_cnt": 0,
+            "tags_cnt": {},
+            "class_ids_cnt": {},
+            "eval_class_ids": []
+        },
+        "gt_stats": {
+            "total_cnt": 6,
+            "positive_asset_cnt": 2,
+            "class_ids_cnt": {
+                "4": 1,
+                "5": 1,
+                "3": 1,
+                "6": 1,
+                "7": 2
+            },
+            "negative_asset_cnt": 0,
+            "tags_cnt": {},
+            "eval_class_ids": []
+        },
+        "cks_cnt": {}
+    },
+    "mir_tasks": {
+        "tasks": {
+            "import_semantic_seg_01": {
+                "type": 5,
+                "name": "importing /tmp/mir_cmd_test/test_cmd_import/TestCmdImport/test_import_cmd_semantic_seg_01/monitor_storage_root/data/coco-idx.txt--/tmp/mir_cmd_test/test_cmd_import/TestCmdImport/test_import_cmd_semantic_seg_01/monitor_storage_root/data/xml/coco-annotations.json to a@import_semantic_seg_01, uts: add",
+                "task_id": "import_semantic_seg_01",
+                "timestamp": 1669880867,
+                "evaluation": {
+                    "config": {
+                        "conf_thr": 0.005,
+                        "iou_thrs_interval": "0.5",
+                        "need_pr_curve": false,
+                        "class_ids": [],
+                        "main_ck": ""
+                    },
+                    "state": 4,
+                    "sub_cks": {}
+                },
+                "new_types": {
+                    "leaves": 0,
+                    "grass": 0,
+                    "blanket": 0,
+                    "house": 0,
+                    "other": 0
+                },
+                "new_types_added": true,
+                "src_revs": "master",
+                "dst_rev": "a@import_semantic_seg_01",
+                "return_code": 0,
+                "return_msg": "",
+                "serialized_task_parameters": "",
+                "serialized_executor_config": "",
+                "executor": ""
+            }
+        },
+        "head_task_id": "import_semantic_seg_01"
+    }
+}

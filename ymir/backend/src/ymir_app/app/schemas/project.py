@@ -3,7 +3,7 @@ from typing import List, Optional
 
 from pydantic import BaseModel, validator
 
-from app.constants.state import MiningStrategy, TrainingType
+from app.constants.state import MiningStrategy, ObjectType
 from app.schemas.common import (
     Common,
     DateTimeModelMixin,
@@ -30,7 +30,7 @@ class ProjectBase(BaseModel):
 
     is_example: Optional[bool] = False
 
-    training_type: TrainingType = TrainingType.object_detect
+    object_type: ObjectType = ObjectType.object_detect
     candidate_training_dataset_id: Optional[int]
 
 
@@ -110,8 +110,6 @@ class Project(ProjectInDBBase):
     training_keywords: List[str]
     current_iteration_id: Optional[int]
     total_asset_count: int = 0
-    running_task_count: int = 0
-    total_task_count: int = 0
 
     @validator("training_keywords", pre=True)
     def unpack_keywords(cls, v: str) -> List[str]:

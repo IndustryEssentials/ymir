@@ -1,9 +1,17 @@
+declare module 'react-xml-viewer'
+
 declare namespace YModels {
   type Labels = string[]
   type DatasetId = number
   type ModelId = number
   type StageId = number
   type ImageId = number
+
+  type Matable<U> = {
+    [Type in keyof U]: {
+      type: Type
+    } & U[Type]
+  }[keyof U]
 
   export type BackendData = {
     [key: string]: any
@@ -20,6 +28,7 @@ declare namespace YModels {
     id: number
     groupId: number
     projectId: number
+    type: number,
     name: string
     versionName: string
     version: number
@@ -40,6 +49,12 @@ declare namespace YModels {
     task?: Task<P>
     hidden: boolean
     description: string
+    needReload?: boolean
+  }
+
+  enum ObjectType {
+    Detection = 1,
+    Segmentation = 2,
   }
 
   type Keywords = {
@@ -71,6 +86,7 @@ declare namespace YModels {
     keywordCount: number
     isProtected: Boolean
     assetCount: number
+    evaluated: boolean
     gt?: AnnotationsCount
     pred?: AnnotationsCount
     inferClass?: Array<string>
@@ -108,31 +124,74 @@ declare namespace YModels {
     hash: string
     keywords: Labels
     url: string
+    type: ObjectType
+    width: number
+    height: number
     metadata?: {
       width: number
       height: number
       channel: number
     }
     size?: number
-    annotations: Array<Annotation>
+    annotations: Annotation[]
     evaluated?: boolean
     cks?: CK
   }
 
-  export interface Annotation {
+  export interface AnnotationBase {
     keyword: string
+    width: number
+    height: number
+    color?: string
+    score?: number | string
+    gt?: boolean
+    cm: number
+    tags?: CK
+  }
+
+  enum AnnotationType {
+    BoundingBox = 0,
+    Polygon = 1,
+    Mask = 2,
+  }
+
+  type AnnotationMaps = {
+    [AnnotationType.BoundingBox]: BoundingBox
+    [AnnotationType.Polygon]: Polygon
+    [AnnotationType.Mask]: Mask
+  }
+
+  type Point = {
+    x: number
+    y: number
+  }
+
+  export type Annotation = Matable<AnnotationMaps>
+
+  export type SegAnnotation = Matable<Omit<AnnotationMaps, AnnotationType.BoundingBox>>
+  export type DetAnnotation = Matable<Pick<AnnotationMaps, AnnotationType.BoundingBox>>
+
+  export interface BoundingBox extends AnnotationBase {
+    type: AnnotationType.BoundingBox
     box: {
       x: number
       y: number
       w: number
       h: number
-      rotate_angle: number
+      rotate_angle?: number
     }
-    color?: string
-    score?: number
-    gt?: boolean
-    cm: number
-    tags?: CK
+  }
+
+  export interface Polygon extends AnnotationBase {
+    type: AnnotationType.Polygon
+    polygon: Point[]
+  }
+
+  export interface Mask extends AnnotationBase {
+    type: AnnotationType.Mask
+    mask: string
+    decodeMask?: number[][]
+    rect?: [x: number, y: number, width: number, height: number]
   }
 
   export interface Stage {
@@ -159,6 +218,7 @@ declare namespace YModels {
     id: number
     name: string
     type: number
+    typeLabel: string
     keywords: Labels
     candidateTrainSet: number
     trainSet?: DatasetGroup
@@ -169,7 +229,6 @@ declare namespace YModels {
     trainSetVersion?: number
     model?: number
     modelStage?: Array<number>
-    modelCount: number
     miningStrategy: number
     chunkSize?: number
     currentIteration?: Iteration
@@ -183,8 +242,12 @@ declare namespace YModels {
     hiddenModels: Array<number>
     enableIteration: boolean
     totalAssetCount: number
-    runningTaskCount: number
-    totalTaskCount: number
+    datasetCount: number
+    datasetProcessingCount: number
+    datasetErrorCount: number
+    modelCount: number
+    modelProcessingCount: number
+    modelErrorCount: number
   }
 
   export type ImageConfig = { [key: string]: number | string }
@@ -196,7 +259,6 @@ declare namespace YModels {
     id: number
     name: string
     state: number
-    isShared: boolean
     functions: Array<number>
     configs: Array<DockerImageConfig>
     url: string

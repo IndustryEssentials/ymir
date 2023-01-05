@@ -106,6 +106,7 @@ def list_datasets(
     group_id: int = Query(None),
     visible: bool = Query(True),
     state: ResultState = Query(None),
+    object_type: int = Query(None),
     offset: int = Query(None),
     limit: int = Query(None),
     order_by: SortField = Query(SortField.id),
@@ -125,6 +126,7 @@ def list_datasets(
         group_id=group_id,
         source=source,
         state=state,
+        object_type=object_type,
         visible=visible,
         offset=offset,
         limit=limit,
@@ -172,7 +174,12 @@ def import_dataset(
     - stop_upon_unknown_annotations = 3
     - add unknown annotations = 4
     """
-    # 1. check if dataset group name is available
+    # 1. various validation
+    project = crud.project.get(db, dataset_import.project_id)
+    if not project:
+        raise ProjectNotFound()
+    object_type = project.object_type
+
     logger.info("[import dataset] import dataset with payload: %s", dataset_import.json())
     if crud.dataset_group.is_duplicated_name_in_project(
         db, project_id=dataset_import.project_id, name=dataset_import.group_name
@@ -228,6 +235,7 @@ def import_dataset(
         dataset_import,
         current_user.id,
         task.hash,
+        object_type,
         dataset.id,
     )
     return {"result": dataset}

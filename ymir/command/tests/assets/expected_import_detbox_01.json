@@ -1,0 +1,748 @@
+{
+    "mir_metadatas": {
+        "attributes": {
+            "a3008c032eb11c8d9ffcb58208a36682ee40900f": {
+                "timestamp": {
+                    "start": 1669895937,
+                    "duration": 0.0
+                },
+                "asset_type": 1,
+                "width": 500,
+                "height": 333,
+                "image_channels": 3,
+                "byte_size": 23509,
+                "origin_filename": "2007_000243",
+                "tvt_type": 0
+            },
+            "430df22960b0f369318705800139fcc8ec38a3e4": {
+                "timestamp": {
+                    "start": 1669895937,
+                    "duration": 0.0
+                },
+                "asset_type": 1,
+                "width": 500,
+                "height": 281,
+                "image_channels": 3,
+                "byte_size": 54757,
+                "origin_filename": "2007_000032",
+                "tvt_type": 0
+            }
+        }
+    },
+    "mir_annotations": {
+        "ground_truth": {
+            "image_annotations": {
+                "430df22960b0f369318705800139fcc8ec38a3e4": {
+                    "boxes": [
+                        {
+                            "box": {
+                                "x": 104,
+                                "y": 78,
+                                "w": 272,
+                                "h": 106,
+                                "rotate_angle": 0.22
+                            },
+                            "class_id": 1,
+                            "score": 0.5,
+                            "anno_quality": 0.62,
+                            "tags": {
+                                "difficult": "0",
+                                "pose": "Frontal",
+                                "color": "white"
+                            },
+                            "index": 0,
+                            "cm": 0,
+                            "det_link_id": 0,
+                            "class_name": "",
+                            "polygon": [],
+                            "mask": "",
+                            "iscrowd": 0,
+                            "type": 0,
+                            "mask_area": 0
+                        },
+                        {
+                            "index": 1,
+                            "box": {
+                                "x": 133,
+                                "y": 88,
+                                "w": 65,
+                                "h": 36,
+                                "rotate_angle": 0.02
+                            },
+                            "class_id": 1,
+                            "score": -1.0,
+                            "anno_quality": 0.75,
+                            "tags": {
+                                "difficult": "0",
+                                "pose": "Left",
+                                "color": "blue"
+                            },
+                            "cm": 0,
+                            "det_link_id": 0,
+                            "class_name": "",
+                            "polygon": [],
+                            "mask": "",
+                            "iscrowd": 0,
+                            "type": 0,
+                            "mask_area": 0
+                        }
+                    ],
+                    "img_class_ids": [
+                        1
+                    ]
+                },
+                "a3008c032eb11c8d9ffcb58208a36682ee40900f": {
+                    "boxes": [
+                        {
+                            "box": {
+                                "x": 181,
+                                "y": 127,
+                                "w": 94,
+                                "h": 67,
+                                "rotate_angle": -0.02
+                            },
+                            "class_id": 1,
+                            "score": -1.0,
+                            "anno_quality": 0.75,
+                            "tags": {
+                                "difficult": "0",
+                                "pose": "Unspecified",
+                                "color": "pink"
+                            },
+                            "index": 0,
+                            "cm": 0,
+                            "det_link_id": 0,
+                            "class_name": "",
+                            "polygon": [],
+                            "mask": "",
+                            "iscrowd": 0,
+                            "type": 0,
+                            "mask_area": 0
+                        }
+                    ],
+                    "img_class_ids": [
+                        1
+                    ]
+                }
+            },
+            "task_id": "import_detbox_01",
+            "type": 2,
+            "task_class_ids": [
+                1
+            ],
+            "eval_class_ids": [],
+            "executor_config": ""
+        },
+        "prediction": {
+            "image_annotations": {
+                "a3008c032eb11c8d9ffcb58208a36682ee40900f": {
+                    "boxes": [
+                        {
+                            "box": {
+                                "x": 181,
+                                "y": 127,
+                                "w": 94,
+                                "h": 67,
+                                "rotate_angle": -0.02
+                            },
+                            "class_id": 1,
+                            "score": -1.0,
+                            "anno_quality": 0.75,
+                            "tags": {
+                                "difficult": "0",
+                                "color": "pink",
+                                "pose": "Unspecified"
+                            },
+                            "index": 0,
+                            "cm": 0,
+                            "det_link_id": 0,
+                            "class_name": "",
+                            "polygon": [],
+                            "mask": "",
+                            "iscrowd": 0,
+                            "type": 0,
+                            "mask_area": 0
+                        }
+                    ],
+                    "img_class_ids": [
+                        1
+                    ]
+                },
+                "430df22960b0f369318705800139fcc8ec38a3e4": {
+                    "boxes": [
+                        {
+                            "box": {
+                                "x": 104,
+                                "y": 78,
+                                "w": 272,
+                                "h": 106,
+                                "rotate_angle": 0.22
+                            },
+                            "class_id": 1,
+                            "score": 0.5,
+                            "anno_quality": 0.62,
+                            "tags": {
+                                "difficult": "0",
+                                "pose": "Frontal",
+                                "color": "white"
+                            },
+                            "index": 0,
+                            "cm": 0,
+                            "det_link_id": 0,
+                            "class_name": "",
+                            "polygon": [],
+                            "mask": "",
+                            "iscrowd": 0,
+                            "type": 0,
+                            "mask_area": 0
+                        },
+                        {
+                            "index": 1,
+                            "box": {
+                                "x": 133,
+                                "y": 88,
+                                "w": 65,
+                                "h": 36,
+                                "rotate_angle": 0.02
+                            },
+                            "class_id": 1,
+                            "score": -1.0,
+                            "anno_quality": 0.75,
+                            "tags": {
+                                "pose": "Left",
+                                "difficult": "0",
+                                "color": "blue"
+                            },
+                            "cm": 0,
+                            "det_link_id": 0,
+                            "class_name": "",
+                            "polygon": [],
+                            "mask": "",
+                            "iscrowd": 0,
+                            "type": 0,
+                            "mask_area": 0
+                        }
+                    ],
+                    "img_class_ids": [
+                        1
+                    ]
+                }
+            },
+            "task_id": "import_detbox_01",
+            "type": 2,
+            "task_class_ids": [
+                1
+            ],
+            "eval_class_ids": [],
+            "executor_config": ""
+        },
+        "image_cks": {
+            "a3008c032eb11c8d9ffcb58208a36682ee40900f": {
+                "cks": {
+                    "theme": "gray sky",
+                    "camera": "camera 1",
+                    "weather": "rainy"
+                },
+                "image_quality": 0.83
+            },
+            "430df22960b0f369318705800139fcc8ec38a3e4": {
+                "cks": {
+                    "camera": "camera 0",
+                    "weather": "sunny",
+                    "theme": "blue sky"
+                },
+                "image_quality": 0.95
+            }
+        }
+    },
+    "mir_keywords": {
+        "pred_idx": {
+            "cis": {
+                "1": {
+                    "key_ids": {
+                        "a3008c032eb11c8d9ffcb58208a36682ee40900f": {
+                            "ids": [
+                                0
+                            ]
+                        },
+                        "430df22960b0f369318705800139fcc8ec38a3e4": {
+                            "ids": [
+                                0,
+                                1
+                            ]
+                        }
+                    }
+                }
+            },
+            "tags": {
+                "difficult": {
+                    "asset_annos": {
+                        "430df22960b0f369318705800139fcc8ec38a3e4": {
+                            "ids": [
+                                0,
+                                1
+                            ]
+                        },
+                        "a3008c032eb11c8d9ffcb58208a36682ee40900f": {
+                            "ids": [
+                                0
+                            ]
+                        }
+                    },
+                    "sub_indexes": {
+                        "0": {
+                            "key_ids": {
+                                "a3008c032eb11c8d9ffcb58208a36682ee40900f": {
+                                    "ids": [
+                                        0
+                                    ]
+                                },
+                                "430df22960b0f369318705800139fcc8ec38a3e4": {
+                                    "ids": [
+                                        0,
+                                        1
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                },
+                "pose": {
+                    "asset_annos": {
+                        "430df22960b0f369318705800139fcc8ec38a3e4": {
+                            "ids": [
+                                0,
+                                1
+                            ]
+                        },
+                        "a3008c032eb11c8d9ffcb58208a36682ee40900f": {
+                            "ids": [
+                                0
+                            ]
+                        }
+                    },
+                    "sub_indexes": {
+                        "Left": {
+                            "key_ids": {
+                                "430df22960b0f369318705800139fcc8ec38a3e4": {
+                                    "ids": [
+                                        1
+                                    ]
+                                }
+                            }
+                        },
+                        "Unspecified": {
+                            "key_ids": {
+                                "a3008c032eb11c8d9ffcb58208a36682ee40900f": {
+                                    "ids": [
+                                        0
+                                    ]
+                                }
+                            }
+                        },
+                        "Frontal": {
+                            "key_ids": {
+                                "430df22960b0f369318705800139fcc8ec38a3e4": {
+                                    "ids": [
+                                        0
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                },
+                "color": {
+                    "asset_annos": {
+                        "430df22960b0f369318705800139fcc8ec38a3e4": {
+                            "ids": [
+                                0,
+                                1
+                            ]
+                        },
+                        "a3008c032eb11c8d9ffcb58208a36682ee40900f": {
+                            "ids": [
+                                0
+                            ]
+                        }
+                    },
+                    "sub_indexes": {
+                        "blue": {
+                            "key_ids": {
+                                "430df22960b0f369318705800139fcc8ec38a3e4": {
+                                    "ids": [
+                                        1
+                                    ]
+                                }
+                            }
+                        },
+                        "white": {
+                            "key_ids": {
+                                "430df22960b0f369318705800139fcc8ec38a3e4": {
+                                    "ids": [
+                                        0
+                                    ]
+                                }
+                            }
+                        },
+                        "pink": {
+                            "key_ids": {
+                                "a3008c032eb11c8d9ffcb58208a36682ee40900f": {
+                                    "ids": [
+                                        0
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "gt_idx": {
+            "cis": {
+                "1": {
+                    "key_ids": {
+                        "430df22960b0f369318705800139fcc8ec38a3e4": {
+                            "ids": [
+                                0,
+                                1
+                            ]
+                        },
+                        "a3008c032eb11c8d9ffcb58208a36682ee40900f": {
+                            "ids": [
+                                0
+                            ]
+                        }
+                    }
+                }
+            },
+            "tags": {
+                "difficult": {
+                    "asset_annos": {
+                        "a3008c032eb11c8d9ffcb58208a36682ee40900f": {
+                            "ids": [
+                                0
+                            ]
+                        },
+                        "430df22960b0f369318705800139fcc8ec38a3e4": {
+                            "ids": [
+                                0,
+                                1
+                            ]
+                        }
+                    },
+                    "sub_indexes": {
+                        "0": {
+                            "key_ids": {
+                                "a3008c032eb11c8d9ffcb58208a36682ee40900f": {
+                                    "ids": [
+                                        0
+                                    ]
+                                },
+                                "430df22960b0f369318705800139fcc8ec38a3e4": {
+                                    "ids": [
+                                        0,
+                                        1
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                },
+                "color": {
+                    "asset_annos": {
+                        "a3008c032eb11c8d9ffcb58208a36682ee40900f": {
+                            "ids": [
+                                0
+                            ]
+                        },
+                        "430df22960b0f369318705800139fcc8ec38a3e4": {
+                            "ids": [
+                                0,
+                                1
+                            ]
+                        }
+                    },
+                    "sub_indexes": {
+                        "pink": {
+                            "key_ids": {
+                                "a3008c032eb11c8d9ffcb58208a36682ee40900f": {
+                                    "ids": [
+                                        0
+                                    ]
+                                }
+                            }
+                        },
+                        "blue": {
+                            "key_ids": {
+                                "430df22960b0f369318705800139fcc8ec38a3e4": {
+                                    "ids": [
+                                        1
+                                    ]
+                                }
+                            }
+                        },
+                        "white": {
+                            "key_ids": {
+                                "430df22960b0f369318705800139fcc8ec38a3e4": {
+                                    "ids": [
+                                        0
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                },
+                "pose": {
+                    "asset_annos": {
+                        "a3008c032eb11c8d9ffcb58208a36682ee40900f": {
+                            "ids": [
+                                0
+                            ]
+                        },
+                        "430df22960b0f369318705800139fcc8ec38a3e4": {
+                            "ids": [
+                                0,
+                                1
+                            ]
+                        }
+                    },
+                    "sub_indexes": {
+                        "Left": {
+                            "key_ids": {
+                                "430df22960b0f369318705800139fcc8ec38a3e4": {
+                                    "ids": [
+                                        1
+                                    ]
+                                }
+                            }
+                        },
+                        "Frontal": {
+                            "key_ids": {
+                                "430df22960b0f369318705800139fcc8ec38a3e4": {
+                                    "ids": [
+                                        0
+                                    ]
+                                }
+                            }
+                        },
+                        "Unspecified": {
+                            "key_ids": {
+                                "a3008c032eb11c8d9ffcb58208a36682ee40900f": {
+                                    "ids": [
+                                        0
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "ck_idx": {
+            "weather": {
+                "asset_annos": {
+                    "430df22960b0f369318705800139fcc8ec38a3e4": {
+                        "ids": []
+                    },
+                    "a3008c032eb11c8d9ffcb58208a36682ee40900f": {
+                        "ids": []
+                    }
+                },
+                "sub_indexes": {
+                    "sunny": {
+                        "key_ids": {
+                            "430df22960b0f369318705800139fcc8ec38a3e4": {
+                                "ids": []
+                            }
+                        }
+                    },
+                    "rainy": {
+                        "key_ids": {
+                            "a3008c032eb11c8d9ffcb58208a36682ee40900f": {
+                                "ids": []
+                            }
+                        }
+                    }
+                }
+            },
+            "theme": {
+                "asset_annos": {
+                    "430df22960b0f369318705800139fcc8ec38a3e4": {
+                        "ids": []
+                    },
+                    "a3008c032eb11c8d9ffcb58208a36682ee40900f": {
+                        "ids": []
+                    }
+                },
+                "sub_indexes": {
+                    "gray sky": {
+                        "key_ids": {
+                            "a3008c032eb11c8d9ffcb58208a36682ee40900f": {
+                                "ids": []
+                            }
+                        }
+                    },
+                    "blue sky": {
+                        "key_ids": {
+                            "430df22960b0f369318705800139fcc8ec38a3e4": {
+                                "ids": []
+                            }
+                        }
+                    }
+                }
+            },
+            "camera": {
+                "asset_annos": {
+                    "430df22960b0f369318705800139fcc8ec38a3e4": {
+                        "ids": []
+                    },
+                    "a3008c032eb11c8d9ffcb58208a36682ee40900f": {
+                        "ids": []
+                    }
+                },
+                "sub_indexes": {
+                    "camera 1": {
+                        "key_ids": {
+                            "a3008c032eb11c8d9ffcb58208a36682ee40900f": {
+                                "ids": []
+                            }
+                        }
+                    },
+                    "camera 0": {
+                        "key_ids": {
+                            "430df22960b0f369318705800139fcc8ec38a3e4": {
+                                "ids": []
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "mir_context": {
+        "images_cnt": 2,
+        "cks_cnt": {
+            "theme": {
+                "cnt": 2,
+                "sub_cnt": {
+                    "blue sky": 1,
+                    "gray sky": 1
+                }
+            },
+            "weather": {
+                "cnt": 2,
+                "sub_cnt": {
+                    "sunny": 1,
+                    "rainy": 1
+                }
+            },
+            "camera": {
+                "cnt": 2,
+                "sub_cnt": {
+                    "camera 1": 1,
+                    "camera 0": 1
+                }
+            }
+        },
+        "total_asset_mbytes": 1,
+        "pred_stats": {
+            "total_cnt": 3,
+            "positive_asset_cnt": 2,
+            "tags_cnt": {
+                "pose": {
+                    "cnt": 3,
+                    "sub_cnt": {
+                        "Frontal": 1,
+                        "Left": 1,
+                        "Unspecified": 1
+                    }
+                },
+                "difficult": {
+                    "cnt": 3,
+                    "sub_cnt": {
+                        "0": 3
+                    }
+                },
+                "color": {
+                    "cnt": 3,
+                    "sub_cnt": {
+                        "blue": 1,
+                        "pink": 1,
+                        "white": 1
+                    }
+                }
+            },
+            "class_ids_cnt": {
+                "1": 2
+            },
+            "negative_asset_cnt": 0,
+            "eval_class_ids": []
+        },
+        "gt_stats": {
+            "total_cnt": 3,
+            "positive_asset_cnt": 2,
+            "tags_cnt": {
+                "color": {
+                    "cnt": 3,
+                    "sub_cnt": {
+                        "blue": 1,
+                        "pink": 1,
+                        "white": 1
+                    }
+                },
+                "difficult": {
+                    "cnt": 3,
+                    "sub_cnt": {
+                        "0": 3
+                    }
+                },
+                "pose": {
+                    "cnt": 3,
+                    "sub_cnt": {
+                        "Unspecified": 1,
+                        "Frontal": 1,
+                        "Left": 1
+                    }
+                }
+            },
+            "class_ids_cnt": {
+                "1": 2
+            },
+            "negative_asset_cnt": 0,
+            "eval_class_ids": []
+        }
+    },
+    "mir_tasks": {
+        "tasks": {
+            "import_detbox_01": {
+                "type": 5,
+                "name": "importing /tmp/mir_cmd_test/test_cmd_import/TestCmdImport/test_import_detbox_00/monitor_storage_root/data/idx.txt-/tmp/mir_cmd_test/test_cmd_import/TestCmdImport/test_import_detbox_00/monitor_storage_root/data/xml-/tmp/mir_cmd_test/test_cmd_import/TestCmdImport/test_import_detbox_00/monitor_storage_root/data/xml to a@import_detbox_01, uts: ignore",
+                "task_id": "import_detbox_01",
+                "timestamp": 1669895937,
+                "evaluation": {
+                    "config": {
+                        "conf_thr": 0.005,
+                        "iou_thrs_interval": "0.5",
+                        "need_pr_curve": false,
+                        "class_ids": [],
+                        "main_ck": ""
+                    },
+                    "state": 4,
+                    "sub_cks": {}
+                },
+                "new_types": {
+                    "person": 3
+                },
+                "src_revs": "master",
+                "dst_rev": "a@import_detbox_01",
+                "return_code": 0,
+                "return_msg": "",
+                "new_types_added": false,
+                "serialized_task_parameters": "",
+                "serialized_executor_config": "",
+                "executor": ""
+            }
+        },
+        "head_task_id": "import_detbox_01"
+    }
+}

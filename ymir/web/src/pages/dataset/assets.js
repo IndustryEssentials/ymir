@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { useParams } from 'umi'
-import { Select, Pagination, Row, Col, Button, Space, Card, Tag, Modal } from 'antd'
+import { Select, Pagination, Row, Col, Button, Space, Card, Tag, Modal, Popover } from 'antd'
 
 import t from '@/utils/t'
 import useFetch from '@/hooks/useFetch'
@@ -15,6 +15,7 @@ import useWindowResize from '@/hooks/useWindowResize'
 import KeywordSelector from './components/keywordSelector'
 import EvaluationSelector from '@/components/form/EvaluationSelector'
 import VersionName from '@/components/result/VersionName'
+import CustomLabels from '@/components/dataset/asset/CustomLabels'
 
 const { Option } = Select
 
@@ -123,6 +124,13 @@ const Dataset = () => {
     </Button>
   )
 
+  const ckPop = (asset) => (
+    <>
+      <h4>{t('dataset.assets.keyword.selector.types.cks')}</h4>
+      <CustomLabels asset={asset} />
+    </>
+  )
+
   const renderList = useCallback(
     (list, row = 5) => {
       let r = 0,
@@ -143,26 +151,28 @@ const Dataset = () => {
           <Row gutter={4} wrap={false} key={index} className={styles.dataset_container}>
             {rows.map((asset, rowIndex) => (
               <Col style={{ height: h }} key={rowIndex} className={styles.dataset_item}>
-                <div className={styles.dataset_img} onClick={() => goAsset(asset, asset.hash, index * row + rowIndex)}>
-                  <ImageAnnotation url={asset.url} data={asset.annotations} filters={filterAnnotations} />
-                  <span className={styles.item_keywords_count} title={asset?.keywords.join(',')}>
-                    {t('dataset.detail.assets.keywords.total', {
-                      total: asset?.keywords?.length,
-                    })}
-                  </span>
-                  <span className={styles.item_keywords}>
-                    {asset.keywords.slice(0, 4).map((key) => (
-                      <Tag className={styles.item_keyword} key={key} title={key}>
-                        {key}
-                      </Tag>
-                    ))}
-                    {asset.keywords.length > 4 ? (
-                      <Tag className={styles.item_keyword} style={{ width: '10px' }}>
-                        ...
-                      </Tag>
-                    ) : null}
-                  </span>
-                </div>
+                <Popover placement="bottomLeft" content={ckPop(asset)}>
+                  <div className={styles.dataset_img} onClick={() => goAsset(asset, asset.hash, index * row + rowIndex)}>
+                    <ImageAnnotation url={asset.url} data={asset.annotations} filters={filterAnnotations} />
+                    <span className={styles.item_keywords_count} title={asset?.keywords.join(',')}>
+                      {t('dataset.detail.assets.keywords.total', {
+                        total: asset?.keywords?.length,
+                      })}
+                    </span>
+                    <span className={styles.item_keywords}>
+                      {asset.keywords.slice(0, 4).map((key) => (
+                        <Tag className={styles.item_keyword} key={key} title={key}>
+                          {key}
+                        </Tag>
+                      ))}
+                      {asset.keywords.length > 4 ? (
+                        <Tag className={styles.item_keyword} style={{ width: '10px' }}>
+                          ...
+                        </Tag>
+                      ) : null}
+                    </span>
+                  </div>
+                </Popover>
               </Col>
             ))}
           </Row>
@@ -193,7 +203,7 @@ const Dataset = () => {
       <Col span={12} style={{ fontSize: 14 }}>
         <Space size={10} wrap={true}>
           <GtSelector layout="inline" value={filterParams.annoType} onChange={(checked, all) => updateFilterParams(checked, all, 'annoType')} />
-          {dataset.inferClass?.length ? (
+          {dataset.evaluated ? (
             <EvaluationSelector value={filterParams.cm} onChange={(checked, all) => updateFilterParams(checked, all, 'cm')} labelAlign={'right'} />
           ) : null}
           <KeywordSelector value={filterParams.keywords} onChange={filterKw} dataset={dataset} labelAlign={'right'} />

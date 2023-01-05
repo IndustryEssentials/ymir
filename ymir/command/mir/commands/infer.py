@@ -2,15 +2,19 @@ import argparse
 import json
 import logging
 import os
+import shutil
 import time
-from typing import Any
+from typing import Any, Callable, Dict
 
+from google.protobuf import json_format
 import yaml
 
 from mir.commands import base
+from mir.protos import mir_command_pb2 as mirpb
 from mir.tools import class_ids, models
 from mir.tools import settings as mir_settings
 from mir.tools import env_config
+from mir.tools.annotations import import_annotations_coco_json, UnknownTypesStrategy
 from mir.tools.code import MirCode
 from mir.tools.errors import MirRuntimeError
 from mir.tools.executant import prepare_executant_env, run_docker_executant
@@ -155,9 +159,17 @@ class CmdInfer(base.BaseCommand):
         )
 
         if run_infer:
-            _process_infer_results(infer_result_file=os.path.join(work_dir_out, 'infer-result.json'),
-                                   max_boxes=_get_max_boxes(config_file),
-                                   label_storage_file=label_storage_file)
+            # result files -> task_annotations and save
+            class_id_mgr = class_ids.load_or_create_userlabels(label_storage_file=label_storage_file)
+            task_annotations = mirpb.SingleTaskAnnotations()
+            _process_infer_result(model_storage.object_type)(task_annotations, work_dir_out, class_id_mgr)
+            task_annotations.type = model_storage.object_type  # type: ignore
+
+            with open(os.path.join(work_dir_out, 'prediction.mir'), 'wb') as m_f:
+                m_f.write(task_annotations.SerializeToString())
+
+        # remove models
+        shutil.rmtree(os.path.join(work_dir_in, 'models'))
 
         return MirCode.RC_OK
 
@@ -209,39 +221,81 @@ def _prepare_assets(index_file: str, work_index_file: str, media_path: str) -> N
                               needs_new_commit=False)
 
 
-def _process_infer_results(infer_result_file: str, max_boxes: int, label_storage_file: str) -> None:
-    if not os.path.isfile(infer_result_file):
-        raise MirRuntimeError(error_code=MirCode.RC_CMD_NO_RESULT,
-                              error_message=f"can not find result file: {infer_result_file}")
+def _process_infer_result(
+        model_object_type: Any) -> Callable[[mirpb.SingleTaskAnnotations, str, class_ids.UserLabels], None]:
+    _func_map: Dict[Any, Callable[[mirpb.SingleTaskAnnotations, str, class_ids.UserLabels], None]] = {
+        mirpb.ObjectType.OT_DET_BOX: _process_infer_detbox_result,
+        mirpb.ObjectType.OT_SEG: _process_infer_seg_coco_result,
+    }
+    return _func_map[model_object_type]
 
+
+def _process_infer_detbox_result(task_annotations: mirpb.SingleTaskAnnotations, work_dir_out: str,
+                                 class_id_mgr: class_ids.UserLabels) -> None:
+    infer_result_file = os.path.join(work_dir_out, 'infer-result.json')
     with open(infer_result_file, 'r') as f:
         results = json.loads(f.read())
 
-    class_id_mgr = class_ids.load_or_create_userlabels(label_storage_file=label_storage_file)
+    detections = results.get('detection')
+    if not isinstance(detections, dict):
+        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_FILE,
+                              error_message=f"Invalid infer result file: {infer_result_file}, have no detection dict")
 
-    for _, annotations_dict in results.get('detection', {}).items():
-        # Compatible with previous version of format.
-        annotations = annotations_dict.get('boxes') or annotations_dict.get('annotations')
+    unknown_class_id_annos_cnt = 0
+    no_score_annos_cnt = 0
+    for asset_name, annotations_dict in detections.items():
+        annotations = annotations_dict.get('boxes')
         if not isinstance(annotations, list):
+            logging.error(f"invalid annotations: {annotations}")
             continue
 
-        annotations.sort(key=(lambda x: x['score']), reverse=True)
-        annotations = [a for a in annotations if class_id_mgr.has_name(a['class_name'])]
-        annotations_dict['boxes'] = annotations[:max_boxes]
+        single_image_annotations = mirpb.SingleImageAnnotations()
+        idx = 0
+        for annotation_dict in annotations:
+            class_id = class_id_mgr.id_and_main_name_for_name(name=annotation_dict['class_name'])[0]
+            # ignore unknown class ids
+            if class_id < 0:
+                unknown_class_id_annos_cnt += 1
+                continue
+            if 'score' not in annotation_dict:
+                no_score_annos_cnt += 1
+                continue
 
-    with open(infer_result_file, 'w') as f:
-        f.write(json.dumps(results, indent=4))
+            annotation = mirpb.ObjectAnnotation()
+            annotation.index = idx
+            json_format.ParseDict(annotation_dict['box'], annotation.box)
+            annotation.class_id = class_id
+            annotation.score = float(annotation_dict['score'])
+            single_image_annotations.boxes.append(annotation)
+            idx += 1
+
+        # task_annotations.image_annotations key: image file base name
+        task_annotations.image_annotations[os.path.basename(asset_name)].CopyFrom(single_image_annotations)
+
+    logging.info(f"count of objects with unknown class ids: {unknown_class_id_annos_cnt}")
+    logging.info(f"count of objects without score: {no_score_annos_cnt}")
 
 
-def _get_max_boxes(config_file: str) -> int:
-    with open(config_file, 'r') as f:
-        config = yaml.safe_load(f.read())
+def _process_infer_seg_coco_result(task_annotations: mirpb.SingleTaskAnnotations, work_dir_out: str,
+                                   class_id_mgr: class_ids.UserLabels) -> None:
+    coco_json_filename = 'coco-infer-result.json'
 
-    max_boxes = config.get('max_boxes', 50)
-    if not isinstance(max_boxes, int) or max_boxes <= 0:
-        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS, error_message=f"invalid max_boxes: {max_boxes}")
+    with open(os.path.join(work_dir_out, coco_json_filename), 'r') as f:
+        result = json.loads(f.read())
+    images_list = result['images']
+    file_name_to_asset_ids = {}
+    for v in images_list:
+        file_name_to_asset_ids[v['file_name']] = v['file_name']
 
-    return max_boxes
+    # task_annotations.image_annotations key: image file base name
+    import_annotations_coco_json(file_name_to_asset_ids=file_name_to_asset_ids,
+                                 mir_annotation=mirpb.MirAnnotations(),
+                                 annotations_dir_path=work_dir_out,
+                                 class_type_manager=class_id_mgr,
+                                 unknown_types_strategy=UnknownTypesStrategy.IGNORE,
+                                 accu_new_class_names={},
+                                 image_annotations=task_annotations,
+                                 coco_json_filename=coco_json_filename)
 
 
 # might used both by mining and infer

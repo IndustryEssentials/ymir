@@ -12,6 +12,7 @@ const Hide = forwardRef(({ type = 0, msg = 'dataset.action.hide.confirm.content'
   const [hideResult, remoteHide] = useFetch(`${!type ? 'dataset' : 'model'}/hide`)
 
   const [modal, contextHolder] = Modal.useModal()
+  const [msgApi, msgHolder] = message.useMessage()
   const getLabels = (labels) =>
     labels.map((version) => (
       <Tag style={{ margin: '0 5px', display: 'inline-block' }} key={version.id}>
@@ -36,9 +37,9 @@ const Hide = forwardRef(({ type = 0, msg = 'dataset.action.hide.confirm.content'
     const excludeLabels = getLabels(versions.filter((vs) => exclude.includes(vs.id)))
     const ids = hideVersions.map(({ id }) => id)
     const pid = versions[0].projectId
-    const emsg = <div style={{ color: 'red' }}>{t(excludeMsg, { labels: excludeLabels })}</div>
+    const emsg = <span style={{ display: 'inline-block', maxWidth: 800, color: 'red' }}>{t(excludeMsg, { labels: excludeLabels })}</span>
     if (!hideVersions?.length) {
-      return message.error(emsg)
+      return msgApi.error(emsg)
     }
     modal.confirm(confirmConfig({
       content: (
@@ -52,7 +53,7 @@ const Hide = forwardRef(({ type = 0, msg = 'dataset.action.hide.confirm.content'
     }))
   }
 
-  return <div>{contextHolder}</div>
+  return <div>{contextHolder}{msgHolder}</div>
 })
 
 export default connect(null, null, null, { forwardRef: true })(Hide)

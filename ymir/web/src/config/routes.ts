@@ -303,12 +303,21 @@ export const homeRoutes = [
   },
   {
     path: "/home/algo/:module?",
-    name: "initModel",
+    name: "algo",
     component: "@/pages/algo/index",
     title: "algo.title",
     pid: 0,
     id: 39,
     breadcrumbLabel: "algo.title",
+  },
+  {
+    path: "/home/public_image/:module?",
+    name: "publicImage",
+    component: "@/pages/public_image/index",
+    title: "public_image.title",
+    pid: 0,
+    id: 39,
+    breadcrumbLabel: "public_image.title",
   },
 ]
 

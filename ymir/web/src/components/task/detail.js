@@ -286,10 +286,9 @@ function TaskDetail({ task = {} }) {
   )
   const renderMerge = () => (
     <>
-      {renderDatasetSource(task?.parameters?.dataset_id)}
+      <Item label={t('task.detail.include_datasets.label')} span={2}>{renderDatasetNames(task?.parameters?.include_datasets)}</Item>
+      <Item label={t('task.detail.exclude_datasets.label')} span={2}>{renderDatasetNames(task?.parameters?.exclude_datasets)}</Item>
       {renderCreateTime(task.create_datetime)}
-      <Item label={t('task.detail.include_datasets.label')}>{renderDatasetNames(task?.parameters?.include_datasets)}</Item>
-      <Item label={t('task.detail.exclude_datasets.label')}>{renderDatasetNames(task?.parameters?.exclude_datasets)}</Item>
     </>
   )
   const renderFilter = () => (
