@@ -76,6 +76,7 @@ async def batch_update_task_status(events: List[Tuple[str, Dict]]) -> List[str]:
 
 
 def create_single_task(db: Session, user_id: int, user_labels: UserLabels, task_in: schemas.TaskCreate) -> models.Task:
+    project_getter = partial(crud.project.get, db, task_in.project_id)
     iterations_getter = partial(crud.iteration.get_multi_by_project, db)
     datasets_getter = partial(ensure_datasets_are_ready, db)
     model_stages_getter = partial(crud.model_stage.get_multi_by_ids, db)
@@ -88,6 +89,7 @@ def create_single_task(db: Session, user_id: int, user_labels: UserLabels, task_
         iterations_getter,
         labels_getter,
         docker_image_getter,
+        project_getter,
     )
     task_hash = gen_task_hash(user_id, task_in.project_id)
     try:
