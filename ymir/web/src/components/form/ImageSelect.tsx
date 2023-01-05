@@ -29,7 +29,11 @@ const ImageSelect: FC<Props> = ({ value, pid, relatedId, type = TYPES.TRAINING, 
   const [name, setSearchName] = useState<string>()
   const searchName = useDebounce(name, { wait: 400 })
   const [total, setTotal] = useState(0)
-  const { data: list, run: getImages, loading } = useRequest<YModels.ImageList, [QueryParams]>('image/getImages', {
+  const {
+    data: list,
+    run: getImages,
+    loading,
+  } = useRequest<YModels.ImageList, [QueryParams]>('image/getImages', {
     loading: false,
   })
   const { data: trainImage, run: getRelatedImage } = useRequest<YModels.Image, [{ id: number }]>('image/getImage', {
@@ -47,9 +51,7 @@ const ImageSelect: FC<Props> = ({ value, pid, relatedId, type = TYPES.TRAINING, 
   useEffect(() => {
     if (list?.items?.length) {
       const options = generateOptions(list.items)
-      setOptions((opts) => [...opts, ...options, ...[
-        1, 2,3,4,5,6,7,8, 10, 11, 'helldssfjldfk'
-      ].map(i => ({ value: i, label: i }))])
+      setOptions((opts) => [...opts, ...options])
     }
     list && setTotal(list?.total)
   }, [list])
@@ -59,12 +61,12 @@ const ImageSelect: FC<Props> = ({ value, pid, relatedId, type = TYPES.TRAINING, 
   }, [relatedId])
 
   useEffect(() => {
-    project && setQuery(query => ({ ...query, objectType: project.type}))
+    project && setQuery((query) => ({ ...query, objectType: project.type }))
   }, [project])
 
   useEffect(() => {
     setOptions([])
-    setQuery(query => ({...query, offset: 0, name: searchName}))
+    setQuery((query) => ({ ...query, offset: 0, name: searchName }))
   }, [searchName])
 
   useEffect(() => {
@@ -87,11 +89,11 @@ const ImageSelect: FC<Props> = ({ value, pid, relatedId, type = TYPES.TRAINING, 
   }, [options])
 
   const fetchImages = () => {
-      if (!project) {
-        return
-      }
-      getImages(query)
+    if (!project) {
+      return
     }
+    getImages(query)
+  }
 
   const generateOption = (image: YModels.Image) => ({
     label: (
@@ -137,7 +139,7 @@ const ImageSelect: FC<Props> = ({ value, pid, relatedId, type = TYPES.TRAINING, 
     if (target.scrollTop + target.offsetHeight === target.scrollHeight) {
       const offset = (query.offset || 0) + (query.limit || 10)
       if (offset <= total) {
-        setQuery(query => ({ ...query, offset }))
+        setQuery((query) => ({ ...query, offset }))
       }
     }
   }
