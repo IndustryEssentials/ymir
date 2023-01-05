@@ -158,7 +158,7 @@ message TaskReqImportDataset {
     // strategy for unknown class types: stop, ignore or add
     UnknownTypesStrategy unknown_types_strategy = 4;
     bool clean_dirs = 5;
-    mir.command.ObjectType anno_type = 6;
+    mir.command.ObjectType object_type = 6;
 }
 
 message TaskReqExporting {
@@ -188,6 +188,7 @@ message TaskReqLabeling {
     string project_name = 3;
     bool export_annotation = 4;
     AnnotationType annotation_type = 5;
+    mir.command.ObjectType object_type = 6;
 }
 
 message TaskReqImportModel {

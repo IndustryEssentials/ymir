@@ -85,7 +85,7 @@ class TestInvokerTaskImportDataset(unittest.TestCase):
         import_dataset_request.pred_dir = self._storage_root
         import_dataset_request.gt_dir = self._storage_root
         import_dataset_request.unknown_types_strategy = backend_pb2.UnknownTypesStrategy.UTS_ADD
-        import_dataset_request.anno_type = mir_cmd_pb.ObjectType.OT_DET_BOX
+        import_dataset_request.object_type = mir_cmd_pb.ObjectType.OT_DET_BOX
         req_create_task = backend_pb2.ReqCreateTask()
         req_create_task.task_type = mir_cmd_pb.TaskType.TaskTypeImportData
         req_create_task.no_task_monitor = True

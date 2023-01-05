@@ -9,6 +9,7 @@ from app import schemas
 from app.constants.state import ResultState, TaskType
 from app.crud.base import CRUDBase
 from app.models import Model
+from app.models.model_group import ModelGroup
 from app.schemas.model import ModelCreate, ModelUpdate
 
 
@@ -20,6 +21,7 @@ class CRUDModel(CRUDBase[Model, ModelCreate, ModelUpdate]):
         user_id: int,
         project_id: Optional[int] = None,
         group_id: Optional[int] = None,
+        group_name: Optional[str] = None,
         source: Optional[TaskType] = None,
         state: Optional[IntEnum] = None,
         visible: bool = True,
@@ -47,10 +49,10 @@ class CRUDModel(CRUDBase[Model, ModelCreate, ModelUpdate]):
                 )
             )
 
-        if source:
+        if source is not None:
             query = query.filter(self.model.source == int(source))
 
-        if state:
+        if state is not None:
             query = query.filter(self.model.result_state == int(state))
 
         if project_id is not None:
@@ -58,6 +60,12 @@ class CRUDModel(CRUDBase[Model, ModelCreate, ModelUpdate]):
 
         if group_id is not None:
             query = query.filter(self.model.model_group_id == group_id)
+
+        if group_name:
+            # basic fuzzy search
+            query = query.join(ModelGroup, ModelGroup.id == self.model.model_group_id).filter(
+                ModelGroup.name.like(f"%{group_name}%")
+            )
 
         order_by_column = getattr(self.model, order_by)
         if is_desc:
