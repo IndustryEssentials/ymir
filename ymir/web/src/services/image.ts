@@ -40,8 +40,23 @@ export function getImage(id: number) {
  * { name, type, start_time = 0, end_time = 0, offset = 0, limit = 10, sort_by: 1|2 }
  * @returns
  */
-export function getImages(params: QueryParams) {
-  return request.get('images/', { params: { ...params, object_type: params.objectType } })
+/**
+ * @description get images by query
+ * @export
+ * @param {QueryParams} { name, type, objectType, state, url, limit = 10, offset = 0 }
+ */
+export function getImages({ name, type, objectType, state, url, limit = 10, offset = 0 }: QueryParams) {
+  return request.get('images/', {
+    params: {
+      name,
+      type,
+      object_type: objectType,
+      state,
+      url,
+      limit,
+      offset,
+    },
+  })
 }
 
 /**

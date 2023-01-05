@@ -7,6 +7,7 @@ import t from '@/utils/t'
 import useRequest from '@/hooks/useRequest'
 import { QueryParams } from '@/services/image'
 import { DefaultOptionType } from 'antd/lib/select'
+import { useDebounce } from 'ahooks'
 
 interface Props extends SelectProps {
   pid: number
@@ -20,7 +21,15 @@ type OptionType = DefaultOptionType & {
 
 const ImageSelect: FC<Props> = ({ value, pid, relatedId, type = TYPES.TRAINING, onChange = () => {}, ...resProps }) => {
   const [options, setOptions] = useState<OptionType[]>([])
-  const { data: list, run: getImages } = useRequest<YModels.ImageList, [QueryParams]>('image/getImages', {
+  const [query, setQuery] = useState<QueryParams>({
+    type,
+    limit: 10,
+    offset: 0,
+  })
+  const [name, setSearchName] = useState<string>()
+  const searchName = useDebounce(name, { wait: 400 })
+  const [total, setTotal] = useState(0)
+  const { data: list, run: getImages, loading } = useRequest<YModels.ImageList, [QueryParams]>('image/getImages', {
     loading: false,
   })
   const { data: trainImage, run: getRelatedImage } = useRequest<YModels.Image, [{ id: number }]>('image/getImage', {
@@ -42,6 +51,7 @@ const ImageSelect: FC<Props> = ({ value, pid, relatedId, type = TYPES.TRAINING, 
         1, 2,3,4,5,6,7,8, 10, 11, 'helldssfjldfk'
       ].map(i => ({ value: i, label: i }))])
     }
+    list && setTotal(list?.total)
   }, [list])
 
   useEffect(() => {
@@ -49,8 +59,17 @@ const ImageSelect: FC<Props> = ({ value, pid, relatedId, type = TYPES.TRAINING, 
   }, [relatedId])
 
   useEffect(() => {
-    project?.type && fetchImages()
+    project && setQuery(query => ({ ...query, objectType: project.type}))
   }, [project])
+
+  useEffect(() => {
+    setOptions([])
+    setQuery(query => ({...query, offset: 0, name: searchName}))
+  }, [searchName])
+
+  useEffect(() => {
+    fetchImages()
+  }, [query])
 
   useEffect(() => {
     if (options.length === 1) {
@@ -67,23 +86,12 @@ const ImageSelect: FC<Props> = ({ value, pid, relatedId, type = TYPES.TRAINING, 
     }
   }, [options])
 
-  const fetchImages = useCallback(
-    (page = 1) => {
+  const fetchImages = () => {
       if (!project) {
         return
       }
-      const limit = 10
-      const offset = (page - 1) * limit
-      const params = {
-        type,
-        objectType: project.type,
-        offset,
-        limit,
-      }
-      getImages(params)
-    },
-    [project?.type],
-  )
+      getImages(query)
+    }
 
   const generateOption = (image: YModels.Image) => ({
     label: (
@@ -125,10 +133,12 @@ const ImageSelect: FC<Props> = ({ value, pid, relatedId, type = TYPES.TRAINING, 
   const scrollChange = (e: UIEvent<HTMLDivElement>) => {
     e.persist()
     const target = e.currentTarget
-    console.log('target:', e, target.scrollTop)
-    // const top = target.scrollTop || 0
 
     if (target.scrollTop + target.offsetHeight === target.scrollHeight) {
+      const offset = (query.offset || 0) + (query.limit || 10)
+      if (offset <= total) {
+        setQuery(query => ({ ...query, offset }))
+      }
     }
   }
 
@@ -141,6 +151,10 @@ const ImageSelect: FC<Props> = ({ value, pid, relatedId, type = TYPES.TRAINING, 
       onChange={(value, opt) => onChange(value, opt)}
       onPopupScroll={scrollChange}
       options={options}
+      loading={loading}
+      onSearch={setSearchName}
+      showSearch
+      filterOption={false}
     ></Select>
   )
 }
