@@ -344,6 +344,8 @@
             ],
             "model": {
                 "mAP": 0.6,
+                "mIoU": 0.0,
+                "maskAP": 0.0,
                 "class_names": [
                     "person",
                     "cat",
