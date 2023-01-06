@@ -300,7 +300,7 @@ function Train({ query = {}, hidden, ok = () => {}, bottom, ...func }) {
               tooltip={t('tip.task.filter.keywords')}
               help={
                 trainDataset && selectedKeywords.length !== trainDataset.gt.keywords.length ? (
-                  <Button type="link" onClick={() => setAllKeywords()}>
+                  <Button type="link" size='small' style={{ marginLeft: '-10px' }} onClick={() => setAllKeywords()}>
                     {t('dataset.train.all.train.target')}
                   </Button>
                 ) : null
@@ -311,6 +311,8 @@ function Train({ query = {}, hidden, ok = () => {}, bottom, ...func }) {
                 showArrow
                 allowClear
                 placeholder={t('project.add.form.keyword.required')}
+                disabled={!trainSet}
+                title={trainSet ? '' : t('task.train.keywords.disabled.tip')}
                 onChange={setSelectedKeywords}
                 options={(trainDataset?.gt?.keywords || []).map((k) => ({
                   label: k,
@@ -347,6 +349,8 @@ function Train({ query = {}, hidden, ok = () => {}, bottom, ...func }) {
           >
             <DatasetSelect
               pid={pid}
+              disabled={!selectedKeywords.length}
+              title={selectedKeywords.length ? '' : t('task.train.validation.disabled.tip')}
               filters={validationSetFilters}
               placeholder={t('task.train.form.test.datasets.placeholder')}
               onChange={validationSetChange}
