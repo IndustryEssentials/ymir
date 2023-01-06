@@ -1,11 +1,8 @@
 from typing import Dict, List, Optional, Tuple
 
 from common_utils.labels import UserLabels
-from controller.invoker.invoker_cmd_filter import FilterBranchInvoker
-from controller.invoker.invoker_cmd_merge import MergeInvoker
-from controller.invoker.invoker_cmd_sampling import SamplingInvoker
 from controller.invoker.invoker_task_base import SubTaskType, TaskBaseInvoker
-from controller.utils import invoker_call, utils
+from controller.utils import revs, utils
 from id_definition.error_codes import CTLResponseCode
 from proto import backend_pb2
 
@@ -19,87 +16,49 @@ class TaskFusionInvoker(TaskBaseInvoker):
 
     @classmethod
     def register_subtasks(cls, request: backend_pb2.GeneralReq) -> List[Tuple[SubTaskType, float]]:
-        subtasks_queue: List[SubTaskType] = []
-        if len(request.in_dataset_ids) > 1 or request.ex_dataset_ids:
-            subtasks_queue.append(cls.subtask_invoke_merge)
-        if request.in_class_ids or request.ex_class_ids:
-            subtasks_queue.append(cls.subtask_invoke_filter)
-        if request.sampling_count or 0 < request.sampling_rate < (1.0 - 1e-9):
-            subtasks_queue.append(cls.subtask_invoke_sample)
-        if not subtasks_queue:  # empty ops, just copy.
-            subtasks_queue.append(cls.subtask_invoke_merge)
-        return [(x, 1.0 / len(subtasks_queue)) for x in subtasks_queue]
+        return [(cls.subtask_invoke_fuse, 1.0)]
 
     @classmethod
-    def subtask_invoke_merge(cls, request: backend_pb2.GeneralReq, user_labels: UserLabels, sandbox_root: str,
-                             assets_config: Dict[str, str], repo_root: str, master_task_id: str, subtask_id: str,
-                             subtask_workdir: str, his_task_id: Optional[str],
-                             in_dataset_ids: List[str]) -> backend_pb2.GeneralResp:
-        """ merge """
-        merge_response = invoker_call.make_invoker_cmd_call(
-            invoker=MergeInvoker,
-            sandbox_root=sandbox_root,
-            req_type=backend_pb2.CMD_MERGE,
-            user_id=request.user_id,
-            repo_id=request.repo_id,
-            task_id=subtask_id,
-            his_task_id=his_task_id,
-            dst_dataset_id=master_task_id,
-            in_dataset_ids=in_dataset_ids,
-            ex_dataset_ids=request.ex_dataset_ids,
-            merge_strategy=request.merge_strategy,
-            work_dir=subtask_workdir,
-        )
-        return merge_response
+    def subtask_invoke_fuse(cls, request: backend_pb2.GeneralReq, user_labels: UserLabels, sandbox_root: str,
+                            assets_config: Dict[str, str], repo_root: str, master_task_id: str, subtask_id: str,
+                            subtask_workdir: str, his_task_id: Optional[str],
+                            in_dataset_ids: List[str]) -> backend_pb2.GeneralResp:
+        return cls.fuse_cmd(repo_root=repo_root,
+                            task_id=subtask_id,
+                            work_dir=subtask_workdir,
+                            in_dataset_ids=request.in_dataset_ids,
+                            ex_dataset_ids=request.ex_dataset_ids,
+                            merge_strategy=request.merge_strategy,
+                            in_class_ids=request.in_class_ids,
+                            ex_class_ids=request.ex_class_ids,
+                            user_labels=user_labels,
+                            sample_count=request.sampling_count,
+                            sample_rate=request.sampling_rate)
 
     @classmethod
-    def subtask_invoke_filter(cls, request: backend_pb2.GeneralReq, user_labels: UserLabels, sandbox_root: str,
-                              assets_config: Dict[str, str], repo_root: str, master_task_id: str, subtask_id: str,
-                              subtask_workdir: str, his_task_id: Optional[str],
-                              in_dataset_ids: List[str]) -> backend_pb2.GeneralResp:
-        if len(in_dataset_ids) != 1:
-            return utils.make_general_response(code=CTLResponseCode.ARG_VALIDATION_FAILED,
-                                               message="Invalid single in_dataset_ids {in_dataset_ids}")
+    def fuse_cmd(cls, repo_root: str, task_id: str, work_dir: str, in_dataset_ids: List[str], ex_dataset_ids: List[str],
+                 merge_strategy: backend_pb2.MergeStrategy, in_class_ids: List[int], ex_class_ids: List[str],
+                 user_labels: UserLabels, sample_count: int, sample_rate: float) -> backend_pb2.GeneralResp:
+        # merge args
+        fuse_cmd = [
+            utils.mir_executable(), 'fuse', '--root', repo_root, '--dst-rev', f"{task_id}@{task_id}", '-w', work_dir,
+            '--src-revs', revs.build_src_revs(in_src_revs=in_dataset_ids),
+            '-s', backend_pb2.MergeStrategy.Name(merge_strategy).lower()
+        ]
+        if ex_dataset_ids:
+            fuse_cmd.extend(['--ex-src-revs', revs.build_src_revs(in_src_revs=ex_dataset_ids)])
 
-        """ filter """
-        filter_response = invoker_call.make_invoker_cmd_call(
-            invoker=FilterBranchInvoker,
-            sandbox_root=sandbox_root,
-            req_type=backend_pb2.CMD_FILTER,
-            user_id=request.user_id,
-            repo_id=request.repo_id,
-            task_id=subtask_id,
-            his_task_id=his_task_id,
-            dst_dataset_id=master_task_id,
-            in_dataset_ids=in_dataset_ids,
-            in_class_ids=request.in_class_ids,
-            ex_class_ids=request.ex_class_ids,
-            work_dir=subtask_workdir,
-        )
-        return filter_response
+        # filter args
+        if in_class_ids:
+            fuse_cmd.extend(['--cis', ';'.join(user_labels.main_name_for_ids(class_ids=in_class_ids))])
+        if ex_class_ids:
+            fuse_cmd.extend(['--ex-cis', ';'.join(user_labels.main_name_for_ids(class_ids=ex_class_ids))])
+        fuse_cmd.extend(['--user-label-file', user_labels.storage_file])
 
-    @classmethod
-    def subtask_invoke_sample(cls, request: backend_pb2.GeneralReq, user_labels: UserLabels, sandbox_root: str,
-                              assets_config: Dict[str, str], repo_root: str, master_task_id: str, subtask_id: str,
-                              subtask_workdir: str, his_task_id: Optional[str],
-                              in_dataset_ids: List[str]) -> backend_pb2.GeneralResp:
-        if len(in_dataset_ids) != 1:
-            return utils.make_general_response(code=CTLResponseCode.ARG_VALIDATION_FAILED,
-                                               message="Invalid single in_dataset_ids {in_dataset_ids}")
+        # sample args
+        if sample_count:
+            fuse_cmd.extend(['--count', f"{sample_count}"])
+        elif sample_rate:
+            fuse_cmd.extend(['--rate', f"{sample_rate}"])
 
-        """ sampling """
-        sampling_response = invoker_call.make_invoker_cmd_call(
-            invoker=SamplingInvoker,
-            sandbox_root=sandbox_root,
-            req_type=backend_pb2.CMD_SAMPLING,
-            user_id=request.user_id,
-            repo_id=request.repo_id,
-            task_id=subtask_id,
-            his_task_id=his_task_id,
-            dst_dataset_id=master_task_id,
-            in_dataset_ids=in_dataset_ids,
-            sampling_count=request.sampling_count,
-            sampling_rate=request.sampling_rate,
-            work_dir=subtask_workdir,
-        )
-        return sampling_response
+        return utils.run_command(fuse_cmd)

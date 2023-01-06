@@ -27,11 +27,6 @@ class CmdSampling(base.BaseCommand):
         src_typ_rev_tid = revs_parser.parse_single_arg_rev(src_revs, need_tid=False)
         dst_typ_rev_tid = revs_parser.parse_single_arg_rev(dst_rev, need_tid=True)
 
-        if count < 0:
-            raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS, error_message='invalid args: --count')
-        if rate < 0 or rate > 1:
-            raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS, error_message='invalid args: --rate')
-
         if not mir_root:
             mir_root = '.'
 
@@ -45,26 +40,13 @@ class CmdSampling(base.BaseCommand):
             ms_list=[mirpb.MirStorage.MIR_METADATAS, mirpb.MirStorage.MIR_ANNOTATIONS],
             as_dict=False,
         )
-        assets_count = len(mir_metadatas.attributes)
-        sampled_assets_count = 0
-        if count > 0:
-            sampled_assets_count = count
-        else:
-            sampled_assets_count = int(assets_count * rate)
-        if sampled_assets_count < 0:
-            raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
-                                  error_message=f"sampled assets count: {sampled_assets_count} is negative")
-        if sampled_assets_count > assets_count:
-            logging.warning(f"sampled assets count: {sampled_assets_count} > assets count: {assets_count}, select all")
-            sampled_assets_count = assets_count
 
-        if sampled_assets_count < assets_count:
-            sampled_asset_ids_set = set(random.sample(mir_metadatas.attributes.keys(), sampled_assets_count))
-            filter_mirdatas_by_asset_ids(mir_metadatas=mir_metadatas,
-                                         mir_annotations=mir_annotations,
-                                         asset_ids_set=sampled_asset_ids_set)
+        sample_with_pb(mir_metadatas=mir_metadatas,
+                       mir_annotations=mir_annotations,
+                       count=count,
+                       rate=rate)
 
-        logging.info(f"sampling done, assets count: {sampled_assets_count}")
+        logging.info(f"sampling done, assets count: {len(mir_metadatas.attributes)}")
 
         # commit
         message = f"sampling src: {src_revs}, dst: {dst_rev}, count: {count}, rate: {rate}"
@@ -86,6 +68,33 @@ class CmdSampling(base.BaseCommand):
                                                       task=task)
 
         return MirCode.RC_OK
+
+
+def sample_with_pb(mir_metadatas: mirpb.MirMetadatas, mir_annotations: mirpb.MirAnnotations, count: int,
+                   rate: float) -> None:
+    if count == 0 and (rate == 0 or rate >= 1.0 - 1e-9):
+        return
+    if count < 0 or rate < 0 or rate > 1:
+        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS, error_message='invalid args: count or rate')
+
+    assets_count = len(mir_metadatas.attributes)
+    sampled_assets_count = 0
+    if count > 0:
+        sampled_assets_count = count
+    else:
+        sampled_assets_count = int(assets_count * rate)
+    if sampled_assets_count < 0:
+        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
+                              error_message=f"sampled assets count: {sampled_assets_count} is negative")
+    if sampled_assets_count > assets_count:
+        logging.warning(f"sampled assets count: {sampled_assets_count} > assets count: {assets_count}, select all")
+        sampled_assets_count = assets_count
+
+    if sampled_assets_count < assets_count:
+        sampled_asset_ids_set = set(random.sample(mir_metadatas.attributes.keys(), sampled_assets_count))
+        filter_mirdatas_by_asset_ids(mir_metadatas=mir_metadatas,
+                                     mir_annotations=mir_annotations,
+                                     asset_ids_set=sampled_asset_ids_set)
 
 
 def bind_to_subparsers(subparsers: argparse._SubParsersAction, parent_parser: argparse.ArgumentParser) -> None:

@@ -5,7 +5,6 @@ import unittest
 from unittest import mock
 
 from common_utils.labels import UserLabels
-from controller.utils import utils
 from controller.utils.invoker_call import make_invoker_cmd_call
 from controller.utils.invoker_mapping import RequestTypeToInvoker
 from mir.protos import mir_command_pb2 as mir_cmd_pb
@@ -28,9 +27,6 @@ class TestInvokerTaskFusion(unittest.TestCase):
         self._mir_repo_name = "repoid"
         self._storage_name = "media_storage_root"
         self._task_id = 't000aaaabbbbbbzzzzzzzzzzzzzzd5'
-        self._sub_task_id_0 = utils.sub_task_id(self._task_id, 0)
-        self._sub_task_id_1 = utils.sub_task_id(self._task_id, 1)
-        self._sub_task_id_2 = utils.sub_task_id(self._task_id, 2)
         self._guest_id1 = 't000aaaabbbbbbzzzzzzzzzzzzzzz1'
         self._guest_id2 = 't000aaaabbbbbbzzzzzzzzzzzzzzz2'
         self._guest_id3 = 't000aaaabbbbbbzzzzzzzzzzzzzzz3'
@@ -42,9 +38,7 @@ class TestInvokerTaskFusion(unittest.TestCase):
 
         self._work_dir = os.path.join(self._sandbox_root, "work_dir",
                                       mir_cmd_pb.TaskType.Name(mir_cmd_pb.TaskType.TaskTypeFusion), self._task_id)
-        self._sub_work_dir_0 = os.path.join(self._work_dir, 'sub_task', self._sub_task_id_0)
-        self._sub_work_dir_1 = os.path.join(self._work_dir, 'sub_task', self._sub_task_id_1)
-        self._sub_work_dir_2 = os.path.join(self._work_dir, 'sub_task', self._sub_task_id_2)
+        self._sub_work_dir_0 = os.path.join(self._work_dir, 'sub_task', self._task_id)
 
     def setUp(self) -> None:
         test_utils.check_commands()
@@ -67,8 +61,6 @@ class TestInvokerTaskFusion(unittest.TestCase):
         os.mkdir(self._mir_repo_root)
         os.mkdir(self._storage_root)
         os.makedirs(self._sub_work_dir_0, exist_ok=True)
-        os.makedirs(self._sub_work_dir_1, exist_ok=True)
-        os.makedirs(self._sub_work_dir_2, exist_ok=True)
 
     def _prepare_mir_repo(self):
         test_utils.mir_repo_init(self._mir_repo_root)
@@ -95,28 +87,14 @@ class TestInvokerTaskFusion(unittest.TestCase):
 
         work_dir_root = os.path.join(self._sandbox_root, "work_dir",
                                      mir_cmd_pb.TaskType.Name(mir_cmd_pb.TaskType.TaskTypeFusion), self._task_id)
-        expected_merge_work_dir = os.path.join(work_dir_root, 'sub_task', self._sub_task_id_2)
-        expected_filter_work_dir = os.path.join(work_dir_root, 'sub_task', self._sub_task_id_1)
-        expected_sampling_work_dir = os.path.join(work_dir_root, 'sub_task', self._sub_task_id_0)
+        expected_work_dir = os.path.join(work_dir_root, 'sub_task', self._task_id)
 
-        expected_merge_cmd = f"mir merge --root {self._mir_repo_root}"
-        expected_merge_cmd += f" --dst-rev {self._task_id}@{self._sub_task_id_2} -s host"
-        expected_merge_cmd += f" -w {expected_merge_work_dir}"
-        expected_merge_cmd += f" --src-revs {self._guest_id1}@{self._guest_id1};{self._guest_id2}"
-        expected_merge_cmd += f" --ex-src-revs {self._guest_id3}"
-
-        expected_filter_cmd = f"mir filter --root {self._mir_repo_root}"
-        expected_filter_cmd += f" --dst-rev {self._task_id}@{self._sub_task_id_1}"
-        expected_filter_cmd += f" --src-revs {self._task_id}@{self._sub_task_id_2}"
-        expected_filter_cmd += f" -w {expected_filter_work_dir} "
-        expected_filter_cmd += f"--user-label-file {test_utils.user_label_file(self._sandbox_root, self._user_name)} "
-        expected_filter_cmd += "--cis person;cat;table"
-
-        expected_sampling_cmd = f"mir sampling --root {self._mir_repo_root}"
-        expected_sampling_cmd += f" --dst-rev {self._task_id}@{self._task_id}"
-        expected_sampling_cmd += f" --src-revs {self._task_id}@{self._sub_task_id_1}"
-        expected_sampling_cmd += f" -w {expected_sampling_work_dir}"
-        expected_sampling_cmd += ' --count 100'
+        expected_fuse_cmd = [
+            'mir', 'fuse', '--root', self._mir_repo_root, '--dst-rev', f"{self._task_id}@{self._task_id}", '-w',
+            expected_work_dir, '--src-revs', f"{self._guest_id1};{self._guest_id2}", '-s', 'host', '--ex-src-revs',
+            self._guest_id3, '--cis', 'person;cat;table', '--user-label-file',
+            test_utils.user_label_file(self._sandbox_root, self._user_name), '--count', '100'
+        ]
 
         response = make_invoker_cmd_call(
             invoker=RequestTypeToInvoker[backend_pb2.TASK_CREATE],
@@ -135,8 +113,4 @@ class TestInvokerTaskFusion(unittest.TestCase):
         )
         logging.info(response)
 
-        mock_run.assert_has_calls(calls=[
-            mock.call(expected_merge_cmd.split(' '), capture_output=True, text=True),
-            mock.call(expected_filter_cmd.split(' '), capture_output=True, text=True),
-            mock.call(expected_sampling_cmd.split(' '), capture_output=True, text=True),
-        ])
+        mock_run.assert_called_once_with(expected_fuse_cmd, capture_output=True, text=True)
