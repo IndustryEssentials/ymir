@@ -138,6 +138,7 @@ class TestModel:
                 },
             },
             "best_stage_name": "epoch-3000",
+            "object_type": 2,
         }
         M = m.ViewerModelInfoResponse.parse_obj(res)
         assert M.hash == res["model_hash"]
@@ -273,6 +274,7 @@ class TestVizClient:
                 },
             },
             "best_stage_name": "epoch-3000",
+            "object_type": 2,
         }
         resp.json.return_value = {"result": res}
         mock_session.get.return_value = resp

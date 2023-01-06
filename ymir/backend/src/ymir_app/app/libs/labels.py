@@ -1,4 +1,4 @@
-from typing import Dict, List
+from typing import Dict, List, Union
 
 from app.utils.cache import CacheClient
 from app.utils.ymir_controller import ControllerClient
@@ -47,5 +47,8 @@ def keywords_to_class_ids(user_labels: UserLabels, keywords: List[str]) -> List[
 
 
 def class_ids_to_keywords(user_labels: UserLabels, class_ids: List) -> List[str]:
-    keywords = user_labels.main_name_for_ids(class_ids=[int(i) for i in class_ids])
-    return keywords
+    return user_labels.main_name_for_ids(class_ids=[int(i) for i in class_ids])
+
+
+def class_id_to_keyword(user_labels: UserLabels, class_id: Union[int, str]) -> List[str]:
+    return user_labels.main_name_for_id(class_id=int(class_id))

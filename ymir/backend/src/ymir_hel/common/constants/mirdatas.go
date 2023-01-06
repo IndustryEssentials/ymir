@@ -18,6 +18,8 @@ type MirdataModel struct {
 
 	TaskParameters string                 `json:"task_parameters"`
 	ExecutorConfig map[string]interface{} `json:"executor_config"`
+
+	ObjectType int32 `json:"object_type"`
 }
 
 func NewMirdataModel(taskParameters string) *MirdataModel {
