@@ -193,8 +193,7 @@ function Inference({...func }) {
         message.warn(t('task.inference.failure.some'))
       }
       await func.clearCache()
-      const groups = result.map((item) => item.result_dataset?.dataset_group_id || '')
-      history.replace(`/home/project/${pid}/dataset#${groups.join(',')}`)
+      history.replace(`/home/project/${pid}/diagnose`)
     }
   }
 
