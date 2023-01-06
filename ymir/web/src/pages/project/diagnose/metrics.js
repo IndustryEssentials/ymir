@@ -33,6 +33,7 @@ const kwTypes = [
   { label: 'keyword.ck.label', value: 1 },
 ]
 
+/** todo support seg */
 function Matrics({ pid, project }) {
   const { state } = useLocation()
   const [form] = Form.useForm()
