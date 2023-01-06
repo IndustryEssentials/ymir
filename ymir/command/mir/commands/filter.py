@@ -1,6 +1,6 @@
 import argparse
 import logging
-from typing import Optional, Set
+from typing import Set
 
 from mir.commands import base
 from mir.protos import mir_command_pb2 as mirpb
@@ -14,57 +14,11 @@ from mir.tools.phase_logger import PhaseLoggerCenter
 
 
 class CmdFilter(base.BaseCommand):
-    # private: misc
-    @staticmethod
-    def __class_ids_set_from_str(preds_str: str, cls_mgr: class_ids.UserLabels) -> Set[int]:
-        if not preds_str:
-            return set()
-
-        class_names = preds_str.split(";")
-        class_ids, unknown_names = cls_mgr.id_for_names(class_names)
-        if unknown_names:
-            raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
-                                  error_message=f"unknwon class names: {unknown_names}")
-
-        return set(class_ids)
-
-    @classmethod
-    def __include_match(cls, asset_ids_set: Set[str], mir_keywords: mirpb.MirKeywords,
-                        in_cis_set: Set[int]) -> Set[str]:
-        # if don't need include match, returns all
-        if not in_cis_set:
-            return asset_ids_set
-
-        asset_ids_set = set()
-        for ci in in_cis_set:
-            if ci in mir_keywords.pred_idx.cis:
-                asset_ids_set.update(mir_keywords.pred_idx.cis[ci].key_ids.keys())
-            if ci in mir_keywords.gt_idx.cis:
-                asset_ids_set.update(mir_keywords.gt_idx.cis[ci].key_ids.keys())
-        return asset_ids_set
-
-    @classmethod
-    def __exclude_match(cls, asset_ids_set: Set[str], mir_keywords: mirpb.MirKeywords,
-                        ex_cis_set: Set[int]) -> Set[str]:
-        if not ex_cis_set:
-            return asset_ids_set
-
-        for ci in ex_cis_set:
-            if ci in mir_keywords.pred_idx.cis:
-                asset_ids_set.difference_update(mir_keywords.pred_idx.cis[ci].key_ids.keys())
-            if ci in mir_keywords.gt_idx.cis:
-                asset_ids_set.difference_update(mir_keywords.gt_idx.cis[ci].key_ids.keys())
-        return asset_ids_set
-
     # public: run cmd
     @staticmethod
     @command_run_in_out
-    def run_with_args(mir_root: str, label_storage_file: str, in_cis: Optional[str], ex_cis: Optional[str],
+    def run_with_args(mir_root: str, label_storage_file: str, in_cis: str, ex_cis: str,
                       src_revs: str, dst_rev: str, work_dir: str) -> int:  # type: ignore
-        # check args
-        in_cis = in_cis.strip().lower() if in_cis else ''
-        ex_cis = ex_cis.strip().lower() if ex_cis else ''
-
         src_typ_rev_tid = revs_parser.parse_single_arg_rev(src_revs, need_tid=False)
         dst_typ_rev_tid = revs_parser.parse_single_arg_rev(dst_rev, need_tid=True)
 
@@ -79,32 +33,20 @@ class CmdFilter(base.BaseCommand):
 
         PhaseLoggerCenter.update_phase(phase="filter.init")
 
-        mir_metadatas, mir_annotations, mir_keywords = mir_storage_ops.MirStorageOps.load_multiple_storages(
+        mir_metadatas, mir_annotations = mir_storage_ops.MirStorageOps.load_multiple_storages(
             mir_root=mir_root,
             mir_branch=src_typ_rev_tid.rev,
             mir_task_id=src_typ_rev_tid.tid,
-            ms_list=[mirpb.MirStorage.MIR_METADATAS, mirpb.MirStorage.MIR_ANNOTATIONS, mirpb.MirStorage.MIR_KEYWORDS],
+            ms_list=[mirpb.MirStorage.MIR_METADATAS, mirpb.MirStorage.MIR_ANNOTATIONS],
             as_dict=False)
 
         PhaseLoggerCenter.update_phase(phase='filter.read')
 
-        class_manager = class_ids.load_or_create_userlabels(label_storage_file=label_storage_file)
-        in_cis_set: Set[int] = CmdFilter.__class_ids_set_from_str(in_cis, class_manager)
-        ex_cis_set: Set[int] = CmdFilter.__class_ids_set_from_str(ex_cis, class_manager)
-
-        asset_ids_set = set(mir_metadatas.attributes.keys())
-        asset_ids_set = CmdFilter.__include_match(asset_ids_set=asset_ids_set,
-                                                  mir_keywords=mir_keywords,
-                                                  in_cis_set=in_cis_set)
-        logging.info(f"assets count after include match: {len(asset_ids_set)}")
-        asset_ids_set = CmdFilter.__exclude_match(asset_ids_set=asset_ids_set,
-                                                  mir_keywords=mir_keywords,
-                                                  ex_cis_set=ex_cis_set)
-        logging.info(f"assets count after exclude match: {len(asset_ids_set)}")
-
-        filter_mirdatas_by_asset_ids(mir_metadatas=mir_metadatas,
-                                     mir_annotations=mir_annotations,
-                                     asset_ids_set=asset_ids_set)
+        filter_with_pb(mir_metadatas=mir_metadatas,
+                       mir_annotations=mir_annotations,
+                       label_storage_file=label_storage_file,
+                       in_cis=in_cis,
+                       ex_cis=ex_cis)
 
         logging.info("matched: %d, overriding current mir repo", len(mir_metadatas.attributes))
 
@@ -140,13 +82,65 @@ class CmdFilter(base.BaseCommand):
                                        work_dir=self.args.work_dir)
 
 
+def _class_ids_set_from_str(preds_str: str, cls_mgr: class_ids.UserLabels) -> Set[int]:
+    if not preds_str:
+        return set()
+
+    class_names = preds_str.split(";")
+    class_ids, unknown_names = cls_mgr.id_for_names(class_names)
+    if unknown_names:
+        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
+                              error_message=f"unknwon class names: {unknown_names}")
+
+    return set(class_ids)
+
+
+def _include_exclude_match(asset_ids_set: Set[str], mir_annotations: mirpb.MirAnnotations, in_cis_set: Set[int],
+                           ex_cis_set: Set[int]) -> Set[str]:
+    # if don't need include match, returns all
+    need_no_include = not in_cis_set
+    need_no_exclude = not ex_cis_set
+
+    filtered_asset_ids_set = set()
+    for asset_id in asset_ids_set:
+        pred = mir_annotations.prediction.image_annotations.get(asset_id, mirpb.SingleImageAnnotations())
+        gt = mir_annotations.ground_truth.image_annotations.get(asset_id, mirpb.SingleImageAnnotations())
+
+        cids = {v.class_id for v in pred.boxes} | {v.class_id for v in gt.boxes}
+        if (need_no_include or cids & in_cis_set) and (need_no_exclude or not (cids & ex_cis_set)):
+            filtered_asset_ids_set.add(asset_id)
+
+    return filtered_asset_ids_set
+
+
+def filter_with_pb(mir_metadatas: mirpb.MirMetadatas, mir_annotations: mirpb.MirAnnotations, label_storage_file: str,
+                   in_cis: str, ex_cis: str) -> None:
+    in_cis = in_cis.strip().lower() if in_cis else ''
+    ex_cis = ex_cis.strip().lower() if ex_cis else ''
+    if not in_cis and not ex_cis:
+        return
+
+    class_manager = class_ids.load_or_create_userlabels(label_storage_file=label_storage_file)
+    in_cis_set: Set[int] = _class_ids_set_from_str(in_cis, class_manager)
+    ex_cis_set: Set[int] = _class_ids_set_from_str(ex_cis, class_manager)
+
+    asset_ids_set = _include_exclude_match(asset_ids_set=set(mir_metadatas.attributes.keys()),
+                                           mir_annotations=mir_annotations,
+                                           in_cis_set=in_cis_set,
+                                           ex_cis_set=ex_cis_set)
+
+    filter_mirdatas_by_asset_ids(mir_metadatas=mir_metadatas,
+                                 mir_annotations=mir_annotations,
+                                 asset_ids_set=asset_ids_set)
+
+
 def bind_to_subparsers(subparsers: argparse._SubParsersAction, parent_parser: argparse.ArgumentParser) -> None:
     filter_arg_parser = subparsers.add_parser("filter",
                                               parents=[parent_parser],
                                               description="use this command to filter assets",
                                               help="filter assets")
-    filter_arg_parser.add_argument("-p", '--cis', dest="in_cis", type=str, help="type names")
-    filter_arg_parser.add_argument("-P", '--ex-cis', dest="ex_cis", type=str, help="exclusive type names")
+    filter_arg_parser.add_argument("-p", '--cis', dest="in_cis", type=str, default='', help="type names")
+    filter_arg_parser.add_argument("-P", '--ex-cis', dest="ex_cis", type=str, default='', help="exclusive type names")
     filter_arg_parser.add_argument("--src-revs", dest="src_revs", type=str, help="type:rev@bid")
     filter_arg_parser.add_argument("--dst-rev", dest="dst_rev", type=str, help="rev@tid")
     filter_arg_parser.add_argument('-w', dest='work_dir', type=str, required=False, help='working directory')

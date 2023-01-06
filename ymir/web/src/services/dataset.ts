@@ -1,4 +1,4 @@
-import { PROJECTTYPES } from '@/constants/project'
+import { ObjectType } from '@/constants/project'
 import request from '@/utils/request'
 import { AxiosResponse } from 'axios'
 
@@ -7,7 +7,7 @@ type QueryParams = {
   gid?: number
   did?: number
   type?: number | string
-  objectType?: PROJECTTYPES
+  objectType?: ObjectType
   state?: number
   name?: string
   visible?: boolean

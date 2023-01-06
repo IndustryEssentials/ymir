@@ -13,7 +13,7 @@ import { randomNumber } from '@/utils/number'
 import useFetch from '@/hooks/useFetch'
 import useRequest from '@/hooks/useRequest'
 
-import ImageSelect from '@/components/form/imageSelect'
+import ImageSelect from '@/components/form/ImageSelect'
 import ModelSelect from '@/components/form/modelSelect'
 import SampleRates from '@/components/dataset/sampleRates'
 import CheckProjectDirty from '@/components/common/CheckProjectDirty'
@@ -167,8 +167,8 @@ function Train({ query = {}, hidden, ok = () => {}, bottom, ...func }) {
     setValidationDataset(option?.dataset)
   }
 
-  function imageChange(_, image = {}) {
-    const { configs } = image
+  function imageChange(_, option = {}) {
+    const { configs } = option.image
     const configObj = (configs || []).find((conf) => conf.type === TYPES.TRAINING) || {}
     if (!HIDDENMODULES.LIVECODE) {
       setLiveCode(image.liveCode || false)
@@ -265,7 +265,7 @@ function Train({ query = {}, hidden, ok = () => {}, bottom, ...func }) {
             rules={[{ required: true, message: t('task.train.form.image.required') }]}
             tooltip={t('tip.task.train.image')}
           >
-            <ImageSelect placeholder={t('task.train.form.image.placeholder')} onChange={imageChange} />
+            <ImageSelect placeholder={t('task.train.form.image.placeholder')} pid={pid} onChange={imageChange} />
           </Form.Item>
           <OpenpaiForm form={form} openpai={openpai} />
           <Form.Item

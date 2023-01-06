@@ -51,6 +51,7 @@ export function transferImage(data: YModels.BackendData): YModels.Image {
     id: data.id,
     name: data.name,
     state: data.state,
+    objectType: data.object_type,
     functions: configs.map(config => config.type),
     configs,
     url: data.url,

@@ -270,7 +270,7 @@ class ControllerRequest:
         request.ex_dataset_ids[:] = [dataset["hash"] for dataset in args["typed_datasets"] if dataset["exclude"]]
         request.merge_strategy = MERGE_STRATEGY_MAPPING[args.get("merge_strategy", MergeStrategy.stop_upon_conflict)]
         request.in_class_ids[:] = [label["class_id"] for label in args["typed_labels"] if not label["exclude"]]
-        request.in_class_ids[:] = [label["class_id"] for label in args["typed_labels"] if label["exclude"]]
+        request.ex_class_ids[:] = [label["class_id"] for label in args["typed_labels"] if label["exclude"]]
 
         if args.get("sampling_count"):
             request.sampling_count = args["sampling_count"]

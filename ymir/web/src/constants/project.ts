@@ -2,21 +2,22 @@ import { transferDatasetGroup, transferDataset } from '@/constants/dataset'
 import { format } from '@/utils/date'
 import { transferIteration } from './iteration'
 
-export enum PROJECTTYPES {
+export enum ObjectType {
   Classification = 1,
   ObjectDetection = 2,
   SemanticSegmentation = 3,
+  InstanceSegmentation = 4,
 }
 
 const typesPrefix = 'project.types.'
 const projectTypes = [
-  { label: 'det', value: PROJECTTYPES.ObjectDetection },
-  { label: 'seg', value: PROJECTTYPES.SemanticSegmentation },
+  { label: 'det', value: ObjectType.ObjectDetection },
+  { label: 'seg', value: ObjectType.SemanticSegmentation },
 ]
 
 export const getProjectTypes = () => projectTypes.map(({ label, value }) => ({ label: typesPrefix + label, value }))
 
-export const getProjectTypeLabel = (type: PROJECTTYPES, prefix: boolean = false) => {
+export const getProjectTypeLabel = (type: ObjectType, prefix: boolean = false) => {
   const target = projectTypes.find(({ value }) => value === type)
   return (prefix ? typesPrefix : '') + target?.label
 }
