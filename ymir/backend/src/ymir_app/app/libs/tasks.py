@@ -10,6 +10,7 @@ from fastapi.encoders import jsonable_encoder
 from sqlalchemy.orm import Session
 
 from app.api.errors.errors import (
+    ProjectNotFound,
     DatasetIndexNotReady,
     DuplicateDatasetGroupError,
     FailedToUpdateTaskStatusTemporally,
@@ -162,6 +163,8 @@ class TaskResult:
     @cached_property
     def object_type(self) -> int:
         project = crud.project.get(self.db, self.project_id)
+        if not project:
+            raise ProjectNotFound()
         return project.object_type
 
     @cached_property
