@@ -140,6 +140,18 @@ class DatasetAnnotation(BaseModel):
 
     eval_class_ids: Optional[List]
 
+    # segmentation
+    classwise_area: Optional[Dict]
+    # instance segmentation
+    total_instance_count: Optional[int]
+    ave_instance_count: Optional[float]
+    classwise_instance_count: Optional[Dict]
+    instance_area: List[Dict]
+    crowdedness: List[Dict]
+    # semantic segmentation
+    total_area: Optional[int]
+    ave_area: Optional[float]
+
 
 class DatasetInfo(DatasetInDBBase):
     gt: Optional[DatasetAnnotation]
