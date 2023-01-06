@@ -10,9 +10,10 @@ import { OPENPAI_MAX_GPU_COUNT } from '@/constants/common'
 import { TYPES } from '@/constants/image'
 import { randomNumber } from '@/utils/number'
 import useFetch from '@/hooks/useFetch'
+import useRequest from '@/hooks/useRequest'
 
 import ModelSelect from '@/components/form/modelSelect'
-import ImageSelect from '@/components/form/imageSelect'
+import ImageSelect from '@/components/form/ImageSelect'
 import DatasetSelect from '@/components/form/datasetSelect'
 import LiveCodeForm from '@/components/form/items/liveCode'
 import { removeLiveCodeConfig } from '@/components/form/items/liveCodeConfig'
@@ -117,11 +118,10 @@ function Mining({ query = {}, hidden, ok = () => {}, datasetCache, bottom, ...fu
     }
   }, [location.state])
 
-  function imageChange(_, image = {}) {
-    const { url, configs = [] } = image
+  function imageChange(_, option = {}) {
+    const { url, configs = [] } = option.image
     const configObj = configs.find((conf) => conf.type === TYPES.MINING) || {}
     const hasInference = configs.some((conf) => conf.type === TYPES.INFERENCE)
-    console.log('hasInference:', hasInference)
     setImageHasInference(hasInference)
     form.setFieldsValue({ inference: hasInference && generate_annotations })
     if (!HIDDENMODULES.LIVECODE) {
@@ -196,6 +196,7 @@ function Mining({ query = {}, hidden, ok = () => {}, datasetCache, bottom, ...fu
               placeholder={t('task.train.form.image.placeholder')}
               relatedId={selectedModel?.task?.parameters?.docker_image_id}
               type={TYPES.MINING}
+              pid={pid}
               onChange={imageChange}
             />
           </Form.Item>
