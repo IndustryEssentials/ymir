@@ -147,7 +147,6 @@ class DatasetAnnotation(BaseModel):
     classwise_area: Optional[Dict]
     # instance segmentation
     total_instance_count: Optional[int]
-    ave_instance_count: Optional[float]
     classwise_instance_count: Optional[Dict]
     # semantic segmentation
     total_area: Optional[int]
