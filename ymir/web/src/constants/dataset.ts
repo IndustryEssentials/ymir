@@ -269,7 +269,9 @@ const transferCK = (counts: YModels.BackendData = {}, total: YModels.BackendData
 }
 
 const generateAnno = (data: YModels.BackendData) => {
-  const { quality, area, area_ratio } = data.hist
+  // todo add metrics
+
+  const { quality, area, area_ratio, instance_area, crowdedness } = data.hist
   return {
     keywords: data.keywords,
     total: data.annos_count,
@@ -278,6 +280,12 @@ const generateAnno = (data: YModels.BackendData) => {
     quality: quality,
     area: area,
     areaRatio: area_ratio,
+    keywordAnnotaitionCount: data.classwise_instance_count,
+    totalArea: data.total_area,
+    keywordArea: data.classwise_area, // average area
+    instanceArea: instance_area,
+    crowdedness,
+    totalInstanceCount: data.total_instance_count,
   }
 }
 

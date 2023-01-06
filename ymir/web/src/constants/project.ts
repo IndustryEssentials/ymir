@@ -3,7 +3,6 @@ import { format } from '@/utils/date'
 import { transferIteration } from './iteration'
 
 export enum ObjectType {
-  Classification = 1,
   ObjectDetection = 2,
   SemanticSegmentation = 3,
   InstanceSegmentation = 4,

@@ -53,7 +53,6 @@ declare namespace YModels {
   }
 
   enum ObjectType {
-    Classification = 1,
     ObjectDetection = 2,
     SemanticSegmentation = 3,
     InstanceSegmentation = 4,
@@ -79,6 +78,12 @@ declare namespace YModels {
     quality: Array<BackendData>
     area: Array<BackendData>
     areaRatio: Array<BackendData>
+    keywordAnnotaitionCount: number
+    totalArea?: Array<BackendData>
+    keywordArea?: Array<BackendData>
+    instanceArea?: Array<BackendData>
+    crowdedness?: Array<BackendData>
+    totalInstanceCount: number
   }
   export interface DatasetGroup extends Group {
     versions?: Array<Dataset>
