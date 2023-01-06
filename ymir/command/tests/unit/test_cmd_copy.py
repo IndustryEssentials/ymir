@@ -121,11 +121,7 @@ class TestCmdCopy(unittest.TestCase):
             }
             self.assertEqual({0: 2, 1: 1}, asset0_idx_ids)
             self.assertEqual({}, asset1_idx_ids)
-        try:
-            self.assertEqual(eval_class_ids_set, set(mir_annotations.prediction.eval_class_ids))
-        except AssertionError:
-            breakpoint()
-            raise
+        self.assertEqual(eval_class_ids_set, set(mir_annotations.prediction.eval_class_ids))
 
         mAP = mir_tasks.tasks[dst_tid].model.mAP
         self.assertTrue(mAP > 0.29999 and mAP < 0.30001)  # it's actually 0.3
