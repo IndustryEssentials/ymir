@@ -192,7 +192,6 @@ function Inference({...func }) {
       if (resultCount < tasksCount) {
         message.warn(t('task.inference.failure.some'))
       }
-      await func.clearCache()
       history.replace(`/home/project/${pid}/diagnose`)
     }
   }
