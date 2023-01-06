@@ -1207,8 +1207,8 @@ class SingleEvaluationElement(google.protobuf.message.Message):
     FP_FIELD_NUMBER: builtins.int
     FN_FIELD_NUMBER: builtins.int
     PR_CURVE_FIELD_NUMBER: builtins.int
-    MIOU_FIELD_NUMBER: builtins.int
-    MACC_FIELD_NUMBER: builtins.int
+    IOU_FIELD_NUMBER: builtins.int
+    ACC_FIELD_NUMBER: builtins.int
     MASKAP_FIELD_NUMBER: builtins.int
     BOXAP_FIELD_NUMBER: builtins.int
     ap: builtins.float = ...
@@ -1222,10 +1222,10 @@ class SingleEvaluationElement(google.protobuf.message.Message):
     fn: builtins.int = ...
     @property
     def pr_curve(self) -> google.protobuf.internal.containers.RepeatedCompositeFieldContainer[global___FloatPoint]: ...
-    mIoU: builtins.float = ...
+    iou: builtins.float = ...
     """available in semantic segmentation models and evaluate results"""
 
-    mAcc: builtins.float = ...
+    acc: builtins.float = ...
     maskAP: builtins.float = ...
     """available in instance segmentation models and evaluate results"""
 
@@ -1238,12 +1238,12 @@ class SingleEvaluationElement(google.protobuf.message.Message):
         fp : builtins.int = ...,
         fn : builtins.int = ...,
         pr_curve : typing.Optional[typing.Iterable[global___FloatPoint]] = ...,
-        mIoU : builtins.float = ...,
-        mAcc : builtins.float = ...,
+        iou : builtins.float = ...,
+        acc : builtins.float = ...,
         maskAP : builtins.float = ...,
         boxAP : builtins.float = ...,
         ) -> None: ...
-    def ClearField(self, field_name: typing_extensions.Literal["ap",b"ap","ar",b"ar","boxAP",b"boxAP","fn",b"fn","fp",b"fp","mAcc",b"mAcc","mIoU",b"mIoU","maskAP",b"maskAP","pr_curve",b"pr_curve","tp",b"tp"]) -> None: ...
+    def ClearField(self, field_name: typing_extensions.Literal["acc",b"acc","ap",b"ap","ar",b"ar","boxAP",b"boxAP","fn",b"fn","fp",b"fp","iou",b"iou","maskAP",b"maskAP","pr_curve",b"pr_curve","tp",b"tp"]) -> None: ...
 global___SingleEvaluationElement = SingleEvaluationElement
 
 class IntPoint(google.protobuf.message.Message):

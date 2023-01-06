@@ -346,8 +346,8 @@ message SingleEvaluationElement {
     int32 fn = 5;
     repeated FloatPoint pr_curve = 6;
     // available in semantic segmentation models and evaluate results
-    float mIoU = 7;
-    float mAcc = 8;
+    float iou = 7;
+    float acc = 8;
     // available in instance segmentation models and evaluate results
     float maskAP = 9;
     float boxAP = 10;
