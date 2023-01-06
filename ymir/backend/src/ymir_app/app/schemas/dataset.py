@@ -126,6 +126,9 @@ class DatasetAnnotationHist(BaseModel):
     quality: List[Dict]
     area: List[Dict]
     area_ratio: List[Dict]
+    # instance segmentation
+    instance_area: List[Dict]
+    crowdedness: List[Dict]
 
 
 class DatasetAnnotation(BaseModel):
@@ -146,8 +149,6 @@ class DatasetAnnotation(BaseModel):
     total_instance_count: Optional[int]
     ave_instance_count: Optional[float]
     classwise_instance_count: Optional[Dict]
-    instance_area: List[Dict]
-    crowdedness: List[Dict]
     # semantic segmentation
     total_area: Optional[int]
     ave_area: Optional[float]
