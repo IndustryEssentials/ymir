@@ -28,7 +28,7 @@ declare namespace YModels {
     id: number
     groupId: number
     projectId: number
-    type: number,
+    type: number
     name: string
     versionName: string
     version: number
@@ -53,8 +53,10 @@ declare namespace YModels {
   }
 
   enum ObjectType {
-    Detection = 1,
-    Segmentation = 2,
+    Classification = 1,
+    ObjectDetection = 2,
+    SemanticSegmentation = 3,
+    InstanceSegmentation = 4,
   }
 
   type Keywords = {
@@ -262,10 +264,16 @@ declare namespace YModels {
     functions: Array<number>
     configs: Array<DockerImageConfig>
     url: string
-    liveCode?: boolean
     description: string
     createTime: string
+    objectType: ObjectType
     related?: Array<Image>
+    liveCode?: boolean
+  }
+
+  export interface ImageList {
+    items: Image[]
+    total: number
   }
 
   type ResultType = 'dataset' | 'model'

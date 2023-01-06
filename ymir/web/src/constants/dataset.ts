@@ -8,11 +8,6 @@ export enum AnnotationType {
   Mask = 2,
 }
 
-export enum ObjectType {
-  Detection = 1,
-  Segmentation = 2,
-}
-
 export enum states {
   READY = 0,
   VALID = 1,

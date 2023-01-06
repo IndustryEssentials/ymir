@@ -8,7 +8,7 @@ import useFetch from '@/hooks/useFetch'
 import useRequest from '@/hooks/useRequest'
 import useAddKeywords from '@/hooks/useAddKeywords'
 import { IMPORTSTRATEGY } from '@/constants/dataset'
-import { PROJECTTYPES } from '@/constants/project'
+import { ObjectType } from '@/constants/project'
 
 import { urlValidator } from '@/components/form/validators'
 import Breadcrumbs from '@/components/common/breadcrumb'
@@ -88,8 +88,7 @@ const Add = (props) => {
   }, [pid])
 
   useEffect(() => {
-    console.log('project.type === PROJECTTYPES.SemanticSegmentation:', project, project.type, PROJECTTYPES.SemanticSegmentation)
-    project.type === PROJECTTYPES.SemanticSegmentation && (setSampleZip('/sample_dataset_seg.zip'), setSamplePic(SegSamplePic))
+    project.type === ObjectType.SemanticSegmentation && (setSampleZip('/sample_dataset_seg.zip'), setSamplePic(SegSamplePic))
   }, [project])
 
   useEffect(() => {
@@ -276,7 +275,7 @@ const Add = (props) => {
       ...params,
       br: <br />,
       structure: structureTip,
-      format: project.type === PROJECTTYPES.ObjectDetection ? 'Pascal VOC' : 'Coco',
+      format: project.type === ObjectType.ObjectDetection ? 'Pascal VOC' : 'Coco',
     })
 
   return (
