@@ -216,6 +216,7 @@ class ViewerModelInfoResponse(BaseModel):
     model_stages: Dict
     best_stage_name: str
     keywords: Optional[str]
+    object_type: int
 
     @root_validator(pre=True)
     def make_up_fields(cls, values: Any) -> Any:
@@ -224,6 +225,7 @@ class ViewerModelInfoResponse(BaseModel):
             hash=values["model_hash"],
             map=values["mAP"],
             model_stages=values["stages"],
+            object_type=values["object_type"],
             keywords=json.dumps(keywords) if keywords else None,
         )
         return values
