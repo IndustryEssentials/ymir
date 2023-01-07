@@ -144,7 +144,7 @@ class TestMirStorage(unittest.TestCase):
                     2: 2,
                     3: 2,
                 },
-                'class_ids_mask_areas': {
+                'class_ids_mask_area': {
                     1: 0,
                     2: 0,
                     3: 0,

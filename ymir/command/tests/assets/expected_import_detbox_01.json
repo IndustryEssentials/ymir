@@ -676,7 +676,7 @@
             "class_ids_cnt": {
                 "1": 2
             },
-            "class_ids_mask_areas": {
+            "class_ids_mask_area": {
                 "1": 0
             },
             "negative_asset_cnt": 0,
@@ -713,7 +713,7 @@
             "class_ids_cnt": {
                 "1": 2
             },
-            "class_ids_mask_areas": {
+            "class_ids_mask_area": {
                 "1": 0
             },
             "negative_asset_cnt": 0,

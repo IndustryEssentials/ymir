@@ -273,7 +273,7 @@
             "positive_asset_cnt": 0,
             "tags_cnt": {},
             "class_ids_cnt": {},
-            "class_ids_mask_areas": {},
+            "class_ids_mask_area": {},
             "eval_class_ids": []
         },
         "gt_stats": {
@@ -287,7 +287,7 @@
                 "6": 1,
                 "7": 2
             },
-            "class_ids_mask_areas": {
+            "class_ids_mask_area": {
                 "3": 5104,
                 "4": 88715,
                 "5": 175494,

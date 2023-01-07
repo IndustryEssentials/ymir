@@ -414,7 +414,7 @@ message AnnoStats {
 
     int32 total_mask_area = 10;
     // key: class ids, value: mask area for this class id
-    map<int32, int32> class_ids_mask_areas = 11;
+    map<int32, int32> class_ids_mask_area = 11;
 
     reserved 4, 5, 6;
 };

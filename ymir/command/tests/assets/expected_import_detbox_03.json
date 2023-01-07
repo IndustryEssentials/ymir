@@ -61,7 +61,7 @@
             "positive_asset_cnt": 0,
             "tags_cnt": {},
             "class_ids_cnt": {},
-            "class_ids_mask_areas": {},
+            "class_ids_mask_area": {},
             "eval_class_ids": []
         },
         "gt_stats": {
@@ -71,7 +71,7 @@
             "positive_asset_cnt": 0,
             "tags_cnt": {},
             "class_ids_cnt": {},
-            "class_ids_mask_areas": {},
+            "class_ids_mask_area": {},
             "eval_class_ids": []
         },
         "cks_cnt": {}

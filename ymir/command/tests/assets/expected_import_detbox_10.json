@@ -871,7 +871,7 @@
                 "1": 2,
                 "2": 1
             },
-            "class_ids_mask_areas": {
+            "class_ids_mask_area": {
                 "1": 0,
                 "2": 0
             },
@@ -916,7 +916,7 @@
                 "1": 2,
                 "2": 1
             },
-            "class_ids_mask_areas": {
+            "class_ids_mask_area": {
                 "1": 0,
                 "2": 0
             },
