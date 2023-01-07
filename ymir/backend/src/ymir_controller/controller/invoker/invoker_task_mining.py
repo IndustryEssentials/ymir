@@ -97,14 +97,16 @@ class TaskMiningInvoker(TaskBaseInvoker):
             utils.mir_executable(), 'mining', '--root', repo_root, '--user-label-file', label_storage_file, '--dst-rev',
             f"{task_id}@{task_id}", '-w', work_dir, '--model-location', model_location, '--media-location',
             media_location, '--model-hash', f"{model_hash}@{model_stage}", '--src-revs',
-            revs.build_src_revs(in_dataset_ids), '--ex-src-revs',
-            revs.build_src_revs(ex_dataset_ids), '-s',
-            backend_pb2.MergeStrategy.Name(merge_strategy).lower(), '--asset-cache-dir', asset_cache_dir,
-            '--task-config-file', config_file, '--executor', executor, '--executant-name', executant_name
+            revs.build_src_revs(in_dataset_ids)
         ]
+        if ex_dataset_ids:
+            mining_cmd.extend(['--ex-src-revs', revs.build_src_revs(ex_dataset_ids)])
+        mining_cmd.extend([
+            '-s', backend_pb2.MergeStrategy.Name(merge_strategy).lower(), '--asset-cache-dir', asset_cache_dir,
+            '--task-config-file', config_file, '--executor', executor, '--executant-name', executant_name
+        ])
         if top_k > 0:
-            mining_cmd.append('--topk')
-            mining_cmd.append(str(top_k))
+            mining_cmd.extend(['--topk', str(top_k)])
         if generate_annotations:
             mining_cmd.append('--add-prediction')
 
