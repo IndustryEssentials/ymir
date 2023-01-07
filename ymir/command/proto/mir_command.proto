@@ -403,11 +403,18 @@ message AnnoStats {
     int32 total_cnt = 1;
     int32 positive_asset_cnt = 2;
     int32 negative_asset_cnt = 3;
-    map<string, SingleMapCount> tags_cnt = 7;  // key: main tag name, value: main tag count and sub tag names and counts
-    map<int32, int32> class_ids_cnt = 8;  // key: class ids, value: asset count for this class id
+
+    // key: main tag name, value: main tag count and sub tag names and counts
+    map<string, SingleMapCount> tags_cnt = 7;
+    // key: class ids, value: asset count for this class id
+    map<int32, int32> class_ids_cnt = 8;
 
     // Shortcut of class_ids for evaluation (dup. field as in SingleTaskAnnotations).
     repeated int32 eval_class_ids = 9;
+
+    int32 total_mask_area = 10;
+    // key: class ids, value: mask area for this class id
+    map<int32, int32> class_ids_mask_area = 11;
 
     reserved 4, 5, 6;
 };

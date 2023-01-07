@@ -647,6 +647,7 @@
         "total_asset_mbytes": 1,
         "pred_stats": {
             "total_cnt": 3,
+            "total_mask_area": 0,
             "positive_asset_cnt": 2,
             "tags_cnt": {
                 "pose": {
@@ -675,11 +676,15 @@
             "class_ids_cnt": {
                 "1": 2
             },
+            "class_ids_mask_area": {
+                "1": 0
+            },
             "negative_asset_cnt": 0,
             "eval_class_ids": []
         },
         "gt_stats": {
             "total_cnt": 3,
+            "total_mask_area": 0,
             "positive_asset_cnt": 2,
             "tags_cnt": {
                 "color": {
@@ -707,6 +712,9 @@
             },
             "class_ids_cnt": {
                 "1": 2
+            },
+            "class_ids_mask_area": {
+                "1": 0
             },
             "negative_asset_cnt": 0,
             "eval_class_ids": []
