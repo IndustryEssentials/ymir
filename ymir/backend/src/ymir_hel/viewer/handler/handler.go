@@ -153,6 +153,13 @@ func (v *ViewerHandler) GetDatasetMetaCountsHandler(
 			}
 		}
 		result.Gt.AnnotationsCount = int64(gtStats.TotalCnt)
+
+		result.Gt.TotalMaskArea = int64(gtStats.TotalMaskArea)
+		if gtStats.ClassIdsMaskArea != nil {
+			for k, v := range gtStats.ClassIdsMaskArea {
+				result.Gt.ClassIDsMaskArea[int(k)] = int64(v)
+			}
+		}
 	}
 
 	predStats := mirContext.PredStats
@@ -165,6 +172,13 @@ func (v *ViewerHandler) GetDatasetMetaCountsHandler(
 			}
 		}
 		result.Pred.AnnotationsCount = int64(predStats.TotalCnt)
+
+		result.Pred.TotalMaskArea = int64(predStats.TotalMaskArea)
+		if gtStats.ClassIdsMaskArea != nil {
+			for k, v := range predStats.ClassIdsMaskArea {
+				result.Pred.ClassIDsMaskArea[int(k)] = int64(v)
+			}
+		}
 	}
 
 	exist, ready := v.mongoServer.CheckDatasetExistenceReady(mirRepo)
