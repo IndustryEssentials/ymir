@@ -1,128 +1,92 @@
-import React, { useEffect, useState } from "react"
-import { Button, Form, Row, Col, Table, Popover, Card, Radio } from "antd"
-import { useParams } from "umi"
+import React, { useEffect, useState } from 'react'
+import { Button, Form, Row, Col, Table, Popover, Card, Radio } from 'antd'
+import { useParams } from 'umi'
 
-import t from "@/utils/t"
-import useFetch from "@/hooks/useFetch"
-import { humanize } from "@/utils/number"
+import t from '@/utils/t'
+import useFetch from '@/hooks/useFetch'
+import useRequest from '@/hooks/useRequest'
 
 import Breadcrumbs from '@/components/common/breadcrumb'
-import Panel from "@/components/form/panel"
-import DatasetSelect from "@/components/form/datasetSelect"
-import AnalysisChart from "./components/analysisChart"
+import Panel from '@/components/form/panel'
+import DatasetSelect from '@/components/form/datasetSelect'
+import AnalysisChart from './components/analysisChart'
+import { getConfigByAnnotationType } from './components/AnalysisHelper'
 
-import style from "./analysis.less"
-import { CompareIcon } from "@/components/common/Icons"
+import style from './analysis.less'
+import { CompareIcon } from '@/components/common/Icons'
 
-const options = [
-  { value: 'gt' },
-  { value: 'pred' }
-]
+const options = ['gt', 'pred']
 
 const getVersionName = ({ name, versionName }) => `${name} ${versionName}`
-/** todo support difference object type */
 function Analysis() {
   const [form] = Form.useForm()
   const { id: pid } = useParams()
   const [remoteSource, fetchSource] = useFetch('dataset/analysis')
   const [source, setSource] = useState([])
-  const [datasets, setDatasets] = useState([])
-  const [tableSource, setTableSource] = useState([])
-  const [chartsData, setChartsData] = useState([])
-  const [annotationsType, setAnnotationType] = useState(options[0].value)
+  const [assetCharts, setAssetCharts] = useState([])
+  const [annotationCharts, setAnnotationCharts] = useState([])
+  const [annotationsType, setAnnotationType] = useState(options[0])
+  const [{ tableColumns, assetChartConfig, annotationChartConfig }, setConfig] = useState({
+    tableColumns: [],
+    assetChartConfig: [],
+    annotationChartConfig: [],
+  })
+  const { data: project, run: getProject } = useRequest('project/getProject', {
+    loading: false,
+  })
 
   useEffect(() => {
-    setTableSource(source)
-    setAnalysisData(source)
-  }, [source, annotationsType])
+    getProject({ id: pid })
+  }, [])
 
   useEffect(() => {
-    setSource(remoteSource)
+    project && setConfig(getConfigByAnnotationType(project.type, annotationsType))
+  }, [project, annotationsType])
+
+  useEffect(() => {
+    const charts = generateCharts(assetChartConfig, source)
+    console.log('assetChartConfig, source getSource:', assetChartConfig, source, charts)
+    setAssetCharts(charts)
+  }, [assetChartConfig, source])
+
+  useEffect(() => {
+    const charts = generateCharts(annotationChartConfig, source)
+    console.log('annotationChartConfig, source getSource:', annotationChartConfig, source, charts)
+    setAnnotationCharts(charts)
+  }, [annotationChartConfig, source])
+
+  useEffect(() => {
+    setSource(remoteSource || [])
   }, [remoteSource])
 
-  function setAnalysisData(datasets) {
-    const chartsMap = [
-      {
-        label: 'dataset.analysis.title.asset_bytes',
-        sourceField: 'assetBytes',
-        totalField: 'assetCount',
-        xUnit: 'MB',
-        renderEachX: x => x.replace("MB", ""),
-        color: ['#10BC5E', '#F2637B']
-      },
-      {
-        label: 'dataset.analysis.title.asset_hw_ratio',
-        sourceField: 'assetHWRatio',
-        totalField: 'assetCount',
-        color: ['#36CBCB', '#E8B900']
-      },
-      {
-        label: 'dataset.analysis.title.asset_area',
-        sourceField: 'assetArea',
-        totalField: 'assetCount',
-        xUnit: 'PX',
-        renderEachX: x => `${x / 10000}W`,
-        color: ['#36CBCB', '#F2637B'],
-      },
-      {
-        label: 'dataset.analysis.title.asset_quality',
-        sourceField: 'assetQuality',
-        totalField: 'assetCount',
-        color: ['#36CBCB', '#10BC5E'],
-        isXUpperLimit: true,
-      },
-      {
-        label: 'dataset.analysis.title.anno_area_ratio',
-        sourceField: 'areaRatio',
-        totalField: 'total',
-        customOptions: {
-          tooltipLable: 'dataset.analysis.bar.anno.tooltip',
-        },
-        color: ['#10BC5E', '#E8B900'],
-        annoType: true,
-        isXUpperLimit: true,
-      },
-      {
-        label: 'dataset.analysis.title.keyword_ratio',
-        sourceField: 'keywords',
-        totalField: 'total',
-        customOptions: {
-          tooltipLable: 'dataset.analysis.bar.anno.tooltip',
-        },
-        color: ['#2CBDE9', '#E8B900'],
-        annoType: true,
-        xType: 'attribute'
-      },
-    ]
-
-    const chartsConfig = datasets ? chartsMap.map(chart => {
-      const xData = chart.xType === 'attribute' ? getAttrXData(chart, datasets) : getXData(chart, datasets)
-      const yData = chart.xType === 'attribute' ? getAttrYData(chart, datasets, xData) : getYData(chart, datasets)
+  function generateCharts(configs = [], datasets = []) {
+    return datasets.length ? configs.map((config) => {
+      console.log('getSource config, datasets:', config, datasets, configs)
+      const xData = config.xType === 'attribute' ? getAttrXData(config, datasets) : getXData(config, datasets)
+      const yData = config.xType === 'attribute' ? getAttrYData(config, datasets, xData) : getYData(config, datasets)
       return {
-        label: chart.label,
+        label: config.label,
         customOptions: {
-          ...chart.customOptions,
+          ...config.customOptions,
           xData,
-          color: chart.color,
-          xUnit: chart.xUnit,
-          yData
+          color: config.color,
+          xUnit: config.xUnit,
+          yData,
         },
       }
     }) : []
-    setChartsData(chartsConfig)
   }
 
-  const getField = (item = {}, field, annoType) => {
-    return annoType && item[annotationsType] ? item[annotationsType][field] : item[field]
-  }
-
-  function getXData({ sourceField, isXUpperLimit = false, annoType, renderEachX = x => x }, datasets) {
-    const dataset = datasets.find(item => {
-      const target = getField(item, sourceField, annoType)
-      return target && target.length > 0
-    }) || datasets[0]
-    const field = getField(dataset, sourceField, annoType)
-    const xData = field ? field.map(item => renderEachX(item.x)) : []
+  function getXData(config, datasets) {
+    const { sourceField, isXUpperLimit = false, getSource, renderEachX = (x) => x } = config
+    console.log('getSource:', getSource, config)
+    const dataset =
+      datasets.find((item) => {
+        const target = getSource(item)
+        return target && target.length > 0
+      }) || datasets[0]
+    const field = getSource(dataset)[sourceField]
+    const xData = field ? field.map((item) => renderEachX(item.x)) : []
     const transferXData = xData.map((x, index) => {
       if (index === xData.length - 1) {
         return isXUpperLimit ? x : `[${x},+)`
@@ -133,131 +97,65 @@ function Analysis() {
     return transferXData
   }
 
-  function getYData({ sourceField, annoType, totalField }, datasets) {
-    const yData = datasets && datasets.map(dataset => {
-      const total = getField(dataset, totalField, annoType)
-      const name = getVersionName(dataset)
-      const field = getField(dataset, sourceField, annoType)
-      return {
-        name,
-        value: field.map(item => total ? (item.y / total).toFixed(4) : 0),
-        count: field.map(item => item.y)
-      }
-    })
+  function getYData({ getSource, sourceField, totalField }, datasets) {
+    const yData =
+      datasets &&
+      datasets.map((dataset) => {
+        const data = getSource(dataset)
+        const total = data[totalField]
+        const name = getVersionName(dataset)
+        const field = data[sourceField]
+        return {
+          name,
+          value: field.map((item) => (total ? (item.y / total).toFixed(4) : 0)),
+          count: field.map((item) => item.y),
+        }
+      })
     return yData
   }
 
-  function getAttrXData({ sourceField, annoType }, datasets) {
+  function getAttrXData({ sourceField, getSource }, datasets) {
     let xData = []
-    datasets && datasets.forEach((dataset) => {
-      const field = getField(dataset, sourceField, annoType)
-      const datasetAttrs = Object.keys(field || {})
-      xData = [...new Set([...xData, ...datasetAttrs])]
-    })
+    datasets &&
+      datasets.forEach((dataset) => {
+        const field = getSource(dataset)[sourceField]
+        const datasetAttrs = Object.keys(field || {})
+        xData = [...new Set([...xData, ...datasetAttrs])]
+      })
     return xData
   }
 
-  function getAttrYData({ sourceField, annoType, totalField }, datasets, xData) {
-    const yData = datasets && datasets.map(dataset => {
-      const total = getField(dataset, totalField, annoType)
-      const name = getVersionName(dataset)
-      const attrObj = getField(dataset, sourceField, annoType)
-      return {
-        name,
-        value: xData.map(key => total ? (attrObj[key] ? (attrObj[key] / total).toFixed(4) : 0) : 0),
-        count: xData.map(key => attrObj[key] || 0)
-      }
-    })
+  function getAttrYData({ getSource, sourceField, totalField }, datasets, xData) {
+    const yData =
+      datasets &&
+      datasets.map((dataset) => {
+        const data = getSource(dataset)
+        const total = data[totalField]
+        const name = getVersionName(dataset)
+        const attrObj = data[sourceField]
+        return {
+          name,
+          value: xData.map((key) => (total ? (attrObj[key] ? (attrObj[key] / total).toFixed(4) : 0) : 0)),
+          count: xData.map((key) => attrObj[key] || 0),
+        }
+      })
     return yData
-  }
-
-  function datasetsChange(values, options) {
-    setDatasets(options.map(option => option.dataset))
   }
 
   const onFinish = async (values) => {
     const params = {
       pid,
-      datasets: values.datasets
+      datasets: values.datasets,
     }
     fetchSource(params)
   }
 
   function onFinishFailed(errorInfo) {
-    console.log("Failed:", errorInfo)
+    console.log('Failed:', errorInfo)
   }
 
   function retry() {
-    setSource(null)
-  }
-
-  function showTitle(str) {
-    return <strong>{t(str)}</strong>
-  }
-
-  const columns = [
-    {
-      title: showTitle('dataset.analysis.column.name'),
-      dataIndex: "name",
-      ellipsis: true,
-      align: 'center',
-      className: style.colunmClass,
-    },
-    {
-      title: showTitle('dataset.analysis.column.version'),
-      dataIndex: "versionName",
-      ellipsis: true,
-      align: 'center',
-      width: 80,
-      className: style.colunmClass,
-    },
-    {
-      title: showTitle('dataset.analysis.column.size'),
-      dataIndex: "totalAssetMbytes",
-      ellipsis: true,
-      align: 'center',
-      className: style.colunmClass,
-      render: (num) => {
-        return num && <span>{num}MB</span>
-      },
-    },
-    {
-      title: showTitle('dataset.analysis.column.box_count'),
-      dataIndex: 'total',
-      ellipsis: true,
-      align: 'center',
-      className: style.colunmClass,
-      render: (_, record) => {
-        const num = getField(record, 'total', true)
-        return renderPop(humanize(num), num)
-      },
-    },
-    {
-      title: showTitle('dataset.analysis.column.average_labels'),
-      dataIndex: 'average',
-      ellipsis: true,
-      align: 'center',
-      className: style.colunmClass,
-      render: (_, record) => getField(record, 'average', true),
-    },
-    {
-      title: showTitle('dataset.analysis.column.overall'),
-      dataIndex: 'metrics',
-      ellipsis: true,
-      align: 'center',
-      className: style.colunmClass,
-      render: (text, record) => {
-        const total = record.assetCount
-        const negative = getField(record, 'negative', true)
-        return renderPop(`${humanize(total - negative)}/${humanize(total)}`, `${total - negative}/${total}`)
-      },
-    },
-  ]
-
-  function renderPop(label, content = {}) {
-    return <Popover content={content} >
-      <span>{label}</span>
-    </Popover>
+    setSource([])
   }
 
   async function validDatasetCount(rule, value) {
@@ -271,6 +169,21 @@ function Analysis() {
 
   const initialValues = {}
 
+  const chartsRender = (label, charts = []) =>
+    charts.length ? (
+      <>
+        <h3>{t(label)}</h3>
+        <Row gutter={[10, 20]}>
+          {charts.map((chart) => (
+            <Col span={24} key={chart.label}>
+              <div className={style.echartTitle}>{t(chart.label)}</div>
+              <AnalysisChart customOptions={chart.customOptions} height={300} />
+            </Col>
+          ))}
+        </Row>
+      </>
+    ) : null
+
   return (
     <div className={style.wrapper}>
       <Breadcrumbs />
@@ -280,33 +193,28 @@ function Analysis() {
             <div className={style.filters}>
               <Radio.Group
                 value={annotationsType}
-                options={options.map(opt => ({ ...opt, label: t(`annotation.${opt.value}`) }))}
+                options={options.map((value) => ({ value, label: t(`annotation.${value}`) }))}
                 onChange={({ target: { value } }) => setAnnotationType(value)}
               ></Radio.Group>
             </div>
             <Table
               size="small"
-              align='right'
-              dataSource={tableSource}
+              align="right"
+              dataSource={source}
               rowKey={(record) => getVersionName(record)}
               rowClassName={style.rowClass}
               className={style.tableClass}
-              columns={columns}
+              columns={tableColumns}
               pagination={false}
             />
-            <Row gutter={[10, 20]}>
-              {chartsData.map(chart => (
-                <Col span={24} key={chart.label}>
-                  <div className={style.echartTitle}>{t(chart.label)}</div>
-                  <AnalysisChart customOptions={chart.customOptions} height={300} />
-                </Col>
-              ))}
-            </Row>
+            {chartsRender('dataset.analysis.annotations.metrics', assetCharts)}
+            {chartsRender('dataset.analysis.assets.metrics', annotationCharts)}
           </Col>
-          <Col span={6} className='rightForm'>
+          <Col span={6} className="rightForm">
             <div className={style.formContainer}>
-              <div className='mask' hidden={!source}>
-                <Button style={{ marginBottom: 24 }} size='large' type="primary" onClick={() => retry()}>
+              {console.log('source:', source)}
+              <div className="mask" hidden={!source.length}>
+                <Button style={{ marginBottom: 24 }} size="large" type="primary" onClick={() => retry()}>
                   <CompareIcon /> {t('dataset.analysis.btn.retry')}
                 </Button>
               </div>
@@ -314,24 +222,18 @@ function Analysis() {
                 <Form
                   className={style.analysisForm}
                   form={form}
-                  layout='vertical'
-                  name='labelForm'
+                  layout="vertical"
+                  name="labelForm"
                   initialValues={initialValues}
                   onFinish={onFinish}
                   onFinishFailed={onFinishFailed}
-                  labelAlign='left'
+                  labelAlign="left"
                   colon={false}
                 >
-                  <Form.Item
-                    label={t('dataset.analysis.column.name')}
-                    name='datasets'
-                    rules={[
-                      { required: true },
-                      { validator: validDatasetCount }
-                    ]}>
-                    <DatasetSelect pid={pid} mode='multiple' onChange={datasetsChange} />
+                  <Form.Item label={t('dataset.analysis.column.name')} name="datasets" rules={[{ required: true }, { validator: validDatasetCount }]}>
+                    <DatasetSelect pid={pid} mode="multiple" />
                   </Form.Item>
-                  <Form.Item name='submitBtn'>
+                  <Form.Item name="submitBtn">
                     <div style={{ textAlign: 'center' }}>
                       <Button type="primary" size="large" htmlType="submit">
                         <CompareIcon /> {t('dataset.analysis.btn.start')}
@@ -343,7 +245,6 @@ function Analysis() {
             </div>
           </Col>
         </Row>
-
       </Card>
     </div>
   )

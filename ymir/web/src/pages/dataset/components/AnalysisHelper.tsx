@@ -2,8 +2,9 @@ import { Popover, TableColumnType } from 'antd'
 import { ReactNode } from 'react'
 
 import t from '@/utils/t'
-import { humanize } from '@/utils/number'
+import { humanize, toFixed } from '@/utils/number'
 import { ObjectType } from '@/constants/project'
+import VersionName from '@/components/result/VersionName'
 
 type AnnotationType = 'gt' | 'pred'
 type ChartConfigType = {
@@ -19,6 +20,7 @@ type ChartConfigType = {
   isXUpperLimit?: boolean
   annoType?: boolean
   xType?: string
+  getSource?: (dataset: YModels.DatasetAnalysis) => Array<{ [key: string]: any }>
 }
 type ColumnType = TableColumnType<YModels.DatasetAnalysis>
 
@@ -97,77 +99,82 @@ const getColumns = (keys: string[], type: AnnotationType) => {
   const columns: { [key: string]: ColumnType } = {
     name: {
       title: title('dataset.analysis.column.name'),
-      dataIndex: 'name',
+      render: (_, record) => <VersionName result={record} />,
     },
     labeled: {
       title: title('dataset.analysis.column.labeled'),
       dataIndex: 'labeled',
       render: (_, record) => {
-        const annoCounts = getAnnotations(record, type)
-        const labeled = record.assetCount - annoCounts.negative
-        return renderPop(humanize(labeled), labeled)
+        const anno = getAnnotations(record, type)
+        const labeled = record.assetCount - anno.negative
+        return renderPop(labeled)
       },
       width: 80,
     },
+    assetCount: {
+      title: title('dataset.analysis.column.assets.count'),
+      render: (assetCount) => renderPop(assetCount),
+    },
     keywordsCount: {
       title: title('dataset.analysis.column.keywords.count'),
-      dataIndex: 'keywords',
-      render: (keywords) => keywords.length,
+      render: (_, record) => Object.keys(getAnnotations(record, type)).length,
     },
     averageKeywordsCount: {
       title: title('dataset.analysis.column.keywords.count.average'),
-      dataIndex: 'averageKeywordsCount',
-      render: (_, record) => getAnnotations(record, type).average,
+      render: (_, record) => toFixed(getAnnotations(record, type).average),
     },
     annotationsCount: {
       title: title('dataset.analysis.column.annotations.total'),
-      dataIndex: 'average',
-      render: (_, record) => getAnnotations(record, type).total,
+      render: (_, record) => {
+        const count = getAnnotations(record, type).total
+        return renderPop(count)
+      },
     },
     averageAnnotationsCount: {
       title: title('dataset.analysis.column.annotations.average'),
-      dataIndex: 'averageAnnotationsCount',
-      render: (_, record) => getAnnotations(record, type).average,
+      render: (_, record) => toFixed(getAnnotations(record, type).average),
     },
     annotationsAreaTotal: {
-      title: title('dataset.analysis.column.annotations.total'),
-      dataIndex: 'average',
-      render: (_, record) => getAnnotations(record, type).total,
+      title: title('dataset.analysis.column.annotations.area.total'),
+      render: (_, record) => unit(getAnnotations(record, type).totalArea),
     },
     averageAnnotationsArea: {
-      title: title('dataset.analysis.column.annotations.average'),
-      dataIndex: 'averageAnnotationsCount',
-      render: (_, record) => getAnnotations(record, type).average,
-    },
-    instanceCount: {
-      title: title('dataset.analysis.column.annotations.total'),
-      dataIndex: 'average',
-      render: (_, record) => getAnnotations(record, type).total,
-    },
-    averageInstanceCount: {
-      title: title('dataset.analysis.column.annotations.average'),
-      dataIndex: 'averageAnnotationsCount',
-      render: (_, record) => getAnnotations(record, type).average,
-    },
-    metrics: {
-      title: title('dataset.analysis.column.overall'),
-      dataIndex: 'metrics',
-      render: (text, record) => {
-        const total = record.assetCount
-        const negative = getAnnotations(record, type).negative
-        return renderPop(`${humanize(total - negative)}/${humanize(total)}`, `${total - negative}/${total}`)
+      title: title('dataset.analysis.column.annotations.area.average'),
+      render: (_, record) => {
+        const total = getAnnotations(record, type).average
+        return unit(toFixed(total / record.assetCount))
       },
     },
+    instanceCount: {
+      title: title('dataset.analysis.column.instances.total'),
+      render: (_, record) => renderPop(getAnnotations(record, type).totalInstanceCount),
+    },
+    averageInstanceCount: {
+      title: title('dataset.analysis.column.instances.average'),
+      render: (_, record) => {
+        const total = getAnnotations(record, type).totalInstanceCount
+        return toFixed(total / record.assetCount)
+      },
+    },
+    cksCount: {
+      title: title('dataset.analysis.column.cks.count'),
+      render: (text, record) =>  record.cks?.subKeywordsTotal || 0,
+    },
   }
-  return keys.map((key) => ({ ...columns[key], ellipsis: true, align: 'center' }))
+  return keys.map((key) => ({ ...columns[key], dataIndex: key, ellipsis: true, align: 'center' }))
 }
 
-function renderPop(label: ReactNode, content: ReactNode) {
+function renderPop(num: number) {
+  const label = humanize(num)
   return (
-    <Popover content={content}>
+    <Popover content={num}>
       <span>{label}</span>
     </Popover>
   )
+}
+
+function unit(value?: string | number, u = 'px', def: string | number = 0) {
+  return value ? value + u : def + u
 }
 
 function title(str = '') {
@@ -185,33 +192,24 @@ const getTableColumns = (objectType: YModels.ObjectType, annotationType: Annotat
 }
 
 // todo 场景复杂度
-const getCharts = (objectType?: YModels.ObjectType) => {
+const getCharts = (annotationType?: AnnotationType, objectType?: YModels.ObjectType) => {
   const maps = {
     [ObjectType.ObjectDetection]: ['keywords', 'areaRatio'],
-    [ObjectType.SemanticSegmentation]: [
-      'keywords',
-      // 标注面积统计
-      'keywordArea',
-    ],
-    [ObjectType.InstanceSegmentation]: [
-      'keywords',
-      // 目标聚集度
-      'crowdedness',
-      // 实例面积分布
-      'instanceArea',
-      // 标注面积统计
-      'keywordArea',
-    ],
+    [ObjectType.SemanticSegmentation]: ['keywords', 'keywordArea'],
+    [ObjectType.InstanceSegmentation]: ['keywords', 'crowdedness', 'instanceArea', 'keywordArea'],
   }
   const assetCharts = ['assetHWRatio', 'assetQuality', 'assetArea']
   const keys = objectType ? maps[objectType] : assetCharts
-  return keys.map((key) => charts[key])
+  return keys.map((key) => ({
+    ...charts[key],
+    getSource: (dataset: YModels.DatasetAnalysis) => (annotationType ? getAnnotations(dataset, annotationType) : dataset),
+  }))
 }
 
 export const getConfigByAnnotationType = (objectType: YModels.ObjectType, annotationType: AnnotationType) => {
   return {
-    table: getTableColumns(objectType, annotationType),
-    assetCharts: getCharts(),
-    annotationCharts: getCharts(objectType),
+    tableColumns: getTableColumns(objectType, annotationType),
+    assetChartConfig: getCharts(),
+    annotationChartConfig: getCharts(annotationType, objectType),
   }
 }
