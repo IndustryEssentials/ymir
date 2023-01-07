@@ -22,7 +22,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 ARG PIP_SOURCE=https://pypi.org/simple
 
 RUN apt-get update \
-  && apt-get install -y curl git vim \
+  && apt-get install -y curl git vim gcc \
   && apt-get install -y --no-install-recommends python3-pip python3-dev mysql-client \
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/* \
@@ -51,3 +51,5 @@ COPY ./backend/deploy/git.config /root/.gitconfig
 COPY ./backend/deploy/supervisor /app/supervisor
 
 ENV PYTHONPATH=/app/ymir_app:/app/ymir_controller:/app/ymir_viz:/app/common:/app/ymir_monitor:/app/ymir_postman
+
+RUN apt-get purge -y gcc
