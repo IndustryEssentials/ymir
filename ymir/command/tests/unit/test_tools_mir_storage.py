@@ -144,6 +144,11 @@ class TestMirStorage(unittest.TestCase):
                     2: 2,
                     3: 2,
                 },
+                'class_ids_mask_areas': {
+                    1: 0,
+                    2: 0,
+                    3: 0,
+                }
             },
             'gt_stats': {
                 'negative_asset_cnt': 3

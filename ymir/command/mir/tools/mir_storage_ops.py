@@ -110,7 +110,7 @@ class MirStorageOps():
 
         anno_stats.total_cnt = sum([len(image_annotation.boxes) for image_annotation in image_annotations.values()])
 
-        # anno_stats.cis_cnt
+        # anno_stats.class_ids_cnt
         for ci, ci_assets in keyword_to_index.cis.items():
             anno_stats.class_ids_cnt[ci] = len(ci_assets.key_ids)
 
@@ -122,6 +122,12 @@ class MirStorageOps():
             for sub_tag, sub_tag_to_annos in tag_to_annos.sub_indexes.items():
                 for anno_idxes in sub_tag_to_annos.key_ids.values():
                     anno_stats.tags_cnt[tag].sub_cnt[sub_tag] += len(anno_idxes.ids)
+
+        # anno_stats.class_ids_mask_areas and anno_stats.total_mask_area
+        for single_image_annotations in task_annotations.image_annotations.values():
+            for object_annotation in single_image_annotations.boxes:
+                anno_stats.class_ids_mask_areas[object_annotation.class_id] += object_annotation.mask_area
+        anno_stats.total_mask_area = sum(anno_stats.class_ids_mask_areas.values())
 
     @classmethod
     @time_it
