@@ -2,6 +2,7 @@ from collections import defaultdict
 from typing import Any, Dict, List, Optional, Set, Tuple, Union
 
 import numpy as np
+import pycocotools.mask
 
 from mir.tools import det_eval_utils
 from mir.tools.code import MirCode
@@ -66,6 +67,8 @@ class MirCoco:
                     'id': annotation_idx,
                     'area': annotation.box.w * annotation.box.h,
                     'bbox': [annotation.box.x, annotation.box.y, annotation.box.w, annotation.box.h],
+                    'mask': annotation.mask,
+                    'size': [annotation.height, annotation.width],
                     'score': annotation.score,
                     'iscrowd': 0,
                     'ignore': 0,
@@ -144,14 +147,21 @@ class CocoDetEval:
         if len(dt) > self.params.maxDets[-1]:
             dt = dt[0:self.params.maxDets[-1]]
 
-        g_boxes = [g['bbox'] for g in gt]
-        d_boxes = [d['bbox'] for d in dt]
+        if self.params.iouType == "bbox":
+            g_boxes = [g['bbox'] for g in gt]
+            d_boxes = [d['bbox'] for d in dt]
+        elif self.params.iouType == "segm":
+            g_boxes = [{'counts': g['mask'], 'size': g['size']} for g in gt]
+            d_boxes = [{'counts': g['mask'], 'size': d['size']} for d in dt]
+        else:
+            raise ValueError('unknown iouType for iou computation')
 
         iscrowd = [int(o.get('iscrowd', 0)) for o in gt]
         # compute iou between each dt and gt region
         # ious: matrix of len(d_boxes) * len(g_boxes)
         #   ious[i][j]: iou of d_boxes[i] and g_boxes[j]
-        ious = self._iou(d_boxes=d_boxes, g_boxes=g_boxes, iscrowd=iscrowd)
+        # ious = self._iou(d_boxes=d_boxes, g_boxes=g_boxes, iscrowd=iscrowd)
+        ious = pycocotools.mask.iou(dt=d_boxes, gt=g_boxes, iscrowd=iscrowd)
         return ious
 
     @classmethod

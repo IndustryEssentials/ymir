@@ -184,6 +184,8 @@ message ObjectAnnotation {
     int32 iscrowd = 12;  // 0 or 1
     ObjectSubType type = 13;
     int32 mask_area = 14;
+    int32 height = 15;
+    int32 width = 16;
 };
 
 enum ConfusionMatrixType {
