@@ -72,7 +72,6 @@ class TaskTrainingInvoker(TaskBaseInvoker):
             task_id=subtask_id,
             work_dir=subtask_workdir,
             in_dataset_ids=train_in_dataset_ids,
-            ex_dataset_ids=request.ex_dataset_ids,
             merge_strategy=request.merge_strategy,
             asset_cache_dir=asset_cache_dir,
             training_image=training_image,
@@ -94,7 +93,6 @@ class TaskTrainingInvoker(TaskBaseInvoker):
         task_id: str,
         work_dir: str,
         in_dataset_ids: List[str],
-        ex_dataset_ids: List[str],
         merge_strategy: backend_pb2.MergeStrategy,
         training_image: str,
         asset_cache_dir: str,
@@ -106,15 +104,12 @@ class TaskTrainingInvoker(TaskBaseInvoker):
         training_cmd = [
             utils.mir_executable(), 'train', '--root', repo_root, '--user-label-file', label_storage_file, '--dst-rev',
             f"{task_id}@{task_id}", '--model-location', models_upload_location, '--media-location', media_location,
-            '-w', work_dir, '--src-revs', revs.build_src_revs(in_dataset_ids)
+            '-w', work_dir, '--src-revs',
+            revs.build_src_revs(in_dataset_ids), '-s',
+            backend_pb2.MergeStrategy.Name(merge_strategy).lower(), '--task-config-file', config_file, '--executor',
+            training_image, '--executant-name', executant_name, '--tensorboard-dir', tensorboard, '--asset-cache-dir',
+            asset_cache_dir
         ]
-        if ex_dataset_ids:
-            training_cmd.extend(['--ex-src-revs', revs.build_src_revs(ex_dataset_ids)])
-        training_cmd.extend([
-            '-s', backend_pb2.MergeStrategy.Name(merge_strategy).lower(), '--task-config-file', config_file,
-            '--executor', training_image, '--executant-name', executant_name, '--tensorboard-dir', tensorboard,
-            '--asset-cache-dir', asset_cache_dir
-        ])
         if model_hash and model_stage:
             training_cmd.extend(['--model-hash', f"{model_hash}@{model_stage}"])
 

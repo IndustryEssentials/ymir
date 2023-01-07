@@ -90,7 +90,6 @@ class TestInvokerTaskMining(unittest.TestCase):
         mine_task_req = backend_pb2.TaskReqMining()
         mine_task_req.top_k = top_k
         in_dataset_ids = [self._guest_id1, self._guest_id2]
-        ex_dataset_ids = [self._guest_id3]
         mine_task_req.generate_annotations = False
 
         req_create_task = backend_pb2.ReqCreateTask()
@@ -127,7 +126,6 @@ class TestInvokerTaskMining(unittest.TestCase):
             model_hash=model_hash,
             model_stage=model_stage,
             in_dataset_ids=in_dataset_ids,
-            ex_dataset_ids=ex_dataset_ids,
             docker_image_config=json.dumps(mining_config),
         )
         print(MessageToDict(response))
@@ -150,8 +148,7 @@ class TestInvokerTaskMining(unittest.TestCase):
                       f"--user-label-file {test_utils.user_label_file(self._sandbox_root, self._user_name)} "
                       f"--dst-rev {self._task_id}@{self._task_id} "
                       f"-w {working_dir_0} --model-location {self._storage_root} --media-location {self._storage_root} "
-                      f"--model-hash {model_hash}@{model_stage} --src-revs {self._guest_id1};{self._guest_id2} "
-                      f"--ex-src-revs {self._guest_id3} -s host "
+                      f"--model-hash {model_hash}@{model_stage} --src-revs {self._guest_id1};{self._guest_id2} -s host "
                       f"--asset-cache-dir {asset_cache_dir} --task-config-file {output_config} --executor mining_image "
                       f"--executant-name {self._task_id} --topk {top_k}")
         mock_run.assert_called_once_with(mining_cmd.split(' '), capture_output=True, text=True)
