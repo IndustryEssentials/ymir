@@ -18,7 +18,7 @@ const { Item } = Form
 
 const Search: FC<Props> = ({ change, name }) => {
   const [form] = Form.useForm<YParams.ResultListQuery>()
-  const [searchName, setSearchName] = useState<string>('')
+  const [searchName, setSearchName] = useState<string>()
   const debonceName = useDebounce(searchName, { wait: 500 })
   const [query, setQuery] = useState<YParams.ResultListQuery>({})
   const valuesChange = (changed: any, values: any) => {
@@ -45,7 +45,7 @@ const Search: FC<Props> = ({ change, name }) => {
   }
 
   useEffect(() => {
-    updateQuery({ ...query, name: debonceName })
+    typeof debonceName !== 'undefined' && updateQuery({ ...query, name: debonceName })
   }, [debonceName])
 
   useEffect(() => {

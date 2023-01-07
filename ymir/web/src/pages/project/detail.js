@@ -37,7 +37,7 @@ function ProjectDetail(func) {
     history.push(`/home/project/${id}/train`)
   }
 
-  const statBlocks = (blocks = []) => blocks.map((block) => <Col span={24 / blocks.length}>{statBlock(block)}</Col>)
+  const statBlocks = (blocks = []) => blocks.map((block, index) => <Col key={index} span={24 / blocks.length}>{statBlock(block)}</Col>)
 
   const statBlock = ({ label, count }) => (
     <>

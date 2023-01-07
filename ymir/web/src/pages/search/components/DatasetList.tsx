@@ -10,40 +10,20 @@ import TypeTag from '@/components/task/TypeTag'
 import Actions from '@/components/table/Actions'
 import AssetCount from '@/components/dataset/AssetCount'
 
-import React, { useEffect, useRef, useState } from 'react'
-import { useHistory, useLocation } from 'umi'
-import { Form, Button, Input, Space, Modal, Row, Col, Pagination, message } from 'antd'
+import { useEffect, useRef, useState } from 'react'
+import { useHistory } from 'umi'
 
 import { diffTime } from '@/utils/date'
-import { getTaskTypeLabel, TASKSTATES, TASKTYPES } from '@/constants/task'
+import { TASKSTATES } from '@/constants/task'
 import { ResultStates } from '@/constants/common'
-import { canHide, validDataset } from '@/constants/dataset'
+import { validDataset } from '@/constants/dataset'
 
-// import CheckProjectDirty from "@/components/common/CheckProjectDirty"
-// import EditNameBox from "@/components/form/editNameBox"
-import EditDescBox from "@/components/form/editDescBox"
-import Terminate, { RefProps } from "@/components/task/terminate"
+import EditDescBox from '@/components/form/editDescBox'
+import Terminate, { RefProps } from '@/components/task/terminate'
 // import Hide from "../common/hide"
 
-import {
-  ImportIcon,
-  ScreenIcon,
-  TaggingIcon,
-  TrainIcon,
-  VectorIcon,
-  WajueIcon,
-  SearchIcon,
-  EditIcon,
-  EyeOffIcon,
-  CopyIcon,
-  StopIcon,
-  ArrowDownIcon,
-  ArrowRightIcon,
-  CompareIcon,
-  CompareListIcon,
-} from '@/components/common/Icons'
+import { ScreenIcon, TaggingIcon, TrainIcon, VectorIcon, WajueIcon, SearchIcon, EditIcon, CopyIcon, StopIcon, CompareListIcon } from '@/components/common/Icons'
 import { DescPop } from '@/components/common/DescPop'
-// import { RefreshIcon } from "../common/Icons"
 // import useRerunAction from "../../hooks/useRerunAction"
 
 type Props = {
@@ -61,14 +41,39 @@ function showTitle(str: string) {
 }
 const DatasetList: FC<Props> = ({ pid, name, query }) => {
   const history = useHistory()
-  const { data: datasets, run: getDatasets } = useRequest<DatasetsType, [YParams.DatasetsQuery]>('dataset/queryDatasets')
+  const [datassetQuery, setQuery] = useState({
+    offset: 0,
+    limit: 10,
+    pid,
+    ...(query || {}),
+  })
+  const { data: datasets, run: getDatasets } = useRequest<DatasetsType, [YParams.DatasetsQuery]>('dataset/queryDatasets', {
+    ready: !!query,
+  })
   const [testingSetIds, setTestingSetIds] = useState<number[]>([])
   const [editingDataset, setEditingDataset] = useState<YModels.Dataset>()
   const terminateRef = useRef<RefProps>(null)
 
-  useEffect(() => fetch(), [query])
+  useEffect(
+    () =>
+      query &&
+      setQuery((q) => ({
+        ...q,
+        ...query,
+      })),
+    [query],
+  )
+  useEffect(() => datassetQuery && fetch(), [datassetQuery])
 
   const tableChange: TableProps<YModels.Dataset>['onChange'] = ({ current, pageSize }, filters, sorters = {}) => {}
+  const pageChange = (page: number, pageSize: number) => {
+    const offset = (page - 1) * datassetQuery.limit
+    setQuery((query) => ({
+      ...query,
+      offset,
+      limit: pageSize,
+    }))
+  }
 
   const columns: TableColumnsType<YModels.Dataset> = [
     {
@@ -90,7 +95,6 @@ const DatasetList: FC<Props> = ({ pid, name, query }) => {
           content
         )
       },
-      // onFilter: (round, { iterationRound }) => round === iterationRound,
       ellipsis: true,
     },
     {
@@ -226,20 +230,12 @@ const DatasetList: FC<Props> = ({ pid, name, query }) => {
         icon: <EditIcon />,
       },
       {
-        key: "stop",
-        label: t("task.action.terminate"),
+        key: 'stop',
+        label: t('task.action.terminate'),
         onclick: () => stop(record),
         hidden: () => taskState === TASKSTATES.PENDING || state !== ResultStates.READY || task.is_terminated,
         icon: <StopIcon />,
       },
-      // generateRerun(record),
-      // {
-      //   key: "hide",
-      //   label: t("common.action.hide"),
-      //   onclick: () => hide(record),
-      //   hidden: () => !canHide(record, project),
-      //   icon: <EyeOffIcon />,
-      // },
     ]
     return menus
   }
@@ -249,14 +245,9 @@ const DatasetList: FC<Props> = ({ pid, name, query }) => {
   }
 
   function fetch() {
-    if (!query) {
-      return
-    }
-    const handleQuery = query || {}
-    getDatasets({ ...handleQuery, pid })
+    getDatasets(datassetQuery)
   }
 
-  
   const stop = (dataset: YModels.Dataset) => {
     terminateRef?.current?.confirm(dataset)
   }
@@ -274,7 +265,13 @@ const DatasetList: FC<Props> = ({ pid, name, query }) => {
         rowKey={(record) => record.id}
         rowClassName={(record, index) => (index % 2 === 0 ? '' : 'oddRow')}
         columns={columns}
-        pagination={false}
+        pagination={{
+          showQuickJumper: true,
+          showSizeChanger: true,
+          total: datasets?.total,
+          pageSize: query?.limit,
+          onChange: pageChange,
+        }}
       />
       {editingDataset ? <EditDescBox record={editingDataset} handle={fetch} /> : null}
       <Terminate ref={terminateRef} ok={fetch} />
