@@ -8,7 +8,7 @@ import { useDebounce } from 'ahooks'
 import t from '@/utils/t'
 
 type Props = {
-  change?: (query: YParams.ResultListQuery) => void
+  change?: (query?: YParams.ResultListQuery) => void
   name?: string
 }
 
@@ -54,13 +54,14 @@ const Search: FC<Props> = ({ change, name }) => {
   }, [name])
 
   function updateQuery(q?: YParams.ResultListQuery) {
-    change && change(q || query)
+    console.log('q:', q)
+    change && change(q)
   }
 
   function reset() {
     form.resetFields()
     setQuery({})
-    updateQuery({})
+    updateQuery()
   }
 
   return (

@@ -5,7 +5,7 @@ import RenderProgress from '@/components/common/Progress'
 
 function State<T extends YModels.Result>(): ColumnType<T> {
   return {
-    title: StrongTitle('dataset.column.state'),
+    title: <StrongTitle label="dataset.column.state" />,
     dataIndex: 'state',
     render: (state, record) => RenderProgress(state, record),
   }

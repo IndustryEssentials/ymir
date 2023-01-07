@@ -1,30 +1,25 @@
+import { useEffect, useRef, useState } from 'react'
+import { useHistory } from 'umi'
 import { FC } from 'react'
 import { Table, TableProps, TableColumnsType, Popover, Tooltip } from 'antd'
 import { Link } from 'umi'
 
 import t from '@/utils/t'
 import useRequest from '@/hooks/useRequest'
-
-import RenderProgress from '@/components/common/Progress'
-import TypeTag from '@/components/task/TypeTag'
-import Actions from '@/components/table/Actions'
-import AssetCount from '@/components/dataset/AssetCount'
-
-import { useEffect, useRef, useState } from 'react'
-import { useHistory } from 'umi'
-
 import { diffTime } from '@/utils/date'
 import { TASKSTATES } from '@/constants/task'
 import { ResultStates } from '@/constants/common'
 import { validDataset } from '@/constants/dataset'
 
+import RenderProgress from '@/components/common/Progress'
+import TypeTag from '@/components/task/TypeTag'
+import Actions from '@/components/table/Actions'
+import AssetCount from '@/components/dataset/AssetCount'
 import EditDescBox from '@/components/form/editDescBox'
 import Terminate, { RefProps } from '@/components/task/terminate'
-// import Hide from "../common/hide"
 
 import { ScreenIcon, TaggingIcon, TrainIcon, VectorIcon, WajueIcon, SearchIcon, EditIcon, CopyIcon, StopIcon, CompareListIcon } from '@/components/common/Icons'
 import { DescPop } from '@/components/common/DescPop'
-// import useRerunAction from "../../hooks/useRerunAction"
 
 type Props = {
   pid: number
@@ -41,14 +36,12 @@ function showTitle(str: string) {
 }
 const DatasetList: FC<Props> = ({ pid, name, query }) => {
   const history = useHistory()
-  const [datassetQuery, setQuery] = useState({
-    offset: 0,
-    limit: 10,
+  const [datasetQuery, setQuery] = useState<YParams.DatasetsQuery>({
     pid,
     ...(query || {}),
   })
   const { data: datasets, run: getDatasets } = useRequest<DatasetsType, [YParams.DatasetsQuery]>('dataset/queryDatasets', {
-    ready: !!query,
+    debounceWait: 100
   })
   const [testingSetIds, setTestingSetIds] = useState<number[]>([])
   const [editingDataset, setEditingDataset] = useState<YModels.Dataset>()
@@ -56,18 +49,18 @@ const DatasetList: FC<Props> = ({ pid, name, query }) => {
 
   useEffect(
     () =>
-      query &&
+      query ?
       setQuery((q) => ({
         ...q,
         ...query,
-      })),
+      })) : setQuery({ pid }),
     [query],
   )
-  useEffect(() => datassetQuery && fetch(), [datassetQuery])
+  useEffect(() => datasetQuery && fetch(), [datasetQuery])
 
   const tableChange: TableProps<YModels.Dataset>['onChange'] = ({ current, pageSize }, filters, sorters = {}) => {}
   const pageChange = (page: number, pageSize: number) => {
-    const offset = (page - 1) * datassetQuery.limit
+    const offset = (page - 1) * (datasetQuery.limit || 10)
     setQuery((query) => ({
       ...query,
       offset,
@@ -245,7 +238,7 @@ const DatasetList: FC<Props> = ({ pid, name, query }) => {
   }
 
   function fetch() {
-    getDatasets(datassetQuery)
+    getDatasets(datasetQuery)
   }
 
   const stop = (dataset: YModels.Dataset) => {

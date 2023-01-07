@@ -50,7 +50,7 @@ const SearchIndex: FC<Props> = () => {
     return <Comp pid={pid} name={searchName} query={query} />
   }
 
-  const queryChange = (query: YParams.ResultListQuery) => {
+  const queryChange = (query?: YParams.ResultListQuery) => {
     updateQuery(query)
   }
 
