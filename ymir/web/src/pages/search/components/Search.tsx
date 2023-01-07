@@ -2,7 +2,6 @@ import Name from '@/components/search/Name'
 import { Button, Col, Form, Row } from 'antd'
 import { FC, useEffect, useState } from 'react'
 import State from '@/components/search/State'
-import ObjectType from '@/components/search/ObjectType'
 import Time from '@/components/search/Time'
 import { useDebounce } from 'ahooks'
 
@@ -75,12 +74,6 @@ const Search: FC<Props> = ({ change, name }) => {
         <Col>
           <Item name={'state'} noStyle>
             <State />
-          </Item>
-        </Col>
-
-        <Col>
-          <Item name={'objectType'} noStyle>
-            <ObjectType />
           </Item>
         </Col>
         <Col>
