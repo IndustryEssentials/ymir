@@ -93,7 +93,8 @@ def write_model_stage(stage_name: str,
         raise ValueError(f"Can not find compare key in evaluation_result, (should be one of {metric_keys})")
 
     # best stage
-    sorted_model_stages = sorted(model_stages.values(), key=lambda x: (x.get(main_metric_key, 0), x.get('timestamp', 0)))
+    sorted_model_stages = sorted(model_stages.values(),
+                                 key=lambda x: (x.get(main_metric_key, 0), x.get('timestamp', 0)))
     training_result['best_stage_name'] = sorted_model_stages[-1]['stage_name']
     training_result[main_metric_key] = sorted_model_stages[-1][main_metric_key]
 
