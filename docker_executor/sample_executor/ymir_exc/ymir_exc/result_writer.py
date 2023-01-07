@@ -41,11 +41,19 @@ def write_model_stage(stage_name: str,
             All files should under directory: `/out/models`
         evaluation_result (Dict[str, Union[float, int]]): example: `{'mAP': 0.65}`
             evaluation result of this stage, it contains:
-                mAP (float, required): mean average precision
-                mAR (float, optional): mean average recall
-                tp (int, optional): true positive box count
-                fp (int, optional): false positive box count
-                fn (int, optional): false negative box count
+                for detection models:
+                    mAP (float, required): mean average precision
+                    mAR (float, optional): mean average recall
+                for semantic segmentation models:
+                    mIoU (float, required): mean IoU
+                    mAcc (float, optional): mean accuracy
+                for instance segmentation models:
+                    maskAP (float, required): mean average precision for masks
+                    boxAP (float, optional): mean average precision for boxes
+                for all models:
+                    tp (int, optional): true positive
+                    fp (int, optional): false positive
+                    fn (int, optional): false negative
         timestamp (int): timestamp (in seconds)
         evaluate_config (dict): configurations used to evaluate this model, which contains:
             iou_thr (float): iou threshold
@@ -57,7 +65,7 @@ def write_model_stage(stage_name: str,
         raise ValueError(
             f"invalid stage_name: {stage_name}, need alphabets, numbers and underlines, start with alphabets")
 
-    training_result: dict = {}  # key: stage name, value: stage name, files, timestamp, mAP
+    training_result: dict = {}  # key: stage name, value: stage name, files, timestamp, mAP / mIoU / maskAP
 
     env_config = env.get_current_env()
     try:
@@ -75,10 +83,20 @@ def write_model_stage(stage_name: str,
         **evaluation_result,
     )
 
+    main_metric_key = None
+    metric_keys = ['maskAP', 'mIoU', 'mAP']
+    for k in metric_keys:
+        if k in evaluation_result:
+            main_metric_key = k
+            break
+    if not main_metric_key:
+        raise ValueError(f"Can not find compare key in evaluation_result, (should be one of {metric_keys})")
+
     # best stage
-    sorted_model_stages = sorted(model_stages.values(), key=lambda x: (x.get('mAP', 0), x.get('timestamp', 0)))
+    sorted_model_stages = sorted(model_stages.values(),
+                                 key=lambda x: (x.get(main_metric_key, 0), x.get('timestamp', 0)))
     training_result['best_stage_name'] = sorted_model_stages[-1]['stage_name']
-    training_result['mAP'] = sorted_model_stages[-1]['mAP']
+    training_result[main_metric_key] = sorted_model_stages[-1][main_metric_key]
 
     # if too many stages, remove a earlest one
     if len(model_stages) > _MAX_MODEL_STAGES_COUNT_:
