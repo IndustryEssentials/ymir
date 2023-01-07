@@ -26,7 +26,7 @@ class ModelStageStorage(BaseModel):
 
     # available in semantic segmentation models
     mIoU: float = Field(default=0, ge=0, le=1)
-    mAcc: float = Field(default=0, ge=0, le=0)
+    mAcc: float = Field(default=0, ge=0, le=1)
 
     # available in instance segmentation models
     maskAP: float = Field(default=0, ge=0, le=1)
@@ -71,6 +71,7 @@ class ModelStorage(BaseModel):
                 'mIoU': self.stages[self.best_stage_name].mIoU,
                 'maskAP': self.stages[self.best_stage_name].maskAP,
                 'model_hash': self.model_hash,
+                'object_type': self.object_type,
                 'stages': {
                     k: {
                         'stage_name': v.stage_name,
@@ -201,8 +202,8 @@ def pack_and_copy_models(model_storage: ModelStorage, model_dir_path: str, model
     shutil.copyfile(tar_file_path, os.path.join(model_location, model_hash))
     os.remove(tar_file_path)
 
-    logging.info(f"pack success, model hash: {model_hash}, best_stage_name: {model_storage.best_stage_name}, "
-                 f"mAP: {model_storage.stages[model_storage.best_stage_name].mAP}")
+    logging.info(f"Pack success, model hash: {model_hash}, "
+                 f"best stage: {model_storage.stages[model_storage.best_stage_name]}")
 
     model_storage.model_hash = model_hash
     return model_hash
