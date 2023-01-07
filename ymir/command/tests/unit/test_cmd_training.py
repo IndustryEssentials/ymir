@@ -253,7 +253,6 @@ class TestCmdTraining(unittest.TestCase):
         fake_args = type('', (), {})()
         fake_args.src_revs = "a@a"
         fake_args.dst_rev = "a@test_training_cmd"
-        fake_args.ex_src_revs = ''
         fake_args.strategy = 'host'
         fake_args.mir_root = self._mir_root
         fake_args.label_storage_file = ids_file_path(self._mir_root)

@@ -33,7 +33,6 @@ class CmdMining(base.BaseCommand):
         return CmdMining.run_with_args(work_dir=self.args.work_dir,
                                        asset_cache_dir=self.args.asset_cache_dir,
                                        src_revs=self.args.src_revs,
-                                       ex_src_revs=self.args.ex_src_revs,
                                        strategy=MergeStrategy(self.args.strategy),
                                        dst_rev=self.args.dst_rev,
                                        mir_root=self.args.mir_root,
@@ -53,7 +52,6 @@ class CmdMining(base.BaseCommand):
     def run_with_args(work_dir: str,
                       asset_cache_dir: Optional[str],
                       src_revs: str,
-                      ex_src_revs: str,
                       strategy: MergeStrategy,
                       dst_rev: str,
                       mir_root: str,
@@ -99,7 +97,6 @@ class CmdMining(base.BaseCommand):
 
         src_typ_rev_tids = revs_parser.parse_arg_revs(src_revs)
         dst_typ_rev_tid = revs_parser.parse_single_arg_rev(dst_rev, need_tid=True)
-        ex_typ_rev_tids = revs_parser.parse_arg_revs(ex_src_revs) if ex_src_revs else []
 
         if not config_file:
             logging.warning('empty --task-config-file, abort')
@@ -119,7 +116,7 @@ class CmdMining(base.BaseCommand):
         # check `topk` and `add_annotations`
         mir_metadatas, mir_annotations = merge_with_pb(mir_root=mir_root,
                                                        src_typ_rev_tids=src_typ_rev_tids,
-                                                       ex_typ_rev_tids=ex_typ_rev_tids,
+                                                       ex_typ_rev_tids=[],
                                                        strategy=strategy)
         assets_count = len(mir_metadatas.attributes)
         if assets_count == 0:
@@ -347,10 +344,6 @@ def bind_to_subparsers(subparsers: argparse._SubParsersAction, parent_parser: ar
                                    type=str,
                                    required=True,
                                    help="source revs and base task ids, first the host, others the guests")
-    mining_arg_parser.add_argument("--ex-src-revs",
-                                   dest="ex_src_revs",
-                                   type=str,
-                                   help="branch(es) id, from which you want to exclude, seperated by comma.")
     mining_arg_parser.add_argument("-s",
                                    dest="strategy",
                                    type=str,

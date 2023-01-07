@@ -139,7 +139,6 @@ class CmdTrain(base.BaseCommand):
                                       model_upload_location=self.args.model_path,
                                       pretrained_model_hash_stage=self.args.model_hash_stage,
                                       src_revs=self.args.src_revs,
-                                      ex_src_revs=self.args.ex_src_revs,
                                       strategy=MergeStrategy(self.args.strategy),
                                       dst_rev=self.args.dst_rev,
                                       mir_root=self.args.mir_root,
@@ -160,7 +159,6 @@ class CmdTrain(base.BaseCommand):
                       executor: str,
                       executant_name: str,
                       src_revs: str,
-                      ex_src_revs: str,
                       strategy: MergeStrategy,
                       dst_rev: str,
                       config_file: Optional[str],
@@ -175,7 +173,6 @@ class CmdTrain(base.BaseCommand):
 
         src_typ_rev_tids = revs_parser.parse_arg_revs(src_revs)
         dst_typ_rev_tid = revs_parser.parse_single_arg_rev(dst_rev, need_tid=True)
-        ex_typ_rev_tids = revs_parser.parse_arg_revs(ex_src_revs) if ex_src_revs else []
         if not work_dir:
             raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS, error_message='empty work_dir')
         if not config_file or not os.path.isfile(config_file):
@@ -244,7 +241,7 @@ class CmdTrain(base.BaseCommand):
 
         mir_metadatas, mir_annotations = merge_with_pb(mir_root=mir_root,
                                                        src_typ_rev_tids=src_typ_rev_tids,
-                                                       ex_typ_rev_tids=ex_typ_rev_tids,
+                                                       ex_typ_rev_tids=[],
                                                        strategy=strategy)
 
         # export
@@ -416,10 +413,6 @@ def bind_to_subparsers(subparsers: argparse._SubParsersAction, parent_parser: ar
                                   required=True,
                                   help="source tvt types, revs and base task ids, first the host, others the guests, "
                                   "can begin with tr:/va:/te:, uses own tvt type if no prefix assigned")
-    train_arg_parser.add_argument("--ex-src-revs",
-                                  dest="ex_src_revs",
-                                  type=str,
-                                  help="branch(es) id, from which you want to exclude, seperated by comma.")
     train_arg_parser.add_argument("-s",
                                   dest="strategy",
                                   type=str,
