@@ -174,7 +174,7 @@ func (v *ViewerHandler) GetDatasetMetaCountsHandler(
 		result.Pred.AnnotationsCount = int64(predStats.TotalCnt)
 
 		result.Pred.TotalMaskArea = int64(predStats.TotalMaskArea)
-		if gtStats.ClassIdsMaskArea != nil {
+		if predStats.ClassIdsMaskArea != nil {
 			for k, v := range predStats.ClassIdsMaskArea {
 				result.Pred.ClassIDsMaskArea[int(k)] = int64(v)
 			}
