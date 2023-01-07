@@ -1,47 +1,5 @@
-import { ObjectType } from '@/constants/project'
 import request from '@/utils/request'
 import { AxiosResponse } from 'axios'
-
-type QueryParams = {
-  pid?: number
-  gid?: number
-  did?: number
-  type?: number | string
-  objectType?: ObjectType
-  state?: number
-  name?: string
-  visible?: boolean
-  limit?: number
-  offset?: number
-  desc?: boolean
-  orderBy?: 'id' | 'create_datetime' | 'asset_count' | 'source'
-  keywords?: string[]
-}
-
-interface AssetQueryParams extends QueryParams {
-  id: number
-  cm?: number[]
-  annoType?: number[]
-  type?: string
-}
-
-interface EvaluationParams extends QueryParams {
-  datasets: number[]
-  confidence: number
-  iou: number
-  averageIou: boolean
-  ck: string
-}
-
-interface CreateParams {
-  name: string
-  pid: number
-  url?: string
-  did?: number
-  path?: string
-  strategy?: number
-  description?: string
-}
 
 /** dataset service */
 /**
@@ -64,20 +22,22 @@ export function getDatasetByGroup(gid: number) {
 }
 
 /**
- * get datasets
- *
+ * @description get datasets by query
  * @export
- * @param {DatasetsQuery} {
+ * @param {YParams.DatasetsQuery} {
  *   pid,
  *   gid,
  *   type,
+ *   objectType,
  *   state,
  *   name,
+ *   startTime,
+ *   endTime,
  *   visible = true,
  *   offset = 0,
  *   limit = 10,
  *   desc = true,
- *   orderBy
+ *   orderBy,
  * }
  */
 export function queryDatasets({
@@ -114,15 +74,10 @@ export function queryDatasets({
   })
 }
 /**
- * get dataset groups
- *
+ * @description get dataset groups
  * @export
  * @param {number} pid
- * @param {DatasetsQuery} {
- *   name,
- *   offset = 0,
- *   limit = 10
- * }
+ * @param {YParams.GroupsQuery} { name, offset = 0, limit = 10 }
  */
 export function getDatasetGroups(pid: number, { name, offset = 0, limit = 10 }: YParams.GroupsQuery) {
   return request.get('dataset_groups/', {
