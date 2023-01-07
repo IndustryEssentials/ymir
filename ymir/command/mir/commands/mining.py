@@ -3,13 +3,14 @@ import json
 import logging
 import os
 from subprocess import CalledProcessError
-from typing import Optional, Set, Tuple
+from typing import Optional, Set
 
 from mir.commands import base, infer
+from mir.commands.merge import merge_with_pb
 from mir.protos import mir_command_pb2 as mirpb
 from mir.tools import checker, class_ids, env_config, exporter
 from mir.tools import mir_storage_ops, models, revs_parser
-from mir.tools.annotations import filter_mirdatas_by_asset_ids
+from mir.tools.annotations import filter_mirdatas_by_asset_ids, MergeStrategy
 from mir.tools.code import MirCode
 from mir.tools.command_run_in_out import command_run_in_out
 from mir.tools.errors import MirContainerError, MirRuntimeError
@@ -32,6 +33,8 @@ class CmdMining(base.BaseCommand):
         return CmdMining.run_with_args(work_dir=self.args.work_dir,
                                        asset_cache_dir=self.args.asset_cache_dir,
                                        src_revs=self.args.src_revs,
+                                       ex_src_revs=self.args.ex_src_revs,
+                                       strategy=MergeStrategy(self.args.strategy),
                                        dst_rev=self.args.dst_rev,
                                        mir_root=self.args.mir_root,
                                        label_storage_file=self.args.label_storage_file,
@@ -50,6 +53,8 @@ class CmdMining(base.BaseCommand):
     def run_with_args(work_dir: str,
                       asset_cache_dir: Optional[str],
                       src_revs: str,
+                      ex_src_revs: str,
+                      strategy: MergeStrategy,
                       dst_rev: str,
                       mir_root: str,
                       label_storage_file: str,
@@ -92,8 +97,9 @@ class CmdMining(base.BaseCommand):
             logging.error('model_hash_stage is required.')
             return MirCode.RC_CMD_INVALID_ARGS
 
-        src_typ_rev_tid = revs_parser.parse_single_arg_rev(src_revs, need_tid=False)
+        src_typ_rev_tids = revs_parser.parse_arg_revs(src_revs)
         dst_typ_rev_tid = revs_parser.parse_single_arg_rev(dst_rev, need_tid=True)
+        ex_typ_rev_tids = revs_parser.parse_arg_revs(ex_src_revs) if ex_src_revs else []
 
         if not config_file:
             logging.warning('empty --task-config-file, abort')
@@ -111,11 +117,10 @@ class CmdMining(base.BaseCommand):
             return return_code
 
         # check `topk` and `add_annotations`
-        mir_metadatas: mirpb.MirMetadatas = mir_storage_ops.MirStorageOps.load_single_storage(
-            mir_root=mir_root,
-            mir_branch=src_typ_rev_tid.rev,
-            mir_task_id=src_typ_rev_tid.tid,
-            ms=mirpb.MirStorage.MIR_METADATAS)
+        mir_metadatas, mir_annotations = merge_with_pb(mir_root=mir_root,
+                                                       src_typ_rev_tids=src_typ_rev_tids,
+                                                       ex_typ_rev_tids=ex_typ_rev_tids,
+                                                       strategy=strategy)
         assets_count = len(mir_metadatas.attributes)
         if assets_count == 0:
             raise MirRuntimeError(error_code=MirCode.RC_CMD_MERGE_ERROR,
@@ -188,7 +193,7 @@ class CmdMining(base.BaseCommand):
         task = mir_storage_ops.create_task(task_type=mirpb.TaskTypeMining,
                                            task_id=dst_typ_rev_tid.tid,
                                            message=f"mining with model: {model_hash_stage}",
-                                           src_revs=src_typ_rev_tid.rev_tid,
+                                           src_revs=src_revs,
                                            dst_rev=dst_typ_rev_tid.rev_tid,
                                            return_code=return_code,
                                            return_msg=return_msg,
@@ -196,20 +201,21 @@ class CmdMining(base.BaseCommand):
         if return_code != MirCode.RC_OK:
             raise MirContainerError(error_message='mining container error occured', task=task)
 
-        mir_metadatas, mir_annotations = _process_results(mir_root=mir_root,
-                                                          label_storage_file=label_storage_file,
-                                                          export_out=work_out_path,
-                                                          src_typ_rev_tid=src_typ_rev_tid,
-                                                          topk=topk,
-                                                          add_prediction=add_prediction,
-                                                          model_storage=model_storage)
+        _process_results(mir_root=mir_root,
+                         label_storage_file=label_storage_file,
+                         export_out=work_out_path,
+                         topk=topk,
+                         add_prediction=add_prediction,
+                         model_storage=model_storage,
+                         mir_metadatas=mir_metadatas,
+                         mir_annotations=mir_annotations)
 
         mir_datas = {
             mirpb.MirStorage.MIR_METADATAS: mir_metadatas,
             mirpb.MirStorage.MIR_ANNOTATIONS: mir_annotations,
         }
         mir_storage_ops.MirStorageOps.save_and_commit(mir_root=mir_root,
-                                                      his_branch=src_typ_rev_tid.rev,
+                                                      his_branch=src_typ_rev_tids[0].rev,
                                                       mir_branch=dst_typ_rev_tid.rev,
                                                       mir_datas=mir_datas,
                                                       task=task)
@@ -219,21 +225,11 @@ class CmdMining(base.BaseCommand):
 
 
 # protected: post process
-def _process_results(mir_root: str, label_storage_file: str, export_out: str, src_typ_rev_tid: revs_parser.TypRevTid,
+def _process_results(mir_root: str, label_storage_file: str, export_out: str,
                      topk: Optional[int], add_prediction: bool,
-                     model_storage: models.ModelStorage) -> Tuple[mirpb.MirMetadatas, mirpb.MirAnnotations]:
+                     model_storage: models.ModelStorage, mir_metadatas: mirpb.MirMetadatas,
+                     mir_annotations: mirpb.MirAnnotations) -> None:
     # step 1: build topk results:
-    #   read old
-    mir_metadatas: mirpb.MirMetadatas
-    mir_annotations: mirpb.MirAnnotations
-    mir_metadatas, mir_annotations = mir_storage_ops.MirStorageOps.load_multiple_storages(
-        mir_root=mir_root,
-        mir_branch=src_typ_rev_tid.rev,
-        mir_task_id=src_typ_rev_tid.tid,
-        ms_list=[mirpb.MirStorage.MIR_METADATAS, mirpb.MirStorage.MIR_ANNOTATIONS],
-        as_dict=False,
-    )
-
     #   parse new: topk and new annotations (both optional)
     topk_result_file_path = os.path.join(export_out, 'result.tsv')
     asset_ids_set = (_get_topk_asset_ids(file_path=topk_result_file_path, topk=topk)
@@ -272,8 +268,6 @@ def _process_results(mir_root: str, label_storage_file: str, export_out: str, sr
         prediction.executor_config = json.dumps(model_storage.executor_config)
         prediction.model.CopyFrom(model_storage.get_model_meta())
         prediction.type = model_storage.object_type  # type: ignore
-
-    return mir_metadatas, mir_annotations
 
 
 def _get_topk_asset_ids(file_path: str, topk: int) -> Set[str]:
@@ -352,7 +346,18 @@ def bind_to_subparsers(subparsers: argparse._SubParsersAction, parent_parser: ar
                                    dest='src_revs',
                                    type=str,
                                    required=True,
-                                   help='rev@bid: source rev and base task id')
+                                   help="source revs and base task ids, first the host, others the guests")
+    mining_arg_parser.add_argument("--ex-src-revs",
+                                   dest="ex_src_revs",
+                                   type=str,
+                                   help="branch(es) id, from which you want to exclude, seperated by comma.")
+    mining_arg_parser.add_argument("-s",
+                                   dest="strategy",
+                                   type=str,
+                                   default="stop",
+                                   choices=["stop", "host", "guest"],
+                                   help="conflict resolvation strategy, stop (default): stop when conflict detects; "
+                                   "host: use host; guest: use guest")
     mining_arg_parser.add_argument('--dst-rev',
                                    dest='dst_rev',
                                    type=str,

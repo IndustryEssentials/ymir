@@ -1,4 +1,3 @@
-import json
 import logging
 import os
 import shutil
@@ -165,6 +164,8 @@ class TestMiningCmd(unittest.TestCase):
 
         args = type('', (), {})()
         args.src_revs = 'a@5928508c-1bc0-43dc-a094-0352079e39b5'
+        args.ex_src_revs = ''
+        args.strategy = 'host'
         args.dst_rev = 'a@mining-task-id'
         args.model_hash_stage = 'xyz@default'
         args.work_dir = os.path.join(self._storage_root, "mining-task-id")
