@@ -37,7 +37,8 @@ def _run_training(env_config: env.EnvConfig) -> None:
     #! use `env.get_executor_config` to get config file for training
     executor_config = env.get_executor_config()
     class_names: List[str] = executor_config['class_names']
-    expected_mAP: float = executor_config.get('expected_map', 0.6)
+    expected_mIoU: float = executor_config.get('expected_mIoU', 0.6)
+    expected_mAcc: float = executor_config.get('expected_mAcc', 0.7)
     idle_seconds: float = executor_config.get('idle_seconds', 60)
     trigger_crash: bool = executor_config.get('trigger_crash', False)
     #! use `logging` or `print` to write log to console
@@ -73,7 +74,8 @@ def _run_training(env_config: env.EnvConfig) -> None:
     rw.write_model_stage(stage_name='stage_00',
                          files=['model-0000.params', 'model-symbols.json'],
                          evaluation_result={
-                             'mAP': expected_mAP / 2,
+                             'mIoU': expected_mIoU / 2,
+                             'mAcc': expected_mAcc / 2,
                          })
 
     _dummy_work(idle_seconds=idle_seconds, trigger_crash=trigger_crash)
@@ -89,7 +91,8 @@ def _run_training(env_config: env.EnvConfig) -> None:
     rw.write_model_stage(stage_name='stage_10',
                          files=['model-0010.params', 'model-symbols.json'],
                          evaluation_result={
-                             'mAP': expected_mAP,
+                             'mIoU': expected_mIoU,
+                             'mAcc': expected_mAcc,
                          })
 
     #! if task done, write 100% percent log

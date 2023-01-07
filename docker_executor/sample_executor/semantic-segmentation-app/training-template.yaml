@@ -13,5 +13,6 @@ class_names: []
 export_format: 'seg-coco:raw'
 
 # just for test, remove this key in your own docker image
-expected_miou: 0.983  # expected mIoU for training task
+expected_mIoU: 0.983  # expected mIoU for training task
+expected_mAcc: 0.800  # expected mAcc for training task
 idle_seconds: 3  # idle seconds for each task
