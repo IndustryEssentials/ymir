@@ -18,12 +18,24 @@ from mir.version import check_model_version_or_crash
 class ModelStageStorage(BaseModel):
     stage_name: str
     files: List[str]
-    mAP: float = Field(..., ge=0, le=1)
+    timestamp: int
+
+    # available in detection models
+    mAP: float = Field(default=0, ge=0, le=1)
     mAR: float = Field(default=0, ge=0, le=1)
+
+    # available in semantic segmentation models
+    mIoU: float = Field(default=0, ge=0, le=1)
+    mAcc: float = Field(default=0, ge=0, le=1)
+
+    # available in instance segmentation models
+    maskAP: float = Field(default=0, ge=0, le=1)
+    boxAP: float = Field(default=0, ge=0, le=1)
+
+    # available in detection / semantic segmentation / instance segmentation models
     tp: int = Field(default=0, ge=0)
     fp: int = Field(default=0, ge=0)
     fn: int = Field(default=0, ge=0)
-    timestamp: int
 
 
 class ModelStorage(BaseModel):
@@ -56,16 +68,23 @@ class ModelStorage(BaseModel):
         json_format.ParseDict(
             {
                 'mAP': self.stages[self.best_stage_name].mAP,
+                'mIoU': self.stages[self.best_stage_name].mIoU,
+                'maskAP': self.stages[self.best_stage_name].maskAP,
                 'model_hash': self.model_hash,
+                'object_type': self.object_type,
                 'stages': {
                     k: {
                         'stage_name': v.stage_name,
                         'files': v.files,
                         'timestamp': v.timestamp,
                         'ci_averaged_evaluation': {
-                            'ap': v.mAP,
+                            'ap': v.mAP,  # detection models
                             'ar': v.mAR,
-                            'tp': v.tp,
+                            'iou': v.mIoU,  # semantic segmentation models
+                            'acc': v.mAcc,
+                            'maskAP': v.maskAP,  # instance segmentation models
+                            'boxAP': v.boxAP,
+                            'tp': v.tp,  # all models
                             'fp': v.fp,
                             'fn': v.fn,
                         }
@@ -183,8 +202,8 @@ def pack_and_copy_models(model_storage: ModelStorage, model_dir_path: str, model
     shutil.copyfile(tar_file_path, os.path.join(model_location, model_hash))
     os.remove(tar_file_path)
 
-    logging.info(f"pack success, model hash: {model_hash}, best_stage_name: {model_storage.best_stage_name}, "
-                 f"mAP: {model_storage.stages[model_storage.best_stage_name].mAP}")
+    logging.info(f"Pack success, model hash: {model_hash}, "
+                 f"best stage: {model_storage.stages[model_storage.best_stage_name]}")
 
     model_storage.model_hash = model_hash
     return model_hash
