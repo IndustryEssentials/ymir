@@ -587,6 +587,8 @@ class ObjectAnnotation(google.protobuf.message.Message):
     ISCROWD_FIELD_NUMBER: builtins.int
     TYPE_FIELD_NUMBER: builtins.int
     MASK_AREA_FIELD_NUMBER: builtins.int
+    HEIGHT_FIELD_NUMBER: builtins.int
+    WIDTH_FIELD_NUMBER: builtins.int
     index: builtins.int = ...
     """Index of this annotation in current single image, may be different from the index in repeated field."""
 
@@ -612,6 +614,8 @@ class ObjectAnnotation(google.protobuf.message.Message):
 
     type: global___ObjectSubType.V = ...
     mask_area: builtins.int = ...
+    height: builtins.int = ...
+    width: builtins.int = ...
     def __init__(self,
         *,
         index : builtins.int = ...,
@@ -628,9 +632,11 @@ class ObjectAnnotation(google.protobuf.message.Message):
         iscrowd : builtins.int = ...,
         type : global___ObjectSubType.V = ...,
         mask_area : builtins.int = ...,
+        height : builtins.int = ...,
+        width : builtins.int = ...,
         ) -> None: ...
     def HasField(self, field_name: typing_extensions.Literal["box",b"box"]) -> builtins.bool: ...
-    def ClearField(self, field_name: typing_extensions.Literal["anno_quality",b"anno_quality","box",b"box","class_id",b"class_id","class_name",b"class_name","cm",b"cm","det_link_id",b"det_link_id","index",b"index","iscrowd",b"iscrowd","mask",b"mask","mask_area",b"mask_area","polygon",b"polygon","score",b"score","tags",b"tags","type",b"type"]) -> None: ...
+    def ClearField(self, field_name: typing_extensions.Literal["anno_quality",b"anno_quality","box",b"box","class_id",b"class_id","class_name",b"class_name","cm",b"cm","det_link_id",b"det_link_id","height",b"height","index",b"index","iscrowd",b"iscrowd","mask",b"mask","mask_area",b"mask_area","polygon",b"polygon","score",b"score","tags",b"tags","type",b"type","width",b"width"]) -> None: ...
 global___ObjectAnnotation = ObjectAnnotation
 
 class Rect(google.protobuf.message.Message):

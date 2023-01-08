@@ -105,7 +105,7 @@ def _coco_object_dict_to_annotation(anno_dict: dict, category_id_to_cids: Dict[i
     if isinstance(seg_obj, dict):  # mask
         obj_anno.type = mirpb.ObjectSubType.OST_SEG_MASK
         obj_anno.mask = seg_obj['counts']
-        obj_anno.height, obj_anno.width =seg_obj['size']
+        obj_anno.height, obj_anno.width = seg_obj['size']
     elif isinstance(seg_obj, list):  # polygon
         if len(seg_obj) > 1:
             raise NotImplementedError('Multi polygons not supported')

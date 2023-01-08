@@ -152,7 +152,7 @@ class CocoDetEval:
             d_boxes = [d['bbox'] for d in dt]
         elif self.params.iouType == "segm":
             g_boxes = [{'counts': g['mask'], 'size': g['size']} for g in gt]
-            d_boxes = [{'counts': g['mask'], 'size': d['size']} for d in dt]
+            d_boxes = [{'counts': d['mask'], 'size': d['size']} for d in dt]
         else:
             raise ValueError('unknown iouType for iou computation')
 
