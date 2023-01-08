@@ -7,13 +7,6 @@ export const HIDDENMODULES = {
 export const INFER_DATASET_MAX_COUNT = 50000
 export const INFER_CLASSES_MAX_COUNT = 20
 
-declare global {
-  interface Window {
-    baseConfig: {
-      [name: string]: string
-    }
-  }
-}
 export enum ResultStates {
   READY = 0,
   VALID = 1,

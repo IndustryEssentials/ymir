@@ -8,6 +8,11 @@ export enum AnnotationType {
   Mask = 2,
 }
 
+export enum MergeType {
+  New = 0,
+  Exist = 1,
+}
+
 export enum states {
   READY = 0,
   VALID = 1,
