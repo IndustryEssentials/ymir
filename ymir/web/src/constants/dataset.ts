@@ -146,16 +146,11 @@ export function transferInferDataset(dataset: YModels.Dataset<YModels.InferenceP
 export function transferDatasetAnalysis(data: YModels.BackendData): YModels.DatasetAnalysis {
   const { bytes, area, quality, hw_ratio } = data.hist
 
-  const assetTotal = data.total_assets_count || 0
   const gt = generateAnno(data.gt)
   const pred = generateAnno(data.pred)
+  const dataset = transferDataset(data)
   return {
-    name: data.group_name,
-    version: data.version_num || 0,
-    versionName: getVersionLabel(data.version_num),
-    assetCount: assetTotal,
-    totalAssetMbytes: data.total_assets_mbytes,
-    assetBytes: bytes,
+    ...dataset,
     assetArea: area,
     assetQuality: quality,
     assetHWRatio: hw_ratio,
@@ -255,11 +250,14 @@ function getType(annotation: YModels.BackendData) {
 }
 
 const transferCK = (counts: YModels.BackendData = {}, total: YModels.BackendData = {}) => {
+  let subKeywordsTotal = 0
   const keywords = Object.keys(counts).map((keyword) => {
     const children = counts[keyword]
+    const subList = Object.keys(children)
+    subKeywordsTotal += subList.length
     return {
       keyword,
-      children: Object.keys(children).map((child) => ({
+      children: subList.map((child) => ({
         keyword: child,
         count: children[child],
       })),
@@ -269,20 +267,27 @@ const transferCK = (counts: YModels.BackendData = {}, total: YModels.BackendData
   return {
     keywords,
     counts,
+    subKeywordsTotal,
     total,
   }
 }
 
-const generateAnno = (data: YModels.BackendData) => {
-  const { quality, area, area_ratio } = data.hist
+const generateAnno = (data: YModels.BackendData): YModels.AnylysisAnnotation => {
+  const { quality = [], area = [], area_ratio = [], instance_area =[], crowdedness = [] } = data.hist
   return {
     keywords: data.keywords,
-    total: data.annos_count,
-    average: data.ave_annos_count,
-    negative: data.negative_assets_count,
-    quality: quality,
-    area: area,
-    areaRatio: area_ratio,
+    total: data.annos_count || 0,
+    average: data.ave_annos_count || 0,
+    negative: data.negative_assets_count || 0,
+    quality: quality || [],
+    area: area || [],
+    areaRatio: area_ratio || [],
+    keywordAnnotaitionCount: data.classwise_instance_count || [],
+    totalArea: data.total_area,
+    keywordArea: data.classwise_area || [],
+    instanceArea: instance_area,
+    crowdedness,
+    totalInstanceCount: data.total_instance_count || 0,
   }
 }
 

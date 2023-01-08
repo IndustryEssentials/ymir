@@ -53,7 +53,6 @@ declare namespace YModels {
   }
 
   enum ObjectType {
-    Classification = 1,
     ObjectDetection = 2,
     SemanticSegmentation = 3,
     InstanceSegmentation = 4,
@@ -76,9 +75,15 @@ declare namespace YModels {
     total: number
     average: number
     negative: number
-    quality: Array<BackendData>
+    totalArea: number
+    totalInstanceCount: number
     area: Array<BackendData>
+    quality: Array<BackendData>
     areaRatio: Array<BackendData>
+    keywordAnnotaitionCount: Array<BackendData>
+    keywordArea: Array<BackendData>
+    instanceArea: Array<BackendData>
+    crowdedness: Array<BackendData>
   }
   export interface DatasetGroup extends Group {
     versions?: Array<Dataset>
@@ -104,21 +109,12 @@ declare namespace YModels {
     inferConfig: ImageConfig
   }
 
-  export interface DatasetAnalysis {
-    name: string
-    version: number
-    versionName: string
-    assetCount: number
-    totalAssetMbytes: number
-    assetBytes: Array<BackendData>
+  export interface DatasetAnalysis extends Omit<Dataset, 'gt' | 'pred'> {
     assetHWRatio: Array<BackendData>
     assetArea: Array<BackendData>
     assetQuality: Array<BackendData>
     gt: AnylysisAnnotation
     pred: AnylysisAnnotation
-    inferClass?: Array<string>
-    cks?: BackendData
-    tags?: BackendData
   }
 
   export interface Asset {
