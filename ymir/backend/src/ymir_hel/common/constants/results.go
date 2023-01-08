@@ -38,14 +38,16 @@ type QueryDatasetStatsResult struct {
 func NewQueryDatasetStatsResult() *QueryDatasetStatsResult {
 	queryResult := QueryDatasetStatsResult{
 		Gt: DatasetStatsElement{
-			ClassIDsCount:  map[int]int64{},
-			TagsCount:      map[string]map[string]int64{},
-			TagsCountTotal: map[string]int64{},
+			ClassIDsCount:    map[int]int64{},
+			TagsCount:        map[string]map[string]int64{},
+			TagsCountTotal:   map[string]int64{},
+			ClassIDsMaskArea: map[int]int64{},
 		},
 		Pred: DatasetStatsElement{
-			ClassIDsCount:  map[int]int64{},
-			TagsCount:      map[string]map[string]int64{},
-			TagsCountTotal: map[string]int64{},
+			ClassIDsCount:    map[int]int64{},
+			TagsCount:        map[string]map[string]int64{},
+			TagsCountTotal:   map[string]int64{},
+			ClassIDsMaskArea: map[int]int64{},
 		},
 
 		CksCount:      map[string]map[string]int64{},
