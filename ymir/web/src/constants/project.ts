@@ -12,6 +12,7 @@ const typesPrefix = 'project.types.'
 const projectTypes = [
   { label: 'det', value: ObjectType.ObjectDetection },
   { label: 'seg', value: ObjectType.SemanticSegmentation },
+  { label: 'ins', value: ObjectType.InstanceSegmentation },
 ]
 
 export const getProjectTypes = () => projectTypes.map(({ label, value }) => ({ label: typesPrefix + label, value }))
