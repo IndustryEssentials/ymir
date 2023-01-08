@@ -126,4 +126,8 @@ type DatasetStatsElement struct {
 	// Tags
 	TagsCountTotal map[string]int64            `json:"tags_count_total"`
 	TagsCount      map[string]map[string]int64 `json:"tags_count"`
+
+	// Masks
+	TotalMaskArea    int64         `json:"total_mask_area"`
+	ClassIDsMaskArea map[int]int64 `json:"class_ids_mask_area"`
 }

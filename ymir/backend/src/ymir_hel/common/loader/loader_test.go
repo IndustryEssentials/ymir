@@ -81,6 +81,8 @@ func TestLoadModelInfo(t *testing.T) {
 			MAP:           0.42,
 			Context:       "context",
 			BestStageName: "best_stage",
+			MIoU:          0.19,
+			MaskAP:        0.22,
 		},
 		SerializedExecutorConfig: "{abc: 1}",
 	}
@@ -94,7 +96,10 @@ func TestLoadModelInfo(t *testing.T) {
 		MAP:            0.42,
 		Context:        "context",
 		BestStageName:  "best_stage",
-		ExecutorConfig: map[string]interface{}{"abc": 1}}
+		ExecutorConfig: map[string]interface{}{"abc": 1},
+		MIoU:           0.19,
+		MaskAP:         0.22,
+	}
 
 	mirRepoLoader := MirRepoLoader{}
 	mirModel := mirRepoLoader.LoadModelInfo(mirRepo)
