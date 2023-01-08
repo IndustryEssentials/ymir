@@ -64,7 +64,6 @@ class TaskMiningInvoker(TaskBaseInvoker):
                                          model_hash=request.model_hash,
                                          model_stage=request.model_stage,
                                          in_dataset_ids=request.in_dataset_ids,
-                                         merge_strategy=request.merge_strategy,
                                          executor=mining_image,
                                          executant_name=executant_name,
                                          generate_annotations=mining_request.generate_annotations)
@@ -85,7 +84,6 @@ class TaskMiningInvoker(TaskBaseInvoker):
         model_hash: str,
         model_stage: str,
         in_dataset_ids: List[str],
-        merge_strategy: backend_pb2.MergeStrategy,
         asset_cache_dir: str,
         executor: str,
         executant_name: str,
@@ -95,8 +93,7 @@ class TaskMiningInvoker(TaskBaseInvoker):
             utils.mir_executable(), 'mining', '--root', repo_root, '--user-label-file', label_storage_file, '--dst-rev',
             f"{task_id}@{task_id}", '-w', work_dir, '--model-location', model_location, '--media-location',
             media_location, '--model-hash', f"{model_hash}@{model_stage}", '--src-revs',
-            revs.build_src_revs(in_dataset_ids), '-s',
-            backend_pb2.MergeStrategy.Name(merge_strategy).lower(), '--asset-cache-dir', asset_cache_dir,
+            revs.build_src_revs(in_dataset_ids), '-s', 'host', '--asset-cache-dir', asset_cache_dir,
             '--task-config-file', config_file, '--executor', executor, '--executant-name', executant_name
         ]
         if top_k > 0:
