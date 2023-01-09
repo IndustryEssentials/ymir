@@ -18,6 +18,7 @@ from app.api.errors.errors import (
 )
 from app.config import settings
 from common_utils.labels import UserLabels
+from app.libs.labels import class_id_to_keyword, class_ids_to_keywords
 from id_definition.error_codes import VizErrorCode, CMDResponseCode
 
 
@@ -43,9 +44,14 @@ class DatasetAnnotation:
     def from_dict(cls, data: Dict, total_assets_count: int, user_labels: UserLabels) -> "DatasetAnnotation":
         ave_annos_count = round(data["annos_count"] / total_assets_count, 2) if total_assets_count else None
         keywords = {
-            user_labels.main_name_for_id(int(class_id)): count for class_id, count in data["class_ids_count"].items()
+            class_id_to_keyword(user_labels, class_id): count for class_id, count in data["class_ids_count"].items()
         }
-        eval_class_ids = user_labels.main_name_for_ids(data["eval_class_ids"]) if data.get("eval_class_ids") else None
+        classwise_area = {
+            class_id_to_keyword(user_labels, class_id): count for class_id, count in data["class_ids_mask_area"].items()
+        }
+        eval_class_ids = (
+            class_ids_to_keywords(user_labels, data["eval_class_ids"]) if data.get("eval_class_ids") else None
+        )
         return cls(
             keywords=keywords,
             class_ids_count=data["class_ids_count"],
@@ -57,7 +63,6 @@ class DatasetAnnotation:
             ave_annos_count=ave_annos_count,
             eval_class_ids=eval_class_ids,
             classwise_area=data.get("class_ids_mask_area") or None,
-            classwise_anns_count=data.get("class_ids_count") or None,
             total_mask_area=data.get("total_mask_area") or None,
         )
 
@@ -140,7 +145,7 @@ class ViewerAssetAnnotation:
     user_labels: InitVar[UserLabels] = None
 
     def __post_init__(self, user_labels: UserLabels) -> None:
-        self.keyword = user_labels.main_name_for_id(self.class_id)
+        self.keyword = class_id_to_keyword(user_labels, self.class_id)
 
 
 @dataclasses.dataclass
@@ -159,7 +164,7 @@ class ViewerAsset:
     def __post_init__(self, user_labels: UserLabels) -> None:
         self.url = get_asset_url(self.asset_id)
         self.hash = self.asset_id
-        self.keywords = user_labels.main_name_for_ids(self.class_ids)
+        self.keywords = class_ids_to_keywords(user_labels, self.class_ids)
         self.gt = [
             ViewerAssetAnnotation(
                 box=i["box"],
