@@ -10,7 +10,7 @@ from google.protobuf.json_format import MessageToDict
 from google.protobuf.text_format import MessageToString
 
 from app.config import settings
-from app.constants.state import TaskType, AnnotationType, DatasetType
+from app.constants.state import TaskType, AnnotationType, DatasetType, ObjectType
 from app.schemas.common import ImportStrategy, MergeStrategy
 from app.schemas.task import TrainingDatasetsStrategy
 from common_utils.labels import UserLabels, userlabels_to_proto
@@ -60,6 +60,13 @@ IMPORTING_STRATEGY_MAPPING = {
 ANNOTATION_TYPE_MAPPING = {
     AnnotationType.gt: mirsvrpb.AnnotationType.GT,
     AnnotationType.pred: mirsvrpb.AnnotationType.PRED,
+}
+
+OBJECT_TYPE_MAPPING = {
+    ObjectType.classification: int(ObjectType.classification),
+    ObjectType.object_detect: int(ObjectType.object_detect),
+    ObjectType.segmentation: int(ObjectType.segmentation),
+    ObjectType.instance_segmentation: int(ObjectType.segmentation),
 }
 
 
@@ -171,7 +178,7 @@ class ControllerRequest:
             if args.get("pred_dir"):
                 import_dataset_request.pred_dir = args["pred_dir"]
         import_dataset_request.clean_dirs = args["clean_dirs"]
-        import_dataset_request.object_type = args["object_type"]
+        import_dataset_request.object_type = OBJECT_TYPE_MAPPING[args["object_type"]]
 
         import_dataset_request.unknown_types_strategy = IMPORTING_STRATEGY_MAPPING[strategy]
 
@@ -190,7 +197,7 @@ class ControllerRequest:
         label_request = mirsvrpb.TaskReqLabeling()
         label_request.project_name = f"label_{dataset['name']}"
         label_request.labeler_accounts[:] = args["labellers"]
-        label_request.object_type = args["object_type"]
+        label_request.object_type = OBJECT_TYPE_MAPPING[args["object_type"]]
 
         # pre annotation
         if args.get("annotation_type"):
