@@ -838,7 +838,7 @@
         },
         "total_asset_mbytes": 1,
         "pred_stats": {
-            "total_cnt": 5,
+            "total_obj_cnt": 5,
             "total_mask_area": 0,
             "positive_asset_cnt": 2,
             "tags_cnt": {
@@ -875,6 +875,10 @@
                 "1": 0,
                 "2": 0
             },
+            "class_ids_obj_cnt": {
+                "1": 3,
+                "2": 2
+            },
             "eval_class_ids": [
                 0,
                 1,
@@ -883,7 +887,7 @@
             "negative_asset_cnt": 0
         },
         "gt_stats": {
-            "total_cnt": 5,
+            "total_obj_cnt": 5,
             "total_mask_area": 0,
             "positive_asset_cnt": 2,
             "tags_cnt": {
@@ -919,6 +923,10 @@
             "class_ids_mask_area": {
                 "1": 0,
                 "2": 0
+            },
+            "class_ids_obj_cnt": {
+                "1": 3,
+                "2": 2
             },
             "negative_asset_cnt": 0,
             "eval_class_ids": []

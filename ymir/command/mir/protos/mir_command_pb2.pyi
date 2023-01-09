@@ -1398,7 +1398,20 @@ class AnnoStats(google.protobuf.message.Message):
             ) -> None: ...
         def ClearField(self, field_name: typing_extensions.Literal["key",b"key","value",b"value"]) -> None: ...
 
-    TOTAL_CNT_FIELD_NUMBER: builtins.int
+    class ClassIdsObjCntEntry(google.protobuf.message.Message):
+        DESCRIPTOR: google.protobuf.descriptor.Descriptor = ...
+        KEY_FIELD_NUMBER: builtins.int
+        VALUE_FIELD_NUMBER: builtins.int
+        key: builtins.int = ...
+        value: builtins.int = ...
+        def __init__(self,
+            *,
+            key : builtins.int = ...,
+            value : builtins.int = ...,
+            ) -> None: ...
+        def ClearField(self, field_name: typing_extensions.Literal["key",b"key","value",b"value"]) -> None: ...
+
+    TOTAL_OBJ_CNT_FIELD_NUMBER: builtins.int
     POSITIVE_ASSET_CNT_FIELD_NUMBER: builtins.int
     NEGATIVE_ASSET_CNT_FIELD_NUMBER: builtins.int
     TAGS_CNT_FIELD_NUMBER: builtins.int
@@ -1406,7 +1419,8 @@ class AnnoStats(google.protobuf.message.Message):
     EVAL_CLASS_IDS_FIELD_NUMBER: builtins.int
     TOTAL_MASK_AREA_FIELD_NUMBER: builtins.int
     CLASS_IDS_MASK_AREA_FIELD_NUMBER: builtins.int
-    total_cnt: builtins.int = ...
+    CLASS_IDS_OBJ_CNT_FIELD_NUMBER: builtins.int
+    total_obj_cnt: builtins.int = ...
     positive_asset_cnt: builtins.int = ...
     negative_asset_cnt: builtins.int = ...
     @property
@@ -1426,9 +1440,13 @@ class AnnoStats(google.protobuf.message.Message):
     def class_ids_mask_area(self) -> google.protobuf.internal.containers.ScalarMap[builtins.int, builtins.int]:
         """key: class ids, value: mask area for this class id"""
         pass
+    @property
+    def class_ids_obj_cnt(self) -> google.protobuf.internal.containers.ScalarMap[builtins.int, builtins.int]:
+        """key: class ids, value: obj count for this class id"""
+        pass
     def __init__(self,
         *,
-        total_cnt : builtins.int = ...,
+        total_obj_cnt : builtins.int = ...,
         positive_asset_cnt : builtins.int = ...,
         negative_asset_cnt : builtins.int = ...,
         tags_cnt : typing.Optional[typing.Mapping[typing.Text, global___SingleMapCount]] = ...,
@@ -1436,8 +1454,9 @@ class AnnoStats(google.protobuf.message.Message):
         eval_class_ids : typing.Optional[typing.Iterable[builtins.int]] = ...,
         total_mask_area : builtins.int = ...,
         class_ids_mask_area : typing.Optional[typing.Mapping[builtins.int, builtins.int]] = ...,
+        class_ids_obj_cnt : typing.Optional[typing.Mapping[builtins.int, builtins.int]] = ...,
         ) -> None: ...
-    def ClearField(self, field_name: typing_extensions.Literal["class_ids_cnt",b"class_ids_cnt","class_ids_mask_area",b"class_ids_mask_area","eval_class_ids",b"eval_class_ids","negative_asset_cnt",b"negative_asset_cnt","positive_asset_cnt",b"positive_asset_cnt","tags_cnt",b"tags_cnt","total_cnt",b"total_cnt","total_mask_area",b"total_mask_area"]) -> None: ...
+    def ClearField(self, field_name: typing_extensions.Literal["class_ids_cnt",b"class_ids_cnt","class_ids_mask_area",b"class_ids_mask_area","class_ids_obj_cnt",b"class_ids_obj_cnt","eval_class_ids",b"eval_class_ids","negative_asset_cnt",b"negative_asset_cnt","positive_asset_cnt",b"positive_asset_cnt","tags_cnt",b"tags_cnt","total_mask_area",b"total_mask_area","total_obj_cnt",b"total_obj_cnt"]) -> None: ...
 global___AnnoStats = AnnoStats
 
 class ExportConfig(google.protobuf.message.Message):

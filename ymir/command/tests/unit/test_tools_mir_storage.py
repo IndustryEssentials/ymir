@@ -136,7 +136,7 @@ class TestMirStorage(unittest.TestCase):
         dict_context = {
             'images_cnt': 3,
             'pred_stats': {
-                'total_cnt': 6,
+                'total_obj_cnt': 6,
                 'positive_asset_cnt': 3,
                 'negative_asset_cnt': 0,
                 'class_ids_cnt': {
@@ -148,6 +148,11 @@ class TestMirStorage(unittest.TestCase):
                     1: 0,
                     2: 0,
                     3: 0,
+                },
+                'class_ids_obj_cnt': {
+                    1: 1,
+                    2: 2,
+                    3: 3,
                 }
             },
             'gt_stats': {
