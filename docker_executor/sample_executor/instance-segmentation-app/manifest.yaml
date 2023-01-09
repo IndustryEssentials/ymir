@@ -2,4 +2,4 @@
 # 3 for semantic segmentation
 # 4 for instance segmentation
 # default: 2
-"object_type": 2
+"object_type": 4

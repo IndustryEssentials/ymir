@@ -1,0 +1,11 @@
+# infer template for your executor app
+# after build image, it should at /img-man/infer-template.yaml
+# key: gpu_id, task_id, model_params_path, class_names should be preserved
+
+gpu_id: '0'
+task_id: 'default-infer-task'
+model_params_path: []
+class_names: []
+
+# just for test, remove this key in your own docker image
+idle_seconds: 3  # idle seconds for each task
