@@ -15,7 +15,7 @@ import useRequest from '@/hooks/useRequest'
 
 import ImageSelect from '@/components/form/ImageSelect'
 import ModelSelect from '@/components/form/modelSelect'
-import SampleRates from '@/components/dataset/sampleRates'
+import SampleRates from '@/components/dataset/SampleRates'
 import CheckProjectDirty from '@/components/common/CheckProjectDirty'
 import LiveCodeForm from '@/components/form/items/liveCode'
 import { removeLiveCodeConfig } from '@/components/form/items/liveCodeConfig'

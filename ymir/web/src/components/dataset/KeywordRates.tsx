@@ -1,20 +1,40 @@
-import { useState, useEffect } from "react"
+import { useState, useEffect, FC } from "react"
 import t from "@/utils/t"
 
 import s from "./keywordRates.less"
 import { percent } from "@/utils/number"
+type StatType = {
+    keywords: string[],
+    count?: { [key: string]: number},
+    negative?: number,
+    total?: number
+  }
+type Props = {
+  stats?: StatType,
+  title?: string
+  progressWidth?: number
+}
+
+type ItemType = {
+  key: string
+label: string
+count: number
+total: number
+max: number
+color: string
+}
 
 function randomColor() {
   return "#" + Math.random().toString(16).slice(-6)
 }
 
-const getWidth = ({ count = 0, max }, progressWidth) => percent(count * progressWidth / max)
+const getWidth = ({ count = 0, max = 1 }, progressWidth: number) => percent(count * progressWidth / max)
 
 // type stats = { count = {}, keywords, negative = 0, total }
-function KeywordRates({ title = '', stats, progressWidth = 0.5 }) {
-  const [list, setList] = useState([])
-  const [keywords, setKws] = useState([])
-  const [colors, setColors] = useState({})
+const KeywordRates: FC<Props> = ({ title = '', stats, progressWidth = 0.5 }) => {
+  const [list, setList] = useState<ItemType[]>([])
+  const [keywords, setKws] = useState<string[]>([])
+  const [colors, setColors] = useState<{ [key: string]: string}>({})
 
   useEffect(() => {
     const kws = stats?.keywords || []
@@ -32,11 +52,11 @@ function KeywordRates({ title = '', stats, progressWidth = 0.5 }) {
   }, [keywords])
 
   useEffect(() => {
-    setList(keywords.length && stats ? generateList(stats, colors) : [])
+    setList(keywords.length && stats ? generateList(stats) : [])
   }, [stats, colors])
 
 
-  function generateList({ count = {}, keywords = [], negative = 0, total }, colors) {
+  function generateList({ count = {}, keywords = [], negative = 0, total }: StatType) {
     const klist = [
       ...(keywords.map(kw => ({
         key: kw,
@@ -53,7 +73,7 @@ function KeywordRates({ title = '', stats, progressWidth = 0.5 }) {
     }))
   }
 
-  function label({ count = 0, label = '', total }) {
+  function label({ count = 0, label = '', total }: ItemType) {
     const countLabel = total ? count / total : 0
     return `${label} ${count}/${total} ${percent(countLabel)}`
   }

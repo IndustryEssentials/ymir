@@ -95,6 +95,11 @@ const common = {
   "common.menu.docs": { en: "Documents", cn: "说明文档", },
   "annotation.gt": { en: "GT", cn: "标准值", },
   "annotation.pred": { en: "Prediction", cn: "预测标注", },
+  "date.range.today": { en: "Today", cn: "今天", },
+  "date.range.last3days": { en: "Last 3 days", cn: "近三天", },
+  "date.range.last7days": { en: "Last 7 days", cn: "近一周", },
+  "common.object.type": { en: "Object Type", cn: "目标类型", },
+  "common.search.result.name": { en: "Dataset/Model Name", cn: "数据集/模型名称", },
 }
 
 export default common

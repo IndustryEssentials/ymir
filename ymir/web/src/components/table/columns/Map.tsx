@@ -10,7 +10,7 @@ function Map<T extends YModels.InferDataset>(): ColumnType<T> {
     return model.model
   })
   return {
-    title: StrongTitle('model.column.map'),
+    title: <StrongTitle label="model.column.map" />,
     dataIndex: 'map',
     render: (_, { inferModel, inferModelId }) => {
       if (!inferModel) {
