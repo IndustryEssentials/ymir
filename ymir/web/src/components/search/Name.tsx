@@ -1,7 +1,6 @@
-import { ChangeEvent, FC } from 'react'
+import type { FC } from 'react'
 import { Input } from 'antd'
 import type { SearchProps } from 'antd/lib/input'
-import { useDebounceFn } from 'ahooks'
 
 import t from '@/utils/t'
 

@@ -16,7 +16,7 @@ import Uploader from '@/components/form/uploader'
 import ProjectDatasetSelect from '@/components/form/projectDatasetSelect'
 import Desc from '@/components/form/desc'
 import DatasetName from '@/components/form/items/DatasetName'
-import { FormatDetailModal } from './components/FormatDetailModal'
+import FormatDetailModal from './components/FormatDetailModal'
 import Dataset from '@/components/form/option/Dataset'
 
 import s from './add.less'
@@ -88,7 +88,7 @@ const Add = (props) => {
   }, [pid])
 
   useEffect(() => {
-    project.type === ObjectType.SemanticSegmentation && (setSampleZip('/sample_dataset_seg.zip'), setSamplePic(SegSamplePic))
+    project.type !== ObjectType.ObjectDetection && (setSampleZip('/sample_dataset_seg.zip'), setSamplePic(SegSamplePic))
   }, [project])
 
   useEffect(() => {
@@ -328,19 +328,17 @@ const Add = (props) => {
                   ></Select>
                 </Form.Item>
 
-                {selectedDataset ? (
+                {selectedDataset && newKeywords.length ? (
                   <Form.Item label={t('dataset.import.public.include')}>
-                    {newKeywords.length ? (
-                      <>
-                        <h4>
-                          {t('dataset.add.internal.newkeywords.label')}
-                          <Button type="link" onClick={(e) => updateIgnoredKeywords(e, newKeywords, false)}>
-                            {t('dataset.add.internal.ignore.all')}
-                          </Button>
-                        </h4>
-                        <div>{renderKeywords(newKeywords)}</div>
-                      </>
-                    ) : null}
+                    <>
+                      <h4>
+                        {t('dataset.add.internal.newkeywords.label')}
+                        <Button type="link" onClick={(e) => updateIgnoredKeywords(e, newKeywords, false)}>
+                          {t('dataset.add.internal.ignore.all')}
+                        </Button>
+                      </h4>
+                      <div>{renderKeywords(newKeywords)}</div>
+                    </>
                     {ignoredKeywords.length ? (
                       <>
                         <h4>

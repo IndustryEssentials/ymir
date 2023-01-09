@@ -57,9 +57,9 @@ const AssetAnnotation: FC<Props> = ({ asset }) => {
   })
 
   return (
-    <div className={styles.anno_panel} ref={imgContainer}>
+    <div className={styles.anno_panel} ref={imgContainer} key={asset?.hash}>
       <div className={styles.img_container}>
-        <img ref={img} src={asset?.url} style={{ width: imgWidth }} className={styles.assetImg} onLoad={calClientWidth} />
+        <img ref={img} src={asset?.url} style={imgWidth ? { width: imgWidth } : undefined} className={styles.assetImg} onLoad={calClientWidth} />
       </div>
       <div className={styles.annotations} style={{ width: imgWidth, left: -imgWidth / 2 }}>
         {annotations.map(renderAnnotation)}
