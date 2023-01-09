@@ -47,13 +47,13 @@ def access_bit(data: Any, num: int) -> Any:
     return (data[base] & (1 << shift)) >> shift
 
 
-def bytes2bit(data):
+def bytes2bit(data: Any) -> str:
     """ get bit string from bytes data
     """
     return ''.join([str(access_bit(data, i)) for i in range(len(data) * 8)])
 
 
-def decode_rle(rle, print_params: bool = False) -> np.ndarray:
+def decode_rle(rle: Any, print_params: bool = False) -> np.ndarray:
     """ from LS RLE to numpy uint8 3d image [width, height, channel]
 
     Args:
