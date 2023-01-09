@@ -33,6 +33,7 @@ const breadcrumbs = {
   'breadcrumbs.project.iterations': { cn: '迭代列表', en: 'Iterations', },
   'breadcrumbs.project.initmodel': { cn: '初始模型准备', en: 'Initial Model Setting', },
   'breadcrumbs.project.hidden': { cn: '隐藏列表', en: 'Hidden List', },
+  'breadcrumbs.project.search': { cn: '搜索', en: 'Search', },
 }
 
 export default breadcrumbs

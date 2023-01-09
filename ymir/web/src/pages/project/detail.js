@@ -7,7 +7,8 @@ import useFetch from '@/hooks/useFetch'
 import Breadcrumbs from '@/components/common/breadcrumb'
 import Empty from '@/components/empty/default'
 import { getStepLabel } from '@/constants/iteration'
-import NoIterationDetail from './components/noIterationDetail'
+import Detail from '@/components/project/Detail'
+import Name from '@/components/search/Name'
 
 import s from './detail.less'
 import { TrainIcon, NavDatasetIcon, ArrowRightIcon, ImportIcon } from '@/components/common/Icons'
@@ -36,7 +37,7 @@ function ProjectDetail(func) {
     history.push(`/home/project/${id}/train`)
   }
 
-  const statBlocks = (blocks = []) => blocks.map((block) => <Col span={24 / blocks.length}>{statBlock(block)}</Col>)
+  const statBlocks = (blocks = []) => blocks.map((block, index) => <Col key={index} span={24 / blocks.length}>{statBlock(block)}</Col>)
 
   const statBlock = ({ label, count }) => (
     <>
@@ -45,12 +46,14 @@ function ProjectDetail(func) {
     </>
   )
 
+  function search(name) {
+    name && history.push(`/home/project/${id}/search`, { name })
+  }
+
   return (
     <div>
       <Breadcrumbs />
-      <div className={s.header}>
-        <NoIterationDetail project={project} />
-      </div>
+      <Detail project={project} />
       {project.enableIteration ? (
         <div className={s.header}>
           {project.round > 0 ? (
@@ -76,14 +79,24 @@ function ProjectDetail(func) {
           )}
         </div>
       ) : null}
-      <Space className="actions">
-        <Button type="primary" onClick={add}>
-          <ImportIcon /> {t('dataset.import.label')}
-        </Button>
-        <Button type="primary" onClick={goTraining}>
-          <TrainIcon /> {t('project.iteration.stage.training')}
-        </Button>
-      </Space>
+      
+      <div className="actions">
+        <Row gutter={10}>
+          <Col flex={1}>
+              <Name onSearch={search} />
+          </Col>
+          <Col>
+            <Button type="primary" onClick={add}>
+              <ImportIcon /> {t('dataset.import.label')}
+            </Button>
+          </Col>
+          <Col>
+            <Button type="primary" onClick={goTraining}>
+              <TrainIcon /> {t('project.iteration.stage.training')}
+            </Button>
+          </Col>
+        </Row>
+      </div>
       <div className={`list ${s.projectOverview}`}>
         <Row gutter={10}>
           <Col span={12}>

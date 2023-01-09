@@ -8,7 +8,7 @@ import { ROLES, getRolesLabel } from '@/constants/user'
 import { AddDelTwoIcon, AddTwoIcon, ShutIcon } from '@/components/common/Icons'
 import s from '../permission.less'
 import Actions from '@/components/table/Actions'
-import confirmConfig from '@/components/common/dangerConfirm'
+import confirmConfig from '@/components/common/DangerConfirm'
 
 const initQuery = {
   limit: 20,

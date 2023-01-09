@@ -46,7 +46,7 @@ declare namespace YModels {
     durationLabel?: string
     taskName: string
     project?: Project
-    task?: Task<P>
+    task: Task<P>
     hidden: boolean
     description: string
     needReload?: boolean

@@ -5,7 +5,7 @@ import TypeTag from '@/components/task/TypeTag'
 
 function Source<T extends YModels.Result>(): ColumnType<T> {
   return {
-    title: StrongTitle('dataset.column.source'),
+    title: <StrongTitle label="dataset.column.source" />,
     dataIndex: 'taskType',
     render: (type) => <TypeTag type={type} />,
     sorter: (a, b) => a.taskType - b.taskType,

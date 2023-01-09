@@ -20,7 +20,7 @@ const createIframe = (params = {}) => {
   return iframe
 }
 
-const usePublish = () => {
+const usePublish = (): [(model: YModels.Model) => void, any] => {
   const [result, setResult] = useState(null)
   const [loading, setLoading] = useState(false)
   const { id: userId, username: userName } = useSelector((state: { user: any }) => state.user)
@@ -46,7 +46,6 @@ const usePublish = () => {
       url,
     }
     // create iframe
-    console.log('publish params:', params)
     createIframe(params)
     setTimeout(() => {
       setLoading(false)

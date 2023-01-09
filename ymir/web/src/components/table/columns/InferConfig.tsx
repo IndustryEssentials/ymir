@@ -6,7 +6,7 @@ import t from '@/utils/t'
 
 const title = 'model.diagnose.label.config'
 const InferConfig = <T extends YModels.InferDataset>(): TableColumnType<T> => ({
-  title: StrongTitle(title),
+  title: <StrongTitle label={title} />,
   dataIndex: 'inferConfig',
   render: (config) => {
     const content = <ReactJson src={config} name={false} />

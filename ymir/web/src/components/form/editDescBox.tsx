@@ -6,9 +6,9 @@ import useFetch from '@/hooks/useFetch'
 import { useEffect } from 'react'
 
 interface Props {
-  type: string
   record: YModels.Result
-  max: number
+  type?: string
+  max?: number
   handle?: Function
 }
 
