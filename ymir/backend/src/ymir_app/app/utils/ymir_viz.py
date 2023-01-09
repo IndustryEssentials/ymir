@@ -37,7 +37,6 @@ class DatasetAnnotation:
 
     eval_class_ids: Optional[List]
     classwise_area: Optional[Dict]
-    classwise_anns_count: Optional[Dict]
     total_mask_area: Optional[int]
 
     @classmethod
