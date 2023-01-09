@@ -35,6 +35,9 @@ class DatasetAnnotation:
     ave_annos_count: Optional[float]
 
     eval_class_ids: Optional[List]
+    classwise_area: Optional[Dict]
+    classwise_anns_count: Optional[Dict]
+    total_mask_area: Optional[int]
 
     @classmethod
     def from_dict(cls, data: Dict, total_assets_count: int, user_labels: UserLabels) -> "DatasetAnnotation":
