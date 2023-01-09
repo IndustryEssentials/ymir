@@ -17,9 +17,9 @@ const projectTypes = [
 
 export const getProjectTypes = () => projectTypes.map(({ label, value }) => ({ label: typesPrefix + label, value }))
 
-export const getProjectTypeLabel = (type: ObjectType, prefix: boolean = false) => {
+export const getProjectTypeLabel = (type?: ObjectType, prefix: boolean = false) => {
   const target = projectTypes.find(({ value }) => value === type)
-  return (prefix ? typesPrefix : '') + target?.label
+  return type ? (prefix ? typesPrefix : '') + target?.label : ''
 }
 
 export const tabs = [

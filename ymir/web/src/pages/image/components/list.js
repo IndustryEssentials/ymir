@@ -150,7 +150,11 @@ const ImageList = ({ role, filter, getImages }) => {
     return <span className={s.stateIcon}>{states[state]}</span>
   }
 
-  const objectTypeLabel = (type) => type ? <span className={`extraTag ${getProjectTypeLabel(type)}`}>{t(getProjectTypeLabel(type, true))}</span> : null
+  const objectTypeLabel = (type) => {
+    const cls = getProjectTypeLabel(type)
+    const label = getProjectTypeLabel(type, true)
+    type && cls ? <span className={`extraTag ${cls}`}>{t(label)}</span> : null
+  }
 
   const liveCodeState = (live) => {
     return <span className={live ? s.remote : s.local}>{t(live ? 'image.livecode.label.remote' : 'image.livecode.label.local')}</span>
