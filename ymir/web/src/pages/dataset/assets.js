@@ -124,12 +124,22 @@ const Dataset = () => {
     </Button>
   )
 
-  const ckPop = (asset) => (
-    <>
-      <h4>{t('dataset.assets.keyword.selector.types.cks')}</h4>
-      <CustomLabels asset={asset} />
-    </>
-  )
+  const CkPopup = ({ asset, children }) => {
+    const cks = Object.keys(asset?.cks || {})
+    const content = (
+      <>
+        <h4>{t('dataset.assets.keyword.selector.types.cks')}</h4>
+        <CustomLabels asset={asset} />
+      </>
+    )
+    return cks.length ? (
+      <Popover placement="bottomLeft" content={content}>
+        {children}
+      </Popover>
+    ) : (
+      children
+    )
+  }
 
   const renderList = useCallback(
     (list, row = 5) => {
@@ -151,7 +161,7 @@ const Dataset = () => {
           <Row gutter={4} wrap={false} key={index} className={styles.dataset_container}>
             {rows.map((asset, rowIndex) => (
               <Col style={{ height: h }} key={rowIndex} className={styles.dataset_item}>
-                <Popover placement="bottomLeft" content={ckPop(asset)}>
+                <CkPopup asset={asset}>
                   <div className={styles.dataset_img} onClick={() => goAsset(asset, asset.hash, index * row + rowIndex)}>
                     <ImageAnnotation url={asset.url} data={asset.annotations} filters={filterAnnotations} />
                     <span className={styles.item_keywords_count} title={asset?.keywords.join(',')}>
@@ -172,7 +182,7 @@ const Dataset = () => {
                       ) : null}
                     </span>
                   </div>
-                </Popover>
+                </CkPopup>
               </Col>
             ))}
           </Row>
