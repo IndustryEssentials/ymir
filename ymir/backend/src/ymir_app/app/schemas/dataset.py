@@ -124,10 +124,10 @@ class DatasetsOut(Common):
 
 class DatasetAnnotationHist(BaseModel):
     quality: List[Dict]
-    area: List[Dict]
-    area_ratio: List[Dict]
+    box_area: List[Dict]
+    box_area_ratio: List[Dict]
     # instance segmentation
-    instance_area: Optional[List[Dict]]
+    mask_area: List[Dict]
     crowdedness: Optional[List[Dict]]
 
 
@@ -146,11 +146,9 @@ class DatasetAnnotation(BaseModel):
     # segmentation
     classwise_area: Optional[Dict]
     # instance segmentation
-    total_instance_count: Optional[int]
-    classwise_instance_count: Optional[Dict]
+    classwise_anns_count: Optional[Dict]
     # semantic segmentation
-    total_area: Optional[int]
-    ave_area: Optional[float]
+    total_mask_area: Optional[int]
 
 
 class DatasetInfo(DatasetInDBBase):
