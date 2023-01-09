@@ -7,6 +7,11 @@ declare namespace YStates {
     image: ImageState
     keywords: LabelState
     project: ProjectState
+    loading: {
+      effects: {
+        [key: string]: boolean
+      }
+    }
   }
 
   type State = {

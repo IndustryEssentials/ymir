@@ -7,7 +7,7 @@ import { validDataset } from '@/constants/dataset'
 
 function Keywords<T extends YModels.Dataset>(): ColumnType<T> {
   return {
-    title: StrongTitle('dataset.column.keyword'),
+    title: <StrongTitle label="dataset.column.keyword" />,
     dataIndex: 'keywords',
     render: (_, record) => {
       const { gt, pred } = record

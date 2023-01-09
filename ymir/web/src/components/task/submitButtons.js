@@ -12,7 +12,7 @@ const SubmitButtons = ({ label = 'common.confirm' }) => {
   </Form.Item>
     <Form.Item name='backBtn' noStyle>
       <Button size="large" onClick={() => history.goBack()}>
-        {t('task.btn.back')}
+        {t('common.back')}
       </Button>
     </Form.Item>
   </Space>

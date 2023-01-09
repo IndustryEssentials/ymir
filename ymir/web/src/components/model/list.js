@@ -19,7 +19,7 @@ import Terminate from '@/components/task/terminate'
 import Hide from '../common/hide'
 import EditNameBox from '@/components/form/editNameBox'
 import EditDescBox from '@/components/form/editDescBox'
-import { getTensorboardLink } from '@/services/common'
+import { getTensorboardLink } from '@/constants/common'
 
 import {
   ShieldIcon,

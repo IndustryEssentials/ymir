@@ -73,6 +73,20 @@ export const getDeployUrl = () => getThirdUrl('DEPLOY_MODULE_URL')
 
 export const getPublicImageUrl = () => getThirdUrl('PUBLIC_IMAGE_URL')
 
+/**
+ * @description generate tensorboard link
+ * @export
+ * @param {(string | string[])} [hashs=[]]
+ * @return {*} 
+ */
+export function getTensorboardLink(hashs: string | string[] = []) {
+  if (!Array.isArray(hashs)) {
+    hashs = [hashs]
+  }
+  const query = hashs.filter(hash => hash).join('|')
+  return `/tensorboard/#scalars&regexInput=${query}`
+}
+
 const getThirdUrl = (field: string) => {
   const config = window?.baseConfig || {}
   const url = config[field]
