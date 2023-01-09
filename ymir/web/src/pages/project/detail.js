@@ -47,7 +47,7 @@ function ProjectDetail(func) {
   )
 
   function search(name) {
-    name && history.push(`/home/project/${id}/search`, { name })
+    history.push(`/home/project/${id}/search`, { name })
   }
 
   return (
@@ -83,7 +83,7 @@ function ProjectDetail(func) {
       <div className="actions">
         <Row gutter={10}>
           <Col flex={1}>
-              <Name onSearch={search} />
+            <Name onSearch={search} enterButton={t('common.search')} />
           </Col>
           <Col>
             <Button type="primary" onClick={add}>
