@@ -2,10 +2,8 @@ import os
 from typing import Dict, List, Optional, Tuple
 
 from common_utils.labels import UserLabels
-from controller.invoker.invoker_cmd_merge import MergeInvoker
 from controller.invoker.invoker_task_base import SubTaskType, TaskBaseInvoker
-from controller.utils import invoker_call, revs, utils
-from controller.utils.errors import MirCtrError
+from controller.utils import revs, utils
 from id_definition.error_codes import CTLResponseCode
 from proto import backend_pb2
 
@@ -38,44 +36,20 @@ class TaskTrainingInvoker(TaskBaseInvoker):
 
     @classmethod
     def register_subtasks(cls, request: backend_pb2.GeneralReq) -> List[Tuple[SubTaskType, float]]:
-        return [(cls.subtask_invoke_merge, 0), (cls.subtask_invoke_training, 1.0)]
-
-    @classmethod
-    def subtask_invoke_merge(cls, request: backend_pb2.GeneralReq, user_labels: UserLabels, sandbox_root: str,
-                             assets_config: Dict[str, str], repo_root: str, master_task_id: str, subtask_id: str,
-                             subtask_workdir: str, his_task_id: Optional[str],
-                             in_dataset_ids: List[str]) -> backend_pb2.GeneralResp:
-        train_request = request.req_create_task.training
-        # order merged datasets by training - validation
-        ordered_dataset_types = sorted(train_request.in_dataset_types, key=lambda v: v.dataset_type)
-        in_dataset_ids = [
-            revs.join_tvt_dataset_id(dataset_type.dataset_type, dataset_type.dataset_id)
-            for dataset_type in ordered_dataset_types
-        ]
-
-        merge_response = invoker_call.make_invoker_cmd_call(
-            invoker=MergeInvoker,
-            sandbox_root=sandbox_root,
-            req_type=backend_pb2.CMD_MERGE,
-            user_id=request.user_id,
-            repo_id=request.repo_id,
-            task_id=subtask_id,
-            his_task_id=ordered_dataset_types[0].dataset_id,
-            dst_dataset_id=master_task_id,
-            in_dataset_ids=in_dataset_ids,
-            merge_strategy=request.merge_strategy,
-            work_dir=subtask_workdir,
-        )
-
-        return merge_response
+        return [(cls.subtask_invoke_training, 1.0)]
 
     @classmethod
     def subtask_invoke_training(cls, request: backend_pb2.GeneralReq, user_labels: UserLabels, sandbox_root: str,
                                 assets_config: Dict[str, str], repo_root: str, master_task_id: str, subtask_id: str,
                                 subtask_workdir: str, his_task_id: Optional[str],
                                 in_dataset_ids: List[str]) -> backend_pb2.GeneralResp:
-        if not his_task_id:
-            raise MirCtrError(CTLResponseCode.INVOKER_GENERAL_ERROR, "empty previous_subtask_id in subtask_mining")
+        train_request = request.req_create_task.training
+        # order merged datasets by training - validation
+        ordered_dataset_types = sorted(train_request.in_dataset_types, key=lambda v: v.dataset_type)
+        train_in_dataset_ids = [
+            revs.join_tvt_dataset_id(dataset_type.dataset_type, dataset_type.dataset_id)
+            for dataset_type in ordered_dataset_types
+        ]
 
         models_upload_location = assets_config["modelsuploadlocation"]
         media_location = assets_config["assetskvlocation"]
@@ -97,8 +71,8 @@ class TaskTrainingInvoker(TaskBaseInvoker):
             media_location=media_location,
             task_id=subtask_id,
             work_dir=subtask_workdir,
-            in_dataset_id=in_dataset_ids[0],
-            his_task_id=his_task_id,
+            in_dataset_ids=train_in_dataset_ids,
+            merge_strategy=request.merge_strategy,
             asset_cache_dir=asset_cache_dir,
             training_image=training_image,
             executant_name=request.task_id,
@@ -118,8 +92,8 @@ class TaskTrainingInvoker(TaskBaseInvoker):
         media_location: str,
         task_id: str,
         work_dir: str,
-        in_dataset_id: str,
-        his_task_id: str,
+        in_dataset_ids: List[str],
+        merge_strategy: backend_pb2.MergeStrategy,
         training_image: str,
         asset_cache_dir: str,
         executant_name: str,
@@ -128,14 +102,15 @@ class TaskTrainingInvoker(TaskBaseInvoker):
         model_stage: str,
     ) -> backend_pb2.GeneralResp:
         training_cmd = [
-            utils.mir_executable(), 'train', '--root', repo_root, '--user-label-file', label_storage_file,
-            '--dst-rev', f"{task_id}@{task_id}", '--model-location', models_upload_location, '--media-location',
-            media_location, '-w', work_dir, '--src-revs', f"{in_dataset_id}@{his_task_id}", '--task-config-file',
-            config_file, '--executor', training_image, '--executant-name', executant_name, '--tensorboard-dir',
-            tensorboard, '--asset-cache-dir', asset_cache_dir
+            utils.mir_executable(), 'train', '--root', repo_root, '--user-label-file', label_storage_file, '--dst-rev',
+            f"{task_id}@{task_id}", '--model-location', models_upload_location, '--media-location', media_location,
+            '-w', work_dir, '--src-revs',
+            revs.build_src_revs(in_dataset_ids), '-s',
+            backend_pb2.MergeStrategy.Name(merge_strategy).lower(), '--task-config-file', config_file, '--executor',
+            training_image, '--executant-name', executant_name, '--tensorboard-dir', tensorboard, '--asset-cache-dir',
+            asset_cache_dir
         ]
         if model_hash and model_stage:
-            training_cmd.append('--model-hash')
-            training_cmd.append(f"{model_hash}@{model_stage}")
+            training_cmd.extend(['--model-hash', f"{model_hash}@{model_stage}"])
 
         return utils.run_command(training_cmd)

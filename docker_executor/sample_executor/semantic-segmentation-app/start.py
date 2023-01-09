@@ -176,6 +176,7 @@ def _run_infer(env_config: env.EnvConfig) -> None:
                     'counts': '',  # rle encoded mask, or polygon, in coco format
                     'size': [300, 500]  # hw
                 },
+                "area": 0,  # mask area
                 'confidence': 0.6  # confidence of this segmentation
             })
 
