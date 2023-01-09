@@ -61,7 +61,7 @@ class DatasetAnnotation:
             annos_count=data.get("annos_count"),
             ave_annos_count=ave_annos_count,
             eval_class_ids=eval_class_ids,
-            classwise_area=data.get("class_ids_mask_area") or None,
+            classwise_area=classwise_area or None,
             total_mask_area=data.get("total_mask_area") or None,
         )
 
