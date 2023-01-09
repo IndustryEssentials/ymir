@@ -204,6 +204,7 @@ func (s *MongoServer) postIndexDatasetData(collection *mongo.Collection, collect
 			assetHist.Ops,
 			assetHist.LowerBNDs,
 			"$metadata",
+			assetHist.SkipUnwind,
 		))
 		(*indexedMetadata.HistAssets)[histKey] = &assetHist
 	}
@@ -214,6 +215,7 @@ func (s *MongoServer) postIndexDatasetData(collection *mongo.Collection, collect
 			annoHist.Ops,
 			annoHist.LowerBNDs,
 			"$gt",
+			annoHist.SkipUnwind,
 		))
 		(*indexedMetadata.HistAnnosGt)[histKey] = &annoHist
 	}
@@ -224,6 +226,7 @@ func (s *MongoServer) postIndexDatasetData(collection *mongo.Collection, collect
 			annoHist.Ops,
 			annoHist.LowerBNDs,
 			"$pred",
+			annoHist.SkipUnwind,
 		))
 		(*indexedMetadata.HistAnnosPred)[histKey] = &annoHist
 	}
@@ -449,6 +452,7 @@ func (s *MongoServer) queryHistogram(
 	ops interface{},
 	lowerBNDs []float64,
 	unwindField string,
+	skipUnwind bool,
 ) *map[string]int32 {
 	buckets := map[string]int32{}
 
@@ -457,7 +461,9 @@ func (s *MongoServer) queryHistogram(
 	extendedLowerBNDs = append(extendedLowerBNDs, lowerBNDs[len(lowerBNDs)-1]+0.01)
 
 	cond := make([]bson.M, 0)
-	cond = append(cond, bson.M{"$unwind": unwindField})
+	if !skipUnwind {
+		cond = append(cond, bson.M{"$unwind": unwindField})
+	}
 	cond = append(cond, bson.M{"$bucket": bson.D{
 		bson.E{
 			Key:   "groupBy",

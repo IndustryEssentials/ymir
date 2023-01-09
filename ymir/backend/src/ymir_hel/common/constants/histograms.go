@@ -17,6 +17,7 @@ type MirHist struct {
 	LowerBNDs     []float64            `json:"-" bson:"-"`
 	Ops           interface{}          `json:"-" bson:"-"`
 	Output        *[]map[string]string `json:"-" bson:"output"`
+	SkipUnwind    bool                 `json:"-" bson:"-"`
 }
 
 func (h *MirHist) BuildMirHist(bucket *map[string]int32) {
@@ -60,8 +61,9 @@ var ConstGtMirHist map[string]MirHist = map[string]MirHist{
 		LowerBNDs: []float64{0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0}},
 	"mask_area": {Ops: "$gt.mask_area", LowerBNDs: []float64{0, 1, 50, 500, 2500, 5000, 10000, 50000, 100000, 200000}},
 	"counts": {
-		Ops:       bson.M{"$size": bson.A{"$gt"}},
-		LowerBNDs: []float64{0, 1, 2, 3, 4, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50},
+		Ops:        bson.M{"$size": "$gt"},
+		LowerBNDs:  []float64{0, 1, 2, 3, 4, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50},
+		SkipUnwind: true,
 	},
 }
 
@@ -80,7 +82,8 @@ var ConstPredMirHist map[string]MirHist = map[string]MirHist{
 		LowerBNDs: []float64{0, 1, 50, 500, 2500, 5000, 10000, 50000, 100000, 200000},
 	},
 	"counts": {
-		Ops:       bson.M{"$size": bson.A{"$pred"}},
-		LowerBNDs: []float64{0, 1, 2, 3, 4, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50},
+		Ops:        bson.M{"$size": "$pred"},
+		LowerBNDs:  []float64{0, 1, 2, 3, 4, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50},
+		SkipUnwind: true,
 	},
 }
