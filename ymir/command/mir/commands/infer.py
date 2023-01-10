@@ -4,7 +4,7 @@ import logging
 import os
 import shutil
 import time
-from typing import Any, Callable, Dict
+from typing import Any
 
 from google.protobuf import json_format
 import yaml
@@ -162,7 +162,9 @@ class CmdInfer(base.BaseCommand):
             # result files -> task_annotations and save
             class_id_mgr = class_ids.load_or_create_userlabels(label_storage_file=label_storage_file)
             task_annotations = mirpb.SingleTaskAnnotations()
-            _process_infer_result(model_storage.object_type)(task_annotations, work_dir_out, class_id_mgr)
+            process_result_func = (_process_infer_detbox_result if model_storage.object_type
+                                   == mirpb.ObjectType.OT_DET_BOX else _process_infer_seg_coco_result)
+            process_result_func(task_annotations, work_dir_out, class_id_mgr)
             task_annotations.type = model_storage.object_type  # type: ignore
 
             with open(os.path.join(work_dir_out, 'prediction.mir'), 'wb') as m_f:
@@ -219,16 +221,6 @@ def _prepare_assets(index_file: str, work_index_file: str, media_path: str) -> N
         raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
                               error_message='no assets to infer, abort',
                               needs_new_commit=False)
-
-
-def _process_infer_result(
-        model_object_type: Any) -> Callable[[mirpb.SingleTaskAnnotations, str, class_ids.UserLabels], None]:
-    _func_map: Dict[Any, Callable[[mirpb.SingleTaskAnnotations, str, class_ids.UserLabels], None]] = {
-        2: _process_infer_detbox_result,
-        3: _process_infer_seg_coco_result,
-        4: _process_infer_seg_coco_result,
-    }
-    return _func_map[model_object_type]
 
 
 def _process_infer_detbox_result(task_annotations: mirpb.SingleTaskAnnotations, work_dir_out: str,

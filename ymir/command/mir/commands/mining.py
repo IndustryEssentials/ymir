@@ -264,7 +264,8 @@ def _process_results(mir_root: str, label_storage_file: str, export_out: str,
             cls_id_mgr.id_for_names(model_storage.class_names, drop_unknown_names=True)[0])
         prediction.executor_config = json.dumps(model_storage.executor_config)
         prediction.model.CopyFrom(model_storage.get_model_meta())
-        prediction.type = _remap_object_type(model_storage.object_type)
+        prediction.type = (mirpb.ObjectType.OT_DET_BOX
+                           if model_storage.object_type == mirpb.ObjectType.OT_DET_BOX else mirpb.ObjectType.OT_SEG)
 
 
 def _get_topk_asset_ids(file_path: str, topk: int) -> Set[str]:
@@ -296,16 +297,6 @@ def _prepare_env(export_root: str, work_in_path: str, work_out_path: str, work_a
     os.makedirs(work_model_path, exist_ok=True)
 
     return MirCode.RC_OK
-
-
-def _remap_object_type(model_object_type: int) -> 'mirpb.ObjectType.V':
-    mapping = {
-        1: mirpb.ObjectType.OT_CLASS,
-        2: mirpb.ObjectType.OT_DET_BOX,
-        3: mirpb.ObjectType.OT_SEG,
-        4: mirpb.ObjectType.OT_SEG,
-    }
-    return mapping[model_object_type]
 
 
 # public: arg parser
