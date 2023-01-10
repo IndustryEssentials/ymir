@@ -37,8 +37,8 @@ def write_model_stage(stage_name: str,
 
     Args:
         stage_name (str): name to this model stage
-        files (List[str]): model file names for this stage
-            All files should under directory: `/out/models`
+        files (List[str]): model file NAMES for this stage
+            All files should under directory: `/out/models` or `/out/models/<stage_name>`
         evaluation_result (Dict[str, Union[float, int]]): example: `{'mAP': 0.65}`
             evaluation result of this stage, it contains:
                 for detection models:
@@ -114,6 +114,8 @@ def write_model_stage(stage_name: str,
     # evaluate config
     if evaluate_config:
         training_result['evaluate_config'] = evaluate_config
+
+    training_result['object_type'] = env.get_manifest_object_type()
 
     # save all
     with open(env_config.output.training_result_file, 'w') as f:
