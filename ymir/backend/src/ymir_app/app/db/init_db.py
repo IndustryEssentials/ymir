@@ -43,8 +43,8 @@ def init_db(db: Session) -> None:
             controller.create_user(user_id=user.id)
 
     docker_images = crud.docker_image.get_multi(db)
-    if not docker_images and settings.RUNTIMES:
-        runtimes = json.loads(settings.RUNTIMES)
+    if not docker_images and settings.DOCKER_IMAGES:
+        runtimes = json.loads(settings.DOCKER_IMAGES)
         for runtime in runtimes:
             docker_image = crud.docker_image.create(db, obj_in=schemas.DockerImageCreate(**runtime))  # noqa: F841
             crud.docker_image.update_state(db, docker_image=docker_image, state=schemas.DockerImageState.done)

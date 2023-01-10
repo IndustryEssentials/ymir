@@ -10,6 +10,7 @@ from fastapi.encoders import jsonable_encoder
 from sqlalchemy.orm import Session
 
 from app.api.errors.errors import (
+    ProjectNotFound,
     DatasetIndexNotReady,
     DuplicateDatasetGroupError,
     FailedToUpdateTaskStatusTemporally,
@@ -160,6 +161,13 @@ class TaskResult:
         return self.controller.get_labels_of_user(self.user_id)
 
     @cached_property
+    def object_type(self) -> int:
+        project = crud.project.get(self.db, self.project_id)
+        if not project:
+            raise ProjectNotFound()
+        return project.object_type
+
+    @cached_property
     def model_info(self) -> Optional[Dict]:
         try:
             result = self.viz.get_model_info(self.task_hash)
@@ -305,14 +313,14 @@ class TaskResult:
 
     def update_model_result(self, task_result: schemas.TaskUpdateStatus, task_in_db: models.Task) -> None:
         """
-        Criterion for ready model: viewer returns valid model_info
+        Criterion for ready model: viewer returns valid model_info and object_type matched with project's
         """
         model_record = crud.model.get_by_task_id(self.db, task_id=self.task.id)
         if not model_record:
             logger.error("[update task] task result (model) not found, skip")
             return
         model_info = self.model_info
-        if model_info:
+        if model_info and model_info.get("object_type") == self.object_type:
             # as long as model info is ready, regardless of task status, just set model as ready
             crud.task.update_parameters_and_config(
                 self.db,

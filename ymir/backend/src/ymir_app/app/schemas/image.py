@@ -2,7 +2,7 @@ from typing import List, Optional
 
 from pydantic import BaseModel
 
-from app.constants.state import DockerImageState
+from app.constants.state import DockerImageState, ObjectType
 from app.schemas.common import (
     Common,
     DateTimeModelMixin,
@@ -19,7 +19,7 @@ class DockerImageBase(BaseModel):
     url: Optional[str]
     description: Optional[str]
     enable_livecode: Optional[bool] = False
-    object_type: Optional[int]
+    object_type: Optional[int] = ObjectType.unknown
 
 
 class DockerImageCreate(DockerImageBase):

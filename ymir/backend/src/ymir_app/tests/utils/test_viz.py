@@ -138,6 +138,7 @@ class TestModel:
                 },
             },
             "best_stage_name": "epoch-3000",
+            "object_type": 2,
         }
         M = m.ViewerModelInfoResponse.parse_obj(res)
         assert M.hash == res["model_hash"]
@@ -160,6 +161,8 @@ class TestDataset:
             "total_assets_count": 1,
             "pred": {
                 "class_ids_count": {3: 34},
+                "class_obj_count": {3: 34},
+                "class_ids_mask_area": {3: 23},
                 "new_types": {"cat": 5},
                 "new_types_added": False,
                 "negative_assets_count": 0,
@@ -273,6 +276,7 @@ class TestVizClient:
                 },
             },
             "best_stage_name": "epoch-3000",
+            "object_type": 2,
         }
         resp.json.return_value = {"result": res}
         mock_session.get.return_value = resp
@@ -303,6 +307,8 @@ class TestVizClient:
             "total_assets_count": 1,
             "pred": {
                 "class_ids_count": {3: 34},
+                "class_obj_count": {3: 34},
+                "class_ids_mask_area": {3: 23},
                 "new_types": {"cat": 5},
                 "new_types_added": False,
                 "tags_count_total": {},
