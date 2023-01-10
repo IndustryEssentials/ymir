@@ -207,8 +207,8 @@ function Analysis() {
               columns={tableColumns}
               pagination={false}
             />
-            {chartsRender('dataset.analysis.annotations.metrics', assetCharts)}
-            {chartsRender('dataset.analysis.assets.metrics', annotationCharts)}
+            {chartsRender('dataset.analysis.assets.metrics', assetCharts)}
+            {chartsRender('dataset.analysis.annotations.metrics', annotationCharts)}
           </Col>
           <Col span={6} className="rightForm">
             <div className={style.formContainer}>
