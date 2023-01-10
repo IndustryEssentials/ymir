@@ -273,14 +273,14 @@ const transferCK = (counts: YModels.BackendData = {}, total: YModels.BackendData
 }
 
 const generateAnno = (data: YModels.BackendData): YModels.AnylysisAnnotation => {
-  const { quality = [], area = [], area_ratio = [], mask_area = [], obj_counts = [] } = data.hist
+  const { quality = [], area = [], box_area_ratio = [], mask_area = [], obj_counts = [] } = data.hist
   return {
     keywords: data.keywords,
     total: data.annos_count || 0,
     average: data.ave_annos_count || 0,
     negative: data.negative_assets_count || 0,
     quality: quality || [],
-    areaRatio: area_ratio || [],
+    areaRatio: box_area_ratio || [],
     keywordAnnotaitionCount: data.classwise_annos_count || {},
     totalArea: data.total_mask_area || 0,
     keywordArea: data.classwise_area || {},
