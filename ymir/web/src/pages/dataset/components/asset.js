@@ -31,7 +31,7 @@ function Asset({ id, asset: cache, datasetKeywords, filterKeyword, filters, inde
   const [gtSelected, setGtSelected] = useState({ selected: [], all: false })
   const [colors, setColors] = useState({})
   const [{ items: assets }, getAssets] = useFetch('dataset/getAssetsOfDataset', { items: [] })
-  const {data: dataset, run: getDataset} = useRequest('dataset/getDataset', {
+  const { data: dataset, run: getDataset } = useRequest('dataset/getDataset', {
     loading: false,
   })
 
@@ -84,6 +84,7 @@ function Asset({ id, asset: cache, datasetKeywords, filterKeyword, filters, inde
   }, [selectedKeywords, evaluation, asset, gtSelected])
 
   function fetchAssetHash() {
+    setAsset((asset) => ({ ...asset, annotations: [] }))
     getAssets({ id, ...filters, keyword: currentIndex.keyword, offset: currentIndex.index, limit: 1, datasetKeywords })
   }
 
@@ -133,10 +134,7 @@ function Asset({ id, asset: cache, datasetKeywords, filterKeyword, filters, inde
             <LeftOutlined hidden={currentIndex.index <= 0} className={styles.prev} onClick={prev} />
           </Col>
           <Col flex={1} className={`${styles.asset_img} scrollbar`}>
-            {/* // todo render semantic segmentation */}
-            {asset.annotations ? (
-              <AssetAnnotation asset={{ ...asset, annotations: showAnnotations}} />
-            ) : null}
+            {asset.annotations ? <AssetAnnotation asset={{ ...asset, annotations: showAnnotations }} /> : null}
           </Col>
           <Col span={6} className={styles.asset_info}>
             <Card

@@ -153,7 +153,7 @@ const ImageList = ({ role, filter, getImages }) => {
   const objectTypeLabel = (type) => {
     const cls = getProjectTypeLabel(type)
     const label = getProjectTypeLabel(type, true)
-    type && cls ? <span className={`extraTag ${cls}`}>{t(label)}</span> : null
+    return type && cls ? <span className={`extraTag ${cls}`}>{t(label)}</span> : null
   }
 
   const liveCodeState = (live) => {
