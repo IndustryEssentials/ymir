@@ -121,6 +121,8 @@ class TestModel:
         res = {
             "model_hash": random_lower_string(),
             "mAP": random.randint(1, 100) / 100,
+            "mIoU": random.randint(1, 100) / 100,
+            "maskAP": random.randint(1, 100) / 100,
             "task_parameters": "mock_task_parameters",
             "executor_config": {"class_names": "a,b,c".split(",")},
             "stages": {
@@ -259,6 +261,8 @@ class TestVizClient:
         res = {
             "model_hash": random_lower_string(),
             "mAP": random.randint(1, 100) / 100,
+            "mIoU": random.randint(1, 100) / 100,
+            "maskAP": random.randint(1, 100) / 100,
             "task_parameters": "mock_task_parameters",
             "executor_config": {"class_names": "a,b,c".split(",")},
             "stages": {

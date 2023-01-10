@@ -189,8 +189,10 @@ class CRUDModel(CRUDBase[Model, ModelCreate, ModelUpdate]):
             return model
 
         if result:
-            model.map = result["map"]
             model.hash = result["hash"]
+            model.map = result["map"]
+            model.miou = result["miou"]
+            model.mask_ap = result["mask_ap"]
             model.keywords = result["keywords"]
 
         model.result_state = int(result_state)

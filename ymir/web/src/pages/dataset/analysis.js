@@ -207,12 +207,11 @@ function Analysis() {
               columns={tableColumns}
               pagination={false}
             />
-            {chartsRender('dataset.analysis.annotations.metrics', assetCharts)}
-            {chartsRender('dataset.analysis.assets.metrics', annotationCharts)}
+            {chartsRender('dataset.analysis.annotations.metrics', annotationCharts)}
+            {chartsRender('dataset.analysis.assets.metrics', assetCharts)}
           </Col>
           <Col span={6} className="rightForm">
             <div className={style.formContainer}>
-              {console.log('source:', source)}
               <div className="mask" hidden={!source.length}>
                 <Button style={{ marginBottom: 24 }} size="large" type="primary" onClick={() => retry()}>
                   <CompareIcon /> {t('dataset.analysis.btn.retry')}

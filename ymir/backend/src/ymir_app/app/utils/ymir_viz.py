@@ -226,6 +226,8 @@ class ViewerAssetsResponse:
 class ViewerModelInfoResponse(BaseModel):
     hash: str
     map: float
+    miou: float
+    mask_ap: float
     task_parameters: str
     executor_config: Dict
     model_stages: Dict
@@ -239,6 +241,8 @@ class ViewerModelInfoResponse(BaseModel):
         values.update(
             hash=values["model_hash"],
             map=values["mAP"],
+            miou=values["mIoU"],
+            mask_ap=values["maskAP"],
             model_stages=values["stages"],
             object_type=values["object_type"],
             keywords=json.dumps(keywords) if keywords else None,

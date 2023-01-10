@@ -101,6 +101,7 @@ const common = {
   "common.object.type": { en: "Object Type", cn: "目标类型", },
   "common.search.result.name": { en: "Dataset/Model Name", cn: "数据集/模型名称", },
   "common.search": { en: "Search", cn: "搜索", },
+  "common.search.advanced": { en: "Advanced Search", cn: "高级搜索", },
 }
 
 export default common

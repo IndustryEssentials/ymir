@@ -102,8 +102,7 @@ const getColumns = (keys: string[], type: AnnotationType) => {
       render: (_, record) => <VersionName result={record} />,
     },
     labeled: {
-      title: title('dataset.analysis.column.labeled'),
-      dataIndex: 'labeled',
+      title: title('dataset.analysis.column.labelled'),
       render: (_, record) => {
         const anno = getAnnotations(record, type)
         const labeled = record.assetCount - anno.negative
