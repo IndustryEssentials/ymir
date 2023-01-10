@@ -196,7 +196,7 @@ export function toAnnotation(annotation: YModels.BackendData, width: number = 0,
     gt,
     tags: annotation.tags || {},
     color,
-    ...annotationTransfer({ ...annotation, type: getType(annotation)}),
+    ...annotationTransfer({ ...annotation, type: getType(annotation) }),
   }
 }
 
@@ -246,7 +246,7 @@ export function transferAnnotationsCount(count = {}, negative = 0, total = 1) {
 }
 
 function getType(annotation: YModels.BackendData) {
-  return annotation?.mask ? AnnotationType.Mask : (annotation?.polygon?.length ? AnnotationType.Polygon : AnnotationType.BoundingBox)
+  return annotation?.mask ? AnnotationType.Mask : annotation?.polygon?.length ? AnnotationType.Polygon : AnnotationType.BoundingBox
 }
 
 const transferCK = (counts: YModels.BackendData = {}, total: YModels.BackendData = {}) => {
@@ -273,21 +273,19 @@ const transferCK = (counts: YModels.BackendData = {}, total: YModels.BackendData
 }
 
 const generateAnno = (data: YModels.BackendData): YModels.AnylysisAnnotation => {
-  const { quality = [], area = [], area_ratio = [], instance_area =[], crowdedness = [] } = data.hist
+  const { quality = [], area = [], area_ratio = [], mask_area = [], obj_counts = [] } = data.hist
   return {
     keywords: data.keywords,
     total: data.annos_count || 0,
     average: data.ave_annos_count || 0,
     negative: data.negative_assets_count || 0,
     quality: quality || [],
-    area: area || [],
     areaRatio: area_ratio || [],
-    keywordAnnotaitionCount: data.classwise_instance_count || [],
-    totalArea: data.total_area,
-    keywordArea: data.classwise_area || [],
-    instanceArea: instance_area,
-    crowdedness,
-    totalInstanceCount: data.total_instance_count || 0,
+    keywordAnnotaitionCount: data.classwise_annos_count || {},
+    totalArea: data.total_mask_area || 0,
+    keywordArea: data.classwise_area || {},
+    instanceArea: mask_area,
+    crowdedness: obj_counts,
   }
 }
 

@@ -71,13 +71,11 @@ declare namespace YModels {
     total: number
   }
   type AnylysisAnnotation = {
-    keywords: Labels
+    keywords: Keywords
     total: number
     average: number
     negative: number
     totalArea: number
-    totalInstanceCount: number
-    area: Array<BackendData>
     quality: Array<BackendData>
     areaRatio: Array<BackendData>
     keywordAnnotaitionCount: Array<BackendData>
