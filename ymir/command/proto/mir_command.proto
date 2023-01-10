@@ -400,7 +400,7 @@ message SingleMapCount {
 };
 
 message AnnoStats {
-    int32 total_cnt = 1;
+    int32 total_obj_cnt = 1;
     int32 positive_asset_cnt = 2;
     int32 negative_asset_cnt = 3;
 
@@ -415,6 +415,9 @@ message AnnoStats {
     int32 total_mask_area = 10;
     // key: class ids, value: mask area for this class id
     map<int32, int32> class_ids_mask_area = 11;
+
+    // key: class ids, value: obj count for this class id
+    map<int32, int32> class_ids_obj_cnt = 12;
 
     reserved 4, 5, 6;
 };

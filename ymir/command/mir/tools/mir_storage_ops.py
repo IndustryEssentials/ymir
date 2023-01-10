@@ -108,11 +108,11 @@ class MirStorageOps():
         anno_stats.positive_asset_cnt = len(image_annotations)
         anno_stats.negative_asset_cnt = len(mir_metadatas.attributes) - len(image_annotations)
 
-        anno_stats.total_cnt = sum([len(image_annotation.boxes) for image_annotation in image_annotations.values()])
-
-        # anno_stats.class_ids_cnt
+        # anno_stats.class_ids_cnt, class_ids_obj_cnt and total_obj_cnt
         for ci, ci_assets in keyword_to_index.cis.items():
             anno_stats.class_ids_cnt[ci] = len(ci_assets.key_ids)
+            anno_stats.class_ids_obj_cnt[ci] = sum([len(v.ids) for v in ci_assets.key_ids.values()])
+        anno_stats.total_obj_cnt = sum(anno_stats.class_ids_obj_cnt.values())
 
         # anno_stats.tags_cnt
         for tag, tag_to_annos in keyword_to_index.tags.items():
