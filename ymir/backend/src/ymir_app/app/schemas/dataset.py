@@ -128,7 +128,7 @@ class DatasetAnnotationHist(BaseModel):
     box_area_ratio: List[Dict]
     # instance segmentation
     mask_area: List[Dict]
-    counts: Optional[List[Dict]]  # crowdedness
+    obj_counts: Optional[List[Dict]]  # crowdedness
 
 
 class DatasetAnnotation(BaseModel):
@@ -145,6 +145,8 @@ class DatasetAnnotation(BaseModel):
 
     # segmentation
     classwise_area: Optional[Dict]
+    # instance segmentation
+    classwise_annos_count: Optional[Dict]
     # semantic segmentation
     total_mask_area: Optional[int]
 

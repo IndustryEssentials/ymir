@@ -161,6 +161,7 @@ class TestDataset:
             "total_assets_count": 1,
             "pred": {
                 "class_ids_count": {3: 34},
+                "class_obj_count": {3: 34},
                 "class_ids_mask_area": {3: 23},
                 "new_types": {"cat": 5},
                 "new_types_added": False,
@@ -306,6 +307,7 @@ class TestVizClient:
             "total_assets_count": 1,
             "pred": {
                 "class_ids_count": {3: 34},
+                "class_obj_count": {3: 34},
                 "class_ids_mask_area": {3: 23},
                 "new_types": {"cat": 5},
                 "new_types_added": False,

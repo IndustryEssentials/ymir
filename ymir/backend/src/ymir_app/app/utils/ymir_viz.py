@@ -36,6 +36,7 @@ class DatasetAnnotation:
     ave_annos_count: Optional[float]
 
     eval_class_ids: Optional[List]
+    classwise_annos_count: Optional[Dict]
     classwise_area: Optional[Dict]
     total_mask_area: Optional[int]
 
@@ -44,6 +45,9 @@ class DatasetAnnotation:
         ave_annos_count = round(data["annos_count"] / total_assets_count, 2) if total_assets_count else None
         keywords = {
             class_id_to_keyword(user_labels, class_id): count for class_id, count in data["class_ids_count"].items()
+        }
+        classwise_annos_count = {
+            class_id_to_keyword(user_labels, class_id): count for class_id, count in data["class_obj_count"].items()
         }
         classwise_area = {
             class_id_to_keyword(user_labels, class_id): count for class_id, count in data["class_ids_mask_area"].items()
@@ -62,6 +66,7 @@ class DatasetAnnotation:
             ave_annos_count=ave_annos_count,
             eval_class_ids=eval_class_ids,
             classwise_area=classwise_area or None,
+            classwise_annos_count=classwise_annos_count or None,
             total_mask_area=data.get("total_mask_area") or None,
         )
 
