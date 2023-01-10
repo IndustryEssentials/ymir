@@ -165,6 +165,7 @@ func TestGetDatasetMetaCountsHandler(t *testing.T) {
 			{
 				"0": 3
 			},
+			"class_obj_count": {},
 			"negative_assets_count": 2,
 			"positive_assets_count": 3,
 			"tags_count_total":
@@ -187,6 +188,7 @@ func TestGetDatasetMetaCountsHandler(t *testing.T) {
 			{
 				"1": 8
 			},
+			"class_obj_count": {},
 			"negative_assets_count": 5,
 			"positive_assets_count": 8,
 			"eval_class_ids": [0, 1],

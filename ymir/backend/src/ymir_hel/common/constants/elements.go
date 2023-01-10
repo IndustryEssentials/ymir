@@ -117,6 +117,7 @@ func NewMirObjectAnnotation() MirObjectAnnotation {
 type DatasetStatsElement struct {
 	// Assets count
 	ClassIDsCount       map[int]int64 `json:"class_ids_count"`
+	ClassObjCount       map[int]int64 `json:"class_obj_count"`
 	NegativeAssetsCount int64         `json:"negative_assets_count"`
 	PositiveAssetsCount int64         `json:"positive_assets_count"`
 
