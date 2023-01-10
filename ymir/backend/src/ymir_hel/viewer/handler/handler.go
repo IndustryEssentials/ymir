@@ -152,6 +152,11 @@ func (v *ViewerHandler) GetDatasetMetaCountsHandler(
 				result.Gt.ClassIDsCount[int(k)] = int64(v)
 			}
 		}
+		if gtStats.ClassIdsObjCnt != nil {
+			for k, v := range gtStats.ClassIdsObjCnt {
+				result.Gt.ClassObjCount[int(k)] = int64(v)
+			}
+		}
 		result.Gt.AnnotationsCount = int64(gtStats.TotalObjCnt)
 
 		result.Gt.TotalMaskArea = int64(gtStats.TotalMaskArea)
@@ -169,6 +174,11 @@ func (v *ViewerHandler) GetDatasetMetaCountsHandler(
 		if predStats.ClassIdsCnt != nil {
 			for k, v := range predStats.ClassIdsCnt {
 				result.Pred.ClassIDsCount[int(k)] = int64(v)
+			}
+		}
+		if predStats.ClassIdsObjCnt != nil {
+			for k, v := range predStats.ClassIdsObjCnt {
+				result.Pred.ClassObjCount[int(k)] = int64(v)
 			}
 		}
 		result.Pred.AnnotationsCount = int64(predStats.TotalObjCnt)
