@@ -51,17 +51,27 @@ const charts: { [key: string]: ChartConfigType } = {
     sourceField: 'areaRatio',
     totalField: 'total',
     customOptions: {
-      tooltipLable: 'dataset.analysis.bar.anno.tooltip',
+      tooltipLabel: 'dataset.analysis.bar.anno.tooltip',
     },
     color: ['#10BC5E', '#E8B900'],
     isXUpperLimit: true,
   },
   keywords: {
     label: 'dataset.analysis.title.keyword_ratio',
-    sourceField: 'keywords',
+    sourceField: 'keywordAnnotaitionCount',
     totalField: 'total',
     customOptions: {
-      tooltipLable: 'dataset.analysis.bar.anno.tooltip',
+      tooltipLabel: 'dataset.analysis.bar.anno.tooltip',
+    },
+    color: ['#2CBDE9', '#E8B900'],
+    xType: 'attribute',
+  },
+  semanticKeywords: {
+    label: 'dataset.analysis.title.keyword_ratio',
+    sourceField: 'keywords',
+    totalField: 'assetCount',
+    customOptions: {
+      tooltipLabel: 'dataset.analysis.bar.anno.tooltip',
     },
     color: ['#2CBDE9', '#E8B900'],
     xType: 'attribute',
@@ -69,17 +79,21 @@ const charts: { [key: string]: ChartConfigType } = {
   keywordArea: {
     label: 'dataset.analysis.title.keyword_area',
     sourceField: 'keywordArea',
-    totalField: 'total',
+    totalField: 'totalArea',
     customOptions: {
-      tooltipLable: 'dataset.analysis.bar.anno.tooltip',
+      tooltipLabel: 'dataset.analysis.bar.area.tooltip',
     },
+    xUnit: 'px',
     color: ['#2CBDE9', '#E8B900'],
     xType: 'attribute',
   },
   instanceArea: {
     label: 'dataset.analysis.title.instance_area',
     sourceField: 'instanceArea',
-    totalField: 'totalArea',
+    totalField: 'total',
+    customOptions: {
+      tooltipLabel: 'dataset.analysis.bar.anno.tooltip',
+    },
     xUnit: 'px',
     isXUpperLimit: true,
     color: ['#10BC5E', '#F2637B'],
@@ -120,7 +134,11 @@ const getColumns = (keys: string[], type: AnnotationType) => {
     },
     averageKeywordsCount: {
       title: title('dataset.analysis.column.keywords.count.average'),
-      render: (_, record) => toFixed(getAnnotations(record, type).average),
+      render: (_, record) => {
+        const keywords = getAnnotations(record, type).keywords
+        const sum = Object.values(keywords).reduce((prev, current) => prev + current, 0)
+        return toFixed(sum / record.assetCount, 2)
+      },
     },
     annotationsCount: {
       title: title('dataset.analysis.column.annotations.total'),
@@ -131,7 +149,7 @@ const getColumns = (keys: string[], type: AnnotationType) => {
     },
     averageAnnotationsCount: {
       title: title('dataset.analysis.column.annotations.average'),
-      render: (_, record) => toFixed(getAnnotations(record, type).average),
+      render: (_, record) => toFixed(getAnnotations(record, type).average, 2),
     },
     annotationsAreaTotal: {
       title: title('dataset.analysis.column.annotations.area.total'),
@@ -140,24 +158,24 @@ const getColumns = (keys: string[], type: AnnotationType) => {
     averageAnnotationsArea: {
       title: title('dataset.analysis.column.annotations.area.average'),
       render: (_, record) => {
-        const total = getAnnotations(record, type).average
-        return unit(toFixed(total / record.assetCount))
+        const total = getAnnotations(record, type).totalArea
+        return unit(toFixed(total / record.assetCount, 2))
       },
     },
     instanceCount: {
       title: title('dataset.analysis.column.instances.total'),
-      render: (_, record) => renderPop(getAnnotations(record, type).totalInstanceCount),
+      render: (_, record) => renderPop(getAnnotations(record, type).total),
     },
     averageInstanceCount: {
       title: title('dataset.analysis.column.instances.average'),
       render: (_, record) => {
-        const total = getAnnotations(record, type).totalInstanceCount
-        return toFixed(total / record.assetCount)
+        const total = getAnnotations(record, type).total
+        return toFixed(total / record.assetCount, 2)
       },
     },
     cksCount: {
       title: title('dataset.analysis.column.cks.count'),
-      render: (text, record) =>  record.cks?.subKeywordsTotal || 0,
+      render: (text, record) => record.cks?.subKeywordsTotal || 0,
     },
   }
   return keys.map((key) => ({ ...columns[key], dataIndex: key, ellipsis: true, align: 'center' }))
@@ -181,11 +199,11 @@ function title(str = '') {
 }
 
 const getTableColumns = (objectType: YModels.ObjectType, annotationType: AnnotationType) => {
-  const keys = (count: string, average: string) => ['name', 'labeled', 'assetCount', 'keywordsCount', 'averageKeywordsCount', count, average, 'cksCount']
+  const keys = (cols: string[]) => ['name', 'labeled', 'assetCount', 'keywordsCount', 'averageKeywordsCount', ...cols]
   const maps = {
-    [ObjectType.ObjectDetection]: keys('annotationsCount', 'averageAnnotationsCount'),
-    [ObjectType.SemanticSegmentation]: keys('annotationsAreaTotal', 'averageAnnotationsArea'),
-    [ObjectType.InstanceSegmentation]: keys('instanceCount', 'averageInstanceCount'),
+    [ObjectType.ObjectDetection]: keys(['annotationsCount', 'averageAnnotationsCount', 'cksCount']),
+    [ObjectType.SemanticSegmentation]: keys(['annotationsAreaTotal', 'averageAnnotationsArea']),
+    [ObjectType.InstanceSegmentation]: keys(['instanceCount', 'averageInstanceCount']),
   }
   return getColumns(maps[objectType], annotationType)
 }
@@ -194,7 +212,7 @@ const getTableColumns = (objectType: YModels.ObjectType, annotationType: Annotat
 const getCharts = (annotationType?: AnnotationType, objectType?: YModels.ObjectType) => {
   const maps = {
     [ObjectType.ObjectDetection]: ['keywords', 'areaRatio'],
-    [ObjectType.SemanticSegmentation]: ['keywords', 'keywordArea'],
+    [ObjectType.SemanticSegmentation]: ['semanticKeywords', 'keywordArea'],
     [ObjectType.InstanceSegmentation]: ['keywords', 'crowdedness', 'instanceArea', 'keywordArea'],
   }
   const assetCharts = ['assetHWRatio', 'assetQuality', 'assetArea']
