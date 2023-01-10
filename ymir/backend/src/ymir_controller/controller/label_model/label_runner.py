@@ -2,6 +2,7 @@ import logging
 import os
 from typing import Tuple, List, Optional
 
+from controller.config import label_task as label_task_config
 from controller.invoker.invoker_task_exporting import TaskExportingInvoker
 from controller.utils import utils
 from mir.protos import mir_command_pb2 as mir_cmd_pb
@@ -27,11 +28,21 @@ def prepare_label_dir(working_dir: str, task_id: str) -> Tuple[str, str, str, st
     return input_asset_dir, export_path, monitor_file_path, export_work_dir, import_work_dir
 
 
+def get_mir_export_fmt(label_tool: str, object_type: int) -> str:
+    """
+    ad hoc
+    labelfree uses coco for segmentation dataset, LS for detection dataset
+    """
+    if label_tool == label_task_config.LABEL_FREE and object_type == mir_cmd_pb.ObjectType.OT_SEG:
+        return utils.annotation_format_str(mir_cmd_pb.ExportFormat.EF_COCO_JSON)
+    return utils.annotation_format_str(mir_cmd_pb.ExportFormat.EF_LS_JSON)
+
+
 def trigger_ymir_export(repo_root: str, label_storage_file: str, dataset_id: str, input_asset_dir: str,
                         media_location: str, export_work_dir: str, keywords: List[str],
-                        annotation_type: Optional[int]) -> None:
+                        annotation_type: Optional[int], object_type: int) -> None:
     # trigger ymir export, so that we can get pictures from ymir
-    format_str = utils.annotation_format_str(mir_cmd_pb.ExportFormat.EF_LS_JSON)
+    format_str = get_mir_export_fmt(label_task_config.LABEL_TOOL, object_type)
 
     gt_dir: Optional[str] = None
     pred_dir: Optional[str] = None
@@ -77,7 +88,8 @@ def start_label_task(
                         media_location=media_location,
                         export_work_dir=export_work_dir,
                         keywords=keywords,
-                        annotation_type=annotation_type)
+                        annotation_type=annotation_type,
+                        object_type=object_type)
     label_instance.run(task_id=task_id,
                        project_name=project_name,
                        keywords=keywords,
