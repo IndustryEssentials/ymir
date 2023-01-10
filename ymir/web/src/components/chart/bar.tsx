@@ -1,27 +1,22 @@
-import { useEffect, useRef, useState } from "react"
-import * as echarts from 'echarts/core';
-import {
-    TooltipComponent,
-    GridComponent,
-    LegendComponent,
-    MarkLineComponent
-} from 'echarts/components'
-import {
-    BarChart, LineChart,
-} from 'echarts/charts'
-import {
-    CanvasRenderer
-} from 'echarts/renderers'
+import { FC, useEffect, useRef } from 'react'
+import * as echarts from 'echarts/core'
+import { TooltipComponent, GridComponent, LegendComponent, MarkLineComponent } from 'echarts/components'
+import { BarChart, LineChart } from 'echarts/charts'
+import { CanvasRenderer } from 'echarts/renderers'
+import type { EChartsOption } from 'echarts'
 
-echarts.use(
-    [TooltipComponent, GridComponent, LegendComponent, MarkLineComponent, BarChart, LineChart, CanvasRenderer]
-);
+type Props = {
+  option?: EChartsOption
+  height?: number
+}
 
-const Chart = ({ option = {}, height = 300 }) => {
-  const chartRef = useRef(null)
-  
+echarts.use([TooltipComponent, GridComponent, LegendComponent, MarkLineComponent, BarChart, LineChart, CanvasRenderer])
+
+const Chart: FC<Props> = ({ option = {}, height = 300 }) => {
+  const chartRef = useRef<HTMLDivElement>(null)
+
   useEffect(() => {
-    let barChart = null
+    let barChart: echarts.ECharts
     if (chartRef.current) {
       const chart = chartRef.current
       barChart = echarts.init(chart)
@@ -42,7 +37,7 @@ const Chart = ({ option = {}, height = 300 }) => {
     }
   })
 
-  return <div ref={chartRef} style={{height}}>&nbsp;</div>
+  return <div ref={chartRef} style={{ height }}></div>
 }
 
 export default Chart
