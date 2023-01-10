@@ -44,7 +44,6 @@ output:
 """
 
 from enum import IntEnum, auto
-import os
 
 from pydantic import BaseModel
 import yaml
