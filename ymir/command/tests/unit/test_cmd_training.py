@@ -237,7 +237,7 @@ class TestCmdTraining(unittest.TestCase):
                                  stages={mss.stage_name: mss},
                                  best_stage_name=mss.stage_name,
                                  model_hash='xyz',
-                                 object_type=mirpb.ObjectType.OT_DET_BOX,
+                                 object_type=2,
                                  package_version=ymir_model_salient_version(YMIR_VERSION))
         return ms
 

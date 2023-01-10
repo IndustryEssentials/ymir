@@ -23,8 +23,7 @@ from mir.tools.executant import prepare_executant_env, run_docker_executant
 
 
 # private: post process
-def _get_model_storage(model_root: str, executor_config: dict, task_context: dict,
-                       model_object_type: 'mirpb.ObjectType.V') -> models.ModelStorage:
+def _get_model_storage(model_root: str, executor_config: dict, task_context: dict) -> models.ModelStorage:
     """
     find models in `model_root`, and returns all model stages and attachments
 
@@ -78,7 +77,7 @@ def _get_model_storage(model_root: str, executor_config: dict, task_context: dic
                                                  type=mirpb.TaskType.TaskTypeTraining),
                                stages=model_stages,
                                best_stage_name=best_stage_name,
-                               object_type=model_object_type,
+                               object_type=int(yaml_obj['object_type']),
                                attachments=attachments,
                                evaluate_config=yaml_obj.get('evaluate_config', {}),
                                package_version=ymir_model_salient_version(YMIR_VERSION))
@@ -334,8 +333,7 @@ class CmdTrain(base.BaseCommand):
         out_model_dir = os.path.join(work_dir_out, "models")
         model_storage = _get_model_storage(model_root=out_model_dir,
                                            executor_config=executor_config,
-                                           task_context=task_context,
-                                           model_object_type=mir_annotations.ground_truth.type)
+                                           task_context=task_context)
         models.pack_and_copy_models(model_storage=model_storage,
                                     model_dir_path=out_model_dir,
                                     model_location=model_upload_location)

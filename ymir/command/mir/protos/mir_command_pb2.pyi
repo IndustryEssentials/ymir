@@ -1010,7 +1010,9 @@ class ModelMeta(google.protobuf.message.Message):
     def class_names(self) -> google.protobuf.internal.containers.RepeatedScalarFieldContainer[typing.Text]: ...
     @property
     def evaluate_config(self) -> global___EvaluateConfig: ...
-    object_type: global___ObjectType.V = ...
+    object_type: builtins.int = ...
+    """/ detection: 2, semantic segmentation: 3, instance segmentation: 4"""
+
     mIoU: builtins.float = ...
     """/ available in semantic segmentation models"""
 
@@ -1026,7 +1028,7 @@ class ModelMeta(google.protobuf.message.Message):
         best_stage_name : typing.Text = ...,
         class_names : typing.Optional[typing.Iterable[typing.Text]] = ...,
         evaluate_config : typing.Optional[global___EvaluateConfig] = ...,
-        object_type : global___ObjectType.V = ...,
+        object_type : builtins.int = ...,
         mIoU : builtins.float = ...,
         maskAP : builtins.float = ...,
         ) -> None: ...
