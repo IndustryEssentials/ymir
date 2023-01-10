@@ -34,4 +34,3 @@ statsd==3.3.0
 supervisor==4.2.2
 websockets==10.3
 pycocotools==2.0.6
-label-studio-converter==0.0.47

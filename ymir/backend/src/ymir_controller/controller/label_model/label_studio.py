@@ -8,13 +8,12 @@ import shutil
 import zipfile
 from io import BytesIO
 import itertools
-from typing import Dict, List
+from typing import Any, Dict, List
 from xml.etree import ElementTree
 
 from mir.protos import mir_command_pb2 as mir_cmd_pb
 import numpy as np
 import pycocotools.mask
-from label_studio_converter import brush
 
 from controller.config import label_task as label_task_config
 from controller.label_model.base import LabelBase, catch_label_task_error
@@ -29,6 +28,62 @@ LS_EXPORT_TYPE_MAPPING = {
 
 
 # TODO move to label_studio
+class InputStream:
+    def __init__(self, data: Any):
+        self.data = data
+        self.i = 0
+
+    def read(self, size: int) -> int:
+        out = self.data[self.i:self.i + size]
+        self.i += size
+        return int(out, 2)
+
+
+def access_bit(data: Any, num: int) -> Any:
+    """ from bytes array to bits by num position
+    """
+    base = int(num // 8)
+    shift = 7 - int(num % 8)
+    return (data[base] & (1 << shift)) >> shift
+
+
+def bytes2bit(data: Any) -> str:
+    """ get bit string from bytes data
+    """
+    return ''.join([str(access_bit(data, i)) for i in range(len(data) * 8)])
+
+
+def decode_rle(rle: Any, print_params: bool = False) -> np.ndarray:
+    """ from LS RLE to numpy uint8 3d image [width, height, channel]
+
+    Args:
+        print_params (bool, optional): If true, a RLE parameters print statement is suppressed
+    """
+    input = InputStream(bytes2bit(rle))
+    num = input.read(32)
+    word_size = input.read(5) + 1
+    rle_sizes = [input.read(4) + 1 for _ in range(4)]
+
+    if print_params:
+        print('RLE params:', num, 'values', word_size, 'word_size', rle_sizes, 'rle_sizes')
+
+    i = 0
+    out = np.zeros(num, dtype=np.uint8)
+    while i < num:
+        x = input.read(1)
+        j = i + 1 + input.read(rle_sizes[input.read(2)])
+        if x:
+            val = input.read(word_size)
+            out[i:j] = val
+            i = j
+        else:
+            while i < j:
+                val = input.read(word_size)
+                out[i] = val
+                i += 1
+    return out
+
+
 def binary_mask_to_rle(binary_mask: np.ndarray) -> Dict:
     counts = []
     for i, (value, elements) in enumerate(itertools.groupby(binary_mask.ravel(order='F'))):
@@ -39,7 +94,7 @@ def binary_mask_to_rle(binary_mask: np.ndarray) -> Dict:
 
 
 def ls_rle_to_coco_rle(ls_rle: List[int], height: int, width: int) -> str:
-    ls_mask = brush.decode_rle(ls_rle)
+    ls_mask = decode_rle(ls_rle)
     ls_mask = np.reshape(ls_mask, [height, width, 4])[:, :, 3]
     ls_mask = np.where(ls_mask > 0, 1, 0)
     binary_mask = np.asfortranarray(ls_mask)
