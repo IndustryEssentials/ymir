@@ -233,7 +233,7 @@ def _get_single_evaluate_element(prediction: mirpb.SingleTaskAnnotations, ground
 
 
 def det_evaluate(prediction: mirpb.SingleTaskAnnotations, ground_truth: mirpb.SingleTaskAnnotations,
-                 config: mirpb.EvaluateConfig) -> mirpb.Evaluation:
+                 config: mirpb.EvaluateConfig, **kwargs: Any) -> mirpb.Evaluation:
     evaluation = mirpb.Evaluation()
     evaluation.config.CopyFrom(config)
 

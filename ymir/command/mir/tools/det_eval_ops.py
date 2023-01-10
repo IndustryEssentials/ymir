@@ -1,7 +1,7 @@
 import logging
 import time
 from types import ModuleType
-from typing import Any, Optional
+from typing import Any, Dict, Optional
 
 from mir.tools import det_eval_coco, det_eval_voc, settings as mir_settings
 from mir.tools.code import MirCode
@@ -13,7 +13,7 @@ def det_evaluate_with_pb(
         prediction: mirpb.SingleTaskAnnotations,
         ground_truth: mirpb.SingleTaskAnnotations,
         config: mirpb.EvaluateConfig,
-        mode: str = 'voc',  # voc or coco
+        assets_metadata: Optional[Dict] = None,
 ) -> mirpb.Evaluation:
     if config.conf_thr < 0 or config.conf_thr > 1:
         raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS, error_message='invalid conf_thr')
@@ -40,9 +40,9 @@ def det_evaluate_with_pb(
         evaluation.state = mirpb.EvaluationState.ES_EXCEEDS_LIMIT
         return evaluation
 
-    eval_model_name = _get_eval_model_name(prediction.type, mode)
+    eval_model_name = _get_eval_model_name(prediction.type)
     if not eval_model_name:
-        logging.warning(f"skip evaluation: anno type: {prediction.type} and mode: {mode} not supported")
+        logging.warning(f"skip evaluation: anno type: {prediction.type} not supported")
         evaluation.state = mirpb.EvaluationState.ES_NOT_SET
         return evaluation
 
@@ -56,7 +56,7 @@ def det_evaluate_with_pb(
             annotation.cm = mirpb.ConfusionMatrixType.IGNORED
             annotation.det_link_id = -1
     evaluation = eval_model_name.det_evaluate(  # type: ignore
-        prediction=prediction, ground_truth=ground_truth, config=config)
+        prediction=prediction, ground_truth=ground_truth, config=config, assets_metadata=assets_metadata)
 
     logging.info(f"|-det_evaluate_with_pb-eval costs {(time.time() - start_time):.2f}s.")
 
@@ -65,14 +65,12 @@ def det_evaluate_with_pb(
     return evaluation
 
 
-def _get_eval_model_name(anno_type: Any, mode: str) -> Optional[ModuleType]:
+def _get_eval_model_name(anno_type: Any) -> Optional[ModuleType]:
     mapping = {
-        mirpb.ObjectType.OT_DET_BOX: {
-            'voc': det_eval_voc,
-            'coco': det_eval_coco,
-        },
+        mirpb.ObjectType.OT_DET_BOX: det_eval_voc,
+        mirpb.ObjectType.OT_SEG: det_eval_coco,
     }
-    return mapping.get(anno_type, {}).get(mode, None)
+    return mapping.get(anno_type)
 
 
 def _show_evaluation(evaluation: mirpb.Evaluation) -> None:

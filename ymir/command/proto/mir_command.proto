@@ -318,6 +318,7 @@ message EvaluateConfig {
     bool need_pr_curve = 5;
     repeated int32 class_ids = 7;
     string main_ck = 8;
+    bool is_instance_segmentation = 9;
 
     reserved 1, 2, 6;
 }
@@ -326,8 +327,15 @@ message SingleDatasetEvaluation {
     float conf_thr = 1;
     map<string, SingleIouEvaluation> iou_evaluations = 4;  // key: string of iou threshold
     SingleIouEvaluation iou_averaged_evaluation = 5;  // average for all ious
+    SegmentationMetrics segmentation_metrics = 6;
 
     reserved 2, 3;
+}
+
+message SegmentationMetrics {
+    float aacc = 1;  // overall accuracy
+    map<int32, float> acc = 2;   // accuracy
+    map<int32, float> iou = 3;  // key: class_id
 }
 
 message SingleIouEvaluation {

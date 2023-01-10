@@ -16,3 +16,4 @@ types-protobuf==3.18.2
 types-PyYAML==6.0.1
 types-redis==3.5.7
 types-requests==2.25.2
+pycocotools==2.0.6

@@ -477,6 +477,11 @@ def batch_evaluate_datasets(
     evaluate datasets by themselves
     """
     logger.info("[evaluate] evaluate datasets with payload: %s", in_evaluation.json())
+
+    project = crud.project.get_by_user_and_id(db, user_id=current_user.id, id=in_evaluation.project_id)
+    if not project:
+        raise ProjectNotFound()
+
     datasets = ensure_datasets_are_ready(db, dataset_ids=in_evaluation.dataset_ids)
     dataset_id_mapping = {dataset.hash: dataset.id for dataset in datasets}
 
@@ -491,6 +496,7 @@ def batch_evaluate_datasets(
         in_evaluation.need_pr_curve,
         in_evaluation.main_ck,
         dataset_id_mapping,
+        is_instance_segmentation=(project.object_type == ObjectType.instance_segmentation),
     )
     return {"result": evaluations}
 
