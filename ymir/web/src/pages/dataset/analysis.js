@@ -45,13 +45,11 @@ function Analysis() {
 
   useEffect(() => {
     const charts = generateCharts(assetChartConfig, source)
-    console.log('assetChartConfig, source getSource:', assetChartConfig, source, charts)
     setAssetCharts(charts)
   }, [assetChartConfig, source])
 
   useEffect(() => {
     const charts = generateCharts(annotationChartConfig, source)
-    console.log('annotationChartConfig, source getSource:', annotationChartConfig, source, charts)
     setAnnotationCharts(charts)
   }, [annotationChartConfig, source])
 
@@ -78,7 +76,6 @@ function Analysis() {
 
   function getXData(config, datasets) {
     const { sourceField, isXUpperLimit = false, getSource, renderEachX = (x) => x } = config
-    console.log('getSource:', getSource, config)
     const dataset =
       datasets.find((item) => {
         const target = getSource(item)
