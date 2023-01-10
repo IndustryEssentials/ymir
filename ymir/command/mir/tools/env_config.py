@@ -41,6 +41,8 @@ class _EnvConfig(BaseModel):
     input: _EnvInputConfig = _EnvInputConfig()
     output: _EnvOutputConfig = _EnvOutputConfig()
 
+    manifest_file: str = '/img-man/manifest.yaml'
+
 
 def generate_training_env_config_file(task_id: str, env_config_file_path: str) -> None:
     env_config = _EnvConfig()
