@@ -285,7 +285,8 @@ message ModelMeta {
     string best_stage_name = 5;
     repeated string class_names = 6;
     EvaluateConfig evaluate_config = 7;
-    ObjectType object_type = 8;
+    /// detection: 2, semantic segmentation: 3, instance segmentation: 4
+    int32 object_type = 8;
     /// available in semantic segmentation models
     float mIoU = 9;
     /// available in instance segmentation models
