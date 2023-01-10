@@ -11,7 +11,7 @@ import Detail from '@/components/project/Detail'
 import Name from '@/components/search/Name'
 
 import s from './detail.less'
-import { TrainIcon, NavDatasetIcon, ArrowRightIcon, ImportIcon } from '@/components/common/Icons'
+import { TrainIcon, NavDatasetIcon, ArrowRightIcon, ImportIcon, SearchIcon } from '@/components/common/Icons'
 
 function ProjectDetail(func) {
   const history = useHistory()
@@ -37,7 +37,12 @@ function ProjectDetail(func) {
     history.push(`/home/project/${id}/train`)
   }
 
-  const statBlocks = (blocks = []) => blocks.map((block, index) => <Col key={index} span={24 / blocks.length}>{statBlock(block)}</Col>)
+  const statBlocks = (blocks = []) =>
+    blocks.map((block, index) => (
+      <Col key={index} span={24 / blocks.length}>
+        {statBlock(block)}
+      </Col>
+    ))
 
   const statBlock = ({ label, count }) => (
     <>
@@ -79,11 +84,14 @@ function ProjectDetail(func) {
           )}
         </div>
       ) : null}
-      
+
       <div className="actions">
         <Row gutter={10}>
           <Col flex={1}>
-            <Name onSearch={search} enterButton={t('common.search')} />
+            <Name onSearch={search} />
+          </Col>
+          <Col>
+            <Button type='primary' icon={<SearchIcon />} onClick={() => search()}>{t('common.search.advanced')}</Button>
           </Col>
           <Col>
             <Button type="primary" onClick={add}>
