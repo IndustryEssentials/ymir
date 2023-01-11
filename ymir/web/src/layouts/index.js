@@ -1,14 +1,14 @@
-import commonStyles from "./common.less"
-import { connect } from "dva"
-import HeaderNav from "@/components/nav/index"
-import React, { useEffect } from "react"
-import { ConfigProvider, Layout, message } from "antd"
-import Loading from "@/components/common/loading"
-import Foot from "@/components/common/footer"
-import LeftMenu from "@/components/common/leftMenu"
+import commonStyles from './common.less'
+import { connect } from 'dva'
+import HeaderNav from '@/components/nav/index'
+import React, { useEffect } from 'react'
+import { ConfigProvider, Layout, message } from 'antd'
+import Loading from '@/components/common/loading'
+import Foot from '@/components/common/footer'
+import LeftMenu from '@/components/common/LeftMenu'
 import Empty from '@/components/empty/default'
 import '@/assets/icons/iconfont.css'
-import { withRouter } from "umi"
+import { withRouter } from 'umi'
 
 const { Header, Content, Sider, Footer } = Layout
 message.config({ maxCount: 1 })
@@ -51,8 +51,6 @@ function BasicLayout(props) {
         </Layout>
       </Layout>
       <Loading />
-      {/* <QuickActions />
-      <Guide /> */}
     </ConfigProvider>
   )
 }
@@ -66,7 +64,7 @@ const mapDispatchToProps = (dispatch) => {
   return {
     getUserInfo: () => {
       return dispatch({
-        type: "user/getUserInfo",
+        type: 'user/getUserInfo',
       })
     },
   }
