@@ -1,6 +1,7 @@
 import { calDuration, format } from '@/utils/date'
 import { getVersionLabel } from './common'
 import { getLocale } from 'umi'
+import { ObjectType } from './project'
 
 export enum states {
   READY = 0,
@@ -44,7 +45,7 @@ export function transferModel(data: YModels.BackendData): YModels.Model {
     durationLabel: calDuration(data.related_task.duration, getLocale()),
     task: { ...data.related_task, durationLabel },
     hidden: !data.is_visible,
-    stages: (data.related_stages || []).map(transferStage) || [],
+    stages: (data.related_stages || []).map((stage: YModels.BackendData) => transferStage(stage, data.object_type)) || [],
     recommendStage: data.recommended_stage || 0,
     description: data.description || '',
   }
@@ -86,24 +87,27 @@ export function getModelName(data: YModels.BackendData) {
  * @param {YModels.BackendData} data
  * @returns {YModels.Stage}
  */
-export function transferStage(data: YModels.BackendData): YModels.Stage {
+export function transferStage(data: YModels.BackendData, type: ObjectType): YModels.Stage {
+  const metrics = transferMetrics(data.metrics, type)
   return {
     id: data.id,
     name: data.name,
-    map: data.map,
+    primaryMetrics: metrics.primary,
     modelId: data.model?.id,
     modelName: getModelName(data),
-    metrics: transferMetrics(data.metrics),
+    metrics,
   }
 }
 
-function transferMetrics(metrics: YModels.BackendData = {}) {
-  return {
-    ar: metrics.ar,
-    fn: metrics.fn,
-    fp: metrics.fp,
-    tp: metrics.tp,
-  }
+function transferMetrics(metrics: { [key: string]: number } = {}, type: ObjectType): YModels.StageMetrics {
+  const { acc = 0, ap = 0, ar = 0, boxAP = 0, fn = 0, fp = 0, iou = 0, maskAP = 0, tp = 0 } = metrics
+
+  const mk = {
+    [ObjectType.ObjectDetection]: { primary: ap, ap, ar },
+    [ObjectType.SemanticSegmentation]: { primary: iou, iou, acc },
+    [ObjectType.InstanceSegmentation]: { primary: maskAP, maskAP, boxAP },
+  }[type]
+  return { ...mk, fn, fp, tp }
 }
 
 /**
