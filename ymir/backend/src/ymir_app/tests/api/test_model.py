@@ -95,7 +95,9 @@ class TestGetModel:
             f"{settings.API_V1_STR}/models/{model.id}",
             headers=normal_user_token_headers,
         )
-        assert model.hash == r.json()["result"]["hash"]
+        result = r.json()["result"]
+        assert model.hash == result["hash"]
+        assert "object_type" in result
 
     def test_get_model_not_found(
         self,
