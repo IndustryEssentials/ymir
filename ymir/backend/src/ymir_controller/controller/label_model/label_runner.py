@@ -79,7 +79,10 @@ def trigger_ymir_export(repo_root: str, label_storage_file: str, dataset_id: str
                                        work_dir=export_work_dir,
                                        keywords=keywords)
     annotation_dir = gt_dir or pred_dir
-    if annotation_dir is not None:
+    if (
+        annotation_dir is not None
+        and format_str == utils.annotation_format_str(mir_cmd_pb.ExportFormat.EF_COCO_JSON)
+    ):
         fix_exported_coco_annotation_image_path(annotation_dir)
 
 
