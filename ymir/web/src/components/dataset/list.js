@@ -20,6 +20,7 @@ import RenderProgress from '@/components/common/Progress'
 import TypeTag from '@/components/task/TypeTag'
 import Actions from '@/components/table/Actions'
 import AssetCount from '@/components/dataset/AssetCount'
+import Detail from '@/components/project/Detail'
 
 import {
   ImportIcon,
@@ -621,6 +622,7 @@ function Datasets({ pid, project = {}, iterations, groups, ...func }) {
 
   return (
     <div className={styles.dataset}>
+      <Detail project={project} />
       <Row className="actions">
         <Col flex={1}>
           <Space>

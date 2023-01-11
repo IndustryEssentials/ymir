@@ -20,6 +20,7 @@ import Hide from '../common/hide'
 import EditNameBox from '@/components/form/editNameBox'
 import EditDescBox from '@/components/form/editDescBox'
 import { getTensorboardLink } from '@/constants/common'
+import Detail from '@/components/project/Detail'
 
 import {
   ShieldIcon,
@@ -571,6 +572,7 @@ function Model({ pid, project = {}, iterations, groups, versions, query, ...func
 
   return (
     <div className={styles.model}>
+      <Detail project={project} />
       <Row className="actions">
         <Col flex={1}>
           <Space>
