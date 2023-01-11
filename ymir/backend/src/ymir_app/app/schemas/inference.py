@@ -1,4 +1,4 @@
-from typing import Dict, List
+from typing import Dict, List, Optional
 
 from pydantic import BaseModel, Field, root_validator
 
@@ -24,8 +24,17 @@ class Box(BaseModel):
     h: int
 
 
-class DetectionResult(BaseModel):
+class PolygonPoint(BaseModel):
+    x: int
+    y: int
+    z: int
+
+
+class InferredAnnotation(BaseModel):
     box: Box
+    mask: Optional[str]
+    polygon: List[PolygonPoint]
+    class_name: str
     keyword: str = Field(description="aka class_name for MIR")
     score: float = Field(ge=0, le=1)
 
@@ -38,7 +47,7 @@ class DetectionResult(BaseModel):
 
 class Annotation(BaseModel):
     image_url: str
-    detection: List[DetectionResult]
+    annotations: List[InferredAnnotation]
 
 
 class InferenceResult(BaseModel):
