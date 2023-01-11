@@ -1,5 +1,7 @@
+import json
 import logging
 import os
+from pathlib import Path
 from typing import Tuple, List, Optional
 
 from controller.config import label_task as label_task_config
@@ -38,6 +40,21 @@ def get_mir_export_fmt(label_tool: str, object_type: int) -> str:
     return utils.annotation_format_str(mir_cmd_pb.ExportFormat.EF_LS_JSON)
 
 
+def fix_exported_coco_annotation_image_path(dirname: str) -> None:
+    """
+    fix image filename in mir exported coco-annotations.json
+    """
+    coco_path = Path(dirname) / label_task_config.MIR_COCO_ANNOTATION_FILENAME
+    if not coco_path.is_file:
+        return
+    with open(coco_path) as f:
+        coco = json.load(f)
+    for image in coco["images"]:
+        image["file_name"] = str(Path(Path(image["file_name"]).stem[-2:], image["file_name"]))
+    with open(coco_path, "w") as f:
+        json.dump(coco, f)
+
+
 def trigger_ymir_export(repo_root: str, label_storage_file: str, dataset_id: str, input_asset_dir: str,
                         media_location: str, export_work_dir: str, keywords: List[str],
                         annotation_type: Optional[int], object_type: int) -> None:
@@ -61,6 +78,9 @@ def trigger_ymir_export(repo_root: str, label_storage_file: str, dataset_id: str
                                        media_location=media_location,
                                        work_dir=export_work_dir,
                                        keywords=keywords)
+    annotation_dir = gt_dir or pred_dir
+    if annotation_dir is not None:
+        fix_exported_coco_annotation_image_path(annotation_dir)
 
 
 def start_label_task(
