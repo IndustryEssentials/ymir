@@ -1,6 +1,7 @@
 import { getLocale } from 'umi'
 import { calDuration, format } from '@/utils/date'
 import { getVersionLabel } from './common'
+import { ObjectType } from './project'
 
 export enum AnnotationType {
   BoundingBox = 0,
@@ -86,7 +87,7 @@ export function transferDataset(data: YModels.BackendData): YModels.Dataset {
     id: data.id,
     groupId: data.dataset_group_id,
     projectId: data.project_id,
-    type: data.object_type || 1,
+    type: data.object_type || ObjectType.ObjectDetection,
     name: data.group_name,
     version: data.version_num || 0,
     versionName: getVersionLabel(data.version_num),

@@ -82,7 +82,7 @@ describe("constants: model", () => {
       groupId: 1,
       projectId: 234,
       name: 'model_training',
-      type: 1,
+      type: 2,
       version: 1,
       versionName: 'V1',
       url: 'test/url',

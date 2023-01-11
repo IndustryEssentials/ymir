@@ -21,6 +21,7 @@ type OptionType = DefaultOptionType & {
 
 const ImageSelect: FC<Props> = ({ value, pid, relatedId, type = TYPES.TRAINING, onChange = () => {}, ...resProps }) => {
   const [options, setOptions] = useState<OptionType[]>([])
+  const [groupOptions, setGroupOptions] = useState<{ label: string; options?: OptionType[] }[]>([])
   const [query, setQuery] = useState<QueryParams>({
     type,
     limit: 10,
@@ -50,8 +51,9 @@ const ImageSelect: FC<Props> = ({ value, pid, relatedId, type = TYPES.TRAINING, 
 
   useEffect(() => {
     if (list?.items?.length) {
-      const options = generateOptions(list.items)
-      setOptions((opts) => [...opts, ...options])
+      const items = list.items.filter((item) => options.every((opt) => opt.value !== item.id))
+      const opts = generateOptions(items)
+      setOptions((options) => [...options, ...opts])
     }
     list && setTotal(list?.total)
   }, [list])
@@ -59,6 +61,27 @@ const ImageSelect: FC<Props> = ({ value, pid, relatedId, type = TYPES.TRAINING, 
   useEffect(() => {
     relatedId && getRelatedImage({ id: relatedId })
   }, [relatedId])
+
+  useEffect(() => {
+    if (trainImage?.related) {
+      const related = trainImage?.related || []
+      if (related.length) {
+        const defOpts = options.filter((opt) => related.every(({ id }) => id !== opt.value))
+        const relatedOpts = related.map(generateOption)
+        const groupOptions = [
+          {
+            label: t('image.select.opt.related'),
+            options: relatedOpts,
+          },
+          {
+            label: t('image.select.opt.normal'),
+            options: defOpts,
+          },
+        ]
+        setGroupOptions(groupOptions)
+      }
+    }
+  }, [options, trainImage])
 
   useEffect(() => {
     project && setQuery((query) => ({ ...query, objectType: project.type }))
@@ -108,29 +131,7 @@ const ImageSelect: FC<Props> = ({ value, pid, relatedId, type = TYPES.TRAINING, 
     value: image.id,
   })
 
-  const generateOptions = useCallback(
-    (images: YModels.Image[]) => {
-      const related = trainImage?.related || []
-      const opts = images.map(generateOption)
-      if (related.length) {
-        const defOpts = opts.filter((opt) => related.every(({ id }) => id !== opt.value))
-        const relatedOpts = related.map(generateOption)
-        return [
-          {
-            label: t('image.select.opt.related'),
-            options: relatedOpts,
-          },
-          {
-            label: t('image.select.opt.normal'),
-            options: defOpts,
-          },
-        ]
-      } else {
-        return opts
-      }
-    },
-    [trainImage],
-  )
+  const generateOptions = (images: YModels.Image[]) => images.map(generateOption)
 
   const scrollChange = (e: UIEvent<HTMLDivElement>) => {
     e.persist()
@@ -152,7 +153,7 @@ const ImageSelect: FC<Props> = ({ value, pid, relatedId, type = TYPES.TRAINING, 
       {...resProps}
       onChange={(value, opt) => onChange(value, opt)}
       onPopupScroll={scrollChange}
-      options={options}
+      options={groupOptions.length ? groupOptions : options}
       loading={loading}
       onSearch={setSearchName}
       showSearch

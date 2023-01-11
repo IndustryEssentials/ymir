@@ -13,7 +13,7 @@ const Stages = <T extends YModels.Model>(): ColumnType<T> => ({
     return validModel(record) ? (
       <Row wrap={false}>
         <Col flex={1}>{stage?.name}</Col>
-        <Col style={{ color: 'orange' }}>mAP: {percent(stage?.map || 0)}</Col>
+        <Col style={{ color: 'orange' }}>{stage?.primaryMetricLabel}: {percent(stage?.primaryMetric || 0)}</Col>
       </Row>
     ) : null
   },

@@ -202,7 +202,7 @@ function Model({ pid, project = {}, iterations, groups, versions, query, ...func
       title: showTitle('model.column.action'),
       key: 'action',
       dataIndex: 'action',
-      render: (text, record) => <Actions actions={actionMenus(record)} showCount={4} />,
+      render: (text, record) => <Actions actions={actionMenus(record)} showCount={3} />,
       className: styles.tab_actions,
       align: 'center',
       width: '280px',

@@ -1,5 +1,7 @@
 import { TableColumnsType } from 'antd'
 
+import { ObjectType } from '@/constants/project'
+
 import Name from './columns/Name'
 import Source from './columns/Source'
 import Count from './columns/Count'
@@ -11,9 +13,11 @@ import Map from './columns/Map'
 import InferModel from './columns/InferModel'
 import InferDataset from './columns/InferDataset'
 import InferConfig from './columns/InferConfig'
+import { getPrimaryMetricsLabel } from '@/constants/model'
 
-export function getInferDatasetColumns(): TableColumnsType<YModels.InferDataset> {
-  return [InferModel(), InferDataset(), InferConfig(), Map(), State(), CreateTime()]
+export function getInferDatasetColumns(type: ObjectType): TableColumnsType<YModels.InferDataset> {
+  const label = getPrimaryMetricsLabel(type)
+  return [InferModel(), InferDataset(), InferConfig(), Map(label), State(), CreateTime()]
 }
 export function getDatasetColumns(): TableColumnsType<YModels.Dataset>  {
   return [Name(), Source(), Count(), Keywords(), State(), CreateTime()]
