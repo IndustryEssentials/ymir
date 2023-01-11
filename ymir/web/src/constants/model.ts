@@ -100,7 +100,7 @@ export function transferStage(data: YModels.BackendData, type: ObjectType): YMod
 }
 
 function transferMetrics(metrics: { [key: string]: number } = {}, type: ObjectType): YModels.StageMetrics {
-  const { acc = 0, ap = 0, ar = 0, boxAP = 0, fn = 0, fp = 0, iou = 0, maskAP = 0, tp = 0 } = metrics
+  const { acc, ap, ar, boxAP, fn, fp, iou, maskAP, tp } = metrics
 
   const mk = {
     [ObjectType.ObjectDetection]: { primary: ap, ap, ar },
