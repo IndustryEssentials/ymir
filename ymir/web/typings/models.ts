@@ -28,7 +28,7 @@ declare namespace YModels {
     id: number
     groupId: number
     projectId: number
-    type: number
+    type: ObjectType
     name: string
     versionName: string
     version: number
@@ -193,15 +193,11 @@ declare namespace YModels {
   export interface Stage {
     id: number
     name: string
-    map: number
+    primaryMetric: number
+    primaryMetricLabel?: string
     modelId?: number
     modelName?: string
-    metrics?: {
-      ar?: number
-      fn?: number
-      fp?: number
-      tp?: number
-    }
+    metrics?: StageMetrics
   }
   export interface ModelGroup extends Group {}
   export interface Model<P = TaskParams> extends Result<P> {
@@ -210,6 +206,27 @@ declare namespace YModels {
     stages?: Array<Stage>
     recommendStage: number
   }
+  type BaseStageMetrics = {
+    primary: number
+    tp?: number
+    fp?: number
+    fn?: number
+  }
+  interface DetectionStageMetrics extends BaseStageMetrics {
+    ap: number
+    ar?: number
+  }
+  interface SemanticStageMetrics extends BaseStageMetrics {
+    iou: number
+    acc?: number
+  }
+  interface InstanceStageMetrics extends BaseStageMetrics {
+    maskAP: number
+    boxAP?: number
+  }
+
+  export type StageMetrics = DetectionStageMetrics | SemanticStageMetrics | InstanceStageMetrics
+
   export interface Project {
     id: number
     name: string

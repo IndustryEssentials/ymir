@@ -20,7 +20,7 @@ const InferDataset: React.FC = () => {
   const [datasets, setDatasets] = useState<YModels.InferDataset[]>([])
   const [query, setQuery] = useState(initQuery)
   const [{ items, total }, getDatasets] = useFetch('dataset/queryInferDatasets', { items: [], total: 0 })
-  const cols = getInferDatasetColumns()
+  const cols = getInferDatasetColumns(datasets[0]?.type)
   const cacheDatasets = useSelector((state: YStates.DatasetState) => state.dataset.dataset)
   const cacheModels = useSelector((state: YStates.ModelState) => state.model.model)
   const actions = (record: YModels.InferDataset): YComponents.Action[] => [

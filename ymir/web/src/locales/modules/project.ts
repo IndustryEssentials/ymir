@@ -198,7 +198,7 @@ const project = {
   'iteration.column.mining': { en: 'Mining Result', cn: '挖掘结果' },
   'iteration.column.label': { en: 'Labelling Result', cn: '标注结果' },
   'iteration.column.merging': { en: 'Training Dataset', cn: '训练数据' },
-  'iteration.column.training': { en: 'Model', cn: '训练结果|mAP' },
+  'iteration.column.training': { en: 'Model Metric', cn: '模型指标' },
   'iteration.column.test': { en: 'Validation Dataset', cn: '验证集' },
   'project.detail.desc': { en: 'Description', cn: '描述' },
   'project.detail.datavolume': { en: 'Data Volume', cn: '数据量' },
@@ -330,8 +330,6 @@ const project = {
   'project.stats.models.total': { en: 'Project Type', cn: '可用模型' },
   'project.stats.models.processing': { en: 'Project Type', cn: '生产中' },
   'project.stats.models.invalid': { en: 'Project Type', cn: '生产失败' },
-
-  'project.search.title': { en: 'Search Page', cn: '搜索' },
 }
 
 export default project

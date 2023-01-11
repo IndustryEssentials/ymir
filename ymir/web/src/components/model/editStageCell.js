@@ -37,7 +37,7 @@ const EditStageCell = ({ record, saveHandle = () => { } }) => {
 
   const tagRender = ({ stage, color = 'rgba(0, 0, 0, 0.65)' }) => (<Row wrap={false}>
     <Col flex={1}>{stage.name}</Col>
-    <Col style={{ color }}>mAP: {percent(stage.map)}</Col>
+    <Col style={{ color }}>{stage.primaryMetricLabel}: {percent(stage.primaryMetric)}</Col>
   </Row>)
 
   return editing && multipleStages ? (
