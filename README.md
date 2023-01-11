@@ -109,15 +109,16 @@ YMIR supports deploying the trained model and public algorithm model directly to
 **Catalog**
 
 - [Citations](#citations)
-- [What's New](#whats-new)
-- [Depolyment Prerequisite (optional)](#deployment-prerequisite-optional)
+- [What's new](#whats-new)
+- [Deployment Prerequisite (optional)](#deployment-prerequisite-optional)
+  - [Introduction](#introduction)
 - [1. Introduction to AI SUITE-YMIR](#1-introduction-to-ai-suite-ymir)
   - [1.1. Main functions](#11-main-functions)
   - [1.2. Apply for trial](#12-apply-for-trial)
 - [2. Installation](#2-installation)
   - [2.1. Environment dependencies](#21-environment-dependencies)
   - [2.2. Installation of YMIR-GUI](#22-installation-of-ymir-gui)
-  - [2.3. Installation of label studio (optional)](#23-installation-of-label-studio-optional)
+  - [2.3. Installation of **Label Studio** (optional)](#23-installation-of-label-studio-optional)
 - [3. Use YMIR-GUI: typical model production process](#3-use-ymir-gui-typical-model-production-process)
 - [4. For advanced users: YMIR-CMD (command line) user's guide](#4-for-advanced-users-ymir-cmd-command-line-users-guide)
   - [4.1 Installation](#41-installation)
@@ -270,7 +271,7 @@ git clone https://github.com/IndustryEssentials/ymir.git
 
 `SERVER_RUNTIME=runc`
 
-3. If you do not need to use the **label free** labeling platform, you can directly execute the start command with the default configuration: ``bash ymir.sh start``.It is recommended not to use the ``sudo`` command, otherwise it may cause insufficient privileges.
+1. It is recommended not to use the ``sudo`` command, otherwise it may cause insufficient privileges.
 
 * When the service starts, it asks the user if they want to send usage reports to the YMIR development team, the default is yes if you do not enter it.
 * Choose between label_free and label_studio for labelling platform.
