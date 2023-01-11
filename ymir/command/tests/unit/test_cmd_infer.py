@@ -186,3 +186,10 @@ class TestCmdInfer(unittest.TestCase):
             infer_config = yaml.safe_load(f.read())
             self.assertTrue('class_names' in infer_config)
             self.assertTrue('model_params_path' in infer_config)
+
+        # checkout prediction.mir
+        with open(os.path.join(fake_args.work_dir, 'out', 'prediction.mir'), 'rb') as f:
+            prediction = mirpb.SingleTaskAnnotations()
+            prediction.ParseFromString(f.read())
+            self.assertEqual(len(prediction.image_annotations), 1)
+            self.assertEqual(len(prediction.image_annotations['2007_000032.jpg'].boxes), 1)
