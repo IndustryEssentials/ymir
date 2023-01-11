@@ -54,8 +54,8 @@ class ModelStorage(BaseModel):
     def validate_model_storage(cls, values: dict) -> dict:
         check_model_version_or_crash(values['package_version'])
         if values['object_type'] == mirpb.ObjectType.OT_UNKNOWN:
-            raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_OBJECT_TYPE,
-                                  error_message=f"Invalid model object type: {values['object_type']}")
+            logging.warning("Unknown model object type, treat as detection models")
+            values['object_type'] = mirpb.ObjectType.OT_DET_BOX
 
         return values
 
