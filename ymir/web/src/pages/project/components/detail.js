@@ -7,8 +7,6 @@ import { getStepLabel } from "@/constants/iteration"
 import useFetch from "@/hooks/useFetch"
 
 import s from "../detail.less"
-import SampleRates from "@/components/dataset/sampleRates"
-import { TestingSet } from "./testingSet"
 import { EditIcon, SearchEyeIcon, EyeOffIcon } from "@/components/common/Icons"
 import { ArrowDownIcon, ArrowRightIcon } from "@/components/common/Icons"
 

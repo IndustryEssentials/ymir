@@ -1,6 +1,7 @@
 import request from '@/utils/request'
 import { TASKTYPES } from '@/constants/task'
 import { randomNumber } from '@/utils/number'
+import { generateName } from '@/utils/string'
 
 /**
  * get (or filter) task list
@@ -114,7 +115,7 @@ export function fusion({
   description,
 }) {
   return createTask({
-    name: 'fusion' + randomNumber(10),
+    name: generateName('fusion'),
     type: TASKTYPES.FUSION,
     project_id,
     parameters: {
@@ -152,7 +153,7 @@ export function fusion({
  */
 export function merge({ projectId, group, name, datasets = [], strategy = 2, excludes = [], description }) {
   return createTask({
-    name: 'merge' + randomNumber(10),
+    name: generateName('merge'),
     type: TASKTYPES.MERGE,
     project_id: projectId,
     parameters: {
@@ -180,12 +181,13 @@ export function merge({ projectId, group, name, datasets = [], strategy = 2, exc
  * }
  * @returns
  */
-export function filter({ projectId, dataset, includes, excludes, samples, description }) {
+export function filter({ projectId, dataset, name, includes, excludes, samples, description }) {
   return createTask({
-    name: 'filter' + randomNumber(10),
+    name: generateName('filter'),
     type: TASKTYPES.FILTER,
     project_id: projectId,
     parameters: {
+      dataset_group_name: name,
       task_type: 'filter',
       project_id: projectId,
       dataset_id: dataset,
@@ -209,13 +211,14 @@ export function filter({ projectId, dataset, includes, excludes, samples, descri
  */
 export function label({ projectId, iteration, stage, groupId, name, datasetId, keywords, keepAnnotations, doc, description }) {
   return createTask({
-    name,
+    name: generateName('task_label'),
     type: TASKTYPES.LABEL,
     project_id: projectId,
     iteration_id: iteration,
     iteration_stage: stage,
     parameters: {
       task_type: 'label',
+      dataset_group_name: name,
       dataset_group_id: groupId,
       dataset_id: datasetId,
       keywords,
@@ -248,7 +251,6 @@ export function train({
   stage,
   openpai,
   description,
-  name,
   projectId,
   datasetId,
   keywords,
@@ -263,7 +265,7 @@ export function train({
   const model = modelStage[0]
   const stageId = modelStage[1]
   return createTask({
-    name,
+    name: generateName('task_train'),
     project_id: projectId,
     result_description: description,
     iteration_id: iteration,
@@ -309,7 +311,7 @@ export function mine({
     result_description: description,
     iteration_id: iteration,
     iteration_stage: stage,
-    name,
+    name: generateName('task_mining'),
     docker_image_config: { ...config, openpai_enable: openpai },
     parameters: {
       task_type: 'mining',
@@ -317,6 +319,7 @@ export function mine({
       model_id: model,
       model_stage_id: stageId,
       dataset_id: datasetId,
+      dataset_group_name: name,
       mining_algorithm: algorithm,
       top_k: topk,
       generate_annotations: inference,

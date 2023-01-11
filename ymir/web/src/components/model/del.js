@@ -1,8 +1,8 @@
-import t from "@/utils/t"
-import confirmConfig from '@/components/common/dangerConfirm'
-import { connect } from "dva"
-import { forwardRef, useImperativeHandle } from "react"
-import { Modal } from "antd"
+import t from '@/utils/t'
+import confirmConfig from '@/components/common/DangerConfirm'
+import { connect } from 'dva'
+import { forwardRef, useImperativeHandle } from 'react'
+import { Modal } from 'antd'
 
 const Del = forwardRef(({ delModel, ok = () => {} }, ref) => {
   useImperativeHandle(ref, () => {
@@ -12,16 +12,18 @@ const Del = forwardRef(({ delModel, ok = () => {} }, ref) => {
   })
 
   function del(id, name) {
-    Modal.confirm(confirmConfig({
-      content: t("model.action.del.confirm.content", { name }),
-      onOk: async () => {
-        const result = await delModel(id)
-        if (result) {
-          ok(result.model_group_id)
-        }
-      },
-      okText: t('common.del'),
-    }))
+    Modal.confirm(
+      confirmConfig({
+        content: t('model.action.del.confirm.content', { name }),
+        onOk: async () => {
+          const result = await delModel(id)
+          if (result) {
+            ok(result.model_group_id)
+          }
+        },
+        okText: t('common.del'),
+      }),
+    )
   }
 
   return null
@@ -34,7 +36,7 @@ const actions = (dispatch) => {
         type: 'model/delModel',
         payload: id,
       })
-    }
+    },
   }
 }
 

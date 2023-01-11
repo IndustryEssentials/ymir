@@ -1,5 +1,7 @@
 import request from '@/utils/request'
 
+type ModelId = number
+
 /** model service */
 /**
  *
@@ -7,7 +9,7 @@ import request from '@/utils/request'
  * @param {number} version
  * @returns
  */
-export function getModel(id) {
+export function getModel(id: ModelId) {
   return request.get(`models/${id}`)
 }
 
@@ -16,25 +18,32 @@ export function getModel(id) {
  * @param {number} group_id
  * @returns
  */
-export function getModelVersions(group_id) {
+export function getModelVersions(group_id: number) {
   return request.get(`models/`, { params: { group_id, limit: 10000 } })
 }
 
 /**
- * query models
- * @param {object} param1 {
- *   {number} project_id
- *   {number} [type] task type
- *   {number} [state] model state
- *   {string} [name] model name
- *   {boolean} [visible] hidden or not
- *   {number} [offset]  query start
- *   {number} [limit] query count
- * }
- * @returns
+ * @description query models
+ * @export
+ * @param {YParams.ModelsQuery} { pid, gid, type, state, name, startTime, endTime, orderBy, desc, visible = true, offset = 0, limit = 10 }
  */
-export function queryModels({ project_id, type, state, name, order_by, is_desc, visible = true, offset = 0, limit = 10 }) {
-  return request.get('models/', { params: { project_id, type, state, name, visible, order_by, is_desc, offset, limit } })
+export function queryModels({ pid, gid, type, state, name, startTime, endTime, orderBy, desc, visible = true, offset = 0, limit = 10 }: YParams.ModelsQuery) {
+  return request.get('models/', {
+    params: {
+      project_id: pid,
+      type,
+      state,
+      group_id: gid,
+      group_name: name,
+      visible,
+      start_time: startTime,
+      end_time: endTime,
+      order_by: orderBy,
+      is_desc: desc,
+      offset,
+      limit,
+    },
+  })
 }
 
 /**
@@ -47,8 +56,8 @@ export function queryModels({ project_id, type, state, name, order_by, is_desc, 
  * }
  * @returns
  */
-export function getModels(project_id, { name, offset = 0, limit = 10 }) {
-  return request.get('model_groups/', { params: { project_id, name, offset, limit } })
+export function getModels(pid: number, { name, offset = 0, limit = 10 }: YParams.GroupsQuery) {
+  return request.get('model_groups/', { params: { project_id: pid, name, offset, limit } })
 }
 
 /**
@@ -56,7 +65,7 @@ export function getModels(project_id, { name, offset = 0, limit = 10 }) {
  * @param {array} ids
  * @returns
  */
-export function batchModels(ids) {
+export function batchModels(ids: ModelId[]) {
   return request.get('models/batch', { params: { ids: ids.toString() } })
 }
 
@@ -65,7 +74,7 @@ export function batchModels(ids) {
  * @param {number} id
  * @returns
  */
-export function delModel(id) {
+export function delModel(id: ModelId) {
   return request({
     method: 'delete',
     url: `/models/${id}`,
@@ -77,7 +86,7 @@ export function delModel(id) {
  * @param {number} id
  * @returns
  */
-export function delModelGroup(id) {
+export function delModelGroup(id: number) {
   return request({
     method: 'delete',
     url: `/model_groups/${id}`,
@@ -85,15 +94,15 @@ export function delModelGroup(id) {
 }
 
 /**
- * hide/restore/delete models
- * @param {string} action hide/restore/delete
- * @param {number} projectId
- * @param {number} ids
- * @returns
+ * @description hide/restore/delete models
+ * @export
+ * @param {('hide'|'restore'|'delete')} action
+ * @param {number} pid
+ * @param {ModelId[]} [ids=[]]
  */
-export function batchAct(action, projectId, ids = []) {
+export function batchAct(action: 'hide' | 'restore' | 'delete', pid: number, ids: ModelId[] = []) {
   return request.post(`/models/batch`, {
-    project_id: projectId,
+    project_id: pid,
     operations: ids.map((id) => ({ id, action })),
   })
 }
@@ -110,7 +119,7 @@ export function batchAct(action, projectId, ids = []) {
  * }
  * @returns
  */
-export function importModel({ projectId, name, description, url, path, modelId }) {
+export function importModel({ projectId, name, description, url, path, modelId }: YParams.ModelCreateParams) {
   return request.post('/models/importing', {
     project_id: projectId,
     input_model_path: path,
@@ -121,7 +130,7 @@ export function importModel({ projectId, name, description, url, path, modelId }
   })
 }
 
-export function updateModelGroup(id, name) {
+export function updateModelGroup(id: ModelId, name: string) {
   return request({
     method: 'patch',
     url: `/model_groups/${id}`,
@@ -137,7 +146,7 @@ export function updateModelGroup(id, name) {
  * @param {string} description
  * @returns
  */
-export function updateVersion(id, description = '') {
+export function updateVersion(id: ModelId, description = '') {
   return request({
     method: 'patch',
     url: `/models/${id}`,
@@ -148,15 +157,11 @@ export function updateVersion(id, description = '') {
 }
 
 /**
- * model verification
- * @param {number} projectId project id
- * @param {array<model, stage>} modelStage model stage
- * @param {array} urls image urls
- * @param {number} image docker image url
- * @param {object<key: value>} config docker image configure
- * @returns
+ * @description model verification
+ * @export
+ * @param {YParams.ModelVerifyParams} { projectId, modelStage, urls, image, config }
  */
-export function verify({ projectId, modelStage, urls, image, config }) {
+export function verify({ projectId, modelStage, urls, image, config }: YParams.ModelVerifyParams) {
   const [model, stage] = modelStage
   return request.post(`/inferences/`, {
     project_id: projectId,
@@ -168,7 +173,7 @@ export function verify({ projectId, modelStage, urls, image, config }) {
   })
 }
 
-export function setRecommendStage(model, stage) {
+export function setRecommendStage(model: number, stage: number) {
   return request({
     method: 'patch',
     url: `/models/${model}`,
@@ -183,6 +188,6 @@ export function setRecommendStage(model, stage) {
  * @param {array} ids
  * @returns
  */
-export function batchModelStages(ids) {
+export function batchModelStages(ids: ModelId[]) {
   return request.get('model_stages/batch', { params: { ids: ids.toString() } })
 }

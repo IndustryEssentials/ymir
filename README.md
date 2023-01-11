@@ -273,15 +273,7 @@ git clone https://github.com/IndustryEssentials/ymir.git
 3. If you do not need to use the **label free** labeling platform, you can directly execute the start command with the default configuration: ``bash ymir.sh start``.It is recommended not to use the ``sudo`` command, otherwise it may cause insufficient privileges.
 
 * When the service starts, it asks the user if they want to send usage reports to the YMIR development team, the default is yes if you do not enter it.
-* If the user needs to use the **label free** labeling platform, you need to change the ip and port information in the .env configuration file to the address and port number of the labeling tool currently deployed by the user.
-
-```
-# Note format: LABEL_TOOL_HOST_IP=http(s)://(ip)
-LABEL_TOOL_HOST_IP=set_your_label_tool_HOST_IP
-LABEL_TOOL_HOST_PORT=set_your_label_tool_HOST_PORT
-
-```
-
+* Choose between label_free and label_studio for labelling platform.
 * The default port number for YMIR's Model Deployment module is 18801. If there is a conflict that needs to be modified, you need to go to the YMIR directory and modify the .env file to configure the ModelDeployment port and MySQL access password:
 
 ```
@@ -303,54 +295,33 @@ Execute the start command after the modification: `bash ymir.sh start`.
 
 **Label Sudio** is also an external labeling system supported by YMIR and can be installed as an alternative labeling tool.
 
-1. In the YMIR directory, modification Env file, configure label studio port：
+1. In the YMIR directory, modify Env file, set LABEL_TOOL to label_studio
 
 ```
 LABEL_TOOL=label_studio
-# Note format: LABEL_TOOL_HOST_IP=http(s)://(ip)
-LABEL_TOOL_HOST_IP=set_your_label_tool_HOST_IP
-LABEL_TOOL_HOST_PORT=set_your_label_tool_HOST_PORT
 ```
 
-2. After configuring the label tool (LABEL_TOOL), IP (LABEL_TOOL_HOST_IP), and port (LABEL_TOOL_HOST_PORT) start the installation of label studio command:
+2. After configuring the label tool (LABEL_TOOL) start the installation of label studio command:
 
-  ```sh
+```sh
 docker-compose -f docker-compose.label_studio.yml up -d
-  ```
+```
 
-It is recommended not to use the ```sudo``` command, as it may result in insufficient privileges.
+It is recommended not to use the `sudo` command, as it may result in insufficient privileges.
 
 3. Check the status of label studio:
 
-  ```sh
+```sh
 docker-compose -f docker-compose.label_studio.yml ps
-  ```
+```
 
-The user can access label studio through the default URL [http://localhost:12007/](http://localhost:12007/). The installation is successful if the login page shows up.
+The user can access label studio through the default URL [http://localhost:8763/](http://localhost:8763/). The installation is successful if the login page shows up.
 
-4. Configure the **Label Studio** authorization token
+4. The command to stop the label studio service is:
 
-  After the user registers and log in to Label Studio, select "Account & Settings" in the upper right corner of the page. Then, copy the token value and paste it into the corresponding location (LABEL_STUDIO_TOKEN) in the .env configuration file of the YMIR project. An example is as follows:
-
-  ```sh
-  label studio env
-
-  LABEL_TOOL_URL=http://(ip):(LABEL_TOOL_PORT)
-
-  LABEL_TOOL_PORT=set_your_label_tool_port
-
-  LABEL_TOOL_TOKEN="Token token_value"
-
-  LABEL_TASK_LOOP_SECONDS=60
-  ```
-
-  Restart ymir after configuring the token (LABEL_STUDIO_TOKEN).
-
-5. The command to stop the label studio service is:
-
-  ```sh
+```sh
 docker-compose -f docker-compose.label_studio.yml down
-  ```
+```
 
 # 3. Use YMIR-GUI: typical model production process
 
@@ -460,3 +431,4 @@ See [this document](https://github.com/IndustryEssentials/ymir/blob/dev/dev_docs
 <a href="https://github.com/Zhang-SJ930104"><img src="https://avatars.githubusercontent.com/u/91466580?v=4" class="avatar-user" width="18px;"/></a>
 <a href="https://github.com/LuciferZap"><img src="https://avatars.githubusercontent.com/u/92283801?v=4" class="avatar-user" width="18px;"/></a>
 <a href="https://github.com/yzbx"><img src="https://avatars.githubusercontent.com/u/5005182?v=4" class="avatar-user" width="18px;"/></a>
+

@@ -13,9 +13,9 @@ import { randomNumber } from '@/utils/number'
 import useFetch from '@/hooks/useFetch'
 import useRequest from '@/hooks/useRequest'
 
-import ImageSelect from '@/components/form/imageSelect'
+import ImageSelect from '@/components/form/ImageSelect'
 import ModelSelect from '@/components/form/modelSelect'
-import SampleRates from '@/components/dataset/sampleRates'
+import SampleRates from '@/components/dataset/SampleRates'
 import CheckProjectDirty from '@/components/common/CheckProjectDirty'
 import LiveCodeForm from '@/components/form/items/liveCode'
 import { removeLiveCodeConfig } from '@/components/form/items/liveCodeConfig'
@@ -167,8 +167,8 @@ function Train({ query = {}, hidden, ok = () => {}, bottom, ...func }) {
     setValidationDataset(option?.dataset)
   }
 
-  function imageChange(_, image = {}) {
-    const { configs } = image
+  function imageChange(_, option = {}) {
+    const { configs } = option.image
     const configObj = (configs || []).find((conf) => conf.type === TYPES.TRAINING) || {}
     if (!HIDDENMODULES.LIVECODE) {
       setLiveCode(image.liveCode || false)
@@ -265,7 +265,7 @@ function Train({ query = {}, hidden, ok = () => {}, bottom, ...func }) {
             rules={[{ required: true, message: t('task.train.form.image.required') }]}
             tooltip={t('tip.task.train.image')}
           >
-            <ImageSelect placeholder={t('task.train.form.image.placeholder')} onChange={imageChange} />
+            <ImageSelect placeholder={t('task.train.form.image.placeholder')} pid={pid} onChange={imageChange} />
           </Form.Item>
           <OpenpaiForm form={form} openpai={openpai} />
           <Form.Item
@@ -300,7 +300,7 @@ function Train({ query = {}, hidden, ok = () => {}, bottom, ...func }) {
               tooltip={t('tip.task.filter.keywords')}
               help={
                 trainDataset && selectedKeywords.length !== trainDataset.gt.keywords.length ? (
-                  <Button type="link" onClick={() => setAllKeywords()}>
+                  <Button type="link" size='small' style={{ marginLeft: '-10px' }} onClick={() => setAllKeywords()}>
                     {t('dataset.train.all.train.target')}
                   </Button>
                 ) : null
@@ -311,6 +311,8 @@ function Train({ query = {}, hidden, ok = () => {}, bottom, ...func }) {
                 showArrow
                 allowClear
                 placeholder={t('project.add.form.keyword.required')}
+                disabled={!trainSet}
+                title={trainSet ? '' : t('task.train.keywords.disabled.tip')}
                 onChange={setSelectedKeywords}
                 options={(trainDataset?.gt?.keywords || []).map((k) => ({
                   label: k,
@@ -347,6 +349,8 @@ function Train({ query = {}, hidden, ok = () => {}, bottom, ...func }) {
           >
             <DatasetSelect
               pid={pid}
+              disabled={!selectedKeywords.length}
+              title={selectedKeywords.length ? '' : t('task.train.validation.disabled.tip')}
               filters={validationSetFilters}
               placeholder={t('task.train.form.test.datasets.placeholder')}
               onChange={validationSetChange}

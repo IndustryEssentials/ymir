@@ -5,6 +5,7 @@ import { getDateFromTimestamp } from '@/utils/date'
 import t from '@/utils/t'
 import { randomBetween } from '@/utils/number'
 import useFetch from '@/hooks/useFetch'
+import useRequest from '@/hooks/useRequest'
 
 import Hash from '@/components/common/hash'
 import AssetAnnotation from '@/components/dataset/asset/AssetAnnotations'
@@ -30,6 +31,13 @@ function Asset({ id, asset: cache, datasetKeywords, filterKeyword, filters, inde
   const [gtSelected, setGtSelected] = useState({ selected: [], all: false })
   const [colors, setColors] = useState({})
   const [{ items: assets }, getAssets] = useFetch('dataset/getAssetsOfDataset', { items: [] })
+  const { data: dataset, run: getDataset } = useRequest('dataset/getDataset', {
+    loading: false,
+  })
+
+  useEffect(() => {
+    getDataset({ id })
+  }, [])
 
   useEffect(() => {
     setAsset({})
@@ -76,6 +84,7 @@ function Asset({ id, asset: cache, datasetKeywords, filterKeyword, filters, inde
   }, [selectedKeywords, evaluation, asset, gtSelected])
 
   function fetchAssetHash() {
+    setAsset((asset) => ({ ...asset, annotations: [] }))
     getAssets({ id, ...filters, keyword: currentIndex.keyword, offset: currentIndex.index, limit: 1, datasetKeywords })
   }
 
@@ -125,10 +134,7 @@ function Asset({ id, asset: cache, datasetKeywords, filterKeyword, filters, inde
             <LeftOutlined hidden={currentIndex.index <= 0} className={styles.prev} onClick={prev} />
           </Col>
           <Col flex={1} className={`${styles.asset_img} scrollbar`}>
-            {/* // todo render semantic segmentation */}
-            {asset.annotations ? (
-              <AssetAnnotation asset={{ ...asset, annotations: showAnnotations}} />
-            ) : null}
+            {asset.annotations ? <AssetAnnotation asset={{ ...asset, annotations: showAnnotations }} /> : null}
           </Col>
           <Col span={6} className={styles.asset_info}>
             <Card
@@ -192,7 +198,7 @@ function Asset({ id, asset: cache, datasetKeywords, filterKeyword, filters, inde
 
               <Space className={styles.filter} size={10} wrap>
                 <GtSelector vertical onChange={gtChange} />
-                <EvaluationSelector hidden={!asset.evaluated} vertical onChange={evaluationChange} />
+                <EvaluationSelector hidden={!dataset?.evaluated || !asset.evaluated} vertical onChange={evaluationChange} />
               </Space>
             </Card>
             <Space className={styles.random}>

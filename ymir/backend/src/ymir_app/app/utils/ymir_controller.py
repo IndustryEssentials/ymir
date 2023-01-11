@@ -45,13 +45,6 @@ MERGE_STRATEGY_MAPPING = {
 }
 
 
-OBJECT_TYPE_MAPPING = {
-    ObjectType.classification: mir_cmd_pb.ObjectType.OT_CLASS,
-    ObjectType.object_detect: mir_cmd_pb.ObjectType.OT_DET_BOX,
-    ObjectType.segmentation: mir_cmd_pb.ObjectType.OT_SEG,
-}
-
-
 TRAINING_DATASET_STRATEGY_MAPPING = {
     TrainingDatasetsStrategy.stop: mirsvrpb.MergeStrategy.STOP,
     TrainingDatasetsStrategy.as_training: mirsvrpb.MergeStrategy.HOST,
@@ -69,6 +62,13 @@ IMPORTING_STRATEGY_MAPPING = {
 ANNOTATION_TYPE_MAPPING = {
     AnnotationType.gt: mirsvrpb.AnnotationType.GT,
     AnnotationType.pred: mirsvrpb.AnnotationType.PRED,
+}
+
+OBJECT_TYPE_MAPPING = {
+    ObjectType.classification: int(ObjectType.classification),
+    ObjectType.object_detect: int(ObjectType.object_detect),
+    ObjectType.segmentation: int(ObjectType.segmentation),
+    ObjectType.instance_segmentation: int(ObjectType.segmentation),
 }
 
 
@@ -180,7 +180,7 @@ class ControllerRequest:
             if args.get("pred_dir"):
                 import_dataset_request.pred_dir = args["pred_dir"]
         import_dataset_request.clean_dirs = args["clean_dirs"]
-        import_dataset_request.anno_type = OBJECT_TYPE_MAPPING[args["object_type"]]
+        import_dataset_request.object_type = OBJECT_TYPE_MAPPING[args["object_type"]]
 
         import_dataset_request.unknown_types_strategy = IMPORTING_STRATEGY_MAPPING[strategy]
 
@@ -199,6 +199,7 @@ class ControllerRequest:
         label_request = mirsvrpb.TaskReqLabeling()
         label_request.project_name = f"label_{dataset['name']}"
         label_request.labeler_accounts[:] = args["labellers"]
+        label_request.object_type = OBJECT_TYPE_MAPPING[args["object_type"]]
 
         # pre annotation
         if args.get("annotation_type"):
@@ -278,7 +279,7 @@ class ControllerRequest:
         request.ex_dataset_ids[:] = [dataset["hash"] for dataset in args["typed_datasets"] if dataset["exclude"]]
         request.merge_strategy = MERGE_STRATEGY_MAPPING[args.get("merge_strategy", MergeStrategy.stop_upon_conflict)]
         request.in_class_ids[:] = [label["class_id"] for label in args["typed_labels"] if not label["exclude"]]
-        request.in_class_ids[:] = [label["class_id"] for label in args["typed_labels"] if label["exclude"]]
+        request.ex_class_ids[:] = [label["class_id"] for label in args["typed_labels"] if label["exclude"]]
 
         if args.get("sampling_count"):
             request.sampling_count = args["sampling_count"]
@@ -436,10 +437,7 @@ class ControllerClient:
             type=ExtraRequestType.kill,
             user_id=user_id,
             project_id=project_id,
-            args={
-                "target_container": task_hash,
-                "task_type": task_type,
-            },
+            args={"target_container": task_hash, "task_type": task_type},
         )
         resp = self.send(req)
         return resp

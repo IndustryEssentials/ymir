@@ -10,10 +10,12 @@ from tensorboardX import SummaryWriter
 import yaml
 
 from mir.commands import base
+from mir.commands.merge import merge_with_pb
 from mir.protos import mir_command_pb2 as mirpb
 from mir.tools import checker, class_ids, env_config, exporter
 from mir.tools import mir_storage_ops, models, revs_parser
 from mir.tools import settings as mir_settings
+from mir.tools.annotations import MergeStrategy
 from mir.tools.command_run_in_out import command_run_in_out
 from mir.tools.code import MirCode
 from mir.tools.errors import MirContainerError, MirRuntimeError
@@ -21,8 +23,7 @@ from mir.tools.executant import prepare_executant_env, run_docker_executant
 
 
 # private: post process
-def _get_model_storage(model_root: str, executor_config: dict, task_context: dict,
-                       model_object_type: 'mirpb.ObjectType.V') -> models.ModelStorage:
+def _get_model_storage(model_root: str, executor_config: dict, task_context: dict) -> models.ModelStorage:
     """
     find models in `model_root`, and returns all model stages and attachments
 
@@ -76,7 +77,7 @@ def _get_model_storage(model_root: str, executor_config: dict, task_context: dic
                                                  type=mirpb.TaskType.TaskTypeTraining),
                                stages=model_stages,
                                best_stage_name=best_stage_name,
-                               object_type=model_object_type,
+                               object_type=int(yaml_obj['object_type']),
                                attachments=attachments,
                                evaluate_config=yaml_obj.get('evaluate_config', {}),
                                package_version=ymir_model_salient_version(YMIR_VERSION))
@@ -137,6 +138,7 @@ class CmdTrain(base.BaseCommand):
                                       model_upload_location=self.args.model_path,
                                       pretrained_model_hash_stage=self.args.model_hash_stage,
                                       src_revs=self.args.src_revs,
+                                      strategy=MergeStrategy(self.args.strategy),
                                       dst_rev=self.args.dst_rev,
                                       mir_root=self.args.mir_root,
                                       label_storage_file=self.args.label_storage_file,
@@ -156,6 +158,7 @@ class CmdTrain(base.BaseCommand):
                       executor: str,
                       executant_name: str,
                       src_revs: str,
+                      strategy: MergeStrategy,
                       dst_rev: str,
                       config_file: Optional[str],
                       tensorboard_dir: str,
@@ -166,7 +169,8 @@ class CmdTrain(base.BaseCommand):
         if not model_upload_location:
             logging.error("empty --model-location, abort")
             return MirCode.RC_CMD_INVALID_ARGS
-        src_typ_rev_tid = revs_parser.parse_single_arg_rev(src_revs, need_tid=True)
+
+        src_typ_rev_tids = revs_parser.parse_arg_revs(src_revs)
         dst_typ_rev_tid = revs_parser.parse_single_arg_rev(dst_rev, need_tid=True)
         if not work_dir:
             raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS, error_message='empty work_dir')
@@ -234,14 +238,10 @@ class CmdTrain(base.BaseCommand):
                                                                       model_hash_stage=pretrained_model_hash_stage,
                                                                       dst_model_dir=os.path.join(work_dir_in, 'models'))
 
-        mir_metadatas: mirpb.MirMetadatas
-        mir_annotations: mirpb.MirAnnotations
-        [mir_metadatas, mir_annotations] = mir_storage_ops.MirStorageOps.load_multiple_storages(
-            mir_root=mir_root,
-            mir_branch=src_typ_rev_tid.rev,
-            mir_task_id=src_typ_rev_tid.tid,
-            ms_list=[mirpb.MirStorage.MIR_METADATAS, mirpb.MirStorage.MIR_ANNOTATIONS],
-        )
+        mir_metadatas, mir_annotations = merge_with_pb(mir_root=mir_root,
+                                                       src_typ_rev_tids=src_typ_rev_tids,
+                                                       ex_typ_rev_tids=[],
+                                                       strategy=strategy)
 
         # export
         logging.info("exporting assets")
@@ -333,8 +333,7 @@ class CmdTrain(base.BaseCommand):
         out_model_dir = os.path.join(work_dir_out, "models")
         model_storage = _get_model_storage(model_root=out_model_dir,
                                            executor_config=executor_config,
-                                           task_context=task_context,
-                                           model_object_type=mir_annotations.ground_truth.type)
+                                           task_context=task_context)
         models.pack_and_copy_models(model_storage=model_storage,
                                     model_dir_path=out_model_dir,
                                     model_location=model_upload_location)
@@ -357,7 +356,7 @@ class CmdTrain(base.BaseCommand):
 
         mir_storage_ops.MirStorageOps.save_and_commit(mir_root=mir_root,
                                                       mir_branch=dst_typ_rev_tid.rev,
-                                                      his_branch=src_typ_rev_tid.rev,
+                                                      his_branch=src_typ_rev_tids[0].rev,
                                                       mir_datas={
                                                           mirpb.MirStorage.MIR_METADATAS: mirpb.MirMetadatas(),
                                                           mirpb.MirStorage.MIR_ANNOTATIONS: mirpb.MirAnnotations()
@@ -410,7 +409,15 @@ def bind_to_subparsers(subparsers: argparse._SubParsersAction, parent_parser: ar
                                   dest="src_revs",
                                   type=str,
                                   required=True,
-                                  help="rev@bid: source rev and base task id")
+                                  help="source tvt types, revs and base task ids, first the host, others the guests, "
+                                  "can begin with tr:/va:/te:, uses own tvt type if no prefix assigned")
+    train_arg_parser.add_argument("-s",
+                                  dest="strategy",
+                                  type=str,
+                                  default="stop",
+                                  choices=["stop", "host", "guest"],
+                                  help="conflict resolvation strategy, stop (default): stop when conflict detects; "
+                                  "host: use host; guest: use guest")
     train_arg_parser.add_argument("--dst-rev",
                                   dest="dst_rev",
                                   type=str,

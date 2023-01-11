@@ -29,6 +29,7 @@ class Model(Base):
     # imported/copied model has no mAP
     map = Column(Float, nullable=True)
     miou = Column(Float, nullable=True)
+    mask_ap = Column(Float, nullable=True)
 
     related_task = relationship(
         "Task",

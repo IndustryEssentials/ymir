@@ -5,7 +5,7 @@ import StrongTitle from './StrongTitle'
 
 function Count<T extends YModels.Dataset>(): ColumnType<T> {
   return {
-    title: StrongTitle('dataset.column.asset_count'),
+    title: <StrongTitle label="dataset.column.asset_count" />,
     dataIndex: 'assetCount',
     render: (num) => humanize(num),
     sorter: (a, b) => a.assetCount - b.assetCount,

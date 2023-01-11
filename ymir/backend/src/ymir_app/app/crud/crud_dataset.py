@@ -10,6 +10,8 @@ from app import schemas, models
 from app.constants.state import ResultState, TaskType
 from app.crud.base import CRUDBase
 from app.models import Dataset
+from app.models.dataset_group import DatasetGroup
+from app.models.project import Project
 from app.schemas.dataset import DatasetCreate, DatasetUpdate
 
 
@@ -21,9 +23,10 @@ class CRUDDataset(CRUDBase[Dataset, DatasetCreate, DatasetUpdate]):
         user_id: int,
         project_id: Optional[int] = None,
         group_id: Optional[int] = None,
+        group_name: Optional[str] = None,
         source: Optional[TaskType] = None,
         state: Optional[IntEnum] = None,
-        object_type: Optional[int] = None,
+        object_type: Optional[IntEnum] = None,
         visible: bool = True,
         start_time: Optional[int] = None,
         end_time: Optional[int] = None,
@@ -52,11 +55,9 @@ class CRUDDataset(CRUDBase[Dataset, DatasetCreate, DatasetUpdate]):
                 )
             )
 
-        if state:
+        if state is not None:
             query = query.filter(self.model.result_state == int(state))
-        if object_type:
-            query = query.filter(self.model.object_type == object_type)
-        if source:
+        if source is not None:
             query = query.filter(self.model.source == int(source))
         if project_id is not None:
             query = query.filter(self.model.project_id == project_id)
@@ -64,6 +65,16 @@ class CRUDDataset(CRUDBase[Dataset, DatasetCreate, DatasetUpdate]):
             query = query.filter(self.model.dataset_group_id == group_id)
         if not allow_empty:
             query = query.filter(self.model.asset_count > 0)
+
+        if object_type is not None:
+            query = query.join(Project, Project.id == self.model.project_id).filter(
+                Project.object_type == int(object_type)
+            )
+        if group_name:
+            # basic fuzzy search
+            query = query.join(DatasetGroup, DatasetGroup.id == self.model.dataset_group_id).filter(
+                DatasetGroup.name.like(f"%{group_name}%")
+            )
 
         order_by_column = getattr(self.model, order_by)
         if is_desc:

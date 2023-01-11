@@ -1,6 +1,7 @@
 from datetime import datetime
 from enum import IntEnum
 from typing import Any, Dict, List, Optional
+from uuid import UUID
 
 from pydantic import BaseModel, EmailStr, validator
 
@@ -59,6 +60,7 @@ class UserInDBBase(IdModelMixin, DateTimeModelMixin, IsDeletedModelMixin, UserBa
 class User(UserInDBBase):
     hash: Optional[str] = None
     last_login_datetime: Optional[datetime] = None
+    uuid: UUID
 
     @validator("hash", always=True)
     def gen_hash(cls, v: Any, values: Dict) -> str:

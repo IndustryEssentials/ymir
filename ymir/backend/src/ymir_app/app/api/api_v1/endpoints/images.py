@@ -37,8 +37,10 @@ def list_docker_images(
     db: Session = Depends(deps.get_db),
     current_user: models.User = Depends(deps.get_current_active_user),
     name: str = Query(None),
+    url: str = Query(None),
     state: DockerImageState = Query(None),
     type_: DockerImageType = Query(None, alias="type"),
+    object_type: ObjectType = Query(None),
 ) -> Any:
     """
     Get docker images and configuration templates
@@ -51,8 +53,10 @@ def list_docker_images(
     docker_images, total = crud.docker_image.get_multi_with_filter(
         db,
         name=name,
+        url=url,
         state=state,
         type=type_,
+        object_type=object_type,
     )
     return {"result": {"total": total, "items": docker_images}}
 

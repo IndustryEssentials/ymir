@@ -14,7 +14,6 @@ const { useForm } = Form
 
 const tabsTitle = [
   { tab: t('image.tab.my.title'), key: 'my', },
-  { tab: t('image.tab.public.title'), key: 'public', },
 ]
 
 const initQuery = {

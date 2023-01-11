@@ -53,7 +53,8 @@
                             "tags": {},
                             "cm": 0,
                             "polygon": [],
-                            "iscrowd": 0
+                            "iscrowd": 0,
+                            "mask_area": 88715
                         },
                         {
                             "index": 1,
@@ -74,7 +75,8 @@
                             "tags": {},
                             "cm": 0,
                             "polygon": [],
-                            "iscrowd": 0
+                            "iscrowd": 0,
+                            "mask_area": 275827
                         }
                     ],
                     "img_class_ids": [
@@ -103,7 +105,8 @@
                             "tags": {},
                             "cm": 0,
                             "polygon": [],
-                            "iscrowd": 0
+                            "iscrowd": 0,
+                            "mask_area": 5104
                         },
                         {
                             "index": 1,
@@ -124,7 +127,8 @@
                             "tags": {},
                             "cm": 0,
                             "polygon": [],
-                            "iscrowd": 0
+                            "iscrowd": 0,
+                            "mask_area": 175494
                         },
                         {
                             "index": 2,
@@ -145,7 +149,8 @@
                             "tags": {},
                             "cm": 0,
                             "polygon": [],
-                            "iscrowd": 0
+                            "iscrowd": 0,
+                            "mask_area": 26543
                         },
                         {
                             "index": 3,
@@ -166,7 +171,8 @@
                             "tags": {},
                             "cm": 0,
                             "polygon": [],
-                            "iscrowd": 0
+                            "iscrowd": 0,
+                            "mask_area": 81539
                         }
                     ],
                     "img_class_ids": [
@@ -192,7 +198,7 @@
         "prediction": {
             "task_id": "import_semantic_seg_01",
             "image_annotations": {},
-            "type": 0,
+            "type": 100,
             "task_class_ids": [],
             "eval_class_ids": [],
             "executor_config": ""
@@ -262,19 +268,37 @@
         "total_asset_mbytes": 1,
         "pred_stats": {
             "negative_asset_cnt": 2,
-            "total_cnt": 0,
+            "total_obj_cnt": 0,
+            "total_mask_area": 0,
             "positive_asset_cnt": 0,
             "tags_cnt": {},
             "class_ids_cnt": {},
+            "class_ids_mask_area": {},
+            "class_ids_obj_cnt": {},
             "eval_class_ids": []
         },
         "gt_stats": {
-            "total_cnt": 6,
+            "total_obj_cnt": 6,
+            "total_mask_area": 653222,
             "positive_asset_cnt": 2,
             "class_ids_cnt": {
+                "3": 1,
                 "4": 1,
                 "5": 1,
+                "6": 1,
+                "7": 2
+            },
+            "class_ids_mask_area": {
+                "3": 5104,
+                "4": 88715,
+                "5": 175494,
+                "6": 26543,
+                "7": 357366
+            },
+            "class_ids_obj_cnt": {
                 "3": 1,
+                "4": 1,
+                "5": 1,
                 "6": 1,
                 "7": 2
             },

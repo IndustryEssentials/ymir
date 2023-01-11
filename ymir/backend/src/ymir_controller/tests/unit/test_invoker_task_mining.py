@@ -31,7 +31,6 @@ class TestInvokerTaskMining(unittest.TestCase):
         self._storage_name = "media_storage_root"
         self._task_id = 't000aaaabbbbbbzzzzzzzzzzzzzzc5'
         self._sub_task_id_0 = utils.sub_task_id(self._task_id, 0)
-        self._sub_task_id_1 = utils.sub_task_id(self._task_id, 1)
         self._base_task_id = 't000aaaabbbbbbzzzzzzzzzzzzzzz4'
         self._guest_id1 = 't000aaaabbbbbbzzzzzzzzzzzzzzz1'
         self._guest_id2 = 't000aaaabbbbbbzzzzzzzzzzzzzzz2'
@@ -91,7 +90,6 @@ class TestInvokerTaskMining(unittest.TestCase):
         mine_task_req = backend_pb2.TaskReqMining()
         mine_task_req.top_k = top_k
         in_dataset_ids = [self._guest_id1, self._guest_id2]
-        ex_dataset_ids = [self._guest_id3]
         mine_task_req.generate_annotations = False
 
         req_create_task = backend_pb2.ReqCreateTask()
@@ -113,13 +111,6 @@ class TestInvokerTaskMining(unittest.TestCase):
         os.makedirs(working_dir_root, exist_ok=True)
         working_dir_0 = os.path.join(working_dir_root, 'sub_task', self._sub_task_id_0)
         os.makedirs(working_dir_0, exist_ok=True)
-        working_dir_1 = os.path.join(working_dir_root, 'sub_task', self._sub_task_id_1)
-        os.makedirs(working_dir_1, exist_ok=True)
-
-        expected_cmd_merge = (
-            f"mir merge --root {self._mir_repo_root} --dst-rev {self._task_id}@{self._sub_task_id_1} "
-            f"-s host -w {working_dir_1} "
-            f"--src-revs {self._guest_id1}@{self._guest_id1};{self._guest_id2} --ex-src-revs {self._guest_id3}")
 
         response = make_invoker_cmd_call(
             invoker=RequestTypeToInvoker[backend_pb2.TASK_CREATE],
@@ -135,7 +126,6 @@ class TestInvokerTaskMining(unittest.TestCase):
             model_hash=model_hash,
             model_stage=model_stage,
             in_dataset_ids=in_dataset_ids,
-            ex_dataset_ids=ex_dataset_ids,
             docker_image_config=json.dumps(mining_config),
         )
         print(MessageToDict(response))
@@ -158,13 +148,10 @@ class TestInvokerTaskMining(unittest.TestCase):
                       f"--user-label-file {test_utils.user_label_file(self._sandbox_root, self._user_name)} "
                       f"--dst-rev {self._task_id}@{self._task_id} "
                       f"-w {working_dir_0} --model-location {self._storage_root} --media-location {self._storage_root} "
-                      f"--model-hash {model_hash}@{model_stage} --src-revs {self._task_id}@{self._sub_task_id_1} "
+                      f"--model-hash {model_hash}@{model_stage} --src-revs {self._guest_id1};{self._guest_id2} -s host "
                       f"--asset-cache-dir {asset_cache_dir} --task-config-file {output_config} --executor mining_image "
                       f"--executant-name {self._task_id} --topk {top_k}")
-        mock_run.assert_has_calls(calls=[
-            mock.call(expected_cmd_merge.split(' '), capture_output=True, text=True),
-            mock.call(mining_cmd.split(' '), capture_output=True, text=True),
-        ])
+        mock_run.assert_called_once_with(mining_cmd.split(' '), capture_output=True, text=True)
 
         expected_ret = backend_pb2.GeneralResp()
         expected_dict = {'message': RET_ID}

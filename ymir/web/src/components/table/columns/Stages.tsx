@@ -6,7 +6,7 @@ import { percent } from '@/utils/number'
 import StrongTitle from './StrongTitle'
 
 const Stages = <T extends YModels.Model>(): ColumnType<T> => ({
-  title: StrongTitle('model.column.stage'),
+  title: <StrongTitle label="model.column.stage" />,
   dataIndex: 'recommendStage',
   render: (_, record) => {
     const stage = getRecommendStage(record)

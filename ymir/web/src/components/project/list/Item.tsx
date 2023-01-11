@@ -16,7 +16,6 @@ type Props = {
 }
 const Item: FC<Props> = ({ project, more }) => {
   const history = useHistory()
-  console.log('project:', project)
   const typeLabel = getProjectTypeLabel(project.type)
   const title = (
     <Row wrap={false} className="title">

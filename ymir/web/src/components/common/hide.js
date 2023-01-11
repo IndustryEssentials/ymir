@@ -3,7 +3,7 @@ import { message, Tag, Modal } from 'antd'
 import { connect } from 'dva'
 
 import t from '@/utils/t'
-import confirmConfig from '@/components/common/dangerConfirm'
+import confirmConfig from '@/components/common/DangerConfirm'
 import useFetch from '@/hooks/useFetch'
 
 import VersionName from '@/components/result/VersionName'
@@ -41,19 +41,26 @@ const Hide = forwardRef(({ type = 0, msg = 'dataset.action.hide.confirm.content'
     if (!hideVersions?.length) {
       return msgApi.error(emsg)
     }
-    modal.confirm(confirmConfig({
-      content: (
-        <div>
-          <p>{t(msg, { name: labels })} </p>
-          {excludeLabels.length ? emsg : null}
-        </div>
-      ),
-      onOk: () => remoteHide({ pid, ids }),
-      okText: t('common.action.hide'),
-    }))
+    modal.confirm(
+      confirmConfig({
+        content: (
+          <div>
+            <p>{t(msg, { name: labels })} </p>
+            {excludeLabels.length ? emsg : null}
+          </div>
+        ),
+        onOk: () => remoteHide({ pid, ids }),
+        okText: t('common.action.hide'),
+      }),
+    )
   }
 
-  return <div>{contextHolder}{msgHolder}</div>
+  return (
+    <div>
+      {contextHolder}
+      {msgHolder}
+    </div>
+  )
 })
 
 export default connect(null, null, null, { forwardRef: true })(Hide)

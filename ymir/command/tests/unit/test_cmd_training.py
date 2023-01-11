@@ -237,7 +237,7 @@ class TestCmdTraining(unittest.TestCase):
                                  stages={mss.stage_name: mss},
                                  best_stage_name=mss.stage_name,
                                  model_hash='xyz',
-                                 object_type=mirpb.ObjectType.OT_DET_BOX,
+                                 object_type=2,
                                  package_version=ymir_model_salient_version(YMIR_VERSION))
         return ms
 
@@ -253,6 +253,7 @@ class TestCmdTraining(unittest.TestCase):
         fake_args = type('', (), {})()
         fake_args.src_revs = "a@a"
         fake_args.dst_rev = "a@test_training_cmd"
+        fake_args.strategy = 'host'
         fake_args.mir_root = self._mir_root
         fake_args.label_storage_file = ids_file_path(self._mir_root)
         fake_args.model_path = self._models_location

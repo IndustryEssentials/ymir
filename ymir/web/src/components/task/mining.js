@@ -10,15 +10,17 @@ import { OPENPAI_MAX_GPU_COUNT } from '@/constants/common'
 import { TYPES } from '@/constants/image'
 import { randomNumber } from '@/utils/number'
 import useFetch from '@/hooks/useFetch'
+import useRequest from '@/hooks/useRequest'
 
 import ModelSelect from '@/components/form/modelSelect'
-import ImageSelect from '@/components/form/imageSelect'
+import ImageSelect from '@/components/form/ImageSelect'
 import DatasetSelect from '@/components/form/datasetSelect'
 import LiveCodeForm from '@/components/form/items/liveCode'
 import { removeLiveCodeConfig } from '@/components/form/items/liveCodeConfig'
 import DockerConfigForm from '@/components/form/items/dockerConfig'
 import OpenpaiForm from '@/components/form/items/openpai'
 import Desc from '@/components/form/desc'
+import MergeType from '@/components/form/items/MergeType'
 
 import styles from './mining.less'
 import SubmitButtons from './submitButtons'
@@ -28,7 +30,7 @@ function Mining({ query = {}, hidden, ok = () => {}, datasetCache, bottom, ...fu
   const pid = Number(pageParams.id)
   const history = useHistory()
   const location = useLocation()
-  const { mid, image, topK, config, generate_annotations = true } = query
+  const { mid, image, topK, config, iterationId, generate_annotations = true } = query
   const stage = mid ? (Array.isArray(mid) ? mid : mid.split(',').map(Number)) : undefined
   const did = Number(query.did)
   const [dataset, setDataset] = useState({})
@@ -117,11 +119,10 @@ function Mining({ query = {}, hidden, ok = () => {}, datasetCache, bottom, ...fu
     }
   }, [location.state])
 
-  function imageChange(_, image = {}) {
-    const { url, configs = [] } = image
+  function imageChange(_, option = {}) {
+    const { url, configs = [] } = option.image
     const configObj = configs.find((conf) => conf.type === TYPES.MINING) || {}
     const hasInference = configs.some((conf) => conf.type === TYPES.INFERENCE)
-    console.log('hasInference:', hasInference)
     setImageHasInference(hasInference)
     form.setFieldsValue({ inference: hasInference && generate_annotations })
     if (!HIDDENMODULES.LIVECODE) {
@@ -144,7 +145,6 @@ function Mining({ query = {}, hidden, ok = () => {}, datasetCache, bottom, ...fu
 
     const params = {
       ...values,
-      name: 'task_mining_' + randomNumber(),
       projectId: pid,
       config,
     }
@@ -186,6 +186,7 @@ function Mining({ query = {}, hidden, ok = () => {}, datasetCache, bottom, ...fu
         onFinishFailed={onFinishFailed}
       >
         <div hidden={hidden}>
+          <MergeType form={form} disabledNew={!!iterationId} />
           <Form.Item
             name="image"
             tooltip={t('tip.task.mining.image')}
@@ -196,6 +197,7 @@ function Mining({ query = {}, hidden, ok = () => {}, datasetCache, bottom, ...fu
               placeholder={t('task.train.form.image.placeholder')}
               relatedId={selectedModel?.task?.parameters?.docker_image_id}
               type={TYPES.MINING}
+              pid={pid}
               onChange={imageChange}
             />
           </Form.Item>

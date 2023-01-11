@@ -53,8 +53,9 @@ class CmdShow(base.BaseCommand):
 
     @classmethod
     def _show_general_annotations(cls, mir_annotations: mirpb.MirAnnotations) -> None:
-        print(f"    pred: {len(mir_annotations.prediction.image_annotations)},"
-              f"    gt: {len(mir_annotations.ground_truth.image_annotations)}")
+        print(
+            f"    pred: {len(mir_annotations.prediction.image_annotations)}, type: {mir_annotations.prediction.type}, "
+            f"    gt: {len(mir_annotations.ground_truth.image_annotations)}, type: {mir_annotations.ground_truth.type}")
 
     @classmethod
     def _show_general_context(cls, mir_context: mirpb.MirContext, mir_keywords: mirpb.MirKeywords) -> None:

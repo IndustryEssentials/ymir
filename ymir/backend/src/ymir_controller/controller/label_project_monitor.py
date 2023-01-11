@@ -3,7 +3,7 @@ import logging
 import os
 from pathlib import Path
 import sys
-from typing import Dict
+from typing import Dict, Iterator
 
 from requests.exceptions import ConnectionError, HTTPError, Timeout
 import sentry_sdk
@@ -21,9 +21,7 @@ from proto import backend_pb2
 
 
 def trigger_mir_import(repo_root: str, task_id: str, index_file: str, des_annotation_path: str, media_location: str,
-                       import_work_dir: str) -> None:
-    # trigger mir import
-    # todo: handle semantic segmentation label task
+                       import_work_dir: str, object_type: int) -> None:
     TaskImportDatasetInvoker.importing_cmd(repo_root=repo_root,
                                            label_storage_file=os.path.join(os.path.dirname(repo_root), ids_file_name()),
                                            task_id=task_id,
@@ -33,7 +31,7 @@ def trigger_mir_import(repo_root: str, task_id: str, index_file: str, des_annota
                                            media_location=media_location,
                                            work_dir=import_work_dir,
                                            unknown_types_strategy=backend_pb2.UnknownTypesStrategy.UTS_STOP,
-                                           anno_type=mir_cmd_pb.ObjectType.OT_DET_BOX)
+                                           object_type=object_type)
 
 
 def remove_json_file(des_annotation_path: str) -> None:
@@ -46,19 +44,33 @@ def remove_json_file(des_annotation_path: str) -> None:
             os.remove(os.path.join(des_annotation_path, annotation_file))
 
 
-def generate_label_index_file(input_file: Path, annotation_dir: Path) -> Path:
+def iter_asset_dir(input_asset_dir: Path) -> Iterator[Path]:
+    image_dirs = [i for i in input_asset_dir.iterdir() if i.is_dir()]
+    for image_dir in image_dirs:
+        for image_path in image_dir.iterdir():
+            yield image_path
+
+
+def generate_label_index_file(input_asset_dir: Path, annotation_dir: Path, object_type: int) -> Path:
     """
     filter assets paths against related annotation files
     """
-    labelled_assets_hashes = [i.stem for i in annotation_dir.iterdir() if i.suffix == ".xml"]
-    output_file = input_file.with_name("label_index.tsv")
+    if object_type == mir_cmd_pb.ObjectType.OT_DET_BOX:
+        labelled_assets_hashes = [i.stem for i in annotation_dir.iterdir() if i.suffix == ".xml"]
+    else:
+        with open(annotation_dir / "coco-annotations.json") as f:
+            coco = json.load(f)
+        labelled_assets_hashes = [Path(i["file_name"]).stem for i in coco["images"]]
+
+    input_asset_paths = list(iter_asset_dir(input_asset_dir))
+    output_file = input_asset_dir / "label_index.tsv"
     total_assets_count, labelled_assets_count = 0, 0
-    with open(input_file) as in_, open(output_file, "w") as out_:
-        for asset_path in in_:
+    with open(output_file, "w") as out_:
+        for asset_path in input_asset_paths:
             total_assets_count += 1
-            if Path(asset_path.strip()).stem in labelled_assets_hashes:
+            if asset_path.stem in labelled_assets_hashes:
                 labelled_assets_count += 1
-                out_.write(asset_path)
+                out_.write(f"{asset_path}\n")
     logging.info(
         f"prepare annotation import: total assets {total_assets_count}, labelled assets {labelled_assets_count}"
     )
@@ -72,11 +84,14 @@ def update_label_task(label_instance: utils.LabelBase, task_id: str, project_inf
     state = LogState.DONE if percent == 1 else LogState.RUNNING
     if state == LogState.DONE:
         # For remove some special tasks. Delete the task after labeling will save file
-        remove_json_file(project_info["des_annotation_path"])
+        object_type = int(project_info.get("object_type", mir_cmd_pb.ObjectType.OT_DET_BOX))
+        des_annotation_path = project_info["des_annotation_path"]
+        remove_json_file(des_annotation_path)
         try:
             label_instance.sync_export_storage(project_info["storage_id"])
-            label_instance.convert_annotation_to_voc(project_info["project_id"],
-                                                     project_info["des_annotation_path"])
+            label_instance.fetch_label_result(project_info["project_id"],
+                                              object_type,
+                                              des_annotation_path)
         except NotReadyError:
             logging.info("label result not ready, try agiain later")
             return
@@ -84,15 +99,16 @@ def update_label_task(label_instance: utils.LabelBase, task_id: str, project_inf
             sentry_sdk.capture_exception(e)
             logging.error(f"get label task {task_id} error: {e}, set task_id:{task_id} error")
             state = LogState.ERROR
-        export_index_file = Path(project_info["input_asset_dir"]) / "index.tsv"
-        label_index_file = generate_label_index_file(export_index_file, Path(project_info["des_annotation_path"]))
+        label_index_file = generate_label_index_file(
+            Path(project_info["input_asset_dir"]), Path(des_annotation_path), object_type)
         trigger_mir_import(
             repo_root=project_info["repo_root"],
             task_id=task_id,
             index_file=str(label_index_file),
-            des_annotation_path=project_info["des_annotation_path"],
+            des_annotation_path=des_annotation_path,
             media_location=project_info["media_location"],
             import_work_dir=project_info["import_work_dir"],
+            object_type=object_type,
         )
 
         rds.hdel(label_task_config.MONITOR_MAPPING_KEY, task_id)

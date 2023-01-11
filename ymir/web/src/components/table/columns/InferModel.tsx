@@ -5,7 +5,7 @@ import ModelVersionName from '@/components/result/ModelVersionName'
 import { Link } from 'umi'
 
 const Model = <T extends YModels.InferDataset>(): ColumnType<T> => ({
-  title: StrongTitle('dataset.column.model'),
+  title: <StrongTitle label="dataset.column.model" />,
   dataIndex: 'model',
   render: (_, { projectId, inferModel, inferModelId }) => {
     const label = inferModel ? <ModelVersionName result={inferModel} stageId={inferModelId[1]} /> : inferModelId.join(',')

@@ -8,7 +8,7 @@ import VersionName from '@/components/result/VersionName'
 
 import s from "./index.less"
 import { CompareIcon } from "@/components/common/Icons"
-import { getTensorboardLink } from "../../../services/common"
+import { getTensorboardLink } from "@/constants/common"
 
 function Training({ pid, project }) {
   const [form] = Form.useForm()

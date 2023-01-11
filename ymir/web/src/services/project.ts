@@ -1,9 +1,9 @@
-import { PROJECTTYPES } from '@/constants/project'
+import { ObjectType } from '@/constants/project'
 import request from '@/utils/request'
 
 type QueryParams = {
   name?: string
-  type?: PROJECTTYPES,
+  type?: ObjectType
   offset?: number
   limit?: number
 }
@@ -12,7 +12,7 @@ type CreateParams = {
   name: string
   keywords: string[]
   strategy: number
-  type: PROJECTTYPES
+  type: ObjectType
   enableIteration?: number
   description?: string
 }

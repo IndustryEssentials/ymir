@@ -4,7 +4,7 @@ import { Col, Descriptions, Row, Space, Tag } from 'antd'
 
 import t from '@/utils/t'
 import { format } from '@/utils/date'
-import { getTensorboardLink } from '@/services/common'
+import { getTensorboardLink } from '@/constants/common'
 import { TASKTYPES, getTaskTypeLabel } from '@/constants/task'
 import useFetch from '@/hooks/useFetch'
 

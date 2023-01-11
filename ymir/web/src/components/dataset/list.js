@@ -1,38 +1,48 @@
-import React, { useEffect, useRef, useState } from "react"
+import React, { useEffect, useRef, useState } from 'react'
+import { useSelector } from 'react-redux'
 import { connect } from 'dva'
-import styles from "./list.less"
-import { Link, useHistory, useLocation } from "umi"
-import { Form, Button, Input, Table, Space, Modal, Row, Col, Tooltip, Pagination, message, Popover, } from "antd"
+import styles from './list.less'
+import { Link, useHistory, useLocation } from 'umi'
+import { Form, Button, Input, Table, Space, Modal, Row, Col, Tooltip, Pagination, message, Popover } from 'antd'
 
-import t from "@/utils/t"
+import t from '@/utils/t'
 import { diffTime } from '@/utils/date'
 import { getTaskTypeLabel, TASKSTATES, TASKTYPES } from '@/constants/task'
 import { ResultStates } from '@/constants/common'
 import { canHide, validDataset } from '@/constants/dataset'
 
-import CheckProjectDirty from "@/components/common/CheckProjectDirty"
-import EditNameBox from "@/components/form/editNameBox"
-import EditDescBox from "@/components/form/editDescBox"
-import Terminate from "@/components/task/terminate"
-import Hide from "../common/hide"
-import RenderProgress from "@/components/common/Progress"
-import TypeTag from "@/components/task/TypeTag"
-import Actions from "@/components/table/Actions"
+import CheckProjectDirty from '@/components/common/CheckProjectDirty'
+import EditNameBox from '@/components/form/editNameBox'
+import EditDescBox from '@/components/form/editDescBox'
+import Terminate from '@/components/task/terminate'
+import Hide from '../common/hide'
+import RenderProgress from '@/components/common/Progress'
+import TypeTag from '@/components/task/TypeTag'
+import Actions from '@/components/table/Actions'
 import AssetCount from '@/components/dataset/AssetCount'
 
 import {
-  ImportIcon, ScreenIcon, TaggingIcon, TrainIcon, VectorIcon, WajueIcon, SearchIcon,
-  EditIcon, EyeOffIcon, CopyIcon, StopIcon, ArrowDownIcon, ArrowRightIcon, CompareIcon,
+  ImportIcon,
+  ScreenIcon,
+  TaggingIcon,
+  TrainIcon,
+  VectorIcon,
+  WajueIcon,
+  SearchIcon,
+  EditIcon,
+  EyeOffIcon,
+  CopyIcon,
+  StopIcon,
+  ArrowDownIcon,
+  ArrowRightIcon,
   CompareListIcon,
-} from "@/components/common/Icons"
-import { DescPop } from "../common/DescPop"
-import { RefreshIcon } from "../common/Icons"
-import useRerunAction from "../../hooks/useRerunAction"
+} from '@/components/common/Icons'
+import { DescPop } from '../common/DescPop'
+import useRerunAction from '@/hooks/useRerunAction'
 
-const { confirm } = Modal
 const { useForm } = Form
 
-function Datasets({ pid, project = {}, iterations, groups, datasetList, query, versions, ...func }) {
+function Datasets({ pid, project = {}, iterations, groups, ...func }) {
   const location = useLocation()
   const { name } = location.query
   const history = useHistory()
@@ -49,8 +59,8 @@ function Datasets({ pid, project = {}, iterations, groups, datasetList, query, v
   const [testingSetIds, setTestingSetIds] = useState([])
   const generateRerun = useRerunAction()
   const [editingDataset, setEditingDataset] = useState({})
+  const { datasets: datasetList, versions, query } = useSelector(({ dataset }) => dataset)
 
-  /** use effect must put on the top */
   useEffect(() => {
     if (history.action !== 'POP') {
       initState()
@@ -71,7 +81,7 @@ function Datasets({ pid, project = {}, iterations, groups, datasetList, query, v
   }, [datasetList, project])
 
   useEffect(() => {
-    Object.keys(visibles).map(key => {
+    Object.keys(visibles).map((key) => {
       if (visibles[key]) {
         fetchVersions(key)
       }
@@ -80,28 +90,27 @@ function Datasets({ pid, project = {}, iterations, groups, datasetList, query, v
 
   useEffect(() => {
     const hasDataset = Object.keys(versions).length
-    const emptyDataset = Object.values(versions).some(dss => !dss.length)
+    const emptyDataset = Object.values(versions).some((dss) => !dss.length)
     if (hasDataset && emptyDataset) {
       fetchDatasets()
     }
   }, [versions])
 
   useEffect(() => {
-    let dvs = setVersionLabelsByProject(versions, project)
-    setDatasetVersions(dvs)
-  }, [project, versions])
-
-  useEffect(() => {
-    if (iterations?.length) {
-      const dvs = setVersionLabelsByIterations(versions, iterations)
-      setDatasetVersions(dvs)
+    let dvs = versions
+    if (project) {
+      dvs = setVersionLabelsByProject(dvs, project)
     }
-  }, [versions, iterations])
+    if (iterations?.length) {
+      dvs = setVersionLabelsByIterations(dvs, iterations)
+    }
+    setDatasetVersions(dvs)
+  }, [project, versions, iterations])
 
   useEffect(() => {
-    Object.keys(versions).forEach(gid => {
+    Object.keys(versions).forEach((gid) => {
       const vss = versions[gid]
-      const needReload = vss.some(ds => ds.needReload)
+      const needReload = vss.some((ds) => ds.needReload)
 
       if (needReload) {
         fetchVersions(gid, true)
@@ -137,30 +146,38 @@ function Datasets({ pid, project = {}, iterations, groups, datasetList, query, v
   const columns = (gid) => {
     return [
       {
-        title: showTitle("dataset.column.name"),
-        key: "name",
-        dataIndex: "versionName",
+        title: showTitle('dataset.column.name'),
+        key: 'name',
+        dataIndex: 'versionName',
         className: styles[`column_name`],
         render: (name, { id, description, projectLabel, iterationLabel }) => {
           const popContent = <DescPop description={description} style={{ maxWidth: '30vw' }} />
-          const content = <Row>
-            <Col flex={1}><Link to={`/home/project/${pid}/dataset/${id}`}>{name}</Link></Col>
-            <Col flex={'50px'}>
-              {projectLabel ? <div className={styles.extraTag}>{projectLabel}</div> : null}
-              {iterationLabel ? <div className={styles.extraIterTag}>{iterationLabel}</div> : null}
-            </Col>
-          </Row>
-          return description ? <Popover title={t('common.desc')} content={popContent}>
-            {content}
-          </Popover> : content
+          const content = (
+            <Row>
+              <Col flex={1}>
+                <Link to={`/home/project/${pid}/dataset/${id}`}>{name}</Link>
+              </Col>
+              <Col flex={'50px'}>
+                {projectLabel ? <div className={styles.extraTag}>{projectLabel}</div> : null}
+                {iterationLabel ? <div className={styles.extraIterTag}>{iterationLabel}</div> : null}
+              </Col>
+            </Row>
+          )
+          return description ? (
+            <Popover title={t('common.desc')} content={popContent}>
+              {content}
+            </Popover>
+          ) : (
+            content
+          )
         },
         filters: getRoundFilter(gid),
         onFilter: (round, { iterationRound }) => round === iterationRound,
         ellipsis: true,
       },
       {
-        title: showTitle("dataset.column.source"),
-        dataIndex: "taskType",
+        title: showTitle('dataset.column.source'),
+        dataIndex: 'taskType',
         render: (type) => <TypeTag type={type} />,
         filters: getTypeFilter(gid),
         onFilter: (type, { taskType }) => type === taskType,
@@ -168,28 +185,36 @@ function Datasets({ pid, project = {}, iterations, groups, datasetList, query, v
         ellipsis: true,
       },
       {
-        title: showTitle("dataset.column.asset_count"),
-        dataIndex: "assetCount",
+        title: showTitle('dataset.column.asset_count'),
+        dataIndex: 'assetCount',
         render: (num, record) => <AssetCount dataset={record} />,
         sorter: (a, b) => a.assetCount - b.assetCount,
         width: 120,
       },
       {
-        title: showTitle("dataset.column.keyword"),
-        dataIndex: "keywords",
-        render: (_, { gt, pred, state, }) => {
-          const renderLine = (keywords, label = 'gt') => <div>
-            <div>{t(`annotation.${label}`)}:</div>
-            {t('dataset.column.keyword.label', {
-              keywords: keywords.join(', '),
-              total: keywords.length
-            })}
-          </div>
-          const label = <>{renderLine(gt.keywords)}{renderLine(pred.keywords, 'pred')}</>
-          return isValidDataset(state) ? <Tooltip title={label}
-            color='white' overlayInnerStyle={{ color: 'rgba(0,0,0,0.45)', fontSize: 12 }}
-            mouseEnterDelay={0.5}
-          ><div>{label}</div></Tooltip> : null
+        title: showTitle('dataset.column.keyword'),
+        dataIndex: 'keywords',
+        render: (_, { gt, pred, state }) => {
+          const renderLine = (keywords, label = 'gt') => (
+            <div>
+              <div>{t(`annotation.${label}`)}:</div>
+              {t('dataset.column.keyword.label', {
+                keywords: keywords.join(', '),
+                total: keywords.length,
+              })}
+            </div>
+          )
+          const label = (
+            <>
+              {renderLine(gt.keywords)}
+              {renderLine(pred.keywords, 'pred')}
+            </>
+          )
+          return isValidDataset(state) ? (
+            <Tooltip title={label} color="white" overlayInnerStyle={{ color: 'rgba(0,0,0,0.45)', fontSize: 12 }} mouseEnterDelay={0.5}>
+              <div>{label}</div>
+            </Tooltip>
+          ) : null
         },
         ellipsis: {
           showTitle: false,
@@ -202,20 +227,20 @@ function Datasets({ pid, project = {}, iterations, groups, datasetList, query, v
         // width: 60,
       },
       {
-        title: showTitle("dataset.column.create_time"),
-        dataIndex: "createTime",
+        title: showTitle('dataset.column.create_time'),
+        dataIndex: 'createTime',
         sorter: (a, b) => diffTime(a.createTime, b.createTime),
         sortDirections: ['ascend', 'descend', 'ascend'],
         defaultSortOrder: 'descend',
         width: 180,
       },
       {
-        title: showTitle("dataset.column.action"),
-        key: "action",
-        dataIndex: "action",
+        title: showTitle('dataset.column.action'),
+        key: 'action',
+        dataIndex: 'action',
         render: (text, record) => <Actions actions={actionMenus(record)} />,
         className: styles.tab_actions,
-        align: "center",
+        align: 'center',
         width: 300,
       },
     ]
@@ -226,78 +251,78 @@ function Datasets({ pid, project = {}, iterations, groups, datasetList, query, v
     const invalidDataset = ({ state, assetCount }) => !isValidDataset(state) || assetCount === 0
     const menus = [
       {
-        key: "label",
-        label: t("dataset.action.label"),
+        key: 'label',
+        label: t('dataset.action.label'),
         hidden: () => invalidDataset(record),
         onclick: () => history.push(`/home/project/${pid}/label?did=${id}`),
         icon: <TaggingIcon />,
       },
       {
-        key: "train",
-        label: t("dataset.action.train"),
+        key: 'train',
+        label: t('dataset.action.train'),
         hidden: () => invalidDataset(record) || isTestingDataset(id),
         onclick: () => history.push(`/home/project/${pid}/train?did=${id}`),
         icon: <TrainIcon />,
       },
       {
-        key: "mining",
-        label: t("dataset.action.mining"),
+        key: 'mining',
+        label: t('dataset.action.mining'),
         hidden: () => invalidDataset(record),
         onclick: () => history.push(`/home/project/${pid}/mining?did=${id}`),
         icon: <VectorIcon />,
       },
       {
-        key: "preview",
-        label: t("common.action.preview"),
+        key: 'preview',
+        label: t('common.action.preview'),
         hidden: () => !validDataset(record),
         onclick: () => history.push(`/home/project/${pid}/dataset/${id}/assets`),
         icon: <SearchIcon className={styles.addBtnIcon} />,
       },
       {
-        key: "merge",
-        label: t("common.action.merge"),
+        key: 'merge',
+        label: t('common.action.merge'),
         hidden: () => !isValidDataset(state),
         onclick: () => history.push(`/home/project/${pid}/merge?did=${id}`),
         icon: <CompareListIcon className={styles.addBtnIcon} />,
       },
       {
-        key: "filter",
-        label: t("common.action.filter"),
+        key: 'filter',
+        label: t('common.action.filter'),
         hidden: () => invalidDataset(record),
         onclick: () => history.push(`/home/project/${pid}/filter?did=${id}`),
         icon: <ScreenIcon className={styles.addBtnIcon} />,
       },
       {
-        key: "inference",
-        label: t("dataset.action.inference"),
+        key: 'inference',
+        label: t('dataset.action.inference'),
         hidden: () => invalidDataset(record),
         onclick: () => history.push(`/home/project/${pid}/inference?did=${id}`),
         icon: <WajueIcon />,
       },
       {
-        key: "copy",
-        label: t("task.action.copy"),
+        key: 'copy',
+        label: t('task.action.copy'),
         hidden: () => invalidDataset(record),
         onclick: () => history.push(`/home/project/${pid}/copy?did=${id}`),
         icon: <CopyIcon />,
       },
       {
-        key: "edit",
-        label: t("common.action.edit.desc"),
+        key: 'edit',
+        label: t('common.action.edit.desc'),
         onclick: () => editDesc(record),
         icon: <EditIcon />,
       },
       {
-        key: "stop",
-        label: t("task.action.terminate"),
+        key: 'stop',
+        label: t('task.action.terminate'),
         onclick: () => stop(record),
         hidden: () => taskState === TASKSTATES.PENDING || !isRunning(state) || task.is_terminated,
         icon: <StopIcon />,
       },
       generateRerun(record),
       {
-        key: "hide",
-        label: t("common.action.hide"),
+        key: 'hide',
+        label: t('common.action.hide'),
         onclick: () => hide(record),
         hidden: () => !canHide(record, project),
         icon: <EyeOffIcon />,
@@ -306,21 +331,20 @@ function Datasets({ pid, project = {}, iterations, groups, datasetList, query, v
     return menus
   }
 
-  const tableChange = ({ current, pageSize }, filters, sorters = {}) => {
-  }
+  const tableChange = ({ current, pageSize }, filters, sorters = {}) => {}
 
-  const getTypeFilter = gid => {
+  const getTypeFilter = (gid) => {
     return getFilters(gid, 'taskType', (type) => t(getTaskTypeLabel(type)))
   }
 
-  const getRoundFilter = gid => {
+  const getRoundFilter = (gid) => {
     return getFilters(gid, 'iterationRound', (round) => t('iteration.tag.round', { round }))
   }
-  const getFilters = (gid, field, label = () => { }) => {
+  const getFilters = (gid, field, label = () => {}) => {
     const vs = datasetVersions[gid]
     if (vs?.length) {
-      const filters = new Set(vs.map(ds => ds[field]).filter(item => item))
-      return [...filters].map(value => ({ text: label(value), value }))
+      const filters = new Set(vs.map((ds) => ds[field]).filter((item) => item))
+      return [...filters].map((value) => ({ text: label(value), value }))
     }
   }
 
@@ -347,7 +371,7 @@ function Datasets({ pid, project = {}, iterations, groups, datasetList, query, v
   }
 
   function setGroupLabelsByProject(datasets, project) {
-    return datasets.map(item => {
+    return datasets.map((item) => {
       delete item.projectLabel
       item = setLabelByProject(project?.trainSet?.id, 'isTrainSet', item)
       item = setLabelByProject(project?.testSet?.groupId, 'isTestSet', item, project?.testSet?.versionName)
@@ -357,12 +381,12 @@ function Datasets({ pid, project = {}, iterations, groups, datasetList, query, v
   }
 
   function setVersionLabelsByProject(versions, project) {
-    Object.keys(versions).forEach(gid => {
+    Object.keys(versions).forEach((gid) => {
       const list = versions[gid]
-      const updatedList = list.map(item => {
+      const updatedList = list.map((item) => {
         delete item.projectLabel
-        const field = item.id === project?.testSet?.id ? 'isTestSet' :
-          (item.id === project?.miningSet?.id ? 'isMiningSet' : (isTestingDataset(item.id) ? 'isTestingSet' : ''))
+        const field =
+          item.id === project?.testSet?.id ? 'isTestSet' : item.id === project?.miningSet?.id ? 'isMiningSet' : isTestingDataset(item.id) ? 'isTestingSet' : ''
         field && (item = setLabelByProject(item.id, field, item))
         return { ...item }
       })
@@ -372,9 +396,9 @@ function Datasets({ pid, project = {}, iterations, groups, datasetList, query, v
   }
 
   function setVersionLabelsByIterations(versions, iterations) {
-    Object.keys(versions).forEach(gid => {
+    Object.keys(versions).forEach((gid) => {
       const list = versions[gid]
-      const updatedList = list.map(item => {
+      const updatedList = list.map((item) => {
         delete item.iterationLabel
         item = setLabelByIterations(item, iterations)
         return { ...item }
@@ -397,13 +421,9 @@ function Datasets({ pid, project = {}, iterations, groups, datasetList, query, v
   }
 
   function setLabelByIterations(item, iterations) {
-    const iteration = iterations.find(iter => [
-      iter.miningSet,
-      iter.miningResult,
-      iter.labelSet,
-      iter.trainUpdateSet,
-      iter.trainSet,
-    ].filter(id => id).includes(item.id))
+    const iteration = iterations.find((iter) =>
+      [iter.miningSet, iter.miningResult, iter.labelSet, iter.trainUpdateSet, iter.trainSet].filter((id) => id).includes(item.id),
+    )
     if (iteration) {
       item.iterationLabel = t('iteration.tag.round', iteration)
       item.iterationRound = iteration.round
@@ -425,7 +445,7 @@ function Datasets({ pid, project = {}, iterations, groups, datasetList, query, v
     terminateRef.current.confirm(dataset)
   }
 
-  function terminateOk({ }, { groupId }) {
+  function terminateOk({}, { groupId }) {
     groupId && func.getVersions(groupId, true)
   }
 
@@ -442,12 +462,12 @@ function Datasets({ pid, project = {}, iterations, groups, datasetList, query, v
             dataset.name = result.name
           }
           return dataset
-        })
+        }),
       )
     }
   }
 
-  const saveDescHandle = result => {
+  const saveDescHandle = (result) => {
     if (result) {
       setDatasetVersions((versions) => ({
         ...versions,
@@ -456,12 +476,12 @@ function Datasets({ pid, project = {}, iterations, groups, datasetList, query, v
             dataset.description = result.description
           }
           return dataset
-        })
+        }),
       }))
     }
   }
 
-  const editDesc = dataset => {
+  const editDesc = (dataset) => {
     setEditingDataset({})
     setTimeout(() => setEditingDataset(dataset), 0)
   }
@@ -470,15 +490,14 @@ function Datasets({ pid, project = {}, iterations, groups, datasetList, query, v
     history.push(`/home/project/${pid}/dataset/add`)
   }
 
-
   const search = (values) => {
     const name = values.name
     if (typeof name === 'undefined') {
-      func.updateQuery({ ...query, ...values, })
+      func.updateQuery({ ...query, ...values })
     } else {
       setTimeout(() => {
         if (name === form.getFieldValue('name')) {
-          func.updateQuery({ ...query, name, })
+          func.updateQuery({ ...query, name })
         }
       }, 1000)
     }
@@ -499,7 +518,7 @@ function Datasets({ pid, project = {}, iterations, groups, datasetList, query, v
   }
 
   const hideOk = (result) => {
-    result.forEach(item => fetchVersions(item.dataset_group_id, true))
+    result.forEach((item) => fetchVersions(item.dataset_group_id, true))
     fetchDatasets(true)
     setSelectedVersions({ selected: [], versions: {} })
   }
@@ -514,10 +533,10 @@ function Datasets({ pid, project = {}, iterations, groups, datasetList, query, v
     history.push(`/home/project/${pid}/merge?mid=${ids}`)
   }
 
-  const getDisabledStatus = (filter = () => { }) => {
+  const getDisabledStatus = (filter = () => {}) => {
     const allVss = Object.values(versions).flat()
     const { selected } = selectedVersions
-    return !selected.length || allVss.filter(({ id }) => selected.includes(id)).some(version => filter(version))
+    return !selected.length || allVss.filter(({ id }) => selected.includes(id)).some((version) => filter(version))
   }
 
   function isValidDataset(state) {
@@ -534,58 +553,75 @@ function Datasets({ pid, project = {}, iterations, groups, datasetList, query, v
 
   const addBtn = (
     <Button type="primary" onClick={add}>
-      <ImportIcon /> {t("dataset.import.label")}
+      <ImportIcon /> {t('dataset.import.label')}
     </Button>
   )
 
-  const renderMultipleActions = <>
-    <Button type="primary" disabled={getDisabledStatus(({ state }) => isRunning(state))} onClick={multipleHide}>
-      <EyeOffIcon /> {t("common.action.multiple.hide")}
-    </Button>
-    <Button type="primary" disabled={getDisabledStatus(({ state }) => !isValidDataset(state))} onClick={multipleInfer}>
-      <WajueIcon /> {t("common.action.multiple.infer")}
-    </Button>
-    <Button type="primary" disabled={getDisabledStatus(({ state }) => !isValidDataset(state))} onClick={batchMerge}>
-      <WajueIcon /> {t("common.action.multiple.merge")}
-    </Button>
-  </>
+  const renderMultipleActions = (
+    <>
+      <Button type="primary" disabled={getDisabledStatus(({ state }) => isRunning(state))} onClick={multipleHide}>
+        <EyeOffIcon /> {t('common.action.multiple.hide')}
+      </Button>
+      <Button type="primary" disabled={getDisabledStatus(({ state }) => !isValidDataset(state))} onClick={multipleInfer}>
+        <WajueIcon /> {t('common.action.multiple.infer')}
+      </Button>
+      <Button type="primary" disabled={getDisabledStatus(({ state }) => !isValidDataset(state))} onClick={batchMerge}>
+        <WajueIcon /> {t('common.action.multiple.merge')}
+      </Button>
+    </>
+  )
 
-  const renderGroups = (<>
-    <div className='groupList'>
-      {datasets.map(group => <div className={styles.groupItem} key={group.id}>
-        <Row className='groupTitle'>
-          <Col flex={1} onClick={() => showVersions(group.id)}>
-            <span className='foldBtn'>{visibles[group.id] ? <ArrowDownIcon /> : <ArrowRightIcon />} </span>
-            <span className='groupName'>{group.name}</span>
-            {group.projectLabel ? <span className={styles.extraTag}>{group.projectLabel}</span> : null}
-          </Col>
-          <Col><Space>
-            <a onClick={() => edit(group)} title={t('common.modify')}><EditIcon /></a>
-          </Space></Col>
-        </Row>
-        <div className='groupTable' hidden={!visibles[group.id]}>
-          <Table
-            dataSource={datasetVersions[group.id]}
-            onChange={tableChange}
-            rowKey={(record) => record.id}
-            rowSelection={{
-              selectedRowKeys: selectedVersions.versions[group.id],
-              onChange: (keys) => rowSelectChange(group.id, keys),
-            }}
-            rowClassName={(record, index) => index % 2 === 0 ? '' : 'oddRow'}
-            columns={columns(group.id)}
-            pagination={false}
-          />
-        </div>
-      </div>)}
-    </div>
-    <Pagination className={`pager ${styles.pager}`} showQuickJumper showSizeChanger total={total}
-      current={query.current} pageSize={query.limit} onChange={listChange} />
-  </>)
+  const renderGroups = (
+    <>
+      <div className="groupList">
+        {datasets.map((group) => (
+          <div className={styles.groupItem} key={group.id}>
+            <Row className="groupTitle">
+              <Col flex={1} onClick={() => showVersions(group.id)}>
+                <span className="foldBtn">{visibles[group.id] ? <ArrowDownIcon /> : <ArrowRightIcon />} </span>
+                <span className="groupName">{group.name}</span>
+                {group.projectLabel ? <span className={styles.extraTag}>{group.projectLabel}</span> : null}
+              </Col>
+              <Col>
+                <Space>
+                  <a onClick={() => edit(group)} title={t('common.modify')}>
+                    <EditIcon />
+                  </a>
+                </Space>
+              </Col>
+            </Row>
+            <div className="groupTable" hidden={!visibles[group.id]}>
+              <Table
+                dataSource={datasetVersions[group.id]}
+                onChange={tableChange}
+                rowKey={(record) => record.id}
+                rowSelection={{
+                  selectedRowKeys: selectedVersions.versions[group.id],
+                  onChange: (keys) => rowSelectChange(group.id, keys),
+                }}
+                rowClassName={(record, index) => (index % 2 === 0 ? '' : 'oddRow')}
+                columns={columns(group.id)}
+                pagination={false}
+              />
+            </div>
+          </div>
+        ))}
+      </div>
+      <Pagination
+        className={`pager ${styles.pager}`}
+        showQuickJumper
+        showSizeChanger
+        total={total}
+        current={query.current}
+        pageSize={query.limit}
+        onChange={listChange}
+      />
+    </>
+  )
 
   return (
     <div className={styles.dataset}>
-      <Row className='actions'>
+      <Row className="actions">
         <Col flex={1}>
           <Space>
             {addBtn}
@@ -599,7 +635,7 @@ function Datasets({ pid, project = {}, iterations, groups, datasetList, query, v
       <div className={`list ${styles.list}`}>
         <div className={`search ${styles.search}`}>
           <Form
-            name='queryForm'
+            name="queryForm"
             form={form}
             labelCol={{ flex: '120px' }}
             initialValues={{ type: query.type, time: query.time, name: name || query.name }}
@@ -609,11 +645,10 @@ function Datasets({ pid, project = {}, iterations, groups, datasetList, query, v
             <Row>
               <Col className={styles.queryColumn} span={12}>
                 <Form.Item name="name" label={t('dataset.query.name')}>
-                  <Input placeholder={t("dataset.query.name.placeholder")} style={{ width: '80%' }} allowClear suffix={<SearchIcon />} />
+                  <Input placeholder={t('dataset.query.name.placeholder')} style={{ width: '80%' }} allowClear suffix={<SearchIcon />} />
                 </Form.Item>
               </Col>
             </Row>
-
           </Form>
         </div>
         {renderGroups}
@@ -628,7 +663,6 @@ function Datasets({ pid, project = {}, iterations, groups, datasetList, query, v
 
 const props = (state) => {
   return {
-    logined: state.user.logined,
     datasetList: state.dataset.datasets,
     versions: state.dataset.versions,
     query: state.dataset.query,

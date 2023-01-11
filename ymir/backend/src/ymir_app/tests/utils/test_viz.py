@@ -121,6 +121,8 @@ class TestModel:
         res = {
             "model_hash": random_lower_string(),
             "mAP": random.randint(1, 100) / 100,
+            "mIoU": random.randint(1, 100) / 100,
+            "maskAP": random.randint(1, 100) / 100,
             "task_parameters": "mock_task_parameters",
             "executor_config": {"class_names": "a,b,c".split(",")},
             "stages": {
@@ -138,6 +140,7 @@ class TestModel:
                 },
             },
             "best_stage_name": "epoch-3000",
+            "object_type": 2,
         }
         M = m.ViewerModelInfoResponse.parse_obj(res)
         assert M.hash == res["model_hash"]
@@ -160,6 +163,8 @@ class TestDataset:
             "total_assets_count": 1,
             "pred": {
                 "class_ids_count": {3: 34},
+                "class_obj_count": {3: 34},
+                "class_ids_mask_area": {3: 23},
                 "new_types": {"cat": 5},
                 "new_types_added": False,
                 "negative_assets_count": 0,
@@ -256,6 +261,8 @@ class TestVizClient:
         res = {
             "model_hash": random_lower_string(),
             "mAP": random.randint(1, 100) / 100,
+            "mIoU": random.randint(1, 100) / 100,
+            "maskAP": random.randint(1, 100) / 100,
             "task_parameters": "mock_task_parameters",
             "executor_config": {"class_names": "a,b,c".split(",")},
             "stages": {
@@ -273,6 +280,7 @@ class TestVizClient:
                 },
             },
             "best_stage_name": "epoch-3000",
+            "object_type": 2,
         }
         resp.json.return_value = {"result": res}
         mock_session.get.return_value = resp
@@ -303,6 +311,8 @@ class TestVizClient:
             "total_assets_count": 1,
             "pred": {
                 "class_ids_count": {3: 34},
+                "class_obj_count": {3: 34},
+                "class_ids_mask_area": {3: 23},
                 "new_types": {"cat": 5},
                 "new_types_added": False,
                 "tags_count_total": {},

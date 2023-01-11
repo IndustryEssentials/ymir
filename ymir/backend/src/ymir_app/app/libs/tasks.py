@@ -10,6 +10,7 @@ from fastapi.encoders import jsonable_encoder
 from sqlalchemy.orm import Session
 
 from app.api.errors.errors import (
+    ProjectNotFound,
     DatasetIndexNotReady,
     DuplicateDatasetGroupError,
     FailedToUpdateTaskStatusTemporally,
@@ -76,6 +77,7 @@ async def batch_update_task_status(events: List[Tuple[str, Dict]]) -> List[str]:
 
 
 def create_single_task(db: Session, user_id: int, user_labels: UserLabels, task_in: schemas.TaskCreate) -> models.Task:
+    project_getter = partial(crud.project.get, db, task_in.project_id)
     iterations_getter = partial(crud.iteration.get_multi_by_project, db)
     datasets_getter = partial(ensure_datasets_are_ready, db)
     model_stages_getter = partial(crud.model_stage.get_multi_by_ids, db)
@@ -88,6 +90,7 @@ def create_single_task(db: Session, user_id: int, user_labels: UserLabels, task_
         iterations_getter,
         labels_getter,
         docker_image_getter,
+        project_getter,
     )
     task_hash = gen_task_hash(user_id, task_in.project_id)
     try:
@@ -156,6 +159,13 @@ class TaskResult:
     @cached_property
     def user_labels(self) -> Dict:
         return self.controller.get_labels_of_user(self.user_id)
+
+    @cached_property
+    def object_type(self) -> int:
+        project = crud.project.get(self.db, self.project_id)
+        if not project:
+            raise ProjectNotFound()
+        return project.object_type
 
     @cached_property
     def model_info(self) -> Optional[Dict]:
@@ -303,14 +313,14 @@ class TaskResult:
 
     def update_model_result(self, task_result: schemas.TaskUpdateStatus, task_in_db: models.Task) -> None:
         """
-        Criterion for ready model: viewer returns valid model_info
+        Criterion for ready model: viewer returns valid model_info and object_type matched with project's
         """
         model_record = crud.model.get_by_task_id(self.db, task_id=self.task.id)
         if not model_record:
             logger.error("[update task] task result (model) not found, skip")
             return
         model_info = self.model_info
-        if model_info:
+        if model_info and model_info.get("object_type") == self.object_type:
             # as long as model info is ready, regardless of task status, just set model as ready
             crud.task.update_parameters_and_config(
                 self.db,

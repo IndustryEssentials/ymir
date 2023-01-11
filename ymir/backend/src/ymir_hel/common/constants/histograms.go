@@ -17,6 +17,7 @@ type MirHist struct {
 	LowerBNDs     []float64            `json:"-" bson:"-"`
 	Ops           interface{}          `json:"-" bson:"-"`
 	Output        *[]map[string]string `json:"-" bson:"output"`
+	SkipUnwind    bool                 `json:"-" bson:"-"`
 }
 
 func (h *MirHist) BuildMirHist(bucket *map[string]int32) {
@@ -50,24 +51,39 @@ var ConstAssetsMirHist map[string]MirHist = map[string]MirHist{
 
 var ConstGtMirHist map[string]MirHist = map[string]MirHist{
 	"quality": {Ops: "$gt.anno_quality", LowerBNDs: []float64{0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0}},
-	"area": {
+	"box_area": {
 		Ops:       bson.M{"$multiply": bson.A{"$gt.box.w", "$gt.box.h"}},
-		LowerBNDs: []float64{0, 50, 500, 2500, 5000, 10000, 50000, 100000, 200000},
+		LowerBNDs: []float64{0, 1, 50, 500, 2500, 5000, 10000, 50000, 100000, 200000},
 	},
-	"area_ratio": {
+	"box_area_ratio": {
 		Ops: bson.M{"$divide": bson.A{bson.M{"$multiply": bson.A{"$gt.box.w", "$gt.box.h"}},
 			bson.M{"$multiply": bson.A{"$metadata.width", "$metadata.height"}}}},
 		LowerBNDs: []float64{0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0}},
+	"mask_area": {Ops: "$gt.mask_area", LowerBNDs: []float64{0, 1, 50, 500, 2500, 5000, 10000, 50000, 100000, 200000}},
+	"obj_counts": {
+		Ops:        bson.M{"$size": "$gt"},
+		LowerBNDs:  []float64{0, 1, 2, 3, 4, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50},
+		SkipUnwind: true,
+	},
 }
 
 var ConstPredMirHist map[string]MirHist = map[string]MirHist{
 	"quality": {Ops: "$pred.anno_quality", LowerBNDs: []float64{0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0}},
-	"area": {
+	"box_area": {
 		Ops:       bson.M{"$multiply": bson.A{"$pred.box.w", "$pred.box.h"}},
-		LowerBNDs: []float64{0, 50, 500, 2500, 5000, 10000, 50000, 100000, 200000},
+		LowerBNDs: []float64{0, 1, 50, 500, 2500, 5000, 10000, 50000, 100000, 200000},
 	},
-	"area_ratio": {
+	"box_area_ratio": {
 		Ops: bson.M{"$divide": bson.A{bson.M{"$multiply": bson.A{"$pred.box.w", "$pred.box.h"}},
 			bson.M{"$multiply": bson.A{"$metadata.width", "$metadata.height"}}}},
 		LowerBNDs: []float64{0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0}},
+	"mask_area": {
+		Ops:       "$pred.mask_area",
+		LowerBNDs: []float64{0, 1, 50, 500, 2500, 5000, 10000, 50000, 100000, 200000},
+	},
+	"obj_counts": {
+		Ops:        bson.M{"$size": "$pred"},
+		LowerBNDs:  []float64{0, 1, 2, 3, 4, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50},
+		SkipUnwind: true,
+	},
 }

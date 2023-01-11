@@ -24,6 +24,7 @@ const emptyUser = {
   phone: "",
   avatar: '',
   hash: '',
+  uuid: '',
   id: 0,
   role: ROLES.USER,
 }
@@ -155,7 +156,7 @@ const model = {
   },
   reducers: {
     UPDATE_USERINFO(state, { payload }) {
-      const { username, email, phone, avatar, role, id, hash } = payload
+      const { username, email, phone, avatar, role, id, hash, uuid } = payload
       return {
         ...state,
         username,
@@ -165,6 +166,7 @@ const model = {
         id,
         role,
         hash,
+        uuid,
       }
     },
     UPDATE_LOGINED(state, { payload }) {

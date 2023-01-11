@@ -48,7 +48,7 @@ def catch_label_task_error(f: Callable) -> Callable:
 class LabelBase(ABC):
     @abstractmethod
     def create_label_project(self, project_name: str, keywords: List, collaborators: List, expert_instruction: str,
-                             **kwargs: Dict) -> int:
+                             object_type: int, **kwargs: Dict) -> int:
         # Create a label project, add extra args in kwargs if you need
         pass
 
@@ -68,8 +68,8 @@ class LabelBase(ABC):
         pass
 
     @abstractmethod
-    def convert_annotation_to_voc(self, project_id: int, des_path: str) -> Any:
-        # because ymir supporting voc files to import
+    def fetch_label_result(self, project_id: int, object_type: int, des_path: str) -> Any:
+        # fetch label result from label tool
         pass
 
     @abstractmethod
@@ -100,6 +100,7 @@ class LabelBase(ABC):
         media_location: str,
         import_work_dir: str,
         use_pre_annotation: bool,
+        object_type: int,
     ) -> None:
         # start a label task
         pass
@@ -116,7 +117,8 @@ class LabelBase(ABC):
         media_location: str,
         import_work_dir: str,
         storage_id: int,
-        input_asset_dir: str
+        input_asset_dir: str,
+        object_type: int,
     ) -> None:
         # store into redis for loop get status
         label_task_content = dict(project_id=project_id,
@@ -127,6 +129,7 @@ class LabelBase(ABC):
                                   media_location=media_location,
                                   import_work_dir=import_work_dir,
                                   storage_id=storage_id,
-                                  input_asset_dir=input_asset_dir)
+                                  input_asset_dir=input_asset_dir,
+                                  object_type=object_type)
 
         rds.hset(name=label_task_config.MONITOR_MAPPING_KEY, mapping={task_id: json.dumps(label_task_content)})

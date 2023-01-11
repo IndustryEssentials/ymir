@@ -275,9 +275,10 @@ class TestToolsDetEval(unittest.TestCase):
                             'polygon': [],
                             'det_link_id': 0,
                             'class_name': '',
-                            'type': 'OT_UNKNOWN',
+                            'type': 'OST_NOTSET',
                             'iscrowd': 0,
                             'mask': '',
+                            'mask_area': 0,
                         }, {
                             'index': 1,
                             'box': {
@@ -295,9 +296,10 @@ class TestToolsDetEval(unittest.TestCase):
                             'anno_quality': 0.0,
                             'tags': {},
                             'class_name': '',
-                            'type': 'OT_UNKNOWN',
+                            'type': 'OST_NOTSET',
                             'iscrowd': 0,
                             'mask': '',
+                            'mask_area': 0,
                         }, {
                             'index': 2,
                             'box': {
@@ -315,9 +317,10 @@ class TestToolsDetEval(unittest.TestCase):
                             'anno_quality': 0.0,
                             'tags': {},
                             'class_name': '',
-                            'type': 'OT_UNKNOWN',
+                            'type': 'OST_NOTSET',
                             'iscrowd': 0,
                             'mask': '',
+                            'mask_area': 0,
                         }, {
                             'index': 3,
                             'box': {
@@ -335,9 +338,10 @@ class TestToolsDetEval(unittest.TestCase):
                             'anno_quality': 0.0,
                             'tags': {},
                             'class_name': '',
-                            'type': 'OT_UNKNOWN',
+                            'type': 'OST_NOTSET',
                             'iscrowd': 0,
                             'mask': '',
+                            'mask_area': 0,
                         }],
                         'img_class_ids': [0, 1, 2],
                     },
@@ -359,9 +363,10 @@ class TestToolsDetEval(unittest.TestCase):
                             'anno_quality': 0.0,
                             'tags': {},
                             'class_name': '',
-                            'type': 'OT_UNKNOWN',
+                            'type': 'OST_NOTSET',
                             'iscrowd': 0,
                             'mask': '',
+                            'mask_area': 0,
                         }],
                         'img_class_ids': [2],
                     },
@@ -392,9 +397,10 @@ class TestToolsDetEval(unittest.TestCase):
                             'anno_quality': 0.0,
                             'tags': {},
                             'class_name': '',
-                            'type': 'OT_UNKNOWN',
+                            'type': 'OST_NOTSET',
                             'iscrowd': 0,
                             'mask': '',
+                            'mask_area': 0,
                         }],
                         'img_class_ids': [2],
                     },
@@ -416,9 +422,10 @@ class TestToolsDetEval(unittest.TestCase):
                             'tags': {},
                             'det_link_id': 0,
                             'class_name': '',
-                            'type': 'OT_UNKNOWN',
+                            'type': 'OST_NOTSET',
                             'iscrowd': 0,
                             'mask': '',
+                            'mask_area': 0,
                         }, {
                             'index': 1,
                             'box': {
@@ -436,9 +443,10 @@ class TestToolsDetEval(unittest.TestCase):
                             'anno_quality': 0.0,
                             'tags': {},
                             'class_name': '',
-                            'type': 'OT_UNKNOWN',
+                            'type': 'OST_NOTSET',
                             'iscrowd': 0,
                             'mask': '',
+                            'mask_area': 0,
                         }, {
                             'index': 2,
                             'box': {
@@ -456,9 +464,10 @@ class TestToolsDetEval(unittest.TestCase):
                             'anno_quality': 0.0,
                             'tags': {},
                             'class_name': '',
-                            'type': 'OT_UNKNOWN',
+                            'type': 'OST_NOTSET',
                             'iscrowd': 0,
                             'mask': '',
+                            'mask_area': 0,
                         }, {
                             'index': 3,
                             'box': {
@@ -476,9 +485,10 @@ class TestToolsDetEval(unittest.TestCase):
                             'anno_quality': 0.0,
                             'tags': {},
                             'class_name': '',
-                            'type': 'OT_UNKNOWN',
+                            'type': 'OST_NOTSET',
                             'iscrowd': 0,
                             'mask': '',
+                            'mask_area': 0,
                         }, {
                             'index': 4,
                             'box': {
@@ -496,9 +506,10 @@ class TestToolsDetEval(unittest.TestCase):
                             'anno_quality': 0.0,
                             'tags': {},
                             'class_name': '',
-                            'type': 'OT_UNKNOWN',
+                            'type': 'OST_NOTSET',
                             'iscrowd': 0,
                             'mask': '',
+                            'mask_area': 0,
                         }],
                         'img_class_ids': [0, 1, 2],
                     }

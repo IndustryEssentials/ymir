@@ -34,7 +34,6 @@ class TestInvokerTaskTraining(unittest.TestCase):
         self._tensorboard_root_name = 'tensorboard_root'
         self._task_id = 't000aaaabbbbbbzzzzzzzzzzzzzzd5'
         self._sub_task_id_0 = utils.sub_task_id(self._task_id, 0)
-        self._sub_task_id_1 = utils.sub_task_id(self._task_id, 1)
         self._guest_id1 = 't000aaaabbbbbbzzzzzzzzzzzzzzz1'
         self._guest_id2 = 't000aaaabbbbbbzzzzzzzzzzzzzzz2'
 
@@ -132,8 +131,6 @@ class TestInvokerTaskTraining(unittest.TestCase):
         os.makedirs(working_dir_root, exist_ok=True)
         working_dir_0 = os.path.join(working_dir_root, 'sub_task', self._sub_task_id_0)
         os.makedirs(working_dir_0, exist_ok=True)
-        working_dir_1 = os.path.join(working_dir_root, 'sub_task', self._sub_task_id_1)
-        os.makedirs(working_dir_1, exist_ok=True)
 
         response = make_invoker_cmd_call(invoker=RequestTypeToInvoker[backend_pb2.TASK_CREATE],
                                          sandbox_root=self._sandbox_root,
@@ -148,11 +145,6 @@ class TestInvokerTaskTraining(unittest.TestCase):
                                          in_class_ids=in_class_ids,
                                          docker_image_config=json.dumps(training_config))
         print(MessageToDict(response))
-
-        expected_cmd_merge = ("mir merge --root {0} --dst-rev {1}@{2} -s host -w {3} "
-                              "--src-revs tr:{4}@{4};va:{5}".format(self._mir_repo_root, self._task_id,
-                                                                    self._sub_task_id_1, working_dir_1, self._guest_id1,
-                                                                    self._guest_id2))
 
         output_config = os.path.join(working_dir_0, 'task_config.yaml')
         with open(output_config, "r") as f:
@@ -178,14 +170,12 @@ class TestInvokerTaskTraining(unittest.TestCase):
                         f"--dst-rev {self._task_id}@{self._task_id} "
                         f"--model-location {self._storage_root} "
                         f"--media-location {self._storage_root} -w {working_dir_0} "
-                        f"--src-revs {self._task_id}@{self._sub_task_id_1} "
+                        f"--src-revs tr:{self._guest_id1};va:{self._guest_id2} "
+                        f"-s host "
                         f"--task-config-file {output_config} --executor {training_image} "
                         f"--executant-name {self._task_id} --tensorboard-dir {tensorboard_dir} "
                         f"--asset-cache-dir {asset_cache_dir}")
-        mock_run.assert_has_calls(calls=[
-            mock.call(expected_cmd_merge.split(' '), capture_output=True, text=True),
-            mock.call(training_cmd.split(' '), capture_output=True, text=True),
-        ])
+        mock_run.assert_called_once_with(training_cmd.split(' '), capture_output=True, text=True)
 
         expected_ret = backend_pb2.GeneralResp()
         expected_dict = {'message': RET_ID}

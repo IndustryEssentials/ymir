@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 
 from app import crud, models, schemas
 from app.config import settings
-from app.constants.state import ResultState, TaskType, TaskState
+from app.constants.state import ResultState, TaskType, TaskState, ObjectType
 from app.utils.ymir_controller import ControllerClient
 from app.libs.datasets import import_dataset_in_background
 from app.libs.models import import_model_in_background
@@ -19,6 +19,7 @@ def setup_dataset_and_group(
     task_type: TaskType,
     task_hash: Optional[str] = None,
     input_url: Optional[str] = None,
+    object_type: int = ObjectType.object_detect.value,
     result_state: Optional[ResultState] = ResultState.processing,
 ) -> models.Dataset:
     task_state = TaskState.done if result_state is ResultState.ready else TaskState.pending
@@ -41,7 +42,7 @@ def setup_dataset_and_group(
     )
     if input_url:
         dataset_import = schemas.DatasetImport(group_name=group_name, project_id=project_id, input_url=input_url)
-        import_dataset_in_background(db, controller_client, dataset_import, user_id, task_hash, dataset.id)
+        import_dataset_in_background(db, controller_client, dataset_import, user_id, task_hash, object_type, dataset.id)
     return dataset
 
 

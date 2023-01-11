@@ -1,6 +1,5 @@
 import {
   getUploadUrl,
-  getTensorboardLink,
   getHistory,
   getStats,
   getSysInfo,
@@ -19,14 +18,6 @@ describe('service: common', () => {
     
     process.env.NODE_ENV = 'development'
     expect(getUploadUrl()).toBe(process.env.APIURL + path)
-  })
-  it('common:getTensorboardLink', () => {
-    const path = '/tensorboard/#scalars&regexInput='
-    const hash = 't23412352134215312342'
-
-    expect(getTensorboardLink(hash)).toBe(path + hash)
-    expect(getTensorboardLink()).toBe(path)
-    expect(getTensorboardLink(null)).toBe(path)
   })
   it('common:getHistory', () => {
     const params = {}

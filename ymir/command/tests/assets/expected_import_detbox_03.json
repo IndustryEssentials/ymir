@@ -33,7 +33,7 @@
         "ground_truth": {
             "task_id": "import_detbox_03",
             "image_annotations": {},
-            "type": 0,
+            "type": 100,
             "task_class_ids": [],
             "eval_class_ids": [],
             "executor_config": ""
@@ -41,7 +41,7 @@
         "prediction": {
             "task_id": "import_detbox_03",
             "image_annotations": {},
-            "type": 0,
+            "type": 100,
             "task_class_ids": [],
             "eval_class_ids": [],
             "executor_config": ""
@@ -56,18 +56,24 @@
         "total_asset_mbytes": 1,
         "pred_stats": {
             "negative_asset_cnt": 2,
-            "total_cnt": 0,
+            "total_obj_cnt": 0,
+            "total_mask_area": 0,
             "positive_asset_cnt": 0,
             "tags_cnt": {},
             "class_ids_cnt": {},
+            "class_ids_mask_area": {},
+            "class_ids_obj_cnt": {},
             "eval_class_ids": []
         },
         "gt_stats": {
             "negative_asset_cnt": 2,
-            "total_cnt": 0,
+            "total_obj_cnt": 0,
+            "total_mask_area": 0,
             "positive_asset_cnt": 0,
             "tags_cnt": {},
             "class_ids_cnt": {},
+            "class_ids_mask_area": {},
+            "class_ids_obj_cnt": {},
             "eval_class_ids": []
         },
         "cks_cnt": {}

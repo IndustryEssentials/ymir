@@ -46,10 +46,7 @@ def import_model_in_background(
 def _import_model(
     db: Session, controller_client: ControllerClient, model_import: schemas.ModelImport, user_id: int, task_hash: str
 ) -> None:
-    logger.info(
-        "[import model] start importing model file from %s",
-        model_import,
-    )
+    logger.info("[import model] start importing model file from %s", model_import)
     parameters: Dict[str, Any] = {}
     if model_import.import_type == TaskType.copy_model:
         # get the task.hash from input_model
@@ -66,9 +63,7 @@ def _import_model(
         }
     elif model_import.import_type == TaskType.import_model and model_import.input_model_path is not None:
         # TODO(chao): remove model file after importing
-        parameters = {
-            "model_package_path": os.path.join(NGINX_DATA_PATH, model_import.input_model_path),
-        }
+        parameters = {"model_package_path": os.path.join(NGINX_DATA_PATH, model_import.input_model_path)}
     elif model_import.input_url:
         temp_dir = tempfile.mkdtemp(prefix="import_model_", dir=settings.SHARED_DATA_DIR)
         model_path = save_file(model_import.input_url, temp_dir)

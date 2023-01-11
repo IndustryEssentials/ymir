@@ -5,7 +5,7 @@ from mir.tools.errors import MirRuntimeError
 
 
 # Current ymir system version
-YMIR_VERSION = '2.0.1'
+YMIR_VERSION = '2.0.2'
 
 # Default sandbox version
 DEFAULT_YMIR_SRC_VERSION = '1.1.0'
@@ -20,6 +20,7 @@ def ymir_salient_version(ver: str) -> str:
         '1.3.0': '2.0.0',
         '2.0.0': '2.0.0',
         '2.0.1': '2.0.0',
+        '2.0.2': '2.0.0',
     }
     return _SALIENT_VERSIONS[ver]
 
@@ -46,6 +47,7 @@ def ymir_model_salient_version(ver: str) -> str:
         '1.3.0': '2.0.0',
         '2.0.0': '2.0.0',
         '2.0.1': '2.0.0',
+        '2.0.2': '2.0.0',
     }
     return _PACKAGE_VERSIONS[ver]
 

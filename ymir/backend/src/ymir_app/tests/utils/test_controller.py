@@ -73,6 +73,7 @@ class TestControllerRequest:
                 "labellers": [],
                 "extra_url": random_url(),
                 "annotation_type": 2,
+                "object_type": 3,
             },
         )
         assert ret.req.req_type == m.mirsvrpb.RequestType.TASK_CREATE

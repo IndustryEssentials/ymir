@@ -8,6 +8,7 @@ const common = {
   'common.top.menu.configure': { cn: "系统配置", en: "Configure", },
   'common.top.menu.permission': { cn: "权限配置", en: "Permission", },
   'common.top.menu.image': { cn: "我的镜像", en: "My Images", },
+  'common.top.menu.public_image': { cn: "镜像社区", en: "Image Community", },
   'common.history.node.title': { cn: '节点详情', en: 'Node Detail', },
   'common.back': { cn: '返回', en: 'Back', },
   'common.editbox.action.edit': { cn: '编辑名称', en: 'Edit Name', }, 
@@ -94,6 +95,13 @@ const common = {
   "common.menu.docs": { en: "Documents", cn: "说明文档", },
   "annotation.gt": { en: "GT", cn: "标准值", },
   "annotation.pred": { en: "Prediction", cn: "预测标注", },
+  "date.range.today": { en: "Today", cn: "今天", },
+  "date.range.last3days": { en: "Last 3 days", cn: "近三天", },
+  "date.range.last7days": { en: "Last 7 days", cn: "近一周", },
+  "common.object.type": { en: "Object Type", cn: "目标类型", },
+  "common.search.result.name": { en: "Dataset/Model Name", cn: "数据集/模型名称", },
+  "common.search": { en: "Search", cn: "搜索", },
+  "common.search.advanced": { en: "Advanced Search", cn: "高级搜索", },
 }
 
 export default common

@@ -592,12 +592,12 @@ def _single_task_annotations_to_coco(
         attrs = mir_metadatas.attributes[asset_id]
         for oa in oas_list:
             segmentation: Union[list, dict] = {}
-            if oa.type == mirpb.ObjectType.OT_SEG_MASK:
+            if oa.type == mirpb.ObjectSubType.OST_SEG_MASK:
                 segmentation = {
                     'counts': oa.mask,
                     'size': [attrs.height, attrs.width],
                 }
-            elif oa.type == mirpb.ObjectType.OT_SEG_POLYGON:
+            elif oa.type == mirpb.ObjectSubType.OST_SEG_POLYGON:
                 segmentation = [[]]
                 for p in oa.polygon:
                     segmentation[0].extend([p.x, p.y])

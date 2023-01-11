@@ -130,7 +130,9 @@ func TestGetDatasetMetaCountsHandler(t *testing.T) {
 					{
 						"shenzhen": 1
 					}
-			}}
+			}},
+			"class_ids_mask_area": {
+			}
 		},
 		"gt_stats":
 		{
@@ -147,7 +149,9 @@ func TestGetDatasetMetaCountsHandler(t *testing.T) {
 					{
 						"guangzhou": 1
 					}
-			}}
+			}},
+			"class_ids_mask_area": {
+			}
 		}
 	}`), &mockMirContext)
 	if err != nil {
@@ -161,6 +165,7 @@ func TestGetDatasetMetaCountsHandler(t *testing.T) {
 			{
 				"0": 3
 			},
+			"class_obj_count": {},
 			"negative_assets_count": 2,
 			"positive_assets_count": 3,
 			"tags_count_total":
@@ -173,6 +178,8 @@ func TestGetDatasetMetaCountsHandler(t *testing.T) {
 				{
 					"guangzhou": 1
 				}
+			},
+			"class_ids_mask_area": {
 			}
 		},
 		"pred":
@@ -181,6 +188,7 @@ func TestGetDatasetMetaCountsHandler(t *testing.T) {
 			{
 				"1": 8
 			},
+			"class_obj_count": {},
 			"negative_assets_count": 5,
 			"positive_assets_count": 8,
 			"eval_class_ids": [0, 1],
@@ -194,6 +202,8 @@ func TestGetDatasetMetaCountsHandler(t *testing.T) {
 				{
 					"shenzhen": 1
 				}
+			},
+			"class_ids_mask_area": {
 			}
 		},
 		"total_assets_count": 20,

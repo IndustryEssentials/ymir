@@ -8,15 +8,15 @@ import useFetch from '@/hooks/useFetch'
 import useRequest from '@/hooks/useRequest'
 import useAddKeywords from '@/hooks/useAddKeywords'
 import { IMPORTSTRATEGY } from '@/constants/dataset'
-import { PROJECTTYPES } from '@/constants/project'
+import { ObjectType } from '@/constants/project'
 
 import { urlValidator } from '@/components/form/validators'
 import Breadcrumbs from '@/components/common/breadcrumb'
 import Uploader from '@/components/form/uploader'
 import ProjectDatasetSelect from '@/components/form/projectDatasetSelect'
 import Desc from '@/components/form/desc'
-import DatasetName from '../../components/form/items/datasetName'
-import { FormatDetailModal } from './components/FormatDetailModal'
+import DatasetName from '@/components/form/items/DatasetName'
+import FormatDetailModal from './components/FormatDetailModal'
 import Dataset from '@/components/form/option/Dataset'
 
 import s from './add.less'
@@ -88,8 +88,7 @@ const Add = (props) => {
   }, [pid])
 
   useEffect(() => {
-    console.log('project.type === PROJECTTYPES.SemanticSegmentation:', project, project.type, PROJECTTYPES.SemanticSegmentation)
-    project.type === PROJECTTYPES.SemanticSegmentation && (setSampleZip('/sample_dataset_seg.zip'), setSamplePic(SegSamplePic))
+    project.type !== ObjectType.ObjectDetection && (setSampleZip('/sample_dataset_seg.zip'), setSamplePic(SegSamplePic))
   }, [project])
 
   useEffect(() => {
@@ -276,7 +275,7 @@ const Add = (props) => {
       ...params,
       br: <br />,
       structure: structureTip,
-      format: project.type === PROJECTTYPES.ObjectDetection ? 'Pascal VOC' : 'Coco',
+      format: project.type === ObjectType.ObjectDetection ? 'Pascal VOC' : 'Coco',
     })
 
   return (
@@ -329,19 +328,17 @@ const Add = (props) => {
                   ></Select>
                 </Form.Item>
 
-                {selectedDataset ? (
+                {selectedDataset && newKeywords.length ? (
                   <Form.Item label={t('dataset.import.public.include')}>
-                    {newKeywords.length ? (
-                      <>
-                        <h4>
-                          {t('dataset.add.internal.newkeywords.label')}
-                          <Button type="link" onClick={(e) => updateIgnoredKeywords(e, newKeywords, false)}>
-                            {t('dataset.add.internal.ignore.all')}
-                          </Button>
-                        </h4>
-                        <div>{renderKeywords(newKeywords)}</div>
-                      </>
-                    ) : null}
+                    <>
+                      <h4>
+                        {t('dataset.add.internal.newkeywords.label')}
+                        <Button type="link" onClick={(e) => updateIgnoredKeywords(e, newKeywords, false)}>
+                          {t('dataset.add.internal.ignore.all')}
+                        </Button>
+                      </h4>
+                      <div>{renderKeywords(newKeywords)}</div>
+                    </>
                     {ignoredKeywords.length ? (
                       <>
                         <h4>

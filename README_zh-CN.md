@@ -267,15 +267,7 @@ YMIR-GUI项目包在DockerHub上，安装部署YMIR步骤如下：
 3. 执行启动命令：`bash ymir.sh start`，建议不要使用```sudo```命令，否则可能会造成权限不足。
 
 *  服务启动时会询问用户是否愿意发送使用报告到YMIR开发团队，不输入默认为愿意。
-*  当询问用户是否需要启动label free标注平台时，如果用户需要启动，则需要前往.env配置文件中将ip和port信息改为用户当前所部署的标注工具地址及端口号。
-
-```
-# Note format: LABEL_TOOL_HOST_IP=http(s)://(ip)
-LABEL_TOOL_HOST_IP=set_your_label_tool_HOST_IP
-LABEL_TOOL_HOST_PORT=set_your_label_tool_HOST_PORT
-
-```
-
+*  当询问用户是否需要启动标注平台时，用户可以选择 label_free 或 label_studio
 *  YMIR的模型部署模块默认端口号为18801，如有冲突需要修改，则需要前往YMIR目录下修改.env文件，配置 ModelDeployment 端口和 MySQL 访问密码：
 
 ```
@@ -297,39 +289,31 @@ DEPLOY_MODULE_MYSQL_ROOT_PASSWORD=deploy_db_passwd
 
 label studio同时也是YMIR所支持的外接标注系统，可以作为备选标注工具安装。
 
-1. 在上一节的YMIR目录下，修改.env文件，配置label studio端口：
+1. 在上一节的YMIR目录下，修改.env文件，配置 LABEL_TOOL
 
 ```
 LABEL_TOOL=label_studio
-# Note format: LABEL_TOOL_HOST_IP=http(s)://(ip)
-LABEL_TOOL_HOST_IP=set_your_label_tool_HOST_IP
-LABEL_TOOL_HOST_PORT=set_your_label_tool_HOST_PORT
-
 ```
 
-2. 配置好标注工具（LABEL_TOOL）、IP（LABEL_TOOL_HOST_IP）、端口（LABEL_TOOL_HOST_PORT）后启动安装label studio命令如下：
+2. 配置好标注工具（LABEL_TOOL）后启动安装 label studio 命令如下：
 
-`docker-compose -f docker-compose.label_studio.yml up -d`
+```sh
+docker-compose -f docker-compose.label_studio.yml up -d
+```
 
 3. 完成后查看label studio状态命令如下：
 
-`docker-compose -f docker-compose.label_studio.yml ps`（默认端口为12007）
-
-可以登录默认地址 [http://localhost:12007/](http://localhost:12007/) 显示登录界面即安装成功。
-
-4. 配置label studio授权token
-
-注册登录label studio后，在页面右上角个人信息图标，选择"Account & Settings"获取Token值并复制，粘贴到YMIR项目的.env配置文件对应的位置（LABEL_STUDIO_TOKEN）。实例如下：
-
-```
-LABEL_TOOL_TOKEN="Token token_value"
+```sh
+docker-compose -f docker-compose.label_studio.yml ps`
 ```
 
-配置好Token值（LABEL_STUDIO_TOKEN）后重启YMIR即可。
+可以登录默认地址 [http://localhost:8763/](http://localhost:8763/) 显示登录界面即安装成功。
 
-5. 停止label studio服务命令如下：
+4. 停止label studio服务命令如下：
 
-`docker-compose -f docker-compose.label_studio.yml down`
+```sh
+docker-compose -f docker-compose.label_studio.yml down
+```
 
 # 3. GUI使用-典型模型生产流程
 
@@ -436,3 +420,4 @@ YMIR repo中的任何代码都应遵循编码标准，并将在CI测试中进行
 <a href="https://github.com/Zhang-SJ930104"><img src="https://avatars.githubusercontent.com/u/91466580?v=4" class="avatar-user" width="18px;"/></a>
 <a href="https://github.com/LuciferZap"><img src="https://avatars.githubusercontent.com/u/92283801?v=4" class="avatar-user" width="18px;"/></a>
 <a href="https://github.com/yzbx"><img src="https://avatars.githubusercontent.com/u/5005182?v=4" class="avatar-user" width="18px;"/></a>
+

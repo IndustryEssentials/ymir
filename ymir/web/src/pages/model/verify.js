@@ -16,7 +16,7 @@ import { TYPES } from '@/constants/image'
 import styles from './verify.less'
 import { NavDatasetIcon, SearchEyeIcon, NoXlmxIcon } from '@/components/common/Icons'
 import ImgDef from '@/assets/img_def.png'
-import ImageSelect from "@/components/form/imageSelect"
+import ImageSelect from "@/components/form/ImageSelect"
 import { percent } from "@/utils/number"
 import useFetch from '@/hooks/useFetch'
 
@@ -29,10 +29,9 @@ const KeywordColor = ["green", "red", "cyan", "blue", "yellow", "purple", "magen
 function Verify({ verify }) {
   const history = useHistory()
   const { mid: id, id: pid } = useParams()
-  const [url, setUrl] = useState('')
+  const [virtualAsset, setVirtualAsset] = useState()
   const [confidence, setConfidence] = useState(20)
   const [annotations, setAnnotations] = useState([])
-  const [showAnnotations, setShowAnnos] = useState([])
   const [selectedKeywords, setSelectedKeywords] = useState([])
   const [form] = Form.useForm()
   const [image, setImage] = useState(null)
@@ -46,27 +45,28 @@ function Verify({ verify }) {
   }, [])
 
   useEffect(() => {
-    setShowAnnos(annotations.length ? annotations.filter(anno =>
+    const annos = annotations.length ? annotations.filter(anno =>
       anno.score * 100 > confidence && selectedKeywords.indexOf(anno.keyword) > -1
-    ) : [])
+    ) : []
+    setVirtualAsset(asset => ({ ...asset, annotations: annos }))
   }, [confidence, annotations, selectedKeywords])
 
   useEffect(() => {
     form.setFieldsValue({ hyperparam: seniorConfig })
   }, [seniorConfig])
 
-  function imageChange(value, option) {
-    if (option) {
-      setImage(option.url)
+  function imageChange(value, option = {}) {
+    const img = option.image
+    if (img) {
+      setImage(img.url)
     }
-    const { configs } = option || {}
+    const { configs } = img || {}
     const configObj = (configs || []).find(conf => conf.type === TYPES.INFERENCE) || {}
     setConfig(configObj.config)
   }
 
   function urlChange(files, url) {
-    setUrl('')
-    setUrl(files.length ? url : '')
+    setVirtualAsset({ url: files.length ? url : '' })
     setAnnotations([])
   }
 
@@ -122,11 +122,14 @@ function Verify({ verify }) {
   }
 
   async function verifyImg() {
+    if (!virtualAsset?.url) {
+      return
+    }
     const config = {}
     form.getFieldValue('hyperparam').forEach(({ key, value }) => key && value ? config[key] = value : null)
     // reinit annotations
     setAnnotations([])
-    const result = await verify({ projectId: pid, modelStage: [id, model.recommendStage], urls: [url], image, config })
+    const result = await verify({ projectId: pid, modelStage: [id, model.recommendStage], urls: [virtualAsset.url], image, config })
     if (result) {
       const all = result || []
 
@@ -160,14 +163,12 @@ function Verify({ verify }) {
       <Card className={styles.info} bodyStyle={{ padding: 20, height: '100%' }} title={renderTitle}>
         <Row className={styles.infoRow} wrap={false}>
           <Col span={18} className={`${styles.asset_img} scrollbar`}>
-            {url ? (
+            {virtualAsset?.url ? (
               <AssetAnnotation
-                url={url}
-                keywords={model.keywords}
-                data={showAnnotations}
+                asset={virtualAsset}
               />
             ) : renderUploader}
-            {url ? (<Form className={styles.confidence}><Form.Item label={t('model.verify.confidence')}>
+            {virtualAsset?.url ? (<Form className={styles.confidence}><Form.Item label={t('model.verify.confidence')}>
               <Row gutter={10}>
                 <Col flex={1}>
                   <Slider marks={{ 0: '0%', 100: '100%' }} style={{ width: 200 }}
@@ -218,7 +219,7 @@ function Verify({ verify }) {
 
             <Form form={form} className={styles.asset_form}>
               <Form.Item name='image' label={t('task.inference.form.image.label')} rules={[{ required: true }]}>
-                <ImageSelect style={{ width: 200 }} type={TYPES.INFERENCE} placeholder={t('task.train.form.image.placeholder')} onChange={imageChange} />
+                <ImageSelect style={{ width: 200 }} pid={pid} type={TYPES.INFERENCE} placeholder={t('task.train.form.image.placeholder')} onChange={imageChange} />
               </Form.Item>
 
               {seniorConfig.length ?
@@ -285,7 +286,7 @@ function Verify({ verify }) {
             <div>
               {renderUploadBtn()}
               <Button type="primary"
-                disabled={!url}
+                disabled={!virtualAsset?.url}
                 icon={<NoXlmxIcon className={styles.modelIcon} />}
                 style={{ marginLeft: 20 }}
                 onClick={() => onFinish()}

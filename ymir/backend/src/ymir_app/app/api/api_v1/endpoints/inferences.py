@@ -71,11 +71,10 @@ def call_inference(
     return {"result": result}
 
 
-def extract_inference_annotations(
-    resp: Dict, *, inference_type: str = "detection", filename_mapping: Dict
-) -> Generator:
-    for filename, annotations in resp[inference_type]["image_annotations"].items():
+def extract_inference_annotations(resp: Dict, *, filename_mapping: Dict) -> Generator:
+    for filename, annotations in resp["objects"]["image_annotations"].items():
+        annotations = annotations["boxes"]  # FIXME ad hoc
         yield {
             "image_url": filename_mapping[filename],
-            "detection": annotations["boxes"],
+            "annotations": annotations,
         }

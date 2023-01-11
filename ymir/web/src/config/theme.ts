@@ -1,6 +1,3 @@
-interface Config{
-  [key: string]: any,
-}
 const theme = {
   '@primary-color': 'rgb(54, 203, 203)',
   '@btn-primary-bg': 'rgb(44, 189, 233)',
@@ -13,8 +10,10 @@ const theme = {
   '@success-color': '@primary-color',
   '@warning-color': 'rgb(250, 211, 55)',
   '@error-color': 'rgb(242, 99, 123)',
-  "@radio-button-active-color": '@primary-color',
+  "@radio-button-active-color": '@btn-primary-bg',
+  "@radio-button-hover-color": '@btn-primary-bg',
   '@card-shadow': '0 1px 2px -2px fade(@primary-color, 16), 0 3px 6px 0 fade(@primary-color, 12), 0 5px 12px 4px fade(@primary-color, 9)',
+  '@radio-dot-color': '@btn-primary-bg'
 }
 
 export default theme

@@ -2,23 +2,24 @@ import { transferDatasetGroup, transferDataset } from '@/constants/dataset'
 import { format } from '@/utils/date'
 import { transferIteration } from './iteration'
 
-export enum PROJECTTYPES {
-  Classification = 1,
+export enum ObjectType {
   ObjectDetection = 2,
   SemanticSegmentation = 3,
+  InstanceSegmentation = 4,
 }
 
 const typesPrefix = 'project.types.'
 const projectTypes = [
-  { label: 'det', value: PROJECTTYPES.ObjectDetection },
-  { label: 'seg', value: PROJECTTYPES.SemanticSegmentation },
+  { label: 'det', value: ObjectType.ObjectDetection },
+  { label: 'seg', value: ObjectType.SemanticSegmentation },
+  { label: 'ins', value: ObjectType.InstanceSegmentation },
 ]
 
 export const getProjectTypes = () => projectTypes.map(({ label, value }) => ({ label: typesPrefix + label, value }))
 
-export const getProjectTypeLabel = (type: PROJECTTYPES, prefix: boolean = false) => {
+export const getProjectTypeLabel = (type?: ObjectType, prefix: boolean = false) => {
   const target = projectTypes.find(({ value }) => value === type)
-  return (prefix ? typesPrefix : '') + target?.label
+  return type ? (prefix ? typesPrefix : '') + target?.label : ''
 }
 
 export const tabs = [
@@ -41,7 +42,6 @@ export function transferProject(data: YModels.BackendData) {
     trainSetVersion: data.initial_training_dataset_id || 0,
     model: data.initial_model_id || 0,
     modelStage: data.initial_model_id ? [data.initial_model_id, data.initial_model_stage_id] : undefined,
-    modelCount: data.model_count,
     miningStrategy: data.mining_strategy,
     chunkSize: data.chunk_size,
     currentIteration: iteration,
@@ -57,8 +57,12 @@ export function transferProject(data: YModels.BackendData) {
     updateTime: format(data.update_datetime),
     enableIteration: data.enable_iteration,
     totalAssetCount: data.total_asset_count,
-    runningTaskCount: data.running_task_count,
-    totalTaskCount: data.total_task_count,
+    datasetCount: data.dataset_count || 0,
+    datasetProcessingCount: data.processing_dataset_count || 0,
+    datasetErrorCount: data.error_dataset_count || 0,
+    modelCount: data.model_count || 0,
+    modelProcessingCount: data.processing_model_count || 0,
+    modelErrorCount: data.error_model_count || 0,
   }
   return project
 }

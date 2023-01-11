@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef, FC } from 'react'
+import { useEffect, useState, useRef, FC, SyntheticEvent } from 'react'
 
 import { AnnotationType } from '@/constants/dataset'
 import { transferAnnotations } from './_helper'
@@ -22,20 +22,20 @@ const AssetAnnotation: FC<Props> = ({ asset }) => {
   const [ratio, setRatio] = useState(1)
 
   useEffect(() => {
-    if (!asset) {
+    if (!asset || !asset.height) {
       return
     }
     const updateAnnotations = transferAnnotations(asset.annotations, asset)
     setAnnotations(updateAnnotations)
   }, [asset])
 
-  function calClientWidth() {
+  function calClientWidth(imgWidth?: number) {
     const { current } = imgContainer
     const cw = current?.clientWidth || 0
-    const iw = asset?.width || 0
+    const iw = asset?.width || width || imgWidth || 0
     const clientWidth = iw > cw ? cw : iw
     setImgWidth(clientWidth)
-    setWidth(cw)
+    setWidth(iw)
     setRatio(clientWidth / iw)
   }
 
@@ -50,6 +50,15 @@ const AssetAnnotation: FC<Props> = ({ asset }) => {
     }
   }
 
+  const imgLoad = (e: SyntheticEvent) => {
+    if (img.current && img.current.naturalWidth) {
+      const { naturalHeight, naturalWidth } = img.current
+      calClientWidth(naturalWidth)
+      const updateAnnotations = transferAnnotations(asset.annotations, { ...asset, height: naturalHeight })
+      setAnnotations(updateAnnotations)
+    }
+  }
+
   window.addEventListener('resize', () => {
     if (imgContainer.current) {
       calClientWidth()
@@ -57,9 +66,9 @@ const AssetAnnotation: FC<Props> = ({ asset }) => {
   })
 
   return (
-    <div className={styles.anno_panel} ref={imgContainer}>
+    <div className={styles.anno_panel} ref={imgContainer} key={asset?.hash}>
       <div className={styles.img_container}>
-        <img ref={img} src={asset?.url} style={{ width: imgWidth }} className={styles.assetImg} onLoad={calClientWidth} />
+        <img ref={img} src={asset?.url} style={imgWidth ? { width: imgWidth } : undefined} className={styles.assetImg} onLoad={imgLoad} />
       </div>
       <div className={styles.annotations} style={{ width: imgWidth, left: -imgWidth / 2 }}>
         {annotations.map(renderAnnotation)}

@@ -22,7 +22,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 ARG PIP_SOURCE=https://pypi.org/simple
 
 RUN apt-get update \
-  && apt-get install -y curl git vim \
+  && apt-get install -y curl git vim gcc \
   && apt-get install -y --no-install-recommends python3-pip python3-dev mysql-client \
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/* \

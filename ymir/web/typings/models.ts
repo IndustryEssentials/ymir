@@ -28,7 +28,7 @@ declare namespace YModels {
     id: number
     groupId: number
     projectId: number
-    type: number,
+    type: number
     name: string
     versionName: string
     version: number
@@ -46,15 +46,16 @@ declare namespace YModels {
     durationLabel?: string
     taskName: string
     project?: Project
-    task?: Task<P>
+    task: Task<P>
     hidden: boolean
     description: string
     needReload?: boolean
   }
 
   enum ObjectType {
-    Detection = 1,
-    Segmentation = 2,
+    ObjectDetection = 2,
+    SemanticSegmentation = 3,
+    InstanceSegmentation = 4,
   }
 
   type Keywords = {
@@ -70,13 +71,17 @@ declare namespace YModels {
     total: number
   }
   type AnylysisAnnotation = {
-    keywords: Labels
+    keywords: Keywords
     total: number
     average: number
     negative: number
+    totalArea: number
     quality: Array<BackendData>
-    area: Array<BackendData>
     areaRatio: Array<BackendData>
+    keywordAnnotaitionCount: Array<BackendData>
+    keywordArea: Array<BackendData>
+    instanceArea: Array<BackendData>
+    crowdedness: Array<BackendData>
   }
   export interface DatasetGroup extends Group {
     versions?: Array<Dataset>
@@ -86,6 +91,7 @@ declare namespace YModels {
     keywordCount: number
     isProtected: Boolean
     assetCount: number
+    evaluated: boolean
     gt?: AnnotationsCount
     pred?: AnnotationsCount
     inferClass?: Array<string>
@@ -101,21 +107,12 @@ declare namespace YModels {
     inferConfig: ImageConfig
   }
 
-  export interface DatasetAnalysis {
-    name: string
-    version: number
-    versionName: string
-    assetCount: number
-    totalAssetMbytes: number
-    assetBytes: Array<BackendData>
+  export interface DatasetAnalysis extends Omit<Dataset, 'gt' | 'pred'> {
     assetHWRatio: Array<BackendData>
     assetArea: Array<BackendData>
     assetQuality: Array<BackendData>
     gt: AnylysisAnnotation
     pred: AnylysisAnnotation
-    inferClass?: Array<string>
-    cks?: BackendData
-    tags?: BackendData
   }
 
   export interface Asset {
@@ -228,7 +225,6 @@ declare namespace YModels {
     trainSetVersion?: number
     model?: number
     modelStage?: Array<number>
-    modelCount: number
     miningStrategy: number
     chunkSize?: number
     currentIteration?: Iteration
@@ -242,8 +238,12 @@ declare namespace YModels {
     hiddenModels: Array<number>
     enableIteration: boolean
     totalAssetCount: number
-    runningTaskCount: number
-    totalTaskCount: number
+    datasetCount: number
+    datasetProcessingCount: number
+    datasetErrorCount: number
+    modelCount: number
+    modelProcessingCount: number
+    modelErrorCount: number
   }
 
   export type ImageConfig = { [key: string]: number | string }
@@ -255,14 +255,19 @@ declare namespace YModels {
     id: number
     name: string
     state: number
-    isShared: boolean
     functions: Array<number>
     configs: Array<DockerImageConfig>
     url: string
-    liveCode?: boolean
     description: string
     createTime: string
+    objectType: ObjectType
     related?: Array<Image>
+    liveCode?: boolean
+  }
+
+  export interface ImageList {
+    items: Image[]
+    total: number
   }
 
   type ResultType = 'dataset' | 'model'

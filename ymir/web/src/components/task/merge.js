@@ -4,12 +4,12 @@ import { useHistory, useParams } from 'umi'
 
 import { formLayout } from '@/config/antd'
 import t from '@/utils/t'
+import { MergeType as DatasetMergeType } from '@/constants/dataset'
 import useFetch from '@/hooks/useFetch'
 
 import DatasetSelect from '@/components/form/datasetSelect'
 import Desc from '@/components/form/desc'
-import MergeType from './merge/formItem.mergeType'
-import DatasetName from '@/components/form/items/datasetName'
+import MergeType from '@/components/form/items/MergeType'
 import Strategy from './merge/formItem.strategy'
 import SubmitButtons from './submitButtons'
 import Dataset from '@/components/form/option/Dataset'
@@ -90,17 +90,17 @@ function Merge({ query = {}, hidden, ok = () => {}, bottom }) {
 
   const excludesFilter = useCallback((datasets) => filter(datasets, [selectedDataset, ...(includes || [])]), [selectedDataset, includes])
 
+  const generate2ExistGroup = type => type === DatasetMergeType.Exist
+
   return (
     <Form form={form} name="mergeForm" {...formLayout} initialValues={initialValues} onFinish={onFinish} onFinishFailed={onFinishFailed}>
       <div hidden={hidden}>
-        <MergeType disabled={[iterationId ? 0 : null]} initialValue={!iterationId && mid ? 0 : 1} />
-        {!type ? <DatasetName /> : null}
+        <MergeType form={form} disabledNew={!!iterationId} initialValue={mid ? DatasetMergeType.New : DatasetMergeType.Exist} />
         {did ? (
           <Form.Item label={t('task.fusion.form.dataset')}>
             <Dataset dataset={dataset} />
           </Form.Item>
-        ) : null}
-        {!did && (type || dataset.id) ? (
+        ) : (generate2ExistGroup(type) || dataset.id) ? (
           <Form.Item name="dataset" label={t('task.fusion.form.dataset')} rules={[{ required: true }]}>
             <DatasetSelect pid={pid} onChange={originDatasetChange} filters={originFilter} />
           </Form.Item>

@@ -48,6 +48,7 @@ class CRUDProject(CRUDBase[Project, ProjectCreate, ProjectUpdate]):
         *,
         user_id: int,
         name: Optional[str] = None,
+        object_type: Optional[int] = None,
         start_time: Optional[int] = None,
         end_time: Optional[int] = None,
         offset: Optional[int] = 0,
@@ -72,6 +73,8 @@ class CRUDProject(CRUDBase[Project, ProjectCreate, ProjectUpdate]):
 
         if name:
             query = query.filter(self.model.name.like(f"%{name}%"))
+        if object_type:
+            query = query.filter(self.model.object_type == object_type)
 
         order_by_column = getattr(self.model, order_by)
         if is_desc:

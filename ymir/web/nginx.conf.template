@@ -65,7 +65,7 @@ server {
     }
 
     location /label_tool/ {
-        return 307 ${LABEL_TOOL_HOST_URL};
+        return 307 http://$host:${LABEL_TOOL_HOST_PORT};
     }
 
     location /socket/ {
