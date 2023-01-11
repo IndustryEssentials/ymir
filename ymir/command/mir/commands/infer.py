@@ -237,7 +237,7 @@ def _process_infer_detbox_result(task_annotations: mirpb.SingleTaskAnnotations, 
     unknown_class_id_annos_cnt = 0
     no_score_annos_cnt = 0
     for asset_name, annotations_dict in detections.items():
-        annotations = annotations_dict.get('boxes')
+        annotations = annotations_dict.get('boxes') or annotations_dict.get('annotations')
         if not isinstance(annotations, list):
             logging.error(f"invalid annotations: {annotations}")
             continue
