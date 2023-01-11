@@ -4,6 +4,7 @@ import { renderMask } from './_helper'
 type Props = {
   annotation: YModels.Mask
   ratio?: number
+  simple?: boolean
 }
 
 const Mask: FC<Props> = ({ annotation, ratio = 1 }) => {

@@ -48,11 +48,11 @@ const ListAnnotation: FC<Props> = ({ asset, filter }) => {
   function renderAnnotation(annotation: YModels.Annotation, key: number | string) {
     switch (annotation.type) {
       case AnnotationType.BoundingBox:
-        return <BoundingBox key={key} annotation={annotation} ratio={ratio} />
+        return <BoundingBox key={key} annotation={annotation} ratio={ratio} simple={true} />
       case AnnotationType.Polygon:
-        return <Polygon key={key} annotation={annotation} ratio={ratio} />
+        return <Polygon key={key} annotation={annotation} ratio={ratio} simple={true} />
       case AnnotationType.Mask:
-        return <Mask key={key} annotation={annotation} ratio={ratio} />
+        return <Mask key={key} annotation={annotation} ratio={ratio} simple={true} />
     }
   }
 
