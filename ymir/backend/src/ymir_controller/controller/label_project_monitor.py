@@ -70,7 +70,7 @@ def generate_label_index_file(input_asset_dir: Path, annotation_dir: Path, objec
             total_assets_count += 1
             if asset_path.stem in labelled_assets_hashes:
                 labelled_assets_count += 1
-                out_.write(str(asset_path))
+                out_.write(f"{asset_path}\n")
     logging.info(
         f"prepare annotation import: total assets {total_assets_count}, labelled assets {labelled_assets_count}"
     )
