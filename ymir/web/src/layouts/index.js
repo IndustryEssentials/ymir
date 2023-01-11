@@ -5,7 +5,7 @@ import React, { useEffect } from "react"
 import { ConfigProvider, Layout, message } from "antd"
 import Loading from "@/components/common/loading"
 import Foot from "@/components/common/footer"
-import LeftMenu from "@/components/common/leftMenu"
+import LeftMenu from "@/components/common/LeftMenu"
 import Empty from '@/components/empty/default'
 import '@/assets/icons/iconfont.css'
 import { withRouter } from "umi"
