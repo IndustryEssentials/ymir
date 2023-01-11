@@ -99,7 +99,8 @@ def update_label_task(label_instance: utils.LabelBase, task_id: str, project_inf
             sentry_sdk.capture_exception(e)
             logging.error(f"get label task {task_id} error: {e}, set task_id:{task_id} error")
             state = LogState.ERROR
-        label_index_file = generate_label_index_file(Path(project_info["input_asset_dir"]), Path(des_annotation_path), object_type)
+        label_index_file = generate_label_index_file(
+            Path(project_info["input_asset_dir"]), Path(des_annotation_path), object_type)
         trigger_mir_import(
             repo_root=project_info["repo_root"],
             task_id=task_id,
