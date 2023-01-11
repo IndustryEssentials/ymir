@@ -466,11 +466,11 @@ def _single_image_annotations_to_det_ls_json(attributes: mirpb.MetadataAttribute
         if class_ids_mapping and annotation.class_id not in class_ids_mapping:
             continue
 
+        img_width, img_height = attributes.width, attributes.height
         if annotation.type == mirpb.ObjectSubType.OST_NOTSET:
             # detection
             bbox_x, bbox_y = float(annotation.box.x), float(annotation.box.y)
             bbox_width, bbox_height = float(annotation.box.w), float(annotation.box.h)
-            img_width, img_height = attributes.width, attributes.height
             result_item = {
                 "id": uuid.uuid4().hex[0:10],  # random id to identify this annotation.
                 "type": "rectanglelabels",
@@ -650,17 +650,22 @@ def _single_task_annotations_to_coco(
 
 
 # todo: we should have a file for rle converters
+# if type(ann['segmentation']['counts']) == list:
+#     rle = maskUtils.frPyObjects([ann['segmentation']], t['height'], t['width'])
+# else:
+#     rle = [ann['segmentation']]
+# m = maskUtils.decode(rle)
 def _coco_rle_to_ls_rle(mask_or_polygon: Union[str, List[mirpb.IntPoint]], width: int, height: int) -> List[int]:
-    mask_np: np.ndarray
     if isinstance(mask_or_polygon, str):
-        mask_np = mask_utils.decode(mask_or_polygon)
+        coco_seg = {'counts': mask_or_polygon, 'size': [height, width]}
     elif isinstance(mask_or_polygon, list):
         polygon = []
         for p in mask_or_polygon:
             polygon.extend([p.x, p.y])
-        mask_np = mask_utils.decode(polygon)
-    mask_np = mask_np.reshape([height, width])
-    return _mask2rle(mask_np)
+        coco_seg = mask_utils.frPyObjects({'counts': [[polygon]]}, height, width)
+
+    # coco_seg: dict -> mask: np.ndarray -> ls_rle: List[int]
+    return _mask2rle(mask_utils.decode(coco_seg))
 
 
 def _mask2rle(mask: np.ndarray) -> List[int]:
