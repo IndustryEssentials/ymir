@@ -3,7 +3,7 @@ import logging
 import os
 from pathlib import Path
 import sys
-from typing import Dict
+from typing import Dict, Iterator
 
 from requests.exceptions import ConnectionError, HTTPError, Timeout
 import sentry_sdk
@@ -44,7 +44,14 @@ def remove_json_file(des_annotation_path: str) -> None:
             os.remove(os.path.join(des_annotation_path, annotation_file))
 
 
-def generate_label_index_file(input_file: Path, annotation_dir: Path, object_type: int) -> Path:
+def iter_asset_dir(input_asset_dir: Path) -> Iterator[Path]:
+    image_dirs = [i for i in input_asset_dir.iterdir() if i.is_dir()]
+    for image_dir in image_dirs:
+        for image_path in image_dir.iterdir():
+            yield image_path
+
+
+def generate_label_index_file(input_asset_dir: Path, annotation_dir: Path, object_type: int) -> Path:
     """
     filter assets paths against related annotation files
     """
@@ -55,14 +62,15 @@ def generate_label_index_file(input_file: Path, annotation_dir: Path, object_typ
             coco = json.load(f)
         labelled_assets_hashes = [Path(i["file_name"]).stem for i in coco["images"]]
 
-    output_file = input_file.with_name("label_index.tsv")
+    input_asset_paths = list(iter_asset_dir(input_asset_dir))
+    output_file = input_asset_dir / "label_index.tsv"
     total_assets_count, labelled_assets_count = 0, 0
-    with open(input_file) as in_, open(output_file, "w") as out_:
-        for asset_path in in_:
+    with open(output_file, "w") as out_:
+        for asset_path in input_asset_paths:
             total_assets_count += 1
-            if Path(asset_path.strip()).stem in labelled_assets_hashes:
+            if asset_path.stem in labelled_assets_hashes:
                 labelled_assets_count += 1
-                out_.write(asset_path)
+                out_.write(f"{asset_path}\n")
     logging.info(
         f"prepare annotation import: total assets {total_assets_count}, labelled assets {labelled_assets_count}"
     )
@@ -91,8 +99,8 @@ def update_label_task(label_instance: utils.LabelBase, task_id: str, project_inf
             sentry_sdk.capture_exception(e)
             logging.error(f"get label task {task_id} error: {e}, set task_id:{task_id} error")
             state = LogState.ERROR
-        export_index_file = Path(project_info["input_asset_dir"]) / "index.tsv"
-        label_index_file = generate_label_index_file(export_index_file, Path(des_annotation_path), object_type)
+        label_index_file = generate_label_index_file(
+            Path(project_info["input_asset_dir"]), Path(des_annotation_path), object_type)
         trigger_mir_import(
             repo_root=project_info["repo_root"],
             task_id=task_id,

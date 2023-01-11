@@ -25,3 +25,6 @@ LABEL_TOOL_TIMEOUT = int(env("LABEL_TOOL_TIMEOUT", 600))
 
 # get label studio tasks's slice number
 LABEL_PAGE_SIZE = 500
+
+# MIR coco
+MIR_COCO_ANNOTATION_FILENAME = "coco-annotations.json"
