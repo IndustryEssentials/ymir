@@ -35,7 +35,7 @@ const menus = () => [
     icon: <FlagIcon className={styles.navIcon} />,
   },
   {
-    label: 'algo.label',
+    label: 'algo.public.label',
     key: "/home/algo",
     icon: <StoreIcon className={styles.navIcon} />,
     hidden: !getDeployUrl(),
@@ -44,12 +44,6 @@ const menus = () => [
     label: 'common.top.menu.public_image',
     key: "/home/public_image",
     icon: <EqualizerIcon className={styles.navIcon} />,
-  },
-  {
-    label: 'common.top.menu.permission',
-    key: "/home/permission",
-    permission: ROLES.SUPER,
-    icon: <UserIcon className={styles.navIcon} />
   },
 ]
 
