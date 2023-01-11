@@ -113,7 +113,7 @@ describe("constants: dataset", () => {
         negative: 234,
         total: 234,
       },
-      type: 1,
+      type: 2,
       tags: undefined,
       inferClass: undefined,
       cks: undefined,
