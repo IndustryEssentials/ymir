@@ -3,6 +3,7 @@ import { renderPolygon } from './_helper'
 type Props = {
   annotation: YModels.Polygon,
   ratio?: number,
+  simple?: boolean
 }
 
 const Polygon: FC<Props> = ({ annotation, ratio = 1 }) => {

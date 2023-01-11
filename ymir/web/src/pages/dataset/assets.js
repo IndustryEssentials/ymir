@@ -11,7 +11,7 @@ import Breadcrumbs from '@/components/common/breadcrumb'
 import Asset from './components/asset'
 import styles from './assets.less'
 import GtSelector from '@/components/form/GtSelector'
-import ImageAnnotation from '@/components/dataset/imageAnnotation'
+import ListAnnotation from '@/components/dataset/ListAnnotation'
 import useWindowResize from '@/hooks/useWindowResize'
 import KeywordSelector from './components/keywordSelector'
 import EvaluationSelector from '@/components/form/EvaluationSelector'
@@ -161,10 +161,10 @@ const Dataset = () => {
         return (
           <Row gutter={4} wrap={false} key={index} className={styles.dataset_container}>
             {rows.map((asset, rowIndex) => (
-              <Col style={{ height: h }} key={rowIndex} className={styles.dataset_item}>
+              <Col style={{ height: h }} key={asset.hash} className={styles.dataset_item}>
                 <CkPopup asset={asset}>
                   <div className={styles.dataset_img} onClick={() => goAsset(asset, asset.hash, index * row + rowIndex)}>
-                    <ImageAnnotation url={asset.url} data={asset.annotations} filters={filterAnnotations} />
+                    <ListAnnotation asset={asset} filter={filterAnnotations} />
                     <span className={styles.item_keywords_count} title={asset?.keywords.join(',')}>
                       {t('dataset.detail.assets.keywords.total', {
                         total: asset?.keywords?.length,
