@@ -5,7 +5,7 @@ import { useSelector } from "umi"
 import t from "@/utils/t"
 import { percent, isNumber } from "@/utils/number"
 import useFetch from "@/hooks/useFetch"
-import { validModel } from "@/constants/model"
+import { validModel, getRecommendStage } from "@/constants/model"
 import { validDataset } from "@/constants/dataset"
 import { STEP } from "@/constants/iteration"
 
@@ -83,7 +83,8 @@ function List({ project }) {
         if (!md) {
           return
         }
-        const map = md.map || 0
+        const stage = getRecommendStage(md)
+        // const map = md.map || 0
         const label = (
           <>
             <VersionName result={md} />
@@ -102,7 +103,7 @@ function List({ project }) {
             >
               {label}
             </span>
-            <span>{map >= 0 ? percent(map) : null}</span>
+            <span>{stage.primaryMetric >= 0 ? percent(stage.primaryMetric) : null}</span>
             <span className={s.extraTag}>{renderExtra(mapEffect, true)}</span>
           </div>
         ) : null
@@ -175,8 +176,8 @@ function List({ project }) {
     }
     const prevModel = models[prev[STEP.training]]
     const currentModel = models[step[STEP.training]]
-    const prevMap = prevModel?.map || 0
-    const map = currentModel?.map || 0
+    const prevMap = getRecommendStage(prevModel)?.primaryMetric || 0
+    const map = getRecommendStage(currentModel)?.primaryMetric || 0
     return map - prevMap
   }
 

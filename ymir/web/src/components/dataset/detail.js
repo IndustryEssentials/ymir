@@ -4,6 +4,7 @@ import { Button, Col, Descriptions, Row, Tag } from "antd"
 
 import t from "@/utils/t"
 import { ResultStates } from '@/constants/common'
+import { getProjectTypeLabel } from '@/constants/project'
 import styles from "./detail.less"
 import { SearchIcon } from "@/components/common/Icons"
 import { DescPop } from "../common/DescPop"
@@ -31,6 +32,7 @@ function DatasetDetail({ dataset = {} }) {
       <Col>{children.map(({ keyword, count }) => <Tag key={keyword}>{keyword}({count})</Tag>)}</Col>
     </Row>)}
   </Item> : null
+
   return (
     <div className='datasetDetail'>
       <Descriptions
@@ -42,6 +44,7 @@ function DatasetDetail({ dataset = {} }) {
         <Item label={t("dataset.detail.label.name")} span={2}>
           <Row>
             <Col flex={1}>{dataset.name} {dataset.versionName}</Col>
+
             <Col hidden={dataset.state !== ResultStates.VALID}>
               <Button
                 type='primary'
@@ -56,6 +59,7 @@ function DatasetDetail({ dataset = {} }) {
           {renderKeywords(dataset.pred, t('annotation.pred'))}
           {inferClass ? <div>{t('dataset.detail.infer.class')}{inferClass.map(cls => <Tag key={cls}>{cls}</Tag>)}</div> : null}
         </Item>
+        <Item label={t('common.object.type')}>{t(getProjectTypeLabel(model.type, true))}</Item>
         <Item label={t("dataset.detail.label.assets")} contentStyle={{ minWidth: 150 }}>{dataset.assetCount}</Item>
         {dataset.hidden ? <Item label={t("common.hidden.label")}>{t('common.state.hidden')}</Item> : null}
         {renderCk(t('dataset.assets.keyword.selector.types.cks'), cks.keywords)}

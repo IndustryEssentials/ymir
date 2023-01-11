@@ -1,13 +1,7 @@
 import { calDuration, format } from '@/utils/date'
-import { getVersionLabel } from './common'
+import { getVersionLabel, ResultStates as states } from './common'
 import { getLocale } from 'umi'
-import { ObjectType } from './project'
-
-export enum states {
-  READY = 0,
-  VALID = 1,
-  INVALID = 2,
-}
+import { getProjectTypeLabel, ObjectType } from './project'
 
 export function transferModelGroup(data: YModels.BackendData) {
   const group: YModels.ModelGroup = {
@@ -21,12 +15,18 @@ export function transferModelGroup(data: YModels.BackendData) {
 
 export function transferModel(data: YModels.BackendData): YModels.Model {
   const durationLabel = calDuration(data.related_task.duration, getLocale())
+  const otype = data.object_type || ObjectType.ObjectDetection
+  const stages = (data.related_stages || []).map((stage: YModels.BackendData) => {
+    const st = transferStage(stage, otype)
+    return { ...st, primaryMetricLabel: getPrimaryMetricsLabel(otype, true) }
+  })
+
   return {
     id: data.id,
     name: data.group_name,
     groupId: data.model_group_id,
     projectId: data.project_id,
-    type: data.object_type || 1,
+    type: data.object_type || ObjectType.ObjectDetection,
     hash: data.hash,
     version: data.version_num || 0,
     versionName: getVersionLabel(data.version_num),
@@ -45,7 +45,7 @@ export function transferModel(data: YModels.BackendData): YModels.Model {
     durationLabel: calDuration(data.related_task.duration, getLocale()),
     task: { ...data.related_task, durationLabel },
     hidden: !data.is_visible,
-    stages: (data.related_stages || []).map((stage: YModels.BackendData) => transferStage(stage, data.object_type)) || [],
+    stages,
     recommendStage: data.recommended_stage || 0,
     description: data.description || '',
   }
@@ -92,7 +92,7 @@ export function transferStage(data: YModels.BackendData, type: ObjectType): YMod
   return {
     id: data.id,
     name: data.name,
-    primaryMetrics: metrics.primary,
+    primaryMetric: metrics.primary,
     modelId: data.model?.id,
     modelName: getModelName(data),
     metrics,
@@ -108,6 +108,19 @@ function transferMetrics(metrics: { [key: string]: number } = {}, type: ObjectTy
     [ObjectType.InstanceSegmentation]: { primary: maskAP, maskAP, boxAP },
   }[type]
   return { ...mk, fn, fp, tp }
+}
+
+export function getPrimaryMetricsLabel(type: ObjectType, isSimple?: boolean) {
+  if (isSimple) {
+    return {
+      [ObjectType.ObjectDetection]: 'mAP',
+      [ObjectType.SemanticSegmentation]: 'mIoU',
+      [ObjectType.InstanceSegmentation]: 'maskAP',
+    }[type]
+  } else {
+    const label = getProjectTypeLabel(type)
+    return `model.stage.metrics.primary.label.${label}`
+  }
 }
 
 /**

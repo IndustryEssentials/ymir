@@ -7,6 +7,7 @@ import t from '@/utils/t'
 import TaskDetail from '@/components/task/detail'
 import { percent } from '../../utils/number'
 import useFetch from '@/hooks/useFetch'
+import { ObjectType, getProjectTypeLabel } from '@/constants/project'
 import { getRecommendStage } from '@/constants/model'
 
 import Breadcrumbs from '@/components/common/breadcrumb'
@@ -68,12 +69,41 @@ function ModelDetail() {
     return <span className={styles.metricsCount}>{t('model.metrics.fpfn.unit', { num: <span className={styles.metricsNum}>{num}</span> })}</span>
   }
 
-  function renderPercentItem(label, value, format, color = null) {
-    return (
-      <Descriptions.Item label={label}>
-        {typeof value !== 'undefined' ? <Progress type="circle" percent={value} format={format} strokeColor={color} /> : <Empty />}
-      </Descriptions.Item>
-    )
+  const renderPercentItem = (value, label, color = null) => (
+    <Descriptions.Item key={label} label={label}>
+      { value !== null ? <Progress type="circle" percent={value * 100} format={() => percent(value)} strokeColor={color} /> : <Empty /> }
+    </Descriptions.Item>
+  )
+
+  const renderCountItem = (value, label, color = 'rgb(255, 255, 255)') => (
+    <Descriptions.Item key={label} label={label}>
+      { value !== null ? <Progress type="circle" percent={100} format={() => renderIntUnit(value)} strokeColor={color} /> : <Empty /> }
+    </Descriptions.Item>
+  )
+
+  const metricsOptions = {
+    tp: { label: 'TP', color: '#fff', isCount: true },
+    fp: { label: 'FP', color: '#fff', isCount: true },
+    fn: { label: 'FN', color: '#fff', isCount: true },
+    ar: { label: 'Recall', color: 'rgb(44, 189, 233)' },
+    acc: { label: 'ACC', color: 'rgb(44, 189, 233)' },
+    boxAP: { label: 'boxAP', color: 'rgb(44, 189, 233)' },
+  }
+
+  const renderMetricsItems = (stage, type) => {
+    const target = {
+      [ObjectType.ObjectDetection]: 'ar',
+      [ObjectType.SemanticSegmentation]: 'acc',
+      [ObjectType.InstanceSegmentation]: 'boxAP',
+    }[type]
+    const list = [target, 'fn', 'fp']
+    console.log('list:', list)
+    return list.map((key) => {
+      const option = metricsOptions[key]
+      const metric = stage.metrics[key]
+      const render = option.isCount ? renderCountItem : renderPercentItem
+      return metric !== null ? render(metric, option.label, option.color) : null
+    })
   }
 
   function renderMetrics() {
@@ -87,10 +117,8 @@ function ModelDetail() {
         labelStyle={{ display: 'block', fontWeight: 'bold', textAlign: 'center' }}
         bordered
       >
-        {renderPercentItem('mAP', stage.map * 100, (cent) => percent(cent / 100), 'rgb(54, 203, 203)')}
-        {renderPercentItem('Recall', stage.metrics.ar * 100, (cent) => percent(cent / 100), 'rgb(44, 189, 233)')}
-        {renderPercentItem('FN', 100, () => renderIntUnit(stage.metrics.fn), 'rgb(255, 255, 255)')}
-        {renderPercentItem('FP', 100, () => renderIntUnit(stage.metrics.fp), 'rgb(255, 255, 255)')}
+        {renderPercentItem(stage.primaryMetric, stage.primaryMetricLabel, 'rgb(54, 203, 203)')}
+        {renderMetricsItems(stage, model.type)}
       </Descriptions>
     ) : null
   }
@@ -104,13 +132,14 @@ function ModelDetail() {
             <Item label={t('model.detail.label.name')}>
               <VersionName result={model} />
             </Item>
+            <Item label={t('common.object.type')}>{t(getProjectTypeLabel(model.type, true))}</Item>
             {model.hidden ? <Item label={t('common.hidden.label')}>{t('common.state.hidden')}</Item> : null}
             {keywordsItem(model.keywords)}
             <Item label={t('model.detail.label.stage')} span={2}>
               <div style={{ width: '100%' }}>
                 {model.stages?.map((stage) => (
-                  <Tag key={stage.id} title={stage.map}>
-                    {stage.name} mAP: {percent(stage.map)}
+                  <Tag key={stage.id} title={stage.primaryMetric}>
+                    {stage.name} {stage.primaryMetricLabel}: {percent(stage.primaryMetric)}
                   </Tag>
                 ))}
               </div>

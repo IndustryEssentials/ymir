@@ -56,7 +56,6 @@ const image = {
   'image.links.placeholder': { en: 'Please select mining images for relating train image', cn: '请选择关联训练镜像的挖掘镜像' },
   'image.detail.title': { en: 'Image Detail', cn: '镜像详情' },
   'image.detail.label.name': { en: 'Name', cn: '镜像名称' },
-  'image.detail.label.object_type': { en: 'Object Type', cn: '目标类型' },
   'image.detail.label.type': { en: 'Type', cn: '镜像类型' },
   'image.detail.label.url': { en: 'Url', cn: '镜像地址' },
   'image.detail.label.publish': { en: 'Published on Image Store', cn: '镜像是否发布' },

@@ -193,7 +193,8 @@ declare namespace YModels {
   export interface Stage {
     id: number
     name: string
-    primaryMetrics: number
+    primaryMetric: number
+    primaryMetricLabel?: string
     modelId?: number
     modelName?: string
     metrics?: StageMetrics

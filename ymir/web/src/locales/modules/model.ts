@@ -117,6 +117,9 @@ const model = {
     cn: '暂不支持拥有超过{max}个类别的模型进行诊断',
   },
   'model.metrics.fpfn.unit': { en: '{num} Boxes', cn: '{num} 个' },
+  'model.stage.metrics.primary.label.det': { en: 'mAP', cn: '精度均值(mAP)' },
+  'model.stage.metrics.primary.label.seg': { en: 'mIoU', cn: '精度均值(mIoU)' },
+  'model.stage.metrics.primary.label.ins': { en: 'maskAP', cn: '精度均值(maskAP)' },
 }
 
 export default model

@@ -5,6 +5,7 @@ import { useSelector } from 'umi'
 import { percent } from '@/utils/number'
 import t from '@/utils/t'
 import useRequest from '@/hooks/useRequest'
+
 import EmptyStateModel from '@/components/empty/model'
 
 const ModelSelect = ({ pid, value, onlyModel, changeByUser, onChange = () => {}, onReady = () => {}, filters, ...resProps }) => {
@@ -54,7 +55,9 @@ const ModelSelect = ({ pid, value, onlyModel, changeByUser, onChange = () => {},
         ? {}
         : {
             children: model.stages.map((stage) => ({
-              label: ` ${stage.name} (mAP:${percent(stage.map)}) ${stage.id === model.recommendStage ? t('common.recommend') : ''}`,
+              label: ` ${stage.name} (${stage.primaryMetricLabel}:${percent(stage.primaryMetric)}) ${
+                stage.id === model.recommendStage ? t('common.recommend') : ''
+              }`,
               value: stage.id,
             })),
           }
