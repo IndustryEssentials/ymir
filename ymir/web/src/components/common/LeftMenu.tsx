@@ -44,19 +44,14 @@ const getItem = (label: ReactNode, key: string, Icon?: FC<IconProps>, children?:
   type,
 })
 
-// const getItem = (label: ReactNode, key: string, children?: MenuItem[]): MenuItem => ({
-//   key,
-//   type: 'group',
-//   label,
-//   children,
-// })
+const getGroupItem = (label: string, key: string, children: MenuItem[]) => getItem(label, key, undefined, children, 'group')
 
 function LeftMenu() {
   const { role } = useSelector<YStates.Root, YStates.UserState>((state) => state.user)
   const { projects } = useSelector<YStates.Root, YStates.ProjectState>((state) => state.project)
   const history = useHistory()
   const { pathname } = useLocation()
-  const [defaultKeys, setDefaultKeys] = useState<string[]>([])
+  const [defaultKeys, setDefaultKeys] = useState<string[]>()
   const [items, setItems] = useState<MenuItem[]>([])
   const [id, setId] = useState(0)
   const [project, setProject] = useState<YModels.Project>()
@@ -74,12 +69,12 @@ function LeftMenu() {
   useEffect(() => {
     const showLeftMenu = projectModule.test(pathname)
     setItems([
-      getItem(t('breadcrumbs.projects'), 'project', undefined, [
+      getGroupItem(t('breadcrumbs.projects'), 'project', [
         getItem(t('projects.title'), `/home/project`, ProjectIcon),
-        showLeftMenu && project
+        showLeftMenu
           ? getItem(project?.name, `project.summary`, VectorIcon, [
               getItem(t('project.summary'), `/home/project/${id}/detail`, BarchartIcon),
-              project.enableIteration ? getItem(t('project.iterations.title'), `/home/project/${id}/iterations`, IterationIcon) : null,
+              project?.enableIteration ? getItem(t('project.iterations.title'), `/home/project/${id}/iterations`, IterationIcon) : null,
               getItem(t('dataset.list'), `/home/project/${id}/dataset`, NavDatasetIcon),
               getItem(t('breadcrumbs.dataset.analysis'), `/home/project/${id}/dataset/analysis`, BarChart2LineIcon),
               getItem(t('model.management'), `/home/project/${id}/model`, MymodelIcon),
@@ -90,13 +85,13 @@ function LeftMenu() {
             ])
           : null,
       ]),
-      getItem(t('image.leftmenu.label'), 'public_image', undefined, [
+      getGroupItem(t('image.leftmenu.label'), 'public_image', [
         getItem(t('common.top.menu.image'), '/home/image', FileHistoryIcon),
         getPublicImageUrl() ? getItem(t('common.top.menu.public_image'), '/home/public_image', FileHistoryIcon) : null,
       ]),
-      getItem(t('breadcrumbs.keyword'), 'keyword', undefined, [getItem(t('breadcrumbs.keyword'), '/home/keyword', FlagIcon)]),
+      getGroupItem(t('breadcrumbs.keyword'), 'keyword', [getItem(t('breadcrumbs.keyword'), '/home/keyword', FlagIcon)]),
       getDeployUrl()
-        ? getItem(t('algo.label'), 'algo', undefined, [
+        ? getGroupItem(t('algo.label'), 'algo', [
             getItem(t('algo.public.label'), '/home/algo', StoreIcon),
             getItem(t('algo.mine.label'), '/home/algo/mine', MyAlgoIcon),
             getItem(t('algo.device.label'), '/home/algo/device', DeviceListIcon),
