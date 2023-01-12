@@ -129,7 +129,7 @@ export function getPrimaryMetricsLabel(type: ObjectType, isSimple?: boolean) {
  * @returns {YModels.Stage|undefined}
  */
 export function getRecommendStage(model: YModels.Model): YModels.Stage | undefined {
-  return getStage(model, model.recommendStage)
+  return model ? getStage(model, model.recommendStage) : undefined
 }
 
 /**
