@@ -25,6 +25,7 @@ from app.api.errors.errors import (
 from app.constants.state import (
     FinalStates,
     TaskState,
+    TaskType,
     ResultType,
     ResultState,
 )
@@ -322,10 +323,13 @@ class TaskResult:
         model_info = self.model_info
         if model_info and model_info.get("object_type") == self.object_type:
             # as long as model info is ready, regardless of task status, just set model as ready
+            parameters = model_info["task_parameters"]
+            if task_in_db.type == TaskType.import_model:
+                parameters = filter_task_parameters_from_imported_model(parameters)
             crud.task.update_parameters_and_config(
                 self.db,
                 task=task_in_db,
-                parameters=model_info["task_parameters"],
+                parameters=parameters,
                 config=json.dumps(model_info["executor_config"]),
             )
             crud.model.finish(self.db, model_record.id, result_state=ResultState.ready, result=model_info)
@@ -354,3 +358,13 @@ class TaskResult:
                 dataset_record.id,
                 result_state=ResultState.error,
             )
+
+
+def filter_task_parameters_from_imported_model(serialized_task_parameters: str) -> str:
+    """
+    for imported model, only a few docker_image related parameters are relevant
+    """
+    KEPT_PARAMETER_KEYS = ["docker_image", "docker_image_config", "preprocess"]
+    task_parameters = json.loads(serialized_task_parameters)
+    task_parameters = {k: v for k, v in task_parameters.items() if k in KEPT_PARAMETER_KEYS}
+    return json.dumps(task_parameters)

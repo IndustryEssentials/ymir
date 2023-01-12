@@ -7,6 +7,7 @@ import google.protobuf.json_format as pb_format
 
 from mir.protos import mir_command_pb2 as mirpb
 from mir.tools import exodus, mir_storage_ops
+from mir.tools.annotations import make_empty_mir_annotations
 from mir.tools.code import MirCode
 from mir.tools.errors import MirRuntimeError
 import tests.utils as test_utils
@@ -80,8 +81,6 @@ class TestExodus(unittest.TestCase):
         test_utils.mir_repo_create_branch(self._mir_root, "a")
 
         mir_metadatas = mirpb.MirMetadatas()
-        mir_annotations = mirpb.MirAnnotations()
-
         dict_metadatas = {
             'attributes': {
                 'd4e4a60147f1e35bc7f5bc89284aa16073b043c9': {
@@ -96,7 +95,7 @@ class TestExodus(unittest.TestCase):
 
         mir_datas = {
             mirpb.MirStorage.MIR_METADATAS: mir_metadatas,
-            mirpb.MirStorage.MIR_ANNOTATIONS: mir_annotations,
+            mirpb.MirStorage.MIR_ANNOTATIONS: make_empty_mir_annotations(),
         }
         task = mir_storage_ops.create_task(task_type=mirpb.TaskType.TaskTypeMining,
                                            task_id='mining-task-id',

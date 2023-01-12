@@ -12,6 +12,7 @@ import yaml
 
 from mir.commands.mining import CmdMining
 from mir.tools import mir_storage_ops, models, settings as mir_settings, mir_storage
+from mir.tools.annotations import make_empty_mir_annotations
 from mir.tools.class_ids import ids_file_path
 import mir.protos.mir_command_pb2 as mirpb
 import tests.utils as test_utils
@@ -94,8 +95,8 @@ class TestMiningCmd(unittest.TestCase):
         self._prepare_mir_repo_branch_mining()
 
     def _prepare_mir_repo_branch_mining(self):
-        mir_annotations = mirpb.MirAnnotations()
         mir_metadatas = mirpb.MirMetadatas()
+        mir_annotations = make_empty_mir_annotations()
 
         mock_image_file = mir_storage.get_asset_storage_path(self._storage_root,
                                                              'd4e4a60147f1e35bc7f5bc89284aa16073b043c9')

@@ -84,6 +84,7 @@ class TestArkDataExporter(unittest.TestCase):
         annotations_dict = {
             'prediction': {
                 'task_id': 'a',
+                'type': mirpb.ObjectType.OT_NO_ANNOTATIONS,
                 'image_annotations': {
                     '430df22960b0f369318705800139fcc8ec38a3e4': {
                         'boxes': [{
@@ -143,6 +144,9 @@ class TestArkDataExporter(unittest.TestCase):
                     },
                 }
             },
+            'ground_truth': {
+                'type': mirpb.ObjectType.OT_NO_ANNOTATIONS,
+            }
         }
         mir_annotations = mirpb.MirAnnotations()
         json_format.ParseDict(annotations_dict, mir_annotations)

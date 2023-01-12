@@ -10,6 +10,7 @@ from mir.commands import base
 from mir.protos import mir_command_pb2 as mirpb
 from mir.tools import checker, mir_storage_ops, models, revs_parser
 from mir.tools import settings as mir_settings
+from mir.tools.annotations import make_empty_mir_annotations
 from mir.tools.code import MirCode
 from mir.tools.command_run_in_out import command_run_in_out
 from mir.tools.errors import MirRuntimeError
@@ -88,7 +89,8 @@ class CmdModelImport(base.BaseCommand):
                                                       his_branch=src_typ_rev_tid.rev,
                                                       mir_datas={
                                                           mirpb.MirStorage.MIR_METADATAS: mirpb.MirMetadatas(),
-                                                          mirpb.MirStorage.MIR_ANNOTATIONS: mirpb.MirAnnotations()
+                                                          mirpb.MirStorage.MIR_ANNOTATIONS:
+                                                          make_empty_mir_annotations()
                                                       },
                                                       task=task)
 

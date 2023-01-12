@@ -8,6 +8,7 @@ from mir.commands import base
 from mir.protos import mir_command_pb2 as mirpb
 from mir.scm.cmd import CmdScm
 from mir.tools import checker, class_ids, mir_storage_ops, revs_parser
+from mir.tools.annotations import make_empty_mir_annotations
 from mir.tools.code import MirCode
 
 
@@ -28,21 +29,19 @@ class CmdInit(base.BaseCommand):
 
         dst_rev_tid = revs_parser.parse_single_arg_rev(empty_rev, need_tid=True)
 
-        mir_metadatas = mirpb.MirMetadatas()
-        mir_annotations = mirpb.MirAnnotations()
         task = mir_storage_ops.create_task(task_type=mirpb.TaskTypeInit,
                                            task_id=dst_rev_tid.tid,
                                            message='init empty dataset',
                                            src_revs='master',
                                            dst_rev=empty_rev)
-        mir_datas = {
-            mirpb.MirStorage.MIR_METADATAS: mir_metadatas,
-            mirpb.MirStorage.MIR_ANNOTATIONS: mir_annotations,
-        }
         mir_storage_ops.MirStorageOps.save_and_commit(mir_root=mir_root,
                                                       mir_branch=dst_rev_tid.rev,
                                                       his_branch='master',
-                                                      mir_datas=mir_datas,
+                                                      mir_datas={
+                                                          mirpb.MirStorage.MIR_METADATAS: mirpb.MirMetadatas(),
+                                                          mirpb.MirStorage.MIR_ANNOTATIONS:
+                                                          make_empty_mir_annotations()
+                                                      },
                                                       task=task)
 
     # public: run

@@ -69,6 +69,8 @@ class TestCmdCopy(unittest.TestCase):
         mir_annotations.prediction.image_annotations['asset1'].CopyFrom(
             self.__create_image_annotations(type_ids=[3]))
         mir_annotations.prediction.eval_class_ids[:] = eval_class_ids
+        mir_annotations.prediction.type = mirpb.ObjectType.OT_NO_ANNOTATIONS
+        mir_annotations.ground_truth.type = mirpb.ObjectType.OT_NO_ANNOTATIONS
 
         model_meta = mirpb.ModelMeta(mAP=0.3)
         task = mir_storage_ops.create_task(task_type=mirpb.TaskType.TaskTypeTraining,
