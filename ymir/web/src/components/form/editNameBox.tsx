@@ -13,7 +13,8 @@ interface Props {
 }
 
 const EditNameBox: React.FC<Props> = ({ type = 'dataset', record, max = 50, handle, children }) => {
-  const [updated, updateResult] = useFetch(`${type}/update${type.replace(/^\w/, (letter = '') => letter.toUpperCase())}`)
+  const func = type === 'dataset' ? 'updateDataset' : 'updateModelGroup'
+  const [updated, updateResult] = useFetch(`${type}/${func}`)
   const { name } = record
 
   useEffect(() => handle && handle(updated), [updated])
