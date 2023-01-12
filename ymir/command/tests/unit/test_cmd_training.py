@@ -11,7 +11,7 @@ import yaml
 from mir.commands import training
 from mir.protos import mir_command_pb2 as mirpb
 from mir.tools import mir_storage_ops, models, settings as mir_settings, mir_storage
-from mir.tools.annotations import make_empty_mir_datas
+from mir.tools.annotations import make_empty_mir_annotations
 from mir.tools.class_ids import ids_file_path
 from mir.tools.code import MirCode
 from mir.tools.mir_storage import sha1sum_for_file
@@ -186,9 +186,7 @@ class TestCmdTraining(unittest.TestCase):
         }
         mir_metadatas = mirpb.MirMetadatas()
         json_format.ParseDict(metadatas_dict, mir_metadatas)
-        mir_annotations = mirpb.MirAnnotations()
-        mir_annotations.prediction.type = mirpb.ObjectType.OT_NO_ANNOTATIONS
-        mir_annotations.ground_truth.type = mirpb.ObjectType.OT_NO_ANNOTATIONS
+        mir_annotations = make_empty_mir_annotations()
 
         # save and commit
         task = mir_storage_ops.create_task(task_type=mirpb.TaskType.TaskTypeImportData, task_id='b', message='import')

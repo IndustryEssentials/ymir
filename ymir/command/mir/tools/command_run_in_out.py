@@ -7,7 +7,7 @@ import traceback
 from typing import Any, Callable, Set
 
 from mir.tools import mir_repo_utils, mir_storage_ops, phase_logger, revs_parser
-from mir.tools.annotations import make_empty_mir_datas
+from mir.tools.annotations import make_empty_mir_annotations
 from mir.tools.code import MirCode
 from mir.tools.errors import MirRuntimeError
 from mir.protos import mir_command_pb2 as mirpb
@@ -42,7 +42,10 @@ def _commit_error(code: int, error_msg: str, mir_root: str, src_revs: str, dst_r
     mir_storage_ops.MirStorageOps.save_and_commit(mir_root=mir_root,
                                                   mir_branch=dst_typ_rev_tid.rev,
                                                   his_branch=src_typ_rev_tid.rev,
-                                                  mir_datas=make_empty_mir_datas(),
+                                                  mir_datas={
+                                                      mirpb.MirStorage.MIR_METADATAS: mirpb.MirMetadatas(),
+                                                      mirpb.MirStorage.MIR_ANNOTATIONS: make_empty_mir_annotations()
+                                                  },
                                                   task=predefined_task)
 
 

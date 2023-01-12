@@ -561,11 +561,8 @@ def match_asset_ids(host_ids: set, guest_ids: set) -> Tuple[set, set, set]:
     return (host_ids - insets, guest_ids - insets, insets)
 
 
-def make_empty_mir_datas() -> dict:
+def make_empty_mir_annotations() -> mirpb.MirAnnotations:
     mir_annotations = mirpb.MirAnnotations()
     mir_annotations.prediction.type = mirpb.ObjectType.OT_NO_ANNOTATIONS
     mir_annotations.ground_truth.type = mirpb.ObjectType.OT_NO_ANNOTATIONS
-    return {
-        mirpb.MirStorage.MIR_METADATAS: mirpb.MirMetadatas(),
-        mirpb.MirStorage.MIR_ANNOTATIONS: mir_annotations,
-    }
+    return mir_annotations

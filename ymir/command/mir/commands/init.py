@@ -8,7 +8,7 @@ from mir.commands import base
 from mir.protos import mir_command_pb2 as mirpb
 from mir.scm.cmd import CmdScm
 from mir.tools import checker, class_ids, mir_storage_ops, revs_parser
-from mir.tools.annotations import make_empty_mir_datas
+from mir.tools.annotations import make_empty_mir_annotations
 from mir.tools.code import MirCode
 
 
@@ -37,7 +37,11 @@ class CmdInit(base.BaseCommand):
         mir_storage_ops.MirStorageOps.save_and_commit(mir_root=mir_root,
                                                       mir_branch=dst_rev_tid.rev,
                                                       his_branch='master',
-                                                      mir_datas=make_empty_mir_datas(),
+                                                      mir_datas={
+                                                          mirpb.MirStorage.MIR_METADATAS: mirpb.MirMetadatas(),
+                                                          mirpb.MirStorage.MIR_ANNOTATIONS:
+                                                          make_empty_mir_annotations()
+                                                      },
                                                       task=task)
 
     # public: run

@@ -15,7 +15,7 @@ from mir.protos import mir_command_pb2 as mirpb
 from mir.tools import checker, class_ids, env_config, exporter
 from mir.tools import mir_storage_ops, models, revs_parser
 from mir.tools import settings as mir_settings
-from mir.tools.annotations import make_empty_mir_datas, MergeStrategy
+from mir.tools.annotations import make_empty_mir_annotations, MergeStrategy
 from mir.tools.command_run_in_out import command_run_in_out
 from mir.tools.code import MirCode
 from mir.tools.errors import MirContainerError, MirRuntimeError
@@ -357,7 +357,11 @@ class CmdTrain(base.BaseCommand):
         mir_storage_ops.MirStorageOps.save_and_commit(mir_root=mir_root,
                                                       mir_branch=dst_typ_rev_tid.rev,
                                                       his_branch=src_typ_rev_tids[0].rev,
-                                                      mir_datas=make_empty_mir_datas(),
+                                                      mir_datas={
+                                                          mirpb.MirStorage.MIR_METADATAS: mirpb.MirMetadatas(),
+                                                          mirpb.MirStorage.MIR_ANNOTATIONS:
+                                                          make_empty_mir_annotations()
+                                                      },
                                                       task=task)
 
         logging.info("training done")

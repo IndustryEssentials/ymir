@@ -103,7 +103,12 @@ class CmdExport(base.BaseCommand):
         mir_storage_ops.MirStorageOps.save_and_commit(mir_root=mir_root,
                                                       mir_branch=dst_rev_tid.rev,
                                                       his_branch=src_rev_tid.rev,
-                                                      mir_datas=annotations.make_empty_mir_datas(),
+                                                      mir_datas={
+                                                          mirpb.MirStorage.MIR_METADATAS:
+                                                          mirpb.MirMetadatas(),
+                                                          mirpb.MirStorage.MIR_ANNOTATIONS:
+                                                          annotations.make_empty_mir_annotations(),
+                                                      },
                                                       task=task)
 
         return MirCode.RC_OK
