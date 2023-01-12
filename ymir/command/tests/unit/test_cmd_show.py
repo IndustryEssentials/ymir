@@ -7,6 +7,7 @@ from google.protobuf.json_format import ParseDict
 from mir.commands.show import CmdShow
 from mir.protos import mir_command_pb2 as mirpb
 from mir.tools import mir_storage_ops
+from mir.tools.annotations import make_empty_mir_annotations
 from mir.tools.code import MirCode
 from tests import utils as test_utils
 
@@ -14,7 +15,7 @@ from tests import utils as test_utils
 class TestCmdShow(unittest.TestCase):
     def _prepare_mir_repo_branch_mining(self, mir_repo_root):
         mir_metadatas = mirpb.MirMetadatas()
-        mir_annotations = mirpb.MirAnnotations()
+        mir_annotations = make_empty_mir_annotations()
 
         dict_metadatas = {
             'attributes': {

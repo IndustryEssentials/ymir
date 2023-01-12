@@ -5,7 +5,8 @@ import unittest
 from tests import utils as test_utils
 
 from mir.commands import init
-from mir.tools import class_ids
+from mir.protos import mir_command_pb2 as mirpb
+from mir.tools import class_ids, mir_storage_ops
 
 
 class TestCmdInit(unittest.TestCase):
@@ -28,3 +29,8 @@ class TestCmdInit(unittest.TestCase):
         with open(ignore_file_path, 'r') as f:
             lines = f.read().splitlines()
         assert '.mir' in lines
+
+        mir_annotations: mirpb.MirAnnotations = mir_storage_ops.MirStorageOps.load_single_storage(
+            mir_root=test_root, mir_branch='a', mir_task_id='a', ms=mirpb.MirStorage.MIR_ANNOTATIONS)
+        assert(mir_annotations.prediction.type == mirpb.ObjectType.OT_NO_ANNOTATIONS)
+        assert(mir_annotations.ground_truth.type == mirpb.ObjectType.OT_NO_ANNOTATIONS)
