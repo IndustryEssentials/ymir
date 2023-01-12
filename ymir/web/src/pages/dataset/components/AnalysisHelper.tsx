@@ -130,7 +130,7 @@ const getColumns = (keys: string[], type: AnnotationType) => {
     },
     keywordsCount: {
       title: title('dataset.analysis.column.keywords.count'),
-      render: (_, record) => Object.keys(getAnnotations(record, type)).length,
+      render: (_, record) => Object.keys(getAnnotations(record, type).keywords).length,
     },
     averageKeywordsCount: {
       title: title('dataset.analysis.column.keywords.count.average'),
