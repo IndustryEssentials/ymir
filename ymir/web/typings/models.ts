@@ -306,6 +306,7 @@ declare namespace YModels {
     testSet: DatasetId
     wholeMiningSet: DatasetId
     prevIteration?: number
+    model?: Model
     end: boolean
   }
 
