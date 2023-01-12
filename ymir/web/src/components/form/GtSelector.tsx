@@ -1,8 +1,9 @@
 import React from 'react'
 import t from '@/utils/t'
 import CheckboxSelector from './CheckboxSelector'
+import { CheckboxProps } from 'antd'
 
-type Props = YModels.PlainObject
+type Props = CheckboxProps
 
 const types = [
   { label: 'annotation.gt', value: 'gt' },

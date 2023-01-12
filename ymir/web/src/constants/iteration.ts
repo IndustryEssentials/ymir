@@ -79,6 +79,7 @@ export function transferIteration(data: YModels.BackendData): YModels.Iteration 
     testSet: data.validation_dataset_id || 0,
     wholeMiningSet: data.mining_dataset_id || 0,
     prevIteration: data.previous_iteration || 0,
+    model: data.training_output_model_id,
     end: !currentStep,
   }
 }

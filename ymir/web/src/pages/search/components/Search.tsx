@@ -45,7 +45,7 @@ const Search: FC<Props> = ({ change, name }) => {
   }
 
   useEffect(() => {
-    typeof debonceName !== 'undefined' && updateQuery({ ...query, name: debonceName })
+    typeof debonceName !== 'undefined' && updateQuery({ ...query, name: debonceName, offset: 1 })
   }, [debonceName])
 
   useEffect(() => {
@@ -54,7 +54,6 @@ const Search: FC<Props> = ({ change, name }) => {
   }, [name])
 
   function updateQuery(q?: YParams.ResultListQuery) {
-    console.log('q:', q)
     change && change(q)
   }
 

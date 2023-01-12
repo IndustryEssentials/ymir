@@ -21,7 +21,7 @@ const Polygon: FC<Props> = ({ annotation, ratio = 1 }) => {
 
   useEffect(() => {
     if (annotation.polygon?.length && canvas) {
-      renderPolygon(canvas, annotation.polygon, width, height)
+      renderPolygon(canvas, annotation.polygon, annotation.color)
     }
   }, [annotation.polygon, canvas, width, height])
 
