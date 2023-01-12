@@ -95,6 +95,8 @@ class TestMiningCmd(unittest.TestCase):
 
     def _prepare_mir_repo_branch_mining(self):
         mir_annotations = mirpb.MirAnnotations()
+        mir_annotations.prediction.type = mirpb.ObjectType.OT_NO_ANNOTATIONS
+        mir_annotations.ground_truth.type = mirpb.ObjectType.OT_NO_ANNOTATIONS
         mir_metadatas = mirpb.MirMetadatas()
 
         mock_image_file = mir_storage.get_asset_storage_path(self._storage_root,

@@ -31,10 +31,7 @@ class TestCmdStatus(unittest.TestCase):
         assert ret == MirCode.RC_OK
 
     def _prepare_mir_repo_branch_mining(self, mir_repo_root):
-        mir_annotations = mirpb.MirAnnotations()
         mir_metadatas = mirpb.MirMetadatas()
-        mir_tasks = mirpb.MirTasks()
-
         dict_metadatas = {
             'attributes': {
                 'd4e4a60147f1e35bc7f5bc89284aa16073b043c9': {
@@ -46,6 +43,10 @@ class TestCmdStatus(unittest.TestCase):
             }
         }
         ParseDict(dict_metadatas, mir_metadatas)
+
+        mir_annotations = mirpb.MirAnnotations()
+        mir_annotations.prediction.type = mirpb.ObjectType.OT_NO_ANNOTATIONS
+        mir_annotations.ground_truth.type = mirpb.ObjectType.OT_NO_ANNOTATIONS
 
         mir_datas = {
             mirpb.MirStorage.MIR_METADATAS: mir_metadatas,

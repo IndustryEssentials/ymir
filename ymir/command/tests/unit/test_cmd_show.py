@@ -15,6 +15,8 @@ class TestCmdShow(unittest.TestCase):
     def _prepare_mir_repo_branch_mining(self, mir_repo_root):
         mir_metadatas = mirpb.MirMetadatas()
         mir_annotations = mirpb.MirAnnotations()
+        mir_annotations.prediction.type = mirpb.ObjectType.OT_NO_ANNOTATIONS
+        mir_annotations.ground_truth.type = mirpb.ObjectType.OT_NO_ANNOTATIONS
 
         dict_metadatas = {
             'attributes': {

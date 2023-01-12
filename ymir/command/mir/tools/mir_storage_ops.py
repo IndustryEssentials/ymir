@@ -35,11 +35,16 @@ class MirStorageOps():
     @classmethod
     def __build_task_keyword_context(cls, mir_datas: Dict['mirpb.MirStorage.V', Any], task: mirpb.Task,
                                      evaluate_config: mirpb.EvaluateConfig) -> None:
-        # add default members
+        # add default members and check pred/gt object type
         mir_metadatas: mirpb.MirMetadatas = mir_datas[mirpb.MirStorage.MIR_METADATAS]
         mir_annotations: mirpb.MirAnnotations = mir_datas[mirpb.MirStorage.MIR_ANNOTATIONS]
         mir_annotations.prediction.task_id = task.task_id
         mir_annotations.ground_truth.task_id = task.task_id
+        if mirpb.ObjectType.OT_UNKNOWN in {mir_annotations.prediction.type, mir_annotations.ground_truth.type}:
+            raise MirRuntimeError(
+                error_message=f"Can not save annotations with unknown object type, task id: {task.task_id}, "
+                f"pred type: {mir_annotations.prediction.type}, gt type: {mir_annotations.ground_truth.type}",
+                error_code=MirCode.RC_CMD_INVALID_OBJECT_TYPE)
 
         # build mir_tasks
         mir_tasks: mirpb.MirTasks = mirpb.MirTasks()

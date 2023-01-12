@@ -8,6 +8,7 @@ from google.protobuf.json_format import MessageToDict
 
 from mir.protos import mir_command_pb2 as mirpb
 from mir.tools import mir_storage, mir_storage_ops, settings as mir_settings
+from mir.tools.annotations import make_empty_mir_datas
 from tests import utils as test_utils
 
 
@@ -70,6 +71,7 @@ class TestMirStorage(unittest.TestCase):
         dict_annotations = {
             "prediction": {
                 'task_id': 'mining-task-id',
+                'type': mirpb.ObjectType.OT_DET_BOX,
                 "image_annotations": {
                     "a001": {
                         'boxes': [{
@@ -129,6 +131,9 @@ class TestMirStorage(unittest.TestCase):
                         }]
                     }
                 }
+            },
+            'ground_truth': {
+                'type': mirpb.ObjectType.OT_NO_ANNOTATIONS,
             }
         }
         pb_format.ParseDict(dict_annotations, mir_annotations)
@@ -245,9 +250,11 @@ class TestMirStorage(unittest.TestCase):
             pb_format.ParseDict({
                 "prediction": {
                     'task_id': 't2',
+                    'type': mirpb.ObjectType.OT_NO_ANNOTATIONS,
                 },
                 "ground_truth": {
                     'task_id': 't2',
+                    'type': mirpb.ObjectType.OT_NO_ANNOTATIONS,
                 },
             }, mirpb.MirAnnotations()),
             mirpb.MirStorage.MIR_TASKS:
@@ -257,10 +264,7 @@ class TestMirStorage(unittest.TestCase):
         mir_storage_ops.MirStorageOps.save_and_commit(mir_root=self._mir_root,
                                                       mir_branch='a',
                                                       his_branch='a',
-                                                      mir_datas={
-                                                          mirpb.MirStorage.MIR_METADATAS: mirpb.MirMetadatas(),
-                                                          mirpb.MirStorage.MIR_ANNOTATIONS: mirpb.MirAnnotations(),
-                                                      },
+                                                      mir_datas=make_empty_mir_datas(),
                                                       task=task_2)
         # previous a@mining-task-id remains unchanged
         mir_datas = mir_storage_ops.MirStorageOps.load_multiple_storages(

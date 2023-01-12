@@ -80,8 +80,6 @@ class TestExodus(unittest.TestCase):
         test_utils.mir_repo_create_branch(self._mir_root, "a")
 
         mir_metadatas = mirpb.MirMetadatas()
-        mir_annotations = mirpb.MirAnnotations()
-
         dict_metadatas = {
             'attributes': {
                 'd4e4a60147f1e35bc7f5bc89284aa16073b043c9': {
@@ -93,6 +91,10 @@ class TestExodus(unittest.TestCase):
             }
         }
         pb_format.ParseDict(dict_metadatas, mir_metadatas)
+        
+        mir_annotations = mirpb.MirAnnotations()
+        mir_annotations.prediction.type = mirpb.ObjectType.OT_NO_ANNOTATIONS
+        mir_annotations.ground_truth.type = mirpb.ObjectType.OT_NO_ANNOTATIONS
 
         mir_datas = {
             mirpb.MirStorage.MIR_METADATAS: mir_metadatas,
