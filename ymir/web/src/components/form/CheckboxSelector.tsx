@@ -17,7 +17,7 @@ const CheckboxSelector: React.FC<Props> = ({ options, label = '', value, onChang
   const all = options.map((opt) => opt.value) || []
   const [checkeds, setCheckeds] = useState<CheckboxValueType[]>(checkedDefault ? all : [])
 
-  useEffect(() => value && setCheckeds(value), [value])
+  useEffect(() => setCheckeds(value ? value : all), [value])
 
   useEffect(() => onChange && onChange(checkeds, checkeds.length === all.length), [checkeds])
 
@@ -27,7 +27,7 @@ const CheckboxSelector: React.FC<Props> = ({ options, label = '', value, onChang
         {label}
       </Col>
       <Col flex={1}>
-        <Checkbox.Group value={checkeds} options={options} onChange={(value) => setCheckeds(value)} />
+        <Checkbox.Group value={checkeds} options={options} onChange={setCheckeds} />
       </Col>
     </Row>
   )

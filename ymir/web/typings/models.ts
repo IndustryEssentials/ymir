@@ -62,7 +62,15 @@ declare namespace YModels {
     [key: string]: number
   }
   type CK = {
-    [key: string]: any
+    [key: string]: string | number
+  }
+  type CKCount = { [key: string]: number }
+  type CKItem = {keyword: string, count: number, children?: CKItem[]}
+  type CKCounts = {
+    keywords: CKItem[]
+    counts: CKCount
+    subKeywordsTotal: number
+    total: CKCount
   }
   type AnnotationsCount = {
     count: Keywords
@@ -95,8 +103,8 @@ declare namespace YModels {
     gt?: AnnotationsCount
     pred?: AnnotationsCount
     inferClass?: Array<string>
-    cks?: BackendData
-    tags?: BackendData
+    cks?: CKCounts
+    tags?: CKCounts
   }
 
   export interface InferDataset extends Dataset {

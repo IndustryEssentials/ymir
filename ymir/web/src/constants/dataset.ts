@@ -250,19 +250,20 @@ function getType(annotation: YModels.BackendData) {
   return annotation?.mask ? AnnotationType.Mask : annotation?.polygon?.length ? AnnotationType.Polygon : AnnotationType.BoundingBox
 }
 
-const transferCK = (counts: YModels.BackendData = {}, total: YModels.BackendData = {}) => {
+const transferCK = (counts: YModels.BackendData = {}, total: YModels.BackendData = {}): YModels.CKCounts => {
   let subKeywordsTotal = 0
-  const keywords = Object.keys(counts).map((keyword) => {
-    const children = counts[keyword]
+  const keywords = Object.keys(counts).map((keyword: string) => {
+    const children: {[key: string]: number} = counts[keyword]
     const subList = Object.keys(children)
+    const count: number = total[keyword]
     subKeywordsTotal += subList.length
     return {
       keyword,
-      children: subList.map((child) => ({
+      children: subList.map((child: string) => ({
         keyword: child,
-        count: children[child],
+        count: children[child] || 0,
       })),
-      count: total[keyword],
+      count: count || 0,
     }
   })
   return {
