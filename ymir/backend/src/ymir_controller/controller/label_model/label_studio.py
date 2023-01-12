@@ -160,8 +160,8 @@ class LabelStudio(LabelBase):
         self.requests = request_handler
 
     @staticmethod
-    def _label_template(label_name: str, keywords: List) -> ElementTree.Element:
-        labels_layer = ElementTree.Element(label_name, name="label", toName="image")
+    def _label_template(label_name: str, keywords: List, field_name: str = "label") -> ElementTree.Element:
+        labels_layer = ElementTree.Element(label_name, name=field_name, toName="image")
         children_label_content = [
             ElementTree.Element("Label", value=keyword, background="green") for keyword in keywords
         ]
@@ -191,7 +191,7 @@ class LabelStudio(LabelBase):
 
         labels_layer = self._label_template(label_name, keywords)
         if extra_layer:
-            mask_labels_layer = self._label_template("BrushLabels", keywords)
+            mask_labels_layer = self._label_template("BrushLabels", keywords, "brush")
             commented_mask_labels_layer = ElementTree.Comment(
                 ElementTree.tostring(mask_labels_layer, encoding="unicode")
             )
