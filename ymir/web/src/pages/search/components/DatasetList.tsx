@@ -75,9 +75,10 @@ const DatasetList: FC<Props> = ({ pid, name, query }) => {
       dataIndex: 'versionName',
       render: (vname, { id, name, description }) => {
         const popContent = <DescPop description={description} style={{ maxWidth: '30vw' }} />
+        const label = name + vname
         const content = (
-          <Link to={`/home/project/${pid}/dataset/${id}`}>
-            {name} {vname}
+          <Link title={label} to={`/home/project/${pid}/dataset/${id}`}>
+            {label}
           </Link>
         )
         return description ? (

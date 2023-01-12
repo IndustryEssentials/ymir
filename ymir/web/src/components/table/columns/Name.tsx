@@ -11,10 +11,11 @@ const Name = <T extends YModels.Result>(type = 'dataset'): ColumnType<T> => ({
   dataIndex: 'versionName',
   render: (name, { id, name: groupName, projectId: pid, description }) => {
     const popContent = <DescPop description={description} style={{ maxWidth: '30vw' }} />
+    const label = groupName + name
     const content = (
-      <Link to={`/home/project/${pid}/${type}/${id}`}>
-        {groupName} {name}
-      </Link>
+      <span title={label}>
+        <Link to={`/home/project/${pid}/${type}/${id}`}>{label}</Link>
+      </span>
     )
     return description ? (
       <Popover title={t('common.desc')} content={popContent}>
