@@ -186,16 +186,16 @@ class LabelStudio(LabelBase):
             label_name = "RectangleLabels"
             extra_layer = False
         else:
-            label_name = "PolygonLabels"
+            label_name = "BrushLabels"
             extra_layer = True
 
         labels_layer = self._label_template(label_name, keywords)
         if extra_layer:
-            mask_labels_layer = self._label_template("BrushLabels", keywords, "brush")
-            commented_mask_labels_layer = ElementTree.Comment(
-                ElementTree.tostring(mask_labels_layer, encoding="unicode")
+            extra_labels_layer = self._label_template("PolygonLabels", keywords, "polygon")
+            commented_labels_layer = ElementTree.Comment(
+                ElementTree.tostring(extra_labels_layer, encoding="unicode")
             )
-            top.extend([image_layer, labels_layer, commented_mask_labels_layer])
+            top.extend([image_layer, labels_layer, commented_labels_layer])
         else:
             top.extend([image_layer, labels_layer])
 
