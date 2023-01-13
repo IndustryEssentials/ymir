@@ -13,24 +13,31 @@ type Props = {
   onChange?: (value: { type: Type; selected?: (string | string[])[] }) => void
   dataset: YModels.Dataset
 }
-type OptionsType = {
+type KeywordOptionsType = {
   [key in Type]: KeywordOption[]
 }
 
-interface KeywordOption {
+type KeywordOption = {
   value: string
   label: string
   children?: KeywordOption[]
   hidden?: boolean
+}
+type TypeOption = KeywordOption & {
+  value: Type
 }
 
 const labels = { [Type.keywords]: 'keywords', [Type.cks]: 'cks', [Type.tags]: 'tags' }
 
 const types = [Type.keywords, Type.cks, Type.tags]
 
+const visibleTypes = (types: TypeOption[]) => types.filter(({ hidden }) => !hidden)
+
 const KeywordSelector: FC<Props> = ({ value, onChange, dataset }) => {
-  const [typeOptions, setTypeOptions] = useState(types.map((value: Type) => ({ value, label: t(`dataset.assets.keyword.selector.types.${labels[value]}`) })))
-  const [kwOptions, setKwOptions] = useState<OptionsType>({
+  const [typeOptions, setTypeOptions] = useState<TypeOption[]>(
+    types.map((value) => ({ value, label: t(`dataset.assets.keyword.selector.types.${labels[value]}`) })),
+  )
+  const [kwOptions, setKwOptions] = useState<KeywordOptionsType>({
     [Type.keywords]: [],
     [Type.cks]: [],
     [Type.tags]: [],
@@ -54,6 +61,14 @@ const KeywordSelector: FC<Props> = ({ value, onChange, dataset }) => {
       }
     }
   }, [value])
+
+  useEffect(() => {
+    console.log('typeOptions:', typeOptions)
+    const validTypes = visibleTypes(typeOptions).map(({ value }) => value)
+    if (!validTypes?.includes(currentType)) {
+      setCurrentType(validTypes[0])
+    }
+  }, [typeOptions])
 
   useEffect(() => {
     setTypeOptions((types) => types.map((opt) => ({ ...opt, hidden: !kwOptions[opt.value].length })))
@@ -109,16 +124,16 @@ const KeywordSelector: FC<Props> = ({ value, onChange, dataset }) => {
       multiple
       allowClear
       expandTrigger="hover"
-      onChange={setCkSelected}
+      onChange={(value: unknown) => setCkSelected(value as string[][])}
       options={list}
       placeholder={t('dataset.assets.keyword.selector.types.placeholder')}
     />
   )
 
-  return typeOptions.length ? (
+  return visibleTypes(typeOptions).length ? (
     <Row gutter={10}>
       <Col style={{ width: 150 }}>
-        <Select style={{ width: '100%' }} value={currentType} onChange={setCurrentType} options={typeOptions.filter((opt) => !opt.hidden)} />
+        <Select style={{ width: '100%' }} value={currentType} onChange={setCurrentType} options={visibleTypes(typeOptions)} />
       </Col>
       <Col flex={1}>{renderKeywords(currentType)}</Col>
     </Row>
