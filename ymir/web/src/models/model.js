@@ -244,8 +244,7 @@ export default {
     *verify({ payload }, { call }) {
       const { code, result } = yield call(verify, payload)
       if (code === 0) {
-        // todo update for annotation structure
-        return result.annotations[0]?.detection?.map(toAnnotation)
+        return result.annotations[0]?.annotations?.map(toAnnotation)
       }
     },
     *batchModelStages({ payload }, { call, put }) {

@@ -215,7 +215,7 @@ const getCharts = (annotationType?: AnnotationType, objectType?: YModels.ObjectT
     [ObjectType.SemanticSegmentation]: ['semanticKeywords', 'keywordArea'],
     [ObjectType.InstanceSegmentation]: ['keywords', 'crowdedness', 'instanceArea', 'keywordArea'],
   }
-  const assetCharts = ['assetHWRatio', 'assetQuality', 'assetArea']
+  const assetCharts = ['assetHWRatio', 'assetArea']
   const keys = objectType ? maps[objectType] : assetCharts
   return keys.map((key) => ({
     ...charts[key],

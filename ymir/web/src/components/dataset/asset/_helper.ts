@@ -52,13 +52,13 @@ export function renderMask(canvas: HTMLCanvasElement, mask: number[][], width: n
   image && ctx.putImageData(image, 0, 0)
 }
 
-export function transferAnnotations(annotations: YModels.Annotation[] = [], asset?: YModels.Asset) {
+export function transferAnnotations(annotations: YModels.Annotation[] = []) {
   const handles = (annotation: YModels.Annotation) => {
     switch (annotation.type) {
       case AnnotationType.Polygon:
         return toPolygon(annotation)
       case AnnotationType.Mask:
-        return toMask(annotation, asset)
+        return toMask(annotation)
       case AnnotationType.BoundingBox:
       default:
         return toBoundingBox(annotation as YModels.BoundingBox)
@@ -72,11 +72,15 @@ function toBoundingBox(annotation: YModels.BoundingBox): YModels.BoundingBox {
   return annotation
 }
 
-function toMask(annotation: YModels.Mask, asset?: YModels.Asset): YModels.Mask {
-  const mask = decode(annotation.mask, asset?.height || 0)
+function toMask(annotation: YModels.Mask): YModels.Mask {
+  const { mask, height } = annotation
+  if(!mask || !height) {
+    return annotation
+  }
+  const decodeMask = decode(mask, height)
   return {
     ...annotation,
-    decodeMask: mask,
+    decodeMask,
   }
 }
 
