@@ -43,6 +43,7 @@
                                 "rotate_angle": 0.22
                             },
                             "class_id": 1,
+                            "class_name": "airplane",
                             "score": 0.5,
                             "anno_quality": 0.62,
                             "tags": {
@@ -53,7 +54,6 @@
                             "index": 0,
                             "cm": 0,
                             "det_link_id": 0,
-                            "class_name": "",
                             "polygon": [],
                             "mask": "",
                             "iscrowd": 0,
@@ -70,6 +70,7 @@
                                 "rotate_angle": 0.02
                             },
                             "class_id": 1,
+                            "class_name": "airplane",
                             "score": -1.0,
                             "anno_quality": 0.75,
                             "tags": {
@@ -79,7 +80,6 @@
                             },
                             "cm": 0,
                             "det_link_id": 0,
-                            "class_name": "",
                             "polygon": [],
                             "mask": "",
                             "iscrowd": 0,
@@ -102,6 +102,7 @@
                                 "rotate_angle": -0.02
                             },
                             "class_id": 1,
+                            "class_name": "airplane",
                             "score": -1.0,
                             "anno_quality": 0.75,
                             "tags": {
@@ -112,7 +113,6 @@
                             "index": 0,
                             "cm": 0,
                             "det_link_id": 0,
-                            "class_name": "",
                             "polygon": [],
                             "mask": "",
                             "iscrowd": 0,
@@ -146,6 +146,7 @@
                                 "rotate_angle": -0.02
                             },
                             "class_id": 1,
+                            "class_name": "airplane",
                             "score": -1.0,
                             "anno_quality": 0.75,
                             "tags": {
@@ -156,7 +157,6 @@
                             "index": 0,
                             "cm": 0,
                             "det_link_id": 0,
-                            "class_name": "",
                             "polygon": [],
                             "mask": "",
                             "iscrowd": 0,
@@ -179,6 +179,7 @@
                                 "rotate_angle": 0.22
                             },
                             "class_id": 1,
+                            "class_name": "airplane",
                             "score": 0.5,
                             "anno_quality": 0.62,
                             "tags": {
@@ -189,7 +190,6 @@
                             "index": 0,
                             "cm": 0,
                             "det_link_id": 0,
-                            "class_name": "",
                             "polygon": [],
                             "mask": "",
                             "iscrowd": 0,
@@ -206,6 +206,7 @@
                                 "rotate_angle": 0.02
                             },
                             "class_id": 1,
+                            "class_name": "airplane",
                             "score": -1.0,
                             "anno_quality": 0.75,
                             "tags": {
@@ -215,7 +216,6 @@
                             },
                             "cm": 0,
                             "det_link_id": 0,
-                            "class_name": "",
                             "polygon": [],
                             "mask": "",
                             "iscrowd": 0,
