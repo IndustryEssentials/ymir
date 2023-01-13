@@ -160,7 +160,15 @@ class LabelStudio(LabelBase):
         self.requests = request_handler
 
     @staticmethod
-    def gen_label_template(object_type: int, keywords: List) -> str:
+    def _label_template(label_name: str, keywords: List, field_name: str = "label") -> ElementTree.Element:
+        labels_layer = ElementTree.Element(label_name, name=field_name, toName="image")
+        children_label_content = [
+            ElementTree.Element("Label", value=keyword, background="green") for keyword in keywords
+        ]
+        labels_layer.extend(children_label_content)
+        return labels_layer
+
+    def gen_label_template(self, object_type: int, keywords: List) -> str:
         """
         generate label_studio template according to https://labelstud.io/playground/
         for example:
@@ -173,29 +181,25 @@ class LabelStudio(LabelBase):
         </View>
         """
         top = ElementTree.Element("View")
-        image_leyer = ElementTree.Element("Image", name="image", value="$image", crosshair="true", maxwidth="100%")
+        image_layer = ElementTree.Element("Image", name="image", value="$image", crosshair="true", maxwidth="100%")
         if object_type == mir_cmd_pb.ObjectType.OT_DET_BOX:
-            LabelName = "RectangleLabels"
-            postpone_template = False
+            label_name = "RectangleLabels"
+            extra_layer = False
         else:
-            LabelName = "PolygonLabels"
-            postpone_template = True
+            label_name = "PolygonLabels"
+            extra_layer = True
 
-        rectangle_labels_layer = ElementTree.Element(LabelName, name="label", toName="image")
-        children_label_content = [
-            ElementTree.Element("Label", value=keyword, background="green") for keyword in keywords
-        ]
-        rectangle_labels_layer.extend(children_label_content)
-        if postpone_template:
-            rectangle_labels_layer = ElementTree.Comment(
-                ElementTree.tostring(rectangle_labels_layer, encoding="unicode")
+        labels_layer = self._label_template(label_name, keywords)
+        if extra_layer:
+            mask_labels_layer = self._label_template("BrushLabels", keywords, "brush")
+            commented_mask_labels_layer = ElementTree.Comment(
+                ElementTree.tostring(mask_labels_layer, encoding="unicode")
             )
+            top.extend([image_layer, labels_layer, commented_mask_labels_layer])
+        else:
+            top.extend([image_layer, labels_layer])
 
-        top.extend([image_leyer, rectangle_labels_layer])
-
-        label_config = ElementTree.tostring(top, encoding="unicode")
-
-        return label_config
+        return ElementTree.tostring(top, encoding="unicode")
 
     def create_label_project(
         self,
@@ -361,7 +365,7 @@ class LabelStudio(LabelBase):
         with a little modification: remove absolute path for image file_name
         """
         ls_coco_file = Path(des_path) / "result.json"
-        ymir_coco_file = Path(des_path) / "coco-annotations.json"
+        ymir_coco_file = Path(des_path) / label_task_config.MIR_COCO_ANNOTATION_FILENAME
         with open(ls_coco_file) as ls_coco_f, open(ymir_coco_file, "w") as ymir_coco_f:
             ls_coco = json.load(ls_coco_f)
             for image in ls_coco["images"]:
@@ -370,17 +374,18 @@ class LabelStudio(LabelBase):
 
     def fetch_label_result(self, project_id: int, object_type: int, des_path: str) -> None:
         project_info = self.get_project_info(project_id)
-        export_type = LS_EXPORT_TYPE_MAPPING[project_info["parsed_label_config"]["label"]["type"]]
+        # parsed_label_config may got various keys, but they all share the same value structure
+        label_studio_label_type = list(project_info["parsed_label_config"].values())[0]["type"]
+        export_type = LS_EXPORT_TYPE_MAPPING[label_studio_label_type]
         if export_type == "VOC":
             self._export_from_label_studio(project_id, des_path, export_type)
             self._move_voc_annotations_to(des_path)
         elif export_type == "COCO":
-            # TODO match image_id
             self._export_from_label_studio(project_id, des_path, export_type)
             self._move_coco_annotations_to(des_path)
         elif export_type == "JSON":
             ls_json_file = self._export_from_label_studio(project_id, des_path, export_type, unzip=False)
-            coco_json_file = Path(ls_json_file).with_name("coco-annotations.json")
+            coco_json_file = Path(ls_json_file).with_name(label_task_config.MIR_COCO_ANNOTATION_FILENAME)
             with open(ls_json_file) as ls_json_f, open(coco_json_file, "w") as coco_json_f:
                 ls_json = json.load(ls_json_f)
                 coco_json = convert_ls_json_to_coco(ls_json)

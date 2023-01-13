@@ -75,9 +75,10 @@ const DatasetList: FC<Props> = ({ pid, name, query }) => {
       dataIndex: 'versionName',
       render: (vname, { id, name, description }) => {
         const popContent = <DescPop description={description} style={{ maxWidth: '30vw' }} />
+        const label = name + vname
         const content = (
-          <Link to={`/home/project/${pid}/dataset/${id}`}>
-            {name} {vname}
+          <Link title={label} to={`/home/project/${pid}/dataset/${id}`}>
+            {label}
           </Link>
         )
         return description ? (
@@ -261,8 +262,9 @@ const DatasetList: FC<Props> = ({ pid, name, query }) => {
         pagination={{
           showQuickJumper: true,
           showSizeChanger: true,
+          current: (datasetQuery?.offset || 0) / (datasetQuery?.limit || 10) + 1,
           total: datasets?.total,
-          pageSize: query?.limit,
+          pageSize: datasetQuery?.limit,
           onChange: pageChange,
         }}
       />

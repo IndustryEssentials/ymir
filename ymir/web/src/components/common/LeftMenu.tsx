@@ -67,11 +67,11 @@ function LeftMenu() {
   }, [id, projects])
 
   useEffect(() => {
-    const showLeftMenu = projectModule.test(pathname)
+    const showProjectList= projectModule.test(pathname)
     setItems([
       getGroupItem(t('breadcrumbs.projects'), 'project', [
         getItem(t('projects.title'), `/home/project`, ProjectIcon),
-        showLeftMenu
+        showProjectList
           ? getItem(project?.name, `project.summary`, VectorIcon, [
               getItem(t('project.summary'), `/home/project/${id}/detail`, BarchartIcon),
               project?.enableIteration ? getItem(t('project.iterations.title'), `/home/project/${id}/iterations`, IterationIcon) : null,

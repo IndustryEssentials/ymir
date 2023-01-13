@@ -13,27 +13,37 @@ import styles from './assets.less'
 import GtSelector from '@/components/form/GtSelector'
 import ListAnnotation from '@/components/dataset/ListAnnotation'
 import useWindowResize from '@/hooks/useWindowResize'
-import KeywordSelector from './components/keywordSelector'
+import KeywordSelector from '@/components/form/KeywordFilter'
 import EvaluationSelector from '@/components/form/EvaluationSelector'
 import VersionName from '@/components/result/VersionName'
 import CustomLabels from '@/components/dataset/asset/CustomLabels'
 
 const { Option } = Select
 
-const paramsHandle = (params) =>
-  Object.keys(params).reduce(
-    (prev, key) => ({
-      ...prev,
-      [key]: params[key + 'all'] ? [] : params[key],
-    }),
-    {},
-  )
+const paramsHandle = (params) => {
+  const mergeKeywords = (params) => {
+    const kws = params.keywords?.map((item) => (Array.isArray(item) ? item.join(':') : item))
+    return {
+      ...params,
+      keywords: kws,
+    }
+  }
+  const addAll = (params) =>
+    Object.keys(params).reduce(
+      (prev, key) => ({
+        ...prev,
+        [key]: params[key + 'all'] ? [] : params[key],
+      }),
+      {},
+    )
+  return addAll(mergeKeywords(params))
+}
 
 const Dataset = () => {
   const { id: pid, did: id } = useParams()
   const initQuery = {
     id,
-    keywords: [],
+    // keywords: [],
     offset: 0,
     limit: 20,
   }
@@ -59,15 +69,15 @@ const Dataset = () => {
   }, [dataset, filterParams])
 
   const filterKw = ({ type, selected }) => {
-    const s = selected.map((item) => (Array.isArray(item) ? item.join(':') : item))
-    if (s.length || (!s.length && filterParams.keywords.length > 0)) {
-      setFilterParams((params) => ({
-        ...params,
-        type,
-        keywords: s,
-        offset: initQuery.offset,
-      }))
+    if (!selected.length && !filterParams.keywords?.length) {
+      return
     }
+    setFilterParams((params) => ({
+      ...params,
+      type,
+      keywords: selected,
+      offset: initQuery.offset,
+    }))
   }
 
   const filterPage = (page, pageSize) => {
@@ -116,7 +126,7 @@ const Dataset = () => {
   }
 
   const reset = () => {
-    setFilterParams(initQuery)
+    setFilterParams({...initQuery, keywords: []})
   }
 
   const randomPageButton = (
@@ -201,7 +211,9 @@ const Dataset = () => {
             <VersionName result={dataset} />
           </strong>
           <span>{t('dataset.detail.pager.total', { total: total + '/' + dataset.assetCount })}</span>
-          <span>{t('common.object.type')}: {t(getProjectTypeLabel(dataset.type, true))}</span>
+          <span>
+            {t('common.object.type')}: {t(getProjectTypeLabel(dataset.type, true))}
+          </span>
           {dataset?.inferClass ? (
             <div>
               {t('dataset.detail.infer.class')}

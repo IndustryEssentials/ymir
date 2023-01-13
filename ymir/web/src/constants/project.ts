@@ -1,33 +1,14 @@
 import { transferDatasetGroup, transferDataset } from '@/constants/dataset'
 import { format } from '@/utils/date'
 import { transferIteration } from './iteration'
+import { ObjectType, getProjectTypes, getProjectTypeLabel, isDetection, isSemantic, isInstance } from './objectType'
 
-export enum ObjectType {
-  ObjectDetection = 2,
-  SemanticSegmentation = 3,
-  InstanceSegmentation = 4,
-}
-
-const typesPrefix = 'project.types.'
-const projectTypes = [
-  { label: 'det', value: ObjectType.ObjectDetection },
-  { label: 'seg', value: ObjectType.SemanticSegmentation },
-  { label: 'ins', value: ObjectType.InstanceSegmentation },
-]
-
-export const getProjectTypes = () => projectTypes.map(({ label, value }) => ({ label: typesPrefix + label, value }))
-
-export const getProjectTypeLabel = (type?: ObjectType, prefix: boolean = false) => {
-  const target = projectTypes.find(({ value }) => value === type)
-  return type ? (prefix ? typesPrefix : '') + target?.label : ''
-}
-
-export const tabs = [
+const tabs = [
   { tab: 'project.tab.set.title', key: 'dataset' },
   { tab: 'project.tab.model.title', key: 'model' },
 ]
 
-export function transferProject(data: YModels.BackendData) {
+function transferProject(data: YModels.BackendData) {
   const iteration = transferIteration(data.current_iteration)
   const project: YModels.Project = {
     id: data.id,
@@ -66,3 +47,5 @@ export function transferProject(data: YModels.BackendData) {
   }
   return project
 }
+
+export { ObjectType, getProjectTypes, getProjectTypeLabel, isDetection, isSemantic, isInstance, tabs, transferProject }
