@@ -503,8 +503,7 @@ def _single_image_annotations_to_det_ls_json(attributes: mirpb.MetadataAttribute
                         mask_or_polygon=(annotation.mask if annotation.type == mirpb.ObjectSubType.OST_SEG_MASK else
                                          list(annotation.polygon)),
                         width=img_width,
-                        height=img_height,
-                        img_name=f"{os.path.splitext(os.path.basename(anno_dst_file))[0]}-{annotation.class_id}.png"),
+                        height=img_height),
                     "brushlabels": [cls_id_mgr.main_name_for_id(annotation.class_id)]
                 },
                 "to_name": to_name,
@@ -651,8 +650,7 @@ def _single_task_annotations_to_coco(
 
 
 # todo: we should have a file for rle converters
-def _coco_rle_to_ls_rle(mask_or_polygon: Union[str, List[mirpb.IntPoint]], width: int, height: int,
-                        img_name: str) -> List[int]:
+def _coco_rle_to_ls_rle(mask_or_polygon: Union[str, List[mirpb.IntPoint]], width: int, height: int) -> List[int]:
     if isinstance(mask_or_polygon, str):
         coco_seg = {'counts': mask_or_polygon, 'size': [height, width]}
     elif isinstance(mask_or_polygon, list):
