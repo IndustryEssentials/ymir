@@ -63,7 +63,6 @@ const KeywordSelector: FC<Props> = ({ value, onChange, dataset }) => {
   }, [value])
 
   useEffect(() => {
-    console.log('typeOptions:', typeOptions)
     const validTypes = visibleTypes(typeOptions).map(({ value }) => value)
     if (!validTypes?.includes(currentType)) {
       setCurrentType(validTypes[0])

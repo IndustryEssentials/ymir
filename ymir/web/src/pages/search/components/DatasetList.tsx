@@ -253,7 +253,6 @@ const DatasetList: FC<Props> = ({ pid, name, query }) => {
 
   return (
     <div>
-      {console.log('query: ', query)}
       <Table
         dataSource={datasets?.items}
         onChange={tableChange}
