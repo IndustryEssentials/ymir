@@ -41,11 +41,12 @@ const Search: FC<Props> = ({ change, name }) => {
       ...values,
       startTime: getTimestamp(start?.startOf('day')),
       endTime: getTimestamp(end?.endOf('day')),
+      offset: 0
     }
   }
 
   useEffect(() => {
-    typeof debonceName !== 'undefined' && updateQuery({ ...query, name: debonceName, offset: 1 })
+    typeof debonceName !== 'undefined' && updateQuery({ ...query, name: debonceName, offset: 0 })
   }, [debonceName])
 
   useEffect(() => {
