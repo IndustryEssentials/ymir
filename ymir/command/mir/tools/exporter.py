@@ -651,11 +651,6 @@ def _single_task_annotations_to_coco(
 
 
 # todo: we should have a file for rle converters
-# if type(ann['segmentation']['counts']) == list:
-#     rle = maskUtils.frPyObjects([ann['segmentation']], t['height'], t['width'])
-# else:
-#     rle = [ann['segmentation']]
-# m = maskUtils.decode(rle)
 def _coco_rle_to_ls_rle(mask_or_polygon: Union[str, List[mirpb.IntPoint]], width: int, height: int,
                         img_name: str) -> List[int]:
     if isinstance(mask_or_polygon, str):
@@ -664,10 +659,12 @@ def _coco_rle_to_ls_rle(mask_or_polygon: Union[str, List[mirpb.IntPoint]], width
         polygon = []
         for p in mask_or_polygon:
             polygon.extend([p.x, p.y])
-        coco_seg = mask_utils.frPyObjects({'counts': [[polygon]]}, height, width)
+        coco_seg = mask_utils.frPyObjects([polygon], height, width)
 
-    # coco_seg: dict -> mask: np.ndarray (shape: h * w * 1) -> ls_rle: List[int]
-    return _mask2rle(mask_utils.decode(coco_seg) * 255)
+    # coco_seg: dict -> mask: np.ndarray (shape: h * w * 1) -> reshape to (h * w) -> ls_rle: List[int]
+    mask_np = mask_utils.decode(coco_seg).reshape((height, width))
+    # https://labelstud.io/guide/predictions.html#Import-brush-segmentation-pre-annotations-in-RLE-format
+    return _mask2rle(mask_np * 255)
 
 
 def _mask2rle(mask: np.ndarray) -> List[int]:
