@@ -29,7 +29,6 @@ import {
 } from '@/components/common/Icons'
 import IterationIcon from '@/components/icon/Xiangmudiedai'
 import type { IconProps } from './icons/IconProps'
-import { isDetection } from '@/constants/project'
 type MenuItem = Required<MenuProps>['items'][number]
 type Handler = Required<MenuProps>['onClick']
 
@@ -69,7 +68,6 @@ function LeftMenu() {
 
   useEffect(() => {
     const showProjectList= projectModule.test(pathname)
-    const detectionProject = isDetection(project?.type)
     setItems([
       getGroupItem(t('breadcrumbs.projects'), 'project', [
         getItem(t('projects.title'), `/home/project`, ProjectIcon),
@@ -80,7 +78,7 @@ function LeftMenu() {
               getItem(t('dataset.list'), `/home/project/${id}/dataset`, NavDatasetIcon),
               getItem(t('breadcrumbs.dataset.analysis'), `/home/project/${id}/dataset/analysis`, BarChart2LineIcon),
               getItem(t('model.management'), `/home/project/${id}/model`, MymodelIcon),
-              detectionProject ? getItem(t('model.diagnose'), `/home/project/${id}/diagnose`, DiagnosisIcon) : null,
+              getItem(t('model.diagnose'), `/home/project/${id}/diagnose`, DiagnosisIcon),
               getItem(t('breadcrumbs.task.training'), `/home/project/${id}/train`, TrainIcon),
               getItem(t('common.hidden.list'), `/home/project/${id}/hidden`, EyeOffIcon),
               getItem(t('project.settings.title'), `/home/project/${id}/add`, EditIcon),
