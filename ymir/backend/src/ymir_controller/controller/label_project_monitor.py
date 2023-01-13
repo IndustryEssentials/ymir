@@ -114,10 +114,10 @@ def update_label_task(label_instance: utils.LabelBase, task_id: str, project_inf
         rds.hdel(label_task_config.MONITOR_MAPPING_KEY, task_id)
         logging.info(f"task {task_id} finished!!!")
 
-        PercentLogHandler.write_percent_log(log_file=project_info["monitor_file_path"],
-                                            tid=project_info["task_id"],
-                                            percent=percent,
-                                            state=state)
+    PercentLogHandler.write_percent_log(log_file=project_info["monitor_file_path"],
+                                        tid=project_info["task_id"],
+                                        percent=percent,
+                                        state=state)
 
 
 def lable_task_monitor() -> None:
