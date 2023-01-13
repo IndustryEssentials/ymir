@@ -284,6 +284,23 @@ DEPLOY_MODULE_MYSQL_ROOT_PASSWORD=deploy_db_passwd
 <div align="left">
   <img src="https://github.com/IndustryEssentials/ymir-images/blob/main/doc_images/first_admin.png" width="600"/>
   <div>&nbsp;</div>
+  
+6.进入.env 文件配置，设置发信邮箱信息，配置完成后才可以发送邮件通知。
+  
+  ```raw
+# Email Notification
+EMAILS_ENABLED=True
+FRONTEND_ENTRYPOINT=<YMIR FRONTEND URL>
+SMTP_TLS=
+SMTP_PORT=
+SMTP_HOST=
+SMTP_USER=
+SMTP_PASSWORD=
+EMAILS_FROM_EMAIL= <SENDER EMAIL ADDRESS>
+EMAILS_FROM_NAME=ymir-project
+EMAIL_RESET_TOKEN_EXPIRE_HOURS=1
+EMAIL_TEMPLATES_DIR=/app/email-templates/build
+```
 
 ## 2.3. 安装配置LabelStudio （可选）
 
