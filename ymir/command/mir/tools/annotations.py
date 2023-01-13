@@ -277,7 +277,7 @@ def import_annotations_coco_json(file_name_to_asset_ids: Dict[str, str], mir_ann
     # images_list -> image_id_to_hashes (key: coco image id, value: ymir asset hash)
     image_id_to_hashes: Dict[int, str] = {}
     for v in images_list:
-        filename = v['file_name']
+        filename = os.path.basename(v['file_name'])  # file_name may contains path
         if filename not in file_name_to_asset_ids:
             unhashed_filenames_cnt += 1
             continue

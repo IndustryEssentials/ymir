@@ -503,7 +503,8 @@ def _single_image_annotations_to_det_ls_json(attributes: mirpb.MetadataAttribute
                         mask_or_polygon=(annotation.mask if annotation.type == mirpb.ObjectSubType.OST_SEG_MASK else
                                          list(annotation.polygon)),
                         width=img_width,
-                        height=img_height),
+                        height=img_height,
+                        img_name=f"{os.path.splitext(os.path.basename(anno_dst_file))[0]}-{annotation.class_id}.png"),
                     "brushlabels": [cls_id_mgr.main_name_for_id(annotation.class_id)]
                 },
                 "to_name": to_name,
@@ -655,7 +656,8 @@ def _single_task_annotations_to_coco(
 # else:
 #     rle = [ann['segmentation']]
 # m = maskUtils.decode(rle)
-def _coco_rle_to_ls_rle(mask_or_polygon: Union[str, List[mirpb.IntPoint]], width: int, height: int) -> List[int]:
+def _coco_rle_to_ls_rle(mask_or_polygon: Union[str, List[mirpb.IntPoint]], width: int, height: int,
+                        img_name: str) -> List[int]:
     if isinstance(mask_or_polygon, str):
         coco_seg = {'counts': mask_or_polygon, 'size': [height, width]}
     elif isinstance(mask_or_polygon, list):
@@ -664,8 +666,8 @@ def _coco_rle_to_ls_rle(mask_or_polygon: Union[str, List[mirpb.IntPoint]], width
             polygon.extend([p.x, p.y])
         coco_seg = mask_utils.frPyObjects({'counts': [[polygon]]}, height, width)
 
-    # coco_seg: dict -> mask: np.ndarray -> ls_rle: List[int]
-    return _mask2rle(mask_utils.decode(coco_seg))
+    # coco_seg: dict -> mask: np.ndarray (shape: h * w * 1) -> ls_rle: List[int]
+    return _mask2rle(mask_utils.decode(coco_seg) * 255)
 
 
 def _mask2rle(mask: np.ndarray) -> List[int]:
