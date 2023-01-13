@@ -82,8 +82,9 @@ const ModelList: FC<Props> = ({ pid, name, query }) => {
         pagination={{
           showQuickJumper: true,
           showSizeChanger: true,
+          current: (modelQuery?.offset || 0) / (modelQuery?.limit || 10) + 1,
           total: models?.total,
-          pageSize: query?.limit,
+          pageSize: modelQuery?.limit,
           onChange: pageChange,
         }}
       />

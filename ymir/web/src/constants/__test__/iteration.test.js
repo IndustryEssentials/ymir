@@ -73,6 +73,7 @@ describe('constants: project', () => {
       wholeMiningSet: 20,
       testSet: 0,
       prevIteration: 0,
+      model: undefined,
       end: false,
     }
     expect(transferIteration(origin)).toEqual(expected)

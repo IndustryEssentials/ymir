@@ -4,8 +4,9 @@ import { useLocation, useParams, useHistory } from 'umi'
 
 import t from '@/utils/t'
 import useFetch from '@/hooks/useFetch'
-import Breadcrumbs from '@/components/common/breadcrumb'
+import { isDetection } from '@/constants/project'
 
+import Breadcrumbs from '@/components/common/breadcrumb'
 import Metrics from './diagnose/metrics'
 import Training from './diagnose/training'
 import InferDataset from './diagnose/InferDataset'
@@ -54,7 +55,10 @@ function Diagnose() {
     <div className={s.projectDetail}>
       <Breadcrumbs />
       <Card
-        tabList={tabs.filter((tab) => !tab.hidden).map((tab) => ({ ...tab, tab: t(tab.tab) }))}
+        tabList={tabs.filter((tab) => {
+          console.log('tab:', tab, project?.type, TabsKey[1])
+          return tab.key !== TabsKey[1] || isDetection(project?.type) 
+        }).map((tab) => ({ ...tab, tab: t(tab.tab) }))}
         activeTabKey={active}
         onTabChange={tabChange}
         className="noShadow"

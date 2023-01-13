@@ -262,8 +262,9 @@ const DatasetList: FC<Props> = ({ pid, name, query }) => {
         pagination={{
           showQuickJumper: true,
           showSizeChanger: true,
+          current: (datasetQuery?.offset || 0) / (datasetQuery?.limit || 10) + 1,
           total: datasets?.total,
-          pageSize: query?.limit,
+          pageSize: datasetQuery?.limit,
           onChange: pageChange,
         }}
       />
