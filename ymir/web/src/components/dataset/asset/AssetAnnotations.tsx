@@ -18,16 +18,24 @@ const AssetAnnotation: FC<Props> = ({ asset }) => {
   const imgContainer = useRef<HTMLDivElement>(null)
   const img = useRef<HTMLImageElement>(null)
   const [width, setWidth] = useState(0)
+  const [imgNaturalHeight, setImgNaturalHeight] = useState(0)
   const [imgWidth, setImgWidth] = useState(0)
   const [ratio, setRatio] = useState(1)
 
   useEffect(() => {
-    if (!asset || !asset.height) {
+    if (!asset) {
       return
     }
-    const updateAnnotations = transferAnnotations(asset.annotations, asset)
-    setAnnotations(updateAnnotations)
+    setAnnotations(transferAnnotations(asset.annotations))
   }, [asset])
+
+  useEffect(() => {
+    let annos = annotations
+    if (annotations.length && !asset?.height && imgNaturalHeight) {
+      annos = annos.map((anno) => ({ ...anno, height: imgNaturalHeight }))
+      setAnnotations(annotations)
+    }
+  }, [asset, annotations, imgNaturalHeight])
 
   function calClientWidth(imgWidth?: number) {
     const { current } = imgContainer
@@ -54,8 +62,7 @@ const AssetAnnotation: FC<Props> = ({ asset }) => {
     if (img.current && img.current.naturalWidth) {
       const { naturalHeight, naturalWidth } = img.current
       calClientWidth(naturalWidth)
-      const updateAnnotations = transferAnnotations(asset.annotations, { ...asset, height: naturalHeight })
-      setAnnotations(updateAnnotations)
+      setImgNaturalHeight(naturalHeight)
     }
   }
 

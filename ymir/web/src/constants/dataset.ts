@@ -166,10 +166,10 @@ export function transferDatasetAnalysis(data: YModels.BackendData): YModels.Data
 export function transferAsset(data: YModels.BackendData, keywords: Array<string>): YModels.Asset {
   const { width, height } = data?.metadata || {}
   const colors = generateDatasetColors(keywords || data.keywords)
-  const transferAnnotations = (annotations = [], gt = false) =>
-    annotations.map((an: YModels.BackendData) => toAnnotation(an, width, height, gt, colors[an.keyword]))
+  const transferAnnotations = (annotations = [], pred = false) =>
+    annotations.map((an: YModels.BackendData) => toAnnotation(an, width, height, pred, colors[an.keyword]))
 
-  const annotations = [...transferAnnotations(data.gt, true), ...transferAnnotations(data.pred)]
+  const annotations = [...transferAnnotations(data.gt), ...transferAnnotations(data.pred, true)]
   const evaluated = annotations.some((annotation) => evaluationTags[annotation.cm])
 
   return {
@@ -188,13 +188,13 @@ export function transferAsset(data: YModels.BackendData, keywords: Array<string>
   }
 }
 
-export function toAnnotation(annotation: YModels.BackendData, width: number = 0, height: number = 0, gt = false, color = ''): YModels.Annotation {
+export function toAnnotation(annotation: YModels.BackendData, width: number = 0, height: number = 0, pred = false, color = ''): YModels.Annotation {
   return {
     keyword: annotation.keyword || '',
     width,
     height,
     cm: annotation.cm,
-    gt,
+    gt: !pred,
     tags: annotation.tags || {},
     color,
     ...annotationTransfer({ ...annotation, type: getType(annotation) }),

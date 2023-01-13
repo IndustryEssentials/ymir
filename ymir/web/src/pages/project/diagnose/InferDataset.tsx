@@ -11,6 +11,7 @@ import Actions from '@/components/table/Actions'
 import s from './index.less'
 import { EyeOnIcon, DiagnosisIcon } from '@/components/common/Icons'
 import { INFER_CLASSES_MAX_COUNT, INFER_DATASET_MAX_COUNT } from '@/constants/common'
+import { isDetection } from '@/constants/objectType'
 
 const initQuery = { current: 1, offset: 0, limit: 20 }
 
@@ -31,6 +32,7 @@ const InferDataset: React.FC = () => {
         history.push(`/home/project/${pid}/diagnose#metrics`, {
           mid: record.inferModelId,
         }),
+      hidden: () => !isDetection(record.type),
       disabled: record.assetCount > INFER_DATASET_MAX_COUNT || (record.inferModel?.keywords?.length || 0) > INFER_CLASSES_MAX_COUNT,
       icon: <DiagnosisIcon />,
     },
