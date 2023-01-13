@@ -5,6 +5,7 @@ import t from '@/utils/t'
 import { evaluationLabel } from '@/constants/dataset'
 
 import styles from '../common.less'
+import { percent } from '@/utils/number'
 
 type Props = {
   annotation: YModels.BoundingBox
@@ -32,7 +33,7 @@ const BoundingBox: FC<Props> = ({ annotation, ratio = 1, simple = false }) => {
         {annotation?.score ? (
           <Row>
             <Col flex={'100px'}>{t('model.verify.confidence')}</Col>
-            <Col flex={1}>{annotation?.score}</Col>
+            <Col flex={1} title={`${annotation.score}`}>{percent(annotation?.score)}</Col>
           </Row>
         ) : null}
         {tagsArr.length ? (

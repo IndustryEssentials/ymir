@@ -86,7 +86,7 @@ function ModelDetail() {
     fp: { label: 'FP', color: '#fff', isCount: true },
     fn: { label: 'FN', color: '#fff', isCount: true },
     ar: { label: 'Recall', color: 'rgb(44, 189, 233)' },
-    acc: { label: 'ACC', color: 'rgb(44, 189, 233)' },
+    acc: { label: 'MACC', color: 'rgb(44, 189, 233)' },
     boxAP: { label: 'boxAP', color: 'rgb(44, 189, 233)' },
   }
 

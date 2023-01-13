@@ -147,7 +147,7 @@ declare namespace YModels {
     width: number
     height: number
     color?: string
-    score?: number | string
+    score?: number
     gt?: boolean
     cm: number
     tags?: CK

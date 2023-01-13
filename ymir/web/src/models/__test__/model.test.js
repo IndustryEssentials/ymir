@@ -301,7 +301,7 @@ describe('models: model', () => {
     const boxes = [{ type: 0, box: { x: 20, y: 52, w: 79, h: 102 }, keyword: 'cat', score: 0.8 }]
     const expected = {
       model_id: id,
-      annotations: [{ img_url: url, detection: boxes }],
+      annotations: [{ img_url: url, annotations: boxes }],
     }
 
     const generator = saga(creator, { put, call })
