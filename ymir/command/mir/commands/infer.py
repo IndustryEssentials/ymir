@@ -245,7 +245,8 @@ def _process_infer_detbox_result(task_annotations: mirpb.SingleTaskAnnotations, 
         single_image_annotations = mirpb.SingleImageAnnotations()
         idx = 0
         for annotation_dict in annotations:
-            class_id = class_id_mgr.id_and_main_name_for_name(name=annotation_dict['class_name'])[0]
+            class_name = annotation_dict['class_name']
+            class_id = class_id_mgr.id_and_main_name_for_name(name=class_name)[0]
             # ignore unknown class ids
             if class_id < 0:
                 unknown_class_id_annos_cnt += 1
@@ -258,6 +259,7 @@ def _process_infer_detbox_result(task_annotations: mirpb.SingleTaskAnnotations, 
             annotation.index = idx
             json_format.ParseDict(annotation_dict['box'], annotation.box)
             annotation.class_id = class_id
+            annotation.class_name = class_name
             annotation.score = float(annotation_dict['score'])
             single_image_annotations.boxes.append(annotation)
             idx += 1
