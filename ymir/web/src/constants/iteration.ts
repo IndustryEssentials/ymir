@@ -24,6 +24,7 @@ export enum MiningStrategy {
 
 export function getStepLabel(step: STEP | undefined, round: number = 0) {
   const list = getSteps()
+  console.log('list:', list, step)
   const target = list.find((item) => item.value === (step || STEP.next))
   return `project.iteration.stage.${round ? target?.label : 'prepare'}`
 }
