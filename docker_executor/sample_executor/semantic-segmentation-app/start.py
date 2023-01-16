@@ -172,12 +172,9 @@ def _run_infer(env_config: env.EnvConfig) -> None:
                 'category_id': category_index + 1,
                 'image_id': image_index + 1,
                 'bbox': [50, 50, 100, 100],  # xywh
-                'segmentation': {
-                    'counts': '',  # rle encoded mask, or polygon, in coco format
-                    'size': [300, 500]  # hw
-                },
+                'segmentation': [[50, 100, 100, 50, 150, 100, 100, 150]],
                 "area": 0,  # mask area
-                'confidence': 0.6  # confidence of this segmentation
+                'confidence': 1  # confidence of this segmentation, 0 <= conf <= 1
             })
 
     coco_dict = {

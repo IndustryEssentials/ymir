@@ -162,10 +162,11 @@ class CmdInfer(base.BaseCommand):
             # result files -> task_annotations and save
             class_id_mgr = class_ids.load_or_create_userlabels(label_storage_file=label_storage_file)
             task_annotations = mirpb.SingleTaskAnnotations()
+            task_annotations.type = (mirpb.ObjectType.OT_DET_BOX if model_storage.object_type
+                                     == mirpb.ObjectType.OT_DET_BOX else mirpb.ObjectType.OT_SEG)
             process_result_func = (_process_infer_detbox_result if model_storage.object_type
                                    == mirpb.ObjectType.OT_DET_BOX else _process_infer_seg_coco_result)
             process_result_func(task_annotations, work_dir_out, class_id_mgr)
-            task_annotations.type = model_storage.object_type  # type: ignore
 
             with open(os.path.join(work_dir_out, 'prediction.mir'), 'wb') as m_f:
                 m_f.write(task_annotations.SerializeToString())

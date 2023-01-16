@@ -413,9 +413,9 @@ message AnnoStats {
     // Shortcut of class_ids for evaluation (dup. field as in SingleTaskAnnotations).
     repeated int32 eval_class_ids = 9;
 
-    int32 total_mask_area = 10;
+    int64 total_mask_area = 10;
     // key: class ids, value: mask area for this class id
-    map<int32, int32> class_ids_mask_area = 11;
+    map<int32, int64> class_ids_mask_area = 11;
 
     // key: class ids, value: obj count for this class id
     map<int32, int32> class_ids_obj_cnt = 12;
