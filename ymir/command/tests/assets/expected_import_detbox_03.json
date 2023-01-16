@@ -57,7 +57,7 @@
         "pred_stats": {
             "negative_asset_cnt": 2,
             "total_obj_cnt": 0,
-            "total_mask_area": 0,
+            "total_mask_area": "0",
             "positive_asset_cnt": 0,
             "tags_cnt": {},
             "class_ids_cnt": {},
@@ -68,7 +68,7 @@
         "gt_stats": {
             "negative_asset_cnt": 2,
             "total_obj_cnt": 0,
-            "total_mask_area": 0,
+            "total_mask_area": "0",
             "positive_asset_cnt": 0,
             "tags_cnt": {},
             "class_ids_cnt": {},

@@ -177,7 +177,7 @@ def _run_infer(env_config: env.EnvConfig) -> None:
                     'size': [300, 500]  # hw
                 },
                 "area": 0,  # mask area
-                'confidence': 0.6  # confidence of this segmentation
+                'confidence': 1  # confidence of this segmentation, 0 <= conf <= 1
             })
 
     coco_dict = {
