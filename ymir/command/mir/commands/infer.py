@@ -292,7 +292,6 @@ def _process_infer_seg_coco_result(task_annotations: mirpb.SingleTaskAnnotations
                                  accu_new_class_names={},
                                  image_annotations=task_annotations,
                                  coco_json_filename=coco_json_filename)
-    # reset all scores in task_annotations
 
 
 # might used both by mining and infer
