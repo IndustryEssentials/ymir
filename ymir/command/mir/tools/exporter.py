@@ -13,6 +13,7 @@ from mir.tools import annotations, mir_storage
 from mir.tools.class_ids import UserLabels
 from mir.tools.code import MirCode, time_it
 from mir.tools.errors import MirRuntimeError
+from mir.tools.mask_utils import coco_rle_to_ls_rle
 from mir.tools.settings import COCO_JSON_NAME
 
 
@@ -463,29 +464,54 @@ def _single_image_annotations_to_det_ls_json(attributes: mirpb.MetadataAttribute
         if class_ids_mapping and annotation.class_id not in class_ids_mapping:
             continue
 
-        bbox_x, bbox_y = float(annotation.box.x), float(annotation.box.y)
-        bbox_width, bbox_height = float(annotation.box.w), float(annotation.box.h)
         img_width, img_height = attributes.width, attributes.height
-        item = {
-            "id": uuid.uuid4().hex[0:10],  # random id to identify this annotation.
-            "type": "rectanglelabels",
-            "value": {
-                # Units of image annotations in label studio is percentage of image width/height.
-                # https://labelstud.io/guide/predictions.html#Units-of-image-annotations
-                "x": bbox_x / img_width * 100,
-                "y": bbox_y / img_height * 100,
-                "width": bbox_width / img_width * 100,
-                "height": bbox_height / img_height * 100,
-                "rotation": 0,
-                "rectanglelabels": [cls_id_mgr.main_name_for_id(annotation.class_id)]
-            },
-            "to_name": to_name,
-            "from_name": from_name,
-            "image_rotation": 0,
-            "original_width": img_width,
-            "original_height": img_height
-        }
-        task[out_type][0]['result'].append(item)
+        if (annotation.type == mirpb.ObjectSubType.OST_SEG_MASK
+                or annotation.type == mirpb.ObjectSubType.OST_SEG_POLYGON):
+            # segmentation
+            result_item = {
+                "id": uuid.uuid4().hex[0:10],  # random id to identify this annotation.
+                "type": "brushlabels",
+                "value": {
+                    "format":
+                    "rle",
+                    "rle":
+                    coco_rle_to_ls_rle(
+                        mask_or_polygon=(annotation.mask if annotation.type == mirpb.ObjectSubType.OST_SEG_MASK else
+                                         list(annotation.polygon)),
+                        width=img_width,
+                        height=img_height),
+                    "brushlabels": [cls_id_mgr.main_name_for_id(annotation.class_id)]
+                },
+                "to_name": to_name,
+                "from_name": from_name,
+                "image_rotation": 0,
+                "original_width": img_width,
+                "original_height": img_height
+            }
+        else:
+            # detection
+            bbox_x, bbox_y = float(annotation.box.x), float(annotation.box.y)
+            bbox_width, bbox_height = float(annotation.box.w), float(annotation.box.h)
+            result_item = {
+                "id": uuid.uuid4().hex[0:10],  # random id to identify this annotation.
+                "type": "rectanglelabels",
+                "value": {
+                    # Units of image annotations in label studio is percentage of image width/height.
+                    # https://labelstud.io/guide/predictions.html#Units-of-image-annotations
+                    "x": bbox_x / img_width * 100,
+                    "y": bbox_y / img_height * 100,
+                    "width": bbox_width / img_width * 100,
+                    "height": bbox_height / img_height * 100,
+                    "rotation": 0,
+                    "rectanglelabels": [cls_id_mgr.main_name_for_id(annotation.class_id)]
+                },
+                "to_name": to_name,
+                "from_name": from_name,
+                "image_rotation": 0,
+                "original_width": img_width,
+                "original_height": img_height
+            }
+        task[out_type][0]['result'].append(result_item)
 
     with open(anno_dst_file, 'w') as af:
         af.write(json.dumps(task))
