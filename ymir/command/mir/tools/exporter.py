@@ -465,7 +465,30 @@ def _single_image_annotations_to_det_ls_json(attributes: mirpb.MetadataAttribute
             continue
 
         img_width, img_height = attributes.width, attributes.height
-        if annotation.type == mirpb.ObjectSubType.OST_NOTSET:
+        if (annotation.type == mirpb.ObjectSubType.OST_SEG_MASK
+                or annotation.type == mirpb.ObjectSubType.OST_SEG_POLYGON):
+            # segmentation
+            result_item = {
+                "id": uuid.uuid4().hex[0:10],  # random id to identify this annotation.
+                "type": "brushlabels",
+                "value": {
+                    "format":
+                    "rle",
+                    "rle":
+                    coco_rle_to_ls_rle(
+                        mask_or_polygon=(annotation.mask if annotation.type == mirpb.ObjectSubType.OST_SEG_MASK else
+                                         list(annotation.polygon)),
+                        width=img_width,
+                        height=img_height),
+                    "brushlabels": [cls_id_mgr.main_name_for_id(annotation.class_id)]
+                },
+                "to_name": to_name,
+                "from_name": from_name,
+                "image_rotation": 0,
+                "original_width": img_width,
+                "original_height": img_height
+            }
+        else:
             # detection
             bbox_x, bbox_y = float(annotation.box.x), float(annotation.box.y)
             bbox_width, bbox_height = float(annotation.box.w), float(annotation.box.h)
@@ -481,28 +504,6 @@ def _single_image_annotations_to_det_ls_json(attributes: mirpb.MetadataAttribute
                     "height": bbox_height / img_height * 100,
                     "rotation": 0,
                     "rectanglelabels": [cls_id_mgr.main_name_for_id(annotation.class_id)]
-                },
-                "to_name": to_name,
-                "from_name": from_name,
-                "image_rotation": 0,
-                "original_width": img_width,
-                "original_height": img_height
-            }
-        else:
-            # segmentation
-            result_item = {
-                "id": uuid.uuid4().hex[0:10],  # random id to identify this annotation.
-                "type": "brushlabels",
-                "value": {
-                    "format":
-                    "rle",
-                    "rle":
-                    coco_rle_to_ls_rle(
-                        mask_or_polygon=(annotation.mask if annotation.type == mirpb.ObjectSubType.OST_SEG_MASK else
-                                         list(annotation.polygon)),
-                        width=img_width,
-                        height=img_height),
-                    "brushlabels": [cls_id_mgr.main_name_for_id(annotation.class_id)]
                 },
                 "to_name": to_name,
                 "from_name": from_name,
