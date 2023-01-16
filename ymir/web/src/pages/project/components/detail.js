@@ -5,6 +5,7 @@ import { Link, useSelector } from "umi"
 import t from "@/utils/t"
 import { getStepLabel } from "@/constants/iteration"
 import useFetch from "@/hooks/useFetch"
+import { getProjectTypeLabel } from '@/constants/project'
 
 import s from "../detail.less"
 import { EditIcon, SearchEyeIcon, EyeOffIcon } from "@/components/common/Icons"
@@ -15,6 +16,7 @@ function ProjectDetail({ project = {} }) {
 
   const unfold = useSelector(({ iteration }) => iteration.actionPanelExpand)
   const [_, toggleActionPanel] = useFetch("iteration/toggleActionPanel", true)
+const typeLabel = getProjectTypeLabel(project.type)
 
   return (
     <div className={s.detailContainer}>
@@ -22,11 +24,12 @@ function ProjectDetail({ project = {} }) {
         <Col flex={1}>
           <Space className={s.detailPanel} wrap size={16}>
             <span className={s.name}>{project.name}</span>
+            <span className={`extraTag ${[typeLabel]}`}>{t(project.typeLabel)}</span>
             <span className={s.iterationInfo}>
               {t("project.detail.info.iteration", {
                 stageLabel: (
                   <span className={s.orange}>
-                    {t(getStepLabel(project.currentStep?.name, project.round))}
+                    {t(getStepLabel(project.currentStep, project.round))}
                   </span>
                 ),
                 current: <span className={s.orange}>{project.round}</span>,
