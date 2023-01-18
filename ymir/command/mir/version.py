@@ -6,6 +6,8 @@ from mir.tools.errors import MirRuntimeError
 
 # Current ymir system version
 YMIR_VERSION = '2.0.2'
+YMIR_PB_VERSION = '2.0.0'
+YMIR_MODEL_VERSION = '2.0.0'
 
 # Default sandbox version
 DEFAULT_YMIR_SRC_VERSION = '1.1.0'

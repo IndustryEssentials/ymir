@@ -14,6 +14,7 @@ from mir.tools.annotations import make_empty_mir_annotations
 from mir.tools.code import MirCode
 from mir.tools.command_run_in_out import command_run_in_out
 from mir.tools.errors import MirRuntimeError
+from mir.version import YMIR_MODEL_VERSION
 
 
 class CmdModelImport(base.BaseCommand):
@@ -64,6 +65,7 @@ class CmdModelImport(base.BaseCommand):
         model_storage.task_context['src-revs'] = src_revs
         model_storage.task_context['dst_rev'] = dst_rev
         model_storage.task_context['type'] = mirpb.TaskType.TaskTypeImportModel
+        model_storage.package_version = YMIR_MODEL_VERSION
         models.pack_and_copy_models(model_storage=model_storage,
                                     model_dir_path=extract_model_dir_path,
                                     model_location=model_location)
