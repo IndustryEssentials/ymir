@@ -124,10 +124,10 @@ class DatasetsOut(Common):
 
 class DatasetAnnotationHist(BaseModel):
     quality: List[Dict]
-    box_area: List[Dict]
-    box_area_ratio: List[Dict]
+    box_area: Optional[List[Dict]]
+    box_area_ratio: Optional[List[Dict]]
     # instance segmentation
-    mask_area: List[Dict]
+    mask_area: Optional[List[Dict]]
     obj_counts: Optional[List[Dict]]  # crowdedness
 
 
