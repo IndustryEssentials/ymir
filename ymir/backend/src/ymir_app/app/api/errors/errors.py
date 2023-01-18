@@ -276,21 +276,6 @@ class DuplicateDockerImageError(DuplicateError):
     message = "Duplicated Docker Image"
 
 
-class FailedtoShareDockerImage(APIError):
-    code = error_codes.FAILED_TO_SHARE_DOCKER_IMAGE
-    message = "Failed to Share Docker Image"
-
-
-class FailedtoGetSharedDockerImages(APIError):
-    code = error_codes.FAILED_TO_GET_SHARED_DOCKER_IMAGES
-    message = "Failed to Share Docker Image"
-
-
-class InvalidSharedImageConfig(APIError):
-    code = error_codes.SHARED_IMAGE_CONFIG_ERROR
-    message = "Invalid Shared Image Config"
-
-
 class DockerImageHavingRelationships(APIError):
     code = error_codes.DOCKER_IMAGE_HAVING_RELATIONSHIPS
     message = "Docker Image Has Reminding Relationships"
