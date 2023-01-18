@@ -7,151 +7,15 @@ from pathlib import Path
 import shutil
 import zipfile
 from io import BytesIO
-import itertools
-from typing import Any, Dict, List
+from typing import Dict, List
 from xml.etree import ElementTree
-
-from mir.protos import mir_command_pb2 as mir_cmd_pb
-import numpy as np
-import pycocotools.mask
 
 from controller.config import label_task as label_task_config
 from controller.label_model.base import LabelBase, catch_label_task_error
 from controller.label_model.request_handler import RequestHandler
 
 
-LS_EXPORT_TYPE_MAPPING = {
-    "RectangleLabels": "VOC",
-    "PolygonLabels": "COCO",
-    "BrushLabels": "JSON",
-}
-
-
-# TODO move to label_studio
-class InputStream:
-    def __init__(self, data: Any):
-        self.data = data
-        self.i = 0
-
-    def read(self, size: int) -> int:
-        out = self.data[self.i:self.i + size]
-        self.i += size
-        return int(out, 2)
-
-
-def access_bit(data: Any, num: int) -> Any:
-    """ from bytes array to bits by num position
-    """
-    base = int(num // 8)
-    shift = 7 - int(num % 8)
-    return (data[base] & (1 << shift)) >> shift
-
-
-def bytes2bit(data: Any) -> str:
-    """ get bit string from bytes data
-    """
-    return ''.join([str(access_bit(data, i)) for i in range(len(data) * 8)])
-
-
-def decode_rle(rle: Any, print_params: bool = False) -> np.ndarray:
-    """ from LS RLE to numpy uint8 3d image [width, height, channel]
-
-    Args:
-        print_params (bool, optional): If true, a RLE parameters print statement is suppressed
-    """
-    input = InputStream(bytes2bit(rle))
-    num = input.read(32)
-    word_size = input.read(5) + 1
-    rle_sizes = [input.read(4) + 1 for _ in range(4)]
-
-    if print_params:
-        print('RLE params:', num, 'values', word_size, 'word_size', rle_sizes, 'rle_sizes')
-
-    i = 0
-    out = np.zeros(num, dtype=np.uint8)
-    while i < num:
-        x = input.read(1)
-        j = i + 1 + input.read(rle_sizes[input.read(2)])
-        if x:
-            val = input.read(word_size)
-            out[i:j] = val
-            i = j
-        else:
-            while i < j:
-                val = input.read(word_size)
-                out[i] = val
-                i += 1
-    return out
-
-
-def binary_mask_to_rle(binary_mask: np.ndarray) -> Dict:
-    counts = []
-    for i, (value, elements) in enumerate(itertools.groupby(binary_mask.ravel(order='F'))):
-        if i == 0 and value == 1:
-            counts.append(0)
-        counts.append(len(list(elements)))
-    return {'counts': counts, 'size': list(binary_mask.shape)}
-
-
-def ls_rle_to_coco_rle(ls_rle: List[int], height: int, width: int) -> str:
-    ls_mask = decode_rle(ls_rle)
-    ls_mask = np.reshape(ls_mask, [height, width, 4])[:, :, 3]
-    ls_mask = np.where(ls_mask > 0, 1, 0)
-    binary_mask = np.asfortranarray(ls_mask)
-    coco_rle = binary_mask_to_rle(binary_mask)
-    return pycocotools.mask.frPyObjects(coco_rle, *coco_rle.get('size'))
-
-
-def convert_ls_json_to_coco(ls_json: Dict) -> Dict:
-    """
-    COCO annotation format consists of three parts:
-    - annotations
-    - images
-    - categories
-
-    each annotation have references to images and categories by ids
-    """
-    images = []
-    annotations = []
-    _categories = {}
-
-    seq = itertools.count()
-
-    def _add_category(name: str) -> Dict:
-        if name not in _categories:
-            _categories[name] = {"name": name, "id": next(seq)}
-        return _categories[name]
-
-    for image_id, image_annotations_unit in enumerate(ls_json):
-        height, width = None, None  # type: ignore
-        for annotation in image_annotations_unit["annotations"]:
-            for _annotation in annotation["result"]:
-                height, width = _annotation["original_height"], _annotation["original_width"]
-                rle = _annotation["value"]["rle"]
-                category = _add_category(_annotation["value"]["brushlabels"][0])
-                segmentation = ls_rle_to_coco_rle(rle, height, width)
-                segmentation["counts"] = segmentation["counts"].decode()  # type: ignore
-                annotations.append({
-                    "image_id": image_id,
-                    "segmentation": segmentation,
-                    "area": int(pycocotools.mask.area(segmentation)),
-                    "bbox": pycocotools.mask.toBbox(segmentation).tolist(),
-                    "iscrowd": 1,
-                    "category_id": category["id"],
-                })
-        if None in (height, width):
-            continue
-        images.append({
-            "file_name": Path(image_annotations_unit["data"]["image"]).name,
-            "id": image_id,
-            "width": width,
-            "height": height,
-        })
-    return {
-        "images": images,
-        "annotations": annotations,
-        "categories": list(_categories.values()),
-    }
+LS_EXPORT_TYPE_MAPPING = {"RectangleLabels": "VOC"}
 
 
 class LabelStudio(LabelBase):
@@ -182,22 +46,8 @@ class LabelStudio(LabelBase):
         """
         top = ElementTree.Element("View")
         image_layer = ElementTree.Element("Image", name="image", value="$image", crosshair="true", maxwidth="100%")
-        if object_type == mir_cmd_pb.ObjectType.OT_DET_BOX:
-            label_name = "RectangleLabels"
-            extra_layer = False
-        else:
-            label_name = "BrushLabels"
-            extra_layer = True
-
-        labels_layer = self._label_template(label_name, keywords)
-        if extra_layer:
-            extra_labels_layer = self._label_template("PolygonLabels", keywords, "polygon")
-            commented_labels_layer = ElementTree.Comment(
-                ElementTree.tostring(extra_labels_layer, encoding="unicode")
-            )
-            top.extend([image_layer, labels_layer, commented_labels_layer])
-        else:
-            top.extend([image_layer, labels_layer])
+        labels_layer = self._label_template("RectangleLabels", keywords)
+        top.extend([image_layer, labels_layer])
 
         return ElementTree.tostring(top, encoding="unicode")
 
@@ -358,20 +208,6 @@ class LabelStudio(LabelBase):
             base_name = os.path.basename(voc_file)
             shutil.move(voc_file, os.path.join(des_path, base_name))
 
-    @staticmethod
-    def _move_coco_annotations_to(des_path: str) -> None:
-        """
-        Convert result.json (Label Studio default filename) to coco-annotations.json (YMIR required filename)
-        with a little modification: remove absolute path for image file_name
-        """
-        ls_coco_file = Path(des_path) / "result.json"
-        ymir_coco_file = Path(des_path) / label_task_config.MIR_COCO_ANNOTATION_FILENAME
-        with open(ls_coco_file) as ls_coco_f, open(ymir_coco_file, "w") as ymir_coco_f:
-            ls_coco = json.load(ls_coco_f)
-            for image in ls_coco["images"]:
-                image["file_name"] = Path(image["file_name"]).name
-            json.dump(ls_coco, ymir_coco_f)
-
     def fetch_label_result(self, project_id: int, object_type: int, des_path: str) -> None:
         project_info = self.get_project_info(project_id)
         # parsed_label_config may got various keys, but they all share the same value structure
@@ -380,16 +216,6 @@ class LabelStudio(LabelBase):
         if export_type == "VOC":
             self._export_from_label_studio(project_id, des_path, export_type)
             self._move_voc_annotations_to(des_path)
-        elif export_type == "COCO":
-            self._export_from_label_studio(project_id, des_path, export_type)
-            self._move_coco_annotations_to(des_path)
-        elif export_type == "JSON":
-            ls_json_file = self._export_from_label_studio(project_id, des_path, export_type, unzip=False)
-            coco_json_file = Path(ls_json_file).with_name(label_task_config.MIR_COCO_ANNOTATION_FILENAME)
-            with open(ls_json_file) as ls_json_f, open(coco_json_file, "w") as coco_json_f:
-                ls_json = json.load(ls_json_f)
-                coco_json = convert_ls_json_to_coco(ls_json)
-                json.dump(coco_json, coco_json_f)
         else:
             raise ValueError(f"invalid label studio format {export_type}, abort")
         logging.info(f"successfuly fetch label result in {export_type} format")
