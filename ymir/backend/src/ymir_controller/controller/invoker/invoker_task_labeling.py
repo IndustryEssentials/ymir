@@ -18,7 +18,7 @@ class TaskLabelingInvoker(TaskBaseInvoker):
                                                message=f"Invalid in_dataset_ids {request.in_dataset_ids}")
 
         if (
-            label_task_config.LABEL_TOOL == label_task_config.LABEL_STUDIO 
+            label_task_config.LABEL_TOOL == label_task_config.LABEL_STUDIO
             and request.req_create_task.labeling.object_type == mir_cmd_pb.ObjectType.OT_SEG
         ):
             return utils.make_general_response(code=CTLResponseCode.ARG_VALIDATION_FAILED,

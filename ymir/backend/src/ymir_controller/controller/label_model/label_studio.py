@@ -7,11 +7,8 @@ from pathlib import Path
 import shutil
 import zipfile
 from io import BytesIO
-import itertools
-from typing import Any, Dict, List
+from typing import Dict, List
 from xml.etree import ElementTree
-
-import numpy as np
 
 from controller.config import label_task as label_task_config
 from controller.label_model.base import LabelBase, catch_label_task_error
