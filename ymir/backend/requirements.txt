@@ -7,7 +7,6 @@ cryptography==3.4.7
 dependency-injector==4.37.0
 email-validator==1.1.2
 emails==0.6
-fastapi-cache2[redis]==0.1.8
 fastapi-health==0.4.0
 fastapi-login==1.6.0
 fastapi-socketio==0.0.9
@@ -33,3 +32,4 @@ starlette-exporter==0.14.0
 statsd==3.3.0
 supervisor==4.2.2
 websockets==10.3
+uvicorn==0.20.0
