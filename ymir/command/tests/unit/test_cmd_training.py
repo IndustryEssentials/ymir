@@ -15,7 +15,7 @@ from mir.tools.annotations import make_empty_mir_annotations
 from mir.tools.class_ids import ids_file_path
 from mir.tools.code import MirCode
 from mir.tools.mir_storage import sha1sum_for_file
-from mir.version import ymir_model_salient_version, YMIR_VERSION
+from mir.version import YMIR_MODEL_VERSION
 from tests import utils as test_utils
 
 
@@ -241,7 +241,7 @@ class TestCmdTraining(unittest.TestCase):
                                  best_stage_name=mss.stage_name,
                                  model_hash='xyz',
                                  object_type=2,
-                                 package_version=ymir_model_salient_version(YMIR_VERSION))
+                                 package_version=YMIR_MODEL_VERSION)
         return ms
 
     def _mock_pack_and_copy_model(*args, **kwargs):

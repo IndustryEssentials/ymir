@@ -7,7 +7,7 @@ import unittest
 from unittest import mock
 
 from google.protobuf.json_format import ParseDict
-from mir.version import YMIR_VERSION, ymir_model_salient_version
+from mir.version import YMIR_MODEL_VERSION
 import yaml
 
 from mir.commands.mining import CmdMining
@@ -67,7 +67,7 @@ class TestMiningCmd(unittest.TestCase):
                                  model_hash='xyz',
                                  stage_name=mss.stage_name,
                                  object_type=mirpb.ObjectType.OT_DET_BOX,
-                                 package_version=ymir_model_salient_version(YMIR_VERSION))
+                                 package_version=YMIR_MODEL_VERSION)
         return ms
 
     # protected: custom: env prepare

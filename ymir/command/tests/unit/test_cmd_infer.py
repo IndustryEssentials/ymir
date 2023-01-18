@@ -13,7 +13,7 @@ from mir.protos import mir_command_pb2 as mirpb
 from mir.tools import models, settings as mir_settings
 from mir.tools.class_ids import ids_file_path
 from mir.tools.code import MirCode
-from mir.version import YMIR_VERSION
+from mir.version import YMIR_MODEL_VERSION
 from tests import utils as test_utils
 
 
@@ -95,7 +95,7 @@ class TestCmdInfer(unittest.TestCase):
                                             stages={model_stage.stage_name: model_stage},
                                             best_stage_name=model_stage.stage_name,
                                             object_type=mirpb.ObjectType.OT_DET_BOX,
-                                            package_version=YMIR_VERSION)
+                                            package_version=YMIR_MODEL_VERSION)
 
         with open(os.path.join(self._models_location, 'ymir-info.yaml'), 'w') as f:
             yaml.dump(model_storage.dict(), f)
