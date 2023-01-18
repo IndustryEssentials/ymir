@@ -6,7 +6,7 @@ from mir.tools.errors import MirRuntimeError
 
 # Current ymir system version
 YMIR_VERSION = '2.1.0'
-YMIR_SANDBOX_VERSION = '2.0.0'
+YMIR_REPO_VERSION = '2.0.0'
 YMIR_MODEL_VERSION = '2.0.0'
 
 # Default sandbox version
@@ -18,7 +18,7 @@ TMI_PROTOCOL_VERSION = '1.1.0'
 
 def ymir_salient_version(ver: str) -> str:
     """
-    legacy function, will be deprecated on next YMIR_SANDBOX_VERSION update
+    legacy function, will be deprecated on next YMIR_REPO_VERSION update
     """
     _SALIENT_VERSIONS = {
         DEFAULT_YMIR_SRC_VERSION: DEFAULT_YMIR_SRC_VERSION,
@@ -58,9 +58,9 @@ def ymir_model_salient_version(ver: str) -> str:
 
 
 def check_ymir_version_or_crash(ver: str) -> None:
-    if ymir_salient_version(ver) != YMIR_SANDBOX_VERSION:
+    if ymir_salient_version(ver) != YMIR_REPO_VERSION:
         raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
-                              error_message=f"Version mismatch between: {ver} and {YMIR_SANDBOX_VERSION}")
+                              error_message=f"Version mismatch between: {ver} and {YMIR_REPO_VERSION}")
 
 
 def check_model_version_or_crash(ver: str) -> None:
