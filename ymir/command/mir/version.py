@@ -18,7 +18,7 @@ TMI_PROTOCOL_VERSION = '1.1.0'
 
 def ymir_salient_version(ver: str) -> str:
     """
-    legacy function, will be deprecated on next YMIR_REPO_VERSION update
+    get sailent version of repo and model versions
     """
     if ver in {'1.3.0', '2.0.0', '2.0.1', '2.0.2'}:
         return '2.0.0'
@@ -38,15 +38,6 @@ def ymir_salient_version_from_label_file(user_label_file: str) -> str:
     return ymir_salient_version(user_label_dict.get('ymir_version', DEFAULT_YMIR_SRC_VERSION))
 
 
-def ymir_model_salient_version(ver: str) -> str:
-    """
-    legacy function, will be deprecated on next YMIR_MODEL_VERSION update
-    """
-    if ver in {'1.3.0', '2.0.0', '2.0.1', '2.0.2'}:
-        return '2.0.0'
-    return ver
-
-
 def check_ymir_version_or_crash(ver: str) -> None:
     if ymir_salient_version(ver) != YMIR_REPO_VERSION:
         raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
@@ -54,6 +45,6 @@ def check_ymir_version_or_crash(ver: str) -> None:
 
 
 def check_model_version_or_crash(ver: str) -> None:
-    if ymir_model_salient_version(ver) != YMIR_MODEL_VERSION:
+    if ymir_salient_version(ver) != YMIR_MODEL_VERSION:
         raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_MODEL_PACKAGE_VERSION,
                               error_message=f"Model package version mismatch between: {ver} and {YMIR_MODEL_VERSION}")

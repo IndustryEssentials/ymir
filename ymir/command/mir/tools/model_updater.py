@@ -5,7 +5,7 @@ from typing import Callable, List
 import yaml
 
 from mir.protos import mir_command_pb2 as mirpb
-from mir.version import DEFAULT_YMIR_SRC_VERSION, YMIR_MODEL_VERSION, ymir_model_salient_version
+from mir.version import DEFAULT_YMIR_SRC_VERSION, YMIR_MODEL_VERSION, ymir_salient_version
 
 
 _ModelUpdaterType = Callable[[str], None]
@@ -27,7 +27,7 @@ def update_model_info(model_info_path: str) -> None:
 
 
 def _get_steps(src_ver: str, dst_ver: str) -> List[_ModelUpdaterType]:
-    src_ver = ymir_model_salient_version(src_ver)
+    src_ver = ymir_salient_version(src_ver)
     _UPDATE_NODES: List[str] = ['1.1.0', '2.0.0']
     _UPDATE_FUNCS: List[_ModelUpdaterType] = [_update_model_110_200]
     return _UPDATE_FUNCS[_UPDATE_NODES.index(src_ver):_UPDATE_NODES.index(dst_ver)]
