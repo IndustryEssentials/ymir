@@ -19,21 +19,18 @@ Updater from 1.1.0 to 1.3.0
 import logging
 import os
 import re
-import shutil
 import tarfile
-import time
 from typing import List, Tuple
 
 from google.protobuf.json_format import MessageToDict, ParseDict
 import yaml
 
 from id_definition.task_id import IDProto
-from mir.tools import revs_parser, models
+from mir.tools import revs_parser
 from mir.protos import mir_command_110_pb2 as pb_src, mir_command_200_pb2 as pb_dst
 from mir.tools import mir_storage_ops_110 as mso_src, mir_storage_ops_200 as mso_dst
-from mir.version import ymir_model_salient_version, DEFAULT_YMIR_SRC_VERSION
 
-from tools import get_repo_tags, remove_old_tag, get_model_hashes
+from tools import get_repo_tags, remove_old_tag
 
 _MirDatasSrc = Tuple[pb_src.MirMetadatas, pb_src.MirAnnotations, pb_src.Task]
 _MirDatasDst = Tuple[pb_dst.MirMetadatas, pb_dst.MirAnnotations, pb_dst.Task]
@@ -182,74 +179,74 @@ def _get_model_class_names(serialized_executor_config: str) -> List[str]:
 
 
 # update models root
-def update_models(models_root: str) -> None:
-    logging.info(f"updating models: {models_root}")
-    model_work_dir = os.path.join(models_root, 'work_dir')
+# def update_models(models_root: str) -> None:
+#     logging.info(f"updating models: {models_root}")
+#     model_work_dir = os.path.join(models_root, 'work_dir')
 
-    for model_hash in get_model_hashes(models_root):
-        logging.info(f"model hash: {model_hash}")
+#     for model_hash in get_model_hashes(models_root):
+#         logging.info(f"model hash: {model_hash}")
 
-        if os.path.isdir(model_work_dir):
-            shutil.rmtree(model_work_dir)
-        os.makedirs(model_work_dir, exist_ok=False)
+#         if os.path.isdir(model_work_dir):
+#             shutil.rmtree(model_work_dir)
+#         os.makedirs(model_work_dir, exist_ok=False)
 
-        model_path = os.path.join(models_root, model_hash)
+#         model_path = os.path.join(models_root, model_hash)
 
-        # extract
-        with tarfile.open(model_path, 'r') as f:
-            f.extractall(model_work_dir)
+#         # extract
+#         with tarfile.open(model_path, 'r') as f:
+#             f.extractall(model_work_dir)
 
-        os.remove(model_path)
-        with open(os.path.join(model_work_dir, 'ymir-info.yaml'), 'r') as f:
-            ymir_info_src = yaml.safe_load(f.read())
-        _check_model(ymir_info_src)
+#         os.remove(model_path)
+#         with open(os.path.join(model_work_dir, 'ymir-info.yaml'), 'r') as f:
+#             ymir_info_src = yaml.safe_load(f.read())
+#         _check_model(ymir_info_src)
 
-        # check model producer version
-        package_version = ymir_info_src.get('package_version', DEFAULT_YMIR_SRC_VERSION)
-        if ymir_model_salient_version(package_version) == ymir_model_salient_version(_DST_YMIR_VER):
-            logging.info('  no need to update, skip')
-            continue
+#         # check model producer version
+#         package_version = ymir_info_src.get('package_version', DEFAULT_YMIR_SRC_VERSION)
+#         if ymir_model_salient_version(package_version) == ymir_model_salient_version(_DST_YMIR_VER):
+#             logging.info('  no need to update, skip')
+#             continue
 
-        # update ymir-info.yaml
-        executor_config_dict = ymir_info_src.get('executor_config', {})
-        task_context_dict = ymir_info_src.get('task_context', {})
-        models_list = ymir_info_src['models']
+#         # update ymir-info.yaml
+#         executor_config_dict = ymir_info_src.get('executor_config', {})
+#         task_context_dict = ymir_info_src.get('task_context', {})
+#         models_list = ymir_info_src['models']
 
-        best_stage_name = 'default_best_stage'
-        model_stage_dict = {
-            best_stage_name: {
-                'files': models_list,
-                'mAP': task_context_dict.get('mAP', 0),
-                'stage_name': best_stage_name,
-                'timestamp': int(time.time()),
-            }
-        }
+#         best_stage_name = 'default_best_stage'
+#         model_stage_dict = {
+#             best_stage_name: {
+#                 'files': models_list,
+#                 'mAP': task_context_dict.get('mAP', 0),
+#                 'stage_name': best_stage_name,
+#                 'timestamp': int(time.time()),
+#             }
+#         }
 
-        ymir_info_dst = {
-            'executor_config': executor_config_dict,
-            'task_context': task_context_dict,
-            'stages': model_stage_dict,
-            'best_stage_name': best_stage_name,
-            'package_version': ymir_model_salient_version(_DST_YMIR_VER),
-        }
+#         ymir_info_dst = {
+#             'executor_config': executor_config_dict,
+#             'task_context': task_context_dict,
+#             'stages': model_stage_dict,
+#             'best_stage_name': best_stage_name,
+#             'package_version': ymir_model_salient_version(_DST_YMIR_VER),
+#         }
 
-        # pack again
-        model_storage = models.ModelStorage.parse_obj(ymir_info_dst)
-        new_model_hash = models.pack_and_copy_models(model_storage=model_storage,
-                                                     model_dir_path=model_work_dir,
-                                                     model_location=model_work_dir)  # avoid hash conflict
-        shutil.move(os.path.join(model_work_dir, new_model_hash), model_path)
+#         # pack again
+#         model_storage = models.ModelStorage.parse_obj(ymir_info_dst)
+#         new_model_hash = models.pack_and_copy_models(model_storage=model_storage,
+#                                                      model_dir_path=model_work_dir,
+#                                                      model_location=model_work_dir)  # avoid hash conflict
+#         shutil.move(os.path.join(model_work_dir, new_model_hash), model_path)
 
-    # cleanup
-    if os.path.isdir(model_work_dir):
-        shutil.rmtree(model_work_dir)
+#     # cleanup
+#     if os.path.isdir(model_work_dir):
+#         shutil.rmtree(model_work_dir)
 
 
-def _check_model(ymir_info: dict) -> None:
-    # executor_config: must be dict
-    # # models: must be list
-    executor_config = ymir_info['executor_config']
-    models_list = ymir_info['models']
-    if not executor_config or not isinstance(executor_config, dict) or not models_list or not isinstance(
-            models_list, list):
-        raise ValueError('Invalid ymir-info.yaml for model version 1.1.0')
+# def _check_model(ymir_info: dict) -> None:
+#     # executor_config: must be dict
+#     # # models: must be list
+#     executor_config = ymir_info['executor_config']
+#     models_list = ymir_info['models']
+#     if not executor_config or not isinstance(executor_config, dict) or not models_list or not isinstance(
+#             models_list, list):
+#         raise ValueError('Invalid ymir-info.yaml for model version 1.1.0')
