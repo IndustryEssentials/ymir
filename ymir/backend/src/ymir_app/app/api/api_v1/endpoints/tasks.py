@@ -19,6 +19,7 @@ from app.api.errors.errors import (
     NoTaskPermission,
     ObsoleteTaskStatus,
     TaskNotFound,
+    FailedToTerminateTask,
 )
 from app.constants.state import FinalStates, TaskState, TaskType
 from app.config import settings
@@ -214,7 +215,10 @@ def terminate_task(
     task = crud.task.get(db, id=task_id)
     if not task:
         raise TaskNotFound()
-    controller_client.terminate_task(user_id=current_user.id, task_hash=task.hash, task_type=task.type)
+    try:
+        controller_client.terminate_task(user_id=current_user.id, task_hash=task.hash, task_type=task.type)
+    except ValueError:
+        raise FailedToTerminateTask()
     task = crud.task.terminate(db, task=task)
     if not terminate_info.fetch_result:
         # task reachs final state right away

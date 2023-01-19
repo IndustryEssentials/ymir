@@ -88,6 +88,11 @@ class FailedToCallInference(ControllerError):
     message = "Failed to Create Task via Controller"
 
 
+class FailedToTerminateTask(ControllerError):
+    code = error_codes.TASK_FAILED_TO_TERMINATE
+    message = "Failed to Terminate Task via Controller"
+
+
 class InvalidInferenceConfig(APIError):
     code = error_codes.INFERENCE_CONFIG_ERROR
     message = "Invalid Inference Model Config"
