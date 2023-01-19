@@ -41,7 +41,6 @@ def update(sandbox_root: str, assets_root: str, models_root: str, src_ver: str, 
 
     # cleanup
     shutil.rmtree(os.path.join(sandbox_root, 'sandbox-bk'))
-    shutil.rmtree(os.path.join(sandbox_root, 'ymir-models-bk'))
 
 
 def _backup(sandbox_root: str) -> None:
