@@ -20,14 +20,9 @@ def ymir_salient_version(ver: str) -> str:
     """
     legacy function, will be deprecated on next YMIR_REPO_VERSION update
     """
-    _SALIENT_VERSIONS = {
-        DEFAULT_YMIR_SRC_VERSION: DEFAULT_YMIR_SRC_VERSION,
-        '1.3.0': '2.0.0',
-        '2.0.0': '2.0.0',
-        '2.0.1': '2.0.0',
-        '2.0.2': '2.0.0',
-    }
-    return _SALIENT_VERSIONS[ver]
+    if ver in {'1.3.0', '2.0.0', '2.0.1', '2.0.2'}:
+        return '2.0.0'
+    return ver
 
 
 def ymir_salient_version_from_label_file(user_label_file: str) -> str:
@@ -47,14 +42,9 @@ def ymir_model_salient_version(ver: str) -> str:
     """
     legacy function, will be deprecated on next YMIR_MODEL_VERSION update
     """
-    _PACKAGE_VERSIONS = {
-        DEFAULT_YMIR_SRC_VERSION: DEFAULT_YMIR_SRC_VERSION,
-        '1.3.0': '2.0.0',
-        '2.0.0': '2.0.0',
-        '2.0.1': '2.0.0',
-        '2.0.2': '2.0.0',
-    }
-    return _PACKAGE_VERSIONS[ver]
+    if ver in {'1.3.0', '2.0.0', '2.0.1', '2.0.2'}:
+        return '2.0.0'
+    return ver
 
 
 def check_ymir_version_or_crash(ver: str) -> None:
