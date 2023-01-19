@@ -63,7 +63,7 @@ def _update_model_110_200(model_info_path: str) -> None:
     }
 
     # write back again
-    with open(os.path.join(model_info_path, 'ymir-info.yaml'), 'w') as f:
+    with open(os.path.join(model_info_path), 'w') as f:
         yaml.safe_dump(model_info_dst, f)
 
 
