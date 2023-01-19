@@ -4,7 +4,7 @@ import sys
 
 from common_utils.sandbox_updater import update
 from common_utils.sandbox_util import detect_sandbox_src_versions
-from mir.version import YMIR_VERSION
+from mir.version import YMIR_REPO_VERSION
 
 
 def main() -> int:
@@ -18,7 +18,7 @@ def main() -> int:
            assets_root=os.environ['ASSETS_PATH'],
            models_root=os.environ['MODELS_PATH'],
            src_ver=sandbox_versions[0],
-           dst_ver=YMIR_VERSION)
+           dst_ver=YMIR_REPO_VERSION)
 
     return 0
 
