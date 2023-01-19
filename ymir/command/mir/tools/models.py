@@ -147,7 +147,7 @@ def prepare_model(model_location: str, model_hash: str, stage_name: str, dst_mod
 
     logging.info(f"extracting models: {tar_file_path}, stage: {stage_name}")
     with tarfile.open(tar_file_path, 'r') as tar_file:
-        # get model_stage of this package
+        # read and update model info
         tar_file.extract('ymir-info.yaml', dst_model_path)
 
         model_info_path = os.path.join(dst_model_path, 'ymir-info.yaml')
@@ -159,6 +159,7 @@ def prepare_model(model_location: str, model_hash: str, stage_name: str, dst_mod
         model_storage.model_hash = model_hash
         model_storage.stage_name = stage_name
 
+        # extract model_stage files
         stage_and_file_names = []
         tar_file_names = set(tar_file.getnames())
         for file_name in model_storage.stages[stage_name].files:
