@@ -1,7 +1,6 @@
 import asyncio
 import logging
 
-import aioredis
 import sentry_sdk
 from fastapi import FastAPI
 from fastapi.exceptions import RequestValidationError
@@ -10,8 +9,6 @@ from fastapi.openapi.docs import (
     get_swagger_ui_oauth2_redirect_html,
 )
 from fastapi.staticfiles import StaticFiles
-from fastapi_cache import FastAPICache
-from fastapi_cache.backends.redis import RedisBackend
 from fastapi_socketio import SocketManager
 
 from fastapi_health import health
@@ -80,8 +77,6 @@ redis_stream = RedisStream(settings.BACKEND_REDIS_URL)
 async def startup() -> None:
     if settings.REDIS_TESTING:
         return
-    redis = aioredis.from_url(settings.BACKEND_REDIS_URL, encoding="utf8", decode_responses=True)
-    FastAPICache.init(RedisBackend(redis), prefix="ymir-app-cache")
     asyncio.create_task(redis_stream.consume(batch_update_task_status))
 
 

@@ -62,14 +62,6 @@ class Settings(BaseSettings):
         str
     ] = '[{"name": "sample_image", "hash": "6d30c27861c5", "object_type": 2, "description": "Demonstration only. This docker image trains fake model after a requested length of running time period. These models can only be used by this same docker image for re-training/mining/inference purposes. Adjust the hyper-parameters to set the length of running time, or to trigger crash, to set expected mAP, etc", "url": "industryessentials/executor-example:latest", "configs": [{"expected_map": 0.983, "idle_seconds": 60, "trigger_crash": 0, "type": 1}, {"idle_seconds": 6, "trigger_crash": 0, "type": 2}, {"idle_seconds": 3, "trigger_crash": 0, "type": 9}]}]'  # noqa: E501
 
-    # Online Sheet
-    SHARING_TIMEOUT: int = 10
-    WUFOO_URL: Optional[str]
-    WUFOO_AUTHORIZATION: Optional[str]
-    SHARED_DOCKER_IMAGES_URL: Optional[str]
-    GITHUB_TIMEOUT: int = 30
-    APP_CACHE_EXPIRE_IN_SECONDS: int = 3600
-
     # Start up stuffs
     # Task Type To Survive Upon Start up
     #  default TaskTypeLabel = 3
