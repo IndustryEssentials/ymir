@@ -4,7 +4,7 @@ import os
 import time
 from subprocess import CalledProcessError
 from typing import Any, Dict, List, Optional
-from mir.version import ymir_model_salient_version, YMIR_VERSION
+from mir.version import YMIR_MODEL_VERSION
 
 from tensorboardX import SummaryWriter
 import yaml
@@ -80,7 +80,7 @@ def _get_model_storage(model_root: str, executor_config: dict, task_context: dic
                                object_type=int(yaml_obj['object_type']),
                                attachments=attachments,
                                evaluate_config=yaml_obj.get('evaluate_config', {}),
-                               package_version=ymir_model_salient_version(YMIR_VERSION))
+                               package_version=YMIR_MODEL_VERSION)
 
 
 # private: pre process

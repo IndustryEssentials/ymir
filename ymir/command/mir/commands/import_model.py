@@ -14,6 +14,7 @@ from mir.tools.annotations import make_empty_mir_annotations
 from mir.tools.code import MirCode
 from mir.tools.command_run_in_out import command_run_in_out
 from mir.tools.errors import MirRuntimeError
+from mir.tools.model_updater import update_model_info
 
 
 class CmdModelImport(base.BaseCommand):
@@ -53,9 +54,11 @@ class CmdModelImport(base.BaseCommand):
         with tarfile.open(package_path, 'r') as tf:
             tf.extractall(extract_model_dir_path)
 
-        with open(os.path.join(extract_model_dir_path, 'ymir-info.yaml'), 'r') as f:
-            ymir_info_dict = yaml.safe_load(f.read())
+        model_info_path = os.path.join(extract_model_dir_path, 'ymir-info.yaml')
+        update_model_info(model_info_path)
 
+        with open(model_info_path, 'r') as f:
+            ymir_info_dict = yaml.safe_load(f.read())
         model_storage = models.ModelStorage.parse_obj(ymir_info_dict)
 
         logging.info(f"importing model with storage: {model_storage}")

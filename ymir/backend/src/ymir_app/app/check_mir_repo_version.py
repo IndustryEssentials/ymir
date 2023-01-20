@@ -4,7 +4,7 @@ from typing import Optional
 
 from app.config import settings
 from app.utils.ymir_controller import ControllerClient
-from common_utils.version import YMIR_VERSION, ymir_salient_version
+from common_utils.version import YMIR_REPO_VERSION, ymir_salient_version
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -37,8 +37,8 @@ def check_mir_repo_version() -> None:
         return
     if len(sandbox_versions) > 1:
         raise ValueError(f"multiple versions detected: {sandbox_versions}")
-    if ymir_salient_version(sandbox_versions[0]) != ymir_salient_version(YMIR_VERSION):
-        raise ValueError(f"mismatched salient version: {sandbox_versions[0]} vs {YMIR_VERSION}.")
+    if ymir_salient_version(sandbox_versions[0]) != YMIR_REPO_VERSION:
+        raise ValueError(f"mismatched salient version: {sandbox_versions[0]} vs {YMIR_REPO_VERSION}.")
 
 
 def main() -> None:

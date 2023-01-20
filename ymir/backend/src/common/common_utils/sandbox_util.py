@@ -85,7 +85,7 @@ def detect_users_and_repos(sandbox_root: str) -> Dict[str, Set[str]]:
 
 def check_sandbox(sandbox_root: str) -> None:
     user_to_repos = detect_users_and_repos(sandbox_root)
-    for user_id, repo_ids in user_to_repos.items():
+    for user_id in user_to_repos:
         user_labels_path = os.path.join(sandbox_root, user_id, 'labels.yaml')
         if not os.path.isfile(user_labels_path):
             raise SandboxError(error_code=UpdaterErrorCode.INVALID_USER_LABEL_FILE,

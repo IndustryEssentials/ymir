@@ -11,6 +11,7 @@ import yaml
 from mir.tools.code import MirCode
 from mir.tools.errors import MirRuntimeError
 from mir.tools.mir_storage import sha1sum_for_file
+from mir.tools.model_updater import update_model_info
 from mir.protos import mir_command_pb2 as mirpb
 from mir.version import check_model_version_or_crash
 
@@ -146,16 +147,30 @@ def prepare_model(model_location: str, model_hash: str, stage_name: str, dst_mod
 
     logging.info(f"extracting models: {tar_file_path}, stage: {stage_name}")
     with tarfile.open(tar_file_path, 'r') as tar_file:
-        # get model_stage of this package
+        # read and update model info
         tar_file.extract('ymir-info.yaml', dst_model_path)
-        with open(os.path.join(dst_model_path, 'ymir-info.yaml'), 'r') as f:
+
+        model_info_path = os.path.join(dst_model_path, 'ymir-info.yaml')
+        update_model_info(model_info_path)
+        with open(model_info_path, 'r') as f:
             ymir_info_dict = yaml.safe_load(f.read())
 
         model_storage = ModelStorage.parse_obj(ymir_info_dict)
         model_storage.model_hash = model_hash
         model_storage.stage_name = stage_name
 
-        stage_and_file_names = [f"{stage_name}/{file_name}" for file_name in model_storage.stages[stage_name].files]
+        # extract model_stage files
+        stage_and_file_names = []
+        tar_file_names = set(tar_file.getnames())
+        for file_name in model_storage.stages[stage_name].files:
+            if file_name in tar_file_names:
+                stage_and_file_names.append(file_name)
+            elif f"{stage_name}/{file_name}" in tar_file_names:
+                stage_and_file_names.append(f"{stage_name}/{file_name}")
+            else:
+                raise MirRuntimeError(
+                    error_code=MirCode.RC_CMD_INVALID_FILE,
+                    error_message=f"Can not find file name: {file_name} in model package: {tar_file_path}")
         os.makedirs(os.path.join(dst_model_path, stage_name), exist_ok=True)
         for name in stage_and_file_names:
             tar_file.extract(name, dst_model_path)
