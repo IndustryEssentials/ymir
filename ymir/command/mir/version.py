@@ -20,7 +20,7 @@ def ymir_salient_version(ver: str) -> str:
     """
     get sailent version of repo and model versions
     """
-    if ver in {'1.3.0', '2.0.0', '2.0.1', '2.0.2'}:
+    if ver in {'2.0.0', '2.0.1', '2.0.2'}:
         return '2.0.0'
     return ver
 
