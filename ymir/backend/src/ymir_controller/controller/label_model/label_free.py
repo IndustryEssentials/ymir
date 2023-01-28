@@ -14,6 +14,13 @@ from controller.label_model.base import LabelBase, catch_label_task_error, NotRe
 from controller.label_model.request_handler import RequestHandler
 
 
+LABELFREE_PROJECT_TYPE_MAPPING = {
+    mir_cmd_pb.ObjectType.OT_DET_BOX: 1,
+    mir_cmd_pb.ObjectType.OT_SEG: 2,
+    mir_cmd_pb.ObjectType.OT_INSTANCE_SEG: 3,
+}
+
+
 class LabelFree(LabelBase):
     def __init__(self, request_handler: RequestHandler = RequestHandler()) -> None:
         self._requests = request_handler
@@ -59,7 +66,7 @@ class LabelFree(LabelBase):
             collaborators=collaborators,
             label_config=label_config,
             expert_instruction=f"<a target='_blank' href='{expert_instruction}'>Labeling Guide</a>",
-            project_type=1 if object_type == mir_cmd_pb.ObjectType.OT_DET_BOX else 2,
+            project_type=LABELFREE_PROJECT_TYPE_MAPPING[object_type],
         )
         resp = self._requests.post(url_path=url_path, json_data=data)
         project_id = json.loads(resp).get("id")

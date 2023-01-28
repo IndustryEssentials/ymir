@@ -197,7 +197,7 @@ class ControllerRequest:
         label_request = mirsvrpb.TaskReqLabeling()
         label_request.project_name = f"label_{dataset['name']}"
         label_request.labeler_accounts[:] = args["labellers"]
-        label_request.object_type = OBJECT_TYPE_MAPPING[args["object_type"]]
+        label_request.object_type = args["object_type"]
 
         # pre annotation
         if args.get("annotation_type"):
