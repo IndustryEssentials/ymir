@@ -147,12 +147,11 @@ def create_project(
     if crud.project.is_duplicated_name(db, user_id=current_user.id, name=project_in.name):
         raise DuplicateProjectError()
 
-    # 1.create project to get task_id for sending to controller
+    # 1. create project record
     project = crud.project.create_project(db, user_id=current_user.id, obj_in=project_in)
-
     task_id = gen_task_hash(current_user.id, project.id)
 
-    # 2.send to controller
+    # 2. create underlying project via controller
     try:
         resp = controller_client.create_project(
             user_id=current_user.id,
@@ -165,30 +164,19 @@ def create_project(
         raise FailedToCreateProject()
 
     if project_in.enable_iteration:
-        # 3.create task info
+        # 3. create initial training dataset
         task = crud.task.create_placeholder(
             db, type_=TaskType.create_project, user_id=current_user.id, project_id=project.id
         )
-
-        # 3.create dataset group to build dataset info
         dataset_name = f"{project_in.name}_training_dataset"
-        dataset_paras = schemas.DatasetGroupCreate(name=dataset_name, project_id=project.id, user_id=current_user.id)
-        dataset_group = crud.dataset_group.create_with_user_id(db, user_id=current_user.id, obj_in=dataset_paras)
-
-        # 4.create init dataset
-        dataset_in = schemas.DatasetCreate(
-            name=dataset_name,
-            hash=task_id,
-            dataset_group_id=dataset_group.id,
-            project_id=project.id,
+        dataset_group = crud.dataset_group.create_with_user_id(
+            db,
             user_id=current_user.id,
-            source=task.type,
-            result_state=ResultState.ready,
-            task_id=task.id,
+            obj_in=schemas.DatasetGroupCreate(name=dataset_name, project_id=project.id, user_id=current_user.id),
         )
-        initial_dataset = crud.dataset.create_with_version(db, obj_in=dataset_in)
+        initial_dataset = crud.dataset.create_as_task_result(db, task, dataset_group.id, ResultState.ready)
 
-        # 5.update project info
+        # 4.update project info
         project = crud.project.update_resources(
             db,
             project_id=project.id,

@@ -140,11 +140,13 @@ class CRUDDataset(CRUDBase[Dataset, DatasetCreate, DatasetUpdate]):
         db: Session,
         task: Union[schemas.TaskInternal, models.Task],
         dest_group_id: int,
+        result_state: ResultState = ResultState.processing,
         description: Optional[str] = None,
     ) -> Dataset:
         dataset_in = DatasetCreate(
             hash=task.hash,
             description=description,
+            result_state=result_state,
             source=task.type,
             dataset_group_id=dest_group_id,
             project_id=task.project_id,

@@ -258,7 +258,7 @@ class TaskResult:
     ) -> Dict[str, Dict]:
         dest_group_id = self.get_dest_group_id(dataset_id, dataset_group_id, dataset_group_name)
         if self.result_type is ResultType.dataset:
-            dataset = crud.dataset.create_as_task_result(self.db, self.task, dest_group_id, description)
+            dataset = crud.dataset.create_as_task_result(self.db, self.task, dest_group_id, description=description)
             logger.info("[create task] created new dataset(%s) as task result", dataset.name)
             return {"dataset": jsonable_encoder(dataset)}
         elif self.result_type is ResultType.model:
