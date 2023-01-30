@@ -59,6 +59,7 @@ class TaskLabelingInvoker(TaskBaseInvoker):
             expert_instruction=labeling_request.expert_instruction_url,
             annotation_type=labeling_request.annotation_type,
             object_type=labeling_request.object_type,
+            is_instance_segmentation=labeling_request.is_instance_segmentation,
         )
 
         return utils.make_general_response(CTLResponseCode.CTR_OK, "")

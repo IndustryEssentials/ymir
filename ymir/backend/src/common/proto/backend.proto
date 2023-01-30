@@ -189,6 +189,7 @@ message TaskReqLabeling {
     bool export_annotation = 4;
     AnnotationType annotation_type = 5;
     mir.command.ObjectType object_type = 6;
+    bool is_instance_segmentation = 7;
 }
 
 message TaskReqImportModel {

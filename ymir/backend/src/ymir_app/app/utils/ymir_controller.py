@@ -197,7 +197,11 @@ class ControllerRequest:
         label_request = mirsvrpb.TaskReqLabeling()
         label_request.project_name = f"label_{dataset['name']}"
         label_request.labeler_accounts[:] = args["labellers"]
-        label_request.object_type = args["object_type"]
+
+        # ad hoc: controller's object_type has no instance_segmentation
+        label_request.object_type = OBJECT_TYPE_MAPPING[args["object_type"]]
+        if args["object_type"] == ObjectType.instance_segmentation:
+            label_request.is_instance_segmentation = True
 
         # pre annotation
         if args.get("annotation_type"):
