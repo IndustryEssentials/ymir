@@ -58,7 +58,7 @@ class LabelStudio(LabelBase):
         collaborators: List,
         expert_instruction: str,
         object_type: int,
-        **kwargs: Dict
+        is_instance_segmentation: bool,
     ) -> int:
         # Create a project and set up the labeling interface in Label Studio
         url_path = "/api/projects"
@@ -261,9 +261,11 @@ class LabelStudio(LabelBase):
         import_work_dir: str,
         use_pre_annotation: bool,
         object_type: int,
+        is_instance_segmentation: bool,
     ) -> None:
         logging.info("start LabelStudio run()")
-        project_id = self.create_label_project(project_name, keywords, collaborators, expert_instruction, object_type)
+        project_id = self.create_label_project(
+            project_name, keywords, collaborators, expert_instruction, object_type, is_instance_segmentation)
         storage_id = self.set_import_storage(project_id, input_asset_dir)
         exported_storage_id = self.set_export_storage(project_id, export_path)
         self.sync_import_storage(storage_id)

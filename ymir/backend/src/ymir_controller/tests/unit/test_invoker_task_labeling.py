@@ -36,6 +36,7 @@ class TestTaskLabelingInvoker:
         label_req.labeler_accounts[:] = ["a@a.com"]
         label_req.project_name = "fake_project_name"
         in_dataset_ids = ["id"]
+        label_req.object_type = mir_cmd_pb.ObjectType.OT_DET_BOX
         label_req.expert_instruction_url = "url"
         label_req.export_annotation = False
 
