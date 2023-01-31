@@ -502,7 +502,7 @@ class CocoDetEval:
 
         return ee
 
-    def _get_confusion_matrix(
+    def _intersect_and_union(
         self,
         dt: np.ndarray,
         gt: np.ndarray,
@@ -519,7 +519,7 @@ class CocoDetEval:
         area_union = area_dt + area_gt - area_intersect
         return area_intersect, area_union, area_dt, area_gt
 
-    def _get_confusion_matrix_of_all_imgs(
+    def _total_intersect_and_union(
         self,
         dts: List[np.ndarray],
         gts: List[np.ndarray],
@@ -531,7 +531,7 @@ class CocoDetEval:
         total_area_dt = np.zeros((num_classes,), dtype=np.float)  # type: ignore
         total_area_gt = np.zeros((num_classes,), dtype=np.float)  # type: ignore
         for dt, gt in zip(dts, gts):
-            area_intersect, area_union, area_dt, area_gt = self._get_confusion_matrix(
+            area_intersect, area_union, area_dt, area_gt = self._intersect_and_union(
                 dt,
                 gt,
                 num_classes,
@@ -581,7 +581,7 @@ class CocoDetEval:
             total_area_union,
             total_area_dt,
             total_area_gt,
-        ) = self._get_confusion_matrix_of_all_imgs(dts, gts, num_classes, ignore_index)
+        ) = self._total_intersect_and_union(dts, gts, num_classes, ignore_index)
         all_acc = total_area_intersect.sum() / total_area_gt.sum()
         acc = total_area_intersect / total_area_gt
         iou = total_area_intersect / total_area_union
@@ -632,14 +632,13 @@ def det_evaluate(prediction: mirpb.SingleTaskAnnotations, ground_truth: mirpb.Si
     area_ranges_index = 0  # area range: 'all'
     max_dets_index = len(params.maxDets) - 1  # last max det number
 
-    is_segmentation = (prediction.type == mirpb.ObjectType.OT_SEG)
+    is_semantic_segmentation = (prediction.type == mirpb.ObjectType.OT_SEG and not config.is_instance_segmentation)
 
     mir_gt = MirCoco(task_annotations=ground_truth, conf_thr=None)
-    mir_dt = MirCoco(task_annotations=prediction, conf_thr=None if is_segmentation else config.conf_thr)
+    mir_dt = MirCoco(task_annotations=prediction, conf_thr=None if is_semantic_segmentation else config.conf_thr)
 
     evaluator = CocoDetEval(coco_gt=mir_gt, coco_dt=mir_dt, params=params, assets_metadata=assets_metadata)
-    if is_segmentation and not config.is_instance_segmentation:
-        # semantic segmentation
+    if is_semantic_segmentation:
         single_dataset_evaluation = mirpb.SingleDatasetEvaluation()
         miou = evaluator.mir_mean_iou()
         single_dataset_evaluation.segmentation_metrics.CopyFrom(miou)
