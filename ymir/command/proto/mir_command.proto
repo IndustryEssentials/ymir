@@ -333,9 +333,9 @@ message SingleDatasetEvaluation {
 }
 
 message SegmentationMetrics {
-    float aacc = 1;  // overall accuracy
-    map<int32, float> acc = 2;   // accuracy
-    map<int32, float> iou = 3;  // key: class_id
+    float aAcc = 1;  // overall accuracy
+    float mAcc = 2;  // mean accuracy
+    float mIoU = 3;  // mean iou
 }
 
 message SingleIouEvaluation {

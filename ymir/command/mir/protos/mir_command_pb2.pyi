@@ -1174,53 +1174,25 @@ global___SingleDatasetEvaluation = SingleDatasetEvaluation
 
 class SegmentationMetrics(google.protobuf.message.Message):
     DESCRIPTOR: google.protobuf.descriptor.Descriptor = ...
-    class AccEntry(google.protobuf.message.Message):
-        DESCRIPTOR: google.protobuf.descriptor.Descriptor = ...
-        KEY_FIELD_NUMBER: builtins.int
-        VALUE_FIELD_NUMBER: builtins.int
-        key: builtins.int = ...
-        value: builtins.float = ...
-        def __init__(self,
-            *,
-            key : builtins.int = ...,
-            value : builtins.float = ...,
-            ) -> None: ...
-        def ClearField(self, field_name: typing_extensions.Literal["key",b"key","value",b"value"]) -> None: ...
-
-    class IouEntry(google.protobuf.message.Message):
-        DESCRIPTOR: google.protobuf.descriptor.Descriptor = ...
-        KEY_FIELD_NUMBER: builtins.int
-        VALUE_FIELD_NUMBER: builtins.int
-        key: builtins.int = ...
-        value: builtins.float = ...
-        def __init__(self,
-            *,
-            key : builtins.int = ...,
-            value : builtins.float = ...,
-            ) -> None: ...
-        def ClearField(self, field_name: typing_extensions.Literal["key",b"key","value",b"value"]) -> None: ...
-
     AACC_FIELD_NUMBER: builtins.int
-    ACC_FIELD_NUMBER: builtins.int
-    IOU_FIELD_NUMBER: builtins.int
-    aacc: builtins.float = ...
+    MACC_FIELD_NUMBER: builtins.int
+    MIOU_FIELD_NUMBER: builtins.int
+    aAcc: builtins.float = ...
     """overall accuracy"""
 
-    @property
-    def acc(self) -> google.protobuf.internal.containers.ScalarMap[builtins.int, builtins.float]:
-        """accuracy"""
-        pass
-    @property
-    def iou(self) -> google.protobuf.internal.containers.ScalarMap[builtins.int, builtins.float]:
-        """key: class_id"""
-        pass
+    mAcc: builtins.float = ...
+    """mean accuracy"""
+
+    mIoU: builtins.float = ...
+    """mean iou"""
+
     def __init__(self,
         *,
-        aacc : builtins.float = ...,
-        acc : typing.Optional[typing.Mapping[builtins.int, builtins.float]] = ...,
-        iou : typing.Optional[typing.Mapping[builtins.int, builtins.float]] = ...,
+        aAcc : builtins.float = ...,
+        mAcc : builtins.float = ...,
+        mIoU : builtins.float = ...,
         ) -> None: ...
-    def ClearField(self, field_name: typing_extensions.Literal["aacc",b"aacc","acc",b"acc","iou",b"iou"]) -> None: ...
+    def ClearField(self, field_name: typing_extensions.Literal["aAcc",b"aAcc","mAcc",b"mAcc","mIoU",b"mIoU"]) -> None: ...
 global___SegmentationMetrics = SegmentationMetrics
 
 class SingleIouEvaluation(google.protobuf.message.Message):

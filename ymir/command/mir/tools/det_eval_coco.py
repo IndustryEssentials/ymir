@@ -582,10 +582,10 @@ class CocoDetEval:
             total_area_dt,
             total_area_gt,
         ) = self._total_intersect_and_union(dts, gts, num_classes, ignore_index)
-        all_acc = total_area_intersect.sum() / total_area_gt.sum()
-        acc = total_area_intersect / total_area_gt
-        iou = total_area_intersect / total_area_union
-        ret_metrics = [all_acc, acc, iou]
+        all_acc = np.nansum(total_area_intersect) / np.nansum(total_area_gt)
+        macc = np.nanmean(total_area_intersect / total_area_gt)
+        miou = np.nanmean(total_area_intersect / total_area_union)
+        ret_metrics = [all_acc, macc, miou]
         if nan_to_num is not None:
             ret_metrics = [np.nan_to_num(metric, nan=nan_to_num) for metric in ret_metrics]
         return ret_metrics
@@ -594,12 +594,11 @@ class CocoDetEval:
         class_ids = self.params.catIds
         dts = list(self.aggregate_imagewise_annotations(self._dts))
         gts = list(self.aggregate_imagewise_annotations(self._gts))
-        all_acc, acc, iou = self._mean_iou(dts, gts, len(class_ids), 255, -1)
-        order_to_class_id = dict(zip(range(len(class_ids)), class_ids))
+        all_acc, macc, miou = self._mean_iou(dts, gts, len(class_ids), 255, -1)
         metrics = mirpb.SegmentationMetrics()
-        metrics.aacc = all_acc
-        metrics.acc.update({order_to_class_id[idx]: value for idx, value in enumerate(acc)})
-        metrics.iou.update({order_to_class_id[idx]: value for idx, value in enumerate(iou)})
+        metrics.aAcc = all_acc
+        metrics.mAcc = macc
+        metrics.mIoU = miou
         return metrics
 
 
