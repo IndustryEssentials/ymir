@@ -280,7 +280,7 @@ evaluate_config: # 计算 mAP, mAR, TP, FP, FN 时使用的配置信息
 | /out/monitor.txt | 参考共同部分 |
 | /out/result.tsv | 最终 mining 结果文件路径，格式见注1 |
 | /out/infer-result.json | 检测模型推理结果，格式见注2 |
-| /out/coco-infer-result.json | 语义或实例分割模型推理结果，格式见注2 |
+| /out/coco-infer-result.json | 语义或实例分割模型推理结果，格式见注3 |
 
 注1. `result.tsv` 文件的格式
 
