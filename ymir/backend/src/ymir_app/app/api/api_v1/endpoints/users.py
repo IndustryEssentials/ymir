@@ -9,6 +9,7 @@ from app import crud, models, schemas
 from app.api import deps
 from app.api.errors.errors import (
     DuplicateUserNameError,
+    DuplicatePhoneError,
     UserNotFound,
     FailedToCreateUser,
 )
@@ -110,6 +111,8 @@ def update_myself(
     if username:
         user_in.username = username
     if phone is not None:
+        if crud.user.get_by_phone(db, phone=phone):
+            raise DuplicatePhoneError()
         user_in.phone = phone
     if avatar is not None:
         user_in.avatar = avatar
