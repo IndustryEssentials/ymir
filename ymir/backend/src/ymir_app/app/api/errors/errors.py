@@ -83,6 +83,11 @@ class FailedtoCreateTask(ControllerError):
     message = "Failed to Create Task via Controller"
 
 
+class FailedtoCreateSegLabelTask(ControllerError):
+    code = error_codes.TASK_SEGMENTATION_LABEL_NOT_SUPPORTED
+    message = "Failed to Create Segmentation Label Task"
+
+
 class FailedToCallInference(ControllerError):
     code = error_codes.INFERENCE_FAILED_TO_CALL
     message = "Failed to Create Task via Controller"
