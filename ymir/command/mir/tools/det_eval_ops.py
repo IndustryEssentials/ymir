@@ -44,8 +44,8 @@ def det_evaluate_with_pb(
         evaluation.state = mirpb.EvaluationState.ES_EXCEEDS_LIMIT
         return evaluation
 
-    eval_model_name = _get_eval_model_name(prediction.type)
-    if not eval_model_name:
+    f_eval_model = _get_eval_model_function(prediction.type)
+    if not f_eval_model:
         logging.warning(f"skip evaluation: anno type: {prediction.type} not supported")
         evaluation.state = mirpb.EvaluationState.ES_NOT_SET
         return evaluation
@@ -59,7 +59,7 @@ def det_evaluate_with_pb(
         for annotation in image_annotations.boxes:
             annotation.cm = mirpb.ConfusionMatrixType.IGNORED
             annotation.det_link_id = -1
-    evaluation = eval_model_name.det_evaluate(  # type: ignore
+    evaluation = f_eval_model.det_evaluate(  # type: ignore
         prediction=prediction, ground_truth=ground_truth, config=config, assets_metadata=assets_metadata
     )
 
@@ -70,7 +70,7 @@ def det_evaluate_with_pb(
     return evaluation
 
 
-def _get_eval_model_name(anno_type: Any) -> Optional[ModuleType]:
+def _get_eval_model_function(anno_type: Any) -> Optional[ModuleType]:
     mapping = {
         mirpb.ObjectType.OT_DET_BOX: det_eval_voc,
         mirpb.ObjectType.OT_SEG: det_eval_coco,
