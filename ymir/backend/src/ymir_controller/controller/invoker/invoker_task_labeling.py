@@ -21,7 +21,7 @@ class TaskLabelingInvoker(TaskBaseInvoker):
             label_task_config.LABEL_TOOL == label_task_config.LABEL_STUDIO
             and request.req_create_task.labeling.object_type == mir_cmd_pb.ObjectType.OT_SEG
         ):
-            return utils.make_general_response(code=CTLResponseCode.ARG_VALIDATION_FAILED,
+            return utils.make_general_response(code=CTLResponseCode.INVOKER_LABEL_TASK_SEG_NOT_SUPPORTED,
                                                message="label_studio does not support segmentation")
         try:
             utils.create_label_instance()
