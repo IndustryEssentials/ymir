@@ -344,6 +344,7 @@ class ControllerRequest:
         evaluate_config.conf_thr = args["confidence_threshold"]
         evaluate_config.iou_thrs_interval = args["iou_thrs_interval"]
         evaluate_config.need_pr_curve = args["need_pr_curve"]
+        evaluate_config.is_instance_segmentation = args["is_instance_segmentation"]
         if args.get("main_ck"):
             evaluate_config.main_ck = args["main_ck"]
 
@@ -535,6 +536,7 @@ class ControllerClient:
         need_pr_curve: bool,
         main_ck: Optional[str],
         dataset_hash: str,
+        is_instance_segmentation: bool = False,
     ) -> Dict:
         req = ControllerRequest(
             type=ExtraRequestType.evaluate,
@@ -546,6 +548,7 @@ class ControllerClient:
                 "iou_thrs_interval": iou_thrs_interval,
                 "need_pr_curve": need_pr_curve,
                 "main_ck": main_ck,
+                "is_instance_segmentation": is_instance_segmentation,
             },
         )
         try:

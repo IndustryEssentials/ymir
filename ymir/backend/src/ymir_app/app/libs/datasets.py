@@ -151,6 +151,7 @@ def evaluate_datasets(
     need_pr_curve: bool,
     main_ck: Optional[str],
     dataset_id_mapping: Dict[str, int],
+    is_instance_segmentation: bool = False,
 ) -> Dict:
     if require_average_iou:
         iou_thrs_interval = f"{iou_threshold}:0.95:0.05"
@@ -167,6 +168,7 @@ def evaluate_datasets(
         iou_thrs_interval,
         need_pr_curve,
         main_ck,
+        is_instance_segmentation,
     )
     with ThreadPoolExecutor() as executor:
         res = executor.map(f_evaluate, dataset_id_mapping.keys())
