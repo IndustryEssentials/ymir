@@ -228,8 +228,8 @@ const project = {
   },
   'iteration.tag.round': { en: 'Round {round}', cn: '迭代{round}' },
   'project.del.confirm.content': {
-    en: 'Remove all datasets and models in this project, confirm?',
-    cn: '删除项目会将项目中的所有资源（数据集、模型）删除，请谨慎操作！',
+    en: 'Deleting this project will REMOVE all datasets and models under the project, and CANNOT be recovered, confirm?',
+    cn: '删除项目会将项目中的所有资源（数据集、模型）删除，且不可恢复！请谨慎操作！',
   },
   'project.add.confirm.title': {
     en: 'Whether this new keywords will add to your Classes?',

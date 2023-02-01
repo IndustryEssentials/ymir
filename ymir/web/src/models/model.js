@@ -244,7 +244,7 @@ export default {
     *verify({ payload }, { call }) {
       const { code, result } = yield call(verify, payload)
       if (code === 0) {
-        return result.annotations[0]?.annotations?.map(toAnnotation)
+        return result.annotations[0]?.annotations?.map((anno) => toAnnotation(anno))
       }
     },
     *batchModelStages({ payload }, { call, put }) {

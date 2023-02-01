@@ -21,30 +21,24 @@ const content = {
   [TabsKey[1]]: Metrics,
   [TabsKey[2]]: Training,
 }
-const getTabContent = (key) => () => {
-  const Content = content[key]
-  return (props) => <Content {...props} />
+
+const DynamicContent = ({ active = TabsKey[0], id, project }) => {
+  const Content = content[active]
+  return id ? <Content pid={id} project={project} /> : null
 }
 
 function Diagnose() {
   const history = useHistory()
   const location = useLocation()
   const { id } = useParams()
-  const [active, setActive] = useState(tabs[0].key)
-  const [TabContent, setTabContent] = useState(getTabContent(TabsKey[0]))
+  const [active, setActive] = useState(TabsKey[0])
   const [project, fetchProject] = useFetch('project/getProject')
 
-  useEffect(() => {
-    id && fetchProject({ id, force: true })
-  }, [id])
-
-  useEffect(() => {
-    id && active && setTabContent(getTabContent(active))
-  }, [active, id])
+  useEffect(() => id && fetchProject({ id, force: true }), [id])
 
   useEffect(() => {
     const tabKey = location.hash.replace(/^#/, '')
-    setActive(tabKey || tabs[0].key)
+    setActive(tabKey || TabsKey[0])
   }, [location.hash])
 
   function tabChange(key) {
@@ -55,17 +49,14 @@ function Diagnose() {
     <div className={s.projectDetail}>
       <Breadcrumbs />
       <Card
-        tabList={tabs.filter((tab) => {
-          console.log('tab:', tab, project?.type, TabsKey[1])
-          return tab.key !== TabsKey[1] || isDetection(project?.type) 
-        }).map((tab) => ({ ...tab, tab: t(tab.tab) }))}
+        tabList={tabs.filter((tab) => tab.key !== TabsKey[1] || isDetection(project?.type)).map((tab) => ({ ...tab, tab: t(tab.tab) }))}
         activeTabKey={active}
         onTabChange={tabChange}
         className="noShadow"
         headStyle={{ background: '#fff', marginBottom: '10px' }}
         bodyStyle={{ padding: '0 20px' }}
       >
-        {<TabContent pid={id} project={project} />}
+        <DynamicContent active={active} id={id} project={project} />
       </Card>
     </div>
   )

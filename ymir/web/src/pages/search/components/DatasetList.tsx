@@ -40,8 +40,9 @@ const DatasetList: FC<Props> = ({ pid, name, query }) => {
     pid,
     ...(query || {}),
   })
-  const { data: datasets, run: getDatasets } = useRequest<DatasetsType, [YParams.DatasetsQuery]>('dataset/queryDatasets', {
-    debounceWait: 100
+  const [datasets, setDatasets] = useState<DatasetsType>()
+  const { data: remoteDatasets, run: getDatasets } = useRequest<DatasetsType, [YParams.DatasetsQuery]>('dataset/queryDatasets', {
+    debounceWait: 100,
   })
   const [testingSetIds, setTestingSetIds] = useState<number[]>([])
   const [editingDataset, setEditingDataset] = useState<YModels.Dataset>()
@@ -49,14 +50,24 @@ const DatasetList: FC<Props> = ({ pid, name, query }) => {
 
   useEffect(
     () =>
-      query ?
-      setQuery((q) => ({
-        ...q,
-        ...query,
-      })) : setQuery({ pid }),
+      query
+        ? setQuery((q) => ({
+            ...q,
+            ...query,
+          }))
+        : setQuery({ pid }),
     [query],
   )
-  useEffect(() => datasetQuery && fetch(), [datasetQuery])
+  useEffect(() => setDatasets(remoteDatasets), [remoteDatasets])
+
+  useEffect(() => {
+    const { name, startTime, state = -1 } = datasetQuery
+    if (name || startTime || state >= 0) {
+      fetch()
+    } else {
+      setDatasets({ items: [], total: 0 })
+    }
+  }, [datasetQuery])
 
   const tableChange: TableProps<YModels.Dataset>['onChange'] = ({ current, pageSize }, filters, sorters = {}) => {}
   const pageChange = (page: number, pageSize: number) => {
