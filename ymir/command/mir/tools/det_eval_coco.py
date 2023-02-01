@@ -82,7 +82,9 @@ class MirCoco:
 
 
 class CocoDetEval:
-    def __init__(self, coco_gt: MirCoco, coco_dt: MirCoco, params: 'Params', assets_metadata: Optional[mirpb.MirMetadatas]):
+    def __init__(
+        self, coco_gt: MirCoco, coco_dt: MirCoco, params: 'Params', assets_metadata: Optional[mirpb.MirMetadatas]
+    ):
         self.evalImgs: dict = {}  # per-image per-category evaluation results [KxAxI] elements
         self.eval: dict = {}  # accumulated evaluation results
         self.params = params
@@ -169,7 +171,7 @@ class CocoDetEval:
         return ious
 
     @staticmethod
-    def _convert_to_coco_segmentation(mir_annotation: Dict, size: List[float]) -> Union[Dict, List]:
+    def _convert_to_coco_segmentation(mir_annotation: Dict, size: List[int]) -> Union[Dict, List]:
         if mir_annotation.get("mask"):
             return {'counts': mir_annotation['mask'], 'size': size}
         elif mir_annotation.get("polygon"):

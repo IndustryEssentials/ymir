@@ -1,7 +1,7 @@
 import logging
 import time
 from types import ModuleType
-from typing import Any, Dict, Optional
+from typing import Any, Optional
 
 from mir.tools import det_eval_coco, det_eval_voc, settings as mir_settings
 from mir.tools.code import MirCode
