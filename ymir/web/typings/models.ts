@@ -143,6 +143,7 @@ declare namespace YModels {
   }
 
   export interface AnnotationBase {
+    id: string | number,
     keyword: string
     width: number
     height: number

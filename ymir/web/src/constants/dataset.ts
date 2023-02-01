@@ -190,6 +190,7 @@ export function transferAsset(data: YModels.BackendData, keywords: Array<string>
 
 export function toAnnotation(annotation: YModels.BackendData, width: number = 0, height: number = 0, pred = false, color = ''): YModels.Annotation {
   return {
+    id: `${Date.now()}${Math.random()}`,
     keyword: annotation.keyword || '',
     width,
     height,

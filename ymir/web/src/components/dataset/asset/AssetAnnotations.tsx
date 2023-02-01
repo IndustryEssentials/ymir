@@ -47,14 +47,14 @@ const AssetAnnotation: FC<Props> = ({ asset }) => {
     setRatio(clientWidth / iw)
   }
 
-  function renderAnnotation(annotation: YModels.Annotation, key: number) {
+  function renderAnnotation(annotation: YModels.Annotation) {
     switch (annotation.type) {
       case AnnotationType.BoundingBox:
-        return <BoundingBox key={key} annotation={annotation} ratio={ratio} />
+        return <BoundingBox key={annotation.id} annotation={annotation} ratio={ratio} />
       case AnnotationType.Polygon:
-        return <Polygon key={key} annotation={annotation} ratio={ratio} />
+        return <Polygon key={annotation.id} annotation={annotation} ratio={ratio} />
       case AnnotationType.Mask:
-        return <Mask key={key} annotation={annotation} ratio={ratio} />
+        return <Mask key={annotation.id} annotation={annotation} ratio={ratio} />
     }
   }
 
