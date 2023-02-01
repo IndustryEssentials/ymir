@@ -15,7 +15,7 @@ WORKDIR /ymir_hel
 RUN go build -mod=readonly -v -o hel_server
 
 
-FROM python:3.8-slim AS compile
+FROM python:3.8-slim AS coco-compile
 RUN apt-get update && apt-get install -y git gcc build-essential \
   && git clone https://github.com/ppwwyyxx/cocoapi \
   && cd cocoapi \
@@ -46,7 +46,7 @@ RUN pip install -r command-requirements.txt -i ${PIP_SOURCE}
 COPY ./command /command
 RUN pip install -U /command -i ${PIP_SOURCE}
 
-COPY --from=compile /pycocotools-2.0.6-cp38-cp38-linux_x86_64.whl .
+COPY --from=coco-compile /pycocotools-2.0.6-cp38-cp38-linux_x86_64.whl .
 RUN pip install /pycocotools-2.0.6-cp38-cp38-linux_x86_64.whl -i ${PIP_SOURCE} --no-dependencies
 
 COPY ./backend/src /app
