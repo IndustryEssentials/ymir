@@ -14,6 +14,13 @@ def det_evaluate_datasets(
     gt_mir_annotations: mirpb.MirAnnotations = mir_storage_ops.MirStorageOps.load_single_storage(
         mir_root=mir_root, mir_branch=gt_rev_tid.rev, mir_task_id=gt_rev_tid.tid, ms=mirpb.MirStorage.MIR_ANNOTATIONS)
     ground_truth = gt_mir_annotations.ground_truth
+    if ground_truth.type == mirpb.ObjectType.OT_SEG:
+        assets_metadata = mir_storage_ops.MirStorageOps.load_single_storage(mir_root=mir_root,
+                                                                            mir_branch=gt_rev_tid.rev,
+                                                                            mir_task_id=gt_rev_tid.tid,
+                                                                            ms=mirpb.MirStorage.MIR_METADATAS)
+    else:
+        assets_metadata = None
 
     if pred_rev_tid != gt_rev_tid:
         pred_mir_annotations = mir_storage_ops.MirStorageOps.load_single_storage(mir_root=mir_root,
@@ -29,6 +36,7 @@ def det_evaluate_datasets(
         prediction=prediction,
         ground_truth=ground_truth,
         config=evaluate_config,
+        assets_metadata=assets_metadata,
     )
     if evaluation.state != mirpb.EvaluationState.ES_READY:
         return None

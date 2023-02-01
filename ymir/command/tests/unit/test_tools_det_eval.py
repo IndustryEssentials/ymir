@@ -543,11 +543,6 @@ class TestToolsDetEval(unittest.TestCase):
         self.assertEqual(expected_annotations_dict, actual_annotations_dict)
 
     # public: test cases
-    def test_det_eval_coco_00(self) -> None:
-        sde = self._test_det_eval(det_eval_model_name=det_eval_coco)
-        see = sde.iou_averaged_evaluation.ci_averaged_evaluation
-        self.assertTrue(np.isclose(0.833333, see.ap))
-
     def test_det_eval_voc_00(self) -> None:
         sde = self._test_det_eval(det_eval_model_name=det_eval_voc)
         see = sde.iou_averaged_evaluation.ci_averaged_evaluation

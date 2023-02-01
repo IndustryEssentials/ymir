@@ -21,7 +21,7 @@
 # --------------------------------------------------------
 """Python implementation of the PASCAL VOC devkit's AP evaluation code."""
 
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 import numpy as np
 
@@ -233,7 +233,8 @@ def _get_single_evaluate_element(prediction: mirpb.SingleTaskAnnotations, ground
 
 
 def det_evaluate(prediction: mirpb.SingleTaskAnnotations, ground_truth: mirpb.SingleTaskAnnotations,
-                 config: mirpb.EvaluateConfig) -> mirpb.Evaluation:
+                 config: mirpb.EvaluateConfig,
+                 assets_metadata: Optional[mirpb.MirMetadatas] = None) -> mirpb.Evaluation:
     evaluation = mirpb.Evaluation()
     evaluation.config.CopyFrom(config)
 
