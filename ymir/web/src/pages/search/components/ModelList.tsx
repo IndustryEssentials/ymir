@@ -17,8 +17,9 @@ type Props = {
   query?: YParams.ResultListQuery
 }
 const ModelList: FC<Props> = ({ pid, name, query }) => {
-  const { data: models, run: getModels } = useRequest<YStates.List<YModels.Model>, [YParams.ModelsQuery]>('model/queryModels', {
-    debounceWait: 100
+  const [models, setModels] = useState<YStates.List<YModels.Model>>()
+  const { data: remoteModels, run: getModels } = useRequest<YStates.List<YModels.Model>, [YParams.ModelsQuery]>('model/queryModels', {
+    debounceWait: 100,
   })
   const [modelQuery, setQuery] = useState<YParams.ModelsQuery>({
     pid,
@@ -29,14 +30,25 @@ const ModelList: FC<Props> = ({ pid, name, query }) => {
 
   useEffect(
     () =>
-      query ?
-      setQuery((q) => ({
-        ...q,
-        ...query,
-      })) : setQuery({ pid }),
+      query
+        ? setQuery((q) => ({
+            ...q,
+            ...query,
+          }))
+        : setQuery({ pid }),
     [query],
   )
-  useEffect(() => modelQuery && fetch(), [modelQuery])
+
+  useEffect(() => setModels(remoteModels), [remoteModels])
+
+  useEffect(() => {
+    const { name, startTime, state = -1 } = modelQuery
+    if (name || startTime || state >= 0) {
+      fetch()
+    } else {
+      setModels({ items: [], total: 0 })
+    }
+  }, [modelQuery])
 
   const tableChange: TableProps<YModels.Model>['onChange'] = ({ current, pageSize }, filters, sorters = {}) => {}
 
@@ -66,10 +78,7 @@ const ModelList: FC<Props> = ({ pid, name, query }) => {
     stop,
     editDesc,
   })
-  const columns = [
-    ...getModelColumns(),
-    Actions(getActions),
-  ]
+  const columns = [...getModelColumns(), Actions(getActions)]
 
   return (
     <div>
@@ -88,7 +97,7 @@ const ModelList: FC<Props> = ({ pid, name, query }) => {
           onChange: pageChange,
         }}
       />
-      { editingModel ? <EditDescBox type="model" record={editingModel} handle={fetch} /> : null }
+      {editingModel ? <EditDescBox type="model" record={editingModel} handle={fetch} /> : null}
       <Terminate ref={terminateRef} ok={fetch} />
     </div>
   )
