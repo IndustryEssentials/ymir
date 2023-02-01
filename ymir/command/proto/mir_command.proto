@@ -318,7 +318,8 @@ message EvaluateConfig {
     bool need_pr_curve = 5;
     repeated int32 class_ids = 7;
     string main_ck = 8;
-    bool is_instance_segmentation = 9;
+    ObjectType type = 9;
+    bool is_instance_segmentation = 10;
 
     reserved 1, 2, 6;
 }

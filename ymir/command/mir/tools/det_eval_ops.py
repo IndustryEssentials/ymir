@@ -18,6 +18,10 @@ def det_evaluate_with_pb(
     if config.conf_thr < 0 or config.conf_thr > 1:
         raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS, error_message="invalid conf_thr")
 
+    if config.type and not (config.type == prediction.type == ground_truth.type):
+        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
+                              error_message="inconsistent evaluate_config object_type")
+
     if not config.class_ids:
         config.class_ids.extend(prediction.eval_class_ids)
 
