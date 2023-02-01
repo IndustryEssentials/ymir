@@ -55,7 +55,7 @@ class MirStorageOps():
             prediction=mir_annotations.prediction,
             ground_truth=mir_annotations.ground_truth,
             config=evaluate_config,
-            assets_metadata=cls.__message_to_dict(mir_metadatas)["attributes"]
+            assets_metadata=mir_metadatas,
         )
         mir_tasks.tasks[mir_tasks.head_task_id].evaluation.CopyFrom(evaluation)
         mir_datas[mirpb.MirStorage.MIR_TASKS] = mir_tasks

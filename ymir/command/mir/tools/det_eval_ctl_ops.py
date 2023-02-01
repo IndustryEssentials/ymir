@@ -18,8 +18,7 @@ def det_evaluate_datasets(
         assets_metadata = mir_storage_ops.MirStorageOps.load_single_storage(mir_root=mir_root,
                                                                             mir_branch=gt_rev_tid.rev,
                                                                             mir_task_id=gt_rev_tid.tid,
-                                                                            ms=mirpb.MirStorage.MIR_METADATAS,
-                                                                            as_dict=True)["attributes"]
+                                                                            ms=mirpb.MirStorage.MIR_METADATAS)
     else:
         assets_metadata = None
 

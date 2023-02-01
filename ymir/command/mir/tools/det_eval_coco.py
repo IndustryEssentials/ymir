@@ -82,7 +82,7 @@ class MirCoco:
 
 
 class CocoDetEval:
-    def __init__(self, coco_gt: MirCoco, coco_dt: MirCoco, params: 'Params', assets_metadata: Optional[Dict]):
+    def __init__(self, coco_gt: MirCoco, coco_dt: MirCoco, params: 'Params', assets_metadata: Optional[mirpb.MirMetadatas]):
         self.evalImgs: dict = {}  # per-image per-category evaluation results [KxAxI] elements
         self.eval: dict = {}  # accumulated evaluation results
         self.params = params
@@ -93,7 +93,7 @@ class CocoDetEval:
         self._gts = defaultdict(list, coco_gt.img_cat_to_annotations)
         self._dts = defaultdict(list, coco_dt.img_cat_to_annotations)
         self._asset_ids: List[str] = sorted(set(coco_gt.asset_ids) | set(coco_dt.asset_ids))
-        self._assets_metadata = assets_metadata
+        self._assets_metadata = assets_metadata.attributes if assets_metadata else None
 
         self._coco_gt = coco_gt
         self._coco_dt = coco_dt
@@ -155,7 +155,7 @@ class CocoDetEval:
             if not self._assets_metadata:
                 raise ValueError('assets_metadata is required for segmentation evaluation')
             asset_metadata = self._assets_metadata[asset_id]
-            size = [asset_metadata["height"], asset_metadata["width"]]
+            size = [asset_metadata.height, asset_metadata.width]
             g_boxes = [self._convert_to_coco_segmentation(g, size) for g in gt]
             d_boxes = [self._convert_to_coco_segmentation(d, size) for d in dt]
         else:
@@ -560,7 +560,7 @@ class CocoDetEval:
             if not self._assets_metadata:
                 raise ValueError('assets_metadata is required for segmentation evaluation')
             asset_metadata = self._assets_metadata[asset_id]
-            height, width = asset_metadata["height"], asset_metadata["width"]
+            height, width = asset_metadata.height, asset_metadata.width
             # use 255 as a special class, which will be ignored upon evaluation
             img = np.ones(shape=(height, width), dtype=np.uint8) * 255
             for class_id in class_ids:
@@ -618,7 +618,7 @@ class Params:
 
 
 def det_evaluate(prediction: mirpb.SingleTaskAnnotations, ground_truth: mirpb.SingleTaskAnnotations,
-                 config: mirpb.EvaluateConfig, assets_metadata: Optional[Dict]) -> mirpb.Evaluation:
+                 config: mirpb.EvaluateConfig, assets_metadata: Optional[mirpb.MirMetadatas]) -> mirpb.Evaluation:
     evaluation = mirpb.Evaluation()
     evaluation.config.CopyFrom(config)
 
