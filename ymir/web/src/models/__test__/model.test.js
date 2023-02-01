@@ -311,7 +311,7 @@ describe('models: model', () => {
       result: expected,
     })
 
-    expect(end.value).toEqual(boxes.map(toAnnotation))
+    expect(end.value).toEqual(boxes.map((box, index) =>({ ...toAnnotation(box), id: end.value[index].id})))
     expect(end.done).toBe(true)
   })
   // getModelsByMap

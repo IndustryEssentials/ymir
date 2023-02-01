@@ -83,7 +83,7 @@ const Search: FC<Props> = ({ change, name }) => {
           </Item>
         </Col>
         <Col>
-          <Item name={'time'} noStyle>
+          <Item name={'action'} noStyle>
             <Button onClick={reset}>{t('common.reset')}</Button>
           </Item>
         </Col>

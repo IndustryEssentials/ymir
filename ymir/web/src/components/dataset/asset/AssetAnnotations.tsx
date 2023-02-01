@@ -18,7 +18,6 @@ const AssetAnnotation: FC<Props> = ({ asset }) => {
   const imgContainer = useRef<HTMLDivElement>(null)
   const img = useRef<HTMLImageElement>(null)
   const [width, setWidth] = useState(0)
-  const [imgNaturalHeight, setImgNaturalHeight] = useState(0)
   const [imgWidth, setImgWidth] = useState(0)
   const [ratio, setRatio] = useState(1)
 
@@ -31,11 +30,12 @@ const AssetAnnotation: FC<Props> = ({ asset }) => {
 
   useEffect(() => {
     let annos = annotations
-    if (annotations.length && !asset?.height && imgNaturalHeight) {
-      annos = annos.map((anno) => ({ ...anno, height: imgNaturalHeight }))
-      setAnnotations(annotations)
+    if (annotations.length && !asset?.height && img.current) {
+      const { naturalWidth, naturalHeight } = img.current
+      annos = annos.map((anno) => ({ ...anno, height: naturalHeight, width: naturalWidth }))
+      setAnnotations(annos)
     }
-  }, [asset, annotations, imgNaturalHeight])
+  }, [asset, annotations.length, img.current])
 
   function calClientWidth(imgWidth?: number) {
     const { current } = imgContainer
@@ -47,22 +47,21 @@ const AssetAnnotation: FC<Props> = ({ asset }) => {
     setRatio(clientWidth / iw)
   }
 
-  function renderAnnotation(annotation: YModels.Annotation, key: number) {
+  function renderAnnotation(annotation: YModels.Annotation) {
     switch (annotation.type) {
       case AnnotationType.BoundingBox:
-        return <BoundingBox key={key} annotation={annotation} ratio={ratio} />
+        return <BoundingBox key={annotation.id} annotation={annotation} ratio={ratio} />
       case AnnotationType.Polygon:
-        return <Polygon key={key} annotation={annotation} ratio={ratio} />
+        return <Polygon key={annotation.id} annotation={annotation} ratio={ratio} />
       case AnnotationType.Mask:
-        return <Mask key={key} annotation={annotation} ratio={ratio} />
+        return <Mask key={annotation.id} annotation={annotation} ratio={ratio} />
     }
   }
 
   const imgLoad = (e: SyntheticEvent) => {
     if (img.current && img.current.naturalWidth) {
-      const { naturalHeight, naturalWidth } = img.current
+      const { naturalWidth } = img.current
       calClientWidth(naturalWidth)
-      setImgNaturalHeight(naturalHeight)
     }
   }
 
