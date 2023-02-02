@@ -291,7 +291,7 @@ evaluate_config: # 计算 mAP, mAR, TP, FP, FN 时使用的配置信息
 
 其中 asset_path 为 `/in/data/index.tsv` 中所指的资源路径（直接把那里面的内容copy过来），results为模型打分结果，具体数据项由调用双方事先约定
 
-注2. `infer-result.json` 文件的格式
+注2. `infer-result.json` 文件的格式（检测）
 
 ``` json
 {
@@ -325,7 +325,7 @@ evaluate_config: # 计算 mAP, mAR, TP, FP, FN 时使用的配置信息
 
 * class_name：模型推断出的类别名称，此名称需要出现在 `/in/config.yaml` 中的 `class_names` 列表中，未知的 class name 所对应的检测结果将会被系统忽略
 
-注3. `coco-infer-result.json` 文件格式
+注3. `infer-result.json` 文件格式（语义及实例分割）
 
 ``` json
 {
