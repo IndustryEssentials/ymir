@@ -156,7 +156,7 @@ app/start.py 展示了一个简单的镜像执行部分，此文档也将基于�
 
   * 如果是实例分割，每个框可以有一个置信度，保存在与 "bbox", "image_id", "category_id" 同级的 "confidence" 中，如果是语义分割，则没有 "confidence" 这个 key
 
-  * 将这个 coco 结构直接写入 `/out/coco-infer-result.json` 文件中
+  * 将这个 coco 结构直接写入 `/out/infer-result.json` 文件中
 
 ## 镜像打包
 

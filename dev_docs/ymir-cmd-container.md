@@ -62,7 +62,7 @@ ymir 的挖掘与推理镜像需要支持以下几种场景的使用：
     
     3.3. 如果是检测，将结果写入到 `/out/infer-result.json`中，此文件的结构在后文详述；
 
-    3.4. 如果是语义或实例分割，将结果转换成 coco json 格式，写入 `/out/coco-infer-result.json` 中，此文件的结构在后文详述。
+    3.4. 如果是语义或实例分割，将结果转换成 coco json 格式，写入 `/out/infer-result.json` 中，此文件的结构在后文详述。
 
 4. 推理成功完成后，ymir 读取推理结果，如果是对于某个特定数据集（而不是图片）进行的推理，则将推理结果写入数据集中，形成一个新的数据集。
 
@@ -96,11 +96,11 @@ ymir 的挖掘与推理镜像需要支持以下几种场景的使用：
 
     3.2. 如果是检测，将结果写入到 `/out/infer-result.json` 中；
 
-    3.3. 如果是语义或实例分割，将结果转换成 coco json 格式，并写入 `/out/coco-infer-result.json` 中；
+    3.3. 如果是语义或实例分割，将结果转换成 coco json 格式，并写入 `/out/infer-result.json` 中；
 
     3.4. 挖掘：使用上述模型以及合适的算法，对传入的每张图片进行打分，并将打分结果保存至 `/out/result.tsv` 中。
 
-4. 镜像完成后，ymir 收集 `/out/result.tsv` 中的结果，根据其中 topk 的结果筛选数据集，并将 `/out/infer-result.json` 或 `/out/coco-infer-result.json` 中的推理保存并归档。
+4. 镜像完成后，ymir 收集 `/out/result.tsv` 中的结果，根据其中 topk 的结果筛选数据集，并将 `/out/infer-result.json` 中的推理保存并归档。
 
 ## 3. 镜像自带的文件
 
@@ -279,8 +279,7 @@ evaluate_config: # 计算 mAP, mAR, TP, FP, FN 时使用的配置信息
 | ---- | ---- |
 | /out/monitor.txt | 参考共同部分 |
 | /out/result.tsv | 最终 mining 结果文件路径，格式见注1 |
-| /out/infer-result.json | 检测模型推理结果，格式见注2 |
-| /out/coco-infer-result.json | 语义或实例分割模型推理结果，格式见注3 |
+| /out/infer-result.json | 推理结果，格式见注2 & 3 |
 
 注1. `result.tsv` 文件的格式
 
