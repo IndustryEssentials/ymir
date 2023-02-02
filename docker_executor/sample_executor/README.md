@@ -144,11 +144,19 @@ app/start.py 展示了一个简单的镜像执行部分，此文档也将基于�
 
 2. 候选集的取得：同数据挖掘过程
 
-3. 结果的保存
+3. 结果的保存（检测）
 
   * 推理结果本身是一个 dict，key 是候选集图片的路径，value 是一个由 `result_writer.Annotation` 构成的 list
 
   * 使用 `result_writer.write_infer_result()` 保存推理结果
+
+4. 结果的保存（语义分割与实例分割）
+
+  * 语义分割与实例分割结果本身是 coco 格式的 dict，可以由 coco api 生成
+
+  * 如果是实例分割，每个框可以有一个置信度，保存在与 "bbox", "image_id", "category_id" 同级的 "confidence" 中，如果是语义分割，则没有 "confidence" 这个 key
+
+  * 将这个 coco 结构直接写入 `/out/infer-result.json` 文件中
 
 ## 镜像打包
 
