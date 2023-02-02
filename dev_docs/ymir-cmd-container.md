@@ -16,9 +16,7 @@
 
 ymir 系统有两种用户交互方式：web 方式和命令行方式。
 
-对于 web 用户来说，训练镜像，以及与之配套的挖掘与推理镜像合在一起，称为一个镜像方案，也就是说，一旦用户通过 web 页面，使用了某个训练镜像来训练模型，那挖掘与推理镜像也随之确定了。
-
-而命令行用户在使用训练，挖掘与推理功能时，通过 `--executor` 参数来决定使用哪个镜像。
+web 用户在使用训练，挖掘与推理功能时，通过任务页面选择使用的镜像，而命令行用户在使用训练，挖掘与推理功能时，通过 `--executor` 参数来决定使用哪个镜像。
 
 ### 2.1. ymir 与训练镜像的协作方式
 
@@ -34,7 +32,7 @@ ymir 系统有两种用户交互方式：web 方式和命令行方式。
 
     3.2. 启动训练流程；
 
-    3.3. 将训练结果保存至 `/out/models` 目录，并将最好的一个结果及其 mAP 写入 `/out/result.yaml` 中。
+    3.3. 将训练结果保存至 `/out/models` 目录，并将最好的一个结果及其 mAP 写入 `/out/models/result.yaml` 中。
 
 4. 训练成功完成后，ymir 读取位于 `out/models` 目录下的输出模型，校验其有效性，并将模型归档。
 
@@ -46,7 +44,7 @@ ymir 对挖掘与推理这两个动作有如下定义：
 
 > 挖掘：在已经具备模型和图像的前提下，使用 active learning 等技术对图像进行打分，并将结果图像依据分数从高到低进行排序；
 
-ymir 的挖掘与推理镜像需要同时支持以下两种场景的使用：
+ymir 的挖掘与推理镜像需要支持以下几种场景的使用：
 
 #### 2.2.1. 推理
 
@@ -60,9 +58,13 @@ ymir 的挖掘与推理镜像需要同时支持以下两种场景的使用：
 
     3.1. 从 `/in/candidate-index.tsv` 中读取所有图像资源；
 
-    3.2. 使用 `/in/models` 位置的模型及预先写好的前后处理代码，完成推理，并将结果写入到 `/out/infer-result.json`中。
+    3.2. 使用 `/in/models` 位置的模型及预先写好的前后处理代码，完成推理；
+    
+    3.3. 如果是检测，将结果写入到 `/out/infer-result.json`中，此文件的结构在后文详述；
 
-4. 推理成功完成后，ymir 读取位于 `out/infer-result.json` 位置下的输出结果，如果是对于某个特定数据集（而不是图片）进行的推理，则将推理结果写入数据集中，形成一个新的数据集。
+    3.4. 如果是语义或实例分割，将结果转换成 coco json 格式，写入 `/out/infer-result.json` 中，此文件的结构在后文详述。
+
+4. 推理成功完成后，ymir 读取推理结果，如果是对于某个特定数据集（而不是图片）进行的推理，则将推理结果写入数据集中，形成一个新的数据集。
 
 #### 2.2.2. 挖掘
 
@@ -76,7 +78,7 @@ ymir 的挖掘与推理镜像需要同时支持以下两种场景的使用：
 
     3.1 从 `/in/candidate-index.tsv` 中读取所有图像资源；
     
-    3.2 使用上述模型以及合适的算法，对传入的每张图片进行打分，并将打分结果保存至 `/out/result.tsv` 中;
+    3.2 使用上述模型以及合适的算法，对传入的每张图片进行打分，并将打分结果按分数由高到低排列，保存至 `/out/result.tsv` 中;
 
 4. 镜像完成后，ymir 收集 `/out/result.tsv` 中的结果，根据其中 topk 的结果筛选数据集
 
@@ -90,11 +92,15 @@ ymir 的挖掘与推理镜像需要同时支持以下两种场景的使用：
 
 3. 在镜像启动过程中，镜像完成以下两个事务：
 
-    3.1. 推理：使用 `/in/models` 位置的模型及预先写好的前后处理代码，完成推理，并将结果写入到 `/out/infer-result.json`中；
+    3.1. 推理：使用 `/in/models` 位置的模型及预先写好的前后处理代码，完成推理
 
-    3.2. 挖掘：使用上述模型以及合适的算法，对传入的每张图片进行打分，并将打分结果保存至 `/out/result.tsv` 中。
+    3.2. 如果是检测，将结果写入到 `/out/infer-result.json` 中；
 
-4. 镜像完成后，ymir 收集 `/out/result.tsv` 中的结果，根据其中 topk 的结果筛选数据集，并将 `/out/infer-result.json` 中的内容保存至结果数据集并归档。
+    3.3. 如果是语义或实例分割，将结果转换成 coco json 格式，并写入 `/out/infer-result.json` 中；
+
+    3.4. 挖掘：使用上述模型以及合适的算法，对传入的每张图片进行打分，并将打分结果保存至 `/out/result.tsv` 中。
+
+4. 镜像完成后，ymir 收集 `/out/result.tsv` 中的结果，根据其中 topk 的结果筛选数据集，并将 `/out/infer-result.json` 中的推理保存并归档。
 
 ## 3. 镜像自带的文件
 
@@ -119,8 +125,7 @@ ymir 的挖掘与推理镜像需要同时支持以下两种场景的使用：
 | 路径 | 说明 |
 | ---- | ---- |
 | /out/monitor.txt | 必要，模型训练进度的输出文件。<br>只保留最新的一条记录，记录不累加。<br>记录格式参考注1 |
-| /out/monitor-log.txt | 非必要，短日志文件的输出位置，每一行都是一条记录<br>记录格式参考注2 |
-| /out/log.txt | 非必要，长日志文件的输出位置，允许截断。 |
+| /out/ymir-executor-out.log | 系统维护的日志文件，镜像的所有控制台输出都将被保存到此日志文件中，镜像不应该读写此日志文件 |
 
 注1. `monitor.txt` 的格式如下：
 
@@ -143,38 +148,20 @@ ymir 的挖掘与推理镜像需要同时支持以下两种场景的使用：
 
     * 2（正在进行）
 
-    * 3（正常结束）
+    * 4（出错，异常结束）
 
-    * 4（异常结束）
-
-* `message` 是自定义信息，比如异常结束可以写入具体的错误原因，backtrace信息等
+* `message` 是自定义信息，比如异常结束可以写入具体的错误原因，backtrace 信息等
 
 例如：
 ```
-train_0 1622552974 0.5 2
+train_0 1622552974.081620 0.5 2
 ```
 
 或者：
 
 ```
-train_0 1622552974 1 4
+train_0 1622552974.040471 1 4
 no training data found
-```
-
-注2. `monitor-log.txt` 的格式如下：
-
-```
-<task_id><tab><timestamp><tab><percent><tab><status>
-```
-
-这个文件主要关注任务状态的切换，例如什么时候创建，什么时候开始运行，什么时候百分比是多少，例如：
-
-```
-task_0    1622552964    0    pending
-task_0    1622552965    0    running
-task_0    1622552966    0.1    running
-...
-task_0    1622552975    1    done
 ```
 
 #### 4.2.2. 容器的启动方式
@@ -183,11 +170,11 @@ task_0    1622552975    1    done
 
 * 在 `/usr/bin` 下面都需要设置一个启动任务的脚本：`/usr/bin/start.sh`（不带参数）
 
-* 所有配置全都放在 `/in/config.yaml` 下面
+* 任务所用的所有配置将由系统写入 `/in/config.yaml`
 
     * 特别的，如果用户需要同时在一个镜像中完成挖掘和推理任务，传入的 `/in/config.yaml` 将是挖掘配置和推理配置的合并
 
-* 在任务执行过程中，所有输出过程如果遇到异常（比如写入失败、没有写入权限等），则直接报错退出；
+* 在任务执行过程中，所有输出过程如果遇到异常（比如写入失败、没有写入权限等），则直接报错退出，并相应在 `/out/monitor.txt` 写入错误原因；
 
 * 所有输入过程如果遇到异常（如 `index.tsv` 里面所指示的图像文件或标注文件不存在），也直接报错退出
 
@@ -223,9 +210,7 @@ task_0    1622552975    1    done
 
         * `det-ls-json`: 导出适合 LabelStudio 使用的检测标注
 
-        * `seg-poly`: 导出 polygon 格式的分割标注
-
-        * `seg-mask`: 导出 mask 类型的分割标注
+        * `seg-coco`: 导出 coco json 格式的检测及分割标注
 
     * `图像格式` 目前只能指定为 `raw`
 
@@ -233,9 +218,7 @@ task_0    1622552975    1    done
 
 | 路径 | 说明 |
 | ---- | ---- |
-| /out/log.txt | 参考共同部分 |
 | /out/monitor.txt | 参考共同部分 |
-| /out/monitor-log.txt | 参考共同部分 |
 | /out/models | 必要，最终生成的模型的输出目录，模型文件存放在以 stage_name 命名的子目录中。<br>/out/models 下必须有一个 `result.yaml` 文件，格式参考注1 |
 
 注1. `result.yaml` 文件的格式如下：
@@ -294,11 +277,9 @@ evaluate_config: # 计算 mAP, mAR, TP, FP, FN 时使用的配置信息
 
 | 路径 | 说明 |
 | ---- | ---- |
-| /out/log.txt | 参考共同部分 |
 | /out/monitor.txt | 参考共同部分 |
-| /out/monitor-log.txt | 参考共同部分 |
 | /out/result.tsv | 最终 mining 结果文件路径，格式见注1 |
-| /out/infer-result.json | 模型推理结果，格式见注2 |
+| /out/infer-result.json | 推理结果，格式见注2 & 3 |
 
 注1. `result.tsv` 文件的格式
 
@@ -310,14 +291,28 @@ evaluate_config: # 计算 mAP, mAR, TP, FP, FN 时使用的配置信息
 
 其中 asset_path 为 `/in/data/index.tsv` 中所指的资源路径（直接把那里面的内容copy过来），results为模型打分结果，具体数据项由调用双方事先约定
 
-注2. `infer-result.json` 文件的格式
+注2. `infer-result.json` 文件的格式（检测）
 
-```
-{'detection':
-  {
-    asset-name-0: {'boxes': [{'box': {'x': 30, 'y': 30, 'w': 50, 'h': 50}, 'class_name': 'cat','score': 0.8}, ...]},
-    asset-name-1: {'boxes': [...]},
-    ...
+``` json
+{
+  "detection": { 
+    "asset-name-0": {
+      "boxes":
+      [
+        {
+          "box": {
+            "x": 30,
+            "y": 30,
+            "w": 50,
+            "h": 50
+          },
+          "class_name": "cat",
+          "score": 0.8
+        },
+        ...
+      ]
+    },
+    "asset-name-1": {}
   }
 }
 ```
@@ -328,4 +323,68 @@ evaluate_config: # 计算 mAP, mAR, TP, FP, FN 时使用的配置信息
 
 * box的结构为：x, y, w, h，参考系为图片坐标系，左上角为原点
 
-* class_name：模型推断出的类别名称，此名称需要出现在 `/in/config.yaml` 中的 `class_names` 列表中
+* class_name：模型推断出的类别名称，此名称需要出现在 `/in/config.yaml` 中的 `class_names` 列表中，未知的 class name 所对应的检测结果将会被系统忽略
+
+注3. `infer-result.json` 文件格式（语义及实例分割）
+
+``` json
+{
+  "images": [
+    {
+      "license": 0,
+      "file_name": "2007_000032.jpg",
+      "coco_url": "",
+      "height": 281,
+      "width": 500,
+      "data_captured": "2013-11-24 13:47:05",
+      "flickr_url": "",
+      "id": 1
+    },
+  ],
+  "categories": [
+    {
+      "supercategory": "object",
+      "id": 1,
+      "name": "cat"
+    },
+    {
+      "supercategory": "object",
+      "id": 2,
+      "name": "person"
+    }
+  ],
+  "annotations": [
+    {
+      "segmentation": {
+          "counts": "^bl346O[>N`A10c05\\OO1OO91h<OlB00l0022RO8?HAN10O70;0Y:Q1UEZ20kL`1JW7l5eGTJZ8o5dGQJ\\8S6[GnI04a8n5^GWJb8U6O1O110OZOeGdJZ8^5f0O0000N2001O01O0O10000O10001O0000000000001O00000000000010O001OO1000000000000000001O0O1O100N2N2000O012N01N2O001O0000O13MN2001O10O1O12M5\\G_I\\8d600001O0000001O0000O2O0000N2N10100O1K5O100000O11N1001O0000001OO1000O1N201O01O00000cN\\G[Ld8e3]GZLc8[3\\G_K6U1_8\\3hGcLX8]3iGWLCXOh8]4iGVLe8g3]GXLc8h3]GXLc8g3^GYLb8g3^GYLa8h3_GWLc8h3]GXLb8h3_GXLb8g3^GZLY;0UD_OMKW1c0d=@cQ`3",
+          "size": [
+              281,
+              500
+          ]
+      },
+      "area": 88715.0,
+      "iscrowd": 0,
+      "image_id": 1,
+      "bbox": [
+        0.0,
+        0.0,
+        586.0,
+        421.0
+      ],
+      "confidence": 0.8,
+      "category_id": 1,
+      "id": 1000
+  }
+  ]
+}
+```
+
+有几个需要注意的点：
+
+* file_name 存放图片的文件名，图片的文件名可以从 /in/candidate-index.tsv 中读取
+
+* bbox 是一个拥有四个 float 的 list，分别是 x, y, w, h
+
+* segmentation 部分支持 str 类型的 mask，也支持 list 类型的 polygon，结构与 coco 官方格式一致
+
+* 此文件增加了 confidence，用于存放实例分割框的置信度，语义分割不需要这个 key
