@@ -274,7 +274,7 @@ def _process_infer_detbox_result(task_annotations: mirpb.SingleTaskAnnotations, 
 
 def _process_infer_seg_coco_result(task_annotations: mirpb.SingleTaskAnnotations, work_dir_out: str,
                                    class_id_mgr: class_ids.UserLabels) -> None:
-    coco_json_filename = 'coco-infer-result.json'
+    coco_json_filename = 'infer-result.json'
 
     with open(os.path.join(work_dir_out, coco_json_filename), 'r') as f:
         result = json.loads(f.read())
