@@ -151,7 +151,7 @@ def _run_infer(env_config: env.EnvConfig) -> None:
 
     # use data_reader.item_paths to read asset path
     # send them to your model (get model files from /in/config.yaml - model-params-path key)
-    # write infer result to /out/coco-infer-result.json (in coco format)
+    # write infer result to /out/infer-result.json (in coco format)
     images_list = []
     categories_list = [{
         'id': i + 1,
@@ -182,7 +182,7 @@ def _run_infer(env_config: env.EnvConfig) -> None:
         'categories': categories_list,
         'annotations': annotations_list,
     }
-    with open('/out/coco-infer-result.json', 'w') as f:
+    with open('/out/infer-result.json', 'w') as f:
         f.write(json.dumps(coco_dict, indent=4))
 
     #! if task done, write 100% percent log
