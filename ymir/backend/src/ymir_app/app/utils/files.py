@@ -62,13 +62,16 @@ def host_file(file: Any) -> str:
     return urljoin(NGINX_PREFIX, str(target))
 
 
-def save_file_content(url: Union[AnyHttpUrl, str], output_filename: Union[Path, str]) -> None:
+def save_file_content(url: Union[AnyHttpUrl, str], output_filename: Union[Path, str], keep: bool = False) -> None:
     if urlparse(url).netloc:
         return download_file(url, output_filename)  # type: ignore
 
     # if file is hosted by nginx on the same host, just copy it
     file_path = Path(NGINX_DATA_PATH) / url
-    shutil.move(str(file_path), output_filename)
+    if keep:
+        shutil.copy(str(file_path), output_filename)
+    else:
+        shutil.move(str(file_path), output_filename)
 
 
 def download_file(url: AnyHttpUrl, output_filename: str) -> None:
@@ -99,16 +102,19 @@ def save_file(
     url: Union[AnyHttpUrl, str],
     output_dir: Union[str, Path],
     output_filename: Optional[str] = None,
+    keep: bool = False,
 ) -> Path:
     filename = output_filename or Path(urlparse(url).path).name
     output_file = Path(output_dir) / filename
-    save_file_content(url, output_file)
+    save_file_content(url, output_file, keep)
     return output_file
 
 
-def save_files(urls: List[Union[AnyHttpUrl, str]], output_basedir: Union[str, Path]) -> Tuple[str, Dict]:
+def save_files(
+    urls: List[Union[AnyHttpUrl, str]], output_basedir: Union[str, Path], keep: bool = False
+) -> Tuple[str, Dict]:
     output_dir = mkdtemp(prefix="import_files_", dir=output_basedir)
-    save_ = partial(save_file, output_dir=Path(output_dir))
+    save_ = partial(save_file, output_dir=Path(output_dir), keep=keep)
     workers = min(MAX_WORKERS, len(urls))
     with ThreadPoolExecutor(workers) as executor:
         res = executor.map(save_, urls)
