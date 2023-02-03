@@ -20,10 +20,7 @@ from app.utils.ymir_controller import ControllerClient
 router = APIRouter()
 
 
-@router.post(
-    "/",
-    response_model=schemas.InferenceOut,
-)
+@router.post("/", response_model=schemas.InferenceOut)
 def call_inference(
     *,
     inference_in: schemas.InferenceCreate,
