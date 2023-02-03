@@ -43,7 +43,7 @@
                                 "rotate_angle": 0.0
                             },
                             "class_id": 4,
-                            "score": -1.0,
+                            "score": 1.0,
                             "anno_quality": -1.0,
                             "det_link_id": -1,
                             "class_name": "grass",
@@ -66,7 +66,7 @@
                                 "rotate_angle": 0.0
                             },
                             "class_id": 7,
-                            "score": -1.0,
+                            "score": 1.0,
                             "anno_quality": -1.0,
                             "det_link_id": -1,
                             "class_name": "other",
@@ -95,7 +95,7 @@
                                 "rotate_angle": 0.0
                             },
                             "class_id": 3,
-                            "score": -1.0,
+                            "score": 1.0,
                             "anno_quality": -1.0,
                             "det_link_id": -1,
                             "class_name": "blanket",
@@ -118,7 +118,7 @@
                                 "rotate_angle": 0.0
                             },
                             "class_id": 5,
-                            "score": -1.0,
+                            "score": 1.0,
                             "anno_quality": -1.0,
                             "det_link_id": -1,
                             "class_name": "house",
@@ -140,7 +140,7 @@
                                 "rotate_angle": 0.0
                             },
                             "class_id": 6,
-                            "score": -1.0,
+                            "score": 1.0,
                             "anno_quality": -1.0,
                             "det_link_id": -1,
                             "class_name": "leaves",
@@ -162,7 +162,7 @@
                                 "rotate_angle": 0.0
                             },
                             "class_id": 7,
-                            "score": -1.0,
+                            "score": 1.0,
                             "anno_quality": -1.0,
                             "det_link_id": -1,
                             "class_name": "other",
