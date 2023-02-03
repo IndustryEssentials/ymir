@@ -10,6 +10,7 @@ import { TYPES } from '@/constants/image'
 import useFetch from '@/hooks/useFetch'
 import { isSemantic } from '@/constants/objectType'
 import useRequest from '@/hooks/useRequest'
+import { getRecommendStage } from '@/constants/model'
 
 import Breadcrumb from '@/components/common/breadcrumb'
 import Uploader from '@/components/form/uploader'
@@ -183,6 +184,13 @@ function Verify() {
     })
   }
 
+  const modelPrimaryMetricRender = (model) => {
+    const stage = getRecommendStage(model)
+    return stage ? <Descriptions.Item label={stage.primaryMetricLabel}>
+    <span title={stage.primaryMetric}>{percent(stage.primaryMetric)}</span>
+  </Descriptions.Item> : null
+  }
+
   return (
     <div className={styles.modelVerify}>
       <Breadcrumb />
@@ -237,9 +245,7 @@ function Verify() {
                 labelStyle={{ justifyContent: 'flex-end', padding: '10px' }}
               >
                 <Descriptions.Item label={t('model.column.name')}>{model.name}</Descriptions.Item>
-                <Descriptions.Item label={'mAP'}>
-                  <span title={model.map}>{percent(model.map)}</span>
-                </Descriptions.Item>
+                {modelPrimaryMetricRender(model)}
                 <Descriptions.Item label={t('model.column.create_time')}>{model.createTime}</Descriptions.Item>
                 <Descriptions.Item label={t('dataset.asset.info.keyword')}>
                   {model.keywords?.map((keyword, i) => (

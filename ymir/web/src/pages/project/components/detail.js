@@ -7,6 +7,8 @@ import { getStepLabel } from "@/constants/iteration"
 import useFetch from "@/hooks/useFetch"
 import { getProjectTypeLabel } from '@/constants/project'
 
+import ObjectTypeTag from '@/components/project/ObjectTypeTag'
+
 import s from "../detail.less"
 import { EditIcon, SearchEyeIcon, EyeOffIcon } from "@/components/common/Icons"
 import { ArrowDownIcon, ArrowRightIcon } from "@/components/common/Icons"
@@ -16,7 +18,6 @@ function ProjectDetail({ project = {} }) {
 
   const unfold = useSelector(({ iteration }) => iteration.actionPanelExpand)
   const [_, toggleActionPanel] = useFetch("iteration/toggleActionPanel", true)
-const typeLabel = getProjectTypeLabel(project.type)
 
   return (
     <div className={s.detailContainer}>
@@ -24,7 +25,7 @@ const typeLabel = getProjectTypeLabel(project.type)
         <Col flex={1}>
           <Space className={s.detailPanel} wrap size={16}>
             <span className={s.name}>{project.name}</span>
-            <span className={`extraTag ${[typeLabel]}`}>{t(project.typeLabel)}</span>
+            <ObjectTypeTag type={project.type} />
             <span className={s.iterationInfo}>
               {t("project.detail.info.iteration", {
                 stageLabel: (
