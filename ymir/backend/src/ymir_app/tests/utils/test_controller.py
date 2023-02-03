@@ -165,3 +165,30 @@ class TestControllerClient:
         assert generated_req.asset_dir == asset_dir
         assert generated_req.singleton_op == docker_image
         assert generated_req.docker_image_config == docker_config
+
+    def test_evaluate(self, mocker):
+        user_id = random.randint(1000, 9000)
+        project_id = random.randint(1000, 9000)
+        channel_str = random_lower_string()
+        user_labels = mocker.Mock()
+        confidence_threshold, iou_thrs_interval, need_pr_curve = 0.5, "0.5", True
+        main_ck = None
+        is_instance_segmentation = True
+        dataset_hash = random_lower_string()
+        cc = m.ControllerClient(channel_str)
+        mock_convertor = mocker.Mock()
+        mocker.patch.object(m, "convert_class_id_to_keyword", mock_convertor)
+        resp = {"evaluation": mocker.Mock()}
+        cc.send = mocker.Mock(return_value=resp)
+        cc.evaluate_dataset(
+            user_id,
+            project_id,
+            user_labels,
+            confidence_threshold,
+            iou_thrs_interval,
+            need_pr_curve,
+            main_ck,
+            is_instance_segmentation,
+            dataset_hash,
+        )
+        mock_convertor.assert_called()
