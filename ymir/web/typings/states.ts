@@ -7,6 +7,7 @@ declare namespace YStates {
     image: ImageState
     keywords: LabelState
     project: ProjectState
+    socket: SocketState
     loading: {
       effects: {
         [key: string]: boolean
@@ -67,6 +68,10 @@ declare namespace YStates {
   type LabelState = {
     keywords: List<YModels.Keywords>
     keyword: IdMap<YModels.Keywords>
+  }
+
+  interface SocketState extends State {
+    tasks: YModels.ProgressTask[]
   }
 
   type ResultState<T extends YModels.ResultType> = T extends 'dataset' ? DatasetState : ModelState

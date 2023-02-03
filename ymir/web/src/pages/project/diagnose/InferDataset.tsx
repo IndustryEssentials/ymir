@@ -1,17 +1,18 @@
 import React, { useEffect, useState } from 'react'
 import { Card, Table, TableColumnsType } from 'antd'
-import { useHistory, useParams, useSelector } from 'umi'
+import { useHistory, useParams } from 'umi'
+import { useSelector } from 'react-redux'
 
 import useFetch from '@/hooks/useFetch'
 import t from '@/utils/t'
+import { INFER_CLASSES_MAX_COUNT, INFER_DATASET_MAX_COUNT, updateResultByTask } from '@/constants/common'
+import { isDetection } from '@/constants/objectType'
+
 import { getInferDatasetColumns } from '@/components/table/Columns'
 import Actions from '@/components/table/Actions'
 
-// test lint-staged
 import s from './index.less'
 import { EyeOnIcon, DiagnosisIcon } from '@/components/common/Icons'
-import { INFER_CLASSES_MAX_COUNT, INFER_DATASET_MAX_COUNT } from '@/constants/common'
-import { isDetection } from '@/constants/objectType'
 
 const initQuery = { current: 1, offset: 0, limit: 20 }
 
@@ -22,8 +23,9 @@ const InferDataset: React.FC = () => {
   const [query, setQuery] = useState(initQuery)
   const [{ items, total }, getDatasets] = useFetch('dataset/queryInferDatasets', { items: [], total: 0 })
   const cols = getInferDatasetColumns(datasets[0]?.type)
-  const cacheDatasets = useSelector((state: YStates.DatasetState) => state.dataset.dataset)
-  const cacheModels = useSelector((state: YStates.ModelState) => state.model.model)
+  const cacheDatasets = useSelector<YStates.Root, YStates.IdMap<YModels.Dataset>>((state) => state.dataset.dataset)
+  const cacheModels = useSelector<YStates.Root, YStates.IdMap<YModels.Model>>((state) => state.model.model)
+  const progressTasks = useSelector<YStates.Root, YModels.ProgressTask[]>(({ socket }) => socket.tasks)
   const actions = (record: YModels.InferDataset): YComponents.Action[] => [
     {
       key: 'diagnose',
@@ -58,6 +60,22 @@ const InferDataset: React.FC = () => {
   const columns = [...cols, ...actionCol]
 
   useEffect(() => pid && fetchInferDatasets(), [pid, query])
+
+  useEffect(() => {
+    if (datasets.length && progressTasks.length) {
+      const needReload = progressTasks.some(({ reload }) => reload)
+      if (needReload) {
+        fetchInferDatasets()
+      } else {
+
+      const updatedDatasets = datasets.map(dataset => {
+        const ds = updateResultByTask<typeof dataset>(dataset, progressTasks.find(task => task.hash === dataset.task.hash))
+        return ds ? ds : dataset
+      })
+      setDatasets(updatedDatasets)
+      }
+    }
+  }, [progressTasks])
 
   useEffect(() => setDatasets(items), [items])
 

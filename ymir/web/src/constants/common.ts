@@ -21,9 +21,6 @@ export enum actions {
 
 export const OPENPAI_MAX_GPU_COUNT = 8
 
-type Result = {
-  [key: string]: any
-}
 export function updateResultState(result: YModels.Result, tasks: YModels.BackendData) {
   const task = result?.task?.hash ? tasks[result.task.hash] : null
   if (!result || !task) {
@@ -32,7 +29,7 @@ export function updateResultState(result: YModels.Result, tasks: YModels.Backend
   return updateResultByTask(result, task)
 }
 
-export function updateResultByTask(result: Result, task: YModels.BackendData) {
+export function updateResultByTask<T extends YModels.Result>(result: T, task?: YModels.ProgressTask): T | undefined {
   if (!result || !task) {
     return
   }
