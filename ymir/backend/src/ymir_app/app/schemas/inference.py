@@ -5,6 +5,9 @@ from pydantic import BaseModel, Field, root_validator
 from app.schemas.common import Common
 
 
+INVALID_INFERENCE_RESULT_FLAG = -1
+
+
 class InferenceBase(BaseModel):
     docker_image: str
     project_id: int
@@ -36,12 +39,15 @@ class InferredAnnotation(BaseModel):
     polygon: List[PolygonPoint]
     class_name: str
     keyword: str = Field(description="aka class_name for MIR")
-    score: float = Field(ge=0, le=1)
+    score: Optional[float] = Field(ge=0, le=1)
 
     @root_validator(pre=True)
-    def fill_keyword(cls, values: Dict) -> Dict:
+    def update_values_upfront(cls, values: Dict) -> Dict:
         # rename class_name to keyword
         values["keyword"] = values["class_name"]
+        # FIXME ad hoc: special value for invalid inference result
+        if values["score"] == INVALID_INFERENCE_RESULT_FLAG:
+            values["score"] = None
         return values
 
 
