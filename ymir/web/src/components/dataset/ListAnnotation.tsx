@@ -28,7 +28,7 @@ const ListAnnotation: FC<Props> = ({ asset, filter }) => {
       if (!asset) {
         return
       }
-      const updateAnnotations = transferAnnotations(asset.annotations, asset)
+      const updateAnnotations = transferAnnotations(asset.annotations)
       setAnnotations(filter ? filter(updateAnnotations) : updateAnnotations)
     },
     [asset, filter],
@@ -55,12 +55,6 @@ const ListAnnotation: FC<Props> = ({ asset, filter }) => {
         return <Mask key={key} annotation={annotation} ratio={ratio} simple={true} />
     }
   }
-
-  window.addEventListener('resize', () => {
-    if (imgContainer.current) {
-      calClientWidth()
-    }
-  })
 
   return (
     <div className={styles.ic_container} ref={imgContainer} key={asset.hash}>

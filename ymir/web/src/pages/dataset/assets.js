@@ -12,7 +12,6 @@ import Asset from './components/asset'
 import styles from './assets.less'
 import GtSelector from '@/components/form/GtSelector'
 import ListAnnotation from '@/components/dataset/ListAnnotation'
-import useWindowResize from '@/hooks/useWindowResize'
 import KeywordSelector from '@/components/form/KeywordFilter'
 import EvaluationSelector from '@/components/form/EvaluationSelector'
 import VersionName from '@/components/result/VersionName'
@@ -55,7 +54,6 @@ const Dataset = () => {
     index: 0,
   })
   const listRef = useRef(null)
-  const windowWidth = useWindowResize()
   const [dataset, getDataset] = useFetch('dataset/getDataset', {})
   const [{ items: assets, total }, getAssets, setAssets] = useFetch('dataset/getAssetsOfDataset', { items: [], total: 0 })
 
@@ -154,22 +152,24 @@ const Dataset = () => {
 
   const renderList = useCallback(
     (list, row = 5) => {
-      let r = 0,
-        result = []
+      let r = 0
+      let result = []
+      let space = 4
       while (r < list.length) {
         result.push(list.slice(r, r + row))
         r += row
       }
 
       return result.map((rows, index) => {
+        const cw = listRef.current?.clientWidth || 0
         const h =
-          listRef.current?.clientWidth /
+          (cw - space * row) /
           rows.reduce((prev, row) => {
             return prev + row.metadata.width / row.metadata.height
           }, 0)
 
         return (
-          <Row gutter={4} wrap={false} key={index} className={styles.dataset_container}>
+          <Row gutter={space} wrap={false} key={index} className={styles.dataset_container}>
             {rows.map((asset, rowIndex) => (
               <Col style={{ height: h }} key={asset.hash} className={styles.dataset_item}>
                 <CkPopup asset={asset}>
@@ -200,7 +200,7 @@ const Dataset = () => {
         )
       })
     },
-    [windowWidth, filterParams],
+    [listRef.current?.clientWidth, filterParams],
   )
 
   const renderTitle = (
