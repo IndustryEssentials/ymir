@@ -5,8 +5,8 @@ import { Select, Pagination, Row, Col, Button, Space, Card, Tag, Modal, Popover 
 import t from '@/utils/t'
 import useFetch from '@/hooks/useFetch'
 import { randomBetween, percent } from '@/utils/number'
-import { getProjectTypeLabel } from '@/constants/project'
 
+import ObjectTypeTag from '@/components/project/ObjectTypeTag'
 import Breadcrumbs from '@/components/common/breadcrumb'
 import Asset from './components/asset'
 import styles from './assets.less'
@@ -211,9 +211,7 @@ const Dataset = () => {
             <VersionName result={dataset} />
           </strong>
           <span>{t('dataset.detail.pager.total', { total: total + '/' + dataset.assetCount })}</span>
-          <span>
-            {t('common.object.type')}: {t(getProjectTypeLabel(dataset.type, true))}
-          </span>
+          <ObjectTypeTag type={dataset.type} />
           {dataset?.inferClass ? (
             <div>
               {t('dataset.detail.infer.class')}

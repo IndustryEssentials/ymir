@@ -9,6 +9,7 @@ import { getStepLabel, STEP } from '@/constants/iteration'
 import KeywordsItem from '../KeywordsItem'
 
 import s from './item.less'
+import ObjectTypeTag from '../ObjectTypeTag'
 
 type Props = {
   project: YModels.Project,
@@ -23,7 +24,7 @@ const Item: FC<Props> = ({ project, more }) => {
         <Space>
           <span className={s.name}>
             <span>{project.name}</span>
-            <span className={`extraTag ${[typeLabel]}`}>{t(project.typeLabel)}</span>
+            <ObjectTypeTag type={project.type} />
             {project.isExample ? <span className="extraTag example">{t('project.example')}</span> : null}
           </span>
           <span className="titleItem">
