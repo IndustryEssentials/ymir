@@ -32,7 +32,7 @@ jobs:
       working-directory: ymir/backend/src/ymir_hel
       run: |
         time go mod verify
-        time go install honnef.co/go/tools/cmd/staticcheck@latest
+        time go install honnef.co/go/tools/cmd/staticcheck@v0.3.3
 
     - name: golangci-lint
       uses: golangci/golangci-lint-action@v3
