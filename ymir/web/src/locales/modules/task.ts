@@ -57,7 +57,7 @@ const task = {
     cn: '创建成功',
     en: 'Create Task Success!',
   },
-  'task.fusion.form.dataset': { cn: '原数据集', en: 'Original Dataset' },
+  'task.fusion.form.dataset': { cn: '当前数据集', en: 'Current Dataset' },
   'task.fusion.form.datasets.placeholder': {
     cn: '请选择数据集',
     en: 'Select/Fusion Datasets',
@@ -424,7 +424,7 @@ const task = {
   'task.merge.type.new': { en: 'Generate a new dataset', cn: '生成新数据集' },
   'task.merge.type.exist': {
     en: 'Generate a version for original dataset',
-    cn: '在原数据集上生成新版本',
+    cn: '在当前数据集上生成新版本',
   },
   'task.train.btn.calc.negative': {
     en: 'Calculate Positive/Negative Samples',
