@@ -535,8 +535,8 @@ class ControllerClient:
         iou_thrs_interval: str,
         need_pr_curve: bool,
         main_ck: Optional[str],
+        is_instance_segmentation: bool,
         dataset_hash: str,
-        is_instance_segmentation: bool = False,
     ) -> Dict:
         req = ControllerRequest(
             type=ExtraRequestType.evaluate,
