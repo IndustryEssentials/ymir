@@ -97,7 +97,6 @@ function ModelDetail() {
       [ObjectType.InstanceSegmentation]: 'boxAP',
     }[type]
     const list = [target, 'fn', 'fp']
-    console.log('list:', list)
     return list.map((key) => {
       const option = metricsOptions[key]
       const metric = stage.metrics[key]
