@@ -374,6 +374,14 @@ declare namespace YModels {
     [func: string]: PlainObject
   }
 
+  type ProgressTask = {
+    hash: string
+    result_state: number
+    percent: number
+    state: number
+    reload?: boolean
+  }
+
   type TaskParams = FusionParams | FilterParams | MergeParams | TrainingParams | LabelParams | MiningParams | InferenceParams
 
   interface Params {
