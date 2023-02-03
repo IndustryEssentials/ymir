@@ -25,17 +25,17 @@ const AssetAnnotation: FC<Props> = ({ asset }) => {
     if (!asset) {
       return
     }
-    setAnnotations(transferAnnotations(asset.annotations))
-  }, [asset])
-
-  useEffect(() => {
-    let annos = annotations
-    if (annotations.length && !asset?.height && img.current) {
+    let annos = asset.annotations
+    if (annos?.length && !asset?.height && img.current) {
       const { naturalWidth, naturalHeight } = img.current
-      annos = annos.map((anno) => ({ ...anno, height: naturalHeight, width: naturalWidth }))
-      setAnnotations(annos)
+      annos = annos.map((anno) => ({
+        ...anno,
+        height: naturalHeight,
+        width: naturalWidth,
+      }))
     }
-  }, [asset, annotations.length, img.current])
+    setAnnotations(transferAnnotations(annos))
+  }, [asset, img.current])
 
   function calClientWidth(imgWidth?: number) {
     const { current } = imgContainer

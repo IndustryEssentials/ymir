@@ -15,6 +15,9 @@ class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):
     def get_by_email(self, db: Session, *, email: str) -> Optional[User]:
         return db.query(User).filter(User.email == email).first()
 
+    def get_by_phone(self, db: Session, *, phone: str) -> Optional[User]:
+        return db.query(User).filter(User.phone == phone).first()
+
     def create(self, db: Session, *, obj_in: UserCreate) -> User:
         state = UserState.registered.value if settings.REGISTRATION_NEEDS_APPROVAL else UserState.active.value
         db_obj = User(

@@ -261,6 +261,11 @@ class DuplicateUserNameError(DuplicateError):
     message = "Duplicated User Name"
 
 
+class DuplicatePhoneError(DuplicateError):
+    code = error_codes.USER_DUPLICATED_PHONE
+    message = "Duplicated User Phone"
+
+
 class DuplicateDatasetError(DuplicateError):
     code = error_codes.DATASET_DUPLICATED_NAME
     message = "Duplicated Dataset Name"

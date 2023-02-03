@@ -45,9 +45,9 @@ def call_inference(
         raise InvalidInferenceConfig()
 
     try:
-        asset_dir, filename_mapping = save_files(inference_in.image_urls, settings.SHARED_DATA_DIR)
-    except FailedToDownload:
-        logger.error("Failed to download user content: %s", inference_in.image_urls)
+        asset_dir, filename_mapping = save_files(inference_in.image_urls, settings.SHARED_DATA_DIR, keep=True)
+    except (FailedToDownload, FileNotFoundError):
+        logger.error("Failed to get user provided images: %s", inference_in.image_urls)
         raise FailedtoDownloadError()
 
     try:
