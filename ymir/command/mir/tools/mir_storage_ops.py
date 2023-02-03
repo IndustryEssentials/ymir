@@ -1,6 +1,7 @@
 from functools import reduce
 from math import ceil
 import os
+import logging
 import time
 from typing import Any, List, Dict, Optional
 
@@ -51,13 +52,17 @@ class MirStorageOps():
         mir_tasks.head_task_id = task.task_id
         mir_tasks.tasks[mir_tasks.head_task_id].CopyFrom(task)
 
-        evaluation = det_eval_ops.det_evaluate_with_pb(
-            prediction=mir_annotations.prediction,
-            ground_truth=mir_annotations.ground_truth,
-            config=evaluate_config,
-            assets_metadata=mir_metadatas,
-        )
-        mir_tasks.tasks[mir_tasks.head_task_id].evaluation.CopyFrom(evaluation)
+        if mir_annotations.prediction.type == mir_annotations.ground_truth.type == mirpb.ObjectType.OT_DET_BOX:
+            evaluation = det_eval_ops.det_evaluate_with_pb(
+                prediction=mir_annotations.prediction,
+                ground_truth=mir_annotations.ground_truth,
+                config=evaluate_config,
+                assets_metadata=mir_metadatas,
+            )
+            mir_tasks.tasks[mir_tasks.head_task_id].evaluation.CopyFrom(evaluation)
+        else:
+            logging.warning("Skip automatic evaluation for none-detection dataset")
+
         mir_datas[mirpb.MirStorage.MIR_TASKS] = mir_tasks
 
         # gen mir_keywords
