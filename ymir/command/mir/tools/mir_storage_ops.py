@@ -1,6 +1,7 @@
 from functools import reduce
 from math import ceil
 import os
+import logging
 import time
 from typing import Any, List, Dict, Optional
 
@@ -59,6 +60,8 @@ class MirStorageOps():
                 assets_metadata=mir_metadatas,
             )
             mir_tasks.tasks[mir_tasks.head_task_id].evaluation.CopyFrom(evaluation)
+        else:
+            logging.warning("Skip automatic evaluation for none-detection dataset")
 
         mir_datas[mirpb.MirStorage.MIR_TASKS] = mir_tasks
 
