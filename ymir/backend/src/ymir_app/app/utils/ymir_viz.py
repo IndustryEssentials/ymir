@@ -228,7 +228,6 @@ class ViewerModelInfoResponse(BaseModel):
     map: float
     miou: float
     mask_ap: float
-    task_parameters: str
     executor_config: Dict
     model_stages: Dict
     best_stage_name: str
