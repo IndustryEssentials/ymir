@@ -274,7 +274,7 @@ def update_task_status(
     try:
         updated_task = task_result.update(task_result=task_update)
     except (ConnectionError, HTTPError, Timeout):
-        logger.exception("Failed to update update task status. Try again later")
+        logger.exception("Failed to update task status. Try again later")
         raise FailedToUpdateTaskStatusTemporally()
     except ModelNotReady:
         logger.warning("Model Not Ready")
