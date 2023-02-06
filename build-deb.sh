@@ -22,7 +22,7 @@ EOT
 
 cat <<EOT > deb-workplace/DEBIAN/postinst
 #!/bin/sh
-echo "Successfully installed ymir, please go to installation dir (default: /usr/ymir) and run ymir.sh start"
+echo "Successfully installed ymir, please go to installation dir (default: /usr/ymir) and run ./ymir.sh start"
 EOT
 
 chmod +x deb-workplace/DEBIAN/postinst
