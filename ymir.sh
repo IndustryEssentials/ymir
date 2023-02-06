@@ -82,10 +82,10 @@ Which label-tool would you like to start (1/2/3)?
 EOF
 
 while true; do
-    read -p "You choose (1/2/3)?" yn
+    read -p "You choose (1/[2]/3)?" yn
     case $yn in
         [1]* ) sed -i.bk "s/^${FIELD_LABEL_TOOL}=.*/${FIELD_LABEL_TOOL}=${FIELD_LABEL_TOOL_LS}/" ${ENV_FILE} && rm -f ${ENV_FILE}.bk; break;;
-        [2]* ) sed -i.bk "s/^${FIELD_LABEL_TOOL}=.*/${FIELD_LABEL_TOOL}=${FIELD_LABEL_TOOL_LF}/" ${ENV_FILE} && rm -f ${ENV_FILE}.bk; break;;
+        [2]*|"" ) sed -i.bk "s/^${FIELD_LABEL_TOOL}=.*/${FIELD_LABEL_TOOL}=${FIELD_LABEL_TOOL_LF}/" ${ENV_FILE} && rm -f ${ENV_FILE}.bk; break;;
         [3]* ) break;;
         * ) echo "Please answer 1/2/3.";;
     esac
