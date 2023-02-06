@@ -44,7 +44,9 @@ def detect_sandbox_src_versions(sandbox_root: str) -> List[str]:
     for user_id in user_to_repos:
         user_label_file = os.path.join(sandbox_root, user_id, 'labels.yaml')
         try:
-            ver = _ymir_salient_version_from_label_file(user_label_file)
+            with open(user_label_file, 'r') as f:
+                user_label_dict = yaml.safe_load(f)
+            ver = ymir_salient_version(user_label_dict.get('ymir_version', DEFAULT_YMIR_SRC_VERSION))
         except (FileNotFoundError, yaml.YAMLError) as e:
             raise SandboxError(error_code=UpdaterErrorCode.INVALID_USER_LABEL_FILE,
                                error_message=f"invalid label file: {user_label_file}") from e
@@ -90,16 +92,3 @@ def check_sandbox(sandbox_root: str) -> None:
         if not os.path.isfile(user_labels_path):
             raise SandboxError(error_code=UpdaterErrorCode.INVALID_USER_LABEL_FILE,
                                error_message=f"Invalid user labels: {user_labels_path} is not a file")
-
-
-def _ymir_salient_version_from_label_file(user_label_file: str) -> str:
-    """
-    parse salient version from labels.yaml
-
-    Raises:
-        FileNotFoundError if file not found
-        yaml.YAMLError if yaml parse failed
-    """
-    with open(user_label_file, 'r') as f:
-        user_label_dict = yaml.safe_load(f)
-    return ymir_salient_version(user_label_dict.get('ymir_version', DEFAULT_YMIR_SRC_VERSION))
