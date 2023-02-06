@@ -1,5 +1,3 @@
-import yaml
-
 from mir.tools.code import MirCode
 from mir.tools.errors import MirRuntimeError
 
@@ -23,19 +21,6 @@ def ymir_salient_version(ver: str) -> str:
     if ver in {'2.0.0', '2.0.1', '2.0.2'}:
         return '2.0.0'
     return ver
-
-
-def ymir_salient_version_from_label_file(user_label_file: str) -> str:
-    """
-    parse salient version from labels.yaml
-
-    Raises:
-        FileNotFoundError if file not found
-        yaml.YAMLError if yaml parse failed
-    """
-    with open(user_label_file, 'r') as f:
-        user_label_dict = yaml.safe_load(f)
-    return ymir_salient_version(user_label_dict.get('ymir_version', DEFAULT_YMIR_SRC_VERSION))
 
 
 def check_ymir_version_or_crash(ver: str) -> None:
