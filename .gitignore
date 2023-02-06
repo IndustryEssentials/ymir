@@ -94,4 +94,5 @@ ymir/backend/static
 
 */updater/app/mir/protos/*.pyi
 
+deploy/
 *.deb

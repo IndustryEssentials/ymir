@@ -27,7 +27,7 @@ EOT
 
 chmod +x deb-workplace/DEBIAN/postinst
 
-dpkg-deb -b deb-workplace ymir-linux-amd64.deb
+mkdir deploy
+dpkg-deb -b deb-workplace deploy/ymir-linux-amd64.deb
 
 rm -rf deb-workplace
-
