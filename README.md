@@ -399,7 +399,7 @@ Any code in the YMIR repo should follow the coding standards and will be checked
 
 Also check out [MSFT Encoding Style](https://github.com/Microsoft/Recommenders/wiki/Coding-Guidelines) for more advice.
 
-## 5.2. About training, inference and mining docker images
+## 5.2. About training, inference, mining docker images and model package structure
 
 [Check this document](https://github.com/IndustryEssentials/ymir/blob/dev/dev_docs/ymir-cmd-container.md) for training, inference and mining details.
 

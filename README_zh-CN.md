@@ -387,9 +387,11 @@ YMIR repo中的任何代码都应遵循编码标准，并将在CI测试中进行
 
 也可以查看 [MSFT编码风格](https://github.com/Microsoft/Recommenders/wiki/Coding-Guidelines) 来获取更多的建议。
 
-## 5.2 关于训练，推理与挖掘镜像
+## 5.2 关于训练，推理与挖掘镜像，以及模型包结构
 
-[查看这篇文档](https://github.com/IndustryEssentials/ymir/blob/dev/dev_docs/ymir-cmd-container.md)获取更多细节。
+[查看这篇文档](https://github.com/IndustryEssentials/ymir/blob/dev/dev_docs/ymir-cmd-container.md)获取更多有关训练，推理与挖掘镜像的细节。
+
+[查看这篇文档](https://github.com/IndustryEssentials/ymir/blob/dev/dev_docs/ymir-model-structure.md) 获取更多关于模型包数据结构的细节。
 
 # 6. 设计理念
 
