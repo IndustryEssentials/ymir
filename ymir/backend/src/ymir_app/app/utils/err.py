@@ -12,14 +12,20 @@ logging.basicConfig(
 logger = logging.getLogger()
 
 
-def retry(func: Callable, n_times: int = 3, wait: float = 0) -> Any:
-    for i in range(n_times - 1):
+def retry(func: Callable, n_times: int = 3, wait: float = 0, backoff: bool = False) -> Any:
+    """
+    try function for at most n_times.
+    if backoff is enabled, wait for wait * 1, wait * 2, ... each time
+    """
+    for i in range(1, n_times):
         try:
             return func()
         except Exception:
             if wait > 0:
+                if backoff:
+                    wait = wait * i
                 time.sleep(wait)
-    logger.error(f"Error! retry {n_times} {func} also failed ")
+    logger.error(f"Retry failed after {n_times} {func} attempted")
     return func()
 
 

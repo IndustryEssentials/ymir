@@ -106,6 +106,8 @@ class Settings(BaseSettings):
     # cron job
     CRON_MIN_IDLE_TIME: int = 2 * 60 * 1000  # 2 minutes
     CRON_CHECK_INTERVAL: int = 10000  # 10 seconds
+    CRON_UPDATE_TASK_BATCH_SIZE: int = 10
+    CRON_UPDATE_TASK_RETRY_INTERVAL: int = 5
 
 
 settings = Settings(_env_file=".env")  # type: ignore
