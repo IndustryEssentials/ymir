@@ -401,7 +401,9 @@ Also check out [MSFT Encoding Style](https://github.com/Microsoft/Recommenders/w
 
 ## 5.2. About training, inference and mining docker images
 
-[Check this document](https://github.com/IndustryEssentials/ymir/blob/dev/dev_docs/ymir-cmd-container.md) for details.
+[Check this document](https://github.com/IndustryEssentials/ymir/blob/dev/dev_docs/ymir-cmd-container.md) for training, inference and mining details.
+
+[Check this document](https://github.com/IndustryEssentials/ymir/blob/dev/dev_docs/ymir-model-structure.md) for model package structure details.
 
 # 6. Design concept
 
