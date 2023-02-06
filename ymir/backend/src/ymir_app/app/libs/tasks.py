@@ -39,6 +39,7 @@ from app.utils.cache import CacheClient
 from app.utils.err import retry
 from app.utils.ymir_controller import ControllerClient, gen_task_hash
 from app.utils.ymir_viz import VizClient
+from app.utils.data import split_seq
 from common_utils.labels import UserLabels
 
 
@@ -72,9 +73,11 @@ async def batch_update_task_status(events: List[Tuple[str, Dict]]) -> List[str]:
         payloads.append(schemas.TaskUpdateStatus.from_monitor_event(msg["payload"]).dict())
 
     async with aiohttp.ClientSession() as session:
-        tasks = [post_task_update(session, payload) for payload in payloads]
-        results = await asyncio.gather(*tasks, return_exceptions=True)
-        success_id_selectors = [not isinstance(res, Exception) for res in results]
+        success_id_selectors = []
+        for payload_group in split_seq(payloads):
+            tasks = [post_task_update(session, payload) for payload in payload_group]
+            results = await asyncio.gather(*tasks, return_exceptions=True)
+            success_id_selectors += [not isinstance(res, Exception) for res in results]
         return list(itertools.compress(ids, success_id_selectors))
 
 
