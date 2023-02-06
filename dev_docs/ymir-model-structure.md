@@ -36,4 +36,4 @@ graph LR
 
 注3：附件放置在专门的 attachments 文件夹下（如果有的话）
 
-注4：ymir-info.yaml 文件中，executor_config 是训练时镜像所用的配置文件，task_context 是对训练环境的描述
+注4：ymir-info.yaml 文件中，executor_config 是训练时镜像所用的配置文件，task_context 是对训练环境的描述，后者由 ymir 系统管理，镜像开发者只需要关注 executor_config 即可
