@@ -425,6 +425,6 @@ graph LR
 
 注2：模型文件放在以中间模型名称命名的文件夹下
 
-注3：附件放置在专门的 attachments 文件夹下
+注3：附件放置在专门的 attachments 文件夹下（如果有的话）
 
 注4：ymir-info.yaml 文件中，executor_config 是训练时镜像所用的配置文件，task_context 是对训练环境的描述
