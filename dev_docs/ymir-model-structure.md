@@ -23,7 +23,7 @@ graph LR
     executor_config --- gpu_id
     executor_config --- task_id
     executor_config --- other_config
-    ymir-info.yaml --- task_context
+    ymir-info.yaml --- task_context(task_context: ymir system hosting)
     task_context --- src_revs
     task_context --- dst_rev
     task_context --- executor
