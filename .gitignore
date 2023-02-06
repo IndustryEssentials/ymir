@@ -93,3 +93,5 @@ ymir/backend/static
 .husky/
 
 */updater/app/mir/protos/*.pyi
+
+*.deb
