@@ -74,7 +74,7 @@ async def batch_update_task_status(events: List[Tuple[str, Dict]]) -> List[str]:
 
     async with aiohttp.ClientSession() as session:
         success_id_selectors = []
-        for payload_group in split_seq(payloads):
+        for payload_group in split_seq(payloads, batch_size=settings.CRON_UPDATE_TASK_BATCH_SIZE):
             tasks = [post_task_update(session, payload) for payload in payload_group]
             results = await asyncio.gather(*tasks, return_exceptions=True)
             success_id_selectors += [not isinstance(res, Exception) for res in results]
@@ -190,7 +190,9 @@ class TaskResult:
     def dataset_info(self) -> Optional[Dict]:
         get_dataset_info = partial(self.viz.get_dataset_info, self.task_hash, self.user_labels, check_index_status=True)
         try:
-            dataset_info = retry(get_dataset_info, n_times=2, wait=settings.RETRY_INTERVAL_SECONDS)
+            dataset_info = retry(
+                get_dataset_info, n_times=3, wait=settings.CRON_UPDATE_TASK_RETRY_INTERVAL, backoff=True
+            )
         except DatasetIndexNotReady:
             raise FailedToUpdateTaskStatusTemporally()
         except Exception:
