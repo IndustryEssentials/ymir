@@ -323,7 +323,7 @@ function Datasets({ pid, project = {}, iterations, groups, ...func }) {
       generateRerun(record),
       {
         key: 'hide',
-        label: t('common.action.hide'),
+        label: t('common.action.del'),
         onclick: () => hide(record),
         hidden: () => !canHide(record, project),
         icon: <EyeOffIcon />,
@@ -513,7 +513,7 @@ function Datasets({ pid, project = {}, iterations, groups, ...func }) {
 
   const hide = (version) => {
     if (project.hiddenDatasets.includes(version.id)) {
-      return message.warn(t('dataset.hide.single.invalid'))
+      return message.warn(t('dataset.del.single.invalid'))
     }
     hideRef.current.hide([version])
   }
@@ -561,7 +561,7 @@ function Datasets({ pid, project = {}, iterations, groups, ...func }) {
   const renderMultipleActions = (
     <>
       <Button type="primary" disabled={getDisabledStatus(({ state }) => isRunning(state))} onClick={multipleHide}>
-        <EyeOffIcon /> {t('common.action.multiple.hide')}
+        <EyeOffIcon /> {t('common.action.multiple.del')}
       </Button>
       <Button type="primary" disabled={getDisabledStatus(({ state }) => !isValidDataset(state))} onClick={multipleInfer}>
         <WajueIcon /> {t('common.action.multiple.infer')}
