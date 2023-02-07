@@ -414,7 +414,7 @@ const task = {
   'task.detail.terminated': { en: 'Terminated by user', cn: '用户手动终止' },
   'task.inference.header.tip': {
     en: "Inference result dataset will generate prediction, and inherit original testing set's GT.",
-    cn: '推理结果数据集将生成新的预测标注，并包含原测试集的基准值标注。',
+    cn: '推理结果数据集将生成新的预测标注，并包含原测试集的标注。',
   },
   'task.label.header.tip': {
     en: 'Labelling result dataset will generate GT.',

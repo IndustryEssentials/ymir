@@ -73,7 +73,7 @@ const errors = {
   'error110406': { cn: '不在同一个数据集的版本不能进行比对', en: 'Versions must be in the same datasets', },
   'error111902': { cn: '调用CMD进行数据集比对失败', en: 'Evaluate error from CMD', },
   'error111903': { cn: '完成数据集比对，但找不到相应的结果', en: 'Evaluate done, but can not find result', },
-  'error111905': { cn: '推理结果缺乏真值或预测标注，诊断失败', en: 'Evaluation failed for no GT or prediction', },
+  'error111905': { cn: '推理结果缺乏标注或预测标注，诊断失败', en: 'Evaluation failed for no GT or prediction', },
   'error111906': { cn: '模型推理尚未完成，诊断失败', en: 'Evaluate failed for inference unfinished', },
   'error112103': { cn: '内部请求超时', en: 'Internal request timeout', },
   'error130604': {
