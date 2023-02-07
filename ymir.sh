@@ -31,10 +31,12 @@ check_docker_version() {
     MIN_DOCKER_VER="20.10"
     if ! command -v docker &> /dev/null; then
         echo "please install docker ${MIN_DOCKER_VER} or newer version."
+        echo "see https://www.howtogeek.com/devops/how-to-install-docker-and-docker-compose-on-linux/ for details"
         exit
     fi
     if ! echo "$(docker version --format '{{.Client.Version}}') ${MIN_DOCKER_VER}" | tr " " "\n" | sort -V | head -n 1 | grep -Eq "^${MIN_DOCKER_VER}$"; then
         echo "please upgrade docker to ${MIN_DOCKER_VER} or newer version."
+        echo "see https://www.howtogeek.com/devops/how-to-install-docker-and-docker-compose-on-linux/ for details"
         exit
     fi
 }
@@ -53,6 +55,7 @@ check_server_runtime(){
     if cat ${ENV_FILE} | grep -oE "^${FIELD_SERVER_RUNTIME}=nvidia$"; then
         if ! has_nvidia_driver; then
             echo "please make sure Nvidia driver is installed when server runtime is set to nvidia."
+            echo "find your Nvidia drivers here: https://www.nvidia.com/Download/Find.aspx"
             exit
         fi
     fi
