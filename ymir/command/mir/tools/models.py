@@ -54,7 +54,7 @@ class ModelStorage(BaseModel):
     @root_validator
     def validate_model_storage(cls, values: dict) -> dict:
         check_model_version_or_crash(values['package_version'])
-        if values['object_type'] == mirpb.ObjectType.OT_UNKNOWN:
+        if values.get('object_type', mirpb.ObjectType.OT_UNKNOWN) == mirpb.ObjectType.OT_UNKNOWN:
             logging.warning("Unknown model object type, treat as detection models")
             values['object_type'] = mirpb.ObjectType.OT_DET_BOX
 
