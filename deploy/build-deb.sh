@@ -2,7 +2,9 @@
 
 set -e
 
-YMIR_VERSION="2.1.0"
+# get version
+VERSION_FILE=../ymir/command/mir/version.py
+YMIR_VERSION=`grep -P 'YMIR_VERSION' $VERSION_FILE | awk '{print $3}' | grep -Po '\d+\.\d+\.\d+'`
 
 mkdir deb-workplace/DEBIAN/ -p
 mkdir deb-workplace/usr/ymir -p
