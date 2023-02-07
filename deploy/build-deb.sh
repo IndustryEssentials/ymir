@@ -3,7 +3,7 @@
 set -e
 
 # get version
-YMIR_VERSION=`grep -Po "(?<=^YMIR_VERSION = ')(\d+\.\d+\.\d+)" ../ymir/command/mir/version.py`
+YMIR_VERSION=`grep -Po "(?<=^YMIR_VERSION = '|\")(\d+\.\d+\.\d+)" ../ymir/command/mir/version.py`
 
 mkdir deb-workplace/DEBIAN/ -p
 mkdir deb-workplace/usr/ymir -p
