@@ -99,7 +99,7 @@ const common = {
   'common.desc': { en: 'Description', cn: '描述' },
   'common.reset': { en: 'Reset', cn: '重置' },
   'common.menu.docs': { en: 'Documents', cn: '说明文档' },
-  'annotation.gt': { en: 'GT', cn: '标准值' },
+  'annotation.gt': { en: 'GT', cn: '标注' },
   'annotation.pred': { en: 'Prediction', cn: '预测标注' },
   'date.range.today': { en: 'Today', cn: '今天' },
   'date.range.last3days': { en: 'Last 3 days', cn: '近三天' },

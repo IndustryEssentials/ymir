@@ -227,7 +227,7 @@ const task = {
     en: 'Keep Annotations',
   },
   'task.label.form.keep_anno.none': { cn: '不保留原标注', en: 'No' },
-  'task.label.form.keep_anno.gt': { cn: '保留标准值标注', en: 'Keep GT' },
+  'task.label.form.keep_anno.gt': { cn: '保留标注', en: 'Keep GT' },
   'task.label.form.keep_anno.pred': {
     cn: '保留预测标注',
     en: 'Keep Prediction',
@@ -418,7 +418,7 @@ const task = {
   },
   'task.label.header.tip': {
     en: 'Labelling result dataset will generate GT.',
-    cn: '标注结果数据集会生成新的标准值标注。',
+    cn: '标注结果数据集会生成新的标注。',
   },
   'task.merge.type.label': { en: 'Merge Type', cn: '合并方式' },
   'task.merge.type.new': { en: 'Generate a new dataset', cn: '生成新数据集' },
