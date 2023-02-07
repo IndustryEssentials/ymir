@@ -7,12 +7,10 @@ from mir.tools.errors import MirRuntimeError
 def _get_ymir_version() -> str:
     with open(os.path.join(os.path.dirname(__file__), 'YMIR_VERSION'), 'r') as f:
         ver = f.read().strip()
-    print(f"=== === current version: {ver}")
     return ver
 
 
 # Current ymir system version
-# YMIR_VERSION = '2.1.0'
 YMIR_VERSION = _get_ymir_version()
 YMIR_REPO_VERSION = '2.0.0'
 YMIR_MODEL_VERSION = '2.0.0'
