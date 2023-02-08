@@ -26,7 +26,6 @@ import {
   ShieldIcon,
   VectorIcon,
   EditIcon,
-  EyeOffIcon,
   DeleteIcon,
   FileDownloadIcon,
   TrainIcon,
@@ -367,7 +366,7 @@ function Model({ pid, project = {}, iterations, groups, versions, query, ...func
         label: t('common.action.del'),
         onclick: () => hide(record),
         hidden: () => hideHidden(record),
-        icon: <EyeOffIcon />,
+        icon: <DeleteIcon />,
       },
     ]
     return actions
@@ -505,7 +504,7 @@ function Model({ pid, project = {}, iterations, groups, versions, query, ...func
   const renderMultipleActions = (
     <>
       <Button type="primary" disabled={getDisabledStatus(({ state }) => isRunning(state))} onClick={multipleHide}>
-        <EyeOffIcon /> {t('common.action.multiple.del')}
+        <DeleteIcon /> {t('common.action.multiple.del')}
       </Button>
       <Button type="primary" disabled={getDisabledStatus(({ state }) => !isValidModel(state))} onClick={multipleInfer}>
         <WajueIcon /> {t('common.action.multiple.infer')}

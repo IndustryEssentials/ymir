@@ -31,12 +31,12 @@ import {
   WajueIcon,
   SearchIcon,
   EditIcon,
-  EyeOffIcon,
   CopyIcon,
   StopIcon,
   ArrowDownIcon,
   ArrowRightIcon,
   CompareListIcon,
+  DeleteIcon,
 } from '@/components/common/Icons'
 import { DescPop } from '../common/DescPop'
 import useRerunAction from '@/hooks/useRerunAction'
@@ -326,7 +326,7 @@ function Datasets({ pid, project = {}, iterations, groups, ...func }) {
         label: t('common.action.del'),
         onclick: () => hide(record),
         hidden: () => !canHide(record, project),
-        icon: <EyeOffIcon />,
+        icon: <DeleteIcon />,
       },
     ]
     return menus
@@ -561,7 +561,7 @@ function Datasets({ pid, project = {}, iterations, groups, ...func }) {
   const renderMultipleActions = (
     <>
       <Button type="primary" disabled={getDisabledStatus(({ state }) => isRunning(state))} onClick={multipleHide}>
-        <EyeOffIcon /> {t('common.action.multiple.del')}
+        <DeleteIcon /> {t('common.action.multiple.del')}
       </Button>
       <Button type="primary" disabled={getDisabledStatus(({ state }) => !isValidDataset(state))} onClick={multipleInfer}>
         <WajueIcon /> {t('common.action.multiple.infer')}
