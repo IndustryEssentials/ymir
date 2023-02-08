@@ -1,4 +1,5 @@
-FROM golang:1.18.5 AS build
+# YMIR-Hel stage
+FROM golang:1.18.5 AS hel-build
 
 # --build-arg GO_SOURCE='https://mirrors.aliyun.com/goproxy/,direct'
 ARG GO_SOURCE=https://proxy.golang.org,direct
@@ -15,14 +16,26 @@ WORKDIR /ymir_hel
 RUN go build -mod=readonly -v -o hel_server
 
 
+# pycocotools stage
 FROM python:3.8-slim AS coco-compile
-RUN apt-get update && apt-get install -y git gcc build-essential \
-  && git clone https://github.com/ppwwyyxx/cocoapi \
-  && cd cocoapi \
-  && pip install build \
-  && python -m build -w ./PythonAPI -o /
+
+# --build-arg PIP_SOURCE=https://pypi.mirrors.ustc.edu.cn/simple
+ARG PIP_SOURCE=https://pypi.org/simple
+
+RUN apt-get update && apt-get install -y --no-install-recommends git gcc build-essential
+
+RUN pip install build -i ${PIP_SOURCE}
+
+WORKDIR /app
+
+RUN git clone https://github.com/ppwwyyxx/cocoapi
+
+# checkout 2.0.6 version
+RUN cd cocoapi && git checkout 9e9164f979fe4265c6f387f10e234f8697a15922 \
+    && python -m build -w ./PythonAPI -o /dist/
 
 
+# main stage
 FROM python:3.8-slim
 
 ENV DEBIAN_FRONTEND=noninteractive
@@ -46,12 +59,12 @@ RUN pip install -r command-requirements.txt -i ${PIP_SOURCE}
 COPY ./command /command
 RUN pip install -U /command -i ${PIP_SOURCE}
 
-COPY --from=coco-compile /pycocotools-2.0.6-cp38-cp38-linux_x86_64.whl .
-RUN pip install /pycocotools-2.0.6-cp38-cp38-linux_x86_64.whl -i ${PIP_SOURCE} --no-dependencies
+COPY --from=coco-compile /dist/pycocotools-*.whl /dist/
+RUN pip install /dist/pycocotools-*.whl -i ${PIP_SOURCE} --no-dependencies
 
 COPY ./backend/src /app
 
-COPY --from=build /ymir_hel/hel_server /app/ymir_hel/hel_server
+COPY --from=hel-build /ymir_hel/hel_server /app/ymir_hel/hel_server
 
 WORKDIR /app
 COPY ./backend/deploy/git.config /root/.gitconfig
