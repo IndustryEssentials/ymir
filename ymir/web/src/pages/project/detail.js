@@ -11,7 +11,7 @@ import Detail from '@/components/project/Detail'
 import Name from '@/components/search/Name'
 
 import s from './detail.less'
-import { TrainIcon, NavDatasetIcon, ArrowRightIcon, ImportIcon, SearchIcon } from '@/components/common/Icons'
+import { TrainIcon, NavDatasetIcon, ArrowRightIcon, AddIcon, SearchIcon } from '@/components/common/Icons'
 
 function ProjectDetail(func) {
   const history = useHistory()
@@ -95,7 +95,7 @@ function ProjectDetail(func) {
           </Col>
           <Col>
             <Button type="primary" onClick={add}>
-              <ImportIcon /> {t('dataset.import.label')}
+              <AddIcon /> {t('dataset.import.label')}
             </Button>
           </Col>
           <Col>
