@@ -9,9 +9,10 @@ import Empty from '@/components/empty/default'
 import { getStepLabel } from '@/constants/iteration'
 import Detail from '@/components/project/Detail'
 import Name from '@/components/search/Name'
+import AddButton from '@/components/dataset/AddButton'
 
 import s from './detail.less'
-import { TrainIcon, NavDatasetIcon, ArrowRightIcon, AddIcon, SearchIcon } from '@/components/common/Icons'
+import { TrainIcon, NavDatasetIcon, ArrowRightIcon, SearchIcon } from '@/components/common/Icons'
 
 function ProjectDetail(func) {
   const history = useHistory()
@@ -28,10 +29,6 @@ function ProjectDetail(func) {
       <span className={s.titleLabel}>{t(label)}</span>
     </div>
   )
-
-  function add() {
-    history.push(`/home/project/${id}/dataset/add`)
-  }
 
   function goTraining() {
     history.push(`/home/project/${id}/train`)
@@ -94,9 +91,7 @@ function ProjectDetail(func) {
             <Button type='primary' icon={<SearchIcon />} onClick={() => search()}>{t('common.search.advanced')}</Button>
           </Col>
           <Col>
-            <Button type="primary" onClick={add}>
-              <AddIcon /> {t('dataset.import.label')}
-            </Button>
+            <AddButton id={id} />
           </Col>
           <Col>
             <Button type="primary" onClick={goTraining}>

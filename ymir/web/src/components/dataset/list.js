@@ -21,9 +21,9 @@ import TypeTag from '@/components/task/TypeTag'
 import Actions from '@/components/table/Actions'
 import AssetCount from '@/components/dataset/AssetCount'
 import Detail from '@/components/project/Detail'
+import AddButton from '@/components/dataset/AddButton'
 
 import {
-  ImportIcon,
   ScreenIcon,
   TaggingIcon,
   TrainIcon,
@@ -552,12 +552,6 @@ function Datasets({ pid, project = {}, iterations, groups, ...func }) {
     return testingSetIds?.includes(id)
   }
 
-  const addBtn = (
-    <Button type="primary" onClick={add}>
-      <ImportIcon /> {t('dataset.import.label')}
-    </Button>
-  )
-
   const renderMultipleActions = (
     <>
       <Button type="primary" disabled={getDisabledStatus(({ state }) => isRunning(state))} onClick={multipleHide}>
@@ -626,7 +620,7 @@ function Datasets({ pid, project = {}, iterations, groups, ...func }) {
       <Row className="actions">
         <Col flex={1}>
           <Space>
-            {addBtn}
+            <AddButton id={pid} />
             {renderMultipleActions}
           </Space>
         </Col>
