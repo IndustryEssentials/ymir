@@ -61,7 +61,7 @@ const model = {
   'model.verify.model.param.fold': { cn: '点击收起', en: 'Fold' },
   'model.verify.model.param.unfold': { cn: '点击展开', en: 'Unfold' },
   'model.verify.upload.tip': { cn: '模型验证需要较长时间，请耐心等待', en: 'Verification need more time, be patient...' },
-  'model.diagnose.tab.metrics': { cn: '衡量指标', en: 'Metrics' },
+  'model.diagnose.tab.metrics': { cn: '精度度量', en: 'Metrics' },
   'model.diagnose.tab.training': { cn: '训练过程', en: 'Training Fitting' },
   'model.diagnose.tab.infer_datasets': { cn: '推理结果', en: 'Inference Results' },
   'model.diagnose.form.model': { cn: '诊断模型', en: 'Diagnosing Models' },
