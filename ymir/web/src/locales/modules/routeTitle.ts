@@ -22,7 +22,7 @@ const routeTitle = {
   "asset.title": generateItem('数据详情', 'Asset Detail'),
   "models.title": generateItem('模型列表', 'Model List'),
   "model.title": generateItem('模型详情', 'Model Detail'),
-  "model.diagnose.title": generateItem('模型诊断', 'Model Diagnose'),
+  "model.diagnose.title": generateItem('结果分析', 'Result Analysis'),
   "model.verify.title": generateItem('模型验证', 'Model Verify'),
   "task.fusion.title": generateItem('挖掘数据准备', 'Data Pretreatment'),
   "task.merge.title": generateItem('数据合并', 'Data Merge'),

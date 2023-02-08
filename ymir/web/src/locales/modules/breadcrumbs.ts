@@ -17,7 +17,7 @@ const breadcrumbs = {
   'breadcrumbs.dataset.asset': { cn: '数据详情', en: 'Asset Detail', },
   'breadcrumbs.model.add': { cn: '导入模型', en: 'Model Import', },
   'breadcrumbs.model': { cn: '模型详情', en: 'Model Detail', },
-  'breadcrumbs.model.diagnose': { cn: '模型诊断', en: 'Model Diagnose', },
+  'breadcrumbs.model.diagnose': { cn: '结果分析', en: 'Result Analysis', },
   'breadcrumbs.model.verify': { cn: '模型验证', en: 'Model Verification', },
   'breadcrumbs.history': { cn: '历史树', en: 'History Tree', },
   'breadcrumbs.keyword': { cn: '类别管理', en: 'Classes', },

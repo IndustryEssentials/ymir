@@ -1,6 +1,6 @@
 const model = {
   'model.detail.title': { en: 'Model Detail', cn: '模型详情' },
-  'model.diagnose': { en: 'Model Diagnose', cn: '模型诊断' },
+  'model.diagnose': { en: 'Result Analysis', cn: '结果分析' },
   'model.management': { en: 'Model Management', cn: '模型管理' },
   'model.list': { en: 'Model List', cn: '模型列表' },
   'model.column.name': { en: 'Version', cn: '版本' },
