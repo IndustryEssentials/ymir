@@ -26,7 +26,6 @@ import {
   ShieldIcon,
   VectorIcon,
   EditIcon,
-  EyeOffIcon,
   DeleteIcon,
   FileDownloadIcon,
   TrainIcon,
@@ -364,10 +363,10 @@ function Model({ pid, project = {}, iterations, groups, versions, query, ...func
       generateRerun(record),
       {
         key: 'hide',
-        label: t('common.action.hide'),
+        label: t('common.action.del'),
         onclick: () => hide(record),
         hidden: () => hideHidden(record),
-        icon: <EyeOffIcon />,
+        icon: <DeleteIcon />,
       },
     ]
     return actions
@@ -411,7 +410,7 @@ function Model({ pid, project = {}, iterations, groups, versions, query, ...func
 
   const hide = (version) => {
     if (project.hiddenModels.includes(version.id)) {
-      return message.warn(t('dataset.hide.single.invalid'))
+      return message.warn(t('dataset.del.single.invalid'))
     }
     hideRef.current.hide([version])
   }
@@ -505,7 +504,7 @@ function Model({ pid, project = {}, iterations, groups, versions, query, ...func
   const renderMultipleActions = (
     <>
       <Button type="primary" disabled={getDisabledStatus(({ state }) => isRunning(state))} onClick={multipleHide}>
-        <EyeOffIcon /> {t('common.action.multiple.hide')}
+        <DeleteIcon /> {t('common.action.multiple.del')}
       </Button>
       <Button type="primary" disabled={getDisabledStatus(({ state }) => !isValidModel(state))} onClick={multipleInfer}>
         <WajueIcon /> {t('common.action.multiple.infer')}
@@ -608,7 +607,7 @@ function Model({ pid, project = {}, iterations, groups, versions, query, ...func
       </div>
       <EditNameBox type="model" record={current} max={80} handle={saveNameHandle} />
       <EditDescBox type="model" record={editingModel} handle={saveDescHandle} />
-      <Hide ref={hideRef} type={1} msg="model.action.hide.confirm.content" ok={hideOk} />
+      <Hide ref={hideRef} type={1} msg="model.action.del.confirm.content" ok={hideOk} />
       <Terminate ref={terminateRef} ok={terminateOk} />
     </div>
   )

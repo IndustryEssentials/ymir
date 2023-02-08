@@ -47,7 +47,7 @@ function ModelDetail() {
 
   const hide = (version) => {
     if (model?.project?.hiddenDatasets?.includes(version.id)) {
-      return message.warn(t('dataset.hide.single.invalid'))
+      return message.warn(t('dataset.del.single.invalid'))
     }
     hideRef.current.hide([version])
   }
@@ -71,13 +71,13 @@ function ModelDetail() {
 
   const renderPercentItem = (value, label, color = null) => (
     <Descriptions.Item key={label} label={label}>
-      { value !== null ? <Progress type="circle" percent={value * 100} format={() => percent(value)} strokeColor={color} /> : <Empty /> }
+      {value !== null ? <Progress type="circle" percent={value * 100} format={() => percent(value)} strokeColor={color} /> : <Empty />}
     </Descriptions.Item>
   )
 
   const renderCountItem = (value, label, color = 'rgb(255, 255, 255)') => (
     <Descriptions.Item key={label} label={label}>
-      { value !== null ? <Progress type="circle" percent={100} format={() => renderIntUnit(value)} strokeColor={color} /> : <Empty /> }
+      {value !== null ? <Progress type="circle" percent={100} format={() => renderIntUnit(value)} strokeColor={color} /> : <Empty />}
     </Descriptions.Item>
   )
 
@@ -132,7 +132,7 @@ function ModelDetail() {
               <VersionName result={model} />
             </Item>
             <Item label={t('common.object.type')}>{t(getProjectTypeLabel(model.type, true))}</Item>
-            {model.hidden ? <Item label={t('common.hidden.label')}>{t('common.state.hidden')}</Item> : null}
+            {model.hidden ? <Item label={t('common.hidden.label')}>{t('common.state.deleted')}</Item> : null}
             {keywordsItem(model.keywords)}
             <Item label={t('model.detail.label.stage')} span={2}>
               <div style={{ width: '100%' }}>
@@ -179,7 +179,7 @@ function ModelDetail() {
                   {t('dataset.action.train')}
                 </Button>
                 <Button type="primary" onClick={() => hide(model)}>
-                  {t('common.action.hide')}
+                  {t('common.action.del')}
                 </Button>
                 <Button type="primary" onClick={() => editDesc()}>
                   {t(`common.action.edit.desc`)}
@@ -195,7 +195,7 @@ function ModelDetail() {
         </div>
       </Card>
       <EditDescBox type="model" record={editing} />
-      <Hide ref={hideRef} type={1} msg="model.action.hide.confirm.content" />
+      <Hide ref={hideRef} type={1} msg="model.action.del.confirm.content" />
     </div>
   )
 }

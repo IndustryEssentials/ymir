@@ -5,7 +5,7 @@ const project = {
   'project.add.title': { en: 'Create Project', cn: '创建项目' },
   'project.settings.title': { en: 'Project Settings', cn: '项目设置' },
   'project.iterations.title': { en: 'Project Iterations', cn: '项目迭代' },
-  'project.hidden.title': { en: 'Hidden List', cn: '隐藏列表' },
+  'project.hidden.title': { en: 'Trash', cn: '回收站' },
   'project.action.edit': { en: 'Edit Project', cn: '编辑项目' },
   'project.action.del': { en: 'Delete Project', cn: '删除' },
   'project.new.label': { en: 'Create Project', cn: '创建项目' },

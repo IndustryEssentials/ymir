@@ -8,7 +8,7 @@ import useFetch from '@/hooks/useFetch'
 
 import VersionName from '@/components/result/VersionName'
 
-const Hide = forwardRef(({ type = 0, msg = 'dataset.action.hide.confirm.content', excludeMsg = 'dataset.action.hide.confirm.exclude', ok = () => {} }, ref) => {
+const Hide = forwardRef(({ type = 0, msg = 'dataset.action.del.confirm.content', excludeMsg = 'dataset.action.hide.confirm.exclude', ok = () => {} }, ref) => {
   const [hideResult, remoteHide] = useFetch(`${!type ? 'dataset' : 'model'}/hide`)
 
   const [modal, contextHolder] = Modal.useModal()
@@ -50,7 +50,7 @@ const Hide = forwardRef(({ type = 0, msg = 'dataset.action.hide.confirm.content'
           </div>
         ),
         onOk: () => remoteHide({ pid, ids }),
-        okText: t('common.action.hide'),
+        okText: t('common.action.del'),
       }),
     )
   }

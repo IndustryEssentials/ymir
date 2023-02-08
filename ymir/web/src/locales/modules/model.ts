@@ -17,8 +17,7 @@ const model = {
   'model.empty.btn.label': { en: 'Import Model', cn: '导入模型' },
   'model.import.label': { en: 'Import Model', cn: '导入模型' },
   'model.query.name': { en: 'Model Name', cn: '模型名称' },
-  'model.action.del.confirm.content': { en: 'Are you sure to remove this model version:{name}?', cn: '确认要删除模型版本：{name}？' },
-  'model.action.hide.confirm.content': { en: 'Are you sure to hide model versions: {name}?', cn: '确认要隐藏模型版本：{name}？' },
+  'model.action.del.confirm.content': { en: 'Are you sure to delete this model version:{name}?', cn: '确认要删除模型版本：{name}？' },
   'model.action.delgroup.confirm.content': {
     en: 'Are you sure to remove this model:{name}, all of versions will be deleted.',
     cn: '确认要删除模型：{name}？这个操作将删除此模型下的所有版本',

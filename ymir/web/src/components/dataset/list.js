@@ -21,9 +21,9 @@ import TypeTag from '@/components/task/TypeTag'
 import Actions from '@/components/table/Actions'
 import AssetCount from '@/components/dataset/AssetCount'
 import Detail from '@/components/project/Detail'
+import AddButton from '@/components/dataset/AddButton'
 
 import {
-  ImportIcon,
   ScreenIcon,
   TaggingIcon,
   TrainIcon,
@@ -31,12 +31,12 @@ import {
   WajueIcon,
   SearchIcon,
   EditIcon,
-  EyeOffIcon,
   CopyIcon,
   StopIcon,
   ArrowDownIcon,
   ArrowRightIcon,
   CompareListIcon,
+  DeleteIcon,
 } from '@/components/common/Icons'
 import { DescPop } from '../common/DescPop'
 import useRerunAction from '@/hooks/useRerunAction'
@@ -323,10 +323,10 @@ function Datasets({ pid, project = {}, iterations, groups, ...func }) {
       generateRerun(record),
       {
         key: 'hide',
-        label: t('common.action.hide'),
+        label: t('common.action.del'),
         onclick: () => hide(record),
         hidden: () => !canHide(record, project),
-        icon: <EyeOffIcon />,
+        icon: <DeleteIcon />,
       },
     ]
     return menus
@@ -513,7 +513,7 @@ function Datasets({ pid, project = {}, iterations, groups, ...func }) {
 
   const hide = (version) => {
     if (project.hiddenDatasets.includes(version.id)) {
-      return message.warn(t('dataset.hide.single.invalid'))
+      return message.warn(t('dataset.del.single.invalid'))
     }
     hideRef.current.hide([version])
   }
@@ -552,16 +552,10 @@ function Datasets({ pid, project = {}, iterations, groups, ...func }) {
     return testingSetIds?.includes(id)
   }
 
-  const addBtn = (
-    <Button type="primary" onClick={add}>
-      <ImportIcon /> {t('dataset.import.label')}
-    </Button>
-  )
-
   const renderMultipleActions = (
     <>
       <Button type="primary" disabled={getDisabledStatus(({ state }) => isRunning(state))} onClick={multipleHide}>
-        <EyeOffIcon /> {t('common.action.multiple.hide')}
+        <DeleteIcon /> {t('common.action.multiple.del')}
       </Button>
       <Button type="primary" disabled={getDisabledStatus(({ state }) => !isValidDataset(state))} onClick={multipleInfer}>
         <WajueIcon /> {t('common.action.multiple.infer')}
@@ -626,7 +620,7 @@ function Datasets({ pid, project = {}, iterations, groups, ...func }) {
       <Row className="actions">
         <Col flex={1}>
           <Space>
-            {addBtn}
+            <AddButton id={pid} />
             {renderMultipleActions}
           </Space>
         </Col>

@@ -12,7 +12,7 @@ const dataset = {
   'dataset.column.ignored_keyword': { cn: '忽略类别', en: 'Ignored Classes' },
   'dataset.column.state': { cn: '状态', en: 'Status' },
   'dataset.column.create_time': { cn: '创建时间', en: 'Create Time' },
-  'dataset.column.hidden_time': { cn: '隐藏时间', en: 'Hidden Time' },
+  'dataset.column.delete_time': { cn: '删除时间', en: 'Deleted Time' },
   'dataset.column.model': { cn: '模型名称', en: 'Model Name' },
   'dataset.column.map': { cn: 'mAP(平均IoU)', en: 'mAP(Average of IoU)' },
   'dataset.column.action': { cn: '操作', en: 'Actions' },
@@ -28,12 +28,11 @@ const dataset = {
   'dataset.empty.label': { cn: '去导入一个数据集', en: 'Import A Dataset' },
   'dataset.import.label': { cn: '添加数据集', en: 'Add Dataset' },
   'dataset.query.name': { cn: '名称', en: 'Dataset Name' },
-  'dataset.action.del.confirm.content': { cn: '确认要删除数据集版本：{name}？', en: 'Are you sure to remove this dataset version:{name}?' },
-  'dataset.action.hide.confirm.content': { cn: '确认要隐藏数据集版本：{name}？', en: 'Are you sure to hide dataset versions: {name}?' },
-  'dataset.hide.single.invalid': { cn: '该版本不能隐藏', en: 'This version can not be hide' },
-  'dataset.action.hide.confirm.exclude': {
-    cn: '以下版本因与项目、迭代等关联不能隐藏：{labels}',
-    en: 'The following related to project or iterations can not be hide: {name}.',
+  'dataset.action.del.confirm.content': { cn: '确认要删除数据集版本：{name}？', en: 'Are you sure to remove this dataset version: {name}?' },
+  'dataset.del.single.invalid': { cn: '该版本不能删除', en: 'This version can not be delete' },
+  'dataset.action.del.confirm.exclude': {
+    cn: '以下版本因与项目、迭代等关联不能删除：{labels}',
+    en: 'The following related to project or iterations can not be delete: {name}.',
   },
   'dataset.action.delgroup.confirm.content': {
     en: 'Are you sure to remove this dataset:{name}, all of versions will be deleted.',

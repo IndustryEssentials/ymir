@@ -88,7 +88,7 @@ const useListActions: ListActionsType = ({ stop, editDesc }) => {
       },
       // {
       //   key: 'hide',
-      //   label: t('common.action.hide'),
+      //   label: t('common.action.del'),
       //   onclick: () => hide(record),
       //   hidden: () => hideHidden(record),
       //   icon: <EyeOffIcon />,
