@@ -1,44 +1,55 @@
 const SysName = "YMIR"
-const generateItem = (cn: string, en: string) => {
+type ItemType = {cn: string, en: string}
+const generateItem = ({ cn, en }: ItemType) => {
   const prefix = (title: string) => `${SysName} - ${title}`
   return {
     cn: prefix(cn),
     en: prefix(en),
   }
 }
-const routeTitle = {
-  "portal.title": generateItem('首页', 'Home'),
-  "login.title": generateItem('登录', 'Login'),
-  "signup.title": generateItem('注册', 'Sign Up'),
-  "modify_pwd.title": generateItem('修改密码', 'Modify Password'),
-  "forget.title": generateItem('忘记密码', 'Forget Password'),
-  "reset_pwd.title": generateItem('重置密码', 'Reset Password'),
-  "datasets.title": generateItem('数据集列表', 'Dataset List'),
-  "dataset.title": generateItem('数据集详情', 'Dataset Detail'),
-  "dataset.add.title": generateItem('添加数据集', 'Add Dataset'),
-  "dataset.analysis.title": generateItem('数据集分析', 'Dataset Analysis'),
-  "dataset.copy.title": generateItem('数据集复制', 'Dataset Copy'),
-  "assets.title": generateItem('数据列表', 'Asset List'),
-  "asset.title": generateItem('数据详情', 'Asset Detail'),
-  "models.title": generateItem('模型列表', 'Model List'),
-  "model.title": generateItem('模型详情', 'Model Detail'),
-  "model.diagnose.title": generateItem('结果分析', 'Result Analysis'),
-  "model.verify.title": generateItem('模型验证', 'Model Verify'),
-  "task.fusion.title": generateItem('挖掘数据准备', 'Data Pretreatment'),
-  "task.merge.title": generateItem('数据合并', 'Data Merge'),
-  "task.filter.title": generateItem('数据筛选', 'Data Filter'),
-  "task.train.title": generateItem('模型训练', 'Model Training'),
-  "task.mining.title": generateItem('数据挖掘', 'Dataset Mining'),
-  "task.inference.title": generateItem('数据推理', 'Dataset Inference'),
-  "task.label.title": generateItem('数据标注', 'Dataset Labeling'),
-  "history.title": generateItem('历史树', 'History Tree'),
-  "keywords.title": generateItem('类别管理', 'Classes'),
-  "projects.title": generateItem('项目管理', 'Project'),
-  "project.title": generateItem('项目详情', 'Project Detail'),
-  "project.add.title": generateItem('项目设置', 'Project Settings'),
-  "project.iteration.add.title": generateItem('迭代设置', 'Iteration Settings'),
-  "project.iteration.title": generateItem('迭代详情', 'Project Iteration'),
-  "user.title": generateItem('个人中心', 'User'),
+const withPrefix = (titles: {[key: string]: ItemType}) => {
+  const items = Object.keys(titles)
+  return items.reduce((prev, curr) => {
+    const item = titles[curr]
+    return {
+      ...prev,
+      [curr]: generateItem(item)
+    }
+  }, {})
 }
+const routeTitle = withPrefix({
+  "portal.title": { cn: '首页', en: 'Home' },
+  "login.title": { cn: '登录', en: 'Login' },
+  "signup.title": { cn: '注册', en: 'Sign Up' },
+  "modify_pwd.title": { cn: '修改密码', en: 'Modify Password' },
+  "forget.title": { cn: '忘记密码', en: 'Forget Password' },
+  "reset_pwd.title": { cn: '重置密码', en: 'Reset Password' },
+  "datasets.title": { cn: '数据集列表', en: 'Dataset List' },
+  "dataset.title": { cn: '数据集详情', en: 'Dataset Detail' },
+  "dataset.add.title": { cn: '添加数据集', en: 'Add Dataset' },
+  "dataset.analysis.title": { cn: '数据集分析', en: 'Dataset Analysis' },
+  "dataset.copy.title": { cn: '数据集复制', en: 'Dataset Copy' },
+  "assets.title": { cn: '数据列表', en: 'Asset List' },
+  "asset.title": { cn: '数据详情', en: 'Asset Detail' },
+  "models.title": { cn: '模型列表', en: 'Model List' },
+  "model.title": { cn: '模型详情', en: 'Model Detail' },
+  "model.diagnose.title": { cn: '结果分析', en: 'Result Analysis' },
+  "model.verify.title": { cn: '模型验证', en: 'Model Verify' },
+  "task.fusion.title": { cn: '挖掘数据准备', en: 'Data Pretreatment' },
+  "task.merge.title": { cn: '数据合并', en: 'Data Merge' },
+  "task.filter.title": { cn: '数据筛选', en: 'Data Filter' },
+  "task.train.title": { cn: '模型训练', en: 'Model Training' },
+  "task.mining.title": { cn: '数据挖掘', en: 'Dataset Mining' },
+  "task.inference.title": { cn: '数据推理', en: 'Dataset Inference' },
+  "task.label.title": { cn: '数据标注', en: 'Dataset Labeling' },
+  "history.title": { cn: '历史树', en: 'History Tree' },
+  "keywords.title": { cn: '类别管理', en: 'Classes' },
+  "projects.title": { cn: '项目管理', en: 'Project' },
+  "project.title": { cn: '项目详情', en: 'Project Detail' },
+  "project.add.title": { cn: '项目设置', en: 'Project Settings' },
+  "project.iteration.add.title": { cn: '迭代设置', en: 'Iteration Settings' },
+  "project.iteration.title": { cn: '迭代详情', en: 'Project Iteration' },
+  "user.title": { cn: '个人中心', en: 'User' },
+})
 
 export default routeTitle
