@@ -67,6 +67,7 @@ def import_metadatas(mir_metadatas: mirpb.MirMetadatas,
     timestamp.duration = 0  # image has no duraton
 
     unknown_format_count = 0
+    zero_size_count = 0
 
     sha1s_count = len(file_name_to_asset_ids)
     for idx, (file_name, asset_id) in enumerate(file_name_to_asset_ids.items()):
@@ -78,16 +79,19 @@ def import_metadatas(mir_metadatas: mirpb.MirMetadatas,
         hashed_asset_path = mir_storage.locate_asset_path(location=hashed_asset_root, hash=asset_id)
         _fill_type_shape_size_for_asset(hashed_asset_path, metadata_attributes)
         if metadata_attributes.asset_type == mirpb.AssetTypeUnknown:
-            logging.warning(f"ignore asset with unknown format, id: {asset_id}")
             unknown_format_count += 1
             continue
+        if metadata_attributes.width <= 0 or metadata_attributes.height <= 0:
+            zero_size_count += 1
+            continue
+
         metadata_attributes.origin_filename = file_name
         mir_metadatas.attributes[asset_id].CopyFrom(metadata_attributes)
 
         if idx > 0 and idx % 5000 == 0:
             PhaseLoggerCenter.update_phase(phase=phase, local_percent=(idx / sha1s_count))
 
-    if unknown_format_count > 0:
-        logging.warning(f"unknown format asset count: {unknown_format_count}")
+    logging.info(f"count of unknown format assets: {unknown_format_count}")
+    logging.info(f"count of zero size assets: {zero_size_count}")
 
     return MirCode.RC_OK

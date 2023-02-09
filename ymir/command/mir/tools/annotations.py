@@ -200,6 +200,7 @@ def _import_annotations_voc_xml(file_name_to_asset_ids: Dict[str, str], mir_anno
                                 annotations_dir_path: str, class_type_manager: class_ids.UserLabels,
                                 unknown_types_strategy: UnknownTypesStrategy, accu_new_class_names: Dict[str, int],
                                 image_annotations: mirpb.SingleTaskAnnotations) -> None:
+    zero_size_count = 0
     add_if_not_found = (unknown_types_strategy == UnknownTypesStrategy.ADD)
     for filename, asset_hash in file_name_to_asset_ids.items():
         # for each asset, import it's annotations
@@ -244,9 +245,15 @@ def _import_annotations_voc_xml(file_name_to_asset_ids: Dict[str, str], mir_anno
                 annotation = _voc_object_dict_to_annotation(object_dict=object_dict,
                                                             cid=cid,
                                                             class_type_manager=class_type_manager)
+                if annotation.box.w <= 0 or annotation.box.h <= 0:
+                    zero_size_count += 1
+                    continue
+
                 annotation.index = anno_idx
                 image_annotations.image_annotations[asset_hash].boxes.append(annotation)
                 anno_idx += 1
+
+    logging.info(f"zero size boxes count: {zero_size_count}")
 
 
 def import_annotations_coco_json(file_name_to_asset_ids: Dict[str, str], mir_annotation: mirpb.MirAnnotations,
