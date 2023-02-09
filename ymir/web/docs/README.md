@@ -63,7 +63,7 @@ YMIR系统的使用流程一般分为两类，一类是系统的元操作，包�
     
 -   如果需要同步导入标注文件，则标注的文件格式需要为Pascal VOC；
     
--   压缩包文件内图片文件需放入images文件夹内，标注文件需放入gt文件夹内，预测标注文件需放入pred文件夹内，且pred文件夹内应包含产生该预测结果的模型信息。gt和pred均为可选，如不上传，则需要该文件夹为空，压缩包内文件结构如下。点击下载示例文件：[Sample.zip](https://github.com/IndustryEssentials/ymir-images/blob/main/doc_v2/sample_dataset.zip?raw=true)
+-   压缩包文件内图片文件需放入images文件夹内，标注文件需放入gt文件夹内，推理结果文件需放入pred文件夹内，且pred文件夹内应包含产生该预测结果的模型信息。gt和pred均为可选，如不上传，则需要该文件夹为空，压缩包内文件结构如下。点击下载示例文件：[Sample.zip](https://github.com/IndustryEssentials/ymir-images/blob/main/doc_v2/sample_dataset.zip?raw=true)
 
 ![sample_zip](https://user-images.githubusercontent.com/90443348/197102085-70a17f1f-bcc9-4557-b9b9-9da1ab295f07.png)
 
@@ -219,9 +219,9 @@ TP：True Positive，即在目标预测类别下，和标注匹配的模型预�
 
 MTP：Matched True Positive，即在目标预测类别下，和预测结果匹配的标注。
 
-### 模型诊断
+### 结果分析
 
-在【项目管理】的左侧导航栏中找到【模型诊断】模块，在线评估模型的效果。具体操作为：①选中你要评估的模型，②选择测试集（选中的测试集需要在模型上已完成推理，具体步骤参考[模型推理](README.md#模型推理)），③调整评估参数，点击诊断。
+在【项目管理】的左侧导航栏中找到【结果分析】模块，在线评估模型的效果。具体操作为：①选中你要评估的模型，②选择测试集（选中的测试集需要在模型上已完成推理，具体步骤参考[模型推理](README.md#模型推理)），③调整评估参数，点击诊断。
 
 - 可以通过切换指标来查看不同参数下的模型诊断结果，诊断结果包括mAP、PR曲线、精确率、召回率。显示结果示例如下：
 
