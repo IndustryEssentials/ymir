@@ -4,9 +4,11 @@ import { useLocation } from 'umi'
 
 import t from '@/utils/t'
 import useFetch from '@/hooks/useFetch'
+import { ObjectType } from '@/constants/objectType'
+
 import Panel from '@/components/form/panel'
 import InferResultSelect from '@/components/form/inferResultSelect'
-import MapView from './components/mapView'
+import SingleMetircView from './components/SingleMetircView'
 import CurveView from './components/curveView'
 import PView from './components/prView'
 import View from './components/view'
@@ -17,11 +19,25 @@ import s from './index.less'
 import { CompareIcon } from '@/components/common/Icons'
 
 const metricsTabs = [
-  { value: 'map', component: MapView, ck: true },
+  { value: 'map', component: SingleMetircView, ck: true },
+  { value: 'miou', component: SingleMetircView },
+  { value: 'macc', component: SingleMetircView },
+  { value: 'maskap', component: SingleMetircView },
+  { value: 'boxap', component: SingleMetircView },
   { value: 'curve', component: CurveView },
   { value: 'rp', component: PView },
   { value: 'pr', component: PView },
 ]
+
+const getTabs = (type = ObjectType.ObjectDetection) => {
+  const types = {
+    [ObjectType.ObjectDetection]: ['map', 'curve', 'rp', 'pr'],
+    [ObjectType.SemanticSegmentation]: ['miou', 'macc'],
+    [ObjectType.InstanceSegmentation]: ['maskap', 'boxap'],
+  }
+  console.log('types[type:', types, type)
+  return metricsTabs.filter(({ value }) => types[type].includes(value))
+}
 
 const xAxisOptions = [
   { key: 'dataset', value: 0 },
@@ -34,6 +50,7 @@ const kwTypes = [
 ]
 
 function Matrics({ pid, project }) {
+  const [tabs, setTabs] = useState([])
   const { state } = useLocation()
   const [form] = Form.useForm()
   const [inferTasks, setInferTasks] = useState([])
@@ -42,7 +59,7 @@ function Matrics({ pid, project }) {
   const [iou, setIou] = useState(0.5)
   const [averageIou, setaverageIou] = useState(false)
   const [confidence, setConfidence] = useState(0.3)
-  const [selectedMetric, setSelectedMetric] = useState(metricsTabs[0].value)
+  const [selectedMetric, setSelectedMetric] = useState('map')
   const [prRate, setPrRate] = useState([0.8, 0.95])
   const [keywords, setKeywords] = useState([])
   const [selectedKeywords, setSelectedKeywords] = useState([])
@@ -60,6 +77,14 @@ function Matrics({ pid, project }) {
   const [ckDatasets, getCKDatasets] = useFetch('dataset/getCK', [])
   const [cks, setCKs] = useState([])
   const selectedCK = Form.useWatch('ck', form)
+
+  useEffect(() => {
+    if (project?.type) {
+      const tabs = getTabs(project.type)
+      setTabs(tabs)
+      setSelectedMetric(tabs[0].value)
+    }
+  }, [project?.type])
 
   useEffect(() => remoteData && setDiagnosis(remoteData), [remoteData])
 
@@ -83,8 +108,9 @@ function Matrics({ pid, project }) {
   useEffect(() => {
     // calculate ck
     const cks = diagnosis
-      ? Object.values(diagnosis).filter(tru => tru)
-          .map(item => Object.keys(item?.sub_cks) || [])
+      ? Object.values(diagnosis)
+          .filter((tru) => tru)
+          .map((item) => Object.keys(item?.sub_cks) || [])
           .flat()
       : []
 
@@ -158,7 +184,7 @@ function Matrics({ pid, project }) {
 
   function metricsChange({ target: { value } }) {
     setSelectedMetric(value)
-    const tab = metricsTabs.find((t) => t.value === value)
+    const tab = tabs.find((t) => t.value === value)
     if (!tab.ck) {
       setKwType(0)
     }
@@ -183,10 +209,14 @@ function Matrics({ pid, project }) {
   }
 
   function renderView() {
-    const panel = metricsTabs.find(({ value }) => selectedMetric === value)
+    const panel = tabs.find(({ value }) => selectedMetric === value)
+    if (!panel) {
+      return
+    }
     const Viewer = View(panel.component)
     return (
       <Viewer
+        id={panel.value}
         tasks={inferTasks}
         models={selectedModels}
         datasets={selectedDatasets}
@@ -205,11 +235,11 @@ function Matrics({ pid, project }) {
       <Space size={20} style={{ marginBottom: 10 }}>
         <span>{t('model.diagnose.metrics.view.label')}</span>
         <Radio.Group
-          defaultValue={metricsTabs[0].value}
-          options={metricsTabs.map((item, index) => ({ ...item, label: t(`model.diagnose.medtric.tabs.${item.value}`), disabled: averageIou && index > 0 }))}
+          value={selectedMetric}
+          options={tabs.map((item, index) => ({ ...item, label: t(`model.diagnose.medtric.tabs.${item.value}`), disabled: averageIou && index > 0 }))}
           onChange={metricsChange}
         />
-        <div hidden={![metricsTabs[2].value, metricsTabs[3].value].includes(selectedMetric)}>
+        <div hidden={!['rp', 'pr'].includes(selectedMetric)}>
           <Slider className={s.prRate} style={{ width: 200 }} min={0} max={1} value={prRate} range={true} onChange={prRateChange} step={0.05} />
         </div>
       </Space>
@@ -219,8 +249,8 @@ function Matrics({ pid, project }) {
             value={kwType}
             options={kwTypes
               .filter((type) => {
-                const tab = metricsTabs.find(({ value }) => selectedMetric === value)
-                return tab.ck || !type.value
+                const tab = tabs.find(({ value }) => selectedMetric === value)
+                return tab?.ck || !type.value
               })
               .map(({ label, value }) => ({ value, label: t(label) }))}
             onChange={setKwType}

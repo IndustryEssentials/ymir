@@ -34,7 +34,7 @@ function Diagnose() {
   const [active, setActive] = useState(TabsKey[0])
   const [project, fetchProject] = useFetch('project/getProject')
 
-  useEffect(() => id && fetchProject({ id, force: true }), [id])
+  useEffect(() => id && fetchProject({ id }), [id])
 
   useEffect(() => {
     const tabKey = location.hash.replace(/^#/, '')
