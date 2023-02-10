@@ -599,10 +599,11 @@ class CocoDetEval:
         dts = list(self.aggregate_imagewise_annotations(self._dts))
         gts = list(self.aggregate_imagewise_annotations(self._gts))
         all_acc, acc, iou, macc, miou = self._mean_iou(dts, gts, len(class_ids), 255, -1)
+        order_to_class_id = dict(zip(range(len(class_ids)), class_ids))
         metrics = mirpb.SegmentationMetrics()
         metrics.aAcc = all_acc
-        metrics.Acc = acc
-        metrics.IoU = iou
+        metrics.Acc.update({order_to_class_id[idx]: value for idx, value in enumerate(acc)})
+        metrics.IoU.update({order_to_class_id[idx]: value for idx, value in enumerate(iou)})
         metrics.mAcc = macc
         metrics.mIoU = miou
         return metrics
