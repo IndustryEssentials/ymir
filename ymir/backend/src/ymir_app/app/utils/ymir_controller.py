@@ -610,7 +610,7 @@ class ControllerClient:
 def convert_class_id_to_keyword(obj: Dict, user_labels: UserLabels) -> None:
     if isinstance(obj, dict):
         for key, value in obj.items():
-            if key == "ci_evaluations":
+            if key in ["ci_evaluations", "Acc", "IoU"]:
                 obj[key] = {user_labels.main_name_for_id(k): v for k, v in value.items()}
             else:
                 convert_class_id_to_keyword(obj[key], user_labels)
