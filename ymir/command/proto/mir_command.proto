@@ -337,6 +337,8 @@ message SegmentationMetrics {
     float aAcc = 1;  // overall accuracy
     float mAcc = 2;  // mean accuracy
     float mIoU = 3;  // mean iou
+    map<int32, float> Acc = 4; // classwise accuracy
+    map<int32, float> IoU = 5; // classwise iou
 }
 
 message SingleIouEvaluation {
