@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"runtime/debug"
 	"sort"
 	"strings"
 	"time"
@@ -106,7 +107,7 @@ func (s *MongoServer) IndexDatasetData(
 			if err != nil {
 				panic(err)
 			}
-			log.Printf("IndexDatasetData %s panic %v", mirRepo.TaskID, r)
+			log.Printf("IndexDatasetData %s panic %v\n%s\n", mirRepo.TaskID, r, debug.Stack())
 		}
 	}()
 
@@ -155,6 +156,10 @@ func (s *MongoServer) buildMirAssetDetail(
 	mirAssetDetail.DocID = assetID
 	mirAssetDetail.AssetID = assetID
 	constants.BuildStructFromMessage(mirMetadatas.Attributes[assetID], &mirAssetDetail.MetaData)
+	if mirAssetDetail.MetaData.Width <= 0 || mirAssetDetail.MetaData.Height <= 0 {
+		panic(fmt.Sprintf("Invalid image %s with size of zero", assetID))
+	}
+
 	if cks, ok := mirCks[assetID]; ok {
 		if len(cks.Cks) > 0 {
 			mirAssetDetail.Cks = cks.Cks
@@ -170,6 +175,8 @@ func (s *MongoServer) buildMirAssetDetail(
 			mirAssetDetail.Gt = append(mirAssetDetail.Gt, &annotationOut)
 			mapClassIDs[annotation.ClassId] = true
 		}
+
+		mirAssetDetail.GtClassIDs = gtAnnotation.ImgClassIds
 	}
 	if predAnnotation, ok := predAnnotations[assetID]; ok {
 		for _, annotation := range predAnnotation.Boxes {
@@ -178,6 +185,8 @@ func (s *MongoServer) buildMirAssetDetail(
 			mirAssetDetail.Pred = append(mirAssetDetail.Pred, &annotationOut)
 			mapClassIDs[annotation.ClassId] = true
 		}
+
+		mirAssetDetail.PredClassIDs = predAnnotation.ImgClassIds
 	}
 
 	mirAssetDetail.JoinedClassIDs = make([]int32, 0, len(mapClassIDs))

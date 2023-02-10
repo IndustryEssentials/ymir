@@ -65,6 +65,11 @@ var ConstGtMirHist map[string]MirHist = map[string]MirHist{
 		LowerBNDs:  []float64{0, 1, 2, 3, 4, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50},
 		SkipUnwind: true,
 	},
+	"class_counts": {
+		Ops:        bson.M{"$size": "$gt_class_ids"},
+		LowerBNDs:  []float64{0, 1, 2, 3, 4, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 100},
+		SkipUnwind: true,
+	},
 }
 
 var ConstPredMirHist map[string]MirHist = map[string]MirHist{
@@ -84,6 +89,11 @@ var ConstPredMirHist map[string]MirHist = map[string]MirHist{
 	"obj_counts": {
 		Ops:        bson.M{"$size": "$pred"},
 		LowerBNDs:  []float64{0, 1, 2, 3, 4, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50},
+		SkipUnwind: true,
+	},
+	"class_counts": {
+		Ops:        bson.M{"$size": "$pred_class_ids"},
+		LowerBNDs:  []float64{0, 1, 2, 3, 4, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 100},
 		SkipUnwind: true,
 	},
 }
