@@ -49,7 +49,7 @@ function Diagnose() {
     <div className={s.projectDetail}>
       <Breadcrumbs />
       <Card
-        tabList={tabs.filter((tab) => tab.key !== TabsKey[1] || isDetection(project?.type)).map((tab) => ({ ...tab, tab: t(tab.tab) }))}
+        tabList={tabs.map((tab) => ({ ...tab, tab: t(tab.tab) }))}
         activeTabKey={active}
         onTabChange={tabChange}
         className="noShadow"
