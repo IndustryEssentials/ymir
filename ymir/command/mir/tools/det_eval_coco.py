@@ -547,7 +547,15 @@ class CocoDetEval:
 
     @staticmethod
     def decode_mir_mask(annotation: Dict, height: float, width: float) -> np.ndarray:
-        coco_segmentation = {"counts": annotation["mask"], "size": [height, width]}
+        coco_segmentation: dict
+        if annotation.get('mask'):
+            coco_segmentation = {"counts": annotation["mask"], "size": [height, width]}
+        elif annotation.get('polygon'):
+            coco_segmentation = pycocotools.mask.frPyObjects(
+                [[i for point in annotation["polygon"] for i in (point.x, point.y)]], height, width)[0]
+        else:
+            raise ValueError("Unsupported coco segmentation format")
+
         return pycocotools.mask.decode(coco_segmentation)
 
     def aggregate_imagewise_annotations(self, annotations: defaultdict) -> Iterator[np.ndarray]:
@@ -567,7 +575,8 @@ class CocoDetEval:
             img = np.ones(shape=(height, width), dtype=np.uint8) * 255
             for class_id in class_ids:
                 for annotation in annotations[(asset_id, class_id)]:
-                    img[self.decode_mir_mask(annotation, height, width) == 1] = class_id_to_order[class_id]
+                    single_class_id_mask = self.decode_mir_mask(annotation, height, width)
+                    img[single_class_id_mask == 1] = class_id_to_order[class_id]
             yield img
 
     def _mean_iou(
