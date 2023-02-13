@@ -1,12 +1,13 @@
-import { FC, useEffect, useState } from 'react'
+import { FC, ReactNode, useEffect, useState } from 'react'
 import { Col, Row, Table, TableColumnsType } from 'antd'
 import { percent } from '@/utils/number'
 import { isSame } from '@/utils/object'
 import Panel from '@/components/form/panel'
-import { average, getAverageField, getCK, getKwField, getModelCell, opt, percentRender } from './common'
+import { average, getAverageField, getCK, getKwField, getModelCell, MetricType, opt, percentRender } from './common'
+import type { Task } from './common'
 
 type Props = {
-  tasks: YModels.Task[]
+  tasks: Task[]
   datasets: YModels.Dataset[]
   models: YModels.Model[]
   data: any
@@ -16,39 +17,51 @@ type Props = {
 }
 
 type KeywordType = {
-  value: string
+  value: string | number
   label: string
 }
 type ListItemType = {
-  id: number
+  id: number | string
   config?: { [key: string]: string | number }
-  _model: string
+  _model: ReactNode
   _average?: number
 }
 
 type ListType = {
-  id: number
+  id: number | string
   label: string
   rows: ListItemType[]
+}
+
+type DatasetDataType = {
+  [id: number | string]: {
+    [keyword: string]: MetricType
+  }
+}
+
+type ClassesDataType = {
+  [keyword: string]: {
+    [id: number | string]: MetricType
+  }
 }
 
 const MapView: FC<Props> = ({ tasks, datasets, models, data, xType, kw: { kwType, keywords }, averageIou }) => {
   const [list, setList] = useState<ListType[]>([])
   const [dd, setDD] = useState<KeywordType[]>([])
   const [kd, setKD] = useState<KeywordType[]>([])
-  const [xasix, setXAsix] = useState([])
-  const [dData, setDData] = useState(null)
-  const [kData, setKData] = useState(null)
-  const [columns, setColumns] = useState<TableColumnsType>([])
-  const [hiddens, setHiddens] = useState({})
+  const [xasix, setXAsix] = useState<KeywordType[]>([])
+  const [dData, setDData] = useState<DatasetDataType>()
+  const [kData, setKData] = useState<ClassesDataType>()
+  const [columns, setColumns] = useState<TableColumnsType<ListItemType>>([])
+  const [hiddens, setHiddens] = useState<{ [id: string | number]: boolean }>({})
 
   useEffect(() => {
     if (data && keywords) {
       generateDData(data)
       generateKData(data)
     } else {
-      setDData(null)
-      setKData(null)
+      setDData(undefined)
+      setKData(undefined)
     }
   }, [kwType, data, keywords, averageIou])
 
@@ -78,9 +91,9 @@ const MapView: FC<Props> = ({ tasks, datasets, models, data, xType, kw: { kwType
     }
   }, [xType, dd, kd, dData, kData])
 
-  function generateDData(data) {
-    const ddata = Object.keys(data).reduce((prev, rid) => {
-      const fiou = !kwType && averageIou ? getAverageField(data[rid]) : getKwField(data[rid], kwType)
+  function generateDData(data: any) {
+    const ddata: DatasetDataType = Object.keys(data).reduce((prev, rid) => {
+      const fiou = !kwType && averageIou ? getAverageField(data[rid]) : getKwField(data[rid], !!kwType)
       return {
         ...prev,
         [rid]: fiou,
@@ -89,10 +102,10 @@ const MapView: FC<Props> = ({ tasks, datasets, models, data, xType, kw: { kwType
     setDData(ddata)
   }
 
-  function generateKData(data) {
-    const kdata = {}
+  function generateKData(data: any) {
+    const kdata: ClassesDataType = {}
     Object.keys(data).forEach((id) => {
-      const fiou = !kwType && averageIou ? getAverageField(data[id]) : getKwField(data[id], kwType)
+      const fiou = !kwType && averageIou ? getAverageField(data[id]) : getKwField(data[id], !!kwType)
       Object.keys(fiou).forEach((key) => {
         kdata[key] = kdata[key] || {}
         kdata[key][id] = fiou[key]
@@ -101,7 +114,7 @@ const MapView: FC<Props> = ({ tasks, datasets, models, data, xType, kw: { kwType
     setKData(kdata)
   }
 
-  function generateList(isDs) {
+  function generateList(isDs: boolean) {
     const titles = isDs ? dd : kd
     const list = titles.map(({ value, label }) => ({
       id: value,
@@ -111,10 +124,10 @@ const MapView: FC<Props> = ({ tasks, datasets, models, data, xType, kw: { kwType
     setList(list)
   }
 
-  function generateDsRows(tid) {
+  function generateDsRows(tid: number | string) {
     const tts = tasks.filter(({ testing }) => testing === tid)
     return tts.map(({ result: rid }) => {
-      const ddata = dData[rid] || {}
+      const ddata = dData && dData[rid] ? dData[rid] : {}
       const kwAps = kd.reduce((prev, { value: kw }) => {
         return {
           ...prev,
@@ -132,10 +145,10 @@ const MapView: FC<Props> = ({ tasks, datasets, models, data, xType, kw: { kwType
     })
   }
 
-  const generateKwRows = (kw) => {
-    const kdata = kData[kw]
+  const generateKwRows = (kw: string | number) => {
+    const kdata = kData && kData[kw] ? kData[kw] : {}
 
-    const mids = Object.values(
+    const mids: { id: number; mid: number; sid: number; config: { [key: string]: any } }[] = Object.values(
       tasks.reduce((prev, { model, stage, config }) => {
         const id = `${model}${stage}${JSON.stringify(config)}`
         return {
@@ -194,20 +207,24 @@ const MapView: FC<Props> = ({ tasks, datasets, models, data, xType, kw: { kwType
     ]
   }
 
-  return list.map(({ id, label, rows }) => (
-    <div key={id}>
-      <Panel label={label} visible={!hiddens[id]} setVisible={(value) => setHiddens((old) => ({ ...old, [id]: !value }))} bg={false}>
-        <Table
-          dataSource={rows}
-          rowKey={(record) => record.id}
-          rowClassName={(record, index) => (index % 2 === 0 ? '' : 'oddRow')}
-          columns={columns}
-          pagination={false}
-          scroll={{ x: '100%' }}
-        />
-      </Panel>
-    </div>
-  ))
+  return (
+    <>
+      {list.map(({ id, label, rows }) => (
+        <div key={id}>
+          <Panel label={label} visible={!hiddens[id]} setVisible={(value) => setHiddens((old) => ({ ...old, [id]: !value }))} bg={false}>
+            <Table
+              dataSource={rows}
+              rowKey={(record) => record.id}
+              rowClassName={(record, index) => (index % 2 === 0 ? '' : 'oddRow')}
+              columns={columns}
+              pagination={false}
+              scroll={{ x: '100%' }}
+            />
+          </Panel>
+        </div>
+      ))}
+    </>
+  )
 }
 
 export default MapView

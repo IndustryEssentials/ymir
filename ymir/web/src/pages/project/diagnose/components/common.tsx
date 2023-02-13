@@ -11,7 +11,7 @@ export type Task = {
   result: number
 }
 export type MetricType = {
-  map: number
+  ap?: number
   pr_curve?: [x: number, y: number, z: number][]
 }
 
@@ -34,7 +34,7 @@ export type DataType = {
   }
 }
 
-export function getModelCell(rid: number, tasks: Task[], models: YModels.Model[], text: string) {
+export function getModelCell(rid: number, tasks: Task[], models: YModels.Model[], text?: string) {
   const task = tasks.find(({ result }) => result === rid)
   const model = models.find((model) => model.id === task?.model)
   const stage = model?.stages?.find((sg) => sg.id === task?.stage)
