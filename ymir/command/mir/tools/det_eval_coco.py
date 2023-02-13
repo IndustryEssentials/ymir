@@ -575,8 +575,7 @@ class CocoDetEval:
             img = np.ones(shape=(height, width), dtype=np.uint8) * 255
             for class_id in class_ids:
                 for annotation in annotations[(asset_id, class_id)]:
-                    single_class_id_mask = self.decode_mir_mask(annotation, height, width)
-                    img[single_class_id_mask == 1] = class_id_to_order[class_id]
+                    img[self.decode_mir_mask(annotation, height, width) == 1] = class_id_to_order[class_id]
             yield img
 
     def _mean_iou(
