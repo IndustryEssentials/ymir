@@ -19,9 +19,9 @@ import s from './index.less'
 import { CompareIcon } from '@/components/common/Icons'
 
 const metricsTabs = [
-  { value: 'map', component: SingleMetircView, ck: true },
-  { value: 'miou', component: SingleMetircView },
-  { value: 'macc', component: SingleMetircView },
+  { value: 'ap', component: SingleMetircView, ck: true },
+  { value: 'Iou', component: SingleMetircView },
+  { value: 'Acc', component: SingleMetircView },
   { value: 'maskap', component: SingleMetircView },
   { value: 'boxap', component: SingleMetircView },
   { value: 'curve', component: CurveView },
@@ -31,8 +31,8 @@ const metricsTabs = [
 
 const getTabs = (type = ObjectType.ObjectDetection) => {
   const types = {
-    [ObjectType.ObjectDetection]: ['map', 'curve', 'rp', 'pr'],
-    [ObjectType.SemanticSegmentation]: ['miou', 'macc'],
+    [ObjectType.ObjectDetection]: ['ap', 'curve', 'rp', 'pr'],
+    [ObjectType.SemanticSegmentation]: ['Iou', 'Acc'],
     [ObjectType.InstanceSegmentation]: ['maskap', 'boxap'],
   }
   console.log('types[type:', types, type)

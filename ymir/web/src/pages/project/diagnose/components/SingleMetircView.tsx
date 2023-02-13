@@ -3,10 +3,11 @@ import { Col, Row, Table, TableColumnsType } from 'antd'
 import { percent } from '@/utils/number'
 import { isSame } from '@/utils/object'
 import Panel from '@/components/form/panel'
-import { average, getAverageField, getCK, getKwField, getModelCell, MetricType, opt, percentRender } from './common'
+import { average, DataType, getAverageField, getCK, getDetRowforDataset, getKwField, getModelCell, getSegRowforDataset, MetricType, opt, percentRender } from './common'
 import type { Task } from './common'
 
 type Props = {
+  id: string
   tasks: Task[]
   datasets: YModels.Dataset[]
   models: YModels.Model[]
@@ -45,7 +46,10 @@ type ClassesDataType = {
   }
 }
 
-const MapView: FC<Props> = ({ tasks, datasets, models, data, xType, kw: { kwType, keywords }, averageIou }) => {
+const segFields = ['iou', 'acc', 'maskap', 'boxap']
+const detFields = ['ap']
+
+const MapView: FC<Props> = ({ id, tasks, datasets, models, data, xType, kw: { kwType, keywords }, averageIou }) => {
   const [list, setList] = useState<ListType[]>([])
   const [dd, setDD] = useState<KeywordType[]>([])
   const [kd, setKD] = useState<KeywordType[]>([])
@@ -91,9 +95,14 @@ const MapView: FC<Props> = ({ tasks, datasets, models, data, xType, kw: { kwType
     }
   }, [xType, dd, kd, dData, kData])
 
+  function getMetricData(data: DataType) {
+    const isDet = detFields.includes(id)
+    return isDet ? getDetRowforDataset(data, !!kwType) : getSegRowforDataset(data, id)
+  }
+
   function generateDData(data: any) {
     const ddata: DatasetDataType = Object.keys(data).reduce((prev, rid) => {
-      const fiou = !kwType && averageIou ? getAverageField(data[rid]) : getKwField(data[rid], !!kwType)
+      const fiou = !kwType && averageIou ? getAverageField(data[rid]) : getMetricData(data[rid])
       return {
         ...prev,
         [rid]: fiou,
@@ -105,7 +114,7 @@ const MapView: FC<Props> = ({ tasks, datasets, models, data, xType, kw: { kwType
   function generateKData(data: any) {
     const kdata: ClassesDataType = {}
     Object.keys(data).forEach((id) => {
-      const fiou = !kwType && averageIou ? getAverageField(data[id]) : getKwField(data[id], !!kwType)
+      const fiou = !kwType && averageIou ? getAverageField(data[id]) : getMetricData(data[id])
       Object.keys(fiou).forEach((key) => {
         kdata[key] = kdata[key] || {}
         kdata[key][id] = fiou[key]

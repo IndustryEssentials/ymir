@@ -13,19 +13,24 @@ export type Task = {
 export type MetricType = {
   ap?: number
   pr_curve?: [x: number, y: number, z: number][]
+  Iou?: number
+  Acc?: number
 }
 
 type CIType = {
-        ci_averaged_evaluation: {
-          [key: string]: MetricType
-        }
-        ci_evaluations: {
-          [key: string]: MetricType
-        }
+  ci_averaged_evaluation: {
+    [key: string]: MetricType
+  }
+  ci_evaluations: {
+    [key: string]: MetricType
+  }
 }
 export type IOUDataType = {
-      iou_averaged_evaluation: CIType
-      iou_evaluations: CIType
+  iou_averaged_evaluation: CIType
+  iou_evaluations: { [iou: string]: CIType }
+  segmentation_metrics: {
+    [metric: string]: { [keyword: string]: number }
+  }
 }
 export type DataType = {
   dataset_evaluation: IOUDataType
@@ -83,6 +88,43 @@ export const getKwField = (evaluation: DataType, type: boolean) => {
     const result = Object.values(data.dataset_evaluation.iou_evaluations || {})[0] || {}
     return result?.ci_evaluations || {}
   }
+}
+
+const getRowDataByCK = (result?: DataType) => {
+  const data = result?.sub_cks || {}
+  return data
+    ? Object.keys(data).reduce((prev, curr) => {
+        const ap = data[curr] ? data[curr]?.iou_averaged_evaluation?.ci_averaged_evaluation : {}
+        return {
+          ...prev,
+          [curr]: ap,
+        }
+      }, {})
+    : {}
+}
+
+export const getDetRowforDataset = (evaluation: DataType, isCk?: boolean) => {
+  return isCk ? getRowDataByCK(evaluation) : getDetectionRowData(evaluation)
+}
+
+export const getSegRowforDataset = (evaluation: DataType, field: string) => {
+  return getSegmentationRowData(evaluation, field)
+}
+const getDetectionRowData = (result?: DataType): { [keyword: string]: MetricType } => {
+  const data = Object.values(result?.dataset_evaluation?.iou_evaluations || {})[0] || {}
+  return data?.ci_evaluations || {}
+}
+
+const getSegmentationRowData = (result: DataType, field: string): { [keyword: string]: MetricType } => {
+  const data = result.dataset_evaluation.segmentation_metrics[field]
+  return Object.keys(data).reduce((prev, keyword) => {
+    return {
+      ...prev,
+      [keyword]: {
+        [field]: data[keyword],
+      },
+    }
+  }, {})
 }
 
 export const getAverageField = (evaluation: DataType) => {
