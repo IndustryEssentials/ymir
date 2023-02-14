@@ -90,6 +90,7 @@ declare namespace YModels {
     keywordArea: Array<BackendData>
     instanceArea: Array<BackendData>
     crowdedness: Array<BackendData>
+    complexity: Array<BackendData>
   }
   export interface DatasetGroup extends Group {
     versions?: Array<Dataset>
