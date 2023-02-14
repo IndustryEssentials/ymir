@@ -420,6 +420,7 @@ def _map_task_annotations_and_remove_empty(task_annotations: mirpb.SingleTaskAnn
         if len(sia.boxes) == 0:
             empty_asset_ids.add(asset_id)
 
+    # remove empty annotations
     for asset_id in empty_asset_ids:
         del task_annotations.image_annotations[asset_id]
 
