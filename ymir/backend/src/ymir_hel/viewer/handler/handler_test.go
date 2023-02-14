@@ -61,11 +61,12 @@ func (m *MockMongoServer) QueryDatasetAssets(
 	classIDs []int,
 	annoTypes []string,
 	currentAssetID string,
-	cmTypes []int,
+	inCMTypes []int,
+	exCMTypes []int,
 	cks []string,
 	tags []string,
 ) *constants.QueryAssetsResult {
-	args := m.Called(mirRepo, offset, limit, classIDs, annoTypes, currentAssetID, cmTypes, cks, tags)
+	args := m.Called(mirRepo, offset, limit, classIDs, annoTypes, currentAssetID, inCMTypes, exCMTypes, cks, tags)
 	return args.Get(0).(*constants.QueryAssetsResult)
 }
 
@@ -309,13 +310,14 @@ func TestGetAssetsHandler(t *testing.T) {
 	classIDs := []int{0, 1}
 	annoTypes := []string{"gt", "pred"}
 	currentAssetID := "abc"
-	cmTypes := []int{0, 1}
+	inCMTypes := []int{0, 1}
+	exCMTypes := []int{}
 	cks := []string{"a", "b", "c"}
 	tags := []string{"x", "y", "z"}
 	expectedResult := &constants.QueryAssetsResult{}
 	mockMongoServer := MockMongoServer{}
 	mockMongoServer.On("CheckDatasetExistenceReady", &mirRepo).Return(true, true)
-	mockMongoServer.On("QueryDatasetAssets", &mirRepo, offset, limit, classIDs, annoTypes, currentAssetID, cmTypes, cks, tags).
+	mockMongoServer.On("QueryDatasetAssets", &mirRepo, offset, limit, classIDs, annoTypes, currentAssetID, inCMTypes, exCMTypes, cks, tags).
 		Return(expectedResult)
 	handler := &ViewerHandler{mongoServer: &mockMongoServer, mirLoader: &mockLoader}
 
@@ -326,7 +328,8 @@ func TestGetAssetsHandler(t *testing.T) {
 		classIDs,
 		annoTypes,
 		currentAssetID,
-		cmTypes,
+		inCMTypes,
+		exCMTypes,
 		cks,
 		tags,
 	)
