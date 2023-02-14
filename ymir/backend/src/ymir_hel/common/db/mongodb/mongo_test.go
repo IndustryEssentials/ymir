@@ -196,7 +196,8 @@ func TestQueryAssetsSuccess(t *testing.T) {
 		classIDs := []int{0, 1}
 		currentAssetID := "abc"
 		annoTypes := []string{"gt", "pred"}
-		cmTypes := []int{0, 1}
+		inCMTypes := []int{0, 1}
+		exCMTypes := []int{}
 		cks := []string{"a", "b:c"}
 		tags := []string{"x", "y:z"}
 		expectedCount := int64(0)
@@ -241,7 +242,8 @@ func TestQueryAssetsSuccess(t *testing.T) {
 			classIDs,
 			annoTypes,
 			currentAssetID,
-			cmTypes,
+			inCMTypes,
+			exCMTypes,
 			cks,
 			tags,
 		)
