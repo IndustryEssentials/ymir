@@ -315,7 +315,8 @@ func (s *MongoServer) QueryDatasetAssets(
 	classIDs []int,
 	annoTypes []string,
 	currentAssetID string,
-	cmTypes []int,
+	inCMTypes []int,
+	exCMTypes []int,
 	cks []string,
 	tags []string,
 ) *constants.QueryAssetsResult {
@@ -327,13 +328,14 @@ func (s *MongoServer) QueryDatasetAssets(
 	}
 
 	log.Printf(
-		"Query offset: %d, limit: %d, classIDs: %v, annoTypes: %v, currentId: %s, cmTypes: %v cks: %v tags: %v\n",
+		"Query offset: %d, limit: %d, classIDs: %v, annoTypes: %v, currentId: %s, inCMTypes: %v, exCMTypes: %v cks: %v tags: %v\n",
 		offset,
 		limit,
 		classIDs,
 		annoTypes,
 		currentAssetID,
-		cmTypes,
+		inCMTypes,
+		exCMTypes,
 		cks,
 		tags,
 	)
@@ -360,10 +362,18 @@ func (s *MongoServer) QueryDatasetAssets(
 		filterAndConditions = append(filterAndConditions, singleQuery)
 	}
 
-	if len(cmTypes) > 0 {
+	if len(inCMTypes) > 0 {
 		singleQuery := bson.M{"$or": bson.A{
-			bson.M{"gt.cm": bson.M{"$in": cmTypes}},
-			bson.M{"pred.cm": bson.M{"$in": cmTypes}},
+			bson.M{"gt.cm": bson.M{"$in": inCMTypes}},
+			bson.M{"pred.cm": bson.M{"$in": inCMTypes}},
+		}}
+		filterAndConditions = append(filterAndConditions, singleQuery)
+	}
+
+	if len(exCMTypes) > 0 {
+		singleQuery := bson.M{"$and": bson.A{
+			bson.M{"gt.cm": bson.M{"$nin": exCMTypes}},
+			bson.M{"pred.cm": bson.M{"$nin": exCMTypes}},
 		}}
 		filterAndConditions = append(filterAndConditions, singleQuery)
 	}
