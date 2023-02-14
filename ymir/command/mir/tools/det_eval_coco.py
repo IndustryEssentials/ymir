@@ -1,5 +1,5 @@
 from collections import defaultdict
-from typing import Any, Dict, List, Optional, Set, Tuple, Union, Iterator
+from typing import Any, Dict, List, Optional, Set, Sequence, Tuple, Union, Iterator
 
 import numpy as np
 import pycocotools.mask
@@ -171,7 +171,7 @@ class CocoDetEval:
         return ious
 
     @staticmethod
-    def _convert_to_coco_segmentation(mir_annotation: Dict, size: List[int]) -> Union[Dict, List]:
+    def _convert_to_coco_segmentation(mir_annotation: Dict, size: Sequence[Union[float, int]]) -> Union[Dict, List]:
         if mir_annotation.get("mask"):
             return {'counts': mir_annotation['mask'], 'size': size}
         elif mir_annotation.get("polygon"):
@@ -547,12 +547,12 @@ class CocoDetEval:
 
     def decode_mir_mask(self, annotation: Dict, height: float, width: float) -> Optional[np.ndarray]:
         try:
-            coco_segmentation = self._convert_to_coco_segmentation(annotation, [height, width])
+            coco_seg = self._convert_to_coco_segmentation(annotation, [height, width])
         except ValueError:
             return None
-        if isinstance(coco_segmentation, list):
-            coco_segmentation = pycocotools.mask.merge(pycocotools.mask.frPyObjects(coco_seg, height, width))
-        return pycocotools.mask.decode(coco_segmentation)
+        if isinstance(coco_seg, list):
+            coco_seg = pycocotools.mask.merge(pycocotools.mask.frPyObjects(coco_seg, height, width))
+        return pycocotools.mask.decode(coco_seg)
 
     def aggregate_imagewise_annotations(self, annotations: defaultdict) -> Iterator[np.ndarray]:
         """
