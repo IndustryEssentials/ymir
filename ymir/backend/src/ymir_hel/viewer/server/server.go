@@ -421,7 +421,7 @@ func (s *ViewerServer) handleHealth(c *gin.Context) {
 // @Param   ID              post    string     true        "id"
 // @Param   createTime      post    timestamp  true        "create_time"
 // @Param   classIDs     	post    string     true        "e.g. class_ids=0,1,2"
-// @Success 200 {string} string    "'code': 0, 'msg': 'Success', 'Success': true, 'result': ''"
+// @Success 200 {string} string    "'code': 0, 'msg': 'Success', 'Success': true, 'result': ”"
 // @Router /api/v1/user_metrics/:metrics_group [post]
 func (s *ViewerServer) handleMetricsRecord(c *gin.Context) {
 	metricsGroup := c.Param("metrics_group")
@@ -472,7 +472,7 @@ func (s *ViewerServer) handleMetricsRecord(c *gin.Context) {
 // @Param   bucket     		 query   string     true        "bucket type, e.g. bucket=count/time"
 // @Param   unit     		 query   string     true        "valid with bucket=time e.g. unit=day week month"
 // @Param   limit            query    string     false        "limit, default is 8"
-// @Success 200 {string} string    "'code': 0, 'msg': 'Success', 'Success': true, 'result': ''"
+// @Success 200 {string} string    "'code': 0, 'msg': 'Success', 'Success': true, 'result': ”"
 // @Router /api/v1/user_metrics/:metrics_group [get]
 func (s *ViewerServer) handleMetricsQuery(c *gin.Context) {
 	metricsGroup := c.Param("metrics_group")
