@@ -266,7 +266,8 @@ def _process_infer_detbox_result(task_annotations: mirpb.SingleTaskAnnotations, 
             idx += 1
 
         # task_annotations.image_annotations key: image file base name
-        task_annotations.image_annotations[os.path.basename(asset_name)].CopyFrom(single_image_annotations)
+        if len(single_image_annotations.boxes) > 0:
+            task_annotations.image_annotations[os.path.basename(asset_name)].CopyFrom(single_image_annotations)
 
     logging.info(f"count of objects with unknown class ids: {unknown_class_id_annos_cnt}")
     logging.info(f"count of objects without score: {no_score_annos_cnt}")
