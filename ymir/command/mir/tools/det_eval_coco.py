@@ -171,11 +171,13 @@ class CocoDetEval:
         return ious
 
     @staticmethod
-    def _convert_to_coco_segmentation(mir_annotation: Dict, size: Sequence[Union[float, int]]) -> Union[Dict, List]:
+    def _convert_to_coco_segmentation(mir_annotation: Dict, size: Sequence[Union[float, int]]) -> Dict:
         if mir_annotation.get("mask"):
-            return {'counts': mir_annotation['mask'], 'size': size}
+            return {"counts": mir_annotation["mask"], "size": size}
         elif mir_annotation.get("polygon"):
-            return [[i for point in mir_annotation["polygon"] for i in (point.x, point.y)]]
+            polygon = [[i for point in mir_annotation["polygon"] for i in (point.x, point.y)]]
+            mask = pycocotools.mask.merge(pycocotools.mask.frPyObjects(polygon, height, width))
+            return {"counts": mask, "size": size}
         else:
             raise ValueError("Failed to convert to coco segmentation format")
 
@@ -550,8 +552,6 @@ class CocoDetEval:
             coco_seg = self._convert_to_coco_segmentation(annotation, [height, width])
         except ValueError:
             return None
-        if isinstance(coco_seg, list):
-            coco_seg = pycocotools.mask.merge(pycocotools.mask.frPyObjects(coco_seg, height, width))
         return pycocotools.mask.decode(coco_seg)
 
     def aggregate_imagewise_annotations(self, annotations: defaultdict) -> Iterator[np.ndarray]:
