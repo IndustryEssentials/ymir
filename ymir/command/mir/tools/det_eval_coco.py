@@ -545,9 +545,13 @@ class CocoDetEval:
             total_area_gt += area_gt
         return total_area_intersect, total_area_union, total_area_dt, total_area_gt
 
-    @staticmethod
-    def decode_mir_mask(annotation: Dict, height: float, width: float) -> np.ndarray:
-        coco_segmentation = {"counts": annotation["mask"], "size": [height, width]}
+    def decode_mir_mask(self, annotation: Dict, height: float, width: float) -> Optional[np.ndarray]:
+        try:
+            coco_segmentation = self._convert_to_coco_segmentation(annotation, [height, width])
+        except ValueError:
+            return None
+        if isinstance(coco_segmentation, list):
+            coco_segmentation = pycocotools.mask.merge(pycocotools.mask.frPyObjects(coco_seg, height, width))
         return pycocotools.mask.decode(coco_segmentation)
 
     def aggregate_imagewise_annotations(self, annotations: defaultdict) -> Iterator[np.ndarray]:
@@ -567,7 +571,9 @@ class CocoDetEval:
             img = np.ones(shape=(height, width), dtype=np.uint8) * 255
             for class_id in class_ids:
                 for annotation in annotations[(asset_id, class_id)]:
-                    img[self.decode_mir_mask(annotation, height, width) == 1] = class_id_to_order[class_id]
+                    _mask = self.decode_mir_mask(annotation, height, width)
+                    if _mask is not None:
+                        img[_mask == 1] = class_id_to_order[class_id]
             yield img
 
     def _mean_iou(
