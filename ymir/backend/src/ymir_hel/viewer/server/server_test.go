@@ -342,7 +342,7 @@ func TestAssetsPageHandlerSuccess(t *testing.T) {
 	cks := "ck0,ck1"
 	tags := "tag0,tag1"
 	querySuffix := fmt.Sprintf(
-		"offset=%d&limit=%d&class_ids=%s&current_asset_id=%s&in_cm_types=%s&ex_cm_types=%s&cks=%s&tags=%s",
+		"offset=%d&limit=%d&class_ids=%s&current_asset_id=%s&cm_types=%s&ex_cm_types=%s&cks=%s&tags=%s",
 		offset,
 		limit,
 		classIDsStr,
