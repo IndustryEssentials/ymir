@@ -10,6 +10,7 @@ import MyAlgoSVG from './icons/MyAlgoSVG'
 import StoreSVG from './icons/StoreSVG'
 import React from 'react'
 import PublishSVG from './icons/PublishSVG'
+import AddSVG from './icons/AddSVG'
 type Props = {
   [key: string]: any,
 }
@@ -27,13 +28,13 @@ export const DeviceSupportedIcon = Icon(DeviceSupportedSVG)
 export const MyAlgoIcon = Icon(MyAlgoSVG)
 export const StoreIcon = Icon(StoreSVG)
 export const PublishIcon = Icon(PublishSVG)
+export const AddIcon = Icon(AddSVG)
 
 export const AddDelTwoIcon = iconFont('add-del-two')
 export const ArrowDownIcon = iconFont('arrow-down')
 export const AddTwoIcon = iconFont('add-two')
 export const AddtaskIcon = iconFont('addtask')
 export const ArrowRightIcon = iconFont('arrow-right')
-export const AddIcon = iconFont('add')
 export const EditIcon = iconFont('edit')
 export const BookIcon = iconFont('book')
 export const DeleteIcon = iconFont('delete')

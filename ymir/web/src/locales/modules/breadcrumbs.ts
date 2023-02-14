@@ -17,7 +17,7 @@ const breadcrumbs = {
   'breadcrumbs.dataset.asset': { cn: '数据详情', en: 'Asset Detail', },
   'breadcrumbs.model.add': { cn: '导入模型', en: 'Model Import', },
   'breadcrumbs.model': { cn: '模型详情', en: 'Model Detail', },
-  'breadcrumbs.model.diagnose': { cn: '模型诊断', en: 'Model Diagnose', },
+  'breadcrumbs.model.diagnose': { cn: '结果分析', en: 'Result Analysis', },
   'breadcrumbs.model.verify': { cn: '模型验证', en: 'Model Verification', },
   'breadcrumbs.history': { cn: '历史树', en: 'History Tree', },
   'breadcrumbs.keyword': { cn: '类别管理', en: 'Classes', },
@@ -32,7 +32,7 @@ const breadcrumbs = {
   'breadcrumbs.project.edit': { cn: '项目设置', en: 'Settings', },
   'breadcrumbs.project.iterations': { cn: '迭代列表', en: 'Iterations', },
   'breadcrumbs.project.initmodel': { cn: '初始模型准备', en: 'Initial Model Setting', },
-  'breadcrumbs.project.hidden': { cn: '隐藏列表', en: 'Hidden List', },
+  'breadcrumbs.project.hidden': { cn: '回收站', en: 'Trash', },
   'breadcrumbs.project.search': { cn: '搜索', en: 'Search', },
 }
 

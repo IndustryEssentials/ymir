@@ -175,7 +175,7 @@ class CocoDetEval:
         if mir_annotation.get("mask"):
             return {'counts': mir_annotation['mask'], 'size': size}
         elif mir_annotation.get("polygon"):
-            return [[i for point in mir_annotation["polygon"] for i in (point["x"], point["y"])]]
+            return [[i for point in mir_annotation["polygon"] for i in (point.x, point.y)]]
         else:
             raise ValueError("Failed to convert to coco segmentation format")
 
@@ -585,9 +585,11 @@ class CocoDetEval:
             total_area_gt,
         ) = self._total_intersect_and_union(dts, gts, num_classes, ignore_index)
         all_acc = np.nansum(total_area_intersect) / np.nansum(total_area_gt)
-        macc = np.nanmean(total_area_intersect / total_area_gt)
-        miou = np.nanmean(total_area_intersect / total_area_union)
-        ret_metrics = [all_acc, macc, miou]
+        acc = total_area_intersect / total_area_gt
+        iou = total_area_intersect / total_area_union
+        macc = np.nanmean(acc)
+        miou = np.nanmean(iou)
+        ret_metrics = [all_acc, acc, iou, macc, miou]
         if nan_to_num is not None:
             ret_metrics = [np.nan_to_num(metric, nan=nan_to_num) for metric in ret_metrics]
         return ret_metrics
@@ -596,9 +598,12 @@ class CocoDetEval:
         class_ids = self.params.catIds
         dts = list(self.aggregate_imagewise_annotations(self._dts))
         gts = list(self.aggregate_imagewise_annotations(self._gts))
-        all_acc, macc, miou = self._mean_iou(dts, gts, len(class_ids), 255, -1)
+        all_acc, acc, iou, macc, miou = self._mean_iou(dts, gts, len(class_ids), 255, -1)
+        order_to_class_id = dict(zip(range(len(class_ids)), class_ids))
         metrics = mirpb.SegmentationMetrics()
         metrics.aAcc = all_acc
+        metrics.Acc.update({order_to_class_id[idx]: value for idx, value in enumerate(acc)})
+        metrics.IoU.update({order_to_class_id[idx]: value for idx, value in enumerate(iou)})
         metrics.mAcc = macc
         metrics.mIoU = miou
         return metrics

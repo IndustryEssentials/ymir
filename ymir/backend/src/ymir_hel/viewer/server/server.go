@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"runtime/debug"
 	"strconv"
 	"strings"
 	"time"
@@ -504,6 +505,6 @@ func (s *ViewerServer) handleFailure(c *gin.Context) {
 			return
 		}
 
-		panic(fmt.Sprintf("unhandled error type: %T\n", r))
+		panic(fmt.Sprintf("unhandled error type: %T\n%s\n", r, debug.Stack()))
 	}
 }
