@@ -127,8 +127,8 @@ const getDetectionRowData = (result?: DataType): { [keyword: string]: MetricType
 }
 
 const getSegmentationRowData = (result: DataType, field: string): { [keyword: string]: MetricType } => {
-  const metrics = attr2LowerCase(result?.dataset_evaluation?.segmentation_metrics)
-  const data = metrics[field]
+  const metrics = attr2LowerCase(result?.dataset_evaluation?.segmentation_metrics || {})
+  const data = metrics[field] || {}
   return Object.keys(data).reduce((prev, keyword) => {
     return {
       ...prev,
