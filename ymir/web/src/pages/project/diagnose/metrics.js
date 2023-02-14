@@ -4,7 +4,7 @@ import { useLocation } from 'umi'
 
 import t from '@/utils/t'
 import useFetch from '@/hooks/useFetch'
-import { ObjectType } from '@/constants/objectType'
+import { ObjectType, isDetection, isSemantic } from '@/constants/objectType'
 
 import Panel from '@/components/form/panel'
 import InferResultSelect from '@/components/form/inferResultSelect'
@@ -20,8 +20,8 @@ import { CompareIcon } from '@/components/common/Icons'
 
 const metricsTabs = [
   { value: 'ap', component: SingleMetircView, ck: true },
-  { value: 'Iou', component: SingleMetircView },
-  { value: 'Acc', component: SingleMetircView },
+  { value: 'iou', component: SingleMetircView },
+  { value: 'acc', component: SingleMetircView },
   { value: 'maskap', component: SingleMetircView },
   { value: 'boxap', component: SingleMetircView },
   { value: 'curve', component: CurveView },
@@ -32,7 +32,7 @@ const metricsTabs = [
 const getTabs = (type = ObjectType.ObjectDetection) => {
   const types = {
     [ObjectType.ObjectDetection]: ['ap', 'curve', 'rp', 'pr'],
-    [ObjectType.SemanticSegmentation]: ['Iou', 'Acc'],
+    [ObjectType.SemanticSegmentation]: ['iou', 'acc'],
     [ObjectType.InstanceSegmentation]: ['maskap', 'boxap'],
   }
   console.log('types[type:', types, type)
@@ -216,7 +216,7 @@ function Matrics({ pid, project }) {
     const Viewer = View(panel.component)
     return (
       <Viewer
-        id={panel.value}
+        type={panel.value}
         tasks={inferTasks}
         models={selectedModels}
         datasets={selectedDatasets}
@@ -330,25 +330,31 @@ function Matrics({ pid, project }) {
                 colon={false}
               >
                 <InferResultSelect form={form} pid={pid} onChange={inferResultChange} />
-                <Form.Item label={t('model.diagnose.form.confidence')} name="confidence">
-                  <InputNumber step={0.0005} min={0.0005} max={0.9995} />
-                </Form.Item>
-                <Form.Item label={t('keyword.ck.label')} name="ck">
-                  <Select options={cks.map((ck) => ({ value: ck, label: ck }))} allowClear></Select>
-                </Form.Item>
-                <Form.Item label={t('model.diagnose.form.iou')}>
-                  <Radio.Group value={averageIou} onChange={({ target: { value } }) => setaverageIou(value)} options={iouOptions}></Radio.Group>
-                  <Row gutter={10}>
-                    <Col flex={1}>
-                      <Form.Item noStyle name="iou" style={{ display: 'inline-block', width: '90%' }}>
-                        <Slider style={{ display: !averageIou ? 'block' : 'none' }} min={0.25} max={0.95} step={0.05} onChange={setIou} />
-                      </Form.Item>
-                    </Col>
-                    <Col>
-                      <InputNumber style={{ width: 60 }} value={iou} />
-                    </Col>
-                  </Row>
-                </Form.Item>
+                {!isSemantic(project?.type) ? (
+                  <Form.Item label={t('model.diagnose.form.confidence')} name="confidence">
+                    <InputNumber step={0.0005} min={0.0005} max={0.9995} />
+                  </Form.Item>
+                ) : null}
+                {isDetection(project?.type) ? (
+                  <Form.Item label={t('keyword.ck.label')} name="ck">
+                    <Select options={cks.map((ck) => ({ value: ck, label: ck }))} allowClear></Select>
+                  </Form.Item>
+                ) : null}
+                {!isSemantic(project?.type) ? (
+                  <Form.Item label={t('model.diagnose.form.iou')}>
+                    <Radio.Group value={averageIou} onChange={({ target: { value } }) => setaverageIou(value)} options={iouOptions}></Radio.Group>
+                    <Row gutter={10}>
+                      <Col flex={1}>
+                        <Form.Item noStyle name="iou" style={{ display: 'inline-block', width: '90%' }}>
+                          <Slider style={{ display: !averageIou ? 'block' : 'none' }} min={0.25} max={0.95} step={0.05} onChange={setIou} />
+                        </Form.Item>
+                      </Col>
+                      <Col>
+                        <InputNumber style={{ width: 60 }} value={iou} />
+                      </Col>
+                    </Row>
+                  </Form.Item>
+                ) : null}
                 <Form.Item name="submitBtn">
                   <div style={{ textAlign: 'center' }}>
                     <Button type="primary" size="large" htmlType="submit">

@@ -3,11 +3,24 @@ import { Col, Row, Table, TableColumnsType } from 'antd'
 import { percent } from '@/utils/number'
 import { isSame } from '@/utils/object'
 import Panel from '@/components/form/panel'
-import { average, DataType, getAverageField, getCK, getDetRowforDataset, getKwField, getModelCell, getSegRowforDataset, MetricType, opt, percentRender } from './common'
+import {
+  average,
+  DataType,
+  getAverageField,
+  getCK,
+  getDetRowforDataset,
+  getKwField,
+  getModelCell,
+  getSegRowforDataset,
+  MetricType,
+  opt,
+  percentRender,
+} from './common'
 import type { Task } from './common'
+import t from '@/utils/t'
 
 type Props = {
-  id: string
+  type: 'ap' | 'iou' | 'acc' | 'maskap' | 'boxap'
   tasks: Task[]
   datasets: YModels.Dataset[]
   models: YModels.Model[]
@@ -46,10 +59,9 @@ type ClassesDataType = {
   }
 }
 
-const segFields = ['iou', 'acc', 'maskap', 'boxap']
-const detFields = ['ap']
+const detFields = ['ap', 'maskap', 'boxap']
 
-const MapView: FC<Props> = ({ id, tasks, datasets, models, data, xType, kw: { kwType, keywords }, averageIou }) => {
+const MapView: FC<Props> = ({ type, tasks, datasets, models, data, xType, kw: { kwType, keywords }, averageIou }) => {
   const [list, setList] = useState<ListType[]>([])
   const [dd, setDD] = useState<KeywordType[]>([])
   const [kd, setKD] = useState<KeywordType[]>([])
@@ -96,8 +108,8 @@ const MapView: FC<Props> = ({ id, tasks, datasets, models, data, xType, kw: { kw
   }, [xType, dd, kd, dData, kData])
 
   function getMetricData(data: DataType) {
-    const isDet = detFields.includes(id)
-    return isDet ? getDetRowforDataset(data, !!kwType) : getSegRowforDataset(data, id)
+    const isDet = detFields.includes(type)
+    return isDet ? getDetRowforDataset(data, !!kwType) : getSegRowforDataset(data, type)
   }
 
   function generateDData(data: any) {
@@ -138,9 +150,10 @@ const MapView: FC<Props> = ({ id, tasks, datasets, models, data, xType, kw: { kw
     return tts.map(({ result: rid }) => {
       const ddata = dData && dData[rid] ? dData[rid] : {}
       const kwAps = kd.reduce((prev, { value: kw }) => {
+        const metric = ddata[kw] ? ddata[kw][type] : null
         return {
           ...prev,
-          [kw]: ddata[kw]?.ap,
+          [kw]: metric,
         }
       }, {})
       const _average = average(Object.values(kwAps))
@@ -174,9 +187,10 @@ const MapView: FC<Props> = ({ id, tasks, datasets, models, data, xType, kw: { kw
 
         const drow = kdata
           ? tts.reduce((prev, { testing, result }) => {
+              const metric = kdata[result] ? kdata[result][type] : null
               return {
                 ...prev,
-                [testing]: kdata[result]?.ap,
+                [testing]: metric,
               }
             }, {})
           : {}
@@ -207,7 +221,7 @@ const MapView: FC<Props> = ({ id, tasks, datasets, models, data, xType, kw: { kw
         ellipsis: true,
       },
       {
-        title: 'Average mAP',
+        title: t('common.average'),
         dataIndex: '_average',
         width: 100,
         render: percentRender,

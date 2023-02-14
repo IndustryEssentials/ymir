@@ -1,4 +1,5 @@
 import { percent, toFixed } from '@/utils/number'
+import { attr2LowerCase } from '@/utils/object'
 import { Popover } from 'antd'
 import ReactJson from 'react-json-view'
 
@@ -13,8 +14,10 @@ export type Task = {
 export type MetricType = {
   ap?: number
   pr_curve?: [x: number, y: number, z: number][]
-  Iou?: number
-  Acc?: number
+  iou?: number
+  acc?: number
+  maskap?: number
+  boxap?: number
 }
 
 type CIType = {
@@ -90,14 +93,14 @@ export const getKwField = (evaluation: DataType, type: boolean) => {
   }
 }
 
-const getRowDataByCK = (result?: DataType) => {
+const getRowDataByCK = (result?: DataType): { [keyword: string]: MetricType } => {
   const data = result?.sub_cks || {}
   return data
     ? Object.keys(data).reduce((prev, curr) => {
         const ap = data[curr] ? data[curr]?.iou_averaged_evaluation?.ci_averaged_evaluation : {}
         return {
           ...prev,
-          [curr]: ap,
+          [curr]: attr2LowerCase(ap),
         }
       }, {})
     : {}
@@ -112,11 +115,20 @@ export const getSegRowforDataset = (evaluation: DataType, field: string) => {
 }
 const getDetectionRowData = (result?: DataType): { [keyword: string]: MetricType } => {
   const data = Object.values(result?.dataset_evaluation?.iou_evaluations || {})[0] || {}
-  return data?.ci_evaluations || {}
+  const evaluation = data?.ci_evaluations || {}
+  return Object.keys(evaluation).reduce((prev, key) => {
+    const metrics = evaluation[key]
+    const lower = attr2LowerCase(metrics)
+    return {
+      ...prev,
+      [key]: lower,
+    }
+  }, {})
 }
 
 const getSegmentationRowData = (result: DataType, field: string): { [keyword: string]: MetricType } => {
-  const data = result.dataset_evaluation.segmentation_metrics[field]
+  const metrics = attr2LowerCase(result?.dataset_evaluation?.segmentation_metrics)
+  const data = metrics[field]
   return Object.keys(data).reduce((prev, keyword) => {
     return {
       ...prev,
