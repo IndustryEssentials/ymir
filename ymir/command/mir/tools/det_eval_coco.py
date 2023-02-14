@@ -176,8 +176,7 @@ class CocoDetEval:
             return {"counts": mir_annotation["mask"], "size": size}
         elif mir_annotation.get("polygon"):
             polygon = [[i for point in mir_annotation["polygon"] for i in (point.x, point.y)]]
-            mask = pycocotools.mask.merge(pycocotools.mask.frPyObjects(polygon, height, width))
-            return {"counts": mask, "size": size}
+            return pycocotools.mask.merge(pycocotools.mask.frPyObjects(polygon, *size))
         else:
             raise ValueError("Failed to convert to coco segmentation format")
 
