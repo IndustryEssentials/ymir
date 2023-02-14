@@ -608,6 +608,8 @@ def _single_task_annotations_to_coco(
                 'category_id': oa.class_id,
                 'iscrowd': oa.iscrowd,
                 'bbox': [oa.box.x, oa.box.y, oa.box.w, oa.box.h],
+                'confidence': oa.score,
+                'area': oa.mask_area,
                 'segmentation': segmentation,
             })
             coco_anno_id += 1
