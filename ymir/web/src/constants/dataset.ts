@@ -276,7 +276,7 @@ const transferCK = (counts: YModels.BackendData = {}, total: YModels.BackendData
 }
 
 const generateAnno = (data: YModels.BackendData): YModels.AnylysisAnnotation => {
-  const { quality = [], area = [], box_area_ratio = [], mask_area = [], obj_counts = [] } = data.hist
+  const { quality = [], area = [], box_area_ratio = [], mask_area = [], obj_counts = [], class_counts=[] } = data.hist
   return {
     keywords: data.keywords,
     total: data.annos_count || 0,
@@ -289,6 +289,7 @@ const generateAnno = (data: YModels.BackendData): YModels.AnylysisAnnotation => 
     keywordArea: data.classwise_area || {},
     instanceArea: mask_area,
     crowdedness: obj_counts,
+    complexity: class_counts,
   }
 }
 

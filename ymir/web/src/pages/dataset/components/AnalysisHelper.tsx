@@ -107,7 +107,7 @@ const charts: { [key: string]: ChartConfigType } = {
   },
   complexity: {
     label: 'dataset.analysis.title.complexity',
-    sourceField: 'crowdedness',
+    sourceField: 'complexity',
     totalField: 'assetCount',
     isXUpperLimit: true,
     color: ['#10BC5E', '#F2637B'],
