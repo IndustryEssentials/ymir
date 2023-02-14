@@ -168,6 +168,7 @@ const dataset = {
   'dataset.analysis.title.keyword_area': { cn: '标注面积统计', en: 'Annotations Area Statistics' },
   'dataset.analysis.title.instance_area': { cn: '实例面积分布', en: 'Instances Area Distribution' },
   'dataset.analysis.title.crowdedness': { cn: '目标聚集度', en: 'Object Crowdedness Statistics' },
+  'dataset.analysis.title.complexity': { cn: '场景复杂度', en: 'Scene Complexity' },
   'dataset.analysis.bar.asset.tooltip': { cn: ' 占比：{ratio} 数量：{amount} 张', en: ' Ratio: {ratio} Amount: {amount}' },
   'dataset.analysis.bar.anno.tooltip': { cn: ' 占比：{ratio} 数量：{amount} 个', en: ' Ratio: {ratio} Amount: {amount}' },
   'dataset.analysis.bar.area.tooltip': { cn: ' 占比：{ratio} 面积：{amount} px', en: ' Ratio: {ratio} Area: {amount}' },
