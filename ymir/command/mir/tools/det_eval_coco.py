@@ -63,7 +63,8 @@ class MirCoco:
                 if conf_thr is not None and annotation.score < conf_thr:
                     continue
 
-                area = (annotation.box.w * annotation.box.h if single_task_annotations.type == mirpb.OT_DET_BOX else annotation.mask_area)
+                area = (annotation.box.w *
+                        annotation.box.h if single_task_annotations.type == mirpb.OT_DET_BOX else annotation.mask_area)
                 annotation_dict = {
                     'id': annotation_idx,
                     'area': area,
