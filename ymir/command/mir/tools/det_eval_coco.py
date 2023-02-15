@@ -2,6 +2,7 @@ from collections import defaultdict
 from typing import Any, Dict, List, Optional, Set, Tuple, Union, Iterator
 
 import numpy as np
+from numpy import savetxt  # for test
 import pycocotools.mask
 
 from mir.tools import det_eval_utils
@@ -561,7 +562,7 @@ class CocoDetEval:
 
         return pycocotools.mask.decode(coco_segmentation)
 
-    def aggregate_imagewise_annotations(self, annotations: defaultdict) -> Iterator[np.ndarray]:
+    def aggregate_imagewise_annotations(self, annotations: defaultdict, is_gt: bool) -> Iterator[np.ndarray]:
         """
         annotations: self._gts or self._dts
         """
@@ -579,6 +580,9 @@ class CocoDetEval:
             for class_id in class_ids:
                 for annotation in annotations[(asset_id, class_id)]:
                     img[self.decode_mir_mask(annotation, height, width) == 1] = class_id_to_order[class_id]
+            # for test
+            savetxt(fname=f"/home/zhaozhiwei/test/{asset_id}-{is_gt}.txt", delimiter=' ', X=img, fmt='%d')
+            # for test ends
             yield img
 
     def _mean_iou(
@@ -607,8 +611,8 @@ class CocoDetEval:
 
     def mir_mean_iou(self) -> mirpb.SegmentationMetrics:
         class_ids = self.params.catIds
-        dts = list(self.aggregate_imagewise_annotations(self._dts))
-        gts = list(self.aggregate_imagewise_annotations(self._gts))
+        dts = list(self.aggregate_imagewise_annotations(self._dts, False))
+        gts = list(self.aggregate_imagewise_annotations(self._gts, True))
         all_acc, acc, iou, macc, miou = self._mean_iou(dts, gts, len(class_ids), 255, -1)
         order_to_class_id = dict(zip(range(len(class_ids)), class_ids))
         metrics = mirpb.SegmentationMetrics()
