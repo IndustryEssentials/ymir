@@ -575,8 +575,8 @@ class TestToolsDetEval(unittest.TestCase):
             mir_root=self._mir_root, mir_branch='a', mir_task_id='a', ms=mirpb.MirStorage.MIR_ANNOTATIONS)
 
         evaluate_config = mirpb.EvaluateConfig()
-        evaluate_config.conf_thr = 0.0005
-        evaluate_config.iou_thrs_interval = '0.5'
+        evaluate_config.conf_thr = 0
+        evaluate_config.iou_thrs_interval = '0'
         evaluate_config.need_pr_curve = True
         evaluate_config.class_ids[:] = [0, 1]
         evaluation: mirpb.Evaluation = det_eval_model_name.det_evaluate(prediction=mir_annotations.prediction,
