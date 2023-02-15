@@ -254,7 +254,7 @@ def _process_results(mir_root: str, label_storage_file: str, export_out: str,
         #   convert: cmd infer packs infer_result_prediction.image_annotations with file base name as key
         #       so we need to convert all keys to asset hash (in cmd mining, the image's main name)
         for file_name in infer_result_prediction.image_annotations:
-            if not single_image_annotations_available(prediction.image_annotations[asset_id]):
+            if not single_image_annotations_available(infer_result_prediction.image_annotations[file_name]):
                 continue
             asset_id = os.path.splitext(file_name)[0]
             if asset_id in asset_ids_set:
