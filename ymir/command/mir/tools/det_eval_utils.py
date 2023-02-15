@@ -108,8 +108,12 @@ def write_confusion_matrix(gt_annotations: mirpb.SingleTaskAnnotations, pred_ann
             annotation.det_link_id = -1
 
     for asset_id in match_result.get_asset_ids(iou_thr=iou_thr):
-        id_to_gts = {box.index: box for box in gt_annotations.image_annotations[asset_id].boxes}
-        id_to_preds = {box.index: box for box in pred_annotations.image_annotations[asset_id].boxes}
+        id_to_gts = {box.index: box
+                     for box in gt_annotations.image_annotations[asset_id].boxes
+                     } if asset_id in gt_annotations.image_annotations else {}
+        id_to_preds = {box.index: box
+                       for box in pred_annotations.image_annotations[asset_id].boxes
+                       } if asset_id in pred_annotations.image_annotations else {}
         for gt_pb_index, pred_pb_index in match_result.get_matches(asset_id=asset_id, iou_thr=iou_thr):
             id_to_gts[gt_pb_index].cm = mirpb.ConfusionMatrixType.MTP
             id_to_gts[gt_pb_index].det_link_id = pred_pb_index
