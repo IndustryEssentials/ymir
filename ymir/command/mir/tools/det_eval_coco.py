@@ -640,7 +640,8 @@ def det_evaluate(prediction: mirpb.SingleTaskAnnotations, ground_truth: mirpb.Si
 
     params = Params()
     params.confThr = config.conf_thr
-    params.iouThrs = det_eval_utils.get_iou_thrs_array(config.iou_thrs_interval)
+    if config.iou_thrs_interval != "-1":
+        params.iouThrs = det_eval_utils.get_iou_thrs_array(config.iou_thrs_interval)
     params.need_pr_curve = config.need_pr_curve
     params.catIds = list(config.class_ids)
 
