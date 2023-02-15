@@ -62,6 +62,7 @@ const Dataset = () => {
   }, [id])
 
   useEffect(() => {
+    console.log('filterParams:', filterParams)
     setCurrentPage(filterParams.offset / filterParams.limit + 1)
     dataset.id && filter(paramsHandle(filterParams))
   }, [dataset, filterParams])
@@ -112,15 +113,15 @@ const Dataset = () => {
     [filterParams.cm, filterParams.annoType],
   )
 
-  const updateFilterParams = (value, all, field) => {
-    if (value?.length || (filterParams[field]?.length && !value?.length)) {
+  const updateFilterParams = (value, field) => {
+    console.log('value, all, field:', value, field)
+    // if (value) {
       setFilterParams((query) => ({
         ...query,
         [field]: value,
-        [field + 'all']: all,
         offset: initQuery.offset,
       }))
-    }
+    // }
   }
 
   const reset = () => {
@@ -224,9 +225,9 @@ const Dataset = () => {
       </Col>
       <Col span={12} style={{ fontSize: 14 }}>
         <Space size={10} wrap={true}>
-          <GtSelector layout="inline" value={filterParams.annoType} onChange={(checked, all) => updateFilterParams(checked, all, 'annoType')} />
+          <GtSelector layout="inline" value={filterParams.annoType} onChange={(checked) => updateFilterParams(checked, 'annoType')} />
           {dataset.evaluated ? (
-            <EvaluationSelector value={filterParams.cm} onChange={(checked, all) => updateFilterParams(checked, all, 'cm')} labelAlign={'right'} />
+            <EvaluationSelector value={filterParams.cm} onChange={({ target }) => updateFilterParams(target.value, 'cm')} labelAlign={'right'} />
           ) : null}
           <KeywordSelector value={filterParams.keywords} onChange={filterKw} dataset={dataset} labelAlign={'right'} />
           <Button onClick={reset}>{t('common.reset')}</Button>

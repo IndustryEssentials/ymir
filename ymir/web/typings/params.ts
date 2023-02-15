@@ -39,6 +39,7 @@ declare namespace YParams {
   interface AssetQueryParams extends DatasetsQuery {
     id: number
     cm?: number[]
+    exclude?: number[]
     annoType?: number[]
     type?: string
   }
