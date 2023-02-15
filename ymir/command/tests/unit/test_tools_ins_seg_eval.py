@@ -68,7 +68,7 @@ class TestToolsSegEval(unittest.TestCase):
 
         # check result
         iou_ci_averaged = evaluation.dataset_evaluation.iou_averaged_evaluation.ci_averaged_evaluation
-        self.assertTrue(np.isclose(0.359735974, iou_ci_averaged.ap, atol=1e-8))
+        self.assertTrue(np.isclose(0.35973597, iou_ci_averaged.ap, atol=1e-8))
         self.assertTrue(np.isclose(0.5, iou_ci_averaged.ar))
 
     def test_sem_seg_eval_00(self) -> None:
@@ -89,6 +89,6 @@ class TestToolsSegEval(unittest.TestCase):
 
         # check result
         semseg_metrics = evaluation.dataset_evaluation.segmentation_metrics
-        self.assertTrue(np.isclose(0.8344325423240662, semseg_metrics.aAcc))
-        self.assertTrue(np.isclose(0.7960630655288696, semseg_metrics.mAcc))
-        self.assertTrue(np.isclose(0.7911081910133362, semseg_metrics.mIoU))
+        self.assertTrue(np.isclose(0.83443254, semseg_metrics.aAcc, atol=1e-8))
+        self.assertTrue(np.isclose(0.79606306, semseg_metrics.mAcc, atol=1e-8))
+        self.assertTrue(np.isclose(0.79110819, semseg_metrics.mIoU, atol=1e-8))
