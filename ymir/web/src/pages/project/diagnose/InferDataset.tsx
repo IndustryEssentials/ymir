@@ -39,11 +39,6 @@ const InferDataset: React.FC = () => {
       icon: <DiagnosisIcon />,
     },
     {
-      key: 'detail',
-      label: t('dataset.action.detail'),
-      onclick: () => history.push(`/home/project/${pid}/dataset/${record.id}`),
-    },
-    {
       key: 'preview',
       label: t('common.action.preview'),
       onclick: () => history.push(`/home/project/${pid}/dataset/${record.id}/assets`),
