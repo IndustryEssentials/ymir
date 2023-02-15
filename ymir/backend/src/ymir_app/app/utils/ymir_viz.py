@@ -121,14 +121,15 @@ class ViewerAssetRequest(BaseModel):
 
     class_ids: Optional[str]
     current_asset_id: Optional[str]
-    cm_types: Optional[str]
+    in_cm_types: Optional[str]
+    ex_cm_types: Optional[str]
     cks: Optional[str]
     tags: Optional[str]
     annotation_types: Optional[str]
     limit: Optional[int]
     offset: Optional[int]
 
-    @validator("class_ids", "cm_types", "cks", "tags", "annotation_types", pre=True)
+    @validator("class_ids", "in_cm_types", "ex_cm_types", "cks", "tags", "annotation_types", pre=True)
     def make_str(cls, v: Any) -> Optional[str]:
         if v is None:
             return v
@@ -284,7 +285,8 @@ class VizClient:
         asset_hash: Optional[str] = None,
         keyword_id: Optional[int] = None,
         keyword_ids: Optional[List[int]] = None,
-        cm_types: Optional[List[str]] = None,
+        in_cm_types: Optional[List[str]] = None,
+        ex_cm_types: Optional[List[str]] = None,
         cks: Optional[List[str]] = None,
         tags: Optional[List[str]] = None,
         annotation_types: Optional[List[str]] = None,
@@ -297,7 +299,8 @@ class VizClient:
         url = f"{self._url_prefix}/branch/{dataset_hash}/assets"
         params = ViewerAssetRequest(
             class_ids=keyword_ids,
-            cm_types=cm_types,
+            in_cm_types=in_cm_types,
+            ex_cm_types=ex_cm_types,
             cks=cks,
             tags=tags,
             annotation_types=annotation_types,
