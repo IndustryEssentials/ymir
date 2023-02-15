@@ -176,9 +176,7 @@ func (s *MongoServer) buildMirAssetDetail(
 			mapClassIDs[annotation.ClassId] = true
 		}
 
-		if gtAnnotation.ImgClassIds != nil {
-			mirAssetDetail.GtClassIDs = gtAnnotation.ImgClassIds
-		}
+		mirAssetDetail.GtClassIDs = append(mirAssetDetail.GtClassIDs, gtAnnotation.ImgClassIds...)
 	}
 	if predAnnotation, ok := predAnnotations[assetID]; ok {
 		for _, annotation := range predAnnotation.Boxes {
@@ -188,9 +186,7 @@ func (s *MongoServer) buildMirAssetDetail(
 			mapClassIDs[annotation.ClassId] = true
 		}
 
-		if predAnnotation.ImgClassIds != nil {
-			mirAssetDetail.PredClassIDs = predAnnotation.ImgClassIds
-		}
+		mirAssetDetail.PredClassIDs = append(mirAssetDetail.PredClassIDs, predAnnotation.ImgClassIds...)
 	}
 
 	mirAssetDetail.JoinedClassIDs = make([]int32, 0, len(mapClassIDs))
