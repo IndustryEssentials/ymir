@@ -1,15 +1,14 @@
-import React, { useEffect, useState } from "react"
+import { useEffect, useState } from "react"
 import s from "./index.less"
-import { useHistory, useLocation, useParams } from "umi"
+import { useLocation, useParams } from "umi"
 
-import t from "@/utils/t"
 import { tabs } from '@/constants/project'
 import Breadcrumbs from "@/components/common/breadcrumb"
-import HiddenList from "./components/hiddenList"
+import HiddenList from "./components/HiddenList"
 
 function Hidden() {
   const location = useLocation()
-  const { id } = useParams()
+  const { id } = useParams<{ id: string }>()
   const [active, setActive] = useState(tabs[0].key)
 
   useEffect(() => {
