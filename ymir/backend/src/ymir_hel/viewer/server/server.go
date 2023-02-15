@@ -229,8 +229,7 @@ func (s *ViewerServer) handleAssets(c *gin.Context) {
 	}
 	classIDs := s.getIntSliceFromString(c.DefaultQuery("class_ids", ""))
 	currentAssetID := c.DefaultQuery("current_asset_id", "")
-	// TODO: change to in_cm_types when app call revised.
-	inCMTypes := s.getIntSliceFromString(c.DefaultQuery("cm_types", ""))
+	inCMTypes := s.getIntSliceFromString(c.DefaultQuery("in_cm_types", ""))
 	exCMTypes := s.getIntSliceFromString(c.DefaultQuery("ex_cm_types", ""))
 	if len(inCMTypes) > 0 && len(exCMTypes) > 0 {
 		ViewerFailure(c, &FailureResult{Code: constants.CodeViewerInvalidParms,
