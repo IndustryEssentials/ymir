@@ -12,7 +12,7 @@ from mir.tools import det_eval_ops
 from tests import utils as test_utils
 
 
-class TestToolsInsSegEval(unittest.TestCase):
+class TestToolsSegEval(unittest.TestCase):
     def __init__(self, methodName: str = "runTest") -> None:
         super().__init__(methodName)
         self._test_root = test_utils.dir_test_root(self.id().split('.')[-3:])
@@ -50,9 +50,9 @@ class TestToolsInsSegEval(unittest.TestCase):
         return mir_metadatas, mir_annotations
 
     # public: test cases
-    def test_00(self) -> None:
+    def test_ins_seg_eval_00(self) -> None:
         mir_metadatas, mir_annotations = self._load_mirdatas(
-            filepath=os.path.join('tests', 'assets', 'test_tools_ins_seg_eval_00.json'))
+            filepath=os.path.join('tests', 'assets', 'test_seg_eval.json'))
 
         evaluate_config = mirpb.EvaluateConfig()
         evaluate_config.conf_thr = 0
