@@ -2,7 +2,6 @@ from collections import defaultdict
 from typing import Any, Dict, List, Optional, Set, Tuple, Union, Iterator
 
 import numpy as np
-from numpy import savetxt  # for test
 import pycocotools.mask
 
 from mir.tools import det_eval_utils
@@ -580,9 +579,6 @@ class CocoDetEval:
             for class_id in class_ids:
                 for annotation in annotations[(asset_id, class_id)]:
                     img[self.decode_mir_mask(annotation, height, width) == 1] = class_id_to_order[class_id]
-            # for test
-            savetxt(fname=f"/home/zhaozhiwei/test/{asset_id}-{is_gt}.txt", delimiter=' ', X=img, fmt='%d')
-            # for test ends
             yield img
 
     def _mean_iou(
