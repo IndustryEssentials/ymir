@@ -78,7 +78,7 @@ const common = {
   'common.action.import': { cn: '添加', en: 'Add' },
   'common.action.del': { cn: '删除', en: 'Delete' },
   'common.action.check': { cn: '检查', en: 'Check' },
-  'common.action.preview': { cn: '图片预览', en: 'Preview' },
+  'common.action.preview': { cn: '查看', en: 'Preview' },
   'common.action.check.again': { cn: '重新检查', en: 'Recheck' },
   'common.action.multiple.del': { cn: '批量删除', en: 'Batch Delete' },
   'common.action.multiple.restore': { cn: '批量恢复', en: 'Batch Recover' },
