@@ -396,33 +396,24 @@ def map_and_filter_annotations(mir_annotations: mirpb.MirAnnotations, data_label
     }
     known_cids_mapping = {k: v for k, v in cids_mapping.items() if v >= 0}
 
-    _map_task_annotations_and_remove_empty(task_annotations=mir_annotations.prediction,
-                                           known_cids_mapping=known_cids_mapping)
-    _map_task_annotations_and_remove_empty(task_annotations=mir_annotations.ground_truth,
-                                           known_cids_mapping=known_cids_mapping)
+    for sia in mir_annotations.prediction.image_annotations.values():
+        for oa in sia.boxes:
+            if oa.class_id in known_cids_mapping:
+                oa.class_id = known_cids_mapping[oa.class_id]
+            else:
+                sia.boxes.remove(oa)
+    for sia in mir_annotations.ground_truth.image_annotations.values():
+        for oa in sia.boxes:
+            if oa.class_id in known_cids_mapping:
+                oa.class_id = known_cids_mapping[oa.class_id]
+            else:
+                sia.boxes.remove(oa)
 
     mir_annotations.prediction.eval_class_ids[:] = [
         known_cids_mapping[cid] for cid in mir_annotations.prediction.eval_class_ids if cid in known_cids_mapping
     ]
 
     return src_class_id_mgr.main_name_for_ids(list(cids_mapping.keys() - known_cids_mapping.keys()))
-
-
-def _map_task_annotations_and_remove_empty(task_annotations: mirpb.SingleTaskAnnotations,
-                                           known_cids_mapping: Dict[int, int]) -> None:
-    empty_asset_ids = set()
-    for asset_id, sia in task_annotations.image_annotations.items():
-        for oa in sia.boxes:
-            if oa.class_id in known_cids_mapping:
-                oa.class_id = known_cids_mapping[oa.class_id]
-            else:
-                sia.boxes.remove(oa)
-        if len(sia.boxes) == 0:
-            empty_asset_ids.add(asset_id)
-
-    # remove empty annotations
-    for asset_id in empty_asset_ids:
-        del task_annotations.image_annotations[asset_id]
 
 
 # filter and sampling
@@ -586,3 +577,9 @@ def make_empty_mir_annotations() -> mirpb.MirAnnotations:
     mir_annotations.prediction.type = mirpb.ObjectType.OT_NO_ANNOTATIONS
     mir_annotations.ground_truth.type = mirpb.ObjectType.OT_NO_ANNOTATIONS
     return mir_annotations
+
+
+def remove_empty_image_annotations(task_annotations: mirpb.SingleTaskAnnotations) -> None:
+    empty_asset_ids = {k for k, v in task_annotations.image_annotations.items() if len(v.boxes) == 0}
+    for asset_id in empty_asset_ids:
+        del task_annotations.image_annotations[asset_id]

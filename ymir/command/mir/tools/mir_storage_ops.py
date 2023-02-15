@@ -15,6 +15,7 @@ from mir.protos import mir_command_pb2 as mirpb
 from mir.tools import det_eval_ops, exodus
 from mir.tools import mir_storage, mir_repo_utils, revs_parser
 from mir.tools import settings as mir_settings
+from mir.tools.annotations import remove_empty_image_annotations
 from mir.tools.code import MirCode, time_it
 from mir.tools.errors import MirRuntimeError
 
@@ -39,6 +40,8 @@ class MirStorageOps():
         # add default members and check pred/gt object type
         mir_metadatas: mirpb.MirMetadatas = mir_datas[mirpb.MirStorage.MIR_METADATAS]
         mir_annotations: mirpb.MirAnnotations = mir_datas[mirpb.MirStorage.MIR_ANNOTATIONS]
+        remove_empty_image_annotations(mir_annotations.prediction)
+        remove_empty_image_annotations(mir_annotations.ground_truth)
         mir_annotations.prediction.task_id = task.task_id
         mir_annotations.ground_truth.task_id = task.task_id
         if mirpb.ObjectType.OT_UNKNOWN in {mir_annotations.prediction.type, mir_annotations.ground_truth.type}:
