@@ -49,6 +49,7 @@ function Analysis() {
   }, [assetChartConfig, source])
 
   useEffect(() => {
+    console.log('annotationChartConfig, source:', annotationChartConfig, source)
     const charts = generateCharts(annotationChartConfig, source)
     setAnnotationCharts(charts)
   }, [annotationChartConfig, source])

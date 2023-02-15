@@ -105,6 +105,13 @@ const charts: { [key: string]: ChartConfigType } = {
     isXUpperLimit: true,
     color: ['#10BC5E', '#F2637B'],
   },
+  complexity: {
+    label: 'dataset.analysis.title.complexity',
+    sourceField: 'complexity',
+    totalField: 'assetCount',
+    isXUpperLimit: true,
+    color: ['#10BC5E', '#F2637B'],
+  },
 }
 
 const getAnnotations = (item: YModels.DatasetAnalysis, type: AnnotationType) => item[type]
@@ -208,12 +215,11 @@ const getTableColumns = (objectType: YModels.ObjectType, annotationType: Annotat
   return getColumns(maps[objectType], annotationType)
 }
 
-// todo 场景复杂度
 const getCharts = (annotationType?: AnnotationType, objectType?: YModels.ObjectType) => {
   const maps = {
-    [ObjectType.ObjectDetection]: ['keywords', 'areaRatio'],
-    [ObjectType.SemanticSegmentation]: ['semanticKeywords', 'keywordArea'],
-    [ObjectType.InstanceSegmentation]: ['keywords', 'crowdedness', 'instanceArea', 'keywordArea'],
+    [ObjectType.ObjectDetection]: ['complexity', 'keywords', 'areaRatio'],
+    [ObjectType.SemanticSegmentation]: ['complexity', 'semanticKeywords', 'keywordArea'],
+    [ObjectType.InstanceSegmentation]: ['complexity', 'keywords', 'crowdedness', 'instanceArea', 'keywordArea'],
   }
   const assetCharts = ['assetHWRatio', 'assetArea']
   const keys = objectType ? maps[objectType] : assetCharts

@@ -88,7 +88,7 @@ const dataset = {
   'dataset.add.form.path.label': { cn: '相对路径', en: 'Relative Path' },
   'dataset.add.form.tip.format.detail': { cn: '查看标注示例文件及meta.yaml格式', en: 'View annotations sample file or meta.yaml' },
   'dataset.add.form.tip.structure': {
-    cn: '图片文件需放入images文件夹内，标准值标注文件需放入gt文件夹内，模型推理标注文件需放入pred文件夹内。gt和pred都是可选的。文件结构如下：{br}{pic}{br}{detail}',
+    cn: '图片文件需放入images文件夹内，标注文件需放入gt文件夹内，模型推理标注文件需放入pred文件夹内。gt和pred都是可选的。文件结构如下：{br}{pic}{br}{detail}',
     en: 'image -> images; gt -> GT annotations; pred -> predictions. gt and pred is optional. structure: {br}{pic}',
   },
   'dataset.add.form.path.tip': {
@@ -168,6 +168,7 @@ const dataset = {
   'dataset.analysis.title.keyword_area': { cn: '标注面积统计', en: 'Annotations Area Statistics' },
   'dataset.analysis.title.instance_area': { cn: '实例面积分布', en: 'Instances Area Distribution' },
   'dataset.analysis.title.crowdedness': { cn: '目标聚集度', en: 'Object Crowdedness Statistics' },
+  'dataset.analysis.title.complexity': { cn: '场景复杂度', en: 'Scene Complexity' },
   'dataset.analysis.bar.asset.tooltip': { cn: ' 占比：{ratio} 数量：{amount} 张', en: ' Ratio: {ratio} Amount: {amount}' },
   'dataset.analysis.bar.anno.tooltip': { cn: ' 占比：{ratio} 数量：{amount} 个', en: ' Ratio: {ratio} Amount: {amount}' },
   'dataset.analysis.bar.area.tooltip': { cn: ' 占比：{ratio} 面积：{amount} px', en: ' Ratio: {ratio} Area: {amount}' },
