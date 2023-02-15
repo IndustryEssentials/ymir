@@ -579,14 +579,5 @@ def make_empty_mir_annotations() -> mirpb.MirAnnotations:
     return mir_annotations
 
 
-def single_image_annotations_available(image_annotations: mirpb.SingleImageAnnotations) -> bool:
+def valid_image_annotation(image_annotations: mirpb.SingleImageAnnotations) -> bool:
     return len(image_annotations.boxes) > 0
-
-
-def remove_empty_image_annotations(task_annotations: mirpb.SingleTaskAnnotations) -> None:
-    invalid_asset_ids = {
-        k
-        for k, v in task_annotations.image_annotations.items() if not single_image_annotations_available(v)
-    }
-    for asset_id in invalid_asset_ids:
-        del task_annotations.image_annotations[asset_id]
