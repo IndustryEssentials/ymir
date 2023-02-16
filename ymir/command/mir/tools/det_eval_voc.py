@@ -232,9 +232,10 @@ def _get_single_evaluate_element(prediction: mirpb.SingleTaskAnnotations, ground
     return see
 
 
-def det_evaluate(prediction: mirpb.SingleTaskAnnotations, ground_truth: mirpb.SingleTaskAnnotations,
-                 config: mirpb.EvaluateConfig,
-                 assets_metadata: Optional[mirpb.MirMetadatas] = None) -> mirpb.Evaluation:
+def evaluate(prediction: mirpb.SingleTaskAnnotations,
+             ground_truth: mirpb.SingleTaskAnnotations,
+             config: mirpb.EvaluateConfig,
+             assets_metadata: Optional[mirpb.MirMetadatas] = None) -> mirpb.Evaluation:
     evaluation = mirpb.Evaluation()
     evaluation.config.CopyFrom(config)
 

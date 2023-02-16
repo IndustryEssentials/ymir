@@ -63,9 +63,11 @@ def det_evaluate_with_pb(
         for annotation in image_annotations.boxes:
             annotation.cm = mirpb.ConfusionMatrixType.IGNORED
             annotation.det_link_id = -1
-    evaluation = f_eval_model.det_evaluate(  # type: ignore
-        prediction=prediction, ground_truth=ground_truth, config=config, assets_metadata=assets_metadata
-    )
+    evaluation = f_eval_model.evaluate(  # type: ignore
+        prediction=prediction,
+        ground_truth=ground_truth,
+        config=config,
+        assets_metadata=assets_metadata)
 
     logging.info(f"|-det_evaluate_with_pb-eval costs {(time.time() - start_time):.2f}s.")
 

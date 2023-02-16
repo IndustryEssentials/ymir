@@ -579,8 +579,8 @@ class TestToolsDetEval(unittest.TestCase):
         evaluate_config.iou_thrs_interval = '0.5'
         evaluate_config.need_pr_curve = True
         evaluate_config.class_ids[:] = [0, 1]
-        evaluation: mirpb.Evaluation = det_eval_model_name.det_evaluate(prediction=mir_annotations.prediction,
-                                                                        ground_truth=mir_annotations.ground_truth,
-                                                                        config=evaluate_config)
+        evaluation: mirpb.Evaluation = det_eval_model_name.evaluate(prediction=mir_annotations.prediction,
+                                                                    ground_truth=mir_annotations.ground_truth,
+                                                                    config=evaluate_config)
         self._check_fpfn(mir_annotations)
         return evaluation.dataset_evaluation
