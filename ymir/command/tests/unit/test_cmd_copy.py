@@ -117,12 +117,11 @@ class TestCmdCopy(unittest.TestCase):
                 annotation.index: annotation.class_id
                 for annotation in mir_annotations.prediction.image_annotations['asset0'].boxes
             }
-            asset1_idx_ids = {
-                annotation.index: annotation.class_id
-                for annotation in mir_annotations.prediction.image_annotations['asset1'].boxes
-            }
             self.assertEqual({0: 2, 1: 1}, asset0_idx_ids)
-            self.assertEqual({}, asset1_idx_ids)
+            # asset1 has only one prediction with class name 'd'
+            # which is unknown to destination dataset, and to be ignored
+            # so asset1 have no predictions in destination dataset, and should not appear in image_annotations
+            self.assertTrue('asset1' not in mir_annotations.prediction.image_annotations)
         self.assertEqual(eval_class_ids_set, set(mir_annotations.prediction.eval_class_ids))
 
         mAP = mir_tasks.tasks[dst_tid].model.mAP
