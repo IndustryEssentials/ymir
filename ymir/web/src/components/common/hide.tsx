@@ -18,7 +18,7 @@ type Props = {
 }
 
 const Hide = forwardRef<RefProps, Props>(
-  ({ type = 0, msg = 'dataset.action.del.confirm.content', excludeMsg = 'dataset.action.hide.confirm.exclude', ok = () => {} }, ref) => {
+  ({ type = 0, msg = 'dataset.action.del.confirm.content', excludeMsg = 'dataset.action.del.confirm.exclude', ok = () => {} }, ref) => {
     const [hideResult, remoteHide] = useFetch(`${!type ? 'dataset' : 'model'}/hide`)
 
     const [modal, contextHolder] = Modal.useModal()
