@@ -102,6 +102,7 @@ class SortField(enum.Enum):
 def list_datasets(
     db: Session = Depends(deps.get_db),
     source: TaskType = Query(None, description="type of related task"),
+    exclude_source: TaskType = Query(None, description="exclude type of related task"),
     project_id: int = Query(None),
     group_id: int = Query(None),
     group_name: str = Query(None),
@@ -127,6 +128,7 @@ def list_datasets(
         group_id=group_id,
         group_name=group_name,
         source=source,
+        exclude_source=exclude_source,
         state=state,
         object_type=object_type,
         visible=visible,
