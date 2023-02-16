@@ -200,8 +200,8 @@ class DatasetPaginationOut(Common):
 class DatasetEvaluationCreate(BaseModel):
     project_id: int
     dataset_ids: List[int]
-    confidence_threshold: float
-    iou_threshold: float
+    confidence_threshold: float = -1  # default -1, no filter
+    iou_threshold: float = -1
     require_average_iou: bool = False
     need_pr_curve: bool = True
     main_ck: Optional[str] = None

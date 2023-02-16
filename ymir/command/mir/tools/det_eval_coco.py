@@ -1,5 +1,5 @@
 from collections import defaultdict
-from typing import Any, Dict, List, Optional, Set, Tuple, Union, Iterator
+from typing import Any, Dict, List, Optional, Set, Sequence, Tuple, Union, Iterator
 
 import numpy as np
 import pycocotools.mask
@@ -63,9 +63,10 @@ class MirCoco:
                 if conf_thr is not None and annotation.score < conf_thr:
                     continue
 
-                area = (annotation.box.w * annotation.box.h
-                        if single_task_annotations.type == mirpb.OT_DET_BOX
-                        else annotation.mask_area)
+                if single_task_annotations.type == mirpb.OT_DET_BOX:
+                    area = annotation.box.w * annotation.box.h
+                else:
+                    area = annotation.mask_area
                 annotation_dict = {
                     'id': annotation_idx,
                     'area': area,
@@ -174,11 +175,12 @@ class CocoDetEval:
         return ious
 
     @staticmethod
-    def _convert_to_coco_segmentation(mir_annotation: Dict, size: List[int]) -> Union[Dict, List]:
+    def _convert_to_coco_segmentation(mir_annotation: Dict, size: Sequence[Union[float, int]]) -> Dict:
         if mir_annotation.get("mask"):
-            return {'counts': mir_annotation['mask'], 'size': size}
+            return {"counts": mir_annotation["mask"], "size": size}
         elif mir_annotation.get("polygon"):
-            return [[i for point in mir_annotation["polygon"] for i in (point.x, point.y)]]
+            polygon = [[i for point in mir_annotation["polygon"] for i in (point.x, point.y)]]
+            return pycocotools.mask.merge(pycocotools.mask.frPyObjects(polygon, *size))
         else:
             raise ValueError("Failed to convert to coco segmentation format")
 
@@ -548,18 +550,12 @@ class CocoDetEval:
             total_area_gt += area_gt
         return total_area_intersect, total_area_union, total_area_dt, total_area_gt
 
-    @staticmethod
-    def decode_mir_mask(annotation: Dict, height: float, width: float) -> np.ndarray:
-        coco_segmentation: dict
-        if annotation.get('mask'):
-            coco_segmentation = {"counts": annotation["mask"], "size": [height, width]}
-        elif annotation.get('polygon'):
-            coco_segmentation = pycocotools.mask.frPyObjects(
-                [[i for point in annotation["polygon"] for i in (point.x, point.y)]], height, width)[0]
-        else:
-            raise ValueError("Unsupported coco segmentation format")
-
-        return pycocotools.mask.decode(coco_segmentation)
+    def decode_mir_mask(self, annotation: Dict, height: float, width: float) -> Optional[np.ndarray]:
+        try:
+            coco_seg = self._convert_to_coco_segmentation(annotation, [height, width])
+        except ValueError:
+            return None
+        return pycocotools.mask.decode(coco_seg)
 
     def aggregate_imagewise_annotations(self, annotations: defaultdict) -> Iterator[np.ndarray]:
         """
@@ -578,7 +574,9 @@ class CocoDetEval:
             img = np.ones(shape=(height, width), dtype=np.uint8) * 255
             for class_id in class_ids:
                 for annotation in annotations[(asset_id, class_id)]:
-                    img[self.decode_mir_mask(annotation, height, width) == 1] = class_id_to_order[class_id]
+                    _mask = self.decode_mir_mask(annotation, height, width)
+                    if _mask is not None:
+                        img[_mask == 1] = class_id_to_order[class_id]
             yield img
 
     def _mean_iou(
@@ -642,7 +640,8 @@ def evaluate(prediction: mirpb.SingleTaskAnnotations, ground_truth: mirpb.Single
 
     params = Params()
     params.confThr = config.conf_thr
-    params.iouThrs = det_eval_utils.get_iou_thrs_array(config.iou_thrs_interval)
+    if config.iou_thrs_interval != "-1":
+        params.iouThrs = det_eval_utils.get_iou_thrs_array(config.iou_thrs_interval)
     params.need_pr_curve = config.need_pr_curve
     params.catIds = list(config.class_ids)
 
