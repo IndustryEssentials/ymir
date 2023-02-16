@@ -3,7 +3,7 @@ import time
 from types import ModuleType
 from typing import Any, Optional
 
-from mir.tools import det_eval_coco, det_eval_voc, settings as mir_settings
+from mir.tools import det_eval_coco, det_eval_voc, sem_seg_eval_mm, settings as mir_settings
 from mir.tools.code import MirCode
 from mir.tools.errors import MirRuntimeError
 from mir.protos import mir_command_pb2 as mirpb
@@ -49,9 +49,10 @@ def det_evaluate_with_pb(
         evaluation.state = mirpb.EvaluationState.ES_EXCEEDS_LIMIT
         return evaluation
 
-    f_eval_model = _get_eval_model_function(prediction.type)
+    f_eval_model = _get_eval_model_function(config.type, config.is_instance_segmentation)
     if not f_eval_model:
-        logging.warning(f"skip evaluation: anno type: {prediction.type} not supported")
+        logging.warning(
+            f"skip evaluation: anno type: {prediction.type}, {config.is_instance_segmentation} not supported")
         evaluation.state = mirpb.EvaluationState.ES_NOT_SET
         return evaluation
 
@@ -77,12 +78,14 @@ def det_evaluate_with_pb(
     return evaluation
 
 
-def _get_eval_model_function(anno_type: Any) -> Optional[ModuleType]:
+def _get_eval_model_function(anno_type: Any, is_instance_segmentation: bool) -> Optional[ModuleType]:
+    breakpoint()
     mapping = {
-        mirpb.ObjectType.OT_DET_BOX: det_eval_voc,
-        mirpb.ObjectType.OT_SEG: det_eval_coco,
+        (mirpb.ObjectType.OT_DET_BOX, False): det_eval_voc,
+        (mirpb.ObjectType.OT_SEG, False): sem_seg_eval_mm,
+        (mirpb.ObjectType.OT_SEG, True): det_eval_coco,
     }
-    return mapping.get(anno_type)
+    return mapping.get((anno_type, is_instance_segmentation))
 
 
 def _show_evaluation(evaluation: mirpb.Evaluation) -> None:

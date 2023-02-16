@@ -1,5 +1,5 @@
 from collections import defaultdict
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional, OrderedDict, Tuple
 
 import numpy as np
 import pycocotools.mask
@@ -7,18 +7,26 @@ import pycocotools.mask
 from mir.protos import mir_command_pb2 as mirpb
 
 
+_SEMANTIC_SEGMENTATION_BACKGROUND_INDEX = 255
+
 # protected: semantic segmentation evaluation
 def _mir_mean_iou(prediction: mirpb.SingleTaskAnnotations, ground_truth: mirpb.SingleTaskAnnotations,
                   class_ids: List[int],
-                  assets_metadata: Optional[mirpb.MirMetadatas]) -> mirpb.SegmentationMetrics:
+                  asset_id_to_hws: OrderedDict[str, Tuple[int, int]]) -> mirpb.SegmentationMetrics:
+
     dts = _aggregate_imagewise_annotations(task_annotations=prediction,
-                                           assets_metadata=assets_metadata,
+                                           asset_id_to_hws=asset_id_to_hws,
                                            class_ids=class_ids)
     gts = _aggregate_imagewise_annotations(task_annotations=ground_truth,
-                                           assets_metadata=assets_metadata,
+                                           asset_id_to_hws=asset_id_to_hws,
                                            class_ids=class_ids)
-    all_acc, acc, iou, macc, miou = self._mean_iou(dts, gts, len(class_ids), 255, -1)
+    all_acc, acc, iou, macc, miou = _mean_iou(dts=dts,
+                                              gts=gts,
+                                              num_classes=len(class_ids),
+                                              ignore_index=_SEMANTIC_SEGMENTATION_BACKGROUND_INDEX,
+                                              nan_to_num=-1)
     order_to_class_id = dict(zip(range(len(class_ids)), class_ids))
+
     metrics = mirpb.SegmentationMetrics()
     metrics.aAcc = all_acc
     metrics.Acc.update({order_to_class_id[idx]: value for idx, value in enumerate(acc)})
@@ -29,32 +37,28 @@ def _mir_mean_iou(prediction: mirpb.SingleTaskAnnotations, ground_truth: mirpb.S
 
 
 def _aggregate_imagewise_annotations(task_annotations: mirpb.SingleTaskAnnotations,
-                                     assets_metadata: mirpb.MirMetadatas,
-                                     class_ids: List[int]) -> Dict[str, np.ndarray]:
-    """
-    annotations: self._gts or self._dts
-    """
+                                     asset_id_to_hws: OrderedDict[str, Tuple[int, int]],
+                                     class_ids: List[int]) -> List[np.ndarray]:
     class_id_to_order = dict(zip(class_ids, range(len(class_ids))))
-    asset_ids = self._asset_ids
 
-    asset_id_to_masks = {}
-
-    for asset_id in asset_ids:
-        if not self._assets_metadata:
-            raise ValueError('assets_metadata is required for segmentation evaluation')
-        asset_metadata = self._assets_metadata[asset_id]
-        height, width = asset_metadata.height, asset_metadata.width
+    image_annotations: List[np.ndarray] = []
+    for asset_id, hw in asset_id_to_hws.items():
         # use 255 as a special class, which will be ignored upon evaluation
-        img = np.ones(shape=(height, width), dtype=np.uint8) * 255
-        for class_id in class_ids:
-            for annotation in annotations[(asset_id, class_id)]:
-                img[self.decode_mir_mask(annotation, height, width) == 1] = class_id_to_order[class_id]
-        asset_id_to_masks[asset_id] = img
-    return asset_id_to_masks
+        img = np.ones(shape=hw, dtype=np.uint8) * _SEMANTIC_SEGMENTATION_BACKGROUND_INDEX
+        if asset_id not in task_annotations.image_annotations:
+            image_annotations.append(img)
+            continue
+
+        for annotation in task_annotations.image_annotations[asset_id].boxes:
+            if annotation.class_id not in class_ids:
+                continue
+            img[_decode_mir_mask(annotation, hw) == 1] = class_id_to_order[annotation.class_id]
+        image_annotations.append(img)
+    return image_annotations
 
 
+# protected: calc mean iou
 def _mean_iou(
-    self,
     dts: List[np.ndarray],
     gts: List[np.ndarray],
     num_classes: int,
@@ -64,22 +68,21 @@ def _mean_iou(
     (
         total_area_intersect,
         total_area_union,
-        total_area_dt,
+        _,
         total_area_gt,
-    ) = self._total_intersect_and_union(dts, gts, num_classes, ignore_index)
-    all_acc = np.nansum(total_area_intersect) / np.nansum(total_area_gt)
-    acc = total_area_intersect / total_area_gt
-    iou = total_area_intersect / total_area_union
-    macc = np.nanmean(acc)
-    miou = np.nanmean(iou)
-    ret_metrics = [all_acc, acc, iou, macc, miou]
+    ) = _total_intersect_and_union(dts, gts, num_classes, ignore_index)
+    all_acc: float = np.nansum(total_area_intersect) / np.nansum(total_area_gt)
+    acc: np.ndarray = total_area_intersect / total_area_gt
+    iou: np.ndarray = total_area_intersect / total_area_union
+    macc: float = np.nanmean(acc)
+    miou: float = np.nanmean(iou)
+    ret_metrics = (all_acc, acc, iou, macc, miou)
     if nan_to_num is not None:
         ret_metrics = [np.nan_to_num(metric, nan=nan_to_num) for metric in ret_metrics]
     return ret_metrics
 
 
 def _intersect_and_union(
-    self,
     dt: np.ndarray,
     gt: np.ndarray,
     num_classes: int,
@@ -97,7 +100,6 @@ def _intersect_and_union(
 
 
 def _total_intersect_and_union(
-    self,
     dts: List[np.ndarray],
     gts: List[np.ndarray],
     num_classes: int,
@@ -108,7 +110,7 @@ def _total_intersect_and_union(
     total_area_dt = np.zeros((num_classes,), dtype=float)  # type: ignore
     total_area_gt = np.zeros((num_classes,), dtype=float)  # type: ignore
     for dt, gt in zip(dts, gts):
-        area_intersect, area_union, area_dt, area_gt = self._intersect_and_union(
+        area_intersect, area_union, area_dt, area_gt = _intersect_and_union(
             dt,
             gt,
             num_classes,
@@ -121,15 +123,15 @@ def _total_intersect_and_union(
     return total_area_intersect, total_area_union, total_area_dt, total_area_gt
 
 
-def decode_mir_mask(annotation: Dict, height: float, width: float) -> np.ndarray:
+def _decode_mir_mask(annotation: mirpb.ObjectAnnotation, hw: Tuple[int, int]) -> np.ndarray:
     coco_segmentation: dict
-    if annotation.get('mask'):
-        coco_segmentation = {"counts": annotation["mask"], "size": [height, width]}
-    elif annotation.get('polygon'):
+    if annotation.type == mirpb.ObjectSubType.OST_SEG_MASK:
+        coco_segmentation = {"counts": annotation.mask, "size": hw}
+    elif annotation.type == mirpb.ObjectSubType.OST_SEG_POLYGON:
         coco_segmentation = pycocotools.mask.frPyObjects(
-            [[i for point in annotation["polygon"] for i in (point.x, point.y)]], height, width)[0]
+            [[i for point in annotation.polygon for i in (point.x, point.y)]], hw[0], hw[1])[0]
     else:
-        raise ValueError("Unsupported coco segmentation format")
+        raise ValueError(f"Unsupported object annotation sub type: {annotation.type}")
 
     return pycocotools.mask.decode(coco_segmentation)
 
@@ -140,10 +142,18 @@ def evaluate(prediction: mirpb.SingleTaskAnnotations, ground_truth: mirpb.Single
     evaluation = mirpb.Evaluation()
     evaluation.config.CopyFrom(config)
 
+    asset_ids = sorted(prediction.image_annotations.keys() | ground_truth.image_annotations.keys())
+    asset_id_to_hws: OrderedDict[str, Tuple[int, int]] = OrderedDict()
+    for asset_id in asset_ids:
+        if asset_id not in assets_metadata.attributes:
+            continue
+        asset_id_to_hws[asset_id] = (assets_metadata.attributes[asset_id].height,
+                                     assets_metadata.attributes[asset_id].width)
+
     evaluation.dataset_evaluation.segmentation_metrics.CopyFrom(
         _mir_mean_iou(prediction=prediction,
                       ground_truth=ground_truth,
-                      assets_metadata=assets_metadata,
+                      asset_id_to_hws=asset_id_to_hws,
                       class_ids=config.class_ids))
 
     evaluation.state = mirpb.EvaluationState.ES_READY
