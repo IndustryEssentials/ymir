@@ -533,10 +533,10 @@ class CocoDetEval:
         num_classes: int,
         ignore_index: int,
     ) -> Tuple:
-        total_area_intersect = np.zeros((num_classes,), dtype=float)  # type: ignore
-        total_area_union = np.zeros((num_classes,), dtype=float)  # type: ignore
-        total_area_dt = np.zeros((num_classes,), dtype=float)  # type: ignore
-        total_area_gt = np.zeros((num_classes,), dtype=float)  # type: ignore
+        total_area_intersect = np.zeros((num_classes,), dtype=float)
+        total_area_union = np.zeros((num_classes,), dtype=float)
+        total_area_dt = np.zeros((num_classes,), dtype=float)
+        total_area_gt = np.zeros((num_classes,), dtype=float)
         for dt, gt in zip(dts, gts):
             area_intersect, area_union, area_dt, area_gt = self._intersect_and_union(
                 dt,

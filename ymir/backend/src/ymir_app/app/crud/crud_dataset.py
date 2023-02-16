@@ -25,6 +25,7 @@ class CRUDDataset(CRUDBase[Dataset, DatasetCreate, DatasetUpdate]):
         group_id: Optional[int] = None,
         group_name: Optional[str] = None,
         source: Optional[TaskType] = None,
+        exclude_source: Optional[TaskType] = None,
         state: Optional[IntEnum] = None,
         object_type: Optional[IntEnum] = None,
         visible: bool = True,
@@ -59,6 +60,9 @@ class CRUDDataset(CRUDBase[Dataset, DatasetCreate, DatasetUpdate]):
             query = query.filter(self.model.result_state == int(state))
         if source is not None:
             query = query.filter(self.model.source == int(source))
+        if exclude_source is not None:
+            # TODO: remove when datasets and preds are separated
+            query = query.filter(self.model.source != int(exclude_source))
         if project_id is not None:
             query = query.filter(self.model.project_id == project_id)
         if group_id is not None:
