@@ -23,7 +23,7 @@ class EvaluateInvoker(BaseMirControllerInvoker):
             return checker_resp
 
         ec = self._request.evaluate_config
-        if ec.conf_thr < 0 or ec.conf_thr >= 1:
+        if not (ec.conf_thr == -1 or 0 <= ec.conf_thr <= 1):
             return utils.make_general_response(CTLResponseCode.ARG_VALIDATION_FAILED,
                                                f"invalid evaluate conf thr: {ec.conf_thr:.2f}")
 
