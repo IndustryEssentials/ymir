@@ -10,7 +10,7 @@ from mir.commands.merge import merge_with_pb
 from mir.protos import mir_command_pb2 as mirpb
 from mir.tools import checker, class_ids, env_config, exporter
 from mir.tools import mir_storage_ops, models, revs_parser
-from mir.tools.annotations import filter_mirdatas_by_asset_ids, MergeStrategy
+from mir.tools.annotations import filter_mirdatas_by_asset_ids, valid_image_annotation, MergeStrategy
 from mir.tools.code import MirCode
 from mir.tools.command_run_in_out import command_run_in_out
 from mir.tools.errors import MirContainerError, MirRuntimeError
@@ -254,6 +254,8 @@ def _process_results(mir_root: str, label_storage_file: str, export_out: str,
         #   convert: cmd infer packs infer_result_prediction.image_annotations with file base name as key
         #       so we need to convert all keys to asset hash (in cmd mining, the image's main name)
         for file_name in infer_result_prediction.image_annotations:
+            if not valid_image_annotation(infer_result_prediction.image_annotations[file_name]):
+                continue
             asset_id = os.path.splitext(file_name)[0]
             if asset_id in asset_ids_set:
                 prediction.image_annotations[asset_id].CopyFrom(
