@@ -14,7 +14,7 @@ from mir.tools.annotations import filter_mirdatas_by_asset_ids, MergeStrategy
 from mir.tools.code import MirCode
 from mir.tools.command_run_in_out import command_run_in_out
 from mir.tools.errors import MirContainerError, MirRuntimeError
-from mir.tools.mir_storage_ops import valid_image_annotation, create_task, MirStorageOps
+from mir.tools.mir_storage_ops import create_task, valid_image_annotation, MirStorageOps
 
 
 class CmdMining(base.BaseCommand):
