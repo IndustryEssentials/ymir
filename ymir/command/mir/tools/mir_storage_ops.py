@@ -15,7 +15,6 @@ from mir.protos import mir_command_pb2 as mirpb
 from mir.tools import det_eval_ops, exodus
 from mir.tools import mir_storage, mir_repo_utils, revs_parser
 from mir.tools import settings as mir_settings
-from mir.tools.annotations import valid_image_annotation
 from mir.tools.code import MirCode, time_it
 from mir.tools.errors import MirRuntimeError
 
@@ -370,3 +369,7 @@ def create_task(task_type: 'mirpb.TaskType.V',
         task.evaluation.CopyFrom(evaluation)
 
     return task
+
+
+def valid_image_annotation(image_annotations: mirpb.SingleImageAnnotations) -> bool:
+    return len(image_annotations.boxes) > 0

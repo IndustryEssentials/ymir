@@ -14,10 +14,11 @@ from mir.protos import mir_command_pb2 as mirpb
 from mir.tools import class_ids, models
 from mir.tools import settings as mir_settings
 from mir.tools import env_config
-from mir.tools.annotations import valid_image_annotation, import_annotations_coco_json, UnknownTypesStrategy
+from mir.tools.annotations import import_annotations_coco_json, UnknownTypesStrategy
 from mir.tools.code import MirCode
 from mir.tools.errors import MirRuntimeError
 from mir.tools.executant import prepare_executant_env, run_docker_executant
+from mir.tools.mir_storage_ops import valid_image_annotation
 
 
 class CmdInfer(base.BaseCommand):
