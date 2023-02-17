@@ -1,74 +1,59 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import type { FC } from 'react'
 import { useParams } from 'umi'
-import { Select, Pagination, Row, Col, Button, Space, Card, Tag, Modal, Popover } from 'antd'
+import { Pagination, Row, Col, Button, Space, Card, Tag, Modal } from 'antd'
 
 import t from '@/utils/t'
-import useFetch from '@/hooks/useFetch'
-import { randomBetween, percent } from '@/utils/number'
+import { randomBetween } from '@/utils/number'
+import useRequest from '@/hooks/useRequest'
 
-import ObjectTypeTag from '@/components/project/ObjectTypeTag'
 import Breadcrumbs from '@/components/common/breadcrumb'
-import Asset from './components/asset'
-import styles from './assets.less'
-import GtSelector from '@/components/form/GtSelector'
-import ListAnnotation from '@/components/dataset/ListAnnotation'
 import KeywordSelector from '@/components/form/KeywordFilter'
 import EvaluationSelector from '@/components/form/EvaluationSelector'
-import VersionName from '@/components/result/VersionName'
-import CustomLabels from '@/components/dataset/asset/CustomLabels'
+import Asset from './components/Asset'
+import List from './components/AssetList'
 
-const { Option } = Select
+import styles from './assets.less'
+import DatasetInfo from './components/DatasetInfo'
 
-const paramsHandle = (params) => {
-  const mergeKeywords = (params) => {
-    const kws = params.keywords?.map((item) => (Array.isArray(item) ? item.join(':') : item))
-    return {
-      ...params,
-      keywords: kws,
-    }
-  }
-  const addAll = (params) =>
-    Object.keys(params).reduce(
-      (prev, key) => ({
-        ...prev,
-        [key]: params[key + 'all'] ? [] : params[key],
-      }),
-      {},
-    )
-  return addAll(mergeKeywords(params))
+type IndexType = {
+  hash: string
+  index: number
+  asset?: YModels.Asset
 }
 
-const Dataset = () => {
-  const { id: pid, did: id } = useParams()
+const Dataset: FC = () => {
+  const { id: pid, did: id } = useParams<{ id: string; did: string }>()
   const initQuery = {
     id,
-    // keywords: [],
     offset: 0,
     limit: 20,
   }
-  const [filterParams, setFilterParams] = useState(initQuery)
+  const [filterParams, setFilterParams] = useState<YParams.AssetQueryParams>(initQuery)
   const [currentPage, setCurrentPage] = useState(1)
   const [assetVisible, setAssetVisible] = useState(false)
-  const [currentAsset, setCurrentAsset] = useState({
-    hash: null,
+  const [currentAsset, setCurrentAsset] = useState<IndexType>({
+    hash: '',
     index: 0,
   })
-  const listRef = useRef(null)
-  const [dataset, getDataset] = useFetch('dataset/getDataset', {})
-  const [{ items: assets, total }, getAssets, setAssets] = useFetch('dataset/getAssetsOfDataset', { items: [], total: 0 })
+  const listRef = useRef<HTMLDivElement>(null)
+  const { data: dataset, run: getDataset } = useRequest<YModels.Dataset>('dataset/getDataset', {
+    loading: false,
+  })
+  const { data: { items: assets, total } = { items: [], total: 0 }, run: getAssets } = useRequest<YStates.List<YModels.Asset>>('dataset/getAssetsOfDataset')
 
   useEffect(() => {
     getDataset({ id, verbose: true })
   }, [id])
 
   useEffect(() => {
-    console.log('filterParams:', filterParams)
-    setCurrentPage(filterParams.offset / filterParams.limit + 1)
-    dataset.id && filter(paramsHandle(filterParams))
+    const { offset = 0, limit = 20 } = filterParams
+    setCurrentPage(offset / limit + 1)
+    dataset?.id && filter(filterParams)
   }, [dataset, filterParams])
 
-  const filterKw = ({ type, selected }) => {
-    if (!selected.length && !filterParams.keywords?.length) {
+  const filterKw = ({ type, selected }: { type: string; selected?: string[] }) => {
+    if (!selected?.length && !filterParams.keywords?.length) {
       return
     }
     setFilterParams((params) => ({
@@ -79,53 +64,38 @@ const Dataset = () => {
     }))
   }
 
-  const filterPage = (page, pageSize) => {
+  const filterPage = (page: number, pageSize: number) => {
     setCurrentPage(page)
     const limit = pageSize
     const offset = limit * (page - 1)
     setFilterParams((params) => ({ ...params, offset, limit }))
   }
-  const filter = (param) => {
-    getAssets({ ...param, datasetKeywords: dataset?.keywords })
+  const filter = (params: YParams.AssetQueryParams) => {
+    getAssets({ ...params, datasetKeywords: dataset?.keywords })
   }
-  const goAsset = (asset, hash, index) => {
-    setCurrentAsset({ asset, hash, index: filterParams.offset + index })
+  const goAsset = (asset: YModels.Asset, hash: string, current: number) => {
+    const index = (filterParams.offset || 0) + current
+    setCurrentAsset({ asset, hash, index })
     setAssetVisible(true)
   }
 
   const randomPage = () => {
-    const { limit, offset } = filterParams
+    const { limit = 20, offset = 0 } = filterParams
     setCurrentPage(offset / limit + 1)
     const page = randomBetween(Math.ceil(total / limit), 1, currentPage)
     filterPage(page, limit)
   }
 
-  const filterAnnotations = useCallback(
-    (annotations) => {
-      const cm = filterParams.cm || []
-      const annoType = filterParams.annoType || []
-      const cmAll = !cm.length || filterParams['cmall']
-      const annoTypeAll = !annoType.length || filterParams['annoTypeall']
-      const gtFilter = (annotation) => annoTypeAll || annoType.some((selected) => (selected === 'gt' ? annotation.gt : !annotation.gt))
-      const evaluationFilter = (annotation) => cmAll || cm.includes(annotation.cm)
-      return annotations.filter((annotation) => gtFilter(annotation) && evaluationFilter(annotation))
-    },
-    [filterParams.cm, filterParams.annoType],
-  )
-
-  const updateFilterParams = (value, field) => {
-    console.log('value, all, field:', value, field)
-    // if (value) {
-      setFilterParams((query) => ({
-        ...query,
-        [field]: value,
-        offset: initQuery.offset,
-      }))
-    // }
+  const updateFilterParams = (value: string | string[] | number, field: string) => {
+    setFilterParams((query) => ({
+      ...query,
+      [field]: value,
+      offset: initQuery.offset,
+    }))
   }
 
   const reset = () => {
-    setFilterParams({...initQuery, keywords: []})
+    setFilterParams({ ...initQuery, keywords: [] })
   }
 
   const randomPageButton = (
@@ -134,102 +104,15 @@ const Dataset = () => {
     </Button>
   )
 
-  const CkPopup = ({ asset, children }) => {
-    const cks = Object.keys(asset?.cks || {})
-    const content = (
-      <>
-        <h4>{t('dataset.assets.keyword.selector.types.cks')}</h4>
-        <CustomLabels asset={asset} />
-      </>
-    )
-    return cks.length ? (
-      <Popover placement="bottomLeft" content={content}>
-        {children}
-      </Popover>
-    ) : (
-      children
-    )
-  }
-
-  const renderList = useCallback(
-    (list, row = 5) => {
-      let r = 0
-      let result = []
-      let space = 4
-      while (r < list.length) {
-        result.push(list.slice(r, r + row))
-        r += row
-      }
-
-      return result.map((rows, index) => {
-        const cw = listRef.current?.clientWidth || 0
-        const h =
-          (cw - space * row) /
-          rows.reduce((prev, row) => {
-            return prev + row.metadata.width / row.metadata.height
-          }, 0)
-
-        return (
-          <Row gutter={space} wrap={false} key={index} className={styles.dataset_container}>
-            {rows.map((asset, rowIndex) => (
-              <Col style={{ height: h }} key={asset.hash} className={styles.dataset_item}>
-                <CkPopup asset={asset}>
-                  <div className={styles.dataset_img} onClick={() => goAsset(asset, asset.hash, index * row + rowIndex)}>
-                    <ListAnnotation asset={asset} filter={filterAnnotations} />
-                    <span className={styles.item_keywords_count} title={asset?.keywords.join(',')}>
-                      {t('dataset.detail.assets.keywords.total', {
-                        total: asset?.keywords?.length,
-                      })}
-                    </span>
-                    <span className={styles.item_keywords}>
-                      {asset.keywords.slice(0, 4).map((key) => (
-                        <Tag className={styles.item_keyword} key={key} title={key}>
-                          {key}
-                        </Tag>
-                      ))}
-                      {asset.keywords.length > 4 ? (
-                        <Tag className={styles.item_keyword} style={{ width: '10px' }}>
-                          ...
-                        </Tag>
-                      ) : null}
-                    </span>
-                  </div>
-                </CkPopup>
-              </Col>
-            ))}
-          </Row>
-        )
-      })
-    },
-    [listRef.current?.clientWidth, filterParams],
-  )
-
   const renderTitle = (
     <Row className={styles.labels}>
       <Col span={12}>
-        <Space wrap={true}>
-          <strong>
-            <VersionName result={dataset} />
-          </strong>
-          <span>{t('dataset.detail.pager.total', { total: total + '/' + dataset.assetCount })}</span>
-          <ObjectTypeTag type={dataset.type} />
-          {dataset?.inferClass ? (
-            <div>
-              {t('dataset.detail.infer.class')}
-              {dataset?.inferClass?.map((cls) => (
-                <Tag key={cls}>{cls}</Tag>
-              ))}
-            </div>
-          ) : null}
-        </Space>
+        <DatasetInfo dataset={dataset} />
       </Col>
       <Col span={12} style={{ fontSize: 14 }}>
         <Space size={10} wrap={true}>
-          <GtSelector layout="inline" value={filterParams.annoType} onChange={(checked) => updateFilterParams(checked, 'annoType')} />
-          {dataset.evaluated ? (
-            <EvaluationSelector value={filterParams.cm} onChange={({ target }) => updateFilterParams(target.value, 'cm')} labelAlign={'right'} />
-          ) : null}
-          <KeywordSelector value={filterParams.keywords} onChange={filterKw} dataset={dataset} labelAlign={'right'} />
+          {dataset?.evaluated ? <EvaluationSelector value={filterParams.cm} onChange={({ target }) => updateFilterParams(target.value, 'cm')} /> : null}
+          <KeywordSelector onChange={filterKw} dataset={dataset} />
           <Button onClick={reset}>{t('common.reset')}</Button>
         </Space>
       </Col>
@@ -243,18 +126,21 @@ const Dataset = () => {
       title={t('dataset.asset.title')}
       visible={assetVisible}
       onCancel={() => setAssetVisible(false)}
-      width={null}
+      centered
+      width={'100%'}
       footer={null}
     >
-      <Asset
-        id={id}
-        asset={currentAsset.asset}
-        datasetKeywords={dataset.keywords}
-        filters={paramsHandle(filterParams)}
-        filterKeyword={assetVisible ? filterParams.keywords : null}
-        index={currentAsset.index}
-        total={total}
-      />
+      {currentAsset.asset ? (
+        <Asset
+          id={id}
+          asset={currentAsset.asset}
+          datasetKeywords={dataset?.keywords}
+          filters={filterParams}
+          filterKeyword={assetVisible ? filterParams.keywords : undefined}
+          index={currentAsset.index}
+          total={total}
+        />
+      ) : null}
     </Modal>
   )
 
@@ -264,23 +150,29 @@ const Dataset = () => {
       {assetDetail}
       <Card className="list" title={renderTitle}>
         <div className={styles.listContainer} ref={listRef}>
-          {renderList(assets)}
-        </div>
-        <Space className={styles.pagi}>
-          <Pagination
-            key={'pager'}
-            className={`pager ${styles.pager}`}
-            showQuickJumper
-            showSizeChanger
-            defaultCurrent={1}
-            current={currentPage}
-            defaultPageSize={20}
-            total={total}
-            showTotal={(total, range) => t('dataset.detail.pager.total', { total })}
-            onChange={filterPage}
+          <List
+            list={assets}
+            goAsset={goAsset}
+            width={listRef.current?.clientWidth}
+            pager={
+              <Space className={styles.pagi}>
+                <Pagination
+                  key={'pager'}
+                  className={`pager ${styles.pager}`}
+                  showQuickJumper
+                  showSizeChanger
+                  defaultCurrent={1}
+                  current={currentPage}
+                  defaultPageSize={20}
+                  total={total}
+                  showTotal={(total, range) => t('dataset.detail.pager.total', { total })}
+                  onChange={filterPage}
+                />
+                {randomPageButton}
+              </Space>
+            }
           />
-          {randomPageButton}
-        </Space>
+        </div>
       </Card>
     </div>
   )
