@@ -83,7 +83,7 @@ function DatasetDetail({ dataset = {} }) {
         <Item label={t('dataset.detail.label.assets')} contentStyle={{ minWidth: 150 }}>
           {dataset.assetCount}
         </Item>
-        {dataset.hidden ? <Item label={t('common.hidden.label')}>{t('common.state.deleted')}</Item> : null}
+        {dataset.hidden ? <Item label={t('common.trash.label')}>{t('common.state.deleted')}</Item> : null}
         {renderCk(t('dataset.assets.keyword.selector.types.cks'), cks.keywords)}
         {renderCk(t('dataset.assets.keyword.selector.types.tags'), tags.keywords)}
         <Item label={t('common.desc')}>

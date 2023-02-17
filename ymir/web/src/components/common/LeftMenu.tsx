@@ -80,7 +80,7 @@ function LeftMenu() {
               getItem(t('model.management'), `/home/project/${id}/model`, MymodelIcon),
               getItem(t('model.diagnose'), `/home/project/${id}/diagnose`, DiagnosisIcon),
               getItem(t('breadcrumbs.task.training'), `/home/project/${id}/train`, TrainIcon),
-              getItem(t('common.hidden.list'), `/home/project/${id}/hidden`, DeleteIcon),
+              getItem(t('common.trash.list'), `/home/project/${id}/trash`, DeleteIcon),
               getItem(t('project.settings.title'), `/home/project/${id}/add`, EditIcon),
             ])
           : null,

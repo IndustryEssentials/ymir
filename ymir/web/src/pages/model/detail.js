@@ -132,7 +132,7 @@ function ModelDetail() {
               <VersionName result={model} />
             </Item>
             <Item label={t('common.object.type')}>{t(getProjectTypeLabel(model.type, true))}</Item>
-            {model.hidden ? <Item label={t('common.hidden.label')}>{t('common.state.deleted')}</Item> : null}
+            {model.hidden ? <Item label={t('common.trash.label')}>{t('common.state.deleted')}</Item> : null}
             {keywordsItem(model.keywords)}
             <Item label={t('model.detail.label.stage')} span={2}>
               <div style={{ width: '100%' }}>

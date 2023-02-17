@@ -121,8 +121,7 @@ class CRUDTask(CRUDBase[Task, TaskCreate, TaskUpdate]):
         db.refresh(task)
         return task
 
-    def update_parameters_and_config(self, db: Session, *, task: Task, parameters: str, config: str) -> Task:
-        task.parameters = parameters
+    def update_config(self, db: Session, *, task: Task, config: str) -> Task:
         task.config = config
         db.add(task)
         db.commit()

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { Card, Table, TableColumnsType } from 'antd'
 import { useHistory, useParams } from 'umi'
 import { useSelector } from 'react-redux'
@@ -6,13 +6,13 @@ import { useSelector } from 'react-redux'
 import useFetch from '@/hooks/useFetch'
 import t from '@/utils/t'
 import { INFER_CLASSES_MAX_COUNT, INFER_DATASET_MAX_COUNT, updateResultByTask } from '@/constants/common'
-import { isDetection } from '@/constants/objectType'
 
 import { getInferDatasetColumns } from '@/components/table/Columns'
 import Actions from '@/components/table/Actions'
+import Hide, { RefProps } from '@/components/common/hide'
 
 import s from './index.less'
-import { EyeOnIcon, DiagnosisIcon } from '@/components/common/Icons'
+import { EyeOnIcon, DiagnosisIcon, DeleteIcon } from '@/components/common/Icons'
 
 const initQuery = { current: 1, offset: 0, limit: 20 }
 
@@ -21,6 +21,7 @@ const InferDataset: React.FC = () => {
   const history = useHistory()
   const [datasets, setDatasets] = useState<YModels.InferDataset[]>([])
   const [query, setQuery] = useState(initQuery)
+  const hideRef = useRef<RefProps>(null)
   const [{ items, total }, getDatasets] = useFetch('dataset/queryInferDatasets', { items: [], total: 0 })
   const cols = getInferDatasetColumns(datasets[0]?.type)
   const cacheDatasets = useSelector<YStates.Root, YStates.IdMap<YModels.Dataset>>((state) => state.dataset.dataset)
@@ -38,22 +39,23 @@ const InferDataset: React.FC = () => {
       icon: <DiagnosisIcon />,
     },
     {
-      key: 'detail',
-      label: t('dataset.action.detail'),
-      onclick: () => history.push(`/home/project/${pid}/dataset/${record.id}`),
-    },
-    {
       key: 'preview',
       label: t('common.action.preview'),
       onclick: () => history.push(`/home/project/${pid}/dataset/${record.id}/assets`),
       icon: <EyeOnIcon />,
+    }, 
+    {
+      key: 'del',
+      label: t('common.action.del'),
+      onclick: () => hide(record),
+      icon: <DeleteIcon />,
     },
   ]
   const actionCol: TableColumnsType<YModels.InferDataset> = [
     {
       dataIndex: 'action',
       title: t('common.action'),
-      render: (_, record) => <Actions actions={actions(record)} />,
+      render: (_, record) => <Actions actions={actions(record)} showCount={4} />,
     },
   ]
   const columns = [...cols, ...actionCol]
@@ -99,6 +101,11 @@ const InferDataset: React.FC = () => {
     return getDatasets({ pid, ...query })
   }
 
+  
+  const hide = (dataset: YModels.InferDataset) => {
+    hideRef?.current?.hide([dataset])
+  }
+
   return (
     <div className={s.inferDataset}>
       <Table
@@ -114,6 +121,7 @@ const InferDataset: React.FC = () => {
           showSizeChanger: true,
         }}
       />
+      <Hide ref={hideRef} ok={fetchInferDatasets} msg='pred.action.del.confirm.content' />
     </div>
   )
 }

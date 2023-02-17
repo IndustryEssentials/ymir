@@ -123,7 +123,6 @@ class TestModel:
             "mAP": random.randint(1, 100) / 100,
             "mIoU": random.randint(1, 100) / 100,
             "maskAP": random.randint(1, 100) / 100,
-            "task_parameters": "mock_task_parameters",
             "executor_config": {"class_names": "a,b,c".split(",")},
             "stages": {
                 "epoch-1000": {
@@ -145,7 +144,6 @@ class TestModel:
         M = m.ViewerModelInfoResponse.parse_obj(res)
         assert M.hash == res["model_hash"]
         assert M.map == res["mAP"]
-        assert M.task_parameters == res["task_parameters"]
         assert M.executor_config == res["executor_config"]
         assert M.model_stages == res["stages"]
         assert M.best_stage_name == res["best_stage_name"]
@@ -263,7 +261,6 @@ class TestVizClient:
             "mAP": random.randint(1, 100) / 100,
             "mIoU": random.randint(1, 100) / 100,
             "maskAP": random.randint(1, 100) / 100,
-            "task_parameters": "mock_task_parameters",
             "executor_config": {"class_names": "a,b,c".split(",")},
             "stages": {
                 "epoch-1000": {
@@ -294,7 +291,6 @@ class TestVizClient:
         assert isinstance(ret, Dict)
         assert ret["hash"] == res["model_hash"]
         assert ret["map"] == res["mAP"]
-        assert ret["task_parameters"] == res["task_parameters"]
         assert ret["executor_config"] == res["executor_config"]
 
     def test_get_dataset_analysis(self, mock_user_labels, mocker):
