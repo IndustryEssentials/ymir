@@ -439,8 +439,6 @@ def filter_mirdatas_by_asset_ids(mir_metadatas: mirpb.MirMetadatas, mir_annotati
 
 # merge
 def tvt_type_from_str(typ: str) -> 'mirpb.TvtType.V':
-    if not isinstance(typ, str):
-        breakpoint()
     mapping = {
         'tr': mirpb.TvtType.TvtTypeTraining,
         'va': mirpb.TvtType.TvtTypeValidation,
