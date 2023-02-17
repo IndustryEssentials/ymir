@@ -10,10 +10,9 @@ from google.protobuf.json_format import ParseDict
 import xmltodict
 import yaml
 
-from mir.tools import class_ids, mir_storage_ops
+from mir.tools import class_ids
 from mir.tools.code import MirCode
 from mir.tools.errors import MirRuntimeError
-from mir.tools.revs_parser import TypRevTid
 from mir.tools.settings import COCO_JSON_NAME
 from mir.tools.phase_logger import PhaseLoggerCenter
 from mir.protos import mir_command_pb2 as mirpb
@@ -440,6 +439,8 @@ def filter_mirdatas_by_asset_ids(mir_metadatas: mirpb.MirMetadatas, mir_annotati
 
 # merge
 def tvt_type_from_str(typ: str) -> 'mirpb.TvtType.V':
+    if not isinstance(typ, str):
+        breakpoint()
     mapping = {
         'tr': mirpb.TvtType.TvtTypeTraining,
         'va': mirpb.TvtType.TvtTypeValidation,
@@ -448,8 +449,9 @@ def tvt_type_from_str(typ: str) -> 'mirpb.TvtType.V':
     return mapping.get(typ.lower(), mirpb.TvtType.TvtTypeUnknown)
 
 
-def merge_to_mirdatas(host_mir_metadatas: mirpb.MirMetadatas, host_mir_annotations: mirpb.MirAnnotations, mir_root: str,
-                      guest_typ_rev_tid: TypRevTid, strategy: MergeStrategy) -> None:
+def merge_to_mirdatas(host_mir_metadatas: mirpb.MirMetadatas, host_mir_annotations: mirpb.MirAnnotations,
+                      guest_mir_metadatas: mirpb.MirMetadatas, guest_mir_annotations: mirpb.MirAnnotations,
+                      guest_tvt_typ: "mirpb.TvtType.V", strategy: MergeStrategy) -> None:
     """
     merge contents in `guest_typ_rev_tid` to host mir datas
 
@@ -463,21 +465,11 @@ def merge_to_mirdatas(host_mir_metadatas: mirpb.MirMetadatas, host_mir_annotatio
     Raises:
         RuntimeError: when guest branch has no metadatas
     """
-    guest_mir_metadatas: mirpb.MirMetadatas
-    guest_mir_annotations: mirpb.MirAnnotations
-    guest_mir_metadatas, guest_mir_annotations = mir_storage_ops.MirStorageOps.load_multiple_storages(
-        mir_root=mir_root,
-        mir_branch=guest_typ_rev_tid.rev,
-        mir_task_id=guest_typ_rev_tid.tid,
-        ms_list=[mirpb.MirStorage.MIR_METADATAS, mirpb.MirStorage.MIR_ANNOTATIONS],
-        as_dict=False)
-
     # reset all host tvt type
     #   if not set, keep origin tvt type
-    guest_tvt_type = tvt_type_from_str(guest_typ_rev_tid.typ)
-    if guest_tvt_type != mirpb.TvtType.TvtTypeUnknown:
+    if guest_tvt_typ != mirpb.TvtType.TvtTypeUnknown:
         for asset_id in guest_mir_metadatas.attributes:
-            guest_mir_metadatas.attributes[asset_id].tvt_type = guest_tvt_type
+            guest_mir_metadatas.attributes[asset_id].tvt_type = guest_tvt_typ
 
     # merge mir_metadatas
     _merge_mirdata_asset_ids_dict(host_asset_ids_dict=host_mir_metadatas.attributes,
@@ -488,14 +480,11 @@ def merge_to_mirdatas(host_mir_metadatas: mirpb.MirMetadatas, host_mir_annotatio
                        guest_mir_annotations=guest_mir_annotations,
                        strategy=strategy)
 
-    logging.info(f"Merged from {guest_typ_rev_tid.typ_rev_tid}, assets: {len(host_mir_metadatas.attributes)}")
+    # logging.info(f"Merged from {guest_typ_rev_tid.typ_rev_tid}, assets: {len(host_mir_metadatas.attributes)}")
 
 
 def exclude_from_mirdatas(host_mir_metadatas: mirpb.MirMetadatas, host_mir_annotations: mirpb.MirAnnotations,
-                          mir_root: str, ex_rev_tid: TypRevTid) -> None:
-    guest_mir_metadatas: mirpb.MirMetadatas = mir_storage_ops.MirStorageOps.load_single_storage(
-        mir_root=mir_root, mir_branch=ex_rev_tid.rev, mir_task_id=ex_rev_tid.tid, ms=mirpb.MirStorage.MIR_METADATAS)
-
+                          guest_mir_metadatas: mirpb.MirMetadatas) -> None:
     _, _, id_joint = match_asset_ids(set(host_mir_metadatas.attributes.keys()),
                                      set(guest_mir_metadatas.attributes.keys()))
     for asset_id in id_joint:

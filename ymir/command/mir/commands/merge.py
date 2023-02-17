@@ -88,17 +88,28 @@ def merge_with_pb(mir_root: str, src_typ_rev_tids: List[revs_parser.TypRevTid],
         host_mir_annotations.prediction.executor_config = ''
 
     for typ_rev_tid in src_typ_rev_tids[1:]:
+        guest_mir_metadatas, guest_mir_annotations = mir_storage_ops.MirStorageOps.load_multiple_storages(
+            mir_root=mir_root,
+            mir_branch=typ_rev_tid.rev,
+            mir_task_id=typ_rev_tid.tid,
+            ms_list=[mirpb.MirStorage.MIR_METADATAS, mirpb.MirStorage.MIR_ANNOTATIONS],
+            as_dict=False)
         merge_to_mirdatas(host_mir_metadatas=host_mir_metadatas,
                           host_mir_annotations=host_mir_annotations,
-                          mir_root=mir_root,
-                          guest_typ_rev_tid=typ_rev_tid,
+                          guest_mir_metadatas=guest_mir_metadatas,
+                          guest_mir_annotations=guest_mir_annotations,
+                          guest_tvt_typ=tvt_type_from_str(typ_rev_tid.typ),
                           strategy=strategy)
 
     for typ_rev_tid in ex_typ_rev_tids:
+        guest_mir_metadatas = mir_storage_ops.MirStorageOps.load_single_storage(
+            mir_root=mir_root,
+            mir_branch=typ_rev_tid.rev,
+            mir_task_id=typ_rev_tid.tid,
+            ms=mirpb.MirStorage.MIR_METADATAS)
         exclude_from_mirdatas(host_mir_metadatas=host_mir_metadatas,
                               host_mir_annotations=host_mir_annotations,
-                              mir_root=mir_root,
-                              ex_rev_tid=typ_rev_tid)
+                              guest_mir_metadatas=guest_mir_metadatas)
 
     return (host_mir_metadatas, host_mir_annotations)
 
