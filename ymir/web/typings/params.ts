@@ -17,6 +17,7 @@ declare namespace YParams {
   interface DatasetsQuery extends ResultListQuery {
     orderBy?: 'id' | 'create_datetime' | 'asset_count' | 'source'
     keywords?: string[]
+    excludeType?: number
   }
 
   interface ModelsQuery extends ResultListQuery {

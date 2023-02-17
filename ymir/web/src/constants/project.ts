@@ -3,11 +3,6 @@ import { format } from '@/utils/date'
 import { transferIteration } from './iteration'
 import { ObjectType, getProjectTypes, getProjectTypeLabel, isDetection, isSemantic, isInstance } from './objectType'
 
-const tabs = [
-  { tab: 'project.tab.set.title', key: 'dataset' },
-  { tab: 'project.tab.model.title', key: 'model' },
-]
-
 function transferProject(data: YModels.BackendData) {
   const iteration = transferIteration(data.current_iteration)
   const project: YModels.Project = {
@@ -48,4 +43,4 @@ function transferProject(data: YModels.BackendData) {
   return project
 }
 
-export { ObjectType, getProjectTypes, getProjectTypeLabel, isDetection, isSemantic, isInstance, tabs, transferProject }
+export { ObjectType, getProjectTypes, getProjectTypeLabel, isDetection, isSemantic, isInstance, transferProject }
