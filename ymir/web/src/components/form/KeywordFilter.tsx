@@ -11,7 +11,7 @@ enum Type {
 type Props = {
   value: string[] | string[][]
   onChange?: (value: { type: Type; selected?: (string | string[])[] }) => void
-  dataset: YModels.Dataset
+  dataset?: YModels.Dataset
 }
 type KeywordOptionsType = {
   [key in Type]: KeywordOption[]
@@ -74,7 +74,7 @@ const KeywordSelector: FC<Props> = ({ value, onChange, dataset }) => {
   }, [kwOptions])
 
   useEffect(() => {
-    if (!dataset.id) {
+    if (!dataset?.id) {
       return
     }
     const ck2opts = (kws: YModels.CKItem[] = []): KeywordOption[] =>

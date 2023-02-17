@@ -1,10 +1,11 @@
 import { evaluationTags as tags } from '@/constants/dataset'
-import t from '@/utils/t'
+import type { RadioGroupProps } from 'antd'
 import React from 'react'
-import CheckboxSelector from './CheckboxSelector'
 import RadioGroup from './RadioGroup'
 
-type Props = YModels.PlainObject
+type Props = RadioGroupProps & {
+  hidden?: boolean
+}
 
 const types = [
   { label: '预测正确', value: tags.mtp },
@@ -13,7 +14,7 @@ const types = [
 ]
 
 const EvaluationSelector: React.FC<Props> = (props) => (
-  <RadioGroup options={types} {...props} optionType='button' />
+  <RadioGroup optionType='button' {...props} options={types} />
 )
 
 export default EvaluationSelector
