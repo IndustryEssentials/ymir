@@ -8,7 +8,7 @@ from google.protobuf import json_format
 import numpy as np
 
 from mir.protos import mir_command_pb2 as mirpb
-from mir.tools.eval import det_eval_ops
+from mir.tools.eval import eval_ops
 from tests import utils as test_utils
 
 
@@ -61,7 +61,7 @@ class TestToolsSegEval(unittest.TestCase):
         evaluate_config.type = mirpb.ObjectType.OT_SEG
         evaluate_config.is_instance_segmentation = True
 
-        evaluation = det_eval_ops.det_evaluate_with_pb(prediction=mir_annotations.prediction,
+        evaluation = eval_ops.evaluate_with_pb(prediction=mir_annotations.prediction,
                                                        ground_truth=mir_annotations.ground_truth,
                                                        config=evaluate_config,
                                                        assets_metadata=mir_metadatas)
@@ -82,7 +82,7 @@ class TestToolsSegEval(unittest.TestCase):
         evaluate_config.type = mirpb.ObjectType.OT_SEG
         evaluate_config.is_instance_segmentation = False
 
-        evaluation = det_eval_ops.det_evaluate_with_pb(prediction=mir_annotations.prediction,
+        evaluation = eval_ops.evaluate_with_pb(prediction=mir_annotations.prediction,
                                                        ground_truth=mir_annotations.ground_truth,
                                                        config=evaluate_config,
                                                        assets_metadata=mir_metadatas)

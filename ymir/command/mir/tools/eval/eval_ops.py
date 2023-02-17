@@ -10,7 +10,7 @@ from mir.tools.eval import eval_coco, det_eval_voc, sem_seg_eval_mm
 from mir.protos import mir_command_pb2 as mirpb
 
 
-def det_evaluate_with_pb(
+def evaluate_with_pb(
     prediction: mirpb.SingleTaskAnnotations,
     ground_truth: mirpb.SingleTaskAnnotations,
     config: mirpb.EvaluateConfig,
@@ -72,7 +72,7 @@ def det_evaluate_with_pb(
         config=config,
         assets_metadata=assets_metadata)
 
-    logging.info(f"|-det_evaluate_with_pb-eval costs {(time.time() - start_time):.2f}s.")
+    logging.info(f"|-evaluate_with_pb-eval costs {(time.time() - start_time):.2f}s.")
 
     _show_evaluation(evaluation=evaluation)
 

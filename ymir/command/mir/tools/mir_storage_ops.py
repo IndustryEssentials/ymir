@@ -18,7 +18,7 @@ from mir.tools import settings as mir_settings
 from mir.tools.annotations import valid_image_annotation
 from mir.tools.code import MirCode, time_it
 from mir.tools.errors import MirRuntimeError
-from mir.tools.eval import det_eval_ops
+from mir.tools.eval import eval_ops
 
 
 def create_evaluate_config(conf_thr: float = mir_settings.DEFAULT_EVALUATE_CONF_THR,
@@ -69,7 +69,7 @@ class MirStorageOps():
         mir_tasks.tasks[mir_tasks.head_task_id].CopyFrom(task)
 
         if mir_annotations.prediction.type == mir_annotations.ground_truth.type == mirpb.ObjectType.OT_DET_BOX:
-            evaluation = det_eval_ops.det_evaluate_with_pb(
+            evaluation = eval_ops.evaluate_with_pb(
                 prediction=mir_annotations.prediction,
                 ground_truth=mir_annotations.ground_truth,
                 config=evaluate_config,

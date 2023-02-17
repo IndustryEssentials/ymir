@@ -2,7 +2,7 @@ from functools import partial
 from typing import Collection, Optional
 
 from mir.tools import mir_storage_ops, revs_parser, settings as mir_settings
-from mir.tools.eval import det_eval_ops
+from mir.tools.eval import eval_ops
 from mir.protos import mir_command_pb2 as mirpb
 
 
@@ -33,7 +33,7 @@ def evaluate_datasets(
     prediction = pred_mir_annotations.prediction
 
     # evaluate
-    evaluation = det_eval_ops.det_evaluate_with_pb(
+    evaluation = eval_ops.evaluate_with_pb(
         prediction=prediction,
         ground_truth=ground_truth,
         config=evaluate_config,
@@ -75,7 +75,7 @@ def _evaluate_on_asset_ids(gt: mirpb.SingleTaskAnnotations, pred: mirpb.SingleTa
                            target: mirpb.SingleDatasetEvaluation) -> None:
     pred = _filter_task_annotations_by_asset_ids(task_annotations=pred, asset_ids=asset_ids)
     gt = _filter_task_annotations_by_asset_ids(task_annotations=gt, asset_ids=asset_ids)
-    evaluation = det_eval_ops.det_evaluate_with_pb(
+    evaluation = eval_ops.evaluate_with_pb(
         prediction=pred,
         ground_truth=gt,
         config=evaluate_config,
