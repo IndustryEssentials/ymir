@@ -1,5 +1,4 @@
-from collections import defaultdict
-from typing import Dict, List, Optional, OrderedDict, Tuple
+from typing import Any, List, Optional, OrderedDict, Tuple
 
 import numpy as np
 import pycocotools.mask
@@ -8,6 +7,7 @@ from mir.protos import mir_command_pb2 as mirpb
 
 
 _SEMANTIC_SEGMENTATION_BACKGROUND_INDEX = 255
+
 
 # protected: semantic segmentation evaluation
 def _mir_mean_iou(prediction: mirpb.SingleTaskAnnotations, ground_truth: mirpb.SingleTaskAnnotations,
@@ -64,19 +64,26 @@ def _mean_iou(
     num_classes: int,
     ignore_index: int,
     nan_to_num: Optional[int] = None,
-) -> List:
+) -> List[Any]:
+    """
+    calc mean iou and associated metrics
+    Returns:
+        list of 5 elements: aAcc (float), Acc (ndarray), IoU (ndarray), mAcc (float), mIoU (float)
+        Acc (ndarray): i-th element means Acc of i-th class
+        IoU (ndarray): i-th element means IoU of i-th class
+    """
     (
         total_area_intersect,
         total_area_union,
         _,
         total_area_gt,
     ) = _total_intersect_and_union(dts, gts, num_classes, ignore_index)
-    all_acc: float = np.nansum(total_area_intersect) / np.nansum(total_area_gt)
-    acc: np.ndarray = total_area_intersect / total_area_gt
-    iou: np.ndarray = total_area_intersect / total_area_union
-    macc: float = np.nanmean(acc)
-    miou: float = np.nanmean(iou)
-    ret_metrics = (all_acc, acc, iou, macc, miou)
+    all_acc = np.nansum(total_area_intersect) / np.nansum(total_area_gt)
+    acc = total_area_intersect / total_area_gt
+    iou = total_area_intersect / total_area_union
+    macc = np.nanmean(acc)
+    miou = np.nanmean(iou)
+    ret_metrics = [all_acc, acc, iou, macc, miou]
     if nan_to_num is not None:
         ret_metrics = [np.nan_to_num(metric, nan=nan_to_num) for metric in ret_metrics]
     return ret_metrics
@@ -138,7 +145,7 @@ def _decode_mir_mask(annotation: mirpb.ObjectAnnotation, hw: Tuple[int, int]) ->
 
 # public: general
 def evaluate(prediction: mirpb.SingleTaskAnnotations, ground_truth: mirpb.SingleTaskAnnotations,
-             config: mirpb.EvaluateConfig, assets_metadata: Optional[mirpb.MirMetadatas]) -> mirpb.Evaluation:
+             config: mirpb.EvaluateConfig, assets_metadata: mirpb.MirMetadatas) -> mirpb.Evaluation:
     evaluation = mirpb.Evaluation()
     evaluation.config.CopyFrom(config)
 
@@ -154,7 +161,7 @@ def evaluate(prediction: mirpb.SingleTaskAnnotations, ground_truth: mirpb.Single
         _mir_mean_iou(prediction=prediction,
                       ground_truth=ground_truth,
                       asset_id_to_hws=asset_id_to_hws,
-                      class_ids=config.class_ids))
+                      class_ids=list(config.class_ids)))
 
     evaluation.state = mirpb.EvaluationState.ES_READY
     return evaluation
