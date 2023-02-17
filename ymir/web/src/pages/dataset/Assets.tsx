@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import type { FC } from 'react'
 import { useParams } from 'umi'
-import { Pagination, Row, Col, Button, Space, Card, Tag, Modal } from 'antd'
+import { Pagination, Row, Col, Button, Space, Card, Tag, Modal, Select } from 'antd'
 
 import t from '@/utils/t'
 import { randomBetween } from '@/utils/number'
@@ -15,6 +15,7 @@ import List from './components/AssetList'
 
 import styles from './assets.less'
 import DatasetInfo from './components/DatasetInfo'
+import ListColumnCountSelect from './components/ListColumnCountSelect'
 
 type IndexType = {
   hash: string
@@ -36,6 +37,7 @@ const Dataset: FC = () => {
     hash: '',
     index: 0,
   })
+  const [columns, setColumns] = useState(5)
   const listRef = useRef<HTMLDivElement>(null)
   const { data: dataset, run: getDataset } = useRequest<YModels.Dataset>('dataset/getDataset', {
     loading: false,
@@ -106,10 +108,13 @@ const Dataset: FC = () => {
 
   const renderTitle = (
     <Row className={styles.labels}>
-      <Col span={12}>
+      <Col flex={1}>
         <DatasetInfo dataset={dataset} />
       </Col>
-      <Col span={12} style={{ fontSize: 14 }}>
+      <Col>
+        <ListColumnCountSelect value={columns} onChange={setColumns} />
+      </Col>
+      <Col span={24} style={{ fontSize: 14 }}>
         <Space size={10} wrap={true}>
           {dataset?.evaluated ? <EvaluationSelector value={filterParams.cm} onChange={({ target }) => updateFilterParams(target.value, 'cm')} /> : null}
           <KeywordSelector onChange={filterKw} dataset={dataset} />
@@ -154,6 +159,7 @@ const Dataset: FC = () => {
             list={assets}
             goAsset={goAsset}
             width={listRef.current?.clientWidth}
+            columns={columns}
             pager={
               <Space className={styles.pagi}>
                 <Pagination

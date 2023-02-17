@@ -183,6 +183,7 @@ const dataset = {
   'dataset.assets.selector.evaluation.label': { en: 'Evaluation:', cn: '评估指标：' },
   'dataset.detail.infer.class': { en: 'Prediction Classes:', cn: '预测类别：' },
   'dataset.type.testing': { cn: '测试集', en: 'Testing Datasets' },
+  'dataset.assets.selector.columns.label': { en: '{count} assets per row', cn: '一行 {count} 张图片' },
 }
 
 export default dataset
