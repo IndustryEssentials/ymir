@@ -227,7 +227,7 @@ function TaskDetail({ task = {} }) {
     <>
       <Item label={t('dataset.column.source')}>{t('task.type.modelimport')}</Item>
       {renderCreateTime(task.create_datetime)}
-      {renderImageByUrl(task?.parameters?.docker_image_url, 2)}
+      {renderImageByUrl(task?.parameters?.docker_image, 2)}
       {renderConfig(task.parameters?.docker_image_config)}
     </>
   )
