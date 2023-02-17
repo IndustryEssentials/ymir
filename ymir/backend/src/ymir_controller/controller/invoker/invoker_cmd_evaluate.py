@@ -37,9 +37,9 @@ class EvaluateInvoker(BaseMirControllerInvoker):
         rev_tid = parse_single_arg_rev(self._request.in_dataset_ids[0], need_tid=False)
 
         evaluation = evaluate_datasets(mir_root=self._repo_root,
-                                           gt_rev_tid=rev_tid,
-                                           pred_rev_tid=rev_tid,
-                                           evaluate_config=self._request.evaluate_config)
+                                       gt_rev_tid=rev_tid,
+                                       pred_rev_tid=rev_tid,
+                                       evaluate_config=self._request.evaluate_config)
         if not evaluation:
             return utils.make_general_response(CTLResponseCode.ARG_VALIDATION_FAILED, "no result generated.")
         response = backend_pb2.GeneralResp()
