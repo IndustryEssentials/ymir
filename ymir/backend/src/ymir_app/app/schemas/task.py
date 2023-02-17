@@ -327,13 +327,19 @@ class TaskInternal(TaskInDBBase):
     state: TaskState
     result_type: ResultType = ResultType.no_result
 
-    @validator("parameters", "config")
+    @validator("parameters", "config", pre=True)
     def ensure_dict(cls, v: Optional[Union[Dict, str]]) -> Dict[str, Any]:
         if not v:
             return {}
         if isinstance(v, dict):
             return v
         return json.loads(v)
+
+    @root_validator
+    def makeup_parameter_config(cls, values: Any) -> Any:
+        if values["config"] and "docker_image_config" not in values["parameters"]:
+            values["parameters"]["docker_image_config"] = json.dumps(values["config"])
+        return values
 
     @validator("result_type", pre=True, always=True)
     def gen_result_type(cls, v: Any, values: Any) -> Optional[ResultType]:
