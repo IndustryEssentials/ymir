@@ -168,7 +168,7 @@ export default {
       }
     },
     *getHiddenList({ payload }, { put }) {
-      const query = { ...{ order_by: 'update_datetime' }, ...payload, visible: false }
+      const query = { order_by: 'update_datetime', ...payload, excludeType: TASKTYPES.INFERENCE, visible: false }
       return yield put({
         type: 'queryDatasets',
         payload: query,

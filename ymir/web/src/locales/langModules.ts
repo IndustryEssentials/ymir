@@ -1,4 +1,3 @@
-import trans from './trans'
 import common from "./modules/common"
 import dataset from "./modules/dataset"
 import errors from "./modules/errors"
@@ -15,6 +14,7 @@ import image from './modules/image'
 import tip from './modules/tip'
 import project from './modules/project'
 import algo from './modules/algo'
+import pred from './modules/prediction'
 
 export default {
   ...common,
@@ -33,4 +33,5 @@ export default {
   ...tip,
   ...project,
   ...algo,
+  ...pred,
 }
