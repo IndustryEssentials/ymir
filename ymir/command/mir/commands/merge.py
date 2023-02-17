@@ -100,6 +100,7 @@ def merge_with_pb(mir_root: str, src_typ_rev_tids: List[revs_parser.TypRevTid],
                           guest_mir_annotations=guest_mir_annotations,
                           guest_tvt_typ=tvt_type_from_str(typ_rev_tid.typ),
                           strategy=strategy)
+        logging.info(f"Merged {typ_rev_tid.typ_rev_tid}, total assets: {len(host_mir_metadatas.attributes)}")
 
     for typ_rev_tid in ex_typ_rev_tids:
         guest_mir_metadatas = mir_storage_ops.MirStorageOps.load_single_storage(

@@ -478,8 +478,6 @@ def merge_to_mirdatas(host_mir_metadatas: mirpb.MirMetadatas, host_mir_annotatio
                        guest_mir_annotations=guest_mir_annotations,
                        strategy=strategy)
 
-    # logging.info(f"Merged from {guest_typ_rev_tid.typ_rev_tid}, assets: {len(host_mir_metadatas.attributes)}")
-
 
 def exclude_from_mirdatas(host_mir_metadatas: mirpb.MirMetadatas, host_mir_annotations: mirpb.MirAnnotations,
                           guest_mir_metadatas: mirpb.MirMetadatas) -> None:
