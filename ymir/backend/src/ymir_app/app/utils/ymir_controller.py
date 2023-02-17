@@ -103,16 +103,13 @@ class ControllerRequest:
     task_id: Optional[str] = None
     args: Optional[Dict] = None
     req: Optional[mirsvrpb.GeneralReq] = None
-    archived_task_parameters: Optional[str] = None
 
     def __post_init__(self) -> None:
         user_hash = gen_user_hash(self.user_id)
         repo_hash = gen_repo_hash(self.project_id)
         task_hash = self.task_id or gen_task_hash(self.user_id, self.project_id)
 
-        request = mirsvrpb.GeneralReq(
-            user_id=user_hash, repo_id=repo_hash, task_id=task_hash, task_parameters=self.archived_task_parameters
-        )
+        request = mirsvrpb.GeneralReq(user_id=user_hash, repo_id=repo_hash, task_id=task_hash)
 
         method_name = "prepare_" + self.type.name
         self.req = getattr(self, method_name)(request, self.args)
@@ -426,7 +423,6 @@ class ControllerClient:
         task_id: str,
         task_type: TaskType,
         task_parameters: Optional[Dict],
-        archived_task_parameters: Optional[str],
     ) -> Dict:
         req = ControllerRequest(
             type=TaskType(task_type),
@@ -434,7 +430,6 @@ class ControllerClient:
             project_id=project_id,
             task_id=task_id,
             args=task_parameters,
-            archived_task_parameters=archived_task_parameters,
         )
         return self.send(req)
 
