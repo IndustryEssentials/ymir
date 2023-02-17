@@ -6,7 +6,7 @@ import pycocotools.mask
 
 from mir.tools.code import MirCode
 from mir.tools.errors import MirRuntimeError
-from mir.tools.eval import det_eval_utils
+from mir.tools.eval import eval_utils
 from mir.protos import mir_command_pb2 as mirpb
 
 
@@ -104,7 +104,7 @@ class CocoDetEval:
         self._coco_gt = coco_gt
         self._coco_dt = coco_dt
 
-        self.match_result = det_eval_utils.DetEvalMatchResult()
+        self.match_result = eval_utils.DetEvalMatchResult()
 
     def evaluate(self) -> None:
         '''
@@ -641,7 +641,7 @@ def evaluate(prediction: mirpb.SingleTaskAnnotations, ground_truth: mirpb.Single
     params = Params()
     params.confThr = config.conf_thr
     if config.iou_thrs_interval != "-1":
-        params.iouThrs = det_eval_utils.get_iou_thrs_array(config.iou_thrs_interval)
+        params.iouThrs = eval_utils.get_iou_thrs_array(config.iou_thrs_interval)
     params.need_pr_curve = config.need_pr_curve
     params.catIds = list(config.class_ids)
 
@@ -663,16 +663,16 @@ def evaluate(prediction: mirpb.SingleTaskAnnotations, ground_truth: mirpb.Single
         evaluator.evaluate()
         evaluator.accumulate()
 
-        det_eval_utils.write_confusion_matrix(gt_annotations=ground_truth,
-                                              pred_annotations=prediction,
-                                              class_ids=params.catIds,
-                                              conf_thr=config.conf_thr,
-                                              match_result=evaluator.match_result,
-                                              iou_thr=params.iouThrs[0])
+        eval_utils.write_confusion_matrix(gt_annotations=ground_truth,
+                                          pred_annotations=prediction,
+                                          class_ids=params.catIds,
+                                          conf_thr=config.conf_thr,
+                                          match_result=evaluator.match_result,
+                                          iou_thr=params.iouThrs[0])
 
         single_dataset_evaluation = evaluator.get_evaluation_result(area_ranges_index=area_ranges_index,
                                                                     max_dets_index=max_dets_index)
-        det_eval_utils.calc_averaged_evaluations(dataset_evaluation=single_dataset_evaluation, class_ids=params.catIds)
+        eval_utils.calc_averaged_evaluations(dataset_evaluation=single_dataset_evaluation, class_ids=params.catIds)
 
         single_dataset_evaluation.conf_thr = config.conf_thr
 
