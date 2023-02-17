@@ -7,7 +7,8 @@ from google.protobuf import json_format
 import numpy as np
 
 from mir.protos import mir_command_pb2 as mirpb
-from mir.tools import det_eval_ctl_ops, det_eval_coco, det_eval_voc, mir_storage_ops, revs_parser
+from mir.tools import mir_storage_ops, revs_parser
+from mir.tools.eval import det_eval_ctl_ops, det_eval_voc
 from tests import utils as test_utils
 
 

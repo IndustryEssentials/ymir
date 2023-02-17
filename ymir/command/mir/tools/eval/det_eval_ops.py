@@ -3,9 +3,10 @@ import time
 from types import ModuleType
 from typing import Any, Optional
 
-from mir.tools import det_eval_coco, det_eval_voc, sem_seg_eval_mm, settings as mir_settings
+from mir.tools import settings as mir_settings
 from mir.tools.code import MirCode
 from mir.tools.errors import MirRuntimeError
+from mir.tools.eval import det_eval_coco, det_eval_voc, sem_seg_eval_mm
 from mir.protos import mir_command_pb2 as mirpb
 
 

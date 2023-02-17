@@ -26,8 +26,7 @@ from typing import Any, Dict, List, Optional
 import numpy as np
 
 from mir.protos import mir_command_pb2 as mirpb
-from mir.tools import det_eval_utils
-from mir.tools.det_eval_utils import DetEvalMatchResult
+from mir.tools.eval import det_eval_utils
 
 
 def _voc_ap(rec: np.ndarray, prec: np.ndarray, use_07_metric: bool) -> float:
@@ -246,7 +245,7 @@ def evaluate(prediction: mirpb.SingleTaskAnnotations,
     single_dataset_evaluation.conf_thr = config.conf_thr
 
     for iou_thr in iou_thrs:
-        match_result = DetEvalMatchResult()
+        match_result = det_eval_utils.DetEvalMatchResult()
         for class_id in class_ids:
             see = _get_single_evaluate_element(prediction=prediction,
                                                ground_truth=ground_truth,

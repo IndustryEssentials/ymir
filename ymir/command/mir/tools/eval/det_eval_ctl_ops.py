@@ -1,7 +1,8 @@
 from functools import partial
 from typing import Collection, Optional
 
-from mir.tools import det_eval_ops, mir_storage_ops, revs_parser, settings as mir_settings
+from mir.tools import mir_storage_ops, revs_parser, settings as mir_settings
+from mir.tools.eval import det_eval_ops
 from mir.protos import mir_command_pb2 as mirpb
 
 

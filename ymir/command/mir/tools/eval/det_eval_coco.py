@@ -4,9 +4,9 @@ from typing import Any, Dict, List, Optional, Set, Sequence, Tuple, Union, Itera
 import numpy as np
 import pycocotools.mask
 
-from mir.tools import det_eval_utils
 from mir.tools.code import MirCode
 from mir.tools.errors import MirRuntimeError
+from mir.tools.eval import det_eval_utils
 from mir.protos import mir_command_pb2 as mirpb
 
 
