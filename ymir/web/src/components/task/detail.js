@@ -213,7 +213,6 @@ function TaskDetail({ task = {} }) {
       </Item>
       <Item label={t('task.label.form.keep_anno.label')}>
         {renderKeepAnnotations(task.parameters.annotation_type)}
-        {/* {task.parameters.keep_annotations ? t("common.yes") : t("common.no")} */}
       </Item>
       <Item label={t('task.label.form.desc.label')}>
         {task.parameters.extra_url ? (
