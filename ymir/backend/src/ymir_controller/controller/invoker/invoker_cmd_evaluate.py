@@ -1,7 +1,7 @@
 from controller.invoker.invoker_cmd_base import BaseMirControllerInvoker
 from controller.utils import checker, utils
 from id_definition.error_codes import CTLResponseCode
-from mir.tools.eval.det_eval_ctl_ops import det_evaluate_datasets
+from mir.tools.eval.eval_ctl_ops import det_evaluate_datasets
 from mir.tools.revs_parser import parse_single_arg_rev
 from proto import backend_pb2
 
