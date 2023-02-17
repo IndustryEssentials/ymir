@@ -556,7 +556,7 @@ class TestToolsDetEval(unittest.TestCase):
         evaluate_config.iou_thrs_interval = '0.5'
         evaluate_config.need_pr_curve = False
         evaluate_config.main_ck = 'color'
-        evaluation = eval_ctl_ops.det_evaluate_datasets(mir_root=self._mir_root,
+        evaluation = eval_ctl_ops.evaluate_datasets(mir_root=self._mir_root,
                                                         gt_rev_tid=gt_pred_rev_tid,
                                                         pred_rev_tid=gt_pred_rev_tid,
                                                         evaluate_config=evaluate_config)
@@ -564,7 +564,7 @@ class TestToolsDetEval(unittest.TestCase):
         self.assertEqual({'blue', 'red'}, set(evaluation.sub_cks.keys()))
 
         evaluate_config.main_ck = 'FakeMainCk'
-        evaluation = eval_ctl_ops.det_evaluate_datasets(mir_root=self._mir_root,
+        evaluation = eval_ctl_ops.evaluate_datasets(mir_root=self._mir_root,
                                                         gt_rev_tid=gt_pred_rev_tid,
                                                         pred_rev_tid=gt_pred_rev_tid,
                                                         evaluate_config=evaluate_config)

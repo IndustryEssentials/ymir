@@ -1,7 +1,7 @@
 from controller.invoker.invoker_cmd_base import BaseMirControllerInvoker
 from controller.utils import checker, utils
 from id_definition.error_codes import CTLResponseCode
-from mir.tools.eval.eval_ctl_ops import det_evaluate_datasets
+from mir.tools.eval.eval_ctl_ops import evaluate_datasets
 from mir.tools.revs_parser import parse_single_arg_rev
 from proto import backend_pb2
 
@@ -36,7 +36,7 @@ class EvaluateInvoker(BaseMirControllerInvoker):
     def invoke(self) -> backend_pb2.GeneralResp:
         rev_tid = parse_single_arg_rev(self._request.in_dataset_ids[0], need_tid=False)
 
-        evaluation = det_evaluate_datasets(mir_root=self._repo_root,
+        evaluation = evaluate_datasets(mir_root=self._repo_root,
                                            gt_rev_tid=rev_tid,
                                            pred_rev_tid=rev_tid,
                                            evaluate_config=self._request.evaluate_config)
