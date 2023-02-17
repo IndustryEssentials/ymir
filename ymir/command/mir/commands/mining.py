@@ -10,11 +10,11 @@ from mir.commands.merge import merge_with_pb
 from mir.protos import mir_command_pb2 as mirpb
 from mir.tools import checker, class_ids, env_config, exporter
 from mir.tools import models, revs_parser
-from mir.tools.annotations import filter_mirdatas_by_asset_ids, MergeStrategy
+from mir.tools.annotations import filter_mirdatas_by_asset_ids, valid_image_annotation, MergeStrategy
 from mir.tools.code import MirCode
 from mir.tools.command_run_in_out import command_run_in_out
 from mir.tools.errors import MirContainerError, MirRuntimeError
-from mir.tools.mir_storage_ops import create_task, valid_image_annotation, MirStorageOps
+from mir.tools.mir_storage_ops import create_task, MirStorageOps
 
 
 class CmdMining(base.BaseCommand):

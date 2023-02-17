@@ -562,3 +562,7 @@ def make_empty_mir_annotations() -> mirpb.MirAnnotations:
     mir_annotations.prediction.type = mirpb.ObjectType.OT_NO_ANNOTATIONS
     mir_annotations.ground_truth.type = mirpb.ObjectType.OT_NO_ANNOTATIONS
     return mir_annotations
+
+
+def valid_image_annotation(image_annotations: mirpb.SingleImageAnnotations) -> bool:
+    return len(image_annotations.boxes) > 0
