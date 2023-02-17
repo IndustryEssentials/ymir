@@ -16,6 +16,8 @@ import List from './components/AssetList'
 import styles from './assets.less'
 import DatasetInfo from './components/DatasetInfo'
 import ListColumnCountSelect from './components/ListColumnCountSelect'
+import ListVisualSelect from './components/ListVisualSelect'
+import VisualModes from './components/VisualModes'
 
 type IndexType = {
   hash: string
@@ -24,7 +26,7 @@ type IndexType = {
 }
 
 const Dataset: FC = () => {
-  const { id: pid, did: id } = useParams<{ id: string; did: string }>()
+  const { id: pid, did: id, type } = useParams<{ id: string; did: string, type: string }>()
   const initQuery = {
     id,
     offset: 0,
@@ -38,6 +40,7 @@ const Dataset: FC = () => {
     index: 0,
   })
   const [columns, setColumns] = useState(5)
+  const [mode, setMode] = useState<VisualModes>(0)
   const listRef = useRef<HTMLDivElement>(null)
   const { data: dataset, run: getDataset } = useRequest<YModels.Dataset>('dataset/getDataset', {
     loading: false,
@@ -116,9 +119,9 @@ const Dataset: FC = () => {
       </Col>
       <Col span={24} style={{ fontSize: 14 }}>
         <Space size={10} wrap={true}>
+          <ListVisualSelect style={{ width: 200 }} type={type} onChange={setMode} />
           {dataset?.evaluated ? <EvaluationSelector value={filterParams.cm} onChange={({ target }) => updateFilterParams(target.value, 'cm')} /> : null}
           <KeywordSelector onChange={filterKw} dataset={dataset} />
-          <Button onClick={reset}>{t('common.reset')}</Button>
         </Space>
       </Col>
     </Row>
@@ -160,6 +163,7 @@ const Dataset: FC = () => {
             goAsset={goAsset}
             width={listRef.current?.clientWidth}
             columns={columns}
+            mode={mode}
             pager={
               <Space className={styles.pagi}>
                 <Pagination

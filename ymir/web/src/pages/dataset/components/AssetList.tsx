@@ -5,10 +5,12 @@ import DefaultEmpty from '@/components/empty/default'
 
 import styles from '../assets.less'
 import Item from './AssetListItem'
+import VisualModes from './VisualModes'
 
 type Props = {
   list?: YModels.Asset[]
   goAsset?: (asset: YModels.Asset, hash: string, current: number) => void
+  mode?: VisualModes
   width?: number
   columns?: number
   pager?: ReactNode
@@ -16,7 +18,7 @@ type Props = {
 
 const ItemSpace = 4
 
-const List: FC<Props> = ({ list = [], goAsset = () => {}, columns = 5, pager }) => {
+const List: FC<Props> = ({ list = [], goAsset = () => {}, mode, columns = 5, pager }) => {
   const [rows, setRows] = useState<YModels.Asset[][]>([])
   const [width, setWidth] = useState(0)
   const listRef = useRef<HTMLDivElement>(null)
@@ -29,7 +31,7 @@ const List: FC<Props> = ({ list = [], goAsset = () => {}, columns = 5, pager }) 
       r += columns
     }
     setRows(result)
-  }, [list])
+  }, [list, columns])
 
   useEffect(() => {
     listRef.current?.clientWidth && setWidth(listRef.current.clientWidth)
@@ -51,7 +53,7 @@ const List: FC<Props> = ({ list = [], goAsset = () => {}, columns = 5, pager }) 
               return (
                 <Row gutter={ItemSpace} wrap={false} key={index} className={styles.dataset_container}>
                   {row.map((asset, rowIndex) => (
-                    <Item asset={asset} showDetail={() => goAsset(asset, asset.hash, index * columns + rowIndex)} height={h} />
+                    <Item asset={asset} showDetail={() => goAsset(asset, asset.hash, index * columns + rowIndex)} height={h} mode={mode} />
                   ))}
                 </Row>
               )

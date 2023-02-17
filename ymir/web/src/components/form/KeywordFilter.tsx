@@ -1,5 +1,4 @@
-import { Cascader, CascaderProps, Col, Row, Select } from 'antd'
-import { useParams } from 'umi'
+import { Cascader, Col, Row, Select } from 'antd'
 import t from '@/utils/t'
 import { FC, useEffect, useState } from 'react'
 
@@ -75,7 +74,6 @@ const KeywordSelector: FC<Props> = ({ onChange, dataset }) => {
 
   useEffect(() => {
     const selected = ckSelected.map(item => item.join(':'))
-    console.log('ckSelected:', ckSelected, selected)
     onChange && onChange({ type: currentType, selected })
   }, [ckSelected])
 
@@ -108,7 +106,7 @@ const KeywordSelector: FC<Props> = ({ onChange, dataset }) => {
       multiple
       allowClear
       expandTrigger="hover"
-      onChange={(value: unknown) => setCkSelected(value as string[][])}
+      onChange={(value) => setCkSelected(value as string[][])}
       options={list}
       placeholder={t('dataset.assets.keyword.selector.types.placeholder')}
     />

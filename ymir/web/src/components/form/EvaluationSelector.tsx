@@ -1,6 +1,7 @@
 import { evaluationTags as tags } from '@/constants/dataset'
 import type { RadioGroupProps } from 'antd'
 import React from 'react'
+import t from '@/utils/t'
 import RadioGroup from './RadioGroup'
 
 type Props = RadioGroupProps & {
@@ -8,13 +9,13 @@ type Props = RadioGroupProps & {
 }
 
 const types = [
-  { label: '预测正确', value: tags.mtp },
-  { label: '预测错误-FN', value: tags.fn },
-  { label: '预测错误-FP', value: tags.fp },
+  { label: 'right', value: tags.mtp },
+  { label: 'fn', value: tags.fn },
+  { label: 'fp', value: tags.fp },
 ]
 
 const EvaluationSelector: React.FC<Props> = (props) => (
-  <RadioGroup optionType='button' {...props} options={types} />
+  <RadioGroup optionType="button" {...props} options={types.map(({ value, label }) => ({ value, label: t(`dataset.assets.selector.evaluation.${label}`) }))} />
 )
 
 export default EvaluationSelector
