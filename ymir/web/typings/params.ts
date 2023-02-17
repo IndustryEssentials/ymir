@@ -1,6 +1,6 @@
 declare namespace YParams {
   type ResultListQuery = {
-    pid?: number
+    pid?: number | string
     gid?: number
     type?: number | string
     objectType?: number
@@ -37,7 +37,7 @@ declare namespace YParams {
   }
 
   interface AssetQueryParams extends DatasetsQuery {
-    id: number
+    id: number | string
     cm?: number[]
     exclude?: number[]
     annoType?: number[]
