@@ -337,6 +337,7 @@ class TaskInternal(TaskInDBBase):
 
     @root_validator
     def makeup_parameter_config(cls, values: Any) -> Any:
+        # FIXME: adhoc remove when Frontend updates
         if values["config"] and "docker_image_config" not in values["parameters"]:
             values["parameters"]["docker_image_config"] = json.dumps(values["config"])
         return values
