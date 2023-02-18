@@ -256,12 +256,12 @@ def evaluate(prediction: mirpb.SingleTaskAnnotations,
                                                match_result=match_result)
             single_dataset_evaluation.iou_evaluations[f"{iou_thr:.2f}"].ci_evaluations[class_id].CopyFrom(see)
 
-        eval_utils.write_confusion_matrix(gt_annotations=ground_truth,
-                                          pred_annotations=prediction,
-                                          class_ids=class_ids,
-                                          conf_thr=config.conf_thr,
-                                          match_result=match_result,
-                                          iou_thr=iou_thrs[0])
+        eval_utils.write_instance_confusion_matrix(gt_annotations=ground_truth,
+                                                   pred_annotations=prediction,
+                                                   class_ids=class_ids,
+                                                   conf_thr=config.conf_thr,
+                                                   match_result=match_result,
+                                                   iou_thr=iou_thrs[0])
     eval_utils.calc_averaged_evaluations(dataset_evaluation=single_dataset_evaluation, class_ids=class_ids)
 
     evaluation.state = mirpb.EvaluationState.ES_READY

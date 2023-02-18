@@ -4,9 +4,10 @@ import numpy as np
 import pycocotools.mask
 
 from mir.protos import mir_command_pb2 as mirpb
+from mir.tools.eval.eval_utils import get_iou_thrs_array, write_semantic_confusion_matrix
 
 
-_SEMANTIC_SEGMENTATION_BACKGROUND_INDEX = 255
+_SEMANTIC_SEGMENTATION_BACKGROUND = 255
 
 
 # protected: semantic segmentation evaluation
@@ -23,7 +24,7 @@ def _mir_mean_iou(prediction: mirpb.SingleTaskAnnotations, ground_truth: mirpb.S
     all_acc, acc, iou, macc, miou = _mean_iou(dts=dts,
                                               gts=gts,
                                               num_classes=len(class_ids),
-                                              ignore_index=_SEMANTIC_SEGMENTATION_BACKGROUND_INDEX,
+                                              ignore_index=_SEMANTIC_SEGMENTATION_BACKGROUND,
                                               nan_to_num=-1)
     order_to_class_id = dict(zip(range(len(class_ids)), class_ids))
 
@@ -44,7 +45,7 @@ def _aggregate_imagewise_annotations(task_annotations: mirpb.SingleTaskAnnotatio
     image_annotations: List[np.ndarray] = []
     for asset_id, hw in asset_id_to_hws.items():
         # use 255 as a special class, which will be ignored upon evaluation
-        img = np.ones(shape=hw, dtype=np.uint8) * _SEMANTIC_SEGMENTATION_BACKGROUND_INDEX
+        img = np.ones(shape=hw, dtype=np.uint8) * _SEMANTIC_SEGMENTATION_BACKGROUND
         if asset_id not in task_annotations.image_annotations:
             image_annotations.append(img)
             continue
@@ -162,6 +163,16 @@ def evaluate(prediction: mirpb.SingleTaskAnnotations, ground_truth: mirpb.Single
                       ground_truth=ground_truth,
                       asset_id_to_hws=asset_id_to_hws,
                       class_ids=list(config.class_ids)))
+
+    # write cm
+    iou_thr = get_iou_thrs_array(config.iou_thrs_interval)[0]
+    matched_class_ids: List[int] = [
+        cid for cid in config.class_ids if evaluation.dataset_evaluation.segmentation_metrics.IoU[cid] >= iou_thr
+    ]
+    write_semantic_confusion_matrix(gt_annotations=ground_truth,
+                                    pred_annotations=prediction,
+                                    class_ids=list(config.class_ids),
+                                    matched_class_ids=matched_class_ids)
 
     evaluation.state = mirpb.EvaluationState.ES_READY
     return evaluation

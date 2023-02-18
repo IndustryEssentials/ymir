@@ -92,9 +92,32 @@ def _get_average_ee(average_ee: mirpb.SingleEvaluationElement, ees: List[mirpb.S
     average_ee.ar /= ees_cnt
 
 
-def write_confusion_matrix(gt_annotations: mirpb.SingleTaskAnnotations, pred_annotations: mirpb.SingleTaskAnnotations,
-                           class_ids: List[int], conf_thr: float, match_result: DetEvalMatchResult,
-                           iou_thr: float) -> None:
+def write_semantic_confusion_matrix(gt_annotations: mirpb.SingleTaskAnnotations,
+                                    pred_annotations: mirpb.SingleTaskAnnotations,
+                                    class_ids: List[int], matched_class_ids: List[int]) -> None:
+    for image_annotations in gt_annotations.image_annotations.values():
+        for annotation in image_annotations.boxes:
+            if annotation.class_id in matched_class_ids:
+                annotation.cm = mirpb.ConfusionMatrixType.MTP
+            elif annotation.class_id in class_ids:
+                annotation.cm = mirpb.ConfusionMatrixType.FN
+            else:
+                annotation.cm = mirpb.ConfusionMatrixType.IGNORED
+            annotation.det_link_id = -1
+    for image_annotations in pred_annotations.image_annotations.values():
+        for annotation in image_annotations.boxes:
+            if annotation.class_id in matched_class_ids:
+                annotation.cm = mirpb.ConfusionMatrixType.TP
+            elif annotation.class_id in class_ids:
+                annotation.cm = mirpb.ConfusionMatrixType.FP
+            else:
+                annotation.cm = mirpb.ConfusionMatrixType.IGNORED
+            annotation.det_link_id = -1
+
+
+def write_instance_confusion_matrix(gt_annotations: mirpb.SingleTaskAnnotations,
+                                    pred_annotations: mirpb.SingleTaskAnnotations, class_ids: List[int],
+                                    conf_thr: float, match_result: DetEvalMatchResult, iou_thr: float) -> None:
     class_ids_set = set(class_ids)
     for image_annotations in gt_annotations.image_annotations.values():
         for annotation in image_annotations.boxes:

@@ -549,12 +549,12 @@ def evaluate(prediction: mirpb.SingleTaskAnnotations, ground_truth: mirpb.Single
     evaluator.evaluate()
     evaluator.accumulate()
 
-    eval_utils.write_confusion_matrix(gt_annotations=ground_truth,
-                                      pred_annotations=prediction,
-                                      class_ids=params.catIds,
-                                      conf_thr=config.conf_thr,
-                                      match_result=evaluator.match_result,
-                                      iou_thr=params.iouThrs[0])
+    eval_utils.write_instance_confusion_matrix(gt_annotations=ground_truth,
+                                               pred_annotations=prediction,
+                                               class_ids=params.catIds,
+                                               conf_thr=config.conf_thr,
+                                               match_result=evaluator.match_result,
+                                               iou_thr=params.iouThrs[0])
 
     single_dataset_evaluation = evaluator.get_evaluation_result(area_ranges_index=area_ranges_index,
                                                                 max_dets_index=max_dets_index)
