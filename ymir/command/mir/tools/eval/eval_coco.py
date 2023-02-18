@@ -1,5 +1,5 @@
 from collections import defaultdict
-from typing import Any, Dict, List, Optional, Set, Sequence, Tuple, Union, Iterator
+from typing import Any, Dict, List, Optional, Set, Sequence, Tuple, Union
 
 import numpy as np
 import pycocotools.mask
@@ -509,114 +509,6 @@ class CocoDetEval:
 
         return ee
 
-    def _intersect_and_union(
-        self,
-        dt: np.ndarray,
-        gt: np.ndarray,
-        num_classes: int,
-        ignore_index: Optional[int],
-    ) -> Tuple:
-        mask = gt != ignore_index
-        dt = dt[mask]
-        gt = gt[mask]
-        intersect = dt[dt == gt]
-        area_intersect, _ = np.histogram(intersect, bins=np.arange(num_classes + 1))
-        area_dt, _ = np.histogram(dt, bins=np.arange(num_classes + 1))
-        area_gt, _ = np.histogram(gt, bins=np.arange(num_classes + 1))
-        area_union = area_dt + area_gt - area_intersect
-        return area_intersect, area_union, area_dt, area_gt
-
-    def _total_intersect_and_union(
-        self,
-        dts: List[np.ndarray],
-        gts: List[np.ndarray],
-        num_classes: int,
-        ignore_index: int,
-    ) -> Tuple:
-        total_area_intersect = np.zeros((num_classes,), dtype=float)
-        total_area_union = np.zeros((num_classes,), dtype=float)
-        total_area_dt = np.zeros((num_classes,), dtype=float)
-        total_area_gt = np.zeros((num_classes,), dtype=float)
-        for dt, gt in zip(dts, gts):
-            area_intersect, area_union, area_dt, area_gt = self._intersect_and_union(
-                dt,
-                gt,
-                num_classes,
-                ignore_index,
-            )
-            total_area_intersect += area_intersect
-            total_area_union += area_union
-            total_area_dt += area_dt
-            total_area_gt += area_gt
-        return total_area_intersect, total_area_union, total_area_dt, total_area_gt
-
-    def decode_mir_mask(self, annotation: Dict, height: float, width: float) -> Optional[np.ndarray]:
-        try:
-            coco_seg = self._convert_to_coco_segmentation(annotation, [height, width])
-        except ValueError:
-            return None
-        return pycocotools.mask.decode(coco_seg)
-
-    def aggregate_imagewise_annotations(self, annotations: defaultdict) -> Iterator[np.ndarray]:
-        """
-        annotations: self._gts or self._dts
-        """
-        class_ids = self.params.catIds
-        class_id_to_order = dict(zip(class_ids, range(len(class_ids))))
-        asset_ids = self._asset_ids
-
-        for asset_id in asset_ids:
-            if not self._assets_metadata:
-                raise ValueError('assets_metadata is required for segmentation evaluation')
-            asset_metadata = self._assets_metadata[asset_id]
-            height, width = asset_metadata.height, asset_metadata.width
-            # use 255 as a special class, which will be ignored upon evaluation
-            img = np.ones(shape=(height, width), dtype=np.uint8) * 255
-            for class_id in class_ids:
-                for annotation in annotations[(asset_id, class_id)]:
-                    _mask = self.decode_mir_mask(annotation, height, width)
-                    if _mask is not None:
-                        img[_mask == 1] = class_id_to_order[class_id]
-            yield img
-
-    def _mean_iou(
-        self,
-        dts: List[np.ndarray],
-        gts: List[np.ndarray],
-        num_classes: int,
-        ignore_index: int,
-        nan_to_num: Optional[int] = None,
-    ) -> List:
-        (
-            total_area_intersect,
-            total_area_union,
-            total_area_dt,
-            total_area_gt,
-        ) = self._total_intersect_and_union(dts, gts, num_classes, ignore_index)
-        all_acc = np.nansum(total_area_intersect) / np.nansum(total_area_gt)
-        acc = total_area_intersect / total_area_gt
-        iou = total_area_intersect / total_area_union
-        macc = np.nanmean(acc)
-        miou = np.nanmean(iou)
-        ret_metrics = [all_acc, acc, iou, macc, miou]
-        if nan_to_num is not None:
-            ret_metrics = [np.nan_to_num(metric, nan=nan_to_num) for metric in ret_metrics]
-        return ret_metrics
-
-    def mir_mean_iou(self) -> mirpb.SegmentationMetrics:
-        class_ids = self.params.catIds
-        dts = list(self.aggregate_imagewise_annotations(self._dts))
-        gts = list(self.aggregate_imagewise_annotations(self._gts))
-        all_acc, acc, iou, macc, miou = self._mean_iou(dts, gts, len(class_ids), 255, -1)
-        order_to_class_id = dict(zip(range(len(class_ids)), class_ids))
-        metrics = mirpb.SegmentationMetrics()
-        metrics.aAcc = all_acc
-        metrics.Acc.update({order_to_class_id[idx]: value for idx, value in enumerate(acc)})
-        metrics.IoU.update({order_to_class_id[idx]: value for idx, value in enumerate(iou)})
-        metrics.mAcc = macc
-        metrics.mIoU = miou
-        return metrics
-
 
 class Params:
     def __init__(self) -> None:
@@ -648,33 +540,25 @@ def evaluate(prediction: mirpb.SingleTaskAnnotations, ground_truth: mirpb.Single
     area_ranges_index = 0  # area range: 'all'
     max_dets_index = len(params.maxDets) - 1  # last max det number
 
-    is_semantic_segmentation = (prediction.type == mirpb.ObjectType.OT_SEG and not config.is_instance_segmentation)
-
     mir_gt = MirCoco(task_annotations=ground_truth, conf_thr=None)
-    mir_dt = MirCoco(task_annotations=prediction, conf_thr=None if is_semantic_segmentation else config.conf_thr)
+    mir_dt = MirCoco(task_annotations=prediction, conf_thr=config.conf_thr)
 
     evaluator = CocoDetEval(coco_gt=mir_gt, coco_dt=mir_dt, params=params, assets_metadata=assets_metadata)
-    if is_semantic_segmentation:
-        single_dataset_evaluation = mirpb.SingleDatasetEvaluation()
-        miou = evaluator.mir_mean_iou()
-        single_dataset_evaluation.segmentation_metrics.CopyFrom(miou)
-    else:
-        # detection, instance segmentation
-        evaluator.evaluate()
-        evaluator.accumulate()
+    evaluator.evaluate()
+    evaluator.accumulate()
 
-        eval_utils.write_confusion_matrix(gt_annotations=ground_truth,
-                                          pred_annotations=prediction,
-                                          class_ids=params.catIds,
-                                          conf_thr=config.conf_thr,
-                                          match_result=evaluator.match_result,
-                                          iou_thr=params.iouThrs[0])
+    eval_utils.write_confusion_matrix(gt_annotations=ground_truth,
+                                      pred_annotations=prediction,
+                                      class_ids=params.catIds,
+                                      conf_thr=config.conf_thr,
+                                      match_result=evaluator.match_result,
+                                      iou_thr=params.iouThrs[0])
 
-        single_dataset_evaluation = evaluator.get_evaluation_result(area_ranges_index=area_ranges_index,
-                                                                    max_dets_index=max_dets_index)
-        eval_utils.calc_averaged_evaluations(dataset_evaluation=single_dataset_evaluation, class_ids=params.catIds)
+    single_dataset_evaluation = evaluator.get_evaluation_result(area_ranges_index=area_ranges_index,
+                                                                max_dets_index=max_dets_index)
+    eval_utils.calc_averaged_evaluations(dataset_evaluation=single_dataset_evaluation, class_ids=params.catIds)
 
-        single_dataset_evaluation.conf_thr = config.conf_thr
+    single_dataset_evaluation.conf_thr = config.conf_thr
 
     evaluation.dataset_evaluation.CopyFrom(single_dataset_evaluation)
     evaluation.state = mirpb.EvaluationState.ES_READY
