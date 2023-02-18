@@ -1,5 +1,5 @@
 from collections import defaultdict
-from typing import Any, Dict, List, Optional, Set, Sequence, Tuple, Union
+from typing import Any, Dict, List, Optional, Set, Tuple, Union
 
 import numpy as np
 import pycocotools.mask
@@ -11,7 +11,8 @@ from mir.protos import mir_command_pb2 as mirpb
 
 
 class MirCoco:
-    def __init__(self, task_annotations: mirpb.SingleTaskAnnotations, conf_thr: Optional[float]) -> None:
+    def __init__(self, task_annotations: mirpb.SingleTaskAnnotations, mir_metadatas: mirpb.MirMetadatas,
+                 conf_thr: Optional[float]) -> None:
         """
         creates MirCoco instance
 
@@ -29,9 +30,11 @@ class MirCoco:
         self.asset_ids = list(task_annotations.image_annotations.keys())
 
         self.img_cat_to_annotations = self._aggregate_annotations(single_task_annotations=task_annotations,
+                                                                  mir_metadatas=mir_metadatas,
                                                                   conf_thr=conf_thr)
 
     def _aggregate_annotations(self, single_task_annotations: mirpb.SingleTaskAnnotations,
+                               mir_metadatas: mirpb.MirMetadatas,
                                conf_thr: Optional[float]) -> Dict[Tuple[str, int], List[dict]]:
         """
         aggregates annotations with confidence >= conf_thr into a dict with key: (asset id, class id)
@@ -55,6 +58,8 @@ class MirCoco:
 
         annotation_idx = 1
         for asset_id in self.asset_ids:
+            if asset_id not in mir_metadatas.attributes:
+                raise ValueError(f"Can not find attrs for asset: {asset_id}")
             if asset_id not in single_task_annotations.image_annotations:
                 continue
 
@@ -71,18 +76,29 @@ class MirCoco:
                     'id': annotation_idx,
                     'area': area,
                     'bbox': [annotation.box.x, annotation.box.y, annotation.box.w, annotation.box.h],
-                    'mask': annotation.mask,
-                    'polygon': annotation.polygon,
                     'score': annotation.score,
-                    'iscrowd': 0,
+                    'iscrowd': annotation.iscrowd,
                     'ignore': 0,
                     'pb_index_id': annotation.index,
                 }
+                annotation_dict['segmentation'] = self._convert_to_coco_segmentation(
+                    annotation=annotation, attrs=mir_metadatas.attributes[asset_id])
                 img_cat_to_annotations[asset_id, annotation.class_id].append(annotation_dict)
 
                 annotation_idx += 1
 
         return img_cat_to_annotations
+
+    @classmethod
+    def _convert_to_coco_segmentation(cls, annotation: mirpb.ObjectAnnotation,
+                                      attrs: mirpb.MetadataAttributes) -> Union[dict, list]:
+        if annotation.type == mirpb.ObjectSubType.OST_SEG_MASK:
+            return {"counts": annotation.mask, "size": [attrs.height, attrs.width]}
+        elif annotation.type == mirpb.ObjectSubType.OST_SEG_POLYGON:
+            polygon = [[i for point in annotation.polygon for i in (point.x, point.y)]]
+            return pycocotools.mask.merge(pycocotools.mask.frPyObjects(polygon, attrs.height, attrs.width))
+        else:
+            raise ValueError("Failed to convert to coco segmentation format")
 
 
 class CocoDetEval:
@@ -158,12 +174,8 @@ class CocoDetEval:
             g_boxes = [g['bbox'] for g in gt]
             d_boxes = [d['bbox'] for d in dt]
         elif self.params.iouType == "segm":
-            if not self._assets_metadata:
-                raise ValueError('assets_metadata is required for segmentation evaluation')
-            asset_metadata = self._assets_metadata[asset_id]
-            size = [asset_metadata.height, asset_metadata.width]
-            g_boxes = [self._convert_to_coco_segmentation(g, size) for g in gt]
-            d_boxes = [self._convert_to_coco_segmentation(d, size) for d in dt]
+            g_boxes = [g['segmentation'] for g in gt]
+            d_boxes = [d['segmentation'] for d in dt]
         else:
             raise ValueError('unknown iouType for iou computation')
 
@@ -173,16 +185,6 @@ class CocoDetEval:
         #   ious[i][j]: iou of d_boxes[i] and g_boxes[j]
         ious = pycocotools.mask.iou(d_boxes, g_boxes, iscrowd)
         return ious
-
-    @staticmethod
-    def _convert_to_coco_segmentation(mir_annotation: Dict, size: Sequence[Union[float, int]]) -> Dict:
-        if mir_annotation.get("mask"):
-            return {"counts": mir_annotation["mask"], "size": size}
-        elif mir_annotation.get("polygon"):
-            polygon = [[i for point in mir_annotation["polygon"] for i in (point.x, point.y)]]
-            return pycocotools.mask.merge(pycocotools.mask.frPyObjects(polygon, *size))
-        else:
-            raise ValueError("Failed to convert to coco segmentation format")
 
     def evaluateImg(self, asset_id: str, catId: int, aRng: Any, maxDet: int) -> Optional[dict]:
         '''
@@ -526,7 +528,7 @@ class Params:
 
 
 def evaluate(prediction: mirpb.SingleTaskAnnotations, ground_truth: mirpb.SingleTaskAnnotations,
-             config: mirpb.EvaluateConfig, assets_metadata: Optional[mirpb.MirMetadatas]) -> mirpb.Evaluation:
+             config: mirpb.EvaluateConfig, assets_metadata: mirpb.MirMetadatas) -> mirpb.Evaluation:
     evaluation = mirpb.Evaluation()
     evaluation.config.CopyFrom(config)
 
@@ -540,8 +542,8 @@ def evaluate(prediction: mirpb.SingleTaskAnnotations, ground_truth: mirpb.Single
     area_ranges_index = 0  # area range: 'all'
     max_dets_index = len(params.maxDets) - 1  # last max det number
 
-    mir_gt = MirCoco(task_annotations=ground_truth, conf_thr=None)
-    mir_dt = MirCoco(task_annotations=prediction, conf_thr=config.conf_thr)
+    mir_gt = MirCoco(task_annotations=ground_truth, mir_metadatas=assets_metadata, conf_thr=None)
+    mir_dt = MirCoco(task_annotations=prediction, mir_metadatas=assets_metadata, conf_thr=config.conf_thr)
 
     evaluator = CocoDetEval(coco_gt=mir_gt, coco_dt=mir_dt, params=params, assets_metadata=assets_metadata)
     evaluator.evaluate()
