@@ -68,8 +68,10 @@ class TestToolsSegEval(unittest.TestCase):
 
         # check result
         iou_ci_averaged = evaluation.dataset_evaluation.iou_averaged_evaluation.ci_averaged_evaluation
-        self.assertTrue(np.isclose(0.35973597, iou_ci_averaged.ap, atol=1e-8))
+        self.assertTrue(np.isclose(0.35973597, iou_ci_averaged.maskAP, atol=1e-8))
+        self.assertTrue(np.isclose(0.37376236, iou_ci_averaged.boxAP, atol=1e-8))
         self.assertTrue(np.isclose(0.5, iou_ci_averaged.ar, atol=1e-8))
+        self.assertEqual(0, iou_ci_averaged.ap)
 
     def test_sem_seg_eval_00(self) -> None:
         mir_metadatas, mir_annotations = self._load_mirdatas(

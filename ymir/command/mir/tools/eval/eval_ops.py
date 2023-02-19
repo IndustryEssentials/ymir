@@ -6,7 +6,7 @@ from typing import Any, Optional
 from mir.tools import settings as mir_settings
 from mir.tools.code import MirCode
 from mir.tools.errors import MirRuntimeError
-from mir.tools.eval import eval_coco, det_eval_voc, sem_seg_eval_mm
+from mir.tools.eval import det_eval_voc, ins_seg_eval_coco, sem_seg_eval_mm
 from mir.protos import mir_command_pb2 as mirpb
 
 
@@ -83,7 +83,7 @@ def _get_eval_model_function(anno_type: Any, is_instance_segmentation: bool) -> 
     mapping = {
         (mirpb.ObjectType.OT_DET_BOX, False): det_eval_voc,
         (mirpb.ObjectType.OT_SEG, False): sem_seg_eval_mm,
-        (mirpb.ObjectType.OT_SEG, True): eval_coco,
+        (mirpb.ObjectType.OT_SEG, True): ins_seg_eval_coco,
     }
     return mapping.get((anno_type, is_instance_segmentation))
 

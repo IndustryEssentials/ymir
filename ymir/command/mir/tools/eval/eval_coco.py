@@ -534,6 +534,7 @@ def evaluate(prediction: mirpb.SingleTaskAnnotations, ground_truth: mirpb.Single
 
     params = Params()
     params.confThr = config.conf_thr
+    params.iouType = 'segm' if config.type == mirpb.ObjectType.OT_SEG else 'bbox'
     if config.iou_thrs_interval != "-1":
         params.iouThrs = eval_utils.get_iou_thrs_array(config.iou_thrs_interval)
     params.need_pr_curve = config.need_pr_curve
