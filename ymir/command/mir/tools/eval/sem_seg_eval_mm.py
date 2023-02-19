@@ -166,13 +166,13 @@ def evaluate(prediction: mirpb.SingleTaskAnnotations, ground_truth: mirpb.Single
 
     # write cm
     iou_thr = get_iou_thrs_array(config.iou_thrs_interval)[0]
-    matched_class_ids: List[int] = [
-        cid for cid in config.class_ids if evaluation.dataset_evaluation.segmentation_metrics.IoU[cid] >= iou_thr
-    ]
     write_semantic_confusion_matrix(gt_annotations=ground_truth,
                                     pred_annotations=prediction,
                                     class_ids=list(config.class_ids),
-                                    matched_class_ids=matched_class_ids)
+                                    matched_class_ids=[
+                                        cid for cid in config.class_ids
+                                        if evaluation.dataset_evaluation.segmentation_metrics.IoU[cid] >= iou_thr
+                                    ])
 
     evaluation.state = mirpb.EvaluationState.ES_READY
     return evaluation
