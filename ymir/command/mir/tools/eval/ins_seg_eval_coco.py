@@ -12,12 +12,16 @@ def _re_arrange_evaluation_element(seg_ee: mirpb.SingleEvaluationElement,
 def evaluate(prediction: mirpb.SingleTaskAnnotations, ground_truth: mirpb.SingleTaskAnnotations,
              config: mirpb.EvaluateConfig, assets_metadata: mirpb.MirMetadatas) -> mirpb.Evaluation:
     # calc boxAP
-    box_config = mirpb.EvaluateConfig()
-    box_config.CopyFrom(config)
-    box_config.type = mirpb.ObjectType.OT_DET_BOX
-    box_evaluation = eval_coco.evaluate(prediction=prediction,
-                                        ground_truth=ground_truth,
-                                        config=box_config,
+    copy_config = mirpb.EvaluateConfig()
+    copy_config.CopyFrom(config)
+    copy_config.type = mirpb.ObjectType.OT_DET_BOX
+    copy_prediction = mirpb.SingleTaskAnnotations()
+    copy_prediction.CopyFrom(prediction)
+    copy_ground_truth = mirpb.SingleTaskAnnotations()
+    copy_ground_truth.CopyFrom(ground_truth)
+    box_evaluation = eval_coco.evaluate(prediction=copy_prediction,
+                                        ground_truth=copy_ground_truth,
+                                        config=copy_config,
                                         assets_metadata=assets_metadata)
 
     # calc maskAP
