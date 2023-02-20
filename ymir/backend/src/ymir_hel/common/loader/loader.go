@@ -56,7 +56,7 @@ func (l *MirRepoLoader) LoadMutipleMirDatas(
 func (l *MirRepoLoader) LoadModelInfo(mirRepo *constants.MirRepo) *constants.MirdataModel {
 	mirTasks := l.LoadSingleMirData(mirRepo, constants.MirfileTasks).(*protos.MirTasks)
 	task := mirTasks.Tasks[mirTasks.HeadTaskId]
-	modelData := constants.NewMirdataModel("")
+	modelData := constants.NewMirdataModel()
 	if task.SerializedExecutorConfig != "" {
 		if err := yaml.Unmarshal([]byte(task.SerializedExecutorConfig), &modelData.ExecutorConfig); err != nil {
 			panic(err)
