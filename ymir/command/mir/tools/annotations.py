@@ -63,6 +63,12 @@ def _annotation_parse_func(anno_type: "mirpb.ObjectType.V") -> Callable:
     return _func_dict[anno_type]
 
 
+def _annotation_signature(annotation: mirpb.ObjectAnnotation, asset_id: str) -> str:
+    return (
+        f"{asset_id}-{annotation.class_id}-{annotation.box.x}-{annotation.box.y}-{annotation.box.w}-{annotation.box.h}"
+        f"-{annotation.box.rotate_angle}")
+
+
 def _voc_object_dict_to_annotation(object_dict: dict, cid: int,
                                    class_type_manager: class_ids.UserLabels) -> mirpb.ObjectAnnotation:
     # Fill shared fields.
@@ -200,6 +206,7 @@ def _import_annotations_voc_xml(file_name_to_asset_ids: Dict[str, str], mir_anno
                                 unknown_types_strategy: UnknownTypesStrategy, accu_new_class_names: Dict[str, int],
                                 image_annotations: mirpb.SingleTaskAnnotations) -> None:
     zero_size_count = 0
+    duplicate_count = 0
     add_if_not_found = (unknown_types_strategy == UnknownTypesStrategy.ADD)
     for filename, asset_hash in file_name_to_asset_ids.items():
         # for each asset, import it's annotations
@@ -227,6 +234,7 @@ def _import_annotations_voc_xml(file_name_to_asset_ids: Dict[str, str], mir_anno
             objects = [objects]
 
         anno_idx = 0
+        known_signatures = set()
         for object_dict in objects:
             cid, new_type_name = class_type_manager.id_and_main_name_for_name(name=object_dict['name'])
 
@@ -248,11 +256,19 @@ def _import_annotations_voc_xml(file_name_to_asset_ids: Dict[str, str], mir_anno
                     zero_size_count += 1
                     continue
 
+                signature = _annotation_signature(annotation, asset_hash)
+                if signature in known_signatures:
+                    logging.warning(f"Found duplicated annotation for asset hash: {asset_hash}")
+                    duplicate_count += 1
+                    continue
+
                 annotation.index = anno_idx
                 image_annotations.image_annotations[asset_hash].boxes.append(annotation)
                 anno_idx += 1
+                known_signatures.add(signature)
 
-    logging.info(f"zero size boxes count: {zero_size_count}")
+    logging.info(f"count of zero size objects: {zero_size_count}")
+    logging.info(f"count of duplicate objects: {duplicate_count}")
 
 
 def import_annotations_coco_json(file_name_to_asset_ids: Dict[str, str], mir_annotation: mirpb.MirAnnotations,
@@ -283,6 +299,8 @@ def import_annotations_coco_json(file_name_to_asset_ids: Dict[str, str], mir_ann
     unknown_category_ids_cnt = 0
     unknown_image_objects_cnt = 0
     error_format_objects_cnt = 0
+    zero_size_count = 0
+    duplicate_count = 0
 
     # images_list -> image_id_to_hashes (key: coco image id, value: ymir asset hash)
     image_id_to_hashes: Dict[int, str] = {}
@@ -306,6 +324,7 @@ def import_annotations_coco_json(file_name_to_asset_ids: Dict[str, str], mir_ann
                 cid, _ = class_type_manager.add_main_name(name)
                 category_id_to_cids[v['id']] = cid
 
+    known_signatures = set()
     for anno_dict in annotations_list:
         if anno_dict['category_id'] not in category_id_to_cids:
             unknown_category_ids_cnt += 1
@@ -320,14 +339,27 @@ def import_annotations_coco_json(file_name_to_asset_ids: Dict[str, str], mir_ann
         if not obj_anno:
             error_format_objects_cnt += 1
             continue
+        if obj_anno.box.w <= 0 or obj_anno.box.h <= 0:
+            zero_size_count += 1
+            continue
+
         asset_hash = image_id_to_hashes[anno_dict['image_id']]
+        signature = _annotation_signature(obj_anno, asset_hash)
+        if signature in known_signatures:
+            logging.warning(f"Found duplicated annotation for asset hash: {asset_hash}")
+            duplicate_count += 1
+            continue
+
         obj_anno.index = len(image_annotations.image_annotations[asset_hash].boxes)
         image_annotations.image_annotations[asset_hash].boxes.append(obj_anno)
+        known_signatures.add(signature)
 
     logging.info(f"count of unhashed file names in images list: {unhashed_filenames_cnt}")
     logging.info(f"count of unknown category ids in categories list: {unknown_category_ids_cnt}")
     logging.info(f"count of objects with unknown image ids in annotations list: {unknown_image_objects_cnt}")
     logging.info(f"count of error format objects: {error_format_objects_cnt}")
+    logging.info(f"count of zero size objects: {zero_size_count}")
+    logging.info(f"count of duplicate objects: {duplicate_count}")
 
 
 def _import_annotation_meta(class_type_manager: class_ids.UserLabels, annotations_dir_path: str,
