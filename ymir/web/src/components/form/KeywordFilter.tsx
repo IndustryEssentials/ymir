@@ -1,5 +1,4 @@
-import { Cascader, CascaderProps, Col, Row, Select } from 'antd'
-import { useParams } from 'umi'
+import { Cascader, Col, Row, Select } from 'antd'
 import t from '@/utils/t'
 import { FC, useEffect, useState } from 'react'
 
@@ -9,9 +8,8 @@ enum Type {
   tags = 'tags',
 }
 type Props = {
-  value: string[] | string[][]
-  onChange?: (value: { type: Type; selected?: (string | string[])[] }) => void
-  dataset: YModels.Dataset
+  onChange?: (value: { type: Type; selected?: string[] }) => void
+  dataset?: YModels.Dataset
 }
 type KeywordOptionsType = {
   [key in Type]: KeywordOption[]
@@ -33,9 +31,9 @@ const types = [Type.keywords, Type.cks, Type.tags]
 
 const visibleTypes = (types: TypeOption[]) => types.filter(({ hidden }) => !hidden)
 
-const KeywordSelector: FC<Props> = ({ value, onChange, dataset }) => {
+const KeywordSelector: FC<Props> = ({ onChange, dataset }) => {
   const [typeOptions, setTypeOptions] = useState<TypeOption[]>(
-    types.map((value) => ({ value, label: t(`dataset.assets.keyword.selector.types.${labels[value]}`) })),
+    types.map((type) => ({ value: type, label: t(`dataset.assets.keyword.selector.types.${labels[type]}`) })),
   )
   const [kwOptions, setKwOptions] = useState<KeywordOptionsType>({
     [Type.keywords]: [],
@@ -45,22 +43,6 @@ const KeywordSelector: FC<Props> = ({ value, onChange, dataset }) => {
   const [currentType, setCurrentType] = useState<Type>(Type.keywords)
   const [selected, setSelected] = useState<string[]>([])
   const [ckSelected, setCkSelected] = useState<string[][]>([])
-
-  useEffect(() => {
-    if (value) {
-      if (value?.length) {
-        const isCk = Array.isArray(value[0])
-        if (isCk) {
-          setCkSelected(value as string[][])
-        } else {
-          setSelected(value as string[])
-        }
-      } else {
-        setCkSelected([])
-        setSelected([])
-      }
-    }
-  }, [value])
 
   useEffect(() => {
     const validTypes = visibleTypes(typeOptions).map(({ value }) => value)
@@ -74,7 +56,7 @@ const KeywordSelector: FC<Props> = ({ value, onChange, dataset }) => {
   }, [kwOptions])
 
   useEffect(() => {
-    if (!dataset.id) {
+    if (!dataset?.id) {
       return
     }
     const ck2opts = (kws: YModels.CKItem[] = []): KeywordOption[] =>
@@ -91,7 +73,8 @@ const KeywordSelector: FC<Props> = ({ value, onChange, dataset }) => {
   }, [selected])
 
   useEffect(() => {
-    onChange && onChange({ type: currentType, selected: ckSelected })
+    const selected = ckSelected.map(item => item.join(':'))
+    onChange && onChange({ type: currentType, selected })
   }, [ckSelected])
 
   useEffect(() => {
@@ -123,7 +106,7 @@ const KeywordSelector: FC<Props> = ({ value, onChange, dataset }) => {
       multiple
       allowClear
       expandTrigger="hover"
-      onChange={(value: unknown) => setCkSelected(value as string[][])}
+      onChange={(value) => setCkSelected(value as string[][])}
       options={list}
       placeholder={t('dataset.assets.keyword.selector.types.placeholder')}
     />

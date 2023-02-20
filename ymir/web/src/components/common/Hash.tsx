@@ -1,7 +1,13 @@
-import Copy from "./copy"
+import { FC } from "react"
+import Copy from "./Copy"
 import styles from "./common.less"
 
-function Hash({ value, width }) {
+type Props = {
+  value: string,
+  width?: number
+}
+
+const Hash: FC<Props> = ({ value, width = 160 }) => {
   return (
     <>
       <span className={styles.hash} style={{ maxWidth: width }} title={value}>

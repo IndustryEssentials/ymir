@@ -1,12 +1,19 @@
+import { FC, MouseEventHandler, useRef } from "react"
 import { message } from "antd"
-import { useRef } from "react"
 import styles from "./common.less"
 
-function Copy({ text, label = "Copy" }) {
-  const inputRef = useRef()
-  const copyText = (e) => {
+type Props = {
+  text: string,
+  label?: string
+}
+const Copy: FC<Props> = ({ text, label = "Copy" }) => {
+  const inputRef = useRef<HTMLInputElement>(null)
+  const copyText: MouseEventHandler<HTMLSpanElement> = (e) => {
     e.stopPropagation()
     e.preventDefault()
+    if (!inputRef.current) {
+      return
+    }
     inputRef.current.select()
     document.execCommand("copy")
     message.info(`${text} Copied!`)
