@@ -25,9 +25,10 @@ class DatasetGroup(Base):
         uselist=True,
         viewonly=True,
     )
+    # FIXME: revert when datasets and preds separated
     visible_datasets = relationship(
         "Dataset",
-        primaryjoin=f"and_(foreign(Dataset.dataset_group_id)==DatasetGroup.id, foreign(Dataset.source)!={TaskType.dataset_infer.value}, foreign(Dataset.is_visible))",
+        primaryjoin=f"and_(foreign(Dataset.dataset_group_id)==DatasetGroup.id, foreign(Dataset.source)!={TaskType.dataset_infer.value}, foreign(Dataset.is_visible))",  # noqa
         uselist=True,
         viewonly=True,
     )
