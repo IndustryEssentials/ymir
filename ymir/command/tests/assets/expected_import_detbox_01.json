@@ -752,7 +752,6 @@
                 "return_code": 0,
                 "return_msg": "",
                 "new_types_added": false,
-                "serialized_task_parameters": "",
                 "serialized_executor_config": "",
                 "executor": ""
             }
