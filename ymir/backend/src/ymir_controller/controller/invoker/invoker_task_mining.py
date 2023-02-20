@@ -25,7 +25,6 @@ class TaskMiningInvoker(TaskBaseInvoker):
         output_config_file = self.gen_executor_config_path(subtask_work_dir_0)
         gpu_lock_ret = self.gen_executor_config_lock_gpus(
             req_executor_config=request.docker_image_config,
-            task_parameters=request.task_parameters,
             class_names=[],
             output_config_file=output_config_file,
             assets_config=self._assets_config,
