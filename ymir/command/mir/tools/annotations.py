@@ -30,6 +30,23 @@ class MergeStrategy(str, enum.Enum):
     GUEST = 'guest'
 
 
+class _ObjectAnnotationsSet(Set[mirpb.ObjectAnnotation]):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._hashes = {}
+
+    @classmethod
+    def _hash(cls, annotation: mirpb.ObjectAnnotation) -> tuple:
+        return (annotation.class_id, annotation.box.x, annotation.box.y, annotation.box.w, annotation.box.h,
+                annotation.box.rotate_angle)
+
+    def add(self, annotation: mirpb.ObjectAnnotation) -> None:
+        new_hash = self._hash(annotation)
+        self.discard(self._hash.get(new_hash))
+        super().add(annotation=annotation)
+        self._hash[new_hash] = annotation
+
+
 def parse_anno_format(anno_format_str: str) -> "mirpb.ExportFormat.V":
     _anno_dict: Dict[str, mirpb.ExportFormat.V] = {
         # compatible with legacy format.
