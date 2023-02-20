@@ -114,8 +114,8 @@ class TestToolsSegEval(unittest.TestCase):
             filepath=os.path.join('tests', 'assets', 'test_eval_sem_seg.json'))
 
         evaluate_config = mirpb.EvaluateConfig()
-        evaluate_config.conf_thr = -1
-        evaluate_config.iou_thrs_interval = '-1'
+        evaluate_config.conf_thr = 0
+        evaluate_config.iou_thrs_interval = ''
         evaluate_config.class_ids[:] = [1, 3]
         evaluate_config.type = mirpb.ObjectType.OT_SEG
         evaluate_config.is_instance_segmentation = False
