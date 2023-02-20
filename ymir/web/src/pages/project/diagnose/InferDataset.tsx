@@ -41,7 +41,7 @@ const InferDataset: React.FC = () => {
     {
       key: 'preview',
       label: t('common.action.preview'),
-      onclick: () => history.push(`/home/project/${pid}/dataset/${record.id}/assets`),
+      onclick: () => history.push(`/home/project/${pid}/dataset/${record.id}/assets#pred`),
       icon: <EyeOnIcon />,
     }, 
     {

@@ -135,7 +135,11 @@ declare namespace YModels {
     metadata?: {
       width: number
       height: number
-      channel: number
+      image_channels?: number
+      timestamp: {
+        start: string
+        duration?: number
+      }
     }
     size?: number
     annotations: Annotation[]
