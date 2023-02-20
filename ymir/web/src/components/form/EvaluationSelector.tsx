@@ -1,10 +1,16 @@
+import type { FC } from 'react'
+import type CSS from 'csstype'
+import { Col, RadioGroupProps, Row } from 'antd'
+
 import { evaluationTags as tags } from '@/constants/dataset'
-import type { RadioGroupProps } from 'antd'
-import React from 'react'
+import t from '@/utils/t'
 import RadioGroup from './RadioGroup'
 
 type Props = RadioGroupProps & {
   hidden?: boolean
+  title?: string
+  vertical?: boolean
+  labelAlign?: CSS.Property.TextAlign
 }
 
 const types = [
@@ -13,8 +19,15 @@ const types = [
   { label: 'fp', value: tags.fp },
 ]
 
-const EvaluationSelector: React.FC<Props> = (props) => (
-  <RadioGroup optionType="button" {...props} prefix='dataset.assets.selector.evaluation.' options={types} />
+const EvaluationSelector: FC<Props> = ({ vertical, hidden, labelAlign = 'left', ...props }) => (
+  <Row gutter={10} hidden={hidden}>
+    <Col span={vertical ? 24 : undefined} style={{ fontWeight: 'bold', textAlign: labelAlign }}>
+      {t('dataset.assets.selector.evaluation.label')}
+    </Col>
+    <Col flex={1}>
+      <RadioGroup optionType="button" {...props} prefix="dataset.assets.selector.evaluation." options={types} />
+    </Col>
+  </Row>
 )
 
 export default EvaluationSelector

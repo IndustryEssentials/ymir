@@ -1,21 +1,19 @@
 import { FC, useEffect, useState } from 'react'
 import t from '@/utils/t'
-import { Select, SelectProps } from 'antd'
+import { Col, Row, Select, SelectProps } from 'antd'
 import V from './VisualModes'
 import { BaseOptionType } from 'antd/lib/select'
 
-type optionType = 1 | 3 | 7
 type Props = SelectProps & {
   type?: string
-  actualClasses?: optionType[]
 }
 
 const options = {
-  [V.All]: { label: 'all', },
-  [V.Asset]: { label: 'asset', },
-  [V.Gt]: { label: 'gt', },
-  [V.Pred]: { label: 'pred', },
-  [V.GtPred]: { label: 'annotation', },
+  [V.All]: { label: 'all' },
+  [V.Asset]: { label: 'asset' },
+  [V.Gt]: { label: 'gt' },
+  [V.Pred]: { label: 'pred' },
+  [V.GtPred]: { label: 'annotation' },
 }
 
 const modes: { [key: string]: V[] } = {
@@ -35,11 +33,16 @@ const ListVisualSelect: FC<Props> = ({ type, ...props }) => {
     setOpts(opts)
   }, [type])
   return opts.length ? (
-    <Select
-      {...props}
-      defaultValue={opts[0].value}
-      options={opts.map(({ value, label }) => ({ value, label: t(`dataset.assets.selector.visual.label.${label}`) }))}
-    />
+    <Row gutter={10}>
+      <Col style={{ fontWeight: 'bold' }}>{t('dataset.assets.selector.visual.label')}</Col>
+      <Col flex={1}>
+        <Select
+          {...props}
+          defaultValue={opts[0].value}
+          options={opts.map(({ value, label }) => ({ value, label: t(`dataset.assets.selector.visual.label.${label}`) }))}
+        />
+      </Col>
+    </Row>
   ) : null
 }
 

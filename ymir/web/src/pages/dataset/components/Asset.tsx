@@ -205,6 +205,7 @@ const Asset: FC<Props> = ({ id, asset: cache, type, datasetKeywords, filterKeywo
               <Space className={styles.filter} size={10} wrap>
                 <EvaluationSelector
                   value={evaluation}
+                  vertical
                   hidden={!dataset?.evaluated || !asset.evaluated}
                   onChange={({ target }) => evaluationChange(target.value)}
                 />

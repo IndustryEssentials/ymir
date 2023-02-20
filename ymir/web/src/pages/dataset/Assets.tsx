@@ -114,15 +114,17 @@ const Dataset: FC = () => {
   const renderTitle = (
     <Row className={styles.labels}>
       <Col flex={1}>
-        <DatasetInfo dataset={dataset} />
+        <DatasetInfo dataset={dataset} type={type} />
       </Col>
       <Col>
         <ListColumnCountSelect value={columns} onChange={setColumns} />
       </Col>
       <Col span={24} style={{ fontSize: 14, textAlign: 'right', marginTop: 10 }}>
-        <Space size={10} wrap={true} style={{ textAlign: 'left' }}>
+        <Space size={20} wrap={true} style={{ textAlign: 'left' }}>
           <ListVisualSelect style={{ width: 200 }} type={type} onChange={setMode} />
-          {dataset?.evaluated ? <EvaluationSelector value={filterParams.cm} onChange={({ target }) => updateFilterParams(target.value, 'cm')} /> : null}
+          {type === 'pred' && dataset?.evaluated ? (
+            <EvaluationSelector value={filterParams.cm} onChange={({ target }) => updateFilterParams(target.value, 'cm')} />
+          ) : null}
           <KeywordSelector onChange={filterKw} dataset={dataset} />
         </Space>
       </Col>
