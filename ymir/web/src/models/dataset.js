@@ -201,7 +201,7 @@ export default {
       const { cm, datasetKeywords } = payload
       const params = payload
       const left = [evaluationTags.fp, evaluationTags.fn]
-      if (!left.includes(cm)) {
+      if (cm && !left.includes(cm)) {
         params.cm = undefined
         params.exclude = left
       }
