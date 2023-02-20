@@ -34,7 +34,7 @@ class DetEvalMatchResult:
         return self._iou_matches[iou_thr].gt_pred_match[asset_id]
 
 
-def get_iou_thrs_array(iou_thrs_str: str, minus_ok: bool = False) -> np.ndarray:
+def get_iou_thrs_array(iou_thrs_str: str, negative_ok: bool = False) -> np.ndarray:
     iou_thrs = [float(v) for v in iou_thrs_str.split(':')]
     if len(iou_thrs) == 3:
         iou_thr_from, iou_thr_to, iou_thr_step = iou_thrs
@@ -43,7 +43,7 @@ def get_iou_thrs_array(iou_thrs_str: str, minus_ok: bool = False) -> np.ndarray:
     else:
         raise ValueError(f"invalid iou thrs str: {iou_thrs_str}")
     for thr in [iou_thr_from, iou_thr_to, iou_thr_step]:
-        if (not minus_ok and thr < 0) or thr > 1:
+        if (not negative_ok and thr < 0) or thr > 1:
             raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
                                   error_message='invalid iou_thr_from, iou_thr_to or iou_thr_step')
     if iou_thr_from > iou_thr_to:

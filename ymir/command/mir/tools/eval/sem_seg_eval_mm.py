@@ -165,7 +165,7 @@ def evaluate(prediction: mirpb.SingleTaskAnnotations, ground_truth: mirpb.Single
                       class_ids=list(config.class_ids)))
 
     # write cm
-    iou_thr = get_iou_thrs_array(config.iou_thrs_interval, minus_ok=True)[0]
+    iou_thr = get_iou_thrs_array(config.iou_thrs_interval, negative_ok=True)[0]
     if iou_thr > 0:
         write_semantic_confusion_matrix(gt_annotations=ground_truth,
                                         pred_annotations=prediction,
