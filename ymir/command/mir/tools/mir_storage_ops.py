@@ -332,19 +332,19 @@ class MirStorageOps():
                                          including_default_value_fields=True)
 
 
-def create_task(task_type: 'mirpb.TaskType.V',
-                task_id: str,
-                message: str,
-                new_types: Dict[str, int] = {},
-                new_types_added: bool = False,
-                return_code: int = 0,
-                return_msg: str = '',
-                serialized_executor_config: str = '',
-                executor: str = '',
-                model_meta: mirpb.ModelMeta = None,
-                evaluation: mirpb.Evaluation = None,
-                src_revs: str = '',
-                dst_rev: str = '') -> mirpb.Task:
+def create_task_record(task_type: 'mirpb.TaskType.V',
+                       task_id: str,
+                       message: str,
+                       new_types: Dict[str, int] = {},
+                       new_types_added: bool = False,
+                       return_code: int = 0,
+                       return_msg: str = '',
+                       serialized_executor_config: str = '',
+                       executor: str = '',
+                       model_meta: mirpb.ModelMeta = None,
+                       evaluation: mirpb.Evaluation = None,
+                       src_revs: str = '',
+                       dst_rev: str = '') -> mirpb.Task:
     task_dict = {
         'type': task_type,
         'name': message,

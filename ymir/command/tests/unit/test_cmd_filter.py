@@ -148,7 +148,7 @@ class TestCmdFilter(unittest.TestCase):
         mir_annotations = mirpb.MirAnnotations()
         json_format.ParseDict(annotations_dict, mir_annotations)
 
-        task = mir_storage_ops.create_task(task_type=mirpb.TaskType.TaskTypeImportData, task_id='t0', message='import')
+        task = mir_storage_ops.create_task_record(task_type=mirpb.TaskType.TaskTypeImportData, task_id='t0', message='import')
 
         MirStorageOps.save_and_commit(mir_root=self._mir_root,
                                       mir_branch='a',

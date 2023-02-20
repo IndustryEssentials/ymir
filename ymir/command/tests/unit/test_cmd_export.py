@@ -190,9 +190,9 @@ class TestCmdExport(unittest.TestCase):
         json_format.ParseDict(annotations_dict, mir_annotations)
 
         # tasks
-        task = mir_storage_ops.create_task(task_type=mirpb.TaskType.TaskTypeImportData,
-                                           task_id='a',
-                                           message='test_tools_data_exporter_branch_a')
+        task = mir_storage_ops.create_task_record(task_type=mirpb.TaskType.TaskTypeImportData,
+                                                  task_id='a',
+                                                  message='test_tools_data_exporter_branch_a')
 
         # save and commit
         mir_datas = {

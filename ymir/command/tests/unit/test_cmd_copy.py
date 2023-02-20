@@ -73,10 +73,10 @@ class TestCmdCopy(unittest.TestCase):
         mir_annotations.ground_truth.type = mirpb.ObjectType.OT_NO_ANNOTATIONS
 
         model_meta = mirpb.ModelMeta(mAP=0.3)
-        task = mir_storage_ops.create_task(task_type=mirpb.TaskType.TaskTypeTraining,
-                                           task_id=task_id,
-                                           message='training',
-                                           model_meta=model_meta)
+        task = mir_storage_ops.create_task_record(task_type=mirpb.TaskType.TaskTypeTraining,
+                                                  task_id=task_id,
+                                                  message='training',
+                                                  model_meta=model_meta)
 
         mir_storage_ops.MirStorageOps.save_and_commit(mir_root=self._src_mir_root,
                                                       mir_branch='a',

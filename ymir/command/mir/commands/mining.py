@@ -14,7 +14,7 @@ from mir.tools.annotations import filter_mirdatas_by_asset_ids, valid_image_anno
 from mir.tools.code import MirCode
 from mir.tools.command_run_in_out import command_run_in_out
 from mir.tools.errors import MirContainerError, MirRuntimeError
-from mir.tools.mir_storage_ops import create_task, MirStorageOps
+from mir.tools.mir_storage_ops import create_task_record, MirStorageOps
 
 
 class CmdMining(base.BaseCommand):
@@ -188,14 +188,14 @@ class CmdMining(base.BaseCommand):
             return_msg = env_config.collect_executor_outlog_tail(work_dir=work_dir)
         # catch other exceptions in command_run_in_out
 
-        task = create_task(task_type=mirpb.TaskTypeMining,
-                           task_id=dst_typ_rev_tid.tid,
-                           message=f"mining with model: {model_hash_stage}",
-                           src_revs=src_revs,
-                           dst_rev=dst_typ_rev_tid.rev_tid,
-                           return_code=return_code,
-                           return_msg=return_msg,
-                           executor=executor)
+        task = create_task_record(task_type=mirpb.TaskTypeMining,
+                                  task_id=dst_typ_rev_tid.tid,
+                                  message=f"mining with model: {model_hash_stage}",
+                                  src_revs=src_revs,
+                                  dst_rev=dst_typ_rev_tid.rev_tid,
+                                  return_code=return_code,
+                                  return_msg=return_msg,
+                                  executor=executor)
         if return_code != MirCode.RC_OK:
             raise MirContainerError(error_message='mining container error occured', task=task)
 

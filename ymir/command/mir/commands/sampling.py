@@ -50,11 +50,11 @@ class CmdSampling(base.BaseCommand):
 
         # commit
         message = f"sampling src: {src_revs}, dst: {dst_rev}, count: {count}, rate: {rate}"
-        task = mir_storage_ops.create_task(task_type=mirpb.TaskType.TaskTypeSampling,
-                                           task_id=dst_typ_rev_tid.tid,
-                                           message=message,
-                                           src_revs=src_revs,
-                                           dst_rev=dst_rev)
+        task = mir_storage_ops.create_task_record(task_type=mirpb.TaskType.TaskTypeSampling,
+                                                  task_id=dst_typ_rev_tid.tid,
+                                                  message=message,
+                                                  src_revs=src_revs,
+                                                  dst_rev=dst_rev)
 
         # save and commit
         sampled_mir_datas = {
