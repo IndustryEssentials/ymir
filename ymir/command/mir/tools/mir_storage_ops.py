@@ -12,12 +12,13 @@ from mir import scm
 from mir.commands.checkout import CmdCheckout
 from mir.commands.commit import CmdCommit
 from mir.protos import mir_command_pb2 as mirpb
-from mir.tools import det_eval_ops, exodus
+from mir.tools import exodus
 from mir.tools import mir_storage, mir_repo_utils, revs_parser
 from mir.tools import settings as mir_settings
 from mir.tools.annotations import valid_image_annotation
 from mir.tools.code import MirCode, time_it
 from mir.tools.errors import MirRuntimeError
+from mir.tools.eval import eval_ops
 
 
 def create_evaluate_config(conf_thr: float = mir_settings.DEFAULT_EVALUATE_CONF_THR,
@@ -68,7 +69,7 @@ class MirStorageOps():
         mir_tasks.tasks[mir_tasks.head_task_id].CopyFrom(task)
 
         if mir_annotations.prediction.type == mir_annotations.ground_truth.type == mirpb.ObjectType.OT_DET_BOX:
-            evaluation = det_eval_ops.det_evaluate_with_pb(
+            evaluation = eval_ops.evaluate_with_pb(
                 prediction=mir_annotations.prediction,
                 ground_truth=mir_annotations.ground_truth,
                 config=evaluate_config,
@@ -331,19 +332,19 @@ class MirStorageOps():
                                          including_default_value_fields=True)
 
 
-def create_task(task_type: 'mirpb.TaskType.V',
-                task_id: str,
-                message: str,
-                new_types: Dict[str, int] = {},
-                new_types_added: bool = False,
-                return_code: int = 0,
-                return_msg: str = '',
-                serialized_executor_config: str = '',
-                executor: str = '',
-                model_meta: mirpb.ModelMeta = None,
-                evaluation: mirpb.Evaluation = None,
-                src_revs: str = '',
-                dst_rev: str = '') -> mirpb.Task:
+def create_task_record(task_type: 'mirpb.TaskType.V',
+                       task_id: str,
+                       message: str,
+                       new_types: Dict[str, int] = {},
+                       new_types_added: bool = False,
+                       return_code: int = 0,
+                       return_msg: str = '',
+                       serialized_executor_config: str = '',
+                       executor: str = '',
+                       model_meta: mirpb.ModelMeta = None,
+                       evaluation: mirpb.Evaluation = None,
+                       src_revs: str = '',
+                       dst_rev: str = '') -> mirpb.Task:
     task_dict = {
         'type': task_type,
         'name': message,

@@ -29,11 +29,11 @@ class CmdInit(base.BaseCommand):
 
         dst_rev_tid = revs_parser.parse_single_arg_rev(empty_rev, need_tid=True)
 
-        task = mir_storage_ops.create_task(task_type=mirpb.TaskTypeInit,
-                                           task_id=dst_rev_tid.tid,
-                                           message='init empty dataset',
-                                           src_revs='master',
-                                           dst_rev=empty_rev)
+        task = mir_storage_ops.create_task_record(task_type=mirpb.TaskTypeInit,
+                                                  task_id=dst_rev_tid.tid,
+                                                  message='init empty dataset',
+                                                  src_revs='master',
+                                                  dst_rev=empty_rev)
         mir_storage_ops.MirStorageOps.save_and_commit(mir_root=mir_root,
                                                       mir_branch=dst_rev_tid.rev,
                                                       his_branch='master',

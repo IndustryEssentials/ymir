@@ -52,9 +52,9 @@ class TestCmdStatus(unittest.TestCase):
             mirpb.MirStorage.MIR_METADATAS: mir_metadatas,
             mirpb.MirStorage.MIR_ANNOTATIONS: mir_annotations,
         }
-        task = mir_storage_ops.create_task(task_type=mirpb.TaskType.TaskTypeMining,
-                                           task_id='mining-task-id',
-                                           message='mining')
+        task = mir_storage_ops.create_task_record(task_type=mirpb.TaskType.TaskTypeMining,
+                                                  task_id='mining-task-id',
+                                                  message='mining')
         mir_storage_ops.MirStorageOps.save_and_commit(mir_root=mir_repo_root,
                                                       mir_branch='a',
                                                       his_branch='master',

@@ -148,9 +148,9 @@ def prepare_mir_branch(mir_root: str, assets_and_keywords: Dict[str, Tuple[List[
     }
     ParseDict(dict_annotations, mir_annotations)
 
-    task = mir_storage_ops.create_task(task_type=mirpb.TaskTypeMining,
-                                       task_id=branch_name_and_task_id,
-                                       message=commit_msg)
+    task = mir_storage_ops.create_task_record(task_type=mirpb.TaskTypeMining,
+                                              task_id=branch_name_and_task_id,
+                                              message=commit_msg)
     mir_storage_ops.MirStorageOps.save_and_commit(mir_root=mir_root,
                                                   mir_branch=branch_name_and_task_id,
                                                   his_branch='master',

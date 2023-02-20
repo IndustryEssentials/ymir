@@ -26,8 +26,7 @@ from typing import Any, Dict, List, Optional
 import numpy as np
 
 from mir.protos import mir_command_pb2 as mirpb
-from mir.tools import det_eval_utils
-from mir.tools.det_eval_utils import DetEvalMatchResult
+from mir.tools.eval import eval_utils
 
 
 def _voc_ap(rec: np.ndarray, prec: np.ndarray, use_07_metric: bool) -> float:
@@ -63,7 +62,7 @@ def _voc_ap(rec: np.ndarray, prec: np.ndarray, use_07_metric: bool) -> float:
 
 
 def _voc_eval(class_recs: Dict[str, Dict[str, Any]], BB: np.ndarray, confidence: np.ndarray, image_ids: List[str],
-              pred_pb_index_ids: List[int], match_result: det_eval_utils.DetEvalMatchResult, ovthresh: float, npos: int,
+              pred_pb_index_ids: List[int], match_result: eval_utils.DetEvalMatchResult, ovthresh: float, npos: int,
               use_07_metric: bool) -> Dict[str, Any]:
     """
     gt: class_recs
@@ -163,7 +162,7 @@ def _voc_eval(class_recs: Dict[str, Dict[str, Any]], BB: np.ndarray, confidence:
 
 
 def _get_single_evaluate_element(prediction: mirpb.SingleTaskAnnotations, ground_truth: mirpb.SingleTaskAnnotations,
-                                 match_result: det_eval_utils.DetEvalMatchResult, class_id: int, iou_thr: float,
+                                 match_result: eval_utils.DetEvalMatchResult, class_id: int, iou_thr: float,
                                  conf_thr: float, need_pr_curve: bool) -> mirpb.SingleEvaluationElement:
     # convert data structure
     # convert gt, save to `class_recs`
@@ -232,20 +231,21 @@ def _get_single_evaluate_element(prediction: mirpb.SingleTaskAnnotations, ground
     return see
 
 
-def det_evaluate(prediction: mirpb.SingleTaskAnnotations, ground_truth: mirpb.SingleTaskAnnotations,
-                 config: mirpb.EvaluateConfig,
-                 assets_metadata: Optional[mirpb.MirMetadatas] = None) -> mirpb.Evaluation:
+def evaluate(prediction: mirpb.SingleTaskAnnotations,
+             ground_truth: mirpb.SingleTaskAnnotations,
+             config: mirpb.EvaluateConfig,
+             assets_metadata: Optional[mirpb.MirMetadatas] = None) -> mirpb.Evaluation:
     evaluation = mirpb.Evaluation()
     evaluation.config.CopyFrom(config)
 
     class_ids = list(config.class_ids)
-    iou_thrs = det_eval_utils.get_iou_thrs_array(config.iou_thrs_interval)
+    iou_thrs = eval_utils.get_iou_thrs_array(config.iou_thrs_interval)
 
     single_dataset_evaluation = evaluation.dataset_evaluation
     single_dataset_evaluation.conf_thr = config.conf_thr
 
     for iou_thr in iou_thrs:
-        match_result = DetEvalMatchResult()
+        match_result = eval_utils.DetEvalMatchResult()
         for class_id in class_ids:
             see = _get_single_evaluate_element(prediction=prediction,
                                                ground_truth=ground_truth,
@@ -256,13 +256,13 @@ def det_evaluate(prediction: mirpb.SingleTaskAnnotations, ground_truth: mirpb.Si
                                                match_result=match_result)
             single_dataset_evaluation.iou_evaluations[f"{iou_thr:.2f}"].ci_evaluations[class_id].CopyFrom(see)
 
-        det_eval_utils.write_confusion_matrix(gt_annotations=ground_truth,
-                                              pred_annotations=prediction,
-                                              class_ids=class_ids,
-                                              conf_thr=config.conf_thr,
-                                              match_result=match_result,
-                                              iou_thr=iou_thrs[0])
-    det_eval_utils.calc_averaged_evaluations(dataset_evaluation=single_dataset_evaluation, class_ids=class_ids)
+        eval_utils.write_instance_confusion_matrix(gt_annotations=ground_truth,
+                                                   pred_annotations=prediction,
+                                                   class_ids=class_ids,
+                                                   conf_thr=config.conf_thr,
+                                                   match_result=match_result,
+                                                   iou_thr=iou_thrs[0])
+    eval_utils.calc_averaged_evaluations(dataset_evaluation=single_dataset_evaluation, class_ids=class_ids)
 
     evaluation.state = mirpb.EvaluationState.ES_READY
     return evaluation

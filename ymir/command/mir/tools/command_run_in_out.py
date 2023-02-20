@@ -31,13 +31,13 @@ def _commit_error(code: int, error_msg: str, mir_root: str, src_revs: str, dst_r
     src_typ_rev_tid = revs_parser.parse_arg_revs(src_revs)[0]
     dst_typ_rev_tid = revs_parser.parse_single_arg_rev(dst_rev, need_tid=True)
     if not predefined_task:
-        predefined_task = mir_storage_ops.create_task(task_type=mirpb.TaskType.TaskTypeUnknown,
-                                                      task_id=dst_typ_rev_tid.tid,
-                                                      message='task failed',
-                                                      return_code=code,
-                                                      return_msg=error_msg,
-                                                      src_revs=src_revs,
-                                                      dst_rev=dst_rev)
+        predefined_task = mir_storage_ops.create_task_record(task_type=mirpb.TaskType.TaskTypeUnknown,
+                                                             task_id=dst_typ_rev_tid.tid,
+                                                             message='task failed',
+                                                             return_code=code,
+                                                             return_msg=error_msg,
+                                                             src_revs=src_revs,
+                                                             dst_rev=dst_rev)
 
     mir_storage_ops.MirStorageOps.save_and_commit(mir_root=mir_root,
                                                   mir_branch=dst_typ_rev_tid.rev,

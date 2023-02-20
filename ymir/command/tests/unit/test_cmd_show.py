@@ -29,9 +29,9 @@ class TestCmdShow(unittest.TestCase):
         }
         ParseDict(dict_metadatas, mir_metadatas)
 
-        task = mir_storage_ops.create_task(task_type=mirpb.TaskType.TaskTypeMining,
-                                           task_id='mining-task-id',
-                                           message='prepare_branch_status')
+        task = mir_storage_ops.create_task_record(task_type=mirpb.TaskType.TaskTypeMining,
+                                                  task_id='mining-task-id',
+                                                  message='prepare_branch_status')
         mir_datas = {
             mirpb.MirStorage.MIR_METADATAS: mir_metadatas,
             mirpb.MirStorage.MIR_ANNOTATIONS: mir_annotations,

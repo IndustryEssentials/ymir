@@ -329,16 +329,16 @@ class CmdTrain(base.BaseCommand):
                                     model_location=model_upload_location)
 
         # commit task
-        task = mir_storage_ops.create_task(task_type=mirpb.TaskType.TaskTypeTraining,
-                                           task_id=dst_typ_rev_tid.tid,
-                                           message='training',
-                                           model_meta=model_storage.get_model_meta(),
-                                           return_code=task_code,
-                                           return_msg=return_msg,
-                                           serialized_executor_config=yaml.safe_dump(executor_config),
-                                           executor=executor,
-                                           src_revs=src_revs,
-                                           dst_rev=dst_rev)
+        task = mir_storage_ops.create_task_record(task_type=mirpb.TaskType.TaskTypeTraining,
+                                                  task_id=dst_typ_rev_tid.tid,
+                                                  message='training',
+                                                  model_meta=model_storage.get_model_meta(),
+                                                  return_code=task_code,
+                                                  return_msg=return_msg,
+                                                  serialized_executor_config=yaml.safe_dump(executor_config),
+                                                  executor=executor,
+                                                  src_revs=src_revs,
+                                                  dst_rev=dst_rev)
 
         if task_code != MirCode.RC_OK:
             raise MirContainerError(error_message='container error occured', task=task)

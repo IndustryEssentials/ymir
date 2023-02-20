@@ -153,7 +153,7 @@ class TestArkDataExporter(unittest.TestCase):
         mir_annotations.ground_truth.CopyFrom(mir_annotations.prediction)
 
         # task
-        task = mir_storage_ops.create_task(task_type=mirpb.TaskType.TaskTypeImportData, task_id='a', message='import')
+        task = mir_storage_ops.create_task_record(task_type=mirpb.TaskType.TaskTypeImportData, task_id='a', message='import')
 
         # save and commit
         mir_storage_ops.MirStorageOps.save_and_commit(mir_root=self._mir_root,
