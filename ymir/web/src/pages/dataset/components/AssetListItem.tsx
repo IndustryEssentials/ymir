@@ -53,9 +53,9 @@ const Item: FC<{ asset: YModels.Asset; showDetail: () => void; height?: number; 
     )
   }, [mode])
 
-  const filterAnnotations = (annotations: YModels.Annotation[]) => {
+  const filterAnnotations = useCallback((annotations: YModels.Annotation[]) => {
     return annotations.filter((annotation) => ((visibles['gt'] && annotation.gt)  || (visibles['pred'] && !annotation.gt)))
-  }
+  }, [visibles])
 
   return (
     <Col style={{ height }} key={asset.hash} className={styles.dataset_item}>

@@ -42,7 +42,7 @@ const Dataset: FC = () => {
     index: 0,
   })
   const [columns, setColumns] = useState(5)
-  const [mode, setMode] = useState<VisualModes>(0)
+  const [mode, setMode] = useState<VisualModes>(type === 'pred' ? VisualModes.All : VisualModes.Gt)
   const listRef = useRef<HTMLDivElement>(null)
   const { data: dataset, run: getDataset } = useRequest<YModels.Dataset>('dataset/getDataset', {
     loading: false,
