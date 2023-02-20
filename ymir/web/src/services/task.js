@@ -298,7 +298,6 @@ export function mine({
   topk,
   algorithm,
   config,
-  strategy,
   inference,
   name,
   image,
@@ -315,7 +314,6 @@ export function mine({
     docker_image_config: { ...config, openpai_enable: openpai },
     parameters: {
       task_type: 'mining',
-      strategy,
       model_id: model,
       model_stage_id: stageId,
       dataset_id: datasetId,
