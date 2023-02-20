@@ -160,32 +160,29 @@ const Dataset: FC = () => {
       <Breadcrumbs />
       {assetDetail}
       <Card className="list" title={renderTitle}>
-        <div className={styles.listContainer} ref={listRef}>
-          <List
-            list={assets}
-            goAsset={goAsset}
-            width={listRef.current?.clientWidth}
-            columns={columns}
-            mode={mode}
-            pager={
-              <Space className={styles.pagi}>
-                <Pagination
-                  key={'pager'}
-                  className={`pager ${styles.pager}`}
-                  showQuickJumper
-                  showSizeChanger
-                  defaultCurrent={1}
-                  current={currentPage}
-                  defaultPageSize={20}
-                  total={total}
-                  showTotal={(total, range) => t('dataset.detail.pager.total', { total })}
-                  onChange={filterPage}
-                />
-                {randomPageButton}
-              </Space>
-            }
-          />
-        </div>
+        <List
+          list={assets}
+          goAsset={goAsset}
+          columns={columns}
+          mode={mode}
+          pager={
+            <Space className={styles.pagi}>
+              <Pagination
+                key={'pager'}
+                className={`pager ${styles.pager}`}
+                showQuickJumper
+                showSizeChanger
+                defaultCurrent={1}
+                current={currentPage}
+                defaultPageSize={20}
+                total={total}
+                showTotal={(total, range) => t('dataset.detail.pager.total', { total })}
+                onChange={filterPage}
+              />
+              {randomPageButton}
+            </Space>
+          }
+        />
       </Card>
     </div>
   )
