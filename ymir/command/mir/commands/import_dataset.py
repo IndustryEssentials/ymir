@@ -88,7 +88,7 @@ class CmdImport(base.BaseCommand):
         logging.info(f"pred / gt import unknown result: {unknown_class_names}")
 
         # create and write tasks
-        task = mir_storage_ops.create_task(
+        task = mir_storage_ops.create_task_record(
             task_type=mirpb.TaskTypeImportData,
             task_id=dst_typ_rev_tid.tid,
             message=f"importing {index_file}-{pred_abs}-{gt_abs} to {dst_rev}, uts: {unknown_types_strategy}",

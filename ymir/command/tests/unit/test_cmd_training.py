@@ -153,7 +153,7 @@ class TestCmdTraining(unittest.TestCase):
         mir_annotations.ground_truth.CopyFrom(mir_annotations.prediction)
 
         # save and commit
-        task = mir_storage_ops.create_task(task_type=mirpb.TaskType.TaskTypeImportData, task_id='a', message='import')
+        task = mir_storage_ops.create_task_record(task_type=mirpb.TaskType.TaskTypeImportData, task_id='a', message='import')
         mir_storage_ops.MirStorageOps.save_and_commit(mir_root=self._mir_root,
                                                       mir_branch='a',
                                                       his_branch='master',
@@ -189,7 +189,7 @@ class TestCmdTraining(unittest.TestCase):
         mir_annotations = make_empty_mir_annotations()
 
         # save and commit
-        task = mir_storage_ops.create_task(task_type=mirpb.TaskType.TaskTypeImportData, task_id='b', message='import')
+        task = mir_storage_ops.create_task_record(task_type=mirpb.TaskType.TaskTypeImportData, task_id='b', message='import')
         mir_storage_ops.MirStorageOps.save_and_commit(mir_root=self._mir_root,
                                                       mir_branch='a',
                                                       his_branch='master',

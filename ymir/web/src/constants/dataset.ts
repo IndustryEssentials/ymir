@@ -59,6 +59,12 @@ export enum MERGESTRATEGY {
   GUEST = 2,
 }
 
+export enum MERGESTRATEGYFORTRAIN {
+  STOP = 0,
+  ASTRAIN = 1,
+  ASVALIDATION = 2,
+}
+
 export function transferDatasetGroup(data: YModels.BackendData) {
   const group: YModels.DatasetGroup = {
     id: data.id,

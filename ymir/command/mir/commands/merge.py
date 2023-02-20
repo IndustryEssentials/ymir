@@ -42,11 +42,11 @@ class CmdMerge(base.BaseCommand):
                                                        strategy=strategy)
 
         # create and write tasks
-        task = mir_storage_ops.create_task(task_type=mirpb.TaskType.TaskTypeMerge,
-                                           task_id=dst_typ_rev_tid.tid,
-                                           message=f"merge: {src_revs} - {ex_src_revs} to {dst_rev}",
-                                           src_revs=src_revs,
-                                           dst_rev=dst_rev)
+        task = mir_storage_ops.create_task_record(task_type=mirpb.TaskType.TaskTypeMerge,
+                                                  task_id=dst_typ_rev_tid.tid,
+                                                  message=f"merge: {src_revs} - {ex_src_revs} to {dst_rev}",
+                                                  src_revs=src_revs,
+                                                  dst_rev=dst_rev)
 
         mir_data = {
             mirpb.MirStorage.MIR_METADATAS: mir_metadatas,

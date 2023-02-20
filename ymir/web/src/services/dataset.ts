@@ -123,11 +123,12 @@ export function batchDatasets(pid: number, ids: number[] = [], ck: boolean) {
  *   limit = 20,
  * }
  */
-export function getAssetsOfDataset({ id, type = 'keywords', keywords = [], cm = [], annoType = [], offset = 0, limit = 20 }: YParams.AssetQueryParams) {
+export function getAssetsOfDataset({ id, type = 'keywords', keywords = [], cm = [], exclude = [], annoType = [], offset = 0, limit = 20 }: YParams.AssetQueryParams) {
   return request.get(`datasets/${id}/assets`, {
     params: {
       [type]: keywords.toString() || undefined,
-      cm_types: cm.toString() || undefined,
+      in_cm_types: cm.toString() || undefined,
+      ex_cm_types: exclude.toString() || undefined,
       annotation_types: annoType.toString() || undefined,
       offset,
       limit,

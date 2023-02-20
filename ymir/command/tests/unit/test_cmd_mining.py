@@ -143,9 +143,9 @@ class TestMiningCmd(unittest.TestCase):
         }
         ParseDict(dict_metadatas, mir_metadatas)
 
-        task = mir_storage_ops.create_task(task_type=mirpb.TaskType.TaskTypeMining,
-                                           task_id='5928508c-1bc0-43dc-a094-0352079e39b5',
-                                           message='prepare_branch_mining')
+        task = mir_storage_ops.create_task_record(task_type=mirpb.TaskType.TaskTypeMining,
+                                                  task_id='5928508c-1bc0-43dc-a094-0352079e39b5',
+                                                  message='prepare_branch_mining')
         mir_storage_ops.MirStorageOps.save_and_commit(mir_root=self._mir_repo_root,
                                                       mir_branch='a',
                                                       his_branch='master',

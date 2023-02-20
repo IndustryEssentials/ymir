@@ -46,14 +46,6 @@ class MirStorageOps():
         mir_tasks: mirpb.MirTasks = mirpb.MirTasks()
         mir_tasks.head_task_id = task.task_id
         mir_tasks.tasks[mir_tasks.head_task_id].CopyFrom(task)
-        # TODO: evaluation skipped in updater
-        # evaluation = det_eval_ops.det_evaluate_with_pb(
-        #     prediction=mir_annotations.prediction,
-        #     ground_truth=mir_annotations.ground_truth,
-        #     config=evaluate_config,
-        # )
-        # if evaluation:
-        #     mir_tasks.tasks[mir_tasks.head_task_id].evaluation.CopyFrom(evaluation)
         mir_datas[mirpb.MirStorage.MIR_TASKS] = mir_tasks
 
         # gen mir_keywords

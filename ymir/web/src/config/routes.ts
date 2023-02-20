@@ -115,7 +115,7 @@ export const homeRoutes = [
   {
     path: "/home/project/:id/dataset/:did/assets",
     name: "datasetDetail",
-    component: "@/pages/dataset/assets",
+    component: "@/pages/dataset/Assets",
     title: "assets.title",
     pid: 10,
     id: 11,
