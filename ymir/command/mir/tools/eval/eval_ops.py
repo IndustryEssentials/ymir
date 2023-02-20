@@ -16,7 +16,7 @@ def evaluate_with_pb(
     config: mirpb.EvaluateConfig,
     assets_metadata: Optional[mirpb.MirMetadatas] = None,
 ) -> mirpb.Evaluation:
-    if not (int(config.conf_thr) == -1 or 0 <= config.conf_thr <= 1):
+    if not (0 <= config.conf_thr <= 1):
         # -1 means skip conf_thr check
         raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS, error_message="invalid conf_thr")
 

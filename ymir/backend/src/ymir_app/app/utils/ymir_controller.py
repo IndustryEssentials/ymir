@@ -338,8 +338,10 @@ class ControllerRequest:
 
     def prepare_evaluate(self, request: mirsvrpb.GeneralReq, args: Dict) -> mirsvrpb.GeneralReq:
         evaluate_config = mir_cmd_pb.EvaluateConfig()
-        evaluate_config.conf_thr = args["confidence_threshold"]
-        evaluate_config.iou_thrs_interval = args["iou_thrs_interval"]
+        if args.get("confidence_threshold"):
+            evaluate_config.conf_thr = args["confidence_threshold"]
+        if args.get("iou_thrs_interval"):
+            evaluate_config.iou_thrs_interval = args["iou_thrs_interval"]
         evaluate_config.need_pr_curve = args["need_pr_curve"]
         evaluate_config.is_instance_segmentation = args["is_instance_segmentation"]
         if args.get("main_ck"):
@@ -526,8 +528,8 @@ class ControllerClient:
         user_id: int,
         project_id: int,
         user_labels: UserLabels,
-        confidence_threshold: float,
-        iou_thrs_interval: str,
+        confidence_threshold: Optional[float],
+        iou_thrs_interval: Optional[str],
         need_pr_curve: bool,
         main_ck: Optional[str],
         is_instance_segmentation: bool,

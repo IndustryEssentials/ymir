@@ -145,18 +145,19 @@ def evaluate_datasets(
     user_id: int,
     project_id: int,
     user_labels: UserLabels,
-    confidence_threshold: float,
-    iou_threshold: float,
+    confidence_threshold: Optional[float],
+    iou_threshold: Optional[float],
     require_average_iou: bool,
     need_pr_curve: bool,
     main_ck: Optional[str],
     dataset_id_mapping: Dict[str, int],
     is_instance_segmentation: bool = False,
 ) -> Dict:
+    iou_thrs_interval: Optional[str] = None
     if require_average_iou:
         iou_thrs_interval = f"{iou_threshold}:0.95:0.05"
         logger.info("set iou_thrs_interval to %s because of require_average_iou", iou_thrs_interval)
-    else:
+    elif iou_threshold is not None:
         iou_thrs_interval = str(iou_threshold)
 
     f_evaluate = partial(
