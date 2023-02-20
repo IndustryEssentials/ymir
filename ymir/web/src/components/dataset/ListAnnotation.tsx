@@ -13,9 +13,10 @@ import { useDebounceEffect } from 'ahooks'
 type Props = {
   asset: YModels.Asset
   filter?: (annotations: YModels.Annotation[]) => YModels.Annotation[]
+  hideAsset?: boolean
 }
 
-const ListAnnotation: FC<Props> = ({ asset, filter }) => {
+const ListAnnotation: FC<Props> = ({ asset, filter, hideAsset }) => {
   const [annotations, setAnnotations] = useState<YModels.Annotation[]>([])
   const imgContainer = useRef<HTMLDivElement>(null)
   const img = useRef<HTMLImageElement>(null)
@@ -58,7 +59,7 @@ const ListAnnotation: FC<Props> = ({ asset, filter }) => {
 
   return (
     <div className={styles.ic_container} ref={imgContainer} key={asset.hash}>
-      <img ref={img} src={asset?.url} className={styles.assetImg} onLoad={calClientWidth} />
+      <img ref={img} style={{ visibility: hideAsset ? 'hidden' : 'visible'}} src={asset?.url} className={styles.assetImg} onLoad={calClientWidth} />
       <div className={styles.annotations} style={{ width: imgWidth, left: -imgWidth / 2 }}>
         {annotations.map((anno, index) => renderAnnotation(anno, asset.hash + index))}
       </div>

@@ -1,7 +1,7 @@
 import {
   getDatasetGroups, getDatasetByGroup, queryDatasets, getDataset, batchDatasets, evaluate, analysis,
   getAssetsOfDataset, getAsset, batchAct, delDataset, delDatasetGroup, createDataset, updateDataset, getInternalDataset,
-  getNegativeKeywords, updateVersion
+  getNegativeKeywords, updateVersion, checkDuplication
 } from "@/services/dataset"
 import {
   transferDatasetGroup,
@@ -12,9 +12,9 @@ import {
   transferInferDataset,
 } from '@/constants/dataset'
 import { actions, updateResultState, updateResultByTask, ResultStates } from '@/constants/common'
+import { evaluationTags } from '@/constants/dataset'
 import { NormalReducer } from './_utils'
 import { deepClone } from '@/utils/object'
-import { checkDuplication } from "../services/dataset"
 import { TASKTYPES } from '@/constants/task'
 
 const initQuery = { name: "", type: "", time: 0, current: 1, offset: 0, limit: 20 }
@@ -198,8 +198,14 @@ export default {
       }
     },
     *getAssetsOfDataset({ payload }, { call, put }) {
-      const { datasetKeywords } = payload
-      const { code, result } = yield call(getAssetsOfDataset, payload)
+      const { cm, datasetKeywords } = payload
+      const params = payload
+      const left = [evaluationTags.fp, evaluationTags.fn]
+      if (cm && !left.includes(cm)) {
+        params.cm = undefined
+        params.exclude = left
+      }
+      const { code, result } = yield call(getAssetsOfDataset, params)
       if (code === 0) {
         const { items, total } = result
         const keywords = [...new Set(items.map(item => item.keywords).flat())]

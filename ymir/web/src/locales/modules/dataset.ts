@@ -183,6 +183,15 @@ const dataset = {
   'dataset.assets.selector.evaluation.label': { en: 'Evaluation:', cn: '评估指标：' },
   'dataset.detail.infer.class': { en: 'Prediction Classes:', cn: '预测类别：' },
   'dataset.type.testing': { cn: '测试集', en: 'Testing Datasets' },
+  'dataset.assets.selector.columns.label': { en: '{count} assets per row', cn: '一行 {count} 张图片' },
+  'dataset.assets.selector.visual.label.all': { cn: '查看图像、标注和推理结果', en: 'View assets/annotations/predictions' },
+  'dataset.assets.selector.visual.label.asset': { cn: '仅查看图像', en: 'View only assets' },
+  'dataset.assets.selector.visual.label.gt': { cn: '查看图像和标注', en: 'View assets/annotations' },
+  'dataset.assets.selector.visual.label.pred': { cn: '查看图像和推理结果', en: 'View assets/predictions' },
+  'dataset.assets.selector.visual.label.annotation': { cn: '查看标注和推理结果', en: 'View annotations/predictions' },
+  'dataset.assets.selector.evaluation.right': { cn: '预测正确', en: 'Correct' },
+  'dataset.assets.selector.evaluation.fp': { cn: '预测错误-误检', en: 'FP' },
+  'dataset.assets.selector.evaluation.fn': { cn: '预测正确-漏检', en: 'FN' },
 }
 
 export default dataset
