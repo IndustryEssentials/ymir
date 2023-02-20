@@ -53,7 +53,7 @@ const List: FC<Props> = ({ list = [], goAsset = () => {}, mode, columns = 5, pag
               return (
                 <Row gutter={ItemSpace} wrap={false} key={index} className={styles.dataset_container}>
                   {row.map((asset, rowIndex) => (
-                    <Item asset={asset} showDetail={() => goAsset(asset, asset.hash, index * columns + rowIndex)} height={h} mode={mode} />
+                    <Item asset={asset} key={rowIndex} showDetail={() => goAsset(asset, asset.hash, index * columns + rowIndex)} height={h} mode={mode} />
                   ))}
                 </Row>
               )

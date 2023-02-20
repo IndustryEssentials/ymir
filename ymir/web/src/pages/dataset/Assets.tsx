@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import type { FC } from 'react'
-import { useParams } from 'umi'
+import { useLocation, useParams } from 'umi'
 import { Pagination, Row, Col, Button, Space, Card, Tag, Modal, Select } from 'antd'
 
 import t from '@/utils/t'
@@ -26,7 +26,9 @@ type IndexType = {
 }
 
 const Dataset: FC = () => {
-  const { id: pid, did: id, type } = useParams<{ id: string; did: string, type: string }>()
+  const { id: pid, did: id } = useParams<{ id: string; did: string; type: string }>()
+  const location = useLocation()
+  const type = location.hash.replace(/^#/, '')
   const initQuery = {
     id,
     offset: 0,
@@ -117,8 +119,8 @@ const Dataset: FC = () => {
       <Col>
         <ListColumnCountSelect value={columns} onChange={setColumns} />
       </Col>
-      <Col span={24} style={{ fontSize: 14 }}>
-        <Space size={10} wrap={true}>
+      <Col span={24} style={{ fontSize: 14, textAlign: 'right', marginTop: 10 }}>
+        <Space size={10} wrap={true} style={{ textAlign: 'left' }}>
           <ListVisualSelect style={{ width: 200 }} type={type} onChange={setMode} />
           {dataset?.evaluated ? <EvaluationSelector value={filterParams.cm} onChange={({ target }) => updateFilterParams(target.value, 'cm')} /> : null}
           <KeywordSelector onChange={filterKw} dataset={dataset} />

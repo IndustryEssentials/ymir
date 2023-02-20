@@ -11,11 +11,11 @@ type Props = SelectProps & {
 }
 
 const options = {
-  [V.All]: { label: 'all', allowed: 11 },
-  [V.Asset]: { label: 'asset', allowed: 1 },
-  [V.Gt]: { label: 'gt', allowed: 4 },
-  [V.Pred]: { label: 'pred', allowed: 8 },
-  [V.GtPred]: { label: 'annotation', allowed: 10 },
+  [V.All]: { label: 'all', },
+  [V.Asset]: { label: 'asset', },
+  [V.Gt]: { label: 'gt', },
+  [V.Pred]: { label: 'pred', },
+  [V.GtPred]: { label: 'annotation', },
 }
 
 const modes: { [key: string]: V[] } = {
@@ -23,20 +23,24 @@ const modes: { [key: string]: V[] } = {
   gt: [V.Gt, V.Asset],
 }
 
-const ListVisualSelect: FC<Props> = ({ type = 'gt', actualClasses = [], ...props }) => {
+const ListVisualSelect: FC<Props> = ({ type, ...props }) => {
   const [opts, setOpts] = useState<BaseOptionType[]>([])
 
   useEffect(() => {
-    const opts = (modes[type] || modes['gt'])
-      .map((value) => ({
-        value,
-        ...options[value],
-      }))
-      // .filter((option) => option.allowed === actualClasses.reduce((prev, current) => prev + current, 0))
+    const opts = (modes[type || 'gt'] || modes['gt']).map((value) => ({
+      value,
+      ...options[value],
+    }))
 
     setOpts(opts)
-  }, [type, actualClasses])
-  return <Select {...props} options={opts.map(({ value, label }) => ({ value, label: t(`dataset.assets.selector.visual.label.${label}`) }))} />
+  }, [type])
+  return opts.length ? (
+    <Select
+      {...props}
+      defaultValue={opts[0].value}
+      options={opts.map(({ value, label }) => ({ value, label: t(`dataset.assets.selector.visual.label.${label}`) }))}
+    />
+  ) : null
 }
 
 export default ListVisualSelect
