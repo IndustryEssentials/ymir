@@ -29,6 +29,11 @@ class MirCoco:
         # ordered list of asset / image ids
         self.asset_ids = list(task_annotations.image_annotations.keys())
 
+        extra_asset_ids = task_annotations.image_annotations.keys() - mir_metadatas.attributes.keys()
+        breakpoint()
+        if len(extra_asset_ids) > 0:
+            raise ValueError(f"Can not find attributes for following assets: {extra_asset_ids}")
+
         self.img_cat_to_annotations = self._aggregate_annotations(single_task_annotations=task_annotations,
                                                                   mir_metadatas=mir_metadatas,
                                                                   conf_thr=conf_thr)
@@ -58,8 +63,6 @@ class MirCoco:
 
         annotation_idx = 1
         for asset_id in self.asset_ids:
-            if asset_id not in mir_metadatas.attributes:
-                raise ValueError(f"Can not find attrs for asset: {asset_id}")
             if asset_id not in single_task_annotations.image_annotations:
                 continue
 
