@@ -91,7 +91,6 @@ class TaskBaseInvoker(BaseMirControllerInvoker):
     @staticmethod
     def gen_executor_config_lock_gpus(req_executor_config: str,
                                       class_names: List,
-                                      task_parameters: str,
                                       output_config_file: str,
                                       assets_config: Dict = {},
                                       preprocess: Optional[str] = None) -> bool:
@@ -101,9 +100,6 @@ class TaskBaseInvoker(BaseMirControllerInvoker):
 
         if class_names:
             executor_config["class_names"] = class_names
-
-        if task_parameters:
-            task_context["task_parameters"] = task_parameters
 
         if preprocess_config:
             task_context["preprocess"] = preprocess_config

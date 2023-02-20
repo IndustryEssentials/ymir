@@ -265,13 +265,12 @@ message Task {
     /// (for import task): reason for new types, True: added, False: ignored
     bool new_types_added = 12;
 
-    string serialized_task_parameters = 102;
     string serialized_executor_config = 103;
     string src_revs = 104;
     string dst_rev = 105;
     string executor = 106;
 
-    reserved 4, 7, 100, 101;
+    reserved 4, 7, 100, 101, 102;
 };
 
 message ModelMeta {

@@ -338,7 +338,6 @@
                 "dst_rev": "a@import_semantic_seg_01",
                 "return_code": 0,
                 "return_msg": "",
-                "serialized_task_parameters": "",
                 "serialized_executor_config": "",
                 "executor": ""
             }
