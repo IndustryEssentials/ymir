@@ -30,7 +30,6 @@ class MirCoco:
         self.asset_ids = list(task_annotations.image_annotations.keys())
 
         extra_asset_ids = task_annotations.image_annotations.keys() - mir_metadatas.attributes.keys()
-        breakpoint()
         if len(extra_asset_ids) > 0:
             raise ValueError(f"Can not find attributes for following assets: {extra_asset_ids}")
 
