@@ -266,8 +266,8 @@ def _import_annotations_voc_xml(file_name_to_asset_ids: Dict[str, str], mir_anno
                 anno_idx += 1
                 known_keys.add(key)
 
-    logging.info(f"zero size boxes count: {zero_size_count}")
-    logging.info(f"duplicate boxes count: {duplicate_count}")
+    logging.info(f"count of zero size objects: {zero_size_count}")
+    logging.info(f"count of duplicate objects: {duplicate_count}")
 
 
 def import_annotations_coco_json(file_name_to_asset_ids: Dict[str, str], mir_annotation: mirpb.MirAnnotations,
@@ -298,6 +298,8 @@ def import_annotations_coco_json(file_name_to_asset_ids: Dict[str, str], mir_ann
     unknown_category_ids_cnt = 0
     unknown_image_objects_cnt = 0
     error_format_objects_cnt = 0
+    zero_size_count = 0
+    duplicate_count = 0
 
     # images_list -> image_id_to_hashes (key: coco image id, value: ymir asset hash)
     image_id_to_hashes: Dict[int, str] = {}
@@ -321,7 +323,6 @@ def import_annotations_coco_json(file_name_to_asset_ids: Dict[str, str], mir_ann
                 cid, _ = class_type_manager.add_main_name(name)
                 category_id_to_cids[v['id']] = cid
 
-    duplicate_count = 0
     known_keys: Set[tuple] = set()
     for anno_dict in annotations_list:
         if anno_dict['category_id'] not in category_id_to_cids:
@@ -336,6 +337,9 @@ def import_annotations_coco_json(file_name_to_asset_ids: Dict[str, str], mir_ann
                                                    class_type_manager=class_type_manager)
         if not obj_anno:
             error_format_objects_cnt += 1
+            continue
+        if obj_anno.box.w <= 0 or obj_anno.box.h <= 0:
+            zero_size_count += 1
             continue
 
         asset_hash = image_id_to_hashes[anno_dict['image_id']]
@@ -353,6 +357,7 @@ def import_annotations_coco_json(file_name_to_asset_ids: Dict[str, str], mir_ann
     logging.info(f"count of unknown category ids in categories list: {unknown_category_ids_cnt}")
     logging.info(f"count of objects with unknown image ids in annotations list: {unknown_image_objects_cnt}")
     logging.info(f"count of error format objects: {error_format_objects_cnt}")
+    logging.info(f"count of zero size objects: {zero_size_count}")
     logging.info(f"count of duplicate objects: {duplicate_count}")
 
 
