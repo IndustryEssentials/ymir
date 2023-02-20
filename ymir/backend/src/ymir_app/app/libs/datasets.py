@@ -153,13 +153,12 @@ def evaluate_datasets(
     dataset_id_mapping: Dict[str, int],
     is_instance_segmentation: bool = False,
 ) -> Dict:
+    iou_thrs_interval: Optional[str] = None
     if require_average_iou:
         iou_thrs_interval = f"{iou_threshold}:0.95:0.05"
         logger.info("set iou_thrs_interval to %s because of require_average_iou", iou_thrs_interval)
     elif iou_threshold is not None:
         iou_thrs_interval = str(iou_threshold)
-    else:
-        iou_thrs_interval = None
 
     f_evaluate = partial(
         controller_client.evaluate_dataset,
