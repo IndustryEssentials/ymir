@@ -118,12 +118,20 @@ function TaskDetail({ task = {} }) {
     )
   }
 
-  function renderImage(id, span = 1, label = 'task.detail.label.training.image') {
+  function renderImage(imageName, span = 1, label = 'task.detail.label.training.image') {
     return (
       <Item label={t(label)} span={span}>
-        <ImageName id={id} />
+        {imageName}
       </Item>
     )
+  }
+
+  function renderImageById(id, span, label) {
+    return renderImage(<ImageName id={id} />, span, label)
+  }
+
+  function renderImageByUrl(url, span, label) {
+    return renderImage(<ImageName url={url} />, span, label)
   }
 
   function renderDatasetSource(id) {
@@ -166,7 +174,7 @@ function TaskDetail({ task = {} }) {
       {renderModel(task.parameters.model_id, task.project_id, 'task.detail.label.premodel')}
       {renderDuration(task.durationLabel)}
       {renderLiveCodeItem(task.config)}
-      {renderImage(task?.parameters?.docker_image_id, 2)}
+      {renderImageById(task?.parameters?.docker_image_id, 2)}
       <Item label={t('task.detail.label.processing')} span={2}>
         <Link target="_blank" to={getTensorboardLink(task.hash)}>
           {t('task.detail.tensorboard.link.label')}
@@ -184,7 +192,7 @@ function TaskDetail({ task = {} }) {
       <Item label={t('task.mining.form.algo.label')}>{task.parameters.mining_algorithm}</Item>
       <Item label={t('task.mining.form.label.label')}>{task.parameters.generate_annotations ? t('common.yes') : t('common.no')}</Item>
       <Item label={t('task.mining.form.topk.label')}>{task.parameters.top_k}</Item>
-      {renderImage(task?.parameters?.docker_image_id, 2, 'task.detail.label.mining.image')}
+      {renderImageById(task?.parameters?.docker_image_id, 2, 'task.detail.label.mining.image')}
       {renderLiveCodeItem(task.config)}
       {renderConfig(task.parameters?.docker_image_config)}
     </>
@@ -205,7 +213,6 @@ function TaskDetail({ task = {} }) {
       </Item>
       <Item label={t('task.label.form.keep_anno.label')}>
         {renderKeepAnnotations(task.parameters.annotation_type)}
-        {/* {task.parameters.keep_annotations ? t("common.yes") : t("common.no")} */}
       </Item>
       <Item label={t('task.label.form.desc.label')}>
         {task.parameters.extra_url ? (
@@ -220,7 +227,7 @@ function TaskDetail({ task = {} }) {
     <>
       <Item label={t('dataset.column.source')}>{t('task.type.modelimport')}</Item>
       {renderCreateTime(task.create_datetime)}
-      {renderImage(task?.parameters?.docker_image_id, 2)}
+      {renderImageByUrl(task?.parameters?.docker_image, 2)}
       {renderConfig(task.parameters?.docker_image_config)}
     </>
   )
@@ -230,7 +237,7 @@ function TaskDetail({ task = {} }) {
       {renderCreateTime(task.create_datetime)}
       {renderModel(task.parameters.model_id, task.project_id, 'task.detail.label.premodel')}
       {renderLiveCodeItem(task.config)}
-      {renderImage(task?.parameters?.docker_image_id, 2)}
+      {renderImageById(task?.parameters?.docker_image_id, 2)}
       {renderPreProcess(task.parameters?.preprocess)}
       {renderConfig(task.parameters?.docker_image_config)}
     </>
@@ -258,7 +265,7 @@ function TaskDetail({ task = {} }) {
       </Item>
       <Item label={t('task.mining.form.algo.label')}>{task.parameters.mining_algorithm}</Item>
       <Item label={t('task.mining.form.topk.label')}>{task.parameters.top_k}</Item>
-      {renderImage(task?.parameters?.docker_image_id, 1, 'task.inference.form.image.label')}
+      {renderImageById(task?.parameters?.docker_image_id, 1, 'task.inference.form.image.label')}
       {renderLiveCodeItem(task.config)}
       {renderConfig(task.parameters?.docker_image_config)}
     </>
