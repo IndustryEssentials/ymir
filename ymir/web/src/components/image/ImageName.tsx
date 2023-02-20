@@ -3,9 +3,13 @@ import React, { useEffect } from 'react'
 import { Link, useSelector } from 'umi'
 
 type Props = {
-  id: number
+  id?: number
+  url?: string
 }
-const ImageName: React.FC<Props> = ({ id }) => {
+const ImageName: React.FC<Props> = ({ id, url = '' }) => {
+  if (url) {
+    return <>${url}</>
+  }
   const image: YModels.Image = useSelector(({ image }: YStates.Root) => {
     return id && image.image[id]
   })
