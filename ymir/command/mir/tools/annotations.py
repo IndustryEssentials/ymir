@@ -30,23 +30,6 @@ class MergeStrategy(str, enum.Enum):
     GUEST = 'guest'
 
 
-class _ObjectAnnotationsSet(Set[mirpb.ObjectAnnotation]):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self._hashes = {}
-
-    @classmethod
-    def _hash(cls, annotation: mirpb.ObjectAnnotation) -> tuple:
-        return (annotation.class_id, annotation.box.x, annotation.box.y, annotation.box.w, annotation.box.h,
-                annotation.box.rotate_angle)
-
-    def add(self, annotation: mirpb.ObjectAnnotation) -> None:
-        new_hash = self._hash(annotation)
-        self.discard(self._hash.get(new_hash))
-        super().add(annotation=annotation)
-        self._hash[new_hash] = annotation
-
-
 def parse_anno_format(anno_format_str: str) -> "mirpb.ExportFormat.V":
     _anno_dict: Dict[str, mirpb.ExportFormat.V] = {
         # compatible with legacy format.
@@ -78,6 +61,11 @@ def _annotation_parse_func(anno_type: "mirpb.ObjectType.V") -> Callable:
     if anno_type not in _func_dict:
         raise NotImplementedError()
     return _func_dict[anno_type]
+
+
+def _uniq_key_for_annotation(annotation: mirpb.ObjectAnnotation, asset_id: str) -> tuple:
+    return (asset_id, annotation.class_id, annotation.box.x, annotation.box.y, annotation.box.w, annotation.box.h,
+            annotation.box.rotate_angle)
 
 
 def _voc_object_dict_to_annotation(object_dict: dict, cid: int,
@@ -217,6 +205,7 @@ def _import_annotations_voc_xml(file_name_to_asset_ids: Dict[str, str], mir_anno
                                 unknown_types_strategy: UnknownTypesStrategy, accu_new_class_names: Dict[str, int],
                                 image_annotations: mirpb.SingleTaskAnnotations) -> None:
     zero_size_count = 0
+    duplicate_count = 0
     add_if_not_found = (unknown_types_strategy == UnknownTypesStrategy.ADD)
     for filename, asset_hash in file_name_to_asset_ids.items():
         # for each asset, import it's annotations
@@ -244,6 +233,7 @@ def _import_annotations_voc_xml(file_name_to_asset_ids: Dict[str, str], mir_anno
             objects = [objects]
 
         anno_idx = 0
+        known_keys = set()
         for object_dict in objects:
             cid, new_type_name = class_type_manager.id_and_main_name_for_name(name=object_dict['name'])
 
@@ -265,11 +255,19 @@ def _import_annotations_voc_xml(file_name_to_asset_ids: Dict[str, str], mir_anno
                     zero_size_count += 1
                     continue
 
+                key = _uniq_key_for_annotation(annotation, asset_hash)
+                if key in known_keys:
+                    logging.warning(f"Found duplicated annotation for asset hash: {asset_hash}")
+                    duplicate_count += 1
+                    continue
+
                 annotation.index = anno_idx
                 image_annotations.image_annotations[asset_hash].boxes.append(annotation)
                 anno_idx += 1
+                known_keys.add(key)
 
     logging.info(f"zero size boxes count: {zero_size_count}")
+    logging.info(f"duplicate boxes count: {duplicate_count}")
 
 
 def import_annotations_coco_json(file_name_to_asset_ids: Dict[str, str], mir_annotation: mirpb.MirAnnotations,
@@ -323,6 +321,8 @@ def import_annotations_coco_json(file_name_to_asset_ids: Dict[str, str], mir_ann
                 cid, _ = class_type_manager.add_main_name(name)
                 category_id_to_cids[v['id']] = cid
 
+    duplicate_count = 0
+    known_keys: Set[tuple] = set()
     for anno_dict in annotations_list:
         if anno_dict['category_id'] not in category_id_to_cids:
             unknown_category_ids_cnt += 1
@@ -337,14 +337,23 @@ def import_annotations_coco_json(file_name_to_asset_ids: Dict[str, str], mir_ann
         if not obj_anno:
             error_format_objects_cnt += 1
             continue
+
         asset_hash = image_id_to_hashes[anno_dict['image_id']]
+        key = _uniq_key_for_annotation(obj_anno, asset_hash)
+        if key in known_keys:
+            logging.warning(f"Found duplicated annotation for asset hash: {asset_hash}")
+            duplicate_count += 1
+            continue
+
         obj_anno.index = len(image_annotations.image_annotations[asset_hash].boxes)
         image_annotations.image_annotations[asset_hash].boxes.append(obj_anno)
+        known_keys.add(key)
 
     logging.info(f"count of unhashed file names in images list: {unhashed_filenames_cnt}")
     logging.info(f"count of unknown category ids in categories list: {unknown_category_ids_cnt}")
     logging.info(f"count of objects with unknown image ids in annotations list: {unknown_image_objects_cnt}")
     logging.info(f"count of error format objects: {error_format_objects_cnt}")
+    logging.info(f"count of duplicate objects: {duplicate_count}")
 
 
 def _import_annotation_meta(class_type_manager: class_ids.UserLabels, annotations_dir_path: str,

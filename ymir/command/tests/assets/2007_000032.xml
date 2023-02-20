@@ -93,4 +93,22 @@
 			<pose>Rear</pose>
 		</tags>
 	</object>
+	<object>
+		<name>PERSON</name>
+		<pose>Rear</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>26</xmin>
+			<ymin>189</ymin>
+			<xmax>44</xmax>
+			<ymax>238</ymax>
+			<rotate_angle>0.12</rotate_angle>
+		</bndbox>
+		<box_quality>0.35</box_quality>
+		<tags>
+			<difficult>1</difficult>
+			<pose>Rear</pose>
+		</tags>
+	</object>
 </annotation>
