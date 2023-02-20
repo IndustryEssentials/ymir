@@ -39,7 +39,6 @@ task_context:
   executor: sample-executor  # 训练模型时所用的镜像，非必要
   mAP: 0.6  # 最好的中间模型对应的 mAP
   producer: fenrir-z  # 模型作者
-  task_parameters: '{"keywords": ["person", "cat"]}' # keywords 与 class_names 一致, 注意引号
 ```
 
 3. 将 `ymir-info.yaml` 和所有模型文件打包：

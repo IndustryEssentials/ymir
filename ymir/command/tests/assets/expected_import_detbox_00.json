@@ -932,7 +932,6 @@
                 "return_msg": "",
                 "new_types": {},
                 "new_types_added": false,
-                "serialized_task_parameters": "",
                 "serialized_executor_config": "",
                 "executor": ""
             }

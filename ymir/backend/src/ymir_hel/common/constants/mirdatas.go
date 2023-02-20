@@ -16,14 +16,13 @@ type MirdataModel struct {
 	MIoU          float32                `json:"mIoU"`
 	MaskAP        float32                `json:"maskAP"`
 
-	TaskParameters string                 `json:"task_parameters"`
 	ExecutorConfig map[string]interface{} `json:"executor_config"`
 
 	ObjectType int32 `json:"object_type"`
 }
 
-func NewMirdataModel(taskParameters string) *MirdataModel {
-	modelData := MirdataModel{TaskParameters: taskParameters, ExecutorConfig: map[string]interface{}{}}
+func NewMirdataModel() *MirdataModel {
+	modelData := MirdataModel{ExecutorConfig: map[string]interface{}{}}
 	return &modelData
 }
 

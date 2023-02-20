@@ -89,13 +89,12 @@ message GeneralReq {
         int32 sampling_count = 22;
         float sampling_rate = 23;
     }
-    string task_parameters = 24;
     LabelCollection label_collection = 25;
     mir.command.EvaluateConfig evaluate_config = 26;
     string model_stage = 27;
     ReqCreateTask req_create_task = 1001;
 
-    reserved 17;
+    reserved 17, 24;
 }
 
 message GeneralResp {
@@ -294,11 +293,12 @@ message HelTaskRequestTrain {
     string preprocess_config = 21;
     string docker_image_name = 22;
     string docker_image_config = 23;
-    string task_parameters = 24;
 
     // Optional, for fine-tuning (use pretrained model)
     string model_hash = 30;
     string model_stage = 31;
+
+    reserved 24;
 }
 
 message HelTaskRequestMine {
@@ -308,7 +308,6 @@ message HelTaskRequestMine {
     // Task configure
     string docker_image_name = 20;
     string docker_image_config = 21;
-    string task_parameters = 22;
 
     // Model
     string model_hash = 30;
@@ -317,6 +316,8 @@ message HelTaskRequestMine {
     // Task params
     int32 top_k = 40;  // > 0, will keep all if set to 0.
     bool add_annotations = 41;
+
+    reserved 22;
 }
 
 message HelTaskRequestFuse {

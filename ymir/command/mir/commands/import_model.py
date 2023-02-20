@@ -9,7 +9,6 @@ import yaml
 from mir.commands import base
 from mir.protos import mir_command_pb2 as mirpb
 from mir.tools import checker, mir_storage_ops, models, revs_parser
-from mir.tools import settings as mir_settings
 from mir.tools.annotations import make_empty_mir_annotations
 from mir.tools.code import MirCode
 from mir.tools.command_run_in_out import command_run_in_out
@@ -84,8 +83,6 @@ class CmdModelImport(base.BaseCommand):
                                            src_revs=src_revs,
                                            dst_rev=dst_rev,
                                            serialized_executor_config=yaml.safe_dump(model_storage.executor_config),
-                                           serialized_task_parameters=model_storage.task_context.get(
-                                               mir_settings.TASK_CONTEXT_PARAMETERS_KEY, ''),
                                            executor=model_storage.task_context.get('executor', ''))
         mir_storage_ops.MirStorageOps.save_and_commit(mir_root=mir_root,
                                                       mir_branch=dst_typ_rev_tid.rev,

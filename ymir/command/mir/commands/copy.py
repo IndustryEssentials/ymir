@@ -108,7 +108,6 @@ class CmdCopy(base.BaseCommand):
                                            message=f"copy from {data_mir_root}, src: {data_src_revs}, dst: {dst_rev}",
                                            new_types={name: 0 for name in unknown_class_names},
                                            model_meta=orig_task.model,
-                                           serialized_task_parameters=orig_task.serialized_task_parameters,
                                            serialized_executor_config=orig_task.serialized_executor_config,
                                            executor=orig_task.executor,
                                            src_revs=src_revs,
