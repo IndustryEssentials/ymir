@@ -143,6 +143,7 @@ const Dataset: FC = () => {
       {currentAsset.asset ? (
         <Asset
           id={id}
+          type={type}
           asset={currentAsset.asset}
           datasetKeywords={dataset?.keywords}
           filters={filterParams}

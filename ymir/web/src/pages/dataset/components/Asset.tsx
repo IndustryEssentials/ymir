@@ -19,6 +19,7 @@ import { LeftOutlined, RightOutlined } from '@ant-design/icons'
 type Props = {
   id: string
   asset: YModels.Asset
+  type?: string
   datasetKeywords?: KeywordsType
   filterKeyword?: KeywordsType
   filters?: YParams.AssetQueryParams
@@ -31,14 +32,14 @@ type KeywordsType = string[]
 const { CheckableTag } = Tag
 const { Item } = Descriptions
 
-const Asset: FC<Props> = ({ id, asset: cache, datasetKeywords, filterKeyword, filters, index = 0, total = 0 }) => {
+const Asset: FC<Props> = ({ id, asset: cache, type, datasetKeywords, filterKeyword, filters, index = 0, total = 0 }) => {
   const [asset, setAsset] = useState<YModels.Asset>()
   const [current, setCurrent] = useState('')
   const [showAnnotations, setShowAnnotations] = useState<YModels.Annotation[]>([])
   const [selectedKeywords, setSelectedKeywords] = useState<KeywordsType>([])
   const [currentIndex, setCurrentIndex] = useState<IndexType>({ index: 0 })
   const [assetHistory, setAssetHistory] = useState<IndexType[]>([])
-  const [evaluation, setEvaluation] = useState<number[]>([])
+  const [evaluation, setEvaluation] = useState(0)
   const [colors, setColors] = useState<{ [key: string]: string }>({})
   const { data: { items: assets } = { items: [] }, run: getAssets } = useRequest<YStates.List<YModels.Asset>>('dataset/getAssetsOfDataset')
   const { data: dataset, run: getDataset } = useRequest<YModels.Dataset>('dataset/getDataset', {
@@ -83,9 +84,11 @@ const Asset: FC<Props> = ({ id, asset: cache, datasetKeywords, filterKeyword, fi
   }, [assets])
 
   useEffect(() => {
-    const keywordFilter = (annotation: YModels.Annotation) => selectedKeywords.indexOf(annotation.keyword) >= 0
-    const evaluationFilter = (annotation: YModels.Annotation) => evaluation.includes(annotation.cm)
-    const visibleAnnotations = (asset?.annotations || []).filter((annotation) => keywordFilter(annotation) && evaluationFilter(annotation))
+    type FilterType = (annotation: YModels.Annotation) => boolean
+    const typeFilter: FilterType = (anno) => (type !== 'pred' ? !!anno.gt : !anno.gt)
+    const keywordFilter: FilterType = (annotation) => selectedKeywords.includes(annotation.keyword)
+    const evaluationFilter: FilterType = (annotation) => !evaluation || evaluation === annotation.cm
+    const visibleAnnotations = (asset?.annotations || []).filter((anno) => typeFilter(anno) && keywordFilter(anno) && evaluationFilter(anno))
     setShowAnnotations(visibleAnnotations)
   }, [selectedKeywords, evaluation, asset])
 
@@ -124,7 +127,7 @@ const Asset: FC<Props> = ({ id, asset: cache, datasetKeywords, filterKeyword, fi
     setSelectedKeywords(selectedKeywords.length || !asset?.keywords.length ? [] : asset?.keywords)
   }
 
-  function evaluationChange(checked: number[]) {
+  function evaluationChange(checked: number) {
     setEvaluation(checked)
   }
 
@@ -200,7 +203,11 @@ const Asset: FC<Props> = ({ id, asset: cache, datasetKeywords, filterKeyword, fi
               </Descriptions>
 
               <Space className={styles.filter} size={10} wrap>
-                <EvaluationSelector hidden={!dataset?.evaluated || !asset.evaluated} onChange={({ target }) => evaluationChange(target.value)} />
+                <EvaluationSelector
+                  value={evaluation}
+                  hidden={!dataset?.evaluated || !asset.evaluated}
+                  onChange={({ target }) => evaluationChange(target.value)}
+                />
               </Space>
             </Card>
             <Space className={styles.random}>
