@@ -158,6 +158,8 @@ def evaluate_datasets(
         logger.info("set iou_thrs_interval to %s because of require_average_iou", iou_thrs_interval)
     elif iou_threshold is not None:
         iou_thrs_interval = str(iou_threshold)
+    else:
+        iou_thrs_interval = None
 
     f_evaluate = partial(
         controller_client.evaluate_dataset,
