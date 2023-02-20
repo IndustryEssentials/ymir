@@ -66,7 +66,7 @@ def _annotation_parse_func(anno_type: "mirpb.ObjectType.V") -> Callable:
 def _annotation_signature(annotation: mirpb.ObjectAnnotation, asset_id: str) -> str:
     return (
         f"{asset_id}-{annotation.class_id}-{annotation.box.x}-{annotation.box.y}-{annotation.box.w}-{annotation.box.h}"
-        f"{annotation.box.rotate_angle}")
+        f"-{annotation.box.rotate_angle}")
 
 
 def _voc_object_dict_to_annotation(object_dict: dict, cid: int,
