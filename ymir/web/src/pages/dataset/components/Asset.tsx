@@ -85,7 +85,7 @@ const Asset: FC<Props> = ({ id, asset: cache, type, datasetKeywords, filterKeywo
 
   useEffect(() => {
     type FilterType = (annotation: YModels.Annotation) => boolean
-    const typeFilter: FilterType = (anno) => (type !== 'pred' ? !!anno.gt : !anno.gt)
+    const typeFilter: FilterType = (anno) => (type === 'pred' || !!anno.gt)
     const keywordFilter: FilterType = (annotation) => selectedKeywords.includes(annotation.keyword)
     const evaluationFilter: FilterType = (annotation) => !evaluation || evaluation === annotation.cm
     const visibleAnnotations = (asset?.annotations || []).filter((anno) => typeFilter(anno) && keywordFilter(anno) && evaluationFilter(anno))
@@ -206,7 +206,7 @@ const Asset: FC<Props> = ({ id, asset: cache, type, datasetKeywords, filterKeywo
                 <EvaluationSelector
                   value={evaluation}
                   vertical
-                  hidden={!dataset?.evaluated || !asset.evaluated}
+                  hidden={type !== 'pred' && (!dataset?.evaluated || !asset.evaluated)}
                   onChange={({ target }) => evaluationChange(target.value)}
                 />
               </Space>

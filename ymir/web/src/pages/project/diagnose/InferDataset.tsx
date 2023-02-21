@@ -36,7 +36,7 @@ const InferDataset: React.FC = () => {
         history.push(`/home/project/${pid}/diagnose#metrics`, {
           mid: record.inferModelId,
         }),
-      disabled: record.assetCount > INFER_DATASET_MAX_COUNT || (record.inferModel?.keywords?.length || 0) > INFER_CLASSES_MAX_COUNT,
+      disabled: !validDataset(record) || (record.assetCount > INFER_DATASET_MAX_COUNT || (record.inferModel?.keywords?.length || 0) > INFER_CLASSES_MAX_COUNT),
       icon: <DiagnosisIcon />,
     },
     {
@@ -45,7 +45,7 @@ const InferDataset: React.FC = () => {
       hidden: () => !validDataset(record),
       onclick: () => history.push(`/home/project/${pid}/dataset/${record.id}/assets#pred`),
       icon: <EyeOnIcon />,
-    }, 
+    },
     {
       key: 'del',
       label: t('common.action.del'),
@@ -70,12 +70,14 @@ const InferDataset: React.FC = () => {
       if (needReload) {
         fetchInferDatasets()
       } else {
-
-      const updatedDatasets = datasets.map(dataset => {
-        const ds = updateResultByTask<typeof dataset>(dataset, progressTasks.find(task => task.hash === dataset.task.hash))
-        return ds ? ds : dataset
-      })
-      setDatasets(updatedDatasets)
+        const updatedDatasets = datasets.map((dataset) => {
+          const ds = updateResultByTask<typeof dataset>(
+            dataset,
+            progressTasks.find((task) => task.hash === dataset.task.hash),
+          )
+          return ds ? ds : dataset
+        })
+        setDatasets(updatedDatasets)
       }
     }
   }, [progressTasks])
@@ -103,7 +105,6 @@ const InferDataset: React.FC = () => {
     return getDatasets({ pid, ...query })
   }
 
-  
   const hide = (dataset: YModels.InferDataset) => {
     hideRef?.current?.hide([dataset])
   }
@@ -123,7 +124,7 @@ const InferDataset: React.FC = () => {
           showSizeChanger: true,
         }}
       />
-      <Hide ref={hideRef} ok={fetchInferDatasets} msg='pred.action.del.confirm.content' />
+      <Hide ref={hideRef} ok={fetchInferDatasets} msg="pred.action.del.confirm.content" />
     </div>
   )
 }
