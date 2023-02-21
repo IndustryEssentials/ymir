@@ -15,6 +15,8 @@ import CustomLabels from '@/components/dataset/asset/CustomLabels'
 import styles from './asset.less'
 import { NavDatasetIcon, EyeOffIcon, EyeOnIcon } from '@/components/common/Icons'
 import { LeftOutlined, RightOutlined } from '@ant-design/icons'
+import GtSelector from '@/components/form/GtSelector'
+import { evaluationTags } from '@/constants/dataset'
 
 type Props = {
   id: string
@@ -39,6 +41,7 @@ const Asset: FC<Props> = ({ id, asset: cache, pred, datasetKeywords, filterKeywo
   const [selectedKeywords, setSelectedKeywords] = useState<KeywordsType>([])
   const [currentIndex, setCurrentIndex] = useState<IndexType>({ index: 0 })
   const [assetHistory, setAssetHistory] = useState<IndexType[]>([])
+  const [gtSelected, setGtSelected] = useState<string[]>([])
   const [evaluation, setEvaluation] = useState(0)
   const [colors, setColors] = useState<{ [key: string]: string }>({})
   const { data: { items: assets } = { items: [] }, run: getAssets } = useRequest<YStates.List<YModels.Asset>>('dataset/getAssetsOfDataset')
@@ -85,12 +88,13 @@ const Asset: FC<Props> = ({ id, asset: cache, pred, datasetKeywords, filterKeywo
 
   useEffect(() => {
     type FilterType = (annotation: YModels.Annotation) => boolean
-    const typeFilter: FilterType = (anno) => (pred || !!anno.gt)
+    const typeFilter: FilterType = (anno) => pred || !!anno.gt
+    const gtFilter: FilterType = (anno) => (gtSelected.includes('gt') && !!anno.gt) || (gtSelected.includes('pred') && !anno.gt)
     const keywordFilter: FilterType = (annotation) => selectedKeywords.includes(annotation.keyword)
-    const evaluationFilter: FilterType = (annotation) => !evaluation || evaluation === annotation.cm
-    const visibleAnnotations = (asset?.annotations || []).filter((anno) => typeFilter(anno) && keywordFilter(anno) && evaluationFilter(anno))
+    const evaluationFilter: FilterType = (annotation) => ![evaluationTags.fn, evaluationTags.fp].includes(evaluation) || evaluation === annotation.cm
+    const visibleAnnotations = (asset?.annotations || []).filter((anno) => typeFilter(anno) && gtFilter(anno) && keywordFilter(anno) && evaluationFilter(anno))
     setShowAnnotations(visibleAnnotations)
-  }, [selectedKeywords, evaluation, asset, pred])
+  }, [selectedKeywords, evaluation, asset, gtSelected, pred])
 
   function fetchAssetHash() {
     setAsset((asset) => (asset ? { ...asset, annotations: [] } : undefined))
@@ -203,6 +207,7 @@ const Asset: FC<Props> = ({ id, asset: cache, pred, datasetKeywords, filterKeywo
               </Descriptions>
 
               <Space className={styles.filter} size={10} wrap>
+                {pred ? <GtSelector vertical onChange={setGtSelected} /> : null}
                 <EvaluationSelector
                   value={evaluation}
                   vertical
