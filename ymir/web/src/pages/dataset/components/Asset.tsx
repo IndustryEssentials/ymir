@@ -206,7 +206,7 @@ const Asset: FC<Props> = ({ id, asset: cache, type, datasetKeywords, filterKeywo
                 <EvaluationSelector
                   value={evaluation}
                   vertical
-                  hidden={!dataset?.evaluated || !asset.evaluated}
+                  hidden={type !== 'pred' && (!dataset?.evaluated || !asset.evaluated)}
                   onChange={({ target }) => evaluationChange(target.value)}
                 />
               </Space>
