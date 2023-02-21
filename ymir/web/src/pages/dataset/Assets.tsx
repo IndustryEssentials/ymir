@@ -42,8 +42,8 @@ const Dataset: FC = () => {
     index: 0,
   })
   const [columns, setColumns] = useState(5)
-  const [mode, setMode] = useState<VisualModes>(type === 'pred' ? VisualModes.All : VisualModes.Gt)
-  const listRef = useRef<HTMLDivElement>(null)
+  const [isPred, setPred] = useState(false)
+  const [mode, setMode] = useState<VisualModes>(VisualModes.Gt)
   const { data: dataset, run: getDataset } = useRequest<YModels.Dataset>('dataset/getDataset', {
     loading: false,
   })
@@ -52,6 +52,12 @@ const Dataset: FC = () => {
   useEffect(() => {
     getDataset({ id, verbose: true })
   }, [id])
+
+  useEffect(() => {
+    const isPred = type === 'pred' || !!dataset?.pred
+    setPred(isPred)
+    setMode(isPred ?  VisualModes.All : VisualModes.Gt)
+  }, [dataset, type])
 
   useEffect(() => {
     const { offset = 0, limit = 20 } = filterParams
@@ -114,15 +120,15 @@ const Dataset: FC = () => {
   const renderTitle = (
     <Row className={styles.labels}>
       <Col flex={1}>
-        <DatasetInfo dataset={dataset} type={type} />
+        <DatasetInfo dataset={dataset} pred={isPred} />
       </Col>
       <Col>
         <ListColumnCountSelect value={columns} onChange={setColumns} />
       </Col>
       <Col span={24} style={{ fontSize: 14, textAlign: 'right', marginTop: 10 }}>
         <Space size={20} wrap={true} style={{ textAlign: 'left' }}>
-          <ListVisualSelect style={{ width: 200 }} type={type} onChange={setMode} />
-          {type === 'pred' && dataset?.evaluated ? (
+          <ListVisualSelect style={{ width: 200 }} pred={isPred} onChange={setMode} />
+          {isPred && dataset?.evaluated ? (
             <EvaluationSelector value={filterParams.cm} onChange={({ target }) => updateFilterParams(target.value, 'cm')} />
           ) : null}
           <KeywordSelector onChange={filterKw} dataset={dataset} />
@@ -145,7 +151,7 @@ const Dataset: FC = () => {
       {currentAsset.asset ? (
         <Asset
           id={id}
-          type={type}
+          pred={isPred}
           asset={currentAsset.asset}
           datasetKeywords={dataset?.keywords}
           filters={filterParams}

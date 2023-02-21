@@ -19,7 +19,7 @@ import { LeftOutlined, RightOutlined } from '@ant-design/icons'
 type Props = {
   id: string
   asset: YModels.Asset
-  type?: string
+  pred?: boolean
   datasetKeywords?: KeywordsType
   filterKeyword?: KeywordsType
   filters?: YParams.AssetQueryParams
@@ -32,7 +32,7 @@ type KeywordsType = string[]
 const { CheckableTag } = Tag
 const { Item } = Descriptions
 
-const Asset: FC<Props> = ({ id, asset: cache, type, datasetKeywords, filterKeyword, filters, index = 0, total = 0 }) => {
+const Asset: FC<Props> = ({ id, asset: cache, pred, datasetKeywords, filterKeyword, filters, index = 0, total = 0 }) => {
   const [asset, setAsset] = useState<YModels.Asset>()
   const [current, setCurrent] = useState('')
   const [showAnnotations, setShowAnnotations] = useState<YModels.Annotation[]>([])
@@ -85,12 +85,12 @@ const Asset: FC<Props> = ({ id, asset: cache, type, datasetKeywords, filterKeywo
 
   useEffect(() => {
     type FilterType = (annotation: YModels.Annotation) => boolean
-    const typeFilter: FilterType = (anno) => (type === 'pred' || !!anno.gt)
+    const typeFilter: FilterType = (anno) => (pred || !!anno.gt)
     const keywordFilter: FilterType = (annotation) => selectedKeywords.includes(annotation.keyword)
     const evaluationFilter: FilterType = (annotation) => !evaluation || evaluation === annotation.cm
     const visibleAnnotations = (asset?.annotations || []).filter((anno) => typeFilter(anno) && keywordFilter(anno) && evaluationFilter(anno))
     setShowAnnotations(visibleAnnotations)
-  }, [selectedKeywords, evaluation, asset])
+  }, [selectedKeywords, evaluation, asset, pred])
 
   function fetchAssetHash() {
     setAsset((asset) => (asset ? { ...asset, annotations: [] } : undefined))
@@ -206,7 +206,7 @@ const Asset: FC<Props> = ({ id, asset: cache, type, datasetKeywords, filterKeywo
                 <EvaluationSelector
                   value={evaluation}
                   vertical
-                  hidden={type !== 'pred' && (!dataset?.evaluated || !asset.evaluated)}
+                  hidden={!(pred && dataset?.evaluated && !asset.evaluated)}
                   onChange={({ target }) => evaluationChange(target.value)}
                 />
               </Space>

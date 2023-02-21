@@ -5,7 +5,7 @@ import V from './VisualModes'
 import { BaseOptionType } from 'antd/lib/select'
 
 type Props = SelectProps & {
-  type?: string
+  pred?: boolean
 }
 
 const options = {
@@ -21,17 +21,17 @@ const modes: { [key: string]: V[] } = {
   gt: [V.Gt, V.Asset],
 }
 
-const ListVisualSelect: FC<Props> = ({ type, ...props }) => {
+const ListVisualSelect: FC<Props> = ({ pred, ...props }) => {
   const [opts, setOpts] = useState<BaseOptionType[]>([])
 
   useEffect(() => {
-    const opts = (modes[type || 'gt'] || modes['gt']).map((value) => ({
+    const opts = modes[pred ? 'pred' : 'gt'].map((value) => ({
       value,
       ...options[value],
     }))
 
     setOpts(opts)
-  }, [type])
+  }, [pred])
   return opts.length ? (
     <Row gutter={10}>
       <Col style={{ fontWeight: 'bold' }}>{t('dataset.assets.selector.visual.label')}</Col>
