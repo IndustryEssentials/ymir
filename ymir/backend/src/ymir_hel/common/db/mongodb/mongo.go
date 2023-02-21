@@ -475,9 +475,9 @@ func (s *MongoServer) queryHistogram(
 ) *map[string]int32 {
 	buckets := map[string]int32{}
 
-	// Mongodb treat last upper element as exclusive boundary, add delta to enclose it.
+	// Mongodb treat last upper element as exclusive boundary, add 100M to calc x+.
 	extendedLowerBNDs := lowerBNDs
-	extendedLowerBNDs = append(extendedLowerBNDs, lowerBNDs[len(lowerBNDs)-1]+0.01)
+	extendedLowerBNDs = append(extendedLowerBNDs, lowerBNDs[len(lowerBNDs)-1]+1e8)
 
 	cond := make([]bson.M, 0)
 	if !skipUnwind {

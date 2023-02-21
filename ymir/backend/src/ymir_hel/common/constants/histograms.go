@@ -25,13 +25,15 @@ func (h *MirHist) BuildMirHist(bucket *map[string]int32) {
 	h.Output = &[]map[string]string{}
 	h.SparseBuckets = bucket
 	for _, LowerBND := range h.LowerBNDs {
-		histKeyFormat := fmt.Sprintf("%%.%df", h.DecDigits)
-		histKey := fmt.Sprintf(histKeyFormat, LowerBND)
-		value := "0"
+		outputKey := fmt.Sprintf(fmt.Sprintf("%%.%df", h.DecDigits), LowerBND)
+
+		outputValue := "0"
+		histKey := fmt.Sprintf("%.2f", LowerBND)
 		if data, ok := (*h.SparseBuckets)[histKey]; ok {
-			value = fmt.Sprintf("%d", data)
+			outputValue = fmt.Sprintf("%d", data)
 		}
-		*h.Output = append(*h.Output, map[string]string{"x": histKey, "y": value})
+
+		*h.Output = append(*h.Output, map[string]string{"x": outputKey, "y": outputValue})
 	}
 }
 
