@@ -474,6 +474,7 @@ class SingleTaskAnnotations(google.protobuf.message.Message):
     TASK_ID_FIELD_NUMBER: builtins.int
     TYPE_FIELD_NUMBER: builtins.int
     TASK_CLASS_IDS_FIELD_NUMBER: builtins.int
+    IS_INSTANCE_SEGMENTATION_FIELD_NUMBER: builtins.int
     EVAL_CLASS_IDS_FIELD_NUMBER: builtins.int
     MODEL_FIELD_NUMBER: builtins.int
     EXECUTOR_CONFIG_FIELD_NUMBER: builtins.int
@@ -487,6 +488,7 @@ class SingleTaskAnnotations(google.protobuf.message.Message):
     def task_class_ids(self) -> google.protobuf.internal.containers.RepeatedScalarFieldContainer[builtins.int]:
         """Set of all shown class ids."""
         pass
+    is_instance_segmentation: builtins.bool = ...
     @property
     def eval_class_ids(self) -> google.protobuf.internal.containers.RepeatedScalarFieldContainer[builtins.int]:
         """meta infos of this SingleTaskAnnotations"""
@@ -504,12 +506,13 @@ class SingleTaskAnnotations(google.protobuf.message.Message):
         task_id : typing.Text = ...,
         type : global___ObjectType.V = ...,
         task_class_ids : typing.Optional[typing.Iterable[builtins.int]] = ...,
+        is_instance_segmentation : builtins.bool = ...,
         eval_class_ids : typing.Optional[typing.Iterable[builtins.int]] = ...,
         model : typing.Optional[global___ModelMeta] = ...,
         executor_config : typing.Text = ...,
         ) -> None: ...
     def HasField(self, field_name: typing_extensions.Literal["model",b"model"]) -> builtins.bool: ...
-    def ClearField(self, field_name: typing_extensions.Literal["eval_class_ids",b"eval_class_ids","executor_config",b"executor_config","image_annotations",b"image_annotations","model",b"model","task_class_ids",b"task_class_ids","task_id",b"task_id","type",b"type"]) -> None: ...
+    def ClearField(self, field_name: typing_extensions.Literal["eval_class_ids",b"eval_class_ids","executor_config",b"executor_config","image_annotations",b"image_annotations","is_instance_segmentation",b"is_instance_segmentation","model",b"model","task_class_ids",b"task_class_ids","task_id",b"task_id","type",b"type"]) -> None: ...
 global___SingleTaskAnnotations = SingleTaskAnnotations
 
 class SingleImageAnnotations(google.protobuf.message.Message):

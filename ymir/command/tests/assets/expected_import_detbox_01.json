@@ -125,6 +125,7 @@
                     ]
                 }
             },
+            "is_instance_segmentation": false,
             "task_id": "import_detbox_01",
             "type": 2,
             "task_class_ids": [
@@ -228,6 +229,7 @@
                     ]
                 }
             },
+            "is_instance_segmentation": false,
             "task_id": "import_detbox_01",
             "type": 2,
             "task_class_ids": [
