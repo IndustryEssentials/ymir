@@ -21,7 +21,7 @@ const modes: { [key: string]: V[] } = {
   gt: [V.Gt, V.Asset],
 }
 
-const ListVisualSelect: FC<Props> = ({ pred, ...props }) => {
+const ListVisualSelect: FC<Props> = ({ value, pred, ...props }) => {
   const [opts, setOpts] = useState<BaseOptionType[]>([])
 
   useEffect(() => {
@@ -38,6 +38,7 @@ const ListVisualSelect: FC<Props> = ({ pred, ...props }) => {
       <Col flex={1}>
         <Select
           {...props}
+          value={value}
           defaultValue={opts[0].value}
           options={opts.map(({ value, label }) => ({ value, label: t(`dataset.assets.selector.visual.label.${label}`) }))}
         />

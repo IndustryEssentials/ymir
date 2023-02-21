@@ -54,7 +54,7 @@ const Dataset: FC = () => {
   }, [id])
 
   useEffect(() => {
-    const isPred = type === 'pred' || !!dataset?.pred
+    const isPred = type === 'pred' || !!dataset?.pred?.keywords.length
     setPred(isPred)
     setMode(isPred ?  VisualModes.All : VisualModes.Gt)
   }, [dataset, type])
@@ -127,7 +127,7 @@ const Dataset: FC = () => {
       </Col>
       <Col span={24} style={{ fontSize: 14, textAlign: 'right', marginTop: 10 }}>
         <Space size={20} wrap={true} style={{ textAlign: 'left' }}>
-          <ListVisualSelect style={{ width: 200 }} pred={isPred} onChange={setMode} />
+          <ListVisualSelect value={mode} style={{ width: 200 }} pred={isPred} onChange={setMode} />
           {isPred && dataset?.evaluated ? (
             <EvaluationSelector value={filterParams.cm} onChange={({ target }) => updateFilterParams(target.value, 'cm')} />
           ) : null}
