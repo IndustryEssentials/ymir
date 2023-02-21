@@ -37,9 +37,11 @@ const List: FC<Props> = ({ list = [], goAsset = () => {}, mode, columns = 5, pag
     listRef.current?.clientWidth && setWidth(listRef.current.clientWidth)
   }, [listRef.current?.clientWidth])
 
+  window.addEventListener('resize', () => listRef.current && setWidth(listRef.current.clientWidth))
+
   return (
     <div className={styles.listContainer} ref={listRef}>
-      {rows.length && width ? (
+      {rows.length ? (
         <>
           <div>
             {rows.map((row, index) => {
@@ -51,9 +53,15 @@ const List: FC<Props> = ({ list = [], goAsset = () => {}, mode, columns = 5, pag
                 }, 0)
 
               return (
-                <Row gutter={ItemSpace} wrap={false} key={index} className={styles.dataset_container}>
+                <Row gutter={ItemSpace} wrap={false} key={columns * (index + 1)} className={styles.dataset_container}>
                   {row.map((asset, rowIndex) => (
-                    <Item asset={asset} key={rowIndex} showDetail={() => goAsset(asset, asset.hash, index * columns + rowIndex)} height={h} mode={mode} />
+                    <Item
+                      asset={asset}
+                      key={index * columns + rowIndex}
+                      showDetail={() => goAsset(asset, asset.hash, index * columns + rowIndex)}
+                      height={h}
+                      mode={mode}
+                    />
                   ))}
                 </Row>
               )

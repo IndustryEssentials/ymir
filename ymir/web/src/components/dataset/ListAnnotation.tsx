@@ -46,6 +46,8 @@ const ListAnnotation: FC<Props> = ({ asset, filter, hideAsset }) => {
     setRatio(clientWidth / iw)
   }
 
+  window.addEventListener('resize', () => imgContainer.current && calClientWidth())
+
   function renderAnnotation(annotation: YModels.Annotation, key: number | string) {
     switch (annotation.type) {
       case AnnotationType.BoundingBox:
@@ -59,7 +61,7 @@ const ListAnnotation: FC<Props> = ({ asset, filter, hideAsset }) => {
 
   return (
     <div className={styles.ic_container} ref={imgContainer} key={asset.hash}>
-      <img ref={img} style={{ visibility: hideAsset ? 'hidden' : 'visible'}} src={asset?.url} className={styles.assetImg} onLoad={calClientWidth} />
+      <img ref={img} style={{ visibility: hideAsset ? 'hidden' : 'visible' }} src={asset?.url} className={styles.assetImg} onLoad={calClientWidth} />
       <div className={styles.annotations} style={{ width: imgWidth, left: -imgWidth / 2 }}>
         {annotations.map((anno, index) => renderAnnotation(anno, asset.hash + index))}
       </div>

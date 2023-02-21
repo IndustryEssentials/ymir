@@ -13,6 +13,7 @@ import Hide, { RefProps } from '@/components/common/hide'
 
 import s from './index.less'
 import { EyeOnIcon, DiagnosisIcon, DeleteIcon } from '@/components/common/Icons'
+import { validDataset } from '@/constants/dataset'
 
 const initQuery = { current: 1, offset: 0, limit: 20 }
 
@@ -41,6 +42,7 @@ const InferDataset: React.FC = () => {
     {
       key: 'preview',
       label: t('common.action.preview'),
+      hidden: () => !validDataset(record),
       onclick: () => history.push(`/home/project/${pid}/dataset/${record.id}/assets#pred`),
       icon: <EyeOnIcon />,
     }, 

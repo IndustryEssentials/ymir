@@ -114,15 +114,17 @@ const Dataset: FC = () => {
   const renderTitle = (
     <Row className={styles.labels}>
       <Col flex={1}>
-        <DatasetInfo dataset={dataset} />
+        <DatasetInfo dataset={dataset} type={type} />
       </Col>
       <Col>
         <ListColumnCountSelect value={columns} onChange={setColumns} />
       </Col>
       <Col span={24} style={{ fontSize: 14, textAlign: 'right', marginTop: 10 }}>
-        <Space size={10} wrap={true} style={{ textAlign: 'left' }}>
+        <Space size={20} wrap={true} style={{ textAlign: 'left' }}>
           <ListVisualSelect style={{ width: 200 }} type={type} onChange={setMode} />
-          {dataset?.evaluated ? <EvaluationSelector value={filterParams.cm} onChange={({ target }) => updateFilterParams(target.value, 'cm')} /> : null}
+          {type === 'pred' && dataset?.evaluated ? (
+            <EvaluationSelector value={filterParams.cm} onChange={({ target }) => updateFilterParams(target.value, 'cm')} />
+          ) : null}
           <KeywordSelector onChange={filterKw} dataset={dataset} />
         </Space>
       </Col>
@@ -143,6 +145,7 @@ const Dataset: FC = () => {
       {currentAsset.asset ? (
         <Asset
           id={id}
+          type={type}
           asset={currentAsset.asset}
           datasetKeywords={dataset?.keywords}
           filters={filterParams}
@@ -159,32 +162,29 @@ const Dataset: FC = () => {
       <Breadcrumbs />
       {assetDetail}
       <Card className="list" title={renderTitle}>
-        <div className={styles.listContainer} ref={listRef}>
-          <List
-            list={assets}
-            goAsset={goAsset}
-            width={listRef.current?.clientWidth}
-            columns={columns}
-            mode={mode}
-            pager={
-              <Space className={styles.pagi}>
-                <Pagination
-                  key={'pager'}
-                  className={`pager ${styles.pager}`}
-                  showQuickJumper
-                  showSizeChanger
-                  defaultCurrent={1}
-                  current={currentPage}
-                  defaultPageSize={20}
-                  total={total}
-                  showTotal={(total, range) => t('dataset.detail.pager.total', { total })}
-                  onChange={filterPage}
-                />
-                {randomPageButton}
-              </Space>
-            }
-          />
-        </div>
+        <List
+          list={assets}
+          goAsset={goAsset}
+          columns={columns}
+          mode={mode}
+          pager={
+            <Space className={styles.pagi}>
+              <Pagination
+                key={'pager'}
+                className={`pager ${styles.pager}`}
+                showQuickJumper
+                showSizeChanger
+                defaultCurrent={1}
+                current={currentPage}
+                defaultPageSize={20}
+                total={total}
+                showTotal={(total, range) => t('dataset.detail.pager.total', { total })}
+                onChange={filterPage}
+              />
+              {randomPageButton}
+            </Space>
+          }
+        />
       </Card>
     </div>
   )

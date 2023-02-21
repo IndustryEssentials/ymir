@@ -87,7 +87,7 @@ const InferResultSelect = ({ pid, form, value, onChange = () => {} }) => {
   }, [selectedStages])
 
   useEffect(() => {
-    if (datasets.length === 1 && datasets[0].assetCount <= INFER_DATASET_MAX_COUNT) {
+    if (datasets.length === 1) {
       form.setFieldsValue({ dataset: datasets })
     }
     setConfigs([])
