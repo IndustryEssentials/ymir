@@ -96,7 +96,7 @@ class TestCmdInfer(unittest.TestCase):
                                             },
                                             stages={model_stage.stage_name: model_stage},
                                             best_stage_name=model_stage.stage_name,
-                                            object_type=mirpb.ObjectType.OT_DET_BOX,
+                                            object_type=models.ModelObjectType.MOT_DET_BOX.value,
                                             package_version=YMIR_MODEL_VERSION)
 
         with open(os.path.join(self._models_location, 'ymir-info.yaml'), 'w') as f:
@@ -197,5 +197,7 @@ class TestCmdInfer(unittest.TestCase):
         with open(os.path.join(fake_args.work_dir, 'out', 'prediction.mir'), 'rb') as f:
             prediction = mirpb.SingleTaskAnnotations()
             prediction.ParseFromString(f.read())
+            self.assertEqual(prediction.type, mirpb.ObjectType.OT_DET_BOX)
+            self.assertEqual(prediction.is_instance_segmentation, False)
             self.assertEqual(len(prediction.image_annotations), 1)
             self.assertEqual(len(prediction.image_annotations['2007_000032.jpg'].boxes), 1)
