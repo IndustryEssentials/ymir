@@ -84,8 +84,10 @@ class CmdCopy(base.BaseCommand):
         if drop_annotations:
             mir_annotations.prediction.Clear()
             mir_annotations.prediction.type = mirpb.ObjectType.OT_NO_ANNOTATIONS
+            mir_annotations.prediction.is_instance_segmentation = False
             mir_annotations.ground_truth.Clear()
             mir_annotations.ground_truth.type = mirpb.ObjectType.OT_NO_ANNOTATIONS
+            mir_annotations.ground_truth.is_instance_segmentation = False
         else:
             unknown_class_names = map_and_filter_annotations(mir_annotations=mir_annotations,
                                                              data_label_storage_file=data_label_storage_file,

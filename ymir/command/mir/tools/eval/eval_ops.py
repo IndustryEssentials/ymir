@@ -50,7 +50,7 @@ def evaluate_with_pb(
         evaluation.state = mirpb.EvaluationState.ES_EXCEEDS_LIMIT
         return evaluation
 
-    f_eval_model = _get_eval_model_function(prediction.type, config.is_instance_segmentation)
+    f_eval_model = _get_eval_model_function(prediction.type, prediction.is_instance_segmentation)
     if not f_eval_model:
         logging.warning(
             f"skip evaluation: anno type: {prediction.type}, {config.is_instance_segmentation} not supported")
@@ -60,11 +60,11 @@ def evaluate_with_pb(
     start_time = time.time()
     for image_annotations in prediction.image_annotations.values():
         for annotation in image_annotations.boxes:
-            annotation.cm = mirpb.ConfusionMatrixType.IGNORED
+            annotation.cm = mirpb.ConfusionMatrixType.NotSet
             annotation.det_link_id = -1
     for image_annotations in ground_truth.image_annotations.values():
         for annotation in image_annotations.boxes:
-            annotation.cm = mirpb.ConfusionMatrixType.IGNORED
+            annotation.cm = mirpb.ConfusionMatrixType.NotSet
             annotation.det_link_id = -1
     evaluation = f_eval_model.evaluate(  # type: ignore
         prediction=prediction,
