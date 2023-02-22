@@ -1,4 +1,5 @@
-from typing import Any, List, Optional, OrderedDict, Tuple
+from collections import defaultdict
+from typing import Any, Dict, List, Optional, OrderedDict, Tuple
 
 import numpy as np
 import pycocotools.mask
@@ -11,9 +12,9 @@ _SEMANTIC_SEGMENTATION_BACKGROUND = 255
 
 
 # protected: semantic segmentation evaluation
-def _mir_mean_iou(prediction: mirpb.SingleTaskAnnotations, ground_truth: mirpb.SingleTaskAnnotations,
-                  class_ids: List[int],
-                  asset_id_to_hws: OrderedDict[str, Tuple[int, int]]) -> mirpb.SegmentationMetrics:
+def _mir_mean_iou(
+        prediction: mirpb.SingleTaskAnnotations, ground_truth: mirpb.SingleTaskAnnotations, class_ids: List[int],
+        asset_id_to_hws: OrderedDict[str, Tuple[int, int]]) -> Tuple[mirpb.SegmentationMetrics, np.ndarray]:
 
     dts = _aggregate_imagewise_annotations(task_annotations=prediction,
                                            asset_id_to_hws=asset_id_to_hws,
@@ -21,11 +22,11 @@ def _mir_mean_iou(prediction: mirpb.SingleTaskAnnotations, ground_truth: mirpb.S
     gts = _aggregate_imagewise_annotations(task_annotations=ground_truth,
                                            asset_id_to_hws=asset_id_to_hws,
                                            class_ids=class_ids)
-    all_acc, acc, iou, macc, miou = _mean_iou(dts=dts,
-                                              gts=gts,
-                                              num_classes=len(class_ids),
-                                              ignore_index=_SEMANTIC_SEGMENTATION_BACKGROUND,
-                                              nan_to_num=-1)
+    all_acc, acc, iou, macc, miou, image_class_iou = _mean_iou(dts=dts,
+                                                               gts=gts,
+                                                               num_classes=len(class_ids),
+                                                               ignore_index=_SEMANTIC_SEGMENTATION_BACKGROUND,
+                                                               nan_to_num=-1)
     order_to_class_id = dict(zip(range(len(class_ids)), class_ids))
 
     metrics = mirpb.SegmentationMetrics()
@@ -34,7 +35,8 @@ def _mir_mean_iou(prediction: mirpb.SingleTaskAnnotations, ground_truth: mirpb.S
     metrics.IoU.update({order_to_class_id[idx]: value for idx, value in enumerate(iou)})
     metrics.mAcc = macc
     metrics.mIoU = miou
-    return metrics
+
+    return metrics, image_class_iou
 
 
 def _aggregate_imagewise_annotations(task_annotations: mirpb.SingleTaskAnnotations,
@@ -78,13 +80,14 @@ def _mean_iou(
         total_area_union,
         _,
         total_area_gt,
+        image_class_iou
     ) = _total_intersect_and_union(dts, gts, num_classes, ignore_index)
     all_acc = np.nansum(total_area_intersect) / np.nansum(total_area_gt)
     acc = total_area_intersect / total_area_gt
     iou = total_area_intersect / total_area_union
     macc = np.nanmean(acc)
     miou = np.nanmean(iou)
-    ret_metrics = [all_acc, acc, iou, macc, miou]
+    ret_metrics = [all_acc, acc, iou, macc, miou, image_class_iou]
     if nan_to_num is not None:
         ret_metrics = [np.nan_to_num(metric, nan=nan_to_num) for metric in ret_metrics]
     return ret_metrics
@@ -117,7 +120,8 @@ def _total_intersect_and_union(
     total_area_union = np.zeros((num_classes,), dtype=float)
     total_area_dt = np.zeros((num_classes,), dtype=float)
     total_area_gt = np.zeros((num_classes,), dtype=float)
-    for dt, gt in zip(dts, gts):
+    image_class_iou = np.zeros((len(dts), num_classes), dtype=float)  # [i, j]: iou of i-th image and j-th class
+    for asset_idx, (dt, gt) in enumerate(zip(dts, gts)):
         area_intersect, area_union, area_dt, area_gt = _intersect_and_union(
             dt,
             gt,
@@ -128,7 +132,8 @@ def _total_intersect_and_union(
         total_area_union += area_union
         total_area_dt += area_dt
         total_area_gt += area_gt
-    return total_area_intersect, total_area_union, total_area_dt, total_area_gt
+        image_class_iou[asset_idx, :] = area_intersect / area_union
+    return total_area_intersect, total_area_union, total_area_dt, total_area_gt, image_class_iou
 
 
 def _decode_mir_mask(annotation: mirpb.ObjectAnnotation, hw: Tuple[int, int]) -> np.ndarray:
@@ -158,22 +163,25 @@ def evaluate(prediction: mirpb.SingleTaskAnnotations, ground_truth: mirpb.Single
         asset_id_to_hws[asset_id] = (assets_metadata.attributes[asset_id].height,
                                      assets_metadata.attributes[asset_id].width)
 
-    evaluation.dataset_evaluation.segmentation_metrics.CopyFrom(
-        _mir_mean_iou(prediction=prediction,
-                      ground_truth=ground_truth,
-                      asset_id_to_hws=asset_id_to_hws,
-                      class_ids=list(config.class_ids)))
+    iou, image_class_iou = _mir_mean_iou(prediction=prediction,
+                                         ground_truth=ground_truth,
+                                         asset_id_to_hws=asset_id_to_hws,
+                                         class_ids=list(config.class_ids))
+    evaluation.dataset_evaluation.segmentation_metrics.CopyFrom(iou)
 
     # write cm
     if config.iou_thrs_interval:
         iou_thr = get_iou_thrs_array(config.iou_thrs_interval)[0]
+        match_result: Dict[str, List[int]] = defaultdict(list)
+        for i in range(len(asset_ids)):
+            for j in range(len(config.class_ids)):
+                if image_class_iou[i, j] >= iou_thr:
+                    match_result[asset_ids[i]].append(config.class_ids[j])
+
         write_semantic_confusion_matrix(gt_annotations=ground_truth,
                                         pred_annotations=prediction,
                                         class_ids=list(config.class_ids),
-                                        matched_class_ids=[
-                                            cid for cid in config.class_ids
-                                            if evaluation.dataset_evaluation.segmentation_metrics.IoU[cid] >= iou_thr
-                                        ])
+                                        match_result=match_result)
 
     evaluation.state = mirpb.EvaluationState.ES_READY
     return evaluation
