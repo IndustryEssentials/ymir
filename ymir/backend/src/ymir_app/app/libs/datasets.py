@@ -153,13 +153,7 @@ def evaluate_datasets(
     dataset_id_mapping: Dict[str, int],
     is_instance_segmentation: bool = False,
 ) -> Dict:
-    iou_thrs_interval: Optional[str] = None
-    if require_average_iou:
-        iou_thrs_interval = f"{iou_threshold}:0.95:0.05"
-        logger.info("set iou_thrs_interval to %s because of require_average_iou", iou_thrs_interval)
-    elif iou_threshold is not None:
-        iou_thrs_interval = str(iou_threshold)
-
+    iou_thrs_interval = convert_to_iou_thrs_interval(iou_threshold, require_average_iou)
     f_evaluate = partial(
         controller_client.evaluate_dataset,
         user_id,
@@ -177,6 +171,17 @@ def evaluate_datasets(
     evaluations = ChainMap(*res)
 
     return {dataset_id_mapping[hash_]: evaluation for hash_, evaluation in evaluations.items()}
+
+
+def convert_to_iou_thrs_interval(iou_threshold: Optional[float], require_average_iou: Optional[bool]) -> Optional[str]:
+    """
+    the underlying requires "start:end:step" format
+    """
+    if require_average_iou:
+        return f"{iou_threshold or 0.5}:0.95:0.05"
+    if not iou_threshold:
+        return None
+    return str(iou_threshold)
 
 
 def ensure_datasets_are_ready(db: Session, dataset_ids: List[int]) -> List[models.Dataset]:
