@@ -6,7 +6,7 @@ import { evaluationTags as tags } from '@/constants/dataset'
 import t from '@/utils/t'
 import RadioGroup from './RadioGroup'
 
-type Props = RadioGroupProps & {
+type Props = Omit<RadioGroupProps, 'options' | 'optionType'> & {
   hidden?: boolean
   title?: string
   vertical?: boolean
@@ -25,7 +25,7 @@ const EvaluationSelector: FC<Props> = ({ vertical, hidden, labelAlign = 'left', 
       {t('dataset.assets.selector.evaluation.label')}
     </Col>
     <Col flex={1}>
-      <RadioGroup optionType="button" {...props} prefix="dataset.assets.selector.evaluation." options={types} />
+      <RadioGroup {...props} prefix="dataset.assets.selector.evaluation." options={types} />
     </Col>
   </Row>
 )
