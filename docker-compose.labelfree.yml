@@ -35,7 +35,6 @@ services:
   label_seg:
     image: labelfree/open_seg:3.3.2
     command: gunicorn --conf /code/config/gunicorn.py  --log-config /code/config/logging.conf --chdir /code/segmentation app:app
-    runtime: runc
     volumes:
       - ${YMIR_PATH}/labelfree/seg_log:/var/log/gunicorn
     environment:
