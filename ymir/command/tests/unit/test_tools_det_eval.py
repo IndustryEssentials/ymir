@@ -372,6 +372,7 @@ class TestToolsDetEval(unittest.TestCase):
                         'img_class_ids': [2],
                     },
                 },
+                'is_instance_segmentation': False,
                 'task_class_ids': [0, 1, 2],
                 'task_id': 'a',
                 'eval_class_ids': [],
@@ -515,6 +516,7 @@ class TestToolsDetEval(unittest.TestCase):
                         'img_class_ids': [0, 1, 2],
                     }
                 },
+                'is_instance_segmentation': False,
                 'task_id': 'a',
                 'eval_class_ids': [0, 1, 2],
                 'executor_config': '',
