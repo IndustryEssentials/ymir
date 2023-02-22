@@ -137,12 +137,14 @@ class TestToolsSegEval(unittest.TestCase):
         # check result: confusion matrix
         for sia in mir_annotations.prediction.image_annotations.values():
             for oa in sia.boxes:
+                self.assertEqual(-1, oa.det_link_id)
                 if oa.class_id == 1:
                     self.assertEqual(mirpb.ConfusionMatrixType.FP, oa.cm)
                 elif oa.class_id == 3:
                     self.assertEqual(mirpb.ConfusionMatrixType.TP, oa.cm)
         for sia in mir_annotations.ground_truth.image_annotations.values():
             for oa in sia.boxes:
+                self.assertEqual(-1, oa.det_link_id)
                 if oa.class_id == 1:
                     self.assertEqual(mirpb.ConfusionMatrixType.FN, oa.cm)
                 elif oa.class_id == 3:
@@ -173,7 +175,9 @@ class TestToolsSegEval(unittest.TestCase):
         # check result: confusion matrix
         for sia in mir_annotations.prediction.image_annotations.values():
             for oa in sia.boxes:
+                self.assertEqual(-1, oa.det_link_id)
                 self.assertEqual(mirpb.ConfusionMatrixType.NotSet, oa.cm)
         for sia in mir_annotations.ground_truth.image_annotations.values():
             for oa in sia.boxes:
+                self.assertEqual(-1, oa.det_link_id)
                 self.assertEqual(mirpb.ConfusionMatrixType.NotSet, oa.cm)
