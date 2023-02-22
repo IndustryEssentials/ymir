@@ -343,16 +343,16 @@ function Matrics({ pid, project }) {
                 {!isSemantic(project?.type) ? (
                   <Form.Item label={t('model.diagnose.form.iou')}>
                     <Radio.Group value={averageIou} onChange={({ target: { value } }) => setaverageIou(value)} options={iouOptions}></Radio.Group>
-                    <Row gutter={10}>
+                    {!averageIou ? <Row gutter={10}>
                       <Col flex={1}>
                         <Form.Item noStyle name="iou" style={{ display: 'inline-block', width: '90%' }}>
-                          <Slider style={{ display: !averageIou ? 'block' : 'none' }} min={0.25} max={0.95} step={0.05} onChange={setIou} />
+                          <Slider min={0.25} max={0.95} step={0.05} onChange={setIou} />
                         </Form.Item>
                       </Col>
                       <Col>
                         <InputNumber style={{ width: 60 }} value={iou} />
                       </Col>
-                    </Row>
+                    </Row> : null }
                   </Form.Item>
                 ) : null}
                 <Form.Item name="submitBtn">
