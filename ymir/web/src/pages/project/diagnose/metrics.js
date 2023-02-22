@@ -148,13 +148,14 @@ function Matrics({ pid, project }) {
     setCKs(uniqueCks)
   }, [ckDatasets])
 
-  const onFinish = async (values) => {
+  const onFinish = (values) => {
     const inferDataset = inferTasks.map(({ result }) => result)
     const params = {
       ...values,
       pid,
       averageIou,
       datasets: inferDataset,
+      curve: isDetection(project?.type)
     }
     fetchDiagnosis(params)
   }
