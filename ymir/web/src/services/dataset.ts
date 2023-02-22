@@ -177,7 +177,7 @@ export function delDatasetGroup(id: number) {
  *   pid, datasets, iou, averageIou, confidence, ck
  * }
  */
-export function evaluate({ pid, datasets, iou, averageIou, confidence, ck }: YParams.EvaluationParams) {
+export function evaluate({ pid, datasets, iou, averageIou, confidence, ck, curve }: YParams.EvaluationParams) {
   return request.post(`/datasets/evaluation`, {
     project_id: pid,
     dataset_ids: datasets,
@@ -185,6 +185,7 @@ export function evaluate({ pid, datasets, iou, averageIou, confidence, ck }: YPa
     iou_threshold: iou,
     require_average_iou: averageIou,
     main_ck: ck,
+    need_pr_curve: curve
   })
 }
 

@@ -46,10 +46,11 @@ declare namespace YParams {
 
   interface EvaluationParams extends DatasetsQuery {
     datasets: number[]
-    confidence: number
-    iou: number
-    averageIou: boolean
-    ck: string
+    confidence?: number
+    iou?: number
+    averageIou?: boolean
+    ck?: string
+    curve?: boolean
   }
 
   interface DatasetCreateParams {

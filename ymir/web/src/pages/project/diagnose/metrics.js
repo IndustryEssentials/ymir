@@ -35,7 +35,6 @@ const getTabs = (type = ObjectType.ObjectDetection) => {
     [ObjectType.SemanticSegmentation]: ['iou', 'acc'],
     [ObjectType.InstanceSegmentation]: ['maskap', 'boxap'],
   }
-  console.log('types[type:', types, type)
   return metricsTabs.filter(({ value }) => types[type].includes(value))
 }
 
@@ -149,13 +148,14 @@ function Matrics({ pid, project }) {
     setCKs(uniqueCks)
   }, [ckDatasets])
 
-  const onFinish = async (values) => {
+  const onFinish = (values) => {
     const inferDataset = inferTasks.map(({ result }) => result)
     const params = {
       ...values,
       pid,
       averageIou,
       datasets: inferDataset,
+      curve: isDetection(project?.type)
     }
     fetchDiagnosis(params)
   }
@@ -236,7 +236,7 @@ function Matrics({ pid, project }) {
         <span>{t('model.diagnose.metrics.view.label')}</span>
         <Radio.Group
           value={selectedMetric}
-          options={tabs.map((item, index) => ({ ...item, label: t(`model.diagnose.medtric.tabs.${item.value}`), disabled: averageIou && index > 0 }))}
+          options={tabs.map((item, index) => ({ ...item, label: t(`model.diagnose.medtric.tabs.${item.value}`), disabled: isDetection(project?.type) && averageIou && index > 0 }))}
           onChange={metricsChange}
         />
         <div hidden={!['rp', 'pr'].includes(selectedMetric)}>
@@ -343,7 +343,7 @@ function Matrics({ pid, project }) {
                 {!isSemantic(project?.type) ? (
                   <Form.Item label={t('model.diagnose.form.iou')}>
                     <Radio.Group value={averageIou} onChange={({ target: { value } }) => setaverageIou(value)} options={iouOptions}></Radio.Group>
-                    {!averageIou ? <Row gutter={10}>
+                    <Row gutter={10} hidden={averageIou}>
                       <Col flex={1}>
                         <Form.Item noStyle name="iou" style={{ display: 'inline-block', width: '90%' }}>
                           <Slider min={0.25} max={0.95} step={0.05} onChange={setIou} />
@@ -352,7 +352,7 @@ function Matrics({ pid, project }) {
                       <Col>
                         <InputNumber style={{ width: 60 }} value={iou} />
                       </Col>
-                    </Row> : null }
+                    </Row>
                   </Form.Item>
                 ) : null}
                 <Form.Item name="submitBtn">
