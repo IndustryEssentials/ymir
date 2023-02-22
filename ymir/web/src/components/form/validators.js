@@ -18,7 +18,7 @@ export const trimValidator = (_, value) => {
 }
 
 export function urlValidator(_, value) {
-  const reg = /^https?:\/\/([\w\-]+(\.[\w\-\:]+)*\/)*[\w\-]+(\.[\w\-]+)*\/?(\?([\w\-\.,@?^=%&:\/~\+#]*)+)?$/
+  const reg = /^(([^:/?#]+):)?(\/\/([^\/?#]*))?([^?#]*)(\?([^#]*))?(#(.*))?$/
   if(reg.test((value || '').trim())) {
     return Promise.resolve()
   } else {

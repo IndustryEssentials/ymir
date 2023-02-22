@@ -203,7 +203,7 @@ class DatasetEvaluationCreate(BaseModel):
     confidence_threshold: Optional[float] = None
     iou_threshold: Optional[float] = None
     require_average_iou: bool = False
-    need_pr_curve: bool = True
+    need_pr_curve: bool = False
     main_ck: Optional[str] = None
 
 

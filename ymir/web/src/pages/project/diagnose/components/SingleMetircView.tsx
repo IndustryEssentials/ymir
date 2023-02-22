@@ -115,6 +115,7 @@ const MapView: FC<Props> = ({ type, tasks, datasets, models, data, xType, kw: { 
   function generateDData(data: any) {
     const ddata: DatasetDataType = Object.keys(data).reduce((prev, rid) => {
       const fiou = !kwType && averageIou ? getAverageField(data[rid]) : getMetricData(data[rid])
+      console.log('fiou:', fiou, kwType, averageIou)
       return {
         ...prev,
         [rid]: fiou,
