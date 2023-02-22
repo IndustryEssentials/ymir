@@ -3,7 +3,7 @@ import { CheckboxValueType } from 'antd/lib/checkbox/Group'
 import React, { useEffect, useState } from 'react'
 import type CSS from 'csstype'
 
-type Props = {
+export type Props = {
   options: CheckboxOptionType[]
   label?: string
   value?: string[]
