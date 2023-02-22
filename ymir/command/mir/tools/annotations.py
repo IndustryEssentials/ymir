@@ -44,14 +44,13 @@ def parse_anno_format(anno_format_str: str) -> "mirpb.ExportFormat.V":
     return _anno_dict.get(anno_format_str.lower(), mirpb.ExportFormat.EF_NO_ANNOTATIONS)
 
 
-def parse_anno_type(anno_type_str: str) -> Tuple["mirpb.ObjectType.V", bool]:
-    _anno_dict: Dict[str, Tuple[mirpb.ObjectType.V, bool]] = {
-        "det-box": (mirpb.ObjectType.OT_DET_BOX, False),
-        "seg": (mirpb.ObjectType.OT_SEG, False),
-        "ins-seg": (mirpb.ObjectType.OT_SEG, True),
-        "no-annotations": (mirpb.ObjectType.OT_NO_ANNOTATIONS, False),
+def parse_anno_type(anno_type_str: str) -> "mirpb.ObjectType.V":
+    _anno_dict: Dict[str, "mirpb.ObjectType.V"] = {
+        "det-box": mirpb.ObjectType.OT_DET_BOX,
+        "seg": mirpb.ObjectType.OT_SEG,
+        "no-annotations": mirpb.ObjectType.OT_NO_ANNOTATIONS,
     }
-    return _anno_dict.get(anno_type_str.lower(), (mirpb.ObjectType.OT_UNKNOWN, False))
+    return _anno_dict.get(anno_type_str.lower(), mirpb.ObjectType.OT_UNKNOWN)
 
 
 def _annotation_parse_func(anno_type: "mirpb.ObjectType.V") -> Callable:

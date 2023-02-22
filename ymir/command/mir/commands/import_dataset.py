@@ -19,8 +19,6 @@ class CmdImport(base.BaseCommand):
     def run(self) -> int:
         logging.debug("command import: %s", self.args)
 
-        object_type, is_instance_segmentation = annotations.parse_anno_type(self.args.anno_type)
-
         return CmdImport.run_with_args(mir_root=self.args.mir_root,
                                        label_storage_file=self.args.label_storage_file,
                                        index_file=self.args.index_file,
@@ -32,8 +30,8 @@ class CmdImport(base.BaseCommand):
                                        work_dir=self.args.work_dir,
                                        unknown_types_strategy=annotations.UnknownTypesStrategy(
                                            self.args.unknown_types_strategy),
-                                       anno_type=object_type,
-                                       is_instance_segmentation=is_instance_segmentation)
+                                       anno_type=annotations.parse_anno_type(self.args.anno_type),
+                                       is_instance_segmentation=self.args.is_instance_segmentation)
 
     @staticmethod
     @command_run_in_out
@@ -209,6 +207,10 @@ def bind_to_subparsers(subparsers: argparse._SubParsersAction, parent_parser: ar
     import_dataset_arg_parser.add_argument('--anno-type',
                                            dest='anno_type',
                                            required=True,
-                                           choices=['det-box', 'seg', 'ins-seg', 'no-annotations'],
+                                           choices=['det-box', 'seg', 'seg', 'no-annotations'],
                                            help='annotations type\n')
+    import_dataset_arg_parser.add_argument('--ins-seg',
+                                           dest='is_instance_segmentation',
+                                           action='store_true',
+                                           help='set if this dataset is instance segmentation')
     import_dataset_arg_parser.set_defaults(func=CmdImport)
