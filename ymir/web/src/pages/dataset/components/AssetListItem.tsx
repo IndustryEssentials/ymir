@@ -61,7 +61,7 @@ const Item: FC<{ asset: YModels.Asset; showDetail: () => void; height?: number; 
     <Col style={{ height }} key={asset.hash} className={styles.dataset_item}>
       <CkPopup asset={asset}>
         <div className={styles.dataset_img} onClick={showDetail}>
-          <ListAnnotation asset={asset} hideAsset={!visibles['asset']} filter={filterAnnotations} />
+          <ListAnnotation asset={asset} hideAsset={!visibles['asset']} filter={filterAnnotations} isFull={true} />
           {mode === VisualModes.Asset ? null : (
             <>
               <span className={styles.item_keywords_count} title={asset?.keywords.join(',')}>
