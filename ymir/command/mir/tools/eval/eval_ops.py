@@ -60,11 +60,11 @@ def evaluate_with_pb(
     start_time = time.time()
     for image_annotations in prediction.image_annotations.values():
         for annotation in image_annotations.boxes:
-            annotation.cm = mirpb.ConfusionMatrixType.IGNORED
+            annotation.cm = mirpb.ConfusionMatrixType.NotSet
             annotation.det_link_id = -1
     for image_annotations in ground_truth.image_annotations.values():
         for annotation in image_annotations.boxes:
-            annotation.cm = mirpb.ConfusionMatrixType.IGNORED
+            annotation.cm = mirpb.ConfusionMatrixType.NotSet
             annotation.det_link_id = -1
     evaluation = f_eval_model.evaluate(  # type: ignore
         prediction=prediction,

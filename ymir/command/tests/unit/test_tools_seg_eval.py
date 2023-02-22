@@ -134,7 +134,7 @@ class TestToolsSegEval(unittest.TestCase):
         # check result: confusion matrix
         for sia in mir_annotations.prediction.image_annotations.values():
             for oa in sia.boxes:
-                self.assertEqual(mirpb.ConfusionMatrixType.IGNORED, oa.cm)
+                self.assertEqual(mirpb.ConfusionMatrixType.NotSet, oa.cm)
         for sia in mir_annotations.ground_truth.image_annotations.values():
             for oa in sia.boxes:
-                self.assertEqual(mirpb.ConfusionMatrixType.IGNORED, oa.cm)
+                self.assertEqual(mirpb.ConfusionMatrixType.NotSet, oa.cm)
