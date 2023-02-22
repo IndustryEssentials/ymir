@@ -6,6 +6,7 @@ import { BaseOptionType } from 'antd/lib/select'
 
 type Props = SelectProps & {
   pred?: boolean
+  seg?: boolean
 }
 
 const options = {
@@ -21,11 +22,13 @@ const modes: { [key: string]: V[] } = {
   gt: [V.Gt, V.Asset],
 }
 
-const ListVisualSelect: FC<Props> = ({ value, pred, ...props }) => {
+const ListVisualSelect: FC<Props> = ({ value, pred, seg, ...props }) => {
   const [opts, setOpts] = useState<BaseOptionType[]>([])
 
   useEffect(() => {
-    const opts = modes[pred ? 'pred' : 'gt'].map((value) => ({
+    const list = modes[pred ? 'pred' : 'gt']
+
+    const opts = (seg && pred ? [ ...list, V.GtPred] : list).map((value) => ({
       value,
       ...options[value],
     }))

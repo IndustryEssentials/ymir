@@ -18,6 +18,7 @@ import DatasetInfo from './components/DatasetInfo'
 import ListColumnCountSelect from './components/ListColumnCountSelect'
 import ListVisualSelect from './components/ListVisualSelect'
 import VisualModes from './components/VisualModes'
+import { isDetection } from '@/constants/objectType'
 
 type IndexType = {
   hash: string
@@ -127,7 +128,7 @@ const Dataset: FC = () => {
       </Col>
       <Col span={24} style={{ fontSize: 14, textAlign: 'right', marginTop: 10 }}>
         <Space size={20} wrap={true} style={{ textAlign: 'left' }}>
-          <ListVisualSelect value={mode} style={{ width: 200 }} pred={isPred} onChange={setMode} />
+          <ListVisualSelect value={mode} style={{ width: 200 }} pred={isPred} seg={!isDetection(dataset?.type)} onChange={setMode} />
           {isPred && dataset?.evaluated ? (
             <EvaluationSelector value={filterParams.cm} onChange={({ target }) => updateFilterParams(target.value, 'cm')} />
           ) : null}
