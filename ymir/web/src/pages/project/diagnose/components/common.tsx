@@ -20,13 +20,13 @@ export type MetricType = {
   boxap?: number
 }
 
+export type MetricsType = {
+  [key: string]: MetricType
+}
+
 type CIType = {
-  ci_averaged_evaluation: {
-    [key: string]: MetricType
-  }
-  ci_evaluations: {
-    [key: string]: MetricType
-  }
+  ci_averaged_evaluation: MetricsType
+  ci_evaluations: MetricsType
 }
 export type IOUDataType = {
   iou_averaged_evaluation: CIType
@@ -93,6 +93,16 @@ export const getKwField = (evaluation: DataType, type: boolean) => {
   }
 }
 
+const lowerMetrics = (metrics: { [key: string]: { [metric: string]: any } }): MetricsType => {
+  return Object.keys(metrics).reduce((prev, key) => {
+    const ap = metrics[key]
+    return {
+      ...prev,
+      [key]: attr2LowerCase(ap),
+    }
+  }, {})
+}
+
 const getRowDataByCK = (result?: DataType): { [keyword: string]: MetricType } => {
   const data = result?.sub_cks || {}
   return data
@@ -141,7 +151,7 @@ const getSegmentationRowData = (result: DataType, field: string): { [keyword: st
 
 export const getAverageField = (evaluation: DataType) => {
   const data = evaluation || {}
-  return data?.dataset_evaluation?.iou_averaged_evaluation?.ci_evaluations || {}
+  return lowerMetrics(data?.dataset_evaluation?.iou_averaged_evaluation?.ci_evaluations || {})
 }
 
 export const percentRender = (value: string | number) => (typeof value === 'number' && !Number.isNaN(value) ? percent(value) : '-')
