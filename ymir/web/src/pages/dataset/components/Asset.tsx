@@ -89,7 +89,7 @@ const Asset: FC<Props> = ({ id, asset: cache, pred, datasetKeywords, filterKeywo
   useEffect(() => {
     type FilterType = (annotation: YModels.Annotation) => boolean
     const typeFilter: FilterType = (anno) => pred || !!anno.gt
-    const gtFilter: FilterType = (anno) => (gtSelected.includes('gt') && !!anno.gt) || (gtSelected.includes('pred') && !anno.gt)
+    const gtFilter: FilterType = (anno) => !pred || ((gtSelected.includes('gt') && !!anno.gt) || (gtSelected.includes('pred') && !anno.gt))
     const keywordFilter: FilterType = (annotation) => selectedKeywords.includes(annotation.keyword)
     const evaluationFilter: FilterType = (annotation) => ![evaluationTags.fn, evaluationTags.fp].includes(evaluation) || evaluation === annotation.cm
     const visibleAnnotations = (asset?.annotations || []).filter((anno) => typeFilter(anno) && gtFilter(anno) && keywordFilter(anno) && evaluationFilter(anno))
