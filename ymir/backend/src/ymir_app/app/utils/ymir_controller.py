@@ -177,7 +177,10 @@ class ControllerRequest:
             if args.get("pred_dir"):
                 import_dataset_request.pred_dir = args["pred_dir"]
         import_dataset_request.clean_dirs = args["clean_dirs"]
+
         import_dataset_request.object_type = OBJECT_TYPE_MAPPING[args["object_type"]]
+        if args["object_type"] == ObjectType.instance_segmentation:
+            import_dataset_request.is_instance_segmentation = True
 
         import_dataset_request.unknown_types_strategy = IMPORTING_STRATEGY_MAPPING[strategy]
 
