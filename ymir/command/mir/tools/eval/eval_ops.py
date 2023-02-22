@@ -50,7 +50,7 @@ def evaluate_with_pb(
         evaluation.state = mirpb.EvaluationState.ES_EXCEEDS_LIMIT
         return evaluation
 
-    f_eval_model = _get_eval_model_function(prediction.type, prediction.is_instance_segmentation)
+    f_eval_model = _get_eval_model_function(prediction.type, config.is_instance_segmentation)
     if not f_eval_model:
         logging.warning(
             f"skip evaluation: anno type: {prediction.type}, {config.is_instance_segmentation} not supported")
