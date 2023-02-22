@@ -14,9 +14,10 @@ type Props = {
   asset: YModels.Asset
   filter?: (annotations: YModels.Annotation[]) => YModels.Annotation[]
   hideAsset?: boolean
+  isFull?: boolean
 }
 
-const ListAnnotation: FC<Props> = ({ asset, filter, hideAsset }) => {
+const ListAnnotation: FC<Props> = ({ asset, filter, hideAsset, isFull }) => {
   const [annotations, setAnnotations] = useState<YModels.Annotation[]>([])
   const imgContainer = useRef<HTMLDivElement>(null)
   const img = useRef<HTMLImageElement>(null)
@@ -40,7 +41,7 @@ const ListAnnotation: FC<Props> = ({ asset, filter, hideAsset }) => {
     const { current } = imgContainer
     const cw = current?.clientWidth || 0
     const iw = asset?.width || 0
-    const clientWidth = iw > cw ? cw : iw
+    const clientWidth = isFull? cw : (iw > cw ? cw : iw)
     setImgWidth(clientWidth)
     setWidth(cw)
     setRatio(clientWidth / iw)

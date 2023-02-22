@@ -192,7 +192,7 @@ const dataset = {
   'dataset.assets.selector.visual.label.annotation': { cn: '查看标注和推理结果', en: 'View annotations/predictions' },
   'dataset.assets.selector.evaluation.right': { cn: '预测正确', en: 'Correct' },
   'dataset.assets.selector.evaluation.fp': { cn: '预测错误-误检', en: 'FP' },
-  'dataset.assets.selector.evaluation.fn': { cn: '预测正确-漏检', en: 'FN' },
+  'dataset.assets.selector.evaluation.fn': { cn: '预测错误-漏检', en: 'FN' },
 }
 
 export default dataset
