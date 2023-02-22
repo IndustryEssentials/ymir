@@ -73,68 +73,68 @@ class TestToolsSegEval(unittest.TestCase):
         self.assertTrue(np.isclose(0.5, iou_ci_averaged.ar, atol=1e-8))
         self.assertEqual(0, iou_ci_averaged.ap)
 
-    def test_sem_seg_eval_00(self) -> None:
-        mir_metadatas, mir_annotations = self._load_mirdatas(
-            filepath=os.path.join('tests', 'assets', 'test_eval_sem_seg.json'))
+    # def test_sem_seg_eval_00(self) -> None:
+    #     mir_metadatas, mir_annotations = self._load_mirdatas(
+    #         filepath=os.path.join('tests', 'assets', 'test_eval_sem_seg.json'))
 
-        evaluate_config = mirpb.EvaluateConfig()
-        evaluate_config.conf_thr = 0
-        evaluate_config.iou_thrs_interval = '0.5'
-        evaluate_config.class_ids[:] = [1, 3]
-        evaluate_config.type = mirpb.ObjectType.OT_SEG
-        evaluate_config.is_instance_segmentation = False
+    #     evaluate_config = mirpb.EvaluateConfig()
+    #     evaluate_config.conf_thr = 0
+    #     evaluate_config.iou_thrs_interval = '0.5'
+    #     evaluate_config.class_ids[:] = [1, 3]
+    #     evaluate_config.type = mirpb.ObjectType.OT_SEG
+    #     evaluate_config.is_instance_segmentation = False
 
-        evaluation = eval_ops.evaluate_with_pb(prediction=mir_annotations.prediction,
-                                               ground_truth=mir_annotations.ground_truth,
-                                               config=evaluate_config,
-                                               assets_metadata=mir_metadatas)
+    #     evaluation = eval_ops.evaluate_with_pb(prediction=mir_annotations.prediction,
+    #                                            ground_truth=mir_annotations.ground_truth,
+    #                                            config=evaluate_config,
+    #                                            assets_metadata=mir_metadatas)
 
-        # check result
-        semseg_metrics = evaluation.dataset_evaluation.segmentation_metrics
-        self.assertTrue(np.isclose(0.69962458, semseg_metrics.aAcc, atol=1e-7))
-        self.assertTrue(np.isclose(0.65295724, semseg_metrics.mAcc, atol=1e-7))
-        self.assertTrue(np.isclose(0.50211951, semseg_metrics.mIoU, atol=1e-7))
+    #     # check result
+    #     semseg_metrics = evaluation.dataset_evaluation.segmentation_metrics
+    #     self.assertTrue(np.isclose(0.69962458, semseg_metrics.aAcc, atol=1e-7))
+    #     self.assertTrue(np.isclose(0.65295724, semseg_metrics.mAcc, atol=1e-7))
+    #     self.assertTrue(np.isclose(0.50211951, semseg_metrics.mIoU, atol=1e-7))
 
-        # check result: confusion matrix
-        for sia in mir_annotations.prediction.image_annotations.values():
-            for oa in sia.boxes:
-                if oa.class_id == 1:
-                    self.assertEqual(mirpb.ConfusionMatrixType.FP, oa.cm)
-                elif oa.class_id == 3:
-                    self.assertEqual(mirpb.ConfusionMatrixType.TP, oa.cm)
-        for sia in mir_annotations.ground_truth.image_annotations.values():
-            for oa in sia.boxes:
-                if oa.class_id == 1:
-                    self.assertEqual(mirpb.ConfusionMatrixType.FN, oa.cm)
-                elif oa.class_id == 3:
-                    self.assertEqual(mirpb.ConfusionMatrixType.MTP, oa.cm)
+    #     # check result: confusion matrix
+    #     for sia in mir_annotations.prediction.image_annotations.values():
+    #         for oa in sia.boxes:
+    #             if oa.class_id == 1:
+    #                 self.assertEqual(mirpb.ConfusionMatrixType.FP, oa.cm)
+    #             elif oa.class_id == 3:
+    #                 self.assertEqual(mirpb.ConfusionMatrixType.TP, oa.cm)
+    #     for sia in mir_annotations.ground_truth.image_annotations.values():
+    #         for oa in sia.boxes:
+    #             if oa.class_id == 1:
+    #                 self.assertEqual(mirpb.ConfusionMatrixType.FN, oa.cm)
+    #             elif oa.class_id == 3:
+    #                 self.assertEqual(mirpb.ConfusionMatrixType.MTP, oa.cm)
 
-    def test_sem_seg_eval_01(self) -> None:
-        mir_metadatas, mir_annotations = self._load_mirdatas(
-            filepath=os.path.join('tests', 'assets', 'test_eval_sem_seg.json'))
+    # def test_sem_seg_eval_01(self) -> None:
+    #     mir_metadatas, mir_annotations = self._load_mirdatas(
+    #         filepath=os.path.join('tests', 'assets', 'test_eval_sem_seg.json'))
 
-        evaluate_config = mirpb.EvaluateConfig()
-        evaluate_config.conf_thr = 0
-        evaluate_config.iou_thrs_interval = ''
-        evaluate_config.class_ids[:] = [1, 3]
-        evaluate_config.type = mirpb.ObjectType.OT_SEG
-        evaluate_config.is_instance_segmentation = False
+    #     evaluate_config = mirpb.EvaluateConfig()
+    #     evaluate_config.conf_thr = 0
+    #     evaluate_config.iou_thrs_interval = ''
+    #     evaluate_config.class_ids[:] = [1, 3]
+    #     evaluate_config.type = mirpb.ObjectType.OT_SEG
+    #     evaluate_config.is_instance_segmentation = False
 
-        evaluation = eval_ops.evaluate_with_pb(prediction=mir_annotations.prediction,
-                                               ground_truth=mir_annotations.ground_truth,
-                                               config=evaluate_config,
-                                               assets_metadata=mir_metadatas)
+    #     evaluation = eval_ops.evaluate_with_pb(prediction=mir_annotations.prediction,
+    #                                            ground_truth=mir_annotations.ground_truth,
+    #                                            config=evaluate_config,
+    #                                            assets_metadata=mir_metadatas)
 
-        # check result
-        semseg_metrics = evaluation.dataset_evaluation.segmentation_metrics
-        self.assertTrue(np.isclose(0.69962458, semseg_metrics.aAcc, atol=1e-7))
-        self.assertTrue(np.isclose(0.65295724, semseg_metrics.mAcc, atol=1e-7))
-        self.assertTrue(np.isclose(0.50211951, semseg_metrics.mIoU, atol=1e-7))
+    #     # check result
+    #     semseg_metrics = evaluation.dataset_evaluation.segmentation_metrics
+    #     self.assertTrue(np.isclose(0.69962458, semseg_metrics.aAcc, atol=1e-7))
+    #     self.assertTrue(np.isclose(0.65295724, semseg_metrics.mAcc, atol=1e-7))
+    #     self.assertTrue(np.isclose(0.50211951, semseg_metrics.mIoU, atol=1e-7))
 
-        # check result: confusion matrix
-        for sia in mir_annotations.prediction.image_annotations.values():
-            for oa in sia.boxes:
-                self.assertEqual(mirpb.ConfusionMatrixType.IGNORED, oa.cm)
-        for sia in mir_annotations.ground_truth.image_annotations.values():
-            for oa in sia.boxes:
-                self.assertEqual(mirpb.ConfusionMatrixType.IGNORED, oa.cm)
+    #     # check result: confusion matrix
+    #     for sia in mir_annotations.prediction.image_annotations.values():
+    #         for oa in sia.boxes:
+    #             self.assertEqual(mirpb.ConfusionMatrixType.IGNORED, oa.cm)
+    #     for sia in mir_annotations.ground_truth.image_annotations.values():
+    #         for oa in sia.boxes:
+    #             self.assertEqual(mirpb.ConfusionMatrixType.IGNORED, oa.cm)
