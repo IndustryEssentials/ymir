@@ -32,7 +32,7 @@ def trigger_mir_import(repo_root: str, task_id: str, index_file: str, des_annota
                                            work_dir=import_work_dir,
                                            unknown_types_strategy=backend_pb2.UnknownTypesStrategy.UTS_STOP,
                                            object_type=object_type,
-                                           is_instance_segmentation=False)
+                                           is_instance_segmentation=False)  # todo: fixit
 
 
 def remove_json_file(des_annotation_path: str) -> None:
