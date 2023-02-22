@@ -261,6 +261,7 @@
                     ]
                 }
             },
+            "is_instance_segmentation": false,
             "task_id": "mining-x-5",
             "type": "OT_SEG",
             "task_class_ids": [
@@ -470,6 +471,7 @@
                     ]
                 }
             },
+            "is_instance_segmentation": false,
             "task_id": "mining-x-5",
             "type": "OT_SEG",
             "task_class_ids": [

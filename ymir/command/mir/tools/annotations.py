@@ -45,7 +45,7 @@ def parse_anno_format(anno_format_str: str) -> "mirpb.ExportFormat.V":
 
 
 def parse_anno_type(anno_type_str: str) -> "mirpb.ObjectType.V":
-    _anno_dict: Dict[str, mirpb.ObjectType.V] = {
+    _anno_dict: Dict[str, "mirpb.ObjectType.V"] = {
         "det-box": mirpb.ObjectType.OT_DET_BOX,
         "seg": mirpb.ObjectType.OT_SEG,
         "no-annotations": mirpb.ObjectType.OT_NO_ANNOTATIONS,
@@ -144,7 +144,7 @@ def _coco_object_dict_to_annotation(anno_dict: dict, category_id_to_cids: Dict[i
 def import_annotations(mir_annotation: mirpb.MirAnnotations, label_storage_file: str, prediction_dir_path: str,
                        groundtruth_dir_path: str, file_name_to_asset_ids: Dict[str, str],
                        unknown_types_strategy: UnknownTypesStrategy, anno_type: "mirpb.ObjectType.V",
-                       phase: str) -> Dict[str, int]:
+                       is_instance_segmentation: bool, phase: str) -> Dict[str, int]:
     anno_import_result: Dict[str, int] = defaultdict(int)
 
     # read type_id_name_dict and type_name_id_dict
@@ -155,6 +155,7 @@ def import_annotations(mir_annotation: mirpb.MirAnnotations, label_storage_file:
         logging.info(f"wrting prediction in {prediction_dir_path}")
 
         mir_annotation.prediction.type = anno_type
+        mir_annotation.prediction.is_instance_segmentation = is_instance_segmentation
         _annotation_parse_func(anno_type)(
             file_name_to_asset_ids=file_name_to_asset_ids,
             mir_annotation=mir_annotation,
@@ -172,12 +173,14 @@ def import_annotations(mir_annotation: mirpb.MirAnnotations, label_storage_file:
             f"imported pred: {len(mir_annotation.prediction.image_annotations)} / {len(file_name_to_asset_ids)}")
     else:
         mir_annotation.prediction.type = mirpb.ObjectType.OT_NO_ANNOTATIONS
+        mir_annotation.prediction.is_instance_segmentation = False
     PhaseLoggerCenter.update_phase(phase=phase, local_percent=0.5)
 
     if groundtruth_dir_path:
         logging.info(f"wrting ground-truth in {groundtruth_dir_path}")
 
         mir_annotation.ground_truth.type = anno_type
+        mir_annotation.ground_truth.is_instance_segmentation = is_instance_segmentation
         _annotation_parse_func(anno_type)(
             file_name_to_asset_ids=file_name_to_asset_ids,
             mir_annotation=mir_annotation,
@@ -192,6 +195,7 @@ def import_annotations(mir_annotation: mirpb.MirAnnotations, label_storage_file:
             f"imported gt: {len(mir_annotation.ground_truth.image_annotations)} / {len(file_name_to_asset_ids)}")
     else:
         mir_annotation.ground_truth.type = mirpb.ObjectType.OT_NO_ANNOTATIONS
+        mir_annotation.ground_truth.is_instance_segmentation = False
     PhaseLoggerCenter.update_phase(phase=phase, local_percent=1.0)
 
     if unknown_types_strategy == UnknownTypesStrategy.STOP and anno_import_result:
@@ -550,12 +554,14 @@ def _merge_task_annotations(host_task_annotations: mirpb.SingleTaskAnnotations,
     # check type
     if (host_task_annotations.type != mirpb.ObjectType.OT_NO_ANNOTATIONS
             and guest_task_annotations.type != mirpb.ObjectType.OT_NO_ANNOTATIONS
-            and host_task_annotations.type != guest_task_annotations.type):
+            and host_task_annotations.type != guest_task_annotations.type
+            and host_task_annotations.is_instance_segmentation != guest_task_annotations.is_instance_segmentation):
         raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_OBJECT_TYPE,
-                              error_message='host and guest object type unequal')
+                              error_message='host and guest object type / is_instance_segmentation unequal')
 
     if host_task_annotations.type == mirpb.ObjectType.OT_NO_ANNOTATIONS:
         host_task_annotations.type = guest_task_annotations.type
+        host_task_annotations.is_instance_segmentation = guest_task_annotations.is_instance_segmentation
 
     _merge_mirdata_asset_ids_dict(host_asset_ids_dict=host_task_annotations.image_annotations,
                                   guest_asset_ids_dict=guest_task_annotations.image_annotations,
