@@ -23,6 +23,9 @@ def evaluate_with_pb(
     if config.type and not (config.type == prediction.type == ground_truth.type):
         raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
                               error_message="inconsistent evaluate_config object_type")
+    if prediction.is_instance_segmentation != ground_truth.is_instance_segmentation:
+        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
+                              error_message='incorrect is_instance_segmentation between prediction and ground_truth')
 
     if not config.class_ids:
         config.class_ids.extend(prediction.eval_class_ids)
