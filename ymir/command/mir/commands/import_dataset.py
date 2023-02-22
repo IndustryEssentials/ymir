@@ -19,6 +19,8 @@ class CmdImport(base.BaseCommand):
     def run(self) -> int:
         logging.debug("command import: %s", self.args)
 
+        object_type, is_instance_segmentation = annotations.parse_anno_type(self.args.anno_type)
+
         return CmdImport.run_with_args(mir_root=self.args.mir_root,
                                        label_storage_file=self.args.label_storage_file,
                                        index_file=self.args.index_file,
@@ -30,13 +32,15 @@ class CmdImport(base.BaseCommand):
                                        work_dir=self.args.work_dir,
                                        unknown_types_strategy=annotations.UnknownTypesStrategy(
                                            self.args.unknown_types_strategy),
-                                       anno_type=annotations.parse_anno_type(self.args.anno_type))
+                                       anno_type=object_type,
+                                       is_instance_segmentation=is_instance_segmentation)
 
     @staticmethod
     @command_run_in_out
     def run_with_args(mir_root: str, index_file: str, pred_abs: str, gt_abs: str, gen_abs: str,
                       dst_rev: str, src_revs: str, work_dir: str, label_storage_file: str,
-                      unknown_types_strategy: annotations.UnknownTypesStrategy, anno_type: "mirpb.ObjectType.V") -> int:
+                      unknown_types_strategy: annotations.UnknownTypesStrategy, anno_type: "mirpb.ObjectType.V",
+                      is_instance_segmentation: bool) -> int:
         # Step 1: check args and prepare environment.
         if not index_file or not gen_abs or not os.path.isfile(index_file):
             logging.error(f"invalid index_file: {index_file} or gen_abs: {gen_abs}")
@@ -83,6 +87,7 @@ class CmdImport(base.BaseCommand):
                                                              file_name_to_asset_ids=file_name_to_asset_ids,
                                                              unknown_types_strategy=unknown_types_strategy,
                                                              anno_type=anno_type,
+                                                             is_instance_segmentation=is_instance_segmentation,
                                                              phase='import.others')
 
         logging.info(f"pred / gt import unknown result: {unknown_class_names}")
@@ -204,6 +209,6 @@ def bind_to_subparsers(subparsers: argparse._SubParsersAction, parent_parser: ar
     import_dataset_arg_parser.add_argument('--anno-type',
                                            dest='anno_type',
                                            required=True,
-                                           choices=['det-box', 'seg', 'no-annotations'],
+                                           choices=['det-box', 'seg', 'ins-seg', 'no-annotations'],
                                            help='annotations type\n')
     import_dataset_arg_parser.set_defaults(func=CmdImport)
