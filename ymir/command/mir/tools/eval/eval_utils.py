@@ -94,19 +94,21 @@ def _get_average_ee(average_ee: mirpb.SingleEvaluationElement, ees: List[mirpb.S
 
 def write_semantic_confusion_matrix(gt_annotations: mirpb.SingleTaskAnnotations,
                                     pred_annotations: mirpb.SingleTaskAnnotations,
-                                    class_ids: List[int], matched_class_ids: List[int]) -> None:
-    for image_annotations in gt_annotations.image_annotations.values():
+                                    class_ids: List[int], match_result: Dict[str, List[int]]) -> None:
+    for asset_id, image_annotations in gt_annotations.image_annotations.items():
+        match_class_ids = match_result.get(asset_id, [])
         for annotation in image_annotations.boxes:
-            if annotation.class_id in matched_class_ids:
+            if annotation.class_id in match_class_ids:
                 annotation.cm = mirpb.ConfusionMatrixType.MTP
             elif annotation.class_id in class_ids:
                 annotation.cm = mirpb.ConfusionMatrixType.FN
             else:
                 annotation.cm = mirpb.ConfusionMatrixType.IGNORED
             annotation.det_link_id = -1
-    for image_annotations in pred_annotations.image_annotations.values():
+    for asset_id, image_annotations in pred_annotations.image_annotations.items():
+        match_class_ids = match_result.get(asset_id, [])
         for annotation in image_annotations.boxes:
-            if annotation.class_id in matched_class_ids:
+            if annotation.class_id in match_class_ids:
                 annotation.cm = mirpb.ConfusionMatrixType.TP
             elif annotation.class_id in class_ids:
                 annotation.cm = mirpb.ConfusionMatrixType.FP

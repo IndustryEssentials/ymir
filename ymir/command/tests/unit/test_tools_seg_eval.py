@@ -134,21 +134,37 @@ class TestToolsSegEval(unittest.TestCase):
         self.assertTrue(np.isclose(0.65295724, semseg_metrics.mAcc, atol=1e-7))
         self.assertTrue(np.isclose(0.50211951, semseg_metrics.mIoU, atol=1e-7))
 
+        expected_aid_idx_to_cm_lids_pred = {
+            ('33a12aff2fbf56c013d739c5ab2b95125f7bd76f', 0): (mirpb.ConfusionMatrixType.TP, -1),
+            ('33a12aff2fbf56c013d739c5ab2b95125f7bd76f', 1): (mirpb.ConfusionMatrixType.TP, -1),
+            ('4dc96d7dbe2338ad884a490161fe7a83b777a23e', 0): (mirpb.ConfusionMatrixType.TP, -1),
+            ('4dc96d7dbe2338ad884a490161fe7a83b777a23e', 1): (mirpb.ConfusionMatrixType.FP, -1),
+            ('5f65e89f247dff226d287ca11ea67ea4f5d73036', 0): (mirpb.ConfusionMatrixType.TP, -1),
+            ('5f65e89f247dff226d287ca11ea67ea4f5d73036', 1): (mirpb.ConfusionMatrixType.FP, -1),
+            ('85e66576063a9a8807ac2ab0b5f9ada1d4e862dc', 0): (mirpb.ConfusionMatrixType.TP, -1),
+            ('85e66576063a9a8807ac2ab0b5f9ada1d4e862dc', 1): (mirpb.ConfusionMatrixType.FP, -1),
+            ('cd994692a4907f4684b5d845e18010b39d412fc2', 0): (mirpb.ConfusionMatrixType.FP, -1),
+            ('cd994692a4907f4684b5d845e18010b39d412fc2', 1): (mirpb.ConfusionMatrixType.FP, -1)
+        }
+        expected_aid_idx_to_cm_lids_gt = {
+            ('33a12aff2fbf56c013d739c5ab2b95125f7bd76f', 0): (mirpb.ConfusionMatrixType.MTP, -1),
+            ('33a12aff2fbf56c013d739c5ab2b95125f7bd76f', 1): (mirpb.ConfusionMatrixType.MTP, -1),
+            ('4dc96d7dbe2338ad884a490161fe7a83b777a23e', 0): (mirpb.ConfusionMatrixType.FN, -1),
+            ('4dc96d7dbe2338ad884a490161fe7a83b777a23e', 1): (mirpb.ConfusionMatrixType.MTP, -1),
+            ('5f65e89f247dff226d287ca11ea67ea4f5d73036', 0): (mirpb.ConfusionMatrixType.FN, -1),
+            ('5f65e89f247dff226d287ca11ea67ea4f5d73036', 1): (mirpb.ConfusionMatrixType.MTP, -1),
+            ('85e66576063a9a8807ac2ab0b5f9ada1d4e862dc', 0): (mirpb.ConfusionMatrixType.FN, -1),
+            ('85e66576063a9a8807ac2ab0b5f9ada1d4e862dc', 1): (mirpb.ConfusionMatrixType.MTP, -1),
+            ('cd994692a4907f4684b5d845e18010b39d412fc2', 0): (mirpb.ConfusionMatrixType.FN, -1),
+            ('cd994692a4907f4684b5d845e18010b39d412fc2', 1): (mirpb.ConfusionMatrixType.FN, -1)
+        }
         # check result: confusion matrix
-        for sia in mir_annotations.prediction.image_annotations.values():
+        for asset_id, sia in mir_annotations.prediction.image_annotations.items():
             for oa in sia.boxes:
-                self.assertEqual(-1, oa.det_link_id)
-                if oa.class_id == 1:
-                    self.assertEqual(mirpb.ConfusionMatrixType.FP, oa.cm)
-                elif oa.class_id == 3:
-                    self.assertEqual(mirpb.ConfusionMatrixType.TP, oa.cm)
-        for sia in mir_annotations.ground_truth.image_annotations.values():
+                self.assertEqual(expected_aid_idx_to_cm_lids_pred[(asset_id, oa.index)], (oa.cm, oa.det_link_id))
+        for asset_id, sia in mir_annotations.ground_truth.image_annotations.items():
             for oa in sia.boxes:
-                self.assertEqual(-1, oa.det_link_id)
-                if oa.class_id == 1:
-                    self.assertEqual(mirpb.ConfusionMatrixType.FN, oa.cm)
-                elif oa.class_id == 3:
-                    self.assertEqual(mirpb.ConfusionMatrixType.MTP, oa.cm)
+                self.assertEqual(expected_aid_idx_to_cm_lids_gt[(asset_id, oa.index)], (oa.cm, oa.det_link_id))
 
     def test_sem_seg_eval_01(self) -> None:
         mir_metadatas, mir_annotations = self._load_mirdatas(
