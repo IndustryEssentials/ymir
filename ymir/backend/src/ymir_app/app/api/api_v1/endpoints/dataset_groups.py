@@ -21,19 +21,14 @@ def list_dataset_groups(
     current_user: models.User = Depends(deps.get_current_active_user),
     name: str = Query(None, description="search by dataset group name"),
     project_id: int = Query(None),
-    p: schemas.CommonPaginationParams = Depends(),
+    pagination: schemas.CommonPaginationParams = Depends(),
 ) -> Any:
     dataset_groups, total = crud.dataset_group.get_multi_dataset_groups(
         db,
         user_id=current_user.id,
         project_id=project_id,
         name=name,
-        offset=p.offset,
-        limit=p.limit,
-        order_by=p.order_by.name,
-        is_desc=p.is_desc,
-        start_time=p.start_time,
-        end_time=p.end_time,
+        pagination=pagination,
     )
     return {"result": {"total": total, "items": dataset_groups}}
 

@@ -6,10 +6,7 @@ from sqlalchemy.orm import Session
 
 from app import crud, models, schemas
 from app.api import deps
-from app.api.errors.errors import (
-    ModelGroupNotFound,
-    DuplicateModelGroupError,
-)
+from app.api.errors.errors import ModelGroupNotFound, DuplicateModelGroupError
 from app.utils.ymir_controller import ControllerClient
 
 router = APIRouter()
@@ -21,19 +18,14 @@ def list_model_groups(
     current_user: models.User = Depends(deps.get_current_active_user),
     project_id: int = Query(None),
     name: str = Query(None, description="search by model's name"),
-    p: schemas.CommonPaginationParams = Depends(),
+    pagination: schemas.CommonPaginationParams = Depends(),
 ) -> Any:
     model_groups, total = crud.model_group.get_multi_model_groups(
         db,
         user_id=current_user.id,
         project_id=project_id,
         name=name,
-        offset=p.offset,
-        limit=p.limit,
-        order_by=p.order_by.name,
-        is_desc=p.is_desc,
-        start_time=p.start_time,
-        end_time=p.end_time,
+        pagination=pagination,
     )
     return {"result": {"total": total, "items": model_groups}}
 

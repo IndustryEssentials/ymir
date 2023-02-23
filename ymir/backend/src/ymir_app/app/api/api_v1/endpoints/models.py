@@ -63,7 +63,7 @@ def list_models(
     group_name: str = Query(None),
     visible: bool = Query(True),
     training_dataset_id: int = Query(None),
-    p: schemas.CommonPaginationParams = Depends(),
+    pagination: schemas.CommonPaginationParams = Depends(),
 ) -> Any:
     """
     Get list of models
@@ -84,12 +84,7 @@ def list_models(
         source=source,
         state=state,
         visible=visible,
-        offset=p.offset,
-        limit=p.limit,
-        order_by=p.order_by.name,
-        is_desc=p.is_desc,
-        start_time=p.start_time,
-        end_time=p.end_time,
+        pagination=pagination,
     )
     payload = {"total": total, "items": models}
     return {"result": payload}

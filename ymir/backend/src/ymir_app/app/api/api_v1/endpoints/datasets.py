@@ -101,7 +101,7 @@ def list_datasets(
     visible: bool = Query(True),
     state: ResultState = Query(None),
     object_type: ObjectType = Query(None),
-    p: schemas.CommonPaginationParams = Depends(),
+    pagination: schemas.CommonPaginationParams = Depends(),
 ) -> Any:
     """
     Get list of datasets,
@@ -118,12 +118,7 @@ def list_datasets(
         state=state,
         object_type=object_type,
         visible=visible,
-        offset=p.offset,
-        limit=p.limit,
-        order_by=p.order_by.name,
-        is_desc=p.is_desc,
-        start_time=p.start_time,
-        end_time=p.end_time,
+        pagination=pagination,
     )
     return {"result": {"total": total, "items": datasets}}
 
@@ -142,6 +137,7 @@ def get_public_datasets(
         db,
         user_id=settings.PUBLIC_DATASET_OWNER,
         allow_empty=False,
+        pagination=schemas.CommonPaginationParams(limit=None),
     )
     return {"result": {"total": total, "items": datasets}}
 
@@ -255,6 +251,7 @@ def delete_dataset(
         db,
         user_id=current_user.id,
         group_id=dataset_group_id,
+        pagination=schemas.CommonPaginationParams(limit=None),
     )
     if not total:
         crud.dataset_group.soft_remove(db, id=dataset_group_id)

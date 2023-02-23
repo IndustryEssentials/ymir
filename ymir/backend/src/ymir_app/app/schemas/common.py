@@ -163,7 +163,7 @@ class SortField(Enum):
 
 class CommonPaginationParams(BaseModel):
     offset: int = 0
-    limit: int = settings.DEFAULT_LIMIT
+    limit: Optional[int] = settings.DEFAULT_LIMIT
     order_by: SortField = SortField.id
     is_desc: bool = True
     start_time: Optional[int] = None

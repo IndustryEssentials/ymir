@@ -32,7 +32,7 @@ def list_projects(
     current_user: models.User = Depends(deps.get_current_active_user),
     name: str = Query(None),
     object_type: int = Query(None),
-    p: schemas.CommonPaginationParams = Depends(),
+    pagination: schemas.CommonPaginationParams = Depends(),
 ) -> Any:
     """
     Get projects list
@@ -49,12 +49,7 @@ def list_projects(
         user_id=current_user.id,
         name=name,
         object_type=object_type,
-        offset=p.offset,
-        limit=p.limit,
-        order_by=p.order_by.name,
-        is_desc=p.is_desc,
-        start_time=p.start_time,
-        end_time=p.end_time,
+        pagination=pagination,
     )
 
     return {"result": {"total": total, "items": projects}}

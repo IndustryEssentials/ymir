@@ -65,7 +65,7 @@ def list_tasks(
     state: TaskState = Query(None),
     dataset_ids: str = Query(None, example="1,2,3"),
     model_stage_ids: str = Query(None, example="4,5,6"),
-    p: schemas.CommonPaginationParams = Depends(),
+    pagination: schemas.CommonPaginationParams = Depends(),
 ) -> Any:
     """
     Get list of tasks,
@@ -79,12 +79,7 @@ def list_tasks(
         state=state,
         dataset_ids=[int(i) for i in dataset_ids.split(",")] if dataset_ids else [],
         model_stage_ids=[int(i) for i in model_stage_ids.split(",")] if model_stage_ids else [],
-        offset=p.offset,
-        limit=p.limit,
-        order_by=p.order_by.name,
-        is_desc=p.is_desc,
-        start_time=p.start_time,
-        end_time=p.end_time,
+        pagination=pagination,
     )
     return {"result": {"total": total, "items": tasks}}
 
