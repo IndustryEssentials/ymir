@@ -1,4 +1,3 @@
-import enum
 import random
 from typing import Any, List, Optional
 
@@ -90,17 +89,10 @@ def batch_update_datasets(
     return {"result": datasets}
 
 
-class SortField(enum.Enum):
-    id = "id"
-    create_datetime = "create_datetime"
-    update_datetime = "update_datetime"
-    asset_count = "asset_count"
-    source = "source"
-
-
 @router.get("/", response_model=schemas.DatasetPaginationOut)
 def list_datasets(
     db: Session = Depends(deps.get_db),
+    current_user: models.User = Depends(deps.get_current_active_user),
     source: TaskType = Query(None, description="type of related task"),
     exclude_source: TaskType = Query(None, description="exclude type of related task"),
     project_id: int = Query(None),
@@ -109,13 +101,7 @@ def list_datasets(
     visible: bool = Query(True),
     state: ResultState = Query(None),
     object_type: ObjectType = Query(None),
-    offset: int = Query(None),
-    limit: int = Query(None),
-    order_by: SortField = Query(SortField.id),
-    is_desc: bool = Query(True),
-    start_time: int = Query(None, description="from this timestamp"),
-    end_time: int = Query(None, description="to this timestamp"),
-    current_user: models.User = Depends(deps.get_current_active_user),
+    p: deps.CommonPaginationParams = Depends(),
 ) -> Any:
     """
     Get list of datasets,
@@ -132,12 +118,12 @@ def list_datasets(
         state=state,
         object_type=object_type,
         visible=visible,
-        offset=offset,
-        limit=limit,
-        order_by=order_by.name,
-        is_desc=is_desc,
-        start_time=start_time,
-        end_time=end_time,
+        offset=p.offset,
+        limit=p.limit,
+        order_by=p.order_by.name,
+        is_desc=p.is_desc,
+        start_time=p.start_time,
+        end_time=p.end_time,
     )
     return {"result": {"total": total, "items": datasets}}
 

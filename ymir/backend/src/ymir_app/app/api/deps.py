@@ -1,3 +1,4 @@
+import enum
 from typing import Generator
 
 from fastapi import Depends, Security
@@ -149,3 +150,34 @@ def get_user_labels(
 
     cache.set(ymir_cache.KEYWORDS_CACHE_KEY, user_labels.json())
     return user_labels
+
+
+# Common Query Parameters
+
+
+class SortField(enum.Enum):
+    id = "id"
+    create_datetime = "create_datetime"
+    update_datetime = "update_datetime"
+    asset_count = "asset_count"
+    source = "source"
+    map = "map"  # Model
+    duration = "duration"  # Task
+
+
+class CommonPaginationParams:
+    def __init__(
+        self,
+        offset: int = 0,
+        limit: int = settings.DEFAULT_LIMIT,
+        order_by: SortField = SortField.id,
+        is_desc: bool = True,
+        start_time: int = None,
+        end_time: int = None,
+    ):
+        self.offset = offset
+        self.limit = limit
+        self.order_by = order_by
+        self.is_desc = is_desc
+        self.start_time = start_time
+        self.end_time = end_time
