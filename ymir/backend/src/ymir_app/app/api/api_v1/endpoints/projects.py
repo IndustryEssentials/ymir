@@ -32,7 +32,7 @@ def list_projects(
     current_user: models.User = Depends(deps.get_current_active_user),
     name: str = Query(None),
     object_type: int = Query(None),
-    p: deps.CommonPaginationParams = Depends(),
+    p: schemas.CommonPaginationParams = Depends(),
 ) -> Any:
     """
     Get projects list

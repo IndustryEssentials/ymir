@@ -65,7 +65,7 @@ def list_tasks(
     state: TaskState = Query(None),
     dataset_ids: str = Query(None, example="1,2,3"),
     model_stage_ids: str = Query(None, example="4,5,6"),
-    p: deps.CommonPaginationParams = Depends(),
+    p: schemas.CommonPaginationParams = Depends(),
 ) -> Any:
     """
     Get list of tasks,

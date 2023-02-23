@@ -63,7 +63,7 @@ def list_models(
     group_name: str = Query(None),
     visible: bool = Query(True),
     training_dataset_id: int = Query(None),
-    p: deps.CommonPaginationParams = Depends(),
+    p: schemas.CommonPaginationParams = Depends(),
 ) -> Any:
     """
     Get list of models

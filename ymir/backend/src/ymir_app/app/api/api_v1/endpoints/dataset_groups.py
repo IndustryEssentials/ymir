@@ -21,7 +21,7 @@ def list_dataset_groups(
     current_user: models.User = Depends(deps.get_current_active_user),
     name: str = Query(None, description="search by dataset group name"),
     project_id: int = Query(None),
-    p: deps.CommonPaginationParams = Depends(),
+    p: schemas.CommonPaginationParams = Depends(),
 ) -> Any:
     dataset_groups, total = crud.dataset_group.get_multi_dataset_groups(
         db,

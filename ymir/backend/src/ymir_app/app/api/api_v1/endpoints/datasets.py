@@ -101,7 +101,7 @@ def list_datasets(
     visible: bool = Query(True),
     state: ResultState = Query(None),
     object_type: ObjectType = Query(None),
-    p: deps.CommonPaginationParams = Depends(),
+    p: schemas.CommonPaginationParams = Depends(),
 ) -> Any:
     """
     Get list of datasets,

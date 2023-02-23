@@ -21,7 +21,7 @@ def list_model_groups(
     current_user: models.User = Depends(deps.get_current_active_user),
     project_id: int = Query(None),
     name: str = Query(None, description="search by model's name"),
-    p: deps.CommonPaginationParams = Depends(),
+    p: schemas.CommonPaginationParams = Depends(),
 ) -> Any:
     model_groups, total = crud.model_group.get_multi_model_groups(
         db,
