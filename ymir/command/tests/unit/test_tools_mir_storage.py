@@ -185,7 +185,7 @@ class TestMirStorage(unittest.TestCase):
                             'conf_thr': mir_settings.DEFAULT_EVALUATE_CONF_THR,
                             'iou_thrs_interval': mir_settings.DEFAULT_EVALUATE_IOU_THR,
                         },
-                        'state': mirpb.EvaluationState.ES_NO_CLASS_IDS,
+                        'state': mirpb.EvaluationState.ES_NOT_ENOUGH_CLASS_IDS,
                     },
                 }
             },
@@ -239,7 +239,7 @@ class TestMirStorage(unittest.TestCase):
         # add another commit a@t2, which has empty dataset
         task_2 = mir_storage_ops.create_task_record(task_type=mirpb.TaskType.TaskTypeMining, task_id='t2', message='task-t2')
         task_2.evaluation.config.CopyFrom(mir_storage_ops.create_evaluate_config())
-        task_2.evaluation.state = mirpb.EvaluationState.ES_NO_CLASS_IDS
+        task_2.evaluation.state = mirpb.EvaluationState.ES_NOT_ENOUGH_CLASS_IDS
         mir_tasks_2 = mirpb.MirTasks()
         mir_tasks_2.head_task_id = task_2.task_id
         mir_tasks_2.tasks[task_2.task_id].CopyFrom(task_2)

@@ -31,7 +31,7 @@ def evaluate_with_pb(
     evaluation.config.CopyFrom(config)
     if not config.class_ids:
         logging.warning("skip evaluation: no evaluate class ids")
-        evaluation.state = mirpb.EvaluationState.ES_NO_CLASS_IDS
+        evaluation.state = mirpb.EvaluationState.ES_NOT_ENOUGH_CLASS_IDS
         return evaluation
     gt_cnt = len(ground_truth.image_annotations)
     pred_cnt = len(prediction.image_annotations)
