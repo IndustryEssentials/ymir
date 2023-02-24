@@ -20,7 +20,8 @@ from mir.tools.errors import MirRuntimeError
 from mir.tools.eval import eval_ops
 
 
-def create_evaluate_config(conf_thr: float = mir_settings.DEFAULT_EVALUATE_CONF_THR,
+def create_evaluate_config(is_instance_segmentation: bool = False,
+                           conf_thr: float = mir_settings.DEFAULT_EVALUATE_CONF_THR,
                            iou_thrs: str = mir_settings.DEFAULT_EVALUATE_IOU_THR,
                            need_pr_curve: bool = False,
                            class_ids: List[int] = []) -> mirpb.EvaluateConfig:
@@ -29,6 +30,7 @@ def create_evaluate_config(conf_thr: float = mir_settings.DEFAULT_EVALUATE_CONF_
     evaluate_config.iou_thrs_interval = iou_thrs
     evaluate_config.need_pr_curve = need_pr_curve
     evaluate_config.class_ids[:] = class_ids
+    evaluate_config.is_instance_segmentation = is_instance_segmentation
     return evaluate_config
 
 
@@ -36,7 +38,7 @@ class MirStorageOps():
     # private: save and load
     @classmethod
     def __build_task_keyword_context(cls, mir_datas: Dict['mirpb.MirStorage.V', Any], task: mirpb.Task,
-                                     evaluate_config: mirpb.EvaluateConfig) -> None:
+                                     evaluate_config: Optional[mirpb.EvaluateConfig]) -> None:
         # add default members and check pred/gt object type
         mir_metadatas: mirpb.MirMetadatas = mir_datas[mirpb.MirStorage.MIR_METADATAS]
         mir_annotations: mirpb.MirAnnotations = mir_datas[mirpb.MirStorage.MIR_ANNOTATIONS]
@@ -66,6 +68,10 @@ class MirStorageOps():
         mir_tasks: mirpb.MirTasks = mirpb.MirTasks()
         mir_tasks.head_task_id = task.task_id
         mir_tasks.tasks[mir_tasks.head_task_id].CopyFrom(task)
+
+        if not evaluate_config:
+            evaluate_config = create_evaluate_config(
+                is_instance_segmentation=mir_annotations.prediction.is_instance_segmentation)
 
         evaluation = eval_ops.evaluate_with_pb(
             prediction=mir_annotations.prediction,
@@ -227,9 +233,6 @@ class MirStorageOps():
             raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS, error_message="empty commit message")
         if not task.task_id:
             raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS, error_message='empty task id')
-
-        if not evaluate_config:
-            evaluate_config = create_evaluate_config()
 
         # Build all mir_datas.
         cls.__build_task_keyword_context(mir_datas=mir_datas,
