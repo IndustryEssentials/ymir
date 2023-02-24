@@ -123,6 +123,10 @@ class TestCmdImport(unittest.TestCase):
 
     @mock.patch('mir.tools.eval.det_eval_voc.evaluate', side_effect=_mock_det_eval)
     def test_import_detbox_01(self, eval_mock):
+        """
+        import detection dataset with pred, pred meta.yaml and gt
+        Expect: cmd returns ok, result ok, det_eval_voc called
+        """
         # test cases for import prediction meta
         shutil.move(os.path.join(self._data_xml_path, 'pred_meta.yaml'), os.path.join(self._data_xml_path, 'meta.yaml'))
 
@@ -153,6 +157,10 @@ class TestCmdImport(unittest.TestCase):
 
     @mock.patch('mir.tools.eval.sem_seg_eval_mm.evaluate', side_effect=_mock_sem_seg_eval)
     def test_import_semantic_seg_00(self, eval_mock) -> None:
+        """
+        import semantic segmentation dataset with pred, pred meta.yaml and gt
+        Expect: cmd returns ok, sem_seg_eval_mm called
+        """
         # test cases for import prediction meta
         shutil.move(os.path.join(self._data_xml_path, 'pred_meta.yaml'), os.path.join(self._data_xml_path, 'meta.yaml'))
 
@@ -178,6 +186,10 @@ class TestCmdImport(unittest.TestCase):
 
     @mock.patch('mir.tools.eval.sem_seg_eval_mm.evaluate', side_effect=_mock_sem_seg_eval)
     def test_import_semantic_seg_01(self, eval_mock) -> None:
+        """
+        import semantic segmentation dataset with gt, without pred and pred meta.yaml
+        Expect: cmd returns ok, sem_seg_eval_mm not called, result correct
+        """
         args = type('', (), {})()
         args.mir_root = self._mir_repo_root
         args.label_storage_file = ids_file_path(self._mir_repo_root)
@@ -202,6 +214,10 @@ class TestCmdImport(unittest.TestCase):
 
     @mock.patch('mir.tools.eval.ins_seg_eval_coco.evaluate', side_effect=_mock_ins_seg_eval)
     def test_import_instance_seg_00(self, eval_mock) -> None:
+        """
+        import instance segmentation dataset with pred, pred meta.yaml and gt
+        Expect: cmd returns ok, ins_seg_eval_coco called
+        """
         # test cases for import prediction meta
         shutil.move(os.path.join(self._data_xml_path, 'pred_meta.yaml'), os.path.join(self._data_xml_path, 'meta.yaml'))
 
