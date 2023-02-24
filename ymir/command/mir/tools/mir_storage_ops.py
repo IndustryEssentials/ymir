@@ -20,14 +20,12 @@ from mir.tools.errors import MirRuntimeError
 from mir.tools.eval import eval_ops
 
 
-def create_evaluate_config(type: "mirpb.ObjectType.V" = mirpb.ObjectType.OT_UNKNOWN,
-                           is_instance_segmentation: bool = False,
+def create_evaluate_config(is_instance_segmentation: bool = False,
                            conf_thr: float = mir_settings.DEFAULT_EVALUATE_CONF_THR,
                            iou_thrs: str = mir_settings.DEFAULT_EVALUATE_IOU_THR,
                            need_pr_curve: bool = False,
                            class_ids: List[int] = []) -> mirpb.EvaluateConfig:
     evaluate_config = mirpb.EvaluateConfig()
-    evaluate_config.type = type
     evaluate_config.is_instance_segmentation = is_instance_segmentation
     evaluate_config.conf_thr = conf_thr
     evaluate_config.iou_thrs_interval = iou_thrs
