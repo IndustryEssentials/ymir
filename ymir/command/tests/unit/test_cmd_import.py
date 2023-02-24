@@ -2,17 +2,21 @@ import json
 import logging
 import os
 import shutil
-from typing import Set
 import unittest
-
-from google.protobuf.json_format import MessageToDict, ParseDict
+from unittest import mock
 
 from mir.commands.import_dataset import CmdImport
 from mir.protos import mir_command_pb2 as mirpb
 from mir.tools.class_ids import ids_file_path
 from mir.tools.code import MirCode
+from mir.tools.eval import det_eval_voc, sem_seg_eval_mm, ins_seg_eval_coco
 from mir.tools.mir_storage_ops import MirStorageOps
 from tests import utils as test_utils
+
+
+_orig_det_eval_func = det_eval_voc.evaluate
+_orig_sem_seg_eval_func = sem_seg_eval_mm.evaluate
+_orig_ins_seg_eval_func = ins_seg_eval_coco.evaluate
 
 
 class TestCmdImport(unittest.TestCase):
@@ -39,8 +43,20 @@ class TestCmdImport(unittest.TestCase):
     def tearDown(self) -> None:
         if os.path.isdir(self._sandbox_root):
             shutil.rmtree(self._sandbox_root)
+            
+    # protected: mocked funcs
+    def _mock_det_eval(*args, **kwargs):
+        return _orig_det_eval_func(*args, **kwargs)
+    
+    def _mock_sem_seg_eval(*args, **kwargs):
+        return _orig_sem_seg_eval_func(*args, **kwargs)
 
-    def test_import_detbox_00(self):
+    def _mock_ins_seg_eval(*args, **kwargs):
+        return _orig_ins_seg_eval_func(*args, **kwargs)
+
+    # public: test cases
+    @mock.patch('mir.tools.eval.det_eval_voc.evaluate', side_effect=_mock_det_eval)
+    def test_import_detbox_00(self, eval_mock):
         # test cases for det-box-voc import
         # normal
         mir_root = self._mir_repo_root
@@ -61,6 +77,7 @@ class TestCmdImport(unittest.TestCase):
         importing_instance = CmdImport(args)
         ret = importing_instance.run()
         self.assertEqual(ret, MirCode.RC_OK)
+        self.assertFalse(eval_mock.called)
         self._check_repo_by_file(mir_root=self._mir_repo_root,
                                  mir_branch='a',
                                  mir_task_id='import_detbox_00',
@@ -104,7 +121,8 @@ class TestCmdImport(unittest.TestCase):
                                  mir_task_id='import_detbox_03',
                                  expected_file_name='expected_import_detbox_03.json')
 
-    def test_import_detbox_01(self):
+    @mock.patch('mir.tools.eval.det_eval_voc.evaluate', side_effect=_mock_det_eval)
+    def test_import_detbox_01(self, eval_mock):
         # test cases for import prediction meta
         shutil.move(os.path.join(self._data_xml_path, 'pred_meta.yaml'), os.path.join(self._data_xml_path, 'meta.yaml'))
 
@@ -126,13 +144,40 @@ class TestCmdImport(unittest.TestCase):
         importing_instance = CmdImport(args)
         ret = importing_instance.run()
         self.assertEqual(ret, MirCode.RC_OK)
+        self.assertTrue(eval_mock.called)
         self._check_repo_by_file(mir_root=self._mir_repo_root,
                                  mir_branch='a',
                                  mir_task_id='import_detbox_10',
                                  expected_file_name='expected_import_detbox_10.json')
         shutil.move(os.path.join(self._data_xml_path, 'meta.yaml'), os.path.join(self._data_xml_path, 'pred_meta.yaml'))
 
-    def test_import_semantic_seg_01(self) -> None:
+    @mock.patch('mir.tools.eval.sem_seg_eval_mm.evaluate', side_effect=_mock_sem_seg_eval)
+    def test_import_semantic_seg_00(self, eval_mock) -> None:
+        # test cases for import prediction meta
+        shutil.move(os.path.join(self._data_xml_path, 'pred_meta.yaml'), os.path.join(self._data_xml_path, 'meta.yaml'))
+
+        args = type('', (), {})()
+        args.mir_root = self._mir_repo_root
+        args.label_storage_file = ids_file_path(self._mir_repo_root)
+        args.src_revs = ''
+        args.dst_rev = 'a@import_semantic_seg_01'
+        args.index_file = self._idx_file
+        args.pred_abs = self._data_xml_path
+        args.gt_abs = self._data_xml_path
+        args.gen_abs = os.path.join(self._storage_root, 'gen')
+        args.work_dir = self._work_dir
+        args.unknown_types_strategy = 'add'
+        args.anno_type = 'seg'
+        args.is_instance_segmentation = False
+        importing_instance = CmdImport(args)
+        ret = importing_instance.run()
+        self.assertEqual(ret, MirCode.RC_OK)
+        self.assertTrue(eval_mock.called)
+
+        shutil.move(os.path.join(self._data_xml_path, 'meta.yaml'), os.path.join(self._data_xml_path, 'pred_meta.yaml'))
+
+    @mock.patch('mir.tools.eval.sem_seg_eval_mm.evaluate', side_effect=_mock_sem_seg_eval)
+    def test_import_semantic_seg_01(self, eval_mock) -> None:
         args = type('', (), {})()
         args.mir_root = self._mir_repo_root
         args.label_storage_file = ids_file_path(self._mir_repo_root)
@@ -149,10 +194,36 @@ class TestCmdImport(unittest.TestCase):
         importing_instance = CmdImport(args)
         ret = importing_instance.run()
         self.assertEqual(ret, MirCode.RC_OK)
+        self.assertFalse(eval_mock.called)
         self._check_repo_by_file(mir_root=self._mir_repo_root,
                                  mir_branch='a',
                                  mir_task_id='import_semantic_seg_01',
                                  expected_file_name='expected_import_semantic_seg_01.json')
+
+    @mock.patch('mir.tools.eval.ins_seg_eval_coco.evaluate', side_effect=_mock_ins_seg_eval)
+    def test_import_instance_seg_00(self, eval_mock) -> None:
+        # test cases for import prediction meta
+        shutil.move(os.path.join(self._data_xml_path, 'pred_meta.yaml'), os.path.join(self._data_xml_path, 'meta.yaml'))
+
+        args = type('', (), {})()
+        args.mir_root = self._mir_repo_root
+        args.label_storage_file = ids_file_path(self._mir_repo_root)
+        args.src_revs = ''
+        args.dst_rev = 'a@import_semantic_seg_01'
+        args.index_file = self._idx_file
+        args.pred_abs = self._data_xml_path
+        args.gt_abs = self._data_xml_path
+        args.gen_abs = os.path.join(self._storage_root, 'gen')
+        args.work_dir = self._work_dir
+        args.unknown_types_strategy = 'add'
+        args.anno_type = 'seg'
+        args.is_instance_segmentation = True
+        importing_instance = CmdImport(args)
+        ret = importing_instance.run()
+        self.assertEqual(ret, MirCode.RC_OK)
+        self.assertTrue(eval_mock.called)
+
+        shutil.move(os.path.join(self._data_xml_path, 'meta.yaml'), os.path.join(self._data_xml_path, 'pred_meta.yaml'))
 
     def _check_repo_by_file(self, mir_root: str, mir_branch: str, mir_task_id: str, expected_file_name: str) -> None:
         with open(os.path.join('tests', 'assets', expected_file_name), 'r') as f:
