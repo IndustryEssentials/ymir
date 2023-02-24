@@ -72,7 +72,7 @@ def evaluate_with_pb(
         config=config,
         assets_metadata=assets_metadata)
 
-    logging.info(f"|-evaluate_with_pb-eval costs {(time.time() - start_time):.2f}s.")
+    logging.info(f"|-evaluate with module: {f_eval_model.__name__}, costs {(time.time() - start_time):.2f}s.")
 
     _show_evaluation(evaluation=evaluation)
 
