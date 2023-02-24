@@ -156,7 +156,7 @@ def evaluate(prediction: mirpb.SingleTaskAnnotations, ground_truth: mirpb.Single
     evaluation = mirpb.Evaluation()
     evaluation.config.CopyFrom(config)
 
-    if len(config.class_ids) == 1:
+    if len(config.class_ids) <= 1:
         logging.warning("skip evaluation: not enough evaluate class ids for semantic segmentation")
         evaluation.state = mirpb.EvaluationState.ES_NOT_ENOUGH_CLASS_IDS
         return evaluation
