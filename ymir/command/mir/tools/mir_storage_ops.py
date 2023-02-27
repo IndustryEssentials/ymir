@@ -31,6 +31,7 @@ def create_evaluate_config(is_instance_segmentation: bool = False,
     evaluate_config.iou_thrs_interval = iou_thrs
     evaluate_config.need_pr_curve = need_pr_curve
     evaluate_config.class_ids[:] = class_ids
+    evaluate_config.is_instance_segmentation = is_instance_segmentation
     return evaluate_config
 
 
