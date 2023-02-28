@@ -1,5 +1,5 @@
 import random
-from typing import Any, List, Optional
+from typing import Any, List, Optional, Union
 
 from fastapi import APIRouter, Depends, Path, Query
 from sqlalchemy.orm import Session
@@ -8,6 +8,7 @@ from app import crud, models, schemas
 from app.api import deps
 from app.api.errors.errors import AssetNotFound, DatasetNotFound
 from app.config import settings
+from app.constants.state import AnnotationType
 from app.utils.ymir_viz import VizClient
 from common_utils.labels import UserLabels
 
@@ -16,7 +17,9 @@ router = APIRouter()
 
 @router.get("/", response_model=schemas.AssetPaginationOut)
 def list_assets(
-    dataset_id: int,
+    project_id: int,
+    data_id: int,
+    data_type: AnnotationType,
     db: Session = Depends(deps.get_db),
     offset: int = 0,
     limit: int = settings.DEFAULT_LIMIT,
@@ -34,20 +37,16 @@ def list_assets(
     Get asset list of specific dataset,
     pagination is supported by means of offset and limit
     """
-    dataset = crud.dataset.get_by_user_and_id(db, user_id=current_user.id, id=dataset_id)
-    if not dataset:
+    mir_dataset = get_mir_dataset(db, current_user.id, data_id, data_type)
+    if not mir_dataset:
         raise DatasetNotFound()
 
     keywords = keywords_str.split(",") if keywords_str else None
     keyword_ids = user_labels.id_for_names(names=keywords, raise_if_unknown=True)[0] if keywords else None
 
-    viz_client.initialize(
-        user_id=current_user.id,
-        project_id=dataset.project_id,
-        user_labels=user_labels,
-    )
+    viz_client.initialize(user_id=current_user.id, project_id=project_id, user_labels=user_labels)
     assets = viz_client.get_assets(
-        dataset_hash=dataset.hash,
+        dataset_hash=mir_dataset.hash,
         keyword_ids=keyword_ids,
         in_cm_types=stringtolist(in_cm_types_str),
         ex_cm_types=stringtolist(ex_cm_types_str),
@@ -62,7 +61,9 @@ def list_assets(
 
 @router.get("/random", response_model=schemas.AssetOut)
 def get_random_asset_id_of_dataset(
-    dataset_id: int,
+    project_id: int,
+    data_id: int,
+    data_type: AnnotationType,
     db: Session = Depends(deps.get_db),
     viz_client: VizClient = Depends(deps.get_viz_client),
     current_user: models.User = Depends(deps.get_current_active_user),
@@ -71,18 +72,18 @@ def get_random_asset_id_of_dataset(
     """
     Get random asset from specific dataset
     """
-    dataset = crud.dataset.get_by_user_and_id(db, user_id=current_user.id, id=dataset_id)
-    if not dataset:
+    mir_dataset = get_mir_dataset(db, current_user.id, data_id, data_type)
+    if not mir_dataset:
         raise DatasetNotFound()
 
-    offset = get_random_asset_offset(dataset)
+    offset = get_random_asset_offset(mir_dataset.asset_count)
     viz_client.initialize(
         user_id=current_user.id,
-        project_id=dataset.project_id,
+        project_id=project_id,
         user_labels=user_labels,
     )
     assets = viz_client.get_assets(
-        dataset_hash=dataset.hash,
+        dataset_hash=mir_dataset.hash,
         keyword_id=None,
         offset=offset,
         limit=1,
@@ -92,16 +93,18 @@ def get_random_asset_id_of_dataset(
     return {"result": assets["items"][0]}
 
 
-def get_random_asset_offset(dataset: models.Dataset) -> int:
-    if not dataset.asset_count:
+def get_random_asset_offset(asset_count: Optional[int]) -> int:
+    if not asset_count:
         raise AssetNotFound()
-    offset = random.randint(0, dataset.asset_count - 1)
+    offset = random.randint(0, asset_count - 1)
     return offset
 
 
 @router.get("/{asset_hash}", response_model=schemas.AssetOut)
 def get_asset_info(
-    dataset_id: int,
+    project_id: int,
+    data_id: int,
+    data_type: AnnotationType,
     asset_hash: str = Path(..., description="in asset hash format"),
     db: Session = Depends(deps.get_db),
     viz_client: VizClient = Depends(deps.get_viz_client),
@@ -111,16 +114,16 @@ def get_asset_info(
     """
     Get asset from specific dataset
     """
-    dataset = crud.dataset.get_by_user_and_id(db, user_id=current_user.id, id=dataset_id)
-    if not dataset:
+    mir_dataset = get_mir_dataset(db, current_user.id, data_id, data_type)
+    if not mir_dataset:
         raise DatasetNotFound()
 
     viz_client.initialize(
         user_id=current_user.id,
-        project_id=dataset.project_id,
+        project_id=project_id,
         user_labels=user_labels,
     )
-    assets = viz_client.get_assets(dataset_hash=dataset.hash, asset_hash=asset_hash, limit=1)
+    assets = viz_client.get_assets(dataset_hash=mir_dataset.hash, asset_hash=asset_hash, limit=1)
     if assets["total"] == 0:
         raise AssetNotFound()
     return {"result": assets["items"][0]}
@@ -130,3 +133,13 @@ def stringtolist(s: Optional[str]) -> Optional[List]:
     if s is None:
         return s
     return s.split(",")
+
+
+def get_mir_dataset(
+    db: Session, user_id: int, data_id: int, data_type: AnnotationType
+) -> Optional[Union[models.Dataset, models.Prediction]]:
+    crud_caller = crud.dataset if data_type == AnnotationType.gt else crud.prediction
+    mir_dataset = crud_caller.get_by_user_and_id(db, user_id=user_id, id=data_id)  # type: ignore
+    if not mir_dataset:
+        return None
+    return mir_dataset
