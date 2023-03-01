@@ -87,6 +87,15 @@ def anno_type_str(anno_type: mir_cmd_pb.ObjectType) -> str:
     return format_enum_dict[anno_type]
 
 
+def gt_pred_type_str(type: mir_cmd_pb.GtOrPredType) -> str:
+    enum_str_map = {
+        mir_cmd_pb.GtOrPredType.GPT_GT: 'gt',
+        mir_cmd_pb.GtOrPredType.GPT_PRED: 'pred',
+        mir_cmd_pb.GtOrPredType.GPT_ANY: 'any',
+    }
+    return enum_str_map.get(type, 'any')
+
+
 def time_it(f: Callable) -> Callable:
     @wraps(f)
     def wrapper(*args: tuple, **kwargs: Dict) -> Callable:
