@@ -61,6 +61,24 @@ AssetTypeVideoMp4 = AssetType.V(101)
 global___AssetType = AssetType
 
 
+class GtOrPredType(_GtOrPredType, metaclass=_GtOrPredTypeEnumTypeWrapper):
+    pass
+class _GtOrPredType:
+    V = typing.NewType('V', builtins.int)
+class _GtOrPredTypeEnumTypeWrapper(google.protobuf.internal.enum_type_wrapper._EnumTypeWrapper[_GtOrPredType.V], builtins.type):
+    DESCRIPTOR: google.protobuf.descriptor.EnumDescriptor = ...
+    GPT_NOTSET = GtOrPredType.V(0)
+    GPT_GT = GtOrPredType.V(1)
+    GPT_PRED = GtOrPredType.V(2)
+    GPT_ANY = GtOrPredType.V(3)
+
+GPT_NOTSET = GtOrPredType.V(0)
+GPT_GT = GtOrPredType.V(1)
+GPT_PRED = GtOrPredType.V(2)
+GPT_ANY = GtOrPredType.V(3)
+global___GtOrPredType = GtOrPredType
+
+
 class TaskType(_TaskType, metaclass=_TaskTypeEnumTypeWrapper):
     """/ task type"""
     pass

@@ -23,6 +23,7 @@ class CmdFuse(base.BaseCommand):
                                      label_storage_file=self.args.label_storage_file,
                                      in_cis=self.args.in_cis,
                                      ex_cis=self.args.ex_cis,
+                                     gt_pred_type=mirpb.GtOrPredType.Value[f"GPT_{type.upper()}"],
                                      count=self.args.count,
                                      rate=self.args.rate,
                                      dst_rev=self.args.dst_rev,
@@ -31,7 +32,8 @@ class CmdFuse(base.BaseCommand):
     @staticmethod
     @command_run_in_out
     def run_with_args(mir_root: str, src_revs: str, ex_src_revs: str, strategy: MergeStrategy, label_storage_file: str,
-                      in_cis: str, ex_cis: str, count: int, rate: float, dst_rev: str, work_dir: str) -> int:
+                      in_cis: str, ex_cis: str, gt_pred_type: "mirpb.GtOrPredType.V", count: int, rate: float,
+                      dst_rev: str, work_dir: str) -> int:
         src_typ_rev_tids = revs_parser.parse_arg_revs(src_revs)
         dst_typ_rev_tid = revs_parser.parse_single_arg_rev(dst_rev, need_tid=True)
         ex_typ_rev_tids = revs_parser.parse_arg_revs(ex_src_revs) if ex_src_revs else []
@@ -53,7 +55,8 @@ class CmdFuse(base.BaseCommand):
                        mir_annotations=mir_annotations,
                        label_storage_file=label_storage_file,
                        in_cis=in_cis,
-                       ex_cis=ex_cis)
+                       ex_cis=ex_cis,
+                       gt_pred_type=gt_pred_type)
         PhaseLoggerCenter.update_phase(phase="fuse.filter")
         sample_with_pb(mir_metadatas=mir_metadatas,
                        mir_annotations=mir_annotations,
@@ -108,6 +111,13 @@ def bind_to_subparsers(subparsers: argparse._SubParsersAction, parent_parser: ar
                                  "host: use host; guest: use guest")
     fuse_arg_parser.add_argument('--cis', dest="in_cis", type=str, default='', help="type names")
     fuse_arg_parser.add_argument('--ex-cis', dest="ex_cis", type=str, default='', help="exclusive type names")
+    fuse_arg_parser.add_argument(
+        '--gt-pred',
+        dest='gt_pred',
+        type=str,
+        default='any',
+        choices=['any', 'gt', 'pred'],
+        help="gt to filter class ids ONLY from ground truth, pred to filter from pred, any from both")
     sampling_group = fuse_arg_parser.add_mutually_exclusive_group(required=False)
     sampling_group.add_argument('--count', dest='count', type=int, default=0, help='assets count')
     sampling_group.add_argument('--rate', dest='rate', type=float, default=0.0, help='assets sampling rate')

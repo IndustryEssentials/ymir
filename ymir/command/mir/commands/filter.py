@@ -18,7 +18,8 @@ class CmdFilter(base.BaseCommand):
     @staticmethod
     @command_run_in_out
     def run_with_args(mir_root: str, label_storage_file: str, in_cis: str, ex_cis: str,
-                      src_revs: str, dst_rev: str, work_dir: str) -> int:  # type: ignore
+                      gt_pred_type: "mirpb.GtOrPredType.V", src_revs: str, dst_rev: str,
+                      work_dir: str) -> int:  # type: ignore
         src_typ_rev_tid = revs_parser.parse_single_arg_rev(src_revs, need_tid=False)
         dst_typ_rev_tid = revs_parser.parse_single_arg_rev(dst_rev, need_tid=True)
 
@@ -46,7 +47,8 @@ class CmdFilter(base.BaseCommand):
                        mir_annotations=mir_annotations,
                        label_storage_file=label_storage_file,
                        in_cis=in_cis,
-                       ex_cis=ex_cis)
+                       ex_cis=ex_cis,
+                       gt_pred_type=gt_pred_type)
 
         logging.info("matched: %d, overriding current mir repo", len(mir_metadatas.attributes))
 
@@ -77,6 +79,7 @@ class CmdFilter(base.BaseCommand):
                                        label_storage_file=self.args.label_storage_file,
                                        in_cis=self.args.in_cis,
                                        ex_cis=self.args.ex_cis,
+                                       gt_pred_type=mirpb.GtOrPredType.Value[f"GPT_{self.args.gt_pred.upper()}"],
                                        src_revs=self.args.src_revs,
                                        dst_rev=self.args.dst_rev,
                                        work_dir=self.args.work_dir)
@@ -96,7 +99,7 @@ def _class_ids_set_from_str(preds_str: str, cls_mgr: class_ids.UserLabels) -> Se
 
 
 def _include_exclude_match(asset_ids_set: Set[str], mir_annotations: mirpb.MirAnnotations, in_cis_set: Set[int],
-                           ex_cis_set: Set[int]) -> Set[str]:
+                           ex_cis_set: Set[int], gt_pred_type: "mirpb.GtOrPredType.V") -> Set[str]:
     # if don't need include match, returns all
     need_no_include = not in_cis_set
     need_no_exclude = not ex_cis_set
@@ -106,7 +109,11 @@ def _include_exclude_match(asset_ids_set: Set[str], mir_annotations: mirpb.MirAn
         pred = mir_annotations.prediction.image_annotations.get(asset_id, mirpb.SingleImageAnnotations())
         gt = mir_annotations.ground_truth.image_annotations.get(asset_id, mirpb.SingleImageAnnotations())
 
-        cids = {v.class_id for v in pred.boxes} | {v.class_id for v in gt.boxes}
+        cids = set()
+        if gt_pred_type in {mirpb.GtOrPredType.GPT_ANY, mirpb.GtOrPredType.GPT_GT}:
+            cids.update({v.class_id for v in gt.boxes})
+        elif gt_pred_type in {mirpb.GtOrPredType.GPT_ANY, mirpb.GtOrPredType.GPT_PRED}:
+            cids.update({v.class_id for v in pred.boxes})
         if (need_no_include or cids & in_cis_set) and (need_no_exclude or not (cids & ex_cis_set)):
             filtered_asset_ids_set.add(asset_id)
 
@@ -114,7 +121,7 @@ def _include_exclude_match(asset_ids_set: Set[str], mir_annotations: mirpb.MirAn
 
 
 def filter_with_pb(mir_metadatas: mirpb.MirMetadatas, mir_annotations: mirpb.MirAnnotations, label_storage_file: str,
-                   in_cis: str, ex_cis: str) -> None:
+                   in_cis: str, ex_cis: str, gt_pred_type: "mirpb.GtOrPredType.V") -> None:
     in_cis = in_cis.strip().lower() if in_cis else ''
     ex_cis = ex_cis.strip().lower() if ex_cis else ''
     if not in_cis and not ex_cis:
@@ -141,6 +148,13 @@ def bind_to_subparsers(subparsers: argparse._SubParsersAction, parent_parser: ar
                                               help="filter assets")
     filter_arg_parser.add_argument("-p", '--cis', dest="in_cis", type=str, default='', help="type names")
     filter_arg_parser.add_argument("-P", '--ex-cis', dest="ex_cis", type=str, default='', help="exclusive type names")
+    filter_arg_parser.add_argument(
+        '--gt-pred',
+        dest='gt_pred',
+        type=str,
+        default='any',
+        choices=['any', 'gt', 'pred'],
+        help="gt to filter class ids ONLY from ground truth, pred to filter from pred, any from both")
     filter_arg_parser.add_argument("--src-revs", dest="src_revs", type=str, help="type:rev@bid")
     filter_arg_parser.add_argument("--dst-rev", dest="dst_rev", type=str, help="rev@tid")
     filter_arg_parser.add_argument('-w', dest='work_dir', type=str, required=False, help='working directory')

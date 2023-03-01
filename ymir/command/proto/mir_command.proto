@@ -25,6 +25,13 @@ enum AssetType {
     AssetTypeVideoMp4 = 101;
 };
 
+enum GtOrPredType {
+    GPT_NOTSET = 0;
+    GPT_GT = 1;
+    GPT_PRED = 2;
+    GPT_ANY = 3;
+};
+
 /// task type
 enum TaskType {
     TaskTypeUnknown = 0;
