@@ -3,14 +3,15 @@ import time
 from tensorboardX import SummaryWriter
 
 from ymir_exc import env
+from ymir_exc.code import TaskState, TaskReturnCode
 
-TASK_STATE_RUNNING = 2
 
-
-def write_monitor_logger(percent: float) -> None:
+def write_monitor_logger(percent: float,
+                         state: TaskState = TaskState.TS_RUNNING,
+                         return_code: TaskReturnCode = TaskReturnCode.TRC_NOTSET) -> None:
     env_config = env.get_current_env()
     with open(env_config.output.monitor_file, 'w') as f:
-        f.write(f"{env_config.task_id}\t{time.time()}\t{percent:.2f}\t{TASK_STATE_RUNNING}\n")
+        f.write(f"{env_config.task_id}\t{time.time()}\t{percent:.2f}\t{state}\t{int(return_code)}\n")
 
 
 def write_tensorboard_text(text: str, tag: str = None) -> None:
