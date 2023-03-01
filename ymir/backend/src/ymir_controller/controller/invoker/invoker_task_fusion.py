@@ -29,7 +29,7 @@ class TaskFusionInvoker(TaskBaseInvoker):
                             work_dir=subtask_workdir,
                             in_dataset_ids=request.in_dataset_ids,
                             ex_dataset_ids=request.ex_dataset_ids,
-                            annotation_type=request.annotation_type,
+                            gt_pred_type=request.gt_pred_type,
                             merge_strategy=request.merge_strategy,
                             in_class_ids=request.in_class_ids,
                             ex_class_ids=request.ex_class_ids,
@@ -40,7 +40,7 @@ class TaskFusionInvoker(TaskBaseInvoker):
     @classmethod
     def fuse_cmd(cls, repo_root: str, task_id: str, work_dir: str, in_dataset_ids: List[str], ex_dataset_ids: List[str],
                  merge_strategy: backend_pb2.MergeStrategy, in_class_ids: List[int], ex_class_ids: List[str],
-                 annotation_type: mir_cmd_pb.GtOrPredType, user_labels: UserLabels, sample_count: int,
+                 gt_pred_type: mir_cmd_pb.GtOrPredType, user_labels: UserLabels, sample_count: int,
                  sample_rate: float) -> backend_pb2.GeneralResp:
         # merge args
         fuse_cmd = [
@@ -57,7 +57,7 @@ class TaskFusionInvoker(TaskBaseInvoker):
         if ex_class_ids:
             fuse_cmd.extend(['--ex-cis', ';'.join(user_labels.main_name_for_ids(class_ids=ex_class_ids))])
         fuse_cmd.extend(['--user-label-file', user_labels.storage_file])
-        fuse_cmd.extend(['--gt-pred', utils.gt_pred_type_str(annotation_type)])
+        fuse_cmd.extend(['--gt-pred', utils.gt_pred_type_str(gt_pred_type)])
 
         # sample args
         if sample_count:

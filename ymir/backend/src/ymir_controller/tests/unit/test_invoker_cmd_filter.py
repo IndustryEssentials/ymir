@@ -83,7 +83,7 @@ class TestInvokerFilterBranch(unittest.TestCase):
                                          in_dataset_ids=self.in_dataset_ids,
                                          in_class_ids=in_class_ids,
                                          ex_class_ids=ex_class_ids,
-                                         annotation_type=mir_cmd_pb.GtOrPredType.GPT_GT)
+                                         gt_pred_type=mir_cmd_pb.GtOrPredType.GPT_GT)
         print(MessageToDict(response))
 
         working_dir = os.path.join(self._sandbox_root, "work_dir", backend_pb2.RequestType.Name(backend_pb2.CMD_FILTER),

@@ -107,7 +107,7 @@ class TestInvokerTaskFusion(unittest.TestCase):
             req_create_task=req_create_task,
             in_dataset_ids=in_dataset_ids,
             ex_dataset_ids=ex_dataset_ids,
-            annotation_type=mir_cmd_pb.GtOrPredType.GPT_PRED,
+            gt_pred_type=mir_cmd_pb.GtOrPredType.GPT_PRED,
             merge_strategy=merge_strategy,
             in_class_ids=in_class_ids,
             sampling_count=sampling_count,
