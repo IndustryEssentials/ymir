@@ -93,6 +93,7 @@ message GeneralReq {
     mir.command.EvaluateConfig evaluate_config = 26;
     string model_stage = 27;
     ReqCreateTask req_create_task = 1001;
+    repeated ReqCreateTask sequential_tasks = 1002;
 
     reserved 17, 24;
 }
@@ -113,6 +114,8 @@ message GeneralResp {
     mir.command.Evaluation evaluation = 1002;
     mir.command.ObjectType object_type = 1003;
 
+    repeated GeneralResp sequential_tasks_resp = 1004;
+
     reserved 5;
 }
 
@@ -129,6 +132,7 @@ message ReqCreateTask {
     TaskReqCopyData copy = 105;
     TaskReqLabeling labeling = 106;
     TaskReqImportModel import_model = 107;
+    TaskReqFuse fuse = 108;
 }
 
 message TrainingDatasetType {
@@ -175,6 +179,17 @@ message TaskReqCopyData {
     bool name_strategy_ignore = 3;
     bool drop_annotations = 4;
 }
+
+message TaskReqFuse {
+    repeated string in_dataset_ids = 1;
+    repeated string ex_dataset_ids = 2;
+    repeated int32 in_class_ids = 11;
+    repeated int32 ex_class_ids = 12;
+    oneof sampling {
+        int32 sampling_count = 21;
+        float sampling_rate = 22;
+    }
+};
 
 enum AnnotationType {
     NOT_SET = 0;
