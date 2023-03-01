@@ -102,11 +102,12 @@ enum LabelAnnotationTypes {
   pred = 2,
 }
 
-export const getLabelAnnotationTypes = () => {
+export const getLabelAnnotationTypes = (isPred?: boolean) => {
   const prefix = 'task.label.form.keep_anno.'
+  const type = isPred ? 'pred' : 'gt'
+  const keepItem = { value: LabelAnnotationTypes[type], label: `${prefix}${type}`}
   return [
-    {value: LabelAnnotationTypes.gt, label: `${prefix}gt`},
-    {value: LabelAnnotationTypes.pred, label: `${prefix}pred`},
+    keepItem,
     {value: undefined, label: `${prefix}none`},
   ]
 }
