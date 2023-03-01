@@ -1,12 +1,12 @@
-import { useEffect, useState } from 'react'
+import { FC, useEffect, useState } from 'react'
 import { Button, Card, Form, Input, message, Radio, Select, Space, Tag } from 'antd'
-import { useParams, useHistory, useLocation, useSelector } from 'umi'
+import { useParams, useHistory, useLocation } from 'umi'
+import { useSelector } from 'react-redux'
 
 import { formLayout } from '@/config/antd'
 import t from '@/utils/t'
 import useFetch from '@/hooks/useFetch'
 import useRequest from '@/hooks/useRequest'
-import useAddKeywords from '@/hooks/useAddKeywords'
 import { IMPORTSTRATEGY } from '@/constants/dataset'
 import { ObjectType } from '@/constants/project'
 
@@ -22,6 +22,7 @@ import Dataset from '@/components/form/option/Dataset'
 import s from './add.less'
 import DetSamplePic from '@/assets/sample.png'
 import SegSamplePic from '@/assets/sample_seg.png'
+import { RadioGroupOptionType } from 'antd/lib/radio'
 
 const { Option } = Select
 const { useForm } = Form
@@ -46,11 +47,12 @@ const strategies = [
   { value: IMPORTSTRATEGY.ALL_KEYWORDS_IGNORE, label: 'exclude' },
 ]
 
-// todo update tips
-const Add = (props) => {
+const Add: FC = () => {
   const history = useHistory()
-  const { query } = useLocation()
-  const pageParams = useParams()
+  const location = useLocation()
+  const query =  location.query
+  console.log('query:', location, query)
+  const pageParams = useParams<{ id?: string }>()
   const pid = Number(pageParams.id)
   const { id, from, stepKey } = query
   const iterationContext = from === 'iteration'
@@ -58,22 +60,22 @@ const Add = (props) => {
   const [form] = useForm()
   const [currentType, setCurrentType] = useState(TYPES.INTERNAL)
   const [file, setFile] = useState('')
-  const [selectedDataset, setSelectedDataset] = useState(id ? Number(id) : null)
-  const [newKeywords, setNewKeywords] = useState([])
-  const [strategyOptions, setStrategyOptions] = useState([])
-  const [ignoredKeywords, setIgnoredKeywords] = useState([])
+  const [selectedDataset, setSelectedDataset] = useState(id ? Number(id) : 0)
+  const [newKeywords, setNewKeywords] = useState<string[]>([])
+  const [strategyOptions, setStrategyOptions] = useState<RadioGroupOptionType[]>([])
+  const [ignoredKeywords, setIgnoredKeywords] = useState<string[]>([])
   const [{ newer }, checkKeywords] = useFetch('keyword/checkDuplication', {
     newer: [],
   })
-  const [_, updateKeywords] = useAddKeywords()
   const [addResult, newDataset] = useFetch('dataset/createDataset')
   const [{ items: publicDatasets }, getPublicDatasets] = useFetch('dataset/getInternalDataset', { items: [] })
+  const { run: updateKeywords } = useRequest<{}, [{ }]>('keyword/addKeywords')
   const [nameChangedByUser, setNameChangedByUser] = useState(false)
   const [defaultName, setDefaultName] = useState('')
-  const netUrl = Form.useWatch('url', form)
-  const path = Form.useWatch('path', form)
+  const netUrl = Form.useWatch<string>('url', form)
+  const path = Form.useWatch<string>('path', form)
   const [formatDetailModal, setFormatDetailModal] = useState(false)
-  const project = useSelector(({ project }) => project.projects[pid] || {})
+  const project = useSelector<YStates.Root, YModels.Project>(({ project }) => project.projects[pid] || {})
   const { run: getProject } = useRequest('project/getProject', {
     loading: false,
     refreshDeps: [pid],
@@ -96,7 +98,7 @@ const Add = (props) => {
     setDefaultName('')
   }, [currentType])
 
-  useEffect(async () => {
+  useEffect(() => {
     getPublicDatasets()
   }, [])
 

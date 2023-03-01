@@ -1,8 +1,10 @@
+import { FormProps } from "antd"
+
 export const tailLayout = {
   wrapperCol: { offset: 6, span: 18 },
 }
 
-export const formLayout = {
+export const formLayout: FormProps = {
   labelCol: { span: 6, offset: 2, },
   wrapperCol: { span: 12 },
   labelAlign: 'left',
