@@ -23,7 +23,7 @@ class CmdFuse(base.BaseCommand):
                                      label_storage_file=self.args.label_storage_file,
                                      in_cis=self.args.in_cis,
                                      ex_cis=self.args.ex_cis,
-                                     gt_pred_type=mirpb.GtOrPredType.Value[f"GPT_{type.upper()}"],
+                                     gt_pred_type=mirpb.GtOrPredType.Value(f"GPT_{self.args.gt_pred.upper()}"),
                                      count=self.args.count,
                                      rate=self.args.rate,
                                      dst_rev=self.args.dst_rev,

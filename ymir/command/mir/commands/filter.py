@@ -79,7 +79,7 @@ class CmdFilter(base.BaseCommand):
                                        label_storage_file=self.args.label_storage_file,
                                        in_cis=self.args.in_cis,
                                        ex_cis=self.args.ex_cis,
-                                       gt_pred_type=mirpb.GtOrPredType.Value[f"GPT_{self.args.gt_pred.upper()}"],
+                                       gt_pred_type=mirpb.GtOrPredType.Value(f"GPT_{self.args.gt_pred.upper()}"),
                                        src_revs=self.args.src_revs,
                                        dst_rev=self.args.dst_rev,
                                        work_dir=self.args.work_dir)
@@ -134,7 +134,8 @@ def filter_with_pb(mir_metadatas: mirpb.MirMetadatas, mir_annotations: mirpb.Mir
     asset_ids_set = _include_exclude_match(asset_ids_set=set(mir_metadatas.attributes.keys()),
                                            mir_annotations=mir_annotations,
                                            in_cis_set=in_cis_set,
-                                           ex_cis_set=ex_cis_set)
+                                           ex_cis_set=ex_cis_set,
+                                           gt_pred_type=gt_pred_type)
 
     filter_mirdatas_by_asset_ids(mir_metadatas=mir_metadatas,
                                  mir_annotations=mir_annotations,
