@@ -93,7 +93,8 @@ class TestInvokerTaskFusion(unittest.TestCase):
             'mir', 'fuse', '--root', self._mir_repo_root, '--dst-rev', f"{self._task_id}@{self._task_id}", '-w',
             expected_work_dir, '--src-revs', f"{self._guest_id1};{self._guest_id2}", '-s', 'host', '--ex-src-revs',
             self._guest_id3, '--cis', 'person;cat;table', '--user-label-file',
-            test_utils.user_label_file(self._sandbox_root, self._user_name), '--filter-anno-src', 'pred', '--count', '100'
+            test_utils.user_label_file(self._sandbox_root,
+                                       self._user_name), '--filter-anno-src', 'pred', '--count', '100'
         ]
 
         response = make_invoker_cmd_call(
