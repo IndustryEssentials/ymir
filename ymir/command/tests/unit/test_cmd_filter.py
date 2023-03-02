@@ -204,7 +204,7 @@ class TestCmdFilter(unittest.TestCase):
                                             ex_cis=excludes,
                                             in_cks="",
                                             ex_cks="",
-                                            filter_anno_src='not_set',
+                                            filter_anno_src='any',
                                             dst_branch='__test_cmd_filter_normal_01',
                                             expected_asset_ids=expected_asset_ids)
 
@@ -261,7 +261,7 @@ class TestCmdFilter(unittest.TestCase):
         fake_args.ex_cis = None
         fake_args.in_cks = None
         fake_args.ex_cks = None
-        fake_args.filter_anno_src = 'not_set'
+        fake_args.filter_anno_src = 'any'
         fake_args.src_revs = "a@t0"  # src branch name and base task id
         fake_args.dst_rev = f"{dst_branch}@t1"
         fake_args.work_dir = ''

@@ -118,7 +118,7 @@ def bind_to_subparsers(subparsers: argparse._SubParsersAction, parent_parser: ar
         type=str,
         default='any',
         choices=['any', 'gt', 'pred'],
-        help="gt to filter class ids ONLY from ground truth, pred to filter from pred, any from both")
+        help="gt to filter class ids from ground truth, pred from prediction, any from both of them")
     sampling_group = fuse_arg_parser.add_mutually_exclusive_group(required=False)
     sampling_group.add_argument('--count', dest='count', type=int, default=0, help='assets count')
     sampling_group.add_argument('--rate', dest='rate', type=float, default=0.0, help='assets sampling rate')

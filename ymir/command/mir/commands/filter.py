@@ -156,7 +156,7 @@ def bind_to_subparsers(subparsers: argparse._SubParsersAction, parent_parser: ar
         type=str,
         default='any',
         choices=['any', 'gt', 'pred'],
-        help="gt to filter class ids ONLY from ground truth, pred to filter from pred, not_set from both")
+        help="gt to filter class ids from ground truth, pred from prediction, any from both of them")
     filter_arg_parser.add_argument("--src-revs", dest="src_revs", type=str, help="type:rev@bid")
     filter_arg_parser.add_argument("--dst-rev", dest="dst_rev", type=str, help="rev@tid")
     filter_arg_parser.add_argument('-w', dest='work_dir', type=str, required=False, help='working directory')
