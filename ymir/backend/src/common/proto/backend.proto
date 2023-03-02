@@ -92,7 +92,7 @@ message GeneralReq {
     LabelCollection label_collection = 25;
     mir.command.EvaluateConfig evaluate_config = 26;
     string model_stage = 27;
-    // use in filter and fuse: filter from gt, or pred, or both
+    // use in filter and fuse: filter from gt, or pred, or any of them
     mir.command.AnnotationType annotation_type = 28;
     ReqCreateTask req_create_task = 1001;
 

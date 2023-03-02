@@ -339,7 +339,7 @@ type GeneralReq struct {
 	LabelCollection *LabelCollection      `protobuf:"bytes,25,opt,name=label_collection,json=labelCollection,proto3" json:"label_collection,omitempty"`
 	EvaluateConfig  *EvaluateConfig       `protobuf:"bytes,26,opt,name=evaluate_config,json=evaluateConfig,proto3" json:"evaluate_config,omitempty"`
 	ModelStage      string                `protobuf:"bytes,27,opt,name=model_stage,json=modelStage,proto3" json:"model_stage,omitempty"`
-	// use in filter and fuse: filter from gt, or pred, or both
+	// use in filter and fuse: filter from gt, or pred, or any of them
 	AnnotationType AnnotationType `protobuf:"varint,28,opt,name=annotation_type,json=annotationType,proto3,enum=mir.command.AnnotationType" json:"annotation_type,omitempty"`
 	ReqCreateTask  *ReqCreateTask `protobuf:"bytes,1001,opt,name=req_create_task,json=reqCreateTask,proto3" json:"req_create_task,omitempty"`
 }
