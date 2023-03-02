@@ -9,7 +9,6 @@ import yaml
 from mir.commands import base
 from mir.protos import mir_command_pb2 as mirpb
 from mir.tools import checker, mir_storage_ops, models, revs_parser
-from mir.tools import settings as mir_settings
 from mir.tools.annotations import make_empty_mir_annotations
 from mir.tools.code import MirCode
 from mir.tools.command_run_in_out import command_run_in_out
@@ -75,18 +74,17 @@ class CmdModelImport(base.BaseCommand):
         shutil.rmtree(extract_model_dir_path)
 
         # create task and commit
-        task = mir_storage_ops.create_task(task_type=mirpb.TaskType.TaskTypeImportModel,
-                                           task_id=dst_typ_rev_tid.tid,
-                                           message=f"import model {package_path} as {model_storage.model_hash}",
-                                           model_meta=model_storage.get_model_meta(),
-                                           return_code=MirCode.RC_OK,
-                                           return_msg='',
-                                           src_revs=src_revs,
-                                           dst_rev=dst_rev,
-                                           serialized_executor_config=yaml.safe_dump(model_storage.executor_config),
-                                           serialized_task_parameters=model_storage.task_context.get(
-                                               mir_settings.TASK_CONTEXT_PARAMETERS_KEY, ''),
-                                           executor=model_storage.task_context.get('executor', ''))
+        task = mir_storage_ops.create_task_record(task_type=mirpb.TaskType.TaskTypeImportModel,
+                                                  task_id=dst_typ_rev_tid.tid,
+                                                  message=f"import model {package_path} as {model_storage.model_hash}",
+                                                  model_meta=model_storage.get_model_meta(),
+                                                  return_code=MirCode.RC_OK,
+                                                  return_msg='',
+                                                  src_revs=src_revs,
+                                                  dst_rev=dst_rev,
+                                                  serialized_executor_config=yaml.safe_dump(
+                                                      model_storage.executor_config),
+                                                  executor=model_storage.task_context.get('executor', ''))
         mir_storage_ops.MirStorageOps.save_and_commit(mir_root=mir_root,
                                                       mir_branch=dst_typ_rev_tid.rev,
                                                       his_branch=src_typ_rev_tid.rev,

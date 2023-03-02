@@ -237,7 +237,7 @@ class TestMirStorage(unittest.TestCase):
             raise e
 
         # add another commit a@t2, which has empty dataset
-        task_2 = mir_storage_ops.create_task(task_type=mirpb.TaskType.TaskTypeMining, task_id='t2', message='task-t2')
+        task_2 = mir_storage_ops.create_task_record(task_type=mirpb.TaskType.TaskTypeMining, task_id='t2', message='task-t2')
         task_2.evaluation.config.CopyFrom(mir_storage_ops.create_evaluate_config())
         task_2.evaluation.state = mirpb.EvaluationState.ES_NO_CLASS_IDS
         mir_tasks_2 = mirpb.MirTasks()

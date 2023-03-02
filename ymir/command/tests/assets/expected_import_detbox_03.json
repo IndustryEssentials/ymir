@@ -33,6 +33,7 @@
         "ground_truth": {
             "task_id": "import_detbox_03",
             "image_annotations": {},
+            "is_instance_segmentation": false,
             "type": 100,
             "task_class_ids": [],
             "eval_class_ids": [],
@@ -41,6 +42,7 @@
         "prediction": {
             "task_id": "import_detbox_03",
             "image_annotations": {},
+            "is_instance_segmentation": false,
             "type": 100,
             "task_class_ids": [],
             "eval_class_ids": [],
@@ -102,7 +104,6 @@
                 "return_msg": "",
                 "new_types": {},
                 "new_types_added": false,
-                "serialized_task_parameters": "",
                 "serialized_executor_config": "",
                 "executor": ""
             }

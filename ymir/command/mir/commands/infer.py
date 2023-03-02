@@ -14,7 +14,7 @@ from mir.protos import mir_command_pb2 as mirpb
 from mir.tools import class_ids, models
 from mir.tools import settings as mir_settings
 from mir.tools import env_config
-from mir.tools.annotations import import_annotations_coco_json, UnknownTypesStrategy
+from mir.tools.annotations import import_annotations_coco_json, valid_image_annotation, UnknownTypesStrategy
 from mir.tools.code import MirCode
 from mir.tools.errors import MirRuntimeError
 from mir.tools.executant import prepare_executant_env, run_docker_executant
@@ -164,6 +164,8 @@ class CmdInfer(base.BaseCommand):
             task_annotations = mirpb.SingleTaskAnnotations()
             task_annotations.type = (mirpb.ObjectType.OT_DET_BOX if model_storage.object_type
                                      == mirpb.ObjectType.OT_DET_BOX else mirpb.ObjectType.OT_SEG)
+            task_annotations.is_instance_segmentation = (
+                model_storage.object_type == models.ModelObjectType.MOT_INS_SEG.value)
             process_result_func = (_process_infer_detbox_result if model_storage.object_type
                                    == mirpb.ObjectType.OT_DET_BOX else _process_infer_seg_coco_result)
             process_result_func(task_annotations, work_dir_out, class_id_mgr)
@@ -266,7 +268,8 @@ def _process_infer_detbox_result(task_annotations: mirpb.SingleTaskAnnotations, 
             idx += 1
 
         # task_annotations.image_annotations key: image file base name
-        task_annotations.image_annotations[os.path.basename(asset_name)].CopyFrom(single_image_annotations)
+        if valid_image_annotation(single_image_annotations):
+            task_annotations.image_annotations[os.path.basename(asset_name)].CopyFrom(single_image_annotations)
 
     logging.info(f"count of objects with unknown class ids: {unknown_class_id_annos_cnt}")
     logging.info(f"count of objects without score: {no_score_annos_cnt}")

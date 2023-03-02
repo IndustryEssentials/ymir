@@ -97,9 +97,9 @@ class TestExodus(unittest.TestCase):
             mirpb.MirStorage.MIR_METADATAS: mir_metadatas,
             mirpb.MirStorage.MIR_ANNOTATIONS: make_empty_mir_annotations(),
         }
-        task = mir_storage_ops.create_task(task_type=mirpb.TaskType.TaskTypeMining,
-                                           task_id='mining-task-id',
-                                           message='branch_a_for_test_exodus')
+        task = mir_storage_ops.create_task_record(task_type=mirpb.TaskType.TaskTypeMining,
+                                                  task_id='mining-task-id',
+                                                  message='branch_a_for_test_exodus')
         mir_storage_ops.MirStorageOps.save_and_commit(mir_root=self._mir_root,
                                                       mir_branch='a',
                                                       his_branch='master',

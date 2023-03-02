@@ -282,4 +282,5 @@ class LabelStudio(LabelBase):
             exported_storage_id,
             input_asset_dir,
             object_type,
+            is_instance_segmentation,
         )

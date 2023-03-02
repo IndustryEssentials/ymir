@@ -1,7 +1,6 @@
 from functools import reduce
 from math import ceil
 import os
-import logging
 import time
 from typing import Any, List, Dict, Optional
 
@@ -12,14 +11,17 @@ from mir import scm
 from mir.commands.checkout import CmdCheckout
 from mir.commands.commit import CmdCommit
 from mir.protos import mir_command_pb2 as mirpb
-from mir.tools import det_eval_ops, exodus
+from mir.tools import exodus
 from mir.tools import mir_storage, mir_repo_utils, revs_parser
 from mir.tools import settings as mir_settings
+from mir.tools.annotations import valid_image_annotation
 from mir.tools.code import MirCode, time_it
 from mir.tools.errors import MirRuntimeError
+from mir.tools.eval import eval_ops
 
 
-def create_evaluate_config(conf_thr: float = mir_settings.DEFAULT_EVALUATE_CONF_THR,
+def create_evaluate_config(is_instance_segmentation: bool = False,
+                           conf_thr: float = mir_settings.DEFAULT_EVALUATE_CONF_THR,
                            iou_thrs: str = mir_settings.DEFAULT_EVALUATE_IOU_THR,
                            need_pr_curve: bool = False,
                            class_ids: List[int] = []) -> mirpb.EvaluateConfig:
@@ -28,6 +30,7 @@ def create_evaluate_config(conf_thr: float = mir_settings.DEFAULT_EVALUATE_CONF_
     evaluate_config.iou_thrs_interval = iou_thrs
     evaluate_config.need_pr_curve = need_pr_curve
     evaluate_config.class_ids[:] = class_ids
+    evaluate_config.is_instance_segmentation = is_instance_segmentation
     return evaluate_config
 
 
@@ -35,10 +38,24 @@ class MirStorageOps():
     # private: save and load
     @classmethod
     def __build_task_keyword_context(cls, mir_datas: Dict['mirpb.MirStorage.V', Any], task: mirpb.Task,
-                                     evaluate_config: mirpb.EvaluateConfig) -> None:
+                                     evaluate_config: Optional[mirpb.EvaluateConfig]) -> None:
         # add default members and check pred/gt object type
         mir_metadatas: mirpb.MirMetadatas = mir_datas[mirpb.MirStorage.MIR_METADATAS]
         mir_annotations: mirpb.MirAnnotations = mir_datas[mirpb.MirStorage.MIR_ANNOTATIONS]
+        invalid_asset_ids = {
+            k
+            for k, v in mir_annotations.prediction.image_annotations.items()
+            if not valid_image_annotation(v)
+        }
+        for asset_id in invalid_asset_ids:
+            del mir_annotations.prediction.image_annotations[asset_id]
+        invalid_asset_ids = {
+            k
+            for k, v in mir_annotations.ground_truth.image_annotations.items()
+            if not valid_image_annotation(v)
+        }
+        for asset_id in invalid_asset_ids:
+            del mir_annotations.ground_truth.image_annotations[asset_id]
         mir_annotations.prediction.task_id = task.task_id
         mir_annotations.ground_truth.task_id = task.task_id
         if mirpb.ObjectType.OT_UNKNOWN in {mir_annotations.prediction.type, mir_annotations.ground_truth.type}:
@@ -52,16 +69,17 @@ class MirStorageOps():
         mir_tasks.head_task_id = task.task_id
         mir_tasks.tasks[mir_tasks.head_task_id].CopyFrom(task)
 
-        if mir_annotations.prediction.type == mir_annotations.ground_truth.type == mirpb.ObjectType.OT_DET_BOX:
-            evaluation = det_eval_ops.det_evaluate_with_pb(
-                prediction=mir_annotations.prediction,
-                ground_truth=mir_annotations.ground_truth,
-                config=evaluate_config,
-                assets_metadata=mir_metadatas,
-            )
-            mir_tasks.tasks[mir_tasks.head_task_id].evaluation.CopyFrom(evaluation)
-        else:
-            logging.warning("Skip automatic evaluation for none-detection dataset")
+        if not evaluate_config:
+            evaluate_config = create_evaluate_config(
+                is_instance_segmentation=mir_annotations.prediction.is_instance_segmentation)
+
+        evaluation = eval_ops.evaluate_with_pb(
+            prediction=mir_annotations.prediction,
+            ground_truth=mir_annotations.ground_truth,
+            config=evaluate_config,
+            assets_metadata=mir_metadatas,
+        )
+        mir_tasks.tasks[mir_tasks.head_task_id].evaluation.CopyFrom(evaluation)
 
         mir_datas[mirpb.MirStorage.MIR_TASKS] = mir_tasks
 
@@ -216,9 +234,6 @@ class MirStorageOps():
         if not task.task_id:
             raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS, error_message='empty task id')
 
-        if not evaluate_config:
-            evaluate_config = create_evaluate_config()
-
         # Build all mir_datas.
         cls.__build_task_keyword_context(mir_datas=mir_datas,
                                          task=task,
@@ -316,20 +331,19 @@ class MirStorageOps():
                                          including_default_value_fields=True)
 
 
-def create_task(task_type: 'mirpb.TaskType.V',
-                task_id: str,
-                message: str,
-                new_types: Dict[str, int] = {},
-                new_types_added: bool = False,
-                return_code: int = 0,
-                return_msg: str = '',
-                serialized_task_parameters: str = '',
-                serialized_executor_config: str = '',
-                executor: str = '',
-                model_meta: mirpb.ModelMeta = None,
-                evaluation: mirpb.Evaluation = None,
-                src_revs: str = '',
-                dst_rev: str = '') -> mirpb.Task:
+def create_task_record(task_type: 'mirpb.TaskType.V',
+                       task_id: str,
+                       message: str,
+                       new_types: Dict[str, int] = {},
+                       new_types_added: bool = False,
+                       return_code: int = 0,
+                       return_msg: str = '',
+                       serialized_executor_config: str = '',
+                       executor: str = '',
+                       model_meta: mirpb.ModelMeta = None,
+                       evaluation: mirpb.Evaluation = None,
+                       src_revs: str = '',
+                       dst_rev: str = '') -> mirpb.Task:
     task_dict = {
         'type': task_type,
         'name': message,
@@ -337,7 +351,6 @@ def create_task(task_type: 'mirpb.TaskType.V',
         'timestamp': int(time.time()),
         'return_code': return_code,
         'return_msg': return_msg,
-        'serialized_task_parameters': serialized_task_parameters,
         'serialized_executor_config': serialized_executor_config,
         'new_types': new_types,
         'new_types_added': new_types_added,

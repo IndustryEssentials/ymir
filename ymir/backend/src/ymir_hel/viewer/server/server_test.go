@@ -37,11 +37,12 @@ func (h *MockViewerHandler) GetAssetsHandler(
 	classIDs []int,
 	annoTypes []string,
 	currentAssetID string,
-	cmTypes []int,
+	inCMTypes []int,
+	exCMTypes []int,
 	cks []string,
 	tags []string,
 ) *constants.QueryAssetsResult {
-	args := h.Called(mirRepo, offset, limit, classIDs, currentAssetID, cmTypes, cks, tags)
+	args := h.Called(mirRepo, offset, limit, classIDs, currentAssetID, inCMTypes, exCMTypes, cks, tags)
 	return args.Get(0).(*constants.QueryAssetsResult)
 }
 
@@ -336,15 +337,18 @@ func TestAssetsPageHandlerSuccess(t *testing.T) {
 	classIDs := []int{0, 1}
 	classIDsStr := "0,1"
 	currentAssetID := "asset_id"
-	cmTypes := "0,1"
+	inCMTypes := "0,1"
+	exCMTypes := ""
 	cks := "ck0,ck1"
 	tags := "tag0,tag1"
-	querySuffix := fmt.Sprintf("offset=%d&limit=%d&class_ids=%s&current_asset_id=%s&cm_types=%s&cks=%s&tags=%s",
+	querySuffix := fmt.Sprintf(
+		"offset=%d&limit=%d&class_ids=%s&current_asset_id=%s&in_cm_types=%s&ex_cm_types=%s&cks=%s&tags=%s",
 		offset,
 		limit,
 		classIDsStr,
 		currentAssetID,
-		cmTypes,
+		inCMTypes,
+		exCMTypes,
 		cks,
 		tags,
 	)
@@ -372,7 +376,8 @@ func TestAssetsPageHandlerSuccess(t *testing.T) {
 
 	revisedOffset := 0
 	revisedLimit := 1
-	revisedcmTypes := []int{0, 1}
+	revisedInCMTypes := []int{0, 1}
+	revisedExCMTypes := []int{}
 	revisedCks := []string{"ck0", "ck1"}
 	revisedTags := []string{"tag0", "tag1"}
 	mirRepo := constants.MirRepo{UserID: userID, RepoID: repoID, BranchID: branchID, TaskID: branchID}
@@ -383,7 +388,8 @@ func TestAssetsPageHandlerSuccess(t *testing.T) {
 		revisedLimit,
 		classIDs,
 		currentAssetID,
-		revisedcmTypes,
+		revisedInCMTypes,
+		revisedExCMTypes,
 		revisedCks,
 		revisedTags).
 		Return(assetsExpectedResult)

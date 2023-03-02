@@ -9,11 +9,12 @@ from mir.commands import base, infer
 from mir.commands.merge import merge_with_pb
 from mir.protos import mir_command_pb2 as mirpb
 from mir.tools import checker, class_ids, env_config, exporter
-from mir.tools import mir_storage_ops, models, revs_parser
-from mir.tools.annotations import filter_mirdatas_by_asset_ids, MergeStrategy
+from mir.tools import models, revs_parser
+from mir.tools.annotations import filter_mirdatas_by_asset_ids, valid_image_annotation, MergeStrategy
 from mir.tools.code import MirCode
 from mir.tools.command_run_in_out import command_run_in_out
 from mir.tools.errors import MirContainerError, MirRuntimeError
+from mir.tools.mir_storage_ops import create_task_record, MirStorageOps
 
 
 class CmdMining(base.BaseCommand):
@@ -187,14 +188,14 @@ class CmdMining(base.BaseCommand):
             return_msg = env_config.collect_executor_outlog_tail(work_dir=work_dir)
         # catch other exceptions in command_run_in_out
 
-        task = mir_storage_ops.create_task(task_type=mirpb.TaskTypeMining,
-                                           task_id=dst_typ_rev_tid.tid,
-                                           message=f"mining with model: {model_hash_stage}",
-                                           src_revs=src_revs,
-                                           dst_rev=dst_typ_rev_tid.rev_tid,
-                                           return_code=return_code,
-                                           return_msg=return_msg,
-                                           executor=executor)
+        task = create_task_record(task_type=mirpb.TaskTypeMining,
+                                  task_id=dst_typ_rev_tid.tid,
+                                  message=f"mining with model: {model_hash_stage}",
+                                  src_revs=src_revs,
+                                  dst_rev=dst_typ_rev_tid.rev_tid,
+                                  return_code=return_code,
+                                  return_msg=return_msg,
+                                  executor=executor)
         if return_code != MirCode.RC_OK:
             raise MirContainerError(error_message='mining container error occured', task=task)
 
@@ -211,11 +212,11 @@ class CmdMining(base.BaseCommand):
             mirpb.MirStorage.MIR_METADATAS: mir_metadatas,
             mirpb.MirStorage.MIR_ANNOTATIONS: mir_annotations,
         }
-        mir_storage_ops.MirStorageOps.save_and_commit(mir_root=mir_root,
-                                                      his_branch=src_typ_rev_tids[0].rev,
-                                                      mir_branch=dst_typ_rev_tid.rev,
-                                                      mir_datas=mir_datas,
-                                                      task=task)
+        MirStorageOps.save_and_commit(mir_root=mir_root,
+                                      his_branch=src_typ_rev_tids[0].rev,
+                                      mir_branch=dst_typ_rev_tid.rev,
+                                      mir_datas=mir_datas,
+                                      task=task)
         logging.info(f"mining done, results at: {work_out_path}")
 
         return MirCode.RC_OK
@@ -254,6 +255,8 @@ def _process_results(mir_root: str, label_storage_file: str, export_out: str,
         #   convert: cmd infer packs infer_result_prediction.image_annotations with file base name as key
         #       so we need to convert all keys to asset hash (in cmd mining, the image's main name)
         for file_name in infer_result_prediction.image_annotations:
+            if not valid_image_annotation(infer_result_prediction.image_annotations[file_name]):
+                continue
             asset_id = os.path.splitext(file_name)[0]
             if asset_id in asset_ids_set:
                 prediction.image_annotations[asset_id].CopyFrom(
@@ -264,8 +267,9 @@ def _process_results(mir_root: str, label_storage_file: str, export_out: str,
             cls_id_mgr.id_for_names(model_storage.class_names, drop_unknown_names=True)[0])
         prediction.executor_config = json.dumps(model_storage.executor_config)
         prediction.model.CopyFrom(model_storage.get_model_meta())
-        prediction.type = (mirpb.ObjectType.OT_DET_BOX
-                           if model_storage.object_type == mirpb.ObjectType.OT_DET_BOX else mirpb.ObjectType.OT_SEG)
+        prediction.type = (mirpb.ObjectType.OT_DET_BOX if model_storage.object_type
+                           == models.ModelObjectType.MOT_DET_BOX else mirpb.ObjectType.OT_SEG)
+        prediction.is_instance_segmentation = (model_storage.object_type == models.ModelObjectType.MOT_INS_SEG)
 
 
 def _get_topk_asset_ids(file_path: str, topk: int) -> Set[str]:

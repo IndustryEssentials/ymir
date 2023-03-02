@@ -77,7 +77,7 @@ def _get_model_storage(model_root: str, executor_config: dict, task_context: dic
                                                  type=mirpb.TaskType.TaskTypeTraining),
                                stages=model_stages,
                                best_stage_name=best_stage_name,
-                               object_type=int(yaml_obj.get('object_type', mirpb.ObjectType.OT_DET_BOX)),
+                               object_type=int(yaml_obj.get('object_type', models.ModelObjectType.MOT_DET_BOX.value)),
                                attachments=attachments,
                                evaluate_config=yaml_obj.get('evaluate_config', {}),
                                package_version=YMIR_MODEL_VERSION)
@@ -123,10 +123,6 @@ def _prepare_pretrained_models(model_location: str, model_hash_stage: str, dst_m
                                          dst_model_path=dst_model_dir)
 
     return [f"{stage_name}/{file_name}" for file_name in model_storage.stages[stage_name].files]
-
-
-def _get_task_parameters(config: dict) -> str:
-    return config.get(mir_settings.TASK_CONTEXT_KEY, {}).get(mir_settings.TASK_CONTEXT_PARAMETERS_KEY, '')
 
 
 class CmdTrain(base.BaseCommand):
@@ -189,11 +185,6 @@ class CmdTrain(base.BaseCommand):
         with open(config_file, "r") as f:
             config = yaml.safe_load(f)
 
-        task_parameters = _get_task_parameters(config)
-        if not isinstance(task_parameters, str):
-            raise MirRuntimeError(
-                error_code=MirCode.RC_CMD_INVALID_ARGS,
-                error_message=f"invalid {mir_settings.TASK_CONTEXT_PARAMETERS_KEY} in config: {config}")
         if mir_settings.EXECUTOR_CONFIG_KEY not in config:
             raise MirRuntimeError(
                 error_code=MirCode.RC_CMD_INVALID_ARGS,
@@ -325,7 +316,6 @@ class CmdTrain(base.BaseCommand):
             'dst_rev': dst_rev,
             'executor': executor,
             mir_settings.PRODUCER_KEY: mir_settings.PRODUCER_NAME,
-            mir_settings.TASK_CONTEXT_PARAMETERS_KEY: task_parameters
         })
 
         # save model
@@ -339,17 +329,16 @@ class CmdTrain(base.BaseCommand):
                                     model_location=model_upload_location)
 
         # commit task
-        task = mir_storage_ops.create_task(task_type=mirpb.TaskType.TaskTypeTraining,
-                                           task_id=dst_typ_rev_tid.tid,
-                                           message='training',
-                                           model_meta=model_storage.get_model_meta(),
-                                           return_code=task_code,
-                                           return_msg=return_msg,
-                                           serialized_task_parameters=task_parameters,
-                                           serialized_executor_config=yaml.safe_dump(executor_config),
-                                           executor=executor,
-                                           src_revs=src_revs,
-                                           dst_rev=dst_rev)
+        task = mir_storage_ops.create_task_record(task_type=mirpb.TaskType.TaskTypeTraining,
+                                                  task_id=dst_typ_rev_tid.tid,
+                                                  message='training',
+                                                  model_meta=model_storage.get_model_meta(),
+                                                  return_code=task_code,
+                                                  return_msg=return_msg,
+                                                  serialized_executor_config=yaml.safe_dump(executor_config),
+                                                  executor=executor,
+                                                  src_revs=src_revs,
+                                                  dst_rev=dst_rev)
 
         if task_code != MirCode.RC_OK:
             raise MirContainerError(error_message='container error occured', task=task)

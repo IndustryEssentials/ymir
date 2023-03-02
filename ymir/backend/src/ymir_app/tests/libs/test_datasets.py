@@ -41,3 +41,11 @@ class TestEvaluateDataset:
         )
 
         ctrl.evaluate_dataset.assert_called()
+
+
+class TestConvertIou:
+    def test_convert_to_iou_thrs_interval(self, mocker: Any) -> None:
+        assert m.convert_to_iou_thrs_interval(None, True) == "0.5:0.95:0.05"
+        assert m.convert_to_iou_thrs_interval(0.1, True) == "0.1:0.95:0.05"
+        assert m.convert_to_iou_thrs_interval(0.1, False) == "0.1"
+        assert m.convert_to_iou_thrs_interval(None, False) is None

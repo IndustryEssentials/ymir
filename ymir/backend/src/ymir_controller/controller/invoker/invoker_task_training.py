@@ -24,7 +24,6 @@ class TaskTrainingInvoker(TaskBaseInvoker):
         gpu_lock_ret = self.gen_executor_config_lock_gpus(
             req_executor_config=request.docker_image_config,
             class_names=class_names,
-            task_parameters=request.task_parameters,
             output_config_file=output_config_file,
             assets_config=self._assets_config,
             preprocess=train_request.preprocess_config,

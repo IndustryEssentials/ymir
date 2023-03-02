@@ -87,7 +87,7 @@ const InferResultSelect = ({ pid, form, value, onChange = () => {} }) => {
   }, [selectedStages])
 
   useEffect(() => {
-    if (datasets.length === 1 && datasets[0].assetCount <= INFER_DATASET_MAX_COUNT) {
+    if (datasets.length === 1) {
       form.setFieldsValue({ dataset: datasets })
     }
     setConfigs([])
@@ -131,7 +131,7 @@ const InferResultSelect = ({ pid, form, value, onChange = () => {} }) => {
 
   useEffect(() => {
     const selected = []
-    selectedStages?.forEach(([model, selectedStage]) => {
+    models.length && selectedStages?.forEach(([model, selectedStage]) => {
       selectedDatasets.forEach((did) => {
         const dtask = tasks.filter(({ parameters: { dataset_id, model_stage_id: stage } }) => dataset_id === did && stage === selectedStage)
         selectedConfigs.forEach(({ config: sconfig, name }) => {
@@ -141,7 +141,7 @@ const InferResultSelect = ({ pid, form, value, onChange = () => {} }) => {
       })
     })
     setSelectedTasks(selected)
-  }, [tasks, selectedConfigs])
+  }, [tasks, selectedConfigs, models])
 
   useEffect(() => {
     onChange({
@@ -161,6 +161,7 @@ const InferResultSelect = ({ pid, form, value, onChange = () => {} }) => {
   }
 
   function modelChange(values, options = []) {
+    console.log('values, options:', values, options)
     // setSelectedStages(values)
     setModels(options.map(([opt]) => opt?.model))
   }

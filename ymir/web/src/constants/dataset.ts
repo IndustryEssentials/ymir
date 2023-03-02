@@ -59,6 +59,12 @@ export enum MERGESTRATEGY {
   GUEST = 2,
 }
 
+export enum MERGESTRATEGYFORTRAIN {
+  STOP = 0,
+  ASTRAIN = 1,
+  ASVALIDATION = 2,
+}
+
 export function transferDatasetGroup(data: YModels.BackendData) {
   const group: YModels.DatasetGroup = {
     id: data.id,
@@ -276,7 +282,7 @@ const transferCK = (counts: YModels.BackendData = {}, total: YModels.BackendData
 }
 
 const generateAnno = (data: YModels.BackendData): YModels.AnylysisAnnotation => {
-  const { quality = [], area = [], box_area_ratio = [], mask_area = [], obj_counts = [] } = data.hist
+  const { quality = [], area = [], box_area_ratio = [], mask_area = [], obj_counts = [], class_counts=[] } = data.hist
   return {
     keywords: data.keywords,
     total: data.annos_count || 0,
@@ -289,6 +295,7 @@ const generateAnno = (data: YModels.BackendData): YModels.AnylysisAnnotation => 
     keywordArea: data.classwise_area || {},
     instanceArea: mask_area,
     crowdedness: obj_counts,
+    complexity: class_counts,
   }
 }
 

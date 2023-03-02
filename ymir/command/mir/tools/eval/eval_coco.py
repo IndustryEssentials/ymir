@@ -1,17 +1,18 @@
 from collections import defaultdict
-from typing import Any, Dict, List, Optional, Set, Tuple, Union, Iterator
+from typing import Any, Dict, List, Optional, Set, Tuple, Union
 
 import numpy as np
 import pycocotools.mask
 
-from mir.tools import det_eval_utils
 from mir.tools.code import MirCode
 from mir.tools.errors import MirRuntimeError
+from mir.tools.eval import eval_utils
 from mir.protos import mir_command_pb2 as mirpb
 
 
 class MirCoco:
-    def __init__(self, task_annotations: mirpb.SingleTaskAnnotations, conf_thr: Optional[float]) -> None:
+    def __init__(self, task_annotations: mirpb.SingleTaskAnnotations, mir_metadatas: mirpb.MirMetadatas,
+                 conf_thr: Optional[float]) -> None:
         """
         creates MirCoco instance
 
@@ -28,10 +29,16 @@ class MirCoco:
         # ordered list of asset / image ids
         self.asset_ids = list(task_annotations.image_annotations.keys())
 
+        extra_asset_ids = task_annotations.image_annotations.keys() - mir_metadatas.attributes.keys()
+        if len(extra_asset_ids) > 0:
+            raise ValueError(f"Can not find attributes for following assets: {extra_asset_ids}")
+
         self.img_cat_to_annotations = self._aggregate_annotations(single_task_annotations=task_annotations,
+                                                                  mir_metadatas=mir_metadatas,
                                                                   conf_thr=conf_thr)
 
     def _aggregate_annotations(self, single_task_annotations: mirpb.SingleTaskAnnotations,
+                               mir_metadatas: mirpb.MirMetadatas,
                                conf_thr: Optional[float]) -> Dict[Tuple[str, int], List[dict]]:
         """
         aggregates annotations with confidence >= conf_thr into a dict with key: (asset id, class id)
@@ -63,22 +70,37 @@ class MirCoco:
                 if conf_thr is not None and annotation.score < conf_thr:
                     continue
 
+                if single_task_annotations.type == mirpb.OT_DET_BOX:
+                    area = annotation.box.w * annotation.box.h
+                else:
+                    area = annotation.mask_area
                 annotation_dict = {
                     'id': annotation_idx,
-                    'area': annotation.box.w * annotation.box.h,
+                    'area': area,
                     'bbox': [annotation.box.x, annotation.box.y, annotation.box.w, annotation.box.h],
-                    'mask': annotation.mask,
-                    'polygon': annotation.polygon,
                     'score': annotation.score,
-                    'iscrowd': 0,
+                    'iscrowd': annotation.iscrowd,
                     'ignore': 0,
                     'pb_index_id': annotation.index,
                 }
+                annotation_dict['segmentation'] = self._convert_to_coco_segmentation(
+                    annotation=annotation, attrs=mir_metadatas.attributes[asset_id])
                 img_cat_to_annotations[asset_id, annotation.class_id].append(annotation_dict)
 
                 annotation_idx += 1
 
         return img_cat_to_annotations
+
+    @classmethod
+    def _convert_to_coco_segmentation(cls, annotation: mirpb.ObjectAnnotation,
+                                      attrs: mirpb.MetadataAttributes) -> Union[dict, list]:
+        if annotation.type == mirpb.ObjectSubType.OST_SEG_MASK:
+            return {"counts": annotation.mask, "size": [attrs.height, attrs.width]}
+        elif annotation.type == mirpb.ObjectSubType.OST_SEG_POLYGON:
+            polygon = [[i for point in annotation.polygon for i in (point.x, point.y)]]
+            return pycocotools.mask.merge(pycocotools.mask.frPyObjects(polygon, attrs.height, attrs.width))
+        else:
+            raise ValueError("Failed to convert to coco segmentation format")
 
 
 class CocoDetEval:
@@ -100,7 +122,7 @@ class CocoDetEval:
         self._coco_gt = coco_gt
         self._coco_dt = coco_dt
 
-        self.match_result = det_eval_utils.DetEvalMatchResult()
+        self.match_result = eval_utils.DetEvalMatchResult()
 
     def evaluate(self) -> None:
         '''
@@ -154,12 +176,8 @@ class CocoDetEval:
             g_boxes = [g['bbox'] for g in gt]
             d_boxes = [d['bbox'] for d in dt]
         elif self.params.iouType == "segm":
-            if not self._assets_metadata:
-                raise ValueError('assets_metadata is required for segmentation evaluation')
-            asset_metadata = self._assets_metadata[asset_id]
-            size = [asset_metadata.height, asset_metadata.width]
-            g_boxes = [self._convert_to_coco_segmentation(g, size) for g in gt]
-            d_boxes = [self._convert_to_coco_segmentation(d, size) for d in dt]
+            g_boxes = [g['segmentation'] for g in gt]
+            d_boxes = [d['segmentation'] for d in dt]
         else:
             raise ValueError('unknown iouType for iou computation')
 
@@ -169,15 +187,6 @@ class CocoDetEval:
         #   ious[i][j]: iou of d_boxes[i] and g_boxes[j]
         ious = pycocotools.mask.iou(d_boxes, g_boxes, iscrowd)
         return ious
-
-    @staticmethod
-    def _convert_to_coco_segmentation(mir_annotation: Dict, size: List[int]) -> Union[Dict, List]:
-        if mir_annotation.get("mask"):
-            return {'counts': mir_annotation['mask'], 'size': size}
-        elif mir_annotation.get("polygon"):
-            return [[i for point in mir_annotation["polygon"] for i in (point["x"], point["y"])]]
-        else:
-            raise ValueError("Failed to convert to coco segmentation format")
 
     def evaluateImg(self, asset_id: str, catId: int, aRng: Any, maxDet: int) -> Optional[dict]:
         '''
@@ -504,105 +513,6 @@ class CocoDetEval:
 
         return ee
 
-    def _intersect_and_union(
-        self,
-        dt: np.ndarray,
-        gt: np.ndarray,
-        num_classes: int,
-        ignore_index: Optional[int],
-    ) -> Tuple:
-        mask = gt != ignore_index
-        dt = dt[mask]
-        gt = gt[mask]
-        intersect = dt[dt == gt]
-        area_intersect, _ = np.histogram(intersect, bins=np.arange(num_classes + 1))
-        area_dt, _ = np.histogram(dt, bins=np.arange(num_classes + 1))
-        area_gt, _ = np.histogram(gt, bins=np.arange(num_classes + 1))
-        area_union = area_dt + area_gt - area_intersect
-        return area_intersect, area_union, area_dt, area_gt
-
-    def _total_intersect_and_union(
-        self,
-        dts: List[np.ndarray],
-        gts: List[np.ndarray],
-        num_classes: int,
-        ignore_index: int,
-    ) -> Tuple:
-        total_area_intersect = np.zeros((num_classes,), dtype=np.float)  # type: ignore
-        total_area_union = np.zeros((num_classes,), dtype=np.float)  # type: ignore
-        total_area_dt = np.zeros((num_classes,), dtype=np.float)  # type: ignore
-        total_area_gt = np.zeros((num_classes,), dtype=np.float)  # type: ignore
-        for dt, gt in zip(dts, gts):
-            area_intersect, area_union, area_dt, area_gt = self._intersect_and_union(
-                dt,
-                gt,
-                num_classes,
-                ignore_index,
-            )
-            total_area_intersect += area_intersect
-            total_area_union += area_union
-            total_area_dt += area_dt
-            total_area_gt += area_gt
-        return total_area_intersect, total_area_union, total_area_dt, total_area_gt
-
-    @staticmethod
-    def decode_mir_mask(annotation: Dict, height: float, width: float) -> np.ndarray:
-        coco_segmentation = {"counts": annotation["mask"], "size": [height, width]}
-        return pycocotools.mask.decode(coco_segmentation)
-
-    def aggregate_imagewise_annotations(self, annotations: defaultdict) -> Iterator[np.ndarray]:
-        """
-        annotations: self._gts or self._dts
-        """
-        class_ids = self.params.catIds
-        class_id_to_order = dict(zip(class_ids, range(len(class_ids))))
-        asset_ids = self._asset_ids
-
-        for asset_id in asset_ids:
-            if not self._assets_metadata:
-                raise ValueError('assets_metadata is required for segmentation evaluation')
-            asset_metadata = self._assets_metadata[asset_id]
-            height, width = asset_metadata.height, asset_metadata.width
-            # use 255 as a special class, which will be ignored upon evaluation
-            img = np.ones(shape=(height, width), dtype=np.uint8) * 255
-            for class_id in class_ids:
-                for annotation in annotations[(asset_id, class_id)]:
-                    img[self.decode_mir_mask(annotation, height, width) == 1] = class_id_to_order[class_id]
-            yield img
-
-    def _mean_iou(
-        self,
-        dts: List[np.ndarray],
-        gts: List[np.ndarray],
-        num_classes: int,
-        ignore_index: int,
-        nan_to_num: Optional[int] = None,
-    ) -> List:
-        (
-            total_area_intersect,
-            total_area_union,
-            total_area_dt,
-            total_area_gt,
-        ) = self._total_intersect_and_union(dts, gts, num_classes, ignore_index)
-        all_acc = np.nansum(total_area_intersect) / np.nansum(total_area_gt)
-        macc = np.nanmean(total_area_intersect / total_area_gt)
-        miou = np.nanmean(total_area_intersect / total_area_union)
-        ret_metrics = [all_acc, macc, miou]
-        if nan_to_num is not None:
-            ret_metrics = [np.nan_to_num(metric, nan=nan_to_num) for metric in ret_metrics]
-        return ret_metrics
-
-    def mir_mean_iou(self) -> mirpb.SegmentationMetrics:
-        class_ids = self.params.catIds
-        dts = list(self.aggregate_imagewise_annotations(self._dts))
-        gts = list(self.aggregate_imagewise_annotations(self._gts))
-        all_acc, macc, miou = self._mean_iou(dts, gts, len(class_ids), 255, -1)
-        metrics = mirpb.SegmentationMetrics()
-        metrics.aAcc = all_acc
-        metrics.mAcc = macc
-        metrics.mIoU = miou
-        return metrics
-
 
 class Params:
     def __init__(self) -> None:
@@ -619,47 +529,41 @@ class Params:
         self.need_pr_curve = False
 
 
-def det_evaluate(prediction: mirpb.SingleTaskAnnotations, ground_truth: mirpb.SingleTaskAnnotations,
-                 config: mirpb.EvaluateConfig, assets_metadata: Optional[mirpb.MirMetadatas]) -> mirpb.Evaluation:
+def evaluate(prediction: mirpb.SingleTaskAnnotations, ground_truth: mirpb.SingleTaskAnnotations,
+             config: mirpb.EvaluateConfig, assets_metadata: mirpb.MirMetadatas) -> mirpb.Evaluation:
     evaluation = mirpb.Evaluation()
     evaluation.config.CopyFrom(config)
 
     params = Params()
     params.confThr = config.conf_thr
-    params.iouThrs = det_eval_utils.get_iou_thrs_array(config.iou_thrs_interval)
+    params.iouType = 'segm' if config.type == mirpb.ObjectType.OT_SEG else 'bbox'
+    if config.iou_thrs_interval != "-1":
+        params.iouThrs = eval_utils.get_iou_thrs_array(config.iou_thrs_interval)
     params.need_pr_curve = config.need_pr_curve
     params.catIds = list(config.class_ids)
 
     area_ranges_index = 0  # area range: 'all'
     max_dets_index = len(params.maxDets) - 1  # last max det number
 
-    is_semantic_segmentation = (prediction.type == mirpb.ObjectType.OT_SEG and not config.is_instance_segmentation)
-
-    mir_gt = MirCoco(task_annotations=ground_truth, conf_thr=None)
-    mir_dt = MirCoco(task_annotations=prediction, conf_thr=None if is_semantic_segmentation else config.conf_thr)
+    mir_gt = MirCoco(task_annotations=ground_truth, mir_metadatas=assets_metadata, conf_thr=None)
+    mir_dt = MirCoco(task_annotations=prediction, mir_metadatas=assets_metadata, conf_thr=config.conf_thr)
 
     evaluator = CocoDetEval(coco_gt=mir_gt, coco_dt=mir_dt, params=params, assets_metadata=assets_metadata)
-    if is_semantic_segmentation:
-        single_dataset_evaluation = mirpb.SingleDatasetEvaluation()
-        miou = evaluator.mir_mean_iou()
-        single_dataset_evaluation.segmentation_metrics.CopyFrom(miou)
-    else:
-        # detection, instance segmentation
-        evaluator.evaluate()
-        evaluator.accumulate()
+    evaluator.evaluate()
+    evaluator.accumulate()
 
-        det_eval_utils.write_confusion_matrix(gt_annotations=ground_truth,
-                                              pred_annotations=prediction,
-                                              class_ids=params.catIds,
-                                              conf_thr=config.conf_thr,
-                                              match_result=evaluator.match_result,
-                                              iou_thr=params.iouThrs[0])
+    eval_utils.write_instance_confusion_matrix(gt_annotations=ground_truth,
+                                               pred_annotations=prediction,
+                                               class_ids=params.catIds,
+                                               conf_thr=config.conf_thr,
+                                               match_result=evaluator.match_result,
+                                               iou_thr=params.iouThrs[0])
 
-        single_dataset_evaluation = evaluator.get_evaluation_result(area_ranges_index=area_ranges_index,
-                                                                    max_dets_index=max_dets_index)
-        det_eval_utils.calc_averaged_evaluations(dataset_evaluation=single_dataset_evaluation, class_ids=params.catIds)
+    single_dataset_evaluation = evaluator.get_evaluation_result(area_ranges_index=area_ranges_index,
+                                                                max_dets_index=max_dets_index)
+    eval_utils.calc_averaged_evaluations(dataset_evaluation=single_dataset_evaluation, class_ids=params.catIds)
 
-        single_dataset_evaluation.conf_thr = config.conf_thr
+    single_dataset_evaluation.conf_thr = config.conf_thr
 
     evaluation.dataset_evaluation.CopyFrom(single_dataset_evaluation)
     evaluation.state = mirpb.EvaluationState.ES_READY

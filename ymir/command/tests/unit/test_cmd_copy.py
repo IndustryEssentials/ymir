@@ -73,10 +73,10 @@ class TestCmdCopy(unittest.TestCase):
         mir_annotations.ground_truth.type = mirpb.ObjectType.OT_NO_ANNOTATIONS
 
         model_meta = mirpb.ModelMeta(mAP=0.3)
-        task = mir_storage_ops.create_task(task_type=mirpb.TaskType.TaskTypeTraining,
-                                           task_id=task_id,
-                                           message='training',
-                                           model_meta=model_meta)
+        task = mir_storage_ops.create_task_record(task_type=mirpb.TaskType.TaskTypeTraining,
+                                                  task_id=task_id,
+                                                  message='training',
+                                                  model_meta=model_meta)
 
         mir_storage_ops.MirStorageOps.save_and_commit(mir_root=self._src_mir_root,
                                                       mir_branch='a',
@@ -117,12 +117,11 @@ class TestCmdCopy(unittest.TestCase):
                 annotation.index: annotation.class_id
                 for annotation in mir_annotations.prediction.image_annotations['asset0'].boxes
             }
-            asset1_idx_ids = {
-                annotation.index: annotation.class_id
-                for annotation in mir_annotations.prediction.image_annotations['asset1'].boxes
-            }
             self.assertEqual({0: 2, 1: 1}, asset0_idx_ids)
-            self.assertEqual({}, asset1_idx_ids)
+            # asset1 has only one prediction with class name 'd'
+            # which is unknown to destination dataset, and to be ignored
+            # so asset1 have no predictions in destination dataset, and should not appear in image_annotations
+            self.assertTrue('asset1' not in mir_annotations.prediction.image_annotations)
         self.assertEqual(eval_class_ids_set, set(mir_annotations.prediction.eval_class_ids))
 
         mAP = mir_tasks.tasks[dst_tid].model.mAP

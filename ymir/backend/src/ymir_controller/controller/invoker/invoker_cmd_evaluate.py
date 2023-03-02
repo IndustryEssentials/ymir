@@ -1,7 +1,7 @@
 from controller.invoker.invoker_cmd_base import BaseMirControllerInvoker
 from controller.utils import checker, utils
 from id_definition.error_codes import CTLResponseCode
-from mir.tools.det_eval_ctl_ops import det_evaluate_datasets
+from mir.tools.eval.eval_ctl_ops import evaluate_datasets
 from mir.tools.revs_parser import parse_single_arg_rev
 from proto import backend_pb2
 
@@ -23,23 +23,19 @@ class EvaluateInvoker(BaseMirControllerInvoker):
             return checker_resp
 
         ec = self._request.evaluate_config
-        if ec.conf_thr < 0 or ec.conf_thr >= 1:
+        if not (0 <= ec.conf_thr <= 1):
             return utils.make_general_response(CTLResponseCode.ARG_VALIDATION_FAILED,
                                                f"invalid evaluate conf thr: {ec.conf_thr:.2f}")
-
-        if not ec.iou_thrs_interval:
-            return utils.make_general_response(CTLResponseCode.ARG_VALIDATION_FAILED,
-                                               "invalid evaluate iou thrs interval: {}".format(ec.iou_thrs_interval))
 
         return utils.make_general_response(CTLResponseCode.CTR_OK, "")
 
     def invoke(self) -> backend_pb2.GeneralResp:
         rev_tid = parse_single_arg_rev(self._request.in_dataset_ids[0], need_tid=False)
 
-        evaluation = det_evaluate_datasets(mir_root=self._repo_root,
-                                           gt_rev_tid=rev_tid,
-                                           pred_rev_tid=rev_tid,
-                                           evaluate_config=self._request.evaluate_config)
+        evaluation = evaluate_datasets(mir_root=self._repo_root,
+                                       gt_rev_tid=rev_tid,
+                                       pred_rev_tid=rev_tid,
+                                       evaluate_config=self._request.evaluate_config)
         if not evaluation:
             return utils.make_general_response(CTLResponseCode.ARG_VALIDATION_FAILED, "no result generated.")
         response = backend_pb2.GeneralResp()

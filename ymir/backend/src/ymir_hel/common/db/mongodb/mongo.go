@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"runtime/debug"
 	"sort"
 	"strings"
 	"time"
@@ -106,7 +107,7 @@ func (s *MongoServer) IndexDatasetData(
 			if err != nil {
 				panic(err)
 			}
-			log.Printf("IndexDatasetData %s panic %v", mirRepo.TaskID, r)
+			log.Printf("IndexDatasetData %s panic %v\n%s\n", mirRepo.TaskID, r, debug.Stack())
 		}
 	}()
 
@@ -155,6 +156,10 @@ func (s *MongoServer) buildMirAssetDetail(
 	mirAssetDetail.DocID = assetID
 	mirAssetDetail.AssetID = assetID
 	constants.BuildStructFromMessage(mirMetadatas.Attributes[assetID], &mirAssetDetail.MetaData)
+	if mirAssetDetail.MetaData.Width <= 0 || mirAssetDetail.MetaData.Height <= 0 {
+		panic(fmt.Sprintf("Invalid image %s with size of zero", assetID))
+	}
+
 	if cks, ok := mirCks[assetID]; ok {
 		if len(cks.Cks) > 0 {
 			mirAssetDetail.Cks = cks.Cks
@@ -170,6 +175,8 @@ func (s *MongoServer) buildMirAssetDetail(
 			mirAssetDetail.Gt = append(mirAssetDetail.Gt, &annotationOut)
 			mapClassIDs[annotation.ClassId] = true
 		}
+
+		mirAssetDetail.GtClassIDs = append(mirAssetDetail.GtClassIDs, gtAnnotation.ImgClassIds...)
 	}
 	if predAnnotation, ok := predAnnotations[assetID]; ok {
 		for _, annotation := range predAnnotation.Boxes {
@@ -178,6 +185,8 @@ func (s *MongoServer) buildMirAssetDetail(
 			mirAssetDetail.Pred = append(mirAssetDetail.Pred, &annotationOut)
 			mapClassIDs[annotation.ClassId] = true
 		}
+
+		mirAssetDetail.PredClassIDs = append(mirAssetDetail.PredClassIDs, predAnnotation.ImgClassIds...)
 	}
 
 	mirAssetDetail.JoinedClassIDs = make([]int32, 0, len(mapClassIDs))
@@ -306,7 +315,8 @@ func (s *MongoServer) QueryDatasetAssets(
 	classIDs []int,
 	annoTypes []string,
 	currentAssetID string,
-	cmTypes []int,
+	inCMTypes []int,
+	exCMTypes []int,
 	cks []string,
 	tags []string,
 ) *constants.QueryAssetsResult {
@@ -318,13 +328,14 @@ func (s *MongoServer) QueryDatasetAssets(
 	}
 
 	log.Printf(
-		"Query offset: %d, limit: %d, classIDs: %v, annoTypes: %v, currentId: %s, cmTypes: %v cks: %v tags: %v\n",
+		"Query offset: %d, limit: %d, classIDs: %v, annoTypes: %v, currentId: %s, inCMTypes: %v, exCMTypes: %v cks: %v tags: %v\n",
 		offset,
 		limit,
 		classIDs,
 		annoTypes,
 		currentAssetID,
-		cmTypes,
+		inCMTypes,
+		exCMTypes,
 		cks,
 		tags,
 	)
@@ -351,10 +362,18 @@ func (s *MongoServer) QueryDatasetAssets(
 		filterAndConditions = append(filterAndConditions, singleQuery)
 	}
 
-	if len(cmTypes) > 0 {
+	if len(inCMTypes) > 0 {
 		singleQuery := bson.M{"$or": bson.A{
-			bson.M{"gt.cm": bson.M{"$in": cmTypes}},
-			bson.M{"pred.cm": bson.M{"$in": cmTypes}},
+			bson.M{"gt.cm": bson.M{"$in": inCMTypes}},
+			bson.M{"pred.cm": bson.M{"$in": inCMTypes}},
+		}}
+		filterAndConditions = append(filterAndConditions, singleQuery)
+	}
+
+	if len(exCMTypes) > 0 {
+		singleQuery := bson.M{"$and": bson.A{
+			bson.M{"gt.cm": bson.M{"$nin": exCMTypes}},
+			bson.M{"pred.cm": bson.M{"$nin": exCMTypes}},
 		}}
 		filterAndConditions = append(filterAndConditions, singleQuery)
 	}
@@ -456,9 +475,9 @@ func (s *MongoServer) queryHistogram(
 ) *map[string]int32 {
 	buckets := map[string]int32{}
 
-	// Mongodb treat last upper element as exclusive boundary, add delta to enclose it.
+	// Mongodb treat last upper element as exclusive boundary, add 100M to calc x+.
 	extendedLowerBNDs := lowerBNDs
-	extendedLowerBNDs = append(extendedLowerBNDs, lowerBNDs[len(lowerBNDs)-1]+0.01)
+	extendedLowerBNDs = append(extendedLowerBNDs, lowerBNDs[len(lowerBNDs)-1]+1e8)
 
 	cond := make([]bson.M, 0)
 	if !skipUnwind {

@@ -92,9 +92,34 @@ def _get_average_ee(average_ee: mirpb.SingleEvaluationElement, ees: List[mirpb.S
     average_ee.ar /= ees_cnt
 
 
-def write_confusion_matrix(gt_annotations: mirpb.SingleTaskAnnotations, pred_annotations: mirpb.SingleTaskAnnotations,
-                           class_ids: List[int], conf_thr: float, match_result: DetEvalMatchResult,
-                           iou_thr: float) -> None:
+def write_semantic_confusion_matrix(gt_annotations: mirpb.SingleTaskAnnotations,
+                                    pred_annotations: mirpb.SingleTaskAnnotations,
+                                    class_ids: List[int], match_result: Dict[str, List[int]]) -> None:
+    for asset_id, image_annotations in gt_annotations.image_annotations.items():
+        match_class_ids = match_result.get(asset_id, [])
+        for annotation in image_annotations.boxes:
+            if annotation.class_id in match_class_ids:
+                annotation.cm = mirpb.ConfusionMatrixType.MTP
+            elif annotation.class_id in class_ids:
+                annotation.cm = mirpb.ConfusionMatrixType.FN
+            else:
+                annotation.cm = mirpb.ConfusionMatrixType.IGNORED
+            annotation.det_link_id = -1
+    for asset_id, image_annotations in pred_annotations.image_annotations.items():
+        match_class_ids = match_result.get(asset_id, [])
+        for annotation in image_annotations.boxes:
+            if annotation.class_id in match_class_ids:
+                annotation.cm = mirpb.ConfusionMatrixType.TP
+            elif annotation.class_id in class_ids:
+                annotation.cm = mirpb.ConfusionMatrixType.FP
+            else:
+                annotation.cm = mirpb.ConfusionMatrixType.IGNORED
+            annotation.det_link_id = -1
+
+
+def write_instance_confusion_matrix(gt_annotations: mirpb.SingleTaskAnnotations,
+                                    pred_annotations: mirpb.SingleTaskAnnotations, class_ids: List[int],
+                                    conf_thr: float, match_result: DetEvalMatchResult, iou_thr: float) -> None:
     class_ids_set = set(class_ids)
     for image_annotations in gt_annotations.image_annotations.values():
         for annotation in image_annotations.boxes:
@@ -108,8 +133,13 @@ def write_confusion_matrix(gt_annotations: mirpb.SingleTaskAnnotations, pred_ann
             annotation.det_link_id = -1
 
     for asset_id in match_result.get_asset_ids(iou_thr=iou_thr):
+        # exclude impossible matches
+        if asset_id not in gt_annotations.image_annotations or asset_id not in pred_annotations.image_annotations:
+            continue
+
         id_to_gts = {box.index: box for box in gt_annotations.image_annotations[asset_id].boxes}
         id_to_preds = {box.index: box for box in pred_annotations.image_annotations[asset_id].boxes}
+
         for gt_pb_index, pred_pb_index in match_result.get_matches(asset_id=asset_id, iou_thr=iou_thr):
             id_to_gts[gt_pb_index].cm = mirpb.ConfusionMatrixType.MTP
             id_to_gts[gt_pb_index].det_link_id = pred_pb_index

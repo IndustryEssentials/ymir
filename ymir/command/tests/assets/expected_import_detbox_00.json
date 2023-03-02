@@ -176,6 +176,7 @@
                     ]
                 }
             },
+            "is_instance_segmentation": false,
             "task_id": "import_detbox_00",
             "type": 2,
             "task_class_ids": [
@@ -331,6 +332,7 @@
                     ]
                 }
             },
+            "is_instance_segmentation": false,
             "task_id": "import_detbox_00",
             "type": 2,
             "task_class_ids": [
@@ -932,7 +934,6 @@
                 "return_msg": "",
                 "new_types": {},
                 "new_types_added": false,
-                "serialized_task_parameters": "",
                 "serialized_executor_config": "",
                 "executor": ""
             }

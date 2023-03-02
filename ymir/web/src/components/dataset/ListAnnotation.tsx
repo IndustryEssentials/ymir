@@ -13,9 +13,11 @@ import { useDebounceEffect } from 'ahooks'
 type Props = {
   asset: YModels.Asset
   filter?: (annotations: YModels.Annotation[]) => YModels.Annotation[]
+  hideAsset?: boolean
+  isFull?: boolean
 }
 
-const ListAnnotation: FC<Props> = ({ asset, filter }) => {
+const ListAnnotation: FC<Props> = ({ asset, filter, hideAsset, isFull }) => {
   const [annotations, setAnnotations] = useState<YModels.Annotation[]>([])
   const imgContainer = useRef<HTMLDivElement>(null)
   const img = useRef<HTMLImageElement>(null)
@@ -39,11 +41,13 @@ const ListAnnotation: FC<Props> = ({ asset, filter }) => {
     const { current } = imgContainer
     const cw = current?.clientWidth || 0
     const iw = asset?.width || 0
-    const clientWidth = iw > cw ? cw : iw
+    const clientWidth = isFull? cw : (iw > cw ? cw : iw)
     setImgWidth(clientWidth)
     setWidth(cw)
     setRatio(clientWidth / iw)
   }
+
+  window.addEventListener('resize', () => imgContainer.current && calClientWidth())
 
   function renderAnnotation(annotation: YModels.Annotation, key: number | string) {
     switch (annotation.type) {
@@ -58,7 +62,7 @@ const ListAnnotation: FC<Props> = ({ asset, filter }) => {
 
   return (
     <div className={styles.ic_container} ref={imgContainer} key={asset.hash}>
-      <img ref={img} src={asset?.url} className={styles.assetImg} onLoad={calClientWidth} />
+      <img ref={img} style={{ visibility: hideAsset ? 'hidden' : 'visible' }} src={asset?.url} className={styles.assetImg} onLoad={calClientWidth} />
       <div className={styles.annotations} style={{ width: imgWidth, left: -imgWidth / 2 }}>
         {annotations.map((anno, index) => renderAnnotation(anno, asset.hash + index))}
       </div>

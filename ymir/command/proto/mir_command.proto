@@ -145,6 +145,7 @@ message SingleTaskAnnotations {
     ObjectType type = 3;
     // Set of all shown class ids.
     repeated int32 task_class_ids = 4;
+    bool is_instance_segmentation = 5;
 
     // meta infos of this SingleTaskAnnotations
     repeated int32 eval_class_ids = 10;
@@ -265,13 +266,12 @@ message Task {
     /// (for import task): reason for new types, True: added, False: ignored
     bool new_types_added = 12;
 
-    string serialized_task_parameters = 102;
     string serialized_executor_config = 103;
     string src_revs = 104;
     string dst_rev = 105;
     string executor = 106;
 
-    reserved 4, 7, 100, 101;
+    reserved 4, 7, 100, 101, 102;
 };
 
 message ModelMeta {
@@ -337,6 +337,8 @@ message SegmentationMetrics {
     float aAcc = 1;  // overall accuracy
     float mAcc = 2;  // mean accuracy
     float mIoU = 3;  // mean iou
+    map<int32, float> Acc = 4; // classwise accuracy
+    map<int32, float> IoU = 5; // classwise iou
 }
 
 message SingleIouEvaluation {

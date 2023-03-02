@@ -1,37 +1,51 @@
 import React, { useEffect, useState } from 'react'
+import type { FC } from 'react'
 import { Button, Card, Col, Descriptions, Row, Tag, Space } from 'antd'
 
 import { getDateFromTimestamp } from '@/utils/date'
 import t from '@/utils/t'
 import { randomBetween } from '@/utils/number'
-import useFetch from '@/hooks/useFetch'
 import useRequest from '@/hooks/useRequest'
 
-import Hash from '@/components/common/hash'
+import Hash from '@/components/common/Hash'
 import AssetAnnotation from '@/components/dataset/asset/AssetAnnotations'
-import GtSelector from '@/components/form/GtSelector'
 import EvaluationSelector from '@/components/form/EvaluationSelector'
 import CustomLabels from '@/components/dataset/asset/CustomLabels'
 
 import styles from './asset.less'
 import { NavDatasetIcon, EyeOffIcon, EyeOnIcon } from '@/components/common/Icons'
 import { LeftOutlined, RightOutlined } from '@ant-design/icons'
+import GtSelector from '@/components/form/GtSelector'
+import { evaluationTags } from '@/constants/dataset'
+
+type Props = {
+  id: string
+  asset: YModels.Asset
+  pred?: boolean
+  datasetKeywords?: KeywordsType
+  filterKeyword?: KeywordsType
+  filters?: YParams.AssetQueryParams
+  index?: number
+  total?: number
+}
+type IndexType = { index: number; keyword?: string[] }
+type KeywordsType = string[]
 
 const { CheckableTag } = Tag
 const { Item } = Descriptions
 
-function Asset({ id, asset: cache, datasetKeywords, filterKeyword, filters, index = 0, total = 0 }) {
-  const [asset, setAsset] = useState({})
+const Asset: FC<Props> = ({ id, asset: cache, pred, datasetKeywords, filterKeyword, filters, index = 0, total = 0 }) => {
+  const [asset, setAsset] = useState<YModels.Asset>()
   const [current, setCurrent] = useState('')
-  const [showAnnotations, setShowAnnotations] = useState([])
-  const [selectedKeywords, setSelectedKeywords] = useState([])
-  const [currentIndex, setCurrentIndex] = useState(null)
-  const [assetHistory, setAssetHistory] = useState([])
-  const [evaluation, setEvaluation] = useState({ selected: [], all: false })
-  const [gtSelected, setGtSelected] = useState({ selected: [], all: false })
-  const [colors, setColors] = useState({})
-  const [{ items: assets }, getAssets] = useFetch('dataset/getAssetsOfDataset', { items: [] })
-  const { data: dataset, run: getDataset } = useRequest('dataset/getDataset', {
+  const [showAnnotations, setShowAnnotations] = useState<YModels.Annotation[]>([])
+  const [selectedKeywords, setSelectedKeywords] = useState<KeywordsType>([])
+  const [currentIndex, setCurrentIndex] = useState<IndexType>({ index: 0 })
+  const [assetHistory, setAssetHistory] = useState<IndexType[]>([])
+  const [gtSelected, setGtSelected] = useState<string[]>([])
+  const [evaluation, setEvaluation] = useState(0)
+  const [colors, setColors] = useState<{ [key: string]: string }>({})
+  const { data: { items: assets } = { items: [] }, run: getAssets } = useRequest<YStates.List<YModels.Asset>>('dataset/getAssetsOfDataset')
+  const { data: dataset, run: getDataset } = useRequest<YModels.Dataset>('dataset/getDataset', {
     loading: false,
   })
 
@@ -40,12 +54,12 @@ function Asset({ id, asset: cache, datasetKeywords, filterKeyword, filters, inde
   }, [])
 
   useEffect(() => {
-    setAsset({})
+    setAsset(undefined)
     index > -1 && setCurrentIndex({ index, keyword: filterKeyword })
   }, [index, filterKeyword])
 
   useEffect(() => {
-    if (currentIndex !== null) {
+    if (currentIndex) {
       fetchAssetHash()
       setAssetHistory((history) => [...history, currentIndex])
     }
@@ -59,7 +73,7 @@ function Asset({ id, asset: cache, datasetKeywords, filterKeyword, filters, inde
   }, [cache])
 
   useEffect(() => {
-    if (!asset.hash) {
+    if (!asset || !asset?.hash) {
       return
     }
     const { annotations } = asset
@@ -73,18 +87,18 @@ function Asset({ id, asset: cache, datasetKeywords, filterKeyword, filters, inde
   }, [assets])
 
   useEffect(() => {
-    const keywordFilter = (annotation) => selectedKeywords.indexOf(annotation.keyword) >= 0
-    const typeAll = !gtSelected.selected.length || gtSelected.all
-    const cmAll = !evaluation.selected.length || evaluation.all
-    const gtFilter = (annotation) => typeAll || gtSelected.selected.some((selected) => (selected === 'gt' ? annotation.gt : !annotation.gt))
-    const evaluationFilter = (annotation) => cmAll || evaluation.selected.includes(annotation.cm)
-    const filters = (annotation) => keywordFilter(annotation) && evaluationFilter(annotation) && gtFilter(annotation)
-    const visibleAnnotations = (asset.annotations || []).filter(filters)
+    type FilterType = (annotation: YModels.Annotation) => boolean
+    const wrong = [evaluationTags.fn, evaluationTags.fp]
+    const typeFilter: FilterType = (anno) => pred || !!anno.gt
+    const gtFilter: FilterType = (anno) => !pred || ((gtSelected.includes('gt') && !!anno.gt) || (gtSelected.includes('pred') && !anno.gt))
+    const keywordFilter: FilterType = (annotation) => selectedKeywords.includes(annotation.keyword)
+    const evaluationFilter: FilterType = (annotation) => !evaluation || (!wrong.includes(evaluation) ? !wrong.includes(annotation.cm) : evaluation === annotation.cm)
+    const visibleAnnotations = (asset?.annotations || []).filter((anno) => typeFilter(anno) && gtFilter(anno) && keywordFilter(anno) && evaluationFilter(anno))
     setShowAnnotations(visibleAnnotations)
-  }, [selectedKeywords, evaluation, asset, gtSelected])
+  }, [selectedKeywords, evaluation, asset, gtSelected, pred])
 
   function fetchAssetHash() {
-    setAsset((asset) => ({ ...asset, annotations: [] }))
+    setAsset((asset) => (asset ? { ...asset, annotations: [] } : undefined))
     getAssets({ id, ...filters, keyword: currentIndex.keyword, offset: currentIndex.index, limit: 1, datasetKeywords })
   }
 
@@ -109,27 +123,23 @@ function Asset({ id, asset: cache, datasetKeywords, filterKeyword, filters, inde
     }
   }
 
-  function changeKeywords(tag, checked) {
+  function changeKeywords(tag: string, checked?: boolean) {
     const selected = checked ? [...selectedKeywords, tag] : selectedKeywords.filter((k) => k !== tag)
     setSelectedKeywords(selected)
   }
 
   function toggleAnnotation() {
-    setSelectedKeywords(selectedKeywords.length ? [] : asset.keywords)
+    setSelectedKeywords(selectedKeywords.length || !asset?.keywords.length ? [] : asset?.keywords)
   }
 
-  function gtChange(checked, all) {
-    setGtSelected({ selected: checked, all })
+  function evaluationChange(checked: number) {
+    setEvaluation(checked)
   }
 
-  function evaluationChange(checked, all) {
-    setEvaluation({ selected: checked, all })
-  }
-
-  return asset.hash ? (
+  return asset?.hash ? (
     <div className={styles.asset}>
       <div className={styles.info}>
-        <Row className={styles.infoRow} align="center" wrap={false}>
+        <Row className={styles.infoRow} align="middle" wrap={false}>
           <Col flex={'20px'} style={{ alignSelf: 'center' }}>
             <LeftOutlined hidden={currentIndex.index <= 0} className={styles.prev} onClick={prev} />
           </Col>
@@ -164,9 +174,11 @@ function Asset({ id, asset: cache, datasetKeywords, filterKeyword, filters, inde
                 <Item label={t('dataset.asset.info.channel')} span={asset.size ? 1 : 2}>
                   {asset.metadata?.image_channels}
                 </Item>
-                <Item label={t('dataset.asset.info.timestamp')} span={2}>
-                  {getDateFromTimestamp(asset.metadata?.timestamp?.start)}
-                </Item>
+                {asset.metadata?.timestamp?.start ? (
+                  <Item label={t('dataset.asset.info.timestamp')} span={2}>
+                    {getDateFromTimestamp(asset.metadata.timestamp.start)}
+                  </Item>
+                ) : null}
                 <Item label={t('dataset.asset.info.keyword')} span={2}>
                   <Row>
                     <Col flex={1}>
@@ -176,7 +188,6 @@ function Asset({ id, asset: cache, datasetKeywords, filterKeyword, filters, inde
                           onChange={(checked) => changeKeywords(keyword, checked)}
                           className={'ant-tag-' + colors[keyword]}
                           key={i}
-                          color={colors[keyword]}
                         >
                           {keyword}
                         </CheckableTag>
@@ -197,8 +208,13 @@ function Asset({ id, asset: cache, datasetKeywords, filterKeyword, filters, inde
               </Descriptions>
 
               <Space className={styles.filter} size={10} wrap>
-                <GtSelector vertical onChange={gtChange} />
-                <EvaluationSelector hidden={!dataset?.evaluated || !asset.evaluated} vertical onChange={evaluationChange} />
+                {pred ? <GtSelector vertical onChange={setGtSelected} /> : null}
+                <EvaluationSelector
+                  value={evaluation}
+                  vertical
+                  hidden={!(pred && dataset?.evaluated)}
+                  onChange={({ target }) => evaluationChange(target.value)}
+                />
               </Space>
             </Card>
             <Space className={styles.random}>

@@ -115,7 +115,7 @@ export const homeRoutes = [
   {
     path: "/home/project/:id/dataset/:did/assets",
     name: "datasetDetail",
-    component: "@/pages/dataset/assets",
+    component: "@/pages/dataset/Assets",
     title: "assets.title",
     pid: 10,
     id: 11,
@@ -284,13 +284,13 @@ export const homeRoutes = [
     breadcrumbLabel: "breadcrumbs.project.add",
   },
   {
-    path: "/home/project/:id/hidden",
-    name: "hidden",
-    component: "@/pages/project/hidden",
-    title: "project.hidden.title",
+    path: "/home/project/:id/trash",
+    name: "trash",
+    component: "@/pages/project/Hidden",
+    title: "project.trash.title",
     pid: 25,
     id: 30,
-    breadcrumbLabel: "breadcrumbs.project.hidden",
+    breadcrumbLabel: "breadcrumbs.project.trash",
   },
   {
     path: "/home/project/:id/iterations",

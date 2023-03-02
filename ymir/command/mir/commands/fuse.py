@@ -64,11 +64,11 @@ class CmdFuse(base.BaseCommand):
         # create and write tasks
         message = (f"merge in: {src_revs}, ex: {ex_src_revs}; sample count: {count}, rate: {rate}; "
                    f"filter in: {in_cis}, ex: {ex_cis}")
-        task = mir_storage_ops.create_task(task_type=mirpb.TaskType.TaskTypeFusion,
-                                           task_id=dst_typ_rev_tid.tid,
-                                           message=message,
-                                           src_revs=src_revs,
-                                           dst_rev=dst_rev)
+        task = mir_storage_ops.create_task_record(task_type=mirpb.TaskType.TaskTypeFusion,
+                                                  task_id=dst_typ_rev_tid.tid,
+                                                  message=message,
+                                                  src_revs=src_revs,
+                                                  dst_rev=dst_rev)
 
         mir_data = {
             mirpb.MirStorage.MIR_METADATAS: mir_metadatas,

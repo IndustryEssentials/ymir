@@ -80,7 +80,7 @@ class TestCmdSampling(unittest.TestCase):
         mir_annotations.prediction.type = mirpb.ObjectType.OT_NO_ANNOTATIONS
         mir_annotations.ground_truth.type = mirpb.ObjectType.OT_NO_ANNOTATIONS
 
-        task = mir_storage_ops.create_task(task_type=mirpb.TaskType.TaskTypeImportData, task_id='t0', message='import')
+        task = mir_storage_ops.create_task_record(task_type=mirpb.TaskType.TaskTypeImportData, task_id='t0', message='import')
         mir_storage_ops.MirStorageOps.save_and_commit(mir_root=self._mir_root,
                                                       mir_branch='a',
                                                       his_branch='master',

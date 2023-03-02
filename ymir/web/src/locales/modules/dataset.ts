@@ -12,7 +12,7 @@ const dataset = {
   'dataset.column.ignored_keyword': { cn: '忽略类别', en: 'Ignored Classes' },
   'dataset.column.state': { cn: '状态', en: 'Status' },
   'dataset.column.create_time': { cn: '创建时间', en: 'Create Time' },
-  'dataset.column.hidden_time': { cn: '隐藏时间', en: 'Hidden Time' },
+  'dataset.column.delete_time': { cn: '删除时间', en: 'Deleted Time' },
   'dataset.column.model': { cn: '模型名称', en: 'Model Name' },
   'dataset.column.map': { cn: 'mAP(平均IoU)', en: 'mAP(Average of IoU)' },
   'dataset.column.action': { cn: '操作', en: 'Actions' },
@@ -28,12 +28,11 @@ const dataset = {
   'dataset.empty.label': { cn: '去导入一个数据集', en: 'Import A Dataset' },
   'dataset.import.label': { cn: '添加数据集', en: 'Add Dataset' },
   'dataset.query.name': { cn: '名称', en: 'Dataset Name' },
-  'dataset.action.del.confirm.content': { cn: '确认要删除数据集版本：{name}？', en: 'Are you sure to remove this dataset version:{name}?' },
-  'dataset.action.hide.confirm.content': { cn: '确认要隐藏数据集版本：{name}？', en: 'Are you sure to hide dataset versions: {name}?' },
-  'dataset.hide.single.invalid': { cn: '该版本不能隐藏', en: 'This version can not be hide' },
-  'dataset.action.hide.confirm.exclude': {
-    cn: '以下版本因与项目、迭代等关联不能隐藏：{labels}',
-    en: 'The following related to project or iterations can not be hide: {name}.',
+  'dataset.action.del.confirm.content': { cn: '确认要删除数据集版本：{name}？', en: 'Are you sure to remove this dataset version: {name}?' },
+  'dataset.del.single.invalid': { cn: '该版本不能删除', en: 'This version can not be delete' },
+  'dataset.action.del.confirm.exclude': {
+    cn: '以下版本因与项目、迭代等关联不能删除：{labels}',
+    en: 'The following related to project or iterations can not be delete: {name}.',
   },
   'dataset.action.delgroup.confirm.content': {
     en: 'Are you sure to remove this dataset:{name}, all of versions will be deleted.',
@@ -89,7 +88,7 @@ const dataset = {
   'dataset.add.form.path.label': { cn: '相对路径', en: 'Relative Path' },
   'dataset.add.form.tip.format.detail': { cn: '查看标注示例文件及meta.yaml格式', en: 'View annotations sample file or meta.yaml' },
   'dataset.add.form.tip.structure': {
-    cn: '图片文件需放入images文件夹内，标准值标注文件需放入gt文件夹内，模型推理标注文件需放入pred文件夹内。gt和pred都是可选的。文件结构如下：{br}{pic}{br}{detail}',
+    cn: '图片文件需放入images文件夹内，标注文件需放入gt文件夹内，模型推理标注文件需放入pred文件夹内。gt和pred都是可选的。文件结构如下：{br}{pic}{br}{detail}',
     en: 'image -> images; gt -> GT annotations; pred -> predictions. gt and pred is optional. structure: {br}{pic}',
   },
   'dataset.add.form.path.tip': {
@@ -169,6 +168,7 @@ const dataset = {
   'dataset.analysis.title.keyword_area': { cn: '标注面积统计', en: 'Annotations Area Statistics' },
   'dataset.analysis.title.instance_area': { cn: '实例面积分布', en: 'Instances Area Distribution' },
   'dataset.analysis.title.crowdedness': { cn: '目标聚集度', en: 'Object Crowdedness Statistics' },
+  'dataset.analysis.title.complexity': { cn: '场景复杂度', en: 'Scene Complexity' },
   'dataset.analysis.bar.asset.tooltip': { cn: ' 占比：{ratio} 数量：{amount} 张', en: ' Ratio: {ratio} Amount: {amount}' },
   'dataset.analysis.bar.anno.tooltip': { cn: ' 占比：{ratio} 数量：{amount} 个', en: ' Ratio: {ratio} Amount: {amount}' },
   'dataset.analysis.bar.area.tooltip': { cn: ' 占比：{ratio} 面积：{amount} px', en: ' Ratio: {ratio} Area: {amount}' },
@@ -180,9 +180,19 @@ const dataset = {
   'dataset.assets.keyword.selector.types.tags': { en: 'Box Tag', cn: '标注框标签' },
   'dataset.assets.keyword.selector.types.placeholder': { en: 'Please select filter classes', cn: '请选择筛选类别，可多选' },
   'dataset.assets.selector.gt.label': { en: 'Annotation Type:', cn: '标注类型：' },
-  'dataset.assets.selector.evaluation.label': { en: 'Evaluation:', cn: '评估指标：' },
+  'dataset.assets.selector.evaluation.label': { en: 'Evaluation:', cn: '评估结果' },
   'dataset.detail.infer.class': { en: 'Prediction Classes:', cn: '预测类别：' },
   'dataset.type.testing': { cn: '测试集', en: 'Testing Datasets' },
+  'dataset.assets.selector.columns.label': { en: '{count} assets per row', cn: '一行 {count} 张图片' },
+  'dataset.assets.selector.visual.label': { cn: '可视化', en: 'Visualization' },
+  'dataset.assets.selector.visual.label.all': { cn: '查看图像、标注和推理结果', en: 'View assets/annotations/predictions' },
+  'dataset.assets.selector.visual.label.asset': { cn: '仅查看图像', en: 'View only assets' },
+  'dataset.assets.selector.visual.label.gt': { cn: '查看图像和标注', en: 'View assets/annotations' },
+  'dataset.assets.selector.visual.label.pred': { cn: '查看图像和推理结果', en: 'View assets/predictions' },
+  'dataset.assets.selector.visual.label.annotation': { cn: '查看标注和推理结果', en: 'View annotations/predictions' },
+  'dataset.assets.selector.evaluation.right': { cn: '预测正确', en: 'Correct' },
+  'dataset.assets.selector.evaluation.fp': { cn: '预测错误-误检', en: 'FP' },
+  'dataset.assets.selector.evaluation.fn': { cn: '预测错误-漏检', en: 'FN' },
 }
 
 export default dataset

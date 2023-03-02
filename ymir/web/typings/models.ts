@@ -90,6 +90,7 @@ declare namespace YModels {
     keywordArea: Array<BackendData>
     instanceArea: Array<BackendData>
     crowdedness: Array<BackendData>
+    complexity: Array<BackendData>
   }
   export interface DatasetGroup extends Group {
     versions?: Array<Dataset>
@@ -134,7 +135,11 @@ declare namespace YModels {
     metadata?: {
       width: number
       height: number
-      channel: number
+      image_channels?: number
+      timestamp: {
+        start: string
+        duration?: number
+      }
     }
     size?: number
     annotations: Annotation[]

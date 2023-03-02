@@ -1,26 +1,26 @@
-import React, { useEffect, useRef, useState } from "react"
-import { useHistory, useParams, Link, useSelector } from "umi"
-import { Button, Card, message, Space } from "antd"
+import React, { useEffect, useRef, useState } from 'react'
+import { useHistory, useParams, Link, useSelector } from 'umi'
+import { Button, Card, message, Space } from 'antd'
 
-import t from "@/utils/t"
-import { TASKTYPES, getTaskTypeLabel } from "@/constants/task"
+import t from '@/utils/t'
+import { TASKTYPES, getTaskTypeLabel } from '@/constants/task'
 import useFetch from '@/hooks/useFetch'
-import useRestore from "@/hooks/useRestore"
+import useRestore from '@/hooks/useRestore'
 import { canHide } from '@/constants/dataset'
 
-import Breadcrumbs from "@/components/common/breadcrumb"
-import TaskDetail from "@/components/task/detail"
-import Detail from "@/components/dataset/detail"
-import TaskProgress from "@/components/task/progress"
-import Error from "@/components/task/error"
-import Hide from "@/components/common/hide"
+import Breadcrumbs from '@/components/common/breadcrumb'
+import TaskDetail from '@/components/task/detail'
+import Detail from '@/components/dataset/detail'
+import TaskProgress from '@/components/task/progress'
+import Error from '@/components/task/error'
+import Hide from '@/components/common/hide'
 import useCardTitle from '@/hooks/useCardTitle'
-import EditDescBox from "@/components/form/editDescBox"
+import EditDescBox from '@/components/form/editDescBox'
 
-import s from "./detail.less"
-import useRerunAction from "../../hooks/useRerunAction"
+import s from './detail.less'
+import useRerunAction from '../../hooks/useRerunAction'
 
-const taskTypes = ["merge", "filter", "train", "mining", "label", 'inference', 'copy']
+const taskTypes = ['merge', 'filter', 'train', 'mining', 'label', 'inference', 'copy']
 
 function DatasetDetail() {
   const history = useHistory()
@@ -55,12 +55,12 @@ function DatasetDetail() {
   }
 
   function saveDescHandle(result) {
-    result && setDataset(dataset => ({ ...dataset, description: result.description }))
+    result && setDataset((dataset) => ({ ...dataset, description: result.description }))
   }
 
   const hide = (version) => {
     if (dataset?.project?.hiddenDatasets?.includes(version.id)) {
-      return message.warn(t('dataset.hide.single.invalid'))
+      return message.warn(t('dataset.del.single.invalid'))
     }
     hideRef.current.hide([version])
   }
@@ -79,9 +79,7 @@ function DatasetDetail() {
   return (
     <div>
       <Breadcrumbs />
-      <Card
-        title={cardTitle}
-      >
+      <Card title={cardTitle}>
         <div className={s.content}>
           <Detail dataset={dataset} />
           <TaskProgress
@@ -93,38 +91,38 @@ function DatasetDetail() {
             fresh={() => fetchDataset(true)}
           />
           <Error code={dataset.task?.error_code} msg={dataset.task?.error_message} terminated={dataset?.task?.is_terminated} />
-          <TaskDetail
-            task={dataset.task}
-          ></TaskDetail>
-          <Space style={{ width: "100%", justifyContent: "flex-end" }}>
+          <TaskDetail task={dataset.task}></TaskDetail>
+          <Space style={{ width: '100%', justifyContent: 'flex-end' }}>
             {dataset.taskType === TASKTYPES.LABEL ? (
-              <div style={{ textAlign: "right" }}>
+              <div style={{ textAlign: 'right' }}>
                 <Link target="_blank" to="/label_tool/">
-                  {t("task.detail.label.go.platform")}
+                  {t('task.detail.label.go.platform')}
                 </Link>
               </div>
             ) : null}
-            {!dataset.hidden ? <>
-              {taskTypes.map((type, index) => index === 0 || dataset.assetCount > 0 ? (
-                <Button
-                  key={type}
-                  type="primary"
-                  onClick={() => history.push(`/home/project/${pid}/${type}?did=${id}`)}
-                >
-                  {t(`common.action.${type}`)}
+            {!dataset.hidden ? (
+              <>
+                {taskTypes.map((type, index) =>
+                  index === 0 || dataset.assetCount > 0 ? (
+                    <Button key={type} type="primary" onClick={() => history.push(`/home/project/${pid}/${type}?did=${id}`)}>
+                      {t(`common.action.${type}`)}
+                    </Button>
+                  ) : null,
+                )}
+                {canHide(dataset) ? (
+                  <Button type="primary" onClick={() => hide(dataset)}>
+                    {t(`common.action.del`)}
+                  </Button>
+                ) : null}
+                <Button type="primary" onClick={() => editDesc()}>
+                  {t(`common.action.edit.desc`)}
                 </Button>
-              ) : null)}
-              {canHide(dataset) ? <Button type="primary" onClick={() => hide(dataset)}>
-                {t(`common.action.hide`)}
-              </Button> : null}
-              <Button type="primary" onClick={() => editDesc()}>
-                {t(`common.action.edit.desc`)}
-              </Button>
-            </> :
+              </>
+            ) : (
               <Button type="primary" onClick={restore}>
-                {t("common.action.restore")}
+                {t('common.action.restore')}
               </Button>
-            }
+            )}
             {generateRerunBtn(dataset)}
           </Space>
         </div>

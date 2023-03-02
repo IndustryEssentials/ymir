@@ -10,10 +10,9 @@ from google.protobuf.json_format import ParseDict
 import xmltodict
 import yaml
 
-from mir.tools import class_ids, mir_storage_ops
+from mir.tools import class_ids
 from mir.tools.code import MirCode
 from mir.tools.errors import MirRuntimeError
-from mir.tools.revs_parser import TypRevTid
 from mir.tools.settings import COCO_JSON_NAME
 from mir.tools.phase_logger import PhaseLoggerCenter
 from mir.protos import mir_command_pb2 as mirpb
@@ -46,7 +45,7 @@ def parse_anno_format(anno_format_str: str) -> "mirpb.ExportFormat.V":
 
 
 def parse_anno_type(anno_type_str: str) -> "mirpb.ObjectType.V":
-    _anno_dict: Dict[str, mirpb.ObjectType.V] = {
+    _anno_dict: Dict[str, "mirpb.ObjectType.V"] = {
         "det-box": mirpb.ObjectType.OT_DET_BOX,
         "seg": mirpb.ObjectType.OT_SEG,
         "no-annotations": mirpb.ObjectType.OT_NO_ANNOTATIONS,
@@ -62,6 +61,12 @@ def _annotation_parse_func(anno_type: "mirpb.ObjectType.V") -> Callable:
     if anno_type not in _func_dict:
         raise NotImplementedError()
     return _func_dict[anno_type]
+
+
+def _annotation_signature(annotation: mirpb.ObjectAnnotation, asset_id: str) -> str:
+    return (
+        f"{asset_id}-{annotation.class_id}-{annotation.box.x}-{annotation.box.y}-{annotation.box.w}-{annotation.box.h}"
+        f"-{annotation.box.rotate_angle}")
 
 
 def _voc_object_dict_to_annotation(object_dict: dict, cid: int,
@@ -139,7 +144,7 @@ def _coco_object_dict_to_annotation(anno_dict: dict, category_id_to_cids: Dict[i
 def import_annotations(mir_annotation: mirpb.MirAnnotations, label_storage_file: str, prediction_dir_path: str,
                        groundtruth_dir_path: str, file_name_to_asset_ids: Dict[str, str],
                        unknown_types_strategy: UnknownTypesStrategy, anno_type: "mirpb.ObjectType.V",
-                       phase: str) -> Dict[str, int]:
+                       is_instance_segmentation: bool, phase: str) -> Dict[str, int]:
     anno_import_result: Dict[str, int] = defaultdict(int)
 
     # read type_id_name_dict and type_name_id_dict
@@ -150,6 +155,7 @@ def import_annotations(mir_annotation: mirpb.MirAnnotations, label_storage_file:
         logging.info(f"wrting prediction in {prediction_dir_path}")
 
         mir_annotation.prediction.type = anno_type
+        mir_annotation.prediction.is_instance_segmentation = is_instance_segmentation
         _annotation_parse_func(anno_type)(
             file_name_to_asset_ids=file_name_to_asset_ids,
             mir_annotation=mir_annotation,
@@ -167,12 +173,14 @@ def import_annotations(mir_annotation: mirpb.MirAnnotations, label_storage_file:
             f"imported pred: {len(mir_annotation.prediction.image_annotations)} / {len(file_name_to_asset_ids)}")
     else:
         mir_annotation.prediction.type = mirpb.ObjectType.OT_NO_ANNOTATIONS
+        mir_annotation.prediction.is_instance_segmentation = False
     PhaseLoggerCenter.update_phase(phase=phase, local_percent=0.5)
 
     if groundtruth_dir_path:
         logging.info(f"wrting ground-truth in {groundtruth_dir_path}")
 
         mir_annotation.ground_truth.type = anno_type
+        mir_annotation.ground_truth.is_instance_segmentation = is_instance_segmentation
         _annotation_parse_func(anno_type)(
             file_name_to_asset_ids=file_name_to_asset_ids,
             mir_annotation=mir_annotation,
@@ -187,6 +195,7 @@ def import_annotations(mir_annotation: mirpb.MirAnnotations, label_storage_file:
             f"imported gt: {len(mir_annotation.ground_truth.image_annotations)} / {len(file_name_to_asset_ids)}")
     else:
         mir_annotation.ground_truth.type = mirpb.ObjectType.OT_NO_ANNOTATIONS
+        mir_annotation.ground_truth.is_instance_segmentation = False
     PhaseLoggerCenter.update_phase(phase=phase, local_percent=1.0)
 
     if unknown_types_strategy == UnknownTypesStrategy.STOP and anno_import_result:
@@ -200,6 +209,8 @@ def _import_annotations_voc_xml(file_name_to_asset_ids: Dict[str, str], mir_anno
                                 annotations_dir_path: str, class_type_manager: class_ids.UserLabels,
                                 unknown_types_strategy: UnknownTypesStrategy, accu_new_class_names: Dict[str, int],
                                 image_annotations: mirpb.SingleTaskAnnotations) -> None:
+    zero_size_count = 0
+    duplicate_count = 0
     add_if_not_found = (unknown_types_strategy == UnknownTypesStrategy.ADD)
     for filename, asset_hash in file_name_to_asset_ids.items():
         # for each asset, import it's annotations
@@ -227,6 +238,7 @@ def _import_annotations_voc_xml(file_name_to_asset_ids: Dict[str, str], mir_anno
             objects = [objects]
 
         anno_idx = 0
+        known_signatures = set()
         for object_dict in objects:
             cid, new_type_name = class_type_manager.id_and_main_name_for_name(name=object_dict['name'])
 
@@ -244,9 +256,23 @@ def _import_annotations_voc_xml(file_name_to_asset_ids: Dict[str, str], mir_anno
                 annotation = _voc_object_dict_to_annotation(object_dict=object_dict,
                                                             cid=cid,
                                                             class_type_manager=class_type_manager)
+                if annotation.box.w <= 0 or annotation.box.h <= 0:
+                    zero_size_count += 1
+                    continue
+
+                signature = _annotation_signature(annotation, asset_hash)
+                if signature in known_signatures:
+                    logging.warning(f"Found duplicated annotation for asset hash: {asset_hash}")
+                    duplicate_count += 1
+                    continue
+
                 annotation.index = anno_idx
                 image_annotations.image_annotations[asset_hash].boxes.append(annotation)
                 anno_idx += 1
+                known_signatures.add(signature)
+
+    logging.info(f"count of zero size objects: {zero_size_count}")
+    logging.info(f"count of duplicate objects: {duplicate_count}")
 
 
 def import_annotations_coco_json(file_name_to_asset_ids: Dict[str, str], mir_annotation: mirpb.MirAnnotations,
@@ -277,6 +303,8 @@ def import_annotations_coco_json(file_name_to_asset_ids: Dict[str, str], mir_ann
     unknown_category_ids_cnt = 0
     unknown_image_objects_cnt = 0
     error_format_objects_cnt = 0
+    zero_size_count = 0
+    duplicate_count = 0
 
     # images_list -> image_id_to_hashes (key: coco image id, value: ymir asset hash)
     image_id_to_hashes: Dict[int, str] = {}
@@ -300,6 +328,7 @@ def import_annotations_coco_json(file_name_to_asset_ids: Dict[str, str], mir_ann
                 cid, _ = class_type_manager.add_main_name(name)
                 category_id_to_cids[v['id']] = cid
 
+    known_signatures = set()
     for anno_dict in annotations_list:
         if anno_dict['category_id'] not in category_id_to_cids:
             unknown_category_ids_cnt += 1
@@ -314,14 +343,27 @@ def import_annotations_coco_json(file_name_to_asset_ids: Dict[str, str], mir_ann
         if not obj_anno:
             error_format_objects_cnt += 1
             continue
+        if obj_anno.box.w <= 0 or obj_anno.box.h <= 0:
+            zero_size_count += 1
+            continue
+
         asset_hash = image_id_to_hashes[anno_dict['image_id']]
+        signature = _annotation_signature(obj_anno, asset_hash)
+        if signature in known_signatures:
+            logging.warning(f"Found duplicated annotation for asset hash: {asset_hash}")
+            duplicate_count += 1
+            continue
+
         obj_anno.index = len(image_annotations.image_annotations[asset_hash].boxes)
         image_annotations.image_annotations[asset_hash].boxes.append(obj_anno)
+        known_signatures.add(signature)
 
     logging.info(f"count of unhashed file names in images list: {unhashed_filenames_cnt}")
     logging.info(f"count of unknown category ids in categories list: {unknown_category_ids_cnt}")
     logging.info(f"count of objects with unknown image ids in annotations list: {unknown_image_objects_cnt}")
     logging.info(f"count of error format objects: {error_format_objects_cnt}")
+    logging.info(f"count of zero size objects: {zero_size_count}")
+    logging.info(f"count of duplicate objects: {duplicate_count}")
 
 
 def _import_annotation_meta(class_type_manager: class_ids.UserLabels, annotations_dir_path: str,
@@ -441,8 +483,9 @@ def tvt_type_from_str(typ: str) -> 'mirpb.TvtType.V':
     return mapping.get(typ.lower(), mirpb.TvtType.TvtTypeUnknown)
 
 
-def merge_to_mirdatas(host_mir_metadatas: mirpb.MirMetadatas, host_mir_annotations: mirpb.MirAnnotations, mir_root: str,
-                      guest_typ_rev_tid: TypRevTid, strategy: MergeStrategy) -> None:
+def merge_to_mirdatas(host_mir_metadatas: mirpb.MirMetadatas, host_mir_annotations: mirpb.MirAnnotations,
+                      guest_mir_metadatas: mirpb.MirMetadatas, guest_mir_annotations: mirpb.MirAnnotations,
+                      guest_tvt_typ: "mirpb.TvtType.V", strategy: MergeStrategy) -> None:
     """
     merge contents in `guest_typ_rev_tid` to host mir datas
 
@@ -456,21 +499,11 @@ def merge_to_mirdatas(host_mir_metadatas: mirpb.MirMetadatas, host_mir_annotatio
     Raises:
         RuntimeError: when guest branch has no metadatas
     """
-    guest_mir_metadatas: mirpb.MirMetadatas
-    guest_mir_annotations: mirpb.MirAnnotations
-    guest_mir_metadatas, guest_mir_annotations = mir_storage_ops.MirStorageOps.load_multiple_storages(
-        mir_root=mir_root,
-        mir_branch=guest_typ_rev_tid.rev,
-        mir_task_id=guest_typ_rev_tid.tid,
-        ms_list=[mirpb.MirStorage.MIR_METADATAS, mirpb.MirStorage.MIR_ANNOTATIONS],
-        as_dict=False)
-
     # reset all host tvt type
     #   if not set, keep origin tvt type
-    guest_tvt_type = tvt_type_from_str(guest_typ_rev_tid.typ)
-    if guest_tvt_type != mirpb.TvtType.TvtTypeUnknown:
+    if guest_tvt_typ != mirpb.TvtType.TvtTypeUnknown:
         for asset_id in guest_mir_metadatas.attributes:
-            guest_mir_metadatas.attributes[asset_id].tvt_type = guest_tvt_type
+            guest_mir_metadatas.attributes[asset_id].tvt_type = guest_tvt_typ
 
     # merge mir_metadatas
     _merge_mirdata_asset_ids_dict(host_asset_ids_dict=host_mir_metadatas.attributes,
@@ -481,14 +514,9 @@ def merge_to_mirdatas(host_mir_metadatas: mirpb.MirMetadatas, host_mir_annotatio
                        guest_mir_annotations=guest_mir_annotations,
                        strategy=strategy)
 
-    logging.info(f"Merged from {guest_typ_rev_tid.typ_rev_tid}, assets: {len(host_mir_metadatas.attributes)}")
-
 
 def exclude_from_mirdatas(host_mir_metadatas: mirpb.MirMetadatas, host_mir_annotations: mirpb.MirAnnotations,
-                          mir_root: str, ex_rev_tid: TypRevTid) -> None:
-    guest_mir_metadatas: mirpb.MirMetadatas = mir_storage_ops.MirStorageOps.load_single_storage(
-        mir_root=mir_root, mir_branch=ex_rev_tid.rev, mir_task_id=ex_rev_tid.tid, ms=mirpb.MirStorage.MIR_METADATAS)
-
+                          guest_mir_metadatas: mirpb.MirMetadatas) -> None:
     _, _, id_joint = match_asset_ids(set(host_mir_metadatas.attributes.keys()),
                                      set(guest_mir_metadatas.attributes.keys()))
     for asset_id in id_joint:
@@ -526,12 +554,14 @@ def _merge_task_annotations(host_task_annotations: mirpb.SingleTaskAnnotations,
     # check type
     if (host_task_annotations.type != mirpb.ObjectType.OT_NO_ANNOTATIONS
             and guest_task_annotations.type != mirpb.ObjectType.OT_NO_ANNOTATIONS
-            and host_task_annotations.type != guest_task_annotations.type):
+            and host_task_annotations.type != guest_task_annotations.type
+            and host_task_annotations.is_instance_segmentation != guest_task_annotations.is_instance_segmentation):
         raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_OBJECT_TYPE,
-                              error_message='host and guest object type unequal')
+                              error_message='host and guest object type / is_instance_segmentation unequal')
 
     if host_task_annotations.type == mirpb.ObjectType.OT_NO_ANNOTATIONS:
         host_task_annotations.type = guest_task_annotations.type
+        host_task_annotations.is_instance_segmentation = guest_task_annotations.is_instance_segmentation
 
     _merge_mirdata_asset_ids_dict(host_asset_ids_dict=host_task_annotations.image_annotations,
                                   guest_asset_ids_dict=guest_task_annotations.image_annotations,
@@ -570,3 +600,7 @@ def make_empty_mir_annotations() -> mirpb.MirAnnotations:
     mir_annotations.prediction.type = mirpb.ObjectType.OT_NO_ANNOTATIONS
     mir_annotations.ground_truth.type = mirpb.ObjectType.OT_NO_ANNOTATIONS
     return mir_annotations
+
+
+def valid_image_annotation(image_annotations: mirpb.SingleImageAnnotations) -> bool:
+    return len(image_annotations.boxes) > 0

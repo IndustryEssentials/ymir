@@ -123,12 +123,13 @@ class DatasetsOut(Common):
 
 
 class DatasetAnnotationHist(BaseModel):
-    quality: List[Dict]
-    box_area: Optional[List[Dict]]
-    box_area_ratio: Optional[List[Dict]]
+    quality: List[Dict] = []
+    box_area: List[Dict] = []
+    box_area_ratio: List[Dict] = []
+    class_counts: List[Dict] = []
     # instance segmentation
-    mask_area: Optional[List[Dict]]
-    obj_counts: Optional[List[Dict]]  # crowdedness
+    mask_area: List[Dict] = []
+    obj_counts: List[Dict] = []  # crowdedness
 
 
 class DatasetAnnotation(BaseModel):
@@ -199,10 +200,10 @@ class DatasetPaginationOut(Common):
 class DatasetEvaluationCreate(BaseModel):
     project_id: int
     dataset_ids: List[int]
-    confidence_threshold: float
-    iou_threshold: float
+    confidence_threshold: Optional[float] = None
+    iou_threshold: Optional[float] = None
     require_average_iou: bool = False
-    need_pr_curve: bool = True
+    need_pr_curve: bool = False
     main_ck: Optional[str] = None
 
 

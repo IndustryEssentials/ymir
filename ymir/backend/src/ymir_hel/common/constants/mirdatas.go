@@ -16,33 +16,36 @@ type MirdataModel struct {
 	MIoU          float32                `json:"mIoU"`
 	MaskAP        float32                `json:"maskAP"`
 
-	TaskParameters string                 `json:"task_parameters"`
 	ExecutorConfig map[string]interface{} `json:"executor_config"`
 
 	ObjectType int32 `json:"object_type"`
 }
 
-func NewMirdataModel(taskParameters string) *MirdataModel {
-	modelData := MirdataModel{TaskParameters: taskParameters, ExecutorConfig: map[string]interface{}{}}
+func NewMirdataModel() *MirdataModel {
+	modelData := MirdataModel{ExecutorConfig: map[string]interface{}{}}
 	return &modelData
 }
 
 type MirAssetDetail struct {
 	// Export fields.
-	DocID          string                 `json:"-"             bson:"_id"`
-	AssetID        string                 `json:"asset_id"      bson:"asset_id"`
-	MetaData       *MirAssetAttributes    `json:"metadata"      bson:"metadata"`
-	JoinedClassIDs []int32                `json:"class_ids"     bson:"class_ids"`
-	Gt             []*MirObjectAnnotation `json:"gt"            bson:"gt"`
-	Pred           []*MirObjectAnnotation `json:"pred"          bson:"pred"`
-	Cks            map[string]string      `json:"cks"           bson:"cks"`
-	Quality        float32                `json:"image_quality" bson:"quality"`
+	DocID          string                 `json:"-"              bson:"_id"`
+	AssetID        string                 `json:"asset_id"       bson:"asset_id"`
+	MetaData       *MirAssetAttributes    `json:"metadata"       bson:"metadata"`
+	JoinedClassIDs []int32                `json:"class_ids"      bson:"class_ids"`
+	GtClassIDs     []int32                `json:"gt_class_ids"   bson:"gt_class_ids"`
+	PredClassIDs   []int32                `json:"pred_class_ids" bson:"pred_class_ids"`
+	Gt             []*MirObjectAnnotation `json:"gt"             bson:"gt"`
+	Pred           []*MirObjectAnnotation `json:"pred"           bson:"pred"`
+	Cks            map[string]string      `json:"cks"            bson:"cks"`
+	Quality        float32                `json:"image_quality"  bson:"quality"`
 }
 
 func NewMirAssetDetail() MirAssetDetail {
 	mirAssetDetail := MirAssetDetail{}
 	mirAssetDetail.MetaData = &MirAssetAttributes{Timestamp: &MirTimestamp{}}
 	mirAssetDetail.JoinedClassIDs = []int32{}
+	mirAssetDetail.GtClassIDs = []int32{}
+	mirAssetDetail.PredClassIDs = []int32{}
 	mirAssetDetail.Pred = make([]*MirObjectAnnotation, 0)
 	mirAssetDetail.Gt = make([]*MirObjectAnnotation, 0)
 	mirAssetDetail.Cks = map[string]string{}

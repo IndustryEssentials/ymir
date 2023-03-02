@@ -63,8 +63,10 @@ class TestCmdInfer(unittest.TestCase):
         test_assets_root = TestCmdInfer._test_assets_root()
         shutil.copyfile(src=os.path.join(test_assets_root, '2007_000032.jpg'),
                         dst=os.path.join(self._working_root, '2007_000032.jpg'))
+        shutil.copyfile(src=os.path.join(test_assets_root, '2007_000243.jpg'),
+                        dst=os.path.join(self._working_root, '2007_000243.jpg'))
         with open(self._assets_index_file, 'w') as f:
-            f.write(f'{self._src_assets_root}/2007_000032.jpg\n')
+            f.write(f'{self._src_assets_root}/2007_000032.jpg\n{self._src_assets_root}/2007_000243.jpg\n')
 
     def _prepare_model(self):
         # model params
@@ -94,7 +96,7 @@ class TestCmdInfer(unittest.TestCase):
                                             },
                                             stages={model_stage.stage_name: model_stage},
                                             best_stage_name=model_stage.stage_name,
-                                            object_type=mirpb.ObjectType.OT_DET_BOX,
+                                            object_type=models.ModelObjectType.MOT_DET_BOX.value,
                                             package_version=YMIR_MODEL_VERSION)
 
         with open(os.path.join(self._models_location, 'ymir-info.yaml'), 'w') as f:
@@ -132,6 +134,9 @@ class TestCmdInfer(unittest.TestCase):
                         },
                     ],
                 },
+                '2007_000243.jpg': {
+                    'annotations': [],
+                }
             },
         }
         infer_output_file = os.path.join(self._working_root, 'out', 'infer-result.json')
@@ -178,8 +183,9 @@ class TestCmdInfer(unittest.TestCase):
         # check assets and index.tsv
         with open(os.path.join(fake_args.work_dir, 'in', 'candidate-index.tsv'), 'r') as f:
             contents = f.read().splitlines()
-            self.assertEqual(1, len(contents))
+            self.assertEqual(2, len(contents))
             self.assertEqual('/in/assets/2007_000032.jpg', contents[0])
+            self.assertEqual('/in/assets/2007_000243.jpg', contents[1])
 
         # check config
         with open(os.path.join(fake_args.work_dir, 'in', 'config.yaml'), 'r') as f:
@@ -191,5 +197,7 @@ class TestCmdInfer(unittest.TestCase):
         with open(os.path.join(fake_args.work_dir, 'out', 'prediction.mir'), 'rb') as f:
             prediction = mirpb.SingleTaskAnnotations()
             prediction.ParseFromString(f.read())
+            self.assertEqual(prediction.type, mirpb.ObjectType.OT_DET_BOX)
+            self.assertEqual(prediction.is_instance_segmentation, False)
             self.assertEqual(len(prediction.image_annotations), 1)
             self.assertEqual(len(prediction.image_annotations['2007_000032.jpg'].boxes), 1)

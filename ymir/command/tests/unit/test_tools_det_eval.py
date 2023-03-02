@@ -7,7 +7,8 @@ from google.protobuf import json_format
 import numpy as np
 
 from mir.protos import mir_command_pb2 as mirpb
-from mir.tools import det_eval_ctl_ops, det_eval_coco, det_eval_voc, mir_storage_ops, revs_parser
+from mir.tools import mir_storage_ops, revs_parser
+from mir.tools.eval import eval_ctl_ops, det_eval_voc
 from tests import utils as test_utils
 
 
@@ -238,7 +239,7 @@ class TestToolsDetEval(unittest.TestCase):
         mir_annotations = mirpb.MirAnnotations()
         json_format.ParseDict(annotations_dict, mir_annotations)
 
-        task = mir_storage_ops.create_task(task_type=mirpb.TaskType.TaskTypeImportData, task_id='a', message='import')
+        task = mir_storage_ops.create_task_record(task_type=mirpb.TaskType.TaskTypeImportData, task_id='a', message='import')
         mir_storage_ops.MirStorageOps.save_and_commit(mir_root=self._mir_root,
                                                       mir_branch='a',
                                                       his_branch='master',
@@ -371,6 +372,7 @@ class TestToolsDetEval(unittest.TestCase):
                         'img_class_ids': [2],
                     },
                 },
+                'is_instance_segmentation': False,
                 'task_class_ids': [0, 1, 2],
                 'task_id': 'a',
                 'eval_class_ids': [],
@@ -514,6 +516,7 @@ class TestToolsDetEval(unittest.TestCase):
                         'img_class_ids': [0, 1, 2],
                     }
                 },
+                'is_instance_segmentation': False,
                 'task_id': 'a',
                 'eval_class_ids': [0, 1, 2],
                 'executor_config': '',
@@ -555,18 +558,18 @@ class TestToolsDetEval(unittest.TestCase):
         evaluate_config.iou_thrs_interval = '0.5'
         evaluate_config.need_pr_curve = False
         evaluate_config.main_ck = 'color'
-        evaluation = det_eval_ctl_ops.det_evaluate_datasets(mir_root=self._mir_root,
-                                                            gt_rev_tid=gt_pred_rev_tid,
-                                                            pred_rev_tid=gt_pred_rev_tid,
-                                                            evaluate_config=evaluate_config)
+        evaluation = eval_ctl_ops.evaluate_datasets(mir_root=self._mir_root,
+                                                        gt_rev_tid=gt_pred_rev_tid,
+                                                        pred_rev_tid=gt_pred_rev_tid,
+                                                        evaluate_config=evaluate_config)
         self.assertIsNotNone(evaluation)
         self.assertEqual({'blue', 'red'}, set(evaluation.sub_cks.keys()))
 
         evaluate_config.main_ck = 'FakeMainCk'
-        evaluation = det_eval_ctl_ops.det_evaluate_datasets(mir_root=self._mir_root,
-                                                            gt_rev_tid=gt_pred_rev_tid,
-                                                            pred_rev_tid=gt_pred_rev_tid,
-                                                            evaluate_config=evaluate_config)
+        evaluation = eval_ctl_ops.evaluate_datasets(mir_root=self._mir_root,
+                                                        gt_rev_tid=gt_pred_rev_tid,
+                                                        pred_rev_tid=gt_pred_rev_tid,
+                                                        evaluate_config=evaluate_config)
         self.assertIsNone(evaluation)
 
     # protected: test cases
@@ -579,8 +582,8 @@ class TestToolsDetEval(unittest.TestCase):
         evaluate_config.iou_thrs_interval = '0.5'
         evaluate_config.need_pr_curve = True
         evaluate_config.class_ids[:] = [0, 1]
-        evaluation: mirpb.Evaluation = det_eval_model_name.det_evaluate(prediction=mir_annotations.prediction,
-                                                                        ground_truth=mir_annotations.ground_truth,
-                                                                        config=evaluate_config)
+        evaluation: mirpb.Evaluation = det_eval_model_name.evaluate(prediction=mir_annotations.prediction,
+                                                                    ground_truth=mir_annotations.ground_truth,
+                                                                    config=evaluate_config)
         self._check_fpfn(mir_annotations)
         return evaluation.dataset_evaluation

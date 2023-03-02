@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"runtime/debug"
 	"strconv"
 	"strings"
 	"time"
@@ -28,7 +29,8 @@ type BaseHandler interface {
 		classIDs []int,
 		annoTypes []string,
 		currentAssetID string,
-		cmTypes []int,
+		inCMTypes []int,
+		exCMTypes []int,
 		cks []string,
 		tags []string,
 	) *constants.QueryAssetsResult
@@ -207,7 +209,8 @@ func (s *ViewerServer) getIntSliceFromString(input string) []int {
 // @Param   class_ids     query    string     false        "e.g. class_ids=1,3,7"
 // @Param   annotation_types     query    string     false        "e.g. annotation_types=GT,PRED"
 // @Param   current_asset_id     query    string     false        "e.g. current_asset_id=xxxyyyzzz"
-// @Param   cm_types     query    string     false        "e.g. cm_types=0,1,2,3 NotSet=0,TP=1,FP=2,FN=3,TN=4,Unknown=5,MTP=11,IGNORED=12"
+// @Param   in_cm_types     query    string     false        "e.g. in_cm_types=0,1,2,3 NotSet=0,TP=1,FP=2,FN=3,TN=4,Unknown=5,MTP=11,IGNORED=12"
+// @Param   ex_cm_types     query    string     false        "e.g. ex_cm_types=0,1,2,3 NotSet=0,TP=1,FP=2,FN=3,TN=4,Unknown=5,MTP=11,IGNORED=12"
 // @Param   cks     query    string     false        "ck pairs, e.g. cks=xxx,xxx:,xxx:yyy, e.g. camera_id:1"
 // @Param   tags     query    string     false        "tag pairs, e.g. cks=xxx,xxx:,xxx:yyy, e.g. camera_id:1"
 // @Success 200 {string} string    "'code': 0, 'msg': 'Success', 'Success': true, 'result': constants.QueryAssetsResult"
@@ -226,7 +229,13 @@ func (s *ViewerServer) handleAssets(c *gin.Context) {
 	}
 	classIDs := s.getIntSliceFromString(c.DefaultQuery("class_ids", ""))
 	currentAssetID := c.DefaultQuery("current_asset_id", "")
-	cmTypes := s.getIntSliceFromString(c.DefaultQuery("cm_types", ""))
+	inCMTypes := s.getIntSliceFromString(c.DefaultQuery("in_cm_types", ""))
+	exCMTypes := s.getIntSliceFromString(c.DefaultQuery("ex_cm_types", ""))
+	if len(inCMTypes) > 0 && len(exCMTypes) > 0 {
+		ViewerFailure(c, &FailureResult{Code: constants.CodeViewerInvalidParms,
+			Msg: "should not set both in_cm_types/ex_cm_types."})
+		return
+	}
 
 	annoTypesStr := c.DefaultQuery("annotation_types", "")
 	annoTypes := make([]string, 0)
@@ -268,7 +277,8 @@ func (s *ViewerServer) handleAssets(c *gin.Context) {
 		classIDs,
 		annoTypes,
 		currentAssetID,
-		cmTypes,
+		inCMTypes,
+		exCMTypes,
 		cks,
 		tags,
 	)
@@ -504,6 +514,6 @@ func (s *ViewerServer) handleFailure(c *gin.Context) {
 			return
 		}
 
-		panic(fmt.Sprintf("unhandled error type: %T\n", r))
+		panic(fmt.Sprintf("unhandled error type: %T\n%s\n", r, debug.Stack()))
 	}
 }
