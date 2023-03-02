@@ -347,9 +347,10 @@ class TaskInternal(TaskInDBBase):
         task_type = values["type"]
         if task_type in [TaskType.training, TaskType.copy_model, TaskType.import_model]:
             return ResultType.model
+        elif task_type == TaskType.dataset_infer:
+            return ResultType.prediction
         elif task_type in [
             TaskType.mining,
-            TaskType.dataset_infer,
             TaskType.label,
             TaskType.import_data,
             TaskType.copy_data,

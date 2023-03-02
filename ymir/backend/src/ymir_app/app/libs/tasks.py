@@ -6,7 +6,6 @@ from typing import Dict, List, Optional, Tuple
 
 import aiohttp
 from fastapi.logger import logger
-from fastapi.encoders import jsonable_encoder
 from sqlalchemy.orm import Session
 
 from app.api.errors.errors import (
@@ -258,19 +257,19 @@ class TaskResult:
         dataset_group_id: Optional[int],
         dataset_group_name: Optional[str],
         description: Optional[str] = None,
-    ) -> Dict[str, Dict]:
+    ) -> None:
         dest_group_id = self.get_dest_group_id(dataset_id, dataset_group_id, dataset_group_name)
         if self.result_type is ResultType.dataset:
             dataset = crud.dataset.create_as_task_result(self.db, self.task, dest_group_id, description)
             logger.info("[create task] created new dataset(%s) as task result", dataset.name)
-            return {"dataset": jsonable_encoder(dataset)}
+        elif self.result_type is ResultType.prediction:
+            prediction = crud.prediction.create_as_task_result(self.db, self.task, description)
+            logger.info("[create task] created new prediction(%s) as task result", prediction.name)
         elif self.result_type is ResultType.model:
             model = crud.model.create_as_task_result(self.db, self.task, dest_group_id, description)
             logger.info("[create task] created new model(%s) as task result", model.name)
-            return {"model": jsonable_encoder(model)}
         else:
             logger.info("[create task] no task result record needed")
-            return {}
 
     def update(
         self,
@@ -312,6 +311,8 @@ class TaskResult:
         """
         if self.result_type is ResultType.dataset:
             self.update_dataset_result(task_result)
+        elif self.result_type is ResultType.prediction:
+            self.update_prediction_result(task_result)
         elif self.result_type is ResultType.model:
             self.update_model_result(task_result, task_in_db)
 
@@ -355,5 +356,27 @@ class TaskResult:
             crud.dataset.finish(
                 self.db,
                 dataset_record.id,
+                result_state=ResultState.error,
+            )
+
+    def update_prediction_result(self, task_result: schemas.TaskUpdateStatus) -> None:
+        """
+        Criterion for ready prediction: task state is DONE and viewer returns valid dataset_info
+        """
+        prediction_record = crud.prediction.get_by_task_id(self.db, task_id=self.task.id)
+        if not prediction_record:
+            logger.error("[update task] task result (prediction) not found, skip")
+            return
+        if task_result.state is TaskState.done and self.dataset_info:
+            crud.prediction.finish(
+                self.db,
+                prediction_record.id,
+                result_state=ResultState.ready,
+                result=self.dataset_info,
+            )
+        else:
+            crud.prediction.finish(
+                self.db,
+                prediction_record.id,
                 result_state=ResultState.error,
             )

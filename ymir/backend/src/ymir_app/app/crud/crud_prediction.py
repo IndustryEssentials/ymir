@@ -96,7 +96,16 @@ class CRUDPrediction(CRUDBase[Prediction, PredictionCreate, PredictionUpdate]):
         task: Union[schemas.TaskInternal, models.Task],
         description: Optional[str] = None,
     ) -> Any:
-        pass
+        prediction_in = PredictionCreate(
+            name=task.hash,
+            hash=task.hash,
+            description=description,
+            source=task.type,
+            project_id=task.project_id,
+            user_id=task.user_id,
+            task_id=task.id,
+        )
+        return self.create(db, obj_in=prediction_in)
 
     def finish(
         self,

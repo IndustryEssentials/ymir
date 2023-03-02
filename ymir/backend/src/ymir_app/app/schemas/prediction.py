@@ -13,9 +13,9 @@ from app.schemas.task import TaskInternal
 
 
 class PredictionBase(BaseModel):
+    name: str
     source: TaskType
     result_state: ResultState = ResultState.processing
-    dataset_group_id: int
     project_id: int
     keywords: Optional[str]
     asset_count: Optional[int]
@@ -45,8 +45,6 @@ class PredictionUpdate(BaseModel):
 
 
 class PredictionInDBBase(IdModelMixin, DateTimeModelMixin, IsDeletedModelMixin, PredictionBase):
-    name: str
-    group_name: str
     hash: str = Field(description="related task hash")
     task_id: int
     user_id: int
