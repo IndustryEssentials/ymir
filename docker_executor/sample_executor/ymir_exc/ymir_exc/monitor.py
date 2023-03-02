@@ -9,6 +9,9 @@ from ymir_exc.code import ExecutorReturnCode, ExecutorState
 def write_monitor_logger(percent: float,
                          state: ExecutorState = ExecutorState.ES_RUNNING,
                          return_code: ExecutorReturnCode = ExecutorReturnCode.RC_EXEC_NO_ERROR) -> None:
+    if state == ExecutorState.ES_RUNNING:
+        return_code = ExecutorReturnCode.RC_EXEC_NO_ERROR
+
     env_config = env.get_current_env()
     with open(env_config.output.monitor_file, 'w') as f:
         f.write(f"{env_config.task_id}\t{time.time()}\t{percent:.2f}\t{state}\t{int(return_code)}\n")

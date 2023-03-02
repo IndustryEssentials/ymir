@@ -72,6 +72,9 @@ class TestMonitor(unittest.TestCase):
         monitor.write_monitor_logger(percent=0.2)
         self._check_monitor(percent=0.2, state=ExecutorState.ES_RUNNING, return_code=ExecutorReturnCode.RC_EXEC_NO_ERROR)
 
+        monitor.write_monitor_logger(percent=0.5, return_code=ExecutorReturnCode.RC_EXEC_NO_GPU)
+        self._check_monitor(percent=0.5, state=ExecutorState.ES_RUNNING, return_code=ExecutorReturnCode.RC_EXEC_NO_ERROR)
+
         monitor.write_monitor_logger(percent=1, state=ExecutorState.ES_ERROR)
         self._check_monitor(percent=1, state=ExecutorState.ES_ERROR, return_code=ExecutorReturnCode.RC_EXEC_NO_ERROR)
 
