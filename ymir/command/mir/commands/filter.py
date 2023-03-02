@@ -18,7 +18,7 @@ class CmdFilter(base.BaseCommand):
     @staticmethod
     @command_run_in_out
     def run_with_args(mir_root: str, label_storage_file: str, in_cis: str, ex_cis: str,
-                      annotation_type: "mirpb.AnnotationType.V", src_revs: str, dst_rev: str,
+                      filter_anno_src: "mirpb.AnnotationType.V", src_revs: str, dst_rev: str,
                       work_dir: str) -> int:  # type: ignore
         src_typ_rev_tid = revs_parser.parse_single_arg_rev(src_revs, need_tid=False)
         dst_typ_rev_tid = revs_parser.parse_single_arg_rev(dst_rev, need_tid=True)
@@ -48,7 +48,7 @@ class CmdFilter(base.BaseCommand):
                        label_storage_file=label_storage_file,
                        in_cis=in_cis,
                        ex_cis=ex_cis,
-                       annotation_type=annotation_type)
+                       filter_anno_src=filter_anno_src)
 
         logging.info("matched: %d, overriding current mir repo", len(mir_metadatas.attributes))
 
@@ -80,7 +80,7 @@ class CmdFilter(base.BaseCommand):
             label_storage_file=self.args.label_storage_file,
             in_cis=self.args.in_cis,
             ex_cis=self.args.ex_cis,
-            annotation_type=mirpb.AnnotationType.Value(f"AT_{self.args.annotation_type.upper()}"),
+            filter_anno_src=mirpb.AnnotationType.Value(f"AT_{self.args.filter_anno_src.upper()}"),
             src_revs=self.args.src_revs,
             dst_rev=self.args.dst_rev,
             work_dir=self.args.work_dir)
@@ -100,7 +100,7 @@ def _class_ids_set_from_str(preds_str: str, cls_mgr: class_ids.UserLabels) -> Se
 
 
 def _include_exclude_match(asset_ids_set: Set[str], mir_annotations: mirpb.MirAnnotations, in_cis_set: Set[int],
-                           ex_cis_set: Set[int], annotation_type: "mirpb.AnnotationType.V") -> Set[str]:
+                           ex_cis_set: Set[int], filter_anno_src: "mirpb.AnnotationType.V") -> Set[str]:
     # if don't need include match, returns all
     need_no_include = not in_cis_set
     need_no_exclude = not ex_cis_set
@@ -111,9 +111,9 @@ def _include_exclude_match(asset_ids_set: Set[str], mir_annotations: mirpb.MirAn
         gt = mir_annotations.ground_truth.image_annotations.get(asset_id, mirpb.SingleImageAnnotations())
 
         cids = set()
-        if annotation_type in {mirpb.AnnotationType.AT_NOT_SET, mirpb.AnnotationType.AT_GT}:
+        if filter_anno_src in {mirpb.AnnotationType.AT_NOT_SET, mirpb.AnnotationType.AT_GT}:
             cids.update({v.class_id for v in gt.boxes})
-        elif annotation_type in {mirpb.AnnotationType.AT_NOT_SET, mirpb.AnnotationType.AT_PRED}:
+        elif filter_anno_src in {mirpb.AnnotationType.AT_NOT_SET, mirpb.AnnotationType.AT_PRED}:
             cids.update({v.class_id for v in pred.boxes})
         if (need_no_include or cids & in_cis_set) and (need_no_exclude or not (cids & ex_cis_set)):
             filtered_asset_ids_set.add(asset_id)
@@ -122,7 +122,7 @@ def _include_exclude_match(asset_ids_set: Set[str], mir_annotations: mirpb.MirAn
 
 
 def filter_with_pb(mir_metadatas: mirpb.MirMetadatas, mir_annotations: mirpb.MirAnnotations, label_storage_file: str,
-                   in_cis: str, ex_cis: str, annotation_type: "mirpb.AnnotationType.V") -> None:
+                   in_cis: str, ex_cis: str, filter_anno_src: "mirpb.AnnotationType.V") -> None:
     in_cis = in_cis.strip().lower() if in_cis else ''
     ex_cis = ex_cis.strip().lower() if ex_cis else ''
     if not in_cis and not ex_cis:
@@ -136,7 +136,7 @@ def filter_with_pb(mir_metadatas: mirpb.MirMetadatas, mir_annotations: mirpb.Mir
                                            mir_annotations=mir_annotations,
                                            in_cis_set=in_cis_set,
                                            ex_cis_set=ex_cis_set,
-                                           annotation_type=annotation_type)
+                                           filter_anno_src=filter_anno_src)
 
     filter_mirdatas_by_asset_ids(mir_metadatas=mir_metadatas,
                                  mir_annotations=mir_annotations,
@@ -151,8 +151,8 @@ def bind_to_subparsers(subparsers: argparse._SubParsersAction, parent_parser: ar
     filter_arg_parser.add_argument("-p", '--cis', dest="in_cis", type=str, default='', help="type names")
     filter_arg_parser.add_argument("-P", '--ex-cis', dest="ex_cis", type=str, default='', help="exclusive type names")
     filter_arg_parser.add_argument(
-        '--anno-type',
-        dest='annotation_type',
+        '--filter-anno-src',
+        dest='filter_anno_src',
         type=str,
         default='not_set',
         choices=['not_set', 'gt', 'pred'],

@@ -70,10 +70,12 @@ class _AnnotationTypeEnumTypeWrapper(google.protobuf.internal.enum_type_wrapper.
     AT_NOT_SET = AnnotationType.V(0)
     AT_GT = AnnotationType.V(1)
     AT_PRED = AnnotationType.V(2)
+    AT_ANY = AnnotationType.V(3)
 
 AT_NOT_SET = AnnotationType.V(0)
 AT_GT = AnnotationType.V(1)
 AT_PRED = AnnotationType.V(2)
+AT_ANY = AnnotationType.V(3)
 global___AnnotationType = AnnotationType
 
 

@@ -57,7 +57,7 @@ class TaskFusionInvoker(TaskBaseInvoker):
         if ex_class_ids:
             fuse_cmd.extend(['--ex-cis', ';'.join(user_labels.main_name_for_ids(class_ids=ex_class_ids))])
         fuse_cmd.extend(['--user-label-file', user_labels.storage_file])
-        fuse_cmd.extend(['--anno-type', utils.annotation_type_str(annotation_type)])
+        fuse_cmd.extend(['--filter-anno-src', utils.annotation_type_str(annotation_type)])
 
         # sample args
         if sample_count:

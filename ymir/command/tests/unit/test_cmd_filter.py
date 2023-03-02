@@ -204,7 +204,7 @@ class TestCmdFilter(unittest.TestCase):
                                             ex_cis=excludes,
                                             in_cks="",
                                             ex_cks="",
-                                            annotation_type='not_set',
+                                            filter_anno_src='not_set',
                                             dst_branch='__test_cmd_filter_normal_01',
                                             expected_asset_ids=expected_asset_ids)
 
@@ -219,12 +219,12 @@ class TestCmdFilter(unittest.TestCase):
                                             ex_cis="",
                                             in_cks="",
                                             ex_cks="",
-                                            annotation_type='pred',
+                                            filter_anno_src='pred',
                                             dst_branch='__test_cmd_filter_normal_02',
                                             expected_asset_ids=expected_asset_ids)
 
     def __test_cmd_filter_normal_cases(self, in_cis: str, ex_cis: str, in_cks: str, ex_cks: str,
-                                       annotation_type: str, dst_branch: str,
+                                       filter_anno_src: str, dst_branch: str,
                                        expected_asset_ids: Set[str]):
         fake_args = type('', (), {})()
         fake_args.mir_root = self._mir_root
@@ -233,7 +233,7 @@ class TestCmdFilter(unittest.TestCase):
         fake_args.ex_cis = ex_cis
         fake_args.in_cks = in_cks
         fake_args.ex_cks = ex_cks
-        fake_args.annotation_type = annotation_type
+        fake_args.filter_anno_src = filter_anno_src
         fake_args.src_revs = "a@t0"  # src branch name and base task id
         fake_args.dst_rev = f"{dst_branch}@t1"
         fake_args.work_dir = ''
@@ -261,7 +261,7 @@ class TestCmdFilter(unittest.TestCase):
         fake_args.ex_cis = None
         fake_args.in_cks = None
         fake_args.ex_cks = None
-        fake_args.annotation_type = 'not_set'
+        fake_args.filter_anno_src = 'not_set'
         fake_args.src_revs = "a@t0"  # src branch name and base task id
         fake_args.dst_rev = f"{dst_branch}@t1"
         fake_args.work_dir = ''

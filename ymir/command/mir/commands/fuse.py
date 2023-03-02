@@ -24,7 +24,7 @@ class CmdFuse(base.BaseCommand):
             label_storage_file=self.args.label_storage_file,
             in_cis=self.args.in_cis,
             ex_cis=self.args.ex_cis,
-            annotation_type=mirpb.AnnotationType.Value(f"AT_{self.args.annotation_type.upper()}"),
+            filter_anno_src=mirpb.AnnotationType.Value(f"AT_{self.args.filter_anno_src.upper()}"),
             count=self.args.count,
             rate=self.args.rate,
             dst_rev=self.args.dst_rev,
@@ -33,7 +33,7 @@ class CmdFuse(base.BaseCommand):
     @staticmethod
     @command_run_in_out
     def run_with_args(mir_root: str, src_revs: str, ex_src_revs: str, strategy: MergeStrategy, label_storage_file: str,
-                      in_cis: str, ex_cis: str, annotation_type: "mirpb.AnnotationType.V", count: int, rate: float,
+                      in_cis: str, ex_cis: str, filter_anno_src: "mirpb.AnnotationType.V", count: int, rate: float,
                       dst_rev: str, work_dir: str) -> int:
         src_typ_rev_tids = revs_parser.parse_arg_revs(src_revs)
         dst_typ_rev_tid = revs_parser.parse_single_arg_rev(dst_rev, need_tid=True)
@@ -57,7 +57,7 @@ class CmdFuse(base.BaseCommand):
                        label_storage_file=label_storage_file,
                        in_cis=in_cis,
                        ex_cis=ex_cis,
-                       annotation_type=annotation_type)
+                       filter_anno_src=filter_anno_src)
         PhaseLoggerCenter.update_phase(phase="fuse.filter")
         sample_with_pb(mir_metadatas=mir_metadatas,
                        mir_annotations=mir_annotations,
@@ -113,8 +113,8 @@ def bind_to_subparsers(subparsers: argparse._SubParsersAction, parent_parser: ar
     fuse_arg_parser.add_argument('--cis', dest="in_cis", type=str, default='', help="type names")
     fuse_arg_parser.add_argument('--ex-cis', dest="ex_cis", type=str, default='', help="exclusive type names")
     fuse_arg_parser.add_argument(
-        '--anno-type',
-        dest='annotation_type',
+        '--filter-anno-src',
+        dest='filter_anno_src',
         type=str,
         default='not_set',
         choices=['not_set', 'gt', 'pred'],
