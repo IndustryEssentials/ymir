@@ -6,7 +6,7 @@ from mir.commands import base
 from mir.protos import mir_command_pb2 as mirpb
 from mir.tools import checker, class_ids
 from mir.tools import mir_repo_utils, mir_storage_ops, revs_parser
-from mir.tools.annotations import filter_mirdatas_by_asset_ids
+from mir.tools.annotations import anno_type_from_str, filter_mirdatas_by_asset_ids
 from mir.tools.code import MirCode
 from mir.tools.command_run_in_out import command_run_in_out
 from mir.tools.errors import MirRuntimeError
@@ -80,7 +80,7 @@ class CmdFilter(base.BaseCommand):
             label_storage_file=self.args.label_storage_file,
             in_cis=self.args.in_cis,
             ex_cis=self.args.ex_cis,
-            filter_anno_src=mirpb.AnnotationType.Value(f"AT_{self.args.filter_anno_src.upper()}"),
+            filter_anno_src=anno_type_from_str(self.args.filter_anno_src),
             src_revs=self.args.src_revs,
             dst_rev=self.args.dst_rev,
             work_dir=self.args.work_dir)

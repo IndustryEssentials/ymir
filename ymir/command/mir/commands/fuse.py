@@ -7,7 +7,7 @@ from mir.commands.filter import filter_with_pb
 from mir.commands.sampling import sample_with_pb
 from mir.protos import mir_command_pb2 as mirpb
 from mir.tools import checker, mir_repo_utils, mir_storage_ops, revs_parser
-from mir.tools.annotations import MergeStrategy
+from mir.tools.annotations import anno_type_from_str, MergeStrategy
 from mir.tools.code import MirCode
 from mir.tools.command_run_in_out import command_run_in_out
 from mir.tools.phase_logger import PhaseLoggerCenter
@@ -24,7 +24,7 @@ class CmdFuse(base.BaseCommand):
             label_storage_file=self.args.label_storage_file,
             in_cis=self.args.in_cis,
             ex_cis=self.args.ex_cis,
-            filter_anno_src=mirpb.AnnotationType.Value(f"AT_{self.args.filter_anno_src.upper()}"),
+            filter_anno_src=anno_type_from_str(self.args.filter_anno_src),
             count=self.args.count,
             rate=self.args.rate,
             dst_rev=self.args.dst_rev,

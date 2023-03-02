@@ -53,6 +53,15 @@ def parse_object_type(object_type_str: str) -> "mirpb.ObjectType.V":
     return _anno_dict.get(object_type_str.lower(), mirpb.ObjectType.OT_UNKNOWN)
 
 
+def anno_type_from_str(anno_type_str: str) -> "mirpb.AnnotationType.V":
+    enum_dict = {
+        'pred': mirpb.AnnotationType.AT_PRED,
+        'gt': mirpb.AnnotationType.AT_GT,
+        'any': mirpb.AnnotationType.AT_ANY,
+    }
+    return enum_dict.get(anno_type_str.lower(), mirpb.AnnotationType.AT_ANY)
+
+
 def _annotation_parse_func(anno_type: "mirpb.ObjectType.V") -> Callable:
     _func_dict: Dict["mirpb.ObjectType.V", Callable] = {
         mirpb.ObjectType.OT_DET_BOX: _import_annotations_voc_xml,
