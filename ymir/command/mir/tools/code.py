@@ -27,7 +27,7 @@ class MirCode(IntEnum):
     RC_CMD_ERROR_UNKNOWN = 169999
 
 
-class ExecutorCode(IntEnum):
+class ExecutorReturnCode(IntEnum):
     # dataset and config errors
     # can not read config file, or can not find required arguments
     RC_EXEC_CONFIG_ERROR = 180001
@@ -51,7 +51,6 @@ class ExecutorCode(IntEnum):
     RC_EXEC_NAN_ERROR = 180201
 
     # misc
-
     # Network error occured when download
     RC_EXEC_NETWORK_ERROR = 180301
 

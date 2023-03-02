@@ -68,6 +68,10 @@ def generate_mining_infer_env_config_file(task_id: str, run_mining: bool, run_in
         yaml.safe_dump(env_config.dict(), f)
 
 
+def collect_executor_return_code(work_dir: str) -> int:
+    pass
+
+
 def collect_executor_outlog_tail(work_dir: str, tail_line_count: int = 5) -> str:
     out_log_path = os.path.join(work_dir, 'out', mir_settings.EXECUTOR_OUTLOG_NAME)
     if not os.path.isfile(out_log_path):

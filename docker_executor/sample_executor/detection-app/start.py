@@ -11,7 +11,7 @@ from tensorboardX import SummaryWriter
 from ymir_exc import dataset_reader as dr
 from ymir_exc import env, monitor
 from ymir_exc import result_writer as rw
-from ymir_exc.code import TaskState, TaskReturnCode
+from ymir_exc.code import ExecutorReturnCode, ExecutorState
 
 
 def start() -> int:
@@ -40,7 +40,7 @@ def _run_training(env_config: env.EnvConfig) -> None:
     class_names: List[str] = executor_config['class_names']
     expected_mAP: float = executor_config.get('expected_map', 0.6)
     idle_seconds: float = executor_config.get('idle_seconds', 60)
-    crash_code: bool = executor_config.get('crash_code', TaskReturnCode.TRC_NOTSET)
+    crash_code: bool = executor_config.get('crash_code', ExecutorReturnCode.RC_EXEC_NO_ERROR)
     #! use `logging` or `print` to write log to console
     #   notice that logging.basicConfig is invoked at executor.env
     logging.info(f"training config: {executor_config}")
@@ -112,7 +112,7 @@ def _run_mining(env_config: env.EnvConfig) -> None:
     #   models are transfered in executor_config's model_params_path
     executor_config = env.get_executor_config()
     idle_seconds: float = executor_config.get('idle_seconds', 60)
-    crash_code: bool = executor_config.get('crash_code', TaskReturnCode.TRC_NOTSET)
+    crash_code: bool = executor_config.get('crash_code', ExecutorReturnCode.RC_EXEC_NO_ERROR)
     #! use `logging` or `print` to write log to console
     logging.info(f"mining config: {executor_config}")
 
@@ -153,7 +153,7 @@ def _run_infer(env_config: env.EnvConfig) -> None:
     executor_config = env.get_executor_config()
     class_names = executor_config['class_names']
     idle_seconds: float = executor_config.get('idle_seconds', 60)
-    crash_code: bool = executor_config.get('crash_code', TaskReturnCode.TRC_NOTSET)
+    crash_code: bool = executor_config.get('crash_code', ExecutorReturnCode.RC_EXEC_NO_ERROR)
     seed: int = executor_config.get('seed', 15)
     #! use `logging` or `print` to write log to console
     logging.info(f"infer config: {executor_config}")
@@ -198,14 +198,14 @@ def _run_infer(env_config: env.EnvConfig) -> None:
     monitor.write_monitor_logger(percent=1.0)
 
 
-def _dummy_work(idle_seconds: float, crash_code: TaskReturnCode) -> None:
+def _dummy_work(idle_seconds: float, crash_code: ExecutorReturnCode) -> None:
     if idle_seconds > 0:
         time.sleep(idle_seconds)
-    if crash_code != TaskReturnCode.TRC_NOTSET:
+    if crash_code != ExecutorReturnCode.RC_EXEC_NO_ERROR:
         #! if error, write corresponding return code with monitor.write_monitor_logger
         #! and then raise exception
         monitor.write_monitor_logger(percent=1,
-                                     state=TaskState.TS_ERROR,
+                                     state=ExecutorState.ES_ERROR,
                                      return_code=crash_code)
         raise RuntimeError(f"App crashed with code: {crash_code}")
 

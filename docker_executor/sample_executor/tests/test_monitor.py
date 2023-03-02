@@ -5,7 +5,7 @@ import unittest
 import yaml
 
 from ymir_exc import env, monitor, settings
-from ymir_exc.code import TaskState, TaskReturnCode
+from ymir_exc.code import ExecutorReturnCode, ExecutorState
 
 
 class TestMonitor(unittest.TestCase):
@@ -56,7 +56,7 @@ class TestMonitor(unittest.TestCase):
             shutil.rmtree(self._test_root)
 
     # protected: check results
-    def _check_monitor(self, percent: float, state: TaskState, return_code: TaskReturnCode) -> None:
+    def _check_monitor(self, percent: float, state: ExecutorState, return_code: ExecutorReturnCode) -> None:
         with open(self._monitor_file, 'r') as f:
             lines = f.read().splitlines()
         task_id, timestamp_str, percent_str, state_str, return_code_str, *_ = lines[0].split()
@@ -70,11 +70,10 @@ class TestMonitor(unittest.TestCase):
     # public: test cases
     def test_write_monitor(self) -> None:
         monitor.write_monitor_logger(percent=0.2)
-        self._check_monitor(percent=0.2, state=TaskState.TS_RUNNING, return_code=TaskReturnCode.TRC_NOTSET)
+        self._check_monitor(percent=0.2, state=ExecutorState.ES_RUNNING, return_code=ExecutorReturnCode.RC_EXEC_NO_ERROR)
 
-        monitor.write_monitor_logger(percent=1, state=TaskState.TS_ERROR)
-        self._check_monitor(percent=1, state=TaskState.TS_ERROR, return_code=TaskReturnCode.TRC_NOTSET)
+        monitor.write_monitor_logger(percent=1, state=ExecutorState.ES_ERROR)
+        self._check_monitor(percent=1, state=ExecutorState.ES_ERROR, return_code=ExecutorReturnCode.RC_EXEC_NO_ERROR)
 
-        monitor.write_monitor_logger(percent=1, state=TaskState.TS_ERROR, return_code=TaskReturnCode.TRC_OOM)
-        self._check_monitor(percent=1, state=TaskState.TS_ERROR, return_code=TaskReturnCode.TRC_OOM)
-
+        monitor.write_monitor_logger(percent=1, state=ExecutorState.ES_ERROR, return_code=ExecutorReturnCode.RC_EXEC_OOM)
+        self._check_monitor(percent=1, state=ExecutorState.ES_ERROR, return_code=ExecutorReturnCode.RC_EXEC_OOM)
