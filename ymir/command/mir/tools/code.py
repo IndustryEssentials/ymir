@@ -29,7 +29,6 @@ class MirCode(IntEnum):
 
 class ExecutorCode(IntEnum):
     # dataset and config errors
-
     # can not read config file, or can not find required arguments
     RC_EXEC_CONFIG_ERROR = 180001
     # Can not find training dataset or validation dataset
@@ -40,7 +39,6 @@ class ExecutorCode(IntEnum):
     RC_EXEC_MODEL_ERROR = 180004
 
     # cuda, gpu and memory errors
-
     # CUDA and GPU mismatch
     RC_EXEC_CUDA_GPU_ERROR = 180101
     # Can not find any GPUs if GPU is needed
@@ -48,8 +46,7 @@ class ExecutorCode(IntEnum):
     # Out of memory
     RC_EXEC_OOM = 180103
 
-    # numeral errors
-    
+    # numeral errors    
     # Find NaN when training
     RC_EXEC_NAN_ERROR = 180201
 
