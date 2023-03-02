@@ -108,7 +108,7 @@ declare namespace YModels {
     tags?: CKCounts
   }
 
-  export interface InferDataset extends Dataset {
+  export interface Prediction extends Dataset {
     inferModelId: number[]
     inferModel?: Model
     inferDatasetId: number

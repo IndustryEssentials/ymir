@@ -139,7 +139,7 @@ export function canHide(dataset: YModels.Dataset, project: YModels.Project | und
   return !runningDataset(dataset) && !p?.hiddenDatasets?.includes(dataset.id)
 }
 
-export function transferInferDataset(dataset: YModels.Dataset<YModels.InferenceParams>): YModels.InferDataset {
+export function transferInferDataset(dataset: YModels.Dataset<YModels.InferenceParams>): YModels.Prediction {
   const params = dataset.task?.parameters
   const config = dataset.task?.config || {}
   return {
@@ -260,7 +260,7 @@ function getType(annotation: YModels.BackendData) {
 const transferCK = (counts: YModels.BackendData = {}, total: YModels.BackendData = {}): YModels.CKCounts => {
   let subKeywordsTotal = 0
   const keywords = Object.keys(counts).map((keyword: string) => {
-    const children: {[key: string]: number} = counts[keyword]
+    const children: { [key: string]: number } = counts[keyword]
     const subList = Object.keys(children)
     const count: number = total[keyword]
     subKeywordsTotal += subList.length
@@ -282,7 +282,7 @@ const transferCK = (counts: YModels.BackendData = {}, total: YModels.BackendData
 }
 
 const generateAnno = (data: YModels.BackendData): YModels.AnylysisAnnotation => {
-  const { quality = [], area = [], box_area_ratio = [], mask_area = [], obj_counts = [], class_counts=[] } = data.hist
+  const { quality = [], area = [], box_area_ratio = [], mask_area = [], obj_counts = [], class_counts = [] } = data.hist
   return {
     keywords: data.keywords,
     total: data.annos_count || 0,

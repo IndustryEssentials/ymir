@@ -7,7 +7,7 @@ import useFetch from '@/hooks/useFetch'
 import t from '@/utils/t'
 import { INFER_CLASSES_MAX_COUNT, INFER_DATASET_MAX_COUNT, updateResultByTask } from '@/constants/common'
 
-import { getInferDatasetColumns } from '@/components/table/Columns'
+import { getPredictionColumns } from '@/components/table/Columns'
 import Actions from '@/components/table/Actions'
 import Hide, { RefProps } from '@/components/common/hide'
 
@@ -17,18 +17,18 @@ import { validDataset } from '@/constants/dataset'
 
 const initQuery = { current: 1, offset: 0, limit: 20 }
 
-const InferDataset: React.FC = () => {
+const Predictions: React.FC = () => {
   const { id: pid } = useParams<{ id?: string }>()
   const history = useHistory()
-  const [datasets, setDatasets] = useState<YModels.InferDataset[]>([])
+  const [predictions, setPredictions] = useState<YModels.Prediction[]>([])
   const [query, setQuery] = useState(initQuery)
   const hideRef = useRef<RefProps>(null)
-  const [{ items, total }, getDatasets] = useFetch('dataset/queryInferDatasets', { items: [], total: 0 })
-  const cols = getInferDatasetColumns(datasets[0]?.type)
+  const [{ items, total }, getDatasets] = useFetch('dataset/queryPredictions', { items: [], total: 0 })
+  const cols = getPredictionColumns(predictions[0]?.type)
   const cacheDatasets = useSelector<YStates.Root, YStates.IdMap<YModels.Dataset>>((state) => state.dataset.dataset)
   const cacheModels = useSelector<YStates.Root, YStates.IdMap<YModels.Model>>((state) => state.model.model)
   const progressTasks = useSelector<YStates.Root, YModels.ProgressTask[]>(({ socket }) => socket.tasks)
-  const actions = (record: YModels.InferDataset): YComponents.Action[] => [
+  const actions = (record: YModels.Prediction): YComponents.Action[] => [
     {
       key: 'diagnose',
       label: t('common.action.diagnose'),
@@ -53,7 +53,7 @@ const InferDataset: React.FC = () => {
       icon: <DeleteIcon />,
     },
   ]
-  const actionCol: TableColumnsType<YModels.InferDataset> = [
+  const actionCol: TableColumnsType<YModels.Prediction> = [
     {
       dataIndex: 'action',
       title: t('common.action'),
@@ -62,31 +62,31 @@ const InferDataset: React.FC = () => {
   ]
   const columns = [...cols, ...actionCol]
 
-  useEffect(() => pid && fetchInferDatasets(), [pid, query])
+  useEffect(() => pid && fetchPredictions(), [pid, query])
 
   useEffect(() => {
-    if (datasets.length && progressTasks.length) {
+    if (predictions.length && progressTasks.length) {
       const needReload = progressTasks.some(({ reload }) => reload)
       if (needReload) {
-        fetchInferDatasets()
+        fetchPredictions()
       } else {
-        const updatedDatasets = datasets.map((dataset) => {
+        const updatedDatasets = predictions.map((dataset) => {
           const ds = updateResultByTask<typeof dataset>(
             dataset,
             progressTasks.find((task) => task.hash === dataset.task.hash),
           )
           return ds ? ds : dataset
         })
-        setDatasets(updatedDatasets)
+        setPredictions(updatedDatasets)
       }
     }
   }, [progressTasks])
 
-  useEffect(() => setDatasets(items), [items])
+  useEffect(() => setPredictions(items), [items])
 
   useEffect(() => {
-    setDatasets((datasets) =>
-      datasets.map((dataset) => {
+    setPredictions((predictions) =>
+      predictions.map((dataset) => {
         const { inferDatasetId, inferModelId } = dataset
         const inferModel = inferModelId[0] ? cacheModels[inferModelId[0]] : undefined
         const inferDataset = inferDatasetId ? cacheDatasets[inferDatasetId] : undefined
@@ -101,11 +101,11 @@ const InferDataset: React.FC = () => {
     setQuery((query) => ({ ...query, current, limit, offset }))
   }
 
-  function fetchInferDatasets() {
+  function fetchPredictions() {
     return getDatasets({ pid, ...query })
   }
 
-  const hide = (dataset: YModels.InferDataset) => {
+  const hide = (dataset: YModels.Prediction) => {
     hideRef?.current?.hide([dataset])
   }
 
@@ -113,7 +113,7 @@ const InferDataset: React.FC = () => {
     <div className={s.inferDataset}>
       <Table
         columns={columns}
-        dataSource={datasets}
+        dataSource={predictions}
         rowKey={(record) => record.id}
         pagination={{
           onChange: pageChange,
@@ -124,9 +124,9 @@ const InferDataset: React.FC = () => {
           showSizeChanger: true,
         }}
       />
-      <Hide ref={hideRef} ok={fetchInferDatasets} msg="pred.action.del.confirm.content" />
+      <Hide ref={hideRef} ok={fetchPredictions} msg="pred.action.del.confirm.content" />
     </div>
   )
 }
 
-export default InferDataset
+export default Predictions
