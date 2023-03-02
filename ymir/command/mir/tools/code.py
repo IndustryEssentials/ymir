@@ -46,7 +46,7 @@ class ExecutorCode(IntEnum):
     # Out of memory
     RC_EXEC_OOM = 180103
 
-    # numeral errors    
+    # numeral errors
     # Find NaN when training
     RC_EXEC_NAN_ERROR = 180201
 
