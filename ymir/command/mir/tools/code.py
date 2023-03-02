@@ -24,11 +24,10 @@ class MirCode(IntEnum):
     RC_CMD_INVALID_MODEL_PACKAGE_VERSION = 160015
     RC_CMD_INVALID_META_YAML_FILE = 160016
     RC_CMD_INVALID_OBJECT_TYPE = 160017
+    RC_CMD_INVALID_MONITOR_FILE = 160018
     RC_CMD_ERROR_UNKNOWN = 169999
 
-
-class ExecutorReturnCode(IntEnum):
-    # dataset and config errors
+    # executor: dataset and config errors
     # can not read config file, or can not find required arguments
     RC_EXEC_CONFIG_ERROR = 180001
     # Can not find training dataset or validation dataset
@@ -38,7 +37,7 @@ class ExecutorReturnCode(IntEnum):
     # Can not find model file
     RC_EXEC_MODEL_ERROR = 180004
 
-    # cuda, gpu and memory errors
+    # executor: cuda, gpu and memory errors
     # CUDA and GPU mismatch
     RC_EXEC_CUDA_GPU_ERROR = 180101
     # Can not find any GPUs if GPU is needed
@@ -46,11 +45,11 @@ class ExecutorReturnCode(IntEnum):
     # Out of memory
     RC_EXEC_OOM = 180103
 
-    # numeral errors
+    # executor: numeral errors
     # Find NaN when training
     RC_EXEC_NAN_ERROR = 180201
 
-    # misc
+    # executor: misc
     # Network error occured when download
     RC_EXEC_NETWORK_ERROR = 180301
 

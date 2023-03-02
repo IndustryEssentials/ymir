@@ -6,6 +6,8 @@ import yaml
 
 from mir import version
 from mir.tools import settings as mir_settings
+from mir.tools.code import MirCode
+from mir.tools.errors import MirRuntimeError
 
 
 # see also: sample_executor/ef/env.py
@@ -68,8 +70,19 @@ def generate_mining_infer_env_config_file(task_id: str, run_mining: bool, run_in
         yaml.safe_dump(env_config.dict(), f)
 
 
-def collect_executor_return_code(work_dir: str) -> int:
-    pass
+def collect_executor_return_code(work_dir: str) -> MirCode:
+    monitor_file_path = os.path.join(work_dir, 'out', 'monitor.txt')
+
+    try:
+        with open(monitor_file_path, 'r') as f:
+            line = f.readline()
+            components = line.split('\t')
+        if len(components) < 5:
+            return MirCode.RC_OK
+        return MirCode(int(components[4]))
+    except Exception as e:
+        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_MONITOR_FILE,
+                              error_message=f"{e}")
 
 
 def collect_executor_outlog_tail(work_dir: str, tail_line_count: int = 5) -> str:
