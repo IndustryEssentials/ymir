@@ -1,5 +1,5 @@
-import { FC, useEffect, useState } from 'react'
-import { Button, Card, Form, Input, message, Radio, Select, Space, Tag } from 'antd'
+import { FC, MouseEvent, ReactElement, useEffect, useState } from 'react'
+import { Button, Card, CheckboxOptionType, Form, Input, message, Radio, Select, Space, Tag } from 'antd'
 import { useParams, useHistory, useLocation } from 'umi'
 import { useSelector } from 'react-redux'
 
@@ -12,7 +12,7 @@ import { ObjectType } from '@/constants/project'
 
 import { urlValidator } from '@/components/form/validators'
 import Breadcrumbs from '@/components/common/breadcrumb'
-import Uploader from '@/components/form/uploader'
+import Uploader, { UploadFile } from '@/components/form/uploader'
 import ProjectDatasetSelect from '@/components/form/projectDatasetSelect'
 import Desc from '@/components/form/desc'
 import DatasetName from '@/components/form/items/DatasetName'
@@ -22,7 +22,13 @@ import Dataset from '@/components/form/option/Dataset'
 import s from './add.less'
 import DetSamplePic from '@/assets/sample.png'
 import SegSamplePic from '@/assets/sample_seg.png'
-import { RadioGroupOptionType } from 'antd/lib/radio'
+import { ValidateErrorEntity } from 'rc-field-form/lib/interface'
+
+type DatasetOptionType = {
+  value: number,
+  label: string | ReactElement,
+  dataset: YModels.Dataset
+}
 
 const { Option } = Select
 const { useForm } = Form
@@ -41,7 +47,7 @@ const types = [
   { id: TYPES.LOCAL, label: 'local' },
   { id: TYPES.PATH, label: 'path' },
 ]
-const strategies = [
+const strategies: { value: string | number; label: string }[] = [
   { value: IMPORTSTRATEGY.UNKOWN_KEYWORDS_IGNORE, label: 'ignore' },
   { value: IMPORTSTRATEGY.UNKOWN_KEYWORDS_AUTO_ADD, label: 'add' },
   { value: IMPORTSTRATEGY.ALL_KEYWORDS_IGNORE, label: 'exclude' },
@@ -50,11 +56,12 @@ const strategies = [
 const Add: FC = () => {
   const history = useHistory()
   const location = useLocation()
-  const query =  location.query
-  console.log('query:', location, query)
+  const query = new URLSearchParams(location.search)
   const pageParams = useParams<{ id?: string }>()
   const pid = Number(pageParams.id)
-  const { id, from, stepKey } = query
+  const id = query.get('id')
+  const from = query.get('from')
+  const stepKey = query.get('stepKey')
   const iterationContext = from === 'iteration'
 
   const [form] = useForm()
@@ -62,14 +69,12 @@ const Add: FC = () => {
   const [file, setFile] = useState('')
   const [selectedDataset, setSelectedDataset] = useState(id ? Number(id) : 0)
   const [newKeywords, setNewKeywords] = useState<string[]>([])
-  const [strategyOptions, setStrategyOptions] = useState<RadioGroupOptionType[]>([])
+  const [strategyOptions, setStrategyOptions] = useState<CheckboxOptionType[]>([])
   const [ignoredKeywords, setIgnoredKeywords] = useState<string[]>([])
-  const [{ newer }, checkKeywords] = useFetch('keyword/checkDuplication', {
-    newer: [],
-  })
+  const { data: { newer } = { newer: [] }, run: checkKeywords } = useRequest<{ newer: string[] }>('keyword/checkDuplication')
   const [addResult, newDataset] = useFetch('dataset/createDataset')
-  const [{ items: publicDatasets }, getPublicDatasets] = useFetch('dataset/getInternalDataset', { items: [] })
-  const { run: updateKeywords } = useRequest<{}, [{ }]>('keyword/addKeywords')
+  const { data: { items: publicDatasets } = { items: [] }, run: getPublicDatasets } = useRequest<YStates.List<YModels.Dataset>>('dataset/getInternalDataset')
+  const { runAsync: addKeywords } = useRequest<{}, [{ keywords: string[]; dry_run?: boolean }]>('keyword/addKeywords')
   const [nameChangedByUser, setNameChangedByUser] = useState(false)
   const [defaultName, setDefaultName] = useState('')
   const netUrl = Form.useWatch<string>('url', form)
@@ -103,8 +108,10 @@ const Add: FC = () => {
   }, [])
 
   useEffect(() => {
-    const kws = getSelectedDatasetKeywords()
+    const dataset = publicDatasets.find(({ id }) => id === selectedDataset)
+    const kws = dataset?.keywords || []
     checkKeywords(kws)
+    dataset && setDefaultName(dataset.name)
   }, [selectedDataset])
 
   useEffect(() => {
@@ -153,46 +160,37 @@ const Add: FC = () => {
     setStrategyOptions(opts)
   }, [currentType])
 
-  const typeChange = (type) => {
+  const typeChange = (type: number) => {
     setCurrentType(type)
     form.setFieldsValue({
       strategy: IMPORTSTRATEGY.UNKOWN_KEYWORDS_IGNORE,
     })
   }
 
-  const isType = (type) => {
-    return currentType === type
-  }
+  const isType = (type: number) => currentType === type
 
-  async function addNewKeywords() {
-    if (!newKeywords.length) {
-      return
-    }
-    const result = await updateKeywords(newKeywords)
-    return result || message.error(t('keyword.add.failure'))
-  }
-
-  async function submit(values) {
-    let updateKeywordResult = null
+  async function submit(values: { [key: string]: any }) {
     if (currentType === TYPES.LOCAL && !file) {
       return message.error(t('dataset.add.local.file.empty'))
     }
 
     if (newKeywords.length && isType(TYPES.INTERNAL)) {
-      updateKeywordResult = await addNewKeywords()
+      const updateKeywordResult = await addKeywords({ keywords: newKeywords })
       if (updateKeywordResult) {
         addDataset({
           ...values,
           strategy: IMPORTSTRATEGY.UNKOWN_KEYWORDS_IGNORE,
         })
+      } else {
+        message.error(t('keyword.add.failure'))
       }
     } else {
       addDataset(values)
     }
   }
 
-  function addDataset(values) {
-    let params = {
+  function addDataset(values: { [x: string]: any; strategy?: IMPORTSTRATEGY; url?: any }) {
+    let params: { [key: string]: any } = {
       ...values,
       pid,
       url: (values.url || '').trim(),
@@ -213,21 +211,21 @@ const Add: FC = () => {
     newDataset(params)
   }
 
-  function onFinishFailed(err) {
+  function onFinishFailed(err: ValidateErrorEntity) {
     console.log('finish failed: ', err)
   }
 
-  function onInternalDatasetChange(value, { dataset }) {
-    setDefaultName(`${dataset.name}`)
-    setSelectedDataset(value)
+  function onInternalDatasetChange(id: number) {
+    // setDefaultName(`${option?.dataset?.name}`)
+    setSelectedDataset(id)
   }
 
-  function setFileDefaultName([file]) {
+  function setFileDefaultName([file]: UploadFile[]) {
     const filename = file.name.replace(/\.zip$/i, '')
     setDefaultName(filename)
   }
 
-  function setCopyDefaultName(value, option) {
+  function setCopyDefaultName(value: number, option: DatasetOptionType[]) {
     const dataset = option[1] ? option[1].dataset : null
     const label = dataset ? `${dataset.name} ${dataset.versionName}` : ''
     setDefaultName(label)
@@ -239,15 +237,15 @@ const Add: FC = () => {
     }
   }
 
-  function updateIgnoredKeywords(e, keywords, isRemove) {
+  function updateIgnoredKeywords(e: MouseEvent, keywords: string[], isRemove?: boolean) {
     e.preventDefault()
-    const add = (old) => [...old, ...keywords]
-    const remove = (old) => old.filter((selected) => !keywords.includes(selected))
+    const add = (old: string[]) => [...old, ...keywords]
+    const remove = (old: string[]) => old.filter((selected) => !keywords.includes(selected))
     setIgnoredKeywords(isRemove ? remove : add)
     setNewKeywords(isRemove ? add : remove)
   }
 
-  function renderKeywords(keywords, isIgnoreKeywords) {
+  function renderKeywords(keywords: string[], isIgnoreKeywords?: boolean) {
     return keywords.length
       ? keywords.map((key) => (
           <Tag className={s.selectedTag} key={key} closable onClose={(e) => updateIgnoredKeywords(e, [key], isIgnoreKeywords)}>
@@ -272,7 +270,7 @@ const Add: FC = () => {
     detail: <Button onClick={showFormatDetail}>{t('dataset.add.form.tip.format.detail')}</Button>,
   })
 
-  const renderTip = (type, params = {}) =>
+  const renderTip = (type: string, params = {}) =>
     t(`dataset.add.form.${type}.tip`, {
       ...params,
       br: <br />,
@@ -424,7 +422,7 @@ const Add: FC = () => {
                 ></Uploader>
               </Form.Item>
             ) : null}
-            <Desc form={form} />
+            <Desc />
             <Form.Item wrapperCol={{ offset: 8 }}>
               <Space size={20}>
                 <Form.Item name="submitBtn" noStyle>

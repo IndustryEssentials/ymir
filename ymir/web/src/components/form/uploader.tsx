@@ -9,6 +9,8 @@ import t from '@/utils/t'
 import 'antd/es/slider/style'
 import { UploadFile } from 'antd/lib/upload/interface'
 
+export type { UploadFile }
+
 type Props = {
   className?: string
   value?: UploadFile[]
