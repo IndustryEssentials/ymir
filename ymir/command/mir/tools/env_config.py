@@ -1,6 +1,7 @@
 import linecache
 import os
 from pydantic import BaseModel
+from typing import Optional
 
 import yaml
 
@@ -70,7 +71,14 @@ def generate_mining_infer_env_config_file(task_id: str, run_mining: bool, run_in
         yaml.safe_dump(env_config.dict(), f)
 
 
-def collect_executor_return_code(work_dir: str) -> MirCode:
+def collect_executor_return_code(work_dir: str) -> Optional[MirCode]:
+    """
+    try to collect executor return code from monitor.txt
+    Return:
+        return code if have, None if have not
+    Raises:
+        MirRuntimeError: if any error occured, for example: monitor.txt not found
+    """
     monitor_file_path = os.path.join(work_dir, 'out', 'monitor.txt')
 
     try:
@@ -78,7 +86,7 @@ def collect_executor_return_code(work_dir: str) -> MirCode:
             line = f.readline()
             components = line.split('\t')
         if len(components) < 5:
-            return MirCode.RC_OK
+            return None
         return MirCode(int(components[4]))
     except Exception as e:
         raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_MONITOR_FILE,

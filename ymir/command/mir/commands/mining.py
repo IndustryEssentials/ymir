@@ -184,8 +184,8 @@ class CmdMining(base.BaseCommand):
                                                        run_infer=add_prediction,
                                                        run_mining=(topk is not None))
         except CalledProcessError:
-            return_code = MirCode.RC_CMD_CONTAINER_ERROR
-            return_msg = env_config.collect_executor_outlog_tail(work_dir=work_dir)
+            return_code = env_config.collect_executor_return_code(work_dir) or MirCode.RC_CMD_CONTAINER_ERROR
+            return_msg = env_config.collect_executor_outlog_tail(work_dir)
         # catch other exceptions in command_run_in_out
 
         task = create_task_record(task_type=mirpb.TaskTypeMining,

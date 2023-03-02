@@ -301,8 +301,8 @@ class CmdTrain(base.BaseCommand):
         except CalledProcessError as e:
             logging.warning(f"training exception: {e}")
             # don't exit, proceed if model exists
-            task_code = MirCode.RC_CMD_CONTAINER_ERROR
-            return_msg = env_config.collect_executor_outlog_tail(work_dir=work_dir)
+            task_code = env_config.collect_executor_return_code(work_dir) or MirCode.RC_CMD_CONTAINER_ERROR
+            return_msg = env_config.collect_executor_outlog_tail(work_dir)
 
             # write executor tail to tensorboard
             if return_msg:

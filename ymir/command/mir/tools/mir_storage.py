@@ -3,7 +3,8 @@ import os
 from typing import Any, List
 
 from mir.protos import mir_command_pb2 as mirpb
-from mir.tools.errors import MirCode, MirRuntimeError
+from mir.tools.code import MirCode
+from mir.tools.errors import MirRuntimeError
 
 
 MIR_ASSOCIATED_FILES = ['.git', '.gitattributes', '.gitignore', '.mir', '.mir_lock']

@@ -1,7 +1,5 @@
 from typing import Any
 
-from mir.tools.code import MirCode
-
 
 class MirError(Exception):
     """
@@ -42,7 +40,7 @@ class MirRuntimeError(MirError):
 
 class MirContainerError(MirRuntimeError):
     def __init__(self, error_message: str, task: Any):
-        super().__init__(error_code=MirCode.RC_CMD_CONTAINER_ERROR,
+        super().__init__(error_code=task.return_code,
                          error_message=error_message,
                          needs_new_commit=True,
                          task=task)
