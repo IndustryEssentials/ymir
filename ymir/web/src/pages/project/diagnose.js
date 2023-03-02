@@ -9,7 +9,7 @@ import { isDetection } from '@/constants/project'
 import Breadcrumbs from '@/components/common/breadcrumb'
 import Metrics from './diagnose/metrics'
 import Training from './diagnose/training'
-import InferDataset from './diagnose/InferDataset'
+import InferDataset from './diagnose/Predictions'
 
 import s from './detail.less'
 const TabsKey = ['infer_datasets', 'metrics', 'training']
