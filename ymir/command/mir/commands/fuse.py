@@ -116,8 +116,8 @@ def bind_to_subparsers(subparsers: argparse._SubParsersAction, parent_parser: ar
         '--filter-anno-src',
         dest='filter_anno_src',
         type=str,
-        default='not_set',
-        choices=['not_set', 'gt', 'pred'],
+        default='any',
+        choices=['any', 'gt', 'pred'],
         help="gt to filter class ids ONLY from ground truth, pred to filter from pred, any from both")
     sampling_group = fuse_arg_parser.add_mutually_exclusive_group(required=False)
     sampling_group.add_argument('--count', dest='count', type=int, default=0, help='assets count')

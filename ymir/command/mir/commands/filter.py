@@ -111,9 +111,9 @@ def _include_exclude_match(asset_ids_set: Set[str], mir_annotations: mirpb.MirAn
         gt = mir_annotations.ground_truth.image_annotations.get(asset_id, mirpb.SingleImageAnnotations())
 
         cids = set()
-        if filter_anno_src in {mirpb.AnnotationType.AT_NOT_SET, mirpb.AnnotationType.AT_GT}:
+        if filter_anno_src in {mirpb.AnnotationType.AT_ANY, mirpb.AnnotationType.AT_GT}:
             cids.update({v.class_id for v in gt.boxes})
-        elif filter_anno_src in {mirpb.AnnotationType.AT_NOT_SET, mirpb.AnnotationType.AT_PRED}:
+        elif filter_anno_src in {mirpb.AnnotationType.AT_ANY, mirpb.AnnotationType.AT_PRED}:
             cids.update({v.class_id for v in pred.boxes})
         if (need_no_include or cids & in_cis_set) and (need_no_exclude or not (cids & ex_cis_set)):
             filtered_asset_ids_set.add(asset_id)
@@ -154,8 +154,8 @@ def bind_to_subparsers(subparsers: argparse._SubParsersAction, parent_parser: ar
         '--filter-anno-src',
         dest='filter_anno_src',
         type=str,
-        default='not_set',
-        choices=['not_set', 'gt', 'pred'],
+        default='any',
+        choices=['any', 'gt', 'pred'],
         help="gt to filter class ids ONLY from ground truth, pred to filter from pred, not_set from both")
     filter_arg_parser.add_argument("--src-revs", dest="src_revs", type=str, help="type:rev@bid")
     filter_arg_parser.add_argument("--dst-rev", dest="dst_rev", type=str, help="rev@tid")

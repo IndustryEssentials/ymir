@@ -92,7 +92,7 @@ def annotation_type_str(annotation_type: mir_cmd_pb.AnnotationType) -> str:
         mir_cmd_pb.AnnotationType.AT_GT: 'gt',
         mir_cmd_pb.AnnotationType.AT_PRED: 'pred',
     }
-    return enum_str_map.get(annotation_type, 'not_set')
+    return enum_str_map.get(annotation_type, 'any')
 
 
 def time_it(f: Callable) -> Callable:
