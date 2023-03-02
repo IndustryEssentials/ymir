@@ -1,7 +1,7 @@
 version: "3.3"
 services:
   backend:
-    image: industryessentials/ymir-backend:release-2.1.0
+    image: industryessentials/ymir-backend:release-2.2.0
     env_file:
       - .env
     runtime: ${SERVER_RUNTIME}
@@ -79,7 +79,7 @@ services:
       - ymirnetwork
 
   web:
-    image: industryessentials/ymir-web:release-2.1.0
+    image: industryessentials/ymir-web:release-2.2.0
     volumes:
       - "${YMIR_PATH}/ymir-models:/data/ymir/ymir-models"
       - "${YMIR_PATH}/ymir-assets:/data/ymir/ymir-assets"
