@@ -112,7 +112,7 @@ def _run_mining(env_config: env.EnvConfig) -> None:
     #   models are transfered in executor_config's model_params_path
     executor_config = env.get_executor_config()
     idle_seconds: float = executor_config.get('idle_seconds', 60)
-    trigger_crash: bool = executor_config.get('trigger_crash', False)
+    crash_code: bool = executor_config.get('crash_code', TaskReturnCode.TRC_NOTSET)
     #! use `logging` or `print` to write log to console
     logging.info(f"mining config: {executor_config}")
 
@@ -134,7 +134,7 @@ def _run_mining(env_config: env.EnvConfig) -> None:
     logging.info(f"assets count: {len(asset_paths)}, absent: {absent_count}")
     monitor.write_monitor_logger(percent=0.5)
 
-    _dummy_work(idle_seconds=idle_seconds, trigger_crash=trigger_crash)
+    _dummy_work(idle_seconds=idle_seconds, crash_code=crash_code)
 
     #! write mining result
     #   here we give a fake score to each assets
@@ -153,7 +153,7 @@ def _run_infer(env_config: env.EnvConfig) -> None:
     executor_config = env.get_executor_config()
     class_names = executor_config['class_names']
     idle_seconds: float = executor_config.get('idle_seconds', 60)
-    trigger_crash: bool = executor_config.get('trigger_crash', False)
+    crash_code: bool = executor_config.get('crash_code', TaskReturnCode.TRC_NOTSET)
     seed: int = executor_config.get('seed', 15)
     #! use `logging` or `print` to write log to console
     logging.info(f"infer config: {executor_config}")
@@ -176,7 +176,7 @@ def _run_infer(env_config: env.EnvConfig) -> None:
     logging.info(f"assets count: {len(asset_paths)}, absent: {absent_count}")
     monitor.write_monitor_logger(percent=0.5)
 
-    _dummy_work(idle_seconds=idle_seconds, trigger_crash=trigger_crash)
+    _dummy_work(idle_seconds=idle_seconds, crash_code=crash_code)
 
     #! write infer result
     fake_anns = []
