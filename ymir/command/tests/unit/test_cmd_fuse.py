@@ -90,6 +90,7 @@ class TestCmdFuse(unittest.TestCase):
         fake_args.strategy = 'stop'
         fake_args.in_cis = 'person;cat'
         fake_args.ex_cis = ''
+        fake_args.filter_anno_src = 'any'
         fake_args.count = 0
         fake_args.rate = 0.5
         fuse_instance = CmdFuse(fake_args)

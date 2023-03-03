@@ -15,6 +15,7 @@ def make_cmd_request(user_id: str = None,
                      ex_dataset_ids: List[str] = None,
                      in_class_ids: List[int] = None,
                      ex_class_ids: List[int] = None,
+                     annotation_type: mir_cmd_pb.AnnotationType = None,
                      label_collection: backend_pb2.LabelCollection = None,
                      asset_dir: str = None,
                      model_config: str = None,
@@ -53,6 +54,8 @@ def make_cmd_request(user_id: str = None,
         request.in_class_ids[:] = in_class_ids
     if ex_class_ids:
         request.ex_class_ids[:] = ex_class_ids
+    if annotation_type:
+        request.annotation_type = annotation_type
     if label_collection:
         request.label_collection.CopyFrom(label_collection)
     if force is not None:
@@ -101,6 +104,7 @@ def make_invoker_cmd_call(invoker: Any,
                           ex_dataset_ids: List[str] = None,
                           in_class_ids: List[int] = None,
                           ex_class_ids: List[int] = None,
+                          annotation_type: mir_cmd_pb.AnnotationType = None,
                           label_collection: backend_pb2.LabelCollection = None,
                           force: bool = None,
                           commit_message: str = None,
@@ -126,6 +130,7 @@ def make_invoker_cmd_call(invoker: Any,
                                ex_dataset_ids=ex_dataset_ids,
                                in_class_ids=in_class_ids,
                                ex_class_ids=ex_class_ids,
+                               annotation_type=annotation_type,
                                label_collection=label_collection,
                                force=force,
                                commit_message=commit_message,
