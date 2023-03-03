@@ -102,6 +102,7 @@ class CRUDPrediction(CRUDBase[Prediction, PredictionCreate, PredictionUpdate]):
         prediction.result_state = int(result_state)
 
         if result:
+            result["keywords"]["eval_class_ids"] = result["pred"]["eval_class_ids"]
             prediction.keywords = json.dumps(result["keywords"])
             prediction.asset_count = result["total_assets_count"]
 

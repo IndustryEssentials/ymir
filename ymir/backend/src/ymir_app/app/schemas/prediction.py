@@ -1,6 +1,7 @@
+import json
 from typing import Dict, List, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, validator
 
 from app.constants.state import ResultState, TaskType, ObjectType
 from app.schemas.common import (
@@ -55,7 +56,14 @@ class PredictionInDBBase(IdModelMixin, DateTimeModelMixin, IsDeletedModelMixin, 
 
 
 class Prediction(PredictionInDBBase):
-    pass
+    keywords: Optional[str]
+
+    # make sure all the json dumped value is unpacked before returning to caller
+    @validator("keywords")
+    def unpack(cls, v: Optional[str]) -> Dict[str, int]:
+        if v is None:
+            return {}
+        return json.loads(v)
 
 
 class PredictionPagination(BaseModel):
