@@ -30,7 +30,7 @@ class CmdImport(base.BaseCommand):
                                        work_dir=self.args.work_dir,
                                        unknown_types_strategy=annotations.UnknownTypesStrategy(
                                            self.args.unknown_types_strategy),
-                                       anno_type=annotations.parse_anno_type(self.args.anno_type),
+                                       anno_type=annotations.parse_object_type(self.args.anno_type),
                                        is_instance_segmentation=self.args.is_instance_segmentation)
 
     @staticmethod

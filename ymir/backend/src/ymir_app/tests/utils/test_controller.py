@@ -78,7 +78,7 @@ class TestControllerRequest:
         )
         assert ret.req.req_type == m.mirsvrpb.RequestType.TASK_CREATE
         assert ret.req.req_create_task.task_type == m.mir_cmd_pb.TaskType.TaskTypeLabel
-        assert ret.req.req_create_task.labeling.annotation_type == m.mirsvrpb.AnnotationType.PRED
+        assert ret.req.req_create_task.labeling.annotation_type == m.mir_cmd_pb.AnnotationType.AT_PRED
 
     def test_copy_data(self):
         task_type = m.TaskType.copy_data
