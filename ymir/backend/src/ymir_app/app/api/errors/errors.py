@@ -237,6 +237,11 @@ class NoTaskPermission(PermissionDenied):
     message = "No Permission to Access or Modify Task"
 
 
+class NoPredictionPermission(PermissionDenied):
+    code = error_codes.PREDICTION_NOT_ACCESSIBLE
+    message = "No Permission to Access or Modify Prediction"
+
+
 class UserNotAdmin(APIError):
     status_code = 401
     code = error_codes.USER_NOT_ADMIN

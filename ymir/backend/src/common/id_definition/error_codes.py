@@ -181,6 +181,7 @@ class APIErrorCode(IntEnum):
 
     PREDICTION_NOT_FOUND = 113001
     PREMATURE_PREDICTIONS = 113002
+    PREDICTION_NOT_ACCESSIBLE = 113003
 
 
 class UpdaterErrorCode(IntEnum):

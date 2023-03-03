@@ -6,7 +6,12 @@ from sqlalchemy.orm import Session
 from app import crud, models, schemas
 from app.utils.data import groupby
 from app.api import deps
-from app.api.errors.errors import ProjectNotFound
+from app.api.errors.errors import (
+    ProjectNotFound,
+    MissingOperations,
+    RefuseToProcessMixedOperations,
+    NoPredictionPermission,
+)
 from app.constants.state import ObjectType
 from app.utils.ymir_controller import ControllerClient
 from app.libs.predictions import evaluate_predictions, ensure_predictions_are_ready
@@ -33,6 +38,33 @@ def list_predictions(
     )
     model_wise_predictions = {k: list(v) for k, v in groupby(predictions, "model_id")}
     return {"result": {"total": total, "items": model_wise_predictions}}
+
+
+@router.post("/batch", response_model=schemas.prediction.PredictionsOut)
+def batch_update_predictions(
+    *,
+    db: Session = Depends(deps.get_db),
+    prediction_ops: schemas.BatchOperations,
+    current_user: models.User = Depends(deps.get_current_active_user),
+) -> Any:
+    if not prediction_ops.operations:
+        raise MissingOperations()
+    project = crud.project.get_by_user_and_id(db, user_id=current_user.id, id=prediction_ops.project_id)
+    if not project:
+        raise ProjectNotFound()
+    actions = list({op.action for op in prediction_ops.operations})
+    if len(actions) != 1:
+        # Do not support mixed operations, for example,
+        #  hide and unhide in a single batch request
+        raise RefuseToProcessMixedOperations()
+    action = actions[0]
+    prediction_ids = list({op.id_ for op in prediction_ops.operations})
+    predictions = crud.prediction.get_multi_by_ids(db, ids=prediction_ids)
+    if {p.user_id for p in predictions} != {current_user.id}:
+        raise NoPredictionPermission()
+
+    predictions = crud.prediction.batch_toggle_visibility(db, ids=prediction_ids, action=action)
+    return {"result": predictions}
 
 
 @router.post("/evaluation", response_model=schemas.prediction.PredictionEvaluationOut)
