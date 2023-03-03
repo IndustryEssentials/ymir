@@ -8,7 +8,7 @@ from app.api import deps
 router = APIRouter()
 
 
-@router.get("/", response_model=schemas.prediction.PredictionsOut)
+@router.get("/", response_model=schemas.prediction.PredictionPaginationOut)
 def list_predictions(
     *,
     db: Session = Depends(deps.get_db),
@@ -17,11 +17,11 @@ def list_predictions(
     visible: bool = Query(True),
     pagination: schemas.CommonPaginationParams = Depends(),
 ) -> Any:
-    predictions = crud.prediction.get_multi_with_filters(
+    predictions, total = crud.prediction.get_multi_with_filters(
         db,
         user_id=current_user.id,
         project_id=project_id,
         visible=visible,
         pagination=pagination,
     )
-    return {"result": predictions}
+    return {"result": {"total": total, "items": predictions}}

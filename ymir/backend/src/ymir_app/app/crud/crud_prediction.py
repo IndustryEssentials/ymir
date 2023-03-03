@@ -1,7 +1,7 @@
 import json
 from typing import Dict, List, Optional, Tuple
 
-from sqlalchemy import desc, not_
+from sqlalchemy import desc, distinct, func, not_
 from sqlalchemy.orm import Session
 
 from app import schemas
@@ -48,7 +48,10 @@ class CRUDPrediction(CRUDBase[Prediction, PredictionCreate, PredictionUpdate]):
         # Query
         #  find all predictions belonging to model_ids from subquery
         query = db.query(self.model).join(subquery, self.model.model_id == subquery.c.model_id)
-        return query.all(), query.count()
+
+        # Count distinct models
+        total = db.query(func.count(distinct(self.model.model_id))).scalar()
+        return query.all(), total
 
     def update_state(
         self,
