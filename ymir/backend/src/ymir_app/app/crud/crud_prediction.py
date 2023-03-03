@@ -18,7 +18,7 @@ class CRUDPrediction(CRUDBase[Prediction, PredictionCreate, PredictionUpdate]):
         db: Session,
         *,
         user_id: int,
-        project_id: Optional[int] = None,
+        project_id: int,
         visible: bool = True,
         pagination: CommonPaginationParams,
     ) -> Tuple[List[Prediction], int]:
@@ -28,7 +28,7 @@ class CRUDPrediction(CRUDBase[Prediction, PredictionCreate, PredictionUpdate]):
         # Subquery
         #  find models with latest predictions
         subquery = (
-            db.query(self.model.project_id)
+            db.query(self.model.model_id)
             .filter(
                 self.model.user_id == user_id,
                 self.model.project_id == project_id,
