@@ -302,7 +302,7 @@ class CmdTrain(base.BaseCommand):
             logging.warning(f"training exception: {e}")
             # don't exit, proceed if model exists
             task_code = env_config.collect_executor_return_code(work_dir) or MirCode.RC_CMD_CONTAINER_ERROR
-            return_msg = env_config.collect_executor_outlog_tail(work_dir)
+            return_msg = env_config.collect_executor_outlog_tail(work_dir) or str(e)
 
             # write executor tail to tensorboard
             if return_msg:
@@ -320,19 +320,25 @@ class CmdTrain(base.BaseCommand):
 
         # save model
         logging.info(f"saving models:\n task_context: {task_context}")
-        out_model_dir = os.path.join(work_dir_out, "models")
-        model_storage = _get_model_storage(model_root=out_model_dir,
-                                           executor_config=executor_config,
-                                           task_context=task_context)
-        models.pack_and_copy_models(model_storage=model_storage,
-                                    model_dir_path=out_model_dir,
-                                    model_location=model_upload_location)
+        model_meta = None
+        try:
+            out_model_dir = os.path.join(work_dir_out, "models")
+            model_storage = _get_model_storage(model_root=out_model_dir,
+                                               executor_config=executor_config,
+                                               task_context=task_context)
+            models.pack_and_copy_models(model_storage=model_storage,
+                                        model_dir_path=out_model_dir,
+                                        model_location=model_upload_location)
+            model_meta = model_storage.get_model_meta()
+        except Exception as e:
+            task_code = task_code or MirCode.RC_CMD_INVALID_FILE
+            return_msg = return_msg or str(e)
 
         # commit task
         task = mir_storage_ops.create_task_record(task_type=mirpb.TaskType.TaskTypeTraining,
                                                   task_id=dst_typ_rev_tid.tid,
                                                   message='training',
-                                                  model_meta=model_storage.get_model_meta(),
+                                                  model_meta=model_meta,
                                                   return_code=task_code,
                                                   return_msg=return_msg,
                                                   serialized_executor_config=yaml.safe_dump(executor_config),
@@ -341,7 +347,7 @@ class CmdTrain(base.BaseCommand):
                                                   dst_rev=dst_rev)
 
         if task_code != MirCode.RC_OK:
-            raise MirContainerError(error_message='container error occured', task=task)
+            raise MirContainerError(task)
 
         mir_storage_ops.MirStorageOps.save_and_commit(mir_root=mir_root,
                                                       mir_branch=dst_typ_rev_tid.rev,

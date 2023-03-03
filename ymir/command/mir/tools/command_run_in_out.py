@@ -115,6 +115,13 @@ def command_run_in_out(f: Callable) -> Callable:
             exc = copy.copy(e)
             trace_message = predefined_task.return_msg if (
                 predefined_task and predefined_task.return_msg) else f"cmd exception: {traceback.format_exc()}"
+        except PermissionError as e:
+            error_code = MirCode.RC_CMD_PERMISSION_ERROR
+            short_message = str(e)
+            predefined_task = None
+            needs_new_commit = True
+            exc = copy.copy(e)
+            trace_message = f"cmd exception: {traceback.format_exc()}"
         except BaseException as e:
             error_code = MirCode.RC_CMD_ERROR_UNKNOWN
             short_message = str(e)

@@ -197,7 +197,7 @@ class CmdMining(base.BaseCommand):
                                   return_msg=return_msg,
                                   executor=executor)
         if return_code != MirCode.RC_OK:
-            raise MirContainerError(error_message='mining container error occured', task=task)
+            raise MirContainerError(task)
 
         _process_results(mir_root=mir_root,
                          label_storage_file=label_storage_file,
