@@ -23,7 +23,7 @@ const Predictions: React.FC = () => {
   const [predictions, setPredictions] = useState<YModels.Prediction[]>([])
   const [query, setQuery] = useState(initQuery)
   const hideRef = useRef<RefProps>(null)
-  const [{ items, total }, getDatasets] = useFetch('dataset/queryPredictions', { items: [], total: 0 })
+  const [{ items, total }, getPredictions] = useFetch('prediction/getPredictions', { items: [], total: 0 })
   const cols = getPredictionColumns(predictions[0]?.type)
   const cacheDatasets = useSelector<YStates.Root, YStates.IdMap<YModels.Dataset>>((state) => state.dataset.dataset)
   const cacheModels = useSelector<YStates.Root, YStates.IdMap<YModels.Model>>((state) => state.model.model)
@@ -36,7 +36,7 @@ const Predictions: React.FC = () => {
         history.push(`/home/project/${pid}/diagnose#metrics`, {
           mid: record.inferModelId,
         }),
-      disabled: !validDataset(record) || (record.assetCount > INFER_DATASET_MAX_COUNT || (record.inferModel?.keywords?.length || 0) > INFER_CLASSES_MAX_COUNT),
+      disabled: !validDataset(record) || record.assetCount > INFER_DATASET_MAX_COUNT || (record.inferModel?.keywords?.length || 0) > INFER_CLASSES_MAX_COUNT,
       icon: <DiagnosisIcon />,
     },
     {
@@ -82,15 +82,15 @@ const Predictions: React.FC = () => {
     }
   }, [progressTasks])
 
-  useEffect(() => setPredictions(items), [items])
+  useEffect(() => items && setPredictions(items), [items])
 
   useEffect(() => {
     setPredictions((predictions) =>
-      predictions.map((dataset) => {
-        const { inferDatasetId, inferModelId } = dataset
+      predictions.map((prediction) => {
+        const { inferDatasetId, inferModelId } = prediction
         const inferModel = inferModelId[0] ? cacheModels[inferModelId[0]] : undefined
         const inferDataset = inferDatasetId ? cacheDatasets[inferDatasetId] : undefined
-        return { ...dataset, inferModel, inferDataset }
+        return { ...prediction, inferModel, inferDataset }
       }),
     )
   }, [cacheDatasets, cacheModels, items])
@@ -102,7 +102,7 @@ const Predictions: React.FC = () => {
   }
 
   function fetchPredictions() {
-    return getDatasets({ pid, ...query })
+    return getPredictions({ pid, ...query })
   }
 
   const hide = (dataset: YModels.Prediction) => {

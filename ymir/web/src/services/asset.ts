@@ -16,7 +16,7 @@ import { AxiosResponse } from 'axios'
  *   limit = 20,
  * }
  */
-export function getAssetsOfDataset({ id, type = 'keywords', keywords = [], cm = [], exclude = [], annoType = [], offset = 0, limit = 20 }: YParams.AssetQueryParams) {
+export function getAssets({ id, type = 'keywords', keywords = [], cm = [], exclude = [], annoType = [], offset = 0, limit = 20 }: YParams.AssetQueryParams) {
   return request.get(`datasets/${id}/assets`, {
     params: {
       [type]: keywords.toString() || undefined,

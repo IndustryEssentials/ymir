@@ -1,7 +1,6 @@
 import request from '@/utils/request'
-import { AxiosResponse } from 'axios'
 
-/** dataset service */
+/** prediction service */
 /**
  * get dataset
  * @export
@@ -17,9 +16,8 @@ export function getPrediction(id: number, verbose: boolean) {
  * @export
  * @param {YParams.PredictionsQuery}
  */
-export function queryPredictions({
+export function getPredictions({
   pid,
-  gid,
   state,
   startTime,
   endTime,
@@ -27,17 +25,14 @@ export function queryPredictions({
   offset = 0,
   limit = 10,
   desc = true,
-  orderBy,
 }: YParams.PredictionsQuery) {
   return request.get('predictions/', {
     params: {
       project_id: pid,
-      group_id: gid,
       state,
       offset,
       limit,
       is_desc: desc,
-      order_by: orderBy,
       visible,
       start_time: startTime,
       end_time: endTime,

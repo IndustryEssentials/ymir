@@ -17,6 +17,16 @@ declare namespace YModels {
     [key: string]: any
   }
 
+  export type ResponseResultList<M extends BackendData = BackendData> = {
+    items: M[]
+    total: number
+  }
+
+  export type Response<M extends BackendData = BackendData> = {
+    code: number,
+    result?: M 
+  }
+
   export interface Group {
     id: number
     name: string
@@ -65,7 +75,7 @@ declare namespace YModels {
     [key: string]: string | number
   }
   type CKCount = { [key: string]: number }
-  type CKItem = {keyword: string, count: number, children?: CKItem[]}
+  type CKItem = { keyword: string; count: number; children?: CKItem[] }
   type CKCounts = {
     keywords: CKItem[]
     counts: CKCount
@@ -148,7 +158,7 @@ declare namespace YModels {
   }
 
   export interface AnnotationBase {
-    id: string | number,
+    id: string | number
     keyword: string
     width: number
     height: number

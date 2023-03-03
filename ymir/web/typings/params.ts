@@ -24,9 +24,7 @@ declare namespace YParams {
     orderBy?: 'id' | 'create_datetime' | 'update_datetime' | 'map' | 'source'
   }
 
-  interface PredictionsQuery extends Omit<ResultListQuery, 'objectType' | 'type'> {
-    orderBy?: 'id' | 'create_datetime'
-  }
+  interface PredictionsQuery extends Omit<ResultListQuery, 'objectType' | 'type' | 'gid' | 'name'> {}
 
   type DatasetQuery = {
     did: number

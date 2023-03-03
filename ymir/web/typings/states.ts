@@ -3,6 +3,7 @@ declare namespace YStates {
     user: UserState
     iteration: IterationState
     dataset: DatasetState
+    prediction: PredictionState
     model: ModelState
     image: ImageState
     keywords: LabelState
@@ -48,7 +49,7 @@ declare namespace YStates {
   }
 
   interface PredictionState extends State {
-    predictions: List<YModels.Prediction>
+    predictions: IdMap<List<YModels.Prediction>>
     prediction: IdMap<YModels.Prediction>
   }
 
@@ -78,19 +79,23 @@ declare namespace YStates {
   interface SocketState extends State {
     tasks: YModels.ProgressTask[]
   }
-  type EffectAction<S> = <R>(func: (state: S) => R) => R
-  type EffectActionsType<S> = {
-    call?: EffectAction<S>
-    put?: EffectAction<S>
-    select?: EffectAction<S>
+  type EffectSelector = <R>(func: (state: YStates.Root) => R) => Promise<R>
+  type EffectAction = <P = unknown, R = unknown>(action: ActionType<P>) => Promise<R>
+  type EffectActionsType = {
+    call: <R>(func: Function, ...params: any[]) => Promise<R>
+    put: EffectAction & {
+      resolve: EffectAction
+    }
+    select: EffectSelector
   }
   type ActionType<P extends any = any> = {
+    type?: string
     payload: P
   }
-  type EffectType<S, R extends any = any> = (action: ActionType, dispatch?: EffectActionsType<S>) => R
+  type EffectType<P extends any = any, R extends any = any> = (action: ActionType<P>, dispatch: EffectActionsType) => R
   type ReducerType<S> = (state: S, action: ActionType) => S
-  type EffectsType<S> = {
-    [key: string]: EffectType<S>
+  type EffectsType = {
+    [key: string]: EffectType
   }
   type ReducersType<S> = {
     [key: string]: ReducerType<S>
@@ -99,7 +104,7 @@ declare namespace YStates {
   type StoreType<name extends string, S extends { [key: string]: any}> = {
     namespace: name,
     state: S
-    effects: EffectsType<S>
+    effects: EffectsType
     reducers: ReducersType<S>
   }
 
