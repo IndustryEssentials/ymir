@@ -47,6 +47,11 @@ declare namespace YStates {
     publicDatasets: YModels.Dataset[]
   }
 
+  interface PredictionState extends State {
+    predictions: List<YModels.Prediction>
+    prediction: IdMap<YModels.Prediction>
+  }
+
   interface ModelState extends State {
     models: List<YModels.Model>
     versions: IdMap<YModels.Model[]>
@@ -73,8 +78,37 @@ declare namespace YStates {
   interface SocketState extends State {
     tasks: YModels.ProgressTask[]
   }
+  type EffectAction<S> = <R>(func: (state: S) => R) => R
+  type EffectActionsType<S> = {
+    call?: EffectAction<S>
+    put?: EffectAction<S>
+    select?: EffectAction<S>
+  }
+  type ActionType<P extends any = any> = {
+    payload: P
+  }
+  type EffectType<S, R extends any = any> = (action: ActionType, dispatch?: EffectActionsType<S>) => R
+  type ReducerType<S> = (state: S, action: ActionType) => S
+  type EffectsType<S> = {
+    [key: string]: EffectType<S>
+  }
+  type ReducersType<S> = {
+    [key: string]: ReducerType<S>
+  }
+
+  type StoreType<name extends string, S extends { [key: string]: any}> = {
+    namespace: name,
+    state: S
+    effects: EffectsType<S>
+    reducers: ReducersType<S>
+  }
+
+
+  type PredictionReducers = ReducersType<PredictionState>
+  type PredictionStore = StoreType<'prediction', PredictionState>
 
   type ResultState<T extends YModels.ResultType> = T extends 'dataset' ? DatasetState : ModelState
   type List<T> = { items: T[]; total: number }
   type IdMap<T> = { [key: string | number]: T }
+  
 }
