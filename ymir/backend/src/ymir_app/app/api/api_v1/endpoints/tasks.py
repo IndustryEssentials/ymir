@@ -267,6 +267,7 @@ def update_task_status(
             state=updated_task.state,
             result_model=updated_task.result_model,  # type: ignore
             result_dataset=updated_task.result_dataset,  # type: ignore
+            result_prediction=updated_task.result_prediction,  # type: ignore
         )
         # todo compatible with current frontend data structure
         #  reformatting is needed

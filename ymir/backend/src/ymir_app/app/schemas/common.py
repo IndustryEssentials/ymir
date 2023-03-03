@@ -148,6 +148,15 @@ class ModelResult(BaseModel):
         orm_mode = True
 
 
+class PredictionResult(BaseModel):
+    id: int
+    result_state: ResultState
+    result_type: ResultType = ResultType.prediction
+
+    class Config:
+        orm_mode = True
+
+
 # Common Query Parameters
 
 
