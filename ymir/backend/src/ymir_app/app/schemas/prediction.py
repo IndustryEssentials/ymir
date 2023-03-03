@@ -14,12 +14,18 @@ from app.schemas.task import TaskInternal
 
 class PredictionBase(BaseModel):
     name: str
-    source: TaskType
-    result_state: ResultState = ResultState.processing
+    hash: str = Field(description="related task hash")
+    description: Optional[str]
+    user_id: int
     project_id: int
-    keywords: Optional[str]
+    task_id: int
+    dataset_id: int
+    model_id: int
+    source: TaskType = TaskType.dataset_infer
+    result_state: ResultState = ResultState.processing
     asset_count: Optional[int]
     keyword_count: Optional[int]
+    keywords: Optional[str]
 
     class Config:
         use_enum_values = True
@@ -27,11 +33,6 @@ class PredictionBase(BaseModel):
 
 
 class PredictionCreate(PredictionBase):
-    hash: str = Field(description="related task hash")
-    task_id: int
-    user_id: int
-    description: Optional[str]
-
     class Config:
         use_enum_values = True
 
@@ -45,9 +46,6 @@ class PredictionUpdate(BaseModel):
 
 
 class PredictionInDBBase(IdModelMixin, DateTimeModelMixin, IsDeletedModelMixin, PredictionBase):
-    hash: str = Field(description="related task hash")
-    task_id: int
-    user_id: int
     related_task: Optional[TaskInternal]
     object_type: Optional[ObjectType] = ObjectType.object_detect
     is_visible: bool

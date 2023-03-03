@@ -1,5 +1,4 @@
 from datetime import datetime
-from typing import Optional
 
 from sqlalchemy import Boolean, Column, DateTime, Integer, String, SmallInteger, Text
 from sqlalchemy.orm import relationship
@@ -12,6 +11,7 @@ from app.models.task import Task  # noqa
 class Prediction(Base):
     __tablename__ = "prediction"
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    name = Column(String(settings.STRING_LEN_LIMIT), index=True, nullable=False)
     hash = Column(String(settings.STRING_LEN_LIMIT), index=True, unique=True, nullable=False)
     source = Column(SmallInteger, index=True, nullable=False)
     description = Column(String(settings.STRING_LEN_LIMIT))
@@ -23,11 +23,9 @@ class Prediction(Base):
     model_id = Column(Integer, index=True, nullable=False)
     dataset_id = Column(Integer, index=True, nullable=False)
 
-    keywords = Column(Text(settings.TEXT_LEN_LIMIT))
-    ignored_keywords = Column(Text(settings.TEXT_LEN_LIMIT))
-    negative_info = Column(String(settings.STRING_LEN_LIMIT))
     asset_count = Column(Integer)
     keyword_count = Column(Integer)
+    keywords = Column(Text(settings.TEXT_LEN_LIMIT))
 
     related_task = relationship(
         "Task",
@@ -46,9 +44,3 @@ class Prediction(Base):
         onupdate=datetime.utcnow,
         nullable=False,
     )
-
-    @property
-    def object_type(self) -> Optional[int]:
-        if self.project:  # type: ignore
-            return self.project.object_type  # type: ignore
-        return None
