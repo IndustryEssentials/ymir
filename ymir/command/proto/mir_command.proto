@@ -25,6 +25,13 @@ enum AssetType {
     AssetTypeVideoMp4 = 101;
 };
 
+enum AnnotationType {
+    AT_NOT_SET = 0;
+    AT_GT = 1;
+    AT_PRED = 2;
+    AT_ANY = 3;
+};
+
 /// task type
 enum TaskType {
     TaskTypeUnknown = 0;

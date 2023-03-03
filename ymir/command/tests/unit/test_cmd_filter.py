@@ -179,6 +179,7 @@ class TestCmdFilter(unittest.TestCase):
     # public: test cases
     def test_all(self):
         self.__test_cmd_filter_normal_01()
+        self.__test_cmd_filter_normal_02()
 
         # test for write lock
         pipe0 = mp.Pipe()
@@ -203,10 +204,27 @@ class TestCmdFilter(unittest.TestCase):
                                             ex_cis=excludes,
                                             in_cks="",
                                             ex_cks="",
+                                            filter_anno_src='any',
                                             dst_branch='__test_cmd_filter_normal_01',
                                             expected_asset_ids=expected_asset_ids)
 
-    def __test_cmd_filter_normal_cases(self, in_cis: str, ex_cis: str, in_cks: str, ex_cks: str, dst_branch: str,
+    def __test_cmd_filter_normal_02(self):
+        preds = "frisbee; person; ChAiR"  # 0; 2; 5
+        expected_asset_ids = {
+            "a0000000000000000000000000000000000000000000000000",
+            "a0000000000000000000000000000000000000000000000003",
+            "a0000000000000000000000000000000000000000000000004",
+        }
+        self.__test_cmd_filter_normal_cases(in_cis=preds,
+                                            ex_cis="",
+                                            in_cks="",
+                                            ex_cks="",
+                                            filter_anno_src='pred',
+                                            dst_branch='__test_cmd_filter_normal_02',
+                                            expected_asset_ids=expected_asset_ids)
+
+    def __test_cmd_filter_normal_cases(self, in_cis: str, ex_cis: str, in_cks: str, ex_cks: str,
+                                       filter_anno_src: str, dst_branch: str,
                                        expected_asset_ids: Set[str]):
         fake_args = type('', (), {})()
         fake_args.mir_root = self._mir_root
@@ -215,6 +233,7 @@ class TestCmdFilter(unittest.TestCase):
         fake_args.ex_cis = ex_cis
         fake_args.in_cks = in_cks
         fake_args.ex_cks = ex_cks
+        fake_args.filter_anno_src = filter_anno_src
         fake_args.src_revs = "a@t0"  # src branch name and base task id
         fake_args.dst_rev = f"{dst_branch}@t1"
         fake_args.work_dir = ''
@@ -242,6 +261,7 @@ class TestCmdFilter(unittest.TestCase):
         fake_args.ex_cis = None
         fake_args.in_cks = None
         fake_args.ex_cks = None
+        fake_args.filter_anno_src = 'any'
         fake_args.src_revs = "a@t0"  # src branch name and base task id
         fake_args.dst_rev = f"{dst_branch}@t1"
         fake_args.work_dir = ''

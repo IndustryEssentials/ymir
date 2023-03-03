@@ -60,8 +60,8 @@ IMPORTING_STRATEGY_MAPPING = {
 }
 
 ANNOTATION_TYPE_MAPPING = {
-    AnnotationType.gt: mirsvrpb.AnnotationType.GT,
-    AnnotationType.pred: mirsvrpb.AnnotationType.PRED,
+    AnnotationType.gt: mir_cmd_pb.AnnotationType.AT_GT,
+    AnnotationType.pred: mir_cmd_pb.AnnotationType.AT_PRED,
 }
 
 OBJECT_TYPE_MAPPING = {

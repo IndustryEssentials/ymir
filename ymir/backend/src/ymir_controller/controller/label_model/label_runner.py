@@ -8,7 +8,6 @@ from controller.config import label_task as label_task_config
 from controller.invoker.invoker_task_exporting import TaskExportingInvoker
 from controller.utils import utils
 from mir.protos import mir_command_pb2 as mir_cmd_pb
-from proto import backend_pb2
 
 
 def prepare_label_dir(working_dir: str, task_id: str) -> Tuple[str, str, str, str, str]:
@@ -63,9 +62,9 @@ def trigger_ymir_export(repo_root: str, label_storage_file: str, dataset_id: str
 
     gt_dir: Optional[str] = None
     pred_dir: Optional[str] = None
-    if annotation_type == backend_pb2.AnnotationType.GT:
+    if annotation_type == mir_cmd_pb.AnnotationType.AT_GT:
         gt_dir = input_asset_dir
-    elif annotation_type == backend_pb2.AnnotationType.PRED:
+    elif annotation_type == mir_cmd_pb.AnnotationType.AT_PRED:
         pred_dir = input_asset_dir
 
     TaskExportingInvoker.exporting_cmd(repo_root=repo_root,

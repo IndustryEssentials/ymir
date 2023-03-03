@@ -79,12 +79,20 @@ def annotation_format_str(format: mir_cmd_pb.ExportFormat) -> str:
     return format_enum_dict[format]
 
 
-def anno_type_str(anno_type: mir_cmd_pb.ObjectType) -> str:
+def object_type_str(object_type: mir_cmd_pb.ObjectType) -> str:
     format_enum_dict = {
         mir_cmd_pb.ObjectType.OT_DET_BOX: 'det-box',
         mir_cmd_pb.ObjectType.OT_SEG: 'seg',
     }
-    return format_enum_dict[anno_type]
+    return format_enum_dict[object_type]
+
+
+def annotation_type_str(annotation_type: mir_cmd_pb.AnnotationType) -> str:
+    enum_str_map = {
+        mir_cmd_pb.AnnotationType.AT_GT: 'gt',
+        mir_cmd_pb.AnnotationType.AT_PRED: 'pred',
+    }
+    return enum_str_map.get(annotation_type, 'any')
 
 
 def time_it(f: Callable) -> Callable:

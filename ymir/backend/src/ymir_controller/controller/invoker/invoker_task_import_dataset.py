@@ -83,7 +83,7 @@ class TaskImportDatasetInvoker(TaskBaseInvoker):
             utils.mir_executable(), 'import', '--root', repo_root, '--dst-rev', f"{task_id}@{task_id}", '--src-revs',
             'master', '--index-file', index_file, '--gen-dir', media_location, '-w', work_dir, "--user-label-file",
             label_storage_file, "--anno-type",
-            utils.anno_type_str(object_type)
+            utils.object_type_str(object_type)
         ]
         if is_instance_segmentation:
             importing_cmd.append('--ins-seg')
