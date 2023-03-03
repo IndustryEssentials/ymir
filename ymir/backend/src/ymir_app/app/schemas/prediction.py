@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import Dict, List, Optional
 
 from pydantic import BaseModel, Field
 
@@ -60,7 +60,7 @@ class Prediction(PredictionInDBBase):
 
 class PredictionPagination(BaseModel):
     total: int
-    items: List[Prediction]
+    items: Dict[int, Prediction]
 
 
 class PredictionPaginationOut(Common):

@@ -3,6 +3,7 @@ from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
 
 from app import crud, models, schemas
+from app.utils.data import groupby
 from app.api import deps
 
 router = APIRouter()
@@ -24,4 +25,5 @@ def list_predictions(
         visible=visible,
         pagination=pagination,
     )
-    return {"result": {"total": total, "items": predictions}}
+    model_wise_predictions = groupby(predictions, "model_id")
+    return {"result": {"total": total, "items": model_wise_predictions}}
