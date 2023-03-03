@@ -60,7 +60,7 @@ class Prediction(PredictionInDBBase):
 
 class PredictionPagination(BaseModel):
     total: int
-    items: Dict[int, Prediction]
+    items: Dict[int, List[Prediction]]
 
 
 class PredictionPaginationOut(Common):
@@ -73,3 +73,18 @@ class PredictionOut(Common):
 
 class PredictionsOut(Common):
     result: List[Prediction]
+
+
+class PredictionEvaluationCreate(BaseModel):
+    project_id: int
+    prediction_ids: List[int]
+    confidence_threshold: Optional[float] = None
+    iou_threshold: Optional[float] = None
+    require_average_iou: bool = False
+    need_pr_curve: bool = False
+    main_ck: Optional[str] = None
+
+
+class PredictionEvaluationOut(Common):
+    # dict of prediction_id to evaluation result
+    result: Dict[int, Optional[Dict]]

@@ -196,21 +196,6 @@ class DatasetPaginationOut(Common):
     result: DatasetPagination
 
 
-class DatasetEvaluationCreate(BaseModel):
-    project_id: int
-    dataset_ids: List[int]
-    confidence_threshold: Optional[float] = None
-    iou_threshold: Optional[float] = None
-    require_average_iou: bool = False
-    need_pr_curve: bool = False
-    main_ck: Optional[str] = None
-
-
-class DatasetEvaluationOut(Common):
-    # dict of dataset_id to evaluation result
-    result: Dict[int, Optional[Dict]]
-
-
 class MultiDatasetsWithProjectID(BaseModel):
     project_id: int
     dataset_ids: List[int]

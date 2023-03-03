@@ -21,11 +21,7 @@ from app.config import settings
 from app.constants.state import TaskState, TaskType, ResultState, ObjectType
 from app.utils.ymir_controller import ControllerClient
 from app.utils.ymir_viz import VizClient
-from app.libs.datasets import (
-    import_dataset_in_background,
-    evaluate_datasets,
-    ensure_datasets_are_ready,
-)
+from app.libs.datasets import import_dataset_in_background, ensure_datasets_are_ready
 from app.libs.tasks import create_single_task
 from common_utils.labels import UserLabels
 
@@ -323,43 +319,6 @@ def get_dataset(
             dataset_info.update(dataset_stats)
 
     return {"result": dataset_info}
-
-
-@router.post("/evaluation", response_model=schemas.dataset.DatasetEvaluationOut)
-def batch_evaluate_datasets(
-    *,
-    db: Session = Depends(deps.get_db),
-    in_evaluation: schemas.dataset.DatasetEvaluationCreate,
-    current_user: models.User = Depends(deps.get_current_active_user),
-    controller_client: ControllerClient = Depends(deps.get_controller_client),
-    user_labels: UserLabels = Depends(deps.get_user_labels),
-) -> Any:
-    """
-    evaluate datasets by themselves
-    """
-    logger.info("[evaluate] evaluate datasets with payload: %s", in_evaluation.json())
-
-    project = crud.project.get_by_user_and_id(db, user_id=current_user.id, id=in_evaluation.project_id)
-    if not project:
-        raise ProjectNotFound()
-
-    datasets = ensure_datasets_are_ready(db, dataset_ids=in_evaluation.dataset_ids)
-    dataset_id_mapping = {dataset.hash: dataset.id for dataset in datasets}
-
-    evaluations = evaluate_datasets(
-        controller_client,
-        current_user.id,
-        in_evaluation.project_id,
-        user_labels,
-        in_evaluation.confidence_threshold,
-        in_evaluation.iou_threshold,
-        in_evaluation.require_average_iou,
-        in_evaluation.need_pr_curve,
-        in_evaluation.main_ck,
-        dataset_id_mapping,
-        is_instance_segmentation=(project.object_type == ObjectType.instance_segmentation),
-    )
-    return {"result": evaluations}
 
 
 @router.post("/check_duplication", response_model=schemas.dataset.DatasetCheckDuplicationOut)
