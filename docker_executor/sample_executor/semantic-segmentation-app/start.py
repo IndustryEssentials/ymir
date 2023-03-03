@@ -62,6 +62,8 @@ def _run_training(env_config: env.EnvConfig) -> None:
     #! use `monitor.write_monitor_logger` to write write task process percent to monitor.txt
     monitor.write_monitor_logger(percent=0.5)
 
+    _dummy_work(idle_seconds=idle_seconds, crash_code=crash_code)
+
     # suppose we have a long time training, and have saved the final model
     #! model output dir: os.path.join(env_config.output.models_dir, your_stage_name)
     stage_dir = os.path.join(env_config.output.models_dir, 'stage_00')
@@ -78,8 +80,6 @@ def _run_training(env_config: env.EnvConfig) -> None:
                              'mIoU': expected_mIoU / 2,
                              'mAcc': expected_mAcc / 2,
                          })
-
-    _dummy_work(idle_seconds=idle_seconds, crash_code=crash_code)
 
     write_tensorboard_log(env_config.output.tensorboard_dir)
 
