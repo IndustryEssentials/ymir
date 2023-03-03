@@ -322,7 +322,7 @@ class _EvaluationStateEnumTypeWrapper(google.protobuf.internal.enum_type_wrapper
     ES_EXCEEDS_LIMIT = EvaluationState.V(3)
     """evaluation not finished because there're too many images or too many class ids"""
 
-    ES_NO_CLASS_IDS = EvaluationState.V(4)
+    ES_NOT_ENOUGH_CLASS_IDS = EvaluationState.V(4)
     """evaluation not finished because there's no evaluate class ids"""
 
 
@@ -338,7 +338,7 @@ ES_NO_GT_OR_PRED = EvaluationState.V(2)
 ES_EXCEEDS_LIMIT = EvaluationState.V(3)
 """evaluation not finished because there're too many images or too many class ids"""
 
-ES_NO_CLASS_IDS = EvaluationState.V(4)
+ES_NOT_ENOUGH_CLASS_IDS = EvaluationState.V(4)
 """evaluation not finished because there's no evaluate class ids"""
 
 global___EvaluationState = EvaluationState
