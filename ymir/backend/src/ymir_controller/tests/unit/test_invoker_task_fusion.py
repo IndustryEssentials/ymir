@@ -115,4 +115,8 @@ class TestInvokerTaskFusion(unittest.TestCase):
         )
         logging.info(response)
 
-        mock_run.assert_called_once_with(expected_fuse_cmd, capture_output=True, text=True)
+        mocked_index_call = test_utils.mocked_index_call(user_id=self._user_name,
+                                                         repo_id=self._mir_repo_name,
+                                                         task_id=self._task_id)
+        mock_run.assert_has_calls(
+            [mock.call(expected_fuse_cmd, capture_output=True, text=True, cwd=None), mocked_index_call])

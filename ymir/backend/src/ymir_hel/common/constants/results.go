@@ -11,8 +11,10 @@ type QueryAssetsResult struct {
 type QueryDatasetStatsContext struct {
 	RequireAssetsHist      bool `json:"require_assets_hist"`
 	RequireAnnotationsHist bool `json:"require_annos_hist"`
-	RepoIndexExist         bool `json:"repo_index_exist"`
-	RepoIndexReady         bool `json:"repo_index_ready"`
+	CheckIndexOnly         bool `json:"check_index_only"`
+
+	RepoIndexExist bool `json:"repo_index_exist"`
+	RepoIndexReady bool `json:"repo_index_ready"`
 }
 
 type QueryDatasetStatsResult struct {

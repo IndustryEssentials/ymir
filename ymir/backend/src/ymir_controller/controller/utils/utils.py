@@ -22,9 +22,10 @@ def mir_executable() -> str:
 
 
 def run_command(cmd: List[str],
-                error_code: int = CTLResponseCode.RUN_COMMAND_ERROR) -> backend_pb2.GeneralResp:
+                error_code: int = CTLResponseCode.RUN_COMMAND_ERROR,
+                cwd: str = None) -> backend_pb2.GeneralResp:
     logging.info(f"starting cmd: \n{' '.join(cmd)}\n")
-    result = subprocess.run(cmd, capture_output=True, text=True)  # run and wait
+    result = subprocess.run(cmd, capture_output=True, text=True, cwd=cwd)  # run and wait
     if result.returncode != 0:
         logging.error(f"run cmd error:\n stderr: {result.stderr} \n stdout: {result.stdout}")
         return make_general_response(error_code, result.stderr)

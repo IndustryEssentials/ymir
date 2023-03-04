@@ -1,9 +1,7 @@
 package configs
 
 import (
-	"encoding/json"
 	"fmt"
-	"log"
 
 	"github.com/spf13/viper"
 )
@@ -100,7 +98,5 @@ func InitViperConfig(configFile string) *Config {
 	config.RedisURLHelGrpc = fmt.Sprintf("%s/%d", config.RedisURLHel, config.RedisNumHelGrpc)
 	config.RedisURLHelTask = fmt.Sprintf("%s/%d", config.RedisURLHel, config.RedisNumHelTask)
 
-	s, _ := json.MarshalIndent(config, "", "\t")
-	log.Printf("ymir-hel config:\n%s\n\n", string(s))
 	return &config
 }

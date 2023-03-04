@@ -151,7 +151,11 @@ class TestInvokerTaskMining(unittest.TestCase):
                       f"--model-hash {model_hash}@{model_stage} --src-revs {self._guest_id1};{self._guest_id2} -s host "
                       f"--asset-cache-dir {asset_cache_dir} --task-config-file {output_config} --executor mining_image "
                       f"--executant-name {self._task_id} --topk {top_k}")
-        mock_run.assert_called_once_with(mining_cmd.split(' '), capture_output=True, text=True)
+        mocked_index_call = test_utils.mocked_index_call(user_id=self._user_name,
+                                                         repo_id=self._mir_repo_name,
+                                                         task_id=self._task_id)
+        mock_run.assert_has_calls(
+            [mock.call(mining_cmd.split(' '), capture_output=True, text=True, cwd=None), mocked_index_call])
 
         expected_ret = backend_pb2.GeneralResp()
         expected_dict = {'message': RET_ID}

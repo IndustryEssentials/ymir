@@ -5,6 +5,7 @@ go 1.18
 require (
 	github.com/RichardKnop/machinery v1.10.6
 	github.com/gin-gonic/gin v1.8.1
+	github.com/go-resty/resty/v2 v2.7.0
 	github.com/jinzhu/now v1.1.5
 	github.com/mitchellh/mapstructure v1.5.0
 	github.com/penglongli/gin-metrics v0.1.10
@@ -13,7 +14,7 @@ require (
 	github.com/swaggo/files v0.0.0-20220610200504-28940afbdbfe
 	github.com/swaggo/gin-swagger v1.5.2
 	github.com/swaggo/swag v1.8.4
-	github.com/urfave/cli v1.22.10
+	github.com/urfave/cli/v2 v2.3.0
 	github.com/vektra/gitreader v0.0.0-20150106002542-abd11557f68c
 	go.mongodb.org/mongo-driver v1.10.1
 	google.golang.org/grpc v1.50.1
