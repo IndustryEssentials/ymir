@@ -16,23 +16,31 @@ from controller.invoker.invoker_task_import_dataset import TaskImportDatasetInvo
 from controller.utils import utils
 from controller.utils.redis import rds
 from controller.label_model.base import NotReadyError
+from id_definition.error_codes import CTLResponseCode
 from mir.protos import mir_command_pb2 as mir_cmd_pb
 from proto import backend_pb2
 
 
 def trigger_mir_import(repo_root: str, task_id: str, index_file: str, des_annotation_path: str, media_location: str,
-                       import_work_dir: str, object_type: int, is_instance_segmentation: bool) -> None:
-    TaskImportDatasetInvoker.importing_cmd(repo_root=repo_root,
-                                           label_storage_file=os.path.join(os.path.dirname(repo_root), ids_file_name()),
-                                           task_id=task_id,
-                                           index_file=index_file,
-                                           pred_dir='',
-                                           gt_dir=des_annotation_path,
-                                           media_location=media_location,
-                                           work_dir=import_work_dir,
-                                           unknown_types_strategy=backend_pb2.UnknownTypesStrategy.UTS_STOP,
-                                           object_type=object_type,
-                                           is_instance_segmentation=is_instance_segmentation)
+                       import_work_dir: str, object_type: int,
+                       is_instance_segmentation: bool) -> backend_pb2.GeneralResp:
+    import_response = TaskImportDatasetInvoker.importing_cmd(
+        repo_root=repo_root,
+        label_storage_file=os.path.join(os.path.dirname(repo_root), ids_file_name()),
+        task_id=task_id,
+        index_file=index_file,
+        pred_dir='',
+        gt_dir=des_annotation_path,
+        media_location=media_location,
+        work_dir=import_work_dir,
+        unknown_types_strategy=backend_pb2.UnknownTypesStrategy.UTS_STOP,
+        object_type=object_type,
+        is_instance_segmentation=is_instance_segmentation)
+    if import_response.code != CTLResponseCode.CTR_OK:
+        return import_response
+    # caution: here assumes that repo_root is composed by: sandbox_root + user_id + repo_id
+    dirs = Path(repo_root).parts
+    return utils.index_repo(user_id=dirs[-2], repo_id=dirs[-1], task_id=task_id)
 
 
 def remove_json_file(des_annotation_path: str) -> None:
@@ -91,9 +99,7 @@ def update_label_task(label_instance: utils.LabelBase, task_id: str, project_inf
         remove_json_file(des_annotation_path)
         try:
             label_instance.sync_export_storage(project_info["storage_id"])
-            label_instance.fetch_label_result(project_info["project_id"],
-                                              object_type,
-                                              des_annotation_path)
+            label_instance.fetch_label_result(project_info["project_id"], object_type, des_annotation_path)
         except NotReadyError:
             logging.info("label result not ready, try agiain later")
             return
@@ -101,9 +107,9 @@ def update_label_task(label_instance: utils.LabelBase, task_id: str, project_inf
             sentry_sdk.capture_exception(e)
             logging.error(f"get label task {task_id} error: {e}, set task_id:{task_id} error")
             state = LogState.ERROR
-        label_index_file = generate_label_index_file(
-            Path(project_info["input_asset_dir"]), Path(des_annotation_path), object_type)
-        trigger_mir_import(
+        label_index_file = generate_label_index_file(Path(project_info["input_asset_dir"]), Path(des_annotation_path),
+                                                     object_type)
+        import_response = trigger_mir_import(
             repo_root=project_info["repo_root"],
             task_id=task_id,
             index_file=str(label_index_file),
@@ -113,9 +119,11 @@ def update_label_task(label_instance: utils.LabelBase, task_id: str, project_inf
             object_type=object_type,
             is_instance_segmentation=is_instance_segmentation,
         )
+        if import_response.Code != CTLResponseCode.CTR_OK:
+            state = LogState.ERROR
 
         rds.hdel(label_task_config.MONITOR_MAPPING_KEY, task_id)
-        logging.info(f"task {task_id} finished!!!")
+        logging.info(f"labeling task {task_id} finished")
 
     PercentLogHandler.write_percent_log(log_file=project_info["monitor_file_path"],
                                         tid=project_info["task_id"],

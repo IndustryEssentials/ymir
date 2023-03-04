@@ -249,11 +249,7 @@ class TaskBaseInvoker(BaseMirControllerInvoker):
                               assets_config: Dict[str, str], repo_root: str, master_task_id: str, subtask_id: str,
                               subtask_workdir: str, his_task_id: Optional[str],
                               in_dataset_ids: List[str]) -> backend_pb2.GeneralResp:
-        index_command = ['./hel_server', 'viewer_client']
-        index_command.extend(
-            ['--user_id', request.user_id, '--repo_id', request.repo_id, '--task_id', master_task_id, 'index'])
-        index_response = utils.run_command(index_command, cwd='/app/ymir_hel')
-
+        index_response = utils.index_repo(user_id=request.user_id, repo_id=request.repo_id, task_id=master_task_id)
         if index_response.code == CTLResponseCode.CTR_OK:
             log_state = LogState.DONE
         else:

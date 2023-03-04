@@ -21,6 +21,13 @@ def mir_executable() -> str:
     return "mir"
 
 
+def index_repo(user_id: str, repo_id: str, task_id: str) -> backend_pb2.GeneralResp:
+    index_command = ['./hel_server', 'viewer_client']
+    index_command.extend(
+        ['--user_id', user_id, '--repo_id', repo_id, '--task_id', task_id, 'index'])
+    return run_command(index_command, cwd='/app/ymir_hel')
+
+
 def run_command(cmd: List[str],
                 error_code: int = CTLResponseCode.RUN_COMMAND_ERROR,
                 cwd: str = None) -> backend_pb2.GeneralResp:
