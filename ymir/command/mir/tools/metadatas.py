@@ -56,11 +56,6 @@ def import_metadatas(mir_metadatas: mirpb.MirMetadatas,
         logging.error('invalid map_hashed_path or hashed_asset_root')
         return MirCode.RC_CMD_INVALID_ARGS
 
-    if not mir_metadatas:
-        # some errors occured, show error message
-        logging.error('mir_metadatas empty')
-        return MirCode.RC_CMD_INVALID_MIR_REPO
-
     current_timestamp = int(time.time())  # this is a fake timestamp
     timestamp = mirpb.Timestamp()
     timestamp.start = current_timestamp
