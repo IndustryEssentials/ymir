@@ -1,6 +1,7 @@
 package server
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"log"
@@ -40,6 +41,7 @@ type BaseHandler interface {
 	) *constants.QueryDatasetDupResult
 	GetDatasetMetaCountsHandler(
 		mirRepo *constants.MirRepo,
+		checkIndexOnly bool,
 	) *constants.QueryDatasetStatsResult
 	GetDatasetStatsHandler(
 		mirRepo *constants.MirRepo,
@@ -65,6 +67,19 @@ type BaseHandler interface {
 	)
 }
 
+func StartViewerServer(config *configs.Config) error {
+	s, _ := json.MarshalIndent(config, "", "\t")
+	log.Printf("ymir-hel server config:\n%s\n\n", string(s))
+
+	viewerServer, err := NewViewerServer(config)
+	if err != nil {
+		return err
+	}
+	defer viewerServer.Clear()
+	viewerServer.Start()
+	return nil
+}
+
 type ViewerServer struct {
 	addr    string
 	gin     *gin.Engine
@@ -85,6 +100,7 @@ func NewViewerServer(config *configs.Config) (ViewerServer, error) {
 			config.MongoDataDBName,
 			config.MongoDataDBCache,
 			config.MongoMetricsDBName,
+			config.ViewerTimeout,
 		),
 	}
 
@@ -109,16 +125,6 @@ func NewViewerServer(config *configs.Config) (ViewerServer, error) {
 
 	viewerServer.routes()
 	return viewerServer, nil
-}
-
-func StartViewerServer(config *configs.Config) error {
-	viewerServer, err := NewViewerServer(config)
-	if err != nil {
-		return err
-	}
-	defer viewerServer.Clear()
-	viewerServer.Start()
-	return nil
 }
 
 func (s *ViewerServer) Start() {
@@ -291,6 +297,7 @@ func (s *ViewerServer) handleAssets(c *gin.Context) {
 // @Param   userID     path    string     true        "User ID"
 // @Param   repoID     path    string     true        "Repo ID"
 // @Param   branchID     path    string     true        "Branch ID"
+// @Param   check_index_only     query    string     false        "e.g. check_index_only=True"
 // @Success 200 {string} string    "'code': 0, 'msg': 'Success', 'Success': true, 'result': constants.QueryDatasetStatsResult"
 // @Router /api/v1/users/{userID}/repo/{repoID}/branch/{branchID}/dataset_meta_count [get]
 func (s *ViewerServer) handleDatasetMetaCounts(c *gin.Context) {
@@ -298,7 +305,15 @@ func (s *ViewerServer) handleDatasetMetaCounts(c *gin.Context) {
 
 	mirRepo := s.buildMirRepoFromParam(c)
 
-	resultData := s.handler.GetDatasetMetaCountsHandler(mirRepo)
+	checkIndexOnlyStr := c.DefaultQuery("check_index_only", "False")
+	if len(checkIndexOnlyStr) == 0 {
+		checkIndexOnlyStr = "True"
+	}
+	checkIndexOnly, err := strconv.ParseBool(checkIndexOnlyStr)
+	if err != nil {
+		panic(err)
+	}
+	resultData := s.handler.GetDatasetMetaCountsHandler(mirRepo, checkIndexOnly)
 	ViewerSuccess(c, resultData)
 }
 

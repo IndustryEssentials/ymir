@@ -394,7 +394,7 @@ enum EvaluationState {
     // evaluation not finished because there're too many images or too many class ids
     ES_EXCEEDS_LIMIT = 3;
     // evaluation not finished because there's no evaluate class ids
-    ES_NO_CLASS_IDS = 4;
+    ES_NOT_ENOUGH_CLASS_IDS = 4;
 }
 
 /// ========== context.mir ==========

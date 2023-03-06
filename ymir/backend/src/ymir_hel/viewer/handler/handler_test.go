@@ -37,7 +37,7 @@ type MockMongoServer struct {
 	mock.Mock
 }
 
-func (m *MockMongoServer) CheckDatasetExistenceReady(mirRepo *constants.MirRepo) (bool, bool) {
+func (m *MockMongoServer) CheckDatasetIndex(mirRepo *constants.MirRepo) (bool, bool) {
 	args := m.Called(mirRepo)
 	return args.Bool(0), args.Bool(1)
 }
@@ -236,10 +236,10 @@ func TestGetDatasetMetaCountsHandler(t *testing.T) {
 		Return(&protos.MirTasks{HeadTaskId: "h", Tasks: map[string]*protos.Task{"h": {NewTypesAdded: true}}}, 0, 0).
 		Once()
 	mockMongoServer := MockMongoServer{}
-	mockMongoServer.On("CheckDatasetExistenceReady", &mirRepo).Return(true, true).Twice()
+	mockMongoServer.On("CheckDatasetIndex", &mirRepo).Return(true, true).Twice()
 
 	handler := &ViewerHandler{mongoServer: &mockMongoServer, mirLoader: &mockLoader}
-	result := handler.GetDatasetMetaCountsHandler(&mirRepo)
+	result := handler.GetDatasetMetaCountsHandler(&mirRepo, false)
 
 	assert.Equal(t, &expectedResult, result)
 	mockLoader.AssertExpectations(t)
@@ -293,7 +293,7 @@ func TestGetDatasetStatsHandler(t *testing.T) {
 	expectedResult.QueryContext.RepoIndexReady = true
 	expectedResult.NewTypesAdded = true
 	mockMongoServer := MockMongoServer{}
-	mockMongoServer.On("CheckDatasetExistenceReady", &mirRepo).Return(true, true).Twice()
+	mockMongoServer.On("CheckDatasetIndex", &mirRepo).Return(true, true).Twice()
 	mockMongoServer.On("QueryDatasetStats", &mirRepo, classIDs, true, true, expectedResult).Return(expectedResult)
 	handler := &ViewerHandler{mongoServer: &mockMongoServer, mirLoader: &mockLoader}
 
@@ -316,7 +316,7 @@ func TestGetAssetsHandler(t *testing.T) {
 	tags := []string{"x", "y", "z"}
 	expectedResult := &constants.QueryAssetsResult{}
 	mockMongoServer := MockMongoServer{}
-	mockMongoServer.On("CheckDatasetExistenceReady", &mirRepo).Return(true, true)
+	mockMongoServer.On("CheckDatasetIndex", &mirRepo).Return(true, true)
 	mockMongoServer.On("QueryDatasetAssets", &mirRepo, offset, limit, classIDs, annoTypes, currentAssetID, inCMTypes, exCMTypes, cks, tags).
 		Return(expectedResult)
 	handler := &ViewerHandler{mongoServer: &mockMongoServer, mirLoader: &mockLoader}
