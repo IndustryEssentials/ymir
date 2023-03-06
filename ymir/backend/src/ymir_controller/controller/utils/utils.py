@@ -21,10 +21,18 @@ def mir_executable() -> str:
     return "mir"
 
 
+def index_repo(user_id: str, repo_id: str, task_id: str) -> backend_pb2.GeneralResp:
+    index_command = ['./hel_server', 'viewer_client']
+    index_command.extend(
+        ['--user_id', user_id, '--repo_id', repo_id, '--task_id', task_id, 'index'])
+    return run_command(index_command, cwd='/app/ymir_hel')
+
+
 def run_command(cmd: List[str],
-                error_code: int = CTLResponseCode.RUN_COMMAND_ERROR) -> backend_pb2.GeneralResp:
+                error_code: int = CTLResponseCode.RUN_COMMAND_ERROR,
+                cwd: str = None) -> backend_pb2.GeneralResp:
     logging.info(f"starting cmd: \n{' '.join(cmd)}\n")
-    result = subprocess.run(cmd, capture_output=True, text=True)  # run and wait
+    result = subprocess.run(cmd, capture_output=True, text=True, cwd=cwd)  # run and wait
     if result.returncode != 0:
         logging.error(f"run cmd error:\n stderr: {result.stderr} \n stdout: {result.stdout}")
         return make_general_response(error_code, result.stderr)

@@ -71,5 +71,5 @@ class TestInvokerCMDTerminate(unittest.TestCase):
 
         cmd = f"docker rm -f {executant_name}"
         mock_run.assert_has_calls(calls=[
-            mock.call(cmd.split(' '), capture_output=True, text=True),
+            mock.call(cmd.split(' '), capture_output=True, text=True, cwd=None),
         ])

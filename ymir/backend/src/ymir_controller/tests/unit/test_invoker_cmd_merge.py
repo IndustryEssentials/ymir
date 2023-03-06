@@ -91,7 +91,7 @@ class TestInvokerMerge(unittest.TestCase):
                         "--src-revs {4}@{4};{5} --ex-src-revs {6}".format(self._mir_repo_root, self._dst_dataset_id,
                                                                           self._task_id, working_dir, self._guest_id1,
                                                                           self._guest_id2, self._guest_id3))
-        mock_run.assert_called_once_with(expected_cmd.split(' '), capture_output=True, text=True)
+        mock_run.assert_called_once_with(expected_cmd.split(' '), capture_output=True, text=True, cwd=None)
 
         expected_ret = backend_pb2.GeneralResp()
         expected_dict = {'message': RET_ID}

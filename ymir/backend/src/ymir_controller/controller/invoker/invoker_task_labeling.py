@@ -36,6 +36,10 @@ class TaskLabelingInvoker(TaskBaseInvoker):
         return [(cls.subtask_invoke_label, 1.0)]
 
     @classmethod
+    def need_index_repo(cls) -> bool:
+        return False
+
+    @classmethod
     def subtask_invoke_label(cls, request: backend_pb2.GeneralReq, user_labels: labels.UserLabels, sandbox_root: str,
                              assets_config: Dict[str, str], repo_root: str, master_task_id: str, subtask_id: str,
                              subtask_workdir: str, his_task_id: Optional[str],

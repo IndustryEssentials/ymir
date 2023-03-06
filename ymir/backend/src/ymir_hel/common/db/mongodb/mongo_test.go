@@ -88,7 +88,7 @@ func TestCheckDatasetExistenceSuccess(t *testing.T) {
 			mtest.FirstBatch,
 			bson.D{{Key: "exist", Value: true}, {Key: "ready", Value: true}})
 		mt.AddMockResponses(find)
-		existence, ready := mongoServer.CheckDatasetExistenceReady(&mirRepo)
+		existence, ready := mongoServer.CheckDatasetIndex(&mirRepo)
 		assert.Equal(t, existence, true)
 		assert.Equal(t, ready, true)
 	})
@@ -107,7 +107,7 @@ func TestCheckDatasetExistenceFailure0(t *testing.T) {
 			Return(mockCollection)
 
 		mongoServer := NewMongoServer(context.Background(), &mockMirDatabase, &mockMetricsDatabase)
-		existence, ready := mongoServer.CheckDatasetExistenceReady(&mirRepo)
+		existence, ready := mongoServer.CheckDatasetIndex(&mirRepo)
 		assert.Equal(t, existence, false)
 		assert.Equal(t, ready, false)
 	})
@@ -135,7 +135,7 @@ func TestCheckDatasetExistenceFailure1(t *testing.T) {
 			mtest.FirstBatch,
 			bson.D{{Key: "exist", Value: false}, {Key: "ready", Value: false}})
 		mt.AddMockResponses(find)
-		existence, ready := mongoServer.CheckDatasetExistenceReady(&mirRepo)
+		existence, ready := mongoServer.CheckDatasetIndex(&mirRepo)
 		assert.Equal(t, existence, false)
 		assert.Equal(t, ready, false)
 	})

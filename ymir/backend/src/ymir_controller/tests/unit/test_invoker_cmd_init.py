@@ -75,7 +75,7 @@ class TestInvokerInit(unittest.TestCase):
         expected_cmd = (f"mir init --root {os.path.join(self._user_root, self._mir_repo_name)} "
                         f"--user-label-file {test_utils.user_label_file(self._sandbox_root, self._user_name)} "
                         f"--with-empty-rev {self._task_id}@{self._task_id}")
-        mock_run.assert_called_once_with(expected_cmd.split(' '), capture_output=True, text=True)
+        mock_run.assert_called_once_with(expected_cmd.split(' '), capture_output=True, text=True, cwd=None)
 
         expected_ret = backend_pb2.GeneralResp()
         expected_dict = {'message': RET_ID}

@@ -77,7 +77,7 @@ class TestInvokerCommitBranch(unittest.TestCase):
         print(MessageToDict(response))
 
         expected_cmd = "mir commit --root {0} -m {1}".format(self._mir_repo_root, self._commit_message)
-        mock_run.assert_called_once_with(expected_cmd.split(' '), capture_output=True, text=True)
+        mock_run.assert_called_once_with(expected_cmd.split(' '), capture_output=True, text=True, cwd=None)
 
         expected_ret = backend_pb2.GeneralResp()
         expected_dict = {'message': RET_ID}

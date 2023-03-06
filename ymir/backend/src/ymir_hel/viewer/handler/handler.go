@@ -3,6 +3,7 @@ package handler
 import (
 	"context"
 	"log"
+	"time"
 
 	"github.com/IndustryEssentials/ymir-hel/common/constants"
 	"github.com/IndustryEssentials/ymir-hel/common/db/mongodb"
@@ -20,7 +21,7 @@ type BaseMirRepoLoader interface {
 }
 
 type BaseMongoServer interface {
-	CheckDatasetExistenceReady(mirRepo *constants.MirRepo) (bool, bool)
+	CheckDatasetIndex(mirRepo *constants.MirRepo) (bool, bool)
 	IndexDatasetData(
 		mirRepo *constants.MirRepo,
 		mirMetadatas *protos.MirMetadatas,
@@ -68,16 +69,28 @@ func NewViewerHandler(
 	mongoDataDBName string,
 	useDataDBCache bool,
 	mongoMetricsDBName string,
+	mongoConnectTimeout int32,
 ) *ViewerHandler {
 	var mongoServer *mongodb.MongoServer
 	if len(mongoURI) > 0 {
-		log.Printf("[viewer] init mongodb %s\n", mongoURI)
+		log.Printf("[viewer] initing mongodb %s\n", mongoURI)
 
 		mongoCtx := context.Background()
-		client, err := mongo.Connect(mongoCtx, options.Client().ApplyURI(mongoURI))
+		client, err := mongo.Connect(
+			mongoCtx,
+			options.Client().
+				ApplyURI(mongoURI).
+				SetServerSelectionTimeout(1*time.Second).
+				SetConnectTimeout(time.Duration(mongoConnectTimeout)*time.Second),
+		)
 		if err != nil {
 			panic(err)
 		}
+		err = client.Ping(mongoCtx, nil)
+		if err != nil {
+			panic(err)
+		}
+		log.Printf("[viewer] connect mongodb succeed.\n")
 
 		mirDatabase := client.Database(mongoDataDBName)
 		metricsDatabase := client.Database(mongoMetricsDBName)
@@ -86,6 +99,7 @@ func NewViewerHandler(
 			go mongoServer.RemoveNonReadyDataset()
 		} else {
 			// Clear cached data.
+			log.Printf("[viewer] drop cached mongodb.\n")
 			err = mirDatabase.Drop(mongoCtx)
 			if err != nil {
 				panic(err)
@@ -94,11 +108,12 @@ func NewViewerHandler(
 
 	}
 
+	log.Printf("[viewer] init mongodb succeed.\n")
 	return &ViewerHandler{mongoServer: mongoServer, mirLoader: &loader.MirRepoLoader{}}
 }
 
 func (v *ViewerHandler) loadAndIndexAssets(mirRepo *constants.MirRepo) {
-	exist, _ := v.mongoServer.CheckDatasetExistenceReady(mirRepo)
+	exist, _ := v.mongoServer.CheckDatasetIndex(mirRepo)
 	if exist {
 		return
 	}
@@ -140,8 +155,21 @@ func (v *ViewerHandler) GetAssetsHandler(
 
 func (v *ViewerHandler) GetDatasetMetaCountsHandler(
 	mirRepo *constants.MirRepo,
+	checkIndexOnly bool,
 ) *constants.QueryDatasetStatsResult {
 	result := constants.NewQueryDatasetStatsResult()
+	exist, ready := v.mongoServer.CheckDatasetIndex(mirRepo)
+	if !exist {
+		// Index dataset in background task.
+		go v.loadAndIndexAssets(mirRepo)
+	}
+
+	result.QueryContext.RepoIndexExist = exist
+	result.QueryContext.RepoIndexReady = ready
+	result.QueryContext.CheckIndexOnly = checkIndexOnly
+	if checkIndexOnly {
+		return result
+	}
 
 	mirContext := v.mirLoader.LoadSingleMirData(mirRepo, constants.MirfileContext).(*protos.MirContext)
 	result.TotalAssetsCount = int64(mirContext.ImagesCnt)
@@ -192,13 +220,6 @@ func (v *ViewerHandler) GetDatasetMetaCountsHandler(
 				result.Pred.ClassIDsMaskArea[int(k)] = int64(v)
 			}
 		}
-	}
-
-	exist, ready := v.mongoServer.CheckDatasetExistenceReady(mirRepo)
-	result.QueryContext.RepoIndexExist = exist
-	result.QueryContext.RepoIndexReady = ready
-	if !exist {
-		go v.loadAndIndexAssets(mirRepo)
 	}
 
 	mirTasks := v.mirLoader.LoadSingleMirData(mirRepo, constants.MirfileTasks).(*protos.MirTasks)
@@ -255,7 +276,7 @@ func (v *ViewerHandler) GetDatasetStatsHandler(
 
 	v.loadAndIndexAssets(mirRepo)
 	// Use metadata_handler to fill basic info.
-	result := v.GetDatasetMetaCountsHandler(mirRepo)
+	result := v.GetDatasetMetaCountsHandler(mirRepo, false)
 	// Two fields need indexed data:
 	// 1. negative counts (classIDs)
 	// 2. build histogram (requireAssetsHist, requireAnnotationsHist)
