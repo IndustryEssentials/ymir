@@ -331,7 +331,7 @@ class CmdTrain(base.BaseCommand):
                                         model_location=model_upload_location)
             model_meta = model_storage.get_model_meta()
         except Exception as e:
-            # if run_docker_executant raised error (executor error), it should not be overridden by model pack error here
+            # if run_docker_executant raised error (executor error), it should not be overridden by this model error
             task_code = task_code or MirCode.RC_CMD_INVALID_FILE
             return_msg = return_msg or str(e)
 
