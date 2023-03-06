@@ -25,10 +25,43 @@ const PredictionModel: YStates.PredictionStore = {
         }
       }
       const { code, result } = yield call<YModels.ResponseResultList>(getPredictions, { pid, ...params })
-      if (code === 0) {
-        const predictions = transferList<YModels.Prediction>(result, transferPrediction)
+      if (code === 0 && result) {
+        const groupByModel = ({ items, total }: { items: { [key: string]: YModels.Prediction[] }; total: number }) => ({
+          items: Object.values(items)
+            .map((list) =>
+              list.map((item, index) => ({
+                ...item,
+                rowSpan: index === 0 ? list.length : 0,
+              })),
+            )
+            .flat(),
+          total,
+        })
+
+        const listResponse = groupByModel(result)
+        const predictions = transferList<YModels.Prediction>(listResponse, transferPrediction)
+
+        const getIds = (key: keyof YModels.InferenceParams) => {
+          const ids = predictions.items
+            .map((ds) => {
+              const param = ds.task?.parameters || {}
+              return param[key]
+            })
+            .filter((notEmpty) => notEmpty)
+          return [...new Set(ids)]
+        }
+        const modelIds = getIds('model_id')
+        const datasetIds = getIds('dataset_id')
         yield put({
-          type: 'prediction/updatePredictions',
+          type: 'model/batchLocalModels',
+          payload: modelIds,
+        })
+        yield put({
+          type: 'dataset/batchLocalDatasets',
+          payload: { pid, ids: datasetIds },
+        })
+        yield put({
+          type: 'updatePredictions',
           payload: predictions,
         })
         return predictions
@@ -56,7 +89,7 @@ const PredictionModel: YStates.PredictionStore = {
           }
         }
         yield put({
-          type: 'UPDATE_DATASET',
+          type: 'updatePrediction',
           payload: { id: prediction.id, prediction },
         })
         return prediction

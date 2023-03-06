@@ -11,6 +11,9 @@ const Model = <T extends YModels.Prediction>(): ColumnType<T> => ({
     const label = inferModel ? <ModelVersionName result={inferModel} stageId={inferModelId[1]} /> : inferModelId.join(',')
     return <Link to={`/home/project/${projectId}/model/${inferModelId[0]}`}>{label}</Link>
   },
+  onCell: ({ rowSpan }) => ({
+    rowSpan,
+  }),
 })
 
 export default Model

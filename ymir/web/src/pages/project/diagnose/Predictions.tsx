@@ -88,7 +88,7 @@ const Predictions: React.FC = () => {
     setPredictions((predictions) =>
       predictions.map((prediction) => {
         const { inferDatasetId, inferModelId } = prediction
-        const inferModel = inferModelId[0] ? cacheModels[inferModelId[0]] : undefined
+        const inferModel = inferModelId[0] ? cacheModels[inferModelId[0]]: undefined
         const inferDataset = inferDatasetId ? cacheDatasets[inferDatasetId] : undefined
         return { ...prediction, inferModel, inferDataset }
       }),

@@ -34,9 +34,9 @@ declare namespace YModels {
     createTime: string
   }
 
-  export interface Result<P = TaskParams> {
+  export interface Result {
     id: number
-    groupId: number
+    groupId?: number
     projectId: number
     type: ObjectType
     name: string
@@ -56,7 +56,6 @@ declare namespace YModels {
     durationLabel?: string
     taskName: string
     project?: Project
-    task: Task<P>
     hidden: boolean
     description: string
     needReload?: boolean
@@ -106,11 +105,12 @@ declare namespace YModels {
     versions?: Array<Dataset>
   }
 
-  export interface Dataset<P = TaskParams> extends Result<P> {
+  export interface Dataset<P = TaskParams> extends Result {
     keywordCount: number
     isProtected: Boolean
     assetCount: number
     evaluated: boolean
+    task: Task<P>
     gt?: AnnotationsCount
     pred?: AnnotationsCount
     inferClass?: Array<string>
@@ -118,12 +118,13 @@ declare namespace YModels {
     tags?: CKCounts
   }
 
-  export interface Prediction extends Dataset {
+  export interface Prediction extends Omit<Dataset<InferenceParams>, 'groupId'> {
     inferModelId: number[]
     inferModel?: Model
     inferDatasetId: number
     inferDataset?: Dataset
     inferConfig: ImageConfig
+    rowSpan?: number
   }
 
   export interface DatasetAnalysis extends Omit<Dataset, 'gt' | 'pred'> {
@@ -224,9 +225,10 @@ declare namespace YModels {
     metrics?: StageMetrics
   }
   export interface ModelGroup extends Group {}
-  export interface Model<P = TaskParams> extends Result<P> {
+  export interface Model<P = TaskParams> extends Result {
     map: number
     url: string
+    task: Task<P>
     stages?: Array<Stage>
     recommendStage: number
   }

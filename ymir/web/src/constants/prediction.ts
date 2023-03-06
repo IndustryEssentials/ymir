@@ -31,7 +31,6 @@ export function transferPrediction(data: YModels.BackendData): YModels.Predictio
   const evaluated = data.evaluation_state === 1
   return {
     id: data.id,
-    groupId: data.dataset_group_id,
     projectId: data.project_id,
     type: data.object_type || ObjectType.ObjectDetection,
     name: data.group_name,
@@ -62,5 +61,6 @@ export function transferPrediction(data: YModels.BackendData): YModels.Predictio
     inferModelId: [params?.model_id || 0, params?.model_stage_id || 0],
     inferDatasetId: params?.dataset_id || 0,
     inferConfig: config,
+    rowSpan: data.rowSpan,
   }
 }
