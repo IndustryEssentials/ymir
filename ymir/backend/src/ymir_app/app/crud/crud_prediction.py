@@ -50,7 +50,14 @@ class CRUDPrediction(CRUDBase[Prediction, PredictionCreate, PredictionUpdate]):
         query = db.query(self.model).join(subquery, self.model.model_id == subquery.c.model_id)
 
         # Count distinct models
-        total = db.query(func.count(distinct(self.model.model_id))).scalar()
+        total = (
+            db.query(func.count(distinct(self.model.model_id)))
+            .filter(
+                self.model.project_id == project_id,
+            )
+            .scalar()
+        )
+
         return query.all(), total
 
     def update_state(
