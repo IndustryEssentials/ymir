@@ -124,7 +124,7 @@ const Predictions: React.FC = () => {
           showSizeChanger: true,
         }}
       />
-      <Hide ref={hideRef} ok={fetchPredictions} msg="pred.action.del.confirm.content" />
+      <Hide ref={hideRef} type='prediction' ok={fetchPredictions} msg="pred.action.del.confirm.content" />
     </div>
   )
 }

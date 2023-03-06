@@ -195,7 +195,7 @@ function ModelDetail() {
         </div>
       </Card>
       <EditDescBox type="model" record={editing} />
-      <Hide ref={hideRef} type={1} msg="model.action.del.confirm.content" />
+      <Hide ref={hideRef} type={'model'} msg="model.action.del.confirm.content" />
     </div>
   )
 }

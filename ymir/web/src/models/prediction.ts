@@ -1,5 +1,6 @@
+import { actions } from '@/constants/common'
 import { transferPrediction } from '@/constants/prediction'
-import { getPrediction, getPredictions } from '@/services/prediction'
+import { batchAct, evaluate, getPrediction, getPredictions } from '@/services/prediction'
 import { createEffect, createReducers, transferList } from './_utils'
 type PredictionsPayload = { pid: number; force?: boolean; [key: string]: any }
 type PredictionPayload = { id: number; verbose?: boolean; force?: boolean }
@@ -8,6 +9,14 @@ const reducersList = [
   { name: 'UpdatePredictions', field: 'predictions' },
   { name: 'UpdatePrediction', field: 'prediction' },
 ]
+
+const hideAction = (type: actions) =>
+  createEffect<{ pid: number; ids: number[] }>(function* ({ payload: { pid, ids = [] } }, { call, put }) {
+    const { code, result } = yield call(batchAct, type, pid, ids)
+    if (code === 0) {
+      return result
+    }
+  })
 
 const PredictionModel: YStates.PredictionStore = {
   namespace: 'prediction',
@@ -93,6 +102,23 @@ const PredictionModel: YStates.PredictionStore = {
           payload: { id: prediction.id, prediction },
         })
         return prediction
+      }
+    }),
+    getHiddenList: createEffect<PredictionsPayload>(function* ({ payload }, { put }) {
+      const query = { order_by: 'update_datetime', ...payload, visible: false }
+      return yield put({
+        type: 'getPredictions',
+        payload: query,
+      })
+    }),
+
+    hide: hideAction(actions.hide),
+    restore: hideAction(actions.restore),
+
+    evaluate: createEffect<YParams.EvaluationParams>(function* ({ payload }, { call, put }) {
+      const { code, result } = yield call(evaluate, payload)
+      if (code === 0) {
+        return result
       }
     }),
   },
