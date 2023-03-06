@@ -1,18 +1,16 @@
 import {
-  getDatasetGroups, getDatasetByGroup, queryDatasets, getDataset, batchDatasets, evaluate, analysis,
-  getAssetsOfDataset, getAsset, batchAct, delDataset, delDatasetGroup, createDataset, updateDataset, getInternalDataset,
+  getDatasetGroups, getDatasetByGroup, queryDatasets, getDataset, batchDatasets, analysis,
+  batchAct, delDataset, delDatasetGroup, createDataset, updateDataset, getInternalDataset,
   getNegativeKeywords, updateVersion, checkDuplication
 } from "@/services/dataset"
 import {
   transferDatasetGroup,
   transferDataset,
   transferDatasetAnalysis,
-  transferAsset,
   transferAnnotationsCount,
   transferInferDataset,
 } from '@/constants/dataset'
 import { actions, updateResultState, updateResultByTask, ResultStates } from '@/constants/common'
-import { evaluationTags } from '@/constants/dataset'
 import { NormalReducer } from './_utils'
 import { deepClone } from '@/utils/object'
 import { TASKTYPES } from '@/constants/task'
@@ -195,38 +193,6 @@ export default {
           payload: { [pid]: dss.items },
         })
         return dss.items
-      }
-    },
-    *getAssetsOfDataset({ payload }, { call, put }) {
-      const { cm, datasetKeywords } = payload
-      const params = payload
-      const left = [evaluationTags.fp, evaluationTags.fn]
-      if (cm && !left.includes(cm)) {
-        params.cm = undefined
-        params.exclude = left
-      }
-      const { code, result } = yield call(getAssetsOfDataset, params)
-      if (code === 0) {
-        const { items, total } = result
-        const keywords = [...new Set(items.map(item => item.keywords).flat())]
-        const assets = { items: items.map(asset => transferAsset(asset, datasetKeywords || keywords)), total }
-
-        yield put({
-          type: "UPDATE_ASSETS",
-          payload: assets,
-        })
-        return assets
-      }
-    },
-    *getAsset({ payload }, { call, put }) {
-      const { code, result } = yield call(getAsset, payload.id, payload.hash)
-      if (code === 0) {
-        const asset = transferAsset(result)
-        yield put({
-          type: "UPDATE_ASSET",
-          payload: asset,
-        })
-        return asset
       }
     },
     *delDataset({ payload }, { call, put }) {

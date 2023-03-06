@@ -64,8 +64,6 @@ describe("models: dataset", () => {
   errorCode(dataset, 'getDatasetGroups')
   errorCode(dataset, 'getDataset', { id: 120034, force: true })
   errorCode(dataset, 'batchDatasets')
-  errorCode(dataset, 'getAssetsOfDataset')
-  errorCode(dataset, 'getAsset')
   errorCode(dataset, 'delDataset')
   errorCode(dataset, 'delDatasetGroup')
   errorCode(dataset, 'createDataset')
@@ -179,26 +177,6 @@ describe("models: dataset", () => {
 
     expect(expected).toEqual(end.value)
     expect(end.done).toBe(true)
-  })
-  it("effects: getAssetsOfDataset", () => {
-    const saga = dataset.effects.getAssetsOfDataset
-    const creator = {
-      type: "getAssetsOfDataset",
-      payload: {},
-    }
-    const result = { items: products(4), total: 4 }
-    const expected = { items: result.items.map(item => transferAsset(item)), total: 4 }
-
-    const generator = saga(creator, { put, call })
-    generator.next()
-    generator.next({
-      code: 0,
-      result,
-    })
-    const end = generator.next()
-
-    expect(end.done).toBe(true)
-    expect(end.value).toEqual(expected)
   })
   it("effects: queryAllDatasets -> from remote", () => {
     const saga = dataset.effects.queryAllDatasets

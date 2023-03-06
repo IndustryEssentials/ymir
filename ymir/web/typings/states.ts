@@ -9,6 +9,7 @@ declare namespace YStates {
     keywords: LabelState
     project: ProjectState
     socket: SocketState
+    asset: AssetState
     loading: {
       effects: {
         [key: string]: boolean
@@ -51,6 +52,11 @@ declare namespace YStates {
   interface PredictionState extends State {
     predictions: IdMap<List<YModels.Prediction>>
     prediction: IdMap<YModels.Prediction>
+  }
+
+  interface AssetState extends State {
+    assets: IdMap<List<YModels.Asset>>
+    asset: IdMap<YModels.Asset>
   }
 
   interface ModelState extends State {
@@ -111,6 +117,7 @@ declare namespace YStates {
 
   type PredictionReducers = ReducersType<PredictionState>
   type PredictionStore = StoreType<'prediction', PredictionState>
+  type AssetStore = StoreType<'asset', AssetState>
 
   type ResultState<T extends YModels.ResultType> = T extends 'dataset' ? DatasetState : ModelState
   type List<T> = { items: T[]; total: number }

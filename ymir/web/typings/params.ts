@@ -42,7 +42,7 @@ declare namespace YParams {
     id: number | string
     cm?: number[]
     exclude?: number[]
-    annoType?: number[]
+    annoType?: number
     type?: string
   }
 

@@ -17,7 +17,7 @@ import {
 import { getStats } from '../services/common'
 import { transferModelGroup, transferModel, transferStage } from '@/constants/model'
 import { ResultStates as states } from '@/constants/common'
-import { toAnnotation } from '@/constants/dataset'
+import { toAnnotation } from '@/constants/asset'
 import { actions, updateResultState, updateResultByTask } from '@/constants/common'
 import { deepClone } from '@/utils/object'
 import { NormalReducer } from './_utils'
