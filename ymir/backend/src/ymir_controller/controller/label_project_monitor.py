@@ -10,7 +10,6 @@ import sentry_sdk
 from apscheduler.schedulers.blocking import BlockingScheduler
 
 from common_utils.labels import ids_file_name
-from common_utils.percent_log_util import LogState, PercentLogHandler
 from controller.config import label_task as label_task_config
 from controller.invoker.invoker_task_import_dataset import TaskImportDatasetInvoker
 from controller.utils import utils
@@ -18,6 +17,7 @@ from controller.utils.redis import rds
 from controller.label_model.base import NotReadyError
 from id_definition.error_codes import CTLResponseCode
 from mir.protos import mir_command_pb2 as mir_cmd_pb
+from mir.tools.percent_log_util import LogState, PercentLogHandler
 from proto import backend_pb2
 
 

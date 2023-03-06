@@ -15,6 +15,7 @@ from mir.tools.code import MirCode
 from mir.tools.command_run_in_out import command_run_in_out
 from mir.tools.errors import MirContainerError, MirRuntimeError
 from mir.tools.mir_storage_ops import create_task_record, MirStorageOps
+from mir.tools.percent_log_util import PercentLogHandler
 
 
 class CmdMining(base.BaseCommand):
@@ -168,7 +169,7 @@ class CmdMining(base.BaseCommand):
                                              stage_name=stage_name,
                                              dst_model_path=work_model_path)
 
-        return_code = MirCode.RC_OK
+        return_code = MirCode.RC_OK.value
         return_msg = ''
         try:
             return_code = infer.CmdInfer.run_with_args(work_dir=work_dir,
@@ -184,7 +185,8 @@ class CmdMining(base.BaseCommand):
                                                        run_infer=add_prediction,
                                                        run_mining=(topk is not None))
         except CalledProcessError:
-            return_code = env_config.collect_executor_return_code(work_dir) or MirCode.RC_CMD_CONTAINER_ERROR
+            return_code = PercentLogHandler.parse_percent_log(os.path.join(
+                work_dir, 'out', 'monitor.txt')).state_code or MirCode.RC_CMD_CONTAINER_ERROR.value
             return_msg = env_config.collect_executor_outlog_tail(work_dir)
         # catch other exceptions in command_run_in_out
 

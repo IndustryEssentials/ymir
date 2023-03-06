@@ -20,6 +20,7 @@ from mir.tools.command_run_in_out import command_run_in_out
 from mir.tools.code import MirCode
 from mir.tools.errors import MirContainerError, MirRuntimeError
 from mir.tools.executant import prepare_executant_env, run_docker_executant
+from mir.tools.percent_log_util import PercentLogHandler
 
 
 # private: post process
@@ -285,7 +286,7 @@ class CmdTrain(base.BaseCommand):
                                                      env_config_file_path=os.path.join(work_dir_in, 'env.yaml'))
 
         task_config = config.get(mir_settings.TASK_CONTEXT_KEY, {})
-        task_code = MirCode.RC_OK
+        task_code = MirCode.RC_OK.value
         return_msg = ""
         try:
             run_docker_executant(
@@ -301,7 +302,8 @@ class CmdTrain(base.BaseCommand):
         except CalledProcessError as e:
             logging.warning(f"training exception: {e}")
             # don't exit, proceed if model exists
-            task_code = env_config.collect_executor_return_code(work_dir) or MirCode.RC_CMD_CONTAINER_ERROR
+            task_code = PercentLogHandler.parse_percent_log(os.path.join(
+                work_dir, 'out', 'monitor.txt')).state_code or MirCode.RC_CMD_CONTAINER_ERROR.value
             return_msg = env_config.collect_executor_outlog_tail(work_dir) or str(e)
 
             # write executor tail to tensorboard

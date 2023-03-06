@@ -4,7 +4,7 @@ from typing import Dict, Optional
 
 from pydantic import BaseModel, validator
 
-from common_utils.percent_log_util import PercentResult
+from mir.tools.percent_log_util import PercentResult
 from monitor.utils.errors import LogWeightError
 
 
