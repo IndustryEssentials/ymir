@@ -23,23 +23,21 @@ class CRUDPrediction(CRUDBase[Prediction, PredictionCreate, PredictionUpdate]):
         pagination: CommonPaginationParams,
     ) -> Tuple[List[Prediction], int]:
         offset, limit = pagination.offset, pagination.limit
+        order_by = pagination.order_by.name
         is_desc = pagination.is_desc
 
         # Subquery
         #  find models with latest predictions
+        order_by_column = getattr(self.model, order_by)
         subquery = (
             db.query(self.model.model_id)
             .filter(
-                self.model.user_id == user_id,
                 self.model.project_id == project_id,
                 self.model.is_visible == int(visible),
                 not_(self.model.is_deleted),
             )
-            .group_by(
-                self.model.model_id,
-                self.model.create_datetime,
-            )
-            .order_by(desc(self.model.create_datetime) if is_desc else self.model.create_datetime)
+            .group_by(self.model.model_id, order_by_column)
+            .order_by(desc(order_by_column) if is_desc else order_by_column)
             .offset(offset)
             .limit(limit)
             .subquery()
@@ -54,6 +52,8 @@ class CRUDPrediction(CRUDBase[Prediction, PredictionCreate, PredictionUpdate]):
             db.query(func.count(distinct(self.model.model_id)))
             .filter(
                 self.model.project_id == project_id,
+                self.model.is_visible == int(visible),
+                not_(self.model.is_deleted),
             )
             .scalar()
         )

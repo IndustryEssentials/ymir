@@ -28,7 +28,6 @@ class PredictionBase(BaseModel):
     result_state: ResultState = ResultState.processing
     asset_count: Optional[int]
     keyword_count: Optional[int]
-    keywords: Optional[str]
 
     class Config:
         use_enum_values = True
