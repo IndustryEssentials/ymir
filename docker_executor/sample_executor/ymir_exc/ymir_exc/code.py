@@ -34,3 +34,6 @@ class ExecutorReturnCode(IntEnum):
     # misc
     # Network error occured when download
     RC_EXEC_NETWORK_ERROR = 180301
+
+    # other errors
+    RC_CMD_CONTAINER_ERROR = 160004
