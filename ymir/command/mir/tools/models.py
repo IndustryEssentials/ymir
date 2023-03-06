@@ -144,11 +144,11 @@ def prepare_model(model_location: str, model_hash: str, stage_name: str, dst_mod
         ModelStorage
     """
     if not model_location or not model_hash:
-        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
+        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_MODEL,
                               error_message='empty model_location or model_hash')
     tar_file_path = os.path.join(model_location, model_hash)
     if not os.path.isfile(tar_file_path):
-        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS,
+        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_MODEL,
                               error_message=f"tar_file is not a file: {tar_file_path}")
 
     os.makedirs(dst_model_path, exist_ok=True)
@@ -159,9 +159,13 @@ def prepare_model(model_location: str, model_hash: str, stage_name: str, dst_mod
         tar_file.extract('ymir-info.yaml', dst_model_path)
 
         model_info_path = os.path.join(dst_model_path, 'ymir-info.yaml')
-        update_model_info(model_info_path)
-        with open(model_info_path, 'r') as f:
-            ymir_info_dict = yaml.safe_load(f.read())
+        try:
+            update_model_info(model_info_path)
+            with open(model_info_path, 'r') as f:
+                ymir_info_dict = yaml.safe_load(f.read())
+        except (FileNotFoundError, ValueError) as e:
+            raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_MODEL,
+                                  error_message=f"{e}")
 
         model_storage = ModelStorage.parse_obj(ymir_info_dict)
         model_storage.model_hash = model_hash
@@ -177,7 +181,7 @@ def prepare_model(model_location: str, model_hash: str, stage_name: str, dst_mod
                 stage_and_file_names.append(f"{stage_name}/{file_name}")
             else:
                 raise MirRuntimeError(
-                    error_code=MirCode.RC_CMD_INVALID_FILE,
+                    error_code=MirCode.RC_CMD_INVALID_MODEL,
                     error_message=f"Can not find file name: {file_name} in model package: {tar_file_path}")
         os.makedirs(os.path.join(dst_model_path, stage_name), exist_ok=True)
         for name in stage_and_file_names:
