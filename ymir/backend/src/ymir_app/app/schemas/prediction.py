@@ -1,5 +1,5 @@
 import json
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Union
 
 from pydantic import BaseModel, Field, validator
 
@@ -11,6 +11,7 @@ from app.schemas.common import (
     IsDeletedModelMixin,
 )
 from app.schemas.task import TaskInternal
+from app.schemas.dataset import DatasetAnnotation
 
 
 class PredictionBase(BaseModel):
@@ -57,14 +58,26 @@ class PredictionInDBBase(IdModelMixin, DateTimeModelMixin, IsDeletedModelMixin, 
 
 
 class Prediction(PredictionInDBBase):
-    keywords: Optional[str]
+    keywords: Optional[Dict]
 
     # make sure all the json dumped value is unpacked before returning to caller
-    @validator("keywords")
-    def unpack(cls, v: Optional[str]) -> Dict[str, int]:
+    @validator("keywords", pre=True, always=True)
+    def unpack(cls, v: Optional[Union[Dict, str]]) -> Dict[str, int]:
         if v is None:
             return {}
+        if isinstance(v, dict):
+            return v
         return json.loads(v)
+
+
+class PredictionInfo(Prediction):
+    gt: Optional[DatasetAnnotation]
+    pred: Optional[DatasetAnnotation]
+
+    cks_count: Optional[Dict]
+    cks_count_total: Optional[Dict]
+
+    evaluation_state: Optional[int]
 
 
 class PredictionPagination(BaseModel):
@@ -82,6 +95,10 @@ class PredictionOut(Common):
 
 class PredictionsOut(Common):
     result: List[Prediction]
+
+
+class PredictionInfoOut(Common):
+    result: PredictionInfo
 
 
 class PredictionEvaluationCreate(BaseModel):

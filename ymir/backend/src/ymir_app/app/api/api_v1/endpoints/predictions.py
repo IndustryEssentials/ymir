@@ -1,5 +1,5 @@
 from typing import Any
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, Path, Query
 from fastapi.logger import logger
 from sqlalchemy.orm import Session
 
@@ -7,12 +7,15 @@ from app import crud, models, schemas
 from app.utils.data import groupby
 from app.api import deps
 from app.api.errors.errors import (
+    FailedToParseVizResponse,
     ProjectNotFound,
+    PredictionNotFound,
     MissingOperations,
     RefuseToProcessMixedOperations,
     NoPredictionPermission,
 )
 from app.constants.state import ObjectType
+from app.utils.ymir_viz import VizClient
 from app.utils.ymir_controller import ControllerClient
 from app.libs.predictions import evaluate_predictions, ensure_predictions_are_ready
 from common_utils.labels import UserLabels
@@ -38,6 +41,36 @@ def list_predictions(
     )
     model_wise_predictions = {k: list(v) for k, v in groupby(predictions, "model_id")}
     return {"result": {"total": total, "items": model_wise_predictions}}
+
+
+@router.get("/{prediction_id}", response_model=schemas.prediction.PredictionInfoOut)
+def get_prediction(
+    db: Session = Depends(deps.get_db),
+    prediction_id: int = Path(..., example="12"),
+    current_user: models.User = Depends(deps.get_current_active_user),
+    viz_client: VizClient = Depends(deps.get_viz_client),
+    user_labels: UserLabels = Depends(deps.get_user_labels),
+) -> Any:
+    """
+    Get verbose information of specific prediction
+    """
+    prediction = crud.prediction.get_by_user_and_id(db, user_id=current_user.id, id=prediction_id)
+    if not prediction:
+        raise PredictionNotFound()
+
+    prediction_info = schemas.prediction.Prediction.from_orm(prediction).dict()
+
+    viz_client.initialize(user_id=current_user.id, project_id=prediction.project_id, user_labels=user_labels)
+    try:
+        prediction_stats = viz_client.get_dataset_info(prediction.hash)
+    except ValueError:
+        logger.exception("[prediction info] could not convert class_id to class_name, return with basic info")
+    except FailedToParseVizResponse:
+        logger.exception("[prediction info] could not get prediction info from viewer, return with basic info")
+    else:
+        prediction_info.update(prediction_stats)
+
+    return {"result": prediction_info}
 
 
 @router.post("/batch", response_model=schemas.prediction.PredictionsOut)
