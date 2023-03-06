@@ -27,32 +27,6 @@ class MirCode(IntEnum):
     RC_CMD_PERMISSION_ERROR = 160019
     RC_CMD_ERROR_UNKNOWN = 169999
 
-    # executor: dataset and config errors
-    # can not read config file, or can not find required arguments
-    RC_EXEC_CONFIG_ERROR = 180001
-    # Can not find training dataset or validation dataset
-    RC_EXEC_DATASET_ERROR = 180002
-    # Can not read image, or image format unknown
-    RC_EXEC_UNKNOWN_IMAGE_FORMAT = 180003
-    # Can not find model file
-    RC_EXEC_MODEL_ERROR = 180004
-
-    # executor: cuda, gpu and memory errors
-    # CUDA and GPU mismatch
-    RC_EXEC_CUDA_GPU_ERROR = 180101
-    # Can not find any GPUs if GPU is needed
-    RC_EXEC_NO_GPU = 180102
-    # Out of memory
-    RC_EXEC_OOM = 180103
-
-    # executor: numeral errors
-    # Find NaN when training
-    RC_EXEC_NAN_ERROR = 180201
-
-    # executor: misc
-    # Network error occured when download
-    RC_EXEC_NETWORK_ERROR = 180301
-
 
 def time_it(f: Callable) -> Callable:
     @wraps(f)
