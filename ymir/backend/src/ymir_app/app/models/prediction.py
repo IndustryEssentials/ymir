@@ -20,8 +20,9 @@ class Prediction(Base):
     user_id = Column(Integer, index=True, nullable=False)
     project_id = Column(Integer, index=True, nullable=False)
     task_id = Column(Integer, index=True, nullable=False)
-    model_id = Column(Integer, index=True, nullable=False)
     dataset_id = Column(Integer, index=True, nullable=False)
+    model_id = Column(Integer, index=True, nullable=False)
+    model_stage_id = Column(Integer, index=True, nullable=False)
 
     asset_count = Column(Integer)
     keyword_count = Column(Integer)

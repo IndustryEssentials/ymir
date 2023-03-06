@@ -82,7 +82,7 @@ class CRUDPrediction(CRUDBase[Prediction, PredictionCreate, PredictionUpdate]):
         task: schemas.TaskInternal,
         description: Optional[str] = None,
     ) -> Prediction:
-        dataset_id, model_id = task.parameters["dataset_id"], task.parameters["model_id"]  # type: ignore
+        dataset_id, model_id, model_stage_id = task.parameters["dataset_id"], task.parameters["model_id"], task.parameters["model_stage_id"]  # type: ignore
         prediction_in = PredictionCreate(
             name=task.hash,
             hash=task.hash,
@@ -92,6 +92,7 @@ class CRUDPrediction(CRUDBase[Prediction, PredictionCreate, PredictionUpdate]):
             task_id=task.id,
             dataset_id=dataset_id,
             model_id=model_id,
+            model_stage_id=model_stage_id,
             source=task.type,
         )
         return self.create(db, obj_in=prediction_in)

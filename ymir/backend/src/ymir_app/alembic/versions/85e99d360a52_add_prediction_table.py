@@ -1,8 +1,8 @@
 """add prediction table
 
-Revision ID: 47c7a6a64e76
+Revision ID: 85e99d360a52
 Revises: 5c8cc5112b38
-Create Date: 2023-03-03 09:41:34.254220
+Create Date: 2023-03-06 11:16:54.923878
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = "47c7a6a64e76"
+revision = "85e99d360a52"
 down_revision = "5c8cc5112b38"
 branch_labels = None
 depends_on = None
@@ -29,8 +29,9 @@ def upgrade() -> None:
         sa.Column("user_id", sa.Integer(), nullable=False),
         sa.Column("project_id", sa.Integer(), nullable=False),
         sa.Column("task_id", sa.Integer(), nullable=False),
-        sa.Column("model_id", sa.Integer(), nullable=False),
         sa.Column("dataset_id", sa.Integer(), nullable=False),
+        sa.Column("model_id", sa.Integer(), nullable=False),
+        sa.Column("model_stage_id", sa.Integer(), nullable=False),
         sa.Column("asset_count", sa.Integer(), nullable=True),
         sa.Column("keyword_count", sa.Integer(), nullable=True),
         sa.Column("keywords", sa.Text(length=20000), nullable=True),
@@ -45,6 +46,7 @@ def upgrade() -> None:
         batch_op.create_index(batch_op.f("ix_prediction_hash"), ["hash"], unique=True)
         batch_op.create_index(batch_op.f("ix_prediction_id"), ["id"], unique=False)
         batch_op.create_index(batch_op.f("ix_prediction_model_id"), ["model_id"], unique=False)
+        batch_op.create_index(batch_op.f("ix_prediction_model_stage_id"), ["model_stage_id"], unique=False)
         batch_op.create_index(batch_op.f("ix_prediction_name"), ["name"], unique=False)
         batch_op.create_index(batch_op.f("ix_prediction_project_id"), ["project_id"], unique=False)
         batch_op.create_index(batch_op.f("ix_prediction_result_state"), ["result_state"], unique=False)
@@ -70,6 +72,7 @@ def downgrade() -> None:
         batch_op.drop_index(batch_op.f("ix_prediction_result_state"))
         batch_op.drop_index(batch_op.f("ix_prediction_project_id"))
         batch_op.drop_index(batch_op.f("ix_prediction_name"))
+        batch_op.drop_index(batch_op.f("ix_prediction_model_stage_id"))
         batch_op.drop_index(batch_op.f("ix_prediction_model_id"))
         batch_op.drop_index(batch_op.f("ix_prediction_id"))
         batch_op.drop_index(batch_op.f("ix_prediction_hash"))

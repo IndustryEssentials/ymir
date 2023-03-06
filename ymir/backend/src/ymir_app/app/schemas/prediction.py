@@ -22,6 +22,7 @@ class PredictionBase(BaseModel):
     task_id: int
     dataset_id: int
     model_id: int
+    model_stage_id: int
     source: TaskType = TaskType.dataset_infer
     result_state: ResultState = ResultState.processing
     asset_count: Optional[int]
