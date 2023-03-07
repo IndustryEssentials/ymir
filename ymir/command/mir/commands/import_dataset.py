@@ -42,13 +42,13 @@ class CmdImport(base.BaseCommand):
         # Step 1: check args and prepare environment.
         if not index_file or not gen_abs or not os.path.isfile(index_file):
             logging.error(f"invalid index_file: {index_file} or gen_abs: {gen_abs}")
-            return MirCode.RC_CMD_INVALID_ARGS
+            return MirCode.RC_CMD_INVALID_DATASET
         if pred_abs and not os.path.isdir(pred_abs):
             logging.error(f"prediction dir invalid: {pred_abs}")
-            return MirCode.RC_CMD_INVALID_ARGS
+            return MirCode.RC_CMD_INVALID_DATASET
         if gt_abs and not os.path.isdir(gt_abs):
             logging.error(f"groundtruth dir invalid: {gt_abs}")
-            return MirCode.RC_CMD_INVALID_ARGS
+            return MirCode.RC_CMD_INVALID_DATASET
         dst_typ_rev_tid = revs_parser.parse_single_arg_rev(dst_rev, need_tid=True)
         src_typ_rev_tid = revs_parser.parse_single_arg_rev(src_revs, need_tid=False)
 

@@ -105,7 +105,7 @@ def _voc_object_dict_to_annotation(object_dict: dict, cid: int,
         annotation.box.h = height
         annotation.box.rotate_angle = float(bndbox_dict.get('rotate_angle', '0.0'))
     else:
-        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_ARGS, error_message='no value for bndbox')
+        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_DATASET, error_message='no value for bndbox')
     return annotation
 
 
@@ -299,13 +299,13 @@ def import_annotations_coco_json(file_name_to_asset_ids: Dict[str, str], mir_ann
         annotations_list = coco_obj['annotations']
 
     if not images_list or not isinstance(images_list, list):
-        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_FILE,
+        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_DATASET,
                               error_message=f"Can not find images list in coco json: {coco_file_path}")
     if not isinstance(categories_list, list):
-        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_FILE,
+        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_DATASET,
                               error_message=f"Can not find categories list in coco json: {coco_file_path}")
     if not isinstance(annotations_list, list):
-        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_FILE,
+        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_DATASET,
                               error_message=f"Can not find annotations list in coco json: {coco_file_path}")
 
     unhashed_filenames_cnt = 0
@@ -387,7 +387,7 @@ def _import_annotation_meta(class_type_manager: class_ids.UserLabels, annotation
     except Exception:
         annotation_meta_dict = None
     if not isinstance(annotation_meta_dict, dict):
-        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_META_YAML_FILE,
+        raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_DATASET,
                               error_message='Invalid meta.yaml')
 
     # model
