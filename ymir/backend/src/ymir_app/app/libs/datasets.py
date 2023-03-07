@@ -88,7 +88,6 @@ def _import_dataset(
         parameters = {
             "asset_dir": paths.asset_dir,
             "gt_dir": paths.gt_dir,
-            "pred_dir": paths.pred_dir,
             "strategy": dataset_import.strategy,
             "object_type": object_type,
             "clean_dirs": dataset_import.input_path is None,  # for path importing, DO NOT clean_dirs
