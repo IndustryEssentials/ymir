@@ -2,7 +2,7 @@ import model from '../model'
 import { put, putResolve, select, call } from 'redux-saga/effects'
 import { errorCode, generatorCreator, product, products, list, response } from './func'
 import { transferModelGroup, transferModel, states } from '@/constants/model'
-import { toAnnotation } from '@/constants/dataset'
+import { toAnnotation } from '@/constants/asset'
 
 put.resolve = putResolve
 

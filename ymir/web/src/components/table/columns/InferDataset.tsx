@@ -4,7 +4,7 @@ import StrongTitle from './StrongTitle'
 import VersionName from '@/components/result/VersionName'
 import { Link } from 'umi'
 
-const InferDataset = <T extends YModels.InferDataset>(): ColumnType<T> => ({
+const InferDataset = <T extends YModels.Prediction>(): ColumnType<T> => ({
   title: <StrongTitle label="dataset.type.testing" />,
   dataIndex: 'inferDatasetId',
   render: (_, { projectId, inferDatasetId, inferDataset }) => {

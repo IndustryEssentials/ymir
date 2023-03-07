@@ -9,6 +9,7 @@ from app.config import settings
 from app.crud.base import CRUDBase
 from app.models import Project, Iteration
 from app.schemas.project import ProjectCreate, ProjectUpdate
+from app.schemas import CommonPaginationParams
 from app.api.errors.errors import ProjectNotFound
 
 
@@ -20,7 +21,6 @@ class CRUDProject(CRUDBase[Project, ProjectCreate, ProjectUpdate]):
         obj_in: ProjectCreate,
         user_id: int,
     ) -> Project:
-
         training_keywords = json.dumps(obj_in.training_keywords)
 
         db_obj = Project(
@@ -49,15 +49,13 @@ class CRUDProject(CRUDBase[Project, ProjectCreate, ProjectUpdate]):
         user_id: int,
         name: Optional[str] = None,
         object_type: Optional[int] = None,
-        start_time: Optional[int] = None,
-        end_time: Optional[int] = None,
-        offset: Optional[int] = 0,
-        limit: Optional[int] = None,
-        order_by: str = "id",
-        is_desc: bool = True,
+        pagination: CommonPaginationParams,
     ) -> Tuple[List[Project], int]:
-        # each dataset is associate with one task
-        # we need related task info as well
+        start_time, end_time = pagination.start_time, pagination.end_time
+        offset, limit = pagination.offset, pagination.limit
+        order_by = pagination.order_by.name
+        is_desc = pagination.is_desc
+
         query = db.query(self.model)
         query = query.filter(self.model.user_id == user_id, not_(self.model.is_deleted))
 

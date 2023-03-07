@@ -109,22 +109,29 @@ def command_run_in_out(f: Callable) -> Callable:
             ret = f(mir_root=mir_root, src_revs=src_revs, dst_rev=dst_rev, work_dir=work_dir, *args, **kwargs)
         except MirRuntimeError as e:
             error_code = e.error_code
-            state_message = e.error_message
+            short_message = e.error_message
             predefined_task = e.task
             needs_new_commit = e.needs_new_commit
             exc = copy.copy(e)
             trace_message = predefined_task.return_msg if (
                 predefined_task and predefined_task.return_msg) else f"cmd exception: {traceback.format_exc()}"
+        except PermissionError as e:
+            error_code = MirCode.RC_CMD_PERMISSION_ERROR
+            short_message = str(e)
+            predefined_task = None
+            needs_new_commit = True
+            exc = copy.copy(e)
+            trace_message = f"cmd exception: {traceback.format_exc()}"
         except BaseException as e:
             error_code = MirCode.RC_CMD_ERROR_UNKNOWN
-            state_message = str(e)
+            short_message = str(e)
             predefined_task = None
             needs_new_commit = True
             exc = copy.copy(e)
             trace_message = f"cmd exception: {traceback.format_exc()}"
         else:
             # if no exception
-            state_message = f"cmd return: {ret}"
+            short_message = f"cmd return: {ret}"
 
             if ret == MirCode.RC_OK:
                 mir_logger.update_percent_info(local_percent=1, task_state=phase_logger.PhaseStateEnum.DONE)
@@ -133,11 +140,9 @@ def command_run_in_out(f: Callable) -> Callable:
             else:
                 mir_logger.update_percent_info(local_percent=1,
                                                task_state=phase_logger.PhaseStateEnum.ERROR,
-                                               state_code=ret,
-                                               state_content=state_message,
-                                               trace_message='')
+                                               return_code=ret)
                 _commit_error(code=ret,
-                              error_msg=state_message,
+                              error_msg=short_message,
                               mir_root=mir_root,
                               src_revs=src_revs,
                               dst_rev=dst_rev,
@@ -151,9 +156,8 @@ def command_run_in_out(f: Callable) -> Callable:
         # exception saved in exc
         mir_logger.update_percent_info(local_percent=1,
                                        task_state=phase_logger.PhaseStateEnum.ERROR,
-                                       state_code=error_code,
-                                       state_content=state_message,
-                                       trace_message=trace_message)
+                                       return_code=error_code,
+                                       message=trace_message)
         if needs_new_commit:
             _commit_error(code=error_code,
                           error_msg=trace_message,

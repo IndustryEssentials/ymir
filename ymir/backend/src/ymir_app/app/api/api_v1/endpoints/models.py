@@ -1,4 +1,3 @@
-import enum
 from typing import Any
 
 from fastapi import APIRouter, BackgroundTasks, Depends, Path, Query
@@ -53,17 +52,10 @@ def batch_update_models(
     return {"result": models}
 
 
-class SortField(enum.Enum):
-    id = "id"
-    create_datetime = "create_datetime"
-    update_datetime = "update_datetime"
-    map = "map"
-    source = "source"
-
-
 @router.get("/", response_model=schemas.ModelPaginationOut)
 def list_models(
     db: Session = Depends(deps.get_db),
+    current_user: models.User = Depends(deps.get_current_active_user),
     source: TaskType = Query(None, description="type of related task"),
     state: ResultState = Query(None),
     project_id: int = Query(None),
@@ -71,13 +63,7 @@ def list_models(
     group_name: str = Query(None),
     visible: bool = Query(True),
     training_dataset_id: int = Query(None),
-    offset: int = Query(None),
-    limit: int = Query(None),
-    order_by: SortField = Query(SortField.id),
-    is_desc: bool = Query(True),
-    start_time: int = Query(None, description="from this timestamp"),
-    end_time: int = Query(None, description="to this timestamp"),
-    current_user: models.User = Depends(deps.get_current_active_user),
+    pagination: schemas.CommonPaginationParams = Depends(),
 ) -> Any:
     """
     Get list of models
@@ -98,12 +84,7 @@ def list_models(
         source=source,
         state=state,
         visible=visible,
-        offset=offset,
-        limit=limit,
-        order_by=order_by.name,
-        is_desc=is_desc,
-        start_time=start_time,
-        end_time=end_time,
+        pagination=pagination,
     )
     payload = {"total": total, "items": models}
     return {"result": payload}

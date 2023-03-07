@@ -75,8 +75,9 @@ func (h *MockViewerHandler) MetricsRecordHandler(
 
 func (h *MockViewerHandler) GetDatasetMetaCountsHandler(
 	mirRepo *constants.MirRepo,
+	checkIndexOnly bool,
 ) *constants.QueryDatasetStatsResult {
-	args := h.Called(mirRepo)
+	args := h.Called(mirRepo, checkIndexOnly)
 	return args.Get(0).(*constants.QueryDatasetStatsResult)
 }
 
@@ -177,7 +178,7 @@ func TestMetaCountPageHandlerSuccess(t *testing.T) {
 	)
 
 	mirRepo := constants.MirRepo{UserID: userID, RepoID: repoID, BranchID: branchID, TaskID: branchID}
-	mockHandler.On("GetDatasetMetaCountsHandler", &mirRepo).Return(metaExpectedResult)
+	mockHandler.On("GetDatasetMetaCountsHandler", &mirRepo, false).Return(metaExpectedResult)
 
 	req, _ := http.NewRequest("GET", metaRequestURL, nil)
 	w := httptest.NewRecorder()
@@ -215,7 +216,7 @@ func TestMetaCountPageHandlerFailure(t *testing.T) {
 	)
 
 	mirRepo := constants.MirRepo{UserID: userID, RepoID: repoID, BranchID: branchID, TaskID: branchID}
-	mockHandler.On("GetDatasetMetaCountsHandler", &mirRepo).Panic("unknown ref")
+	mockHandler.On("GetDatasetMetaCountsHandler", &mirRepo, false).Panic("unknown ref")
 
 	req, _ := http.NewRequest("GET", metaRequestURL, nil)
 	w := httptest.NewRecorder()

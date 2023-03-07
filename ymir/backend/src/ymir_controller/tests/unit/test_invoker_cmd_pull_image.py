@@ -74,29 +74,37 @@ class TestInvokerPullImage(unittest.TestCase):
                 "docker image inspect docker_image_name --format ignore_me".split(' '),
                 capture_output=True,
                 text=True,
+                cwd=None,
             ),
-            mock.call("docker images docker_image_name --format {{.ID}}".split(' '),
-                      capture_output=True,
-                      text=True),
+            mock.call(
+                "docker images docker_image_name --format {{.ID}}".split(' '),
+                capture_output=True,
+                text=True,
+                cwd=None,
+            ),
             mock.call(
                 "docker run --rm docker_image_name cat /img-man/training-template.yaml".split(' '),
                 capture_output=True,
                 text=True,
+                cwd=None,
             ),
             mock.call(
                 "docker run --rm docker_image_name cat /img-man/mining-template.yaml".split(' '),
                 capture_output=True,
                 text=True,
+                cwd=None,
             ),
             mock.call(
                 "docker run --rm docker_image_name cat /img-man/infer-template.yaml".split(' '),
                 capture_output=True,
                 text=True,
+                cwd=None,
             ),
             mock.call(
                 "docker run --rm docker_image_name cat /img-man/manifest.yaml".split(" "),
                 capture_output=True,
-                text=True
+                text=True,
+                cwd=None,
             )
         ]
 

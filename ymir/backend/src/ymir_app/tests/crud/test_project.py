@@ -28,5 +28,7 @@ def test_get_multiple_projects(db: Session, mocker: Any) -> None:
     user_id = randint(1000, 2000)
     for i in range(3):
         create_project_record(db, user_id, name=f"prefix_{i}")
-    _, count = crud.project.get_multi_projects(db, user_id=user_id, name="prefix_")
+    _, count = crud.project.get_multi_projects(
+        db, user_id=user_id, name="prefix_", pagination=schemas.CommonPaginationParams()
+    )
     assert count == 3

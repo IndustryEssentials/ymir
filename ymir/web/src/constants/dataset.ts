@@ -139,7 +139,7 @@ export function canHide(dataset: YModels.Dataset, project: YModels.Project | und
   return !runningDataset(dataset) && !p?.hiddenDatasets?.includes(dataset.id)
 }
 
-export function transferInferDataset(dataset: YModels.Dataset<YModels.InferenceParams>): YModels.InferDataset {
+export function transferInferDataset(dataset: YModels.Dataset<YModels.InferenceParams>): YModels.Prediction {
   const params = dataset.task?.parameters
   const config = dataset.task?.config || {}
   return {
@@ -169,81 +169,6 @@ export function transferDatasetAnalysis(data: YModels.BackendData): YModels.Data
   }
 }
 
-export function transferAsset(data: YModels.BackendData, keywords: Array<string>): YModels.Asset {
-  const { width, height } = data?.metadata || {}
-  const colors = generateDatasetColors(keywords || data.keywords)
-  const transferAnnotations = (annotations = [], pred = false) =>
-    annotations.map((an: YModels.BackendData) => toAnnotation(an, width, height, pred, colors[an.keyword]))
-
-  const annotations = [...transferAnnotations(data.gt), ...transferAnnotations(data.pred, true)]
-  const evaluated = annotations.some((annotation) => evaluationTags[annotation.cm])
-
-  return {
-    id: data.id,
-    hash: data.hash,
-    keywords: data.keywords || [],
-    url: data.url,
-    type: data.type,
-    width,
-    height,
-    metadata: data.metadata,
-    size: data.size,
-    annotations,
-    evaluated,
-    cks: data.cks || {},
-  }
-}
-
-export function toAnnotation(annotation: YModels.BackendData, width: number = 0, height: number = 0, pred = false, color = ''): YModels.Annotation {
-  return {
-    id: `${Date.now()}${Math.random()}`,
-    keyword: annotation.keyword || '',
-    width,
-    height,
-    cm: annotation.cm,
-    gt: !pred,
-    tags: annotation.tags || {},
-    color,
-    ...annotationTransfer({ ...annotation, type: getType(annotation) }),
-  }
-}
-
-function annotationTransfer(annotation: YModels.BackendData) {
-  const type = annotation.type as YModels.AnnotationType
-  return {
-    [AnnotationType.BoundingBox]: toBoundingBoxAnnoatation,
-    [AnnotationType.Polygon]: toPolygonAnnotation,
-    [AnnotationType.Mask]: toMaskAnnotation,
-  }[type](annotation)
-}
-
-export function toBoundingBoxAnnoatation(annotation: YModels.BackendData) {
-  const type: YModels.AnnotationType.BoundingBox = annotation.type || AnnotationType.BoundingBox
-  return {
-    ...annotation,
-    box: annotation.box,
-    type,
-  }
-}
-
-export function toMaskAnnotation(annotation: YModels.BackendData) {
-  const type: YModels.AnnotationType.Mask = annotation.type || AnnotationType.Mask
-  return {
-    ...annotation,
-    mask: annotation.mask,
-    type,
-  }
-}
-
-export function toPolygonAnnotation(annotation: YModels.BackendData) {
-  const type: YModels.AnnotationType.Polygon = annotation.type || AnnotationType.Polygon
-  return {
-    ...annotation,
-    polygon: annotation.polygon,
-    type,
-  }
-}
-
 export function transferAnnotationsCount(count = {}, negative = 0, total = 1) {
   return {
     keywords: Object.keys(count),
@@ -253,14 +178,10 @@ export function transferAnnotationsCount(count = {}, negative = 0, total = 1) {
   }
 }
 
-function getType(annotation: YModels.BackendData) {
-  return annotation?.mask ? AnnotationType.Mask : annotation?.polygon?.length ? AnnotationType.Polygon : AnnotationType.BoundingBox
-}
-
 const transferCK = (counts: YModels.BackendData = {}, total: YModels.BackendData = {}): YModels.CKCounts => {
   let subKeywordsTotal = 0
   const keywords = Object.keys(counts).map((keyword: string) => {
-    const children: {[key: string]: number} = counts[keyword]
+    const children: { [key: string]: number } = counts[keyword]
     const subList = Object.keys(children)
     const count: number = total[keyword]
     subKeywordsTotal += subList.length
@@ -282,7 +203,7 @@ const transferCK = (counts: YModels.BackendData = {}, total: YModels.BackendData
 }
 
 const generateAnno = (data: YModels.BackendData): YModels.AnylysisAnnotation => {
-  const { quality = [], area = [], box_area_ratio = [], mask_area = [], obj_counts = [], class_counts=[] } = data.hist
+  const { quality = [], area = [], box_area_ratio = [], mask_area = [], obj_counts = [], class_counts = [] } = data.hist
   return {
     keywords: data.keywords,
     total: data.annos_count || 0,
@@ -297,17 +218,4 @@ const generateAnno = (data: YModels.BackendData): YModels.AnylysisAnnotation => 
     crowdedness: obj_counts,
     complexity: class_counts,
   }
-}
-
-function generateDatasetColors(keywords: Array<string> = []): {
-  [name: string]: string
-} {
-  const KeywordColor = ['green', 'red', 'cyan', 'blue', 'yellow', 'purple', 'magenta', 'orange', 'gold']
-  return keywords.reduce(
-    (prev, curr, i) => ({
-      ...prev,
-      [curr]: KeywordColor[i % KeywordColor.length],
-    }),
-    {},
-  )
 }

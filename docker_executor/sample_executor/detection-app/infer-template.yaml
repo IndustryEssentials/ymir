@@ -10,3 +10,4 @@ class_names: []
 # just for test, remove this key in your own docker image
 idle_seconds: 3  # idle seconds for each task
 seed: 15
+crash_code: 0  # 0, or 18xxxx(see also: code.py), generate an error message with this id if set non-zero value

@@ -131,7 +131,7 @@ function TaskDetail({ task = {} }) {
   }
 
   function renderImageByUrl(url, span, label) {
-    return renderImage(<ImageName url={url} />, span, label)
+    return url ? renderImage(<ImageName url={url} />, span, label) : null
   }
 
   function renderDatasetSource(id) {

@@ -1,7 +1,5 @@
 import { useIntl, getLocale } from "umi"
 
-type KeyType = string | number | null | undefined
-
 let intl: any = null
 let locale: any = null
 
@@ -13,25 +11,22 @@ const getIntl = () => {
   return intl
 }
 
-function _MSG(id: KeyType = '', values = {}) {
+function _MSG({ id = '', values = {} }) {
   const uIntl = getIntl()
   return uIntl.formatMessage({ id }, values)
 }
 
 export const initIntl = (prefix: string = '') => {
-  const _helper = (id: KeyType, values = {}, _prefix: string = '') => {
+  const _helper = (id: string, values = {}, _prefix: string = '') => {
     const key = _prefix ? `${_prefix}.${id}` : (prefix ? `${prefix}.${id}` : id)
-    return _MSG(key, values)
+    return _MSG({ id: key, values })
   }
   return _helper
 }
 
-const showIntl = (id: KeyType = '', values = {}, prefix: string = '') => {
-  if (!id) {
-    return
-  }
+const showIntl = (id: string, values = {}, prefix = '') => {
   try {
-    return initIntl(prefix)(id, values)
+    return id ? initIntl(prefix)(id, values) : null
   } catch (err) {
     console.warn('locale error: ', id, values, err)
   }

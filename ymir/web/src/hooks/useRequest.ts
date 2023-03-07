@@ -32,7 +32,7 @@ type OptionsType<TData, TParams extends any[]> = {
   ready?: boolean
 }
 
-const useRequest = <TData, TParams extends any[] = [{ [key: string]: any }]>(effect: string, options: OptionsType<TData, TParams> = {}) => {
+const useRequest = <TData, TParams extends any[] = [params?: { [key: string]: any }]>(effect: string, options: OptionsType<TData, TParams> = {}) => {
   const dispatch = useDispatch()
   const { loading = true } = options
   const setLoading = (loading: Boolean) =>

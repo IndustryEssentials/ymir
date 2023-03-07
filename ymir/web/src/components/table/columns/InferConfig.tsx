@@ -5,7 +5,7 @@ import StrongTitle from './StrongTitle'
 import t from '@/utils/t'
 
 const title = 'model.diagnose.label.config'
-const InferConfig = <T extends YModels.InferDataset>(): TableColumnType<T> => ({
+const InferConfig = <T extends YModels.Prediction>(): TableColumnType<T> => ({
   title: <StrongTitle label={title} />,
   dataIndex: 'inferConfig',
   render: (config) => {

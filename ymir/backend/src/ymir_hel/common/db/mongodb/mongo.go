@@ -68,15 +68,18 @@ func (s *MongoServer) upsertDocument(collection *mongo.Collection, id string, da
 	}
 }
 
-func (s *MongoServer) CheckDatasetExistenceReady(mirRepo *constants.MirRepo) (exist bool, ready bool) {
+func (s *MongoServer) CheckDatasetIndex(mirRepo *constants.MirRepo) (exist bool, ready bool) {
 	defer func() {
 		if r := recover(); r != nil {
 			exist = false
 			ready = false
+			log.Printf("[recover] repo %s CheckDatasetIndex failed", mirRepo.TaskID)
 		}
+		log.Printf("check repo %s index, exist: %v, ready: %v", mirRepo.TaskID, exist, ready)
 	}()
 
 	metadata := s.loadDatasetMetaData(mirRepo)
+
 	return metadata.Exist, metadata.Ready
 }
 
@@ -85,8 +88,9 @@ func (s *MongoServer) IndexDatasetData(
 	mirMetadatas *protos.MirMetadatas,
 	mirAnnotations *protos.MirAnnotations,
 ) {
-	exist, _ := s.CheckDatasetExistenceReady(mirRepo)
+	exist, _ := s.CheckDatasetIndex(mirRepo)
 	if exist {
+		// Skip dup-index.
 		return
 	}
 
@@ -322,7 +326,7 @@ func (s *MongoServer) QueryDatasetAssets(
 ) *constants.QueryAssetsResult {
 	defer tools.TimeTrack(time.Now(), mirRepo.TaskID)
 
-	_, ready := s.CheckDatasetExistenceReady(mirRepo)
+	_, ready := s.CheckDatasetIndex(mirRepo)
 	if !ready {
 		panic("QueryDatasetAssets repo not ready: " + mirRepo.TaskID)
 	}
@@ -562,7 +566,7 @@ func (s *MongoServer) QueryDatasetStats(
 	requireAnnotationsHist bool,
 	queryData *constants.QueryDatasetStatsResult,
 ) *constants.QueryDatasetStatsResult {
-	_, ready := s.CheckDatasetExistenceReady(mirRepo)
+	_, ready := s.CheckDatasetIndex(mirRepo)
 	if !ready {
 		panic("QueryDatasetStats repo not ready: " + mirRepo.TaskID)
 	}

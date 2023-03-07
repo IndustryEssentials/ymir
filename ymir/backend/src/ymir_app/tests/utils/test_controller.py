@@ -180,7 +180,7 @@ class TestControllerClient:
         mocker.patch.object(m, "convert_class_id_to_keyword", mock_convertor)
         resp = {"evaluation": mocker.Mock()}
         cc.send = mocker.Mock(return_value=resp)
-        cc.evaluate_dataset(
+        cc.evaluate_prediction(
             user_id,
             project_id,
             user_labels,

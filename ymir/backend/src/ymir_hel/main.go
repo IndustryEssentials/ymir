@@ -1,50 +1,111 @@
 package main
 
 import (
+	"fmt"
 	"os"
 
-	"github.com/urfave/cli"
+	"github.com/urfave/cli/v2"
 
 	"github.com/IndustryEssentials/ymir-hel/configs"
-	server_hel "github.com/IndustryEssentials/ymir-hel/hel"
-	server_viewer "github.com/IndustryEssentials/ymir-hel/viewer/server"
+	hel_server "github.com/IndustryEssentials/ymir-hel/hel"
+	viewer_client "github.com/IndustryEssentials/ymir-hel/viewer/client"
+	viewer_server "github.com/IndustryEssentials/ymir-hel/viewer/server"
 )
 
 func BuildCliApp(config *configs.Config) (*cli.App, error) {
-	app := cli.NewApp()
-	app.Commands = []cli.Command{
+	var userID string
+	var repoID string
+	var taskID string
+
+	app := &cli.App{
+		Name:  "YMIR Hel",
+		Usage: "YMIR Hel Server",
+		Action: func(c *cli.Context) error {
+			fmt.Println("YMIR Hel, see --help for usage")
+			return nil
+		},
+	}
+
+	app.Commands = []*cli.Command{
 		{
-			Name:  "viewer",
-			Usage: "start YMIR-Viewer Service.",
+			Name:    "viewer",
+			Aliases: []string{"v"},
+			Usage:   "start YMIR-Viewer Service.",
 			Action: func(c *cli.Context) error {
-				if err := server_viewer.StartViewerServer(config); err != nil {
-					return cli.NewExitError(err.Error(), 1)
+				if err := viewer_server.StartViewerServer(config); err != nil {
+					return cli.Exit(err.Error(), 1)
 				}
 				return nil
 			},
 		},
 		{
+			Name:    "viewer_client",
+			Aliases: []string{"vc"},
+			Usage:   "start YMIR-Viewer Client Call.",
+			Flags: []cli.Flag{
+				&cli.StringFlag{
+					Name:        "user_id",
+					Aliases:     []string{"uid"},
+					Usage:       "user id",
+					Destination: &userID,
+				},
+				&cli.StringFlag{
+					Name:        "repo_id",
+					Aliases:     []string{"rid"},
+					Usage:       "repo id",
+					Destination: &repoID,
+				},
+				&cli.StringFlag{
+					Name:        "task_id",
+					Aliases:     []string{"tid"},
+					Usage:       "task id",
+					Destination: &taskID,
+				},
+			},
+			Subcommands: []*cli.Command{
+				{
+					Name:  "index",
+					Usage: "create dataset index",
+					Action: func(c *cli.Context) error {
+						if err := viewer_client.IndexDataset(config.ViewerURI, userID, repoID, taskID); err != nil {
+							return cli.Exit(err.Error(), 1)
+						}
+						return nil
+					},
+				},
+				{
+					Name:  "query",
+					Usage: "query dataset metadata",
+					Action: func(c *cli.Context) error {
+						if err := viewer_client.QueryDataset(config.ViewerURI, userID, repoID, taskID); err != nil {
+							return cli.Exit(err.Error(), 1)
+						}
+						return nil
+					},
+				},
+			},
+		}, {
 			Name:  "hel",
 			Usage: "launch YMIR-Hel Service.",
 			Action: func(c *cli.Context) error {
-				if err := server_hel.StartHelServer(config); err != nil {
-					return cli.NewExitError(err.Error(), 1)
+				if err := hel_server.StartHelServer(config); err != nil {
+					return cli.Exit(err.Error(), 1)
 				}
 				return nil
 			},
 		},
 		{
-			Name:  "hel_client",
-			Usage: "call YMIR-Hel Service.",
+			Name:    "hel_client",
+			Aliases: []string{"hc"},
+			Usage:   "call YMIR-Hel Service.",
 			Action: func(c *cli.Context) error {
-				if err := server_hel.GrpcClientCall(config.HelGrpcURL); err != nil {
-					return cli.NewExitError(err.Error(), 1)
+				if err := hel_server.GrpcClientCall(config.HelGrpcURL); err != nil {
+					return cli.Exit(err.Error(), 1)
 				}
 				return nil
 			},
 		},
 	}
-
 	return app, nil
 }
 

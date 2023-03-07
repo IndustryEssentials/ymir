@@ -46,6 +46,8 @@ def terminate_tasks() -> None:
                 crud.model.set_result_state_to_error(db, id=task.result_model.id)  # type: ignore
             if task.result_dataset:  # type: ignore
                 crud.dataset.set_result_state_to_error(db, id=task.result_dataset.id)  # type: ignore
+            if task.result_prediction:  # type: ignore
+                crud.dataset.set_result_state_to_error(db, id=task.result_prediction.id)  # type: ignore
 
 
 def main() -> None:

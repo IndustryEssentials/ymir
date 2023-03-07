@@ -77,7 +77,7 @@ def _check_task_id(invoker: BaseMirControllerInvoker) -> backend_pb2.GeneralResp
 def _check_repo_root_exist(invoker: BaseMirControllerInvoker) -> backend_pb2.GeneralResp:
     mir_root = invoker._repo_root
     if not os.path.isdir(mir_root):
-        return utils.make_general_response(CTLResponseCode.ARG_VALIDATION_FAILED,
+        return utils.make_general_response(CTLResponseCode.INVALID_MIR_ROOT,
                                            "mir_root not exist: {}, abort".format(mir_root))
 
     return utils.make_general_response(CTLResponseCode.CTR_OK, "")

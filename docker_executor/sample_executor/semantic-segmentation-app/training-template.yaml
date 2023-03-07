@@ -16,3 +16,4 @@ export_format: 'seg-coco:raw'
 expected_mIoU: 0.983  # expected mIoU for training task
 expected_mAcc: 0.800  # expected mAcc for training task
 idle_seconds: 3  # idle seconds for each task
+crash_code: 0  # 0, or 18xxxx(see also: code.py), generate an error message with this id if set non-zero value

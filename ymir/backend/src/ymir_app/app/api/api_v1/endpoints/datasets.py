@@ -1,5 +1,3 @@
-import enum
-import random
 from typing import Any, List, Optional
 
 from fastapi import APIRouter, BackgroundTasks, Depends, Path, Query
@@ -9,7 +7,6 @@ from sqlalchemy.orm import Session
 from app import crud, models, schemas
 from app.api import deps
 from app.api.errors.errors import (
-    AssetNotFound,
     DatasetGroupNotFound,
     DatasetNotFound,
     DuplicateDatasetGroupError,
@@ -24,11 +21,7 @@ from app.config import settings
 from app.constants.state import TaskState, TaskType, ResultState, ObjectType
 from app.utils.ymir_controller import ControllerClient
 from app.utils.ymir_viz import VizClient
-from app.libs.datasets import (
-    import_dataset_in_background,
-    evaluate_datasets,
-    ensure_datasets_are_ready,
-)
+from app.libs.datasets import import_dataset_in_background, ensure_datasets_are_ready
 from app.libs.tasks import create_single_task
 from common_utils.labels import UserLabels
 
@@ -90,17 +83,10 @@ def batch_update_datasets(
     return {"result": datasets}
 
 
-class SortField(enum.Enum):
-    id = "id"
-    create_datetime = "create_datetime"
-    update_datetime = "update_datetime"
-    asset_count = "asset_count"
-    source = "source"
-
-
 @router.get("/", response_model=schemas.DatasetPaginationOut)
 def list_datasets(
     db: Session = Depends(deps.get_db),
+    current_user: models.User = Depends(deps.get_current_active_user),
     source: TaskType = Query(None, description="type of related task"),
     exclude_source: TaskType = Query(None, description="exclude type of related task"),
     project_id: int = Query(None),
@@ -109,13 +95,7 @@ def list_datasets(
     visible: bool = Query(True),
     state: ResultState = Query(None),
     object_type: ObjectType = Query(None),
-    offset: int = Query(None),
-    limit: int = Query(None),
-    order_by: SortField = Query(SortField.id),
-    is_desc: bool = Query(True),
-    start_time: int = Query(None, description="from this timestamp"),
-    end_time: int = Query(None, description="to this timestamp"),
-    current_user: models.User = Depends(deps.get_current_active_user),
+    pagination: schemas.CommonPaginationParams = Depends(),
 ) -> Any:
     """
     Get list of datasets,
@@ -132,12 +112,7 @@ def list_datasets(
         state=state,
         object_type=object_type,
         visible=visible,
-        offset=offset,
-        limit=limit,
-        order_by=order_by.name,
-        is_desc=is_desc,
-        start_time=start_time,
-        end_time=end_time,
+        pagination=pagination,
     )
     return {"result": {"total": total, "items": datasets}}
 
@@ -156,6 +131,7 @@ def get_public_datasets(
         db,
         user_id=settings.PUBLIC_DATASET_OWNER,
         allow_empty=False,
+        pagination=schemas.CommonPaginationParams(limit=None),
     )
     return {"result": {"total": total, "items": datasets}}
 
@@ -269,6 +245,7 @@ def delete_dataset(
         db,
         user_id=current_user.id,
         group_id=dataset_group_id,
+        pagination=schemas.CommonPaginationParams(limit=None),
     )
     if not total:
         crud.dataset_group.soft_remove(db, id=dataset_group_id)
@@ -342,167 +319,6 @@ def get_dataset(
             dataset_info.update(dataset_stats)
 
     return {"result": dataset_info}
-
-
-@router.get(
-    "/{dataset_id}/assets",
-    response_model=schemas.AssetPaginationOut,
-    responses={404: {"description": "Dataset Not Found"}},
-)
-def get_assets_of_dataset(
-    db: Session = Depends(deps.get_db),
-    dataset_id: int = Path(..., example="12"),
-    offset: int = 0,
-    limit: int = settings.DEFAULT_LIMIT,
-    keywords_str: Optional[str] = Query(None, example="person,cat", alias="keywords"),
-    in_cm_types_str: Optional[str] = Query(None, example="tp,mtp", alias="in_cm_types"),
-    ex_cm_types_str: Optional[str] = Query(None, example="tp,mtp", alias="ex_cm_types"),
-    cks_str: Optional[str] = Query(None, example="shenzhen,shanghai", alias="cks"),
-    tags_str: Optional[str] = Query(None, example="big,small", alias="tags"),
-    annotation_types_str: Optional[str] = Query(None, example="gt,pred", alias="annotation_types"),
-    viz_client: VizClient = Depends(deps.get_viz_client),
-    current_user: models.User = Depends(deps.get_current_active_user),
-    user_labels: UserLabels = Depends(deps.get_user_labels),
-) -> Any:
-    """
-    Get asset list of specific dataset,
-    pagination is supported by means of offset and limit
-    """
-    dataset = crud.dataset.get_by_user_and_id(db, user_id=current_user.id, id=dataset_id)
-    if not dataset:
-        raise DatasetNotFound()
-
-    keywords = keywords_str.split(",") if keywords_str else None
-    keyword_ids = user_labels.id_for_names(names=keywords, raise_if_unknown=True)[0] if keywords else None
-
-    viz_client.initialize(
-        user_id=current_user.id,
-        project_id=dataset.project_id,
-        user_labels=user_labels,
-    )
-    assets = viz_client.get_assets(
-        dataset_hash=dataset.hash,
-        keyword_ids=keyword_ids,
-        in_cm_types=stringtolist(in_cm_types_str),
-        ex_cm_types=stringtolist(ex_cm_types_str),
-        cks=stringtolist(cks_str),
-        tags=stringtolist(tags_str),
-        annotation_types=stringtolist(annotation_types_str),
-        limit=limit,
-        offset=offset,
-    )
-    return {"result": assets}
-
-
-@router.get(
-    "/{dataset_id}/assets/random",
-    response_model=schemas.AssetOut,
-    responses={404: {"description": "Asset Not Found"}},
-)
-def get_random_asset_id_of_dataset(
-    db: Session = Depends(deps.get_db),
-    dataset_id: int = Path(..., example="12"),
-    viz_client: VizClient = Depends(deps.get_viz_client),
-    current_user: models.User = Depends(deps.get_current_active_user),
-    user_labels: UserLabels = Depends(deps.get_user_labels),
-) -> Any:
-    """
-    Get random asset from specific dataset
-    """
-    dataset = crud.dataset.get_by_user_and_id(db, user_id=current_user.id, id=dataset_id)
-    if not dataset:
-        raise DatasetNotFound()
-
-    offset = get_random_asset_offset(dataset)
-    viz_client.initialize(
-        user_id=current_user.id,
-        project_id=dataset.project_id,
-        user_labels=user_labels,
-    )
-    assets = viz_client.get_assets(
-        dataset_hash=dataset.hash,
-        keyword_id=None,
-        offset=offset,
-        limit=1,
-    )
-    if assets["total"] == 0:
-        raise AssetNotFound()
-    return {"result": assets["items"][0]}
-
-
-def get_random_asset_offset(dataset: models.Dataset) -> int:
-    if not dataset.asset_count:
-        raise AssetNotFound()
-    offset = random.randint(0, dataset.asset_count - 1)
-    return offset
-
-
-@router.get(
-    "/{dataset_id}/assets/{asset_hash}",
-    response_model=schemas.AssetOut,
-    responses={404: {"description": "Asset Not Found"}},
-)
-def get_asset_of_dataset(
-    db: Session = Depends(deps.get_db),
-    dataset_id: int = Path(..., example="12"),
-    asset_hash: str = Path(..., description="in asset hash format"),
-    viz_client: VizClient = Depends(deps.get_viz_client),
-    current_user: models.User = Depends(deps.get_current_active_user),
-    user_labels: UserLabels = Depends(deps.get_user_labels),
-) -> Any:
-    """
-    Get asset from specific dataset
-    """
-    dataset = crud.dataset.get_by_user_and_id(db, user_id=current_user.id, id=dataset_id)
-    if not dataset:
-        raise DatasetNotFound()
-
-    viz_client.initialize(
-        user_id=current_user.id,
-        project_id=dataset.project_id,
-        user_labels=user_labels,
-    )
-    assets = viz_client.get_assets(dataset_hash=dataset.hash, asset_hash=asset_hash, limit=1)
-    if assets["total"] == 0:
-        raise AssetNotFound()
-    return {"result": assets["items"][0]}
-
-
-@router.post("/evaluation", response_model=schemas.dataset.DatasetEvaluationOut)
-def batch_evaluate_datasets(
-    *,
-    db: Session = Depends(deps.get_db),
-    in_evaluation: schemas.dataset.DatasetEvaluationCreate,
-    current_user: models.User = Depends(deps.get_current_active_user),
-    controller_client: ControllerClient = Depends(deps.get_controller_client),
-    user_labels: UserLabels = Depends(deps.get_user_labels),
-) -> Any:
-    """
-    evaluate datasets by themselves
-    """
-    logger.info("[evaluate] evaluate datasets with payload: %s", in_evaluation.json())
-
-    project = crud.project.get_by_user_and_id(db, user_id=current_user.id, id=in_evaluation.project_id)
-    if not project:
-        raise ProjectNotFound()
-
-    datasets = ensure_datasets_are_ready(db, dataset_ids=in_evaluation.dataset_ids)
-    dataset_id_mapping = {dataset.hash: dataset.id for dataset in datasets}
-
-    evaluations = evaluate_datasets(
-        controller_client,
-        current_user.id,
-        in_evaluation.project_id,
-        user_labels,
-        in_evaluation.confidence_threshold,
-        in_evaluation.iou_threshold,
-        in_evaluation.require_average_iou,
-        in_evaluation.need_pr_curve,
-        in_evaluation.main_ck,
-        dataset_id_mapping,
-        is_instance_segmentation=(project.object_type == ObjectType.instance_segmentation),
-    )
-    return {"result": evaluations}
 
 
 @router.post("/check_duplication", response_model=schemas.dataset.DatasetCheckDuplicationOut)
@@ -595,9 +411,3 @@ def filter_dataset(
     )
     task_in_db = create_single_task(db, current_user.id, user_labels, task_in)
     return {"result": task_in_db}
-
-
-def stringtolist(s: Optional[str]) -> Optional[List]:
-    if s is None:
-        return s
-    return s.split(",")
