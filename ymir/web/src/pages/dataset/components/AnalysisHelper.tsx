@@ -114,9 +114,9 @@ const charts: { [key: string]: ChartConfigType } = {
   },
 }
 
-const getAnnotations = (item: YModels.DatasetAnalysis, type: AnnotationType) => item[type]
+const getAnnotations = (item: YModels.DatasetAnalysis) => item.gt
 
-const getColumns = (keys: string[], type: AnnotationType) => {
+const getColumns = (keys: string[]) => {
   const columns: { [key: string]: ColumnType } = {
     name: {
       title: title('dataset.analysis.column.name'),
@@ -125,7 +125,7 @@ const getColumns = (keys: string[], type: AnnotationType) => {
     labeled: {
       title: title('dataset.analysis.column.labelled'),
       render: (_, record) => {
-        const anno = getAnnotations(record, type)
+        const anno = getAnnotations(record)
         const labeled = record.assetCount - anno.negative
         return renderPop(labeled)
       },
@@ -137,12 +137,12 @@ const getColumns = (keys: string[], type: AnnotationType) => {
     },
     keywordsCount: {
       title: title('dataset.analysis.column.keywords.count'),
-      render: (_, record) => Object.keys(getAnnotations(record, type).keywords).length,
+      render: (_, record) => Object.keys(getAnnotations(record).keywords).length,
     },
     averageKeywordsCount: {
       title: title('dataset.analysis.column.keywords.count.average'),
       render: (_, record) => {
-        const keywords = getAnnotations(record, type).keywords
+        const keywords = getAnnotations(record).keywords
         const sum = Object.values(keywords).reduce((prev, current) => prev + current, 0)
         return toFixed(sum / record.assetCount, 2)
       },
@@ -150,33 +150,33 @@ const getColumns = (keys: string[], type: AnnotationType) => {
     annotationsCount: {
       title: title('dataset.analysis.column.annotations.total'),
       render: (_, record) => {
-        const count = getAnnotations(record, type).total
+        const count = getAnnotations(record).total
         return renderPop(count)
       },
     },
     averageAnnotationsCount: {
       title: title('dataset.analysis.column.annotations.average'),
-      render: (_, record) => toFixed(getAnnotations(record, type).average, 2),
+      render: (_, record) => toFixed(getAnnotations(record).average, 2),
     },
     annotationsAreaTotal: {
       title: title('dataset.analysis.column.annotations.area.total'),
-      render: (_, record) => unit(getAnnotations(record, type).totalArea),
+      render: (_, record) => unit(getAnnotations(record).totalArea),
     },
     averageAnnotationsArea: {
       title: title('dataset.analysis.column.annotations.area.average'),
       render: (_, record) => {
-        const total = getAnnotations(record, type).totalArea
+        const total = getAnnotations(record).totalArea
         return unit(toFixed(total / record.assetCount, 2))
       },
     },
     instanceCount: {
       title: title('dataset.analysis.column.instances.total'),
-      render: (_, record) => renderPop(getAnnotations(record, type).total),
+      render: (_, record) => renderPop(getAnnotations(record).total),
     },
     averageInstanceCount: {
       title: title('dataset.analysis.column.instances.average'),
       render: (_, record) => {
-        const total = getAnnotations(record, type).total
+        const total = getAnnotations(record).total
         return toFixed(total / record.assetCount, 2)
       },
     },
@@ -205,17 +205,17 @@ function title(str = '') {
   return <strong>{t(str)}</strong>
 }
 
-const getTableColumns = (objectType: YModels.ObjectType, annotationType: AnnotationType) => {
+const getTableColumns = (objectType: YModels.ObjectType) => {
   const keys = (cols: string[]) => ['name', 'labeled', 'assetCount', 'keywordsCount', 'averageKeywordsCount', ...cols]
   const maps = {
     [ObjectType.ObjectDetection]: keys(['annotationsCount', 'averageAnnotationsCount', 'cksCount']),
     [ObjectType.SemanticSegmentation]: keys(['annotationsAreaTotal', 'averageAnnotationsArea']),
     [ObjectType.InstanceSegmentation]: keys(['instanceCount', 'averageInstanceCount']),
   }
-  return getColumns(maps[objectType], annotationType)
+  return getColumns(maps[objectType])
 }
 
-const getCharts = (annotationType?: AnnotationType, objectType?: YModels.ObjectType) => {
+const getCharts = (objectType?: YModels.ObjectType, isAnnotation?: boolean) => {
   const maps = {
     [ObjectType.ObjectDetection]: ['complexity', 'keywords', 'areaRatio'],
     [ObjectType.SemanticSegmentation]: ['complexity', 'semanticKeywords', 'keywordArea'],
@@ -225,14 +225,14 @@ const getCharts = (annotationType?: AnnotationType, objectType?: YModels.ObjectT
   const keys = objectType ? maps[objectType] : assetCharts
   return keys.map((key) => ({
     ...charts[key],
-    getSource: (dataset: YModels.DatasetAnalysis) => (annotationType ? getAnnotations(dataset, annotationType) : dataset),
+    getSource: (dataset: YModels.DatasetAnalysis) => (isAnnotation ? getAnnotations(dataset) : dataset),
   }))
 }
 
-export const getConfigByAnnotationType = (objectType: YModels.ObjectType, annotationType: AnnotationType) => {
+export const getConfigByAnnotationType = (objectType: YModels.ObjectType) => {
   return {
-    tableColumns: getTableColumns(objectType, annotationType),
+    tableColumns: getTableColumns(objectType),
     assetChartConfig: getCharts(),
-    annotationChartConfig: getCharts(annotationType, objectType),
+    annotationChartConfig: getCharts(objectType, true),
   }
 }
