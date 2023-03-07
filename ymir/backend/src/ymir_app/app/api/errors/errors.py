@@ -203,11 +203,6 @@ class ModelNotReady(APIError):
     message = "Model Not Ready"
 
 
-class GraphNotFound(NotFound):
-    code = error_codes.GRAPH_NOT_FOUND
-    message = "Graph Not Found"
-
-
 class DockerImageNotFound(NotFound):
     code = error_codes.DOCKER_IMAGE_NOT_FOUND
     message = "Docker Image Not Found"
