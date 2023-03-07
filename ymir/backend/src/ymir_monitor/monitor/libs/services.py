@@ -1,7 +1,7 @@
 import logging
 from typing import Dict
 
-from mir.tools.percent_log_util import PercentLogHandler, LogState
+from common_utils.percent_log_util import PercentLogHandler, LogState
 from monitor.config import settings
 from monitor.libs.redis_handler import RedisHandler
 from monitor.schemas.task import TaskParameter, PercentResult, TaskStorageStructure

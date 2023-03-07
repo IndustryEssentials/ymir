@@ -7,10 +7,10 @@ from typing import Any, Callable, Dict, List, Optional, Tuple
 import yaml
 
 from common_utils.labels import UserLabels
+from common_utils.percent_log_util import LogState, PercentLogHandler
 from controller.invoker.invoker_cmd_base import BaseMirControllerInvoker
 from controller.utils import checker, errors, gpu_utils, tasks_util, utils
 from id_definition.error_codes import CTLResponseCode
-from mir.tools.percent_log_util import LogState, PercentLogHandler
 from proto import backend_pb2
 
 

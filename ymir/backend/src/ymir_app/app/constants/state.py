@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from enum import IntEnum
 
 from mir.protos import mir_command_pb2 as mir_cmd_pb
-from mir.tools.percent_log_util import LogState
+from common_utils.percent_log_util import LogState
 from proto import backend_pb2 as mirsvrpb
 
 

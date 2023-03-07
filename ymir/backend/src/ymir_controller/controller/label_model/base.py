@@ -6,10 +6,10 @@ from typing import Any, Callable, List
 
 from requests.exceptions import ConnectionError
 
+from common_utils.percent_log_util import LogState, PercentLogHandler
 from controller.config import label_task as label_task_config
 from controller.utils.redis import rds
 from id_definition.error_codes import CTLResponseCode
-from mir.tools.percent_log_util import LogState, PercentLogHandler
 
 
 class NotReadyError(Exception):

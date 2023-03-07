@@ -7,8 +7,8 @@ from typing import List
 import sentry_sdk
 from apscheduler.schedulers.blocking import BlockingScheduler
 
+from common_utils.percent_log_util import PercentLogHandler, PercentResult, LogState
 from id_definition.error_codes import MonitorErrorCode
-from mir.tools.percent_log_util import PercentLogHandler, PercentResult, LogState
 from monitor.config import settings
 from monitor.libs import redis_handler
 from monitor.libs.redis_handler import RedisHandler
