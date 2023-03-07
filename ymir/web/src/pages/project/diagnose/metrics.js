@@ -66,7 +66,7 @@ function Matrics({ pid, project }) {
   const [kwType, setKwType] = useState(0)
   const [kws, setKws] = useState([])
   const [xAxis, setXAsix] = useState(xAxisOptions[0].value)
-  const [remoteData, fetchDiagnosis] = useFetch('dataset/evaluate')
+  const [remoteData, fetchDiagnosis] = useFetch('prediction/evaluate')
   const [diagnosis, setDiagnosis] = useState(null)
   const [diagnosing, setDiagnosing] = useState(false)
   const [kwFilter, setKwFilter] = useState({
@@ -155,7 +155,7 @@ function Matrics({ pid, project }) {
       pid,
       averageIou,
       datasets: inferDataset,
-      curve: isDetection(project?.type)
+      curve: isDetection(project?.type),
     }
     fetchDiagnosis(params)
   }
@@ -165,8 +165,9 @@ function Matrics({ pid, project }) {
   }
 
   function inferResultChange({ tasks, models, datasets }) {
+    console.log('tasks, models, datasets:', tasks, models, datasets)
     setInferTasks(
-      tasks.map(({ config, configName, parameters: { dataset_id, model_id, model_stage_id }, result_dataset: { id } }) => ({
+      tasks.map(({ config, configName, parameters: { dataset_id, model_id, model_stage_id }, result_prediction: { id } }) => ({
         config,
         configName,
         testing: dataset_id,
@@ -236,7 +237,11 @@ function Matrics({ pid, project }) {
         <span>{t('model.diagnose.metrics.view.label')}</span>
         <Radio.Group
           value={selectedMetric}
-          options={tabs.map((item, index) => ({ ...item, label: t(`model.diagnose.medtric.tabs.${item.value}`), disabled: isDetection(project?.type) && averageIou && index > 0 }))}
+          options={tabs.map((item, index) => ({
+            ...item,
+            label: t(`model.diagnose.medtric.tabs.${item.value}`),
+            disabled: isDetection(project?.type) && averageIou && index > 0,
+          }))}
           onChange={metricsChange}
         />
         <div hidden={!['rp', 'pr'].includes(selectedMetric)}>
