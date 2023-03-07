@@ -321,12 +321,8 @@ class CmdTrain(base.BaseCommand):
         })
 
         # save model
-        # some model files may have been generated even if container raise errors
-        # we should make sure that:
-        #   if have both container error and model pack error, we need container error
-        #   if have container error, but no model pack error, we need container error
-        #   if have no container error, but have model pack error, we need model pack error
-        #   if have no container error and model pack error, we need RC_OK
+        # some model files may have been generated even if container raise errors, we should save them here
+        # if we have errors in both training and save process, we need error in training process
         logging.info(f"saving models:\n task_context: {task_context}")
         model_meta = None
         try:
