@@ -45,8 +45,14 @@ class CRUDPrediction(CRUDBase[Prediction, PredictionCreate, PredictionUpdate]):
 
         # Query
         #  find all predictions belonging to model_ids from subquery
-        query = db.query(self.model).join(subquery, self.model.model_id == subquery.c.model_id)
-
+        query = (
+            db.query(self.model)
+            .join(subquery, self.model.model_id == subquery.c.model_id)
+            .filter(
+                self.model.is_visible == int(visible),
+                not_(self.model.is_deleted),
+            )
+        )
         # Count distinct models
         total = (
             db.query(func.count(distinct(self.model.model_id)))
