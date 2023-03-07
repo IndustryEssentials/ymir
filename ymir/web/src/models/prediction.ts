@@ -61,14 +61,18 @@ const PredictionModel: YStates.PredictionStore = {
         }
         const modelIds = getIds('model_id')
         const datasetIds = getIds('dataset_id')
-        yield put({
-          type: 'model/batchLocalModels',
-          payload: modelIds,
-        })
-        yield put({
-          type: 'dataset/batchLocalDatasets',
-          payload: { pid, ids: datasetIds },
-        })
+        if (modelIds.length) {
+          yield put({
+            type: 'model/batchLocalModels',
+            payload: modelIds,
+          })
+        }
+        if (datasetIds.length) {
+          yield put({
+            type: 'dataset/batchLocalDatasets',
+            payload: { pid, ids: datasetIds },
+          })
+        }
         yield put({
           type: 'updatePredictions',
           payload: predictions,
