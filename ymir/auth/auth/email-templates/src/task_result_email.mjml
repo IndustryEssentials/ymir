@@ -1,0 +1,21 @@
+<mjml>
+  <mj-body background-color="#fff">
+    <mj-section>
+      <mj-column>
+        <mj-divider border-color="#555"></mj-divider>
+        <mj-text font-size="20px" color="#555">{{ title }}</mj-text>
+        <mj-text font-size="16px" color="#555">task id: {{ task_id }}</mj-text>
+        <mj-text font-size="16px" color="#555">task name: {{ task_name }}</mj-text>
+        <mj-text font-size="16px" color="#555">task type: {{ task_type }}</mj-text>
+      </mj-column>
+    </mj-section>
+
+
+    <mj-section>
+      <mj-column>
+        <mj-button padding="50px 0px" href="{{ link }}">在 Ymir Portal 中查看</mj-button>
+      </mj-column>
+    </mj-section>
+
+  </mj-body>
+</mjml>

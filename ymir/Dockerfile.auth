@@ -1,0 +1,23 @@
+FROM python:3.8-slim
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+# --build-arg PIP_SOURCE=https://pypi.mirrors.ustc.edu.cn/simple
+ARG PIP_SOURCE=https://pypi.org/simple
+
+COPY ./sources.list /etc/apt/sources.list
+RUN apt-get update \
+  && apt-get install -y --no-install-recommends curl default-mysql-client \
+  && apt-get clean \
+  && rm -rf /var/lib/apt/lists/*
+
+RUN mkdir -p /app_logs/
+
+WORKDIR /auth
+
+COPY ./auth/requirements.txt .
+RUN pip install -r /auth/requirements.txt -i ${PIP_SOURCE}
+
+COPY ./auth .
+
+ENV PYTHONPATH=/auth
