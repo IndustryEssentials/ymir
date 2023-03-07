@@ -21,6 +21,7 @@ import { evaluationTags } from '@/constants/dataset'
 type Props = {
   id: string
   asset: YModels.Asset
+  dataset?: YModels.Dataset | YModels.Prediction
   pred?: boolean
   datasetKeywords?: KeywordsType
   filterKeyword?: KeywordsType
@@ -34,7 +35,7 @@ type KeywordsType = string[]
 const { CheckableTag } = Tag
 const { Item } = Descriptions
 
-const Asset: FC<Props> = ({ id, asset: cache, pred, datasetKeywords, filterKeyword, filters, index = 0, total = 0 }) => {
+const Asset: FC<Props> = ({ id, asset: cache, dataset, pred, datasetKeywords, filterKeyword, filters, index = 0, total = 0 }) => {
   const [asset, setAsset] = useState<YModels.Asset>()
   const [current, setCurrent] = useState('')
   const [showAnnotations, setShowAnnotations] = useState<YModels.Annotation[]>([])
@@ -44,14 +45,7 @@ const Asset: FC<Props> = ({ id, asset: cache, pred, datasetKeywords, filterKeywo
   const [gtSelected, setGtSelected] = useState<string[]>([])
   const [evaluation, setEvaluation] = useState(0)
   const [colors, setColors] = useState<{ [key: string]: string }>({})
-  const { data: { items: assets } = { items: [] }, run: getAssets } = useRequest<YStates.List<YModels.Asset>>('dataset/getAssetsOfDataset')
-  const { data: dataset, run: getDataset } = useRequest<YModels.Dataset>('dataset/getDataset', {
-    loading: false,
-  })
-
-  useEffect(() => {
-    getDataset({ id })
-  }, [])
+  const { data: { items: assets } = { items: [] }, run: getAssets } = useRequest<YStates.List<YModels.Asset>>('asset/getAssets')
 
   useEffect(() => {
     setAsset(undefined)

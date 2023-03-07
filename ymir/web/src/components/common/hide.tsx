@@ -11,15 +11,15 @@ export type RefProps = {
   hide: (dss: YModels.Result[], exclude?: number[]) => void
 }
 type Props = {
-  type?: number
+  type?: 'dataset' | 'model' | 'prediction'
   msg?: string
   excludeMsg?: string
   ok?: (result: YModels.Result) => void
 }
 
 const Hide = forwardRef<RefProps, Props>(
-  ({ type = 0, msg = 'dataset.action.del.confirm.content', excludeMsg = 'dataset.action.del.confirm.exclude', ok = () => {} }, ref) => {
-    const [hideResult, remoteHide] = useFetch(`${!type ? 'dataset' : 'model'}/hide`)
+  ({ type = 'dataset', msg = 'dataset.action.del.confirm.content', excludeMsg = 'dataset.action.del.confirm.exclude', ok = () => {} }, ref) => {
+    const [hideResult, remoteHide] = useFetch(`${type}/hide`)
 
     const [modal, contextHolder] = Modal.useModal()
     const [msgApi, msgHolder] = message.useMessage()

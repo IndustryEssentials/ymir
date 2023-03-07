@@ -1,8 +1,8 @@
 
 
 import t from '@/utils/t'
-
-export const phoneValidate = (rule, value) => {
+type ValidatorType<ValueType = string> = (rule: unknown, value?: ValueType) => Promise<string|void>
+export const phoneValidate: ValidatorType = (_, value) => {
   const reg = /^\+?\d{5,18}$/
   if (value && !reg.test(value)) {
     return Promise.reject(t("signup.phone.format.msg"))
@@ -10,14 +10,14 @@ export const phoneValidate = (rule, value) => {
   return Promise.resolve()
 }
 
-export const trimValidator = (_, value) => {
-  if (value.trim().length <= 0) {
+export const trimValidator: ValidatorType = (_, value) => {
+  if ((value || '').trim().length <= 0) {
     return Promise.reject()
   }
   return Promise.resolve()
 }
 
-export function urlValidator(_, value) {
+export const urlValidator: ValidatorType = (_, value) => {
   const reg = /^(([^:/?#]+):)?(\/\/([^\/?#]*))?([^?#]*)(\?([^#]*))?(#(.*))?$/
   if(reg.test((value || '').trim())) {
     return Promise.resolve()

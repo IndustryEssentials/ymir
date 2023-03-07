@@ -64,8 +64,6 @@ describe("models: dataset", () => {
   errorCode(dataset, 'getDatasetGroups')
   errorCode(dataset, 'getDataset', { id: 120034, force: true })
   errorCode(dataset, 'batchDatasets')
-  errorCode(dataset, 'getAssetsOfDataset')
-  errorCode(dataset, 'getAsset')
   errorCode(dataset, 'delDataset')
   errorCode(dataset, 'delDatasetGroup')
   errorCode(dataset, 'createDataset')
@@ -179,26 +177,6 @@ describe("models: dataset", () => {
 
     expect(expected).toEqual(end.value)
     expect(end.done).toBe(true)
-  })
-  it("effects: getAssetsOfDataset", () => {
-    const saga = dataset.effects.getAssetsOfDataset
-    const creator = {
-      type: "getAssetsOfDataset",
-      payload: {},
-    }
-    const result = { items: products(4), total: 4 }
-    const expected = { items: result.items.map(item => transferAsset(item)), total: 4 }
-
-    const generator = saga(creator, { put, call })
-    generator.next()
-    generator.next({
-      code: 0,
-      result,
-    })
-    const end = generator.next()
-
-    expect(end.done).toBe(true)
-    expect(end.value).toEqual(expected)
   })
   it("effects: queryAllDatasets -> from remote", () => {
     const saga = dataset.effects.queryAllDatasets
@@ -322,35 +300,6 @@ describe("models: dataset", () => {
     })
 
     expect(end.value).toEqual(expected)
-    expect(end.done).toBe(true)
-  })
-  it("effects: getAsset", () => {
-    const saga = dataset.effects.getAsset
-    const creator = {
-      type: "getAsset",
-      payload: { hash: 'identify_hash_string' },
-    }
-    const result = {
-      hash: 'identify_hash_string', width: 800, height: 600,
-      "size": 0,
-      "channel": 3,
-      "timestamp": "2021-09-28T08:26:53.088Z",
-      "url": "string",
-      "metadata": {},
-      "keywords": [
-        "string"
-      ]
-    }
-
-    const generator = saga(creator, { put, call })
-    generator.next()
-    generator.next({
-      code: 0,
-      result,
-    })
-    const end = generator.next()
-
-    expect(end.value).toEqual(transferAsset(result))
     expect(end.done).toBe(true)
   })
   it("effects: delDataset", () => {
@@ -497,36 +446,6 @@ describe("models: dataset", () => {
     const end = generator.next()
 
     expect(end.value).toEqual(expected)
-    expect(end.done).toBe(true)
-  })
-
-  it("effects: evaluate", () => {
-    const saga = dataset.effects.evaluate
-    const item = () => ({ ap: Math.random() })
-    const list = (list, it) => list.reduce((p, c) => ({ ...p, [c]: it ? it : item() }), {})
-    const keywords = ['dog', 'cat', 'person']
-    const ious = [0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95].map(n => toFixed(n, 2))
-    const iitems = () => ({
-      ci_evaluations: list(keywords),
-      ci_everage_evaluations: item(),
-    })
-    const expected = {
-      iou_evaluations: list(ious, iitems()),
-      iou_everage_evaluations: iitems(),
-    }
-    const creator = {
-      type: "evaluate",
-      payload: { pid: 51234, gt: 1324536, datasets: [534243234, 64311234], confidence: 0.6 },
-    }
-
-    const generator = saga(creator, { put, call })
-    generator.next()
-    const end = generator.next({
-      code: 0,
-      result: expected,
-    })
-
-    equalObject(expected, end.value)
     expect(end.done).toBe(true)
   })
 })

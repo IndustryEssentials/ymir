@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import type { FC } from 'react'
 import { useLocation, useParams } from 'umi'
 import { Pagination, Row, Col, Button, Space, Card, Tag, Modal, Select } from 'antd'
@@ -31,6 +31,8 @@ const Dataset: FC = () => {
   const location = useLocation()
   const type = location.hash.replace(/^#/, '')
   const initQuery = {
+    pid,
+    annoType: type === 'pred' ? 2 : 1,
     id,
     offset: 0,
     limit: 20,
@@ -48,23 +50,39 @@ const Dataset: FC = () => {
   const { data: dataset, run: getDataset } = useRequest<YModels.Dataset>('dataset/getDataset', {
     loading: false,
   })
-  const { data: { items: assets, total } = { items: [], total: 0 }, run: getAssets } = useRequest<YStates.List<YModels.Asset>>('dataset/getAssetsOfDataset')
+  const { data: prediction, run: getPrediction } = useRequest<YModels.Dataset>('prediction/getPrediction', {
+    loading: false,
+  })
+  const [current, setCurrent] = useState<YModels.Prediction | YModels.Dataset>()
+  const { data: { items: assets, total } = { items: [], total: 0 }, run: getAssets } = useRequest<
+    YStates.List<YModels.Asset>,
+    [
+      YParams.AssetQueryParams & {
+        datasetKeywords?: string[]
+      },
+    ]
+  >('asset/getAssets')
 
   useEffect(() => {
-    getDataset({ id, verbose: true })
+    ;(type === 'pred' ? getPrediction : getDataset)({ id, verbose: true, force: true })
   }, [id])
 
   useEffect(() => {
-    const isPred = type === 'pred' || !!dataset?.pred?.keywords.length
+    const isPred = type === 'pred'
     setPred(isPred)
-    setMode(isPred ?  VisualModes.All : VisualModes.Gt)
-  }, [dataset, type])
+    setMode(isPred ? VisualModes.All : VisualModes.Gt)
+  }, [type])
+
+  useEffect(() => {
+    setCurrent(isPred ? prediction : dataset)
+  }, [dataset, prediction, type])
 
   useEffect(() => {
     const { offset = 0, limit = 20 } = filterParams
     setCurrentPage(offset / limit + 1)
-    dataset?.id && filter(filterParams)
-  }, [dataset, filterParams])
+    current?.id && filter(filterParams)
+    console.log('current:', current)
+  }, [current, filterParams])
 
   const filterKw = ({ type, selected }: { type: string; selected?: string[] }) => {
     if (!selected?.length && !filterParams.keywords?.length) {
@@ -121,18 +139,18 @@ const Dataset: FC = () => {
   const renderTitle = (
     <Row className={styles.labels}>
       <Col flex={1}>
-        <DatasetInfo dataset={dataset} pred={isPred} />
+        <DatasetInfo dataset={current} pred={isPred} />
       </Col>
       <Col>
         <ListColumnCountSelect value={columns} onChange={setColumns} />
       </Col>
       <Col span={24} style={{ fontSize: 14, textAlign: 'right', marginTop: 10 }}>
         <Space size={20} wrap={true} style={{ textAlign: 'left' }}>
-          <ListVisualSelect value={mode} style={{ width: 200 }} pred={isPred} seg={!isDetection(dataset?.type)} onChange={setMode} />
-          {isPred && dataset?.evaluated ? (
+          <ListVisualSelect value={mode} style={{ width: 200 }} pred={isPred} seg={!isDetection(current?.type)} onChange={setMode} />
+          {isPred && current?.evaluated ? (
             <EvaluationSelector value={filterParams.cm} onChange={({ target }) => updateFilterParams(target.value, 'cm')} />
           ) : null}
-          <KeywordSelector onChange={filterKw} dataset={dataset} />
+          <KeywordSelector onChange={filterKw} dataset={current} />
         </Space>
       </Col>
     </Row>
@@ -154,11 +172,12 @@ const Dataset: FC = () => {
           id={id}
           pred={isPred}
           asset={currentAsset.asset}
-          datasetKeywords={dataset?.keywords}
+          datasetKeywords={current?.keywords}
           filters={filterParams}
           filterKeyword={assetVisible ? filterParams.keywords : undefined}
           index={currentAsset.index}
           total={total}
+          dataset={current}
         />
       ) : null}
     </Modal>
