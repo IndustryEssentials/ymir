@@ -301,7 +301,7 @@ class CmdTrain(base.BaseCommand):
             )
         except CalledProcessError as e:
             logging.warning(f"training exception: {e}")
-            # don't exit, proceed if model exists
+
             task_code = PercentLogHandler.parse_percent_log(os.path.join(
                 work_dir, 'out', 'monitor.txt')).state_code or MirCode.RC_CMD_CONTAINER_ERROR.value
             return_msg = env_config.collect_executor_outlog_tail(work_dir) or str(e)
@@ -311,6 +311,10 @@ class CmdTrain(base.BaseCommand):
                 with SummaryWriter(logdir=tensorboard_dir) as tb_writer:
                     tb_writer.add_text(tag='executor tail', text_string=f"```\n{return_msg}\n```", walltime=time.time())
 
+            # don't raise, proceed to save models
+            # check comments below for details
+
+        # save model
         # gen task_context
         task_context = task_config
         task_context.update({
@@ -320,7 +324,6 @@ class CmdTrain(base.BaseCommand):
             mir_settings.PRODUCER_KEY: mir_settings.PRODUCER_NAME,
         })
 
-        # save model
         # some model files may have been generated even if container raise errors, we should save them here
         # if we have errors in both training and save process, we need error in training process
         logging.info(f"saving models:\n task_context: {task_context}")
