@@ -38,4 +38,5 @@ class FilterBranchInvoker(BaseMirControllerInvoker):
             filter_command.append('--ex-cis')
             filter_command.append(';'.join(
                 self._user_labels.main_name_for_ids(class_ids=list(self._request.ex_class_ids))))
+        filter_command.extend(['--filter-anno-src', utils.annotation_type_str(self._request.annotation_type)])
         return utils.run_command(filter_command)

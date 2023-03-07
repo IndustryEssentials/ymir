@@ -4,6 +4,7 @@ from common_utils.labels import UserLabels
 from controller.invoker.invoker_task_base import SubTaskType, TaskBaseInvoker
 from controller.utils import revs, utils
 from id_definition.error_codes import CTLResponseCode
+from mir.protos import mir_command_pb2 as mir_cmd_pb
 from proto import backend_pb2
 
 
@@ -28,6 +29,7 @@ class TaskFusionInvoker(TaskBaseInvoker):
                             work_dir=subtask_workdir,
                             in_dataset_ids=request.in_dataset_ids,
                             ex_dataset_ids=request.ex_dataset_ids,
+                            annotation_type=request.annotation_type,
                             merge_strategy=request.merge_strategy,
                             in_class_ids=request.in_class_ids,
                             ex_class_ids=request.ex_class_ids,
@@ -38,7 +40,8 @@ class TaskFusionInvoker(TaskBaseInvoker):
     @classmethod
     def fuse_cmd(cls, repo_root: str, task_id: str, work_dir: str, in_dataset_ids: List[str], ex_dataset_ids: List[str],
                  merge_strategy: backend_pb2.MergeStrategy, in_class_ids: List[int], ex_class_ids: List[str],
-                 user_labels: UserLabels, sample_count: int, sample_rate: float) -> backend_pb2.GeneralResp:
+                 annotation_type: mir_cmd_pb.AnnotationType, user_labels: UserLabels, sample_count: int,
+                 sample_rate: float) -> backend_pb2.GeneralResp:
         # merge args
         fuse_cmd = [
             utils.mir_executable(), 'fuse', '--root', repo_root, '--dst-rev', f"{task_id}@{task_id}", '-w', work_dir,
@@ -54,6 +57,7 @@ class TaskFusionInvoker(TaskBaseInvoker):
         if ex_class_ids:
             fuse_cmd.extend(['--ex-cis', ';'.join(user_labels.main_name_for_ids(class_ids=ex_class_ids))])
         fuse_cmd.extend(['--user-label-file', user_labels.storage_file])
+        fuse_cmd.extend(['--filter-anno-src', utils.annotation_type_str(annotation_type)])
 
         # sample args
         if sample_count:

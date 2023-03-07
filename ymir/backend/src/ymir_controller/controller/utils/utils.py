@@ -21,10 +21,18 @@ def mir_executable() -> str:
     return "mir"
 
 
+def index_repo(user_id: str, repo_id: str, task_id: str) -> backend_pb2.GeneralResp:
+    index_command = ['./hel_server', 'viewer_client']
+    index_command.extend(
+        ['--user_id', user_id, '--repo_id', repo_id, '--task_id', task_id, 'index'])
+    return run_command(index_command, cwd='/app/ymir_hel')
+
+
 def run_command(cmd: List[str],
-                error_code: int = CTLResponseCode.RUN_COMMAND_ERROR) -> backend_pb2.GeneralResp:
+                error_code: int = CTLResponseCode.RUN_COMMAND_ERROR,
+                cwd: str = None) -> backend_pb2.GeneralResp:
     logging.info(f"starting cmd: \n{' '.join(cmd)}\n")
-    result = subprocess.run(cmd, capture_output=True, text=True)  # run and wait
+    result = subprocess.run(cmd, capture_output=True, text=True, cwd=cwd)  # run and wait
     if result.returncode != 0:
         logging.error(f"run cmd error:\n stderr: {result.stderr} \n stdout: {result.stdout}")
         return make_general_response(error_code, result.stderr)
@@ -79,12 +87,20 @@ def annotation_format_str(format: mir_cmd_pb.ExportFormat) -> str:
     return format_enum_dict[format]
 
 
-def anno_type_str(anno_type: mir_cmd_pb.ObjectType) -> str:
+def object_type_str(object_type: mir_cmd_pb.ObjectType) -> str:
     format_enum_dict = {
         mir_cmd_pb.ObjectType.OT_DET_BOX: 'det-box',
         mir_cmd_pb.ObjectType.OT_SEG: 'seg',
     }
-    return format_enum_dict[anno_type]
+    return format_enum_dict[object_type]
+
+
+def annotation_type_str(annotation_type: mir_cmd_pb.AnnotationType) -> str:
+    enum_str_map = {
+        mir_cmd_pb.AnnotationType.AT_GT: 'gt',
+        mir_cmd_pb.AnnotationType.AT_PRED: 'pred',
+    }
+    return enum_str_map.get(annotation_type, 'any')
 
 
 def time_it(f: Callable) -> Callable:

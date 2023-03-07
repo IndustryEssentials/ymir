@@ -111,8 +111,12 @@ class TestInvokerTaskImportDataset(unittest.TestCase):
             f"--user-label-file {test_utils.user_label_file(sandbox_root=self._sandbox_root, user_id=self._user_name)} "
             f"--anno-type det-box --pred-dir {self._storage_root} --gt-dir {self._storage_root} "
             "--unknown-types-strategy add")
-        mock_run.assert_has_calls(calls=[
-            mock.call(expected_cmd_import_dataset.split(' '), capture_output=True, text=True),
+        mocked_index_call = test_utils.mocked_index_call(user_id=self._user_name,
+                                                         repo_id=self._mir_repo_name,
+                                                         task_id=self._task_id)
+        mock_run.assert_has_calls([
+            mock.call(expected_cmd_import_dataset.split(' '), capture_output=True, text=True, cwd=None),
+            mocked_index_call
         ])
 
         expected_ret = backend_pb2.GeneralResp()

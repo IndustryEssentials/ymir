@@ -298,7 +298,6 @@ export function mine({
   topk,
   algorithm,
   config,
-  inference,
   name,
   image,
 }) {
@@ -320,7 +319,6 @@ export function mine({
       dataset_group_name: name,
       mining_algorithm: algorithm,
       top_k: topk,
-      generate_annotations: inference,
       docker_image_id: image,
     },
   })

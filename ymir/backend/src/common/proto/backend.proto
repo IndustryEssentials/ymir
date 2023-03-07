@@ -92,6 +92,8 @@ message GeneralReq {
     LabelCollection label_collection = 25;
     mir.command.EvaluateConfig evaluate_config = 26;
     string model_stage = 27;
+    // use in filter and fuse: filter from gt, or pred, or any of them
+    mir.command.AnnotationType annotation_type = 28;
     ReqCreateTask req_create_task = 1001;
 
     reserved 17, 24;
@@ -176,18 +178,12 @@ message TaskReqCopyData {
     bool drop_annotations = 4;
 }
 
-enum AnnotationType {
-    NOT_SET = 0;
-    GT = 1;
-    PRED = 2;
-}
-
 message TaskReqLabeling {
     repeated string labeler_accounts = 1;
     string expert_instruction_url = 2;
     string project_name = 3;
     bool export_annotation = 4;
-    AnnotationType annotation_type = 5;
+    mir.command.AnnotationType annotation_type = 5;
     mir.command.ObjectType object_type = 6;
     bool is_instance_segmentation = 7;
 }

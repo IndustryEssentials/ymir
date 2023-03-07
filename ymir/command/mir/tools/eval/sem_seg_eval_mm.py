@@ -1,4 +1,5 @@
 from collections import defaultdict
+import logging
 from typing import Any, Dict, List, Optional, OrderedDict, Tuple
 
 import numpy as np
@@ -154,6 +155,11 @@ def evaluate(prediction: mirpb.SingleTaskAnnotations, ground_truth: mirpb.Single
              config: mirpb.EvaluateConfig, assets_metadata: mirpb.MirMetadatas) -> mirpb.Evaluation:
     evaluation = mirpb.Evaluation()
     evaluation.config.CopyFrom(config)
+
+    if len(config.class_ids) <= 1:
+        logging.warning("skip evaluation: not enough evaluate class ids for semantic segmentation")
+        evaluation.state = mirpb.EvaluationState.ES_NOT_ENOUGH_CLASS_IDS
+        return evaluation
 
     asset_ids = sorted(prediction.image_annotations.keys() | ground_truth.image_annotations.keys())
     asset_id_to_hws: OrderedDict[str, Tuple[int, int]] = OrderedDict()

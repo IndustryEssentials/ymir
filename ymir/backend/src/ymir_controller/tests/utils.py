@@ -1,6 +1,7 @@
 import os
 import subprocess
-from typing import List
+from typing import Any, List
+from unittest import mock
 
 from common_utils.labels import ids_file_name
 
@@ -36,3 +37,10 @@ def mir_repo_create_branch(mir_root: str, branch_name: str):
 
 def user_label_file(sandbox_root: str, user_id: str) -> str:
     return os.path.join(sandbox_root, user_id, ids_file_name())
+
+
+def mocked_index_call(user_id: str, repo_id: str, task_id: str) -> Any:
+    index_command = [
+        './hel_server', 'viewer_client', '--user_id', user_id, '--repo_id', repo_id, '--task_id', task_id, 'index'
+    ]
+    return mock.call(index_command, capture_output=True, text=True, cwd='/app/ymir_hel')

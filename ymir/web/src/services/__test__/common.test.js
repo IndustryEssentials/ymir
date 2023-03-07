@@ -1,6 +1,5 @@
 import {
   getUploadUrl,
-  getHistory,
   getStats,
   getSysInfo,
 } from '../common'
@@ -18,14 +17,6 @@ describe('service: common', () => {
     
     process.env.NODE_ENV = 'development'
     expect(getUploadUrl()).toBe(process.env.APIURL + path)
-  })
-  it('common:getHistory', () => {
-    const params = {}
-    const expected = {
-      edges: [1,2,3,4],
-      nodes: [5,6,7,8],
-    }
-    requestExample(getHistory, params, expected, 'get')
   })
   it('common:getStats', () => {
     const params1 = { q: 'ds', limit: 3 }
