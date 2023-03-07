@@ -1,0 +1,41 @@
+# This workflow will install Python dependencies, run tests and lint with a single version of Python
+# For more information see: https://help.github.com/actions/language-and-framework-guides/using-python-with-github-actions
+name: auth-unittest
+
+on:
+  pull_request:
+    branches:
+      - master
+      - dev
+      - prerelease
+
+env:
+  PYTHONPATH: ./ymir/auth
+  FIRST_ADMIN: admin@example.com
+  FIRST_ADMIN_PASSWORD: fake_passwd
+
+jobs:
+  auth-ci:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python 3.8
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.8
+    - name: Install dependencies
+      run: |
+        time pip install tox
+      working-directory: ymir/auth
+    - name: Cache Tox Environment
+      uses: actions/cache@v3
+      with:
+        path: |
+          ymir/auth/.tox
+          ymir/auth/.mypy_cache
+        # requirements.txt and requirements-dev.txt have versioning info that would
+        # impact the tox environment.
+        key: tox-${{ hashFiles('ymir/auth/requirements-dev.txt', 'ymir/auth/requirements.txt') }}
+    - name: Test with tox
+      run: tox
+      working-directory: ymir/auth
