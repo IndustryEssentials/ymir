@@ -6,10 +6,10 @@ import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
 
-from app.api import deps
-from app.config import settings
-from app.db.session import SessionLocal
-from app.main import app
+from auth.api import deps
+from auth.config import settings
+from auth.db.session import SessionLocal
+from auth.main import app
 from tests.utils.user import authentication_token_from_email
 from tests.utils.utils import get_admin_token_headers, get_super_admin_token_headers
 

@@ -1,9 +1,9 @@
 from fastapi.testclient import TestClient
 
-from app.api.api_v1.endpoints import login as m
-from app.api.errors.errors import InvalidToken
-from app.config import settings
-from app.utils.security import frontend_hash
+from auth.api.api_v1.endpoints import login as m
+from auth.api.errors.errors import InvalidToken
+from auth.config import settings
+from auth.utils.security import frontend_hash
 from tests.utils.utils import random_email, random_lower_string
 
 

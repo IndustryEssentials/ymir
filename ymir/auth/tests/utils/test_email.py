@@ -2,7 +2,7 @@ import random
 
 import pytest
 
-from app.utils import email as m
+from auth.utils import email as m
 from tests.utils.utils import random_email, random_lower_string
 
 

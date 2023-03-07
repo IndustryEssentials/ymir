@@ -4,8 +4,8 @@ from typing import Dict
 
 from fastapi.testclient import TestClient
 
-from app.config import settings
-from app.utils.security import frontend_hash
+from auth.config import settings
+from auth.utils.security import frontend_hash
 
 
 def random_lower_string(k: int = 32) -> str:

@@ -1,6 +1,6 @@
 import pytest
 from typing import Any
-from app.utils import err as m
+from auth.utils import err as m
 
 
 def test_retry(mocker: Any) -> None:
