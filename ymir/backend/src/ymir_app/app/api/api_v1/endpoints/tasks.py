@@ -1,5 +1,4 @@
 import asyncio
-import enum
 from typing import Any, Union
 from functools import partial
 import time
@@ -57,30 +56,16 @@ def batch_create_tasks(
     return {"result": results}
 
 
-class SortField(enum.Enum):
-    id = "id"
-    create_datetime = "create_datetime"
-    duration = "duration"
-
-
-@router.get(
-    "/",
-    response_model=schemas.TaskPaginationOut,
-)
+@router.get("/", response_model=schemas.TaskPaginationOut)
 def list_tasks(
     db: Session = Depends(deps.get_db),
+    current_user: models.User = Depends(deps.get_current_active_user),
     name: str = Query(None, description="search by task name"),
     type_: TaskType = Query(None, alias="type"),
     state: TaskState = Query(None),
     dataset_ids: str = Query(None, example="1,2,3"),
     model_stage_ids: str = Query(None, example="4,5,6"),
-    offset: int = Query(None),
-    limit: int = Query(None),
-    order_by: SortField = Query(SortField.id),
-    is_desc: bool = Query(True),
-    start_time: int = Query(None, description="from this timestamp"),
-    end_time: int = Query(None, description="to this timestamp"),
-    current_user: models.User = Depends(deps.get_current_active_user),
+    pagination: schemas.CommonPaginationParams = Depends(),
 ) -> Any:
     """
     Get list of tasks,
@@ -94,12 +79,7 @@ def list_tasks(
         state=state,
         dataset_ids=[int(i) for i in dataset_ids.split(",")] if dataset_ids else [],
         model_stage_ids=[int(i) for i in model_stage_ids.split(",")] if model_stage_ids else [],
-        offset=offset,
-        limit=limit,
-        order_by=order_by.name,
-        is_desc=is_desc,
-        start_time=start_time,
-        end_time=end_time,
+        pagination=pagination,
     )
     return {"result": {"total": total, "items": tasks}}
 
@@ -287,6 +267,7 @@ def update_task_status(
             state=updated_task.state,
             result_model=updated_task.result_model,  # type: ignore
             result_dataset=updated_task.result_dataset,  # type: ignore
+            result_prediction=updated_task.result_prediction,  # type: ignore
         )
         # todo compatible with current frontend data structure
         #  reformatting is needed

@@ -11,6 +11,7 @@ from app.crud.base import CRUDBase
 from app.models import Model
 from app.models.model_group import ModelGroup
 from app.schemas.model import ModelCreate, ModelUpdate
+from app.schemas import CommonPaginationParams
 
 
 class CRUDModel(CRUDBase[Model, ModelCreate, ModelUpdate]):
@@ -25,13 +26,13 @@ class CRUDModel(CRUDBase[Model, ModelCreate, ModelUpdate]):
         source: Optional[TaskType] = None,
         state: Optional[IntEnum] = None,
         visible: bool = True,
-        start_time: Optional[int],
-        end_time: Optional[int],
-        offset: Optional[int],
-        limit: Optional[int],
-        order_by: str,
-        is_desc: bool = True,
+        pagination: CommonPaginationParams,
     ) -> Tuple[List[Model], int]:
+        start_time, end_time = pagination.start_time, pagination.end_time
+        offset, limit = pagination.offset, pagination.limit
+        order_by = pagination.order_by.name
+        is_desc = pagination.is_desc
+
         query = db.query(self.model)
         query = query.filter(
             self.model.user_id == user_id,

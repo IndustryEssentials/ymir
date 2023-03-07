@@ -13,6 +13,7 @@ from app.models import Dataset
 from app.models.dataset_group import DatasetGroup
 from app.models.project import Project
 from app.schemas.dataset import DatasetCreate, DatasetUpdate
+from app.schemas import CommonPaginationParams
 
 
 class CRUDDataset(CRUDBase[Dataset, DatasetCreate, DatasetUpdate]):
@@ -29,16 +30,16 @@ class CRUDDataset(CRUDBase[Dataset, DatasetCreate, DatasetUpdate]):
         state: Optional[IntEnum] = None,
         object_type: Optional[IntEnum] = None,
         visible: bool = True,
-        start_time: Optional[int] = None,
-        end_time: Optional[int] = None,
-        offset: Optional[int] = 0,
-        limit: Optional[int] = None,
-        order_by: str = "id",
-        is_desc: bool = True,
         allow_empty: bool = True,
+        pagination: CommonPaginationParams,
     ) -> Tuple[List[Dataset], int]:
         # each dataset is associate with one task
         # we need related task info as well
+        start_time, end_time = pagination.start_time, pagination.end_time
+        offset, limit = pagination.offset, pagination.limit
+        order_by = pagination.order_by.name
+        is_desc = pagination.is_desc
+
         query = db.query(self.model)
         query = query.filter(
             self.model.user_id == user_id,
@@ -60,9 +61,6 @@ class CRUDDataset(CRUDBase[Dataset, DatasetCreate, DatasetUpdate]):
             query = query.filter(self.model.result_state == int(state))
         if source is not None:
             query = query.filter(self.model.source == int(source))
-        if exclude_source is not None:
-            # TODO: remove when datasets and preds are separated
-            query = query.filter(self.model.source != int(exclude_source))
         if project_id is not None:
             query = query.filter(self.model.project_id == project_id)
         if group_id is not None:

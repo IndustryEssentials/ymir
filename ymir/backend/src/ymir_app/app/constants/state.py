@@ -53,6 +53,7 @@ class ResultType(IntEnum):
     no_result = 0
     dataset = 1
     model = 2
+    prediction = 3
 
 
 class ResultState(IntEnum):

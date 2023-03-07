@@ -5,9 +5,10 @@ from sqlalchemy import and_, desc, not_
 from sqlalchemy.orm import Session
 
 from app.crud.base import CRUDBase
-from app.libs.common import pagination
+from app.libs.common import pagination as paginate
 from app.models import ModelGroup
 from app.schemas.model_group import ModelGroupCreate, ModelGroupUpdate
+from app.schemas import CommonPaginationParams
 
 
 class CRUDModelGroup(CRUDBase[ModelGroup, ModelGroupCreate, ModelGroupUpdate]):
@@ -39,13 +40,13 @@ class CRUDModelGroup(CRUDBase[ModelGroup, ModelGroupCreate, ModelGroupUpdate]):
         user_id: int,
         project_id: int,
         name: Optional[str],
-        start_time: Optional[int],
-        end_time: Optional[int],
-        offset: Optional[int],
-        limit: Optional[int],
-        order_by: str,
-        is_desc: bool = True,
+        pagination: CommonPaginationParams,
     ) -> Tuple[List[ModelGroup], int]:
+        start_time, end_time = pagination.start_time, pagination.end_time
+        offset, limit = pagination.offset, pagination.limit
+        order_by = pagination.order_by.name
+        is_desc = pagination.is_desc
+
         query = db.query(self.model)
         query = query.filter(self.model.user_id == user_id, self.model.visible_models, not_(self.model.is_deleted))
 
@@ -74,7 +75,7 @@ class CRUDModelGroup(CRUDBase[ModelGroup, ModelGroupCreate, ModelGroupUpdate]):
         # fixme
         # SQLAlchemy do not guarantee precise count
         items = query.all()
-        return pagination(items, offset, limit), len(items)
+        return paginate(items, offset, limit), len(items)
 
     def get_from_training_dataset(self, db: Session, training_dataset_id: int) -> Optional[ModelGroup]:
         return (

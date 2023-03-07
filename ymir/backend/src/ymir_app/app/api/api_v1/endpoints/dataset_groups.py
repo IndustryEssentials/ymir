@@ -1,4 +1,3 @@
-import enum
 from typing import Any
 
 from fastapi import APIRouter, Depends, Query, Path
@@ -16,35 +15,20 @@ from app.utils.ymir_controller import ControllerClient
 router = APIRouter()
 
 
-class SortField(enum.Enum):
-    id = "id"
-    create_datetime = "create_datetime"
-
-
 @router.get("/", response_model=schemas.DatasetGroupPaginationOut)
 def list_dataset_groups(
     db: Session = Depends(deps.get_db),
     current_user: models.User = Depends(deps.get_current_active_user),
     name: str = Query(None, description="search by dataset group name"),
     project_id: int = Query(None),
-    offset: int = Query(None),
-    limit: int = Query(None),
-    order_by: SortField = Query(SortField.id),
-    is_desc: bool = Query(True),
-    start_time: int = Query(None, description="from this timestamp"),
-    end_time: int = Query(None, description="to this timestamp"),
+    pagination: schemas.CommonPaginationParams = Depends(),
 ) -> Any:
     dataset_groups, total = crud.dataset_group.get_multi_dataset_groups(
         db,
         user_id=current_user.id,
         project_id=project_id,
         name=name,
-        offset=offset,
-        limit=limit,
-        order_by=order_by.name,
-        is_desc=is_desc,
-        start_time=start_time,
-        end_time=end_time,
+        pagination=pagination,
     )
     return {"result": {"total": total, "items": dataset_groups}}
 
