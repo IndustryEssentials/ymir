@@ -1,29 +1,35 @@
-import { useIntl } from 'umi'
+import { useIntl, getLocale } from "umi"
 
-type KeyType = string | number | undefined
+let intl: any = null
+let locale: any = null
 
-function _MSG(id: KeyType = '', values = {}) {
-  const uIntl = useIntl()
+const getIntl = () => {
+  if (!intl || locale !== getLocale()) {
+    intl = useIntl()
+    locale = getLocale()
+  }
+  return intl
+}
+
+function _MSG({ id = '', values = {} }) {
+  const uIntl = getIntl()
   return uIntl.formatMessage({ id }, values)
 }
 
 export const initIntl = (prefix: string = '') => {
-  const _helper = (id: KeyType, values = {}, _prefix: string = '') => {
-    const key = _prefix ? `${_prefix}.${id}` : prefix ? `${prefix}.${id}` : id
-    return _MSG(key, values)
+  const _helper = (id: string, values = {}, _prefix: string = '') => {
+    const key = _prefix ? `${_prefix}.${id}` : (prefix ? `${prefix}.${id}` : id)
+    return _MSG({ id: key, values })
   }
   return _helper
 }
 
-const showIntl = (id: KeyType = '', values = {}, prefix: string = '') => {
-  if (id) {
-    try {
-      return initIntl(prefix)(id, values)
-    } catch (err) {
-      console.warn('locale error: ', id, values, err)
-    }
+const showIntl = (id: string, values = {}, prefix = '') => {
+  try {
+    return id ? initIntl(prefix)(id, values) : null
+  } catch (err) {
+    console.warn('locale error: ', id, values, err)
   }
-  return ''
 }
 
 export default showIntl
