@@ -5,8 +5,6 @@ max-complexity = 18
 select = B,C,E,F,W,T4,B9
 
 exclude =
-    src/ymir_viz/src/swagger_models
-    src/ymir_app/alembic
-    src/common/proto
+    auth/alembic
 
 per-file-ignores = __init__.py:F401
