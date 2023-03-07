@@ -4,7 +4,7 @@ from common_utils.labels import UserLabels
 
 from controller.invoker.invoker_task_base import SubTaskType, TaskBaseInvoker
 from controller.utils import utils
-from id_definition.error_codes import CTLResponseCode
+from id_definition.error_codes import CMDResponseCode, CTLResponseCode
 from proto import backend_pb2
 
 
@@ -35,4 +35,4 @@ class TaskImportModelInvoker(TaskBaseInvoker):
             subtask_workdir, '--dst-rev', f"{subtask_id}@{subtask_id}", '--model-location',
             assets_config["modelsuploadlocation"]
         ]
-        return utils.run_command(cmd)
+        return utils.run_command(cmd, error_code=CMDResponseCode.RC_CMD_INVALID_MODEL)

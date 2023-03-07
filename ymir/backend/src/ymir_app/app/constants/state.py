@@ -1,8 +1,8 @@
 from dataclasses import dataclass
 from enum import IntEnum
 
-from common_utils.percent_log_util import LogState
 from mir.protos import mir_command_pb2 as mir_cmd_pb
+from common_utils.percent_log_util import LogState
 from proto import backend_pb2 as mirsvrpb
 
 

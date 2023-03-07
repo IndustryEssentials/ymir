@@ -81,9 +81,8 @@ class PhaseLogger:
 
     # public: general
     def update_percent_info(self, local_percent: float, task_state: PhaseStateEnum,
-                            state_code: int = 0,
-                            state_content: str = None,
-                            trace_message: str = None) -> None:
+                            return_code: int = 0,
+                            message: str = None) -> None:
         # if no monitor_file assgned, no need to write monitor percent log
         _raise_if_false(local_percent >= 0 and local_percent <= 1, 'invalid local_percent')
         self._local_percent = local_percent
@@ -95,12 +94,9 @@ class PhaseLogger:
 
         with open(self.monitor_file, 'w') as f:
             timestamp = datetime.datetime.now().timestamp()
-            f.write(f"{self.task_name}\t{timestamp:.6f}\t{global_percent:.2f}\t{task_state}")
-            if state_code and state_content:
-                f.write(f"\t{state_code}\t{state_content}")
-            f.write("\n")
-            if trace_message:
-                f.write(f"{trace_message}\n")
+            f.write(f"{self.task_name}\t{timestamp:.6f}\t{global_percent:.2f}\t{task_state}\t{return_code}\n")
+            if message:
+                f.write(f"{message}\n")
 
     def create_children(self, deltas: List[float]) -> List['PhaseLogger']:
         """
@@ -177,8 +173,7 @@ class PhaseLoggerCenter:
                      local_percent: float = 1,
                      task_state: PhaseStateEnum = PhaseStateEnum.RUNNING,
                      state_code: int = 0,
-                     state_content: str = None,
-                     trace_message: str = None) -> None:
+                     message: str = None) -> None:
         if not phase:
             return
 
@@ -186,6 +181,5 @@ class PhaseLoggerCenter:
 
         PhaseLoggerCenter._phase_name_to_loggers[phase].update_percent_info(local_percent=local_percent,
                                                                             task_state=task_state,
-                                                                            state_code=state_code,
-                                                                            state_content=state_content,
-                                                                            trace_message=trace_message)
+                                                                            return_code=state_code,
+                                                                            message=message)

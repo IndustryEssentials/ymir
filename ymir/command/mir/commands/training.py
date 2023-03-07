@@ -20,6 +20,7 @@ from mir.tools.command_run_in_out import command_run_in_out
 from mir.tools.code import MirCode
 from mir.tools.errors import MirContainerError, MirRuntimeError
 from mir.tools.executant import prepare_executant_env, run_docker_executant
+from mir.tools.percent_log_util import PercentLogHandler
 
 
 # private: post process
@@ -285,7 +286,7 @@ class CmdTrain(base.BaseCommand):
                                                      env_config_file_path=os.path.join(work_dir_in, 'env.yaml'))
 
         task_config = config.get(mir_settings.TASK_CONTEXT_KEY, {})
-        task_code = MirCode.RC_OK
+        task_code = MirCode.RC_OK.value
         return_msg = ""
         try:
             run_docker_executant(
@@ -300,15 +301,20 @@ class CmdTrain(base.BaseCommand):
             )
         except CalledProcessError as e:
             logging.warning(f"training exception: {e}")
-            # don't exit, proceed if model exists
-            task_code = MirCode.RC_CMD_CONTAINER_ERROR
-            return_msg = env_config.collect_executor_outlog_tail(work_dir=work_dir)
+
+            task_code = PercentLogHandler.parse_percent_log(os.path.join(
+                work_dir, 'out', 'monitor.txt')).state_code or MirCode.RC_CMD_CONTAINER_ERROR.value
+            return_msg = env_config.collect_executor_outlog_tail(work_dir) or str(e)
 
             # write executor tail to tensorboard
             if return_msg:
                 with SummaryWriter(logdir=tensorboard_dir) as tb_writer:
                     tb_writer.add_text(tag='executor tail', text_string=f"```\n{return_msg}\n```", walltime=time.time())
 
+            # don't raise, proceed to save models
+            # check comments below for details
+
+        # save model
         # gen task_context
         task_context = task_config
         task_context.update({
@@ -318,21 +324,28 @@ class CmdTrain(base.BaseCommand):
             mir_settings.PRODUCER_KEY: mir_settings.PRODUCER_NAME,
         })
 
-        # save model
+        # some model files may have been generated even if container raise errors, we should save them here
+        # if we have errors in both training and save process, we need error in training process
         logging.info(f"saving models:\n task_context: {task_context}")
-        out_model_dir = os.path.join(work_dir_out, "models")
-        model_storage = _get_model_storage(model_root=out_model_dir,
-                                           executor_config=executor_config,
-                                           task_context=task_context)
-        models.pack_and_copy_models(model_storage=model_storage,
-                                    model_dir_path=out_model_dir,
-                                    model_location=model_upload_location)
+        model_meta = None
+        try:
+            out_model_dir = os.path.join(work_dir_out, "models")
+            model_storage = _get_model_storage(model_root=out_model_dir,
+                                               executor_config=executor_config,
+                                               task_context=task_context)
+            models.pack_and_copy_models(model_storage=model_storage,
+                                        model_dir_path=out_model_dir,
+                                        model_location=model_upload_location)
+            model_meta = model_storage.get_model_meta()
+        except Exception as e:
+            task_code = task_code or MirCode.RC_CMD_INVALID_FILE
+            return_msg = return_msg or str(e)
 
         # commit task
         task = mir_storage_ops.create_task_record(task_type=mirpb.TaskType.TaskTypeTraining,
                                                   task_id=dst_typ_rev_tid.tid,
                                                   message='training',
-                                                  model_meta=model_storage.get_model_meta(),
+                                                  model_meta=model_meta,
                                                   return_code=task_code,
                                                   return_msg=return_msg,
                                                   serialized_executor_config=yaml.safe_dump(executor_config),
@@ -341,7 +354,7 @@ class CmdTrain(base.BaseCommand):
                                                   dst_rev=dst_rev)
 
         if task_code != MirCode.RC_OK:
-            raise MirContainerError(error_message='container error occured', task=task)
+            raise MirContainerError(task)
 
         mir_storage_ops.MirStorageOps.save_and_commit(mir_root=mir_root,
                                                       mir_branch=dst_typ_rev_tid.rev,
