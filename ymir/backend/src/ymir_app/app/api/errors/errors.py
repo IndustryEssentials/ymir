@@ -93,6 +93,11 @@ class FailedToCallInference(ControllerError):
     message = "Failed to Create Task via Controller"
 
 
+class InvalidInferenceResultFormat(ControllerError):
+    code = error_codes.INVALID_INFERENCE_RESULT_FORMAT
+    message = "Invalid Inference Result Format"
+
+
 class FailedToTerminateTask(ControllerError):
     code = error_codes.TASK_FAILED_TO_TERMINATE
     message = "Failed to Terminate Task via Controller"
