@@ -232,19 +232,6 @@ function Mining({ query = {}, hidden, ok = () => {}, datasetCache, bottom, ...fu
             ]}>
             <InputNumber style={{ width: 120 }} min={1} max={dataset.assetCount - 1} precision={0} />
           </Form.Item>
-          <Form.Item tooltip={t('tip.task.filter.newlable')} label={t('task.mining.form.label.label')} name="inference" initialValue={imageHasInference}>
-            <Radio.Group
-              options={[
-                {
-                  value: true,
-                  label: t('common.yes'),
-                  disabled: !imageHasInference,
-                },
-                { value: false, label: t('common.no') },
-              ]}
-            />
-          </Form.Item>
-
           <Form.Item tooltip={t('tip.task.filter.mgpucount')} label={t('task.gpu.count')}>
             <Form.Item
               noStyle
