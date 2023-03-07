@@ -64,6 +64,7 @@ const dataset = {
   'dataset.add.types.path': { cn: '路径导入', en: 'Path Import' },
   'dataset.add.success.msg': { cn: '导入正在进行中', en: 'Dataset Importing' },
   'dataset.add.form.name.label': { cn: '新数据集名称', en: 'Dataset Name' },
+  'dataset.add.top.warning': { cn: '当前版本不支持推理结果导入', en: 'Predictions import is not supported for current version' },
   'dataset.add.form.name.required': { cn: '数据集名称为必填项', en: 'Dataset Name Required' },
   'dataset.add.form.name.placeholder': { cn: '请输入数据集名称，支持2-80个字符', en: 'Please input dataset name, 2 - 80 characters' },
   'dataset.add.form.type.label': { cn: '添加类型', en: 'Type' },

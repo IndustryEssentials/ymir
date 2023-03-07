@@ -1,5 +1,5 @@
 import { FC, MouseEvent, ReactElement, useEffect, useState } from 'react'
-import { Button, Card, CheckboxOptionType, Form, Input, message, Radio, Select, Space, Tag } from 'antd'
+import { Alert, Button, Card, CheckboxOptionType, Form, Input, message, Radio, Select, Space, Tag } from 'antd'
 import { useParams, useHistory, useLocation } from 'umi'
 import { useSelector } from 'react-redux'
 
@@ -216,7 +216,6 @@ const Add: FC = () => {
   }
 
   function onInternalDatasetChange(id: number) {
-    // setDefaultName(`${option?.dataset?.name}`)
     setSelectedDataset(id)
   }
 
@@ -255,11 +254,6 @@ const Add: FC = () => {
       : t('common.empty.keywords')
   }
 
-  function getSelectedDatasetKeywords() {
-    const set = publicDatasets.find((d) => d.id === selectedDataset)
-    return set?.keywords || []
-  }
-
   function showFormatDetail() {
     setFormatDetailModal(true)
   }
@@ -283,6 +277,7 @@ const Add: FC = () => {
       <Breadcrumbs />
       <Card className={s.container} title={t('breadcrumbs.dataset.add')}>
         <div className={s.formContainer}>
+          <Alert message={t('dataset.add.top.warning')} type='warning' style={{ marginBottom: 20 }} />
           <Form name="datasetImportForm" className={s.form} {...formLayout} form={form} onFinish={submit} onFinishFailed={onFinishFailed}>
             <DatasetName
               inputProps={{
