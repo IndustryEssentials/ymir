@@ -21,24 +21,20 @@ const content = {
   [TabsKey[2]]: Training,
 }
 
-const DynamicContent = ({ active = TabsKey[0], id, project }) => {
+const DynamicContent = ({ active, id, project }) => {
   const Content = content[active]
-  return id ? <Content pid={id} project={project} /> : null
+  return id && active ? <Content pid={id} project={project} /> : null
 }
 
 function Diagnose() {
   const history = useHistory()
   const location = useLocation()
+  const tabKey = location.hash.replace(/^#/, '')
+  const active = tabKey || TabsKey[0]
   const { id } = useParams()
-  const [active, setActive] = useState(TabsKey[0])
   const [project, fetchProject] = useFetch('project/getProject')
 
   useEffect(() => id && fetchProject({ id }), [id])
-
-  useEffect(() => {
-    const tabKey = location.hash.replace(/^#/, '')
-    setActive(tabKey || TabsKey[0])
-  }, [location.hash])
 
   function tabChange(key) {
     history.push(`#${key}`)

@@ -14,6 +14,7 @@ import VersionName from '../result/VersionName'
 
 interface Props extends Omit<SelectProps, 'mode'> {
   pid: number
+  autoSelectFirst?: boolean
 }
 // interface DatasetOption extends YModels.Dataset {
 //   disabled?: boolean
@@ -21,31 +22,30 @@ interface Props extends Omit<SelectProps, 'mode'> {
 type ModelId = string
 type DataType = YModels.Prediction
 type PredictionItems = {
-  [id: ModelId]: YModels.Prediction[]
+  [id: ModelId]: DataType[]
 }
 type PredictionList = {
-  items: PredictionItems
+  items: DataType[]
   total: number
 }
 
-const PredictionSelect: FC<Props> = ({ pid, value, onChange = () => {}, ...resProps }) => {
+const PredictionSelect: FC<Props> = ({ pid, autoSelectFirst = true, ...resProps }) => {
   const [currentPage, setCurrentPage] = useState(1)
   const [total, setTotal] = useState(0)
   const [options, setOptions] = useState<DefaultOptionType[]>([])
+  const [defaultSelected, setDefaultSelcted] = useState<number>()
   const [predictions, setPredictions] = useState<PredictionItems>({})
-  const { data: remotePredictions, run: getPredictions, loading } = useRequest<PredictionList>('prediction/getPredictions', {
+  const {
+    data: remotePredictions,
+    run: getPredictions,
+    loading,
+  } = useRequest<PredictionList, [YParams.PredictionsQuery]>('prediction/getPredictions', {
     debounceWait: 300,
     loading: false,
     cacheKey: 'predictionSelect',
     refreshDeps: [pid],
     ready: !!pid,
-    onSuccess: () => {
-      setVal(value)
-    },
   })
-  const [val, setVal] = useState(value)
-
-  useEffect(() => setVal(value), [value])
 
   useEffect(() => {
     pid && queryPredictions(currentPage)
@@ -56,22 +56,23 @@ const PredictionSelect: FC<Props> = ({ pid, value, onChange = () => {}, ...resPr
       return
     }
     const { items: remoteItems, total } = remotePredictions
+    const groupItems = remoteItems.reduce<PredictionItems>((prev, item) => {
+      const mid = item.inferModelId[0]
+      const items = item.rowSpan ? [item] : [...prev[mid], item]
+      return {
+        ...prev,
+        [mid]: items,
+      }
+    }, {})
     setTotal(total)
-    setPredictions((items) => ({ ...items, ...remoteItems }))
+    setPredictions((old) => ({ ...old, ...groupItems }))
   }, [remotePredictions])
 
   useEffect(() => {
-    let selected = null
-    if (options.length && value) {
-      selected = options.find((opt) => value === opt.value)
-      if (selected) {
-        onChange(value, selected)
-      } else {
-        onChange(undefined, [])
-        setVal(undefined)
-      }
+    if (autoSelectFirst && options.length) {
+      setDefaultSelcted(options[0].options[0])
     }
-  }, [options])
+  }, [options, autoSelectFirst])
 
   useEffect(() => {
     const modelsId = Object.keys(predictions)
@@ -92,7 +93,7 @@ const PredictionSelect: FC<Props> = ({ pid, value, onChange = () => {}, ...resPr
   function queryPredictions(page = 1) {
     const limit = 10
     const offset = (page - 1) * limit
-    if (offset >= total) {
+    if (total && offset > total) {
       return
     }
     getPredictions({ pid, limit, offset })
@@ -109,7 +110,17 @@ const PredictionSelect: FC<Props> = ({ pid, value, onChange = () => {}, ...resPr
 
   return (
     <ConfigProvider renderEmpty={() => <EmptyState />}>
-      <Select {...resProps} value={val} onChange={onChange} showArrow allowClear options={options} onPopupScroll={scroll} loading={loading}></Select>
+      <Select
+        {...resProps}
+        key={defaultSelected}
+        defaultValue={defaultSelected}
+        showArrow
+        allowClear
+        options={options}
+        onPopupScroll={scroll}
+        loading={loading}
+        placeholder={t('pred.selector.placeholder')}
+      ></Select>
     </ConfigProvider>
   )
 }

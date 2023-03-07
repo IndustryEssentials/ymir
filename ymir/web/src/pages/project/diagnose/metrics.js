@@ -7,7 +7,7 @@ import useFetch from '@/hooks/useFetch'
 import { ObjectType, isDetection, isSemantic } from '@/constants/objectType'
 
 import Panel from '@/components/form/panel'
-import InferResultSelect from '@/components/form/inferResultSelect'
+import PredictionSelect from '@/components/form/PredictionSelect'
 import SingleMetircView from './components/SingleMetircView'
 import CurveView from './components/curveView'
 import PView from './components/prView'
@@ -164,24 +164,28 @@ function Matrics({ pid, project }) {
     console.log('Failed:', errorInfo)
   }
 
-  function inferResultChange({ tasks, models, datasets }) {
-    console.log('tasks, models, datasets:', tasks, models, datasets)
-    setInferTasks(
-      tasks.map(({ config, configName, parameters: { dataset_id, model_id, model_stage_id }, result_prediction: { id } }) => ({
-        config,
-        configName,
-        testing: dataset_id,
-        model: model_id,
-        stage: model_stage_id,
-        result: id,
-      })),
-    )
-    setSelectedDatasets(datasets)
-    setSelectedModels(models)
-    form.setFieldsValue({
-      ck: undefined,
-    })
+  function predictionChange(id, option) {
+    console.log('prediction change: ', id, option)
+    // todo set selected datasets and models
   }
+
+  // function inferResultChange({ tasks, models, datasets }) {
+  //   setInferTasks(
+  //     tasks.map(({ config, configName, parameters: { dataset_id, model_id, model_stage_id }, result_prediction: { id } }) => ({
+  //       config,
+  //       configName,
+  //       testing: dataset_id,
+  //       model: model_id,
+  //       stage: model_stage_id,
+  //       result: id,
+  //     })),
+  //   )
+  //   setSelectedDatasets(datasets)
+  //   setSelectedModels(models)
+  //   form.setFieldsValue({
+  //     ck: undefined,
+  //   })
+  // }
 
   function metricsChange({ target: { value } }) {
     setSelectedMetric(value)
@@ -334,7 +338,9 @@ function Matrics({ pid, project }) {
                 labelAlign="left"
                 colon={false}
               >
-                <InferResultSelect form={form} pid={pid} onChange={inferResultChange} />
+                <Form.Item label={t('pred.metrics.prediction.select.label')}>
+                  <PredictionSelect pid={pid} onChange={predictionChange} />
+                </Form.Item>
                 {!isSemantic(project?.type) ? (
                   <Form.Item label={t('model.diagnose.form.confidence')} name="confidence">
                     <InputNumber step={0.0005} min={0.0005} max={0.9995} />
