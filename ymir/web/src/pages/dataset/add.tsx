@@ -48,8 +48,8 @@ const types = [
   { id: TYPES.PATH, label: 'path' },
 ]
 const strategies: { value: string | number; label: string }[] = [
-  { value: IMPORTSTRATEGY.UNKOWN_KEYWORDS_IGNORE, label: 'ignore' },
   { value: IMPORTSTRATEGY.UNKOWN_KEYWORDS_AUTO_ADD, label: 'add' },
+  { value: IMPORTSTRATEGY.UNKOWN_KEYWORDS_IGNORE, label: 'ignore' },
   { value: IMPORTSTRATEGY.ALL_KEYWORDS_IGNORE, label: 'exclude' },
 ]
 
@@ -163,7 +163,7 @@ const Add: FC = () => {
   const typeChange = (type: number) => {
     setCurrentType(type)
     form.setFieldsValue({
-      strategy: IMPORTSTRATEGY.UNKOWN_KEYWORDS_IGNORE,
+      strategy: IMPORTSTRATEGY.UNKOWN_KEYWORDS_AUTO_ADD,
     })
   }
 
@@ -364,7 +364,7 @@ const Add: FC = () => {
               </Form.Item>
             ) : null}
             {!isType(TYPES.INTERNAL) ? (
-              <Form.Item label={t('dataset.add.form.label.label')} name="strategy" initialValue={IMPORTSTRATEGY.UNKOWN_KEYWORDS_IGNORE}>
+              <Form.Item label={t('dataset.add.form.label.label')} name="strategy" initialValue={IMPORTSTRATEGY.UNKOWN_KEYWORDS_AUTO_ADD}>
                 <Radio.Group options={strategyOptions.filter((opt) => !isType(TYPES.COPY) || opt.value !== IMPORTSTRATEGY.UNKOWN_KEYWORDS_AUTO_ADD)} />
               </Form.Item>
             ) : null}
