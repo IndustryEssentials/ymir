@@ -118,8 +118,7 @@ export default {
       }
       const { code, result } = yield call(getDatasetByGroup, gid)
       if (code === 0) {
-        const excludeInferResult = dss => dss.filter(ds => ds.taskType !== TASKTYPES.INFERENCE)
-        const vss = excludeInferResult(result.items.map(item => transferDataset(item)))
+        const vss = result.items.map(item => transferDataset(item))
         const vs = { id: gid, versions: vss, }
         yield put({
           type: "UPDATE_VERSIONS",
