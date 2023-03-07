@@ -13,6 +13,7 @@ from controller.utils import checker, errors, gpu_utils, tasks_util, utils
 from id_definition.error_codes import CTLResponseCode
 from proto import backend_pb2
 
+
 SubTaskType = Callable[
     [backend_pb2.GeneralReq, UserLabels, str, Dict[str, str], str, str, str, str, Optional[str], List[str]],
     backend_pb2.GeneralResp]

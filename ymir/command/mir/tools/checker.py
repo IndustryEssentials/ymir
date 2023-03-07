@@ -54,7 +54,7 @@ def _check_nothing(mir_root: str) -> int:
 
 
 def _check_is_inside_git_repo(mir_root: str) -> int:
-    return (MirCode.RC_OK if os.path.isdir(os.path.join(mir_root, ".git")) else MirCode.RC_CMD_INVALID_ARGS)
+    return (MirCode.RC_OK if os.path.isdir(os.path.join(mir_root, ".git")) else MirCode.RC_CMD_INVALID_MIR_REPO)
 
 
 def _check_is_outside_git_repo(mir_root: str) -> int:

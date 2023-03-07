@@ -1,18 +1,18 @@
-import { useEffect, useState } from 'react'
-import { Button, Card, Form, Input, message, Radio, Select, Space, Tag } from 'antd'
-import { useParams, useHistory, useLocation, useSelector } from 'umi'
+import { FC, MouseEvent, ReactElement, useEffect, useState } from 'react'
+import { Alert, Button, Card, CheckboxOptionType, Form, Input, message, Radio, Select, Space, Tag } from 'antd'
+import { useParams, useHistory, useLocation } from 'umi'
+import { useSelector } from 'react-redux'
 
 import { formLayout } from '@/config/antd'
 import t from '@/utils/t'
 import useFetch from '@/hooks/useFetch'
 import useRequest from '@/hooks/useRequest'
-import useAddKeywords from '@/hooks/useAddKeywords'
 import { IMPORTSTRATEGY } from '@/constants/dataset'
 import { ObjectType } from '@/constants/project'
 
 import { urlValidator } from '@/components/form/validators'
 import Breadcrumbs from '@/components/common/breadcrumb'
-import Uploader from '@/components/form/uploader'
+import Uploader, { UploadFile } from '@/components/form/uploader'
 import ProjectDatasetSelect from '@/components/form/projectDatasetSelect'
 import Desc from '@/components/form/desc'
 import DatasetName from '@/components/form/items/DatasetName'
@@ -22,6 +22,13 @@ import Dataset from '@/components/form/option/Dataset'
 import s from './add.less'
 import DetSamplePic from '@/assets/sample.png'
 import SegSamplePic from '@/assets/sample_seg.png'
+import { ValidateErrorEntity } from 'rc-field-form/lib/interface'
+
+type DatasetOptionType = {
+  value: number,
+  label: string | ReactElement,
+  dataset: YModels.Dataset
+}
 
 const { Option } = Select
 const { useForm } = Form
@@ -40,40 +47,40 @@ const types = [
   { id: TYPES.LOCAL, label: 'local' },
   { id: TYPES.PATH, label: 'path' },
 ]
-const strategies = [
-  { value: IMPORTSTRATEGY.UNKOWN_KEYWORDS_IGNORE, label: 'ignore' },
+const strategies: { value: string | number; label: string }[] = [
   { value: IMPORTSTRATEGY.UNKOWN_KEYWORDS_AUTO_ADD, label: 'add' },
+  { value: IMPORTSTRATEGY.UNKOWN_KEYWORDS_IGNORE, label: 'ignore' },
   { value: IMPORTSTRATEGY.ALL_KEYWORDS_IGNORE, label: 'exclude' },
 ]
 
-// todo update tips
-const Add = (props) => {
+const Add: FC = () => {
   const history = useHistory()
-  const { query } = useLocation()
-  const pageParams = useParams()
+  const location = useLocation()
+  const query = new URLSearchParams(location.search)
+  const pageParams = useParams<{ id?: string }>()
   const pid = Number(pageParams.id)
-  const { id, from, stepKey } = query
+  const id = query.get('id')
+  const from = query.get('from')
+  const stepKey = query.get('stepKey')
   const iterationContext = from === 'iteration'
 
   const [form] = useForm()
   const [currentType, setCurrentType] = useState(TYPES.INTERNAL)
   const [file, setFile] = useState('')
-  const [selectedDataset, setSelectedDataset] = useState(id ? Number(id) : null)
-  const [newKeywords, setNewKeywords] = useState([])
-  const [strategyOptions, setStrategyOptions] = useState([])
-  const [ignoredKeywords, setIgnoredKeywords] = useState([])
-  const [{ newer }, checkKeywords] = useFetch('keyword/checkDuplication', {
-    newer: [],
-  })
-  const [_, updateKeywords] = useAddKeywords()
+  const [selectedDataset, setSelectedDataset] = useState(id ? Number(id) : 0)
+  const [newKeywords, setNewKeywords] = useState<string[]>([])
+  const [strategyOptions, setStrategyOptions] = useState<CheckboxOptionType[]>([])
+  const [ignoredKeywords, setIgnoredKeywords] = useState<string[]>([])
+  const { data: { newer } = { newer: [] }, run: checkKeywords } = useRequest<{ newer: string[] }>('keyword/checkDuplication')
   const [addResult, newDataset] = useFetch('dataset/createDataset')
-  const [{ items: publicDatasets }, getPublicDatasets] = useFetch('dataset/getInternalDataset', { items: [] })
+  const { data: { items: publicDatasets } = { items: [] }, run: getPublicDatasets } = useRequest<YStates.List<YModels.Dataset>>('dataset/getInternalDataset')
+  const { runAsync: addKeywords } = useRequest<{}, [{ keywords: string[]; dry_run?: boolean }]>('keyword/addKeywords')
   const [nameChangedByUser, setNameChangedByUser] = useState(false)
   const [defaultName, setDefaultName] = useState('')
-  const netUrl = Form.useWatch('url', form)
-  const path = Form.useWatch('path', form)
+  const netUrl = Form.useWatch<string>('url', form)
+  const path = Form.useWatch<string>('path', form)
   const [formatDetailModal, setFormatDetailModal] = useState(false)
-  const project = useSelector(({ project }) => project.projects[pid] || {})
+  const project = useSelector<YStates.Root, YModels.Project>(({ project }) => project.projects[pid] || {})
   const { run: getProject } = useRequest('project/getProject', {
     loading: false,
     refreshDeps: [pid],
@@ -96,13 +103,15 @@ const Add = (props) => {
     setDefaultName('')
   }, [currentType])
 
-  useEffect(async () => {
+  useEffect(() => {
     getPublicDatasets()
   }, [])
 
   useEffect(() => {
-    const kws = getSelectedDatasetKeywords()
+    const dataset = publicDatasets.find(({ id }) => id === selectedDataset)
+    const kws = dataset?.keywords || []
     checkKeywords(kws)
+    dataset && setDefaultName(dataset.name)
   }, [selectedDataset])
 
   useEffect(() => {
@@ -151,46 +160,37 @@ const Add = (props) => {
     setStrategyOptions(opts)
   }, [currentType])
 
-  const typeChange = (type) => {
+  const typeChange = (type: number) => {
     setCurrentType(type)
     form.setFieldsValue({
-      strategy: IMPORTSTRATEGY.UNKOWN_KEYWORDS_IGNORE,
+      strategy: IMPORTSTRATEGY.UNKOWN_KEYWORDS_AUTO_ADD,
     })
   }
 
-  const isType = (type) => {
-    return currentType === type
-  }
+  const isType = (type: number) => currentType === type
 
-  async function addNewKeywords() {
-    if (!newKeywords.length) {
-      return
-    }
-    const result = await updateKeywords(newKeywords)
-    return result || message.error(t('keyword.add.failure'))
-  }
-
-  async function submit(values) {
-    let updateKeywordResult = null
+  async function submit(values: { [key: string]: any }) {
     if (currentType === TYPES.LOCAL && !file) {
       return message.error(t('dataset.add.local.file.empty'))
     }
 
     if (newKeywords.length && isType(TYPES.INTERNAL)) {
-      updateKeywordResult = await addNewKeywords()
+      const updateKeywordResult = await addKeywords({ keywords: newKeywords })
       if (updateKeywordResult) {
         addDataset({
           ...values,
           strategy: IMPORTSTRATEGY.UNKOWN_KEYWORDS_IGNORE,
         })
+      } else {
+        message.error(t('keyword.add.failure'))
       }
     } else {
       addDataset(values)
     }
   }
 
-  function addDataset(values) {
-    let params = {
+  function addDataset(values: { [x: string]: any; strategy?: IMPORTSTRATEGY; url?: any }) {
+    let params: { [key: string]: any } = {
       ...values,
       pid,
       url: (values.url || '').trim(),
@@ -211,21 +211,20 @@ const Add = (props) => {
     newDataset(params)
   }
 
-  function onFinishFailed(err) {
+  function onFinishFailed(err: ValidateErrorEntity) {
     console.log('finish failed: ', err)
   }
 
-  function onInternalDatasetChange(value, { dataset }) {
-    setDefaultName(`${dataset.name}`)
-    setSelectedDataset(value)
+  function onInternalDatasetChange(id: number) {
+    setSelectedDataset(id)
   }
 
-  function setFileDefaultName([file]) {
+  function setFileDefaultName([file]: UploadFile[]) {
     const filename = file.name.replace(/\.zip$/i, '')
     setDefaultName(filename)
   }
 
-  function setCopyDefaultName(value, option) {
+  function setCopyDefaultName(value: number, option: DatasetOptionType[]) {
     const dataset = option[1] ? option[1].dataset : null
     const label = dataset ? `${dataset.name} ${dataset.versionName}` : ''
     setDefaultName(label)
@@ -237,15 +236,15 @@ const Add = (props) => {
     }
   }
 
-  function updateIgnoredKeywords(e, keywords, isRemove) {
+  function updateIgnoredKeywords(e: MouseEvent, keywords: string[], isRemove?: boolean) {
     e.preventDefault()
-    const add = (old) => [...old, ...keywords]
-    const remove = (old) => old.filter((selected) => !keywords.includes(selected))
+    const add = (old: string[]) => [...old, ...keywords]
+    const remove = (old: string[]) => old.filter((selected) => !keywords.includes(selected))
     setIgnoredKeywords(isRemove ? remove : add)
     setNewKeywords(isRemove ? add : remove)
   }
 
-  function renderKeywords(keywords, isIgnoreKeywords) {
+  function renderKeywords(keywords: string[], isIgnoreKeywords?: boolean) {
     return keywords.length
       ? keywords.map((key) => (
           <Tag className={s.selectedTag} key={key} closable onClose={(e) => updateIgnoredKeywords(e, [key], isIgnoreKeywords)}>
@@ -253,11 +252,6 @@ const Add = (props) => {
           </Tag>
         ))
       : t('common.empty.keywords')
-  }
-
-  function getSelectedDatasetKeywords() {
-    const set = publicDatasets.find((d) => d.id === selectedDataset)
-    return set?.keywords || []
   }
 
   function showFormatDetail() {
@@ -270,7 +264,7 @@ const Add = (props) => {
     detail: <Button onClick={showFormatDetail}>{t('dataset.add.form.tip.format.detail')}</Button>,
   })
 
-  const renderTip = (type, params = {}) =>
+  const renderTip = (type: string, params = {}) =>
     t(`dataset.add.form.${type}.tip`, {
       ...params,
       br: <br />,
@@ -283,6 +277,7 @@ const Add = (props) => {
       <Breadcrumbs />
       <Card className={s.container} title={t('breadcrumbs.dataset.add')}>
         <div className={s.formContainer}>
+          <Alert message={t('dataset.add.top.warning')} type='warning' style={{ marginBottom: 20 }} />
           <Form name="datasetImportForm" className={s.form} {...formLayout} form={form} onFinish={submit} onFinishFailed={onFinishFailed}>
             <DatasetName
               inputProps={{
@@ -369,7 +364,7 @@ const Add = (props) => {
               </Form.Item>
             ) : null}
             {!isType(TYPES.INTERNAL) ? (
-              <Form.Item label={t('dataset.add.form.label.label')} name="strategy" initialValue={IMPORTSTRATEGY.UNKOWN_KEYWORDS_IGNORE}>
+              <Form.Item label={t('dataset.add.form.label.label')} name="strategy" initialValue={IMPORTSTRATEGY.UNKOWN_KEYWORDS_AUTO_ADD}>
                 <Radio.Group options={strategyOptions.filter((opt) => !isType(TYPES.COPY) || opt.value !== IMPORTSTRATEGY.UNKOWN_KEYWORDS_AUTO_ADD)} />
               </Form.Item>
             ) : null}
@@ -422,7 +417,7 @@ const Add = (props) => {
                 ></Uploader>
               </Form.Item>
             ) : null}
-            <Desc form={form} />
+            <Desc />
             <Form.Item wrapperCol={{ offset: 8 }}>
               <Space size={20}>
                 <Form.Item name="submitBtn" noStyle>

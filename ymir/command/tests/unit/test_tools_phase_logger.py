@@ -36,7 +36,7 @@ class TestPhaseLogger(unittest.TestCase):
             monitor_lines = f.read().splitlines()
             self.assertEqual(1 + trace_message_line_count, len(monitor_lines))
             monitor_parts = monitor_lines[0].split('\t')
-            self.assertEqual(4, len(monitor_parts))
+            self.assertEqual(5, len(monitor_parts))
             self.assertEqual(task_name, monitor_parts[0])
             self.assertEqual(f"{global_percent:.2f}", monitor_parts[2])
             self.assertEqual(task_state, int(monitor_parts[3]))
@@ -166,7 +166,7 @@ class TestPhaseLogger(unittest.TestCase):
                                  global_percent=0.46,
                                  task_state=mirpb.TaskStateRunning,
                                  trace_message=None)
-        pm_children[1].update_percent_info(local_percent=1.0, task_state=PhaseStateEnum.DONE, trace_message='task done')
+        pm_children[1].update_percent_info(local_percent=1.0, task_state=PhaseStateEnum.DONE, message='task done')
         self._check_monitor_file(task_name=pm.task_name,
                                  global_percent=1,
                                  task_state=mirpb.TaskStateDone,
@@ -195,18 +195,17 @@ class TestPhaseLoggerCenter(unittest.TestCase):
         self.assertTrue(math.isclose(1.0, sub_logger.end_percent))
         self.assertTrue(sub_logger.auto_done)
 
-        PhaseLoggerCenter.update_phase('copy.read', task_state=PhaseStateEnum.DONE, trace_message='abc')
+        PhaseLoggerCenter.update_phase('copy.read', task_state=PhaseStateEnum.DONE, message='abc')
         mock_run.assert_called_with(local_percent=1,
                                     task_state=PhaseStateEnum.DONE,
-                                    state_code=0,
-                                    state_content=None,
-                                    trace_message='abc')
+                                    return_code=0,
+                                    message='abc')
 
         PhaseLoggerCenter.clear_all()
 
     def test_01(self):
         PhaseLoggerCenter.create_phase_loggers('export', None, '0')
-        PhaseLoggerCenter.update_phase('export.others', task_state=PhaseStateEnum.DONE, trace_message='export done')
+        PhaseLoggerCenter.update_phase('export.others', task_state=PhaseStateEnum.DONE, message='export done')
         self.assertEqual(1.0, PhaseLoggerCenter.loggers()['export.others'].global_percent)
 
         PhaseLoggerCenter.clear_all()

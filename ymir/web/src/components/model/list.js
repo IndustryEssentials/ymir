@@ -607,7 +607,7 @@ function Model({ pid, project = {}, iterations, groups, versions, query, ...func
       </div>
       <EditNameBox type="model" record={current} max={80} handle={saveNameHandle} />
       <EditDescBox type="model" record={editingModel} handle={saveDescHandle} />
-      <Hide ref={hideRef} type={1} msg="model.action.del.confirm.content" ok={hideOk} />
+      <Hide ref={hideRef} type={'model'} msg="model.action.del.confirm.content" ok={hideOk} />
       <Terminate ref={terminateRef} ok={terminateOk} />
     </div>
   )

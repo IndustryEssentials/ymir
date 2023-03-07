@@ -526,7 +526,7 @@ class ControllerClient:
         )
         return self.send(req)
 
-    def evaluate_dataset(
+    def evaluate_prediction(
         self,
         user_id: int,
         project_id: int,

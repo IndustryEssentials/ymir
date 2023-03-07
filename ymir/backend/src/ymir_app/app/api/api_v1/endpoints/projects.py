@@ -1,4 +1,3 @@
-import enum
 from typing import Any
 import uuid
 
@@ -27,23 +26,13 @@ from common_utils.labels import UserLabels
 router = APIRouter()
 
 
-class SortField(enum.Enum):
-    id = "id"
-    create_datetime = "create_datetime"
-
-
 @router.get("/", response_model=schemas.ProjectPaginationOut)
 def list_projects(
     db: Session = Depends(deps.get_db),
     current_user: models.User = Depends(deps.get_current_active_user),
     name: str = Query(None),
     object_type: int = Query(None),
-    start_time: int = Query(None, description="from this timestamp"),
-    end_time: int = Query(None, description="to this timestamp"),
-    offset: int = Query(None),
-    limit: int = Query(None),
-    order_by: SortField = Query(SortField.id),
-    is_desc: bool = Query(True),
+    pagination: schemas.CommonPaginationParams = Depends(),
 ) -> Any:
     """
     Get projects list
@@ -60,12 +49,7 @@ def list_projects(
         user_id=current_user.id,
         name=name,
         object_type=object_type,
-        offset=offset,
-        limit=limit,
-        order_by=order_by.name,
-        is_desc=is_desc,
-        start_time=start_time,
-        end_time=end_time,
+        pagination=pagination,
     )
 
     return {"result": {"total": total, "items": projects}}

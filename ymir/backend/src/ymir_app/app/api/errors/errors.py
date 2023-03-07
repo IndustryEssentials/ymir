@@ -93,6 +93,11 @@ class FailedToCallInference(ControllerError):
     message = "Failed to Create Task via Controller"
 
 
+class InvalidInferenceResultFormat(ControllerError):
+    code = error_codes.INVALID_INFERENCE_RESULT_FORMAT
+    message = "Invalid Inference Result Format"
+
+
 class FailedToTerminateTask(ControllerError):
     code = error_codes.TASK_FAILED_TO_TERMINATE
     message = "Failed to Terminate Task via Controller"
@@ -123,6 +128,11 @@ class PrematureDatasets(APIError):
     message = "Not All The Datasets Are Ready"
 
 
+class PrematurePredictions(APIError):
+    code = error_codes.PREMATURE_PREDICTIONS
+    message = "Not All The Predictions Are Ready"
+
+
 class RequiredFieldMissing(APIError):
     code = error_codes.REQUIRED_FIELD_MISSING
     message = "Required Field Missing"
@@ -151,6 +161,11 @@ class TaskNotFound(NotFound):
 class DatasetNotFound(NotFound):
     code = error_codes.DATASET_NOT_FOUND
     message = "Dataset Not Found"
+
+
+class PredictionNotFound(NotFound):
+    code = error_codes.PREDICTION_NOT_FOUND
+    message = "Prediction Not Found"
 
 
 class AssetNotFound(NotFound):
@@ -188,11 +203,6 @@ class ModelNotReady(APIError):
     message = "Model Not Ready"
 
 
-class GraphNotFound(NotFound):
-    code = error_codes.GRAPH_NOT_FOUND
-    message = "Graph Not Found"
-
-
 class DockerImageNotFound(NotFound):
     code = error_codes.DOCKER_IMAGE_NOT_FOUND
     message = "Docker Image Not Found"
@@ -220,6 +230,11 @@ class NoModelPermission(PermissionDenied):
 class NoTaskPermission(PermissionDenied):
     code = error_codes.TASK_NOT_ACCESSIBLE
     message = "No Permission to Access or Modify Task"
+
+
+class NoPredictionPermission(PermissionDenied):
+    code = error_codes.PREDICTION_NOT_ACCESSIBLE
+    message = "No Permission to Access or Modify Prediction"
 
 
 class UserNotAdmin(APIError):

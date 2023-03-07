@@ -49,12 +49,16 @@ class CmdModelImport(base.BaseCommand):
                                   error_message=f"model package: {package_path} is not file")
 
         # unpack
-        extract_model_dir_path = os.path.join(work_dir, 'model')
-        with tarfile.open(package_path, 'r') as tf:
-            tf.extractall(extract_model_dir_path)
+        try:
+            extract_model_dir_path = os.path.join(work_dir, 'model')
+            with tarfile.open(package_path, 'r') as tf:
+                tf.extractall(extract_model_dir_path)
 
-        model_info_path = os.path.join(extract_model_dir_path, 'ymir-info.yaml')
-        update_model_info(model_info_path)
+            model_info_path = os.path.join(extract_model_dir_path, 'ymir-info.yaml')
+            update_model_info(model_info_path)
+        except (FileNotFoundError, tarfile.TarError, ValueError) as e:
+            raise MirRuntimeError(error_code=MirCode.RC_CMD_INVALID_MODEL,
+                                  error_message=f"{e}")
 
         with open(model_info_path, 'r') as f:
             ymir_info_dict = yaml.safe_load(f.read())

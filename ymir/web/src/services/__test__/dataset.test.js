@@ -2,8 +2,6 @@ import {
   getDataset,
   getDatasetGroups,
   batchDatasets,
-  getAssetsOfDataset,
-  getAsset,
   delDataset,
   createDataset,
   updateDataset,
@@ -92,29 +90,6 @@ describe("service: dataset", () => {
   it("updateDataset -> params validate failed", () => {
     requestExample(updateDataset, null, null, null, 4002)
   })
-
-  it("getAssetsOfDataset -> success", () => {
-    const params = { id: 642 }
-    const expected = products(11)
-    requestExample(getAssetsOfDataset, params, { items: expected, total: expected.length }, 'get')
-  })
-
-  it("getAssetsOfDataset -> success with keywords", () => {
-    const params = { id: 642, keyword: 83, limit: 20, offset: 0, }
-    const expected = products(7)
-    requestExample(getAssetsOfDataset, params, { items: expected, total: expected.length }, 'get')
-  })
-
-  it("getAsset -> success", () => {
-    const hash = "643"
-    const expected = { hash, url: '/path/to/asset/image', annotations: [{ keyword: 'cat', box: [234, 34, 200, 403] }] }
-    requestExample(getAsset, hash, expected, 'get')
-  })
-
-  it('getAsset -> can not find resource', () => {
-    requestExample(getAsset, null, null, 'get', 5001)
-  })
-
   it("getInternalDataset -> success", () => {
     const expected = products(11)
     requestExample(getInternalDataset, {}, { items: expected, total: expected.length }, 'get')

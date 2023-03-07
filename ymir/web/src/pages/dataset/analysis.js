@@ -15,8 +15,6 @@ import { getConfigByAnnotationType } from './components/AnalysisHelper'
 import style from './analysis.less'
 import { CompareIcon } from '@/components/common/Icons'
 
-const options = ['gt', 'pred']
-
 const getVersionName = ({ name, versionName }) => `${name} ${versionName}`
 function Analysis() {
   const [form] = Form.useForm()
@@ -25,7 +23,6 @@ function Analysis() {
   const [source, setSource] = useState([])
   const [assetCharts, setAssetCharts] = useState([])
   const [annotationCharts, setAnnotationCharts] = useState([])
-  const [annotationsType, setAnnotationType] = useState(options[0])
   const [{ tableColumns, assetChartConfig, annotationChartConfig }, setConfig] = useState({
     tableColumns: [],
     assetChartConfig: [],
@@ -40,8 +37,8 @@ function Analysis() {
   }, [])
 
   useEffect(() => {
-    project && setConfig(getConfigByAnnotationType(project.type, annotationsType))
-  }, [project, annotationsType])
+    project && setConfig(getConfigByAnnotationType(project.type))
+  }, [project])
 
   useEffect(() => {
     const charts = generateCharts(assetChartConfig, source)
@@ -49,7 +46,6 @@ function Analysis() {
   }, [assetChartConfig, source])
 
   useEffect(() => {
-    console.log('annotationChartConfig, source:', annotationChartConfig, source)
     const charts = generateCharts(annotationChartConfig, source)
     setAnnotationCharts(charts)
   }, [annotationChartConfig, source])
@@ -187,13 +183,6 @@ function Analysis() {
       <Card className={style.container} title={t('breadcrumbs.dataset.analysis')}>
         <Row gutter={20} className={style.dataContainer}>
           <Col span={18} className={style.rowData}>
-            <div className={style.filters}>
-              <Radio.Group
-                value={annotationsType}
-                options={options.map((value) => ({ value, label: t(`annotation.${value}`) }))}
-                onChange={({ target: { value } }) => setAnnotationType(value)}
-              ></Radio.Group>
-            </div>
             <Table
               size="small"
               align="right"

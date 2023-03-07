@@ -4,6 +4,7 @@ from typing import Any, Dict, Optional, List
 
 from pydantic import BaseModel, Field, validator
 
+from app.config import settings
 from app.constants.state import MiningStrategy, IterationStage, DatasetType, ResultState, ResultType
 
 
@@ -145,3 +146,34 @@ class ModelResult(BaseModel):
 
     class Config:
         orm_mode = True
+
+
+class PredictionResult(BaseModel):
+    id: int
+    result_state: ResultState
+    result_type: ResultType = ResultType.prediction
+
+    class Config:
+        orm_mode = True
+
+
+# Common Query Parameters
+
+
+class SortField(Enum):
+    id = "id"
+    create_datetime = "create_datetime"
+    update_datetime = "update_datetime"
+    asset_count = "asset_count"
+    source = "source"
+    map = "map"  # Model
+    duration = "duration"  # Task
+
+
+class CommonPaginationParams(BaseModel):
+    offset: int = 0
+    limit: Optional[int] = settings.DEFAULT_LIMIT
+    order_by: SortField = SortField.id
+    is_desc: bool = True
+    start_time: Optional[int] = None
+    end_time: Optional[int] = None

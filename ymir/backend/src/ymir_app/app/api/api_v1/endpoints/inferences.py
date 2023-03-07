@@ -11,6 +11,7 @@ from app.api.errors.errors import (
     FailedToCallInference,
     FailedtoDownloadError,
     InvalidInferenceConfig,
+    InvalidInferenceResultFormat,
     ModelStageNotFound,
 )
 from app.config import settings
@@ -61,9 +62,14 @@ def call_inference(
         logger.exception("Failed to call inference via Controller: %s", e)
         raise FailedToCallInference()
 
+    try:
+        annotations = list(extract_inference_annotations(resp, filename_mapping=filename_mapping))
+    except KeyError:
+        logger.exception("Invalid inference result format: %s", resp)
+        raise InvalidInferenceResultFormat()
     result = {
         "model_stage_id": inference_in.model_stage_id,
-        "annotations": extract_inference_annotations(resp, filename_mapping=filename_mapping),
+        "annotations": annotations,
     }
     return {"result": result}
 
