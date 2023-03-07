@@ -1,6 +1,7 @@
 import React, { FC, useEffect, useState } from 'react'
-import { Table, Space, Button, message, Card, TableColumnsType, TableProps } from 'antd'
+import { Table, Space, Button, message, Card, TableColumnsType, TableProps, TableColumnType } from 'antd'
 import { useHistory } from 'umi'
+import { useSelector } from 'react-redux'
 
 import t from '@/utils/t'
 import Actions from '@/components/table/Actions'
@@ -10,28 +11,57 @@ import { EyeOnIcon } from '@/components/common/Icons'
 import VersionName from '@/components/result/VersionName'
 import useRequest from '@/hooks/useRequest'
 import StrongTitle from '@/components/table/columns/StrongTitle'
+import { ObjectType } from '@/constants/objectType'
+import Stages from '@/components/table/columns/Stages'
+import InferDataset from '@/components/table/columns/InferDataset'
+import Model from '@/components/table/columns/InferModel'
 
+export type AType = 'dataset' | 'model' | 'prediction'
+type DataType = YModels.Dataset | YModels.Model | YModels.Prediction
+type ColumnType = TableColumnType<DataType>
+type ColumnsType = TableColumnsType<DataType>
 type Props = {
-  active: string
+  active?: AType
   pid: number | string
 }
 const tabs = [
   { tab: 'project.tab.set.title', key: 'dataset' },
   { tab: 'project.tab.model.title', key: 'model' },
-  { tab: 'annotation.pred', key: 'pred' },
+  { tab: 'annotation.pred', key: 'prediction' },
 ]
 
 const HiddenList: FC<Props> = ({ active, pid }) => {
   const history = useHistory()
-  const [list, setHiddenList] = useState<YModels.Result[]>([])
+  const [list, setHiddenList] = useState<DataType[]>([])
   const [total, setTotal] = useState(0)
   const [query, setQuery] = useState<YParams.DatasetsQuery>({
     offset: 0,
     limit: 10,
   })
   const [selected, setSelected] = useState<(number | string)[]>([])
+  const [columns, setColumns] = useState<ColumnsType>([])
+  const cacheDatasets = useSelector<YStates.Root, YStates.IdMap<YModels.Dataset>>((state) => state.dataset.dataset)
+  const cacheModels = useSelector<YStates.Root, YStates.IdMap<YModels.Model>>((state) => state.model.model)
+  const { data: project, run: getProject } = useRequest<YModels.Project, [{ id: number | string }]>('project/getProject')
   const { data: recoverResult, run: recoverAPI } = useRequest(`${active}/restore`)
-  const { data: listData, run: getList } = useRequest<YStates.List<YModels.Result>, [{ [key: string]: any }]>(`${active}/getHiddenList`)
+  const { data: listData, run: getList } = useRequest<YStates.List<DataType>, [{ [key: string]: any }]>(`${active}/getHiddenList`)
+
+  useEffect(() => {
+    pid && getProject({ id: pid })
+  }, [pid])
+
+  useEffect(() => {
+    if (active === 'prediction' && list.length) {
+      const predictions = list as YModels.Prediction[]
+      const updatedPredictions = predictions.map((prediction: YModels.Prediction) => {
+        const { inferDatasetId, inferModelId } = prediction
+        const inferModel = inferModelId[0] ? cacheModels[inferModelId[0]] : undefined
+        const inferDataset = inferDatasetId ? cacheDatasets[inferDatasetId] : undefined
+        return { ...prediction, inferModel, inferDataset }
+      })
+      setHiddenList(updatedPredictions)
+    }
+  }, [cacheDatasets, cacheModels, list.length, active])
 
   useEffect(() => {
     if (listData) {
@@ -43,11 +73,13 @@ const HiddenList: FC<Props> = ({ active, pid }) => {
       }
     }
   }, [listData])
+
   useEffect(() => {
-    // initial query
-    setQuery({})
-    setSelected([])
-  }, [active])
+    if (project && active) {
+      const columns = getColumns(active, project.type)
+      setColumns(columns)
+    }
+  }, [active, project])
 
   useEffect(() => {
     if (recoverResult) {
@@ -57,10 +89,16 @@ const HiddenList: FC<Props> = ({ active, pid }) => {
   }, [recoverResult])
 
   useEffect(() => {
-    query && fetch()
-  }, [query])
+    active && query && fetch()
+  }, [active, query])
 
-  const tabChange = (key: string) => history.push(`#${key}`)
+  const tabChange = (key: string) => {
+    // initial query
+    setQuery({})
+    setSelected([])
+    setHiddenList([])
+    history.push(`#${key}`)
+  }
 
   const titleCol = {
     title: <StrongTitle label="dataset.column.name" />,
@@ -73,27 +111,34 @@ const HiddenList: FC<Props> = ({ active, pid }) => {
     dataIndex: 'assetCount',
     render: (num: number, dataset: YModels.Dataset) => <AssetCount dataset={dataset} />,
   }
-  const metricCol = {
-    title: <StrongTitle label="model.column.map" />,
-    dataIndex: 'map',
-  }
+
   const timeCol = {
     title: <StrongTitle label="dataset.column.delete_time" />,
     dataIndex: 'updateTime',
-    sorter: true,
-    sortDirections: ['descend', 'ascend'],
-    defaultSortOrder: 'descend',
+    // sorter: true,
+    // sortDirections: ['descend', 'ascend'],
+    // defaultSortOrder: 'descend',
   }
-  const actionCol = {
+  const actionCol: ColumnType = {
     title: <StrongTitle label="dataset.column.action" />,
     dataIndex: 'id',
-    render: (id: number, record: YModels.Result) => <Actions actions={actionMenus(record)} />,
+    render: (id: number, record: DataType) => <Actions actions={actionMenus(record)} />,
     align: 'center',
   }
 
-  const columns: TableColumnsType<YModels.Result> = [titleCol, countCol, metricCol, timeCol, actionCol]
+  const getColumns = (type: AType, objectType: YModels.ObjectType = ObjectType.ObjectDetection): ColumnsType => {
+    let columns: ColumnType[] = []
+    if (type === 'dataset') {
+      columns = [titleCol, countCol] as ColumnsType
+    } else if (type === 'model') {
+      columns = [titleCol, Stages()] as ColumnsType
+    } else if (type === 'prediction') {
+      columns = [Model(), InferDataset()] as ColumnsType
+    }
+    return [...columns, timeCol, actionCol]
+  }
 
-  const actionMenus = ({ id }: YModels.Result) => [
+  const actionMenus = ({ id }: DataType) => [
     {
       key: 'restore',
       label: t('common.action.restore'),
@@ -114,7 +159,7 @@ const HiddenList: FC<Props> = ({ active, pid }) => {
     recover(selected)
   }
 
-  const pageChange: TableProps<YModels.Result>['onChange'] = ({ current = 1, pageSize = 10 }, filters, sorters) => {
+  const pageChange: TableProps<DataType>['onChange'] = ({ current = 1, pageSize = 10 }, filters, sorters) => {
     if (Array.isArray(sorters)) {
       return
     }
