@@ -1,6 +1,6 @@
 from datetime import datetime
-from enum import Enum, IntEnum
-from typing import Any, Dict, Optional, List
+from enum import Enum
+from typing import List
 
 from pydantic import BaseModel, Field, validator
 
@@ -43,4 +43,3 @@ class Operation(BaseModel):
 class BatchOperations(BaseModel):
     project_id: int
     operations: List[Operation]
-

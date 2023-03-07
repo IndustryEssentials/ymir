@@ -38,7 +38,7 @@ target_metadata = Base.metadata
 
 
 def get_url() -> str:
-    return os.getenv("DATABASE_URI", "sqlite:///app.db")
+    return os.getenv("DATABASE_URI", "sqlite:///auth.db")
 
 
 def get_mysql_credentials() -> Dict:

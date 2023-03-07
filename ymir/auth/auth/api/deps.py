@@ -18,9 +18,7 @@ from auth.api.errors.errors import (
 from auth.config import settings
 from auth.constants.role import Roles
 from auth.db.session import SessionLocal
-from auth.utils import cache as ymir_cache
 from auth.utils import security
-from auth.utils.security import verify_api_key
 
 reusable_oauth2 = OAuth2PasswordBearer(
     tokenUrl=f"{settings.API_V1_STR}/auth/token",
@@ -92,13 +90,3 @@ def get_current_active_super_admin(
     current_user: models.User = Security(get_current_user, scopes=[Roles.SUPER_ADMIN.name]),
 ) -> models.User:
     return current_user
-
-
-def get_cache(
-    current_user: models.User = Depends(get_current_active_user),
-) -> Generator:
-    try:
-        cache_client = ymir_cache.CacheClient(redis_uri=settings.BACKEND_REDIS_URL, user_id=current_user.id)
-        yield cache_client
-    finally:
-        cache_client.close()

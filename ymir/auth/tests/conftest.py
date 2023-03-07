@@ -6,7 +6,6 @@ import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
 
-from auth.api import deps
 from auth.config import settings
 from auth.db.session import SessionLocal
 from auth.main import app
@@ -44,9 +43,6 @@ def fake_cache_client() -> Generator:
         yield client
     finally:
         client.close()
-
-
-app.dependency_overrides[deps.get_cache] = fake_cache_client
 
 
 @pytest.fixture(scope="module")
