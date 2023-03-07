@@ -247,8 +247,8 @@ const task = {
     en: 'GPU Count must between {min} - {max}',
   },
   'task.gpu.tip': {
-    cn: '当前可用GPU个数为 {count}',
-    en: 'Valid GPU count: {count}',
+    cn: '当前可用空闲GPU个数为 {count}',
+    en: 'Valid Idle GPU count: {count}',
   },
   'task.detail.label.go.platform': {
     cn: '跳转到标注平台>>',
