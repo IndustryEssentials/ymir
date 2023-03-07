@@ -64,6 +64,10 @@ const dataset = {
   'dataset.add.types.path': { cn: '路径导入', en: 'Path Import' },
   'dataset.add.success.msg': { cn: '导入正在进行中', en: 'Dataset Importing' },
   'dataset.add.form.name.label': { cn: '新数据集名称', en: 'Dataset Name' },
+  'dataset.add.top.warning': {
+    cn: '数据集导入支持包含图像以及标注的导入，如数据集包含推理结果会被忽略。',
+    en: 'Assets, annotations but not predictions are supported by Dataset Import',
+  },
   'dataset.add.form.name.required': { cn: '数据集名称为必填项', en: 'Dataset Name Required' },
   'dataset.add.form.name.placeholder': { cn: '请输入数据集名称，支持2-80个字符', en: 'Please input dataset name, 2 - 80 characters' },
   'dataset.add.form.type.label': { cn: '添加类型', en: 'Type' },
@@ -88,8 +92,8 @@ const dataset = {
   'dataset.add.form.path.label': { cn: '相对路径', en: 'Relative Path' },
   'dataset.add.form.tip.format.detail': { cn: '查看标注示例文件及meta.yaml格式', en: 'View annotations sample file or meta.yaml' },
   'dataset.add.form.tip.structure': {
-    cn: '图片文件需放入images文件夹内，标注文件需放入gt文件夹内，模型推理标注文件需放入pred文件夹内。gt和pred都是可选的。文件结构如下：{br}{pic}{br}{detail}',
-    en: 'image -> images; gt -> GT annotations; pred -> predictions. gt and pred is optional. structure: {br}{pic}',
+    cn: '图片文件需放入images文件夹内，标注文件需放入gt文件夹内。gt可选。文件结构如下：{br}{pic}{br}{detail}',
+    en: 'image -> images; gt -> GT annotations; gt is optional. structure: {br}{pic}',
   },
   'dataset.add.form.path.tip': {
     cn: `1. 将数据文件夹存放到ymir工作空间目录下的ymir-sharing目录，如 /home/ymir/ymir-workspace/ymir-sharing/Dataset2012, 输入基于ymir-sharing相对路径：Dataset2012{br}

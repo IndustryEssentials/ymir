@@ -134,7 +134,6 @@ function Verify() {
     return (
       <Uploader
         key={'uploader'}
-        type="primary"
         className={styles.verify_uploader}
         onChange={urlChange}
         format="img"
