@@ -17,7 +17,7 @@ import { getPrimaryMetricsLabel } from '@/constants/model'
 
 export function getPredictionColumns(type: ObjectType): TableColumnsType<YModels.Prediction> {
   const label = type ? getPrimaryMetricsLabel(type) : undefined
-  return [InferModel(), InferDataset(), InferConfig(), Map(label), State(), CreateTime()]
+  return [InferModel(), InferDataset(), InferConfig(), Map(label), State(), CreateTime(false)]
 }
 export function getDatasetColumns(): TableColumnsType<YModels.Dataset>  {
   return [Name(), Source(), Count(), Keywords(), State(), CreateTime()]
