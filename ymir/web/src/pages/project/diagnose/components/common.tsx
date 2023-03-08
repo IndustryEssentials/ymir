@@ -3,6 +3,8 @@ import { attr2LowerCase } from '@/utils/object'
 import { Popover } from 'antd'
 import ReactJson from 'react-json-view'
 
+export type TabIdType = 'ap' | 'iou' | 'acc' | 'maskap' | 'boxap' | 'curve' | 'rp' | 'pr'
+type MetricKeys = Exclude<TabIdType, 'rp' | 'pr' | 'curve'> | 'pr_curve'
 export type Task = {
   config: { [key: string]: string | number }
   configName: string
@@ -10,6 +12,19 @@ export type Task = {
   model: number
   stage: number
   result: number
+}
+
+export type ViewProps = {
+  type: MetricKeys
+  tasks: Task[]
+  datasets: YModels.Dataset[]
+  models: YModels.Model[]
+  data: YModels.BackendData
+  p2r?: boolean
+  prRate?: number[]
+  xByClasses?: boolean
+  kw: { ck?: boolean; keywords: string[] }
+  averageIou?: number
 }
 export type MetricType = {
   ap?: number

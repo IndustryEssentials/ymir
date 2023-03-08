@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react'
+import React, { FC, useCallback, useEffect, useState } from 'react'
 import { Card, Button, Form, Row, Col, Radio, Slider, Select, InputNumber, Checkbox, Space, Tag } from 'antd'
 import { useLocation } from 'umi'
 
@@ -8,17 +8,26 @@ import { ObjectType, isDetection, isSemantic } from '@/constants/objectType'
 
 import Panel from '@/components/form/panel'
 import PredictionSelect from '@/components/form/PredictionSelect'
-import SingleMetircView from './components/SingleMetircView'
-import CurveView from './components/curveView'
-import PView from './components/prView'
-import View from './components/view'
-import DefaultStages from './components/defaultStages'
+import SingleMetircView from './SingleMetircView'
+import CurveView from './CurveView'
+import PView from './PRView'
+import View from './View'
+import DefaultStages from './DefaultStages'
 import Tip from '@/components/form/singleTip'
 
 import s from './index.less'
 import { CompareIcon } from '@/components/common/Icons'
+import { ViewProps } from './common'
+type Props = {
+  project: YModels.Project
+}
+type TabType = {
+  value: string
+  component: FC<ViewProps>
+  ck?: boolean
+}
 
-const metricsTabs = [
+const metricsTabs: TabType[] = [
   { value: 'ap', component: SingleMetircView, ck: true },
   { value: 'iou', component: SingleMetircView },
   { value: 'acc', component: SingleMetircView },
@@ -48,9 +57,10 @@ const kwTypes = [
   { label: 'keyword.ck.label', value: 1 },
 ]
 
-function Matrics({ pid, project }) {
-  const [tabs, setTabs] = useState([])
-  const { state } = useLocation()
+const Matrics: FC<Props> = ({ project }) => {
+  const pid = project.id
+  const [tabs, setTabs] = useState<TabType[]>([])
+  const { state } = useLocation<{ mid: number }>()
   const [form] = Form.useForm()
   const [inferTasks, setInferTasks] = useState([])
   const [selectedModels, setSelectedModels] = useState([])

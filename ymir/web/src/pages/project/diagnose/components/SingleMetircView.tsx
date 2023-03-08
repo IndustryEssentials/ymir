@@ -15,20 +15,10 @@ import {
   MetricType,
   opt,
   percentRender,
+  ViewProps,
 } from './common'
 import type { Task } from './common'
 import t from '@/utils/t'
-
-type Props = {
-  type: 'ap' | 'iou' | 'acc' | 'maskap' | 'boxap'
-  tasks: Task[]
-  datasets: YModels.Dataset[]
-  models: YModels.Model[]
-  data: any
-  xType: string
-  kw: { kwType: string; keywords: string[] }
-  averageIou: number
-}
 
 type KeywordType = {
   value: string | number
@@ -61,7 +51,7 @@ type ClassesDataType = {
 
 const detFields = ['ap', 'maskap', 'boxap']
 
-const MapView: FC<Props> = ({ type, tasks, datasets, models, data, xType, kw: { kwType, keywords }, averageIou }) => {
+const MapView: FC<ViewProps> = ({ type, tasks, datasets, models, data, xByClasses, kw: { ck, keywords }, averageIou }) => {
   const [list, setList] = useState<ListType[]>([])
   const [dd, setDD] = useState<KeywordType[]>([])
   const [kd, setKD] = useState<KeywordType[]>([])
@@ -79,7 +69,7 @@ const MapView: FC<Props> = ({ type, tasks, datasets, models, data, xType, kw: { 
       setDData(undefined)
       setKData(undefined)
     }
-  }, [kwType, data, keywords, averageIou])
+  }, [ck, data, keywords, averageIou])
 
   useEffect(() => {
     setDD(datasets.map(opt))
@@ -90,7 +80,7 @@ const MapView: FC<Props> = ({ type, tasks, datasets, models, data, xType, kw: { 
       const kws = keywords.map((k) => ({ value: k, label: k }))
       setKD(kws)
     }
-  }, [keywords, data, kwType])
+  }, [keywords, data, ck])
 
   useEffect(() => {
     const cls = generateColumns()
@@ -100,22 +90,22 @@ const MapView: FC<Props> = ({ type, tasks, datasets, models, data, xType, kw: { 
   useEffect(() => {
     // list
     if (dData && kData) {
-      generateList(!xType)
-      setXAsix(xType ? dd : kd)
+      generateList(!xByClasses)
+      setXAsix(xByClasses ? dd : kd)
     } else {
       setList([])
     }
-  }, [xType, dd, kd, dData, kData])
+  }, [xByClasses, dd, kd, dData, kData])
 
   function getMetricData(data: DataType) {
     const isDet = detFields.includes(type)
-    return isDet ? getDetRowforDataset(data, !!kwType) : getSegRowforDataset(data, type)
+    return isDet ? getDetRowforDataset(data, ck) : getSegRowforDataset(data, type)
   }
 
   function generateDData(data: any) {
     const ddata: DatasetDataType = Object.keys(data).reduce((prev, rid) => {
-      const fiou = !kwType && averageIou ? getAverageField(data[rid]) : getMetricData(data[rid])
-      console.log('fiou:', fiou, kwType, averageIou)
+      const fiou = !ck && averageIou ? getAverageField(data[rid]) : getMetricData(data[rid])
+      console.log('fiou:', fiou, ck, averageIou)
       return {
         ...prev,
         [rid]: fiou,
@@ -127,7 +117,7 @@ const MapView: FC<Props> = ({ type, tasks, datasets, models, data, xType, kw: { 
   function generateKData(data: any) {
     const kdata: ClassesDataType = {}
     Object.keys(data).forEach((id) => {
-      const fiou = !kwType && averageIou ? getAverageField(data[id]) : getMetricData(data[id])
+      const fiou = !ck && averageIou ? getAverageField(data[id]) : getMetricData(data[id])
       Object.keys(fiou).forEach((key) => {
         kdata[key] = kdata[key] || {}
         kdata[key][id] = fiou[key]
