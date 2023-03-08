@@ -43,7 +43,7 @@ const Predictions: React.FC = () => {
       key: 'preview',
       label: t('common.action.preview'),
       hidden: () => !validDataset(record),
-      onclick: () => history.push(`/home/project/${pid}/dataset/${record.id}/assets#pred`),
+      onclick: () => history.push(`/home/project/${pid}/prediction/${record.id}#pred`),
       icon: <EyeOnIcon />,
     },
     {
