@@ -105,6 +105,8 @@ describe('utils: request', () => {
     const error401 = error(401)
     const error403 = error(403)
     const error405 = error(405)
+    const error500 = error(500)
+    const error502 = error(502)
     const error504 = error(504)
 
     const reqHandler = request.interceptors.response.handlers[0]
@@ -158,5 +160,15 @@ describe('utils: request', () => {
     const error504Result = reqHandler.rejected(error504)
     expect(msgSpy).toHaveBeenCalled()
     expect(error504Result).toEqual({ code: 504 })
+
+    // 500
+    const error500Result = reqHandler.rejected(error500)
+    expect(msgSpy).toHaveBeenCalled()
+    expect(error500Result).toEqual({ code: 500 })
+
+    // 502
+    const error502Result = reqHandler.rejected(error502)
+    expect(msgSpy).toHaveBeenCalled()
+    expect(error502Result).toEqual({ code: 502 })
   })
 })

@@ -44,12 +44,11 @@ request.interceptors.response.use(
   },
   (err) => {
     let authrized = [401, 403]
+    let serviceErrorCode = [500, 504, 502]
     if (authrized.includes(err.request.status)) {
       return logout()
-    } else if (err.request.status === 504) {
-      message.error(t('error.timeout'))
-    } else if (err.request.status === 502) {
-      message.error(t('error.502'))
+    } else if (serviceErrorCode.includes(err.request.status)) {
+      message.error(t(`error.${err.request.status}`))
     } else {
       const res = err.response
       if (res?.data?.code) {
