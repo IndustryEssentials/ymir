@@ -1,0 +1,45 @@
+<mjml>
+  <mj-body background-color="#fff">
+    <mj-section>
+      <mj-column>
+        <mj-divider border-color="#555"></mj-divider>
+        <mj-text font-size="20px" color="#555">您的任务已完成</mj-text>
+        <mj-text font-size="16px" color="#555">任务id: {{ task_hash }}</mj-text>
+        <mj-text font-size="16px" color="#555">任务类型: {{ task_type }}</mj-text>
+        <mj-text font-size="16px" color="#555">资源数: {{ asset_count }}</mj-text>
+        <mj-text font-size="16px" color="#555">commit id: {{ commit_id }}</mj-text>
+      </mj-column>
+    </mj-section>
+
+    <mj-section>
+      <mj-column>
+        <mj-text font-size="20px" color="#555">asset 预览</mj-text>
+      </mj-column>
+    </mj-section>
+
+    <mj-section>
+      <mj-column>
+        <mj-table>
+
+          <tr>
+            <td><a href="{{ image1 }}"> {{ asset1 }}</a></td>
+          </tr>
+          <tr>
+            <td><a href="{{ image2 }}"> {{ asset2 }}</a></td>
+          </tr>
+          <tr>
+            <td><a href="{{ image3 }}"> {{ asset3 }}</a></td>
+          </tr>
+
+        </mj-table>
+      </mj-column>
+    </mj-section>
+
+    <mj-section>
+      <mj-column>
+        <mj-button padding="50px 0px" href="{{ link }}">在 Ymir Portal 中查看</mj-button>
+      </mj-column>
+    </mj-section>
+
+  </mj-body>
+</mjml>

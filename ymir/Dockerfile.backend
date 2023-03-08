@@ -70,4 +70,4 @@ WORKDIR /app
 COPY ./backend/deploy/git.config /root/.gitconfig
 COPY ./backend/deploy/supervisor /app/supervisor
 
-ENV PYTHONPATH=/app/ymir_app:/app/ymir_controller:/app/ymir_viz:/app/common:/app/ymir_monitor:/app/ymir_postman
+ENV PYTHONPATH=/app/ymir_auth:/app/ymir_app:/app/ymir_controller:/app/ymir_viz:/app/common:/app/ymir_monitor
