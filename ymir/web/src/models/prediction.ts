@@ -1,3 +1,4 @@
+import { diffTime } from '@/utils/date'
 import { actions } from '@/constants/common'
 import { transferPrediction } from '@/constants/prediction'
 import { batchAct, evaluate, getPrediction, getPredictions } from '@/services/prediction'
@@ -35,14 +36,19 @@ const PredictionModel: YStates.PredictionStore = {
       }
       const { code, result } = yield call<YModels.ResponseResultList>(getPredictions, { pid, ...params })
       if (code === 0 && result) {
+        type originData = { create_datatime: string, [key: string]: any }
+        const sorter = (a: originData, b: originData) => diffTime(b.create_datetime, a.create_datetime)
         const groupByModel = ({ items, total }: { items: { [key: string]: YModels.Prediction[] }; total: number }) => ({
           items: Object.values(items)
             .map((list) =>
-              list.map((item, index) => ({
-                ...item,
-                rowSpan: index === 0 ? list.length : 0,
-              })),
+              list
+                .sort(sorter)
+                .map((item, index) => ({
+                  ...item,
+                  rowSpan: index === 0 ? list.length : 0,
+                })),
             )
+            .sort(([a], [b]) => sorter(a, b))
             .flat(),
           total,
         })
