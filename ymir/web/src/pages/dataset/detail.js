@@ -4,6 +4,7 @@ import { Button, Card, message, Space } from 'antd'
 
 import t from '@/utils/t'
 import { TASKTYPES, getTaskTypeLabel } from '@/constants/task'
+import { getLabelToolUrl } from '@/constants/common'
 import useFetch from '@/hooks/useFetch'
 import useRestore from '@/hooks/useRestore'
 import { canHide } from '@/constants/dataset'
@@ -95,7 +96,7 @@ function DatasetDetail() {
           <Space style={{ width: '100%', justifyContent: 'flex-end' }}>
             {dataset.taskType === TASKTYPES.LABEL ? (
               <div style={{ textAlign: 'right' }}>
-                <Link target="_blank" to="/label_tool/">
+                <Link target="_blank" to={getLabelToolUrl()}>
                   {t('task.detail.label.go.platform')}
                 </Link>
               </div>
