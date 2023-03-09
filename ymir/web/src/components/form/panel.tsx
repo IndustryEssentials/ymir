@@ -4,17 +4,17 @@ import { ArrowDownIcon, ArrowRightIcon } from '@/components/common/Icons'
 import s from './panel.less'
 
 type Props = {
-  setVisible: (visible: boolean) => void
-  visible: boolean
+  visible?: boolean
+  setVisible?: (visible: boolean) => void
   toogleVisible?: boolean
   hasHeader?: boolean
-  label: string
-  bg: boolean
+  label?: string
+  bg?: boolean
 }
 const Panel: FC<Props> = ({ hasHeader = true, toogleVisible = true, visible, setVisible = () => {}, label = '', bg = true, children }) => {
   const [vis, setVis] = useState(false)
   useEffect(() => {
-    setVis(visible)
+    setVis(!!visible)
   }, [visible])
 
   return (

@@ -1,23 +1,10 @@
 import { FC, ReactNode, useEffect, useState } from 'react'
-import { Col, Row, Table, TableColumnsType } from 'antd'
-import { percent } from '@/utils/number'
+import { Table, TableColumnsType } from 'antd'
 import { isSame } from '@/utils/object'
 import Panel from '@/components/form/panel'
-import {
-  average,
-  DataType,
-  getAverageField,
-  getCK,
-  getDetRowforDataset,
-  getKwField,
-  getModelCell,
-  getSegRowforDataset,
-  MetricType,
-  opt,
-  percentRender,
-  ViewProps,
-} from './common'
-import type { Task } from './common'
+import { average, getAverageField, getDetRowforDataset, getModelCell, getSegRowforDataset, opt, percentRender } from './common'
+import type { DataType, DataTypeForTable, EvaluationResult, MetricType, ViewProps, MetricKeys, MetricsType, OptionType } from '.'
+
 import t from '@/utils/t'
 
 type KeywordType = {
@@ -37,27 +24,16 @@ type ListType = {
   rows: ListItemType[]
 }
 
-type DatasetDataType = {
-  [id: number | string]: {
-    [keyword: string]: MetricType
-  }
-}
-
-type ClassesDataType = {
-  [keyword: string]: {
-    [id: number | string]: MetricType
-  }
-}
-
 const detFields = ['ap', 'maskap', 'boxap']
 
-const MapView: FC<ViewProps> = ({ type, tasks, datasets, models, data, xByClasses, kw: { ck, keywords }, averageIou }) => {
+const MapView: FC<ViewProps> = ({ type, predictions, datasets, models, data, xByClasses, kw: { ck, keywords }, averageIou }) => {
+  console.log('list:', data, predictions)
   const [list, setList] = useState<ListType[]>([])
-  const [dd, setDD] = useState<KeywordType[]>([])
-  const [kd, setKD] = useState<KeywordType[]>([])
+  const [dd, setDD] = useState<OptionType<number>[]>([])
+  const [kd, setKD] = useState<OptionType[]>([])
   const [xasix, setXAsix] = useState<KeywordType[]>([])
-  const [dData, setDData] = useState<DatasetDataType>()
-  const [kData, setKData] = useState<ClassesDataType>()
+  const [dData, setDData] = useState<DataTypeForTable>()
+  const [kData, setKData] = useState<DataTypeForTable>()
   const [columns, setColumns] = useState<TableColumnsType<ListItemType>>([])
   const [hiddens, setHiddens] = useState<{ [id: string | number]: boolean }>({})
 
@@ -90,7 +66,7 @@ const MapView: FC<ViewProps> = ({ type, tasks, datasets, models, data, xByClasse
   useEffect(() => {
     // list
     if (dData && kData) {
-      generateList(!xByClasses)
+      setList(xByClasses ? generateKwItems() : generateDsItems())
       setXAsix(xByClasses ? dd : kd)
     } else {
       setList([])
@@ -102,10 +78,9 @@ const MapView: FC<ViewProps> = ({ type, tasks, datasets, models, data, xByClasse
     return isDet ? getDetRowforDataset(data, ck) : getSegRowforDataset(data, type)
   }
 
-  function generateDData(data: any) {
-    const ddata: DatasetDataType = Object.keys(data).reduce((prev, rid) => {
+  function generateDData(data: EvaluationResult) {
+    const ddata: DataTypeForTable = Object.keys(data).reduce((prev, rid) => {
       const fiou = !ck && averageIou ? getAverageField(data[rid]) : getMetricData(data[rid])
-      console.log('fiou:', fiou, ck, averageIou)
       return {
         ...prev,
         [rid]: fiou,
@@ -114,8 +89,8 @@ const MapView: FC<ViewProps> = ({ type, tasks, datasets, models, data, xByClasse
     setDData(ddata)
   }
 
-  function generateKData(data: any) {
-    const kdata: ClassesDataType = {}
+  function generateKData(data: EvaluationResult) {
+    const kdata: DataTypeForTable = {}
     Object.keys(data).forEach((id) => {
       const fiou = !ck && averageIou ? getAverageField(data[id]) : getMetricData(data[id])
       Object.keys(fiou).forEach((key) => {
@@ -125,30 +100,28 @@ const MapView: FC<ViewProps> = ({ type, tasks, datasets, models, data, xByClasse
     })
     setKData(kdata)
   }
+  
+  function generateDsItems() {
+    return dd.map(({ value, label }) => ({ id: value, label, rows: generateDsRows(value) }))
+  }
 
-  function generateList(isDs: boolean) {
-    const titles = isDs ? dd : kd
-    const list = titles.map(({ value, label }) => ({
-      id: value,
-      label,
-      rows: isDs ? generateDsRows(value) : generateKwRows(value),
-    }))
-    setList(list)
+  function generateKwItems () {
+    return kd.map(({ value, label }) => ({ id: value, label, rows: generateKwRows(value) }))
   }
 
   function generateDsRows(tid: number | string) {
-    const tts = tasks.filter(({ testing }) => testing === tid)
-    return tts.map(({ result: rid }) => {
+    const tts = predictions.filter(({ inferDatasetId }) => inferDatasetId === tid)
+    return tts.map((prediction) => {
+      const rid = prediction.id
       const ddata = dData && dData[rid] ? dData[rid] : {}
-      const kwAps = kd.reduce((prev, { value: kw }) => {
-        const metric = ddata[kw] ? ddata[kw][type] : null
+      const kwAps = kd.reduce<{[key: string]: number}>((prev, { value: kw }) => {
         return {
           ...prev,
-          [kw]: metric,
+          [kw]: ddata[kw] ? ddata[kw][type] : 0,
         }
       }, {})
       const _average = average(Object.values(kwAps))
-      const _model = getModelCell(rid, tasks, models)
+      const _model = getModelCell(prediction, models)
       return {
         id: rid,
         _model,
@@ -160,35 +133,26 @@ const MapView: FC<ViewProps> = ({ type, tasks, datasets, models, data, xByClasse
 
   const generateKwRows = (kw: string | number) => {
     const kdata = kData && kData[kw] ? kData[kw] : {}
-
-    const mids: { id: number; mid: number; sid: number; config: { [key: string]: any } }[] = Object.values(
-      tasks.reduce((prev, { model, stage, config }) => {
-        const id = `${model}${stage}${JSON.stringify(config)}`
-        return {
-          ...prev,
-          [id]: { id, mid: model, sid: stage, config: config },
-        }
-      }, {}),
-    )
+    const mids = [...new Set(predictions.map(({ inferModelId }) => inferModelId))]
 
     return mids
-      .map(({ id, mid, sid, config }) => {
-        const tts = tasks.filter(({ model, stage, config: tconfig }) => model === mid && stage === sid && isSame(config, tconfig))
-        const _model = getModelCell(tts[0].result, tasks, models)
+      .map(([mid, sid]) => {
+        const preds = predictions.filter(({ inferModelId: [model, stage] }) => mid === model && sid === stage)
+        const _model = getModelCell(preds[0], models)
 
         const drow = kdata
-          ? tts.reduce((prev, { testing, result }) => {
-              const metric = kdata[result] ? kdata[result][type] : null
+          ? preds.reduce((prev, { id, inferDatasetId }) => {
+              const metric = kdata[id] ? kdata[id] : {}
               return {
                 ...prev,
-                [testing]: metric,
+                [inferDatasetId]: metric[type],
               }
             }, {})
           : {}
         const _average = average(Object.values(drow))
         return {
-          id,
-          config,
+          id: `${mid}${sid}`,
+          config: preds[0]?.task?.config,
           _model,
           _average,
           ...drow,

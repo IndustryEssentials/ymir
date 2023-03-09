@@ -1,15 +1,11 @@
 import { FC, useEffect, useState } from 'react'
-import { Table } from 'antd'
+import { Table, TableColumnsType } from 'antd'
 import { percent, toFixed } from '@/utils/number'
 import { isSame } from '@/utils/object'
 import t from '@/utils/t'
 import Panel from '@/components/form/panel'
-import { average, getCK, getKwField, opt, percentRender, getModelCell, confidenceRender, ViewProps } from './common'
-type Point = {
-  x: number,
-  y: number
-  z: number
-}
+import { average, getCK, getKwField, opt, percentRender, getModelCell, confidenceRender } from './common'
+import { DataTypeForTable, EvaluationResult, ListType, MetricsType, OptionType, Point, TableDataType, ViewProps } from '.'
 
 const getLabels = (type: string) => ({
   colMain: `model.diagnose.metrics.${type}.label`,
@@ -28,33 +24,35 @@ function generateRange(min: number, max: number, step = 0.05) {
 }
 
 function findClosestPoint(target: number, points: Point[] = [], field: keyof Point = 'x') {
-  return points?.reduce((prev, curr) => (Math.abs(prev[field] - target) <= Math.abs(curr[field] - target) ? prev : curr), {[field]: 1})
+  return points?.reduce((prev, curr) => (Math.abs(prev[field] - target) <= Math.abs(curr[field] - target) ? prev : curr), { [field]: 1 })
 }
 
-const PView: FC<ViewProps> = ({ tasks, datasets, models, data, p2r, prRate, xByClasses, kw: { keywords } }) => {
-  const [list, setList] = useState([])
-  const [dd, setDD] = useState([])
-  const [kd, setKD] = useState([])
-  const [xasix, setXAsix] = useState([])
-  const [dData, setDData] = useState(null)
-  const [kData, setKData] = useState(null)
-  const [columns, setColumns] = useState([])
-  const [range, setRange] = useState([])
-  const [pointField, setPointField] = useState(['x', 'y'])
-  const [labels, setLabels] = useState({})
-  const [hiddens, setHiddens] = useState({})
-  const kwType = 0
+const PView: FC<ViewProps> = ({ predictions, datasets, models, data, p2r, prRate, xByClasses, kw: { ck, keywords } }) => {
+  const [list, setList] = useState<ListType>([])
+  const [dd, setDD] = useState<OptionType<number>[]>([])
+  const [kd, setKD] = useState<OptionType[]>([])
+  const [xasix, setXAsix] = useState<OptionType<string | number>[]>([])
+  const [dData, setDData] = useState<DataTypeForTable | null>(null)
+  const [kData, setKData] = useState<DataTypeForTable | null>(null)
+  const [columns, setColumns] = useState<TableColumnsType<TableDataType>>([])
+  const [range, setRange] = useState<number[]>([])
+  const [pointField, setPointField] = useState<(keyof Point)[]>(['x', 'y'])
+  const [labels, setLabels] = useState<ReturnType<typeof getLabels>>()
+  const [hiddens, setHiddens] = useState<{ [key: string]: boolean }>({})
 
   useEffect(() => {
+    if (!prRate) {
+      return
+    }
     const min = prRate[0]
     const max = prRate[1]
     setRange(generateRange(min, max))
   }, [prRate])
 
   useEffect(() => {
-    setPointField(prType ? ['y', 'x'] : ['x', 'y'])
-    setLabels(getLabels(prType ? 'recall' : 'precision'))
-  }, [prType])
+    setPointField(p2r ? ['y', 'x'] : ['x', 'y'])
+    setLabels(getLabels(p2r ? 'recall' : 'precision'))
+  }, [p2r])
 
   useEffect(() => {
     if (data && keywords) {
@@ -85,16 +83,16 @@ const PView: FC<ViewProps> = ({ tasks, datasets, models, data, p2r, prRate, xByC
   useEffect(() => {
     // list
     if (dData && kData) {
-      generateList(!xType)
-      setXAsix(xType ? dd : kd)
+      setList(xByClasses ? generateKwItems() : generateDsItems())
+      setXAsix(xByClasses ? dd : kd)
     } else {
       setList([])
     }
-  }, [xType, dd, kd, dData, kData, range])
+  }, [xByClasses, dd, kd, dData, kData, range])
 
-  function generateDData(data) {
-    const ddata = Object.keys(data).reduce((prev, rid) => {
-      const fiou = getKwField(data[rid], kwType)
+  function generateDData(data: EvaluationResult) {
+    const ddata = Object.keys(data).reduce<DataTypeForTable>((prev, rid) => {
+      const fiou = getKwField(data[rid], ck)
       return {
         ...prev,
         [rid]: fiou,
@@ -103,10 +101,10 @@ const PView: FC<ViewProps> = ({ tasks, datasets, models, data, p2r, prRate, xByC
     setDData(ddata)
   }
 
-  function generateKData(data) {
-    const kdata = {}
+  function generateKData(data: EvaluationResult) {
+    const kdata: DataTypeForTable = {}
     Object.keys(data).forEach((id) => {
-      const fiou = getKwField(data[id], kwType)
+      const fiou = getKwField(data[id], ck)
       Object.keys(fiou).forEach((key) => {
         kdata[key] = kdata[key] || {}
         kdata[key][id] = fiou[key]
@@ -115,27 +113,26 @@ const PView: FC<ViewProps> = ({ tasks, datasets, models, data, p2r, prRate, xByC
     setKData(kdata)
   }
 
-  function generateList(isDs) {
-    const titles = isDs ? dd : kd
-    const list = titles.map(({ value, label }) => ({
-      id: value,
-      label,
-      rows: isDs ? generateDsRows(value) : generateKwRows(value),
-    }))
-    setList(list)
+  function generateDsItems() {
+    return dd.map(({ value, label }) => ({ id: value, label, rows: generateDsRows(value) }))
   }
 
-  function generateDsRows(tid) {
-    const tts = tasks.filter(({ testing }) => testing === tid)
+  function generateKwItems () {
+    return kd.map(({ value, label }) => ({ id: value, label, rows: generateKwRows(value) }))
+  }
+
+  function generateDsRows(tid: number): TableDataType[] {
+    const tts = predictions.filter(({ inferDatasetId }) => inferDatasetId === tid)
 
     return tts
-      .map(({ model, result: rid }) => {
+      .map((prediction) => {
+        const id = prediction.id
         return range.map((rate) => {
-          const ddata = dData[rid] || {}
+          const ddata = dData && dData[id] ? dData[id] : {}
 
-          const _model = getModelCell(rid, tasks, models)
+          const _model = getModelCell(prediction, models)
           const kwPoints = kd.map(({ value: kw }) => {
-            const line = ddata[kw]?.pr_curve
+            const line: Point[] = ddata[kw]?.pr_curve || []
             return { point: findClosestPoint(rate, line, pointField[0]), kw }
           })
           const _average = average(kwPoints.map(({ point }) => point[pointField[1]]))
@@ -150,7 +147,7 @@ const PView: FC<ViewProps> = ({ tasks, datasets, models, data, p2r, prRate, xByC
           )
 
           return {
-            id: `${rid}${rate}`,
+            id: `${id}${rate}`,
             value: rate,
             name: _model,
             ...kwFields,
@@ -162,28 +159,23 @@ const PView: FC<ViewProps> = ({ tasks, datasets, models, data, p2r, prRate, xByC
       .flat()
   }
 
-  // todo
-  function generateKwRows(kw) {
-    const kdata = kData[kw] || {}
+  function generateKwRows(kw: string): TableDataType[] {
+    const kdata = kData && kData[kw] ? kData[kw] : {}
 
-    const mids = Object.values(
-      tasks.reduce((prev, { model, stage, config }) => {
-        const id = `${model}${stage}${JSON.stringify(config)}`
-        return {
-          ...prev,
-          [id]: { id, mid: model, sid: stage, config: config },
-        }
-      }, {}),
-    )
+    const mids = [...new Set(predictions.map(({ inferModelId }) => inferModelId))]
+    const cols = predictions.map(({ inferDatasetId }) => inferDatasetId)
 
     return mids
-      .map(({ id, mid, sid, config }) => {
-        const tts = tasks.filter(({ model, stage, config: tconfig }) => model === mid && stage === sid && isSame(config, tconfig))
-        const _model = getModelCell(tts[0].result, tasks, models)
+      .map(([mid, sid]) => {
+        const preds = predictions.filter(({ inferModelId: [model, stage] }) => mid === model && sid === stage)
+
+        // const { id, inferModelId: [mid, sid], task: { config } = {config: {}} } = prediction
+        // const tts = tasks.filter(({ model, stage, config: tconfig }) => model === mid && stage === sid && isSame(config, tconfig))
+        const _model = getModelCell(preds[0], models)
 
         return range.map((rate) => {
-          const points = tts.map(({ result: rid, testing: tid }) => {
-            const line = kdata[rid]?.pr_curve
+          const points = preds.map(({ inferDatasetId: tid }) => {
+            const line = kdata[tid]?.pr_curve || []
             const point = findClosestPoint(rate, line, pointField[0])
             return {
               tid,
@@ -202,7 +194,7 @@ const PView: FC<ViewProps> = ({ tasks, datasets, models, data, p2r, prRate, xByC
           )
 
           return {
-            id: `${id}${rate}`,
+            id: `${mid}${rate}`,
             value: rate,
             name: _model,
             ...tpoints,
@@ -214,11 +206,11 @@ const PView: FC<ViewProps> = ({ tasks, datasets, models, data, p2r, prRate, xByC
       .flat()
   }
 
-  function generateColumns() {
+  function generateColumns(): TableColumnsType<TableDataType> {
     const dynamicColumns = xasix
       .map(({ value, label }) => [
         {
-          title: t(labels.colTarget, { label: <div>{label}</div> }),
+          title: t(labels?.colTarget, { label: <div>{label}</div> }),
           dataIndex: `${value}_target`,
           colSpan: 2,
           width: 100,
@@ -237,19 +229,19 @@ const PView: FC<ViewProps> = ({ tasks, datasets, models, data, p2r, prRate, xByC
         title: 'Model',
         dataIndex: 'name',
         width: 150,
-        onCell: (_, index) => ({
+        onCell: (_, index: number = 0) => ({
           rowSpan: index % range.length ? 0 : range.length,
         }),
       },
       {
-        title: t(labels.colMain),
+        title: t(labels?.colMain),
         dataIndex: 'value',
         width: 100,
         render: percentRender,
       },
       ...dynamicColumns,
       {
-        title: t(labels.colAverage),
+        title: t(labels?.colAverage),
         dataIndex: 'a',
         width: 100,
         render: percentRender,
@@ -263,20 +255,24 @@ const PView: FC<ViewProps> = ({ tasks, datasets, models, data, p2r, prRate, xByC
     ]
   }
 
-  return list.map(({ id, label, rows }) => (
-    <div key={id}>
-      <Panel label={label} visible={!hiddens[id]} setVisible={(value) => setHiddens((old) => ({ ...old, [id]: !value }))} bg={false}>
-        <Table
-          dataSource={rows}
-          rowKey={(record) => record.id}
-          rowClassName={(record, index) => (Math.floor(index / range.length) % 2 === 0 ? '' : 'oddRow')}
-          columns={columns}
-          pagination={false}
-          scroll={{ x: '100%' }}
-        />
-      </Panel>
-    </div>
-  ))
+  return (
+    <>
+      {list.map(({ id, label, rows }) => (
+        <div key={id}>
+          <Panel label={label} visible={!hiddens[id]} setVisible={(value) => setHiddens((old) => ({ ...old, [id]: !value }))} bg={false}>
+            <Table
+              dataSource={rows}
+              rowKey={(record) => record.id}
+              rowClassName={(record, index) => (Math.floor(index / range.length) % 2 === 0 ? '' : 'oddRow')}
+              columns={columns}
+              pagination={false}
+              scroll={{ x: '100%' }}
+            />
+          </Panel>
+        </div>
+      ))}
+    </>
+  )
 }
 
 export default PView

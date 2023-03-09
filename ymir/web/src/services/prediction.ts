@@ -2,17 +2,16 @@ import request from '@/utils/request'
 
 /** prediction service */
 /**
- * get dataset
+ * get prediction
  * @export
- * @param {number} id dataset id
- * @param {boolean} verbose for more infomation
+ * @param {number} id prediction id
  */
-export function getPrediction(id: number, verbose: boolean) {
-  return request.get(`predictions/${id}`, { params: { verbose } })
+export function getPrediction(id: number) {
+  return request.get(`predictions/${id}`)
 }
 
 /**
- * @description get datasets by query
+ * @description get predictions by query
  * @export
  * @param {YParams.PredictionsQuery}
  */
@@ -46,16 +45,14 @@ export function batchAct(action: string, pid: number, ids: number[] = []) {
 }
 
 /**
- * @description evalution between gt and prediction annotations by dataset
+ * @description evalution between gt and prediction annotations by prediction
  * @export
- * @param {EvaluationParams} {
- *   pid, datasets, iou, averageIou, confidence, ck
- * }
+ * @param {YParams.EvaluationParams} { pid, predictionId, iou, averageIou, confidence, ck, curve }
  */
-export function evaluate({ pid, datasets, iou, averageIou, confidence, ck, curve }: YParams.EvaluationParams) {
+export function evaluate({ pid, predictionId, iou, averageIou, confidence, ck, curve }: YParams.EvaluationParams) {
   return request.post(`/predictions/evaluation`, {
     project_id: pid,
-    prediction_ids: datasets,
+    prediction_ids: [predictionId],
     confidence_threshold: confidence,
     iou_threshold: iou,
     require_average_iou: averageIou,

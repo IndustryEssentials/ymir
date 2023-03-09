@@ -5,7 +5,7 @@ import { TipsIcon } from '@/components/common/Icons'
 import s from './tip.less'
 
 type Props = PopoverProps & {
-  iconStyles: CSSProperties,
+  iconStyles?: CSSProperties,
 }
 
 const Tip: FC<Props> = ({ title = null, content = '', placement = 'right', iconStyles = {}, ...resProps }) => {

@@ -2,13 +2,13 @@ import { Modal, ModalProps } from "antd"
 import { FC } from "react"
 import Metrics from './Metrics'
 type Props = ModalProps & {
-  project: YModels.Project
+  prediction?: YModels.Prediction
 }
 
-const MetricsModal: FC<Props> = ({ project, ...props }) => {
-  return <Modal {...props}>
-    <Metrics project={project}  />
-  </Modal>
+const MetricsModal: FC<Props> = ({ prediction, ...props }) => {
+  return prediction ? <Modal width={'90%'} bodyStyle={{ height: '100%'}} {...props} destroyOnClose>
+    <Metrics prediction={prediction}  />
+  </Modal> : null
 }
 
 export default MetricsModal
