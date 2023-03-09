@@ -127,6 +127,8 @@ declare namespace YModels {
     rowSpan?: number
   }
 
+  type AllResult = Prediction | Dataset | Model
+
   export interface DatasetAnalysis extends Omit<Dataset, 'gt' | 'pred'> {
     assetHWRatio: Array<BackendData>
     assetArea: Array<BackendData>

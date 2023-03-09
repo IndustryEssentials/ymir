@@ -1,7 +1,7 @@
 const errors = {
-  'error.500': { cn: '内部服务错误，请重试或联系管理员', en: 'Service Error, please retry or contact admin', },
-  'error.504': { cn: '网关请求超时，后端服务异常', en: 'Gateway Timeout, backend service expection', },
-  'error.502': { cn: '网关异常，无法连接到后端服务', en: 'Bad Gateway, backend service disconnect', },
+  'error500': { cn: '内部服务错误，请重试或联系管理员', en: 'Service Error, please retry or contact admin', },
+  'error504': { cn: '网关请求超时，后端服务异常', en: 'Gateway Timeout, backend service expection', },
+  'error502': { cn: '网关异常，无法连接到后端服务', en: 'Bad Gateway, backend service disconnect', },
   'error110101': { cn: '接口错误', en: 'API_ERROR: API Error', },
   'error110102': { cn: '参数校验失败', en: 'Parammeters Validation Failed', },
   'error110103': { cn: '未知错误', en: 'UNKNOWN_ERROR: Unkown Error', },

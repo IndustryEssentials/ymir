@@ -25,7 +25,7 @@ export enum actions {
 
 export const OPENPAI_MAX_GPU_COUNT = 8
 
-export function updateResultState(result: Result, tasks: YModels.BackendData) {
+export function updateResultState(result: YModels.AllResult, tasks: YModels.BackendData) {
   const task = result?.task?.hash ? tasks[result.task.hash] : null
   if (!result || !task) {
     return result
@@ -33,7 +33,7 @@ export function updateResultState(result: Result, tasks: YModels.BackendData) {
   return updateResultByTask(result, task)
 }
 
-export function updateResultByTask<T extends Result>(result: T, task?: YModels.ProgressTask): T | undefined {
+export function updateResultByTask<T extends YModels.Result>(result: T, task?: YModels.ProgressTask): T | undefined {
   if (!result || !task) {
     return
   }
@@ -94,6 +94,8 @@ const getThirdUrl = (field: string) => {
   const onlyPort = /^\d+$/.test(url)
   return onlyPort ? `${location.protocol}//${location.hostname}:${url}` : url
 }
+
+export const getErrorCodeDocLink = (code: string | number) => `/docs/#/error-code-zh-CN?id=_${code}`
 
 enum MergeStrategy {
   latest = 2,
