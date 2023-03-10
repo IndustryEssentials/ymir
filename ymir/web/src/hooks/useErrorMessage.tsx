@@ -1,4 +1,3 @@
-import { ReactNode } from 'react'
 import { message, MessageArgsProps } from 'antd'
 import { getErrorCodeDocLink } from '@/constants/common'
 import t from '@/utils/t'
@@ -11,7 +10,7 @@ const useErrorMessage = (config: Omit<MessageArgsProps, 'content'> = {}) => {
         {msg}
         {showLink ? (
           <a href={getErrorCodeDocLink(code)} target="_blank">
-            View More
+            {t('common.more')}
           </a>
         ) : null}
       </>
