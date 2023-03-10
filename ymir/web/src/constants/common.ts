@@ -95,7 +95,7 @@ const getThirdUrl = (field: string) => {
   return onlyPort ? `${location.protocol}//${location.hostname}:${url}` : url
 }
 
-export const getErrorCodeDocLink = (code: string | number) => `/docs/#/error-code-zh-CN?id=_${code}`
+export const getErrorCodeDocLink = (code: string | number = '') => `/docs/#/error-code-zh-CN?id=_${code}`
 
 enum MergeStrategy {
   latest = 2,
