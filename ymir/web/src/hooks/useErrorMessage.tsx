@@ -9,7 +9,7 @@ const useErrorMessage = (config: Omit<MessageArgsProps, 'content'> = {}) => {
       <>
         {msg}
         {showLink ? (
-          <a href={getErrorCodeDocLink(code)} target="_blank">
+          <a href={getErrorCodeDocLink(code)} target="_blank" style={{ display: 'inline-block', paddingLeft: 10 }}>
             {t('common.more')}
           </a>
         ) : null}
