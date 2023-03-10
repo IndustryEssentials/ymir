@@ -6,7 +6,7 @@ type Props = ModalProps & {
 }
 
 const MetricsModal: FC<Props> = ({ prediction, ...props }) => {
-  return prediction ? <Modal width={'90%'} bodyStyle={{ height: '100%'}} {...props} destroyOnClose>
+  return prediction ? <Modal width={'90%'} bodyStyle={{ height: '100%'}} centered {...props} destroyOnClose>
     <Metrics prediction={prediction}  />
   </Modal> : null
 }

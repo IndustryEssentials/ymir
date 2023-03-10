@@ -20,6 +20,9 @@ import { CompareIcon } from '@/components/common/Icons'
 import useRequest from '@/hooks/useRequest'
 import CKSelector from './CKSelector'
 import { ValidateErrorEntity } from 'rc-field-form/lib/interface'
+import ModelVersionName from '@/components/result/ModelVersionName'
+import VersionName from '@/components/result/VersionName'
+import ReactJson from 'react-json-view'
 type Props = {
   prediction: YModels.Prediction
 }
@@ -308,6 +311,9 @@ const Matrics: FC<Props> = ({ prediction }) => {
                 colon={false}
               >
                 <Form.Item label={t('pred.metrics.prediction.select.label')}>
+                  <p><span>{t('model.diagnose.label.model')}：</span><ModelVersionName id={prediction.inferModelId[0]} stageId={prediction.inferModelId[1]} /></p>
+                  <p><span>{t('model.diagnose.label.testing_dataset')}: </span><VersionName id={prediction.inferDatasetId} /></p>
+                  <div><p>{t('model.diagnose.label.config')}</p><ReactJson src={prediction.task.config} collapsed={true} /></div>
                 </Form.Item>
                 {!isSemantic(prediction?.type) ? (
                   <Form.Item label={t('model.diagnose.form.confidence')} name="confidence">

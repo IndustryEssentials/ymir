@@ -27,7 +27,6 @@ type ListType = {
 const detFields = ['ap', 'maskap', 'boxap']
 
 const MapView: FC<ViewProps> = ({ type, predictions, datasets, models, data, xByClasses, kw: { ck, keywords }, averageIou }) => {
-  console.log('list:', data, predictions)
   const [list, setList] = useState<ListType[]>([])
   const [dd, setDD] = useState<OptionType<number>[]>([])
   const [kd, setKD] = useState<OptionType[]>([])
