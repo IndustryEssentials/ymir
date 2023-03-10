@@ -378,7 +378,7 @@ declare namespace YModels {
     id: number
     hash: string
     state: number
-    error_code: number
+    error_code: string
     duration: number
     percent: number
     parameters: P
