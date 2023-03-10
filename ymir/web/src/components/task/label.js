@@ -209,7 +209,7 @@ function Label({ query = {}, hidden, datasets, keywords, ok = () => {}, bottom, 
           <div className={styles.bottomTip}>
             {t('task.label.bottomtip', {
               link: (
-                <Link target="_blank" to={'/label_tool/'}>
+                <Link target="_blank" to={getLabelToolUrl()}>
                   {t('task.label.bottomtip.link.label')}
                 </Link>
               ),
