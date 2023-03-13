@@ -64,8 +64,11 @@ server {
         proxy_set_header   X-Forwarded-Host $server_name;
     }
 
-    location /label_tool/ {
-        return 307 http://$host:${LABEL_TOOL_HOST_PORT};
+    location /label_tool/ {        
+        if ($query_string ~* "token=([^&]+)") {
+          set $id $1;
+        }
+        return 307 http://$host:${LABEL_TOOL_HOST_PORT}?token=$id;
     }
 
     location /socket/ {

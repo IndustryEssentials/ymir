@@ -4,6 +4,7 @@ import { Select, Input, Button, Form, Row, Col, Checkbox, Space } from 'antd'
 import { useHistory, useParams, Link } from 'umi'
 
 import { formLayout } from '@/config/antd'
+import { getLabelToolUrl } from '@/constants/common'
 import t from '@/utils/t'
 import Uploader from '@/components/form/uploader'
 import { randomNumber } from '@/utils/number'
@@ -159,7 +160,7 @@ function Label({ query = {}, hidden, datasets, keywords, ok = () => {}, bottom, 
                 </Form.Item>
               </Col>
               <Col>
-                <a target="_blank" href={'/label_tool/'}>
+                <a target="_blank" href={getLabelToolUrl()}>
                   {t('task.label.form.plat.go')}
                 </a>
               </Col>
@@ -208,7 +209,7 @@ function Label({ query = {}, hidden, datasets, keywords, ok = () => {}, bottom, 
           <div className={styles.bottomTip}>
             {t('task.label.bottomtip', {
               link: (
-                <Link target="_blank" to={'/label_tool/'}>
+                <Link target="_blank" to={getLabelToolUrl()}>
                   {t('task.label.bottomtip.link.label')}
                 </Link>
               ),
