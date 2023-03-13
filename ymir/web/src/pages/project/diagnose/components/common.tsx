@@ -2,55 +2,17 @@ import { percent, toFixed } from '@/utils/number'
 import { attr2LowerCase } from '@/utils/object'
 import { Popover } from 'antd'
 import ReactJson from 'react-json-view'
+import { DataType, MetricsType, MetricType } from '.'
 
-export type Task = {
-  config: { [key: string]: string | number }
-  configName: string
-  testing: number
-  model: number
-  stage: number
-  result: number
-}
-export type MetricType = {
-  ap?: number
-  pr_curve?: [x: number, y: number, z: number][]
-  iou?: number
-  acc?: number
-  maskap?: number
-  boxap?: number
-}
-
-export type MetricsType = {
-  [key: string]: MetricType
-}
-
-type CIType = {
-  ci_averaged_evaluation: MetricsType
-  ci_evaluations: MetricsType
-}
-export type IOUDataType = {
-  iou_averaged_evaluation: CIType
-  iou_evaluations: { [iou: string]: CIType }
-  segmentation_metrics: {
-    [metric: string]: { [keyword: string]: number }
-  }
-}
-export type DataType = {
-  dataset_evaluation: IOUDataType
-  sub_cks?: {
-    [key: string]: IOUDataType
-  }
-}
-
-export function getModelCell(rid: number, tasks: Task[], models: YModels.Model[], text?: string) {
-  const task = tasks.find(({ result }) => result === rid)
-  const model = models.find((model) => model.id === task?.model)
-  const stage = model?.stages?.find((sg) => sg.id === task?.stage)
-  if (!task || !model || !stage) {
+export function getModelCell(prediction: YModels.Prediction, models: YModels.Model[], text?: string) {
+  const [mid, sid] = prediction?.inferModelId || []
+  const model = models.find(({ id }) => mid === id)
+  const stage = model?.stages?.find(({ id }) => sid === id)
+  if (!prediction || !model || !stage) {
     return
   }
-  const content = <ReactJson src={task?.config} name={false} />
-  const label = `${model.name} ${model.versionName} ${stage.name} ${task.configName}`
+  const content = <ReactJson src={prediction.task?.config} name={false} />
+  const label = `${model.name} ${model.versionName} ${stage.name}`
   return text ? (
     label
   ) : (
@@ -73,12 +35,11 @@ export function getCK(data: { iou_averaged_evaluation: { ck_evaluations: { [key:
 
 export const opt = (d: YModels.Result) => ({ value: d.id, label: `${d.name} ${d.versionName}` })
 
-export const average = (nums = []) => nums.reduce((prev, num) => (!Number.isNaN(num) ? prev + num : prev), 0) / nums.length
+export const average = (nums: number[] = []) => nums.reduce((prev, num) => (!Number.isNaN(num) ? prev + num : prev), 0) / nums.length
 
-export const getKwField = (evaluation: DataType, type: boolean) => {
+export const getKwField = (evaluation: DataType, ck?: boolean) => {
   const data = evaluation || {}
-  if (type) {
-    // ck
+  if (ck) {
     const data = evaluation?.sub_cks || {}
     return Object.keys(data).reduce((prev, curr) => {
       const ap = data[curr] ? data[curr]?.iou_averaged_evaluation?.ci_averaged_evaluation : {}

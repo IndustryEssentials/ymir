@@ -47,7 +47,7 @@ declare namespace YParams {
   }
 
   interface EvaluationParams extends DatasetsQuery {
-    datasets: number[]
+    predictionId: number
     confidence?: number
     iou?: number
     averageIou?: boolean

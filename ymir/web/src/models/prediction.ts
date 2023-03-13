@@ -4,7 +4,7 @@ import { transferPrediction } from '@/constants/prediction'
 import { batchAct, evaluate, getPrediction, getPredictions } from '@/services/prediction'
 import { createEffect, createReducers, transferList } from './_utils'
 type PredictionsPayload = { pid: number; force?: boolean; [key: string]: any }
-type PredictionPayload = { id: number; verbose?: boolean; force?: boolean }
+type PredictionPayload = { id: number; force?: boolean }
 
 const reducersList = [
   { name: 'UpdatePredictions', field: 'predictions' },
@@ -38,7 +38,7 @@ const PredictionModel: YStates.PredictionStore = {
       if (code === 0 && result) {
         type originData = { create_datatime: string, [key: string]: any }
         const sorter = (a: originData, b: originData) => diffTime(b.create_datetime, a.create_datetime)
-        const groupByModel = ({ items, total }: { items: { [key: string]: YModels.Prediction[] }; total: number }) => ({
+        const groupByModel = ({ items, total }: { items: { [key: string]: originData[] }; total: number }) => ({
           items: Object.values(items)
             .map((list) =>
               list
@@ -87,14 +87,14 @@ const PredictionModel: YStates.PredictionStore = {
       }
     }),
     getPrediction: createEffect<PredictionPayload>(function* ({ payload }, { call, select, put }) {
-      const { id, verbose, force } = payload
+      const { id, force } = payload
       if (!force) {
         const pred = yield select(({ prediction }) => prediction.prediction[id])
         if (pred) {
           return pred
         }
       }
-      const { code, result } = yield call(getPrediction, id, verbose)
+      const { code, result } = yield call(getPrediction, id)
       if (code === 0) {
         const prediction = transferPrediction(result)
 

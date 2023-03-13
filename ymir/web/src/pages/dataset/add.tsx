@@ -71,7 +71,7 @@ const Add: FC = () => {
   const [newKeywords, setNewKeywords] = useState<string[]>([])
   const [strategyOptions, setStrategyOptions] = useState<CheckboxOptionType[]>([])
   const [ignoredKeywords, setIgnoredKeywords] = useState<string[]>([])
-  const { data: { newer } = { newer: [] }, run: checkKeywords } = useRequest<{ newer: string[] }>('keyword/checkDuplication')
+  const { data: { newer } = {}, run: checkKeywords } = useRequest<{ newer: string[] }>('keyword/checkDuplication')
   const [addResult, newDataset] = useFetch('dataset/createDataset')
   const { data: { items: publicDatasets } = { items: [] }, run: getPublicDatasets } = useRequest<YStates.List<YModels.Dataset>>('dataset/getInternalDataset')
   const { runAsync: addKeywords } = useRequest<{}, [{ keywords: string[]; dry_run?: boolean }]>('keyword/addKeywords')
@@ -110,13 +110,15 @@ const Add: FC = () => {
   useEffect(() => {
     const dataset = publicDatasets.find(({ id }) => id === selectedDataset)
     const kws = dataset?.keywords || []
-    checkKeywords(kws)
+    kws.length && checkKeywords(kws)
     dataset && setDefaultName(dataset.name)
   }, [selectedDataset])
 
   useEffect(() => {
-    setNewKeywords(newer)
-    setIgnoredKeywords([])
+    if (newer) {
+      setNewKeywords(newer)
+      setIgnoredKeywords([])
+    }
   }, [newer])
 
   useEffect(() => {

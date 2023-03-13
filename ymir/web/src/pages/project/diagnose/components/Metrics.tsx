@@ -1,24 +1,38 @@
-import React, { useCallback, useEffect, useState } from 'react'
-import { Card, Button, Form, Row, Col, Radio, Slider, Select, InputNumber, Checkbox, Space, Tag } from 'antd'
+import { ViewProps, EvaluationResult, TabIdType } from '.'
+import { FC, useCallback, useEffect, useState } from 'react'
+import { Button, Form, Row, Col, Radio, Slider, Select, InputNumber, Space, Tag, RadioChangeEvent } from 'antd'
 import { useLocation } from 'umi'
+import { useSelector } from 'react-redux'
 
 import t from '@/utils/t'
-import useFetch from '@/hooks/useFetch'
 import { ObjectType, isDetection, isSemantic } from '@/constants/objectType'
 
 import Panel from '@/components/form/panel'
-import InferResultSelect from '@/components/form/inferResultSelect'
-import SingleMetircView from './components/SingleMetircView'
-import CurveView from './components/curveView'
-import PView from './components/prView'
-import View from './components/view'
-import DefaultStages from './components/defaultStages'
+import SingleMetircView from './SingleMetircView'
+import CurveView from './CurveView'
+import PView from './PRView'
+import View from './View'
+import DefaultStages from './DefaultStages'
 import Tip from '@/components/form/singleTip'
 
-import s from './index.less'
+import s from '../index.less'
 import { CompareIcon } from '@/components/common/Icons'
+import useRequest from '@/hooks/useRequest'
+import CKSelector from './CKSelector'
+import { ValidateErrorEntity } from 'rc-field-form/lib/interface'
+import ModelVersionName from '@/components/result/ModelVersionName'
+import VersionName from '@/components/result/VersionName'
+import ReactJson from 'react-json-view'
+type Props = {
+  prediction: YModels.Prediction
+}
+type TabType = {
+  value: TabIdType
+  component: FC<ViewProps>
+  ck?: boolean
+}
 
-const metricsTabs = [
+const metricsTabs: TabType[] = [
   { value: 'ap', component: SingleMetircView, ck: true },
   { value: 'iou', component: SingleMetircView },
   { value: 'acc', component: SingleMetircView },
@@ -39,51 +53,49 @@ const getTabs = (type = ObjectType.ObjectDetection) => {
 }
 
 const xAxisOptions = [
-  { key: 'dataset', value: 0 },
-  { key: 'keyword', value: 1 },
+  { key: 'dataset', value: false },
+  { key: 'keyword', value: true },
 ]
 
 const kwTypes = [
-  { label: 'keyword.add.name.label', value: 0 },
-  { label: 'keyword.ck.label', value: 1 },
+  { label: 'keyword.add.name.label', value: false },
+  { label: 'keyword.ck.label', value: true },
 ]
 
-function Matrics({ pid, project }) {
-  const [tabs, setTabs] = useState([])
-  const { state } = useLocation()
+const Matrics: FC<Props> = ({ prediction }) => {
+  const [tabs, setTabs] = useState<TabType[]>([])
+  const { state } = useLocation<{ mid: number }>()
   const [form] = Form.useForm()
-  const [inferTasks, setInferTasks] = useState([])
-  const [selectedModels, setSelectedModels] = useState([])
-  const [selectedDatasets, setSelectedDatasets] = useState([])
   const [iou, setIou] = useState(0.5)
   const [averageIou, setaverageIou] = useState(false)
   const [confidence, setConfidence] = useState(0.3)
-  const [selectedMetric, setSelectedMetric] = useState('map')
-  const [prRate, setPrRate] = useState([0.8, 0.95])
-  const [keywords, setKeywords] = useState([])
-  const [selectedKeywords, setSelectedKeywords] = useState([])
-  const [subCks, setSubCks] = useState([])
-  const [kwType, setKwType] = useState(0)
-  const [kws, setKws] = useState([])
+  const [selectedMetric, setSelectedMetric] = useState<TabIdType>('ap')
+  const [prRate, setPrRate] = useState<[number, number]>([0.8, 0.95])
+  const [keywords, setKeywords] = useState<string[]>([])
+  const [selectedKeywords, setSelectedKeywords] = useState<string[]>([])
+  const [subCks, setSubCks] = useState<string[]>([])
+  const [ck, setCk] = useState<boolean>(false)
+  const [kws, setKws] = useState<string[]>([])
   const [xAxis, setXAsix] = useState(xAxisOptions[0].value)
-  const [remoteData, fetchDiagnosis] = useFetch('prediction/evaluate')
-  const [diagnosis, setDiagnosis] = useState(null)
+  const [diagnosis, setDiagnosis] = useState<EvaluationResult>()
   const [diagnosing, setDiagnosing] = useState(false)
-  const [kwFilter, setKwFilter] = useState({
-    kwType: 0,
+  const [kwFilter, setKwFilter] = useState<{ ck: boolean; keywords: string[] }>({
+    ck: false,
     keywords: [],
   })
-  const [ckDatasets, getCKDatasets] = useFetch('dataset/getCK', [])
-  const [cks, setCKs] = useState([])
+  const { data: remoteData, run: fetchDiagnosis } = useRequest<EvaluationResult, [YParams.EvaluationParams]>('prediction/evaluate')
+
   const selectedCK = Form.useWatch('ck', form)
+  const model = useSelector<YStates.Root, YModels.Model>(({ model }) => model.model[prediction.inferModelId[0].toString()])
+  const dataset = useSelector<YStates.Root, YModels.Dataset>(({ dataset }) => dataset.dataset[prediction.inferDatasetId.toString()])
 
   useEffect(() => {
-    if (project?.type) {
-      const tabs = getTabs(project.type)
+    if (prediction?.type) {
+      const tabs = getTabs(prediction.type)
       setTabs(tabs)
       setSelectedMetric(tabs[0].value)
     }
-  }, [project?.type])
+  }, [prediction?.type])
 
   useEffect(() => remoteData && setDiagnosis(remoteData), [remoteData])
 
@@ -97,19 +109,19 @@ function Matrics({ pid, project }) {
 
   useEffect(() => {
     if (diagnosing) {
-      const kws = [...new Set(selectedModels.map(({ keywords }) => keywords).flat())]
+      const kws = prediction?.inferClass || []
       setKeywords(kws)
     } else {
       setKeywords([])
     }
-  }, [selectedModels, diagnosing])
+  }, [prediction, diagnosing])
 
   useEffect(() => {
     // calculate ck
     const cks = diagnosis
       ? Object.values(diagnosis)
           .filter((tru) => tru)
-          .map((item) => Object.keys(item?.sub_cks) || [])
+          .map((item) => Object.keys(item?.sub_cks || {}))
           .flat()
       : []
 
@@ -117,8 +129,8 @@ function Matrics({ pid, project }) {
   }, [diagnosis])
 
   useEffect(() => {
-    setKws(!kwType ? keywords : subCks)
-  }, [kwType, keywords, subCks])
+    setKws(!ck ? keywords : subCks)
+  }, [ck, keywords, subCks])
 
   useEffect(() => {
     setDiagnosing(!!diagnosis)
@@ -128,88 +140,52 @@ function Matrics({ pid, project }) {
   useEffect(() => {
     setKwFilter({
       keywords: selectedKeywords?.length ? selectedKeywords : kws,
-      kwType,
+      ck,
     })
   }, [selectedKeywords, kws])
 
-  useEffect(() => {
-    if (selectedDatasets.length) {
-      getCKDatasets({ pid, ids: selectedDatasets.map(({ id }) => id) })
-    }
-  }, [selectedDatasets])
+  const diagnose = useCallback(
+    (params: { [key: string]: any }) => {
+      if (!prediction) {
+        return
+      }
+      fetchDiagnosis({ ...params, pid: prediction?.projectId, predictionId: prediction?.id, curve: isDetection(prediction?.type), averageIou })
+    },
+    [prediction, averageIou],
+  )
 
-  useEffect(() => {
-    const allCks = ckDatasets.map(({ cks: { keywords } }) => keywords.map(({ keyword }) => keyword)).flat()
-    const cks = allCks.filter((keyword) => {
-      const same = allCks.filter((k) => k === keyword)
-      return same.length === ckDatasets.length
-    })
-    const uniqueCks = [...new Set(cks)]
-    setCKs(uniqueCks)
-  }, [ckDatasets])
-
-  const onFinish = (values) => {
-    const inferDataset = inferTasks.map(({ result }) => result)
-    const params = {
-      ...values,
-      pid,
-      averageIou,
-      datasets: inferDataset,
-      curve: isDetection(project?.type),
-    }
-    fetchDiagnosis(params)
-  }
-
-  function onFinishFailed(errorInfo) {
+  function onFinishFailed(errorInfo: ValidateErrorEntity) {
     console.log('Failed:', errorInfo)
   }
 
-  function inferResultChange({ tasks, models, datasets }) {
-    console.log('tasks, models, datasets:', tasks, models, datasets)
-    setInferTasks(
-      tasks.map(({ config, configName, parameters: { dataset_id, model_id, model_stage_id }, result_prediction: { id } }) => ({
-        config,
-        configName,
-        testing: dataset_id,
-        model: model_id,
-        stage: model_stage_id,
-        result: id,
-      })),
-    )
-    setSelectedDatasets(datasets)
-    setSelectedModels(models)
-    form.setFieldsValue({
-      ck: undefined,
-    })
-  }
-
-  function metricsChange({ target: { value } }) {
+  function metricsChange({ target: { value } }: RadioChangeEvent) {
     setSelectedMetric(value)
     const tab = tabs.find((t) => t.value === value)
-    if (!tab.ck) {
-      setKwType(0)
-    }
+    setCk(!!tab?.ck)
   }
 
-  function prRateChange(value) {
+  function prRateChange(value: [number, number]) {
     setPrRate(value)
   }
 
-  function xAxisChange({ target: { value } }) {
+  function xAxisChange({ target: { value } }: RadioChangeEvent) {
     setXAsix(value)
   }
 
-  function kwChange(values) {
+  function kwChange(values: string[]) {
     setSelectedKeywords(values)
   }
 
   function retry() {
-    setDiagnosis(null)
+    setDiagnosis(undefined)
     setDiagnosing(false)
-    setKwType(0)
+    setCk(false)
   }
 
   function renderView() {
+    if (!prediction || !dataset || !model) {
+      return
+    }
     const panel = tabs.find(({ value }) => selectedMetric === value)
     if (!panel) {
       return
@@ -218,14 +194,14 @@ function Matrics({ pid, project }) {
     return (
       <Viewer
         type={panel.value}
-        tasks={inferTasks}
-        models={selectedModels}
-        datasets={selectedDatasets}
+        predictions={[prediction]}
+        models={[model]}
+        datasets={[dataset]}
         data={diagnosis}
         averageIou={averageIou}
-        prType={selectedMetric === 'pr' ? 0 : 1}
+        p2r={selectedMetric === 'pr'}
         prRate={prRate}
-        xType={xAxis}
+        xByClasses={xAxis}
         kw={kwFilter}
       />
     )
@@ -240,7 +216,7 @@ function Matrics({ pid, project }) {
           options={tabs.map((item, index) => ({
             ...item,
             label: t(`model.diagnose.medtric.tabs.${item.value}`),
-            disabled: isDetection(project?.type) && averageIou && index > 0,
+            disabled: isDetection(prediction?.type) && averageIou && index > 0,
           }))}
           onChange={metricsChange}
         />
@@ -251,24 +227,24 @@ function Matrics({ pid, project }) {
       <Row gutter={20}>
         <Col>
           <Select
-            value={kwType}
+            value={ck}
             options={kwTypes
               .filter((type) => {
                 const tab = tabs.find(({ value }) => selectedMetric === value)
                 return tab?.ck || !type.value
               })
               .map(({ label, value }) => ({ value, label: t(label) }))}
-            onChange={setKwType}
+            onChange={setCk}
           ></Select>
         </Col>
         <Col flex={1}>
-          {kwTypes[0].value === kwType ? (
+          {kwTypes[0].value === ck ? (
             <Select
               style={{ width: '100%' }}
-              mode={kwType ? 'single' : 'multiple'}
+              mode={ck ? undefined : 'multiple'}
               value={selectedKeywords}
               options={kws.map((kw) => ({ label: kw, value: kw }))}
-              placeholder={t(kwType ? 'model.diagnose.metrics.ck.placeholder' : 'model.diagnose.metrics.keyword.placeholder')}
+              placeholder={t(ck ? 'model.diagnose.metrics.ck.placeholder' : 'model.diagnose.metrics.keyword.placeholder')}
               showArrow
               onChange={kwChange}
             ></Select>
@@ -292,7 +268,7 @@ function Matrics({ pid, project }) {
 
   const renderViewPanel = () => <div className={s.metricsPanel}>{renderView()}</div>
 
-  const renderIouOptionLabel = (type) => (
+  const renderIouOptionLabel = (type: string) => (
     <>
       {t(`model.diagnose.form.iou.${type}`)}
       <Tip className={s.iouTip} content={t(`model.diagnose.form.iou.${type}.tip`)} placement="top" arrowPointAtCenter />
@@ -323,29 +299,29 @@ function Matrics({ pid, project }) {
                 <CompareIcon /> {t('model.diagnose.metrics.btn.retry')}
               </Button>
             </div>
-            <Panel label={'Metrics'} style={{ marginTop: -10 }} toogleVisible={false}>
+            <Panel label={'Metrics'} toogleVisible={false}>
               <Form
                 className={s.form}
                 form={form}
                 layout="vertical"
                 initialValues={initialValues}
-                onFinish={onFinish}
+                onFinish={diagnose}
                 onFinishFailed={onFinishFailed}
                 labelAlign="left"
                 colon={false}
               >
-                <InferResultSelect form={form} pid={pid} onChange={inferResultChange} />
-                {!isSemantic(project?.type) ? (
+                <Form.Item label={t('pred.metrics.prediction.select.label')}>
+                  <p><span>{t('model.diagnose.label.model')}：</span><ModelVersionName id={prediction.inferModelId[0]} stageId={prediction.inferModelId[1]} /></p>
+                  <p><span>{t('model.diagnose.label.testing_dataset')}: </span><VersionName id={prediction.inferDatasetId} /></p>
+                  <div><p>{t('model.diagnose.label.config')}</p><ReactJson src={prediction.task.config} collapsed={true} /></div>
+                </Form.Item>
+                {!isSemantic(prediction?.type) ? (
                   <Form.Item label={t('model.diagnose.form.confidence')} name="confidence">
                     <InputNumber step={0.0005} min={0.0005} max={0.9995} />
                   </Form.Item>
                 ) : null}
-                {isDetection(project?.type) ? (
-                  <Form.Item label={t('keyword.ck.label')} name="ck">
-                    <Select options={cks.map((ck) => ({ value: ck, label: ck }))} allowClear></Select>
-                  </Form.Item>
-                ) : null}
-                {!isSemantic(project?.type) ? (
+                <CKSelector prediction={prediction} />
+                {!isSemantic(prediction?.type) ? (
                   <Form.Item label={t('model.diagnose.form.iou')}>
                     <Radio.Group value={averageIou} onChange={({ target: { value } }) => setaverageIou(value)} options={iouOptions}></Radio.Group>
                     <Row gutter={10} hidden={averageIou}>
@@ -370,7 +346,7 @@ function Matrics({ pid, project }) {
               </Form>
             </Panel>
           </div>
-          <DefaultStages diagnosing={diagnosing} models={selectedModels} />
+          {model && diagnosing ? <DefaultStages models={[model]} /> : null}
         </Col>
       </Row>
     </div>
