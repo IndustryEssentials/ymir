@@ -32,6 +32,8 @@ class Settings(BaseSettings):
     USE_200_EVERYWHERE: bool = True
 
     REDIS_TESTING: bool = False
+    APP_API_TIMEOUT: int = 30
+    APP_API_HOST: str = "backend:80"
     APP_API_KEY: str = secrets.token_urlsafe(32)
 
     # paths to share data with Controller, etc
