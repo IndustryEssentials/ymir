@@ -77,6 +77,8 @@ function DatasetDetail() {
     }
   }
 
+  const trainDisabledRule = (buttonType, { id, keywords }) => isTestingDataset(id) || !keywords.length
+
   return (
     <div>
       <Breadcrumbs />
@@ -105,7 +107,7 @@ function DatasetDetail() {
               <>
                 {taskTypes.map((type, index) =>
                   index === 0 || dataset.assetCount > 0 ? (
-                    <Button key={type} type="primary" onClick={() => history.push(`/home/project/${pid}/${type}?did=${id}`)}>
+                    <Button key={type} disabled={type !== 'train' || trainDisabledRule(record)} type="primary" onClick={() => history.push(`/home/project/${pid}/${type}?did=${id}`)}>
                       {t(`common.action.${type}`)}
                     </Button>
                   ) : null,

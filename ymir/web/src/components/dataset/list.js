@@ -195,22 +195,11 @@ function Datasets({ pid, project = {}, iterations, groups, ...func }) {
       {
         title: showTitle('dataset.column.keyword'),
         dataIndex: 'keywords',
-        render: (_, { gt, pred, state }) => {
-          const renderLine = (keywords, label = 'gt') => (
-            <div>
-              <div>{t(`annotation.${label}`)}:</div>
-              {t('dataset.column.keyword.label', {
-                keywords: keywords.join(', '),
-                total: keywords.length,
-              })}
-            </div>
-          )
-          const label = (
-            <>
-              {renderLine(gt.keywords)}
-              {renderLine(pred.keywords, 'pred')}
-            </>
-          )
+        render: (keywords, { state }) => {
+          const label = t('dataset.column.keyword.label', {
+            keywords: keywords.join(', '),
+            total: keywords.length,
+          })
           return isValidDataset(state) ? (
             <Tooltip title={label} color="white" overlayInnerStyle={{ color: 'rgba(0,0,0,0.45)', fontSize: 12 }} mouseEnterDelay={0.5}>
               <div>{label}</div>
@@ -261,7 +250,7 @@ function Datasets({ pid, project = {}, iterations, groups, ...func }) {
       {
         key: 'train',
         label: t('dataset.action.train'),
-        hidden: () => invalidDataset(record) || isTestingDataset(id),
+        hidden: () => invalidDataset(record) || isTestingDataset(id) || !record.keywords.length,
         onclick: () => history.push(`/home/project/${pid}/train?did=${id}`),
         icon: <TrainIcon />,
       },
@@ -275,7 +264,7 @@ function Datasets({ pid, project = {}, iterations, groups, ...func }) {
       {
         key: 'preview',
         label: t('common.action.preview'),
-        hidden: () => !validDataset(record),
+        hidden: () => !validDataset(record) || !assetCount,
         onclick: () => history.push(`/home/project/${pid}/dataset/${id}/assets`),
         icon: <SearchIcon className={styles.addBtnIcon} />,
       },

@@ -76,19 +76,10 @@ export function transferDatasetGroup(data: YModels.BackendData) {
   return group
 }
 
-const tagsCounts = (gt: YModels.BackendData = {}, pred: YModels.BackendData = {}) =>
-  Object.keys(gt).reduce((prev, tag) => {
-    const gtCount = gt[tag] || {}
-    const predCount = pred[tag] || {}
-    return { ...prev, [tag]: { ...gtCount, ...predCount } }
-  }, {})
-const tagsTotal = (gt: YModels.BackendData = {}, pred: YModels.BackendData = {}) => ({ ...gt, ...pred })
-
 export function transferDataset(data: YModels.BackendData): YModels.Dataset {
-  const { gt = {}, pred = {} } = data.keywords
+  const { gt = {} } = data.keywords
   const assetCount = data.asset_count || 0
-  const keywords = [...new Set([...Object.keys(gt), ...Object.keys(pred)])]
-  const evaluated = data.evaluation_state === 1
+  const keywords = Object.keys(gt)
   return {
     id: data.id,
     groupId: data.dataset_group_id,
@@ -101,7 +92,6 @@ export function transferDataset(data: YModels.BackendData): YModels.Dataset {
     keywords,
     keywordCount: keywords.length,
     gt: transferAnnotationsCount(gt, data.negative_info?.gt, assetCount),
-    pred: transferAnnotationsCount(pred, data.negative_info?.pred, assetCount),
     isProtected: data.is_protected || false,
     hash: data.hash,
     state: data.result_state,
@@ -117,11 +107,9 @@ export function transferDataset(data: YModels.BackendData): YModels.Dataset {
     task: data.related_task,
     hidden: !data.is_visible,
     description: data.description || '',
-    inferClass: data?.pred?.eval_class_ids,
-    evaluated,
     cks: data.cks_count ? transferCK(data.cks_count, data.cks_count_total) : undefined,
     tags: data.gt
-      ? transferCK(tagsCounts(data?.gt?.tags_count, data?.pred?.tags_count), tagsTotal(data?.gt?.tags_count_total, data?.pred?.tags_count_total))
+      ? transferCK(data?.gt?.tags_count, data?.gt?.tags_count_total)
       : undefined,
   }
 }
@@ -139,17 +127,6 @@ export function canHide(dataset: YModels.Dataset, project: YModels.Project | und
   return !runningDataset(dataset) && !p?.hiddenDatasets?.includes(dataset.id)
 }
 
-export function transferInferDataset(dataset: YModels.Dataset<YModels.InferenceParams>): YModels.Prediction {
-  const params = dataset.task?.parameters
-  const config = dataset.task?.config || {}
-  return {
-    ...dataset,
-    inferModelId: [params?.model_id || 0, params?.model_stage_id || 0],
-    inferDatasetId: params?.dataset_id || 0,
-    inferConfig: config,
-  }
-}
-
 export function transferDatasetAnalysis(data: YModels.BackendData): YModels.DatasetAnalysis {
   const { bytes, area, quality, hw_ratio } = data.hist
 
@@ -163,9 +140,8 @@ export function transferDatasetAnalysis(data: YModels.BackendData): YModels.Data
     assetHWRatio: hw_ratio,
     gt,
     pred,
-    inferClass: data?.pred?.eval_class_ids,
     cks: transferCK(data.cks_count, data.cks_count_total),
-    tags: transferCK(tagsCounts(data.gt.tags_count, data.pred?.tags_count), tagsTotal(data.gt?.tags_count_total, data.pred?.tags_count_total)),
+    tags: transferCK(data.gt.tags_count, data.gt?.tags_count_total),
   }
 }
 
