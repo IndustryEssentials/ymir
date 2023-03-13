@@ -3,6 +3,11 @@ access_log /var/log/nginx/access.log combined;
 upstream backend_api {
     server backend:80;
 }
+
+upstream auth_api {
+    server auth:80;
+}
+
 upstream tensorboard_web {
     server tensorboard:6006;
 }
@@ -19,9 +24,9 @@ server {
     # use 'listen 80 deferred;' for Linux
     # use 'listen 80 accept_filter=httpready;' for FreeBSD
     client_max_body_size 4G;
-    
+
     gzip  on;
-    gzip_min_length 1k; 
+    gzip_min_length 1k;
     gzip_comp_level 5;
     gzip_types text/plain application/javascript application/x-javascript text/javascript text/xml text/css;
 
@@ -33,6 +38,15 @@ server {
     # Ymir docs
     location /docs/ {
         root /data/ymir/;
+    }
+
+    location /auth/ {
+        proxy_pass http://auth_api/api/;
+        add_header 'Access-Control-Allow-Origin' '*';
+        proxy_set_header   Host $host;
+        proxy_set_header   X-Real-IP $remote_addr;
+        proxy_set_header   X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header   X-Forwarded-Host $server_name;
     }
 
     location /api/ {
