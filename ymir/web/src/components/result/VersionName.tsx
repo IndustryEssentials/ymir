@@ -9,9 +9,10 @@ type Props = {
 }
 const VersionName: React.FC<Props> = ({ id, result, extra }) => {
   const cache: YModels.Dataset = useSelector(({ dataset }: YStates.Root) => {
-    return id && dataset.dataset[id]
+    return id ? dataset.dataset[id] : undefined
   })
   const [dataset, setDataset] = useState<YModels.Result>()
+  const [label, setLabel] = useState('')
   const [_, getDataset] = useFetch('dataset/getDataset')
 
   useEffect(() => id && getDataset({ id }), [id])
@@ -20,12 +21,15 @@ const VersionName: React.FC<Props> = ({ id, result, extra }) => {
     setDataset(cache || result)
   }, [cache, result])
 
-  const label = `${dataset?.name} ${dataset?.versionName}`
-  return (
-    <span className="versionName" title={label}>
+  useEffect(() => {
+    dataset && setLabel(`${dataset.name} ${dataset.versionName}`)
+  }, [dataset])
+
+  return dataset ? (
+    <span className="versionName">
       {label} {extra}
     </span>
-  )
+  ) : null
 }
 
 export default VersionName
