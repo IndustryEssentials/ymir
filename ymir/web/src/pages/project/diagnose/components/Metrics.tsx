@@ -13,7 +13,7 @@ import CurveView from './CurveView'
 import PView from './PRView'
 import View from './View'
 import DefaultStages from './DefaultStages'
-import Tip from '@/components/form/singleTip'
+import Tip from '@/components/form/SingleTip'
 
 import s from '../index.less'
 import { CompareIcon } from '@/components/common/Icons'
