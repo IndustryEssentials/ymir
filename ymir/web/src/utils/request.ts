@@ -1,8 +1,9 @@
 import axios from 'axios'
 import storage from '@/utils/storage'
-import t from '@/utils/t'
 import { getDvaApp } from 'umi'
-import { message } from 'antd'
+import useErrorMessage from '@/hooks/useErrorMessage'
+
+const errorMsg = useErrorMessage()
 
 const getBaseURL = () => {
   const envUrl = process.env.APIURL
@@ -34,29 +35,27 @@ request.interceptors.request.use(
 request.interceptors.response.use(
   (res) => {
     if (res.data.code !== 0) {
-      message.error(t(`error${res.data.code}`))
+      errorMsg(res.data.code)
       if ([110104, 110112].includes(res.data.code)) {
         logout()
       }
     }
-
     return res.data
   },
   (err) => {
     let authrized = [401, 403]
+    let serviceErrorCode = [500, 504, 502]
     if (authrized.includes(err.request.status)) {
       return logout()
-    } else if (err.request.status === 504) {
-      message.error(t('error.timeout'))
-    } else if (err.request.status === 502) {
-      message.error(t('error.502'))
+    } else if (serviceErrorCode.includes(err.request.status)) {
+      errorMsg(err.request.status, false)
     } else {
       const res = err.response
       if (res?.data?.code) {
         if (res.data.code === 110104) {
           return logout()
         }
-        message.error(t(`error${res.data.code}`))
+        errorMsg(res.data.code)
         return res.data
       }
     }
