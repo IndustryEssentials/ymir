@@ -107,12 +107,6 @@ describe("constants: dataset", () => {
         negative: 34,
         total: 234,
       },
-      pred: {
-        count: {},
-        keywords: [],
-        negative: 234,
-        total: 234,
-      },
       type: 2,
       tags: undefined,
       cks: undefined,
