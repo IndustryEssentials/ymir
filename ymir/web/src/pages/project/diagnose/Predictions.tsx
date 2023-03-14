@@ -123,6 +123,7 @@ const Predictions: React.FC = () => {
         columns={columns}
         dataSource={predictions}
         rowKey={(record) => record.id}
+        rowClassName={(record, index) => (index % 2 === 0 ? '' : 'oddRow')}
         pagination={{
           onChange: pageChange,
           current: query.current,
