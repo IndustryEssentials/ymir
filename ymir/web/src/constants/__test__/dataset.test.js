@@ -107,15 +107,8 @@ describe("constants: dataset", () => {
         negative: 34,
         total: 234,
       },
-      pred: {
-        count: {},
-        keywords: [],
-        negative: 234,
-        total: 234,
-      },
       type: 2,
       tags: undefined,
-      inferClass: undefined,
       cks: undefined,
       isProtected: false,
       hash: 't00000020000012afef21646883528',
@@ -130,7 +123,6 @@ describe("constants: dataset", () => {
       duration: 18,
       durationLabel: '1 分钟',
       taskName: task.name,
-      evaluated: false,
       task,
       description: '',
     }

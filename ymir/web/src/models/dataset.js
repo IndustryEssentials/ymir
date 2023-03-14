@@ -8,7 +8,6 @@ import {
   transferDataset,
   transferDatasetAnalysis,
   transferAnnotationsCount,
-  transferInferDataset,
 } from '@/constants/dataset'
 import { actions, updateResultState, updateResultByTask, ResultStates } from '@/constants/common'
 import { NormalReducer } from './_utils'
@@ -131,37 +130,6 @@ export default {
       const { code, result } = yield call(queryDatasets, payload)
       if (code === 0) {
         return { items: result.items.map(ds => transferDataset(ds)), total: result.total }
-      }
-    },
-    *queryInferDatasets({ payload }, { call, put }) {
-      const { pid } = payload
-      const result = yield put.resolve({
-        type: 'queryDatasets',
-        payload: { ...payload, type: TASKTYPES.INFERENCE }
-      })
-      if (result) {
-        const { items: datasets = [], total } = result
-        const getIds = key => {
-          const ids = datasets.map(ds => {
-            const param = ds.task?.parameters || {}
-            return param[key]
-          }).filter(notEmpty => notEmpty)
-          return [...new Set(ids)]
-        }
-        const modelIds = getIds('model_id')
-        const datasetIds = getIds('dataset_id')
-        yield put({
-          type: 'model/batchLocalModels',
-          payload: modelIds
-        })
-        yield put({
-          type: 'batchLocalDatasets',
-          payload: { pid, ids: datasetIds, }
-        })
-        return {
-          items: datasets.map(transferInferDataset),
-          total,
-        }
       }
     },
     *getHiddenList({ payload }, { put }) {
