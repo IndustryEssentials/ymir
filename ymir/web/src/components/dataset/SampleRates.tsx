@@ -65,7 +65,6 @@ const SampleRates: FC<Props> = ({ keywords, dataset, negative, label, progressWi
         </div>
       ) : null}
       <KeywordRates title={t('annotation.gt')} stats={addNegativeInfo(stats.gt)} progressWidth={progressWidth} />
-      <KeywordRates title={t('annotation.pred')} stats={addNegativeInfo(stats.pred)} progressWidth={progressWidth} />
     </div>
   )
 }

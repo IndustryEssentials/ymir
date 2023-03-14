@@ -14,23 +14,18 @@ const labelStyle = { width: '15%', paddingRight: '20px', justifyContent: 'flex-e
 
 function DatasetDetail({ dataset = {} }) {
   const history = useHistory()
-  const { cks = {}, tags = {}, inferClass } = dataset
+  const { cks = {}, tags = {} } = dataset
 
   const renderKeywords = (anno, label = t('annotation.gt')) => {
     if (!anno) {
       return
     }
     const { keywords = [], count = {} } = anno
-    return (
-      <p>
-        {label}:{' '}
-        {keywords.map((keyword) => (
-          <Tag key={keyword}>
-            {keyword}({count[keyword]})
-          </Tag>
-        ))}
-      </p>
-    )
+    return keywords.map((keyword) => (
+      <Tag key={keyword}>
+        {keyword}({count[keyword]})
+      </Tag>
+    ))
   }
 
   const renderCk = (label = 'ck', keywords = []) =>
@@ -69,15 +64,6 @@ function DatasetDetail({ dataset = {} }) {
         </Item>
         <Item label={t('dataset.detail.label.keywords')}>
           {renderKeywords(dataset.gt)}
-          {renderKeywords(dataset.pred, t('annotation.pred'))}
-          {inferClass ? (
-            <div>
-              {t('dataset.detail.infer.class')}
-              {inferClass.map((cls) => (
-                <Tag key={cls}>{cls}</Tag>
-              ))}
-            </div>
-          ) : null}
         </Item>
         <Item label={t('common.object.type')}>{t(getProjectTypeLabel(dataset.type, true))}</Item>
         <Item label={t('dataset.detail.label.assets')} contentStyle={{ minWidth: 150 }}>

@@ -5,7 +5,7 @@ import { connect } from 'dva'
 import s from './add.less'
 import t from '@/utils/t'
 import { AddDelTwoIcon, AddIcon, AddTwoIcon } from '@/components/common/Icons'
-import Tip from "@/components/form/singleTip"
+import Tip from "@/components/form/SingleTip"
 
 const { Option } = Select
 const { useForm } = Form
