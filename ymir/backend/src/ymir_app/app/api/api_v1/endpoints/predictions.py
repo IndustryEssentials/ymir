@@ -12,7 +12,6 @@ from app.api.errors.errors import (
     PredictionNotFound,
     MissingOperations,
     RefuseToProcessMixedOperations,
-    NoPredictionPermission,
 )
 from app.constants.state import ObjectType
 from app.utils.ymir_viz import VizClient
@@ -92,10 +91,7 @@ def batch_update_predictions(
         raise RefuseToProcessMixedOperations()
     action = actions[0]
     prediction_ids = list({op.id_ for op in prediction_ops.operations})
-    predictions = crud.prediction.get_multi_by_ids(db, ids=prediction_ids)
-    if {p.user_id for p in predictions} != {current_user.id}:
-        raise NoPredictionPermission()
-
+    predictions = crud.prediction.get_multi_by_user_and_ids(db, user_id=current_user.id, ids=prediction_ids)
     predictions = crud.prediction.batch_toggle_visibility(db, ids=prediction_ids, action=action)
     return {"result": predictions}
 
