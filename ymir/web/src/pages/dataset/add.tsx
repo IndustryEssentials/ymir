@@ -367,7 +367,7 @@ const Add: FC = () => {
             ) : null}
             {!isType(TYPES.INTERNAL) ? (
               <Form.Item label={t('dataset.add.form.label.label')} name="strategy" initialValue={IMPORTSTRATEGY.UNKOWN_KEYWORDS_AUTO_ADD}>
-                <Radio.Group options={strategyOptions.filter((opt) => !isType(TYPES.COPY) || opt.value !== IMPORTSTRATEGY.UNKOWN_KEYWORDS_AUTO_ADD)} />
+                <Radio.Group options={strategyOptions.filter((opt) => !isType(TYPES.COPY) || opt.value !== IMPORTSTRATEGY.UNKOWN_KEYWORDS_IGNORE)} />
               </Form.Item>
             ) : null}
             {isType(TYPES.NET) ? (
