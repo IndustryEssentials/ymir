@@ -224,14 +224,11 @@ class ControllerRequest:
         request.in_dataset_ids[:] = [args["src_resource_id"]]
         copy_request = mirsvrpb.TaskReqCopyData()
         strategy = args.get("strategy") or ImportStrategy.ignore_unknown_annotations
-        if strategy is ImportStrategy.ignore_unknown_annotations:
-            copy_request.name_strategy_ignore = True
-        elif strategy is ImportStrategy.stop_upon_unknown_annotations:
-            copy_request.name_strategy_ignore = False
-        elif strategy is ImportStrategy.no_annotations:
+
+        # for dataset copy, only no_annotations will take effect and drop annotations
+        copy_request.name_strategy_ignore = True
+        if strategy is ImportStrategy.no_annotations:
             copy_request.drop_annotations = True
-        else:
-            raise ValueError("not supported strategy: %s" % strategy.name)
 
         copy_request.src_user_id = args["src_user_id"]
         copy_request.src_repo_id = args["src_repo_id"]
