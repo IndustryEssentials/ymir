@@ -56,9 +56,6 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
     def get_by_hash(self, db: Session, hash_: str) -> Optional[ModelType]:
         return db.query(self.model).filter(self.model.hash == hash_).first()  # type: ignore
 
-    def get_by_task_id(self, db: Session, task_id: int) -> Optional[ModelType]:
-        return db.query(self.model).filter(self.model.task_id == task_id).first()  # type: ignore
-
     def get_multi(self, db: Session, *, offset: int = 0, limit: int = settings.DEFAULT_LIMIT) -> List[ModelType]:
         return db.query(self.model).offset(offset).limit(limit).all()
 
@@ -73,24 +70,6 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
             .filter(
                 self.model.user_id == user_id,  # type: ignore
                 not_(self.model.is_deleted),  # type: ignore
-            )
-            .all()
-        )
-
-    def get_multi_by_project(self, db: Session, *, project_id: int) -> List[ModelType]:
-        return (
-            db.query(self.model)
-            .filter(
-                self.model.project_id == project_id,  # type: ignore
-            )
-            .all()
-        )
-
-    def get_multi_by_iteration(self, db: Session, *, iteration_id: int) -> List[ModelType]:
-        return (
-            db.query(self.model)
-            .filter(
-                self.model.iteration_id == iteration_id,  # type: ignore
             )
             .all()
         )
@@ -155,27 +134,3 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
 
     def is_duplicated_name(self, db: Session, user_id: int, name: str) -> bool:
         return self.get_by_user_and_name(db, user_id, name) is not None
-
-    def is_duplicated_name_in_project(self, db: Session, project_id: int, name: str) -> bool:
-        existing = (
-            db.query(self.model)
-            .filter(
-                self.model.project_id == project_id,  # type: ignore
-                self.model.name == name,  # type: ignore
-                not_(self.model.is_deleted),  # type: ignore
-            )
-            .one_or_none()
-        )
-        return existing is not None
-
-    def is_duplicated_hash(self, db: Session, project_id: int, hash_: str) -> bool:
-        existing = (
-            db.query(self.model)
-            .filter(
-                self.model.project_id == project_id,  # type: ignore
-                self.model.hash == hash_,  # type: ignore
-                not_(self.model.is_deleted),  # type: ignore
-            )
-            .one_or_none()
-        )
-        return existing is not None

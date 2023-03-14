@@ -1,13 +1,8 @@
 from __future__ import with_statement
 
-from contextlib import contextmanager
 import os
-import time
-import logging
 from logging.config import fileConfig
-import uuid
-import subprocess
-from typing import Dict, Optional, Generator
+from typing import Optional
 
 from alembic import context
 from sqlalchemy import engine_from_config, pool
@@ -39,50 +34,6 @@ target_metadata = Base.metadata
 
 def get_url() -> str:
     return os.getenv("DATABASE_URI", "sqlite:///auth.db")
-
-
-def get_mysql_credentials() -> Dict:
-    credentials = {
-        "MYSQL_USER": os.getenv("MYSQL_INITIAL_USER"),
-        "MYSQL_PASSWORD": os.getenv("MYSQL_INITIAL_PASSWORD"),
-        "MYSQL_DATABASE": os.getenv("MYSQL_DATABASE"),
-        "MYSQL_HOST": "db",
-    }
-    if None in credentials.values():
-        raise ValueError("Invalid MySQL Environments")
-    return credentials
-
-
-def create_backup(backup_filename: str) -> None:
-    credentials = get_mysql_credentials()
-    mysqldump_command = (
-        "mysqldump --host {MYSQL_HOST} -u {MYSQL_USER} -p{MYSQL_PASSWORD} --databases {MYSQL_DATABASE} --no-tablespaces --ignore-table {MYSQL_DATABASE}.alembic_version --result-file %s"
-    ).format(**credentials)
-    subprocess.run(mysqldump_command % backup_filename, shell=True, check=True)
-
-
-def recover_from_backup(backup_filename: str) -> None:
-    credentials = get_mysql_credentials()
-    recover_command = "mysql --host {MYSQL_HOST} -u {MYSQL_USER} -p{MYSQL_PASSWORD} < %s".format(**credentials)
-    subprocess.run(recover_command % backup_filename, shell=True, check=True)
-
-
-@contextmanager
-def backup_database() -> Generator[None, None, None]:
-    current_alembic_version = get_current_alembic_version()
-    backup_filename: Optional[str] = None
-    if is_alembic_migration_command() and current_alembic_version:
-        # Only when alembic is upgrading or downgrading
-        # and legacy database exists, should we backup database
-        backup_filename = f"backup_{current_alembic_version}_{int(time.time())}_{uuid.uuid4().hex}.sql"
-        create_backup(backup_filename)
-        logging.info("Created MySQL backup to %s" % backup_filename)
-    try:
-        yield
-    except Exception as e:
-        if backup_filename:
-            recover_from_backup(backup_filename)
-            logging.info("Failed to upgrade database (%s), rollback with backup %s" % (e, backup_filename))
 
 
 def is_alembic_migration_command() -> bool:
@@ -142,10 +93,6 @@ def run_migrations_online() -> None:
             # new feature, for sqlite alter
             render_as_batch=True,
         )
-
-        with backup_database():
-            with context.begin_transaction():
-                context.run_migrations()
 
 
 if context.is_offline_mode():

@@ -19,6 +19,7 @@ from auth.api.errors.errors import (
 from auth.config import settings
 from auth.utils import security
 from auth.utils.email import send_reset_password_email
+from common_utils.version import YMIR_VERSION
 
 router = APIRouter()
 
@@ -64,7 +65,7 @@ def login_access_token(
         "id": user.id,
         "role": role.name,
     }
-    token_payload["version"] = settings.YMIR_VERSION
+    token_payload["version"] = YMIR_VERSION
     payload = {
         "access_token": security.create_access_token(token_payload, expires_delta=access_token_expires),
         "token_type": "bearer",

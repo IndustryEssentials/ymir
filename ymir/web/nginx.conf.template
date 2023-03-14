@@ -5,7 +5,7 @@ upstream backend_api {
 }
 
 upstream auth_api {
-    server auth:80;
+    server auth:8088;
 }
 
 upstream tensorboard_web {
@@ -40,8 +40,32 @@ server {
         root /data/ymir/;
     }
 
-    location /auth/ {
-        proxy_pass http://auth_api/api/;
+    location /api/v1/users/ {
+        proxy_pass http://auth_api/api/v1/users/;
+        add_header 'Access-Control-Allow-Origin' '*';
+        proxy_set_header   Host $host;
+        proxy_set_header   X-Real-IP $remote_addr;
+        proxy_set_header   X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header   X-Forwarded-Host $server_name;
+    }
+    location /api/v1/auth/ {
+        proxy_pass http://auth_api/api/v1/auth/;
+        add_header 'Access-Control-Allow-Origin' '*';
+        proxy_set_header   Host $host;
+        proxy_set_header   X-Real-IP $remote_addr;
+        proxy_set_header   X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header   X-Forwarded-Host $server_name;
+    }
+    location /api/v1/reset-password/ {
+        proxy_pass http://auth_api/api/v1/reset-password/;
+        add_header 'Access-Control-Allow-Origin' '*';
+        proxy_set_header   Host $host;
+        proxy_set_header   X-Real-IP $remote_addr;
+        proxy_set_header   X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header   X-Forwarded-Host $server_name;
+    }
+    location /api/v1/password-recovery/ {
+        proxy_pass http://auth_api/api/v1/password-recovery/;
         add_header 'Access-Control-Allow-Origin' '*';
         proxy_set_header   Host $host;
         proxy_set_header   X-Real-IP $remote_addr;
@@ -78,7 +102,7 @@ server {
         proxy_set_header   X-Forwarded-Host $server_name;
     }
 
-    location /label_tool/ {        
+    location /label_tool/ {
         if ($query_string ~* "token=([^&]+)") {
           set $id $1;
         }

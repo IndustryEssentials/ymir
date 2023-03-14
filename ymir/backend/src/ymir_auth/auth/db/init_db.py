@@ -5,6 +5,7 @@ from auth.config import settings
 from auth.constants.role import Roles
 from auth.db import base  # noqa: F401
 from auth.utils.security import frontend_hash
+from app.utils.ymir_controller import ControllerClient
 
 # make sure all SQL Alchemy models are imported (app.db.base) before initializing DB
 # otherwise, SQL Alchemy might fail to initialize relationships properly
@@ -32,7 +33,6 @@ def init_db(db: Session) -> None:
         user = crud.user.create(db, obj_in=user_in)  # noqa: F841
         user = crud.user.activate(db, user=user)
         user = crud.user.update_role(db, user=user, role=schemas.UserRole.SUPER_ADMIN)
-
-
-# TODO
-# First User's Label
+        if settings.INIT_LABEL_FOR_FIRST_USER:
+            controller = ControllerClient(settings.GRPC_CHANNEL)
+            controller.create_user(user_id=user.id)
