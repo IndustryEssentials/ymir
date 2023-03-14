@@ -102,7 +102,7 @@ const Uploader: FC<Props> = ({
       maxCount={maxCount}
       showUploadList={showUploadList}
     >
-      <Button ghost icon={<CloudUploadOutlined />} {...btnProps}>
+      <Button type='primary' ghost icon={<CloudUploadOutlined />} {...btnProps}>
         {label}
       </Button>
     </Upload>
