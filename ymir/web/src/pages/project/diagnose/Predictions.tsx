@@ -14,6 +14,7 @@ import Hide, { RefProps } from '@/components/common/hide'
 import s from './index.less'
 import { EyeOnIcon, DiagnosisIcon, DeleteIcon } from '@/components/common/Icons'
 import { validDataset } from '@/constants/dataset'
+import MetricsModal from './components/MetricsModal'
 
 const initQuery = { current: 1, offset: 0, limit: 20 }
 
@@ -25,6 +26,8 @@ const Predictions: React.FC = () => {
   const hideRef = useRef<RefProps>(null)
   const [{ items, total }, getPredictions] = useFetch('prediction/getPredictions', { items: [], total: 0 })
   const cols = getPredictionColumns(predictions[0]?.type)
+  const [currentPrediction, setCurrentPrediction] = useState<YModels.Prediction>()
+  const [metricsModalVisible, setMModalVisible] = useState(false)
   const cacheDatasets = useSelector<YStates.Root, YStates.IdMap<YModels.Dataset>>((state) => state.dataset.dataset)
   const cacheModels = useSelector<YStates.Root, YStates.IdMap<YModels.Model>>((state) => state.model.model)
   const progressTasks = useSelector<YStates.Root, YModels.ProgressTask[]>(({ socket }) => socket.tasks)
@@ -32,10 +35,10 @@ const Predictions: React.FC = () => {
     {
       key: 'diagnose',
       label: t('common.action.diagnose'),
-      onclick: () =>
-        history.push(`/home/project/${pid}/diagnose#metrics`, {
-          mid: record.inferModelId,
-        }),
+      onclick: () => popupModal(record),
+        // history.push(`/home/project/${pid}/diagnose#metrics`, {
+        //   mid: record.inferModelId,
+        // }),
       disabled: !validDataset(record) || record.assetCount > INFER_DATASET_MAX_COUNT || (record.inferModel?.keywords?.length || 0) > INFER_CLASSES_MAX_COUNT,
       icon: <DiagnosisIcon />,
     },
@@ -95,6 +98,11 @@ const Predictions: React.FC = () => {
     )
   }, [cacheDatasets, cacheModels, items])
 
+  const popupModal = (prediction: YModels.Prediction) => {
+    setCurrentPrediction(prediction)
+    setMModalVisible(true)
+  }
+
   function pageChange(current: number, size: number) {
     const limit = size
     const offset = (current - 1) * size
@@ -125,6 +133,7 @@ const Predictions: React.FC = () => {
         }}
       />
       <Hide ref={hideRef} type='prediction' ok={fetchPredictions} msg="pred.action.del.confirm.content" />
+      <MetricsModal width={'90%'} prediction={currentPrediction} visible={metricsModalVisible} onCancel={() => setMModalVisible(false)} footer={null} />
     </div>
   )
 }

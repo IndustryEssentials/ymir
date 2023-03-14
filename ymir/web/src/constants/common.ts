@@ -1,3 +1,7 @@
+import storage from "@/utils/storage"
+
+type Result = YModels.Dataset | YModels.Prediction | YModels.Model
+
 export const HIDDENMODULES = {
   ITERATIONSWITCH: true,
   OPENPAI: true,
@@ -21,7 +25,7 @@ export enum actions {
 
 export const OPENPAI_MAX_GPU_COUNT = 8
 
-export function updateResultState(result: YModels.Result, tasks: YModels.BackendData) {
+export function updateResultState(result: YModels.AllResult, tasks: YModels.BackendData) {
   const task = result?.task?.hash ? tasks[result.task.hash] : null
   if (!result || !task) {
     return result
@@ -91,6 +95,8 @@ const getThirdUrl = (field: string) => {
   return onlyPort ? `${location.protocol}//${location.hostname}:${url}` : url
 }
 
+export const getErrorCodeDocLink = (code: string | number = '') => `/docs/#/error-code-zh-CN?id=_${code}`
+
 enum MergeStrategy {
   latest = 2,
   older = 3,
@@ -129,4 +135,10 @@ export const getMergeStrategies = () => {
 
 export const getMergeStrategyLabel = (strategy: MergeStrategy | undefined) => {
   return strategy ? getMergeStrategies().find(({ value }) => value === strategy)?.label : undefined
+}
+
+export const getLabelToolUrl = () => {
+  const base = '/label_tool/'
+  const token = storage.get('access_token')
+  return `${base}?token=${token}`
 }

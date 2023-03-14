@@ -4,6 +4,7 @@ import { Button, Card, message, Space } from 'antd'
 
 import t from '@/utils/t'
 import { TASKTYPES, getTaskTypeLabel } from '@/constants/task'
+import { getLabelToolUrl } from '@/constants/common'
 import useFetch from '@/hooks/useFetch'
 import useRestore from '@/hooks/useRestore'
 import { canHide } from '@/constants/dataset'
@@ -12,7 +13,7 @@ import Breadcrumbs from '@/components/common/breadcrumb'
 import TaskDetail from '@/components/task/detail'
 import Detail from '@/components/dataset/detail'
 import TaskProgress from '@/components/task/progress'
-import Error from '@/components/task/error'
+import Error from '@/components/task/ErrorMessage'
 import Hide from '@/components/common/hide'
 import useCardTitle from '@/hooks/useCardTitle'
 import EditDescBox from '@/components/form/editDescBox'
@@ -95,7 +96,7 @@ function DatasetDetail() {
           <Space style={{ width: '100%', justifyContent: 'flex-end' }}>
             {dataset.taskType === TASKTYPES.LABEL ? (
               <div style={{ textAlign: 'right' }}>
-                <Link target="_blank" to="/label_tool/">
+                <Link target="_blank" to={getLabelToolUrl()}>
                   {t('task.detail.label.go.platform')}
                 </Link>
               </div>

@@ -1,5 +1,4 @@
 import { history, getDvaApp } from 'umi'
-import { message } from 'antd'
 
 const token = 'itistokenstring'
 
@@ -28,22 +27,19 @@ jest.mock('@/utils/storage', () => {
   }
 })
 
-jest.mock('@/utils/t', () => {
-  return jest.fn((msg) => msg)
-})
+jest.mock('@/utils/t', () => jest.fn((msg) => msg))
+
+jest.mock('@/hooks/useErrorMessage', () => () => jest.fn((code) => code))
 
 const err = 'it is a test error message'
 
 describe('utils: request', () => {
-  let consoleSpy = {}
-  let msgSpy = {}
+  let consoleSpy
 
   beforeEach(() => {
-    // process.env.APIURL = 'http://192.168.13.107:8088/api/v1/'
     process.env.APIURL = 'https://www.baidu.com/'
     process.env.NODE_ENV = ''
     consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {})
-    msgSpy = jest.spyOn(message, 'error').mockImplementation((msg) => msg)
   })
 
   it('set the right base url', () => {
@@ -105,6 +101,8 @@ describe('utils: request', () => {
     const error401 = error(401)
     const error403 = error(403)
     const error405 = error(405)
+    const error500 = error(500)
+    const error502 = error(502)
     const error504 = error(504)
 
     const reqHandler = request.interceptors.response.handlers[0]
@@ -116,20 +114,17 @@ describe('utils: request', () => {
 
     // 200 -> 110104
     const res110104Result = reqHandler.fulfilled(res110104)
-    expect(msgSpy).toHaveBeenCalled()
     expect(getDvaApp).toHaveBeenCalled()
     expect(getDvaApp()._store.dispatch).toHaveBeenCalled()
     expect(res110104Result).toEqual(res110104.data)
 
     // 200 -> 10001
     const res10001Result = reqHandler.fulfilled(res10001)
-    expect(msgSpy).toHaveBeenCalled()
     expect(res10001Result.code).toBe(10001)
 
     // 401
 
     const error401Result = reqHandler.rejected(error401)
-    expect(getDvaApp).toHaveBeenCalled()
     expect(getDvaApp()._store.dispatch).toHaveBeenCalled()
     expect(error401Result).toBeUndefined()
 
@@ -141,7 +136,6 @@ describe('utils: request', () => {
 
     // 400 -> 1003
     const error4001003Result = reqHandler.rejected(error4001003)
-    expect(msgSpy).toHaveBeenCalled()
     expect(error4001003Result).toEqual({ code: 1003 })
 
     // 400 -> 110104
@@ -156,7 +150,14 @@ describe('utils: request', () => {
 
     // 504
     const error504Result = reqHandler.rejected(error504)
-    expect(msgSpy).toHaveBeenCalled()
     expect(error504Result).toEqual({ code: 504 })
+
+    // 500
+    const error500Result = reqHandler.rejected(error500)
+    expect(error500Result).toEqual({ code: 500 })
+
+    // 502
+    const error502Result = reqHandler.rejected(error502)
+    expect(error502Result).toEqual({ code: 502 })
   })
 })
