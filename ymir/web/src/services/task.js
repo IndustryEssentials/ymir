@@ -349,7 +349,6 @@ export function infer({ name, projectId, datasets, stages = [], config, image, o
       task_type: 'infer',
       model_id: model,
       model_stage_id: stage,
-      generate_annotations: true,
       dataset_id: dataset,
       docker_image_id: image,
     },
