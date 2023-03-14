@@ -1,6 +1,6 @@
 import { FC, useEffect, useState } from 'react'
 import { Col, Row, Table } from 'antd'
-import PrCurve from './prCurve'
+import PrCurve from './PRCurve'
 import Panel from '@/components/form/panel'
 import { getKwField, getModelCell, opt } from './common'
 import { ChartDataType, DataTypeForTable, EvaluationResult, ListType, OptionType, ViewProps } from '.'

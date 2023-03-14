@@ -109,13 +109,11 @@ declare namespace YModels {
     keywordCount: number
     isProtected: Boolean
     assetCount: number
-    evaluated: boolean
     task: Task<P>
     gt?: AnnotationsCount
-    pred?: AnnotationsCount
-    inferClass?: Array<string>
     cks?: CKCounts
     tags?: CKCounts
+    evaluated?: boolean
   }
 
   export interface Prediction extends Omit<Dataset<InferenceParams>, 'groupId'> {
@@ -125,6 +123,9 @@ declare namespace YModels {
     inferDataset?: Dataset
     inferConfig: ImageConfig
     rowSpan?: number
+    evaluated: boolean
+    pred?: AnnotationsCount
+    inferClass?: Array<string>
   }
 
   type AllResult = Prediction | Dataset | Model
