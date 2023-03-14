@@ -119,19 +119,19 @@ class TrainingParameter(TaskParameterBase):
 
 
 class MiningParameterBase(TaskParameterBase):
-    top_k: Optional[int]
-    generate_annotations: Optional[bool]
-
     normalize_datasets = root_validator(allow_reuse=True)(dataset_normalize)
     normalize_models = root_validator(allow_reuse=True)(model_normalize)
     normalize_labels = root_validator(allow_reuse=True)(label_normalize)
 
 
 class MiningParameter(MiningParameterBase):
+    top_k: Optional[int]
+    generate_annotations: Optional[bool] = False
     task_type: Literal["mining"]
 
 
 class InferParameter(MiningParameterBase):
+    generate_annotations: Optional[bool] = True
     task_type: Literal["infer"]
 
 
