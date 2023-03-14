@@ -12,7 +12,7 @@ import Breadcrumbs from '@/components/common/breadcrumb'
 import LinkModal from './components/relate'
 import Del from './components/del'
 import ImagesLink from './components/imagesLink'
-import StateTag from '@/components/task/StateTag'
+import StateTag from '@/components/image/StateTag'
 
 import styles from './detail.less'
 import { EditIcon, PublishIcon, DeleteIcon, LinkIcon } from '@/components/common/Icons'
@@ -135,7 +135,7 @@ function ImageDetail() {
               {renderConfigs(image.configs)}
             </Item>
             <Item label={t('image.detail.label.state')} span={2}>
-              <StateTag state={image.state} />
+              <StateTag label={true} state={image.state} />
             </Item>
 
             <Item label={''} span={2}>
