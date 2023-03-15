@@ -125,7 +125,7 @@ class FailedToEvaluate(ControllerError):
 
 class InvalidRepo(ControllerError):
     code = ctl_error_codes.INVALID_MIR_ROOT
-    message = "Invalid mir root"
+    message = "Invalid repo"
 
 
 class PrematureDatasets(APIError):
