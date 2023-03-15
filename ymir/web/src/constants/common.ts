@@ -33,7 +33,7 @@ export function updateResultState(result: YModels.AllResult, tasks: YModels.Back
   return updateResultByTask(result, task)
 }
 
-export function updateResultByTask<T extends YModels.Result>(result: T, task?: YModels.ProgressTask): T | undefined {
+export function updateResultByTask<T extends YModels.AllResult>(result: T, task?: YModels.ProgressTask): T | undefined {
   if (!result || !task) {
     return
   }
