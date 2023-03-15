@@ -12,6 +12,7 @@ import { getProjectTypeLabel } from '@/constants/project'
 import RelateModal from './relate'
 import Del from './del'
 import ImagesLink from './imagesLink'
+import StateTag from '@/components/image/StateTag'
 
 import s from './list.less'
 import { EditIcon, DeleteIcon, AddIcon, MoreIcon, PublishIcon, LinkIcon } from '@/components/common/Icons'
@@ -174,7 +175,7 @@ const ImageList = ({ role, filter, getImages }) => {
           <Space>
             <span>{item.name}</span>
             {objectTypeLabel(item.objectType)}
-            {imageState(item.state)}
+            <StateTag state={item.state} />
             {isDone(item.state) && !HIDDENMODULES.LIVECODE ? liveCodeState(item.liveCode) : null}
           </Space>
         </Col>
