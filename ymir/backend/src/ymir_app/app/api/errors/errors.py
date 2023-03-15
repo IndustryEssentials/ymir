@@ -8,7 +8,7 @@ from starlette.responses import JSONResponse
 from starlette.status import HTTP_422_UNPROCESSABLE_ENTITY
 
 from app.config import settings
-from id_definition.error_codes import APIErrorCode as error_codes
+from id_definition.error_codes import APIErrorCode as error_codes, CTLResponseCode as ctl_error_codes
 
 
 async def http_error_handler(_: Request, exc: HTTPException) -> JSONResponse:
@@ -121,6 +121,11 @@ class FailedtoCreateModel(ControllerError):
 class FailedToEvaluate(ControllerError):
     code = error_codes.FAILED_TO_EVALUATE
     message = "Failed to RUN EVALUATE CMD via Controller"
+
+
+class InvalidMirRoot(ControllerError):
+    code = ctl_error_codes.INVALID_MIR_ROOT
+    message = "Invalid mir root"
 
 
 class PrematureDatasets(APIError):

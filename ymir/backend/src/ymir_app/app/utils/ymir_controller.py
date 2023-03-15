@@ -9,7 +9,7 @@ from fastapi.logger import logger
 from google.protobuf.json_format import MessageToDict
 from google.protobuf.text_format import MessageToString
 
-from app.api.errors.errors import FailedtoCreateSegLabelTask
+from app.api.errors.errors import FailedtoCreateSegLabelTask, InvalidMirRoot
 from app.config import settings
 from app.constants.state import TaskType, AnnotationType, DatasetType, ObjectType
 from app.schemas.common import ImportStrategy, MergeStrategy
@@ -378,6 +378,8 @@ class ControllerClient:
     def check_response_code(self, resp_code: int, resp_msg: Optional[str], verbose: bool = True) -> None:
         if resp_code == controller_error_code.INVOKER_LABEL_TASK_SEG_NOT_SUPPORTED:
             raise FailedtoCreateSegLabelTask()
+        if resp_code == controller_error_code.INVALID_MIR_ROOT:
+            raise InvalidMirRoot()
         elif resp_code != 0:
             raise ValueError(f"gRPC error. response: {resp_code} {resp_msg}")
 

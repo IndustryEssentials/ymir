@@ -8,6 +8,7 @@ from sqlalchemy.orm import Session
 
 from app import crud, schemas, models
 from app.api.errors.errors import (
+    ControllerError,
     DatasetNotFound,
     FailedtoCreateDataset,
     PrematureDatasets,
@@ -46,6 +47,9 @@ def import_dataset_in_background(
     except BadZipFile:
         logger.exception("[import dataset] invalid zip file")
         state_code = error_codes.INVALID_DATASET_ZIP_FILE
+    except ControllerError as e:
+        logger.exception(f"[import dataset] {e.message}")
+        state_code = e.code
     except Exception:
         logger.exception("[import dataset] failed to import dataset")
         state_code = error_codes.DATASET_FAILED_TO_IMPORT
