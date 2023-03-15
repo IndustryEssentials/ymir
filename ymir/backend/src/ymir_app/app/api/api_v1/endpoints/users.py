@@ -178,12 +178,11 @@ def update_user_state(
 @router.post(
     "/controller",
     response_model=schemas.user.ControllerUserOut,
-    responses={400: {"description": "Username Already Exists"}},
+    dependencies=[Depends(deps.api_key_security)],
 )
 def create_controller_user(
     *,
     in_user: schemas.user.ControllerUserCreate,
-    dependencies=[Depends(deps.api_key_security)],
     controller_client: ControllerClient = Depends(deps.get_controller_client),
 ) -> Any:
     """

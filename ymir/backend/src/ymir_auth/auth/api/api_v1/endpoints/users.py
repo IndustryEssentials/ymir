@@ -74,7 +74,7 @@ def create_user(
 
 
 def register_sandbox(user_id: int) -> None:
-    url = f"http://{settings.APP_API_HOST}/{settings.API_V1_STR}/users/controller"
+    url = f"http://{settings.APP_API_HOST}{settings.API_V1_STR}/users/controller"
     resp = requests.post(
         url, json={"user_id": user_id}, timeout=settings.APP_API_TIMEOUT, headers={"api-key": settings.APP_API_KEY}
     )
