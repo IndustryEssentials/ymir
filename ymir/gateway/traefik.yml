@@ -2,10 +2,6 @@ entryPoints:
   web:
     address: ":80"
 
-api:
-  insecure: true
-  dashboard: true
-
 providers:
   file:
     filename: "/dynamic-conf.yml"

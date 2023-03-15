@@ -1,6 +1,4 @@
 from datetime import datetime
-from enum import Enum
-from typing import List
 
 from pydantic import BaseModel, Field, validator
 
@@ -28,18 +26,3 @@ class IdModelMixin(BaseModel):
 
 class IsDeletedModelMixin(BaseModel):
     is_deleted: bool = False
-
-
-class OperationAction(str, Enum):
-    hide = "hide"
-    unhide = "unhide"
-
-
-class Operation(BaseModel):
-    action: OperationAction = Field(example="hide")
-    id_: int = Field(alias="id")
-
-
-class BatchOperations(BaseModel):
-    project_id: int
-    operations: List[Operation]
