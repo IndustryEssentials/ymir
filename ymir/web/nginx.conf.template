@@ -5,7 +5,7 @@ upstream backend_api {
 }
 
 upstream auth_api {
-    server auth:8088;
+    server backend:8088;
 }
 
 upstream tensorboard_web {

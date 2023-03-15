@@ -1,28 +1,5 @@
 version: "3.3"
 services:
-  auth:
-    image: industryessentials/ymir-backend:release-2.2.0
-    env_file:
-      - .env
-    runtime: ${SERVER_RUNTIME}
-    environment:
-      - DATABASE_URI=mysql+pymysql://${MYSQL_INITIAL_USER}:${MYSQL_INITIAL_PASSWORD}@db/ymir
-      - APP_API_HOST=127.0.0.1:80
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-    depends_on:
-      - db
-    command: bash -c 'cd /app && supervisord -nc supervisor/supervisord_auth.conf'
-    restart: on-failure:10
-    healthcheck:
-      test: bash health_check_auth.sh || exit 1
-      interval: 60s
-      timeout: 6s
-      retries: 3
-      start_period: 30s
-    networks:
-      - ymirnetwork
-
   backend:
     image: industryessentials/ymir-backend:release-2.2.0
     env_file:
