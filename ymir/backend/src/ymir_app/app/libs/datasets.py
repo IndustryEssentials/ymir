@@ -48,7 +48,7 @@ def import_dataset_in_background(
         logger.exception("[import dataset] invalid zip file")
         state_code = error_codes.INVALID_DATASET_ZIP_FILE
     except ControllerError as e:
-        logger.exception(f"[import dataset] {e.message}")
+        logger.exception(f"[import dataset] controller: {e.message}")
         state_code = e.code
     except Exception:
         logger.exception("[import dataset] failed to import dataset")
