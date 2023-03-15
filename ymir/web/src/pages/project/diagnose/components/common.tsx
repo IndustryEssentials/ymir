@@ -37,7 +37,7 @@ export const opt = (d: YModels.Result) => ({ value: d.id, label: `${d.name} ${d.
 
 export const average = (nums: number[] = []) => nums.reduce((prev, num) => (!Number.isNaN(num) ? prev + num : prev), 0) / nums.length
 
-export const getKwField = (evaluation: DataType, ck?: boolean) => {
+export const getKwField = (evaluation: DataType, ck?: boolean): MetricsType => {
   const data = evaluation || {}
   if (ck) {
     const data = evaluation?.sub_cks || {}
