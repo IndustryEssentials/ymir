@@ -1,0 +1,18 @@
+entryPoints:
+  web:
+    address: ":80"
+
+api:
+  insecure: true
+  dashboard: true
+
+providers:
+  file:
+    filename: "/dynamic-conf.yml"
+
+log:
+  filePath: "/app_logs/traefik.log"
+  level: DEBUG
+
+accessLog:
+  filePath: "/app_logs/traefik_access.log"

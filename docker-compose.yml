@@ -1,5 +1,16 @@
 version: "3.3"
 services:
+  gateway:
+    image: industryessentials/ymir-gateway:release-2.2.0
+    env_file:
+      - .env
+    ports:
+      - ${NGINX_PORT}:80
+    volumes:
+      - ${YMIR_PATH}/ymir-data/logs:/app_logs
+    networks:
+      - ymirnetwork
+
   backend:
     image: industryessentials/ymir-backend:release-2.2.0
     env_file:
@@ -88,8 +99,6 @@ services:
       - LABEL_TOOL_HOST_PORT=${LABEL_TOOL_HOST_PORT}
       - DEPLOY_MODULE_URL=${DEPLOY_MODULE_URL}
       - PUBLIC_IMAGE_URL=${PUBLIC_IMAGE_URL}
-    ports:
-      - ${NGINX_PORT}:80
     restart: on-failure:10
     depends_on:
       - backend
