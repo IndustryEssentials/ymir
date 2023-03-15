@@ -123,7 +123,7 @@ class FailedToEvaluate(ControllerError):
     message = "Failed to RUN EVALUATE CMD via Controller"
 
 
-class InvalidMirRoot(ControllerError):
+class InvalidProjectRoot(ControllerError):
     code = ctl_error_codes.INVALID_MIR_ROOT
     message = "Invalid mir root"
 
