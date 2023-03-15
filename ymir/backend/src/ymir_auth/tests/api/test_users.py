@@ -3,6 +3,7 @@ from typing import Dict
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
 
+from auth.api.api_v1.api import users as m
 from auth.config import settings
 from tests.utils.utils import random_email, random_lower_string
 
@@ -15,10 +16,11 @@ def test_get_users_normal_user_me(client: TestClient, normal_user_token_headers:
     assert current_user["email"] == settings.EMAIL_TEST_USER
 
 
-def test_create_user_new_email(client: TestClient, admin_token_headers: Dict, db: Session) -> None:
+def test_create_user_new_email(client: TestClient, admin_token_headers: Dict, db: Session, mocker) -> None:
     email = random_email()
     password = random_lower_string()
     data = {"email": email, "password": password}
+    mocker.patch.object(m, "register_sandbox")
     r = client.post(f"{settings.API_V1_STR}/users/", json=data)
     assert 200 <= r.status_code < 300
     created_user = r.json()["result"]
@@ -31,10 +33,11 @@ def test_create_user_new_email(client: TestClient, admin_token_headers: Dict, db
 
 
 class TestActivateUser:
-    def test_activate_user(self, client: TestClient, super_admin_token_headers: Dict, db: Session) -> None:
+    def test_activate_user(self, client: TestClient, super_admin_token_headers: Dict, db: Session, mocker) -> None:
         email = random_email()
         password = random_lower_string()
         data = {"email": email, "password": password}
+        mocker.patch.object(m, "register_sandbox")
         r = client.post(f"{settings.API_V1_STR}/users/", json=data)
         new_user = r.json()["result"]
         assert new_user["state"] == 1
