@@ -88,7 +88,7 @@ function List({ project }) {
         const label = (
           <>
             <VersionName result={md} />
-            {!validModel(md) ? <StateTag mode="text" state={md.state} /> : null}
+            {!validModel(md) ? <StateTag mode="text" state={md.state} code={md.task?.error_code} /> : null}
           </>
         )
         return validModel(md) ? (
