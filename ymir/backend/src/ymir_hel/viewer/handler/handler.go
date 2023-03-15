@@ -2,6 +2,7 @@ package handler
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"time"
 
@@ -73,7 +74,7 @@ func NewViewerHandler(
 ) *ViewerHandler {
 	var mongoServer *mongodb.MongoServer
 	if len(mongoURI) > 0 {
-		log.Printf("[viewer] initing mongodb %s\n", mongoURI)
+		log.Printf("[viewer init] initing mongodb %s\n", mongoURI)
 
 		mongoCtx := context.Background()
 		client, err := mongo.Connect(
@@ -90,16 +91,23 @@ func NewViewerHandler(
 		if err != nil {
 			panic(err)
 		}
-		log.Printf("[viewer] connect mongodb succeed.\n")
+		log.Printf("[viewer init] connect mongodb succeed.\n")
 
 		mirDatabase := client.Database(mongoDataDBName)
 		metricsDatabase := client.Database(mongoMetricsDBName)
 		mongoServer = mongodb.NewMongoServer(mongoCtx, mirDatabase, metricsDatabase)
 		if useDataDBCache {
-			go mongoServer.RemoveNonReadyDataset()
+			go func() {
+				defer func() {
+					if r := recover(); r != nil {
+						fmt.Printf("RemoveNonReadyDataset fails: %s\n", r)
+					}
+				}()
+				mongoServer.RemoveNonReadyDataset()
+			}()
 		} else {
 			// Clear cached data.
-			log.Printf("[viewer] drop cached mongodb.\n")
+			log.Printf("[viewer init] drop cached mongodb.\n")
 			err = mirDatabase.Drop(mongoCtx)
 			if err != nil {
 				panic(err)
@@ -108,7 +116,7 @@ func NewViewerHandler(
 
 	}
 
-	log.Printf("[viewer] init mongodb succeed.\n")
+	log.Printf("[viewer init] init mongodb succeed.\n")
 	return &ViewerHandler{mongoServer: mongoServer, mirLoader: &loader.MirRepoLoader{}}
 }
 
@@ -161,7 +169,14 @@ func (v *ViewerHandler) GetDatasetMetaCountsHandler(
 	exist, ready := v.mongoServer.CheckDatasetIndex(mirRepo)
 	if !exist {
 		// Index dataset in background task.
-		go v.loadAndIndexAssets(mirRepo)
+		go func() {
+			defer func() {
+				if r := recover(); r != nil {
+					fmt.Printf("background index fails: %s\n", r)
+				}
+			}()
+			v.loadAndIndexAssets(mirRepo)
+		}()
 	}
 
 	result.QueryContext.RepoIndexExist = exist
