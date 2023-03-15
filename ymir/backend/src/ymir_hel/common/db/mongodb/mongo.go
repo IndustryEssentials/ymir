@@ -543,7 +543,7 @@ func (s *MongoServer) RemoveNonReadyDataset() {
 		}
 		s.setDatasetExistence(collectionName, false, false)
 	}
-	log.Printf("Dropped %d non-ready collections.", len(queryDatas))
+	log.Printf("[viewer init]Dropped %d non-ready collections.", len(queryDatas))
 }
 
 func (s *MongoServer) loadDatasetMetaData(

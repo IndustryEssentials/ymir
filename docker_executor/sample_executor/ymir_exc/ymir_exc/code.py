@@ -11,29 +11,29 @@ class ExecutorReturnCode(IntEnum):
 
     # dataset and config errors
     # can not read config file, or can not find required arguments
-    RC_EXEC_CONFIG_ERROR = 180001
+    RC_EXEC_CONFIG_ERROR = 300001
     # Can not find training dataset or validation dataset
-    RC_EXEC_DATASET_ERROR = 180002
+    RC_EXEC_DATASET_ERROR = 300002
     # Can not read image, or image format unknown
-    RC_EXEC_UNKNOWN_IMAGE_FORMAT = 180003
+    RC_EXEC_UNKNOWN_IMAGE_FORMAT = 300003
     # Can not find model file
-    RC_EXEC_MODEL_ERROR = 180004
+    RC_EXEC_MODEL_ERROR = 300004
 
     # cuda, gpu and memory errors
     # CUDA and GPU mismatch
-    RC_EXEC_CUDA_GPU_ERROR = 180101
+    RC_EXEC_CUDA_GPU_ERROR = 300101
     # Can not find any GPUs if GPU is needed
-    RC_EXEC_NO_GPU = 180102
+    RC_EXEC_NO_GPU = 300102
     # Out of memory
-    RC_EXEC_OOM = 180103
+    RC_EXEC_OOM = 300103
 
     # numeral errors
     # Find NaN when training
-    RC_EXEC_NAN_ERROR = 180201
+    RC_EXEC_NAN_ERROR = 300201
 
     # misc
     # Network error occured when download
-    RC_EXEC_NETWORK_ERROR = 180301
+    RC_EXEC_NETWORK_ERROR = 300301
 
     # other errors
     RC_CMD_CONTAINER_ERROR = 160004
