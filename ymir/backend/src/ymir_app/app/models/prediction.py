@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import Optional
 
 from sqlalchemy import Boolean, Column, DateTime, Integer, String, SmallInteger, Text
 from sqlalchemy.orm import relationship
@@ -6,6 +7,7 @@ from sqlalchemy.orm import relationship
 from app.config import settings
 from app.db.base_class import Base
 from app.models.task import Task  # noqa
+from app.models.project import Project  # noqa
 
 
 class Prediction(Base):
@@ -45,3 +47,16 @@ class Prediction(Base):
         onupdate=datetime.utcnow,
         nullable=False,
     )
+
+    project = relationship(
+        "Project",
+        primaryjoin="foreign(Project.id)==Prediction.project_id",
+        uselist=False,
+        viewonly=True,
+    )
+
+    @property
+    def object_type(self) -> Optional[int]:
+        if self.project:  # type: ignore
+            return self.project.object_type  # type: ignore
+        return None
