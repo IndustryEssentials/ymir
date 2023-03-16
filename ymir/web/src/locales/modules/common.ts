@@ -94,6 +94,7 @@ const common = {
   'common.state.deleted': { cn: '删除', en: 'Deleted' },
   'common.selected.required': { cn: '需要选中至少一项', en: 'Selected required' },
   'common.trash.list': { cn: '回收站', en: 'Trash' },
+  'common.trash.label': { cn: '删除状态', en: 'Deleted' },
   'common.average': { cn: '平均值', en: 'Average' },
   'common.recommend': { cn: '推荐', en: 'Recommend' },
   'common.desc': { en: 'Description', cn: '描述' },

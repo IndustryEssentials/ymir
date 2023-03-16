@@ -62,8 +62,8 @@ describe('models: prediction', () => {
   })
 
   const generateItems = (mids, isExpected) => {
-    const item = (curr, exp) => (id, index) => exp ? { ...transferPrediction(ds(id)), rowSpan: index ? 0 : curr } : ds(id)
-    const items = mids.reduce((prev, curr) => ({ ...prev, [curr]: products(curr).map(item(curr, isExpected)) }), {})
+    const item = (curr, exp, listIndex) => ({id}, index) => exp ? { ...transferPrediction(ds(id)), rowSpan: index ? 0 : curr, odd: listIndex % 2 === 0 } : ds(id)
+    const items = mids.reduce((prev, curr, index) => ({ ...prev, [curr]: products(curr).map(item(curr, isExpected, index)) }), {})
     const total = mids.length
     return { items: isExpected ? Object.values(items).flat() : items, total }
   }
@@ -99,7 +99,7 @@ describe('models: prediction', () => {
   it('effects: getPredictions -> success from cache.', () => {
     const saga = prediction.effects.getPredictions
     const pid = 134234
-    const mids = [1,3,2]
+    const mids = [1,2,5]
     const creator = {
       type: 'getPredictions',
       payload: { pid },
@@ -116,7 +116,7 @@ describe('models: prediction', () => {
   it('effects: getPredictions -> cache failed, and success from remote.', () => {
     const saga = prediction.effects.getPredictions
     const pid = 134234
-    const mids = [2, 6, 3]
+    const mids = [1, 2, 3]
     const creator = {
       type: 'getPredictions',
       payload: { pid },

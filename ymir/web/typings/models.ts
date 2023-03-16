@@ -126,6 +126,7 @@ declare namespace YModels {
     evaluated: boolean
     pred?: AnnotationsCount
     inferClass?: Array<string>
+    odd?: boolean
   }
 
   type AllResult = Prediction | Dataset | Model
