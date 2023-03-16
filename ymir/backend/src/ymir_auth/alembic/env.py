@@ -93,8 +93,6 @@ def run_migrations_online() -> None:
             # new feature, for sqlite alter
             render_as_batch=True,
         )
-        with context.begin_transaction():
-            context.run_migrations()
 
 
 if context.is_offline_mode():
