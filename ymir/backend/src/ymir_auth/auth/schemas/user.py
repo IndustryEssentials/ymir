@@ -5,7 +5,7 @@ from uuid import UUID
 
 from pydantic import BaseModel, EmailStr, validator
 
-from app.schemas.common import (
+from auth.schemas.common import (
     Common,
     DateTimeModelMixin,
     IdModelMixin,
@@ -84,15 +84,3 @@ class UsersOut(Common):
 # Additional properties stored in DB
 class UserInDB(UserInDBBase):
     hashed_password: str
-
-
-class ControllerUserCreate(BaseModel):
-    user_id: int
-
-
-class ControllerUser(BaseModel):
-    hash: str
-
-
-class ControllerUserOut(Common):
-    result: ControllerUser

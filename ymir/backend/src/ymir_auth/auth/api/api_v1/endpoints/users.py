@@ -1,28 +1,27 @@
 from typing import Any, Optional
 
 from fastapi import APIRouter, Body, Depends, Query, Security
+from fastapi.logger import logger
 from fastapi.encoders import jsonable_encoder
 from pydantic.networks import EmailStr
 from sqlalchemy.orm import Session
+import requests
 
-from app import crud, models, schemas
-from app.api import deps
-from app.api.errors.errors import (
+from auth import crud, models, schemas
+from auth.api import deps
+from auth.config import settings
+from auth.api.errors.errors import (
     DuplicateUserNameError,
     DuplicatePhoneError,
-    UserNotFound,
     FailedToCreateUser,
+    UserNotFound,
 )
-from app.constants.role import Roles
-from app.utils.ymir_controller import ControllerClient, gen_user_hash
+from auth.constants.role import Roles
 
 router = APIRouter()
 
 
-@router.get(
-    "/",
-    response_model=schemas.UsersOut,
-)
+@router.get("/", response_model=schemas.UsersOut)
 def list_users(
     db: Session = Depends(deps.get_db),
     offset: int = Query(None),
@@ -54,7 +53,6 @@ def list_users(
 def create_user(
     *,
     db: Session = Depends(deps.get_db),
-    controller_client: ControllerClient = Depends(deps.get_controller_client),
     password: str = Body(...),
     email: EmailStr = Body(...),
     phone: str = Body(None),
@@ -70,13 +68,19 @@ def create_user(
 
     user_in = schemas.UserCreate(password=password, email=email, phone=phone, username=username)
     user = crud.user.create(db, obj_in=user_in)
-
-    try:
-        controller_client.create_user(user_id=user.id)
-    except ValueError:
-        raise FailedToCreateUser()
+    register_sandbox(user.id)
 
     return {"result": user}
+
+
+def register_sandbox(user_id: int) -> None:
+    url = f"http://{settings.APP_API_HOST}{settings.API_V1_STR}/users/controller"
+    resp = requests.post(
+        url, json={"user_id": user_id}, timeout=settings.APP_API_TIMEOUT, headers={"api-key": settings.APP_API_KEY}
+    )
+    if not resp.ok:
+        logger.error("Failed to create sandbox via APP: %s", resp.content)
+        raise FailedToCreateUser()
 
 
 @router.get("/me", response_model=schemas.UserOut)
@@ -173,24 +177,3 @@ def update_user_state(
     if role is not None:
         user = crud.user.update_role(db, user=user, role=role)
     return {"result": user}
-
-
-@router.post(
-    "/controller",
-    response_model=schemas.user.ControllerUserOut,
-    dependencies=[Depends(deps.api_key_security)],
-)
-def create_controller_user(
-    *,
-    in_user: schemas.user.ControllerUserCreate,
-    controller_client: ControllerClient = Depends(deps.get_controller_client),
-) -> Any:
-    """
-    Register controller user
-    """
-    try:
-        controller_client.create_user(user_id=in_user.user_id)
-    except ValueError:
-        raise FailedToCreateUser()
-
-    return {"result": {"hash": gen_user_hash(in_user.user_id)}}
