@@ -130,8 +130,19 @@ class TestToolsDetEval(unittest.TestCase):
                             'class_id': 2,
                             'polygon': [],
                             'score': 0.9,
+                        }, {
+                            'index': 5,
+                            'box': {
+                                'x': 350,
+                                'y': 50,
+                                'w': 102,
+                                'h': 103,
+                            },
+                            'class_id': 3,
+                            'polygon': [],
+                            'score': 0.9,
                         }],
-                        'img_class_ids': [0, 1, 2],
+                        'img_class_ids': [0, 1, 2, 3],
                     },
                     'a1': {
                         'boxes': [{
@@ -149,8 +160,8 @@ class TestToolsDetEval(unittest.TestCase):
                         'img_class_ids': [2],
                     },
                 },
-                'eval_class_ids': [0, 1, 2],
-                'task_class_ids': [0, 1, 2],
+                'eval_class_ids': [0, 1, 2, 3],
+                'task_class_ids': [0, 1, 2, 3],
             },
             'image_cks': {
                 'a0': {
@@ -512,16 +523,37 @@ class TestToolsDetEval(unittest.TestCase):
                             'iscrowd': 0,
                             'mask': '',
                             'mask_area': 0,
+                        }, {
+                            'index': 5,
+                            'box': {
+                                'x': 350,
+                                'y': 50,
+                                'w': 102,
+                                'h': 103,
+                                'rotate_angle': 0.0
+                            },
+                            'class_id': 3,
+                            'score': 0.9,
+                            'polygon': [],
+                            'cm': 'IGNORED',
+                            'det_link_id': -1,
+                            'anno_quality': 0.0,
+                            'tags': {},
+                            'class_name': '',
+                            'type': 'OST_NOTSET',
+                            'iscrowd': 0,
+                            'mask': '',
+                            'mask_area': 0,
                         }],
-                        'img_class_ids': [0, 1, 2],
+                        'img_class_ids': [0, 1, 2, 3],
                     }
                 },
                 'is_instance_segmentation': False,
                 'task_id': 'a',
-                'eval_class_ids': [0, 1, 2],
+                'eval_class_ids': [0, 1, 2, 3],
                 'executor_config': '',
                 'type': 'OT_DET_BOX',
-                'task_class_ids': [0, 1, 2],
+                'task_class_ids': [0, 1, 2, 3],
             },
             'image_cks': {
                 'a1': {
@@ -547,9 +579,35 @@ class TestToolsDetEval(unittest.TestCase):
 
     # public: test cases
     def test_det_eval_voc_00(self) -> None:
-        sde = self._test_det_eval(det_eval_model_name=det_eval_voc)
+        mir_annotations: mirpb.MirAnnotations = mir_storage_ops.MirStorageOps.load_single_storage(
+            mir_root=self._mir_root, mir_branch='a', mir_task_id='a', ms=mirpb.MirStorage.MIR_ANNOTATIONS)
+
+        evaluate_config = mirpb.EvaluateConfig()
+        evaluate_config.conf_thr = 0.0005
+        evaluate_config.iou_thrs_interval = '0.5'
+        evaluate_config.need_pr_curve = True
+        evaluate_config.class_ids[:] = [0, 1]
+        evaluation: mirpb.Evaluation = det_eval_voc.evaluate(prediction=mir_annotations.prediction,
+                                                             ground_truth=mir_annotations.ground_truth,
+                                                             config=evaluate_config)
+        self._check_fpfn(mir_annotations)
+        sde = evaluation.dataset_evaluation
         see = sde.iou_averaged_evaluation.ci_averaged_evaluation
         self.assertTrue(np.isclose(0.833333, see.ap))
+
+    def test_det_eval_voc_01(self) -> None:
+        mir_annotations: mirpb.MirAnnotations = mir_storage_ops.MirStorageOps.load_single_storage(
+            mir_root=self._mir_root, mir_branch='a', mir_task_id='a', ms=mirpb.MirStorage.MIR_ANNOTATIONS)
+        evaluate_config = mirpb.EvaluateConfig()
+        evaluate_config.conf_thr = 0.0005
+        evaluate_config.iou_thrs_interval = '0.5'
+        evaluate_config.need_pr_curve = False
+        evaluate_config.class_ids[:] = [3]
+        evaluation: mirpb.Evaluation = det_eval_voc.evaluate(prediction=mir_annotations.prediction,
+                                                             ground_truth=mir_annotations.ground_truth,
+                                                             config=evaluate_config)
+        self.assertEqual(evaluation.dataset_evaluation.iou_averaged_evaluation.ci_averaged_evaluation.ap, 0)
+        self.assertEqual(evaluation.dataset_evaluation.iou_averaged_evaluation.ci_averaged_evaluation.ar, 0)
 
     def test_det_eval_ctl_ops(self) -> None:
         gt_pred_rev_tid = revs_parser.parse_single_arg_rev('a@a', need_tid=False)
@@ -571,19 +629,3 @@ class TestToolsDetEval(unittest.TestCase):
                                                         pred_rev_tid=gt_pred_rev_tid,
                                                         evaluate_config=evaluate_config)
         self.assertIsNone(evaluation)
-
-    # protected: test cases
-    def _test_det_eval(self, det_eval_model_name: Any) -> mirpb.SingleDatasetEvaluation:
-        mir_annotations: mirpb.MirAnnotations = mir_storage_ops.MirStorageOps.load_single_storage(
-            mir_root=self._mir_root, mir_branch='a', mir_task_id='a', ms=mirpb.MirStorage.MIR_ANNOTATIONS)
-
-        evaluate_config = mirpb.EvaluateConfig()
-        evaluate_config.conf_thr = 0.0005
-        evaluate_config.iou_thrs_interval = '0.5'
-        evaluate_config.need_pr_curve = True
-        evaluate_config.class_ids[:] = [0, 1]
-        evaluation: mirpb.Evaluation = det_eval_model_name.evaluate(prediction=mir_annotations.prediction,
-                                                                    ground_truth=mir_annotations.ground_truth,
-                                                                    config=evaluate_config)
-        self._check_fpfn(mir_annotations)
-        return evaluation.dataset_evaluation
