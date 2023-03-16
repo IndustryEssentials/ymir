@@ -14,7 +14,7 @@ from app.api.errors.errors import (
     FailedToCreateUser,
 )
 from app.constants.role import Roles
-from app.utils.ymir_controller import ControllerClient
+from app.utils.ymir_controller import ControllerClient, gen_user_hash
 
 router = APIRouter()
 
@@ -173,3 +173,24 @@ def update_user_state(
     if role is not None:
         user = crud.user.update_role(db, user=user, role=role)
     return {"result": user}
+
+
+@router.post(
+    "/controller",
+    response_model=schemas.user.ControllerUserOut,
+    dependencies=[Depends(deps.api_key_security)],
+)
+def create_controller_user(
+    *,
+    in_user: schemas.user.ControllerUserCreate,
+    controller_client: ControllerClient = Depends(deps.get_controller_client),
+) -> Any:
+    """
+    Register controller user
+    """
+    try:
+        controller_client.create_user(user_id=in_user.user_id)
+    except ValueError:
+        raise FailedToCreateUser()
+
+    return {"result": {"hash": gen_user_hash(in_user.user_id)}}

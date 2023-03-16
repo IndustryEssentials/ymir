@@ -1,0 +1,71 @@
+http:
+  routers:
+    auth_router:
+      entryPoints:
+        - web
+      middlewares:
+        - APIRateLimiter
+      service: auth
+      rule: PathPrefix(`/api/v1/auth`) || PathPrefix(`/api/v1/user`) || PathPrefix(`/api/v1/reset-password`) || PathPrefix(`/api/v1/password-recovery`)
+
+    backend_router:
+      entryPoints:
+        - web
+      middlewares:
+        - APIRateLimiter
+      service: backend
+      rule: PathPrefix(`/api/v1/`)
+
+    tensorboard_router:
+      entryPoints:
+        - web
+      middlewares:
+        - APIRateLimiter
+      service: tensorboard
+      rule: PathPrefix(`/tensorboard/`)
+
+    socket_router:
+      entryPoints:
+        - web
+      middlewares:
+        - updateSocketPath
+      service: backend
+      rule: PathPrefix(`/socket/`)
+
+    frontend_router:
+      entryPoints:
+        - web
+      service: frontend
+      rule: PathPrefix(`/`)
+
+  services:
+    auth:
+      loadBalancer:
+        servers:
+          - url: http://backend:8088/
+    backend:
+      loadBalancer:
+        servers:
+          - url: http://backend:80/
+    frontend:
+      loadBalancer:
+        servers:
+          - url: http://web:80/
+
+    # third parties
+    tensorboard:
+      loadBalancer:
+        servers:
+          - url: http://tensorboard:6006
+
+  middlewares:
+
+    APIRateLimiter:
+      rateLimit:
+        average: 3
+        burst: 10
+
+    updateSocketPath:
+      stripPrefix:
+        prefixes:
+          - "/socket"

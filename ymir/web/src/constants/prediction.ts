@@ -62,5 +62,6 @@ export function transferPrediction(data: YModels.BackendData): YModels.Predictio
     inferDatasetId: params?.dataset_id || 0,
     inferConfig: config,
     rowSpan: data.rowSpan,
+    odd: data.odd,
   }
 }

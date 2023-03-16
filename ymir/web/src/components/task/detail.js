@@ -263,8 +263,6 @@ function TaskDetail({ task = {} }) {
           <ModelVersionName id={task.parameters.model_id} />
         </Link>
       </Item>
-      <Item label={t('task.mining.form.algo.label')}>{task.parameters.mining_algorithm}</Item>
-      <Item label={t('task.mining.form.topk.label')}>{task.parameters.top_k}</Item>
       {renderImageById(task?.parameters?.docker_image_id, 1, 'task.inference.form.image.label')}
       {renderLiveCodeItem(task.config)}
       {renderConfig(task.parameters?.docker_image_config)}
