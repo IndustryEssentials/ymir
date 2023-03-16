@@ -64,6 +64,7 @@ def run_migrations_offline() -> None:
         target_metadata=target_metadata,
         literal_binds=True,
         compare_type=True,
+        version_table="alembic_version_auth",
     )
 
     with context.begin_transaction():
@@ -91,8 +92,11 @@ def run_migrations_online() -> None:
             target_metadata=target_metadata,
             compare_type=True,
             # new feature, for sqlite alter
+            version_table="alembic_version_auth",
             render_as_batch=True,
         )
+        with context.begin_transaction():
+            context.run_migrations()
 
 
 if context.is_offline_mode():
