@@ -6,8 +6,12 @@ import t from '@/utils/t'
 import ObjectTypeTag from '@/components/project/ObjectTypeTag'
 import VersionName from '@/components/result/VersionName'
 
-const DatasetInfo: FC<{ dataset?: YModels.Dataset | YModels.Prediction; pred?: boolean }> = ({ dataset, pred }) => {
-  return dataset ? (
+const DatasetInfo: FC<{ dataset?: YModels.Prediction }> = ({ dataset }) => {
+  if (!dataset) {
+    return null
+  }
+  const pred = Object.hasOwn(dataset, 'pred')
+  return (
     <Space wrap={true}>
       {!pred ? (
         <strong>
@@ -25,7 +29,7 @@ const DatasetInfo: FC<{ dataset?: YModels.Dataset | YModels.Prediction; pred?: b
         </div>
       ) : null}
     </Space>
-  ) : null
+  )
 }
 
 export default DatasetInfo

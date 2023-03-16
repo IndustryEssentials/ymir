@@ -106,6 +106,7 @@ declare namespace YModels {
   }
 
   export interface Dataset<P = TaskParams> extends Result {
+    groupId: number
     keywordCount: number
     isProtected: Boolean
     assetCount: number
@@ -124,7 +125,7 @@ declare namespace YModels {
     inferConfig: ImageConfig
     rowSpan?: number
     evaluated: boolean
-    pred?: AnnotationsCount
+    pred: AnnotationsCount
     inferClass?: Array<string>
     odd?: boolean
   }
