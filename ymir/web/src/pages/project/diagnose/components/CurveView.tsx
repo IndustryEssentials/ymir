@@ -80,7 +80,7 @@ const CurveView: FC<ViewProps> = ({ predictions, datasets, models, data, xByClas
 
     return kd.map(({ value }) => {
       const kwRows = tts.map((prediction) => {
-        const rid = prediction.inferDatasetId
+        const rid = prediction.id
         const ddata = dData && dData[rid] ? dData[rid] : {}
         const _model = getModelCell(prediction, models, 'text')
         const line = ddata[value]?.pr_curve || []
