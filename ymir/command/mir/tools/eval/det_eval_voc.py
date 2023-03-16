@@ -74,11 +74,11 @@ def _voc_eval(class_recs: Dict[str, Dict[str, Any]], BB: np.ndarray, confidence:
             'rec': [],
             'prec': [],
             'conf': [],
-            'ap': 0,
-            'ar': 0,
+            'ap': -1,
+            'ar': -1,
             'tp': 0,
             'fp': 0,
-            'fn': npos,
+            'fn': npos,  # if no prediction, all gt boxes set to fn
         }
     # if no gt
     if npos == 0:
@@ -86,10 +86,10 @@ def _voc_eval(class_recs: Dict[str, Dict[str, Any]], BB: np.ndarray, confidence:
             'rec': [],
             'prec': [],
             'conf': [],
-            'ap': 0,
-            'ar': 0,
+            'ap': -1,
+            'ar': -1,
             'tp': 0,
-            'fp': len(image_ids),
+            'fp': len(image_ids),  # if no gt, all prediction boxes set to fp
             'fn': 0,
         }
 
