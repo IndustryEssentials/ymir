@@ -3,18 +3,24 @@ http:
     auth_router:
       entryPoints:
         - web
+      middlewares:
+        - APIRateLimiter
       service: auth
       rule: PathPrefix(`/api/v1/auth`) || PathPrefix(`/api/v1/user`) || PathPrefix(`/api/v1/reset-password`) || PathPrefix(`/api/v1/password-recovery`)
 
     backend_router:
       entryPoints:
         - web
+      middlewares:
+        - APIRateLimiter
       service: backend
       rule: PathPrefix(`/api/v1/`)
 
     tensorboard_router:
       entryPoints:
         - web
+      middlewares:
+        - APIRateLimiter
       service: tensorboard
       rule: PathPrefix(`/tensorboard/`)
 
@@ -53,6 +59,12 @@ http:
           - url: http://tensorboard:6006
 
   middlewares:
+
+    APIRateLimiter:
+      rateLimit:
+        average: 3
+        burst: 10
+
     updateSocketPath:
       stripPrefix:
         prefixes:
