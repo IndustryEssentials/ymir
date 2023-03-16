@@ -7,6 +7,7 @@ from sqlalchemy.orm import relationship
 from app.config import settings
 from app.db.base_class import Base
 from app.models.task import Task  # noqa
+from app.models.project import Project  # noqa
 
 
 class Prediction(Base):
