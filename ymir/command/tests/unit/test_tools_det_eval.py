@@ -606,8 +606,8 @@ class TestToolsDetEval(unittest.TestCase):
         evaluation: mirpb.Evaluation = det_eval_voc.evaluate(prediction=mir_annotations.prediction,
                                                              ground_truth=mir_annotations.ground_truth,
                                                              config=evaluate_config)
-        self.assertEqual(evaluation.dataset_evaluation.iou_averaged_evaluation.ci_averaged_evaluation.ap, -1)
-        self.assertEqual(evaluation.dataset_evaluation.iou_averaged_evaluation.ci_averaged_evaluation.ar, -1)
+        self.assertEqual(evaluation.dataset_evaluation.iou_averaged_evaluation.ci_averaged_evaluation.ap, 0)
+        self.assertEqual(evaluation.dataset_evaluation.iou_averaged_evaluation.ci_averaged_evaluation.ar, 0)
 
     def test_det_eval_ctl_ops(self) -> None:
         gt_pred_rev_tid = revs_parser.parse_single_arg_rev('a@a', need_tid=False)
