@@ -27,7 +27,7 @@ jobs:
         cache-dependency-path: ymir/web/package-lock.json
     - name: Test with npm
       run: |
-        npm config set registry="http://registry.npmjs.org/"
+        npm config set registry="https://registry.npmjs.org/"
         time npm ci
         time CI=true npm run test:coverage
       working-directory: ymir/web
