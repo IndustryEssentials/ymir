@@ -311,6 +311,7 @@ declare namespace YModels {
     objectType: ObjectType
     related?: Array<Image>
     liveCode?: boolean
+    errorCode?: string
   }
 
   export interface ImageList {
