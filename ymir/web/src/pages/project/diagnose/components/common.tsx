@@ -2,7 +2,7 @@ import { percent, toFixed } from '@/utils/number'
 import { attr2LowerCase } from '@/utils/object'
 import { Popover } from 'antd'
 import ReactJson from 'react-json-view'
-import { DataType, MetricsType, MetricType } from '.'
+import { DataType, EvaluationResult, MetricsType, MetricType } from '.'
 
 export function getModelCell(prediction: YModels.Prediction, models: YModels.Model[], text?: string) {
   const [mid, sid] = prediction?.inferModelId || []
@@ -108,6 +108,11 @@ const getSegmentationRowData = (result: DataType, field: string): { [keyword: st
       },
     }
   }, {})
+}
+
+export const getInferClassesFromResult = (data: DataType, field: string = 'maskap', isDet?: boolean) => {
+  const rowsData = isDet ? getDetRowforDataset(data) : getSegRowforDataset(data, field)
+  return Object.keys(rowsData)
 }
 
 export const getAverageField = (evaluation: DataType) => {

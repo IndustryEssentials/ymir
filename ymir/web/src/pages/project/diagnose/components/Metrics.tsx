@@ -24,6 +24,7 @@ import ModelVersionName from '@/components/result/ModelVersionName'
 import VersionName from '@/components/result/VersionName'
 import ReactJson from 'react-json-view'
 import IouSlider from './IouSlider'
+import { getInferClassesFromResult } from './common'
 type Props = {
   prediction: YModels.Prediction
 }
@@ -108,13 +109,13 @@ const Matrics: FC<Props> = ({ prediction }) => {
   }, [state])
 
   useEffect(() => {
-    if (diagnosing) {
-      const kws = prediction?.inferClass || []
+    if (diagnosis && prediction) {
+      const kws = prediction.inferClass || getInferClassesFromResult(diagnosis[prediction.id], selectedMetric, isDetection(prediction.type)) || []
       setKeywords(kws)
     } else {
       setKeywords([])
     }
-  }, [prediction, diagnosing])
+  }, [prediction, diagnosis])
 
   useEffect(() => {
     // calculate ck
