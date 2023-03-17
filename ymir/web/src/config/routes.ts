@@ -277,7 +277,7 @@ export const homeRoutes = [
   {
     path: "/home/project/:id/iterations/settings",
     name: "projectEdit",
-    component: "@/pages/project/iterationSettings",
+    component: "@/pages/project/IterationSettings",
     title: "project.iteration.add.title",
     pid: 25,
     id: 35,
