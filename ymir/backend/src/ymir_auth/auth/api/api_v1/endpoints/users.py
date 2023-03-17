@@ -3,6 +3,7 @@ from typing import Any, Optional
 from fastapi import APIRouter, Body, Depends, Query, Security
 from fastapi.encoders import jsonable_encoder
 from pydantic.networks import EmailStr
+from pydantic import ValidationError
 from sqlalchemy.orm import Session
 
 from auth import crud, models, schemas
@@ -10,6 +11,7 @@ from auth.api import deps
 from auth.api.errors.errors import (
     DuplicateUserNameError,
     DuplicatePhoneError,
+    FieldValidationFailed,
     UserNotFound,
 )
 from auth.constants.role import Roles
@@ -65,14 +67,17 @@ def create_user(
     if phone and crud.user.get_by_phone(db, phone=phone):
         raise DuplicatePhoneError()
 
-    user_in = schemas.UserCreate(
-        password=password,
-        email=email,
-        phone=phone,
-        username=username,
-        organization=organization,
-        scene=scene,
-    )
+    try:
+        user_in = schemas.UserCreate(
+            password=password,
+            email=email,
+            phone=phone,
+            username=username,
+            organization=organization,
+            scene=scene,
+        )
+    except ValidationError:
+        raise FieldValidationFailed()
     user = crud.user.create(db, obj_in=user_in)
     register_sandbox(user.id)
 

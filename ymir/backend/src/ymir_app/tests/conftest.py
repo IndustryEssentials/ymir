@@ -6,7 +6,6 @@ import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
 
-from app import crud
 from app.api import deps
 from app.config import settings
 from app.db.session import SessionLocal
@@ -170,6 +169,7 @@ def super_admin_token_headers(client: TestClient) -> Dict[str, str]:
 
 
 @pytest.fixture()
-def user_id(mocker, db: Session, client: TestClient, normal_user_token_headers: Dict[str, str]):
-    user = crud.user.get_by_email(db, email=settings.EMAIL_TEST_USER)
-    return user.id
+def user_id(mocker, client: TestClient, normal_user_token_headers: Dict[str, str]):
+    r = client.get(f"{settings.API_V1_STR}/users/me", headers=normal_user_token_headers)
+    current_user = r.json()["result"]
+    return current_user["id"]
