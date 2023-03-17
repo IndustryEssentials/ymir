@@ -142,6 +142,7 @@ const Matrics: FC<Props> = ({ prediction }) => {
       keywords: selectedKeywords?.length ? selectedKeywords : kws,
       ck,
     })
+  console.log('selectedKeywords, kws:', selectedKeywords, kws, ck)
   }, [selectedKeywords, kws])
 
   const diagnose = useCallback(
@@ -161,7 +162,6 @@ const Matrics: FC<Props> = ({ prediction }) => {
   function metricsChange({ target: { value } }: RadioChangeEvent) {
     setSelectedMetric(value)
     const tab = tabs.find((t) => t.value === value)
-    setCk(!!tab?.ck)
   }
 
   function prRateChange(value: [number, number]) {
