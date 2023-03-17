@@ -1,22 +1,19 @@
 from typing import Any, Optional
 
 from fastapi import APIRouter, Body, Depends, Query, Security
-from fastapi.logger import logger
 from fastapi.encoders import jsonable_encoder
 from pydantic.networks import EmailStr
 from sqlalchemy.orm import Session
-import requests
 
 from auth import crud, models, schemas
 from auth.api import deps
-from auth.config import settings
 from auth.api.errors.errors import (
     DuplicateUserNameError,
     DuplicatePhoneError,
-    FailedToCreateUser,
     UserNotFound,
 )
 from auth.constants.role import Roles
+from auth.utils.app import register_sandbox
 
 router = APIRouter()
 
@@ -80,16 +77,6 @@ def create_user(
     register_sandbox(user.id)
 
     return {"result": user}
-
-
-def register_sandbox(user_id: int) -> None:
-    url = f"http://{settings.APP_API_HOST}{settings.API_V1_STR}/users/controller"
-    resp = requests.post(
-        url, json={"user_id": user_id}, timeout=settings.APP_API_TIMEOUT, headers={"api-key": settings.APP_API_KEY}
-    )
-    if not resp.ok:
-        logger.error("Failed to create sandbox via APP: %s", resp.content)
-        raise FailedToCreateUser()
 
 
 @router.get("/me", response_model=schemas.UserOut)
