@@ -1,6 +1,6 @@
 from typing import List, Optional
 
-from pydantic import BaseModel
+from pydantic import BaseModel, validator
 
 from .common import Common
 from common_utils.labels import SingleLabel
@@ -38,6 +38,14 @@ class KeywordsCreateOut(Common):
 
 class KeywordsInput(Common):
     keywords: List[SingleLabel]
+
+    @validator("keywords")
+    def dedup(cls, v: List[SingleLabel]) -> List[SingleLabel]:
+        uniq = []
+        for label in v:
+            if label not in uniq:
+                uniq.append(label)
+        return uniq
 
 
 class KeywordsCheckDupOut(Common):
