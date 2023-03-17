@@ -23,6 +23,7 @@ import { ValidateErrorEntity } from 'rc-field-form/lib/interface'
 import ModelVersionName from '@/components/result/ModelVersionName'
 import VersionName from '@/components/result/VersionName'
 import ReactJson from 'react-json-view'
+import IouSlider from './IouSlider'
 type Props = {
   prediction: YModels.Prediction
 }
@@ -66,7 +67,6 @@ const Matrics: FC<Props> = ({ prediction }) => {
   const [tabs, setTabs] = useState<TabType[]>([])
   const { state } = useLocation<{ mid: number }>()
   const [form] = Form.useForm()
-  const [iou, setIou] = useState(0.5)
   const [averageIou, setaverageIou] = useState(false)
   const [confidence, setConfidence] = useState(0.3)
   const [selectedMetric, setSelectedMetric] = useState<TabIdType>('ap')
@@ -280,7 +280,6 @@ const Matrics: FC<Props> = ({ prediction }) => {
 
   // todo form initial values
   const initialValues = {
-    iou,
     confidence,
   }
   return (
@@ -331,24 +330,11 @@ const Matrics: FC<Props> = ({ prediction }) => {
                 {!isSemantic(prediction?.type) ? (
                   <Form.Item label={t('model.diagnose.form.iou')}>
                     <Radio.Group value={averageIou} onChange={({ target: { value } }) => setaverageIou(value)} options={iouOptions}></Radio.Group>
-                    <Row gutter={10} hidden={averageIou}>
-                      <Col flex={1}>
-                        <Form.Item noStyle name="iou" style={{ display: 'inline-block', width: '90%' }}>
-                          <Slider value={iou} min={0.25} max={0.95} step={0.05} onChange={setIou} />
-                        </Form.Item>
-                      </Col>
-                      <Col>
-                        <InputNumber
-                          step={0.05}
-                          style={{ width: 60 }}
-                          value={iou}
-                          onChange={(value) => {
-                            setIou(value)
-                            form.setFieldsValue({ iou: value })
-                          }}
-                        />
-                      </Col>
-                    </Row>
+                    {!averageIou ? (
+                      <Form.Item name="iou">
+                        <IouSlider />
+                      </Form.Item>
+                    ) : null}
                   </Form.Item>
                 ) : null}
                 <Form.Item name="submitBtn">
