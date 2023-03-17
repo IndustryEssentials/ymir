@@ -57,6 +57,8 @@ def create_user(
     email: EmailStr = Body(...),
     phone: str = Body(None),
     username: str = Body(None),
+    organization: str = Body(None),
+    scene: str = Body(None),
 ) -> Any:
     """
     Register user
@@ -66,7 +68,14 @@ def create_user(
     if phone and crud.user.get_by_phone(db, phone=phone):
         raise DuplicatePhoneError()
 
-    user_in = schemas.UserCreate(password=password, email=email, phone=phone, username=username)
+    user_in = schemas.UserCreate(
+        password=password,
+        email=email,
+        phone=phone,
+        username=username,
+        organization=organization,
+        scene=scene,
+    )
     user = crud.user.create(db, obj_in=user_in)
     register_sandbox(user.id)
 
