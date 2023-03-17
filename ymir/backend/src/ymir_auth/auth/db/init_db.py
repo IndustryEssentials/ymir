@@ -27,6 +27,7 @@ def init_db(db: Session) -> None:
     if not user:
         password = frontend_hash(settings.FIRST_ADMIN_PASSWORD)
         user_in = schemas.UserCreate(
+            username="admin",
             email=settings.FIRST_ADMIN,
             password=password,
         )
