@@ -24,7 +24,7 @@ export const initIntl = (prefix: string = '') => {
   return _helper
 }
 
-const showIntl = (id: string, values = {}, prefix = '') => {
+const showIntl = (id?: string, values = {}, prefix = '') => {
   try {
     return id ? initIntl(prefix)(id, values) : null
   } catch (err) {
