@@ -83,6 +83,7 @@ describe("constants: image", () => {
       description: "test",
       functions,
       objectType: 1,
+      error_code: undefined,
       liveCode: undefined,
       id: 1,
       name: "sample_image",

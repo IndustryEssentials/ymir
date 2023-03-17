@@ -175,7 +175,7 @@ const ImageList = ({ role, filter, getImages }) => {
           <Space>
             <span>{item.name}</span>
             {objectTypeLabel(item.objectType)}
-            <StateTag state={item.state} />
+            <StateTag state={item.state} code={item.errorCode} />
             {isDone(item.state) && !HIDDENMODULES.LIVECODE ? liveCodeState(item.liveCode) : null}
           </Space>
         </Col>

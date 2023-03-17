@@ -50,7 +50,7 @@ const PView: FC<ViewProps> = ({ predictions, datasets, models, data, p2r, prRate
   }, [prRate])
 
   useEffect(() => {
-    setPointField(p2r ? ['x', 'y'] : ['y', 'x'])
+    setPointField(p2r ? ['y', 'x'] : ['x', 'y'])
     setLabels(getLabels(p2r ? 'precision' : 'recall'))
   }, [p2r])
 
@@ -117,7 +117,7 @@ const PView: FC<ViewProps> = ({ predictions, datasets, models, data, p2r, prRate
     return dd.map(({ value, label }) => ({ id: value, label, rows: generateDsRows(value) }))
   }
 
-  function generateKwItems () {
+  function generateKwItems() {
     return kd.map(({ value, label }) => ({ id: value, label, rows: generateKwRows(value) }))
   }
 
