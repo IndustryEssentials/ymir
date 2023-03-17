@@ -309,9 +309,18 @@ const Matrics: FC<Props> = ({ prediction }) => {
                 colon={false}
               >
                 <Form.Item label={t('pred.metrics.prediction.select.label')}>
-                  <p><span>{t('model.diagnose.label.model')}：</span><ModelVersionName id={prediction.inferModelId[0]} stageId={prediction.inferModelId[1]} /></p>
-                  <p><span>{t('model.diagnose.label.testing_dataset')}: </span><VersionName id={prediction.inferDatasetId} /></p>
-                  <div><p>{t('model.diagnose.label.config')}</p><ReactJson src={prediction.task.config} collapsed={true} /></div>
+                  <p>
+                    <span>{t('model.diagnose.label.model')}：</span>
+                    <ModelVersionName id={prediction.inferModelId[0]} stageId={prediction.inferModelId[1]} />
+                  </p>
+                  <p>
+                    <span>{t('model.diagnose.label.testing_dataset')}: </span>
+                    <VersionName id={prediction.inferDatasetId} />
+                  </p>
+                  <div>
+                    <p>{t('model.diagnose.label.config')}</p>
+                    <ReactJson src={prediction.task.config} collapsed={true} />
+                  </div>
                 </Form.Item>
                 {!isSemantic(prediction?.type) ? (
                   <Form.Item label={t('model.diagnose.form.confidence')} name="confidence">
@@ -325,11 +334,19 @@ const Matrics: FC<Props> = ({ prediction }) => {
                     <Row gutter={10} hidden={averageIou}>
                       <Col flex={1}>
                         <Form.Item noStyle name="iou" style={{ display: 'inline-block', width: '90%' }}>
-                          <Slider min={0.25} max={0.95} step={0.05} onChange={setIou} />
+                          <Slider value={iou} min={0.25} max={0.95} step={0.05} onChange={setIou} />
                         </Form.Item>
                       </Col>
                       <Col>
-                        <InputNumber style={{ width: 60 }} value={iou} />
+                        <InputNumber
+                          step={0.05}
+                          style={{ width: 60 }}
+                          value={iou}
+                          onChange={(value) => {
+                            setIou(value)
+                            form.setFieldsValue({ iou: value })
+                          }}
+                        />
                       </Col>
                     </Row>
                   </Form.Item>
