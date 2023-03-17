@@ -1,7 +1,7 @@
 import json
 from typing import Dict, List, Optional, Tuple
 
-from sqlalchemy import desc, distinct, func, not_
+from sqlalchemy import desc, not_
 from sqlalchemy.orm import Session
 
 from app import schemas
@@ -53,18 +53,8 @@ class CRUDPrediction(CRUDBase[Prediction, PredictionCreate, PredictionUpdate]):
                 not_(self.model.is_deleted),
             )
         )
-        # Count distinct models
-        total = (
-            db.query(func.count(distinct(self.model.model_id)))
-            .filter(
-                self.model.project_id == project_id,
-                self.model.is_visible == int(visible),
-                not_(self.model.is_deleted),
-            )
-            .scalar()
-        )
 
-        return query.all(), total
+        return query.all(), query.count()
 
     def update_state(
         self,
