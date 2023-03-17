@@ -32,13 +32,20 @@ class UserRole(IntEnum):
 
 # Shared properties
 class UserBase(BaseModel):
-    username: Optional[constr(min_length=2, max_length=15, strip_whitespace=True)] = None
+    username: Optional[str] = None
     email: EmailStr
     phone: Optional[str] = None
     avatar: Optional[str] = None
     state: UserState = UserState.registered
     organization: Optional[str] = None
     scene: Optional[str] = None
+
+
+# Properties to receive via API on creation
+class UserCreate(UserBase):
+    username: Optional[constr(min_length=2, max_length=15, strip_whitespace=True)] = None
+    phone: Optional[str] = None
+    password: str
 
     @validator("phone")
     def check_phone(cls, v: Optional[str]) -> Optional[str]:
@@ -47,12 +54,6 @@ class UserBase(BaseModel):
         if not PHONE_NUMBER_PATTERN.match(v):
             raise ValueError("Invalud Phone Number")
         return v
-
-
-# Properties to receive via API on creation
-class UserCreate(UserBase):
-    email: EmailStr
-    password: str
 
 
 # Properties to receive via API on update
