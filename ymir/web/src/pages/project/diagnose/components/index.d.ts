@@ -115,4 +115,5 @@ export {
   ChartDataType,
   DataTypeForTable,
   ListType,
+  LineType,
 }
