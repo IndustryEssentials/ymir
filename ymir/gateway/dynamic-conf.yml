@@ -20,6 +20,7 @@ http:
       entryPoints:
         - web
       middlewares:
+        - updateTensorboardPath
         - APIRateLimiter
       service: tensorboard
       rule: PathPrefix(`/tensorboard/`)
@@ -56,7 +57,7 @@ http:
     tensorboard:
       loadBalancer:
         servers:
-          - url: http://tensorboard:6006
+          - url: http://tensorboard:6006/
 
   middlewares:
 
@@ -69,3 +70,8 @@ http:
       stripPrefix:
         prefixes:
           - "/socket"
+
+    updateTensorboardPath:
+      stripPrefix:
+        prefixes:
+          - "/tensorboard"
