@@ -142,7 +142,6 @@ const Matrics: FC<Props> = ({ prediction }) => {
       keywords: selectedKeywords?.length ? selectedKeywords : kws,
       ck,
     })
-  console.log('selectedKeywords, kws:', selectedKeywords, kws, ck)
   }, [selectedKeywords, kws])
 
   const diagnose = useCallback(
