@@ -76,7 +76,7 @@ def check_keywords_duplication(
     keywords_input: KeywordsInput,
     user_labels: UserLabels = Depends(deps.get_user_labels),
 ) -> Any:
-    new_user_labels = UserLabels(labels=keywords_input.keywords)
+    new_user_labels = UserLabels.from_single_labels(single_labels=keywords_input.keywords, ignore_dups=True)
     dups = user_labels.find_dups(new_user_labels)
     return {"result": dups}
 

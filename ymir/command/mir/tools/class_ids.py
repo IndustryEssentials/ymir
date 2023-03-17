@@ -15,6 +15,9 @@ class SingleLabel(BaseModel):
     update_time: datetime = datetime(year=2022, month=1, day=1)
     aliases: List[str] = []
 
+    def __hash__(self) -> int:
+        return self.name.__hash__()
+
     @validator('name')
     def _strip_and_lower_name(cls, v: str) -> str:
         return _normalize_and_check_name(v)
@@ -59,6 +62,12 @@ class UserLabels(LabelStorage):
     _id_to_name: Dict[int, str] = {}
     _name_aliases_to_id: Dict[str, int] = {}
     storage_file: Optional[str] = None
+
+    @classmethod
+    def from_single_labels(cls, single_labels: List[SingleLabel], ignore_dups: bool = True) -> "UserLabels":
+        if ignore_dups:
+            return UserLabels(labels=set(single_labels))
+        return UserLabels(labels=single_labels)
 
     @root_validator
     def _generate_dicts(cls, values: dict) -> dict:
