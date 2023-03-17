@@ -139,7 +139,7 @@ const Dataset: FC = () => {
   const renderTitle = (
     <Row className={styles.labels}>
       <Col flex={1}>
-        <DatasetInfo dataset={current} pred={isPred} />
+        <DatasetInfo dataset={current} />
       </Col>
       <Col>
         <ListColumnCountSelect value={columns} onChange={setColumns} />
