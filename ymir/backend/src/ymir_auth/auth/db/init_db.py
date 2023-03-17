@@ -1,3 +1,5 @@
+from functools import partial
+
 from sqlalchemy.orm import Session
 
 from auth import crud, schemas
@@ -5,7 +7,8 @@ from auth.config import settings
 from auth.constants.role import Roles
 from auth.db import base  # noqa: F401
 from auth.utils.security import frontend_hash
-from app.utils.ymir_controller import ControllerClient
+from auth.utils.app import register_sandbox
+from auth.utils.err import retry
 
 # make sure all SQL Alchemy models are imported (app.db.base) before initializing DB
 # otherwise, SQL Alchemy might fail to initialize relationships properly
@@ -35,5 +38,5 @@ def init_db(db: Session) -> None:
         user = crud.user.activate(db, user=user)
         user = crud.user.update_role(db, user=user, role=schemas.UserRole.SUPER_ADMIN)
         if settings.INIT_LABEL_FOR_FIRST_USER:
-            controller = ControllerClient(settings.GRPC_CHANNEL)
-            controller.create_user(user_id=user.id)
+            register_admin_sandbox = partial(register_sandbox, user.id)
+            retry(register_admin_sandbox, wait=settings.RETRY_INTERVAL_SECONDS)

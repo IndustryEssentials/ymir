@@ -3,10 +3,11 @@ from typing import Dict
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
 
-from app import crud
+from app import crud, schemas
 from app.config import settings
 from app.models.user import User
 from app.schemas.user import UserCreate, UserUpdate
+from app.utils.security import frontend_hash
 from tests.utils.utils import random_email, random_lower_string
 
 
@@ -26,6 +27,16 @@ def create_random_user(db: Session) -> User:
     user_in = UserCreate(username=email, email=email, password=password)
     user = crud.user.create(db=db, obj_in=user_in)
     user = crud.user.activate(db=db, user=user)
+    return user
+
+
+def create_admin_user(db: Session) -> User:
+    user_in = UserCreate(
+        username="admin", email=settings.FIRST_ADMIN, password=frontend_hash(settings.FIRST_ADMIN_PASSWORD)
+    )
+    user = crud.user.create(db=db, obj_in=user_in)
+    user = crud.user.activate(db=db, user=user)
+    user = crud.user.update_role(db, user=user, role=schemas.UserRole.SUPER_ADMIN)
     return user
 
 

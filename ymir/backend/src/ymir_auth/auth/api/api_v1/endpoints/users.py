@@ -1,22 +1,18 @@
 from typing import Any, Optional
 
 from fastapi import APIRouter, Body, Depends, Query, Security
-from fastapi.logger import logger
 from fastapi.encoders import jsonable_encoder
-from pydantic.networks import EmailStr
 from sqlalchemy.orm import Session
-import requests
 
 from auth import crud, models, schemas
 from auth.api import deps
-from auth.config import settings
 from auth.api.errors.errors import (
     DuplicateUserNameError,
     DuplicatePhoneError,
-    FailedToCreateUser,
     UserNotFound,
 )
 from auth.constants.role import Roles
+from auth.utils.app import register_sandbox
 
 router = APIRouter()
 
@@ -53,43 +49,20 @@ def list_users(
 def create_user(
     *,
     db: Session = Depends(deps.get_db),
-    password: str = Body(...),
-    email: EmailStr = Body(...),
-    phone: str = Body(None),
-    username: str = Body(None),
-    organization: str = Body(None),
-    scene: str = Body(None),
+    user_in: schemas.UserCreate,
 ) -> Any:
     """
     Register user
     """
-    if crud.user.get_by_email(db, email=email):
+    if crud.user.get_by_email(db, email=user_in.email):
         raise DuplicateUserNameError()
-    if phone and crud.user.get_by_phone(db, phone=phone):
+    if user_in.phone and crud.user.get_by_phone(db, phone=user_in.phone):
         raise DuplicatePhoneError()
 
-    user_in = schemas.UserCreate(
-        password=password,
-        email=email,
-        phone=phone,
-        username=username,
-        organization=organization,
-        scene=scene,
-    )
     user = crud.user.create(db, obj_in=user_in)
     register_sandbox(user.id)
 
     return {"result": user}
-
-
-def register_sandbox(user_id: int) -> None:
-    url = f"http://{settings.APP_API_HOST}{settings.API_V1_STR}/users/controller"
-    resp = requests.post(
-        url, json={"user_id": user_id}, timeout=settings.APP_API_TIMEOUT, headers={"api-key": settings.APP_API_KEY}
-    )
-    if not resp.ok:
-        logger.error("Failed to create sandbox via APP: %s", resp.content)
-        raise FailedToCreateUser()
 
 
 @router.get("/me", response_model=schemas.UserOut)

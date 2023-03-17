@@ -10,13 +10,16 @@ from app.api import deps
 from app.config import settings
 from app.db.session import SessionLocal
 from app.main import app
-from tests.utils.user import authentication_token_from_email
+from tests.utils.user import authentication_token_from_email, create_admin_user
 from tests.utils.utils import get_admin_token_headers, get_super_admin_token_headers
 
 
 @pytest.fixture(scope="session")
 def db() -> Generator:
     yield SessionLocal()
+
+
+create_admin_user(SessionLocal())
 
 
 def fake_controller_client() -> Generator:
