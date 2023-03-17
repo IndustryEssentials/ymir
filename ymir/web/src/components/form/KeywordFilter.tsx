@@ -9,7 +9,7 @@ enum Type {
 }
 type Props = {
   onChange?: (value: { type: Type; selected?: string[] }) => void
-  dataset?: YModels.Dataset
+  dataset?: YModels.Dataset | YModels.Prediction
 }
 type KeywordOptionsType = {
   [key in Type]: KeywordOption[]

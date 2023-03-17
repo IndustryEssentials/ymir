@@ -56,7 +56,7 @@ export function transferPrediction(data: YModels.BackendData): YModels.Predictio
     task,
     hidden: !data.is_visible,
     description: data.description || '',
-    inferClass: data?.keywords?.eval_class_ids,
+    inferClass: data?.keywords?.eval_class_ids || data?.pred?.eval_class_ids,
     evaluated,
     inferModelId: [params?.model_id || 0, params?.model_stage_id || 0],
     inferDatasetId: params?.dataset_id || 0,

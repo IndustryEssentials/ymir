@@ -3,8 +3,13 @@ import { useEffect, useState } from 'react'
 import { Card } from 'antd'
 
 import Empty from '@/components/empty/default'
-
-const PrCurve = ({ title = '', lines }) => {
+import { FC } from 'react'
+import { LineType, Point } from '.'
+type Props = {
+  title?: string
+  lines?: LineType[]
+}
+const PrCurve: FC<Props> = ({ title = '', lines = [] }) => {
   const [option, setOption] = useState({})
   const [series, setSeries] = useState([])
   const [xasix, setXAsix] = useState([])
@@ -39,7 +44,7 @@ const PrCurve = ({ title = '', lines }) => {
         symbol: 'circle',
         symbolSize: 2,
         type: 'scatter',
-        data: line.map(({ x, y }) => [x, y]),
+        data: line?.map(({ x, y }) => [x, y]),
         markLine: {
           symbol: 'circle',
           
@@ -47,7 +52,7 @@ const PrCurve = ({ title = '', lines }) => {
             type: 'solid',
             width: 2,
           },
-          data: line.reduce((prev, { x, y }, index) => {
+          data: line?.reduce<{coord: [number, number]}[][]>((prev, { x, y }, index) => {
             const next = line[index + 1]
             return next ? [...prev, [{ coord: [x, y] }, { coord: [next.x, next.y] }]] : prev
           }, []),

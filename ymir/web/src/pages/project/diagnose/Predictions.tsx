@@ -1,11 +1,11 @@
 import React, { useEffect, useRef, useState } from 'react'
-import { Card, Table, TableColumnsType } from 'antd'
+import { Card, Pagination, Table, TableColumnsType } from 'antd'
 import { useHistory, useParams } from 'umi'
 import { useSelector } from 'react-redux'
 
 import useFetch from '@/hooks/useFetch'
 import t from '@/utils/t'
-import { INFER_CLASSES_MAX_COUNT, INFER_DATASET_MAX_COUNT, updateResultByTask } from '@/constants/common'
+import { INFER_CLASSES_MAX_COUNT, INFER_DATASET_MAX_COUNT, updateResultByTask, validState } from '@/constants/common'
 
 import { getPredictionColumns } from '@/components/table/Columns'
 import Actions from '@/components/table/Actions'
@@ -37,13 +37,14 @@ const Predictions: React.FC = () => {
       key: 'diagnose',
       label: t('common.action.diagnose'),
       onclick: () => popupModal(record),
-      disabled: !validDataset(record) || record.assetCount > INFER_DATASET_MAX_COUNT || (record.inferModel?.keywords?.length || 0) > INFER_CLASSES_MAX_COUNT,
+      disabled:
+        !validState(record.state) || record.assetCount > INFER_DATASET_MAX_COUNT || (record.inferModel?.keywords?.length || 0) > INFER_CLASSES_MAX_COUNT,
       icon: <DiagnosisIcon />,
     },
     {
       key: 'preview',
       label: t('common.action.preview'),
-      hidden: () => !validDataset(record),
+      hidden: () => !validState(record.state),
       onclick: () => history.push(`/home/project/${pid}/prediction/${record.id}#pred`),
       icon: <EyeOnIcon />,
     },
@@ -91,7 +92,7 @@ const Predictions: React.FC = () => {
       items.map((prediction) => {
         const { inferDatasetId, inferModelId, rowSpan } = prediction
         if (rowSpan) {
-           rowIndex = rowSpan
+          rowIndex = rowSpan
         }
         const inferModel = inferModelId[0] ? cacheModels[inferModelId[0]] : undefined
         const inferDataset = inferDatasetId ? cacheDatasets[inferDatasetId] : undefined
@@ -126,14 +127,16 @@ const Predictions: React.FC = () => {
         dataSource={predictions}
         rowKey={(record) => record.id}
         rowClassName={(record) => (record.odd ? 'oddRow' : '')}
-        pagination={{
-          onChange: pageChange,
-          current: query.current,
-          defaultPageSize: query.limit,
-          total,
-          showQuickJumper: true,
-          showSizeChanger: true,
-        }}
+        pagination={false}
+      />
+      <Pagination
+        className={`pager`}
+        onChange={pageChange}
+        current={query.current}
+        defaultPageSize={query.limit}
+        total={total}
+        showQuickJumper
+        showSizeChanger
       />
       <Hide ref={hideRef} type="prediction" ok={fetchPredictions} msg="pred.action.del.confirm.content" />
       <MetricsModal width={'90%'} prediction={currentPrediction} visible={metricsModalVisible} onCancel={() => setMModalVisible(false)} footer={null} />

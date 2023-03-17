@@ -50,8 +50,8 @@ const PView: FC<ViewProps> = ({ predictions, datasets, models, data, p2r, prRate
   }, [prRate])
 
   useEffect(() => {
-    setPointField(p2r ? ['y', 'x'] : ['x', 'y'])
-    setLabels(getLabels(p2r ? 'recall' : 'precision'))
+    setPointField(p2r ? ['x', 'y'] : ['y', 'x'])
+    setLabels(getLabels(p2r ? 'precision' : 'recall'))
   }, [p2r])
 
   useEffect(() => {

@@ -65,7 +65,7 @@ const dataset = {
   'dataset.add.success.msg': { cn: '导入正在进行中', en: 'Dataset Importing' },
   'dataset.add.form.name.label': { cn: '新数据集名称', en: 'Dataset Name' },
   'dataset.add.top.warning': {
-    cn: '数据集导入支持包含图像以及标注的导入，如数据集包含推理结果会被忽略。',
+    cn: '数据集导入支持包含图像以及标注的导入，如数据集包含推理结果，推理结果会被忽略，图像和标注会被导入。',
     en: 'Assets, annotations but not predictions are supported by Dataset Import',
   },
   'dataset.add.form.name.required': { cn: '数据集名称为必填项', en: 'Dataset Name Required' },
