@@ -60,25 +60,6 @@ class UserLabels(LabelStorage):
     _name_aliases_to_id: Dict[str, int] = {}
     storage_file: Optional[str] = None
 
-    @classmethod
-    def from_single_labels(cls, single_labels: List[SingleLabel], ignore_dups: bool = True) -> "UserLabels":
-        if ignore_dups:
-            known_names: Set[str] = set()
-            deduplicated: List[SingleLabel] = []
-            for s in single_labels:
-                if s.name in known_names:
-                    continue
-                if s.aliases:
-                    s.aliases = list(set(s.aliases) - known_names)
-                deduplicated.append(s)
-
-                known_names.add(s.name)
-                known_names.update(s.aliases)
-
-            return UserLabels(labels=deduplicated)
-
-        return UserLabels(labels=single_labels)
-
     @root_validator
     def _generate_dicts(cls, values: dict) -> dict:
         # source priority: storage_file > labels.
