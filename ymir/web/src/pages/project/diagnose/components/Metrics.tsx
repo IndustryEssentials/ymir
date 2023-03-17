@@ -161,7 +161,6 @@ const Matrics: FC<Props> = ({ prediction }) => {
 
   function metricsChange({ target: { value } }: RadioChangeEvent) {
     setSelectedMetric(value)
-    const tab = tabs.find((t) => t.value === value)
   }
 
   function prRateChange(value: [number, number]) {
