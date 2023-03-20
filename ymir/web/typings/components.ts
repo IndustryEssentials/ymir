@@ -2,7 +2,7 @@ declare namespace YComponents {
   // components table actions
   type Action = {
     key: string,
-    label: string,
+    label?: string,
     onclick?: Function,
     icon?: React.ReactElement,
     link?: string,

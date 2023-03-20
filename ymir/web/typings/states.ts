@@ -14,11 +14,20 @@ declare namespace YStates {
       effects: {
         [key: string]: boolean
       }
+      global: boolean
+      models: {
+        [key: string]: boolean
+      }
     }
+    common: CommonState
   }
 
   type State = {
     [key: string]: any
+  }
+
+  interface CommonState extends State {
+    loading: boolean
   }
 
   interface UserState extends State {
@@ -29,7 +38,7 @@ declare namespace YStates {
     hash: string
     id: number
     role: number
-    logined?: string
+    logined: boolean
     neverShow?: string
   }
 

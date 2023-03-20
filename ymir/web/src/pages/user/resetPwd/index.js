@@ -1,13 +1,13 @@
-import React, { useEffect, useState } from "react"
-import { connect } from "dva"
-import { Form, Input, Button, Layout, Row, Col } from "antd"
-import { useParams, useHistory } from "umi"
+import React, { useEffect, useState } from 'react'
+import { connect } from 'dva'
+import { Form, Input, Button, Layout, Row, Col } from 'antd'
+import { useParams, useHistory } from 'umi'
 
-import t from "@/utils/t"
-import { layout420 } from "@/config/antd"
-import HeaderNav from "@/components/nav"
-import Foot from "@/components/common/footer"
-import styles from "../common.less"
+import t from '@/utils/t'
+import { layout420 } from '@/config/antd'
+import HeaderNav from '@/components/common/Nav'
+import Foot from '@/components/common/Footer'
+import styles from '../common.less'
 
 const { Header, Footer, Content } = Layout
 
@@ -21,19 +21,19 @@ const ResetPwd = ({ resetPwd }) => {
     }
     const res = await resetPwd(params)
     if (res) {
-      history.push("/login")
+      history.push('/login')
     }
   }
 
   const onFinishFailed = (errorInfo) => {
-    console.log("Failed:", errorInfo)
+    console.log('Failed:', errorInfo)
   }
 
-  const repeatErr = t("signup.pwd.repeat.same.msg")
+  const repeatErr = t('signup.pwd.repeat.same.msg')
 
   const pwdRepeat = ({ getFieldValue }) => ({
     validator(_, value) {
-      if (value && getFieldValue("password") !== value) {
+      if (value && getFieldValue('password') !== value) {
         return Promise.reject(repeatErr)
       }
       return Promise.resolve()
@@ -49,11 +49,11 @@ const ResetPwd = ({ resetPwd }) => {
           <div className={styles.formBox}>
             <Row className={styles.header}>
               <Col flex={1}>
-                <h2>{t("reset_pwd.title.page")}</h2>
+                <h2>{t('reset_pwd.title.page')}</h2>
               </Col>
               <Col>
                 <Button type="link" onClick={() => history.replace('/login')}>
-                  {t("reset_pwd.back")}
+                  {t('reset_pwd.back')}
                 </Button>
               </Col>
             </Row>
@@ -65,38 +65,38 @@ const ResetPwd = ({ resetPwd }) => {
               onFinish={onFinish}
               onFinishFailed={onFinishFailed}
               size="large"
-              labelAlign='left'
+              labelAlign="left"
             >
               <Form.Item>
-                <h3>{t("reset_pwd.tip.title")}</h3>
+                <h3>{t('reset_pwd.tip.title')}</h3>
                 <p>{t('reset_pwd.tip.content')}</p>
               </Form.Item>
 
               <Form.Item
-                label={t("signup.pwd")}
+                label={t('signup.pwd')}
                 name="password"
                 rules={[
                   {
                     required: true,
-                    message: t("signup.pwd.required.msg"),
+                    message: t('signup.pwd.required.msg'),
                   },
                   {
                     min: 8,
                     max: 16,
-                    message: t("signup.pwd.length.msg", { min: 8, max: 16 }),
+                    message: t('signup.pwd.length.msg', { min: 8, max: 16 }),
                   },
                 ]}
               >
                 <Input.Password visibilityToggle={false} allowClear placeholder={t('reset_pwd.pwd.placeholder')} />
               </Form.Item>
               <Form.Item
-                label={t("signup.repwd")}
+                label={t('signup.repwd')}
                 name="repwd"
-                dependencies={["password"]}
+                dependencies={['password']}
                 rules={[
                   {
                     required: true,
-                    message: t("signup.pwd.repeat.required.msg"),
+                    message: t('signup.pwd.repeat.required.msg'),
                   },
                   pwdRepeat,
                 ]}
@@ -104,9 +104,9 @@ const ResetPwd = ({ resetPwd }) => {
                 <Input.Password visibilityToggle={false} allowClear placeholder={t('reset_pwd.repwd.placeholder')} />
               </Form.Item>
 
-              <Form.Item name='submitBtn' wrapperCol={{ span: 24 }}>
+              <Form.Item name="submitBtn" wrapperCol={{ span: 24 }}>
                 <Button type="primary" htmlType="submit" className={styles.submit} block>
-                  {t("reset_pwd.reset")}
+                  {t('reset_pwd.reset')}
                 </Button>
               </Form.Item>
             </Form>
@@ -124,7 +124,7 @@ const mapDispatchToProps = (dispatch) => {
   return {
     resetPwd(params) {
       return dispatch({
-        type: "user/resetPwd",
+        type: 'user/resetPwd',
         payload: params,
       })
     },

@@ -3,8 +3,15 @@ import t from '@/utils/t'
 import { TASKTYPES } from '@/constants/task'
 import { RefreshIcon } from '@/components/common/Icons'
 import { Button } from 'antd'
+import { ReactNode } from 'react'
 
-export default function useRerunAction(mode = 'menu') {
+type ModeType = 'menu' | 'btn'
+type Result<T extends ModeType> = {
+    'menu': YComponents.Action
+    'btn': ReactNode
+  }[T]
+export default function useRerunAction(mode: ModeType = 'menu') {
+  console.log('mode:', mode, typeof mode)
   const history = useHistory()
 
   const rerun = (pid: number, type: string, record: YModels.Result) => {
@@ -26,14 +33,14 @@ export default function useRerunAction(mode = 'menu') {
           onclick: () => rerun(pid, type, record),
           icon: <RefreshIcon />,
         }
-      : { hidden: () => true }
+      : { key: 'rerun', hidden: () => true }
 
     const renderBtn = type ? (
       <Button type="primary" onClick={() => rerun(pid, type, record)}>
         {t(`common.action.rerun.${type}`)}
       </Button>
     ) : null
-    return mode === 'btn' ? renderBtn : renderMenu
+    return (mode === 'btn' ? renderBtn : renderMenu) as typeof renderMenu
   }
   return generateRerunAction
 }

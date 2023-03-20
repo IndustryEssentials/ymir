@@ -110,7 +110,7 @@ const Matrics: FC<Props> = ({ prediction }) => {
 
   useEffect(() => {
     if (diagnosis && prediction) {
-      const kws = prediction.inferClass || getInferClassesFromResult(diagnosis[prediction.id], selectedMetric, isDetection(prediction.type)) || []
+      const kws = prediction.inferClass || getInferClassesFromResult(diagnosis[prediction.id], selectedMetric, !isSemantic(prediction.type)) || []
       setKeywords(kws)
     } else {
       setKeywords([])

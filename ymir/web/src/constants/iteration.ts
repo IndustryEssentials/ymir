@@ -109,7 +109,7 @@ type Ratio = {
   total_assets_count: number
 }
 
-export function transferMiningStats(data: YModels.BackendData) {
+export function transferMiningStats(data: YModels.BackendData): YModels.MiningStats {
   const { total_mining_ratio, class_wise_mining_ratio, negative_ratio } = data
   const transfer = (ratios: Array<Ratio>) => {
     const getName = (ratio: Ratio) => ratio.class_name || ''

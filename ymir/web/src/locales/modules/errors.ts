@@ -49,6 +49,7 @@ const errors = {
   'error110704': { cn: '任务创建失败', en: 'TASK_FAILED_TO_CREATE: failed to create task', },
   'error110705': { cn: '任务状态过时', en: 'TASK_STATUS_OBSOLETE', },
   'error110706': { cn: '更新任务状态失败', en: 'FAILED_TO_UPDATE_TASK_STATUS: failed to update task status', },
+  'error110707': { cn: '无法终止任务', en: 'Failed to terminate task', },
   'error110708': { cn: 'LabelStudio 暂不支持分割标注任务', en: 'Segmentation dataset label is not supported by Label Studio', },
   'error111001': { cn: '重复的类别名称或别名', en: 'KEYWORD_DUPLICATED: duplicated keyword or aliases', },
   'error110901': { cn: '调用推理失败', en: 'INFERENCE_FAILED_TO_CALL: failed to call inference', },

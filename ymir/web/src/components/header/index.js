@@ -1,6 +1,6 @@
 import { Col, Row } from "antd"
 import styles from "./index.less"
-import LangBtn from "@/components/common/langBtn"
+import LangBtn from "@/components/common/LangBtn"
 
 const Header = () => {
   return (

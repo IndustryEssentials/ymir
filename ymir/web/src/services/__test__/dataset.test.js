@@ -6,7 +6,6 @@ import {
   createDataset,
   updateDataset,
   getInternalDataset,
-  evaluate,
 } from "../dataset"
 import { product, products, requestExample } from './func'
 
@@ -95,18 +94,4 @@ describe("service: dataset", () => {
     requestExample(getInternalDataset, {}, { items: expected, total: expected.length }, 'get')
   })
 
-  it("evaluate -> error code", () => {
-    const params = { datasets: 2342353 }
-    requestExample(evaluate, params, null, 'post', 111902)
-  })
-  it("evaluate -> normal return", () => {
-    const datasets = [2342353, 2345]
-    const iou = 0.65
-    const params = { pid: 25343, datasets, iou, averageIou: false, confidence: 0.6 }
-    const expected = datasets.reduce((prev, ds) => ({
-      ...prev,
-      [ds]: { [iou]: iou }
-    }), {})
-    requestExample(evaluate, params, expected, 'post', 111902)
-  })
 })

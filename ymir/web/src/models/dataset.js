@@ -181,7 +181,7 @@ export default {
     *hide({ payload: { pid, ids = [] } }, { call, put }) {
       const { code, result } = yield call(batchAct, actions.hide, pid, ids)
       if (code === 0) {
-        return result
+        return result.map(transferDataset)
       }
     },
     *restore({ payload: { pid, ids = [] } }, { call, put }) {

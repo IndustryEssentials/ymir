@@ -11,7 +11,7 @@ import { canHide } from '@/constants/dataset'
 
 import Breadcrumbs from '@/components/common/breadcrumb'
 import TaskDetail from '@/components/task/detail'
-import Detail from '@/components/dataset/detail'
+import Detail from '@/components/dataset/Detail'
 import TaskProgress from '@/components/task/progress'
 import Error from '@/components/task/ErrorMessage'
 import Hide from '@/components/common/hide'

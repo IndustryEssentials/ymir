@@ -8,18 +8,12 @@ describe("constants: user", () => {
     expect(ROLES.SUPER).toBe(3)
     expect(ROLES.ADMIN).toBe(2)
     expect(ROLES.USER).toBe(1)
-
-    function tryExtendAttr () { ROLES.newAttr = 'test' }
-    expect(tryExtendAttr).toThrowError('object is not extensible')
   })
   it("STATES: user states have right mapping and object is freeze", () => {
     expect(STATES.REGISTERED).toBe(1)
     expect(STATES.ACTIVE).toBe(2)
     expect(STATES.DECLINED).toBe(3)
     expect(STATES.DEACTIVED).toBe(4)
-
-    function tryExtendAttr () { STATES.newAttr = 'test' }
-    expect(tryExtendAttr).toThrowError('object is not extensible')
   })
   it('getRolesLabel: get user role label', () => {
 

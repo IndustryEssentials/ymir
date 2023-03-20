@@ -23,8 +23,8 @@ declare namespace YModels {
   }
 
   export type Response<M extends BackendData = BackendData> = {
-    code: number,
-    result?: M 
+    code: number
+    result?: M
   }
 
   export interface Group {
@@ -466,4 +466,15 @@ declare namespace YModels {
   }
 
   interface InferenceParams extends DockerParams {}
+
+  type KeywordsCount = {
+    keywords: string[]
+    count: {
+      [keyword: string]: number
+    }
+  }
+  type MiningStats = {
+    totalList: KeywordsCount
+    keywordList: KeywordsCount
+  }
 }

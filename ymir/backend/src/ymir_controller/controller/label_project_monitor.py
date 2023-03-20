@@ -91,15 +91,15 @@ def update_label_task(label_instance: utils.LabelBase, task_id: str, project_inf
         percent = label_instance.get_task_completion_percent(project_info["project_id"])
     except (ConnectionError, HTTPError, Timeout) as e:
         logging.error(f"Failed to get_task_completion_percent for {project_info['project_id']} error: {e}")
+        percent = -1
         error_code = CTLResponseCode.INVOKER_LABEL_TASK_NETWORK_ERROR
+        error_message = "Label Service Network Error"
         state = LogState.ERROR
     else:
         logging.info(f"label task <{task_id}> percent: {percent}")
-        error_code = None
+        error_code, error_message = None, None  # type: ignore
         state = LogState.DONE if percent == 1 else LogState.RUNNING
 
-    logging.info(f"label task <{task_id}> percent: {percent}")
-    state = LogState.DONE if percent == 1 else LogState.RUNNING
     if state == LogState.DONE:
         # For remove some special tasks. Delete the task after labeling will save file
         object_type = int(project_info.get("object_type", mir_cmd_pb.ObjectType.OT_DET_BOX))
@@ -116,6 +116,7 @@ def update_label_task(label_instance: utils.LabelBase, task_id: str, project_inf
             sentry_sdk.capture_exception(e)
             logging.error(f"get label task {task_id} error: {e}, set task_id:{task_id} error")
             error_code = CTLResponseCode.INVOKER_LABEL_TASK_NETWORK_ERROR
+            error_message = "Label Service Network Error"
             state = LogState.ERROR
         label_index_file = generate_label_index_file(Path(project_info["input_asset_dir"]), Path(des_annotation_path),
                                                      object_type)
@@ -129,10 +130,12 @@ def update_label_task(label_instance: utils.LabelBase, task_id: str, project_inf
             object_type=object_type,
             is_instance_segmentation=is_instance_segmentation,
         )
-        if import_response.Code != CTLResponseCode.CTR_OK:
+        if import_response.code != CTLResponseCode.CTR_OK:
             error_code = CTLResponseCode.INVOKER_LABEL_TASK_UNKNOWN_ERROR
+            error_message = "Failed to Import Label Result"
             state = LogState.ERROR
 
+    if state in [LogState.DONE, LogState.ERROR]:
         rds.hdel(label_task_config.MONITOR_MAPPING_KEY, task_id)
         logging.info(f"labeling task {task_id} finished")
 
@@ -140,7 +143,8 @@ def update_label_task(label_instance: utils.LabelBase, task_id: str, project_inf
                                         tid=project_info["task_id"],
                                         percent=percent,
                                         state=state,
-                                        error_code=error_code)
+                                        error_code=error_code,
+                                        error_message=error_message)
 
 
 def lable_task_monitor() -> None:
