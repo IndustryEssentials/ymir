@@ -135,25 +135,6 @@ export function delDatasetGroup(id: number) {
 }
 
 /**
- * @description evalution between gt and prediction annotations by dataset
- * @export
- * @param {EvaluationParams} {
- *   pid, datasets, iou, averageIou, confidence, ck
- * }
- */
-export function evaluate({ pid, datasets, iou, averageIou, confidence, ck, curve }: YParams.EvaluationParams) {
-  return request.post(`/datasets/evaluation`, {
-    project_id: pid,
-    dataset_ids: datasets,
-    confidence_threshold: confidence,
-    iou_threshold: iou,
-    require_average_iou: averageIou,
-    main_ck: ck,
-    need_pr_curve: curve
-  })
-}
-
-/**
  * @description get more analysis info from datasets
  * @export
  * @param {number} pid

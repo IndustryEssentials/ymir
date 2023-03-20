@@ -1,8 +1,8 @@
 import React from 'react'
-import styles from './index.less';
-import HeaderNav from '@/components/nav'
+import styles from './index.less'
+import HeaderNav from '@/components/common/Nav'
 
-export default function() {
+export default function () {
   return (
     <div className={styles.normal}>
       {/* <HeaderNav></HeaderNav> */}
@@ -16,5 +16,5 @@ export default function() {
         </li>
       </ul> */}
     </div>
-  );
+  )
 }

@@ -37,7 +37,7 @@ export function updateResultByTask<T extends YModels.AllResult>(result: T, task?
   if (!result || !task) {
     return
   }
-  if (ResultStates.VALID === task.result_state) {
+  if ([ResultStates.VALID, ResultStates.INVALID].includes(task.result_state)) {
     result.needReload = true
   }
   result.state = task.result_state

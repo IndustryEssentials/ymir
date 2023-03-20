@@ -1,26 +1,33 @@
-import commonStyles from './common.less'
-import { connect } from 'dva'
-import HeaderNav from '@/components/nav/index'
-import React, { useEffect } from 'react'
+import React, { FC, useEffect } from 'react'
 import { ConfigProvider, Layout, message } from 'antd'
-import Loading from '@/components/common/loading'
-import Foot from '@/components/common/footer'
-import LeftMenu from '@/components/common/LeftMenu'
+import { useHistory, withRouter } from 'umi'
+import { useSelector } from 'react-redux'
+
+import useRequest from '@/hooks/useRequest'
+
+import Loading from '@/components/common/Loading'
 import Empty from '@/components/empty/default'
+import LeftMenu from '@/components/common/LeftMenu'
+import HeaderNav from '@/components/common/Nav'
+import Foot from '@/components/common/Footer'
+
+import commonStyles from './common.less'
 import '@/assets/icons/iconfont.css'
-import { withRouter } from 'umi'
 
 const { Header, Content, Sider, Footer } = Layout
 message.config({ maxCount: 1 })
 
-function BasicLayout(props) {
-  let { logined, history } = props
+const BasicLayout: FC = ({ children }) => {
+  const history = useHistory()
+  const logined = useSelector<YStates.Root, boolean>(({ user }) => user.logined)
+  const { run: getUserInfo } = useRequest('user/getUserInfo')
+
   useEffect(() => {
     if (!logined) {
       history.replace(`/login?redirect=${history.location.pathname}`)
       return
     }
-    props.getUserInfo()
+    getUserInfo()
   }, [logined])
 
   useEffect(() => {
@@ -42,7 +49,7 @@ function BasicLayout(props) {
                 minHeight: document.documentElement.clientHeight - 60 - 50,
               }}
             >
-              {props.children}
+              {children}
             </Content>
             <Footer className={commonStyles.footer}>
               <Foot></Foot>
@@ -54,19 +61,4 @@ function BasicLayout(props) {
     </ConfigProvider>
   )
 }
-
-const mapStateToProps = (state) => {
-  return {
-    logined: state.user.logined,
-  }
-}
-const mapDispatchToProps = (dispatch) => {
-  return {
-    getUserInfo: () => {
-      return dispatch({
-        type: 'user/getUserInfo',
-      })
-    },
-  }
-}
-export default withRouter(connect(mapStateToProps, mapDispatchToProps)(BasicLayout))
+export default withRouter(BasicLayout)
