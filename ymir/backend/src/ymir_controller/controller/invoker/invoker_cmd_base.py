@@ -8,7 +8,7 @@ from google.protobuf.text_format import MessageToString
 from common_utils import labels
 from controller.utils import errors, metrics, utils
 from id_definition.error_codes import CTLResponseCode
-from id_definition.task_id import TaskId
+from id_definition.task_id import check_task_id
 from mir.protos import mir_command_pb2 as mir_cmd_pb
 from proto import backend_pb2
 
@@ -80,13 +80,10 @@ class BaseMirControllerInvoker(ABC):
     def server_invoke(self) -> backend_pb2.GeneralResp:
         logging.info(str(self))
 
-        # match task id, user id and repo id
-        if self._task_id:
-            task_id: TaskId = TaskId.from_task_id(self._task_id)
-            if self._user_id != task_id.user_id and self._repo_id != task_id.repo_id:
-                message = f"tid mismatch: {self._task_id}, user: {self._user_id}, repo: {self._repo_id}"
-                logging.error(message)
-                return utils.make_general_response(code=CTLResponseCode.INVOKER_INVALID_ARGS, message=message)
+        if not check_task_id(tid=self._task_id, uid=self._user_id, rid=self._repo_id):
+            message = f"tid mismatch: {self._task_id}, user: {self._user_id}, repo: {self._repo_id}"
+            logging.error(message)
+            return utils.make_general_response(code=CTLResponseCode.INVOKER_INVALID_ARGS, message=message)
 
         response = self.pre_invoke()
         if response.code != CTLResponseCode.CTR_OK:

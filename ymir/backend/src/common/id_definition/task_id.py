@@ -57,3 +57,11 @@ class TaskId:
         fmt = "1s1s2s4s6s16s"
         components = struct.unpack(fmt, task_id.encode())
         return cls(*(c.decode() for c in components))
+
+
+def check_task_id(tid: str, uid: str, rid: str) -> bool:
+    if not tid:
+        return True
+
+    task_id: TaskId = TaskId.from_task_id(tid)
+    return uid == task_id.user_id and rid == task_id.repo_id
