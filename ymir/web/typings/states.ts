@@ -29,7 +29,7 @@ declare namespace YStates {
     hash: string
     id: number
     role: number
-    logined?: string
+    logined: boolean
     neverShow?: string
   }
 
